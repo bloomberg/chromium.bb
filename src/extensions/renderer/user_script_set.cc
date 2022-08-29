@@ -11,6 +11,7 @@
 
 #include "base/debug/alias.h"
 #include "base/memory/ref_counted.h"
+#include "base/observer_list.h"
 #include "base/strings/strcat.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/render_frame.h"
@@ -208,7 +209,7 @@ std::unique_ptr<ScriptInjection> UserScriptSet::GetInjectionForScript(
       ScriptContext::GetEffectiveDocumentURLForInjection(
           web_frame, document_url, script->match_origin_as_fallback());
 
-  bool is_subframe = web_frame->Parent();
+  bool is_subframe = !web_frame->IsOutermostMainFrame();
   if (!script->MatchesDocument(effective_document_url, is_subframe))
     return injection;
 

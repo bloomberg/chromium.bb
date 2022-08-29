@@ -102,7 +102,7 @@
     "slashed-zero",
 
     //
-    // font-weigth
+    // font-weight
     //
     "normal",
     "bold",
@@ -195,6 +195,7 @@
     "activetext",
     "appworkspace",
     "background",
+    "buttonborder",
     "buttonface",
     "buttonhighlight",
     "buttonshadow",
@@ -213,7 +214,11 @@
     "infobackground",
     "infotext",
     "linktext",
+    "mark",
+    "marktext",
     "menutext",
+    "selecteditem",
+    "selecteditemtext",
     "scrollbar",
     "threeddarkshadow",
     "threedface",
@@ -413,13 +418,12 @@
     "-webkit-baseline-middle",
     //
     // text-align
-    // The order of this enum must match the order found in CSSParserFastPaths::IsValidKeywordPropertyAndValue().
+    // The order and contents this block MUST match the kTextAlign[Last] cases
+    // of CSSParserFastPaths::IsValidKeywordPropertyAndValue().
     //
     "-webkit-auto",
     "left",
     "right",
-    "inline-start",
-    "inline-end",
     "center",
     "justify",
     "-webkit-left",
@@ -427,6 +431,11 @@
     "-webkit-center",
     "-webkit-match-parent",
     "-internal-center",
+    //
+    // float, clear, etc.
+    //
+    "inline-start",
+    "inline-end",
     //
     // text-justify
     //
@@ -966,7 +975,7 @@
     "after",
     "before",
 
-    // -webkit-text-emphasis-position
+    // text-emphasis-position
     "over",
     "under",
     //right
@@ -1253,6 +1262,7 @@
     "rgba",
     "hsl",
     "hsla",
+    "hwb",
     "-internal-light-dark",
 
     // transform
@@ -1468,5 +1478,39 @@
 
     // Layered @import rule
     "layer",
+
+    // toggle-root
+    "group",
+    "self",
+
+    // color-contrast()
+    "color-contrast",
+    "vs",
+    "AA",
+    "AA-large",
+    "AAA",
+    "AAA-large",
+
+    // basic-shape functions.
+    "xywh",
+
+    // anchor positioning
+    "anchor",
+    // top,
+    // left,
+    // right,
+    // bottom,
+    // start,
+    // end,
+    // self-start,
+    // self-end,
+    // center,
+    "anchor-size",
+    "width",
+    "height",
+    // block,
+    // inline,
+    "self-block",
+    "self-inline",
   ],
 }

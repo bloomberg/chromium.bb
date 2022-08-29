@@ -27,7 +27,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-#if defined(OS_IOS)
+#if BUILDFLAG(IS_IOS)
 #include "components/content_settings/core/common/features.h"
 #else
 #include "third_party/blink/public/common/features.h"
@@ -86,7 +86,7 @@ class CookieSettingsTest : public testing::Test {
         kHttpsSubdomainSite("https://www.example.com"),
         kHttpsSite8080("https://example.com:8080"),
         kAllHttpsSitesPattern(ContentSettingsPattern::FromString("https://*")) {
-#ifdef OS_IOS
+#if BUILDFLAG(IS_IOS)
     feature_list_.InitAndEnableFeature(kImprovedCookieControls);
 #else
     feature_list_.Init();
@@ -215,7 +215,7 @@ TEST_F(CookieSettingsTest, CookiesControlsEnabledForIncognito) {
       kBlockedSite, kFirstPartySite));
 }
 
-#if defined(OS_IOS)
+#if BUILDFLAG(IS_IOS)
 // Test fixture with ImprovedCookieControls disabled.
 class ImprovedCookieControlsDisabledCookieSettingsTest
     : public CookieSettingsTest {
@@ -447,7 +447,7 @@ TEST_F(CookieSettingsTest, CookiesBlockEverythingExceptAllowed) {
   EXPECT_FALSE(cookie_settings_->IsCookieSessionOnly(kAllowedSite));
 }
 
-#if !defined(OS_IOS)
+#if !BUILDFLAG(IS_IOS)
 TEST_F(CookieSettingsTest, GetCookieSettingAllowedTelemetry) {
   const GURL top_level_url = GURL(kFirstPartySite);
   const GURL url = GURL(kAllowedSite);

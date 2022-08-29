@@ -14,7 +14,6 @@
 
 set(ROOT_PROJECT_COMPILE_OPTIONS
     ${SWIFTSHADER_COMPILE_OPTIONS}
-    ${WARNINGS_AS_ERRORS}
 )
 
 set(ROOT_PROJECT_LINK_LIBRARIES
@@ -49,6 +48,6 @@ target_link_libraries(ReactorBenchmarks
     PRIVATE
         benchmark::benchmark
         marl
-        ${Reactor}
+        Reactor
         ${ROOT_PROJECT_LINK_LIBRARIES}
 )

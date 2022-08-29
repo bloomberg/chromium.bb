@@ -4,6 +4,8 @@
 
 import json
 import logging
+import six
+import unittest
 
 from blinkpy.common.host_mock import MockHost
 from blinkpy.common.system.log_testing import LoggingTestCase
@@ -24,8 +26,8 @@ class TestWPTServe(LoggingTestCase):
 
     def test_init_start_cmd_without_ws_handlers(self):
         server = WPTServe(self.port, '/foo')
-        self.assertEqual(server._start_cmd, [
-            'python3',
+        expected_start_cmd = [
+            self.port.python3_command(),
             '-u',
             '/mock-checkout/third_party/wpt_tools/wpt/wpt',
             'serve',
@@ -33,14 +35,18 @@ class TestWPTServe(LoggingTestCase):
             server._config_file,
             '--doc_root',
             '/test.checkout/wtests/external/wpt',
-        ])
+        ]
+        if six.PY3:
+            expected_start_cmd.append('--webtransport-h3')
+
+        self.assertEqual(server._start_cmd, expected_start_cmd)
 
     def test_init_start_cmd_with_ws_handlers(self):
         self.host.filesystem.maybe_make_directory(
             '/test.checkout/wtests/external/wpt/websockets/handlers')
         server = WPTServe(self.port, '/foo')
-        self.assertEqual(server._start_cmd, [
-            'python3',
+        expected_start_cmd = [
+            self.port.python3_command(),
             '-u',
             '/mock-checkout/third_party/wpt_tools/wpt/wpt',
             'serve',
@@ -50,7 +56,11 @@ class TestWPTServe(LoggingTestCase):
             '/test.checkout/wtests/external/wpt',
             '--ws_doc_root',
             '/test.checkout/wtests/external/wpt/websockets/handlers',
-        ])
+        ]
+        if six.PY3:
+            expected_start_cmd.append('--webtransport-h3')
+
+        self.assertEqual(server._start_cmd, expected_start_cmd)
 
     def test_init_env(self):
         server = WPTServe(self.port, '/foo')
@@ -72,6 +82,10 @@ class TestWPTServe(LoggingTestCase):
             'local-dir': '/mock-checkout/out/Release/gen'
         })
 
+    @unittest.skipIf(
+        six.PY3,
+        'This test is flaky when run as part of the suite. See crbug.com/1308877'
+    )
     def test_start_with_stale_pid(self):
         # Allow asserting about debug logs.
         self.set_logging_level(logging.DEBUG)
@@ -88,7 +102,8 @@ class TestWPTServe(LoggingTestCase):
         server.start()
         # PID file should be overwritten (MockProcess.pid == 42)
         self.assertEqual(server._pid, 42)
-        self.assertEqual(self.host.filesystem.files[server._pid_file], '42')
+        self.assertEqual(self.host.filesystem.read_text_file(server._pid_file),
+                         '42')
         # Config file should exist.
         json.loads(self.port._filesystem.read_text_file(server._config_file))
 
@@ -102,6 +117,10 @@ class TestWPTServe(LoggingTestCase):
         self.assertEqual(logs[-1],
                          'DEBUG: wptserve successfully started (pid = 42)\n')
 
+    @unittest.skipIf(
+        six.PY3,
+        'This test is flaky when run as part of the suite. See crbug.com/1308877'
+    )
     def test_start_with_unkillable_zombie_process(self):
         # Allow asserting about debug logs.
         self.set_logging_level(logging.DEBUG)
@@ -120,7 +139,8 @@ class TestWPTServe(LoggingTestCase):
 
         server.start()
         self.assertEqual(server._pid, 42)
-        self.assertEqual(self.host.filesystem.files[server._pid_file], '42')
+        self.assertEqual(self.host.filesystem.read_text_file(server._pid_file),
+                         '42')
 
         # In this case, we'll try to kill the process repeatedly,
         # then give up and just try to start a new process anyway.

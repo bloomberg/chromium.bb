@@ -41,6 +41,9 @@ class RendererImpl::RendererClientInternal final : public RendererClient {
   }
 
   void OnError(PipelineStatus error) override { renderer_->OnError(error); }
+  void OnFallback(PipelineStatus error) override {
+    renderer_->OnFallback(std::move(error).AddHere());
+  }
   void OnEnded() override { renderer_->OnRendererEnded(type_); }
   void OnStatisticsUpdate(const PipelineStatistics& stats) override {
     renderer_->OnStatisticsUpdate(stats);
@@ -200,12 +203,14 @@ void RendererImpl::SetPreservesPitch(bool preserves_pitch) {
     audio_renderer_->SetPreservesPitch(preserves_pitch);
 }
 
-void RendererImpl::SetAutoplayInitiated(bool autoplay_initiated) {
+void RendererImpl::SetWasPlayedWithUserActivation(
+    bool was_played_with_user_activation) {
   DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (audio_renderer_)
-    audio_renderer_->SetAutoplayInitiated(autoplay_initiated);
+    audio_renderer_->SetWasPlayedWithUserActivation(
+        was_played_with_user_activation);
 }
 
 void RendererImpl::Flush(base::OnceClosure flush_cb) {
@@ -902,10 +907,14 @@ void RendererImpl::RunEndedCallbackIfNeeded() {
   client_->OnEnded();
 }
 
+void RendererImpl::OnFallback(PipelineStatus fallback) {
+  client_->OnFallback(std::move(fallback).AddHere());
+}
+
 void RendererImpl::OnError(PipelineStatus error) {
   DVLOG(1) << __func__ << "(" << error << ")";
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK_NE(PIPELINE_OK, error) << "PIPELINE_OK isn't an error!";
+  DCHECK(error != PIPELINE_OK) << "PIPELINE_OK isn't an error!";
   TRACE_EVENT1("media", "RendererImpl::OnError", "error",
                PipelineStatusToString(error));
 

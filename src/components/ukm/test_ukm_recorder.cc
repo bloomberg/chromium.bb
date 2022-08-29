@@ -9,7 +9,6 @@
 
 #include "base/check_op.h"
 #include "base/metrics/metrics_hashes.h"
-#include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "services/metrics/public/cpp/delegating_ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
@@ -55,7 +54,7 @@ void TestUkmRecorder::AddEntry(mojom::UkmEntryPtr entry) {
       on_add_entry_ && entry && entry_hash_to_wait_for_ == entry->event_hash;
   UkmRecorderImpl::AddEntry(std::move(entry));
   if (should_run_callback)
-    std::move(on_add_entry_).Run();
+    on_add_entry_.Run();
 }
 
 const UkmSource* TestUkmRecorder::GetSourceForSourceId(
@@ -80,8 +79,9 @@ const ukm::mojom::UkmEntry* TestUkmRecorder::GetDocumentCreatedEntryForSourceId(
   return nullptr;
 }
 
-void TestUkmRecorder::SetOnAddEntryCallback(base::StringPiece entry_name,
-                                            base::OnceClosure on_add_entry) {
+void TestUkmRecorder::SetOnAddEntryCallback(
+    base::StringPiece entry_name,
+    base::RepeatingClosure on_add_entry) {
   on_add_entry_ = std::move(on_add_entry);
   entry_hash_to_wait_for_ = base::HashMetricName(entry_name);
 }

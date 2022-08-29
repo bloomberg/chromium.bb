@@ -45,7 +45,6 @@
 #include "third_party/blink/public/platform/file_path_conversion.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/blob/blob_bytes_provider.h"
-#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/line_ending.h"
@@ -107,6 +106,12 @@ BlobData::BlobData(FileCompositionStatus composition)
 BlobData::~BlobData() = default;
 
 Vector<mojom::blink::DataElementPtr> BlobData::ReleaseElements() {
+  if (last_bytes_provider_) {
+    DCHECK(last_bytes_provider_receiver_);
+    BlobBytesProvider::Bind(std::move(last_bytes_provider_),
+                            std::move(last_bytes_provider_receiver_));
+  }
+
   return std::move(elements_);
 }
 
@@ -139,16 +144,6 @@ std::unique_ptr<BlobData> BlobData::CreateForFileSystemURLWithUnknownSize(
       DataElementFilesystemURL::New(file_system_url, 0, BlobData::kToEndOfFile,
                                     expected_modification_time)));
   return data;
-}
-
-void BlobData::DetachFromCurrentThread() {
-  content_type_ = content_type_.IsolatedCopy();
-  for (auto& element : elements_) {
-    if (element->is_file_filesystem()) {
-      auto& file_element = element->get_file_filesystem();
-      file_element->url = file_element->url.Copy();
-    }
-  }
 }
 
 void BlobData::SetContentType(const String& content_type) {
@@ -245,16 +240,16 @@ uint64_t BlobData::length() const {
 
   for (const auto& element : elements_) {
     switch (element->which()) {
-      case DataElement::Tag::BYTES:
+      case DataElement::Tag::kBytes:
         length += element->get_bytes()->length;
         break;
-      case DataElement::Tag::FILE:
+      case DataElement::Tag::kFile:
         length += element->get_file()->length;
         break;
-      case DataElement::Tag::FILE_FILESYSTEM:
+      case DataElement::Tag::kFileFilesystem:
         length += element->get_file_filesystem()->length;
         break;
-      case DataElement::Tag::BLOB:
+      case DataElement::Tag::kBlob:
         length += element->get_blob()->length;
         break;
     }
@@ -274,6 +269,7 @@ void BlobData::AppendDataInternal(base::span<const char> data,
   if (!elements_.IsEmpty() && elements_.back()->is_bytes()) {
     // Append bytes to previous element.
     DCHECK(last_bytes_provider_);
+    DCHECK(last_bytes_provider_receiver_);
     const auto& bytes_element = elements_.back()->get_bytes();
     bytes_element->length += data.size();
     if (should_embed_bytes && bytes_element->embedded_data) {
@@ -285,9 +281,18 @@ void BlobData::AppendDataInternal(base::span<const char> data,
       bytes_element->embedded_data = absl::nullopt;
     }
   } else {
+    if (last_bytes_provider_) {
+      // If `last_bytes_provider_` is set, but the previous element is not a
+      // bytes element, a new BytesProvider will be created and we need to
+      // make sure to bind the previous one first.
+      DCHECK(last_bytes_provider_receiver_);
+      BlobBytesProvider::Bind(std::move(last_bytes_provider_),
+                              std::move(last_bytes_provider_receiver_));
+    }
     mojo::PendingRemote<BytesProvider> bytes_provider_remote;
-    last_bytes_provider_ = BlobBytesProvider::CreateAndBind(
-        bytes_provider_remote.InitWithNewPipeAndPassReceiver());
+    last_bytes_provider_ = std::make_unique<BlobBytesProvider>();
+    last_bytes_provider_receiver_ =
+        bytes_provider_remote.InitWithNewPipeAndPassReceiver();
 
     auto bytes_element = DataElementBytes::New(
         data.size(), absl::nullopt, std::move(bytes_provider_remote));
@@ -331,11 +336,11 @@ BlobDataHandle::BlobDataHandle(std::unique_ptr<BlobData> data, uint64_t size)
       type_(data->ContentType().IsolatedCopy()),
       size_(size),
       is_single_unknown_size_file_(data->IsSingleUnknownSizeFile()) {
+  auto elements = data->ReleaseElements();
   TRACE_EVENT0("Blob", "Registry::RegisterBlob");
-  SCOPED_BLINK_UMA_HISTOGRAM_TIMER_THREAD_SAFE("Storage.Blob.RegisterBlobTime");
   GetThreadSpecificRegistry()->Register(
       blob_remote_.InitWithNewPipeAndPassReceiver(), uuid_,
-      type_.IsNull() ? "" : type_, "", data->ReleaseElements());
+      type_.IsNull() ? "" : type_, "", std::move(elements));
 }
 
 BlobDataHandle::BlobDataHandle(const String& uuid,
@@ -345,8 +350,6 @@ BlobDataHandle::BlobDataHandle(const String& uuid,
       type_(IsValidBlobType(type) ? type.IsolatedCopy() : ""),
       size_(size),
       is_single_unknown_size_file_(false) {
-  SCOPED_BLINK_UMA_HISTOGRAM_TIMER_THREAD_SAFE(
-      "Storage.Blob.GetBlobFromUUIDTime");
   GetThreadSpecificRegistry()->GetBlobFromUUID(
       blob_remote_.InitWithNewPipeAndPassReceiver(), uuid_);
 }
@@ -367,7 +370,7 @@ BlobDataHandle::BlobDataHandle(
 BlobDataHandle::~BlobDataHandle() = default;
 
 mojo::PendingRemote<mojom::blink::Blob> BlobDataHandle::CloneBlobRemote() {
-  MutexLocker locker(blob_remote_mutex_);
+  base::AutoLock locker(blob_remote_lock_);
   if (!blob_remote_.is_valid())
     return mojo::NullRemote();
   mojo::Remote<mojom::blink::Blob> blob(std::move(blob_remote_));
@@ -379,7 +382,7 @@ mojo::PendingRemote<mojom::blink::Blob> BlobDataHandle::CloneBlobRemote() {
 
 void BlobDataHandle::CloneBlobRemote(
     mojo::PendingReceiver<mojom::blink::Blob> receiver) {
-  MutexLocker locker(blob_remote_mutex_);
+  base::AutoLock locker(blob_remote_lock_);
   if (!blob_remote_.is_valid())
     return;
   mojo::Remote<mojom::blink::Blob> blob(std::move(blob_remote_));
@@ -389,7 +392,7 @@ void BlobDataHandle::CloneBlobRemote(
 
 mojo::PendingRemote<network::mojom::blink::DataPipeGetter>
 BlobDataHandle::AsDataPipeGetter() {
-  MutexLocker locker(blob_remote_mutex_);
+  base::AutoLock locker(blob_remote_lock_);
   if (!blob_remote_.is_valid())
     return mojo::NullRemote();
   mojo::PendingRemote<network::mojom::blink::DataPipeGetter> result;
@@ -402,7 +405,7 @@ BlobDataHandle::AsDataPipeGetter() {
 void BlobDataHandle::ReadAll(
     mojo::ScopedDataPipeProducerHandle pipe,
     mojo::PendingRemote<mojom::blink::BlobReaderClient> client) {
-  MutexLocker locker(blob_remote_mutex_);
+  base::AutoLock locker(blob_remote_lock_);
   mojo::Remote<mojom::blink::Blob> blob(std::move(blob_remote_));
   blob->ReadAll(std::move(pipe), std::move(client));
   blob_remote_ = blob.Unbind();
@@ -413,7 +416,7 @@ void BlobDataHandle::ReadRange(
     uint64_t length,
     mojo::ScopedDataPipeProducerHandle pipe,
     mojo::PendingRemote<mojom::blink::BlobReaderClient> client) {
-  MutexLocker locker(blob_remote_mutex_);
+  base::AutoLock locker(blob_remote_lock_);
   mojo::Remote<mojom::blink::Blob> blob(std::move(blob_remote_));
   blob->ReadRange(offset, length, std::move(pipe), std::move(client));
   blob_remote_ = blob.Unbind();
@@ -423,7 +426,7 @@ bool BlobDataHandle::CaptureSnapshot(
     uint64_t* snapshot_size,
     absl::optional<base::Time>* snapshot_modification_time) {
   // This method operates on a cloned blob remote; this lets us avoid holding
-  // the |blob_remote_mutex_| locked during the duration of the (synchronous)
+  // the |blob_remote_lock_| locked during the duration of the (synchronous)
   // CaptureSnapshot call.
   mojo::Remote<mojom::blink::Blob> remote(CloneBlobRemote());
   return remote->CaptureSnapshot(snapshot_size, snapshot_modification_time);

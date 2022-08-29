@@ -26,6 +26,12 @@ void FidoAuthenticator::GetNextAssertion(
   NOTREACHED();
 }
 
+void FidoAuthenticator::GetCredentialInformationForRequest(
+    const CtapGetAssertionRequest& request,
+    GetCredentialInformationForRequestCallback callback) {
+  NOTREACHED();
+}
+
 void FidoAuthenticator::GetTouch(base::OnceCallback<void()> callback) {}
 
 void FidoAuthenticator::GetPinRetries(
@@ -166,7 +172,7 @@ void FidoAuthenticator::BioEnrollDelete(const pin::TokenResponse&,
 }
 
 void FidoAuthenticator::WriteLargeBlob(
-    const std::vector<uint8_t>& large_blob,
+    LargeBlob large_blob,
     const LargeBlobKey& large_blob_key,
     const absl::optional<pin::TokenResponse> pin_uv_auth_token,
     base::OnceCallback<void(CtapDeviceResponseCode)> callback) {
@@ -191,6 +197,10 @@ bool FidoAuthenticator::DiscoverableCredentialStorageFull() const {
 void FidoAuthenticator::Reset(ResetCallback callback) {
   std::move(callback).Run(CtapDeviceResponseCode::kCtap1ErrInvalidCommand,
                           absl::nullopt);
+}
+
+FidoAuthenticator::Type FidoAuthenticator::GetType() const {
+  return Type::kOther;
 }
 
 std::string FidoAuthenticator::GetDisplayName() const {

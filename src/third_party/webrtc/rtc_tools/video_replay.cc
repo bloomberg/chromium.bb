@@ -312,7 +312,7 @@ class DecoderIvfFileWriter : public test::FakeDecoder {
 };
 
 // The RtpReplayer is responsible for parsing the configuration provided by the
-// user, setting up the windows, recieve streams and decoders and then replaying
+// user, setting up the windows, receive streams and decoders and then replaying
 // the provided RTP dump.
 class RtpReplayer final {
  public:
@@ -382,13 +382,13 @@ class RtpReplayer final {
   }
 
  private:
-  // Holds all the shared memory structures required for a recieve stream. This
+  // Holds all the shared memory structures required for a receive stream. This
   // structure is used to prevent members being deallocated before the replay
   // has been finished.
   struct StreamState {
     test::NullTransport transport;
     std::vector<std::unique_ptr<rtc::VideoSinkInterface<VideoFrame>>> sinks;
-    std::vector<VideoReceiveStream*> receive_streams;
+    std::vector<VideoReceiveStreamInterface*> receive_streams;
     std::unique_ptr<VideoDecoderFactory> decoder_factory;
   };
 
@@ -455,7 +455,8 @@ class RtpReplayer final {
     stream_state->sinks.push_back(std::move(playback_video));
     stream_state->sinks.push_back(std::move(file_passthrough));
     // Setup the configuration from the flags.
-    VideoReceiveStream::Config receive_config(&(stream_state->transport));
+    VideoReceiveStreamInterface::Config receive_config(
+        &(stream_state->transport));
     receive_config.rtp.remote_ssrc = Ssrc();
     receive_config.rtp.local_ssrc = kReceiverLocalSsrc;
     receive_config.rtp.rtx_ssrc = SsrcRtx();
@@ -477,7 +478,7 @@ class RtpReplayer final {
     receive_config.renderer = stream_state->sinks.back().get();
 
     // Setup the receiving stream
-    VideoReceiveStream::Decoder decoder;
+    VideoReceiveStreamInterface::Decoder decoder;
     decoder = test::CreateMatchingDecoder(MediaPayloadType(), Codec());
     if (!DecoderBitstreamFilename().empty()) {
       // Replace decoder with file writer if we're writing the bitstream to a

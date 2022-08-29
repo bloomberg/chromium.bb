@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/net/proxy_config_monitor.h"
 #include "chrome/browser/net/stub_resolver_config_reader.h"
+#include "chrome/browser/ssl/ssl_config_service_manager.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_member.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -27,7 +28,6 @@
 
 class PrefRegistrySimple;
 class PrefService;
-class SSLConfigServiceManager;
 
 namespace network {
 namespace mojom {
@@ -111,7 +111,7 @@ class SystemNetworkContextManager {
   void DisableQuic();
 
   // Returns an mojo::PendingReceiver<SSLConfigClient> that can be passed as a
-  // NetorkContextParam.
+  // NetworkContextParam.
   mojo::PendingReceiver<network::mojom::SSLConfigClient>
   GetSSLConfigClientReceiver();
 
@@ -141,7 +141,7 @@ class SystemNetworkContextManager {
   // or destroyed, and so that it's destroyed before Mojo is shut down.
   net_log::NetExportFileWriter* GetNetExportFileWriter();
 
-  // Returns whether the network sandbox is enabled. This depends on  policy but
+  // Returns whether the network sandbox is enabled. This depends on policy but
   // also feature status from sandbox. Called before there is an instance of
   // SystemNetworkContextManager.
   static bool IsNetworkSandboxEnabled();
@@ -180,6 +180,7 @@ class SystemNetworkContextManager {
       Test);
 
   class URLLoaderFactoryForSystem;
+  class NetworkProcessLaunchWatcher;
 
   // Constructor. |pref_service| must out live this object.
   explicit SystemNetworkContextManager(PrefService* pref_service);
@@ -200,7 +201,7 @@ class SystemNetworkContextManager {
   // This is an instance of the default SSLConfigServiceManager for the current
   // platform and it gets SSL preferences from the BrowserProcess's local_state
   // object. It's shared with other NetworkContexts.
-  std::unique_ptr<SSLConfigServiceManager> ssl_config_service_manager_;
+  SSLConfigServiceManager ssl_config_service_manager_;
 
   ProxyConfigMonitor proxy_config_monitor_;
 
@@ -226,6 +227,8 @@ class SystemNetworkContextManager {
 
   // Initialized on first access.
   std::unique_ptr<net_log::NetExportFileWriter> net_export_file_writer_;
+
+  std::unique_ptr<NetworkProcessLaunchWatcher> network_process_launch_watcher_;
 
   StubResolverConfigReader stub_resolver_config_reader_;
   static StubResolverConfigReader* stub_resolver_config_reader_for_testing_;

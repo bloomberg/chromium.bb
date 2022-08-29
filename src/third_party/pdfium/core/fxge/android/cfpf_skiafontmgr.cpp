@@ -7,6 +7,7 @@
 #include "core/fxge/android/cfpf_skiafontmgr.h"
 
 #include <algorithm>
+#include <iterator>
 #include <utility>
 
 #include "core/fxcrt/fx_codepage.h"
@@ -15,10 +16,9 @@
 #include "core/fxcrt/fx_system.h"
 #include "core/fxge/android/cfpf_skiafont.h"
 #include "core/fxge/android/cfpf_skiapathfont.h"
+#include "core/fxge/freetype/fx_freetype.h"
 #include "core/fxge/fx_font.h"
-#include "core/fxge/fx_freetype.h"
 #include "third_party/base/containers/adapters.h"
-#include "third_party/base/cxx17_backports.h"
 
 namespace {
 
@@ -63,18 +63,6 @@ uint32_t FPF_SkiaGetSubstFont(uint32_t dwHash,
   if (pFontMap < pEnd && pFontMap->dwFamily == dwHash)
     return pFontMap->dwSubSt;
   return 0;
-}
-
-uint32_t FPF_GetHashCode_StringA(const char* pStr, int32_t iLength) {
-  if (!pStr)
-    return 0;
-  if (iLength < 0)
-    iLength = strlen(pStr);
-  const char* pStrEnd = pStr + iLength;
-  uint32_t uHashCode = 0;
-  while (pStr < pStrEnd)
-    uHashCode = 31 * uHashCode + tolower(*pStr++);
-  return uHashCode;
 }
 
 enum FPF_SKIACHARSET {
@@ -135,17 +123,14 @@ uint32_t FPF_SkiaGetCharset(FX_Charset uCharset) {
   return FPF_SKIACHARSET_Default;
 }
 
-uint32_t FPF_SKIANormalizeFontName(ByteStringView bsfamily) {
-  uint32_t dwHash = 0;
-  int32_t iLength = bsfamily.GetLength();
-  const char* pBuffer = bsfamily.unterminated_c_str();
-  for (int32_t i = 0; i < iLength; i++) {
-    char ch = pBuffer[i];
+uint32_t FPF_SKIANormalizeFontName(ByteStringView bsFamily) {
+  uint32_t uHashCode = 0;
+  for (unsigned char ch : bsFamily) {
     if (ch == ' ' || ch == '-' || ch == ',')
       continue;
-    dwHash = 31 * dwHash + tolower(ch);
+    uHashCode = 31 * uHashCode + tolower(ch);
   }
-  return dwHash;
+  return uHashCode;
 }
 
 uint32_t FPF_SKIAGetFamilyHash(ByteStringView bsFamily,
@@ -159,7 +144,7 @@ uint32_t FPF_SKIAGetFamilyHash(ByteStringView bsFamily,
   if (FontStyleIsSerif(dwStyle))
     bsFont += "Serif";
   bsFont += static_cast<uint8_t>(uCharset);
-  return FPF_GetHashCode_StringA(bsFont.c_str(), bsFont.GetLength());
+  return FX_HashCode_GetA(bsFont.AsStringView());
 }
 
 bool FPF_SkiaIsCJK(FX_Charset uCharset) {
@@ -263,10 +248,10 @@ CFPF_SkiaFont* CFPF_SkiaFontMgr::CreateFont(ByteStringView bsFamilyname,
     return family_iter->second.get();
 
   uint32_t dwFaceName = FPF_SKIANormalizeFontName(bsFamilyname);
-  uint32_t dwSubst = FPF_SkiaGetSubstFont(dwFaceName, kSkiaFontmap,
-                                          pdfium::size(kSkiaFontmap));
+  uint32_t dwSubst =
+      FPF_SkiaGetSubstFont(dwFaceName, kSkiaFontmap, std::size(kSkiaFontmap));
   uint32_t dwSubstSans = FPF_SkiaGetSubstFont(dwFaceName, kSkiaSansFontMap,
-                                              pdfium::size(kSkiaSansFontMap));
+                                              std::size(kSkiaSansFontMap));
   bool bMaybeSymbol = FPF_SkiaMaybeSymbol(bsFamilyname);
   if (uCharset != FX_Charset::kMSWin_Arabic &&
       FPF_SkiaMaybeArabic(bsFamilyname)) {

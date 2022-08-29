@@ -366,16 +366,16 @@ TEST_F(CrosDisplayConfigTest, GetDisplayUnitInfoListBasic) {
   EXPECT_EQ(96, info_0.dpi_y);
   EXPECT_EQ(mojom::DisplayRotationOptions::kZeroDegrees,
             info_0.rotation_options);
-  EXPECT_EQ("0,0 500x600", info_0.bounds.ToString());
-  EXPECT_EQ("0,0,0,0", info_0.overscan.ToString());
+  EXPECT_EQ(gfx::Rect(0, 0, 500, 600), info_0.bounds);
+  EXPECT_EQ(gfx::Insets(), info_0.overscan);
 
   ASSERT_TRUE(base::StringToInt64(result[1]->id, &display_id));
   ASSERT_TRUE(DisplayExists(display_id));
   const mojom::DisplayUnitInfo& info_1 = *result[1];
   EXPECT_EQ(display_manager()->GetDisplayNameForId(display_id), info_1.name);
   // Second display is left of the primary display whose width 500.
-  EXPECT_EQ("500,0 400x520", info_1.bounds.ToString());
-  EXPECT_EQ("0,0,0,0", info_1.overscan.ToString());
+  EXPECT_EQ(gfx::Rect(500, 0, 400, 520), info_1.bounds);
+  EXPECT_EQ(gfx::Insets(), info_1.overscan);
   EXPECT_EQ(mojom::DisplayRotationOptions::kZeroDegrees,
             info_1.rotation_options);
   EXPECT_FALSE(info_1.is_primary);
@@ -432,11 +432,11 @@ TEST_F(CrosDisplayConfigTest, SetDisplayPropertiesOverscan) {
           .GetSecondaryDisplay();
 
   auto properties = mojom::DisplayConfigProperties::New();
-  properties->overscan = gfx::Insets({199, 20, 51, 130});
+  properties->overscan = gfx::Insets::TLBR(199, 20, 51, 130);
   mojom::DisplayConfigResult result = SetDisplayProperties(
       base::NumberToString(secondary.id()), std::move(properties));
   EXPECT_EQ(mojom::DisplayConfigResult::kSuccess, result);
-  EXPECT_EQ("1200,0 150x250", secondary.bounds().ToString());
+  EXPECT_EQ(gfx::Rect(1200, 0, 150, 250), secondary.bounds());
   const gfx::Insets overscan =
       display_manager()->GetOverscanInsets(secondary.id());
   EXPECT_EQ(199, overscan.top());
@@ -459,7 +459,7 @@ TEST_F(CrosDisplayConfigTest, SetDisplayPropertiesRotation) {
   result = SetDisplayProperties(base::NumberToString(secondary.id()),
                                 std::move(properties));
   EXPECT_EQ(mojom::DisplayConfigResult::kSuccess, result);
-  EXPECT_EQ("1200,0 500x300", secondary.bounds().ToString());
+  EXPECT_EQ(gfx::Rect(1200, 0, 500, 300), secondary.bounds());
   EXPECT_EQ(display::Display::ROTATE_90, secondary.rotation());
 
   properties = mojom::DisplayConfigProperties::New();
@@ -468,7 +468,7 @@ TEST_F(CrosDisplayConfigTest, SetDisplayPropertiesRotation) {
   result = SetDisplayProperties(base::NumberToString(secondary.id()),
                                 std::move(properties));
   EXPECT_EQ(mojom::DisplayConfigResult::kSuccess, result);
-  EXPECT_EQ("1200,0 500x300", secondary.bounds().ToString());
+  EXPECT_EQ(gfx::Rect(1200, 0, 500, 300), secondary.bounds());
   EXPECT_EQ(display::Display::ROTATE_270, secondary.rotation());
 
   // Test setting primary and rotating.
@@ -482,7 +482,7 @@ TEST_F(CrosDisplayConfigTest, SetDisplayPropertiesRotation) {
   const display::Display& primary =
       display::Screen::GetScreen()->GetPrimaryDisplay();
   EXPECT_EQ(secondary.id(), primary.id());
-  EXPECT_EQ("0,0 300x500", primary.bounds().ToString());
+  EXPECT_EQ(gfx::Rect(0, 0, 300, 500), primary.bounds());
   EXPECT_EQ(display::Display::ROTATE_180, primary.rotation());
 }
 
@@ -499,28 +499,28 @@ TEST_F(CrosDisplayConfigTest, SetDisplayPropertiesBoundsOrigin) {
   result = SetDisplayProperties(base::NumberToString(secondary.id()),
                                 std::move(properties));
   EXPECT_EQ(mojom::DisplayConfigResult::kSuccess, result);
-  EXPECT_EQ("-520,50 520x400", secondary.bounds().ToString());
+  EXPECT_EQ(gfx::Rect(-520, 50, 520, 400), secondary.bounds());
 
   properties = mojom::DisplayConfigProperties::New();
   properties->bounds_origin = gfx::Point({1200, 100});
   result = SetDisplayProperties(base::NumberToString(secondary.id()),
                                 std::move(properties));
   EXPECT_EQ(mojom::DisplayConfigResult::kSuccess, result);
-  EXPECT_EQ("1200,100 520x400", secondary.bounds().ToString());
+  EXPECT_EQ(gfx::Rect(1200, 100, 520, 400), secondary.bounds());
 
   properties = mojom::DisplayConfigProperties::New();
   properties->bounds_origin = gfx::Point({1100, -400});
   result = SetDisplayProperties(base::NumberToString(secondary.id()),
                                 std::move(properties));
   EXPECT_EQ(mojom::DisplayConfigResult::kSuccess, result);
-  EXPECT_EQ("1100,-400 520x400", secondary.bounds().ToString());
+  EXPECT_EQ(gfx::Rect(1100, -400, 520, 400), secondary.bounds());
 
   properties = mojom::DisplayConfigProperties::New();
   properties->bounds_origin = gfx::Point({-350, 600});
   result = SetDisplayProperties(base::NumberToString(secondary.id()),
                                 std::move(properties));
   EXPECT_EQ(mojom::DisplayConfigResult::kSuccess, result);
-  EXPECT_EQ("-350,600 520x400", secondary.bounds().ToString());
+  EXPECT_EQ(gfx::Rect(-350, 600, 520, 400), secondary.bounds());
 }
 
 TEST_F(CrosDisplayConfigTest, SetDisplayPropertiesDisplayZoomFactor) {
@@ -532,7 +532,7 @@ TEST_F(CrosDisplayConfigTest, SetDisplayPropertiesDisplayZoomFactor) {
     SCOPED_TRACE(config);
     UpdateDisplay(config);
     display::DisplayIdList display_id_list =
-        display_manager()->GetCurrentDisplayIdList();
+        display_manager()->GetConnectedDisplayIdList();
 
     const float zoom_factor_1 = 1.23f;
     const float zoom_factor_2 = 2.34f;
@@ -614,13 +614,13 @@ TEST_F(CrosDisplayConfigTest, OverscanCalibration) {
   // Test that kAdjust succeeds after kComplete call.
   EXPECT_TRUE(OverscanCalibration(id, mojom::DisplayConfigOperation::kStart,
                                   absl::nullopt));
-  EXPECT_EQ(gfx::Insets(0, 0, 0, 0), display_manager()->GetOverscanInsets(id));
+  EXPECT_EQ(gfx::Insets(), display_manager()->GetOverscanInsets(id));
 
-  gfx::Insets insets(10, 10, 10, 10);
+  gfx::Insets insets(10);
   EXPECT_TRUE(
       OverscanCalibration(id, mojom::DisplayConfigOperation::kAdjust, insets));
   // Adjust has no effect until Complete.
-  EXPECT_EQ(gfx::Insets(0, 0, 0, 0), display_manager()->GetOverscanInsets(id));
+  EXPECT_EQ(gfx::Insets(), display_manager()->GetOverscanInsets(id));
 
   EXPECT_TRUE(OverscanCalibration(id, mojom::DisplayConfigOperation::kComplete,
                                   absl::nullopt));
@@ -633,12 +633,12 @@ TEST_F(CrosDisplayConfigTest, OverscanCalibration) {
   // Start clears any overscan values.
   EXPECT_TRUE(OverscanCalibration(id, mojom::DisplayConfigOperation::kStart,
                                   absl::nullopt));
-  EXPECT_EQ(gfx::Insets(0, 0, 0, 0), display_manager()->GetOverscanInsets(id));
+  EXPECT_EQ(gfx::Insets(), display_manager()->GetOverscanInsets(id));
 
   // Reset + Complete restores previously set insets.
   EXPECT_TRUE(OverscanCalibration(id, mojom::DisplayConfigOperation::kReset,
                                   absl::nullopt));
-  EXPECT_EQ(gfx::Insets(0, 0, 0, 0), display_manager()->GetOverscanInsets(id));
+  EXPECT_EQ(gfx::Insets(), display_manager()->GetOverscanInsets(id));
   EXPECT_TRUE(OverscanCalibration(id, mojom::DisplayConfigOperation::kComplete,
                                   absl::nullopt));
   EXPECT_EQ(insets, display_manager()->GetOverscanInsets(id));
@@ -674,7 +674,7 @@ TEST_F(CrosDisplayConfigTest, CustomTouchCalibrationNonTouchDisplay) {
           .SetFirstDisplayAsInternalDisplay();
 
   display::DisplayIdList display_id_list =
-      display_manager()->GetCurrentDisplayIdList();
+      display_manager()->GetConnectedDisplayIdList();
 
   // Pick the non internal display Id.
   const int64_t display_id = display_id_list[0] == internal_display_id
@@ -701,7 +701,7 @@ TEST_F(CrosDisplayConfigTest, CustomTouchCalibrationInvalidPoints) {
           .SetFirstDisplayAsInternalDisplay();
 
   display::DisplayIdList display_id_list =
-      display_manager()->GetCurrentDisplayIdList();
+      display_manager()->GetConnectedDisplayIdList();
 
   // Pick the non internal display Id.
   const int64_t display_id = display_id_list[0] == internal_display_id
@@ -732,7 +732,7 @@ TEST_F(CrosDisplayConfigTest, CustomTouchCalibrationSuccess) {
           .SetFirstDisplayAsInternalDisplay();
 
   display::DisplayIdList display_id_list =
-      display_manager()->GetCurrentDisplayIdList();
+      display_manager()->GetConnectedDisplayIdList();
 
   // Pick the non internal display Id.
   const int64_t display_id = display_id_list[0] == internal_display_id

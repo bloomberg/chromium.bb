@@ -100,7 +100,7 @@ export class ConsolePinPane extends UI.ThrottledWidget.ThrottledWidget {
       }
     }
     contextMenu.editSection().appendItem(i18nString(UIStrings.removeAllExpressions), this.removeAllPins.bind(this));
-    contextMenu.show();
+    void contextMenu.show();
   }
 
   private removeAllPins(): void {
@@ -115,7 +115,7 @@ export class ConsolePinPane extends UI.ThrottledWidget.ThrottledWidget {
     this.pins.delete(pin);
     this.savePins();
     if (newFocusedPin) {
-      newFocusedPin.focus();
+      void newFocusedPin.focus();
     } else {
       this.liveExpressionButton.focus();
     }
@@ -127,7 +127,7 @@ export class ConsolePinPane extends UI.ThrottledWidget.ThrottledWidget {
     this.pins.add(pin);
     this.savePins();
     if (userGesture) {
-      pin.focus();
+      void pin.focus();
     }
     this.update();
   }
@@ -213,7 +213,7 @@ export class ConsolePin {
     this.pinPreview.addEventListener('mouseleave', this.setHovered.bind(this, false), false);
     this.pinPreview.addEventListener('click', (event: Event) => {
       if (this.lastNode) {
-        Common.Revealer.reveal(this.lastNode);
+        void Common.Revealer.reveal(this.lastNode);
         event.consume();
       }
     }, false);
@@ -241,6 +241,13 @@ export class ConsolePin {
             key: 'Escape',
             run: (view: CodeMirror.EditorView): boolean => {
               view.dispatch({changes: {from: 0, to: view.state.doc.length, insert: this.committedExpression}});
+              this.focusOut();
+              return true;
+            },
+          },
+          {
+            key: 'Enter',
+            run: (): boolean => {
               this.focusOut();
               return true;
             },

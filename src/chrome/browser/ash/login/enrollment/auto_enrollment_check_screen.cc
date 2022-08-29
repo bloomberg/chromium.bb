@@ -16,6 +16,7 @@
 #include "chrome/browser/ash/login/screens/error_screen.h"
 #include "chrome/browser/ash/login/screens/network_error.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
+#include "chrome/browser/ash/policy/enrollment/auto_enrollment_type_checker.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 
@@ -63,7 +64,7 @@ void AutoEnrollmentCheckScreen::ClearState() {
 
 void AutoEnrollmentCheckScreen::ShowImpl() {
   // If the decision got made already, don't show the screen at all.
-  if (!AutoEnrollmentController::IsEnabled() || IsCompleted()) {
+  if (!policy::AutoEnrollmentTypeChecker::IsEnabled() || IsCompleted()) {
     SignalCompletion();
     return;
   }
@@ -216,7 +217,7 @@ bool AutoEnrollmentCheckScreen::UpdateAutoEnrollmentState(
 
       // Fall to the same behavior like any connection error if the device is
       // enrolled.
-      FALLTHROUGH;
+      [[fallthrough]];
     case policy::AUTO_ENROLLMENT_STATE_CONNECTION_ERROR:
       ShowErrorScreen(NetworkError::ERROR_STATE_OFFLINE);
       return true;
@@ -233,8 +234,9 @@ void AutoEnrollmentCheckScreen::ShowErrorScreen(
       NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
   error_screen_->SetUIState(NetworkError::UI_STATE_AUTO_ENROLLMENT_ERROR);
   error_screen_->AllowGuestSignin(
-      auto_enrollment_controller_->GetFRERequirement() !=
-      AutoEnrollmentController::FRERequirement::kExplicitlyRequired);
+      auto_enrollment_controller_->auto_enrollment_check_type() !=
+      policy::AutoEnrollmentTypeChecker::CheckType::
+          kForcedReEnrollmentExplicitlyRequired);
   error_screen_->SetErrorState(error_state,
                                network ? network->name() : std::string());
   connect_request_subscription_ = error_screen_->RegisterConnectRequestCallback(
@@ -249,7 +251,7 @@ void AutoEnrollmentCheckScreen::ShowErrorScreen(
 }
 
 void AutoEnrollmentCheckScreen::OnErrorScreenHidden() {
-  error_screen_->SetParentScreen(OobeScreen::SCREEN_UNKNOWN);
+  error_screen_->SetParentScreen(ash::OOBE_SCREEN_UNKNOWN);
   Show(context());
 }
 
@@ -258,7 +260,7 @@ void AutoEnrollmentCheckScreen::SignalCompletion() {
 
   network_portal_detector::GetInstance()->RemoveObserver(this);
   error_screen_->SetHideCallback(base::OnceClosure());
-  error_screen_->SetParentScreen(OobeScreen::SCREEN_UNKNOWN);
+  error_screen_->SetParentScreen(ash::OOBE_SCREEN_UNKNOWN);
   auto_enrollment_progress_subscription_ = {};
   connect_request_subscription_ = {};
 
@@ -294,23 +296,18 @@ void AutoEnrollmentCheckScreen::OnConnectRequested() {
 }
 
 bool AutoEnrollmentCheckScreen::ShouldBlockOnServerError() const {
+  using CheckType = policy::AutoEnrollmentTypeChecker::CheckType;
   switch (auto_enrollment_controller_->auto_enrollment_check_type()) {
-    case AutoEnrollmentController::AutoEnrollmentCheckType::
-        kForcedReEnrollmentImplicitlyRequired:
-      // [[fallthrough]];
-    case AutoEnrollmentController::AutoEnrollmentCheckType::
-        kForcedReEnrollmentExplicitlyRequired:
-      // Only block on errors in FRE if FRE is expliclty required (i.e. the
-      // device was enrolled before).
-      return auto_enrollment_controller_->GetFRERequirement() ==
-             AutoEnrollmentController::FRERequirement::kExplicitlyRequired;
-    case AutoEnrollmentController::AutoEnrollmentCheckType::
-        kInitialStateDetermination:
+    case CheckType::kForcedReEnrollmentImplicitlyRequired:
+      // Auto-enrollment is implicitly required so we don't block in server
+      // errors.
+      return false;
+    case CheckType::kForcedReEnrollmentExplicitlyRequired:
+    case CheckType::kInitialStateDetermination:
+      // Auto-enrollment is explicitly required so we block on server errors.
       return true;
-    case AutoEnrollmentController::AutoEnrollmentCheckType::
-        kUnknownDueToMissingSystemClockSync:
-      // [[fallthrough]];
-    case AutoEnrollmentController::AutoEnrollmentCheckType::kNone:
+    case CheckType::kUnknownDueToMissingSystemClockSync:
+    case CheckType::kNone:
       NOTREACHED();
       return false;
   }

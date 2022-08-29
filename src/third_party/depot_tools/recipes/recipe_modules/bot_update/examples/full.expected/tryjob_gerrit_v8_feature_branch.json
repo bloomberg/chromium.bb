@@ -2,7 +2,6 @@
   {
     "cmd": [
       "vpython",
-      "-u",
       "RECIPE_REPO[depot_tools]/gerrit_client.py",
       "changes",
       "--host",
@@ -56,7 +55,7 @@
   },
   {
     "cmd": [
-      "python",
+      "vpython3",
       "-u",
       "RECIPE_MODULE[depot_tools::bot_update]/resources/bot_update.py",
       "--spec-path",
@@ -76,8 +75,7 @@
       "--revision",
       "src@HEAD",
       "--revision",
-      "src/v8@refs/heads/experimental/feature",
-      "--disable-syntax-validation"
+      "src/v8@refs/heads/experimental/feature"
     ],
     "env": {
       "DEPOT_TOOLS_REPORT_BUILD": "chromium/src/try/linux/8945511751514863184",
@@ -186,7 +184,7 @@
   },
   {
     "cmd": [
-      "python",
+      "vpython3",
       "-u",
       "RECIPE_MODULE[depot_tools::bot_update]/resources/bot_update.py",
       "--spec-path",

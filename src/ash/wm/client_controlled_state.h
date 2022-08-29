@@ -10,6 +10,7 @@
 #include "ash/ash_export.h"
 #include "ash/wm/base_state.h"
 #include "ash/wm/wm_event.h"
+#include "base/time/time.h"
 #include "ui/display/display.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -82,6 +83,10 @@ class ASH_EXPORT ClientControlledState : public BaseState {
   void AttachState(WindowState* window_state,
                    WindowState::State* previous_state) override;
   void DetachState(WindowState* window_state) override;
+#if DCHECK_IS_ON()
+  void CheckMaximizableCondition(
+      const WindowState* window_state) const override;
+#endif  // DCHECK_IS_ON()
 
   // BaseState:
   void HandleWorkspaceEvents(WindowState* window_state,
@@ -104,6 +109,11 @@ class ASH_EXPORT ClientControlledState : public BaseState {
   chromeos::WindowStateType GetResolvedNextWindowStateType(
       WindowState* window_state,
       const WMEvent* event);
+
+  void UpdateWindowForTransitionEvents(
+      WindowState* window_state,
+      chromeos::WindowStateType next_state_type,
+      WMEventType event_type);
 
   std::unique_ptr<Delegate> delegate_;
 

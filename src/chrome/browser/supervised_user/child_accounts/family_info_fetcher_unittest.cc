@@ -11,13 +11,13 @@
 #include <utility>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/json/json_writer.h"
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "build/chromeos_buildflags.h"
 #include "components/signin/public/base/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
@@ -77,36 +77,32 @@ std::string BuildEmptyGetFamilyProfileResponse() {
 
 std::string BuildGetFamilyMembersResponse(
     const std::vector<FamilyInfoFetcher::FamilyMember>& members) {
-  base::DictionaryValue dict;
-  auto list = std::make_unique<base::ListValue>();
+  base::Value::Dict dict;
+  base::Value::List list;
   for (size_t i = 0; i < members.size(); i++) {
     const FamilyInfoFetcher::FamilyMember& member = members[i];
-    std::unique_ptr<base::DictionaryValue> member_dict(
-        new base::DictionaryValue);
-    member_dict->SetKey("userId", base::Value(member.obfuscated_gaia_id));
-    member_dict->SetKey(
-        "role", base::Value(FamilyInfoFetcher::RoleToString(member.role)));
+    base::Value::Dict member_dict;
+    member_dict.Set("userId", member.obfuscated_gaia_id);
+    member_dict.Set("role", FamilyInfoFetcher::RoleToString(member.role));
     if (!member.display_name.empty() ||
         !member.email.empty() ||
         !member.profile_url.empty() ||
         !member.profile_image_url.empty()) {
-      auto profile_dict = std::make_unique<base::DictionaryValue>();
+      base::Value::Dict profile_dict;
       if (!member.display_name.empty())
-        profile_dict->SetKey("displayName", base::Value(member.display_name));
+        profile_dict.Set("displayName", member.display_name);
       if (!member.email.empty())
-        profile_dict->SetKey("email", base::Value(member.email));
+        profile_dict.Set("email", member.email);
       if (!member.profile_url.empty())
-        profile_dict->SetKey("profileUrl", base::Value(member.profile_url));
+        profile_dict.Set("profileUrl", member.profile_url);
       if (!member.profile_image_url.empty())
-        profile_dict->SetKey("profileImageUrl",
-                             base::Value(member.profile_image_url));
+        profile_dict.Set("profileImageUrl", member.profile_image_url);
 
-      member_dict->SetKey(
-          "profile", base::Value::FromUniquePtrValue(std::move(profile_dict)));
+      member_dict.Set("profile", std::move(profile_dict));
     }
-    list->Append(std::move(member_dict));
+    list.Append(std::move(member_dict));
   }
-  dict.SetKey("members", base::Value::FromUniquePtrValue(std::move(list)));
+  dict.Set("members", std::move(list));
   std::string result;
   base::JSONWriter::Write(dict, &result);
   return result;
@@ -146,30 +142,30 @@ class FamilyInfoFetcherTest
   }
 
   CoreAccountInfo SetPrimaryAccount() {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
     return identity_test_env_.SetPrimaryAccount(kAccountId,
                                                 signin::ConsentLevel::kSync);
-#elif defined(OS_ANDROID)
-    // TODO(https://crbug.com/1046746): Change to ConsentLevel::kSignin
-    // when Android supports the concept of an unconsented primary account that
-    // is different than the primary account.
+#elif BUILDFLAG(IS_ANDROID)
+    // Android supports Unicorn accounts in signed in state with sync disabled.
+    // Using that setup in these tests checks that we aren't overly
+    // restrictive.
     return identity_test_env_.SetPrimaryAccount(kAccountId,
-                                                signin::ConsentLevel::kSync);
+                                                signin::ConsentLevel::kSignin);
 #else
 #error Unsupported platform.
 #endif
   }
 
   void IssueRefreshToken() {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
     identity_test_env_.MakePrimaryAccountAvailable(kAccountId,
                                                    signin::ConsentLevel::kSync);
-#elif defined(OS_ANDROID)
-    // TODO(https://crbug.com/1046746): Change to ConsentLevel::kSignin
-    // when Android supports the concept of an unconsented primary account that
-    // is different than the primary account.
-    identity_test_env_.MakePrimaryAccountAvailable(kAccountId,
-                                                   signin::ConsentLevel::kSync);
+#elif BUILDFLAG(IS_ANDROID)
+    // Android supports Unicorn accounts in signed in state with sync disabled.
+    // Using that setup in these tests checks that we aren't overly
+    // restrictive.
+    identity_test_env_.MakePrimaryAccountAvailable(
+        kAccountId, signin::ConsentLevel::kSignin);
 #else
 #error Unsupported platform.
 #endif

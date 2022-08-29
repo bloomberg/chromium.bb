@@ -532,10 +532,6 @@ class V8_EXPORT CFunction {
   };
 };
 
-struct V8_DEPRECATED("Use v8::Local<v8::Value> instead.") ApiObject {
-  uintptr_t address;
-};
-
 /**
  * A struct which may be passed to a fast call callback, like so:
  * \code
@@ -660,7 +656,6 @@ struct CTypeInfoTraits {};
   V(void, kVoid)                     \
   V(v8::Local<v8::Value>, kV8Value)  \
   V(v8::Local<v8::Object>, kV8Value) \
-  V(ApiObject, kApiObject)           \
   V(AnyCType, kAny)
 
 // ApiObject was a temporary solution to wrap the pointer to the v8::Value.
@@ -886,31 +881,6 @@ static constexpr CTypeInfo kTypeInfoFloat64 =
  * to the requested destination type, is considered unsupported. The operation
  * returns true on success. `type_info` will be used for conversions.
  */
-template <const CTypeInfo* type_info, typename T>
-V8_DEPRECATED(
-    "Use TryToCopyAndConvertArrayToCppBuffer<CTypeInfo::Identifier, T>()")
-bool V8_EXPORT V8_WARN_UNUSED_RESULT
-    TryCopyAndConvertArrayToCppBuffer(Local<Array> src, T* dst,
-                                      uint32_t max_length);
-
-template <>
-V8_DEPRECATED(
-    "Use TryToCopyAndConvertArrayToCppBuffer<CTypeInfo::Identifier, T>()")
-inline bool V8_WARN_UNUSED_RESULT
-    TryCopyAndConvertArrayToCppBuffer<&kTypeInfoInt32, int32_t>(
-        Local<Array> src, int32_t* dst, uint32_t max_length) {
-  return false;
-}
-
-template <>
-V8_DEPRECATED(
-    "Use TryToCopyAndConvertArrayToCppBuffer<CTypeInfo::Identifier, T>()")
-inline bool V8_WARN_UNUSED_RESULT
-    TryCopyAndConvertArrayToCppBuffer<&kTypeInfoFloat64, double>(
-        Local<Array> src, double* dst, uint32_t max_length) {
-  return false;
-}
-
 template <CTypeInfo::Identifier type_info_id, typename T>
 bool V8_EXPORT V8_WARN_UNUSED_RESULT TryToCopyAndConvertArrayToCppBuffer(
     Local<Array> src, T* dst, uint32_t max_length);

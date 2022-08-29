@@ -20,7 +20,7 @@
 #include "include/core/SkTypeface.h"
 #include "include/gpu/GrDirectContext.h"
 #include "src/core/SkGlyphRun.h"
-#include "src/gpu/GrDirectContextPriv.h"
+#include "src/gpu/ganesh/GrDirectContextPriv.h"
 #include "tools/fonts/RandomScalerContext.h"
 
 #ifdef SK_BUILD_FOR_WIN
@@ -29,9 +29,9 @@
 
 #include "tests/Test.h"
 
-#include "src/gpu/GrDirectContextPriv.h"
-#include "src/gpu/text/GrAtlasManager.h"
-#include "src/gpu/text/GrTextBlobCache.h"
+#include "src/gpu/ganesh/GrDirectContextPriv.h"
+#include "src/gpu/ganesh/text/GrAtlasManager.h"
+#include "src/text/gpu/TextBlobRedrawCoordinator.h"
 
 static void draw(SkCanvas* canvas, int redraw, const SkTArray<sk_sp<SkTextBlob>>& blobs) {
     int yOffset = 0;
@@ -55,7 +55,7 @@ static void setup_always_evict_atlas(GrDirectContext* dContext) {
 
 class GrTextBlobTestingPeer {
 public:
-    static void SetBudget(GrTextBlobCache* cache, size_t budget) {
+    static void SetBudget(sktext::gpu::TextBlobRedrawCoordinator* cache, size_t budget) {
         SkAutoSpinlock lock{cache->fSpinLock};
         cache->fSizeBudget = budget;
         cache->internalCheckPurge();

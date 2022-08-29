@@ -77,14 +77,6 @@ class FailingSSLClientSocket : public SSLClientSocket {
 
   bool GetSSLInfo(SSLInfo* ssl_info) override { return false; }
 
-  void GetConnectionAttempts(ConnectionAttempts* out) const override {
-    out->clear();
-  }
-
-  void ClearConnectionAttempts() override {}
-
-  void AddConnectionAttempts(const ConnectionAttempts& attempts) override {}
-
   int64_t GetTotalReceivedBytes() const override { return 0; }
 
   void GetSSLCertRequestInfo(
@@ -115,7 +107,7 @@ class FailingSSLClientSocket : public SSLClientSocket {
 }  // namespace
 
 FuzzedSocketFactory::FuzzedSocketFactory(FuzzedDataProvider* data_provider)
-    : data_provider_(data_provider), fuzz_connect_result_(true) {}
+    : data_provider_(data_provider) {}
 
 FuzzedSocketFactory::~FuzzedSocketFactory() = default;
 
@@ -148,21 +140,6 @@ std::unique_ptr<SSLClientSocket> FuzzedSocketFactory::CreateSSLClientSocket(
     const HostPortPair& host_and_port,
     const SSLConfig& ssl_config) {
   return std::make_unique<FailingSSLClientSocket>();
-}
-
-std::unique_ptr<ProxyClientSocket> FuzzedSocketFactory::CreateProxyClientSocket(
-    std::unique_ptr<StreamSocket> stream_socket,
-    const std::string& user_agent,
-    const HostPortPair& endpoint,
-    const ProxyServer& proxy_server,
-    HttpAuthController* http_auth_controller,
-    bool tunnel,
-    bool using_spdy,
-    NextProto negotiated_protocol,
-    ProxyDelegate* proxy_delegate,
-    const NetworkTrafficAnnotationTag& traffic_annotation) {
-  NOTIMPLEMENTED();
-  return nullptr;
 }
 
 }  // namespace net

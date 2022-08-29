@@ -5,7 +5,6 @@
 #include "content/browser/network_context_client_base_impl.h"
 
 #include "base/bind.h"
-#include "base/task/post_task.h"
 #include "base/task/task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
@@ -16,7 +15,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/trust_tokens.mojom.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "base/android/content_uri_utils.h"
 #endif
 
@@ -43,7 +42,7 @@ void HandleFileUploadRequest(
                                     std::vector<base::File>()));
       return;
     }
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     if (file_path.IsContentUri()) {
       files.push_back(base::OpenContentUriForRead(file_path));
     } else {
@@ -104,7 +103,7 @@ void NetworkContextClientBase::OnCanSendDomainReliabilityUpload(
   std::move(callback).Run(false);
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 void NetworkContextClientBase::OnGenerateHttpNegotiateAuthToken(
     const std::string& server_auth_token,
     bool can_delegate,
@@ -115,7 +114,7 @@ void NetworkContextClientBase::OnGenerateHttpNegotiateAuthToken(
 }
 #endif
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
 void NetworkContextClientBase::OnTrustAnchorUsed() {}
 #endif
 
@@ -127,5 +126,12 @@ void NetworkContextClientBase::OnTrustTokenIssuanceDivertedToSystem(
       network::mojom::FulfillTrustTokenIssuanceAnswer::Status::kNotFound;
   std::move(callback).Run(std::move(response));
 }
+
+void NetworkContextClientBase::OnCanSendSCTAuditingReport(
+    OnCanSendSCTAuditingReportCallback callback) {
+  std::move(callback).Run(false);
+}
+
+void NetworkContextClientBase::OnNewSCTAuditingReportSent() {}
 
 }  // namespace content

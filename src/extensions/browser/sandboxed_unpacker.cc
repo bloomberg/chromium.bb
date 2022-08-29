@@ -22,7 +22,6 @@
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/timer/elapsed_timer.h"
 #include "build/build_config.h"
@@ -150,8 +149,8 @@ std::set<base::FilePath> GetMessageCatalogPathsToBeSanitized(
 // _metadata directory (e.g. computed_hashes.json itself).
 bool ShouldComputeHashesForResource(
     const base::FilePath& relative_resource_path) {
-  std::vector<base::FilePath::StringType> components;
-  relative_resource_path.GetComponents(&components);
+  std::vector<base::FilePath::StringType> components =
+      relative_resource_path.GetComponents();
   return !components.empty() && components[0] != kMetadataFolder;
 }
 
@@ -1061,7 +1060,8 @@ void SandboxedUnpacker::ParseJsonFile(
     return;
   }
 
-  GetJsonParserPtr()->Parse(contents, std::move(callback));
+  GetJsonParserPtr()->Parse(contents, base::JSON_PARSE_CHROMIUM_EXTENSIONS,
+                            std::move(callback));
 }
 
 }  // namespace extensions

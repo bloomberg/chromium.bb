@@ -7,21 +7,25 @@
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_regex_constants.h"
 #include "components/autofill/core/browser/form_parsing/autofill_scanner.h"
+#include "components/autofill/core/browser/form_parsing/regex_patterns.h"
 
 namespace autofill {
 
 // static
 std::unique_ptr<FormField> PriceField::Parse(AutofillScanner* scanner,
                                              const LanguageCode& page_language,
+                                             PatternSource pattern_source,
                                              LogManager* log_manager) {
   AutofillField* field;
-  const std::vector<MatchingPattern>& price_patterns =
-      PatternProvider::GetInstance().GetMatchPatterns("PRICE", page_language);
+  base::span<const MatchPatternRef> price_patterns =
+      GetMatchPatterns("PRICE", page_language, pattern_source);
 
-  if (ParseFieldSpecifics(scanner, kPriceRe,
-                          MATCH_DEFAULT | MATCH_NUMBER | MATCH_SELECT |
-                              MATCH_TEXT_AREA | MATCH_SEARCH,
-                          price_patterns, &field, {log_manager, "kPriceRe"})) {
+  if (ParseFieldSpecifics(
+          scanner, kPriceRe,
+          kDefaultMatchParamsWith<
+              MatchFieldType::kNumber, MatchFieldType::kSelect,
+              MatchFieldType::kTextArea, MatchFieldType::kSearch>,
+          price_patterns, &field, {log_manager, "kPriceRe"})) {
     return std::make_unique<PriceField>(field);
   }
 

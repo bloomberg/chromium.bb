@@ -29,6 +29,11 @@
       this._addExtensionCallback = null;
 
       /**
+       * @type {!Array<string>}
+       */
+      this._originsForbiddenForExtensions = [];
+
+      /**
        * @type {!Promise<string>}
        */
       this._initialTargetIdPromise = new Promise(resolve => {
@@ -93,6 +98,20 @@
           this._pendingExtensionDescriptors.push(...extensions);
         }
       }
+    }
+
+    /**
+     * @param {!Array<string>} forbiddenOrigins
+     */
+    setOriginsForbiddenForExtensions(forbiddenOrigins) {
+      this._originsForbiddenForExtensions = forbiddenOrigins;
+    }
+
+    /**
+     * @return {!Array<string>}
+     */
+    getOriginsForbiddenForExtensions() {
+      return this._originsForbiddenForExtensions;
     }
 
     /**
@@ -385,7 +404,6 @@
     IssuesPanelOpenedFrom: 'DevTools.IssuesPanelOpenedFrom',
     IssuesPanelResourceOpened: 'DevTools.IssuesPanelResourceOpened',
     KeybindSetSettingChanged: 'DevTools.KeybindSetSettingChanged',
-    DualScreenDeviceEmulated: 'DevTools.DualScreenDeviceEmulated',
     ExperimentEnabledAtLaunch: 'DevTools.ExperimentEnabledAtLaunch',
     ExperimentEnabled: 'DevTools.ExperimentEnabled',
     ExperimentDisabled: 'DevTools.ExperimentDisabled',
@@ -398,9 +416,11 @@
     RecordingEdited: 'DevTools.RecordingEdited',
     RecordingExported: 'DevTools.RecordingExported',
     RecordingReplayFinished: 'DevTools.RecordingReplayFinished',
+    RecordingReplaySpeed: 'DevTools.RecordingReplaySpeed',
     RecordingReplayStarted: 'DevTools.RecordingReplayStarted',
     RecordingToggled: 'DevTools.RecordingToggled',
     SyncSetting: 'DevTools.SyncSetting',
+    StyleTextCopied: 'DevTools.StyleTextCopied',
   };
 
   /**
@@ -541,6 +561,15 @@
      */
     getPreferences(callback) {
       DevToolsAPI.sendMessageToEmbedder('getPreferences', [], /** @type {function(?Object)} */ (callback));
+    }
+
+    /**
+     * @override
+     * @param {string} name
+     * @param {function(string)} callback
+     */
+    getPreference(name, callback) {
+      DevToolsAPI.sendMessageToEmbedder('getPreference', [name], /** @type {function(string)} */ (callback));
     }
 
     /**
@@ -1069,6 +1098,7 @@
       'messageLevelFilters',
       'messageURLFilters',
       'monitoringXHREnabled',
+      'navigatorGroupByAuthored',
       'navigatorGroupByFolder',
       'navigatorHidden',
       'networkColorCodeResourceTypes',
@@ -1452,42 +1482,6 @@
 
     if (majorVersion <= 50) {
       installObjectObserve();
-    }
-
-    if (majorVersion <= 45) {
-      /**
-       * @param {string} property
-       * @return {!CSSValue|null}
-       * @this {CSSStyleDeclaration}
-       */
-      function getValue(property) {
-        // Note that |property| comes from another context, so we can't use === here.
-        // eslint-disable-next-line eqeqeq
-        if (property == 'padding-left') {
-          return /** @type {!CSSValue} */ ({
-            /**
-             * @return {number}
-             * @this {!{__paddingLeft: number}}
-             */
-            getFloatValue: function() {
-              return this.__paddingLeft;
-            },
-            __paddingLeft: parseFloat(this.paddingLeft)
-          });
-        }
-        throw new Error('getPropertyCSSValue is undefined');
-      }
-
-      window.CSSStyleDeclaration.prototype.getPropertyCSSValue = getValue;
-
-      function CSSPrimitiveValue() {
-      }
-      CSSPrimitiveValue.CSS_PX = 5;
-      window.CSSPrimitiveValue = CSSPrimitiveValue;
-    }
-
-    if (majorVersion <= 45) {
-      styleRules.push('* { min-width: 0; min-height: 0; }');
     }
 
     if (majorVersion <= 71) {

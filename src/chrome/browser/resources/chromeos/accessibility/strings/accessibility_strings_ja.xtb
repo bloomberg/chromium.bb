@@ -52,7 +52,7 @@
 <translation id="1251750620252348585">次のレベル 6 見出し</translation>
 <translation id="1268366246392928616">前の数式はありません</translation>
 <translation id="1273314450961659276">テキスト読み上げの設定</translation>
-<translation id="1275718070701477396">選択されています</translation>
+<translation id="1275718070701477396">選択中</translation>
 <translation id="1284576163386164372">チュートリアルは後からいつでも確認できます。4 本の指でタップしてメニューを開き、[ChromeVox] セクションでチュートリアルを起動してください。</translation>
 <translation id="1291286136605998134">切り替えボタン</translation>
 <translation id="1299774449519412690">ライト スカイブルー</translation>
@@ -173,7 +173,7 @@
 <translation id="2152179395627233441">練習エリアを閉じる</translation>
 <translation id="2163782704988363449">正誤表</translation>
 <translation id="2169714232367507776">現在の項目をクリック</translation>
-<translation id="2179452035581866348">ChromeVox を使用すると、基本情報や追加情報を通知音で知ることができます。それぞれの通知音の意味を把握しておくと、すばやく操作するのに便利です。慣れてきたら、詳しい音声説明を無効にして、通知音だけでページの情報を把握できます。通知音の一覧とその意味については、以下をご覧ください。</translation>
+<translation id="2179452035581866348">ChromeVox を使用すると、基本情報や追加情報を通知音で知ることができます。それぞれの通知音の意味を把握しておくと、すばやく操作するのに便利です。慣れてきたら、詳しい音声説明を無効にして、通知音だけでページの情報を把握できます。通知音の一覧とその意味については、以下をご確認ください。</translation>
 <translation id="2183409941723714159">タブの操作</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{右丸かっこ}other{# 個の右丸かっこ}}</translation>
 <translation id="2197863150503783129">サドルブラウン</translation>
@@ -213,7 +213,7 @@
 <translation id="2435422727584637732">ドジャーブルー</translation>
 <translation id="2438712309510062123">提案</translation>
 <translation id="2450814015951372393">チェックボックス</translation>
-<translation id="2461822463642141190">電流</translation>
+<translation id="2461822463642141190">現在</translation>
 <translation id="2462626033734746142">ラジオボタン グループ</translation>
 <translation id="2467741090055146971">選択解除</translation>
 <translation id="2471138580042810658">見出し 6</translation>
@@ -536,6 +536,7 @@
 <translation id="4601367666219428522">表「<ph name="TABLENAME" />」（<ph name="TABLEROWS" />x<ph name="TABLECOLS" />）</translation>
 <translation id="4615592953348396470">次に押すキーを無視します</translation>
 <translation id="4623097797855662355">奥付</translation>
+<translation id="4624970070706497034">Chromebook では TalkBack のカスタマイズがサポートされなくなりました。TalkBack は引き続きご利用いただけますが、デフォルトのキーボード ショートカットをご使用ください。使用できるショートカットは、検索+A キーに続けて K キーを押して確認できます。確認した後に TalkBack に戻るには、もう一度コマンドを押します。</translation>
 <translation id="463135993322337640">ChromeVox+o+n キーを押すと新機能を確認できます</translation>
 <translation id="4649220074413114917">2 本の指で画面をタップすると、現在の読み上げを停止できます。ChromeVox に読み上げてほしくないことがある場合に便利です。次に進むには、2 本の指で画面をタップしてください。</translation>
 <translation id="4660783501463101648">クラシックの削除。ChromeVox クラシックに戻るキーボード切り替えは削除されました。</translation>
@@ -618,7 +619,6 @@
 <translation id="5170206230005240598">点字表示が有効になっています</translation>
 <translation id="5183440668879371625">ブライユ点字の前の行</translation>
 <translation id="5189244881767082992">行</translation>
-<translation id="5234747236692380506"><ph name="TEXT" /> を入力</translation>
 <translation id="5263034204789987535">コーンシルク</translation>
 <translation id="5263344797180442561">見出し 2</translation>
 <translation id="528468243742722775">終了</translation>
@@ -666,6 +666,7 @@
 <translation id="5522423213731659107">クイックガイドは以上です</translation>
 <translation id="5534303576632885660">ヘッダー</translation>
 <translation id="5539820223028224601">ゲインズボロ</translation>
+<translation id="554893713779400387">音声入力を切り替え</translation>
 <translation id="5549179427201066174">音声フィードバック（イアコン）をオンまたはオフにします</translation>
 <translation id="556042886152191864">ボタン</translation>
 <translation id="5561345396546889625">次のリスト</translation>
@@ -684,6 +685,7 @@
 <translation id="5623842676595125836">ログ</translation>
 <translation id="5628125749885014029">見出し 4</translation>
 <translation id="5632083598315326067">図形記号</translation>
+<translation id="5648939288050772726">お疲れさまでした。これで、ChromeVox を使用するための基本事項を習得しました。ChromeVox のコマンド メニューは、検索+ピリオド（.）キーを押していつでも開くことができます。ChromeVox と Chrome OS について詳しくは、以下の記事をご覧ください。チュートリアルを終了するには、ChromeVox を使って「閉じる」ボタンに移動し、クリックしてください。</translation>
 <translation id="5653397561111110475">Chromebook のタッチ スクリーンのユーザー補助機能を使用する</translation>
 <translation id="5655682562155942719">ジャンプ コマンド</translation>
 <translation id="56637627897541303">テキスト領域</translation>
@@ -793,6 +795,7 @@
 <translation id="641759969622533235">{COUNT,plural, =1{コロン}other{# 個のコロン}}</translation>
 <translation id="6444046323172968959">アラート ダイアログ</translation>
 <translation id="6452403590345320472">目次</translation>
+<translation id="6457542714329819968">タイプ</translation>
 <translation id="6468049171101508116">次のボタン</translation>
 <translation id="646954774886932461">索引</translation>
 <translation id="6475604559827479857">次の色で単語をハイライト表示:</translation>
@@ -965,8 +968,6 @@
 <translation id="7701196182766842984">リストのオートコンプリート</translation>
 <translation id="7713139339518499741">自然な音声</translation>
 <translation id="7714340021005120797">次のコンボボックスはありません</translation>
-<translation id="772146615414628379">以上が ChromeVox を使用するための基本事項です。ChromeVox のコマンド メニューは、検索+ピリオド（.）キーを押していつでも開くことができます。ChromeVox と Chrome OS について詳しくは、以下の記事をご覧ください。
-    チュートリアルを終了するには、ChromeVox を使って閉じるボタンまで移動し、クリックしてください。</translation>
 <translation id="7724603315864178912">切り取り</translation>
 <translation id="7731785449856576010">次のメディア ウィジェットはありません</translation>
 <translation id="7735498529470878067">タッチガイドを使うと、画面上に何があるかをすばやく把握できます。</translation>
@@ -1168,6 +1169,7 @@
 <translation id="9223032053830369045">ダークレッド</translation>
 <translation id="923331726185079994">ChromeVox が更新されました</translation>
 <translation id="93384979447910801">ダーク シーグリーン</translation>
+<translation id="937605981140327129">TalkBack は現在インストールされていません。Play ストアで Android ユーザー補助設定ツールをインストールしてから、もう一度お試しください。</translation>
 <translation id="948171205378458592">読み上げの速度を下げる</translation>
 <translation id="957570623732056069">このレッスンを操作するには、1 本の指で左右にスワイプします</translation>
 <translation id="958854023026327378">1 本の指で下にスワイプします</translation>

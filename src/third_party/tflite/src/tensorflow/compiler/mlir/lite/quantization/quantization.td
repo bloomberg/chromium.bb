@@ -143,11 +143,11 @@ def DynamicRangeQuantizedOpInterface : OpInterface<
     %q_w = "tfl.pseudo_qconst"() {
          qtype = tensor<64x3x3x3x!quant.uniform<i8<-127:127>:f32, 1.000000e+00>>
     %w = "tfl.dequantize"(%q_w) :
-         (tensor<tensor<64x3x3x3x!quant.uniform<i8<-127:127>:f32>) ->
+         (tensor<64x3x3x3x!quant.uniform<i8<-127:127>:f32, 1.000000e+00>>) ->
          tensor<64x3x3x3xf32>
     %conv = "tfl.conv_2d"(%input_act, %w, %bias)
 
-    but if it is supported it will be rewritten as:
+    but if it is supported, it will be rewritten as:
 
     %q_w = "tfl.pseudo_qconst"() {
          qtype = tensor<64x3x3x3x!quant.uniform<i8<-127:127>:f32, 1.000000e+00>>
@@ -155,7 +155,7 @@ def DynamicRangeQuantizedOpInterface : OpInterface<
 
     Note that this is part of reaching feature parity with the old quantizer for
     dynamic range quantization except:
-    -  Only use_updated_hybrid_scheme=True is supported which means the ops with
+    - Only use_updated_hybrid_scheme=True is supported which means the ops with
     the asymmetrically quantizing input support is enabled to use this feature
     during MLIR graph rewriting passes while it is configurable in the old
     quantizer. So when those ops are matched during graph rewriting passes,
@@ -164,6 +164,8 @@ def DynamicRangeQuantizedOpInterface : OpInterface<
     generally activations of these ops show better accuracy with asymmetric
     input quantization so we want to deprecate symmetric activation quantization
     for those ops eventually.
+    - Unlike to the old quantizer, per-channel quantization is supported for
+    weight-only TransposeConvOp.
   }];
 
   let methods = [
@@ -203,7 +205,7 @@ class AffineOpCoefficient<int dim, int index> : NativeOpTrait<
              !interleave([dim, index], ", "),
              ">::Impl")>;
 
-// Specify this trait if the op doesn't have quantizable output. We shouldn't
+// Specify this trait if the op does have quantizable output. Quantizers will
 // apply quantization on this op.
-def NoQuantizableResult : NativeOpTrait<"quant::NoQuantizableResult">;
+def QuantizableResult : NativeOpTrait<"quant::QuantizableResult">;
 #endif // TF_Quantization

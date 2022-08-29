@@ -20,7 +20,7 @@ directly):
 
 {
 
-"homepage" : "http://dev.chromium.org",
+"homepage" : "http://www.chromium.org",
 
 "homepage_is_newtabpage" : false,
 

@@ -103,6 +103,7 @@ extern const char kName[];
 extern const char kNativelyConnectable[];
 extern const char kOfflineEnabled[];
 extern const char kOmniboxKeyword[];
+extern const char kOptionalHostPermissions[];
 extern const char kOptionalPermissions[];
 extern const char kOptionsPage[];
 extern const char kOptionsUI[];
@@ -159,11 +160,13 @@ extern const char kWebview[];
 extern const char kWebviewName[];
 extern const char kWebviewAccessibleResources[];
 extern const char kWebviewPartitions[];
+#if BUILDFLAG(IS_CHROMEOS)
+extern const char kFileSystemProviderCapabilities[];
+#endif
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 extern const char kActionHandlers[];
 extern const char kActionHandlerActionKey[];
 extern const char kActionHandlerEnabledOnLockScreenKey[];
-extern const char kFileSystemProviderCapabilities[];
 #endif
 }  // namespace manifest_keys
 
@@ -434,7 +437,10 @@ extern const char kLocalesNoValidLocaleNamesListed[];
 extern const char kLocalesTreeMissing[];
 extern const char kManifestParseError[];
 extern const char kManifestUnreadable[];
+extern const char kManifestV2IsDeprecatedWarning[];
 extern const char kManifestVersionTooHighWarning[];
+extern const char kMatchOriginAsFallbackCantHavePaths[];
+extern const char kMatchOriginAsFallbackRestrictedToMV3[];
 extern const char kMissingFile[];
 extern const char16_t kMultipleOverrides[];
 extern const char kNoWildCardsInPaths[];
@@ -457,14 +463,16 @@ extern const char kTtsGenderIsDeprecated[];
 extern const char kUnrecognizedManifestKey[];
 extern const char kUnrecognizedManifestProperty[];
 extern const char16_t kWebRequestConflictsWithLazyBackground[];
+#if BUILDFLAG(IS_CHROMEOS)
+extern const char16_t kInvalidFileSystemProviderMissingCapabilities[];
+extern const char kInvalidFileSystemProviderMissingPermission[];
+#endif
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 extern const char kDuplicateActionHandlerFound[];
 extern const char kIllegalPlugins[];
 extern const char16_t kInvalidActionHandlerDictionary[];
 extern const char kInvalidActionHandlersActionType[];
 extern const char16_t kInvalidActionHandlersType[];
-extern const char16_t kInvalidFileSystemProviderMissingCapabilities[];
-extern const char kInvalidFileSystemProviderMissingPermission[];
 #endif
 
 }  // namespace manifest_errors

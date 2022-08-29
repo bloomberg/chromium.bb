@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2020-2021 The Khronos Group Inc.
- * Copyright (c) 2020-2021 Valve Corporation
- * Copyright (c) 2020-2021 LunarG, Inc.
+ * Copyright (c) 2020-2022 The Khronos Group Inc.
+ * Copyright (c) 2020-2022 Valve Corporation
+ * Copyright (c) 2020-2022 LunarG, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,9 +52,7 @@ TEST_F(VkPortabilitySubsetTest, ValidatePortabilityCreateDevice) {
         }
     }
 
-    VkDeviceCreateInfo dev_info = {};
-    dev_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-    dev_info.pNext = nullptr;
+    VkDeviceCreateInfo dev_info = LvlInitStruct<VkDeviceCreateInfo>();
     dev_info.queueCreateInfoCount = create_queue_infos.size();
     dev_info.pQueueCreateInfos = create_queue_infos.data();
     dev_info.enabledLayerCount = 0;
@@ -89,7 +87,7 @@ TEST_F(VkPortabilitySubsetTest, PortabilityCreateEvent) {
     ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &features2));
 
     m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCreateEvent-events-04468");
-    VkEventCreateInfo eci = {VK_STRUCTURE_TYPE_EVENT_CREATE_INFO, nullptr, 0};
+    VkEventCreateInfo eci = LvlInitStruct<VkEventCreateInfo>();
     VkEvent event;
     vk::CreateEvent(m_device->device(), &eci, nullptr, &event);
     m_errorMonitor->VerifyFound();
@@ -116,9 +114,7 @@ TEST_F(VkPortabilitySubsetTest, CreateImage) {
 
     ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &features2));
 
-    VkImageCreateInfo ci;
-    ci.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-    ci.pNext = NULL;
+    VkImageCreateInfo ci = LvlInitStruct<VkImageCreateInfo>();
     ci.flags = VK_IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT;
     ci.imageType = VK_IMAGE_TYPE_3D;
     ci.format = VK_FORMAT_R8G8B8A8_UNORM;
@@ -169,9 +165,7 @@ TEST_F(VkPortabilitySubsetTest, CreateImageView) {
 
     ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &features2));
 
-    VkImageCreateInfo imageCI;
-    imageCI.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-    imageCI.pNext = NULL;
+    VkImageCreateInfo imageCI = LvlInitStruct<VkImageCreateInfo>();
     imageCI.flags = VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT;
     imageCI.imageType = VK_IMAGE_TYPE_2D;
     imageCI.format = VK_FORMAT_R4G4B4A4_UNORM_PACK16;
@@ -190,9 +184,7 @@ TEST_F(VkPortabilitySubsetTest, CreateImageView) {
     VkImageObj image(m_device);
     image.init(&imageCI);
 
-    VkImageViewCreateInfo ci;
-    ci.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-    ci.pNext = nullptr;
+    VkImageViewCreateInfo ci = LvlInitStruct<VkImageViewCreateInfo>();
     ci.flags = 0;
     ci.image = image.image();
     ci.viewType = VK_IMAGE_VIEW_TYPE_2D;
@@ -424,8 +416,7 @@ TEST_F(VkPortabilitySubsetTest, CreateGraphicsPipelinesRasterizationState) {
     subpass.pColorAttachments = &color_ref;
     subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
 
-    VkRenderPassCreateInfo rp_info{};
-    rp_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+    VkRenderPassCreateInfo rp_info = LvlInitStruct<VkRenderPassCreateInfo>();
     rp_info.attachmentCount = 1;
     rp_info.pAttachments = &attachment;
     rp_info.subpassCount = 1;
@@ -518,7 +509,7 @@ TEST_F(VkPortabilitySubsetTest, CreateGraphicsPipelinesColorBlendAttachmentState
 
     CreatePipelineHelper pipe(*this);
     pipe.InitInfo();
-    pipe.cb_attachments_.srcColorBlendFactor = VK_BLEND_FACTOR_CONSTANT_ALPHA;
+    pipe.cb_attachments_[0].srcColorBlendFactor = VK_BLEND_FACTOR_CONSTANT_ALPHA;
     pipe.rs_state_ci_.rasterizerDiscardEnable = VK_TRUE;
     pipe.InitState();
 
@@ -527,20 +518,20 @@ TEST_F(VkPortabilitySubsetTest, CreateGraphicsPipelinesColorBlendAttachmentState
     pipe.CreateGraphicsPipeline();
     m_errorMonitor->VerifyFound();
 
-    pipe.cb_attachments_.srcColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_CONSTANT_ALPHA;
+    pipe.cb_attachments_[0].srcColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_CONSTANT_ALPHA;
     m_errorMonitor->SetDesiredFailureMsg(kErrorBit,
                                          "VUID-VkPipelineColorBlendAttachmentState-constantAlphaColorBlendFactors-04454");
     pipe.CreateGraphicsPipeline();
     m_errorMonitor->VerifyFound();
 
-    pipe.cb_attachments_.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
-    pipe.cb_attachments_.dstColorBlendFactor = VK_BLEND_FACTOR_CONSTANT_ALPHA;
+    pipe.cb_attachments_[0].srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
+    pipe.cb_attachments_[0].dstColorBlendFactor = VK_BLEND_FACTOR_CONSTANT_ALPHA;
     m_errorMonitor->SetDesiredFailureMsg(kErrorBit,
                                          "VUID-VkPipelineColorBlendAttachmentState-constantAlphaColorBlendFactors-04455");
     pipe.CreateGraphicsPipeline();
     m_errorMonitor->VerifyFound();
 
-    pipe.cb_attachments_.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_CONSTANT_ALPHA;
+    pipe.cb_attachments_[0].dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_CONSTANT_ALPHA;
     m_errorMonitor->SetDesiredFailureMsg(kErrorBit,
                                          "VUID-VkPipelineColorBlendAttachmentState-constantAlphaColorBlendFactors-04455");
     pipe.CreateGraphicsPipeline();
@@ -590,7 +581,7 @@ TEST_F(VkPortabilitySubsetTest, UpdateDescriptorSets) {
     img_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
     VkWriteDescriptorSet descriptor_writes[2] = {};
-    descriptor_writes[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    descriptor_writes[0] = LvlInitStruct<VkWriteDescriptorSet>();
     descriptor_writes[0].dstSet = descriptor_set.set_;
     descriptor_writes[0].dstBinding = 0;
     descriptor_writes[0].descriptorCount = 1;
@@ -627,7 +618,7 @@ TEST_F(VkPortabilitySubsetTest, ShaderValidation) {
     ASSERT_NO_FATAL_FAILURE(InitViewport());
     ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
 
-    VkShaderObj tsc_obj(DeviceObj(), bindStateTscShaderText, VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT, this);
+    VkShaderObj tsc_obj(this, bindStateTscShaderText, VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT);
 
     VkPipelineInputAssemblyStateCreateInfo iasci{VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO, nullptr, 0,
                                                  VK_PRIMITIVE_TOPOLOGY_PATCH_LIST, VK_FALSE};
@@ -650,7 +641,7 @@ TEST_F(VkPortabilitySubsetTest, ShaderValidation) {
                 gl_Position = vec4(1);
             }
         )glsl";
-        VkShaderObj tes_obj(DeviceObj(), tes_source, VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT, this);
+        VkShaderObj tes_obj(this, tes_source, VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT);
         pipe.shader_stages_.emplace_back(tes_obj.GetStageCreateInfo());
         m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-RuntimeSpirv-tessellationShader-06326");
         pipe.CreateGraphicsPipeline();
@@ -670,7 +661,7 @@ TEST_F(VkPortabilitySubsetTest, ShaderValidation) {
         // Reset TES shader stage
         pipe.InitShaderInfo();
         pipe.shader_stages_.emplace_back(tsc_obj.GetStageCreateInfo());
-        VkShaderObj tes_obj(DeviceObj(), tes_source, VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT, this);
+        VkShaderObj tes_obj(this, tes_source, VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT);
         pipe.shader_stages_.emplace_back(tes_obj.GetStageCreateInfo());
 
         m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-RuntimeSpirv-tessellationShader-06327");
@@ -699,9 +690,9 @@ TEST_F(VkPortabilitySubsetTest, ShaderValidation) {
 
         // Reset shader stages
         pipe.shader_stages_.clear();
-        VkShaderObj vs_obj(DeviceObj(), vs_source, VK_SHADER_STAGE_VERTEX_BIT, this);
+        VkShaderObj vs_obj(this, vs_source, VK_SHADER_STAGE_VERTEX_BIT);
         pipe.shader_stages_.emplace_back(vs_obj.GetStageCreateInfo());
-        VkShaderObj fs_obj(DeviceObj(), fs_source, VK_SHADER_STAGE_FRAGMENT_BIT, this);
+        VkShaderObj fs_obj(this, fs_source, VK_SHADER_STAGE_FRAGMENT_BIT);
         pipe.shader_stages_.emplace_back(fs_obj.GetStageCreateInfo());
 
         iasci.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;

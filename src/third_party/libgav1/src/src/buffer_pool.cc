@@ -156,13 +156,6 @@ bool BufferPool::OnFrameBufferSizeChanged(int bitdepth,
 }
 
 RefCountedBufferPtr BufferPool::GetFreeBuffer() {
-  // In frame parallel mode, the GetFreeBuffer() calls from ObuParser all happen
-  // from the same thread serially, but the GetFreeBuffer() call in
-  // DecoderImpl::ApplyFilmGrain can happen from multiple threads at the same
-  // time. So this function has to be thread safe.
-  // TODO(b/142583029): Investigate if the GetFreeBuffer() call in
-  // DecoderImpl::ApplyFilmGrain() call can be serialized so that this function
-  // need not be thread safe.
   std::unique_lock<std::mutex> lock(mutex_);
   for (auto buffer : buffers_) {
     if (!buffer->in_use_) {

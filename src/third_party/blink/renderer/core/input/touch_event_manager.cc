@@ -11,7 +11,6 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
 #include "third_party/blink/renderer/core/events/touch_event.h"
-#include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/event_handler_registry.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -212,9 +211,9 @@ Touch* TouchEventManager::CreateDomTouch(
       gfx::ScalePoint(target_frame->View()->RootFrameToDocument(
                           transformed_event.PositionInWidget()),
                       scale_factor);
-  FloatSize adjusted_radius =
-      FloatSize(transformed_event.width / 2.f, transformed_event.height / 2.f)
-          .ScaledBy(scale_factor);
+  gfx::SizeF adjusted_radius = gfx::ScaleSize(
+      gfx::SizeF(transformed_event.width / 2.f, transformed_event.height / 2.f),
+      scale_factor);
 
   return MakeGarbageCollected<Touch>(
       target_frame, touch_node, point_attr->event_.id,
@@ -625,9 +624,8 @@ void TouchEventManager::HandleTouchPoint(
     return;
   }
 
-  // In touch event model only touch starts can set the target and after that
-  // the touch event always goes to that target.
-  if (event.GetType() == WebInputEvent::Type::kPointerDown) {
+  if (!RuntimeEnabledFeatures::TouchActionEffectiveAtPointerDownEnabled() &&
+      event.GetType() == WebInputEvent::Type::kPointerDown) {
     UpdateTouchAttributeMapsForPointerDown(event, pointer_event_target);
   }
 

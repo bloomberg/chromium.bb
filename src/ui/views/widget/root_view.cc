@@ -77,7 +77,7 @@ class AnnounceTextView : public View {
 
   // View:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
     // On ChromeOS, kAlert role can invoke an unnecessary event on reparenting.
     node_data->role = ax::mojom::Role::kStaticText;
 #else
@@ -113,7 +113,7 @@ class PreEventDispatchHandler : public ui::EventHandler {
   void OnKeyEvent(ui::KeyEvent* event) override {
     CHECK_EQ(ui::EP_PRETARGET, event->phase());
 // macOS doesn't have keyboard-triggered context menus.
-#if !defined(OS_MAC)
+#if !BUILDFLAG(IS_MAC)
     if (event->handled())
       return;
 
@@ -273,7 +273,7 @@ void RootView::DeviceScaleFactorChanged(float old_device_scale_factor,
 // Accessibility ---------------------------------------------------------------
 
 void RootView::AnnounceText(const std::u16string& text) {
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   gfx::NativeViewAccessible native = GetViewAccessibility().GetNativeObject();
   auto* ax_node = ui::AXPlatformNode::FromNativeViewAccessible(native);
   if (ax_node)
@@ -604,7 +604,7 @@ void RootView::OnMouseMoved(const ui::MouseEvent& event) {
     // some windows.  Let the non-client cursor handling code set the cursor
     // as we do above.
     if (!(event.flags() & ui::EF_IS_NON_CLIENT))
-      widget_->SetCursor(gfx::kNullCursor);
+      widget_->SetCursor(ui::Cursor());
     mouse_move_handler_ = nullptr;
   }
 }
@@ -693,7 +693,7 @@ void RootView::ViewHierarchyChanged(
     const ViewHierarchyChangedDetails& details) {
   widget_->ViewHierarchyChanged(details);
 
-  if (!details.is_add) {
+  if (!details.is_add && !details.move_view) {
     if (!explicit_mouse_handler_ && mouse_pressed_handler_ == details.child)
       mouse_pressed_handler_ = nullptr;
     if (mouse_move_handler_ == details.child)
@@ -727,7 +727,7 @@ void RootView::OnDidSchedulePaint(const gfx::Rect& rect) {
 
 void RootView::OnPaint(gfx::Canvas* canvas) {
   if (!layer() || !layer()->fills_bounds_opaquely())
-    canvas->DrawColor(SK_ColorBLACK, SkBlendMode::kClear);
+    canvas->DrawColor(SK_ColorTRANSPARENT, SkBlendMode::kClear);
 
   View::OnPaint(canvas);
 }

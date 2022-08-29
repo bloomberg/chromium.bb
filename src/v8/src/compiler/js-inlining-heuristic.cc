@@ -197,16 +197,23 @@ Reduction JSInliningHeuristic::Reduce(Node* node) {
                                        ? candidate.functions[i].value().shared()
                                        : candidate.shared_info.value();
     candidate.can_inline_function[i] = candidate.bytecode[i].has_value();
-    CHECK_IMPLIES(candidate.can_inline_function[i], shared.IsInlineable());
+    // Because of concurrent optimization, optimization of the inlining
+    // candidate could have been disabled meanwhile.
+    // JSInliner will check this again and not actually inline the function in
+    // this case.
+    CHECK_IMPLIES(candidate.can_inline_function[i],
+                  shared.IsInlineable() ||
+                      shared.GetInlineability() ==
+                          SharedFunctionInfo::kHasOptimizationDisabled);
     // Do not allow direct recursion i.e. f() -> f(). We still allow indirect
-    // recurion like f() -> g() -> f(). The indirect recursion is helpful in
+    // recursion like f() -> g() -> f(). The indirect recursion is helpful in
     // cases where f() is a small dispatch function that calls the appropriate
     // function. In the case of direct recursion, we only have some static
     // information for the first level of inlining and it may not be that useful
     // to just inline one level in recursive calls. In some cases like tail
     // recursion we may benefit from recursive inlining, if we have additional
     // analysis that converts them to iterative implementations. Though it is
-    // not obvious if such an anlysis is needed.
+    // not obvious if such an analysis is needed.
     if (frame_info.shared_info().ToHandle(&frame_shared_info) &&
         frame_shared_info.equals(shared.object())) {
       TRACE("Not considering call site #" << node->id() << ":"
@@ -650,7 +657,7 @@ void JSInliningHeuristic::CreateOrReuseDispatch(Node* node, Node* callee,
     return;
   }
 
-  STATIC_ASSERT(JSCallOrConstructNode::kHaveIdenticalLayouts);
+  static_assert(JSCallOrConstructNode::kHaveIdenticalLayouts);
 
   Node* fallthrough_control = NodeProperties::GetControlInput(node);
   int const num_calls = candidate.num_functions;
@@ -843,13 +850,6 @@ CommonOperatorBuilder* JSInliningHeuristic::common() const {
 
 SimplifiedOperatorBuilder* JSInliningHeuristic::simplified() const {
   return jsgraph()->simplified();
-}
-
-int JSInliningHeuristic::ScaleInliningSize(int value, JSHeapBroker* broker) {
-  if (broker->is_turboprop()) {
-    value = value / FLAG_turboprop_inline_scaling_factor;
-  }
-  return value;
 }
 
 #undef TRACE

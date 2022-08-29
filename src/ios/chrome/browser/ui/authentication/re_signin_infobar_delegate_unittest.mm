@@ -17,6 +17,7 @@
 #include "ios/chrome/browser/signin/authentication_service_fake.h"
 #import "ios/chrome/browser/ui/authentication/signin_presenter.h"
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
+#import "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
 #include "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
 #include "ios/web/public/test/web_task_environment.h"
 #include "testing/gtest_mac.h"
@@ -58,10 +59,11 @@ class ReSignInInfoBarDelegateTest : public PlatformTest {
     AuthenticationService* authentication_service =
         AuthenticationServiceFactory::GetForBrowserState(
             chrome_browser_state_.get());
-    authentication_service->SignIn(chrome_identity);
+    authentication_service->SignIn(chrome_identity, nil);
   }
 
   web::WebTaskEnvironment task_environment_;
+  IOSChromeScopedTestingLocalState scoped_testing_local_state_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
 };
 
@@ -148,7 +150,7 @@ TEST_F(ReSignInInfoBarDelegateTest, TestAccept) {
   [[presenter expect]
       showSignin:[OCMArg checkWithBlock:^BOOL(id command) {
         EXPECT_TRUE([command isKindOfClass:[ShowSigninCommand class]]);
-        EXPECT_EQ(AUTHENTICATION_OPERATION_REAUTHENTICATE,
+        EXPECT_EQ(AuthenticationOperationReauthenticate,
                   static_cast<ShowSigninCommand*>(command).operation);
         return YES;
       }]];

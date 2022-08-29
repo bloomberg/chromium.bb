@@ -11,12 +11,16 @@
 
 #include "extensions/browser/updater/extension_downloader.h"
 #include "extensions/browser/updater/extension_downloader_delegate.h"
+#include "extensions/browser/updater/extension_downloader_types.h"
 #include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace extensions {
+
+// Backoff policy to enforce zero initial delay.
+const extern net::BackoffEntry::Policy kZeroBackoffPolicy;
 
 class MockExtensionDownloaderDelegate
     : public testing::NiceMock<ExtensionDownloaderDelegate> {
@@ -55,7 +59,7 @@ class MockExtensionDownloaderDelegate
                     InstallCallback&));
   MOCK_METHOD0(OnExtensionDownloadRetryForTests, void());
   MOCK_METHOD2(GetPingDataForExtension,
-               bool(const ExtensionId&, ManifestFetchData::PingData*));
+               bool(const ExtensionId&, DownloadPingData*));
   MOCK_METHOD1(GetUpdateUrlData, std::string(const ExtensionId&));
   MOCK_METHOD1(IsExtensionPending, bool(const ExtensionId&));
   MOCK_METHOD2(GetExtensionExistingVersion,
@@ -75,6 +79,13 @@ class MockExtensionDownloaderDelegate
 // TestURLLoaderFactory as a URL factory.
 class ExtensionDownloaderTestHelper {
  public:
+  static constexpr DownloadPingData kNeverPingedData =
+      DownloadPingData(ManifestFetchData::kNeverPinged,
+                       ManifestFetchData::kNeverPinged,
+                       true,
+                       0);
+  static constexpr char kEmptyUpdateUrlData[] = "";
+
   ExtensionDownloaderTestHelper();
 
   ExtensionDownloaderTestHelper(const ExtensionDownloaderTestHelper&) = delete;
@@ -91,6 +102,9 @@ class ExtensionDownloaderTestHelper {
   network::TestURLLoaderFactory& test_url_loader_factory() {
     return test_url_loader_factory_;
   }
+
+  // Adds a fetch request directly to the internal downloader.
+  void StartUpdateCheck(std::unique_ptr<ManifestFetchData> fetch_data);
 
   // Returns a request that URL loader factory has received (or nullptr if it
   // didn't receive enough requests).
@@ -112,6 +126,19 @@ class ExtensionDownloaderTestHelper {
   MockExtensionDownloaderDelegate delegate_;
   ExtensionDownloader downloader_;
 };
+
+// Creates extension info and associated task, adds both to `fetch_data`.
+void AddExtensionToFetchDataForTesting(ManifestFetchData* fetch_data,
+                                       const ExtensionId& id,
+                                       const std::string& version,
+                                       const GURL& update_url,
+                                       DownloadPingData ping_data);
+
+// Simplified version with fewer arguments.
+void AddExtensionToFetchDataForTesting(ManifestFetchData* fetch_data,
+                                       const ExtensionId& id,
+                                       const std::string& version,
+                                       const GURL& update_url);
 
 }  // namespace extensions
 

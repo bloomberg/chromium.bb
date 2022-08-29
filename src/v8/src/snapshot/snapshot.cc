@@ -11,7 +11,6 @@
 #include "src/execution/isolate-inl.h"
 #include "src/heap/safepoint.h"
 #include "src/init/bootstrapper.h"
-#include "src/logging/counters-scopes.h"
 #include "src/logging/runtime-call-stats-scope.h"
 #include "src/objects/code-kind.h"
 #include "src/objects/js-regexp-inl.h"
@@ -72,7 +71,7 @@ class SnapshotImpl : public AllStatic {
   // [0] number of contexts N
   // [1] rehashability
   // [2] checksum
-  // [3] (128 bytes) version string
+  // [3] (64 bytes) version string
   // [4] offset to readonly
   // [5] offset to shared heap
   // [6] offset to context 0
@@ -101,7 +100,7 @@ class SnapshotImpl : public AllStatic {
 
   static base::Vector<const byte> ChecksummedContent(
       const v8::StartupData* data) {
-    STATIC_ASSERT(kVersionStringOffset == kChecksumOffset + kUInt32Size);
+    static_assert(kVersionStringOffset == kChecksumOffset + kUInt32Size);
     const uint32_t kChecksumStart = kVersionStringOffset;
     return base::Vector<const byte>(
         reinterpret_cast<const byte*>(data->data + kChecksumStart),
@@ -168,7 +167,10 @@ bool Snapshot::Initialize(Isolate* isolate) {
 
   const v8::StartupData* blob = isolate->snapshot_blob();
   SnapshotImpl::CheckVersion(blob);
-  if (FLAG_verify_snapshot_checksum) CHECK(VerifyChecksum(blob));
+  if (Snapshot::ShouldVerifyChecksum(blob)) {
+    CHECK(VerifyChecksum(blob));
+  }
+
   base::Vector<const byte> startup_data =
       SnapshotImpl::ExtractStartupData(blob);
   base::Vector<const byte> read_only_data =
@@ -176,20 +178,11 @@ bool Snapshot::Initialize(Isolate* isolate) {
   base::Vector<const byte> shared_heap_data =
       SnapshotImpl::ExtractSharedHeapData(blob);
 
-#ifdef V8_SNAPSHOT_COMPRESSION
-  base::Optional<NestedTimedHistogramScope> decompress_histogram;
-  if (base::TimeTicks::IsHighResolution()) {
-    decompress_histogram.emplace(isolate->counters()->snapshot_decompress());
-  }
-#endif
   SnapshotData startup_snapshot_data(MaybeDecompress(isolate, startup_data));
   SnapshotData read_only_snapshot_data(
       MaybeDecompress(isolate, read_only_data));
   SnapshotData shared_heap_snapshot_data(
       MaybeDecompress(isolate, shared_heap_data));
-#ifdef V8_SNAPSHOT_COMPRESSION
-  decompress_histogram.reset();
-#endif
 
   bool success = isolate->InitWithSnapshot(
       &startup_snapshot_data, &read_only_snapshot_data,
@@ -215,20 +208,10 @@ MaybeHandle<Context> Snapshot::NewContextFromSnapshot(
   bool can_rehash = ExtractRehashability(blob);
   base::Vector<const byte> context_data = SnapshotImpl::ExtractContextData(
       blob, static_cast<uint32_t>(context_index));
-  base::Optional<SnapshotData> snapshot_data;
-  {
-#ifdef V8_SNAPSHOT_COMPRESSION
-    base::Optional<NestedTimedHistogramScope> decompress_histogram;
-    if (base::TimeTicks::IsHighResolution()) {
-      decompress_histogram.emplace(
-          isolate->counters()->context_snapshot_decompress());
-    }
-#endif
-    snapshot_data.emplace(MaybeDecompress(isolate, context_data));
-  }
+  SnapshotData snapshot_data(MaybeDecompress(isolate, context_data));
 
   MaybeHandle<Context> maybe_result = ContextDeserializer::DeserializeContext(
-      isolate, &(*snapshot_data), can_rehash, global_proxy,
+      isolate, &snapshot_data, can_rehash, global_proxy,
       embedder_fields_deserializer);
 
   Handle<Context> result;
@@ -338,8 +321,8 @@ void Snapshot::SerializeDeserializeAndVerifyForTesting(
     Snapshot::SerializerFlags flags(
         Snapshot::kAllowUnknownExternalReferencesForTesting |
         Snapshot::kAllowActiveIsolateForTesting |
-        (ReadOnlyHeap::IsReadOnlySpaceShared()
-             ? Snapshot::kReconstructReadOnlyObjectCacheForTesting
+        ((isolate->shared_isolate() || ReadOnlyHeap::IsReadOnlySpaceShared())
+             ? Snapshot::kReconstructReadOnlyAndSharedObjectCachesForTesting
              : 0));
     serialized_data = Snapshot::Create(isolate, *default_context,
                                        global_safepoint, no_gc, flags);
@@ -357,6 +340,9 @@ void Snapshot::SerializeDeserializeAndVerifyForTesting(
     new_isolate->set_snapshot_blob(&serialized_data);
     new_isolate->set_array_buffer_allocator(
         v8::ArrayBuffer::Allocator::NewDefaultAllocator());
+    if (Isolate* shared_isolate = isolate->shared_isolate()) {
+      new_isolate->set_shared_isolate(shared_isolate);
+    }
     CHECK(Snapshot::Initialize(new_isolate));
 
     HandleScope scope(new_isolate);
@@ -613,12 +599,18 @@ uint32_t SnapshotImpl::ExtractNumContexts(const v8::StartupData* data) {
   return num_contexts;
 }
 
+uint32_t Snapshot::GetExpectedChecksum(const v8::StartupData* data) {
+  return SnapshotImpl::GetHeaderValue(data, SnapshotImpl::kChecksumOffset);
+}
+uint32_t Snapshot::CalculateChecksum(const v8::StartupData* data) {
+  return Checksum(SnapshotImpl::ChecksummedContent(data));
+}
+
 bool Snapshot::VerifyChecksum(const v8::StartupData* data) {
   base::ElapsedTimer timer;
   if (FLAG_profile_deserialization) timer.Start();
-  uint32_t expected =
-      SnapshotImpl::GetHeaderValue(data, SnapshotImpl::kChecksumOffset);
-  uint32_t result = Checksum(SnapshotImpl::ChecksummedContent(data));
+  uint32_t expected = GetExpectedChecksum(data);
+  uint32_t result = CalculateChecksum(data);
   if (FLAG_profile_deserialization) {
     double ms = timer.Elapsed().InMillisecondsF();
     PrintF("[Verifying snapshot checksum took %0.3f ms]\n", ms);

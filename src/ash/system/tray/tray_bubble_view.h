@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "ash/ash_export.h"
+#include "ash/bubble/bubble_constants.h"
 #include "ash/public/cpp/accelerators.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/system/status_area_widget.h"
@@ -29,6 +30,8 @@ class Widget;
 }  // namespace views
 
 namespace ash {
+
+class ViewShadow;
 
 // Specialized bubble view for bubbles associated with a tray icon (e.g. the
 // Ash status area). Mostly this handles custom anchor location and arrow and
@@ -100,14 +103,15 @@ class ASH_EXPORT TrayBubbleView : public views::BubbleDialogDelegateView,
     bool close_on_deactivate = true;
     // Indicates whether tray bubble view should add a pre target event handler.
     bool reroute_event_handler = false;
-    // If not provided, the bg color will be derived from the NativeTheme.
-    absl::optional<SkColor> bg_color;
-    absl::optional<int> corner_radius;
+    int corner_radius = kBubbleCornerRadius;
     absl::optional<gfx::Insets> insets;
     absl::optional<gfx::Insets> margin;
     bool has_shadow = true;
+    int shadow_elevation = kBubbleShadowElevation;
     // Use half opaque widget instead of fully opaque.
     bool translucent = false;
+    // Whether the view is fully transparent (only serves as a container).
+    bool transparent = false;
   };
 
   explicit TrayBubbleView(const InitParams& init_params);
@@ -175,8 +179,6 @@ class ASH_EXPORT TrayBubbleView : public views::BubbleDialogDelegateView,
   std::u16string GetAccessibleWindowTitle() const override;
 
   // views::BubbleDialogDelegateView:
-  void OnBeforeBubbleWidgetInit(views::Widget::InitParams* params,
-                                views::Widget* bubble_widget) const override;
   void OnWidgetClosing(views::Widget* widget) override;
   void OnWidgetActivationChanged(views::Widget* widget, bool active) override;
   ui::LayerType GetLayerType() const override;
@@ -230,10 +232,6 @@ class ASH_EXPORT TrayBubbleView : public views::BubbleDialogDelegateView,
   views::BoxLayout* layout_;
   Delegate* delegate_;
   int preferred_width_;
-  // |bubble_border_| and |owned_bubble_border_| point to the same thing, but
-  // the latter ensures we don't leak it before passing off ownership.
-  views::BubbleBorder* bubble_border_;
-  std::unique_ptr<views::BubbleBorder> owned_bubble_border_;
   bool is_gesture_dragging_;
 
   // True once the mouse cursor was actively moved by the user over the bubble.
@@ -246,6 +244,8 @@ class ASH_EXPORT TrayBubbleView : public views::BubbleDialogDelegateView,
   // Used to activate tray bubble view if user tries to interact the tray with
   // keyboard.
   std::unique_ptr<EventHandler> reroute_event_handler_;
+
+  std::unique_ptr<ViewShadow> shadow_;
 
   absl::optional<StatusAreaWidget::ScopedTrayBubbleCounter>
       tray_bubble_counter_;

@@ -1,7 +1,7 @@
-/* Copyright (c) 2015-2021 The Khronos Group Inc.
- * Copyright (c) 2015-2021 Valve Corporation
- * Copyright (c) 2015-2021 LunarG, Inc.
- * Copyright (C) 2015-2021 Google Inc.
+/* Copyright (c) 2015-2022 The Khronos Group Inc.
+ * Copyright (c) 2015-2022 Valve Corporation
+ * Copyright (c) 2015-2022 LunarG, Inc.
+ * Copyright (C) 2015-2022 Google Inc.
  * Modifications Copyright (C) 2020 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -198,7 +198,7 @@ static bool SparseMetaDataRequired(const IMAGE_STATE::SparseReqs &sparse_reqs) {
 }
 
 IMAGE_STATE::IMAGE_STATE(const ValidationStateTracker *dev_data, VkImage img, const VkImageCreateInfo *pCreateInfo,
-                         VkFormatFeatureFlags ff)
+                         VkFormatFeatureFlags2KHR ff)
     : BINDABLE(img, kVulkanObjectTypeImage, (pCreateInfo->flags & VK_IMAGE_CREATE_SPARSE_BINDING_BIT) != 0,
                (pCreateInfo->flags & VK_IMAGE_CREATE_PROTECTED_BIT) == 0, GetExternalHandleType(pCreateInfo)),
       safe_create_info(pCreateInfo),
@@ -221,8 +221,8 @@ IMAGE_STATE::IMAGE_STATE(const ValidationStateTracker *dev_data, VkImage img, co
       fragment_encoder(nullptr),
       store_device_as_workaround(dev_data->device) {}  // TODO REMOVE WHEN encoder can be const
 
-IMAGE_STATE::IMAGE_STATE(const ValidationStateTracker *dev_data, VkImage img, const VkImageCreateInfo *pCreateInfo, VkSwapchainKHR swapchain,
-                         uint32_t swapchain_index, VkFormatFeatureFlags ff)
+IMAGE_STATE::IMAGE_STATE(const ValidationStateTracker *dev_data, VkImage img, const VkImageCreateInfo *pCreateInfo,
+                         VkSwapchainKHR swapchain, uint32_t swapchain_index, VkFormatFeatureFlags2KHR ff)
     : BINDABLE(img, kVulkanObjectTypeImage, (pCreateInfo->flags & VK_IMAGE_CREATE_SPARSE_BINDING_BIT) != 0,
                (pCreateInfo->flags & VK_IMAGE_CREATE_PROTECTED_BIT) == 0, GetExternalHandleType(pCreateInfo)),
       safe_create_info(pCreateInfo),
@@ -248,27 +248,22 @@ IMAGE_STATE::IMAGE_STATE(const ValidationStateTracker *dev_data, VkImage img, co
         std::unique_ptr<const subresource_adapter::ImageRangeEncoder>(new subresource_adapter::ImageRangeEncoder(*this));
 }
 
-void IMAGE_STATE::Unlink() {
-    for (auto *alias_state : aliasing_images) {
-        assert(alias_state);
-        alias_state->aliasing_images.erase(this);
-    }
-    aliasing_images.clear();
+void IMAGE_STATE::Destroy() {
+    // NOTE: due to corner cases in aliased images, the layout_range_map MUST not be cleaned up here.
+    // If it is, bad local entries could be created by CMD_BUFFER_STATE::GetImageSubresourceLayoutMap()
+    // If an aliasing image was being destroyed (and layout_range_map was reset()), a nullptr keyed
+    // entry could get put into CMD_BUFFER_STATE::aliased_image_layout_map.
     if (bind_swapchain) {
         bind_swapchain->RemoveParent(this);
         bind_swapchain = nullptr;
     }
-}
-
-void IMAGE_STATE::Destroy() {
-    Unlink();
     BINDABLE::Destroy();
 }
 
 void IMAGE_STATE::NotifyInvalidate(const BASE_NODE::NodeList &invalid_nodes, bool unlink) {
     BINDABLE::NotifyInvalidate(invalid_nodes, unlink);
     if (unlink) {
-        Unlink();
+        bind_swapchain = nullptr;
     }
 }
 
@@ -308,36 +303,70 @@ bool IMAGE_STATE::IsCompatibleAliasing(IMAGE_STATE *other_image_state) const {
     }
     const auto binding = Binding();
     const auto other_binding = other_image_state->Binding();
-    if ((create_from_swapchain == VK_NULL_HANDLE) && binding && other_binding && (binding->mem_state == other_binding->mem_state) &&
-        (binding->offset == other_binding->offset) && IsCreateInfoEqual(other_image_state->createInfo)) {
+    if ((create_from_swapchain == VK_NULL_HANDLE) && binding && other_binding &&
+        (binding->memory_state == other_binding->memory_state) && (binding->memory_offset == other_binding->memory_offset) &&
+        IsCreateInfoEqual(other_image_state->createInfo)) {
         return true;
     }
-    if (bind_swapchain && (bind_swapchain == other_image_state->bind_swapchain)) {
+    if (bind_swapchain && (bind_swapchain == other_image_state->bind_swapchain) &&
+        (swapchain_image_index == other_image_state->swapchain_image_index)) {
         return true;
     }
     return false;
 }
 
-void IMAGE_STATE::AddAliasingImage(IMAGE_STATE *bound_image) {
-    assert(bound_image);
-    if (bound_image != this && bound_image->IsCompatibleAliasing(this)) {
-        auto inserted = bound_image->aliasing_images.emplace(this);
-        if (inserted.second) {
-            aliasing_images.emplace(bound_image);
-        }
+void IMAGE_STATE::SetInitialLayoutMap() {
+    if (layout_range_map) {
+        return;
     }
-}
-
-void IMAGE_STATE::SetMemBinding(std::shared_ptr<DEVICE_MEMORY_STATE> &mem, VkDeviceSize memory_offset) {
     if ((createInfo.flags & VK_IMAGE_CREATE_ALIAS_BIT) != 0) {
-        for (auto *base_node : mem->ObjectBindings()) {
-            if (base_node->Type() == kVulkanObjectTypeImage) {
-                auto other_image = static_cast<IMAGE_STATE *>(base_node);
-                AddAliasingImage(other_image);
+        // Look for another aliasing image and point at its layout state.
+        // ObjectBindings() is thread safe since returns by value, and once
+        // the weak_ptr is successfully locked, the other image state won't
+        // be freed out from under us.
+        for (auto const &memory_state : GetBoundMemoryStates()) {
+            for (auto &entry : memory_state->ObjectBindings()) {
+                if (entry.first.type == kVulkanObjectTypeImage) {
+                    auto base_node = entry.second.lock();
+                    if (base_node) {
+                        auto other_image = static_cast<IMAGE_STATE *>(base_node.get());
+                        if (other_image != this && other_image->IsCompatibleAliasing(this)) {
+                            layout_range_map = other_image->layout_range_map;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    } else if (bind_swapchain) {
+        // Swapchains can also alias if multiple images are bound (or retrieved
+        // with vkGetSwapchainImages()) for a (single swapchain, index) pair.
+        // ObjectBindings() is thread safe since returns by value, and once
+        // the weak_ptr is successfully locked, the other image state won't
+        // be freed out from under us.
+        for (auto &entry : bind_swapchain->ObjectBindings()) {
+            if (entry.first.type == kVulkanObjectTypeImage) {
+                auto base_node = entry.second.lock();
+                if (base_node) {
+                    auto other_image = static_cast<IMAGE_STATE *>(base_node.get());
+                    if (other_image != this && other_image->IsCompatibleAliasing(this)) {
+                        layout_range_map = other_image->layout_range_map;
+                        break;
+                    }
+                }
             }
         }
     }
-    BINDABLE::SetMemBinding(mem, memory_offset);
+    // ... otherwise set up the new map.
+    if (!layout_range_map) {
+        // set up the new map completely before making it available
+        auto new_map = std::make_shared<GlobalImageLayoutRangeMap>(subresource_encoder.SubresourceCount());
+        auto range_gen = subresource_adapter::RangeGenerator(subresource_encoder);
+        for (; range_gen->non_empty(); ++range_gen) {
+            new_map->insert(new_map->end(), std::make_pair(*range_gen, createInfo.initialLayout));
+        }
+        layout_range_map = std::move(new_map);
+    }
 }
 
 void IMAGE_STATE::SetSwapchain(std::shared_ptr<SWAPCHAIN_NODE> &swapchain, uint32_t swapchain_index) {
@@ -345,14 +374,6 @@ void IMAGE_STATE::SetSwapchain(std::shared_ptr<SWAPCHAIN_NODE> &swapchain, uint3
     bind_swapchain = swapchain;
     swapchain_image_index = swapchain_index;
     bind_swapchain->AddParent(this);
-    for (auto *base_node : swapchain->ObjectBindings()) {
-        if (base_node->Type() == kVulkanObjectTypeImage) {
-            auto other_image = static_cast<IMAGE_STATE *>(base_node);
-            if (swapchain_image_index == other_image->swapchain_image_index) {
-                AddAliasingImage(other_image);
-            }
-        }
-    }
 }
 
 VkDeviceSize IMAGE_STATE::GetFakeBaseAddress() const {
@@ -365,12 +386,9 @@ VkDeviceSize IMAGE_STATE::GetFakeBaseAddress() const {
     return bind_swapchain->images[swapchain_image_index].fake_base_address;
 }
 
-// Returns the effective extent of an image subresource, adjusted for mip level and array depth.
-VkExtent3D IMAGE_STATE::GetSubresourceExtent(const VkImageSubresourceLayers &subresource) const {
-    const uint32_t mip = subresource.mipLevel;
-
+VkExtent3D IMAGE_STATE::GetSubresourceExtent(VkImageAspectFlags aspect_mask, uint32_t mip_level) const {
     // Return zero extent if mip level doesn't exist
-    if (mip >= createInfo.mipLevels) {
+    if (mip_level >= createInfo.mipLevels) {
         return VkExtent3D{0, 0, 0};
     }
 
@@ -379,19 +397,19 @@ VkExtent3D IMAGE_STATE::GetSubresourceExtent(const VkImageSubresourceLayers &sub
 
     // If multi-plane, adjust per-plane extent
     if (FormatIsMultiplane(createInfo.format)) {
-        VkExtent2D divisors = FindMultiplaneExtentDivisors(createInfo.format, subresource.aspectMask);
+        VkExtent2D divisors = FindMultiplaneExtentDivisors(createInfo.format, aspect_mask);
         extent.width /= divisors.width;
         extent.height /= divisors.height;
     }
 
     if (createInfo.flags & VK_IMAGE_CREATE_CORNER_SAMPLED_BIT_NV) {
-        extent.width = (0 == extent.width ? 0 : std::max(2U, 1 + ((extent.width - 1) >> mip)));
-        extent.height = (0 == extent.height ? 0 : std::max(2U, 1 + ((extent.height - 1) >> mip)));
-        extent.depth = (0 == extent.depth ? 0 : std::max(2U, 1 + ((extent.depth - 1) >> mip)));
+        extent.width = (0 == extent.width ? 0 : std::max(2U, 1 + ((extent.width - 1) >> mip_level)));
+        extent.height = (0 == extent.height ? 0 : std::max(2U, 1 + ((extent.height - 1) >> mip_level)));
+        extent.depth = (0 == extent.depth ? 0 : std::max(2U, 1 + ((extent.depth - 1) >> mip_level)));
     } else {
-        extent.width = (0 == extent.width ? 0 : std::max(1U, extent.width >> mip));
-        extent.height = (0 == extent.height ? 0 : std::max(1U, extent.height >> mip));
-        extent.depth = (0 == extent.depth ? 0 : std::max(1U, extent.depth >> mip));
+        extent.width = (0 == extent.width ? 0 : std::max(1U, extent.width >> mip_level));
+        extent.height = (0 == extent.height ? 0 : std::max(1U, extent.height >> mip_level));
+        extent.depth = (0 == extent.depth ? 0 : std::max(1U, extent.depth >> mip_level));
     }
 
     // Image arrays have an effective z extent that isn't diminished by mip level
@@ -400,6 +418,11 @@ VkExtent3D IMAGE_STATE::GetSubresourceExtent(const VkImageSubresourceLayers &sub
     }
 
     return extent;
+}
+
+// Returns the effective extent of an image subresource, adjusted for mip level and array depth.
+VkExtent3D IMAGE_STATE::GetSubresourceExtent(const VkImageSubresourceLayers &subresource) const {
+    return GetSubresourceExtent(subresource.aspectMask, subresource.mipLevel);
 }
 
 static VkSamplerYcbcrConversion GetSamplerConversion(const VkImageViewCreateInfo *ci) {
@@ -418,9 +441,10 @@ static float GetImageViewMinLod(const VkImageViewCreateInfo* ci) {
 }
 
 IMAGE_VIEW_STATE::IMAGE_VIEW_STATE(const std::shared_ptr<IMAGE_STATE> &im, VkImageView iv, const VkImageViewCreateInfo *ci,
-                                   VkFormatFeatureFlags ff, const VkFilterCubicImageViewImageFormatPropertiesEXT &cubic_props)
+                                   VkFormatFeatureFlags2KHR ff, const VkFilterCubicImageViewImageFormatPropertiesEXT &cubic_props)
     : BASE_NODE(iv, kVulkanObjectTypeImageView),
-      create_info(*ci),
+      safe_create_info(ci),
+      create_info(*safe_create_info.ptr()),
       normalized_subresource_range(::NormalizeSubresourceRange(im->createInfo, *ci)),
       range_generator(im->subresource_encoder, normalized_subresource_range),
       samples(im->createInfo.samples),
@@ -434,9 +458,7 @@ IMAGE_VIEW_STATE::IMAGE_VIEW_STATE(const std::shared_ptr<IMAGE_STATE> &im, VkIma
       min_lod(GetImageViewMinLod(ci)),
       format_features(ff),
       inherited_usage(GetInheritedUsage(ci, *im)),
-      image_state(im) {
-    image_state->AddParent(this);
-}
+      image_state(im) {}
 
 void IMAGE_VIEW_STATE::Destroy() {
     if (image_state) {
@@ -462,6 +484,13 @@ VkExtent3D IMAGE_VIEW_STATE::GetExtent() const {
         result.depth = create_info.subresourceRange.layerCount;
     }
     return result;
+}
+
+uint32_t IMAGE_VIEW_STATE::GetAttachmentLayerCount() const {
+    if (create_info.subresourceRange.layerCount == VK_REMAINING_ARRAY_LAYERS && !IsDepthSliced()) {
+        return image_state->createInfo.arrayLayers;
+    }
+    return create_info.subresourceRange.layerCount;
 }
 
 static safe_VkImageCreateInfo GetImageCreateInfo(const VkSwapchainCreateInfoKHR *pCreateInfo) {
@@ -579,12 +608,14 @@ void SURFACE_STATE::RemoveParent(BASE_NODE *parent_node) {
 }
 
 void SURFACE_STATE::SetQueueSupport(VkPhysicalDevice phys_dev, uint32_t qfi, bool supported) {
+    auto guard = Lock();
     assert(phys_dev);
     GpuQueue key{phys_dev, qfi};
     gpu_queue_support_[key] = supported;
 }
 
 bool SURFACE_STATE::GetQueueSupport(VkPhysicalDevice phys_dev, uint32_t qfi) const {
+    auto guard = Lock();
     assert(phys_dev);
     GpuQueue key{phys_dev, qfi};
     auto iter = gpu_queue_support_.find(key);
@@ -598,11 +629,13 @@ bool SURFACE_STATE::GetQueueSupport(VkPhysicalDevice phys_dev, uint32_t qfi) con
 }
 
 void SURFACE_STATE::SetPresentModes(VkPhysicalDevice phys_dev, std::vector<VkPresentModeKHR> &&modes) {
+    auto guard = Lock();
     assert(phys_dev);
     present_modes_[phys_dev] = std::move(modes);
 }
 
 std::vector<VkPresentModeKHR> SURFACE_STATE::GetPresentModes(VkPhysicalDevice phys_dev) const {
+    auto guard = Lock();
     assert(phys_dev);
     auto iter = present_modes_.find(phys_dev);
     if (iter != present_modes_.end()) {
@@ -617,11 +650,13 @@ std::vector<VkPresentModeKHR> SURFACE_STATE::GetPresentModes(VkPhysicalDevice ph
 }
 
 void SURFACE_STATE::SetFormats(VkPhysicalDevice phys_dev, std::vector<VkSurfaceFormatKHR> &&fmts) {
+    auto guard = Lock();
     assert(phys_dev);
     formats_[phys_dev] = std::move(fmts);
 }
 
 std::vector<VkSurfaceFormatKHR> SURFACE_STATE::GetFormats(VkPhysicalDevice phys_dev) const {
+    auto guard = Lock();
     assert(phys_dev);
     auto iter = formats_.find(phys_dev);
     if (iter != formats_.end()) {
@@ -637,11 +672,13 @@ std::vector<VkSurfaceFormatKHR> SURFACE_STATE::GetFormats(VkPhysicalDevice phys_
 }
 
 void SURFACE_STATE::SetCapabilities(VkPhysicalDevice phys_dev, const VkSurfaceCapabilitiesKHR &caps) {
+    auto guard = Lock();
     assert(phys_dev);
     capabilities_[phys_dev] = caps;
 }
 
 VkSurfaceCapabilitiesKHR SURFACE_STATE::GetCapabilities(VkPhysicalDevice phys_dev) const {
+    auto guard = Lock();
     assert(phys_dev);
     auto iter = capabilities_.find(phys_dev);
     if (iter != capabilities_.end()) {

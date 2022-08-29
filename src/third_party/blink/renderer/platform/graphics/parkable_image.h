@@ -7,8 +7,10 @@
 
 #include "base/debug/stack_trace.h"
 #include "base/feature_list.h"
+#include "base/synchronization/lock.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
+#include "base/time/time.h"
 #include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/renderer/platform/disk_data_metadata.h"
 #include "third_party/blink/renderer/platform/graphics/rw_buffer.h"
@@ -71,7 +73,7 @@ class PLATFORM_EXPORT ParkableImageImpl final
   bool is_frozen() const { return !frozen_time_.is_null(); }
 
   bool ShouldReschedule() const LOCKS_EXCLUDED(lock_) {
-    MutexLocker lock(lock_);
+    base::AutoLock lock(lock_);
     return TransientlyUnableToPark();
   }
 
@@ -121,7 +123,7 @@ class PLATFORM_EXPORT ParkableImageImpl final
 
   bool CanParkNow() const EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
-  mutable Mutex lock_;
+  mutable base::Lock lock_;
 
   std::unique_ptr<RWBuffer> rw_buffer_ GUARDED_BY(lock_);
 

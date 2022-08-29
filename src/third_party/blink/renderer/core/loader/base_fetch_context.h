@@ -15,7 +15,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/web_feature_forward.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_context.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
@@ -94,15 +94,6 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
       const absl::optional<KURL>& alias_url,
       ResourceType type,
       const FetchInitiatorInfo& initiator_info) override;
-
-  // Returns whether a request to |url| is a conversion registration request.
-  // Conversion registration requests are redirects to a well-known conversion
-  // registration endpoint.
-  virtual bool SendConversionRequestInsteadOfRedirecting(
-      const KURL& url,
-      const absl::optional<ResourceRequest::RedirectInfo>& redirect_info,
-      ReportingDisposition reporting_disposition,
-      const String& devtools_request_id) const;
 
   void AddClientHintsIfNecessary(
       const ClientHintsPreferences& hints_preferences,

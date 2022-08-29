@@ -13,10 +13,7 @@
 #include "components/reporting/client/report_queue.h"
 #include "components/reporting/client/report_queue_configuration.h"
 #include "components/reporting/util/statusor.h"
-
-namespace net {
-class BackoffEntry;
-}  // namespace net
+#include "net/base/backoff_entry.h"
 
 namespace reporting {
 
@@ -44,21 +41,11 @@ class ReportQueueFactory {
   using TrySetReportQueueCallback =
       base::OnceCallback<void(StatusOr<std::unique_ptr<ReportQueue>>)>;
 
-  // Deprecated
-  static void Create(base::StringPiece dm_token_value,
-                     Destination destination,
-                     SuccessCallback done_cb);
-
   static void Create(EventType event_type,
                      Destination destination,
                      SuccessCallback done_cb);
 
-  // Deprecated
-  static std::unique_ptr<::reporting::ReportQueue, base::OnTaskRunnerDeleter>
-  CreateSpeculativeReportQueue(base::StringPiece dm_token_value,
-                               Destination destination);
-
-  static std::unique_ptr<::reporting::ReportQueue, base::OnTaskRunnerDeleter>
+  static std::unique_ptr<ReportQueue, base::OnTaskRunnerDeleter>
   CreateSpeculativeReportQueue(EventType event_type, Destination destination);
 
  private:
@@ -69,7 +56,7 @@ class ReportQueueFactory {
   static TrySetReportQueueCallback CreateTrySetCallback(
       Destination destination,
       SuccessCallback success_cb,
-      std::unique_ptr<net::BackoffEntry> backoff_entry);
+      std::unique_ptr<::net::BackoffEntry> backoff_entry);
 };
 
 }  // namespace reporting

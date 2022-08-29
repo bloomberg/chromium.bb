@@ -30,18 +30,23 @@
 
 import * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
-import type * as Formatter from '../../models/formatter/formatter.js';
 import * as Acorn from '../../third_party/acorn/acorn.js';
-import type * as CodeMirrorModule from '../../third_party/codemirror/codemirror-legacy.js'; // eslint-disable-line @typescript-eslint/no-unused-vars
+
+// This file is required to bring some types into scope, even though it
+// is not used.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import type * as CodeMirrorModule from '../../third_party/codemirror/codemirror-legacy.js';
 
 import {AcornTokenizer, ECMA_VERSION} from './AcornTokenizer.js';
 import {CSSFormatter} from './CSSFormatter.js';
 import {ESTreeWalker} from './ESTreeWalker.js';
 import {FormattedContentBuilder} from './FormattedContentBuilder.js';
+import type {FormatResult} from './FormatterActions.js';
 import {HTMLFormatter} from './HTMLFormatter.js';
 import {IdentityFormatter} from './IdentityFormatter.js';
 import {JavaScriptFormatter} from './JavaScriptFormatter.js';
 import {JSONFormatter} from './JSONFormatter.js';
+import {substituteExpression} from './Substitute.js';
 
 export interface Chunk {
   // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
@@ -86,19 +91,17 @@ export function createTokenizer(mimeType: string): (
 export const AbortTokenization = {};
 
 export function evaluatableJavaScriptSubstring(content: string): string {
-  const tokenizer = Acorn.tokenizer(content, {ecmaVersion: ECMA_VERSION});
-  let result = '';
   try {
+    const tokenizer = Acorn.tokenizer(content, {ecmaVersion: ECMA_VERSION});
     let token = tokenizer.getToken();
-    while (token.type !== Acorn.tokTypes.eof && AcornTokenizer.punctuator(token)) {
+    while (AcornTokenizer.punctuator(token)) {
       token = tokenizer.getToken();
     }
 
     const startIndex = token.start;
-    let endIndex: number = token.end;
-    let openBracketsCounter = 0;
+    let endIndex = token.end;
     while (token.type !== Acorn.tokTypes.eof) {
-      const isIdentifier = AcornTokenizer.identifier(token);
+      const isIdentifier = token.type === Acorn.tokTypes.name || token.type === Acorn.tokTypes.privateId;
       const isThis = AcornTokenizer.keyword(token, 'this');
       const isString = token.type === Acorn.tokTypes.string;
       if (!isThis && !isIdentifier && !isString) {
@@ -107,24 +110,35 @@ export function evaluatableJavaScriptSubstring(content: string): string {
 
       endIndex = token.end;
       token = tokenizer.getToken();
-      while (AcornTokenizer.punctuator(token, '.[]')) {
-        if (AcornTokenizer.punctuator(token, '[')) {
-          openBracketsCounter++;
-        }
 
-        if (AcornTokenizer.punctuator(token, ']')) {
-          endIndex = openBracketsCounter > 0 ? token.end : endIndex;
-          openBracketsCounter--;
-        }
-
-        token = tokenizer.getToken();
+      while (AcornTokenizer.punctuator(token, '[')) {
+        let openBracketCounter = 0;
+        do {
+          if (AcornTokenizer.punctuator(token, '[')) {
+            ++openBracketCounter;
+          }
+          token = tokenizer.getToken();
+          if (AcornTokenizer.punctuator(token, ']')) {
+            if (--openBracketCounter === 0) {
+              endIndex = token.end;
+              token = tokenizer.getToken();
+              break;
+            }
+          }
+        } while (token.type !== Acorn.tokTypes.eof);
       }
+
+      if (!AcornTokenizer.punctuator(token, '.')) {
+        break;
+      }
+
+      token = tokenizer.getToken();
     }
-    result = content.substring(startIndex, endIndex);
+    return content.substring(startIndex, endIndex);
   } catch (e) {
     console.error(e);
+    return '';
   }
-  return result;
 }
 
 export function javaScriptIdentifiers(content: string): {
@@ -179,12 +193,11 @@ export function javaScriptIdentifiers(content: string): {
   return identifiers.map(id => ({name: 'name' in id && id.name || undefined, offset: id.start}));
 }
 
-export function format(
-    mimeType: string, text: string, indentString?: string): Formatter.FormatterWorkerPool.FormatResult {
+export function format(mimeType: string, text: string, indentString?: string): FormatResult {
   // Default to a 4-space indent.
   indentString = indentString || '    ';
 
-  let result: Formatter.FormatterWorkerPool.FormatResult;
+  let result: FormatResult;
   const builder = new FormattedContentBuilder(indentString);
   const lineEndings = Platform.StringUtilities.findLineEndingIndexes(text);
   try {
@@ -305,3 +318,5 @@ export function argumentsList(content: string): string[] {
     console.error = (): undefined => undefined;
   }
 })();
+
+export {substituteExpression};
