@@ -21,7 +21,7 @@ namespace cppgc {
 namespace internal {
 
 // static
-AtomicEntryFlag WriteBarrier::incremental_or_concurrent_marking_flag_;
+AtomicEntryFlag WriteBarrier::write_barrier_enabled_;
 
 namespace {
 
@@ -129,15 +129,31 @@ void WriteBarrier::GenerationalBarrierSlow(const CagedHeapLocalData& local_data,
                                            const AgeTable& age_table,
                                            const void* slot,
                                            uintptr_t value_offset) {
+  DCHECK(slot);
   // A write during atomic pause (e.g. pre-finalizer) may trigger the slow path
   // of the barrier. This is a result of the order of bailouts where not marking
   // results in applying the generational barrier.
   if (local_data.heap_base.in_atomic_pause()) return;
 
-  if (value_offset > 0 && age_table[value_offset] == AgeTable::Age::kOld)
+  if (value_offset > 0 && age_table.GetAge(value_offset) == AgeTable::Age::kOld)
     return;
+
   // Record slot.
-  local_data.heap_base.remembered_slots().insert(const_cast<void*>(slot));
+  local_data.heap_base.remembered_set().AddSlot((const_cast<void*>(slot)));
+}
+
+// static
+void WriteBarrier::GenerationalBarrierForSourceObjectSlow(
+    const CagedHeapLocalData& local_data, const void* inner_pointer) {
+  DCHECK(inner_pointer);
+
+  auto& object_header =
+      BasePage::FromInnerAddress(&local_data.heap_base, inner_pointer)
+          ->ObjectHeaderFromInnerAddress<AccessMode::kAtomic>(inner_pointer);
+
+  // Record the source object.
+  local_data.heap_base.remembered_set().AddSourceObject(
+      const_cast<HeapObjectHeader&>(object_header));
 }
 #endif  // CPPGC_YOUNG_GENERATION
 
@@ -172,19 +188,51 @@ bool WriteBarrierTypeForNonCagedHeapPolicy::IsMarking(HeapHandle& heap_handle) {
 bool WriteBarrierTypeForCagedHeapPolicy::IsMarking(
     const HeapHandle& heap_handle, WriteBarrier::Params& params) {
   const auto& heap_base = internal::HeapBase::From(heap_handle);
-  if (const MarkerBase* marker = heap_base.marker()) {
-    return marker->IsMarking();
-  }
+  const bool is_marking = heap_base.marker() && heap_base.marker()->IsMarking();
   // Also set caged heap start here to avoid another call immediately after
   // checking IsMarking().
 #if defined(CPPGC_YOUNG_GENERATION)
-  params.start =
-      reinterpret_cast<uintptr_t>(&heap_base.caged_heap().local_data());
+  params.start = reinterpret_cast<uintptr_t>(heap_base.caged_heap().base());
 #endif  // !CPPGC_YOUNG_GENERATION
-  return false;
+  return is_marking;
 }
 
 #endif  // CPPGC_CAGED_HEAP
+
+#if defined(CPPGC_YOUNG_GENERATION)
+
+// static
+YoungGenerationEnabler& YoungGenerationEnabler::Instance() {
+  static v8::base::LeakyObject<YoungGenerationEnabler> instance;
+  return *instance.get();
+}
+
+void YoungGenerationEnabler::Enable() {
+  auto& instance = Instance();
+  v8::base::LockGuard _(&instance.mutex_);
+  if (++instance.is_enabled_ == 1) {
+    // Enter the flag so that the check in the write barrier will always trigger
+    // when young generation is enabled.
+    WriteBarrier::FlagUpdater::Enter();
+  }
+}
+
+void YoungGenerationEnabler::Disable() {
+  auto& instance = Instance();
+  v8::base::LockGuard _(&instance.mutex_);
+  DCHECK_LT(0, instance.is_enabled_);
+  if (--instance.is_enabled_ == 0) {
+    WriteBarrier::FlagUpdater::Exit();
+  }
+}
+
+bool YoungGenerationEnabler::IsEnabled() {
+  auto& instance = Instance();
+  v8::base::LockGuard _(&instance.mutex_);
+  return instance.is_enabled_;
+}
+
+#endif  // defined(CPPGC_YOUNG_GENERATION)
 
 }  // namespace internal
 }  // namespace cppgc

@@ -8,8 +8,10 @@
 #include <cursor-shapes-unstable-v1-server-protocol.h>
 #include <extended-drag-unstable-v1-server-protocol.h>
 #include <gaming-input-unstable-v2-server-protocol.h>
+#include <idle-inhibit-unstable-v1-server-protocol.h>
 #include <keyboard-configuration-unstable-v1-server-protocol.h>
 #include <keyboard-extension-unstable-v1-server-protocol.h>
+#include <keyboard-shortcuts-inhibit-unstable-v1-server-protocol.h>
 #include <notification-shell-unstable-v1-server-protocol.h>
 #include <overlay-prioritizer-server-protocol.h>
 #include <pointer-constraints-unstable-v1-server-protocol.h>
@@ -85,6 +87,8 @@ struct Globals {
   std::unique_ptr<zcr_text_input_extension_v1> zcr_text_input_extension_v1;
   std::unique_ptr<zcr_keyboard_configuration_v1> zcr_keyboard_configuration_v1;
   std::unique_ptr<zcr_keyboard_extension_v1> zcr_keyboard_extension_v1;
+  std::unique_ptr<zwp_keyboard_shortcuts_inhibit_manager_v1>
+      zwp_keyboard_shortcuts_inhibit_manager_v1;
   std::unique_ptr<zcr_notification_shell_v1> zcr_notification_shell_v1;
   std::unique_ptr<zcr_remote_shell_v1> zcr_remote_shell_v1;
   std::unique_ptr<zcr_remote_shell_v2> zcr_remote_shell_v2;
@@ -98,6 +102,7 @@ struct Globals {
   std::unique_ptr<zcr_extended_drag_v1> zcr_extended_drag_v1;
   std::unique_ptr<zxdg_output_manager_v1> zxdg_output_manager_v1;
   std::unique_ptr<weston_test> weston_test;
+  std::unique_ptr<zwp_idle_inhibit_manager_v1> zwp_idle_inhibit_manager_v1;
 };
 
 typedef void (*InterfaceRegistryCallback)(Globals*,
@@ -175,6 +180,8 @@ void RegistryHandler(void* data,
                             zcr_keyboard_configuration_v1),
           REGISTRY_CALLBACK(zcr_keyboard_extension_v1,
                             zcr_keyboard_extension_v1),
+          REGISTRY_CALLBACK(zwp_keyboard_shortcuts_inhibit_manager_v1,
+                            zwp_keyboard_shortcuts_inhibit_manager_v1),
           REGISTRY_CALLBACK(zcr_notification_shell_v1,
                             zcr_notification_shell_v1),
           REGISTRY_CALLBACK(zcr_remote_shell_v1, zcr_remote_shell_v1),
@@ -195,6 +202,8 @@ void RegistryHandler(void* data,
           REGISTRY_CALLBACK(surface_augmenter, surface_augmenter),
           REGISTRY_CALLBACK(overlay_prioritizer, overlay_prioritizer),
           REGISTRY_CALLBACK(weston_test, weston_test),
+          REGISTRY_CALLBACK(zwp_idle_inhibit_manager_v1,
+                            zwp_idle_inhibit_manager_v1),
       };
   if (interfaces_callbacks.find(interface) != interfaces_callbacks.end()) {
     interfaces_callbacks[interface](globals, registry, id, version);

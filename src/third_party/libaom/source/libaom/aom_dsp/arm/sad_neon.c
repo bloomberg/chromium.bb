@@ -485,8 +485,10 @@ static INLINE unsigned int sad4xh_neon(const uint8_t *src_ptr, int src_stride,
                                        2 * ref_stride, h / 2);           \
     return 2 * sum;                                                      \
   }
-FSADS128_H(128);
-FSADS128_H(64);
+
+FSADS128_H(128)
+FSADS128_H(64)
+
 #undef FSADS128_H
 
 #define FSADS64_H(h)                                                          \
@@ -497,10 +499,11 @@ FSADS128_H(64);
                             h / 2);                                           \
   }
 
-FSADS64_H(128);
-FSADS64_H(64);
-FSADS64_H(32);
-FSADS64_H(16);
+FSADS64_H(128)
+FSADS64_H(64)
+FSADS64_H(32)
+FSADS64_H(16)
+
 #undef FSADS64_H
 
 #define FSADS32_H(h)                                                          \
@@ -511,10 +514,11 @@ FSADS64_H(16);
                             h / 2);                                           \
   }
 
-FSADS32_H(64);
-FSADS32_H(32);
-FSADS32_H(16);
-FSADS32_H(8);
+FSADS32_H(64)
+FSADS32_H(32)
+FSADS32_H(16)
+FSADS32_H(8)
+
 #undef FSADS32_H
 
 #define FSADS16_H(h)                                                          \
@@ -525,10 +529,11 @@ FSADS32_H(8);
                             h / 2);                                           \
   }
 
-FSADS16_H(64);
-FSADS16_H(32);
-FSADS16_H(16);
-FSADS16_H(8);
+FSADS16_H(64)
+FSADS16_H(32)
+FSADS16_H(16)
+FSADS16_H(8)
+
 #undef FSADS16_H
 
 #define FSADS8_H(h)                                                          \
@@ -539,9 +544,10 @@ FSADS16_H(8);
                            h / 2);                                           \
   }
 
-FSADS8_H(32);
-FSADS8_H(16);
-FSADS8_H(8);
+FSADS8_H(32)
+FSADS8_H(16)
+FSADS8_H(8)
+
 #undef FSADS8_H
 
 #define FSADS4_H(h)                                                          \
@@ -552,6 +558,7 @@ FSADS8_H(8);
                            h / 2);                                           \
   }
 
-FSADS4_H(16);
-FSADS4_H(8);
+FSADS4_H(16)
+FSADS4_H(8)
+
 #undef FSADS4_H

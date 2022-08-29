@@ -12,6 +12,7 @@ import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v
 
 import {getShimlessRmaService} from './mojo_interface_provider.js';
 import {ShimlessRmaServiceInterface, StateResult} from './shimless_rma_types.js';
+import {disableNextButton, enableNextButton} from './shimless_rma_util.js';
 
 /**
  * @fileoverview
@@ -40,6 +41,12 @@ export class OnboardingChooseDestinationPageElement extends
 
   static get properties() {
     return {
+      /**
+       * Set by shimless_rma.js.
+       * @type {boolean}
+       */
+      allButtonsDisabled: Boolean,
+
       /** @protected */
       destinationOwner_: {
         type: String,
@@ -61,17 +68,20 @@ export class OnboardingChooseDestinationPageElement extends
   onDestinationSelectionChanged_(event) {
     this.destinationOwner_ = event.detail.value;
     const disabled = !this.destinationOwner_;
-    this.dispatchEvent(new CustomEvent(
-        'disable-next-button',
-        {bubbles: true, composed: true, detail: disabled},
-        ));
+    if (disabled) {
+      disableNextButton(this);
+    } else {
+      enableNextButton(this);
+    }
   }
 
-  /** @return {!Promise<!StateResult>} */
+  /** @return {!Promise<!{stateResult: !StateResult}>} */
   onNextButtonClick() {
     if (this.destinationOwner_ === 'originalOwner') {
       return this.shimlessRmaService_.setSameOwner();
-    } else if (this.destinationOwner_ === 'newOwner') {
+    } else if (
+        this.destinationOwner_ === 'newOwner' ||
+        this.destinationOwner_ === 'notSureOwner') {
       return this.shimlessRmaService_.setDifferentOwner();
     } else {
       return Promise.reject(new Error('No destination selected'));

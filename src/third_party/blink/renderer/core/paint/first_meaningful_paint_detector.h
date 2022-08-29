@@ -8,7 +8,8 @@
 #include "base/time/time.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/paint/paint_event.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
+#include "third_party/blink/renderer/platform/heap/member.h"
 
 namespace base {
 class TickClock;
@@ -39,6 +40,10 @@ class CORE_EXPORT FirstMeaningfulPaintDetector
                                          double contents_height_before_layout,
                                          double contents_height_after_layout,
                                          int visible_height);
+  void MarkNextPaintAsMeaningfulForTesting() {
+    next_paint_is_meaningful_ = true;
+  }
+
   void NotifyInputEvent();
   void NotifyPaint();
   void ReportPresentationTime(PaintEvent, base::TimeTicks);

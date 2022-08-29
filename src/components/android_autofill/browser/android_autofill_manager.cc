@@ -14,26 +14,55 @@ namespace autofill {
 
 using base::TimeTicks;
 
-// static
-std::unique_ptr<AutofillManager> AndroidAutofillManager::Create(
-    AutofillDriver* driver,
+void AndroidDriverInitHook(
     AutofillClient* client,
-    const std::string& /*app_locale*/,
-    AutofillManager::AutofillDownloadManagerState enable_download_manager) {
-  return base::WrapUnique(
-      new AndroidAutofillManager(driver, client, enable_download_manager));
+    AutofillManager::EnableDownloadManager enable_download_manager,
+    ContentAutofillDriver* driver) {
+  driver->set_autofill_manager(base::WrapUnique(
+      new AndroidAutofillManager(driver, client, enable_download_manager)));
+  driver->GetAutofillAgent()->SetUserGestureRequired(false);
+  driver->GetAutofillAgent()->SetSecureContextRequired(true);
+  driver->GetAutofillAgent()->SetFocusRequiresScroll(false);
+  driver->GetAutofillAgent()->SetQueryPasswordSuggestion(true);
 }
 
 AndroidAutofillManager::AndroidAutofillManager(
     AutofillDriver* driver,
     AutofillClient* client,
-    AutofillManager::AutofillDownloadManagerState enable_download_manager)
+    EnableDownloadManager enable_download_manager)
     : AutofillManager(driver,
                       client,
-                      enable_download_manager,
-                      version_info::Channel::UNKNOWN) {}
+                      version_info::Channel::UNKNOWN,
+                      enable_download_manager) {}
 
 AndroidAutofillManager::~AndroidAutofillManager() = default;
+
+AutofillOfferManager* AndroidAutofillManager::GetOfferManager() {
+  return nullptr;
+}
+
+CreditCardAccessManager* AndroidAutofillManager::GetCreditCardAccessManager() {
+  return nullptr;
+}
+
+bool AndroidAutofillManager::ShouldClearPreviewedForm() {
+  return false;
+}
+
+void AndroidAutofillManager::FillCreditCardForm(int query_id,
+                                                const FormData& form,
+                                                const FormFieldData& field,
+                                                const CreditCard& credit_card,
+                                                const std::u16string& cvc) {
+  NOTREACHED();
+}
+
+void AndroidAutofillManager::FillProfileForm(
+    const autofill::AutofillProfile& profile,
+    const FormData& form,
+    const FormFieldData& field) {
+  NOTREACHED();
+}
 
 void AndroidAutofillManager::OnFormSubmittedImpl(
     const FormData& form,
@@ -65,10 +94,12 @@ void AndroidAutofillManager::OnAskForValuesToFillImpl(
     const FormData& form,
     const FormFieldData& field,
     const gfx::RectF& bounding_box,
-    bool autoselect_first_suggestion) {
+    bool autoselect_first_suggestion,
+    TouchToFillEligible touch_to_fill_eligible) {
   if (auto* provider = GetAutofillProvider()) {
     provider->OnAskForValuesToFill(this, query_id, form, field, bounding_box,
-                                   autoselect_first_suggestion);
+                                   autoselect_first_suggestion,
+                                   touch_to_fill_eligible);
   }
 }
 
@@ -117,8 +148,12 @@ void AndroidAutofillManager::OnHidePopup() {
 void AndroidAutofillManager::SelectFieldOptionsDidChange(const FormData& form) {
 }
 
+void AndroidAutofillManager::JavaScriptChangedAutofilledValue(
+    const FormData& form,
+    const FormFieldData& field,
+    const std::u16string& old_value) {}
+
 void AndroidAutofillManager::PropagateAutofillPredictions(
-    content::RenderFrameHost* rfh,
     const std::vector<FormStructure*>& forms) {
   has_server_prediction_ = true;
   if (auto* provider = GetAutofillProvider())

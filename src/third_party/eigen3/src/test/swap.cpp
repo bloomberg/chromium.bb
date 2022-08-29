@@ -22,16 +22,19 @@ struct other_matrix_type<Matrix<Scalar_, Rows_, Cols_, Options_, MaxRows_, MaxCo
 };
 
 template <typename MatrixType>
-typename internal::enable_if<(MatrixType::RowsAtCompileTime==1 || MatrixType::RowsAtCompileTime==Dynamic), void>::type
+std::enable_if_t<(MatrixType::RowsAtCompileTime==1 || MatrixType::RowsAtCompileTime==Dynamic), void>
 check_row_swap(MatrixType& m1) {
-  // test assertion on mismatching size -- matrix case
-  VERIFY_RAISES_ASSERT(m1.swap(m1.row(0)));
-  // test assertion on mismatching size -- xpr case
-  VERIFY_RAISES_ASSERT(m1.row(0).swap(m1));
+  
+  if (m1.rows() != 1) {
+    // test assertion on mismatching size -- matrix case
+    VERIFY_RAISES_ASSERT(m1.swap(m1.row(0)));
+    // test assertion on mismatching size -- xpr case
+    VERIFY_RAISES_ASSERT(m1.row(0).swap(m1));
+  }
 }
 
 template <typename MatrixType>
-typename internal::enable_if<!(MatrixType::RowsAtCompileTime==1 || MatrixType::RowsAtCompileTime==Dynamic), void>::type
+std::enable_if_t<!(MatrixType::RowsAtCompileTime==1 || MatrixType::RowsAtCompileTime==Dynamic), void>
 check_row_swap(MatrixType& /* unused */) {
 }
 

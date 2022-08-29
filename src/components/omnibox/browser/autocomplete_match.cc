@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "base/check_op.h"
-#include "base/cxx17_backports.h"
 #include "base/debug/crash_logging.h"
 #include "base/feature_list.h"
 #include "base/i18n/case_conversion.h"
@@ -24,6 +23,7 @@
 #include "base/time/time.h"
 #include "base/trace_event/memory_usage_estimator.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "components/omnibox/browser/actions/omnibox_action.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
 #include "components/omnibox/browser/document_provider.h"
@@ -36,7 +36,7 @@
 #include "ui/gfx/vector_icon_types.h"
 #include "url/third_party/mozilla/url_parse.h"
 
-#if (!defined(OS_ANDROID) || BUILDFLAG(ENABLE_VR)) && !defined(OS_IOS)
+#if (!BUILDFLAG(IS_ANDROID) || BUILDFLAG(ENABLE_VR)) && !BUILDFLAG(IS_IOS)
 #include "components/omnibox/browser/suggestion_answer.h"
 #include "components/omnibox/browser/vector_icons.h"  // nogncheck
 #include "components/vector_icons/vector_icons.h"     // nogncheck
@@ -63,7 +63,7 @@ bool WordMatchesURLContent(
       url.scheme().length() + strlen(url::kStandardSchemeSeparator);
   DCHECK_GE(url.spec().length(), prefix_length);
   const std::u16string& formatted_url = url_formatter::FormatUrl(
-      url, url_formatter::kFormatUrlOmitNothing, net::UnescapeRule::NORMAL,
+      url, url_formatter::kFormatUrlOmitNothing, base::UnescapeRule::NORMAL,
       nullptr, nullptr, &prefix_length);
   if (prefix_length == std::u16string::npos)
     return false;
@@ -129,7 +129,7 @@ const char* const AutocompleteMatch::kDocumentTypeStrings[]{
     "drive_image", "drive_pdf",  "drive_video", "drive_folder", "drive_other"};
 
 static_assert(
-    base::size(AutocompleteMatch::kDocumentTypeStrings) ==
+    std::size(AutocompleteMatch::kDocumentTypeStrings) ==
         static_cast<int>(AutocompleteMatch::DocumentType::DOCUMENT_TYPE_SIZE),
     "Sizes of AutocompleteMatch::kDocumentTypeStrings and "
     "AutocompleteMatch::DocumentType don't match.");
@@ -226,7 +226,7 @@ AutocompleteMatch::AutocompleteMatch(const AutocompleteMatch& match)
       additional_info(match.additional_info),
       duplicate_matches(match.duplicate_matches),
       query_tiles(match.query_tiles),
-      navsuggest_tiles(match.navsuggest_tiles) {}
+      suggest_tiles(match.suggest_tiles) {}
 
 AutocompleteMatch::AutocompleteMatch(AutocompleteMatch&& match) noexcept {
   *this = std::move(match);
@@ -277,8 +277,8 @@ AutocompleteMatch& AutocompleteMatch::operator=(
   additional_info = std::move(match.additional_info);
   duplicate_matches = std::move(match.duplicate_matches);
   query_tiles = std::move(match.query_tiles);
-  navsuggest_tiles = std::move(match.navsuggest_tiles);
-#if defined(OS_ANDROID)
+  suggest_tiles = std::move(match.suggest_tiles);
+#if BUILDFLAG(IS_ANDROID)
   DestroyJavaObject();
   std::swap(java_match_, match.java_match_);
   std::swap(matching_java_tab_, match.matching_java_tab_);
@@ -288,7 +288,7 @@ AutocompleteMatch& AutocompleteMatch::operator=(
 }
 
 AutocompleteMatch::~AutocompleteMatch() {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   DestroyJavaObject();
 #endif
 }
@@ -346,9 +346,9 @@ AutocompleteMatch& AutocompleteMatch::operator=(
   additional_info = match.additional_info;
   duplicate_matches = match.duplicate_matches;
   query_tiles = match.query_tiles;
-  navsuggest_tiles = match.navsuggest_tiles;
+  suggest_tiles = match.suggest_tiles;
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // In case the target element previously held a java object, release it.
   // This happens, when in an expression "match1 = match2;" match1 already
   // is initialized and linked to a Java object: we rewrite the contents of the
@@ -362,7 +362,7 @@ AutocompleteMatch& AutocompleteMatch::operator=(
   return *this;
 }
 
-#if (!defined(OS_ANDROID) || BUILDFLAG(ENABLE_VR)) && !defined(OS_IOS)
+#if (!BUILDFLAG(IS_ANDROID) || BUILDFLAG(ENABLE_VR)) && !BUILDFLAG(IS_IOS)
 // static
 const gfx::VectorIcon& AutocompleteMatch::AnswerTypeToAnswerIcon(int type) {
   switch (static_cast<SuggestionAnswer::AnswerType>(type)) {
@@ -407,6 +407,7 @@ const gfx::VectorIcon& AutocompleteMatch::GetVectorIcon(
     case Type::PHYSICAL_WEB_OVERFLOW_DEPRECATED:
     case Type::TAB_SEARCH_DEPRECATED:
     case Type::TILE_NAVSUGGEST:
+    case Type::OPEN_TAB:
       return omnibox::kPageIcon;
 
     case Type::SEARCH_SUGGEST: {
@@ -505,6 +506,16 @@ bool AutocompleteMatch::BetterDuplicate(const AutocompleteMatch& match1,
     return false;
   }
 
+  // Prefer open tab matches over other types of matches.
+  if (match1.type == AutocompleteMatchType::OPEN_TAB &&
+      match2.type != AutocompleteMatchType::OPEN_TAB) {
+    return true;
+  }
+  if (match1.type != AutocompleteMatchType::OPEN_TAB &&
+      match2.type == AutocompleteMatchType::OPEN_TAB) {
+    return false;
+  }
+
   // Prefer matches allowed to be the default match.
   if (match1.allowed_to_be_default_match && !match2.allowed_to_be_default_match)
     return true;
@@ -520,17 +531,26 @@ bool AutocompleteMatch::BetterDuplicate(const AutocompleteMatch& match1,
       return false;
   }
 
-  // Prefer live document suggestions. We check provider type instead of match
-  // type in order to distinguish live suggestions from the document provider
-  // from stale suggestions from the shortcuts providers, because the latter
-  // omits changing metadata such as last access date.
-  if (match1.provider->type() == AutocompleteProvider::TYPE_DOCUMENT &&
-      match2.provider->type() != AutocompleteProvider::TYPE_DOCUMENT) {
-    return true;
-  }
-  if (match1.provider->type() != AutocompleteProvider::TYPE_DOCUMENT &&
-      match2.provider->type() == AutocompleteProvider::TYPE_DOCUMENT) {
-    return false;
+  // Prefer some providers over others.
+  const std::vector<AutocompleteProvider::Type> preferred_providers = {
+      // Prefer live document suggestions. We check provider type instead of
+      // match type in order to distinguish live suggestions from the document
+      // provider from stale suggestions from the shortcuts providers, because
+      // the latter omits changing metadata such as last access date.
+      AutocompleteProvider::TYPE_DOCUMENT,
+      // Prefer bookmark suggestions, as 1) their titles may be explicitly set,
+      // and 2) they may display enhanced information such as the bookmark
+      // folders path.
+      AutocompleteProvider::TYPE_BOOKMARK,
+  };
+
+  if (match1.provider->type() != match2.provider->type()) {
+    for (const auto& preferred_provider : preferred_providers) {
+      if (match1.provider->type() == preferred_provider)
+        return true;
+      if (match2.provider->type() == preferred_provider)
+        return false;
+    }
   }
 
   // By default, simply prefer the more relevant match.
@@ -812,7 +832,7 @@ GURL AutocompleteMatch::GURLToStrippedGURL(
 
   // Remove the www. prefix from the host.
   static const char prefix[] = "www.";
-  static const size_t prefix_len = base::size(prefix) - 1;
+  static const size_t prefix_len = std::size(prefix) - 1;
   std::string host = stripped_destination_url.host();
   if (host.compare(0, prefix_len, prefix) == 0 && host.length() > prefix_len) {
     replacements.SetHostStr(base::StringPiece(host).substr(prefix_len));
@@ -1048,6 +1068,8 @@ AutocompleteMatch::AsOmniboxEventResultType() const {
       return OmniboxEventProto::Suggestion::TILE_SUGGESTION;
     case AutocompleteMatchType::TILE_NAVSUGGEST:
       return OmniboxEventProto::Suggestion::NAVSUGGEST;
+    case AutocompleteMatchType::OPEN_TAB:
+      return OmniboxEventProto::Suggestion::OPEN_TAB;
     case AutocompleteMatchType::VOICE_SUGGEST:
       // VOICE_SUGGEST matches are only used in Java and are not logged,
       // so we should never reach this case.
@@ -1140,11 +1162,21 @@ void AutocompleteMatch::SetAllowedToBeDefault(const AutocompleteInput& input) {
   }
 }
 
-void AutocompleteMatch::InlineTailPrefix(const std::u16string& common_prefix) {
+void AutocompleteMatch::SetTailSuggestCommonPrefix(
+    const std::u16string& common_prefix) {
   // Prevent re-addition of prefix.
   if (type == AutocompleteMatchType::SEARCH_SUGGEST_TAIL &&
       tail_suggest_common_prefix.empty()) {
     tail_suggest_common_prefix = common_prefix;
+  }
+}
+
+void AutocompleteMatch::SetTailSuggestContentPrefix(
+    const std::u16string& common_prefix) {
+  // Prevent re-addition of prefix.
+  if (type == AutocompleteMatchType::SEARCH_SUGGEST_TAIL &&
+      tail_suggest_common_prefix.empty()) {
+    SetTailSuggestCommonPrefix(common_prefix);
     // Insert an ellipsis before uncommon part.
     const std::u16string ellipsis = kEllipsis;
     contents = ellipsis + contents;
@@ -1244,7 +1276,7 @@ bool AutocompleteMatch::TryRichAutocompletion(
     const std::u16string& primary_text,
     const std::u16string& secondary_text,
     const AutocompleteInput& input,
-    bool shortcut_provider) {
+    const std::u16string& shortcut_text) {
   if (!OmniboxFieldTrial::IsRichAutocompletionEnabled())
     return false;
 
@@ -1254,9 +1286,11 @@ bool AutocompleteMatch::TryRichAutocompletion(
   if (input.prevent_inline_autocomplete())
     return false;
 
+  // Lowercase the strings for case-insensitive comparisons.
   const std::u16string primary_text_lower{base::i18n::ToLower(primary_text)};
   const std::u16string secondary_text_lower{
       base::i18n::ToLower(secondary_text)};
+  const std::u16string shortcut_text_lower{base::i18n::ToLower(shortcut_text)};
   const std::u16string input_text_lower{base::i18n::ToLower(input.text())};
 
   // Try matching the prefix of |primary_text|.
@@ -1273,6 +1307,11 @@ bool AutocompleteMatch::TryRichAutocompletion(
     return true;
   }
 
+  // Determine which types of rich AC are allowed. Depends on:
+  // - The input length.
+  // - Whether the input contains whitespaces.
+  // - Whether the match is from the shortcut provider.
+  // - Fieldtrial params.
   const bool can_autocomplete_titles = RichAutocompletionApplicable(
       OmniboxFieldTrial::kRichAutocompletionAutocompleteTitles.Get(),
       OmniboxFieldTrial::kRichAutocompletionAutocompleteTitlesShortcutProvider
@@ -1280,7 +1319,7 @@ bool AutocompleteMatch::TryRichAutocompletion(
       OmniboxFieldTrial::kRichAutocompletionAutocompleteTitlesMinChar.Get(),
       OmniboxFieldTrial::kRichAutocompletionAutocompleteTitlesNoInputsWithSpaces
           .Get(),
-      shortcut_provider, input.text());
+      !shortcut_text.empty(), input.text());
   const bool can_autocomplete_non_prefix = RichAutocompletionApplicable(
       OmniboxFieldTrial::kRichAutocompletionAutocompleteNonPrefixAll.Get(),
       OmniboxFieldTrial::
@@ -1288,7 +1327,15 @@ bool AutocompleteMatch::TryRichAutocompletion(
       OmniboxFieldTrial::kRichAutocompletionAutocompleteNonPrefixMinChar.Get(),
       OmniboxFieldTrial::
           kRichAutocompletionAutocompleteNonPrefixNoInputsWithSpaces.Get(),
-      shortcut_provider, input.text());
+      !shortcut_text.empty(), input.text());
+  const bool can_autocomplete_shortcut_text = RichAutocompletionApplicable(
+      false,
+      OmniboxFieldTrial::kRichAutocompletionAutocompleteShortcutText.Get(),
+      OmniboxFieldTrial::kRichAutocompletionAutocompleteShortcutTextMinChar
+          .Get(),
+      OmniboxFieldTrial::
+          kRichAutocompletionAutocompleteShortcutTextNoInputsWithSpaces.Get(),
+      !shortcut_text.empty(), input.text());
 
   // All else equal, prefer matching primary over secondary texts and prefixes
   // over non-prefixes. |prefer_primary_non_prefix_over_secondary_prefix|
@@ -1414,6 +1461,23 @@ bool AutocompleteMatch::TryRichAutocompletion(
     RecordAdditionalInfo("autocompletion", "secondary & split");
     return true;
   }
+
+  // Try matching the prefix of `shortcut_text`.
+  if (can_autocomplete_shortcut_text &&
+      base::StartsWith(shortcut_text_lower, input_text_lower,
+                       base::CompareCase::SENSITIVE)) {
+    rich_autocompletion_triggered = true;
+    if (counterfactual)
+      return false;
+    additional_text = primary_text;
+    inline_autocompletion = shortcut_text.substr(input_text_lower.length());
+    allowed_to_be_default_match = true;
+    RecordAdditionalInfo("autocompletion", "shortcut text & prefix");
+    return true;
+  }
+  // Don't try matching a non-prefix of `shortcut_text`. Shortcut matches are
+  // intended for repeated inputs, i.e. inputs that are prefixes of previous
+  // inputs.
 
   return false;
 }

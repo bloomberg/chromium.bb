@@ -7,12 +7,18 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "base/memory/raw_ptr.h"
 
 namespace captions {
 
 class CaptionBubble;
 class CaptionBubbleContext;
+
+enum CaptionBubbleErrorType { GENERIC, MEDIA_FOUNDATION_RENDERER_UNSUPPORTED };
+using OnErrorClickedCallback = base::RepeatingCallback<void()>;
+using OnDoNotShowAgainClickedCallback =
+    base::RepeatingCallback<void(CaptionBubbleErrorType, bool)>;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Caption Bubble Model
@@ -53,7 +59,9 @@ class CaptionBubbleModel {
   void CommitPartialText();
 
   // Set that the bubble has an error and alert the observer.
-  void OnError();
+  void OnError(CaptionBubbleErrorType error_type,
+               OnErrorClickedCallback error_clicked_callback,
+               OnDoNotShowAgainClickedCallback error_silenced_callback);
 
   // Mark the bubble as closed, clear the partial and final text, and alert the
   // observer.
@@ -67,6 +75,7 @@ class CaptionBubbleModel {
 
   bool IsClosed() const { return is_closed_; }
   bool HasError() const { return has_error_; }
+  CaptionBubbleErrorType ErrorType() const { return error_type_; }
   std::string GetFullText() const { return final_text_ + partial_text_; }
   CaptionBubbleContext* GetContext() { return context_; }
 
@@ -80,8 +89,11 @@ class CaptionBubbleModel {
   // Whether the bubble has been closed by the user.
   bool is_closed_ = false;
 
-  // Whether an error should be displayed one the bubble.
+  // Whether an error should be displayed in the bubble.
   bool has_error_ = false;
+
+  // The most recent error type encountered.
+  CaptionBubbleErrorType error_type_ = CaptionBubbleErrorType::GENERIC;
 
   // The CaptionBubble observing changes to this model.
   raw_ptr<CaptionBubble> observer_ = nullptr;

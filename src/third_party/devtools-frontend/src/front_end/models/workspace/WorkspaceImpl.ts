@@ -29,6 +29,7 @@
  */
 
 import * as Common from '../../core/common/common.js';
+import type * as Platform from '../../core/platform/platform.js';
 import type * as TextUtils from '../text_utils/text_utils.js';
 
 import type {UISourceCodeMetadata} from './UISourceCode.js';
@@ -39,44 +40,43 @@ export interface ProjectSearchConfig {
   ignoreCase(): boolean;
   isRegex(): boolean;
   queries(): string[];
-  filePathMatchesFileQuery(filePath: string): boolean;
+  filePathMatchesFileQuery(filePath: Platform.DevToolsPath.RawPathString|
+                           Platform.DevToolsPath.EncodedPathString|Platform.DevToolsPath.UrlString): boolean;
 }
 
-export abstract class Project {
-  abstract workspace(): WorkspaceImpl;
-  abstract id(): string;
-  abstract type(): string;
-  abstract isServiceProject(): boolean;
-  abstract displayName(): string;
-  abstract requestMetadata(uiSourceCode: UISourceCode): Promise<UISourceCodeMetadata|null>;
-  abstract requestFileContent(uiSourceCode: UISourceCode): Promise<TextUtils.ContentProvider.DeferredContent>;
-  abstract canSetFileContent(): boolean;
-  abstract setFileContent(uiSourceCode: UISourceCode, newContent: string, isBase64: boolean): Promise<void>;
-  abstract fullDisplayName(uiSourceCode: UISourceCode): string;
-  abstract mimeType(uiSourceCode: UISourceCode): string;
-  abstract canRename(): boolean;
+export interface Project {
+  workspace(): WorkspaceImpl;
+  id(): string;
+  type(): projectTypes;
+  isServiceProject(): boolean;
+  displayName(): string;
+  requestMetadata(uiSourceCode: UISourceCode): Promise<UISourceCodeMetadata|null>;
+  requestFileContent(uiSourceCode: UISourceCode): Promise<TextUtils.ContentProvider.DeferredContent>;
+  canSetFileContent(): boolean;
+  setFileContent(uiSourceCode: UISourceCode, newContent: string, isBase64: boolean): Promise<void>;
+  fullDisplayName(uiSourceCode: UISourceCode): string;
+  mimeType(uiSourceCode: UISourceCode): string;
+  canRename(): boolean;
   rename(
-      _uiSourceCode: UISourceCode, _newName: string,
-      _callback: (arg0: boolean, arg1?: string, arg2?: string, arg3?: Common.ResourceType.ResourceType) => void): void {
-  }
-  excludeFolder(_path: string): void {
-  }
-  abstract canExcludeFolder(path: string): boolean;
-  abstract createFile(path: string, name: string|null, content: string, isBase64?: boolean): Promise<UISourceCode|null>;
-  abstract canCreateFile(): boolean;
-  deleteFile(_uiSourceCode: UISourceCode): void {
-  }
-  remove(): void {
-  }
-  abstract searchInFileContent(uiSourceCode: UISourceCode, query: string, caseSensitive: boolean, isRegex: boolean):
+      uiSourceCode: UISourceCode, newName: Platform.DevToolsPath.RawPathString,
+      callback:
+          (arg0: boolean, arg1?: string, arg2?: Platform.DevToolsPath.UrlString,
+           arg3?: Common.ResourceType.ResourceType) => void): void;
+  excludeFolder(path: Platform.DevToolsPath.UrlString): void;
+  canExcludeFolder(path: Platform.DevToolsPath.EncodedPathString): boolean;
+  createFile(path: Platform.DevToolsPath.EncodedPathString, name: string|null, content: string, isBase64?: boolean):
+      Promise<UISourceCode|null>;
+  canCreateFile(): boolean;
+  deleteFile(uiSourceCode: UISourceCode): void;
+  remove(): void;
+  searchInFileContent(uiSourceCode: UISourceCode, query: string, caseSensitive: boolean, isRegex: boolean):
       Promise<TextUtils.ContentProvider.SearchMatch[]>;
-  abstract findFilesMatchingSearchRequest(
-      searchConfig: ProjectSearchConfig, filesMathingFileQuery: string[],
+  findFilesMatchingSearchRequest(
+      searchConfig: ProjectSearchConfig, filesMatchingFileQuery: Platform.DevToolsPath.UrlString[],
       progress: Common.Progress.Progress): Promise<string[]>;
-  indexContent(_progress: Common.Progress.Progress): void {
-  }
-  abstract uiSourceCodeForURL(url: string): UISourceCode|null;
-  abstract uiSourceCodes(): UISourceCode[];
+  indexContent(progress: Common.Progress.Progress): void;
+  uiSourceCodeForURL(url: Platform.DevToolsPath.UrlString): UISourceCode|null;
+  uiSourceCodes(): UISourceCode[];
 }
 
 // TODO(crbug.com/1167717): Make this a const enum again
@@ -90,17 +90,16 @@ export enum projectTypes {
   Service = 'service',
 }
 
-export class ProjectStore {
+export abstract class ProjectStore implements Project {
   private readonly workspaceInternal: WorkspaceImpl;
   private readonly idInternal: string;
   private readonly typeInternal: projectTypes;
   private readonly displayNameInternal: string;
-  private uiSourceCodesMap: Map<string, {
+  private uiSourceCodesMap: Map<Platform.DevToolsPath.UrlString, {
     uiSourceCode: UISourceCode,
     index: number,
   }>;
   private uiSourceCodesList: UISourceCode[];
-  private readonly project: Project;
 
   constructor(workspace: WorkspaceImpl, id: string, type: projectTypes, displayName: string) {
     this.workspaceInternal = workspace;
@@ -110,14 +109,13 @@ export class ProjectStore {
 
     this.uiSourceCodesMap = new Map();
     this.uiSourceCodesList = [];
-    this.project = (this as unknown as Project);
   }
 
   id(): string {
     return this.idInternal;
   }
 
-  type(): string {
+  type(): projectTypes {
     return this.typeInternal;
   }
 
@@ -129,8 +127,9 @@ export class ProjectStore {
     return this.workspaceInternal;
   }
 
-  createUISourceCode(url: string, contentType: Common.ResourceType.ResourceType): UISourceCode {
-    return new UISourceCode(this.project, url, contentType);
+  createUISourceCode(url: Platform.DevToolsPath.UrlString, contentType: Common.ResourceType.ResourceType):
+      UISourceCode {
+    return new UISourceCode(this, url, contentType);
   }
 
   addUISourceCode(uiSourceCode: UISourceCode): boolean {
@@ -144,7 +143,7 @@ export class ProjectStore {
     return true;
   }
 
-  removeUISourceCode(url: string): void {
+  removeUISourceCode(url: Platform.DevToolsPath.UrlString): void {
     const uiSourceCode = this.uiSourceCodeForURL(url);
     if (!uiSourceCode) {
       return;
@@ -166,12 +165,12 @@ export class ProjectStore {
   }
 
   removeProject(): void {
-    this.workspaceInternal.removeProject(this.project);
+    this.workspaceInternal.removeProject(this);
     this.uiSourceCodesMap = new Map();
     this.uiSourceCodesList = [];
   }
 
-  uiSourceCodeForURL(url: string): UISourceCode|null {
+  uiSourceCodeForURL(url: Platform.DevToolsPath.UrlString): UISourceCode|null {
     const entry = this.uiSourceCodesMap.get(url);
     return entry ? entry.uiSourceCode : null;
   }
@@ -182,7 +181,9 @@ export class ProjectStore {
 
   renameUISourceCode(uiSourceCode: UISourceCode, newName: string): void {
     const oldPath = uiSourceCode.url();
-    const newPath = uiSourceCode.parentURL() ? uiSourceCode.parentURL() + '/' + newName : newName;
+    const newPath = uiSourceCode.parentURL() ?
+        Common.ParsedURL.ParsedURL.urlFromParentUrlAndName(uiSourceCode.parentURL(), newName) :
+        Common.ParsedURL.ParsedURL.preEncodeSpecialCharactersInPath(newName) as Platform.DevToolsPath.UrlString;
     const value = this.uiSourceCodesMap.get(oldPath) as {
       uiSourceCode: UISourceCode,
       index: number,
@@ -190,6 +191,42 @@ export class ProjectStore {
     this.uiSourceCodesMap.set(newPath, value);
     this.uiSourceCodesMap.delete(oldPath);
   }
+
+  // No-op implementation for a handfull of interface methods.
+
+  rename(
+      _uiSourceCode: UISourceCode, _newName: string,
+      _callback:
+          (arg0: boolean, arg1?: string, arg2?: Platform.DevToolsPath.UrlString,
+           arg3?: Common.ResourceType.ResourceType) => void): void {
+  }
+  excludeFolder(_path: Platform.DevToolsPath.UrlString): void {
+  }
+  deleteFile(_uiSourceCode: UISourceCode): void {
+  }
+  remove(): void {
+  }
+  indexContent(_progress: Common.Progress.Progress): void {
+  }
+
+  abstract isServiceProject(): boolean;
+  abstract requestMetadata(uiSourceCode: UISourceCode): Promise<UISourceCodeMetadata|null>;
+  abstract requestFileContent(uiSourceCode: UISourceCode): Promise<TextUtils.ContentProvider.DeferredContent>;
+  abstract canSetFileContent(): boolean;
+  abstract setFileContent(uiSourceCode: UISourceCode, newContent: string, isBase64: boolean): Promise<void>;
+  abstract fullDisplayName(uiSourceCode: UISourceCode): string;
+  abstract mimeType(uiSourceCode: UISourceCode): string;
+  abstract canRename(): boolean;
+  abstract canExcludeFolder(path: Platform.DevToolsPath.EncodedPathString): boolean;
+  abstract createFile(
+      path: Platform.DevToolsPath.EncodedPathString, name: string|null, content: string,
+      isBase64?: boolean): Promise<UISourceCode|null>;
+  abstract canCreateFile(): boolean;
+  abstract searchInFileContent(uiSourceCode: UISourceCode, query: string, caseSensitive: boolean, isRegex: boolean):
+      Promise<TextUtils.ContentProvider.SearchMatch[]>;
+  abstract findFilesMatchingSearchRequest(
+      searchConfig: ProjectSearchConfig, filesMatchingFileQuery: Platform.DevToolsPath.UrlString[],
+      progress: Common.Progress.Progress): Promise<string[]>;
 }
 
 let workspaceInstance: WorkspaceImpl|undefined;
@@ -217,22 +254,47 @@ export class WorkspaceImpl extends Common.ObjectWrapper.ObjectWrapper<EventTypes
     workspaceInstance = undefined;
   }
 
-  uiSourceCode(projectId: string, url: string): UISourceCode|null {
+  uiSourceCode(projectId: string, url: Platform.DevToolsPath.UrlString): UISourceCode|null {
     const project = this.projectsInternal.get(projectId);
     return project ? project.uiSourceCodeForURL(url) : null;
   }
 
-  uiSourceCodeForURL(url: string): UISourceCode|null {
+  // This method explicitly awaits the UISourceCode if not yet
+  // available.
+  uiSourceCodeForURLPromise(url: Platform.DevToolsPath.UrlString, type?: projectTypes): Promise<UISourceCode> {
+    const uiSourceCode = this.uiSourceCodeForURL(url, type);
+    if (uiSourceCode) {
+      return Promise.resolve(uiSourceCode);
+    }
+    return new Promise(resolve => {
+      const descriptor = this.addEventListener(Events.UISourceCodeAdded, event => {
+        const uiSourceCode = event.data;
+        if (uiSourceCode.url() === url) {
+          if (!type || type === uiSourceCode.project().type()) {
+            this.removeEventListener(Events.UISourceCodeAdded, descriptor.listener);
+            resolve(uiSourceCode);
+          }
+        }
+      });
+    });
+  }
+
+  uiSourceCodeForURL(url: Platform.DevToolsPath.UrlString, type?: projectTypes): UISourceCode|null {
     for (const project of this.projectsInternal.values()) {
-      const uiSourceCode = project.uiSourceCodeForURL(url);
-      if (uiSourceCode) {
-        return uiSourceCode;
+      // For snippets, we may get two different UISourceCodes for the same url (one belonging to
+      // the file system project, one belonging to the network project). Allow selecting the UISourceCode
+      // for a specific project type.
+      if (!type || project.type() === type) {
+        const uiSourceCode = project.uiSourceCodeForURL(url);
+        if (uiSourceCode) {
+          return uiSourceCode;
+        }
       }
     }
     return null;
   }
 
-  uiSourceCodesForProjectType(type: string): UISourceCode[] {
+  uiSourceCodesForProjectType(type: projectTypes): UISourceCode[] {
     const result: UISourceCode[] = [];
     for (const project of this.projectsInternal.values()) {
       if (project.type() === type) {
@@ -299,7 +361,7 @@ export enum Events {
 }
 
 export interface UISourceCodeRenamedEvent {
-  oldURL: string;
+  oldURL: Platform.DevToolsPath.UrlString;
   uiSourceCode: UISourceCode;
 }
 

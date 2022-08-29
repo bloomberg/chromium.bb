@@ -4,6 +4,7 @@
 
 #include "ash/system/accessibility/floating_accessibility_detailed_controller.h"
 
+#include "ash/bubble/bubble_constants.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
@@ -73,18 +74,16 @@ void FloatingAccessibilityDetailedController::Show(
       Shell::GetPrimaryRootWindow(), kShellWindowId_SettingBubbleContainer);
   init_params.anchor_mode = TrayBubbleView::AnchorMode::kRect;
   init_params.anchor_rect = anchor_rect;
-  init_params.insets = gfx::Insets(0, kUnifiedMenuPadding, kUnifiedMenuPadding,
-                                   kUnifiedMenuPadding);
+  init_params.insets = gfx::Insets::TLBR(
+      0, kBubbleMenuPadding, kBubbleMenuPadding, kBubbleMenuPadding);
   init_params.close_on_deactivate = false;
-  init_params.corner_radius = kUnifiedTrayCornerRadius;
-  init_params.has_shadow = false;
   init_params.translucent = true;
 
   bubble_view_ = new DetailedBubbleView(init_params);
   bubble_view_->SetArrowWithoutResizing(alignment);
 
   detailed_view_ = bubble_view_->AddChildView(
-      std::make_unique<tray::AccessibilityDetailedView>(this));
+      std::make_unique<AccessibilityDetailedView>(this));
   bubble_view_->SetPreferredSize(
       gfx::Size(kTrayMenuWidth, kDetailedViewHeightDip));
   bubble_view_->SetFocusBehavior(ActionableView::FocusBehavior::ALWAYS);

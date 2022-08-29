@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/rand_util.h"
 #include "base/time/default_tick_clock.h"
+#include "base/time/time.h"
 #include "components/prefs/pref_service.h"
 #include "components/query_tiles/internal/stats.h"
 #include "components/query_tiles/internal/tile_config.h"
@@ -145,7 +146,7 @@ TileGroup* TileServiceSchedulerImpl::GetTileGroup() {
 
 std::unique_ptr<net::BackoffEntry> TileServiceSchedulerImpl::GetBackoff() {
   std::unique_ptr<net::BackoffEntry> result;
-  const base::ListValue* value = prefs_->GetList(kBackoffEntryKey);
+  const base::Value* value = prefs_->GetList(kBackoffEntryKey);
   if (value) {
     result = net::BackoffEntrySerializer::DeserializeFromValue(
         *value, backoff_policy_.get(), tick_clock_, clock_->Now());

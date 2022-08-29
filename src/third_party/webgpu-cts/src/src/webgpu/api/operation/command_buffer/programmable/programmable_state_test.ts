@@ -9,29 +9,47 @@ interface BindGroupIndices {
 }
 
 export class ProgrammableStateTest extends GPUTest {
-  private commonBindGroupLayout: GPUBindGroupLayout | undefined;
-  private encoder: GPUCommandEncoder | null = null;
+  private commonBindGroupLayouts: Map<string, GPUBindGroupLayout> = new Map();
 
-  get bindGroupLayout(): GPUBindGroupLayout {
-    if (!this.commonBindGroupLayout) {
-      this.commonBindGroupLayout = this.device.createBindGroupLayout({
-        entries: [
-          {
-            binding: 0,
-            visibility: GPUShaderStage.COMPUTE | GPUShaderStage.FRAGMENT,
-            buffer: { type: 'storage' },
-          },
-        ],
-      });
+  getBindGroupLayout(type: GPUBufferBindingType): GPUBindGroupLayout {
+    if (!this.commonBindGroupLayouts.has(type)) {
+      this.commonBindGroupLayouts.set(
+        type,
+        this.device.createBindGroupLayout({
+          entries: [
+            {
+              binding: 0,
+              visibility: GPUShaderStage.COMPUTE | GPUShaderStage.FRAGMENT,
+              buffer: { type },
+            },
+          ],
+        })
+      );
     }
-    return this.commonBindGroupLayout;
+    return this.commonBindGroupLayouts.get(type)!;
   }
 
-  createBindGroup(buffer: GPUBuffer): GPUBindGroup {
+  getBindGroupLayouts(indices: BindGroupIndices): GPUBindGroupLayout[] {
+    const bindGroupLayouts: GPUBindGroupLayout[] = [];
+    bindGroupLayouts[indices.a] = this.getBindGroupLayout('read-only-storage');
+    bindGroupLayouts[indices.b] = this.getBindGroupLayout('read-only-storage');
+    bindGroupLayouts[indices.out] = this.getBindGroupLayout('storage');
+    return bindGroupLayouts;
+  }
+
+  createBindGroup(buffer: GPUBuffer, type: GPUBufferBindingType): GPUBindGroup {
     return this.device.createBindGroup({
-      layout: this.bindGroupLayout,
+      layout: this.getBindGroupLayout(type),
       entries: [{ binding: 0, resource: { buffer } }],
     });
+  }
+
+  setBindGroup(
+    encoder: GPUBindingCommandsMixin,
+    index: number,
+    factory: (index: number) => GPUBindGroup
+  ) {
+    encoder.setBindGroup(index, factory(index));
   }
 
   // Create a compute pipeline that performs an operation on data from two bind groups,
@@ -43,15 +61,15 @@ export class ProgrammableStateTest extends GPUTest {
   ): GPUComputePipeline | GPURenderPipeline {
     switch (encoderType) {
       case 'compute pass': {
-        const wgsl = `[[block]] struct Data {
-            value : i32;
+        const wgsl = `struct Data {
+            value : i32
           };
-    
-          [[group(${groups.a}), binding(0)]] var<storage> a : Data;
-          [[group(${groups.b}), binding(0)]] var<storage> b : Data;
-          [[group(${groups.out}), binding(0)]] var<storage, read_write> out : Data;
-    
-          [[stage(compute), workgroup_size(1)]] fn main() {
+
+          @group(${groups.a}) @binding(0) var<storage> a : Data;
+          @group(${groups.b}) @binding(0) var<storage> b : Data;
+          @group(${groups.out}) @binding(0) var<storage, read_write> out : Data;
+
+          @compute @workgroup_size(1) fn main() {
             out.value = ${algorithm};
             return;
           }
@@ -59,7 +77,7 @@ export class ProgrammableStateTest extends GPUTest {
 
         return this.device.createComputePipeline({
           layout: this.device.createPipelineLayout({
-            bindGroupLayouts: [this.bindGroupLayout, this.bindGroupLayout, this.bindGroupLayout],
+            bindGroupLayouts: this.getBindGroupLayouts(groups),
           }),
           compute: {
             module: this.device.createShaderModule({
@@ -73,21 +91,21 @@ export class ProgrammableStateTest extends GPUTest {
       case 'render bundle': {
         const wgslShaders = {
           vertex: `
-            [[stage(vertex)]] fn vert_main() -> [[builtin(position)]] vec4<f32> {
+            @vertex fn vert_main() -> @builtin(position) vec4<f32> {
               return vec4<f32>(0.5, 0.5, 0.0, 1.0);
             }
           `,
 
           fragment: `
-            [[block]] struct Data {
-              value : i32;
+            struct Data {
+              value : i32
             };
-    
-            [[group(${groups.a}), binding(0)]] var<storage> a : Data;
-            [[group(${groups.b}), binding(0)]] var<storage> b : Data;
-            [[group(${groups.out}), binding(0)]] var<storage, read_write> out : Data;
-    
-            [[stage(fragment)]] fn frag_main() -> [[location(0)]] vec4<f32> {
+
+            @group(${groups.a}) @binding(0) var<storage> a : Data;
+            @group(${groups.b}) @binding(0) var<storage> b : Data;
+            @group(${groups.out}) @binding(0) var<storage, read_write> out : Data;
+
+            @fragment fn frag_main() -> @location(0) vec4<f32> {
               out.value = ${algorithm};
               return vec4<f32>(1.0, 0.0, 0.0, 1.0);
             }
@@ -96,7 +114,7 @@ export class ProgrammableStateTest extends GPUTest {
 
         return this.device.createRenderPipeline({
           layout: this.device.createPipelineLayout({
-            bindGroupLayouts: [this.bindGroupLayout, this.bindGroupLayout, this.bindGroupLayout],
+            bindGroupLayouts: this.getBindGroupLayouts(groups),
           }),
           vertex: {
             module: this.device.createShaderModule({
@@ -119,7 +137,7 @@ export class ProgrammableStateTest extends GPUTest {
     }
   }
 
-  setPipeline(pass: GPUProgrammablePassEncoder, pipeline: GPUComputePipeline | GPURenderPipeline) {
+  setPipeline(pass: GPUBindingCommandsMixin, pipeline: GPUComputePipeline | GPURenderPipeline) {
     if (pass instanceof GPUComputePassEncoder) {
       pass.setPipeline(pipeline as GPUComputePipeline);
     } else if (pass instanceof GPURenderPassEncoder || pass instanceof GPURenderBundleEncoder) {
@@ -127,9 +145,9 @@ export class ProgrammableStateTest extends GPUTest {
     }
   }
 
-  dispatchOrDraw(pass: GPUProgrammablePassEncoder) {
+  dispatchOrDraw(pass: GPUBindingCommandsMixin) {
     if (pass instanceof GPUComputePassEncoder) {
-      pass.dispatch(1);
+      pass.dispatchWorkgroups(1);
     } else if (pass instanceof GPURenderPassEncoder) {
       pass.draw(1);
     } else if (pass instanceof GPURenderBundleEncoder) {

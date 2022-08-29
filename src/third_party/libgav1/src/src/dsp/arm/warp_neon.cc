@@ -147,14 +147,8 @@ void Warp_NEON(const void* LIBGAV1_RESTRICT const source,
     do {
       const int src_x = (start_x + 4) << subsampling_x;
       const int src_y = (start_y + 4) << subsampling_y;
-      const int dst_x =
-          src_x * warp_params[2] + src_y * warp_params[3] + warp_params[0];
-      const int dst_y =
-          src_x * warp_params[4] + src_y * warp_params[5] + warp_params[1];
-      const int x4 = dst_x >> subsampling_x;
-      const int y4 = dst_y >> subsampling_y;
-      const int ix4 = x4 >> kWarpedModelPrecisionBits;
-      const int iy4 = y4 >> kWarpedModelPrecisionBits;
+      const WarpFilterParams filter_params = GetWarpFilterParams(
+          src_x, src_y, subsampling_x, subsampling_y, warp_params);
       // A prediction block may fall outside the frame's boundaries. If a
       // prediction block is calculated using only samples outside the frame's
       // boundary, the filtering can be simplified. We can divide the plane
@@ -207,22 +201,24 @@ void Warp_NEON(const void* LIBGAV1_RESTRICT const source,
       // border index (source_width - 1 or 0, respectively). Then for each x,
       // the inner for loop of the horizontal filter is reduced to multiplying
       // the border pixel by the sum of the filter coefficients.
-      if (ix4 - 7 >= source_width - 1 || ix4 + 7 <= 0) {
+      if (filter_params.ix4 - 7 >= source_width - 1 ||
+          filter_params.ix4 + 7 <= 0) {
         // Regions 1 and 2.
         // Points to the left or right border of the first row of |src|.
         const uint8_t* first_row_border =
-            (ix4 + 7 <= 0) ? src : src + source_width - 1;
+            (filter_params.ix4 + 7 <= 0) ? src : src + source_width - 1;
         // In general, for y in [-7, 8), the row number iy4 + y is clipped:
         //   const int row = Clip3(iy4 + y, 0, source_height - 1);
         // In two special cases, iy4 + y is clipped to either 0 or
         // source_height - 1 for all y. In the rest of the cases, iy4 + y is
         // bounded and we can avoid clipping iy4 + y by relying on a reference
         // frame's boundary extension on the top and bottom.
-        if (iy4 - 7 >= source_height - 1 || iy4 + 7 <= 0) {
+        if (filter_params.iy4 - 7 >= source_height - 1 ||
+            filter_params.iy4 + 7 <= 0) {
           // Region 1.
           // Every sample used to calculate the prediction block has the same
           // value. So the whole prediction block has the same value.
-          const int row = (iy4 + 7 <= 0) ? 0 : source_height - 1;
+          const int row = (filter_params.iy4 + 7 <= 0) ? 0 : source_height - 1;
           const uint8_t row_border_pixel =
               first_row_border[row * source_stride];
 
@@ -256,15 +252,15 @@ void Warp_NEON(const void* LIBGAV1_RESTRICT const source,
           // We may over-read up to 13 pixels above the top source row, or up
           // to 13 pixels below the bottom source row. This is proved in
           // warp.cc.
-          const int row = iy4 + y;
+          const int row = filter_params.iy4 + y;
           int sum = first_row_border[row * source_stride];
           sum <<= (kFilterBits - kInterRoundBitsHorizontal);
           intermediate_result_column[y + 7] = sum;
         }
         // Vertical filter.
         DestType* dst_row = dst + start_x - block_start_x;
-        int sy4 =
-            (y4 & ((1 << kWarpedModelPrecisionBits) - 1)) - MultiplyBy4(delta);
+        int sy4 = (filter_params.y4 & ((1 << kWarpedModelPrecisionBits) - 1)) -
+                  MultiplyBy4(delta);
         for (int y = 0; y < 8; ++y) {
           int sy = sy4 - MultiplyBy4(gamma);
 #if defined(__aarch64__)
@@ -341,10 +337,11 @@ void Warp_NEON(const void* LIBGAV1_RESTRICT const source,
       // source_height - 1 for all y. In the rest of the cases, iy4 + y is
       // bounded and we can avoid clipping iy4 + y by relying on a reference
       // frame's boundary extension on the top and bottom.
-      if (iy4 - 7 >= source_height - 1 || iy4 + 7 <= 0) {
+      if (filter_params.iy4 - 7 >= source_height - 1 ||
+          filter_params.iy4 + 7 <= 0) {
         // Region 3.
         // Horizontal filter.
-        const int row = (iy4 + 7 <= 0) ? 0 : source_height - 1;
+        const int row = (filter_params.iy4 + 7 <= 0) ? 0 : source_height - 1;
         const uint8_t* const src_row = src + row * source_stride;
         // Read 15 samples from &src_row[ix4 - 7]. The 16th sample is also
         // read but is ignored.
@@ -354,11 +351,12 @@ void Warp_NEON(const void* LIBGAV1_RESTRICT const source,
         // has left and right borders of at least 13 bytes that extend the
         // frame boundary pixels. We also assume there is at least one extra
         // padding byte after the right border of the last source row.
-        const uint8x16_t src_row_v = vld1q_u8(&src_row[ix4 - 7]);
+        const uint8x16_t src_row_v = vld1q_u8(&src_row[filter_params.ix4 - 7]);
         // Convert src_row_v to int8 (subtract 128).
         const int8x16_t src_row_centered =
             vreinterpretq_s8_u8(vsubq_u8(src_row_v, vdupq_n_u8(128)));
-        int sx4 = (x4 & ((1 << kWarpedModelPrecisionBits) - 1)) - beta * 7;
+        int sx4 = (filter_params.x4 & ((1 << kWarpedModelPrecisionBits) - 1)) -
+                  beta * 7;
         for (int y = -7; y < 8; ++y) {
           HorizontalFilter(sx4, alpha, src_row_centered,
                            intermediate_result[y + 7]);
@@ -367,12 +365,13 @@ void Warp_NEON(const void* LIBGAV1_RESTRICT const source,
       } else {
         // Region 4.
         // Horizontal filter.
-        int sx4 = (x4 & ((1 << kWarpedModelPrecisionBits) - 1)) - beta * 7;
+        int sx4 = (filter_params.x4 & ((1 << kWarpedModelPrecisionBits) - 1)) -
+                  beta * 7;
         for (int y = -7; y < 8; ++y) {
           // We may over-read up to 13 pixels above the top source row, or up
           // to 13 pixels below the bottom source row. This is proved in
           // warp.cc.
-          const int row = iy4 + y;
+          const int row = filter_params.iy4 + y;
           const uint8_t* const src_row = src + row * source_stride;
           // Read 15 samples from &src_row[ix4 - 7]. The 16th sample is also
           // read but is ignored.
@@ -382,7 +381,8 @@ void Warp_NEON(const void* LIBGAV1_RESTRICT const source,
           // has left and right borders of at least 13 bytes that extend the
           // frame boundary pixels. We also assume there is at least one extra
           // padding byte after the right border of the last source row.
-          const uint8x16_t src_row_v = vld1q_u8(&src_row[ix4 - 7]);
+          const uint8x16_t src_row_v =
+              vld1q_u8(&src_row[filter_params.ix4 - 7]);
           // Convert src_row_v to int8 (subtract 128).
           const int8x16_t src_row_centered =
               vreinterpretq_s8_u8(vsubq_u8(src_row_v, vdupq_n_u8(128)));
@@ -395,8 +395,8 @@ void Warp_NEON(const void* LIBGAV1_RESTRICT const source,
       // Regions 3 and 4.
       // Vertical filter.
       DestType* dst_row = dst + start_x - block_start_x;
-      int sy4 =
-          (y4 & ((1 << kWarpedModelPrecisionBits) - 1)) - MultiplyBy4(delta);
+      int sy4 = (filter_params.y4 & ((1 << kWarpedModelPrecisionBits) - 1)) -
+                MultiplyBy4(delta);
       for (int y = 0; y < 8; ++y) {
         int sy = sy4 - MultiplyBy4(gamma);
         int16x8_t filter[8];
@@ -574,14 +574,8 @@ void Warp_NEON(const void* LIBGAV1_RESTRICT const source,
     do {
       const int src_x = (start_x + 4) << subsampling_x;
       const int src_y = (start_y + 4) << subsampling_y;
-      const int dst_x =
-          src_x * warp_params[2] + src_y * warp_params[3] + warp_params[0];
-      const int dst_y =
-          src_x * warp_params[4] + src_y * warp_params[5] + warp_params[1];
-      const int x4 = dst_x >> subsampling_x;
-      const int y4 = dst_y >> subsampling_y;
-      const int ix4 = x4 >> kWarpedModelPrecisionBits;
-      const int iy4 = y4 >> kWarpedModelPrecisionBits;
+      const WarpFilterParams filter_params = GetWarpFilterParams(
+          src_x, src_y, subsampling_x, subsampling_y, warp_params);
       // A prediction block may fall outside the frame's boundaries. If a
       // prediction block is calculated using only samples outside the frame's
       // boundary, the filtering can be simplified. We can divide the plane
@@ -634,22 +628,24 @@ void Warp_NEON(const void* LIBGAV1_RESTRICT const source,
       // border index (source_width - 1 or 0, respectively). Then for each x,
       // the inner for loop of the horizontal filter is reduced to multiplying
       // the border pixel by the sum of the filter coefficients.
-      if (ix4 - 7 >= source_width - 1 || ix4 + 7 <= 0) {
+      if (filter_params.ix4 - 7 >= source_width - 1 ||
+          filter_params.ix4 + 7 <= 0) {
         // Regions 1 and 2.
         // Points to the left or right border of the first row of |src|.
         const uint16_t* first_row_border =
-            (ix4 + 7 <= 0) ? src : src + source_width - 1;
+            (filter_params.ix4 + 7 <= 0) ? src : src + source_width - 1;
         // In general, for y in [-7, 8), the row number iy4 + y is clipped:
         //   const int row = Clip3(iy4 + y, 0, source_height - 1);
         // In two special cases, iy4 + y is clipped to either 0 or
         // source_height - 1 for all y. In the rest of the cases, iy4 + y is
         // bounded and we can avoid clipping iy4 + y by relying on a reference
         // frame's boundary extension on the top and bottom.
-        if (iy4 - 7 >= source_height - 1 || iy4 + 7 <= 0) {
+        if (filter_params.iy4 - 7 >= source_height - 1 ||
+            filter_params.iy4 + 7 <= 0) {
           // Region 1.
           // Every sample used to calculate the prediction block has the same
           // value. So the whole prediction block has the same value.
-          const int row = (iy4 + 7 <= 0) ? 0 : source_height - 1;
+          const int row = (filter_params.iy4 + 7 <= 0) ? 0 : source_height - 1;
           const uint16_t row_border_pixel = first_row_border[row * src_stride];
 
           DestType* dst_row = dst + start_x - block_start_x;
@@ -684,15 +680,15 @@ void Warp_NEON(const void* LIBGAV1_RESTRICT const source,
           // We may over-read up to 13 pixels above the top source row, or up
           // to 13 pixels below the bottom source row. This is proved in
           // warp.cc.
-          const int row = iy4 + y;
+          const int row = filter_params.iy4 + y;
           int sum = first_row_border[row * src_stride];
           sum <<= (kFilterBits - kInterRoundBitsHorizontal);
           intermediate_result_column[y + 7] = sum;
         }
         // Vertical filter.
         DestType* dst_row = dst + start_x - block_start_x;
-        int sy4 =
-            (y4 & ((1 << kWarpedModelPrecisionBits) - 1)) - MultiplyBy4(delta);
+        int sy4 = (filter_params.y4 & ((1 << kWarpedModelPrecisionBits) - 1)) -
+                  MultiplyBy4(delta);
         for (int y = 0; y < 8; ++y) {
           int sy = sy4 - MultiplyBy4(gamma);
 #if defined(__aarch64__)
@@ -782,10 +778,11 @@ void Warp_NEON(const void* LIBGAV1_RESTRICT const source,
       // source_height - 1 for all y. In the rest of the cases, iy4 + y is
       // bounded and we can avoid clipping iy4 + y by relying on a reference
       // frame's boundary extension on the top and bottom.
-      if (iy4 - 7 >= source_height - 1 || iy4 + 7 <= 0) {
+      if (filter_params.iy4 - 7 >= source_height - 1 ||
+          filter_params.iy4 + 7 <= 0) {
         // Region 3.
         // Horizontal filter.
-        const int row = (iy4 + 7 <= 0) ? 0 : source_height - 1;
+        const int row = (filter_params.iy4 + 7 <= 0) ? 0 : source_height - 1;
         const uint16_t* const src_row = src + row * src_stride;
         // Read 15 samples from &src_row[ix4 - 7]. The 16th sample is also
         // read but is ignored.
@@ -795,8 +792,10 @@ void Warp_NEON(const void* LIBGAV1_RESTRICT const source,
         // has left and right borders of at least 13 pixels that extend the
         // frame boundary pixels. We also assume there is at least one extra
         // padding pixel after the right border of the last source row.
-        const uint16x8x2_t src_row_v = LoadSrcRow(&src_row[ix4 - 7]);
-        int sx4 = (x4 & ((1 << kWarpedModelPrecisionBits) - 1)) - beta * 7;
+        const uint16x8x2_t src_row_v =
+            LoadSrcRow(&src_row[filter_params.ix4 - 7]);
+        int sx4 = (filter_params.x4 & ((1 << kWarpedModelPrecisionBits) - 1)) -
+                  beta * 7;
         for (int y = -7; y < 8; ++y) {
           HorizontalFilter(sx4, alpha, src_row_v, intermediate_result[y + 7]);
           sx4 += beta;
@@ -804,12 +803,13 @@ void Warp_NEON(const void* LIBGAV1_RESTRICT const source,
       } else {
         // Region 4.
         // Horizontal filter.
-        int sx4 = (x4 & ((1 << kWarpedModelPrecisionBits) - 1)) - beta * 7;
+        int sx4 = (filter_params.x4 & ((1 << kWarpedModelPrecisionBits) - 1)) -
+                  beta * 7;
         for (int y = -7; y < 8; ++y) {
           // We may over-read up to 13 pixels above the top source row, or up
           // to 13 pixels below the bottom source row. This is proved in
           // warp.cc.
-          const int row = iy4 + y;
+          const int row = filter_params.iy4 + y;
           const uint16_t* const src_row = src + row * src_stride;
           // Read 15 samples from &src_row[ix4 - 7]. The 16th sample is also
           // read but is ignored.
@@ -819,7 +819,8 @@ void Warp_NEON(const void* LIBGAV1_RESTRICT const source,
           // frame has left and right borders of at least 13 pixels that extend
           // the frame boundary pixels. We also assume there is at least one
           // extra padding pixel after the right border of the last source row.
-          const uint16x8x2_t src_row_v = LoadSrcRow(&src_row[ix4 - 7]);
+          const uint16x8x2_t src_row_v =
+              LoadSrcRow(&src_row[filter_params.ix4 - 7]);
           HorizontalFilter(sx4, alpha, src_row_v, intermediate_result[y + 7]);
           sx4 += beta;
         }
@@ -828,8 +829,8 @@ void Warp_NEON(const void* LIBGAV1_RESTRICT const source,
       // Regions 3 and 4.
       // Vertical filter.
       DestType* dst_row = dst + start_x - block_start_x;
-      int sy4 =
-          (y4 & ((1 << kWarpedModelPrecisionBits) - 1)) - MultiplyBy4(delta);
+      int sy4 = (filter_params.y4 & ((1 << kWarpedModelPrecisionBits) - 1)) -
+                MultiplyBy4(delta);
       for (int y = 0; y < 8; ++y) {
         int sy = sy4 - MultiplyBy4(gamma);
         int16x8_t filter[8];

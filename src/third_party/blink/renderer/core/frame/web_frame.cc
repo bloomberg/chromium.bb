@@ -23,7 +23,6 @@
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 
 namespace blink {
@@ -99,6 +98,12 @@ WebFrame* WebFrame::TraverseNext() const {
   if (Frame* frame = ToCoreFrame(*this))
     return FromCoreFrame(frame->Tree().TraverseNext());
   return nullptr;
+}
+
+bool WebFrame::IsOutermostMainFrame() const {
+  Frame* core_frame = ToCoreFrame(*this);
+  CHECK(core_frame);
+  return core_frame->IsOutermostMainFrame();
 }
 
 WebFrame* WebFrame::FromFrameOwnerElement(const WebNode& web_node) {

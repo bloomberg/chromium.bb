@@ -242,6 +242,8 @@ bool LayoutImage::ForegroundIsKnownToBeOpaqueInRect(
     const PhysicalRect& local_rect,
     unsigned) const {
   NOT_DESTROYED();
+  if (ChildPaintBlockedByDisplayLock())
+    return false;
   if (!image_resource_->HasImage() || image_resource_->ErrorOccurred())
     return false;
   ImageResourceContent* image_content = image_resource_->CachedImage();
@@ -280,10 +282,7 @@ bool LayoutImage::ComputeBackgroundIsKnownToBeObscured() const {
   if (!StyleRef().HasBackground())
     return false;
 
-  PhysicalRect painted_extent;
-  if (!GetBackgroundPaintedExtent(painted_extent))
-    return false;
-  return ForegroundIsKnownToBeOpaqueInRect(painted_extent, 0);
+  return ForegroundIsKnownToBeOpaqueInRect(BackgroundPaintedExtent(), 0);
 }
 
 LayoutUnit LayoutImage::MinimumReplacedHeight() const {
@@ -357,6 +356,17 @@ bool LayoutImage::OverrideIntrinsicSizingInfo(
   return true;
 }
 
+bool LayoutImage::CanApplyObjectViewBox() const {
+  auto* svg_image = EmbeddedSVGImage();
+  if (!svg_image)
+    return true;
+
+  // Only apply object-view-box if the image has both intrinsic width/height.
+  IntrinsicSizingInfo info;
+  svg_image->GetIntrinsicSizingInfo(info);
+  return info.has_width && info.has_height;
+}
+
 void LayoutImage::ComputeIntrinsicSizingInfo(
     IntrinsicSizingInfo& intrinsic_sizing_info) const {
   NOT_DESTROYED();
@@ -365,9 +375,19 @@ void LayoutImage::ComputeIntrinsicSizingInfo(
     if (SVGImage* svg_image = EmbeddedSVGImage()) {
       svg_image->GetIntrinsicSizingInfo(intrinsic_sizing_info);
 
+      // Scale for the element's effective zoom (which includes scaling for
+      // device scale) is already applied when computing the view box. If the
+      // element has no view box then it needs to be explicitly applied here.
+      if (auto view_box_size = ComputeObjectViewBoxSizeForIntrinsicSizing()) {
+        DCHECK(intrinsic_sizing_info.has_width);
+        DCHECK(intrinsic_sizing_info.has_height);
+        intrinsic_sizing_info.size = *view_box_size;
+      } else {
+        intrinsic_sizing_info.size.Scale(StyleRef().EffectiveZoom());
+      }
+
       // Handle zoom & vertical writing modes here, as the embedded SVG document
       // doesn't know about them.
-      intrinsic_sizing_info.size.Scale(StyleRef().EffectiveZoom());
       if (StyleRef().GetObjectFit() != EObjectFit::kScaleDown)
         intrinsic_sizing_info.size.Scale(ImageDevicePixelRatio());
 

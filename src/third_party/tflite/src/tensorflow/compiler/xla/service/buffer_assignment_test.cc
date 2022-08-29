@@ -44,7 +44,6 @@ limitations under the License.
 #include "tensorflow/compiler/xla/types.h"
 #include "tensorflow/compiler/xla/xla_data.pb.h"
 #include "tensorflow/core/lib/core/status_test_util.h"
-#include "tensorflow/core/platform/macros.h"
 
 namespace xla {
 namespace {
@@ -75,7 +74,8 @@ class InstructionListVisitor : public DfsHloVisitorWithDefault {
   // The full set of instructions found (may be duplicates, e.g., kParameter).
   std::vector<const HloInstruction*> instructions_;
 
-  TF_DISALLOW_COPY_AND_ASSIGN(InstructionListVisitor);
+  InstructionListVisitor(const InstructionListVisitor&) = delete;
+  InstructionListVisitor& operator=(const InstructionListVisitor&) = delete;
 };
 
 const std::vector<const HloInstruction*> GetInstructions(HloInstruction* root) {
@@ -121,7 +121,10 @@ class BufferAssignmentTest : public HloTestBase {
 
   std::unique_ptr<BufferAssignment> RunBufferAssignmentNoBuffersReuseForAdd(
       HloModule* module, int64_t alignment = 1) {
-    absl::flat_hash_set<HloOpcode> must_not_live_out = {HloOpcode::kAdd};
+    auto must_not_live_out = [](const HloInstruction* instruction,
+                                const ShapeIndex&) {
+      return instruction->opcode() == HloOpcode::kAdd;
+    };
 
     return BufferAssigner::Run(
                module, absl::make_unique<DependencyHloOrdering>(module),
@@ -166,13 +169,14 @@ class BufferAssignmentTest : public HloTestBase {
                [alignment](LogicalBuffer::Color) { return alignment; },
                /*allocate_buffers_for_constants=*/true,
                BufferAssigner::DefaultColorer(),
-               /*must_not_live_out=*/{},
+               /*must_not_live_out=*/absl::nullopt,
                /*can_share_buffer=*/nullptr, std::move(preset_assignments))
         .ConsumeValueOrDie();
   }
 
   // Builds an x+1.0 computation to use in a Map.
-  std::unique_ptr<HloComputation> BuildMapComputationPlus1(const string& name) {
+  std::unique_ptr<HloComputation> BuildMapComputationPlus1(
+      const std::string& name) {
     auto builder = HloComputation::Builder(name);
     auto param =
         builder.AddInstruction(HloInstruction::CreateParameter(0, r0f32_, "x"));
@@ -183,7 +187,8 @@ class BufferAssignmentTest : public HloTestBase {
     return builder.Build();
   }
 
-  std::unique_ptr<HloComputation> BuildReduceComputation(const string& name) {
+  std::unique_ptr<HloComputation> BuildReduceComputation(
+      const std::string& name) {
     auto builder = HloComputation::Builder(name);
     auto param =
         builder.AddInstruction(HloInstruction::CreateParameter(0, r0f32_, "x"));
@@ -202,7 +207,7 @@ class BufferAssignmentTest : public HloTestBase {
   //   param[(s32,f32[4])] --- get-tuple-element[0] --- less-than
   //
   std::unique_ptr<HloComputation> BuildWhileConditionComputation(
-      const string& name) {
+      const std::string& name) {
     auto builder = HloComputation::Builder(name);
     auto const4 = builder.AddInstruction(
         HloInstruction::CreateConstant(LiteralUtil::CreateR0<int>(4)));
@@ -228,7 +233,7 @@ class BufferAssignmentTest : public HloTestBase {
   //   const1[s32] -----------------------------------------/
   //
   std::unique_ptr<HloComputation> BuildWhileBodyComputation(
-      const string& name) {
+      const std::string& name) {
     auto builder = HloComputation::Builder(name);
     auto const1 = builder.AddInstruction(
         HloInstruction::CreateConstant(LiteralUtil::CreateR0<int>(1)));
@@ -249,7 +254,7 @@ class BufferAssignmentTest : public HloTestBase {
   }
 
   std::unique_ptr<HloComputation> BuildR0F32UnaryOpComputation(
-      HloOpcode opcode, const string& name) {
+      HloOpcode opcode, const std::string& name) {
     auto builder = HloComputation::Builder(name);
     auto param =
         builder.AddInstruction(HloInstruction::CreateParameter(0, r0f32_, "x"));
@@ -1750,47 +1755,6 @@ TEST_F(BufferAssignmentTest, BitcastAsOutput) {
             GetTopLevelAllocation(*assignment, bitcast));
 }
 
-TEST_F(BufferAssignmentTest, AmbiguousBufferAsOutput) {
-  // Test a computation with an output that has an ambiguous points-to set.
-  // This is constructed using a select among tuple shapes.
-  auto builder = HloComputation::Builder(TestName());
-  auto tuple_shape =
-      ShapeUtil::MakeTupleShape({ShapeUtil::MakeShape(PRED, {1, 2, 3, 4})});
-
-  auto tuple_param0 = builder.AddInstruction(
-      HloInstruction::CreateParameter(0, tuple_shape, "param0"));
-  auto tuple_param1 = builder.AddInstruction(
-      HloInstruction::CreateParameter(1, tuple_shape, "param1"));
-  auto pred_param = builder.AddInstruction(HloInstruction::CreateParameter(
-      2, ShapeUtil::MakeShape(PRED, {}), "param1"));
-  auto select = builder.AddInstruction(
-      HloInstruction::CreateTernary(tuple_shape, HloOpcode::kTupleSelect,
-                                    pred_param, tuple_param0, tuple_param1));
-
-  auto module = CreateNewVerifiedModule();
-  module->AddEntryComputation(builder.Build());
-  auto assignment = RunBufferAssignment(module.get());
-
-  // Select shallow copies one of its operands so it defines its own top-level
-  // buffer and receives its own allocation.
-  auto select_alloc = GetTopLevelAllocation(*assignment, select);
-  EXPECT_EQ(1, select_alloc.assigned_buffers().size());
-  EXPECT_EQ(select,
-            select_alloc.assigned_buffers().begin()->first->instruction());
-
-  // The buffer for the tuple element of the select is forwarded from one its
-  // operands which cannot be determined statically. Therefore its slices
-  // should include the slices of both of the elements in the parameters.
-  auto element_slices = assignment->GetAllSlices(select, /*index=*/{0});
-  EXPECT_EQ(2, element_slices.size());
-  EXPECT_THAT(element_slices,
-              UnorderedElementsAre(
-                  assignment->GetUniqueSlice(tuple_param0, /*index=*/{0})
-                      .ConsumeValueOrDie(),
-                  assignment->GetUniqueSlice(tuple_param1, /*index=*/{0})
-                      .ConsumeValueOrDie()));
-}
-
 // TODO(b/34669761): Remove this test when buffers are allowed to share
 // allocations.
 TEST_F(BufferAssignmentTest, TupleBufferNotReused) {
@@ -2120,7 +2084,7 @@ ENTRY main {
 class WhileBufferAssignmentTest : public HloTestBase {
  protected:
   std::unique_ptr<HloComputation> BuildWhileConditionComputation(
-      const string& name) {
+      const std::string& name) {
     auto builder = HloComputation::Builder(name);
     builder.AddInstruction(
         HloInstruction::CreateParameter(0, loop_state_shape_, "loop_state"));
@@ -2134,7 +2098,7 @@ class WhileBufferAssignmentTest : public HloTestBase {
   }
 
   std::unique_ptr<HloComputation> BuildWhileBodyComputation(
-      const string& name) {
+      const std::string& name) {
     auto builder = HloComputation::Builder(name);
     auto loop_state = builder.AddInstruction(
         HloInstruction::CreateParameter(0, loop_state_shape_, "loop_state"));
@@ -2437,7 +2401,7 @@ TEST_F(WhileBufferAssignmentTest, ColocatedBuffers) {
       HloInstruction::CreateWhile(r0s32, cond1, body1, while0));
 
   auto zero = builder.AddInstruction(
-      HloInstruction::CreateConstant(LiteralUtil::CreateR0<int32>(0)));
+      HloInstruction::CreateConstant(LiteralUtil::CreateR0<int32_t>(0)));
   auto add = builder.AddInstruction(
       HloInstruction::CreateBinary(r0s32, HloOpcode::kAdd, zero, zero));
   auto cond2 = module->AddEmbeddedComputation(build_cond());

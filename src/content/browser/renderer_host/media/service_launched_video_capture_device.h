@@ -37,6 +37,7 @@ class ServiceLaunchedVideoCaptureDevice : public LaunchedVideoCaptureDevice {
   void MaybeSuspendDevice() override;
   void ResumeDevice() override;
   void Crop(const base::Token& crop_id,
+            uint32_t crop_version,
             base::OnceCallback<void(media::mojom::CropRequestResult)> callback)
       override;
   void RequestRefreshFrame() override;
@@ -44,8 +45,7 @@ class ServiceLaunchedVideoCaptureDevice : public LaunchedVideoCaptureDevice {
   void SetDesktopCaptureWindowIdAsync(gfx::NativeViewId window_id,
                                       base::OnceClosure done_cb) override;
 
-  void OnUtilizationReport(int frame_feedback_id,
-                           media::VideoCaptureFeedback feedback) override;
+  void OnUtilizationReport(media::VideoCaptureFeedback feedback) override;
 
  private:
   void OnLostConnectionToSourceOrSubscription();

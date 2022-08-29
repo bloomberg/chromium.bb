@@ -22,6 +22,7 @@
 #include "perfetto/trace_processor/trace_blob.h"
 #include "src/trace_processor/importers/additional_modules.h"
 #include "src/trace_processor/importers/common/args_tracker.h"
+#include "src/trace_processor/importers/common/args_translation_table.h"
 #include "src/trace_processor/importers/common/clock_tracker.h"
 #include "src/trace_processor/importers/common/event_tracker.h"
 #include "src/trace_processor/importers/common/flow_tracker.h"
@@ -217,19 +218,6 @@ class MockSliceTracker : public SliceTracker {
                                        std::function<SliceId()> inserter));
 };
 
-class MockFlowTracker : public FlowTracker {
- public:
-  MockFlowTracker(TraceProcessorContext* context) : FlowTracker(context) {}
-
-  MOCK_METHOD2(Begin, void(TrackId track_id, FlowId flow_id));
-  MOCK_METHOD2(Step, void(TrackId track_id, FlowId flow_id));
-  MOCK_METHOD4(End,
-               void(TrackId track_id,
-                    FlowId flow_id,
-                    bool bind_enclosing,
-                    bool close_flow));
-};
-
 class ProtoTraceParserTest : public ::testing::Test {
  public:
   ProtoTraceParserTest() {
@@ -240,6 +228,7 @@ class ProtoTraceParserTest : public ::testing::Test {
     context_.global_stack_profile_tracker.reset(
         new GlobalStackProfileTracker());
     context_.args_tracker.reset(new ArgsTracker(&context_));
+    context_.args_translation_table.reset(new ArgsTranslationTable(storage_));
     context_.metadata_tracker.reset(new MetadataTracker(&context_));
     event_ = new MockEventTracker(&context_);
     context_.event_tracker.reset(event_);
@@ -249,10 +238,10 @@ class ProtoTraceParserTest : public ::testing::Test {
     context_.process_tracker.reset(process_);
     slice_ = new MockSliceTracker(&context_);
     context_.slice_tracker.reset(slice_);
-    flow_ = new MockFlowTracker(&context_);
-    context_.flow_tracker.reset(flow_);
+    context_.slice_translation_table.reset(new SliceTranslationTable(storage_));
     clock_ = new ClockTracker(&context_);
     context_.clock_tracker.reset(clock_);
+    context_.flow_tracker.reset(new FlowTracker(&context_));
     context_.sorter.reset(new TraceSorter(&context_, CreateParser(),
                                           TraceSorter::SortingMode::kFullSort));
     context_.descriptor_pool_.reset(new DescriptorPool());
@@ -283,9 +272,9 @@ class ProtoTraceParserTest : public ::testing::Test {
     RowMap rm = args.FilterToRowMap({args.arg_set_id().eq(set_id)});
     bool found = false;
     for (auto it = rm.IterateRows(); it; it.Next()) {
-      if (args.key()[it.row()] == key_id) {
-        EXPECT_EQ(args.flat_key()[it.row()], key_id);
-        if (storage_->GetArgValue(it.row()) == value) {
+      if (args.key()[it.index()] == key_id) {
+        EXPECT_EQ(args.flat_key()[it.index()], key_id);
+        if (storage_->GetArgValue(it.index()) == value) {
           found = true;
           break;
         }
@@ -305,7 +294,6 @@ class ProtoTraceParserTest : public ::testing::Test {
   MockSchedEventTracker* sched_;
   MockProcessTracker* process_;
   MockSliceTracker* slice_;
-  MockFlowTracker* flow_;
   ClockTracker* clock_;
   TraceStorage* storage_;
 };
@@ -593,6 +581,28 @@ TEST_F(ProtoTraceParserTest, LoadCpuFreq) {
   context_.sorter->ExtractEventsForced();
 
   EXPECT_EQ(context_.storage->cpu_counter_track_table().cpu()[0], 10u);
+}
+
+TEST_F(ProtoTraceParserTest, LoadCpuFreqKHz) {
+  auto* packet = trace_->add_packet();
+  uint64_t ts = 1000;
+  packet->set_timestamp(ts);
+  auto* bundle = packet->set_sys_stats();
+  bundle->add_cpufreq_khz(2650000u);
+  bundle->add_cpufreq_khz(3698200u);
+
+  EXPECT_CALL(*event_, PushCounter(static_cast<int64_t>(ts), DoubleEq(2650000u),
+                                   TrackId{0u}));
+  EXPECT_CALL(*event_, PushCounter(static_cast<int64_t>(ts), DoubleEq(3698200u),
+                                   TrackId{1u}));
+  Tokenize();
+  context_.sorter->ExtractEventsForced();
+
+  EXPECT_EQ(context_.storage->track_table().row_count(), 2u);
+  EXPECT_EQ(context_.storage->track_table().name().GetString(0),
+            "CPU 0 Freq in kHz");
+  EXPECT_EQ(context_.storage->track_table().name().GetString(1),
+            "CPU 1 Freq in kHz");
 }
 
 TEST_F(ProtoTraceParserTest, LoadMemInfo) {
@@ -1112,12 +1122,6 @@ TEST_F(ProtoTraceParserTest, TrackEventWithInternedData) {
   EXPECT_CALL(*slice_, StartSlice(1005000, thread_1_track, _, _))
       .WillOnce(DoAll(IgnoreResult(InvokeArgument<3>()),
                       InvokeArgument<2>(&inserter), Return(SliceId(0u))));
-
-  EXPECT_CALL(*flow_, Begin(_, _));
-
-  EXPECT_CALL(*flow_, Step(_, _));
-
-  EXPECT_CALL(*flow_, End(_, _, false, false));
 
   EXPECT_CALL(*event_, PushCounter(1010000, testing::DoubleEq(2005000),
                                    thread_time_track));

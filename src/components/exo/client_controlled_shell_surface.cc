@@ -166,17 +166,13 @@ class ClientControlledWindowStateDelegate : public ash::WindowStateDelegate {
     switch (window_state->GetStateType()) {
       case chromeos::WindowStateType::kDefault:
       case chromeos::WindowStateType::kNormal:
-        window->SetProperty(aura::client::kPreFullscreenShowStateKey,
-                            ui::SHOW_STATE_NORMAL);
         next_state = chromeos::WindowStateType::kFullscreen;
         break;
       case chromeos::WindowStateType::kMaximized:
-        window->SetProperty(aura::client::kPreFullscreenShowStateKey,
-                            ui::SHOW_STATE_MAXIMIZED);
         next_state = chromeos::WindowStateType::kFullscreen;
         break;
       case chromeos::WindowStateType::kFullscreen:
-        switch (window->GetProperty(aura::client::kPreFullscreenShowStateKey)) {
+        switch (window->GetProperty(aura::client::kRestoreShowStateKey)) {
           case ui::SHOW_STATE_DEFAULT:
           case ui::SHOW_STATE_NORMAL:
             next_state = chromeos::WindowStateType::kNormal;
@@ -192,17 +188,11 @@ class ClientControlledWindowStateDelegate : public ash::WindowStateDelegate {
           case ui::SHOW_STATE_END:
             NOTREACHED() << " unknown state :"
                          << window->GetProperty(
-                                aura::client::kPreFullscreenShowStateKey);
+                                aura::client::kRestoreShowStateKey);
             return false;
         }
         break;
       case chromeos::WindowStateType::kMinimized: {
-        ui::WindowShowState pre_full_state =
-            window->GetProperty(aura::client::kPreMinimizedShowStateKey);
-        if (pre_full_state != ui::SHOW_STATE_FULLSCREEN) {
-          window->SetProperty(aura::client::kPreFullscreenShowStateKey,
-                              pre_full_state);
-        }
         next_state = chromeos::WindowStateType::kFullscreen;
         break;
       }
@@ -219,8 +209,10 @@ class ClientControlledWindowStateDelegate : public ash::WindowStateDelegate {
     return;
   }
 
-  void OnDragStarted(int component) override {
+  std::unique_ptr<ash::PresentationTimeRecorder> OnDragStarted(
+      int component) override {
     shell_surface_->OnDragStarted(component);
+    return nullptr;
   }
 
   void OnDragFinished(bool canceled, const gfx::PointF& location) override {
@@ -376,8 +368,21 @@ void ClientControlledShellSurface::SetBounds(int64_t display_id,
     return;
   }
 
+  // When use_default_scale_cancellation_ is false, the client is scale-aware
+  // and we expect that the |bounds| has been calculated by the client based
+  // on the device_scale_factor of the display with |display_id|.
+  // If the display has been changed before |SetBounds()| is called, for some
+  // cases(eg. move ARC window between displays with shortcut), |pending_scale_|
+  // may be stale and tied the old pending_display. Therefore, we re-initialize
+  // it to 0.0 here to force an update on the value in |EnsurePendingScale()|.
+  // Also need to note that we only want to commit |pending_scale_| in the cases
+  // where it hasn't been initialized before this method call.
+  bool const commit_immediately = pending_scale_ == 0.0;
+  if (!use_default_scale_cancellation_ && display_id != pending_display_id_)
+    pending_scale_ = 0.0;
+
   SetDisplay(display_id);
-  EnsurePendingScale();
+  EnsurePendingScale(commit_immediately);
 
   const gfx::Rect bounds_dp =
       gfx::ScaleToRoundedRect(bounds, GetClientToDpPendingScale());
@@ -388,7 +393,7 @@ void ClientControlledShellSurface::SetBoundsOrigin(const gfx::Point& origin) {
   TRACE_EVENT1("exo", "ClientControlledShellSurface::SetBoundsOrigin", "origin",
                origin.ToString());
 
-  EnsurePendingScale();
+  EnsurePendingScale(/*commit_immediately=*/true);
   const gfx::Point origin_dp =
       gfx::ScaleToRoundedPoint(origin, GetClientToDpPendingScale());
   pending_geometry_.set_origin(origin_dp);
@@ -403,7 +408,7 @@ void ClientControlledShellSurface::SetBoundsSize(const gfx::Size& size) {
     return;
   }
 
-  EnsurePendingScale();
+  EnsurePendingScale(/*commit_immediately=*/true);
   const gfx::Size size_dp =
       gfx::ScaleToRoundedSize(size, GetClientToDpPendingScale());
   pending_geometry_.set_size(size_dp);
@@ -762,6 +767,7 @@ void ClientControlledShellSurface::OnSetFrameColors(SkColor active_color,
   ShellSurfaceBase::OnSetFrameColors(active_color, inactive_color);
   if (wide_frame_) {
     aura::Window* window = wide_frame_->GetWidget()->GetNativeWindow();
+    window->SetProperty(chromeos::kTrackDefaultFrameColors, false);
     window->SetProperty(chromeos::kFrameActiveColorKey, active_color);
     window->SetProperty(chromeos::kFrameInactiveColorKey, inactive_color);
   }
@@ -834,6 +840,10 @@ ClientControlledShellSurface::CreateNonClientFrameView(views::Widget* widget) {
       ->InitImmersiveFullscreenControllerForView(
           immersive_fullscreen_controller_.get());
   return frame_view;
+}
+
+bool ClientControlledShellSurface::ShouldSaveWindowPlacement() const {
+  return false;
 }
 
 void ClientControlledShellSurface::SaveWindowPlacement(
@@ -941,6 +951,22 @@ void ClientControlledShellSurface::CompositorLockTimedOut() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // ShellSurfaceBase overrides:
+
+void ClientControlledShellSurface::SetSystemModal(bool system_modal) {
+  // System modal container is used by clients to implement client side
+  // managed system modal dialogs using a single ShellSurface instance.
+  // Hit-test region will be non-empty when at least one dialog exists on
+  // the client side. Here we detect the transition between no client side
+  // dialog and at least one dialog so activatable state is properly
+  // updated.
+  if (container_ != ash::kShellWindowId_SystemModalContainer) {
+    LOG(ERROR)
+        << "Only a window in SystemModalContainer can change the modality";
+    return;
+  }
+
+  ShellSurfaceBase::SetSystemModal(system_modal);
+}
 
 void ClientControlledShellSurface::SetWidgetBounds(const gfx::Rect& bounds) {
   const auto* screen = display::Screen::GetScreen();
@@ -1387,6 +1413,23 @@ void ClientControlledShellSurface::UpdateFrameType() {
     UpdateSurfaceBounds();
 }
 
+bool ClientControlledShellSurface::GetCanResizeFromSizeConstraints() const {
+  // Both min and max bounds of unresizable, maximized ARC windows are empty
+  // because Ash requires maximizable apps have empty max bounds.
+  // This assumes that ARC sets non-empty min sizes to all resizable apps.
+  //
+  // Example values of size constraints:
+  // ----------------------------------------------------------------------
+  // |           |          resizable           |      non-resizable      |
+  // ----------------------------------------------------------------------
+  // | freeform  | min: (400, 400), max: (0, 0) | min = max = window size |
+  // ----------------------------------------------------------------------
+  // | maximized | min: (400, 400), max: (0, 0) |   min = max = (0, 0)    |
+  // ----------------------------------------------------------------------
+
+  return minimum_size_ != maximum_size_;
+}
+
 void ClientControlledShellSurface::
     EnsureCompositorIsLockedForOrientationChange() {
   if (!orientation_compositor_lock_) {
@@ -1412,16 +1455,17 @@ const ash::NonClientFrameViewAsh* ClientControlledShellSurface::GetFrameView()
       widget_->non_client_view()->frame_view());
 }
 
-void ClientControlledShellSurface::EnsurePendingScale() {
+void ClientControlledShellSurface::EnsurePendingScale(bool commit_immediately) {
   // Handle the case where we receive bounds from the client before the initial
-  // scale has been set.
+  // scale has been set or |pending_scale_| is stale due to change of displays.
   if (pending_scale_ == 0.0) {
     DCHECK(!use_default_scale_cancellation_);
     display::Display display;
     if (display::Screen::GetScreen()->GetDisplayWithDisplayId(
             pending_display_id_, &display)) {
       SetScale(display.device_scale_factor());
-      CommitPendingScale();
+      if (commit_immediately)
+        CommitPendingScale();
     }
   }
 }
@@ -1463,8 +1507,8 @@ ClientControlledShellSurface::GetClientBoundsForWindowBoundsAndWindowState(
     // Until the next commit, the frame view is in immersive mode, and the above
     // GetClientBoundsForWindowBounds doesn't return bounds taking the caption
     // height into account.
-    client_bounds.Inset(0, GetFrameView()->NonClientTopBorderPreferredHeight(),
-                        0, 0);
+    client_bounds.Inset(gfx::Insets().set_top(
+        GetFrameView()->NonClientTopBorderPreferredHeight()));
   }
   return client_bounds;
 }

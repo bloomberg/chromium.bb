@@ -15,9 +15,12 @@
 #import "ios/chrome/browser/ui/omnibox/popup/image_retriever.h"
 #include "ui/base/window_open_disposition.h"
 
+@protocol ApplicationCommands;
 @protocol BrowserCommands;
 @class DefaultBrowserPromoNonModalScheduler;
+@class OmniboxPedalAnnotator;
 @class OmniboxPopupPresenter;
+@class PopupModel;
 class FaviconLoader;
 class WebStateList;
 
@@ -34,6 +37,8 @@ class OmniboxPopupMediatorDelegate {
   virtual void OnMatchSelectedForAppending(const AutocompleteMatch& match) = 0;
   virtual void OnMatchSelectedForDeletion(const AutocompleteMatch& match) = 0;
   virtual void OnScroll() = 0;
+  virtual void OnHighlightCanceled() = 0;
+
   virtual void OnMatchHighlighted(size_t row) = 0;
 };
 
@@ -46,18 +51,9 @@ class OmniboxPopupMediatorDelegate {
 // Whether the mediator has results to show.
 @property(nonatomic, assign) BOOL hasResults;
 
-- (void)updateMatches:(const AutocompleteResult&)result
-        withAnimation:(BOOL)animated;
-
-// Sets the text alignment of the popup content.
-- (void)setTextAlignment:(NSTextAlignment)alignment;
-
 // Sets the semantic content attribute of the popup content.
 - (void)setSemanticContentAttribute:
     (UISemanticContentAttribute)semanticContentAttribute;
-
-// Updates the popup with the |results|.
-- (void)updateWithResults:(const AutocompleteResult&)results;
 
 @property(nonatomic, weak) id<BrowserCommands> dispatcher;
 @property(nonatomic, weak) id<AutocompleteResultConsumer> consumer;
@@ -74,6 +70,10 @@ class OmniboxPopupMediatorDelegate {
 // Whether the default search engine is Google impacts which icon is used in
 // some cases
 @property(nonatomic, assign) BOOL defaultSearchEngineIsGoogle;
+// The model for this mediator, if one exists.
+@property(nonatomic, weak) PopupModel* model;
+// The annotator to create pedals for ths mediator.
+@property(nonatomic) OmniboxPedalAnnotator* pedalAnnotator;
 
 // Designated initializer. Takes ownership of |imageFetcher|.
 - (instancetype)initWithFetcher:
@@ -82,8 +82,7 @@ class OmniboxPopupMediatorDelegate {
                   faviconLoader:(FaviconLoader*)faviconLoader
                        delegate:(OmniboxPopupMediatorDelegate*)delegate;
 
-- (void)updateMatches:(const AutocompleteResult&)result
-        withAnimation:(BOOL)animated;
+- (void)updateMatches:(const AutocompleteResult&)result;
 
 // Sets the text alignment of the popup content.
 - (void)setTextAlignment:(NSTextAlignment)alignment;

@@ -12,6 +12,7 @@
 #include "base/json/json_writer.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/observer_list.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -280,13 +281,23 @@ void TailoredSecurityService::AddQueryRequest() {
   DCHECK(!is_shut_down_);
   active_query_request_++;
   if (active_query_request_ == 1) {
-    // Query now and register a repeating timer to get the tailored security bit
-    // every `kRepeatingCheckTailoredSecurityBitDelayInMinutes` minutes.
-    QueryTailoredSecurityBit();
-    timer_.Start(
-        FROM_HERE,
-        base::Minutes(kRepeatingCheckTailoredSecurityBitDelayInMinutes), this,
-        &TailoredSecurityService::QueryTailoredSecurityBit);
+    if (base::Time::Now() - last_updated_ <=
+        base::Minutes(kRepeatingCheckTailoredSecurityBitDelayInMinutes)) {
+      // Since we queried recently, start the timer with a shorter delay.
+      base::TimeDelta delay =
+          base::Minutes(kRepeatingCheckTailoredSecurityBitDelayInMinutes) -
+          (base::Time::Now() - last_updated_);
+      timer_.Start(FROM_HERE, delay, this,
+                   &TailoredSecurityService::QueryTailoredSecurityBit);
+    } else {
+      // Query now and register a timer to get the tailored security bit
+      // every `kRepeatingCheckTailoredSecurityBitDelayInMinutes` minutes.
+      QueryTailoredSecurityBit();
+      timer_.Start(
+          FROM_HERE,
+          base::Minutes(kRepeatingCheckTailoredSecurityBitDelayInMinutes), this,
+          &TailoredSecurityService::QueryTailoredSecurityBit);
+    }
   }
 }
 
@@ -362,6 +373,12 @@ void TailoredSecurityService::OnTailoredSecurityBitRetrieved(
   }
   is_tailored_security_enabled_ = is_enabled;
   last_updated_ = base::Time::Now();
+  if (active_query_request_ > 0) {
+    timer_.Start(
+        FROM_HERE,
+        base::Minutes(kRepeatingCheckTailoredSecurityBitDelayInMinutes), this,
+        &TailoredSecurityService::QueryTailoredSecurityBit);
+  }
 }
 
 void TailoredSecurityService::QueryTailoredSecurityBitCompletionCallback(
@@ -400,8 +417,8 @@ void TailoredSecurityService::SetTailoredSecurityBitForTesting(
   std::unique_ptr<Request> request =
       CreateRequest(url, std::move(completion_callback), traffic_annotation);
 
-  base::DictionaryValue enable_tailored_security_service;
-  enable_tailored_security_service.SetBoolean("history_recording_enabled",
+  base::Value enable_tailored_security_service(base::Value::Type::DICTIONARY);
+  enable_tailored_security_service.SetBoolKey("history_recording_enabled",
                                               is_enabled);
   std::string post_data;
   base::JSONWriter::Write(enable_tailored_security_service, &post_data);

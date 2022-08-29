@@ -106,6 +106,7 @@ void InitInput(Pixel* dst, const int stride, const int bitdepth,
 template <int bitdepth, typename Pixel>
 class LoopFilterTest : public testing::TestWithParam<LoopFilterSize> {
  public:
+  static_assert(bitdepth >= kBitdepth8 && bitdepth <= LIBGAV1_MAX_BITDEPTH, "");
   LoopFilterTest() = default;
   LoopFilterTest(const LoopFilterTest&) = delete;
   LoopFilterTest& operator=(const LoopFilterTest&) = delete;
@@ -132,6 +133,9 @@ class LoopFilterTest : public testing::TestWithParam<LoopFilterSize> {
       }
     } else if (absl::StartsWith(test_case, "NEON/")) {
       LoopFilterInit_NEON();
+#if LIBGAV1_MAX_BITDEPTH >= 10
+      LoopFilterInit10bpp_NEON();
+#endif
     } else {
       FAIL() << "Unrecognized architecture prefix in test case name: "
              << test_case;
@@ -203,22 +207,23 @@ void LoopFilterTest<bitdepth, Pixel>::TestRandomValues(
 
 template <int bitdepth, typename Pixel>
 void LoopFilterTest<bitdepth, Pixel>::TestSaturatedValues() const {
-  const LoopFilterType filter = kLoopFilterTypeHorizontal;
-  if (cur_loop_filters_[filter] == nullptr) return;
-
   Pixel dst[kNumPixels], ref[kNumPixels];
   const auto value = static_cast<Pixel>((1 << bitdepth) - 1);
   for (auto& r : dst) r = value;
   memcpy(ref, dst, sizeof(dst));
 
-  const int outer_thresh = 24;
-  const int inner_thresh = 8;
-  const int hev_thresh = 0;
-  cur_loop_filters_[filter](dst + 8 + kBlockStride * 8, kBlockStride,
-                            outer_thresh, inner_thresh, hev_thresh);
-  ASSERT_TRUE(test_utils::CompareBlocks(ref, dst, kBlockStride, kBlockStride,
-                                        kBlockStride, kBlockStride, true))
-      << "kLoopFilterTypeHorizontal output doesn't match reference";
+  for (int i = 0; i < kNumLoopFilterTypes; ++i) {
+    if (cur_loop_filters_[i] == nullptr) return;
+    const int outer_thresh = 24;
+    const int inner_thresh = 8;
+    const int hev_thresh = 0;
+    cur_loop_filters_[i](dst + 8 + kBlockStride * 8, kBlockStride, outer_thresh,
+                         inner_thresh, hev_thresh);
+    ASSERT_TRUE(test_utils::CompareBlocks(ref, dst, kBlockStride, kBlockStride,
+                                          kBlockStride, kBlockStride, true))
+        << ToString(static_cast<LoopFilterType>(i))
+        << " output doesn't match reference";
+  }
 }
 
 //------------------------------------------------------------------------------
@@ -328,6 +333,8 @@ TEST_P(LoopFilterTest10bpp, FixedInput) {
   TestRandomValues(GetDigests10bpp(size_), kNumTests);
 }
 
+TEST_P(LoopFilterTest10bpp, SaturatedValues) { TestSaturatedValues(); }
+
 INSTANTIATE_TEST_SUITE_P(C, LoopFilterTest10bpp,
                          testing::ValuesIn(kLoopFilterSizes));
 
@@ -339,7 +346,59 @@ INSTANTIATE_TEST_SUITE_P(SSE41, LoopFilterTest10bpp,
 INSTANTIATE_TEST_SUITE_P(NEON, LoopFilterTest10bpp,
                          testing::ValuesIn(kLoopFilterSizes));
 #endif
-#endif
+#endif  // LIBGAV1_MAX_BITDEPTH >= 10
+
+//------------------------------------------------------------------------------
+
+#if LIBGAV1_MAX_BITDEPTH == 12
+using LoopFilterTest12bpp = LoopFilterTest<12, uint16_t>;
+
+const char* const* GetDigests12bpp(LoopFilterSize size) {
+  static const char* const kDigestsSize4[kNumLoopFilterTypes] = {
+      "a14599cbfe2daee633d556a15c47b1f6",
+      "1f0a0794832de1012e2fed6b1cb02e69",
+  };
+  static const char* const kDigestsSize6[kNumLoopFilterTypes] = {
+      "c76b24a73139239db10f16f36e01a625",
+      "3f75d904e9dcb1886e84a0f03f60f31e",
+  };
+  static const char* const kDigestsSize8[kNumLoopFilterTypes] = {
+      "57c6f0efe2ab3957f5500ca2a9670f37",
+      "caa1f90c2eb2b65b280d678f8fcf6be8",
+  };
+  static const char* const kDigestsSize14[kNumLoopFilterTypes] = {
+      "0c58f7466c36c3f4a2c1b4aa1b80f0b3",
+      "63077978326e6dddb5b2c3bfe6d684f5",
+  };
+
+  switch (size) {
+    case kLoopFilterSize4:
+      return kDigestsSize4;
+    case kLoopFilterSize6:
+      return kDigestsSize6;
+    case kLoopFilterSize8:
+      return kDigestsSize8;
+    case kLoopFilterSize14:
+      return kDigestsSize14;
+    default:
+      ADD_FAILURE() << "Unknown loop filter size" << size;
+      return nullptr;
+  }
+}
+
+TEST_P(LoopFilterTest12bpp, DISABLED_Speed) {
+  TestRandomValues(nullptr, kNumSpeedTests);
+}
+
+TEST_P(LoopFilterTest12bpp, FixedInput) {
+  TestRandomValues(GetDigests12bpp(size_), kNumTests);
+}
+
+TEST_P(LoopFilterTest12bpp, SaturatedValues) { TestSaturatedValues(); }
+
+INSTANTIATE_TEST_SUITE_P(C, LoopFilterTest12bpp,
+                         testing::ValuesIn(kLoopFilterSizes));
+#endif  // LIBGAV1_MAX_BITDEPTH == 12
 
 }  // namespace
 

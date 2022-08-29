@@ -290,9 +290,11 @@ IN_PROC_BROWSER_TEST_F(AccuracyTipBubbleViewBrowserTest,
   auto test_api =
       std::make_unique<test::PermissionRequestManagerTestApi>(browser());
   EXPECT_TRUE(test_api->manager());
-  test_api->AddSimpleRequest(
-      browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame(),
-      permissions::RequestType::kGeolocation);
+  test_api->AddSimpleRequest(browser()
+                                 ->tab_strip_model()
+                                 ->GetActiveWebContents()
+                                 ->GetPrimaryMainFrame(),
+                             permissions::RequestType::kGeolocation);
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(IsUIShowing());
 
@@ -311,7 +313,7 @@ IN_PROC_BROWSER_TEST_F(AccuracyTipBubbleViewBrowserTest, OpenLearnMoreLink) {
   views::test::WidgetDestroyedWaiter waiter(view->GetWidget());
   view->AcceptDialog();
   EXPECT_EQ(GURL(chrome::kSafetyTipHelpCenterURL),
-            new_tab_observer.GetWebContents()->GetURL());
+            new_tab_observer.GetWebContents()->GetVisibleURL());
   waiter.Wait();
   EXPECT_FALSE(IsUIShowing());
 

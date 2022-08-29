@@ -154,10 +154,12 @@ class AppIconFactoryTest : public testing::Test {
     base::FilePath base_path;
     std::string png_data_as_string;
     CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &base_path));
-    base::FilePath icon_file_path = base_path.AppendASCII("components")
+    base::FilePath icon_file_path = base_path.AppendASCII("ash")
+                                        .AppendASCII("components")
+                                        .AppendASCII("arc")
                                         .AppendASCII("test")
                                         .AppendASCII("data")
-                                        .AppendASCII("arc")
+                                        .AppendASCII("icons")
                                         .AppendASCII(file_name);
     CHECK(base::PathExists(icon_file_path));
     CHECK(base::ReadFileToString(icon_file_path, &png_data_as_string));
@@ -1030,7 +1032,7 @@ TEST_F(WebAppIconFactoryTest, ConvertSquareBitmapsToImageSkia_MatchBigger) {
   // scale).
   const std::vector<SkColor> expected_colors{SK_ColorRED, SK_ColorGREEN};
 
-  for (int i = 0; i < scale_factors.size(); ++i) {
+  for (size_t i = 0; i < scale_factors.size(); ++i) {
     const float scale = ui::GetScaleForResourceScaleFactor(scale_factors[i]);
     ASSERT_TRUE(converted_image.HasRepresentation(scale));
     EXPECT_EQ(
@@ -1061,7 +1063,7 @@ TEST_F(WebAppIconFactoryTest, ConvertSquareBitmapsToImageSkia_StandardEffect) {
       ui::GetSupportedResourceScaleFactors();
   ASSERT_EQ(2U, scale_factors.size());
 
-  for (int i = 0; i < scale_factors.size(); ++i) {
+  for (size_t i = 0; i < scale_factors.size(); ++i) {
     const float scale = ui::GetScaleForResourceScaleFactor(scale_factors[i]);
     ASSERT_TRUE(converted_image.HasRepresentation(scale));
 
@@ -1074,6 +1076,12 @@ TEST_F(WebAppIconFactoryTest, ConvertSquareBitmapsToImageSkia_StandardEffect) {
     EXPECT_TRUE(converted_image.GetRepresentation(scale).GetBitmap().getColor(
         center_px, center_px));
   }
+}
+
+// Regression test for crash. https://crbug.com/1335266
+TEST_F(WebAppIconFactoryTest, ApplyBackgroundAndMask_NullImage) {
+  gfx::ImageSkia image = apps::ApplyBackgroundAndMask(gfx::ImageSkia());
+  DCHECK(image.isNull());
 }
 
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)

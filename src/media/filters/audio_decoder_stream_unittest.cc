@@ -12,6 +12,7 @@
 #include "base/test/gmock_callback_support.h"
 #include "base/test/task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "base/time/time.h"
 #include "media/base/media_util.h"
 #include "media/base/mock_filters.h"
 #include "media/filters/decoder_stream.h"
@@ -49,7 +50,8 @@ class AudioDecoderStreamTest : public testing::Test {
       : audio_decoder_stream_(
             std::make_unique<AudioDecoderStream::StreamTraits>(
                 &media_log_,
-                CHANNEL_LAYOUT_STEREO),
+                CHANNEL_LAYOUT_STEREO,
+                kSampleFormatPlanarF32),
             task_environment_.GetMainThreadTaskRunner(),
             base::BindRepeating(&AudioDecoderStreamTest::CreateMockAudioDecoder,
                                 base::Unretained(this)),
@@ -98,7 +100,8 @@ class AudioDecoderStreamTest : public testing::Test {
                 config.channel_layout(), config.channels(),
                 config.samples_per_second(), 1221, last_timestamp_)));
     base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(decode_cb), DecodeStatus::OK));
+        FROM_HERE,
+        base::BindOnce(std::move(decode_cb), DecoderStatus::Codes::kOk));
   }
 
   void RunUntilIdle() { task_environment_.RunUntilIdle(); }
@@ -109,7 +112,7 @@ class AudioDecoderStreamTest : public testing::Test {
     EXPECT_CALL(*decoder, Initialize_(_, _, _, _, _))
         .Times(AnyNumber())
         .WillRepeatedly(DoAll(SaveArg<3>(&decoder_output_cb_),
-                              RunOnceCallback<2>(OkStatus())));
+                              RunOnceCallback<2>(DecoderStatus::Codes::kOk)));
     decoder_ = decoder.get();
 
     std::vector<std::unique_ptr<AudioDecoder>> result;

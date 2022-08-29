@@ -8,9 +8,9 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
+#include "build/build_config.h"
 #include "chrome/browser/file_util_service.h"
 #include "chrome/common/safe_browsing/archive_analyzer_results.h"
 #include "chrome/common/safe_browsing/document_analyzer_results.h"
@@ -18,8 +18,9 @@
 #include "components/safe_browsing/content/common/file_type_policies.h"
 #include "components/safe_browsing/core/common/features.h"
 #include "content/public/browser/browser_thread.h"
+#include "url/gurl.h"
 
-#if defined(OS_LINUX) || defined(OS_WIN)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN)
 #include "chrome/browser/safe_browsing/download_protection/document_analysis_service.h"
 #endif
 
@@ -89,25 +90,23 @@ void FileAnalyzer::Start(const base::FilePath& target_path,
 
   DownloadFileType::InspectionType inspection_type =
       FileTypePolicies::GetInstance()
-          ->PolicyForFile(target_path_)
+          ->PolicyForFile(target_path_, GURL{}, nullptr)
           .inspection_type();
 
   if (inspection_type == DownloadFileType::ZIP) {
     StartExtractZipFeatures();
   } else if (inspection_type == DownloadFileType::RAR) {
     StartExtractRarFeatures();
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   } else if (inspection_type == DownloadFileType::DMG) {
     StartExtractDmgFeatures();
 #endif
-#if defined(OS_LINUX) || defined(OS_WIN)
-  } else if (base::FeatureList::IsEnabled(
-                 safe_browsing::kClientSideDetectionDocumentScanning) &&
-             inspection_type == DownloadFileType::OFFICE_DOCUMENT) {
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN)
+  } else if (inspection_type == DownloadFileType::OFFICE_DOCUMENT) {
     StartExtractDocumentFeatures();
 #endif
   } else {
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
     // Checks for existence of "koly" signature even if file doesn't have
     // archive-type extension, then calls ExtractFileOrDmgFeatures() with
     // result.
@@ -155,6 +154,8 @@ void FileAnalyzer::StartExtractZipFeatures() {
 
 void FileAnalyzer::OnZipAnalysisFinished(
     const ArchiveAnalyzerResults& archive_results) {
+  base::UmaHistogramEnumeration("SBClientDownload.ZipArchiveAnalysisResult",
+                                archive_results.analysis_result);
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Even if !results.success, some of the zip may have been parsed.
@@ -201,6 +202,8 @@ void FileAnalyzer::StartExtractRarFeatures() {
 void FileAnalyzer::OnRarAnalysisFinished(
     const ArchiveAnalyzerResults& archive_results) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  base::UmaHistogramEnumeration("SBClientDownload.RarArchiveAnalysisResult",
+                                archive_results.analysis_result);
 
   results_.archive_is_valid =
       (archive_results.success ? ArchiveValid::VALID : ArchiveValid::INVALID);
@@ -227,7 +230,7 @@ void FileAnalyzer::OnRarAnalysisFinished(
   std::move(callback_).Run(std::move(results_));
 }
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 // This is called for .DMGs and other files that can be parsed by
 // SandboxedDMGAnalyzer.
 void FileAnalyzer::StartExtractDmgFeatures() {
@@ -257,6 +260,8 @@ void FileAnalyzer::ExtractFileOrDmgFeatures(
 void FileAnalyzer::OnDmgAnalysisFinished(
     const safe_browsing::ArchiveAnalyzerResults& archive_results) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  base::UmaHistogramEnumeration("SBClientDownload.DmgArchiveAnalysisResult",
+                                archive_results.analysis_result);
 
   if (archive_results.signature_blob.size() > 0) {
     results_.disk_image_signature =
@@ -282,9 +287,9 @@ void FileAnalyzer::OnDmgAnalysisFinished(
 
   std::move(callback_).Run(std::move(results_));
 }
-#endif  // defined(OS_MAC)
+#endif  // BUILDFLAG(IS_MAC)
 
-#if defined(OS_LINUX) || defined(OS_WIN)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN)
 void FileAnalyzer::StartExtractDocumentFeatures() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 

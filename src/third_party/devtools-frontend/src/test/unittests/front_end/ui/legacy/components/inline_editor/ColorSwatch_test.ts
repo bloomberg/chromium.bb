@@ -5,7 +5,13 @@
 import * as Common from '../../../../../../../front_end/core/common/common.js';
 import {assertNotNullOrUndefined} from '../../../../../../../front_end/core/platform/platform.js';
 import * as InlineEditor from '../../../../../../../front_end/ui/legacy/components/inline_editor/inline_editor.js';
-import {assertElement, assertShadowRoot, dispatchClickEvent, renderElementIntoDOM} from '../../../../helpers/DOMHelpers.js';
+import {
+  assertElement,
+  assertShadowRoot,
+  dispatchClickEvent,
+  renderElementIntoDOM,
+} from '../../../../helpers/DOMHelpers.js';
+import {describeWithLocale} from '../../../../helpers/EnvironmentHelpers.js';
 
 const {assert} = chai;
 
@@ -45,7 +51,7 @@ function getClickTarget(swatch: InlineEditor.ColorSwatch.ColorSwatch) {
   return swatch.shadowRoot.querySelector('.color-swatch-inner') as HTMLElement;
 }
 
-describe('ColorSwatch', () => {
+describeWithLocale('ColorSwatch', () => {
   it('accepts colors as text', () => {
     const swatch = createSwatch('red');
 
@@ -119,6 +125,8 @@ describe('ColorSwatch', () => {
     assertSwatch(swatch, {colorTextInSlot: 'rgb(255 0 0)'});
     dispatchClickEvent(target, {shiftKey: true});
     assertSwatch(swatch, {colorTextInSlot: 'hsl(0deg 100% 50%)'});
+    dispatchClickEvent(target, {shiftKey: true});
+    assertSwatch(swatch, {colorTextInSlot: 'hwb(0deg 0% 0%)'});
     dispatchClickEvent(target, {shiftKey: true});
     assertSwatch(swatch, {colorTextInSlot: 'red'});
   });

@@ -7,6 +7,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/memory/raw_ptr.h"
 #include "base/process/kill.h"
 #include "chrome/common/url_constants.h"
@@ -17,7 +18,7 @@
 #include "content/public/test/web_contents_tester.h"
 #include "extensions/buildflags/buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink.h"
+#include "third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom-blink.h"
 #include "url/gurl.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)

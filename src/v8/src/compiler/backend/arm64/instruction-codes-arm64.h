@@ -201,8 +201,8 @@ namespace compiler {
   V(Arm64LdarDecompressAnyTagged)                    \
   V(Arm64StrCompressTagged)                          \
   V(Arm64StlrCompressTagged)                         \
-  V(Arm64LdrDecodeCagedPointer)                      \
-  V(Arm64StrEncodeCagedPointer)                      \
+  V(Arm64LdrDecodeSandboxedPointer)                  \
+  V(Arm64StrEncodeSandboxedPointer)                  \
   V(Arm64DmbIsh)                                     \
   V(Arm64DsbIsb)                                     \
   V(Arm64Sxtl)                                       \
@@ -237,8 +237,6 @@ namespace compiler {
   V(Arm64F64x2PromoteLowF32x4)                       \
   V(Arm64F32x4SConvertI32x4)                         \
   V(Arm64F32x4UConvertI32x4)                         \
-  V(Arm64F32x4RecipApprox)                           \
-  V(Arm64F32x4RecipSqrtApprox)                       \
   V(Arm64F32x4Qfma)                                  \
   V(Arm64F32x4Qfms)                                  \
   V(Arm64F32x4Pmin)                                  \
@@ -278,6 +276,8 @@ namespace compiler {
   V(Arm64IGeU)                                       \
   V(Arm64I32x4BitMask)                               \
   V(Arm64I32x4DotI16x8S)                             \
+  V(Arm64I16x8DotI8x16S)                             \
+  V(Arm64I32x4DotI8x16AddS)                          \
   V(Arm64I32x4TruncSatF64x2SZero)                    \
   V(Arm64I32x4TruncSatF64x2UZero)                    \
   V(Arm64IExtractLaneU)                              \

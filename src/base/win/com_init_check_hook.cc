@@ -10,6 +10,9 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <ostream>
+#include <string>
+
 #include "base/notreached.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
@@ -86,6 +89,10 @@ const unsigned char g_hotpatch_placeholder_nop[] = {0x90, 0x90, 0x90, 0x90,
 const unsigned char g_hotpatch_placeholder_int3[] = {0xcc, 0xcc, 0xcc, 0xcc,
                                                      0xcc, 0x8b, 0xff};
 
+// http://crbug.com/1312659: Unusable apphelp placeholder missing one byte.
+const unsigned char g_hotpatch_placeholder_apphelp[] = {0x00, 0xcc, 0xcc, 0xcc,
+                                                        0xcc, 0x8b, 0xff};
+
 class HookManager {
  public:
   static HookManager* GetInstance() {
@@ -132,6 +139,8 @@ class HookManager {
     INT3,
     // The hotpatch placeholder used nop's in the sled.
     NOP,
+    // The hotpatch placeholder is an unusable apphelp shim.
+    APPHELP_SHIM,
     // This function has already been patched by a different component.
     EXTERNALLY_PATCHED,
   };
@@ -181,6 +190,11 @@ class HookManager {
                           reinterpret_cast<uint32_t>(&structured_hotpatch_))
                    << ">";
       return;
+    } else if (format == HotpatchPlaceholderFormat::APPHELP_SHIM) {
+      // The apphelp shim placeholder does not allocate enough bytes for a
+      // trampolined jump. In this case, we skip patching.
+      hotpatch_placeholder_format_ = format;
+      return;
     }
 
     DCHECK_EQ(hotpatch_placeholder_format_, HotpatchPlaceholderFormat::UNKNOWN);
@@ -214,6 +228,7 @@ class HookManager {
             sizeof(g_hotpatch_placeholder_nop));
         break;
       case HotpatchPlaceholderFormat::EXTERNALLY_PATCHED:
+      case HotpatchPlaceholderFormat::APPHELP_SHIM:
       case HotpatchPlaceholderFormat::UNKNOWN:
         break;
     }
@@ -242,6 +257,12 @@ class HookManager {
                  reinterpret_cast<const void*>(&g_hotpatch_placeholder_nop),
                  sizeof(g_hotpatch_placeholder_nop)) == 0) {
       return HotpatchPlaceholderFormat::NOP;
+    }
+
+    if (::memcmp(reinterpret_cast<void*>(co_create_instance_padded_address_),
+                 reinterpret_cast<const void*>(&g_hotpatch_placeholder_apphelp),
+                 sizeof(g_hotpatch_placeholder_apphelp)) == 0) {
+      return HotpatchPlaceholderFormat::APPHELP_SHIM;
     }
 
     const unsigned char* instruction_bytes =
@@ -287,12 +308,12 @@ class HookManager {
     //
     // If you hit this assert as part of migrating to the Task Scheduler,
     // evaluate your threading guarantees and dispatch your work with
-    // base::CreateCOMSTATaskRunner().
+    // base::ThreadPool::CreateCOMSTATaskRunner().
     //
     // If you need MTA support, ping //base/task/thread_pool/OWNERS.
     AssertComInitialized(
         "CoCreateInstance calls in Chromium require explicit COM "
-        "initialization via base::CreateCOMSTATaskRunner() or "
+        "initialization via base::ThreadPool::CreateCOMSTATaskRunner() or "
         "ScopedCOMInitializer. See the comment in DCheckedCoCreateInstance for "
         "more details.");
     return original_co_create_instance_body_function_(rclsid, pUnkOuter,

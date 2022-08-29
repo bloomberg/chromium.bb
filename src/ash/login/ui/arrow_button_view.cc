@@ -55,7 +55,7 @@ void PaintLoadingArc(gfx::Canvas* canvas,
                      double loading_fraction) {
   gfx::Rect oval = bounds;
   // Inset to make sure the whole arc is inside the visible rect.
-  oval.Inset(/*horizontal=*/1, /*vertical=*/1);
+  oval.Inset(gfx::Insets::VH(/*vertical=*/1, /*horizontal=*/1));
 
   SkPath path;
   path.arcTo(RectToSkRect(oval), /*startAngle=*/-90,
@@ -74,7 +74,7 @@ void PaintLoadingArc(gfx::Canvas* canvas,
 
 ArrowButtonView::ArrowButtonView(PressedCallback callback, int size)
     : LoginButton(std::move(callback)) {
-  SetBorder(views::CreateEmptyBorder(gfx::Insets(kBorderForFocusRingDp)));
+  SetBorder(views::CreateEmptyBorder(kBorderForFocusRingDp));
   SetPreferredSize(gfx::Size(size + 2 * kBorderForFocusRingDp,
                              size + 2 * kBorderForFocusRingDp));
   SetFocusBehavior(FocusBehavior::ALWAYS);
@@ -98,8 +98,12 @@ void ArrowButtonView::PaintButtonContents(gfx::Canvas* canvas) {
   // Draw background.
   cc::PaintFlags flags;
   flags.setAntiAlias(true);
-  flags.setColor(AshColorProvider::Get()->GetControlsLayerColor(
-      AshColorProvider::ControlsLayerType::kControlBackgroundColorInactive));
+  if (background_color_) {
+    flags.setColor(*background_color_);
+  } else {
+    flags.setColor(AshColorProvider::Get()->GetControlsLayerColor(
+        AshColorProvider::ControlsLayerType::kControlBackgroundColorInactive));
+  }
   flags.setStyle(cc::PaintFlags::kFill_Style);
   canvas->DrawCircle(gfx::PointF(rect.CenterPoint()), rect.width() / 2, flags);
 
@@ -114,8 +118,13 @@ void ArrowButtonView::PaintButtonContents(gfx::Canvas* canvas) {
 void ArrowButtonView::OnThemeChanged() {
   LoginButton::OnThemeChanged();
   auto* color_provider = AshColorProvider::Get();
-  const SkColor icon_color = color_provider->GetContentLayerColor(
-      AshColorProvider::ContentLayerType::kButtonIconColor);
+  SkColor icon_color;
+  if (icon_color_) {
+    icon_color = *icon_color_;
+  } else {
+    icon_color = color_provider->GetContentLayerColor(
+        AshColorProvider::ContentLayerType::kButtonIconColor);
+  }
   SetImage(views::Button::STATE_NORMAL,
            gfx::CreateVectorIcon(kLockScreenArrowIcon, kArrowIconSizeDp,
                                  icon_color));

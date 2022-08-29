@@ -202,7 +202,7 @@ spv_result_t ValidateBinaryUsingContextAndValidationState(
                  /* diagnostic = */ nullptr);
 
   // Parse the module and perform inline validation checks. These checks do
-  // not require the the knowledge of the whole module.
+  // not require the knowledge of the whole module.
   if (auto error = spvBinaryParse(&context, vstate, words, num_words,
                                   /*parsed_header =*/nullptr,
                                   ProcessInstruction, pDiagnostic)) {
@@ -348,7 +348,7 @@ spv_result_t ValidateBinaryUsingContextAndValidationState(
   }
 
   // Validate the preconditions involving adjacent instructions. e.g. SpvOpPhi
-  // must only be preceeded by SpvOpLabel, SpvOpPhi, or SpvOpLine.
+  // must only be preceded by SpvOpLabel, SpvOpPhi, or SpvOpLine.
   if (auto error = ValidateAdjacency(*vstate)) return error;
 
   if (auto error = ValidateEntryPoints(*vstate)) return error;

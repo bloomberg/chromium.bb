@@ -29,15 +29,18 @@ bool IsWebUiHostInDevUiDfm(const std::string& host) {
   // Each WebUI host (including synonyms) in the DevUI DFM must have an entry.
   // Assume linear search is fast enough. Can optimize later if needed.
   return host == chrome::kChromeUIAccessibilityHost ||
+         host == chrome::kChromeUIAPCInternalsHost ||
          host == chrome::kChromeUIAutofillInternalsHost ||
          host == chrome::kChromeUIBluetoothInternalsHost ||
+         host == chrome::kChromeUIBrowsingTopicsInternalsHost ||
          host == chrome::kChromeUIComponentsHost ||
          host == chrome::kChromeUICrashesHost ||
          host == chrome::kChromeUIDeviceLogHost ||
          host == chrome::kChromeUIDomainReliabilityInternalsHost ||
          host == chrome::kChromeUIDownloadInternalsHost ||
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
          host == chrome::kChromeUIFamilyLinkUserInternalsHost ||
-         host == chrome::kChromeUIFlocInternalsHost ||
+#endif
          host == chrome::kChromeUIGCMInternalsHost ||
          host == chrome::kChromeUIInternalsHost ||
          host == chrome::kChromeUIInterstitialHost ||
@@ -52,7 +55,6 @@ bool IsWebUiHostInDevUiDfm(const std::string& host) {
          host == chrome::kChromeUIPasswordManagerInternalsHost ||
          host == chrome::kChromeUIPolicyHost ||
          host == chrome::kChromeUIPredictorsHost ||
-         host == chrome::kChromeUIQuotaInternalsHost ||
          host == chrome::kChromeUISandboxHost ||
          host == chrome::kChromeUISignInInternalsHost ||
          host == chrome::kChromeUISiteEngagementHost ||
@@ -71,6 +73,7 @@ bool IsWebUiHostInDevUiDfm(const std::string& host) {
          host == content::kChromeUIMediaInternalsHost ||
          host == content::kChromeUINetworkErrorsListingHost ||
          host == content::kChromeUIProcessInternalsHost ||
+         host == content::kChromeUIQuotaInternalsHost ||
          host == content::kChromeUIServiceWorkerInternalsHost ||
          host == content::kChromeUIUkmHost ||
          host == content::kChromeUIWebRTCInternalsHost;
@@ -91,7 +94,7 @@ std::unique_ptr<content::NavigationThrottle>
 DevUiLoaderThrottle::MaybeCreateThrottleFor(content::NavigationHandle* handle) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(handle);
-  if (!handle->IsInMainFrame())
+  if (!handle->IsInPrimaryMainFrame())
     return nullptr;
 
   if (!ShouldInstallDevUiDfm(handle->GetURL()))

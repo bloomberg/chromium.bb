@@ -304,7 +304,7 @@ class BlockSparseMatrix : public SparseMatrixBase<BlockSparseMatrix<Scalar_,_Blo
     };
     typedef Matrix<Scalar, _BlockAtCompileTime, _BlockAtCompileTime,IsColMajor ? ColMajor : RowMajor> BlockScalar;
     typedef Matrix<RealScalar, _BlockAtCompileTime, _BlockAtCompileTime,IsColMajor ? ColMajor : RowMajor> BlockRealScalar;
-    typedef typename internal::conditional<_BlockAtCompileTime==Dynamic, Scalar, BlockScalar>::type BlockScalarReturnType;
+    typedef std::conditional_t<_BlockAtCompileTime==Dynamic, Scalar, BlockScalar> BlockScalarReturnType;
     typedef BlockSparseMatrix<Scalar, BlockSize, IsColMajor ? ColMajor : RowMajor, StorageIndex> PlainObject;
   public:
     // Default constructor
@@ -939,7 +939,7 @@ class BlockSparseMatrix : public SparseMatrixBase<BlockSparseMatrix<Scalar_,_Blo
     {
       if(m_blockSize == Dynamic) return m_blockPtr[id];
       else return id * m_blockSize * m_blockSize;
-      //return blockDynIdx(id, typename internal::conditional<(BlockSize==Dynamic), internal::true_type, internal::false_type>::type());
+      //return blockDynIdx(id, std::conditional_t<(BlockSize==Dynamic), internal::true_type, internal::false_type>());
     }
 
 

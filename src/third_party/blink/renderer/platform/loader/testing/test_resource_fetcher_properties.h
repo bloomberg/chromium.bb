@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_TESTING_TEST_RESOURCE_FETCHER_PROPERTIES_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_TESTING_TEST_RESOURCE_FETCHER_PROPERTIES_H_
 
+#include "base/check_op.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/platform/heap/forward.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
@@ -36,7 +37,9 @@ class TestResourceFetcherProperties final : public ResourceFetcherProperties {
       const override {
     return *fetch_client_settings_object_;
   }
-  bool IsMainFrame() const override { return is_main_frame_; }
+  bool IsOutermostMainFrame() const override {
+    return is_outermost_main_frame_;
+  }
   ControllerServiceWorkerMode GetControllerServiceWorkerMode() const override {
     return service_worker_mode_;
   }
@@ -60,15 +63,10 @@ class TestResourceFetcherProperties final : public ResourceFetcherProperties {
   }
   const KURL& WebBundlePhysicalUrl() const override;
   int GetOutstandingThrottledLimit() const override {
-    return IsMainFrame() ? 3 : 2;
+    return IsOutermostMainFrame() ? 3 : 2;
   }
 
-  scoped_refptr<SecurityOrigin> GetLitePageSubresourceRedirectOrigin()
-      const override {
-    return nullptr;
-  }
-
-  void SetIsMainFrame(bool value) { is_main_frame_ = value; }
+  void SetIsOutermostMainFrame(bool value) { is_outermost_main_frame_ = value; }
   void SetControllerServiceWorkerMode(ControllerServiceWorkerMode mode) {
     service_worker_mode_ = mode;
   }
@@ -85,7 +83,7 @@ class TestResourceFetcherProperties final : public ResourceFetcherProperties {
 
  private:
   const Member<const FetchClientSettingsObject> fetch_client_settings_object_;
-  bool is_main_frame_ = false;
+  bool is_outermost_main_frame_ = false;
   ControllerServiceWorkerMode service_worker_mode_ =
       ControllerServiceWorkerMode::kNoController;
   int64_t service_worker_id_ = 0;

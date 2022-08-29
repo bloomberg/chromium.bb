@@ -103,13 +103,13 @@ DnsConfig GetFuzzedDnsConfig(FuzzedDataProvider* data_provider) {
   switch (data_provider->ConsumeIntegralInRange(0, 3)) {
     case 3:
       config.search.push_back("foo.com");
-      FALLTHROUGH;
+      [[fallthrough]];
     case 2:
       config.search.push_back("bar");
-      FALLTHROUGH;
+      [[fallthrough]];
     case 1:
       config.search.push_back("com");
-      FALLTHROUGH;
+      [[fallthrough]];
     default:
       break;
   }
@@ -385,10 +385,9 @@ class FuzzedHostResolverManager : public HostResolverManager {
     SetMdnsSocketFactoryForTesting(
         std::make_unique<FuzzedMdnsSocketFactory>(data_provider_));
     std::unique_ptr<DnsClient> dns_client = DnsClient::CreateClientForTesting(
-        net_log_, &socket_factory_,
-        base::BindRepeating(
-            &FuzzedDataProvider::ConsumeIntegralInRange<int32_t>,
-            base::Unretained(data_provider_)));
+        net_log_, base::BindRepeating(
+                      &FuzzedDataProvider::ConsumeIntegralInRange<int32_t>,
+                      base::Unretained(data_provider_)));
     dns_client->SetSystemConfig(GetFuzzedDnsConfig(data_provider_));
     HostResolverManager::SetDnsClientForTesting(std::move(dns_client));
   }

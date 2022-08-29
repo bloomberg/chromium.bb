@@ -15,7 +15,6 @@
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/process/process_iterator.h"
-#include "base/task/post_task.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 
@@ -55,7 +54,7 @@ TerminationStatus GetTerminationStatusImpl(ProcessHandle handle,
       case SIGSYS:
         return TERMINATION_STATUS_PROCESS_CRASHED;
       case SIGKILL:
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
         // On ChromeOS, only way a process gets kill by SIGKILL
         // is by oom-killer.
         return TERMINATION_STATUS_PROCESS_WAS_KILLED_BY_OOM;
@@ -121,7 +120,7 @@ bool CleanupProcesses(const FilePath::StringType& executable_name,
   return exited_cleanly;
 }
 
-#if !defined(OS_APPLE)
+#if !BUILDFLAG(IS_APPLE)
 
 namespace {
 
@@ -159,7 +158,7 @@ void EnsureProcessTerminated(Process process) {
       0, new BackgroundReaper(std::move(process), Seconds(2)));
 }
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 void EnsureProcessGetsReaped(Process process) {
   DCHECK(!process.is_current());
 
@@ -170,8 +169,8 @@ void EnsureProcessGetsReaped(Process process) {
   PlatformThread::CreateNonJoinable(
       0, new BackgroundReaper(std::move(process), TimeDelta()));
 }
-#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 
-#endif  // !defined(OS_APPLE)
+#endif  // !BUILDFLAG(IS_APPLE)
 
 }  // namespace base

@@ -52,7 +52,8 @@ RELEASE_ACQUIRE_WEAK_ACCESSORS(Map, raw_transitions,
                                kTransitionsOrPrototypeInfoOffset)
 
 ACCESSORS_CHECKED2(Map, prototype, HeapObject, kPrototypeOffset, true,
-                   value.IsNull() || value.IsJSReceiver())
+                   value.IsNull() || value.IsJSProxy() ||
+                       (value.IsJSObject() && value.map().is_prototype_map()))
 
 DEF_GETTER(Map, prototype_info, Object) {
   Object value = TaggedField<Object, kTransitionsOrPrototypeInfoOffset>::load(
@@ -191,8 +192,8 @@ bool Map::TooManyFastProperties(StoreOrigin store_origin) const {
     return external > limit || counts.GetTotal() > kMaxNumberOfDescriptors;
   } else {
     int limit = std::max({kFastPropertiesSoftLimit, GetInObjectProperties()});
-    int external = NumberOfFields(ConcurrencyMode::kNotConcurrent) -
-                   GetInObjectProperties();
+    int external =
+        NumberOfFields(ConcurrencyMode::kSynchronous) - GetInObjectProperties();
     return external > limit;
   }
 }
@@ -394,7 +395,7 @@ int Map::UsedInstanceSize() const {
 }
 
 void Map::SetInObjectUnusedPropertyFields(int value) {
-  STATIC_ASSERT(JSObject::kFieldsAdded == JSObject::kHeaderSize / kTaggedSize);
+  static_assert(JSObject::kFieldsAdded == JSObject::kHeaderSize / kTaggedSize);
   if (!IsJSObjectMap()) {
     CHECK_EQ(0, value);
     set_used_or_unused_instance_size_in_words(0);
@@ -410,7 +411,7 @@ void Map::SetInObjectUnusedPropertyFields(int value) {
 }
 
 void Map::SetOutOfObjectUnusedPropertyFields(int value) {
-  STATIC_ASSERT(JSObject::kFieldsAdded == JSObject::kHeaderSize / kTaggedSize);
+  static_assert(JSObject::kFieldsAdded == JSObject::kHeaderSize / kTaggedSize);
   CHECK_LT(static_cast<unsigned>(value), JSObject::kFieldsAdded);
   // For out of object properties "used_instance_size_in_words" byte encodes
   // the slack in the property array.
@@ -437,7 +438,7 @@ void Map::CopyUnusedPropertyFieldsAdjustedForInstanceSize(Map map) {
 
 void Map::AccountAddedPropertyField() {
   // Update used instance size and unused property fields number.
-  STATIC_ASSERT(JSObject::kFieldsAdded == JSObject::kHeaderSize / kTaggedSize);
+  static_assert(JSObject::kFieldsAdded == JSObject::kHeaderSize / kTaggedSize);
 #ifdef DEBUG
   int new_unused = UnusedPropertyFields() - 1;
   if (new_unused < 0) new_unused += JSObject::kFieldsAdded;
@@ -590,14 +591,6 @@ bool Map::has_fast_string_wrapper_elements() const {
   return elements_kind() == FAST_STRING_WRAPPER_ELEMENTS;
 }
 
-bool Map::has_typed_array_elements() const {
-  return IsTypedArrayElementsKind(elements_kind());
-}
-
-bool Map::has_rab_gsab_typed_array_elements() const {
-  return IsRabGsabTypedArrayElementsKind(elements_kind());
-}
-
 bool Map::has_typed_array_or_rab_gsab_typed_array_elements() const {
   return IsTypedArrayOrRabGsabTypedArrayElementsKind(elements_kind());
 }
@@ -688,8 +681,8 @@ bool Map::IsBooleanMap() const {
 }
 
 bool Map::IsNullOrUndefinedMap() const {
-  return *this == GetReadOnlyRoots().null_map() ||
-         *this == GetReadOnlyRoots().undefined_map();
+  auto roots = GetReadOnlyRoots();
+  return *this == roots.null_map() || *this == roots.undefined_map();
 }
 
 bool Map::IsPrimitiveMap() const {
@@ -768,9 +761,7 @@ void Map::SetBackPointer(HeapObject value, WriteBarrierMode mode) {
 
 // static
 Map Map::ElementsTransitionMap(Isolate* isolate, ConcurrencyMode cmode) {
-  DisallowGarbageCollection no_gc;
-  return TransitionsAccessor(isolate, *this, &no_gc,
-                             cmode == ConcurrencyMode::kConcurrent)
+  return TransitionsAccessor(isolate, *this, IsConcurrent(cmode))
       .SearchSpecial(ReadOnlyRoots(isolate).elements_transition_symbol());
 }
 
@@ -797,9 +788,13 @@ ACCESSORS_CHECKED(Map, wasm_type_info, WasmTypeInfo,
 
 bool Map::IsPrototypeValidityCellValid() const {
   Object validity_cell = prototype_validity_cell();
-  Object value = validity_cell.IsSmi() ? Smi::cast(validity_cell)
-                                       : Cell::cast(validity_cell).value();
-  return value == Smi::FromInt(Map::kPrototypeChainValid);
+  if (validity_cell.IsSmi()) {
+    // Smi validity cells should always be considered valid.
+    DCHECK_EQ(Smi::cast(validity_cell).value(), Map::kPrototypeChainValid);
+    return true;
+  }
+  Smi cell_value = Smi::cast(Cell::cast(validity_cell).value());
+  return cell_value == Smi::FromInt(Map::kPrototypeChainValid);
 }
 
 DEF_GETTER(Map, GetConstructor, Object) {

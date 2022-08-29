@@ -9,12 +9,14 @@ title: Page Heap for Chromium
 ---
 
 Page Heap is a Windows mode to help identify memory errors, including those in
-third-party or OS supplied code. Application Verifier is a Windows mode that can
-detect additional programming errors.
+third-party or OS supplied code. Application Verifier is a Windows mode that
+enables Page Heap and can also detect additional programming errors.
 
-Note that until crbug.com/1004989 is fixed you may need to add
---disable-features=RendererCodeIntegrity to avoid sandbox crashes in renderer
-processes when using pageheap. See also [this
+When using Application Verifier on official builds of Chrome you need to add
+`--disable-features=RendererCodeIntegrity` to avoid sandbox crashes in renderer
+processes. See [crbug.com/1004989](https://crbug.com/1004989) for details.
+Application Verifier can be used on non-official developer builds, but you
+should probably close stable Chrome to avoid having it crash. See also [this
 page](/developers/how-tos/debugging-on-windows) for information on Application
 Verifier.
 
@@ -24,19 +26,19 @@ Verifier.
 Verifier](https://randomascii.wordpress.com/2011/12/07/increased-reliability-through-more-crashes/)
 (comes with the Windows Platform SDK, use X64 or WOW versions), which enables
 full page heap and also enables other checks. If you run Application Verifier
-(requires Chrome 68.0.3406.0 or later) you can enable the checks for chrome by
-using File-&gt; Add Application to add chrome.exe. Then open the Basics section
-and uncheck *Leak*, to avoid known failures that do not indicate problems we
-want to fix (see crbug.com/807500 for details). You may also need to disable
-*Handles* and *Locks* depending on your graphics driver and specific Chrome
-version.
+you can enable the checks for chrome by using File-&gt; Add Application to add
+chrome.exe. Then open the Basics section and uncheck *Leak* and *SRWLock*, to
+avoid known failures that do not indicate real problems (see crbug.com/807500
+for details). You may also need to disable *Handles* and *Locks* depending on
+your graphics driver.
 
 For some builds (debug builds for sure) it is necessary to disable Basics-&gt;
 TLS due to aggressive TLS index range-checking done by v8.
 
 After adjusting these settings be sure to hit Save. Note that all chrome.exe
 process launches will be affected so you may want to shut down stable Chrome
-while testing to avoid confusing problems.
+while testing to avoid confusing problems. You should make sure that Chrome has
+fully shut down.
 
 Page heap should always be used with a 64-bit version of Chrome to avoid address
 space exhaustion - every allocation takes a minimum of 4 KB of memory and at
@@ -99,7 +101,7 @@ accordingly.
 in registry. Gflags is a utility downloadable from Microsoft to edit settings
 under "Image File Execution Options".
 
-### ### Troubleshooting
+### Troubleshooting
 
 *   Are you sure you're using the 32-bit version of gflags? If you use
             the 64-bit version, you won't get any error messages, but nothing

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "base/cancelable_callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/ash/authpolicy/authpolicy_helper.h"
 #include "chrome/browser/ash/login/enrollment/enrollment_screen_view.h"
 #include "chrome/browser/ash/login/enrollment/enterprise_enrollment_helper.h"
@@ -51,7 +52,8 @@ class EnrollmentScreen
     BACK,
     SKIPPED_FOR_TESTS,
     TPM_ERROR,
-    TPM_DBUS_ERROR
+    TPM_DBUS_ERROR,
+    BACK_TO_AUTO_ENROLLMENT_CHECK,
   };
 
   static std::string GetResultString(Result result);
@@ -77,6 +79,7 @@ class EnrollmentScreen
 
   // EnrollmentScreenView::Controller implementation:
   void OnLoginDone(const std::string& user,
+                   int license_type,
                    const std::string& auth_code) override;
   void OnRetry() override;
   void OnCancel() override;
@@ -128,7 +131,7 @@ class EnrollmentScreen
   void ShowImpl() override;
   void HideImpl() override;
   bool HandleAccelerator(LoginAcceleratorAction action) override;
-  void OnUserAction(const std::string& action_id) override;
+  void OnUserActionDeprecated(const std::string& action_id) override;
 
   // Expose the exit_callback to test screen overrides.
   ScreenExitCallback* exit_callback() { return &exit_callback_; }
@@ -230,11 +233,20 @@ class EnrollmentScreen
   // to reboot the device.
   void CheckInstallAttributesState();
 
+  // Updates the local variable, according to the existence of the Chromad
+  // migration flag file.
+  void UpdateChromadMigrationOobeFlow(bool exists);
+
+  // Indicates whether this is an automatic enrollment as part of Zero-Touch
+  // Hands Off flow or Chromad Migration.
+  bool IsAutomaticEnrollmentFlow();
+
   EnrollmentScreenView* view_;
   ScreenExitCallback exit_callback_;
   absl::optional<TpmStatusCallback> tpm_ownership_callback_for_testing_;
   policy::EnrollmentConfig config_;
   policy::EnrollmentConfig enrollment_config_;
+  policy::LicenseType license_type_to_use_ = policy::LicenseType::kEnterprise;
 
   // 'Current' and 'Next' authentication mechanisms to be used.
   Auth current_auth_ = AUTH_OAUTH;
@@ -249,6 +261,11 @@ class EnrollmentScreen
   int install_state_retries_ = 0;
   // Timer for install attribute to resolve.
   base::OneShotTimer wait_state_timer_;
+
+  // This local flag should be true if the OOBE flow is operating as part of the
+  // Chromad to cloud device migration. If so, "Enterprise enrollment complete"
+  // screen should be skipped.
+  bool is_chromad_migration_oobe_flow_ = false;
 
   std::string enrolling_user_domain_;
   std::unique_ptr<base::ElapsedTimer> elapsed_timer_;

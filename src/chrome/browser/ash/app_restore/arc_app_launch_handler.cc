@@ -25,6 +25,7 @@
 #include "chrome/browser/ash/app_restore/arc_window_utils.h"
 #include "chrome/browser/ash/app_restore/full_restore_app_launch_handler.h"
 #include "chrome/browser/ash/arc/arc_util.h"
+#include "chrome/browser/ash/arc/window_predictor/window_predictor_utils.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/profiles/profile.h"
@@ -43,6 +44,7 @@
 #include "components/app_restore/restore_data.h"
 #include "components/app_restore/window_properties.h"
 #include "components/exo/wm_helper.h"
+#include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/types_util.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "ui/display/display.h"
@@ -253,9 +255,12 @@ void ArcAppLaunchHandler::LaunchApp(const std::string& app_id) {
   RemoveWindowsForApp(app_id);
 }
 
+bool ArcAppLaunchHandler::IsAppPendingRestore(const std::string& app_id) const {
+  return base::Contains(app_ids_, app_id);
+}
+
 void ArcAppLaunchHandler::OnAppUpdate(const apps::AppUpdate& update) {
-  if (!update.ReadinessChanged() ||
-      update.AppType() != apps::mojom::AppType::kArc) {
+  if (!update.ReadinessChanged() || update.AppType() != apps::AppType::kArc) {
     return;
   }
 
@@ -265,7 +270,7 @@ void ArcAppLaunchHandler::OnAppUpdate(const apps::AppUpdate& update) {
   }
 
   // If the app is not ready, don't launch the app for the restoration.
-  if (update.Readiness() != apps::mojom::Readiness::kReady)
+  if (update.Readiness() != apps::Readiness::kReady)
     return;
 
   if (is_shelf_ready_ && base::Contains(app_ids_, update.AppId())) {
@@ -382,8 +387,8 @@ void ArcAppLaunchHandler::PrepareLaunchApps() {
   // for the app.
   std::set<std::string> app_ids;
   cache.ForEachApp([&app_ids, this](const apps::AppUpdate& update) {
-    if (update.Readiness() == apps::mojom::Readiness::kReady &&
-        update.AppType() == apps::mojom::AppType::kArc &&
+    if (update.Readiness() == apps::Readiness::kReady &&
+        update.AppType() == apps::AppType::kArc &&
         base::Contains(app_ids_, update.AppId())) {
       app_ids.insert(update.AppId());
     }
@@ -415,8 +420,13 @@ void ArcAppLaunchHandler::PrepareAppLaunching(const std::string& app_id) {
     DCHECK(data_it.second->event_flag.has_value());
 
     // Set an ARC session id to find the restore window id based on the newly
-    // created ARC task id.
-    const int32_t arc_session_id = ::app_restore::GetArcSessionId();
+    // created ARC task id. Note that the desk template launch ID must be set
+    // first, if available.
+    const int32_t arc_session_id = ::app_restore::CreateArcSessionId();
+    if (desk_template_launch_id_ != 0) {
+      ::app_restore::SetDeskTemplateLaunchIdForArcSessionId(
+          arc_session_id, desk_template_launch_id_);
+    }
     ::app_restore::SetArcSessionIdForWindowId(arc_session_id, data_it.first);
     window_id_to_session_id_[data_it.first] = arc_session_id;
     session_id_to_window_id_[arc_session_id] = data_it.first;
@@ -424,8 +434,7 @@ void ArcAppLaunchHandler::PrepareAppLaunching(const std::string& app_id) {
     bool launch_ghost_window = false;
 #if BUILDFLAG(ENABLE_WAYLAND_SERVER)
     if (window_handler_ &&
-        (data_it.second->bounds_in_root.has_value() ||
-         data_it.second->current_bounds.has_value()) &&
+        arc::CanLaunchGhostWindowByRestoreData(*data_it.second) &&
         window_handler_->LaunchArcGhostWindow(app_id, arc_session_id,
                                               data_it.second.get())) {
       launch_ghost_window = true;
@@ -623,7 +632,7 @@ void ArcAppLaunchHandler::LaunchApp(const std::string& app_id,
   } else {
     // Set an ARC session id to find the restore window id based on the newly
     // created ARC task id.
-    const int32_t arc_session_id = ::app_restore::GetArcSessionId();
+    const int32_t arc_session_id = ::app_restore::CreateArcSessionId();
     window_info->window_id = arc_session_id;
     ::app_restore::SetArcSessionIdForWindowId(arc_session_id, window_id);
     window_id_to_session_id_[window_id] = arc_session_id;
@@ -777,6 +786,12 @@ void ArcAppLaunchHandler::UpdateCpuUsage() {
 
 void ArcAppLaunchHandler::OnCpuUsageUpdated(
     chromeos::cros_healthd::mojom::TelemetryInfoPtr info_ptr) {
+  // May be null in tests.
+  if (info_ptr.is_null() || info_ptr->cpu_result.is_null() ||
+      info_ptr->cpu_result->get_cpu_info().is_null()) {
+    return;
+  }
+
   CpuTick tick;
   // For simplicity, assume that device has only one physical CPU.
   for (const auto& logical_cpu :
@@ -803,15 +818,9 @@ void ArcAppLaunchHandler::RecordArcGhostWindowLaunch(bool is_arc_ghost_window) {
   base::UmaHistogramBoolean(kArcGhostWindowLaunchHistogram,
                             is_arc_ghost_window);
 
-  if (!is_arc_ghost_window) {
-    if (!::full_restore::features::IsArcGhostWindowEnabled()) {
-      base::UmaHistogramEnumeration(kNoGhostWindowReasonHistogram,
-                                    NoGhostWindowReason::kFlagDisabled);
-    }
-    if (!exo::WMHelper::HasInstance()) {
-      base::UmaHistogramEnumeration(kNoGhostWindowReasonHistogram,
-                                    NoGhostWindowReason::kNoExoHelper);
-    }
+  if (!is_arc_ghost_window && !exo::WMHelper::HasInstance()) {
+    base::UmaHistogramEnumeration(kNoGhostWindowReasonHistogram,
+                                  NoGhostWindowReason::kNoExoHelper);
   }
 }
 

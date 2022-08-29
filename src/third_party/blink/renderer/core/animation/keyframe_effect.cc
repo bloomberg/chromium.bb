@@ -50,11 +50,13 @@
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/core/svg/svg_element.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
 
@@ -126,8 +128,14 @@ KeyframeEffect* KeyframeEffect::Create(
     effect->target_pseudo_ = pseudo;
     if (element) {
       element->GetDocument().UpdateStyleAndLayoutTreeForNode(element);
-      effect->effect_target_ = element->GetPseudoElement(
-          CSSSelectorParser::ParsePseudoElement(pseudo, element));
+      PseudoId pseudo_id =
+          CSSSelectorParser::ParsePseudoElement(pseudo, element);
+      AtomicString pseudo_argument =
+          PseudoElementHasArguments(pseudo_id)
+              ? CSSSelectorParser::ParsePseudoElementArgument(pseudo)
+              : WTF::g_null_atom;
+      effect->effect_target_ =
+          element->GetNestedPseudoElement(pseudo_id, pseudo_argument);
     }
   }
   return effect;
@@ -172,7 +180,10 @@ KeyframeEffect::KeyframeEffect(Element* target,
 
   // fix target for css animations and transitions
   if (target && target->IsPseudoElement()) {
-    target_element_ = target->parentElement();
+    // The |target_element_| is used to target events in script when
+    // animating pseudo elements. This requires using the DOM element that the
+    // pseudo element originates from.
+    target_element_ = DynamicTo<PseudoElement>(target)->OriginatingElement();
     DCHECK(!target_element_->IsPseudoElement());
     target_pseudo_ = target->tagName();
   }
@@ -239,20 +250,19 @@ void KeyframeEffect::setComposite(String composite_string) {
   InvalidateAndNotifyOwner();
 }
 
+// Returns a list of 'ComputedKeyframes'. A ComputedKeyframe consists of the
+// normal keyframe data combined with the computed offset for the given
+// keyframe.
+// https://w3.org/TR/web-animations-1/#dom-keyframeeffect-getkeyframes
 HeapVector<ScriptValue> KeyframeEffect::getKeyframes(
     ScriptState* script_state) {
   if (Animation* animation = GetAnimation())
     animation->FlushPendingUpdates();
 
   HeapVector<ScriptValue> computed_keyframes;
-  if (!model_->HasFrames())
+  if (!model_->HasFrames() || !script_state->ContextIsValid())
     return computed_keyframes;
 
-  // getKeyframes() returns a list of 'ComputedKeyframes'. A ComputedKeyframe
-  // consists of the normal keyframe data combined with the computed offset for
-  // the given keyframe.
-  //
-  // https://w3c.github.io/web-animations/#dom-keyframeeffectreadonly-getkeyframes
   KeyframeVector keyframes = ignore_css_keyframes_
                                  ? model_->GetFrames()
                                  : model_->GetComputedKeyframes(EffectTarget());
@@ -330,15 +340,19 @@ KeyframeEffect::CheckCanStartAnimationOnCompositor(
   // no visual result.
   if (!effect_target_) {
     reasons |= CompositorAnimations::kInvalidAnimationOrEffect;
+  } else if (!IsCurrent()) {
+    // There is no reason to composite an effect that is not current, and
+    // CheckCanStartAnimationOnCompositor might assert about having some but
+    // not all properties if we call it on such an animation.
+    reasons |= CompositorAnimations::kInvalidAnimationOrEffect;
   } else {
     if (effect_target_->GetComputedStyle() &&
         effect_target_->GetComputedStyle()->HasOffset())
       reasons |= CompositorAnimations::kTargetHasCSSOffset;
 
-    // Do not put transforms on compositor if more than one of them are defined
-    // in computed style because they need to be explicitly ordered
-    if (HasMultipleTransformProperties())
-      reasons |= CompositorAnimations::kTargetHasMultipleTransformProperties;
+    // Do not animate a property on the compositor that is marked important.
+    if (AffectsImportantProperty())
+      reasons |= CompositorAnimations::kAffectsImportantProperty;
 
     reasons |= CompositorAnimations::CheckCanStartAnimationOnCompositor(
         SpecifiedTiming(), NormalizedTiming(), *effect_target_, GetAnimation(),
@@ -386,7 +400,9 @@ bool KeyframeEffect::CancelAnimationOnCompositor(
     CompositorAnimation* compositor_animation) {
   if (!HasActiveAnimationsOnCompositor())
     return false;
-  if (!effect_target_ || !effect_target_->GetLayoutObject())
+  // Don't check effect_target_->GetLayoutObject(); we might be here because
+  // it's *just* been set to null.
+  if (!effect_target_)
     return false;
   DCHECK(Model());
   for (const auto& compositor_keyframe_model_id :
@@ -472,7 +488,7 @@ const CSSProperty** TransformProperties() {
 }  // namespace
 
 bool KeyframeEffect::UpdateBoxSizeAndCheckTransformAxisAlignment(
-    const FloatSize& box_size) {
+    const gfx::SizeF& box_size) {
   static const auto** properties = TransformProperties();
   bool preserves_axis_alignment = true;
   bool has_transform = false;
@@ -736,26 +752,27 @@ bool KeyframeEffect::HasIncompatibleStyle() const {
           return true;
       }
     }
-    return HasMultipleTransformProperties();
   }
 
   return false;
 }
 
-bool KeyframeEffect::HasMultipleTransformProperties() const {
+bool KeyframeEffect::AffectsImportantProperty() const {
   if (!effect_target_->GetComputedStyle())
     return false;
 
-  unsigned transform_property_count = 0;
-  if (effect_target_->GetComputedStyle()->HasTransformOperations())
-    transform_property_count++;
-  if (effect_target_->GetComputedStyle()->Rotate())
-    transform_property_count++;
-  if (effect_target_->GetComputedStyle()->Scale())
-    transform_property_count++;
-  if (effect_target_->GetComputedStyle()->Translate())
-    transform_property_count++;
-  return transform_property_count > 1;
+  const CSSBitset* important_properties =
+      effect_target_->GetComputedStyle()->GetBaseImportantSet();
+
+  if (!important_properties)
+    return false;
+
+  for (CSSPropertyID property_id : *important_properties) {
+    if (Affects(PropertyHandle(CSSProperty::Get(property_id))))
+      return true;
+  }
+
+  return false;
 }
 
 ActiveInterpolationsMap KeyframeEffect::InterpolationsForCommitStyles() {

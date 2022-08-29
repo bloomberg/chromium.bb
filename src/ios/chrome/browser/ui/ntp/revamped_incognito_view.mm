@@ -10,6 +10,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/application_context.h"
 #import "ios/chrome/browser/drag_and_drop/url_drag_drop_handler.h"
+#import "ios/chrome/browser/ui/icons/chrome_symbol.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_url_loader_delegate.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_utils.h"
@@ -38,9 +39,12 @@ const CGFloat kStackViewImageSpacing = 16.0;
 const CGFloat kStackViewDescriptionsSpacing = 20.0;
 const CGFloat kLayoutGuideVerticalMargin = 8.0;
 const CGFloat kLayoutGuideMinHeight = 12.0;
-const CGFloat kDescriptionsInnerMargin = 16.0;
+const CGFloat kDescriptionsInnerMargin = 17.0;
 const CGFloat kLearnMoreVerticalInnerMargin = 8.0;
 const CGFloat kLearnMoreHorizontalInnerMargin = 16.0;
+
+// The size of the incognito symbol image.
+NSInteger kIncognitoSymbolImagePointSize = 72;
 
 // The URL for the the Learn More page shown on incognito new tab.
 // Taken from ntp_resource_cache.cc.
@@ -90,9 +94,11 @@ UIColor* TextBackgroudColor() {
 // properly in a UILabel.  Removes the "<ul>" tag and replaces "<li>" with a
 // bullet unicode character.
 NSAttributedString* FormatHTMLListForUILabel(NSString* listString) {
-  listString =
-      [listString stringByReplacingOccurrencesOfString:@"\n        <ul>"
-                                            withString:@""];
+  listString = [listString
+      stringByReplacingOccurrencesOfString:@"\n +<ul>"
+                                withString:@""
+                                   options:NSRegularExpressionSearch
+                                     range:NSMakeRange(0, [listString length])];
   listString = [listString stringByReplacingOccurrencesOfString:@"</ul>"
                                                      withString:@""];
 
@@ -197,8 +203,20 @@ NSAttributedString* FormatHTMLForLearnMoreSection() {
     [self.containerView addSubview:self.stackView];
 
     // Incognito icon.
-    UIImage* incognitoImage = [[UIImage imageNamed:@"incognito_icon"]
-        imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    UIImage* incognitoImage;
+    if (UseSymbols()) {
+      UIImageSymbolConfiguration* configuration = [UIImageSymbolConfiguration
+          configurationWithPointSize:kIncognitoSymbolImagePointSize
+                              weight:UIImageSymbolWeightLight
+                               scale:UIImageSymbolScaleMedium];
+      incognitoImage = [CustomSymbolWithConfiguration(
+          kIncognitoCircleFillSymbol, configuration)
+          imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    } else {
+      incognitoImage = [[UIImage imageNamed:@"incognito_icon"]
+          imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    }
+
     UIImageView* incognitoImageView =
         [[UIImageView alloc] initWithImage:incognitoImage];
     incognitoImageView.tintColor = [UIColor colorNamed:kTextPrimaryColor];
@@ -342,6 +360,7 @@ NSAttributedString* FormatHTMLForLearnMoreSection() {
   learnMore.editable = NO;
   learnMore.delegate = self;
   learnMore.attributedText = FormatHTMLForLearnMoreSection();
+  learnMore.textAlignment = NSTextAlignmentCenter;
   learnMore.layer.masksToBounds = YES;
   learnMore.layer.cornerRadius = 17;
   learnMore.backgroundColor = TextBackgroudColor();

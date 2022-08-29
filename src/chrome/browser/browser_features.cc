@@ -8,7 +8,7 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "chrome/browser/net/system_network_context_manager.h"
 #endif
 
@@ -28,7 +28,19 @@ const base::Feature kColorProviderRedirectionForThemeProvider = {
 // Destroy profiles when their last browser window is closed, instead of when
 // the browser exits.
 const base::Feature kDestroyProfileOnBrowserClose{
-    "DestroyProfileOnBrowserClose", base::FEATURE_DISABLED_BY_DEFAULT};
+  "DestroyProfileOnBrowserClose",
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+      base::FEATURE_ENABLED_BY_DEFAULT
+};
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+};
+#endif
+
+// DestroyProfileOnBrowserClose only covers deleting regular (non-System)
+// Profiles. This flags lets us destroy the System Profile, as well.
+const base::Feature kDestroySystemProfiles{"DestroySystemProfiles",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Nukes profile directory before creating a new profile using
 // ProfileManager::CreateMultiProfileAsync().
@@ -51,7 +63,7 @@ const char kBrowserCommandIdParam[] = "BrowserCommandIdParam";
 const base::Feature kUseManagementService{"UseManagementService",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 // Enables integration with the macOS feature Universal Links.
 const base::Feature kEnableUniveralLinks{"EnableUniveralLinks",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
@@ -62,14 +74,16 @@ const base::Feature kEnableUniveralLinks{"EnableUniveralLinks",
 // menu.
 const base::Feature kQuickSettingsPWANotifications{
     "QuickSettingsPWA", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
 
+#if BUILDFLAG(IS_CHROMEOS)
 // Enables being able to zoom a web page by double tapping in Chrome OS tablet
 // mode.
 const base::Feature kDoubleTapToZoomInTabletMode{
     "DoubleTapToZoomInTabletMode", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 // Adds an item to the context menu that copies a link to the page with the
 // selected text highlighted.
 const base::Feature kCopyLinkToText{"CopyLinkToText",
@@ -80,21 +94,11 @@ const base::Feature kMuteNotificationSnoozeAction{
     "MuteNotificationSnoozeAction", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
-// Shows a confirmation dialog when updates to PWAs identity (name and icon)
-// have been detected.
-const base::Feature kPwaUpdateDialogForNameAndIcon{
-  "PwaUpdateDialogForNameAndIcon",
-#if defined(OS_ANDROID)
-      base::FEATURE_ENABLED_BY_DEFAULT
-#else
-      base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-};
-
 // Gates sandboxed iframe navigation toward external protocol behind any of:
-// - allow-popups
 // - allow-top-navigation
+// - allow-top-navigation-to-custom-protocols
 // - allow-top-navigation-with-user-gesture (+ user gesture)
+// - allow-popups
 //
 // Motivation:
 // Developers are surprised that a sandboxed iframe can navigate and/or
@@ -106,40 +110,20 @@ const base::Feature kPwaUpdateDialogForNameAndIcon{
 // malvertising.
 //
 // Implementation bug: https://crbug.com/1253379
+// I2S: https://groups.google.com/a/chromium.org/g/blink-dev/c/-t-f7I6VvOI
+//
+// Enabled in M103. Flag to be removed in M106
 const base::Feature kSandboxExternalProtocolBlocked{
-    "SandboxExternalProtocolBlocked", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// If enabled, a blue-border is drawn around shared tabs.
-// If disabled, the blue border is *never* used, no matter what any other
-// flag might say.
-// If enabled, the blue border is *generally* used, but other flags might
-// still disable it for specific cases.
-const base::Feature kTabCaptureBlueBorder{"TabCaptureBlueBorder",
-                                          base::FEATURE_ENABLED_BY_DEFAULT};
-
-// This flag is subordinate to |kTabCaptureBlueBorder|:
-// * If |kTabCaptureBlueBorder| is disabled, the blue border is always disabled,
-//    and this flag has no effect.
-// * If |kTabCaptureBlueBorder| and
-//   |kTabCaptureBlueBorderForSelfCaptureRegionCaptureOT| are both enabled,
-//   the blue-border is always drawn.
-// * If |kTabCaptureBlueBorder| is enabled but
-//   |kTabCaptureBlueBorderForSelfCaptureRegionCaptureOT| is disabled,
-//   then the blue-border tab-capture-indicator will NOT be drawn if the
-//   following conditions apply:
-//   1. A single capture of the tab exists, and it is self-capture (a document
-//      is tab-capturing the very tab in which the document is loaded).
-//   2. The capturing document is opted-into Region Capture. (Either through an
-//      origin trial or through enabling Experimental Web Platforms features.)
-const base::Feature kTabCaptureBlueBorderForSelfCaptureRegionCaptureOT{
-    "TabCaptureBlueBorderForSelfCaptureRegionCaptureOT",
-    base::FEATURE_ENABLED_BY_DEFAULT};
+    "SandboxExternalProtocolBlocked", base::FEATURE_ENABLED_BY_DEFAULT};
+// Enabled in M100. Flag to be removed in M106
+const base::Feature kSandboxExternalProtocolBlockedWarning{
+    "SandboxExternalProtocolBlockedWarning", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables migration of the network context data from `unsandboxed_data_path` to
 // `data_path`. See the explanation in network_context.mojom.
 const base::Feature kTriggerNetworkDataMigration {
   "TriggerNetworkDataMigration",
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
       base::FEATURE_DISABLED_BY_DEFAULT
@@ -151,15 +135,33 @@ const base::Feature kTriggerNetworkDataMigration {
 const base::Feature kWebUsbDeviceDetection{"WebUsbDeviceDetection",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 // Enables Certificate Transparency on Android.
 const base::Feature kCertificateTransparencyAndroid{
-    "CertificateTransparencyAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
+    "CertificateTransparencyAndroid", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 const base::Feature kLargeFaviconFromGoogle{"LargeFaviconFromGoogle",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 const base::FeatureParam<int> kLargeFaviconFromGoogleSizeInDip{
     &kLargeFaviconFromGoogle, "favicon_size_in_dip", 128};
+
+// Enables the use of a `ProfileManagerObserver` to trigger the post profile
+// init step of the browser startup. This affects the initialization order of
+// some features with the goal to improve startup performance in some cases.
+// See https://bit.ly/chromium-startup-no-guest-profile.
+const base::Feature kObserverBasedPostProfileInit{
+    "ObserverBasedPostProfileInit", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Controls whether the static key pinning list can be updated via component
+// updater.
+const base::Feature kKeyPinningComponentUpdater{
+    "KeyPinningComponentUpdater", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// When this feature is enabled, the network service will restart unsandboxed if
+// a previous attempt to launch it sandboxed failed.
+const base::Feature kRestartNetworkServiceUnsandboxedForFailedLaunch{
+    "RestartNetworkServiceUnsandboxedForFailedLaunch",
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace features

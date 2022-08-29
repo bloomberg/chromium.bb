@@ -4,15 +4,15 @@
 
 package com.android.webview.chromium;
 
-import android.annotation.TargetApi;
 import android.os.Build;
 import android.webkit.RenderProcessGoneDetail;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.webkit.WebViewDelegate;
 
+import androidx.annotation.RequiresApi;
+
 import org.chromium.android_webview.AwRenderProcessGoneDetail;
-import org.chromium.base.annotations.VerifiesOnO;
 
 /**
  * Utility class to use new APIs that were added in O (API level 26). These need to exist in a
@@ -21,8 +21,7 @@ import org.chromium.base.annotations.VerifiesOnO;
  * in base/, for reasons such as using system APIs or instantiating an adapter class that is
  * specific to glue layer.
  */
-@VerifiesOnO
-@TargetApi(Build.VERSION_CODES.O)
+@RequiresApi(Build.VERSION_CODES.O)
 public final class GlueApiHelperForO {
     private GlueApiHelperForO() {}
 

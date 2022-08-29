@@ -15,6 +15,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/video_codecs.h"
@@ -25,10 +26,6 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
-
-namespace gpu {
-class GpuMemoryBufferFactory;
-}  // namespace gpu
 
 namespace media {
 namespace test {
@@ -171,19 +168,17 @@ constexpr size_t kPlatformBufferAlignment = 8;
 // frames is not consecutive.
 class AlignedDataHelper {
  public:
-  AlignedDataHelper(
-      const std::vector<uint8_t>& stream,
-      uint32_t num_frames,
-      uint32_t num_read_frames,
-      bool reverse,
-      VideoPixelFormat pixel_format,
-      const gfx::Size& src_coded_size,
-      const gfx::Size& dst_coded_size,
-      const gfx::Rect& visible_rect,
-      const gfx::Size& natural_size,
-      uint32_t frame_rate,
-      VideoFrame::StorageType storage_type,
-      gpu::GpuMemoryBufferFactory* const gpu_memory_buffer_factory);
+  AlignedDataHelper(const std::vector<uint8_t>& stream,
+                    uint32_t num_frames,
+                    uint32_t num_read_frames,
+                    bool reverse,
+                    VideoPixelFormat pixel_format,
+                    const gfx::Size& src_coded_size,
+                    const gfx::Size& dst_coded_size,
+                    const gfx::Rect& visible_rect,
+                    const gfx::Size& natural_size,
+                    uint32_t frame_rate,
+                    VideoFrame::StorageType storage_type);
   ~AlignedDataHelper();
 
   // Compute and return the next frame to be sent to the encoder.
@@ -232,7 +227,6 @@ class AlignedDataHelper {
   uint32_t frame_index_ = 0;
 
   const VideoFrame::StorageType storage_type_;
-  gpu::GpuMemoryBufferFactory* const gpu_memory_buffer_factory_;
 
   // The layout of VideoFrames returned by GetNextFrame().
   absl::optional<VideoFrameLayout> layout_;

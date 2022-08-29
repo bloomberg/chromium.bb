@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/notreached.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 
 namespace printing {
@@ -22,6 +23,10 @@ FakePrintRenderFrame::~FakePrintRenderFrame() = default;
 
 void FakePrintRenderFrame::PrintRequestedPages() {}
 
+void FakePrintRenderFrame::PrintWithParams(mojom::PrintPagesParamsPtr params) {
+  NOTREACHED();
+}
+
 void FakePrintRenderFrame::PrintForSystemDialog() {}
 
 void FakePrintRenderFrame::SetPrintPreviewUI(
@@ -31,7 +36,7 @@ void FakePrintRenderFrame::InitiatePrintPreview(
     mojo::PendingAssociatedRemote<mojom::PrintRenderer> print_renderer,
     bool has_selection) {}
 
-void FakePrintRenderFrame::PrintPreview(base::Value settings) {}
+void FakePrintRenderFrame::PrintPreview(base::Value::Dict settings) {}
 
 void FakePrintRenderFrame::OnPrintPreviewDialogClosed() {}
 
@@ -44,6 +49,11 @@ void FakePrintRenderFrame::PrintingDone(bool success) {}
 void FakePrintRenderFrame::SetPrintingEnabled(bool enabled) {}
 
 void FakePrintRenderFrame::PrintNodeUnderContextMenu() {}
+
+#if BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
+void FakePrintRenderFrame::SnapshotForContentAnalysis(
+    SnapshotForContentAnalysisCallback callback) {}
+#endif  // BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
 
 void FakePrintRenderFrame::BindPrintRenderFrameReceiver(
     mojo::ScopedInterfaceEndpointHandle handle) {
