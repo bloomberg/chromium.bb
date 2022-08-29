@@ -8,6 +8,7 @@
 #include "ash/ash_export.h"
 #include "ash/system/unified/unified_system_tray_model.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/scoped_multi_source_observation.h"
 #include "base/scoped_observation.h"
 #include "ui/compositor/throughput_tracker.h"
 #include "ui/message_center/message_center.h"
@@ -31,8 +32,8 @@ namespace ash {
 class UnifiedMessageCenterView;
 class UnifiedSystemTrayModel;
 
-// It's enclosed. This class is used only from UnifiedMessageCenterView.
 // Manages list of notifications. The class doesn't know about the ScrollView
+// it's enclosed. This class is used only from UnifiedMessageCenterView.
 class ASH_EXPORT UnifiedMessageListView
     : public views::View,
       public message_center::MessageCenterObserver,
@@ -82,6 +83,12 @@ class ASH_EXPORT UnifiedMessageListView
   std::vector<message_center::Notification*> GetNotificationsAboveY(
       int y_offset) const;
 
+  // Returns the notifications in the view hierarchy that are also in the
+  // MessageCenter, whose bottom position is below |y_offset|. O(n) where n is
+  // number of notifications.
+  std::vector<message_center::Notification*> GetNotificationsBelowY(
+      int y_offset) const;
+
   // Same as GetNotificationsAboveY, but returns notifications that are not in
   // the MessageCenter. This is useful for the clear all animation which first
   // removes all notifications before asking for stacked notifications.
@@ -118,6 +125,7 @@ class ASH_EXPORT UnifiedMessageListView
   const char* GetClassName() const override;
 
   // message_center::NotificationViewController:
+  void AnimateResize() override;
   message_center::MessageView* GetMessageViewForNotificationId(
       const std::string& id) override;
   void ConvertNotificationViewToGroupedNotificationView(
@@ -151,6 +159,8 @@ class ASH_EXPORT UnifiedMessageListView
   // Virtual for testing.
   virtual message_center::MessageView* CreateMessageView(
       const message_center::Notification& notification);
+
+  void ConfigureMessageView(message_center::MessageView* message_view);
 
   // Virtual for testing.
   virtual std::vector<message_center::Notification*> GetStackedNotifications()
@@ -283,6 +293,10 @@ class ASH_EXPORT UnifiedMessageListView
   base::ScopedObservation<message_center::MessageCenter,
                           message_center::MessageCenterObserver>
       message_center_observation_{this};
+
+  base::ScopedMultiSourceObservation<message_center::MessageView,
+                                     message_center::MessageView::Observer>
+      message_view_multi_source_observation_{this};
 };
 
 }  // namespace ash

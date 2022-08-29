@@ -36,7 +36,7 @@ class SyncErrorInfoBarDelegate : public ConfirmInfoBarDelegate,
 
   ~SyncErrorInfoBarDelegate() override;
 
-  // Creates a sync error infobar and adds it to |infobar_manager|.
+  // Creates a sync error infobar and adds it to `infobar_manager`.
   static bool Create(infobars::InfoBarManager* infobar_manager,
                      ChromeBrowserState* browser_state,
                      id<SyncPresenter> presenter);
@@ -48,7 +48,7 @@ class SyncErrorInfoBarDelegate : public ConfirmInfoBarDelegate,
   std::u16string GetMessageText() const override;
   int GetButtons() const override;
   std::u16string GetButtonLabel(InfoBarButton button) const override;
-  gfx::Image GetIcon() const override;
+  ui::ImageModel GetIcon() const override;
   bool UseIconBackgroundTint() const override;
   bool Accept() override;
 

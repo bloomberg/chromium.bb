@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "api/fec_controller.h"
+#include "api/field_trials_view.h"
 #include "api/sequence_checker.h"
 #include "api/video/video_stream_encoder_interface.h"
 #include "call/bitrate_allocator.h"
@@ -68,15 +69,15 @@ class VideoSendStream : public webrtc::VideoSendStream {
       VideoEncoderConfig encoder_config,
       const std::map<uint32_t, RtpState>& suspended_ssrcs,
       const std::map<uint32_t, RtpPayloadState>& suspended_payload_states,
-      std::unique_ptr<FecController> fec_controller);
+      std::unique_ptr<FecController> fec_controller,
+      const FieldTrialsView& field_trials);
 
   ~VideoSendStream() override;
 
   void DeliverRtcp(const uint8_t* packet, size_t length);
 
   // webrtc::VideoSendStream implementation.
-  void UpdateActiveSimulcastLayers(
-      const std::vector<bool> active_layers) override;
+  void UpdateActiveSimulcastLayers(std::vector<bool> active_layers) override;
   void Start() override;
   void Stop() override;
   bool started() override;

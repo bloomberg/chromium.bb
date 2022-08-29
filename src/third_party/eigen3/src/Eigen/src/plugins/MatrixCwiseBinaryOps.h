@@ -86,10 +86,10 @@ cwiseMin(const EIGEN_CURRENT_STORAGE_BASE_CLASS<OtherDerived> &other) const
   */
 template<int NaNPropagation=PropagateFast>
 EIGEN_DEVICE_FUNC
-    EIGEN_STRONG_INLINE const CwiseBinaryOp<internal::scalar_min_op<Scalar,Scalar,NaNPropagation>, const Derived, const ConstantReturnType>
+EIGEN_STRONG_INLINE const CwiseBinaryOp<internal::scalar_min_op<Scalar,Scalar,NaNPropagation>, const Derived, const ConstantReturnType>
 cwiseMin(const Scalar &other) const
 {
-  return cwiseMin(Derived::Constant(rows(), cols(), other));
+  return cwiseMin<NaNPropagation>(Derived::Constant(rows(), cols(), other));
 }
 
 /** \returns an expression of the coefficient-wise max of *this and \a other
@@ -116,7 +116,7 @@ EIGEN_DEVICE_FUNC
 EIGEN_STRONG_INLINE const CwiseBinaryOp<internal::scalar_max_op<Scalar,Scalar,NaNPropagation>, const Derived, const ConstantReturnType>
 cwiseMax(const Scalar &other) const
 {
-  return cwiseMax(Derived::Constant(rows(), cols(), other));
+  return cwiseMax<NaNPropagation>(Derived::Constant(rows(), cols(), other));
 }
 
 

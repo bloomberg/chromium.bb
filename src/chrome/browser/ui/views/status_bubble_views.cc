@@ -57,9 +57,6 @@
 
 namespace {
 
-// The alpha and color of the bubble's shadow.
-constexpr SkColor kShadowColor = SkColorSetARGB(30, 0, 0, 0);
-
 // The roundedness of the edges of our bubble.
 constexpr int kBubbleCornerRadius = 4;
 
@@ -229,6 +226,8 @@ class StatusBubbleViews::StatusView : public views::View {
   // memory savings of closing the widget when it's hidden and unused.
   base::OneShotTimer destroy_popup_timer_;
 
+  base::CallbackListSubscription paint_as_active_subscription_;
+
   base::WeakPtrFactory<StatusBubbleViews::StatusView> timer_factory_{this};
 };
 using StatusView = StatusBubbleViews::StatusView;
@@ -245,6 +244,12 @@ StatusView::StatusView(StatusBubbleViews* status_bubble)
   SetTextLabelColors(text.get());
   text->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   text_ = AddChildView(std::move(text));
+
+  paint_as_active_subscription_ =
+      status_bubble_->base_view()
+          ->GetWidget()
+          ->RegisterPaintAsActiveChangedCallback(base::BindRepeating(
+              &StatusView::SetTextLabelColors, base::Unretained(this), text_));
 }
 
 StatusView::~StatusView() {
@@ -253,7 +258,8 @@ StatusView::~StatusView() {
 }
 
 gfx::Insets StatusView::GetInsets() const {
-  return gfx::Insets(kShadowThickness, kShadowThickness + kTextHorizPadding);
+  return gfx::Insets::VH(kShadowThickness,
+                         kShadowThickness + kTextHorizPadding);
 }
 
 const std::u16string& StatusView::GetText() const {
@@ -422,12 +428,16 @@ void StatusView::StartShowing() {
 
 void StatusView::SetTextLabelColors(views::Label* text) {
   const auto* theme_provider = status_bubble_->base_view()->GetThemeProvider();
-  SkColor bubble_color =
-      theme_provider->GetColor(ThemeProperties::COLOR_STATUS_BUBBLE);
+  const bool active =
+      status_bubble_->base_view()->GetWidget()->ShouldPaintAsActive();
+  SkColor bubble_color = theme_provider->GetColor(
+      active ? ThemeProperties::COLOR_STATUS_BUBBLE_ACTIVE
+             : ThemeProperties::COLOR_STATUS_BUBBLE_INACTIVE);
   text->SetBackgroundColor(bubble_color);
   // Text color is the background tab text color, adjusted if required.
   text->SetEnabledColor(theme_provider->GetColor(
-      ThemeProperties::COLOR_TAB_FOREGROUND_INACTIVE_FRAME_ACTIVE));
+      active ? ThemeProperties::COLOR_STATUS_BUBBLE_TEXT_ACTIVE
+             : ThemeProperties::COLOR_STATUS_BUBBLE_TEXT_INACTIVE));
 }
 
 void StatusView::OnPaint(gfx::Canvas* canvas) {
@@ -462,7 +472,7 @@ void StatusView::OnPaint(gfx::Canvas* canvas) {
     round_corner(gfx::RRectF::Corner::kLowerRight);
     round_corner(gfx::RRectF::Corner::kLowerLeft);
   } else {
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
     // Mac's window has rounded corners, but the corner radius might be
     // different on different versions. Status bubble will use its own round
     // corner on Mac when there is no download shelf beneath.
@@ -495,7 +505,7 @@ void StatusView::OnPaint(gfx::Canvas* canvas) {
 
   const int clip_bottom = clip_left || clip_right ? shadow_thickness_pixels : 0;
   gfx::Rect clip_rect(scaled_size);
-  clip_rect.Inset(clip_left, 0, clip_right, clip_bottom);
+  clip_rect.Inset(gfx::Insets::TLBR(0, clip_left, clip_bottom, clip_right));
   canvas->ClipRect(clip_rect);
 
   gfx::RectF bubble_rect{gfx::SizeF(scaled_size)};
@@ -505,10 +515,13 @@ void StatusView::OnPaint(gfx::Canvas* canvas) {
   // bubble bounds by 1 DIP minus 1 pixel. Failing to do this results in drawing
   // further and further outside the window as the scale increases.
   const int inset = shadow_thickness_pixels - 1;
-  bubble_rect.Inset(style_ == BubbleStyle::kStandardRight ? 0 : inset, 0,
-                    style_ == BubbleStyle::kStandardRight ? inset : 0, inset);
+  bubble_rect.Inset(
+      gfx::InsetsF()
+          .set_left(style_ == BubbleStyle::kStandardRight ? 0 : inset)
+          .set_right(style_ == BubbleStyle::kStandardRight ? inset : 0)
+          .set_bottom(inset));
   // Align to pixel centers now that the layout is correct.
-  bubble_rect.Inset(0.5, 0.5);
+  bubble_rect.Inset(0.5);
 
   SkPath path;
   path.addRoundRect(gfx::RectFToSkRect(bubble_rect), rad);
@@ -527,12 +540,15 @@ void StatusView::OnPaint(gfx::Canvas* canvas) {
   flags.setStyle(cc::PaintFlags::kFill_Style);
 
   const auto* theme_provider = status_bubble_->base_view()->GetThemeProvider();
-  const SkColor bubble_color =
-      theme_provider->GetColor(ThemeProperties::COLOR_STATUS_BUBBLE);
-  flags.setColor(bubble_color);
+  const auto id =
+      status_bubble_->base_view()->GetWidget()->ShouldPaintAsActive()
+          ? ThemeProperties::COLOR_STATUS_BUBBLE_ACTIVE
+          : ThemeProperties::COLOR_STATUS_BUBBLE_INACTIVE;
+  flags.setColor(theme_provider->GetColor(id));
   canvas->sk_canvas()->drawPath(fill_path, flags);
 
-  flags.setColor(kShadowColor);
+  flags.setColor(
+      theme_provider->GetColor(ThemeProperties::COLOR_STATUS_BUBBLE_SHADOW));
   canvas->sk_canvas()->drawPath(stroke_path, flags);
 }
 
@@ -693,7 +709,7 @@ void StatusBubbleViews::InitPopup() {
     popup_ = std::make_unique<views::Widget>();
 
     views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
     // On Windows use the software compositor to ensure that we don't block
     // the UI thread blocking issue during command buffer creation. We can
     // revert this change once http://crbug.com/125248 is fixed.
@@ -717,7 +733,7 @@ void StatusBubbleViews::InitPopup() {
     popup_->SetOpacity(0.f);
     view_ = popup_->SetContentsView(std::make_unique<StatusView>(this));
     expand_view_ = std::make_unique<StatusViewExpander>(this, view_);
-#if !defined(OS_MAC)
+#if !BUILDFLAG(IS_MAC)
     // Stack the popup above the base widget and below higher z-order windows.
     // This is unnecessary and even detrimental on Mac, see CreateBubbleWidget.
     popup_->StackAboveWidget(frame);

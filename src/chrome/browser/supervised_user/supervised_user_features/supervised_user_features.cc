@@ -22,6 +22,11 @@ const base::Feature kWebFilterInterstitialRefresh{
 const base::Feature kLocalWebApprovals{"LocalWebApprovals",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables child accounts (i.e. Unicorn accounts) to clear their browsing
+// history data from Settings.
+const base::Feature kAllowHistoryDeletionForChildAccounts{
+    "AllowHistoryDeletionForChildAccounts", base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool IsWebFilterInterstitialRefreshEnabled() {
   DCHECK(base::FeatureList::IsEnabled(kWebFilterInterstitialRefresh) ||
          !base::FeatureList::IsEnabled(kLocalWebApprovals));
@@ -29,6 +34,8 @@ bool IsWebFilterInterstitialRefreshEnabled() {
 }
 
 bool IsLocalWebApprovalsEnabled() {
+  // TODO(crbug.com/1272462): on Android also call through to Java code to check
+  // whether the feature is supported.
   return IsWebFilterInterstitialRefreshEnabled() &&
          base::FeatureList::IsEnabled(kLocalWebApprovals);
 }

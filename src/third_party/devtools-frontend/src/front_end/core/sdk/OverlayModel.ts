@@ -59,27 +59,13 @@ export class OverlayModel extends SDKModel<EventTypes> implements ProtocolProxyA
   #hideHighlightTimeout: number|null;
   #defaultHighlighter: Highlighter;
   #highlighter: Highlighter;
-  // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  #showPaintRectsSetting: Common.Settings.Setting<any>;
-  // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  #showLayoutShiftRegionsSetting: Common.Settings.Setting<any>;
-  // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  #showAdHighlightsSetting: Common.Settings.Setting<any>;
-  // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  #showDebugBordersSetting: Common.Settings.Setting<any>;
-  // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  #showFPSCounterSetting: Common.Settings.Setting<any>;
-  // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  #showScrollBottleneckRectsSetting: Common.Settings.Setting<any>;
-  // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  #showWebVitalsSetting: Common.Settings.Setting<any>;
+  #showPaintRectsSetting: Common.Settings.Setting<boolean>;
+  #showLayoutShiftRegionsSetting: Common.Settings.Setting<boolean>;
+  #showAdHighlightsSetting: Common.Settings.Setting<boolean>;
+  #showDebugBordersSetting: Common.Settings.Setting<boolean>;
+  #showFPSCounterSetting: Common.Settings.Setting<boolean>;
+  #showScrollBottleneckRectsSetting: Common.Settings.Setting<boolean>;
+  #showWebVitalsSetting: Common.Settings.Setting<boolean>;
   #registeredListeners: Common.EventTarget.EventDescriptor[];
   #showViewportSizeOnResize: boolean;
   #persistentHighlighter: OverlayPersistentHighlighter|null;
@@ -113,20 +99,21 @@ export class OverlayModel extends SDKModel<EventTypes> implements ProtocolProxyA
     this.#defaultHighlighter = new DefaultHighlighter(this);
     this.#highlighter = this.#defaultHighlighter;
 
-    this.#showPaintRectsSetting = Common.Settings.Settings.instance().moduleSetting('showPaintRects');
-    this.#showLayoutShiftRegionsSetting = Common.Settings.Settings.instance().moduleSetting('showLayoutShiftRegions');
-    this.#showAdHighlightsSetting = Common.Settings.Settings.instance().moduleSetting('showAdHighlights');
-    this.#showDebugBordersSetting = Common.Settings.Settings.instance().moduleSetting('showDebugBorders');
-    this.#showFPSCounterSetting = Common.Settings.Settings.instance().moduleSetting('showFPSCounter');
+    this.#showPaintRectsSetting = Common.Settings.Settings.instance().moduleSetting<boolean>('showPaintRects');
+    this.#showLayoutShiftRegionsSetting =
+        Common.Settings.Settings.instance().moduleSetting<boolean>('showLayoutShiftRegions');
+    this.#showAdHighlightsSetting = Common.Settings.Settings.instance().moduleSetting<boolean>('showAdHighlights');
+    this.#showDebugBordersSetting = Common.Settings.Settings.instance().moduleSetting<boolean>('showDebugBorders');
+    this.#showFPSCounterSetting = Common.Settings.Settings.instance().moduleSetting<boolean>('showFPSCounter');
     this.#showScrollBottleneckRectsSetting =
-        Common.Settings.Settings.instance().moduleSetting('showScrollBottleneckRects');
-    this.#showWebVitalsSetting = Common.Settings.Settings.instance().moduleSetting('showWebVitals');
+        Common.Settings.Settings.instance().moduleSetting<boolean>('showScrollBottleneckRects');
+    this.#showWebVitalsSetting = Common.Settings.Settings.instance().moduleSetting<boolean>('showWebVitals');
 
     this.#registeredListeners = [];
     this.#showViewportSizeOnResize = true;
     if (!target.suspended()) {
-      this.overlayAgent.invoke_enable();
-      this.wireAgentToSettings();
+      void this.overlayAgent.invoke_enable();
+      void this.wireAgentToSettings();
     }
 
     this.#persistentHighlighter = new OverlayPersistentHighlighter(this);
@@ -164,13 +151,13 @@ export class OverlayModel extends SDKModel<EventTypes> implements ProtocolProxyA
 
   static highlightRect(rect: HighlightRect): void {
     for (const overlayModel of TargetManager.instance().models(OverlayModel)) {
-      overlayModel.highlightRect(rect);
+      void overlayModel.highlightRect(rect);
     }
   }
 
   static clearHighlight(): void {
     for (const overlayModel of TargetManager.instance().models(OverlayModel)) {
-      overlayModel.clearHighlight();
+      void overlayModel.clearHighlight();
     }
   }
 
@@ -178,18 +165,15 @@ export class OverlayModel extends SDKModel<EventTypes> implements ProtocolProxyA
     return this.#domModel;
   }
 
-  // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  highlightRect({x, y, width, height, color, outlineColor}: HighlightRect): Promise<any> {
+  highlightRect({x, y, width, height, color, outlineColor}: HighlightRect):
+      Promise<Protocol.ProtocolResponseWithError> {
     const highlightColor = color || {r: 255, g: 0, b: 255, a: 0.3};
     const highlightOutlineColor = outlineColor || {r: 255, g: 0, b: 255, a: 0.5};
     return this.overlayAgent.invoke_highlightRect(
         {x, y, width, height, color: highlightColor, outlineColor: highlightOutlineColor});
   }
 
-  // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  clearHighlight(): Promise<any> {
+  clearHighlight(): Promise<Protocol.ProtocolResponseWithError> {
     return this.overlayAgent.invoke_hideHighlight();
   }
 
@@ -214,25 +198,25 @@ export class OverlayModel extends SDKModel<EventTypes> implements ProtocolProxyA
     ];
 
     if (this.#showPaintRectsSetting.get()) {
-      this.overlayAgent.invoke_setShowPaintRects({result: true});
+      void this.overlayAgent.invoke_setShowPaintRects({result: true});
     }
     if (this.#showLayoutShiftRegionsSetting.get()) {
-      this.overlayAgent.invoke_setShowLayoutShiftRegions({result: true});
+      void this.overlayAgent.invoke_setShowLayoutShiftRegions({result: true});
     }
     if (this.#showAdHighlightsSetting.get()) {
-      this.overlayAgent.invoke_setShowAdHighlights({show: true});
+      void this.overlayAgent.invoke_setShowAdHighlights({show: true});
     }
     if (this.#showDebugBordersSetting.get()) {
-      this.overlayAgent.invoke_setShowDebugBorders({show: true});
+      void this.overlayAgent.invoke_setShowDebugBorders({show: true});
     }
     if (this.#showFPSCounterSetting.get()) {
-      this.overlayAgent.invoke_setShowFPSCounter({show: true});
+      void this.overlayAgent.invoke_setShowFPSCounter({show: true});
     }
     if (this.#showScrollBottleneckRectsSetting.get()) {
-      this.overlayAgent.invoke_setShowScrollBottleneckRects({show: true});
+      void this.overlayAgent.invoke_setShowScrollBottleneckRects({show: true});
     }
     if (this.#showWebVitalsSetting.get()) {
-      this.overlayAgent.invoke_setShowWebVitals({show: true});
+      void this.overlayAgent.invoke_setShowWebVitals({show: true});
     }
     if (this.#debuggerModel && this.#debuggerModel.isPaused()) {
       this.updatePausedInDebuggerMessage();
@@ -258,7 +242,7 @@ export class OverlayModel extends SDKModel<EventTypes> implements ProtocolProxyA
     if (this.target().suspended()) {
       return;
     }
-    this.overlayAgent.invoke_setShowViewportSizeOnResize({show});
+    void this.overlayAgent.invoke_setShowViewportSizeOnResize({show});
   }
 
   private updatePausedInDebuggerMessage(): void {
@@ -269,7 +253,7 @@ export class OverlayModel extends SDKModel<EventTypes> implements ProtocolProxyA
             !Common.Settings.Settings.instance().moduleSetting('disablePausedStateOverlay').get() ?
         i18nString(UIStrings.pausedInDebugger) :
         undefined;
-    this.overlayAgent.invoke_setPausedInDebuggerMessage({message});
+    void this.overlayAgent.invoke_setPausedInDebuggerMessage({message});
   }
 
   setHighlighter(highlighter: Highlighter|null): void {
@@ -281,7 +265,7 @@ export class OverlayModel extends SDKModel<EventTypes> implements ProtocolProxyA
     await this.#domModel.requestDocument();
     this.#inspectModeEnabledInternal = mode !== Protocol.Overlay.InspectMode.None;
     this.dispatchEventToListeners(Events.InspectModeWillBeToggled, this);
-    this.#highlighter.setInspectMode(mode, this.buildHighlightConfig('all', showDetailedTooltip));
+    void this.#highlighter.setInspectMode(mode, this.buildHighlightConfig('all', showDetailedTooltip));
   }
 
   inspectModeEnabled(): boolean {
@@ -498,12 +482,12 @@ export class OverlayModel extends SDKModel<EventTypes> implements ProtocolProxyA
   showHingeForDualScreen(hinge: Hinge|null): void {
     if (hinge) {
       const {x, y, width, height, contentColor, outlineColor} = hinge;
-      this.overlayAgent.invoke_setShowHinge({
+      void this.overlayAgent.invoke_setShowHinge({
         hingeConfig:
             {rect: {x: x, y: y, width: width, height: height}, contentColor: contentColor, outlineColor: outlineColor},
       });
     } else {
-      this.overlayAgent.invoke_setShowHinge({});
+      void this.overlayAgent.invoke_setShowHinge({});
     }
   }
 
@@ -755,13 +739,13 @@ export class OverlayModel extends SDKModel<EventTypes> implements ProtocolProxyA
   inspectNodeRequested({backendNodeId}: Protocol.Overlay.InspectNodeRequestedEvent): void {
     const deferredNode = new DeferredDOMNode(this.target(), backendNodeId);
     if (OverlayModel.inspectNodeHandler) {
-      deferredNode.resolvePromise().then(node => {
+      void deferredNode.resolvePromise().then(node => {
         if (node && OverlayModel.inspectNodeHandler) {
           OverlayModel.inspectNodeHandler(node);
         }
       });
     } else {
-      Common.Revealer.reveal(deferredNode);
+      void Common.Revealer.reveal(deferredNode);
     }
     this.dispatchEventToListeners(Events.ExitedInspectMode);
   }
@@ -832,10 +816,10 @@ class DefaultHighlighter implements Highlighter {
     const backendNodeId = deferredNode ? deferredNode.backendNodeId() : undefined;
     const objectId = object ? object.objectId : undefined;
     if (nodeId || backendNodeId || objectId) {
-      this.#model.target().overlayAgent().invoke_highlightNode(
+      void this.#model.target().overlayAgent().invoke_highlightNode(
           {highlightConfig, nodeId, backendNodeId, objectId, selector: selectorList});
     } else {
-      this.#model.target().overlayAgent().invoke_hideHighlight();
+      void this.#model.target().overlayAgent().invoke_hideHighlight();
     }
   }
 
@@ -845,7 +829,7 @@ class DefaultHighlighter implements Highlighter {
   }
 
   highlightFrame(frameId: Protocol.Page.FrameId): void {
-    this.#model.target().overlayAgent().invoke_highlightFrame({
+    void this.#model.target().overlayAgent().invoke_highlightFrame({
       frameId,
       contentColor: Common.Color.PageHighlight.Content.toProtocolRGBA(),
       contentOutlineColor: Common.Color.PageHighlight.ContentOutline.toProtocolRGBA(),
@@ -862,13 +846,13 @@ export class SourceOrderHighlighter {
   highlightSourceOrderInOverlay(node: DOMNode, sourceOrderConfig: Protocol.Overlay.SourceOrderConfig): void {
     this.#model.setSourceOrderActive(true);
     this.#model.setShowViewportSizeOnResize(false);
-    this.#model.getOverlayAgent().invoke_highlightSourceOrder({sourceOrderConfig, nodeId: node.id});
+    void this.#model.getOverlayAgent().invoke_highlightSourceOrder({sourceOrderConfig, nodeId: node.id});
   }
 
   hideSourceOrderHighlight(): void {
     this.#model.setSourceOrderActive(false);
     this.#model.setShowViewportSizeOnResize(true);
-    this.#model.clearHighlight();
+    void this.#model.clearHighlight();
   }
 }
 

@@ -26,7 +26,7 @@
 #include "libavcodec/bsf.h"
 #include "internal.h"
 #include "avformat.h"
-#include "avio_internal.h"
+#include "mux.h"
 #include "tee_common.h"
 
 typedef enum {
@@ -237,6 +237,7 @@ static int open_slave(AVFormatContext *avf, char *slave, TeeSlave *tee_slave)
     avf2->opaque   = avf->opaque;
     avf2->io_open  = avf->io_open;
     avf2->io_close = avf->io_close;
+    avf2->io_close2 = avf->io_close2;
     avf2->interrupt_callback = avf->interrupt_callback;
     avf2->flags = avf->flags;
     avf2->strict_std_compliance = avf->strict_std_compliance;

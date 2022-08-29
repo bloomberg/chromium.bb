@@ -34,10 +34,11 @@
 #include "base/mac/mach_logging.h"
 #include "base/process/memory.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "third_party/apple_apsl/CFBase.h"
 
-#if defined(OS_IOS)
+#if BUILDFLAG(IS_IOS)
 #include "base/ios/ios_util.h"
 #else
 #include "base/mac/mac_util.h"
@@ -235,8 +236,8 @@ void* oom_killer_memalign_purgeable(struct _malloc_zone_t* zone,
 // === Core Foundation CFAllocators ===
 
 bool CanGetContextForCFAllocator() {
-#if defined(OS_IOS)
-  return !base::ios::IsRunningOnOrLater(14, 0, 0);
+#if BUILDFLAG(IS_IOS)
+  return !base::ios::IsRunningOnOrLater(16, 0, 0);
 #else
   return !base::mac::IsOSLaterThan12_DontCallThis();
 #endif

@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/containers/flat_map.h"
-#include "base/cxx17_backports.h"
 #include "base/feature_list.h"
 #include "base/files/file.h"
 #include "base/files/file_enumerator.h"
@@ -21,8 +20,8 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/persistent_histogram_allocator.h"
 #include "base/metrics/persistent_memory_allocator.h"
+#include "base/metrics/ranges_manager.h"
 #include "base/strings/string_piece.h"
-#include "base/task/post_task.h"
 #include "base/task/task_runner.h"
 #include "base/task/task_runner_util.h"
 #include "base/task/task_traits.h"
@@ -38,7 +37,6 @@
 #include "components/prefs/scoped_user_pref_update.h"
 
 namespace metrics {
-
 namespace {
 
 // These structures provide values used to define how files are opened and
@@ -55,10 +53,8 @@ struct SourceOptions {
   bool is_read_only;
 };
 
-enum : int {
-  // Opening a file typically requires at least these flags.
-  STD_OPEN = base::File::FLAG_OPEN | base::File::FLAG_READ,
-};
+// Opening a file typically requires at least these flags.
+constexpr int STD_OPEN = base::File::FLAG_OPEN | base::File::FLAG_READ;
 
 constexpr SourceOptions kSourceOptions[] = {
     // SOURCE_HISTOGRAMS_ATOMIC_FILE
@@ -125,7 +121,7 @@ struct FileMetricsProvider::SourceInfo {
     switch (type) {
       case SOURCE_HISTOGRAMS_ACTIVE_FILE:
         DCHECK(prefs_key.empty());
-        FALLTHROUGH;
+        [[fallthrough]];
       case SOURCE_HISTOGRAMS_ATOMIC_FILE:
         path = params.path;
         break;
@@ -212,7 +208,7 @@ void FileMetricsProvider::RegisterSource(const Params& params) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Ensure that kSourceOptions has been filled for this type.
-  DCHECK_GT(base::size(kSourceOptions), static_cast<size_t>(params.type));
+  DCHECK_GT(std::size(kSourceOptions), static_cast<size_t>(params.type));
 
   std::unique_ptr<SourceInfo> source(new SourceInfo(params));
 
@@ -674,6 +670,10 @@ bool FileMetricsProvider::ProvideIndependentMetricsOnTaskRunner(
     base::HistogramSnapshotManager* snapshot_manager) {
   if (PersistentSystemProfile::GetSystemProfile(
           *source->allocator->memory_allocator(), system_profile_proto)) {
+    // Pass a custom RangesManager so that we do not register the BucketRanges
+    // with the global statistics recorder. Otherwise, it could add unnecessary
+    // contention, and a low amount of extra memory that will never be released.
+    source->allocator->SetRangesManager(new base::RangesManager());
     system_profile_proto->mutable_stability()->set_from_previous_run(true);
     RecordHistogramSnapshotsFromSource(snapshot_manager, source);
     return true;
@@ -926,10 +926,10 @@ bool FileMetricsProvider::SimulateIndependentMetrics() {
 
   ListPrefUpdate list_value(pref_service_,
                             metrics::prefs::kMetricsFileMetricsMetadata);
-  if (list_value->GetList().empty())
+  if (list_value->GetListDeprecated().empty())
     return false;
 
-  base::Value::ListView mutable_list = list_value->GetList();
+  base::Value::ListView mutable_list = list_value->GetListDeprecated();
   size_t count = pref_service_->GetInteger(
       metrics::prefs::kStabilityFileMetricsUnsentSamplesCount);
   pref_service_->SetInteger(
@@ -937,7 +937,7 @@ bool FileMetricsProvider::SimulateIndependentMetrics() {
       mutable_list[0].GetInt() + count);
   pref_service_->SetInteger(
       metrics::prefs::kStabilityFileMetricsUnsentFilesCount,
-      list_value->GetList().size() - 1);
+      list_value->GetListDeprecated().size() - 1);
   list_value->EraseListIter(mutable_list.begin());
 
   return true;

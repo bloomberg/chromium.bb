@@ -15,9 +15,12 @@ const char kFallbackAppNameKey[] = "fallback_app_name";
 const char kCustomNameKey[] = "custom_name";
 const char kCustomIconKey[] = "custom_icon";
 const char kCustomIconURLKey[] = "url";
+const char kCustomIconHashKey[] = "hash";
+const char kUninstallAndReplaceKey[] = "uninstall_and_replace";
 
 const char kWildcard[] = "*";
 
+const char kManifestId[] = "manifest_id";
 const char kRunOnOsLogin[] = "run_on_os_login";
 const char kAllowed[] = "allowed";
 const char kBlocked[] = "blocked";

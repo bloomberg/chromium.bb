@@ -19,6 +19,7 @@
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/gfx/geometry/rounded_corners_f.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/native_widget_private.h"
@@ -46,8 +47,8 @@ ObservableWebView::~ObservableWebView() = default;
 void ObservableWebView::DidFinishLoad(
     content::RenderFrameHost* render_frame_host,
     const GURL& validated_url) {
-  // Only listen to the main frame.
-  if (render_frame_host->GetParent())
+  // Only listen to the primary main frame.
+  if (!render_frame_host->IsInPrimaryMainFrame())
     return;
 
   if (delegate_)

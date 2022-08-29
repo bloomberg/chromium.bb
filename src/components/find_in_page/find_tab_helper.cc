@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/observer_list.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "components/find_in_page/find_result_observer.h"
@@ -126,8 +127,9 @@ void FindTabHelper::StopFinding(SelectionAction selection_action) {
 }
 
 void FindTabHelper::ActivateFindInPageResultForAccessibility() {
-  GetWebContents().GetMainFrame()->ActivateFindInPageResultForAccessibility(
-      current_find_request_id_);
+  GetWebContents()
+      .GetPrimaryMainFrame()
+      ->ActivateFindInPageResultForAccessibility(current_find_request_id_);
 }
 
 std::u16string FindTabHelper::GetInitialSearchText() {
@@ -139,7 +141,7 @@ std::u16string FindTabHelper::GetInitialSearchText() {
   return delegate_ ? delegate_->GetSearchPrepopulateText() : std::u16string();
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 void FindTabHelper::ActivateNearestFindResult(float x, float y) {
   if (!find_op_aborted_ && !find_text_.empty()) {
     GetWebContents().ActivateNearestFindResult(x, y);

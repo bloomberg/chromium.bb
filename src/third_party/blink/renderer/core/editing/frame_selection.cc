@@ -28,6 +28,7 @@
 #include <stdio.h>
 
 #include "base/auto_reset.h"
+#include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/accessibility/blink_ax_event_intent.h"
 #include "third_party/blink/renderer/core/accessibility/scoped_blink_ax_event_intent.h"
@@ -82,13 +83,15 @@
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/frame_tree.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/page/page_animator.h"
 #include "third_party/blink/renderer/core/page/spatial_navigation.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/core/scroll/scroll_into_view_util.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/geometry/float_quad.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/text/unicode_utilities.h"
+#include "ui/gfx/geometry/quad_f.h"
 
 #define EDIT_DEBUG 0
 
@@ -112,9 +115,8 @@ FrameSelection::FrameSelection(LocalFrame& frame)
 
 FrameSelection::~FrameSelection() = default;
 
-const CaretDisplayItemClient& FrameSelection::CaretDisplayItemClientForTesting()
-    const {
-  return frame_caret_->CaretDisplayItemClientForTesting();
+const EffectPaintPropertyNode& FrameSelection::CaretEffectNode() const {
+  return frame_caret_->CaretEffectNode();
 }
 
 bool FrameSelection::IsAvailable() const {
@@ -1087,8 +1089,8 @@ void FrameSelection::RevealSelection(
       !start.AnchorNode()->GetLayoutObject()->EnclosingBox())
     return;
 
-  start.AnchorNode()->GetLayoutObject()->ScrollRectToVisible(
-      selection_rect,
+  scroll_into_view_util::ScrollRectToVisible(
+      *start.AnchorNode()->GetLayoutObject(), selection_rect,
       ScrollAlignment::CreateScrollIntoViewParams(alignment, alignment));
   UpdateAppearance();
 }
@@ -1303,9 +1305,9 @@ LayoutSelectionStatus FrameSelection::ComputeLayoutSelectionStatus(
   return layout_selection_->ComputeSelectionStatus(cursor);
 }
 
-SelectionState FrameSelection::ComputeLayoutSelectionStateForCursor(
+SelectionState FrameSelection::ComputePaintingSelectionStateForCursor(
     const NGInlineCursorPosition& position) const {
-  return layout_selection_->ComputeSelectionStateForCursor(position);
+  return layout_selection_->ComputePaintingSelectionStateForCursor(position);
 }
 
 SelectionState FrameSelection::ComputeLayoutSelectionStateForInlineTextBox(

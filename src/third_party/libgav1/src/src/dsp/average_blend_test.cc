@@ -59,6 +59,7 @@ template <int bitdepth, typename Pixel>
 class AverageBlendTest : public testing::TestWithParam<BlockSize>,
                          public test_utils::MaxAlignedAllocable {
  public:
+  static_assert(bitdepth >= kBitdepth8 && bitdepth <= LIBGAV1_MAX_BITDEPTH, "");
   AverageBlendTest() = default;
   ~AverageBlendTest() override = default;
 
@@ -281,6 +282,60 @@ INSTANTIATE_TEST_SUITE_P(NEON, AverageBlendTest10bpp,
                          testing::ValuesIn(kTestParam));
 #endif
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
+
+#if LIBGAV1_MAX_BITDEPTH == 12
+using AverageBlendTest12bpp = AverageBlendTest<12, uint16_t>;
+
+const char* GetAverageBlendDigest12bpp(const BlockSize block_size) {
+  static const char* const kDigests[kMaxBlockSizes] = {
+      // 4xN
+      "8f5ad8fba61a0f1cb6b77f5460c241be",
+      "3a9d017848fdb4162315c689b4449ac6",
+      "bb97029fff021b168b98b209dcee5123",
+      // 8xN
+      "a7ff1b199965b8856499ae3f1b2c48eb",
+      "05220c72835fc4662d261183df0a57cf",
+      "97de8c325f1475c44e1afc44183e55ad",
+      "60d820c46cad14d9d934da238bb79707",
+      // 16xN
+      "f3e4863121819bc28f7c1f453898650c",
+      "5f5f68d21269d7df546c848921e8f2cd",
+      "17efe0b0fce1f8d4c7bc6eacf769063e",
+      "3da591e201f44511cdd6c465692ace1e",
+      "5a0ca6c88664d2e918a032b5fcf66070",
+      // 32xN
+      "efe236bee8a9fef90b99d8012006f985",
+      "d6ff3aacbbbadff6d0ccb0873fb9fa2a",
+      "38801f7361052873423d57b574aabddc",
+      "55c76772ecdc1721e92ca04d2fc7c089",
+      // 64xN
+      "4261ecdde34eedc4e5066a93e0f64881",
+      "fe82e012efab872672193316d670fd82",
+      "6c698bc2d4acf4444a64ac55ae9641de",
+      "98626e25101cff69019d1b7e6e439404",
+      // 128xN
+      "fe0f3c89dd39786df1c952a2470d680d",
+      "af7e166fc3d8c9ce85789acf3467ed9d",
+  };
+  assert(block_size < kMaxBlockSizes);
+  return kDigests[block_size];
+}
+
+TEST_P(AverageBlendTest12bpp, Blending) {
+  Test(GetAverageBlendDigest12bpp(GetParam()), 1, false);
+}
+
+TEST_P(AverageBlendTest12bpp, DISABLED_Speed) {
+  Test(GetAverageBlendDigest12bpp(GetParam()),
+       kNumSpeedTests /
+           (kBlockHeightPixels[GetParam()] * kBlockHeightPixels[GetParam()]) /
+           2,
+       false);
+}
+
+INSTANTIATE_TEST_SUITE_P(C, AverageBlendTest12bpp,
+                         testing::ValuesIn(kTestParam));
+#endif  // LIBGAV1_MAX_BITDEPTH == 12
 
 }  // namespace
 }  // namespace dsp

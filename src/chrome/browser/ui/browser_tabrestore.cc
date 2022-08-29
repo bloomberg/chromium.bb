@@ -31,9 +31,9 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/range/range.h"
 
-#if BUILDFLAG(ENABLE_SIDE_SEARCH)
+#if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/ui/side_search/side_search_utils.h"
-#endif
+#endif  // defined(TOOLKIT_VIEWS)
 
 using content::NavigationEntry;
 using content::RestoreType;
@@ -97,12 +97,12 @@ std::unique_ptr<WebContents> CreateRestoredTab(
                                         RestoreType::kRestored, &entries);
   DCHECK_EQ(0u, entries.size());
 
-#if BUILDFLAG(ENABLE_SIDE_SEARCH)
+#if defined(TOOLKIT_VIEWS)
   if (IsSideSearchEnabled(browser->profile())) {
     side_search::SetSideSearchTabStateFromRestoreData(web_contents.get(),
                                                       extra_data);
   }
-#endif  // BUILDFLAG(ENABLE_SIDE_SEARCH)
+#endif  // defined(TOOLKIT_VIEWS)
 
   return web_contents;
 }
@@ -188,7 +188,7 @@ WebContents* AddRestoredTabImpl(std::unique_ptr<WebContents> web_contents,
     raw_web_contents->WasHidden();
   } else {
     const bool should_activate =
-#if defined(OS_WIN) || defined(OS_MAC)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
         // Activating a window on another space causes the system to switch to
         // that space. Since the session restore process shows and activates
         // windows itself, activating windows here should be safe to skip.
@@ -210,9 +210,9 @@ WebContents* AddRestoredTabImpl(std::unique_ptr<WebContents> web_contents,
 // On OS_MAC, app restorations take longer than the normal browser window to
 // be restored and that will cause LoadRestoredTabIfVisible() to fail.
 // Skip LoadRestoreTabIfVisible if OS_MAC && the browser is an app browser.
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   if (browser->type() != Browser::Type::TYPE_APP)
-#endif  // defined(OS_MAC)
+#endif  // BUILDFLAG(IS_MAC)
     LoadRestoredTabIfVisible(browser, raw_web_contents);
 
   return raw_web_contents;
@@ -262,10 +262,10 @@ WebContents* AddRestoredTabFromCache(
       user_agent_override.opaque_ua_metadata_override);
   web_contents->SetUserAgentOverride(ua_override, false);
 
-#if BUILDFLAG(ENABLE_SIDE_SEARCH)
+#if defined(TOOLKIT_VIEWS)
   side_search::SetSideSearchTabStateFromRestoreData(web_contents.get(),
                                                     extra_data);
-#endif  // BUILDFLAG(ENABLE_SIDE_SEARCH)
+#endif  // defined(TOOLKIT_VIEWS)
 
   return AddRestoredTabImpl(std::move(web_contents), browser, tab_index, group,
                             select, pin, /*from_session_restore=*/false);

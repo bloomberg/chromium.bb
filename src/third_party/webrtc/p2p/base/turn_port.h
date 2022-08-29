@@ -52,108 +52,56 @@ class TurnPort : public Port {
                          // packets.
   };
 
-  // Create a TURN port using the shared UDP socket, `socket`.
-  static std::unique_ptr<TurnPort> Create(
-      rtc::Thread* thread,
-      rtc::PacketSocketFactory* factory,
-      rtc::Network* network,
-      rtc::AsyncPacketSocket* socket,
-      const std::string& username,  // ice username.
-      const std::string& password,  // ice password.
-      const ProtocolAddress& server_address,
-      const RelayCredentials& credentials,
-      int server_priority,
-      webrtc::TurnCustomizer* customizer) {
+  static bool Validate(const CreateRelayPortArgs& args) {
     // Do basic parameter validation.
-    if (credentials.username.size() > kMaxTurnUsernameLength) {
+    if (args.config->credentials.username.size() > kMaxTurnUsernameLength) {
       RTC_LOG(LS_ERROR) << "Attempt to use TURN with a too long username "
-                        << "of length " << credentials.username.size();
-      return nullptr;
+                        << "of length "
+                        << args.config->credentials.username.size();
+      return false;
     }
     // Do not connect to low-numbered ports. The default STUN port is 3478.
-    if (!AllowedTurnPort(server_address.address.port())) {
+    if (!AllowedTurnPort(args.server_address->address.port(),
+                         args.field_trials)) {
       RTC_LOG(LS_ERROR) << "Attempt to use TURN to connect to port "
-                        << server_address.address.port();
+                        << args.server_address->address.port();
+      return false;
+    }
+    return true;
+  }
+
+  // Create a TURN port using the shared UDP socket, `socket`.
+  static std::unique_ptr<TurnPort> Create(const CreateRelayPortArgs& args,
+                                          rtc::AsyncPacketSocket* socket) {
+    if (!Validate(args)) {
       return nullptr;
     }
     // Using `new` to access a non-public constructor.
     return absl::WrapUnique(
-        new TurnPort(thread, factory, network, socket, username, password,
-                     server_address, credentials, server_priority, customizer));
-  }
-
-  // TODO(steveanton): Remove once downstream clients have moved to `Create`.
-  static std::unique_ptr<TurnPort> CreateUnique(
-      rtc::Thread* thread,
-      rtc::PacketSocketFactory* factory,
-      rtc::Network* network,
-      rtc::AsyncPacketSocket* socket,
-      const std::string& username,  // ice username.
-      const std::string& password,  // ice password.
-      const ProtocolAddress& server_address,
-      const RelayCredentials& credentials,
-      int server_priority,
-      webrtc::TurnCustomizer* customizer) {
-    return Create(thread, factory, network, socket, username, password,
-                  server_address, credentials, server_priority, customizer);
+        new TurnPort(args.network_thread, args.socket_factory, args.network,
+                     socket, args.username, args.password, *args.server_address,
+                     args.config->credentials, args.config->priority,
+                     args.config->tls_alpn_protocols,
+                     args.config->tls_elliptic_curves, args.turn_customizer,
+                     args.config->tls_cert_verifier, args.field_trials));
   }
 
   // Create a TURN port that will use a new socket, bound to `network` and
   // using a port in the range between `min_port` and `max_port`.
-  static std::unique_ptr<TurnPort> Create(
-      rtc::Thread* thread,
-      rtc::PacketSocketFactory* factory,
-      rtc::Network* network,
-      uint16_t min_port,
-      uint16_t max_port,
-      const std::string& username,  // ice username.
-      const std::string& password,  // ice password.
-      const ProtocolAddress& server_address,
-      const RelayCredentials& credentials,
-      int server_priority,
-      const std::vector<std::string>& tls_alpn_protocols,
-      const std::vector<std::string>& tls_elliptic_curves,
-      webrtc::TurnCustomizer* customizer,
-      rtc::SSLCertificateVerifier* tls_cert_verifier = nullptr) {
-    // Do basic parameter validation.
-    if (credentials.username.size() > kMaxTurnUsernameLength) {
-      RTC_LOG(LS_ERROR) << "Attempt to use TURN with a too long username "
-                        << "of length " << credentials.username.size();
-      return nullptr;
-    }
-    // Do not connect to low-numbered ports. The default STUN port is 3478.
-    if (!AllowedTurnPort(server_address.address.port())) {
-      RTC_LOG(LS_ERROR) << "Attempt to use TURN to connect to port "
-                        << server_address.address.port();
+  static std::unique_ptr<TurnPort> Create(const CreateRelayPortArgs& args,
+                                          int min_port,
+                                          int max_port) {
+    if (!Validate(args)) {
       return nullptr;
     }
     // Using `new` to access a non-public constructor.
-    return absl::WrapUnique(new TurnPort(
-        thread, factory, network, min_port, max_port, username, password,
-        server_address, credentials, server_priority, tls_alpn_protocols,
-        tls_elliptic_curves, customizer, tls_cert_verifier));
-  }
-
-  // TODO(steveanton): Remove once downstream clients have moved to `Create`.
-  static std::unique_ptr<TurnPort> CreateUnique(
-      rtc::Thread* thread,
-      rtc::PacketSocketFactory* factory,
-      rtc::Network* network,
-      uint16_t min_port,
-      uint16_t max_port,
-      const std::string& username,  // ice username.
-      const std::string& password,  // ice password.
-      const ProtocolAddress& server_address,
-      const RelayCredentials& credentials,
-      int server_priority,
-      const std::vector<std::string>& tls_alpn_protocols,
-      const std::vector<std::string>& tls_elliptic_curves,
-      webrtc::TurnCustomizer* customizer,
-      rtc::SSLCertificateVerifier* tls_cert_verifier = nullptr) {
-    return Create(thread, factory, network, min_port, max_port, username,
-                  password, server_address, credentials, server_priority,
-                  tls_alpn_protocols, tls_elliptic_curves, customizer,
-                  tls_cert_verifier);
+    return absl::WrapUnique(
+        new TurnPort(args.network_thread, args.socket_factory, args.network,
+                     min_port, max_port, args.username, args.password,
+                     *args.server_address, args.config->credentials,
+                     args.config->priority, args.config->tls_alpn_protocols,
+                     args.config->tls_elliptic_curves, args.turn_customizer,
+                     args.config->tls_cert_verifier, args.field_trials));
   }
 
   ~TurnPort() override;
@@ -223,6 +171,7 @@ class TurnPort : public Port {
   void OnAllocateMismatch();
 
   rtc::AsyncPacketSocket* socket() const { return socket_; }
+  StunRequestManager& request_manager() { return request_manager_; }
 
   // Signal with resolved server address.
   // Parameters are port, server address and resolved server address.
@@ -240,7 +189,11 @@ class TurnPort : public Port {
   sigslot::signal2<TurnPort*, int> SignalTurnRefreshResult;
   sigslot::signal3<TurnPort*, const rtc::SocketAddress&, int>
       SignalCreatePermissionResult;
-  void FlushRequests(int msg_type) { request_manager_.Flush(msg_type); }
+
+  void FlushRequestsForTest(int msg_type) {
+    request_manager_.FlushForTest(msg_type);
+  }
+
   bool HasRequests() { return !request_manager_.empty(); }
   void set_credentials(const RelayCredentials& credentials) {
     credentials_ = credentials;
@@ -257,18 +210,22 @@ class TurnPort : public Port {
  protected:
   TurnPort(rtc::Thread* thread,
            rtc::PacketSocketFactory* factory,
-           rtc::Network* network,
+           const rtc::Network* network,
            rtc::AsyncPacketSocket* socket,
            const std::string& username,
            const std::string& password,
            const ProtocolAddress& server_address,
            const RelayCredentials& credentials,
            int server_priority,
-           webrtc::TurnCustomizer* customizer);
+           const std::vector<std::string>& tls_alpn_protocols,
+           const std::vector<std::string>& tls_elliptic_curves,
+           webrtc::TurnCustomizer* customizer,
+           rtc::SSLCertificateVerifier* tls_cert_verifier = nullptr,
+           const webrtc::FieldTrialsView* field_trials = nullptr);
 
   TurnPort(rtc::Thread* thread,
            rtc::PacketSocketFactory* factory,
-           rtc::Network* network,
+           const rtc::Network* network,
            uint16_t min_port,
            uint16_t max_port,
            const std::string& username,
@@ -279,7 +236,8 @@ class TurnPort : public Port {
            const std::vector<std::string>& tls_alpn_protocols,
            const std::vector<std::string>& tls_elliptic_curves,
            webrtc::TurnCustomizer* customizer,
-           rtc::SSLCertificateVerifier* tls_cert_verifier = nullptr);
+           rtc::SSLCertificateVerifier* tls_cert_verifier = nullptr,
+           const webrtc::FieldTrialsView* field_trials = nullptr);
 
   // NOTE: This method needs to be accessible for StunPort
   // return true if entry was created (i.e channel_number consumed).
@@ -304,15 +262,16 @@ class TurnPort : public Port {
   typedef std::map<rtc::Socket::Option, int> SocketOptionsMap;
   typedef std::set<rtc::SocketAddress> AttemptedServerSet;
 
-  static bool AllowedTurnPort(int port);
+  static bool AllowedTurnPort(int port,
+                              const webrtc::FieldTrialsView* field_trials);
   void OnMessage(rtc::Message* pmsg) override;
 
   bool CreateTurnClientSocket();
 
-  void set_nonce(const std::string& nonce) { nonce_ = nonce; }
-  void set_realm(const std::string& realm) {
+  void set_nonce(absl::string_view nonce) { nonce_ = std::string(nonce); }
+  void set_realm(absl::string_view realm) {
     if (realm != realm_) {
-      realm_ = realm;
+      realm_ = std::string(realm);
       UpdateHash();
     }
   }
@@ -361,14 +320,13 @@ class TurnPort : public Port {
   // Destroys the entry only if `timestamp` matches the destruction timestamp
   // in `entry`.
   void DestroyEntryIfNotCancelled(TurnEntry* entry, int64_t timestamp);
-  void ScheduleEntryDestruction(TurnEntry* entry);
 
   // Marks the connection with remote address `address` failed and
   // pruned (a.k.a. write-timed-out). Returns true if a connection is found.
   bool FailAndPruneConnection(const rtc::SocketAddress& address);
 
   // Reconstruct the URL of the server which the candidate is gathered from.
-  std::string ReconstructedServerUrl(bool use_hostname);
+  std::string ReconstructedServerUrl();
 
   void MaybeAddTurnLoggingId(StunMessage* message);
 
@@ -410,6 +368,8 @@ class TurnPort : public Port {
   // Optional TurnCustomizer that can modify outgoing messages. Once set, this
   // must outlive the TurnPort's lifetime.
   webrtc::TurnCustomizer* turn_customizer_ = nullptr;
+
+  const webrtc::FieldTrialsView* field_trials_;
 
   // Optional TurnLoggingId.
   // An identifier set by application that is added to TURN_ALLOCATE_REQUEST

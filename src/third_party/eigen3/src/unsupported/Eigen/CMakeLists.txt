@@ -12,6 +12,7 @@ set(Eigen_HEADERS
   MatrixFunctions 
   MoreVectorization
   MPRealSupport
+  NNLS
   NonLinearOptimization
   NumericalDiff
   OpenGLSupport

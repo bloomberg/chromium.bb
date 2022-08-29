@@ -11,6 +11,7 @@
 #include "base/time/time.h"
 #include "net/base/address_family.h"
 #include "net/base/net_export.h"
+#include "net/base/network_change_notifier.h"
 
 namespace net {
 
@@ -44,6 +45,15 @@ class NET_EXPORT HostResolverProc
                       HostResolverFlags host_resolver_flags,
                       AddressList* addrlist,
                       int* os_error) = 0;
+
+  // Same as above but requires an additional `network` parameter. Differently
+  // from above the lookup will be performed specifically for `network`.
+  virtual int Resolve(const std::string& host,
+                      AddressFamily address_family,
+                      HostResolverFlags host_resolver_flags,
+                      AddressList* addrlist,
+                      int* os_error,
+                      NetworkChangeNotifier::NetworkHandle network);
 
  protected:
   friend class base::RefCountedThreadSafe<HostResolverProc>;
@@ -86,17 +96,21 @@ class NET_EXPORT HostResolverProc
   static HostResolverProc* default_proc_;
 };
 
-// Resolves |host| to an address list, using the system's default host resolver.
+// Resolves `host` to an address list, using the system's default host resolver.
 // (i.e. this calls out to getaddrinfo()). If successful returns OK and fills
-// |addrlist| with a list of socket addresses. Otherwise returns a
-// network error code, and fills |os_error| with a more specific error if it
+// `addrlist` with a list of socket addresses. Otherwise returns a
+// network error code, and fills `os_error` with a more specific error if it
 // was non-NULL.
+// `network` is an optional parameter, when specified (!= kInvalidNetworkHandle)
+// the lookup will be performed specifically for `network`.
 NET_EXPORT_PRIVATE int SystemHostResolverCall(
     const std::string& host,
     AddressFamily address_family,
     HostResolverFlags host_resolver_flags,
     AddressList* addrlist,
-    int* os_error);
+    int* os_error,
+    NetworkChangeNotifier::NetworkHandle network =
+        NetworkChangeNotifier::kInvalidNetworkHandle);
 
 // Wraps call to SystemHostResolverCall as an instance of HostResolverProc.
 class NET_EXPORT_PRIVATE SystemHostResolverProc : public HostResolverProc {
@@ -111,6 +125,13 @@ class NET_EXPORT_PRIVATE SystemHostResolverProc : public HostResolverProc {
               HostResolverFlags host_resolver_flags,
               AddressList* addr_list,
               int* os_error) override;
+
+  int Resolve(const std::string& hostname,
+              AddressFamily address_family,
+              HostResolverFlags host_resolver_flags,
+              AddressList* addr_list,
+              int* os_error,
+              NetworkChangeNotifier::NetworkHandle network) override;
 
  protected:
   ~SystemHostResolverProc() override;
@@ -133,7 +154,8 @@ class NET_EXPORT_PRIVATE SystemHostResolverProc : public HostResolverProc {
 struct NET_EXPORT_PRIVATE ProcTaskParams {
   // Default delay between calls to the system resolver for the same hostname.
   // (Can be overridden by field trial.)
-  static const base::TimeDelta kDnsDefaultUnresponsiveDelay;
+  static constexpr base::TimeDelta kDnsDefaultUnresponsiveDelay =
+      base::Seconds(6);
 
   // Sets up defaults.
   ProcTaskParams(HostResolverProc* resolver_proc, size_t max_retry_attempts);
@@ -153,10 +175,10 @@ struct NET_EXPORT_PRIVATE ProcTaskParams {
 
   // This is the limit after which we make another attempt to resolve the host
   // if the worker thread has not responded yet.
-  base::TimeDelta unresponsive_delay;
+  base::TimeDelta unresponsive_delay = kDnsDefaultUnresponsiveDelay;
 
   // Factor to grow |unresponsive_delay| when we re-re-try.
-  uint32_t retry_factor;
+  uint32_t retry_factor = 2;
 };
 
 }  // namespace net

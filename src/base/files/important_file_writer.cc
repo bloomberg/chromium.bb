@@ -16,7 +16,6 @@
 #include "base/callback_helpers.h"
 #include "base/check.h"
 #include "base/critical_closure.h"
-#include "base/cxx17_backports.h"
 #include "base/debug/alias.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
@@ -24,6 +23,7 @@
 #include "base/files/important_file_writer_cleaner.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -42,7 +42,7 @@ namespace base {
 namespace {
 
 constexpr auto kDefaultCommitInterval = Seconds(10);
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 // This is how many times we will retry ReplaceFile on Windows.
 constexpr int kReplaceRetries = 5;
 // This is the result code recorded if ReplaceFile still fails.
@@ -74,7 +74,7 @@ void UmaHistogramTimesWithSuffix(const char* histogram_name,
 void DeleteTmpFileWithRetry(File tmp_file,
                             const FilePath& tmp_file_path,
                             int attempt = 0) {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // Mark the file for deletion when it is closed and then close it implicitly.
   if (tmp_file.IsValid()) {
     if (tmp_file.DeleteOnClose(true))
@@ -147,17 +147,18 @@ bool ImportantFileWriter::WriteFileAtomicallyImpl(const FilePath& path,
                                                   StringPiece data,
                                                   StringPiece histogram_suffix,
                                                   bool from_instance) {
+  const TimeTicks write_start = TimeTicks::Now();
   if (!from_instance)
     ImportantFileWriterCleaner::AddDirectory(path.DirName());
 
-#if defined(OS_WIN) && DCHECK_IS_ON()
+#if BUILDFLAG(IS_WIN) && DCHECK_IS_ON()
   // In https://crbug.com/920174, we have cases where CreateTemporaryFileInDir
   // hits a DCHECK because creation fails with no indication why. Pull the path
   // onto the stack so that we can see if it is malformed in some odd way.
   wchar_t path_copy[MAX_PATH];
-  base::wcslcpy(path_copy, path.value().c_str(), base::size(path_copy));
+  base::wcslcpy(path_copy, path.value().c_str(), std::size(path_copy));
   base::debug::Alias(path_copy);
-#endif  // defined(OS_WIN) && DCHECK_IS_ON()
+#endif  // BUILDFLAG(IS_WIN) && DCHECK_IS_ON()
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // On Chrome OS, chrome gets killed when it cannot finish shutdown quickly,
@@ -169,7 +170,7 @@ bool ImportantFileWriter::WriteFileAtomicallyImpl(const FilePath& path,
     char path[128];
   } file_info;
   file_info.data_size = data.size();
-  strlcpy(file_info.path, path.value().c_str(), base::size(file_info.path));
+  strlcpy(file_info.path, path.value().c_str(), std::size(file_info.path));
   debug::Alias(&file_info);
 #endif
 
@@ -192,7 +193,8 @@ bool ImportantFileWriter::WriteFileAtomicallyImpl(const FilePath& path,
   int bytes_written = 0;
   for (const char *scan = data.data(), *const end = scan + data.length();
        scan < end; scan += bytes_written) {
-    const int write_amount = std::min(kMaxWriteAmount, end - scan);
+    const int write_amount =
+        static_cast<int>(std::min(kMaxWriteAmount, end - scan));
     bytes_written = tmp_file.WriteAtCurrentPos(scan, write_amount);
     if (bytes_written != write_amount) {
       DPLOG(WARNING) << "Failed to write " << write_amount << " bytes to temp "
@@ -216,15 +218,15 @@ bool ImportantFileWriter::WriteFileAtomicallyImpl(const FilePath& path,
   // doing its job without oplocks). Boost a background thread's priority on
   // Windows and close as late as possible to improve the chances that the other
   // software will lose the race.
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   const auto previous_priority = PlatformThread::GetCurrentThreadPriority();
   const bool reset_priority = previous_priority <= ThreadPriority::NORMAL;
   if (reset_priority)
     PlatformThread::SetCurrentThreadPriority(ThreadPriority::DISPLAY);
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
   tmp_file.Close();
   bool result = ReplaceFile(tmp_file_path, path, &replace_file_error);
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // Save and restore the last error code so that it's not polluted by the
   // thread priority change.
   auto last_error = ::GetLastError();
@@ -246,10 +248,10 @@ bool ImportantFileWriter::WriteFileAtomicallyImpl(const FilePath& path,
     retry_count = kReplaceRetryFailure;
   UmaHistogramExactLinear("ImportantFile.FileReplaceRetryCount", retry_count,
                           kReplaceRetryFailure);
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
   if (!result) {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
     // Restore the error code from ReplaceFile so that it will be available for
     // the log message, otherwise failures in SetCurrentThreadPriority may be
     // reported instead.
@@ -258,6 +260,10 @@ bool ImportantFileWriter::WriteFileAtomicallyImpl(const FilePath& path,
     DPLOG(WARNING) << "Failed to replace " << path << " with " << tmp_file_path;
     DeleteTmpFileWithRetry(File(), tmp_file_path);
   }
+
+  const TimeDelta write_duration = TimeTicks::Now() - write_start;
+  UmaHistogramTimesWithSuffix("ImportantFile.WriteDuration", histogram_suffix,
+                              write_duration);
 
   return result;
 }
@@ -324,7 +330,8 @@ void ImportantFileWriter::WriteNowWithBackgroundDataProducer(
 
   if (!task_runner_->PostTask(
           FROM_HERE, MakeCriticalClosure("ImportantFileWriter::WriteNow",
-                                         std::move(split_task.first)))) {
+                                         std::move(split_task.first),
+                                         /*is_immediate=*/true))) {
     // Posting the task to background message loop is not expected
     // to fail, but if it does, avoid losing data and just hit the disk
     // on the current thread.

@@ -7,6 +7,8 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "components/autofill_assistant/browser/web/element_finder_result.h"
+#include "components/autofill_assistant/browser/web/js_snippets.h"
 #include "components/autofill_assistant/browser/web/web_controller_util.h"
 
 namespace autofill_assistant {
@@ -16,7 +18,7 @@ CheckOnTopWorker::CheckOnTopWorker(DevtoolsClient* devtools_client)
 
 CheckOnTopWorker::~CheckOnTopWorker() {}
 
-void CheckOnTopWorker::Start(const ElementFinder::Result& element,
+void CheckOnTopWorker::Start(const ElementFinderResult& element,
                              Callback callback) {
   callback_ = std::move(callback);
 

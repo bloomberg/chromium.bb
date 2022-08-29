@@ -6,28 +6,25 @@
  * @fileoverview Basic facillities to handle events from a single automation
  * node.
  */
+import {ChromeVoxState} from '/chromevox/background/chromevox_state.js';
+import {EventSourceState} from '/chromevox/background/event_source.js';
+import {Output} from '/chromevox/background/output/output.js';
+import {ChromeVoxEvent} from '/chromevox/common/custom_automation_event.js';
+import {EventSourceType} from '/chromevox/common/event_source_type.js';
 
-goog.provide('BaseAutomationHandler');
-
-goog.scope(function() {
 const ActionType = chrome.automation.ActionType;
 const AutomationEvent = chrome.automation.AutomationEvent;
 const AutomationNode = chrome.automation.AutomationNode;
 const EventType = chrome.automation.EventType;
 
-BaseAutomationHandler = class {
-  /**
-   * @param {AutomationNode|undefined} node
-   */
+export class BaseAutomationHandler {
+  /** @param {?AutomationNode} node */
   constructor(node) {
-    /**
-     * @type {AutomationNode|undefined}
-     */
+    /** @type {?AutomationNode} */
     this.node_ = node;
 
     /**
-     * @type {!Object<EventType,
-     *     function(!AutomationEvent): void>} @private
+     * @private {!Object<EventType, function(!AutomationEvent)>}
      */
     this.listeners_ = {};
   }
@@ -48,9 +45,7 @@ BaseAutomationHandler = class {
     this.listeners_[eventType] = listener;
   }
 
-  /**
-   * Removes all listeners from this handler.
-   */
+  /** Removes all listeners from this handler. */
   removeAllListeners() {
     for (const eventType in this.listeners_) {
       this.node_.removeEventListener(
@@ -65,13 +60,13 @@ BaseAutomationHandler = class {
    * @private
    */
   makeListener_(callback) {
-    return function(evt) {
+    return evt => {
       if (this.willHandleEvent_(evt)) {
         return;
       }
       callback(evt);
       this.didHandleEvent_(evt);
-    }.bind(this);
+    };
   }
 
   /**
@@ -101,10 +96,8 @@ BaseAutomationHandler = class {
 
     // Decide whether to announce and sync this event.
     const prevRange = ChromeVoxState.instance.getCurrentRangeWithoutRecovery();
-    if (!DesktopAutomationHandler.announceActions &&
-        (prevRange && !prevRange.requiresRecovery()) &&
-        evt.eventFrom === 'action' &&
-        !BaseAutomationHandler.allowEventFromAction_(evt.eventFromAction)) {
+    if ((prevRange && !prevRange.requiresRecovery()) &&
+        BaseAutomationHandler.disallowEventFromAction(evt)) {
       return;
     }
 
@@ -125,13 +118,20 @@ BaseAutomationHandler = class {
   }
 
   /**
-   * @param {ActionType} eventFromAction
+   * Returns true if the event contains an action that should not be processed.
+   * @param {!ChromeVoxEvent} evt
    * @return {boolean}
-   * @private
    */
-  static allowEventFromAction_(eventFromAction) {
-    return eventFromAction === ActionType.DO_DEFAULT ||
-        eventFromAction === ActionType.SHOW_CONTEXT_MENU;
+  static disallowEventFromAction(evt) {
+    return !BaseAutomationHandler.announceActions &&
+        evt.eventFrom === 'action' &&
+        evt.eventFromAction !== ActionType.DO_DEFAULT &&
+        evt.eventFromAction !== ActionType.SHOW_CONTEXT_MENU;
   }
-};
-});  // goog.scope
+}
+
+/**
+ * Controls announcement of non-user-initiated events.
+ * @public {boolean}
+ */
+BaseAutomationHandler.announceActions = false;

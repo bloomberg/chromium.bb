@@ -21,7 +21,7 @@
 #include "chrome/browser/ui/exclusive_access/exclusive_access_test.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chromeos/dbus/biod/fake_biod_client.h"
+#include "chromeos/ash/components/dbus/biod/fake_biod_client.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
@@ -56,10 +56,10 @@ class ScreenLockerTest : public InProcessBrowserTest {
             ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
   }
 
-  void TearDown() override { quick_unlock::EnabledForTesting(false); }
-
   void EnrollFingerprint() {
-    quick_unlock::EnabledForTesting(true);
+    test_api_ = std::make_unique<quick_unlock::TestApi>(
+        /*override_quick_unlock=*/true);
+    test_api_->EnableFingerprintByPolicy(quick_unlock::Purpose::kUnlock);
 
     FakeBiodClient::Get()->StartEnrollSession(
         "test-user", std::string(),
@@ -77,8 +77,9 @@ class ScreenLockerTest : public InProcessBrowserTest {
   }
 
   void AuthenticateWithFingerprint() {
-    FakeBiodClient::Get()->SendAuthScanDone(kFingerprint,
-                                            biod::SCAN_RESULT_SUCCESS);
+    biod::FingerprintMessage msg;
+    msg.set_scan_result(biod::SCAN_RESULT_SUCCESS);
+    FakeBiodClient::Get()->SendAuthScanDone(kFingerprint, msg);
     base::RunLoop().RunUntilIdle();
   }
 
@@ -86,6 +87,7 @@ class ScreenLockerTest : public InProcessBrowserTest {
   void OnStartSession(const dbus::ObjectPath& path) {}
 
   std::unique_ptr<ui::ScopedAnimationDurationScaleMode> zero_duration_mode_;
+  std::unique_ptr<quick_unlock::TestApi> test_api_;
 };
 
 IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestBadThenGoodPassword) {
@@ -155,7 +157,7 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestFullscreenExit) {
     browser()
         ->exclusive_access_manager()
         ->fullscreen_controller()
-        ->EnterFullscreenModeForTab(web_contents->GetMainFrame());
+        ->EnterFullscreenModeForTab(web_contents->GetPrimaryMainFrame());
     fullscreen_waiter.Wait();
     EXPECT_TRUE(browser_window->IsFullscreen());
     EXPECT_TRUE(window_state->GetHideShelfWhenFullscreen());

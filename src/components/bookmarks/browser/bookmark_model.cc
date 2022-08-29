@@ -18,6 +18,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
+#include "base/observer_list.h"
 #include "base/strings/string_util.h"
 #include "components/bookmarks/browser/bookmark_expanded_state_tracker.h"
 #include "components/bookmarks/browser/bookmark_load_details.h"
@@ -33,6 +34,7 @@
 #include "components/bookmarks/browser/url_and_title.h"
 #include "components/bookmarks/browser/url_index.h"
 #include "components/bookmarks/common/bookmark_constants.h"
+#include "components/bookmarks/common/bookmark_metrics.h"
 #include "components/favicon_base/favicon_types.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -660,9 +662,8 @@ void BookmarkModel::SortChildren(const BookmarkNode* parent) {
   std::unique_ptr<icu::Collator> collator(icu::Collator::createInstance(error));
   if (U_FAILURE(error))
     collator.reset(nullptr);
-  BookmarkNode* mutable_parent = AsMutable(parent);
-  std::sort(mutable_parent->children_.begin(), mutable_parent->children_.end(),
-            SortComparator(collator.get()));
+
+  AsMutable(parent)->SortChildren(SortComparator(collator.get()));
 
   if (store_)
     store_->ScheduleSave();
@@ -690,14 +691,15 @@ void BookmarkModel::ReorderChildren(
     for (size_t i = 0; i < ordered_nodes.size(); ++i)
       order[ordered_nodes[i]] = i;
 
-    std::vector<std::unique_ptr<BookmarkNode>> new_children(
-        ordered_nodes.size());
-    BookmarkNode* mutable_parent = AsMutable(parent);
-    for (auto& child : mutable_parent->children_) {
-      size_t new_location = order[child.get()];
-      new_children[new_location] = std::move(child);
+    std::vector<size_t> new_order(ordered_nodes.size());
+    for (size_t old_index = 0; old_index < parent->children().size();
+         ++old_index) {
+      const BookmarkNode* node = parent->children()[old_index].get();
+      size_t new_index = order[node];
+      new_order[old_index] = new_index;
     }
-    mutable_parent->children_.swap(new_children);
+
+    AsMutable(parent)->ReorderChildren(new_order);
 
     if (store_)
       store_->ScheduleSave();
@@ -811,8 +813,7 @@ void BookmarkModel::DoneLoading(std::unique_ptr<BookmarkLoadDetails> details) {
       std::make_unique<TypedCountSorter>(client_.get()));
   // Sorting the permanent nodes has to happen on the main thread, so we do it
   // here, after loading completes.
-  std::stable_sort(root_->children_.begin(), root_->children_.end(),
-                   VisibilityComparator(client_.get()));
+  root_->SortChildren(VisibilityComparator(client_.get()));
 
   root_->SetMetaInfoMap(details->model_meta_info_map());
 
@@ -822,6 +823,10 @@ void BookmarkModel::DoneLoading(std::unique_ptr<BookmarkLoadDetails> details) {
       store_ ? base::BindRepeating(&BookmarkStorage::ScheduleSave,
                                    base::Unretained(store_.get()))
              : base::DoNothing());
+
+  const base::TimeDelta load_duration =
+      base::TimeTicks::Now() - details->load_start();
+  metrics::RecordTimeToLoadAtStartup(load_duration);
 
   // Notify our direct observers.
   for (BookmarkModelObserver& observer : observers_)

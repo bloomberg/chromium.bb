@@ -9,7 +9,6 @@
 
 #include <vector>
 
-#include "base/compiler_specific.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gfx_export.h"
@@ -35,19 +34,30 @@ GFX_EXPORT size_t SubsamplingFactorForBufferFormat(BufferFormat format,
 GFX_EXPORT size_t RowSizeForBufferFormat(size_t width,
                                          BufferFormat format,
                                          size_t plane);
-GFX_EXPORT bool RowSizeForBufferFormatChecked(size_t width,
-                                              BufferFormat format,
-                                              size_t plane,
-                                              size_t* size_in_bytes)
-    WARN_UNUSED_RESULT;
+[[nodiscard]] GFX_EXPORT bool RowSizeForBufferFormatChecked(
+    size_t width,
+    BufferFormat format,
+    size_t plane,
+    size_t* size_in_bytes);
+
+// Returns the number of bytes used to the plane of a given |format|.
+GFX_EXPORT size_t PlaneSizeForBufferFormat(const Size& size,
+                                           BufferFormat format,
+                                           size_t plane);
+[[nodiscard]] GFX_EXPORT bool PlaneSizeForBufferFormatChecked(
+    const Size& size,
+    BufferFormat format,
+    size_t plane,
+    size_t* size_in_bytes);
 
 // Returns the number of bytes used to store all the planes of a given |format|.
 GFX_EXPORT size_t BufferSizeForBufferFormat(const Size& size,
                                             BufferFormat format);
-GFX_EXPORT bool BufferSizeForBufferFormatChecked(const Size& size,
-                                                 BufferFormat format,
-                                                 size_t* size_in_bytes)
-    WARN_UNUSED_RESULT;
+
+[[nodiscard]] GFX_EXPORT bool BufferSizeForBufferFormatChecked(
+    const Size& size,
+    BufferFormat format,
+    size_t* size_in_bytes);
 
 GFX_EXPORT size_t BufferOffsetForBufferFormat(const Size& size,
                                            BufferFormat format,
@@ -63,8 +73,9 @@ GFX_EXPORT const char* BufferPlaneToString(BufferPlane plane);
 // tricky when the size of the primary plane is odd, because the subsampled
 // planes will have a size that is not a divisor of the primary plane's size.
 // This indicates that odd height multiplanar formats are supported.
-GFX_EXPORT bool AllowOddHeightMultiPlanarBuffers();
+GFX_EXPORT bool IsOddHeightMultiPlanarBuffersAllowed();
 
+GFX_EXPORT bool IsOddWidthMultiPlanarBuffersAllowed();
 }  // namespace gfx
 
 #endif  // UI_GFX_BUFFER_FORMAT_UTIL_H_

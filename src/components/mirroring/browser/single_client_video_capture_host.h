@@ -89,6 +89,7 @@ class SingleClientVideoCaptureHost final
   void OnBufferRetired(int buffer_id) override;
   void OnError(media::VideoCaptureError error) override;
   void OnFrameDropped(media::VideoCaptureFrameDropReason reason) override;
+  void OnFrameWithEmptyRegionCapture() override;
   void OnLog(const std::string& message) override;
   void OnStarted() override;
   void OnStartedUsingGpuDecode() override;
@@ -102,7 +103,7 @@ class SingleClientVideoCaptureHost final
  private:
   // Reports the |consumer_resource_utilization| and removes the buffer context.
   void OnFinishedConsumingBuffer(int buffer_context_id,
-                                 const media::VideoCaptureFeedback& feedback);
+                                 media::VideoCaptureFeedback feedback);
 
   const std::string device_id_;
   const blink::mojom::MediaStreamType type_;

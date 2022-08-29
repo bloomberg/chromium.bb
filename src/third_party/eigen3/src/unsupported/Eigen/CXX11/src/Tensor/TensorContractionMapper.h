@@ -296,7 +296,7 @@ class BaseTensorContractionMapper : public SimpleTensorContractionMapper<Scalar,
 
   template <typename PacketT,int AlignmentType>
   EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
-  typename internal::enable_if<internal::unpacket_traits<PacketT>::size==packet_size,PacketT>::type
+  std::enable_if_t<internal::unpacket_traits<PacketT>::size==packet_size,PacketT>
   load(Index i, Index j) const
   {
     // whole method makes column major assumption
@@ -342,7 +342,7 @@ class BaseTensorContractionMapper : public SimpleTensorContractionMapper<Scalar,
 
   template <typename PacketT,int AlignmentType>
   EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
-  typename internal::enable_if<internal::unpacket_traits<PacketT>::size!=packet_size,PacketT>::type
+  std::enable_if_t<internal::unpacket_traits<PacketT>::size!=packet_size,PacketT>
   load(Index i, Index j) const
   {
     const Index requested_packet_size = internal::unpacket_traits<PacketT>::size;

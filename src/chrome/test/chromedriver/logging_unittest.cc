@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/test/chromedriver/logging.h"
+
 #include <stddef.h>
 
 #include <memory>
 #include <vector>
 
-#include "base/cxx17_backports.h"
 #include "base/format_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -16,7 +17,6 @@
 #include "chrome/test/chromedriver/chrome/log.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/command_listener.h"
-#include "chrome/test/chromedriver/logging.h"
 #include "chrome/test/chromedriver/session.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -30,7 +30,7 @@ const char* const kAllWdLevels[] = {
 
 TEST(Logging, NameLevelConversionHappy) {
   // All names map to a valid enum value.
-  for (int i = 0; static_cast<size_t>(i) < base::size(kAllWdLevels); ++i) {
+  for (int i = 0; static_cast<size_t>(i) < std::size(kAllWdLevels); ++i) {
     Log::Level level = static_cast<Log::Level>(-1);
     EXPECT_TRUE(WebDriverLog::NameToLevel(kAllWdLevels[i], &level));
     EXPECT_LE(Log::kAll, level);
@@ -56,7 +56,7 @@ void ValidateLogEntry(base::ListValue *entries,
                       int index,
                       const std::string& expected_level,
                       const std::string& expected_message) {
-  const base::Value& entry_value = entries->GetList()[index];
+  const base::Value& entry_value = entries->GetListDeprecated()[index];
   ASSERT_TRUE(entry_value.is_dict());
   const base::DictionaryValue& entry =
       base::Value::AsDictionaryValue(entry_value);
@@ -79,7 +79,7 @@ TEST(WebDriverLog, Levels) {
 
   std::unique_ptr<base::ListValue> entries(log.GetAndClearEntries());
 
-  ASSERT_EQ(2u, entries->GetList().size());
+  ASSERT_EQ(2u, entries->GetListDeprecated().size());
   ValidateLogEntry(entries.get(), 0, "INFO", "info message");
   ValidateLogEntry(entries.get(), 1, "SEVERE", "severe message");
 }
@@ -91,7 +91,7 @@ TEST(WebDriverLog, Off) {
 
   std::unique_ptr<base::ListValue> entries(log.GetAndClearEntries());
 
-  ASSERT_EQ(0u, entries->GetList().size());
+  ASSERT_EQ(0u, entries->GetListDeprecated().size());
 }
 
 TEST(WebDriverLog, All) {
@@ -101,7 +101,7 @@ TEST(WebDriverLog, All) {
 
   std::unique_ptr<base::ListValue> entries(log.GetAndClearEntries());
 
-  ASSERT_EQ(2u, entries->GetList().size());
+  ASSERT_EQ(2u, entries->GetListDeprecated().size());
   ValidateLogEntry(entries.get(), 0, "SEVERE", "severe message");
   ValidateLogEntry(entries.get(), 1, "DEBUG", "debug message");
 }
@@ -181,7 +181,7 @@ TEST(Logging, OverflowLogs) {
   log.AddEntry(Log::kError, "the 1st error is in the 2nd batch");
   ASSERT_EQ("the 1st error is in the 2nd batch", log.GetFirstErrorMessage());
   std::unique_ptr<base::ListValue> entries = log.GetAndClearEntries();
-  ASSERT_EQ(internal::kMaxReturnedEntries, entries->GetList().size());
+  ASSERT_EQ(internal::kMaxReturnedEntries, entries->GetListDeprecated().size());
   entries = log.GetAndClearEntries();
-  ASSERT_EQ(1u, entries->GetList().size());
+  ASSERT_EQ(1u, entries->GetListDeprecated().size());
 }

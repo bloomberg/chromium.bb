@@ -25,6 +25,7 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/after_startup_task_utils.h"
+#include "chrome/browser/browser_features.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
@@ -38,6 +39,7 @@
 #include "chrome/browser/net/net_error_tab_helper.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/predictors/loading_predictor_config.h"
+#include "chrome/browser/privacy_sandbox/privacy_sandbox_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
@@ -81,13 +83,13 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "ui/base/ui_base_features.h"
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "chrome/test/base/scoped_bundle_swizzler_mac.h"
 #include "services/device/public/cpp/test/fake_geolocation_manager.h"
 #endif
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/windows_version.h"
 #include "ui/base/win/atl_module.h"
@@ -97,25 +99,29 @@
 #include "components/captive_portal/content/captive_portal_service.h"
 #endif
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/ui/webui/whats_new/whats_new_util.h"
 #include "components/storage_monitor/test_storage_monitor.h"
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/components/cryptohome/cryptohome_parameters.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/test/shell_test_api.h"
+#include "ash/services/device_sync/device_sync_impl.h"
+#include "ash/services/device_sync/fake_device_sync.h"
 #include "ash/shell.h"
 #include "base/system/sys_info.h"
 #include "chrome/browser/ash/app_restore/full_restore_app_launch_handler.h"
 #include "chrome/browser/ash/input_method/input_method_configuration.h"
-#include "chromeos/cryptohome/cryptohome_parameters.h"
-#include "chromeos/services/device_sync/device_sync_impl.h"
-#include "chromeos/services/device_sync/fake_device_sync.h"
 #include "components/user_manager/user_names.h"
 #include "ui/display/display_switches.h"
 #include "ui/events/test/event_generator.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if defined(USE_OZONE)
+#include "ui/views/test/test_desktop_screen_ozone.h"
+#endif
 
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -127,7 +133,7 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-#include "chrome/browser/lacros/cert_db_initializer_factory.h"
+#include "chrome/browser/lacros/cert/cert_db_initializer_factory.h"
 #include "components/account_manager_core/chromeos/account_manager.h"
 #include "components/account_manager_core/chromeos/account_manager_facade_factory.h"  // nogncheck
 #include "components/account_manager_core/chromeos/fake_account_manager_ui.h"  // nogncheck
@@ -139,23 +145,24 @@ namespace {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 class FakeDeviceSyncImplFactory
-    : public chromeos::device_sync::DeviceSyncImpl::Factory {
+    : public ash::device_sync::DeviceSyncImpl::Factory {
  public:
   FakeDeviceSyncImplFactory() = default;
   ~FakeDeviceSyncImplFactory() override = default;
 
-  // chromeos::device_sync::DeviceSyncImpl::Factory:
-  std::unique_ptr<chromeos::device_sync::DeviceSyncBase> CreateInstance(
+  // ash::device_sync::DeviceSyncImpl::Factory:
+  std::unique_ptr<ash::device_sync::DeviceSyncBase> CreateInstance(
       signin::IdentityManager* identity_manager,
       gcm::GCMDriver* gcm_driver,
       PrefService* profile_prefs,
-      const chromeos::device_sync::GcmDeviceInfoProvider*
-          gcm_device_info_provider,
-      chromeos::device_sync::ClientAppMetadataProvider*
-          client_app_metadata_provider,
+      const ash::device_sync::GcmDeviceInfoProvider* gcm_device_info_provider,
+      ash::device_sync::ClientAppMetadataProvider* client_app_metadata_provider,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      std::unique_ptr<base::OneShotTimer> timer) override {
-    return std::make_unique<chromeos::device_sync::FakeDeviceSync>();
+      std::unique_ptr<base::OneShotTimer> timer,
+      ash::device_sync::AttestationCertificatesSyncer::
+          GetAttestationCertificatesFunction
+              get_attestation_certificates_function) override {
+    return std::make_unique<ash::device_sync::FakeDeviceSync>();
   }
 };
 
@@ -165,7 +172,7 @@ FakeDeviceSyncImplFactory* GetFakeDeviceSyncImplFactory() {
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-#if !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
 // An observer that returns back to test code after a new profile is
 // initialized.
 void UnblockOnProfileCreation(base::RunLoop* run_loop,
@@ -176,7 +183,7 @@ void UnblockOnProfileCreation(base::RunLoop* run_loop,
 }
 #endif
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 class ChromeBrowserMainExtraPartsBrowserProcessInjection
     : public ChromeBrowserMainExtraParts {
  public:
@@ -202,7 +209,7 @@ class ChromeBrowserMainExtraPartsBrowserProcessInjection
   ChromeBrowserMainExtraPartsBrowserProcessInjection& operator=(
       const ChromeBrowserMainExtraPartsBrowserProcessInjection&) = delete;
 };
-#endif  // defined(OS_MAC)
+#endif  // BUILDFLAG(IS_MAC)
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 // For browser tests that depend on AccountManager on Lacros - e.g. tests that
@@ -303,7 +310,7 @@ void InProcessBrowserTest::Initialize() {
   CHECK(base::PathService::Override(chrome::DIR_TEST_DATA,
                                     src_dir.Append(GetChromeTestDataDir())));
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   bundle_swizzler_ = std::make_unique<ScopedBundleSwizzlerMac>();
 #endif
 
@@ -312,6 +319,11 @@ void InProcessBrowserTest::Initialize() {
   // Preconnecting can cause non-deterministic test behavior especially with
   // various test fixtures that mock servers.
   disabled_features.push_back(features::kPreconnectToSearch);
+
+  // If the network service fails to start sandboxed then this should cause
+  // tests to fail.
+  disabled_features.push_back(
+      features::kRestartNetworkServiceUnsandboxedForFailedLaunch);
 
   // In-product help can conflict with tests' expected window activation and
   // focus. Individual tests can re-enable IPH.
@@ -325,6 +337,10 @@ void InProcessBrowserTest::Initialize() {
   launch_browser_for_testing_ =
       std::make_unique<ash::full_restore::ScopedLaunchBrowserForTesting>();
 #endif
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  CertDbInitializerFactory::GetInstance()
+      ->SetCreateWithBrowserContextForTesting(/*should_create=*/false);
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 }
 
 InProcessBrowserTest::~InProcessBrowserTest() = default;
@@ -381,14 +397,14 @@ void InProcessBrowserTest::SetUp() {
   // (--login-user), or the guest session (--bwsi). This is essentially
   // the same as in `ChromeBrowserMainPartsAsh::PreEarlyInitialization`
   // but it will be done on device and only for tests.
-  if (!command_line->HasSwitch(chromeos::switches::kLoginManager) &&
-      !command_line->HasSwitch(chromeos::switches::kLoginUser) &&
-      !command_line->HasSwitch(chromeos::switches::kGuestSession)) {
+  if (!command_line->HasSwitch(ash::switches::kLoginManager) &&
+      !command_line->HasSwitch(ash::switches::kLoginUser) &&
+      !command_line->HasSwitch(ash::switches::kGuestSession)) {
     command_line->AppendSwitchASCII(
-        chromeos::switches::kLoginUser,
+        ash::switches::kLoginUser,
         cryptohome::Identification(user_manager::StubAccountId()).id());
-    if (!command_line->HasSwitch(chromeos::switches::kLoginProfile)) {
-      command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile,
+    if (!command_line->HasSwitch(ash::switches::kLoginProfile)) {
+      command_line->AppendSwitchASCII(ash::switches::kLoginProfile,
                                       chrome::kTestUserProfileDir);
     }
   }
@@ -401,7 +417,7 @@ void InProcessBrowserTest::SetUp() {
   // Cookies). Without this on Mac and Linux, many tests will hang waiting for a
   // user to approve KeyChain/kwallet access. On Windows this is not needed as
   // OS APIs never block.
-#if defined(OS_MAC) || defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
   OSCryptMocker::SetUp();
 #endif
 
@@ -413,21 +429,16 @@ void InProcessBrowserTest::SetUp() {
   chrome_browser_net::NetErrorTabHelper::set_state_for_testing(
       chrome_browser_net::NetErrorTabHelper::TESTING_FORCE_DISABLED);
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS)
   // On Chrome OS, access to files via file: scheme is restricted. Enable
   // access to all files here since browser_tests and interactive_ui_tests
   // rely on the ability to open any files via file: scheme.
   ChromeNetworkDelegate::EnableAccessToAllFilesForTesting(true);
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
-
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-  CertDbInitializerFactory::GetInstance()
-      ->SetCreateWithBrowserContextForTesting(/*should_create=*/false);
-#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // Device sync (for multidevice "Better Together") is ash specific.
-  chromeos::device_sync::DeviceSyncImpl::Factory::SetCustomFactory(
+  ash::device_sync::DeviceSyncImpl::Factory::SetCustomFactory(
       GetFakeDeviceSyncImplFactory());
 
   // Using a screenshot for clamshell to tablet mode transitions makes the flow
@@ -459,6 +470,11 @@ void InProcessBrowserTest::SetUp() {
   // What's New for tests that simulate first run, is unexpected by most tests.
   whats_new::DisableRemoteContentForTests();
 
+  // The Privacy Sandbox service may attempt to show a modal dialog to the
+  // profile on browser start, which is unexpected by mosts tests. Tests which
+  // expect this can allow the dialog as desired.
+  PrivacySandboxService::SetDialogDisabledForTests(true);
+
   BrowserTestBase::SetUp();
 }
 
@@ -471,20 +487,24 @@ void InProcessBrowserTest::SetUpDefaultCommandLine(
   // TODO(pkotwicz): Investigate if we can remove this switch.
   if (exit_when_last_browser_closes_)
     command_line->AppendSwitch(switches::kDisableZeroBrowsersOpenForTests);
+#if BUILDFLAG(IS_CHROMEOS)
+  // Do not automaximize in browser tests.
+  command_line->AppendSwitch(switches::kDisableAutoMaximizeForTests);
+#endif
 }
 
 void InProcessBrowserTest::TearDown() {
   DCHECK(!g_browser_process);
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   com_initializer_.reset();
 #endif
   BrowserTestBase::TearDown();
-#if defined(OS_MAC) || defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
   OSCryptMocker::TearDown();
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  chromeos::device_sync::DeviceSyncImpl::Factory::SetCustomFactory(nullptr);
+  ash::device_sync::DeviceSyncImpl::Factory::SetCustomFactory(nullptr);
   launch_browser_for_testing_ = nullptr;
 #endif
 }
@@ -505,7 +525,7 @@ size_t InProcessBrowserTest::GetTestPreCount() {
 void InProcessBrowserTest::CreatedBrowserMainParts(
     content::BrowserMainParts* parts) {
   BrowserTestBase::CreatedBrowserMainParts(parts);
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   static_cast<ChromeBrowserMainParts*>(parts)->AddParts(
       std::make_unique<ChromeBrowserMainExtraPartsBrowserProcessInjection>());
 #endif
@@ -528,7 +548,7 @@ void InProcessBrowserTest::CloseBrowserSynchronously(Browser* browser) {
 
 void InProcessBrowserTest::CloseBrowserAsynchronously(Browser* browser) {
   browser->window()->Close();
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   // BrowserWindowController depends on the auto release pool being recycled
   // in the message loop to delete itself.
   AutoreleasePool()->Recycle();
@@ -537,7 +557,7 @@ void InProcessBrowserTest::CloseBrowserAsynchronously(Browser* browser) {
 
 void InProcessBrowserTest::CloseAllBrowsers() {
   chrome::CloseAllBrowsers();
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   // BrowserWindowController depends on the auto release pool being recycled
   // in the message loop to delete itself.
   AutoreleasePool()->Recycle();
@@ -551,36 +571,55 @@ void InProcessBrowserTest::RunUntilBrowserProcessQuits() {
 // TODO(alexmos): This function should expose success of the underlying
 // navigation to tests, which should make sure navigations succeed when
 // appropriate. See https://crbug.com/425335
-void InProcessBrowserTest::AddTabAtIndexToBrowser(
+bool InProcessBrowserTest::AddTabAtIndexToBrowser(
     Browser* browser,
     int index,
     const GURL& url,
     ui::PageTransition transition,
     bool check_navigation_success) {
+  return AddTabAtIndexToBrowser(browser, index, url, transition);
+}
+
+bool InProcessBrowserTest::AddTabAtIndexToBrowser(
+    Browser* browser,
+    int index,
+    const GURL& url,
+    ui::PageTransition transition) {
   NavigateParams params(browser, url, transition);
   params.tabstrip_index = index;
   params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
   Navigate(&params);
 
-  if (check_navigation_success) {
-    content::WaitForLoadStop(params.navigated_or_inserted_contents);
-  } else {
-    content::WaitForLoadStopWithoutSuccessCheck(
-        params.navigated_or_inserted_contents);
-  }
+  return content::WaitForLoadStop(params.navigated_or_inserted_contents);
 }
 
-void InProcessBrowserTest::AddTabAtIndex(int index,
+bool InProcessBrowserTest::AddTabAtIndex(int index,
                                          const GURL& url,
                                          ui::PageTransition transition) {
-  AddTabAtIndexToBrowser(browser(), index, url, transition, true);
+  return AddTabAtIndexToBrowser(browser(), index, url, transition, true);
 }
 
 bool InProcessBrowserTest::SetUpUserDataDirectory() {
   return true;
 }
 
-#if !defined(OS_MAC)
+void InProcessBrowserTest::SetScreenInstance() {
+  // TODO(crbug.com/1317416): On wayland platform, we need to check if the
+  // wayland-ozone platform is initialized at this point due to the async
+  // initialization of the display. Investigate if we can eliminate
+  // IsOzoneInitialized.
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
+  if (!display::Screen::HasScreen() &&
+      views::test::TestDesktopScreenOzone::IsOzoneInitialized()) {
+    // This is necessary for interactive UI tests.
+    // It is enabled in interactive_ui_tests_main.cc
+    // (or through GPUMain)
+    screen_ = views::test::TestDesktopScreenOzone::Create();
+  }
+#endif
+}
+
+#if !BUILDFLAG(IS_MAC)
 void InProcessBrowserTest::OpenDevToolsWindow(
     content::WebContents* web_contents) {
   ASSERT_FALSE(content::DevToolsAgentHost::HasFor(web_contents));
@@ -632,9 +671,9 @@ Browser* InProcessBrowserTest::CreateBrowserForApp(const std::string& app_name,
   AddBlankTabAndShow(browser);
   return browser;
 }
-#endif  // !defined(OS_MAC)
+#endif  // !BUILDFLAG(IS_MAC)
 
-#if !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
 Browser* InProcessBrowserTest::CreateGuestBrowser() {
   // Get Guest profile.
   ProfileManager* profile_manager = g_browser_process->profile_manager();
@@ -653,7 +692,7 @@ Browser* InProcessBrowserTest::CreateGuestBrowser() {
   AddBlankTabAndShow(browser);
   return browser;
 }
-#endif  // !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
 
 void InProcessBrowserTest::AddBlankTabAndShow(Browser* browser) {
   content::WebContents* blank_tab = chrome::AddSelectedTabWithURL(
@@ -664,7 +703,7 @@ void InProcessBrowserTest::AddBlankTabAndShow(Browser* browser) {
   browser->window()->Show();
 }
 
-#if !defined(OS_MAC) && !BUILDFLAG(IS_CHROMEOS_LACROS)
+#if !BUILDFLAG(IS_MAC) && !BUILDFLAG(IS_CHROMEOS_LACROS)
 base::CommandLine InProcessBrowserTest::GetCommandLineForRelaunch() {
   base::CommandLine new_command_line(
       base::CommandLine::ForCurrentProcess()->GetProgram());
@@ -685,7 +724,7 @@ base::CommandLine InProcessBrowserTest::GetCommandLineForRelaunch() {
   }
   return new_command_line;
 }
-#endif  // !defined(OS_MAC) && !BUILDFLAG(IS_CHROMEOS_LACROS)
+#endif  // !BUILDFLAG(IS_MAC) && !BUILDFLAG(IS_CHROMEOS_LACROS)
 
 base::FilePath InProcessBrowserTest::GetChromeTestDataDir() const {
   return base::FilePath(FILE_PATH_LITERAL("chrome/test/data"));
@@ -703,23 +742,18 @@ void InProcessBrowserTest::PreRunTestOnMainThread() {
 
   SelectFirstBrowser();
   if (browser_) {
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
-    // There are cases where windows get created maximized by default.
-    if (browser_->window()->IsMaximized())
-      browser_->window()->Restore();
-#endif
     auto* tab = browser_->tab_strip_model()->GetActiveWebContents();
     content::WaitForLoadStop(tab);
     SetInitialWebContents(tab);
   }
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   // Do not use the real StorageMonitor for tests, which introduces another
   // source of variability and potential slowness.
   ASSERT_TRUE(storage_monitor::TestStorageMonitor::CreateForBrowserTests());
 #endif
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   // On Mac, without the following autorelease pool, code which is directly
   // executed (as opposed to executed inside a message loop) would autorelease
   // objects into a higher-level pool. This pool is not recycled in-sync with
@@ -737,13 +771,13 @@ void InProcessBrowserTest::PreRunTestOnMainThread() {
   if (browser_ && global_browser_set_up_function_)
     ASSERT_TRUE(global_browser_set_up_function_(browser_));
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   autorelease_pool_->Recycle();
 #endif
 }
 
 void InProcessBrowserTest::PostRunTestOnMainThread() {
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   autorelease_pool_->Recycle();
 #endif
 
@@ -780,7 +814,7 @@ void InProcessBrowserTest::QuitBrowsers() {
       FROM_HERE, base::BindOnce(&chrome::AttemptExit));
   RunUntilBrowserProcessQuits();
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   // chrome::AttemptExit() will attempt to close all browsers by deleting
   // their tab contents. The last tab contents being removed triggers closing of
   // the browser window.

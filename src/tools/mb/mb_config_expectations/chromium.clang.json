@@ -9,7 +9,8 @@
       "use_cfi_diag": true,
       "use_cfi_icall": true,
       "use_cfi_recover": true,
-      "use_goma": true,
+      "use_rbe": true,
+      "use_remoteexec": true,
       "use_thin_lto": true
     }
   },
@@ -424,35 +425,6 @@
       "use_libfuzzer": true
     }
   },
-  "ToTWinCFI": {
-    "gn_args": {
-      "dcheck_always_on": true,
-      "is_cfi": true,
-      "is_clang": true,
-      "is_component_build": false,
-      "is_debug": false,
-      "llvm_force_head_revision": true,
-      "target_cpu": "x86",
-      "use_cfi_cast": true,
-      "use_cfi_diag": true,
-      "use_thin_lto": true,
-      "win_linker_timing": true
-    }
-  },
-  "ToTWinCFI64": {
-    "gn_args": {
-      "dcheck_always_on": true,
-      "is_cfi": true,
-      "is_clang": true,
-      "is_component_build": false,
-      "is_debug": false,
-      "llvm_force_head_revision": true,
-      "use_cfi_cast": true,
-      "use_cfi_diag": true,
-      "use_thin_lto": true,
-      "win_linker_timing": true
-    }
-  },
   "ToTWinOfficial": {
     "gn_args": {
       "is_chrome_branded": true,
@@ -495,7 +467,6 @@
       "is_clang": true,
       "is_component_build": false,
       "is_debug": false,
-      "is_p2p_enabled": false,
       "llvm_force_head_revision": true,
       "target_cpu": "x64",
       "target_environment": "simulator",
@@ -510,7 +481,6 @@
       "ios_set_attributes_for_xcode_project_generation": false,
       "is_clang": true,
       "is_debug": false,
-      "is_p2p_enabled": false,
       "llvm_force_head_revision": true,
       "target_cpu": "arm64",
       "target_environment": "device",

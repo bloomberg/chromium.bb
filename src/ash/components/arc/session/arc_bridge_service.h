@@ -88,6 +88,8 @@ class PowerHost;
 class PowerInstance;
 class PrintSpoolerHost;
 class PrintSpoolerInstance;
+class PrivacyItemsHost;
+class PrivacyItemsInstance;
 class ProcessInstance;
 class PropertyInstance;
 class RotationLockInstance;
@@ -100,6 +102,7 @@ class SharesheetInstance;
 class SmartCardManagerHost;
 class SmartCardManagerInstance;
 class StorageManagerInstance;
+class SystemUiInstance;
 class TimerHost;
 class TimerInstance;
 class TracingInstance;
@@ -290,6 +293,10 @@ class ArcBridgeService {
   print_spooler() {
     return &print_spooler_;
   }
+  ConnectionHolder<mojom::PrivacyItemsInstance, mojom::PrivacyItemsHost>*
+  privacy_items() {
+    return &privacy_items_;
+  }
   ConnectionHolder<mojom::ProcessInstance>* process() { return &process_; }
   ConnectionHolder<mojom::PropertyInstance>* property() { return &property_; }
   ConnectionHolder<mojom::RotationLockInstance>* rotation_lock() {
@@ -315,6 +322,7 @@ class ArcBridgeService {
   ConnectionHolder<mojom::StorageManagerInstance>* storage_manager() {
     return &storage_manager_;
   }
+  ConnectionHolder<mojom::SystemUiInstance>* system_ui() { return &system_ui_; }
   ConnectionHolder<mojom::TimerInstance, mojom::TimerHost>* timer() {
     return &timer_;
   }
@@ -399,6 +407,8 @@ class ArcBridgeService {
   ConnectionHolder<mojom::PowerInstance, mojom::PowerHost> power_;
   ConnectionHolder<mojom::PrintSpoolerInstance, mojom::PrintSpoolerHost>
       print_spooler_;
+  ConnectionHolder<mojom::PrivacyItemsInstance, mojom::PrivacyItemsHost>
+      privacy_items_;
   ConnectionHolder<mojom::ProcessInstance> process_;
   ConnectionHolder<mojom::PropertyInstance> property_;
   ConnectionHolder<mojom::RotationLockInstance> rotation_lock_;
@@ -410,6 +420,7 @@ class ArcBridgeService {
   ConnectionHolder<mojom::SmartCardManagerInstance, mojom::SmartCardManagerHost>
       smart_card_manager_;
   ConnectionHolder<mojom::StorageManagerInstance> storage_manager_;
+  ConnectionHolder<mojom::SystemUiInstance> system_ui_;
   ConnectionHolder<mojom::TimerInstance, mojom::TimerHost> timer_;
   ConnectionHolder<mojom::TracingInstance> tracing_;
   ConnectionHolder<mojom::TtsInstance, mojom::TtsHost> tts_;

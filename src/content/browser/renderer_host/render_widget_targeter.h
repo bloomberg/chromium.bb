@@ -208,12 +208,9 @@ class RenderWidgetTargeter {
                         const gfx::PointF& transformed_location);
 
   // |target_location|, if
-  // set, is the location in |target|'s coordinate space. If |latched_target| is
-  // false, we explicitly did hit-testing for this event, instead of using a
-  // known target.
+  // set, is the location in |target|'s coordinate space.
   void FoundTarget(RenderWidgetHostViewBase* target,
                    const absl::optional<gfx::PointF>& target_location,
-                   bool latched_target,
                    TargetingRequest* request);
 
   // Callback when the hit testing timer fires, to resume event processing
@@ -241,10 +238,6 @@ class RenderWidgetTargeter {
 
   std::unordered_set<RenderWidgetHostViewBase*> unresponsive_views_;
 
-  // This value keeps track of the number of clients we have asked in order to
-  // do async hit-testing.
-  uint32_t async_depth_ = 0;
-
   // Target to send events to if autoscroll is in progress
   RenderWidgetTargetResult middle_click_result_;
 
@@ -258,11 +251,6 @@ class RenderWidgetTargeter {
   base::OneShotTimer async_hit_test_timeout_;
 
   uint64_t trace_id_;
-
-  const bool is_viz_hit_testing_debug_enabled_;
-  // Stores SurfaceIds for regions that were async queried if hit-test debugging
-  // is enabled. This allows us to send the queried regions in batches.
-  std::vector<viz::FrameSinkId> hit_test_async_queried_debug_queue_;
 
   const raw_ptr<Delegate> delegate_;
   base::WeakPtrFactory<RenderWidgetTargeter> weak_ptr_factory_{this};

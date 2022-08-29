@@ -18,22 +18,23 @@ import './password_check_edit_dialog.js';
 import './password_check_edit_disclaimer_dialog.js';
 import './password_check_list_item.js';
 import './password_remove_confirmation_dialog.js';
-// <if expr="chromeos or lacros">
+// <if expr="chromeos_ash or chromeos_lacros">
 import '../controls/password_prompt_dialog.js';
 
 // </if>
 
 import {CrActionMenuElement} from 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
-import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
+import {CrButtonElement} from 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import {assert, assertNotReached} from 'chrome://resources/js/assert_ts.js';
 import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
 import {I18nMixin, I18nMixinInterface} from 'chrome://resources/js/i18n_mixin.js';
-// <if expr="chromeos or lacros">
+// <if expr="chromeos_ash or chromeos_lacros">
 import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
 // </if>
 import {WebUIListenerMixin, WebUIListenerMixinInterface} from 'chrome://resources/js/web_ui_listener_mixin.js';
-import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-// <if expr="chromeos or lacros">
+// <if expr="chromeos_ash or chromeos_lacros">
 import {loadTimeData} from '../i18n_setup.js';
 // </if>
 
@@ -42,38 +43,57 @@ import {PrefsMixin, PrefsMixinInterface} from '../prefs/prefs_mixin.js';
 import {routes} from '../route.js';
 import {Route, RouteObserverMixin, RouteObserverMixinInterface, Router} from '../router.js';
 
-// <if expr="chromeos or lacros">
+// <if expr="chromeos_ash or chromeos_lacros">
 import {BlockingRequestManager} from './blocking_request_manager.js';
 // </if>
 
+import {getTemplate} from './password_check.html.js';
 import {PasswordCheckListItemElement} from './password_check_list_item.js';
 import {PasswordCheckMixin, PasswordCheckMixinInterface} from './password_check_mixin.js';
 import {PasswordCheckInteraction, SavedPasswordListChangedListener} from './password_manager_proxy.js';
+import {PasswordRequestorMixin, PasswordRequestorMixinInterface} from './password_requestor_mixin.js';
 
 
 const CheckState = chrome.passwordsPrivate.PasswordCheckState;
 
-interface SettingsPasswordCheckElement {
+export interface SettingsPasswordCheckElement {
   $: {
+    compromisedCredentialsBody: HTMLElement,
+    compromisedPasswordsDescription: HTMLElement,
+    controlPasswordCheckButton: CrButtonElement,
+    leakedPasswordList: HTMLElement,
+    menuEditPassword: HTMLButtonElement,
+    menuShowPassword: HTMLButtonElement,
     moreActionsMenu: CrActionMenuElement,
+    mutedPasswordList: HTMLElement,
+    noCompromisedCredentials: HTMLElement,
+    signedOutUserLabel: HTMLElement,
+    subtitle: HTMLElement,
+    title: HTMLElement,
+    titleRow: HTMLElement,
+    weakCredentialsBody: HTMLElement,
+    weakPasswordsDescription: HTMLElement,
+    weakPasswordList: HTMLElement,
   };
 }
 
 const SettingsPasswordCheckElementBase =
-    RouteObserverMixin(WebUIListenerMixin(
-        I18nMixin(PrefsMixin(PasswordCheckMixin((PolymerElement)))))) as {
+    RouteObserverMixin(WebUIListenerMixin(I18nMixin(PrefsMixin(
+        PasswordRequestorMixin(PasswordCheckMixin((PolymerElement))))))) as {
       new (): PolymerElement & I18nMixinInterface &
-      WebUIListenerMixinInterface & PrefsMixinInterface &
-      PasswordCheckMixinInterface & RouteObserverMixinInterface
+          WebUIListenerMixinInterface & PrefsMixinInterface &
+          PasswordCheckMixinInterface & PasswordRequestorMixinInterface &
+          RouteObserverMixinInterface,
     };
 
-class SettingsPasswordCheckElement extends SettingsPasswordCheckElementBase {
+export class SettingsPasswordCheckElement extends
+    SettingsPasswordCheckElementBase {
   static get is() {
     return 'settings-password-check';
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
@@ -83,6 +103,11 @@ class SettingsPasswordCheckElement extends SettingsPasswordCheckElementBase {
       title_: {
         type: String,
         computed: 'computeTitle_(status, canUsePasswordCheckup_)',
+      },
+
+      mutedLeakedCredentialsTitle_: {
+        type: String,
+        computed: 'computeMutedLeakedCredentialsTitle_(mutedPasswords)',
       },
 
       isSignedOut_: {
@@ -106,6 +131,16 @@ class SettingsPasswordCheckElement extends SettingsPasswordCheckElementBase {
             'computeIsButtonHidden_(status, isSignedOut_, isInitialStatus)',
       },
 
+      isMutePasswordButtonEnabled_: {
+        type: Boolean,
+        computed: 'computeIsMutePasswordButtonEnabled_(activePassword_)',
+      },
+
+      isUnmutePasswordButtonEnabled_: {
+        type: Boolean,
+        computed: 'computeIsUnmutePasswordButtonEnabled_(activePassword_)',
+      },
+
       syncPrefs_: Object,
       syncStatus_: Object,
       showPasswordEditDialog_: Boolean,
@@ -120,7 +155,12 @@ class SettingsPasswordCheckElement extends SettingsPasswordCheckElementBase {
       showCompromisedCredentialsBody_: {
         type: Boolean,
         computed: 'computeShowCompromisedCredentialsBody_(' +
-            'isSignedOut_, leakedPasswords)',
+            'isSignedOut_, leakedPasswords, mutedPasswords)',
+      },
+
+      showMutedPasswordsSection_: {
+        type: Boolean,
+        computed: 'computeShowMutedLeakedCredentials_(mutedPasswords)'
       },
 
       showNoCompromisedPasswordsLabel_: {
@@ -149,19 +189,21 @@ class SettingsPasswordCheckElement extends SettingsPasswordCheckElementBase {
         value: new Set(),
       },
 
-      // <if expr="chromeos or lacros">
+      // <if expr="chromeos_ash or chromeos_lacros">
       showPasswordPromptDialog_: Boolean,
-      tokenRequestManager_: Object,
       // </if>
     };
   }
 
   private storedAccounts_: Array<StoredAccount>;
   private title_: string;
+  private mutedPasswordsTitle_: string;
   private isSignedOut_: boolean;
   private isSyncingPasswords_: boolean;
   private canUsePasswordCheckup_: boolean;
   private isButtonHidden_: boolean;
+  private isMutePasswordButtonEnabled_: boolean;
+  private isUnmutePasswordButtonEnabled_: boolean;
   private syncPrefs_: SyncPrefs;
   private syncStatus_: SyncStatus;
   private showPasswordEditDialog_: boolean;
@@ -169,14 +211,14 @@ class SettingsPasswordCheckElement extends SettingsPasswordCheckElementBase {
   private showPasswordEditDisclaimer_: boolean;
   private activePassword_: chrome.passwordsPrivate.InsecureCredential|null;
   private showCompromisedCredentialsBody_: boolean;
+  private showMutedPasswordsSection_: boolean;
   private showNoCompromisedPasswordsLabel_: boolean;
   private showHideMenuTitle_: string;
   private iconHaloClass_: string;
   private clickedChangePasswordIds_: Set<number>;
 
-  // <if expr="chromeos or lacros">
+  // <if expr="chromeos_ash or chromeos_lacros">
   private showPasswordPromptDialog_: boolean;
-  private tokenRequestManager_: BlockingRequestManager;
   // </if>
 
   private activeDialogAnchorStack_: Array<HTMLElement>|null;
@@ -209,15 +251,15 @@ class SettingsPasswordCheckElement extends SettingsPasswordCheckElementBase {
     this.setSavedPasswordsListener_ = null;
   }
 
-  connectedCallback() {
+  override connectedCallback() {
     super.connectedCallback();
 
-    // <if expr="chromeos or lacros">
+    // <if expr="chromeos_ash or chromeos_lacros">
     // If the user's account supports the password check, an auth token will be
     // required in order for them to view or export passwords. Otherwise there
     // is no additional security so |tokenRequestManager_| will immediately
     // resolve requests.
-    this.tokenRequestManager_ =
+    this.tokenRequestManager =
         loadTimeData.getBoolean('userCannotManuallyEnterPassword') ?
         new BlockingRequestManager() :
         new BlockingRequestManager(() => this.openPasswordPromptDialog_());
@@ -250,7 +292,7 @@ class SettingsPasswordCheckElement extends SettingsPasswordCheckElementBase {
     syncBrowserProxy.sendSyncPrefsChanged();
 
     // For non-ChromeOS, also check whether accounts are available.
-    // <if expr="not (chromeos or lacros)">
+    // <if expr="not (chromeos_ash or chromeos_lacros)">
     const storedAccountsChanged = (accounts: Array<StoredAccount>) =>
         this.storedAccounts_ = accounts;
     syncBrowserProxy.getStoredAccounts().then(storedAccountsChanged);
@@ -258,11 +300,12 @@ class SettingsPasswordCheckElement extends SettingsPasswordCheckElementBase {
     // </if>
   }
 
-  disconnectedCallback() {
+  override disconnectedCallback() {
     super.disconnectedCallback();
 
+    assert(this.setSavedPasswordsListener_);
     this.passwordManager!.removeSavedPasswordListChangedListener(
-        assert(this.setSavedPasswordsListener_!));
+        this.setSavedPasswordsListener_);
     this.setSavedPasswordsListener_ = null;
   }
 
@@ -270,7 +313,7 @@ class SettingsPasswordCheckElement extends SettingsPasswordCheckElementBase {
    * Tries to start bulk password check on page open if instructed to do so and
    * didn't start successfully before
    */
-  currentRouteChanged(currentRoute: Route) {
+  override currentRouteChanged(currentRoute: Route) {
     const router = Router.getInstance();
 
     if (currentRoute.path === routes.CHECK_PASSWORDS.path &&
@@ -335,6 +378,13 @@ class SettingsPasswordCheckElement extends SettingsPasswordCheckElementBase {
   }
 
   /**
+   * @return true if there are any compromised credentials that are dismissed.
+   */
+  private computeShowMutedLeakedCredentials_(): boolean {
+    return this.isMutedPasswordsEnabled && !!this.mutedPasswords.length;
+  }
+
+  /**
    * @return true if there are any weak credentials.
    */
   private hasWeakCredentials_(): boolean {
@@ -376,22 +426,16 @@ class SettingsPasswordCheckElement extends SettingsPasswordCheckElementBase {
   }
 
   private onEditPasswordClick_() {
-    this.passwordManager!
-        .getPlaintextInsecurePassword(
-            assert(this.activePassword_!),
-            chrome.passwordsPrivate.PlaintextReason.EDIT)
+    assert(this.activePassword_);
+    this.getPlaintextInsecurePassword(
+            this.activePassword_, chrome.passwordsPrivate.PlaintextReason.EDIT)
         .then(
             insecureCredential => {
               this.activePassword_ = insecureCredential;
               this.showPasswordEditDialog_ = true;
             },
             _error => {
-              // <if expr="chromeos or lacros">
-              // If no password was found, refresh auth token and retry.
-              this.tokenRequestManager_.request(
-                  () => this.onEditPasswordClick_());
-              // </if>
-              // <if expr="not (chromeos or lacros)">
+              // <if expr="not (chromeos_ash or chromeos_lacros)">
               this.activePassword_ = null;
               this.onPasswordEditDialogClosed_();
               // </if>
@@ -404,14 +448,32 @@ class SettingsPasswordCheckElement extends SettingsPasswordCheckElementBase {
     this.showPasswordRemoveDialog_ = true;
   }
 
+  private onMenuMuteCompromisedPasswordClick_() {
+    this.passwordManager!.recordPasswordCheckInteraction(
+        PasswordCheckInteraction.MUTE_PASSWORD);
+    this.$.moreActionsMenu.close();
+    this.passwordManager!.muteInsecureCredential(this.activeListItem_!.item);
+  }
+
+  private onMenuUnmuteMutedCompromisedPasswordClick_() {
+    this.passwordManager!.recordPasswordCheckInteraction(
+        PasswordCheckInteraction.UNMUTE_PASSWORD);
+    this.$.moreActionsMenu.close();
+    this.passwordManager!.unmuteInsecureCredential(this.activeListItem_!.item);
+  }
+
   private onPasswordRemoveDialogClosed_() {
     this.showPasswordRemoveDialog_ = false;
-    focusWithoutInk(assert(this.activeDialogAnchorStack_!.pop()!));
+    const toFocus = this.activeDialogAnchorStack_!.pop();
+    assert(toFocus);
+    focusWithoutInk(toFocus);
   }
 
   private onPasswordEditDialogClosed_() {
     this.showPasswordEditDialog_ = false;
-    focusWithoutInk(assert(this.activeDialogAnchorStack_!.pop()!));
+    const toFocus = this.activeDialogAnchorStack_!.pop();
+    assert(toFocus);
+    focusWithoutInk(toFocus);
   }
 
   private onAlreadyChangedClick_(event: CustomEvent<HTMLElement>) {
@@ -426,7 +488,9 @@ class SettingsPasswordCheckElement extends SettingsPasswordCheckElementBase {
 
   private onEditDisclaimerClosed_() {
     this.showPasswordEditDisclaimer_ = false;
-    focusWithoutInk(assert(this.activeDialogAnchorStack_!.pop()!));
+    const toFocus = this.activeDialogAnchorStack_!.pop();
+    assert(toFocus);
+    focusWithoutInk(toFocus);
   }
 
   private computeShowHideMenuTitle(): string {
@@ -500,8 +564,17 @@ class SettingsPasswordCheckElement extends SettingsPasswordCheckElementBase {
             this.i18n('checkPasswordsErrorQuota');
       case CheckState.OTHER_ERROR:
         return this.i18n('checkPasswordsErrorGeneric');
+      default:
+        assertNotReached('Can\'t find a title for state: ' + this.status.state);
     }
-    assertNotReached('Can\'t find a title for state: ' + this.status.state);
+  }
+
+  /**
+   * @return the muted / dismissed passwords section title which includes the
+   * number of muted passwords.
+   */
+  private computeMutedLeakedCredentialsTitle_(): string {
+    return this.i18n('mutedPasswords', this.mutedPasswords.length);
   }
 
   /**
@@ -509,6 +582,42 @@ class SettingsPasswordCheckElement extends SettingsPasswordCheckElementBase {
    */
   private isCheckInProgress_(): boolean {
     return this.status.state === CheckState.RUNNING;
+  }
+
+  /**
+   * @return true if a password is compromised. A weak password may not be
+   * compromised.
+   */
+  private isPasswordCompromised_(): boolean {
+    return !!this.activePassword_ && !!this.activePassword_!.compromisedInfo;
+  }
+
+  /**
+   * @return true if the pref value for
+   *     profile.password_dismiss_compromised_alert exists and equals to false.
+   */
+  private isMutingDisabledByPrefs_(): boolean {
+    return !!this.prefs &&
+        this.getPref('profile.password_dismiss_compromised_alert').value ===
+        false;
+  }
+
+  /**
+   * @return true if muting is enabled
+   * and the password is compromised and is dismissable/mutable.
+   */
+  private computeIsMutePasswordButtonEnabled_(): boolean {
+    return this.isMutedPasswordsEnabled && this.isPasswordCompromised_() &&
+        !this.activePassword_!.compromisedInfo!.isMuted;
+  }
+
+  /**
+   * @return true if unmuting is enabled
+   * and the password is compromised and is dismissed/muted.
+   */
+  private computeIsUnmutePasswordButtonEnabled_(): boolean {
+    return this.isMutedPasswordsEnabled && this.isPasswordCompromised_() &&
+        !!this.activePassword_!.compromisedInfo!.isMuted;
   }
 
   /**
@@ -542,9 +651,10 @@ class SettingsPasswordCheckElement extends SettingsPasswordCheckElementBase {
         return this.i18n('checkPasswordsAgain');
       case CheckState.QUOTA_LIMIT:
         return '';  // Undefined behavior. Don't show any misleading text.
+      default:
+        assertNotReached(
+            'Can\'t find a button text for state: ' + this.status.state);
     }
-    assertNotReached(
-        'Can\'t find a button text for state: ' + this.status.state);
   }
 
   /**
@@ -570,10 +680,11 @@ class SettingsPasswordCheckElement extends SettingsPasswordCheckElementBase {
       case CheckState.NO_PASSWORDS:
       case CheckState.QUOTA_LIMIT:
         return true;
+      default:
+        assertNotReached(
+            'Can\'t determine button visibility for state: ' +
+            this.status.state);
     }
-    assertNotReached(
-        'Can\'t determine button visibility for state: ' + this.status.state);
-    return true;
   }
 
   /**
@@ -618,9 +729,10 @@ class SettingsPasswordCheckElement extends SettingsPasswordCheckElementBase {
       case CheckState.QUOTA_LIMIT:
       case CheckState.OTHER_ERROR:
         return true;
+      default:
+        assertNotReached(
+            'Not specified whether to state is an error: ' + this.status.state);
     }
-    assertNotReached(
-        'Not specified whether to state is an error: ' + this.status.state);
   }
 
   /**
@@ -645,10 +757,11 @@ class SettingsPasswordCheckElement extends SettingsPasswordCheckElementBase {
         // Shows "No security issues found" if user is signed out and doesn't
         // have insecure credentials.
         return true;
+      default:
+        assertNotReached(
+            'Not specified whether to show passwords for state: ' +
+            this.status.state);
     }
-    assertNotReached(
-        'Not specified whether to show passwords for state: ' +
-        this.status.state);
   }
 
   /**
@@ -711,8 +824,9 @@ class SettingsPasswordCheckElement extends SettingsPasswordCheckElementBase {
   }
 
   private computeShowCompromisedCredentialsBody_(): boolean {
-    // Always shows compromised credetnials section if user is signed out.
-    return this.isSignedOut_ || this.hasLeakedCredentials_();
+    // Always shows compromised credentials section if user is signed out.
+    return this.isSignedOut_ || this.hasLeakedCredentials_() ||
+        this.computeShowMutedLeakedCredentials_();
   }
 
   private computeShowNoCompromisedPasswordsLabel_(): boolean {
@@ -742,7 +856,7 @@ class SettingsPasswordCheckElement extends SettingsPasswordCheckElementBase {
     return this.clickedChangePasswordIds_.has(item.id);
   }
 
-  // <if expr="chromeos or lacros">
+  // <if expr="chromeos_ash or chromeos_lacros">
   /**
    * Copied from passwords_section.js.
    * TODO(crbug.com/1074228): Extract to a separate behavior
@@ -753,12 +867,14 @@ class SettingsPasswordCheckElement extends SettingsPasswordCheckElementBase {
    */
   private onTokenObtained_(e: CustomEvent<any>) {
     assert(e.detail);
-    this.tokenRequestManager_.resolve();
+    this.tokenRequestManager.resolve();
   }
 
   private onPasswordPromptClosed_() {
     this.showPasswordPromptDialog_ = false;
-    focusWithoutInk(assert(this.activeDialogAnchorStack_!.pop()!));
+    const toFocus = this.activeDialogAnchorStack_!.pop();
+    assert(toFocus);
+    focusWithoutInk(toFocus);
   }
 
   private openPasswordPromptDialog_() {
@@ -766,6 +882,12 @@ class SettingsPasswordCheckElement extends SettingsPasswordCheckElementBase {
     this.showPasswordPromptDialog_ = true;
   }
   // </if>
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'settings-password-check': SettingsPasswordCheckElement;
+  }
 }
 
 customElements.define(

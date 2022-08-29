@@ -17,7 +17,7 @@
 #include "components/autofill/core/browser/payments/payments_customer_data.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/autofill/core/common/autofill_util.h"
-#include "components/sync/engine/entity_data.h"
+#include "components/sync/protocol/entity_data.h"
 
 using autofill::data_util::TruncateUTF8;
 using sync_pb::AutofillWalletSpecifics;
@@ -39,6 +39,8 @@ sync_pb::WalletMaskedCreditCard::WalletCardType WalletCardTypeFromCardNetwork(
     return sync_pb::WalletMaskedCreditCard::UNIONPAY;
   if (network == kVisaCard)
     return sync_pb::WalletMaskedCreditCard::VISA;
+  if (network == kEloCard)
+    return sync_pb::WalletMaskedCreditCard::ELO;
 
   // Some cards aren't supported by the client, so just return unknown.
   return sync_pb::WalletMaskedCreditCard::UNKNOWN;
@@ -59,6 +61,8 @@ const char* CardNetworkFromWalletCardType(
       return kUnionPay;
     case sync_pb::WalletMaskedCreditCard::VISA:
       return kVisaCard;
+    case sync_pb::WalletMaskedCreditCard::ELO:
+      return kEloCard;
 
     // These aren't supported by the client, so just declare a generic card.
     case sync_pb::WalletMaskedCreditCard::MAESTRO:
@@ -103,8 +107,13 @@ CreditCard CardFromSpecifics(const sync_pb::WalletMaskedCreditCard& card) {
     case sync_pb::WalletMaskedCreditCard::ENROLLED:
       state = CreditCard::ENROLLED;
       break;
+    case sync_pb::WalletMaskedCreditCard::UNENROLLED_AND_NOT_ELIGIBLE:
+      state = CreditCard::UNENROLLED_AND_NOT_ELIGIBLE;
+      break;
+    case sync_pb::WalletMaskedCreditCard::UNENROLLED_AND_ELIGIBLE:
+      state = CreditCard::UNENROLLED_AND_ELIGIBLE;
+      break;
     case sync_pb::WalletMaskedCreditCard::UNSPECIFIED:
-      state = CreditCard::UNSPECIFIED;
       break;
   }
   result.set_virtual_card_enrollment_state(state);
@@ -275,6 +284,12 @@ void SetAutofillWalletSpecificsFromServerCard(
     case CreditCard::ENROLLED:
       state = sync_pb::WalletMaskedCreditCard::ENROLLED;
       break;
+    case CreditCard::UNENROLLED_AND_NOT_ELIGIBLE:
+      state = sync_pb::WalletMaskedCreditCard::UNENROLLED_AND_NOT_ELIGIBLE;
+      break;
+    case CreditCard::UNENROLLED_AND_ELIGIBLE:
+      state = sync_pb::WalletMaskedCreditCard::UNENROLLED_AND_ELIGIBLE;
+      break;
     case CreditCard::UNSPECIFIED:
       state = sync_pb::WalletMaskedCreditCard::UNSPECIFIED;
       break;
@@ -326,96 +341,105 @@ void SetAutofillOfferSpecificsFromOfferData(
     const AutofillOfferData& offer_data,
     sync_pb::AutofillOfferSpecifics* offer_specifics) {
   // General offer data:
-  offer_specifics->set_id(offer_data.offer_id);
-  offer_specifics->set_offer_details_url(offer_data.offer_details_url.spec());
-  for (const GURL& merchant_origin : offer_data.merchant_origins) {
+  offer_specifics->set_id(offer_data.GetOfferId());
+  offer_specifics->set_offer_details_url(
+      offer_data.GetOfferDetailsUrl().spec());
+  for (const GURL& merchant_origin : offer_data.GetMerchantOrigins()) {
     offer_specifics->add_merchant_domain(merchant_origin.spec());
   }
   offer_specifics->set_offer_expiry_date(
-      (offer_data.expiry - base::Time::UnixEpoch()).InSeconds());
+      (offer_data.GetExpiry() - base::Time::UnixEpoch()).InSeconds());
   offer_specifics->mutable_display_strings()->set_value_prop_text(
-      offer_data.display_strings.value_prop_text);
-#if defined(OS_ANDROID) || defined(OS_IOS)
+      offer_data.GetDisplayStrings().value_prop_text);
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
   offer_specifics->mutable_display_strings()->set_see_details_text_mobile(
-      offer_data.display_strings.see_details_text);
+      offer_data.GetDisplayStrings().see_details_text);
   offer_specifics->mutable_display_strings()
       ->set_usage_instructions_text_mobile(
-          offer_data.display_strings.usage_instructions_text);
+          offer_data.GetDisplayStrings().usage_instructions_text);
 #else
   offer_specifics->mutable_display_strings()->set_see_details_text_desktop(
-      offer_data.display_strings.see_details_text);
+      offer_data.GetDisplayStrings().see_details_text);
   offer_specifics->mutable_display_strings()
       ->set_usage_instructions_text_desktop(
-          offer_data.display_strings.usage_instructions_text);
-#endif  // defined(OS_ANDROID) || defined(OS_IOS)
+          offer_data.GetDisplayStrings().usage_instructions_text);
+#endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
 
   // Because card_linked_offer_data and promo_code_offer_data are a oneof,
   // setting one will clear the other. We should figure out which one we care
   // about.
-  if (offer_data.promo_code == "") {
+  if (offer_data.GetPromoCode().empty()) {
     // Card-linked offer fields (promo code is empty):
-    for (int64_t instrument_id : offer_data.eligible_instrument_id) {
+    for (int64_t instrument_id : offer_data.GetEligibleInstrumentIds()) {
       offer_specifics->mutable_card_linked_offer_data()->add_instrument_id(
           instrument_id);
     }
-    if (offer_data.offer_reward_amount.find("%") != std::string::npos) {
+    if (offer_data.GetOfferRewardAmount().find("%") != std::string::npos) {
       offer_specifics->mutable_percentage_reward()->set_percentage(
-          offer_data.offer_reward_amount);
+          offer_data.GetOfferRewardAmount());
     } else {
       offer_specifics->mutable_fixed_amount_reward()->set_amount(
-          offer_data.offer_reward_amount);
+          offer_data.GetOfferRewardAmount());
     }
   } else {
     // Promo code offer fields:
     offer_specifics->mutable_promo_code_offer_data()->set_promo_code(
-        offer_data.promo_code);
+        offer_data.GetPromoCode());
   }
 }
 
 AutofillOfferData AutofillOfferDataFromOfferSpecifics(
     const sync_pb::AutofillOfferSpecifics& offer_specifics) {
   DCHECK(IsOfferSpecificsValid(offer_specifics));
-  AutofillOfferData offer_data;
 
   // General offer data:
-  offer_data.offer_id = offer_specifics.id();
-  offer_data.expiry = base::Time::UnixEpoch() +
+  int64_t offer_id = offer_specifics.id();
+  base::Time expiry = base::Time::UnixEpoch() +
                       base::Seconds(offer_specifics.offer_expiry_date());
-  offer_data.offer_details_url = GURL(offer_specifics.offer_details_url());
+  GURL offer_details_url = GURL(offer_specifics.offer_details_url());
+  std::vector<GURL> merchant_origins;
   for (const std::string& domain : offer_specifics.merchant_domain()) {
     const GURL gurl_domain = GURL(domain);
     if (gurl_domain.is_valid())
-      offer_data.merchant_origins.emplace_back(
-          gurl_domain.DeprecatedGetOriginAsURL());
+      merchant_origins.emplace_back(gurl_domain.DeprecatedGetOriginAsURL());
   }
-  offer_data.display_strings.value_prop_text =
+  DisplayStrings display_strings;
+  display_strings.value_prop_text =
       offer_specifics.display_strings().value_prop_text();
-#if defined(OS_ANDROID) || defined(OS_IOS)
-  offer_data.display_strings.see_details_text =
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
+  display_strings.see_details_text =
       offer_specifics.display_strings().see_details_text_mobile();
-  offer_data.display_strings.usage_instructions_text =
+  display_strings.usage_instructions_text =
       offer_specifics.display_strings().usage_instructions_text_mobile();
 #else
-  offer_data.display_strings.see_details_text =
+  display_strings.see_details_text =
       offer_specifics.display_strings().see_details_text_desktop();
-  offer_data.display_strings.usage_instructions_text =
+  display_strings.usage_instructions_text =
       offer_specifics.display_strings().usage_instructions_text_desktop();
-#endif  // defined(OS_ANDROID) || defined(OS_IOS)
+#endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
 
-  // Card-linked offer fields:
-  offer_data.offer_reward_amount =
-      offer_specifics.has_percentage_reward()
-          ? offer_specifics.percentage_reward().percentage()
-          : offer_specifics.fixed_amount_reward().amount();
-  for (int64_t instrument_id :
-       offer_specifics.card_linked_offer_data().instrument_id()) {
-    offer_data.eligible_instrument_id.push_back(instrument_id);
+  if (offer_specifics.promo_code_offer_data().promo_code().empty()) {
+    // Card-linked offer fields:
+    std::string offer_reward_amount =
+        offer_specifics.has_percentage_reward()
+            ? offer_specifics.percentage_reward().percentage()
+            : offer_specifics.fixed_amount_reward().amount();
+    std::vector<int64_t> eligible_instrument_id;
+    for (int64_t instrument_id :
+         offer_specifics.card_linked_offer_data().instrument_id()) {
+      eligible_instrument_id.push_back(instrument_id);
+    }
+
+    AutofillOfferData offer_data = AutofillOfferData::GPayCardLinkedOffer(
+        offer_id, expiry, merchant_origins, offer_details_url, display_strings,
+        eligible_instrument_id, offer_reward_amount);
+    return offer_data;
+  } else {
+    AutofillOfferData offer_data = AutofillOfferData::GPayPromoCodeOffer(
+        offer_id, expiry, merchant_origins, offer_details_url, display_strings,
+        offer_specifics.promo_code_offer_data().promo_code());
+    return offer_data;
   }
-
-  // Promo code offer fields:
-  offer_data.promo_code = offer_specifics.promo_code_offer_data().promo_code();
-
-  return offer_data;
 }
 
 AutofillProfile ProfileFromSpecifics(

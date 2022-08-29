@@ -919,8 +919,7 @@ TEST_P(ParameterizedLocalCaretRectTest, AfterLineBreakInPreBlockLTRLineLTR) {
   InsertStyleElement("pre{ font: 10px/10px Ahem; width: 300px }");
   const Position& caret =
       SetCaretTextToBody("<pre dir='ltr'>foo\n|<bdo dir='ltr'>abc</bdo></pre>");
-  PhysicalRect position_rect, visible_position_rect;
-  std::tie(position_rect, visible_position_rect) = GetPhysicalRects(caret);
+  auto [position_rect, visible_position_rect] = GetPhysicalRects(caret);
   EXPECT_EQ(PhysicalRect(0, 10, 1, 10), position_rect);
   EXPECT_EQ(PhysicalRect(0, 10, 1, 10), visible_position_rect);
 }
@@ -930,8 +929,7 @@ TEST_P(ParameterizedLocalCaretRectTest, AfterLineBreakInPreBlockLTRLineRTL) {
   InsertStyleElement("pre{ font: 10px/10px Ahem; width: 300px }");
   const Position& caret =
       SetCaretTextToBody("<pre dir='ltr'>foo\n|<bdo dir='rtl'>abc</bdo></pre>");
-  PhysicalRect position_rect, visible_position_rect;
-  std::tie(position_rect, visible_position_rect) = GetPhysicalRects(caret);
+  auto [position_rect, visible_position_rect] = GetPhysicalRects(caret);
   EXPECT_EQ(PhysicalRect(0, 10, 1, 10), position_rect);
   EXPECT_EQ(PhysicalRect(0, 10, 1, 10), visible_position_rect);
 }
@@ -941,8 +939,7 @@ TEST_P(ParameterizedLocalCaretRectTest, AfterLineBreakInPreBlockRTLLineLTR) {
   InsertStyleElement("pre{ font: 10px/10px Ahem; width: 300px }");
   const Position& caret =
       SetCaretTextToBody("<pre dir='rtl'>foo\n|<bdo dir='ltr'>abc</bdo></pre>");
-  PhysicalRect position_rect, visible_position_rect;
-  std::tie(position_rect, visible_position_rect) = GetPhysicalRects(caret);
+  auto [position_rect, visible_position_rect] = GetPhysicalRects(caret);
   EXPECT_EQ(PhysicalRect(299, 10, 1, 10), position_rect);
   EXPECT_EQ(PhysicalRect(299, 10, 1, 10), visible_position_rect);
 }
@@ -952,8 +949,7 @@ TEST_P(ParameterizedLocalCaretRectTest, AfterLineBreakInPreBlockRTLLineRTL) {
   InsertStyleElement("pre{ font: 10px/10px Ahem; width: 300px }");
   const Position& caret =
       SetCaretTextToBody("<pre dir='rtl'>foo\n|<bdo dir='rtl'>abc</bdo></pre>");
-  PhysicalRect position_rect, visible_position_rect;
-  std::tie(position_rect, visible_position_rect) = GetPhysicalRects(caret);
+  auto [position_rect, visible_position_rect] = GetPhysicalRects(caret);
   EXPECT_EQ(PhysicalRect(299, 10, 1, 10), position_rect);
   EXPECT_EQ(PhysicalRect(299, 10, 1, 10), visible_position_rect);
 }
@@ -963,8 +959,7 @@ TEST_P(ParameterizedLocalCaretRectTest, AfterTrimedLineBreak) {
   LoadAhem();
   InsertStyleElement("body { font: 10px/10px Ahem; width: 300px }");
   const Position& caret = SetCaretTextToBody("<div>foo\n|</div>");
-  PhysicalRect position_rect, visible_position_rect;
-  std::tie(position_rect, visible_position_rect) = GetPhysicalRects(caret);
+  auto [position_rect, visible_position_rect] = GetPhysicalRects(caret);
   EXPECT_EQ(PhysicalRect(30, 0, 1, 10), position_rect);
   EXPECT_EQ(PhysicalRect(30, 0, 1, 10), visible_position_rect);
 }
@@ -1143,9 +1138,6 @@ TEST_P(ParameterizedLocalCaretRectTest, AfterCollapsedWhiteSpaceInRTLText) {
 
 // https://crbug.com/936988
 TEST_P(ParameterizedLocalCaretRectTest, AfterIneditableInline) {
-  // For LayoutNG, we also enable EditingNG to test NG caret rendering.
-  ScopedEditingNGForTest editing_ng(LayoutNGEnabled());
-
   LoadAhem();
   InsertStyleElement("div { font: 10px/10px Ahem }");
   SetBodyContent(
@@ -1160,9 +1152,6 @@ TEST_P(ParameterizedLocalCaretRectTest, AfterIneditableInline) {
 
 // http://crbug.com/688015
 TEST_P(ParameterizedLocalCaretRectTest, LocalCaretAtBeginningOfNonEditable) {
-  // For LayoutNG, we also enable EditingNG to test NG caret rendering.
-  ScopedEditingNGForTest editing_ng(LayoutNGEnabled());
-
   LoadAhem();
   InsertStyleElement(
       "div { width: 70px; padding-left: 10px; font: 10px/10px Ahem }"
@@ -1182,9 +1171,6 @@ TEST_P(ParameterizedLocalCaretRectTest, LocalCaretAtBeginningOfNonEditable) {
 // http://crbug.com/688015
 TEST_P(ParameterizedLocalCaretRectTest,
        LocalCaretAtBeginningOfNonEditableInFlatTree) {
-  // For LayoutNG, we also enable EditingNG to test NG caret rendering.
-  ScopedEditingNGForTest editing_ng(LayoutNGEnabled());
-
   LoadAhem();
   InsertStyleElement(
       "div { width: 70px; padding-left: 10px; font: 10px/10px Ahem }"
@@ -1222,9 +1208,6 @@ TEST_P(ParameterizedLocalCaretRectTest,
 
 // http://crbug.com/688015
 TEST_P(ParameterizedLocalCaretRectTest, LocalCaretAtEndOfNonEditable) {
-  // For LayoutNG, we also enable EditingNG to test NG caret rendering.
-  ScopedEditingNGForTest editing_ng(LayoutNGEnabled());
-
   LoadAhem();
   InsertStyleElement(
       "div { width: 70px; padding: 10px; font: 10px/10px Ahem }"
@@ -1249,9 +1232,6 @@ TEST_P(ParameterizedLocalCaretRectTest, LocalCaretAtEndOfNonEditable) {
 // http://crbug.com/688015
 TEST_P(ParameterizedLocalCaretRectTest,
        LocalCaretAtEndOfNonEditableInFlatTree) {
-  // For LayoutNG, we also enable EditingNG to test NG caret rendering.
-  ScopedEditingNGForTest editing_ng(LayoutNGEnabled());
-
   LoadAhem();
   InsertStyleElement(
       "div { width: 70px; padding: 10px; font: 10px/10px Ahem }"
@@ -1301,9 +1281,6 @@ TEST_P(ParameterizedLocalCaretRectTest,
 
 // http://crbug.com/688015
 TEST_P(ParameterizedLocalCaretRectTest, AbsoluteCaretAtEndOfNonEditable) {
-  // For LayoutNG, we also enable EditingNG to test NG caret rendering.
-  ScopedEditingNGForTest editing_ng(LayoutNGEnabled());
-
   LoadAhem();
   InsertStyleElement(
       "body { margin: 5px; }"
@@ -1332,9 +1309,6 @@ TEST_P(ParameterizedLocalCaretRectTest, AbsoluteCaretAtEndOfNonEditable) {
 
 // http://crbug.com/688015
 TEST_P(ParameterizedLocalCaretRectTest, AbsoluteCaretAtBeginningOfNonEditable) {
-  // For LayoutNG, we also enable EditingNG to test NG caret rendering.
-  ScopedEditingNGForTest editing_ng(LayoutNGEnabled());
-
   LoadAhem();
   InsertStyleElement(
       "body { margin: 5px; }"
@@ -1384,7 +1358,7 @@ TEST_P(ParameterizedLocalCaretRectTest, OptionWithDisplayContents) {
 TEST_P(ParameterizedLocalCaretRectTest, TextCombineOneTextNode) {
   if (!LayoutNGEnabled())
     return;
-  ScopedLayoutNGTextCombineForTest enable_layout_ng_text_combine(true);
+  ScopedLayoutNGForTest enable_layout_ng(true);
   LoadAhem();
   InsertStyleElement(
       "div {"
@@ -1449,7 +1423,7 @@ TEST_P(ParameterizedLocalCaretRectTest, TextCombineOneTextNode) {
 TEST_P(ParameterizedLocalCaretRectTest, TextCombineTwoTextNodes) {
   if (!LayoutNGEnabled())
     return;
-  ScopedLayoutNGTextCombineForTest enable_layout_ng_text_combine(true);
+  ScopedLayoutNGForTest enable_layout_ng(true);
   LoadAhem();
   InsertStyleElement(
       "div {"
