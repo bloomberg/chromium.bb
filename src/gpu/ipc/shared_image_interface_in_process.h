@@ -11,6 +11,10 @@
 #include "gpu/command_buffer/common/command_buffer_id.h"
 #include "gpu/ipc/in_process_command_buffer.h"
 
+namespace base {
+class WaitableEvent;
+}
+
 namespace gpu {
 class MailboxManager;
 class SharedContextState;
@@ -106,12 +110,6 @@ class GL_IN_PROCESS_CONTEXT_EXPORT SharedImageInterfaceInProcess
                             SkAlphaType alpha_type,
                             uint32_t usage) override;
 
-#if defined(OS_ANDROID)
-  Mailbox CreateSharedImageWithAHB(const Mailbox& mailbox,
-                                   uint32_t usage,
-                                   const SyncToken& sync_token) override;
-#endif
-
   // Updates a shared image after its GpuMemoryBuffer (if any) was modified on
   // the CPU or through external devices, after |sync_token| has been released.
   void UpdateSharedImage(const SyncToken& sync_token,
@@ -146,7 +144,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT SharedImageInterfaceInProcess
   void PresentSwapChain(const SyncToken& sync_token,
                         const Mailbox& mailbox) override;
 
-#if defined(OS_FUCHSIA)
+#if BUILDFLAG(IS_FUCHSIA)
   // Registers a sysmem buffer collection. Not reached in this implementation.
   void RegisterSysmemBufferCollection(gfx::SysmemBufferCollectionId id,
                                       zx::channel token,
@@ -156,7 +154,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT SharedImageInterfaceInProcess
 
   // Not reached in this implementation.
   void ReleaseSysmemBufferCollection(gfx::SysmemBufferCollectionId id) override;
-#endif  // defined(OS_FUCHSIA)
+#endif  // BUILDFLAG(IS_FUCHSIA)
 
   // Generates an unverified SyncToken that is released after all previous
   // commands on this interface have executed on the service side.
@@ -228,12 +226,6 @@ class GL_IN_PROCESS_CONTEXT_EXPORT SharedImageInterfaceInProcess
   void DestroySharedImageOnGpuThread(const Mailbox& mailbox);
   void WaitSyncTokenOnGpuThread(const SyncToken& sync_token);
   void WrapTaskWithGpuUrl(base::OnceClosure task);
-#if defined(OS_ANDROID)
-  void CreateSharedImageWithAHBOnGpuThread(const Mailbox& out_mailbox,
-                                           const Mailbox& in_mailbox,
-                                           uint32_t usage,
-                                           const SyncToken& sync_token);
-#endif
 
   // Used to schedule work on the gpu thread. This is a raw pointer for now
   // since the ownership of SingleTaskSequence would be the same as the

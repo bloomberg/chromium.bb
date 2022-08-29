@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("../../../config/gni/all_devtools_files.gni")
 import("../../../scripts/build/ninja/devtools_entrypoint.gni")
 import("../../../scripts/build/ninja/devtools_module.gni")
 import("../../../scripts/build/ninja/devtools_pre_built.gni")
@@ -11,11 +10,14 @@ import("../visibility.gni")
 devtools_module("issues_manager") {
   sources = [
     "AttributionReportingIssue.ts",
+    "ClientHintIssue.ts",
     "ContentSecurityPolicyIssue.ts",
     "ContrastCheckTrigger.ts",
+    "CookieIssue.ts",
     "CorsIssue.ts",
     "CrossOriginEmbedderPolicyIssue.ts",
     "DeprecationIssue.ts",
+    "FederatedAuthRequestIssue.ts",
     "GenericIssue.ts",
     "HeavyAdIssue.ts",
     "Issue.ts",
@@ -28,11 +30,9 @@ devtools_module("issues_manager") {
     "NavigatorUserAgentIssue.ts",
     "QuirksModeIssue.ts",
     "RelatedIssue.ts",
-    "SameSiteCookieIssue.ts",
     "SharedArrayBufferIssue.ts",
     "SourceFrameIssuesManager.ts",
     "TrustedWebActivityIssue.ts",
-    "WasmCrossOriginModuleSharingIssue.ts",
   ]
 
   deps = [
@@ -53,27 +53,21 @@ devtools_module("issues_manager") {
 }
 
 devtools_issue_description_files = [
-  "arAttributionEventSourceTriggerDataTooLarge.md",
   "arAttributionSourceUntrustworthyFrameOrigin.md",
   "arAttributionSourceUntrustworthyOrigin.md",
-  "arAttributionTriggerDataTooLarge.md",
   "arAttributionUntrustworthyFrameOrigin.md",
   "arAttributionUntrustworthyOrigin.md",
-  "arInvalidAttributionData.md",
-  "arInvalidAttributionSourceEventId.md",
-  "arInvalidAttributionSourceExpiry.md",
-  "arInvalidAttributionSourcePriority.md",
-  "arInvalidEventSourceTriggerData.md",
-  "arInvalidTriggerDedupKey.md",
-  "arInvalidTriggerPriority.md",
-  "arMissingAttributionData.md",
+  "arInvalidHeader.md",
   "arPermissionPolicyDisabled.md",
+  "clientHintMetaTagAllowListInvalidOrigin.md",
+  "clientHintMetaTagModifiedHTML.md",
   "CoepCoopSandboxedIframeCannotNavigateToCoopPage.md",
   "CoepCorpNotSameOrigin.md",
   "CoepCorpNotSameOriginAfterDefaultedToSameOriginByCoep.md",
   "CoepCorpNotSameSite.md",
   "CoepFrameResourceNeedsCoepHeader.md",
   "CompatibilityModeQuirks.md",
+  "CookieAttributeValueExceedsMaxSize.md",
   "corsAllowCredentialsRequired.md",
   "corsDisabledScheme.md",
   "corsDisallowedByMode.md",
@@ -95,6 +89,25 @@ devtools_issue_description_files = [
   "deprecation.md",
   "deprecationNavigatorUserAgent.md",
   "genericCrossOriginPortalPostMessageError.md",
+  "federatedAuthRequestApprovalDeclined.md",
+  "federatedAuthRequestTooManyRequests.md",
+  "federatedAuthRequestManifestHttpNotFound.md",
+  "federatedAuthRequestManifestNoResponse.md",
+  "federatedAuthRequestManifestInvalidResponse.md",
+  "federatedAuthRequestClientMetadataHttpNotFound.md",
+  "federatedAuthRequestClientMetadataNoResponse.md",
+  "federatedAuthRequestClientMetadataInvalidResponse.md",
+  "federatedAuthRequestErrorFetchingSignin.md",
+  "federatedAuthRequestInvalidSigninResponse.md",
+  "federatedAuthRequestAccountsHttpNotFound.md",
+  "federatedAuthRequestAccountsNoResponse.md",
+  "federatedAuthRequestAccountsInvalidResponse.md",
+  "federatedAuthRequestIdTokenHttpNotFound.md",
+  "federatedAuthRequestIdTokenNoResponse.md",
+  "federatedAuthRequestIdTokenInvalidResponse.md",
+  "federatedAuthRequestIdTokenInvalidRequest.md",
+  "federatedAuthRequestErrorIdToken.md",
+  "federatedAuthRequestCanceled.md",
   "heavyAd.md",
   "LowTextContrast.md",
   "mixedContent.md",
@@ -117,7 +130,6 @@ devtools_issue_description_files = [
   "TwaDigitalAssetLinksFailed.md",
   "TwaHttpError.md",
   "TwaPageUnavailableOffline.md",
-  "wasmCrossOriginModuleSharing.md",
 ]
 
 devtools_pre_built("descriptions") {
@@ -147,6 +159,7 @@ devtools_entrypoint("bundle") {
     "../../ui/components/docs/issue_counter/*",
 
     # TODO(crbug.com/1202788): Remove invalid dependents
+    "../../../test/unittests/front_end/helpers/*",
     "../../../test/unittests/front_end/ui/components/issue_counter/*",
     "../../ui/components/issue_counter/*",
     "../../ui/legacy/components/cookie_table/*",

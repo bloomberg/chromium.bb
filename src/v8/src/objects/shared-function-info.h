@@ -210,10 +210,6 @@ class SharedFunctionInfo
   template <typename IsolateT>
   inline AbstractCode abstract_code(IsolateT* isolate);
 
-  // Tells whether or not this shared function info has an attached
-  // BytecodeArray.
-  inline bool IsInterpreted() const;
-
   // Set up the link between shared function info and the script. The shared
   // function info is added to the list on the script.
   V8_EXPORT_PRIVATE void SetScript(ReadOnlyRoots roots,
@@ -351,6 +347,7 @@ class SharedFunctionInfo
   inline bool HasWasmExportedFunctionData() const;
   inline bool HasWasmJSFunctionData() const;
   inline bool HasWasmCapiFunctionData() const;
+  inline bool HasWasmOnFulfilledData() const;
   inline AsmWasmData asm_wasm_data() const;
   inline void set_asm_wasm_data(AsmWasmData data);
 
@@ -447,6 +444,9 @@ class SharedFunctionInfo
   // private instance methdos.
   DECL_BOOLEAN_ACCESSORS(class_scope_has_private_brand)
   DECL_BOOLEAN_ACCESSORS(has_static_private_methods_or_accessors)
+
+  DECL_BOOLEAN_ACCESSORS(is_sparkplug_compiling)
+  DECL_BOOLEAN_ACCESSORS(maglev_compilation_failed)
 
   // Is this function a top-level function (scripts, evals).
   DECL_BOOLEAN_ACCESSORS(is_toplevel)
@@ -577,7 +577,7 @@ class SharedFunctionInfo
   };
   // Returns the first value that applies (see enum definition for the order).
   template <typename IsolateT>
-  Inlineability GetInlineability(IsolateT* isolate, bool is_turboprop) const;
+  Inlineability GetInlineability(IsolateT* isolate) const;
 
   // Source size of this function.
   int SourceSize();
@@ -606,7 +606,7 @@ class SharedFunctionInfo
 
   static void EnsureBytecodeArrayAvailable(
       Isolate* isolate, Handle<SharedFunctionInfo> shared_info,
-      IsCompiledScope* is_compiled,
+      IsCompiledScope* is_compiled_scope,
       CreateSourcePositions flag = CreateSourcePositions::kNo);
 
   inline bool CanCollectSourcePosition(Isolate* isolate);
@@ -659,18 +659,18 @@ class SharedFunctionInfo
   // Constants.
   static const int kMaximumFunctionTokenOffset = kMaxUInt16 - 1;
   static const uint16_t kFunctionTokenOutOfRange = static_cast<uint16_t>(-1);
-  STATIC_ASSERT(kMaximumFunctionTokenOffset + 1 == kFunctionTokenOutOfRange);
+  static_assert(kMaximumFunctionTokenOffset + 1 == kFunctionTokenOutOfRange);
 
   static const int kAlignedSize = OBJECT_POINTER_ALIGN(kSize);
 
   class BodyDescriptor;
 
   // Bailout reasons must fit in the DisabledOptimizationReason bitfield.
-  STATIC_ASSERT(BailoutReason::kLastErrorMessage <=
+  static_assert(BailoutReason::kLastErrorMessage <=
                 DisabledOptimizationReasonBits::kMax);
 
-  STATIC_ASSERT(FunctionKind::kLastFunctionKind <= FunctionKindBits::kMax);
-  STATIC_ASSERT(FunctionSyntaxKind::kLastFunctionSyntaxKind <=
+  static_assert(FunctionKind::kLastFunctionKind <= FunctionKindBits::kMax);
+  static_assert(FunctionSyntaxKind::kLastFunctionSyntaxKind <=
                 FunctionSyntaxKindBits::kMax);
 
   // Sets the bytecode in {shared}'s DebugInfo as the bytecode to

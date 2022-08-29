@@ -12,8 +12,10 @@ loadScript.then(async function() {
   let port = config.testServer.port;
   let URL_MAIN = getURL('main.html');
   let URL_INTERMEDIATE_IFRAME = getURL('iframe.html');
-  let URL_FENCED_FRAME = 'http://a.com:' + port +
+  let URL_FENCED_FRAME = 'https://a.test:' + port +
       '/extensions/api_test/webnavigation/fencedFrames/frame.html';
+  var mparchEnabled = config.customArg == 'MPArch';
+
   chrome.test.runTests([
     // Navigates from an extension page to a HTTP page to contain
     // an iframe which contains a fenced frame.
@@ -22,7 +24,9 @@ loadScript.then(async function() {
       expect([
         { label: 'main-onBeforeNavigate',
           event: 'onBeforeNavigate',
-          details: { frameId: 0,
+          details: { documentLifecycle: "active",
+                     frameId: 0,
+                     frameType: "outermost_frame",
                      parentFrameId: -1,
                      processId: -1,
                      tabId: 0,
@@ -30,7 +34,10 @@ loadScript.then(async function() {
                      url: URL_MAIN }},
         { label: 'main-onCommitted',
           event: 'onCommitted',
-          details: { frameId: 0,
+          details: { documentId: 1,
+                     documentLifecycle: "active",
+                     frameId: 0,
+                     frameType: "outermost_frame",
                      parentFrameId: -1,
                      processId: 0,
                      tabId: 0,
@@ -40,7 +47,10 @@ loadScript.then(async function() {
                      url: URL_MAIN }},
         { label: 'main-onDOMContentLoaded',
           event: 'onDOMContentLoaded',
-          details: { frameId: 0,
+          details: { documentId: 1,
+                     documentLifecycle: "active",
+                     frameId: 0,
+                     frameType: "outermost_frame",
                      parentFrameId: -1,
                      processId: 0,
                      tabId: 0,
@@ -48,7 +58,10 @@ loadScript.then(async function() {
                      url: URL_MAIN }},
         { label: 'main-onCompleted',
           event: 'onCompleted',
-          details: { frameId: 0,
+          details: { documentId: 1,
+                     documentLifecycle: "active",
+                     frameId: 0,
+                     frameType: "outermost_frame",
                      parentFrameId: -1,
                      processId: 0,
                      tabId: 0,
@@ -56,7 +69,10 @@ loadScript.then(async function() {
                      url: URL_MAIN }},
         { label: 'intermediate-onBeforeNavigate',
           event: 'onBeforeNavigate',
-          details: { frameId: 1,
+          details: { documentLifecycle: "active",
+                     frameId: 1,
+                     frameType: "sub_frame",
+                     parentDocumentId: 1,
                      parentFrameId: 0,
                      processId: -1,
                      tabId: 0,
@@ -64,7 +80,11 @@ loadScript.then(async function() {
                      url: URL_INTERMEDIATE_IFRAME }},
         { label: 'intermediate-onCommitted',
           event: 'onCommitted',
-          details: { frameId: 1,
+          details: { documentId: 2,
+                     documentLifecycle: "active",
+                     frameId: 1,
+                     frameType: "sub_frame",
+                     parentDocumentId: 1,
                      parentFrameId: 0,
                      processId: 0,
                      tabId: 0,
@@ -74,7 +94,11 @@ loadScript.then(async function() {
                      url: URL_INTERMEDIATE_IFRAME }},
         { label: 'intermediate-onDOMContentLoaded',
           event: 'onDOMContentLoaded',
-          details: { frameId: 1,
+          details: { documentId: 2,
+                     documentLifecycle: "active",
+                     frameId: 1,
+                     frameType: "sub_frame",
+                     parentDocumentId: 1,
                      parentFrameId: 0,
                      processId: 0,
                      tabId: 0,
@@ -82,23 +106,34 @@ loadScript.then(async function() {
                      url: URL_INTERMEDIATE_IFRAME }},
         { label: 'intermediate-onCompleted',
           event: 'onCompleted',
-          details: { frameId: 1,
+          details: { documentId: 2,
+                     documentLifecycle: "active",
+                     frameId: 1,
+                     frameType: "sub_frame",
+                     parentDocumentId: 1,
                      parentFrameId: 0,
                      processId: 0,
                      tabId: 0,
                      timeStamp: 0,
                      url: URL_INTERMEDIATE_IFRAME }},
-        { label: 'a.com-onBeforeNavigate',
+        { label: 'a.test-onBeforeNavigate',
           event: 'onBeforeNavigate',
-          details: { frameId: 2,
+          details: { documentLifecycle: "active",
+                     frameId: 2,
+                     frameType: mparchEnabled ? "fenced_frame" : "sub_frame",
+                     parentDocumentId: 2,
                      parentFrameId: 1,
                      processId: -1,
                      tabId: 0,
                      timeStamp: 0,
                      url: URL_FENCED_FRAME }},
-        { label: 'a.com-onCommitted',
+        { label: 'a.test-onCommitted',
           event: 'onCommitted',
-          details: { frameId: 2,
+          details: { documentId: 3,
+                     documentLifecycle: "active",
+                     frameId: 2,
+                     frameType: "fenced_frame",
+                     parentDocumentId: 2,
                      parentFrameId: 1,
                      processId: 1,
                      tabId: 0,
@@ -106,17 +141,25 @@ loadScript.then(async function() {
                      transitionQualifiers: [],
                      transitionType: 'auto_subframe',
                      url: URL_FENCED_FRAME }},
-        { label: 'a.com-onDOMContentLoaded',
+        { label: 'a.test-onDOMContentLoaded',
           event: 'onDOMContentLoaded',
-          details: { frameId: 2,
+          details: { documentId: 3,
+                     documentLifecycle: "active",
+                     frameId: 2,
+                     frameType: "fenced_frame",
+                     parentDocumentId: 2,
                      parentFrameId: 1,
                      processId: 1,
                      tabId: 0,
                      timeStamp: 0,
                      url: URL_FENCED_FRAME }},
-        { label: 'a.com-onCompleted',
+        { label: 'a.test-onCompleted',
           event: 'onCompleted',
-          details: { frameId: 2,
+          details: { documentId: 3,
+                     documentLifecycle: "active",
+                     frameId: 2,
+                     frameType: "fenced_frame",
+                     parentDocumentId: 2,
                      parentFrameId: 1,
                      processId: 1,
                      tabId: 0,
@@ -125,7 +168,7 @@ loadScript.then(async function() {
         [
           navigationOrder('main-'),
           navigationOrder('intermediate-'),
-          navigationOrder('a.com-'),
+          navigationOrder('a.test-'),
         ]);
 
       chrome.tabs.update(tab.id, {url: URL_MAIN});
@@ -133,20 +176,45 @@ loadScript.then(async function() {
 
     function testGetAllFrames() {
       chrome.webNavigation.getAllFrames({tabId: tab.id}, function (details) {
-          // Since processIds are randomly assigned we remove them for the
-          // assertEq.
-          details.forEach(element => delete element.processId);
+          var documentIds = [];
+          var nextDocumentId = 1;
+          details.forEach(element => {
+            // Since processIds are randomly assigned we remove them for the
+            // assertEq.
+            delete element.processId;
+            if ('parentDocumentId' in element) {
+              if (documentIds[element.parentDocumentId] === undefined) {
+                documentIds[element.parentDocumentId] = nextDocumentId++;
+              }
+              element.parentDocumentId = documentIds[element.parentDocumentId];
+            }
+            if (documentIds[element.documentId] === undefined) {
+              documentIds[element.documentId] = nextDocumentId++;
+            }
+            element.documentId = documentIds[element.documentId];
+          });
           chrome.test.assertEq(
               [{errorOccurred: false,
+                documentId: 1,
+                documentLifecycle: "active",
                 frameId: 0,
+                frameType: "outermost_frame",
                 parentFrameId: -1,
                 url: URL_MAIN},
               {errorOccurred: false,
+                documentId: 2,
+                documentLifecycle: "active",
                 frameId: 4,
+                frameType: "sub_frame",
+                parentDocumentId: 1,
                 parentFrameId: 0,
                 url: URL_INTERMEDIATE_IFRAME},
               {errorOccurred: false,
-                frameId: 5,
+                documentId: 3,
+                documentLifecycle: "active",
+                frameId: mparchEnabled ? 6 : 5,
+                frameType: "fenced_frame",
+                parentDocumentId: 2,
                 parentFrameId: 4,
                 url: URL_FENCED_FRAME}],
                details);

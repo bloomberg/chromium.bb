@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 type OptionWithDefault = {
-  is_default?: boolean
+  is_default?: boolean,
 };
 
 export type LocalizedString = {
@@ -36,7 +36,7 @@ type TypedValueCapability = {
 };
 
 type RangeCapability = {
-  default: number
+  default: number,
 };
 
 /**
@@ -66,12 +66,12 @@ export type ColorCapability = {
 }&CapabilityWithReset;
 
 type CollateCapability = {
-  default?: boolean
+  default?: boolean,
 };
 
 export type CopiesCapability = {
   default?: number,
-  max?: number
+  max?: number,
 };
 
 export type DuplexOption = {
@@ -114,7 +114,7 @@ export type DpiCapability = {
 }&CapabilityWithReset;
 
 type PinCapability = {
-  supported?: boolean
+  supported?: boolean,
 };
 
 
@@ -132,7 +132,7 @@ export type CddCapabilities = {
   page_orientation?: PageOrientationCapability,
   media_size?: MediaSizeCapability,
   dpi?: DpiCapability,
-  // <if expr="chromeos or lacros">
+  // <if expr="chromeos_ash or chromeos_lacros">
   pin?: PinCapability,
   // </if>
 };

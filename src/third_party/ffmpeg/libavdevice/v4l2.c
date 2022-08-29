@@ -34,6 +34,15 @@
 
 #include "libavutil/avassert.h"
 #include "libavutil/avstring.h"
+#include "libavutil/imgutils.h"
+#include "libavutil/parseutils.h"
+#include "libavutil/pixdesc.h"
+#include "libavutil/time.h"
+#include "libavcodec/codec_desc.h"
+#include "libavformat/demux.h"
+#include "libavformat/internal.h"
+#include "avdevice.h"
+#include "timefilter.h"
 #include "v4l2-common.h"
 #include <dirent.h>
 
@@ -1019,8 +1028,6 @@ static int v4l2_get_device_list(AVFormatContext *ctx, AVDeviceInfoList *device_l
     struct video_data *s = ctx->priv_data;
     DIR *dir;
     struct dirent *entry;
-    AVDeviceInfo *device = NULL;
-    struct v4l2_capability cap;
     int ret = 0;
 
     if (!device_list)
@@ -1033,16 +1040,25 @@ static int v4l2_get_device_list(AVFormatContext *ctx, AVDeviceInfoList *device_l
         return ret;
     }
     while ((entry = readdir(dir))) {
+        AVDeviceInfo *device = NULL;
+        struct v4l2_capability cap;
+        int fd = -1, size;
         char device_name[256];
 
         if (!v4l2_is_v4l_dev(entry->d_name))
             continue;
 
-        snprintf(device_name, sizeof(device_name), "/dev/%s", entry->d_name);
-        if ((s->fd = device_open(ctx, device_name)) < 0)
+        size = snprintf(device_name, sizeof(device_name), "/dev/%s", entry->d_name);
+        if (size >= sizeof(device_name)) {
+            av_log(ctx, AV_LOG_ERROR, "Device name too long.\n");
+            ret = AVERROR(ENOSYS);
+            break;
+        }
+
+        if ((fd = device_open(ctx, device_name)) < 0)
             continue;
 
-        if (v4l2_ioctl(s->fd, VIDIOC_QUERYCAP, &cap) < 0) {
+        if (v4l2_ioctl(fd, VIDIOC_QUERYCAP, &cap) < 0) {
             ret = AVERROR(errno);
             av_log(ctx, AV_LOG_ERROR, "ioctl(VIDIOC_QUERYCAP): %s\n", av_err2str(ret));
             goto fail;
@@ -1064,8 +1080,7 @@ static int v4l2_get_device_list(AVFormatContext *ctx, AVDeviceInfoList *device_l
                                           &device_list->nb_devices, device)) < 0)
             goto fail;
 
-        v4l2_close(s->fd);
-        s->fd = -1;
+        v4l2_close(fd);
         continue;
 
       fail:
@@ -1074,9 +1089,7 @@ static int v4l2_get_device_list(AVFormatContext *ctx, AVDeviceInfoList *device_l
             av_freep(&device->device_description);
             av_freep(&device);
         }
-        if (s->fd >= 0)
-            v4l2_close(s->fd);
-        s->fd = -1;
+        v4l2_close(fd);
         break;
     }
     closedir(dir);

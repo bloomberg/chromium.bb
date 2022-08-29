@@ -12,8 +12,8 @@
 #include "net/base/net_export.h"
 #include "net/log/net_log_with_source.h"
 #include "net/socket/datagram_client_socket.h"
-#include "net/third_party/quiche/src/quic/core/quic_packets.h"
-#include "net/third_party/quiche/src/quic/core/quic_time.h"
+#include "net/third_party/quiche/src/quiche/quic/core/quic_packets.h"
+#include "net/third_party/quiche/src/quiche/quic/core/quic_time.h"
 
 namespace quic {
 class QuicClock;
@@ -65,8 +65,8 @@ class NET_EXPORT_PRIVATE QuicChromiumPacketReader {
   raw_ptr<DatagramClientSocket> socket_;
 
   raw_ptr<Visitor> visitor_;
-  bool read_pending_;
-  int num_packets_read_;
+  bool read_pending_ = false;
+  int num_packets_read_ = 0;
   raw_ptr<const quic::QuicClock> clock_;  // Not owned.
   int yield_after_packets_;
   quic::QuicTime::Delta yield_after_duration_;

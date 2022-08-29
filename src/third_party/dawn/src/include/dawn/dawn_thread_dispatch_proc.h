@@ -1,4 +1,4 @@
-// Copyright 2020 The Dawn Authors
+// Copyright 2022 The Dawn Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,22 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef DAWN_DAWN_THREAD_DISPATCH_PROC_H_
-#define DAWN_DAWN_THREAD_DISPATCH_PROC_H_
+#ifndef SRC_INCLUDE_DAWN_DAWN_THREAD_DISPATCH_PROC_H_
+#define SRC_INCLUDE_DAWN_DAWN_THREAD_DISPATCH_PROC_H_
 
-#include "dawn/dawn_proc.h"
+#include "dawn/dawn_thread_dispatch_proc.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-// Call dawnProcSetProcs(&dawnThreadDispatchProcTable) and then use dawnProcSetPerThreadProcs
-// to set per-thread procs.
-WGPU_EXPORT extern DawnProcTable dawnThreadDispatchProcTable;
-WGPU_EXPORT void dawnProcSetPerThreadProcs(const DawnProcTable* procs);
-
-#ifdef __cplusplus
-}  // extern "C"
-#endif
-
-#endif  // DAWN_DAWN_THREAD_DISPATCH_PROC_H_
+#endif  // SRC_INCLUDE_DAWN_DAWN_THREAD_DISPATCH_PROC_H_

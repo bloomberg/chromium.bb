@@ -40,7 +40,6 @@
 #include "base/numerics/checked_math.h"
 #include "base/numerics/safe_conversions.h"
 #include "build/build_config.h"
-#include "build/os_buildflags.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/blink/public/common/features.h"
@@ -90,15 +89,16 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/page/page_animator.h"
 #include "third_party/blink/renderer/core/paint/paint_auto_dark_mode.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/no_alloc_direct_call_host.h"
+#include "third_party/blink/renderer/platform/graphics/canvas_2d_layer_bridge.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_resource_dispatcher.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_resource_provider.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
-#include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/graphics/image_data_buffer.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image_to_video_frame_copier.h"
@@ -117,8 +117,15 @@ namespace {
 
 // This feature will only take effect if `kTwoCopyCanvasCapture` is also
 // enabled.
-const base::Feature kOneCopyCanvasCapture{"OneCopyCanvasCapture",
-                                          base::FEATURE_ENABLED_BY_DEFAULT};
+// TODO(https://crbug.com/1298812): Investigate why this fails on Windows.
+const base::Feature kOneCopyCanvasCapture {
+  "OneCopyCanvasCapture",
+#if BUILDFLAG(IS_MAC)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
 const base::Feature kTwoCopyCanvasCapture {
   "TwoCopyCanvasCapture",
@@ -309,7 +316,7 @@ void HTMLCanvasElement::RecordIdentifiabilityMetric(
 
 void HTMLCanvasElement::IdentifiabilityReportWithDigest(
     IdentifiableToken canvas_contents_token) const {
-  if (IdentifiabilityStudySettings::Get()->ShouldSample(
+  if (IdentifiabilityStudySettings::Get()->ShouldSampleType(
           blink::IdentifiableSurface::Type::kCanvasReadback)) {
     RecordIdentifiabilityMetric(
         blink::IdentifiableSurface::FromTypeAndToken(
@@ -326,7 +333,7 @@ CanvasRenderingContext* HTMLCanvasElement::GetCanvasRenderingContext(
   auto* result = GetCanvasRenderingContextInternal(type, attributes);
 
   Document& doc = GetDocument();
-  if (IdentifiabilityStudySettings::Get()->ShouldSample(
+  if (IdentifiabilityStudySettings::Get()->ShouldSampleType(
           IdentifiableSurface::Type::kCanvasRenderingContext)) {
     IdentifiabilityMetricBuilder(doc.UkmSourceID())
         .Add(IdentifiableSurface::FromTypeAndToken(
@@ -336,13 +343,9 @@ CanvasRenderingContext* HTMLCanvasElement::GetCanvasRenderingContext(
              !!result)
         .Record(doc.UkmRecorder());
   }
-  if (attributes.color_space != kSRGBCanvasColorSpaceName ||
-      attributes.pixel_format != kUint8CanvasPixelFormatName) {
-    UseCounter::Count(doc, WebFeature::kCanvasUseColorSpace);
-  }
 
-  if (RuntimeEnabledFeatures::NewCanvas2DAPIEnabled(GetExecutionContext()))
-    UseCounter::Count(doc, WebFeature::kNewCanvas2DAPI);
+  if (attributes.color_space != PredefinedColorSpace::kSRGB)
+    UseCounter::Count(doc, WebFeature::kCanvasUseColorSpace);
 
   if (ContentsCcLayer() != old_contents_cc_layer)
     SetNeedsCompositingUpdate();
@@ -381,7 +384,7 @@ CanvasRenderingContext* HTMLCanvasElement::GetCanvasRenderingContextInternal(
   // If this context is cross-origin, it should prefer to use the low-power GPU
   LocalFrame* frame = GetDocument().GetFrame();
   CanvasContextCreationAttributesCore recomputed_attributes = attributes;
-  if (frame && frame->IsCrossOriginToMainFrame())
+  if (frame && frame->IsCrossOriginToOutermostMainFrame())
     recomputed_attributes.power_preference = "low-power";
 
   context_ = factory->Create(this, recomputed_attributes);
@@ -490,8 +493,7 @@ void HTMLCanvasElement::DidDraw(const SkIRect& rect) {
   canvas_is_clear_ = false;
   if (GetLayoutObject() && !LowLatencyEnabled())
     GetLayoutObject()->SetShouldCheckForPaintInvalidation();
-  if (IsRenderingContext2D() && context_->ShouldAntialias() && GetPage() &&
-      GetPage()->DeviceScaleFactorDeprecated() > 1.0f) {
+  if (IsRenderingContext2D() && context_->ShouldAntialias() && GetPage()) {
     gfx::RectF inflated_rect(gfx::SkIRectToRect(rect));
     inflated_rect.Outset(1);
     dirty_rect_.Union(inflated_rect);
@@ -675,7 +677,7 @@ void HTMLCanvasElement::Reset() {
 
   SetSurfaceSize(new_size);
 
-  if (IsWebGL() && old_size != Size())
+  if ((IsWebGL() || IsWebGPU()) && old_size != Size())
     context_->Reshape(width(), height());
 
   if (LayoutObject* layout_object = GetLayoutObject()) {
@@ -728,20 +730,24 @@ void HTMLCanvasElement::NotifyListenersCanvasChanged() {
     if (!listener->NeedsNewFrame())
       continue;
 
-    auto callback = listener->GetNewFrameCallback();
+    // Split the listener's callback so that it can be used with both the one
+    // copy path and fallback two copy path below.
+    auto split_callback =
+        base::SplitOnceCallback(listener->GetNewFrameCallback());
     const bool can_discard_alpha = listener->CanDiscardAlpha();
 
     // First attempt to copy directly from the rendering context to a video
     // frame. Not all rendering contexts need to support this (for contexts
     // where GetSourceImageForCanvasInternal is zero-copy, this is superfluous).
-    if (can_discard_alpha &&
+    if (context_ && can_discard_alpha &&
         base::FeatureList::IsEnabled(kOneCopyCanvasCapture)) {
-      context_->CopyRenderingResultsToVideoFrame(
-          copier_->GetAcceleratedVideoFramePool(
-              SharedGpuContext::ContextProviderWrapper()),
-          kBackBuffer, gfx::ColorSpace::CreateREC709(), callback);
-      if (!callback)
+      if (context_->CopyRenderingResultsToVideoFrame(
+              copier_->GetAcceleratedVideoFramePool(
+                  SharedGpuContext::ContextProviderWrapper()),
+              kBackBuffer, gfx::ColorSpace::CreateREC709(),
+              std::move(split_callback.first))) {
         continue;
+      }
     }
 
     // If that fails, then create a StaticBitmapImage for the contents of
@@ -758,12 +764,13 @@ void HTMLCanvasElement::NotifyListenersCanvasChanged() {
     // need a context_provider that has a RasterInterface available.
     copier_->Convert(source_image, can_discard_alpha,
                      SharedGpuContext::ContextProviderWrapper(),
-                     std::move(callback));
+                     std::move(split_callback.second));
   }
 }
 
 // Returns an image and the image's resolution scale factor.
-static std::pair<blink::Image*, float> BrokenCanvas(float device_scale_factor) {
+std::pair<blink::Image*, float> HTMLCanvasElement::BrokenCanvas(
+    float device_scale_factor) {
   if (device_scale_factor >= 2) {
     DEFINE_STATIC_REF(blink::Image, broken_canvas_hi_res,
                       (blink::Image::LoadPlatformResource(IDR_BROKENCANVAS,
@@ -799,10 +806,8 @@ void HTMLCanvasElement::Paint(GraphicsContext& context,
                               bool flatten_composited_layers) {
   if (context_creation_was_blocked_ ||
       (context_ && context_->isContextLost())) {
-    float device_scale_factor =
-        blink::DeviceScaleFactorDeprecated(GetDocument().GetFrame());
     std::pair<Image*, float> broken_canvas_and_image_scale_factor =
-        BrokenCanvas(device_scale_factor);
+        BrokenCanvas(GetDocument().DevicePixelRatio());
     Image* broken_canvas = broken_canvas_and_image_scale_factor.first;
     context.Save();
     context.FillRect(
@@ -817,11 +822,9 @@ void HTMLCanvasElement::Paint(GraphicsContext& context,
     gfx::PointF upper_left =
         gfx::PointF(r.PixelSnappedOffset()) +
         gfx::Vector2dF(icon_size.width(), icon_size.height());
-    context.DrawImage(
-        broken_canvas, Image::kSyncDecode,
-        PaintAutoDarkMode(ComputedStyleRef(),
-                          DarkModeFilter::ElementRole::kBackground),
-        gfx::RectF(upper_left, icon_size));
+    context.DrawImage(broken_canvas, Image::kSyncDecode,
+                      ImageAutoDarkMode::Disabled(),
+                      gfx::RectF(upper_left, icon_size));
     context.Restore();
     return;
   }
@@ -842,11 +845,9 @@ void HTMLCanvasElement::Paint(GraphicsContext& context,
     DCHECK(GetDocument().Printing());
     scoped_refptr<StaticBitmapImage> image_for_printing =
         OffscreenCanvasFrame()->Bitmap()->MakeUnaccelerated();
-    context.DrawImage(
-        image_for_printing.get(), Image::kSyncDecode,
-        PaintAutoDarkMode(ComputedStyleRef(),
-                          DarkModeFilter::ElementRole::kBackground),
-        gfx::RectF(ToPixelSnappedRect(r)));
+    context.DrawImage(image_for_printing.get(), Image::kSyncDecode,
+                      ImageAutoDarkMode::Disabled(),
+                      gfx::RectF(ToPixelSnappedRect(r)));
     return;
   }
 
@@ -898,9 +899,7 @@ void HTMLCanvasElement::PaintInternal(GraphicsContext& context,
       snapshot = snapshot->MakeUnaccelerated();
       DCHECK(!snapshot->IsTextureBacked());
       context.DrawImage(
-          snapshot.get(), Image::kSyncDecode,
-          PaintAutoDarkMode(ComputedStyleRef(),
-                            DarkModeFilter::ElementRole::kBackground),
+          snapshot.get(), Image::kSyncDecode, ImageAutoDarkMode::Disabled(),
           gfx::RectF(ToPixelSnappedRect(r)), &src_rect, composite_operator);
     }
   } else {
@@ -962,17 +961,20 @@ scoped_refptr<StaticBitmapImage> HTMLCanvasElement::Snapshot(
         // path that scales down the drawing buffer to the maximum supported
         // size. Hence, we need to query the adjusted size of DrawingBuffer.
         gfx::Size adjusted_size = context_->DrawingBufferSize();
-        SkColorInfo color_info = GetRenderingContextSkColorInfo().makeAlphaType(
-            kUnpremul_SkAlphaType);
-        if (color_info.colorType() == kN32_SkColorType)
-          color_info = color_info.makeColorType(kRGBA_8888_SkColorType);
-        else
-          color_info = color_info.makeColorType(kRGBA_F16_SkColorType);
-        image_bitmap = StaticBitmapImage::Create(
-            std::move(pixel_data),
-            SkImageInfo::Make(
-                SkISize::Make(adjusted_size.width(), adjusted_size.height()),
-                color_info));
+        if (!adjusted_size.IsEmpty()) {
+          SkColorInfo color_info =
+              GetRenderingContextSkColorInfo().makeAlphaType(
+                  kUnpremul_SkAlphaType);
+          if (color_info.colorType() == kN32_SkColorType)
+            color_info = color_info.makeColorType(kRGBA_8888_SkColorType);
+          else
+            color_info = color_info.makeColorType(kRGBA_F16_SkColorType);
+          image_bitmap = StaticBitmapImage::Create(
+              std::move(pixel_data),
+              SkImageInfo::Make(
+                  SkISize::Make(adjusted_size.width(), adjusted_size.height()),
+                  color_info));
+        }
       }
     }
   } else if (context_) {
@@ -981,8 +983,11 @@ scoped_refptr<StaticBitmapImage> HTMLCanvasElement::Snapshot(
     image_bitmap = context_->GetImage();
   }
 
-  if (!image_bitmap)
+  if (image_bitmap)
+    DCHECK(image_bitmap->SupportsDisplayCompositing());
+  else
     image_bitmap = CreateTransparentImage(size_);
+
   return image_bitmap;
 }
 
@@ -1098,7 +1103,7 @@ void HTMLCanvasElement::toBlob(V8BlobCallback* callback,
         image_bitmap, options,
         CanvasAsyncBlobCreator::kHTMLCanvasToBlobCallback, callback, start_time,
         GetExecutionContext(),
-        IdentifiabilityStudySettings::Get()->IsTypeAllowed(
+        IdentifiabilityStudySettings::Get()->ShouldSampleType(
             IdentifiableSurface::Type::kCanvasReadback)
             ? IdentifiabilityInputDigest(context_)
             : 0);
@@ -1243,10 +1248,11 @@ void HTMLCanvasElement::SetCanvas2DLayerBridgeInternal(
     // use accelerated-GPU rendering.
     // If any of the two conditions fails, or if the creation of accelerated
     // resource provider fails, the canvas will fallback to CPU rendering.
-    UMA_HISTOGRAM_BOOLEAN("Blink.Canvas.WillReadFrequently",
-                          context_->CreationAttributes().will_read_frequently);
+    UMA_HISTOGRAM_BOOLEAN(
+        "Blink.Canvas.2DLayerBridge.WillReadFrequently",
+        context_ && context_->CreationAttributes().will_read_frequently);
 
-    if (ShouldAccelerate() &&
+    if (ShouldAccelerate() && context_ &&
         !context_->CreationAttributes().will_read_frequently) {
       canvas2d_bridge_ = Create2DLayerBridge(RasterMode::kGPU);
     }
@@ -1286,7 +1292,7 @@ Canvas2DLayerBridge* HTMLCanvasElement::GetOrCreateCanvas2DLayerBridge() {
   DCHECK(IsRenderingContext2D());
   if (!canvas2d_bridge_ && !did_fail_to_create_resource_provider_) {
     SetCanvas2DLayerBridgeInternal(nullptr);
-    if (did_fail_to_create_resource_provider_ && !Size().IsEmpty())
+    if (did_fail_to_create_resource_provider_ && !Size().IsEmpty() && context_)
       context_->LoseContext(CanvasRenderingContext::kSyntheticLostContext);
   }
   return canvas2d_bridge_.get();

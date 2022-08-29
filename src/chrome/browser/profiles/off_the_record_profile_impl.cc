@@ -16,7 +16,6 @@
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/accessibility/accessibility_labels_service.h"
@@ -42,13 +41,19 @@
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
-#include "chrome/browser/profiles/profile_keep_alive_types.h"
+#include "chrome/browser/profiles/keep_alive/profile_keep_alive_types.h"
 #include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/ssl/stateful_ssl_host_state_delegate_factory.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/transition_manager/full_browser_transition_manager.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/browser/ui/zoom/chrome_zoom_level_otr_delegate.h"
+#include "chrome/browser/webid/federated_identity_active_session_permission_context.h"
+#include "chrome/browser/webid/federated_identity_active_session_permission_context_factory.h"
+#include "chrome/browser/webid/federated_identity_api_permission_context.h"
+#include "chrome/browser/webid/federated_identity_api_permission_context_factory.h"
+#include "chrome/browser/webid/federated_identity_sharing_permission_context.h"
+#include "chrome/browser/webid/federated_identity_sharing_permission_context_factory.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -81,9 +86,11 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "storage/browser/database/database_tracker.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "components/prefs/scoped_user_pref_update.h"
-#endif  // defined(OS_ANDROID)
+#else
+#include "chrome/browser/profiles/guest_profile_creation_logger.h"
+#endif  // BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/preferences.h"
@@ -149,12 +156,17 @@ OffTheRecordProfileImpl::OffTheRecordProfileImpl(
     Profile* real_profile,
     const OTRProfileID& otr_profile_id)
     : profile_(real_profile),
-      profile_keep_alive_(profile_,
-                          ProfileKeepAliveOrigin::kOffTheRecordProfile),
       otr_profile_id_(otr_profile_id),
       start_time_(base::Time::Now()),
       key_(std::make_unique<ProfileKey>(profile_->GetPath(),
                                         profile_->GetProfileKey())) {
+  // It's OK to delete a System Profile, even if it still has an active OTR
+  // Profile.
+  if (!real_profile->IsSystemProfile()) {
+    profile_keep_alive_ = std::make_unique<ScopedProfileKeepAlive>(
+        profile_, ProfileKeepAliveOrigin::kOffTheRecordProfile);
+  }
+
   prefs_ = CreateIncognitoPrefServiceSyncable(
       PrefServiceSyncableFromProfile(profile_),
       CreateExtensionPrefStore(profile_, true));
@@ -208,6 +220,12 @@ void OffTheRecordProfileImpl::Init() {
 
   if (IsIncognitoProfile())
     base::RecordAction(base::UserMetricsAction("IncognitoMode_Started"));
+
+#if !BUILDFLAG(IS_ANDROID)
+  if (IsGuestSession()) {
+    profile::MaybeRecordGuestChildCreation(this);
+  }
+#endif
 }
 
 OffTheRecordProfileImpl::~OffTheRecordProfileImpl() {
@@ -241,7 +259,7 @@ OffTheRecordProfileImpl::~OffTheRecordProfileImpl() {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // Bypass profile lifetime recording for ChromeOS helper profiles (sign-in,
   // lockscreen, etc).
-  if (!chromeos::ProfileHelper::IsRegularProfile(profile_))
+  if (!ash::ProfileHelper::IsRegularProfile(profile_))
     return;
 #endif
   // Store incognito lifetime and navigations count histogram.
@@ -654,4 +672,20 @@ void OffTheRecordProfileImpl::UpdateDefaultZoomLevel() {
 
 void OffTheRecordProfileImpl::RecordPrimaryMainFrameNavigation() {
   main_frame_navigations_++;
+}
+
+content::FederatedIdentityActiveSessionPermissionContextDelegate*
+OffTheRecordProfileImpl::GetFederatedIdentityActiveSessionPermissionContext() {
+  return FederatedIdentityActiveSessionPermissionContextFactory::GetForProfile(
+      this);
+}
+
+content::FederatedIdentitySharingPermissionContextDelegate*
+OffTheRecordProfileImpl::GetFederatedIdentitySharingPermissionContext() {
+  return FederatedIdentitySharingPermissionContextFactory::GetForProfile(this);
+}
+
+content::FederatedIdentityApiPermissionContextDelegate*
+OffTheRecordProfileImpl::GetFederatedIdentityApiPermissionContext() {
+  return FederatedIdentityApiPermissionContextFactory::GetForProfile(this);
 }

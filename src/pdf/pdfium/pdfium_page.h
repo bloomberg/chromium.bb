@@ -21,6 +21,7 @@
 #include "third_party/pdfium/public/fpdf_doc.h"
 #include "third_party/pdfium/public/fpdf_formfill.h"
 #include "third_party/pdfium/public/fpdf_text.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -56,9 +57,6 @@ class PDFiumPage {
   // Returns FPDF_TEXTPAGE for the page, loading and parsing it if necessary.
   FPDF_TEXTPAGE GetTextPage();
 
-  // Log overlaps between annotations in the page.
-  void LogOverlappingAnnotations();
-
   // See definition of PDFEngine::GetTextRunInfo().
   absl::optional<AccessibilityTextRunInfo> GetTextRunInfo(int start_char_index);
 
@@ -75,8 +73,11 @@ class PDFiumPage {
   // bounding boxes.
   std::vector<AccessibilityLinkInfo> GetLinkInfo(
       const std::vector<AccessibilityTextRunInfo>& text_runs);
-
-  // For all the images on the page, get their alt texts and bounding boxes.
+  // For all the images on the page, get their alt texts and bounding boxes. If
+  // the alt text is empty or unavailable, and if the user has requested that
+  // the OCR service tag the PDF so that it is made accessible, transfer the raw
+  // image pixels in the `image_data` field. Otherwise do not populate the
+  // `image_data` field.
   std::vector<AccessibilityImageInfo> GetImageInfo(uint32_t text_run_count);
 
   // For all the highlights on the page, get their underlying text ranges and
@@ -220,6 +221,7 @@ class PDFiumPage {
   FRIEND_TEST_ALL_PREFIXES(PDFiumPageHighlightTest, PopulateHighlights);
   FRIEND_TEST_ALL_PREFIXES(PDFiumPageImageTest, CalculateImages);
   FRIEND_TEST_ALL_PREFIXES(PDFiumPageImageTest, ImageAltText);
+  FRIEND_TEST_ALL_PREFIXES(PDFiumPageImageDataTest, ImageData);
   FRIEND_TEST_ALL_PREFIXES(PDFiumPageLinkTest, AnnotLinkGeneration);
   FRIEND_TEST_ALL_PREFIXES(PDFiumPageLinkTest, GetLinkTarget);
   FRIEND_TEST_ALL_PREFIXES(PDFiumPageLinkTest, LinkGeneration);
@@ -256,9 +258,13 @@ class PDFiumPage {
     Image(const Image& other);
     ~Image();
 
-    gfx::Rect bounding_rect;
-    // Alt text is available only for tagged PDFs.
+    int page_object_index;
+    // Alt text is available only for PDFs that are tagged for accessibility.
     std::string alt_text;
+    gfx::Rect bounding_rect;
+    // Image data is only stored if the user has requested that the OCR service
+    // try to retrieve textual and layout information from this image.
+    SkBitmap image_data;
   };
 
   // Represents a highlight within the page.
@@ -395,9 +401,6 @@ class PDFiumPage {
       const MarkedContentIdToImageMap& marked_content_id_image_map,
       FPDF_STRUCTELEMENT current_element,
       std::set<FPDF_STRUCTELEMENT>* visited_elements);
-  static uint32_t CountLinkHighlightOverlaps(
-      const std::vector<Link>& links,
-      const std::vector<Highlight>& highlights);
   bool PopulateFormFieldProperties(FPDF_ANNOTATION annot,
                                    FormField* form_field);
   // Generates and sends the thumbnail using `send_callback`.
@@ -419,7 +422,6 @@ class PDFiumPage {
   std::vector<TextField> text_fields_;
   std::vector<ChoiceField> choice_fields_;
   std::vector<Button> buttons_;
-  bool logged_overlapping_annotations_ = false;
   bool calculated_page_object_text_run_breaks_ = false;
   // The set of character indices on which text runs need to be broken for page
   // objects.
@@ -430,7 +432,21 @@ class PDFiumPage {
 
 // Converts page orientations to the PDFium equivalents, as defined by
 // FPDF_RenderPage().
-int ToPDFiumRotation(PageOrientation orientation);
+constexpr int ToPDFiumRotation(PageOrientation orientation) {
+  // Could use static_cast<int>(orientation), but using an exhaustive switch
+  // will trigger an error if we ever change the definition of
+  // `PageOrientation`.
+  switch (orientation) {
+    case PageOrientation::kOriginal:
+      return 0;
+    case PageOrientation::kClockwise90:
+      return 1;
+    case PageOrientation::kClockwise180:
+      return 2;
+    case PageOrientation::kClockwise270:
+      return 3;
+  }
+}
 
 constexpr uint32_t MakeARGB(unsigned int a,
                             unsigned int r,

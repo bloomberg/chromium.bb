@@ -36,6 +36,7 @@
 #include "vp8/common/swapyv12buffer.h"
 #include "vp8/common/threading.h"
 #include "vpx_ports/system_state.h"
+#include "vpx_ports/vpx_once.h"
 #include "vpx_ports/vpx_timer.h"
 #include "vpx_util/vpx_write_yuv_frame.h"
 #if VPX_ARCH_ARM
@@ -394,15 +395,12 @@ static void setup_features(VP8_COMP *cpi) {
 
 static void dealloc_raw_frame_buffers(VP8_COMP *cpi);
 
-void vp8_initialize_enc(void) {
-  static volatile int init_done = 0;
-
-  if (!init_done) {
-    vpx_dsp_rtcd();
-    vp8_init_intra_predictors();
-    init_done = 1;
-  }
+static void initialize_enc(void) {
+  vpx_dsp_rtcd();
+  vp8_init_intra_predictors();
 }
+
+void vp8_initialize_enc(void) { once(initialize_enc); }
 
 static void dealloc_compressor_data(VP8_COMP *cpi) {
   vpx_free(cpi->tplist);
@@ -2014,36 +2012,26 @@ struct VP8_COMP *vp8_create_compressor(VP8_CONFIG *oxcf) {
   cpi->fn_ptr[BLOCK_16X16].sdf = vpx_sad16x16;
   cpi->fn_ptr[BLOCK_16X16].vf = vpx_variance16x16;
   cpi->fn_ptr[BLOCK_16X16].svf = vpx_sub_pixel_variance16x16;
-  cpi->fn_ptr[BLOCK_16X16].sdx3f = vpx_sad16x16x3;
-  cpi->fn_ptr[BLOCK_16X16].sdx8f = vpx_sad16x16x8;
   cpi->fn_ptr[BLOCK_16X16].sdx4df = vpx_sad16x16x4d;
 
   cpi->fn_ptr[BLOCK_16X8].sdf = vpx_sad16x8;
   cpi->fn_ptr[BLOCK_16X8].vf = vpx_variance16x8;
   cpi->fn_ptr[BLOCK_16X8].svf = vpx_sub_pixel_variance16x8;
-  cpi->fn_ptr[BLOCK_16X8].sdx3f = vpx_sad16x8x3;
-  cpi->fn_ptr[BLOCK_16X8].sdx8f = vpx_sad16x8x8;
   cpi->fn_ptr[BLOCK_16X8].sdx4df = vpx_sad16x8x4d;
 
   cpi->fn_ptr[BLOCK_8X16].sdf = vpx_sad8x16;
   cpi->fn_ptr[BLOCK_8X16].vf = vpx_variance8x16;
   cpi->fn_ptr[BLOCK_8X16].svf = vpx_sub_pixel_variance8x16;
-  cpi->fn_ptr[BLOCK_8X16].sdx3f = vpx_sad8x16x3;
-  cpi->fn_ptr[BLOCK_8X16].sdx8f = vpx_sad8x16x8;
   cpi->fn_ptr[BLOCK_8X16].sdx4df = vpx_sad8x16x4d;
 
   cpi->fn_ptr[BLOCK_8X8].sdf = vpx_sad8x8;
   cpi->fn_ptr[BLOCK_8X8].vf = vpx_variance8x8;
   cpi->fn_ptr[BLOCK_8X8].svf = vpx_sub_pixel_variance8x8;
-  cpi->fn_ptr[BLOCK_8X8].sdx3f = vpx_sad8x8x3;
-  cpi->fn_ptr[BLOCK_8X8].sdx8f = vpx_sad8x8x8;
   cpi->fn_ptr[BLOCK_8X8].sdx4df = vpx_sad8x8x4d;
 
   cpi->fn_ptr[BLOCK_4X4].sdf = vpx_sad4x4;
   cpi->fn_ptr[BLOCK_4X4].vf = vpx_variance4x4;
   cpi->fn_ptr[BLOCK_4X4].svf = vpx_sub_pixel_variance4x4;
-  cpi->fn_ptr[BLOCK_4X4].sdx3f = vpx_sad4x4x3;
-  cpi->fn_ptr[BLOCK_4X4].sdx8f = vpx_sad4x4x8;
   cpi->fn_ptr[BLOCK_4X4].sdx4df = vpx_sad4x4x4d;
 
 #if VPX_ARCH_X86 || VPX_ARCH_X86_64
@@ -2054,7 +2042,6 @@ struct VP8_COMP *vp8_create_compressor(VP8_CONFIG *oxcf) {
   cpi->fn_ptr[BLOCK_4X4].copymem = vp8_copy32xn;
 #endif
 
-  cpi->full_search_sad = vp8_full_search_sad;
   cpi->diamond_search_sad = vp8_diamond_search_sad;
   cpi->refining_search_sad = vp8_refining_search_sad;
 

@@ -145,14 +145,14 @@
 // Matcher for Add to bookmarks button.
 + (id<GREYMatcher>)addToBookmarksButton;
 
-// Matcher for SettingsSwitchCell.
-+ (id<GREYMatcher>)settingsSwitchCell:(NSString*)accessibilityIdentifier
-                          isToggledOn:(BOOL)isToggledOn;
+// Matcher for TableViewSwitchCell.
++ (id<GREYMatcher>)tableViewSwitchCell:(NSString*)accessibilityIdentifier
+                           isToggledOn:(BOOL)isToggledOn;
 
-// Matcher for SettingsSwitchCell.
-+ (id<GREYMatcher>)settingsSwitchCell:(NSString*)accessibilityIdentifier
-                          isToggledOn:(BOOL)isToggledOn
-                            isEnabled:(BOOL)isEnabled;
+// Matcher for TableViewSwitchCell.
++ (id<GREYMatcher>)tableViewSwitchCell:(NSString*)accessibilityIdentifier
+                           isToggledOn:(BOOL)isToggledOn
+                             isEnabled:(BOOL)isEnabled;
 
 // Matcher for SyncSwitchCell.
 + (id<GREYMatcher>)syncSwitchCell:(NSString*)accessibilityLabel
@@ -238,6 +238,12 @@
 // Returns matcher for the tools menu table view.
 + (id<GREYMatcher>)toolsMenuView;
 
+// Returns matcher for the omnibox popup list row views.
++ (id<GREYMatcher>)omniboxPopupRow;
+
+// Returns matcher for the omnibox popup list view.
++ (id<GREYMatcher>)omniboxPopupList;
+
 // Returns matcher for the OK button.
 + (id<GREYMatcher>)OKButton;
 
@@ -266,6 +272,9 @@
 // Returns matcher for the Continue navigation button in switch sync account
 // view.
 + (id<GREYMatcher>)settingsImportDataContinueButton;
+
+// Returns matcher for the safety check table view.
++ (id<GREYMatcher>)settingsSafetyCheckTableView;
 
 // Returns matcher for the privacy table view.
 + (id<GREYMatcher>)settingsPrivacyTableView;
@@ -311,6 +320,9 @@
 
 // Returns matcher for the settings main menu view.
 + (id<GREYMatcher>)settingsCollectionView;
+
+// Returns matcher for the History table view.
++ (id<GREYMatcher>)historyTableView;
 
 // Returns matcher for the clear browsing history cell on the clear browsing
 // data panel.
@@ -405,7 +417,7 @@
 // Returns matcher for the Copy item on the old-style context menu.
 + (id<GREYMatcher>)contextMenuCopyButton;
 
-// Returns matcher for defoucesed omnibox on a new tab.
+// Returns matcher for defocused omnibox on a new tab.
 + (id<GREYMatcher>)NTPOmnibox;
 
 // Returns matcher for a fake omnibox on a new tab page.
@@ -474,6 +486,11 @@
 // the tab grid.
 + (id<GREYMatcher>)tabGridOtherDevicesPanelButton;
 
+// Returns a matcher that matches tab grid normal mode page control - The
+// PageControl panel always exist only on the tab grid normal mode, So this can
+// be used to validate that the tab grid normal mode is active.
++ (id<GREYMatcher>)tabGridNormalModePageControl;
+
 // Returns the GREYMatcher for the background of the tab grid.
 + (id<GREYMatcher>)tabGridBackground;
 
@@ -515,6 +532,9 @@
 
 // Returns a matcher for a history entry with |url| and |title|.
 + (id<GREYMatcher>)historyEntryForURL:(NSString*)URL title:(NSString*)title;
+
+// Returns a matcher to the add button in the toolbar of the settings view.
++ (id<GREYMatcher>)settingsToolbarAddButton;
 
 #pragma mark - Manual Fallback
 
@@ -612,6 +632,20 @@
 
 // Returns a matcher for the button to share tabs.
 + (id<GREYMatcher>)tabGridEditShareButton;
+
+#pragma mark - Tab Grid Search Mode
+
+// Returns a matcher for the button to enter the tab grid search mode.
++ (id<GREYMatcher>)tabGridSearchTabsButton;
+
+// Returns a matcher for the tab grid search bar.
++ (id<GREYMatcher>)tabGridSearchBar;
+
+// Returns a matcher for the tab grid search cancel button.
++ (id<GREYMatcher>)tabGridSearchCancelButton;
+
+// Returns a matcher for the tab grid search mode toolbar.
++ (id<GREYMatcher>)tabGridSearchModeToolbar;
 
 @end
 

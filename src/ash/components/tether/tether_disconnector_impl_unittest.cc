@@ -6,6 +6,8 @@
 
 #include <memory>
 
+#include "ash/components/multidevice/remote_device_ref.h"
+#include "ash/components/multidevice/remote_device_test_util.h"
 #include "ash/components/tether/device_id_tether_network_guid_map.h"
 #include "ash/components/tether/fake_active_host.h"
 #include "ash/components/tether/fake_disconnect_tethering_request_sender.h"
@@ -14,11 +16,9 @@
 #include "ash/components/tether/fake_wifi_hotspot_disconnector.h"
 #include "ash/components/tether/tether_session_completion_logger.h"
 #include "base/bind.h"
-#include "chromeos/components/multidevice/remote_device_ref.h"
-#include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace tether {
 
@@ -261,4 +261,4 @@ TEST_F(TetherDisconnectorImplTest, DisconnectWhenConnected_Success) {
 
 }  // namespace tether
 
-}  // namespace chromeos
+}  // namespace ash

@@ -41,13 +41,12 @@ std::unique_ptr<base::DictionaryValue> GetFingerprintsInfo(
   DCHECK_LE(static_cast<int>(fingerprints_list.size()),
             kMaxAllowedFingerprints);
   for (auto& fingerprint_name: fingerprints_list) {
-    std::unique_ptr<base::Value> str =
-        std::make_unique<base::Value>(fingerprint_name);
+    base::Value str(fingerprint_name);
     fingerprints.Append(std::move(str));
   }
 
   response->SetKey("fingerprintsList", std::move(fingerprints));
-  response->SetBoolean("isMaxed", static_cast<int>(fingerprints_list.size()) >=
+  response->SetBoolKey("isMaxed", static_cast<int>(fingerprints_list.size()) >=
                                       kMaxAllowedFingerprints);
   return response;
 }
@@ -65,40 +64,32 @@ FingerprintHandler::~FingerprintHandler() {
 
 void FingerprintHandler::RegisterMessages() {
   // Note: getFingerprintsList must be called before observers will be added.
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "getFingerprintsList",
       base::BindRepeating(&FingerprintHandler::HandleGetFingerprintsList,
                           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "getNumFingerprints",
       base::BindRepeating(&FingerprintHandler::HandleGetNumFingerprints,
                           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "startEnroll", base::BindRepeating(&FingerprintHandler::HandleStartEnroll,
                                          base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "cancelCurrentEnroll",
       base::BindRepeating(&FingerprintHandler::HandleCancelCurrentEnroll,
                           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "getEnrollmentLabel",
       base::BindRepeating(&FingerprintHandler::HandleGetEnrollmentLabel,
                           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "removeEnrollment",
       base::BindRepeating(&FingerprintHandler::HandleRemoveEnrollment,
                           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "changeEnrollmentLabel",
       base::BindRepeating(&FingerprintHandler::HandleChangeEnrollmentLabel,
-                          base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
-      "startAuthentication",
-      base::BindRepeating(&FingerprintHandler::HandleStartAuthentication,
-                          base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
-      "endCurrentAuthentication",
-      base::BindRepeating(&FingerprintHandler::HandleEndCurrentAuthentication,
                           base::Unretained(this)));
 }
 
@@ -125,18 +116,17 @@ void FingerprintHandler::OnEnrollScanDone(device::mojom::ScanResult scan_result,
           << ", enroll_session_complete=" << enroll_session_complete
           << ", percent_complete=" << percent_complete;
   auto scan_attempt = std::make_unique<base::DictionaryValue>();
-  scan_attempt->SetInteger("result", static_cast<int>(scan_result));
-  scan_attempt->SetBoolean("isComplete", enroll_session_complete);
-  scan_attempt->SetInteger("percentComplete", percent_complete);
+  scan_attempt->SetIntKey("result", static_cast<int>(scan_result));
+  scan_attempt->SetBoolKey("isComplete", enroll_session_complete);
+  scan_attempt->SetIntKey("percentComplete", percent_complete);
 
   FireWebUIListener("on-fingerprint-scan-received", *scan_attempt);
 }
 
 void FingerprintHandler::OnAuthScanDone(
-    device::mojom::ScanResult scan_result,
+    const device::mojom::FingerprintMessagePtr msg,
     const base::flat_map<std::string, std::vector<std::string>>& matches) {
-  VLOG(1) << "Receive fingerprint auth scan result. scan_result="
-          << scan_result;
+  NOTREACHED();
 }
 
 void FingerprintHandler::OnSessionFailed() {
@@ -151,9 +141,9 @@ void FingerprintHandler::OnSessionStateChanged() {
 }
 
 void FingerprintHandler::HandleGetFingerprintsList(
-    const base::ListValue* args) {
-  CHECK_EQ(1U, args->GetList().size());
-  const std::string& callback_id = args->GetList()[0].GetString();
+    const base::Value::List& args) {
+  CHECK_EQ(1U, args.size());
+  const std::string& callback_id = args[0].GetString();
 
   AllowJavascript();
   fp_service_->GetRecordsForUser(
@@ -180,9 +170,10 @@ void FingerprintHandler::OnGetFingerprintsList(
   ResolveJavascriptCallback(base::Value(callback_id), *fingerprint_info);
 }
 
-void FingerprintHandler::HandleGetNumFingerprints(const base::ListValue* args) {
-  CHECK_EQ(1U, args->GetList().size());
-  const std::string& callback_id = args->GetList()[0].GetString();
+void FingerprintHandler::HandleGetNumFingerprints(
+    const base::Value::List& args) {
+  CHECK_EQ(1U, args.size());
+  const std::string& callback_id = args[0].GetString();
 
   int fingerprints_num =
       profile_->GetPrefs()->GetInteger(prefs::kQuickUnlockFingerprintRecord);
@@ -192,10 +183,10 @@ void FingerprintHandler::HandleGetNumFingerprints(const base::ListValue* args) {
                             base::Value(fingerprints_num));
 }
 
-void FingerprintHandler::HandleStartEnroll(const base::ListValue* args) {
+void FingerprintHandler::HandleStartEnroll(const base::Value::List& args) {
   AllowJavascript();
 
-  const std::string& auth_token = args->GetList()[0].GetString();
+  const std::string& auth_token = args[0].GetString();
 
   // Auth token expiration will trigger password prompt.
   // Silently fail if auth token is incorrect.
@@ -219,7 +210,7 @@ void FingerprintHandler::HandleStartEnroll(const base::ListValue* args) {
 }
 
 void FingerprintHandler::HandleCancelCurrentEnroll(
-    const base::ListValue* args) {
+    const base::Value::List& args) {
   AllowJavascript();
   fp_service_->CancelCurrentEnrollSession(
       base::BindOnce(&FingerprintHandler::OnCancelCurrentEnrollSession,
@@ -231,8 +222,9 @@ void FingerprintHandler::OnCancelCurrentEnrollSession(bool success) {
     LOG(ERROR) << "Failed to cancel current fingerprint enroll session.";
 }
 
-void FingerprintHandler::HandleGetEnrollmentLabel(const base::ListValue* args) {
-  const auto& list = args->GetList();
+void FingerprintHandler::HandleGetEnrollmentLabel(
+    const base::Value::List& args) {
+  const auto& list = args;
   CHECK_EQ(2U, list.size());
   std::string callback_id = list[0].GetString();
   int index = list[1].GetInt();
@@ -251,8 +243,8 @@ void FingerprintHandler::OnRequestRecordLabel(const std::string& callback_id,
   ResolveJavascriptCallback(base::Value(callback_id), base::Value(label));
 }
 
-void FingerprintHandler::HandleRemoveEnrollment(const base::ListValue* args) {
-  const auto& list = args->GetList();
+void FingerprintHandler::HandleRemoveEnrollment(const base::Value::List& args) {
+  const auto& list = args;
   CHECK_EQ(2U, list.size());
   std::string callback_id = list[0].GetString();
   int index = list[1].GetInt();
@@ -274,8 +266,8 @@ void FingerprintHandler::OnRemoveRecord(const std::string& callback_id,
 }
 
 void FingerprintHandler::HandleChangeEnrollmentLabel(
-    const base::ListValue* args) {
-  const auto& list = args->GetList();
+    const base::Value::List& args) {
+  const auto& list = args;
   CHECK_EQ(3U, list.size());
 
   std::string callback_id = list[0].GetString();
@@ -297,25 +289,6 @@ void FingerprintHandler::OnSetRecordLabel(const std::string& callback_id,
   if (!success)
     LOG(ERROR) << "Failed to set fingerprint record label.";
   ResolveJavascriptCallback(base::Value(callback_id), base::Value(success));
-}
-
-void FingerprintHandler::HandleStartAuthentication(
-    const base::ListValue* args) {
-  AllowJavascript();
-  fp_service_->StartAuthSession();
-}
-
-void FingerprintHandler::HandleEndCurrentAuthentication(
-    const base::ListValue* args) {
-  AllowJavascript();
-  fp_service_->EndCurrentAuthSession(
-      base::BindOnce(&FingerprintHandler::OnEndCurrentAuthSession,
-                     weak_ptr_factory_.GetWeakPtr()));
-}
-
-void FingerprintHandler::OnEndCurrentAuthSession(bool success) {
-  if (!success)
-    LOG(ERROR) << "Failed to end current fingerprint authentication session.";
 }
 
 }  // namespace settings

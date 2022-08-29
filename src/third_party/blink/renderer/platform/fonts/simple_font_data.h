@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/platform/fonts/font_platform_data.h"
 #include "third_party/blink/renderer/platform/fonts/font_vertical_position_type.h"
 #include "third_party/blink/renderer/platform/fonts/glyph.h"
+#include "third_party/blink/renderer/platform/fonts/lock_for_parallel_text_shaping.h"
 #include "third_party/blink/renderer/platform/fonts/typesetting_features.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
@@ -44,7 +45,7 @@
 #include "third_party/skia/include/core/SkFont.h"
 #include "ui/gfx/geometry/rect_f.h"
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #include "third_party/blink/renderer/platform/fonts/glyph_metrics_map.h"
 #endif
 
@@ -69,7 +70,7 @@ struct GlyphData {
 
 class FontDescription;
 
-class PLATFORM_EXPORT SimpleFontData : public FontData {
+class PLATFORM_EXPORT SimpleFontData final : public FontData {
  public:
   // Used to create platform fonts.
   static scoped_refptr<SimpleFontData> Create(
@@ -80,10 +81,17 @@ class PLATFORM_EXPORT SimpleFontData : public FontData {
         platform_data, std::move(custom_data), subpixel_ascent_descent));
   }
 
+  SimpleFontData(const SimpleFontData&) = delete;
+  SimpleFontData(SimpleFontData&&) = delete;
+  SimpleFontData& operator=(const SimpleFontData&) = delete;
+  SimpleFontData& operator=(const SimpleFontData&&) = delete;
+
   const FontPlatformData& PlatformData() const { return platform_data_; }
 
-  scoped_refptr<SimpleFontData> SmallCapsFontData(const FontDescription&) const;
-  scoped_refptr<SimpleFontData> EmphasisMarkFontData(const FontDescription&) const;
+  scoped_refptr<SimpleFontData> SmallCapsFontData(const FontDescription&) const
+      LOCKS_EXCLUDED(derived_font_data_lock_);
+  scoped_refptr<SimpleFontData> EmphasisMarkFontData(
+      const FontDescription&) const LOCKS_EXCLUDED(derived_font_data_lock_);
   scoped_refptr<SimpleFontData> MetricsOverriddenFontData(
       const FontMetricsOverride&) const;
 
@@ -160,14 +168,13 @@ class PLATFORM_EXPORT SimpleFontData : public FontData {
     return visual_overflow_inflation_for_descent_;
   }
 
- protected:
+ private:
   SimpleFontData(
       const FontPlatformData&,
       scoped_refptr<CustomFontData> custom_data,
       bool subpixel_ascent_descent = false,
       const FontMetricsOverride& metrics_override = FontMetricsOverride());
 
- private:
   void PlatformInit(bool subpixel_ascent_descent, const FontMetricsOverride&);
   void PlatformGlyphInit();
 
@@ -178,37 +185,41 @@ class PLATFORM_EXPORT SimpleFontData : public FontData {
   bool TrySetNormalizedTypoAscentAndDescent(float ascent, float descent) const;
 
   FontMetrics font_metrics_;
-  float max_char_width_;
-  float avg_char_width_;
+  float max_char_width_ = -1;
+  float avg_char_width_ = -1;
 
-  FontPlatformData platform_data_;
-  SkFont font_;
+  const FontPlatformData platform_data_;
+  const SkFont font_;
 
-  Glyph space_glyph_;
-  float space_width_;
-  Glyph zero_glyph_;
+  Glyph space_glyph_ = 0;
+  float space_width_ = 0;
+  Glyph zero_glyph_ = 0;
 
-  struct DerivedFontData {
+  struct DerivedFontData final {
     USING_FAST_MALLOC(DerivedFontData);
 
    public:
     DerivedFontData() = default;
     DerivedFontData(const DerivedFontData&) = delete;
+    DerivedFontData(DerivedFontData&&) = delete;
     DerivedFontData& operator=(const DerivedFontData&) = delete;
+    DerivedFontData& operator=(DerivedFontData&&) = delete;
 
     scoped_refptr<SimpleFontData> small_caps;
     scoped_refptr<SimpleFontData> emphasis_mark;
   };
 
-  mutable std::unique_ptr<DerivedFontData> derived_font_data_;
+  mutable std::unique_ptr<DerivedFontData> derived_font_data_
+      GUARDED_BY(derived_font_data_lock_);
+  mutable LockForParallelTextShaping derived_font_data_lock_;
 
-  scoped_refptr<CustomFontData> custom_font_data_;
+  const scoped_refptr<CustomFontData> custom_font_data_;
 
   // These are set to non-zero when ascent or descent is rounded or shifted
   // to be smaller than the actual ascent or descent. When calculating visual
   // overflows, we should add the inflations.
-  unsigned visual_overflow_inflation_for_ascent_;
-  unsigned visual_overflow_inflation_for_descent_;
+  unsigned visual_overflow_inflation_for_ascent_ = 0;
+  unsigned visual_overflow_inflation_for_descent_ = 0;
 
   mutable FontHeight normalized_typo_ascent_descent_;
 
@@ -216,14 +227,14 @@ class PLATFORM_EXPORT SimpleFontData : public FontData {
 // https://bugs.chromium.org/p/skia/issues/detail?id=5328 :
 // On Mac we're still using path based glyph metrics, and they seem to be
 // too slow to be able to remove the caching layer we have here.
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   mutable std::unique_ptr<GlyphMetricsMap<gfx::RectF>> glyph_to_bounds_map_;
   mutable GlyphMetricsMap<float> glyph_to_width_map_;
 #endif
 };
 
 ALWAYS_INLINE gfx::RectF SimpleFontData::BoundsForGlyph(Glyph glyph) const {
-#if !defined(OS_MAC)
+#if !BUILDFLAG(IS_MAC)
   return PlatformBoundsForGlyph(glyph);
 #else
   if (glyph_to_bounds_map_) {
@@ -243,7 +254,7 @@ ALWAYS_INLINE gfx::RectF SimpleFontData::BoundsForGlyph(Glyph glyph) const {
 }
 
 ALWAYS_INLINE float SimpleFontData::WidthForGlyph(Glyph glyph) const {
-#if !defined(OS_MAC)
+#if !BUILDFLAG(IS_MAC)
   return PlatformWidthForGlyph(glyph);
 #else
   if (absl::optional<float> width = glyph_to_width_map_.MetricsForGlyph(glyph))

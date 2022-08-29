@@ -13,7 +13,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/task/post_task.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/task_runner_util.h"
@@ -120,7 +119,6 @@ NetworkChangeNotifierWin::NetworkChangeNotifierWin()
       blocking_task_runner_(
           base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()})),
       last_computed_connection_type_(RecomputeCurrentConnectionType()),
-      last_computed_connection_cost_(ConnectionCost::CONNECTION_COST_UNKNOWN),
       last_announced_offline_(last_computed_connection_type_ ==
                               CONNECTION_NONE),
       sequence_runner_for_registration_(

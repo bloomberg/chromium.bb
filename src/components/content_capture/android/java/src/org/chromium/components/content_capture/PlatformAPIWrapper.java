@@ -4,23 +4,20 @@
 
 package org.chromium.components.content_capture;
 
-import android.annotation.TargetApi;
 import android.os.Build;
 import android.view.ViewStructure;
 import android.view.autofill.AutofillId;
 import android.view.contentcapture.ContentCaptureSession;
 
+import androidx.annotation.RequiresApi;
 import androidx.annotation.VisibleForTesting;
-
-import org.chromium.base.annotations.VerifiesOnQ;
 
 /**
  * The class to wrap ContentCapture platform APIs, catches the exception from platform, and
  * re-throws with PlatformAPIException, so the call sites can catch platform exception to avoid
  * the crash.
  */
-@VerifiesOnQ
-@TargetApi(Build.VERSION_CODES.Q)
+@RequiresApi(Build.VERSION_CODES.Q)
 public abstract class PlatformAPIWrapper {
     private static PlatformAPIWrapper sImpl;
     public static PlatformAPIWrapper getInstance() {

@@ -79,7 +79,7 @@ IN_PROC_BROWSER_TEST_F(SetIconAPITest, Overview) {
       "    })\n"
       "  });\n"
       "});\n");
-  ExtensionTestMessageListener ready("ready", false);
+  ExtensionTestMessageListener ready("ready");
   const Extension* extension = LoadExtension(ext_dir_.UnpackedPath());
   ASSERT_TRUE(extension);
   // Wait for declarative rules to be set up.
@@ -120,11 +120,11 @@ IN_PROC_BROWSER_TEST_F(SetIconAPITest, Overview) {
 
   // There should be no declarative icon until we navigate to a matched page.
   EXPECT_TRUE(action->GetDeclarativeIcon(tab_id).IsEmpty());
-  NavigateInRenderer(tab, GURL("http://test1/"));
+  EXPECT_FALSE(NavigateInRenderer(tab, GURL("http://test1/")));
   EXPECT_FALSE(action->GetDeclarativeIcon(tab_id).IsEmpty());
 
   // Navigating to an unmatched page should reset the icon.
-  NavigateInRenderer(tab, GURL("http://test2/"));
+  EXPECT_FALSE(NavigateInRenderer(tab, GURL("http://test2/")));
   EXPECT_TRUE(action->GetDeclarativeIcon(tab_id).IsEmpty());
 }
 }  // namespace

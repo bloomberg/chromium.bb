@@ -14,7 +14,6 @@
 #include "fxjs/gc/container_trace.h"
 #include "fxjs/xfa/cjx_object.h"
 #include "third_party/base/check.h"
-#include "third_party/base/compiler_specific.h"
 #include "third_party/base/containers/adapters.h"
 #include "third_party/base/notreached.h"
 #include "xfa/fxfa/cxfa_ffdoc.h"
@@ -392,39 +391,45 @@ bool ExistContainerKeep(CXFA_Node* pCurNode, bool bPreFind) {
   return false;
 }
 
-absl::optional<CXFA_ContentLayoutProcessor::Stage> FindBreakNode(
+absl::optional<CXFA_ContentLayoutProcessor::Stage> FindBreakBeforeNode(
     CXFA_Node* pContainerNode,
-    bool bBreakBefore,
     CXFA_Node** pCurActionNode) {
   for (CXFA_Node* pBreakNode = pContainerNode; pBreakNode;
        pBreakNode = pBreakNode->GetNextSibling()) {
-    XFA_Attribute eAttributeType =
-        bBreakBefore ? XFA_Attribute::Before : XFA_Attribute::After;
-
     switch (pBreakNode->GetElementType()) {
-      case XFA_Element::BreakBefore: {
-        if (!bBreakBefore)
-          break;
-
+      case XFA_Element::BreakBefore:
         *pCurActionNode = pBreakNode;
         return CXFA_ContentLayoutProcessor::Stage::kBreakBefore;
-      }
-      case XFA_Element::BreakAfter: {
-        if (bBreakBefore)
-          break;
-
-        *pCurActionNode = pBreakNode;
-        return CXFA_ContentLayoutProcessor::Stage::kBreakAfter;
-      }
       case XFA_Element::Break:
-        if (pBreakNode->JSObject()->GetEnum(eAttributeType) ==
+        if (pBreakNode->JSObject()->GetEnum(XFA_Attribute::Before) ==
             XFA_AttributeValue::Auto) {
           break;
         }
-
         *pCurActionNode = pBreakNode;
-        return bBreakBefore ? CXFA_ContentLayoutProcessor::Stage::kBreakBefore
-                            : CXFA_ContentLayoutProcessor::Stage::kBreakAfter;
+        return CXFA_ContentLayoutProcessor::Stage::kBreakBefore;
+      default:
+        break;
+    }
+  }
+  return absl::nullopt;
+}
+
+absl::optional<CXFA_ContentLayoutProcessor::Stage> FindBreakAfterNode(
+    CXFA_Node* pContainerNode,
+    CXFA_Node** pCurActionNode) {
+  for (CXFA_Node* pBreakNode = pContainerNode; pBreakNode;
+       pBreakNode = pBreakNode->GetNextSibling()) {
+    switch (pBreakNode->GetElementType()) {
+      case XFA_Element::BreakAfter:
+        *pCurActionNode = pBreakNode;
+        return CXFA_ContentLayoutProcessor::Stage::kBreakAfter;
+      case XFA_Element::Break:
+        if (pBreakNode->JSObject()->GetEnum(XFA_Attribute::After) ==
+            XFA_AttributeValue::Auto) {
+          break;
+        }
+        *pCurActionNode = pBreakNode;
+        return CXFA_ContentLayoutProcessor::Stage::kBreakAfter;
       default:
         break;
     }
@@ -845,15 +850,13 @@ CXFA_ContentLayoutItem* CXFA_ContentLayoutProcessor::ExtractLayoutItem() {
   return pLayoutItem;
 }
 
-void CXFA_ContentLayoutProcessor::GotoNextContainerNodeSimple(
-    bool bUsePageBreak) {
+void CXFA_ContentLayoutProcessor::GotoNextContainerNodeSimple() {
   std::tie(m_nCurChildNodeStage, m_pCurChildNode) = GotoNextContainerNode(
-      m_nCurChildNodeStage, bUsePageBreak, GetFormNode(), m_pCurChildNode);
+      m_nCurChildNodeStage, GetFormNode(), m_pCurChildNode);
 }
 
 std::pair<CXFA_ContentLayoutProcessor::Stage, CXFA_Node*>
 CXFA_ContentLayoutProcessor::GotoNextContainerNode(Stage nCurStage,
-                                                   bool bUsePageBreak,
                                                    CXFA_Node* pParentContainer,
                                                    CXFA_Node* pCurActionNode) {
   CXFA_Node* pChildContainer = nullptr;
@@ -882,14 +885,14 @@ CXFA_ContentLayoutProcessor::GotoNextContainerNode(Stage nCurStage,
 
     case Stage::kNone:
       pCurActionNode = nullptr;
-      FALLTHROUGH;
+      [[fallthrough]];
 
     case Stage::kBookendLeader:
       ret = HandleBookendLeader(pParentContainer, &pCurActionNode);
       if (ret.has_value())
         return {ret.value(), pCurActionNode};
       pCurActionNode = nullptr;
-      FALLTHROUGH;
+      [[fallthrough]];
 
     case Stage::kBreakBefore:
       ret = HandleBreakBefore(pChildContainer, &pCurActionNode);
@@ -899,7 +902,7 @@ CXFA_ContentLayoutProcessor::GotoNextContainerNode(Stage nCurStage,
 
     case Stage::kContainer:
       pCurActionNode = nullptr;
-      FALLTHROUGH;
+      [[fallthrough]];
 
     case Stage::kBreakAfter:
       ret = HandleBreakAfter(pChildContainer, &pCurActionNode);
@@ -911,7 +914,7 @@ CXFA_ContentLayoutProcessor::GotoNextContainerNode(Stage nCurStage,
       ret = HandleBookendTrailer(pParentContainer, &pCurActionNode);
       if (ret.has_value())
         return {ret.value(), pCurActionNode};
-      FALLTHROUGH;
+      [[fallthrough]];
 
     default:
       return {Stage::kDone, nullptr};
@@ -962,7 +965,7 @@ CXFA_ContentLayoutProcessor::ProcessKeepNodesForCheckNext(
   }
 
   absl::optional<Stage> ret =
-      FindBreakNode((*pNextContainer)->GetFirstChild(), true, pCurActionNode);
+      FindBreakBeforeNode((*pNextContainer)->GetFirstChild(), pCurActionNode);
   if (!ret.has_value()) {
     *pNextContainer = m_pKeepHeadNode;
     ProcessKeepNodesEnd();
@@ -983,7 +986,7 @@ CXFA_ContentLayoutProcessor::ProcessKeepNodesForBreakBefore(
   }
 
   CXFA_Node* pBreakAfterNode = pContainerNode->GetFirstChild();
-  return FindBreakNode(pBreakAfterNode, false, pCurActionNode);
+  return FindBreakAfterNode(pBreakAfterNode, pCurActionNode);
 }
 
 void CXFA_ContentLayoutProcessor::DoLayoutPageArea(
@@ -992,9 +995,9 @@ void CXFA_ContentLayoutProcessor::DoLayoutPageArea(
   CXFA_Node* pCurChildNode = nullptr;
   CXFA_LayoutItem* pBeforeItem = nullptr;
   Stage nCurChildNodeStage = Stage::kNone;
-  while (1) {
-    std::tie(nCurChildNodeStage, pCurChildNode) = GotoNextContainerNode(
-        nCurChildNodeStage, false, pFormNode, pCurChildNode);
+  while (true) {
+    std::tie(nCurChildNodeStage, pCurChildNode) =
+        GotoNextContainerNode(nCurChildNodeStage, pFormNode, pCurChildNode);
     if (!pCurChildNode)
       break;
 
@@ -1062,10 +1065,10 @@ void CXFA_ContentLayoutProcessor::DoLayoutPositionedContainer(
   float fHiddenContentCalculatedWidth = 0;
   float fHiddenContentCalculatedHeight = 0;
   if (!m_pCurChildNode)
-    GotoNextContainerNodeSimple(false);
+    GotoNextContainerNodeSimple();
 
   int32_t iColIndex = 0;
-  for (; m_pCurChildNode; GotoNextContainerNodeSimple(false)) {
+  for (; m_pCurChildNode; GotoNextContainerNodeSimple()) {
     if (m_nCurChildNodeStage != Stage::kContainer)
       continue;
     if (m_pCurChildNode->GetElementType() == XFA_Element::Variables)
@@ -1201,9 +1204,9 @@ void CXFA_ContentLayoutProcessor::DoLayoutTableContainer(
   Context* pLayoutContext =
       iSpecifiedColumnCount > 0 ? &layoutContext : nullptr;
   if (!m_pCurChildNode)
-    GotoNextContainerNodeSimple(false);
+    GotoNextContainerNodeSimple();
 
-  for (; m_pCurChildNode; GotoNextContainerNodeSimple(false)) {
+  for (; m_pCurChildNode; GotoNextContainerNodeSimple()) {
     layoutContext.m_fCurColumnWidth.reset();
     if (m_nCurChildNodeStage != Stage::kContainer)
       continue;
@@ -1560,7 +1563,7 @@ CXFA_ContentLayoutProcessor::DoLayoutFlowedContainer(
 
   fContentCurRowY += InsertKeepLayoutItems();
   if (m_nCurChildNodeStage == Stage::kNone)
-    GotoNextContainerNodeSimple(true);
+    GotoNextContainerNodeSimple();
 
   fContentCurRowY += InsertPendingItems(GetFormNode());
   if (m_pCurChildPreprocessor && m_nCurChildNodeStage == Stage::kContainer) {
@@ -1675,7 +1678,7 @@ CXFA_ContentLayoutProcessor::DoLayoutFlowedContainer(
                   &bAddedItemInRow, &bForceEndPage, pContext, false);
             }
           }
-          GotoNextContainerNodeSimple(true);
+          GotoNextContainerNodeSimple();
           bForceEndPage = true;
           bIsManualBreak = true;
           goto SuspendAndCreateNewRow;
@@ -1733,7 +1736,7 @@ CXFA_ContentLayoutProcessor::DoLayoutFlowedContainer(
               AddPendingNode(pLeaderNode, true);
           }
 
-          GotoNextContainerNodeSimple(true);
+          GotoNextContainerNodeSimple();
           if (bCreatePage) {
             bForceEndPage = true;
             bIsManualBreak = true;
@@ -1838,10 +1841,10 @@ CXFA_ContentLayoutProcessor::DoLayoutFlowedContainer(
           switch (rs) {
             case Result::kManualBreak:
               bIsManualBreak = true;
-              FALLTHROUGH;
+              [[fallthrough]];
             case Result::kPageFullBreak:
               bForceEndPage = true;
-              FALLTHROUGH;
+              [[fallthrough]];
             case Result::kRowFullBreak:
               goto SuspendAndCreateNewRow;
             case Result::kDone:
@@ -1858,7 +1861,7 @@ CXFA_ContentLayoutProcessor::DoLayoutFlowedContainer(
         default:
           break;
       }
-      GotoNextContainerNodeSimple(true);
+      GotoNextContainerNodeSimple();
       if (bAddedItemInRow && eFlowStrategy == XFA_AttributeValue::Tb)
         break;
       continue;
@@ -2673,7 +2676,7 @@ CXFA_ContentLayoutProcessor::HandleKeep(CXFA_Node* pBreakAfterNode,
                                         CXFA_Node** pCurActionNode) {
   if (m_bKeepBreakFinish)
     return absl::nullopt;
-  return FindBreakNode(pBreakAfterNode, false, pCurActionNode);
+  return FindBreakAfterNode(pBreakAfterNode, pCurActionNode);
 }
 
 absl::optional<CXFA_ContentLayoutProcessor::Stage>
@@ -2704,7 +2707,7 @@ CXFA_ContentLayoutProcessor::HandleBreakBefore(CXFA_Node* pChildContainer,
   CXFA_Node* pBreakBeforeNode = (*pCurActionNode)->GetNextSibling();
   if (!m_bKeepBreakFinish) {
     absl::optional<Stage> ret =
-        FindBreakNode(pBreakBeforeNode, true, pCurActionNode);
+        FindBreakBeforeNode(pBreakBeforeNode, pCurActionNode);
     if (ret.has_value())
       return ret.value();
   }
@@ -2720,7 +2723,7 @@ CXFA_ContentLayoutProcessor::HandleBreakAfter(CXFA_Node* pChildContainer,
                                               CXFA_Node** pCurActionNode) {
   if (*pCurActionNode) {
     CXFA_Node* pBreakAfterNode = (*pCurActionNode)->GetNextSibling();
-    return FindBreakNode(pBreakAfterNode, false, pCurActionNode);
+    return FindBreakAfterNode(pBreakAfterNode, pCurActionNode);
   }
 
   CXFA_Node* pBreakAfterNode = pChildContainer->GetFirstChild();
@@ -2751,8 +2754,8 @@ CXFA_ContentLayoutProcessor::HandleCheckNextChildContainer(
     return ret.value();
 
   if (!m_bKeepBreakFinish && !bLastKeep) {
-    ret = FindBreakNode(pNextChildContainer->GetFirstChild(), true,
-                        pCurActionNode);
+    ret = FindBreakBeforeNode(pNextChildContainer->GetFirstChild(),
+                              pCurActionNode);
     if (ret.has_value())
       return ret.value();
   }

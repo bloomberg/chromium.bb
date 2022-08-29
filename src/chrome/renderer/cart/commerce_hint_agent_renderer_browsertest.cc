@@ -6,6 +6,8 @@
 
 #include "chrome/test/base/chrome_render_view_test.h"
 #include "content/public/test/browser_test_utils.h"
+#include "third_party/blink/public/web/web_element.h"
+#include "third_party/blink/public/web/web_form_element.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 
 namespace {
@@ -45,7 +47,7 @@ TEST_F(CommerceHintAgentRendererTest, ExtractButtonTexts) {
   blink::WebFormElement form = GetMainFrame()
                                    ->GetDocument()
                                    .GetElementById(blink::WebString("form"))
-                                   .ToConst<blink::WebFormElement>();
+                                   .To<blink::WebFormElement>();
 
   for (auto& entry : extract_case) {
     PopulateForm(entry.first);

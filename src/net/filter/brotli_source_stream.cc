@@ -23,12 +23,7 @@ const char kBrotli[] = "BROTLI";
 class BrotliSourceStream : public FilterSourceStream {
  public:
   explicit BrotliSourceStream(std::unique_ptr<SourceStream> upstream)
-      : FilterSourceStream(SourceStream::TYPE_BROTLI, std::move(upstream)),
-        decoding_status_(DecodingStatus::DECODING_IN_PROGRESS),
-        used_memory_(0),
-        used_memory_maximum_(0),
-        consumed_bytes_(0),
-        produced_bytes_(0) {
+      : FilterSourceStream(SourceStream::TYPE_BROTLI, std::move(upstream)) {
     brotli_state_ =
         BrotliDecoderCreateInstance(AllocateMemory, FreeMemory, this);
     CHECK(brotli_state_);
@@ -99,9 +94,9 @@ class BrotliSourceStream : public FilterSourceStream {
     if (decoding_status_ != DecodingStatus::DECODING_IN_PROGRESS)
       return ERR_CONTENT_DECODING_FAILED;
 
-    const uint8_t* next_in = bit_cast<uint8_t*>(input_buffer->data());
+    const uint8_t* next_in = base::bit_cast<uint8_t*>(input_buffer->data());
     size_t available_in = input_buffer_size;
-    uint8_t* next_out = bit_cast<uint8_t*>(output_buffer->data());
+    uint8_t* next_out = base::bit_cast<uint8_t*>(output_buffer->data());
     size_t available_out = output_buffer_size;
 
     BrotliDecoderResult result =
@@ -169,12 +164,12 @@ class BrotliSourceStream : public FilterSourceStream {
 
   raw_ptr<BrotliDecoderState> brotli_state_;
 
-  DecodingStatus decoding_status_;
+  DecodingStatus decoding_status_ = DecodingStatus::DECODING_IN_PROGRESS;
 
-  size_t used_memory_;
-  size_t used_memory_maximum_;
-  size_t consumed_bytes_;
-  size_t produced_bytes_;
+  size_t used_memory_ = 0;
+  size_t used_memory_maximum_ = 0;
+  size_t consumed_bytes_ = 0;
+  size_t produced_bytes_ = 0;
 };
 
 }  // namespace

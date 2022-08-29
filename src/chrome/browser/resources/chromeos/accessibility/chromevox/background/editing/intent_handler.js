@@ -6,14 +6,9 @@
  * @fileoverview Handles automation intents for speech feedback.
  * Braille is *not* handled in this module.
  */
+import {EditableLine} from '/chromevox/background/editing/editable_line.js';
+import {Output} from '/chromevox/background/output/output.js';
 
-goog.provide('IntentHandler');
-
-goog.require('constants');
-goog.require('editing.EditableLine');
-goog.require('Output');
-
-goog.scope(function() {
 const AutomationIntent = chrome.automation.AutomationIntent;
 const Cursor = cursors.Cursor;
 const Dir = constants.Dir;
@@ -27,12 +22,12 @@ const Unit = cursors.Unit;
 /**
  * A stateless class that turns intents into speech.
  */
-IntentHandler = class {
+export class IntentHandler {
   /**
    * Called when intents are received from an AutomationEvent.
    * @param {!Array<AutomationIntent>} intents
-   * @param {!editing.EditableLine} cur The current line.
-   * @param {editing.EditableLine} prev The previous line.
+   * @param {!EditableLine} cur The current line.
+   * @param {EditableLine} prev The previous line.
    * @return {boolean} Whether intents are handled.
    */
   static onIntents(intents, cur, prev) {
@@ -53,8 +48,8 @@ IntentHandler = class {
   /**
    * Called when an intent is received.
    * @param {!AutomationIntent} intent
-   * @param {!editing.EditableLine} cur The current line.
-   * @param {editing.EditableLine} prev The previous line.
+   * @param {!EditableLine} cur The current line.
+   * @param {EditableLine} prev The previous line.
    * @return {boolean} Whether the intent was handled.
    */
   static onIntent(intent, cur, prev) {
@@ -82,41 +77,13 @@ IntentHandler = class {
    * Called when the text selection moves.
    * @param {!AutomationIntent} intent A move selection
    *     intent.
-   * @param {!editing.EditableLine} cur The current line.
-   * @param {editing.EditableLine} prev The previous line.
+   * @param {!EditableLine} cur The current line.
+   * @param {EditableLine} prev The previous line.
    * @return {boolean} Whether the intent was handled.
    */
   static onMoveSelection(intent, cur, prev) {
     switch (intent.textBoundary) {
       case IntentTextBoundaryType.CHARACTER: {
-        const text = cur.text.substring(cur.startOffset, cur.startOffset + 1);
-
-        // First, handle the case where there is no text to the right of the
-        // cursor.
-        if (!text && prev) {
-          // Detect cases where |cur| is immediately before an abstractSpan.
-          const enteredAncestors =
-              AutomationUtil.getUniqueAncestors(prev.end.node, cur.end.node);
-          const exitedAncestors =
-              AutomationUtil.getUniqueAncestors(cur.end.node, prev.end.node);
-
-          // Scan up only to a root or the editable root.
-          let ancestor;
-          const ancestors = enteredAncestors.concat(exitedAncestors);
-          while ((ancestor = ancestors.pop()) &&
-                 !AutomationPredicate.rootOrEditableRoot(ancestor)) {
-            const roleInfo = OutputRoleInfo[ancestor.role];
-            if (roleInfo && roleInfo['inherits'] === 'abstractSpan') {
-              // Let the caller handle this case.
-              return false;
-            }
-          }
-
-          // It is assumed to be a new line otherwise.
-          ChromeVox.tts.speak('\n', QueueMode.CATEGORY_FLUSH);
-          return true;
-        }
-
         // Read character to the right of the cursor by building a character
         // range.
         let prevRange = null;
@@ -128,8 +95,41 @@ IntentHandler = class {
         // Use the Output module for feedback so that we get contextual
         // information e.g. if we've entered a suggestion, insertion, or
         // deletion.
-        new Output()
-            .withRichSpeech(newRange, prevRange, OutputEventType.NAVIGATE)
+        const output = new Output();
+        const text = cur.text;
+        if (text.substring(cur.startOffset, cur.startOffset + 1).length === 0) {
+          // There isn't any text to the right of the cursor.
+          if (prev) {
+            // Detect cases where |cur| is immediately before an abstractSpan.
+            const enteredAncestors =
+                AutomationUtil.getUniqueAncestors(prev.end.node, cur.end.node);
+            const exitedAncestors =
+                AutomationUtil.getUniqueAncestors(cur.end.node, prev.end.node);
+
+            // Scan up only to a root or the editable root.
+            let ancestor;
+            const ancestors = enteredAncestors.concat(exitedAncestors);
+            while ((ancestor = ancestors.pop()) &&
+                   !AutomationPredicate.rootOrEditableRoot(ancestor)) {
+              const roleInfo = OutputRoleInfo[ancestor.role];
+              if (roleInfo && roleInfo['inherits'] === 'abstractSpan') {
+                // Let the caller handle this case.
+                return false;
+              }
+            }
+          }
+
+          // This block special cases readout of the cursor when it reaches the
+          // end of a line.
+          if (text === '\u00a0') {
+            output.withString('\u00a0');
+          } else {
+            // It is assumed to be a new line otherwise.
+            output.withString('\n');
+          }
+        }
+
+        output.withRichSpeech(newRange, prevRange, OutputEventType.NAVIGATE)
             .go();
 
         // Handled.
@@ -197,5 +197,4 @@ IntentHandler = class {
 
     return false;
   }
-};
-});  // goog.scope
+}

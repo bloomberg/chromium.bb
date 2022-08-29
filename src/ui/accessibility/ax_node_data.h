@@ -16,6 +16,7 @@
 #include "base/strings/string_split.h"
 #include "ui/accessibility/ax_base_export.h"
 #include "ui/accessibility/ax_enums.mojom-forward.h"
+#include "ui/accessibility/ax_node_id_forward.h"
 #include "ui/accessibility/ax_relative_bounds.h"
 #include "ui/accessibility/ax_text_attributes.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -23,13 +24,6 @@
 namespace ui {
 
 class AXTreeID;
-
-// Defines the type used for AXNode IDs.
-using AXNodeID = int32_t;
-
-// If a node is not yet or no longer valid, its ID should have a value of
-// kInvalidAXNodeID.
-static constexpr AXNodeID kInvalidAXNodeID = 0;
 
 // Return true if |attr| should be interpreted as the id of another node
 // in the same tree.
@@ -108,6 +102,7 @@ struct AX_BASE_EXPORT AXNodeData {
   bool GetStringListAttribute(ax::mojom::StringListAttribute attribute,
                               std::vector<std::string>* value) const;
 
+  bool HasHtmlAttribute(const char* attribute) const;
   bool GetHtmlAttribute(const char* attribute, std::string* value) const;
   bool GetHtmlAttribute(const char* attribute, std::u16string* value) const;
 
@@ -289,10 +284,6 @@ struct AX_BASE_EXPORT AXNodeData {
   // month, time, and week types does not allow this. In either type, pressing
   // up/down arrow will change the value to the previous/next allowed value.
   bool IsSpinnerTextField() const;
-
-  // Helper to determine if |GetRestriction| is either ReadOnly or Disabled.
-  // By default, all nodes that can't be edited are readonly.
-  bool IsReadOnlyOrDisabled() const;
 
   // Helper to determine if the data belongs to a node that supports
   // range-based values.

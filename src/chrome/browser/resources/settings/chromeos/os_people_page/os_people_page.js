@@ -6,181 +6,252 @@
  * @fileoverview
  * 'settings-people-page' is the settings page containing sign-in settings.
  */
-Polymer({
-  is: 'os-settings-people-page',
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
+import 'chrome://resources/cr_elements/icons.m.js';
+import 'chrome://resources/cr_elements/policy/cr_policy_indicator.m.js';
+import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
+import '../../controls/settings_toggle_button.js';
+import '../../people_page/signout_dialog.js';
+import '../../people_page/sync_controls.js';
+import '../../people_page/sync_page.js';
+import '../../settings_page/settings_animated_pages.js';
+import '../../settings_page/settings_subpage.js';
+import '../../settings_shared_css.js';
+import './account_manager.js';
+import './fingerprint_list.js';
+import './lock_screen.js';
+import './lock_screen_password_prompt_dialog.js';
+import './users_page.js';
+import './os_sync_controls.js';
 
-  behaviors: [
-    DeepLinkingBehavior,
-    settings.RouteObserverBehavior,
-    I18nBehavior,
-    WebUIListenerBehavior,
-    LockStateBehavior,
-  ],
+import {convertImageSequenceToPng} from 'chrome://resources/cr_elements/chromeos/cr_picture/png.js';
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {sendWithPromise} from 'chrome://resources/js/cr.m.js';
+import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
+import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/js/i18n_behavior.m.js';
+import {getImage} from 'chrome://resources/js/icon.js';
+import {WebUIListenerBehavior, WebUIListenerBehaviorInterface} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
+import {afterNextRender, flush, html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-  properties: {
-    /**
-     * Preferences state.
-     */
-    prefs: {
-      type: Object,
-      notify: true,
-    },
+import {loadTimeData} from '../../i18n_setup.js';
+import {ProfileInfoBrowserProxyImpl} from '../../people_page/profile_info_browser_proxy.js';
+import {SyncBrowserProxyImpl} from '../../people_page/sync_browser_proxy.js';
+import {Route, Router} from '../../router.js';
+import {DeepLinkingBehavior, DeepLinkingBehaviorInterface} from '../deep_linking_behavior.js';
+import {OSPageVisibility} from '../os_page_visibility.js';
+import {routes} from '../os_route.js';
+import {SettingsParentalControlsPageElement} from '../parental_controls_page/parental_controls_page.js';
+import {RouteObserverBehavior, RouteObserverBehaviorInterface} from '../route_observer_behavior.js';
 
-    /** @private */
-    syncSettingsCategorizationEnabled_: {
-      type: Boolean,
-      value() {
-        return loadTimeData.getBoolean('syncSettingsCategorizationEnabled');
+import {Account, AccountManagerBrowserProxyImpl} from './account_manager_browser_proxy.js';
+import {LockStateBehavior, LockStateBehaviorInterface} from './lock_state_behavior.js';
+
+/**
+ * @constructor
+ * @extends {PolymerElement}
+ * @implements {DeepLinkingBehaviorInterface}
+ * @implements {RouteObserverBehaviorInterface}
+ * @implements {I18nBehaviorInterface}
+ * @implements {WebUIListenerBehaviorInterface}
+ * @implements {LockStateBehaviorInterface}
+ */
+const OsSettingsPeoplePageElementBase = mixinBehaviors(
+    [
+      DeepLinkingBehavior, RouteObserverBehavior, I18nBehavior,
+      WebUIListenerBehavior, LockStateBehavior
+    ],
+    PolymerElement);
+
+/** @polymer */
+class OsSettingsPeoplePageElement extends OsSettingsPeoplePageElementBase {
+  static get is() {
+    return 'os-settings-people-page';
+  }
+
+  static get template() {
+    return html`{__html_template__}`;
+  }
+
+  static get properties() {
+    return {
+      /**
+       * Preferences state.
+       */
+      prefs: {
+        type: Object,
+        notify: true,
       },
-    },
 
-    /**
-     * The current sync status, supplied by SyncBrowserProxy.
-     * @type {?settings.SyncStatus}
-     */
-    syncStatus: Object,
-
-    /**
-     * Dictionary defining page visibility.
-     * @type {!OSPageVisibility}
-     */
-    pageVisibility: Object,
-
-    /**
-     * Authentication token.
-     * @private {!chrome.quickUnlockPrivate.TokenInfo|undefined}
-     */
-    authToken_: {
-      type: Object,
-      observer: 'onAuthTokenChanged_',
-    },
-
-    /**
-     * The current profile icon URL. Usually a data:image/png URL.
-     * @private
-     */
-    profileIconUrl_: String,
-
-    /**
-     * The current profile name, e.g. "John Cena".
-     * @private
-     */
-    profileName_: String,
-
-    /**
-     * The current profile email, e.g. "john.cena@gmail.com".
-     * @private
-     */
-    profileEmail_: String,
-
-    /**
-     * The label may contain additional text, for example:
-     * "john.cena@gmail, + 2 more accounts".
-     * @private
-     */
-    profileLabel_: String,
-
-    /** @private */
-    showSignoutDialog_: Boolean,
-
-    /**
-     * True if fingerprint settings should be displayed on this machine.
-     * @private
-     */
-    fingerprintUnlockEnabled_: {
-      type: Boolean,
-      value() {
-        return loadTimeData.getBoolean('fingerprintUnlockEnabled');
+      /** @private */
+      syncSettingsCategorizationEnabled_: {
+        type: Boolean,
+        value() {
+          return loadTimeData.getBoolean('syncSettingsCategorizationEnabled');
+        },
       },
-      readOnly: true,
-    },
+
+      /**
+       * The current sync status, supplied by SyncBrowserProxy.
+       * @type {?SyncStatus}
+       */
+      syncStatus: Object,
+
+      /**
+       * Dictionary defining page visibility.
+       * @type {!OSPageVisibility}
+       */
+      pageVisibility: Object,
+
+      /**
+       * Authentication token.
+       * @private {!chrome.quickUnlockPrivate.TokenInfo|undefined}
+       */
+      authToken_: {
+        type: Object,
+        observer: 'onAuthTokenChanged_',
+      },
+
+      /**
+       * The current profile icon URL. Usually a data:image/png URL.
+       * @private
+       */
+      profileIconUrl_: String,
+
+      /**
+       * The current profile name, e.g. "John Cena".
+       * @private
+       */
+      profileName_: String,
+
+      /**
+       * The current profile email, e.g. "john.cena@gmail.com".
+       * @private
+       */
+      profileEmail_: String,
+
+      /**
+       * The label may contain additional text, for example:
+       * "john.cena@gmail, + 2 more accounts".
+       * @private
+       */
+      profileLabel_: String,
+
+      /** @private */
+      showSignoutDialog_: Boolean,
+
+      /**
+       * True if fingerprint settings should be displayed on this machine.
+       * @private
+       */
+      fingerprintUnlockEnabled_: {
+        type: Boolean,
+        value() {
+          return loadTimeData.getBoolean('fingerprintUnlockEnabled');
+        },
+        readOnly: true,
+      },
+
+      /**
+       * True if Chrome OS Account Manager is enabled.
+       * @private
+       */
+      isAccountManagerEnabled_: {
+        type: Boolean,
+        value() {
+          return loadTimeData.getBoolean('isAccountManagerEnabled');
+        },
+        readOnly: true,
+      },
+
+      /** @private */
+      showParentalControls_: {
+        type: Boolean,
+        value() {
+          return loadTimeData.valueExists('showParentalControls') &&
+              loadTimeData.getBoolean('showParentalControls');
+        },
+      },
+
+      /** @private {!Map<string, string>} */
+      focusConfig_: {
+        type: Object,
+        value() {
+          const map = new Map();
+          if (routes.SYNC) {
+            map.set(routes.SYNC.path, '#sync-setup');
+          }
+          if (routes.LOCK_SCREEN) {
+            map.set(routes.LOCK_SCREEN.path, '#lock-screen-subpage-trigger');
+          }
+          if (routes.ACCOUNTS) {
+            map.set(
+                routes.ACCOUNTS.path, '#manage-other-people-subpage-trigger');
+          }
+          if (routes.ACCOUNT_MANAGER) {
+            map.set(
+                routes.ACCOUNT_MANAGER.path,
+                '#account-manager-subpage-trigger');
+          }
+          return map;
+        },
+      },
+
+      /** @private {boolean} */
+      showPasswordPromptDialog_: {
+        type: Boolean,
+        value: false,
+      },
+
+      /**
+       * setModes_ is a partially applied function that stores the current auth
+       * token. It's defined only when the user has entered a valid password.
+       * @type {Object|undefined}
+       * @private
+       */
+      setModes_: {
+        type: Object,
+      },
+
+      /**
+       * Used by DeepLinkingBehavior to focus this page's deep links.
+       * @type {!Set<!chromeos.settings.mojom.Setting>}
+       */
+      supportedSettingIds: {
+        type: Object,
+        value: () => new Set([
+          chromeos.settings.mojom.Setting.kSetUpParentalControls,
+
+          // Perform Sync page deep links here since it's a shared page.
+          chromeos.settings.mojom.Setting.kNonSplitSyncEncryptionOptions,
+          chromeos.settings.mojom.Setting.kAutocompleteSearchesAndUrls,
+          chromeos.settings.mojom.Setting.kMakeSearchesAndBrowsingBetter,
+          chromeos.settings.mojom.Setting.kGoogleDriveSearchSuggestions,
+        ]),
+      },
+
+    };
+  }
+
+  constructor() {
+    super();
+
+    /** @private {!SyncBrowserProxy} */
+    this.syncBrowserProxy_ = SyncBrowserProxyImpl.getInstance();
 
     /**
-     * True if Chrome OS Account Manager is enabled.
-     * @private
+     * The timeout ID to pass to clearTimeout() to cancel auth token
+     * invalidation.
+     * @private {number|undefined}
      */
-    isAccountManagerEnabled_: {
-      type: Boolean,
-      value() {
-        return loadTimeData.getBoolean('isAccountManagerEnabled');
-      },
-      readOnly: true,
-    },
-
-    /** @private */
-    showParentalControls_: {
-      type: Boolean,
-      value() {
-        return loadTimeData.valueExists('showParentalControls') &&
-            loadTimeData.getBoolean('showParentalControls');
-      },
-    },
-
-    /** @private {!Map<string, string>} */
-    focusConfig_: {
-      type: Object,
-      value() {
-        const map = new Map();
-        if (settings.routes.SYNC) {
-          map.set(settings.routes.SYNC.path, '#sync-setup');
-        }
-        if (settings.routes.LOCK_SCREEN) {
-          map.set(
-              settings.routes.LOCK_SCREEN.path, '#lock-screen-subpage-trigger');
-        }
-        if (settings.routes.ACCOUNTS) {
-          map.set(
-              settings.routes.ACCOUNTS.path,
-              '#manage-other-people-subpage-trigger');
-        }
-        if (settings.routes.ACCOUNT_MANAGER) {
-          map.set(
-              settings.routes.ACCOUNT_MANAGER.path,
-              '#account-manager-subpage-trigger');
-        }
-        return map;
-      },
-    },
-
-    /** @private {boolean} */
-    showPasswordPromptDialog_: {
-      type: Boolean,
-      value: false,
-    },
-
-    /**
-     * setModes_ is a partially applied function that stores the current auth
-     * token. It's defined only when the user has entered a valid password.
-     * @type {Object|undefined}
-     * @private
-     */
-    setModes_: {
-      type: Object,
-    },
-
-    /**
-     * Used by DeepLinkingBehavior to focus this page's deep links.
-     * @type {!Set<!chromeos.settings.mojom.Setting>}
-     */
-    supportedSettingIds: {
-      type: Object,
-      value: () => new Set([
-        chromeos.settings.mojom.Setting.kSetUpParentalControls,
-
-        // Perform Sync page deep links here since it's a shared page.
-        chromeos.settings.mojom.Setting.kNonSplitSyncEncryptionOptions,
-        chromeos.settings.mojom.Setting.kAutocompleteSearchesAndUrls,
-        chromeos.settings.mojom.Setting.kMakeSearchesAndBrowsingBetter,
-        chromeos.settings.mojom.Setting.kGoogleDriveSearchSuggestions,
-      ]),
-    },
-  },
-
-  /** @private {?settings.SyncBrowserProxy} */
-  syncBrowserProxy_: null,
+    this.clearAccountPasswordTimeoutId_ = undefined;
+  }
 
   /** @override */
-  attached() {
+  connectedCallback() {
+    super.connectedCallback();
+
     if (this.isAccountManagerEnabled_) {
       // If we have the Google Account manager, use GAIA name and icon.
       this.addWebUIListener(
@@ -188,37 +259,36 @@ Polymer({
       this.updateAccounts_();
     } else {
       // Otherwise use the Profile name and icon.
-      settings.ProfileInfoBrowserProxyImpl.getInstance().getProfileInfo().then(
+      ProfileInfoBrowserProxyImpl.getInstance().getProfileInfo().then(
           this.handleProfileInfo_.bind(this));
       this.addWebUIListener(
           'profile-info-changed', this.handleProfileInfo_.bind(this));
     }
 
-    this.syncBrowserProxy_ = settings.SyncBrowserProxyImpl.getInstance();
     this.syncBrowserProxy_.getSyncStatus().then(
         this.handleSyncStatus_.bind(this));
     this.addWebUIListener(
         'sync-status-changed', this.handleSyncStatus_.bind(this));
-  },
+  }
 
   /** @private */
   onPasswordRequested_() {
     this.showPasswordPromptDialog_ = true;
-  },
+  }
 
   // Invalidate the token to trigger a password re-prompt. Used for PIN auto
   // submit when too many attempts were made when using PrefStore based PIN.
   onInvalidateTokenRequested_() {
     this.authToken_ = undefined;
-  },
+  }
 
   /** @private */
   onPasswordPromptDialogClose_() {
     this.showPasswordPromptDialog_ = false;
     if (!this.setModes_) {
-      settings.Router.getInstance().navigateToPreviousRoute();
+      Router.getInstance().navigateToPreviousRoute();
     }
-  },
+  }
 
   /**
    * Helper function for manually showing deep links on this page.
@@ -228,7 +298,7 @@ Polymer({
    */
   afterRenderShowDeepLink_(settingId, getElementCallback) {
     // Wait for element to load.
-    Polymer.RenderStatus.afterNextRender(this, () => {
+    afterNextRender(this, () => {
       const deepLinkElement = getElementCallback();
       if (!deepLinkElement || deepLinkElement.hidden) {
         console.warn(`Element with deep link id ${settingId} not focusable.`);
@@ -236,7 +306,7 @@ Polymer({
       }
       this.showDeepLinkElement(deepLinkElement);
     });
-  },
+  }
 
   /**
    * Overridden from DeepLinkingBehavior.
@@ -250,7 +320,8 @@ Polymer({
         this.afterRenderShowDeepLink_(settingId, () => {
           const parentalPage =
               /** @type {?SettingsParentalControlsPageElement} */ (
-                  this.$$('settings-parental-controls-page'));
+                  this.shadowRoot.querySelector(
+                      'settings-parental-controls-page'));
           return parentalPage && parentalPage.getSetupButton();
         });
         // Stop deep link attempt since we completed it manually.
@@ -261,10 +332,10 @@ Polymer({
       case chromeos.settings.mojom.Setting.kNonSplitSyncEncryptionOptions:
         this.afterRenderShowDeepLink_(settingId, () => {
           const syncPage = /** @type {?SettingsSyncPageElement} */ (
-              this.$$('settings-sync-page'));
+              this.shadowRoot.querySelector('settings-sync-page'));
           // Expand the encryption collapse.
           syncPage.forceEncryptionExpanded = true;
-          Polymer.dom.flush();
+          flush();
           return syncPage && syncPage.getEncryptionOptions() &&
               syncPage.getEncryptionOptions().getEncryptionsRadioButtons();
         });
@@ -273,7 +344,7 @@ Polymer({
       case chromeos.settings.mojom.Setting.kAutocompleteSearchesAndUrls:
         this.afterRenderShowDeepLink_(settingId, () => {
           const syncPage = /** @type {?SettingsSyncPageElement} */ (
-              this.$$('settings-sync-page'));
+              this.shadowRoot.querySelector('settings-sync-page'));
           return syncPage && syncPage.getPersonalizationOptions() &&
               syncPage.getPersonalizationOptions().getSearchSuggestToggle();
         });
@@ -282,7 +353,7 @@ Polymer({
       case chromeos.settings.mojom.Setting.kMakeSearchesAndBrowsingBetter:
         this.afterRenderShowDeepLink_(settingId, () => {
           const syncPage = /** @type {?SettingsSyncPageElement} */ (
-              this.$$('settings-sync-page'));
+              this.shadowRoot.querySelector('settings-sync-page'));
           return syncPage && syncPage.getPersonalizationOptions() &&
               syncPage.getPersonalizationOptions().getUrlCollectionToggle();
         });
@@ -291,7 +362,7 @@ Polymer({
       case chromeos.settings.mojom.Setting.kGoogleDriveSearchSuggestions:
         this.afterRenderShowDeepLink_(settingId, () => {
           const syncPage = /** @type {?SettingsSyncPageElement} */ (
-              this.$$('settings-sync-page'));
+              this.shadowRoot.querySelector('settings-sync-page'));
           return syncPage && syncPage.getPersonalizationOptions() &&
               syncPage.getPersonalizationOptions().getDriveSuggestToggle();
         });
@@ -301,22 +372,21 @@ Polymer({
         // Continue with deep linking attempt.
         return true;
     }
-  },
+  }
 
   /**
-   * settings.RouteObserverBehavior
-   * @param {!settings.Route} route
-   * @param {!settings.Route} oldRoute
+   * RouteObserverBehavior
+   * @param {!Route} route
+   * @param {!Route=} oldRoute
    * @protected
    */
   currentRouteChanged(route, oldRoute) {
-    if (settings.Router.getInstance().getCurrentRoute() ===
-        settings.routes.OS_SIGN_OUT) {
+    if (Router.getInstance().getCurrentRoute() === routes.OS_SIGN_OUT) {
       // If the sync status has not been fetched yet, optimistically display
       // the sign-out dialog. There is another check when the sync status is
       // fetched. The dialog will be closed when the user is not signed in.
       if (this.syncStatus && !this.syncStatus.signedIn) {
-        settings.Router.getInstance().navigateToPreviousRoute();
+        Router.getInstance().navigateToPreviousRoute();
       } else {
         this.showSignoutDialog_ = true;
       }
@@ -324,10 +394,10 @@ Polymer({
 
     // The old sync page is a shared subpage, so we handle deep links for
     // both this page and the sync page. Not ideal.
-    if (route === settings.routes.SYNC || route === settings.routes.OS_PEOPLE) {
+    if (route === routes.SYNC || route === routes.OS_PEOPLE) {
       this.attemptDeepLink();
     }
-  },
+  }
 
   /**
    * @param {!CustomEvent<!chrome.quickUnlockPrivate.TokenInfo>} e
@@ -335,7 +405,7 @@ Polymer({
    * */
   onAuthTokenObtained_(e) {
     this.authToken_ = e.detail;
-  },
+  }
 
   /**
    * @return {string}
@@ -347,32 +417,31 @@ Polymer({
       return this.syncStatus.statusText;
     }
     return '';
-  },
+  }
 
   /**
    * Handler for when the profile's icon and name is updated.
    * @private
-   * @param {!settings.ProfileInfo} info
+   * @param {!ProfileInfo} info
    */
   handleProfileInfo_(info) {
     this.profileName_ = info.name;
     // Extract first frame from image by creating a single frame PNG using
     // url as input if base64 encoded and potentially animated.
     if (info.iconUrl.startsWith('data:image/png;base64')) {
-      this.profileIconUrl_ = cr.png.convertImageSequenceToPng([info.iconUrl]);
+      this.profileIconUrl_ = convertImageSequenceToPng([info.iconUrl]);
       return;
     }
     this.profileIconUrl_ = info.iconUrl;
-  },
+  }
 
   /**
    * Handler for when the account list is updated.
    * @private
    */
-  updateAccounts_: async function() {
-    const /** @type {!Array<settings.Account>} */ accounts =
-        await settings.AccountManagerBrowserProxyImpl.getInstance()
-            .getAccounts();
+  async updateAccounts_() {
+    const /** @type {!Array<Account>} */ accounts =
+        await AccountManagerBrowserProxyImpl.getInstance().getAccounts();
     // The user might not have any GAIA accounts (e.g. guest mode or Active
     // Directory). In these cases the profile row is hidden, so there's nothing
     // to do.
@@ -384,25 +453,25 @@ Polymer({
     this.profileIconUrl_ = accounts[0].pic;
 
     await this.setProfileLabel(accounts);
-  },
+  }
 
   /**
-   * @param {!Array<settings.Account>} accounts
+   * @param {!Array<Account>} accounts
    * @private
    */
   async setProfileLabel(accounts) {
     // Template: "$1 Google accounts" with correct plural of "account".
-    const labelTemplate = await cr.sendWithPromise(
+    const labelTemplate = await sendWithPromise(
         'getPluralString', 'profileLabel', accounts.length);
 
     // Final output: "X Google accounts"
     this.profileLabel_ = loadTimeData.substituteString(
         labelTemplate, accounts[0].email, accounts.length);
-  },
+  }
 
   /**
    * Handler for when the sync state is pushed from the browser.
-   * @param {?settings.SyncStatus} syncStatus
+   * @param {?SyncStatus} syncStatus
    * @private
    */
   handleSyncStatus_(syncStatus) {
@@ -414,29 +483,28 @@ Polymer({
         syncStatus.signedInUsername) {
       this.profileLabel_ = syncStatus.signedInUsername;
     }
-  },
+  }
 
   /** @private */
   onDisconnectDialogClosed_(e) {
     this.showSignoutDialog_ = false;
-    cr.ui.focusWithoutInk(assert(this.$$('#disconnectButton')));
+    focusWithoutInk(assert(this.shadowRoot.querySelector('#disconnectButton')));
 
-    if (settings.Router.getInstance().getCurrentRoute() ===
-        settings.routes.OS_SIGN_OUT) {
-      settings.Router.getInstance().navigateToPreviousRoute();
+    if (Router.getInstance().getCurrentRoute() === routes.OS_SIGN_OUT) {
+      Router.getInstance().navigateToPreviousRoute();
     }
-  },
+  }
 
   /** @private */
   onDisconnectTap_() {
-    settings.Router.getInstance().navigateTo(settings.routes.OS_SIGN_OUT);
-  },
+    Router.getInstance().navigateTo(routes.OS_SIGN_OUT);
+  }
 
   /** @private */
   onSyncTap_() {
     // Users can go to sync subpage regardless of sync status.
-    settings.Router.getInstance().navigateTo(settings.routes.SYNC);
-  },
+    Router.getInstance().navigateTo(routes.SYNC);
+  }
 
   /**
    * @param {!Event} e
@@ -444,9 +512,9 @@ Polymer({
    */
   onAccountManagerTap_(e) {
     if (this.isAccountManagerEnabled_) {
-      settings.Router.getInstance().navigateTo(settings.routes.ACCOUNT_MANAGER);
+      Router.getInstance().navigateTo(routes.ACCOUNT_MANAGER);
     }
-  },
+  }
 
   /**
    * @param {string} iconUrl
@@ -454,8 +522,8 @@ Polymer({
    * @private
    */
   getIconImageSet_(iconUrl) {
-    return cr.icon.getImage(iconUrl);
-  },
+    return getImage(iconUrl);
+  }
 
   /**
    * @return {string}
@@ -466,23 +534,16 @@ Polymer({
       return loadTimeData.getString('osProfileName');
     }
     return this.profileName_;
-  },
+  }
 
   /**
-   * @param {!settings.SyncStatus} syncStatus
+   * @param {!SyncStatus} syncStatus
    * @return {boolean} Whether to show the "Sign in to Chrome" button.
    * @private
    */
   showSignin_(syncStatus) {
     return loadTimeData.getBoolean('signinAllowed') && !syncStatus.signedIn;
-  },
-
-  /**
-   * The timeout ID to pass to clearTimeout() to cancel auth token
-   * invalidation.
-   * @private {number|undefined}
-   */
-  clearAccountPasswordTimeoutId_: undefined,
+  }
 
   /** @private */
   onAuthTokenChanged_() {
@@ -503,7 +564,7 @@ Polymer({
       };
     }
 
-    if (this.clearAuthTokenTimeoutId_) {
+    if (this.clearAccountPasswordTimeoutId_) {
       clearTimeout(this.clearAccountPasswordTimeoutId_);
     }
     if (this.authToken_ === undefined) {
@@ -520,5 +581,8 @@ Polymer({
     this.clearAccountPasswordTimeoutId_ = setTimeout(() => {
       this.authToken_ = undefined;
     }, lifetimeMs);
-  },
-});
+  }
+}
+
+customElements.define(
+    OsSettingsPeoplePageElement.is, OsSettingsPeoplePageElement);

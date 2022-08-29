@@ -17,6 +17,7 @@
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/tether/tether_service.h"
+#include "chrome/browser/chromeos/extensions/vpn_provider/vpn_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
@@ -28,8 +29,6 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
-#include "extensions/browser/api/vpn_provider/vpn_service.h"
-#include "extensions/browser/api/vpn_provider/vpn_service_factory.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/events/event_constants.h"
 
@@ -78,24 +77,24 @@ InternetHandler::~InternetHandler() {
 }
 
 void InternetHandler::RegisterMessages() {
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       kAddThirdPartyVpnMessage,
       base::BindRepeating(&InternetHandler::AddThirdPartyVpn,
                           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       kConfigureThirdPartyVpnMessage,
       base::BindRepeating(&InternetHandler::ConfigureThirdPartyVpn,
                           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       kRequestGmsCoreNotificationsDisabledDeviceNames,
       base::BindRepeating(
           &InternetHandler::RequestGmsCoreNotificationsDisabledDeviceNames,
           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       kShowCarrierAccountDetail,
       base::BindRepeating(&InternetHandler::ShowCarrierAccountDetail,
                           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       kShowCellularSetupUI,
       base::BindRepeating(&InternetHandler::ShowCellularSetupUI,
                           base::Unretained(this)));
@@ -109,12 +108,12 @@ void InternetHandler::OnGmsCoreNotificationStateChanged() {
   SetGmsCoreNotificationsDisabledDeviceNames();
 }
 
-void InternetHandler::AddThirdPartyVpn(const base::ListValue* args) {
-  if (args->GetList().size() < 1 || !args->GetList()[0].is_string()) {
+void InternetHandler::AddThirdPartyVpn(const base::Value::List& args) {
+  if (args.size() < 1 || !args[0].is_string()) {
     NOTREACHED() << "Invalid args for: " << kAddThirdPartyVpnMessage;
     return;
   }
-  const std::string& app_id = args->GetList()[0].GetString();
+  const std::string& app_id = args[0].GetString();
   if (app_id.empty()) {
     NET_LOG(ERROR) << "Empty app id for " << kAddThirdPartyVpnMessage;
     return;
@@ -145,12 +144,12 @@ void InternetHandler::AddThirdPartyVpn(const base::ListValue* args) {
       ->SendShowAddDialogToExtension(app_id);
 }
 
-void InternetHandler::ConfigureThirdPartyVpn(const base::ListValue* args) {
-  if (args->GetList().size() < 1 || !args->GetList()[0].is_string()) {
+void InternetHandler::ConfigureThirdPartyVpn(const base::Value::List& args) {
+  if (args.size() < 1 || !args[0].is_string()) {
     NOTREACHED() << "Invalid args for: " << kConfigureThirdPartyVpnMessage;
     return;
   }
-  const std::string& guid = args->GetList()[0].GetString();
+  const std::string& guid = args[0].GetString();
   if (profile_ != GetProfileForPrimaryUser()) {
     NET_LOG(ERROR) << "Only the primary user can configure VPNs";
     return;
@@ -200,26 +199,26 @@ void InternetHandler::ConfigureThirdPartyVpn(const base::ListValue* args) {
 }
 
 void InternetHandler::RequestGmsCoreNotificationsDisabledDeviceNames(
-    const base::ListValue* args) {
+    const base::Value::List& args) {
   AllowJavascript();
   SetGmsCoreNotificationsDisabledDeviceNames();
 }
 
-void InternetHandler::ShowCarrierAccountDetail(const base::ListValue* args) {
-  if (args->GetList().size() < 1 || !args->GetList()[0].is_string()) {
+void InternetHandler::ShowCarrierAccountDetail(const base::Value::List& args) {
+  if (args.size() < 1 || !args[0].is_string()) {
     NOTREACHED() << "Invalid args for: " << kShowCarrierAccountDetail;
     return;
   }
-  const std::string& guid = args->GetList()[0].GetString();
+  const std::string& guid = args[0].GetString();
   chromeos::NetworkConnect::Get()->ShowCarrierAccountDetail(guid);
 }
 
-void InternetHandler::ShowCellularSetupUI(const base::ListValue* args) {
-  if (args->GetList().size() < 1 || !args->GetList()[0].is_string()) {
+void InternetHandler::ShowCellularSetupUI(const base::Value::List& args) {
+  if (args.size() < 1 || !args[0].is_string()) {
     NOTREACHED() << "Invalid args for: " << kConfigureThirdPartyVpnMessage;
     return;
   }
-  const std::string& guid = args->GetList()[0].GetString();
+  const std::string& guid = args[0].GetString();
   chromeos::NetworkConnect::Get()->ShowMobileSetup(guid);
 }
 
@@ -237,8 +236,7 @@ void InternetHandler::SetGmsCoreNotificationsDisabledDeviceNames() {
       gms_core_notifications_state_tracker_
           ->GetGmsCoreNotificationsDisabledDeviceNames();
   for (const auto& device_name : device_names) {
-    device_names_without_notifications_.emplace_back(
-        std::make_unique<base::Value>(device_name));
+    device_names_without_notifications_.emplace_back(base::Value(device_name));
   }
   SendGmsCoreNotificationsDisabledDeviceNames();
 }
@@ -249,7 +247,7 @@ void InternetHandler::SendGmsCoreNotificationsDisabledDeviceNames() {
 
   base::ListValue device_names_value;
   for (const auto& device_name : device_names_without_notifications_)
-    device_names_value.Append(device_name->Clone());
+    device_names_value.Append(device_name.Clone());
 
   FireWebUIListener(kSendGmsCoreNotificationsDisabledDeviceNames,
                     device_names_value);

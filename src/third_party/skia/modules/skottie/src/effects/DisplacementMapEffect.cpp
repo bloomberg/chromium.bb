@@ -7,6 +7,7 @@
 
 #include "modules/skottie/src/effects/Effects.h"
 
+#include "include/core/SkCanvas.h"
 #include "include/core/SkPictureRecorder.h"
 #include "include/effects/SkColorMatrix.h"
 #include "include/effects/SkImageFilters.h"
@@ -237,7 +238,7 @@ private:
         builder.uniform("selector_offset") = selector_o;
 
         // TODO: RGB->HSL stage
-        return builder.makeShader(nullptr, false);
+        return builder.makeShader();
     }
 
     SkRect onRevalidate(sksg::InvalidationController* ic, const SkMatrix& ctm) override {

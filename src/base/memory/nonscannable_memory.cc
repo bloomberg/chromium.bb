@@ -38,11 +38,12 @@ void* NonScannableAllocatorImpl<Quarantinable>::Alloc(size_t size) {
   // TODO(bikineev): Change to LIKELY once PCScan is enabled by default.
   if (UNLIKELY(pcscan_enabled_.load(std::memory_order_acquire))) {
     PA_DCHECK(allocator_.get());
-    return allocator_->root()->AllocFlagsNoHooks(0, size, PartitionPageSize());
+    return allocator_->root()->AllocWithFlagsNoHooks(
+        0, size, partition_alloc::PartitionPageSize());
   }
   // Otherwise, dispatch to default partition.
-  return PartitionAllocMalloc::Allocator()->AllocFlagsNoHooks(
-      0, size, PartitionPageSize());
+  return PartitionAllocMalloc::Allocator()->AllocWithFlagsNoHooks(
+      0, size, partition_alloc::PartitionPageSize());
 }
 
 template <bool Quarantinable>
@@ -52,19 +53,16 @@ void NonScannableAllocatorImpl<Quarantinable>::Free(void* ptr) {
 
 template <bool Quarantinable>
 void NonScannableAllocatorImpl<Quarantinable>::NotifyPCScanEnabled() {
-  base::PartitionOptions::LazyCommit lazy_commit =
-      base::FeatureList::IsEnabled(base::features::kPartitionAllocLazyCommit)
-          ? base::PartitionOptions::LazyCommit::kEnabled
-          : base::PartitionOptions::LazyCommit::kDisabled;
   allocator_.reset(MakePCScanMetadata<base::PartitionAllocator>());
-  allocator_->init(PartitionOptions(
+  allocator_->init({
       PartitionOptions::AlignedAlloc::kDisallowed,
       PartitionOptions::ThreadCache::kDisabled,
       Quarantinable ? PartitionOptions::Quarantine::kAllowed
                     : PartitionOptions::Quarantine::kDisallowed,
       PartitionOptions::Cookie::kAllowed,
       PartitionOptions::BackupRefPtr::kDisabled,
-      PartitionOptions::UseConfigurablePool::kNo, lazy_commit));
+      PartitionOptions::UseConfigurablePool::kNo,
+  });
   if (Quarantinable)
     PCScan::RegisterNonScannableRoot(allocator_->root());
   pcscan_enabled_.store(true, std::memory_order_release);

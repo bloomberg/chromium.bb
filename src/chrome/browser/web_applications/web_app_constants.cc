@@ -7,9 +7,11 @@
 #include <ostream>
 
 #include "base/compiler_specific.h"
+#include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/common/chrome_features.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "content/public/common/content_features.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace web_app {
 
@@ -28,7 +30,7 @@ DisplayMode ResolveAppDisplayModeForStandaloneLaunchContainer(
       return DisplayMode::kMinimalUi;
     case DisplayMode::kUndefined:
       NOTREACHED();
-      FALLTHROUGH;
+      [[fallthrough]];
     case DisplayMode::kStandalone:
     case DisplayMode::kFullscreen:
       return DisplayMode::kStandalone;
@@ -43,21 +45,22 @@ DisplayMode ResolveAppDisplayModeForStandaloneLaunchContainer(
 }
 }  // namespace
 
-static_assert(Source::kMinValue == 0, "Source enum should be zero based");
+static_assert(WebAppManagement::kMinValue == 0,
+              "Source enum should be zero based");
 
-std::ostream& operator<<(std::ostream& os, Source::Type type) {
+std::ostream& operator<<(std::ostream& os, WebAppManagement::Type type) {
   switch (type) {
-    case Source::Type::kSystem:
+    case WebAppManagement::Type::kSystem:
       return os << "System";
-    case Source::Type::kPolicy:
+    case WebAppManagement::Type::kPolicy:
       return os << "Policy";
-    case Source::Type::kSubApp:
+    case WebAppManagement::Type::kSubApp:
       return os << "SubApp";
-    case Source::Type::kWebAppStore:
+    case WebAppManagement::Type::kWebAppStore:
       return os << "WebAppStore";
-    case Source::Type::kSync:
+    case WebAppManagement::Type::kSync:
       return os << "Sync";
-    case Source::Type::kDefault:
+    case WebAppManagement::Type::kDefault:
       return os << "Default";
   }
 }
@@ -65,105 +68,73 @@ std::ostream& operator<<(std::ostream& os, Source::Type type) {
 static_assert(OsHookType::kShortcuts == 0,
               "OsHookType enum should be zero based");
 
-bool IsSuccess(InstallResultCode code) {
-  switch (code) {
-    case InstallResultCode::kSuccessNewInstall:
-    case InstallResultCode::kSuccessAlreadyInstalled:
-    case InstallResultCode::kSuccessOfflineOnlyInstall:
-    case InstallResultCode::kSuccessOfflineFallbackInstall:
-      return true;
-    default:
-      return false;
+namespace {
+
+absl::optional<DisplayMode> TryResolveUserDisplayMode(
+    UserDisplayMode user_display_mode) {
+  switch (user_display_mode) {
+    case UserDisplayMode::kBrowser:
+      return DisplayMode::kBrowser;
+    case UserDisplayMode::kTabbed:
+      if (base::FeatureList::IsEnabled(features::kDesktopPWAsTabStripSettings))
+        return DisplayMode::kTabbed;
+      // Treat as standalone.
+      [[fallthrough]];
+    case UserDisplayMode::kStandalone:
+      break;
   }
+
+  return absl::nullopt;
 }
 
-bool IsNewInstall(InstallResultCode code) {
-  return IsSuccess(code) && code != InstallResultCode::kSuccessAlreadyInstalled;
+absl::optional<DisplayMode> TryResolveOverridesDisplayMode(
+    const std::vector<DisplayMode>& display_mode_overrides) {
+  for (DisplayMode override_display_mode : display_mode_overrides) {
+    DisplayMode resolved_display_mode =
+        ResolveAppDisplayModeForStandaloneLaunchContainer(
+            override_display_mode);
+    if (override_display_mode == resolved_display_mode) {
+      return resolved_display_mode;
+    }
+  }
+
+  return absl::nullopt;
 }
 
-std::ostream& operator<<(std::ostream& os, InstallResultCode code) {
-  switch (code) {
-    case InstallResultCode::kSuccessNewInstall:
-      return os << "kSuccessNewInstall";
-    case InstallResultCode::kSuccessAlreadyInstalled:
-      return os << "kSuccessAlreadyInstalled";
-    case InstallResultCode::kGetWebApplicationInfoFailed:
-      return os << "kGetWebApplicationInfoFailed";
-    case InstallResultCode::kPreviouslyUninstalled:
-      return os << "kPreviouslyUninstalled";
-    case InstallResultCode::kWebContentsDestroyed:
-      return os << "kWebContentsDestroyed";
-    case InstallResultCode::kInstallTaskDestroyed:
-      return os << "kInstallTaskDestroyed";
-    case InstallResultCode::kWriteDataFailed:
-      return os << "kWriteDataFailed";
-    case InstallResultCode::kUserInstallDeclined:
-      return os << "kUserInstallDeclined";
-    case InstallResultCode::kNotValidManifestForWebApp:
-      return os << "kNotValidManifestForWebApp";
-    case InstallResultCode::kIntentToPlayStore:
-      return os << "kIntentToPlayStore";
-    case InstallResultCode::kWebAppDisabled:
-      return os << "kWebAppDisabled";
-    case InstallResultCode::kInstallURLRedirected:
-      return os << "kInstallURLRedirected";
-    case InstallResultCode::kInstallURLLoadFailed:
-      return os << "kInstallURLLoadFailed";
-    case InstallResultCode::kExpectedAppIdCheckFailed:
-      return os << "kExpectedAppIdCheckFailed";
-    case InstallResultCode::kInstallURLLoadTimeOut:
-      return os << "kInstallURLLoadTimeOut";
-    case InstallResultCode::kFailedPlaceholderUninstall:
-      return os << "kFailedPlaceholderUninstall";
-    case InstallResultCode::kNotInstallable:
-      return os << "kNotInstallable";
-    case InstallResultCode::kApkWebAppInstallFailed:
-      return os << "kApkWebAppInstallFailed";
-    case InstallResultCode::kCancelledOnWebAppProviderShuttingDown:
-      return os << "kCancelledOnWebAppProviderShuttingDown";
-    case InstallResultCode::kWebAppProviderNotReady:
-      return os << "kWebAppProviderNotReady";
-    case InstallResultCode::kSuccessOfflineOnlyInstall:
-      return os << "kSuccessOfflineOnlyInstall";
-    case InstallResultCode::kSuccessOfflineFallbackInstall:
-      return os << "kSuccessOfflineFallbackInstall";
-    case InstallResultCode::kUpdateTaskFailed:
-      return os << "kUpdateTaskFailed";
+DisplayMode ResolveNonIsolatedEffectiveDisplayMode(
+    DisplayMode app_display_mode,
+    const std::vector<DisplayMode>& display_mode_overrides,
+    UserDisplayMode user_display_mode) {
+  const absl::optional<DisplayMode> resolved_display_mode =
+      TryResolveUserDisplayMode(user_display_mode);
+  if (resolved_display_mode.has_value()) {
+    return *resolved_display_mode;
   }
+
+  const absl::optional<DisplayMode> resolved_override_display_mode =
+      TryResolveOverridesDisplayMode(display_mode_overrides);
+  if (resolved_override_display_mode.has_value()) {
+    return *resolved_override_display_mode;
+  }
+
+  return ResolveAppDisplayModeForStandaloneLaunchContainer(app_display_mode);
 }
+
+}  // namespace
 
 DisplayMode ResolveEffectiveDisplayMode(
     DisplayMode app_display_mode,
     const std::vector<DisplayMode>& app_display_mode_overrides,
-    DisplayMode user_display_mode) {
-  switch (user_display_mode) {
-    case DisplayMode::kBrowser:
-      return user_display_mode;
-    case DisplayMode::kUndefined:
-    case DisplayMode::kMinimalUi:
-    case DisplayMode::kFullscreen:
-    case DisplayMode::kWindowControlsOverlay:
-      NOTREACHED();
-      FALLTHROUGH;
-    case DisplayMode::kTabbed:
-      if (base::FeatureList::IsEnabled(features::kDesktopPWAsTabStripSettings))
-        return user_display_mode;
-      // Treat as standalone.
-      FALLTHROUGH;
-    case DisplayMode::kStandalone:
-      break;
+    UserDisplayMode user_display_mode,
+    bool is_isolated) {
+  const DisplayMode resolved_display_mode =
+      ResolveNonIsolatedEffectiveDisplayMode(
+          app_display_mode, app_display_mode_overrides, user_display_mode);
+  if (is_isolated && resolved_display_mode == DisplayMode::kBrowser) {
+    return DisplayMode::kStandalone;
   }
 
-  for (const DisplayMode& app_display_mode_override :
-       app_display_mode_overrides) {
-    DisplayMode resolved_display_mode =
-        ResolveAppDisplayModeForStandaloneLaunchContainer(
-            app_display_mode_override);
-    if (resolved_display_mode == app_display_mode_override)
-      return resolved_display_mode;
-  }
-
-  return ResolveAppDisplayModeForStandaloneLaunchContainer(app_display_mode);
+  return resolved_display_mode;
 }
 
 apps::mojom::LaunchContainer ConvertDisplayModeToAppLaunchContainer(
@@ -190,6 +161,18 @@ std::string RunOnOsLoginModeToString(RunOnOsLoginMode mode) {
       return "minimized";
     case RunOnOsLoginMode::kNotRun:
       return "not run";
+  }
+}
+
+apps::RunOnOsLoginMode ConvertOsLoginMode(
+    web_app::RunOnOsLoginMode login_mode) {
+  switch (login_mode) {
+    case web_app::RunOnOsLoginMode::kWindowed:
+      return apps::RunOnOsLoginMode::kWindowed;
+    case web_app::RunOnOsLoginMode::kNotRun:
+      return apps::RunOnOsLoginMode::kNotRun;
+    case web_app::RunOnOsLoginMode::kMinimized:
+      return apps::RunOnOsLoginMode::kUnknown;
   }
 }
 

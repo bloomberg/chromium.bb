@@ -49,13 +49,14 @@ WebContentsVideoCaptureDevice::Create(const std::string& device_id) {
 
 void WebContentsVideoCaptureDevice::Crop(
     const base::Token& crop_id,
+    uint32_t crop_version,
     base::OnceCallback<void(media::mojom::CropRequestResult)> callback) {
   DCHECK(callback);
 
   GetUIThreadTaskRunner({})->PostTask(
       FROM_HERE,
       base::BindOnce(
-          [](const base::Token& crop_id,
+          [](const base::Token& crop_id, uint32_t crop_version,
              base::OnceCallback<void(media::mojom::CropRequestResult)> callback,
              base::WeakPtr<WebContentsFrameTracker> tracker) {
             if (!tracker) {
@@ -63,9 +64,28 @@ void WebContentsVideoCaptureDevice::Crop(
                   media::mojom::CropRequestResult::kErrorGeneric);
               return;
             }
-            tracker->Crop(crop_id, std::move(callback));
+            tracker->Crop(crop_id, crop_version, std::move(callback));
           },
-          crop_id, std::move(callback), tracker_->AsWeakPtr()));
+          crop_id, crop_version, std::move(callback), tracker_->AsWeakPtr()));
+}
+
+void WebContentsVideoCaptureDevice::OnFrameCaptured(
+    media::mojom::VideoBufferHandlePtr data,
+    media::mojom::VideoFrameInfoPtr info,
+    const gfx::Rect& content_rect,
+    mojo::PendingRemote<viz::mojom::FrameSinkVideoConsumerFrameCallbacks>
+        callbacks) {
+  const gfx::Size new_size = content_rect.size();
+  if (new_size != content_size_) {
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
+        base::BindOnce(&WebContentsFrameTracker::SetCapturedContentSize,
+                       tracker_->AsWeakPtr(), content_rect.size()));
+    content_size_ = new_size;
+  }
+
+  FrameSinkVideoCaptureDevice::OnFrameCaptured(
+      std::move(data), std::move(info), content_rect, std::move(callbacks));
 }
 
 WebContentsVideoCaptureDevice::WebContentsVideoCaptureDevice() = default;

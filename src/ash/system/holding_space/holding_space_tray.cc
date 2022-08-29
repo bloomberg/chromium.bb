@@ -20,10 +20,11 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/holding_space/holding_space_animation_registry.h"
-#include "ash/system/holding_space/holding_space_progress_ring.h"
+#include "ash/system/holding_space/holding_space_progress_indicator_util.h"
 #include "ash/system/holding_space/holding_space_tray_bubble.h"
 #include "ash/system/holding_space/holding_space_tray_icon.h"
 #include "ash/system/holding_space/pinned_files_section.h"
+#include "ash/system/progress_indicator/progress_indicator.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_container.h"
 #include "base/bind.h"
@@ -42,7 +43,9 @@
 #include "ui/color/color_id.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/gfx/geometry/transform_util.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/animation/animation_builder.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/layout/fill_layout.h"
@@ -56,6 +59,13 @@ using ::ui::mojom::DragOperation;
 
 // Animation.
 constexpr base::TimeDelta kAnimationDuration = base::Milliseconds(167);
+constexpr base::TimeDelta kInProgressAnimationOpacityDuration =
+    base::Milliseconds(100);
+constexpr base::TimeDelta kInProgressAnimationScaleDelay =
+    base::Milliseconds(50);
+constexpr base::TimeDelta kInProgressAnimationScaleDuration =
+    base::Milliseconds(166);
+constexpr float kInProgressAnimationScaleFactor = 0.875f;
 
 // Helpers ---------------------------------------------------------------------
 
@@ -178,7 +188,8 @@ std::unique_ptr<views::ImageView> CreateDropTargetIcon() {
   auto icon = std::make_unique<views::ImageView>();
   icon->SetHorizontalAlignment(views::ImageView::Alignment::kCenter);
   icon->SetVerticalAlignment(views::ImageView::Alignment::kCenter);
-  icon->SetPreferredSize({kHoldingSpaceIconSize, kHoldingSpaceIconSize});
+  icon->SetPreferredSize(
+      gfx::Size(kHoldingSpaceIconSize, kHoldingSpaceIconSize));
   icon->SetPaintToLayer();
   icon->layer()->SetFillsBoundsOpaquely(false);
   return icon;
@@ -194,6 +205,20 @@ std::unique_ptr<views::View> CreateDropTargetOverlay() {
   drop_target_overlay->SetPaintToLayer();
   drop_target_overlay->layer()->SetFillsBoundsOpaquely(false);
   return drop_target_overlay;
+}
+
+// Returns the `aura::client::DragDropClient` for the given `widget`. Note that
+// this may return `nullptr` if the browser is performing its shutdown sequence.
+aura::client::DragDropClient* GetDragDropClient(views::Widget* widget) {
+  if (widget) {
+    auto* native_window = widget->GetNativeWindow();
+    if (native_window) {
+      auto* root_window = native_window->GetRootWindow();
+      if (root_window)
+        return aura::client::GetDragDropClient(root_window);
+    }
+  }
+  return nullptr;
 }
 
 }  // namespace
@@ -228,13 +253,23 @@ HoldingSpaceTray::HoldingSpaceTray(Shelf* shelf) : TrayBackgroundView(shelf) {
   drop_target_icon_ =
       drop_target_overlay_->AddChildView(CreateDropTargetIcon());
 
-  // Progress ring.
-  // NOTE: The `progress_ring_` will only be visible when:
+  // Progress indicator.
+  // NOTE: The `progress_indicator_` will only be visible when:
   //   * there is at least one in-progress item in the attached model, and
   //   * previews are hidden.
-  progress_ring_ = HoldingSpaceProgressRing::CreateForController(
-      HoldingSpaceController::Get());
-  layer()->Add(progress_ring_->layer());
+  progress_indicator_ =
+      holding_space_util::CreateProgressIndicatorForController(
+          HoldingSpaceController::Get());
+  layer()->Add(progress_indicator_->CreateLayer());
+
+  // Subscribe to receive notification of changes to the `progress_indicator_`'s
+  // underlying progress. When progress changes, the `default_tray_icon_` may
+  // need to be updated since it occupies the same space as the inner icon of
+  // the `progress_indicator_`.
+  progress_indicator_progress_changed_callback_list_subscription_ =
+      progress_indicator_->AddProgressChangedCallback(base::BindRepeating(
+          &HoldingSpaceTray::UpdateDefaultTrayIcon, base::Unretained(this)));
+  UpdateDefaultTrayIcon();
 
   // Enable context menu, which supports an action to toggle item previews.
   SetContextMenuEnabled(true);
@@ -373,19 +408,6 @@ int HoldingSpaceTray::OnDragUpdated(const ui::DropTargetEvent& event) {
              : ui::DragDropTypes::DRAG_COPY;
 }
 
-DragOperation HoldingSpaceTray::OnPerformDrop(
-    const ui::DropTargetEvent& event) {
-  std::vector<base::FilePath> unpinned_file_paths(
-      ExtractUnpinnedFilePaths(event.data()));
-  if (unpinned_file_paths.empty())
-    return DragOperation::kNone;
-
-  ui::mojom::DragOperation output_drag_op = DragOperation::kNone;
-  PerformDrop(std::move(unpinned_file_paths), event, output_drag_op);
-
-  return output_drag_op;
-}
-
 views::View::DropCallback HoldingSpaceTray::GetDropCallback(
     const ui::DropTargetEvent& event) {
   std::vector<base::FilePath> unpinned_file_paths(
@@ -422,10 +444,10 @@ void HoldingSpaceTray::Layout() {
   const gfx::Rect background_bounds(GetBackgroundBounds());
   drop_target_overlay_->SetBoundsRect(GetMirroredRect(background_bounds));
 
-  // The `progress_ring_` should also fill this view's bounds as they are
+  // The `progress_indicator_` should also fill this view's bounds as they are
   // perceived by the user, but these bounds do not need to be mirrored since
   // they are in layer coordinates.
-  progress_ring_->layer()->SetBounds(background_bounds);
+  progress_indicator_->layer()->SetBounds(background_bounds);
 }
 
 void HoldingSpaceTray::VisibilityChanged(views::View* starting_from,
@@ -437,11 +459,16 @@ void HoldingSpaceTray::VisibilityChanged(views::View* starting_from,
     return;
   }
 
+  // It's possible that the `drag_drop_client` might be `nullptr` if the browser
+  // is performing its shutdown sequence.
+  auto* drag_drop_client = GetDragDropClient(GetWidget());
+  if (!drag_drop_client)
+    return;
+
   // Observe drag/drop events only when visible. Since the observer is owned by
   // `this` view, it's safe to bind to a raw pointer.
   drag_drop_observer_ = std::make_unique<ScopedDragDropObserver>(
-      /*client=*/aura::client::GetDragDropClient(
-          GetWidget()->GetNativeWindow()->GetRootWindow()),
+      drag_drop_client,
       /*event_callback=*/base::BindRepeating(
           &HoldingSpaceTray::UpdateDropTargetState, base::Unretained(this)));
 }
@@ -460,8 +487,8 @@ void HoldingSpaceTray::OnThemeChanged() {
   drop_target_icon_->SetImage(
       gfx::CreateVectorIcon(views::kUnpinIcon, kHoldingSpaceIconSize, color));
 
-  // Progress ring.
-  progress_ring_->InvalidateLayer();
+  // Progress indicator.
+  progress_indicator_->InvalidateLayer();
 }
 
 void HoldingSpaceTray::UpdateVisibility() {
@@ -517,14 +544,16 @@ HoldingSpaceTray::CreateContextMenuModel() {
         static_cast<int>(HoldingSpaceCommandId::kHidePreviews),
         l10n_util::GetStringUTF16(
             IDS_ASH_HOLDING_SPACE_CONTEXT_MENU_HIDE_PREVIEWS),
-        ui::ImageModel::FromVectorIcon(kVisibilityOffIcon, ui::kColorMenuIcon,
+        ui::ImageModel::FromVectorIcon(kVisibilityOffIcon,
+                                       ui::kColorAshSystemUIMenuIcon,
                                        kHoldingSpaceIconSize));
   } else {
     context_menu_model->AddItemWithIcon(
         static_cast<int>(HoldingSpaceCommandId::kShowPreviews),
         l10n_util::GetStringUTF16(
             IDS_ASH_HOLDING_SPACE_CONTEXT_MENU_SHOW_PREVIEWS),
-        ui::ImageModel::FromVectorIcon(kVisibilityIcon, ui::kColorMenuIcon,
+        ui::ImageModel::FromVectorIcon(kVisibilityIcon,
+                                       ui::kColorAshSystemUIMenuIcon,
                                        kHoldingSpaceIconSize));
   }
 
@@ -660,6 +689,21 @@ void HoldingSpaceTray::ObservePrefService(PrefService* prefs) {
 void HoldingSpaceTray::UpdatePreviewsState() {
   UpdatePreviewsVisibility();
   SchedulePreviewsIconUpdate();
+
+  if (PreviewsShown())
+    return;
+
+  // When previews are shown, progress icon animations are started on completion
+  // of preview animations. When previews are *not* shown, there is nothing to
+  // wait for so progress icon animations should be started immediately.
+  if (auto* model = HoldingSpaceController::Get()->model(); model) {
+    auto* registry = HoldingSpaceAnimationRegistry::GetInstance();
+    for (const auto& item : model->items()) {
+      auto* animation = registry->GetProgressIconAnimationForKey(item.get());
+      if (animation && !animation->HasAnimated())
+        animation->Start();
+    }
+  }
 }
 
 void HoldingSpaceTray::UpdatePreviewsVisibility() {
@@ -672,7 +716,7 @@ void HoldingSpaceTray::UpdatePreviewsVisibility() {
 
   default_tray_icon_->SetVisible(!show_previews);
   previews_tray_icon_->SetVisible(show_previews);
-  progress_ring_->layer()->SetVisible(!show_previews);
+  progress_indicator_->layer()->SetVisible(!show_previews);
 
   if (!show_previews) {
     previews_tray_icon_->Clear();
@@ -716,6 +760,56 @@ void HoldingSpaceTray::UpdatePreviewsIcon() {
 
 bool HoldingSpaceTray::PreviewsShown() const {
   return previews_tray_icon_->GetVisible();
+}
+
+void HoldingSpaceTray::UpdateDefaultTrayIcon() {
+  const absl::optional<float>& progress = progress_indicator_->progress();
+
+  // If `progress` is not `complete`, there is potential for overlap between the
+  // `default_tray_icon_` and the `progress_indicator_`'s inner icon. To address
+  // this, hide the `default_tray_icon_` when `progress` is being indicated.
+  bool complete = progress == ProgressIndicator::kProgressComplete;
+  float target_opacity = complete ? 1.f : 0.f;
+
+  // If `target_opacity` is already set there's nothing to do.
+  ui::Layer* const layer = default_tray_icon_->layer();
+  if (layer->GetTargetOpacity() == target_opacity)
+    return;
+
+  // If `target_opacity` is zero, it should be set immediately w/o animation.
+  if (target_opacity == 0.f) {
+    layer->GetAnimator()->StopAnimating();
+    layer->SetOpacity(0.f);
+    return;
+  }
+
+  // If `bounds` are empty, the `default_tray_icon_` has not yet been laid out
+  // and therefore any changes to its visual state need not be animated.
+  const gfx::Rect& bounds = default_tray_icon_->bounds();
+  if (bounds.IsEmpty()) {
+    layer->SetOpacity(1.f);
+    layer->SetTransform(gfx::Transform());
+    return;
+  }
+
+  const auto preemption_strategy =
+      ui::LayerAnimator::PreemptionStrategy::IMMEDIATELY_ANIMATE_TO_NEW_TARGET;
+  const auto transform = gfx::GetScaleTransform(
+      bounds.CenterPoint(), kInProgressAnimationScaleFactor);
+  const auto tween_type = gfx::Tween::Type::FAST_OUT_SLOW_IN_3;
+
+  views::AnimationBuilder()
+      .SetPreemptionStrategy(preemption_strategy)
+      .Once()
+      .SetDuration(base::TimeDelta())
+      .SetOpacity(layer, 0.f)
+      .SetTransform(layer, transform)
+      .Then()
+      .SetDuration(kInProgressAnimationOpacityDuration)
+      .SetOpacity(layer, 1.f)
+      .Offset(kInProgressAnimationScaleDelay)
+      .SetDuration(kInProgressAnimationScaleDuration)
+      .SetTransform(layer, gfx::Transform(), tween_type);
 }
 
 void HoldingSpaceTray::UpdateDropTargetState(const ui::DropTargetEvent* event) {

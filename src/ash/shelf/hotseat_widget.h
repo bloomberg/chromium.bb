@@ -158,6 +158,11 @@ class ASH_EXPORT HotseatWidget : public ShelfComponent,
 
   metrics_util::ReportCallback GetTranslucentBackgroundReportCallback();
 
+  // Verifies if `screen_location` falls within the hotseat widget bounds' touch
+  // area. `screen_location` is expected to be in screen bounds. The hotseat
+  // touch area is the area of the widget that allows to trigger gesture events.
+  bool IsPointWithinGestureTouchArea(const gfx::Point& screen_location);
+
   void SetState(HotseatState state);
   HotseatState state() const { return state_; }
 
@@ -173,7 +178,7 @@ class ASH_EXPORT HotseatWidget : public ShelfComponent,
   // manual user intervention (dragging the hotseat into its extended state).
   // This will return |false| after any visible change in the shelf
   // configuration.
-  bool is_manually_extended() { return is_manually_extended_; }
+  bool is_manually_extended() const { return is_manually_extended_; }
 
   void set_manually_extended(bool value) { is_manually_extended_ = value; }
 

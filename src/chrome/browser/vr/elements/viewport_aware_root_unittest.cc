@@ -9,6 +9,7 @@
 
 #include "base/memory/raw_ptr.h"
 #include "base/numerics/ranges.h"
+#include "base/time/time.h"
 #include "chrome/browser/vr/elements/draw_phase.h"
 #include "chrome/browser/vr/test/animation_utils.h"
 #include "chrome/browser/vr/test/constants.h"
@@ -35,8 +36,8 @@ bool MatricesAreNearlyEqual(const gfx::Transform& lhs,
                             const gfx::Transform& rhs) {
   for (int row = 0; row < 4; ++row) {
     for (int col = 0; col < 4; ++col) {
-      if (!base::IsApproximatelyEqual(lhs.matrix().get(row, col),
-                                      rhs.matrix().get(row, col), kEpsilon)) {
+      if (!base::IsApproximatelyEqual(lhs.matrix().rc(row, col),
+                                      rhs.matrix().rc(row, col), kEpsilon)) {
         return false;
       }
     }

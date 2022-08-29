@@ -43,7 +43,7 @@ class TrackEventInternal;
 //                       ctx.AddDebugAnnotation("name", 1234);
 //                     });
 //
-class PERFETTO_EXPORT EventContext {
+class PERFETTO_EXPORT_COMPONENT EventContext {
  public:
   EventContext(EventContext&&) = default;
 
@@ -55,6 +55,10 @@ class PERFETTO_EXPORT EventContext {
       : event_(event), incremental_state_(incremental_state) {}
 
   ~EventContext();
+
+  internal::TrackEventIncrementalState* GetIncrementalState() const {
+    return incremental_state_;
+  }
 
   // Get a TrackEvent message to write typed arguments to.
   //
@@ -89,8 +93,10 @@ class PERFETTO_EXPORT EventContext {
   // EventContext::AddDebugAnnotation provides an explicit equivalent.
   template <typename T>
   void AddDebugAnnotation(const char* name, T&& value) {
+    if (tls_state_ && tls_state_->filter_debug_annotations)
+      return;
     auto annotation = AddDebugAnnotation(name);
-    WriteIntoTracedValue(internal::CreateTracedValueFromProto(annotation),
+    WriteIntoTracedValue(internal::CreateTracedValueFromProto(annotation, this),
                          std::forward<T>(value));
   }
 
@@ -102,7 +108,9 @@ class PERFETTO_EXPORT EventContext {
   using TracePacketHandle =
       ::protozero::MessageHandle<protos::pbzero::TracePacket>;
 
-  EventContext(TracePacketHandle, internal::TrackEventIncrementalState*);
+  EventContext(TracePacketHandle,
+               internal::TrackEventIncrementalState*,
+               const internal::TrackEventTlsState*);
   EventContext(const EventContext&) = delete;
 
   protos::pbzero::DebugAnnotation* AddDebugAnnotation(const char* name);
@@ -110,6 +118,10 @@ class PERFETTO_EXPORT EventContext {
   TracePacketHandle trace_packet_;
   protos::pbzero::TrackEvent* event_;
   internal::TrackEventIncrementalState* incremental_state_;
+  // TODO(mohitms): Make it const-reference instead of pointer, once we
+  // are certain that it cannot be nullptr. Once we switch to client library in
+  // chrome, we can make that happen.
+  const internal::TrackEventTlsState* tls_state_ = nullptr;
 };
 
 }  // namespace perfetto

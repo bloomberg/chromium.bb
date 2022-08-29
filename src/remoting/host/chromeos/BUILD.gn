@@ -6,6 +6,8 @@ import("//remoting/build/config/remoting_build.gni")
 
 source_set("chromeos") {
   sources = [
+    "ash_display_util.cc",
+    "ash_display_util.h",
     "aura_desktop_capturer.cc",
     "aura_desktop_capturer.h",
     "clipboard_aura.cc",
@@ -25,7 +27,6 @@ source_set("chromeos") {
     "//build:chromeos_buildflags",
     "//cc",
     "//gpu/command_buffer/common",
-    "//ppapi/host",
     "//remoting/protocol",
     "//skia",
     "//third_party/webrtc_overrides:webrtc_component",
@@ -37,10 +38,13 @@ source_set("chromeos") {
   ]
 
   deps = [
+    ":features",
     "//remoting/base:base",
     "//remoting/host:clipboard",
     "//ui/aura/cursor",
     "//ui/base/cursor/mojom:cursor_type",
+    "//ui/display/manager",
+    "//ui/wm",
   ]
 }
 
@@ -76,6 +80,35 @@ source_set("remoting_service") {
   ]
 }
 
+static_library("host_event_reporter_impl") {
+  sources = [
+    "host_event_reporter_impl.cc",
+    "host_event_reporter_impl.h",
+  ]
+  public_deps = [
+    "//base",
+    "//chrome/browser/policy/messaging_layer/proto:crd_event_proto",
+    "//components/reporting/proto:record_constants",
+    "//remoting/host:common",
+    "//remoting/protocol",
+  ]
+}
+
+# All unit tests are built as part of the //remoting/host:unit_tests target
+# and must be one target named "unit_tests".
+source_set("reporter_unit_tests") {
+  testonly = true
+  sources = [ "host_event_reporter_impl_unittest.cc" ]
+  deps = [
+    ":host_event_reporter_impl",
+    "//base",
+    "//base/test:test_support",
+    "//remoting/host:common",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+}
+
 # The host portions of the remoting unit tests.
 source_set("unit_tests") {
   testonly = true
@@ -83,12 +116,15 @@ source_set("unit_tests") {
   sources = [
     "aura_desktop_capturer_unittest.cc",
     "clipboard_aura_unittest.cc",
+    "scoped_fake_ash_display_util.cc",
+    "scoped_fake_ash_display_util.h",
   ]
 
   configs += [ "//remoting/build/config:version" ]
 
   deps = [
     ":chromeos",
+    ":features",
     "//base/test:test_support",
     "//remoting/host:common",
     "//remoting/host:test_support",
@@ -97,5 +133,14 @@ source_set("unit_tests") {
     "//skia",
     "//testing/gmock",
     "//testing/gtest",
+    "//ui/display/manager",
   ]
+}
+
+source_set("features") {
+  sources = [
+    "features.cc",
+    "features.h",
+  ]
+  deps = [ "//base" ]
 }

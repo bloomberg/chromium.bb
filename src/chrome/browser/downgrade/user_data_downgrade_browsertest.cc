@@ -169,6 +169,13 @@ class UserDataDowngradeBrowserCopyAndCleanTest
 
       // Prepare to check histograms during the restart.
       histogram_tester_ = std::make_unique<base::HistogramTester>();
+    } else {
+      // Verify the contents of the renamed user data directory.
+      ASSERT_TRUE(base::DirectoryExists(moved_user_data_dir()));
+      EXPECT_TRUE(base::PathExists(
+          moved_user_data_dir().Append(other_file().BaseName())));
+      EXPECT_EQ(GetNextChromeVersion(),
+                GetLastVersion(moved_user_data_dir())->GetString());
     }
   }
 
@@ -183,15 +190,9 @@ class UserDataDowngradeBrowserCopyAndCleanTest
     }
   }
 
-  // Verify the contents of the renamed user data directory.
   void SetUpOnMainThread() override {
     // This is never reached in the pre test due to the relaunch.
     ASSERT_FALSE(ParentClass::IsPreTest());
-    ASSERT_TRUE(base::DirectoryExists(moved_user_data_dir()));
-    EXPECT_TRUE(base::PathExists(
-        moved_user_data_dir().Append(other_file().BaseName())));
-    EXPECT_EQ(GetNextChromeVersion(),
-              GetLastVersion(moved_user_data_dir())->GetString());
     ParentClass::SetUpOnMainThread();
   }
 

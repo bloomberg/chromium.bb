@@ -24,6 +24,12 @@ namespace blink {
 
 namespace {
 
+webrtc::PeerConnectionInterface::RTCConfiguration DefaultConfiguration() {
+  webrtc::PeerConnectionInterface::RTCConfiguration config;
+  config.sdp_semantics = webrtc::SdpSemantics::kUnifiedPlan;
+  return config;
+}
+
 // Having a refcounted helper class allows multiple DummyRTCRtpSenderPlatform to
 // share the same internal states.
 class DummyRtpSenderInternal
@@ -221,7 +227,6 @@ class MockRTCPeerConnectionHandlerPlatform::DummyRTCRtpTransceiverPlatform
   std::unique_ptr<RTCRtpReceiverPlatform> Receiver() const override {
     return internal_->Receiver();
   }
-  bool Stopped() const override { return true; }
   webrtc::RtpTransceiverDirection Direction() const override {
     return internal_->direction();
   }
@@ -271,19 +276,9 @@ bool MockRTCPeerConnectionHandlerPlatform::Initialize(
 
 Vector<std::unique_ptr<RTCRtpTransceiverPlatform>>
 MockRTCPeerConnectionHandlerPlatform::CreateOffer(RTCSessionDescriptionRequest*,
-                                                  const MediaConstraints&) {
-  return {};
-}
-
-Vector<std::unique_ptr<RTCRtpTransceiverPlatform>>
-MockRTCPeerConnectionHandlerPlatform::CreateOffer(RTCSessionDescriptionRequest*,
                                                   RTCOfferOptionsPlatform*) {
   return {};
 }
-
-void MockRTCPeerConnectionHandlerPlatform::CreateAnswer(
-    RTCSessionDescriptionRequest*,
-    const MediaConstraints&) {}
 
 void MockRTCPeerConnectionHandlerPlatform::CreateAnswer(
     RTCSessionDescriptionRequest*,
@@ -302,7 +297,8 @@ void MockRTCPeerConnectionHandlerPlatform::SetRemoteDescription(
 
 const webrtc::PeerConnectionInterface::RTCConfiguration&
 MockRTCPeerConnectionHandlerPlatform::GetConfiguration() const {
-  static const webrtc::PeerConnectionInterface::RTCConfiguration configuration;
+  static const webrtc::PeerConnectionInterface::RTCConfiguration configuration =
+      DefaultConfiguration();
   return configuration;
 }
 
@@ -394,9 +390,8 @@ void MockRTCPeerConnectionHandlerPlatform::
                                                const char* trace_event_name) {}
 
 void MockRTCPeerConnectionHandlerPlatform::
-    RunSynchronousRepeatingClosureOnSignalingThread(
-        const base::RepeatingClosure& closure,
-        const char* trace_event_name) {}
+    RunSynchronousOnceClosureOnSignalingThread(base::OnceClosure closure,
+                                               const char* trace_event_name) {}
 
 void MockRTCPeerConnectionHandlerPlatform::TrackIceConnectionStateChange(
     RTCPeerConnectionHandler::IceConnectionStateVersion version,

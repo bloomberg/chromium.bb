@@ -27,9 +27,11 @@
 #include "include/core/SkPathMeasure.h"
 #include "include/core/SkPicture.h"
 #include "include/core/SkPictureRecorder.h"
+#include "include/core/SkPoint3.h"
 #include "include/core/SkRRect.h"
 #include "include/core/SkSamplingOptions.h"
 #include "include/core/SkScalar.h"
+#include "include/core/SkSerialProcs.h"
 #include "include/core/SkShader.h"
 #include "include/core/SkString.h"
 #include "include/core/SkStrokeRec.h"
@@ -38,6 +40,8 @@
 #include "include/core/SkTypeface.h"
 #include "include/core/SkTypes.h"
 #include "include/core/SkVertices.h"
+#include "include/effects/Sk1DPathEffect.h"
+#include "include/effects/Sk2DPathEffect.h"
 #include "include/effects/SkCornerPathEffect.h"
 #include "include/effects/SkDashPathEffect.h"
 #include "include/effects/SkDiscretePathEffect.h"
@@ -64,28 +68,33 @@
 #include "include/gpu/GrDirectContext.h"
 #include "include/gpu/gl/GrGLInterface.h"
 #include "include/gpu/gl/GrGLTypes.h"
-#include "src/gpu/GrProxyProvider.h"
-#include "src/gpu/GrRecordingContextPriv.h"
-#include "src/gpu/gl/GrGLDefines.h"
+#include "src/gpu/RefCntedCallback.h"
+#include "src/gpu/ganesh/GrProxyProvider.h"
+#include "src/gpu/ganesh/GrRecordingContextPriv.h"
+#include "src/gpu/ganesh/gl/GrGLDefines_impl.h"
 
 #include <webgl/webgl1.h>
 #endif
 
-#ifndef SK_NO_FONTS
+#ifndef CK_NO_FONTS
 #include "include/core/SkFont.h"
 #include "include/core/SkFontMetrics.h"
 #include "include/core/SkFontMgr.h"
 #include "include/core/SkFontTypes.h"
-#ifdef SK_INCLUDE_PARAGRAPH
+#ifdef CK_INCLUDE_PARAGRAPH
 #include "modules/skparagraph/include/Paragraph.h"
-#endif // SK_INCLUDE_PARAGRAPH
-#endif // SK_NO_FONTS
+#endif // CK_INCLUDE_PARAGRAPH
+#endif // CK_NO_FONTS
 
-#ifdef SK_INCLUDE_PATHOPS
+#ifdef CK_INCLUDE_PATHOPS
 #include "include/pathops/SkPathOps.h"
 #endif
 
-#ifndef SK_NO_FONTS
+#if defined(CK_INCLUDE_RUNTIME_EFFECT) && defined(SKSL_ENABLE_TRACING)
+#include "include/sksl/SkSLDebugTrace.h"
+#endif
+
+#ifndef CK_NO_FONTS
 sk_sp<SkFontMgr> SkFontMgr_New_Custom_Data(sk_sp<SkData>* datas, int n);
 #endif
 
@@ -128,7 +137,8 @@ struct SimpleImageInfo {
 };
 
 SkImageInfo toSkImageInfo(const SimpleImageInfo& sii) {
-    return SkImageInfo::Make(sii.width, sii.height, sii.colorType, sii.alphaType, sii.colorSpace);
+    return SkImageInfo::Make(sii.width, sii.height, sii.colorType, sii.alphaType,
+                             sii.colorSpace ? sii.colorSpace : SkColorSpace::MakeSRGB());
 }
 
 #ifdef SK_GL
@@ -179,6 +189,10 @@ sk_sp<SkSurface> MakeOnScreenGLSurface(sk_sp<GrDirectContext> dContext, int widt
     GrGLint stencil;
     emscripten_glGetIntegerv(GL_STENCIL_BITS, &stencil);
 
+    if (!colorSpace) {
+        colorSpace = SkColorSpace::MakeSRGB();
+    }
+
     const auto colorSettings = ColorSettings(colorSpace);
     info.fFormat = colorSettings.pixFormat;
     GrBackendRenderTarget target(width, height, sampleCnt, stencil, info);
@@ -188,7 +202,8 @@ sk_sp<SkSurface> MakeOnScreenGLSurface(sk_sp<GrDirectContext> dContext, int widt
 }
 
 sk_sp<SkSurface> MakeRenderTarget(sk_sp<GrDirectContext> dContext, int width, int height) {
-    SkImageInfo info = SkImageInfo::MakeN32(width, height, SkAlphaType::kPremul_SkAlphaType);
+    SkImageInfo info = SkImageInfo::MakeN32(
+            width, height, SkAlphaType::kPremul_SkAlphaType, SkColorSpace::MakeSRGB());
 
     sk_sp<SkSurface> surface(SkSurface::MakeRenderTarget(dContext.get(),
                              SkBudgeted::kYes,
@@ -315,7 +330,7 @@ void ApplyTransform(SkPath& orig,
     orig.transform(m);
 }
 
-#ifdef SK_INCLUDE_PATHOPS
+#ifdef CK_INCLUDE_PATHOPS
 bool ApplySimplify(SkPath& path) {
     return Simplify(path, &path);
 }
@@ -614,7 +629,7 @@ void computeTonalColors(WASMPointerF32 cPtrAmbi, WASMPointerF32 cPtrSpot) {
     memcpy(spotFloats, spot4f.vec(), 4 * sizeof(SkScalar));
 }
 
-#ifdef SK_INCLUDE_RUNTIME_EFFECT
+#ifdef CK_INCLUDE_RUNTIME_EFFECT
 struct RuntimeEffectUniform {
     int columns;
     int rows;
@@ -666,6 +681,10 @@ void castUniforms(void* data, size_t dataLen, const SkRuntimeEffect& effect) {
 }
 #endif
 
+sk_sp<SkData> alwaysSaveTypefaceBytes(SkTypeface* face, void*) {
+    return face->serialize(SkTypeface::SerializeBehavior::kDoIncludeData);
+}
+
 // These objects have private destructors / delete methods - I don't think
 // we need to do anything other than tell emscripten to do nothing.
 namespace emscripten {
@@ -681,7 +700,7 @@ namespace emscripten {
         void raw_destructor<SkVertices>(SkVertices* ptr) {
         }
 
-#ifndef SK_NO_FONTS
+#ifndef CK_NO_FONTS
         template<>
         void raw_destructor<SkTextBlob>(SkTextBlob* ptr) {
         }
@@ -740,18 +759,23 @@ protected:
     GrSurfaceProxyView onGenerateTexture(GrRecordingContext* ctx,
                                          const SkImageInfo& info,
                                          const SkIPoint& origin,
-                                         GrMipmapped mipMapped,
+                                         GrMipmapped mipmapped,
                                          GrImageTexGenPolicy texGenPolicy) {
         if (ctx->backend() != GrBackendApi::kOpenGL) {
             return {};
         }
 
         GrGLTextureInfo glInfo;
+        // This callback is defined in gpu.js
         glInfo.fID     = fCallback.call<uint32_t>("makeTexture");
         // The format and target should match how we make the texture on the JS side
         // See the implementation of the makeTexture function.
         glInfo.fFormat = GR_GL_RGBA8;
         glInfo.fTarget = GR_GL_TEXTURE_2D;
+
+        // In order to bind the image source to the texture, makeTexture has changed which
+        // texture is "in focus" for the WebGL context.
+        GrAsDirectContext(ctx)->resetContext(kTextureBinding_GrGLBackendState);
 
         static constexpr auto kMipmapped = GrMipmapped::kNo;
         GrBackendTexture backendTexture(info.width(), info.height(), kMipmapped, glInfo);
@@ -764,7 +788,7 @@ protected:
 
         uint32_t webGLCtx = emscripten_webgl_get_current_context();
         auto releaseCtx = new TextureReleaseContext{webGLCtx, glInfo.fID};
-        auto cleanupCallback = GrRefCntedCallback::Make(deleteJSTexture, releaseCtx);
+        auto cleanupCallback = skgpu::RefCntedCallback::Make(deleteJSTexture, releaseCtx);
 
         sk_sp<GrSurfaceProxy> proxy = ctx->priv().proxyProvider()->wrapBackendTexture(
                 backendTexture,
@@ -776,7 +800,7 @@ protected:
             return {};
         }
         static constexpr auto kOrigin = kTopLeft_GrSurfaceOrigin;
-        GrSwizzle swizzle = ctx->priv().caps()->getReadSwizzle(format, colorType);
+        skgpu::Swizzle swizzle = ctx->priv().caps()->getReadSwizzle(format, colorType);
         return GrSurfaceProxyView(std::move(proxy), kOrigin, swizzle);
     }
 
@@ -850,7 +874,7 @@ EMSCRIPTEN_BINDINGS(Skia) {
                               flags, outputBounds);
     }));
 
-#ifdef SK_SERIALIZE_SKP
+#ifdef CK_SERIALIZE_SKP
     function("_MakePicture", optional_override([](WASMPointerU8 dPtr,
                                                   size_t bytes)->sk_sp<SkPicture> {
         uint8_t* d = reinterpret_cast<uint8_t*>(dPtr);
@@ -912,6 +936,7 @@ EMSCRIPTEN_BINDINGS(Skia) {
 
     class_<SkCanvas>("Canvas")
         .constructor<>()
+        .constructor<SkScalar,SkScalar>()
         .function("_clear", optional_override([](SkCanvas& self, WASMPointerF32 cPtr) {
             self.clear(ptrToSkColor4f(cPtr));
         }))
@@ -1051,7 +1076,7 @@ EMSCRIPTEN_BINDINGS(Skia) {
             self.drawOval(*oval, paint);
         }))
         .function("_drawPaint", &SkCanvas::drawPaint)
-#ifdef SK_INCLUDE_PARAGRAPH
+#ifdef CK_INCLUDE_PARAGRAPH
         .function("_drawParagraph", optional_override([](SkCanvas& self, skia::textlayout::Paragraph* p,
                                                         SkScalar x, SkScalar y) {
             p->paint(&self, x, y);
@@ -1107,7 +1132,7 @@ EMSCRIPTEN_BINDINGS(Skia) {
                                       ptrToSkColor4f(spotColorPtr).toSkColor(),
                                       flags);
         }))
-#ifndef SK_NO_FONTS
+#ifndef CK_NO_FONTS
         .function("_drawSimpleText", optional_override([](SkCanvas& self, WASMPointerU8 sptr,
                                                           size_t len, SkScalar x, SkScalar y, const SkFont& font,
                                                           const SkPaint& paint) {
@@ -1118,6 +1143,14 @@ EMSCRIPTEN_BINDINGS(Skia) {
         .function("_drawTextBlob", select_overload<void (const sk_sp<SkTextBlob>&, SkScalar, SkScalar, const SkPaint&)>(&SkCanvas::drawTextBlob))
 #endif
         .function("_drawVertices", select_overload<void (const sk_sp<SkVertices>&, SkBlendMode, const SkPaint&)>(&SkCanvas::drawVertices))
+
+        .function("_getDeviceClipBounds", optional_override([](const SkCanvas& self, WASMPointerI32 iPtr) {
+            SkIRect* outputRect = reinterpret_cast<SkIRect*>(iPtr);
+            if (!outputRect) {
+                return; // output pointer cannot be null
+            }
+            self.getDeviceClipBounds(outputRect);
+        }))
         // 4x4 matrix functions
         // Just like with getTotalMatrix, we allocate the buffer for the 16 floats to go in from
         // interface.js, so it can also free them when its done.
@@ -1217,7 +1250,7 @@ EMSCRIPTEN_BINDINGS(Skia) {
         .function("isClosed", &SkContourMeasure::isClosed)
         .function("length", &SkContourMeasure::length);
 
-#ifndef SK_NO_FONTS
+#ifndef CK_NO_FONTS
     class_<SkFont>("Font")
         .constructor<>()
         .constructor<sk_sp<SkTypeface>>()
@@ -1331,11 +1364,11 @@ EMSCRIPTEN_BINDINGS(Skia) {
 
         return self.makeFromData(fontData);
     }), allow_raw_pointers());
-#endif // SK_NO_FONTS
+#endif // CK_NO_FONTS
 
     class_<SkImage>("Image")
         .smart_ptr<sk_sp<SkImage>>("sk_sp<Image>")
-#if SK_GL
+#ifdef SK_GL
         .class_function("_makeFromGenerator", &MakeImageFromGenerator)
 #endif
         // Note that this needs to be cleaned up with delete().
@@ -1492,12 +1525,27 @@ EMSCRIPTEN_BINDINGS(Skia) {
             const float* intervals = reinterpret_cast<const float*>(cptr);
             return SkDashPathEffect::Make(intervals, count, phase);
         }), allow_raw_pointers())
-        .class_function("MakeDiscrete", &SkDiscretePathEffect::Make);
+        .class_function("MakeDiscrete", &SkDiscretePathEffect::Make)
+        .class_function("_MakeLine2D", optional_override([](SkScalar width,
+                                                            WASMPointerF32 mPtr)->sk_sp<SkPathEffect> {
+            SkMatrix matrix;
+            const SkScalar* nineMatrixValues = reinterpret_cast<const SkScalar*>(mPtr);
+            matrix.set9(nineMatrixValues);
+            return SkLine2DPathEffect::Make(width, matrix);
+        }), allow_raw_pointers())
+        .class_function("MakePath1D", &SkPath1DPathEffect::Make)
+        .class_function("_MakePath2D", optional_override([](WASMPointerF32 mPtr,
+                                                          SkPath path)->sk_sp<SkPathEffect> {
+            SkMatrix matrix;
+            const SkScalar* nineMatrixValues = reinterpret_cast<const SkScalar*>(mPtr);
+            matrix.set9(nineMatrixValues);
+            return SkPath2DPathEffect::Make(matrix, path);
+        }), allow_raw_pointers());
 
     // TODO(kjlubick, reed) Make SkPath immutable and only creatable via a factory/builder.
     class_<SkPath>("Path")
         .constructor<>()
-#ifdef SK_INCLUDE_PATHOPS
+#ifdef CK_INCLUDE_PATHOPS
         .class_function("MakeFromOp", &MakePathFromOp)
 #endif
         .class_function("MakeFromSVGString", &MakePathFromSVGString)
@@ -1574,7 +1622,7 @@ EMSCRIPTEN_BINDINGS(Skia) {
         .function("_trim", &ApplyTrim)
         .function("_stroke", &ApplyStroke)
 
-#ifdef SK_INCLUDE_PATHOPS
+#ifdef CK_INCLUDE_PATHOPS
         // PathOps
         .function("_simplify", &ApplySimplify)
         .function("_op", &ApplyPathOp)
@@ -1618,14 +1666,27 @@ EMSCRIPTEN_BINDINGS(Skia) {
 
     class_<SkPicture>("Picture")
         .smart_ptr<sk_sp<SkPicture>>("sk_sp<Picture>")
-#ifdef SK_SERIALIZE_SKP
+        .function("_makeShader",  optional_override([](SkPicture& self,
+                                 SkTileMode tmx, SkTileMode tmy, SkFilterMode mode,
+                                 WASMPointerF32 mPtr, WASMPointerF32 rPtr) -> sk_sp<SkShader> {
+            OptionalMatrix localMatrix(mPtr);
+            SkRect* tileRect = reinterpret_cast<SkRect*>(rPtr);
+            return self.makeShader(tmx, tmy, mode, &localMatrix, tileRect);
+        }), allow_raw_pointers())
+#ifdef CK_SERIALIZE_SKP
         // The serialized format of an SkPicture (informally called an "skp"), is not something
         // that clients should ever rely on.  The format may change at anytime and no promises
         // are made for backwards or forward compatibility.
         .function("serialize", optional_override([](SkPicture& self) -> Uint8Array {
-            // Emscripten doesn't play well with optional arguments, which we don't
-            // want to expose anyway.
-            sk_sp<SkData> data = self.serialize();
+            // We want to make sure we always save the underlying data of the Typeface to the
+            // SkPicture. By default, the data for "system" fonts is not saved, just an identifier
+            // (e.g. the family name and style). We do not want the user to have to supply a
+            // FontMgr with the correct fonts by name when deserializing, so we choose to always
+            // serialize the underlying data. This makes the SKPs a bit bigger, but easier to use.
+            SkSerialProcs sp;
+            sp.fTypefaceProc = &alwaysSaveTypefaceBytes;
+
+            sk_sp<SkData> data = self.serialize(&sp);
             if (!data) {
                 return emscripten::val::null();
             }
@@ -1760,7 +1821,22 @@ EMSCRIPTEN_BINDINGS(Skia) {
             return nullptr;
         }), allow_raw_pointers());
 
-#ifdef SK_INCLUDE_RUNTIME_EFFECT
+#ifdef CK_INCLUDE_RUNTIME_EFFECT
+#ifdef SKSL_ENABLE_TRACING
+    class_<SkSL::DebugTrace>("DebugTrace")
+        .smart_ptr<sk_sp<SkSL::DebugTrace>>("sk_sp<DebugTrace>")
+        .function("writeTrace", optional_override([](SkSL::DebugTrace& self) -> std::string {
+            SkDynamicMemoryWStream wstream;
+            self.writeTrace(&wstream);
+            sk_sp<SkData> trace = wstream.detachAsData();
+            return std::string(reinterpret_cast<const char*>(trace->bytes()), trace->size());
+        }));
+
+    value_object<SkRuntimeEffect::TracedShader>("TracedShader")
+        .field("shader",     &SkRuntimeEffect::TracedShader::shader)
+        .field("debugTrace", &SkRuntimeEffect::TracedShader::debugTrace);
+#endif
+
     class_<SkRuntimeEffect>("RuntimeEffect")
         .smart_ptr<sk_sp<SkRuntimeEffect>>("sk_sp<RuntimeEffect>")
         .class_function("_Make", optional_override([](std::string sksl,
@@ -1774,21 +1850,46 @@ EMSCRIPTEN_BINDINGS(Skia) {
             }
             return effect;
         }))
-        .function("_makeShader", optional_override([](SkRuntimeEffect& self, WASMPointerF32 fPtr, size_t fLen, bool isOpaque,
+#ifdef SKSL_ENABLE_TRACING
+        .class_function("MakeTraced", optional_override([](
+                sk_sp<SkShader> shader,
+                int traceCoordX,
+                int traceCoordY) -> SkRuntimeEffect::TracedShader {
+            return SkRuntimeEffect::MakeTraced(shader, SkIPoint::Make(traceCoordX, traceCoordY));
+        }))
+#endif
+        .function("_makeShader", optional_override([](SkRuntimeEffect& self,
+                                                      WASMPointerF32 fPtr,
+                                                      size_t fLen,
+                                                      bool shouldOwnUniforms,
                                                       WASMPointerF32 mPtr)->sk_sp<SkShader> {
-            void* inputData = reinterpret_cast<void*>(fPtr);
-            castUniforms(inputData, fLen, self);
-            sk_sp<SkData> inputs = SkData::MakeFromMalloc(inputData, fLen);
+            void* uniformData = reinterpret_cast<void*>(fPtr);
+            castUniforms(uniformData, fLen, self);
+            sk_sp<SkData> uniforms;
+            if (shouldOwnUniforms) {
+                uniforms = SkData::MakeFromMalloc(uniformData, fLen);
+            } else {
+                uniforms = SkData::MakeWithoutCopy(uniformData, fLen);
+            }
 
             OptionalMatrix localMatrix(mPtr);
-            return self.makeShader(inputs, nullptr, 0, &localMatrix, isOpaque);
+            return self.makeShader(uniforms, nullptr, 0, &localMatrix);
         }))
-        .function("_makeShaderWithChildren", optional_override([](SkRuntimeEffect& self, WASMPointerF32 fPtr, size_t fLen, bool isOpaque,
-                                                                  WASMPointerU32 cPtrs, size_t cLen,
+        .function("_makeShaderWithChildren", optional_override([](SkRuntimeEffect& self,
+                                                                  WASMPointerF32 fPtr,
+                                                                  size_t fLen,
+                                                                  bool shouldOwnUniforms,
+                                                                  WASMPointerU32 cPtrs,
+                                                                  size_t cLen,
                                                                   WASMPointerF32 mPtr)->sk_sp<SkShader> {
-            void* inputData = reinterpret_cast<void*>(fPtr);
-            castUniforms(inputData, fLen, self);
-            sk_sp<SkData> inputs = SkData::MakeFromMalloc(inputData, fLen);
+            void* uniformData = reinterpret_cast<void*>(fPtr);
+            castUniforms(uniformData, fLen, self);
+            sk_sp<SkData> uniforms;
+            if (shouldOwnUniforms) {
+                uniforms = SkData::MakeFromMalloc(uniformData, fLen);
+            } else {
+                uniforms = SkData::MakeWithoutCopy(uniformData, fLen);
+            }
 
             sk_sp<SkShader>* children = new sk_sp<SkShader>[cLen];
             SkShader** childrenPtrs = reinterpret_cast<SkShader**>(cPtrs);
@@ -1798,7 +1899,7 @@ EMSCRIPTEN_BINDINGS(Skia) {
                 children[i] = sk_ref_sp<SkShader>(childrenPtrs[i]);
             }
             OptionalMatrix localMatrix(mPtr);
-            auto s = self.makeShader(inputs, children, cLen, &localMatrix, isOpaque);
+            auto s = self.makeShader(uniforms, children, cLen, &localMatrix);
             delete[] children;
             return s;
         }))
@@ -1884,6 +1985,9 @@ EMSCRIPTEN_BINDINGS(Skia) {
             auto backendRT = self.getBackendRenderTarget(SkSurface::kFlushRead_BackendHandleAccess);
             return (backendRT.isValid()) ? backendRT.sampleCnt() : 0;
         }))
+        .function("_resetContext",optional_override([](SkSurface& self)->void {
+            GrAsDirectContext(self.recordingContext())->resetContext(kTextureBinding_GrGLBackendState);
+        }))
 #else
         .function("reportBackendTypeIsGPU", optional_override([](SkSurface& self) -> bool {
             return false;
@@ -1891,7 +1995,7 @@ EMSCRIPTEN_BINDINGS(Skia) {
 #endif
         .function("width", &SkSurface::width);
 
-#ifndef SK_NO_FONTS
+#ifndef CK_NO_FONTS
     class_<SkTextBlob>("TextBlob")
         .smart_ptr<sk_sp<SkTextBlob>>("sk_sp<TextBlob>")
         .class_function("_MakeFromRSXform", optional_override([](WASMPointerU8 sptr,
@@ -2055,7 +2159,12 @@ EMSCRIPTEN_BINDINGS(Skia) {
         .value("Fill",            SkPaint::Style::kFill_Style)
         .value("Stroke",          SkPaint::Style::kStroke_Style);
 
-#ifdef SK_INCLUDE_PATHOPS
+    enum_<SkPath1DPathEffect::Style>("Path1DEffect")
+        .value("Translate", SkPath1DPathEffect::Style::kTranslate_Style)
+        .value("Rotate",    SkPath1DPathEffect::Style::kRotate_Style)
+        .value("Morph",     SkPath1DPathEffect::Style::kMorph_Style);
+
+#ifdef CK_INCLUDE_PATHOPS
     enum_<SkPathOp>("PathOp")
         .value("Difference",         SkPathOp::kDifference_SkPathOp)
         .value("Intersect",          SkPathOp::kIntersect_SkPathOp)
@@ -2079,7 +2188,7 @@ EMSCRIPTEN_BINDINGS(Skia) {
         .value("Round", SkPaint::Join::kRound_Join)
         .value("Bevel", SkPaint::Join::kBevel_Join);
 
-#ifndef SK_NO_FONTS
+#ifndef CK_NO_FONTS
     enum_<SkFontHinting>("FontHinting")
         .value("None",   SkFontHinting::kNone)
         .value("Slight", SkFontHinting::kSlight)
@@ -2137,7 +2246,7 @@ EMSCRIPTEN_BINDINGS(Skia) {
     constant("ShadowGeometricOnly", (int)SkShadowFlags::kGeometricOnly_ShadowFlag);
     constant("ShadowDirectionalLight", (int)SkShadowFlags::kDirectionalLight_ShadowFlag);
 
-#ifdef SK_INCLUDE_PARAGRAPH
+#ifdef CK_INCLUDE_PARAGRAPH
     constant("_GlyphRunFlags_isWhiteSpace", (int)skia::textlayout::Paragraph::kWhiteSpace_VisitorFlag);
 #endif
 }

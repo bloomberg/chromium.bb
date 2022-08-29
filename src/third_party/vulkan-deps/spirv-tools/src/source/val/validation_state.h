@@ -67,14 +67,12 @@ class ValidationState_t {
     bool declare_int16_type = false;     // Allow OpTypeInt with 16 bit width?
     bool declare_float16_type = false;   // Allow OpTypeFloat with 16 bit width?
     bool free_fp_rounding_mode = false;  // Allow the FPRoundingMode decoration
-                                         // and its vaules to be used without
+                                         // and its values to be used without
                                          // requiring any capability
 
-    // Allow functionalities enabled by VariablePointers capability.
+    // Allow functionalities enabled by VariablePointers or
+    // VariablePointersStorageBuffer capability.
     bool variable_pointers = false;
-    // Allow functionalities enabled by VariablePointersStorageBuffer
-    // capability.
-    bool variable_pointers_storage_buffer = false;
 
     // Permit group oerations Reduce, InclusiveScan, ExclusiveScan
     bool group_ops_reduce_and_scans = false;
@@ -377,17 +375,14 @@ class ValidationState_t {
   /// Registers the decoration for the given <id>
   void RegisterDecorationForId(uint32_t id, const Decoration& dec) {
     auto& dec_list = id_decorations_[id];
-    auto lb = std::find(dec_list.begin(), dec_list.end(), dec);
-    if (lb == dec_list.end()) {
-      dec_list.push_back(dec);
-    }
+    dec_list.insert(dec);
   }
 
   /// Registers the list of decorations for the given <id>
   template <class InputIt>
   void RegisterDecorationsForId(uint32_t id, InputIt begin, InputIt end) {
-    std::vector<Decoration>& cur_decs = id_decorations_[id];
-    cur_decs.insert(cur_decs.end(), begin, end);
+    std::set<Decoration>& cur_decs = id_decorations_[id];
+    cur_decs.insert(begin, end);
   }
 
   /// Registers the list of decorations for the given member of the given
@@ -396,21 +391,44 @@ class ValidationState_t {
   void RegisterDecorationsForStructMember(uint32_t struct_id,
                                           uint32_t member_index, InputIt begin,
                                           InputIt end) {
-    RegisterDecorationsForId(struct_id, begin, end);
-    for (auto& decoration : id_decorations_[struct_id]) {
-      decoration.set_struct_member_index(member_index);
+    std::set<Decoration>& cur_decs = id_decorations_[struct_id];
+    for (InputIt iter = begin; iter != end; ++iter) {
+      Decoration dec = *iter;
+      dec.set_struct_member_index(member_index);
+      cur_decs.insert(dec);
     }
   }
 
   /// Returns all the decorations for the given <id>. If no decorations exist
-  /// for the <id>, it registers an empty vector for it in the map and
-  /// returns the empty vector.
-  std::vector<Decoration>& id_decorations(uint32_t id) {
+  /// for the <id>, it registers an empty set for it in the map and
+  /// returns the empty set.
+  std::set<Decoration>& id_decorations(uint32_t id) {
     return id_decorations_[id];
   }
 
+  /// Returns the range of decorations for the given field of the given <id>.
+  struct FieldDecorationsIter {
+    std::set<Decoration>::const_iterator begin;
+    std::set<Decoration>::const_iterator end;
+  };
+  FieldDecorationsIter id_member_decorations(uint32_t id,
+                                             uint32_t member_index) {
+    const auto& decorations = id_decorations_[id];
+
+    // The decorations are sorted by member_index, so this look up will give the
+    // exact range of decorations for this member index.
+    Decoration min_decoration((SpvDecoration)0, {}, member_index);
+    Decoration max_decoration(SpvDecorationMax, {}, member_index);
+
+    FieldDecorationsIter result;
+    result.begin = decorations.lower_bound(min_decoration);
+    result.end = decorations.upper_bound(max_decoration);
+
+    return result;
+  }
+
   // Returns const pointer to the internal decoration container.
-  const std::map<uint32_t, std::vector<Decoration>>& id_decorations() const {
+  const std::map<uint32_t, std::set<Decoration>>& id_decorations() const {
     return id_decorations_;
   }
 
@@ -797,7 +815,7 @@ class ValidationState_t {
   /// IDs that are entry points, ie, arguments to OpEntryPoint.
   std::vector<uint32_t> entry_points_;
 
-  /// Maps an entry point id to its desciptions.
+  /// Maps an entry point id to its descriptions.
   std::unordered_map<uint32_t, std::vector<EntryPointDescription>>
       entry_point_descriptions_;
 
@@ -828,7 +846,7 @@ class ValidationState_t {
       struct_has_nested_blockorbufferblock_struct_;
 
   /// Stores the list of decorations for a given <id>
-  std::map<uint32_t, std::vector<Decoration>> id_decorations_;
+  std::map<uint32_t, std::set<Decoration>> id_decorations_;
 
   /// Stores type declarations which need to be unique (i.e. non-aggregates),
   /// in the form [opcode, operand words], result_id is not stored.
@@ -844,7 +862,7 @@ class ValidationState_t {
   // have the same pointer size (for physical pointer types).
   uint32_t pointer_size_and_alignment_;
 
-  /// NOTE: See correspoding getter functions
+  /// NOTE: See corresponding getter functions
   bool in_function_;
 
   /// The state of optional features.  These are determined by capabilities

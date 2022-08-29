@@ -185,14 +185,14 @@ template <typename Descriptor, int ArgIndex, bool kIsRegister>
 struct ArgumentSettingHelper<Descriptor, ArgIndex, kIsRegister> {
   static void Set(BaselineAssembler* masm) {
     // Should only ever be called for the end of register arguments.
-    STATIC_ASSERT(ArgIndex == Descriptor::GetRegisterParameterCount());
+    static_assert(ArgIndex == Descriptor::GetRegisterParameterCount());
   }
 };
 
 template <typename Descriptor, int ArgIndex, typename Arg, typename... Args>
 struct ArgumentSettingHelper<Descriptor, ArgIndex, true, Arg, Args...> {
   static void Set(BaselineAssembler* masm, Arg arg, Args... args) {
-    STATIC_ASSERT(ArgIndex < Descriptor::GetRegisterParameterCount());
+    static_assert(ArgIndex < Descriptor::GetRegisterParameterCount());
     Register target = Descriptor::GetRegisterParameter(ArgIndex);
     CheckSettingDoesntClobber(target, args...);
     masm->Move(target, arg);
@@ -207,7 +207,7 @@ template <typename Descriptor, int ArgIndex>
 struct ArgumentSettingHelper<Descriptor, ArgIndex, true,
                              interpreter::RegisterList> {
   static void Set(BaselineAssembler* masm, interpreter::RegisterList list) {
-    STATIC_ASSERT(ArgIndex < Descriptor::GetRegisterParameterCount());
+    static_assert(ArgIndex < Descriptor::GetRegisterParameterCount());
     DCHECK_EQ(ArgIndex + list.register_count(),
               Descriptor::GetRegisterParameterCount());
     for (int i = 0; ArgIndex + i < Descriptor::GetRegisterParameterCount();
@@ -586,7 +586,7 @@ void BaselineCompiler::UpdateInterruptBudgetAndJumpToLabel(
 
     if (weight < 0) {
       SaveAccumulatorScope accumulator_scope(&basm_);
-      CallRuntime(Runtime::kBytecodeBudgetInterruptWithStackCheckFromBytecode,
+      CallRuntime(Runtime::kBytecodeBudgetInterruptWithStackCheck,
                   __ FunctionOperand());
     }
   }
@@ -652,7 +652,7 @@ void BaselineCompiler::JumpIfToBoolean(bool do_jump_if_true, Label* label,
   // ToBooleanForBaselineJump returns the ToBoolean value into return reg 1, and
   // the original value into kInterpreterAccumulatorRegister, so we don't have
   // to worry about it getting clobbered.
-  STATIC_ASSERT(kReturnRegister0 == kInterpreterAccumulatorRegister);
+  static_assert(kReturnRegister0 == kInterpreterAccumulatorRegister);
   __ JumpIfSmi(do_jump_if_true ? Condition::kNotEqual : Condition::kEqual,
                kReturnRegister1, Smi::FromInt(0), label, distance);
 }
@@ -841,13 +841,13 @@ void BaselineCompiler::VisitMov() {
   StoreRegister(1, scratch);
 }
 
-void BaselineCompiler::VisitLdaNamedProperty() {
+void BaselineCompiler::VisitGetNamedProperty() {
   CallBuiltin<Builtin::kLoadICBaseline>(RegisterOperand(0),  // object
                                         Constant<Name>(1),   // name
                                         IndexAsTagged(2));   // slot
 }
 
-void BaselineCompiler::VisitLdaNamedPropertyFromSuper() {
+void BaselineCompiler::VisitGetNamedPropertyFromSuper() {
   __ LoadPrototype(
       LoadWithReceiverAndVectorDescriptor::LookupStartObjectRegister(),
       kInterpreterAccumulatorRegister);
@@ -860,7 +860,7 @@ void BaselineCompiler::VisitLdaNamedPropertyFromSuper() {
       IndexAsTagged(2));                // slot
 }
 
-void BaselineCompiler::VisitLdaKeyedProperty() {
+void BaselineCompiler::VisitGetKeyedProperty() {
   CallBuiltin<Builtin::kKeyedLoadICBaseline>(
       RegisterOperand(0),               // object
       kInterpreterAccumulatorRegister,  // key
@@ -921,7 +921,12 @@ void BaselineCompiler::VisitStaModuleVariable() {
   __ StoreTaggedFieldWithWriteBarrier(scratch, Cell::kValueOffset, value);
 }
 
-void BaselineCompiler::VisitStaNamedProperty() {
+void BaselineCompiler::VisitSetNamedProperty() {
+  // StoreIC is currently a base class for multiple property store operations
+  // and contains mixed logic for named and keyed, set and define operations,
+  // the paths are controlled by feedback.
+  // TODO(v8:12548): refactor SetNamedIC as a subclass of StoreIC, which can be
+  // called here.
   CallBuiltin<Builtin::kStoreICBaseline>(
       RegisterOperand(0),               // object
       Constant<Name>(1),                // name
@@ -929,15 +934,20 @@ void BaselineCompiler::VisitStaNamedProperty() {
       IndexAsTagged(2));                // slot
 }
 
-void BaselineCompiler::VisitStaNamedOwnProperty() {
-  CallBuiltin<Builtin::kStoreOwnICBaseline>(
+void BaselineCompiler::VisitDefineNamedOwnProperty() {
+  CallBuiltin<Builtin::kDefineNamedOwnICBaseline>(
       RegisterOperand(0),               // object
       Constant<Name>(1),                // name
       kInterpreterAccumulatorRegister,  // value
       IndexAsTagged(2));                // slot
 }
 
-void BaselineCompiler::VisitStaKeyedProperty() {
+void BaselineCompiler::VisitSetKeyedProperty() {
+  // KeyedStoreIC is currently a base class for multiple keyed property store
+  // operations and contains mixed logic for set and define operations,
+  // the paths are controlled by feedback.
+  // TODO(v8:12548): refactor SetKeyedIC as a subclass of KeyedStoreIC, which
+  // can be called here.
   CallBuiltin<Builtin::kKeyedStoreICBaseline>(
       RegisterOperand(0),               // object
       RegisterOperand(1),               // key
@@ -945,8 +955,8 @@ void BaselineCompiler::VisitStaKeyedProperty() {
       IndexAsTagged(2));                // slot
 }
 
-void BaselineCompiler::VisitStaKeyedPropertyAsDefine() {
-  CallBuiltin<Builtin::kKeyedDefineOwnICBaseline>(
+void BaselineCompiler::VisitDefineKeyedOwnProperty() {
+  CallBuiltin<Builtin::kDefineKeyedOwnICBaseline>(
       RegisterOperand(0),               // object
       RegisterOperand(1),               // key
       kInterpreterAccumulatorRegister,  // value
@@ -961,11 +971,12 @@ void BaselineCompiler::VisitStaInArrayLiteral() {
       IndexAsTagged(2));                // slot
 }
 
-void BaselineCompiler::VisitStaDataPropertyInLiteral() {
-  // Here we should save the accumulator, since StaDataPropertyInLiteral doesn't
-  // write the accumulator, but Runtime::kDefineDataPropertyInLiteral returns
-  // the value that we got from the accumulator so this still works.
-  CallRuntime(Runtime::kDefineDataPropertyInLiteral,
+void BaselineCompiler::VisitDefineKeyedOwnPropertyInLiteral() {
+  // Here we should save the accumulator, since
+  // DefineKeyedOwnPropertyInLiteral doesn't write the accumulator, but
+  // Runtime::kDefineKeyedOwnPropertyInLiteral returns the value that we got
+  // from the accumulator so this still works.
+  CallRuntime(Runtime::kDefineKeyedOwnPropertyInLiteral,
               RegisterOperand(0),               // object
               RegisterOperand(1),               // name
               kInterpreterAccumulatorRegister,  // value
@@ -1211,14 +1222,12 @@ void BaselineCompiler::BuildCall(uint32_t slot, uint32_t arg_count,
 void BaselineCompiler::VisitCallAnyReceiver() {
   interpreter::RegisterList args = iterator().GetRegisterListOperand(1);
   uint32_t arg_count = args.register_count();
-  if (!kJSArgcIncludesReceiver) arg_count -= 1;  // Remove receiver.
   BuildCall<ConvertReceiverMode::kAny>(Index(3), arg_count, args);
 }
 
 void BaselineCompiler::VisitCallProperty() {
   interpreter::RegisterList args = iterator().GetRegisterListOperand(1);
   uint32_t arg_count = args.register_count();
-  if (!kJSArgcIncludesReceiver) arg_count -= 1;  // Remove receiver.
   BuildCall<ConvertReceiverMode::kNotNullOrUndefined>(Index(3), arg_count,
                                                       args);
 }
@@ -1271,7 +1280,6 @@ void BaselineCompiler::VisitCallWithSpread() {
   args = args.Truncate(args.register_count() - 1);
 
   uint32_t arg_count = args.register_count();
-  if (!kJSArgcIncludesReceiver) arg_count -= 1;  // Remove receiver.
 
   CallBuiltin<Builtin::kCallWithSpread_Baseline>(
       RegisterOperand(0),  // kFunction
@@ -1327,6 +1335,19 @@ void BaselineCompiler::VisitInvokeIntrinsic() {
 void BaselineCompiler::VisitIntrinsicCopyDataProperties(
     interpreter::RegisterList args) {
   CallBuiltin<Builtin::kCopyDataProperties>(args);
+}
+
+void BaselineCompiler::
+    VisitIntrinsicCopyDataPropertiesWithExcludedPropertiesOnStack(
+        interpreter::RegisterList args) {
+  BaselineAssembler::ScratchRegisterScope scratch_scope(&basm_);
+  Register rscratch = scratch_scope.AcquireScratch();
+  // Use an offset from args[0] instead of args[1] to pass a valid "end of"
+  // pointer in the case where args.register_count() == 1.
+  basm_.RegisterFrameAddress(interpreter::Register(args[0].index() + 1),
+                             rscratch);
+  CallBuiltin<Builtin::kCopyDataPropertiesWithExcludedPropertiesOnStack>(
+      args[0], args.register_count() - 1, rscratch);
 }
 
 void BaselineCompiler::VisitIntrinsicCreateIterResultObject(
@@ -1517,7 +1538,7 @@ void BaselineCompiler::VisitTestUndetectable() {
 
   Register map_bit_field = kInterpreterAccumulatorRegister;
   __ LoadMap(map_bit_field, kInterpreterAccumulatorRegister);
-  __ LoadByteField(map_bit_field, map_bit_field, Map::kBitFieldOffset);
+  __ LoadWord8Field(map_bit_field, map_bit_field, Map::kBitFieldOffset);
   __ TestAndBranch(map_bit_field, Map::Bits1::IsUndetectableBit::kMask,
                    Condition::kZero, &not_undetectable, Label::kNear);
 
@@ -1574,7 +1595,7 @@ void BaselineCompiler::VisitTestTypeOf() {
     case interpreter::TestTypeOfFlags::LiteralFlag::kString: {
       Label is_smi, bad_instance_type;
       __ JumpIfSmi(kInterpreterAccumulatorRegister, &is_smi, Label::kNear);
-      STATIC_ASSERT(INTERNALIZED_STRING_TYPE == FIRST_TYPE);
+      static_assert(INTERNALIZED_STRING_TYPE == FIRST_TYPE);
       __ JumpIfObjectType(Condition::kGreaterThanEqual,
                           kInterpreterAccumulatorRegister, FIRST_NONSTRING_TYPE,
                           scratch_scope.AcquireScratch(), &bad_instance_type,
@@ -1644,7 +1665,7 @@ void BaselineCompiler::VisitTestTypeOf() {
       // All other undetectable maps are typeof undefined.
       Register map_bit_field = kInterpreterAccumulatorRegister;
       __ LoadMap(map_bit_field, kInterpreterAccumulatorRegister);
-      __ LoadByteField(map_bit_field, map_bit_field, Map::kBitFieldOffset);
+      __ LoadWord8Field(map_bit_field, map_bit_field, Map::kBitFieldOffset);
       __ TestAndBranch(map_bit_field, Map::Bits1::IsUndetectableBit::kMask,
                        Condition::kZero, &not_undetectable, Label::kNear);
 
@@ -1664,7 +1685,7 @@ void BaselineCompiler::VisitTestTypeOf() {
       // Check if the map is callable but not undetectable.
       Register map_bit_field = kInterpreterAccumulatorRegister;
       __ LoadMap(map_bit_field, kInterpreterAccumulatorRegister);
-      __ LoadByteField(map_bit_field, map_bit_field, Map::kBitFieldOffset);
+      __ LoadWord8Field(map_bit_field, map_bit_field, Map::kBitFieldOffset);
       __ TestAndBranch(map_bit_field, Map::Bits1::IsCallableBit::kMask,
                        Condition::kZero, &not_callable, Label::kNear);
       __ TestAndBranch(map_bit_field, Map::Bits1::IsUndetectableBit::kMask,
@@ -1688,7 +1709,7 @@ void BaselineCompiler::VisitTestTypeOf() {
                     &is_null, Label::kNear);
 
       // If the object's instance type isn't within the range, return false.
-      STATIC_ASSERT(LAST_JS_RECEIVER_TYPE == LAST_TYPE);
+      static_assert(LAST_JS_RECEIVER_TYPE == LAST_TYPE);
       Register map = scratch_scope.AcquireScratch();
       __ JumpIfObjectType(Condition::kLessThan, kInterpreterAccumulatorRegister,
                           FIRST_JS_RECEIVER_TYPE, map, &bad_instance_type,
@@ -1696,7 +1717,7 @@ void BaselineCompiler::VisitTestTypeOf() {
 
       // If the map is undetectable or callable, return false.
       Register map_bit_field = kInterpreterAccumulatorRegister;
-      __ LoadByteField(map_bit_field, map, Map::kBitFieldOffset);
+      __ LoadWord8Field(map_bit_field, map, Map::kBitFieldOffset);
       __ TestAndBranch(map_bit_field,
                        Map::Bits1::IsUndetectableBit::kMask |
                            Map::Bits1::IsCallableBit::kMask,
@@ -1904,19 +1925,34 @@ void BaselineCompiler::VisitCreateRestParameter() {
 }
 
 void BaselineCompiler::VisitJumpLoop() {
-  BaselineAssembler::ScratchRegisterScope scope(&basm_);
-  Register scratch = scope.AcquireScratch();
   Label osr_not_armed;
   {
     ASM_CODE_COMMENT_STRING(&masm_, "OSR Check Armed");
-    Register osr_level = scratch;
-    __ LoadRegister(osr_level, interpreter::Register::bytecode_array());
-    __ LoadByteField(osr_level, osr_level,
-                     BytecodeArray::kOsrLoopNestingLevelOffset);
-    int loop_depth = iterator().GetImmediateOperand(1);
-    __ JumpIfByte(Condition::kUnsignedLessThanEqual, osr_level, loop_depth,
-                  &osr_not_armed);
-    CallBuiltin<Builtin::kBaselineOnStackReplacement>();
+    using D = BaselineOnStackReplacementDescriptor;
+    BaselineAssembler::ScratchRegisterScope temps(&basm_);
+    Register feedback_vector = temps.AcquireScratch();
+    Register osr_state = temps.AcquireScratch();
+    LoadFeedbackVector(feedback_vector);
+    __ LoadWord8Field(osr_state, feedback_vector,
+                      FeedbackVector::kOsrStateOffset);
+    const int loop_depth = iterator().GetImmediateOperand(1);
+    static_assert(FeedbackVector::MaybeHasOptimizedOsrCodeBit::encode(true) >
+                  FeedbackVector::kMaxOsrUrgency);
+    __ JumpIfByte(Condition::kUnsignedLessThanEqual, osr_state, loop_depth,
+                  &osr_not_armed, Label::kNear);
+
+    Label osr;
+    Register maybe_target_code = D::MaybeTargetCodeRegister();
+    DCHECK(!AreAliased(maybe_target_code, feedback_vector, osr_state));
+    __ TryLoadOptimizedOsrCode(maybe_target_code, feedback_vector,
+                               iterator().GetSlotOperand(2), &osr,
+                               Label::kNear);
+    __ DecodeField<FeedbackVector::OsrUrgencyBits>(osr_state);
+    __ JumpIfByte(Condition::kUnsignedLessThanEqual, osr_state, loop_depth,
+                  &osr_not_armed, Label::kNear);
+
+    __ Bind(&osr);
+    CallBuiltin<Builtin::kBaselineOnStackReplacement>(maybe_target_code);
   }
 
   __ Bind(&osr_not_armed);
@@ -2121,15 +2157,8 @@ void BaselineCompiler::VisitReturn() {
                          iterator().current_bytecode_size_without_prefix();
   int parameter_count = bytecode_->parameter_count();
 
-  if (kJSArgcIncludesReceiver) {
-    TailCallBuiltin<Builtin::kBaselineLeaveFrame>(parameter_count,
-                                                  -profiling_weight);
-
-  } else {
-    int parameter_count_without_receiver = parameter_count - 1;
-    TailCallBuiltin<Builtin::kBaselineLeaveFrame>(
-        parameter_count_without_receiver, -profiling_weight);
-  }
+  TailCallBuiltin<Builtin::kBaselineLeaveFrame>(parameter_count,
+                                                -profiling_weight);
 }
 
 void BaselineCompiler::VisitThrowReferenceErrorIfHole() {
@@ -2170,7 +2199,7 @@ void BaselineCompiler::VisitThrowIfNotSuperConstructor() {
   LoadRegister(reg, 0);
   Register map_bit_field = scratch_scope.AcquireScratch();
   __ LoadMap(map_bit_field, reg);
-  __ LoadByteField(map_bit_field, map_bit_field, Map::kBitFieldOffset);
+  __ LoadWord8Field(map_bit_field, map_bit_field, Map::kBitFieldOffset);
   __ TestAndBranch(map_bit_field, Map::Bits1::IsConstructorBit::kMask,
                    Condition::kNotZero, &done, Label::kNear);
 

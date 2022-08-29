@@ -4,12 +4,15 @@
 
 #include "ash/webui/camera_app_ui/camera_app_ui.h"
 
-#include "ash/grit/ash_camera_app_resources_map.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/webui/camera_app_ui/camera_app_helper_impl.h"
 #include "ash/webui/camera_app_ui/resources.h"
 #include "ash/webui/camera_app_ui/url_constants.h"
+#include "ash/webui/grit/ash_camera_app_resources_map.h"
 #include "base/bind.h"
+#include "base/feature_list.h"
+#include "base/files/file_util.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/strings/string_util.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -26,7 +29,6 @@
 #include "media/capture/video/chromeos/mojom/camera_app.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
-#include "mojo/public/js/grit/mojo_bindings_resources.h"
 #include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "services/video_capture/public/mojom/video_capture_service.mojom.h"
 #include "ui/aura/window.h"
@@ -35,6 +37,11 @@
 namespace ash {
 
 namespace {
+
+const base::Feature kCCALocalOverride{"CCALocalOverride",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+const base::FilePath::CharType kCCALocalOverrideDirectoryPath[] =
+    FILE_PATH_LITERAL("/etc/camera/cca");
 
 content::WebUIDataSource* CreateCameraAppUIHTMLSource(
     CameraAppUIDelegate* delegate) {
@@ -47,9 +54,6 @@ content::WebUIDataSource* CreateCameraAppUIHTMLSource(
   source->AddResourcePaths(
       base::make_span(kAshCameraAppResources, kAshCameraAppResourcesSize));
 
-  source->AddResourcePath("js/mojo/mojo_bindings_lite.js",
-                          IDR_MOJO_MOJO_BINDINGS_LITE_JS);
-
   delegate->PopulateLoadTimeData(source);
 
   for (const auto& str : kStringResourceMap) {
@@ -57,6 +61,41 @@ content::WebUIDataSource* CreateCameraAppUIHTMLSource(
   }
 
   source->UseStringsJs();
+
+  if (base::FeatureList::IsEnabled(kCCALocalOverride)) {
+    source->SetRequestFilter(
+        base::BindRepeating([](const std::string& url) {
+          // Only override files that are copied locally with cca.py deploy.
+          if (!(base::StartsWith(url, "js/") || base::StartsWith(url, "css/") ||
+                base::StartsWith(url, "images/") ||
+                base::StartsWith(url, "views/") ||
+                base::StartsWith(url, "sounds/"))) {
+            return false;
+          }
+          // This file is written by `cca.py deploy` and contains version
+          // information of deployed file.
+          base::FilePath version_path =
+              base::FilePath(kCCALocalOverrideDirectoryPath)
+                  .Append("js/deployed_version.js");
+          if (!base::PathExists(version_path)) {
+            return false;
+          }
+          return true;
+        }),
+        base::BindRepeating(
+            [](const std::string& url,
+               content::WebUIDataSource::GotDataCallback callback) {
+              base::FilePath path =
+                  base::FilePath(kCCALocalOverrideDirectoryPath).Append(url);
+              std::string result;
+              if (base::ReadFileToString(path, &result)) {
+                std::move(callback).Run(
+                    base::RefCountedString::TakeString(&result));
+              } else {
+                std::move(callback).Run(nullptr);
+              }
+            }));
+  }
 
   source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::WorkerSrc,
@@ -72,32 +111,6 @@ content::WebUIDataSource* CreateCameraAppUIHTMLSource(
       std::string("object-src 'self';"));
 
   return source;
-}
-
-content::WebUIDataSource* CreateUntrustedCameraAppUIHTMLSource() {
-  content::WebUIDataSource* untrusted_source =
-      content::WebUIDataSource::Create(kChromeUIUntrustedCameraAppURL);
-  for (size_t i = 0; i < kAshCameraAppResourcesSize; i++) {
-    untrusted_source->AddResourcePath(kAshCameraAppResources[i].path,
-                                      kAshCameraAppResources[i].id);
-  }
-  untrusted_source->AddFrameAncestor(GURL(kChromeUICameraAppURL));
-
-  untrusted_source->OverrideContentSecurityPolicy(
-      network::mojom::CSPDirectiveName::ConnectSrc,
-      std::string("connect-src http://www.google-analytics.com/ 'self';"));
-  untrusted_source->OverrideContentSecurityPolicy(
-      network::mojom::CSPDirectiveName::WorkerSrc,
-      std::string("worker-src 'self';"));
-  // TODO(crbug/948834): Replace 'wasm-eval' with 'wasm-unsafe-eval'.
-  untrusted_source->OverrideContentSecurityPolicy(
-      network::mojom::CSPDirectiveName::ScriptSrc,
-      std::string("script-src 'self' 'wasm-eval';"));
-  untrusted_source->OverrideContentSecurityPolicy(
-      network::mojom::CSPDirectiveName::TrustedTypes,
-      std::string("trusted-types ga-js-static video-processor-js-static;"));
-
-  return untrusted_source;
 }
 
 // Translates the renderer-side source ID to video device id.
@@ -213,8 +226,6 @@ CameraAppUI::CameraAppUI(content::WebUI* web_ui,
   // Set up the data source.
   content::WebUIDataSource::Add(browser_context,
                                 CreateCameraAppUIHTMLSource(delegate_.get()));
-  content::WebUIDataSource::Add(browser_context,
-                                CreateUntrustedCameraAppUIHTMLSource());
 
   // Add ability to request chrome-untrusted: URLs
   web_ui->AddRequestableScheme(content::kChromeUIUntrustedScheme);

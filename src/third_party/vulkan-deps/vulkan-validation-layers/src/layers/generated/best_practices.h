@@ -4,9 +4,9 @@
 
 /***************************************************************************
  *
- * Copyright (c) 2015-2021 The Khronos Group Inc.
- * Copyright (c) 2015-2021 Valve Corporation
- * Copyright (c) 2015-2021 LunarG, Inc.
+ * Copyright (c) 2015-2022 The Khronos Group Inc.
+ * Copyright (c) 2015-2022 Valve Corporation
+ * Copyright (c) 2015-2022 LunarG, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -496,6 +496,38 @@ void PostCallRecordWaitSemaphores(
 void PostCallRecordSignalSemaphore(
     VkDevice                                    device,
     const VkSemaphoreSignalInfo*                pSignalInfo,
+    VkResult                                    result) override;
+
+
+void PostCallRecordGetPhysicalDeviceToolProperties(
+    VkPhysicalDevice                            physicalDevice,
+    uint32_t*                                   pToolCount,
+    VkPhysicalDeviceToolProperties*             pToolProperties,
+    VkResult                                    result) override;
+
+
+void PostCallRecordCreatePrivateDataSlot(
+    VkDevice                                    device,
+    const VkPrivateDataSlotCreateInfo*          pCreateInfo,
+    const VkAllocationCallbacks*                pAllocator,
+    VkPrivateDataSlot*                          pPrivateDataSlot,
+    VkResult                                    result) override;
+
+
+void PostCallRecordSetPrivateData(
+    VkDevice                                    device,
+    VkObjectType                                objectType,
+    uint64_t                                    objectHandle,
+    VkPrivateDataSlot                           privateDataSlot,
+    uint64_t                                    data,
+    VkResult                                    result) override;
+
+
+void PostCallRecordQueueSubmit2(
+    VkQueue                                     queue,
+    uint32_t                                    submitCount,
+    const VkSubmitInfo2*                        pSubmits,
+    VkFence                                     fence,
     VkResult                                    result) override;
 
 
@@ -1100,7 +1132,7 @@ void PostCallRecordGetPipelineExecutableInternalRepresentationsKHR(
 void PostCallRecordQueueSubmit2KHR(
     VkQueue                                     queue,
     uint32_t                                    submitCount,
-    const VkSubmitInfo2KHR*                     pSubmits,
+    const VkSubmitInfo2*                        pSubmits,
     VkFence                                     fence,
     VkResult                                    result) override;
 
@@ -1518,7 +1550,7 @@ void PostCallRecordCreateMetalSurfaceEXT(
 void PostCallRecordGetPhysicalDeviceToolPropertiesEXT(
     VkPhysicalDevice                            physicalDevice,
     uint32_t*                                   pToolCount,
-    VkPhysicalDeviceToolPropertiesEXT*          pToolProperties,
+    VkPhysicalDeviceToolProperties*             pToolProperties,
     VkResult                                    result) override;
 
 
@@ -1612,9 +1644,9 @@ void PostCallRecordGetDrmDisplayEXT(
 
 void PostCallRecordCreatePrivateDataSlotEXT(
     VkDevice                                    device,
-    const VkPrivateDataSlotCreateInfoEXT*       pCreateInfo,
+    const VkPrivateDataSlotCreateInfo*          pCreateInfo,
     const VkAllocationCallbacks*                pAllocator,
-    VkPrivateDataSlotEXT*                       pPrivateDataSlot,
+    VkPrivateDataSlot*                          pPrivateDataSlot,
     VkResult                                    result) override;
 
 
@@ -1622,7 +1654,7 @@ void PostCallRecordSetPrivateDataEXT(
     VkDevice                                    device,
     VkObjectType                                objectType,
     uint64_t                                    objectHandle,
-    VkPrivateDataSlotEXT                        privateDataSlot,
+    VkPrivateDataSlot                           privateDataSlot,
     uint64_t                                    data,
     VkResult                                    result) override;
 
@@ -1763,6 +1795,13 @@ void PostCallRecordGetMemoryRemoteAddressNV(
     VkResult                                    result) override;
 
 
+void PostCallRecordGetPipelinePropertiesEXT(
+    VkDevice                                    device,
+    const VkPipelineInfoEXT*                    pPipelineInfo,
+    VkBaseOutStructure*                         pPipelineProperties,
+    VkResult                                    result) override;
+
+
 #ifdef VK_USE_PLATFORM_SCREEN_QNX
 
 void PostCallRecordCreateScreenSurfaceQNX(
@@ -1855,22 +1894,39 @@ const layer_data::unordered_map<std::string, DeprecationData>  deprecated_extens
     {"VK_AMD_gpu_shader_half_float", {kExtDeprecated, "VK_KHR_shader_float16_int8"}},
     {"VK_AMD_gpu_shader_int16", {kExtDeprecated, "VK_KHR_shader_float16_int8"}},
     {"VK_AMD_negative_viewport_height", {kExtObsoleted, "VK_KHR_maintenance1"}},
+    {"VK_EXT_4444_formats", {kExtPromoted, "VK_VERSION_1_3"}},
     {"VK_EXT_buffer_device_address", {kExtDeprecated, "VK_KHR_buffer_device_address"}},
     {"VK_EXT_debug_marker", {kExtPromoted, "VK_EXT_debug_utils"}},
     {"VK_EXT_debug_report", {kExtDeprecated, "VK_EXT_debug_utils"}},
     {"VK_EXT_descriptor_indexing", {kExtPromoted, "VK_VERSION_1_2"}},
+    {"VK_EXT_extended_dynamic_state", {kExtPromoted, "VK_VERSION_1_3"}},
+    {"VK_EXT_extended_dynamic_state2", {kExtPromoted, "VK_VERSION_1_3"}},
+    {"VK_EXT_global_priority", {kExtPromoted, "VK_KHR_global_priority"}},
+    {"VK_EXT_global_priority_query", {kExtPromoted, "VK_KHR_global_priority"}},
     {"VK_EXT_host_query_reset", {kExtPromoted, "VK_VERSION_1_2"}},
+    {"VK_EXT_image_robustness", {kExtPromoted, "VK_VERSION_1_3"}},
+    {"VK_EXT_inline_uniform_block", {kExtPromoted, "VK_VERSION_1_3"}},
+    {"VK_EXT_pipeline_creation_cache_control", {kExtPromoted, "VK_VERSION_1_3"}},
+    {"VK_EXT_pipeline_creation_feedback", {kExtPromoted, "VK_VERSION_1_3"}},
+    {"VK_EXT_private_data", {kExtPromoted, "VK_VERSION_1_3"}},
     {"VK_EXT_sampler_filter_minmax", {kExtPromoted, "VK_VERSION_1_2"}},
     {"VK_EXT_scalar_block_layout", {kExtPromoted, "VK_VERSION_1_2"}},
     {"VK_EXT_separate_stencil_usage", {kExtPromoted, "VK_VERSION_1_2"}},
+    {"VK_EXT_shader_demote_to_helper_invocation", {kExtPromoted, "VK_VERSION_1_3"}},
     {"VK_EXT_shader_subgroup_ballot", {kExtDeprecated, "VK_VERSION_1_2"}},
     {"VK_EXT_shader_subgroup_vote", {kExtDeprecated, "VK_VERSION_1_1"}},
     {"VK_EXT_shader_viewport_index_layer", {kExtPromoted, "VK_VERSION_1_2"}},
+    {"VK_EXT_subgroup_size_control", {kExtPromoted, "VK_VERSION_1_3"}},
+    {"VK_EXT_texel_buffer_alignment", {kExtPromoted, "VK_VERSION_1_3"}},
+    {"VK_EXT_texture_compression_astc_hdr", {kExtPromoted, "VK_VERSION_1_3"}},
+    {"VK_EXT_tooling_info", {kExtPromoted, "VK_VERSION_1_3"}},
     {"VK_EXT_validation_flags", {kExtDeprecated, "VK_EXT_validation_features"}},
+    {"VK_EXT_ycbcr_2plane_444_formats", {kExtPromoted, "VK_VERSION_1_3"}},
     {"VK_KHR_16bit_storage", {kExtPromoted, "VK_VERSION_1_1"}},
     {"VK_KHR_8bit_storage", {kExtPromoted, "VK_VERSION_1_2"}},
     {"VK_KHR_bind_memory2", {kExtPromoted, "VK_VERSION_1_1"}},
     {"VK_KHR_buffer_device_address", {kExtPromoted, "VK_VERSION_1_2"}},
+    {"VK_KHR_copy_commands2", {kExtPromoted, "VK_VERSION_1_3"}},
     {"VK_KHR_create_renderpass2", {kExtPromoted, "VK_VERSION_1_2"}},
     {"VK_KHR_dedicated_allocation", {kExtPromoted, "VK_VERSION_1_1"}},
     {"VK_KHR_depth_stencil_resolve", {kExtPromoted, "VK_VERSION_1_2"}},
@@ -1879,12 +1935,14 @@ const layer_data::unordered_map<std::string, DeprecationData>  deprecated_extens
     {"VK_KHR_device_group_creation", {kExtPromoted, "VK_VERSION_1_1"}},
     {"VK_KHR_draw_indirect_count", {kExtPromoted, "VK_VERSION_1_2"}},
     {"VK_KHR_driver_properties", {kExtPromoted, "VK_VERSION_1_2"}},
+    {"VK_KHR_dynamic_rendering", {kExtPromoted, "VK_VERSION_1_3"}},
     {"VK_KHR_external_fence", {kExtPromoted, "VK_VERSION_1_1"}},
     {"VK_KHR_external_fence_capabilities", {kExtPromoted, "VK_VERSION_1_1"}},
     {"VK_KHR_external_memory", {kExtPromoted, "VK_VERSION_1_1"}},
     {"VK_KHR_external_memory_capabilities", {kExtPromoted, "VK_VERSION_1_1"}},
     {"VK_KHR_external_semaphore", {kExtPromoted, "VK_VERSION_1_1"}},
     {"VK_KHR_external_semaphore_capabilities", {kExtPromoted, "VK_VERSION_1_1"}},
+    {"VK_KHR_format_feature_flags2", {kExtPromoted, "VK_VERSION_1_3"}},
     {"VK_KHR_get_memory_requirements2", {kExtPromoted, "VK_VERSION_1_1"}},
     {"VK_KHR_get_physical_device_properties2", {kExtPromoted, "VK_VERSION_1_1"}},
     {"VK_KHR_image_format_list", {kExtPromoted, "VK_VERSION_1_2"}},
@@ -1892,6 +1950,7 @@ const layer_data::unordered_map<std::string, DeprecationData>  deprecated_extens
     {"VK_KHR_maintenance1", {kExtPromoted, "VK_VERSION_1_1"}},
     {"VK_KHR_maintenance2", {kExtPromoted, "VK_VERSION_1_1"}},
     {"VK_KHR_maintenance3", {kExtPromoted, "VK_VERSION_1_1"}},
+    {"VK_KHR_maintenance4", {kExtPromoted, "VK_VERSION_1_3"}},
     {"VK_KHR_multiview", {kExtPromoted, "VK_VERSION_1_1"}},
     {"VK_KHR_relaxed_block_layout", {kExtPromoted, "VK_VERSION_1_1"}},
     {"VK_KHR_sampler_mirror_clamp_to_edge", {kExtPromoted, "VK_VERSION_1_2"}},
@@ -1901,19 +1960,25 @@ const layer_data::unordered_map<std::string, DeprecationData>  deprecated_extens
     {"VK_KHR_shader_draw_parameters", {kExtPromoted, "VK_VERSION_1_1"}},
     {"VK_KHR_shader_float16_int8", {kExtPromoted, "VK_VERSION_1_2"}},
     {"VK_KHR_shader_float_controls", {kExtPromoted, "VK_VERSION_1_2"}},
+    {"VK_KHR_shader_integer_dot_product", {kExtPromoted, "VK_VERSION_1_3"}},
+    {"VK_KHR_shader_non_semantic_info", {kExtPromoted, "VK_VERSION_1_3"}},
     {"VK_KHR_shader_subgroup_extended_types", {kExtPromoted, "VK_VERSION_1_2"}},
+    {"VK_KHR_shader_terminate_invocation", {kExtPromoted, "VK_VERSION_1_3"}},
     {"VK_KHR_spirv_1_4", {kExtPromoted, "VK_VERSION_1_2"}},
     {"VK_KHR_storage_buffer_storage_class", {kExtPromoted, "VK_VERSION_1_1"}},
+    {"VK_KHR_synchronization2", {kExtPromoted, "VK_VERSION_1_3"}},
     {"VK_KHR_timeline_semaphore", {kExtPromoted, "VK_VERSION_1_2"}},
     {"VK_KHR_uniform_buffer_standard_layout", {kExtPromoted, "VK_VERSION_1_2"}},
     {"VK_KHR_variable_pointers", {kExtPromoted, "VK_VERSION_1_1"}},
     {"VK_KHR_vulkan_memory_model", {kExtPromoted, "VK_VERSION_1_2"}},
+    {"VK_KHR_zero_initialize_workgroup_memory", {kExtPromoted, "VK_VERSION_1_3"}},
     {"VK_MVK_ios_surface", {kExtDeprecated, "VK_EXT_metal_surface"}},
     {"VK_MVK_macos_surface", {kExtDeprecated, "VK_EXT_metal_surface"}},
     {"VK_NV_dedicated_allocation", {kExtDeprecated, "VK_KHR_dedicated_allocation"}},
     {"VK_NV_external_memory", {kExtDeprecated, "VK_KHR_external_memory"}},
     {"VK_NV_external_memory_capabilities", {kExtDeprecated, "VK_KHR_external_memory_capabilities"}},
     {"VK_NV_external_memory_win32", {kExtDeprecated, "VK_KHR_external_memory_win32"}},
+    {"VK_NV_fragment_shader_barycentric", {kExtPromoted, "VK_KHR_fragment_shader_barycentric"}},
     {"VK_NV_glsl_shader", {kExtDeprecated, ""}},
     {"VK_NV_win32_keyed_mutex", {kExtPromoted, "VK_KHR_win32_keyed_mutex"}},
 };
@@ -1929,16 +1994,20 @@ const layer_data::unordered_map<std::string, std::string> special_use_extensions
     {"VK_EXT_depth_clip_control", "glemulation"},
     {"VK_EXT_depth_clip_enable", "d3demulation"},
     {"VK_EXT_device_memory_report", "devtools"},
+    {"VK_EXT_image_2d_view_of_3d", "glemulation"},
     {"VK_EXT_line_rasterization", "cadsupport"},
     {"VK_EXT_pipeline_creation_feedback", "devtools"},
     {"VK_EXT_primitive_topology_list_restart", "glemulation"},
+    {"VK_EXT_primitives_generated_query", "glemulation"},
     {"VK_EXT_provoking_vertex", "glemulation"},
     {"VK_EXT_transform_feedback", "glemulation, d3demulation, devtools"},
     {"VK_EXT_validation_features", "debugging"},
     {"VK_EXT_validation_flags", "debugging"},
+    {"VK_GOOGLE_surfaceless_query", "glemulation"},
     {"VK_INTEL_performance_query", "devtools"},
     {"VK_KHR_performance_query", "devtools"},
     {"VK_KHR_pipeline_executable_properties", "devtools"},
+    {"VK_VALVE_descriptor_set_host_mapping", "d3demulation"},
     {"VK_VALVE_mutable_descriptor_type", "d3demulation"},
 };
 

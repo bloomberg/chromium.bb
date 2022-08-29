@@ -23,12 +23,14 @@ sys.path.append(
     os.path.join(
         os.path.dirname(__file__), os.pardir, os.pardir, 'third_party',
         'catapult', 'devil'))
+# pylint: disable=wrong-import-position,import-error
 from devil.utils import cmd_helper
 
 sys.path.append(
     os.path.join(
         os.path.dirname(__file__), os.pardir, os.pardir, 'third_party',
         'catapult', 'common', 'py_utils'))
+# pylint: disable=wrong-import-position,import-error
 from py_utils import tempfile_ext
 
 SRC_DIR = os.path.abspath(
@@ -67,7 +69,7 @@ _ENSURE_SUBDIR = 'cipd'
 _RE_COMMENT_OR_BLANK = re.compile(r'^ *(#.*)?$')
 
 
-class CTSConfig(object):
+class CTSConfig:
   """Represents a CTS config file."""
 
   def __init__(self, file_path=CONFIG_PATH):
@@ -106,8 +108,14 @@ class CTSConfig(object):
   def get_apks(self, platform):
     return sorted([r['apk'] for r in self._config[platform]['test_runs']])
 
+  def get_additional_apks(self, platform):
+    return [
+        apk['apk'] for r in self._config[platform]['test_runs']
+        for apk in r.get('additional_apks', [])
+    ]
 
-class CTSCIPDYaml(object):
+
+class CTSCIPDYaml:
   """Represents a CTS CIPD yaml file."""
 
   RE_PACKAGE = r'^package:\s*(\S+)\s*$'
@@ -275,13 +283,14 @@ def filter_cts_file(cts_config, cts_zip_file, dest_dir):
       o = cts_config.get_origin(p, a)
       base_name = os.path.basename(o)
       if base_name == os.path.basename(cts_zip_file):
-        filterzip(cts_zip_file, cts_config.get_apks(p),
+        filterzip(cts_zip_file,
+                  cts_config.get_apks(p) + cts_config.get_additional_apks(p),
                   os.path.join(dest_dir, base_name))
         return
   raise ValueError('Could not find platform and arch for: ' + cts_zip_file)
 
 
-class ChromiumRepoHelper(object):
+class ChromiumRepoHelper:
   """Performs operations on Chromium checkout."""
 
   def __init__(self, root_dir=SRC_DIR):
@@ -303,9 +312,11 @@ class ChromiumRepoHelper(object):
     deps_file = os.path.join(self._root_dir, DEPS_FILE)
 
     # Use the gclient command instead of gclient_eval since the latter is not
-    # intended for direct use outside of depot_tools.
+    # intended for direct use outside of depot_tools. The .bat file extension
+    # must be explicitly specified when shell=False.
+    gclient = 'gclient.bat' if os.name == 'nt' else 'gclient'
     cmd = [
-        'gclient', 'getdep', '--revision',
+        gclient, 'getdep', '--revision',
         '%s:%s' % (CTS_DEP_NAME, CTS_DEP_PACKAGE), '--deps-file', deps_file
     ]
     env = os.environ

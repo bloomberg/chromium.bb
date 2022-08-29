@@ -7,6 +7,8 @@
 
 #import <UIKit/UIKit.h>
 
+#include <set>
+
 #include "base/base_paths.h"
 #include "base/bind.h"
 #include "base/containers/contains.h"
@@ -19,7 +21,6 @@
 #include "base/path_service.h"
 #include "base/sequence_checker.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/task_runner_util.h"
 #include "base/task/thread_pool.h"
@@ -168,9 +169,9 @@ void WriteImageToDisk(UIImage* image, const base::FilePath& file_path) {
 
   // Encrypt the snapshot file (mostly for Incognito, but can't hurt to
   // always do it).
-  NSDictionary* attribute_dict =
-      [NSDictionary dictionaryWithObject:NSFileProtectionComplete
-                                  forKey:NSFileProtectionKey];
+  NSDictionary* attribute_dict = [NSDictionary
+      dictionaryWithObject:NSFileProtectionCompleteUntilFirstUserAuthentication
+                    forKey:NSFileProtectionKey];
   NSError* error = nil;
   BOOL success = [[NSFileManager defaultManager] setAttributes:attribute_dict
                                                   ofItemAtPath:path
