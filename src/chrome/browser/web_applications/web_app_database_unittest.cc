@@ -19,15 +19,16 @@
 #include "chrome/browser/web_applications/test/fake_web_app_registry_controller.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/browser/web_applications/test/web_app_test_utils.h"
+#include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
+#include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_proto_utils.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_registry_update.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
-#include "chrome/browser/web_applications/web_application_info.h"
 #include "components/services/app_service/public/cpp/file_handler.h"
 #include "components/services/app_service/public/cpp/protocol_handler_info.h"
 #include "components/services/app_service/public/cpp/share_target.h"
@@ -210,7 +211,6 @@ TEST_F(WebAppDatabaseTest, BackwardCompatibility_WebAppWithOnlyRequiredFields) {
   const GURL start_url{"https://example.com/"};
   const AppId app_id = GenerateAppId(/*manifest_id=*/absl::nullopt, start_url);
   const std::string name = "App Name";
-  const auto user_display_mode = DisplayMode::kBrowser;
   const bool is_locally_installed = true;
 
   std::vector<std::unique_ptr<WebAppProto>> protos;
@@ -222,7 +222,7 @@ TEST_F(WebAppDatabaseTest, BackwardCompatibility_WebAppWithOnlyRequiredFields) {
     sync_pb::WebAppSpecifics sync_proto;
     sync_proto.set_start_url(start_url.spec());
     sync_proto.set_user_display_mode(
-        ToWebAppSpecificsUserDisplayMode(user_display_mode));
+        ToWebAppSpecificsUserDisplayMode(DisplayMode::kBrowser));
     *(proto->mutable_sync_data()) = std::move(sync_proto);
   }
 
@@ -252,8 +252,8 @@ TEST_F(WebAppDatabaseTest, BackwardCompatibility_WebAppWithOnlyRequiredFields) {
   const WebApp* app = registrar().GetAppById(app_id);
   EXPECT_EQ(app_id, app->app_id());
   EXPECT_EQ(start_url, app->start_url());
-  EXPECT_EQ(name, app->name());
-  EXPECT_EQ(user_display_mode, app->user_display_mode());
+  EXPECT_EQ(name, app->untranslated_name());
+  EXPECT_EQ(UserDisplayMode::kBrowser, app->user_display_mode());
   EXPECT_EQ(is_locally_installed, app->is_locally_installed());
   EXPECT_TRUE(app->IsSynced());
   EXPECT_FALSE(app->IsPreinstalledApp());
@@ -275,29 +275,29 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   const AppId app_id =
       GenerateAppId(/*manifest_id=*/absl::nullopt, GURL(start_url));
   const std::string name = "Name";
-  const auto user_display_mode = DisplayMode::kBrowser;
 
   auto app = std::make_unique<WebApp>(app_id);
 
   // Required fields:
   app->SetStartUrl(start_url);
   app->SetName(name);
-  app->SetUserDisplayMode(user_display_mode);
+  app->SetUserDisplayMode(UserDisplayMode::kBrowser);
   app->SetIsLocallyInstalled(false);
   // chromeos_data should always be set on ChromeOS.
   if (IsChromeOsDataMandatory())
     app->SetWebAppChromeOsData(absl::make_optional<WebAppChromeOsData>());
 
   EXPECT_FALSE(app->HasAnySources());
-  for (int i = Source::kMinValue; i <= Source::kMaxValue; ++i) {
-    app->AddSource(static_cast<Source::Type>(i));
+  for (int i = WebAppManagement::kMinValue; i <= WebAppManagement::kMaxValue;
+       ++i) {
+    app->AddSource(static_cast<WebAppManagement::Type>(i));
     EXPECT_TRUE(app->HasAnySources());
   }
 
   // Let optional fields be empty:
   EXPECT_EQ(app->display_mode(), DisplayMode::kUndefined);
   EXPECT_TRUE(app->display_mode_override().empty());
-  EXPECT_TRUE(app->description().empty());
+  EXPECT_TRUE(app->untranslated_description().empty());
   EXPECT_TRUE(app->scope().is_empty());
   EXPECT_FALSE(app->theme_color().has_value());
   EXPECT_FALSE(app->dark_mode_theme_color().has_value());
@@ -326,9 +326,11 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_TRUE(app->shortcuts_menu_item_infos().empty());
   EXPECT_TRUE(app->downloaded_shortcuts_menu_icons_sizes().empty());
   EXPECT_EQ(app->run_on_os_login_mode(), RunOnOsLoginMode::kNotRun);
+  EXPECT_FALSE(app->run_on_os_login_os_integration_state().has_value());
   EXPECT_TRUE(app->manifest_url().is_empty());
   EXPECT_FALSE(app->manifest_id().has_value());
   EXPECT_FALSE(app->IsStorageIsolated());
+  EXPECT_TRUE(app->permissions_policy().empty());
   controller().RegisterApp(std::move(app));
 
   Registry registry = database_factory().ReadRegistry();
@@ -339,8 +341,8 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   // Required fields were serialized:
   EXPECT_EQ(app_id, app_copy->app_id());
   EXPECT_EQ(start_url, app_copy->start_url());
-  EXPECT_EQ(name, app_copy->name());
-  EXPECT_EQ(user_display_mode, app_copy->user_display_mode());
+  EXPECT_EQ(name, app_copy->untranslated_name());
+  EXPECT_EQ(UserDisplayMode::kBrowser, app_copy->user_display_mode());
   EXPECT_FALSE(app_copy->is_locally_installed());
 
   auto& chromeos_data = app_copy->chromeos_data();
@@ -354,16 +356,17 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
     EXPECT_FALSE(chromeos_data.has_value());
   }
 
-  for (int i = Source::kMinValue; i <= Source::kMaxValue; ++i) {
+  for (int i = WebAppManagement::kMinValue; i <= WebAppManagement::kMaxValue;
+       ++i) {
     EXPECT_TRUE(app_copy->HasAnySources());
-    app_copy->RemoveSource(static_cast<Source::Type>(i));
+    app_copy->RemoveSource(static_cast<WebAppManagement::Type>(i));
   }
   EXPECT_FALSE(app_copy->HasAnySources());
 
   // No optional fields.
   EXPECT_EQ(app_copy->display_mode(), DisplayMode::kUndefined);
   EXPECT_TRUE(app_copy->display_mode_override().empty());
-  EXPECT_TRUE(app_copy->description().empty());
+  EXPECT_TRUE(app_copy->untranslated_description().empty());
   EXPECT_TRUE(app_copy->scope().is_empty());
   EXPECT_FALSE(app_copy->theme_color().has_value());
   EXPECT_FALSE(app_copy->dark_mode_theme_color().has_value());
@@ -391,9 +394,11 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_TRUE(app_copy->shortcuts_menu_item_infos().empty());
   EXPECT_TRUE(app_copy->downloaded_shortcuts_menu_icons_sizes().empty());
   EXPECT_EQ(app_copy->run_on_os_login_mode(), RunOnOsLoginMode::kNotRun);
+  EXPECT_FALSE(app_copy->run_on_os_login_os_integration_state().has_value());
   EXPECT_TRUE(app_copy->manifest_url().is_empty());
   EXPECT_FALSE(app_copy->manifest_id().has_value());
   EXPECT_FALSE(app_copy->IsStorageIsolated());
+  EXPECT_TRUE(app_copy->permissions_policy().empty());
 }
 
 TEST_F(WebAppDatabaseTest, WebAppWithManyIcons) {
@@ -441,6 +446,65 @@ TEST_F(WebAppDatabaseTest, WebAppWithManyIcons) {
               app_copy->manifest_icons()[i - 1].square_size_px);
   }
   EXPECT_FALSE(app_copy->is_generated_icon());
+}
+
+TEST_F(WebAppDatabaseTest, MigrateOldLaunchHandlerSyntax) {
+  std::unique_ptr<WebApp> base_app =
+      test::CreateRandomWebApp(GURL("https://example.com"), /*seed=*/0);
+  std::unique_ptr<WebAppProto> base_proto =
+      WebAppDatabase::CreateWebAppProto(*base_app);
+
+  // "launch_handler": {
+  //   "route_to": "existing-client",
+  //   "navigate_existing_client": "always"
+  // }
+  // ->
+  // "launch_handler": {
+  //   "route_to": "existing-client-navigate"
+  // }
+  WebAppProto old_navigate_proto(*base_proto);
+  old_navigate_proto.mutable_launch_handler()->set_route_to(
+      LaunchHandlerProto_RouteTo_DEPRECATED_EXISTING_CLIENT);
+  old_navigate_proto.mutable_launch_handler()->set_navigate_existing_client(
+      LaunchHandlerProto_NavigateExistingClient_ALWAYS);
+
+  std::unique_ptr<WebApp> new_navigate_app =
+      WebAppDatabase::CreateWebApp(old_navigate_proto);
+  EXPECT_EQ(new_navigate_app->launch_handler(),
+            (LaunchHandler{LaunchHandler::RouteTo::kExistingClientNavigate}));
+
+  std::unique_ptr<WebAppProto> new_navigate_proto =
+      WebAppDatabase::CreateWebAppProto(*new_navigate_app);
+  EXPECT_EQ(new_navigate_proto->launch_handler().route_to(),
+            LaunchHandlerProto_RouteTo_EXISTING_CLIENT_NAVIGATE);
+  EXPECT_EQ(new_navigate_proto->launch_handler().navigate_existing_client(),
+            LaunchHandlerProto_NavigateExistingClient_UNSPECIFIED_NAVIGATE);
+
+  // "launch_handler": {
+  //   "route_to": "existing-client",
+  //   "navigate_existing_client": "never"
+  // }
+  // ->
+  // "launch_handler": {
+  //   "route_to": "existing-client-retain"
+  // }
+  WebAppProto old_retain_proto(*base_proto);
+  old_retain_proto.mutable_launch_handler()->set_route_to(
+      LaunchHandlerProto_RouteTo_DEPRECATED_EXISTING_CLIENT);
+  old_retain_proto.mutable_launch_handler()->set_navigate_existing_client(
+      LaunchHandlerProto_NavigateExistingClient_NEVER);
+
+  std::unique_ptr<WebApp> new_retain_app =
+      WebAppDatabase::CreateWebApp(old_retain_proto);
+  EXPECT_EQ(new_retain_app->launch_handler(),
+            (LaunchHandler{LaunchHandler::RouteTo::kExistingClientRetain}));
+
+  std::unique_ptr<WebAppProto> new_retain_proto =
+      WebAppDatabase::CreateWebAppProto(*new_retain_app);
+  EXPECT_EQ(new_retain_proto->launch_handler().route_to(),
+            LaunchHandlerProto_RouteTo_EXISTING_CLIENT_RETAIN);
+  EXPECT_EQ(new_retain_proto->launch_handler().navigate_existing_client(),
+            LaunchHandlerProto_NavigateExistingClient_UNSPECIFIED_NAVIGATE);
 }
 
 }  // namespace web_app

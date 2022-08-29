@@ -28,12 +28,17 @@ using DeviceMediaPolicy = SenderSocketFactory::DeviceMediaPolicy;
 
 }  // namespace
 
-LoopingFileCastAgent::LoopingFileCastAgent(TaskRunner* task_runner,
-                                           ShutdownCallback shutdown_callback)
+LoopingFileCastAgent::LoopingFileCastAgent(
+    TaskRunner* task_runner,
+    std::unique_ptr<TrustStore> cast_trust_store,
+    ShutdownCallback shutdown_callback)
     : task_runner_(task_runner),
       shutdown_callback_(std::move(shutdown_callback)),
       connection_handler_(&router_, this),
-      socket_factory_(this, task_runner_),
+      socket_factory_(this,
+                      task_runner_,
+                      std::move(cast_trust_store),
+                      CastCRLTrustStore::Create()),
       connection_factory_(
           TlsConnectionFactory::CreateFactory(&socket_factory_, task_runner_)),
       message_port_(&router_) {

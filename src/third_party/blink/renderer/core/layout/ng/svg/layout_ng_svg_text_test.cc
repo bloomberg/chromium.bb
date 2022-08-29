@@ -15,9 +15,7 @@ class LayoutCounts : public EmptyLocalFrameClient {
   void DidObserveLayoutNg(uint32_t all_block_count,
                           uint32_t ng_block_count,
                           uint32_t all_call_count,
-                          uint32_t ng_call_count,
-                          uint32_t flexbox_ng_block_count,
-                          uint32_t grid_ng_block_count) override {
+                          uint32_t ng_call_count) override {
     all_call_count_ += all_call_count;
   }
 
@@ -49,11 +47,11 @@ body { margin:0; padding: 0; }
 </svg>)HTML");
   UpdateAllLifecyclePhasesForTest();
 
-  Vector<FloatQuad> quads;
+  Vector<gfx::QuadF> quads;
   auto* object = GetLayoutObjectByElementId("t");
   object->AbsoluteQuads(quads, 0);
   EXPECT_EQ(1u, quads.size());
-  FloatRect bounding = quads.back().BoundingBox();
+  gfx::RectF bounding = quads.back().BoundingBox();
   EXPECT_EQ(7.0f, bounding.x());
   EXPECT_EQ(307.0f, bounding.right());
 }
@@ -117,6 +115,32 @@ TEST_F(LayoutNGSVGTextTest, SubtreeLayout) {
   UpdateAllLifecyclePhasesForTest();
   // Only the <text> and its parent <svg> should be laid out again.
   EXPECT_EQ(2u, AllLayoutCallCount() - pre_layout_count);
+}
+
+// crbug.com/1320615
+TEST_F(LayoutNGSVGTextTest, WillBeRemovedFromTree) {
+  SetHtmlInnerHTML(R"HTML(
+<body>
+<div id="to_be_skipped">
+<div id="d">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 360" id="svg">
+<text id="t">foo</text>
+</svg>
+</div>
+</div>
+</body>)HTML");
+  // The <text> is registered to #d, #to_be_skipped, body, ...
+  UpdateAllLifecyclePhasesForTest();
+
+  // #d's containing block will be the LayoutView.
+  GetElementById("d")->setAttribute("style", "position:absolute;");
+  UpdateAllLifecyclePhasesForTest();
+
+  // The <text> should be unregistered from all of ancestors.
+  GetElementById("svg")->remove();
+  GetElementById("to_be_skipped")
+      ->setAttribute("style", "transform:rotate(20deg)");
+  UpdateAllLifecyclePhasesForTest();
 }
 
 }  // namespace blink

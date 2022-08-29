@@ -41,6 +41,9 @@ transitive_hdrs(
         "//tensorflow/c/experimental/grappler:grappler_hdrs",
         "//tensorflow/c:kernels_hdrs",
         "//tensorflow/c:ops_hdrs",
+        # TODO(rostam): Revisit these after cc_shared_library everywhere
+        "//tensorflow/cc:client_session",
+        "//tensorflow/cc:cc_ops",
         # WARNING: None of the C/C++ code under python/ has any API guarantees, and TF team
         # reserves the right to change APIs and other header-level interfaces.  If your custom
         # op uses these headers, it may break when users upgrade their version of tensorflow.
@@ -125,20 +128,22 @@ COMMON_PIP_DEPS = [
     "//tensorflow/python/ops/ragged:ragged_tensor_test_ops",
     "//tensorflow/python/debug:debug_pip",
     "//tensorflow/python/distribute:combinations",
+    "//tensorflow/python/distribute/failure_handling:failure_handling_lib",
+    "//tensorflow/python/distribute/failure_handling:gce_util",
     "//tensorflow/python/distribute:multi_process_runner",
     "//tensorflow/python/eager:eager_pip",
     "//tensorflow/python/keras:combinations",
-    "//tensorflow/python/keras/distribute:distribute_test_lib_pip",
-    "//tensorflow/python/keras/distribute:strategy_combinations",
     "//tensorflow/python/keras/mixed_precision:test_util",
     "//tensorflow/python/keras/utils:dataset_creator",
     "//tensorflow/python/kernel_tests/linalg/testdata:self_adjoint_eig_op_test_files",
     "//tensorflow/python/kernel_tests/nn_ops:bias_op_base",
     "//tensorflow/python/kernel_tests/nn_ops:cudnn_deterministic_base",
+    "//tensorflow/python/kernel_tests/nn_ops:depthwise_conv_op_base",
     "//tensorflow/python/kernel_tests/nn_ops:xent_op_test_base",
     "//tensorflow/python/kernel_tests/random:util",
     "//tensorflow/python/kernel_tests/signal:test_util",
     "//tensorflow/python/kernel_tests/sparse_ops:sparse_xent_op_test_base",
+    "//tensorflow/python/ops/structured:structured_tensor_dynamic",
     "//tensorflow/python/profiler:trace",
     "//tensorflow/python/saved_model:saved_model",
     "//tensorflow/python/tools:tools_pip",
@@ -181,13 +186,17 @@ filegroup(
         "//third_party/eigen3:LICENSE",
         "//third_party/fft2d:LICENSE",
         "//third_party/icu/data:LICENSE",
-        "@ruy//:LICENSE",
+        "@FP16//:LICENSE",
+        "@FXdiv//:LICENSE",
+        "@XNNPACK//:LICENSE",
         "@arm_neon_2_x86_sse//:LICENSE",
         "@astunparse_archive//:LICENSE",
         "@boringssl//:LICENSE",
+        "@clog//:LICENSE",
         "@com_google_absl//:LICENSE",
         "@com_google_protobuf//:LICENSE",
         "@com_googlesource_code_re2//:LICENSE",
+        "@cpuinfo//:LICENSE",
         "@curl//:COPYING",
         "@dill_archive//:LICENSE",
         "@dlpack//:LICENSE",
@@ -212,6 +221,8 @@ filegroup(
         "@opt_einsum_archive//:LICENSE",
         "@pasta//:LICENSE",
         "@png//:LICENSE",
+        "@pthreadpool//:LICENSE",
+        "@ruy//:LICENSE",
         "@six_archive//:LICENSE",
         "@snappy//:COPYING",
         "@sobol_data//:LICENSE",
@@ -219,8 +230,6 @@ filegroup(
         "@termcolor_archive//:COPYING.txt",
         "@typing_extensions_archive//:LICENSE",
         "@zlib//:zlib.h",
-        "@clog//:LICENSE",
-        "@cpuinfo//:LICENSE",
     ] + select({
         "//tensorflow:android": [],
         "//tensorflow:ios": [],
@@ -232,7 +241,6 @@ filegroup(
         "//tensorflow:ios": [],
         "//tensorflow:linux_s390x": [],
         "//tensorflow:windows": [],
-        "//tensorflow:no_gcp_support": [],
         "//conditions:default": [
             "@com_github_googlecloudplatform_google_cloud_cpp//:LICENSE",
         ],
@@ -255,7 +263,6 @@ filegroup(
         "absl_py",
         [
             "@absl_py//:LICENSE",
-            "@absl_py//absl/third_party/unittest3_backport:LICENSE",
         ],
     ) + if_not_system_lib(
         "com_github_grpc_grpc",
@@ -282,6 +289,7 @@ sh_binary(
                "//tensorflow:dynamic_loaded_kernels": DYNAMIC_LOADED_KERNELS,
                "//conditions:default": [],
            }) + if_mkl_ml(["//third_party/mkl:intel_binary_blob"]),
+    visibility = ["//visibility:public"],
 )
 
 # A genrule for generating a marker file for the pip package on Windows

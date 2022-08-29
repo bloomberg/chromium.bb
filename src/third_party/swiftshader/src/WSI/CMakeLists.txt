@@ -32,16 +32,7 @@ if(WIN32)
         Win32SurfaceKHR.hpp
     )
 elseif(LINUX)
-    if(X11)
-        list(APPEND WSI_SRC_FILES
-            XlibSurfaceKHR.cpp
-            XlibSurfaceKHR.hpp
-            libX11.cpp
-            libX11.hpp
-        )
-    endif()
-
-    if(XCB)
+    if(HAVE_XCB_H)
         list(APPEND WSI_SRC_FILES
             XcbSurfaceKHR.cpp
             XcbSurfaceKHR.hpp
@@ -50,10 +41,12 @@ elseif(LINUX)
         )
     endif()
 
-    if(WAYLAND)
+    if(HAVE_WAYLAND_CLIENT_H)
         list(APPEND WSI_SRC_FILES
             WaylandSurfaceKHR.cpp
             WaylandSurfaceKHR.hpp
+            libWaylandClient.cpp
+            libWaylandClient.hpp
         )
     endif()
 

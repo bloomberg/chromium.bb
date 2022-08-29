@@ -31,10 +31,12 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_DOCUMENT_ANIMATIONS_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_DOCUMENT_ANIMATIONS_H_
 
-#include "base/auto_reset.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/animation/animation.h"
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/document_lifecycle.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_map.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_set.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
 
 namespace blink {
@@ -90,12 +92,17 @@ class CORE_EXPORT DocumentAnimations final
   // https://github.com/w3c/csswg-drafts/issues/5261
   void ValidateTimelines();
 
+  // Detach compositor timelines to prevent further ticking of any animations
+  // associated with the timelines.  Detached timelines may be subsequently
+  // reattached if needed.
+  void DetachCompositorTimelines();
+
   // Add an element to the set of elements with a pending animation update.
   // The elements in the set can be applied later using,
   // ApplyPendingElementUpdates.
   //
   // It's invalid to call this function if there is no current
-  // CSSAnimationUpdateScope.
+  // PostStyleUpdateScope.
   void AddElementWithPendingAnimationUpdate(Element&);
 
   // Apply pending updates for any elements previously added during AddElement-

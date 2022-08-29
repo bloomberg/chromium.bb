@@ -13,14 +13,24 @@
 #include <vector>
 
 #include "base/base64.h"
+#include "base/check.h"
 #include "base/containers/contains.h"
+#include "base/containers/span.h"
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
+#include "base/guid.h"
+#include "base/json/json_reader.h"
+#include "base/strings/strcat.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/sequence_bound.h"
 #include "base/time/time.h"
+#include "base/values.h"
 #include "content/browser/aggregation_service/aggregatable_report.h"
 #include "content/browser/aggregation_service/aggregation_service_storage_sql.h"
 #include "content/browser/aggregation_service/public_key.h"
+#include "content/browser/aggregation_service/public_key_parsing_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/boringssl/src/include/openssl/hpke.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -66,13 +76,6 @@ testing::AssertionResult AggregatableReportsEqual(
     const AggregationServicePayload& expected_payload = expected.payloads()[i];
     const AggregationServicePayload& actual_payload = actual.payloads()[i];
 
-    if (expected_payload.origin != actual_payload.origin) {
-      return testing::AssertionFailure()
-             << "Expected origin " << expected_payload.origin
-             << " at payload index " << i
-             << ", actual: " << actual_payload.origin;
-    }
-
     if (expected_payload.payload != actual_payload.payload) {
       return testing::AssertionFailure()
              << "Expected payloads at payload index " << i << " to match";
@@ -86,25 +89,30 @@ testing::AssertionResult AggregatableReportsEqual(
     }
   }
 
-  return SharedInfoEqual(expected.shared_info(), actual.shared_info());
+  if (expected.shared_info() != actual.shared_info()) {
+    return testing::AssertionFailure()
+           << "Expected shared info " << expected.shared_info()
+           << ", actual: " << actual.shared_info();
+  }
+
+  return testing::AssertionSuccess();
 }
 
 testing::AssertionResult ReportRequestsEqual(
     const AggregatableReportRequest& expected,
     const AggregatableReportRequest& actual) {
-  if (expected.processing_origins().size() !=
-      actual.processing_origins().size()) {
+  if (expected.processing_urls().size() != actual.processing_urls().size()) {
     return testing::AssertionFailure()
-           << "Expected processing_origins size "
-           << expected.processing_origins().size()
-           << ", actual: " << actual.processing_origins().size();
+           << "Expected processing_urls size "
+           << expected.processing_urls().size()
+           << ", actual: " << actual.processing_urls().size();
   }
-  for (size_t i = 0; i < expected.processing_origins().size(); ++i) {
-    if (expected.processing_origins()[i] != actual.processing_origins()[i]) {
+  for (size_t i = 0; i < expected.processing_urls().size(); ++i) {
+    if (expected.processing_urls()[i] != actual.processing_urls()[i]) {
       return testing::AssertionFailure()
-             << "Expected processing_origins()[" << i << "] to be "
-             << expected.processing_origins()[i]
-             << ", actual: " << actual.processing_origins()[i];
+             << "Expected processing_urls()[" << i << "] to be "
+             << expected.processing_urls()[i]
+             << ", actual: " << actual.processing_urls()[i];
     }
   }
 
@@ -124,18 +132,29 @@ testing::AssertionResult PayloadContentsEqual(
            << "Expected operation " << expected.operation
            << ", actual: " << actual.operation;
   }
-  if (expected.bucket != actual.bucket) {
-    return testing::AssertionFailure() << "Expected bucket " << expected.bucket
-                                       << ", actual: " << actual.bucket;
-  }
-  if (expected.value != actual.value) {
-    return testing::AssertionFailure() << "Expected value " << expected.value
-                                       << ", actual: " << actual.value;
-  }
-  if (expected.processing_type != actual.processing_type) {
+  if (expected.contributions.size() != actual.contributions.size()) {
     return testing::AssertionFailure()
-           << "Expected processing_type " << expected.processing_type
-           << ", actual: " << actual.processing_type;
+           << "Expected contributions.size() " << expected.contributions.size()
+           << ", actual: " << actual.contributions.size();
+  }
+  for (size_t i = 0; i < expected.contributions.size(); ++i) {
+    if (expected.contributions[i].bucket != actual.contributions[i].bucket) {
+      return testing::AssertionFailure()
+             << "Expected contribution " << i << " bucket "
+             << expected.contributions[i].bucket
+             << ", actual: " << actual.contributions[i].bucket;
+    }
+    if (expected.contributions[i].value != actual.contributions[i].value) {
+      return testing::AssertionFailure()
+             << "Expected contribution " << i << " value "
+             << expected.contributions[i].value
+             << ", actual: " << actual.contributions[i].value;
+    }
+  }
+  if (expected.aggregation_mode != actual.aggregation_mode) {
+    return testing::AssertionFailure()
+           << "Expected aggregation_mode " << expected.aggregation_mode
+           << ", actual: " << actual.aggregation_mode;
   }
 
   return testing::AssertionSuccess();
@@ -150,52 +169,73 @@ testing::AssertionResult SharedInfoEqual(
            << expected.scheduled_report_time
            << ", actual: " << actual.scheduled_report_time;
   }
-  if (expected.privacy_budget_key != actual.privacy_budget_key) {
+  if (expected.report_id != actual.report_id) {
     return testing::AssertionFailure()
-           << "Expected privacy_budget_key " << expected.privacy_budget_key
-           << ", actual: " << actual.privacy_budget_key;
+           << "Expected report_id " << expected.report_id
+           << ", actual: " << actual.report_id;
+  }
+  if (expected.reporting_origin != actual.reporting_origin) {
+    return testing::AssertionFailure()
+           << "Expected reporting_origin " << expected.reporting_origin
+           << ", actual: " << actual.reporting_origin;
+  }
+  if (expected.debug_mode != actual.debug_mode) {
+    return testing::AssertionFailure()
+           << "Expected debug_mode " << expected.debug_mode
+           << ", actual: " << actual.debug_mode;
+  }
+  if (expected.additional_fields != actual.additional_fields) {
+    return testing::AssertionFailure()
+           << "Expected additional_fields " << expected.additional_fields
+           << ", actual: " << actual.additional_fields;
+  }
+  if (expected.api_version != actual.api_version) {
+    return testing::AssertionFailure()
+           << "Expected api_version " << expected.api_version
+           << ", actual: " << actual.api_version;
+  }
+  if (expected.api_identifier != actual.api_identifier) {
+    return testing::AssertionFailure()
+           << "Expected api_identifier " << expected.api_identifier
+           << ", actual: " << actual.api_identifier;
   }
 
   return testing::AssertionSuccess();
 }
 
-std::vector<url::Origin> GetExampleProcessingOrigins() {
-  return {url::Origin::Create(GURL("https://a.example")),
-          url::Origin::Create(GURL("https://b.example"))};
-}
-
 AggregatableReportRequest CreateExampleRequest(
-    AggregationServicePayloadContents::ProcessingType processing_type) {
-  return CreateExampleRequest(processing_type, GetExampleProcessingOrigins());
-}
-
-AggregatableReportRequest CreateExampleRequest(
-    AggregationServicePayloadContents::ProcessingType processing_type,
-    std::vector<url::Origin> processing_origins) {
+    AggregationServicePayloadContents::AggregationMode aggregation_mode) {
   return AggregatableReportRequest::Create(
-             std::move(processing_origins),
              AggregationServicePayloadContents(
                  AggregationServicePayloadContents::Operation::kHistogram,
-                 /*bucket=*/123, /*value=*/456, processing_type,
-                 url::Origin::Create(GURL("https://reporting.example"))),
+                 {AggregationServicePayloadContents::HistogramContribution{
+                     .bucket = 123, .value = 456}},
+                 aggregation_mode),
              AggregatableReportSharedInfo(
                  /*scheduled_report_time=*/base::Time::Now(),
-                 /*privacy_budget_key=*/"example_budget_key"))
+                 /*report_id=*/
+                 base::GUID::GenerateRandomV4(),
+                 url::Origin::Create(GURL("https://reporting.example")),
+                 AggregatableReportSharedInfo::DebugMode::kDisabled,
+                 /*additional_fields=*/base::Value::Dict(),
+                 /*api_version=*/"",
+                 /*api_identifier=*/"example-api"))
       .value();
 }
 
 AggregatableReportRequest CloneReportRequest(
     const AggregatableReportRequest& request) {
-  return AggregatableReportRequest::Create(request.processing_origins(),
-                                           request.payload_contents(),
-                                           request.shared_info())
+  return AggregatableReportRequest::CreateForTesting(
+             request.processing_urls(), request.payload_contents(),
+             request.shared_info().Clone())
       .value();
 }
 
 AggregatableReport CloneAggregatableReport(const AggregatableReport& report) {
   std::vector<AggregationServicePayload> payloads;
   for (const AggregationServicePayload& payload : report.payloads()) {
-    payloads.emplace_back(payload.origin, payload.payload, payload.key_id);
+    payloads.emplace_back(payload.payload, payload.key_id,
+                          payload.debug_cleartext_payload);
   }
 
   return AggregatableReport(std::move(payloads), report.shared_info());
@@ -219,6 +259,93 @@ TestHpkeKey GenerateKey(std::string key_id) {
   return hpke_key;
 }
 
+absl::optional<PublicKeyset> ReadAndParsePublicKeys(const base::FilePath& file,
+                                                    base::Time now,
+                                                    std::string* error_msg) {
+  if (!base::PathExists(file)) {
+    if (error_msg)
+      *error_msg = base::StrCat({"Failed to open file: ", file.MaybeAsASCII()});
+
+    return absl::nullopt;
+  }
+
+  std::string contents;
+  if (!base::ReadFileToString(file, &contents)) {
+    if (error_msg)
+      *error_msg = base::StrCat({"Failed to read file: ", file.MaybeAsASCII()});
+
+    return absl::nullopt;
+  }
+
+  base::JSONReader::ValueWithError value_with_error =
+      base::JSONReader::ReadAndReturnValueWithError(contents);
+  if (!value_with_error.value) {
+    if (error_msg) {
+      *error_msg =
+          base::StrCat({"Failed to parse \"", contents,
+                        "\" as JSON: ", value_with_error.error_message});
+    }
+    return absl::nullopt;
+  }
+
+  std::vector<PublicKey> keys = GetPublicKeys(*value_with_error.value);
+  if (keys.empty()) {
+    if (error_msg) {
+      *error_msg =
+          base::StrCat({"Failed to parse public keys from \"", contents, "\""});
+    }
+
+    return absl::nullopt;
+  }
+
+  return PublicKeyset(std::move(keys), /*fetch_time=*/now,
+                      /*expiry_time=*/base::Time::Max());
+}
+
+std::vector<uint8_t> DecryptPayloadWithHpke(
+    base::span<const uint8_t> payload,
+    const EVP_HPKE_KEY& key,
+    const std::string& expected_serialized_shared_info) {
+  base::span<const uint8_t> enc = payload.subspan(0, X25519_PUBLIC_VALUE_LEN);
+
+  std::string authenticated_info_str =
+      base::StrCat({AggregatableReport::kDomainSeparationPrefix,
+                    expected_serialized_shared_info});
+  base::span<const uint8_t> authenticated_info =
+      base::as_bytes(base::make_span(authenticated_info_str));
+
+  // No null terminators should have been copied when concatenating the strings.
+  DCHECK(!base::Contains(authenticated_info_str, '\0'));
+
+  bssl::ScopedEVP_HPKE_CTX recipient_context;
+  if (!EVP_HPKE_CTX_setup_recipient(
+          /*ctx=*/recipient_context.get(), /*key=*/&key,
+          /*kdf=*/EVP_hpke_hkdf_sha256(),
+          /*aead=*/EVP_hpke_chacha20_poly1305(),
+          /*enc=*/enc.data(), /*enc_len=*/enc.size(),
+          /*info=*/authenticated_info.data(),
+          /*info_len=*/authenticated_info.size())) {
+    return {};
+  }
+
+  base::span<const uint8_t> ciphertext =
+      payload.subspan(X25519_PUBLIC_VALUE_LEN);
+  std::vector<uint8_t> plaintext(ciphertext.size());
+  size_t plaintext_len;
+
+  if (!EVP_HPKE_CTX_open(
+          /*ctx=*/recipient_context.get(), /*out=*/plaintext.data(),
+          /*out_len*/ &plaintext_len, /*max_out_len=*/plaintext.size(),
+          /*in=*/ciphertext.data(), /*in_len=*/ciphertext.size(),
+          /*ad=*/nullptr,
+          /*ad_len=*/0)) {
+    return {};
+  }
+
+  plaintext.resize(plaintext_len);
+  return plaintext;
+}
+
 }  // namespace aggregation_service
 
 TestAggregationServiceStorageContext::TestAggregationServiceStorageContext(
@@ -237,68 +364,9 @@ TestAggregationServiceStorageContext::GetKeyStorage() {
   return storage_;
 }
 
-TestAggregationServiceKeyFetcher::TestAggregationServiceKeyFetcher()
-    : AggregationServiceKeyFetcher(/*storage_context=*/nullptr,
-                                   /*network_fetcher=*/nullptr) {}
-
-TestAggregationServiceKeyFetcher::~TestAggregationServiceKeyFetcher() = default;
-
-void TestAggregationServiceKeyFetcher::GetPublicKey(const url::Origin& origin,
-                                                    FetchCallback callback) {
-  callbacks_[origin].push_back(std::move(callback));
-}
-
-void TestAggregationServiceKeyFetcher::TriggerPublicKeyResponse(
-    const url::Origin& origin,
-    absl::optional<PublicKey> key,
-    PublicKeyFetchStatus status) {
-  ASSERT_TRUE(base::Contains(callbacks_, origin))
-      << "No corresponding GetPublicKeys call for origin " << origin;
-  ASSERT_EQ(key.has_value(), status == PublicKeyFetchStatus::kOk)
-      << "Key must be returned if and only if status is kOk";
-
-  std::vector<FetchCallback> callbacks = std::move(callbacks_[origin]);
-  callbacks_.erase(origin);
-  for (FetchCallback& callback : callbacks) {
-    std::move(callback).Run(key, status);
-  }
-}
-
-void TestAggregationServiceKeyFetcher::TriggerPublicKeyResponseForAllOrigins(
-    absl::optional<PublicKey> key,
-    PublicKeyFetchStatus status) {
-  std::vector<url::Origin> all_origins_;
-  for (const auto& elem : callbacks_) {
-    all_origins_.push_back(elem.first);
-  }
-  for (auto& origin : all_origins_) {
-    TriggerPublicKeyResponse(std::move(origin), key, status);
-  }
-}
-
-bool TestAggregationServiceKeyFetcher::HasPendingCallbacks() {
-  return !callbacks_.empty();
-}
-
-TestAggregatableReportProvider::TestAggregatableReportProvider() = default;
-TestAggregatableReportProvider::~TestAggregatableReportProvider() = default;
-
-absl::optional<AggregatableReport>
-TestAggregatableReportProvider::CreateFromRequestAndPublicKeys(
-    AggregatableReportRequest report_request,
-    std::vector<PublicKey> public_keys) const {
-  ++num_calls_;
-  previous_request_ = aggregation_service::CloneReportRequest(report_request);
-  previous_public_keys_ = public_keys;
-
-  EXPECT_TRUE(report_to_return_.has_value());
-  return aggregation_service::CloneAggregatableReport(
-      report_to_return_.value());
-}
-
 std::ostream& operator<<(
     std::ostream& out,
-    const AggregationServicePayloadContents::Operation& operation) {
+    AggregationServicePayloadContents::Operation operation) {
   switch (operation) {
     case AggregationServicePayloadContents::Operation::kHistogram:
       return out << "kHistogram";
@@ -307,13 +375,35 @@ std::ostream& operator<<(
 
 std::ostream& operator<<(
     std::ostream& out,
-    const AggregationServicePayloadContents::ProcessingType& processing_type) {
-  switch (processing_type) {
-    case AggregationServicePayloadContents::ProcessingType::kTwoParty:
-      return out << "kTwoParty";
-    case AggregationServicePayloadContents::ProcessingType::kSingleServer:
-      return out << "kSingleServer";
+    AggregationServicePayloadContents::AggregationMode aggregation_mode) {
+  switch (aggregation_mode) {
+    case AggregationServicePayloadContents::AggregationMode::kTeeBased:
+      return out << "kTeeBased";
+    case AggregationServicePayloadContents::AggregationMode::
+        kExperimentalPoplar:
+      return out << "kExperimentalPoplar";
   }
+}
+
+std::ostream& operator<<(std::ostream& out,
+                         AggregatableReportSharedInfo::DebugMode debug_mode) {
+  switch (debug_mode) {
+    case AggregatableReportSharedInfo::DebugMode::kDisabled:
+      return out << "kDisabled";
+    case AggregatableReportSharedInfo::DebugMode::kEnabled:
+      return out << "kEnabled";
+  }
+}
+
+bool operator==(const PublicKey& a, const PublicKey& b) {
+  const auto tie = [](const PublicKey& public_key) {
+    return std::make_tuple(public_key.id, public_key.key);
+  };
+  return tie(a) == tie(b);
+}
+
+bool operator==(const AggregatableReport& a, const AggregatableReport& b) {
+  return aggregation_service::AggregatableReportsEqual(a, b);
 }
 
 }  // namespace content

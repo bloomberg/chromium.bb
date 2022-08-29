@@ -56,7 +56,7 @@ static const unsigned char *GetKernelRtSigreturnAddress() {
     absl::debugging_internal::VDSOSupport::SymbolInfo symbol_info;
     // Symbol versioning pulled from arch/riscv/kernel/vdso/vdso.lds at v5.10.
     auto lookup = [&](int type) {
-      return vdso.LookupSymbol("__kernel_rt_sigreturn", "LINUX_4.15", type,
+      return vdso.LookupSymbol("__vdso_rt_sigreturn", "LINUX_4.15", type,
                                &symbol_info);
     };
     if ((!lookup(STT_FUNC) && !lookup(STT_NOTYPE)) ||
@@ -213,12 +213,17 @@ static int UnwindImpl(void **result, int *sizes, int max_depth, int skip_count,
     // Implementation detail: we clamp the max of frames we are willing to
     // count, so as not to spend too much time in the loop below.
     const int kMaxUnwind = 200;
-    int j = 0;
-    for (; frame_pointer != nullptr && j < kMaxUnwind; j++) {
+    int num_dropped_frames = 0;
+    for (int j = 0; frame_pointer != nullptr && j < kMaxUnwind; j++) {
+      if (skip_count > 0) {
+        skip_count--;
+      } else {
+        num_dropped_frames++;
+      }
       frame_pointer =
           NextStackFrame<!IS_STACK_FRAMES, IS_WITH_CONTEXT>(frame_pointer, ucp);
     }
-    *min_dropped_frames = j;
+    *min_dropped_frames = num_dropped_frames;
   }
   return n;
 }

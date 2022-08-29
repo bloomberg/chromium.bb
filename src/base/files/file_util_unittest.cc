@@ -20,7 +20,6 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
-#include "base/cxx17_backports.h"
 #include "base/environment.h"
 #include "base/files/file.h"
 #include "base/files/file_enumerator.h"
@@ -45,13 +44,11 @@
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "build/chromeos_buildflags.h"
-#include "build/os_buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/multiprocess_func_list.h"
 #include "testing/platform_test.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include <shellapi.h>
 #include <shlobj.h>
 #include <tchar.h>
@@ -62,7 +59,7 @@
 #include "base/win/win_util.h"
 #endif
 
-#if defined(OS_POSIX) || defined(OS_FUCHSIA)
+#if BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
@@ -70,15 +67,15 @@
 #include <unistd.h>
 #endif
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID)
 #include <sys/socket.h>
 #endif
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 #include <linux/fs.h>
 #endif
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "base/android/content_uri_utils.h"
 #endif
 
@@ -97,7 +94,7 @@ const size_t kLargeFileSize = (1 << 16) + 3;
 
 // To test that NormalizeFilePath() deals with NTFS reparse points correctly,
 // we need functions to create and delete reparse points.
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 typedef struct _REPARSE_DATA_BUFFER {
   ULONG  ReparseTag;
   USHORT  ReparseDataLength;
@@ -197,14 +194,14 @@ class ReparsePoint {
                      NULL, OPEN_EXISTING,
                      FILE_FLAG_BACKUP_SEMANTICS,  // Needed to open a directory.
                      NULL));
-    created_ = dir_.IsValid() && SetReparsePoint(dir_.Get(), target);
+    created_ = dir_.is_valid() && SetReparsePoint(dir_.get(), target);
   }
   ReparsePoint(const ReparsePoint&) = delete;
   ReparsePoint& operator=(const ReparsePoint&) = delete;
 
   ~ReparsePoint() {
     if (created_)
-      DeleteReparsePoint(dir_.Get());
+      DeleteReparsePoint(dir_.get());
   }
 
   bool IsValid() { return created_; }
@@ -216,9 +213,7 @@ class ReparsePoint {
 
 #endif
 
-// Fuchsia doesn't support file permissions.
-#if !defined(OS_FUCHSIA)
-#if defined(OS_POSIX)
+#if BUILDFLAG(IS_MAC)
 // Provide a simple way to change the permissions bits on |path| in tests.
 // ASSERT failures will return, but not stop the test.  Caller should wrap
 // calls to this function in ASSERT_NO_FATAL_FAILURE().
@@ -234,11 +229,13 @@ void ChangePosixFilePermissions(const FilePath& path,
   mode &= ~mode_bits_to_clear;
   ASSERT_TRUE(SetPosixFilePermissions(path, mode));
 }
-#endif  // defined(OS_POSIX)
+#endif  // BUILDFLAG(IS_MAC)
 
+// Fuchsia doesn't support file permissions.
+#if !BUILDFLAG(IS_FUCHSIA)
 // Sets the source file to read-only.
 void SetReadOnly(const FilePath& path, bool read_only) {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // On Windows, it involves setting/removing the 'readonly' bit.
   DWORD attrs = GetFileAttributes(path.value().c_str());
   ASSERT_NE(INVALID_FILE_ATTRIBUTES, attrs);
@@ -264,11 +261,11 @@ void SetReadOnly(const FilePath& path, bool read_only) {
   mode_t mode = read_only ? S_IRUSR : (S_IRUSR | S_IWUSR);
   EXPECT_TRUE(SetPosixFilePermissions(
       path, DirectoryExists(path) ? (mode | S_IXUSR) : mode));
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 }
 
 bool IsReadOnly(const FilePath& path) {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   DWORD attrs = GetFileAttributes(path.value().c_str());
   EXPECT_NE(INVALID_FILE_ATTRIBUTES, attrs);
   return attrs & FILE_ATTRIBUTE_READONLY;
@@ -276,10 +273,10 @@ bool IsReadOnly(const FilePath& path) {
   int mode = 0;
   EXPECT_TRUE(GetPosixFilePermissions(path, &mode));
   return !(mode & S_IWUSR);
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 }
 
-#endif  // defined(OS_FUCHSIA)
+#endif  // BUILDFLAG(IS_FUCHSIA)
 
 const wchar_t bogus_content[] = L"I'm cannon fodder.";
 
@@ -332,11 +329,11 @@ class FindResultCollector {
 void CreateTextFile(const FilePath& filename,
                     const std::wstring& contents) {
   std::wofstream file;
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   file.open(filename.value().c_str());
-#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
+#elif BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
   file.open(filename.value());
-#endif  // OS_WIN
+#endif  // BUILDFLAG(IS_WIN)
   ASSERT_TRUE(file.is_open());
   file << contents;
   file.close();
@@ -346,13 +343,13 @@ void CreateTextFile(const FilePath& filename,
 std::wstring ReadTextFile(const FilePath& filename) {
   wchar_t contents[64];
   std::wifstream file;
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   file.open(filename.value().c_str());
-#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
+#elif BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
   file.open(filename.value());
-#endif  // OS_WIN
+#endif  // BUILDFLAG(IS_WIN)
   EXPECT_TRUE(file.is_open());
-  file.getline(contents, size(contents));
+  file.getline(contents, std::size(contents));
   file.close();
   return std::wstring(contents);
 }
@@ -363,14 +360,14 @@ std::wstring ReadTextFile(const FilePath& filename) {
 // descriptor on POSIX). Calls to this function must be wrapped with
 // ASSERT_NO_FATAL_FAILURE to properly abort tests in case of fatal failure.
 void GetIsInheritable(FILE* stream, bool* is_inheritable) {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   HANDLE handle = reinterpret_cast<HANDLE>(_get_osfhandle(_fileno(stream)));
   ASSERT_NE(INVALID_HANDLE_VALUE, handle);
 
   DWORD info = 0;
   ASSERT_EQ(TRUE, ::GetHandleInformation(handle, &info));
   *is_inheritable = ((info & HANDLE_FLAG_INHERIT) != 0);
-#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
+#elif BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
   int fd = fileno(stream);
   ASSERT_NE(-1, fd);
   int flags = fcntl(fd, F_GETFD, 0);
@@ -437,7 +434,7 @@ TEST_F(FileUtilTest, NormalizeFilePathBasic) {
       .IsParent(normalized_file_b_path.DirName()));
 }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 
 TEST_F(FileUtilTest, NormalizeFileEmptyFile) {
   // Create a directory under the test dir.  Because we create it,
@@ -485,7 +482,7 @@ TEST_F(FileUtilTest, NormalizeFilePathReparsePoints) {
   //     |-> to_sub_long (reparse point to temp_dir\sub_a\long_name_\sub_long)
 
   FilePath base_a = temp_dir_.GetPath().Append(FPL("base_a"));
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // TEMP can have a lower case drive letter.
   std::wstring temp_base_a = base_a.value();
   ASSERT_FALSE(temp_base_a.empty());
@@ -493,7 +490,7 @@ TEST_F(FileUtilTest, NormalizeFilePathReparsePoints) {
   base_a = FilePath(temp_base_a);
 #endif
   ASSERT_TRUE(CreateDirectory(base_a));
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // TEMP might be a short name which is not normalized.
   base_a = MakeLongFilePath(base_a);
 #endif
@@ -533,7 +530,7 @@ TEST_F(FileUtilTest, NormalizeFilePathReparsePoints) {
 
   FilePath base_b = temp_dir_.GetPath().Append(FPL("base_b"));
   ASSERT_TRUE(CreateDirectory(base_b));
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // TEMP might be a short name which is not normalized.
   base_b = MakeLongFilePath(base_b);
 #endif
@@ -776,9 +773,9 @@ TEST_F(FileUtilTest, CreateWinHardlinkTest) {
   EXPECT_FALSE(CreateWinHardLink(temp_dir_.GetPath(), test_dir));
 }
 
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
-#if defined(OS_POSIX)
+#if BUILDFLAG(IS_POSIX)
 
 TEST_F(FileUtilTest, CreateAndReadSymlinks) {
   FilePath link_from = temp_dir_.GetPath().Append(FPL("from_file"));
@@ -1132,9 +1129,9 @@ TEST_F(FileUtilTest, CopyDirectoryPermissions) {
   int mode = 0;
   int expected_mode;
   ASSERT_TRUE(GetPosixFilePermissions(file_name_to, &mode));
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
   expected_mode = 0755;
-#elif BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#elif BUILDFLAG(IS_CHROMEOS)
   expected_mode = 0644;
 #else
   expected_mode = 0600;
@@ -1142,9 +1139,9 @@ TEST_F(FileUtilTest, CopyDirectoryPermissions) {
   EXPECT_EQ(expected_mode, mode);
 
   ASSERT_TRUE(GetPosixFilePermissions(file2_name_to, &mode));
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
   expected_mode = 0755;
-#elif BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#elif BUILDFLAG(IS_CHROMEOS)
   expected_mode = 0644;
 #else
   expected_mode = 0600;
@@ -1152,9 +1149,9 @@ TEST_F(FileUtilTest, CopyDirectoryPermissions) {
   EXPECT_EQ(expected_mode, mode);
 
   ASSERT_TRUE(GetPosixFilePermissions(file3_name_to, &mode));
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
   expected_mode = 0600;
-#elif BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#elif BUILDFLAG(IS_CHROMEOS)
   expected_mode = 0644;
 #else
   expected_mode = 0600;
@@ -1302,9 +1299,9 @@ TEST_F(FileUtilTest, CopyFileExecutablePermission) {
 
   ASSERT_TRUE(GetPosixFilePermissions(dst, &mode));
   int expected_mode;
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
   expected_mode = 0755;
-#elif BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#elif BUILDFLAG(IS_CHROMEOS)
   expected_mode = 0644;
 #else
   expected_mode = 0600;
@@ -1320,9 +1317,9 @@ TEST_F(FileUtilTest, CopyFileExecutablePermission) {
   EXPECT_EQ(file_contents, ReadTextFile(dst));
 
   ASSERT_TRUE(GetPosixFilePermissions(dst, &mode));
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
   expected_mode = 0755;
-#elif BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#elif BUILDFLAG(IS_CHROMEOS)
   expected_mode = 0644;
 #else
   expected_mode = 0600;
@@ -1338,9 +1335,9 @@ TEST_F(FileUtilTest, CopyFileExecutablePermission) {
   EXPECT_EQ(file_contents, ReadTextFile(dst));
 
   ASSERT_TRUE(GetPosixFilePermissions(dst, &mode));
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
   expected_mode = 0600;
-#elif BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#elif BUILDFLAG(IS_CHROMEOS)
   expected_mode = 0644;
 #else
   expected_mode = 0600;
@@ -1359,9 +1356,9 @@ TEST_F(FileUtilTest, CopyFileExecutablePermission) {
   EXPECT_EQ(0777, mode);
 }
 
-#endif  // defined(OS_POSIX)
+#endif  // BUILDFLAG(IS_POSIX)
 
-#if !defined(OS_FUCHSIA)
+#if !BUILDFLAG(IS_FUCHSIA)
 
 TEST_F(FileUtilTest, CopyFileACL) {
   // While FileUtilTest.CopyFile asserts the content is correctly copied over,
@@ -1415,7 +1412,7 @@ TEST_F(FileUtilTest, CopyDirectoryACL) {
   ASSERT_FALSE(IsReadOnly(src_subdir));
 }
 
-#endif  // !defined(OS_FUCHSIA)
+#endif  // !BUILDFLAG(IS_FUCHSIA)
 
 TEST_F(FileUtilTest, DeleteNonExistent) {
   FilePath non_existent =
@@ -1459,7 +1456,7 @@ TEST_F(FileUtilTest, DeleteFile) {
   EXPECT_FALSE(PathExists(file_name));
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 TEST_F(FileUtilTest, DeleteContentUri) {
   // Get the path to the test file.
   FilePath data_dir;
@@ -1484,9 +1481,9 @@ TEST_F(FileUtilTest, DeleteContentUri) {
   EXPECT_FALSE(PathExists(image_copy));
   EXPECT_FALSE(PathExists(uri_path));
 }
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 // Tests that the Delete function works for wild cards, especially
 // with the recursion flag.  Also coincidentally tests PathExists.
 // TODO(erikkay): see if anyone's actually using this feature of the API
@@ -1620,7 +1617,7 @@ TEST_F(FileUtilTest, DeleteDirRecursiveWithOpenFile) {
              File::FLAG_CREATE | File::FLAG_READ | File::FLAG_WRITE);
   ASSERT_TRUE(PathExists(file_name3));
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
   // On Windows, holding the file open in sufficient to make it un-deletable.
   // The POSIX code is verifiable on Linux by creating an "immutable" file but
   // this is best-effort because it's not supported by all file systems. Both
@@ -1641,7 +1638,7 @@ TEST_F(FileUtilTest, DeleteDirRecursiveWithOpenFile) {
   DeletePathRecursively(test_subdir);
   EXPECT_FALSE(PathExists(file_name2));
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
   // Make sure that the test can clean up after itself.
   if (file_attrs_supported) {
     flags &= ~FS_IMMUTABLE_FL;
@@ -1651,7 +1648,7 @@ TEST_F(FileUtilTest, DeleteDirRecursiveWithOpenFile) {
 #endif
 }
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 // This test will validate that files which would block when read result in a
 // failure on a call to ReadFileToStringNonBlocking. To accomplish this we will
 // use a named pipe because it appears as a file on disk and we can control how
@@ -1684,7 +1681,7 @@ TEST_F(FileUtilTest, TestNonBlockingFileReadLinux) {
   ASSERT_EQ(result.size(), 1u);
   EXPECT_EQ(result[0], 'a');
 }
-#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 
 TEST_F(FileUtilTest, MoveFileNew) {
   // Create a file
@@ -2117,10 +2114,10 @@ TEST_F(FileUtilTest, CopyDirectoryWithTrailingSeparators) {
       dir_name_to.Append(FILE_PATH_LITERAL("Copy_Test_File.txt"));
 
   // Create from path with trailing separators.
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   FilePath from_path =
       temp_dir_.GetPath().Append(FILE_PATH_LITERAL("Copy_From_Subdir\\\\\\"));
-#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
+#elif BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
   FilePath from_path =
       temp_dir_.GetPath().Append(FILE_PATH_LITERAL("Copy_From_Subdir///"));
 #endif
@@ -2134,7 +2131,7 @@ TEST_F(FileUtilTest, CopyDirectoryWithTrailingSeparators) {
   EXPECT_TRUE(PathExists(file_name_to));
 }
 
-#if defined(OS_POSIX)
+#if BUILDFLAG(IS_POSIX)
 TEST_F(FileUtilTest, CopyDirectoryWithNonRegularFiles) {
   // Create a directory.
   FilePath dir_name_from =
@@ -2347,7 +2344,7 @@ TEST_F(FileUtilTest, CopyDirectoryExclFileOverFifo) {
   // Check that copying fails.
   EXPECT_FALSE(CopyDirectoryExcl(dir_name_from, dir_name_to, false));
 }
-#endif  // defined(OS_POSIX)
+#endif  // BUILDFLAG(IS_POSIX)
 
 TEST_F(FileUtilTest, CopyFile) {
   // Create a directory
@@ -2503,7 +2500,7 @@ TEST_F(ReadOnlyFileUtilTest, TextContentsEqual) {
 }
 
 // We don't need equivalent functionality outside of Windows.
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 TEST_F(FileUtilTest, CopyAndDeleteDirectoryTest) {
   // Create a directory
   FilePath dir_name_from = temp_dir_.GetPath().Append(
@@ -2546,7 +2543,7 @@ TEST_F(FileUtilTest, GetTempDirTest) {
   ASSERT_EQ(0, ::_tdupenv_s(&original_tmp, &original_tmp_size, kTmpKey));
   // original_tmp may be NULL.
 
-  for (unsigned int i = 0; i < size(kTmpValues); ++i) {
+  for (unsigned int i = 0; i < std::size(kTmpValues); ++i) {
     FilePath path;
     ::_tputenv_s(kTmpKey, kTmpValues[i]);
     GetTempDir(&path);
@@ -2562,7 +2559,7 @@ TEST_F(FileUtilTest, GetTempDirTest) {
     ::_tputenv_s(kTmpKey, _T(""));
   }
 }
-#endif  // OS_WIN
+#endif  // BUILDFLAG(IS_WIN)
 
 // Test that files opened by OpenFile are not set up for inheritance into child
 // procs.
@@ -2601,7 +2598,7 @@ TEST_F(FileUtilTest, CreateAndOpenTemporaryFileInDir) {
   // Try to open another handle to it.
   File file2(path,
              File::FLAG_OPEN | File::FLAG_READ | File::FLAG_WIN_SHARE_DELETE);
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // The file cannot be opened again on account of the exclusive access.
   EXPECT_FALSE(file2.IsValid());
 #else
@@ -2734,7 +2731,7 @@ TEST_F(FileUtilTest, CreateNewTemporaryDirInDirTest) {
   EXPECT_TRUE(DeleteFile(new_dir));
 }
 
-#if defined(OS_POSIX) || defined(OS_FUCHSIA)
+#if BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
 TEST_F(FileUtilTest, GetShmemTempDirTest) {
   FilePath dir;
   EXPECT_TRUE(GetShmemTempDir(false, &dir));
@@ -2812,7 +2809,7 @@ TEST_F(FileUtilTest, AllocateFileRegionTest_DontTruncate) {
 #endif
 
 TEST_F(FileUtilTest, GetHomeDirTest) {
-#if !defined(OS_ANDROID)  // Not implemented on Android.
+#if !BUILDFLAG(IS_ANDROID)  // Not implemented on Android.
   // We don't actually know what the home directory is supposed to be without
   // calling some OS functions which would just duplicate the implementation.
   // So here we just test that it returns something "reasonable".
@@ -2825,10 +2822,10 @@ TEST_F(FileUtilTest, GetHomeDirTest) {
 TEST_F(FileUtilTest, CreateDirectoryTest) {
   FilePath test_root =
       temp_dir_.GetPath().Append(FILE_PATH_LITERAL("create_directory_test"));
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   FilePath test_path =
       test_root.Append(FILE_PATH_LITERAL("dir\\tree\\likely\\doesnt\\exist\\"));
-#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
+#elif BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
   FilePath test_path =
       test_root.Append(FILE_PATH_LITERAL("dir/tree/likely/doesnt/exist/"));
 #endif
@@ -2866,7 +2863,7 @@ TEST_F(FileUtilTest, CreateDirectoryTest) {
       FilePath(FilePath::kCurrentDirectory)));
   EXPECT_TRUE(CreateDirectory(top_level));
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   FilePath invalid_drive(FILE_PATH_LITERAL("o:\\"));
   FilePath invalid_path =
       invalid_drive.Append(FILE_PATH_LITERAL("some\\inaccessible\\dir"));
@@ -2997,7 +2994,7 @@ TEST_F(FileUtilTest, FileEnumeratorTest) {
   EXPECT_TRUE(c5.HasFile(dir2innerfile));
   EXPECT_EQ(5, c5.size());
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   {
     // Make dir1 point to dir2.
     ReparsePoint reparse_point(dir1, dir2);
@@ -3171,7 +3168,7 @@ TEST_F(FileUtilTest, ReadFileToString) {
   EXPECT_EQ(0u, data.length());
 }
 
-#if !defined(OS_WIN)
+#if !BUILDFLAG(IS_WIN)
 TEST_F(FileUtilTest, ReadFileToStringWithUnknownFileSize) {
 #if BUILDFLAG(IS_FUCHSIA)
   test::TaskEnvironment task_environment;
@@ -3198,10 +3195,10 @@ TEST_F(FileUtilTest, ReadFileToStringWithUnknownFileSize) {
 
   EXPECT_FALSE(ReadFileToStringWithMaxSize(file_path, nullptr, kLargeFileSize));
 }
-#endif  // !defined(OS_WIN)
+#endif  // !BUILDFLAG(IS_WIN)
 
-#if !defined(OS_WIN) && !defined(OS_NACL) && !defined(OS_FUCHSIA) && \
-    !defined(OS_IOS)
+#if !BUILDFLAG(IS_WIN) && !BUILDFLAG(IS_NACL) && !BUILDFLAG(IS_FUCHSIA) && \
+    !BUILDFLAG(IS_IOS)
 #define ChildMain WriteToPipeChildMain
 #define ChildMainString "WriteToPipeChildMain"
 
@@ -3347,10 +3344,10 @@ TEST_F(FileUtilTest, ReadFileToStringWithNamedPipe) {
 
   ASSERT_EQ(0, unlink(pipe_path.value().c_str()));
 }
-#endif  // !defined(OS_WIN) && !defined(OS_NACL) && !defined(OS_FUCHSIA) &&
-        // !defined(OS_IOS)
+#endif  // !BUILDFLAG(IS_WIN) && !BUILDFLAG(IS_NACL) && !BUILDFLAG(IS_FUCHSIA)
+        // && !BUILDFLAG(IS_IOS)
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #define ChildMain WriteToPipeChildMain
 #define ChildMainString "WriteToPipeChildMain"
 
@@ -3367,7 +3364,7 @@ MULTIPROCESS_TEST_MAIN(ChildMain) {
   HANDLE ph = CreateNamedPipe(pipe_path.value().c_str(), PIPE_ACCESS_OUTBOUND,
                               PIPE_WAIT, 1, 0, 0, 0, NULL);
   EXPECT_NE(ph, INVALID_HANDLE_VALUE);
-  EXPECT_TRUE(SetEvent(sync_event.Get()));
+  EXPECT_TRUE(SetEvent(sync_event.get()));
   if (!::ConnectNamedPipe(ph, /*lpOverlapped=*/nullptr)) {
     // ERROR_PIPE_CONNECTED means that the other side has already connected.
     auto error = ::GetLastError();
@@ -3398,7 +3395,7 @@ MULTIPROCESS_TEST_MAIN(MoreThanBufferSizeChildMain) {
   HANDLE ph = CreateNamedPipe(pipe_path.value().c_str(), PIPE_ACCESS_OUTBOUND,
                               PIPE_WAIT, 1, data.size(), data.size(), 0, NULL);
   EXPECT_NE(ph, INVALID_HANDLE_VALUE);
-  EXPECT_TRUE(SetEvent(sync_event.Get()));
+  EXPECT_TRUE(SetEvent(sync_event.get()));
   if (!::ConnectNamedPipe(ph, /*lpOverlapped=*/nullptr)) {
     // ERROR_PIPE_CONNECTED means that the other side has already connected.
     auto error = ::GetLastError();
@@ -3419,17 +3416,17 @@ TEST_F(FileUtilTest, ReadFileToStringWithNamedPipe) {
   CommandLine child_command_line(GetMultiProcessTestChildBaseCommandLine());
   child_command_line.AppendSwitchPath("pipe-path", pipe_path);
   child_command_line.AppendSwitchASCII(
-      "sync_event", NumberToString(win::HandleToUint32(sync_event.Get())));
+      "sync_event", NumberToString(win::HandleToUint32(sync_event.get())));
 
   LaunchOptions options;
-  options.handles_to_inherit.push_back(sync_event.Get());
+  options.handles_to_inherit.push_back(sync_event.get());
 
   {
     Process child_process = SpawnMultiProcessTestChild(
         ChildMainString, child_command_line, options);
     ASSERT_TRUE(child_process.IsValid());
     // Wait for pipe creation in child process.
-    EXPECT_EQ(WAIT_OBJECT_0, WaitForSingleObject(sync_event.Get(), INFINITE));
+    EXPECT_EQ(WAIT_OBJECT_0, WaitForSingleObject(sync_event.get(), INFINITE));
 
     std::string data = "temp";
     EXPECT_FALSE(ReadFileToStringWithMaxSize(pipe_path, &data, 2));
@@ -3445,7 +3442,7 @@ TEST_F(FileUtilTest, ReadFileToStringWithNamedPipe) {
         ChildMainString, child_command_line, options);
     ASSERT_TRUE(child_process.IsValid());
     // Wait for pipe creation in child process.
-    EXPECT_EQ(WAIT_OBJECT_0, WaitForSingleObject(sync_event.Get(), INFINITE));
+    EXPECT_EQ(WAIT_OBJECT_0, WaitForSingleObject(sync_event.get(), INFINITE));
 
     std::string data = "temp";
     EXPECT_TRUE(ReadFileToStringWithMaxSize(pipe_path, &data, 6));
@@ -3461,7 +3458,7 @@ TEST_F(FileUtilTest, ReadFileToStringWithNamedPipe) {
         MoreThanBufferSizeChildMainString, child_command_line, options);
     ASSERT_TRUE(child_process.IsValid());
     // Wait for pipe creation in child process.
-    EXPECT_EQ(WAIT_OBJECT_0, WaitForSingleObject(sync_event.Get(), INFINITE));
+    EXPECT_EQ(WAIT_OBJECT_0, WaitForSingleObject(sync_event.get(), INFINITE));
 
     std::string data = "temp";
     EXPECT_FALSE(ReadFileToStringWithMaxSize(pipe_path, &data, 6));
@@ -3477,7 +3474,7 @@ TEST_F(FileUtilTest, ReadFileToStringWithNamedPipe) {
         MoreThanBufferSizeChildMainString, child_command_line, options);
     ASSERT_TRUE(child_process.IsValid());
     // Wait for pipe creation in child process.
-    EXPECT_EQ(WAIT_OBJECT_0, WaitForSingleObject(sync_event.Get(), INFINITE));
+    EXPECT_EQ(WAIT_OBJECT_0, WaitForSingleObject(sync_event.get(), INFINITE));
 
     std::string data = "temp";
     EXPECT_FALSE(
@@ -3494,7 +3491,7 @@ TEST_F(FileUtilTest, ReadFileToStringWithNamedPipe) {
         MoreThanBufferSizeChildMainString, child_command_line, options);
     ASSERT_TRUE(child_process.IsValid());
     // Wait for pipe creation in child process.
-    EXPECT_EQ(WAIT_OBJECT_0, WaitForSingleObject(sync_event.Get(), INFINITE));
+    EXPECT_EQ(WAIT_OBJECT_0, WaitForSingleObject(sync_event.get(), INFINITE));
 
     std::string data = "temp";
     EXPECT_TRUE(ReadFileToStringWithMaxSize(pipe_path, &data, kLargeFileSize));
@@ -3510,7 +3507,7 @@ TEST_F(FileUtilTest, ReadFileToStringWithNamedPipe) {
         MoreThanBufferSizeChildMainString, child_command_line, options);
     ASSERT_TRUE(child_process.IsValid());
     // Wait for pipe creation in child process.
-    EXPECT_EQ(WAIT_OBJECT_0, WaitForSingleObject(sync_event.Get(), INFINITE));
+    EXPECT_EQ(WAIT_OBJECT_0, WaitForSingleObject(sync_event.get(), INFINITE));
 
     std::string data = "temp";
     EXPECT_TRUE(
@@ -3523,9 +3520,9 @@ TEST_F(FileUtilTest, ReadFileToStringWithNamedPipe) {
     ASSERT_EQ(0, rv);
   }
 }
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
-#if defined(OS_POSIX) && !defined(OS_APPLE)
+#if BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_APPLE)
 TEST_F(FileUtilTest, ReadFileToStringWithProcFileSystem) {
   FilePath file_path("/proc/cpuinfo");
   std::string data = "temp";
@@ -3543,7 +3540,7 @@ TEST_F(FileUtilTest, ReadFileToStringWithProcFileSystem) {
 
   EXPECT_FALSE(ReadFileToStringWithMaxSize(file_path, nullptr, 4));
 }
-#endif  // defined(OS_POSIX) && !defined(OS_APPLE)
+#endif  // BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_APPLE)
 
 TEST_F(FileUtilTest, ReadFileToStringWithLargeFile) {
   std::string data(kLargeFileSize, 'c');
@@ -3583,7 +3580,7 @@ TEST_F(FileUtilTest, ReadStreamToString) {
   EXPECT_EQ(contents, std::string("there"));
 }
 
-#if defined(OS_POSIX)
+#if BUILDFLAG(IS_POSIX)
 TEST_F(FileUtilTest, ReadStreamToString_ZeroLengthFile) {
   Thread write_thread("write thread");
   ASSERT_TRUE(write_thread.Start());
@@ -3663,7 +3660,7 @@ TEST_F(FileUtilTest, TouchFile) {
   ASSERT_TRUE(TouchFile(foobar, access_time, modification_time));
   File::Info file_info;
   ASSERT_TRUE(GetFileInfo(foobar, &file_info));
-#if !defined(OS_FUCHSIA)
+#if !BUILDFLAG(IS_FUCHSIA)
   // Access time is not supported on Fuchsia, see https://crbug.com/735233.
   EXPECT_EQ(access_time.ToInternalValue(),
             file_info.last_accessed.ToInternalValue());
@@ -3734,7 +3731,7 @@ TEST_F(FileUtilTest, IsDirectoryEmpty) {
   EXPECT_FALSE(IsDirectoryEmpty(empty_dir));
 }
 
-#if defined(OS_POSIX) || defined(OS_FUCHSIA)
+#if BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
 
 TEST_F(FileUtilTest, SetNonBlocking) {
   const int kBogusFd = 99999;
@@ -3762,7 +3759,7 @@ TEST_F(FileUtilTest, SetCloseOnExec) {
 
 #endif
 
-#if defined(OS_POSIX)
+#if BUILDFLAG(IS_MAC)
 
 // Testing VerifyPathControlledByAdmin() is hard, because there is no
 // way a test can make a file owned by root, or change file paths
@@ -4046,10 +4043,10 @@ TEST_F(VerifyPathControlledByUserTest, WriteBitChecks) {
   EXPECT_TRUE(VerifyPathControlledByUser(sub_dir_, text_file_, uid_, ok_gids_));
 }
 
-#endif  // defined(OS_POSIX)
+#endif  // BUILDFLAG(IS_MAC)
 
 // Flaky test: crbug/1054637
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 TEST_F(FileUtilTest, DISABLED_ValidContentUriTest) {
   // Get the test image path.
   FilePath data_dir;
@@ -4153,7 +4150,7 @@ TEST_F(FileUtilTest, PreReadFile_ExistingFile_ExactSize) {
   CreateTextFile(text_file, bogus_content);
 
   EXPECT_TRUE(
-      PreReadFile(text_file, /*is_executable=*/false, base::size(bogus_content))
+      PreReadFile(text_file, /*is_executable=*/false, std::size(bogus_content))
           .succeeded());
 }
 
@@ -4162,7 +4159,7 @@ TEST_F(FileUtilTest, PreReadFile_ExistingFile_OverSized) {
   CreateTextFile(text_file, bogus_content);
 
   EXPECT_TRUE(PreReadFile(text_file, /*is_executable=*/false,
-                          base::size(bogus_content) * 2)
+                          std::size(bogus_content) * 2)
                   .succeeded());
 }
 
@@ -4171,7 +4168,7 @@ TEST_F(FileUtilTest, PreReadFile_ExistingFile_UnderSized) {
   CreateTextFile(text_file, bogus_content);
 
   EXPECT_TRUE(PreReadFile(text_file, /*is_executable=*/false,
-                          base::size(bogus_content) / 2)
+                          std::size(bogus_content) / 2)
                   .succeeded());
 }
 
@@ -4209,7 +4206,7 @@ TEST_F(FileUtilTest, PreReadFile_InexistentFile) {
 // threads). Mimics file operations in DoLaunchChildTestProcess() to rule out
 // thread-safety issues @ https://crbug.com/826408#c17.
 TEST(FileUtilMultiThreadedTest, MultiThreadedTempFiles) {
-#if defined(OS_FUCHSIA)
+#if BUILDFLAG(IS_FUCHSIA)
   // TODO(crbug.com/844416): Too slow to run on infra due to QEMU overhead.
   constexpr int kNumThreads = 8;
 #else
@@ -4233,7 +4230,7 @@ TEST(FileUtilMultiThreadedTest, MultiThreadedTempFiles) {
     EXPECT_TRUE(output_file);
 
     const std::string content = GenerateGUID();
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
     HANDLE handle =
         reinterpret_cast<HANDLE>(_get_osfhandle(_fileno(output_file.get())));
     DWORD bytes_written = 0;
@@ -4268,7 +4265,7 @@ TEST(FileUtilMultiThreadedTest, MultiThreadedTempFiles) {
     thread->Stop();
 }
 
-#if defined(OS_POSIX) || defined(OS_FUCHSIA)
+#if BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
 
 TEST(ScopedFD, ScopedFDDoesClose) {
   int fds[2];
@@ -4307,9 +4304,9 @@ TEST(ScopedFD, ScopedFDCrashesOnCloseFailure) {
 #endif
 }
 
-#endif  // defined(OS_POSIX) || defined(OS_FUCHSIA)
+#endif  // BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID)
 TEST_F(FileUtilTest, CopyFileContentsWithSendfile) {
   // This test validates that sendfile(2) can be used to copy a file contents
   // and that it will honor the file offsets as CopyFileContents does.
@@ -4470,7 +4467,8 @@ TEST_F(FileUtilTest, CopyFileContentsWithSendfileSeqFile) {
   }
 }
 
-#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) ||
+        // BUILDFLAG(IS_ANDROID)
 
 }  // namespace
 

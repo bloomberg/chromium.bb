@@ -333,8 +333,9 @@ class FakeClient : public ReceiverSession::Client {
               (override));
 };
 
-void ExpectIsErrorAnswerMessage(const ErrorOr<Json::Value>& message_or_error) {
-  EXPECT_TRUE(message_or_error.is_value());
+void ExpectIsErrorAnswer(const std::string& raw_message) {
+  ErrorOr<Json::Value> message_or_error = json::Parse(raw_message);
+  ASSERT_TRUE(message_or_error.is_value());
   const Json::Value message = std::move(message_or_error.value());
   EXPECT_TRUE(message["answer"].isNull());
   EXPECT_EQ("error", message["result"].asString());
@@ -344,6 +345,27 @@ void ExpectIsErrorAnswerMessage(const ErrorOr<Json::Value>& message_or_error) {
   const Json::Value& error = message["error"];
   EXPECT_TRUE(error.isObject());
   EXPECT_GT(error["code"].asInt(), 0);
+}
+
+// Returns the parsed and validated ANSWER message for additional field
+// validation.
+Json::Value ExpectIsValidAnswer(const std::string& raw_message) {
+  ErrorOr<Json::Value> message_or_error = json::Parse(raw_message);
+  EXPECT_TRUE(message_or_error.is_value());
+  Json::Value message = std::move(message_or_error.value());
+
+  EXPECT_EQ("ANSWER", message["type"].asString());
+  EXPECT_EQ("ok", message["result"].asString());
+  EXPECT_FALSE(message["answer"].isNull());
+  EXPECT_TRUE(message["answer"].isObject());
+  return message;
+}
+
+MATCHER_P(
+    NegotiatedWithSender,
+    sender_id,
+    "Checks that a set of ConfiguredReceivers are from a specific sender") {
+  return sender_id == arg.sender_id;
 }
 
 }  // namespace
@@ -357,8 +379,7 @@ class ReceiverSessionTest : public ::testing::Test {
         &FakeClock::now, &task_runner_);
     ON_CALL(*environment, GetBoundLocalEndpoint())
         .WillByDefault(Return(IPEndpoint{{127, 0, 0, 1}, 12345}));
-    environment->set_socket_state_for_testing(
-        Environment::SocketState::kReady);
+    environment->SetSocketStateForTesting(Environment::SocketState::kReady);
     return environment;
   }
 
@@ -377,11 +398,10 @@ class ReceiverSessionTest : public ::testing::Test {
 
  protected:
   void AssertGotAnErrorAnswerResponse() {
-    const auto& messages = message_port_->posted_messages();
+    const std::vector<std::string>& messages = message_port_->posted_messages();
     ASSERT_EQ(1u, messages.size());
 
-    auto message_body = json::Parse(messages[0]);
-    ExpectIsErrorAnswerMessage(message_body);
+    ExpectIsErrorAnswer(messages[0]);
   }
 
   StrictMock<FakeClient> client_;
@@ -414,6 +434,9 @@ TEST_F(ReceiverSessionTest, CanNegotiateWithDefaultPreferences) {
 
         // We should have chosen vp8
         EXPECT_EQ(cr.video_config.codec, VideoCodec::kVp8);
+
+        // This should be from the default test sender ID.
+        EXPECT_EQ("sender-12345", cr.sender_id);
       });
   EXPECT_CALL(client_,
               OnReceiversDestroying(session_.get(),
@@ -421,31 +444,29 @@ TEST_F(ReceiverSessionTest, CanNegotiateWithDefaultPreferences) {
 
   message_port_->ReceiveMessage(kValidOfferMessage);
 
-  const auto& messages = message_port_->posted_messages();
+  const std::vector<std::string>& messages = message_port_->posted_messages();
   ASSERT_EQ(1u, messages.size());
 
-  auto message_body = json::Parse(messages[0]);
-  EXPECT_TRUE(message_body.is_value());
-  const Json::Value answer = std::move(message_body.value());
+  Json::Value message = ExpectIsValidAnswer(messages[0]);
 
-  EXPECT_EQ("ANSWER", answer["type"].asString());
-  EXPECT_EQ(1337, answer["seqNum"].asInt());
-  EXPECT_EQ("ok", answer["result"].asString());
+  EXPECT_EQ("ANSWER", message["type"].asString());
+  EXPECT_EQ(1337, message["seqNum"].asInt());
+  EXPECT_EQ("ok", message["result"].asString());
 
-  const Json::Value& answer_body = answer["answer"];
-  EXPECT_TRUE(answer_body.isObject());
+  const Json::Value& answer = message["answer"];
+  EXPECT_TRUE(answer.isObject());
 
   // Spot check the answer body fields. We have more in depth testing
   // of answer behavior in answer_messages_unittest, but here we can
   // ensure that the ReceiverSession properly configured the answer.
-  EXPECT_EQ(1337, answer_body["sendIndexes"][0].asInt());
-  EXPECT_EQ(31338, answer_body["sendIndexes"][1].asInt());
-  EXPECT_LT(0, answer_body["udpPort"].asInt());
-  EXPECT_GT(65535, answer_body["udpPort"].asInt());
+  EXPECT_EQ(1337, answer["sendIndexes"][0].asInt());
+  EXPECT_EQ(31338, answer["sendIndexes"][1].asInt());
+  EXPECT_LT(0, answer["udpPort"].asInt());
+  EXPECT_GT(65535, answer["udpPort"].asInt());
 
   // Constraints and display should not be present with no preferences.
-  EXPECT_TRUE(answer_body["constraints"].isNull());
-  EXPECT_TRUE(answer_body["display"].isNull());
+  EXPECT_TRUE(answer["constraints"].isNull());
+  EXPECT_TRUE(answer["display"].isNull());
 }
 
 TEST_F(ReceiverSessionTest, CanNegotiateWithCustomCodecPreferences) {
@@ -562,27 +583,24 @@ TEST_F(ReceiverSessionTest, CanNegotiateWithLimits) {
                            &session, ReceiverSession::Client::kEndOfSession));
   message_port_->ReceiveMessage(kValidOfferMessage);
 
-  const auto& messages = message_port_->posted_messages();
+  const std::vector<std::string>& messages = message_port_->posted_messages();
   ASSERT_EQ(1u, messages.size());
 
-  auto message_body = json::Parse(messages[0]);
-  ASSERT_TRUE(message_body.is_value());
-  const Json::Value answer = std::move(message_body.value());
-
-  const Json::Value& answer_body = answer["answer"];
-  ASSERT_TRUE(answer_body.isObject()) << messages[0];
+  Json::Value message_body = ExpectIsValidAnswer(messages[0]);
+  const Json::Value& answer_json = message_body["answer"];
+  ASSERT_TRUE(answer_json.isObject()) << messages[0];
 
   // Constraints and display should be valid with valid preferences.
-  ASSERT_FALSE(answer_body["constraints"].isNull());
-  ASSERT_FALSE(answer_body["display"].isNull());
+  ASSERT_FALSE(answer_json["constraints"].isNull());
+  ASSERT_FALSE(answer_json["display"].isNull());
 
-  const Json::Value& display_json = answer_body["display"];
+  const Json::Value& display_json = answer_json["display"];
   EXPECT_EQ("60", display_json["dimensions"]["frameRate"].asString());
   EXPECT_EQ(640, display_json["dimensions"]["width"].asInt());
   EXPECT_EQ(480, display_json["dimensions"]["height"].asInt());
   EXPECT_EQ("sender", display_json["scaling"].asString());
 
-  const Json::Value& constraints_json = answer_body["constraints"];
+  const Json::Value& constraints_json = answer_json["constraints"];
   ASSERT_TRUE(constraints_json.isObject());
 
   const Json::Value& audio = constraints_json["audio"];
@@ -611,33 +629,26 @@ TEST_F(ReceiverSessionTest, HandlesNoValidAudioStream) {
                                     ReceiverSession::Client::kEndOfSession));
 
   message_port_->ReceiveMessage(kNoAudioOfferMessage);
-  const auto& messages = message_port_->posted_messages();
+  const std::vector<std::string>& messages = message_port_->posted_messages();
   EXPECT_EQ(1u, messages.size());
-
-  auto message_body = json::Parse(messages[0]);
-  EXPECT_TRUE(message_body.is_value());
-  const Json::Value& answer_body = message_body.value()["answer"];
-  EXPECT_TRUE(answer_body.isObject());
+  Json::Value answer = ExpectIsValidAnswer(messages[0])["answer"];
 
   // Should still select video stream.
-  EXPECT_EQ(1u, answer_body["sendIndexes"].size());
-  EXPECT_EQ(31338, answer_body["sendIndexes"][0].asInt());
-  EXPECT_EQ(1u, answer_body["ssrcs"].size());
-  EXPECT_EQ(19088746, answer_body["ssrcs"][0].asInt());
+  EXPECT_EQ(1u, answer["sendIndexes"].size());
+  EXPECT_EQ(31338, answer["sendIndexes"][0].asInt());
+  EXPECT_EQ(1u, answer["ssrcs"].size());
+  EXPECT_EQ(19088746, answer["ssrcs"][0].asInt());
 }
 
 TEST_F(ReceiverSessionTest, HandlesInvalidCodec) {
   // We didn't select any streams, but didn't have any errors either.
   message_port_->ReceiveMessage(kInvalidCodecOfferMessage);
-  const auto& messages = message_port_->posted_messages();
+  const std::vector<std::string>& messages = message_port_->posted_messages();
   EXPECT_EQ(1u, messages.size());
-
-  auto message_body = json::Parse(messages[0]);
-  EXPECT_TRUE(message_body.is_value());
 
   // We should have failed to produce a valid answer message due to not
   // selecting any stream.
-  EXPECT_EQ("error", message_body.value()["result"].asString());
+  AssertGotAnErrorAnswerResponse();
 }
 
 TEST_F(ReceiverSessionTest, HandlesNoValidVideoStream) {
@@ -648,19 +659,107 @@ TEST_F(ReceiverSessionTest, HandlesNoValidVideoStream) {
                                     ReceiverSession::Client::kEndOfSession));
 
   message_port_->ReceiveMessage(kNoVideoOfferMessage);
-  const auto& messages = message_port_->posted_messages();
+  const std::vector<std::string>& messages = message_port_->posted_messages();
   EXPECT_EQ(1u, messages.size());
-
-  auto message_body = json::Parse(messages[0]);
-  EXPECT_TRUE(message_body.is_value());
-  const Json::Value& answer_body = message_body.value()["answer"];
-  EXPECT_TRUE(answer_body.isObject());
+  const Json::Value answer = ExpectIsValidAnswer(messages[0])["answer"];
 
   // Should still select audio stream.
-  EXPECT_EQ(1u, answer_body["sendIndexes"].size());
-  EXPECT_EQ(1337, answer_body["sendIndexes"][0].asInt());
-  EXPECT_EQ(1u, answer_body["ssrcs"].size());
-  EXPECT_EQ(19088748, answer_body["ssrcs"][0].asInt());
+  EXPECT_EQ(1u, answer["sendIndexes"].size());
+  EXPECT_EQ(1337, answer["sendIndexes"][0].asInt());
+  EXPECT_EQ(1u, answer["ssrcs"].size());
+  EXPECT_EQ(19088748, answer["ssrcs"][0].asInt());
+}
+
+TEST_F(ReceiverSessionTest, RejectsOfferIfNewOneComesBeforeNegotiationIsDone) {
+  InSequence s;
+  EXPECT_CALL(client_, OnNegotiated(session_.get(),
+                                    NegotiatedWithSender("first-sender")));
+  EXPECT_CALL(client_,
+              OnReceiversDestroying(session_.get(),
+                                    ReceiverSession::Client::kEndOfSession));
+
+  // If the socket state is pending we don't process OFFERs yet.
+  environment_->SetSocketStateForTesting(Environment::SocketState::kStarting);
+  message_port_->ReceiveMessage("first-sender", kCastWebrtcNamespace,
+                                kValidOfferMessage);
+  EXPECT_EQ(0u, message_port_->posted_messages().size());
+
+  // We should process the first OFFER now that the second one has come in.
+  message_port_->ReceiveMessage("first-sender", kCastWebrtcNamespace,
+                                kValidOfferMessage);
+  EXPECT_EQ(1u, message_port_->posted_messages().size());
+  ExpectIsErrorAnswer(message_port_->posted_messages()[0]);
+
+  environment_->SetSocketStateForTesting(Environment::SocketState::kReady);
+  EXPECT_EQ(2u, message_port_->posted_messages().size());
+  ExpectIsValidAnswer(message_port_->posted_messages()[1]);
+}
+
+TEST_F(ReceiverSessionTest, HandlesRenegotiationFromSameSender) {
+  InSequence s;
+  EXPECT_CALL(client_, OnNegotiated(session_.get(),
+                                    NegotiatedWithSender("first-sender")));
+  EXPECT_CALL(client_,
+              OnReceiversDestroying(session_.get(),
+                                    ReceiverSession::Client::kRenegotiated));
+  EXPECT_CALL(client_, OnNegotiated(session_.get(),
+                                    NegotiatedWithSender("first-sender")));
+  EXPECT_CALL(client_,
+              OnReceiversDestroying(session_.get(),
+                                    ReceiverSession::Client::kEndOfSession));
+
+  message_port_->ReceiveMessage("first-sender", kCastWebrtcNamespace,
+                                kValidOfferMessage);
+  EXPECT_EQ(1u, message_port_->posted_messages().size());
+  ExpectIsValidAnswer(message_port_->posted_messages()[0]);
+
+  message_port_->ReceiveMessage("first-sender", kCastWebrtcNamespace,
+                                kValidOfferMessage);
+  EXPECT_EQ(2u, message_port_->posted_messages().size());
+  ExpectIsValidAnswer(message_port_->posted_messages()[1]);
+}
+
+TEST_F(ReceiverSessionTest, HandlesRenegotiationFromAnotherSender) {
+  InSequence s;
+  EXPECT_CALL(client_, OnNegotiated(session_.get(),
+                                    NegotiatedWithSender("first-sender")));
+  EXPECT_CALL(client_,
+              OnReceiversDestroying(session_.get(),
+                                    ReceiverSession::Client::kRenegotiated));
+  EXPECT_CALL(client_, OnNegotiated(session_.get(),
+                                    NegotiatedWithSender("some-other-sender")));
+  EXPECT_CALL(client_,
+              OnReceiversDestroying(session_.get(),
+                                    ReceiverSession::Client::kEndOfSession));
+
+  message_port_->ReceiveMessage("first-sender", kCastWebrtcNamespace,
+                                kValidOfferMessage);
+  EXPECT_EQ(1u, message_port_->posted_messages().size());
+  ExpectIsValidAnswer(message_port_->posted_messages()[0]);
+
+  message_port_->ReceiveMessage("some-other-sender", kCastWebrtcNamespace,
+                                kValidOfferMessage);
+  EXPECT_EQ(2u, message_port_->posted_messages().size());
+  ExpectIsValidAnswer(message_port_->posted_messages()[1]);
+}
+
+TEST_F(ReceiverSessionTest, HandlesErrorOfferFromAnotherSender) {
+  InSequence s;
+  EXPECT_CALL(client_, OnNegotiated(session_.get(),
+                                    NegotiatedWithSender("first-sender")));
+  EXPECT_CALL(client_,
+              OnReceiversDestroying(session_.get(),
+                                    ReceiverSession::Client::kEndOfSession));
+
+  message_port_->ReceiveMessage("first-sender", kCastWebrtcNamespace,
+                                kValidOfferMessage);
+  EXPECT_EQ(1u, message_port_->posted_messages().size());
+  ExpectIsValidAnswer(message_port_->posted_messages()[0]);
+
+  message_port_->ReceiveMessage("some-other-sender", kCastWebrtcNamespace,
+                                kInvalidCodecOfferMessage);
+  EXPECT_EQ(2u, message_port_->posted_messages().size());
+  ExpectIsErrorAnswer(message_port_->posted_messages()[1]);
 }
 
 TEST_F(ReceiverSessionTest, HandlesNoValidStreams) {
@@ -745,20 +844,11 @@ TEST_F(ReceiverSessionTest, HandlesInvalidAnswer) {
       .WillOnce(Return(IPEndpoint{}));
 
   message_port_->ReceiveMessage(kValidOfferMessage);
-  const auto& messages = message_port_->posted_messages();
-  ASSERT_EQ(1u, messages.size());
-
-  auto message_body = json::Parse(messages[0]);
-  EXPECT_TRUE(message_body.is_value());
-  const Json::Value answer = std::move(message_body.value());
-
-  EXPECT_EQ("ANSWER", answer["type"].asString());
-  EXPECT_EQ("error", answer["result"].asString());
+  AssertGotAnErrorAnswerResponse();
 }
 
 TEST_F(ReceiverSessionTest, DelaysAnswerUntilEnvironmentIsReady) {
-  environment_->set_socket_state_for_testing(
-      Environment::SocketState::kStarting);
+  environment_->SetSocketStateForTesting(Environment::SocketState::kStarting);
 
   // We should not have sent an answer yet--the UDP socket is not ready.
   message_port_->ReceiveMessage(kValidOfferMessage);
@@ -773,61 +863,45 @@ TEST_F(ReceiverSessionTest, DelaysAnswerUntilEnvironmentIsReady) {
               OnReceiversDestroying(session_.get(),
                                     ReceiverSession::Client::kEndOfSession));
   session_->OnSocketReady();
-  const auto& messages = message_port_->posted_messages();
+  const std::vector<std::string>& messages = message_port_->posted_messages();
   ASSERT_EQ(1u, messages.size());
 
   // We should have set the UDP port based on the ready socket value.
-  auto message_body = json::Parse(messages[0]);
-  EXPECT_TRUE(message_body.is_value());
-  const Json::Value& answer_body = message_body.value()["answer"];
-  EXPECT_TRUE(answer_body.isObject());
-  EXPECT_EQ(4567, answer_body["udpPort"].asInt());
+  const Json::Value& message_body = ExpectIsValidAnswer(messages[0]);
+  EXPECT_EQ(4567, message_body["answer"]["udpPort"].asInt());
 }
 
 TEST_F(ReceiverSessionTest,
        ReturnsErrorAnswerIfEnvironmentIsAlreadyInvalidated) {
-  environment_->set_socket_state_for_testing(
-      Environment::SocketState::kInvalid);
+  EXPECT_CALL(client_, OnError(session_.get(), _));
+  environment_->SetSocketStateForTesting(Environment::SocketState::kInvalid);
 
   // If the environment is already in a bad state, we can respond immediately.
   message_port_->ReceiveMessage(kValidOfferMessage);
-  const auto& messages = message_port_->posted_messages();
-  ASSERT_EQ(1u, messages.size());
-
-  auto message_body = json::Parse(messages[0]);
-  EXPECT_TRUE(message_body.is_value());
-  EXPECT_EQ("ANSWER", message_body.value()["type"].asString());
-  EXPECT_EQ("error", message_body.value()["result"].asString());
+  AssertGotAnErrorAnswerResponse();
 }
 
 TEST_F(ReceiverSessionTest, ReturnsErrorAnswerIfEnvironmentIsInvalidated) {
-  environment_->set_socket_state_for_testing(
-      Environment::SocketState::kStarting);
+  EXPECT_CALL(client_, OnError(session_.get(), _));
+  environment_->SetSocketStateForTesting(Environment::SocketState::kStarting);
 
   // We should not have sent an answer yet--the environment is not ready.
   message_port_->ReceiveMessage(kValidOfferMessage);
   ASSERT_TRUE(message_port_->posted_messages().empty());
 
   // Simulate the environment calling back into us with invalidation.
-  EXPECT_CALL(client_, OnError(_, _)).Times(1);
-  session_->OnSocketInvalid(Error::Code::kSocketBindFailure);
-  const auto& messages = message_port_->posted_messages();
-  ASSERT_EQ(1u, messages.size());
+  environment_->SetSocketStateForTesting(Environment::SocketState::kInvalid);
 
-  // We should have an error answer.
-  auto message_body = json::Parse(messages[0]);
-  EXPECT_TRUE(message_body.is_value());
-  EXPECT_EQ("ANSWER", message_body.value()["type"].asString());
-  EXPECT_EQ("error", message_body.value()["result"].asString());
+  AssertGotAnErrorAnswerResponse();
 }
 
 TEST_F(ReceiverSessionTest, ReturnsErrorCapabilitiesIfRemotingDisabled) {
   message_port_->ReceiveMessage(kGetCapabilitiesMessage);
-  const auto& messages = message_port_->posted_messages();
+  const std::vector<std::string>& messages = message_port_->posted_messages();
   ASSERT_EQ(1u, messages.size());
 
   // We should have an error response.
-  auto message_body = json::Parse(messages[0]);
+  ErrorOr<Json::Value> message_body = json::Parse(messages[0]);
   EXPECT_TRUE(message_body.is_value());
   EXPECT_EQ("CAPABILITIES_RESPONSE", message_body.value()["type"].asString());
   EXPECT_EQ("error", message_body.value()["result"].asString());
@@ -840,11 +914,10 @@ TEST_F(ReceiverSessionTest, ReturnsCapabilitiesWithRemotingDefaults) {
 
   SetUpWithPreferences(std::move(preferences));
   message_port_->ReceiveMessage(kGetCapabilitiesMessage);
-  const auto& messages = message_port_->posted_messages();
+  const std::vector<std::string>& messages = message_port_->posted_messages();
   ASSERT_EQ(1u, messages.size());
 
-  // We should have an error response.
-  auto message_body = json::Parse(messages[0]);
+  const ErrorOr<Json::Value> message_body = json::Parse(messages[0]);
   EXPECT_TRUE(message_body.is_value());
   EXPECT_EQ("CAPABILITIES_RESPONSE", message_body.value()["type"].asString());
   EXPECT_EQ("ok", message_body.value()["result"].asString());
@@ -867,11 +940,10 @@ TEST_F(ReceiverSessionTest, ReturnsCapabilitiesWithRemotingPreferences) {
 
   SetUpWithPreferences(std::move(preferences));
   message_port_->ReceiveMessage(kGetCapabilitiesMessage);
-  const auto& messages = message_port_->posted_messages();
+  const std::vector<std::string>& messages = message_port_->posted_messages();
   ASSERT_EQ(1u, messages.size());
 
-  // We should have an error response.
-  auto message_body = json::Parse(messages[0]);
+  const ErrorOr<Json::Value> message_body = json::Parse(messages[0]);
   EXPECT_TRUE(message_body.is_value());
   EXPECT_EQ("CAPABILITIES_RESPONSE", message_body.value()["type"].asString());
   EXPECT_EQ("ok", message_body.value()["result"].asString());
@@ -897,7 +969,7 @@ TEST_F(ReceiverSessionTest, CanNegotiateRemoting) {
   EXPECT_CALL(client_, OnRemotingNegotiated(session_.get(), _))
       .WillOnce([](const ReceiverSession* session_,
                    ReceiverSession::RemotingNegotiation negotiation) {
-        const auto& cr = negotiation.receivers;
+        const ReceiverSession::ConfiguredReceivers& cr = negotiation.receivers;
         EXPECT_TRUE(cr.audio_receiver);
         EXPECT_EQ(cr.audio_receiver->config().sender_ssrc, 19088747u);
         EXPECT_EQ(cr.audio_receiver->config().receiver_ssrc, 19088748u);
@@ -928,7 +1000,7 @@ TEST_F(ReceiverSessionTest, HandlesRpcMessage) {
   SetUpWithPreferences(std::move(preferences));
 
   message_port_->ReceiveMessage(kRpcMessage);
-  const auto& messages = message_port_->posted_messages();
+  const std::vector<std::string>& messages = message_port_->posted_messages();
   // Nothing should happen yet, the session doesn't have a messenger.
   ASSERT_EQ(0u, messages.size());
 

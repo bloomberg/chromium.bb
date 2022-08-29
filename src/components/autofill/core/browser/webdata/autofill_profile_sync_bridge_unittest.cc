@@ -33,13 +33,13 @@
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/sync/base/client_tag_hash.h"
 #include "components/sync/engine/data_type_activation_response.h"
-#include "components/sync/engine/entity_data.h"
 #include "components/sync/model/client_tag_based_model_type_processor.h"
 #include "components/sync/model/data_batch.h"
 #include "components/sync/model/data_type_activation_request.h"
 #include "components/sync/model/sync_data.h"
 #include "components/sync/model/sync_error_factory.h"
 #include "components/sync/protocol/autofill_specifics.pb.h"
+#include "components/sync/protocol/entity_data.h"
 #include "components/sync/protocol/entity_specifics.pb.h"
 #include "components/sync/protocol/model_type_state.pb.h"
 #include "components/sync/test/model/mock_model_type_change_processor.h"
@@ -181,7 +181,6 @@ AutofillProfile ConstructCompleteProfile() {
   profile.SetRawInfo(ADDRESS_HOME_SUBPREMISE, u"Subpremise");
   profile.SetRawInfo(ADDRESS_HOME_PREMISE_NAME, u"Premise");
   profile.set_language_code("en");
-  profile.SetClientValidityFromBitfieldValue(kValidityStateBitfield);
   profile.FinalizeAfterImport();
   return profile;
 }
@@ -456,7 +455,6 @@ TEST_P(AutofillProfileSyncBridgeTest,
   StartSyncing({});
 
   AutofillProfile local(kGuidA, kHttpsOrigin);
-  local.SetClientValidityFromBitfieldValue(kValidityStateBitfield);
   AutofillProfileChange change(AutofillProfileChange::ADD, kGuidA, &local);
 
   EXPECT_CALL(
@@ -527,7 +525,7 @@ TEST_P(AutofillProfileSyncBridgeTest,
   AutofillProfileChange change(AutofillProfileChange::UPDATE,
                                server_profile.guid(), &server_profile);
 
-  EXPECT_CALL(mock_processor(), Put(_, _, _)).Times(0);
+  EXPECT_CALL(mock_processor(), Put).Times(0);
   // Should not crash.
   bridge()->AutofillProfileChanged(change);
 }
@@ -555,7 +553,7 @@ TEST_P(AutofillProfileSyncBridgeTest,
   AutofillProfileChange change(AutofillProfileChange::REMOVE,
                                server_profile.guid(), &server_profile);
 
-  EXPECT_CALL(mock_processor(), Put(_, _, _)).Times(0);
+  EXPECT_CALL(mock_processor(), Put).Times(0);
   // Should not crash.
   bridge()->AutofillProfileChanged(change);
 }
@@ -633,7 +631,7 @@ TEST_P(AutofillProfileSyncBridgeTest, MergeSyncData) {
   EXPECT_CALL(
       mock_processor(),
       Put(kGuidA, HasSpecifics(CreateAutofillProfileSpecifics(local1)), _));
-  EXPECT_CALL(mock_processor(), Delete(_, _)).Times(0);
+  EXPECT_CALL(mock_processor(), Delete).Times(0);
   EXPECT_CALL(*backend(), CommitChanges());
 
   StartSyncing({remote1_specifics, remote2_specifics, remote3_specifics});
@@ -711,7 +709,7 @@ TEST_P(AutofillProfileSyncBridgeTest, MergeSyncData_SyncAllFieldsToServer) {
 // Ensure that all profile fields are able to be synced down from the server to
 // the client (and nothing gets uploaded back).
 TEST_P(AutofillProfileSyncBridgeTest, MergeSyncData_SyncAllFieldsToClient) {
-  EXPECT_CALL(mock_processor(), Put(_, _, _)).Times(0);
+  EXPECT_CALL(mock_processor(), Put).Times(0);
   EXPECT_CALL(*backend(), CommitChanges());
   StartSyncing({ConstructCompleteSpecifics()});
 
@@ -799,7 +797,7 @@ TEST_P(AutofillProfileSyncBridgeTest, MergeSyncData_NonSimilarProfiles) {
   EXPECT_CALL(
       mock_processor(),
       Put(kGuidA, HasSpecifics(CreateAutofillProfileSpecifics(local)), _));
-  EXPECT_CALL(mock_processor(), Delete(_, _)).Times(0);
+  EXPECT_CALL(mock_processor(), Delete).Times(0);
   EXPECT_CALL(*backend(), CommitChanges());
 
   StartSyncing({remote});
@@ -867,7 +865,7 @@ TEST_P(AutofillProfileSyncBridgeTest, MergeSyncData_SimilarProfiles) {
   EXPECT_CALL(
       mock_processor(),
       Put(kGuidB, HasSpecifics(CreateAutofillProfileSpecifics(local2)), _));
-  EXPECT_CALL(mock_processor(), Delete(_, _)).Times(0);
+  EXPECT_CALL(mock_processor(), Delete).Times(0);
   EXPECT_CALL(*backend(), CommitChanges());
 
   StartSyncing({remote1_specifics, remote2_specifics});
@@ -995,7 +993,7 @@ TEST_P(AutofillProfileSyncBridgeTest,
   ASSERT_FALSE(remote.has_origin());
 
   // Expect no sync events to add origin to the remote data.
-  EXPECT_CALL(mock_processor(), Put(_, _, _)).Times(0);
+  EXPECT_CALL(mock_processor(), Put).Times(0);
   EXPECT_CALL(*backend(), CommitChanges());
   StartSyncing({remote});
 
@@ -1026,7 +1024,7 @@ TEST_P(AutofillProfileSyncBridgeTest,
   remote.clear_origin();
   ASSERT_FALSE(remote.has_origin());
 
-  EXPECT_CALL(mock_processor(), Put(_, _, _)).Times(0);
+  EXPECT_CALL(mock_processor(), Put).Times(0);
   EXPECT_CALL(*backend(), CommitChanges());
   StartSyncing({remote});
   EXPECT_THAT(GetAllLocalData(), ElementsAre(local));
@@ -1045,8 +1043,8 @@ TEST_P(AutofillProfileSyncBridgeTest, ApplySyncChanges) {
   AutofillProfileSpecifics remote =
       CreateAutofillProfileSpecifics(remote_profile);
 
-  EXPECT_CALL(mock_processor(), Put(_, _, _)).Times(0);
-  EXPECT_CALL(mock_processor(), Delete(_, _)).Times(0);
+  EXPECT_CALL(mock_processor(), Put).Times(0);
+  EXPECT_CALL(mock_processor(), Delete).Times(0);
   EXPECT_CALL(*backend(), CommitChanges());
 
   syncer::EntityChangeList entity_change_list;
@@ -1067,7 +1065,7 @@ TEST_P(AutofillProfileSyncBridgeTest, ApplySyncChanges_OmitsInvalidSpecifics) {
   AutofillProfileSpecifics remote_invalid =
       CreateAutofillProfileSpecifics(kGuidInvalid, std::string());
 
-  EXPECT_CALL(mock_processor(), Put(_, _, _)).Times(0);
+  EXPECT_CALL(mock_processor(), Put).Times(0);
   EXPECT_CALL(*backend(), CommitChanges());
 
   syncer::EntityChangeList entity_change_list;
@@ -1170,7 +1168,7 @@ TEST_P(AutofillProfileSyncBridgeTest,
   remote.set_address_home_line2("Apt. 42");
 
   // No update to sync, no change in local data.
-  EXPECT_CALL(mock_processor(), Put(_, _, _)).Times(0);
+  EXPECT_CALL(mock_processor(), Put).Times(0);
   EXPECT_CALL(*backend(), CommitChanges());
   StartSyncing({remote});
   EXPECT_THAT(GetAllLocalData(), ElementsAre(local));
@@ -1189,7 +1187,7 @@ TEST_P(AutofillProfileSyncBridgeTest,
   ASSERT_FALSE(remote.has_address_home_language_code());
 
   // No update to sync, no change in local data.
-  EXPECT_CALL(mock_processor(), Put(_, _, _)).Times(0);
+  EXPECT_CALL(mock_processor(), Put).Times(0);
   EXPECT_CALL(*backend(), CommitChanges());
   StartSyncing({remote});
   EXPECT_THAT(GetAllLocalData(), ElementsAre(local));
@@ -1208,7 +1206,7 @@ TEST_P(AutofillProfileSyncBridgeTest,
   remote.set_address_home_language_code("en");
 
   // No update to sync, remote language code overwrites the empty local one.
-  EXPECT_CALL(mock_processor(), Put(_, _, _)).Times(0);
+  EXPECT_CALL(mock_processor(), Put).Times(0);
   EXPECT_CALL(*backend(), CommitChanges());
   StartSyncing({remote});
   EXPECT_THAT(GetAllLocalData(), ElementsAre(CreateAutofillProfile(remote)));
@@ -1227,7 +1225,7 @@ TEST_P(AutofillProfileSyncBridgeTest,
   remote.set_address_home_language_code("en");
 
   // No update to sync, remote language code overwrites the local one.
-  EXPECT_CALL(mock_processor(), Put(_, _, _)).Times(0);
+  EXPECT_CALL(mock_processor(), Put).Times(0);
   EXPECT_CALL(*backend(), CommitChanges());
   StartSyncing({remote});
   EXPECT_THAT(GetAllLocalData(), ElementsAre(CreateAutofillProfile(remote)));
@@ -1256,7 +1254,7 @@ TEST_P(AutofillProfileSyncBridgeTest,
   merged.FinalizeAfterImport();
 
   // No update to sync, remote language code overwrites the local one.
-  EXPECT_CALL(mock_processor(), Put(_, _, _)).Times(0);
+  EXPECT_CALL(mock_processor(), Put).Times(0);
   EXPECT_CALL(*backend(), CommitChanges());
   StartSyncing({remote});
   EXPECT_THAT(GetAllLocalData(), ElementsAre(merged));
@@ -1266,8 +1264,6 @@ TEST_P(AutofillProfileSyncBridgeTest,
 TEST_P(AutofillProfileSyncBridgeTest,
        RemoteWithSameGuid_ValidityState_DefaultValueNoSync) {
   AutofillProfile local(kGuidA, kHttpsOrigin);
-  ASSERT_EQ(0, local.GetClientValidityBitfieldValue());
-  ASSERT_FALSE(local.is_client_validity_states_updated());
   AddAutofillProfilesToTable({local});
 
   // Remote data does not have a validity state bitfield value.
@@ -1277,7 +1273,7 @@ TEST_P(AutofillProfileSyncBridgeTest,
   ASSERT_FALSE(remote.is_client_validity_states_updated());
 
   // No update to sync, no change in local data.
-  EXPECT_CALL(mock_processor(), Put(_, _, _)).Times(0);
+  EXPECT_CALL(mock_processor(), Put).Times(0);
   EXPECT_CALL(*backend(), CommitChanges());
   StartSyncing({remote});
   EXPECT_THAT(GetAllLocalData(), ElementsAre(local));
@@ -1287,7 +1283,6 @@ TEST_P(AutofillProfileSyncBridgeTest,
 TEST_P(AutofillProfileSyncBridgeTest,
        RemoteWithSameGuid_ValidityState_ExistingRemoteWinsOverMissingLocal) {
   AutofillProfile local(kGuidA, kHttpsOrigin);
-  ASSERT_EQ(0, local.GetClientValidityBitfieldValue());
   AddAutofillProfilesToTable({local});
 
   // Remote data has a non default validity state bitfield value.
@@ -1297,7 +1292,7 @@ TEST_P(AutofillProfileSyncBridgeTest,
   ASSERT_TRUE(remote.has_validity_state_bitfield());
 
   // No update to sync, the validity bitfield should be stored to local.
-  EXPECT_CALL(mock_processor(), Put(_, _, _)).Times(0);
+  EXPECT_CALL(mock_processor(), Put).Times(0);
   EXPECT_CALL(*backend(), CommitChanges());
   StartSyncing({remote});
   EXPECT_THAT(GetAllLocalData(), ElementsAre(CreateAutofillProfile(remote)));
@@ -1307,7 +1302,6 @@ TEST_P(AutofillProfileSyncBridgeTest,
 TEST_P(AutofillProfileSyncBridgeTest,
        RemoteWithSameGuid_ValidityState_ExistingRemoteWinsOverExistingLocal) {
   AutofillProfile local(kGuidA, kHttpsOrigin);
-  local.SetClientValidityFromBitfieldValue(kValidityStateBitfield + 1);
   AddAutofillProfilesToTable({local});
 
   // Remote data has a non default validity state bitfield value.
@@ -1317,7 +1311,7 @@ TEST_P(AutofillProfileSyncBridgeTest,
   ASSERT_TRUE(remote.has_validity_state_bitfield());
 
   // No update to sync, the remote validity bitfield should overwrite local.
-  EXPECT_CALL(mock_processor(), Put(_, _, _)).Times(0);
+  EXPECT_CALL(mock_processor(), Put).Times(0);
   EXPECT_CALL(*backend(), CommitChanges());
   StartSyncing({remote});
   EXPECT_THAT(GetAllLocalData(), ElementsAre(CreateAutofillProfile(remote)));
@@ -1328,7 +1322,6 @@ TEST_P(AutofillProfileSyncBridgeTest,
 TEST_P(AutofillProfileSyncBridgeTest,
        RemoteWithSameGuid_ValidityState_ExistingLocalWinsOverMissingRemote) {
   AutofillProfile local(kGuidA, kHttpsOrigin);
-  local.SetClientValidityFromBitfieldValue(kValidityStateBitfield);
   AddAutofillProfilesToTable({local});
 
   // Remote data has a non default validity state bitfield value.
@@ -1343,7 +1336,7 @@ TEST_P(AutofillProfileSyncBridgeTest,
   merged.FinalizeAfterImport();
 
   // No update to sync, the local validity bitfield should stay untouched.
-  EXPECT_CALL(mock_processor(), Put(_, _, _)).Times(0);
+  EXPECT_CALL(mock_processor(), Put).Times(0);
   EXPECT_CALL(*backend(), CommitChanges());
   StartSyncing({remote});
   EXPECT_THAT(GetAllLocalData(), ElementsAre(merged));
@@ -1364,7 +1357,7 @@ TEST_P(AutofillProfileSyncBridgeTest,
   remote.add_name_first(std::string("John"));
 
   // No update to sync, no change in local data.
-  EXPECT_CALL(mock_processor(), Put(_, _, _)).Times(0);
+  EXPECT_CALL(mock_processor(), Put).Times(0);
   EXPECT_CALL(*backend(), CommitChanges());
   StartSyncing({remote});
   EXPECT_THAT(GetAllLocalData(), ElementsAre(local));
@@ -1422,7 +1415,7 @@ TEST_P(AutofillProfileSyncBridgeTest,
       NAME_LAST, u"Smith", structured_address::VerificationStatus::kObserved);
 
   // No update to sync, merged changes in local data.
-  EXPECT_CALL(mock_processor(), Put(_, _, _)).Times(0);
+  EXPECT_CALL(mock_processor(), Put).Times(0);
   EXPECT_CALL(*backend(), CommitChanges());
   StartSyncing({remote});
   EXPECT_THAT(GetAllLocalData(), ElementsAre(merged));
@@ -1446,7 +1439,7 @@ TEST_P(AutofillProfileSyncBridgeTest,
   remote.set_address_home_language_code("en");
 
   // No update to sync, no change in local data.
-  EXPECT_CALL(mock_processor(), Put(_, _, _)).Times(0);
+  EXPECT_CALL(mock_processor(), Put).Times(0);
   EXPECT_CALL(*backend(), CommitChanges());
   StartSyncing({remote});
   EXPECT_THAT(GetAllLocalData(), ElementsAre(WithUsageStats(local)));
@@ -1502,7 +1495,7 @@ TEST_P(AutofillProfileSyncBridgeUpdatesUsageStatsTest, UpdatesUsageStats) {
   merged.set_use_date(test_case.merged_use_date);
 
   // Expect no changes to remote data.
-  EXPECT_CALL(mock_processor(), Put(_, _, _)).Times(0);
+  EXPECT_CALL(mock_processor(), Put).Times(0);
   EXPECT_CALL(*backend(), CommitChanges());
 
   StartSyncing({remote});

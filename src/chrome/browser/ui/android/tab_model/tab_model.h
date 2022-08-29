@@ -96,6 +96,15 @@ class TabModel {
     FROM_LONGPRESS_BACKGROUND_IN_GROUP,
     // Opened from an app widget.
     FROM_APP_WIDGET,
+    // Open from the long press context menu item 'Open in Incognito Tab'.
+    FROM_LONGPRESS_INCOGNITO,
+    // Opened in background from Recent Tabs. This is a non-link launch with no
+    // parent/child relationship. The tab is added to the end of the TabModel.
+    // This does not include opening in the current tab.
+    FROM_RECENT_TABS,
+    // Opened from a Reading list. When going "back" on Android, the Reading
+    // list should be reopened.
+    FROM_READING_LIST,
     // Must be last.
     SIZE
   };
@@ -116,6 +125,8 @@ class TabModel {
     // User-originated switch to existing tab from Omnibox tab switch
     // suggestions.
     FROM_OMNIBOX,
+    // Selection of a previously closed tab when closure is undone.
+    FROM_UNDO,
     // Must be last.
     SIZE
   };

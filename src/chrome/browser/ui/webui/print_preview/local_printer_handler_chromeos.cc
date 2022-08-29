@@ -46,10 +46,10 @@ void OnGetPrintersComplete(
     LocalPrinterHandlerChromeos::AddedPrintersCallback callback,
     std::vector<crosapi::mojom::LocalDestinationInfoPtr> printers) {
   if (!printers.empty()) {
-    base::Value::ListStorage list;
+    base::Value::List list;
     for (const crosapi::mojom::LocalDestinationInfoPtr& p : printers)
-      list.push_back(LocalPrinterHandlerChromeos::PrinterToValue(*p));
-    std::move(callback).Run(base::ListValue(std::move(list)));
+      list.Append(LocalPrinterHandlerChromeos::PrinterToValue(*p));
+    std::move(callback).Run(std::move(list));
   }
 }
 
@@ -102,12 +102,12 @@ base::Value LocalPrinterHandlerChromeos::PrinterToValue(
 }
 
 // static
-base::Value LocalPrinterHandlerChromeos::CapabilityToValue(
+base::Value::Dict LocalPrinterHandlerChromeos::CapabilityToValue(
     crosapi::mojom::CapabilitiesResponsePtr caps) {
   if (!caps)
-    return base::Value();
+    return base::Value::Dict();
 
-  base::Value dict = AssemblePrinterSettings(
+  return AssemblePrinterSettings(
       caps->basic_info->id,
       PrinterBasicInfo(
           caps->basic_info->id, caps->basic_info->name,
@@ -118,25 +118,6 @@ base::Value LocalPrinterHandlerChromeos::CapabilityToValue(
                                            : kValueFalse}}),
       PrinterSemanticCapsAndDefaults::Papers(), caps->has_secure_protocol,
       base::OptionalOrNullptr(caps->capabilities));
-
-  // TODO(b/195001379, jkopanski): This block of code should be removed once
-  // Ash Chrome M94 is on stable channel.
-  base::Value policies(base::Value::Type::DICTIONARY);
-  policies.SetIntKey(kAllowedColorModes, caps->allowed_color_modes_deprecated);
-  policies.SetIntKey(kAllowedDuplexModes,
-                     caps->allowed_duplex_modes_deprecated);
-  policies.SetIntKey(
-      kAllowedPinModes,
-      static_cast<int>(caps->allowed_pin_modes_deprecated_version_1));
-  policies.SetIntKey(kDefaultColorMode,
-                     static_cast<int>(caps->default_color_mode_deprecated));
-  policies.SetIntKey(kDefaultDuplexMode,
-                     static_cast<int>(caps->default_duplex_mode_deprecated));
-  policies.SetIntKey(kDefaultPinMode,
-                     static_cast<int>(caps->default_pin_mode_deprecated));
-  dict.FindKey(kPrinter)->SetKey(kSettingPolicies, std::move(policies));
-
-  return dict;
 }
 
 // static
@@ -186,7 +167,7 @@ void LocalPrinterHandlerChromeos::StartGetCapability(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!local_printer_) {
     PRINTER_LOG(ERROR) << "Local printer not available (StartGetCapability)";
-    std::move(callback).Run(base::Value());
+    std::move(callback).Run(base::Value::Dict());
     return;
   }
   local_printer_->GetCapability(
@@ -194,7 +175,7 @@ void LocalPrinterHandlerChromeos::StartGetCapability(
 }
 void LocalPrinterHandlerChromeos::StartPrint(
     const std::u16string& job_title,
-    base::Value settings,
+    base::Value::Dict settings,
     scoped_refptr<base::RefCountedMemory> print_data,
     PrintCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -226,13 +207,13 @@ void LocalPrinterHandlerChromeos::StartPrint(
 }
 
 void LocalPrinterHandlerChromeos::OnProfileUsernameReady(
-    base::Value settings,
+    base::Value::Dict settings,
     scoped_refptr<base::RefCountedMemory> print_data,
     PrinterHandler::PrintCallback callback,
     const absl::optional<std::string>& username) {
   if (username.has_value() && !username->empty()) {
-    settings.SetKey(kSettingUsername, base::Value(*username));
-    settings.SetKey(kSettingSendUserInfo, base::Value(true));
+    settings.Set(kSettingUsername, *username);
+    settings.Set(kSettingSendUserInfo, true);
   }
   StartLocalPrint(std::move(settings), std::move(print_data),
                   preview_web_contents_, std::move(callback));

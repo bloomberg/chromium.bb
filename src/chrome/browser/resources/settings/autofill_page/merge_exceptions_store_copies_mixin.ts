@@ -9,7 +9,7 @@
  * device and in the account.
  */
 
-import {assert} from 'chrome://resources/js/assert.m.js';
+import {assert} from 'chrome://resources/js/assert_ts.js';
 import {dedupingMixin, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {MultiStoreExceptionEntry} from './multi_store_exception_entry.js';
@@ -39,7 +39,7 @@ export const MergeExceptionsStoreCopiesMixin = dedupingMixin(
         private setPasswordExceptionsListener_:
             PasswordExceptionListChangedListener|null = null;
 
-        connectedCallback() {
+        override connectedCallback() {
           super.connectedCallback();
 
           this.setPasswordExceptionsListener_ = list => {
@@ -52,11 +52,12 @@ export const MergeExceptionsStoreCopiesMixin = dedupingMixin(
               this.setPasswordExceptionsListener_);
         }
 
-        disconnectedCallback() {
+        override disconnectedCallback() {
           super.disconnectedCallback();
 
+          assert(this.setPasswordExceptionsListener_);
           PasswordManagerImpl.getInstance().removeExceptionListChangedListener(
-              assert(this.setPasswordExceptionsListener_!));
+              this.setPasswordExceptionsListener_);
           this.setPasswordExceptionsListener_ = null;
         }
       }

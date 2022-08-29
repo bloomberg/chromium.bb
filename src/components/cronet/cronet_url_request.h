@@ -9,11 +9,11 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/location.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "net/base/idempotency.h"
+#include "net/base/network_change_notifier.h"
 #include "net/base/request_priority.h"
 #include "net/url_request/url_request.h"
 #include "url/gurl.h"
@@ -28,7 +28,7 @@ class UploadDataStream;
 
 namespace cronet {
 
-class CronetURLRequestContext;
+class CronetContext;
 class TestUtil;
 
 // Wrapper around net::URLRequestContext.
@@ -140,7 +140,7 @@ class CronetURLRequest {
   // causes connection migration to be disabled for this request if true. If
   // global connection migration flag is not enabled,
   // |disable_connection_migration| has no effect.
-  CronetURLRequest(CronetURLRequestContext* context,
+  CronetURLRequest(CronetContext* context,
                    std::unique_ptr<Callback> callback,
                    const GURL& url,
                    net::RequestPriority priority,
@@ -151,7 +151,9 @@ class CronetURLRequest {
                    int32_t traffic_stats_tag,
                    bool traffic_stats_uid_set,
                    int32_t traffic_stats_uid,
-                   net::Idempotency idempotency);
+                   net::Idempotency idempotency,
+                   net::NetworkChangeNotifier::NetworkHandle network =
+                       net::NetworkChangeNotifier::kInvalidNetworkHandle);
 
   CronetURLRequest(const CronetURLRequest&) = delete;
   CronetURLRequest& operator=(const CronetURLRequest&) = delete;
@@ -213,7 +215,8 @@ class CronetURLRequest {
                  int32_t traffic_stats_tag,
                  bool traffic_stats_uid_set,
                  int32_t traffic_stats_uid,
-                 net::Idempotency idempotency);
+                 net::Idempotency idempotency,
+                 net::NetworkChangeNotifier::NetworkHandle network);
 
     NetworkTasks(const NetworkTasks&) = delete;
     NetworkTasks& operator=(const NetworkTasks&) = delete;
@@ -222,7 +225,7 @@ class CronetURLRequest {
     ~NetworkTasks() override;
 
     // Starts the request.
-    void Start(CronetURLRequestContext* context,
+    void Start(CronetContext* context,
                const std::string& method,
                std::unique_ptr<net::HttpRequestHeaders> request_headers,
                std::unique_ptr<net::UploadDataStream> upload);
@@ -297,13 +300,15 @@ class CronetURLRequest {
     // Idempotency of the request.
     const net::Idempotency idempotency_;
 
+    net::NetworkChangeNotifier::NetworkHandle network_;
+
     scoped_refptr<net::IOBuffer> read_buffer_;
     std::unique_ptr<net::URLRequest> url_request_;
 
     THREAD_CHECKER(network_thread_checker_);
   };
 
-  raw_ptr<CronetURLRequestContext> context_;
+  raw_ptr<CronetContext> context_;
   // |network_tasks_| is invoked on network thread.
   NetworkTasks network_tasks_;
 

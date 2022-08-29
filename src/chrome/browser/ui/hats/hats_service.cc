@@ -25,6 +25,8 @@
 #include "chrome/common/pref_names.h"
 #include "components/accuracy_tips/features.h"
 #include "components/metrics_services_manager/metrics_services_manager.h"
+#include "components/permissions/constants.h"
+#include "components/permissions/features.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/version_info/version_info.h"
@@ -38,11 +40,27 @@ constexpr char kHatsSurveyTriggerAutofillAddress[] = "autofill-address";
 constexpr char kHatsSurveyTriggerAutofillCard[] = "autofill-card";
 constexpr char kHatsSurveyTriggerAutofillPassword[] = "autofill-password";
 constexpr char kHatsSurveyTriggerNtpModules[] = "ntp-modules";
-constexpr char kHatsSurveyTriggerPrivacyReview[] = "privacy-review";
+constexpr char kHatsSurveyTriggerNtpPhotosModuleOptOut[] =
+    "ntp-photos-module-opt-out";
+constexpr char kHatsSurveyTriggerPermissionsPostPrompt[] =
+    "permissions-post-prompt";
+constexpr char kHatsSurveyTriggerPrivacyGuide[] = "privacy-guide";
 constexpr char kHatsSurveyTriggerPrivacySandbox[] = "privacy-sandbox";
 constexpr char kHatsSurveyTriggerSettings[] = "settings";
 constexpr char kHatsSurveyTriggerSettingsPrivacy[] = "settings-privacy";
 constexpr char kHatsSurveyTriggerTesting[] = "testing";
+constexpr char kHatsSurveyTriggerTrustSafetyPrivacySandbox3ConsentAccept[] =
+    "ts-ps3-consent-accept";
+constexpr char kHatsSurveyTriggerTrustSafetyPrivacySandbox3ConsentDecline[] =
+    "ts-ps3-consent-decline";
+constexpr char kHatsSurveyTriggerTrustSafetyPrivacySandbox3NoticeDismiss[] =
+    "ts-ps3-notice-dismiss";
+constexpr char kHatsSurveyTriggerTrustSafetyPrivacySandbox3NoticeOk[] =
+    "ts-ps3-notice-ok";
+constexpr char kHatsSurveyTriggerTrustSafetyPrivacySandbox3NoticeSettings[] =
+    "ts-ps3-notice-settings";
+constexpr char kHatsSurveyTriggerTrustSafetyPrivacySandbox3NoticeLearnMore[] =
+    "ts-ps3-notice-learn-more";
 constexpr char kHatsSurveyTriggerTrustSafetyPrivacySettings[] =
     "ts-privacy-settings";
 constexpr char kHatsSurveyTriggerTrustSafetyTrustedSurface[] =
@@ -122,9 +140,6 @@ std::vector<HatsService::SurveyConfig> GetSurveyConfigs() {
   survey_configs.emplace_back(&features::kHaTSDesktopDevToolsIssuesCSP,
                               "devtools-issues-csp",
                               "c9fjDmwjb0ugnJ3q1cK0USeAJJ9C");
-  survey_configs.emplace_back(&features::kHaTSDesktopDevToolsLayoutPanel,
-                              "devtools-layout-panel",
-                              "hhoMFLFq70ugnJ3q1cK0XYpqkErh");
 
   // Settings surveys.
   survey_configs.emplace_back(
@@ -137,8 +152,8 @@ std::vector<HatsService::SurveyConfig> GetSurveyConfigs() {
       std::vector<std::string>{"3P cookies blocked",
                                "Privacy Sandbox enabled"});
   survey_configs.emplace_back(
-      &features::kHappinessTrackingSurveysForDesktopPrivacyReview,
-      kHatsSurveyTriggerPrivacyReview);
+      &features::kHappinessTrackingSurveysForDesktopPrivacyGuide,
+      kHatsSurveyTriggerPrivacyGuide);
   survey_configs.emplace_back(
       &features::kHappinessTrackingSurveysForDesktopPrivacySandbox,
       kHatsSurveyTriggerPrivacySandbox,
@@ -150,6 +165,10 @@ std::vector<HatsService::SurveyConfig> GetSurveyConfigs() {
   survey_configs.emplace_back(
       &features::kHappinessTrackingSurveysForDesktopNtpModules,
       kHatsSurveyTriggerNtpModules);
+  // NTP Photos module opt-out survey.
+  survey_configs.emplace_back(
+      &features::kHappinessTrackingSurveysForNtpPhotosOptOut,
+      kHatsSurveyTriggerNtpPhotosModuleOptOut);
 
   // Trust & Safety Sentiment surveys.
   survey_configs.emplace_back(
@@ -167,6 +186,51 @@ std::vector<HatsService::SurveyConfig> GetSurveyConfigs() {
       kHatsSurveyTriggerTrustSafetyTransactions,
       features::kTrustSafetySentimentSurveyTransactionsTriggerId.Get(),
       std::vector<std::string>{"Saved password"});
+  survey_configs.emplace_back(
+      &features::kTrustSafetySentimentSurvey,
+      kHatsSurveyTriggerTrustSafetyPrivacySandbox3ConsentAccept,
+      features::kTrustSafetySentimentSurveyPrivacySandbox3ConsentAcceptTriggerId
+          .Get(),
+      std::vector<std::string>{"Stable channel", "3P cookies blocked",
+                               "Privacy Sandbox enabled"});
+  survey_configs.emplace_back(
+      &features::kTrustSafetySentimentSurvey,
+      kHatsSurveyTriggerTrustSafetyPrivacySandbox3ConsentDecline,
+      features::
+          kTrustSafetySentimentSurveyPrivacySandbox3ConsentDeclineTriggerId
+              .Get(),
+      std::vector<std::string>{"Stable channel", "3P cookies blocked",
+                               "Privacy Sandbox enabled"});
+  survey_configs.emplace_back(
+      &features::kTrustSafetySentimentSurvey,
+      kHatsSurveyTriggerTrustSafetyPrivacySandbox3NoticeDismiss,
+      features::kTrustSafetySentimentSurveyPrivacySandbox3NoticeDismissTriggerId
+          .Get(),
+      std::vector<std::string>{"Stable channel", "3P cookies blocked",
+                               "Privacy Sandbox enabled"});
+  survey_configs.emplace_back(
+      &features::kTrustSafetySentimentSurvey,
+      kHatsSurveyTriggerTrustSafetyPrivacySandbox3NoticeOk,
+      features::kTrustSafetySentimentSurveyPrivacySandbox3NoticeOkTriggerId
+          .Get(),
+      std::vector<std::string>{"Stable channel", "3P cookies blocked",
+                               "Privacy Sandbox enabled"});
+  survey_configs.emplace_back(
+      &features::kTrustSafetySentimentSurvey,
+      kHatsSurveyTriggerTrustSafetyPrivacySandbox3NoticeSettings,
+      features::
+          kTrustSafetySentimentSurveyPrivacySandbox3NoticeSettingsTriggerId
+              .Get(),
+      std::vector<std::string>{"Stable channel", "3P cookies blocked",
+                               "Privacy Sandbox enabled"});
+  survey_configs.emplace_back(
+      &features::kTrustSafetySentimentSurvey,
+      kHatsSurveyTriggerTrustSafetyPrivacySandbox3NoticeLearnMore,
+      features::
+          kTrustSafetySentimentSurveyPrivacySandbox3NoticeLearnMoreTriggerId
+              .Get(),
+      std::vector<std::string>{"Stable channel", "3P cookies blocked",
+                               "Privacy Sandbox enabled"});
 
   // Accuracy tips survey.
   survey_configs.emplace_back(
@@ -187,6 +251,21 @@ std::vector<HatsService::SurveyConfig> GetSurveyConfigs() {
   survey_configs.emplace_back(
       &features::kHappinessTrackingSurveysForDesktopWhatsNew,
       kHatsSurveyTriggerWhatsNew);
+
+  // Permissions surveys.
+  survey_configs.emplace_back(
+      &permissions::features::kPermissionsPostPromptSurvey,
+      kHatsSurveyTriggerPermissionsPostPrompt,
+      permissions::feature_params::kPermissionsPostPromptSurveyTriggerId.Get(),
+      std::vector<std::string>{
+          permissions::kPermissionsPostPromptSurveyHadGestureKey},
+      std::vector<std::string>{
+          /* String values correspond to known enumerators in
+           * permissions::PermissionPromptDisposition. */
+          permissions::kPermissionsPostPromptSurveyPromptDispositionKey,
+          /* String values correspond to known enumerators in
+           * permissions::PermissionPromptDispositionReason. */
+          permissions::kPermissionsPostPromptSurveyPromptDispositionReasonKey});
 
   return survey_configs;
 }
@@ -400,7 +479,7 @@ void HatsService::RecordSurveyAsShown(std::string trigger_id) {
                             ShouldShowSurveyReasons::kYes);
 
   DictionaryPrefUpdate update(profile_->GetPrefs(), prefs::kHatsSurveyMetadata);
-  base::DictionaryValue* pref_data = update.Get();
+  base::Value* pref_data = update.Get();
   pref_data->SetIntPath(GetMajorVersionPath(trigger),
                         version_info::GetVersion().components()[0]);
   pref_data->SetPath(GetLastSurveyStartedTime(trigger),
@@ -417,7 +496,7 @@ void HatsService::SetSurveyMetadataForTesting(
     const HatsService::SurveyMetadata& metadata) {
   const std::string& trigger = kHatsSurveyTriggerSettings;
   DictionaryPrefUpdate update(profile_->GetPrefs(), prefs::kHatsSurveyMetadata);
-  base::DictionaryValue* pref_data = update.Get();
+  base::Value* pref_data = update.Get();
   if (!metadata.last_major_version.has_value() &&
       !metadata.last_survey_started_time.has_value() &&
       !metadata.is_survey_full.has_value() &&
@@ -465,7 +544,7 @@ void HatsService::GetSurveyMetadataForTesting(
     HatsService::SurveyMetadata* metadata) const {
   const std::string& trigger = kHatsSurveyTriggerSettings;
   DictionaryPrefUpdate update(profile_->GetPrefs(), prefs::kHatsSurveyMetadata);
-  base::DictionaryValue* pref_data = update.Get();
+  base::Value* pref_data = update.Get();
 
   absl::optional<int> last_major_version =
       pref_data->FindIntPath(GetMajorVersionPath(trigger));
@@ -586,7 +665,7 @@ bool HatsService::CanShowSurvey(const std::string& trigger) const {
     return false;
   }
 
-  const base::DictionaryValue* pref_data =
+  const base::Value* pref_data =
       profile_->GetPrefs()->GetDictionary(prefs::kHatsSurveyMetadata);
   absl::optional<int> last_major_version =
       pref_data->FindIntPath(GetMajorVersionPath(trigger));
@@ -655,7 +734,7 @@ bool HatsService::CanShowAnySurvey(bool user_prompted) const {
   // confrontational manner than the standard HaTS prompt). The bar for whether
   // a user is eligible is thus lower for these types of surveys.
   if (!user_prompted) {
-    const base::DictionaryValue* pref_data =
+    const base::Value* pref_data =
         profile_->GetPrefs()->GetDictionary(prefs::kHatsSurveyMetadata);
 
     // If the profile is too new, measured as the age of the profile directory,
@@ -710,7 +789,7 @@ void HatsService::CheckSurveyStatusAndMaybeShow(
   // Check the survey status in profile first.
   // We record the survey's over capacity information in user profile to avoid
   // duplicated checks since the survey won't change once it is full.
-  const base::DictionaryValue* pref_data =
+  const base::Value* pref_data =
       profile_->GetPrefs()->GetDictionary(prefs::kHatsSurveyMetadata);
   absl::optional<int> is_full =
       pref_data->FindBoolPath(GetIsSurveyFull(trigger));

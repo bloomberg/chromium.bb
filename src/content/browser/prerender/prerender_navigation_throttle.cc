@@ -4,27 +4,19 @@
 
 #include "content/browser/prerender/prerender_navigation_throttle.h"
 
+#include "base/memory/ptr_util.h"
 #include "content/browser/prerender/prerender_host.h"
 #include "content/browser/prerender/prerender_host_registry.h"
+#include "content/browser/prerender/prerender_navigation_utils.h"
 #include "content/browser/renderer_host/frame_tree.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/navigation_request.h"
 #include "content/browser/renderer_host/render_frame_host_delegate.h"
+#include "content/public/browser/prerender_trigger_type.h"
 #include "third_party/blink/public/common/features.h"
+#include "url/origin.h"
 
 namespace content {
-
-namespace {
-
-// Returns true if a the response code is disallowed for pre-rendering (e.g 404,
-// etc), and false otherwise.
-// TODO(crbug.com/1167592): This should be eventually synced with the outcome
-// of https://github.com/jeremyroman/alternate-loading-modes/issues/30.
-bool IsDisallowedHttpResponseCode(int response_code) {
-  return response_code < 100 || response_code > 399;
-}
-
-}  // namespace
 
 PrerenderNavigationThrottle::~PrerenderNavigationThrottle() = default;
 
@@ -130,13 +122,17 @@ PrerenderNavigationThrottle::WillStartOrRedirectRequest(bool is_redirection) {
     if (is_redirection) {
       url::Origin initial_origin =
           url::Origin::Create(prerender_host->GetInitialUrl());
-      prerender_host_registry->CancelHost(
-          frame_tree_node->frame_tree_node_id(),
-          initial_origin == prerendering_origin
-              ? PrerenderHost::FinalStatus::
-                    kEmbedderTriggeredAndSameOriginRedirected
-              : PrerenderHost::FinalStatus::
-                    kEmbedderTriggeredAndCrossOriginRedirected);
+      if (initial_origin == prerendering_origin) {
+        prerender_host_registry->CancelHost(
+            frame_tree_node->frame_tree_node_id(),
+            PrerenderHost::FinalStatus::
+                kEmbedderTriggeredAndSameOriginRedirected);
+      } else {
+        prerender_host_registry->CancelHost(
+            frame_tree_node->frame_tree_node_id(),
+            PrerenderHost::FinalStatus::
+                kEmbedderTriggeredAndCrossOriginRedirected);
+      }
       return CANCEL;
     }
 
@@ -162,10 +158,11 @@ PrerenderNavigationThrottle::WillProcessResponse() {
   auto* navigation_request = NavigationRequest::From(navigation_handle());
   absl::optional<PrerenderHost::FinalStatus> cancel_reason;
 
+  // TODO(crbug.com/1318739): Delay until activation instead of cancellation.
   if (navigation_handle()->IsDownload()) {
     // Disallow downloads during prerendering and cancel the prerender.
     cancel_reason = PrerenderHost::FinalStatus::kDownload;
-  } else if (IsDisallowedHttpResponseCode(
+  } else if (prerender_navigation_utils::IsDisallowedHttpResponseCode(
                  navigation_request->commit_params().http_response_code)) {
     // There's no point in trying to prerender failed navigations.
     cancel_reason = PrerenderHost::FinalStatus::kNavigationBadHttpStatus;

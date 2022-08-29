@@ -10,7 +10,6 @@
 #include <set>
 #include <string>
 
-#include "base/cxx17_backports.h"
 #include "base/enterprise_util.h"
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
@@ -285,19 +284,19 @@ void CollectRegistryData(
 
 void CollectDomainEnrollmentData(
     ClientIncidentReport_EnvironmentData_OS* os_data) {
-  os_data->set_is_enrolled_to_domain(base::IsMachineExternallyManaged());
+  os_data->set_is_enrolled_to_domain(base::IsEnterpriseDevice());
 }
 
 void CollectPlatformProcessData(
     ClientIncidentReport_EnvironmentData_Process* process) {
   CollectDlls(process);
   RecordLspFeature(process);
-  CollectModuleVerificationData(kModulesToVerify, base::size(kModulesToVerify),
+  CollectModuleVerificationData(kModulesToVerify, std::size(kModulesToVerify),
                                 process);
 }
 
 void CollectPlatformOSData(ClientIncidentReport_EnvironmentData_OS* os_data) {
-  CollectRegistryData(kRegKeysToCollect, base::size(kRegKeysToCollect),
+  CollectRegistryData(kRegKeysToCollect, std::size(kRegKeysToCollect),
                       os_data->mutable_registry_key());
   CollectDomainEnrollmentData(os_data);
 }

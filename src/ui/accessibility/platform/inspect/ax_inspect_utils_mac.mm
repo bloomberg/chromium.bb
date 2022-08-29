@@ -4,8 +4,11 @@
 
 #include "ui/accessibility/platform/inspect/ax_inspect_utils_mac.h"
 
+#include <ostream>
+
 #include "base/callback.h"
 #include "base/containers/fixed_flat_set.h"
+#include "base/logging.h"
 #include "base/strings/pattern.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ui/accessibility/platform/ax_private_attributes_mac.h"
@@ -47,10 +50,22 @@ bool IsValidAXAttribute(const std::string& attribute) {
        NSAccessibilityARIARowIndexAttribute,
        NSAccessibilityARIASetSizeAttribute,
        NSAccessibilityAutocompleteValueAttribute,
+       NSAccessibilityBlockQuoteLevelAttribute,
+       NSAccessibilityChromeAXNodeIdAttribute,
        NSAccessibilityColumnHeaderUIElementsAttribute,
+       NSAccessibilityDescriptionAttribute,
        NSAccessibilityDetailsElementsAttribute,
+       NSAccessibilityDOMClassList,
+       NSAccessibilityDropEffectsAttribute,
+       NSAccessibilityElementBusyAttribute,
+       NSAccessibilityFocusableAncestorAttribute,
+       NSAccessibilityGrabbedAttribute,
        NSAccessibilityHasPopupAttribute,
        NSAccessibilityInvalidAttribute,
+       NSAccessibilityIsMultiSelectable,
+       NSAccessibilityKeyShortcutsValueAttribute,
+       NSAccessibilityLoadedAttribute,
+       NSAccessibilityLoadingProgressAttribute,
        NSAccessibilityMathFractionNumeratorAttribute,
        NSAccessibilityMathFractionDenominatorAttribute,
        NSAccessibilityMathRootRadicandAttribute,
@@ -62,10 +77,16 @@ bool IsValidAXAttribute(const std::string& attribute) {
        NSAccessibilityMathOverAttribute,
        NSAccessibilityMathPostscriptsAttribute,
        NSAccessibilityMathPrescriptsAttribute,
+       NSAccessibilityOwnsAttribute,
        NSAccessibilityPopupValueAttribute,
-       NSAccessibilityRequiredAttributeChrome,
+       NSAccessibilityRequiredAttribute,
        NSAccessibilityRoleDescriptionAttribute,
-       NSAccessibilityURLAttribute},
+       NSAccessibilitySelectedAttribute,
+       NSAccessibilitySizeAttribute,
+       NSAccessibilityTitleAttribute,
+       NSAccessibilityTitleUIElementAttribute,
+       NSAccessibilityURLAttribute,
+       NSAccessibilityVisitedAttribute},
       NSStringComparator());
 
   return kValidAttributes.contains(base::SysUTF8ToNSString(attribute));
@@ -151,8 +172,9 @@ NSArray* AXAttributeNamesOf(const id node) {
 
   if (IsAXUIElement(node)) {
     CFArrayRef attributes_ref;
-    if (AXUIElementCopyAttributeNames(static_cast<AXUIElementRef>(node),
-                                      &attributes_ref) == kAXErrorSuccess)
+    AXError result = AXUIElementCopyAttributeNames(
+        static_cast<AXUIElementRef>(node), &attributes_ref);
+    if (AXSuccess(result, "AXAttributeNamesOf"))
       return static_cast<NSArray*>(attributes_ref);
     return nil;
   }
@@ -168,9 +190,9 @@ NSArray* AXParameterizedAttributeNamesOf(const id node) {
 
   if (IsAXUIElement(node)) {
     CFArrayRef attributes_ref;
-    if (AXUIElementCopyParameterizedAttributeNames(
-            static_cast<AXUIElementRef>(node), &attributes_ref) ==
-        kAXErrorSuccess)
+    AXError result = AXUIElementCopyParameterizedAttributeNames(
+        static_cast<AXUIElementRef>(node), &attributes_ref);
+    if (AXSuccess(result, "AXParameterizedAttributeNamesOf"))
       return static_cast<NSArray*>(attributes_ref);
     return nil;
   }
@@ -186,9 +208,11 @@ id AXAttributeValueOf(const id node, NSString* attribute) {
 
   if (IsAXUIElement(node)) {
     CFTypeRef value_ref;
-    if ((AXUIElementCopyAttributeValue(static_cast<AXUIElementRef>(node),
-                                       static_cast<CFStringRef>(attribute),
-                                       &value_ref)) == kAXErrorSuccess)
+    AXError result = AXUIElementCopyAttributeValue(
+        static_cast<AXUIElementRef>(node), static_cast<CFStringRef>(attribute),
+        &value_ref);
+    if (AXSuccess(result, "AXAttributeValueOf(" +
+                              base::SysNSStringToUTF8(attribute) + ")"))
       return static_cast<id>(value_ref);
     return nil;
   }
@@ -205,12 +229,24 @@ id AXParameterizedAttributeValueOf(const id node,
     return [node accessibilityAttributeValue:attribute forParameter:parameter];
 
   if (IsAXUIElement(node)) {
+    // Convert NSValue parameter to CFTypeRef if needed.
+    CFTypeRef parameter_ref = static_cast<CFTypeRef>(parameter);
+    if ([parameter isKindOfClass:[NSValue class]] &&
+        !strcmp([static_cast<NSValue*>(parameter) objCType],
+                @encode(NSRange))) {
+      NSRange range = [static_cast<NSValue*>(parameter) rangeValue];
+      parameter_ref = AXValueCreate(kAXValueTypeCFRange, &range);
+    }
+
+    // Get value.
     CFTypeRef value_ref;
-    if ((AXUIElementCopyParameterizedAttributeValue(
-            static_cast<AXUIElementRef>(node),
-            static_cast<CFStringRef>(attribute),
-            static_cast<CFTypeRef>(parameter), &value_ref)) == kAXErrorSuccess)
+    AXError result = AXUIElementCopyParameterizedAttributeValue(
+        static_cast<AXUIElementRef>(node), static_cast<CFStringRef>(attribute),
+        parameter_ref, &value_ref);
+    if (AXSuccess(result, "AXParameterizedAttributeValueOf(" +
+                              base::SysNSStringToUTF8(attribute) + ")"))
       return static_cast<id>(value_ref);
+
     return nil;
   }
 
@@ -224,10 +260,26 @@ absl::optional<id> PerformAXSelector(const id node,
   if (![node conformsToProtocol:@protocol(NSAccessibility)])
     return absl::nullopt;
 
-  SEL selector = NSSelectorFromString(base::SysUTF8ToNSString(selector_string));
+  NSString* selector_nsstring = base::SysUTF8ToNSString(selector_string);
+  SEL selector = NSSelectorFromString(selector_nsstring);
 
   if ([node respondsToSelector:selector])
-    return [node performSelector:selector];
+    return [node valueForKey:selector_nsstring];
+  return absl::nullopt;
+}
+
+absl::optional<id> PerformAXSelector(const id node,
+                                     const std::string& selector_string,
+                                     const std::string& argument_string) {
+  if (![node conformsToProtocol:@protocol(NSAccessibility)])
+    return absl::nullopt;
+
+  SEL selector =
+      NSSelectorFromString(base::SysUTF8ToNSString(selector_string + ":"));
+  NSString* argument = base::SysUTF8ToNSString(argument_string);
+
+  if ([node respondsToSelector:selector])
+    return [node performSelector:selector withObject:argument];
   return absl::nullopt;
 }
 
@@ -386,6 +438,42 @@ AXUIElementRef FindAXWindowChild(AXUIElementRef parent,
     return static_cast<AXUIElementRef>(window);
 
   return nil;
+}
+
+AX_EXPORT bool AXSuccess(AXError result, const std::string& message) {
+  if (result == kAXErrorSuccess) {
+    return true;
+  }
+
+  std::string error;
+  switch (result) {
+    case kAXErrorAttributeUnsupported:
+      error = "attribute unsupported";
+      break;
+    case kAXErrorParameterizedAttributeUnsupported:
+      error = "parameterized attribute unsupported";
+      break;
+    case kAXErrorNoValue:
+      error = "no value";
+      break;
+    case kAXErrorIllegalArgument:
+      error = "illegal argument";
+      break;
+    case kAXErrorInvalidUIElement:
+      error = "invalid UIElement";
+      break;
+    case kAXErrorCannotComplete:
+      error = "cannot complete";
+      break;
+    case kAXErrorNotImplemented:
+      error = "not implemented";
+      break;
+    default:
+      error = "unknown error";
+      break;
+  }
+  LOG(WARNING) << message << ": " << error;
+  return false;
 }
 
 }  // namespace ui

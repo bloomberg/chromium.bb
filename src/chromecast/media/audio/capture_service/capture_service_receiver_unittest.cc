@@ -10,7 +10,6 @@
 
 #include "base/big_endian.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/test/task_environment.h"
 #include "chromecast/media/audio/capture_service/message_parsing_utils.h"
@@ -65,6 +64,7 @@ class MockCaptureServiceReceiverDelegate
   MOCK_METHOD(bool, OnInitialStreamInfo, (const StreamInfo&), (override));
   MOCK_METHOD(bool, OnCaptureData, (const char*, size_t), (override));
   MOCK_METHOD(void, OnCaptureError, (), (override));
+  MOCK_METHOD(void, OnCaptureMetadata, (const char*, size_t), (override));
 };
 
 class CaptureServiceReceiverTest : public ::testing::Test {
@@ -127,9 +127,9 @@ TEST_F(CaptureServiceReceiverTest, SendRequest) {
                           net::CompletionOnceCallback,
                           const net::NetworkTrafficAnnotationTag&) {
         EXPECT_EQ(buf_len, static_cast<int>(sizeof(HandshakePacket)));
-        const char* data = buf->data();
+        auto* data = reinterpret_cast<const uint8_t*>(buf->data());
         uint16_t size;
-        base::ReadBigEndian(reinterpret_cast<const uint8_t*>(data), &size);
+        base::ReadBigEndian(data, &size);
         EXPECT_EQ(size, sizeof(HandshakePacket) - sizeof(size));
         HandshakePacket packet;
         std::memcpy(&packet, data, sizeof(HandshakePacket));
@@ -206,6 +206,7 @@ TEST_F(CaptureServiceReceiverTest, ReceiveMetadataMessage) {
   // Neither OnCaptureError nor OnCaptureData will be called.
   EXPECT_CALL(delegate_, OnCaptureError).Times(0);
   EXPECT_CALL(delegate_, OnCaptureData).Times(0);
+  EXPECT_CALL(delegate_, OnCaptureMetadata).Times(1);
 
   receiver_.StartWithSocket(std::move(socket));
   task_environment_.RunUntilIdle();

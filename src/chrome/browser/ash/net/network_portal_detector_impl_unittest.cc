@@ -24,7 +24,8 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "chromeos/dbus/concierge/concierge_client.h"
+#include "chromeos/ash/components/dbus/concierge/concierge_client.h"
+#include "chromeos/ash/components/network/portal_detector/network_portal_detector_strategy.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill/shill_device_client.h"
 #include "chromeos/dbus/shill/shill_service_client.h"
@@ -32,7 +33,6 @@
 #include "chromeos/network/network_handler_test_helper.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
-#include "chromeos/network/portal_detector/network_portal_detector_strategy.h"
 #include "components/captive_portal/core/captive_portal_detector.h"
 #include "components/captive_portal/core/captive_portal_testing_utils.h"
 #include "components/user_manager/scoped_user_manager.h"
@@ -44,13 +44,13 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
-using testing::_;
-using testing::AnyNumber;
-using testing::Mock;
-
-namespace chromeos {
+namespace ash {
 
 namespace {
+
+using ::testing::_;
+using ::testing::AnyNumber;
+using ::testing::Mock;
 
 // Service path / guid for stub networks.
 const char kStubEthernet[] = "stub_ethernet";
@@ -917,4 +917,4 @@ TEST_F(NetworkPortalDetectorImplTest, RequestTimeouts2) {
   EXPECT_NE(State::STATE_IDLE, state());
 }
 
-}  // namespace chromeos
+}  // namespace ash

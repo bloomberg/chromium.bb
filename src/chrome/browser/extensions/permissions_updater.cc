@@ -454,8 +454,7 @@ void PermissionsUpdater::SetPolicyHostRestrictions(
 
 void PermissionsUpdater::SetUsesDefaultHostRestrictions(
     const Extension* extension) {
-  extension->permissions_data()->SetUsesDefaultHostRestrictions(
-      util::GetBrowserContextId(browser_context_));
+  extension->permissions_data()->SetUsesDefaultHostRestrictions();
   NetworkPermissionsUpdateHelper::UpdatePermissions(
       browser_context_, POLICY, extension, PermissionSet(), base::DoNothing());
 }
@@ -533,12 +532,12 @@ void PermissionsUpdater::GrantActivePermissions(const Extension* extension) {
 void PermissionsUpdater::InitializePermissions(const Extension* extension) {
   std::unique_ptr<const PermissionSet> bounded_wrapper;
   const PermissionSet* bounded_active = nullptr;
-  ExtensionPrefs* prefs = ExtensionPrefs::Get(browser_context_);
   // If |extension| is a transient dummy extension, we do not want to look for
   // it in preferences.
   if (init_flag_ & INIT_FLAG_TRANSIENT) {
     bounded_active = &extension->permissions_data()->active_permissions();
   } else {
+    ExtensionPrefs* prefs = ExtensionPrefs::Get(browser_context_);
     std::unique_ptr<const PermissionSet> active_permissions =
         prefs->GetActivePermissions(extension->id());
     bounded_wrapper =
@@ -547,8 +546,8 @@ void PermissionsUpdater::InitializePermissions(const Extension* extension) {
   }
 
   std::unique_ptr<const PermissionSet> granted_permissions =
-      ScriptingPermissionsModifier::WithholdPermissionsIfNecessary(
-          *extension, *prefs, *bounded_active);
+      ScriptingPermissionsModifier(browser_context_, extension)
+          .WithholdPermissionsIfNecessary(*bounded_active);
 
   if (GetDelegate())
     GetDelegate()->InitializePermissions(extension, &granted_permissions);
@@ -556,6 +555,10 @@ void PermissionsUpdater::InitializePermissions(const Extension* extension) {
   bool update_active_permissions = false;
   if ((init_flag_ & INIT_FLAG_TRANSIENT) == 0) {
     update_active_permissions = true;
+
+    extension->permissions_data()->SetContextId(
+        util::GetBrowserContextId(browser_context_));
+
     // Apply per-extension policy if set.
     ApplyPolicyHostRestrictions(*extension);
   }
@@ -676,13 +679,13 @@ void PermissionsUpdater::NotifyPermissionsUpdated(
   EventRouter* event_router =
       event_name ? EventRouter::Get(browser_context) : nullptr;
   if (event_router) {
-    std::unique_ptr<base::ListValue> value(new base::ListValue());
+    std::vector<base::Value> event_args;
     std::unique_ptr<api::permissions::Permissions> permissions =
         PackPermissionSet(*changed);
-    value->Append(permissions->ToValue());
-    auto event =
-        std::make_unique<Event>(histogram_value, event_name,
-                                std::move(*value).TakeList(), browser_context);
+    event_args.emplace_back(
+        base::Value::FromUniquePtrValue(permissions->ToValue()));
+    auto event = std::make_unique<Event>(
+        histogram_value, event_name, std::move(event_args), browser_context);
     event_router->DispatchEventToExtension(extension->id(), std::move(event));
   }
 

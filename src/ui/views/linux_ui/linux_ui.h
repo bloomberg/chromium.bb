@@ -7,21 +7,27 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "build/buildflag.h"
+#include "build/chromecast_buildflags.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/cursor/cursor_theme_manager.h"
 #include "ui/base/ime/linux/linux_input_method_context_factory.h"
 #include "ui/base/ime/linux/text_edit_key_bindings_delegate_auralinux.h"
 #include "ui/gfx/animation/animation_settings_provider_linux.h"
 #include "ui/gfx/skia_font_delegate.h"
-#include "ui/shell_dialogs/shell_dialog_linux.h"
 #include "ui/views/buildflags.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/views_export.h"
 
-// The main entrypoint into Linux toolkit specific code. GTK code should only
+#if BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CASTOS)
+#include "ui/shell_dialogs/shell_dialog_linux.h"
+#endif
+
+// The main entrypoint into Linux toolkit specific code. GTK/QT code should only
 // be executed behind this interface.
 
 namespace aura {
@@ -41,10 +47,7 @@ class Image;
 }
 
 namespace views {
-class Border;
 class DeviceScaleFactorObserver;
-class LabelButton;
-class LabelButtonBorder;
 class NavButtonProvider;
 class WindowButtonOrderObserver;
 class WindowFrameProvider;
@@ -53,7 +56,9 @@ class WindowFrameProvider;
 // project that wants to do linux desktop native rendering.
 class VIEWS_EXPORT LinuxUI : public ui::LinuxInputMethodContextFactory,
                              public gfx::SkiaFontDelegate,
+#if BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CASTOS)
                              public ui::ShellDialogLinux,
+#endif
                              public ui::TextEditKeyBindingsDelegateAuraLinux,
                              public ui::CursorThemeManager,
                              public gfx::AnimationSettingsProviderLinux {
@@ -92,7 +97,37 @@ class VIEWS_EXPORT LinuxUI : public ui::LinuxInputMethodContextFactory,
   // running with the "--ash" flag.)
   static LinuxUI* instance();
 
-  virtual void Initialize() = 0;
+  // Notifies the observer about changes about how window buttons should be
+  // laid out.
+  void AddWindowButtonOrderObserver(WindowButtonOrderObserver* observer);
+
+  // Removes the observer from the LinuxUI's list.
+  void RemoveWindowButtonOrderObserver(WindowButtonOrderObserver* observer);
+
+  // Registers |observer| to be notified about changes to the device
+  // scale factor.
+  void AddDeviceScaleFactorObserver(DeviceScaleFactorObserver* observer);
+
+  // Unregisters |observer| from receiving changes to the device scale
+  // factor.
+  void RemoveDeviceScaleFactorObserver(DeviceScaleFactorObserver* observer);
+
+  // Returns the NativeTheme that reflects the theme used by `window`.
+  ui::NativeTheme* GetNativeTheme(aura::Window* window) const;
+
+  // Returns the classic or system NativeTheme depending on `use_system_theme`.
+  ui::NativeTheme* GetNativeTheme(bool use_system_theme) const;
+
+  // Sets a callback that determines whether to use the system theme.
+  void SetUseSystemThemeCallback(UseSystemThemeCallback callback);
+
+  // Returns whether we should be using the native theme provided by this
+  // object by default.
+  bool GetDefaultUsesSystemTheme() const;
+
+  // Returns true on success.  If false is returned, this instance shouldn't
+  // be used and the behavior of all functions is undefined.
+  [[nodiscard]] virtual bool Initialize() = 0;
   virtual bool GetTint(int id, color_utils::HSL* tint) const = 0;
   virtual bool GetColor(int id,
                         SkColor* color,
@@ -107,65 +142,20 @@ class VIEWS_EXPORT LinuxUI : public ui::LinuxInputMethodContextFactory,
   virtual SkColor GetInactiveSelectionFgColor() const = 0;
   virtual base::TimeDelta GetCursorBlinkInterval() const = 0;
 
-  // Returns a NativeTheme that will provide system colors and draw system
-  // style widgets.
-  virtual ui::NativeTheme* GetNativeTheme(aura::Window* window) const = 0;
-
-  // Sets a callback that determines whether to use the system theme.
-  virtual void SetUseSystemThemeCallback(UseSystemThemeCallback callback) = 0;
-
-  // Returns whether we should be using the native theme provided by this
-  // object by default.
-  virtual bool GetDefaultUsesSystemTheme() const = 0;
-
   // Returns the icon for a given content type from the icon theme.
   // TODO(davidben): Add an observer for the theme changing, so we can drop the
   // caches.
   virtual gfx::Image GetIconForContentType(const std::string& content_type,
-                                           int size) const = 0;
-
-  // Builds a Border which paints the native button style.
-  virtual std::unique_ptr<Border> CreateNativeBorder(
-      views::LabelButton* owning_button,
-      std::unique_ptr<views::LabelButtonBorder> border) = 0;
-
-  // Notifies the observer about changes about how window buttons should be
-  // laid out. If the order is anything other than the default min,max,close on
-  // the right, will immediately send a button change event to the observer.
-  virtual void AddWindowButtonOrderObserver(
-      WindowButtonOrderObserver* observer) = 0;
-
-  // Removes the observer from the LinuxUI's list.
-  virtual void RemoveWindowButtonOrderObserver(
-      WindowButtonOrderObserver* observer) = 0;
+                                           int size,
+                                           float scale) const = 0;
 
   // What action we should take when the user clicks on the non-client area.
   // |source| describes the type of click.
   virtual WindowFrameAction GetWindowFrameAction(
       WindowFrameActionSource source) = 0;
 
-  // Notifies the window manager that start up has completed.
-  // This needs to be called explicitly both on the primary and the "remote"
-  // instances (e.g. an existing browser window already exists), since we no
-  // longer use GTK (which did this automatically) for the main windows.
-  virtual void NotifyWindowManagerStartupComplete() = 0;
-
-  // Updates the device scale factor so that the default font size can be
-  // recalculated.
-  virtual void UpdateDeviceScaleFactor() = 0;
-
   // Determines the device scale factor of the primary screen.
   virtual float GetDeviceScaleFactor() const = 0;
-
-  // Registers |observer| to be notified about changes to the device
-  // scale factor.
-  virtual void AddDeviceScaleFactorObserver(
-      DeviceScaleFactorObserver* observer) = 0;
-
-  // Unregisters |observer| from receiving changes to the device scale
-  // factor.
-  virtual void RemoveDeviceScaleFactorObserver(
-      DeviceScaleFactorObserver* observer) = 0;
 
   // Only used on GTK to indicate if the dark GTK theme variant is
   // preferred.
@@ -185,8 +175,59 @@ class VIEWS_EXPORT LinuxUI : public ui::LinuxInputMethodContextFactory,
   // Returns a map of KeyboardEvent code to KeyboardEvent key values.
   virtual base::flat_map<std::string, std::string> GetKeyboardLayoutMap() = 0;
 
+  // Returns the names of available system themes. Used only in test.
+  virtual std::vector<std::string> GetAvailableSystemThemeNamesForTest()
+      const = 0;
+
+  // Set the system theme by name. Used only in test.
+  virtual void SetSystemThemeByNameForTest(const std::string& theme_name) = 0;
+
  protected:
+  struct CmdLineArgs {
+    CmdLineArgs();
+    CmdLineArgs(const CmdLineArgs&);
+    CmdLineArgs& operator=(const CmdLineArgs&);
+    ~CmdLineArgs();
+
+    // `argc` is modified by toolkits, so store it explicitly.
+    int argc = 0;
+
+    // Contains C-strings that point into `args`.  `argv.size()` >= `argc`.
+    std::vector<char*> argv;
+
+    // `argv` concatenated with NUL characters.
+    std::vector<char> args;
+  };
+
   LinuxUI();
+
+  static CmdLineArgs CopyCmdLine(const base::CommandLine& command_line);
+
+  const base::ObserverList<views::WindowButtonOrderObserver>::Unchecked&
+  window_button_order_observer_list() const {
+    return window_button_order_observer_list_;
+  }
+
+  const base::ObserverList<views::DeviceScaleFactorObserver>::Unchecked&
+  device_scale_factor_observer_list() const {
+    return device_scale_factor_observer_list_;
+  }
+
+  virtual ui::NativeTheme* GetNativeTheme() const = 0;
+
+ private:
+  // Used to determine whether the system theme should be used for a window.  If
+  // no override is provided or the callback returns true, LinuxUI will default
+  // to GetNativeTheme().
+  UseSystemThemeCallback use_system_theme_callback_;
+
+  // Objects to notify when the window frame button order changes.
+  base::ObserverList<views::WindowButtonOrderObserver>::Unchecked
+      window_button_order_observer_list_;
+
+  // Objects to notify when the device scale factor changes.
+  base::ObserverList<views::DeviceScaleFactorObserver>::Unchecked
+      device_scale_factor_observer_list_;
 };
 
 }  // namespace views

@@ -21,8 +21,7 @@ Loading on the web is user centric, sustainable, fast and delightful.
             users about how a web application loads, with usage of memory /
             power / data that is proportional to value.
 *   **fast and delightful:**
-    *   Meet the [Core Web Vitals
-                thresholds](https://web.dev/defining-core-web-vitals-thresholds/)
+    *   Meet the [Core Web Vitals thresholds](https://web.dev/defining-core-web-vitals-thresholds/)
 
 These are the goals we should strive for.
 
@@ -33,21 +32,16 @@ what should drive our work.
 
 *   Communications: loading-dev@chromium.org is our public discussion
             group for all things related to Loading in Chrome.
-*   crbug:
-            [blink](https://bugs.chromium.org/p/chromium/issues/list?can=2&q=component%3ABlink%3ELoader%2CBlink%3ENetwork%2CBlink%3EServiceWorker%2CBlink%3EWorker&sort=pri+-component&colspec=ID+Pri+M+Stars+ReleaseBlock+Component+Status+Owner+Summary+OS+Modified&x=m&y=releaseblock&cells=ids)
+*   crbug: [blink](https://bugs.chromium.org/p/chromium/issues/list?can=2&q=component%3ABlink%3ELoader%2CBlink%3ENetwork%2CBlink%3EServiceWorker%2CBlink%3EWorker&sort=pri+-component&colspec=ID+Pri+M+Stars+ReleaseBlock+Component+Status+Owner+Summary+OS+Modified&x=m&y=releaseblock&cells=ids)
 
 ## I have a reproducible bad Loading user experience, what do I do?
 
 *   ## As a user:
-    *   ## File a [Speed
-                bug](https://bugs.chromium.org/p/chromium/issues/entry?template=Speed%20Bug)
-    *   ## Include the "Loading" keyword in the subject if the issue
-                fits within the scope of the North Star.
-    *   ## If you are not sure, don't include the "Loading" keyword,
-                triage will make sure it shows up in the right bucket.
+    *   File a [Speed bug](https://bugs.chromium.org/p/chromium/issues/entry?template=Speed%20Bug)
+    *   Include the "Loading" keyword in the subject if the issue fits within the scope of the North Star.
+    *   If you are not sure, don't include the "Loading" keyword, triage will make sure it shows up in the right bucket.
 *   ## As a chromium developer
-    *   ## Same steps but try to [record a
-                trace](/developers/how-tos/trace-event-profiling-tool/recording-tracing-runs)
+    *   Same steps but try to [record a trace](/developers/how-tos/trace-event-profiling-tool/recording-tracing-runs)
                 (select every trace categories on the left side).
 
 ## I'm a dev and interested in helping on Loading. How do I get started?
@@ -62,7 +56,7 @@ Reach out via loading-dev@ and tell us more about you:
 
 Your friendly PM: kenjibaheux
 
-Blink TLs: kinuko, falken, yhirano (blink&gt;network)
+Blink TLs: kouhei, yhirano (blink&gt;network)
 
 "Here here!": reach out to kenjibaheux@ if you want your name to be added here.
 

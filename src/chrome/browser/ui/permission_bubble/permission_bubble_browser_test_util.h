@@ -49,6 +49,8 @@ class TestPermissionBubbleViewDelegate
   void Deny() override {}
   void Dismiss() override {}
   void Ignore() override {}
+  void SetManageClicked() override {}
+  void SetLearnMoreClicked() override {}
 
   absl::optional<permissions::PermissionUiSelector::QuietUiReason>
   ReasonForUsingQuietUi() const override;
@@ -59,12 +61,15 @@ class TestPermissionBubbleViewDelegate
   void SetBubbleShown() override {}
   void SetDecisionTime() override {}
 
+  base::WeakPtr<permissions::PermissionPrompt::Delegate> GetWeakPtr() override;
+
   void set_requests(std::vector<permissions::PermissionRequest*> requests) {
     requests_ = requests;
   }
 
  private:
   std::vector<permissions::PermissionRequest*> requests_;
+  base::WeakPtrFactory<TestPermissionBubbleViewDelegate> weak_factory_{this};
 };
 
 // Use this class to test on a default window or an app window. Inheriting from
@@ -109,7 +114,7 @@ class PermissionBubbleKioskBrowserTest : public PermissionBubbleBrowserTest {
   void SetUpCommandLine(base::CommandLine* command_line) override;
 
  private:
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   // Toggling fullscreen mode on Mac can be flaky for tests run in parallel
   // because only one window may be animating into or out of fullscreen at a
   // time.

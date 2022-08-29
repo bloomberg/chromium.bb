@@ -48,7 +48,7 @@ export class SnippetsQuickOpen extends QuickOpen.FilteredListWidget.Provider {
     if (itemIndex === null) {
       return;
     }
-    evaluateScriptSnippet(this.snippets[itemIndex]);
+    void evaluateScriptSnippet(this.snippets[itemIndex]);
   }
 
   notFoundText(_query: string): string {
@@ -63,6 +63,11 @@ export class SnippetsQuickOpen extends QuickOpen.FilteredListWidget.Provider {
     this.snippets = [];
   }
 
+  itemScoreAt(itemIndex: number, query: string): number {
+    // Prefer short matches over long matches
+    return query.length / this.snippets[itemIndex].name().length;
+  }
+
   itemCount(): number {
     return this.snippets.length;
   }
@@ -72,7 +77,7 @@ export class SnippetsQuickOpen extends QuickOpen.FilteredListWidget.Provider {
   }
 
   renderItem(itemIndex: number, query: string, titleElement: Element, _subtitleElement: Element): void {
-    titleElement.textContent = unescape(this.snippets[itemIndex].name());
+    titleElement.textContent = this.snippets[itemIndex].name();
     titleElement.classList.add('monospace');
     QuickOpen.FilteredListWidget.FilteredListWidget.highlightRanges(titleElement, query, true);
   }

@@ -21,10 +21,12 @@
 #include "core/fpdfapi/parser/cpdf_number.h"
 #include "core/fpdfapi/parser/cpdf_reference.h"
 #include "core/fpdfapi/parser/cpdf_stream.h"
+#include "core/fxcrt/fx_string_wrappers.h"
 #include "core/fxcrt/stl_util.h"
 #include "core/fxge/cfx_fillrenderoptions.h"
 #include "core/fxge/cfx_path.h"
 #include "fpdfsdk/cpdfsdk_helpers.h"
+#include "third_party/base/numerics/safe_conversions.h"
 #include "third_party/base/span.h"
 
 namespace {
@@ -39,7 +41,7 @@ void SetBoundingBox(CPDF_Page* page,
   page->UpdateDimensions();
 }
 
-bool GetBoundingBox(CPDF_Page* page,
+bool GetBoundingBox(const CPDF_Page* page,
                     const ByteString& key,
                     float* left,
                     float* bottom,
@@ -48,7 +50,7 @@ bool GetBoundingBox(CPDF_Page* page,
   if (!page || !left || !bottom || !right || !top)
     return false;
 
-  CPDF_Array* pArray = page->GetDict()->GetArrayFor(key);
+  const CPDF_Array* pArray = page->GetDict()->GetArrayFor(key);
   if (!pArray)
     return false;
 
@@ -63,7 +65,7 @@ CPDF_Object* GetPageContent(CPDF_Dictionary* pPageDict) {
   return pPageDict->GetDirectObjectFor(pdfium::page_object::kContents);
 }
 
-void OutputPath(std::ostringstream& buf, CPDF_Path path) {
+void OutputPath(fxcrt::ostringstream& buf, CPDF_Path path) {
   const CFX_Path* pPath = path.GetObject();
   if (!pPath)
     return;
@@ -215,7 +217,7 @@ FPDFPage_TransFormWithClip(FPDF_PAGE page,
   if (!pDoc)
     return false;
 
-  std::ostringstream text_buf;
+  fxcrt::ostringstream text_buf;
   text_buf << "q ";
 
   if (clipRect) {
@@ -320,7 +322,7 @@ FPDF_EXPORT int FPDF_CALLCONV FPDFClipPath_CountPaths(FPDF_CLIPPATH clip_path) {
   if (!pClipPath || !pClipPath->HasRef())
     return -1;
 
-  return pClipPath->GetPathCount();
+  return pdfium::base::checked_cast<int>(pClipPath->GetPathCount());
 }
 
 FPDF_EXPORT int FPDF_CALLCONV
@@ -388,7 +390,7 @@ FPDF_EXPORT void FPDF_CALLCONV FPDFPage_InsertClipPath(FPDF_PAGE page,
   if (!pContentObj)
     return;
 
-  std::ostringstream strClip;
+  fxcrt::ostringstream strClip;
   CPDF_ClipPath* pClipPath = CPDFClipPathFromFPDFClipPath(clipPath);
   for (size_t i = 0; i < pClipPath->GetPathCount(); ++i) {
     CPDF_Path path = pClipPath->GetPath(i);

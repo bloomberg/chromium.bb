@@ -146,6 +146,7 @@ ui::EventDispatchDetails InputMethodAuraLinux::DispatchKeyEvent(
   {
     suppress_non_key_input_until_ = base::TimeTicks::UnixEpoch();
     composition_changed_ = false;
+    last_commit_result_.reset();
     result_text_.clear();
     base::AutoReset<bool> flipper(&is_sync_mode_, true);
     filtered = context->DispatchKeyEvent(*event);
@@ -343,39 +344,34 @@ bool InputMethodAuraLinux::MaybeUpdateComposition(bool text_committed) {
 }
 
 void InputMethodAuraLinux::UpdateContextFocusState() {
-  bool old_text_input_type = text_input_type_;
+  auto old_text_input_type = text_input_type_;
   text_input_type_ = GetTextInputType();
 
-  // We only focus in |context_| when the focus is in a textfield.
-  if (old_text_input_type != TEXT_INPUT_TYPE_NONE &&
-      text_input_type_ == TEXT_INPUT_TYPE_NONE) {
-    context_->Blur();
-  } else if (old_text_input_type == TEXT_INPUT_TYPE_NONE &&
-             text_input_type_ != TEXT_INPUT_TYPE_NONE) {
-    context_->Focus();
-  }
-
-  // |context_simple_| can be used in any textfield, including password box, and
-  // even if the focused text input client's text input type is
-  // ui::TEXT_INPUT_TYPE_NONE.
-  if (GetTextInputClient())
-    context_simple_->Focus();
-  else
-    context_simple_->Blur();
-}
-
-void InputMethodAuraLinux::OnTextInputTypeChanged(
-    const TextInputClient* client) {
-  UpdateContextFocusState();
-  InputMethodBase::OnTextInputTypeChanged(client);
+  auto* client = GetTextInputClient();
+  bool has_client = client != nullptr;
+  context_->UpdateFocus(has_client, old_text_input_type, text_input_type_);
+  context_simple_->UpdateFocus(has_client, old_text_input_type,
+                               text_input_type_);
 
   LinuxInputMethodContext* context =
       text_input_type_ != TEXT_INPUT_TYPE_NONE &&
               text_input_type_ != TEXT_INPUT_TYPE_PASSWORD
           ? context_.get()
           : context_simple_.get();
-  int flags = client ? client->GetTextInputFlags() : TEXT_INPUT_FLAG_NONE;
-  context->SetContentType(text_input_type_, flags);
+  TextInputMode mode = TEXT_INPUT_MODE_DEFAULT;
+  int flags = TEXT_INPUT_FLAG_NONE;
+  bool should_do_learning = false;
+  if (client) {
+    mode = client->GetTextInputMode();
+    flags = client->GetTextInputFlags();
+    should_do_learning = client->ShouldDoLearning();
+  }
+  context->SetContentType(text_input_type_, mode, flags, should_do_learning);
+}
+
+void InputMethodAuraLinux::OnTextInputTypeChanged(TextInputClient* client) {
+  UpdateContextFocusState();
+  InputMethodBase::OnTextInputTypeChanged(client);
   // TODO(yoichio): Support inputmode HTML attribute.
 }
 
@@ -433,6 +429,11 @@ bool InputMethodAuraLinux::IsCandidatePopupOpen() const {
   return false;
 }
 
+VirtualKeyboardController*
+InputMethodAuraLinux::GetVirtualKeyboardController() {
+  return context_->GetVirtualKeyboardController();
+}
+
 // Overriden from ui::LinuxInputMethodContextDelegate
 
 void InputMethodAuraLinux::OnCommit(const std::u16string& text) {
@@ -450,16 +451,18 @@ void InputMethodAuraLinux::OnCommit(const std::u16string& text) {
   // the focused text input client does not support text input.
   if (!is_sync_mode_ && !IsTextInputTypeNone()) {
     ui::KeyEvent event =
-        ime_filtered_key_event_.has_value()
-            ? std::move(*ime_filtered_key_event_)
-            : ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_PROCESSKEY, 0);
-    ime_filtered_key_event_.reset();
-    ui::EventDispatchDetails details = DispatchImeFilteredKeyPressEvent(&event);
-    if (details.target_destroyed || details.dispatcher_destroyed ||
-        event.stopped_propagation()) {
-      return;
+        ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_PROCESSKEY, 0);
+    if (ime_filtered_key_event_.has_value()) {
+      event = std::move(*ime_filtered_key_event_);
+      ime_filtered_key_event_.reset();
+      ui::EventDispatchDetails details =
+          DispatchImeFilteredKeyPressEvent(&event);
+      if (details.target_destroyed || details.dispatcher_destroyed ||
+          event.stopped_propagation()) {
+        return;
+      }
     }
-    MaybeCommitResult(/*filtered=*/true, event);
+    last_commit_result_ = MaybeCommitResult(/*filtered=*/true, event);
     composition_ = CompositionText();
   }
 }
@@ -525,17 +528,18 @@ void InputMethodAuraLinux::OnPreeditUpdate(
 
   if (!force_update_client)
     return;
-  ui::KeyEvent event =
-      ime_filtered_key_event_.has_value()
-          ? std::move(*ime_filtered_key_event_)
-          : ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_PROCESSKEY, 0);
-  ime_filtered_key_event_.reset();
-  ui::EventDispatchDetails details = DispatchImeFilteredKeyPressEvent(&event);
-  if (details.target_destroyed || details.dispatcher_destroyed ||
-      event.stopped_propagation()) {
-    return;
+
+  if (ime_filtered_key_event_.has_value()) {
+    ui::KeyEvent event = std::move(*ime_filtered_key_event_);
+    ime_filtered_key_event_.reset();
+    ui::EventDispatchDetails details = DispatchImeFilteredKeyPressEvent(&event);
+    if (details.target_destroyed || details.dispatcher_destroyed ||
+        event.stopped_propagation()) {
+      return;
+    }
   }
-  MaybeUpdateComposition(/*text_committed=*/false);
+  MaybeUpdateComposition(last_commit_result_ == CommitResult::kSuccess);
+  last_commit_result_.reset();
 }
 
 bool InputMethodAuraLinux::HasInputMethodResult() {

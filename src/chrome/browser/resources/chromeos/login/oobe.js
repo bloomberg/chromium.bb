@@ -7,7 +7,6 @@
  * This is the main code for the OOBE WebUI implementation.
  */
 
-// <include src="test_util.js">
 // <include src="components/display_manager_types.js">
 // <include src="components/oobe_types.js">
 // <include src="display_manager.js">
@@ -38,7 +37,8 @@ disableTextSelectAndDrag(function(e) {
 // <include src="components/web_view_loader.js">
 
 HTMLImports.whenReady(() => {
-  i18nTemplate.process(document, loadTimeData);
+  // Update localized strings at the document level.
+  Oobe.updateDocumentLocalizedStrings();
 
   // <include src="oobe_initialization.js">
 });

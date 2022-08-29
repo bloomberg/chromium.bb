@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/current_thread.h"
 #include "base/threading/thread.h"
@@ -23,9 +24,9 @@
 #include "components/performance_manager/embedder/performance_manager_lifetime.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
+#include "content/public/browser/first_party_sets_handler.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/main_function_params.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/url_constants.h"
 #include "content/shell/android/shell_descriptors.h"
@@ -42,21 +43,21 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "components/crash/content/browser/child_exit_observer_android.h"
 #include "components/crash/content/browser/child_process_crash_observer_android.h"
 #include "net/android/network_change_notifier_factory_android.h"
 #include "net/base/network_change_notifier.h"
 #endif
 
-#if defined(USE_AURA) && (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
+#if defined(USE_AURA) && (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
 #include "ui/base/ime/init/input_method_initializer.h"
 #endif
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS)
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
-#elif defined(OS_LINUX)
+#elif BUILDFLAG(IS_LINUX)
 #include "device/bluetooth/dbus/dbus_bluez_manager_wrapper_linux.h"
 #endif
 
@@ -64,9 +65,9 @@
 #include "chromeos/lacros/dbus/lacros_dbus_thread_manager.h"
 #endif
 
-#if BUILDFLAG(USE_GTK)
-#include "ui/gtk/gtk_ui_factory.h"
+#if BUILDFLAG(IS_LINUX)
 #include "ui/views/linux_ui/linux_ui.h"  // nogncheck
+#include "ui/views/linux_ui/linux_ui_factory.h"  // nogncheck
 #endif
 
 namespace content {
@@ -78,7 +79,7 @@ GURL GetStartupURL() {
   if (command_line->HasSwitch(switches::kBrowserTest))
     return GURL();
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // Delay renderer creation on Android until surface is ready.
   return GURL();
 #else
@@ -86,7 +87,7 @@ GURL GetStartupURL() {
   if (args.empty())
     return GURL("https://www.google.com/");
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   GURL url(base::WideToUTF16(args[0]));
 #else
   GURL url(args[0]);
@@ -109,8 +110,7 @@ scoped_refptr<base::RefCountedMemory> PlatformResourceProvider(int key) {
 
 }  // namespace
 
-ShellBrowserMainParts::ShellBrowserMainParts(MainFunctionParams parameters)
-    : parameters_(std::move(parameters)) {}
+ShellBrowserMainParts::ShellBrowserMainParts() = default;
 
 ShellBrowserMainParts::~ShellBrowserMainParts() = default;
 
@@ -121,18 +121,18 @@ void ShellBrowserMainParts::PostCreateMainMessageLoop() {
   chromeos::LacrosDBusThreadManager::Initialize();
 #endif
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS)
   bluez::BluezDBusManager::InitializeFake();
-#elif defined(OS_LINUX)
+#elif BUILDFLAG(IS_LINUX)
   bluez::DBusBluezManagerWrapperLinux::Initialize();
 #endif
 }
 
 int ShellBrowserMainParts::PreEarlyInitialization() {
-#if defined(USE_AURA) && (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
+#if defined(USE_AURA) && (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
   ui::InitializeInputMethodForTesting();
 #endif
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   net::NetworkChangeNotifier::SetFactory(
       new net::NetworkChangeNotifierFactoryAndroid());
 #endif
@@ -149,26 +149,22 @@ void ShellBrowserMainParts::InitializeMessageLoopContext() {
                          gfx::Size());
 }
 
-// Copied from ChromeBrowserMainExtraPartsViewsLinux::ToolkitInitialized().
-// See that function for details.
 void ShellBrowserMainParts::ToolkitInitialized() {
-#if BUILDFLAG(USE_GTK)
   if (switches::IsRunWebTestsSwitchPresent())
     return;
 
-  auto linux_ui = BuildGtkUi();
-  linux_ui->Initialize();
-  views::LinuxUI::SetInstance(std::move(linux_ui));
+#if BUILDFLAG(IS_LINUX)
+  views::LinuxUI::SetInstance(CreateLinuxUi());
 #endif
 }
 
 int ShellBrowserMainParts::PreCreateThreads() {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
-  crash_reporter::ChildExitObserver::Create();
+  child_exit_observer_ = std::make_unique<crash_reporter::ChildExitObserver>();
   if (command_line->HasSwitch(switches::kEnableCrashReporter)) {
-    crash_reporter::ChildExitObserver::GetInstance()->RegisterClient(
+    child_exit_observer_->RegisterClient(
         std::make_unique<crash_reporter::ChildProcessCrashObserver>());
   }
 #endif
@@ -200,17 +196,17 @@ void ShellBrowserMainParts::PostMainMessageLoopRun() {
   ShellDevToolsManagerDelegate::StopHttpHandler();
   browser_context_.reset();
   off_the_record_browser_context_.reset();
-#if BUILDFLAG(USE_GTK)
+#if BUILDFLAG(IS_LINUX)
   views::LinuxUI::SetInstance(nullptr);
 #endif
   performance_manager_lifetime_.reset();
 }
 
 void ShellBrowserMainParts::PostDestroyThreads() {
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS)
   device::BluetoothAdapterFactory::Shutdown();
   bluez::BluezDBusManager::Shutdown();
-#elif defined(OS_LINUX)
+#elif BUILDFLAG(IS_LINUX)
   device::BluetoothAdapterFactory::Shutdown();
   bluez::DBusBluezManagerWrapperLinux::Shutdown();
 #endif

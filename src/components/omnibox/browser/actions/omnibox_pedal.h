@@ -184,7 +184,7 @@ class OmniboxPedal : public OmniboxAction {
   // Sets the destination URL for the Pedal.
   void SetNavigationUrl(const GURL& url);
 
-#if (!defined(OS_ANDROID) || BUILDFLAG(ENABLE_VR)) && !defined(OS_IOS)
+#if defined(SUPPORT_PEDALS_VECTOR_ICONS)
   // Returns the default vector icon to use for Pedals that do not specify one.
   static const gfx::VectorIcon& GetDefaultVectorIcon();
 #endif
@@ -224,13 +224,17 @@ class OmniboxPedal : public OmniboxAction {
   bool IsConceptMatch(TokenSequence& match_sequence) const;
 
   // OmniboxAction overrides:
-  void RecordActionShown(size_t position) const override;
-  void RecordActionExecuted(size_t position) const override;
-#if (!defined(OS_ANDROID) || BUILDFLAG(ENABLE_VR)) && !defined(OS_IOS)
+  void RecordActionShown(size_t position, bool executed) const override;
+#if defined(SUPPORT_PEDALS_VECTOR_ICONS)
   const gfx::VectorIcon& GetVectorIcon() const override;
 #endif
   size_t EstimateMemoryUsage() const override;
   int32_t GetID() const override;
+
+#if BUILDFLAG(IS_ANDROID)
+  base::android::ScopedJavaGlobalRef<jobject> GetJavaObject() const override;
+  void CreateOrUpdateJavaObject();
+#endif
 
  protected:
   FRIEND_TEST_ALL_PREFIXES(OmniboxPedalTest, SynonymGroupErasesFirstMatchOnly);
@@ -249,6 +253,10 @@ class OmniboxPedal : public OmniboxAction {
   SynonymGroup verbatim_synonym_group_;
 
   std::vector<SynonymGroup> synonym_groups_;
+
+#if BUILDFLAG(IS_ANDROID)
+  base::android::ScopedJavaGlobalRef<jobject> j_omnibox_action_;
+#endif
 };
 
 // This is a simple pedal suitable only for use by tests.

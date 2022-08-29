@@ -11,4 +11,7 @@
 ] interface CSSColorValue {
   CSSRGB toRGB();
   CSSHSL toHSL();
+  CSSHWB toHWB();
+
+  [RaisesException, NewObject, Exposed=Window, CallWith=ExecutionContext] static (CSSColorValue or CSSStyleValue) parse(USVString cssText);
 };

@@ -108,6 +108,7 @@ public class PageInfoTest {
 
     @Test
     @SmallTest
+    @DisabledTest(message = "https://crbug.com/1312569")
     public void testPageInfoConnectionSubPage() {
         Bundle extras = new Bundle();
         extras.putBoolean(InstrumentationActivity.EXTRA_URLBAR_TEXT_CLICKABLE, true);
@@ -125,7 +126,7 @@ public class PageInfoTest {
 
     @Test
     @SmallTest
-    @DisabledTest(message = "https://crbug.com/1223953")
+    @DisabledTest(message = "https://crbug.com/1188735")
     public void testPageInfoCookiesSubPage() {
         Bundle extras = new Bundle();
         extras.putBoolean(InstrumentationActivity.EXTRA_URLBAR_TEXT_CLICKABLE, true);

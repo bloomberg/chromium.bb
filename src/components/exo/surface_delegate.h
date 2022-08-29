@@ -10,6 +10,7 @@
 #include "ui/gfx/geometry/size_f.h"
 
 namespace exo {
+class Capabilities;
 class Surface;
 
 // Frame types that can be used to decorate a surface.
@@ -100,6 +101,13 @@ class SurfaceDelegate {
 
   // Releases the pinned mode and allows the user to do other things again.
   virtual void Unpin() = 0;
+
+  // Sets the system modality.
+  virtual void SetSystemModal(bool modal) = 0;
+
+  // Returns the capability relevant to this surface. See go/secure-exo-ids for
+  // more information.
+  virtual Capabilities* GetCapabilities() = 0;
 
  protected:
   virtual ~SurfaceDelegate() {}

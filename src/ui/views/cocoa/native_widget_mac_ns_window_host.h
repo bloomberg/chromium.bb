@@ -5,6 +5,7 @@
 #ifndef UI_VIEWS_COCOA_NATIVE_WIDGET_MAC_NS_WINDOW_HOST_H_
 #define UI_VIEWS_COCOA_NATIVE_WIDGET_MAC_NS_WINDOW_HOST_H_
 
+#include <list>
 #include <map>
 #include <memory>
 #include <string>
@@ -24,6 +25,7 @@
 #include "ui/compositor/layer_owner.h"
 #include "ui/display/mac/display_link_mac.h"
 #include "ui/views/cocoa/drag_drop_client_mac.h"
+#include "ui/views/cocoa/native_widget_mac_event_monitor.h"
 #include "ui/views/views_export.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_observer.h"
@@ -44,6 +46,7 @@ class RecyclableCompositorMac;
 namespace views {
 
 class NativeWidgetMac;
+class NativeWidgetMacEventMonitor;
 class TextInputHost;
 
 // The portion of NativeWidgetMac that lives in the browser process. This
@@ -150,9 +153,10 @@ class VIEWS_EXPORT NativeWidgetMacNSWindowHost
   void SetBoundsInScreen(const gfx::Rect& bounds);
 
   // Tell the window to transition to being fullscreen or not-fullscreen.
-  // If `delay` is given, this sets the target fullscreen state and then posts
-  // a delayed task to request the window transition. See crbug.com/1210548.
-  void SetFullscreen(bool fullscreen, base::TimeDelta delay = {});
+  // If `fullscreen` is true, then `target_display_id` specifies the display to
+  // which window should move (or an invalid display, to use the default).
+  void SetFullscreen(bool fullscreen,
+                     int64_t target_display_id = display::kInvalidDisplayId);
 
   // The ultimate fullscreen state that is being targeted (irrespective of any
   // active transitions).
@@ -221,6 +225,15 @@ class VIEWS_EXPORT NativeWidgetMacNSWindowHost
   bool IsWindowKey() const { return is_window_key_; }
   bool IsMouseCaptureActive() const { return is_mouse_capture_active_; }
 
+  // Add a NSEvent local event monitor, which will send events to `client`
+  // before they are dispatched to their ordinary target. Clients may specify
+  // that they have handled an event, which will prevent further dispatch. All
+  // clients will receive all events, in the order that the clients were added,
+  // regardless of whether or not a previous client handled the event.
+  std::unique_ptr<NativeWidgetMacEventMonitor> AddEventMonitor(
+      NativeWidgetMacEventMonitor::Client* client);
+  void RemoveEventMonitor(NativeWidgetMacEventMonitor*);
+
   // Used by NativeWidgetPrivate::GetGlobalCapture.
   static NSView* GetGlobalCaptureView();
 
@@ -238,10 +251,6 @@ class VIEWS_EXPORT NativeWidgetMacNSWindowHost
 
   void UpdateCompositorProperties();
   void DestroyCompositor();
-
-  // This is used to request a delayed fullscreen window transition after some
-  // other window placement occurs; see SetFullscreen() and crbug.com/1210548.
-  static void SetFullscreenAfterDelay(uint64_t bridged_native_widget_id);
 
   // Sort |attached_native_view_host_views_| by the order in which their
   // NSViews should appear as subviews. This does a recursive pre-order
@@ -288,6 +297,8 @@ class VIEWS_EXPORT NativeWidgetMacNSWindowHost
   bool DispatchKeyEventToMenuControllerRemote(std::unique_ptr<ui::Event> event,
                                               bool* event_swallowed,
                                               bool* event_handled) override;
+  bool DispatchMonitorEvent(std::unique_ptr<ui::Event> event,
+                            bool* event_handled) override;
   bool GetHasMenuController(bool* has_menu_controller) override;
   bool GetIsDraggableBackgroundAt(const gfx::Point& location_in_content,
                                   bool* is_draggable_background) override;
@@ -348,6 +359,8 @@ class VIEWS_EXPORT NativeWidgetMacNSWindowHost
   void DispatchKeyEventToMenuControllerRemote(
       std::unique_ptr<ui::Event> event,
       DispatchKeyEventToMenuControllerRemoteCallback callback) override;
+  void DispatchMonitorEvent(std::unique_ptr<ui::Event> event,
+                            DispatchMonitorEventCallback callback) override;
   void GetHasMenuController(GetHasMenuControllerCallback callback) override;
   void GetIsDraggableBackgroundAt(
       const gfx::Point& location_in_content,
@@ -396,6 +409,9 @@ class VIEWS_EXPORT NativeWidgetMacNSWindowHost
 
   // ui::AcceleratedWidgetMacNSView:
   void AcceleratedWidgetCALayerParamsUpdated() override;
+
+  void OnVSyncParametersUpdated(base::TimeTicks timebase,
+                                base::TimeDelta interval);
 
   // The id that this bridge may be looked up from.
   const uint64_t widget_id_;
@@ -474,7 +490,12 @@ class VIEWS_EXPORT NativeWidgetMacNSWindowHost
   bool is_miniaturized_ = false;
   bool is_window_key_ = false;
   bool is_mouse_capture_active_ = false;
+  bool is_headless_mode_window_ = false;
   gfx::Rect window_bounds_before_fullscreen_;
+
+  // Weak pointers to event monitors for this widget. The event monitors
+  // themselves will remove themselves from this list.
+  std::list<NativeWidgetMacEventMonitor*> event_monitors_;
 
   std::unique_ptr<ui::RecyclableCompositorMac> compositor_;
   std::unique_ptr<remote_cocoa::ScopedCGWindowID> scoped_cg_window_id_;
@@ -488,6 +509,10 @@ class VIEWS_EXPORT NativeWidgetMacNSWindowHost
 
   mojo::AssociatedReceiver<remote_cocoa::mojom::NativeWidgetNSWindowHost>
       remote_ns_window_host_receiver_{this};
+
+  base::WeakPtrFactory<NativeWidgetMacNSWindowHost>
+      weak_factory_for_vsync_update_{this};
+  base::WeakPtrFactory<NativeWidgetMacNSWindowHost> weak_factory_{this};
 };
 
 }  // namespace views

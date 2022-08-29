@@ -26,7 +26,8 @@ There are a lot of git utilities included.
 ## Updating
 
 `depot_tools` updates itself automatically when running `gclient` tool. To
-disable auto update, set the environment variable `DEPOT_TOOLS_UPDATE=0`.
+disable auto update, set the environment variable `DEPOT_TOOLS_UPDATE=0` or
+run `./update_depot_tools_toggle.py --disable`.
 
 To update package manually, run `update_depot_tools.bat` on Windows,
 or `./update_depot_tools` on Linux or Mac.

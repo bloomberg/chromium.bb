@@ -4,7 +4,6 @@
 
 import 'chrome://tab-strip.top-chrome/tab_list.js';
 
-import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {FocusOutlineManager} from 'chrome://resources/js/cr/ui/focus_outline_manager.m.js';
 import {TabElement} from 'chrome://tab-strip.top-chrome/tab.js';
 import {TabGroupElement} from 'chrome://tab-strip.top-chrome/tab_group.js';
@@ -55,6 +54,11 @@ suite('TabList', () => {
 
   function getUnpinnedTabs(): NodeListOf<TabElement> {
     return tabList.shadowRoot!.querySelectorAll('#unpinnedTabs tabstrip-tab');
+  }
+
+  function getUnpinnedActiveTabs(): NodeListOf<TabElement> {
+    return tabList.shadowRoot!.querySelectorAll(
+        '#unpinnedTabs tabstrip-tab[active]');
   }
 
   function getPinnedTabs(): NodeListOf<TabElement> {
@@ -124,7 +128,8 @@ suite('TabList', () => {
       '--background-color': 'pink',
       '--foreground-color': 'blue',
     });
-    webUIListenerCallback('theme-changed');
+    callbackRouter.themeChanged();
+    await flushTasks();
     await testTabsApiProxy.whenCalled('getColors');
     assertEquals(tabList.style.getPropertyValue('--background-color'), 'pink');
     assertEquals(tabList.style.getPropertyValue('--foreground-color'), 'blue');
@@ -178,7 +183,8 @@ suite('TabList', () => {
         textColor: 'black',
       },
     });
-    webUIListenerCallback('theme-changed');
+    callbackRouter.themeChanged();
+    await flushTasks();
     await testTabsApiProxy.whenCalled('getGroupVisualData');
   });
 
@@ -283,7 +289,7 @@ suite('TabList', () => {
   async function testPlaceTabElementAnimation(
       indexToMove: number, newIndex: number, direction: number) {
     await tabList.animationPromises;
-    let unpinnedTabs = getUnpinnedTabs();
+    const unpinnedTabs = getUnpinnedTabs();
 
     const movedTab = unpinnedTabs[indexToMove]!;
     tabList.placeTabElement(movedTab, newIndex, false, undefined);
@@ -617,6 +623,24 @@ suite('TabList', () => {
     assertFalse(tabElements[2]!.tab.active);
   });
 
+  test('SingleActiveTabOnActiveTabCreated', async () => {
+    let activeTabElements = getUnpinnedActiveTabs();
+    assertEquals(activeTabElements.length, 1);
+
+    const newActiveTab = createTab({
+      active: true,
+      id: tabs.length,
+      index: tabs.length - 1,
+      title: 'Tab 4',
+    });
+    callbackRouter.tabCreated(newActiveTab);
+    await flushTasks();
+
+    activeTabElements = getUnpinnedActiveTabs();
+    assertEquals(activeTabElements.length, 1);
+    assertEquals(activeTabElements[0]!.tab.id, newActiveTab.id);
+  });
+
   test('adds a pinned tab to its designated container', async () => {
     callbackRouter.tabCreated(createTab({
       id: tabs.length,
@@ -637,7 +661,7 @@ suite('TabList', () => {
     callbackRouter.tabUpdated(updatedTab);
     await flushTasks();
 
-    let pinnedTabElements = getPinnedTabs();
+    const pinnedTabElements = getPinnedTabs();
     assertEquals(pinnedTabElements.length, 1);
     assertTrue(pinnedTabElements[0]!.tab.pinned);
     assertEquals(pinnedTabElements[0]!.tab.id, tabToPin.id);
@@ -923,7 +947,7 @@ suite('TabList', () => {
     // The 2nd tab should be off-screen to the right, so activating it should
     // scroll so that the element's right edge is aligned with the screen's
     // right edge.
-    let activeTab = getUnpinnedTabs()[1]!;
+    const activeTab = getUnpinnedTabs()[1]!;
     assertEquals(
         tabList.scrollLeft + tabList.offsetWidth,
         activeTab.offsetLeft + activeTab.offsetWidth + scrollPadding);
@@ -939,6 +963,34 @@ suite('TabList', () => {
   test('PreventsDraggingWhenOnlyOneTab', () => {
     assertFalse(tabList.shouldPreventDrag());
     const tabElements = getUnpinnedTabs();
+    tabElements[1]!.remove();
+    tabElements[2]!.remove();
+    assertTrue(tabList.shouldPreventDrag());
+  });
+
+  test('PreventsDraggingWhenOnlyOneTabGroup', async () => {
+    // Create a tab group with 2 tabs.
+    const appendedTab = createTab({
+      groupId: 'group0',
+      id: 3,
+      index: 3,
+      title: 'New tab in group',
+    });
+    callbackRouter.tabCreated(appendedTab);
+    await flushTasks();
+    const appendedTabInSameGroup = createTab({
+      groupId: 'group0',
+      id: 4,
+      index: 4,
+      title: 'New tab in same group',
+    });
+    callbackRouter.tabCreated(appendedTabInSameGroup);
+    await flushTasks();
+    assertFalse(tabList.shouldPreventDrag());
+
+    // Remove all tabs outside the tab group.
+    const tabElements = getUnpinnedTabs();
+    tabElements[0]!.remove();
     tabElements[1]!.remove();
     tabElements[2]!.remove();
     assertTrue(tabList.shouldPreventDrag());

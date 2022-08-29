@@ -5,9 +5,11 @@
 #include "chrome/updater/external_constants_default.h"
 
 #include "base/memory/scoped_refptr.h"
+#include "base/values.h"
 #include "chrome/updater/constants.h"
 #include "chrome/updater/external_constants.h"
 #include "chrome/updater/updater_branding.h"
+#include "components/crx_file/crx_verifier.h"
 #include "url/gurl.h"
 
 namespace updater {
@@ -28,6 +30,14 @@ class DefaultExternalConstants : public ExternalConstants {
 
   int ServerKeepAliveSeconds() const override {
     return kServerKeepAliveSeconds;
+  }
+
+  crx_file::VerifierFormat CrxVerifierFormat() const override {
+    return crx_file::VerifierFormat::CRX3_WITH_PUBLISHER_PROOF;
+  }
+
+  base::Value::Dict GroupPolicies() const override {
+    return base::Value::Dict();
   }
 
  private:

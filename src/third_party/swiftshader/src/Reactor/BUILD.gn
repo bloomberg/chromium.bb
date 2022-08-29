@@ -40,9 +40,7 @@ swiftshader_source_set("swiftshader_reactor_base") {
   sources = [
     "Assert.cpp",
     "Debug.cpp",
-    "EmulatedIntrinsics.cpp",
     "ExecutableMemory.cpp",
-    "OptimalIntrinsics.cpp",
     "Pragma.cpp",
     "Reactor.cpp",
   ]
@@ -145,6 +143,7 @@ if (supports_subzero) {
     if (is_clang) {
       cflags += [
         "-Wno-header-hygiene",
+        "-Wno-deprecated-declarations", # (llvm)
         "-Wno-enum-compare-switch",
         "-Wno-unused-lambda-capture",
         "-Wno-unused-function",
@@ -180,7 +179,10 @@ if (supports_subzero) {
     }
 
     if (is_clang) {
-      cflags += [ "-Wno-header-hygiene" ]
+      cflags += [
+        "-Wno-header-hygiene",
+        "-Wno-deprecated-declarations", # (llvm)
+      ]
     }
   }
 

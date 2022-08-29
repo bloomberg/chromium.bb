@@ -118,11 +118,11 @@ static inline float ViewportLengthPercent(const float width_or_height) {
   return width_or_height / 100;
 }
 
-static inline float ViewportMinPercent(const FloatSize& viewport_size) {
+static inline float ViewportMinPercent(const gfx::SizeF& viewport_size) {
   return std::min(viewport_size.width(), viewport_size.height()) / 100;
 }
 
-static inline float ViewportMaxPercent(const FloatSize& viewport_size) {
+static inline float ViewportMaxPercent(const gfx::SizeF& viewport_size) {
   return std::max(viewport_size.width(), viewport_size.height()) / 100;
 }
 
@@ -140,7 +140,7 @@ static inline float DimensionForViewportUnit(const SVGElement* context,
   if (!style)
     return 0;
 
-  FloatSize viewport_size(view->Width(), view->Height());
+  gfx::SizeF viewport_size(view->Width(), view->Height());
 
   switch (unit) {
     case CSSPrimitiveValue::UnitType::kViewportWidth:
@@ -338,6 +338,14 @@ float SVGLengthContext::ConvertValueToUserUnits(
     case CSSPrimitiveValue::UnitType::kViewportMax:
       user_units = value * DimensionForViewportUnit(context_, from_unit);
       break;
+    case CSSPrimitiveValue::UnitType::kContainerWidth:
+    case CSSPrimitiveValue::UnitType::kContainerHeight:
+    case CSSPrimitiveValue::UnitType::kContainerInlineSize:
+    case CSSPrimitiveValue::UnitType::kContainerBlockSize:
+    case CSSPrimitiveValue::UnitType::kContainerMin:
+    case CSSPrimitiveValue::UnitType::kContainerMax:
+      NOTREACHED() << "Must be handled using ResolveValue";
+      break;
     default:
       NOTREACHED();
       break;
@@ -396,6 +404,14 @@ float SVGLengthContext::ConvertValueFromUserUnits(
     case CSSPrimitiveValue::UnitType::kViewportMin:
     case CSSPrimitiveValue::UnitType::kViewportMax:
       return value / DimensionForViewportUnit(context_, to_unit);
+    case CSSPrimitiveValue::UnitType::kContainerWidth:
+    case CSSPrimitiveValue::UnitType::kContainerHeight:
+    case CSSPrimitiveValue::UnitType::kContainerInlineSize:
+    case CSSPrimitiveValue::UnitType::kContainerBlockSize:
+    case CSSPrimitiveValue::UnitType::kContainerMin:
+    case CSSPrimitiveValue::UnitType::kContainerMax:
+      NOTREACHED() << "Must be handled using ResolveValue";
+      break;
     default:
       break;
   }
@@ -493,10 +509,10 @@ float SVGLengthContext::ResolveValue(const CSSPrimitiveValue& primitive_value,
   if (!root_style)
     return 0;
 
-  // TOOD(crbug.com/1223030): Handle container relative units.
+  DCHECK(context_);
   CSSToLengthConversionData conversion_data = CSSToLengthConversionData(
       style, root_style, context_->GetDocument().GetLayoutView(),
-      /* nearest_container */ nullptr, 1.0f);
+      CSSToLengthConversionData::ContainerSizes(context_), 1.0f);
   Length length = primitive_value.ConvertToLength(conversion_data);
   return ValueForLength(length, 1.0f, mode);
 }

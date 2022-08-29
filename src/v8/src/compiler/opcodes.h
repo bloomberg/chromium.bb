@@ -10,28 +10,27 @@
 #include "src/common/globals.h"
 
 // Opcodes for control operators.
-#define CONTROL_OP_LIST(V)           \
-  V(Start)                           \
-  V(Loop)                            \
-  V(Branch)                          \
-  V(Switch)                          \
-  V(IfTrue)                          \
-  V(IfFalse)                         \
-  V(IfSuccess)                       \
-  V(IfException)                     \
-  V(IfValue)                         \
-  V(IfDefault)                       \
-  V(Merge)                           \
-  V(Deoptimize)                      \
-  V(DeoptimizeIf)                    \
-  V(DeoptimizeUnless)                \
-  V(DynamicCheckMapsWithDeoptUnless) \
-  V(TrapIf)                          \
-  V(TrapUnless)                      \
-  V(Return)                          \
-  V(TailCall)                        \
-  V(Terminate)                       \
-  V(Throw)                           \
+#define CONTROL_OP_LIST(V) \
+  V(Start)                 \
+  V(Loop)                  \
+  V(Branch)                \
+  V(Switch)                \
+  V(IfTrue)                \
+  V(IfFalse)               \
+  V(IfSuccess)             \
+  V(IfException)           \
+  V(IfValue)               \
+  V(IfDefault)             \
+  V(Merge)                 \
+  V(Deoptimize)            \
+  V(DeoptimizeIf)          \
+  V(DeoptimizeUnless)      \
+  V(TrapIf)                \
+  V(TrapUnless)            \
+  V(Return)                \
+  V(TailCall)              \
+  V(Terminate)             \
+  V(Throw)                 \
   V(End)
 
 // Opcodes for constant operators.
@@ -84,6 +83,7 @@
   V(DeadValue)            \
   V(Dead)                 \
   V(Plug)                 \
+  V(SLVerifierHint)       \
   V(StaticAssert)
 
 // Opcodes for JavaScript operators.
@@ -168,21 +168,21 @@
   V(JSCreateTypedArray)          \
   V(JSGetTemplateObject)
 
-#define JS_OBJECT_OP_LIST(V)      \
-  JS_CREATE_OP_LIST(V)            \
-  V(JSLoadProperty)               \
-  V(JSLoadNamed)                  \
-  V(JSLoadNamedFromSuper)         \
-  V(JSLoadGlobal)                 \
-  V(JSStoreProperty)              \
-  V(JSDefineProperty)             \
-  V(JSStoreNamed)                 \
-  V(JSStoreNamedOwn)              \
-  V(JSStoreGlobal)                \
-  V(JSStoreDataPropertyInLiteral) \
-  V(JSStoreInArrayLiteral)        \
-  V(JSDeleteProperty)             \
-  V(JSHasProperty)                \
+#define JS_OBJECT_OP_LIST(V)           \
+  JS_CREATE_OP_LIST(V)                 \
+  V(JSLoadProperty)                    \
+  V(JSLoadNamed)                       \
+  V(JSLoadNamedFromSuper)              \
+  V(JSLoadGlobal)                      \
+  V(JSSetKeyedProperty)                \
+  V(JSDefineKeyedOwnProperty)          \
+  V(JSSetNamedProperty)                \
+  V(JSDefineNamedOwnProperty)          \
+  V(JSStoreGlobal)                     \
+  V(JSDefineKeyedOwnPropertyInLiteral) \
+  V(JSStoreInArrayLiteral)             \
+  V(JSDeleteProperty)                  \
+  V(JSHasProperty)                     \
   V(JSGetSuperConstructor)
 
 #define JS_CONTEXT_OP_LIST(V) \
@@ -421,16 +421,17 @@
   V(ConvertTaggedHoleToUndefined)       \
   V(DateNow)                            \
   V(DelayedStringConstant)              \
-  V(DynamicCheckMaps)                   \
   V(EnsureWritableFastElements)         \
   V(FastApiCall)                        \
   V(FindOrderedHashMapEntry)            \
   V(FindOrderedHashMapEntryForInt32Key) \
+  V(InitializeImmutableInObject)        \
   V(LoadDataViewElement)                \
   V(LoadElement)                        \
   V(LoadField)                          \
   V(LoadFieldByIndex)                   \
   V(LoadFromObject)                     \
+  V(LoadImmutableFromObject)            \
   V(LoadMessage)                        \
   V(LoadStackArgument)                  \
   V(LoadTypedElement)                   \
@@ -486,14 +487,13 @@
   V(StringToLowerCaseIntl)              \
   V(StringToNumber)                     \
   V(StringToUpperCaseIntl)              \
-  V(TierUpCheck)                        \
   V(ToBoolean)                          \
   V(TransitionAndStoreElement)          \
   V(TransitionAndStoreNonNumberElement) \
   V(TransitionAndStoreNumberElement)    \
   V(TransitionElementsKind)             \
   V(TypeOf)                             \
-  V(UpdateInterruptBudget)              \
+  V(Unsigned32Divide)                   \
   V(VerifyType)
 
 #define SIMPLIFIED_SPECULATIVE_BIGINT_BINOP_LIST(V) \
@@ -504,6 +504,15 @@
   V(SpeculativeBigIntAsIntN)                       \
   V(SpeculativeBigIntAsUintN)                      \
   V(SpeculativeBigIntNegate)
+
+#define SIMPLIFIED_WASM_OP_LIST(V) \
+  V(AssertNotNull)                 \
+  V(IsNull)                        \
+  V(IsNotNull)                     \
+  V(Null)                          \
+  V(RttCanon)                      \
+  V(WasmTypeCast)                  \
+  V(WasmTypeCheck)
 
 #define SIMPLIFIED_OP_LIST(V)                 \
   SIMPLIFIED_CHANGE_OP_LIST(V)                \
@@ -517,6 +526,7 @@
   SIMPLIFIED_SPECULATIVE_NUMBER_UNOP_LIST(V)  \
   SIMPLIFIED_SPECULATIVE_BIGINT_UNOP_LIST(V)  \
   SIMPLIFIED_SPECULATIVE_BIGINT_BINOP_LIST(V) \
+  IF_WASM(SIMPLIFIED_WASM_OP_LIST, V)         \
   SIMPLIFIED_OTHER_OP_LIST(V)
 
 // Opcodes for Machine-level operators.
@@ -766,7 +776,6 @@
   V(SignExtendWord8ToInt64)              \
   V(SignExtendWord16ToInt64)             \
   V(SignExtendWord32ToInt64)             \
-  V(UnsafePointerAdd)                    \
   V(StackPointerGreaterThan)
 
 #define MACHINE_SIMD_OP_LIST(V)  \
@@ -805,8 +814,6 @@
   V(F32x4Abs)                    \
   V(F32x4Neg)                    \
   V(F32x4Sqrt)                   \
-  V(F32x4RecipApprox)            \
-  V(F32x4RecipSqrtApprox)        \
   V(F32x4Add)                    \
   V(F32x4Sub)                    \
   V(F32x4Mul)                    \
@@ -995,6 +1002,9 @@
   V(I32x4RelaxedTruncF32x4U)     \
   V(I32x4RelaxedTruncF64x2SZero) \
   V(I32x4RelaxedTruncF64x2UZero) \
+  V(I16x8RelaxedQ15MulRS)        \
+  V(I16x8DotI8x16I7x16S)         \
+  V(I32x4DotI8x16I7x16AddS)      \
   V(I8x16Shuffle)                \
   V(V128AnyTrue)                 \
   V(I64x2AllTrue)                \
@@ -1135,7 +1145,7 @@ class V8_EXPORT_PRIVATE IrOpcode {
       case kJSCreateLiteralArray:
       case kJSCreateLiteralObject:
       case kJSCreateLiteralRegExp:
-      case kJSDefineProperty:
+      case kJSDefineKeyedOwnProperty:
       case kJSForInNext:
       case kJSForInPrepare:
       case kJSGetIterator:
@@ -1146,12 +1156,12 @@ class V8_EXPORT_PRIVATE IrOpcode {
       case kJSLoadNamed:
       case kJSLoadNamedFromSuper:
       case kJSLoadProperty:
-      case kJSStoreDataPropertyInLiteral:
+      case kJSDefineKeyedOwnPropertyInLiteral:
       case kJSStoreGlobal:
       case kJSStoreInArrayLiteral:
-      case kJSStoreNamed:
-      case kJSStoreNamedOwn:
-      case kJSStoreProperty:
+      case kJSSetNamedProperty:
+      case kJSDefineNamedOwnProperty:
+      case kJSSetKeyedProperty:
         return true;
       default:
         return false;

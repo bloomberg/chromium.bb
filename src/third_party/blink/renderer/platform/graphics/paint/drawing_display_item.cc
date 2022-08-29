@@ -13,6 +13,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkData.h"
+#include "ui/gfx/geometry/insets_f.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/skia_conversions.h"
@@ -22,8 +23,10 @@ namespace blink {
 static SkBitmap RecordToBitmap(sk_sp<const PaintRecord> record,
                                const gfx::Rect& bounds) {
   SkBitmap bitmap;
-  bitmap.allocPixels(
-      SkImageInfo::MakeN32Premul(bounds.width(), bounds.height()));
+  if (!bitmap.tryAllocPixels(
+          SkImageInfo::MakeN32Premul(bounds.width(), bounds.height())))
+    return bitmap;
+
   SkiaPaintCanvas canvas(bitmap);
   canvas.clear(SK_ColorTRANSPARENT);
   canvas.translate(-bounds.x(), -bounds.y());
@@ -36,6 +39,9 @@ static bool BitmapsEqual(sk_sp<const PaintRecord> record1,
                          const gfx::Rect& bounds) {
   SkBitmap bitmap1 = RecordToBitmap(record1, bounds);
   SkBitmap bitmap2 = RecordToBitmap(record2, bounds);
+  if (bitmap1.isNull() || bitmap2.isNull())
+    return true;
+
   int mismatch_count = 0;
   constexpr int kMaxMismatches = 10;
   for (int y = 0; y < bounds.height(); ++y) {
@@ -76,8 +82,6 @@ bool DrawingDisplayItem::EqualsForUnderInvalidationImpl(
 
   // Sometimes the client may produce different records for the same visual
   // result, which should be treated as equal.
-  // Limit the bounds to prevent OOM.
-  bounds.Intersect(gfx::Rect(bounds.x(), bounds.y(), 6000, 6000));
   return BitmapsEqual(std::move(record), std::move(other_record), bounds);
 }
 
@@ -201,10 +205,13 @@ gfx::Rect DrawingDisplayItem::CalculateRectKnownToBeOpaqueForRecord(
           // that can be inscribed inside it has an inset of |((2 - sqrt(2)) /
           // 2) * radius|.
           gfx::RectF contained = gfx::SkRectToRectF(rrect.rect());
-          contained.Inset(std::max(top_left.y(), top_right.y()) * 0.3f,
-                          std::max(top_right.x(), bottom_right.x()) * 0.3f,
-                          std::max(bottom_left.y(), bottom_right.y()) * 0.3f,
-                          std::max(top_left.x(), bottom_left.x()) * 0.3f);
+          contained.Inset(
+              gfx::InsetsF()
+                  .set_top(std::max(top_left.y(), top_right.y()) * 0.3f)
+                  .set_right(std::max(top_right.x(), bottom_right.x()) * 0.3f)
+                  .set_bottom(std::max(bottom_left.y(), bottom_right.y()) *
+                              0.3f)
+                  .set_left(std::max(top_left.x(), bottom_left.x()) * 0.3f));
           op_opaque_rect = ToEnclosedRect(contained);
           break;
         }
@@ -225,8 +232,8 @@ gfx::Rect DrawingDisplayItem::CalculateRectKnownToBeOpaqueForRecord(
           const auto* draw_image_rect_op =
               static_cast<const cc::DrawImageRectOp*>(op);
           const auto& image = draw_image_rect_op->image;
-          DCHECK(SkRect::MakeWH(image.width(), image.height())
-                     .contains(draw_image_rect_op->src));
+          DCHECK(gfx::RectF(image.width(), image.height())
+                     .Contains(gfx::SkRectToRectF(draw_image_rect_op->src)));
           if (!image.IsOpaque())
             continue;
           op_opaque_rect =

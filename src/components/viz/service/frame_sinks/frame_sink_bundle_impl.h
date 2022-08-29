@@ -51,6 +51,11 @@ class FrameSinkBundleImpl : public mojom::FrameSinkBundle {
 
   const FrameSinkBundleId& id() const { return id_; }
 
+  // Called by the identified sink itself to notify the bundle that the sink
+  // needs (or no longer needs) BeginFrame notifications. This is distinct from
+  // SetNeedsBeginFrame(), as the latter is only called by clients.
+  void SetSinkNeedsBeginFrame(uint32_t sink_id, bool needs_begin_frame);
+
   void AddFrameSink(CompositorFrameSinkSupport* support);
   void UpdateFrameSink(CompositorFrameSinkSupport* support,
                        BeginFrameSource* old_source);
@@ -66,7 +71,7 @@ class FrameSinkBundleImpl : public mojom::FrameSinkBundle {
   void DidAllocateSharedBitmap(uint32_t sink_id,
                                base::ReadOnlySharedMemoryRegion region,
                                const gpu::Mailbox& id) override;
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   void SetThreadIds(uint32_t sink_id,
                     const std::vector<int32_t>& thread_ids) override;
 #endif
