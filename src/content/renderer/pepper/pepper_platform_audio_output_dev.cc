@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -26,7 +27,7 @@
 #include "third_party/blink/public/web/web_local_frame.h"
 
 namespace {
-#if defined(OS_WIN) || defined(OS_MAC)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
 constexpr base::TimeDelta kMaxAuthorizationTimeout = base::Seconds(4);
 #else
 constexpr base::TimeDelta kMaxAuthorizationTimeout;  // No timeout.
@@ -186,7 +187,7 @@ void PepperPlatformAudioOutputDev::OnStreamCreated(
     base::SyncSocket::ScopedHandle socket_handle,
     bool playing_automatically) {
   DCHECK(shared_memory_region.IsValid());
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   DCHECK(socket_handle.IsValid());
 #else
   DCHECK(socket_handle.is_valid());
@@ -313,7 +314,7 @@ void PepperPlatformAudioOutputDev::CreateStreamOnIOThread(
     case IDLE:
       if (did_receive_auth_.IsSignaled() && device_id_.empty()) {
         state_ = CREATING_STREAM;
-        ipc_->CreateStream(this, params, absl::nullopt);
+        ipc_->CreateStream(this, params);
       } else {
         RequestDeviceAuthorizationOnIOThread();
         start_on_authorized_ = true;
@@ -326,7 +327,7 @@ void PepperPlatformAudioOutputDev::CreateStreamOnIOThread(
 
     case AUTHORIZED:
       state_ = CREATING_STREAM;
-      ipc_->CreateStream(this, params, absl::nullopt);
+      ipc_->CreateStream(this, params);
       start_on_authorized_ = false;
       break;
 

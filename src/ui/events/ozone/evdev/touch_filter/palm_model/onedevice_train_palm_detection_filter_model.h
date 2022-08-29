@@ -18,8 +18,8 @@ namespace ui {
 class COMPONENT_EXPORT(EVDEV) OneDeviceTrainNeuralStylusPalmDetectionFilterModel
     : public NeuralStylusPalmDetectionFilterModel {
  public:
-  OneDeviceTrainNeuralStylusPalmDetectionFilterModel();
   explicit OneDeviceTrainNeuralStylusPalmDetectionFilterModel(
+      const std::string& model_version,
       const std::vector<float>& radius_poly);
 
   OneDeviceTrainNeuralStylusPalmDetectionFilterModel(
@@ -32,7 +32,9 @@ class COMPONENT_EXPORT(EVDEV) OneDeviceTrainNeuralStylusPalmDetectionFilterModel
   const NeuralStylusPalmDetectionFilterModelConfig& config() const override;
 
  private:
+  void Initialize();
   NeuralStylusPalmDetectionFilterModelConfig config_;
+  size_t expected_feature_size_;
 };
 
 }  // namespace ui

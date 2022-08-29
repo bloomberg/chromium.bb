@@ -23,22 +23,12 @@ chromium-metrics-reviews@google.com.
 <histograms>
 
 <histogram name="Geolocation.AuthorizationActionExistingUser"
-    enum="GeolocationAuthorizationAction" expires_after="2022-04-10">
+    enum="GeolocationAuthorizationAction" expires_after="2022-10-16">
   <owner>mattreynolds@chromium.org</owner>
   <owner>device-dev@chromium.org</owner>
   <summary>
     Records the action performed by an existing user when prompted to authorize
     the use of location by Chrome.
-  </summary>
-</histogram>
-
-<histogram name="Geolocation.AuthorizationActionNewUser"
-    enum="GeolocationAuthorizationAction" expires_after="2022-04-10">
-  <owner>mattreynolds@chromium.org</owner>
-  <owner>device-dev@chromium.org</owner>
-  <summary>
-    Records the action performed by a new user when prompted to authorize the
-    use of location by Chrome.
   </summary>
 </histogram>
 
@@ -87,7 +77,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Geolocation.LocationUpdate.ErrorCode"
-    enum="GeopositionErrorCode" expires_after="2022-04-17">
+    enum="GeopositionErrorCode" expires_after="2022-11-20">
   <owner>mattreynolds@chromium.org</owner>
   <owner>device-dev@chromium.org</owner>
   <summary>Error code for the geoposition sent to the renderers.</summary>
@@ -103,7 +93,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Geolocation.NetworkLocationRequest.Event"
-    enum="NetworkLocationRequestEvent" expires_after="2022-05-22">
+    enum="NetworkLocationRequestEvent" expires_after="2022-12-04">
   <owner>mattreynolds@chromium.org</owner>
   <owner>device-dev@chromium.org</owner>
   <summary>
@@ -115,14 +105,14 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Geolocation.NetworkLocationRequest.NetError"
-    enum="NetErrorCodes" expires_after="2022-05-22">
+    enum="NetErrorCodes" expires_after="2022-11-27">
   <owner>JamesHollyer@chromium.org</owner>
   <owner>device-dev@chromium.org</owner>
   <summary>Network errors in NetworkLocationRequest.</summary>
 </histogram>
 
 <histogram name="Geolocation.NetworkLocationRequest.ResponseCode"
-    enum="HttpResponseCode" expires_after="2022-05-22">
+    enum="HttpResponseCode" expires_after="2022-11-27">
   <owner>mattreynolds@chromium.org</owner>
   <owner>device-dev@chromium.org</owner>
   <summary>
@@ -134,7 +124,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Geolocation.PositionCache.CacheHit" enum="BooleanCacheHit"
-    expires_after="2022-05-22">
+    expires_after="2022-10-04">
   <owner>mattreynolds@chromium.org</owner>
   <owner>deviceapi-team@google.com</owner>
   <summary>
@@ -215,46 +205,6 @@ chromium-metrics-reviews@google.com.
     duration. This means no position was received within the allowed time from
     the browser process due to e.g. a slow network or an unresponsive system
     location provider.
-  </summary>
-</histogram>
-
-<histogram name="GeolocationDisclosure.DisclosureResult"
-    enum="GeolocationDisclosureResult" expires_after="2022-01-02">
-  <owner>benwells@chromium.org</owner>
-  <summary>
-    Records the action the user took after the geolocation disclosure has been
-    displayed.
-  </summary>
-</histogram>
-
-<histogram name="GeolocationDisclosure.InfoBarVisibleTime" units="ms"
-    expires_after="2022-04-17">
-  <owner>engedy@chromium.org</owner>
-  <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
-  <summary>
-    Records how long the search geolocation disclosure infobar was visible for.
-  </summary>
-</histogram>
-
-<histogram name="GeolocationDisclosure.PostDisclosureDSESetting"
-    enum="BooleanAllowed" expires_after="2022-04-24">
-  <owner>engedy@chromium.org</owner>
-  <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
-  <summary>
-    Records the geolocation default search engine setting after the search
-    geolocation disclosure has been shown and won't be shown again. This metric
-    is only recorded once per client.
-  </summary>
-</histogram>
-
-<histogram name="GeolocationDisclosure.PreDisclosureDSESetting"
-    enum="BooleanAllowed" expires_after="2022-04-24">
-  <owner>engedy@chromium.org</owner>
-  <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
-  <summary>
-    Records the geolocation default search engine setting immediately before the
-    search geolocation disclosure has been shown. This metric is only recorded
-    once per client.
   </summary>
 </histogram>
 

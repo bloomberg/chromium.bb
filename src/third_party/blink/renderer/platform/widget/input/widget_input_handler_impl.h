@@ -39,7 +39,7 @@ class WidgetInputHandlerImpl : public mojom::blink::WidgetInputHandler {
   void SetReceiver(mojo::PendingReceiver<mojom::blink::WidgetInputHandler>
                        interface_receiver);
 
-  void SetFocus(bool focused) override;
+  void SetFocus(mojom::blink::FocusState focus_state) override;
   void MouseCaptureLost() override;
   void SetEditCommandsForNextKeyEvent(
       Vector<mojom::blink::EditCommandPtr> commands) override;
@@ -64,7 +64,7 @@ class WidgetInputHandlerImpl : public mojom::blink::WidgetInputHandler {
   void DispatchNonBlockingEvent(
       std::unique_ptr<WebCoalescedInputEvent>) override;
   void WaitForInputProcessed(WaitForInputProcessedCallback callback) override;
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   void AttachSynchronousCompositor(
       mojo::PendingRemote<mojom::blink::SynchronousCompositorControlHost>
           control_host,

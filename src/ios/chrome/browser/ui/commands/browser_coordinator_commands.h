@@ -30,6 +30,18 @@
 // Shows the Reading List UI.
 - (void)showReadingList;
 
+// Shows an IPH pointing to where the Reading List entry point is, if
+// applicable.
+- (void)showReadingListIPH;
+
+// Shows an IPH pointing to where the Follow entry point is, if
+// applicable.
+- (void)showFollowWhileBrowsingIPH;
+
+// Shows an IPH to explain to the user how to change the default site view, if
+// applicable.
+- (void)showDefaultSiteViewIPH;
+
 // Shows recent tabs.
 - (void)showRecentTabs;
 
@@ -40,7 +52,14 @@
 - (void)displayPopupMenuWithBadgeItems:(NSArray<id<BadgeItem>>*)badgeItems;
 
 // Dismisses the Badge popup menu.
-- (void)dismissPopupMenu;
+- (void)dismissBadgePopupMenu;
+
+// Shows the activity indicator overlay that appears over the view to prevent
+// interaction with the web page.
+- (void)showActivityOverlay;
+
+// Hides the activity indicator overlay.
+- (void)hideActivityOverlay;
 
 #if !defined(NDEBUG)
 // Inserts a new tab showing the HTML source of the current page.

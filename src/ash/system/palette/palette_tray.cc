@@ -9,6 +9,7 @@
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
+#include "ash/projector/projector_controller_impl.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/stylus_utils.h"
 #include "ash/public/cpp/system_tray_client.h"
@@ -70,7 +71,7 @@ constexpr int kPaddingBetweenTitleAndSeparator = 3;
 constexpr int kPaddingBetweenBottomAndLastTrayItem = 8;
 
 // Insets for the title view (dp).
-constexpr gfx::Insets kTitleViewPadding(8, 16, 8, 16);
+constexpr auto kTitleViewPadding = gfx::Insets::TLBR(8, 16, 8, 16);
 
 // Spacing between buttons in the title view (dp).
 constexpr int kTitleViewChildSpacing = 16;
@@ -163,7 +164,7 @@ class TitleView : public views::View {
       AddChildView(std::make_unique<BatteryView>());
 
       auto* separator = AddChildView(std::make_unique<views::Separator>());
-      separator->SetPreferredHeight(GetPreferredSize().height());
+      separator->SetPreferredLength(GetPreferredSize().height());
       separator->SetColor(AshColorProvider::Get()->GetContentLayerColor(
           AshColorProvider::ContentLayerType::kSeparatorColor));
     }
@@ -296,8 +297,9 @@ bool PaletteTray::ShouldShowPalette() const {
 
 bool PaletteTray::ShouldShowOnDisplay() {
   if (stylus_utils::IsPaletteEnabledOnEveryDisplay() ||
-      display_has_stylus_for_testing_)
+      display_has_stylus_for_testing_) {
     return true;
+  }
 
   // |widget| is null when this function is called from PaletteTray constructor
   // before it is added to a widget.
@@ -320,6 +322,7 @@ bool PaletteTray::ShouldShowOnDisplay() {
     ids.insert(ids.end(), mirrors.begin(), mirrors.end());
     ids.push_back(display_manager->mirroring_source_id());
   }
+
   for (const ui::TouchscreenDevice& device :
        ui::DeviceDataManager::GetInstance()->GetTouchscreenDevices()) {
     if (device.has_stylus && std::find(ids.begin(), ids.end(),
@@ -407,6 +410,15 @@ void PaletteTray::OnLockStateChanged(bool locked) {
     // The user can eject the stylus during the lock screen transition, which
     // will open the palette. Make sure to close it if that happens.
     HidePalette();
+  }
+}
+
+void PaletteTray::OnShellInitialized() {
+  if (features::IsProjectorEnabled()) {
+    ProjectorControllerImpl* projector_controller =
+        Shell::Get()->projector_controller();
+    projector_session_observation_.Observe(
+        projector_controller->projector_session());
   }
 }
 
@@ -547,6 +559,16 @@ void PaletteTray::RecordPaletteModeCancellation(PaletteModeCancelType type) {
       PaletteModeCancelType::PALETTE_MODE_CANCEL_TYPE_COUNT);
 }
 
+void PaletteTray::OnProjectorSessionActiveStateChanged(bool active) {
+  is_palette_visibility_paused_ = active;
+  if (active) {
+    DeactivateActiveTool();
+    SetVisiblePreferred(false);
+  } else {
+    UpdateIconVisibility();
+  }
+}
+
 void PaletteTray::OnActiveToolChanged() {
   ++num_actions_in_bubble_;
 
@@ -624,7 +646,6 @@ void PaletteTray::ShowBubble() {
   init_params.preferred_width = kPaletteWidth;
   init_params.close_on_deactivate = true;
   init_params.translucent = true;
-  init_params.has_shadow = false;
   init_params.corner_radius = kTrayItemCornerRadius;
   init_params.reroute_event_handler = true;
 
@@ -636,7 +657,7 @@ void PaletteTray::ShowBubble() {
   TrayBubbleView* bubble_view = new TrayBubbleView(init_params);
   bubble_view->set_margins(GetSecondaryBubbleInsets());
   bubble_view->SetBorder(views::CreateEmptyBorder(
-      gfx::Insets(0, 0, kPaddingBetweenBottomAndLastTrayItem, 0)));
+      gfx::Insets::TLBR(0, 0, kPaddingBetweenBottomAndLastTrayItem, 0)));
 
   auto setup_layered_view = [](views::View* view) {
     view->SetPaintToLayer();
@@ -654,7 +675,7 @@ void PaletteTray::ShowBubble() {
   setup_layered_view(separator);
   separator->SetColor(AshColorProvider::Get()->GetContentLayerColor(
       AshColorProvider::ContentLayerType::kSeparatorColor));
-  separator->SetBorder(views::CreateEmptyBorder(gfx::Insets(
+  separator->SetBorder(views::CreateEmptyBorder(gfx::Insets::TLBR(
       kPaddingBetweenTitleAndSeparator, 0, kMenuSeparatorVerticalPadding, 0)));
 
   // Add palette tools.
@@ -758,8 +779,9 @@ void PaletteTray::SetDisplayHasStylusForTesting() {
 
 void PaletteTray::UpdateIconVisibility() {
   bool visible_preferred =
-      is_palette_enabled_ && stylus_utils::HasStylusInput() &&
-      ShouldShowOnDisplay() && palette_utils::IsInUserSession();
+      is_palette_enabled_ && !is_palette_visibility_paused_ &&
+      stylus_utils::HasStylusInput() && ShouldShowOnDisplay() &&
+      palette_utils::IsInUserSession();
   SetVisiblePreferred(visible_preferred);
   if (visible_preferred)
     UpdateLayout();

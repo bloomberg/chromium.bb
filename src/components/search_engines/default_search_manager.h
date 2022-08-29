@@ -48,6 +48,7 @@ class DefaultSearchManager {
   static const char kSearchURLPostParams[];
   static const char kSuggestionsURLPostParams[];
   static const char kImageURLPostParams[];
+  static const char kSideSearchParam[];
 
   static const char kSafeForAutoReplace[];
   static const char kInputEncodings[];
@@ -62,7 +63,9 @@ class DefaultSearchManager {
   static const char kDisabledByPolicy[];
   static const char kCreatedFromPlayAPI[];
   static const char kPreconnectToSearchUrl[];
+  static const char kPrefetchLikelyNavigations[];
   static const char kIsActive[];
+  static const char kStarterPackId[];
 
   enum Source {
     // Default search engine chosen either from prepopulated engines set for

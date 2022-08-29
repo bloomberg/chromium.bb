@@ -13,7 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/web_applications/web_app_id.h"
-#include "chrome/browser/web_applications/web_application_info.h"
+#include "chrome/browser/web_applications/web_app_install_info.h"
 #include "ui/views/window/dialog_delegate.h"
 
 class Profile;
@@ -46,7 +46,7 @@ class LaunchAppUserChoiceDialogView : public views::DialogDelegateView {
 
   void Init();
 
-  static void SetDefaultRememberSelectionForTesting(bool remember_state);
+  static void SetDefaultRememberSelectionForTesting(bool remember_selection);
 
  protected:
   virtual std::unique_ptr<views::View> CreateAboveAppInfoView() = 0;

@@ -6,6 +6,8 @@
  * @fileoverview Library providing basic test framework functionality.
  */
 
+/* eslint-disable no-console */
+
 /**
  * See assert.js for where this is used.
  * @suppress {globalThis}
@@ -67,10 +69,10 @@ function Test() {}
  * will break. animationend events should still work.
  */
 Test.disableAnimationsAndTransitions = function() {
-  let all = document.body.querySelectorAll('*');
+  const all = document.body.querySelectorAll('*');
   const ZERO_MS_IMPORTANT = '0ms !important';
   for (let i = 0, l = all.length; i < l; ++i) {
-    let style = all[i].style;
+    const style = all[i].style;
     style.animationDelay = ZERO_MS_IMPORTANT;
     style.animationDuration = ZERO_MS_IMPORTANT;
     style.transitionDelay = ZERO_MS_IMPORTANT;
@@ -1207,24 +1209,6 @@ function exportChaiAsserts() {
 }
 
 /**
- * Exports expect methods. 'expect*' methods allow tests to run until the end
- * even in the presence of failures.
- */
-function exportExpects() {
-  exports.expectTrue = createExpect(assertTrue);
-  exports.expectFalse = createExpect(assertFalse);
-  exports.expectGE = createExpect(assertGE);
-  exports.expectGT = createExpect(assertGT);
-  exports.expectEquals = createExpect(assertEquals);
-  exports.expectDeepEquals = createExpect(assertDeepEquals);
-  exports.expectLE = createExpect(assertLE);
-  exports.expectLT = createExpect(assertLT);
-  exports.expectNotEquals = createExpect(assertNotEquals);
-  exports.expectNotReached = createExpect(assertNotReached);
-  exports.expectThrows = createExpect(assertThrows);
-}
-
-/**
  * Exports methods related to Mock4JS mocking.
  */
 function exportMock4JsHelpers() {
@@ -1236,7 +1220,6 @@ function exportMock4JsHelpers() {
 testing.Test = Test;
 exports.testDone = testDone;
 exportChaiAsserts();
-exportExpects();
 exportMock4JsHelpers();
 exports.preloadJavascriptLibraries = preloadJavascriptLibraries;
 exports.setWaitUser = setWaitUser;

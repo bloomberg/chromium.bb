@@ -45,7 +45,8 @@ class SharedPageState(story_module.SharedState):
     if (self._device_type == 'desktop' and
         platform_module.GetHostPlatform().GetOSName() == 'chromeos'):
       self._device_type = 'chromeos'
-    if possible_browser.browser_type == 'web-engine-shell':
+    if (possible_browser.browser_type == 'web-engine-shell' or
+        possible_browser.browser_type == 'fuchsia-chrome'):
       self._device_type = None
 
     browser_options = finder_options.browser_options
@@ -146,10 +147,11 @@ class SharedPageState(story_module.SharedState):
     This should return False in most situations in order to help maitain
     independence between measurements taken on different story runs.
 
-    The default implementation only allows reusing the browser in ChromeOs,
+    Previously, we only reused the browser for ChromeOS,
     where bringing up the browser for each story is expensive.
+    However, this is causing some tests to break.
     """
-    return self.platform.GetOSName() == 'chromeos'
+    return False
 
   @property
   def platform(self):

@@ -428,7 +428,13 @@ int av_match_list(const char *name, const char *list, char separator);
  * See libc sscanf manual for more information.
  * Locale-independent sscanf implementation.
  */
+#if 0
 int av_sscanf(const char *string, const char *format, ...);
+#else
+// Chromium: av_sscanf() is ~8kb in implementation and isn't used by any
+// methods needed for Chromium; drop to save binary size.
+#define av_sscanf sscanf
+#endif
 
 /**
  * @}

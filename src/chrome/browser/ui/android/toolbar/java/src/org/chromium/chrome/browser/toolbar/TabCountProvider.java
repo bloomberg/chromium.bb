@@ -50,7 +50,12 @@ public class TabCountProvider {
     private boolean mIsIncognito;
 
     TabCountProvider() {
-        mTabCountObservers = new ObserverList<TabCountObserver>();
+        mTabCountObservers = new ObserverList<>();
+    }
+
+    /** Gets the current count of tabs. */
+    public int getTabCount() {
+        return mTabCount;
     }
 
     /**
@@ -116,7 +121,7 @@ public class TabCountProvider {
             }
 
             @Override
-            public void didCloseTab(int tabId, boolean incognito) {
+            public void didCloseTab(Tab tab) {
                 updateTabCount();
             }
 

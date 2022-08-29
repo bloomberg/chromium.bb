@@ -6,40 +6,40 @@
 
 #include <utility>
 
+#include "base/no_destructor.h"
 #include "build/build_config.h"
-#include "build/chromeos_buildflags.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_frame_view_layout_linux.h"
 #include "chrome/browser/ui/views/frame/browser_frame_view_linux.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/frame/desktop_browser_frame_aura_linux.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
+#include "third_party/skia/include/core/SkRRect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/platform_window/extensions/wayland_extension.h"
 #include "ui/platform_window/extensions/x11_extension.h"
 
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-#include "chrome/browser/ui/views/frame/desktop_browser_frame_lacros.h"
-#else  // defined(OS_LINUX)
-#include "chrome/browser/ui/views/frame/desktop_browser_frame_aura_linux.h"
-#endif
-
-#if defined(USE_DBUS_MENU)
-
 namespace {
 
+#if defined(USE_DBUS_MENU)
 bool CreateGlobalMenuBar() {
   return ui::OzonePlatform::GetInstance()
       ->GetPlatformProperties()
       .supports_global_application_menus;
 }
+#endif  // defined(USE_DBUS_MENU)
+
+std::unordered_set<std::string>& SentStartupIds() {
+  static base::NoDestructor<std::unordered_set<std::string>> sent_startup_ids;
+  return *sent_startup_ids;
+}
 
 }  // namespace
-
-#endif  // defined(USE_DBUS_MENU)
 
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserDesktopWindowTreeHostLinux, public:
@@ -53,7 +53,7 @@ BrowserDesktopWindowTreeHostLinux::BrowserDesktopWindowTreeHostLinux(
                                  desktop_native_widget_aura),
       browser_view_(browser_view),
       browser_frame_(browser_frame) {
-  native_frame_ = static_cast<DesktopBrowserFrameAuraPlatform*>(
+  native_frame_ = static_cast<DesktopBrowserFrameAuraLinux*>(
       browser_frame->native_browser_frame());
   native_frame_->set_host(this);
 
@@ -135,8 +135,11 @@ void BrowserDesktopWindowTreeHostLinux::TabDraggingKindChanged(
   }
 
   if (auto* wayland_extension = ui::GetWaylandExtension(*platform_window())) {
-    if (tab_drag_kind != TabDragKind::kNone)
-      wayland_extension->StartWindowDraggingSessionIfNeeded();
+    if (tab_drag_kind != TabDragKind::kNone) {
+      auto allow_system_drag = base::FeatureList::IsEnabled(
+          features::kAllowWindowDragUsingSystemDragDrop);
+      wayland_extension->StartWindowDraggingSessionIfNeeded(allow_system_drag);
+    }
   }
 }
 
@@ -146,7 +149,6 @@ bool BrowserDesktopWindowTreeHostLinux::SupportsClientFrameShadow() const {
 }
 
 void BrowserDesktopWindowTreeHostLinux::UpdateFrameHints() {
-#if defined(OS_LINUX)
   auto* view = static_cast<BrowserFrameViewLinux*>(
       native_frame_->browser_frame()->GetFrameView());
   auto* layout = view->layout();
@@ -160,8 +162,15 @@ void BrowserDesktopWindowTreeHostLinux::UpdateFrameHints() {
 
   if (SupportsClientFrameShadow()) {
     // Set the frame decoration insets.
+    // For a window in maximised or minimised state, insets should be zero, see
+    // https://crbug.com/1281211.  However, if we also set zero insets when the
+    // window is being initialised and has unknown state, it will be inflated on
+    // later steps.
+    // See https://crbug.com/1287212 for details.
+    const auto window_state = window->GetPlatformWindowState();
     const gfx::Insets insets =
-        (window->GetPlatformWindowState() == ui::PlatformWindowState::kNormal)
+        (window_state == ui::PlatformWindowState::kUnknown ||
+         window_state == ui::PlatformWindowState::kNormal)
             ? layout->MirroredFrameBorderInsets()
             : gfx::Insets();
     const gfx::Insets insets_px = gfx::ScaleToCeiledInsets(insets, scale);
@@ -176,6 +185,7 @@ void BrowserDesktopWindowTreeHostLinux::UpdateFrameHints() {
 
   if (window->IsTranslucentWindowOpacitySupported()) {
     // Set the opaque region.
+    std::vector<gfx::Rect> opaque_region;
     if (showing_frame) {
       // The opaque region is a list of rectangles that contain only fully
       // opaque pixels of the window.  We need to convert the clipping
@@ -214,17 +224,16 @@ void BrowserDesktopWindowTreeHostLinux::UpdateFrameHints() {
       }
 
       // Convert the region to a list of rectangles.
-      std::vector<gfx::Rect> opaque_region;
       for (SkRegion::Iterator i(region); !i.done(); i.next())
         opaque_region.push_back(gfx::SkIRectToRect(i.rect()));
-      window->SetOpaqueRegion(&opaque_region);
     } else {
-      window->SetOpaqueRegion(nullptr);
+      // Set the entire window as opaque.
+      opaque_region.push_back({{}, widget_size});
     }
+    window->SetOpaqueRegion(&opaque_region);
   }
 
   SizeConstraintsChanged();
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -256,6 +265,18 @@ void BrowserDesktopWindowTreeHostLinux::CloseNow() {
   dbus_appmenu_.reset();
 #endif
   DesktopWindowTreeHostLinux::CloseNow();
+}
+
+void BrowserDesktopWindowTreeHostLinux::Show(ui::WindowShowState show_state,
+                                             const gfx::Rect& restore_bounds) {
+  DesktopWindowTreeHostLinux::Show(show_state, restore_bounds);
+
+  const std::string& startup_id =
+      browser_view_->browser()->create_params().startup_id;
+  if (!startup_id.empty() && !SentStartupIds().count(startup_id)) {
+    platform_window()->NotifyStartupComplete(startup_id);
+    SentStartupIds().insert(startup_id);
+  }
 }
 
 bool BrowserDesktopWindowTreeHostLinux::IsOverrideRedirect() const {
@@ -302,9 +323,6 @@ void BrowserDesktopWindowTreeHostLinux::OnDeviceScaleFactorChanged() {
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserDesktopWindowTreeHost, public:
 
-// TODO(crbug.com/1221374): Separate Lacros specific codes into
-// browser_desktop_window_tree_host_lacros.cc.
-#if !BUILDFLAG(IS_CHROMEOS_LACROS)
 // static
 BrowserDesktopWindowTreeHost*
 BrowserDesktopWindowTreeHost::CreateBrowserDesktopWindowTreeHost(
@@ -316,4 +334,3 @@ BrowserDesktopWindowTreeHost::CreateBrowserDesktopWindowTreeHost(
                                                desktop_native_widget_aura,
                                                browser_view, browser_frame);
 }
-#endif

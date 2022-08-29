@@ -51,7 +51,7 @@ namespace views {
 
 namespace {
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 const int kControlCommandModifier = ui::EF_COMMAND_DOWN;
 #else
 const int kControlCommandModifier = ui::EF_CONTROL_DOWN;
@@ -248,7 +248,7 @@ TEST_F(LabelTest, Metadata) {
 }
 
 TEST_F(LabelTest, FontPropertySymbol) {
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
   // On linux, the fonts are mocked with a custom FontConfig. The "Courier New"
   // family name is mapped to Cousine-Regular.ttf (see: $build/test_fonts/*).
   std::string font_name("Courier New");
@@ -346,7 +346,7 @@ TEST_F(LabelTest, MinimumSizeRespectsLineHeightWithInsets) {
   const gfx::Size minimum_size = label()->GetMinimumSize();
   int expected_height = minimum_size.height() + 10;
   label()->SetLineHeight(expected_height);
-  constexpr gfx::Insets kInsets{2, 3, 4, 5};
+  constexpr auto kInsets = gfx::Insets::TLBR(2, 3, 4, 5);
   expected_height += kInsets.height();
   label()->SetBorder(CreateEmptyBorder(kInsets));
   EXPECT_EQ(expected_height, label()->GetMinimumSize().height());
@@ -360,7 +360,7 @@ TEST_F(LabelTest, MinimumSizeRespectsLineHeightMultilineWithInsets) {
   const gfx::Size minimum_size = label()->GetMinimumSize();
   int expected_height = minimum_size.height() + 10;
   label()->SetLineHeight(expected_height);
-  constexpr gfx::Insets kInsets{2, 3, 4, 5};
+  constexpr auto kInsets = gfx::Insets::TLBR(2, 3, 4, 5);
   expected_height += kInsets.height();
   label()->SetBorder(CreateEmptyBorder(kInsets));
   EXPECT_EQ(expected_height, label()->GetMinimumSize().height());
@@ -698,7 +698,7 @@ TEST_F(LabelTest, SingleLineSizing) {
   label()->SetSize(gfx::Size(size.width() / 2, size.height() / 2));
   EXPECT_EQ(size, label()->GetPreferredSize());
 
-  const gfx::Insets border(10, 20, 30, 40);
+  const auto border = gfx::Insets::TLBR(10, 20, 30, 40);
   label()->SetBorder(CreateEmptyBorder(border));
   const gfx::Size size_with_border = label()->GetPreferredSize();
   EXPECT_EQ(size_with_border.height(), size.height() + border.height());
@@ -748,7 +748,7 @@ TEST_F(LabelTest, MultiLineSizing) {
   // SizeToFit with limited width.
   label()->SizeToFit(required_width - 1);
   int constrained_width = label()->GetLocalBounds().width();
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // Canvas::SizeStringInt (in ui/gfx/canvas_linux.cc)
   // has to be fixed to return the size that fits to given width/height.
   EXPECT_LT(constrained_width, required_width);
@@ -764,7 +764,7 @@ TEST_F(LabelTest, MultiLineSizing) {
   EXPECT_GT(required_height, kMinTextDimension);
   int height_for_constrained_width =
       label()->GetHeightForWidth(constrained_width);
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // Canvas::SizeStringInt (in ui/gfx/canvas_linux.cc)
   // has to be fixed to return the size that fits to given width/height.
   EXPECT_GT(height_for_constrained_width, required_height);
@@ -776,7 +776,7 @@ TEST_F(LabelTest, MultiLineSizing) {
             label()->GetHeightForWidth(required_width - 1));
 
   // Test everything with borders.
-  gfx::Insets border(10, 20, 30, 40);
+  auto border = gfx::Insets::TLBR(10, 20, 30, 40);
   label()->SetBorder(CreateEmptyBorder(border));
 
   // SizeToFit and borders.
@@ -793,7 +793,7 @@ TEST_F(LabelTest, MultiLineSizing) {
   // calculation.  If it is, then the height will grow when width
   // is shrunk.
   int height1 = label()->GetHeightForWidth(required_width_with_border - 1);
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // Canvas::SizeStringInt (in ui/gfx/canvas_linux.cc)
   // has to be fixed to return the size that fits to given width/height.
   EXPECT_GT(height1, required_height_with_border);
@@ -809,8 +809,8 @@ TEST_F(LabelTest, MultiLineSizing) {
             required_size.width() + border.width());
 }
 
-#if !defined(OS_MAC)
-// TODO(warx): Remove !defined(OS_MAC) once SetMaxLines() is applied to MAC
+#if !BUILDFLAG(IS_MAC)
+// TODO(warx): Remove !BUILDFLAG(IS_MAC) once SetMaxLines() is applied to MAC
 // (crbug.com/758720).
 TEST_F(LabelTest, MultiLineSetMaxLines) {
   // Ensure SetMaxLines clamps the line count of a string with returns.
@@ -848,7 +848,7 @@ TEST_F(LabelTest, MultiLineSetMaxLines) {
   EXPECT_GT(string_size.height(), two_line_size.height());
 
   // Ensure SetMaxLines respects the requested inset height.
-  const gfx::Insets border(1, 2, 3, 4);
+  const auto border = gfx::Insets::TLBR(1, 2, 3, 4);
   label()->SetBorder(CreateEmptyBorder(border));
   EXPECT_EQ(two_line_size.height() + border.height(),
             label()->GetPreferredSize().height());
@@ -1114,7 +1114,7 @@ TEST_F(LabelTest, GetSubstringBounds) {
   auto substring_bounds = label()->GetSubstringBounds(gfx::Range(0, 3));
   EXPECT_EQ(1u, substring_bounds.size());
 
-  gfx::Insets insets{2, 3, 4, 5};
+  auto insets = gfx::Insets::TLBR(2, 3, 4, 5);
   label()->SetBorder(CreateEmptyBorder(insets));
   auto substring_bounds_with_inset =
       label()->GetSubstringBounds(gfx::Range(0, 3));
@@ -1128,7 +1128,7 @@ TEST_F(LabelTest, GetSubstringBounds) {
 }
 
 // TODO(crbug.com/1139395): Enable on ChromeOS along with the DCHECK in Label.
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS)
 #define MAYBE_ChecksSubpixelRenderingOntoOpaqueSurface \
   DISABLED_ChecksSubpixelRenderingOntoOpaqueSurface
 #else
@@ -1470,7 +1470,7 @@ TEST_F(LabelSelectionTest, MouseDragWord) {
 #endif
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
-#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 // Verify selection clipboard behavior on text selection.
 TEST_F(LabelSelectionTest, MAYBE_SelectionClipboard) {
   label()->SetText(u"Label selection clipboard");

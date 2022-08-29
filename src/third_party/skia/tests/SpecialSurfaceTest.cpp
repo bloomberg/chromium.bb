@@ -10,9 +10,9 @@
 #include "include/gpu/GrDirectContext.h"
 #include "src/core/SkSpecialImage.h"
 #include "src/core/SkSpecialSurface.h"
-#include "src/gpu/GrCaps.h"
-#include "src/gpu/GrDirectContextPriv.h"
-#include "src/gpu/SkGr.h"
+#include "src/gpu/ganesh/GrCaps.h"
+#include "src/gpu/ganesh/GrDirectContextPriv.h"
+#include "src/gpu/ganesh/SkGr.h"
 #include "tests/Test.h"
 
 class TestingSpecialSurfaceAccess {
@@ -87,7 +87,8 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(SpecialSurface_Gpu1, reporter, ctxInfo) {
         SkImageInfo ii = SkImageInfo::Make({ kSmallerSize, kSmallerSize }, colorType,
                                            kPremul_SkAlphaType);
 
-        auto surf(SkSpecialSurface::MakeRenderTarget(dContext, ii, SkSurfaceProps()));
+        auto surf(SkSpecialSurface::MakeRenderTarget(dContext, ii, SkSurfaceProps(),
+                                                     kTopLeft_GrSurfaceOrigin));
         test_surface(surf, reporter, 0);
     }
 }

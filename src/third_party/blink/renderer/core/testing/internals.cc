@@ -35,6 +35,7 @@
 #include "cc/trees/layer_tree_host.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/abseil-cpp/absl/utility/utility.h"
 #include "third_party/blink/public/common/widget/device_emulation_params.h"
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-blink.h"
 #include "third_party/blink/public/mojom/favicon/favicon_url.mojom-blink.h"
@@ -132,8 +133,6 @@
 #include "third_party/blink/renderer/core/page/spatial_navigation_controller.h"
 #include "third_party/blink/renderer/core/page/validation_message_client.h"
 #include "third_party/blink/renderer/core/page/viewport_description.h"
-#include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
-#include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
@@ -176,10 +175,8 @@
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/graphics/compositing/paint_artifact_compositor.h"
-#include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/graphics/paint/raster_invalidation_tracking.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/instrumentation/instance_counters.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/language.h"
@@ -192,6 +189,8 @@
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
 #include "third_party/blink/renderer/platform/text/layout_locale.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_copier_base.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_copier_std.h"
 #include "third_party/blink/renderer/platform/wtf/dtoa.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_encoding_registry.h"
@@ -199,6 +198,7 @@
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-blink.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/rect.h"
 #include "v8/include/v8.h"
 
@@ -209,7 +209,13 @@ using ui::mojom::ImeTextSpanUnderlineStyle;
 
 namespace {
 
-std::unique_ptr<ScopedMockOverlayScrollbars> g_mock_overlay_scrollbars;
+ScopedMockOverlayScrollbars* g_mock_overlay_scrollbars = nullptr;
+
+void ResetMockOverlayScrollbars() {
+  if (g_mock_overlay_scrollbars)
+    delete g_mock_overlay_scrollbars;
+  g_mock_overlay_scrollbars = nullptr;
+}
 
 class UseCounterImplObserverImpl final : public UseCounterImpl::Observer {
  public:
@@ -460,7 +466,7 @@ class TestWritableStreamSink final : public UnderlyingSinkBase {
       : type_(type),
         optimizer_flag_(
             base::MakeRefCounted<base::RefCountedData<std::atomic_bool>>(
-                base::in_place,
+                absl::in_place,
                 false)) {}
 
   ScriptPromise start(ScriptState* script_state,
@@ -680,7 +686,7 @@ void Internals::ResetToConsistentState(Page* page) {
       OverrideCapsLockState::kDefault);
 
   IntersectionObserver::SetThrottleDelayEnabledForTesting(true);
-  g_mock_overlay_scrollbars.reset();
+  ResetMockOverlayScrollbars();
 
   Page::SetMaxNumberOfFramesToTenForTesting(false);
 }
@@ -689,6 +695,10 @@ Internals::Internals(ExecutionContext* context)
     : runtime_flags_(InternalRuntimeFlags::create()),
       document_(To<LocalDOMWindow>(context)->document()) {
   document_->Fetcher()->EnableIsPreloadedForTest();
+}
+
+Internals::~Internals() {
+  ResetMockOverlayScrollbars();
 }
 
 LocalFrame* Internals::GetFrame() const {
@@ -944,8 +954,8 @@ uint16_t Internals::compareTreeScopePosition(
       IsA<Document>(node2)
           ? static_cast<const TreeScope*>(To<Document>(node2))
           : IsA<ShadowRoot>(node2)
-                ? static_cast<const TreeScope*>(To<ShadowRoot>(node2))
-                : nullptr;
+          ? static_cast<const TreeScope*>(To<ShadowRoot>(node2))
+          : nullptr;
   if (!tree_scope1 || !tree_scope2) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidAccessError,
@@ -1246,7 +1256,7 @@ DOMRectReadOnly* Internals::absoluteCaretBounds(
   }
 
   document_->UpdateStyleAndLayout(DocumentUpdateReason::kTest);
-  return DOMRectReadOnly::FromIntRect(
+  return DOMRectReadOnly::FromRect(
       GetFrame()->Selection().AbsoluteCaretBounds());
 }
 
@@ -1270,7 +1280,7 @@ DOMRectReadOnly* Internals::boundingBox(Element* element) {
   LayoutObject* layout_object = element->GetLayoutObject();
   if (!layout_object)
     return DOMRectReadOnly::Create(0, 0, 0, 0);
-  return DOMRectReadOnly::FromIntRect(layout_object->AbsoluteBoundingBoxRect());
+  return DOMRectReadOnly::FromRect(layout_object->AbsoluteBoundingBoxRect());
 }
 
 void Internals::setMarker(Document* document,
@@ -1666,7 +1676,7 @@ String Internals::viewportAsText(Document* document,
 
   ViewportDescription description = page->GetViewportDescription();
   PageScaleConstraints constraints =
-      description.Resolve(FloatSize(initial_viewport_size), Length());
+      description.Resolve(gfx::SizeF(initial_viewport_size), Length());
 
   constraints.FitToContentsWidth(constraints.layout_size.width(),
                                  available_width);
@@ -1780,15 +1790,12 @@ void Internals::setAutofilledValue(Element* element,
   }
 
   if (auto* select = DynamicTo<HTMLSelectElement>(*element)) {
-    select->setValue(value.IsEmpty()
-                         ? String()  // Null string resets the autofill state.
-                         : value,
-                     true /* send_events */);
+    select->SetAutofillValue(
+        value.IsEmpty() ? String()  // Null string resets the autofill state.
+                        : value,
+        value.IsEmpty() ? WebAutofillState::kNotFilled
+                        : WebAutofillState::kAutofilled);
   }
-
-  To<HTMLFormControlElement>(element)->SetAutofillState(
-      value.IsEmpty() ? WebAutofillState::kNotFilled
-                      : blink::WebAutofillState::kAutofilled);
 }
 
 void Internals::setEditingValue(Element* element,
@@ -2245,8 +2252,8 @@ HitTestLayerRectList* Internals::touchEventTargetLayerRects(
 
       for (const gfx::Rect& hit_test_rect : layer_hit_test_rects) {
         if (!hit_test_rect.IsEmpty()) {
-          hit_test_rects->Append(DOMRectReadOnly::FromIntRect(layer_rect),
-                                 DOMRectReadOnly::FromIntRect(hit_test_rect));
+          hit_test_rects->Append(DOMRectReadOnly::FromRect(layer_rect),
+                                 DOMRectReadOnly::FromRect(hit_test_rect));
         }
       }
     }
@@ -2272,7 +2279,7 @@ bool Internals::executeCommand(Document* document,
 void Internals::triggerTestInspectorIssue(Document* document) {
   DCHECK(document);
   auto info = mojom::blink::InspectorIssueInfo::New(
-      mojom::InspectorIssueCode::kSameSiteCookieIssue,
+      mojom::InspectorIssueCode::kCookieIssue,
       mojom::blink::InspectorIssueDetails::New());
   document->GetFrame()->AddInspectorIssue(std::move(info));
 }
@@ -2415,8 +2422,8 @@ unsigned Internals::numberOfScrollableAreas(Document* document) {
 
   unsigned count = 0;
   LocalFrame* frame = document->GetFrame();
-  if (frame->View()->ScrollableAreas()) {
-    for (const auto& scrollable_area : *frame->View()->ScrollableAreas()) {
+  if (frame->View()->UserScrollableAreas()) {
+    for (const auto& scrollable_area : *frame->View()->UserScrollableAreas()) {
       if (scrollable_area->ScrollsOverflow())
         count++;
     }
@@ -2426,9 +2433,9 @@ unsigned Internals::numberOfScrollableAreas(Document* document) {
        child = child->Tree().NextSibling()) {
     auto* child_local_frame = DynamicTo<LocalFrame>(child);
     if (child_local_frame && child_local_frame->View() &&
-        child_local_frame->View()->ScrollableAreas()) {
+        child_local_frame->View()->UserScrollableAreas()) {
       for (const auto& scrollable_area :
-           *child_local_frame->View()->ScrollableAreas()) {
+           *child_local_frame->View()->UserScrollableAreas()) {
         if (scrollable_area->ScrollsOverflow())
           count++;
       }
@@ -2446,46 +2453,6 @@ bool Internals::isPageBoxVisible(Document* document, int page_number) {
 String Internals::layerTreeAsText(Document* document,
                                   ExceptionState& exception_state) const {
   return layerTreeAsText(document, 0, exception_state);
-}
-
-bool Internals::scrollsWithRespectTo(Element* element1,
-                                     Element* element2,
-                                     ExceptionState& exception_state) {
-  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
-  DCHECK(element1 && element2);
-  element1->GetDocument().View()->UpdateAllLifecyclePhasesForTest();
-
-  LayoutObject* layout_object1 = element1->GetLayoutObject();
-  LayoutObject* layout_object2 = element2->GetLayoutObject();
-  if (!layout_object1 || !layout_object1->IsBox()) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kInvalidAccessError,
-        layout_object1
-            ? "The first provided element's layoutObject is not a box."
-            : "The first provided element has no layoutObject.");
-    return false;
-  }
-  if (!layout_object2 || !layout_object2->IsBox()) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kInvalidAccessError,
-        layout_object2
-            ? "The second provided element's layoutObject is not a box."
-            : "The second provided element has no layoutObject.");
-    return false;
-  }
-
-  PaintLayer* layer1 = To<LayoutBox>(layout_object1)->Layer();
-  PaintLayer* layer2 = To<LayoutBox>(layout_object2)->Layer();
-  if (!layer1 || !layer2) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kInvalidAccessError,
-        String::Format(
-            "No PaintLayer can be obtained from the %s provided element.",
-            layer1 ? "second" : "first"));
-    return false;
-  }
-
-  return layer1->ScrollsWithRespectTo(layer2);
 }
 
 String Internals::layerTreeAsText(Document* document,
@@ -2549,7 +2516,7 @@ DOMRectList* Internals::nonFastScrollableRects(
       // Map |layer_rect| into screen space.
       layer_rect.Offset(layer->offset_to_transform_parent());
       auto& transform_tree =
-          layer->layer_tree_host()->property_trees()->transform_tree;
+          layer->layer_tree_host()->property_trees()->transform_tree_mutable();
       transform_tree.UpdateTransforms(layer->transform_tree_index());
       const gfx::Transform& to_screen =
           transform_tree.ToScreen(layer->transform_tree_index());
@@ -2962,10 +2929,10 @@ DOMRectList* Internals::AnnotatedRegions(Document* document,
   document->View()->UpdateDocumentAnnotatedRegions();
   Vector<AnnotatedRegionValue> regions = document->AnnotatedRegions();
 
-  Vector<FloatQuad> quads;
+  Vector<gfx::QuadF> quads;
   for (const AnnotatedRegionValue& region : regions) {
     if (region.draggable == draggable)
-      quads.push_back(FloatQuad(FloatRect(region.bounds)));
+      quads.push_back(gfx::QuadF(gfx::RectF(region.bounds)));
   }
   return MakeGarbageCollected<DOMRectList>(quads);
 }
@@ -3239,8 +3206,8 @@ DOMRect* Internals::selectionBounds(ExceptionState& exception_state) {
 
   GetFrame()->View()->UpdateLifecycleToLayoutClean(
       DocumentUpdateReason::kSelection);
-  return DOMRect::FromFloatRect(
-      FloatRect(GetFrame()->Selection().AbsoluteUnclippedBounds()));
+  return DOMRect::FromRectF(
+      gfx::RectF(GetFrame()->Selection().AbsoluteUnclippedBounds()));
 }
 
 String Internals::markerTextForListItem(Element* element) {
@@ -3337,6 +3304,12 @@ void Internals::setForcedColorsAndDarkPreferredColorScheme(Document* document) {
   document->GetFrame()->View()->UpdateAllLifecyclePhasesForTest();
 }
 
+void Internals::setDarkPreferredColorScheme(Document* document) {
+  DCHECK(document);
+  Settings* settings = document->GetSettings();
+  settings->SetPreferredColorScheme(mojom::blink::PreferredColorScheme::kDark);
+}
+
 void Internals::setShouldRevealPassword(Element* element,
                                         bool reveal,
                                         ExceptionState& exception_state) {
@@ -3353,7 +3326,7 @@ void Internals::setShouldRevealPassword(Element* element,
 
 namespace {
 
-class AddOneFunction : public NewScriptFunction::Callable {
+class AddOneFunction : public ScriptFunction::Callable {
  public:
   ScriptValue Call(ScriptState* script_state, ScriptValue value) override {
     v8::Local<v8::Value> v8_value = value.V8Value();
@@ -3386,7 +3359,7 @@ ScriptPromise Internals::createRejectedPromise(ScriptState* script_state,
 
 ScriptPromise Internals::addOneToPromise(ScriptState* script_state,
                                          ScriptPromise promise) {
-  return promise.Then(MakeGarbageCollected<NewScriptFunction>(
+  return promise.Then(MakeGarbageCollected<ScriptFunction>(
       script_state, MakeGarbageCollected<AddOneFunction>()));
 }
 
@@ -3554,11 +3527,6 @@ void Internals::setVisualViewportOffset(int x, int y) {
   if (!GetFrame())
     return;
   gfx::PointF offset(x, y);
-
-  // `setVisualViewportOffset()` inputs are in physical pixels, but
-  // `SetLocation()` gets positions in DIPs when --use-zoom-for-dsf disabled.
-  if (!Platform::Current()->IsUseZoomForDSFEnabled())
-    offset.Scale(1 / GetFrame()->DevicePixelRatio());
   GetFrame()->GetPage()->GetVisualViewport().SetLocation(offset);
 }
 
@@ -3852,8 +3820,16 @@ String Internals::getAgentId(DOMWindow* window) {
 }
 
 void Internals::useMockOverlayScrollbars() {
-  g_mock_overlay_scrollbars =
-      std::make_unique<ScopedMockOverlayScrollbars>(true);
+  // Note: it's important to reset `g_mock_overlay_scrollbars` before the
+  // assignment, since if `g_mock_overlay_scrollbars` is non-null, its
+  // destructor will end up running after the constructor for the new
+  // ScopedMockOverlayScrollbars runs, meaning the global state the new pointer
+  // stores will in fact be the state from the previous pointer, which may not
+  // be what was intended. E.g. if a test calls this function twice, then
+  // whatever the original global state was in Blink's ScrollbarThemeSettings
+  // will be lost, and the state after the second call may be wrong.
+  ResetMockOverlayScrollbars();
+  g_mock_overlay_scrollbars = new ScopedMockOverlayScrollbars(true);
 }
 
 bool Internals::overlayScrollbarsEnabled() const {

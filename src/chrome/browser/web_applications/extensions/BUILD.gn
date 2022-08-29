@@ -24,13 +24,17 @@ source_set("extensions") {
     ]
   }
 
+  # Enable the "exit_time_destructors" warning here to avoid accidentally
+  # adding exit time destructors and because the flag is not enabled by default.
+  # TODO(http://crbug.com/101600):  Remove once exit_time_destructors is enabled
+  # by default.
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+
   deps = [
     "//base",
-    "//build:chromeos_buildflags",
     "//chrome/browser:browser_process",
     "//chrome/browser/profiles:profile",
     "//chrome/browser/web_applications",
-    "//chrome/browser/web_applications:web_app_group",
     "//chrome/common",
     "//components/pref_registry",
     "//components/services/app_service/public/mojom",
@@ -47,7 +51,6 @@ source_set("unit_tests") {
 
   sources = [
     "bookmark_app_util_unittest.cc",
-    "externally_installed_web_app_prefs_unittest.cc",
     "externally_managed_app_install_task_unittest.cc",
     "web_app_policy_manager_unittest.cc",
     "web_app_provider_unittest.cc",
@@ -55,8 +58,7 @@ source_set("unit_tests") {
 
   deps = [
     ":extensions",
-    "//chrome/browser",
-    "//chrome/browser/web_applications:web_app_test_group",
+    "//build:chromeos_buildflags",
     "//chrome/browser/web_applications:web_applications",
     "//chrome/browser/web_applications:web_applications_test_support",
     "//chrome/common",
@@ -71,7 +73,14 @@ source_set("unit_tests") {
     "//testing/gtest",
   ]
 
+  if (is_chromeos) {
+    deps += [
+      "//chrome/browser",
+      "//components/policy/core/common:common_constants",
+    ]
+  }
+
   if (is_chromeos_ash) {
-    deps += [ "//chrome/browser/chromeos:chromeos" ]
+    deps += [ "//ash/constants" ]
   }
 }

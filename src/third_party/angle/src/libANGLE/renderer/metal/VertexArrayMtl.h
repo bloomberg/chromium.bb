@@ -14,6 +14,7 @@
 #include "libANGLE/renderer/metal/BufferMtl.h"
 #include "libANGLE/renderer/metal/mtl_buffer_pool.h"
 #include "libANGLE/renderer/metal/mtl_command_buffer.h"
+#include "libANGLE/renderer/metal/mtl_context_device.h"
 #include "libANGLE/renderer/metal/mtl_format_utils.h"
 #include "libANGLE/renderer/metal/mtl_resources.h"
 
@@ -152,6 +153,7 @@ class VertexArrayMtl : public VertexArrayImpl
     std::vector<uint32_t> mEmulatedInstanceAttribs;
 
     bool mVertexArrayDirty = true;
+    bool mVertexDataDirty  = true;
 };
 }  // namespace rx
 

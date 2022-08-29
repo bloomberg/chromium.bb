@@ -9,6 +9,7 @@
 
 #include "base/memory/raw_ptr.h"
 #include "base/timer/elapsed_timer.h"
+#include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
@@ -81,6 +82,7 @@ enum AppMenuAction {
   MENU_ACTION_UNINSTALL_APP = 51,
   MENU_ACTION_CHROME_TIPS = 53,
   MENU_ACTION_CHROME_WHATS_NEW = 54,
+  MENU_ACTION_LACROS_DATA_MIGRATION = 55,
   LIMIT_MENU_ACTION
 };
 
@@ -122,6 +124,7 @@ class AppMenuModel : public ui::SimpleMenuModel,
                      public content::WebContentsObserver {
  public:
   DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kHistoryMenuItem);
+  DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kDownloadsMenuItem);
 
   // First command ID to use for the recent tabs menu. This is one higher than
   // the first command id used for the bookmarks menus, as the command ids for
@@ -199,8 +202,6 @@ class AppMenuModel : public ui::SimpleMenuModel,
  private:
   friend class ::MockAppMenuModel;
 
-  bool ShouldShowNewIncognitoWindowMenuItem();
-
   // Adds actionable global error menu items to the menu.
   // Examples: Extension permissions and sign in errors.
   // Returns a boolean indicating whether any menu items were added.
@@ -213,11 +214,11 @@ class AppMenuModel : public ui::SimpleMenuModel,
   // took to select the command.
   void LogMenuMetrics(int command_id);
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
   // Disables/Enables the settings item based on kSystemFeaturesDisableList
   // pref.
   void UpdateSettingsItemState();
-#endif  // BUILDFLAG(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
   // Time menu has been open. Used by LogMenuMetrics() to record the time
   // to action when the user selects a menu item.

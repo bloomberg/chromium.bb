@@ -9,7 +9,6 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
-#include "base/task/post_task.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/task_runner.h"
 #include "chrome/browser/policy/messaging_layer/upload/dm_server_upload_service.h"
@@ -34,7 +33,7 @@ class RecordHandlerImpl : public DmServerUploadService::RecordHandler {
 
   // Base class RecordHandler method implementation.
   void HandleRecords(bool need_encryption_key,
-                     std::unique_ptr<std::vector<EncryptedRecord>> record,
+                     std::vector<EncryptedRecord> record,
                      DmServerUploadService::CompletionCallback upload_complete,
                      DmServerUploadService::EncryptionKeyAttachedCallback
                          encryption_key_attached_cb) override;

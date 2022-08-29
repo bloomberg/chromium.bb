@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 
+#include "ash/components/tpm/install_attributes.h"
 #include "base/barrier_closure.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
@@ -23,7 +24,6 @@
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_profile_handler.h"
 #include "chromeos/network/network_state_handler.h"
-#include "chromeos/tpm/install_attributes.h"
 #include "components/onc/onc_constants.h"
 #include "dbus/object_path.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -36,8 +36,8 @@ namespace {
 const char kDeviceUserHash[] = "";
 
 bool IsOwnershipTaken() {
-  return ash::DeviceSettingsService::Get()->GetOwnershipStatus() ==
-         ash::DeviceSettingsService::OwnershipStatus::OWNERSHIP_TAKEN;
+  return DeviceSettingsService::Get()->GetOwnershipStatus() ==
+         DeviceSettingsService::OwnershipStatus::OWNERSHIP_TAKEN;
 }
 
 bool IsDeviceEnterpriseEnrolled() {
@@ -57,8 +57,7 @@ bool ShouldSaveNetwork(const base::Value& network) {
           rollback_network_config::OncIsEapWithoutClientCertificate(network));
 }
 
-void PrintError(const std::string& error_name,
-                std::unique_ptr<base::DictionaryValue>) {
+void PrintError(const std::string& error_name) {
   LOG(ERROR) << error_name;
 }
 
@@ -91,14 +90,13 @@ void ManagedOncConfigureActivePartAsDeviceWide(
                        onc::network_config::kSourceDevice);
   if (!network_state || !network_state->IsInProfile()) {
     managed_network_configuration_handler()->CreateConfiguration(
-        kDeviceUserHash, base::Value::AsDictionaryValue(network),
+        kDeviceUserHash, network,
         base::BindOnce([](const std::string&, const std::string&) {
         }).Then(std::move(success_callback)),
         base::BindOnce(&PrintError).Then(std::move(failure_callback)));
   } else if (network_state) {
     managed_network_configuration_handler()->SetProperties(
-        network_state->path(), base::Value::AsDictionaryValue(network),
-        std::move(success_callback),
+        network_state->path(), network, std::move(success_callback),
         base::BindOnce(&PrintError).Then(std::move(failure_callback)));
   }
 }
@@ -132,8 +130,8 @@ void ReconfigureUiData(const base::Value& network_config,
   rollback_network_config::ManagedOncCollapseToUiData(&ui_data);
 
   managed_network_configuration_handler()->SetProperties(
-      network_state->path(), base::Value::AsDictionaryValue(ui_data),
-      base::DoNothing(), base::BindOnce(&PrintError));
+      network_state->path(), ui_data, base::DoNothing(),
+      base::BindOnce(&PrintError));
 }
 
 using GetPasswordResult =
@@ -314,9 +312,8 @@ std::string RollbackNetworkConfig::Exporter::SerializeNetworkConfigs() const {
   return serialized_config;
 }
 
-class RollbackNetworkConfig::Importer
-    : public ash::DeviceSettingsService::Observer,
-      public NetworkPolicyObserver {
+class RollbackNetworkConfig::Importer : public DeviceSettingsService::Observer,
+                                        public NetworkPolicyObserver {
  public:
   Importer();
   Importer(const Importer&) = delete;
@@ -351,15 +348,15 @@ class RollbackNetworkConfig::Importer
 };
 
 RollbackNetworkConfig::Importer::Importer() {
-  ash::DeviceSettingsService::Get()->AddObserver(this);
+  DeviceSettingsService::Get()->AddObserver(this);
   chromeos::NetworkHandler::Get()
       ->managed_network_configuration_handler()
       ->AddObserver(this);
 }
 
 RollbackNetworkConfig::Importer::~Importer() {
-  if (ash::DeviceSettingsService::Get()) {
-    ash::DeviceSettingsService::Get()->RemoveObserver(this);
+  if (DeviceSettingsService::Get()) {
+    DeviceSettingsService::Get()->RemoveObserver(this);
   }
   if (chromeos::NetworkHandler::Get()) {
     chromeos::NetworkHandler::Get()
@@ -386,7 +383,7 @@ void RollbackNetworkConfig::Importer::Import(const std::string& network_config,
   }
 
   auto barrier_closure = base::BarrierClosure(
-      network_list->GetList().size(),
+      network_list->GetListDeprecated().size(),
       base::BindOnce(&RollbackNetworkConfig::Importer::AllNetworksConfigured,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
 
@@ -396,7 +393,7 @@ void RollbackNetworkConfig::Importer::Import(const std::string& network_config,
 
   bool ownership_taken = IsOwnershipTaken();
 
-  for (base::Value& network : network_list->GetList()) {
+  for (base::Value& network : network_list->GetListDeprecated()) {
     if (!ownership_taken) {
       ManagedOncConfigureActivePartAsDeviceWide(network.Clone(),
                                                 finished_a_network);

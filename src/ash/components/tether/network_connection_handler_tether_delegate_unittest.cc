@@ -16,7 +16,7 @@
 #include "chromeos/network/network_connection_handler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace tether {
 
@@ -138,10 +138,7 @@ class NetworkConnectionHandlerTetherDelegateTest : public testing::Test {
 
   void OnSuccess() { result_ = kSuccessResult; }
 
-  void OnError(const std::string& error,
-               std::unique_ptr<base::DictionaryValue> error_data) {
-    result_ = error;
-  }
+  void OnError(const std::string& error) { result_ = error; }
 
   std::string GetResultAndReset() {
     std::string result;
@@ -231,4 +228,4 @@ TEST_F(NetworkConnectionHandlerTetherDelegateTest,
 
 }  // namespace tether
 
-}  // namespace chromeos
+}  // namespace ash

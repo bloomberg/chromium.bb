@@ -17,19 +17,21 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/ios/ios_util.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
+#include "base/time/time.h"
 #include "components/crash/core/app/crashpad.h"
 #include "components/crash/core/common/crash_key.h"
 #include "components/crash/core/common/reporter_running_ios.h"
 #include "ios/chrome/browser/chrome_paths.h"
 #import "ios/chrome/browser/crash_report/crash_report_user_application_state.h"
+#include "ios/chrome/browser/crash_report/crash_upload_list.h"
 #include "ios/chrome/browser/crash_report/features.h"
 #import "ios/chrome/browser/crash_report/main_thread_freeze_detector.h"
 #include "ios/chrome/common/app_group/app_group_constants.h"
@@ -128,7 +130,7 @@ int64_t GetUptimeMilliseconds() {
   kinfo_proc kern_proc_info;
   int mib[] = {CTL_KERN, KERN_PROC, KERN_PROC_PID, getpid()};
   size_t len = sizeof(kern_proc_info);
-  if (sysctl(mib, base::size(mib), &kern_proc_info, &len, nullptr, 0) != 0)
+  if (sysctl(mib, std::size(mib), &kern_proc_info, &len, nullptr, 0) != 0)
     return 0;
   time_t process_uptime_seconds =
       tv.tv_sec - kern_proc_info.kp_proc.p_starttime.tv_sec;
@@ -180,7 +182,11 @@ void Start() {
       key.Set(channel_name);
     }
   }
-  [[MainThreadFreezeDetector sharedInstance] start];
+
+  // Don't start MTFD when prewarmed, the check thread will just get confused.
+  if (!base::ios::IsApplicationPreWarmed()) {
+    [[MainThreadFreezeDetector sharedInstance] start];
+  }
 }
 
 void SetEnabled(bool enabled) {
@@ -196,7 +202,13 @@ void SetEnabled(bool enabled) {
   // here, because if Crashpad fails to init, do not unintentionally enable
   // breakpad.
   if (common::CanUseCrashpad()) {
-    crash_reporter::SetUploadConsent(enabled);
+    // Posts SetUploadConsent on blocking pool thread because it needs access to
+    // IO and cannot work from UI thread.
+    base::ThreadPool::PostTask(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+        base::BindOnce(^{
+          crash_reporter::SetUploadConsent(enabled);
+        }));
     return;
   }
 
@@ -350,6 +362,10 @@ void RestoreDefaultConfiguration() {
   [[BreakpadController sharedInstance] resetConfiguration];
   [[BreakpadController sharedInstance] start:NO];
   [[BreakpadController sharedInstance] setUploadingEnabled:NO];
+}
+
+void ClearReportsBetween(base::Time delete_begin, base::Time delete_end) {
+  ios::CreateCrashUploadList()->Clear(delete_begin, delete_end);
 }
 
 }  // namespace crash_helper

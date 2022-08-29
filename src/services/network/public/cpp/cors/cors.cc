@@ -11,8 +11,7 @@
 
 #include "base/containers/contains.h"
 #include "base/containers/fixed_flat_set.h"
-#include "base/metrics/histogram_macros.h"
-#include "base/no_destructor.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "net/base/mime_util.h"
@@ -233,14 +232,10 @@ absl::optional<CorsErrorStatus> CheckAccessAndReportMetrics(
   cors::AccessCheckResult result = error_status
                                        ? cors::AccessCheckResult::kNotPermitted
                                        : cors::AccessCheckResult::kPermitted;
-  UMA_HISTOGRAM_ENUMERATION("Net.Cors.AccessCheckResult", result);
+  base::UmaHistogramEnumeration("Net.Cors.AccessCheckResult", result);
   if (!IsOriginPotentiallyTrustworthy(origin)) {
-    UMA_HISTOGRAM_ENUMERATION("Net.Cors.AccessCheckResult.NotSecureRequestor",
-                              result);
-  }
-  if (error_status) {
-    UMA_HISTOGRAM_ENUMERATION("Net.Cors.AccessCheckError",
-                              error_status->cors_error);
+    base::UmaHistogramEnumeration(
+        "Net.Cors.AccessCheckResult.NotSecureRequestor", result);
   }
   return error_status;
 }
@@ -261,7 +256,7 @@ bool ShouldCheckCors(const GURL& request_url,
   // DCHECK for a while, just in case.
   DCHECK(!request_url.SchemeIs(url::kDataScheme));
 
-  if (request_initiator->IsSameOriginWith(url::Origin::Create(request_url)))
+  if (request_initiator->IsSameOriginWith(request_url))
     return false;
   return true;
 }
@@ -374,6 +369,15 @@ bool IsCorsSafelistedHeader(const std::string& name, const std::string& value) {
       // full version for each brand in its brands list.
       // https://wicg.github.io/ua-client-hints/#sec-ch-ua-full-version-list
       "sec-ch-ua-full-version-list",
+
+      // The `Sec-CH-UA-Full` header field is a temporary client hint, which
+      // will only be sent in the presence of a valid Origin Trial token.  It
+      // was introduced to enable sites to register for the deprecation UA
+      // reduction origin trial and continue to receive the full UA string for
+      // some period, once UA reduction rolls out.
+      "sec-ch-ua-full",
+
+      "sec-ch-ua-wow64",
   });
 
   if (!base::Contains(safe_names, lower_name))

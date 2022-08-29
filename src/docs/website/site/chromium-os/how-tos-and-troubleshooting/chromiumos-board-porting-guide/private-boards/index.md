@@ -129,11 +129,3 @@ you had a public overlay (see the public porting guide for more info).
 
 For now, this should be the same as the public overlay. We plan on making this
 incremental too, but haven't yet done so.
-
-## Board Variant Framework *(advanced)*
-
-Just like the public overlays are allowed to have board variants, so can private
-boards. As you'd expect, the paths look like:
-
-*   src/private-overlays/overlay-$BOARD-private/
-*   src/private-overlays/overlay-variant-$OTHER_BOARD-private/

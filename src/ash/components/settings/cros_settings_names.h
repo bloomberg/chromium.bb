@@ -106,6 +106,8 @@ extern const char kReportDeviceNetworkInterfaces[];
 COMPONENT_EXPORT(ASH_SETTINGS)
 extern const char kReportDeviceNetworkStatus[];
 COMPONENT_EXPORT(ASH_SETTINGS)
+extern const char kReportDevicePeripherals[];
+COMPONENT_EXPORT(ASH_SETTINGS)
 extern const char kReportDevicePowerStatus[];
 COMPONENT_EXPORT(ASH_SETTINGS)
 extern const char kReportDeviceStorageStatus[];
@@ -132,6 +134,8 @@ COMPONENT_EXPORT(ASH_SETTINGS) extern const char kReportDeviceSystemInfo[];
 COMPONENT_EXPORT(ASH_SETTINGS) extern const char kReportDevicePrintJobs[];
 COMPONENT_EXPORT(ASH_SETTINGS)
 extern const char kReportDeviceLoginLogout[];
+COMPONENT_EXPORT(ASH_SETTINGS)
+extern const char kReportCRDSessions[];
 COMPONENT_EXPORT(ASH_SETTINGS)
 extern const char kReportDeviceNetworkTelemetryCollectionRateMs[];
 COMPONENT_EXPORT(ASH_SETTINGS)
@@ -325,6 +329,9 @@ extern const char kDeviceRestrictedManagedGuestSessionEnabled[];
 COMPONENT_EXPORT(ASH_SETTINGS)
 extern const char kRevenEnableDeviceHWDataUsage[];
 
+COMPONENT_EXPORT(ASH_SETTINGS)
+extern const char kDeviceEncryptedReportingPipelineEnabled[];
+
 }  // namespace ash
 
 namespace chromeos {
@@ -339,7 +346,6 @@ using ::ash::kDeviceSecondFactorAuthenticationMode;
 using ::ash::kDeviceWebBasedAttestationAllowedUrls;
 using ::ash::kFineGrainedTimeZoneResolveEnabled;
 using ::ash::kLoginAuthenticationBehavior;
-using ::ash::kSystemProxySettings;
 using ::ash::kSystemTimezone;
 using ::ash::kSystemTimezonePolicy;
 using ::ash::kTPMFirmwareUpdateSettings;

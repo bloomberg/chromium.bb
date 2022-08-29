@@ -4,14 +4,22 @@
 
 #include "chromeos/dbus/fwupd/fwupd_update.h"
 
+#include "base/files/file_path.h"
+
 namespace chromeos {
 
 FwupdUpdate::FwupdUpdate() = default;
 
 FwupdUpdate::FwupdUpdate(const std::string& version,
                          const std::string& description,
-                         int priority)
-    : version(version), description(description), priority(priority) {}
+                         int priority,
+                         const base::FilePath& filepath,
+                         const std::string& checksum)
+    : version(version),
+      description(description),
+      priority(priority),
+      filepath(filepath),
+      checksum(checksum) {}
 
 FwupdUpdate::FwupdUpdate(FwupdUpdate&& other) = default;
 FwupdUpdate& FwupdUpdate::operator=(FwupdUpdate&& other) = default;

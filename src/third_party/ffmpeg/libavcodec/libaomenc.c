@@ -38,6 +38,7 @@
 #include "av1.h"
 #include "avcodec.h"
 #include "bsf.h"
+#include "codec_internal.h"
 #include "encode.h"
 #include "internal.h"
 #include "packet_internal.h"
@@ -99,6 +100,7 @@ typedef struct AOMEncoderContext {
     int enable_restoration;
     int usage;
     int tune;
+    int still_picture;
     int enable_rect_partitions;
     int enable_1to4_partitions;
     int enable_ab_partitions;
@@ -746,6 +748,18 @@ static av_cold int aom_init(AVCodecContext *avctx,
     if (res < 0)
         return res;
 
+    if (ctx->still_picture) {
+        // Set the maximum number of frames to 1. This will let libaom set
+        // still_picture and reduced_still_picture_header to 1 in the Sequence
+        // Header as required by AVIF still images.
+        enccfg.g_limit = 1;
+        // Reduce memory usage for still images.
+        enccfg.g_lag_in_frames = 0;
+        // All frames will be key frames.
+        enccfg.kf_max_dist = 0;
+        enccfg.kf_mode = AOM_KF_DISABLED;
+    }
+
     /* Construct Encoder Context */
     res = aom_codec_enc_init(&ctx->encoder, iface, &enccfg, flags);
     if (res != AOM_CODEC_OK) {
@@ -948,7 +962,6 @@ static inline void cx_pktcpy(AOMContext *ctx,
     dst->sz       = src->data.frame.sz;
     dst->buf      = src->data.frame.buf;
 #ifdef AOM_FRAME_IS_INTRAONLY
-    dst->have_sse = 0;
     dst->frame_number = ++ctx->frame_number;
     dst->have_sse = ctx->have_sse;
     if (ctx->have_sse) {
@@ -1229,19 +1242,19 @@ static const enum AVPixelFormat av1_pix_fmts_highbd_with_gray[] = {
     AV_PIX_FMT_NONE
 };
 
-static av_cold void av1_init_static(AVCodec *codec)
+static av_cold void av1_init_static(FFCodec *codec)
 {
     int supports_monochrome = aom_codec_version() >= 20001;
     aom_codec_caps_t codec_caps = aom_codec_get_caps(aom_codec_av1_cx());
     if (codec_caps & AOM_CODEC_CAP_HIGHBITDEPTH)
-        codec->pix_fmts = supports_monochrome ? av1_pix_fmts_highbd_with_gray :
-                                                av1_pix_fmts_highbd;
+        codec->p.pix_fmts = supports_monochrome ? av1_pix_fmts_highbd_with_gray :
+                                                  av1_pix_fmts_highbd;
     else
-        codec->pix_fmts = supports_monochrome ? av1_pix_fmts_with_gray :
-                                                av1_pix_fmts;
+        codec->p.pix_fmts = supports_monochrome ? av1_pix_fmts_with_gray :
+                                                  av1_pix_fmts;
 
     if (aom_codec_version_major() < 2)
-        codec->capabilities |= AV_CODEC_CAP_EXPERIMENTAL;
+        codec->p.capabilities |= AV_CODEC_CAP_EXPERIMENTAL;
 }
 
 static av_cold int av1_init(AVCodecContext *avctx)
@@ -1291,6 +1304,7 @@ static const AVOption options[] = {
     { "psnr",            NULL,         0, AV_OPT_TYPE_CONST, {.i64 = AOM_TUNE_PSNR}, 0, 0, VE, "tune"},
     { "ssim",            NULL,         0, AV_OPT_TYPE_CONST, {.i64 = AOM_TUNE_SSIM}, 0, 0, VE, "tune"},
     FF_AV1_PROFILE_OPTS
+    { "still-picture", "Encode in single frame mode (typically used for still AVIF images).", OFFSET(still_picture), AV_OPT_TYPE_BOOL, {.i64 = 0}, -1, 1, VE },
     { "enable-rect-partitions", "Enable rectangular partitions", OFFSET(enable_rect_partitions), AV_OPT_TYPE_BOOL, {.i64 = -1}, -1, 1, VE},
     { "enable-1to4-partitions", "Enable 1:4/4:1 partitions",     OFFSET(enable_1to4_partitions), AV_OPT_TYPE_BOOL, {.i64 = -1}, -1, 1, VE},
     { "enable-ab-partitions",   "Enable ab shape partitions",    OFFSET(enable_ab_partitions),   AV_OPT_TYPE_BOOL, {.i64 = -1}, -1, 1, VE},
@@ -1325,7 +1339,7 @@ static const AVOption options[] = {
     { NULL },
 };
 
-static const AVCodecDefault defaults[] = {
+static const FFCodecDefault defaults[] = {
     { "b",                 "0" },
     { "qmin",             "-1" },
     { "qmax",             "-1" },
@@ -1341,21 +1355,21 @@ static const AVClass class_aom = {
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
-AVCodec ff_libaom_av1_encoder = {
-    .name           = "libaom-av1",
-    .long_name      = NULL_IF_CONFIG_SMALL("libaom AV1"),
-    .type           = AVMEDIA_TYPE_VIDEO,
-    .id             = AV_CODEC_ID_AV1,
-    .capabilities   = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_DELAY |
+FFCodec ff_libaom_av1_encoder = {
+    .p.name         = "libaom-av1",
+    .p.long_name    = NULL_IF_CONFIG_SMALL("libaom AV1"),
+    .p.type         = AVMEDIA_TYPE_VIDEO,
+    .p.id           = AV_CODEC_ID_AV1,
+    .p.capabilities = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_DELAY |
                       AV_CODEC_CAP_OTHER_THREADS,
+    .p.profiles     = NULL_IF_CONFIG_SMALL(ff_av1_profiles),
+    .p.priv_class   = &class_aom,
+    .p.wrapper_name = "libaom",
     .priv_data_size = sizeof(AOMContext),
     .init           = av1_init,
-    .encode2        = aom_encode,
+    FF_CODEC_ENCODE_CB(aom_encode),
     .close          = aom_free,
     .caps_internal  = FF_CODEC_CAP_AUTO_THREADS,
-    .profiles       = NULL_IF_CONFIG_SMALL(ff_av1_profiles),
-    .priv_class     = &class_aom,
     .defaults       = defaults,
     .init_static_data = av1_init_static,
-    .wrapper_name   = "libaom",
 };

@@ -52,7 +52,7 @@
 #import "ios/web/web_state/ui/crw_web_controller_container_view.h"
 #import "ios/web/web_state/web_state_impl.h"
 #import "net/base/mac/url_conversions.h"
-#include "net/cert/x509_util_ios_and_mac.h"
+#include "net/cert/x509_util_apple.h"
 #include "net/ssl/ssl_info.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
@@ -507,17 +507,27 @@ class CRWWebControllerResponseTest : public CRWWebControllerTest {
   // Calls webView:decidePolicyForNavigationResponse:decisionHandler: callback
   // and waits for decision handler call. Returns false if decision handler call
   // times out.
-  bool CallDecidePolicyForNavigationResponseWithResponse(
+  [[nodiscard]] bool CallDecidePolicyForNavigationResponseWithResponse(
       NSURLResponse* response,
       BOOL for_main_frame,
       BOOL can_show_mime_type,
-      WKNavigationResponsePolicy* out_policy) WARN_UNUSED_RESULT {
+      WKNavigationResponsePolicy* out_policy) {
     id navigation_response =
         [OCMockObject mockForClass:[WKNavigationResponse class]];
     OCMStub([navigation_response response]).andReturn(response);
     OCMStub([navigation_response isForMainFrame]).andReturn(for_main_frame);
     OCMStub([navigation_response canShowMIMEType])
         .andReturn(can_show_mime_type);
+
+    // Check whether the NavigationController has been configured to simulate
+    // a POST request (which is required to recreate a correct NSURLRequest
+    // object when mocking the new download API on iOS 15+).
+    NavigationItemImpl* pending_item =
+        web_controller()
+            .webStateImpl->GetNavigationManagerImpl()
+            .GetPendingItemInCurrentOrRestoredSession();
+    const bool has_post_data =
+        pending_item && pending_item->GetPostData() != nil;
 
     // Call decidePolicyForNavigationResponse and wait for decisionHandler's
     // callback.
@@ -533,9 +543,79 @@ class CRWWebControllerResponseTest : public CRWWebControllerTest {
                             *out_policy = policy;
                             callback_called = true;
                           }];
-    return WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
-      return callback_called;
-    });
+    if (!WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+          return callback_called;
+        })) {
+      return false;
+    }
+
+    // When the new download API is enabled (which can only happen on iOS 15),
+    // the interaction is a bit more complex as WebKit will call additional
+    // methods on the WKNavigationDelegate before the DownloadTask is created.
+    // Mock those necessary interactions.
+    if (@available(iOS 15, *)) {
+      if (*out_policy == WKNavigationResponsePolicyDownload) {
+        DCHECK(web::features::IsNewDownloadAPIEnabled());
+        id mock_download = [OCMockObject mockForClass:[WKDownload class]];
+
+        __block bool delegate_set = false;
+        __block id download_delegate = nil;
+        OCMStub([mock_download setDelegate:[OCMArg any]])
+            .andDo(^(NSInvocation* invocation) {
+              // Using __unsafe_unretained is required to extract the parameter
+              // from the NSInvocation otherwise ARC will over-release.
+              __unsafe_unretained id argument = nil;
+              [invocation getArgument:&argument atIndex:2];
+              download_delegate = argument;
+              delegate_set = true;
+            });
+
+        [navigation_delegate_ webView:mock_web_view_
+                   navigationResponse:navigation_response
+                    didBecomeDownload:mock_download];
+
+        if (!WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+              return delegate_set;
+            })) {
+          return false;
+        }
+
+        NSMutableURLRequest* request =
+            [[NSURLRequest requestWithURL:response.URL] mutableCopy];
+        if (has_post_data) {
+          request.HTTPMethod = @"POST";
+        }
+        OCMStub([mock_download originalRequest]).andReturn(request);
+        OCMStub([mock_download cancel:[OCMArg any]])
+            .andDo(^(NSInvocation* invocation) {
+              // Using __unsafe_unretained is required to extract the parameter
+              // from the NSInvocation otherwise ARC will over-release.
+              __unsafe_unretained void (^block)(NSData* data);
+              [invocation getArgument:&block atIndex:2];
+              block(nil);
+            });
+
+        [download_delegate download:mock_download
+            decideDestinationUsingResponse:response
+                         suggestedFilename:@"filename.txt"
+                         completionHandler:^(NSURL* destination){
+                         }];
+      }
+    }
+
+    return true;
+  }
+
+  // The expectation varies depending on whether the new download API is used
+  // or not (as the new download API requires CRWWKNavigationHandler to return
+  // a different policy). This method returns the expected policy for the test.
+  [[nodiscard]] static WKNavigationResponsePolicy ExpectedPolicyForDownload() {
+    if (@available(iOS 15, *)) {
+      if (web::features::IsNewDownloadAPIEnabled()) {
+        return WKNavigationResponsePolicyDownload;
+      }
+    }
+    return WKNavigationResponsePolicyCancel;
   }
 
   DownloadController* download_controller() {
@@ -598,14 +678,14 @@ TEST_F(CRWWebControllerResponseTest,
   WKNavigationResponsePolicy policy = WKNavigationResponsePolicyAllow;
   ASSERT_TRUE(CallDecidePolicyForNavigationResponseWithResponse(
       response, /*for_main_frame=*/YES, /*can_show_mime_type=*/YES, &policy));
-  EXPECT_EQ(WKNavigationResponsePolicyCancel, policy);
+  EXPECT_EQ(ExpectedPolicyForDownload(), policy);
 
   // Verify that download task was created (see crbug.com/949114).
   ASSERT_EQ(1U, download_delegate_->alive_download_tasks().size());
   DownloadTask* task =
       download_delegate_->alive_download_tasks()[0].second.get();
   ASSERT_TRUE(task);
-  EXPECT_TRUE(task->GetIndentifier());
+  EXPECT_TRUE(task->GetIdentifier());
   EXPECT_EQ(kTestDataURL, task->GetOriginalUrl());
   EXPECT_EQ(-1, task->GetTotalBytes());
   EXPECT_TRUE(task->GetContentDisposition().empty());
@@ -656,14 +736,14 @@ TEST_F(CRWWebControllerResponseTest, DownloadForPostRequest) {
   WKNavigationResponsePolicy policy = WKNavigationResponsePolicyAllow;
   ASSERT_TRUE(CallDecidePolicyForNavigationResponseWithResponse(
       response, /*for_main_frame=*/YES, /*can_show_mime_type=*/NO, &policy));
-  EXPECT_EQ(WKNavigationResponsePolicyCancel, policy);
+  EXPECT_EQ(ExpectedPolicyForDownload(), policy);
 
   // Verify that download task was created with POST method (crbug.com/.
   ASSERT_EQ(1U, download_delegate_->alive_download_tasks().size());
   DownloadTask* task =
       download_delegate_->alive_download_tasks()[0].second.get();
   ASSERT_TRUE(task);
-  EXPECT_TRUE(task->GetIndentifier());
+  EXPECT_TRUE(task->GetIdentifier());
   EXPECT_NSEQ(@"POST", task->GetHttpMethod());
 }
 
@@ -680,14 +760,14 @@ TEST_F(CRWWebControllerResponseTest, DownloadWithNSURLResponse) {
   WKNavigationResponsePolicy policy = WKNavigationResponsePolicyAllow;
   ASSERT_TRUE(CallDecidePolicyForNavigationResponseWithResponse(
       response, /*for_main_frame=*/YES, /*can_show_mime_type=*/NO, &policy));
-  EXPECT_EQ(WKNavigationResponsePolicyCancel, policy);
+  EXPECT_EQ(ExpectedPolicyForDownload(), policy);
 
   // Verify that download task was created.
   ASSERT_EQ(1U, download_delegate_->alive_download_tasks().size());
   DownloadTask* task =
       download_delegate_->alive_download_tasks()[0].second.get();
   ASSERT_TRUE(task);
-  EXPECT_TRUE(task->GetIndentifier());
+  EXPECT_TRUE(task->GetIdentifier());
   EXPECT_EQ(kTestURLString, task->GetOriginalUrl());
   EXPECT_EQ(content_length, task->GetTotalBytes());
   EXPECT_EQ("", task->GetContentDisposition());
@@ -709,14 +789,14 @@ TEST_F(CRWWebControllerResponseTest, DownloadWithNSHTTPURLResponse) {
   WKNavigationResponsePolicy policy = WKNavigationResponsePolicyAllow;
   ASSERT_TRUE(CallDecidePolicyForNavigationResponseWithResponse(
       response, /*for_main_frame=*/YES, /*can_show_mime_type=*/NO, &policy));
-  EXPECT_EQ(WKNavigationResponsePolicyCancel, policy);
+  EXPECT_EQ(ExpectedPolicyForDownload(), policy);
 
   // Verify that download task was created.
   ASSERT_EQ(1U, download_delegate_->alive_download_tasks().size());
   DownloadTask* task =
       download_delegate_->alive_download_tasks()[0].second.get();
   ASSERT_TRUE(task);
-  EXPECT_TRUE(task->GetIndentifier());
+  EXPECT_TRUE(task->GetIdentifier());
   EXPECT_EQ(kTestURLString, task->GetOriginalUrl());
   EXPECT_EQ(-1, task->GetTotalBytes());
   EXPECT_EQ(kContentDisposition, task->GetContentDisposition());
@@ -738,7 +818,7 @@ TEST_F(CRWWebControllerResponseTest, DownloadDiscardsPendingUrl) {
   WKNavigationResponsePolicy policy = WKNavigationResponsePolicyAllow;
   ASSERT_TRUE(CallDecidePolicyForNavigationResponseWithResponse(
       response, /*for_main_frame=*/YES, /*can_show_mime_type=*/NO, &policy));
-  EXPECT_EQ(WKNavigationResponsePolicyCancel, policy);
+  EXPECT_EQ(ExpectedPolicyForDownload(), policy);
 
   // Verify that download task was created and pending URL discarded.
   ASSERT_EQ(1U, download_delegate_->alive_download_tasks().size());
@@ -760,14 +840,14 @@ TEST_F(CRWWebControllerResponseTest, IFrameDownloadWithNSHTTPURLResponse) {
   WKNavigationResponsePolicy policy = WKNavigationResponsePolicyAllow;
   ASSERT_TRUE(CallDecidePolicyForNavigationResponseWithResponse(
       response, /*for_main_frame=*/NO, /*can_show_mime_type=*/NO, &policy));
-  EXPECT_EQ(WKNavigationResponsePolicyCancel, policy);
+  EXPECT_EQ(ExpectedPolicyForDownload(), policy);
 
   // Verify that download task was created.
   ASSERT_EQ(1U, download_delegate_->alive_download_tasks().size());
   DownloadTask* task =
       download_delegate_->alive_download_tasks()[0].second.get();
   ASSERT_TRUE(task);
-  EXPECT_TRUE(task->GetIndentifier());
+  EXPECT_TRUE(task->GetIdentifier());
   EXPECT_EQ(kTestURLString, task->GetOriginalUrl());
   EXPECT_EQ(-1, task->GetTotalBytes());
   EXPECT_EQ(kContentDisposition, task->GetContentDisposition());
@@ -809,9 +889,9 @@ class CRWWebControllerPolicyDeciderTest : public CRWWebControllerTest {
   // callback and waits for decision handler call. Returns false if decision
   // handler policy parameter didn't match |expected_policy| or if the call
   // timed out.
-  bool VerifyDecidePolicyForNavigationAction(
+  [[nodiscard]] bool VerifyDecidePolicyForNavigationAction(
       NSURLRequest* request,
-      WKNavigationActionPolicy expected_policy) WARN_UNUSED_RESULT {
+      WKNavigationActionPolicy expected_policy) {
     CRWFakeWKNavigationAction* navigation_action =
         [[CRWFakeWKNavigationAction alloc] init];
     navigation_action.request = request;
@@ -1108,6 +1188,7 @@ TEST_F(WindowOpenByDomTest, CloseWindow) {
 
   delegate_.child_windows()[0]->SetDelegate(&delegate_);
   CloseWindow();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(delegate_.child_windows().empty());
   EXPECT_TRUE(delegate_.popups().empty());

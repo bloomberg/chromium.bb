@@ -51,7 +51,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/web_applications/web_application_info.h"
+#include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -539,7 +539,7 @@ class V4SafeBrowsingServiceTest : public InProcessBrowserTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     command_line->AppendSwitch(
-        chromeos::switches::kIgnoreUserProfileMappingForTests);
+        ash::switches::kIgnoreUserProfileMappingForTests);
 #endif
   }
 
@@ -771,15 +771,12 @@ IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest,
       .Times(1);
 
   WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
-  content::WindowedNotificationObserver load_stop_observer(
-      content::NOTIFICATION_LOAD_STOP,
-      content::Source<content::NavigationController>(
-          &contents->GetController()));
+  content::LoadStopObserver load_stop_observer(contents);
   // Run javascript function in the page which starts a timer to load the
   // malware image, and also starts a renderer-initiated top-level navigation to
   // a site that does not respond.  Should show interstitial and have first page
   // in referrer.
-  contents->GetMainFrame()->ExecuteJavaScriptForTests(
+  contents->GetPrimaryMainFrame()->ExecuteJavaScriptForTests(
       u"navigateAndLoadMalwareImage()", base::NullCallback());
   load_stop_observer.Wait();
 
@@ -821,11 +818,8 @@ IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest,
       .Times(1);
 
   WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
-  content::RenderFrameHost* rfh = contents->GetMainFrame();
-  content::WindowedNotificationObserver load_stop_observer(
-      content::NOTIFICATION_LOAD_STOP,
-      content::Source<content::NavigationController>(
-          &contents->GetController()));
+  content::RenderFrameHost* rfh = contents->GetPrimaryMainFrame();
+  content::LoadStopObserver load_stop_observer(contents);
   // Start a browser initiated top-level navigation to a site that does not
   // respond.
   ui_test_utils::NavigateToURLWithDisposition(
@@ -861,13 +855,14 @@ IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest, SubResourceHitOnFreshTab) {
   // Have the current tab open a new tab with window.open().
   WebContents* main_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  content::RenderFrameHost* main_rfh = main_contents->GetMainFrame();
+  content::RenderFrameHost* main_rfh = main_contents->GetPrimaryMainFrame();
 
   content::WebContentsAddedObserver web_contents_added_observer;
   main_rfh->ExecuteJavaScriptForTests(u"w=window.open();",
                                       base::NullCallback());
   WebContents* new_tab_contents = web_contents_added_observer.GetWebContents();
-  content::RenderFrameHost* new_tab_rfh = new_tab_contents->GetMainFrame();
+  content::RenderFrameHost* new_tab_rfh =
+      new_tab_contents->GetPrimaryMainFrame();
   // A fresh WebContents should be on the initial NavigationEntry, or have
   // no NavigationEntry (if InitialNavigationEntry is disabled).
   EXPECT_TRUE(!new_tab_contents->GetController().GetLastCommittedEntry() ||
@@ -1314,7 +1309,8 @@ IN_PROC_BROWSER_TEST_P(V4SafeBrowsingServiceMetadataTest, MalwareIFrame) {
 
 // Depending on the threat_type classification, if an embedded resource is
 // marked as Malware, an interstitial may be shown.
-IN_PROC_BROWSER_TEST_P(V4SafeBrowsingServiceMetadataTest, MalwareImg) {
+// TODO(crbug.com/1320123): Re-enable this test
+IN_PROC_BROWSER_TEST_P(V4SafeBrowsingServiceMetadataTest, DISABLED_MalwareImg) {
   GURL main_url = embedded_test_server()->GetURL(kMalwarePage);
   GURL img_url = embedded_test_server()->GetURL(kMalwareImg);
 

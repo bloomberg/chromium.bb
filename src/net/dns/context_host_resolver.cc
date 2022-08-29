@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/check_op.h"
-#include "base/no_destructor.h"
 #include "base/strings/string_piece.h"
 #include "base/time/tick_clock.h"
 #include "net/base/net_errors.h"
@@ -139,6 +138,12 @@ HostResolverManager* ContextHostResolver::GetManagerForTesting() {
 
 const URLRequestContext* ContextHostResolver::GetContextForTesting() const {
   return resolve_context_ ? resolve_context_->url_request_context() : nullptr;
+}
+
+NetworkChangeNotifier::NetworkHandle
+ContextHostResolver::GetTargetNetworkForTesting() const {
+  return resolve_context_ ? resolve_context_->GetTargetNetwork()
+                          : NetworkChangeNotifier::kInvalidNetworkHandle;
 }
 
 size_t ContextHostResolver::LastRestoredCacheSize() const {

@@ -14,7 +14,6 @@
 #include "base/no_destructor.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/task_runner_util.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -158,7 +157,6 @@ void InMemoryURLIndex::DeleteURL(const GURL& url) {
 void InMemoryURLIndex::OnURLVisited(history::HistoryService* history_service,
                                     ui::PageTransition transition,
                                     const history::URLRow& row,
-                                    const history::RedirectList& redirects,
                                     base::Time visit_time) {
   DCHECK_EQ(history_service_, history_service);
   needs_to_be_cached_ |= private_data_->UpdateURL(
@@ -200,8 +198,7 @@ void InMemoryURLIndex::OnURLsDeleted(
   // would be odd and confusing.  It's better to force a rebuild.
   base::FilePath path;
   if (needs_to_be_cached_ && GetCacheFilePath(&path))
-    task_runner_->PostTask(FROM_HERE,
-                           base::BindOnce(base::GetDeleteFileCallback(), path));
+    task_runner_->PostTask(FROM_HERE, base::GetDeleteFileCallback(path));
 }
 
 void InMemoryURLIndex::OnHistoryServiceLoaded(
@@ -273,8 +270,7 @@ void InMemoryURLIndex::OnCacheLoadDone(
     base::FilePath path;
     if (!GetCacheFilePath(&path) || shutdown_)
       return;
-    task_runner_->PostTask(FROM_HERE,
-                           base::BindOnce(base::GetDeleteFileCallback(), path));
+    task_runner_->PostTask(FROM_HERE, base::GetDeleteFileCallback(path));
     if (history_service_->backend_loaded()) {
       ScheduleRebuildFromHistory();
     } else {
@@ -386,8 +382,7 @@ void InMemoryURLIndex::PostSaveToCacheFileTask() {
         base::BindOnce(&InMemoryURLIndex::OnCacheSaveDone, AsWeakPtr()));
   } else {
     // If there is no data in our index then delete any existing cache file.
-    task_runner_->PostTask(FROM_HERE,
-                           base::BindOnce(base::GetDeleteFileCallback(), path));
+    task_runner_->PostTask(FROM_HERE, base::GetDeleteFileCallback(path));
   }
 }
 

@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
+#include "chrome/browser/ui/views/location_bar/permission_chip.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "components/permissions/features.h"
 
@@ -50,12 +51,16 @@ AnchorConfiguration GetPageInfoAnchorConfiguration(Browser* browser,
 AnchorConfiguration GetPermissionPromptBubbleAnchorConfiguration(
     Browser* browser) {
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
-  if (browser_view->GetLocationBarView()->chip()) {
+  if (browser_view->GetLocationBarView()->IsChipActive()) {
     return {browser_view->GetLocationBarView(),
             browser_view->GetLocationBarView()->chip()->button(),
             views::BubbleBorder::TOP_LEFT};
   }
   return GetPageInfoAnchorConfiguration(browser);
+}
+
+AnchorConfiguration GetAppMenuAnchorConfiguration(Browser* browser) {
+  return GetPageInfoAnchorConfiguration(browser, kAppMenuButton);
 }
 
 gfx::Rect GetPageInfoAnchorRect(Browser* browser) {

@@ -5,7 +5,7 @@
 #ifndef V8_DEOPTIMIZER_TRANSLATION_ARRAY_H_
 #define V8_DEOPTIMIZER_TRANSLATION_ARRAY_H_
 
-#include "src/codegen/register-arch.h"
+#include "src/codegen/register.h"
 #include "src/deoptimizer/translation-opcode.h"
 #include "src/objects/fixed-array.h"
 #include "src/zone/zone-containers.h"
@@ -66,7 +66,7 @@ class TranslationArrayBuilder {
   void BeginInterpretedFrame(BytecodeOffset bytecode_offset, int literal_id,
                              unsigned height, int return_value_offset,
                              int return_value_count);
-  void BeginArgumentsAdaptorFrame(int literal_id, unsigned height);
+  void BeginInlinedExtraArguments(int literal_id, unsigned height);
   void BeginConstructStubFrame(BytecodeOffset bailout_id, int literal_id,
                                unsigned height);
   void BeginBuiltinContinuationFrame(BytecodeOffset bailout_id, int literal_id,

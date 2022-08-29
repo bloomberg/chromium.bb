@@ -186,10 +186,9 @@ class GitApi(recipe_api.RecipeApi):
       remote_name = 'origin'
 
     step_suffix = '' if step_suffix is  None else ' (%s)' % step_suffix
-    self.m.python(
+    self.m.step(
         'git setup%s' % step_suffix,
-        self.resource('git_setup.py'),
-        git_setup_args)
+        ['python3', '-u', self.resource('git_setup.py')] + git_setup_args)
 
     # Some of the commands below require depot_tools to be in PATH.
     path = self.m.path.pathsep.join([

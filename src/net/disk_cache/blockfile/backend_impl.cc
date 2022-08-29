@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/cxx17_backports.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -24,6 +23,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/system/sys_info.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread.h"
@@ -158,7 +158,6 @@ BackendImpl::BackendImpl(
       background_queue_(this, FallbackToInternalIfNull(cache_thread)),
       path_(path),
       block_files_(path),
-      mask_(0),
       user_flags_(0),
       net_log_(net_log) {
   TRACE_EVENT0("disk_cache", "BackendImpl::BackendImpl");
@@ -1542,7 +1541,7 @@ void BackendImpl::RestartCache(bool failure) {
   if (failure) {
     DCHECK(!num_refs_);
     DCHECK(open_entries_.empty());
-    DelayedCacheCleanup(path_);
+    CleanupDirectorySync(path_);
   } else {
     DeleteCache(path_, false);
   }
@@ -2100,7 +2099,7 @@ bool BackendImpl::CheckEntry(EntryImpl* cache_entry) {
   bool ok = block_files_.IsValid(cache_entry->entry()->address());
   ok = ok && block_files_.IsValid(cache_entry->rankings()->address());
   EntryStore* data = cache_entry->entry()->Data();
-  for (size_t i = 0; i < base::size(data->data_addr); i++) {
+  for (size_t i = 0; i < std::size(data->data_addr); i++) {
     if (data->data_addr[i]) {
       Addr address(data->data_addr[i]);
       if (address.is_block_file())
@@ -2130,7 +2129,22 @@ int BackendImpl::MaxBuffersSize() {
 }
 
 void BackendImpl::FlushForTesting() {
+  if (!g_internal_cache_thread.IsCreated()) {
+    return;
+  }
+
   g_internal_cache_thread.Get().FlushForTesting();
+}
+
+void BackendImpl::FlushAsynchronouslyForTesting(base::OnceClosure callback) {
+  if (!g_internal_cache_thread.IsCreated()) {
+    base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                     std::move(callback));
+    return;
+  }
+
+  InternalCacheThread()->PostTaskAndReply(FROM_HERE, base::BindOnce([]() {}),
+                                          std::move(callback));
 }
 
 }  // namespace disk_cache

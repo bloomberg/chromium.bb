@@ -121,7 +121,7 @@ class AX_EXPORT AXTree : public AXNode::OwnerTree {
 
   // AXNode::OwnerTree override.
   // Returns the globally unique ID of this accessibility tree.
-  AXTreeID GetAXTreeID() const override;
+  const AXTreeID& GetAXTreeID() const override;
 
   // AXNode::OwnerTree override.
   // Returns the AXNode with the given |id| if it is part of this AXTree.
@@ -173,6 +173,10 @@ class AX_EXPORT AXTree : public AXNode::OwnerTree {
 
   // Given a child tree ID, return the node IDs of all nodes in the tree who
   // have a kChildTreeId int attribute with that value.
+  //
+  // TODO(accessibility): There should really be only one host node per child
+  // tree, so the return value should not be a set but a single node ID or
+  // `kInvalidAXNodeID`.
   std::set<AXNodeID> GetNodeIdsForChildTreeId(AXTreeID child_tree_id) const;
 
   // Get all of the child tree IDs referenced by any node in this tree.
@@ -212,7 +216,6 @@ class AX_EXPORT AXTree : public AXNode::OwnerTree {
   Selection GetUnignoredSelection() const override;
 
   bool GetTreeUpdateInProgressState() const override;
-  void SetTreeUpdateInProgressState(bool set_tree_update_value);
 
   // AXNode::OwnerTree override.
   // Returns true if the tree represents a paginated document
@@ -234,6 +237,7 @@ class AX_EXPORT AXTree : public AXNode::OwnerTree {
   void NotifyTreeManagerWillBeRemoved(AXTreeID previous_tree_id);
 
  private:
+  friend class ScopedTreeUpdateInProgressStateSetter;
   friend class AXTableInfoTest;
 
   // Indicates if the node with the focus should never be ignored, (see
@@ -325,6 +329,11 @@ class AX_EXPORT AXTree : public AXNode::OwnerTree {
 
   void UpdateReverseRelations(AXNode* node, const AXNodeData& new_data);
 
+  // Sets a flag indicating whether the tree is currently being updated or not.
+  // If the tree is being updated, then its internal pointers might be invalid
+  // and the tree should not be traversed.
+  void SetTreeUpdateInProgressState(bool set_tree_update_value);
+
   // Returns true if all pending changes in the |update_state| have been
   // handled. If this returns false, the |error_| message will be populated.
   // It's a fatal error to have pending changes after exhausting
@@ -379,7 +388,7 @@ class AX_EXPORT AXTree : public AXNode::OwnerTree {
 
   base::ObserverList<AXTreeObserver> observers_;
   raw_ptr<AXNode> root_ = nullptr;
-  std::unordered_map<AXNodeID, AXNode*> id_map_;
+  std::unordered_map<AXNodeID, std::unique_ptr<AXNode>> id_map_;
   std::string error_;
   AXTreeData data_;
 
@@ -463,6 +472,32 @@ class AX_EXPORT AXTree : public AXNode::OwnerTree {
   bool has_pagination_support_ = false;
 
   std::unique_ptr<AXEvent> event_data_;
+};
+
+// Sets the flag that indicates whether the accessibility tree is currently
+// being updated, and ensures that it is reset to its previous value when the
+// instance is destructed. An accessibility tree that is being updated is
+// unstable and should not be traversed.
+class AX_EXPORT ScopedTreeUpdateInProgressStateSetter {
+ public:
+  explicit ScopedTreeUpdateInProgressStateSetter(AXTree& tree)
+      : tree_(&tree),
+        last_tree_update_in_progress_(tree.GetTreeUpdateInProgressState()) {
+    tree_->SetTreeUpdateInProgressState(true);
+  }
+
+  ~ScopedTreeUpdateInProgressStateSetter() {
+    tree_->SetTreeUpdateInProgressState(last_tree_update_in_progress_);
+  }
+
+  ScopedTreeUpdateInProgressStateSetter(
+      const ScopedTreeUpdateInProgressStateSetter&) = delete;
+  ScopedTreeUpdateInProgressStateSetter& operator=(
+      const ScopedTreeUpdateInProgressStateSetter&) = delete;
+
+ private:
+  const raw_ptr<AXTree> tree_;
+  bool last_tree_update_in_progress_;
 };
 
 }  // namespace ui

@@ -18,6 +18,7 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/loader/empty_clients.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/page/page_animator.h"
 #include "third_party/blink/renderer/core/page/page_popup_client.h"
 #include "third_party/blink/renderer/platform/data_resource_helper.h"
 #include "third_party/blink/renderer/platform/graphics/paint/cull_rect.h"
@@ -104,19 +105,7 @@ void ValidationMessageOverlayDelegate::PaintFrameOverlay(
     return;
   DrawingRecorder recorder(context, overlay, DisplayItem::kFrameOverlay,
                            gfx::Rect(view_size));
-
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    context.DrawRecord(FrameView().GetPaintRecord());
-  } else {
-    // The overlay frame is has a standalone paint property tree. Paint it in
-    // its root space into a paint record, then draw the record into the proper
-    // target space in the overlaid frame.
-    auto* paint_record_builder =
-        MakeGarbageCollected<PaintRecordBuilder>(context);
-    FrameView().PaintOutsideOfLifecycle(paint_record_builder->Context(),
-                                        kGlobalPaintNormalPhase);
-    context.DrawRecord(paint_record_builder->EndRecording());
-  }
+  context.DrawRecord(FrameView().GetPaintRecord());
 }
 
 void ValidationMessageOverlayDelegate::ServiceScriptedAnimations(
@@ -169,13 +158,23 @@ void ValidationMessageOverlayDelegate::CreatePage(const FrameOverlay& overlay) {
   frame->View()->SetBaseBackgroundColor(Color::kTransparent);
   page_->GetVisualViewport().SetSize(view_size);
 
+  // Propagate dark mode settings from anchor document to allow CSS of
+  // overlay bubble to detect dark mode. See the comments in
+  // PagePopupClient::AdjustSettingsFromOwnerColorScheme for more information.
+  page_->GetSettings().SetForceDarkModeEnabled(false);
+  bool in_forced_colors_mode = anchor_->GetDocument().InForcedColorsMode();
+  LayoutObject* anchor_layout = anchor_->GetLayoutObject();
+  page_->GetSettings().SetPreferredColorScheme(
+      !in_forced_colors_mode && anchor_layout &&
+              anchor_layout->StyleRef().UsedColorScheme() ==
+                  mojom::blink::ColorScheme::kDark
+          ? mojom::blink::PreferredColorScheme::kDark
+          : mojom::blink::PreferredColorScheme::kLight);
+
   scoped_refptr<SharedBuffer> data = SharedBuffer::Create();
   WriteDocument(data.get());
   float zoom_factor = anchor_->GetDocument().GetFrame()->PageZoomFactor();
   frame->SetPageZoomFactor(zoom_factor);
-  // Propagate deprecated DSF for platforms without use-zoom-for-dsf.
-  page_->SetDeviceScaleFactorDeprecated(
-      main_page_->DeviceScaleFactorDeprecated());
   frame->ForceSynchronousDocumentInstall("text/html", data);
 
   Element& main_message = GetElementById("main-message");
@@ -207,7 +206,10 @@ void ValidationMessageOverlayDelegate::CreatePage(const FrameOverlay& overlay) {
 
 void ValidationMessageOverlayDelegate::WriteDocument(SharedBuffer* data) {
   DCHECK(data);
-  PagePopupClient::AddString("<!DOCTYPE html><html><head><style>", data);
+  PagePopupClient::AddString(
+      "<!DOCTYPE html><head><meta charset='UTF-8'><meta name='color-scheme' "
+      "content='light dark'><style>",
+      data);
   data->Append(UncompressResourceAsBinary(IDR_VALIDATION_BUBBLE_CSS));
   PagePopupClient::AddString("</style></head>", data);
   PagePopupClient::AddString(

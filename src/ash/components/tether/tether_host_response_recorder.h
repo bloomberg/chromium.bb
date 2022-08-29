@@ -8,8 +8,8 @@
 #include <string>
 #include <vector>
 
+#include "ash/components/multidevice/remote_device_ref.h"
 #include "base/observer_list.h"
-#include "chromeos/components/multidevice/remote_device_ref.h"
 
 class PrefService;
 
@@ -17,7 +17,7 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }  // namespace user_prefs
 
-namespace chromeos {
+namespace ash {
 
 namespace tether {
 
@@ -92,6 +92,6 @@ class TetherHostResponseRecorder {
 
 }  // namespace tether
 
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // ASH_COMPONENTS_TETHER_TETHER_HOST_RESPONSE_RECORDER_H_

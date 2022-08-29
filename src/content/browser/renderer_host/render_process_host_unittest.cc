@@ -70,7 +70,7 @@ TEST_F(RenderProcessHostUnitTest, GuestsAreNotSuitableHosts) {
             RenderProcessHostImpl::GetExistingProcessHost(site_instance.get()));
 }
 
-#if !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
 TEST_F(RenderProcessHostUnitTest, RendererProcessLimit) {
   // This test shouldn't run with --site-per-process mode, which prohibits
   // the renderer process reuse this test explicitly exercises.
@@ -99,7 +99,7 @@ TEST_F(RenderProcessHostUnitTest, RendererProcessLimit) {
 }
 #endif
 
-#if defined(OS_ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH)
 TEST_F(RenderProcessHostUnitTest, NoRendererProcessLimitOnAndroidOrChromeOS) {
   // Add a few dummy process hosts.
   static constexpr size_t kMaxRendererProcessCountForTesting = 82;
@@ -124,7 +124,7 @@ TEST_F(RenderProcessHostUnitTest, ReuseCommittedSite) {
   // cached and reused after the navigation to |kUrl2| with BFCache enabled. The
   // test expects that a new process (either spare or created) is used instead.
   contents()->GetController().GetBackForwardCache().DisableForTesting(
-      BackForwardCache::TEST_ASSUMES_NO_CACHING);
+      BackForwardCache::TEST_REQUIRES_NO_CACHING);
 
   // At first, trying to get a RenderProcessHost with the
   // REUSE_PENDING_OR_COMMITTED_SITE policy should return a new process.
@@ -436,7 +436,7 @@ TEST_F(RenderProcessHostUnitTest, DoNotReuseError) {
   // This cannot happen if the page is restored from the back-forward
   // cache, because no network requests would be made.
   contents()->GetController().GetBackForwardCache().DisableForTesting(
-      BackForwardCache::TEST_ASSUMES_NO_CACHING);
+      BackForwardCache::TEST_REQUIRES_NO_CACHING);
   const GURL kUrl1("http://foo.com");
   const GURL kUrl2("http://bar.com");
 
@@ -874,6 +874,29 @@ TEST_F(RenderProcessHostUnitTest,
                                                          kUrl);
   RenderProcessHost* process = site_instance->GetProcess();
   EXPECT_NE(main_test_rfh()->GetProcess(), process);
+  EXPECT_NE(main_test_rfh()->GetProcess()->GetStoragePartition(),
+            process->GetStoragePartition());
+
+  // Commit a navigation to foo.com in a new WebContents, so that there is a
+  // reusable foo.com process in the new StoragePartition.
+  std::unique_ptr<WebContents> contents(CreateTestWebContents());
+  static_cast<TestWebContents*>(contents.get())->NavigateAndCommit(kUrl);
+  RenderProcessHost* foo_process_in_new_partition =
+      contents->GetMainFrame()->GetProcess();
+
+  // Create another reusable foo.com SiteInstance in the new StoragePartition,
+  // and ensure that this SiteInstance reuse the process just created in that
+  // same StoragePartition.
+  scoped_refptr<SiteInstanceImpl> site_instance2 =
+      SiteInstanceImpl::CreateReusableInstanceForTesting(browser_context(),
+                                                         kUrl);
+  RenderProcessHost* process2 = site_instance2->GetProcess();
+  EXPECT_EQ(foo_process_in_new_partition, process2);
+  EXPECT_EQ(foo_process_in_new_partition->GetStoragePartition(),
+            process2->GetStoragePartition());
+  EXPECT_NE(main_test_rfh()->GetProcess(), process2);
+  EXPECT_NE(main_test_rfh()->GetProcess()->GetStoragePartition(),
+            process2->GetStoragePartition());
 
   SetBrowserClientForTesting(regular_client);
 }
@@ -903,6 +926,28 @@ TEST_F(RenderProcessHostUnitTest,
                                                          kUrl);
   RenderProcessHost* process = site_instance->GetProcess();
   EXPECT_NE(sw_process, process);
+
+  // Commit a navigation to foo.com in a new WebContents, so that there is a
+  // reusable foo.com process in the new StoragePartition.
+  std::unique_ptr<WebContents> contents(CreateTestWebContents());
+  static_cast<TestWebContents*>(contents.get())->NavigateAndCommit(kUrl);
+  RenderProcessHost* foo_process_in_new_partition =
+      contents->GetMainFrame()->GetProcess();
+
+  // Create a second foo.com service worker, this time in the new
+  // StoragePartition. Ensure that it reuses the process registered for foo.com
+  // in that same StoragePartition.
+  scoped_refptr<SiteInstanceImpl> sw_site_instance2 =
+      SiteInstanceImpl::CreateForServiceWorker(
+          browser_context(),
+          UrlInfo::CreateForTesting(kUrl,
+                                    site_instance->GetStoragePartitionConfig()),
+          /*can_reuse_process=*/true);
+  RenderProcessHost* sw_process2 = sw_site_instance2->GetProcess();
+  EXPECT_EQ(sw_process2, foo_process_in_new_partition);
+  EXPECT_NE(sw_process2, sw_process);
+  EXPECT_EQ(SiteInstanceProcessAssignment::REUSED_EXISTING_PROCESS,
+            sw_site_instance2->GetLastProcessAssignmentOutcome());
 
   SetBrowserClientForTesting(regular_client);
 }

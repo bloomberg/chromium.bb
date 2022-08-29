@@ -135,9 +135,6 @@ TEST_P(ProvokingVertexTest, FlatTriangle)
 // Ensure that any provoking vertex shenanigans still gives correct vertex streams.
 TEST_P(ProvokingVertexTest, FlatTriWithTransformFeedback)
 {
-    // http://anglebug.com/4092
-    ANGLE_SKIP_TEST_IF(IsAndroid() && IsVulkan());
-
     // TODO(cwallez) figure out why it is broken on AMD on Mac
     ANGLE_SKIP_TEST_IF(IsOSX() && IsAMD());
 
@@ -179,8 +176,6 @@ TEST_P(ProvokingVertexTest, FlatTriWithTransformFeedback)
 // Test drawing a simple line with flat shading, and different valued vertices.
 TEST_P(ProvokingVertexTest, FlatLine)
 {
-    // http://anglebug.com/4092
-    ANGLE_SKIP_TEST_IF((IsWindows() || IsLinux()) && IsVulkan());
     GLfloat halfPixel = 1.0f / static_cast<GLfloat>(getWindowWidth());
 
     GLint vertexData[]     = {1, 2};
@@ -200,6 +195,53 @@ TEST_P(ProvokingVertexTest, FlatLine)
 
     ASSERT_GL_NO_ERROR();
     EXPECT_EQ(vertexData[1], pixelValue[0]);
+}
+
+// Test drawing a simple line with flat shading, and different valued vertices.
+TEST_P(ProvokingVertexTest, FlatLineWithFirstIndex)
+{
+    GLfloat halfPixel = 1.0f / static_cast<GLfloat>(getWindowWidth());
+
+    GLint vertexData[]     = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2};
+    GLfloat positionData[] = {0,
+                              0,
+                              0,
+                              0,
+                              0,
+                              0,
+                              0,
+                              0,
+                              0,
+                              0,
+                              0,
+                              0,
+                              0,
+                              0,
+                              0,
+                              0,
+                              0,
+                              0,
+                              0,
+                              0,
+                              -1.0f + halfPixel,
+                              -1.0f,
+                              -1.0f + halfPixel,
+                              1.0f};
+
+    glVertexAttribIPointer(mIntAttribLocation, 1, GL_INT, 0, vertexData);
+
+    GLint positionLocation = glGetAttribLocation(mProgram, "position");
+    glEnableVertexAttribArray(positionLocation);
+    glVertexAttribPointer(positionLocation, 2, GL_FLOAT, GL_FALSE, 0, positionData);
+
+    glUseProgram(mProgram);
+    glDrawArrays(GL_LINES, 10, 2);
+
+    GLint pixelValue[4] = {0};
+    glReadPixels(0, 0, 1, 1, GL_RGBA_INTEGER, GL_INT, &pixelValue);
+
+    ASSERT_GL_NO_ERROR();
+    EXPECT_EQ(vertexData[11], pixelValue[0]);
 }
 
 // Test drawing a simple triangle strip with flat shading, and different valued vertices.
@@ -344,6 +386,6 @@ TEST_P(ProvokingVertexTest, ANGLEProvokingVertex)
 }
 
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(ProvokingVertexTest);
-ANGLE_INSTANTIATE_TEST(ProvokingVertexTest, ES3_D3D11(), ES3_OPENGL(), ES3_OPENGLES());
+ANGLE_INSTANTIATE_TEST(ProvokingVertexTest, ES3_D3D11(), ES3_OPENGL(), ES3_OPENGLES(), ES3_METAL());
 
 }  // anonymous namespace

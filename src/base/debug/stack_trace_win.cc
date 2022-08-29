@@ -10,9 +10,9 @@
 
 #include <algorithm>
 #include <iostream>
+#include <iterator>
 #include <memory>
 
-#include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
@@ -328,17 +328,17 @@ void StackTrace::InitTrace(const CONTEXT* context_record) {
   STACKFRAME64 stack_frame;
   memset(&stack_frame, 0, sizeof(stack_frame));
 #if defined(ARCH_CPU_X86_64)
-  int machine_type = IMAGE_FILE_MACHINE_AMD64;
+  DWORD machine_type = IMAGE_FILE_MACHINE_AMD64;
   stack_frame.AddrPC.Offset = context_record->Rip;
   stack_frame.AddrFrame.Offset = context_record->Rbp;
   stack_frame.AddrStack.Offset = context_record->Rsp;
 #elif defined(ARCH_CPU_ARM64)
-  int machine_type = IMAGE_FILE_MACHINE_ARM64;
+  DWORD machine_type = IMAGE_FILE_MACHINE_ARM64;
   stack_frame.AddrPC.Offset = context_record->Pc;
   stack_frame.AddrFrame.Offset = context_record->Fp;
   stack_frame.AddrStack.Offset = context_record->Sp;
 #elif defined(ARCH_CPU_X86)
-  int machine_type = IMAGE_FILE_MACHINE_I386;
+  DWORD machine_type = IMAGE_FILE_MACHINE_I386;
   stack_frame.AddrPC.Offset = context_record->Eip;
   stack_frame.AddrFrame.Offset = context_record->Ebp;
   stack_frame.AddrStack.Offset = context_record->Esp;
@@ -351,11 +351,11 @@ void StackTrace::InitTrace(const CONTEXT* context_record) {
   while (StackWalk64(machine_type, GetCurrentProcess(), GetCurrentThread(),
                      &stack_frame, &context_copy, NULL,
                      &SymFunctionTableAccess64, &SymGetModuleBase64, NULL) &&
-         count_ < size(trace_)) {
+         count_ < std::size(trace_)) {
     trace_[count_++] = reinterpret_cast<void*>(stack_frame.AddrPC.Offset);
   }
 
-  for (size_t i = count_; i < size(trace_); ++i)
+  for (size_t i = count_; i < std::size(trace_); ++i)
     trace_[i] = NULL;
 }
 
