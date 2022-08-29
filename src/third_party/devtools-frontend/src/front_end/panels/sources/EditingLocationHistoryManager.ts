@@ -28,6 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import type * as Platform from '../../core/platform/platform.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import type * as CodeMirror from '../../third_party/codemirror.next/codemirror.next.js';
 import * as SourceFrame from '../../ui/legacy/components/source_frame/source_frame.js';
@@ -128,7 +129,7 @@ export class EditingLocationHistoryManager {
 
 class EditingLocationHistoryEntry {
   readonly projectId: string;
-  readonly url: string;
+  readonly url: Platform.DevToolsPath.UrlString;
   position: number;
 
   constructor(uiSourceCode: Workspace.UISourceCode.UISourceCode, position: number) {

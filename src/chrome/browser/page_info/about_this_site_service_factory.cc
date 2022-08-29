@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/feature_list.h"
+#include "base/no_destructor.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
@@ -42,7 +43,8 @@ AboutThisSiteServiceFactory::~AboutThisSiteServiceFactory() = default;
 // BrowserContextKeyedServiceFactory:
 KeyedService* AboutThisSiteServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* browser_context) const {
-  if (!base::FeatureList::IsEnabled(page_info::kPageInfoAboutThisSite))
+  if (!page_info::IsAboutThisSiteFeatureEnabled(
+          g_browser_process->GetApplicationLocale()))
     return nullptr;
 
   Profile* profile = Profile::FromBrowserContext(browser_context);

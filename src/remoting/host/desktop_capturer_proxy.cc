@@ -17,7 +17,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "remoting/host/client_session_control.h"
+#include "remoting/host/desktop_display_info_monitor.h"
 #include "remoting/proto/control.pb.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capture_options.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
@@ -27,6 +27,10 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "remoting/host/chromeos/aura_desktop_capturer.h"
+#endif
+
+#if defined(REMOTING_USE_WAYLAND)
+#include "remoting/host/linux/wayland_desktop_capturer.h"
 #endif
 
 namespace remoting {
@@ -51,6 +55,9 @@ class DesktopCapturerProxy::Core : public webrtc::DesktopCapturer::Callback {
       std::unique_ptr<webrtc::SharedMemoryFactory> shared_memory_factory);
   void SelectSource(SourceId id);
   void CaptureFrame();
+#if defined(WEBRTC_USE_GIO)
+  void GetAndSetMetadata();
+#endif
 
  private:
   // webrtc::DesktopCapturer::Callback implementation.
@@ -81,6 +88,12 @@ void DesktopCapturerProxy::Core::CreateCapturer(
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   capturer_ = std::make_unique<webrtc::DesktopCapturerDifferWrapper>(
       std::make_unique<AuraDesktopCapturer>());
+#elif defined(REMOTING_USE_WAYLAND)
+  if (options.allow_pipewire() && DesktopCapturer::IsRunningUnderWayland()) {
+    capturer_ = std::make_unique<WaylandDesktopCapturer>(options);
+  } else {
+    capturer_ = webrtc::DesktopCapturer::CreateScreenCapturer(options);
+  }
 #else   // !BUILDFLAG(IS_CHROMEOS_ASH)
   capturer_ = webrtc::DesktopCapturer::CreateScreenCapturer(options);
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
@@ -118,6 +131,18 @@ void DesktopCapturerProxy::Core::CaptureFrame() {
   }
 }
 
+#if defined(WEBRTC_USE_GIO)
+void DesktopCapturerProxy::Core::GetAndSetMetadata() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (capturer_) {
+    webrtc::DesktopCaptureMetadata metadata = capturer_->GetMetadata();
+    caller_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&DesktopCapturerProxy::OnMetadata, proxy_,
+                                  std::move(metadata)));
+  }
+}
+#endif
+
 void DesktopCapturerProxy::Core::OnCaptureResult(
     webrtc::DesktopCapturer::Result result,
     std::unique_ptr<webrtc::DesktopFrame> frame) {
@@ -130,23 +155,19 @@ void DesktopCapturerProxy::Core::OnCaptureResult(
 
 DesktopCapturerProxy::DesktopCapturerProxy(
     scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-    base::WeakPtr<ClientSessionControl> client_session_control)
-    : capture_task_runner_(capture_task_runner),
-      ui_task_runner_(ui_task_runner),
-      client_session_control_(client_session_control),
-      desktop_display_info_loader_(DesktopDisplayInfoLoader::Create()) {
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
+    : capture_task_runner_(capture_task_runner) {
   core_ = std::make_unique<Core>(weak_factory_.GetWeakPtr());
-  ui_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&DesktopDisplayInfoLoader::Init,
-                     base::Unretained(desktop_display_info_loader_.get())));
 }
 
 DesktopCapturerProxy::~DesktopCapturerProxy() {
   capture_task_runner_->DeleteSoon(FROM_HERE, core_.release());
-  ui_task_runner_->DeleteSoon(FROM_HERE,
-                              desktop_display_info_loader_.release());
+}
+
+void DesktopCapturerProxy::set_desktop_display_info_monitor(
+    DesktopDisplayInfoMonitor* monitor) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  desktop_display_info_monitor_ = monitor;
 }
 
 void DesktopCapturerProxy::CreateCapturer(
@@ -198,13 +219,8 @@ bool DesktopCapturerProxy::GetSourceList(SourceList* sources) {
   return false;
 }
 
-bool DesktopCapturerProxy::SelectSource(SourceId id_index) {
+bool DesktopCapturerProxy::SelectSource(SourceId id) {
   DCHECK(thread_checker_.CalledOnValidThread());
-
-  const DisplayGeometry* display =
-      desktop_display_info_.GetDisplayInfo(id_index);
-
-  SourceId id = (display ? display->id : webrtc::kFullDesktopScreenId);
 
   capture_task_runner_->PostTask(
       FROM_HERE,
@@ -219,39 +235,26 @@ void DesktopCapturerProxy::OnFrameCaptured(
 
   callback_->OnCaptureResult(result, std::move(frame));
 
-  if (client_session_control_) {
-    ui_task_runner_->PostTaskAndReplyWithResult(
-        FROM_HERE,
-        base::BindOnce(&DesktopDisplayInfoLoader::GetCurrentDisplayInfo,
-                       base::Unretained(desktop_display_info_loader_.get())),
-        base::BindOnce(&DesktopCapturerProxy::OnDisplayInfoLoaded,
-                       weak_factory_.GetWeakPtr()));
+  if (desktop_display_info_monitor_) {
+    desktop_display_info_monitor_->QueryDisplayInfo();
   }
 }
 
-void DesktopCapturerProxy::OnDisplayInfoLoaded(DesktopDisplayInfo info) {
+#if defined(WEBRTC_USE_GIO)
+void DesktopCapturerProxy::GetMetadataAsync(
+    base::OnceCallback<void(webrtc::DesktopCaptureMetadata)> callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  metadata_callback_ = std::move(callback);
+  capture_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&Core::GetAndSetMetadata, base::Unretained(core_.get())));
+}
+
+void DesktopCapturerProxy::OnMetadata(webrtc::DesktopCaptureMetadata metadata) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (!client_session_control_ || desktop_display_info_ == info) {
-    return;
-  }
-
-  desktop_display_info_ = std::move(info);
-
-  auto layout = std::make_unique<protocol::VideoLayout>();
-  LOG(INFO) << "DCP::OnDisplayInfoLoaded";
-  for (const auto& display : desktop_display_info_.displays()) {
-    protocol::VideoTrackLayout* track = layout->add_video_track();
-    track->set_position_x(display.x);
-    track->set_position_y(display.y);
-    track->set_width(display.width);
-    track->set_height(display.height);
-    track->set_x_dpi(display.dpi);
-    track->set_y_dpi(display.dpi);
-    LOG(INFO) << "   Display: " << display.x << "," << display.y << " "
-              << display.width << "x" << display.height << " @ " << display.dpi;
-  }
-  client_session_control_->OnDesktopDisplayChanged(std::move(layout));
+  std::move(metadata_callback_).Run(std::move(metadata));
 }
 
+#endif
 }  // namespace remoting

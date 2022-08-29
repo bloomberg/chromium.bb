@@ -39,7 +39,7 @@ POLL_DELAY_SECONDS = 2 * 60
 TIMEOUT_SECONDS = 210 * 60
 
 # Sheriff calendar URL, used for getting the ecosystem infra sheriff to cc.
-ROTATIONS_URL = 'https://chrome-ops-rotation-proxy.appspot.com/current/grotation:chrome-ecosystem-infra'
+ROTATIONS_URL = 'https://chrome-ops-rotation-proxy.appspot.com/current/grotation:chromium-wpt-two-way-sync'
 SHERIFF_EMAIL_FALLBACK = 'weizhong@google.com'
 RUBBER_STAMPER_BOT = 'rubber-stamper@appspot.gserviceaccount.com'
 
@@ -202,6 +202,9 @@ class TestImporter(object):
         if not options.auto_update:
             return 0
 
+        if not self.record_version():
+            return 1
+
         if not self.run_commit_queue_for_cl():
             return 1
 
@@ -210,6 +213,17 @@ class TestImporter(object):
             return 1
 
         return 0
+
+    def record_version(self):
+        _log.info('Update external/Version to record upstream ToT.')
+        path_to_version = self.finder.path_from_web_tests('external', 'Version')
+        with open(path_to_version, "w") as f:
+            f.write("Version: %s\n" % self.wpt_revision)
+
+        message = 'Update revision'
+        self._commit_changes(message)
+        self._upload_patchset(message)
+        return True
 
     def update_expectations_for_cl(self):
         """Performs the expectation-updating part of an auto-import job.
@@ -294,7 +308,7 @@ class TestImporter(object):
                 'CR+1 and commit. The sheriff has one hour to respond.')
             self.git_cl.run([
                 'upload', '-f', '--send-mail', '--enable-auto-submit',
-                '--reviewers', self.sheriff_email()
+                '--cc', self.sheriff_email()
             ])
             timeout = 3600
         else:
@@ -556,7 +570,6 @@ class TestImporter(object):
         _log.info('Uploading change list.')
         directory_owners = self.get_directory_owners()
         description = self._cl_description(directory_owners)
-        sheriff_email = self.sheriff_email()
 
         temp_file, temp_path = self.fs.open_text_tempfile()
         temp_file.write(description)
@@ -605,7 +618,18 @@ class TestImporter(object):
         # Move any No-Export tag to the end of the description.
         description = description.replace('No-Export: true', '')
         description = description.replace('\n\n\n\n', '\n\n')
-        description += 'No-Export: true'
+        description += 'No-Export: true\n'
+
+        # Add the wptrunner MVP tryjobs as blocking trybots, to catch any test
+        # changes or infrastructure changes from upstream.
+        #
+        # If this starts blocking the importer unnecessarily, revert
+        # https://chromium-review.googlesource.com/c/chromium/src/+/2451504
+        # Try linux-blink-rel to make sure no breakage in webdriver tests
+        description += (
+            'Cq-Include-Trybots: luci.chromium.try:linux-wpt-identity-fyi-rel,'
+            'linux-wpt-input-fyi-rel,linux-blink-rel')
+
         return description
 
     @staticmethod

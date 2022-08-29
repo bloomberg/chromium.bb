@@ -14,20 +14,16 @@ DEFINE_int(gpuThreads,
              "Create this many extra threads to assist with GPU work, "
              "including software path rendering. Defaults to two.");
 
+extern bool gSkBlobAsSlugTesting;
+
 namespace CommonFlags {
 
 static DEFINE_bool(cachePathMasks, true,
                    "Allows path mask textures to be cached in GPU configs.");
+static DEFINE_bool(failFlushTimeCallbacks, false,
+                   "Causes all flush-time callbacks to fail.");
 static DEFINE_bool(allPathsVolatile, false,
                    "Causes all GPU paths to be processed as if 'setIsVolatile' had been called.");
-
-static DEFINE_bool(hwtess, false, "Enables support for tessellation shaders (if hw allows.).");
-
-static DEFINE_int(maxTessellationSegments, 0,
-                  "Overrides the max number of tessellation segments supported by the caps.");
-
-static DEFINE_bool(alwaysHwTess, false,
-        "Always try to use hardware tessellation, regardless of how small a path may be.");
 
 static DEFINE_string(pr, "",
               "Set of enabled gpu path renderers. Defined as a list of: "
@@ -102,13 +98,13 @@ void SetCtxOptions(GrContextOptions* ctxOptions) {
 
     ctxOptions->fExecutor                            = gGpuExecutor.get();
     ctxOptions->fAllowPathMaskCaching                = FLAGS_cachePathMasks;
+    ctxOptions->fFailFlushTimeCallbacks              = FLAGS_failFlushTimeCallbacks;
     ctxOptions->fAllPathsVolatile                    = FLAGS_allPathsVolatile;
-    ctxOptions->fEnableExperimentalHardwareTessellation = FLAGS_hwtess;
-    ctxOptions->fMaxTessellationSegmentsOverride     = FLAGS_maxTessellationSegments;
-    ctxOptions->fAlwaysPreferHardwareTessellation    = FLAGS_alwaysHwTess;
     ctxOptions->fGpuPathRenderers                    = collect_gpu_path_renderers_from_flags();
     ctxOptions->fDisableDriverCorrectnessWorkarounds = FLAGS_disableDriverCorrectnessWorkarounds;
     ctxOptions->fResourceCacheLimitOverride          = FLAGS_gpuResourceCacheLimit;
+    // If testing with slugs ensure that padding is added in the atlas.
+    ctxOptions->fSupportBilerpFromGlyphAtlas        |= gSkBlobAsSlugTesting;
 
     if (FLAGS_internalSamples >= 0) {
         ctxOptions->fInternalMultisampleCount = FLAGS_internalSamples;

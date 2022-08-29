@@ -35,8 +35,19 @@ class AwSettings : public content::WebContentsObserver {
     PREFER_MEDIA_QUERY_OVER_FORCE_DARK = 2,
   };
 
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.android_webview.settings
+  enum RequestedWithHeaderMode {
+    NO_HEADER = 0,
+    APP_PACKAGE_NAME = 1,
+    CONSTANT_WEBVIEW = 2,
+  };
+
   static AwSettings* FromWebContents(content::WebContents* web_contents);
   static bool GetAllowSniffingFileUrls();
+
+  // Static accessor to get the currently configured default value based
+  // on feature flags and trial config
+  static RequestedWithHeaderMode GetDefaultRequestedWithHeaderMode();
 
   AwSettings(JNIEnv* env, jobject obj, content::WebContents* web_contents);
   ~AwSettings() override;
@@ -85,8 +96,19 @@ class AwSettings : public content::WebContentsObserver {
 
   void PopulateWebPreferences(blink::web_pref::WebPreferences* web_prefs);
   bool GetAllowFileAccess();
-  bool IsDarkMode(JNIEnv* env,
-                       const base::android::JavaParamRef<jobject>& obj);
+  bool IsForceDarkApplied(JNIEnv* env,
+                          const base::android::JavaParamRef<jobject>& obj);
+
+  void SetEnterpriseAuthenticationAppLinkPolicyEnabled(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      jboolean enabled);
+  bool GetEnterpriseAuthenticationAppLinkPolicyEnabled(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+  inline bool enterprise_authentication_app_link_policy_enabled() {
+    return enterprise_authentication_app_link_policy_enabled_;
+  }
 
  private:
   AwRenderViewHostExt* GetAwRenderViewHostExt();
@@ -101,6 +123,7 @@ class AwSettings : public content::WebContentsObserver {
   bool javascript_can_open_windows_automatically_;
   bool allow_third_party_cookies_;
   bool allow_file_access_;
+  bool enterprise_authentication_app_link_policy_enabled_;
 
   JavaObjectWeakGlobalRef aw_settings_;
 };

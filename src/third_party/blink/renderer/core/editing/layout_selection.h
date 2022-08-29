@@ -22,7 +22,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_LAYOUT_SELECTION_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_LAYOUT_SELECTION_H_
 
-#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/editing/forward.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
@@ -63,7 +62,7 @@ class LayoutSelection final : public GarbageCollected<LayoutSelection> {
   // starts within the position (and ends elsewhere), where kStartAndEnd means
   // the selection both starts and ends within the position. This information is
   // used at paint time to determine the edges of the layout selection.
-  SelectionState ComputeSelectionStateForCursor(
+  SelectionState ComputePaintingSelectionStateForCursor(
       const NGInlineCursorPosition&) const;
 
   // Compute the layout selection state relative to the InlineTextBox.

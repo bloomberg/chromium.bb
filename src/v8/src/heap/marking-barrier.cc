@@ -121,15 +121,16 @@ void MarkingBarrier::Write(DescriptorArray descriptor_array,
 void MarkingBarrier::RecordRelocSlot(Code host, RelocInfo* rinfo,
                                      HeapObject target) {
   DCHECK(IsCurrentMarkingBarrier());
+  if (!MarkCompactCollector::ShouldRecordRelocSlot(host, rinfo, target)) return;
+
   MarkCompactCollector::RecordRelocSlotInfo info =
-      MarkCompactCollector::PrepareRecordRelocSlot(host, rinfo, target);
-  if (info.should_record) {
-    auto& typed_slots = typed_slots_map_[info.memory_chunk];
-    if (!typed_slots) {
-      typed_slots.reset(new TypedSlots());
-    }
-    typed_slots->Insert(info.slot_type, info.offset);
+      MarkCompactCollector::ProcessRelocInfo(host, rinfo, target);
+
+  auto& typed_slots = typed_slots_map_[info.memory_chunk];
+  if (!typed_slots) {
+    typed_slots.reset(new TypedSlots());
   }
+  typed_slots->Insert(info.slot_type, info.offset);
 }
 
 // static
@@ -158,6 +159,11 @@ void MarkingBarrier::PublishAll(Heap* heap) {
 void MarkingBarrier::Publish() {
   if (is_activated_) {
     worklist_.Publish();
+    base::Optional<CodePageHeaderModificationScope> optional_rwx_write_scope;
+    if (!typed_slots_map_.empty()) {
+      optional_rwx_write_scope.emplace(
+          "Merging typed slots may require allocating a new typed slot set.");
+    }
     for (auto& it : typed_slots_map_) {
       MemoryChunk* memory_chunk = it.first;
       // Access to TypeSlots need to be protected, since LocalHeaps might
@@ -193,7 +199,7 @@ void MarkingBarrier::Deactivate() {
   is_compacting_ = false;
   if (is_main_thread_barrier_) {
     DeactivateSpace(heap_->old_space());
-    DeactivateSpace(heap_->map_space());
+    if (heap_->map_space()) DeactivateSpace(heap_->map_space());
     DeactivateSpace(heap_->code_space());
     DeactivateSpace(heap_->new_space());
     for (LargePage* p : *heap_->new_lo_space()) {
@@ -232,8 +238,12 @@ void MarkingBarrier::Activate(bool is_compacting) {
   is_activated_ = true;
   if (is_main_thread_barrier_) {
     ActivateSpace(heap_->old_space());
-    ActivateSpace(heap_->map_space());
-    ActivateSpace(heap_->code_space());
+    if (heap_->map_space()) ActivateSpace(heap_->map_space());
+    {
+      CodePageHeaderModificationScope rwx_write_scope(
+          "Modification of Code page header flags requires write access");
+      ActivateSpace(heap_->code_space());
+    }
     ActivateSpace(heap_->new_space());
 
     for (LargePage* p : *heap_->new_lo_space()) {
@@ -245,8 +255,12 @@ void MarkingBarrier::Activate(bool is_compacting) {
       p->SetOldGenerationPageFlags(true);
     }
 
-    for (LargePage* p : *heap_->code_lo_space()) {
-      p->SetOldGenerationPageFlags(true);
+    {
+      CodePageHeaderModificationScope rwx_write_scope(
+          "Modification of Code page header flags requires write access");
+      for (LargePage* p : *heap_->code_lo_space()) {
+        p->SetOldGenerationPageFlags(true);
+      }
     }
   }
 }

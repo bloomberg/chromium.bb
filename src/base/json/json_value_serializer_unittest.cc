@@ -80,8 +80,8 @@ void ValidateJsonList(const std::string& json) {
   absl::optional<Value> list = JSONReader::Read(json);
   ASSERT_TRUE(list);
   ASSERT_TRUE(list->is_list());
-  ASSERT_EQ(1U, list->GetList().size());
-  const Value& elt = list->GetList()[0];
+  ASSERT_EQ(1U, list->GetListDeprecated().size());
+  const Value& elt = list->GetListDeprecated()[0];
   ASSERT_TRUE(elt.is_int());
   ASSERT_EQ(1, elt.GetInt());
 }
@@ -213,7 +213,7 @@ TEST(JSONValueDeserializerTest, AllowTrailingComma) {
   std::unique_ptr<Value> root_expected;
   root_expected = deserializer_expected.Deserialize(nullptr, nullptr);
   ASSERT_TRUE(root_expected);
-  ASSERT_TRUE(root->Equals(root_expected.get()));
+  ASSERT_EQ(*root, *root_expected);
 }
 
 TEST(JSONValueSerializerTest, Roundtrip) {
@@ -241,7 +241,7 @@ TEST(JSONValueSerializerTest, Roundtrip) {
   ASSERT_TRUE(mutable_serializer.Serialize(*root_dict));
   // JSON output uses a different newline style on Windows than on other
   // platforms.
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #define JSON_NEWLINE "\r\n"
 #else
 #define JSON_NEWLINE "\n"
@@ -371,8 +371,8 @@ TEST(JSONValueSerializerTest, JSONReaderComments) {
   absl::optional<Value> list = JSONReader::Read("[\"// ok\\n /* foo */ \"]");
   ASSERT_TRUE(list);
   ASSERT_TRUE(list->is_list());
-  ASSERT_EQ(1U, list->GetList().size());
-  const Value& elt = list->GetList()[0];
+  ASSERT_EQ(1U, list->GetListDeprecated().size());
+  const Value& elt = list->GetListDeprecated()[0];
   ASSERT_TRUE(elt.is_string());
   ASSERT_EQ("// ok\n /* foo */ ", elt.GetString());
 

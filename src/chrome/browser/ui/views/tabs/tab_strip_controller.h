@@ -16,6 +16,7 @@
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/range/range.h"
 
+class Browser;
 class Tab;
 class TabStrip;
 
@@ -83,6 +84,9 @@ class TabStripController {
 
   // Closes the tab at the specified index in the model.
   virtual void CloseTab(int index) = 0;
+
+  // Toggles audio muting for the tab at the specified index in the model.
+  virtual void ToggleTabAudioMute(int index) = 0;
 
   // Adds a tab to an existing tab group.
   virtual void AddTabToGroup(int model_index,
@@ -208,10 +212,6 @@ class TabStripController {
   // Returns the color of the browser frame for the given window activation
   // state.
   virtual SkColor GetFrameColor(BrowserFrameActiveState active_state) const = 0;
-
-  // Returns COLOR_TOOLBAR_TOP_SEPARATOR[,_INACTIVE] depending on the activation
-  // state of the window.
-  virtual SkColor GetToolbarTopSeparatorColor() const = 0;
 
   // For non-transparent windows, returns the background tab image resource ID
   // if the image has been customized, directly or indirectly, by the theme.

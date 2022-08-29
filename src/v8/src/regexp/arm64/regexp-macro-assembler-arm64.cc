@@ -122,8 +122,8 @@ RegExpMacroAssemblerARM64::RegExpMacroAssemblerARM64(Isolate* isolate,
       exit_label_() {
   DCHECK_EQ(0, registers_to_save % 2);
   // We can cache at most 16 W registers in x0-x7.
-  STATIC_ASSERT(kNumCachedRegisters <= 16);
-  STATIC_ASSERT((kNumCachedRegisters % 2) == 0);
+  static_assert(kNumCachedRegisters <= 16);
+  static_assert((kNumCachedRegisters % 2) == 0);
   __ CallTarget();
 
   __ B(&entry_label_);   // We'll write the entry code later.
@@ -813,7 +813,7 @@ Handle<HeapObject> RegExpMacroAssemblerARM64::GetCode(Handle<String> source) {
   CPURegList registers_to_retain = kCalleeSaved;
   DCHECK_EQ(registers_to_retain.Count(), kNumCalleeSavedRegisters);
 
-  __ PushCPURegList<TurboAssembler::kDontStoreLR>(registers_to_retain);
+  __ PushCPURegList(registers_to_retain);
   __ Push<TurboAssembler::kSignLR>(lr, fp);
   __ PushCPURegList(argument_registers);
 
@@ -839,7 +839,7 @@ Handle<HeapObject> RegExpMacroAssemblerARM64::GetCode(Handle<String> source) {
 
   // Initialize backtrack stack pointer. It must not be clobbered from here on.
   // Note the backtrack_stackpointer is callee-saved.
-  STATIC_ASSERT(backtrack_stackpointer() == x23);
+  static_assert(backtrack_stackpointer() == x23);
   LoadRegExpStackPointerFromMemory(backtrack_stackpointer());
 
   // Store the regexp base pointer - we'll later restore it / write it to
@@ -1008,7 +1008,7 @@ Handle<HeapObject> RegExpMacroAssemblerARM64::GetCode(Handle<String> source) {
 
         // We can unroll the loop here, we should not unroll for less than 2
         // registers.
-        STATIC_ASSERT(kNumRegistersToUnroll > 2);
+        static_assert(kNumRegistersToUnroll > 2);
         if (num_registers_left_on_stack <= kNumRegistersToUnroll) {
           for (int i = 0; i < num_registers_left_on_stack / 2; i++) {
             __ Ldp(capture_end, capture_start,
@@ -1128,7 +1128,7 @@ Handle<HeapObject> RegExpMacroAssemblerARM64::GetCode(Handle<String> source) {
   __ Pop<TurboAssembler::kAuthLR>(fp, lr);
 
   // Restore registers.
-  __ PopCPURegList<TurboAssembler::kDontLoadLR>(registers_to_retain);
+  __ PopCPURegList(registers_to_retain);
 
   __ Ret();
 
@@ -1389,7 +1389,7 @@ void RegExpMacroAssemblerARM64::ClearRegisters(int reg_from, int reg_to) {
     reg_from -= kNumCachedRegisters;
     reg_to -= kNumCachedRegisters;
     // We should not unroll the loop for less than 2 registers.
-    STATIC_ASSERT(kNumRegistersToUnroll > 2);
+    static_assert(kNumRegistersToUnroll > 2);
     // We position the base pointer to (reg_from + 1).
     int base_offset = kFirstRegisterOnStack -
         kWRegSize - (kWRegSize * reg_from);

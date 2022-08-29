@@ -135,7 +135,6 @@ void av1_reset_cdf_symbol_counters(FRAME_CONTEXT *fc) {
   reset_nmv_counter(&fc->nmvc);
   reset_nmv_counter(&fc->ndvc);
   RESET_CDF_COUNTER(fc->intrabc_cdf, 2);
-  RESET_CDF_COUNTER(fc->seg.tree_cdf, MAX_SEGMENTS);
   RESET_CDF_COUNTER(fc->seg.pred_cdf, 2);
   RESET_CDF_COUNTER(fc->seg.spatial_pred_seg_cdf, MAX_SEGMENTS);
   RESET_CDF_COUNTER(fc->filter_intra_cdfs, 2);

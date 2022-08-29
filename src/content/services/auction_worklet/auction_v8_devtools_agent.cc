@@ -36,7 +36,7 @@ AuctionV8DevToolsAgent::~AuctionV8DevToolsAgent() {
 }
 
 void AuctionV8DevToolsAgent::Connect(
-    mojo::PendingReceiver<blink::mojom::DevToolsAgent> agent,
+    mojo::PendingAssociatedReceiver<blink::mojom::DevToolsAgent> agent,
     int context_group_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(v8_sequence_checker_);
   receivers_.Add(this, std::move(agent), context_group_id);
@@ -68,6 +68,7 @@ void AuctionV8DevToolsAgent::AttachDevToolsSession(
     mojo::PendingReceiver<blink::mojom::DevToolsSession> io_session_receiver,
     blink::mojom::DevToolsSessionStatePtr reattach_session_state,
     bool client_expects_binary_responses,
+    bool client_is_trusted,
     const std::string& session_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(v8_sequence_checker_);
   int context_group_id = receivers_.current_context();
@@ -93,10 +94,10 @@ void AuctionV8DevToolsAgent::InspectElement(const ::gfx::Point& point) {
   NOTIMPLEMENTED();  // Should not be used with this.
 }
 
-void AuctionV8DevToolsAgent::ReportChildWorkers(
+void AuctionV8DevToolsAgent::ReportChildTargets(
     bool report,
     bool wait_for_debugger,
-    ReportChildWorkersCallback callback) {
+    ReportChildTargetsCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(v8_sequence_checker_);
   NOTIMPLEMENTED();  // Should not be used with this.
 }

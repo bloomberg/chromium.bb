@@ -40,9 +40,11 @@
 #include "build/build_config.h"
 #include "components/viz/common/gpu/raster_context_provider.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
+#include "media/base/media_log.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
+#include "third_party/blink/public/platform/web_dedicated_worker_host_factory_client.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
 #include "third_party/blink/public/platform/web_url_loader_factory.h"
 #include "third_party/blink/public/platform/websocket_handshake_throttle.h"
@@ -299,6 +301,13 @@ Platform::WrapSharedURLLoaderFactory(
   return nullptr;
 }
 
+std::unique_ptr<WebDedicatedWorkerHostFactoryClient>
+Platform::CreateDedicatedWorkerHostFactoryClient(
+    WebDedicatedWorker*,
+    const BrowserInterfaceBrokerProxy&) {
+  return nullptr;
+}
+
 void Platform::CreateServiceWorkerSubresourceLoaderFactory(
     CrossVariantMojoRemote<mojom::ServiceWorkerContainerHostInterfaceBase>
         service_worker_container_host,
@@ -365,8 +374,19 @@ scoped_refptr<gpu::GpuChannelHost> Platform::EstablishGpuChannelSync() {
   return nullptr;
 }
 
+void Platform::EstablishGpuChannel(EstablishGpuChannelCallback callback) {
+  std::move(callback).Run(nullptr);
+}
+
 gfx::ColorSpace Platform::GetRenderingColorSpace() const {
   return {};
+}
+
+std::unique_ptr<media::MediaLog> Platform::GetMediaLog(
+    MediaInspectorContext* inspector_context,
+    scoped_refptr<base::SingleThreadTaskRunner> owner_task_runner,
+    bool is_on_worker) {
+  return nullptr;
 }
 
 }  // namespace blink

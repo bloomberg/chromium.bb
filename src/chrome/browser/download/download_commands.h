@@ -11,7 +11,7 @@
 #include "content/public/browser/page_navigator.h"
 #include "ui/gfx/image/image.h"
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 class Browser;
 #endif
 
@@ -33,7 +33,6 @@ class DownloadCommands {
     LEARN_MORE_INTERRUPTED,    // Show information about interrupted downloads.
     LEARN_MORE_MIXED_CONTENT,  // Show info about mixed content downloads.
     COPY_TO_CLIPBOARD,         // Copy the contents to the clipboard.
-    ANNOTATE,                  // Open an app to annotate the image.
     DEEP_SCAN,                 // Send file to Safe Browsing for deep scanning.
     BYPASS_DEEP_SCANNING,      // Bypass the prompt to deep scan.
     MAX
@@ -53,8 +52,8 @@ class DownloadCommands {
   bool IsCommandVisible(Command command) const;
   void ExecuteCommand(Command command);
 
-#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS) || \
-    defined(OS_MAC) || defined(OS_FUCHSIA)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || \
+    BUILDFLAG(IS_MAC) || BUILDFLAG(IS_FUCHSIA)
   bool IsDownloadPdf() const;
   bool CanOpenPdfInSystemViewer() const;
   Browser* GetBrowser() const;

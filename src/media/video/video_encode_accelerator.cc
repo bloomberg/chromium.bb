@@ -17,6 +17,10 @@ Vp9Metadata::Vp9Metadata() = default;
 Vp9Metadata::~Vp9Metadata() = default;
 Vp9Metadata::Vp9Metadata(const Vp9Metadata&) = default;
 
+Av1Metadata::Av1Metadata() = default;
+Av1Metadata::~Av1Metadata() = default;
+Av1Metadata::Av1Metadata(const Av1Metadata&) = default;
+
 BitstreamBufferMetadata::BitstreamBufferMetadata()
     : payload_size_bytes(0), key_frame(false) {}
 BitstreamBufferMetadata::BitstreamBufferMetadata(
@@ -148,11 +152,13 @@ VideoEncodeAccelerator::SupportedProfile::SupportedProfile(
     const gfx::Size& max_resolution,
     uint32_t max_framerate_numerator,
     uint32_t max_framerate_denominator,
+    SupportedRateControlMode rc_modes,
     const std::vector<SVCScalabilityMode>& scalability_modes)
     : profile(profile),
       max_resolution(max_resolution),
       max_framerate_numerator(max_framerate_numerator),
       max_framerate_denominator(max_framerate_denominator),
+      rate_control_modes(rc_modes),
       scalability_modes(scalability_modes) {}
 
 VideoEncodeAccelerator::SupportedProfile::SupportedProfile(
@@ -176,7 +182,7 @@ bool VideoEncodeAccelerator::IsFlushSupported() {
 }
 
 bool VideoEncodeAccelerator::IsGpuFrameResizeSupported() {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_WIN)
   // TODO(crbug.com/1166889) Add proper method overrides in
   // MojoVideoEncodeAccelerator and other subclasses that might return true.
   return true;
@@ -198,6 +204,7 @@ bool operator==(const VideoEncodeAccelerator::SupportedProfile& l,
          l.max_resolution == r.max_resolution &&
          l.max_framerate_numerator == r.max_framerate_numerator &&
          l.max_framerate_denominator == r.max_framerate_denominator &&
+         l.rate_control_modes == r.rate_control_modes &&
          l.scalability_modes == r.scalability_modes;
 }
 
@@ -220,6 +227,15 @@ bool operator==(const Vp9Metadata& l, const Vp9Metadata& r) {
          l.temporal_idx == r.temporal_idx && l.spatial_idx == r.spatial_idx &&
          l.spatial_layer_resolutions == r.spatial_layer_resolutions &&
          l.p_diffs == r.p_diffs;
+}
+
+bool operator==(const Av1Metadata& l, const Av1Metadata& r) {
+  return l.inter_pic_predicted == r.inter_pic_predicted &&
+         l.switch_frame == r.switch_frame &&
+         l.end_of_picture == r.end_of_picture &&
+         l.temporal_idx == r.temporal_idx && l.spatial_idx == r.spatial_idx &&
+         l.spatial_layer_resolutions == r.spatial_layer_resolutions &&
+         l.f_diffs == r.f_diffs;
 }
 
 bool operator==(const BitstreamBufferMetadata& l,

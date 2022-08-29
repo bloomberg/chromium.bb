@@ -8,7 +8,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <list>
 #include <memory>
 #include <string>
 
@@ -30,7 +29,7 @@
 #include "net/spdy/spdy_read_queue.h"
 #include "net/spdy/spdy_session.h"
 #include "net/spdy/spdy_stream.h"
-#include "net/third_party/quiche/src/spdy/core/spdy_protocol.h"
+#include "net/third_party/quiche/src/quiche/spdy/core/spdy_protocol.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace net {
@@ -39,6 +38,7 @@ class IOBuffer;
 class ProxyDelegate;
 class SpdyStream;
 
+// Tunnels a stream socket over an HTTP/2 connection.
 class NET_EXPORT_PRIVATE SpdyProxyClientSocket : public ProxyClientSocket,
                                                  public SpdyStream::Delegate {
  public:
@@ -64,8 +64,6 @@ class NET_EXPORT_PRIVATE SpdyProxyClientSocket : public ProxyClientSocket,
   const HttpResponseInfo* GetConnectResponseInfo() const override;
   const scoped_refptr<HttpAuthController>& GetAuthController() const override;
   int RestartWithAuth(CompletionOnceCallback callback) override;
-  bool IsUsingSpdy() const override;
-  NextProto GetProxyNegotiatedProtocol() const override;
   void SetStreamPriority(RequestPriority priority) override;
 
   // StreamSocket implementation.
@@ -78,9 +76,6 @@ class NET_EXPORT_PRIVATE SpdyProxyClientSocket : public ProxyClientSocket,
   bool WasAlpnNegotiated() const override;
   NextProto GetNegotiatedProtocol() const override;
   bool GetSSLInfo(SSLInfo* ssl_info) override;
-  void GetConnectionAttempts(ConnectionAttempts* out) const override;
-  void ClearConnectionAttempts() override {}
-  void AddConnectionAttempts(const ConnectionAttempts& attempts) override {}
   int64_t GetTotalReceivedBytes() const override;
   void ApplySocketTag(const SocketTag& tag) override;
 
@@ -128,7 +123,7 @@ class NET_EXPORT_PRIVATE SpdyProxyClientSocket : public ProxyClientSocket,
 
   // Calls |callback.Run(result)|. Used to run a callback posted to the
   // message loop.
-  void RunCallback(CompletionOnceCallback callback, int result) const;
+  void RunWriteCallback(CompletionOnceCallback callback, int result) const;
 
   void OnIOComplete(int result);
 
@@ -143,7 +138,10 @@ class NET_EXPORT_PRIVATE SpdyProxyClientSocket : public ProxyClientSocket,
   // and returns the number of bytes read.
   size_t PopulateUserReadBuffer(char* out, size_t len);
 
-  State next_state_;
+  // Called when the peer sent END_STREAM.
+  void MaybeSendEndStream();
+
+  State next_state_ = STATE_DISCONNECTED;
 
   // Pointer to the SPDY Stream that this sits on top of.
   base::WeakPtr<SpdyStream> spdy_stream_;
@@ -175,16 +173,27 @@ class NET_EXPORT_PRIVATE SpdyProxyClientSocket : public ProxyClientSocket,
 
   // User provided buffer for the Read() response.
   scoped_refptr<IOBuffer> user_buffer_;
-  size_t user_buffer_len_;
+  size_t user_buffer_len_ = 0;
 
   // User specified number of bytes to be written.
-  int write_buffer_len_;
+  int write_buffer_len_ = 0;
 
   // True if the transport socket has ever sent data.
-  bool was_ever_used_;
+  bool was_ever_used_ = false;
 
   const NetLogWithSource net_log_;
   const NetLogSource source_dependency_;
+
+  // State for handling END_STREAM. When the peer sends a DATA frame with
+  // END_STREAM, it should be treated as being equivalent to the TCP FIN bit.
+  // We should send a DATA frame with END_STREAM after receiving END_STREAM
+  // as the spec requires.
+  enum class EndStreamState {
+    kNone,
+    kEndStreamReceived,
+    kEndStreamSent,
+  };
+  EndStreamState end_stream_state_ = EndStreamState::kNone;
 
   // The default weak pointer factory.
   base::WeakPtrFactory<SpdyProxyClientSocket> weak_factory_{this};

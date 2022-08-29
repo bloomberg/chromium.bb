@@ -4,9 +4,9 @@
 
 #include "weblayer/browser/autofill_client_impl.h"
 
+#include "build/build_config.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
-#include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/web_contents.h"
@@ -116,7 +116,7 @@ void AutofillClientImpl::OnUnmaskVerificationResult(PaymentsRpcResult result) {
   NOTREACHED();
 }
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 std::vector<std::string>
 AutofillClientImpl::GetAllowedMerchantsForVirtualCards() {
   NOTREACHED();
@@ -181,7 +181,7 @@ void AutofillClientImpl::OfferVirtualCardOptions(
   NOTREACHED();
 }
 
-#else  // defined(OS_ANDROID)
+#else  // !BUILDFLAG(IS_ANDROID)
 void AutofillClientImpl::ConfirmAccountNameFixFlow(
     base::OnceCallback<void(const std::u16string&)> callback) {
   NOTREACHED();
@@ -283,8 +283,15 @@ bool AutofillClientImpl::IsAutocompleteEnabled() {
   return false;
 }
 
+bool AutofillClientImpl::IsPasswordManagerEnabled() {
+  // This function is currently only used by the BrowserAutofillManager,
+  // but not by the AndroidAutofillManager. See crbug.com/1293341 for context.
+  NOTREACHED();
+  return false;
+}
+
 void AutofillClientImpl::PropagateAutofillPredictions(
-    content::RenderFrameHost* rfh,
+    autofill::AutofillDriver* driver,
     const std::vector<autofill::FormStructure*>& forms) {
   NOTREACHED();
 }
@@ -311,6 +318,10 @@ bool AutofillClientImpl::AreServerCardsSupported() const {
 }
 
 void AutofillClientImpl::ExecuteCommand(int id) {
+  NOTREACHED();
+}
+
+void AutofillClientImpl::OpenPromoCodeOfferDetailsURL(const GURL& url) {
   NOTREACHED();
 }
 

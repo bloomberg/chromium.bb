@@ -31,6 +31,7 @@
 
 #include <memory>
 
+#include "base/notreached.h"
 #include "cc/paint/paint_canvas.h"
 #include "cc/trees/paint_holding_reason.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -43,6 +44,7 @@
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/web_spell_check_panel_host_client.h"
 #include "third_party/blink/public/platform/web_url_loader.h"
+#include "third_party/blink/public/platform/web_url_loader_factory.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/remote_frame_client.h"
@@ -50,16 +52,16 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/cursors.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_request.h"
-#include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/graphics/touch_action.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_error.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/display/screen_info.h"
 #include "ui/display/screen_infos.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "v8/include/v8.h"
 
 /*
@@ -99,10 +101,11 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
   void DidFocusPage() override {}
   bool CanTakeFocus(mojom::blink::FocusType) override { return false; }
   void TakeFocus(mojom::blink::FocusType) override {}
-  void Show(const blink::LocalFrameToken& opener_frame_token,
+  void Show(LocalFrame& frame,
+            LocalFrame& opener_frame,
             NavigationPolicy navigation_policy,
             const gfx::Rect& initial_rect,
-            bool user_gesture) override {}
+            bool consumed_user_gesture) override {}
   void DidOverscroll(const gfx::Vector2dF&,
                      const gfx::Vector2dF&,
                      const gfx::PointF&,
@@ -231,8 +234,6 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
   void SetCursorForPlugin(const ui::Cursor&, LocalFrame*) override {}
   void InstallSupplements(LocalFrame&) override {}
   void MainFrameScrollOffsetChanged(LocalFrame& main_frame) const override {}
-  void BatterySavingsChanged(LocalFrame& main_frame,
-                             BatterySavingsFlags savings) override {}
 
  private:
   const display::ScreenInfos empty_screen_infos_{display::ScreenInfo()};
@@ -280,14 +281,15 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
       NavigationPolicy,
       WebFrameLoadType,
       bool,
+      // TODO(crbug.com/1315802): Refactor _unfencedTop handling.
+      bool,
       mojom::blink::TriggeringEventInfo,
       HTMLFormElement*,
       network::mojom::CSPDisposition,
       mojo::PendingRemote<mojom::blink::BlobURLToken>,
       base::TimeTicks,
       const String&,
-      const absl::optional<WebImpression>&,
-      network::mojom::IPAddressSpace,
+      const absl::optional<Impression>&,
       const LocalFrameToken* initiator_frame_token,
       std::unique_ptr<SourceLocation>,
       mojo::PendingRemote<mojom::blink::PolicyContainerHostKeepAliveHandle>)
@@ -298,17 +300,11 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
   void DidStartLoading() override {}
   void DidStopLoading() override {}
 
-  DocumentLoader* CreateDocumentLoader(
-      LocalFrame*,
-      WebNavigationType,
-      std::unique_ptr<WebNavigationParams> navigation_params,
-      std::unique_ptr<PolicyContainer> policy_container,
-      std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) override;
-  void UpdateDocumentLoader(
-      DocumentLoader* document_loader,
-      std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) override {}
+  void DidCreateDocumentLoader(DocumentLoader*) override {}
 
+  String UserAgentOverride() override { return ""; }
   String UserAgent() override { return ""; }
+  String FullUserAgent() override { return ""; }
   String ReducedUserAgent() override { return ""; }
   absl::optional<blink::UserAgentMetadata> UserAgentMetadata() override {
     return blink::UserAgentMetadata();
@@ -331,8 +327,8 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
 
   RemoteFrame* CreateFencedFrame(
       HTMLFencedFrameElement*,
-      mojo::PendingAssociatedReceiver<mojom::blink::FencedFrameOwnerHost>)
-      override;
+      mojo::PendingAssociatedReceiver<mojom::blink::FencedFrameOwnerHost>,
+      mojom::blink::FencedFrameMode) override;
 
   WebPluginContainerImpl* CreatePlugin(HTMLPlugInElement&,
                                        const KURL&,

@@ -435,11 +435,25 @@ const char* GetTestDigestLuma(int bitdepth, int param_index) {
       "0efbad5f9dc07391ad243232b8df1787", "2bd41882cd82960019aa2b87d5fb1fbc",
       "1c66629c0c4e7b6f9b0a7a6944fbad50", "2c633a50ead62f8e844a409545f46244",
   };
+  static const char* const kTestDigestsLuma12bpp[10] = {
+      "1dc9b38a93454a85eb924f25346ae369", "5f9d311ee5384a5a902f8e2d1297319e",
+      "cf1a35878720564c7a741f91eef66565", "47a0608fe0f6f7ccae42a5ca05783cbf",
+      "dbc28da0178e3c18a036c3f2203c300f", "04911d2074e3252119ee2d80426b8c01",
+      "df19ab8103c40b726c842ccf7772208b", "39276967eb16710d98f82068c3eeba41",
+      "b83100f18abb2062d9c9969f07182b86", "b39a69515491329698cf66f6d4fa371f",
+  };
 
-  if (bitdepth == 8) {
-    return kTestDigestsLuma8bpp[param_index];
+  switch (bitdepth) {
+    case 8:
+      return kTestDigestsLuma8bpp[param_index];
+    case 10:
+      return kTestDigestsLuma10bpp[param_index];
+    case 12:
+      return kTestDigestsLuma12bpp[param_index];
+    default:
+      assert(bitdepth == 8 || bitdepth == 10 || bitdepth == 12);
+      return nullptr;
   }
-  return kTestDigestsLuma10bpp[param_index];
 }
 
 const char* GetTestDigestChromaU(int bitdepth, int param_index) {
@@ -457,10 +471,25 @@ const char* GetTestDigestChromaU(int bitdepth, int param_index) {
       "be306c6a94c55dbd9ef514f0ad4a0011", "904602329b0dec352b3b177b0a2554d2",
       "58afc9497d968c67fdf2c0cf23b33aa3", "74fee7be6f62724bf901fdd04a733b46",
   };
-  if (bitdepth == 8) {
-    return kTestDigestsChromaU8bpp[param_index];
+  static const char* const kTestDigestsChromaU12bpp[10] = {
+      "846d608050fe7c19d6cabe2d53cb7821", "2caf4665a26aad50f68497e4b1326417",
+      "ce40f0f8f8c207c7c985464c812fea33", "820de51d07a21da5c00833bab546f1fa",
+      "5e7bedd8933cd274af03babb4dbb94dd", "d137cf584eabea86387460a6d3f62bfe",
+      "f206e0c6ed35b3ab35c6ff37e151e963", "55d87981b7044df225b3b5935185449b",
+      "6a655c8bf4df6af0e80ae6d004a73a25", "6234ae36076cc77161af6e6e3c04449a",
+  };
+
+  switch (bitdepth) {
+    case 8:
+      return kTestDigestsChromaU8bpp[param_index];
+    case 10:
+      return kTestDigestsChromaU10bpp[param_index];
+    case 12:
+      return kTestDigestsChromaU12bpp[param_index];
+    default:
+      assert(bitdepth == 8 || bitdepth == 10 || bitdepth == 12);
+      return nullptr;
   }
-  return kTestDigestsChromaU10bpp[param_index];
 }
 
 const char* GetTestDigestChromaV(int bitdepth, int param_index) {
@@ -478,95 +507,93 @@ const char* GetTestDigestChromaV(int bitdepth, int param_index) {
       "7b1624c3543badf5fadaee4d1e602e6b", "3be074e4ca0eec5770748b15661aaadd",
       "639197401032f272d6c30666a2d08f43", "28075dd34246bf9d5e6197b1944f646a",
   };
-  if (bitdepth == 8) {
-    return kTestDigestsChromaV8bpp[param_index];
+  static const char* const kTestDigestsChromaV12bpp[10] = {
+      "4957ec919c20707d594fa5c2138c2550", "3f07c65bfb42c81768b1f5ad9611d1ce",
+      "665d9547171c99faba95ac81a35c9a0c", "1b5d032e0cefdb4041ad51796de8a45e",
+      "18fa974579a4f1ff8cd7df664fc339d5", "2ffaa4f143495ff73c06a580a97b6321",
+      "4fd1f562bc47a68dbfaf7c566c7c4da6", "4d37c80c9caf110c1d3d20bd1a1875b3",
+      "8ea29759640962613166dc5154837d14", "5ca4c10f42d0906c72ebee90fae6ce7d",
+  };
+
+  switch (bitdepth) {
+    case 8:
+      return kTestDigestsChromaV8bpp[param_index];
+    case 10:
+      return kTestDigestsChromaV10bpp[param_index];
+    case 12:
+      return kTestDigestsChromaV12bpp[param_index];
+    default:
+      assert(bitdepth == 8 || bitdepth == 10 || bitdepth == 12);
+      return nullptr;
   }
-  return kTestDigestsChromaV10bpp[param_index];
 }
 
 const char* GetARTestDigestLuma(int bitdepth, int coeff_lag, int param_index) {
   static const char* const kTestDigestsLuma8bpp[3][kNumFilmGrainTestParams] = {
-      {
-          "a835127918f93478b45f1ba4d20d81bd",
-          "a835127918f93478b45f1ba4d20d81bd",
-          "e5db4da626e214bb17bcc7ecffa76303",
-          "a835127918f93478b45f1ba4d20d81bd",
-          "a835127918f93478b45f1ba4d20d81bd",
-          "e5db4da626e214bb17bcc7ecffa76303",
-          "a835127918f93478b45f1ba4d20d81bd",
-          "1da62b7233de502123a18546b6c97da2",
-          "1da62b7233de502123a18546b6c97da2",
-          "1da62b7233de502123a18546b6c97da2",
-      },
-      {
-          "11464b880de3ecd6e6189c5c4e7f9b28",
-          "dfe411762e283b5f49bece02ec200951",
-          "5c534d92afdf0a5b53dbe4fe7271929c",
-          "2e1a68a18aca96c31320ba7ceab59be9",
-          "584c0323e6b276cb9acb1a294d462d58",
-          "9571eb8f1cbaa96ea3bf64a820a8d9f0",
-          "305285ff0df87aba3c59e3fc0818697d",
-          "0066d35c8818cf20230114dcd3765a4d",
-          "0066d35c8818cf20230114dcd3765a4d",
-          "16d61b046084ef2636eedc5a737cb6f6",
-      },
-      {
-          "0c9e2cf1b6c3cad0f7668026e8ea0516",
-          "7d094855292d0eded9e0d1b5bab1990b",
-          "fbf28860a5f1285dcc6725a45256a86a",
-          "dccb906904160ccabbd2c9a7797a4bf9",
-          "46f645e17f08a3260b1ae70284e5c5b8",
-          "124fdc90bed11a7320a0cbdee8b94400",
-          "8d2978651dddeaef6282191fa146f0a0",
-          "28b4d5aa33f05b3fb7f9323a11936bdc",
-          "6a8ea684f6736a069e3612d1af6391a8",
-          "2781ea40a63704dbfeb3a1ac5db6f2fc",
-      },
+      {"a835127918f93478b45f1ba4d20d81bd", "a835127918f93478b45f1ba4d20d81bd",
+       "e5db4da626e214bb17bcc7ecffa76303", "a835127918f93478b45f1ba4d20d81bd",
+       "a835127918f93478b45f1ba4d20d81bd", "e5db4da626e214bb17bcc7ecffa76303",
+       "a835127918f93478b45f1ba4d20d81bd", "1da62b7233de502123a18546b6c97da2",
+       "1da62b7233de502123a18546b6c97da2", "1da62b7233de502123a18546b6c97da2"},
+      {"11464b880de3ecd6e6189c5c4e7f9b28", "dfe411762e283b5f49bece02ec200951",
+       "5c534d92afdf0a5b53dbe4fe7271929c", "2e1a68a18aca96c31320ba7ceab59be9",
+       "584c0323e6b276cb9acb1a294d462d58", "9571eb8f1cbaa96ea3bf64a820a8d9f0",
+       "305285ff0df87aba3c59e3fc0818697d", "0066d35c8818cf20230114dcd3765a4d",
+       "0066d35c8818cf20230114dcd3765a4d", "16d61b046084ef2636eedc5a737cb6f6"},
+      {"0c9e2cf1b6c3cad0f7668026e8ea0516", "7d094855292d0eded9e0d1b5bab1990b",
+       "fbf28860a5f1285dcc6725a45256a86a", "dccb906904160ccabbd2c9a7797a4bf9",
+       "46f645e17f08a3260b1ae70284e5c5b8", "124fdc90bed11a7320a0cbdee8b94400",
+       "8d2978651dddeaef6282191fa146f0a0", "28b4d5aa33f05b3fb7f9323a11936bdc",
+       "6a8ea684f6736a069e3612d1af6391a8", "2781ea40a63704dbfeb3a1ac5db6f2fc"},
   };
 
   static const char* const kTestDigestsLuma10bpp[3][kNumFilmGrainTestParams] = {
-      {
-          "5e6bc8444ece2d38420f51d82238d812",
-          "5e6bc8444ece2d38420f51d82238d812",
-          "2bfaec768794af33d60a9771f971f68d",
-          "5e6bc8444ece2d38420f51d82238d812",
-          "5e6bc8444ece2d38420f51d82238d812",
-          "c880807a368c4e82c23bea6f035ad23f",
-          "5e6bc8444ece2d38420f51d82238d812",
-          "c576667da5286183ec3aab9a76f53a2e",
-          "c576667da5286183ec3aab9a76f53a2e",
-          "c576667da5286183ec3aab9a76f53a2e",
-      },
-      {
-          "095c2dd4d4d52aff9696df9bfdb70062",
-          "983d14afa497060792d472a449a380c7",
-          "c5fdc0f7c594b2b36132cec6f45a79bd",
-          "acff232ac5597c1712213150552281d1",
-          "4dd7341923b1d260092853553b6b6246",
-          "0ca8afd71a4f564ea1ce69c4af14e9ab",
-          "9bc7565e5359d09194fcee28e4bf7b94",
-          "6fea7805458b9d149f238a30e2dc3f13",
-          "6fea7805458b9d149f238a30e2dc3f13",
-          "681dff5fc7a7244ba4e4a582ca7ecb14",
-      },
-      {
-          "cb99352c9c6300e7e825188bb4adaee0",
-          "7e40674de0209bd72f8e9c6e39ee6f7c",
-          "3e475572f6b4ecbb2730fd16751ad7ed",
-          "e6e4c63abc9cb112d9d1f23886cd1415",
-          "1a1c953b175c105c604902877e2bab18",
-          "380a53072530223d4ee622e014ee4bdb",
-          "6137394ea1172fb7ea0cbac237ff1703",
-          "85ab0c813e46f97cb9f42542f44c01ad",
-          "68c8ac462f0e28cb35402c538bee32f1",
-          "0038502ffa4760c8feb6f9abd4de7250",
-      },
+      {"5e6bc8444ece2d38420f51d82238d812", "5e6bc8444ece2d38420f51d82238d812",
+       "2bfaec768794af33d60a9771f971f68d", "5e6bc8444ece2d38420f51d82238d812",
+       "5e6bc8444ece2d38420f51d82238d812", "c880807a368c4e82c23bea6f035ad23f",
+       "5e6bc8444ece2d38420f51d82238d812", "c576667da5286183ec3aab9a76f53a2e",
+       "c576667da5286183ec3aab9a76f53a2e", "c576667da5286183ec3aab9a76f53a2e"},
+      {"095c2dd4d4d52aff9696df9bfdb70062", "983d14afa497060792d472a449a380c7",
+       "c5fdc0f7c594b2b36132cec6f45a79bd", "acff232ac5597c1712213150552281d1",
+       "4dd7341923b1d260092853553b6b6246", "0ca8afd71a4f564ea1ce69c4af14e9ab",
+       "9bc7565e5359d09194fcee28e4bf7b94", "6fea7805458b9d149f238a30e2dc3f13",
+       "6fea7805458b9d149f238a30e2dc3f13", "681dff5fc7a7244ba4e4a582ca7ecb14"},
+      {"cb99352c9c6300e7e825188bb4adaee0", "7e40674de0209bd72f8e9c6e39ee6f7c",
+       "3e475572f6b4ecbb2730fd16751ad7ed", "e6e4c63abc9cb112d9d1f23886cd1415",
+       "1a1c953b175c105c604902877e2bab18", "380a53072530223d4ee622e014ee4bdb",
+       "6137394ea1172fb7ea0cbac237ff1703", "85ab0c813e46f97cb9f42542f44c01ad",
+       "68c8ac462f0e28cb35402c538bee32f1", "0038502ffa4760c8feb6f9abd4de7250"},
   };
 
-  if (bitdepth == 8) {
-    return kTestDigestsLuma8bpp[coeff_lag - 1][param_index];
+  static const char* const kTestDigestsLuma12bpp[3][kNumFilmGrainTestParams] = {
+      {"d618bbb0e337969c91b1805f39561520", "d618bbb0e337969c91b1805f39561520",
+       "678f6e911591daf9eca4e305dabdb2b3", "d618bbb0e337969c91b1805f39561520",
+       "d618bbb0e337969c91b1805f39561520", "3b26f49612fd587c7360790d40adb5de",
+       "d618bbb0e337969c91b1805f39561520", "33f77d3ff50cfc64c6bc9a896b567377",
+       "33f77d3ff50cfc64c6bc9a896b567377", "33f77d3ff50cfc64c6bc9a896b567377"},
+      {"362fd67050fb7abaf57c43a92d993423", "e014ae0eb9e697281015c38905cc46ef",
+       "82b867e57151dc08afba31eccf5ccf69", "a94ba736cdce7bfa0b550285f59e47a9",
+       "3f1b0b7dd3b10e322254d35e4e185b7c", "7929708e5f017d58c53513cb79b35fda",
+       "6d26d31a091cbe642a7070933bd7de5a", "dc29ac40a994c0a760bfbad0bfc15b3a",
+       "dc29ac40a994c0a760bfbad0bfc15b3a", "399b919db5190a5311ce8d166580827b"},
+      {"6116d1f569f5b568eca4dc1fbf255086", "7e9cf31ea74e8ea99ffd12094ce6cd05",
+       "bb982c4c39e82a333d744defd16f4388", "7c6e584b082dc6b97ed0d967def3993f",
+       "fb234695353058f03c8e128f2f8de130", "9218c6ca67bf6a9237f98aa1ce7acdfd",
+       "d1fb834bbb388ed066c5cbc1c79b5bdf", "d6f630daedc08216fcea12012e7408b5",
+       "dd7fe49299e6f113a98debc7411c8db8", "8b89e45a5101a28c24209ae119eafeb8"},
+  };
+
+  switch (bitdepth) {
+    case 8:
+      return kTestDigestsLuma8bpp[coeff_lag - 1][param_index];
+    case 10:
+      return kTestDigestsLuma10bpp[coeff_lag - 1][param_index];
+    case 12:
+      return kTestDigestsLuma12bpp[coeff_lag - 1][param_index];
+    default:
+      assert(bitdepth == 8 || bitdepth == 10 || bitdepth == 12);
+      return nullptr;
   }
-  return kTestDigestsLuma10bpp[coeff_lag - 1][param_index];
 }
 
 const char* GetARTestDigestChromaU(int bitdepth, int coeff_lag,
@@ -589,12 +616,28 @@ const char* GetARTestDigestChromaU(int bitdepth, int coeff_lag,
       "e2688d7286cd43fe0a3ea734d2ad0f77", "853193c4981bd882912171061327bdf2",
   };
 
+  static const char* const kTestDigestsChromaU12bpp[12] = {
+      "04c23b01d01c0e3f3247f3741581b383", "9f8ea1d66e44f6fe93d765ce56b2b0f3",
+      "5dda44b128d6c244963f1e8e17cc1d22", "9dd0a79dd2f772310a95762d445bface",
+      "0dbd40d930e4873d72ea72b9e3d62440", "d7d83c207c6b435a164206d5f457931f",
+      "e8d04f6e63ed63838adff965275a1ff1", "fc09a903e941fcff8bad67a84f705775",
+      "9cd706606a2aa40d0957547756f7abd9", "258b37e7b8f48db77dac7ea24073fe69",
+      "80149b8bb05308da09c1383d8b79d3da", "e993f3bffae53204a1942feb1af42074",
+  };
+
   assert(!(subsampling_x == 0 && subsampling_y == 1));
   const int base_index = 3 * coeff_lag + subsampling_x + subsampling_y;
-  if (bitdepth == 8) {
-    return kTestDigestsChromaU8bpp[base_index];
+  switch (bitdepth) {
+    case 8:
+      return kTestDigestsChromaU8bpp[base_index];
+    case 10:
+      return kTestDigestsChromaU10bpp[base_index];
+    case 12:
+      return kTestDigestsChromaU12bpp[base_index];
+    default:
+      assert(bitdepth == 8 || bitdepth == 10 || bitdepth == 12);
+      return nullptr;
   }
-  return kTestDigestsChromaU10bpp[base_index];
 }
 
 const char* GetARTestDigestChromaV(int bitdepth, int coeff_lag,
@@ -617,12 +660,28 @@ const char* GetARTestDigestChromaV(int bitdepth, int coeff_lag,
       "d3d0912e3fdb956fef416a010bd7b4c2", "a2fca8abd9fd38d2eef3c4495d9eff78",
   };
 
+  static const char* const kTestDigestsChromaV12bpp[12] = {
+      "0d1890335f4464167de22353678ca9c6", "9e6830aba73139407196f1c811f910bc",
+      "6018f2fb76bd648bef0262471cfeba5c", "78e1ae1b790d709cdb8997621cf0fde3",
+      "5b44ae281d7f9db2f17aa3c24b4741dd", "f931d16991669cb16721de87da9b8067",
+      "5580f2aed349d9cabdafb9fc25a57b1c", "86918cd78bf95e6d4405dd050f5890b8",
+      "13c8b314eeebe35fa60b703d94e1b2c1", "13c6fb75cab3f42e0d4ca31e4d068b0e",
+      "bb9ca0bd6f8cd67e44c8ac2803abf5a5", "0da4ea711ffe557bb66577392b6f148b",
+  };
+
   assert(!(subsampling_x == 0 && subsampling_y == 1));
   const int base_index = 3 * coeff_lag + subsampling_x + subsampling_y;
-  if (bitdepth == 8) {
-    return kTestDigestsChromaV8bpp[base_index];
+  switch (bitdepth) {
+    case 8:
+      return kTestDigestsChromaV8bpp[base_index];
+    case 10:
+      return kTestDigestsChromaV10bpp[base_index];
+    case 12:
+      return kTestDigestsChromaV12bpp[base_index];
+    default:
+      assert(bitdepth == 8 || bitdepth == 10 || bitdepth == 12);
+      return nullptr;
   }
-  return kTestDigestsChromaV10bpp[base_index];
 }
 
 const char* GetGrainGenerationTestDigestLuma(int bitdepth, int param_index) {
@@ -642,10 +701,25 @@ const char* GetGrainGenerationTestDigestLuma(int bitdepth, int param_index) {
       "85a122e32648fde84b883a1f98947c60", "dee656e3791138285bc5b71e3491a177",
   };
 
-  if (bitdepth == 8) {
-    return kTestDigestsLuma8bpp[param_index];
+  static const char* const kTestDigestsLuma12bpp[kNumFilmGrainTestParams] = {
+      "ae359794b5340d073d597117046886ac", "4d4ad3908b4fb0f248a0086537dd6b1e",
+      "672a97e15180cbeeaf76d763992c9f23", "739124d10d16e00a158e833ea92107bc",
+      "4c38c738ff7ffc50adaa4474584d3aae", "ca05ba7e51000a7d10e5cbb2101bbd86",
+      "e207022b916bf03a76ac8742af29853d", "7454bf1859149237ff74f1161156c857",
+      "10fc2a16e663bbc305255b0883cfcd45", "4228abff6899bb33839b579288ab29fe",
+  };
+
+  switch (bitdepth) {
+    case 8:
+      return kTestDigestsLuma8bpp[param_index];
+    case 10:
+      return kTestDigestsLuma10bpp[param_index];
+    case 12:
+      return kTestDigestsLuma12bpp[param_index];
+    default:
+      assert(bitdepth == 8 || bitdepth == 10 || bitdepth == 12);
+      return nullptr;
   }
-  return kTestDigestsLuma10bpp[param_index];
 }
 
 const char* GetConstructStripesTestDigest(int bitdepth, int overlap_flag,
@@ -663,11 +737,24 @@ const char* GetConstructStripesTestDigest(int bitdepth, int overlap_flag,
       "125bf18b7787e8f0792ea12f9210de0d", "21cf98cbce17eca77dc150cc9be0e0a0",
   };
 
+  static const char* const kTestDigests12bpp[6] = {
+      "57f8e17078b6e8935252e918a2562636", "556a7b294a99bf1163b7166b4f68357e",
+      "249bee5572cd7d1cc07182c97adc4ba7", "9bf43ae1998c2a5b2e5f4d8236b58747",
+      "477c08fa26499936e5bb03bde097633e", "fe64b7166ff87ea0711ae4f519cadd59",
+  };
+
   const int base_index = 3 * overlap_flag + subsampling_x + subsampling_y;
-  if (bitdepth == 8) {
-    return kTestDigests8bpp[base_index];
+  switch (bitdepth) {
+    case 8:
+      return kTestDigests8bpp[base_index];
+    case 10:
+      return kTestDigests10bpp[base_index];
+    case 12:
+      return kTestDigests12bpp[base_index];
+    default:
+      assert(bitdepth == 8 || bitdepth == 10 || bitdepth == 12);
+      return nullptr;
   }
-  return kTestDigests10bpp[base_index];
 }
 
 const char* GetConstructImageTestDigest(int bitdepth, int overlap_flag,
@@ -684,11 +771,24 @@ const char* GetConstructImageTestDigest(int bitdepth, int overlap_flag,
       "656a9ef056b04565bec9ca7e0873c408", "a70fff81ab28d02d99dd4f142699ba39",
   };
 
+  static const char* const kTestDigests12bpp[6] = {
+      "146f7ceadaf77e7a3c41e191a58c1d3c", "de18526db39630936733e687cdca189e",
+      "165c96ff63bf3136505ab1d239f7ceae", "a102636662547f84e5f6fb6c3e4ef959",
+      "4cb073fcc783c158a95c0b1ce0d27e9f", "3a734c71d4325a7da53e2a6e00f81647",
+  };
+
   const int base_index = 3 * overlap_flag + subsampling_x + subsampling_y;
-  if (bitdepth == 8) {
-    return kTestDigests8bpp[base_index];
+  switch (bitdepth) {
+    case 8:
+      return kTestDigests8bpp[base_index];
+    case 10:
+      return kTestDigests10bpp[base_index];
+    case 12:
+      return kTestDigests12bpp[base_index];
+    default:
+      assert(bitdepth == 8 || bitdepth == 10 || bitdepth == 12);
+      return nullptr;
   }
-  return kTestDigests10bpp[base_index];
 }
 
 const char* GetScalingInitTestDigest(int param_index, int bitdepth) {
@@ -708,23 +808,36 @@ const char* GetScalingInitTestDigest(int param_index, int bitdepth) {
       "11b3e256c74cee2b5679f7457793869a", "89fab5c1db09e242d0494d1c696a774a",
   };
 
-  if (bitdepth == 8) {
-    return kTestDigests8bpp[param_index];
+  static const char* const kTestDigests12bpp[kNumFilmGrainTestParams] = {
+      "1554df49a863a851d146213e09d311a4", "84808c3ed3b5495a62c9d2dd9a08cb26",
+      "bb31f083a3bd9ef26587478b8752f280", "34fdfe61d6871e4882e38062a0725c5c",
+      "bb31f083a3bd9ef26587478b8752f280", "e7b8c3e4508ceabe89b78f10a9e160b8",
+      "e7b8c3e4508ceabe89b78f10a9e160b8", "a0ccc9e3d0f0c9d1f08f1249264d92f5",
+      "7992a96883c8a9a35d6ca8961bc4515b", "de906ce2c0fceed6f168215447b21b16",
+  };
+
+  switch (bitdepth) {
+    case 8:
+      return kTestDigests8bpp[param_index];
+    case 10:
+      return kTestDigests10bpp[param_index];
+    case 12:
+      return kTestDigests12bpp[param_index];
+    default:
+      assert(bitdepth == 8 || bitdepth == 10 || bitdepth == 12);
+      return nullptr;
   }
-  assert(bitdepth == 10);
-  return kTestDigests10bpp[param_index];
 }
 
 const char* GetBlendLumaTestDigest(int bitdepth) {
-  static const char* const kTestDigest8bpp = "de35b16c702690b1d311cdd0973835d7";
+  static const char* const kTestDigests[] = {
+      "de35b16c702690b1d311cdd0973835d7",
+      "60e9f24dcaaa0207a8db5ab5f3c66608",
+      "8e7d44b620bb7768459074be6bfbca7b",
+  };
 
-  static const char* const kTestDigest10bpp =
-      "60e9f24dcaaa0207a8db5ab5f3c66608";
-
-  if (bitdepth == 8) {
-    return kTestDigest8bpp;
-  }
-  return kTestDigest10bpp;
+  assert(bitdepth == 8 || bitdepth == 10 || bitdepth == 12);
+  return kTestDigests[(bitdepth - 8) / 2];
 }
 
 const char* GetBlendChromaUTestDigest(int bitdepth,
@@ -742,12 +855,25 @@ const char* GetBlendChromaUTestDigest(int bitdepth,
       "9b7958a2278a16bce2b7bc31fdd811f5", "c5c3c8cccf6a2b4e40b4a412a5bf4f08",
   };
 
+  static const char* const kTestDigests12bpp[6] = {
+      "8fad0cc641da35e0d2d8f178c7ce8394", "793eb9d2e6b4ea2e3bb08e7068236155",
+      "9156bd85ab9493d8867a174f920bb1e6", "6834319b4c88e3e0c96b6f8d7efd08dd",
+      "c40e492790d3803a734efbc6feca46e2", "d884c3b1e2c21d98844ca7639e0599a5",
+  };
+
   const int base_index =
       3 * chroma_scaling_from_luma + subsampling_x + subsampling_y;
-  if (bitdepth == 8) {
-    return kTestDigests8bpp[base_index];
+  switch (bitdepth) {
+    case 8:
+      return kTestDigests8bpp[base_index];
+    case 10:
+      return kTestDigests10bpp[base_index];
+    case 12:
+      return kTestDigests12bpp[base_index];
+    default:
+      assert(bitdepth == 8 || bitdepth == 10 || bitdepth == 12);
+      return nullptr;
   }
-  return kTestDigests10bpp[base_index];
 }
 
 const char* GetBlendChromaVTestDigest(int bitdepth,
@@ -765,12 +891,25 @@ const char* GetBlendChromaVTestDigest(int bitdepth,
       "ed4382caa936acf1158ff8049d18ffac", "942bdd1344c9182dd7572099fb9372db",
   };
 
+  static const char* const kTestDigests12bpp[6] = {
+      "70704a1e171a3a70d40b7d0037a75fbc", "62549e2afbf36a1ed405a6574d39c542",
+      "e93889927ab77c6e0767ff071d980c02", "a0c1f6ed78874137710fee7418d80959",
+      "f6283e36a25cb867e30bdf0bfdb2124b", "741c2d48898835b9d9e3bd0b6ac6269a",
+  };
+
   const int base_index =
       3 * chroma_scaling_from_luma + subsampling_x + subsampling_y;
-  if (bitdepth == 8) {
-    return kTestDigests8bpp[base_index];
+  switch (bitdepth) {
+    case 8:
+      return kTestDigests8bpp[base_index];
+    case 10:
+      return kTestDigests10bpp[base_index];
+    case 12:
+      return kTestDigests12bpp[base_index];
+    default:
+      assert(bitdepth == 8 || bitdepth == 10 || bitdepth == 12);
+      return nullptr;
   }
-  return kTestDigests10bpp[base_index];
 }
 
 // GetFilmGrainRandomNumber() is only invoked with |bits| equal to 11 or 8. Test
@@ -844,6 +983,7 @@ template <int bitdepth>
 class AutoRegressionTestLuma
     : public testing::TestWithParam<std::tuple<int, int>> {
  public:
+  static_assert(bitdepth >= kBitdepth8 && bitdepth <= LIBGAV1_MAX_BITDEPTH, "");
   using GrainType =
       typename std::conditional<bitdepth == 8, int8_t, int16_t>::type;
 
@@ -982,6 +1122,28 @@ TEST_P(AutoRegressionTestLuma10bpp, DISABLED_Speed) {
 }
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
 
+#if LIBGAV1_MAX_BITDEPTH == 12
+using AutoRegressionTestLuma12bpp = AutoRegressionTestLuma<12>;
+
+TEST_P(AutoRegressionTestLuma12bpp, AutoRegressiveFilterLuma) {
+  TestAutoRegressiveFilterLuma(std::get<0>(GetParam()), std::get<1>(GetParam()),
+                               1, /*saturate=*/false,
+                               /*compare=*/false);
+}
+
+TEST_P(AutoRegressionTestLuma12bpp, AutoRegressiveFilterLumaSaturated) {
+  TestAutoRegressiveFilterLuma(std::get<0>(GetParam()), std::get<1>(GetParam()),
+                               1, /*saturate=*/true,
+                               /*compare=*/true);
+}
+
+TEST_P(AutoRegressionTestLuma12bpp, DISABLED_Speed) {
+  TestAutoRegressiveFilterLuma(std::get<0>(GetParam()), std::get<1>(GetParam()),
+                               1e5,
+                               /*saturate=*/false, /*compare=*/false);
+}
+#endif  // LIBGAV1_MAX_BITDEPTH == 12
+
 INSTANTIATE_TEST_SUITE_P(
     C, AutoRegressionTestLuma8bpp,
     testing::Combine(testing::Range(1, 4) /* coeff_lag */,
@@ -1005,6 +1167,13 @@ INSTANTIATE_TEST_SUITE_P(
                      testing::Range(0, 10) /* param_index */));
 #endif
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
+
+#if LIBGAV1_MAX_BITDEPTH == 12
+INSTANTIATE_TEST_SUITE_P(
+    C, AutoRegressionTestLuma12bpp,
+    testing::Combine(testing::Range(1, 4) /* coeff_lag */,
+                     testing::Range(0, 10) /* param_index */));
+#endif  // LIBGAV1_MAX_BITDEPTH == 12
 
 struct AutoRegressionChromaTestParam {
   explicit AutoRegressionChromaTestParam(const std::tuple<int, int>& in)
@@ -1033,6 +1202,7 @@ template <int bitdepth>
 class AutoRegressionTestChroma
     : public testing::TestWithParam<std::tuple<int, int>> {
  public:
+  static_assert(bitdepth >= kBitdepth8 && bitdepth <= LIBGAV1_MAX_BITDEPTH, "");
   using GrainType =
       typename std::conditional<bitdepth == 8, int8_t, int16_t>::type;
 
@@ -1228,8 +1398,36 @@ TEST_P(AutoRegressionTestChroma10bpp, DISABLED_Speed) {
       1e5 * (1 << (test_param.subsampling_y + test_param.subsampling_x)),
       /*saturate=*/false, /*compare=*/false);
 }
-
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
+
+#if LIBGAV1_MAX_BITDEPTH == 12
+using AutoRegressionTestChroma12bpp = AutoRegressionTestChroma<12>;
+
+TEST_P(AutoRegressionTestChroma12bpp, AutoRegressiveFilterChroma) {
+  AutoRegressionChromaTestParam test_param(GetParam());
+  TestAutoRegressiveFilterChroma(test_param.coeff_lag, test_param.subsampling_x,
+                                 test_param.subsampling_y, 1,
+                                 /*saturate=*/false,
+                                 /*compare=*/false);
+}
+
+TEST_P(AutoRegressionTestChroma12bpp, AutoRegressiveFilterChromaSaturated) {
+  AutoRegressionChromaTestParam test_param(GetParam());
+  TestAutoRegressiveFilterChroma(test_param.coeff_lag, test_param.subsampling_x,
+                                 test_param.subsampling_y, 1, /*saturate=*/true,
+                                 /*compare=*/true);
+}
+
+TEST_P(AutoRegressionTestChroma12bpp, DISABLED_Speed) {
+  AutoRegressionChromaTestParam test_param(GetParam());
+  TestAutoRegressiveFilterChroma(
+      test_param.coeff_lag, test_param.subsampling_x, test_param.subsampling_y,
+      // Subsampling cuts each dimension of the chroma blocks in half, so run
+      // twice as many times to compensate.
+      1e5 * (1 << (test_param.subsampling_y + test_param.subsampling_x)),
+      /*saturate=*/false, /*compare=*/false);
+}
+#endif  // LIBGAV1_MAX_BITDEPTH == 12
 
 INSTANTIATE_TEST_SUITE_P(C, AutoRegressionTestChroma8bpp,
                          testing::Combine(testing::Range(0, 4) /* coeff_lag */,
@@ -1242,6 +1440,13 @@ INSTANTIATE_TEST_SUITE_P(C, AutoRegressionTestChroma10bpp,
                                           testing::Range(0,
                                                          3) /* subsampling */));
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
+
+#if LIBGAV1_MAX_BITDEPTH == 12
+INSTANTIATE_TEST_SUITE_P(C, AutoRegressionTestChroma12bpp,
+                         testing::Combine(testing::Range(0, 4) /* coeff_lag */,
+                                          testing::Range(0,
+                                                         3) /* subsampling */));
+#endif  // LIBGAV1_MAX_BITDEPTH == 12
 
 #if LIBGAV1_ENABLE_NEON
 INSTANTIATE_TEST_SUITE_P(NEON, AutoRegressionTestChroma8bpp,
@@ -1260,6 +1465,7 @@ INSTANTIATE_TEST_SUITE_P(NEON, AutoRegressionTestChroma10bpp,
 template <int bitdepth>
 class GrainGenerationTest : public testing::TestWithParam<int> {
  protected:
+  static_assert(bitdepth >= kBitdepth8 && bitdepth <= LIBGAV1_MAX_BITDEPTH, "");
   using GrainType =
       typename std::conditional<bitdepth == 8, int8_t, int16_t>::type;
 
@@ -1313,6 +1519,18 @@ TEST_P(GrainGenerationTest10bpp, DISABLED_LumaSpeed) {
 }
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
 
+#if LIBGAV1_MAX_BITDEPTH == 12
+using GrainGenerationTest12bpp = GrainGenerationTest<12>;
+
+TEST_P(GrainGenerationTest12bpp, GenerateGrainLuma) {
+  TestGenerateGrainLuma(GetParam(), 1);
+}
+
+TEST_P(GrainGenerationTest12bpp, DISABLED_LumaSpeed) {
+  TestGenerateGrainLuma(GetParam(), 1e5);
+}
+#endif  // LIBGAV1_MAX_BITDEPTH == 12
+
 INSTANTIATE_TEST_SUITE_P(C, GrainGenerationTest8bpp,
                          testing::Range(0, 10) /* param_index */);
 
@@ -1320,6 +1538,10 @@ INSTANTIATE_TEST_SUITE_P(C, GrainGenerationTest8bpp,
 INSTANTIATE_TEST_SUITE_P(C, GrainGenerationTest10bpp,
                          testing::Range(0, 10) /* param_index */);
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
+#if LIBGAV1_MAX_BITDEPTH == 12
+INSTANTIATE_TEST_SUITE_P(C, GrainGenerationTest12bpp,
+                         testing::Range(0, 10) /* param_index */);
+#endif  // LIBGAV1_MAX_BITDEPTH == 12
 
 // This param type is used for both ConstructStripesTest and
 // ConstructImageTest.
@@ -1350,6 +1572,7 @@ template <int bitdepth>
 class ConstructStripesTest
     : public testing::TestWithParam<std::tuple<int, int>> {
  public:
+  static_assert(bitdepth >= kBitdepth8 && bitdepth <= LIBGAV1_MAX_BITDEPTH, "");
   using GrainType =
       typename std::conditional<bitdepth == 8, int8_t, int16_t>::type;
 
@@ -1523,6 +1746,30 @@ TEST_P(ConstructStripesTest10bpp, DISABLED_Speed) {
 }
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
 
+#if LIBGAV1_MAX_BITDEPTH == 12
+using ConstructStripesTest12bpp = ConstructStripesTest<12>;
+
+TEST_P(ConstructStripesTest12bpp, RandomValues) {
+  ConstructNoiseTestParam test_params(GetParam());
+  TestConstructNoiseStripes(test_params.overlap_flag, test_params.subsampling_x,
+                            test_params.subsampling_y, /*num_runs=*/1,
+                            /*saturate=*/false, /*compare=*/false);
+}
+TEST_P(ConstructStripesTest12bpp, SaturatedValues) {
+  ConstructNoiseTestParam test_params(GetParam());
+  TestConstructNoiseStripes(test_params.overlap_flag, test_params.subsampling_x,
+                            test_params.subsampling_y, /*num_runs=*/1,
+                            /*saturate=*/true, /*compare=*/true);
+}
+
+TEST_P(ConstructStripesTest12bpp, DISABLED_Speed) {
+  ConstructNoiseTestParam test_params(GetParam());
+  TestConstructNoiseStripes(test_params.overlap_flag, test_params.subsampling_x,
+                            test_params.subsampling_y, /*num_runs=*/500,
+                            /*saturate=*/false, /*compare=*/false);
+}
+#endif  // LIBGAV1_MAX_BITDEPTH == 12
+
 INSTANTIATE_TEST_SUITE_P(C, ConstructStripesTest8bpp,
                          testing::Combine(testing::Range(0, 2),
                                           testing::Range(0, 3)));
@@ -1533,9 +1780,16 @@ INSTANTIATE_TEST_SUITE_P(C, ConstructStripesTest10bpp,
                                           testing::Range(0, 3)));
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
 
+#if LIBGAV1_MAX_BITDEPTH == 12
+INSTANTIATE_TEST_SUITE_P(C, ConstructStripesTest12bpp,
+                         testing::Combine(testing::Range(0, 2),
+                                          testing::Range(0, 3)));
+#endif  // LIBGAV1_MAX_BITDEPTH == 12
+
 template <int bitdepth>
 class ConstructImageTest : public testing::TestWithParam<std::tuple<int, int>> {
  public:
+  static_assert(bitdepth >= kBitdepth8 && bitdepth <= LIBGAV1_MAX_BITDEPTH, "");
   using GrainType =
       typename std::conditional<bitdepth == 8, int8_t, int16_t>::type;
 
@@ -1732,6 +1986,31 @@ TEST_P(ConstructImageTest10bpp, DISABLED_Speed) {
 }
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
 
+#if LIBGAV1_MAX_BITDEPTH == 12
+using ConstructImageTest12bpp = ConstructImageTest<12>;
+
+TEST_P(ConstructImageTest12bpp, RandomValues) {
+  ConstructNoiseTestParam test_params(GetParam());
+  TestConstructNoiseImage(test_params.overlap_flag, test_params.subsampling_x,
+                          test_params.subsampling_y, /*num_runs=*/1,
+                          /*saturate=*/false, /*compare=*/false);
+}
+
+TEST_P(ConstructImageTest12bpp, SaturatedValues) {
+  ConstructNoiseTestParam test_params(GetParam());
+  TestConstructNoiseImage(test_params.overlap_flag, test_params.subsampling_x,
+                          test_params.subsampling_y, /*num_runs=*/1,
+                          /*saturate=*/true, /*compare=*/true);
+}
+
+TEST_P(ConstructImageTest12bpp, DISABLED_Speed) {
+  ConstructNoiseTestParam test_params(GetParam());
+  TestConstructNoiseImage(test_params.overlap_flag, test_params.subsampling_x,
+                          test_params.subsampling_y, /*num_runs=*/500,
+                          /*saturate=*/false, /*compare=*/false);
+}
+#endif  // LIBGAV1_MAX_BITDEPTH == 12
+
 INSTANTIATE_TEST_SUITE_P(C, ConstructImageTest8bpp,
                          testing::Combine(testing::Range(0, 2),
                                           testing::Range(0, 3)));
@@ -1748,9 +2027,16 @@ INSTANTIATE_TEST_SUITE_P(C, ConstructImageTest10bpp,
                                           testing::Range(0, 3)));
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
 
+#if LIBGAV1_MAX_BITDEPTH == 12
+INSTANTIATE_TEST_SUITE_P(C, ConstructImageTest12bpp,
+                         testing::Combine(testing::Range(0, 2),
+                                          testing::Range(0, 3)));
+#endif  // LIBGAV1_MAX_BITDEPTH == 12
+
 template <int bitdepth>
 class ScalingLookupTableTest : public testing::TestWithParam<int> {
  public:
+  static_assert(bitdepth >= kBitdepth8 && bitdepth <= LIBGAV1_MAX_BITDEPTH, "");
   ScalingLookupTableTest() {
     test_utils::ResetDspTable(bitdepth);
     FilmGrainInit_C();
@@ -1840,6 +2126,18 @@ TEST_P(ScalingLookupTableTest10bpp, DISABLED_Speed) {
 }
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
 
+#if LIBGAV1_MAX_BITDEPTH == 12
+using ScalingLookupTableTest12bpp = ScalingLookupTableTest<12>;
+
+TEST_P(ScalingLookupTableTest12bpp, ZeroPoints) { ZeroPoints(); }
+
+TEST_P(ScalingLookupTableTest12bpp, Correctness) { TestSpeed(/*num_runs=*/1); }
+
+TEST_P(ScalingLookupTableTest12bpp, DISABLED_Speed) {
+  TestSpeed(/*num_runs=*/1e5);
+}
+#endif  // LIBGAV1_MAX_BITDEPTH == 12
+
 INSTANTIATE_TEST_SUITE_P(C, ScalingLookupTableTest8bpp,
                          testing::Range(0, kNumFilmGrainTestParams));
 
@@ -1857,6 +2155,11 @@ INSTANTIATE_TEST_SUITE_P(NEON, ScalingLookupTableTest10bpp,
                          testing::Range(0, kNumFilmGrainTestParams));
 #endif
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
+
+#if LIBGAV1_MAX_BITDEPTH == 12
+INSTANTIATE_TEST_SUITE_P(C, ScalingLookupTableTest12bpp,
+                         testing::Range(0, kNumFilmGrainTestParams));
+#endif  // LIBGAV1_MAX_BITDEPTH == 12
 
 struct BlendNoiseTestParam {
   explicit BlendNoiseTestParam(const std::tuple<int, int>& in)
@@ -1884,6 +2187,7 @@ struct BlendNoiseTestParam {
 template <int bitdepth, typename Pixel>
 class BlendNoiseTest : public testing::TestWithParam<std::tuple<int, int>> {
  public:
+  static_assert(bitdepth >= kBitdepth8 && bitdepth <= LIBGAV1_MAX_BITDEPTH, "");
   using GrainType =
       typename std::conditional<bitdepth == 8, int8_t, int16_t>::type;
 
@@ -2213,9 +2517,22 @@ INSTANTIATE_TEST_SUITE_P(NEON, BlendNoiseTest10bpp,
 #endif
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
 
+#if LIBGAV1_MAX_BITDEPTH == 12
+using BlendNoiseTest12bpp = BlendNoiseTest<12, uint16_t>;
+
+TEST_P(BlendNoiseTest12bpp, MatchesOriginalOutput) { TestSpeed(1); }
+
+TEST_P(BlendNoiseTest12bpp, DISABLED_Speed) { TestSpeed(kNumSpeedTests); }
+
+INSTANTIATE_TEST_SUITE_P(C, BlendNoiseTest12bpp,
+                         testing::Combine(testing::Range(0, 2),
+                                          testing::Range(0, 3)));
+#endif  // LIBGAV1_MAX_BITDEPTH == 12
+
 template <int bitdepth, typename Pixel>
 class FilmGrainSpeedTest : public testing::TestWithParam<int> {
  public:
+  static_assert(bitdepth >= kBitdepth8 && bitdepth <= LIBGAV1_MAX_BITDEPTH, "");
   FilmGrainSpeedTest() {
     test_utils::ResetDspTable(bitdepth);
     FilmGrainInit_C();
@@ -2353,6 +2670,16 @@ INSTANTIATE_TEST_SUITE_P(NEON, FilmGrainSpeedTest10bpp,
 #endif
 
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
+
+#if LIBGAV1_MAX_BITDEPTH == 12
+using FilmGrainSpeedTest12bpp = FilmGrainSpeedTest<12, uint16_t>;
+
+TEST_P(FilmGrainSpeedTest12bpp, MatchesOriginalOutput) { TestSpeed(1); }
+
+TEST_P(FilmGrainSpeedTest12bpp, DISABLED_Speed) { TestSpeed(kNumSpeedTests); }
+
+INSTANTIATE_TEST_SUITE_P(C, FilmGrainSpeedTest12bpp, testing::Values(0, 3, 8));
+#endif  // LIBGAV1_MAX_BITDEPTH == 12
 
 }  // namespace
 }  // namespace film_grain

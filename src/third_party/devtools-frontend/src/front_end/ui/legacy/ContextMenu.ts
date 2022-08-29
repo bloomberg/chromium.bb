@@ -111,7 +111,7 @@ export class Item {
         };
       }
       case 'checkbox': {
-        return {
+        const result = {
           type: 'checkbox',
           id: this.idInternal,
           label: this.label,
@@ -119,6 +119,11 @@ export class Item {
           enabled: !this.disabled,
           subItems: undefined,
         };
+        if (this.customElement) {
+          const resultAsSoftContextMenuItem = (result as SoftContextMenuDescriptor);
+          resultAsSoftContextMenuItem.element = (this.customElement as Element);
+        }
+        return result;
       }
     }
     throw new Error('Invalid item type:' + this.typeInternal);
@@ -187,11 +192,15 @@ export class Section {
     return item;
   }
 
-  appendCheckboxItem(label: string, handler: () => void, checked?: boolean, disabled?: boolean): Item {
+  appendCheckboxItem(
+      label: string, handler: () => void, checked?: boolean, disabled?: boolean, additionalElement?: Element): Item {
     const item = new Item(this.contextMenu, 'checkbox', label, disabled, checked);
     this.items.push(item);
     if (this.contextMenu) {
       this.contextMenu.setHandler(item.id(), handler);
+    }
+    if (additionalElement) {
+      item.customElement = additionalElement;
     }
     return item;
   }
@@ -352,6 +361,7 @@ export class ContextMenu extends SubMenu {
   private readonly handlers: Map<number, () => void>;
   idInternal: number;
   private softMenu?: SoftContextMenu;
+  private contextMenuLabel?: string;
 
   constructor(event: Event, options: ContextMenuOptions = {}) {
     super(null);
@@ -388,7 +398,7 @@ export class ContextMenu extends SubMenu {
 
     function handler(event: Event): void {
       const contextMenu = new ContextMenu(event);
-      contextMenu.show();
+      void contextMenu.show();
     }
   }
 
@@ -440,6 +450,9 @@ export class ContextMenu extends SubMenu {
       this.softMenu = new SoftContextMenu(
           (menuObject as SoftContextMenuDescriptor[]), this.itemSelected.bind(this), undefined, this.onSoftMenuClosed);
       this.softMenu.show((ownerDocument as Document), new AnchorBox(this.x, this.y, 0, 0));
+      if (this.contextMenuLabel) {
+        this.softMenu.setContextMenuElementLabel(this.contextMenuLabel);
+      }
     } else {
       Host.InspectorFrontendHost.InspectorFrontendHostInstance.showContextMenuAtPoint(
           this.x, this.y, menuObject, (ownerDocument as Document));
@@ -457,6 +470,10 @@ export class ContextMenu extends SubMenu {
     }
   }
 
+  setContextMenuLabel(label: string): void {
+    this.contextMenuLabel = label;
+  }
+
   setX(x: number): void {
     this.x = x;
   }
@@ -472,9 +489,8 @@ export class ContextMenu extends SubMenu {
   }
 
   private buildMenuDescriptors(): (SoftContextMenuDescriptor|Host.InspectorFrontendHostAPI.ContextMenuDescriptor)[] {
-    return /** @type {!Array.<!Host.InspectorFrontendHostAPI.ContextMenuDescriptor|!SoftContextMenuDescriptor>} */ super
-               .buildDescriptor()
-               .subItems as (SoftContextMenuDescriptor | Host.InspectorFrontendHostAPI.ContextMenuDescriptor)[];
+    return super.buildDescriptor().subItems as (
+               SoftContextMenuDescriptor | Host.InspectorFrontendHostAPI.ContextMenuDescriptor)[];
   }
 
   private onItemSelected(event: Common.EventTarget.EventTargetEvent<number>): void {
@@ -503,6 +519,12 @@ export class ContextMenu extends SubMenu {
   appendApplicableItems(target: Object): void {
     this.pendingPromises.push(loadApplicableRegisteredProviders(target));
     this.pendingTargets.push(target);
+  }
+
+  markAsMenuItemCheckBox(): void {
+    if (this.softMenu) {
+      this.softMenu.markAsMenuItemCheckBox();
+    }
   }
 
   private static pendingMenu: ContextMenu|null = null;

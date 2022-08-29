@@ -13,6 +13,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/time/clock.h"
 #include "base/time/tick_clock.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -34,10 +35,10 @@
 #include "chromeos/lacros/lacros_test_helper.h"
 #endif
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "chrome/install_static/install_modes.h"
 #include "chrome/install_static/test/scoped_install_details.h"
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
 using ::testing::AnyNumber;
 

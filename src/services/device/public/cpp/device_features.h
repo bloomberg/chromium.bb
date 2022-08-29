@@ -19,10 +19,7 @@ namespace features {
 DEVICE_FEATURES_EXPORT extern const base::Feature kGenericSensorExtraClasses;
 DEVICE_FEATURES_EXPORT extern const base::Feature
     kWinrtGeolocationImplementation;
-DEVICE_FEATURES_EXPORT extern const base::Feature
-    kMacCoreLocationImplementation;
 DEVICE_FEATURES_EXPORT extern const base::Feature kMacCoreLocationBackend;
-DEVICE_FEATURES_EXPORT extern const base::Feature kWebBluetoothRequestLargerMtu;
 
 }  // namespace features
 

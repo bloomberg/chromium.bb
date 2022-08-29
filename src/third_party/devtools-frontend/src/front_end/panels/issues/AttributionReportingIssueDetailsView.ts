@@ -24,49 +24,18 @@ const UIStrings = {
    */
   element: 'Element',
   /**
+   * @description Noun, label for the column showing the invalid header value in the issue details table.
+   */
+  invalidHeaderValue: 'Invalid Header Value',
+  /**
    * @description Noun, label for the column showing the associated network request in the issue details table.
    */
   request: 'Request',
-  /**
-   * @description Label for the column showing the invalid value used as the 'attributionsourceeventid' attribute
-   * on an anchor HTML element ("a link").
-   */
-  invalidSourceEventId: 'Invalid `attributionsourceeventid`',
-  /**
-   * @description Label for the column showing the invalid value used as the 'attributionexpiry' attribute
-   * on an anchor HTML element ("a link").
-   */
-  invalidSourceExpiry: 'Invalid `attributionexpiry`',
-  /**
-   * @description Label for the column showing the invalid value used as the 'attributionpriority' attribute
-   * on an anchor HTML element ("a link").
-   */
-  invalidSourcePriority: 'Invalid `attributionsourcepriority`',
   /**
    * @description Label for the column showing the invalid URL used in an HTML anchor element ("a link").
    * A origin is (roughly said) the front part of a URL.
    */
   untrustworthyOrigin: 'Untrustworthy origin',
-  /**
-   * @description Label for the column showing the invalid value used for the 'trigger-data' query
-   * parameter.
-   */
-  invalidTriggerData: 'Invalid `trigger-data`',
-  /**
-   * @description Label for the column showing the invalid value used for the
-   * 'event-source-trigger-data' query parameter.
-   */
-  invalidEventSourceTriggerData: 'Invalid `event-source-trigger-data`',
-  /**
-   * @description Label for the column showing the invalid value used for the
-   * 'priority' query parameter.
-   */
-  invalidTriggerPriority: 'Invalid `priority`',
-  /**
-   * @description Label for the column showing the invalid value used for the
-   * 'dedup-key' query parameter.
-   */
-  invalidTriggerDedupKey: 'Invalid `dedup-key`',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/issues/AttributionReportingIssueDetailsView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -80,13 +49,13 @@ export class AttributionReportingIssueDetailsView extends AffectedResourcesView 
     this.clear();
     const issues = this.issue.getAttributionReportingIssues();
     if (issues.size > 0) {
-      this.appendDetails(issues.values().next().value.code(), issues);
+      this.#appendDetails(issues.values().next().value.code(), issues);
     } else {
       this.updateAffectedResourceCount(0);
     }
   }
 
-  private appendDetails(
+  #appendDetails(
       issueCode: IssuesManager.AttributionReportingIssue.IssueCode,
       issues: Iterable<IssuesManager.AttributionReportingIssue.AttributionReportingIssue>): void {
     const header = document.createElement('tr');
@@ -109,41 +78,10 @@ export class AttributionReportingIssueDetailsView extends AffectedResourcesView 
         this.appendColumnTitle(header, i18nString(UIStrings.element));
         this.appendColumnTitle(header, i18nString(UIStrings.untrustworthyOrigin));
         break;
-      case IssuesManager.AttributionReportingIssue.IssueCode.InvalidAttributionData:
-      case IssuesManager.AttributionReportingIssue.IssueCode.AttributionTriggerDataTooLarge:
-        this.appendColumnTitle(header, i18nString(UIStrings.request));
-        this.appendColumnTitle(header, i18nString(UIStrings.invalidTriggerData));
-        break;
-      case IssuesManager.AttributionReportingIssue.IssueCode.InvalidEventSourceTriggerData:
-      case IssuesManager.AttributionReportingIssue.IssueCode.AttributionEventSourceTriggerDataTooLarge:
-        this.appendColumnTitle(header, i18nString(UIStrings.request));
-        this.appendColumnTitle(header, i18nString(UIStrings.invalidEventSourceTriggerData));
-        break;
-      case IssuesManager.AttributionReportingIssue.IssueCode.InvalidTriggerPriority:
-        this.appendColumnTitle(header, i18nString(UIStrings.request));
-        this.appendColumnTitle(header, i18nString(UIStrings.invalidTriggerPriority));
-        break;
-      case IssuesManager.AttributionReportingIssue.IssueCode.InvalidTriggerDedupKey:
-        this.appendColumnTitle(header, i18nString(UIStrings.request));
-        this.appendColumnTitle(header, i18nString(UIStrings.invalidTriggerDedupKey));
-        break;
-      case IssuesManager.AttributionReportingIssue.IssueCode.InvalidAttributionSourceEventId:
+      case IssuesManager.AttributionReportingIssue.IssueCode.InvalidHeader:
         this.appendColumnTitle(header, i18nString(UIStrings.frame));
-        this.appendColumnTitle(header, i18nString(UIStrings.element));
-        this.appendColumnTitle(header, i18nString(UIStrings.invalidSourceEventId));
-        break;
-      case IssuesManager.AttributionReportingIssue.IssueCode.InvalidAttributionSourceExpiry:
-        this.appendColumnTitle(header, i18nString(UIStrings.frame));
-        this.appendColumnTitle(header, i18nString(UIStrings.element));
-        this.appendColumnTitle(header, i18nString(UIStrings.invalidSourceExpiry));
-        break;
-      case IssuesManager.AttributionReportingIssue.IssueCode.InvalidAttributionSourcePriority:
-        this.appendColumnTitle(header, i18nString(UIStrings.frame));
-        this.appendColumnTitle(header, i18nString(UIStrings.element));
-        this.appendColumnTitle(header, i18nString(UIStrings.invalidSourcePriority));
-        break;
-      case IssuesManager.AttributionReportingIssue.IssueCode.MissingAttributionData:
         this.appendColumnTitle(header, i18nString(UIStrings.request));
+        this.appendColumnTitle(header, i18nString(UIStrings.invalidHeaderValue));
         break;
       case IssuesManager.AttributionReportingIssue.IssueCode.PermissionPolicyDisabled:
         this.appendColumnTitle(header, i18nString(UIStrings.frame));
@@ -156,12 +94,12 @@ export class AttributionReportingIssueDetailsView extends AffectedResourcesView 
     let count = 0;
     for (const issue of issues) {
       count++;
-      this.appendDetail(issueCode, issue);
+      void this.#appendDetail(issueCode, issue);
     }
     this.updateAffectedResourceCount(count);
   }
 
-  private async appendDetail(
+  async #appendDetail(
       issueCode: IssuesManager.AttributionReportingIssue.IssueCode,
       issue: IssuesManager.AttributionReportingIssue.AttributionReportingIssue): Promise<void> {
     const element = document.createElement('tr');
@@ -170,47 +108,30 @@ export class AttributionReportingIssueDetailsView extends AffectedResourcesView 
     const details = issue.issueDetails;
 
     switch (issueCode) {
-      case IssuesManager.AttributionReportingIssue.IssueCode.AttributionUntrustworthyFrameOrigin:
-        this.appendFrameOrEmptyCell(element, issue);
-        this.appendRequestOrEmptyCell(element, details.request);
-        this.appendIssueDetailCell(element, details.invalidParameter || '');
-        break;
       case IssuesManager.AttributionReportingIssue.IssueCode.AttributionSourceUntrustworthyOrigin:
-        await this.appendElementOrEmptyCell(element, issue);
+        await this.#appendElementOrEmptyCell(element, issue);
         this.appendIssueDetailCell(element, details.invalidParameter || '');
         break;
-      case IssuesManager.AttributionReportingIssue.IssueCode.AttributionTriggerDataTooLarge:
-      case IssuesManager.AttributionReportingIssue.IssueCode.AttributionEventSourceTriggerDataTooLarge:
       case IssuesManager.AttributionReportingIssue.IssueCode.AttributionUntrustworthyOrigin:
-      case IssuesManager.AttributionReportingIssue.IssueCode.InvalidAttributionData:
-      case IssuesManager.AttributionReportingIssue.IssueCode.InvalidEventSourceTriggerData:
-      case IssuesManager.AttributionReportingIssue.IssueCode.InvalidTriggerPriority:
-      case IssuesManager.AttributionReportingIssue.IssueCode.InvalidTriggerDedupKey:
-        this.appendRequestOrEmptyCell(element, details.request);
+        this.#appendRequestOrEmptyCell(element, details.request);
         this.appendIssueDetailCell(element, details.invalidParameter || '');
         break;
-      case IssuesManager.AttributionReportingIssue.IssueCode.AttributionSourceUntrustworthyFrameOrigin:
-      case IssuesManager.AttributionReportingIssue.IssueCode.InvalidAttributionSourceEventId:
-      case IssuesManager.AttributionReportingIssue.IssueCode.InvalidAttributionSourceExpiry:
-      case IssuesManager.AttributionReportingIssue.IssueCode.InvalidAttributionSourcePriority:
-        this.appendFrameOrEmptyCell(element, issue);
-        await this.appendElementOrEmptyCell(element, issue);
+      case IssuesManager.AttributionReportingIssue.IssueCode.InvalidHeader:
+        this.#appendFrameOrEmptyCell(element, issue);
+        this.#appendRequestOrEmptyCell(element, details.request);
         this.appendIssueDetailCell(element, details.invalidParameter || '');
-        break;
-      case IssuesManager.AttributionReportingIssue.IssueCode.MissingAttributionData:
-        this.appendRequestOrEmptyCell(element, details.request);
         break;
       case IssuesManager.AttributionReportingIssue.IssueCode.PermissionPolicyDisabled:
-        this.appendFrameOrEmptyCell(element, issue);
-        await this.appendElementOrEmptyCell(element, issue);
-        this.appendRequestOrEmptyCell(element, details.request);
+        this.#appendFrameOrEmptyCell(element, issue);
+        await this.#appendElementOrEmptyCell(element, issue);
+        this.#appendRequestOrEmptyCell(element, details.request);
         break;
     }
 
     this.affectedResources.appendChild(element);
   }
 
-  private appendFrameOrEmptyCell(
+  #appendFrameOrEmptyCell(
       parent: HTMLElement, issue: IssuesManager.AttributionReportingIssue.AttributionReportingIssue): void {
     const details = issue.issueDetails;
     if (details.frame) {
@@ -220,7 +141,7 @@ export class AttributionReportingIssueDetailsView extends AffectedResourcesView 
     }
   }
 
-  private async appendElementOrEmptyCell(
+  async #appendElementOrEmptyCell(
       parent: HTMLElement, issue: IssuesManager.AttributionReportingIssue.AttributionReportingIssue): Promise<void> {
     const details = issue.issueDetails;
     if (details.violatingNodeId !== undefined) {
@@ -233,7 +154,7 @@ export class AttributionReportingIssueDetailsView extends AffectedResourcesView 
     }
   }
 
-  private appendRequestOrEmptyCell(parent: HTMLElement, request?: Protocol.Audits.AffectedRequest): void {
+  #appendRequestOrEmptyCell(parent: HTMLElement, request?: Protocol.Audits.AffectedRequest): void {
     if (!request) {
       this.appendIssueDetailCell(parent, '');
       return;

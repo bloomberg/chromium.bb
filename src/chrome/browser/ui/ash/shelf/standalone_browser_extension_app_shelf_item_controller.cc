@@ -7,10 +7,12 @@
 #include <algorithm>
 #include <utility>
 
+#include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
 #include "base/bind.h"
 #include "base/containers/cxx20_erase.h"
+#include "base/numerics/safe_conversions.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/publishers/standalone_browser_extension_apps.h"
@@ -165,7 +167,8 @@ void StandaloneBrowserExtensionAppShelfItemController::ExecuteCommand(
   // the aura::Windows for destruction. This should almost always work. In rare
   // edge cases, this will cause the wrong window to be selected, but will not
   // cause undefined behavior.
-  if (command_id >= 0 && command_id < context_menu_windows_.size()) {
+  if (command_id >= 0 &&
+      command_id < base::checked_cast<int32_t>(context_menu_windows_.size())) {
     views::Widget* widget = views::Widget::GetWidgetForNativeWindow(
         context_menu_windows_[command_id]);
     AppWindowBase app_window(shelf_id(), widget);
@@ -339,6 +342,10 @@ void StandaloneBrowserExtensionAppShelfItemController::InitWindowStatus(
   }
   window_status_[window] = state;
   UpdateInstance(window, state);
+
+  // Also update the window properties in exo.
+  window->SetProperty(ash::kAppIDKey, shelf_id().app_id);
+  window->SetProperty(ash::kShelfIDKey, shelf_id().Serialize());
 }
 
 void StandaloneBrowserExtensionAppShelfItemController::UpdateInstance(

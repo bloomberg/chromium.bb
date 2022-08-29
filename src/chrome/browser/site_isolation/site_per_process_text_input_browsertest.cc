@@ -46,7 +46,7 @@
 
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
-#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "ui/base/ime/linux/text_edit_command_auralinux.h"
 #include "ui/base/ime/linux/text_edit_key_bindings_delegate_auralinux.h"
 #endif
@@ -364,7 +364,8 @@ class SitePerProcessTextInputManagerTest : public InProcessBrowserTest {
   // inside frame. For example, for 'a(b(c, d(e)))', [0] returns b, and
   // [0, 1, 0] returns e;
   content::RenderFrameHost* GetFrame(const IndexVector& indices) {
-    content::RenderFrameHost* current = active_contents()->GetMainFrame();
+    content::RenderFrameHost* current =
+        active_contents()->GetPrimaryMainFrame();
     for (size_t index : indices)
       current = ChildFrameAt(current, index);
     return current;
@@ -727,7 +728,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
 }
 
 // Failing on Mac - http://crbug.com/852452
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #define MAYBE_TrackTextSelectionForAllFrames \
   DISABLED_TrackTextSelectionForAllFrames
 #else
@@ -790,7 +791,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
 // Then, it verifies that the <input>'s value matches the committed text
 // (https://crbug.com/688842).
 // Flaky on Android and Linux http://crbug.com/852274
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #define MAYBE_ImeCommitTextForAllFrames DISABLED_ImeCommitTextForAllFrames
 #else
 #define MAYBE_ImeCommitTextForAllFrames ImeCommitTextForAllFrames
@@ -838,7 +839,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
 // TODO(ekaramad): Some of the following tests should be active on Android as
 // well. Enable them when the corresponding feature is implemented for Android
 // (https://crbug.com/602723).
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 // This test creates a page with multiple child frames and adds an <input> to
 // each frame. Then, sequentially, each <input> is focused by sending a tab key.
 // Then, after |TextInputState.type| for a view is changed to text, another key
@@ -1088,7 +1089,7 @@ class InputMethodObserverForShowIme : public InputMethodObserverBase {
 // or not. On Windows we have implemented TSF1 on Chromium that takes care of
 // IME compositions, handwriting panels, SIP visibility etc. Please see
 // (https://crbug.com/1007958) for more details.
-#if !defined(OS_WIN)
+#if !BUILDFLAG(IS_WIN)
 IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
                        CorrectlyShowVirtualKeyboardIfEnabled) {
   // We only need the <iframe> page to create RWHV.
@@ -1135,7 +1136,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
   sender.SetType(ui::TEXT_INPUT_TYPE_NONE);
   EXPECT_FALSE(send_and_check_show_ime());
 }
-#endif  // OS_WIN
+#endif  // !BUILDFLAG(IS_WIN)
 
 #endif  // USE_AURA
 
@@ -1144,7 +1145,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
 // overriding TextEditKeyBindingsDelegateAuraLinux, which only exists on Linux.
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
-#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
                        SubframeKeyboardEditCommands) {
   GURL main_url(embedded_test_server()->GetURL(
@@ -1159,7 +1160,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
   // Focus the subframe and then its input field.  The return value
   // "input-focus" will be sent once the input field's focus event fires.
   content::RenderFrameHost* child =
-      ChildFrameAt(web_contents->GetMainFrame(), 0);
+      ChildFrameAt(web_contents->GetPrimaryMainFrame(), 0);
   std::string result;
   std::string script =
       "function onInput(e) {"
@@ -1242,7 +1243,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
 // cannot have two instances of ShellContentBrowserClient (due to a DCHECK in
 // the ctor). Therefore, we put the test here to use ChromeContentBrowserClient
 // which does not have the same singleton constraint.
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 class ShowDefinitionForWordObserver
     : content::RenderWidgetHostViewCocoaObserver {
  public:
@@ -1436,4 +1437,4 @@ IN_PROC_BROWSER_TEST_F(
 }
 #endif  //  defined(MAC_OSX)
 
-#endif  // !defined(OS_ANDROID)
+#endif  // !BUILDFLAG(IS_ANDROID)

@@ -1,9 +1,9 @@
 /*
- * Copyright (c) 2015-2021 The Khronos Group Inc.
- * Copyright (c) 2015-2021 Valve Corporation
- * Copyright (c) 2015-2021 LunarG, Inc.
- * Copyright (c) 2015-2021 Google, Inc.
- * Modifications Copyright (C) 2020-2021 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (c) 2015-2022 The Khronos Group Inc.
+ * Copyright (c) 2015-2022 Valve Corporation
+ * Copyright (c) 2015-2022 LunarG, Inc.
+ * Copyright (c) 2015-2022 Google, Inc.
+ * Modifications Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,12 +54,11 @@ TEST_F(VkLayerTest, ImagelessFramebufferRenderPassBeginImageViewMismatchTests) {
         return;
     }
 
-    VkPhysicalDeviceImagelessFramebufferFeaturesKHR physicalDeviceImagelessFramebufferFeatures = {};
-    physicalDeviceImagelessFramebufferFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGELESS_FRAMEBUFFER_FEATURES_KHR;
+    VkPhysicalDeviceImagelessFramebufferFeaturesKHR physicalDeviceImagelessFramebufferFeatures =
+        LvlInitStruct<VkPhysicalDeviceImagelessFramebufferFeaturesKHR>();
     physicalDeviceImagelessFramebufferFeatures.imagelessFramebuffer = VK_TRUE;
-    VkPhysicalDeviceFeatures2 physicalDeviceFeatures2 = {};
-    physicalDeviceFeatures2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
-    physicalDeviceFeatures2.pNext = &physicalDeviceImagelessFramebufferFeatures;
+    VkPhysicalDeviceFeatures2 physicalDeviceFeatures2 =
+        LvlInitStruct<VkPhysicalDeviceFeatures2>(&physicalDeviceImagelessFramebufferFeatures);
 
     ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &physicalDeviceFeatures2, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT));
 
@@ -78,17 +77,15 @@ TEST_F(VkLayerTest, ImagelessFramebufferRenderPassBeginImageViewMismatchTests) {
     VkSubpassDescription subpassDescription = {};
     subpassDescription.colorAttachmentCount = 1;
     subpassDescription.pColorAttachments = &attachmentReference;
-    VkRenderPassCreateInfo renderPassCreateInfo = {};
+    VkRenderPassCreateInfo renderPassCreateInfo = LvlInitStruct<VkRenderPassCreateInfo>();
     renderPassCreateInfo.subpassCount = 1;
     renderPassCreateInfo.pSubpasses = &subpassDescription;
     renderPassCreateInfo.attachmentCount = 1;
     renderPassCreateInfo.pAttachments = &attachmentDescription;
-    renderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
     VkRenderPass renderPass;
     vk::CreateRenderPass(m_device->device(), &renderPassCreateInfo, NULL, &renderPass);
 
-    VkFramebufferAttachmentImageInfoKHR framebufferAttachmentImageInfo = {};
-    framebufferAttachmentImageInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_ATTACHMENT_IMAGE_INFO_KHR;
+    VkFramebufferAttachmentImageInfoKHR framebufferAttachmentImageInfo = LvlInitStruct<VkFramebufferAttachmentImageInfoKHR>();
     framebufferAttachmentImageInfo.flags = VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT;
     framebufferAttachmentImageInfo.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
     framebufferAttachmentImageInfo.width = attachmentWidth;
@@ -96,13 +93,10 @@ TEST_F(VkLayerTest, ImagelessFramebufferRenderPassBeginImageViewMismatchTests) {
     framebufferAttachmentImageInfo.layerCount = 1;
     framebufferAttachmentImageInfo.viewFormatCount = 2;
     framebufferAttachmentImageInfo.pViewFormats = framebufferAttachmentFormats;
-    VkFramebufferAttachmentsCreateInfoKHR framebufferAttachmentsCreateInfo = {};
-    framebufferAttachmentsCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_ATTACHMENTS_CREATE_INFO_KHR;
+    VkFramebufferAttachmentsCreateInfoKHR framebufferAttachmentsCreateInfo = LvlInitStruct<VkFramebufferAttachmentsCreateInfoKHR>();
     framebufferAttachmentsCreateInfo.attachmentImageInfoCount = 1;
     framebufferAttachmentsCreateInfo.pAttachmentImageInfos = &framebufferAttachmentImageInfo;
-    VkFramebufferCreateInfo framebufferCreateInfo = {};
-    framebufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-    framebufferCreateInfo.pNext = &framebufferAttachmentsCreateInfo;
+    VkFramebufferCreateInfo framebufferCreateInfo = LvlInitStruct<VkFramebufferCreateInfo>(&framebufferAttachmentsCreateInfo);
     framebufferCreateInfo.flags = VK_FRAMEBUFFER_CREATE_IMAGELESS_BIT_KHR;
     framebufferCreateInfo.width = attachmentWidth;
     framebufferCreateInfo.height = attachmentHeight;
@@ -112,13 +106,10 @@ TEST_F(VkLayerTest, ImagelessFramebufferRenderPassBeginImageViewMismatchTests) {
     framebufferCreateInfo.renderPass = renderPass;
     VkFramebuffer framebuffer;
 
-    VkImageFormatListCreateInfoKHR imageFormatListCreateInfo = {};
-    imageFormatListCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_FORMAT_LIST_CREATE_INFO_KHR;
+    VkImageFormatListCreateInfoKHR imageFormatListCreateInfo = LvlInitStruct<VkImageFormatListCreateInfo>();
     imageFormatListCreateInfo.viewFormatCount = 2;
     imageFormatListCreateInfo.pViewFormats = attachmentFormats;
-    VkImageCreateInfo imageCreateInfo = {};
-    imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-    imageCreateInfo.pNext = &imageFormatListCreateInfo;
+    VkImageCreateInfo imageCreateInfo = LvlInitStruct<VkImageCreateInfo>(&imageFormatListCreateInfo);
     imageCreateInfo.flags = VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT;
     imageCreateInfo.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
     imageCreateInfo.extent.width = attachmentWidth;
@@ -135,13 +126,10 @@ TEST_F(VkLayerTest, ImagelessFramebufferRenderPassBeginImageViewMismatchTests) {
     VkImage image = imageObject.image();
 
     // Only use the subset without the TRANSFER bit
-    VkImageViewUsageCreateInfo image_view_usage_create_info = {};
-    image_view_usage_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_USAGE_CREATE_INFO;
-    image_view_usage_create_info.pNext = nullptr;
+    VkImageViewUsageCreateInfo image_view_usage_create_info = LvlInitStruct<VkImageViewUsageCreateInfo>();
     image_view_usage_create_info.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-    VkImageViewCreateInfo imageViewCreateInfo = {};
-    imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+    VkImageViewCreateInfo imageViewCreateInfo = LvlInitStruct<VkImageViewCreateInfo>();
     imageViewCreateInfo.image = image;
     imageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
     imageViewCreateInfo.format = attachmentFormats[0];
@@ -158,14 +146,10 @@ TEST_F(VkLayerTest, ImagelessFramebufferRenderPassBeginImageViewMismatchTests) {
     VkImageView imageView;
     vk::CreateImageView(m_device->device(), &imageViewCreateInfo, NULL, &imageView);
 
-    VkRenderPassAttachmentBeginInfoKHR renderPassAttachmentBeginInfo = {};
-    renderPassAttachmentBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_ATTACHMENT_BEGIN_INFO_KHR;
-    renderPassAttachmentBeginInfo.pNext = nullptr;
+    VkRenderPassAttachmentBeginInfoKHR renderPassAttachmentBeginInfo = LvlInitStruct<VkRenderPassAttachmentBeginInfo>();
     renderPassAttachmentBeginInfo.attachmentCount = 1;
     renderPassAttachmentBeginInfo.pAttachments = &imageView;
-    VkRenderPassBeginInfo renderPassBeginInfo = {};
-    renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-    renderPassBeginInfo.pNext = &renderPassAttachmentBeginInfo;
+    VkRenderPassBeginInfo renderPassBeginInfo = LvlInitStruct<VkRenderPassBeginInfo>(&renderPassAttachmentBeginInfo);
     renderPassBeginInfo.renderPass = renderPass;
     renderPassBeginInfo.renderArea.extent.width = attachmentWidth;
     renderPassBeginInfo.renderArea.extent.height = attachmentHeight;
@@ -350,8 +334,12 @@ TEST_F(VkLayerTest, ImagelessFramebufferRenderPassBeginImageViewMismatchTests) {
     renderPassAttachmentBeginInfo.pAttachments = &imageView2;
     framebufferAttachmentImageInfo.height = framebufferAttachmentImageInfo.height / 2;
     framebufferAttachmentImageInfo.width = framebufferAttachmentImageInfo.width / 2;
+    framebufferCreateInfo.height = framebufferCreateInfo.height / 2;
+    framebufferCreateInfo.width = framebufferCreateInfo.width / 2;
     vk::CreateFramebuffer(m_device->device(), &framebufferCreateInfo, nullptr, &framebuffer);
     renderPassBeginInfo.framebuffer = framebuffer;
+    renderPassBeginInfo.renderArea.extent.height = renderPassBeginInfo.renderArea.extent.height / 2;
+    renderPassBeginInfo.renderArea.extent.width = renderPassBeginInfo.renderArea.extent.width / 2;
     vk::BeginCommandBuffer(m_commandBuffer->handle(), &cmd_begin_info);
     m_errorMonitor->ExpectSuccess();
     vk::CmdBeginRenderPass(m_commandBuffer->handle(), &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
@@ -409,30 +397,25 @@ TEST_F(VkLayerTest, ImagelessFramebufferFeatureEnableTest) {
     VkSubpassDescription subpassDescription = {};
     subpassDescription.colorAttachmentCount = 1;
     subpassDescription.pColorAttachments = &attachmentReference;
-    VkRenderPassCreateInfo renderPassCreateInfo = {};
+    VkRenderPassCreateInfo renderPassCreateInfo = LvlInitStruct<VkRenderPassCreateInfo>();
     renderPassCreateInfo.subpassCount = 1;
     renderPassCreateInfo.pSubpasses = &subpassDescription;
     renderPassCreateInfo.attachmentCount = 1;
     renderPassCreateInfo.pAttachments = &attachmentDescription;
-    renderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
     VkRenderPass renderPass;
     vk::CreateRenderPass(m_device->device(), &renderPassCreateInfo, NULL, &renderPass);
 
-    VkFramebufferAttachmentImageInfoKHR framebufferAttachmentImageInfo = {};
-    framebufferAttachmentImageInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_ATTACHMENT_IMAGE_INFO_KHR;
+    VkFramebufferAttachmentImageInfoKHR framebufferAttachmentImageInfo = LvlInitStruct<VkFramebufferAttachmentImageInfoKHR>();
     framebufferAttachmentImageInfo.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
     framebufferAttachmentImageInfo.width = attachmentWidth;
     framebufferAttachmentImageInfo.height = attachmentHeight;
     framebufferAttachmentImageInfo.layerCount = 1;
     framebufferAttachmentImageInfo.viewFormatCount = 1;
     framebufferAttachmentImageInfo.pViewFormats = &attachmentFormat;
-    VkFramebufferAttachmentsCreateInfoKHR framebufferAttachmentsCreateInfo = {};
-    framebufferAttachmentsCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_ATTACHMENTS_CREATE_INFO_KHR;
+    VkFramebufferAttachmentsCreateInfoKHR framebufferAttachmentsCreateInfo = LvlInitStruct<VkFramebufferAttachmentsCreateInfoKHR>();
     framebufferAttachmentsCreateInfo.attachmentImageInfoCount = 1;
     framebufferAttachmentsCreateInfo.pAttachmentImageInfos = &framebufferAttachmentImageInfo;
-    VkFramebufferCreateInfo framebufferCreateInfo = {};
-    framebufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-    framebufferCreateInfo.pNext = &framebufferAttachmentsCreateInfo;
+    VkFramebufferCreateInfo framebufferCreateInfo = LvlInitStruct<VkFramebufferCreateInfo>(&framebufferAttachmentsCreateInfo);
     framebufferCreateInfo.flags = VK_FRAMEBUFFER_CREATE_IMAGELESS_BIT_KHR;
     framebufferCreateInfo.width = attachmentWidth;
     framebufferCreateInfo.height = attachmentHeight;
@@ -483,12 +466,11 @@ TEST_F(VkLayerTest, ImagelessFramebufferCreationTests) {
         return;
     }
 
-    VkPhysicalDeviceImagelessFramebufferFeaturesKHR physicalDeviceImagelessFramebufferFeatures = {};
-    physicalDeviceImagelessFramebufferFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGELESS_FRAMEBUFFER_FEATURES_KHR;
+    VkPhysicalDeviceImagelessFramebufferFeaturesKHR physicalDeviceImagelessFramebufferFeatures =
+        LvlInitStruct<VkPhysicalDeviceImagelessFramebufferFeaturesKHR>();
     physicalDeviceImagelessFramebufferFeatures.imagelessFramebuffer = VK_TRUE;
-    VkPhysicalDeviceFeatures2 physicalDeviceFeatures2 = {};
-    physicalDeviceFeatures2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
-    physicalDeviceFeatures2.pNext = &physicalDeviceImagelessFramebufferFeatures;
+    VkPhysicalDeviceFeatures2 physicalDeviceFeatures2 =
+        LvlInitStruct<VkPhysicalDeviceFeatures2>(&physicalDeviceImagelessFramebufferFeatures);
     ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &physicalDeviceFeatures2, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT));
 
     ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
@@ -507,30 +489,25 @@ TEST_F(VkLayerTest, ImagelessFramebufferCreationTests) {
     VkSubpassDescription subpassDescription = {};
     subpassDescription.colorAttachmentCount = 1;
     subpassDescription.pColorAttachments = &attachmentReference;
-    VkRenderPassCreateInfo renderPassCreateInfo = {};
+    VkRenderPassCreateInfo renderPassCreateInfo = LvlInitStruct<VkRenderPassCreateInfo>();
     renderPassCreateInfo.subpassCount = 1;
     renderPassCreateInfo.pSubpasses = &subpassDescription;
     renderPassCreateInfo.attachmentCount = 1;
     renderPassCreateInfo.pAttachments = &attachmentDescription;
-    renderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
     VkRenderPass renderPass;
     vk::CreateRenderPass(m_device->device(), &renderPassCreateInfo, NULL, &renderPass);
 
-    VkFramebufferAttachmentImageInfoKHR framebufferAttachmentImageInfo = {};
-    framebufferAttachmentImageInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_ATTACHMENT_IMAGE_INFO_KHR;
+    VkFramebufferAttachmentImageInfoKHR framebufferAttachmentImageInfo = LvlInitStruct<VkFramebufferAttachmentImageInfoKHR>();
     framebufferAttachmentImageInfo.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
     framebufferAttachmentImageInfo.width = attachmentWidth;
     framebufferAttachmentImageInfo.height = attachmentHeight;
     framebufferAttachmentImageInfo.layerCount = 1;
     framebufferAttachmentImageInfo.viewFormatCount = 1;
     framebufferAttachmentImageInfo.pViewFormats = &attachmentFormat;
-    VkFramebufferAttachmentsCreateInfoKHR framebufferAttachmentsCreateInfo = {};
-    framebufferAttachmentsCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_ATTACHMENTS_CREATE_INFO_KHR;
+    VkFramebufferAttachmentsCreateInfoKHR framebufferAttachmentsCreateInfo = LvlInitStruct<VkFramebufferAttachmentsCreateInfoKHR>();
     framebufferAttachmentsCreateInfo.attachmentImageInfoCount = 1;
     framebufferAttachmentsCreateInfo.pAttachmentImageInfos = &framebufferAttachmentImageInfo;
-    VkFramebufferCreateInfo framebufferCreateInfo = {};
-    framebufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-    framebufferCreateInfo.pNext = &framebufferAttachmentsCreateInfo;
+    VkFramebufferCreateInfo framebufferCreateInfo = LvlInitStruct<VkFramebufferCreateInfo>(&framebufferAttachmentsCreateInfo);
     framebufferCreateInfo.flags = VK_FRAMEBUFFER_CREATE_IMAGELESS_BIT_KHR;
     framebufferCreateInfo.width = attachmentWidth;
     framebufferCreateInfo.height = attachmentHeight;
@@ -640,12 +617,11 @@ TEST_F(VkLayerTest, ImagelessFramebufferAttachmentImageUsageMismatchTests) {
         return;
     }
 
-    VkPhysicalDeviceImagelessFramebufferFeaturesKHR physicalDeviceImagelessFramebufferFeatures = {};
-    physicalDeviceImagelessFramebufferFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGELESS_FRAMEBUFFER_FEATURES_KHR;
+    VkPhysicalDeviceImagelessFramebufferFeaturesKHR physicalDeviceImagelessFramebufferFeatures =
+        LvlInitStruct<VkPhysicalDeviceImagelessFramebufferFeaturesKHR>();
     physicalDeviceImagelessFramebufferFeatures.imagelessFramebuffer = VK_TRUE;
-    VkPhysicalDeviceFeatures2 physicalDeviceFeatures2 = {};
-    physicalDeviceFeatures2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
-    physicalDeviceFeatures2.pNext = &physicalDeviceImagelessFramebufferFeatures;
+    VkPhysicalDeviceFeatures2 physicalDeviceFeatures2 =
+        LvlInitStruct<VkPhysicalDeviceFeatures2>(&physicalDeviceImagelessFramebufferFeatures);
     ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &physicalDeviceFeatures2, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT));
 
     ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
@@ -693,18 +669,17 @@ TEST_F(VkLayerTest, ImagelessFramebufferAttachmentImageUsageMismatchTests) {
     subpassDescription.inputAttachmentCount = 1;
     subpassDescription.pInputAttachments = &inputAttachmentReference;
 
-    VkRenderPassCreateInfo renderPassCreateInfo = {};
+    VkRenderPassCreateInfo renderPassCreateInfo = LvlInitStruct<VkRenderPassCreateInfo>();
     renderPassCreateInfo.attachmentCount = 4;
     renderPassCreateInfo.subpassCount = 1;
     renderPassCreateInfo.pSubpasses = &subpassDescription;
     renderPassCreateInfo.pAttachments = attachmentDescriptions;
-    renderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
     VkRenderPass renderPass;
     vk::CreateRenderPass(m_device->device(), &renderPassCreateInfo, nullptr, &renderPass);
 
     VkFramebufferAttachmentImageInfoKHR framebufferAttachmentImageInfos[4] = {};
     // Color attachment
-    framebufferAttachmentImageInfos[0].sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_ATTACHMENT_IMAGE_INFO_KHR;
+    framebufferAttachmentImageInfos[0] = LvlInitStruct<VkFramebufferAttachmentImageInfoKHR>();
     framebufferAttachmentImageInfos[0].width = attachmentWidth;
     framebufferAttachmentImageInfos[0].height = attachmentHeight;
     framebufferAttachmentImageInfos[0].usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
@@ -712,7 +687,7 @@ TEST_F(VkLayerTest, ImagelessFramebufferAttachmentImageUsageMismatchTests) {
     framebufferAttachmentImageInfos[0].viewFormatCount = 1;
     framebufferAttachmentImageInfos[0].pViewFormats = &colorAndInputAttachmentFormat;
     // Color resolve attachment
-    framebufferAttachmentImageInfos[1].sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_ATTACHMENT_IMAGE_INFO_KHR;
+    framebufferAttachmentImageInfos[1] = LvlInitStruct<VkFramebufferAttachmentImageInfoKHR>();
     framebufferAttachmentImageInfos[1].width = attachmentWidth;
     framebufferAttachmentImageInfos[1].height = attachmentHeight;
     framebufferAttachmentImageInfos[1].usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
@@ -720,7 +695,7 @@ TEST_F(VkLayerTest, ImagelessFramebufferAttachmentImageUsageMismatchTests) {
     framebufferAttachmentImageInfos[1].viewFormatCount = 1;
     framebufferAttachmentImageInfos[1].pViewFormats = &colorAndInputAttachmentFormat;
     // Depth stencil attachment
-    framebufferAttachmentImageInfos[2].sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_ATTACHMENT_IMAGE_INFO_KHR;
+    framebufferAttachmentImageInfos[2] = LvlInitStruct<VkFramebufferAttachmentImageInfoKHR>();
     framebufferAttachmentImageInfos[2].width = attachmentWidth;
     framebufferAttachmentImageInfos[2].height = attachmentHeight;
     framebufferAttachmentImageInfos[2].usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
@@ -728,20 +703,17 @@ TEST_F(VkLayerTest, ImagelessFramebufferAttachmentImageUsageMismatchTests) {
     framebufferAttachmentImageInfos[2].viewFormatCount = 1;
     framebufferAttachmentImageInfos[2].pViewFormats = &depthStencilAttachmentFormat;
     // Input attachment
-    framebufferAttachmentImageInfos[3].sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_ATTACHMENT_IMAGE_INFO_KHR;
+    framebufferAttachmentImageInfos[3] = LvlInitStruct<VkFramebufferAttachmentImageInfoKHR>();
     framebufferAttachmentImageInfos[3].width = attachmentWidth;
     framebufferAttachmentImageInfos[3].height = attachmentHeight;
     framebufferAttachmentImageInfos[3].usage = VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
     framebufferAttachmentImageInfos[3].layerCount = 1;
     framebufferAttachmentImageInfos[3].viewFormatCount = 1;
     framebufferAttachmentImageInfos[3].pViewFormats = &colorAndInputAttachmentFormat;
-    VkFramebufferAttachmentsCreateInfoKHR framebufferAttachmentsCreateInfo = {};
-    framebufferAttachmentsCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_ATTACHMENTS_CREATE_INFO_KHR;
+    VkFramebufferAttachmentsCreateInfoKHR framebufferAttachmentsCreateInfo = LvlInitStruct<VkFramebufferAttachmentsCreateInfoKHR>();
     framebufferAttachmentsCreateInfo.attachmentImageInfoCount = 4;
     framebufferAttachmentsCreateInfo.pAttachmentImageInfos = framebufferAttachmentImageInfos;
-    VkFramebufferCreateInfo framebufferCreateInfo = {};
-    framebufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-    framebufferCreateInfo.pNext = &framebufferAttachmentsCreateInfo;
+    VkFramebufferCreateInfo framebufferCreateInfo = LvlInitStruct<VkFramebufferCreateInfo>(&framebufferAttachmentsCreateInfo);
     framebufferCreateInfo.flags = VK_FRAMEBUFFER_CREATE_IMAGELESS_BIT_KHR;
     framebufferCreateInfo.width = attachmentWidth;
     framebufferCreateInfo.height = attachmentHeight;
@@ -822,12 +794,11 @@ TEST_F(VkLayerTest, ImagelessFramebufferAttachmentMultiviewImageLayerCountMismat
         return;
     }
 
-    VkPhysicalDeviceImagelessFramebufferFeaturesKHR physicalDeviceImagelessFramebufferFeatures = {};
-    physicalDeviceImagelessFramebufferFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGELESS_FRAMEBUFFER_FEATURES_KHR;
+    VkPhysicalDeviceImagelessFramebufferFeaturesKHR physicalDeviceImagelessFramebufferFeatures =
+        LvlInitStruct<VkPhysicalDeviceImagelessFramebufferFeaturesKHR>();
     physicalDeviceImagelessFramebufferFeatures.imagelessFramebuffer = VK_TRUE;
-    VkPhysicalDeviceFeatures2 physicalDeviceFeatures2 = {};
-    physicalDeviceFeatures2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
-    physicalDeviceFeatures2.pNext = &physicalDeviceImagelessFramebufferFeatures;
+    VkPhysicalDeviceFeatures2 physicalDeviceFeatures2 =
+        LvlInitStruct<VkPhysicalDeviceFeatures2>(&physicalDeviceImagelessFramebufferFeatures);
     ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &physicalDeviceFeatures2, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT));
 
     ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
@@ -876,23 +847,20 @@ TEST_F(VkLayerTest, ImagelessFramebufferAttachmentMultiviewImageLayerCountMismat
     subpassDescription.pInputAttachments = &inputAttachmentReference;
 
     uint32_t viewMask = 0x3u;
-    VkRenderPassMultiviewCreateInfo renderPassMultiviewCreateInfo = {};
-    renderPassMultiviewCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO;
+    VkRenderPassMultiviewCreateInfo renderPassMultiviewCreateInfo = LvlInitStruct<VkRenderPassMultiviewCreateInfo>();
     renderPassMultiviewCreateInfo.subpassCount = 1;
     renderPassMultiviewCreateInfo.pViewMasks = &viewMask;
-    VkRenderPassCreateInfo renderPassCreateInfo = {};
-    renderPassCreateInfo.pNext = &renderPassMultiviewCreateInfo;
+    VkRenderPassCreateInfo renderPassCreateInfo = LvlInitStruct<VkRenderPassCreateInfo>(&renderPassMultiviewCreateInfo);
     renderPassCreateInfo.attachmentCount = 4;
     renderPassCreateInfo.subpassCount = 1;
     renderPassCreateInfo.pSubpasses = &subpassDescription;
     renderPassCreateInfo.pAttachments = attachmentDescriptions;
-    renderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
     VkRenderPass renderPass;
     vk::CreateRenderPass(m_device->device(), &renderPassCreateInfo, nullptr, &renderPass);
 
     VkFramebufferAttachmentImageInfoKHR framebufferAttachmentImageInfos[4] = {};
     // Color attachment
-    framebufferAttachmentImageInfos[0].sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_ATTACHMENT_IMAGE_INFO_KHR;
+    framebufferAttachmentImageInfos[0] = LvlInitStruct<VkFramebufferAttachmentImageInfoKHR>();
     framebufferAttachmentImageInfos[0].width = attachmentWidth;
     framebufferAttachmentImageInfos[0].height = attachmentHeight;
     framebufferAttachmentImageInfos[0].usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
@@ -900,7 +868,7 @@ TEST_F(VkLayerTest, ImagelessFramebufferAttachmentMultiviewImageLayerCountMismat
     framebufferAttachmentImageInfos[0].viewFormatCount = 1;
     framebufferAttachmentImageInfos[0].pViewFormats = &colorAndInputAttachmentFormat;
     // Color resolve attachment
-    framebufferAttachmentImageInfos[1].sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_ATTACHMENT_IMAGE_INFO_KHR;
+    framebufferAttachmentImageInfos[1] = LvlInitStruct<VkFramebufferAttachmentImageInfoKHR>();
     framebufferAttachmentImageInfos[1].width = attachmentWidth;
     framebufferAttachmentImageInfos[1].height = attachmentHeight;
     framebufferAttachmentImageInfos[1].usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
@@ -908,7 +876,7 @@ TEST_F(VkLayerTest, ImagelessFramebufferAttachmentMultiviewImageLayerCountMismat
     framebufferAttachmentImageInfos[1].viewFormatCount = 1;
     framebufferAttachmentImageInfos[1].pViewFormats = &colorAndInputAttachmentFormat;
     // Depth stencil attachment
-    framebufferAttachmentImageInfos[2].sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_ATTACHMENT_IMAGE_INFO_KHR;
+    framebufferAttachmentImageInfos[2] = LvlInitStruct<VkFramebufferAttachmentImageInfoKHR>();
     framebufferAttachmentImageInfos[2].width = attachmentWidth;
     framebufferAttachmentImageInfos[2].height = attachmentHeight;
     framebufferAttachmentImageInfos[2].usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
@@ -916,20 +884,17 @@ TEST_F(VkLayerTest, ImagelessFramebufferAttachmentMultiviewImageLayerCountMismat
     framebufferAttachmentImageInfos[2].viewFormatCount = 1;
     framebufferAttachmentImageInfos[2].pViewFormats = &depthStencilAttachmentFormat;
     // Input attachment
-    framebufferAttachmentImageInfos[3].sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_ATTACHMENT_IMAGE_INFO_KHR;
+    framebufferAttachmentImageInfos[3] = LvlInitStruct<VkFramebufferAttachmentImageInfoKHR>();
     framebufferAttachmentImageInfos[3].width = attachmentWidth;
     framebufferAttachmentImageInfos[3].height = attachmentHeight;
     framebufferAttachmentImageInfos[3].usage = VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
     framebufferAttachmentImageInfos[3].layerCount = 2;
     framebufferAttachmentImageInfos[3].viewFormatCount = 1;
     framebufferAttachmentImageInfos[3].pViewFormats = &colorAndInputAttachmentFormat;
-    VkFramebufferAttachmentsCreateInfoKHR framebufferAttachmentsCreateInfo = {};
-    framebufferAttachmentsCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_ATTACHMENTS_CREATE_INFO_KHR;
+    VkFramebufferAttachmentsCreateInfoKHR framebufferAttachmentsCreateInfo = LvlInitStruct<VkFramebufferAttachmentsCreateInfoKHR>();
     framebufferAttachmentsCreateInfo.attachmentImageInfoCount = 4;
     framebufferAttachmentsCreateInfo.pAttachmentImageInfos = framebufferAttachmentImageInfos;
-    VkFramebufferCreateInfo framebufferCreateInfo = {};
-    framebufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-    framebufferCreateInfo.pNext = &framebufferAttachmentsCreateInfo;
+    VkFramebufferCreateInfo framebufferCreateInfo = LvlInitStruct<VkFramebufferCreateInfo>(&framebufferAttachmentsCreateInfo);
     framebufferCreateInfo.flags = VK_FRAMEBUFFER_CREATE_IMAGELESS_BIT_KHR;
     framebufferCreateInfo.width = attachmentWidth;
     framebufferCreateInfo.height = attachmentHeight;
@@ -1018,12 +983,11 @@ TEST_F(VkLayerTest, ImagelessFramebufferDepthStencilResolveAttachmentTests) {
         return;
     }
 
-    VkPhysicalDeviceImagelessFramebufferFeaturesKHR physicalDeviceImagelessFramebufferFeatures = {};
-    physicalDeviceImagelessFramebufferFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGELESS_FRAMEBUFFER_FEATURES_KHR;
+    VkPhysicalDeviceImagelessFramebufferFeaturesKHR physicalDeviceImagelessFramebufferFeatures =
+        LvlInitStruct<VkPhysicalDeviceImagelessFramebufferFeaturesKHR>();
     physicalDeviceImagelessFramebufferFeatures.imagelessFramebuffer = VK_TRUE;
-    VkPhysicalDeviceFeatures2 physicalDeviceFeatures2 = {};
-    physicalDeviceFeatures2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
-    physicalDeviceFeatures2.pNext = &physicalDeviceImagelessFramebufferFeatures;
+    VkPhysicalDeviceFeatures2 physicalDeviceFeatures2 =
+        LvlInitStruct<VkPhysicalDeviceFeatures2>(&physicalDeviceImagelessFramebufferFeatures);
     ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &physicalDeviceFeatures2, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT));
 
     ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
@@ -1038,38 +1002,32 @@ TEST_F(VkLayerTest, ImagelessFramebufferDepthStencilResolveAttachmentTests) {
 
     VkAttachmentDescription2KHR attachmentDescriptions[2] = {};
     // Depth/stencil attachment
-    attachmentDescriptions[0].sType = VK_STRUCTURE_TYPE_ATTACHMENT_DESCRIPTION_2_KHR;
+    attachmentDescriptions[0] = LvlInitStruct<VkAttachmentDescription2>();
     attachmentDescriptions[0].format = attachmentFormat;
     attachmentDescriptions[0].samples = VK_SAMPLE_COUNT_4_BIT;
     attachmentDescriptions[0].finalLayout = VK_IMAGE_LAYOUT_GENERAL;
     // Depth/stencil resolve attachment
-    attachmentDescriptions[1].sType = VK_STRUCTURE_TYPE_ATTACHMENT_DESCRIPTION_2_KHR;
+    attachmentDescriptions[1] = LvlInitStruct<VkAttachmentDescription2>();
     attachmentDescriptions[1].format = attachmentFormat;
     attachmentDescriptions[1].samples = VK_SAMPLE_COUNT_1_BIT;
     attachmentDescriptions[1].finalLayout = VK_IMAGE_LAYOUT_GENERAL;
 
-    VkAttachmentReference2KHR depthStencilAttachmentReference = {};
-    depthStencilAttachmentReference.sType = VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2_KHR;
+    VkAttachmentReference2KHR depthStencilAttachmentReference = LvlInitStruct<VkAttachmentReference2>();
     depthStencilAttachmentReference.layout = VK_IMAGE_LAYOUT_GENERAL;
     depthStencilAttachmentReference.attachment = 0;
-    VkAttachmentReference2KHR depthStencilResolveAttachmentReference = {};
-    depthStencilResolveAttachmentReference.sType = VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2_KHR;
+    VkAttachmentReference2KHR depthStencilResolveAttachmentReference = LvlInitStruct<VkAttachmentReference2>();
     depthStencilResolveAttachmentReference.layout = VK_IMAGE_LAYOUT_GENERAL;
     depthStencilResolveAttachmentReference.attachment = 1;
-    VkSubpassDescriptionDepthStencilResolveKHR subpassDescriptionDepthStencilResolve = {};
-    subpassDescriptionDepthStencilResolve.sType = VK_STRUCTURE_TYPE_SUBPASS_DESCRIPTION_DEPTH_STENCIL_RESOLVE_KHR;
+    VkSubpassDescriptionDepthStencilResolveKHR subpassDescriptionDepthStencilResolve =
+        LvlInitStruct<VkSubpassDescriptionDepthStencilResolveKHR>();
     subpassDescriptionDepthStencilResolve.pDepthStencilResolveAttachment = &depthStencilResolveAttachmentReference;
     subpassDescriptionDepthStencilResolve.depthResolveMode = VK_RESOLVE_MODE_SAMPLE_ZERO_BIT_KHR;
     subpassDescriptionDepthStencilResolve.stencilResolveMode = VK_RESOLVE_MODE_SAMPLE_ZERO_BIT_KHR;
-    VkSubpassDescription2KHR subpassDescription = {};
-    subpassDescription.sType = VK_STRUCTURE_TYPE_SUBPASS_DESCRIPTION_2_KHR;
-    subpassDescription.pNext = &subpassDescriptionDepthStencilResolve;
+    VkSubpassDescription2KHR subpassDescription = LvlInitStruct<VkSubpassDescription2>(&subpassDescriptionDepthStencilResolve);
     subpassDescription.pDepthStencilAttachment = &depthStencilAttachmentReference;
     subpassDescription.viewMask = 0x3u;
 
-    VkRenderPassCreateInfo2KHR renderPassCreateInfo = {};
-    renderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO_2_KHR;
-    renderPassCreateInfo.pNext = nullptr;
+    VkRenderPassCreateInfo2KHR renderPassCreateInfo = LvlInitStruct<VkRenderPassCreateInfo2>();
     renderPassCreateInfo.attachmentCount = 2;
     renderPassCreateInfo.subpassCount = 1;
     renderPassCreateInfo.pSubpasses = &subpassDescription;
@@ -1081,7 +1039,7 @@ TEST_F(VkLayerTest, ImagelessFramebufferDepthStencilResolveAttachmentTests) {
 
     VkFramebufferAttachmentImageInfoKHR framebufferAttachmentImageInfos[2] = {};
     // Depth/stencil attachment
-    framebufferAttachmentImageInfos[0].sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_ATTACHMENT_IMAGE_INFO_KHR;
+    framebufferAttachmentImageInfos[0] = LvlInitStruct<VkFramebufferAttachmentImageInfoKHR>();
     framebufferAttachmentImageInfos[0].width = attachmentWidth;
     framebufferAttachmentImageInfos[0].height = attachmentHeight;
     framebufferAttachmentImageInfos[0].usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
@@ -1089,20 +1047,17 @@ TEST_F(VkLayerTest, ImagelessFramebufferDepthStencilResolveAttachmentTests) {
     framebufferAttachmentImageInfos[0].viewFormatCount = 1;
     framebufferAttachmentImageInfos[0].pViewFormats = &attachmentFormat;
     // Depth/stencil resolve attachment
-    framebufferAttachmentImageInfos[1].sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_ATTACHMENT_IMAGE_INFO_KHR;
+    framebufferAttachmentImageInfos[1] = LvlInitStruct<VkFramebufferAttachmentImageInfoKHR>();
     framebufferAttachmentImageInfos[1].width = attachmentWidth;
     framebufferAttachmentImageInfos[1].height = attachmentHeight;
     framebufferAttachmentImageInfos[1].usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
     framebufferAttachmentImageInfos[1].layerCount = 2;
     framebufferAttachmentImageInfos[1].viewFormatCount = 1;
     framebufferAttachmentImageInfos[1].pViewFormats = &attachmentFormat;
-    VkFramebufferAttachmentsCreateInfoKHR framebufferAttachmentsCreateInfo = {};
-    framebufferAttachmentsCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_ATTACHMENTS_CREATE_INFO_KHR;
+    VkFramebufferAttachmentsCreateInfoKHR framebufferAttachmentsCreateInfo = LvlInitStruct<VkFramebufferAttachmentsCreateInfoKHR>();
     framebufferAttachmentsCreateInfo.attachmentImageInfoCount = 2;
     framebufferAttachmentsCreateInfo.pAttachmentImageInfos = framebufferAttachmentImageInfos;
-    VkFramebufferCreateInfo framebufferCreateInfo = {};
-    framebufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-    framebufferCreateInfo.pNext = &framebufferAttachmentsCreateInfo;
+    VkFramebufferCreateInfo framebufferCreateInfo = LvlInitStruct<VkFramebufferCreateInfo>(&framebufferAttachmentsCreateInfo);
     framebufferCreateInfo.flags = VK_FRAMEBUFFER_CREATE_IMAGELESS_BIT_KHR;
     framebufferCreateInfo.width = attachmentWidth;
     framebufferCreateInfo.height = attachmentHeight;
@@ -1204,20 +1159,16 @@ TEST_F(VkLayerTest, InvalidFragmentShadingRateImagelessFramebufferUsage) {
 
     ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &features2));
 
-    VkAttachmentReference2 attach = {};
-    attach.sType = VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2;
+    VkAttachmentReference2 attach = LvlInitStruct<VkAttachmentReference2>();
     attach.layout = VK_IMAGE_LAYOUT_GENERAL;
     attach.attachment = 0;
 
-    VkFragmentShadingRateAttachmentInfoKHR fsr_attachment = {};
-    fsr_attachment.sType = VK_STRUCTURE_TYPE_FRAGMENT_SHADING_RATE_ATTACHMENT_INFO_KHR;
+    VkFragmentShadingRateAttachmentInfoKHR fsr_attachment = LvlInitStruct<VkFragmentShadingRateAttachmentInfoKHR>();
     fsr_attachment.shadingRateAttachmentTexelSize = fsr_properties.minFragmentShadingRateAttachmentTexelSize;
     fsr_attachment.pFragmentShadingRateAttachment = &attach;
 
     // Create a renderPass with a single fsr attachment
-    VkSubpassDescription2 subpass = {};
-    subpass.sType = VK_STRUCTURE_TYPE_SUBPASS_DESCRIPTION_2;
-    subpass.pNext = &fsr_attachment;
+    VkSubpassDescription2 subpass = LvlInitStruct<VkSubpassDescription2>(&fsr_attachment);
 
     VkAttachmentDescription2 attach_desc = {};
     attach_desc.format = VK_FORMAT_R8_UINT;
@@ -1225,8 +1176,7 @@ TEST_F(VkLayerTest, InvalidFragmentShadingRateImagelessFramebufferUsage) {
     attach_desc.initialLayout = VK_IMAGE_LAYOUT_GENERAL;
     attach_desc.finalLayout = VK_IMAGE_LAYOUT_GENERAL;
 
-    VkRenderPassCreateInfo2 rpci = {};
-    rpci.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO_2;
+    VkRenderPassCreateInfo2 rpci = LvlInitStruct<VkRenderPassCreateInfo2>();
     rpci.subpassCount = 1;
     rpci.pSubpasses = &subpass;
     rpci.attachmentCount = 1;
@@ -1240,8 +1190,7 @@ TEST_F(VkLayerTest, InvalidFragmentShadingRateImagelessFramebufferUsage) {
     ASSERT_VK_SUCCESS(err);
 
     VkFormat viewFormat = VK_FORMAT_R8_UINT;
-    VkFramebufferAttachmentImageInfo fbai_info = {};
-    fbai_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_ATTACHMENT_IMAGE_INFO;
+    VkFramebufferAttachmentImageInfo fbai_info = LvlInitStruct<VkFramebufferAttachmentImageInfo>();
     fbai_info.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
     fbai_info.width = 1;
     fbai_info.height = 1;
@@ -1249,14 +1198,11 @@ TEST_F(VkLayerTest, InvalidFragmentShadingRateImagelessFramebufferUsage) {
     fbai_info.viewFormatCount = 1;
     fbai_info.pViewFormats = &viewFormat;
 
-    VkFramebufferAttachmentsCreateInfo fba_info = {};
-    fba_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_ATTACHMENTS_CREATE_INFO;
+    VkFramebufferAttachmentsCreateInfo fba_info = LvlInitStruct<VkFramebufferAttachmentsCreateInfo>();
     fba_info.attachmentImageInfoCount = 1;
     fba_info.pAttachmentImageInfos = &fbai_info;
 
-    VkFramebufferCreateInfo fb_info = {};
-    fb_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-    fb_info.pNext = &fba_info;
+    VkFramebufferCreateInfo fb_info = LvlInitStruct<VkFramebufferCreateInfo>(&fba_info);
     fb_info.flags = VK_FRAMEBUFFER_CREATE_IMAGELESS_BIT;
     fb_info.renderPass = rp;
     fb_info.attachmentCount = 1;
@@ -1334,20 +1280,16 @@ TEST_F(VkLayerTest, InvalidFragmentShadingRateImagelessFramebufferDimensions) {
 
     ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &features2));
 
-    VkAttachmentReference2 attach = {};
-    attach.sType = VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2;
+    VkAttachmentReference2 attach = LvlInitStruct<VkAttachmentReference2>();
     attach.layout = VK_IMAGE_LAYOUT_GENERAL;
     attach.attachment = 0;
 
-    VkFragmentShadingRateAttachmentInfoKHR fsr_attachment = {};
-    fsr_attachment.sType = VK_STRUCTURE_TYPE_FRAGMENT_SHADING_RATE_ATTACHMENT_INFO_KHR;
+    VkFragmentShadingRateAttachmentInfoKHR fsr_attachment = LvlInitStruct<VkFragmentShadingRateAttachmentInfoKHR>();
     fsr_attachment.shadingRateAttachmentTexelSize = fsr_properties.minFragmentShadingRateAttachmentTexelSize;
     fsr_attachment.pFragmentShadingRateAttachment = &attach;
 
     // Create a renderPass with a single fsr attachment
-    VkSubpassDescription2 subpass = {};
-    subpass.sType = VK_STRUCTURE_TYPE_SUBPASS_DESCRIPTION_2;
-    subpass.pNext = &fsr_attachment;
+    VkSubpassDescription2 subpass = LvlInitStruct<VkSubpassDescription2>(&fsr_attachment);
 
     VkAttachmentDescription2 attach_desc = {};
     attach_desc.format = VK_FORMAT_R8_UINT;
@@ -1355,8 +1297,7 @@ TEST_F(VkLayerTest, InvalidFragmentShadingRateImagelessFramebufferDimensions) {
     attach_desc.initialLayout = VK_IMAGE_LAYOUT_GENERAL;
     attach_desc.finalLayout = VK_IMAGE_LAYOUT_GENERAL;
 
-    VkRenderPassCreateInfo2 rpci = {};
-    rpci.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO_2;
+    VkRenderPassCreateInfo2 rpci = LvlInitStruct<VkRenderPassCreateInfo2>();
     rpci.subpassCount = 1;
     rpci.pSubpasses = &subpass;
     rpci.attachmentCount = 1;
@@ -1370,8 +1311,7 @@ TEST_F(VkLayerTest, InvalidFragmentShadingRateImagelessFramebufferDimensions) {
     ASSERT_VK_SUCCESS(err);
 
     VkFormat viewFormat = VK_FORMAT_R8_UINT;
-    VkFramebufferAttachmentImageInfo fbai_info = {};
-    fbai_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_ATTACHMENT_IMAGE_INFO;
+    VkFramebufferAttachmentImageInfo fbai_info = LvlInitStruct<VkFramebufferAttachmentImageInfo>();
     fbai_info.usage = VK_IMAGE_USAGE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT_KHR;
     fbai_info.width = 1;
     fbai_info.height = 1;
@@ -1379,14 +1319,11 @@ TEST_F(VkLayerTest, InvalidFragmentShadingRateImagelessFramebufferDimensions) {
     fbai_info.viewFormatCount = 1;
     fbai_info.pViewFormats = &viewFormat;
 
-    VkFramebufferAttachmentsCreateInfo fba_info = {};
-    fba_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_ATTACHMENTS_CREATE_INFO;
+    VkFramebufferAttachmentsCreateInfo fba_info = LvlInitStruct<VkFramebufferAttachmentsCreateInfo>();
     fba_info.attachmentImageInfoCount = 1;
     fba_info.pAttachmentImageInfos = &fbai_info;
 
-    VkFramebufferCreateInfo fb_info = {};
-    fb_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-    fb_info.pNext = &fba_info;
+    VkFramebufferCreateInfo fb_info = LvlInitStruct<VkFramebufferCreateInfo>(&fba_info);
     fb_info.flags = VK_FRAMEBUFFER_CREATE_IMAGELESS_BIT;
     fb_info.renderPass = rp;
     fb_info.attachmentCount = 1;
@@ -1471,12 +1408,11 @@ TEST_F(VkLayerTest, ImagelessFramebufferRenderPassBeginImageView3D) {
         return;
     }
 
-    VkPhysicalDeviceImagelessFramebufferFeaturesKHR physicalDeviceImagelessFramebufferFeatures = {};
-    physicalDeviceImagelessFramebufferFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGELESS_FRAMEBUFFER_FEATURES_KHR;
+    VkPhysicalDeviceImagelessFramebufferFeaturesKHR physicalDeviceImagelessFramebufferFeatures =
+        LvlInitStruct<VkPhysicalDeviceImagelessFramebufferFeaturesKHR>();
     physicalDeviceImagelessFramebufferFeatures.imagelessFramebuffer = VK_TRUE;
-    VkPhysicalDeviceFeatures2 physicalDeviceFeatures2 = {};
-    physicalDeviceFeatures2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
-    physicalDeviceFeatures2.pNext = &physicalDeviceImagelessFramebufferFeatures;
+    VkPhysicalDeviceFeatures2 physicalDeviceFeatures2 =
+        LvlInitStruct<VkPhysicalDeviceFeatures2>(&physicalDeviceImagelessFramebufferFeatures);
 
     ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &physicalDeviceFeatures2, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT));
     uint32_t attachmentWidth = 512;
@@ -1494,19 +1430,16 @@ TEST_F(VkLayerTest, ImagelessFramebufferRenderPassBeginImageView3D) {
     VkSubpassDescription subpassDescription = {};
     subpassDescription.colorAttachmentCount = 1;
     subpassDescription.pColorAttachments = &attachmentReference;
-    VkRenderPassCreateInfo renderPassCreateInfo = {};
+    VkRenderPassCreateInfo renderPassCreateInfo = LvlInitStruct<VkRenderPassCreateInfo>();
     renderPassCreateInfo.subpassCount = 1;
     renderPassCreateInfo.pSubpasses = &subpassDescription;
     renderPassCreateInfo.attachmentCount = 1;
     renderPassCreateInfo.pAttachments = &attachmentDescription;
-    renderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
     VkRenderPass renderPass;
     vk::CreateRenderPass(m_device->device(), &renderPassCreateInfo, NULL, &renderPass);
 
     // Create Attachments
-    VkImageCreateInfo imageCreateInfo = {};
-    imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-    imageCreateInfo.pNext = nullptr;
+    VkImageCreateInfo imageCreateInfo = LvlInitStruct<VkImageCreateInfo>();
     imageCreateInfo.flags = 0;
     imageCreateInfo.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
     imageCreateInfo.extent.width = attachmentWidth;
@@ -1521,8 +1454,7 @@ TEST_F(VkLayerTest, ImagelessFramebufferRenderPassBeginImageView3D) {
     VkImageObj image3D(m_device);
     image3D.init(&imageCreateInfo);
 
-    VkImageViewCreateInfo imageViewCreateInfo = {};
-    imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+    VkImageViewCreateInfo imageViewCreateInfo = LvlInitStruct<VkImageViewCreateInfo>();
     imageViewCreateInfo.image = image3D.handle();
     imageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_3D;
     imageViewCreateInfo.format = attachmentFormats[0];
@@ -1534,8 +1466,7 @@ TEST_F(VkLayerTest, ImagelessFramebufferRenderPassBeginImageView3D) {
     VkImageView imageView3D;
     vk::CreateImageView(m_device->device(), &imageViewCreateInfo, NULL, &imageView3D);
 
-    VkFramebufferAttachmentImageInfoKHR framebufferAttachmentImageInfo = {};
-    framebufferAttachmentImageInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_ATTACHMENT_IMAGE_INFO_KHR;
+    VkFramebufferAttachmentImageInfoKHR framebufferAttachmentImageInfo = LvlInitStruct<VkFramebufferAttachmentImageInfoKHR>();
     framebufferAttachmentImageInfo.flags = 0;
     framebufferAttachmentImageInfo.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
     framebufferAttachmentImageInfo.width = attachmentWidth;
@@ -1543,14 +1474,12 @@ TEST_F(VkLayerTest, ImagelessFramebufferRenderPassBeginImageView3D) {
     framebufferAttachmentImageInfo.layerCount = 1;
     framebufferAttachmentImageInfo.viewFormatCount = 1;
     framebufferAttachmentImageInfo.pViewFormats = framebufferAttachmentFormats;
-    VkFramebufferAttachmentsCreateInfoKHR framebufferAttachmentsCreateInfo = {};
-    framebufferAttachmentsCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_ATTACHMENTS_CREATE_INFO_KHR;
+    VkFramebufferAttachmentsCreateInfoKHR framebufferAttachmentsCreateInfo = LvlInitStruct<VkFramebufferAttachmentsCreateInfoKHR>();
     framebufferAttachmentsCreateInfo.attachmentImageInfoCount = 1;
     framebufferAttachmentsCreateInfo.pAttachmentImageInfos = &framebufferAttachmentImageInfo;
 
     VkFramebuffer framebuffer;
-    VkFramebufferCreateInfo framebufferCreateInfo = {};
-    framebufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+    VkFramebufferCreateInfo framebufferCreateInfo = LvlInitStruct<VkFramebufferCreateInfo>();
     framebufferCreateInfo.width = attachmentWidth;
     framebufferCreateInfo.height = attachmentHeight;
     framebufferCreateInfo.layers = 1;
@@ -1572,14 +1501,10 @@ TEST_F(VkLayerTest, ImagelessFramebufferRenderPassBeginImageView3D) {
     vk::CreateFramebuffer(m_device->device(), &framebufferCreateInfo, nullptr, &framebuffer);
     m_errorMonitor->VerifyNotFound();
 
-    VkRenderPassAttachmentBeginInfoKHR renderPassAttachmentBeginInfo = {};
-    renderPassAttachmentBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_ATTACHMENT_BEGIN_INFO_KHR;
-    renderPassAttachmentBeginInfo.pNext = nullptr;
+    VkRenderPassAttachmentBeginInfoKHR renderPassAttachmentBeginInfo = LvlInitStruct<VkRenderPassAttachmentBeginInfo>();
     renderPassAttachmentBeginInfo.attachmentCount = 1;
     renderPassAttachmentBeginInfo.pAttachments = &imageView3D;
-    VkRenderPassBeginInfo renderPassBeginInfo = {};
-    renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-    renderPassBeginInfo.pNext = &renderPassAttachmentBeginInfo;
+    VkRenderPassBeginInfo renderPassBeginInfo = LvlInitStruct<VkRenderPassBeginInfo>(&renderPassAttachmentBeginInfo);
     renderPassBeginInfo.renderPass = renderPass;
     renderPassBeginInfo.renderArea.extent.width = attachmentWidth;
     renderPassBeginInfo.renderArea.extent.height = attachmentHeight;
@@ -1597,13 +1522,12 @@ TEST_F(VkLayerTest, ImagelessFramebufferRenderPassBeginImageView3D) {
 
 TEST_F(VkLayerTest, FramebufferAttachmentImageInfoPNext) {
     TEST_DESCRIPTION("Begin render pass with missing framebuffer attachment");
+    AddRequiredExtensions(VK_KHR_IMAGELESS_FRAMEBUFFER_EXTENSION_NAME);
 
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
-    if (!DeviceExtensionSupported(VK_KHR_IMAGELESS_FRAMEBUFFER_EXTENSION_NAME)) {
-        printf("%s test requires VK_KHR_imageless_framebuffer, not available.  Skipping.\n", kSkipPrefix);
-        return;
+    if (!AreRequiredExtensionsEnabled()) {
+        GTEST_SKIP() << RequiredExtensionsNotSupported() << " not supported";
     }
-    m_device_extension_names.push_back(VK_KHR_IMAGELESS_FRAMEBUFFER_EXTENSION_NAME);
     ASSERT_NO_FATAL_FAILURE(InitState());
     ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
 
@@ -1729,6 +1653,8 @@ TEST_F(VkLayerTest, RenderPassCreateFragmentDensityMapReferenceToInvalidAttachme
     TEST_DESCRIPTION(
         "Test creating a framebuffer with fragment density map reference to an attachment with layer count different from 1");
 
+    SetTargetApiVersion(VK_API_VERSION_1_0);
+
     if (!InstanceExtensionSupported(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME)) {
         return;
     }
@@ -1739,6 +1665,11 @@ TEST_F(VkLayerTest, RenderPassCreateFragmentDensityMapReferenceToInvalidAttachme
         printf("%s %s extension not supported skipped.\n", kSkipPrefix, VK_EXT_FRAGMENT_DENSITY_MAP_EXTENSION_NAME);
         return;
     }
+
+    if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
+        GTEST_SKIP() << "At least Vulkan version 1.1 is required";
+    }
+
     m_device_extension_names.push_back(VK_EXT_FRAGMENT_DENSITY_MAP_EXTENSION_NAME);
     VkPhysicalDeviceFragmentDensityMapFeaturesEXT fdm_features = LvlInitStruct<VkPhysicalDeviceFragmentDensityMapFeaturesEXT>();
     VkPhysicalDeviceFeatures2 features2 = LvlInitStruct<VkPhysicalDeviceFeatures2>(&fdm_features);

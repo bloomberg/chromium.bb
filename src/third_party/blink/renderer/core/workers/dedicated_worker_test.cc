@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/inspector/thread_debugger.h"
+#include "third_party/blink/renderer/core/messaging/blink_transferable_message.h"
 #include "third_party/blink/renderer/core/script/script.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/core/workers/dedicated_worker_global_scope.h"
@@ -94,7 +95,6 @@ class DedicatedWorkerThreadForTest final : public DedicatedWorkerThread {
     EXPECT_TRUE(IsCurrentThread());
     To<DedicatedWorkerGlobalScope>(GlobalScope())
         ->Initialize(script_url, network::mojom::ReferrerPolicy::kDefault,
-                     network::mojom::IPAddressSpace::kLocal,
                      Vector<network::mojom::blink::ContentSecurityPolicyPtr>(),
                      nullptr /* response_origin_trial_tokens */);
   }
@@ -153,9 +153,9 @@ class DedicatedWorkerMessagingProxyForTest
         false /* starter_secure_context */,
         CalculateHttpsState(security_origin.get()),
         nullptr /* worker_clients */, nullptr /* content_settings_client */,
-        network::mojom::IPAddressSpace::kLocal,
-        nullptr /* origin_trial_tokens */, base::UnguessableToken::Create(),
-        std::move(worker_settings), mojom::blink::V8CacheOptions::kDefault,
+        nullptr /* inherited_trial_features */,
+        base::UnguessableToken::Create(), std::move(worker_settings),
+        mojom::blink::V8CacheOptions::kDefault,
         nullptr /* worklet_module_responses_map */);
     params->parent_context_token =
         GetExecutionContext()->GetExecutionContextToken();

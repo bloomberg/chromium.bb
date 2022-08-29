@@ -99,4 +99,3 @@ for i in range(len(split)):
 
 output.write("\n")
 output.close()
-print("Generated " + output_file)

@@ -98,17 +98,11 @@ void RenderTargetVk::onColorDraw(ContextVk *contextVk,
     ASSERT(!mImage->getActualFormat().hasDepthOrStencilBits());
     ASSERT(framebufferLayerCount <= mLayerCount);
 
-    contextVk->onColorDraw(mImage, mResolveImage, packedAttachmentIndex);
-    mImage->onWrite(mLevelIndexGL, 1, mLayerIndex, framebufferLayerCount,
-                    VK_IMAGE_ASPECT_COLOR_BIT);
-    if (mResolveImage)
-    {
-        // Multisampled render to texture framebuffers cannot be layered.
-        ASSERT(framebufferLayerCount == 1);
-        mResolveImage->onWrite(mLevelIndexGL, 1, mLayerIndex, framebufferLayerCount,
-                               VK_IMAGE_ASPECT_COLOR_BIT);
-    }
-    retainImageViews(contextVk);
+    contextVk->onColorDraw(mLevelIndexGL, mLayerIndex, framebufferLayerCount, mImage, mResolveImage,
+                           packedAttachmentIndex);
+
+    // Multisampled render to texture framebuffers cannot be layered.
+    ASSERT(mResolveImage == nullptr || framebufferLayerCount == 1);
 }
 
 void RenderTargetVk::onColorResolve(ContextVk *contextVk, uint32_t framebufferLayerCount)
@@ -120,7 +114,6 @@ void RenderTargetVk::onColorResolve(ContextVk *contextVk, uint32_t framebufferLa
     contextVk->onImageRenderPassWrite(mLevelIndexGL, mLayerIndex, framebufferLayerCount,
                                       VK_IMAGE_ASPECT_COLOR_BIT, vk::ImageLayout::ColorAttachment,
                                       mImage);
-    retainImageViews(contextVk);
 }
 
 void RenderTargetVk::onDepthStencilDraw(ContextVk *contextVk, uint32_t framebufferLayerCount)
@@ -131,7 +124,6 @@ void RenderTargetVk::onDepthStencilDraw(ContextVk *contextVk, uint32_t framebuff
 
     contextVk->onDepthStencilDraw(mLevelIndexGL, mLayerIndex, framebufferLayerCount, mImage,
                                   mResolveImage);
-    retainImageViews(contextVk);
 }
 
 vk::ImageHelper &RenderTargetVk::getImageForRenderPass()
@@ -158,7 +150,7 @@ const vk::ImageHelper &RenderTargetVk::getResolveImageForRenderPass() const
     return *mResolveImage;
 }
 
-angle::Result RenderTargetVk::getImageViewImpl(ContextVk *contextVk,
+angle::Result RenderTargetVk::getImageViewImpl(vk::Context *context,
                                                const vk::ImageHelper &image,
                                                gl::SrgbWriteControlMode mode,
                                                vk::ImageViewHelper *imageViews,
@@ -168,36 +160,36 @@ angle::Result RenderTargetVk::getImageViewImpl(ContextVk *contextVk,
     vk::LevelIndex levelVk = mImage->toVkLevel(mLevelIndexGL);
     if (mLayerCount == 1)
     {
-        return imageViews->getLevelLayerDrawImageView(contextVk, image, levelVk, mLayerIndex, mode,
+        return imageViews->getLevelLayerDrawImageView(context, image, levelVk, mLayerIndex, mode,
                                                       imageViewOut);
     }
 
     // Layered render targets view the whole level or a handful of layers in case of multiview.
-    return imageViews->getLevelDrawImageView(contextVk, image, levelVk, mLayerIndex, mLayerCount,
+    return imageViews->getLevelDrawImageView(context, image, levelVk, mLayerIndex, mLayerCount,
                                              mode, imageViewOut);
 }
 
-angle::Result RenderTargetVk::getImageView(ContextVk *contextVk,
+angle::Result RenderTargetVk::getImageView(vk::Context *context,
                                            const vk::ImageView **imageViewOut) const
 {
     ASSERT(mImage);
-    return getImageViewImpl(contextVk, *mImage, gl::SrgbWriteControlMode::Default, mImageViews,
+    return getImageViewImpl(context, *mImage, gl::SrgbWriteControlMode::Default, mImageViews,
                             imageViewOut);
 }
 
-angle::Result RenderTargetVk::getImageViewWithColorspace(ContextVk *contextVk,
+angle::Result RenderTargetVk::getImageViewWithColorspace(vk::Context *context,
                                                          gl::SrgbWriteControlMode mode,
                                                          const vk::ImageView **imageViewOut) const
 {
     ASSERT(mImage);
-    return getImageViewImpl(contextVk, *mImage, mode, mImageViews, imageViewOut);
+    return getImageViewImpl(context, *mImage, mode, mImageViews, imageViewOut);
 }
 
-angle::Result RenderTargetVk::getResolveImageView(ContextVk *contextVk,
+angle::Result RenderTargetVk::getResolveImageView(vk::Context *context,
                                                   const vk::ImageView **imageViewOut) const
 {
     ASSERT(mResolveImage);
-    return getImageViewImpl(contextVk, *mResolveImage, gl::SrgbWriteControlMode::Default,
+    return getImageViewImpl(context, *mResolveImage, gl::SrgbWriteControlMode::Default,
                             mResolveImageViews, imageViewOut);
 }
 
@@ -214,11 +206,9 @@ vk::ImageHelper *RenderTargetVk::getOwnerOfData() const
     return isResolveImageOwnerOfData() ? mResolveImage : mImage;
 }
 
-angle::Result RenderTargetVk::getAndRetainCopyImageView(ContextVk *contextVk,
-                                                        const vk::ImageView **imageViewOut) const
+angle::Result RenderTargetVk::getCopyImageView(vk::Context *context,
+                                               const vk::ImageView **imageViewOut) const
 {
-    retainImageViews(contextVk);
-
     const vk::ImageViewHelper *imageViews =
         isResolveImageOwnerOfData() ? mResolveImageViews : mImageViews;
 
@@ -233,8 +223,8 @@ angle::Result RenderTargetVk::getAndRetainCopyImageView(ContextVk *contextVk,
     // Otherwise, this must come from the surface, in which case the image is 2D, so the image view
     // used to draw is just as good for fetching.  If resolve attachment is present, fetching is
     // done from that.
-    return isResolveImageOwnerOfData() ? getResolveImageView(contextVk, imageViewOut)
-                                       : getImageView(contextVk, imageViewOut);
+    return isResolveImageOwnerOfData() ? getResolveImageView(context, imageViewOut)
+                                       : getImageView(context, imageViewOut);
 }
 
 angle::FormatID RenderTargetVk::getImageActualFormatID() const
@@ -342,15 +332,6 @@ angle::Result RenderTargetVk::flushStagedUpdates(ContextVk *contextVk,
                                                       deferredClearIndex);
 }
 
-void RenderTargetVk::retainImageViews(ContextVk *contextVk) const
-{
-    mImageViews->retain(&contextVk->getResourceUseList());
-    if (mResolveImageViews)
-    {
-        mResolveImageViews->retain(&contextVk->getResourceUseList());
-    }
-}
-
 bool RenderTargetVk::hasDefinedContent() const
 {
     vk::ImageHelper *image = getOwnerOfData();
@@ -363,28 +344,20 @@ bool RenderTargetVk::hasDefinedStencilContent() const
     return image->hasSubresourceDefinedStencilContent(mLevelIndexGL, mLayerIndex, mLayerCount);
 }
 
-void RenderTargetVk::invalidateEntireContent(ContextVk *contextVk)
+void RenderTargetVk::invalidateEntireContent(ContextVk *contextVk,
+                                             bool *preferToKeepContentsDefinedOut)
 {
     vk::ImageHelper *image = getOwnerOfData();
-    image->invalidateSubresourceContent(contextVk, mLevelIndexGL, mLayerIndex, mLayerCount);
+    image->invalidateSubresourceContent(contextVk, mLevelIndexGL, mLayerIndex, mLayerCount,
+                                        preferToKeepContentsDefinedOut);
 }
 
-void RenderTargetVk::invalidateEntireStencilContent(ContextVk *contextVk)
+void RenderTargetVk::invalidateEntireStencilContent(ContextVk *contextVk,
+                                                    bool *preferToKeepContentsDefinedOut)
 {
     vk::ImageHelper *image = getOwnerOfData();
-    image->invalidateSubresourceStencilContent(contextVk, mLevelIndexGL, mLayerIndex, mLayerCount);
-}
-
-void RenderTargetVk::restoreEntireContent()
-{
-    vk::ImageHelper *image = getOwnerOfData();
-    image->restoreSubresourceContent(mLevelIndexGL, mLayerIndex, mLayerCount);
-}
-
-void RenderTargetVk::restoreEntireStencilContent()
-{
-    vk::ImageHelper *image = getOwnerOfData();
-    image->restoreSubresourceStencilContent(mLevelIndexGL, mLayerIndex, mLayerCount);
+    image->invalidateSubresourceStencilContent(contextVk, mLevelIndexGL, mLayerIndex, mLayerCount,
+                                               preferToKeepContentsDefinedOut);
 }
 
 gl::ImageIndex RenderTargetVk::getImageIndexForClear(uint32_t layerCount) const

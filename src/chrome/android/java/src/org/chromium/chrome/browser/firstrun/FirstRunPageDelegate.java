@@ -47,18 +47,6 @@ public interface FirstRunPageDelegate {
     void exitFirstRun();
 
     /**
-     * Notifies that the user refused to sync (e.g. "NO, THANKS").
-     */
-    void refuseSync();
-
-    /**
-     * Notifies that the user consented to sync.
-     * @param accountName An account to sync.
-     * @param openSettings Whether the settings page should be opened after sync is enabled.
-     */
-    void acceptSync(String accountName, boolean openSettings);
-
-    /**
      * @return Whether the user has accepted Chrome Terms of Service.
      */
     boolean didAcceptTermsOfService();
@@ -71,6 +59,7 @@ public interface FirstRunPageDelegate {
     /**
      * Notifies all interested parties that the user has accepted Chrome Terms of Service.
      * Must be called only after the delegate has fully initialized.
+     * Does not automatically advance to the next page, call {@link #advanceToNextPage()} directly.
      * @param allowCrashUpload True if the user allows to upload crash dumps and collect stats.
      */
     void acceptTermsOfService(boolean allowCrashUpload);
@@ -87,9 +76,20 @@ public interface FirstRunPageDelegate {
      */
     void recordFreProgressHistogram(@MobileFreProgress int state);
 
+    /** Records MobileFre.FromLaunch.NativeAndPoliciesLoaded histogram. **/
+    void recordNativePolicyAndChildStatusLoadedHistogram();
+
+    /** Records MobileFre.FromLaunch.NativeInitialized histogram. **/
+    void recordNativeInitializedHistogram();
+
     /**
      * The supplier that supplies whether reading policy value is necessary.
      * See {@link PolicyLoadListener} for details.
      */
     OneshotSupplier<Boolean> getPolicyLoadListener();
+
+    /**
+     * Returns the supplier that supplies child account status.
+     */
+    OneshotSupplier<Boolean> getChildAccountStatusSupplier();
 }

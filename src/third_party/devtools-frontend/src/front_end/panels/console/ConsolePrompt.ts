@@ -5,7 +5,10 @@
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
+import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as Formatter from '../../models/formatter/formatter.js';
+import * as SourceMapScopes from '../../models/source_map_scopes/source_map_scopes.js';
 import * as CodeMirror from '../../third_party/codemirror.next/codemirror.next.js';
 import * as TextEditor from '../../ui/components/text_editor/text_editor.js';
 import * as ObjectUI from '../../ui/legacy/components/object_ui/object_ui.js';
@@ -39,6 +42,10 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin<EventTypes, t
   private readonly eagerEvalSetting: Common.Settings.Setting<boolean>;
   private previewRequestForTest: Promise<void>|null;
   private highlightingNode: boolean;
+  // The CodeMirror state field that controls whether the argument hints are showing.
+  // If they are, the escape key will clear them. However, if they aren't, then the
+  // console drawer should be hidden as a whole.
+  #argumentHintsState: CodeMirror.StateField<CodeMirror.Tooltip|null>;
 
   constructor() {
     super();
@@ -68,13 +75,15 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin<EventTypes, t
     this.element.tabIndex = 0;
     this.previewRequestForTest = null;
     this.highlightingNode = false;
+    const argumentHints = TextEditor.JavaScript.argumentHints();
+    this.#argumentHintsState = argumentHints[0];
 
     const editorState = CodeMirror.EditorState.create({
       doc: this.initialText,
       extensions: [
         CodeMirror.keymap.of(this.editorKeymap()),
         CodeMirror.EditorView.updateListener.of(update => this.editorUpdate(update)),
-        TextEditor.JavaScript.argumentHints(),
+        argumentHints,
         TextEditor.JavaScript.completion(),
         TextEditor.Config.showCompletionHint,
         CodeMirror.javascript.javascript(),
@@ -113,7 +122,7 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin<EventTypes, t
     const enabled = this.eagerEvalSetting.get();
     this.eagerPreviewElement.classList.toggle('hidden', !enabled);
     if (enabled) {
-      this.requestPreview();
+      void this.requestPreview();
     }
   }
 
@@ -208,9 +217,15 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin<EventTypes, t
       {mac: 'Ctrl-p', run: (): boolean => this.moveHistory(-1, true)},
       {mac: 'Ctrl-n', run: (): boolean => this.moveHistory(1, true)},
       {
+        key: 'Escape',
+        run: (): boolean => {
+          return TextEditor.JavaScript.closeArgumentsHintsTooltip(this.editor.editor, this.#argumentHintsState);
+        },
+      },
+      {
         key: 'Enter',
         run: (): boolean => {
-          this.handleEnter();
+          void this.handleEnter();
           return true;
         },
         shift: CodeMirror.insertNewlineAndIndent,
@@ -240,12 +255,22 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin<EventTypes, t
       return false;
     }
 
-    const cursorPos = dir < 0 ? newText.search(/\n|$/) : newText.length;
+    // Change the prompt input to the history content, and scroll to the end to
+    // bring the full content (potentially multiple lines) into view.
+    const cursorPos = newText.length;
     this.editor.dispatch({
       changes: {from: 0, to: this.editor.state.doc.length, insert: newText},
       selection: CodeMirror.EditorSelection.cursor(cursorPos),
       scrollIntoView: true,
     });
+    if (dir < 0) {
+      // If we are going back in history, put the cursor to the end of the first line
+      // so that the user can quickly go further back in history.
+      const firstLineBreak = newText.search(/\n|$/);
+      this.editor.dispatch({
+        selection: CodeMirror.EditorSelection.cursor(firstLineBreak),
+      });
+    }
     return true;
   }
 
@@ -257,6 +282,7 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin<EventTypes, t
   private async handleEnter(): Promise<void> {
     if (await this.enterWillEvaluate()) {
       this.appendCommand(this.text(), true);
+      TextEditor.JavaScript.closeArgumentsHintsTooltip(this.editor.editor, this.#argumentHintsState);
       this.editor.dispatch({
         changes: {from: 0, to: this.editor.state.doc.length},
         scrollIntoView: true,
@@ -269,7 +295,7 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin<EventTypes, t
   }
 
   private updatePromptIcon(): void {
-    this.iconThrottler.schedule(async () => {
+    void this.iconThrottler.schedule(async () => {
       this.promptIcon.classList.toggle('console-prompt-incomplete', !(await this.enterWillEvaluate()));
     });
   }
@@ -280,11 +306,33 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin<EventTypes, t
       const executionContext = currentExecutionContext;
       const message = SDK.ConsoleModel.ConsoleModel.instance().addCommandMessage(executionContext, text);
       const expression = ObjectUI.JavaScriptREPL.JavaScriptREPL.preprocessExpression(text);
-      SDK.ConsoleModel.ConsoleModel.instance().evaluateCommandInConsole(
-          executionContext, message, expression, useCommandLineAPI);
+      void this.evaluateCommandInConsole(executionContext, message, expression, useCommandLineAPI);
       if (ConsolePanel.instance().isShowing()) {
         Host.userMetrics.actionTaken(Host.UserMetrics.Action.CommandEvaluatedInConsolePanel);
       }
+    }
+  }
+
+  private async evaluateCommandInConsole(
+      executionContext: SDK.RuntimeModel.ExecutionContext, message: SDK.ConsoleModel.ConsoleMessage, expression: string,
+      useCommandLineAPI: boolean): Promise<void> {
+    if (Root.Runtime.experiments.isEnabled('evaluateExpressionsWithSourceMaps')) {
+      const callFrame = executionContext.debuggerModel.selectedCallFrame();
+      if (callFrame) {
+        const nameMap = await SourceMapScopes.NamesResolver.allVariablesInCallFrame(callFrame);
+        expression = await this.substituteNames(expression, nameMap);
+      }
+    }
+
+    await SDK.ConsoleModel.ConsoleModel.instance().evaluateCommandInConsole(
+        executionContext, message, expression, useCommandLineAPI);
+  }
+
+  private async substituteNames(expression: string, mapping: Map<string, string>): Promise<string> {
+    try {
+      return await Formatter.FormatterWorkerPool.formatterWorkerPool().javaScriptSubstitute(expression, mapping);
+    } catch {
+      return expression;
     }
   }
 

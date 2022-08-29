@@ -11,8 +11,11 @@ from __future__ import absolute_import
 
 import base64
 import json
+import logging
 import os
-import urllib
+import six.moves.urllib.request
+import six.moves.urllib.parse
+import six.moves.urllib.error
 
 from google.appengine.api import app_identity
 from google.appengine.api import urlfetch
@@ -57,16 +60,18 @@ class LoadFromProdHandler(request_handler.RequestHandler):
       num_points = self.request.get('num_points')
       end_rev = self.request.get('end_rev')
       url = ('%s?test_path=%s&num_points=%s' %
-             (_PROD_DUMP_GRAPH_JSON_URL, urllib.quote(test_path), num_points))
+             (_PROD_DUMP_GRAPH_JSON_URL,
+              six.moves.urllib.parse.quote(test_path), num_points))
       if end_rev:
         url += '&end_rev=%s' % end_rev
     elif sheriff:
       sheriff_name = self.request.get('sheriff')
       num_alerts = self.request.get('num_alerts')
       num_points = self.request.get('num_points')
-      url = ('%s?sheriff=%s&num_alerts=%s&num_points=%s' %
-             (_PROD_DUMP_GRAPH_JSON_URL, urllib.quote(sheriff_name), num_alerts,
-              num_points))
+      url = (
+          '%s?sheriff=%s&num_alerts=%s&num_points=%s' %
+          (_PROD_DUMP_GRAPH_JSON_URL,
+           six.moves.urllib.parse.quote(sheriff_name), num_alerts, num_points))
     elif raw_json:
       protos = json.loads(raw_json)
     else:
@@ -100,6 +105,9 @@ class LoadFromProdHandler(request_handler.RequestHandler):
           ref = val.mutable_referencevalue()
           ref.set_app(_DEV_APP_ID)
       entity = ndb.ModelAdapter().pb_to_entity(pb)
+      if entity.key is None:
+        logging.warning('Entity without key: %s', entity)
+        continue
       entities[entity.key.kind()].append(entity)
 
     for kind in kinds:

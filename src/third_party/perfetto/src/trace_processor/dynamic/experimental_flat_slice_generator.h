@@ -18,7 +18,7 @@
 #define SRC_TRACE_PROCESSOR_DYNAMIC_EXPERIMENTAL_FLAT_SLICE_GENERATOR_H_
 
 #include "perfetto/ext/base/optional.h"
-#include "src/trace_processor/sqlite/db_sqlite_table.h"
+#include "src/trace_processor/dynamic/dynamic_table_generator.h"
 #include "src/trace_processor/storage/trace_storage.h"
 
 namespace perfetto {
@@ -52,17 +52,18 @@ class TraceProcessorContext;
 // (which picks all slices with ts + dur >= bound) and is more akin to doing
 // a simple ts >= bound. However, slices *will* be truncated at the end
 // if they would spill past the provided end bound.
-class ExperimentalFlatSliceGenerator
-    : public DbSqliteTable::DynamicTableGenerator {
+class ExperimentalFlatSliceGenerator : public DynamicTableGenerator {
  public:
   ExperimentalFlatSliceGenerator(TraceProcessorContext* context);
 
   Table::Schema CreateSchema() override;
   std::string TableName() override;
   uint32_t EstimateRowCount() override;
-  util::Status ValidateConstraints(const QueryConstraints&) override;
-  std::unique_ptr<Table> ComputeTable(const std::vector<Constraint>& cs,
-                                      const std::vector<Order>& ob) override;
+  base::Status ValidateConstraints(const QueryConstraints&) override;
+  base::Status ComputeTable(const std::vector<Constraint>& cs,
+                            const std::vector<Order>& ob,
+                            const BitVector& cols_used,
+                            std::unique_ptr<Table>& table_return) override;
 
   // Visibile for testing.
   static std::unique_ptr<tables::ExperimentalFlatSliceTable>

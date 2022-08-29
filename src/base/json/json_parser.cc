@@ -10,6 +10,7 @@
 
 #include "base/check_op.h"
 #include "base/json/json_reader.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/ranges/algorithm.h"
@@ -76,6 +77,20 @@ bool UnprefixedHexStringToInt(StringPiece input, int* output) {
   }
   return HexStringToInt(input, output);
 }
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class ChromiumJsonExtension {
+  kCComment,
+  kCppComment,
+  kXEscape,
+  kVerticalTabEscape,
+  kControlCharacter,
+  kMaxValue = kControlCharacter,
+};
+
+const char kExtensionHistogramName[] =
+    "Security.JSONParser.ChromiumExtensionUsage";
 
 }  // namespace
 
@@ -189,7 +204,7 @@ JSONParser::StringBuilder& JSONParser::StringBuilder::operator=(
     StringBuilder&& other) = default;
 
 void JSONParser::StringBuilder::Append(uint32_t point) {
-  DCHECK(IsValidCodepoint(point));
+  DCHECK(IsValidCodepoint(static_cast<base_icu::UChar32>(point)));
 
   if (point < kExtendedASCIIStart && !string_) {
     DCHECK_EQ(static_cast<char>(point), pos_[length_]);
@@ -307,7 +322,7 @@ void JSONParser::EatWhitespaceAndComments() {
         if (!(c == '\n' && index_ > 0 && input_[index_ - 1] == '\r')) {
           ++line_number_;
         }
-        FALLTHROUGH;
+        [[fallthrough]];
       case ' ':
       case '\t':
         ConsumeChar();
@@ -327,7 +342,16 @@ bool JSONParser::EatComment() {
   if (!comment_start)
     return false;
 
+  const bool comments_allowed = options_ & JSON_ALLOW_COMMENTS;
+
   if (comment_start == "//") {
+    UmaHistogramEnumeration(kExtensionHistogramName,
+                            ChromiumJsonExtension::kCppComment);
+    if (!comments_allowed) {
+      ReportError(JSON_UNEXPECTED_TOKEN, 0);
+      return false;
+    }
+
     ConsumeChars(2);
     // Single line comment, read to newline.
     while (absl::optional<char> c = PeekChar()) {
@@ -336,6 +360,13 @@ bool JSONParser::EatComment() {
       ConsumeChar();
     }
   } else if (comment_start == "/*") {
+    UmaHistogramEnumeration(kExtensionHistogramName,
+                            ChromiumJsonExtension::kCComment);
+    if (!comments_allowed) {
+      ReportError(JSON_UNEXPECTED_TOKEN, 0);
+      return false;
+    }
+
     ConsumeChars(2);
     char previous_char = '\0';
     // Block comment, read until end marker.
@@ -392,7 +423,7 @@ absl::optional<Value> JSONParser::ConsumeDictionary() {
     return absl::nullopt;
   }
 
-  std::vector<Value::DictStorage::value_type> dict_storage;
+  std::vector<Value::DeprecatedDictStorage::value_type> dict_storage;
 
   Token token = GetNextToken();
   while (token != T_OBJECT_END) {
@@ -442,7 +473,7 @@ absl::optional<Value> JSONParser::ConsumeDictionary() {
   // Reverse |dict_storage| to keep the last of elements with the same key in
   // the input.
   ranges::reverse(dict_storage);
-  return Value(Value::DictStorage(std::move(dict_storage)));
+  return Value(Value::DeprecatedDictStorage(std::move(dict_storage)));
 }
 
 absl::optional<Value> JSONParser::ConsumeList() {
@@ -507,7 +538,7 @@ bool JSONParser::ConsumeStringRaw(StringBuilder* out) {
   StringBuilder string(pos());
 
   while (PeekChar()) {
-    uint32_t next_char = 0;
+    base_icu::UChar32 next_char = 0;
     if (!ReadUnicodeCharacter(input_.data(),
                               static_cast<int32_t>(input_.length()), &index_,
                               &next_char) ||
@@ -527,6 +558,19 @@ bool JSONParser::ConsumeStringRaw(StringBuilder* out) {
       return true;
     }
     if (next_char != '\\') {
+      // Per Section 7, "All Unicode characters may be placed within the
+      // quotation marks, except for the characters that MUST be escaped:
+      // quotation mark, reverse solidus, and the control characters (U+0000
+      // through U+001F)".
+      if (next_char <= 0x1F) {
+        UmaHistogramEnumeration(kExtensionHistogramName,
+                                ChromiumJsonExtension::kControlCharacter);
+        if (!(options_ & JSON_ALLOW_CONTROL_CHARS)) {
+          ReportError(JSON_UNSUPPORTED_ENCODING, -1);
+          return false;
+        }
+      }
+
       // If this character is not an escape sequence, track any line breaks and
       // copy next_char to the StringBuilder. The JSON spec forbids unescaped
       // ASCII control characters within a string, including '\r' and '\n', but
@@ -561,6 +605,13 @@ bool JSONParser::ConsumeStringRaw(StringBuilder* out) {
         case 'x': {  // UTF-8 sequence.
           // UTF-8 \x escape sequences are not allowed in the spec, but they
           // are supported here for backwards-compatiblity with the old parser.
+          UmaHistogramEnumeration(kExtensionHistogramName,
+                                  ChromiumJsonExtension::kXEscape);
+          if (!(options_ & JSON_ALLOW_X_ESCAPES)) {
+            ReportError(JSON_INVALID_ESCAPE, -1);
+            return false;
+          }
+
           escape_sequence = ConsumeChars(2);
           if (!escape_sequence) {
             ReportError(JSON_INVALID_ESCAPE, -3);
@@ -612,6 +663,12 @@ bool JSONParser::ConsumeStringRaw(StringBuilder* out) {
           string.Append('\t');
           break;
         case 'v':  // Not listed as valid escape sequence in the RFC.
+          UmaHistogramEnumeration(kExtensionHistogramName,
+                                  ChromiumJsonExtension::kVerticalTabEscape);
+          if (!(options_ & JSON_ALLOW_VERT_TAB)) {
+            ReportError(JSON_INVALID_ESCAPE, -1);
+            return false;
+          }
           string.Append('\v');
           break;
         // All other escape squences are illegal.

@@ -6,6 +6,7 @@
 
 #include "base/containers/contains.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/observer_list.h"
 #include "components/global_media_controls/public/media_item_manager.h"
 #include "components/global_media_controls/public/media_item_ui.h"
 #include "components/global_media_controls/public/media_session_item_producer_observer.h"
@@ -240,7 +241,8 @@ MediaSessionItemProducer::GetMediaItem(const std::string& id) {
   return it == sessions_.end() ? nullptr : it->second.item()->GetWeakPtr();
 }
 
-std::set<std::string> MediaSessionItemProducer::GetActiveControllableItemIds() {
+std::set<std::string> MediaSessionItemProducer::GetActiveControllableItemIds()
+    const {
   return active_controllable_session_ids_;
 }
 
@@ -343,6 +345,7 @@ void MediaSessionItemProducer::OnMediaItemUIDismissed(const std::string& id) {
 
   session->set_dismiss_reason(
       GlobalMediaControlsDismissReason::kUserDismissedNotification);
+  session->item()->Stop();
   session->item()->Dismiss();
 }
 

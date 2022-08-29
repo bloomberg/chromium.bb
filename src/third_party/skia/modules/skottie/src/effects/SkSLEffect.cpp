@@ -7,6 +7,7 @@
 
 #include "modules/skottie/src/effects/Effects.h"
 
+#include "include/core/SkCanvas.h"
 #include "include/effects/SkRuntimeEffect.h"
 #include "include/private/SkMalloc.h"
 #include "modules/skottie/src/Adapter.h"
@@ -139,7 +140,8 @@ private:
         if (!fEffect) {
             return;
         }
-        sk_sp<SkShader> shader = fEffect->makeShader(buildUniformData(), {/* TODO: child support */}, &SkMatrix::I(), false);
+        sk_sp<SkShader> shader =
+                fEffect->makeShader(buildUniformData(), {/* TODO: child support */});
         this->node()->setShader(std::move(shader));
     }
 };

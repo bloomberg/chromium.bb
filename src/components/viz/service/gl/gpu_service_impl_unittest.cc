@@ -5,15 +5,16 @@
 #include "components/viz/service/gl/gpu_service_impl.h"
 
 #include <memory>
+#include <tuple>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
-#include "base/ignore_result.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/task/single_thread_task_runner.h"
+#include "base/time/time.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/ipc/service/display_context.h"
 #include "gpu/ipc/service/gpu_watchdog_thread.h"
@@ -129,7 +130,7 @@ TEST_F(GpuServiceTest, LoseAllContexts) {
   // Use a disconnected mojo remote for GpuHost, we don't need to receive any
   // messages.
   mojo::PendingRemote<mojom::GpuHost> gpu_host_proxy;
-  ignore_result(gpu_host_proxy.InitWithNewPipeAndPassReceiver());
+  std::ignore = gpu_host_proxy.InitWithNewPipeAndPassReceiver();
   gpu_service()->InitializeWithHost(
       std::move(gpu_host_proxy), gpu::GpuProcessActivityFlags(),
       gl::init::CreateOffscreenGLSurface(gfx::Size()),
@@ -163,7 +164,7 @@ TEST_F(GpuServiceTest, VisibilityCallbackCalled) {
   gpu_service()->Bind(gpu_service_remote.BindNewPipeAndPassReceiver());
 
   mojo::PendingRemote<mojom::GpuHost> gpu_host_proxy;
-  ignore_result(gpu_host_proxy.InitWithNewPipeAndPassReceiver());
+  std::ignore = gpu_host_proxy.InitWithNewPipeAndPassReceiver();
   gpu_service()->InitializeWithHost(
       std::move(gpu_host_proxy), gpu::GpuProcessActivityFlags(),
       gl::init::CreateOffscreenGLSurface(gfx::Size()),

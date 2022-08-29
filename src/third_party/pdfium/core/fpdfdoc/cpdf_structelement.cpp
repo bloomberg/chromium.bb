@@ -47,10 +47,24 @@ CPDF_StructElement::CPDF_StructElement(const CPDF_StructTree* pTree,
   LoadKids(m_pDict.Get());
 }
 
-CPDF_StructElement::~CPDF_StructElement() = default;
+CPDF_StructElement::~CPDF_StructElement() {
+  for (auto& kid : m_Kids) {
+    if (kid.m_Type == Kid::kElement && kid.m_pElement) {
+      kid.m_pElement->SetParent(nullptr);
+    }
+  }
+}
+
+ByteString CPDF_StructElement::GetObjType() const {
+  return GetDict()->GetStringFor("Type");
+}
 
 WideString CPDF_StructElement::GetAltText() const {
   return GetDict()->GetUnicodeTextFor("Alt");
+}
+
+WideString CPDF_StructElement::GetActualText() const {
+  return GetDict()->GetUnicodeTextFor("ActualText");
 }
 
 WideString CPDF_StructElement::GetTitle() const {
