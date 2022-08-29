@@ -6,9 +6,10 @@
 #define CHROME_BROWSER_ASH_APP_RESTORE_APP_LAUNCH_HANDLER_H_
 
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "components/app_restore/restore_data.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
-#include "components/services/app_service/public/mojom/types.mojom.h"
+#include "components/services/app_service/public/cpp/app_types.h"
 
 namespace apps {
 class AppUpdate;
@@ -37,7 +38,7 @@ class AppLaunchHandler : public apps::AppRegistryCache::Observer {
 
   // apps::AppRegistryCache::Observer:
   void OnAppUpdate(const apps::AppUpdate& update) override;
-  void OnAppTypeInitialized(apps::mojom::AppType app_type) override;
+  void OnAppTypeInitialized(apps::AppType app_type) override;
   void OnAppRegistryCacheWillBeDestroyed(
       apps::AppRegistryCache* cache) override;
 
@@ -45,6 +46,8 @@ class AppLaunchHandler : public apps::AppRegistryCache::Observer {
   const Profile* profile() const { return profile_; }
 
   ::app_restore::RestoreData* restore_data() { return restore_data_.get(); }
+
+  void set_delay(base::TimeDelta delay) { delay_ = delay; }
 
  protected:
   // Note: LaunchApps does not launch browser windows, this is handled
@@ -61,7 +64,7 @@ class AppLaunchHandler : public apps::AppRegistryCache::Observer {
 
   // Called before an extension type app is launched. Allows subclasses to
   // perform some setup prior to launching an extension type app.
-  virtual void OnExtensionLaunching(const std::string& app_id) = 0;
+  virtual void OnExtensionLaunching(const std::string& app_id) {}
 
   virtual base::WeakPtr<AppLaunchHandler> GetWeakPtrAppLaunchHandler() = 0;
 
@@ -71,15 +74,19 @@ class AppLaunchHandler : public apps::AppRegistryCache::Observer {
   }
 
  private:
-  void LaunchApp(apps::mojom::AppType app_type, const std::string& app_id);
+  void LaunchApp(apps::AppType app_type, const std::string& app_id);
 
   virtual void LaunchSystemWebAppOrChromeApp(
-      apps::mojom::AppType app_type,
+      apps::AppType app_type,
       const std::string& app_id,
       const ::app_restore::RestoreData::LaunchList& launch_list);
 
   Profile* const profile_;
   std::unique_ptr<::app_restore::RestoreData> restore_data_;
+
+  // A delay between apps launch time. This should only be set in non official
+  // builds.
+  base::TimeDelta delay_;
 };
 
 }  // namespace ash

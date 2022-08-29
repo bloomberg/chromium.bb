@@ -25,17 +25,16 @@ test::SingleThreadTaskEnvironment::MainThreadType GetMainThreadType(
     case MessagePumpType::UI:
       return test::SingleThreadTaskEnvironment::MainThreadType::UI;
     case MessagePumpType::CUSTOM:
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     case MessagePumpType::JAVA:
-#elif defined(OS_APPLE)
+#elif BUILDFLAG(IS_APPLE)
     case MessagePumpType::NS_RUNLOOP:
-#elif defined(OS_WIN)
-    case MessagePumpType::UI_WITH_WM_QUIT_SUPPORT:
 #endif
       NOTREACHED();
       return test::SingleThreadTaskEnvironment::MainThreadType::DEFAULT;
   }
 }
+
 }  // namespace
 
 TestMessageLoop::TestMessageLoop() = default;

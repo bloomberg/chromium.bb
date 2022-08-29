@@ -9,6 +9,7 @@
  */
 
 #import <Foundation/Foundation.h>
+#import <XCTest/XCTest.h>
 
 #include <memory>
 #include <vector>
@@ -27,14 +28,10 @@
 #import "api/peerconnection/RTCSessionDescription.h"
 #import "helpers/NSString+StdString.h"
 
-@interface RTCPeerConnectionTest : NSObject
-- (void)testConfigurationGetter;
-- (void)testWithDependencies;
-- (void)testWithInvalidSDP;
-- (void)testWithInvalidIceCandidate;
+@interface RTCPeerConnectionTests : XCTestCase
 @end
 
-@implementation RTCPeerConnectionTest
+@implementation RTCPeerConnectionTests
 
 - (void)testConfigurationGetter {
   NSArray *urlStrings = @[ @"stun:stun1.example.net" ];
@@ -42,6 +39,7 @@
       [[RTC_OBJC_TYPE(RTCIceServer) alloc] initWithURLStrings:urlStrings];
 
   RTC_OBJC_TYPE(RTCConfiguration) *config = [[RTC_OBJC_TYPE(RTCConfiguration) alloc] init];
+  config.sdpSemantics = RTCSdpSemanticsUnifiedPlan;
   config.iceServers = @[ server ];
   config.iceTransportPolicy = RTCIceTransportPolicyRelay;
   config.bundlePolicy = RTCBundlePolicyMaxBundle;
@@ -121,6 +119,7 @@
       [[RTC_OBJC_TYPE(RTCIceServer) alloc] initWithURLStrings:urlStrings];
 
   RTC_OBJC_TYPE(RTCConfiguration) *config = [[RTC_OBJC_TYPE(RTCConfiguration) alloc] init];
+  config.sdpSemantics = RTCSdpSemanticsUnifiedPlan;
   config.iceServers = @[ server ];
   RTC_OBJC_TYPE(RTCMediaConstraints) *contraints =
       [[RTC_OBJC_TYPE(RTCMediaConstraints) alloc] initWithMandatoryConstraints:@{}
@@ -145,6 +144,7 @@
       [[RTC_OBJC_TYPE(RTCPeerConnectionFactory) alloc] init];
 
   RTC_OBJC_TYPE(RTCConfiguration) *config = [[RTC_OBJC_TYPE(RTCConfiguration) alloc] init];
+  config.sdpSemantics = RTCSdpSemanticsUnifiedPlan;
   RTC_OBJC_TYPE(RTCMediaConstraints) *contraints =
       [[RTC_OBJC_TYPE(RTCMediaConstraints) alloc] initWithMandatoryConstraints:@{}
                                                            optionalConstraints:nil];
@@ -175,6 +175,7 @@
       [[RTC_OBJC_TYPE(RTCPeerConnectionFactory) alloc] init];
 
   RTC_OBJC_TYPE(RTCConfiguration) *config = [[RTC_OBJC_TYPE(RTCConfiguration) alloc] init];
+  config.sdpSemantics = RTCSdpSemanticsUnifiedPlan;
   RTC_OBJC_TYPE(RTCMediaConstraints) *contraints =
       [[RTC_OBJC_TYPE(RTCMediaConstraints) alloc] initWithMandatoryConstraints:@{}
                                                            optionalConstraints:nil];
@@ -201,31 +202,3 @@
 }
 
 @end
-
-TEST(RTCPeerConnectionTest, ConfigurationGetterTest) {
-  @autoreleasepool {
-    RTCPeerConnectionTest *test = [[RTCPeerConnectionTest alloc] init];
-    [test testConfigurationGetter];
-  }
-}
-
-TEST(RTCPeerConnectionTest, TestWithDependencies) {
-  @autoreleasepool {
-    RTCPeerConnectionTest *test = [[RTCPeerConnectionTest alloc] init];
-    [test testWithDependencies];
-  }
-}
-
-TEST(RTCPeerConnectionTest, TestWithInvalidSDP) {
-  @autoreleasepool {
-    RTCPeerConnectionTest *test = [[RTCPeerConnectionTest alloc] init];
-    [test testWithInvalidSDP];
-  }
-}
-
-TEST(RTCPeerConnectionTest, TestWithInvalidIceCandidate) {
-  @autoreleasepool {
-    RTCPeerConnectionTest *test = [[RTCPeerConnectionTest alloc] init];
-    [test testWithInvalidIceCandidate];
-  }
-}

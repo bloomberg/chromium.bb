@@ -8,12 +8,12 @@
 #include <string.h>
 
 #include <map>
+#include <tuple>
 #include <utility>
 #include <vector>
 
 #include "base/containers/flat_set.h"
 #include "base/guid.h"
-#include "base/ignore_result.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/pickle.h"
@@ -21,19 +21,6 @@
 #include "base/values.h"
 #include "components/sessions/core/base_session_service_commands.h"
 #include "components/tab_groups/tab_group_color.h"
-
-namespace {
-
-bool ReadSessionIdFromPickle(base::PickleIterator* iterator, SessionID* id) {
-  SessionID::id_type value;
-  if (!iterator->ReadInt(&value)) {
-    return false;
-  }
-  *id = SessionID::FromSerializedValue(value);
-  return true;
-}
-
-}  // namespace
 
 namespace sessions {
 
@@ -680,7 +667,7 @@ bool CreateTabsAndWindows(
         // The |is_collapsed| boolean was added in M88 to save the collapsed
         // state, so previous versions may not have this stored.
         bool is_collapsed = false;
-        ignore_result(!iter.ReadBool(&is_collapsed));
+        std::ignore = iter.ReadBool(&is_collapsed);
         group->visual_data =
             tab_groups::TabGroupVisualData(title, color_int, is_collapsed);
         break;
@@ -857,14 +844,10 @@ bool CreateTabsAndWindows(
       }
 
       case kCommandAddTabExtraData: {
-        std::unique_ptr<base::Pickle> pickle(command->PayloadAsPickle());
-        base::PickleIterator it(*pickle);
-
         SessionID tab_id = SessionID::InvalidValue();
         std::string key;
         std::string data;
-        if (!ReadSessionIdFromPickle(&it, &tab_id) || !it.ReadString(&key) ||
-            !it.ReadString(&data)) {
+        if (!RestoreAddExtraDataCommand(*command, &tab_id, &key, &data)) {
           DVLOG(1) << "Failed reading command " << command->id();
           return true;
         }
@@ -874,14 +857,10 @@ bool CreateTabsAndWindows(
       }
 
       case kCommandAddWindowExtraData: {
-        std::unique_ptr<base::Pickle> pickle(command->PayloadAsPickle());
-        base::PickleIterator it(*pickle);
-
         SessionID window_id = SessionID::InvalidValue();
         std::string key;
         std::string data;
-        if (!ReadSessionIdFromPickle(&it, &window_id) || !it.ReadString(&key) ||
-            !it.ReadString(&data)) {
+        if (!RestoreAddExtraDataCommand(*command, &window_id, &key, &data)) {
           DVLOG(1) << "Failed reading command " << command->id();
           return true;
         }
@@ -1145,19 +1124,6 @@ std::unique_ptr<SessionCommand> CreateSetTabDataCommand(
     pickle.WriteString(kv.second);
   }
   return std::make_unique<SessionCommand>(kCommandSetTabData, pickle);
-}
-
-std::unique_ptr<SessionCommand> CreateAddExtraDataCommand(
-    SessionCommand::id_type command,
-    const SessionID& session_id,
-    const std::string& key,
-    const std::string& data) {
-  base::Pickle pickle;
-  pickle.WriteInt(session_id.id());
-  pickle.WriteString(key);
-  pickle.WriteString(data);
-
-  return std::make_unique<SessionCommand>(command, pickle);
 }
 
 std::unique_ptr<SessionCommand> CreateAddTabExtraDataCommand(

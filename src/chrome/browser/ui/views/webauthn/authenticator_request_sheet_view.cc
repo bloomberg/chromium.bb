@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/browser/ui/views/accessibility/non_accessible_image_view.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
@@ -16,6 +17,7 @@
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/color/color_provider.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/native_theme/native_theme.h"
@@ -129,6 +131,19 @@ AuthenticatorRequestSheetView::CreateIllustrationWithOverlays() {
         image_with_overlays->AddChildView(std::move(back_arrow));
   }
 
+  if (model()->IsCloseButtonVisible()) {
+    auto close = views::CreateVectorImageButton(base::BindRepeating(
+        &AuthenticatorRequestSheetModel::OnCancel, base::Unretained(model())));
+    close->SetAccessibleName(
+        l10n_util::GetStringUTF16(IDS_NEW_TAB_VOICE_CLOSE_TOOLTIP));
+    close->SizeToPreferredSize();
+    close->SetX(illustration_size.width() - close->GetPreferredSize().width() -
+                kActivityIndicatorHeight);
+    close->SetY(kActivityIndicatorHeight);
+    close_button_ = close.get();
+    image_with_overlays->AddChildView(std::move(close));
+  }
+
   if (GetWidget()) {
     UpdateIconImageFromModel();
     UpdateIconColors();
@@ -228,11 +243,18 @@ void AuthenticatorRequestSheetView::UpdateIconImageFromModel() {
 }
 
 void AuthenticatorRequestSheetView::UpdateIconColors() {
+  const auto* const cp = GetColorProvider();
   if (back_arrow_) {
-    views::SetImageFromVectorIcon(
+    views::SetImageFromVectorIconWithColor(
         back_arrow_, vector_icons::kBackArrowIcon,
-        color_utils::DeriveDefaultIconColor(views::style::GetColor(
-            *this, views::style::CONTEXT_LABEL, views::style::STYLE_PRIMARY)));
+        cp->GetColor(kColorWebAuthnBackArrowButtonIcon),
+        cp->GetColor(kColorWebAuthnBackArrowButtonIconDisabled));
+  }
+  if (close_button_) {
+    views::SetImageFromVectorIconWithColor(
+        close_button_, vector_icons::kCloseIcon,
+        cp->GetColor(kColorWebAuthnBackArrowButtonIcon),
+        cp->GetColor(kColorWebAuthnBackArrowButtonIconDisabled));
   }
 }
 

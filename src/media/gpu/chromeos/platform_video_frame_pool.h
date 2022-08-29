@@ -6,6 +6,8 @@
 #define MEDIA_GPU_CHROMEOS_PLATFORM_VIDEO_FRAME_POOL_H_
 
 #include <stddef.h>
+
+#include <map>
 #include <vector>
 
 #include "base/bind.h"
@@ -35,12 +37,9 @@ namespace media {
 // old parameter values will be purged from the pool.
 class MEDIA_GPU_EXPORT PlatformVideoFramePool : public DmabufVideoFramePool {
  public:
-  explicit PlatformVideoFramePool(
-      gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory);
-
+  PlatformVideoFramePool();
   PlatformVideoFramePool(const PlatformVideoFramePool&) = delete;
   PlatformVideoFramePool& operator=(const PlatformVideoFramePool&) = delete;
-
   ~PlatformVideoFramePool() override;
 
   // Returns the ID of the GpuMemoryBuffer wrapped by |frame|.
@@ -54,7 +53,8 @@ class MEDIA_GPU_EXPORT PlatformVideoFramePool : public DmabufVideoFramePool {
                                             const gfx::Rect& visible_rect,
                                             const gfx::Size& natural_size,
                                             size_t max_num_frames,
-                                            bool use_protected) override;
+                                            bool use_protected,
+                                            bool use_linear_buffers) override;
   scoped_refptr<VideoFrame> GetFrame() override;
   bool IsExhausted() override;
   void NotifyWhenFrameAvailable(base::OnceClosure cb) override;
@@ -108,11 +108,6 @@ class MEDIA_GPU_EXPORT PlatformVideoFramePool : public DmabufVideoFramePool {
   // The function used to allocate new frames.
   CreateFrameCB create_frame_cb_ GUARDED_BY(lock_);
 
-  // Used to allocate the video frame GpuMemoryBuffers, passed directly to
-  // the callback that creates video frames. Indirectly owned by GpuChildThread;
-  // therefore alive as long as the GPU process is.
-  gpu::GpuMemoryBufferFactory* const gpu_memory_buffer_factory_ = nullptr;
-
   // The arguments of current frame. We allocate new frames only if a pixel
   // format or size in |frame_layout_| is changed. When GetFrame() is
   // called, we update |visible_rect_| and |natural_size_| of wrapped frames.
@@ -133,6 +128,10 @@ class MEDIA_GPU_EXPORT PlatformVideoFramePool : public DmabufVideoFramePool {
 
   // If we are using HW protected buffers.
   bool use_protected_ GUARDED_BY(lock_) = false;
+
+  // True if we need to allocate GPU buffers in a way that is accessible from
+  // the CPU with a linear layout. Can only be set once per instance.
+  absl::optional<bool> use_linear_buffers_ GUARDED_BY(lock_);
 
   // Callback which is called when the pool is not exhausted.
   base::OnceClosure frame_available_cb_ GUARDED_BY(lock_);

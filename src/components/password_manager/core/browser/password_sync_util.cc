@@ -82,8 +82,11 @@ bool IsSyncAccountEmail(const std::string& username,
 }
 
 bool IsGaiaCredentialPage(const std::string& signon_realm) {
-  return gaia::IsGaiaSignonRealm(GURL(signon_realm)) ||
-         signon_realm == kGoogleChangePasswordSignonRealm;
+  const GURL signon_realm_url = GURL(signon_realm);
+  const GURL gaia_signon_realm_url =
+      GaiaUrls::GetInstance()->gaia_origin().GetURL();
+  return signon_realm_url == gaia_signon_realm_url ||
+         signon_realm_url == GURL(kGoogleChangePasswordSignonRealm);
 }
 
 bool ShouldSaveEnterprisePasswordHash(const PasswordForm& form,
@@ -94,6 +97,12 @@ bool ShouldSaveEnterprisePasswordHash(const PasswordForm& form,
                                                                      prefs);
   }
   return false;
+}
+
+bool IsPasswordSyncEnabled(syncer::SyncService* sync_service) {
+  return sync_service && sync_service->IsSyncFeatureEnabled() &&
+         sync_service->GetUserSettings()->GetSelectedTypes().Has(
+             syncer::UserSelectableType::kPasswords);
 }
 
 }  // namespace sync_util

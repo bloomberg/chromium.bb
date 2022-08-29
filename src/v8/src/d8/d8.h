@@ -48,7 +48,7 @@ class Counter {
   void Bind(const char* name, bool histogram);
   // TODO(12482): Return pointer to an atomic.
   int* ptr() {
-    STATIC_ASSERT(sizeof(int) == sizeof(count_));
+    static_assert(sizeof(int) == sizeof(count_));
     return reinterpret_cast<int*>(&count_);
   }
   int count() const { return count_.load(std::memory_order_relaxed); }
@@ -151,6 +151,11 @@ class SerializationData {
   const std::vector<CompiledWasmModule>& compiled_wasm_modules() {
     return compiled_wasm_modules_;
   }
+  const std::vector<v8::Global<v8::Value>>& shared_values() {
+    return shared_values_;
+  }
+
+  void ClearSharedValuesUnderLockIfNeeded();
 
  private:
   struct DataDeleter {
@@ -162,6 +167,7 @@ class SerializationData {
   std::vector<std::shared_ptr<v8::BackingStore>> backing_stores_;
   std::vector<std::shared_ptr<v8::BackingStore>> sab_backing_stores_;
   std::vector<CompiledWasmModule> compiled_wasm_modules_;
+  std::vector<v8::Global<v8::Value>> shared_values_;
 
  private:
   friend class Serializer;
@@ -211,11 +217,10 @@ class Worker : public std::enable_shared_from_this<Worker> {
 
   enum class State {
     kReady,
+    kPrepareRunning,
     kRunning,
     kTerminating,
     kTerminated,
-    kTerminatingAndJoining,
-    kTerminatedAndJoined
   };
   bool is_running() const;
 
@@ -242,6 +247,7 @@ class Worker : public std::enable_shared_from_this<Worker> {
   base::Thread* thread_ = nullptr;
   char* script_;
   std::atomic<State> state_;
+  bool is_joined_ = false;
   // For signalling that the worker has started.
   base::Semaphore started_semaphore_{0};
 
@@ -253,8 +259,11 @@ class Worker : public std::enable_shared_from_this<Worker> {
   // need locking, but accessing the Worker's data member does.)
   base::Mutex worker_mutex_;
 
-  // Only accessed by the worker thread.
+  // The isolate should only be accessed by the worker itself, or when holding
+  // the worker_mutex_ and after checking the worker state.
   Isolate* isolate_ = nullptr;
+
+  // Only accessed by the worker thread.
   v8::Persistent<v8::Context> context_;
 };
 
@@ -315,6 +324,9 @@ class PerIsolateData {
   Local<FunctionTemplate> GetSnapshotObjectCtor() const;
   void SetSnapshotObjectCtor(Local<FunctionTemplate> ctor);
 
+  Local<FunctionTemplate> GetDomNodeCtor() const;
+  void SetDomNodeCtor(Local<FunctionTemplate> ctor);
+
  private:
   friend class Shell;
   friend class RealmScope;
@@ -335,6 +347,7 @@ class PerIsolateData {
 #endif
   Global<FunctionTemplate> test_api_object_ctor_;
   Global<FunctionTemplate> snapshot_object_ctor_;
+  Global<FunctionTemplate> dom_node_ctor_;
 
   int RealmIndexOrThrow(const v8::FunctionCallbackInfo<v8::Value>& args,
                         int arg_offset);
@@ -458,6 +471,8 @@ class ShellOptions {
       "web-snapshot-output", nullptr};
   DisallowReassignment<bool> d8_web_snapshot_api = {
       "experimental-d8-web-snapshot-api", false};
+  // Applies to web snapshot and JSON deserialization.
+  DisallowReassignment<bool> stress_deserialize = {"stress-deserialize", false};
   DisallowReassignment<bool> compile_only = {"compile-only", false};
   DisallowReassignment<int> repeat_compile = {"repeat-compile", 1};
 #if V8_ENABLE_WEBASSEMBLY
@@ -484,12 +499,14 @@ class Shell : public i::AllStatic {
                             ReportExceptions report_exceptions,
                             ProcessMessageQueue process_message_queue);
   static bool ExecuteModule(Isolate* isolate, const char* file_name);
+  static bool TakeWebSnapshot(Isolate* isolate);
   static bool ExecuteWebSnapshot(Isolate* isolate, const char* file_name);
+  static bool LoadJSON(Isolate* isolate, const char* file_name);
   static void ReportException(Isolate* isolate, Local<Message> message,
                               Local<Value> exception);
   static void ReportException(Isolate* isolate, TryCatch* try_catch);
-  static Local<String> ReadFile(Isolate* isolate, const char* name,
-                                bool should_throw = true);
+  static MaybeLocal<String> ReadFile(Isolate* isolate, const char* name,
+                                     bool should_throw = true);
   static Local<String> WasmLoadSourceMapCallback(Isolate* isolate,
                                                  const char* name);
   static Local<Context> CreateEvaluationContext(Isolate* isolate);
@@ -545,6 +562,9 @@ class Shell : public i::AllStatic {
   static void TestVerifySourcePositions(
       const v8::FunctionCallbackInfo<v8::Value>& args);
 
+  static void InstallConditionalFeatures(
+      const v8::FunctionCallbackInfo<v8::Value>& args);
+
   static void AsyncHooksCreateHook(
       const v8::FunctionCallbackInfo<v8::Value>& args);
   static void AsyncHooksExecutionAsyncId(
@@ -553,6 +573,11 @@ class Shell : public i::AllStatic {
       const v8::FunctionCallbackInfo<v8::Value>& args);
 
   static void SetPromiseHooks(const v8::FunctionCallbackInfo<v8::Value>& args);
+
+  static void SerializerSerialize(
+      const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void SerializerDeserialize(
+      const v8::FunctionCallbackInfo<v8::Value>& args);
 
   static void Print(const v8::FunctionCallbackInfo<v8::Value>& args);
   static void PrintErr(const v8::FunctionCallbackInfo<v8::Value>& args);
@@ -636,6 +661,8 @@ class Shell : public i::AllStatic {
   static void HostInitializeImportMetaObject(Local<Context> context,
                                              Local<Module> module,
                                              Local<Object> meta);
+  static MaybeLocal<Context> HostCreateShadowRealmContext(
+      Local<Context> initiator_context);
 
 #ifdef V8_FUZZILLI
   static void Fuzzilli(const v8::FunctionCallbackInfo<v8::Value>& args);
@@ -682,6 +709,10 @@ class Shell : public i::AllStatic {
   static Local<FunctionTemplate> CreateSnapshotTemplate(Isolate* isolate);
 
  private:
+  static inline int DeserializationRunCount() {
+    return options.stress_deserialize ? 1000 : 1;
+  }
+
   static Global<Context> evaluation_context_;
   static base::OnceType quit_once_;
   static Global<Function> stringify_function_;
@@ -714,7 +745,9 @@ class Shell : public i::AllStatic {
 
   static void NodeTypeCallback(const v8::FunctionCallbackInfo<v8::Value>& args);
 
-  static Local<FunctionTemplate> CreateNodeTemplates(Isolate* isolate);
+  static Local<FunctionTemplate> CreateEventTargetTemplate(Isolate* isolate);
+  static Local<FunctionTemplate> CreateNodeTemplates(
+      Isolate* isolate, Local<FunctionTemplate> event_target);
   static Local<ObjectTemplate> CreateGlobalTemplate(Isolate* isolate);
   static Local<ObjectTemplate> CreateOSTemplate(Isolate* isolate);
   static Local<FunctionTemplate> CreateWorkerTemplate(Isolate* isolate);

@@ -15,11 +15,13 @@
 #include "base/component_export.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/scoped_observation.h"
 #include "base/values.h"
-#include "chromeos/dbus/dbus_method_call_status.h"
+#include "chromeos/dbus/common/dbus_method_call_status.h"
 #include "chromeos/network/network_configuration_observer.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_handler_callbacks.h"
+#include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_state_handler_observer.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -150,13 +152,22 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkConfigurationHandler
   void Init(NetworkStateHandler* network_state_handler,
             NetworkDeviceHandler* network_device_handler);
 
-  // Called when a configuration completes. This will wait for the cached
-  // state (NetworkStateHandler) to update before triggering the callback.
+  // Called when a configuration completes. This will use
+  // NotifyConfigurationCompleted to defer notifying observers that a
+  // configuration was completed and invoking |callback| until the cached state
+  // (NetworkStateHandler) to update before triggering the callback.
   void ConfigurationCompleted(const std::string& profile_path,
                               const std::string& guid,
                               base::Value configure_properties,
                               network_handler::ServiceResultCallback callback,
                               const dbus::ObjectPath& service_path);
+
+  // Used by ConfigurationCompleted to defer notifying observers and invoking
+  // the provided callback.
+  void NotifyConfigurationCompleted(
+      network_handler::ServiceResultCallback callback,
+      const std::string& service_path,
+      const std::string& guid);
 
   void ConfigurationFailed(network_handler::ErrorCallback error_callback,
                            const std::string& dbus_error_name,
@@ -217,6 +228,9 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkConfigurationHandler
 
   // Unowned associated Network*Handlers (global or test instance).
   NetworkStateHandler* network_state_handler_;
+  base::ScopedObservation<chromeos::NetworkStateHandler,
+                          chromeos::NetworkStateHandlerObserver>
+      network_state_handler_observer_{this};
   NetworkDeviceHandler* network_device_handler_;
 
   // Map of in-progress deleter instances.

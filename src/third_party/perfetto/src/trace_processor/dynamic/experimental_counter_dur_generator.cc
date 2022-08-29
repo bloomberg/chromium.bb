@@ -18,6 +18,19 @@
 
 namespace perfetto {
 namespace trace_processor {
+namespace tables {
+
+#define PERFETTO_TP_COUNTER_DUR_TABLE_DEF(NAME, PARENT, C)      \
+  NAME(ExperimentalCounterDurTable, "experimental_counter_dur") \
+  PARENT(PERFETTO_TP_COUNTER_TABLE_DEF, C)                      \
+  C(int64_t, dur)                                               \
+  C(double, delta)
+
+PERFETTO_TP_TABLE(PERFETTO_TP_COUNTER_DUR_TABLE_DEF);
+
+ExperimentalCounterDurTable::~ExperimentalCounterDurTable() = default;
+
+}  // namespace tables
 
 ExperimentalCounterDurGenerator::ExperimentalCounterDurGenerator(
     const tables::CounterTable& table)
@@ -25,46 +38,34 @@ ExperimentalCounterDurGenerator::ExperimentalCounterDurGenerator(
 ExperimentalCounterDurGenerator::~ExperimentalCounterDurGenerator() = default;
 
 Table::Schema ExperimentalCounterDurGenerator::CreateSchema() {
-  Table::Schema schema = tables::CounterTable::Schema();
-  schema.columns.emplace_back(
-      Table::Schema::Column{"dur", SqlValue::Type::kLong, false /* is_id */,
-                            false /* is_sorted */, false /* is_hidden */});
-  schema.columns.emplace_back(
-      Table::Schema::Column{"delta", SqlValue::Type::kLong, false /* is_id */,
-                            false /* is_sorted */, false /* is_hidden */});
-  return schema;
+  return tables::ExperimentalCounterDurTable::Schema();
 }
 
 std::string ExperimentalCounterDurGenerator::TableName() {
-  return "experimental_counter_dur";
+  return tables::ExperimentalCounterDurTable::Name();
 }
 
 uint32_t ExperimentalCounterDurGenerator::EstimateRowCount() {
   return counter_table_->row_count();
 }
 
-util::Status ExperimentalCounterDurGenerator::ValidateConstraints(
+base::Status ExperimentalCounterDurGenerator::ValidateConstraints(
     const QueryConstraints&) {
-  return util::OkStatus();
+  return base::OkStatus();
 }
 
-std::unique_ptr<Table> ExperimentalCounterDurGenerator::ComputeTable(
+base::Status ExperimentalCounterDurGenerator::ComputeTable(
     const std::vector<Constraint>&,
-    const std::vector<Order>&) {
-  if (!dur_column_) {
-    dur_column_.reset(
-        new NullableVector<int64_t>(ComputeDurColumn(*counter_table_)));
-    delta_column_.reset(
-        new NullableVector<double>(ComputeDeltaColumn(*counter_table_)));
+    const std::vector<Order>&,
+    const BitVector&,
+    std::unique_ptr<Table>& table_return) {
+  if (!counter_dur_table_) {
+    counter_dur_table_ = tables::ExperimentalCounterDurTable::ExtendParent(
+        *counter_table_, ComputeDurColumn(*counter_table_),
+        ComputeDeltaColumn(*counter_table_));
   }
-
-  Table t = counter_table_
-                ->ExtendWithColumn("dur", std::move(dur_column_.get()),
-                                   TypedColumn<int64_t>::default_flags())
-                .ExtendWithColumn("delta", std::move(delta_column_.get()),
-                                  TypedColumn<int64_t>::default_flags());
-
-  return std::unique_ptr<Table>(new Table(t.Copy()));
+  table_return.reset(new Table(counter_dur_table_->Copy()));
+  return base::OkStatus();
 }
 
 // static

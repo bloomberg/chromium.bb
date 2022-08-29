@@ -15,7 +15,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_connection_status_flags.h"
-#include "net/third_party/quiche/src/quic/core/quic_versions.h"
+#include "net/third_party/quiche/src/quiche/quic/core/quic_versions.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
 
 using base::Time;
@@ -117,6 +117,10 @@ enum {
   // This bit is set if the response has a nonempty `dns_aliases` entry.
   RESPONSE_INFO_HAS_DNS_ALIASES = 1 << 27,
 
+  // This bit is set for an entry in the single-keyed cache that has been marked
+  // unusable due to the checksum not matching.
+  RESPONSE_INFO_SINGLE_KEYED_CACHE_ENTRY_UNUSABLE = 1 << 28,
+
   // TODO(darin): Add other bits to indicate alternate request methods.
   // For now, we don't support storing those.
 };
@@ -168,6 +172,7 @@ HttpResponseInfo::ConnectionInfoCoarse HttpResponseInfo::ConnectionInfoToCoarse(
     case CONNECTION_INFO_QUIC_DRAFT_29:
     case CONNECTION_INFO_QUIC_T051:
     case CONNECTION_INFO_QUIC_RFC_V1:
+    case CONNECTION_INFO_QUIC_2_DRAFT_1:
       return CONNECTION_INFO_COARSE_QUIC;
 
     case CONNECTION_INFO_UNKNOWN:
@@ -182,19 +187,7 @@ HttpResponseInfo::ConnectionInfoCoarse HttpResponseInfo::ConnectionInfoToCoarse(
   return CONNECTION_INFO_COARSE_OTHER;
 }
 
-HttpResponseInfo::HttpResponseInfo()
-    : was_cached(false),
-      cache_entry_status(CacheEntryStatus::ENTRY_UNDEFINED),
-      server_data_unavailable(false),
-      network_accessed(false),
-      was_fetched_via_spdy(false),
-      was_alpn_negotiated(false),
-      was_fetched_via_proxy(false),
-      did_use_http_auth(false),
-      unused_since_prefetch(false),
-      restricted_prefetch(false),
-      async_revalidation_requested(false),
-      connection_info(CONNECTION_INFO_UNKNOWN) {}
+HttpResponseInfo::HttpResponseInfo() = default;
 
 HttpResponseInfo::HttpResponseInfo(const HttpResponseInfo& rhs) = default;
 
@@ -357,6 +350,9 @@ bool HttpResponseInfo::InitFromPickle(const base::Pickle& pickle,
 
   restricted_prefetch = (flags & RESPONSE_INFO_RESTRICTED_PREFETCH) != 0;
 
+  single_keyed_cache_entry_unusable =
+      (flags & RESPONSE_INFO_SINGLE_KEYED_CACHE_ENTRY_UNUSABLE) != 0;
+
   ssl_info.pkp_bypassed = (flags & RESPONSE_INFO_PKP_BYPASSED) != 0;
 
   // Read peer_signature_algorithm.
@@ -381,7 +377,7 @@ bool HttpResponseInfo::InitFromPickle(const base::Pickle& pickle,
     for (int i = 0; i < num_aliases; i++) {
       if (!iter.ReadString(&alias))
         return false;
-      dns_aliases.push_back(alias);
+      dns_aliases.insert(alias);
     }
   }
 
@@ -422,6 +418,8 @@ void HttpResponseInfo::Persist(base::Pickle* pickle,
     flags |= RESPONSE_INFO_UNUSED_SINCE_PREFETCH;
   if (restricted_prefetch)
     flags |= RESPONSE_INFO_RESTRICTED_PREFETCH;
+  if (single_keyed_cache_entry_unusable)
+    flags |= RESPONSE_INFO_SINGLE_KEYED_CACHE_ENTRY_UNUSABLE;
   if (ssl_info.pkp_bypassed)
     flags |= RESPONSE_INFO_PKP_BYPASSED;
   if (!stale_revalidate_timeout.is_null())
@@ -528,6 +526,7 @@ bool HttpResponseInfo::DidUseQuic() const {
     case CONNECTION_INFO_QUIC_DRAFT_29:
     case CONNECTION_INFO_QUIC_T051:
     case CONNECTION_INFO_QUIC_RFC_V1:
+    case CONNECTION_INFO_QUIC_2_DRAFT_1:
       return true;
     case NUM_OF_CONNECTION_INFOS:
       NOTREACHED();
@@ -626,6 +625,8 @@ std::string HttpResponseInfo::ConnectionInfoToString(
       return "h3-T051";
     case CONNECTION_INFO_QUIC_RFC_V1:
       return "h3";
+    case CONNECTION_INFO_QUIC_2_DRAFT_1:
+      return "h3/quic2draft01";
     case NUM_OF_CONNECTION_INFOS:
       break;
   }

@@ -1,9 +1,4 @@
 {
-  "$build/chromium_tests": {
-    "project_trigger_overrides": {
-      "chromium": "chromium-m98"
-    }
-  },
   "$build/chromium_tests_builder_config": {
     "builder_config": {
       "builder_db": {
@@ -12,7 +7,7 @@
             "builder_id": {
               "bucket": "ci",
               "builder": "chromeos-arm-generic-rel",
-              "project": "chromium-m98"
+              "project": "chromium"
             },
             "builder_spec": {
               "builder_group": "chromium.chromiumos",
@@ -44,10 +39,10 @@
         {
           "bucket": "ci",
           "builder": "chromeos-arm-generic-rel",
-          "project": "chromium-m98"
+          "project": "chromium"
         }
       ],
-      "mirroring_builders": [
+      "mirroring_builder_group_and_names": [
         {
           "builder": "chromeos-arm-generic-rel",
           "group": "tryserver.chromium.chromiumos"
@@ -55,11 +50,10 @@
       ]
     }
   },
-  "$build/goma": {
-    "enable_ats": true,
-    "rpc_extra_params": "?prod",
-    "server_host": "goma.chromium.org",
-    "use_luci_auth": true
+  "$build/reclient": {
+    "instance": "rbe-chromium-trusted",
+    "jobs": 500,
+    "metrics_project": "chromium-reclient-metrics"
   },
   "$recipe_engine/resultdb/test_presentation": {
     "column_keys": [],

@@ -29,15 +29,20 @@ public class SuggestionListProperties {
             new WritableObjectPropertyKey<>(true);
 
     /**
-     * Specifies the omnibox theme. It can be light or dark because of a publisher defined color,
+     * Whether the list encompasses the final set of suggestions for the current user query.
+     */
+    public static final WritableBooleanPropertyKey LIST_IS_FINAL = new WritableBooleanPropertyKey();
+
+    /**
+     * Specifies the color scheme. It can be light or dark because of a publisher defined color,
      * incognito, or the default theme that follows dynamic colors.
      */
-    public static final WritableIntPropertyKey OMNIBOX_THEME = new WritableIntPropertyKey();
+    public static final WritableIntPropertyKey COLOR_SCHEME = new WritableIntPropertyKey();
 
     /** Observer that will receive notifications and callbacks from Suggestion List. */
     public static final WritableObjectPropertyKey<OmniboxSuggestionsDropdown.Observer> OBSERVER =
             new WritableObjectPropertyKey<>();
 
-    public static final PropertyKey[] ALL_KEYS =
-            new PropertyKey[] {VISIBLE, EMBEDDER, SUGGESTION_MODELS, OMNIBOX_THEME, OBSERVER};
+    public static final PropertyKey[] ALL_KEYS = new PropertyKey[] {
+            VISIBLE, EMBEDDER, SUGGESTION_MODELS, COLOR_SCHEME, OBSERVER, LIST_IS_FINAL};
 }

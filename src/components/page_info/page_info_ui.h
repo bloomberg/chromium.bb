@@ -14,11 +14,12 @@
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/page_info/page_info.h"
 #include "components/permissions/object_permission_context_base.h"
+#include "components/privacy_sandbox/canonical_topic.h"
 #include "components/safe_browsing/buildflags.h"
 #include "ui/base/models/image_model.h"
 #include "ui/gfx/native_widget_types.h"
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 #include "ui/gfx/image/image_skia.h"
 #endif
 
@@ -119,7 +120,7 @@ class PageInfoUI {
     // Textual description of the Safe Browsing status.
     std::u16string safe_browsing_details;
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     // Textual description of the site's identity status that is displayed to
     // the user.
     std::string identity_status_description_android;
@@ -158,6 +159,15 @@ class PageInfoUI {
     int string_id_mid_sentence;
   };
 
+  struct AdPersonalizationInfo {
+    AdPersonalizationInfo();
+    ~AdPersonalizationInfo();
+    bool is_empty() const;
+
+    bool has_joined_user_to_interest_group;
+    std::vector<privacy_sandbox::CanonicalTopic> accessed_topics;
+  };
+
   using CookieInfoList = std::vector<CookieInfo>;
   using PermissionInfoList = std::vector<PageInfo::PermissionInfo>;
   using ChosenObjectInfoList = std::vector<std::unique_ptr<ChosenObjectInfo>>;
@@ -185,12 +195,6 @@ class PageInfoUI {
       content_settings::SettingSource source,
       bool is_one_time);
 
-  // Returns a string indicating whether the permission was blocked via an
-  // extension, enterprise policy, or embargo.
-  static std::u16string PermissionDecisionReasonToUIString(
-      PageInfoUiDelegate* delegate,
-      const PageInfo::PermissionInfo& permission);
-
   static std::u16string PermissionStateToUIString(
       PageInfoUiDelegate* delegate,
       const PageInfo::PermissionInfo& permission);
@@ -217,7 +221,7 @@ class PageInfoUI {
   // Returns the color to use for the permission decision reason strings.
   static SkColor GetSecondaryTextColor();
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // Returns the identity icon ID for the given identity |status|.
   static int GetIdentityIconID(PageInfo::SiteIdentityStatus status);
 
@@ -229,7 +233,7 @@ class PageInfoUI {
 
   // Returns the connection icon color ID for the given connection |status|.
   static int GetConnectionIconColorID(PageInfo::SiteConnectionStatus status);
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 
   // Return true if the given ContentSettingsType is in PageInfoUI.
   static bool ContentSettingsTypeInPageInfo(ContentSettingsType type);
@@ -255,6 +259,10 @@ class PageInfoUI {
   // Sets feature related information; for now only if VR content is being
   // presented in a headset.
   virtual void SetPageFeatureInfo(const PageFeatureInfo& page_feature_info) {}
+
+  // Sets ad personalization information.
+  virtual void SetAdPersonalizationInfo(
+      const AdPersonalizationInfo& ad_personalization_info) {}
 
   // Helper to get security description info to display to the user.
   std::unique_ptr<SecurityDescription> GetSecurityDescription(

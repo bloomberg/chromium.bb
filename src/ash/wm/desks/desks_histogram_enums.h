@@ -16,7 +16,9 @@ enum class DesksCreationRemovalSource {
   kDesksRestore = 2,
   kLaunchTemplate = 3,
   kDragToNewDeskButton = 4,
-  kMaxValue = kDragToNewDeskButton,
+  kSaveAndRecall = 5,
+  kApi = 6,
+  kMaxValue = kApi,
 };
 
 // These values are logged to UMA. Entries should not be renumbered and
@@ -45,7 +47,8 @@ enum class DesksSwitchSource {
   kPersistentDesksBar = 7,
   kLaunchTemplate = 8,
   kIndexedDeskSwitchShortcut = 9,
-  kMaxValue = kIndexedDeskSwitchShortcut,
+  kRemovalUndone = 10,
+  kMaxValue = kRemovalUndone,
 };
 
 }  // namespace ash

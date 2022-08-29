@@ -7,6 +7,8 @@
 
 #include <memory>
 
+#include "base/base_export.h"
+#include "base/check.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/common/checked_lock.h"
 #include "base/task/sequence_manager/lazy_now.h"
@@ -378,8 +380,8 @@ class BASE_EXPORT TaskQueue : public RefCountedThreadSafe<TaskQueue> {
   }
 
   // Checks whether or not this TaskQueue has a TaskQueueImpl.
-  // TODO(kdillon): Remove this method when TaskQueueImpl inherits from
-  // TaskQueue and TaskQueue no longer owns an Impl.
+  // TODO(crbug.com/1143007): Remove this method when TaskQueueImpl inherits
+  // from TaskQueue and TaskQueue no longer owns an Impl.
   bool HasImpl() { return !!impl_; }
 
   using OnTaskStartedHandler =
@@ -401,12 +403,29 @@ class BASE_EXPORT TaskQueue : public RefCountedThreadSafe<TaskQueue> {
   // finalize the task, and use the resulting timing.
   void SetOnTaskCompletedHandler(OnTaskCompletedHandler handler);
 
-  // Set a callback for adding custom functionality for processing posted task.
+  // RAII handle associated with an OnTaskPostedHandler. Unregisters the handler
+  // upon destruction.
+  class OnTaskPostedCallbackHandle {
+   public:
+    OnTaskPostedCallbackHandle(const OnTaskPostedCallbackHandle&) = delete;
+    OnTaskPostedCallbackHandle& operator=(const OnTaskPostedCallbackHandle&) =
+        delete;
+    virtual ~OnTaskPostedCallbackHandle() = default;
+
+   protected:
+    OnTaskPostedCallbackHandle() = default;
+  };
+
+  // Add a callback for adding custom functionality for processing posted task.
   // Callback will be dispatched while holding a scheduler lock. As a result,
   // callback should not call scheduler APIs directly, as this can lead to
   // deadlocks. For example, PostTask should not be called directly and
-  // ScopedDeferTaskPosting::PostOrDefer should be used instead.
-  void SetOnTaskPostedHandler(OnTaskPostedHandler handler);
+  // ScopedDeferTaskPosting::PostOrDefer should be used instead. `handler` must
+  // not be a null callback. Must be called on the thread this task queue is
+  // associated with, and the handle returned must be destroyed on the same
+  // thread.
+  [[nodiscard]] std::unique_ptr<OnTaskPostedCallbackHandle>
+  AddOnTaskPostedHandler(OnTaskPostedHandler handler);
 
   // Set a callback to fill trace event arguments associated with the task
   // execution.
@@ -450,8 +469,8 @@ class BASE_EXPORT TaskQueue : public RefCountedThreadSafe<TaskQueue> {
 
   const WeakPtr<internal::SequenceManagerImpl> sequence_manager_;
 
-  scoped_refptr<internal::AssociatedThreadId> associated_thread_;
-  scoped_refptr<SingleThreadTaskRunner> default_task_runner_;
+  const scoped_refptr<const internal::AssociatedThreadId> associated_thread_;
+  const scoped_refptr<SingleThreadTaskRunner> default_task_runner_;
 
   int enabled_voter_count_ = 0;
   int voter_count_ = 0;

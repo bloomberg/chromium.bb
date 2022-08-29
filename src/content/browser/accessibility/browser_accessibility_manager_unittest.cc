@@ -12,7 +12,7 @@
 #include "build/buildflag.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "content/browser/accessibility/browser_accessibility_win.h"
 #endif
 #include "content/browser/accessibility/test_browser_accessibility_delegate.h"
@@ -125,7 +125,7 @@ TEST_F(BrowserAccessibilityManagerTest, DISABLED_TestFatalError) {
 
 // This test depends on hypertext, which is only used on
 // Linux and Windows.
-#if defined(OS_WIN) || BUILDFLAG(USE_ATK)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(USE_ATK)
 TEST_F(BrowserAccessibilityManagerTest, BoundsForRange) {
   ui::AXNodeData root;
   root.id = 1;
@@ -230,7 +230,7 @@ TEST_F(BrowserAccessibilityManagerTest, BoundsForRange) {
                     0, 13, ui::AXClippingBehavior::kUnclipped)
                 .ToString());
 }
-#endif  // defined(OS_WIN) || BUILDFLAG(USE_ATK)
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(USE_ATK)
 
 TEST_F(BrowserAccessibilityManagerTest, BoundsForRangeMultiElement) {
   ui::AXNodeData root;
@@ -340,7 +340,7 @@ TEST_F(BrowserAccessibilityManagerTest, BoundsForRangeMultiElement) {
 
 // This test depends on hypertext, which is only used on
 // Linux and Windows.
-#if defined(OS_WIN) || BUILDFLAG(USE_ATK)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(USE_ATK)
 TEST_F(BrowserAccessibilityManagerTest, BoundsForRangeBiDi) {
   // In this example, we assume that the string "123abc" is rendered with
   // "123" going left-to-right and "abc" going right-to-left. In other
@@ -440,11 +440,11 @@ TEST_F(BrowserAccessibilityManagerTest, BoundsForRangeBiDi) {
                     2, 2, ui::AXClippingBehavior::kUnclipped)
                 .ToString());
 }
-#endif  // defined(OS_WIN) || BUILDFLAG(USE_ATK)
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(USE_ATK)
 
 // This test depends on hypertext, which is only used on
 // Linux and Windows.
-#if defined(OS_WIN) || BUILDFLAG(USE_ATK)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(USE_ATK)
 TEST_F(BrowserAccessibilityManagerTest, BoundsForRangeScrolledWindow) {
   ui::AXNodeData root;
   root.id = 1;
@@ -499,11 +499,11 @@ TEST_F(BrowserAccessibilityManagerTest, BoundsForRangeScrolledWindow) {
                   .ToString());
   }
 }
-#endif  // defined(OS_WIN) || BUILDFLAG(USE_ATK)
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(USE_ATK)
 
 // This test depends on hypertext, which is only used on
 // Linux and Windows.
-#if defined(OS_WIN) || BUILDFLAG(USE_ATK)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(USE_ATK)
 TEST_F(BrowserAccessibilityManagerTest, BoundsForRangeOnParentElement) {
   ui::AXNodeData root;
   root.id = 1;
@@ -609,7 +609,7 @@ TEST_F(BrowserAccessibilityManagerTest, BoundsForRangeOnParentElement) {
                     0, 5, ui::AXClippingBehavior::kUnclipped)
                 .ToString());
 }
-#endif  // defined(OS_WIN) || BUILDFLAG(USE_ATK)
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(USE_ATK)
 
 TEST_F(BrowserAccessibilityManagerTest, TestNextPreviousInTreeOrder) {
   ui::AXNodeData root;
@@ -872,7 +872,7 @@ TEST_F(BrowserAccessibilityManagerTest, TestNextPreviousTextOnlyObject) {
 
 // This test depends on hypertext, which is only used on
 // Linux and Windows.
-#if defined(OS_WIN) || BUILDFLAG(USE_ATK)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(USE_ATK)
 TEST_F(BrowserAccessibilityManagerTest, TestFindIndicesInCommonParent) {
   ui::AXNodeData root;
   root.id = 1;
@@ -937,8 +937,11 @@ TEST_F(BrowserAccessibilityManagerTest, TestFindIndicesInCommonParent) {
   ASSERT_EQ(2U, div_accessible->PlatformChildCount());
   BrowserAccessibility* button_accessible = div_accessible->PlatformGetChild(0);
   ASSERT_NE(nullptr, button_accessible);
+  ASSERT_EQ(0U, button_accessible->PlatformChildCount());
+  ASSERT_EQ(1U, button_accessible->InternalChildCount());
+
   BrowserAccessibility* button_text_accessible =
-      button_accessible->PlatformGetChild(0);
+      button_accessible->InternalGetChild(0);
   ASSERT_NE(nullptr, button_text_accessible);
   BrowserAccessibility* line_break_accessible =
       div_accessible->PlatformGetChild(1);
@@ -958,68 +961,65 @@ TEST_F(BrowserAccessibilityManagerTest, TestFindIndicesInCommonParent) {
   ASSERT_NE(nullptr, paragraph_line2_accessible);
 
   BrowserAccessibility* common_parent = nullptr;
-  int child_index1, child_index2;
+  size_t child_index1, child_index2;
   EXPECT_FALSE(BrowserAccessibilityManager::FindIndicesInCommonParent(
       *root_accessible, *root_accessible, &common_parent, &child_index1,
       &child_index2));
-  EXPECT_EQ(nullptr, common_parent);
-  EXPECT_EQ(-1, child_index1);
-  EXPECT_EQ(-1, child_index2);
 
   EXPECT_TRUE(BrowserAccessibilityManager::FindIndicesInCommonParent(
       *div_accessible, *paragraph_accessible, &common_parent, &child_index1,
       &child_index2));
   EXPECT_EQ(root_accessible, common_parent);
-  EXPECT_EQ(0, child_index1);
-  EXPECT_EQ(1, child_index2);
+  EXPECT_EQ(0u, child_index1);
+  EXPECT_EQ(1u, child_index2);
 
   EXPECT_TRUE(BrowserAccessibilityManager::FindIndicesInCommonParent(
       *div_accessible, *paragraph_line1_accessible, &common_parent,
       &child_index1, &child_index2));
   EXPECT_EQ(root_accessible, common_parent);
-  EXPECT_EQ(0, child_index1);
-  EXPECT_EQ(1, child_index2);
+  EXPECT_EQ(0u, child_index1);
+  EXPECT_EQ(1u, child_index2);
 
   EXPECT_TRUE(BrowserAccessibilityManager::FindIndicesInCommonParent(
       *line_break_accessible, *paragraph_text_accessible, &common_parent,
       &child_index1, &child_index2));
   EXPECT_EQ(root_accessible, common_parent);
-  EXPECT_EQ(0, child_index1);
-  EXPECT_EQ(1, child_index2);
+  EXPECT_EQ(0u, child_index1);
+  EXPECT_EQ(1u, child_index2);
 
   EXPECT_TRUE(BrowserAccessibilityManager::FindIndicesInCommonParent(
       *button_text_accessible, *line_break_accessible, &common_parent,
       &child_index1, &child_index2));
   EXPECT_EQ(div_accessible, common_parent);
-  EXPECT_EQ(0, child_index1);
-  EXPECT_EQ(1, child_index2);
+  EXPECT_EQ(0u, child_index1);
+  EXPECT_EQ(1u, child_index2);
 
   EXPECT_TRUE(BrowserAccessibilityManager::FindIndicesInCommonParent(
       *paragraph_accessible, *paragraph_line2_accessible, &common_parent,
       &child_index1, &child_index2));
   EXPECT_EQ(root_accessible, common_parent);
-  EXPECT_EQ(1, child_index1);
-  EXPECT_EQ(1, child_index2);
+  EXPECT_EQ(1u, child_index1);
+  EXPECT_EQ(1u, child_index2);
 
   EXPECT_TRUE(BrowserAccessibilityManager::FindIndicesInCommonParent(
       *paragraph_text_accessible, *paragraph_line1_accessible, &common_parent,
       &child_index1, &child_index2));
   EXPECT_EQ(paragraph_accessible, common_parent);
-  EXPECT_EQ(0, child_index1);
-  EXPECT_EQ(0, child_index2);
+  EXPECT_EQ(0u, child_index1);
+  EXPECT_EQ(0u, child_index2);
 
   EXPECT_TRUE(BrowserAccessibilityManager::FindIndicesInCommonParent(
       *paragraph_line1_accessible, *paragraph_line2_accessible, &common_parent,
       &child_index1, &child_index2));
   EXPECT_EQ(paragraph_text_accessible, common_parent);
-  EXPECT_EQ(0, child_index1);
-  EXPECT_EQ(1, child_index2);
+  EXPECT_EQ(0u, child_index1);
+  EXPECT_EQ(1u, child_index2);
 }
-#endif  // defined(OS_WIN) || BUILDFLAG(USE_ATK)
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(USE_ATK)
 
 // This test depends on hypertext, which is only used on
 // Linux and Windows.
-#if defined(OS_WIN) || BUILDFLAG(USE_ATK)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(USE_ATK)
 TEST_F(BrowserAccessibilityManagerTest, TestGetTextForRange) {
   ui::AXNodeData root;
   root.id = 1;
@@ -1096,8 +1096,11 @@ TEST_F(BrowserAccessibilityManagerTest, TestGetTextForRange) {
   ASSERT_EQ(3U, div_accessible->PlatformChildCount());
   BrowserAccessibility* button_accessible = div_accessible->PlatformGetChild(0);
   ASSERT_NE(nullptr, button_accessible);
+  ASSERT_EQ(0U, button_accessible->PlatformChildCount());
+  ASSERT_EQ(1U, button_accessible->InternalChildCount());
+
   BrowserAccessibility* button_text_accessible =
-      button_accessible->PlatformGetChild(0);
+      button_accessible->InternalGetChild(0);
   ASSERT_NE(nullptr, button_text_accessible);
   BrowserAccessibility* container_accessible =
       div_accessible->PlatformGetChild(1);
@@ -1193,7 +1196,7 @@ TEST_F(BrowserAccessibilityManagerTest, TestGetTextForRange) {
                                  *paragraph_line2_accessible, 6,
                                  *paragraph_line1_accessible, 0));
 }
-#endif  // defined(OS_WIN) || BUILDFLAG(USE_ATK)
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(USE_ATK)
 
 TEST_F(BrowserAccessibilityManagerTest, DeletingFocusedNodeDoesNotCrash) {
   // Create a really simple tree with one root node and one focused child.
@@ -1473,7 +1476,7 @@ TEST_F(BrowserAccessibilityManagerTest, TestShouldFireEventForNode) {
   EXPECT_TRUE(manager->ShouldFireEventForNode(manager->GetFromID(1)));
   EXPECT_TRUE(manager->ShouldFireEventForNode(manager->GetFromID(11)));
   EXPECT_TRUE(manager->ShouldFireEventForNode(manager->GetFromID(111)));
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // On Android, ShouldFireEventForNode walks up the ancestor that's a leaf node
   // node and the event is fired on the updated target.
   EXPECT_TRUE(manager->ShouldFireEventForNode(manager->GetFromID(1111)));
@@ -1537,6 +1540,75 @@ TEST_F(BrowserAccessibilityManagerTest, NestedChildRoot) {
   root.child_ids = {2, 3};
   manager->Initialize(MakeAXTreeUpdate(root));
   EXPECT_EQ(manager->GetPopupRoot(), nullptr);
+}
+
+TEST_F(BrowserAccessibilityManagerTest, TestApproximateHitTestCache) {
+  ui::AXNodeData root;
+  root.id = 1;
+  root.role = ax::mojom::Role::kRootWebArea;
+  root.SetName("root");
+  root.relative_bounds.bounds = gfx::RectF(0, 0, 200, 200);
+  root.child_ids = {2, 3};
+
+  ui::AXNodeData child1;
+  child1.id = 2;
+  child1.role = ax::mojom::Role::kGenericContainer;
+  child1.SetName("child1");
+  child1.relative_bounds.bounds = gfx::RectF(0, 0, 100, 100);
+
+  ui::AXNodeData child2;
+  child2.id = 3;
+  child2.role = ax::mojom::Role::kGenericContainer;
+  child2.SetName("child2");
+  child2.relative_bounds.bounds = gfx::RectF(50, 50, 50, 50);
+
+  ui::AXTreeUpdate update = MakeAXTreeUpdate(root, child1, child2);
+
+  // Create manager.
+  std::unique_ptr<BrowserAccessibilityManager> manager(
+      BrowserAccessibilityManager::Create(
+          update, test_browser_accessibility_delegate_.get()));
+  manager->BuildAXTreeHitTestCache();
+
+  auto* hittest1 = manager->ApproximateHitTest(gfx::Point(1, 1));
+  ASSERT_NE(nullptr, hittest1);
+  ASSERT_EQ("child1",
+            hittest1->GetStringAttribute(ax::mojom::StringAttribute::kName));
+
+  auto* hittest2 = manager->CachingAsyncHitTest(gfx::Point(75, 75));
+  ASSERT_NE(nullptr, hittest2);
+  ASSERT_EQ("child2",
+            hittest2->GetStringAttribute(ax::mojom::StringAttribute::kName));
+}
+
+TEST_F(BrowserAccessibilityManagerTest, TestOnNodeReparented) {
+  ui::AXNodeData root;
+  root.id = 1;
+  root.child_ids = {2, 3};
+
+  ui::AXNodeData child1;
+  child1.id = 2;
+
+  ui::AXNodeData child2;
+  child2.id = 3;
+
+  ui::AXTreeUpdate initial_state = MakeAXTreeUpdate(root, child1, child2);
+
+  // Create manager.
+  std::unique_ptr<BrowserAccessibilityManager> manager(
+      BrowserAccessibilityManager::Create(
+          initial_state, test_browser_accessibility_delegate_.get()));
+
+  // Reparenting a child found in the tree should not crash.
+  root.child_ids = {2};
+  child1.child_ids = {3};
+  ui::AXTreeUpdate update = MakeAXTreeUpdate(root, child1, child2);
+  ui::AXTree tree(update);
+  manager->OnNodeReparented(&tree, tree.GetFromId(3));
+
+  // Reparenting a new child not found in the tree should not crash.
+  ui::AXNode child3(nullptr, nullptr, 4, 0);
+  manager->OnNodeReparented(&tree, &child3);
 }
 
 }  // namespace content

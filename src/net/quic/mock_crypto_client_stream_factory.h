@@ -12,7 +12,7 @@
 #include "net/quic/crypto/proof_verifier_chromium.h"
 #include "net/quic/mock_crypto_client_stream.h"
 #include "net/quic/quic_crypto_client_stream_factory.h"
-#include "net/third_party/quiche/src/quic/core/quic_server_id.h"
+#include "net/third_party/quiche/src/quiche/quic/core/quic_server_id.h"
 
 namespace quic {
 class QuicCryptoClientStream;
@@ -56,11 +56,12 @@ class MockCryptoClientStreamFactory : public QuicCryptoClientStreamFactory {
   void SetConfig(const quic::QuicConfig& config);
 
  private:
-  MockCryptoClientStream::HandshakeMode handshake_mode_;
-  raw_ptr<MockCryptoClientStream> last_stream_;
+  MockCryptoClientStream::HandshakeMode handshake_mode_ =
+      MockCryptoClientStream::CONFIRM_HANDSHAKE;
+  raw_ptr<MockCryptoClientStream> last_stream_ = nullptr;
   base::queue<const ProofVerifyDetailsChromium*> proof_verify_details_queue_;
   std::unique_ptr<quic::QuicConfig> config_;
-  bool use_mock_crypter_;
+  bool use_mock_crypter_ = false;
 };
 
 }  // namespace net

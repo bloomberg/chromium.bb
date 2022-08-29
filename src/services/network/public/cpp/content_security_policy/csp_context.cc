@@ -42,14 +42,15 @@ bool CSPContext::IsAllowedByCsp(
     bool is_response_check,
     const mojom::SourceLocationPtr& source_location,
     CheckCSPDisposition check_csp_disposition,
-    bool is_form_submission) {
+    bool is_form_submission,
+    bool is_opaque_fenced_frame) {
   bool allow = true;
   for (const auto& policy : policies) {
     if (ShouldCheckPolicy(policy, check_csp_disposition)) {
       allow &= CheckContentSecurityPolicy(
           policy, directive_name, url, url_before_redirects,
           has_followed_redirect, is_response_check, this, source_location,
-          is_form_submission);
+          is_form_submission, is_opaque_fenced_frame);
     }
   }
 
@@ -71,7 +72,6 @@ bool CSPContext::SchemeShouldBypassCSP(const base::StringPiece& scheme) {
 }
 
 void CSPContext::SanitizeDataForUseInCspViolation(
-    bool has_followed_redirect,
     mojom::CSPDirectiveName directive,
     GURL* blocked_url,
     network::mojom::SourceLocation* source_location) const {}

@@ -18,6 +18,7 @@
 
 #include "absl/types/optional.h"
 #include "api/array_view.h"
+#include "api/task_queue/task_queue_base.h"
 #include "net/dcsctp/common/handover_testing.h"
 #include "net/dcsctp/common/math.h"
 #include "net/dcsctp/packet/chunk/data_chunk.h"
@@ -63,7 +64,9 @@ class RetransmissionQueueTest : public testing::Test {
       : options_(MakeOptions()),
         gen_(MID(42)),
         timeout_manager_([this]() { return now_; }),
-        timer_manager_([this]() { return timeout_manager_.CreateTimeout(); }),
+        timer_manager_([this](webrtc::TaskQueueBase::DelayPrecision precision) {
+          return timeout_manager_.CreateTimeout(precision);
+        }),
         timer_(timer_manager_.CreateTimer(
             "test/t3_rtx",
             []() { return absl::nullopt; },
@@ -73,6 +76,14 @@ class RetransmissionQueueTest : public testing::Test {
     return [this](TimeMs now, size_t max_size) {
       return SendQueue::DataToSend(gen_.Ordered({1, 2, 3, 4}, "BE"));
     };
+  }
+
+  std::vector<TSN> GetTSNsForFastRetransmit(RetransmissionQueue& queue) {
+    std::vector<TSN> tsns;
+    for (const auto& elem : queue.GetChunksForFastRetransmit(10000)) {
+      tsns.push_back(elem.first);
+    }
+    return tsns;
   }
 
   std::vector<TSN> GetSentPacketTSNs(RetransmissionQueue& queue) {
@@ -276,7 +287,8 @@ TEST_F(RetransmissionQueueTest, ResendPacketsWhenNackedThreeTimes) {
   // resent right now. The send queue will not even be queried.
   EXPECT_CALL(producer_, Produce).Times(0);
 
-  EXPECT_THAT(GetSentPacketTSNs(queue), testing::ElementsAre(TSN(13), TSN(16)));
+  EXPECT_THAT(GetTSNsForFastRetransmit(queue),
+              testing::ElementsAre(TSN(13), TSN(16)));
 
   EXPECT_THAT(queue.GetChunkStatesForTesting(),
               ElementsAre(Pair(TSN(12), State::kAcked),     //
@@ -1137,7 +1149,8 @@ TEST_F(RetransmissionQueueTest, AbandonsRtxLimit2WhenNackedNineTimes) {
                           Pair(TSN(18), State::kInFlight),           //
                           Pair(TSN(19), State::kInFlight)));
 
-  EXPECT_THAT(queue.GetChunksToSend(now_, 1000), ElementsAre(Pair(TSN(10), _)));
+  EXPECT_THAT(queue.GetChunksForFastRetransmit(1000),
+              ElementsAre(Pair(TSN(10), _)));
 
   // Ack TSN [14 to 16] - three more nacks - second and last retransmission.
   for (int tsn = 14; tsn <= 16; ++tsn) {
@@ -1372,7 +1385,7 @@ TEST_F(RetransmissionQueueTest, ReadyForHandoverWhenNothingToRetransmit) {
 
   // Send "fast retransmit" mode chunks
   EXPECT_CALL(producer_, Produce).Times(0);
-  EXPECT_THAT(GetSentPacketTSNs(queue), SizeIs(2));
+  EXPECT_THAT(GetTSNsForFastRetransmit(queue), SizeIs(2));
   EXPECT_EQ(
       queue.GetHandoverReadiness(),
       HandoverReadinessStatus()

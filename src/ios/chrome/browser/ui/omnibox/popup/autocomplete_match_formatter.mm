@@ -6,12 +6,14 @@
 
 #import <UIKit/UIKit.h>
 
+#include "base/metrics/field_trial_params.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/suggestion_answer.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_util.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_icon_formatter.h"
+#import "ios/chrome/browser/ui/omnibox/popup/popup_swift.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
@@ -21,6 +23,17 @@
 #endif
 
 namespace {
+
+// The current popup UI variation according to flags.
+PopupUIVariation CurrentPopupUIVariation() {
+  std::string variationName = base::GetFieldTrialParamValueByFeature(
+      kIOSOmniboxUpdatedPopupUI, kIOSOmniboxUpdatedPopupUIVariationName);
+
+  return variationName == kIOSOmniboxUpdatedPopupUIVariation1
+             ? PopupUIVariationOne
+             : PopupUIVariationTwo;
+}
+
 // The color of the main text of a suggest cell.
 UIColor* SuggestionTextColor() {
   return [UIColor colorNamed:kTextPrimaryColor];
@@ -59,8 +72,14 @@ UIColor* DimColorIncognito() {
 #pragma mark - NSObject
 
 - (NSString*)description {
-  return [NSString
-      stringWithFormat:@"%@ (%@)", self.text.string, self.detailText.string];
+  NSString* description = [NSString
+      stringWithFormat:@"<%@ %p> %@ (%@)", self.class, self,
+                       self.text.string, self.detailText.string];
+  if (self.pedalData) {
+    description =
+        [description stringByAppendingFormat:@" P:[%@]", self.pedalData.title];
+  }
+  return description;
 }
 
 #pragma mark AutocompleteSuggestion
@@ -71,13 +90,6 @@ UIColor* DimColorIncognito() {
 
 - (BOOL)hasAnswer {
   return _match.answer.has_value();
-}
-
-- (BOOL)hasImage {
-  BOOL hasAnswerImage =
-      self.hasAnswer && _match.answer->second_line().image_url().is_valid();
-  BOOL hasRichEntityImage = !_match.image_url.is_empty();
-  return hasAnswerImage || hasRichEntityImage;
 }
 
 - (BOOL)isURL {
@@ -117,10 +129,12 @@ UIColor* DimColorIncognito() {
     // suggestions. For non-search suggestions (URLs), a highlight color is used
     // instead.
     UIColor* suggestionDetailTextColor = nil;
-    if (_match.type == AutocompleteMatchType::SEARCH_SUGGEST_ENTITY) {
-      suggestionDetailTextColor = SuggestionTextColor();
-    } else {
+    if (_match.type != AutocompleteMatchType::SEARCH_SUGGEST_ENTITY ||
+        (base::FeatureList::IsEnabled(kIOSOmniboxUpdatedPopupUI) &&
+         CurrentPopupUIVariation() == PopupUIVariationTwo)) {
       suggestionDetailTextColor = SuggestionDetailTextColor();
+    } else {
+      suggestionDetailTextColor = SuggestionTextColor();
     }
     DCHECK(suggestionDetailTextColor);
     return [self attributedStringWithString:detailText
@@ -205,6 +219,7 @@ UIColor* DimColorIncognito() {
          _match.type == AutocompleteMatchType::HISTORY_URL ||
          _match.type == AutocompleteMatchType::NAVSUGGEST ||
          _match.type == AutocompleteMatchType::NAVSUGGEST_PERSONALIZED ||
+         _match.type == AutocompleteMatchType::SEARCH_HISTORY ||
          _match.type == AutocompleteMatchType::SEARCH_SUGGEST_PERSONALIZED ||
          _match.type == AutocompleteMatchType::SEARCH_SUGGEST_TAIL ||
          _match.type == AutocompleteMatchType::SEARCH_SUGGEST ||
@@ -214,29 +229,12 @@ UIColor* DimColorIncognito() {
          _match.type == AutocompleteMatchType::PHYSICAL_WEB_DEPRECATED;
 }
 
-- (GURL)imageURL {
-  if (self.hasAnswer && _match.answer->second_line().image_url().is_valid()) {
-    return _match.answer->second_line().image_url();
-  } else {
-    return GURL(_match.image_url);
-  }
-}
-
-- (GURL)faviconPageURL {
-  return _match.destination_url;
-}
-
-- (UIImage*)suggestionTypeIcon {
-  DCHECK(
-      !(self.isIncognito && _match.type == AutocompleteMatchType::CALCULATOR))
-      << "Calculator answers are never shown in incognito mode because input "
-         "is never sent to the search provider.";
-  return GetOmniboxSuggestionIconForAutocompleteMatchType(_match.type,
-                                                          self.isStarred);
-}
-
 - (BOOL)isTabMatch {
   return _match.has_tab_match.value_or(false);
+}
+
+- (id<OmniboxPedal>)pedal {
+  return self.pedalData;
 }
 
 #pragma mark tail suggest
@@ -246,7 +244,7 @@ UIColor* DimColorIncognito() {
 }
 
 - (NSString*)commonPrefix {
-  if (![self isTailSuggestion]) {
+  if (!self.isTailSuggestion) {
     return @"";
   }
   return base::SysUTF16ToNSString(_match.tail_suggest_common_prefix);
@@ -310,7 +308,7 @@ UIColor* DimColorIncognito() {
   const std::u16string& string = field->text();
 
   NSString* unescapedString =
-      base::SysUTF16ToNSString(net::UnescapeForHTML(string));
+      base::SysUTF16ToNSString(base::UnescapeForHTML(string));
 
   NSDictionary* attributes =
       [self formattingAttributesForSuggestionStyle:field->style()

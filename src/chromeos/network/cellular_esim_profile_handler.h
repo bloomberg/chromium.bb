@@ -55,10 +55,15 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularESimProfileHandler
   // Refreshes the list of installed profiles from Hermes. This operation
   // requires the Cellular Device to be inhibited. If |inhibit_lock| is passed
   // by the client, it will be used; otherwise, this function will acquire one
-  // internally.
+  // internally. The |RefreshProfileListAndRestoreSlot| variant is identical
+  // except that it requests Hermes to maintain SIM slots after refresh.
   //
   // On success, this function returns the lock; on failure, it returns null.
   void RefreshProfileList(
+      const dbus::ObjectPath& euicc_path,
+      RefreshProfilesCallback callback,
+      std::unique_ptr<CellularInhibitor::InhibitLock> inhibit_lock = nullptr);
+  void RefreshProfileListAndRestoreSlot(
       const dbus::ObjectPath& euicc_path,
       RefreshProfilesCallback callback,
       std::unique_ptr<CellularInhibitor::InhibitLock> inhibit_lock = nullptr);
@@ -68,10 +73,12 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularESimProfileHandler
   // (e.g., if ModemManager is currently pointed to a pSIM slot).
   virtual std::vector<CellularESimProfile> GetESimProfiles() = 0;
 
-  // Returns whether profiles for the EUICC with the given EID have been
+  // Returns whether profiles for the EUICC with the given EID or path have been
   // refreshsed. If this function returns true, any known eSIM profiles for the
   // associated EUICC should be returned by GetESimProfiles().
   virtual bool HasRefreshedProfilesForEuicc(const std::string& eid) = 0;
+  virtual bool HasRefreshedProfilesForEuicc(
+      const dbus::ObjectPath& euicc_path) = 0;
 
   virtual void SetDevicePrefs(PrefService* device_prefs) = 0;
 
@@ -96,6 +103,8 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularESimProfileHandler
     return network_state_handler_;
   }
 
+  CellularInhibitor* cellular_inhibitor() const { return cellular_inhibitor_; }
+
   virtual void InitInternal() {}
 
  private:
@@ -111,12 +120,19 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularESimProfileHandler
       const dbus::ObjectPath& carrier_profile_path,
       const std::string& property_name) override;
 
+  void PerformRefreshProfileList(
+      const dbus::ObjectPath& euicc_path,
+      bool restore_slot,
+      RefreshProfilesCallback callback,
+      std::unique_ptr<CellularInhibitor::InhibitLock> inhibit_lock = nullptr);
   void OnInhibited(
       const dbus::ObjectPath& euicc_path,
+      bool restore_slot,
       RefreshProfilesCallback callback,
       std::unique_ptr<CellularInhibitor::InhibitLock> inhibit_lock);
   void RefreshProfilesWithLock(
       const dbus::ObjectPath& euicc_path,
+      bool restore_slot,
       RefreshProfilesCallback callback,
       std::unique_ptr<CellularInhibitor::InhibitLock> inhibit_lock);
   void OnRequestInstalledProfilesResult(HermesResponseStatus status);
@@ -141,5 +157,10 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularESimProfileHandler
 };
 
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove after the migration is finished.
+namespace ash {
+using ::chromeos::CellularESimProfileHandler;
+}
 
 #endif  // CHROMEOS_NETWORK_CELLULAR_ESIM_PROFILE_HANDLER_H_

@@ -31,8 +31,6 @@ service CastCoreService {
 }
 
 message RegisterRuntimeRequest {
-  // DEPRECATED.
-  string runtime_id = 1 [deprecated = true];
   // Metadata about the runtime.
   cast.common.RuntimeMetadata runtime_metadata = 2;
 }

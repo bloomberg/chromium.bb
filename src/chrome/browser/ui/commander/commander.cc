@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/commander/commander.h"
 
+#include "base/no_destructor.h"
 #include "chrome/browser/ui/commander/commander_controller.h"
 #include "chrome/browser/ui/commander/commander_frontend.h"
 #include "chrome/browser/ui/ui_features.h"
@@ -12,7 +13,7 @@
 namespace commander {
 
 bool IsEnabled() {
-  return base::FeatureList::IsEnabled(features::kCommander);
+  return base::FeatureList::IsEnabled(features::kQuickCommands);
 }
 
 // static

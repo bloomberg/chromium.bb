@@ -15,7 +15,10 @@
 #include "third_party/blink/public/common/scheme_registry.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom-shared.h"
 #include "third_party/blink/public/mojom/permissions_policy/permissions_policy.mojom-blink.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_picture_in_picture_options.h"
+#include "third_party/blink/public/web/web_picture_in_picture_window_options.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_throw_dom_exception.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
@@ -25,7 +28,6 @@
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/modules/picture_in_picture/picture_in_picture_event.h"
-#include "third_party/blink/renderer/modules/picture_in_picture/picture_in_picture_window.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
@@ -83,77 +85,44 @@ PictureInPictureControllerImpl::IsDocumentAllowed(bool report_failure) const {
 }
 
 PictureInPictureController::Status
-PictureInPictureControllerImpl::VerifyElementAndOptions(
-    const HTMLElement& element,
-    const PictureInPictureOptions* options) const {
-  if (!IsA<HTMLVideoElement>(element) && options) {
-    // If either the width or height is present then we should make sure they
-    // are both present and valid.
-    if (options->hasWidth() || options->hasHeight()) {
-      if (!options->hasWidth() || options->width() <= 0)
-        return Status::kInvalidWidthOrHeightOption;
-
-      if (!options->hasHeight() || options->height() <= 0)
-        return Status::kInvalidWidthOrHeightOption;
-    }
-  }
-
-  return IsElementAllowed(element, /*report_failure=*/true);
-}
-
-PictureInPictureController::Status
 PictureInPictureControllerImpl::IsElementAllowed(
-    const HTMLElement& element) const {
+    const HTMLVideoElement& element) const {
   return IsElementAllowed(element, /*report_failure=*/false);
 }
 
 PictureInPictureController::Status
-PictureInPictureControllerImpl::IsElementAllowed(const HTMLElement& element,
-                                                 bool report_failure) const {
+PictureInPictureControllerImpl::IsElementAllowed(
+    const HTMLVideoElement& video_element,
+    bool report_failure) const {
   PictureInPictureController::Status status = IsDocumentAllowed(report_failure);
   if (status != Status::kEnabled)
     return status;
 
-  const auto* video_element = DynamicTo<HTMLVideoElement>(element);
-  if (!video_element)
-    return Status::kEnabled;
-
-  if (video_element->getReadyState() == HTMLMediaElement::kHaveNothing)
+  if (video_element.getReadyState() == HTMLMediaElement::kHaveNothing)
     return Status::kMetadataNotLoaded;
 
-  if (!video_element->HasVideo())
+  if (!video_element.HasVideo())
     return Status::kVideoTrackNotAvailable;
 
-  if (video_element->FastHasAttribute(html_names::kDisablepictureinpictureAttr))
+  if (video_element.FastHasAttribute(html_names::kDisablepictureinpictureAttr))
     return Status::kDisabledByAttribute;
 
   return Status::kEnabled;
 }
 
 void PictureInPictureControllerImpl::EnterPictureInPicture(
-    HTMLElement* element,
-    PictureInPictureOptions* options,
+    HTMLVideoElement* video_element,
     ScriptPromiseResolver* resolver) {
-  auto* video_element = DynamicTo<HTMLVideoElement>(*element);
-  if (!video_element) {
-    DCHECK(RuntimeEnabledFeatures::PictureInPictureV2Enabled());
-    // TODO(https://crbug.com/953957): Support element level pip.
-    if (resolver)
-      resolver->Resolve();
-
-    return;
-  }
-
   if (!video_element->GetWebMediaPlayer()) {
     if (resolver) {
-      resolver->Reject(MakeGarbageCollected<DOMException>(
+      // TODO(crbug.com/1293949): Add an error message.
+      resolver->Reject(V8ThrowDOMException::CreateOrDie(
+          resolver->GetScriptState()->GetIsolate(),
           DOMExceptionCode::kInvalidStateError, ""));
     }
 
     return;
   }
-
-  DCHECK(!options);
 
   if (picture_in_picture_element_ == video_element) {
     if (resolver)
@@ -176,7 +145,7 @@ void PictureInPictureControllerImpl::EnterPictureInPicture(
   mojo::PendingRemote<mojom::blink::PictureInPictureSessionObserver>
       session_observer;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-      element->GetDocument().GetTaskRunner(TaskType::kMediaElementEvent);
+      video_element->GetDocument().GetTaskRunner(TaskType::kMediaElementEvent);
   session_observer_receiver_.Bind(
       session_observer.InitWithNewPipeAndPassReceiver(), task_runner);
 
@@ -191,6 +160,7 @@ void PictureInPictureControllerImpl::EnterPictureInPicture(
       video_element->GetWebMediaPlayer()->GetSurfaceId().value(),
       video_element->GetWebMediaPlayer()->NaturalSize(),
       ShouldShowPlayPauseButton(*video_element), std::move(session_observer),
+      video_element->BoundsInViewport(),
       WTF::Bind(&PictureInPictureControllerImpl::OnEnteredPictureInPicture,
                 WrapPersistent(this), WrapPersistent(video_element),
                 WrapPersistent(resolver)));
@@ -205,8 +175,12 @@ void PictureInPictureControllerImpl::OnEnteredPictureInPicture(
   // browser. We should rarely see this because we should have already rejected
   // with |kDisabledBySystem|.
   if (!session_remote) {
-    if (resolver) {
-      resolver->Reject(MakeGarbageCollected<DOMException>(
+    if (resolver &&
+        IsInParallelAlgorithmRunnable(resolver->GetExecutionContext(),
+                                      resolver->GetScriptState())) {
+      ScriptState::Scope script_state_scope(resolver->GetScriptState());
+      resolver->Reject(V8ThrowDOMException::CreateOrDie(
+          resolver->GetScriptState()->GetIsolate(),
           DOMExceptionCode::kNotSupportedError,
           "Picture-in-Picture is not available."));
     }
@@ -219,8 +193,13 @@ void PictureInPictureControllerImpl::OnEnteredPictureInPicture(
       std::move(session_remote),
       element->GetDocument().GetTaskRunner(TaskType::kMediaElementEvent));
   if (IsElementAllowed(*element, /*report_failure=*/true) != Status::kEnabled) {
-    if (resolver) {
-      resolver->Reject(MakeGarbageCollected<DOMException>(
+    if (resolver &&
+        IsInParallelAlgorithmRunnable(resolver->GetExecutionContext(),
+                                      resolver->GetScriptState())) {
+      ScriptState::Scope script_state_scope(resolver->GetScriptState());
+      // TODO(crbug.com/1293949): Add an error message.
+      resolver->Reject(V8ThrowDOMException::CreateOrDie(
+          resolver->GetScriptState()->GetIsolate(),
           DOMExceptionCode::kInvalidStateError, ""));
     }
 
@@ -312,6 +291,11 @@ void PictureInPictureControllerImpl::OnExitedPictureInPicture(
     resolver->Resolve();
 }
 
+PictureInPictureWindow* PictureInPictureControllerImpl::pictureInPictureWindow()
+    const {
+  return picture_in_picture_window_;
+}
+
 Element* PictureInPictureControllerImpl::PictureInPictureElement() const {
   return picture_in_picture_element_;
 }
@@ -401,6 +385,50 @@ bool PictureInPictureControllerImpl::IsExitAutoPictureInPictureAllowed() const {
   return (picture_in_picture_element_ == AutoPictureInPictureElement());
 }
 
+// While this API returns a Promise to the calling website, it is actually
+// currently synchronous since it uses the |window.open()| API to open the PiP
+// window. We still want the document PiP API to be asynchronous though,
+// because:
+// 1) We may eventually make this an asynchronous call to the browsser
+// 2) Other UAs may want to implement the API in an asynchronous way
+void PictureInPictureControllerImpl::CreateDocumentPictureInPictureWindow(
+    ScriptState* script_state,
+    LocalDOMWindow& opener,
+    PictureInPictureWindowOptions* options,
+    ScriptPromiseResolver* resolver,
+    ExceptionState& exception_state) {
+  WebPictureInPictureWindowOptions web_options;
+  web_options.initial_aspect_ratio = options->initialAspectRatio();
+  web_options.lock_aspect_ratio = options->lockAspectRatio();
+
+  auto* dom_window = opener.openPictureInPictureWindow(
+      script_state->GetIsolate(), web_options, exception_state);
+
+  // If we can't create a window then reject the promise with the exception
+  // state.
+  if (!dom_window || exception_state.HadException()) {
+    resolver->Reject();
+    return;
+  }
+
+  auto* local_dom_window = dom_window->ToLocalDOMWindow();
+  DCHECK(local_dom_window);
+
+  // Set the Picture-in-Picture window's base URL to be the same as the opener
+  // window's so that relative URLs will be resolved in the same way.
+  DCHECK(local_dom_window->document());
+  local_dom_window->document()->SetBaseURLOverride(
+      opener.document()->BaseURL());
+
+  // TODO(https://crbug.com/1329638): Return a type specific to document pip
+  // instead of a shared interface between the two APIs.
+  picture_in_picture_window_ = MakeGarbageCollected<PictureInPictureWindow>(
+      GetExecutionContext(), gfx::Size(), local_dom_window->document());
+
+  // TODO(https://crbug.com/1329698): Resolve this in a posted task instead.
+  resolver->Resolve(picture_in_picture_window_);
+}
+
 void PictureInPictureControllerImpl::PageVisibilityChanged() {
   DCHECK(GetSupplementable());
 
@@ -415,8 +443,7 @@ void PictureInPictureControllerImpl::PageVisibilityChanged() {
   // If page becomes hidden and entering Auto Picture-in-Picture is allowed,
   // enter Picture-in-Picture.
   if (GetSupplementable()->hidden() && IsEnterAutoPictureInPictureAllowed()) {
-    EnterPictureInPicture(AutoPictureInPictureElement(), nullptr /* options */,
-                          nullptr /* promise */);
+    EnterPictureInPicture(AutoPictureInPictureElement(), /*promise=*/nullptr);
   }
 }
 

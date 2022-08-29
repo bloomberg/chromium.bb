@@ -27,9 +27,6 @@ static_assert(sizeof(absl::string_view::size_type) == sizeof(size_t),
 // grammar.abnf.  Similarly, methods like ParseMemberKey1 attempt to parse the
 // first choice in the memberkey rule.
 struct Parser {
-  Parser(const Parser&) = delete;
-  Parser& operator=(const Parser&) = delete;
-
   const char* data;
   std::vector<std::unique_ptr<AstNode>> nodes;
 };

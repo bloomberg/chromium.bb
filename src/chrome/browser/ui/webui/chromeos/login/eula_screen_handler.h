@@ -5,7 +5,10 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_EULA_SCREEN_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_EULA_SCREEN_HANDLER_H_
 
+#include <string>
+
 #include "base/memory/ref_counted.h"
+#include "base/values.h"
 // TODO(https://crbug.com/1164001): move to forward declaration.
 #include "chrome/browser/ash/login/help_app_launcher.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
@@ -13,10 +16,6 @@
 
 namespace ash {
 class EulaScreen;
-}
-
-namespace base {
-class DictionaryValue;
 }
 
 namespace chromeos {
@@ -37,6 +36,8 @@ class EulaView {
   virtual void ShowStatsUsageLearnMore() = 0;
   virtual void ShowAdditionalTosDialog() = 0;
   virtual void ShowSecuritySettingsDialog() = 0;
+  virtual void HideSecuritySettingsInfo() = 0;
+  virtual void HideBackButton() = 0;
 };
 
 // WebUI implementation of EulaScreenView. It is used to interact
@@ -45,7 +46,7 @@ class EulaScreenHandler : public EulaView, public BaseScreenHandler {
  public:
   using TView = EulaView;
 
-  explicit EulaScreenHandler(JSCallsContainer* js_calls_container);
+  EulaScreenHandler();
 
   EulaScreenHandler(const EulaScreenHandler&) = delete;
   EulaScreenHandler& operator=(const EulaScreenHandler&) = delete;
@@ -60,12 +61,14 @@ class EulaScreenHandler : public EulaView, public BaseScreenHandler {
   void ShowStatsUsageLearnMore() override;
   void ShowAdditionalTosDialog() override;
   void ShowSecuritySettingsDialog() override;
+  void HideSecuritySettingsInfo() override;
+  void HideBackButton() override;
 
   // BaseScreenHandler implementation:
   void DeclareLocalizedValues(
       ::login::LocalizedValuesBuilder* builder) override;
-  void GetAdditionalParameters(base::DictionaryValue* dict) override;
-  void Initialize() override;
+  void GetAdditionalParameters(base::Value::Dict* dict) override;
+  void InitializeDeprecated() override;
 
  private:
   // Determines the online URL to use.
@@ -78,6 +81,10 @@ class EulaScreenHandler : public EulaView, public BaseScreenHandler {
 
   // Keeps whether screen should be shown right after initialization.
   bool show_on_init_ = false;
+
+  // Booleans to control parts of UI for different flows.
+  bool security_settings_hidden_ = false;
+  bool back_button_hidden_ = false;
 
   // Help application used for help dialogs.
   scoped_refptr<HelpAppLauncher> help_app_;

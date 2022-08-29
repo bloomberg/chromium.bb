@@ -14,10 +14,14 @@ const base::Feature kStructuredMetrics{"EnableStructuredMetrics",
 
 // TODO(b/181724341): Remove this experimental once the feature is rolled out.
 const base::Feature kBluetoothSessionizedMetrics{
-    "BluetoothSessionizedMetrics", base::FEATURE_DISABLED_BY_DEFAULT};
+    "BluetoothSessionizedMetrics", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// TODO(crbug/1249222): Clean feature up by 05/02/2023.
 const base::Feature kUseCrosApiInterface{"UseCrosApiInterface",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kDelayUploadUntilHwid("DelayUploadUntilHwid",
+                                          base::FEATURE_DISABLED_BY_DEFAULT);
 
 bool IsIndependentMetricsUploadEnabled() {
   return base::GetFieldTrialParamByFeatureAsBool(

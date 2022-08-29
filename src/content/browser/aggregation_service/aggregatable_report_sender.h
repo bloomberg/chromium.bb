@@ -48,30 +48,33 @@ class CONTENT_EXPORT AggregatableReportSender {
   explicit AggregatableReportSender(StoragePartition* storage_partition);
   AggregatableReportSender(const AggregatableReportSender&) = delete;
   AggregatableReportSender& operator=(const AggregatableReportSender&) = delete;
-  ~AggregatableReportSender();
+  virtual ~AggregatableReportSender();
 
   // Callback used to notify caller that the requested report has been sent.
   using ReportSentCallback = base::OnceCallback<void(RequestStatus)>;
 
   // Sends an aggregatable report to the reporting endpoint `url`. This should
   // generate a secure POST request with no-credentials.
-  void SendReport(const GURL& url,
-                  const base::Value& contents,
-                  ReportSentCallback callback);
+  virtual void SendReport(const GURL& url,
+                          const base::Value& contents,
+                          ReportSentCallback callback);
 
   // Used by tests to inject a TestURLLoaderFactory so they can mock the
   // network response. Also used by the aggregation service tool to inject a
   // `url_loader_factory` if one is provided.
   static std::unique_ptr<AggregatableReportSender> CreateForTesting(
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      bool enable_debug_logging = false);
+
+ protected:
+  // For testing only.
+  explicit AggregatableReportSender(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      bool enable_debug_logging = false);
 
  private:
   // This is a std::list so that iterators remain valid during modifications.
   using UrlLoaderList = std::list<std::unique_ptr<network::SimpleURLLoader>>;
-
-  // For testing only.
-  explicit AggregatableReportSender(
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
 
   // Called when headers are available for a sent report.
   void OnReportSent(UrlLoaderList::iterator it,
@@ -86,6 +89,9 @@ class CONTENT_EXPORT AggregatableReportSender {
 
   // Lazily accessed URLLoaderFactory used for network requests.
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
+
+  // Whether to enable debug logging. Should be false in production.
+  bool enable_debug_logging_ = false;
 };
 
 }  // namespace content

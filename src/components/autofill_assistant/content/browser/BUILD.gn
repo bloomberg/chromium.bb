@@ -15,11 +15,25 @@ static_library("browser") {
   deps = [
     "//base",
     "//components/autofill_assistant/content/common:mojo_interfaces",
+    "//components/autofill_assistant/content/common/proto:proto",
     "//components/keyed_service/core",
     "//components/optimization_guide/core",
     "//components/optimization_guide/proto:optimization_guide_proto",
     "//content/public/browser",
     "//content/public/common",
     "//mojo/public/cpp/bindings",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [ "content_autofill_assistant_driver_unittest.cc" ]
+
+  deps = [
+    ":browser",
+    "//base",
+    "//base/test:test_support",
+    "//content/public/browser",
+    "//content/test:test_support",
   ]
 }

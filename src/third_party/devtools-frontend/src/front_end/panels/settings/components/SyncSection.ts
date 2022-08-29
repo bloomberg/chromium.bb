@@ -8,7 +8,7 @@ import type * as Host from '../../../core/host/host.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as Settings from '../../../ui/components/settings/settings.js';
-import * as SDK from '../../../core/sdk/sdk.js';
+import * as ChromeLink from '../../../ui/components/chrome_link/chrome_link.js';
 
 import syncSectionStyles from './syncSection.css.js';
 
@@ -44,40 +44,40 @@ export interface SyncSectionData {
 
 export class SyncSection extends HTMLElement {
   static readonly litTagName = LitHtml.literal`devtools-sync-section`;
-  private readonly shadow = this.attachShadow({mode: 'open'});
+  readonly #shadow = this.attachShadow({mode: 'open'});
 
-  private syncInfo: Host.InspectorFrontendHostAPI.SyncInformation = {isSyncActive: false};
-  private syncSetting?: Common.Settings.Setting<boolean>;
+  #syncInfo: Host.InspectorFrontendHostAPI.SyncInformation = {isSyncActive: false};
+  #syncSetting?: Common.Settings.Setting<boolean>;
 
-  private boundRender = this.render.bind(this);
+  #boundRender = this.#render.bind(this);
 
   connectedCallback(): void {
-    this.shadow.adoptedStyleSheets = [syncSectionStyles];
+    this.#shadow.adoptedStyleSheets = [syncSectionStyles];
   }
 
   set data(data: SyncSectionData) {
-    this.syncInfo = data.syncInfo;
-    this.syncSetting = data.syncSetting;
-    ComponentHelpers.ScheduledRender.scheduleRender(this, this.boundRender);
+    this.#syncInfo = data.syncInfo;
+    this.#syncSetting = data.syncSetting;
+    void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
   }
 
-  private render(): void {
-    if (!this.syncSetting) {
+  #render(): void {
+    if (!this.#syncSetting) {
       throw new Error('SyncSection not properly initialized');
     }
 
-    const checkboxDisabled = !this.syncInfo.isSyncActive || !this.syncInfo.arePreferencesSynced;
+    const checkboxDisabled = !this.#syncInfo.isSyncActive || !this.#syncInfo.arePreferencesSynced;
     // Disabled until https://crbug.com/1079231 is fixed.
     // clang-format off
     LitHtml.render(LitHtml.html`
       <fieldset>
         <legend>${Common.Settings.getLocalizedSettingsCategory(Common.Settings.SettingCategory.SYNC)}</legend>
-        ${renderAccountInfoOrWarning(this.syncInfo)}
+        ${renderAccountInfoOrWarning(this.#syncInfo)}
         <${Settings.SettingCheckbox.SettingCheckbox.litTagName} .data=${
-            {setting: this.syncSetting, disabled: checkboxDisabled} as Settings.SettingCheckbox.SettingCheckboxData}>
+            {setting: this.#syncSetting, disabled: checkboxDisabled} as Settings.SettingCheckbox.SettingCheckboxData}>
         </${Settings.SettingCheckbox.SettingCheckbox.litTagName}>
       </fieldset>
-    `, this.shadow, {host: this});
+    `, this.#shadow, {host: this});
     // clang-format on
   }
 }
@@ -92,9 +92,8 @@ function renderAccountInfoOrWarning(syncInfo: Host.InspectorFrontendHostAPI.Sync
     // clang-format off
     return LitHtml.html`
       <span class="warning">
-        ${i18nString(UIStrings.syncDisabled)} <a href=${link} class="link" target="_blank"
-          @click=${(e: Event): void => openSettingsTab(link, e)}
-          @keydown=${(e: Event): void => openSettingsTab(link, e)}>${i18nString(UIStrings.settings)}</x-link>
+        ${i18nString(UIStrings.syncDisabled)}
+        <${ChromeLink.ChromeLink.ChromeLink.litTagName} .href=${link}>${i18nString(UIStrings.settings)}</${ChromeLink.ChromeLink.ChromeLink.litTagName}>
       </span>`;
     // clang-format on
   }
@@ -104,9 +103,8 @@ function renderAccountInfoOrWarning(syncInfo: Host.InspectorFrontendHostAPI.Sync
     // clang-format off
     return LitHtml.html`
       <span class="warning">
-        ${i18nString(UIStrings.preferencesSyncDisabled)} <a href=${link} class="link" target="_blank"
-          @click=${(e: Event): void => openSettingsTab(link, e)}
-          @keydown=${(e: Event): void => openSettingsTab(link, e)}>${i18nString(UIStrings.settings)}</x-link>
+        ${i18nString(UIStrings.preferencesSyncDisabled)}
+        <${ChromeLink.ChromeLink.ChromeLink.litTagName} .href=${link}>${i18nString(UIStrings.settings)}</${ChromeLink.ChromeLink.ChromeLink.litTagName}>
       </span>`;
     // clang-format on
   }
@@ -118,16 +116,6 @@ function renderAccountInfoOrWarning(syncInfo: Host.InspectorFrontendHostAPI.Sync
         <span>${syncInfo.accountEmail}</span>
       </div>
     </div>`;
-}
-
-// Navigating to a chrome:// link via a normal anchor doesn't work, so we "navigate"
-// there using CDP.
-function openSettingsTab(url: string, event: Event): void {
-  if (event.type === 'click' || (event.type === 'keydown' && self.isEnterOrSpaceKey(event))) {
-    const mainTarget = SDK.TargetManager.TargetManager.instance().mainTarget();
-    mainTarget && mainTarget.targetAgent().invoke_createTarget({url});
-    event.consume(true);
-  }
 }
 
 ComponentHelpers.CustomElements.defineComponent('devtools-sync-section', SyncSection);

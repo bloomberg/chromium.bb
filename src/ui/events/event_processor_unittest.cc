@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <tuple>
 #include <utility>
 #include <vector>
 
-#include "base/cxx17_backports.h"
-#include "base/ignore_result.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -186,7 +185,7 @@ TEST_F(EventProcessorTest, NestedEventProcessing) {
   // first event processor should be handled by |target_handler| instead.
   std::unique_ptr<TestEventHandler> target_handler(
       new ReDispatchEventHandler(second_processor.get(), root()->child_at(0)));
-  ignore_result(root()->child_at(0)->SetTargetHandler(target_handler.get()));
+  std::ignore = root()->child_at(0)->SetTargetHandler(target_handler.get());
 
   // Dispatch a mouse event to the tree of event targets owned by the first
   // event processor, checking in ReDispatchEventHandler that the phase and
@@ -412,7 +411,7 @@ TEST_F(EventProcessorTest, HandlerSequence) {
 
   std::string expected[] = { "PreR", "PreC", "PreG", "G", "PostG", "PostC",
       "PostR", "PreR", "PreC", "C", "PostC", "PostR", "PreR", "R", "PostR" };
-  EXPECT_EQ(std::vector<std::string>(expected, expected + base::size(expected)),
+  EXPECT_EQ(std::vector<std::string>(expected, expected + std::size(expected)),
             recorder);
 
   root()->RemovePreTargetHandler(&pre_root);

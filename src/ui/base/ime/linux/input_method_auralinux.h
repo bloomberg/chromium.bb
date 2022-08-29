@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/compiler_specific.h"
 #include "base/component_export.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/ime/composition_text.h"
@@ -32,10 +31,11 @@ class COMPONENT_EXPORT(UI_BASE_IME_LINUX) InputMethodAuraLinux
 
   // Overriden from InputMethod.
   ui::EventDispatchDetails DispatchKeyEvent(ui::KeyEvent* event) override;
-  void OnTextInputTypeChanged(const TextInputClient* client) override;
+  void OnTextInputTypeChanged(TextInputClient* client) override;
   void OnCaretBoundsChanged(const TextInputClient* client) override;
   void CancelComposition(const TextInputClient* client) override;
   bool IsCandidatePopupOpen() const override;
+  VirtualKeyboardController* GetVirtualKeyboardController() override;
 
   // Overriden from ui::LinuxInputMethodContextDelegate
   void OnCommit(const std::u16string& text) override;
@@ -75,8 +75,8 @@ class COMPONENT_EXPORT(UI_BASE_IME_LINUX) InputMethodAuraLinux
   void ConfirmCompositionText();
   bool HasInputMethodResult();
   bool NeedInsertChar(const std::u16string& result_text) const;
-  ui::EventDispatchDetails SendFakeProcessKeyEvent(ui::KeyEvent* event) const
-      WARN_UNUSED_RESULT;
+  [[nodiscard]] ui::EventDispatchDetails SendFakeProcessKeyEvent(
+      ui::KeyEvent* event) const;
   void UpdateContextFocusState();
   void ResetContext();
   bool IgnoringNonKeyInput() const;
@@ -87,6 +87,9 @@ class COMPONENT_EXPORT(UI_BASE_IME_LINUX) InputMethodAuraLinux
   // The last key event that IME is probably in process in
   // async-mode.
   absl::optional<ui::KeyEvent> ime_filtered_key_event_;
+
+  // Tracks last commit result during one key dispatch event.
+  absl::optional<CommitResult> last_commit_result_;
 
   std::u16string result_text_;
 

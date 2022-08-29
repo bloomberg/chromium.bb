@@ -6,7 +6,7 @@
 <translation id="1127811143501539442">{DAYS,plural, =1{ഒരു ദിവസം മുമ്പ്}other{# ദിവസം മുമ്പ്}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{ഒരു മിനിറ്റിന് മുമ്പ്}other{# മിനിറ്റ് മുമ്പ്}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{ 1 മീറ്റര്‍}other{# മീറ്റർ}}</translation>
-<translation id="1243314992276662751">അപ്‌ലോഡുചെയ്യുക</translation>
+<translation id="1243314992276662751">അപ്‌ലോഡ് ചെയ്യുക</translation>
 <translation id="1266864766717917324"><ph name="CONTENT_TYPE" /> പങ്കിടാനായില്ല</translation>
 <translation id="1269641567813814718">Win</translation>
 <translation id="1291104554099683393">ചെറിയ ഭാഗങ്ങളായി ടെക്‌സ്‌റ്റ് പങ്കിടാൻ ശ്രമിക്കൂ.</translation>
@@ -37,7 +37,7 @@
 <translation id="2141853158323869627">{DAYS,plural, =1{1ദിവസം}other{# ദിവസം}}</translation>
 <translation id="2148716181193084225">ഇന്ന്</translation>
 <translation id="2161656808144014275">വാചകം</translation>
-<translation id="2168039046890040389">പേജ് മുകളിലേയ്ക്ക്</translation>
+<translation id="2168039046890040389">Page Up</translation>
 <translation id="2190355936436201913">(ശൂന്യം)</translation>
 <translation id="2192232475740621500">കുറഞ്ഞ സാന്ദ്രത ഉപയോഗിക്കുക</translation>
 <translation id="2267918077332197517">ഈ സൈറ്റിൽ നിന്നുള്ള എല്ലാ അറിയിപ്പുകളും ബ്ലോക്ക് ചെയ്യുക</translation>
@@ -52,6 +52,7 @@
 <translation id="2445449901874883781">കൂടിയ സാന്ദ്രത ഉപയോഗിക്കുക</translation>
 <translation id="2482878487686419369">അറിയിപ്പുകൾ</translation>
 <translation id="2497284189126895209">എല്ലാ ഫയലുകളും</translation>
+<translation id="2498950423397131220">ഫ്ലോട്ട് ചെയ്യുക</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2522350507219695259">കാലിബറേഷൻ പൂർത്തിയായി</translation>
 <translation id="252373100621549798">അജ്ഞാത പ്രദർശനം</translation>
@@ -62,7 +63,6 @@
 <translation id="2666092431469916601">മുകളിലേക്ക്</translation>
 <translation id="2701330563083355633"><ph name="DEVICE_NAME" /> ഉപകരണത്തിൽ നിന്ന് പങ്കിട്ടു</translation>
 <translation id="271033894570825754">പുതിയത്</translation>
-<translation id="2743387203779672305">ക്ലിപ്പ്ബോർഡിലേക്ക് പകർത്തുക</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{ഒരു വർഷം മുമ്പ്}other{# വർഷം മുമ്പ്}}</translation>
 <translation id="2878511608894704031">എല്ലാം ഇല്ലാതാക്കൂ</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{ഒരു ദിവസത്തിൽ}other{# ദിവസത്തിൽ}}</translation>
@@ -94,12 +94,14 @@
 <translation id="3889424535448813030">വലതുഭാഗത്തെ അമ്പടയാളം</translation>
 <translation id="3897092660631435901">മെനു</translation>
 <translation id="3909791450649380159">&amp;മുറിക്കുക</translation>
+<translation id="3924145049010392604">Meta</translation>
 <translation id="3990502903496589789">വലത് അഗ്രം</translation>
 <translation id="3994749195054421561"><ph name="COLUMN_NAME" /> എന്ന കോളം ആരോഹണക്രമത്തിൽ അടുക്കി.</translation>
+<translation id="4031910098617850788">F5</translation>
 <translation id="40579289237549812">{UNREAD_NOTIFICATIONS,plural, =1{വായിക്കാത്ത ഒരു അറിയിപ്പ്}other{വായിക്കാത്ത # അറിയിപ്പുകൾ}}</translation>
-<translation id="4250229828105606438">സ്‌ക്രീൻഷോട്ട്</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{ഒരു മാസം മുമ്പ്}other{# മാസം മുമ്പ്}}</translation>
 <translation id="4289300219472526559">സംഭാഷണം ആരംഭിക്കുക</translation>
+<translation id="4289540628985791613">അവലോകനം</translation>
 <translation id="4306392492252714209">ക്ലിപ്പ്ബോർഡിൽ നിന്ന് നീക്കം ചെയ്യുക.</translation>
 <translation id="4491109536499578614">ചിത്രം</translation>
 <translation id="4565377596337484307">പാസ്‌വേഡ് മറയ്ക്കുക</translation>
@@ -187,7 +189,7 @@
 <translation id="8134065097954893699">ഈ പേജ് റീലോഡ് ചെയ്യുന്നു</translation>
 <translation id="815598010540052116">താഴേയ്‌ക്ക് സ്ക്രോൾ ചെയ്യുക</translation>
 <translation id="8179976553408161302">Enter</translation>
-<translation id="8210608804940886430">താഴെയുള്ള പേജുകള്‍</translation>
+<translation id="8210608804940886430">Page Down</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8245914219290430011">ടാബ്</translation>
 <translation id="8259556432390118667">ഹെക്‌സ് വർണ മൂല്യം</translation>
@@ -203,7 +205,6 @@
 <translation id="8730621377337864115">പൂർത്തിയാക്കി</translation>
 <translation id="8772073294905169192">{HOURS,plural, =1{1 മണിക്കൂർ}other{# മണിക്കൂർ}}</translation>
 <translation id="8798099450830957504">ഡിഫോൾട്ട്</translation>
-<translation id="883911313571074303">ചിത്രം വ്യാഖ്യാനിക്കുക</translation>
 <translation id="8841375032071747811">ബാക്ക് ബട്ടൺ</translation>
 <translation id="8867568208303837180">അയയ്‌ക്കുന്നു...</translation>
 <translation id="8876215549894133151">ഫോര്‍മാറ്റ്:</translation>

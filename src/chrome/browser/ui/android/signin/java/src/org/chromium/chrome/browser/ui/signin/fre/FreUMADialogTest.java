@@ -8,6 +8,7 @@ import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.matcher.RootMatchers.isDialog;
 import static androidx.test.espresso.matcher.ViewMatchers.isChecked;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
@@ -50,7 +51,7 @@ import org.chromium.components.browser_ui.modaldialog.AppModalPresenter;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogManager.ModalDialogType;
-import org.chromium.ui.test.util.DummyUiActivity;
+import org.chromium.ui.test.util.BlankUiTestActivity;
 import org.chromium.ui.test.util.NightModeTestUtils;
 
 import java.io.IOException;
@@ -62,15 +63,17 @@ import java.io.IOException;
 @Batch(Batch.PER_CLASS)
 public class FreUMADialogTest {
     @ClassRule
-    public static BaseActivityTestRule<DummyUiActivity> activityTestRule =
-            new BaseActivityTestRule<>(DummyUiActivity.class);
+    public static BaseActivityTestRule<BlankUiTestActivity> activityTestRule =
+            new BaseActivityTestRule<>(BlankUiTestActivity.class);
 
     @Rule
     public final MockitoRule mMockitoRule = MockitoJUnit.rule();
 
     @Rule
     public final ChromeRenderTestRule mRenderTestRule =
-            ChromeRenderTestRule.Builder.withPublicCorpus().build();
+            ChromeRenderTestRule.Builder.withPublicCorpus()
+                    .setBugComponent(ChromeRenderTestRule.Component.UI_BROWSER_FIRST_RUN)
+                    .build();
 
     @Mock
     private Listener mListenerMock;
@@ -111,10 +114,11 @@ public class FreUMADialogTest {
         showFreUMADialog(/*allowCrashUpload=*/false);
 
         onView(withId(R.id.fre_uma_dialog_switch))
+                .inRoot(isDialog())
                 .check(matches(not(isChecked())))
                 .perform(click());
+        onView(withText(org.chromium.chrome.R.string.done)).inRoot(isDialog()).perform(click());
 
-        onView(withText(org.chromium.chrome.R.string.done)).perform(click());
         onView(withText(R.string.signin_fre_uma_dialog_title)).check(doesNotExist());
         verify(mListenerMock).onAllowCrashUploadChecked(true);
     }

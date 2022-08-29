@@ -38,10 +38,9 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/events/event_dispatch_result.h"
 #include "third_party/blink/renderer/core/dom/events/event_listener_map.h"
-#include "third_party/blink/renderer/core/event_target_names.h"
 #include "third_party/blink/renderer/core/event_type_names.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
@@ -173,7 +172,7 @@ class CORE_EXPORT EventTarget : public ScriptWrappable {
                                  EventListener*);
   EventListener* GetAttributeEventListener(const AtomicString& event_type);
 
-  bool HasEventListeners() const override;
+  bool HasEventListeners() const;
   bool HasEventListeners(const AtomicString& event_type) const;
   bool HasAnyEventListeners(const Vector<AtomicString>& event_types) const;
   bool HasCapturingEventListeners(const AtomicString& event_type);

@@ -7,6 +7,7 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/iterable.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
 namespace blink {
 
@@ -20,6 +21,7 @@ class GPUSupportedFeatures : public ScriptWrappable,
 
   void AddFeatureName(const String& feature_name);
 
+  bool has(const String& feature) const;
   bool hasForBinding(ScriptState* script_state,
                      const String& feature,
                      ExceptionState& exception_state) const;
