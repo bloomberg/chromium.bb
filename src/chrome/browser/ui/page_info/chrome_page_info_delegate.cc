@@ -4,9 +4,11 @@
 
 #include "chrome/browser/ui/page_info/chrome_page_info_delegate.h"
 
+#include "base/metrics/histogram_functions.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/bluetooth/bluetooth_chooser_context_factory.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/page_specific_content_settings_delegate.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker_factory.h"
@@ -22,6 +24,7 @@
 #include "chrome/common/url_constants.h"
 #include "components/content_settings/browser/page_specific_content_settings.h"
 #include "components/infobars/content/content_infobar_manager.h"
+#include "components/page_info/core/features.h"
 #include "components/permissions/contexts/bluetooth_chooser_context.h"
 #include "components/permissions/object_permission_context_base.h"
 #include "components/permissions/permission_manager.h"
@@ -37,25 +40,24 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/chrome_pages.h"
-#include "chrome/browser/ui/web_applications/app_browser_controller.h"
-#include "chrome/browser/ui/webui/settings/chromeos/app_management/app_management_uma.h"
+#include "chrome/browser/ui/webui/settings/ash/app_management/app_management_uma.h"
 #endif
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/certificate_viewer.h"
 #include "chrome/browser/hid/hid_chooser_context.h"
 #include "chrome/browser/hid/hid_chooser_context_factory.h"
 #include "chrome/browser/reputation/safety_tip_ui_helper.h"
 #include "chrome/browser/serial/serial_chooser_context.h"
 #include "chrome/browser/serial/serial_chooser_context_factory.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/hats/trust_safety_sentiment_service.h"
 #include "chrome/browser/ui/hats/trust_safety_sentiment_service_factory.h"
 #include "chrome/browser/ui/page_info/page_info_infobar_delegate.h"
 #include "chrome/browser/ui/tab_dialogs.h"
+#include "chrome/browser/ui/web_applications/web_app_ui_utils.h"
 #include "ui/events/event.h"
 #else
 #include "chrome/grit/chromium_strings.h"
@@ -65,10 +67,13 @@
 ChromePageInfoDelegate::ChromePageInfoDelegate(
     content::WebContents* web_contents)
     : web_contents_(web_contents) {
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   sentiment_service_ =
       TrustSafetySentimentServiceFactory::GetForProfile(GetProfile());
 #endif
+  base::UmaHistogramBoolean("Security.PageInfo.AboutThisSiteLanguageSupported",
+                            page_info::IsAboutThisSiteFeatureEnabled(
+                                g_browser_process->GetApplicationLocale()));
 }
 
 Profile* ChromePageInfoDelegate::GetProfile() const {
@@ -87,14 +92,14 @@ ChromePageInfoDelegate::GetChooserContext(ContentSettingsType type) {
       }
       return nullptr;
     case ContentSettingsType::SERIAL_CHOOSER_DATA:
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
       return SerialChooserContextFactory::GetForProfile(GetProfile());
 #else
       NOTREACHED();
       return nullptr;
 #endif
     case ContentSettingsType::HID_CHOOSER_DATA:
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
       return HidChooserContextFactory::GetForProfile(GetProfile());
 #else
       NOTREACHED();
@@ -153,9 +158,10 @@ permissions::PermissionResult ChromePageInfoDelegate::GetPermissionStatus(
   // about *all* permissions once it has default behaviour implemented for
   // ContentSettingTypes that aren't permissions.
   return PermissionManagerFactory::GetForProfile(GetProfile())
-      ->GetPermissionStatus(type, site_url, site_url);
+      ->GetPermissionStatusForDisplayOnSettingsUI(type, site_url);
 }
-#if !defined(OS_ANDROID)
+
+#if !BUILDFLAG(IS_ANDROID)
 bool ChromePageInfoDelegate::CreateInfoBarDelegate() {
   infobars::ContentInfoBarManager* infobar_manager =
       infobars::ContentInfoBarManager::FromWebContents(web_contents_);
@@ -167,16 +173,10 @@ bool ChromePageInfoDelegate::CreateInfoBarDelegate() {
 }
 
 void ChromePageInfoDelegate::ShowSiteSettings(const GURL& site_url) {
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (web_app::AppBrowserController::IsWebApp(browser)) {
-    web_app::AppId app_id = browser->app_controller()->app_id();
-    chrome::ShowAppManagementPage(GetProfile(), app_id,
-                                  AppManagementEntryPoint::kPageInfoView);
+  if (web_app::HandleAppManagementLinkClickedInPageInfo(web_contents_))
     return;
-  }
-#endif
 
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
   chrome::ShowSiteSettings(browser, site_url);
 }
 
@@ -290,7 +290,7 @@ ChromePageInfoDelegate::GetPageSpecificContentSettingsDelegate() {
   return std::move(delegate);
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 const std::u16string ChromePageInfoDelegate::GetClientApplicationName() {
   return l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME);
 }

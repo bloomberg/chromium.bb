@@ -36,11 +36,11 @@ class HloSnapshot;
 
 // Get a timestamp which we can use as a filename prefix specific to this
 // module.
-string TimestampFor(const HloModule& module);
+std::string TimestampFor(const HloModule& module);
 
 // Create the filename we will use to dump in DumpToFileInDir.
-string FilenameFor(const HloModule& module, absl::string_view prefix,
-                   absl::string_view suffix);
+std::string FilenameFor(const HloModule& module, absl::string_view prefix,
+                        absl::string_view suffix);
 
 // Writes the given string to a file in the xla_dump_to directory specified by
 // module's DebugOptions.
@@ -75,10 +75,19 @@ void DumpToFileInDirOrStdout(const HloModule& module,
                              absl::string_view file_prefix,
                              mlir::Operation* op);
 
-// Dumps the given execution options if dumping is enabled. Exactly
-// where and in what formats it's dumped is determined by the debug options.
-void DumpExecutionOptions(const ExecutionOptions& execution_options,
-                          const DebugOptions& debug_options);
+// Dumps the given protobuf to the given filename if dumping is enabled.
+// Exactly where and in what formats it's dumped is determined by the debug
+// options.
+void DumpProtobufToFile(const tensorflow::protobuf::Message& proto,
+                        const DebugOptions& debug_options,
+                        absl::string_view filename);
+
+// Similar to above, but the filename depends on module's information and the
+// given name.
+void DumpPerModuleProtobufToFile(const HloModule& module,
+                                 const tensorflow::protobuf::Message& proto,
+                                 const DebugOptions& debug_options,
+                                 absl::string_view name);
 
 // Dumps the given HLO module if dumping is enabled for the module. Exactly
 // where and in what formats it's dumped is determined by the module's config.

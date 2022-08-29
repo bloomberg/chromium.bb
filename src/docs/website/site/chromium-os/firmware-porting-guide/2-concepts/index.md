@@ -145,9 +145,7 @@ U-Boot performs the device initialization for the system, as follows:
             the Verity parameters) to open the root filesystem.
 9.  The system initializes user space and runs X and Chrome.
 
-### [<img alt="image"
-src="/chromium-os/firmware-porting-guide/2-concepts/Verified%20Boot%20Flow.png"
-width=100%>](/chromium-os/firmware-porting-guide/2-concepts/Verified%20Boot%20Flow.png)
+![Verified boot flow](/chromium-os/firmware-porting-guide/2-concepts/Verified%20Boot%20Flow.png)
 
 ### Recovery Mode
 

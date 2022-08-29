@@ -4,7 +4,10 @@
 
 #include <memory>
 #include <set>
+#include "build/build_config.h"
 
+#include "base/files/file.h"
+#include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -18,6 +21,7 @@
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router_factory.h"
 #include "chrome/browser/policy/dm_token_utils.h"
+#include "chrome/browser/safe_browsing/cloud_content_scanning/cloud_binary_upload_service.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_browsertest_base.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_test_utils.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_utils.h"
@@ -31,6 +35,7 @@
 
 using extensions::SafeBrowsingPrivateEventRouter;
 using safe_browsing::BinaryUploadService;
+using safe_browsing::CloudBinaryUploadService;
 using ::testing::_;
 using ::testing::Mock;
 
@@ -47,9 +52,10 @@ std::string text() {
   return std::string(100, 'a');
 }
 
-class FakeBinaryUploadService : public BinaryUploadService {
+class FakeBinaryUploadService : public CloudBinaryUploadService {
  public:
-  FakeBinaryUploadService() : BinaryUploadService(nullptr, nullptr, nullptr) {}
+  FakeBinaryUploadService()
+      : CloudBinaryUploadService(nullptr, nullptr, nullptr) {}
 
   // Sets whether the user is authorized to upload data for Deep Scanning.
   void SetAuthorized(bool authorized) {
@@ -95,14 +101,35 @@ class FakeBinaryUploadService : public BinaryUploadService {
       if (should_automatically_authorize_)
         ReturnAuthorizedResponse();
     } else {
+      Request* request_raw = request.get();
       std::string file = request->filename();
-      if (file.empty()) {
-        request->FinishRequest(prepared_text_result_, prepared_text_response_);
-      } else {
-        ASSERT_TRUE(prepared_file_results_.count(file));
-        ASSERT_TRUE(prepared_file_responses_.count(file));
-        request->FinishRequest(prepared_file_results_[file],
-                               prepared_file_responses_[file]);
+      switch (request->analysis_connector()) {
+        case AnalysisConnector::FILE_ATTACHED:
+          ASSERT_FALSE(file.empty());
+          ASSERT_TRUE(prepared_file_results_.count(file));
+          ASSERT_TRUE(prepared_file_responses_.count(file));
+          request->FinishRequest(prepared_file_results_[file],
+                                 prepared_file_responses_[file]);
+          break;
+        case AnalysisConnector::BULK_DATA_ENTRY:
+          request->FinishRequest(prepared_text_result_,
+                                 prepared_text_response_);
+          break;
+        case AnalysisConnector::PRINT:
+          // Since this path is only used for prints that are too large, calling
+          // GetRequestData should then call FinishRequest with FILE_TOO_LARGE.
+          request_raw->GetRequestData(base::BindOnce(
+              [](std::unique_ptr<BinaryUploadService::Request> request,
+                 BinaryUploadService::Result result,
+                 BinaryUploadService::Request::Data data) {
+                ASSERT_EQ(result, BinaryUploadService::Result::FILE_TOO_LARGE);
+                request->FinishRequest(result, ContentAnalysisResponse());
+              },
+              std::move(request)));
+          break;
+        case AnalysisConnector::ANALYSIS_CONNECTOR_UNSPECIFIED:
+        case AnalysisConnector::FILE_DOWNLOADED:
+          NOTREACHED();
       }
     }
   }
@@ -233,6 +260,7 @@ class ContentAnalysisDelegateBrowserTestBase
     safe_browsing::SetOnSecurityEventReporting(browser()->profile()->GetPrefs(),
                                                /*enabled*/ true,
                                                /*enabled_event_names*/ {},
+                                               /*enabled_opt_in_events*/ {},
 #if BUILDFLAG(IS_CHROMEOS_ASH)
                                                /*machine_scope*/ false);
 #else
@@ -291,7 +319,7 @@ class ContentAnalysisDelegateBrowserTest
       : ContentAnalysisDelegateBrowserTestBase(GetParam()) {}
 };
 
-INSTANTIATE_TEST_CASE_P(, ContentAnalysisDelegateBrowserTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(, ContentAnalysisDelegateBrowserTest, testing::Bool());
 
 IN_PROC_BROWSER_TEST_P(ContentAnalysisDelegateBrowserTest, Unauthorized) {
   // The reading of the browser DM token is blocking and happens in this test
@@ -369,7 +397,7 @@ IN_PROC_BROWSER_TEST_P(ContentAnalysisDelegateBrowserTest, Files) {
   safe_browsing::EventReportValidator validator(client());
   validator.ExpectDangerousDeepScanningResult(
       /*url*/ "about:blank",
-      /*filename*/ created_file_paths()[1].AsUTF8Unsafe(),
+      /*filename*/ "bad.exe",
       // printf "bad file content" | sha256sum |  tr '[:lower:]' '[:upper:]'
       /*sha*/
       "77AE96C38386429D28E53F5005C46C7B4D8D39BE73D757CE61E0AE65CC1A5A5D",
@@ -539,9 +567,9 @@ IN_PROC_BROWSER_TEST_P(ContentAnalysisDelegateBrowserTest, Throttled) {
   validator.ExpectUnscannedFileEvents(
       /*url*/ "about:blank",
       {
-          created_file_paths()[0].AsUTF8Unsafe(),
-          created_file_paths()[1].AsUTF8Unsafe(),
-          created_file_paths()[2].AsUTF8Unsafe(),
+          created_file_paths()[0].BaseName().AsUTF8Unsafe(),
+          created_file_paths()[1].BaseName().AsUTF8Unsafe(),
+          created_file_paths()[2].BaseName().AsUTF8Unsafe(),
       },
       {
           // printf "a content" | sha256sum | tr '[:lower:]' '[:upper:]'
@@ -673,7 +701,7 @@ IN_PROC_BROWSER_TEST_P(ContentAnalysisDelegateBlockingSettingBrowserTest,
   safe_browsing::EventReportValidator validator(client());
   validator.ExpectUnscannedFileEvent(
       /*url*/ "about:blank",
-      /*filename*/ test_zip.AsUTF8Unsafe(),
+      /*filename*/ "encrypted.zip",
       // sha256sum < chrome/test/data/safe_browsing/download_protection/\
       // encrypted.zip |  tr '[:lower:]' '[:upper:]'
       /*sha*/
@@ -747,7 +775,7 @@ IN_PROC_BROWSER_TEST_P(ContentAnalysisDelegateBlockingSettingBrowserTest,
   safe_browsing::EventReportValidator validator(client());
   validator.ExpectUnscannedFileEvent(
       /*url*/ "about:blank",
-      /*filename*/ created_file_paths()[0].AsUTF8Unsafe(),
+      /*filename*/ "a.png",
       // printf "\x89PNG\x0D\x0A\x1A\x0A" | sha256sum |  tr '[:lower:]' \
       // '[:upper:]'
       "4C4B6A3BE1314AB86138BEF4314DDE022E600960D8689A2C8F8631802D20DAB6",
@@ -784,8 +812,14 @@ IN_PROC_BROWSER_TEST_P(ContentAnalysisDelegateBlockingSettingBrowserTest,
   EXPECT_TRUE(called);
 }
 
+// Flaky on linux: https://crbug.com/1299762.
+#if BUILDFLAG(IS_LINUX)
+#define MAYBE_BlockLargeFiles DISABLED_BlockLargeFiles
+#else
+#define MAYBE_BlockLargeFiles BlockLargeFiles
+#endif
 IN_PROC_BROWSER_TEST_P(ContentAnalysisDelegateBlockingSettingBrowserTest,
-                       BlockLargeFiles) {
+                       MAYBE_BlockLargeFiles) {
   base::ScopedAllowBlockingForTesting allow_blocking;
 
   // Set up delegate and upload service.
@@ -815,9 +849,19 @@ IN_PROC_BROWSER_TEST_P(ContentAnalysisDelegateBlockingSettingBrowserTest,
   // Create the large file.
   ContentAnalysisDelegate::Data data;
 
-  CreateFilesForTest(
-      {"large.doc"},
-      {std::string(BinaryUploadService::kMaxUploadSizeBytes + 1, 'a')}, &data);
+  CreateFilesForTest({"large.doc"}, {std::string()}, &data);
+
+  // Write data to the file in chunks to avoid memory allocation errors.
+  constexpr int64_t kChunkSize = 50 * 1024 * 1024;  // 100 MB
+  constexpr int64_t kLargeSize = 42 * kChunkSize;   // ~2.1 GB, just over maxint
+  int64_t total_size = 0;
+  std::string chunk = std::string(kChunkSize, 'a');
+  base::File file(created_file_paths()[0],
+                  base::File::FLAG_OPEN | base::File::FLAG_WRITE);
+  while (total_size != kLargeSize) {
+    file.WriteAtCurrentPos(chunk.data(), chunk.size());
+    total_size += chunk.size();
+  }
   ASSERT_TRUE(ContentAnalysisDelegate::IsEnabled(
       browser()->profile(), GURL(kTestUrl), &data, FILE_ATTACHED));
 
@@ -825,15 +869,15 @@ IN_PROC_BROWSER_TEST_P(ContentAnalysisDelegateBlockingSettingBrowserTest,
   safe_browsing::EventReportValidator validator(client());
   validator.ExpectUnscannedFileEvent(
       /*url*/ "about:blank",
-      /*filename*/ created_file_paths()[0].AsUTF8Unsafe(),
-      // python3 -c "print('a' * (50 * 1024 * 1024 + 1), end='')" | sha256sum |\
-      // tr '[:lower:]' '[:upper:]'
+      /*filename*/ "large.doc",
+      // python3 -c "print('a' * (42 * 50 * 1024 * 1024), end='')" |\
+      // sha256sum |  tr '[:lower:]' '[:upper:]'
       /*sha*/
-      "9EB56DB30C49E131459FE735BA6B9D38327376224EC8D5A1233F43A5B4A25942",
+      "E061612733D5D991F3BD676A51F77B1F0C824282909B7C1C89BD1612FC52E073",
       /*trigger*/ SafeBrowsingPrivateEventRouter::kTriggerFileUpload,
       /*reason*/ "FILE_TOO_LARGE",
       /*mimetypes*/ DocMimeTypes(),
-      /*size*/ BinaryUploadService::kMaxUploadSizeBytes + 1,
+      /*size*/ kLargeSize,
       /*result*/
       expected_result() ? safe_browsing::EventResultToString(
                               safe_browsing::EventResult::ALLOWED)
@@ -858,6 +902,68 @@ IN_PROC_BROWSER_TEST_P(ContentAnalysisDelegateBlockingSettingBrowserTest,
             called = true;
           }),
       safe_browsing::DeepScanAccessPoint::UPLOAD);
+
+  run_loop.Run();
+  EXPECT_TRUE(called);
+}
+
+IN_PROC_BROWSER_TEST_P(ContentAnalysisDelegateBlockingSettingBrowserTest,
+                       BlockLargePages) {
+  base::ScopedAllowBlockingForTesting allow_blocking;
+
+  // Set up delegate and upload service.
+  EnableUploadsScanningAndReporting();
+  constexpr char kBlockLargePagesPref[] = R"({
+    "service_provider": "google",
+    "enable": [
+      {
+        "url_list": ["*"],
+        "tags": ["dlp"]
+      }
+    ],
+    "block_until_verdict": 1,
+    "block_large_files": %s
+  })";
+  safe_browsing::SetAnalysisConnector(
+      browser()->profile()->GetPrefs(), PRINT,
+      base::StringPrintf(kBlockLargePagesPref, bool_setting_value()),
+      machine_scope());
+
+  ContentAnalysisDelegate::SetFactoryForTesting(
+      base::BindRepeating(&MinimalFakeContentAnalysisDelegate::Create));
+
+  FakeBinaryUploadServiceStorage()->SetAuthorized(true);
+
+  // Create the large page.
+  ContentAnalysisDelegate::Data data;
+  constexpr int64_t kLargeSize = 51 * 1024 * 1024;
+  base::MappedReadOnlyRegion page =
+      base::ReadOnlySharedMemoryRegion::Create(kLargeSize);
+  memset(page.mapping.memory(), 'a', kLargeSize);
+  data.page = std::move(page.region);
+
+  ASSERT_TRUE(ContentAnalysisDelegate::IsEnabled(browser()->profile(),
+                                                 GURL(kTestUrl), &data, PRINT));
+
+  bool called = false;
+  base::RunLoop run_loop;
+  SetQuitClosure(run_loop.QuitClosure());
+
+  // Start test.
+  ContentAnalysisDelegate::CreateForWebContents(
+      browser()->tab_strip_model()->GetActiveWebContents(), std::move(data),
+      base::BindLambdaForTesting(
+          [this, &called](const ContentAnalysisDelegate::Data& data,
+                          const ContentAnalysisDelegate::Result& result) {
+            ASSERT_TRUE(result.paths_results.empty());
+            ASSERT_TRUE(result.text_results.empty());
+            ASSERT_EQ(result.page_result, expected_result());
+
+            called = true;
+          }),
+      safe_browsing::DeepScanAccessPoint::PRINT);
+
+  FakeBinaryUploadServiceStorage()->ReturnAuthorizedResponse();
 
   run_loop.Run();
   EXPECT_TRUE(called);
@@ -922,7 +1028,7 @@ IN_PROC_BROWSER_TEST_P(ContentAnalysisDelegateBlockingSettingBrowserTest,
       BinaryUploadService::Result::SUCCESS, response);
   validator.ExpectDangerousDeepScanningResultAndSensitiveDataEvent(
       /*url*/ "about:blank",
-      /*filename*/ created_file_paths()[0].AsUTF8Unsafe(),
+      /*filename*/ "foo.doc",
       // printf "foo content" | sha256sum  |  tr '[:lower:]' '[:upper:]'
       /*sha*/
       "B3A2E2EDBAA3C798B4FC267792B1641B94793DE02D870124E5CBE663750B4CFC",
@@ -1040,7 +1146,7 @@ class ContentAnalysisDelegateUnauthorizedBrowserTest
   }
 
   void DialogUpdated(ContentAnalysisDialog* dialog,
-                     ContentAnalysisDelegateBase::FinalResult result) override {
+                     FinalContentAnalysisResult result) override {
     ASSERT_TRUE(file_scan_ && blocking_scan());
   }
 

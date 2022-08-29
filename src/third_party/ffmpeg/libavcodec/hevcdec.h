@@ -26,12 +26,12 @@
 #include <stdatomic.h>
 
 #include "libavutil/buffer.h"
-#include "libavutil/md5.h"
 #include "libavutil/mem_internal.h"
 
 #include "avcodec.h"
 #include "bswapdsp.h"
 #include "cabac.h"
+#include "dovi_rpu.h"
 #include "get_bits.h"
 #include "hevcpred.h"
 #include "h2645_parse.h"
@@ -40,8 +40,7 @@
 #include "hevc_sei.h"
 #include "hevcdsp.h"
 #include "h274.h"
-#include "internal.h"
-#include "thread.h"
+#include "threadframe.h"
 #include "videodsp.h"
 
 #define SHIFT_CTB_WPP 2
@@ -395,7 +394,6 @@ typedef struct HEVCFrame {
     AVFrame *frame;
     AVFrame *frame_grain;
     ThreadFrame tf;
-    ThreadFrame tf_grain;
     int needs_fg; /* 1 if grain needs to be applied by the decoder */
     MvField *tab_mvf;
     RefPicList *refPicList;
@@ -572,6 +570,9 @@ typedef struct HEVCContext {
 
     int nal_length_size;    ///< Number of bytes used for nal length (1, 2 or 4)
     int nuh_layer_id;
+
+    AVBufferRef *rpu_buf;       ///< 0 or 1 Dolby Vision RPUs.
+    DOVIContext dovi_ctx;       ///< Dolby Vision decoding context
 } HEVCContext;
 
 /**

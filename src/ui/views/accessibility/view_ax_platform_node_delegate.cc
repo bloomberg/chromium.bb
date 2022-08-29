@@ -14,9 +14,14 @@
 #include "base/containers/adapters.h"
 #include "base/lazy_instance.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "ui/accessibility/ax_action_data.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_role_properties.h"
+#include "ui/accessibility/ax_tree.h"
 #include "ui/accessibility/ax_tree_data.h"
+#include "ui/accessibility/ax_tree_id.h"
+#include "ui/accessibility/ax_tree_update.h"
 #include "ui/accessibility/platform/ax_platform_node.h"
 #include "ui/accessibility/platform/ax_platform_node_base.h"
 #include "ui/accessibility/platform/ax_unique_id.h"
@@ -262,11 +267,11 @@ void ViewAXPlatformNodeDelegate::NotifyAccessibilityEvent(
   ax_platform_node_->NotifyAccessibilityEvent(event_type);
 }
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 void ViewAXPlatformNodeDelegate::AnnounceText(const std::u16string& text) {
   ax_platform_node_->AnnounceText(text);
 }
-#endif  // defined(OS_MAC)
+#endif  // BUILDFLAG(IS_MAC)
 
 const ui::AXNodeData& ViewAXPlatformNodeDelegate::GetData() const {
   // Clear the data, then populate it.
@@ -296,7 +301,7 @@ const ui::AXNodeData& ViewAXPlatformNodeDelegate::GetData() const {
   return data_;
 }
 
-int ViewAXPlatformNodeDelegate::GetChildCount() const {
+size_t ViewAXPlatformNodeDelegate::GetChildCount() const {
   // We call `ViewAccessibility::IsLeaf` here instead of our own override
   // because our class has an expanded definition of what a leaf node is, which
   // includes all nodes with zero unignored children. Calling our own override
@@ -309,7 +314,7 @@ int ViewAXPlatformNodeDelegate::GetChildCount() const {
     // Ignored virtual views are not exposed in any accessibility platform APIs.
     // Remove all ignored virtual view children and recursively replace them
     // with their unignored children count.
-    int virtual_child_count = 0;
+    size_t virtual_child_count = 0;
     for (const std::unique_ptr<AXVirtualView>& virtual_child :
          virtual_children()) {
       if (virtual_child->IsIgnored()) {
@@ -336,7 +341,7 @@ int ViewAXPlatformNodeDelegate::GetChildCount() const {
   // all ignored view children and recursively replace them with their unignored
   // children count. This matches how AXPlatformNodeDelegate::GetChildCount()
   // behaves for Web content.
-  int view_child_count = 0;
+  size_t view_child_count = 0;
   for (View* child : view()->children()) {
     const ViewAccessibility& view_accessibility = child->GetViewAccessibility();
     if (view_accessibility.IsIgnored()) {
@@ -349,12 +354,11 @@ int ViewAXPlatformNodeDelegate::GetChildCount() const {
     }
   }
 
-  return view_child_count +
-         static_cast<int>(child_widgets_result.child_widgets.size());
+  return view_child_count + child_widgets_result.child_widgets.size();
 }
 
-gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::ChildAtIndex(int index) {
-  DCHECK_GE(index, 0) << "|index| should be greater or equal to 0.";
+gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::ChildAtIndex(
+    size_t index) {
   DCHECK_LT(index, GetChildCount())
       << "|index| should be less than the unignored child count.";
   if (IsLeaf())
@@ -365,7 +369,7 @@ gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::ChildAtIndex(int index) {
     for (const std::unique_ptr<AXVirtualView>& virtual_child :
          virtual_children()) {
       if (virtual_child->IsIgnored()) {
-        int virtual_child_count = virtual_child->GetChildCount();
+        size_t virtual_child_count = virtual_child->GetChildCount();
         if (index < virtual_child_count)
           return virtual_child->ChildAtIndex(index);
         index -= virtual_child_count;
@@ -374,8 +378,6 @@ gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::ChildAtIndex(int index) {
           return virtual_child->GetNativeObject();
         --index;
       }
-
-      DCHECK_GE(index, 0);
     }
 
     NOTREACHED() << "|index| should be less than the unignored child count.";
@@ -395,7 +397,7 @@ gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::ChildAtIndex(int index) {
   // (NVDAKey+B)" commands in the NVDA screen reader. We need to hide the rest
   // of the UI, other than the dialog, from the screen reader.
   if (child_widgets_result.is_tab_modal_showing) {
-    DCHECK_EQ(index, 0);
+    DCHECK_EQ(index, 0u);
     DCHECK_EQ(child_widgets.size(), 1U);
     return child_widgets[0]->GetRootView()->GetNativeViewAccessible();
   }
@@ -406,7 +408,7 @@ gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::ChildAtIndex(int index) {
       auto* child_view_delegate =
           static_cast<ViewAXPlatformNodeDelegate*>(&view_accessibility);
       DCHECK(child_view_delegate);
-      int child_count = child_view_delegate->GetChildCount();
+      size_t child_count = child_view_delegate->GetChildCount();
       if (index < child_count)
         return child_view_delegate->ChildAtIndex(index);
       index -= child_count;
@@ -415,11 +417,9 @@ gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::ChildAtIndex(int index) {
         return view_accessibility.view()->GetNativeViewAccessible();
       --index;
     }
-
-    DCHECK_GE(index, 0);
   }
 
-  if (index < static_cast<int>(child_widgets_result.child_widgets.size()))
+  if (index < child_widgets_result.child_widgets.size())
     return child_widgets[index]->GetRootView()->GetNativeViewAccessible();
 
   NOTREACHED() << "|index| should be less than the unignored child count.";
@@ -432,6 +432,36 @@ bool ViewAXPlatformNodeDelegate::HasModalDialog() const {
 
 bool ViewAXPlatformNodeDelegate::IsChildOfLeaf() const {
   return AXPlatformNodeDelegateBase::IsChildOfLeaf();
+}
+
+ui::AXNodePosition::AXPositionInstance
+ViewAXPlatformNodeDelegate::CreateTextPositionAt(
+    int offset,
+    ax::mojom::TextAffinity affinity) const {
+  // Support text navigation only on text fields for now. Primarily this is to
+  // support navigating the address bar.
+  if (!IsDescendantOfAtomicTextField())
+    return ui::AXNodePosition::CreateNullPosition();
+
+  if (!dummy_tree_manager_) {
+    ui::AXTreeUpdate initial_state;
+    initial_state.root_id = GetData().id;
+    initial_state.nodes = {GetData()};
+    initial_state.has_tree_data = true;
+    initial_state.tree_data.tree_id = ui::AXTreeID::CreateNewAXTreeID();
+    auto dummy_tree = std::make_unique<ui::AXTree>(initial_state);
+    dummy_tree_manager_ =
+        std::make_unique<ui::TestAXTreeManager>(std::move(dummy_tree));
+  } else {
+    DCHECK(dummy_tree_manager_->GetTree());
+    ui::AXTreeUpdate update;
+    update.nodes = {GetData()};
+    const_cast<ui::AXTree*>(dummy_tree_manager_->GetTree())
+        ->Unserialize(update);
+  }
+
+  return ui::AXNodePosition::CreatePosition(
+      *dummy_tree_manager_->GetRootAsAXNode(), offset, affinity);
 }
 
 gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::GetNSWindow() {
@@ -646,6 +676,37 @@ bool ViewAXPlatformNodeDelegate::IsMinimized() const {
   return widget && widget->IsMinimized();
 }
 
+// TODO(accessibility): This function should call AXNode::IsReadOnlySupported
+// instead, just like in BrowserAccessibility, but ViewAccessibility objects
+// don't have a corresponding AXNode yet.
+bool ViewAXPlatformNodeDelegate::IsReadOnlySupported() const {
+  return ui::IsReadOnlySupported(GetData().role);
+}
+
+// TODO(accessibility): This function should call AXNode::IsReadOnlyOrDisabled
+// instead, just like in BrowserAccessibility, but ViewAccessibility objects
+// don't have a corresponding AXNode yet.
+bool ViewAXPlatformNodeDelegate::IsReadOnlyOrDisabled() const {
+  switch (GetData().GetRestriction()) {
+    case ax::mojom::Restriction::kReadOnly:
+    case ax::mojom::Restriction::kDisabled:
+      return true;
+    case ax::mojom::Restriction::kNone: {
+      if (HasState(ax::mojom::State::kEditable) ||
+          HasState(ax::mojom::State::kRichlyEditable)) {
+        return false;
+      }
+
+      if (ui::ShouldHaveReadonlyStateByDefault(GetData().role))
+        return true;
+
+      // When readonly is not supported, we assume that the node is always
+      // read-only and mark it as such since this is the default behavior.
+      return !IsReadOnlySupported();
+    }
+  }
+}
+
 const ui::AXUniqueId& ViewAXPlatformNodeDelegate::GetUniqueId() const {
   return ViewAccessibility::GetUniqueId();
 }
@@ -736,9 +797,10 @@ absl::optional<int> ViewAXPlatformNodeDelegate::GetPosInSet() const {
   if (found_view == views_in_group.end())
     return absl::nullopt;
 
-  int posInSet = std::distance(views_in_group.begin(), found_view);
-  // posInSet is zero-based; users expect one-based, so increment.
-  return ++posInSet;
+  int pos_in_set = base::checked_cast<int>(
+      std::distance(views_in_group.begin(), found_view));
+  // pos_in_set is zero-based; users expect one-based, so increment.
+  return ++pos_in_set;
 }
 
 absl::optional<int> ViewAXPlatformNodeDelegate::GetSetSize() const {

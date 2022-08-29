@@ -9,7 +9,6 @@
 
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/time/time.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher_delegate.h"
 #include "chrome/browser/image_decoder/image_decoder.h"
 #include "net/http/http_request_headers.h"
@@ -19,6 +18,7 @@
 #include "services/network/public/mojom/fetch_api.mojom-forward.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-forward.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 class SkBitmap;
 
@@ -47,10 +47,10 @@ class BitmapFetcher : public ImageDecoder::ImageRequest {
   // |additional_headers| will be merged with default HTTP headers provided by
   // |BitmapFetcher| when fetching the image.
   // TODO(tommycli): Init and Start should likely be combined.
-  virtual void Init(const std::string& referrer,
-                    net::ReferrerPolicy referrer_policy,
+  virtual void Init(net::ReferrerPolicy referrer_policy,
                     network::mojom::CredentialsMode credentials_mode,
-                    const net::HttpRequestHeaders& additional_headers = {});
+                    const net::HttpRequestHeaders& additional_headers = {},
+                    const url::Origin& initiator = url::Origin());
 
   // Start fetching the URL with the fetcher. The delegate is notified
   // asynchronously when done.  Start may be called more than once in some
@@ -67,9 +67,6 @@ class BitmapFetcher : public ImageDecoder::ImageRequest {
   // Called when decoding image failed.
   void OnDecodeImageFailed() override;
 
-  // Sets |start_time_| for tests.
-  void SetStartTimeForTesting();
-
  private:
   void OnSimpleLoaderComplete(std::unique_ptr<std::string> response_body);
 
@@ -81,12 +78,6 @@ class BitmapFetcher : public ImageDecoder::ImageRequest {
   const GURL url_;
   const raw_ptr<BitmapFetcherDelegate> delegate_;
   const net::NetworkTrafficAnnotationTag traffic_annotation_;
-
-  // Used to measure UMA histograms for fetching and decoding. Will be reset
-  // when either operation begins and measured in a histogram when the operation
-  // ends. Decoding doesn't begin until fetching completes, so there's no risk
-  // of the two measurements interfering.
-  base::TimeTicks start_time_;
 
   base::WeakPtrFactory<BitmapFetcher> weak_factory_{this};
 };

@@ -8,11 +8,13 @@
 #include <string>
 
 #include "base/atomic_sequence_num.h"
+#include "base/notreached.h"
 #include "base/numerics/safe_math.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "components/viz/common/resources/resource_sizes.h"
 #include "gpu/command_buffer/common/shared_image_trace_utils.h"
 #include "ui/gfx/geometry/size.h"
@@ -114,14 +116,14 @@ bool DisplayResourceProvider::OnMemoryDump(
   return true;
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 bool DisplayResourceProvider::IsBackedBySurfaceTexture(ResourceId id) {
   ChildResource* resource = GetResource(id);
   return resource->transferable.is_backed_by_surface_texture;
 }
 #endif
 
-#if defined(OS_ANDROID) || defined(OS_WIN)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_WIN)
 bool DisplayResourceProvider::DoesResourceWantPromotionHint(ResourceId id) {
   ChildResource* resource = TryGetResource(id);
   // TODO(ericrk): We should never fail TryGetResource, but we appear to
@@ -201,13 +203,9 @@ void DisplayResourceProvider::ReceiveFromChild(
     const std::vector<TransferableResource>& resources) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  // TODO(crbug.com/855785): Fishing for misuse of DisplayResourceProvider
-  // causing crashes.
-  CHECK(child_id);
   auto child_it = children_.find(child_id);
-  // TODO(crbug.com/855785): Fishing for misuse of DisplayResourceProvider
-  // causing crashes.
-  CHECK(child_it != children_.end());
+  DCHECK(child_it != children_.end());
+
   Child& child_info = child_it->second;
   DCHECK(!child_info.marked_for_deletion);
   for (const TransferableResource& transferable_resource : resources) {
@@ -244,13 +242,9 @@ void DisplayResourceProvider::DeclareUsedResourcesFromChild(
     const ResourceIdSet& resources_from_child) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  // TODO(crbug.com/855785): Fishing for misuse of DisplayResourceProvider
-  // causing crashes.
-  CHECK(child);
   auto child_it = children_.find(child);
-  // TODO(crbug.com/855785): Fishing for misuse of DisplayResourceProvider
-  // causing crashes.
-  CHECK(child_it != children_.end());
+  DCHECK(child_it != children_.end());
+
   Child& child_info = child_it->second;
   DCHECK(!child_info.marked_for_deletion);
 
@@ -313,9 +307,9 @@ void DisplayResourceProvider::TryReleaseResource(ResourceId id,
   }
 }
 
-bool DisplayResourceProvider::ReadLockFenceHasPassed(
+bool DisplayResourceProvider::ResourceFenceHasPassed(
     const ChildResource* resource) {
-  return !resource->read_lock_fence || resource->read_lock_fence->HasPassed();
+  return !resource->resource_fence || resource->resource_fence->HasPassed();
 }
 
 DisplayResourceProvider::CanDeleteNowResult
@@ -329,7 +323,7 @@ DisplayResourceProvider::CanDeleteNow(const Child& child_info,
 
     // Defer this resource deletion.
     return CanDeleteNowResult::kNo;
-  } else if (!ReadLockFenceHasPassed(&resource)) {
+  } else if (!ResourceFenceHasPassed(&resource)) {
     // TODO(dcastagna): see if it's possible to use this logic for
     // the branch above too, where the resource is locked or still exported.
     // We can't postpone the deletion, so we'll have to lose it.
@@ -441,8 +435,8 @@ DisplayResourceProvider::ScopedReadLockSharedImage::ScopedReadLockSharedImage(
       resource_(resource_provider_->GetResource(resource_id_)) {
   DCHECK(resource_);
   DCHECK(resource_->is_gpu_resource_type());
-  // Remove this #if defined(OS_WIN), when shared image is used on Windows.
-#if !defined(OS_WIN)
+  // Remove this #if BUILDFLAG(IS_WIN), when shared image is used on Windows.
+#if !BUILDFLAG(IS_WIN)
   DCHECK(resource_->transferable.mailbox_holder.mailbox.IsSharedImage());
 #endif
   resource_->lock_for_overlay_count++;
@@ -480,7 +474,8 @@ void DisplayResourceProvider::ScopedReadLockSharedImage::SetReleaseFence(
 bool DisplayResourceProvider::ScopedReadLockSharedImage::HasReadLockFence()
     const {
   DCHECK(resource_);
-  return resource_->transferable.read_lock_fences_enabled;
+  return resource_->transferable.synchronization_type ==
+         TransferableResource::SynchronizationType::kGpuCommandsCompleted;
 }
 
 void DisplayResourceProvider::ScopedReadLockSharedImage::Reset() {

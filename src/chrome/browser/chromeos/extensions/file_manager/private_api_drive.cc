@@ -22,7 +22,6 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/ash/arc/fileapi/arc_documents_provider_root.h"
 #include "chrome/browser/ash/arc/fileapi/arc_documents_provider_root_map.h"
@@ -294,8 +293,10 @@ class SingleEntryPropertiesGetterForDocumentsProvider {
     properties_->can_rename = std::make_unique<bool>(metadata.supports_rename);
     properties_->can_add_children =
         std::make_unique<bool>(metadata.dir_supports_create);
-    properties_->modification_time =
-        std::make_unique<double>(metadata.last_modified.ToJsTimeIgnoringNull());
+    if (!metadata.last_modified.is_null()) {
+      properties_->modification_time = std::make_unique<double>(
+          metadata.last_modified.ToJsTimeIgnoringNull());
+    }
     properties_->size = std::make_unique<double>(metadata.size);
     CompleteGetEntryProperties(base::File::FILE_OK);
   }
@@ -733,7 +734,7 @@ void FileManagerPrivateSearchDriveMetadataFunction::OnSearchDriveFs(
   }
 
   auto results_list = std::make_unique<base::ListValue>();
-  for (auto& entry : results->GetList()) {
+  for (auto& entry : results->GetListDeprecated()) {
     base::DictionaryValue dict;
     std::string highlight;
     base::Value* value = entry.FindKey("fileFullPath");
@@ -945,6 +946,20 @@ FileManagerPrivateNotifyDriveDialogResultFunction::Run() {
     event_router->OnDriveDialogResult(result);
   } else {
     return RespondNow(Error("Could not find event router"));
+  }
+  return RespondNow(NoArguments());
+}
+
+ExtensionFunction::ResponseAction
+FileManagerPrivatePollDriveHostedFilePinStatesFunction::Run() {
+  if (base::FeatureList::IsEnabled(
+          ash::features::kDriveFsBidirectionalNativeMessaging)) {
+    Profile* const profile = Profile::FromBrowserContext(browser_context());
+    drive::DriveIntegrationService* integration_service =
+        drive::util::GetIntegrationServiceByProfile(profile);
+    if (integration_service) {
+      integration_service->PollHostedFilePinStates();
+    }
   }
   return RespondNow(NoArguments());
 }

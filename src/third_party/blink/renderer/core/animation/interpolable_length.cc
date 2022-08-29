@@ -69,9 +69,18 @@ std::unique_ptr<InterpolableLength> InterpolableLength::MaybeConvertCSSValue(
   if (primitive_value->AccumulateLengthArray(length_array))
     return std::make_unique<InterpolableLength>(std::move(length_array));
 
-  DCHECK(primitive_value->IsMathFunctionValue());
-  return std::make_unique<InterpolableLength>(
-      *To<CSSMathFunctionValue>(primitive_value)->ExpressionNode());
+  const CSSMathExpressionNode* expression_node = nullptr;
+
+  if (const auto* numeric_literal =
+          DynamicTo<CSSNumericLiteralValue>(primitive_value)) {
+    expression_node = CSSMathExpressionNumericLiteral::Create(numeric_literal);
+  } else {
+    DCHECK(primitive_value->IsMathFunctionValue());
+    expression_node =
+        To<CSSMathFunctionValue>(primitive_value)->ExpressionNode();
+  }
+
+  return std::make_unique<InterpolableLength>(*expression_node);
 }
 
 // static
@@ -166,7 +175,7 @@ void InterpolableLength::SetHasPercentage() {
 
   DEFINE_STATIC_LOCAL(Persistent<CSSMathExpressionNode>, zero_percent,
                       {PercentageNode(0)});
-  SetExpression(*CSSMathExpressionBinaryOperation::Create(
+  SetExpression(*CSSMathExpressionOperation::CreateArithmeticOperation(
       expression_, zero_percent, CSSMathOperator::kAdd));
 }
 
@@ -181,8 +190,9 @@ void InterpolableLength::SubtractFromOneHundredPercent() {
 
   DEFINE_STATIC_LOCAL(Persistent<CSSMathExpressionNode>, hundred_percent,
                       {PercentageNode(100)});
-  SetExpression(*CSSMathExpressionBinaryOperation::CreateSimplified(
-      hundred_percent, expression_, CSSMathOperator::kSubtract));
+  SetExpression(
+      *CSSMathExpressionOperation::CreateArithmeticOperationSimplified(
+          hundred_percent, expression_, CSSMathOperator::kSubtract));
 }
 
 static double ClampToRange(double x, Length::ValueRange range) {
@@ -205,11 +215,17 @@ static UnitType IndexToUnitType(wtf_size_t index) {
 Length InterpolableLength::CreateLength(
     const CSSToLengthConversionData& conversion_data,
     Length::ValueRange range) const {
-  // Passing true for ToCalcValue is a dirty hack to ensure that we don't create
-  // a degenerate value when animating 'background-position', while we know it
-  // may cause some minor animation glitches for the other properties.
-  if (IsExpression())
+  if (IsExpression()) {
+    if (expression_->Category() == kCalcLength) {
+      double pixels = expression_->ComputeLengthPx(conversion_data);
+      return Length::Fixed(CSSPrimitiveValue::ClampToCSSLengthRange(
+          ClampToRange(pixels, range)));
+    }
+    // Passing true for ToCalcValue is a dirty hack to ensure that we don't
+    // create a degenerate value when animating 'background-position', while we
+    // know it may cause some minor animation glitches for the other properties.
     return Length(expression_->ToCalcValue(conversion_data, range, true));
+  }
 
   DCHECK(IsLengthArray());
   bool has_percentage = HasPercentage();
@@ -301,7 +317,7 @@ const CSSMathExpressionNode& InterpolableLength::AsExpression() const {
     if (!root_node) {
       root_node = current_node;
     } else {
-      root_node = CSSMathExpressionBinaryOperation::Create(
+      root_node = CSSMathExpressionOperation::CreateArithmeticOperation(
           root_node, current_node, CSSMathOperator::kAdd);
     }
   }
@@ -320,8 +336,9 @@ void InterpolableLength::Scale(double scale) {
   }
 
   DCHECK(IsExpression());
-  SetExpression(*CSSMathExpressionBinaryOperation::CreateSimplified(
-      expression_, NumberNode(scale), CSSMathOperator::kMultiply));
+  SetExpression(
+      *CSSMathExpressionOperation::CreateArithmeticOperationSimplified(
+          expression_, NumberNode(scale), CSSMathOperator::kMultiply));
 }
 
 void InterpolableLength::Add(const InterpolableValue& other) {
@@ -336,7 +353,7 @@ void InterpolableLength::Add(const InterpolableValue& other) {
   }
 
   CSSMathExpressionNode* result =
-      CSSMathExpressionBinaryOperation::CreateSimplified(
+      CSSMathExpressionOperation::CreateArithmeticOperationSimplified(
           &AsExpression(), &other_length.AsExpression(), CSSMathOperator::kAdd);
   SetExpression(*result);
 }
@@ -354,10 +371,10 @@ void InterpolableLength::ScaleAndAdd(double scale,
   }
 
   CSSMathExpressionNode* scaled =
-      CSSMathExpressionBinaryOperation::CreateSimplified(
+      CSSMathExpressionOperation::CreateArithmeticOperationSimplified(
           &AsExpression(), NumberNode(scale), CSSMathOperator::kMultiply);
   CSSMathExpressionNode* result =
-      CSSMathExpressionBinaryOperation::CreateSimplified(
+      CSSMathExpressionOperation::CreateArithmeticOperationSimplified(
           scaled, &other_length.AsExpression(), CSSMathOperator::kAdd);
   SetExpression(*result);
 }
@@ -394,15 +411,15 @@ void InterpolableLength::Interpolate(const InterpolableValue& to,
   }
 
   CSSMathExpressionNode* blended_from =
-      CSSMathExpressionBinaryOperation::CreateSimplified(
+      CSSMathExpressionOperation::CreateArithmeticOperationSimplified(
           &AsExpression(), NumberNode(1 - progress),
           CSSMathOperator::kMultiply);
   CSSMathExpressionNode* blended_to =
-      CSSMathExpressionBinaryOperation::CreateSimplified(
+      CSSMathExpressionOperation::CreateArithmeticOperationSimplified(
           &to_length.AsExpression(), NumberNode(progress),
           CSSMathOperator::kMultiply);
   CSSMathExpressionNode* result_expression =
-      CSSMathExpressionBinaryOperation::CreateSimplified(
+      CSSMathExpressionOperation::CreateArithmeticOperationSimplified(
           blended_from, blended_to, CSSMathOperator::kAdd);
   result_length.SetExpression(*result_expression);
 

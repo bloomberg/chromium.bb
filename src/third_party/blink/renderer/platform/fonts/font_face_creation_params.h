@@ -31,6 +31,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_FONT_FACE_CREATION_PARAMS_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_FONT_FACE_CREATION_PARAMS_H_
 
+#include "base/check_op.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
@@ -61,7 +62,7 @@ class FontFaceCreationParams {
         filename_(std::string()),
         fontconfig_interface_id_(0),
         ttc_index_(0) {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
     // Leading "@" in the font name enables Windows vertical flow flag for the
     // font.  Because we do vertical flow by ourselves, we don't want to use the
     // Windows feature.  IE disregards "@" regardless of the orientation, so we

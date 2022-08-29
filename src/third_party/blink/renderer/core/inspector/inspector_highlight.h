@@ -9,16 +9,16 @@
 #include "third_party/blink/renderer/core/dom/pseudo_element.h"
 #include "third_party/blink/renderer/core/inspector/node_content_visibility_state.h"
 #include "third_party/blink/renderer/core/inspector/protocol/dom.h"
-#include "third_party/blink/renderer/platform/geometry/float_quad.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
+#include "ui/gfx/geometry/quad_f.h"
 
 namespace blink {
 
 class Color;
 
-enum class ColorFormat { kRgb, kHex, kHsl };
+enum class ColorFormat { kRgb, kHex, kHsl, kHwb };
 enum class ContrastAlgorithm { kAa, kAaa, kApca };
 
 struct CORE_EXPORT LineStyle {
@@ -145,6 +145,7 @@ struct CORE_EXPORT InspectorIsolationModeHighlightConfig {
   Color resizer_color;
   Color resizer_handle_color;
   Color mask_color;
+  int highlight_index = 0;
 };
 
 struct CORE_EXPORT InspectorHighlightConfig {
@@ -196,7 +197,7 @@ class InspectorHighlightBase {
                   const Color& fill_color,
                   const Color& outline_color,
                   const String& name = String());
-  void AppendQuad(const FloatQuad&,
+  void AppendQuad(const gfx::QuadF&,
                   const Color& fill_color,
                   const Color& outline_color = Color::kTransparent,
                   const String& name = String());
@@ -205,10 +206,10 @@ class InspectorHighlightBase {
 
  protected:
   static bool BuildNodeQuads(Node*,
-                             FloatQuad* content,
-                             FloatQuad* padding,
-                             FloatQuad* border,
-                             FloatQuad* margin);
+                             gfx::QuadF* content,
+                             gfx::QuadF* padding,
+                             gfx::QuadF* border,
+                             gfx::QuadF* margin);
   std::unique_ptr<protocol::ListValue> highlight_paths_;
   float scale_;
 };
@@ -254,7 +255,7 @@ class CORE_EXPORT InspectorHighlight : public InspectorHighlightBase {
   std::unique_ptr<protocol::DictionaryValue> AsProtocolValue() const override;
 
  private:
-  static bool BuildSVGQuads(Node*, Vector<FloatQuad>& quads);
+  static bool BuildSVGQuads(Node*, Vector<gfx::QuadF>& quads);
   void AppendNodeHighlight(Node*, const InspectorHighlightConfig&);
   void AppendPathsForShapeOutside(Node*, const InspectorHighlightConfig&);
 
@@ -300,8 +301,7 @@ std::unique_ptr<protocol::DictionaryValue> InspectorContainerQueryHighlight(
 
 std::unique_ptr<protocol::DictionaryValue> InspectorIsolatedElementHighlight(
     Element* element,
-    const InspectorIsolationModeHighlightConfig& config,
-    int highlight_index);
+    const InspectorIsolationModeHighlightConfig& config);
 
 // CORE_EXPORT is required to make these functions available for unit tests.
 std::unique_ptr<protocol::DictionaryValue> CORE_EXPORT

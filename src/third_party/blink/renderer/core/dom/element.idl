@@ -24,6 +24,13 @@
 enum NativeScrollBehavior { "disable-native-scroll", "perform-before-native-scroll", "perform-after-native-scroll" };
 callback ScrollStateCallback = void (ScrollState scrollState);
 
+// https://drafts.csswg.org/cssom-view/#dictdef-isvisibleoptions
+dictionary IsVisibleOptions {
+  boolean checkInert = false;
+  boolean checkOpacity = false;
+  boolean checkVisibilityCSS = false;
+};
+
 // https://dom.spec.whatwg.org/#interface-element
 
 [
@@ -44,8 +51,10 @@ callback ScrollStateCallback = void (ScrollState scrollState);
     [Affects=Nothing] sequence<DOMString> getAttributeNames();
     [Affects=Nothing] DOMString? getAttribute(DOMString name);
     [Affects=Nothing] DOMString? getAttributeNS(DOMString? namespaceURI, DOMString localName);
-    [RaisesException, CEReactions] void setAttribute(DOMString name, TrustedString value);
-    [RaisesException, CEReactions] void setAttributeNS(DOMString? namespaceURI, DOMString name, TrustedString value);
+    [RaisesException, CEReactions] void setAttribute(DOMString name, DOMString value);
+    [RaisesException, CEReactions] void setAttribute(DOMString name, TrustedType value);
+    [RaisesException, CEReactions] void setAttributeNS(DOMString? namespaceURI, DOMString name, DOMString value);
+    [RaisesException, CEReactions] void setAttributeNS(DOMString? namespaceURI, DOMString name, TrustedType value);
     [CEReactions] void removeAttribute(DOMString name);
     [CEReactions] void removeAttributeNS(DOMString? namespaceURI, DOMString localName);
     [RaisesException, CEReactions] boolean toggleAttribute(DOMString qualifiedName, optional boolean force);
@@ -57,8 +66,6 @@ callback ScrollStateCallback = void (ScrollState scrollState);
     [RaisesException, CEReactions] Attr? setAttributeNode(Attr attr);
     [RaisesException, CEReactions] Attr? setAttributeNodeNS(Attr attr);
     [RaisesException, CEReactions] Attr removeAttributeNode(Attr attr);
-
-    [RuntimeEnabled=EditContext] attribute EditContext? editContext;
 
     [RaisesException, MeasureAs=ElementAttachShadow] ShadowRoot attachShadow(ShadowRootInit shadowRootInitDict);
     [PerWorldBindings, ImplementedAs=OpenShadowRoot] readonly attribute ShadowRoot? shadowRoot;
@@ -111,6 +118,9 @@ callback ScrollStateCallback = void (ScrollState scrollState);
     [Measure] DOMRectList getClientRects();
     [Affects=Nothing, Measure, RuntimeCallStatsCounter=ElementGetBoundingClientRect] DOMRect getBoundingClientRect();
 
+    // https://drafts.csswg.org/cssom-view/#dom-element-isvisible
+    [RuntimeEnabled=isVisible] boolean isVisible(optional IsVisibleOptions options = {});
+
     // TODO(sunyunjia): Add default value for scrollIntoView() once
     // crbug.com/734599 is fixed.
     void scrollIntoView(optional (ScrollIntoViewOptions or boolean) arg = {});
@@ -136,6 +146,12 @@ callback ScrollStateCallback = void (ScrollState scrollState);
     // Non-standard API
     [MeasureAs=ElementScrollIntoViewIfNeeded] void scrollIntoViewIfNeeded(optional boolean centerIfNeeded);
 
+    // The Popup API
+    [MeasureAs=ElementShowPopup,RuntimeEnabled=HTMLPopupAttribute,RaisesException] void showPopup();
+    [MeasureAs=ElementHidePopup,RuntimeEnabled=HTMLPopupAttribute,RaisesException] void hidePopup();
+    [Unscopable,CEReactions,RuntimeEnabled=HTMLPopupAttribute,MeasureAs=AnyPopupAttribute,Reflect,ReflectOnly=("auto","hint","async"),ReflectEmpty="auto"] attribute DOMString? popup;
+    [CEReactions,RuntimeEnabled=HTMLPopupAttribute,Reflect] attribute boolean defaultOpen;
+
     // Experimental accessibility API
     [RuntimeEnabled=ComputedAccessibilityInfo] readonly attribute DOMString? computedRole;
     [RuntimeEnabled=ComputedAccessibilityInfo] readonly attribute DOMString? computedName;
@@ -148,7 +164,6 @@ callback ScrollStateCallback = void (ScrollState scrollState);
     attribute EventHandler onbeforecut;
     attribute EventHandler onbeforepaste;
     attribute EventHandler onsearch;
-    [RuntimeEnabled=BeforeMatchEvent] attribute EventHandler onbeforematch;
 
     // Element Timing
     [CEReactions, Reflect=elementtiming] attribute DOMString elementTiming;

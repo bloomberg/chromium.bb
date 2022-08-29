@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/style/nine_piece_image.h"
 #include "third_party/blink/renderer/core/style/style_generated_image.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
+#include "ui/gfx/geometry/outsets.h"
 
 namespace blink {
 namespace {
@@ -22,7 +23,8 @@ class NinePieceImageGridTest : public RenderingTest {
 
                                               CSSLinearGradientValue>(
         nullptr, nullptr, nullptr, nullptr, nullptr, cssvalue::kRepeating);
-    return MakeGarbageCollected<StyleGeneratedImage>(*gradient);
+    return MakeGarbageCollected<StyleGeneratedImage>(
+        *gradient, StyleGeneratedImage::ContainerSizes());
   }
 };
 
@@ -32,7 +34,7 @@ TEST_F(NinePieceImageGridTest, NinePieceImagePainting_NoDrawables) {
 
   gfx::SizeF image_size(100, 100);
   gfx::Rect border_image_area(0, 0, 100, 100);
-  IntRectOutsets border_widths(0, 0, 0, 0);
+  gfx::Outsets border_widths(0);
 
   NinePieceImageGrid grid =
       NinePieceImageGrid(nine_piece, image_size, gfx::Vector2dF(1, 1), 1,
@@ -52,7 +54,7 @@ TEST_F(NinePieceImageGridTest, NinePieceImagePainting_AllDrawable) {
 
   gfx::SizeF image_size(100, 100);
   gfx::Rect border_image_area(0, 0, 100, 100);
-  IntRectOutsets border_widths(10, 10, 10, 10);
+  gfx::Outsets border_widths(10);
 
   NinePieceImageGrid grid =
       NinePieceImageGrid(nine_piece, image_size, gfx::Vector2dF(1, 1), 1,
@@ -72,7 +74,7 @@ TEST_F(NinePieceImageGridTest, NinePieceImagePainting_NoFillMiddleNotDrawable) {
 
   gfx::SizeF image_size(100, 100);
   gfx::Rect border_image_area(0, 0, 100, 100);
-  IntRectOutsets border_widths(10, 10, 10, 10);
+  gfx::Outsets border_widths(10);
 
   NinePieceImageGrid grid =
       NinePieceImageGrid(nine_piece, image_size, gfx::Vector2dF(1, 1), 1,
@@ -96,7 +98,7 @@ TEST_F(NinePieceImageGridTest, NinePieceImagePainting_EmptySidesNotDrawable) {
 
   gfx::SizeF image_size(6, 6);
   gfx::Rect border_image_area(0, 0, 6, 6);
-  IntRectOutsets border_widths(3, 3, 3, 3);
+  gfx::Outsets border_widths(3);
 
   NinePieceImageGrid grid(nine_piece, image_size, gfx::Vector2dF(1, 1), 1,
                           border_image_area, border_widths);
@@ -119,13 +121,13 @@ TEST_F(NinePieceImageGridTest, NinePieceImagePainting_TopLeftDrawable) {
   gfx::Rect border_image_area(0, 0, 100, 100);
 
   const struct {
-    IntRectOutsets border_widths;
+    gfx::Outsets border_widths;
     bool expected_is_drawable;
   } test_cases[] = {
-      {IntRectOutsets(0, 0, 0, 0), false},
-      {IntRectOutsets(10, 0, 0, 0), false},
-      {IntRectOutsets(0, 0, 0, 10), false},
-      {IntRectOutsets(10, 0, 0, 10), true},
+      {gfx::Outsets(), false},
+      {gfx::Outsets().set_top(10), false},
+      {gfx::Outsets().set_left(10), false},
+      {gfx::Outsets().set_top(10).set_left(10), true},
   };
 
   for (const auto& test_case : test_cases) {
@@ -148,7 +150,7 @@ TEST_F(NinePieceImageGridTest, NinePieceImagePainting_ScaleDownBorder) {
 
   gfx::SizeF image_size(100, 100);
   gfx::Rect border_image_area(0, 0, 100, 100);
-  IntRectOutsets border_widths(10, 10, 10, 10);
+  gfx::Outsets border_widths(10);
 
   // Set border slices wide enough so that the widths are scaled
   // down and corner pieces cover the entire border image area.
@@ -210,7 +212,7 @@ TEST_F(NinePieceImageGridTest, NinePieceImagePainting) {
   const struct {
     gfx::SizeF image_size;
     gfx::Rect border_image_area;
-    IntRectOutsets border_widths;
+    gfx::Outsets border_widths;
     bool fill;
     LengthBox image_slices;
     ENinePieceImageRule horizontal_rule;
@@ -229,7 +231,7 @@ TEST_F(NinePieceImageGridTest, NinePieceImagePainting) {
       {// Empty border and slices but with fill
        gfx::SizeF(100, 100),
        gfx::Rect(0, 0, 100, 100),
-       IntRectOutsets(0, 0, 0, 0),
+       gfx::Outsets(0),
        true,
        LengthBox(Length::Fixed(0), Length::Fixed(0), Length::Fixed(0),
                  Length::Fixed(0)),
@@ -258,7 +260,7 @@ TEST_F(NinePieceImageGridTest, NinePieceImagePainting) {
       {// Single border and fill
        gfx::SizeF(100, 100),
        gfx::Rect(0, 0, 100, 100),
-       IntRectOutsets(0, 0, 10, 0),
+       gfx::Outsets().set_bottom(10),
        true,
        LengthBox(Length::Percent(20), Length::Percent(20), Length::Percent(20),
                  Length::Percent(20)),
@@ -287,7 +289,7 @@ TEST_F(NinePieceImageGridTest, NinePieceImagePainting) {
       {// All borders, no fill
        gfx::SizeF(100, 100),
        gfx::Rect(0, 0, 100, 100),
-       IntRectOutsets(10, 10, 10, 10),
+       gfx::Outsets(10),
        false,
        LengthBox(Length::Percent(20), Length::Percent(20), Length::Percent(20),
                  Length::Percent(20)),
@@ -316,7 +318,7 @@ TEST_F(NinePieceImageGridTest, NinePieceImagePainting) {
       {// Single border, no fill
        gfx::SizeF(100, 100),
        gfx::Rect(0, 0, 100, 100),
-       IntRectOutsets(0, 0, 0, 10),
+       gfx::Outsets().set_left(10),
        false,
        LengthBox(Length::Percent(20), Length::Percent(20), Length::Percent(20),
                  Length::Percent(20)),
@@ -346,7 +348,7 @@ TEST_F(NinePieceImageGridTest, NinePieceImagePainting) {
        // vertically)
        gfx::SizeF(100, 100),
        gfx::Rect(0, 0, 100, 100),
-       IntRectOutsets(10, 10, 10, 10),
+       gfx::Outsets(10),
        true,
        LengthBox(Length::Fixed(0), Length::Fixed(0), Length::Fixed(0),
                  Length::Fixed(0)),
@@ -432,7 +434,7 @@ TEST_F(NinePieceImageGridTest, NinePieceImagePainting_Zoomed) {
 
   gfx::SizeF image_size(50, 50);
   gfx::Rect border_image_area(0, 0, 200, 200);
-  IntRectOutsets border_widths(20, 20, 20, 20);
+  gfx::Outsets border_widths(20);
 
   NinePieceImageGrid grid(nine_piece, image_size, gfx::Vector2dF(2, 2), 2,
                           border_image_area, border_widths);
@@ -495,7 +497,7 @@ TEST_F(NinePieceImageGridTest, NinePieceImagePainting_ZoomedNarrowSlices) {
   constexpr float zoom = 2.2f;
   gfx::SizeF image_size(3 * zoom, 3 * zoom);
   gfx::Rect border_image_area(0, 0, 220, 220);
-  IntRectOutsets border_widths(33, 33, 33, 33);
+  gfx::Outsets border_widths(33);
 
   NinePieceImageGrid grid(nine_piece, image_size, gfx::Vector2dF(zoom, zoom),
                           zoom, border_image_area, border_widths);

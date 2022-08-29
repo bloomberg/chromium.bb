@@ -18,6 +18,7 @@
 #include "core/fxge/dib/fx_dib.h"
 #include "core/fxge/render_defines.h"
 #include "core/fxge/renderdevicedriver_iface.h"
+#include "third_party/base/span.h"
 
 class CFX_DIBBase;
 class CFX_DIBitmap;
@@ -156,15 +157,13 @@ class CFX_RenderDevice {
                             BlendMode blend_mode);
   bool ContinueDIBits(CFX_ImageRenderer* handle, PauseIndicatorIface* pPause);
 
-  bool DrawNormalText(int nChars,
-                      const TextCharPos* pCharPos,
+  bool DrawNormalText(pdfium::span<const TextCharPos> pCharPos,
                       CFX_Font* pFont,
                       float font_size,
                       const CFX_Matrix& mtText2Device,
                       uint32_t fill_color,
                       const CFX_TextRenderOptions& options);
-  bool DrawTextPath(int nChars,
-                    const TextCharPos* pCharPos,
+  bool DrawTextPath(pdfium::span<const TextCharPos> pCharPos,
                     CFX_Font* pFont,
                     float font_size,
                     const CFX_Matrix& mtText2User,
@@ -203,8 +202,6 @@ class CFX_RenderDevice {
                     const std::vector<CFX_PointF>& points,
                     const FX_COLORREF& color);
   void DrawShadow(const CFX_Matrix& mtUser2Device,
-                  bool bVertical,
-                  bool bHorizontal,
                   const CFX_FloatRect& rect,
                   int32_t nTransparency,
                   int32_t nStartGray,

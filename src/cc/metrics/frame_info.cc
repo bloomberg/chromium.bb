@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/check.h"
 #include "build/build_config.h"
 
 namespace cc {
@@ -45,19 +46,11 @@ bool FrameInfo::IsDroppedAffectingSmoothness() const {
   if (smooth_thread == SmoothThread::kSmoothNone)
     return false;
 
-  if (IsMainSmooth(smooth_thread) && WasMainUpdateDropped()) {
-    return true;
-  }
-
-  if (IsCompositorSmooth(smooth_thread) && WasCompositorUpdateDropped()) {
-    return true;
-  }
-
-  return false;
+  return WasSmoothMainUpdateDropped() || WasSmoothCompositorUpdateDropped();
 }
 
 void FrameInfo::MergeWith(const FrameInfo& other) {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // TODO(1278168): on android-webview, multiple frames can be submitted against
   // the same BeginFrameArgs. This can trip the DCHECK()s in this function.
   if (was_merged)
@@ -101,9 +94,18 @@ void FrameInfo::MergeWith(const FrameInfo& other) {
   was_merged = true;
   main_thread_response = MainThreadResponse::kIncluded;
 
-  // The |scroll_thread| information cannot change once the frame starts. So
-  // it should not need to be updated during merge.
-  DCHECK_EQ(scroll_thread, other.scroll_thread);
+  // The |scroll_thread| information cannot change once the frame starts.
+  // However, if a frame did not have any scroll-events, or the scroll-events
+  // for the frame did not cause any visual updates, then |scroll_thread| is
+  // reset. Therefore, either |scroll_thread| should be the same for |this| and
+  // |other|, or one of them must be |kUnknown|.
+  if (scroll_thread != other.scroll_thread) {
+    if (scroll_thread == SmoothEffectDrivingThread::kUnknown) {
+      scroll_thread = other.scroll_thread;
+    } else {
+      DCHECK_EQ(other.scroll_thread, SmoothEffectDrivingThread::kUnknown);
+    }
+  }
 
   if (other.has_missing_content)
     has_missing_content = true;
@@ -143,13 +145,19 @@ bool FrameInfo::Validate() const {
   return true;
 }
 
-bool FrameInfo::WasCompositorUpdateDropped() const {
+bool FrameInfo::WasSmoothCompositorUpdateDropped() const {
+  if (!IsCompositorSmooth(smooth_thread))
+    return false;
+
   if (was_merged)
     return compositor_update_was_dropped;
   return final_state == FrameFinalState::kDropped;
 }
 
-bool FrameInfo::WasMainUpdateDropped() const {
+bool FrameInfo::WasSmoothMainUpdateDropped() const {
+  if (!IsMainSmooth(smooth_thread))
+    return false;
+
   if (was_merged)
     return main_update_was_dropped;
 
@@ -172,15 +180,19 @@ bool FrameInfo::WasMainUpdateDropped() const {
   return false;
 }
 
+bool FrameInfo::WasSmoothMainUpdateExpected() const {
+  return final_state != FrameFinalState::kNoUpdateDesired;
+}
+
 bool FrameInfo::IsScrollPrioritizeFrameDropped() const {
   // If any scroll is active the dropped frame for only the scrolling thread is
   // reported. If no scroll is active then reports if dropped frames is
   // affecting smoothness.
   switch (scroll_thread) {
     case SmoothEffectDrivingThread::kCompositor:
-      return WasCompositorUpdateDropped();
+      return WasSmoothCompositorUpdateDropped();
     case SmoothEffectDrivingThread::kMain:
-      return WasMainUpdateDropped();
+      return WasSmoothMainUpdateDropped();
     case SmoothEffectDrivingThread::kUnknown:
       return IsDroppedAffectingSmoothness();
   }

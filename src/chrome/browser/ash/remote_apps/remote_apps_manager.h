@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_ASH_REMOTE_APPS_REMOTE_APPS_MANAGER_H_
 
 #include <map>
+#include <string>
 #include <vector>
 
 #include "base/callback.h"
@@ -23,6 +24,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class AppListModelUpdater;
 class ChromeAppListItem;
@@ -46,7 +48,8 @@ class RemoteAppsManager
       public apps::RemoteApps::Delegate,
       public app_list::AppListSyncableService::Observer,
       public AppListModelUpdaterObserver,
-      public chromeos::remote_apps::mojom::RemoteAppsFactory {
+      public chromeos::remote_apps::mojom::RemoteAppsFactory,
+      public chromeos::remote_apps::mojom::RemoteAppsLacrosBridge {
  public:
   class Observer : public base::CheckedObserver {
    public:
@@ -71,24 +74,32 @@ class RemoteAppsManager
 
   bool is_initialized() const { return is_initialized_; }
 
-  void BindInterface(
+  void BindFactoryInterface(
       mojo::PendingReceiver<chromeos::remote_apps::mojom::RemoteAppsFactory>
           pending_remote_apps_factory);
+
+  void BindLacrosBridgeInterface(
+      mojo::PendingReceiver<
+          chromeos::remote_apps::mojom::RemoteAppsLacrosBridge>
+          pending_remote_apps_lacros_bridge);
 
   using AddAppCallback =
       base::OnceCallback<void(const std::string& id, RemoteAppsError error)>;
 
-  // Adds a app with the given |name|. If |folder_id| is non-empty, the app is
+  // Adds a app with the given `name`. If `folder_id` is non-empty, the app is
   // added to the folder with the given ID. The icon of the app is an image
-  // retrieved from |icon_url| and is retrieved asynchronously. If the icon has
+  // retrieved from `icon_url` and is retrieved asynchronously. If the icon has
   // not been downloaded, or there is an error in downloading the icon, a
-  // placeholder icon will be used. If |add_to_front| is true and the app has
+  // placeholder icon will be used. If `add_to_front` is true and the app has
   // no parent folder, the app will be added to the front of the app item list.
+  // `source_id` is a string used to identify the caller of this method. This
+  // identifier is typically an extension or app ID.
   // The callback will be run with the ID of the added app, or an error if
   // there is one.
   // Adding to a non-existent folder will result in an error.
   // Adding an app before the manager is initialized will result in an error.
-  void AddApp(const std::string& name,
+  void AddApp(const std::string& source_id,
+              const std::string& name,
               const std::string& folder_id,
               const GURL& icon_url,
               bool add_to_front,
@@ -119,14 +130,19 @@ class RemoteAppsManager
   // of the app item list.
   bool ShouldAddToFront(const std::string& id) const;
 
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
-
   // KeyedService:
   void Shutdown() override;
 
-  // remote_apps::mojom::RemoteAppsFactory:
-  void Create(
+  // chromeos::remote_apps::mojom::RemoteAppsFactory:
+  void BindRemoteAppsAndAppLaunchObserver(
+      const std::string& source_id,
+      mojo::PendingReceiver<chromeos::remote_apps::mojom::RemoteApps>
+          pending_remote_apps,
+      mojo::PendingRemote<chromeos::remote_apps::mojom::RemoteAppLaunchObserver>
+          pending_observer) override;
+
+  // chromeos::remote_apps::mojom::RemoteAppsLacrosBridge:
+  void BindRemoteAppsAndAppLaunchObserverForLacros(
       mojo::PendingReceiver<chromeos::remote_apps::mojom::RemoteApps>
           pending_remote_apps,
       mojo::PendingRemote<chromeos::remote_apps::mojom::RemoteAppLaunchObserver>
@@ -173,10 +189,14 @@ class RemoteAppsManager
   std::unique_ptr<RemoteAppsModel> model_;
   std::unique_ptr<ImageDownloader> image_downloader_;
   base::ObserverList<Observer> observer_list_;
-  mojo::ReceiverSet<chromeos::remote_apps::mojom::RemoteAppsFactory> receivers_;
+  mojo::ReceiverSet<chromeos::remote_apps::mojom::RemoteAppsFactory>
+      factory_receivers_;
+  mojo::ReceiverSet<chromeos::remote_apps::mojom::RemoteAppsLacrosBridge>
+      bridge_receivers_;
   // Map from id to callback. The callback is run after |OnAppUpdate| for the
   // app has been observed.
   std::map<std::string, AddAppCallback> add_app_callback_map_;
+  std::map<std::string, std::string> app_id_to_source_id_map_;
   base::ScopedObservation<
       app_list::AppListSyncableService,
       app_list::AppListSyncableService::Observer,

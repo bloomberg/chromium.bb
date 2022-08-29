@@ -55,29 +55,16 @@ By default, %Eigen strive to automatically detect and enable language features a
 the information provided by the compiler.
 
  - \b EIGEN_MAX_CPP_VER - disables usage of C++ features requiring a version greater than EIGEN_MAX_CPP_VER.
-   Possible values are: 03, 11, 14, 17, etc. If not defined (the default), %Eigen enables all features supported
+   Possible values are: 14, 17, etc. If not defined (the default), %Eigen enables all features supported
    by the compiler.
 
 Individual features can be explicitly enabled or disabled by defining the following token to 0 or 1 respectively.
-For instance, one might limit the C++ version to C++03 by defining EIGEN_MAX_CPP_VER=03, but still enable C99 math
+For instance, one might limit the C++ version to C++14 by defining EIGEN_MAX_CPP_VER=14, but still enable C99 math
 functions by defining EIGEN_HAS_C99_MATH=1.
 
  - \b EIGEN_HAS_C99_MATH - controls the usage of C99 math functions such as erf, erfc, lgamma, etc.
-   Automatic detection disabled if EIGEN_MAX_CPP_VER<11.
  - \b EIGEN_HAS_CXX11_MATH - controls the implementation of some functions such as round, logp1, isinf, isnan, etc.
-   Automatic detection disabled if EIGEN_MAX_CPP_VER<11.
- - \b EIGEN_HAS_RVALUE_REFERENCES - defines whether rvalue references are supported
-   Automatic detection disabled if EIGEN_MAX_CPP_VER<11.
  - \b EIGEN_HAS_STD_RESULT_OF - defines whether std::result_of is supported
-   Automatic detection disabled if EIGEN_MAX_CPP_VER<11.
- - \b EIGEN_HAS_VARIADIC_TEMPLATES - defines whether variadic templates are supported
-   Automatic detection disabled if EIGEN_MAX_CPP_VER<11.
- - \b EIGEN_HAS_CONSTEXPR - defines whether relaxed const expression are supported
-   Automatic detection disabled if EIGEN_MAX_CPP_VER<14.
- - \b EIGEN_HAS_CXX11_CONTAINERS - defines whether STL's containers follows C++11 specifications
-   Automatic detection disabled if EIGEN_MAX_CPP_VER<11.
- - \b EIGEN_HAS_CXX11_NOEXCEPT - defines whether noexcept is supported
-   Automatic detection disabled if EIGEN_MAX_CPP_VER<11.
  - \b EIGEN_NO_IO - Disables any usage and support for `<iostreams>`.
 
 \section TopicPreprocessorDirectivesAssertions Assertions
@@ -131,8 +118,11 @@ run time. However, these assertions do cost time and can thus be turned off.
  - \b \c EIGEN_DEFAULT_L2_CACHE_SIZE - Sets the default L2 cache size that is used in Eigen's GEBP kernel when the correct cache size cannot be determined at runtime.
  - \b \c EIGEN_DEFAULT_L3_CACHE_SIZE - Sets the default L3 cache size that is used in Eigen's GEBP kernel when the correct cache size cannot be determined at runtime.
 
- - \c EIGEN_DONT_ALIGN - Deprecated, it is a synonym for \c EIGEN_MAX_ALIGN_BYTES=0. It disables alignment completely. %Eigen will not try to align its objects and does not expect that any objects passed to it are aligned. This will turn off vectorization if \b \c EIGEN_UNALIGNED_VECTORIZE=1. Not defined by default.
- - \c EIGEN_DONT_ALIGN_STATICALLY - Deprecated, it is a synonym for \c EIGEN_MAX_STATIC_ALIGN_BYTES=0. It disables alignment of arrays on the stack. Not defined by default, unless \c EIGEN_DONT_ALIGN is defined.
+ - \b \c EIGEN_DONT_ALIGN - Deprecated, it is a synonym for \c EIGEN_MAX_ALIGN_BYTES=0. It disables alignment completely. %Eigen will not try to align its objects and does not expect that any objects passed to it are aligned. This will turn off vectorization if \b \c EIGEN_UNALIGNED_VECTORIZE=1. Not defined by default.
+ - \b \c EIGEN_DONT_ALIGN_STATICALLY - Deprecated, it is a synonym for \c EIGEN_MAX_STATIC_ALIGN_BYTES=0. It disables alignment of arrays on the stack. Not defined by default, unless \c EIGEN_DONT_ALIGN is defined.
+ - \b \c EIGEN_ALTIVEC_ENABLE_MMA_DYNAMIC_DISPATCH - Controls whether to use Eigen's dynamic dispatching for Altivec MMA or not.
+ - \b \c EIGEN_ALTIVEC_DISABLE_MMA - Overrides the usage of Altivec MMA instructions.
+ - \b \c EIGEN_ALTIVEC_USE_CUSTOM_PACK - Controls whether to use Eigen's custom packing for Altivec or not.
 
 
 \section TopicPreprocessorDirectivesPlugins Plugins

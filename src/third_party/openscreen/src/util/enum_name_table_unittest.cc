@@ -49,9 +49,13 @@ TEST(EnumNameTable, GetEnumNameEmpty) {
 
 TEST(EnumNameTable, GetEnumValid) {
   EXPECT_EQ(TestEnum::kFoo, GetEnum(kTestEnumNames, "foo").value());
+  EXPECT_EQ(TestEnum::kFoo, GetEnum(kTestEnumNames, "FOO").value());
   EXPECT_EQ(TestEnum::kBar, GetEnum(kTestEnumNames, "bar").value());
+  EXPECT_EQ(TestEnum::kBar, GetEnum(kTestEnumNames, "baR").value());
   EXPECT_EQ(TestEnum::kBaz, GetEnum(kTestEnumNames, "baz").value());
+  EXPECT_EQ(TestEnum::kBaz, GetEnum(kTestEnumNames, "Baz").value());
   EXPECT_EQ(TestEnum::kBuzz, GetEnum(kTestEnumNames, "buzz").value());
+  EXPECT_EQ(TestEnum::kBuzz, GetEnum(kTestEnumNames, "bUZZ").value());
 }
 
 TEST(EnumNameTable, GetEnumMissing) {

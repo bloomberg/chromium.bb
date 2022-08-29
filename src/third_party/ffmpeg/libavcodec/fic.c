@@ -25,6 +25,7 @@
 #include "libavutil/mem_internal.h"
 #include "libavutil/opt.h"
 #include "avcodec.h"
+#include "codec_internal.h"
 #include "internal.h"
 #include "get_bits.h"
 #include "golomb.h"
@@ -266,7 +267,7 @@ static void fic_draw_cursor(AVCodecContext *avctx, int cur_x, int cur_y)
     }
 }
 
-static int fic_decode_frame(AVCodecContext *avctx, void *data,
+static int fic_decode_frame(AVCodecContext *avctx, AVFrame *rframe,
                             int *got_frame, AVPacket *avpkt)
 {
     FICContext *ctx = avctx->priv_data;
@@ -435,7 +436,7 @@ static int fic_decode_frame(AVCodecContext *avctx, void *data,
 
 skip:
     *got_frame = 1;
-    if ((ret = av_frame_ref(data, ctx->final_frame)) < 0)
+    if ((ret = av_frame_ref(rframe, ctx->final_frame)) < 0)
         return ret;
 
     return avpkt->size;
@@ -483,16 +484,16 @@ static const AVClass fic_decoder_class = {
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
-const AVCodec ff_fic_decoder = {
-    .name           = "fic",
-    .long_name      = NULL_IF_CONFIG_SMALL("Mirillis FIC"),
-    .type           = AVMEDIA_TYPE_VIDEO,
-    .id             = AV_CODEC_ID_FIC,
+const FFCodec ff_fic_decoder = {
+    .p.name         = "fic",
+    .p.long_name    = NULL_IF_CONFIG_SMALL("Mirillis FIC"),
+    .p.type         = AVMEDIA_TYPE_VIDEO,
+    .p.id           = AV_CODEC_ID_FIC,
     .priv_data_size = sizeof(FICContext),
     .init           = fic_decode_init,
-    .decode         = fic_decode_frame,
+    FF_CODEC_DECODE_CB(fic_decode_frame),
     .close          = fic_decode_close,
-    .capabilities   = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_SLICE_THREADS,
-    .priv_class     = &fic_decoder_class,
+    .p.capabilities = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_SLICE_THREADS,
+    .p.priv_class   = &fic_decoder_class,
     .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };

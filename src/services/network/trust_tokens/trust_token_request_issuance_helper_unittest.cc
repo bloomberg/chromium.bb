@@ -25,9 +25,9 @@
 #include "services/network/public/cpp/trust_token_parameterization.h"
 #include "services/network/public/mojom/trust_tokens.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
+#include "services/network/test/trust_token_test_util.h"
 #include "services/network/trust_tokens/operating_system_matching.h"
 #include "services/network/trust_tokens/proto/public.pb.h"
-#include "services/network/trust_tokens/test/trust_token_test_util.h"
 #include "services/network/trust_tokens/trust_token_key_commitment_getter.h"
 #include "services/network/trust_tokens/trust_token_parameterization.h"
 #include "services/network/trust_tokens/trust_token_store.h"
@@ -627,6 +627,265 @@ TEST_F(TrustTokenRequestIssuanceHelperTest, StoresObtainedTokens) {
       ElementsAre(Property(&TrustToken::body, "a signed, unblinded token")));
 }
 
+// Check that the issuance helper correctly handles responses bearing
+// Sec-Trust-Token-Clear-Data header with value all.
+TEST_F(TrustTokenRequestIssuanceHelperTest, DiscardDataResponseSuccess) {
+  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateForTesting();
+
+  // isser1 must be "https://issuer.com/", this is hard coded to
+  // ReasonableKeyCommitmentGetter
+  SuitableTrustTokenOrigin issuer1 =
+      *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com/"));
+
+  // Add tokens that will be discarded with Sec-Trust-Token-Clear-Data response.
+  store->AddTokens(issuer1, std::vector<std::string>{"token1", "token2"},
+                   "key");
+
+  SuitableTrustTokenOrigin issuer2 =
+      *SuitableTrustTokenOrigin::Create(GURL("https://issuer2.com/"));
+
+  store->AddTokens(issuer2, std::vector<std::string>{"token3", "token4"},
+                   "key2");
+
+  auto unblinded_tokens = std::make_unique<UnblindedTokens>();
+  unblinded_tokens->body_of_verifying_key =
+      ReasonableKeyCommitmentResult()->keys.front()->body;
+  unblinded_tokens->tokens.push_back("a signed, unblinded token");
+
+  auto cryptographer = std::make_unique<MockCryptographer>();
+  EXPECT_CALL(*cryptographer, Initialize(_, _)).WillOnce(Return(true));
+  EXPECT_CALL(*cryptographer, AddKey(_)).WillOnce(Return(true));
+  EXPECT_CALL(*cryptographer, BeginIssuance(_))
+      .WillOnce(
+          Return(std::string("this string contains some blinded tokens")));
+  EXPECT_CALL(*cryptographer, ConfirmIssuance(_))
+      .WillOnce(Return(ByMove(std::move((unblinded_tokens)))));
+
+  // ReasonableKeyCommitmentGetter is for issuer1
+  TrustTokenRequestIssuanceHelper helper(
+      *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com/")),
+      store.get(), ReasonableKeyCommitmentGetter(), std::move(cryptographer),
+      std::make_unique<MockLocalOperationDelegate>(),
+      base::BindRepeating(&IsCurrentOperatingSystem), g_metrics_delegate.get());
+
+  // request is from issuer1
+  auto request = MakeURLRequest("https://issuer.com/");
+  request->set_initiator(issuer1);
+
+  ASSERT_EQ(ExecuteBeginOperationAndWaitForResult(&helper, request.get()),
+            mojom::TrustTokenOperationStatus::kOk);
+
+  auto response_head = mojom::URLResponseHead::New();
+  response_head->headers =
+      net::HttpResponseHeaders::TryToCreate("HTTP/1.1 200 OK\r\n");
+  response_head->headers->SetHeader(
+      kTrustTokensSecTrustTokenHeader,
+      "response from issuer (this value will be ignored, since "
+      "Cryptographer::ConfirmResponse is mocked out)");
+  // Add clear data response header.
+  response_head->headers->SetHeader(
+      kTrustTokensResponseHeaderSecTrustTokenClearData, "all");
+
+  EXPECT_EQ(ExecuteFinalizeAndWaitForResult(&helper, response_head.get()),
+            mojom::TrustTokenOperationStatus::kOk);
+
+  // Trust token parsed from the server response should be in the store.
+  auto match_all_keys =
+      base::BindRepeating([](const std::string&) { return true; });
+  EXPECT_THAT(
+      store->RetrieveMatchingTokens(issuer1, std::move(match_all_keys)),
+      ElementsAre(Property(&TrustToken::body, "a signed, unblinded token")));
+
+  // The store should have only the recently issued token, and previous tokens
+  // should be discarded.
+  EXPECT_EQ(store->CountTokens(issuer1), 1);
+
+  // All issuer2 tokens must be in store
+  EXPECT_EQ(store->CountTokens(issuer2), 2);
+
+  // Verify that Finalize correctly stripped the response header.
+  EXPECT_FALSE(response_head->headers->HasHeader(
+      kTrustTokensResponseHeaderSecTrustTokenClearData));
+}
+
+// Check that the issuance helper correctly handles responses bearing
+// Sec-Trust-Token-Clear-Data header when there are no tokens for the issuer
+TEST_F(TrustTokenRequestIssuanceHelperTest,
+       DiscardDataResponseNoTokensInStore) {
+  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateForTesting();
+
+  SuitableTrustTokenOrigin issuer =
+      *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com/"));
+
+  auto unblinded_tokens = std::make_unique<UnblindedTokens>();
+  unblinded_tokens->body_of_verifying_key =
+      ReasonableKeyCommitmentResult()->keys.front()->body;
+  unblinded_tokens->tokens.push_back("a signed, unblinded token");
+
+  auto cryptographer = std::make_unique<MockCryptographer>();
+  EXPECT_CALL(*cryptographer, Initialize(_, _)).WillOnce(Return(true));
+  EXPECT_CALL(*cryptographer, AddKey(_)).WillOnce(Return(true));
+  EXPECT_CALL(*cryptographer, BeginIssuance(_))
+      .WillOnce(
+          Return(std::string("this string contains some blinded tokens")));
+  EXPECT_CALL(*cryptographer, ConfirmIssuance(_))
+      .WillOnce(Return(ByMove(std::move((unblinded_tokens)))));
+
+  TrustTokenRequestIssuanceHelper helper(
+      *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com/")),
+      store.get(), ReasonableKeyCommitmentGetter(), std::move(cryptographer),
+      std::make_unique<MockLocalOperationDelegate>(),
+      base::BindRepeating(&IsCurrentOperatingSystem), g_metrics_delegate.get());
+
+  auto request = MakeURLRequest("https://issuer.com/");
+  request->set_initiator(issuer);
+
+  ASSERT_EQ(ExecuteBeginOperationAndWaitForResult(&helper, request.get()),
+            mojom::TrustTokenOperationStatus::kOk);
+
+  auto response_head = mojom::URLResponseHead::New();
+  response_head->headers =
+      net::HttpResponseHeaders::TryToCreate("HTTP/1.1 200 OK\r\n");
+  response_head->headers->SetHeader(
+      kTrustTokensSecTrustTokenHeader,
+      "response from issuer (this value will be ignored, since "
+      "Cryptographer::ConfirmResponse is mocked out)");
+  // Add clear data response header.
+  response_head->headers->SetHeader(
+      kTrustTokensResponseHeaderSecTrustTokenClearData, "all");
+
+  EXPECT_EQ(ExecuteFinalizeAndWaitForResult(&helper, response_head.get()),
+            mojom::TrustTokenOperationStatus::kOk);
+
+  // Trust token parsed from the server response should be in the store.
+  auto match_all_keys =
+      base::BindRepeating([](const std::string&) { return true; });
+  EXPECT_THAT(
+      store->RetrieveMatchingTokens(issuer, std::move(match_all_keys)),
+      ElementsAre(Property(&TrustToken::body, "a signed, unblinded token")));
+
+  // The store should have only the recently issued token
+  EXPECT_EQ(store->CountTokens(issuer), 1);
+
+  // Verify that Finalize correctly stripped the response header.
+  EXPECT_FALSE(response_head->headers->HasHeader(
+      kTrustTokensResponseHeaderSecTrustTokenClearData));
+}
+
+// Check that the issuance helper correctly handles responses bearing
+// Sec-Trust-Token-Clear-Data header with values other than "all"
+TEST_F(TrustTokenRequestIssuanceHelperTest,
+       DiscardDataResponseWrongHeaderValue) {
+  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateForTesting();
+
+  SuitableTrustTokenOrigin issuer =
+      *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com/"));
+
+  // Add tokens that will be discarded with Sec-Trust-Token-Clear-Data response.
+  store->AddTokens(issuer, std::vector<std::string>{"token1", "token2"}, "key");
+
+  auto unblinded_tokens = std::make_unique<UnblindedTokens>();
+  unblinded_tokens->body_of_verifying_key =
+      ReasonableKeyCommitmentResult()->keys.front()->body;
+  unblinded_tokens->tokens.push_back("a signed, unblinded token");
+
+  auto cryptographer = std::make_unique<MockCryptographer>();
+  EXPECT_CALL(*cryptographer, Initialize(_, _)).WillOnce(Return(true));
+  EXPECT_CALL(*cryptographer, AddKey(_)).WillOnce(Return(true));
+  EXPECT_CALL(*cryptographer, BeginIssuance(_))
+      .WillOnce(
+          Return(std::string("this string contains some blinded tokens")));
+  EXPECT_CALL(*cryptographer, ConfirmIssuance(_))
+      .WillOnce(Return(ByMove(std::move((unblinded_tokens)))));
+
+  TrustTokenRequestIssuanceHelper helper(
+      *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com/")),
+      store.get(), ReasonableKeyCommitmentGetter(), std::move(cryptographer),
+      std::make_unique<MockLocalOperationDelegate>(),
+      base::BindRepeating(&IsCurrentOperatingSystem), g_metrics_delegate.get());
+
+  auto request = MakeURLRequest("https://issuer.com/");
+  request->set_initiator(issuer);
+
+  ASSERT_EQ(ExecuteBeginOperationAndWaitForResult(&helper, request.get()),
+            mojom::TrustTokenOperationStatus::kOk);
+
+  auto response_head = mojom::URLResponseHead::New();
+  response_head->headers =
+      net::HttpResponseHeaders::TryToCreate("HTTP/1.1 200 OK\r\n");
+  response_head->headers->SetHeader(
+      kTrustTokensSecTrustTokenHeader,
+      "response from issuer (this value will be ignored, since "
+      "Cryptographer::ConfirmResponse is mocked out)");
+  // Add clear data response header with a wrong value
+  response_head->headers->SetHeader(
+      kTrustTokensResponseHeaderSecTrustTokenClearData, "wrong_value");
+
+  EXPECT_EQ(ExecuteFinalizeAndWaitForResult(&helper, response_head.get()),
+            mojom::TrustTokenOperationStatus::kOk);
+
+  // The store should have previously issued tokens as well
+  EXPECT_EQ(store->CountTokens(issuer), 3);
+
+  // Verify that Finalize correctly stripped the response header.
+  EXPECT_FALSE(response_head->headers->HasHeader(
+      kTrustTokensResponseHeaderSecTrustTokenClearData));
+}
+
+// Check that the issuance helper correctly handles responses bearing
+// Sec-Trust-Token-Clear-Data header where Sec-Trust-Token header is missing.
+TEST_F(TrustTokenRequestIssuanceHelperTest,
+       DiscardDataResponseOmitsTrustTokenHeader) {
+  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateForTesting();
+
+  SuitableTrustTokenOrigin issuer =
+      *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com/"));
+
+  // Add tokens that will be discarded with Sec-Trust-Token-Clear-Data response.
+  store->AddTokens(issuer, std::vector<std::string>{"token1", "token2"}, "key");
+
+  auto unblinded_tokens = std::make_unique<UnblindedTokens>();
+  unblinded_tokens->body_of_verifying_key =
+      ReasonableKeyCommitmentResult()->keys.front()->body;
+  unblinded_tokens->tokens.push_back("a signed, unblinded token");
+
+  auto cryptographer = std::make_unique<MockCryptographer>();
+  EXPECT_CALL(*cryptographer, Initialize(_, _)).WillOnce(Return(true));
+  EXPECT_CALL(*cryptographer, AddKey(_)).WillOnce(Return(true));
+  EXPECT_CALL(*cryptographer, BeginIssuance(_))
+      .WillOnce(
+          Return(std::string("this string contains some blinded tokens")));
+
+  TrustTokenRequestIssuanceHelper helper(
+      *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com/")),
+      store.get(), ReasonableKeyCommitmentGetter(), std::move(cryptographer),
+      std::make_unique<MockLocalOperationDelegate>(),
+      base::BindRepeating(&IsCurrentOperatingSystem), g_metrics_delegate.get());
+
+  auto request = MakeURLRequest("https://issuer.com/");
+  request->set_initiator(issuer);
+
+  ASSERT_EQ(ExecuteBeginOperationAndWaitForResult(&helper, request.get()),
+            mojom::TrustTokenOperationStatus::kOk);
+
+  auto response_head = mojom::URLResponseHead::New();
+  response_head->headers =
+      net::HttpResponseHeaders::TryToCreate("HTTP/1.1 200 OK\r\n");
+  // Add clear data response header with wrong value
+  response_head->headers->SetHeader(
+      kTrustTokensResponseHeaderSecTrustTokenClearData, "");
+
+  EXPECT_EQ(ExecuteFinalizeAndWaitForResult(&helper, response_head.get()),
+            mojom::TrustTokenOperationStatus::kBadResponse);
+
+  // The store should have previously issued tokens
+  EXPECT_EQ(store->CountTokens(issuer), 2);
+
+  // Verify that Finalize correctly stripped the response header.
+  EXPECT_FALSE(response_head->headers->HasHeader(
+      kTrustTokensResponseHeaderSecTrustTokenClearData));
+}
+
 TEST_F(TrustTokenRequestIssuanceHelperTest, RejectsUnsuitableInsecureIssuer) {
   auto store = TrustTokenStore::CreateForTesting();
   TrustTokenRequestIssuanceHelper helper(
@@ -954,7 +1213,7 @@ TEST_F(TrustTokenRequestIssuanceHelperTestWithPlatformIssuance,
   auto local_operation_delegate =
       std::make_unique<StrictMock<MockLocalOperationDelegate>>();
   auto metrics_delegate = std::make_unique<StrictMock<MockMetricsDelegate>>();
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   EXPECT_CALL(*cryptographer, Initialize(_, _)).WillOnce(Return(true));
   EXPECT_CALL(*cryptographer, AddKey(_)).WillOnce(Return(true));
   EXPECT_CALL(*cryptographer, BeginIssuance(_))
@@ -972,7 +1231,7 @@ TEST_F(TrustTokenRequestIssuanceHelperTestWithPlatformIssuance,
   EXPECT_CALL(*local_operation_delegate, FulfillIssuance(_, _))
       .WillOnce(WithArgs<1>(Invoke(receive_answer)));
   EXPECT_CALL(*metrics_delegate, WillExecutePlatformProvidedOperation());
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 
   TrustTokenRequestIssuanceHelper helper(
       *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com/")),
@@ -987,19 +1246,19 @@ TEST_F(TrustTokenRequestIssuanceHelperTestWithPlatformIssuance,
   // if we're not on Android, we should observe error saying we couldn't execute
   // issuance locally.
   ASSERT_EQ(ExecuteBeginOperationAndWaitForResult(&helper, request.get()),
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
             mojom::TrustTokenOperationStatus::kUnknownError
 #else
             mojom::TrustTokenOperationStatus::kUnavailable
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
   );
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   histograms.ExpectUniqueSample(
       "Net.TrustTokens.IssuanceHelperLocalFulfillResult",
       mojom::FulfillTrustTokenIssuanceAnswer::Status::kUnknownError,
       /*expected_count=*/1);
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 }
 
 }  // namespace network

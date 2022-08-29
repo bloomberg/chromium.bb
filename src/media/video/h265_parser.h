@@ -35,14 +35,17 @@ enum {
 struct MEDIA_EXPORT H265ProfileTierLevel {
   H265ProfileTierLevel();
 
-  // From Annex A.3.
-  enum H264ProfileIdc {
+  enum H265ProfileIdc {
     kProfileIdcMain = 1,
     kProfileIdcMain10 = 2,
     kProfileIdcMainStill = 3,
     kProfileIdcRangeExtensions = 4,
     kProfileIdcHighThroughput = 5,
+    kProfileIdcMultiviewMain = 6,
+    kProfileIdcScalableMain = 7,
+    kProfileIdc3dMain = 8,
     kProfileIdcScreenContentCoding = 9,
+    kProfileIdcScalableRangeExtensions = 10,
     kProfileIdcHighThroughputScreenContentCoding = 11,
   };
 
@@ -110,10 +113,31 @@ struct MEDIA_EXPORT H265VUIParameters {
   int def_disp_win_bottom_offset;
 };
 
+struct MEDIA_EXPORT H265VPS {
+  H265VPS();
+
+  int vps_video_parameter_set_id;
+  bool vps_base_layer_internal_flag;
+  bool vps_base_layer_available_flag;
+  int vps_max_layers_minus1;
+  int vps_max_sub_layers_minus1;
+  bool vps_temporal_id_nesting_flag;
+  H265ProfileTierLevel profile_tier_level;
+  int vps_max_dec_pic_buffering_minus1[kMaxSubLayers];
+  int vps_max_num_reorder_pics[kMaxSubLayers];
+  int vps_max_latency_increase_plus1[kMaxSubLayers];
+  int vps_max_layer_id;
+  int vps_num_layer_sets_minus1;
+  bool vps_timing_info_present_flag;
+
+  // skipped the rest
+};
+
 struct MEDIA_EXPORT H265SPS {
   H265SPS();
 
   // Syntax elements.
+  int sps_video_parameter_set_id;
   int sps_max_sub_layers_minus1;
   H265ProfileTierLevel profile_tier_level;
   int sps_seq_parameter_set_id;
@@ -157,6 +181,22 @@ struct MEDIA_EXPORT H265SPS {
   bool sps_temporal_mvp_enabled_flag;
   bool strong_intra_smoothing_enabled_flag;
   H265VUIParameters vui_parameters;
+
+  // Extension extra elements.
+  bool sps_extension_present_flag;
+  bool sps_range_extension_flag;
+  bool sps_multilayer_extension_flag;
+  bool sps_3d_extension_flag;
+  bool sps_scc_extension_flag;
+  bool transform_skip_rotation_enabled_flag;
+  bool transform_skip_context_enabled_flag;
+  bool implicit_rdpcm_enabled_flag;
+  bool explicit_rdpcm_enabled_flag;
+  bool extended_precision_processing_flag;
+  bool intra_smoothing_disabled_flag;
+  bool high_precision_offsets_enabled_flag;
+  bool persistent_rice_adaptation_enabled_flag;
+  bool cabac_bypass_alignment_enabled_flag;
 
   // Calculated fields.
   int chroma_array_type;
@@ -229,6 +269,22 @@ struct MEDIA_EXPORT H265PPS {
   bool lists_modification_present_flag;
   int log2_parallel_merge_level_minus2;
   bool slice_segment_header_extension_present_flag;
+
+  // Extension extra elements.
+  bool pps_extension_present_flag;
+  bool pps_range_extension_flag;
+  bool pps_multilayer_extension_flag;
+  bool pps_3d_extension_flag;
+  bool pps_scc_extension_flag;
+  int log2_max_transform_skip_block_size_minus2;
+  bool cross_component_prediction_enabled_flag;
+  bool chroma_qp_offset_list_enabled_flag;
+  int diff_cu_chroma_qp_offset_depth;
+  int chroma_qp_offset_list_len_minus1;
+  int cb_qp_offset_list[6];
+  int cr_qp_offset_list[6];
+  int log2_sao_offset_scale_luma;
+  int log2_sao_offset_scale_chroma;
 
   // Calculated fields.
   int qp_bd_offset_y;
@@ -356,19 +412,21 @@ class MEDIA_EXPORT H265Parser : public H265NaluParser {
   // NALU-specific parsing functions.
   // These should be called after AdvanceToNextNALU().
 
-  // SPSes and PPSes are owned by the parser class and the memory for their
-  // structures is managed here, not by the caller, as they are reused across
-  // NALUs.
+  // VPSes, SPSes and PPSes are owned by the parser class and the memory for
+  // their structures is managed here, not by the caller, as they are
+  // reused across NALUs.
   //
-  // Parse an SPS/PPS NALU and save their data in the parser, returning id
-  // of the parsed structure in |*pps_id|/|*sps_id|. To get a pointer to a given
-  // SPS/PPS structure, use GetSPS()/GetPPS(), passing the returned
-  // |*sps_id|/|*pps_id| as parameter.
+  // Parse an VPS/SPS/PPS NALU and save their data in the parser, returning id
+  // of the parsed structure in |*pps_id|/|*sps_id|/|*vps_id|. To get a pointer
+  // to a given VPS/SPS/PPS structure, use GetVPS()/GetSPS()/GetPPS(), passing
+  // the returned |*vps_id|/|*sps_id|/|*pps_id| as parameter.
+  Result ParseVPS(int* vps_id);
   Result ParseSPS(int* sps_id);
   Result ParsePPS(const H265NALU& nalu, int* pps_id);
 
-  // Return a pointer to SPS/PPS with given |sps_id|/|pps_id| or null if not
-  // present.
+  // Return a pointer to VPS/SPS/PPS with given |*vps_id|/|sps_id|/|pps_id| or
+  // null if not present.
+  const H265VPS* GetVPS(int vps_id) const;
   const H265SPS* GetSPS(int sps_id) const;
   const H265PPS* GetPPS(int pps_id) const;
 
@@ -414,7 +472,8 @@ class MEDIA_EXPORT H265Parser : public H265NaluParser {
                               const H265SliceHeader& shdr,
                               H265PredWeightTable* pred_weight_table);
 
-  // PPSes and SPSes stored for future reference.
+  // VPSes, PPSes and SPSes stored for future reference.
+  base::flat_map<int, std::unique_ptr<H265VPS>> active_vps_;
   base::flat_map<int, std::unique_ptr<H265SPS>> active_sps_;
   base::flat_map<int, std::unique_ptr<H265PPS>> active_pps_;
 };

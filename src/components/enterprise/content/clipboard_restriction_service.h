@@ -8,10 +8,10 @@
 #include <map>
 #include <memory>
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/singleton.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/policy/core/browser/url_util.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/url_matcher/url_matcher.h"
 
@@ -50,9 +50,9 @@ class ClipboardRestrictionService : KeyedService {
   void UpdateSettings();
 
   PrefChangeRegistrar pref_change_registrar_;
-  PrefService* pref_service_;
+  raw_ptr<PrefService> pref_service_;
 
-  url_matcher::URLMatcherConditionSet::ID next_id_;
+  base::MatcherStringPattern::ID next_id_;
   std::unique_ptr<url_matcher::URLMatcher> enable_url_matcher_;
   std::unique_ptr<url_matcher::URLMatcher> disable_url_matcher_;
 

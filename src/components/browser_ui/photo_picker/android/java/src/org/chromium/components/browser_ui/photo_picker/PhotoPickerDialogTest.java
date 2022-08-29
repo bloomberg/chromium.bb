@@ -31,6 +31,7 @@ import org.chromium.base.MathUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.DisableIf;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.UrlUtils;
@@ -44,8 +45,8 @@ import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.IntentRequestTracker;
 import org.chromium.ui.base.PhotoPickerListener;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.ui.test.util.BlankUiTestActivityTestCase;
 import org.chromium.ui.test.util.DisableAnimationsTestRule;
-import org.chromium.ui.test.util.DummyUiActivityTestCase;
 import org.chromium.ui.test.util.RenderTestRule;
 
 import java.io.File;
@@ -58,7 +59,7 @@ import java.util.concurrent.TimeUnit;
  * Tests for the PhotoPickerDialog class.
  */
 @RunWith(BaseJUnit4ClassRunner.class)
-public class PhotoPickerDialogTest extends DummyUiActivityTestCase
+public class PhotoPickerDialogTest extends BlankUiTestActivityTestCase
         implements PhotoPickerListener, SelectionObserver<PickerBitmap>,
                    DecoderServiceHost.DecoderStatusCallback,
                    PickerVideoPlayer.VideoPlaybackStatusCallback, AnimationListener {
@@ -67,9 +68,13 @@ public class PhotoPickerDialogTest extends DummyUiActivityTestCase
 
     // The timeout (in seconds) to wait for the decoder service to be ready.
     private static final long WAIT_TIMEOUT_SECONDS = 30L;
+    private static final long VIDEO_TIMEOUT_SECONDS = 10L;
 
     @Rule
-    public RenderTestRule mRenderTestRule = RenderTestRule.Builder.withPublicCorpus().build();
+    public RenderTestRule mRenderTestRule =
+            RenderTestRule.Builder.withPublicCorpus()
+                    .setBugComponent(RenderTestRule.Component.UI_BROWSER_MEDIA_PICKER)
+                    .build();
 
     private WindowAndroid mWindowAndroid;
 
@@ -345,7 +350,8 @@ public class PhotoPickerDialogTest extends DummyUiActivityTestCase
         int callCount = mOnVideoPlayingCallback.getCallCount();
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { mDialog.getCategoryViewForTesting().startVideoPlaybackAsync(uri); });
-        mOnVideoPlayingCallback.waitForCallback(callCount, 1);
+        mOnVideoPlayingCallback.waitForCallback(
+                callCount, 1, VIDEO_TIMEOUT_SECONDS, TimeUnit.SECONDS);
     }
 
     private void dismissDialog() {
@@ -529,6 +535,8 @@ public class PhotoPickerDialogTest extends DummyUiActivityTestCase
     @DisableAnimationsTestRule.EnsureAnimationsOn
     @MinAndroidSdkLevel(Build.VERSION_CODES.O) // Video is only supported on O+.
     @DisableIf.Build(supported_abis_includes = "x86", message = "https://crbug.com/1092104")
+    @DisableIf.Build(supported_abis_includes = "x86_64", message = "https://crbug.com/1092104")
+    @DisabledTest(message = "https://crbug.com/1311783")
     public void testVideoPlayerAnimations() throws Throwable {
         PickerVideoPlayer.setShortAnimationTimesForTesting(true);
 

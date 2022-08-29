@@ -92,9 +92,13 @@ EXPORTS
     eglQueryStringiANGLE
 
     ; EGL_ANGLE_power_preference
+    eglForceGPUSwitchANGLE
     eglHandleGPUSwitchANGLE
     eglReacquireHighPowerGPUANGLE
     eglReleaseHighPowerGPUANGLE
+
+    ; EGL_ANGLE_prepare_swap_buffers
+    eglPrepareSwapBuffersANGLE
 
     ; EGL_ANGLE_program_cache_control
     eglProgramCacheGetAttribANGLE
@@ -126,6 +130,10 @@ EXPORTS
     eglQueryDeviceStringEXT
     eglQueryDisplayAttribEXT
 
+    ; EGL_EXT_image_dma_buf_import_modifiers
+    eglQueryDmaBufFormatsEXT
+    eglQueryDmaBufModifiersEXT
+
     ; EGL_EXT_platform_base
     eglCreatePlatformPixmapSurfaceEXT
     eglCreatePlatformWindowSurfaceEXT
@@ -150,6 +158,9 @@ EXPORTS
     eglLockSurfaceKHR
     eglQuerySurface64KHR
     eglUnlockSurfaceKHR
+
+    ; EGL_KHR_partial_update
+    eglSetDamageRegionKHR
 
     ; EGL_KHR_reusable_sync
     eglSignalSyncKHR

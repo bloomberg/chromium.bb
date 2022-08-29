@@ -16,7 +16,6 @@
 
 #include "base/containers/stack.h"
 #include "base/memory/raw_ptr.h"
-#include "base/strings/char_traits.h"
 #include "build/build_config.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -37,19 +36,21 @@ struct AXTreeData;
 class AX_EXPORT AXNode final {
  public:
   // Replacement character used to represent an embedded (or, additionally for
-  // text navigation, an empty) object. Encoded in UTF16 format. Part of the
-  // Unicode Standard.
+  // text navigation, an empty) object. Part of the Unicode Standard.
   //
   // On some platforms, most objects are represented in the text of their
   // parents with a special "embedded object character" and not with their
   // actual text contents. Also on the same platforms, if a node has only
   // ignored descendants, i.e., it appears to be empty to assistive software, we
   // need to treat it as a character and a word boundary.
-  static constexpr char16_t kEmbeddedCharacter[] = u"\uFFFC";
-  // We compute the embedded character's length instead of manually typing it in
-  // order to avoid the two variables getting out of sync in a future update.
-  static constexpr int kEmbeddedCharacterLength =
-      base::CharTraits<char16_t>::length(kEmbeddedCharacter);
+  static constexpr char kEmbeddedObjectCharacterUTF8[] = "\xEF\xBF\xBC";
+  static constexpr char16_t kEmbeddedObjectCharacterUTF16[] = u"\xFFFC";
+  // We compute the embedded characters' length instead of manually typing it in
+  // order to avoid the variable pairs getting out of sync in a future update.
+  static constexpr int kEmbeddedObjectCharacterLengthUTF8 =
+      std::char_traits<char>::length(kEmbeddedObjectCharacterUTF8);
+  static constexpr int kEmbeddedObjectCharacterLengthUTF16 =
+      std::char_traits<char16_t>::length(kEmbeddedObjectCharacterUTF16);
 
   // Interface to the tree class that owns an AXNode. We use this instead
   // of letting AXNode have a pointer to its AXTree directly so that we're
@@ -68,7 +69,7 @@ class AX_EXPORT AXNode final {
     };
 
     // See AXTree::GetAXTreeID.
-    virtual AXTreeID GetAXTreeID() const = 0;
+    virtual const AXTreeID& GetAXTreeID() const = 0;
     // See `AXTree::GetTableInfo`.
     virtual AXTableInfo* GetTableInfo(const AXNode* table_node) const = 0;
     // See AXTree::GetFromId.
@@ -280,13 +281,6 @@ class AX_EXPORT AXNode final {
   // now owns all of the passed children.
   void SwapChildren(std::vector<AXNode*>* children);
 
-  // This is called when the AXTree no longer includes this node in the
-  // tree. Reference counting is used on some platforms because the
-  // operating system may hold onto a reference to an AXNode
-  // object even after we're through with it, so this may decrement the
-  // reference count and clear out the object's data.
-  void Destroy();
-
   // Returns true if this node is equal to or a descendant of |ancestor|.
   bool IsDescendantOf(const AXNode* ancestor) const;
   bool IsDescendantOfCrossingTreeBoundary(const AXNode* ancestor) const;
@@ -391,6 +385,9 @@ class AX_EXPORT AXNode final {
   const base::StringPairs& GetHtmlAttributes() const {
     return data().html_attributes;
   }
+  bool HasHtmlAttribute(const char* attribute) const {
+    return data().HasHtmlAttribute(attribute);
+  }
   bool GetHtmlAttribute(const char* attribute, std::string* value) const {
     return data().GetHtmlAttribute(attribute, value);
   }
@@ -438,6 +435,12 @@ class AX_EXPORT AXNode final {
   // Container objects that should be ignored for computing PosInSet and SetSize
   // for ordered sets.
   bool IsIgnoredContainerForOrderedSet() const;
+
+  // Helper functions that returns true when we are on a row/row group inside of
+  // a tree grid. Also works for rows that are part of a row group inside a tree
+  // grid. Returns false otherwise.
+  bool IsRowInTreeGrid(const AXNode* ordered_set) const;
+  bool IsRowGroupInTreeGrid() const;
 
   // Returns the accessible name for this node. This could have originated from
   // e.g. an onscreen label, or an ARIA label.
@@ -556,11 +559,11 @@ class AX_EXPORT AXNode final {
   // Get the node ids that represent rows in a table.
   std::vector<AXNodeID> GetTableRowNodeIds() const;
 
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
   // Table column-like nodes. These nodes are only present on macOS.
   bool IsTableColumn() const;
   absl::optional<int> GetTableColColIndex() const;
-#endif  // defined(OS_APPLE)
+#endif  // BUILDFLAG(IS_APPLE)
 
   // Table cell-like nodes.
   bool IsTableCellOrHeader() const;
@@ -698,7 +701,14 @@ class AX_EXPORT AXNode final {
   // Returns false if the |data_| is uninitialized or has been taken. Returns
   // true otherwise.
   bool IsDataValid() const;
-  
+
+  // Returns true if the node supports the read-only attribute.
+  bool IsReadOnlySupported() const;
+
+  // Returns true if the node is marked read-only or is disabled. By default,
+  // all nodes that can't be edited are read-only.
+  bool IsReadOnlyOrDisabled() const;
+
  private:
   AXTableInfo* GetAncestorTableInfo() const;
   void IdVectorToNodeVector(const std::vector<AXNodeID>& ids,
@@ -826,10 +836,10 @@ AXNode::ChildIteratorBase<NodeType,
   // increment the iterator past the end, we remain at the past-the-end iterator
   // condition.
   if (child_ && parent_) {
-    if (child_ == (parent_->*LastChild)())
+    if (child_ == (parent_.get()->*LastChild)())
       child_ = nullptr;
     else
-      child_ = (child_->*NextSibling)();
+      child_ = (child_.get()->*NextSibling)();
   }
 
   return *this;
@@ -854,12 +864,12 @@ AXNode::ChildIteratorBase<NodeType,
     // If the iterator is past the end, |child_=nullptr|, decrement the iterator
     // gives us the last iterator element.
     if (!child_)
-      child_ = (parent_->*LastChild)();
+      child_ = (parent_.get()->*LastChild)();
     // Decrement the iterator gives us the previous element, except when the
     // iterator is at the beginning; in which case, decrementing the iterator
     // remains at the beginning.
-    else if (child_ != (parent_->*FirstChild)())
-      child_ = (child_->*PreviousSibling)();
+    else if (child_ != (parent_.get()->*FirstChild)())
+      child_ = (child_.get()->*PreviousSibling)();
   }
 
   return *this;

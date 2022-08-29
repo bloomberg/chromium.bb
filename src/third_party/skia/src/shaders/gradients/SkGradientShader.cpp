@@ -5,7 +5,7 @@
  * found in the LICENSE file.
  */
 
-#include <algorithm>
+#include "include/core/SkColorSpace.h"
 #include "include/core/SkMallocPixelRef.h"
 #include "include/private/SkFloatBits.h"
 #include "include/private/SkHalf.h"
@@ -24,6 +24,8 @@
 #include "src/shaders/gradients/SkSweepGradient.h"
 #include "src/shaders/gradients/SkTwoPointConicalGradient.h"
 
+#include <algorithm>
+
 enum GradientSerializationFlags {
     // Bits 29:31 used for various boolean flags
     kHasPosition_GSF    = 0x80000000,
@@ -40,6 +42,12 @@ enum GradientSerializationFlags {
     kGradFlagsShift_GSF = 0,
     kGradFlagsMask_GSF  = 0xFF,
 };
+
+SkGradientShaderBase::Descriptor::Descriptor() {
+    sk_bzero(this, sizeof(*this));
+    fTileMode = SkTileMode::kClamp;
+}
+SkGradientShaderBase::Descriptor::~Descriptor() = default;
 
 void SkGradientShaderBase::Descriptor::flatten(SkWriteBuffer& buffer) const {
     uint32_t flags = 0;
@@ -331,8 +339,8 @@ bool SkGradientShaderBase::onAppendStages(const SkStageRec& rec) const {
 
         // See F and B below.
         auto ctx = alloc->make<SkRasterPipeline_EvenlySpaced2StopGradientCtx>();
-        (Sk4f::Load(c_r.vec()) - Sk4f::Load(c_l.vec())).store(ctx->f);
-        (                        Sk4f::Load(c_l.vec())).store(ctx->b);
+        (skvx::float4::Load(c_r.vec()) - skvx::float4::Load(c_l.vec())).store(ctx->f);
+        (                                skvx::float4::Load(c_l.vec())).store(ctx->b);
         ctx->interpolatedInPremul = premulGrad;
 
         p->append(SkRasterPipeline::evenly_spaced_2_stop_gradient, ctx);
@@ -697,11 +705,11 @@ static SkColor4f average_gradient_color(const SkColor4f colors[], const SkScalar
     // the integral between the two endpoints is 0.5 * (ci + cj) * (pj - pi), which provides that
     // intervals average color. The overall average color is thus the sum of each piece. The thing
     // to keep in mind is that the provided gradient definition may implicitly use p=0 and p=1.
-    Sk4f blend(0.0f);
+    skvx::float4 blend(0.0f);
     for (int i = 0; i < colorCount - 1; ++i) {
         // Calculate the average color for the interval between pos(i) and pos(i+1)
-        Sk4f c0 = Sk4f::Load(&colors[i]);
-        Sk4f c1 = Sk4f::Load(&colors[i + 1]);
+        auto c0 = skvx::float4::Load(&colors[i]);
+        auto c1 = skvx::float4::Load(&colors[i + 1]);
 
         // when pos == null, there are colorCount uniformly distributed stops, going from 0 to 1,
         // so pos[i + 1] - pos[i] = 1/(colorCount-1)
@@ -718,7 +726,7 @@ static SkColor4f average_gradient_color(const SkColor4f colors[], const SkScalar
                 if (p0 > 0.0f) {
                     // The first color is fixed between p = 0 to pos[0], so 0.5*(ci + cj)*(pj - pi)
                     // becomes 0.5*(c + c)*(pj - 0) = c * pj
-                    Sk4f c = Sk4f::Load(&colors[0]);
+                    auto c = skvx::float4::Load(&colors[0]);
                     blend += p0 * c;
                 }
             }
@@ -726,7 +734,7 @@ static SkColor4f average_gradient_color(const SkColor4f colors[], const SkScalar
                 if (p1 < 1.f) {
                     // The last color is fixed between pos[n-1] to p = 1, so 0.5*(ci + cj)*(pj - pi)
                     // becomes 0.5*(c + c)*(1 - pi) = c * (1 - pi)
-                    Sk4f c = Sk4f::Load(&colors[colorCount - 1]);
+                    auto c = skvx::float4::Load(&colors[colorCount - 1]);
                     blend += (1.f - p1) * c;
                 }
             }
@@ -854,6 +862,13 @@ sk_sp<SkShader> SkGradientShader::MakeLinear(const SkPoint pts[2],
 sk_sp<SkShader> SkGradientShader::MakeLinear(const SkPoint pts[2],
                                              const SkColor4f colors[],
                                              sk_sp<SkColorSpace> colorSpace,
+                                             const SkScalar pos[], int count, SkTileMode mode) {
+    return MakeLinear(pts, colors, std::move(colorSpace), pos, count, mode, 0, nullptr);
+}
+
+sk_sp<SkShader> SkGradientShader::MakeLinear(const SkPoint pts[2],
+                                             const SkColor4f colors[],
+                                             sk_sp<SkColorSpace> colorSpace,
                                              const SkScalar pos[], int colorCount,
                                              SkTileMode mode,
                                              uint32_t flags,
@@ -896,6 +911,13 @@ sk_sp<SkShader> SkGradientShader::MakeRadial(const SkPoint& center, SkScalar rad
     ColorConverter converter(colors, colorCount);
     return MakeRadial(center, radius, converter.fColors4f.begin(), nullptr, pos, colorCount, mode,
                       flags, localMatrix);
+}
+
+sk_sp<SkShader> SkGradientShader::MakeRadial(const SkPoint& center, SkScalar radius,
+                                             const SkColor4f colors[],
+                                             sk_sp<SkColorSpace> colorSpace,
+                                             const SkScalar pos[], int count, SkTileMode mode) {
+    return MakeRadial(center, radius, colors, std::move(colorSpace), pos, count, mode, 0, nullptr);
 }
 
 sk_sp<SkShader> SkGradientShader::MakeRadial(const SkPoint& center, SkScalar radius,
@@ -944,6 +966,18 @@ sk_sp<SkShader> SkGradientShader::MakeTwoPointConical(const SkPoint& start,
     ColorConverter converter(colors, colorCount);
     return MakeTwoPointConical(start, startRadius, end, endRadius, converter.fColors4f.begin(),
                                nullptr, pos, colorCount, mode, flags, localMatrix);
+}
+
+sk_sp<SkShader> SkGradientShader::MakeTwoPointConical(const SkPoint& start,
+                                                      SkScalar startRadius,
+                                                      const SkPoint& end,
+                                                      SkScalar endRadius,
+                                                      const SkColor4f colors[],
+                                                      sk_sp<SkColorSpace> colorSpace,
+                                                      const SkScalar pos[],
+                                                      int count, SkTileMode mode) {
+    return MakeTwoPointConical(start, startRadius, end, endRadius, colors,
+                               std::move(colorSpace), pos, count, mode, 0, nullptr);
 }
 
 sk_sp<SkShader> SkGradientShader::MakeTwoPointConical(const SkPoint& start,
@@ -1019,6 +1053,21 @@ sk_sp<SkShader> SkGradientShader::MakeSweep(SkScalar cx, SkScalar cy,
     ColorConverter converter(colors, colorCount);
     return MakeSweep(cx, cy, converter.fColors4f.begin(), nullptr, pos, colorCount,
                      mode, startAngle, endAngle, flags, localMatrix);
+}
+
+sk_sp<SkShader> SkGradientShader::MakeSweep(SkScalar cx, SkScalar cy,
+                                            const SkColor4f colors[],
+                                            sk_sp<SkColorSpace> colorSpace,
+                                            const SkScalar pos[], int count,
+                                            uint32_t flags, const SkMatrix* localMatrix) {
+    return MakeSweep(cx, cy, colors, std::move(colorSpace), pos, count,
+                     SkTileMode::kClamp, 0, 360, flags, localMatrix);
+}
+sk_sp<SkShader> SkGradientShader::MakeSweep(SkScalar cx, SkScalar cy,
+                                            const SkColor4f colors[],
+                                            sk_sp<SkColorSpace> colorSpace,
+                                            const SkScalar pos[], int count) {
+    return MakeSweep(cx, cy, colors, std::move(colorSpace), pos, count, 0, nullptr);
 }
 
 sk_sp<SkShader> SkGradientShader::MakeSweep(SkScalar cx, SkScalar cy,

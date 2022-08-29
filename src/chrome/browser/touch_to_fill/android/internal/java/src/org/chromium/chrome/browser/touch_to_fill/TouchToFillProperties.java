@@ -11,6 +11,7 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.Callback;
 import org.chromium.chrome.browser.touch_to_fill.data.Credential;
+import org.chromium.chrome.browser.touch_to_fill.data.WebAuthnCredential;
 import org.chromium.ui.modelutil.ListModel;
 import org.chromium.ui.modelutil.MVCListAdapter;
 import org.chromium.ui.modelutil.PropertyKey;
@@ -69,33 +70,60 @@ class TouchToFillProperties {
                 new PropertyModel.ReadableObjectPropertyKey<>("credential");
         static final PropertyModel.ReadableObjectPropertyKey<String> FORMATTED_ORIGIN =
                 new PropertyModel.ReadableObjectPropertyKey<>("formatted_url");
+        static final PropertyModel.ReadableObjectPropertyKey<Boolean> SHOW_SUBMIT_BUTTON =
+                new PropertyModel.ReadableObjectPropertyKey<>("submit_credential");
         static final PropertyModel
                 .ReadableObjectPropertyKey<Callback<Credential>> ON_CLICK_LISTENER =
                 new PropertyModel.ReadableObjectPropertyKey<>("on_click_listener");
 
-        static final PropertyKey[] ALL_KEYS = {
-                FAVICON_OR_FALLBACK, CREDENTIAL, FORMATTED_ORIGIN, ON_CLICK_LISTENER};
+        static final PropertyKey[] ALL_KEYS = {FAVICON_OR_FALLBACK, CREDENTIAL, FORMATTED_ORIGIN,
+                ON_CLICK_LISTENER, SHOW_SUBMIT_BUTTON};
 
         private CredentialProperties() {}
+    }
+
+    /**
+     * Properties for a Web Authentication credential entry in TouchToFill sheet.
+     */
+    static class WebAuthnCredentialProperties {
+        static final PropertyModel
+                .ReadableObjectPropertyKey<WebAuthnCredential> WEBAUTHN_CREDENTIAL =
+                new PropertyModel.ReadableObjectPropertyKey<>("webauthn_credential");
+        static final PropertyModel.ReadableIntPropertyKey WEBAUTHN_ICON =
+                new PropertyModel.ReadableIntPropertyKey("webauthn_icon");
+        static final PropertyModel.ReadableObjectPropertyKey<Callback<WebAuthnCredential>>
+                ON_WEBAUTHN_CLICK_LISTENER =
+                new PropertyModel.ReadableObjectPropertyKey<>("on_webauthn_click_listener");
+
+        static final PropertyKey[] ALL_KEYS = {
+                WEBAUTHN_CREDENTIAL, WEBAUTHN_ICON, ON_WEBAUTHN_CLICK_LISTENER};
+
+        private WebAuthnCredentialProperties() {}
     }
 
     /**
      * Properties defined here reflect the visible state of the header in the TouchToFill sheet.
      */
     static class HeaderProperties {
+        static final PropertyModel.ReadableBooleanPropertyKey SHOW_SUBMIT_SUBTITLE =
+                new PropertyModel.ReadableBooleanPropertyKey("submit_credential");
         static final PropertyModel.ReadableBooleanPropertyKey SINGLE_CREDENTIAL =
                 new PropertyModel.ReadableBooleanPropertyKey("single_credential");
         static final PropertyModel.ReadableObjectPropertyKey<String> FORMATTED_URL =
                 new PropertyModel.ReadableObjectPropertyKey<>("formatted_url");
         static final PropertyModel.ReadableBooleanPropertyKey ORIGIN_SECURE =
                 new PropertyModel.ReadableBooleanPropertyKey("origin_secure");
+        static final PropertyModel.ReadableIntPropertyKey IMAGE_DRAWABLE_ID =
+                new PropertyModel.ReadableIntPropertyKey("image_drawable_id");
 
-        static final PropertyKey[] ALL_KEYS = {SINGLE_CREDENTIAL, FORMATTED_URL, ORIGIN_SECURE};
+        static final PropertyKey[] ALL_KEYS = {SHOW_SUBMIT_SUBTITLE, SINGLE_CREDENTIAL,
+                FORMATTED_URL, ORIGIN_SECURE, IMAGE_DRAWABLE_ID};
 
         private HeaderProperties() {}
     }
 
-    @IntDef({ItemType.HEADER, ItemType.CREDENTIAL, ItemType.FILL_BUTTON})
+    @IntDef({ItemType.HEADER, ItemType.CREDENTIAL, ItemType.WEBAUTHN_CREDENTIAL,
+            ItemType.FILL_BUTTON})
     @Retention(RetentionPolicy.SOURCE)
     @interface ItemType {
         /**
@@ -109,9 +137,14 @@ class TouchToFillProperties {
         int CREDENTIAL = 2;
 
         /**
+         * A section containing information about a WebAuthn credential.
+         */
+        int WEBAUTHN_CREDENTIAL = 3;
+
+        /**
          * The fill button at the end of the sheet that filling more obvious for one suggestion.
          */
-        int FILL_BUTTON = 3;
+        int FILL_BUTTON = 4;
     }
 
     /**

@@ -12,10 +12,10 @@
 #include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/task/post_task.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/test/task_environment.h"
+#include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "net/base/test_completion_callback.h"
 #include "net/cookies/canonical_cookie.h"
@@ -58,8 +58,7 @@ perf_test::PerfResultReporter SetUpSQLPCSReporter(const std::string& story) {
 class SQLitePersistentCookieStorePerfTest : public testing::Test {
  public:
   SQLitePersistentCookieStorePerfTest()
-      : seed_multiple_(1),
-        test_start_(base::Time::Now()),
+      : test_start_(base::Time::Now()),
         loaded_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                       base::WaitableEvent::InitialState::NOT_SIGNALED),
         key_loaded_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
@@ -89,7 +88,7 @@ class SQLitePersistentCookieStorePerfTest : public testing::Test {
     std::string domain_name(base::StringPrintf(".domain_%d.com", domain_num));
     return *CanonicalCookie::CreateUnsafeCookieForTesting(
         base::StringPrintf("Cookie_%d", cookie_num), "1", domain_name, "/", t,
-        t, t, false, false, CookieSameSite::NO_RESTRICTION,
+        t, t, t, false, false, CookieSameSite::NO_RESTRICTION,
         COOKIE_PRIORITY_DEFAULT, false);
   }
 
@@ -146,7 +145,7 @@ class SQLitePersistentCookieStorePerfTest : public testing::Test {
   }
 
  protected:
-  int seed_multiple_;
+  int seed_multiple_ = 1;
   base::Time test_start_;
   base::test::TaskEnvironment task_environment_;
   const scoped_refptr<base::SequencedTaskRunner> background_task_runner_ =

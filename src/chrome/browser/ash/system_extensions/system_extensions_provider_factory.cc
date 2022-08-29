@@ -12,6 +12,8 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/user_manager/user_manager.h"
 
+namespace ash {
+
 // static
 SystemExtensionsProvider*
 SystemExtensionsProviderFactory::GetForProfileIfExists(Profile* profile) {
@@ -55,10 +57,10 @@ SystemExtensionsProviderFactory::GetBrowserContextToUse(
   if (profile->IsSystemProfile())
     return nullptr;
 
-  if (!chromeos::ProfileHelper::IsRegularProfile(profile))
+  if (!ash::ProfileHelper::IsRegularProfile(profile))
     return nullptr;
 
-  if (!chromeos::ProfileHelper::IsPrimaryProfile(profile))
+  if (!ash::ProfileHelper::IsPrimaryProfile(profile))
     return nullptr;
 
   auto* user_manager = user_manager::UserManager::Get();
@@ -70,3 +72,5 @@ SystemExtensionsProviderFactory::GetBrowserContextToUse(
 
   return BrowserContextKeyedServiceFactory::GetBrowserContextToUse(context);
 }
+
+}  // namespace ash

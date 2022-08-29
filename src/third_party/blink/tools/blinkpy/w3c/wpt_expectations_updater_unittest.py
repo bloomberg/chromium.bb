@@ -50,7 +50,7 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
             'MOCK Try Trusty': {
                 'port_name': 'test-linux-trusty',
                 'specifiers': ['Trusty', 'Release'],
-                'master': 'tryserver.blink',
+                'main': 'tryserver.blink',
                 'has_webdriver_tests': True,
                 'is_try_builder': True,
             },
@@ -199,8 +199,8 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
             [json.loads(result)])
         updater = WPTExpectationsUpdater(host)
         self.assertFalse(
-            updater.get_failing_results_dicts(Build('MOCK Try Mac10.10', 123, 'Build-123'),
-                                              'blink_web_tests'))
+            list(updater.get_failing_results_dicts(Build('MOCK Try Mac10.10', 123, 'Build-123'),
+                                                   'blink_web_tests')))
 
     def test_get_failing_results_dict_unexpected_pass(self):
         host = self.mock_host()
@@ -222,8 +222,8 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
             [json.loads(result)])
         updater = WPTExpectationsUpdater(host)
         self.assertFalse(
-            updater.get_failing_results_dicts(Build('MOCK Try Mac10.10', 123, 'Build-123'),
-                                              'blink_web_tests'))
+            list(updater.get_failing_results_dicts(Build('MOCK Try Mac10.10', 123, 'Build-123'),
+                                                   'blink_web_tests')))
 
     def test_get_failing_results_dict_no_results(self):
         host = self.mock_host()
@@ -231,8 +231,8 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
         host.results_fetcher.set_results_to_resultdb(Build('MOCK Try Mac10.10', 123), None)
         updater = WPTExpectationsUpdater(host)
         self.assertFalse(
-            updater.get_failing_results_dicts(Build('MOCK Try Mac10.10', 123),
-                                              'blink_web_tests'))
+            list(updater.get_failing_results_dicts(Build('MOCK Try Mac10.10', 123),
+                                                   'blink_web_tests')))
 
     def test_get_failing_results_dict_some_failing_results(self):
         host = self.mock_host()
@@ -255,7 +255,7 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
         updater = WPTExpectationsUpdater(host)
         results = updater.get_failing_results_dicts(
             Build('MOCK Try Mac10.10', 123, 'Build-123'), 'blink_web_tests')
-        self.assertEqual(results, [{
+        self.assertEqual(list(results), [{
             'external/wpt/x/failing-test.html': {
                 DesktopConfig(port_name='test-mac-mac10.10'):
                 SimpleTestResult(
@@ -286,7 +286,7 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
         updater = WPTExpectationsUpdater(host)
         results_dict = updater.get_failing_results_dicts(
             Build('MOCK Try Mac10.10', 123, 'Build-123'), 'blink_web_tests')
-        self.assertEqual(results_dict, [])
+        self.assertEqual(list(results_dict), [])
 
     def test_get_failing_results_dict_not_retried_test(self):
         host = self.mock_host()
@@ -308,7 +308,7 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
         updater = WPTExpectationsUpdater(host)
         results_dict = updater.get_failing_results_dicts(
             Build('MOCK Try Mac10.10', 123, 'Build-123'), 'blink_web_tests')
-        self.assertEqual(results_dict, [])
+        self.assertEqual(list(results_dict), [])
 
     def test_get_failing_results_dict_webdriver_failing_results(self):
         host = self.mock_host()
@@ -346,8 +346,8 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
                 },
             }))
         updater = WPTExpectationsUpdater(host)
-        results = updater.get_failing_results_dicts(
-            Build('MOCK Try Trusty', 123, 'Build-123'), 'blink_web_tests')
+        results = list(updater.get_failing_results_dicts(
+            Build('MOCK Try Trusty', 123, 'Build-123'), 'blink_web_tests'))
         self.assertEqual(len(results), 2)
         self.assertEqual(results, [{
             'external/wpt/x/failing-test.html': {
@@ -379,7 +379,7 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
                 'two': SimpleTestResult(actual='TIMEOUT FAIL',
                                         expected='TIMEOUT',
                                         bug='')
-            }), {('two', 'one'): SimpleTestResult(actual='FAIL TIMEOUT',
+            }), {('one', 'two'): SimpleTestResult(actual='FAIL TIMEOUT',
                                                   expected='FAIL',
                                                   bug='')})
 
@@ -397,7 +397,7 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
                                           expected='FAIL',
                                           bug='')
             }), {
-                ('two', 'one'): SimpleTestResult(actual='FAIL TIMEOUT',
+                ('one', 'two'): SimpleTestResult(actual='FAIL TIMEOUT',
                                                  expected='FAIL',
                                                  bug=''),
                 ('three',): SimpleTestResult(actual='TIMEOUT',
@@ -1399,24 +1399,27 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
     def test_cleanup_all_deleted_tests_in_expectations_files(self):
         host = MockHost()
         port = host.port_factory.get()
-        host.filesystem.files[MOCK_WEB_TESTS + 'TestExpectations'] = (
-            '# results: [ Failure ]\n'
-            'external/wpt/some/test/a.html?hello%20world [ Failure ]\n'
-            'some/test/b.html [ Failure ]\n'
-            '# This line should be deleted\n'
-            'some/test/c.html [ Failure ]\n'
-            '# line below should exist in new file\n'
-            'some/test/d.html [ Failure ]\n')
-        host.filesystem.files[MOCK_WEB_TESTS + 'VirtualTestSuites'] = '[]'
-        host.filesystem.files[MOCK_WEB_TESTS + 'new/a.html'] = ''
-        host.filesystem.files[MOCK_WEB_TESTS + 'new/b.html'] = ''
-        host.filesystem.files[
-            host.filesystem.join(
-                port.web_tests_dir(), 'some', 'test', 'd.html')] = ''
+        fs = host.filesystem
+        expectations_path = fs.join(MOCK_WEB_TESTS, 'TestExpectations')
+
+        fs.write_text_file(
+            expectations_path,
+            ('# results: [ Failure ]\n'
+             'external/wpt/some/test/a.html?hello%20world [ Failure ]\n'
+             'some/test/b.html [ Failure ]\n'
+             '# This line should be deleted\n'
+             'some/test/c.html [ Failure ]\n'
+             '# line below should exist in new file\n'
+             'some/test/d.html [ Failure ]\n'))
+        fs.write_text_file(fs.join(MOCK_WEB_TESTS, 'VirtualTestSuites'), '[]')
+        fs.write_text_file(fs.join(MOCK_WEB_TESTS, 'new', 'a.html'), '')
+        fs.write_text_file(fs.join(MOCK_WEB_TESTS, 'new', 'b.html'), '')
+        fs.write_text_file(
+            fs.join(port.web_tests_dir(), 'some', 'test', 'd.html'), '')
         # TODO(rmhasan): Remove creation of Android files within
         # tests.
         for path in PRODUCTS_TO_EXPECTATION_FILE_PATHS.values():
-            host.filesystem.write_text_file(path, '')
+            fs.write_text_file(path, '')
 
         updater = WPTExpectationsUpdater(host)
 
@@ -1428,63 +1431,70 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
         updater.git.run = _git_command_return_val
         updater._relative_to_web_test_dir = lambda test_path: test_path
         updater.cleanup_test_expectations_files()
-        self.assertMultiLineEqual(
-            host.filesystem.read_text_file(MOCK_WEB_TESTS +
-                                           'TestExpectations'),
-            ('# results: [ Failure ]\n'
-             '# line below should exist in new file\n'
-             'some/test/d.html [ Failure ]\n'))
+        self.assertMultiLineEqual(fs.read_text_file(expectations_path),
+                                  ('# results: [ Failure ]\n'
+                                   '# line below should exist in new file\n'
+                                   'some/test/d.html [ Failure ]\n'))
 
     def test_skip_slow_timeout_tests(self):
         host = MockHost()
-        host.filesystem.write_text_file(
-            MOCK_WEB_TESTS + 'SlowTests',
-            ('# results: [ Slow ]\n'
-             'foo/slow_timeout.html [ Slow ]\n'
-             'bar/slow.html [ Slow ]\n'))
+        fs = host.filesystem
+        expectations_path = fs.join(MOCK_WEB_TESTS, 'TestExpectations')
         data = ('# results: [ Pass Failure Crash Timeout Skip ]\n'
                 'foo/failure.html [ Failure ]\n'
                 'foo/slow_timeout.html [ Timeout ]\n'
                 'bar/text.html [ Pass ]\n')
-        host.filesystem.write_text_file(
-            MOCK_WEB_TESTS + 'TestExpectations', data)
+
+        fs.write_text_file(fs.join(MOCK_WEB_TESTS, 'SlowTests'),
+                           ('# results: [ Slow ]\n'
+                            'foo/slow_timeout.html [ Slow ]\n'
+                            'bar/slow.html [ Slow ]\n'))
+        fs.write_text_file(expectations_path, data)
         for path in PRODUCTS_TO_EXPECTATION_FILE_PATHS.values():
-            host.filesystem.write_text_file(path, '')
+            fs.write_text_file(path, '')
+
         newdata = data.replace('foo/slow_timeout.html [ Timeout ]',
                                'foo/slow_timeout.html [ Skip Timeout ]')
         updater = WPTExpectationsUpdater(host)
         rv = updater.skip_slow_timeout_tests(host.port_factory.get())
         self.assertTrue(rv)
-        self.assertEqual(
-            newdata,
-            host.filesystem.read_text_file(MOCK_WEB_TESTS + 'TestExpectations'))
+        self.assertEqual(newdata, fs.read_text_file(expectations_path))
 
     def test_cleanup_all_test_expectations_files(self):
         host = MockHost()
-        host.filesystem.files[MOCK_WEB_TESTS + 'TestExpectations'] = (
-            '# results: [ Failure ]\n'
-            'some/test/a.html [ Failure ]\n'
-            'some/test/b.html [ Failure ]\n'
-            'ignore/globs/* [ Failure ]\n'
-            'some/test/c\*.html [ Failure ]\n'
-            # default test case, line below should exist in new file
-            'some/test/d.html [ Failure ]\n')
-        host.filesystem.files[MOCK_WEB_TESTS + 'WebDriverExpectations'] = (
-            '# results: [ Failure ]\n'
-            'external/wpt/webdriver/some/test/a\*.html>>foo\* [ Failure ]\n'
-            'external/wpt/webdriver/some/test/a\*.html>>bar [ Failure ]\n'
-            'external/wpt/webdriver/some/test/b.html>>foo [ Failure ]\n'
-            'external/wpt/webdriver/some/test/c.html>>a [ Failure ]\n'
-            # default test case, line below should exist in new file
-            'external/wpt/webdriver/some/test/d.html>>foo [ Failure ]\n')
-        host.filesystem.files[MOCK_WEB_TESTS + 'VirtualTestSuites'] = '[]'
-        host.filesystem.files[MOCK_WEB_TESTS + 'new/a.html'] = ''
-        host.filesystem.files[MOCK_WEB_TESTS + 'new/b.html'] = ''
+        fs = host.filesystem
+        test_expect_path = fs.join(MOCK_WEB_TESTS, 'TestExpectations')
+        webdriver_expect_path = fs.join(MOCK_WEB_TESTS,
+                                        'WebDriverExpectations')
+
+        fs.write_text_file(
+            test_expect_path,
+            (
+                '# results: [ Failure ]\n'
+                'some/test/a.html [ Failure ]\n'
+                'some/test/b.html [ Failure ]\n'
+                'ignore/globs/* [ Failure ]\n'
+                'some/test/c\*.html [ Failure ]\n'
+                # default test case, line below should exist in new file
+                'some/test/d.html [ Failure ]\n'))
+        fs.write_text_file(
+            webdriver_expect_path,
+            (
+                '# results: [ Failure ]\n'
+                'external/wpt/webdriver/some/test/a\*.html>>foo\* [ Failure ]\n'
+                'external/wpt/webdriver/some/test/a\*.html>>bar [ Failure ]\n'
+                'external/wpt/webdriver/some/test/b.html>>foo [ Failure ]\n'
+                'external/wpt/webdriver/some/test/c.html>>a [ Failure ]\n'
+                # default test case, line below should exist in new file
+                'external/wpt/webdriver/some/test/d.html>>foo [ Failure ]\n'))
+        fs.write_text_file(fs.join(MOCK_WEB_TESTS, 'VirtualTestSuites'), '[]')
+        fs.write_text_file(fs.join(MOCK_WEB_TESTS, 'new', 'a.html'), '')
+        fs.write_text_file(fs.join(MOCK_WEB_TESTS, 'new', 'b.html'), '')
 
         # TODO(rmhasan): Remove creation of Android files within
         # tests.
         for path in PRODUCTS_TO_EXPECTATION_FILE_PATHS.values():
-            host.filesystem.write_text_file(path, '')
+            fs.write_text_file(path, '')
 
         updater = WPTExpectationsUpdater(
             host, ['--clean-up-test-expectations-only',
@@ -1501,17 +1511,14 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
         updater._list_deleted_files = lambda: deleted_files
         updater._list_renamed_files = lambda: renamed_file_pairs
         updater.cleanup_test_expectations_files()
+        self.assertMultiLineEqual(fs.read_text_file(test_expect_path),
+                                  ('# results: [ Failure ]\n'
+                                   'new/a.html [ Failure ]\n'
+                                   'ignore/globs/* [ Failure ]\n'
+                                   'new/c\*.html [ Failure ]\n'
+                                   'some/test/d.html [ Failure ]\n'))
         self.assertMultiLineEqual(
-            host.filesystem.read_text_file(MOCK_WEB_TESTS +
-                                           'TestExpectations'),
-            ('# results: [ Failure ]\n'
-             'new/a.html [ Failure ]\n'
-             'ignore/globs/* [ Failure ]\n'
-             'new/c\*.html [ Failure ]\n'
-             'some/test/d.html [ Failure ]\n'))
-        self.assertMultiLineEqual(
-            host.filesystem.read_text_file(MOCK_WEB_TESTS +
-                                           'WebDriverExpectations'),
+            fs.read_text_file(webdriver_expect_path),
             ('# results: [ Failure ]\n'
              'old/a\*.html>>foo\* [ Failure ]\n'
              'old/a\*.html>>bar [ Failure ]\n'
@@ -1568,7 +1575,7 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
             'MOCK Try Trusty': {
                 'port_name': 'test-linux-trusty',
                 'specifiers': ['Trusty', 'Release'],
-                'master': 'tryserver.blink',
+                'main': 'tryserver.blink',
                 'has_webdriver_tests': True,
                 'is_try_builder': True,
             },
@@ -1616,7 +1623,7 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
         updater.add_results_for_configs_without_results(
             tmp_results, [missing_config])
         inherited_result = tmp_results[test_name][missing_config]
-        self.assertEqual("FAILURE CRASH", inherited_result.actual)
+        self.assertEqual("CRASH FAILURE", inherited_result.actual)
 
         # Linux will inherit all results from Mac and Win since there is no
         # other Linux result to take.
@@ -1625,7 +1632,7 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
         updater.add_results_for_configs_without_results(
             tmp_results, [missing_config])
         inherited_result = tmp_results[test_name][missing_config]
-        self.assertEqual("FAILURE CRASH TIMEOUT", inherited_result.actual)
+        self.assertEqual("CRASH FAILURE TIMEOUT", inherited_result.actual)
 
     def test_inheriting_results_dedupe(self):
         # In this test we make sure that we dedupe the inherited results.
@@ -1651,7 +1658,7 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
             'MOCK Try Trusty': {
                 'port_name': 'test-linux-trusty',
                 'specifiers': ['Trusty', 'Release'],
-                'master': 'tryserver.blink',
+                'main': 'tryserver.blink',
                 'has_webdriver_tests': True,
                 'is_try_builder': True,
             },

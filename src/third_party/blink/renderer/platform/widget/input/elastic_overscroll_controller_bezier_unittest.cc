@@ -24,10 +24,8 @@ class MockScrollElasticityHelper : public cc::ScrollElasticityHelper {
 
   // cc::ScrollElasticityHelper implementation:
   Size ScrollBounds() const override { return Size(1000, 1000); }
-  bool IsUserScrollable() const override { return is_user_scrollable_; }
-  void SetUserScrollable(bool is_user_scrollable) {
-    is_user_scrollable_ = is_user_scrollable;
-  }
+  bool IsUserScrollableHorizontal() const override { return true; }
+  bool IsUserScrollableVertical() const override { return true; }
   Vector2dF StretchAmount() const override { return stretch_amount_; }
   void SetStretchAmount(const Vector2dF& stretch_amount) override {
     stretch_amount_ = stretch_amount;
@@ -44,7 +42,6 @@ class MockScrollElasticityHelper : public cc::ScrollElasticityHelper {
   }
 
  private:
-  bool is_user_scrollable_ = true;
   Vector2dF stretch_amount_;
   gfx::PointF scroll_offset_, max_scroll_offset_;
 };
@@ -99,7 +96,7 @@ TEST_F(ElasticOverscrollControllerBezierTest, OverscrollStretch) {
   SendGestureScrollBegin(PhaseState::kNonMomentum);
   EXPECT_EQ(Vector2dF(0, 0), helper_.StretchAmount());
   SendGestureScrollUpdate(PhaseState::kNonMomentum, Vector2dF(0, -100));
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   EXPECT_EQ(Vector2dF(0, 0), helper_.StretchAmount());
 #else
   EXPECT_EQ(Vector2dF(0, -19), helper_.StretchAmount());
@@ -112,7 +109,7 @@ TEST_F(ElasticOverscrollControllerBezierTest, OverscrollStretch) {
   SendGestureScrollBegin(PhaseState::kNonMomentum);
   EXPECT_EQ(Vector2dF(0, 0), helper_.StretchAmount());
   SendGestureScrollUpdate(PhaseState::kNonMomentum, Vector2dF(-100, 0));
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   EXPECT_EQ(Vector2dF(0, 0), helper_.StretchAmount());
 #else
   EXPECT_EQ(Vector2dF(-19, 0), helper_.StretchAmount());

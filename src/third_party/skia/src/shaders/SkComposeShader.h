@@ -13,6 +13,8 @@
 #include "src/core/SkBlenderBase.h"
 #include "src/shaders/SkShaderBase.h"
 
+class SkShaderCodeDictionary;
+
 class SkShader_Blend final : public SkShaderBase {
 public:
     SkShader_Blend(SkBlendMode mode, sk_sp<SkShader> dst, sk_sp<SkShader> src)
@@ -26,6 +28,12 @@ public:
 
 #if SK_SUPPORT_GPU
     std::unique_ptr<GrFragmentProcessor> asFragmentProcessor(const GrFPArgs&) const override;
+#endif
+
+#ifdef SK_ENABLE_SKSL
+    void addToKey(const SkKeyContext&,
+                  SkPaintParamsKeyBuilder*,
+                  SkPipelineDataGatherer*) const override;
 #endif
 
 protected:

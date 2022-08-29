@@ -12,6 +12,8 @@ static_library("browser") {
     "optimization_guide_decider.h",
     "page_content_annotations_service.cc",
     "page_content_annotations_service.h",
+    "page_content_annotations_validator.cc",
+    "page_content_annotations_validator.h",
     "page_content_annotations_web_contents_observer.cc",
     "page_content_annotations_web_contents_observer.h",
     "page_content_annotator.h",
@@ -54,10 +56,6 @@ static_library("browser") {
       "//third_party/tflite_support",
       "//third_party/tflite_support:tflite_support_proto",
     ]
-
-    if (build_with_internal_optimization_guide) {
-      deps = [ "//components/optimization_guide/internal" ]
-    }
   }
 }
 
@@ -79,11 +77,14 @@ static_library("test_support") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "page_content_annotations_validator_unittest.cc",
     "page_content_annotations_web_contents_observer_unittest.cc",
     "page_text_dump_result_unittest.cc",
     "page_text_observer_unittest.cc",
   ]
-  if (build_with_tflite_lib) {
+
+  # crbug.com/1279884 Flaky on CrOS
+  if (!is_chromeos && build_with_tflite_lib) {
     sources += [ "page_content_annotations_model_manager_unittest.cc" ]
   }
   deps = [

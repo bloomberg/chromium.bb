@@ -6,6 +6,8 @@
 
 #include <string>
 
+#include "ash/bubble/bubble_constants.h"
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/shelf/shelf.h"
@@ -65,8 +67,11 @@ void SetupConnectingScrollListItem(HoverHighlightView* view) {
 }
 
 SkColor TrayIconColor(session_manager::SessionState session_state) {
-  if (session_state == session_manager::SessionState::OOBE)
+  if (!features::IsDarkLightModeEnabled() &&
+      session_state == session_manager::SessionState::OOBE) {
     return kIconColorInOobe;
+  }
+
   return AshColorProvider::Get()->GetContentLayerColor(
       AshColorProvider::ContentLayerType::kIconColorPrimary);
 }
@@ -74,9 +79,9 @@ SkColor TrayIconColor(session_manager::SessionState session_state) {
 gfx::Insets GetTrayBubbleInsets() {
   // Decrease bottom and right insets to compensate for the adjustment of
   // the respective edges in Shelf::GetSystemTrayAnchorRect().
-  gfx::Insets insets = gfx::Insets(
-      kUnifiedMenuPadding, kUnifiedMenuPadding, kUnifiedMenuPadding - 1,
-      kUnifiedMenuPadding - (base::i18n::IsRTL() ? 0 : 1));
+  gfx::Insets insets = gfx::Insets::TLBR(
+      kBubbleMenuPadding, kBubbleMenuPadding, kBubbleMenuPadding - 1,
+      kBubbleMenuPadding - (base::i18n::IsRTL() ? 0 : 1));
 
   // The work area in tablet mode always uses the in-app shelf height, which is
   // shorter than the standard shelf height. In this state, we need to add back
@@ -127,13 +132,13 @@ gfx::Insets GetSecondaryBubbleInsets() {
   switch (shelf->alignment()) {
     case ShelfAlignment::kBottom:
     case ShelfAlignment::kBottomLocked:
-      insets.set_bottom(kUnifiedMenuPadding);
+      insets.set_bottom(kBubbleMenuPadding);
       break;
     case ShelfAlignment::kLeft:
-      insets.set_left(kUnifiedMenuPadding);
+      insets.set_left(kBubbleMenuPadding);
       break;
     case ShelfAlignment::kRight:
-      insets.set_right(kUnifiedMenuPadding);
+      insets.set_right(kBubbleMenuPadding);
       break;
   }
   return insets;

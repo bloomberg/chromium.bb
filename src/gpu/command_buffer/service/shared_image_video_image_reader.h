@@ -46,8 +46,6 @@ class GPU_GLES2_EXPORT SharedImageVideoImageReader
 
   // SharedImageBacking implementation.
   size_t EstimatedSizeForMemTracking() const override;
-  std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>
-  GetAHardwareBuffer() override;
 
  protected:
   std::unique_ptr<SharedImageRepresentationGLTexture> ProduceGLTexture(
@@ -67,8 +65,9 @@ class GPU_GLES2_EXPORT SharedImageVideoImageReader
       gpu::SharedImageManager* manager,
       gpu::MemoryTypeTracker* tracker) override;
 
-  // TODO(vikassoni): Add overlay and AHardwareBuffer representations in future
-  // patch. Overlays are anyways using legacy mailbox for now.
+  std::unique_ptr<gpu::SharedImageRepresentationLegacyOverlay>
+  ProduceLegacyOverlay(gpu::SharedImageManager* manager,
+                       gpu::MemoryTypeTracker* tracker) override;
 
  private:
   // Helper class for observing SharedContext loss on gpu main thread and
@@ -97,6 +96,7 @@ class GPU_GLES2_EXPORT SharedImageVideoImageReader
   class SharedImageRepresentationGLTexturePassthroughVideo;
   class SharedImageRepresentationVideoSkiaVk;
   class SharedImageRepresentationOverlayVideo;
+  class SharedImageRepresentationLegacyOverlayVideo;
 
   void BeginGLReadAccess(const GLuint service_id);
 

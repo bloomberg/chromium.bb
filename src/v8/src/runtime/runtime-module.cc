@@ -28,12 +28,11 @@ RUNTIME_FUNCTION(Runtime_DynamicImportCall) {
   HandleScope scope(isolate);
   DCHECK_LE(2, args.length());
   DCHECK_GE(3, args.length());
-  CONVERT_ARG_HANDLE_CHECKED(JSFunction, function, 0);
-  CONVERT_ARG_HANDLE_CHECKED(Object, specifier, 1);
+  Handle<JSFunction> function = args.at<JSFunction>(0);
+  Handle<Object> specifier = args.at(1);
 
   MaybeHandle<Object> import_assertions;
   if (args.length() == 3) {
-    CHECK(args[2].IsObject());
     import_assertions = args.at<Object>(2);
   }
 
@@ -47,7 +46,7 @@ RUNTIME_FUNCTION(Runtime_DynamicImportCall) {
 RUNTIME_FUNCTION(Runtime_GetModuleNamespace) {
   HandleScope scope(isolate);
   DCHECK_EQ(1, args.length());
-  CONVERT_SMI_ARG_CHECKED(module_request, 0);
+  int module_request = args.smi_value_at(0);
   Handle<SourceTextModule> module(isolate->context().module(), isolate);
   return *SourceTextModule::GetModuleNamespace(isolate, module, module_request);
 }
@@ -58,6 +57,18 @@ RUNTIME_FUNCTION(Runtime_GetImportMetaObject) {
   Handle<SourceTextModule> module(isolate->context().module(), isolate);
   RETURN_RESULT_OR_FAILURE(isolate,
                            SourceTextModule::GetImportMeta(isolate, module));
+}
+
+RUNTIME_FUNCTION(Runtime_GetModuleNamespaceExport) {
+  HandleScope scope(isolate);
+  DCHECK_EQ(2, args.length());
+  Handle<JSModuleNamespace> module_namespace = args.at<JSModuleNamespace>(0);
+  Handle<String> name = args.at<String>(1);
+  if (!module_namespace->HasExport(isolate, name)) {
+    THROW_NEW_ERROR_RETURN_FAILURE(
+        isolate, NewReferenceError(MessageTemplate::kNotDefined, name));
+  }
+  RETURN_RESULT_OR_FAILURE(isolate, module_namespace->GetExport(isolate, name));
 }
 
 }  // namespace internal
