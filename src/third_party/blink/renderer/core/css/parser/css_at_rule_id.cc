@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -15,14 +16,17 @@ CSSAtRuleID CssAtRuleID(StringView name) {
     return kCSSAtRuleCharset;
   if (EqualIgnoringASCIICase(name, "font-face"))
     return kCSSAtRuleFontFace;
+  if (EqualIgnoringASCIICase(name, "font-palette-values")) {
+    if (RuntimeEnabledFeatures::FontPaletteEnabled())
+      return kCSSAtRuleFontPaletteValues;
+    return kCSSAtRuleInvalid;
+  }
   if (EqualIgnoringASCIICase(name, "import"))
     return kCSSAtRuleImport;
   if (EqualIgnoringASCIICase(name, "keyframes"))
     return kCSSAtRuleKeyframes;
   if (EqualIgnoringASCIICase(name, "layer")) {
-    if (RuntimeEnabledFeatures::CSSCascadeLayersEnabled())
-      return kCSSAtRuleLayer;
-    return kCSSAtRuleInvalid;
+    return kCSSAtRuleLayer;
   }
   if (EqualIgnoringASCIICase(name, "media"))
     return kCSSAtRuleMedia;
@@ -30,6 +34,11 @@ CSSAtRuleID CssAtRuleID(StringView name) {
     return kCSSAtRuleNamespace;
   if (EqualIgnoringASCIICase(name, "page"))
     return kCSSAtRulePage;
+  if (EqualIgnoringASCIICase(name, "position-fallback")) {
+    if (RuntimeEnabledFeatures::CSSAnchorPositioningEnabled())
+      return kCSSAtRulePositionFallback;
+    return kCSSAtRuleInvalid;
+  }
   if (EqualIgnoringASCIICase(name, "property"))
     return kCSSAtRuleProperty;
   if (EqualIgnoringASCIICase(name, "container")) {
@@ -44,8 +53,18 @@ CSSAtRuleID CssAtRuleID(StringView name) {
       return kCSSAtRuleScrollTimeline;
     return kCSSAtRuleInvalid;
   }
+  if (EqualIgnoringASCIICase(name, "scope")) {
+    if (RuntimeEnabledFeatures::CSSScopeEnabled())
+      return kCSSAtRuleScope;
+    return kCSSAtRuleInvalid;
+  }
   if (EqualIgnoringASCIICase(name, "supports"))
     return kCSSAtRuleSupports;
+  if (EqualIgnoringASCIICase(name, "try")) {
+    if (RuntimeEnabledFeatures::CSSAnchorPositioningEnabled())
+      return kCSSAtRuleTry;
+    return kCSSAtRuleInvalid;
+  }
   if (EqualIgnoringASCIICase(name, "viewport"))
     return kCSSAtRuleViewport;
   if (EqualIgnoringASCIICase(name, "-webkit-keyframes"))
@@ -62,6 +81,9 @@ void CountAtRule(const CSSParserContext* context, CSSAtRuleID rule_id) {
       break;
     case kCSSAtRuleFontFace:
       feature = WebFeature::kCSSAtRuleFontFace;
+      break;
+    case kCSSAtRuleFontPaletteValues:
+      feature = WebFeature::kCSSAtRuleFontPaletteValues;
       break;
     case kCSSAtRuleImport:
       feature = WebFeature::kCSSAtRuleImport;
@@ -85,10 +107,13 @@ void CountAtRule(const CSSParserContext* context, CSSAtRuleID rule_id) {
       feature = WebFeature::kCSSAtRuleProperty;
       break;
     case kCSSAtRuleContainer:
-      // TODO(crbug.com/1145970): Add use-counter.
+      feature = WebFeature::kCSSAtRuleContainer;
       return;
     case kCSSAtRuleCounterStyle:
       feature = WebFeature::kCSSAtRuleCounterStyle;
+      break;
+    case kCSSAtRuleScope:
+      feature = WebFeature::kCSSAtRuleScope;
       break;
     case kCSSAtRuleScrollTimeline:
       feature = WebFeature::kCSSAtRuleScrollTimeline;
@@ -99,6 +124,10 @@ void CountAtRule(const CSSParserContext* context, CSSAtRuleID rule_id) {
     case kCSSAtRuleViewport:
       feature = WebFeature::kCSSAtRuleViewport;
       break;
+    case kCSSAtRulePositionFallback:
+    case kCSSAtRuleTry:
+      // TODO(crbug.com/1309178): Add use counter.
+      return;
 
     case kCSSAtRuleWebkitKeyframes:
       feature = WebFeature::kCSSAtRuleWebkitKeyframes;

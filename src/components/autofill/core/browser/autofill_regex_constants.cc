@@ -41,8 +41,8 @@ const char16_t kStreetNameRe[] =
     u"|((?<!do |de )endereço)"  // pt-BR
     u"|calle";                  // es-MX
 const char16_t kHouseNumberRe[] =
-    u"(house.?|street.?|^)number"              // en
-    u"|(haus|^)(nummer|nr\\.?)"                // de
+    u"(house.?|street.?|^)(number|no\\.?$)"    // en
+    u"|(haus|^)(nummer|nr)"                    // de
     u"|^\\*?.?número(.?\\*?$| da residência)"  // pt-BR, pt-PT
     u"|дом|номер.?дома"                        // ru
     u"|exterior";                              // es-MX
@@ -603,8 +603,10 @@ const char16_t kHiddenValueRe[] = u"^(\\W)\\1+$";
 /////////////////////////////////////////////////////////////////////////////
 // merchant_promo_code_field.cc
 /////////////////////////////////////////////////////////////////////////////
+// "promo code", "promotion code", "promotional code" are all acceptable
+// keywords.
 const char16_t kMerchantPromoCodeRe[] =
-    u"\\bpromo.*code\\b|\\bcoupon code\\b|\\bgift code\\b";
+    u"(promo(tion|tional)?|gift|discount|coupon)[-_. ]*code";
 
 /////////////////////////////////////////////////////////////////////////////
 // votes_uploader.cc

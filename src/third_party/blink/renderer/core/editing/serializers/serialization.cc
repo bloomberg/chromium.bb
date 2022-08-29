@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/core/editing/serializers/serialization.h"
 
 #include "third_party/blink/public/common/tokens/tokens.h"
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
 #include "third_party/blink/renderer/core/css/css_value.h"
@@ -835,53 +836,97 @@ static bool StripSVGUseDataURLs(Node& node) {
   return stripped;
 }
 
+namespace {
+
+constexpr unsigned kMaxSanitizationIterations = 16;
+
+}  // namespace
+
+String CreateSanitizedMarkupWithContext(Document& document,
+                                        const String& raw_markup,
+                                        unsigned fragment_start,
+                                        unsigned fragment_end,
+                                        const String& base_url,
+                                        ChildrenOnly children_only,
+                                        AbsoluteURLs should_resolve_urls,
+                                        IncludeShadowRoots include_shadow_roots,
+                                        ClosedRootsSet include_closed_roots) {
+  if (raw_markup.IsEmpty())
+    return String();
+
+  Document* staging_document = CreateStagingDocumentForMarkupSanitization(
+      *document.GetFrame()->GetFrameScheduler()->GetAgentGroupScheduler());
+
+  // Iterate on parsing, sanitization and serialization until the markup is
+  // stable, or if we have exceeded the maximum allowed number of iterations.
+  String last_markup;
+  String markup = raw_markup;
+  for (unsigned iteration = 0;
+       iteration < kMaxSanitizationIterations && last_markup != markup;
+       ++iteration) {
+    last_markup = markup;
+
+    DocumentFragment* fragment = CreateFragmentFromMarkupWithContext(
+        *staging_document, last_markup, fragment_start, fragment_end, KURL(),
+        kDisallowScriptingAndPluginContent);
+    if (!fragment) {
+      staging_document->GetPage()->WillBeDestroyed();
+      return String();
+    }
+
+    bool needs_sanitization = false;
+    if (ContainsStyleElements(*fragment))
+      needs_sanitization = true;
+    if (StripSVGUseDataURLs(*fragment))
+      needs_sanitization = true;
+
+    if (!needs_sanitization) {
+      markup = CreateMarkup(fragment);
+    } else {
+      Element* body = staging_document->body();
+      staging_document->body()->appendChild(fragment);
+      staging_document->UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
+
+      // This sanitizes stylesheets in the markup into element inline styles
+      markup = CreateMarkup(Position::FirstPositionInNode(*body),
+                            Position::LastPositionInNode(*body),
+                            CreateMarkupOptions::Builder()
+                                .SetShouldAnnotateForInterchange(true)
+                                .SetIsForMarkupSanitization(true)
+                                .Build());
+
+      body->RemoveChildren();
+    }
+
+    fragment_start = 0;
+    fragment_end = markup.length();
+  }
+
+  String final_markup;
+  // Sanitization succeeds only if the markup can stabilize.
+  if (last_markup == markup) {
+    DocumentFragment* final_fragment =
+        CreateFragmentFromMarkup(*staging_document, markup, base_url,
+                                 kDisallowScriptingAndPluginContent);
+    final_markup =
+        CreateMarkup(final_fragment, children_only, should_resolve_urls,
+                     include_shadow_roots, include_closed_roots);
+  }
+  staging_document->GetPage()->WillBeDestroyed();
+  return final_markup;
+}
+
 DocumentFragment* CreateSanitizedFragmentFromMarkupWithContext(
     Document& document,
     const String& raw_markup,
     unsigned fragment_start,
     unsigned fragment_end,
     const String& base_url) {
-  if (raw_markup.IsEmpty())
+  String sanitized_markup = CreateSanitizedMarkupWithContext(
+      document, raw_markup, fragment_start, fragment_end, KURL());
+  if (sanitized_markup.IsNull())
     return nullptr;
-
-  Document* staging_document = CreateStagingDocumentForMarkupSanitization(
-      *document.GetFrame()->GetFrameScheduler()->GetAgentGroupScheduler());
-  Element* body = staging_document->body();
-
-  DocumentFragment* fragment = CreateFragmentFromMarkupWithContext(
-      *staging_document, raw_markup, fragment_start, fragment_end, KURL(),
-      kDisallowScriptingAndPluginContent);
-  if (!fragment) {
-    staging_document->GetPage()->WillBeDestroyed();
-    return nullptr;
-  }
-
-  bool needs_sanitization = false;
-  if (ContainsStyleElements(*fragment))
-    needs_sanitization = true;
-  if (StripSVGUseDataURLs(*fragment))
-    needs_sanitization = true;
-
-  if (!needs_sanitization) {
-    staging_document->GetPage()->WillBeDestroyed();
-    return CreateFragmentFromMarkupWithContext(
-        document, raw_markup, fragment_start, fragment_end, base_url,
-        kDisallowScriptingAndPluginContent);
-  }
-
-  body->appendChild(fragment);
-  staging_document->UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
-
-  // This sanitizes stylesheets in the markup into element inline styles
-  String markup = CreateMarkup(Position::FirstPositionInNode(*body),
-                               Position::LastPositionInNode(*body),
-                               CreateMarkupOptions::Builder()
-                                   .SetShouldAnnotateForInterchange(true)
-                                   .SetIsForMarkupSanitization(true)
-                                   .Build());
-  staging_document->GetPage()->WillBeDestroyed();
-
-  return CreateFragmentFromMarkup(document, markup, base_url,
+  return CreateFragmentFromMarkup(document, sanitized_markup, base_url,
                                   kDisallowScriptingAndPluginContent);
 }
 

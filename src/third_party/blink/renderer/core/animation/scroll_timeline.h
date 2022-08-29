@@ -6,12 +6,15 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_SCROLL_TIMELINE_H_
 
 #include "base/gtest_prod_util.h"
+#include "base/time/time.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_typedefs.h"
 #include "third_party/blink/renderer/core/animation/animation_timeline.h"
 #include "third_party/blink/renderer/core/animation/scroll_timeline_offset.h"
 #include "third_party/blink/renderer/core/animation/timing.h"
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -96,7 +99,7 @@ class CORE_EXPORT ScrollTimeline : public AnimationTimeline {
   // See DocumentAnimations::ValidateTimelines
   void ValidateState();
 
-  CompositorAnimationTimeline* EnsureCompositorTimeline() override;
+  cc::AnimationTimeline* EnsureCompositorTimeline() override;
   void UpdateCompositorTimeline() override;
 
   // TODO(crbug.com/896249): This method is temporary and currently required

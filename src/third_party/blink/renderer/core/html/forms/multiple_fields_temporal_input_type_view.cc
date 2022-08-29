@@ -205,7 +205,7 @@ void MultipleFieldsTemporalInputTypeView::DidFocusOnControl(
 }
 
 void MultipleFieldsTemporalInputTypeView::EditControlValueChanged() {
-  String old_value = GetElement().value();
+  String old_value = GetElement().Value();
   String new_value =
       input_type_->SanitizeValue(GetDateTimeEditElement()->Value());
   // Even if oldValue is null and newValue is "", we should assume they are
@@ -285,7 +285,7 @@ void MultipleFieldsTemporalInputTypeView::PickerIndicatorChooseValue(
   if (will_be_destroyed_)
     return;
   if (GetElement().IsValidValue(value)) {
-    GetElement().setValue(value, TextFieldEventBehavior::kDispatchInputEvent);
+    GetElement().SetValue(value, TextFieldEventBehavior::kDispatchInputEvent);
     return;
   }
 
@@ -314,7 +314,7 @@ void MultipleFieldsTemporalInputTypeView::PickerIndicatorChooseValue(
     return;
   DCHECK(std::isfinite(value) || std::isnan(value));
   if (std::isnan(value)) {
-    GetElement().setValue(g_empty_string,
+    GetElement().SetValue(g_empty_string,
                           TextFieldEventBehavior::kDispatchInputEvent);
   } else {
     GetElement().setValueAsNumber(value, ASSERT_NO_EXCEPTION,
@@ -425,7 +425,7 @@ void MultipleFieldsTemporalInputTypeView::DestroyShadowSubtree() {
   // If a field element has focus, set focus back to the <input> itself before
   // deleting the field. This prevents unnecessary focusout/blur events.
   if (ContainsFocusedShadowElement())
-    GetElement().focus();
+    GetElement().Focus();
 
   InputTypeView::DestroyShadowSubtree();
   is_destroying_shadow_subtree_ = false;
@@ -448,13 +448,10 @@ void MultipleFieldsTemporalInputTypeView::HandleFocusInEvent(
     if (GetElement().GetDocument().GetPage())
       GetElement().GetDocument().GetPage()->GetFocusController().AdvanceFocus(
           type);
-  } else if (type == mojom::blink::FocusType::kNone ||
-             type == mojom::blink::FocusType::kMouse ||
-             type == mojom::blink::FocusType::kPage ||
-             type == mojom::blink::FocusType::kAccessKey) {
-    edit->FocusByOwner(old_focused_element);
-  } else {
+  } else if (type == mojom::blink::FocusType::kForward) {
     edit->FocusByOwner();
+  } else {
+    edit->FocusByOwner(old_focused_element);
   }
 }
 
@@ -497,7 +494,7 @@ void MultipleFieldsTemporalInputTypeView::HandleKeydownEvent(
 
 bool MultipleFieldsTemporalInputTypeView::HasBadInput() const {
   DateTimeEditElement* edit = GetDateTimeEditElement();
-  return GetElement().value().IsEmpty() && edit &&
+  return GetElement().Value().IsEmpty() && edit &&
          edit->AnyEditableFieldsHaveValues();
 }
 
@@ -571,7 +568,7 @@ void MultipleFieldsTemporalInputTypeView::UpdateView() {
     has_value = input_type_->ParseToDateComponents(
         GetElement().SuggestedValue(), &date);
   else
-    has_value = input_type_->ParseToDateComponents(GetElement().value(), &date);
+    has_value = input_type_->ParseToDateComponents(GetElement().Value(), &date);
   if (!has_value)
     input_type_->SetMillisecondToDateComponents(
         layout_parameters.step_range.Minimum().ToDouble(), &date);
@@ -596,6 +593,10 @@ void MultipleFieldsTemporalInputTypeView::UpdateView() {
   else
     edit->SetEmptyValue(layout_parameters, date);
   UpdateClearButtonVisibility();
+}
+
+ControlPart MultipleFieldsTemporalInputTypeView::AutoAppearance() const {
+  return kTextFieldPart;
 }
 
 void MultipleFieldsTemporalInputTypeView::OpenPopupView() {
@@ -654,7 +655,7 @@ void MultipleFieldsTemporalInputTypeView::ShowPickerIndicator() {
 }
 
 void MultipleFieldsTemporalInputTypeView::FocusAndSelectClearButtonOwner() {
-  GetElement().focus();
+  GetElement().Focus();
 }
 
 bool MultipleFieldsTemporalInputTypeView::
@@ -663,7 +664,7 @@ bool MultipleFieldsTemporalInputTypeView::
 }
 
 void MultipleFieldsTemporalInputTypeView::ClearValue() {
-  GetElement().setValue("",
+  GetElement().SetValue("",
                         TextFieldEventBehavior::kDispatchInputAndChangeEvent);
   GetElement().UpdateClearButtonVisibility();
 }

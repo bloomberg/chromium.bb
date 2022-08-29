@@ -39,8 +39,8 @@ void av1_tile_init(TileInfo *tile, const struct AV1Common *cm, int row,
 void av1_tile_set_row(TileInfo *tile, const struct AV1Common *cm, int row);
 void av1_tile_set_col(TileInfo *tile, const struct AV1Common *cm, int col);
 
-int av1_get_sb_rows_in_tile(struct AV1Common *cm, TileInfo tile);
-int av1_get_sb_cols_in_tile(struct AV1Common *cm, TileInfo tile);
+int av1_get_sb_rows_in_tile(struct AV1Common *cm, const TileInfo *tile);
+int av1_get_sb_cols_in_tile(struct AV1Common *cm, const TileInfo *tile);
 
 typedef struct {
   int left, top, right, bottom;

@@ -62,11 +62,6 @@ FakeAppInstance::FakeAppInstance(mojom::AppHost* app_host)
     : app_host_(app_host) {}
 FakeAppInstance::~FakeAppInstance() {}
 
-void FakeAppInstance::InitDeprecated(
-    mojo::PendingRemote<mojom::AppHost> host_remote) {
-  Init(std::move(host_remote), base::DoNothing());
-}
-
 void FakeAppInstance::Init(mojo::PendingRemote<mojom::AppHost> host_remote,
                            InitCallback callback) {
   // For every change in a connection bind latest remote.
@@ -120,19 +115,19 @@ void FakeAppInstance::GetAppIcon(const std::string& package_name,
 }
 
 void FakeAppInstance::SendRefreshAppList(
-    const std::vector<mojom::AppInfo>& apps) {
+    const std::vector<mojom::AppInfoPtr>& apps) {
   std::vector<mojom::AppInfoPtr> v;
   for (const auto& app : apps)
-    v.emplace_back(app.Clone());
+    v.emplace_back(app->Clone());
   app_host_->OnAppListRefreshed(std::move(v));
 }
 
 void FakeAppInstance::SendPackageAppListRefreshed(
     const std::string& package_name,
-    const std::vector<mojom::AppInfo>& apps) {
+    const std::vector<mojom::AppInfoPtr>& apps) {
   std::vector<mojom::AppInfoPtr> v;
   for (const auto& app : apps)
-    v.emplace_back(app.Clone());
+    v.emplace_back(app->Clone());
   app_host_->OnPackageAppListRefreshed(package_name, std::move(v));
 }
 
@@ -210,10 +205,12 @@ arc::mojom::RawIconPngDataPtr FakeAppInstance::GenerateIconResponse(
       base::FilePath base_path;
       CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &base_path));
       base::FilePath icon_file_path =
-          base_path.AppendASCII("components")
+          base_path.AppendASCII("ash")
+              .AppendASCII("components")
+              .AppendASCII("arc")
               .AppendASCII("test")
               .AppendASCII("data")
-              .AppendASCII("arc")
+              .AppendASCII("icons")
               .AppendASCII(base::StringPrintf(
                   "icon_%s_%d.png", app_icon ? "app" : "shortcut", dimension));
       std::string good_png_data_as_string;
@@ -269,10 +266,12 @@ arc::mojom::RawIconPngDataPtr FakeAppInstance::GetFakeIcon(
   base::FilePath base_path;
   std::string png_data_as_string;
   CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &base_path));
-  base::FilePath icon_file_path = base_path.AppendASCII("components")
+  base::FilePath icon_file_path = base_path.AppendASCII("ash")
+                                      .AppendASCII("components")
+                                      .AppendASCII("arc")
                                       .AppendASCII("test")
                                       .AppendASCII("data")
-                                      .AppendASCII("arc")
+                                      .AppendASCII("icons")
                                       .AppendASCII(icon_file_name);
   CHECK(base::PathExists(icon_file_path));
   CHECK(base::ReadFileToString(icon_file_path, &png_data_as_string));

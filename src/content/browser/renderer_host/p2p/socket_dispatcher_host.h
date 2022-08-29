@@ -16,6 +16,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
 #include "net/base/network_isolation_key.h"
 #include "services/network/public/mojom/p2p.mojom.h"
@@ -45,9 +46,14 @@ class P2PSocketDispatcherHost
   void BindReceiver(
       RenderProcessHostImpl& process,
       mojo::PendingReceiver<network::mojom::P2PSocketManager> receiver,
-      net::NetworkIsolationKey isolation_key);
+      net::NetworkIsolationKey isolation_key,
+      const GlobalRenderFrameHostId& render_frame_host_id);
 
   base::WeakPtr<P2PSocketDispatcherHost> GetWeakPtr();
+  void PauseSocketManagerForRenderFrameHost(
+      const GlobalRenderFrameHostId& frame_id);
+  void ResumeSocketManagerForRenderFrameHost(
+      const GlobalRenderFrameHostId& frame_id);
 
  private:
   // network::mojom::P2PTrustedSocketManagerClient overrides:
@@ -73,7 +79,11 @@ class P2PSocketDispatcherHost
   mojo::RemoteSet<network::mojom::P2PTrustedSocketManager>
       trusted_socket_managers_;
 
-  network::mojom::P2PNetworkNotificationClientPtr network_notification_client_;
+  base::flat_map<GlobalRenderFrameHostId, mojo::RemoteSetElementId>
+      frame_host_to_socket_manager_id_;
+
+  mojo::Remote<network::mojom::P2PNetworkNotificationClient>
+      network_notification_client_;
 
   base::WeakPtrFactory<P2PSocketDispatcherHost> weak_factory_{this};
 };

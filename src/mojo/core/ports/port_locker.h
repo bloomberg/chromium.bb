@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include "base/memory/raw_ptr_exclusion.h"
 #include "mojo/core/ports/port_ref.h"
 
 namespace mojo {
@@ -64,12 +65,12 @@ class PortLocker {
   // `port_refs_` is not a raw_ptr<T> for performance reasons: PortLocker is
   // usually short-lived (e.g. allocated on the stack) + the stack (not on the
   // heap).
-  const PortRef** const port_refs_;
+  RAW_PTR_EXCLUSION const PortRef** const port_refs_;
   const size_t num_ports_;
 };
 
 // Convenience wrapper for a PortLocker that locks a single port.
-class SinglePortLocker {
+class COMPONENT_EXPORT(MOJO_CORE_PORTS) SinglePortLocker {
  public:
   explicit SinglePortLocker(const PortRef* port_ref);
 

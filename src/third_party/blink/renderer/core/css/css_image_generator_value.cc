@@ -140,20 +140,21 @@ scoped_refptr<Image> CSSImageGeneratorValue::GetImage(
     const ImageResourceObserver& client,
     const Document& document,
     const ComputedStyle& style,
+    const ContainerSizes& container_sizes,
     const gfx::SizeF& target_size) {
   switch (GetClassType()) {
     case kLinearGradientClass:
-      return To<CSSLinearGradientValue>(this)->GetImage(client, document, style,
-                                                        target_size);
+      return To<CSSLinearGradientValue>(this)->GetImage(
+          client, document, style, container_sizes, target_size);
     case kPaintClass:
       return To<CSSPaintValue>(this)->GetImage(client, document, style,
                                                target_size);
     case kRadialGradientClass:
-      return To<CSSRadialGradientValue>(this)->GetImage(client, document, style,
-                                                        target_size);
+      return To<CSSRadialGradientValue>(this)->GetImage(
+          client, document, style, container_sizes, target_size);
     case kConicGradientClass:
-      return To<CSSConicGradientValue>(this)->GetImage(client, document, style,
-                                                       target_size);
+      return To<CSSConicGradientValue>(this)->GetImage(
+          client, document, style, container_sizes, target_size);
     default:
       NOTREACHED();
   }
@@ -168,6 +169,32 @@ bool CSSImageGeneratorValue::IsUsingCustomProperty(
                                                           document);
   }
   return false;
+}
+
+bool CSSImageGeneratorValue::IsUsingCurrentColor() const {
+  switch (GetClassType()) {
+    case kLinearGradientClass:
+      return To<CSSLinearGradientValue>(this)->IsUsingCurrentColor();
+    case kRadialGradientClass:
+      return To<CSSRadialGradientValue>(this)->IsUsingCurrentColor();
+    case kConicGradientClass:
+      return To<CSSConicGradientValue>(this)->IsUsingCurrentColor();
+    default:
+      return false;
+  }
+}
+
+bool CSSImageGeneratorValue::IsUsingContainerRelativeUnits() const {
+  switch (GetClassType()) {
+    case kLinearGradientClass:
+      return To<CSSLinearGradientValue>(this)->IsUsingContainerRelativeUnits();
+    case kRadialGradientClass:
+      return To<CSSRadialGradientValue>(this)->IsUsingContainerRelativeUnits();
+    case kConicGradientClass:
+      return To<CSSConicGradientValue>(this)->IsUsingContainerRelativeUnits();
+    default:
+      return false;
+  }
 }
 
 bool CSSImageGeneratorValue::KnownToBeOpaque(const Document& document,

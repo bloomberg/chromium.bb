@@ -6,10 +6,13 @@
 
 #include <inttypes.h>
 
+#include <type_traits>
+
 #include "base/bits.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/checked_math.h"
 #include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
 #include "components/crash/core/common/crash_key.h"
@@ -27,8 +30,7 @@ class Deserializer {
 
   template <typename T>
   bool Read(T* val) {
-    static_assert(base::is_trivially_copyable<T>::value,
-                  "Not trivially copyable");
+    static_assert(std::is_trivially_copyable_v<T>);
     if (!AlignMemory(sizeof(T), alignof(T)))
       return false;
 
@@ -153,6 +155,8 @@ ServiceFontManager::ServiceFontManager(Client* client,
 
 ServiceFontManager::~ServiceFontManager() {
   DCHECK(destroyed_);
+  DLOG_IF(ERROR, !discardable_handle_map_.empty())
+      << "discardable_handle_map_ is not empty.";
 }
 
 void ServiceFontManager::Destroy() {
@@ -160,7 +164,6 @@ void ServiceFontManager::Destroy() {
 
   client_ = nullptr;
   strike_client_.reset();
-  discardable_handle_map_.clear();
   destroyed_ = true;
 }
 
@@ -168,7 +171,7 @@ bool ServiceFontManager::Deserialize(
     const volatile char* memory,
     uint32_t memory_size,
     std::vector<SkDiscardableHandleId>* locked_handles) {
-  base::AutoLock hold(lock_);
+  base::ReleasableAutoLock hold(&lock_);
   DCHECK_EQ(client_thread_id_, base::PlatformThread::CurrentId());
 
   DCHECK(locked_handles->empty());
@@ -187,8 +190,9 @@ bool ServiceFontManager::Deserialize(
 
     scoped_refptr<gpu::Buffer> buffer = client_->GetShmBuffer(handle.shm_id);
     if (!DiscardableHandleBase::ValidateParameters(buffer.get(),
-                                                   handle.byte_offset))
+                                                   handle.byte_offset)) {
       return false;
+    }
 
     if (!AddHandle(handle.handle_id,
                    ServiceDiscardableHandle(
@@ -207,9 +211,15 @@ bool ServiceFontManager::Deserialize(
     return false;
 
   locked_handles->resize(num_locked_handles);
-  for (uint32_t i = 0; i < num_locked_handles; ++i) {
-    if (!deserializer.Read<SkDiscardableHandleId>(&locked_handles->at(i)))
+  for (auto& locked_handle : *locked_handles) {
+    if (!deserializer.Read<SkDiscardableHandleId>(&locked_handle))
       return false;
+    auto it = discardable_handle_map_.find(locked_handle);
+    if (it == discardable_handle_map_.end()) {
+      DLOG(ERROR) << "Got an invalid SkDiscardableHandleId:" << locked_handle;
+      continue;
+    }
+    it->second.Lock();
   }
 
   // Skia font data.
@@ -217,11 +227,9 @@ bool ServiceFontManager::Deserialize(
   if (!deserializer.Read<uint32_t>(&skia_data_size))
     return false;
 
-  {
-    base::AutoUnlock release(lock_);
-    if (!deserializer.ReadStrikeData(strike_client_.get(), skia_data_size))
-      return false;
-  }
+  hold.Release();
+  if (!deserializer.ReadStrikeData(strike_client_.get(), skia_data_size))
+    return false;
 
   return true;
 }
@@ -229,18 +237,15 @@ bool ServiceFontManager::Deserialize(
 bool ServiceFontManager::AddHandle(SkDiscardableHandleId handle_id,
                                    ServiceDiscardableHandle handle) {
   lock_.AssertAcquired();
-
-  if (discardable_handle_map_.find(handle_id) != discardable_handle_map_.end())
-    return false;
-  discardable_handle_map_[handle_id] = std::move(handle);
-  return true;
+  bool inserted;
+  std::tie(std::ignore, inserted) =
+      discardable_handle_map_.try_emplace(handle_id, std::move(handle));
+  return inserted;
 }
 
 bool ServiceFontManager::Unlock(
     const std::vector<SkDiscardableHandleId>& handles) {
   base::AutoLock hold(lock_);
-  DCHECK(!destroyed_);
-
   for (auto handle_id : handles) {
     auto it = discardable_handle_map_.find(handle_id);
     if (it == discardable_handle_map_.end())
@@ -252,10 +257,6 @@ bool ServiceFontManager::Unlock(
 
 bool ServiceFontManager::DeleteHandle(SkDiscardableHandleId handle_id) {
   base::AutoLock hold(lock_);
-
-  if (destroyed_)
-    return true;
-
   // If this method returns true, the strike associated with the handle will be
   // deleted which deletes the memory for all glyphs cached by the strike. On
   // mac this is resulting in hangs during strike deserialization when a bunch
@@ -265,24 +266,32 @@ bool ServiceFontManager::DeleteHandle(SkDiscardableHandleId handle_id) {
   // where skia is used, except for single process webview where the renderer
   // and GPU run in the same process.
   const bool report_progress =
-      base::PlatformThread::CurrentId() == client_thread_id_;
+      base::PlatformThread::CurrentId() == client_thread_id_ && !destroyed_;
 
   auto it = discardable_handle_map_.find(handle_id);
   if (it == discardable_handle_map_.end()) {
     LOG(ERROR) << "Tried to delete invalid SkDiscardableHandleId: "
                << handle_id;
-    if (report_progress)
+    if (report_progress) {
+      DCHECK(client_);
       client_->ReportProgress();
+    }
     return true;
   }
 
-  bool deleted = it->second.Delete();
+  // If the renderer is destroyed, we just need check if the local ref count is
+  // 0.
+  bool deleted = destroyed_ ? it->second.ref_count() == 0 : it->second.Delete();
   if (!deleted)
     return false;
 
+  DCHECK_EQ(it->second.ref_count(), 0);
   discardable_handle_map_.erase(it);
-  if (report_progress)
+  if (report_progress) {
+    DCHECK(client_);
     client_->ReportProgress();
+  }
+
   return true;
 }
 

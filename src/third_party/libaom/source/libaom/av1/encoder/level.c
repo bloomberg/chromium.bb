@@ -1223,7 +1223,7 @@ void av1_update_level_info(AV1_COMP *cpi, size_t size, int64_t ts_start,
 
     // Check whether target level is met.
     const AV1_LEVEL target_level = level_params->target_seq_level_idx[i];
-    if (target_level < SEQ_LEVELS) {
+    if (target_level < SEQ_LEVELS && cpi->oxcf.strict_level_conformance == 1) {
       assert(is_valid_seq_level_idx(target_level));
       const int tier = seq_params->tier[i];
       const TARGET_LEVEL_FAIL_ID fail_id = check_level_constraints(
@@ -1260,6 +1260,18 @@ aom_codec_err_t av1_get_seq_level_idx(const SequenceHeader *seq_params,
         break;
       }
     }
+  }
+
+  return AOM_CODEC_OK;
+}
+
+aom_codec_err_t av1_get_target_seq_level_idx(const SequenceHeader *seq_params,
+                                             const AV1LevelParams *level_params,
+                                             int *target_seq_level_idx) {
+  for (int op = 0; op < seq_params->operating_points_cnt_minus_1 + 1; ++op) {
+    target_seq_level_idx[op] = (int)SEQ_LEVEL_MAX;
+    if (!((level_params->keep_level_stats >> op) & 1)) continue;
+    target_seq_level_idx[op] = level_params->target_seq_level_idx[op];
   }
 
   return AOM_CODEC_OK;

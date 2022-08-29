@@ -9,13 +9,13 @@
 #include <algorithm>
 #include <cstring>
 #include <set>
+#include <tuple>
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/check.h"
 #include "base/i18n/char_iterator.h"
-#include "base/ignore_result.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/third_party/icu/icu_utf.h"
@@ -175,13 +175,13 @@ void InputMethodAsh::ProcessKeyEventDone(ui::KeyEvent* event, bool is_handled) {
     }
   }
   if (event->type() == ET_KEY_PRESSED || event->type() == ET_KEY_RELEASED) {
-    ignore_result(ProcessKeyEventPostIME(event, is_handled,
-                                         /* stopped_propagation */ false));
+    std::ignore = ProcessKeyEventPostIME(event, is_handled,
+                                         /* stopped_propagation */ false);
   }
   handling_key_event_ = false;
 }
 
-void InputMethodAsh::OnTextInputTypeChanged(const TextInputClient* client) {
+void InputMethodAsh::OnTextInputTypeChanged(TextInputClient* client) {
   if (!IsTextInputClientFocused(client))
     return;
 
@@ -244,7 +244,6 @@ void InputMethodAsh::OnCaretBoundsChanged(const TextInputClient* client) {
     ash::Bounds bounds;
     bounds.caret = caret_rect;
     bounds.autocorrect = client->GetAutocorrectCharacterBounds();
-    client->GetCompositionCharacterBounds(0, &bounds.composition_text);
     assistive_window->SetBounds(bounds);
   }
 
@@ -454,11 +453,10 @@ bool InputMethodAsh::SetAutocorrectRange(const gfx::Range& range) {
   }
 }
 
-absl::optional<GrammarFragment> InputMethodAsh::GetGrammarFragment(
-    const gfx::Range& range) {
+absl::optional<GrammarFragment> InputMethodAsh::GetGrammarFragmentAtCursor() {
   if (IsTextInputTypeNone())
     return absl::nullopt;
-  return GetTextInputClient()->GetGrammarFragment(range);
+  return GetTextInputClient()->GetGrammarFragmentAtCursor();
 }
 
 bool InputMethodAsh::ClearGrammarFragments(const gfx::Range& range) {
@@ -485,6 +483,23 @@ bool InputMethodAsh::SetSelectionRange(uint32_t start, uint32_t end) {
 void InputMethodAsh::ConfirmCompositionText(bool reset_engine,
                                             bool keep_selection) {
   TextInputClient* client = GetTextInputClient();
+  // TODO(b/223075193): Quick fix for the case where we have a pending commit.
+  // Without this, then we would lose the pending commit after confirming the
+  // composition text.
+  // Fix this properly by getting rid of the pending mechanism completely.
+  if (pending_commit_ && !pending_composition_range_ && !pending_composition_) {
+    // Only a pending commit, so confirming the composition is a no-op.
+    return;
+  }
+  // TODO(b/225723475): Similar to the comment above, this is a quick fix to
+  // solve the autocorrect issue outlined in the linked bug. This is due to the
+  // pending composition being reset before it could be applied to the current
+  // text. Again we need to fix this properly by removing the pending mechanism.
+  if (pending_composition_ && !pending_commit_ && !pending_composition_range_) {
+    GetTextInputClient()->SetCompositionText(*pending_composition_);
+    pending_composition_ = absl::nullopt;
+    composition_changed_ = false;
+  }
   if (client && client->HasCompositionText()) {
     const uint32_t characters_committed =
         client->ConfirmCompositionText(keep_selection);
@@ -629,16 +644,9 @@ void InputMethodAsh::MaybeProcessPendingInputMethodResult(ui::KeyEvent* event,
   DCHECK(client);
 
   if (pending_commit_) {
-    if (handled && NeedInsertChar()) {
-      for (const auto& ch : pending_commit_->text) {
-        KeyEvent ch_event(ET_KEY_PRESSED, VKEY_UNKNOWN, EF_NONE);
-        ch_event.set_character(ch);
-        client->InsertChar(ch_event);
-      }
-    } else if (pending_commit_->text.empty()) {
+    if (pending_commit_->text.empty()) {
       client->InsertText(
           u"", TextInputClient::InsertTextCursorBehavior::kMoveCursorAfterText);
-      composing_text_ = false;
     } else {
       // Split the commit into two separate commits, one for the substring
       // before the cursor and one for the substring after.
@@ -656,8 +664,8 @@ void InputMethodAsh::MaybeProcessPendingInputMethodResult(ui::KeyEvent* event,
             after_cursor,
             TextInputClient::InsertTextCursorBehavior::kMoveCursorBeforeText);
       }
-      composing_text_ = false;
     }
+    composing_text_ = false;
     typing_session_manager_.CommitCharacters(pending_commit_->text.length());
   }
 
@@ -831,7 +839,8 @@ SurroundingTextInfo InputMethodAsh::GetSurroundingTextInfo() {
   gfx::Range text_range;
   SurroundingTextInfo info;
   TextInputClient* client = GetTextInputClient();
-  if (!client->GetTextRange(&text_range) ||
+  if (!client ||
+      !client->GetTextRange(&text_range) ||
       !client->GetTextFromRange(text_range, &info.surrounding_text) ||
       !client->GetEditableSelectionRange(&info.selection_range)) {
     return SurroundingTextInfo();
@@ -960,6 +969,20 @@ TextInputClient::FocusReason InputMethodAsh::GetClientFocusReason() const {
 bool InputMethodAsh::HasCompositionText() {
   TextInputClient* client = GetTextInputClient();
   return client && client->HasCompositionText();
+}
+
+std::u16string InputMethodAsh::GetCompositionText() {
+  TextInputClient* client = GetTextInputClient();
+  if (!client) {
+    return u"";
+  }
+
+  gfx::Range composition_range;
+  client->GetCompositionTextRange(&composition_range);
+  std::u16string composition_text;
+  client->GetTextFromRange(composition_range, &composition_text);
+
+  return composition_text;
 }
 
 ukm::SourceId InputMethodAsh::GetClientSourceForMetrics() {

@@ -9,6 +9,7 @@
 
 #include "base/memory/singleton.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 // A signleton that provides all the URLs that are used for connecting to GAIA.
 //
@@ -23,8 +24,8 @@ class GaiaUrls {
   // The URLs for different calls in the Google Accounts programmatic login API.
   const GURL& google_url() const;
   const GURL& secure_google_url() const;
-  const GURL& gaia_url() const;
-  const GURL& captcha_base_url() const;
+  const url::Origin& gaia_origin() const;
+  GURL gaia_url() const;
   const GURL& client_login_url() const;
   const GURL& service_login_url() const;
   const GURL& embedded_setup_chromeos_url(unsigned version) const;
@@ -61,8 +62,6 @@ class GaiaUrls {
   const GURL& oauth2_revoke_url() const;
   const GURL& reauth_api_url() const;
 
-  const GURL& gaia_login_form_realm() const;
-
   // The base URL for communicating with the google api server.
   const GURL& google_apis_origin_url() const;
 
@@ -82,8 +81,7 @@ class GaiaUrls {
 
   GURL google_url_;
   GURL secure_google_url_;
-  GURL gaia_url_;
-  GURL captcha_base_url_;
+  url::Origin gaia_origin_;
 
   GURL lso_origin_url_;
   GURL google_apis_origin_url_;
@@ -130,8 +128,6 @@ class GaiaUrls {
   GURL oauth2_revoke_url_;
 
   GURL reauth_api_url_;
-
-  GURL gaia_login_form_realm_;
 };
 
 #endif  // GOOGLE_APIS_GAIA_GAIA_URLS_H_

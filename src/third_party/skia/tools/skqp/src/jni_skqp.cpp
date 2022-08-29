@@ -14,6 +14,7 @@
 
 #include "include/core/SkStream.h"
 #include "include/private/SkTo.h"
+#include "src/utils/SkOSPath.h"
 #include "tools/ResourceFactory.h"
 
 #include "tools/skqp/src/skqp.h"
@@ -21,23 +22,22 @@
 ////////////////////////////////////////////////////////////////////////////////
 extern "C" {
 JNIEXPORT void JNICALL Java_org_skia_skqp_SkQP_nInit(JNIEnv*, jobject, jobject, jstring);
-JNIEXPORT jlong JNICALL Java_org_skia_skqp_SkQP_nExecuteGM(JNIEnv*, jobject, jint, jint);
 JNIEXPORT jobjectArray JNICALL Java_org_skia_skqp_SkQP_nExecuteUnitTest(JNIEnv*, jobject, jint);
 JNIEXPORT void JNICALL Java_org_skia_skqp_SkQP_nMakeReport(JNIEnv*, jobject);
 }  // extern "C"
 ////////////////////////////////////////////////////////////////////////////////
 
-static AAssetManager* gAAssetManager = nullptr;
+static AAssetManager* sAAssetManager = nullptr;
 
 static sk_sp<SkData> open_asset_data(const char* path) {
     sk_sp<SkData> data;
-    if (gAAssetManager) {
-        if (AAsset* asset = AAssetManager_open(gAAssetManager, path, AASSET_MODE_STREAMING)) {
+    if (sAAssetManager) {
+        if (AAsset* asset = AAssetManager_open(sAAssetManager, path, AASSET_MODE_STREAMING)) {
             if (size_t size = SkToSizeT(AAsset_getLength(asset))) {
                 data = SkData::MakeUninitialized(size);
                 int ret = AAsset_read(asset, data->writable_data(), size);
                 if (ret != SkToInt(size)) {
-                    SkDebugf("ERROR: AAsset_read != AAsset_getLength (%s)\n", path);
+                    SK_ABORT("ERROR: AAsset_read != AAsset_getLength (%s)\n", path);
                 }
             }
             AAsset_close(asset);
@@ -48,7 +48,29 @@ static sk_sp<SkData> open_asset_data(const char* path) {
 
 namespace {
 struct AndroidAssetManager : public SkQPAssetManager {
-    sk_sp<SkData> open(const char* path) override { return open_asset_data(path); }
+    sk_sp<SkData> open(const char* path) override {
+        return open_asset_data(path);
+    }
+
+    std::vector<std::string> iterateDir(const char* directory, const char* extension) override {
+        std::vector<std::string> paths;
+        AAssetDir* assetDir = AAssetManager_openDir(sAAssetManager, directory);
+
+        while (const char* filename = AAssetDir_getNextFileName(assetDir)) {
+            const char* ext = strrchr(filename, '.');
+            if (!ext) {
+                continue;
+            }
+            if (0 != strcasecmp(extension, ext)) {
+                continue;
+            }
+            SkString path = SkOSPath::Join(directory, filename);
+            paths.push_back(path.c_str());
+        }
+
+        AAssetDir_close(assetDir);
+        return paths;
+    }
 };
 }
 
@@ -63,6 +85,16 @@ static SkQP gSkQP;
                     __FILE__ ": assert(" #cond ") failed."); \
     return ret; } } while (0)
 
+////////////////////////////////////////////////////////////////////////////////
+
+static jobjectArray make_java_string_array(JNIEnv* env, jint arraySize) {
+    jclass stringClass = env->FindClass("java/lang/String");
+    jassert(env, stringClass, nullptr);
+    jobjectArray jarray = env->NewObjectArray(arraySize, stringClass, nullptr);
+    jassert(env, jarray != nullptr, nullptr);
+    return jarray;
+}
+
 static void set_string_array_element(JNIEnv* env, jobjectArray a, const char* s, unsigned i) {
     jstring jstr = env->NewStringUTF(s);
     jassert(env, jstr != nullptr,);
@@ -70,24 +102,13 @@ static void set_string_array_element(JNIEnv* env, jobjectArray a, const char* s,
     env->DeleteLocalRef(jstr);
 }
 
-////////////////////////////////////////////////////////////////////////////////
-
-sk_sp<SkData> get_resource(const char* resource) {
-    return open_asset_data((std::string("resources/")  + resource).c_str());
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
 template <typename T, typename F>
-jobjectArray to_java_string_array(JNIEnv* env,
-                                  const std::vector<T>& array,
-                                  F toString) {
-    jclass stringClass = env->FindClass("java/lang/String");
-    jassert(env, stringClass, nullptr);
-    jobjectArray jarray = env->NewObjectArray((jint)array.size(), stringClass, nullptr);
-    jassert(env, jarray != nullptr, nullptr);
-    for (unsigned i = 0; i < array.size(); ++i) {
-        set_string_array_element(env, jarray, std::string(toString(array[i])).c_str(), i);
+static jobjectArray to_java_string_array(JNIEnv* env,
+                                         const std::vector<T>& array,
+                                         F stringizeFn) {
+    jobjectArray jarray = make_java_string_array(env, (jint)array.size());
+    for (size_t i = 0; i < array.size(); ++i) {
+        set_string_array_element(env, jarray, stringizeFn(array[i]), i);
     }
     return jarray;
 }
@@ -100,58 +121,44 @@ static std::string to_string(JNIEnv* env, jstring jString) {
     return sString;
 }
 
+static const char* get_sksl_error_name(const SkQP::SkSLErrorTest& t) {
+    return t.name.c_str();
+}
+
+static const char* get_sksl_error_shader_text(const SkQP::SkSLErrorTest& t) {
+    return t.shaderText.c_str();
+}
+
 void Java_org_skia_skqp_SkQP_nInit(JNIEnv* env, jobject object, jobject assetManager,
                                    jstring dataDir) {
     jclass SkQP_class = env->GetObjectClass(object);
 
     // tools/Resources
-    gResourceFactory = &get_resource;
+    gResourceFactory = &open_asset_data;
 
     std::string reportDirectory = to_string(env, dataDir);
 
     jassert(env, assetManager,);
     // This global must be set before using AndroidAssetManager
-    gAAssetManager = AAssetManager_fromJava(env, assetManager);
-    jassert(env, gAAssetManager,);
+    sAAssetManager = AAssetManager_fromJava(env, assetManager);
+    jassert(env, sAAssetManager,);
 
     std::lock_guard<std::mutex> lock(gMutex);
-    gSkQP.init(&gAndroidAssetManager, nullptr, reportDirectory.c_str());
+    gSkQP.init(&gAndroidAssetManager, reportDirectory.c_str());
 
-    auto backends = gSkQP.getSupportedBackends();
-    jassert(env, backends.size() > 0,);
-    auto gms = gSkQP.getGMs();
-    jassert(env, gms.size() > 0,);
-    auto unitTests = gSkQP.getUnitTests();
-    jassert(env, unitTests.size() > 0,);
+    const std::vector<SkQP::UnitTest>& unitTests = gSkQP.getUnitTests();
+    const std::vector<SkQP::SkSLErrorTest>& skslErrorTests = gSkQP.getSkSLErrorTests();
 
     constexpr char kStringArrayType[] = "[Ljava/lang/String;";
-    env->SetObjectField(object, env->GetFieldID(SkQP_class, "mBackends", kStringArrayType),
-                        to_java_string_array(env, backends, SkQP::GetBackendName));
-    env->SetObjectField(object, env->GetFieldID(SkQP_class, "mUnitTests", kStringArrayType),
-                        to_java_string_array(env, unitTests, SkQP::GetUnitTestName));
-    env->SetObjectField(object, env->GetFieldID(SkQP_class, "mGMs", kStringArrayType),
-                        to_java_string_array(env, gms, SkQP::GetGMName));
-}
-
-jlong Java_org_skia_skqp_SkQP_nExecuteGM(JNIEnv* env,
-                                          jobject object,
-                                          jint gmIndex,
-                                          jint backendIndex) {
-    SkQP::RenderOutcome outcome;
-    std::string except;
-    {
-        std::lock_guard<std::mutex> lock(gMutex);
-        jassert(env, backendIndex < (jint)gSkQP.getSupportedBackends().size(), -1);
-        jassert(env, gmIndex < (jint)gSkQP.getGMs().size(), -1);
-        SkQP::SkiaBackend backend = gSkQP.getSupportedBackends()[backendIndex];
-        SkQP::GMFactory gm = gSkQP.getGMs()[gmIndex];
-        std::tie(outcome, except) = gSkQP.evaluateGM(backend, gm);
-    }
-
-    if (!except.empty()) {
-        (void)env->ThrowNew(env->FindClass("org/skia/skqp/SkQPException"), except.c_str());
-    }
-    return (jlong)outcome.fTotalError;
+    env->SetObjectField(object,
+                        env->GetFieldID(SkQP_class, "mUnitTests", kStringArrayType),
+                        to_java_string_array(env, unitTests, &SkQP::GetUnitTestName));
+    env->SetObjectField(object,
+                        env->GetFieldID(SkQP_class, "mSkSLErrorTestName", kStringArrayType),
+                        to_java_string_array(env, skslErrorTests, get_sksl_error_name));
+    env->SetObjectField(object,
+                        env->GetFieldID(SkQP_class, "mSkSLErrorTestShader", kStringArrayType),
+                        to_java_string_array(env, skslErrorTests, get_sksl_error_shader_text));
 }
 
 jobjectArray Java_org_skia_skqp_SkQP_nExecuteUnitTest(JNIEnv* env,
@@ -159,17 +166,15 @@ jobjectArray Java_org_skia_skqp_SkQP_nExecuteUnitTest(JNIEnv* env,
                                                       jint index) {
     std::vector<std::string> errors;
     {
-        jassert(env, index < (jint)gSkQP.getUnitTests().size(), nullptr);
         std::lock_guard<std::mutex> lock(gMutex);
+        jassert(env, index < (jint)gSkQP.getUnitTests().size(), nullptr);
         errors = gSkQP.executeTest(gSkQP.getUnitTests()[index]);
     }
-    if (errors.size() == 0) {
+    if (errors.empty()) {
         return nullptr;
     }
-    jclass stringClass = env->FindClass("java/lang/String");
-    jassert(env, stringClass, nullptr);
-    jobjectArray array = env->NewObjectArray(errors.size(), stringClass, nullptr);
-    for (unsigned i = 0; i < errors.size(); ++i) {
+    jobjectArray array = make_java_string_array(env, errors.size());
+    for (size_t i = 0; i < errors.size(); ++i) {
         set_string_array_element(env, array, errors[i].c_str(), i);
     }
     return (jobjectArray)env->NewGlobalRef(array);

@@ -9,6 +9,7 @@
 #include <dawn/webgpu.h>
 
 #include "base/memory/scoped_refptr.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/dawn_control_client_holder.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
@@ -92,6 +93,8 @@ class DawnObjectBase {
   const String& label() const { return label_; }
   void setLabel(const String& value);
 
+  virtual void setLabelImpl(const String& value){};
+
  private:
   scoped_refptr<DawnControlClientHolder> dawn_control_client_;
   String label_;
@@ -103,6 +106,7 @@ class DawnObjectImpl : public ScriptWrappable, public DawnObjectBase {
   ~DawnObjectImpl() override;
 
   WGPUDevice GetDeviceHandle();
+  GPUDevice* device() { return device_.Get(); }
 
   void Trace(Visitor* visitor) const override;
 

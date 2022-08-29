@@ -5,6 +5,7 @@
 #include "chrome/browser/ash/app_restore/arc_ghost_window_view.h"
 
 #include "ash/public/cpp/app_list/app_list_config.h"
+#include "base/time/time.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/ash/app_restore/arc_window_handler.h"
@@ -83,7 +84,7 @@ void ArcGhostWindowView::InitLayout(uint32_t theme_color, int diameter) {
 
   auto* throbber = AddChildView(std::make_unique<Throbber>(
       color_utils::GetColorWithMaxContrast(theme_color)));
-  throbber->SetPreferredSize({diameter, diameter});
+  throbber->SetPreferredSize(gfx::Size(diameter, diameter));
   throbber->GetViewAccessibility().OverrideRole(ax::mojom::Role::kImage);
 
   // TODO(sstan): Set window title and accessible name from saved data.

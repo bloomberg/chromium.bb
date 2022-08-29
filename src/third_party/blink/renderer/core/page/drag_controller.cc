@@ -31,6 +31,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
 #include "third_party/blink/public/common/page/drag_operation.h"
+#include "third_party/blink/public/mojom/frame/user_activation_notification_type.mojom-blink.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_drag_data.h"
 #include "third_party/blink/renderer/core/clipboard/data_object.h"
@@ -95,7 +96,7 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include <windows.h>
 #endif
 
@@ -105,7 +106,12 @@ using ui::mojom::blink::DragOperation;
 
 static const int kMaxOriginalImageArea = 1500 * 1500;
 static const int kLinkDragBorderInset = 2;
+#if BUILDFLAG(IS_ANDROID)
+// Android handles drag image transparency at the browser level
+static const float kDragImageAlpha = 1.00f;
+#else
 static const float kDragImageAlpha = 0.75f;
+#endif
 
 #if DCHECK_IS_ON()
 static bool DragTypeIsValid(DragSourceAction action) {
@@ -547,6 +553,8 @@ DispatchEventResult DragController::DispatchTextInputEventFor(
       *inner_frame,
       CreateVisibleSelection(
           SelectionInDOMTree::Builder().Collapse(caret_position).Build()));
+  if (!target)
+    return DispatchEventResult::kNotCanceled;
   return target->DispatchEvent(
       *TextEvent::CreateForDrop(inner_frame->DomWindow(), text));
 }
@@ -1054,7 +1062,7 @@ static gfx::Point DragLocationForSelectionDrag(const LocalFrame& frame) {
 }
 
 static const gfx::Size MaxDragImageSize(float device_scale_factor) {
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   // Match Safari's drag image size.
   static const gfx::Size kMaxDragImageSize(400, 400);
 #else
@@ -1171,11 +1179,11 @@ std::unique_ptr<DragImage> DragController::DragImageForSelection(
   DCHECK(frame.GetDocument()->IsActive());
 
   gfx::RectF painting_rect = ClippedSelection(frame);
-  GlobalPaintFlags paint_flags =
-      kGlobalPaintSelectionDragImageOnly | kGlobalPaintFlattenCompositingLayers;
+  PaintFlags paint_flags =
+      PaintFlag::kSelectionDragImageOnly | PaintFlag::kOmitCompositingInfo;
 
   auto* builder = MakeGarbageCollected<PaintRecordBuilder>();
-  frame.View()->PaintContentsOutsideOfLifecycle(
+  frame.View()->PaintOutsideOfLifecycle(
       builder->Context(), paint_flags,
       CullRect(gfx::ToEnclosingRect(painting_rect)));
 
@@ -1251,8 +1259,7 @@ bool DragController::StartDrag(LocalFrame* src,
       // TODO(oshima): Remove this scaling and simply pass imageRect to
       // dragImageForImage once all platforms are migrated to use zoom for dsf.
       gfx::Size image_size_in_pixels = gfx::ScaleToFlooredSize(
-          image_rect.size(), src->GetPage()->DeviceScaleFactorDeprecated() *
-                                 src->GetPage()->GetVisualViewport().Scale());
+          image_rect.size(), src->GetPage()->GetVisualViewport().Scale());
 
       float screen_device_scale_factor =
           src->GetChromeClient().GetScreenInfo(*src).device_scale_factor;
@@ -1368,7 +1375,7 @@ DragOperation DragController::GetDragOperation(DragData* drag_data) {
 bool DragController::IsCopyKeyDown(DragData* drag_data) {
   int modifiers = drag_data->GetModifiers();
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   return modifiers & WebInputEvent::kAltKey;
 #else
   return modifiers & WebInputEvent::kControlKey;

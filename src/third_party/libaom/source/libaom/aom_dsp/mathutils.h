@@ -70,6 +70,7 @@ static INLINE int least_squares(int n, double *A, int rows, int stride,
   double *AtA, *Atb;
   if (!scratch) {
     scratch_ = (double *)aom_malloc(sizeof(*scratch) * n * (n + 1));
+    if (!scratch_) return 0;
     scratch = scratch_;
   }
   AtA = scratch;
@@ -138,6 +139,7 @@ static INLINE int svdcmp(double **u, int m, int n, double w[], double **v) {
   int flag, i, its, j, jj, k, l, nm;
   double anorm, c, f, g, h, s, scale, x, y, z;
   double *rv1 = (double *)aom_malloc(sizeof(*rv1) * (n + 1));
+  if (!rv1) return 0;
   g = scale = anorm = 0.0;
   for (i = 0; i < n; i++) {
     l = i + 1;
@@ -333,8 +335,8 @@ static INLINE int SVD(double *U, double *W, double *V, double *matx, int M,
       nrV[i] = &V[i * N];
     }
   } else {
-    if (nrU) aom_free(nrU);
-    if (nrV) aom_free(nrV);
+    aom_free(nrU);
+    aom_free(nrV);
     return 1;
   }
 

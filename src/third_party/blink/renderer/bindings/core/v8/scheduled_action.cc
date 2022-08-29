@@ -30,7 +30,9 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/scheduled_action.h"
 
-#include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink.h"
+#include <tuple>
+
+#include "third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/binding_security.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_evaluation_result.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
@@ -145,13 +147,11 @@ void ScheduledAction::Execute(ExecutionContext* context) {
   // not set in https://html.spec.whatwg.org/C/#timer-initialisation-steps
   // TODO(crbug.com/1133238): Plumb base URL etc. from the initializing script.
   DVLOG(1) << "ScheduledAction::execute " << this << ": executing from source";
-  v8::HandleScope scope(script_state_->GetIsolate());
   ClassicScript* script =
       ClassicScript::Create(code_, KURL(), KURL(), ScriptFetchOptions(),
                             ScriptSourceLocationType::kEvalForScheduledAction,
                             SanitizeScriptErrors::kDoNotSanitize);
-  ignore_result(
-      script->RunScriptOnScriptStateAndReturnValue(script_state_->Get()));
+  script->RunScriptOnScriptState(script_state_->Get());
 }
 
 void ScheduledAction::Trace(Visitor* visitor) const {

@@ -74,13 +74,14 @@ void AwProxyingRestrictedCookieManager::GetAllForUrl(
     const net::SiteForCookies& site_for_cookies,
     const url::Origin& top_frame_origin,
     network::mojom::CookieManagerGetOptionsPtr options,
+    bool partitioned_cookies_runtime_feature_enabled,
     GetAllForUrlCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   if (AllowCookies(url, site_for_cookies)) {
     underlying_restricted_cookie_manager_->GetAllForUrl(
         url, site_for_cookies, top_frame_origin, std::move(options),
-        std::move(callback));
+        partitioned_cookies_runtime_feature_enabled, std::move(callback));
   } else {
     std::move(callback).Run(std::vector<net::CookieWithAccessResult>());
   }
@@ -91,12 +92,14 @@ void AwProxyingRestrictedCookieManager::SetCanonicalCookie(
     const GURL& url,
     const net::SiteForCookies& site_for_cookies,
     const url::Origin& top_frame_origin,
+    net::CookieInclusionStatus status,
     SetCanonicalCookieCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   if (AllowCookies(url, site_for_cookies)) {
     underlying_restricted_cookie_manager_->SetCanonicalCookie(
-        cookie, url, site_for_cookies, top_frame_origin, std::move(callback));
+        cookie, url, site_for_cookies, top_frame_origin, status,
+        std::move(callback));
   } else {
     std::move(callback).Run(false);
   }
@@ -131,12 +134,14 @@ void AwProxyingRestrictedCookieManager::SetCookieFromString(
     const net::SiteForCookies& site_for_cookies,
     const url::Origin& top_frame_origin,
     const std::string& cookie,
+    bool partitioned_cookies_runtime_feature_enabled,
     SetCookieFromStringCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   if (AllowCookies(url, site_for_cookies)) {
     underlying_restricted_cookie_manager_->SetCookieFromString(
-        url, site_for_cookies, top_frame_origin, cookie, std::move(callback));
+        url, site_for_cookies, top_frame_origin, cookie,
+        partitioned_cookies_runtime_feature_enabled, std::move(callback));
   } else {
     std::move(callback).Run();
   }
@@ -146,12 +151,14 @@ void AwProxyingRestrictedCookieManager::GetCookiesString(
     const GURL& url,
     const net::SiteForCookies& site_for_cookies,
     const url::Origin& top_frame_origin,
+    bool partitioned_cookies_runtime_feature_enabled,
     GetCookiesStringCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   if (AllowCookies(url, site_for_cookies)) {
     underlying_restricted_cookie_manager_->GetCookiesString(
-        url, site_for_cookies, top_frame_origin, std::move(callback));
+        url, site_for_cookies, top_frame_origin,
+        partitioned_cookies_runtime_feature_enabled, std::move(callback));
   } else {
     std::move(callback).Run("");
   }
@@ -204,6 +211,12 @@ bool AwProxyingRestrictedCookieManager::AllowCookies(
     return AwCookieAccessPolicy::GetInstance()->AllowCookies(
         url, site_for_cookies, process_id_, frame_id_);
   }
+}
+
+void AwProxyingRestrictedCookieManager::
+    ConvertPartitionedCookiesToUnpartitioned(const GURL& url) {
+  underlying_restricted_cookie_manager_
+      ->ConvertPartitionedCookiesToUnpartitioned(url);
 }
 
 }  // namespace android_webview

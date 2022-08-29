@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include "base/containers/contains.h"
 #include "components/autofill/content/renderer/form_cache.h"
 #include "third_party/blink/public/web/web_form_control_element.h"
 
@@ -37,12 +38,6 @@ class FormCacheTestApi {
   }
 
   size_t parsed_forms_size() { return form_cache_->parsed_forms_.size(); }
-
-  // TODO(crbug/1215333): Remove once the `AutofillUseNewFormExtraction` feature
-  // is launched.
-  size_t parsed_forms_by_renderer_id_size() {
-    return form_cache_->parsed_forms_by_renderer_id_.size();
-  }
 
  private:
   FormCache* form_cache_;

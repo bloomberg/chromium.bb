@@ -7,21 +7,64 @@
 
 #include <winerror.h>
 
-#include <stdint.h>
-
+#include <cstdint>
 #include <string>
 
+#include "base/containers/span.h"
+#include "base/files/file_path.h"
+#include "base/hash/hash.h"
 #include "base/process/process_iterator.h"
+#include "base/scoped_generic.h"
 #include "base/win/atl.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_types.h"
 #include "chrome/updater/updater_scope.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
 class FilePath;
 }
 
+// Specialization for std::hash so that IID values can be stored in an
+// associative container.
+template <>
+struct std::hash<IID> {
+  size_t operator()(const IID& iid) const {
+    static_assert(sizeof(iid) == 16, "IID storage must be contiguous.");
+    return base::FastHash(base::span<const uint8_t>(
+        reinterpret_cast<const uint8_t*>(&iid), sizeof(iid)));
+  }
+};
+
 namespace updater {
+
+class ScHandleTraits {
+ public:
+  using Handle = SC_HANDLE;
+
+  ScHandleTraits() = delete;
+  ScHandleTraits(const ScHandleTraits&) = delete;
+  ScHandleTraits& operator=(const ScHandleTraits&) = delete;
+
+  static bool CloseHandle(SC_HANDLE handle) {
+    return ::CloseServiceHandle(handle) != FALSE;
+  }
+
+  static bool IsHandleValid(SC_HANDLE handle) { return handle != nullptr; }
+
+  static SC_HANDLE NullHandle() { return nullptr; }
+};
+
+using ScopedScHandle =
+    base::win::GenericScopedHandle<ScHandleTraits,
+                                   base::win::DummyVerifierTraits>;
+
+struct LocalAllocTraits {
+  static HLOCAL InvalidValue() { return nullptr; }
+  static void Free(HLOCAL mem) { ::LocalFree(mem); }
+};
+
+using ScopedLocalAlloc = base::ScopedGeneric<HLOCAL, LocalAllocTraits>;
 
 class ProcessFilterName : public base::ProcessFilter {
  public:
@@ -160,19 +203,20 @@ std::wstring GetServiceName(bool is_internal_service);
 // For instance: "ChromiumUpdater InternalService 92.0.0.1".
 std::wstring GetServiceDisplayName(bool is_internal_service);
 
-// Returns the versioned task name in the following format:
-// "{ProductName}Task{System/User}{UpdaterVersion}".
-// For instance: "ChromiumUpdaterTaskSystem92.0.0.1".
-std::wstring GetTaskName(UpdaterScope scope);
-
-// Returns the versioned task display name in the following format:
-// "{ProductName} Task {System/User} {UpdaterVersion}".
-// For instance: "ChromiumUpdater Task System 92.0.0.1".
-std::wstring GetTaskDisplayName(UpdaterScope scope);
-
 // Returns `KEY_WOW64_32KEY | access`. All registry access under the Updater key
 // should use `Wow6432(access)` as the `REGSAM`.
 REGSAM Wow6432(REGSAM access);
+
+// Starts a new process via ::ShellExecuteEx. `parameters` and `verb` can be
+// empty strings. The function waits until the spawned process has completed.
+// The exit code of the process is returned in `exit_code`.
+// `verb` specifies the action to perform. For instance, the "runas" verb
+// launches an application as administrator with an UAC prompt if UAC is enabled
+// and the parent process is running at medium integrity.
+HRESULT ShellExecuteAndWait(const base::FilePath& file_path,
+                            const std::wstring& parameters,
+                            const std::wstring& verb,
+                            DWORD* exit_code);
 
 // Starts a new elevated process. `file_path` specifies the program to be run.
 // `parameters` can be an empty string.
@@ -181,6 +225,36 @@ REGSAM Wow6432(REGSAM access);
 HRESULT RunElevated(const base::FilePath& file_path,
                     const std::wstring& parameters,
                     DWORD* exit_code);
+
+absl::optional<base::FilePath> GetGoogleUpdateExePath(UpdaterScope scope);
+
+// Causes the COM runtime not to handle exceptions. Failing to set this
+// up is a critical error, since ignoring exceptions may lead to corrupted
+// program state.
+[[nodiscard]] HRESULT DisableCOMExceptionHandling();
+
+// Builds a command line running `MSIExec` on the provided
+// `msi_installer`,`arguments`, and `installer_data_file`, with added logging to
+// a log file in the same directory as the MSI installer.
+std::wstring BuildMsiCommandLine(
+    const std::wstring& arguments,
+    const absl::optional<base::FilePath>& installer_data_file,
+    const base::FilePath& msi_installer);
+
+// Builds a command line running the provided `exe_installer`, `arguments`, and
+// `installer_data_file`.
+std::wstring BuildExeCommandLine(
+    const std::wstring& arguments,
+    const absl::optional<base::FilePath>& installer_data_file,
+    const base::FilePath& exe_installer);
+
+// Returns `true` if the service specified is currently running or starting.
+bool IsServiceRunning(const std::wstring& service_name);
+
+// Returns the HKEY root corresponding to the UpdaterScope:
+// * scope == UpdaterScope::kSystem == HKEY_LOCAL_MACHINE
+// * scope == UpdaterScope::kUser == HKEY_CURRENT_USER
+HKEY UpdaterScopeToHKeyRoot(UpdaterScope scope);
 
 }  // namespace updater
 

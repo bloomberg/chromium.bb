@@ -71,9 +71,25 @@ void SeparatorTest::ExpectDrawAtLeastOnePixel(float image_scale) {
   EXPECT_FALSE(gfx::test::AreBitmapsEqual(painted, unpainted.GetBitmap()));
 }
 
+TEST_F(SeparatorTest, GetPreferredSize_VerticalOrientation) {
+  // Orientation is vertical by default.
+  constexpr int kLength = 8;
+  separator_->SetPreferredLength(kLength);
+  EXPECT_EQ(separator_->GetPreferredSize(),
+            gfx::Size(Separator::kThickness, kLength));
+}
+
+TEST_F(SeparatorTest, GetPreferredSize_HorizontalOrientation) {
+  constexpr int kLength = 8;
+  separator_->SetOrientation(Separator::Orientation::kHorizontal);
+  separator_->SetPreferredLength(kLength);
+  EXPECT_EQ(separator_->GetPreferredSize(),
+            gfx::Size(kLength, Separator::kThickness));
+}
+
 TEST_F(SeparatorTest, ImageScaleBelowOne) {
   // Vertical line with 1[dp] thickness by default.
-  separator_->SetPreferredHeight(8);
+  separator_->SetPreferredLength(8);
   ExpectDrawAtLeastOnePixel(0.4);
 }
 
@@ -120,7 +136,7 @@ TEST_F(SeparatorTest, Paint_NoInsets_FillsCanvas_Scale150) {
 TEST_F(SeparatorTest, Paint_TopInset_Scale100) {
   separator_->SetSize({10, 10});
   separator_->SetColor(kForegroundColor);
-  separator_->SetBorder(CreateEmptyBorder(1, 0, 0, 0));
+  separator_->SetBorder(CreateEmptyBorder(gfx::Insets::TLBR(1, 0, 0, 0)));
 
   SkBitmap painted = PaintToCanvas(1.0f);
   EXPECT_EQ(kBackgroundColor, painted.getColor(0, 0));
@@ -134,7 +150,7 @@ TEST_F(SeparatorTest, Paint_TopInset_Scale100) {
 TEST_F(SeparatorTest, Paint_TopInset_Scale125) {
   separator_->SetSize({10, 10});
   separator_->SetColor(kForegroundColor);
-  separator_->SetBorder(CreateEmptyBorder(1, 0, 0, 0));
+  separator_->SetBorder(CreateEmptyBorder(gfx::Insets::TLBR(1, 0, 0, 0)));
 
   SkBitmap painted = PaintToCanvas(1.25f);
   EXPECT_EQ(kBackgroundColor, painted.getColor(0, 1));
@@ -148,7 +164,7 @@ TEST_F(SeparatorTest, Paint_TopInset_Scale125) {
 TEST_F(SeparatorTest, Paint_LeftInset_Scale100) {
   separator_->SetSize({10, 10});
   separator_->SetColor(kForegroundColor);
-  separator_->SetBorder(CreateEmptyBorder(0, 1, 0, 0));
+  separator_->SetBorder(CreateEmptyBorder(gfx::Insets::TLBR(0, 1, 0, 0)));
 
   SkBitmap painted = PaintToCanvas(1.0f);
   EXPECT_EQ(kBackgroundColor, painted.getColor(0, 0));
@@ -162,7 +178,7 @@ TEST_F(SeparatorTest, Paint_LeftInset_Scale100) {
 TEST_F(SeparatorTest, Paint_LeftInset_Scale125) {
   separator_->SetSize({10, 10});
   separator_->SetColor(kForegroundColor);
-  separator_->SetBorder(CreateEmptyBorder(0, 1, 0, 0));
+  separator_->SetBorder(CreateEmptyBorder(gfx::Insets::TLBR(0, 1, 0, 0)));
 
   SkBitmap painted = PaintToCanvas(1.25f);
   EXPECT_EQ(kBackgroundColor, painted.getColor(1, 0));
@@ -176,7 +192,7 @@ TEST_F(SeparatorTest, Paint_LeftInset_Scale125) {
 TEST_F(SeparatorTest, Paint_BottomInset_Scale100) {
   separator_->SetSize({10, 10});
   separator_->SetColor(kForegroundColor);
-  separator_->SetBorder(CreateEmptyBorder(0, 0, 1, 0));
+  separator_->SetBorder(CreateEmptyBorder(gfx::Insets::TLBR(0, 0, 1, 0)));
 
   SkBitmap painted = PaintToCanvas(1.0f);
   EXPECT_EQ(kForegroundColor, painted.getColor(0, 0));
@@ -190,7 +206,7 @@ TEST_F(SeparatorTest, Paint_BottomInset_Scale100) {
 TEST_F(SeparatorTest, Paint_BottomInset_Scale125) {
   separator_->SetSize({10, 10});
   separator_->SetColor(kForegroundColor);
-  separator_->SetBorder(CreateEmptyBorder(0, 0, 1, 0));
+  separator_->SetBorder(CreateEmptyBorder(gfx::Insets::TLBR(0, 0, 1, 0)));
 
   SkBitmap painted = PaintToCanvas(1.25f);
   EXPECT_EQ(kForegroundColor, painted.getColor(0, 0));
@@ -204,7 +220,7 @@ TEST_F(SeparatorTest, Paint_BottomInset_Scale125) {
 TEST_F(SeparatorTest, Paint_RightInset_Scale100) {
   separator_->SetSize({10, 10});
   separator_->SetColor(kForegroundColor);
-  separator_->SetBorder(CreateEmptyBorder(0, 0, 0, 1));
+  separator_->SetBorder(CreateEmptyBorder(gfx::Insets::TLBR(0, 0, 0, 1)));
 
   SkBitmap painted = PaintToCanvas(1.0f);
   EXPECT_EQ(kForegroundColor, painted.getColor(0, 0));
@@ -218,7 +234,7 @@ TEST_F(SeparatorTest, Paint_RightInset_Scale100) {
 TEST_F(SeparatorTest, Paint_RightInset_Scale125) {
   separator_->SetSize({10, 10});
   separator_->SetColor(kForegroundColor);
-  separator_->SetBorder(CreateEmptyBorder(0, 0, 0, 1));
+  separator_->SetBorder(CreateEmptyBorder(gfx::Insets::TLBR(0, 0, 0, 1)));
 
   SkBitmap painted = PaintToCanvas(1.25f);
   EXPECT_EQ(kForegroundColor, painted.getColor(0, 0));
@@ -232,7 +248,7 @@ TEST_F(SeparatorTest, Paint_RightInset_Scale125) {
 TEST_F(SeparatorTest, Paint_Vertical_Scale100) {
   separator_->SetSize({10, 10});
   separator_->SetColor(kForegroundColor);
-  separator_->SetBorder(CreateEmptyBorder(0, 4, 0, 5));
+  separator_->SetBorder(CreateEmptyBorder(gfx::Insets::TLBR(0, 4, 0, 5)));
 
   SkBitmap painted = PaintToCanvas(1.0f);
   EXPECT_EQ(kBackgroundColor, painted.getColor(3, 0));
@@ -246,7 +262,7 @@ TEST_F(SeparatorTest, Paint_Vertical_Scale100) {
 TEST_F(SeparatorTest, Paint_Vertical_Scale125) {
   separator_->SetSize({10, 10});
   separator_->SetColor(kForegroundColor);
-  separator_->SetBorder(CreateEmptyBorder(0, 4, 0, 5));
+  separator_->SetBorder(CreateEmptyBorder(gfx::Insets::TLBR(0, 4, 0, 5)));
 
   SkBitmap painted = PaintToCanvas(1.25f);
   EXPECT_EQ(kBackgroundColor, painted.getColor(4, 0));
@@ -260,7 +276,7 @@ TEST_F(SeparatorTest, Paint_Vertical_Scale125) {
 TEST_F(SeparatorTest, Paint_Horizontal_Scale100) {
   separator_->SetSize({10, 10});
   separator_->SetColor(kForegroundColor);
-  separator_->SetBorder(CreateEmptyBorder(4, 0, 5, 0));
+  separator_->SetBorder(CreateEmptyBorder(gfx::Insets::TLBR(4, 0, 5, 0)));
 
   SkBitmap painted = PaintToCanvas(1.0f);
   EXPECT_EQ(kBackgroundColor, painted.getColor(0, 3));
@@ -274,7 +290,7 @@ TEST_F(SeparatorTest, Paint_Horizontal_Scale100) {
 TEST_F(SeparatorTest, Paint_Horizontal_Scale125) {
   separator_->SetSize({10, 10});
   separator_->SetColor(kForegroundColor);
-  separator_->SetBorder(CreateEmptyBorder(4, 0, 5, 0));
+  separator_->SetBorder(CreateEmptyBorder(gfx::Insets::TLBR(4, 0, 5, 0)));
 
   SkBitmap painted = PaintToCanvas(1.25f);
   EXPECT_EQ(kBackgroundColor, painted.getColor(0, 4));
@@ -290,7 +306,7 @@ TEST_F(SeparatorTest, Paint_Horizontal_Scale125) {
 TEST_F(SeparatorTest, Paint_MinimumSize_Scale100) {
   separator_->SetSize({10, 10});
   separator_->SetColor(kForegroundColor);
-  separator_->SetBorder(CreateEmptyBorder(5, 5, 5, 5));
+  separator_->SetBorder(CreateEmptyBorder(gfx::Insets::TLBR(5, 5, 5, 5)));
 
   SkBitmap painted = PaintToCanvas(1.0f);
   EXPECT_EQ(kForegroundColor, painted.getColor(5, 5));
@@ -305,7 +321,7 @@ TEST_F(SeparatorTest, Paint_MinimumSize_Scale100) {
 TEST_F(SeparatorTest, Paint_MinimumSize_Scale125) {
   separator_->SetSize({10, 10});
   separator_->SetColor(kForegroundColor);
-  separator_->SetBorder(CreateEmptyBorder(5, 5, 5, 5));
+  separator_->SetBorder(CreateEmptyBorder(gfx::Insets::TLBR(5, 5, 5, 5)));
 
   SkBitmap painted = PaintToCanvas(1.25f);
   EXPECT_EQ(kForegroundColor, painted.getColor(7, 7));

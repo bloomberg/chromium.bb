@@ -12,8 +12,10 @@ namespace web {
 
 ContextMenuParams::ContextMenuParams()
     : is_main_frame(true),
+      tag_name(nil),
       referrer_policy(ReferrerPolicyDefault),
-      location(CGPointZero) {}
+      location(CGPointZero),
+      text_offset(0) {}
 
 ContextMenuParams::ContextMenuParams(const ContextMenuParams& other) = default;
 

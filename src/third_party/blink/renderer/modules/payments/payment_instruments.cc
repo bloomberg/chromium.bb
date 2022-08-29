@@ -10,7 +10,7 @@
 #include "third_party/blink/public/common/permissions_policy/permissions_policy.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom-blink.h"
 #include "third_party/blink/public/mojom/permissions_policy/permissions_policy.mojom-blink.h"
-#include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink.h"
+#include "third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_icon_sizes_parser.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
@@ -206,14 +206,21 @@ ScriptPromise PaymentInstruments::set(ScriptState* script_state,
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
 
+  // TODO(crbug.com/1311953): A service worker can get here without a frame to
+  // check for a user gesture. We should consider either removing the user
+  // gesture requirement or not exposing PaymentInstruments to service workers.
+  LocalDOMWindow* window = LocalDOMWindow::From(script_state);
+  bool user_gesture =
+      window ? LocalFrame::HasTransientUserActivation(window->GetFrame())
+             : false;
+
   // Should move this permission check to browser process.
   // Please see http://crbug.com/795929
   GetPermissionService(script_state)
       ->RequestPermission(
           CreatePermissionDescriptor(
               mojom::blink::PermissionName::PAYMENT_HANDLER),
-          LocalFrame::HasTransientUserActivation(
-              LocalDOMWindow::From(script_state)->GetFrame()),
+          user_gesture,
           WTF::Bind(&PaymentInstruments::OnRequestPermission,
                     WrapPersistent(this), WrapPersistent(resolver),
                     instrument_key, WrapPersistent(details)));
@@ -297,10 +304,10 @@ void PaymentInstruments::OnRequestPermission(
       // Truncate the type to avoid passing too-large strings to Mojo (see
       // https://crbug.com/810792). We could additionally verify that the type
       // is a MIME type, but the browser side will do that anyway.
-      icon->type = image_object->type().Left(kMaxTypeLength);
+      icon->type = image_object->getTypeOr("").Left(kMaxTypeLength);
       icon->purpose.push_back(blink::mojom::ManifestImageResource_Purpose::ANY);
       WebVector<gfx::Size> web_sizes =
-          WebIconSizesParser::ParseIconSizes(image_object->sizes());
+          WebIconSizesParser::ParseIconSizes(image_object->getSizesOr(""));
       for (const auto& web_size : web_sizes) {
         icon->sizes.push_back(web_size);
       }

@@ -50,21 +50,22 @@ SkiaOutputDeviceWebView::SkiaOutputDeviceWebView(
 
 SkiaOutputDeviceWebView::~SkiaOutputDeviceWebView() = default;
 
-bool SkiaOutputDeviceWebView::Reshape(const gfx::Size& size,
-                                      float device_scale_factor,
-                                      const gfx::ColorSpace& color_space,
-                                      gfx::BufferFormat format,
-                                      gfx::OverlayTransform transform) {
+bool SkiaOutputDeviceWebView::Reshape(
+    const SkSurfaceCharacterization& characterization,
+    const gfx::ColorSpace& color_space,
+    float device_scale_factor,
+    gfx::OverlayTransform transform) {
   DCHECK_EQ(transform, gfx::OVERLAY_TRANSFORM_NONE);
 
+  gfx::Size size = gfx::SkISizeToSize(characterization.dimensions());
   if (!gl_surface_->Resize(size, device_scale_factor, color_space,
-                           gfx::AlphaBitsForBufferFormat(format))) {
+                           /*has_alpha=*/true)) {
     DLOG(ERROR) << "Failed to resize.";
     return false;
   }
 
   size_ = size;
-  color_space_ = color_space;
+  sk_color_space_ = characterization.refColorSpace();
   InitSkiaSurface(gl_surface_->GetBackingFramebufferObject());
   return !!sk_surface_;
 }
@@ -82,9 +83,7 @@ void SkiaOutputDeviceWebView::SwapBuffers(BufferPresentedCallback feedback,
 }
 
 SkSurface* SkiaOutputDeviceWebView::BeginPaint(
-    bool allocate_frame_buffer,
     std::vector<GrBackendSemaphore>* end_semaphores) {
-  DCHECK(!allocate_frame_buffer);
   DCHECK(sk_surface_);
 
   unsigned int fbo = gl_surface_->GetBackingFramebufferObject();
@@ -116,14 +115,13 @@ void SkiaOutputDeviceWebView::InitSkiaSurface(unsigned int fbo) {
   SkSurfaceProps surface_props{0, kUnknown_SkPixelGeometry};
   sk_surface_ = SkSurface::MakeFromBackendRenderTarget(
       context_state_->gr_context(), render_target, origin, color_type,
-      color_space_.ToSkColorSpace(), &surface_props);
+      sk_color_space_, &surface_props);
 
   if (!sk_surface_) {
     LOG(ERROR) << "Couldn't create surface: "
                << context_state_->gr_context()->abandoned() << " " << color_type
                << " " << framebuffer_info.fFBOID << " "
-               << framebuffer_info.fFormat << " " << color_space_.ToString()
-               << " " << size_.ToString();
+               << framebuffer_info.fFormat << " " << size_.ToString();
   }
 }
 

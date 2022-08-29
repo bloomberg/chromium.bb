@@ -20,6 +20,7 @@ BorealisServiceFake* BorealisServiceFake::UseFakeForTesting(
           })));
 }
 
+BorealisServiceFake::BorealisServiceFake() = default;
 BorealisServiceFake::~BorealisServiceFake() = default;
 
 BorealisAppLauncher& BorealisServiceFake::AppLauncher() {

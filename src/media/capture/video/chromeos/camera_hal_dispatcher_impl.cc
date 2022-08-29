@@ -14,7 +14,6 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/cxx17_backports.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -74,7 +73,7 @@ bool WaitForSocketReadable(int raw_socket_fd, int raw_cancel_fd) {
       {raw_cancel_fd, POLLIN, 0},
   };
 
-  if (HANDLE_EINTR(poll(fds, base::size(fds), -1)) <= 0) {
+  if (HANDLE_EINTR(poll(fds, std::size(fds), -1)) <= 0) {
     PLOG(ERROR) << "poll()";
     return false;
   }
@@ -182,9 +181,6 @@ bool CameraHalDispatcherImpl::Start(
   if (!StartThreads()) {
     return false;
   }
-  // This event is for adding camera category to categories list.
-  TRACE_EVENT0("camera", "CameraHalDispatcherImpl");
-  base::trace_event::TraceLog::GetInstance()->AddEnabledStateObserver(this);
 
   {
     base::FilePath enable_file_path(kForceEnableAePath);
@@ -312,9 +308,7 @@ bool CameraHalDispatcherImpl::IsStarted() {
 void CameraHalDispatcherImpl::AddActiveClientObserver(
     CameraActiveClientObserver* observer) {
   base::AutoLock lock(opened_camera_id_map_lock_);
-  for (auto& opened_camera_id_pair : opened_camera_id_map_) {
-    const auto& camera_client_type = opened_camera_id_pair.first;
-    const auto& camera_id_set = opened_camera_id_pair.second;
+  for (auto& [camera_client_type, camera_id_set] : opened_camera_id_map_) {
     if (!camera_id_set.empty()) {
       observer->OnActiveClientChange(camera_client_type, /*is_active=*/true);
     }
@@ -349,6 +343,10 @@ void CameraHalDispatcherImpl::RegisterPluginVmToken(
 void CameraHalDispatcherImpl::UnregisterPluginVmToken(
     const base::UnguessableToken& token) {
   token_manager_.UnregisterPluginVmToken(token);
+}
+
+void CameraHalDispatcherImpl::DisableSensorForTesting() {
+  sensor_enabled_ = false;
 }
 
 CameraHalDispatcherImpl::CameraHalDispatcherImpl()
@@ -455,6 +453,11 @@ void CameraHalDispatcherImpl::RegisterSensorClientWithToken(
     RegisterSensorClientWithTokenCallback callback) {
   DCHECK(proxy_task_runner_->BelongsToCurrentThread());
 
+  if (!sensor_enabled_) {
+    std::move(callback).Run(-EPERM);
+    return;
+  }
+
   main_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
@@ -521,20 +524,6 @@ void CameraHalDispatcherImpl::CameraPrivacySwitchStateChange(
 base::UnguessableToken CameraHalDispatcherImpl::GetTokenForTrustedClient(
     cros::mojom::CameraClientType type) {
   return token_manager_.GetTokenForTrustedClient(type);
-}
-
-void CameraHalDispatcherImpl::OnTraceLogEnabled() {
-  proxy_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&CameraHalDispatcherImpl::OnTraceLogEnabledOnProxyThread,
-                     base::Unretained(this)));
-}
-
-void CameraHalDispatcherImpl::OnTraceLogDisabled() {
-  proxy_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&CameraHalDispatcherImpl::OnTraceLogDisabledOnProxyThread,
-                     base::Unretained(this)));
 }
 
 void CameraHalDispatcherImpl::CreateSocket(base::WaitableEvent* started) {
@@ -716,9 +705,7 @@ void CameraHalDispatcherImpl::OnCameraHalServerConnectionError() {
   CAMERA_LOG(EVENT) << "Camera HAL server connection lost";
   camera_hal_server_.reset();
   camera_hal_server_callbacks_.reset();
-  for (auto& opened_camera_id_pair : opened_camera_id_map_) {
-    auto camera_client_type = opened_camera_id_pair.first;
-    const auto& camera_id_set = opened_camera_id_pair.second;
+  for (auto& [camera_client_type, camera_id_set] : opened_camera_id_map_) {
     if (!camera_id_set.empty()) {
       active_client_observers_->Notify(
           FROM_HERE, &CameraActiveClientObserver::OnActiveClientChange,
@@ -783,7 +770,6 @@ void CameraHalDispatcherImpl::RegisterSensorClientWithTokenOnUIThread(
 
 void CameraHalDispatcherImpl::StopOnProxyThread() {
   DCHECK(proxy_task_runner_->BelongsToCurrentThread());
-  base::trace_event::TraceLog::GetInstance()->RemoveEnabledStateObserver(this);
 
   // TODO(crbug.com/1053569): Remove these lines once the issue is solved.
   base::File::Info info;
@@ -805,26 +791,6 @@ void CameraHalDispatcherImpl::StopOnProxyThread() {
   camera_hal_server_callbacks_.reset();
   camera_hal_server_.reset();
   receiver_set_.Clear();
-}
-
-void CameraHalDispatcherImpl::OnTraceLogEnabledOnProxyThread() {
-  DCHECK(proxy_task_runner_->BelongsToCurrentThread());
-  if (!camera_hal_server_) {
-    return;
-  }
-  bool camera_event_enabled = false;
-  TRACE_EVENT_CATEGORY_GROUP_ENABLED("camera", &camera_event_enabled);
-  if (camera_event_enabled) {
-    camera_hal_server_->SetTracingEnabled(true);
-  }
-}
-
-void CameraHalDispatcherImpl::OnTraceLogDisabledOnProxyThread() {
-  DCHECK(proxy_task_runner_->BelongsToCurrentThread());
-  if (!camera_hal_server_) {
-    return;
-  }
-  camera_hal_server_->SetTracingEnabled(false);
 }
 
 TokenManager* CameraHalDispatcherImpl::GetTokenManagerForTesting() {

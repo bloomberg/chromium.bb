@@ -107,9 +107,17 @@ bool IsForwardBackLoad(ui::PageTransition transition) {
 ServiceWorkerPageLoadMetricsObserver::ServiceWorkerPageLoadMetricsObserver() {}
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
-ServiceWorkerPageLoadMetricsObserver::OnCommit(
+ServiceWorkerPageLoadMetricsObserver::OnFencedFramesStart(
     content::NavigationHandle* navigation_handle,
-    ukm::SourceId source_id) {
+    const GURL& currently_committed_url) {
+  // All events this class is interested in are preprocessed and forwarded at
+  // PageLoadTracker and observer doesn't need to care for forwarding.
+  return STOP_OBSERVING;
+}
+
+page_load_metrics::PageLoadMetricsObserver::ObservePolicy
+ServiceWorkerPageLoadMetricsObserver::OnCommit(
+    content::NavigationHandle* navigation_handle) {
   transition_ = navigation_handle->GetPageTransition();
   const net::HttpResponseHeaders* headers =
       navigation_handle->GetResponseHeaders();

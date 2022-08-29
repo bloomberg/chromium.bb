@@ -5,6 +5,7 @@
  * found in the LICENSE file.
  */
 
+#include "include/core/SkBitmap.h"
 #include "include/core/SkCanvas.h"
 #include "include/core/SkData.h"
 #include "include/core/SkOverdrawCanvas.h"
@@ -18,18 +19,19 @@
 #include "src/core/SkCanvasPriv.h"
 #include "src/core/SkDevice.h"
 #include "src/core/SkUtils.h"
-#include "src/gpu/BaseDevice.h"
-#include "src/gpu/GrDirectContextPriv.h"
-#include "src/gpu/GrGpu.h"
-#include "src/gpu/GrGpuResourcePriv.h"
-#include "src/gpu/GrImageInfo.h"
-#include "src/gpu/GrRenderTarget.h"
-#include "src/gpu/GrResourceProvider.h"
-#include "src/gpu/SurfaceFillContext.h"
+#include "src/gpu/ganesh/BaseDevice.h"
+#include "src/gpu/ganesh/GrDirectContextPriv.h"
+#include "src/gpu/ganesh/GrGpu.h"
+#include "src/gpu/ganesh/GrGpuResourcePriv.h"
+#include "src/gpu/ganesh/GrImageInfo.h"
+#include "src/gpu/ganesh/GrRenderTarget.h"
+#include "src/gpu/ganesh/GrResourceProvider.h"
+#include "src/gpu/ganesh/SurfaceFillContext.h"
 #include "src/image/SkImage_Base.h"
 #include "src/image/SkImage_Gpu.h"
 #include "src/image/SkSurface_Gpu.h"
 #include "tests/Test.h"
+#include "tests/TestHarness.h"
 #include "tools/ToolUtils.h"
 #include "tools/gpu/BackendSurfaceFactory.h"
 #include "tools/gpu/ManagedBackendTexture.h"
@@ -706,16 +708,10 @@ static sk_sp<SkSurface> create_gpu_surface_backend_texture(GrDirectContext* dCon
     //
     // Requesting a much larger backend texture size seems to prevent it from reusing the same
     // memory and avoids the issue.
-#if defined(SK_BUILD_FOR_SKQP)
-    const int kWidth = 10;
-    const int kHeight = 10;
-#else
-    const int kWidth = 100;
-    const int kHeight = 100;
-#endif
+    const SkISize kSize = CurrentTestHarnessIsSkQP() ? SkISize{10, 10} : SkISize{100, 100};
 
     auto surf = sk_gpu_test::MakeBackendTextureSurface(dContext,
-                                                       {kWidth, kHeight},
+                                                       kSize,
                                                        kTopLeft_GrSurfaceOrigin,
                                                        sampleCnt,
                                                        kRGBA_8888_SkColorType);
@@ -1156,13 +1152,15 @@ DEF_TEST(surface_image_unity, reporter) {
         auto surf = SkSurface::MakeRaster(info, rowBytes, nullptr);
         if (surf) {
             auto img = surf->makeImageSnapshot();
-            if (!img && false) {    // change to true to document the differences
-                SkDebugf("image failed: [%08X %08X] %14s %s\n",
-                         info.width(),
-                         info.height(),
-                         ToolUtils::colortype_name(info.colorType()),
-                         ToolUtils::alphatype_name(info.alphaType()));
-                return;
+            if ((false)) { // change to true to document the differences
+                if (!img) {
+                    SkDebugf("image failed: [%08X %08X] %14s %s\n",
+                             info.width(),
+                             info.height(),
+                             ToolUtils::colortype_name(info.colorType()),
+                             ToolUtils::alphatype_name(info.alphaType()));
+                    return;
+                }
             }
             REPORTER_ASSERT(reporter, img != nullptr);
 

@@ -4,6 +4,7 @@
 
 #include "core/fpdfapi/edit/cpdf_pagecontentgenerator.h"
 
+#include <iterator>
 #include <memory>
 #include <utility>
 
@@ -12,29 +13,25 @@
 #include "core/fpdfapi/page/cpdf_docpagedata.h"
 #include "core/fpdfapi/page/cpdf_form.h"
 #include "core/fpdfapi/page/cpdf_page.h"
-#include "core/fpdfapi/page/cpdf_pagemodule.h"
 #include "core/fpdfapi/page/cpdf_pathobject.h"
 #include "core/fpdfapi/page/cpdf_textobject.h"
 #include "core/fpdfapi/page/cpdf_textstate.h"
+#include "core/fpdfapi/page/test_with_page_module.h"
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
 #include "core/fpdfapi/parser/cpdf_document.h"
 #include "core/fpdfapi/parser/cpdf_name.h"
 #include "core/fpdfapi/parser/cpdf_parser.h"
 #include "core/fpdfapi/parser/cpdf_reference.h"
 #include "core/fpdfapi/parser/cpdf_stream.h"
-#include "core/fpdfapi/render/cpdf_docrenderdata.h"
+#include "core/fpdfapi/parser/cpdf_test_document.h"
 #include "core/fxcrt/fx_memory_wrappers.h"
 #include "core/fxge/cfx_fillrenderoptions.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/base/cxx17_backports.h"
 
-class CPDF_PageContentGeneratorTest : public testing::Test {
+class CPDF_PageContentGeneratorTest : public TestWithPageModule {
  protected:
-  void SetUp() override { CPDF_PageModule::Create(); }
-  void TearDown() override { CPDF_PageModule::Destroy(); }
-
   void TestProcessPath(CPDF_PageContentGenerator* pGen,
-                       std::ostringstream* buf,
+                       fxcrt::ostringstream* buf,
                        CPDF_PathObject* pPathObj) {
     pGen->ProcessPath(buf, pPathObj);
   }
@@ -47,7 +44,7 @@ class CPDF_PageContentGeneratorTest : public testing::Test {
   }
 
   void TestProcessText(CPDF_PageContentGenerator* pGen,
-                       std::ostringstream* buf,
+                       fxcrt::ostringstream* buf,
                        CPDF_TextObject* pTextObj) {
     pGen->ProcessText(buf, pTextObj);
   }
@@ -63,7 +60,7 @@ TEST_F(CPDF_PageContentGeneratorTest, ProcessRect) {
   auto pTestPage =
       pdfium::MakeRetain<CPDF_Page>(nullptr, dummy_page_dict.Get());
   CPDF_PageContentGenerator generator(pTestPage.Get());
-  std::ostringstream buf;
+  fxcrt::ostringstream buf;
   TestProcessPath(&generator, &buf, pPathObj.get());
   EXPECT_EQ("q 1 0 0 1 0 0 cm 10 5 3 25 re B* Q\n", ByteString(buf));
 
@@ -102,7 +99,7 @@ TEST_F(CPDF_PageContentGeneratorTest, BUG_937) {
     auto pTestPage =
         pdfium::MakeRetain<CPDF_Page>(nullptr, dummy_page_dict.Get());
     CPDF_PageContentGenerator generator(pTestPage.Get());
-    std::ostringstream buf;
+    fxcrt::ostringstream buf;
     TestProcessPath(&generator, &buf, pPathObj.get());
     EXPECT_EQ(
         "q 0 0.701961 0.34902 rg 0 0.701961 0.34902 RG 200000000000000000000 w"
@@ -136,7 +133,7 @@ TEST_F(CPDF_PageContentGeneratorTest, BUG_937) {
     auto pTestPage =
         pdfium::MakeRetain<CPDF_Page>(nullptr, dummy_page_dict.Get());
     CPDF_PageContentGenerator generator(pTestPage.Get());
-    std::ostringstream buf;
+    fxcrt::ostringstream buf;
 
     TestProcessPath(&generator, &buf, pPathObj.get());
     EXPECT_EQ(
@@ -176,7 +173,7 @@ TEST_F(CPDF_PageContentGeneratorTest, ProcessPath) {
   auto pTestPage =
       pdfium::MakeRetain<CPDF_Page>(nullptr, dummy_page_dict.Get());
   CPDF_PageContentGenerator generator(pTestPage.Get());
-  std::ostringstream buf;
+  fxcrt::ostringstream buf;
   TestProcessPath(&generator, &buf, pPathObj.get());
   EXPECT_EQ(
       "q 1 0 0 1 0 0 cm 3.102 4.6700001 m 5.4499998 .28999999 l 4.2399998 "
@@ -205,15 +202,12 @@ TEST_F(CPDF_PageContentGeneratorTest, ProcessGraphics) {
   pPathObj->m_GeneralState.SetFillAlpha(0.5f);
   pPathObj->m_GeneralState.SetStrokeAlpha(0.8f);
 
-  auto pDoc =
-      std::make_unique<CPDF_Document>(std::make_unique<CPDF_DocRenderData>(),
-                                      std::make_unique<CPDF_DocPageData>());
-
+  auto pDoc = std::make_unique<CPDF_TestDocument>();
   pDoc->CreateNewDoc();
   CPDF_Dictionary* pPageDict = pDoc->CreateNewPage(0);
   auto pTestPage = pdfium::MakeRetain<CPDF_Page>(pDoc.get(), pPageDict);
   CPDF_PageContentGenerator generator(pTestPage.Get());
-  std::ostringstream buf;
+  fxcrt::ostringstream buf;
   TestProcessPath(&generator, &buf, pPathObj.get());
   ByteString pathString(buf);
 
@@ -248,10 +242,7 @@ TEST_F(CPDF_PageContentGeneratorTest, ProcessGraphics) {
 
 TEST_F(CPDF_PageContentGeneratorTest, ProcessStandardText) {
   // Checking font whose font dictionary is not yet indirect object.
-  auto pDoc =
-      std::make_unique<CPDF_Document>(std::make_unique<CPDF_DocRenderData>(),
-                                      std::make_unique<CPDF_DocPageData>());
-
+  auto pDoc = std::make_unique<CPDF_TestDocument>();
   pDoc->CreateNewDoc();
   CPDF_Dictionary* pPageDict = pDoc->CreateNewPage(0);
   auto pTestPage = pdfium::MakeRetain<CPDF_Page>(pDoc.get(), pPageDict);
@@ -273,7 +264,7 @@ TEST_F(CPDF_PageContentGeneratorTest, ProcessStandardText) {
   pTextObj->m_GeneralState.SetStrokeAlpha(0.8f);
   pTextObj->Transform(CFX_Matrix(1, 0, 0, 1, 100, 100));
   pTextObj->SetText("Hello World");
-  std::ostringstream buf;
+  fxcrt::ostringstream buf;
   TestProcessText(&generator, &buf, pTextObj.get());
   ByteString textString(buf);
   auto firstResourceAt = textString.Find('/');
@@ -317,16 +308,14 @@ TEST_F(CPDF_PageContentGeneratorTest, ProcessStandardText) {
 
 TEST_F(CPDF_PageContentGeneratorTest, ProcessText) {
   // Checking font whose font dictionary is already an indirect object.
-  auto pDoc =
-      std::make_unique<CPDF_Document>(std::make_unique<CPDF_DocRenderData>(),
-                                      std::make_unique<CPDF_DocPageData>());
+  auto pDoc = std::make_unique<CPDF_TestDocument>();
   pDoc->CreateNewDoc();
 
   CPDF_Dictionary* pPageDict = pDoc->CreateNewPage(0);
   auto pTestPage = pdfium::MakeRetain<CPDF_Page>(pDoc.get(), pPageDict);
   CPDF_PageContentGenerator generator(pTestPage.Get());
 
-  std::ostringstream buf;
+  fxcrt::ostringstream buf;
   {
     // Set the text object font and text
     auto pTextObj = std::make_unique<CPDF_TextObject>();
@@ -396,9 +385,7 @@ TEST_F(CPDF_PageContentGeneratorTest, ProcessText) {
 }
 
 TEST_F(CPDF_PageContentGeneratorTest, ProcessEmptyForm) {
-  auto pDoc =
-      std::make_unique<CPDF_Document>(std::make_unique<CPDF_DocRenderData>(),
-                                      std::make_unique<CPDF_DocPageData>());
+  auto pDoc = std::make_unique<CPDF_TestDocument>();
   pDoc->CreateNewDoc();
   auto pDict = pdfium::MakeRetain<CPDF_Dictionary>();
   auto pStream = pdfium::MakeRetain<CPDF_Stream>(nullptr, 0, std::move(pDict));
@@ -412,21 +399,19 @@ TEST_F(CPDF_PageContentGeneratorTest, ProcessEmptyForm) {
 
   // The generated stream for the empty form should be an empty string.
   CPDF_PageContentGenerator generator(pTestForm.get());
-  std::ostringstream buf;
+  fxcrt::ostringstream buf;
   generator.ProcessPageObjects(&buf);
   EXPECT_EQ("", ByteString(buf));
 }
 
 TEST_F(CPDF_PageContentGeneratorTest, ProcessFormWithPath) {
-  auto pDoc =
-      std::make_unique<CPDF_Document>(std::make_unique<CPDF_DocRenderData>(),
-                                      std::make_unique<CPDF_DocPageData>());
+  auto pDoc = std::make_unique<CPDF_TestDocument>();
   pDoc->CreateNewDoc();
   auto pDict = pdfium::MakeRetain<CPDF_Dictionary>();
   const char content[] =
       "q 1 0 0 1 0 0 cm 3.102 4.6700001 m 5.4500012 .28999999 "
       "l 4.2399998 3.1499999 4.65 2.98 3.456 0.24 c 3.102 4.6700001 l h f Q\n";
-  size_t buf_len = pdfium::size(content);
+  size_t buf_len = std::size(content);
   std::unique_ptr<uint8_t, FxFreeDeleter> buf(FX_AllocUninit(uint8_t, buf_len));
   memcpy(buf.get(), content, buf_len);
   auto pStream = pdfium::MakeRetain<CPDF_Stream>(std::move(buf), buf_len,
@@ -440,7 +425,7 @@ TEST_F(CPDF_PageContentGeneratorTest, ProcessFormWithPath) {
             pTestForm->GetParseState());
 
   CPDF_PageContentGenerator generator(pTestForm.get());
-  std::ostringstream process_buf;
+  fxcrt::ostringstream process_buf;
   generator.ProcessPageObjects(&process_buf);
   EXPECT_STREQ(
       "q 1 0 0 1 0 0 cm 3.102 4.6700001 m 5.4500012 .28999999 l 4.2399998 3.14"

@@ -28,9 +28,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs_factory.h"
-#include "chromeos/dbus/concierge/concierge_client.h"
+#include "chromeos/ash/components/dbus/concierge/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "components/arc/intent_helper/arc_intent_helper_bridge.h"
+#include "components/arc/test/fake_intent_helper_host.h"
 #include "components/arc/test/fake_intent_helper_instance.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -61,6 +61,15 @@ std::vector<arc::mojom::ArcPackageInfoPtr> ArcAppTest::ClonePackages(
   return result;
 }
 
+// static
+std::vector<arc::mojom::AppInfoPtr> ArcAppTest::CloneApps(
+    const std::vector<arc::mojom::AppInfoPtr>& apps) {
+  std::vector<arc::mojom::AppInfoPtr> result;
+  for (const auto& app : apps)
+    result.emplace_back(app->Clone());
+  return result;
+}
+
 ArcAppTest::ArcAppTest() {
   user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
       std::make_unique<ash::FakeChromeUserManager>());
@@ -78,7 +87,7 @@ void ArcAppTest::SetUp(Profile* profile) {
   if (!chromeos::DBusThreadManager::IsInitialized()) {
     chromeos::DBusThreadManager::Initialize();
     dbus_thread_manager_initialized_ = true;
-    chromeos::ConciergeClient::InitializeFake(/*fake_cicerone_client=*/nullptr);
+    ash::ConciergeClient::InitializeFake(/*fake_cicerone_client=*/nullptr);
   }
   arc::SetArcAvailableCommandLineForTesting(
       base::CommandLine::ForCurrentProcess());
@@ -92,8 +101,7 @@ void ArcAppTest::SetUp(Profile* profile) {
   // If for any reason the garbage collector kicks in while we are waiting for
   // an icon, have the user-to-profile mapping ready to avoid using the real
   // profile manager (which is null).
-  chromeos::ProfileHelper::Get()->SetUserToProfileMappingForTesting(user,
-                                                                    profile_);
+  ash::ProfileHelper::Get()->SetUserToProfileMappingForTesting(user, profile_);
 
   // A valid |arc_app_list_prefs_| is needed for the ARC bridge service and the
   // ARC auth service.
@@ -119,6 +127,7 @@ void ArcAppTest::SetUp(Profile* profile) {
   DCHECK(arc_app_list_pref_);
   if (wait_default_apps_)
     WaitForDefaultApps();
+  WaitForRemoveAllApps();
 
   // Check initial conditions.
   if (activate_arc_on_start_) {
@@ -150,35 +159,31 @@ void ArcAppTest::WaitForDefaultApps() {
   run_loop.Run();
 }
 
+void ArcAppTest::WaitForRemoveAllApps() {
+  DCHECK(arc_app_list_pref_);
+  if (arc_app_list_pref_->is_remove_all_in_progress()) {
+    base::RunLoop run_loop;
+    arc_app_list_pref_->SetRemoveAllCallbackForTesting(run_loop.QuitClosure());
+    run_loop.Run();
+  }
+}
+
 void ArcAppTest::CreateFakeAppsAndPackages() {
   arc::mojom::AppInfo app;
   // Make sure we have enough data for test.
   for (int i = 0; i < 3; ++i) {
-    app.name = base::StringPrintf("Fake App %d", i);
-    app.package_name = base::StringPrintf("fake.app.%d", i);
-    app.activity = base::StringPrintf("fake.app.%d.activity", i);
-    app.sticky = false;
-    fake_apps_.push_back(app);
+    fake_apps_.emplace_back(arc::mojom::AppInfo::New(
+        base::StringPrintf("Fake App %d", i),
+        base::StringPrintf("fake.app.%d", i),
+        base::StringPrintf("fake.app.%d.activity", i), false /* sticky */));
   }
-  fake_apps_[0].sticky = true;
+  fake_apps_[0]->sticky = true;
 
-  app.name = "TestApp1";
-  app.package_name = "test.app1";
-  app.activity = "test.app1.activity";
-  app.sticky = true;
-  fake_default_apps_.push_back(app);
-
-  app.name = "TestApp2";
-  app.package_name = "test.app2";
-  app.activity = "test.app2.activity";
-  app.sticky = true;
-  fake_default_apps_.push_back(app);
-
-  app.name = "TestApp3";
-  app.package_name = "test.app3";
-  app.activity = "test.app3.activity";
-  app.sticky = true;
-  fake_default_apps_.push_back(app);
+  for (int i = 1; i <= 3; ++i) {
+    fake_default_apps_.emplace_back(arc::mojom::AppInfo::New(
+        base::StringPrintf("TestApp%d", i), base::StringPrintf("test.app%d", i),
+        base::StringPrintf("test.app%d.activity", i), true /* sticky */));
+  }
 
   base::flat_map<arc::mojom::AppPermission, arc::mojom::PermissionStatePtr>
       permissions1;
@@ -189,7 +194,8 @@ void ArcAppTest::CreateFakeAppsAndPackages() {
       kPackageName1 /* package_name */, 1 /* package_version */,
       1 /* last_backup_android_id */, 1 /* last_backup_time */,
       false /* sync */, false /* system */, false /* vpn_provider */,
-      nullptr /* web_app_info */, absl::nullopt, std::move(permissions1)));
+      nullptr /* web_app_info */, absl::nullopt, std::move(permissions1),
+      absl::nullopt /* version_name */));
 
   base::flat_map<arc::mojom::AppPermission, arc::mojom::PermissionStatePtr>
       permissions2;
@@ -203,7 +209,8 @@ void ArcAppTest::CreateFakeAppsAndPackages() {
       kPackageName2 /* package_name */, 2 /* package_version */,
       2 /* last_backup_android_id */, 2 /* last_backup_time */, true /* sync */,
       false /* system */, false /* vpn_provider */, nullptr /* web_app_info */,
-      absl::nullopt, std::move(permissions2)));
+      absl::nullopt, std::move(permissions2),
+      absl::nullopt /* version_name */));
 
   base::flat_map<arc::mojom::AppPermission, arc::mojom::PermissionStatePtr>
       permissions3;
@@ -220,7 +227,8 @@ void ArcAppTest::CreateFakeAppsAndPackages() {
       kPackageName3 /* package_name */, 3 /* package_version */,
       3 /* last_backup_android_id */, 3 /* last_backup_time */,
       false /* sync */, false /* system */, false /* vpn_provider */,
-      nullptr /* web_app_info */, absl::nullopt, std::move(permissions3)));
+      nullptr /* web_app_info */, absl::nullopt, std::move(permissions3),
+      absl::nullopt /* version_name */));
 
   for (int i = 0; i < 3; ++i) {
     arc::mojom::ShortcutInfo shortcut_info;
@@ -239,7 +247,7 @@ void ArcAppTest::TearDown() {
     arc_service_manager_->arc_bridge_service()->intent_helper()->CloseInstance(
         intent_helper_instance_.get());
     intent_helper_instance_.reset();
-    intent_helper_bridge_.reset();
+    intent_helper_host_.reset();
   }
   app_instance_.reset();
   arc_play_store_enabled_preference_handler_.reset();
@@ -251,7 +259,7 @@ void ArcAppTest::TearDown() {
   // ash::AshTestHelper::SetUp(), so Shutdown() only when it is initialized in
   // ArcAppTest::SetUp().
   if (dbus_thread_manager_initialized_) {
-    chromeos::ConciergeClient::Shutdown();
+    ash::ConciergeClient::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
     dbus_thread_manager_initialized_ = false;
   }
@@ -274,8 +282,8 @@ void ArcAppTest::RestartArcInstance() {
 void ArcAppTest::SetUpIntentHelper() {
   DCHECK(profile_);
   auto* arc_bridge_service = arc_service_manager_->arc_bridge_service();
-  intent_helper_bridge_ = std::make_unique<arc::ArcIntentHelperBridge>(
-      profile_, arc_bridge_service);
+  intent_helper_host_ = std::make_unique<arc::FakeIntentHelperHost>(
+      arc_bridge_service->intent_helper());
   intent_helper_instance_ = std::make_unique<arc::FakeIntentHelperInstance>();
   arc_bridge_service->intent_helper()->SetInstance(
       intent_helper_instance_.get());

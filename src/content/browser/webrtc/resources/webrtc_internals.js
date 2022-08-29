@@ -150,12 +150,14 @@ function initialize() {
 document.addEventListener('DOMContentLoaded', initialize);
 
 function createStatsSelectionOptionElements() {
-  const p = document.createElement('p');
-
-  const selectElement = document.createElement('select');
-  selectElement.setAttribute('id', 'statsSelectElement');
+  const statsElement = $('stats-template').content.cloneNode(true);
+  const selectElement = statsElement.getElementById('statsSelectElement');
+  const legacyStatsElement = statsElement.getElementById(
+      'legacy-stats-warning');
   selectElement.onchange = () => {
     currentGetStatsMethod = selectElement.value;
+    legacyStatsElement.style.display =
+        currentGetStatsMethod === OPTION_GETSTATS_LEGACY ? 'block' : 'none';
     Object.keys(peerConnectionDataStore).forEach(id => {
       const peerConnectionElement = $(id);
       statsTable.clearStatsLists(peerConnectionElement);
@@ -172,17 +174,7 @@ function createStatsSelectionOptionElements() {
   });
 
   selectElement.value = currentGetStatsMethod;
-
-  p.appendChild(document.createTextNode('Read Stats From: '));
-  p.appendChild(selectElement);
-
-  const statsDocumentation = document.createElement('p');
-  statsDocumentation.appendChild(
-    document.createTextNode('Note: computed stats are in []. ' +
-      'Experimental stats are marked with an * at the end.'));
-  p.appendChild(statsDocumentation);
-
-  return p;
+  return statsElement;
 }
 
 function requestStats() {
@@ -501,6 +493,8 @@ function addStandardStats(data) {
           + ' <=> ' + remoteCandidate.address + ':' + remoteCandidate.port;
     }
 
+    // Mark active local-candidate, remote candidate and candidate pair
+    // bold in the table.
     const statsContainer =
         document.getElementById(peerConnectionElement.id + '-table-container');
     const activeConnectionClass = 'stats-table-active-connection';
@@ -512,11 +506,29 @@ function addStandardStats(data) {
       if (innerText.startsWith(activeCandidatePair.id)
           || innerText.startsWith(localCandidate.id)
           || innerText.startsWith(remoteCandidate.id)) {
-        node.classList.add(activeConnectionClass);
+        node.firstElementChild.classList.add(activeConnectionClass);
       } else {
-        node.classList.remove(activeConnectionClass);
+        node.firstElementChild.classList.remove(activeConnectionClass);
       }
     });
+    // Mark active candidate-pair graph bold.
+    const statsGraphContainers = peerConnectionElement
+      .getElementsByClassName('stats-graph-container');
+    for (let i = 0; i < statsGraphContainers.length; i++) {
+      const node = statsGraphContainers[i];
+      if (node.nodeName !== 'DETAILS') {
+        continue;
+      }
+      if (!node.id.startsWith(pcId + '-candidate-pair')) {
+        continue;
+      }
+      if (node.id === pcId + '-candidate-pair-' + activeCandidatePair.id
+          + '-graph-container') {
+        node.firstElementChild.classList.add(activeConnectionClass);
+      } else {
+        node.firstElementChild.classList.remove(activeConnectionClass);
+      }
+    }
   } else {
     candidateElement.innerText = '(not connected)';
   }

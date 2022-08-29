@@ -23,7 +23,6 @@
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_table_view_constants.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_table_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_table_view_constants.h"
-#import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_link_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_edit_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_edit_item_delegate.h"
@@ -34,6 +33,7 @@
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/elements/popover_label_view_controller.h"
 #import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
+#import "ios/chrome/common/ui/table_view/table_view_cells_constants.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -99,7 +99,7 @@ typedef NS_ENUM(NSInteger, ReauthenticationReason) {
 @property(nonatomic, strong) TableViewTextEditItem* passwordTextItem;
 
 // The view used to anchor error alert which is shown for the username. This is
-// image icon in the |usernameTextItem| cell.
+// image icon in the `usernameTextItem` cell.
 @property(nonatomic, weak) UIView* usernameErrorAnchorView;
 
 // Denotes the type of the credential passed to this coordinator. Could be
@@ -349,9 +349,7 @@ typedef NS_ENUM(NSInteger, ReauthenticationReason) {
       l10n_util::GetNSString(IDS_IOS_SHOW_PASSWORD_VIEW_USERNAME);
   item.textFieldValue = self.password.username;  // Empty for a new form.
   // If password is missing (federated credential) don't allow to edit username.
-  if (self.credentialType != CredentialTypeFederation &&
-      base::FeatureList::IsEnabled(
-          password_manager::features::kEditPasswordsInSettings)) {
+  if (self.credentialType != CredentialTypeFederation) {
     item.textFieldEnabled = self.tableView.editing;
     item.hideIcon = !self.tableView.editing;
     item.autoCapitalizationType = UITextAutocapitalizationTypeNone;
@@ -505,14 +503,26 @@ typedef NS_ENUM(NSInteger, ReauthenticationReason) {
 }
 
 - (NSString*)footerText {
-  if (self.syncingUserEmail) {
-    return l10n_util::GetNSStringF(
-        IDS_IOS_SETTINGS_ADD_PASSWORD_FOOTER,
-        base::SysNSStringToUTF16(self.syncingUserEmail));
-  }
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::
+              kIOSEnablePasswordManagerBrandingUpdate)) {
+    if (self.syncingUserEmail) {
+      return l10n_util::GetNSStringF(
+          IDS_IOS_SETTINGS_ADD_PASSWORD_FOOTER_BRANDED,
+          base::SysNSStringToUTF16(self.syncingUserEmail));
+    }
 
-  return l10n_util::GetNSString(
-      IDS_IOS_SETTINGS_ADD_PASSWORD_FOOTER_NON_SYNCING);
+    return l10n_util::GetNSString(IDS_IOS_SAVE_PASSWORD_FOOTER_NOT_SYNCING);
+  } else {
+    if (self.syncingUserEmail) {
+      return l10n_util::GetNSStringF(
+          IDS_IOS_SETTINGS_ADD_PASSWORD_FOOTER,
+          base::SysNSStringToUTF16(self.syncingUserEmail));
+    }
+
+    return l10n_util::GetNSString(
+        IDS_IOS_SETTINGS_ADD_PASSWORD_FOOTER_NON_SYNCING);
+  }
 }
 
 #pragma mark - UITableViewDelegate
@@ -537,9 +547,7 @@ typedef NS_ENUM(NSInteger, ReauthenticationReason) {
     case ItemTypeDuplicateCredentialMessage:
       break;
     case ItemTypeUsername: {
-      if (base::FeatureList::IsEnabled(
-              password_manager::features::kEditPasswordsInSettings) &&
-          self.tableView.editing) {
+      if (self.tableView.editing) {
         UITableViewCell* cell =
             [self.tableView cellForRowAtIndexPath:indexPath];
         TableViewTextEditCell* textFieldCell =
@@ -626,7 +634,7 @@ typedef NS_ENUM(NSInteger, ReauthenticationReason) {
 - (CGFloat)tableView:(UITableView*)tableView
     heightForHeaderInSection:(NSInteger)section {
   NSInteger sectionIdentifier =
-      [self.tableViewModel sectionIdentifierForSection:section];
+      [self.tableViewModel sectionIdentifierForSectionIndex:section];
 
   if (sectionIdentifier == SectionIdentifierFooter ||
       sectionIdentifier == SectionIdentifierTLDFooter) {
@@ -638,7 +646,7 @@ typedef NS_ENUM(NSInteger, ReauthenticationReason) {
 - (CGFloat)tableView:(UITableView*)tableView
     heightForFooterInSection:(NSInteger)section {
   NSInteger sectionIdentifier =
-      [self.tableViewModel sectionIdentifierForSection:section];
+      [self.tableViewModel sectionIdentifierForSectionIndex:section];
   if (sectionIdentifier == SectionIdentifierSite) {
     return 0;
   }
@@ -715,8 +723,6 @@ typedef NS_ENUM(NSInteger, ReauthenticationReason) {
     case ItemTypeDuplicateCredentialButton:
       return NO;
     case ItemTypeUsername:
-      return base::FeatureList::IsEnabled(
-          password_manager::features::kEditPasswordsInSettings);
     case ItemTypePassword:
       return YES;
   }
@@ -976,7 +982,7 @@ typedef NS_ENUM(NSInteger, ReauthenticationReason) {
       break;
     }
     case ReauthenticationReasonEdit:
-      // Called super because we want to update only |tableView.editing|.
+      // Called super because we want to update only `tableView.editing`.
       [super editButtonPressed];
       [self reloadData];
       break;
@@ -999,24 +1005,31 @@ typedef NS_ENUM(NSInteger, ReauthenticationReason) {
   }
 }
 
-// Shows a snack bar with |message| and provides haptic feedback. The haptic
-// feedback is either for success or for error, depending on |success|.
+// Shows a snack bar with `message` and provides haptic feedback. The haptic
+// feedback is either for success or for error, depending on `success`. Deselect
+// cell if there was one selected.
 - (void)showToast:(NSString*)message forSuccess:(BOOL)success {
   TriggerHapticFeedbackForNotification(success
                                            ? UINotificationFeedbackTypeSuccess
                                            : UINotificationFeedbackTypeError);
+  // TODO(crbug.com/1323778): This will need to be called on the
+  // SnackbarCommands handler.
   [self.commandsHandler showSnackbarWithMessage:message
                                      buttonText:nil
                                   messageAction:nil
                                completionAction:nil];
+
+  if ([self.tableView indexPathForSelectedRow]) {
+    [self.tableView
+        deselectRowAtIndexPath:[self.tableView indexPathForSelectedRow]
+                      animated:YES];
+  }
 }
 
 - (BOOL)isItemAtIndexPathTextEditCell:(NSIndexPath*)cellPath {
   NSInteger itemType = [self.tableViewModel itemTypeForIndexPath:cellPath];
   switch (static_cast<ItemType>(itemType)) {
     case ItemTypeUsername:
-      return base::FeatureList::IsEnabled(
-          password_manager::features::kEditPasswordsInSettings);
     case ItemTypePassword:
       return YES;
     case ItemTypeWebsite:
@@ -1284,7 +1297,7 @@ typedef NS_ENUM(NSInteger, ReauthenticationReason) {
 
 #pragma mark - Metrics
 
-// Logs metrics for the given reauthentication |result| (success, failure or
+// Logs metrics for the given reauthentication `result` (success, failure or
 // skipped).
 - (void)logPasswordSettingsReauthResult:(ReauthenticationResult)result {
   switch (result) {

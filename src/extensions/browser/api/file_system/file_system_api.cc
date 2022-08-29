@@ -14,7 +14,6 @@
 
 #include "base/bind.h"
 #include "base/containers/contains.h"
-#include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/json/values_util.h"
@@ -25,6 +24,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/thread_pool.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -61,7 +61,7 @@
 #include "ui/shell_dialogs/select_file_dialog.h"
 #include "url/origin.h"
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #include <CoreFoundation/CoreFoundation.h>
 #include "base/mac/foundation_util.h"
 #endif
@@ -159,7 +159,7 @@ bool GetFileTypesFromAcceptOption(
     for (std::vector<std::string>::const_iterator iter = list->begin();
          iter != list->end(); ++iter) {
       std::string extension = base::ToLowerASCII(*iter);
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
       extension_set.insert(base::UTF8ToWide(*iter));
 #else
       extension_set.insert(*iter);
@@ -185,8 +185,10 @@ const char kLastChooseEntryDirectory[] = "last_choose_file_directory";
 
 const int kGraylistedPaths[] = {
     base::DIR_HOME,
-#if defined(OS_WIN)
-    base::DIR_PROGRAM_FILES, base::DIR_PROGRAM_FILESX86, base::DIR_WINDOWS,
+#if BUILDFLAG(IS_WIN)
+    base::DIR_PROGRAM_FILES,
+    base::DIR_PROGRAM_FILESX86,
+    base::DIR_WINDOWS,
 #endif
 };
 
@@ -344,7 +346,7 @@ void FileSystemEntryFunction::RegisterFileSystemsAndSendResponse(
 std::unique_ptr<base::DictionaryValue> FileSystemEntryFunction::CreateResult() {
   std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
   result->Set("entries", std::make_unique<base::ListValue>());
-  result->SetBoolean("multiple", multiple_);
+  result->SetBoolKey("multiple", multiple_);
   return result;
 }
 
@@ -357,15 +359,16 @@ void FileSystemEntryFunction::AddEntryToResult(const base::FilePath& path,
   bool success = result->GetList("entries", &entries);
   DCHECK(success);
 
-  std::unique_ptr<base::DictionaryValue> entry(new base::DictionaryValue());
-  entry->SetString("fileSystemId", file_entry.filesystem_id);
-  entry->SetString("baseName", file_entry.registered_name);
-  if (id_override.empty())
-    entry->SetString("id", file_entry.id);
-  else
-    entry->SetString("id", id_override);
-  entry->SetBoolean("isDirectory", is_directory_);
-  entries->Append(std::move(entry));
+  base::Value::Dict entry;
+  entry.Set("fileSystemId", file_entry.filesystem_id);
+  entry.Set("baseName", file_entry.registered_name);
+  if (id_override.empty()) {
+    entry.Set("id", file_entry.id);
+  } else {
+    entry.Set("id", id_override);
+  }
+  entry.Set("isDirectory", is_directory_);
+  entries->Append(base::Value(std::move(entry)));
 }
 
 void FileSystemEntryFunction::HandleWritableFileError(
@@ -610,7 +613,7 @@ void FileSystemChooseEntryFunction::ConfirmDirectoryAccessAsync(
     return;
   }
 
-  for (size_t i = 0; i < base::size(kGraylistedPaths); i++) {
+  for (size_t i = 0; i < std::size(kGraylistedPaths); i++) {
     base::FilePath graylisted_path;
     if (!base::PathService::Get(kGraylistedPaths[i], &graylisted_path))
       continue;
@@ -724,7 +727,9 @@ void FileSystemChooseEntryFunction::BuildSuggestion(
     base::FilePath* suggested_name,
     base::FilePath::StringType* suggested_extension) {
   if (opt_name) {
-    *suggested_name = base::FilePath::FromUTF8Unsafe(*opt_name);
+    std::string name;
+    base::ReplaceChars(*opt_name, "%", "_", &name);
+    *suggested_name = base::FilePath::FromUTF8Unsafe(name);
 
     // Don't allow any path components; shorten to the base name. This should
     // result in a relative path, but in some cases may not. Clear the
@@ -1073,7 +1078,7 @@ ExtensionFunction::ResponseAction FileSystemRequestFileSystemFunction::Run() {
       ExtensionsAPIClient::Get()->GetFileSystemDelegate();
   DCHECK(delegate);
   // Only kiosk apps in kiosk sessions can use this API.
-  // Additionally it is enabled for whitelisted component extensions and apps.
+  // Additionally it is enabled for allowlisted component extensions and apps.
   if (delegate->GetGrantVolumesMode(browser_context(), render_frame_host(),
                                     *extension()) ==
       FileSystemDelegate::kGrantNone) {
@@ -1094,8 +1099,8 @@ void FileSystemRequestFileSystemFunction::OnGotFileSystem(
     const std::string& id,
     const std::string& path) {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetString("file_system_id", id);
-  dict->SetString("file_system_path", path);
+  dict->SetStringKey("file_system_id", id);
+  dict->SetStringKey("file_system_path", path);
   Respond(OneArgument(base::Value::FromUniquePtrValue(std::move(dict))));
 }
 
@@ -1112,7 +1117,7 @@ ExtensionFunction::ResponseAction FileSystemGetVolumeListFunction::Run() {
       ExtensionsAPIClient::Get()->GetFileSystemDelegate();
   DCHECK(delegate);
   // Only kiosk apps in kiosk sessions can use this API.
-  // Additionally it is enabled for whitelisted component extensions and apps.
+  // Additionally it is enabled for allowlisted component extensions and apps.
   if (delegate->GetGrantVolumesMode(browser_context(), render_frame_host(),
                                     *extension()) ==
       FileSystemDelegate::kGrantNone) {

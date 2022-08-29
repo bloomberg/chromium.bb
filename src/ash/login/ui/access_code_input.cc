@@ -57,7 +57,8 @@ FlexCodeInput::FlexCodeInput(OnInputChange on_input_change,
       kAccessCodeFontSizeDeltaDp, gfx::Font::FontStyle::NORMAL,
       gfx::Font::Weight::NORMAL));
   code_field_->SetBorder(views::CreateSolidSidedBorder(
-      0, 0, kAccessCodeFlexUnderlineThicknessDp, 0, text_color));
+      gfx::Insets::TLBR(0, 0, kAccessCodeFlexUnderlineThicknessDp, 0),
+      text_color));
   code_field_->SetBackgroundColor(SK_ColorTRANSPARENT);
   code_field_->SetFocusBehavior(FocusBehavior::ALWAYS);
   code_field_->SetPreferredSize(
@@ -177,7 +178,7 @@ views::View* AccessibleInputField::GetSelectedViewForGroup(int group) {
 }
 
 void AccessibleInputField::OnGestureEvent(ui::GestureEvent* event) {
-  if (event->type() == ui::ET_GESTURE_TAP_DOWN) {
+  if (event->type() == ui::ET_GESTURE_TAP) {
     RequestFocusWithPointer(event->details().primary_pointer_type());
     return;
   }
@@ -188,9 +189,13 @@ void AccessibleInputField::OnGestureEvent(ui::GestureEvent* event) {
 void AccessibleInputField::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   // Focusable nodes generally must have a name, but the focus of an accessible
   // input field is propagated to its ancestor.
-  node_data->SetNameFrom(ax::mojom::NameFrom::kAttributeExplicitlyEmpty);
-
   views::Textfield::GetAccessibleNodeData(node_data);
+
+  // We want the PIN input field, an empty input field, to retain
+  // NameFrom::kAttributeExplicitlyEmpty. However
+  // Textfield::GetAccessibleNodeData() sets NameFrom to NameFrom::kContent.
+  // We override NameFrom after this call.
+  node_data->SetNameFrom(ax::mojom::NameFrom::kAttributeExplicitlyEmpty);
 }
 
 FixedLengthCodeInput::FixedLengthCodeInput(int length,
@@ -230,7 +235,8 @@ FixedLengthCodeInput::FixedLengthCodeInput(int length,
         kAccessCodeFontSizeDeltaDp, gfx::Font::FontStyle::NORMAL,
         gfx::Font::Weight::NORMAL));
     field->SetBorder(views::CreateSolidSidedBorder(
-        0, 0, kAccessCodeInputFieldUnderlineThicknessDp, 0, text_color));
+        gfx::Insets::TLBR(0, 0, kAccessCodeInputFieldUnderlineThicknessDp, 0),
+        text_color));
     field->SetGroup(kFixedLengthInputGroup);
 
     // Ignores the a11y focus of |field| because the a11y needs to focus to the

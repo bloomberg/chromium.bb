@@ -26,14 +26,18 @@ void TestURLLoaderClient::OnReceiveEarlyHints(
 }
 
 void TestURLLoaderClient::OnReceiveResponse(
-    mojom::URLResponseHeadPtr response_head) {
+    mojom::URLResponseHeadPtr response_head,
+    mojo::ScopedDataPipeConsumerHandle body) {
   EXPECT_FALSE(has_received_response_);
-  EXPECT_FALSE(has_received_cached_metadata_);
   EXPECT_FALSE(has_received_completion_);
   has_received_response_ = true;
   response_head_ = std::move(response_head);
   if (quit_closure_for_on_receive_response_)
     std::move(quit_closure_for_on_receive_response_).Run();
+
+  response_body_ = std::move(body);
+  if (quit_closure_for_on_start_loading_response_body_)
+    std::move(quit_closure_for_on_start_loading_response_body_).Run();
 }
 
 void TestURLLoaderClient::OnReceiveRedirect(
@@ -54,7 +58,6 @@ void TestURLLoaderClient::OnReceiveRedirect(
 
 void TestURLLoaderClient::OnReceiveCachedMetadata(mojo_base::BigBuffer data) {
   EXPECT_FALSE(has_received_cached_metadata_);
-  EXPECT_TRUE(has_received_response_);
   EXPECT_FALSE(has_received_completion_);
   has_received_cached_metadata_ = true;
   cached_metadata_ =
@@ -85,15 +88,6 @@ void TestURLLoaderClient::OnUploadProgress(
   current_upload_position_ = current_position;
   total_upload_size_ = total_size;
   std::move(ack_callback).Run();
-}
-
-void TestURLLoaderClient::OnStartLoadingResponseBody(
-    mojo::ScopedDataPipeConsumerHandle body) {
-  EXPECT_TRUE(has_received_response_);
-  EXPECT_FALSE(has_received_completion_);
-  response_body_ = std::move(body);
-  if (quit_closure_for_on_start_loading_response_body_)
-    std::move(quit_closure_for_on_start_loading_response_body_).Run();
 }
 
 void TestURLLoaderClient::OnComplete(const URLLoaderCompletionStatus& status) {

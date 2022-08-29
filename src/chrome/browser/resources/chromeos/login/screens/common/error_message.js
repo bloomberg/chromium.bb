@@ -11,6 +11,7 @@
 const USER_ACTION_LAUNCH_OOBE_GUEST = 'launch-oobe-guest';
 const USER_ACTION_LOCAL_STATE_POWERWASH = 'local-state-error-powerwash';
 const USER_ACTION_SHOW_CAPTIVE_PORTAL = 'show-captive-portal';
+const USER_ACTION_OPEN_INTERNET_DIALOG = 'open-internet-dialog';
 
 /**
  * Possible UI states of the error screen.
@@ -174,6 +175,14 @@ class ErrorMessageScreen extends ErrorMessageScreenBase {
         type: Boolean,
         value: false,
       },
+
+      /**
+       * @private
+       */
+      hasUserPods_: {
+        type: Boolean,
+        value: false,
+      },
     };
   }
 
@@ -208,7 +217,7 @@ class ErrorMessageScreen extends ErrorMessageScreenBase {
    * @type {boolean}
    */
   get closable() {
-    return Oobe.getInstance().hasUserPods && !this.is_persistent_error_;
+    return this.hasUserPods_ && !this.is_persistent_error_;
   }
 
   /**
@@ -221,9 +230,7 @@ class ErrorMessageScreen extends ErrorMessageScreenBase {
 
   ready() {
     super.ready();
-    this.initializeLoginScreen('ErrorMessageScreen', {
-      resetAllowed: true,
-    });
+    this.initializeLoginScreen('ErrorMessageScreen');
 
     this.updateLocalizedContent();
   }
@@ -282,7 +289,7 @@ class ErrorMessageScreen extends ErrorMessageScreenBase {
     opts.attrs = opts.attrs.concat(['id', 'class', 'is']);
     opts.substitutions = opts.substitutions || [];
     for (const anchorId of anchor_ids) {
-      let attributes =
+      const attributes =
           ' class="oobe-local-link focus-on-show" is="action-link"';
       opts.substitutions = opts.substitutions.concat(
           ['<a id="' + anchorId + '"' + attributes + '>', '</a>']);
@@ -304,7 +311,7 @@ class ErrorMessageScreen extends ErrorMessageScreenBase {
     }
     for (const anchorId of anchor_ids) {
       /** @suppress {checkTypes} anchorId is a string */
-      let linkElement = this.shadowRoot.getElementById(anchorId);
+      const linkElement = this.shadowRoot.getElementById(anchorId);
       if (hidden) {
         linkElement.setAttribute('hidden', '');
       } else {
@@ -343,7 +350,7 @@ class ErrorMessageScreen extends ErrorMessageScreenBase {
         'captive-portal-proxy-message-text', 'captivePortalProxyMessage', {},
         'proxy-settings-fix-link');
     this.shadowRoot.querySelector('#proxy-settings-fix-link').onclick = () => {
-      chrome.send('openInternetDetailDialog');
+      this.userActed(USER_ACTION_OPEN_INTERNET_DIALOG);
     };
 
     this.updateElementWithStringAndAnchorTag_(
@@ -351,7 +358,7 @@ class ErrorMessageScreen extends ErrorMessageScreenBase {
         'update-proxy-error-fix-proxy');
     this.shadowRoot.querySelector('#update-proxy-error-fix-proxy').onclick =
         () => {
-          chrome.send('openInternetDetailDialog');
+          this.userActed(USER_ACTION_OPEN_INTERNET_DIALOG);
         };
 
     this.updateElementWithStringAndAnchorTag_(
@@ -363,7 +370,7 @@ class ErrorMessageScreen extends ErrorMessageScreenBase {
         };
     this.shadowRoot.querySelector('#signin-proxy-error-fix-proxy').onclick =
         () => {
-          chrome.send('openInternetDetailDialog');
+          this.userActed(USER_ACTION_OPEN_INTERNET_DIALOG);
         };
 
     this.updateElementWithStringAndAnchorTag_(
@@ -396,6 +403,7 @@ class ErrorMessageScreen extends ErrorMessageScreenBase {
   onBeforeShow(data) {
     this.enableWifiScans_ = true;
     this.$.backButton.disabled = !this.closable;
+    this.hasUserPods_ = data && ('hasUserPods' in data) && data.hasUserPods;
   }
 
   /**
@@ -413,11 +421,7 @@ class ErrorMessageScreen extends ErrorMessageScreenBase {
    * @private
    */
   launchGuestSession_() {
-    if (Oobe.getInstance().isOobeUI()) {
-      this.userActed(USER_ACTION_LAUNCH_OOBE_GUEST);
-    } else {
-      chrome.send('launchIncognito');
-    }
+    this.userActed(USER_ACTION_LAUNCH_OOBE_GUEST);
   }
 
   /**
@@ -474,8 +478,9 @@ class ErrorMessageScreen extends ErrorMessageScreenBase {
    * Cancels error screen and drops to user pods.
    */
   cancel() {
-    if (this.closable)
+    if (this.closable) {
       this.userActed('cancel');
+    }
   }
 
   /**

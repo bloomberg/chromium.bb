@@ -4,9 +4,11 @@
 
 #include "chrome/browser/chromeos/policy/dlp/dlp_confidential_contents.h"
 
+#include <sstream>
 #include <string>
 
 #include "base/test/test_mock_time_task_runner.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_histogram_helper.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/web_contents.h"
@@ -68,11 +70,58 @@ class DlpConfidentialContentsTest : public testing::Test {
     return iter != contents.GetContents().end();
   }
 
+ protected:
+  base::HistogramTester histogram_tester_;
+
  private:
   content::BrowserTaskEnvironment task_environment_;
   content::RenderViewHostTestEnabler render_view_host_test_enabler_;
   const std::unique_ptr<TestingProfile> profile_;
 };
+
+TEST_F(DlpConfidentialContentsTest, ComparisonWithDifferentUrls) {
+  DlpConfidentialContent content1 = CreateConfidentialContent(title1, url1);
+  DlpConfidentialContent content2 = CreateConfidentialContent(title2, url2);
+
+  EXPECT_TRUE(content1 != content2);
+  EXPECT_TRUE(content1 < content2);
+  EXPECT_TRUE(content1 <= content2);
+  EXPECT_TRUE(content2 > content1);
+  EXPECT_TRUE(content2 >= content1);
+}
+
+TEST_F(DlpConfidentialContentsTest, ComparisonWithSameUrls) {
+  DlpConfidentialContent content1 = CreateConfidentialContent(title1, url1);
+  DlpConfidentialContent content2 = CreateConfidentialContent(title2, url1);
+
+  EXPECT_TRUE(content1 == content2);
+  EXPECT_FALSE(content1 != content2);
+  EXPECT_FALSE(content1 < content2);
+  EXPECT_TRUE(content1 <= content2);
+  EXPECT_FALSE(content2 > content1);
+  EXPECT_TRUE(content2 >= content1);
+}
+
+TEST_F(DlpConfidentialContentsTest, ComparisonAfterAssignement) {
+  DlpConfidentialContent content1 = CreateConfidentialContent(title1, url1);
+  DlpConfidentialContent content2 = CreateConfidentialContent(title2, url2);
+
+  EXPECT_FALSE(content1 == content2);
+
+  content2 = content1;
+  EXPECT_TRUE(content1 == content2);
+}
+
+TEST_F(DlpConfidentialContentsTest, EqualityIgnoresTheRef) {
+  const GURL url1 = GURL("https://example.com#first_ref");
+  const GURL url2 = GURL("https://example.com#second_ref");
+  EXPECT_NE(url1, url2);
+  EXPECT_TRUE(url1.EqualsIgnoringRef(url2));
+
+  DlpConfidentialContent content1 = CreateConfidentialContent(title1, url1);
+  DlpConfidentialContent content2 = CreateConfidentialContent(title2, url2);
+  EXPECT_EQ(content1, content2);
+}
 
 TEST_F(DlpConfidentialContentsTest, EmptyContents) {
   DlpConfidentialContents contents;
@@ -106,7 +155,7 @@ TEST_F(DlpConfidentialContentsTest, ClearAndAdd) {
   EXPECT_TRUE(Contains(contents, web_contents3.get()));
 }
 
-TEST_F(DlpConfidentialContentsTest, UnionShouldAddUniqueItems) {
+TEST_F(DlpConfidentialContentsTest, InsertOrUpdateDropsDuplicates) {
   DlpConfidentialContents contents1;
   DlpConfidentialContents contents2;
 
@@ -124,11 +173,74 @@ TEST_F(DlpConfidentialContentsTest, UnionShouldAddUniqueItems) {
   EXPECT_EQ(contents2.GetContents().size(), 2u);
   EXPECT_FALSE(Contains(contents1, web_contents3.get()));
 
-  contents1.UnionWith(contents2);
+  contents1.InsertOrUpdate(contents2);
 
   EXPECT_EQ(contents1.GetContents().size(), 3u);
   EXPECT_EQ(contents2.GetContents().size(), 2u);
   EXPECT_TRUE(Contains(contents1, web_contents3.get()));
+}
+
+TEST_F(DlpConfidentialContentsTest, InsertOrUpdateUpdatesTitles) {
+  const GURL url1 = GURL("https://example.com#first_ref");
+  const GURL url2 = GURL("https://example.com#second_ref");
+  EXPECT_NE(url1, url2);
+  EXPECT_TRUE(url1.EqualsIgnoringRef(url2));
+
+  DlpConfidentialContents contents1;
+  DlpConfidentialContents contents2;
+
+  auto web_contents1 = CreateWebContents(title1, url1);
+  auto web_contents2 = CreateWebContents(title2, url2);
+  auto web_contents3 = CreateWebContents(title3, url3);
+
+  contents1.Add(web_contents1.get());
+  contents2.Add(web_contents2.get());
+  contents2.Add(web_contents3.get());
+
+  EXPECT_EQ(contents1.GetContents().begin()->title, title1);
+
+  contents1.InsertOrUpdate(contents2);
+
+  EXPECT_EQ(contents2.GetContents().size(), 2u);
+  EXPECT_EQ(contents1.GetContents().begin()->title, title2);
+}
+
+TEST_F(DlpConfidentialContentsTest, EqualityDoesNotDependOnOrder) {
+  DlpConfidentialContents contents1;
+  DlpConfidentialContents contents2;
+
+  auto web_contents1 = CreateWebContents(title1, url1);
+  auto web_contents2 = CreateWebContents(title2, url2);
+  auto web_contents3 = CreateWebContents(title3, url3);
+
+  contents1.Add(web_contents1.get());
+  contents1.Add(web_contents2.get());
+  contents2.Add(web_contents2.get());
+  contents2.Add(web_contents1.get());
+  EXPECT_TRUE(contents1 == contents2);
+  EXPECT_TRUE(EqualWithTitles(contents1, contents2));
+
+  contents1.Add(web_contents3.get());
+  EXPECT_TRUE(contents1 != contents2);
+  EXPECT_FALSE(EqualWithTitles(contents1, contents2));
+}
+
+TEST_F(DlpConfidentialContentsTest, EqualityDoesNotDependOnTitle) {
+  DlpConfidentialContents contents1;
+  DlpConfidentialContents contents2;
+  DlpConfidentialContents contents3;
+
+  auto web_contents1 = CreateWebContents(title1, url1);
+  auto web_contents2 = CreateWebContents(title2, url1);
+
+  contents1.Add(web_contents1.get());
+  contents2.Add(web_contents1.get());
+  contents3.Add(web_contents2.get());
+  EXPECT_TRUE(contents1 == contents2);
+  EXPECT_TRUE(EqualWithTitles(contents1, contents2));
+
+  EXPECT_TRUE(contents1 == contents3);
+  EXPECT_FALSE(EqualWithTitles(contents1, contents3));
 }
 
 TEST_F(DlpConfidentialContentsTest, CacheEvictsAfterTimeout) {
@@ -141,22 +253,49 @@ TEST_F(DlpConfidentialContentsTest, CacheEvictsAfterTimeout) {
 
   cache.Cache(content, kRestriction);
   EXPECT_TRUE(cache.Contains(content, kRestriction));
+  histogram_tester_.ExpectBucketCount(
+      GetDlpHistogramPrefix() + dlp::kConfidentialContentsCount, 1, 1);
   task_runner->FastForwardBy(DlpConfidentialContentsCache::GetCacheTimeout());
   EXPECT_FALSE(cache.Contains(content, kRestriction));
 }
 
 TEST_F(DlpConfidentialContentsTest, CacheEvictsWhenFull) {
   DlpConfidentialContentsCache cache;
-  cache.SetCacheSizeLimitForTesting(1);
-
   DlpConfidentialContent content1 = CreateConfidentialContent(title1, url1);
-  DlpConfidentialContent content2 = CreateConfidentialContent(title2, url2);
-
   cache.Cache(content1, kRestriction);
-  EXPECT_TRUE(cache.Contains(content1, kRestriction));
-  cache.Cache(content2, kRestriction);
+  histogram_tester_.ExpectBucketCount(
+      GetDlpHistogramPrefix() + dlp::kConfidentialContentsCount, 1, 1);
+  for (int i = 2; i <= 100; i++) {
+    std::stringstream url;
+    url << "https://example";
+    url << i;
+    url << ".com";
+    cache.Cache(CreateConfidentialContent(u"title", GURL(url.str())),
+                kRestriction);
+  }
+  EXPECT_EQ(cache.GetSizeForTesting(), 100u);
+  histogram_tester_.ExpectBucketCount(
+      GetDlpHistogramPrefix() + dlp::kConfidentialContentsCount, 100, 1);
+  EXPECT_EQ(histogram_tester_
+                .GetHistogramSamplesSinceCreation(
+                    GetDlpHistogramPrefix() + dlp::kConfidentialContentsCount)
+                ->TotalCount(),
+            100);
+
+  // Add an additional item which should lead to the first one being evicted.
+  DlpConfidentialContent content101 =
+      CreateConfidentialContent(u"Example101", GURL("https://example101.com"));
+  cache.Cache(content101, kRestriction);
+  EXPECT_EQ(cache.GetSizeForTesting(), 100u);
   EXPECT_FALSE(cache.Contains(content1, kRestriction));
-  EXPECT_TRUE(cache.Contains(content2, kRestriction));
+  EXPECT_TRUE(cache.Contains(content101, kRestriction));
+  EXPECT_EQ(histogram_tester_
+                .GetHistogramSamplesSinceCreation(
+                    GetDlpHistogramPrefix() + dlp::kConfidentialContentsCount)
+                ->TotalCount(),
+            101);
+  histogram_tester_.ExpectBucketCount(
+      GetDlpHistogramPrefix() + dlp::kConfidentialContentsCount, 100, 2);
 }
 
 TEST_F(DlpConfidentialContentsTest, CacheRemovesDuplicates) {
@@ -167,6 +306,8 @@ TEST_F(DlpConfidentialContentsTest, CacheRemovesDuplicates) {
   cache.Cache(content, kRestriction);
   cache.Cache(content, kRestriction);
   EXPECT_EQ(cache.GetSizeForTesting(), 1u);
+  histogram_tester_.ExpectBucketCount(
+      GetDlpHistogramPrefix() + dlp::kConfidentialContentsCount, 1, 1);
 }
 
 }  // namespace policy

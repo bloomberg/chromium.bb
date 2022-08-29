@@ -12,12 +12,12 @@
 #include <Eigen/LU>
 
 template<typename MatrixType>
-void inverse_for_fixed_size(const MatrixType&, typename internal::enable_if<MatrixType::SizeAtCompileTime==Dynamic>::type* = 0)
+void inverse_for_fixed_size(const MatrixType&, std::enable_if_t<MatrixType::SizeAtCompileTime==Dynamic>* = 0)
 {
 }
 
 template<typename MatrixType>
-void inverse_for_fixed_size(const MatrixType& m1, typename internal::enable_if<MatrixType::SizeAtCompileTime!=Dynamic>::type* = 0)
+void inverse_for_fixed_size(const MatrixType& m1, std::enable_if_t<MatrixType::SizeAtCompileTime!=Dynamic>* = 0)
 {
   using std::abs;
 

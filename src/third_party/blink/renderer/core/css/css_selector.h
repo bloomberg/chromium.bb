@@ -24,6 +24,8 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_SELECTOR_H_
 
 #include <memory>
+
+#include "base/check_op.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_mode.h"
 #include "third_party/blink/renderer/core/dom/qualified_name.h"
@@ -219,6 +221,7 @@ class CORE_EXPORT CSSSelector {
     kPseudoAfter,
     kPseudoMarker,
     kPseudoModal,
+    kPseudoSelectorFragmentAnchor,
     kPseudoBackdrop,
     kPseudoLang,
     kPseudoNot,
@@ -277,7 +280,7 @@ class CORE_EXPORT CSSSelector {
     kPseudoListBox,
     kPseudoMultiSelectFocus,
     kPseudoHostHasAppearance,
-    kPseudoPopupOpen,
+    kPseudoTopLayer,
     kPseudoSlotted,
     kPseudoVideoPersistent,
     kPseudoVideoPersistentAncestor,
@@ -287,11 +290,18 @@ class CORE_EXPORT CSSSelector {
     kPseudoSpellingError,
     kPseudoGrammarError,
     kPseudoHas,
-    // TODO(blee@igalia.com) Need to clarify the :scope dependency in relative
-    // selector definition.
-    // - spec : https://www.w3.org/TR/selectors-4/#relative
-    // - csswg issue : https://github.com/w3c/csswg-drafts/issues/6399
-    kPseudoRelativeLeftmost,
+    kPseudoRelativeAnchor,
+
+    // The following selectors are used to target pseudo elements created for
+    // DocumentTransition.
+    // See
+    // https://github.com/WICG/shared-element-transitions/blob/main/explainer.md
+    // for details.
+    kPseudoPageTransition,
+    kPseudoPageTransitionContainer,
+    kPseudoPageTransitionImageWrapper,
+    kPseudoPageTransitionOutgoingImage,
+    kPseudoPageTransitionIncomingImage,
   };
 
   enum class AttributeMatchType {
@@ -343,6 +353,15 @@ class CORE_EXPORT CSSSelector {
   const Vector<AtomicString>* PartNames() const {
     return has_rare_data_ ? data_.rare_data_->part_names_.get() : nullptr;
   }
+  bool ContainsPseudoInsideHasPseudoClass() const {
+    return has_rare_data_ ? data_.rare_data_->bits_.has_.contains_pseudo_
+                          : false;
+  }
+  bool ContainsComplexLogicalCombinationsInsideHasPseudoClass() const {
+    return has_rare_data_ ? data_.rare_data_->bits_.has_
+                                .contains_complex_logical_combinations_
+                          : false;
+  }
 
 #ifndef NDEBUG
   void Show() const;
@@ -355,14 +374,15 @@ class CORE_EXPORT CSSSelector {
   void SetArgument(const AtomicString&);
   void SetSelectorList(std::unique_ptr<CSSSelectorList>);
   void SetPartNames(std::unique_ptr<Vector<AtomicString>>);
+  void SetContainsPseudoInsideHasPseudoClass();
+  void SetContainsComplexLogicalCombinationsInsideHasPseudoClass();
 
   void SetNth(int a, int b);
   bool MatchNth(unsigned count) const;
 
-  bool IsAdjacentSelector() const {
-    return relation_ == kDirectAdjacent || relation_ == kIndirectAdjacent;
+  static bool IsAdjacentRelation(RelationType relation) {
+    return relation == kDirectAdjacent || relation == kIndirectAdjacent;
   }
-  bool IsUAShadowSelector() const { return relation_ == kUAShadow; }
   bool IsAttributeSelector() const {
     return match_ >= kFirstAttributeSelectorMatch;
   }
@@ -468,6 +488,15 @@ class CORE_EXPORT CSSSelector {
       } nth_;
       AttributeMatchType
           attribute_match_;  // used for attribute selector (with value)
+
+      struct {
+        // Used for :has() with pseudos in its argument. e.g. :has(:hover)
+        bool contains_pseudo_;
+
+        // Used for :has() with logical combinations (:is(), :where(), :not())
+        // containing complex selector in its argument. e.g. :has(:is(.a .b))
+        bool contains_complex_logical_combinations_;
+      } has_;
     } bits_;
     QualifiedName attribute_;  // used for attribute selector
     AtomicString argument_;    // Used for :contains, :lang, :nth-*

@@ -9,6 +9,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/printing/print_job_worker.h"
 #include "chrome/services/printing/public/mojom/print_backend_service.mojom.h"
 #include "printing/buildflags/buildflags.h"
@@ -30,7 +31,7 @@ class PrintedDocument;
 // thread.  PrintJob always outlives its worker instance.
 class PrintJobWorkerOop : public PrintJobWorker {
  public:
-  PrintJobWorkerOop(int render_process_id, int render_frame_id);
+  explicit PrintJobWorkerOop(content::GlobalRenderFrameHostId rfh_id);
   PrintJobWorkerOop(const PrintJobWorkerOop&) = delete;
   PrintJobWorkerOop& operator=(const PrintJobWorkerOop&) = delete;
   ~PrintJobWorkerOop() override;
@@ -39,19 +40,56 @@ class PrintJobWorkerOop : public PrintJobWorker {
   void StartPrinting(PrintedDocument* new_document) override;
 
  protected:
-  // Local callback wrapper for Print Backend Service mojom call.  Virtual to
+  // For testing.
+  PrintJobWorkerOop(content::GlobalRenderFrameHostId rfh_id,
+                    bool simulate_spooling_memory_errors);
+
+  // Local callback wrappers for Print Backend Service mojom call.  Virtual to
   // support testing.
+  virtual void OnDidUseDefaultSettings(
+      SettingsCallback callback,
+      mojom::PrintSettingsResultPtr print_settings);
+#if BUILDFLAG(IS_WIN)
+  virtual void OnDidAskUserForSettings(
+      SettingsCallback callback,
+      mojom::PrintSettingsResultPtr print_settings);
+#endif
   virtual void OnDidStartPrinting(mojom::ResultCode result);
+#if BUILDFLAG(IS_WIN)
+  virtual void OnDidRenderPrintedPage(uint32_t page_index,
+                                      mojom::ResultCode result);
+#endif
+  virtual void OnDidRenderPrintedDocument(mojom::ResultCode result);
+  virtual void OnDidDocumentDone(int job_id, mojom::ResultCode result);
 
   // `PrintJobWorker` overrides.
-  void UpdatePrintSettings(base::Value new_settings,
+#if BUILDFLAG(IS_WIN)
+  bool SpoolPage(PrintedPage* page) override;
+#endif
+  bool SpoolDocument() override;
+  void OnDocumentDone() override;
+  void InvokeUseDefaultSettings(SettingsCallback callback) override;
+  void InvokeGetSettingsWithUI(uint32_t document_page_count,
+                               bool has_selection,
+                               bool is_scripted,
+                               SettingsCallback callback) override;
+  void UpdatePrintSettings(base::Value::Dict new_settings,
                            SettingsCallback callback) override;
   void OnFailure() override;
+
+  // Show the print error dialog, virtual to support testing.
+  virtual void ShowErrorDialog();
 
  private:
   // Support to unregister this worker as a printing client.  Applicable any
   // time a print job finishes, is canceled, or needs to be restarted.
   void UnregisterServiceManagerClient();
+
+  // Helper function for restarting a print job after error.
+  bool TryRestartPrinting();
+
+  // Initiate failure handling, including notification to the user.
+  void NotifyFailure(mojom::ResultCode result);
 
   // Local callback wrapper for Print Backend Service mojom call.
   void OnDidUpdatePrintSettings(const std::string& device_name,
@@ -59,8 +97,28 @@ class PrintJobWorkerOop : public PrintJobWorker {
                                 mojom::PrintSettingsResultPtr print_settings);
 
   // Mojo support to send messages from UI thread.
+  void SendUseDefaultSettings(SettingsCallback callback);
+#if BUILDFLAG(IS_WIN)
+  void SendAskUserForSettings(uint32_t document_page_count,
+                              bool has_selection,
+                              bool is_scripted,
+                              SettingsCallback callback);
+#endif
   void SendStartPrinting(const std::string& device_name,
                          const std::u16string& document_name);
+#if BUILDFLAG(IS_WIN)
+  void SendRenderPrintedPage(
+      const PrintedPage* page,
+      mojom::MetafileDataType page_data_type,
+      base::ReadOnlySharedMemoryRegion serialized_page_data);
+#endif  // BUILDFLAG(IS_WIN)
+  void SendRenderPrintedDocument(
+      mojom::MetafileDataType data_type,
+      base::ReadOnlySharedMemoryRegion serialized_data);
+  void SendDocumentDone();
+
+  // Used to test spooling memory error handling.
+  bool simulate_spooling_memory_errors_ = false;
 
   // Client ID with the print backend service manager for this print job.
   // Used only from UI thread.
@@ -77,6 +135,14 @@ class PrintJobWorkerOop : public PrintJobWorker {
   // The type of target to print to.  Used only from the UI thread.
   mojom::PrintTargetType print_target_type_ =
       mojom::PrintTargetType::kDirectToDevice;
+
+#if BUILDFLAG(IS_WIN)
+  // Number of pages that have completed printing.
+  uint32_t pages_printed_count_ = 0;
+#endif
+
+  // Tracks if a restart for printing has already been attempted.
+  bool print_retried_ = false;
 
   // Weak pointers have flags that get bound to the thread where they are
   // checked, so it is necessary to use different factories when getting a

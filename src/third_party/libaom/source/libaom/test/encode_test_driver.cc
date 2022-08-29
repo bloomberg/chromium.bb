@@ -189,7 +189,7 @@ void EncoderTest::RunLoop(VideoSource *video) {
     BeginPassHook(pass);
     std::unique_ptr<Encoder> encoder(
         codec_->CreateEncoder(cfg_, init_flags_, &stats_));
-    ASSERT_TRUE(encoder.get() != NULL);
+    ASSERT_NE(encoder, nullptr);
 
     ASSERT_NO_FATAL_FAILURE(video->Begin());
     encoder->InitEncoder(video);
@@ -224,7 +224,7 @@ void EncoderTest::RunLoop(VideoSource *video) {
         PreEncodeFrameHook(video);
         PreEncodeFrameHook(video, encoder.get());
         encoder->EncodeFrame(video, frame_flags_);
-
+        PostEncodeFrameHook(encoder.get());
         CxDataIterator iter = encoder->GetCxData();
         bool has_cxdata = false;
 

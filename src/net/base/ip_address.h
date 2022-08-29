@@ -12,7 +12,7 @@
 #include <string>
 #include <vector>
 
-#include "base/compiler_specific.h"
+#include "base/check_op.h"
 #include "base/strings/string_piece.h"
 #include "net/base/net_export.h"
 
@@ -157,10 +157,6 @@ class NET_EXPORT IPAddress {
   // IPv4-mapped-to-IPv6 addresses are considered publicly routable.
   bool IsPubliclyRoutable() const;
 
-  // Let future IsPubliclyRoutable() calls in the current process always return
-  // true for a loopback ip.
-  static void ConsiderLoopbackIPToBePubliclyRoutableForTesting();
-
   // Returns true if the IP is "zero" (e.g. the 0.0.0.0 IPv4 address).
   bool IsZero() const;
 
@@ -190,8 +186,7 @@ class NET_EXPORT IPAddress {
   //
   // When parsing fails, the original value of |this| will be overwritten such
   // that |this->empty()| and |!this->IsValid()|.
-  bool AssignFromIPLiteral(const base::StringPiece& ip_literal)
-      WARN_UNUSED_RESULT;
+  [[nodiscard]] bool AssignFromIPLiteral(const base::StringPiece& ip_literal);
 
   // Returns the underlying bytes.
   const IPAddressBytes& bytes() const { return ip_address_; }
@@ -279,9 +274,9 @@ NET_EXPORT bool ParseCIDRBlock(base::StringPiece cidr_literal,
 // In other words, |hostname| must be an IPv4 literal, or an IPv6 literal
 // surrounded by brackets as in [::1]. On failure |ip_address| may have been
 // overwritten and could contain an invalid IPAddress.
-NET_EXPORT bool ParseURLHostnameToAddress(const base::StringPiece& hostname,
-                                          IPAddress* ip_address)
-    WARN_UNUSED_RESULT;
+[[nodiscard]] NET_EXPORT bool ParseURLHostnameToAddress(
+    const base::StringPiece& hostname,
+    IPAddress* ip_address);
 
 // Returns number of matching initial bits between the addresses |a1| and |a2|.
 NET_EXPORT size_t CommonPrefixLength(const IPAddress& a1, const IPAddress& a2);

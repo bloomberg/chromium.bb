@@ -65,8 +65,8 @@ struct SessionMessageStore {
   }
 
   ReceiverSessionMessenger::RequestCallback GetRequestCallback() {
-    return [this](SenderMessage message) {
-      sender_messages.push_back(std::move(message));
+    return [this](const std::string& sender_id, SenderMessage message) {
+      sender_messages.push_back(std::make_pair(sender_id, std::move(message)));
     };
   }
 
@@ -74,7 +74,7 @@ struct SessionMessageStore {
     return [this](Error error) { errors.push_back(std::move(error)); };
   }
 
-  std::vector<SenderMessage> sender_messages;
+  std::vector<std::pair<std::string, SenderMessage>> sender_messages;
   std::vector<ReceiverMessage> receiver_messages;
   std::vector<Error> errors;
 };
@@ -132,15 +132,17 @@ TEST_F(SessionMessengerTest, RpcMessaging) {
 
   ASSERT_EQ(1u, message_store_.sender_messages.size());
   ASSERT_TRUE(message_store_.receiver_messages.empty());
-  EXPECT_EQ(SenderMessage::Type::kRpc, message_store_.sender_messages[0].type);
-  ASSERT_TRUE(message_store_.sender_messages[0].valid);
+  EXPECT_EQ(SenderMessage::Type::kRpc,
+            message_store_.sender_messages[0].second.type);
+  ASSERT_TRUE(message_store_.sender_messages[0].second.valid);
   EXPECT_EQ(kSenderMessage, absl::get<std::vector<uint8_t>>(
-                                message_store_.sender_messages[0].body));
+                                message_store_.sender_messages[0].second.body));
 
   message_store_.sender_messages.clear();
   ASSERT_TRUE(
       receiver_messenger_
-          .SendMessage(ReceiverMessage{ReceiverMessage::Type::kRpc, 123,
+          .SendMessage(kSenderId,
+                       ReceiverMessage{ReceiverMessage::Type::kRpc, 123,
                                        true /* valid */, kReceiverResponse})
           .ok());
 
@@ -165,16 +167,18 @@ TEST_F(SessionMessengerTest, CapabilitiesMessaging) {
   ASSERT_EQ(1u, message_store_.sender_messages.size());
   ASSERT_TRUE(message_store_.receiver_messages.empty());
   EXPECT_EQ(SenderMessage::Type::kGetCapabilities,
-            message_store_.sender_messages[0].type);
-  EXPECT_TRUE(message_store_.sender_messages[0].valid);
+            message_store_.sender_messages[0].second.type);
+  EXPECT_TRUE(message_store_.sender_messages[0].second.valid);
 
   message_store_.sender_messages.clear();
   ASSERT_TRUE(receiver_messenger_
-                  .SendMessage(ReceiverMessage{
-                      ReceiverMessage::Type::kCapabilitiesResponse, 1337,
-                      true /* valid */,
-                      ReceiverCapability{
-                          47, {MediaCapability::kAac, MediaCapability::k4k}}})
+                  .SendMessage(kSenderId,
+                               ReceiverMessage{
+                                   ReceiverMessage::Type::kCapabilitiesResponse,
+                                   1337, true /* valid */,
+                                   ReceiverCapability{47,
+                                                      {MediaCapability::kAac,
+                                                       MediaCapability::k4k}}})
                   .ok());
 
   ASSERT_TRUE(message_store_.sender_messages.empty());
@@ -201,24 +205,28 @@ TEST_F(SessionMessengerTest, OfferAnswerMessaging) {
   ASSERT_EQ(1u, message_store_.sender_messages.size());
   ASSERT_TRUE(message_store_.receiver_messages.empty());
   EXPECT_EQ(SenderMessage::Type::kOffer,
-            message_store_.sender_messages[0].type);
-  EXPECT_TRUE(message_store_.sender_messages[0].valid);
+            message_store_.sender_messages[0].second.type);
+  EXPECT_TRUE(message_store_.sender_messages[0].second.valid);
   message_store_.sender_messages.clear();
 
-  EXPECT_TRUE(receiver_messenger_
-                  .SendMessage(ReceiverMessage{
-                      ReceiverMessage::Type::kAnswer, 41, true /* valid */,
-                      Answer{1234, {0, 1}, {12344443, 12344445}}})
-                  .ok());
+  EXPECT_TRUE(
+      receiver_messenger_
+          .SendMessage(kSenderId,
+                       ReceiverMessage{
+                           ReceiverMessage::Type::kAnswer, 41, true /* valid */,
+                           Answer{1234, {0, 1}, {12344443, 12344445}}})
+          .ok());
   // A stale answer (for offer 41) should get ignored:
   ASSERT_TRUE(message_store_.sender_messages.empty());
   ASSERT_TRUE(message_store_.receiver_messages.empty());
 
-  ASSERT_TRUE(receiver_messenger_
-                  .SendMessage(ReceiverMessage{
-                      ReceiverMessage::Type::kAnswer, 42, true /* valid */,
-                      Answer{1234, {0, 1}, {12344443, 12344445}}})
-                  .ok());
+  ASSERT_TRUE(
+      receiver_messenger_
+          .SendMessage(kSenderId,
+                       ReceiverMessage{
+                           ReceiverMessage::Type::kAnswer, 42, true /* valid */,
+                           Answer{1234, {0, 1}, {12344443, 12344445}}})
+          .ok());
   EXPECT_TRUE(message_store_.sender_messages.empty());
   ASSERT_EQ(1u, message_store_.receiver_messages.size());
   EXPECT_EQ(ReceiverMessage::Type::kAnswer,
@@ -243,15 +251,18 @@ TEST_F(SessionMessengerTest, OfferAndReceiverError) {
 
   ASSERT_EQ(1u, message_store_.sender_messages.size());
   ASSERT_TRUE(message_store_.receiver_messages.empty());
+  EXPECT_EQ(kSenderId, message_store_.sender_messages[0].first);
   EXPECT_EQ(SenderMessage::Type::kOffer,
-            message_store_.sender_messages[0].type);
-  EXPECT_TRUE(message_store_.sender_messages[0].valid);
+            message_store_.sender_messages[0].second.type);
+  EXPECT_TRUE(message_store_.sender_messages[0].second.valid);
   message_store_.sender_messages.clear();
 
   EXPECT_TRUE(receiver_messenger_
-                  .SendMessage(ReceiverMessage{
-                      ReceiverMessage::Type::kAnswer, 42, false /* valid */,
-                      ReceiverError{123, "Something real bad happened"}})
+                  .SendMessage(
+                      kSenderId,
+                      ReceiverMessage{
+                          ReceiverMessage::Type::kAnswer, 42, false /* valid */,
+                          ReceiverError{123, "Something real bad happened"}})
                   .ok());
 
   EXPECT_TRUE(message_store_.sender_messages.empty());
@@ -264,19 +275,6 @@ TEST_F(SessionMessengerTest, OfferAndReceiverError) {
       absl::get<ReceiverError>(message_store_.receiver_messages[0].body);
   EXPECT_EQ(123, error.code);
   EXPECT_EQ("Something real bad happened", error.description);
-}
-
-TEST_F(SessionMessengerTest, UnexpectedMessagesAreIgnored) {
-  EXPECT_FALSE(receiver_messenger_
-                   .SendMessage(ReceiverMessage{
-                       ReceiverMessage::Type::kCapabilitiesResponse, 3123,
-                       true /* valid */,
-                       ReceiverCapability{2, {MediaCapability::kH264}}})
-                   .ok());
-
-  // The message gets dropped and thus won't be in the store.
-  EXPECT_TRUE(message_store_.sender_messages.empty());
-  EXPECT_TRUE(message_store_.receiver_messages.empty());
 }
 
 TEST_F(SessionMessengerTest, UnknownSenderMessageTypesDontGetSent) {
@@ -296,7 +294,8 @@ TEST_F(SessionMessengerTest, UnknownReceiverMessageTypesDontGetSent) {
                   .ok());
 
   EXPECT_DEATH(receiver_messenger_
-                   .SendMessage(ReceiverMessage{ReceiverMessage::Type::kUnknown,
+                   .SendMessage(kSenderId,
+                                ReceiverMessage{ReceiverMessage::Type::kUnknown,
                                                 3123, true /* valid */})
                    .ok(),
                ".*Trying to send an unknown message is a developer error.*");
@@ -354,10 +353,11 @@ TEST_F(SessionMessengerTest, SenderHandlesMessageMissingSequenceNumber) {
   ASSERT_TRUE(message_store_.receiver_messages.empty());
 }
 
-TEST_F(SessionMessengerTest, ReceiverCannotSendFirst) {
-  const Error error = receiver_messenger_.SendMessage(ReceiverMessage{
-      ReceiverMessage::Type::kCapabilitiesResponse, 3123, true /* valid */,
-      ReceiverCapability{2, {MediaCapability::kAudio}}});
+TEST_F(SessionMessengerTest, ReceiverCannotSendToEmptyId) {
+  const Error error = receiver_messenger_.SendMessage(
+      "", ReceiverMessage{ReceiverMessage::Type::kCapabilitiesResponse, 3123,
+                          true /* valid */,
+                          ReceiverCapability{2, {MediaCapability::kAudio}}});
 
   EXPECT_EQ(Error::Code::kInitializationFailure, error.code());
 }
@@ -383,15 +383,14 @@ TEST_F(SessionMessengerTest, ErrorMessageLoggedIfTimeout) {
   EXPECT_FALSE(message_store_.receiver_messages[0].valid);
 }
 
-TEST_F(SessionMessengerTest, ReceiverRejectsMessageFromWrongSender) {
+TEST_F(SessionMessengerTest, ReceiverHandlesMessagesFromMultipleSenders) {
   SimpleMessagePort port(kReceiverId);
   ReceiverSessionMessenger messenger(&port, kReceiverId,
                                      message_store_.GetErrorCallback());
   messenger.SetHandler(SenderMessage::Type::kGetCapabilities,
                        message_store_.GetRequestCallback());
 
-  // The first message should be accepted since we don't have a set sender_id
-  // yet.
+  // The first message should be accepted from any sender.
   port.ReceiveMessage("sender-31337", kCastWebrtcNamespace, R"({
         "seqNum": 820263769,
         "type": "GET_CAPABILITIES"
@@ -400,16 +399,18 @@ TEST_F(SessionMessengerTest, ReceiverRejectsMessageFromWrongSender) {
   ASSERT_EQ(1u, message_store_.sender_messages.size());
   message_store_.sender_messages.clear();
 
-  // The second message should just be ignored.
+  // The second message should be happily accepted from another sender because
+  // it's a GET_CAPABILITIES call.
   port.ReceiveMessage("sender-42", kCastWebrtcNamespace, R"({
         "seqNum": 1234,
         "type": "GET_CAPABILITIES"
       })");
   ASSERT_TRUE(message_store_.errors.empty());
-  ASSERT_TRUE(message_store_.sender_messages.empty());
+  ASSERT_EQ(1u, message_store_.sender_messages.size());
+  ASSERT_EQ("sender-42", message_store_.sender_messages[0].first);
+  message_store_.sender_messages.clear();
 
-  // But the third message should be accepted again since it's from the
-  // first sender.
+  // The third message should also be accepted from the original sender.
   port.ReceiveMessage("sender-31337", kCastWebrtcNamespace, R"({
         "seqNum": 820263769,
         "type": "GET_CAPABILITIES"
@@ -418,7 +419,7 @@ TEST_F(SessionMessengerTest, ReceiverRejectsMessageFromWrongSender) {
   ASSERT_EQ(1u, message_store_.sender_messages.size());
 }
 
-TEST_F(SessionMessengerTest, SenderRejectsMessageFromWrongSender) {
+TEST_F(SessionMessengerTest, SenderRejectsMessageFromWrongReceiver) {
   SimpleMessagePort port(kReceiverId);
   SenderSessionMessenger messenger(&port, kSenderId, kReceiverId,
                                    message_store_.GetErrorCallback(),

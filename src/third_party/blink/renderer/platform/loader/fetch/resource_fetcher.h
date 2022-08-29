@@ -35,9 +35,12 @@
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/service_worker/controller_service_worker_mode.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/web_url_loader.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_map.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_set.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/heap/prefinalizer.h"
+#include "third_party/blink/renderer/platform/loader/fetch/early_hints_preload_entry.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
 #include "third_party/blink/renderer/platform/loader/fetch/loader_freeze_mode.h"
 #include "third_party/blink/renderer/platform/loader/fetch/preload_key.h"
@@ -48,7 +51,6 @@
 #include "third_party/blink/renderer/platform/mojo/mojo_binding_context.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/timer.h"
-#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 
@@ -250,8 +252,9 @@ class PLATFORM_EXPORT ResourceFetcher
 
   enum IsImageSet { kImageNotImageSet, kImageIsImageSet };
 
-  WARN_UNUSED_RESULT static mojom::blink::RequestContextType
-      DetermineRequestContext(ResourceType, IsImageSet);
+  [[nodiscard]] static mojom::blink::RequestContextType DetermineRequestContext(
+      ResourceType,
+      IsImageSet);
 
   static network::mojom::RequestDestination DetermineRequestDestination(
       ResourceType);
@@ -291,9 +294,11 @@ class PLATFORM_EXPORT ResourceFetcher
       ResourcePriority::VisibilityStatus visibility_statue,
       FetchParameters::DeferOption defer_option,
       FetchParameters::SpeculativePreloadType speculative_preload_type,
+      RenderBlockingBehavior render_blocking_behavior,
       bool is_link_preload) {
     return ComputeLoadPriority(type, request, visibility_statue, defer_option,
-                               speculative_preload_type, is_link_preload);
+                               speculative_preload_type,
+                               render_blocking_behavior, is_link_preload);
   }
 
   void SetThrottleOptionOverride(
@@ -308,8 +313,9 @@ class PLATFORM_EXPORT ResourceFetcher
     return back_forward_cache_loader_helper_;
   }
 
-  void SetEarlyHintsPreloadedResources(HashSet<KURL> preloaded) {
-    early_hints_preloaded_resources_ = std::move(preloaded);
+  void SetEarlyHintsPreloadedResources(
+      HashMap<KURL, EarlyHintsPreloadEntry> resources) {
+    early_hints_preloaded_resources_ = std::move(resources);
   }
 
  private:
@@ -335,6 +341,7 @@ class PLATFORM_EXPORT ResourceFetcher
       FetchParameters::DeferOption = FetchParameters::DeferOption::kNoDefer,
       FetchParameters::SpeculativePreloadType =
           FetchParameters::SpeculativePreloadType::kNotSpeculative,
+      RenderBlockingBehavior = RenderBlockingBehavior::kNonBlocking,
       bool is_link_preload = false);
 
   // |virtual_time_pauser| is an output parameter. PrepareRequest may
@@ -353,7 +360,7 @@ class PLATFORM_EXPORT ResourceFetcher
                                       ResourceClient*);
 
   Resource* MatchPreload(const FetchParameters& params, ResourceType);
-  void PrintPreloadWarning(Resource*, Resource::MatchStatus);
+  void PrintPreloadMismatch(Resource*, Resource::MatchStatus);
   void InsertAsPreloadIfNecessary(Resource*,
                                   const FetchParameters& params,
                                   ResourceType);
@@ -461,7 +468,7 @@ class PLATFORM_EXPORT ResourceFetcher
   HeapHashSet<Member<ResourceLoader>> loaders_;
   HeapHashSet<Member<ResourceLoader>> non_blocking_loaders_;
 
-  HashSet<KURL> early_hints_preloaded_resources_;
+  HashMap<KURL, EarlyHintsPreloadEntry> early_hints_preloaded_resources_;
 
   std::unique_ptr<HashSet<String>> preloaded_urls_for_test_;
 

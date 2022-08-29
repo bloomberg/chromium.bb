@@ -15,6 +15,7 @@
 #include "build/build_config.h"
 #include "net/base/net_errors.h"
 #include "net/base/sockaddr_storage.h"
+#include "net/base/sockaddr_util_posix.h"
 #include "net/socket/socket_posix.h"
 #include "net/socket/unix_domain_client_socket_posix.h"
 
@@ -33,8 +34,8 @@ UnixDomainServerSocket::~UnixDomainServerSocket() = default;
 // static
 bool UnixDomainServerSocket::GetPeerCredentials(SocketDescriptor socket,
                                                 Credentials* credentials) {
-#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID) || \
-    defined(OS_FUCHSIA)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID) || \
+    BUILDFLAG(IS_FUCHSIA)
   struct ucred user_cred;
   socklen_t len = sizeof(user_cred);
   if (getsockopt(socket, SOL_SOCKET, SO_PEERCRED, &user_cred, &len) < 0)
@@ -67,9 +68,7 @@ int UnixDomainServerSocket::BindAndListen(const std::string& socket_path,
   DCHECK(!listen_socket_);
 
   SockaddrStorage address;
-  if (!UnixDomainClientSocket::FillAddress(socket_path,
-                                           use_abstract_namespace_,
-                                           &address)) {
+  if (!FillUnixAddress(socket_path, use_abstract_namespace_, &address)) {
     return ERR_ADDRESS_INVALID;
   }
 
