@@ -70,6 +70,16 @@ ReSignInInfoBarDelegate::CreateInfoBarDelegate(
   // Returns null if user does not need to be prompted to sign in again.
   AuthenticationService* authService =
       AuthenticationServiceFactory::GetForBrowserState(browser_state);
+  // Don't show the notification if sign-in is not supported.
+  switch (authService->GetServiceStatus()) {
+    case AuthenticationService::ServiceStatus::SigninForcedByPolicy:
+    case AuthenticationService::ServiceStatus::SigninAllowed:
+      break;
+    case AuthenticationService::ServiceStatus::SigninDisabledByUser:
+    case AuthenticationService::ServiceStatus::SigninDisabledByPolicy:
+    case AuthenticationService::ServiceStatus::SigninDisabledByInternal:
+      return nullptr;
+  }
   if (!authService->ShouldReauthPromptForSignInAndSync())
     return nullptr;
   // Returns null if user has already signed in via some other path.
@@ -115,8 +125,8 @@ std::u16string ReSignInInfoBarDelegate::GetButtonLabel(
       IDS_IOS_SYNC_INFOBAR_SIGN_IN_SETTINGS_BUTTON_MOBILE);
 }
 
-gfx::Image ReSignInInfoBarDelegate::GetIcon() const {
-  return icon_;
+ui::ImageModel ReSignInInfoBarDelegate::GetIcon() const {
+  return ui::ImageModel::FromImage(icon_);
 }
 
 bool ReSignInInfoBarDelegate::Accept() {
@@ -124,7 +134,7 @@ bool ReSignInInfoBarDelegate::Accept() {
       signin_metrics::AccessPoint::ACCESS_POINT_RESIGNIN_INFOBAR,
       signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO);
   ShowSigninCommand* command = [[ShowSigninCommand alloc]
-      initWithOperation:AUTHENTICATION_OPERATION_REAUTHENTICATE
+      initWithOperation:AuthenticationOperationReauthenticate
             accessPoint:signin_metrics::AccessPoint::
                             ACCESS_POINT_RESIGNIN_INFOBAR];
   [presenter_ showSignin:command];

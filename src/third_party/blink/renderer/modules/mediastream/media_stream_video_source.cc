@@ -18,6 +18,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/token.h"
 #include "build/build_config.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_constraints_util_video_device.h"
@@ -25,6 +26,7 @@
 #include "third_party/blink/renderer/modules/mediastream/video_track_adapter.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_copier_media.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 
 namespace blink {
@@ -49,15 +51,7 @@ MediaStreamVideoSource* MediaStreamVideoSource::GetVideoSource(
 
 MediaStreamVideoSource::MediaStreamVideoSource(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : MediaStreamVideoSource(std::move(task_runner),
-                             /*metronome_provider=*/nullptr) {}
-
-MediaStreamVideoSource::MediaStreamVideoSource(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    scoped_refptr<MetronomeProvider> metronome_provider)
-    : WebPlatformMediaStreamSource(std::move(task_runner)),
-      state_(NEW),
-      metronome_provider_(std::move(metronome_provider)) {}
+    : WebPlatformMediaStreamSource(std::move(task_runner)), state_(NEW) {}
 
 MediaStreamVideoSource::~MediaStreamVideoSource() {
   DCHECK(GetTaskRunner()->BelongsToCurrentThread());
@@ -308,10 +302,25 @@ void MediaStreamVideoSource::OnRestartDone(bool did_restart) {
     state_ = STOPPED_FOR_RESTART;
   }
 
+  DCHECK(restart_callback_);
   RestartResult result =
       did_restart ? RestartResult::IS_RUNNING : RestartResult::IS_STOPPED;
   GetTaskRunner()->PostTask(FROM_HERE,
                             WTF::Bind(std::move(restart_callback_), result));
+}
+
+void MediaStreamVideoSource::OnRestartBySourceSwitchDone(bool did_restart) {
+  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
+  DCHECK(base::FeatureList::IsEnabled(
+      features::kAllowSourceSwitchOnPausedVideoMediaStream));
+  if (state_ == ENDED)
+    return;
+  DCHECK_EQ(state_, STOPPED_FOR_RESTART);
+  if (did_restart) {
+    state_ = STARTED;
+    StartFrameMonitoring();
+    FinalizeAddPendingTracks(mojom::blink::MediaStreamRequestResult::OK);
+  }
 }
 
 void MediaStreamVideoSource::UpdateHasConsumers(MediaStreamVideoTrack* track,
@@ -390,7 +399,12 @@ void MediaStreamVideoSource::DoChangeSource(
   DVLOG(1) << "MediaStreamVideoSource::DoChangeSource: "
            << ", new device id = " << new_device.id
            << ", session id = " << new_device.session_id();
-  if (state_ != STARTED) {
+  if (!base::FeatureList::IsEnabled(
+          features::kAllowSourceSwitchOnPausedVideoMediaStream) &&
+      state_ != STARTED) {
+    return;
+  }
+  if (state_ != STARTED && state_ != STOPPED_FOR_RESTART) {
     return;
   }
 
@@ -517,11 +531,16 @@ bool MediaStreamVideoSource::SupportsEncodedOutput() const {
   return false;
 }
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 void MediaStreamVideoSource::Crop(
     const base::Token& crop_id,
+    uint32_t crop_version,
     base::OnceCallback<void(media::mojom::CropRequestResult)> callback) {
   std::move(callback).Run(media::mojom::CropRequestResult::kErrorGeneric);
+}
+
+absl::optional<uint32_t> MediaStreamVideoSource::GetNextCropVersion() {
+  return absl::nullopt;
 }
 #endif
 
@@ -533,8 +552,8 @@ VideoCaptureFeedbackCB MediaStreamVideoSource::GetFeedbackCallback() const {
 scoped_refptr<VideoTrackAdapter> MediaStreamVideoSource::GetTrackAdapter() {
   DCHECK(GetTaskRunner()->BelongsToCurrentThread());
   if (!track_adapter_) {
-    track_adapter_ = base::MakeRefCounted<VideoTrackAdapter>(
-        io_task_runner(), metronome_provider_, GetWeakPtr());
+    track_adapter_ =
+        base::MakeRefCounted<VideoTrackAdapter>(io_task_runner(), GetWeakPtr());
   }
   return track_adapter_;
 }

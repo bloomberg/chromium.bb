@@ -55,8 +55,10 @@ ExtensionViewHost::ExtensionViewHost(const Extension* extension,
   autofill::ContentAutofillDriverFactory::CreateForWebContentsAndDelegate(
       host_contents(),
       autofill::ChromeAutofillClient::FromWebContents(host_contents()),
-      g_browser_process->GetApplicationLocale(),
-      autofill::BrowserAutofillManager::ENABLE_AUTOFILL_DOWNLOAD_MANAGER);
+      base::BindRepeating(
+          &autofill::BrowserDriverInitHook,
+          autofill::ChromeAutofillClient::FromWebContents(host_contents()),
+          g_browser_process->GetApplicationLocale()));
 
   // The popup itself cannot be zoomed, but we must specify a zoom level to use.
   // Otherwise, if a user zooms a page of the same extension, the popup would
@@ -65,11 +67,11 @@ ExtensionViewHost::ExtensionViewHost(const Extension* extension,
     content::HostZoomMap* zoom_map =
         content::HostZoomMap::GetForWebContents(host_contents());
     zoom_map->SetTemporaryZoomLevel(
+        host_contents()->GetPrimaryMainFrame()->GetProcess()->GetID(),
         host_contents()
-            ->GetMainFrame()
-            ->GetProcess()
-            ->GetID(),
-        host_contents()->GetMainFrame()->GetRenderViewHost()->GetRoutingID(),
+            ->GetPrimaryMainFrame()
+            ->GetRenderViewHost()
+            ->GetRoutingID(),
         zoom_map->GetDefaultZoomLevel());
   }
 }
@@ -147,11 +149,11 @@ content::WebContents* ExtensionViewHost::OpenURLFromTab(
 }
 
 bool ExtensionViewHost::ShouldAllowRendererInitiatedCrossProcessNavigation(
-    bool is_main_frame_navigation) {
+    bool is_outermost_main_frame_navigation) {
   // Block navigations that cause main frame of an extension pop-up (or
   // background page) to navigate to non-extension content (i.e. to web
   // content).
-  return !is_main_frame_navigation;
+  return !is_outermost_main_frame_navigation;
 }
 
 content::KeyboardEventProcessingResult

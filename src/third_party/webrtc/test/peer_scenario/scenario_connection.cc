@@ -13,6 +13,7 @@
 #include "media/base/rtp_utils.h"
 #include "modules/rtp_rtcp/source/rtp_packet_received.h"
 #include "p2p/client/basic_port_allocator.h"
+#include "pc/channel.h"
 #include "pc/jsep_transport_controller.h"
 #include "pc/rtp_transport_internal.h"
 #include "pc/session_description.h"
@@ -95,7 +96,8 @@ ScenarioIceConnectionImpl::ScenarioIceConnectionImpl(
           rtc::SSLFingerprint::CreateFromCertificate(*certificate_.get())
               .get()),
       port_allocator_(
-          new cricket::BasicPortAllocator(manager_->network_manager())),
+          new cricket::BasicPortAllocator(manager_->network_manager(),
+                                          manager_->packet_socket_factory())),
       jsep_controller_(
           new JsepTransportController(network_thread_,
                                       port_allocator_.get(),
@@ -132,6 +134,7 @@ JsepTransportController::Config ScenarioIceConnectionImpl::CreateJsepConfig() {
     RTC_DCHECK_RUN_ON(network_thread_);
     observer_->OnPacketReceived(packet);
   };
+  config.field_trials = &field_trials;
   return config;
 }
 
@@ -139,26 +142,24 @@ void ScenarioIceConnectionImpl::SendRtpPacket(
     rtc::ArrayView<const uint8_t> packet_view) {
   rtc::CopyOnWriteBuffer packet(packet_view.data(), packet_view.size(),
                                 ::cricket::kMaxRtpPacketLen);
-  network_thread_->PostTask(
-      RTC_FROM_HERE, [this, packet = std::move(packet)]() mutable {
-        RTC_DCHECK_RUN_ON(network_thread_);
-        if (rtp_transport_ != nullptr)
-          rtp_transport_->SendRtpPacket(&packet, rtc::PacketOptions(),
-                                        cricket::PF_SRTP_BYPASS);
-      });
+  network_thread_->PostTask([this, packet = std::move(packet)]() mutable {
+    RTC_DCHECK_RUN_ON(network_thread_);
+    if (rtp_transport_ != nullptr)
+      rtp_transport_->SendRtpPacket(&packet, rtc::PacketOptions(),
+                                    cricket::PF_SRTP_BYPASS);
+  });
 }
 
 void ScenarioIceConnectionImpl::SendRtcpPacket(
     rtc::ArrayView<const uint8_t> packet_view) {
   rtc::CopyOnWriteBuffer packet(packet_view.data(), packet_view.size(),
                                 ::cricket::kMaxRtpPacketLen);
-  network_thread_->PostTask(
-      RTC_FROM_HERE, [this, packet = std::move(packet)]() mutable {
-        RTC_DCHECK_RUN_ON(network_thread_);
-        if (rtp_transport_ != nullptr)
-          rtp_transport_->SendRtcpPacket(&packet, rtc::PacketOptions(),
-                                         cricket::PF_SRTP_BYPASS);
-      });
+  network_thread_->PostTask([this, packet = std::move(packet)]() mutable {
+    RTC_DCHECK_RUN_ON(network_thread_);
+    if (rtp_transport_ != nullptr)
+      rtp_transport_->SendRtcpPacket(&packet, rtc::PacketOptions(),
+                                     cricket::PF_SRTP_BYPASS);
+  });
 }
 void ScenarioIceConnectionImpl::SetRemoteSdp(SdpType type,
                                              const std::string& remote_sdp) {
@@ -178,18 +179,18 @@ void ScenarioIceConnectionImpl::SetRemoteSdp(SdpType type,
     if (content.media_description()->as_audio()) {
       for (const auto& codec :
            content.media_description()->as_audio()->codecs()) {
-        criteria.payload_types.insert(codec.id);
+        criteria.payload_types().insert(codec.id);
       }
     }
     if (content.media_description()->as_video()) {
       for (const auto& codec :
            content.media_description()->as_video()->codecs()) {
-        criteria.payload_types.insert(codec.id);
+        criteria.payload_types().insert(codec.id);
       }
     }
   }
 
-  network_thread_->PostTask(RTC_FROM_HERE, [this, criteria]() {
+  network_thread_->PostTask([this, criteria]() {
     RTC_DCHECK_RUN_ON(network_thread_);
     RTC_DCHECK(rtp_transport_);
     rtp_transport_->RegisterRtpDemuxerSink(criteria, this);
@@ -219,8 +220,7 @@ bool ScenarioIceConnectionImpl::OnTransportChanged(
     if (rtp_transport_ != rtp_transport) {
       rtp_transport_ = rtp_transport;
     }
-    RtpDemuxerCriteria criteria;
-    criteria.mid = mid;
+    RtpDemuxerCriteria criteria(mid);
     rtp_transport_->RegisterRtpDemuxerSink(criteria, this);
   }
   return true;

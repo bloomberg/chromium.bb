@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ash/crostini/crostini_export_import_notification_controller.h"
 
+#include "ash/constants/notifier_catalogs.h"
+#include "ash/constants/url_constants.h"
 #include "ash/public/cpp/notification_utils.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/vector_icons/vector_icons.h"
@@ -15,7 +17,6 @@
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
-#include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -68,12 +69,14 @@ CrostiniExportImportNotificationController::
   notification_ = std::make_unique<message_center::Notification>(
       message_center::NOTIFICATION_TYPE_PROGRESS, notification_id,
       std::u16string(), std::u16string(),
-      gfx::Image(),  // icon
+      ui::ImageModel(),  // icon
       l10n_util::GetStringUTF16(
           IDS_CROSTINI_EXPORT_IMPORT_NOTIFICATION_DISPLAY_SOURCE),
       GURL(),  // origin_url
-      message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
-                                 kNotifierCrostiniExportImportOperation),
+      message_center::NotifierId(
+          message_center::NotifierType::SYSTEM_COMPONENT,
+          kNotifierCrostiniExportImportOperation,
+          ash::NotificationCatalogName::kCrostiniExportImport),
       rich_notification_data, delegate_);
 }
 
@@ -100,7 +103,7 @@ void CrostiniExportImportNotificationController::SetStatusRunningUI(
         if (!button_index.has_value()) {
           return;
         }
-        DCHECK(*button_index == 1);
+        DCHECK_EQ(0, *button_index);
         CrostiniExportImport::GetForProfile(profile)->CancelOperation(
             type, container_id);
       },

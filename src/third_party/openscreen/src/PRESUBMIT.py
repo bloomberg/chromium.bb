@@ -27,9 +27,6 @@ _EXCLUDED_PATHS = (
   # Exclude all of third_party/ except for BUILD.gns that we maintain.
   r'third_party[\\\/].*(?<!BUILD.gn)$',
 
-  # Exclude everything under third_party/chromium_quic/{src|build}
-  r'third_party/chromium_quic/(src|build)/.*',
-
   # Output directories (just in case)
   r'.*\bDebug[\\\/].*',
   r'.*\bRelease[\\\/].*',
@@ -219,9 +216,8 @@ def CheckChangeOnUpload(input_api, output_api):
     input_api.DEFAULT_FILES_TO_SKIP = _EXCLUDED_PATHS
     # We always run the OnCommit checks, as well as some additional checks.
     results = CheckChangeOnCommit(input_api, output_api)
-    # TODO(crbug.com/1220846): Open Screen needs a `main` config_set.
-    #results.extend(
-    #    input_api.canned_checks.CheckChangedLUCIConfigs(input_api, output_api))
+    results.extend(
+        input_api.canned_checks.CheckChangedLUCIConfigs(input_api, output_api))
     return results
 
 

@@ -17,7 +17,6 @@
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/current_thread.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -124,27 +123,26 @@ class NetInternalsTest::MessageHandler : public content::WebUIMessageHandler {
  private:
   void RegisterMessages() override;
 
-  void RegisterMessage(
-      const std::string& message,
-      const content::WebUI::DeprecatedMessageCallback& handler);
+  void RegisterMessage(const std::string& message,
+                       const content::WebUI::MessageCallback& handler);
 
-  void HandleMessage(const content::WebUI::DeprecatedMessageCallback& handler,
-                     const base::ListValue* data);
+  void HandleMessage(const content::WebUI::MessageCallback& handler,
+                     const base::Value::List& data);
 
   // Runs NetInternalsTest.callback with the given value.
   void RunJavascriptCallback(base::Value* value);
 
   // Takes a string and provides the corresponding URL from the test server,
   // which must already have been started.
-  void GetTestServerURL(const base::ListValue* list_value);
+  void GetTestServerURL(const base::Value::List& list);
 
   // Sets up the test server to receive test Expect-CT reports. Calls the
   // Javascript callback to return the test server URI.
-  void SetUpTestReportURI(const base::ListValue* list_value);
+  void SetUpTestReportURI(const base::Value::List& list);
 
   // Performs a DNS lookup. Calls the Javascript callback with the host's IP
   // address or an error string.
-  void DnsLookup(const base::ListValue* list_value);
+  void DnsLookup(const base::Value::List& list);
 
   Browser* browser() { return net_internals_test_->browser(); }
 
@@ -178,16 +176,16 @@ void NetInternalsTest::MessageHandler::RegisterMessages() {
 
 void NetInternalsTest::MessageHandler::RegisterMessage(
     const std::string& message,
-    const content::WebUI::DeprecatedMessageCallback& handler) {
-  web_ui()->RegisterDeprecatedMessageCallback(
+    const content::WebUI::MessageCallback& handler) {
+  web_ui()->RegisterMessageCallback(
       message,
       base::BindRepeating(&NetInternalsTest::MessageHandler::HandleMessage,
                           weak_factory_.GetWeakPtr(), handler));
 }
 
 void NetInternalsTest::MessageHandler::HandleMessage(
-    const content::WebUI::DeprecatedMessageCallback& handler,
-    const base::ListValue* data) {
+    const content::WebUI::MessageCallback& handler,
+    const base::Value::List& data) {
   // The handler might run a nested loop to wait for something.
   base::CurrentThread::ScopedNestableTaskAllower nestable_task_allower;
   handler.Run(data);
@@ -199,16 +197,16 @@ void NetInternalsTest::MessageHandler::RunJavascriptCallback(
 }
 
 void NetInternalsTest::MessageHandler::GetTestServerURL(
-    const base::ListValue* list_value) {
+    const base::Value::List& list) {
   ASSERT_TRUE(net_internals_test_->StartTestServer());
-  const std::string& path = list_value->GetList()[0].GetString();
+  const std::string& path = list[0].GetString();
   GURL url = net_internals_test_->embedded_test_server()->GetURL(path);
-  std::unique_ptr<base::Value> url_value(new base::Value(url.spec()));
-  RunJavascriptCallback(url_value.get());
+  base::Value url_value(url.spec());
+  RunJavascriptCallback(&url_value);
 }
 
 void NetInternalsTest::MessageHandler::SetUpTestReportURI(
-    const base::ListValue* list_value) {
+    const base::Value::List& list) {
   net_internals_test_->embedded_test_server()->RegisterRequestHandler(
       base::BindRepeating(&HandleExpectCTReportPreflight));
   ASSERT_TRUE(net_internals_test_->embedded_test_server()->Start());
@@ -218,8 +216,7 @@ void NetInternalsTest::MessageHandler::SetUpTestReportURI(
 }
 
 void NetInternalsTest::MessageHandler::DnsLookup(
-    const base::ListValue* list_value) {
-  const auto& list = list_value->GetList();
+    const base::Value::List& list) {
   ASSERT_GE(2u, list.size());
   ASSERT_TRUE(list[0].is_string());
   ASSERT_TRUE(list[1].is_bool());

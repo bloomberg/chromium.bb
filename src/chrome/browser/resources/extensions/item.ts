@@ -12,9 +12,9 @@ import 'chrome://resources/cr_elements/shared_style_css.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import 'chrome://resources/js/action_link.js';
 import 'chrome://resources/cr_elements/action_link_css.m.js';
-import './icons.js';
-import './shared_style.js';
-import './shared_vars.js';
+import './icons.html.js';
+import './shared_style.css.js';
+import './shared_vars.css.js';
 import './strings.m.js';
 import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
@@ -22,10 +22,11 @@ import 'chrome://resources/polymer/v3_0/paper-tooltip/paper-tooltip.js';
 
 import {getToastManager} from 'chrome://resources/cr_elements/cr_toast/cr_toast_manager.js';
 import {CrToggleElement} from 'chrome://resources/cr_elements/cr_toggle/cr_toggle.m.js';
-import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
+import {assert, assertNotReached} from 'chrome://resources/js/assert_ts.js';
 import {I18nMixin} from 'chrome://resources/js/i18n_mixin.js';
-import {flush, html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {flush, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import {getTemplate} from './item.html.js';
 import {ItemMixin} from './item_mixin.js';
 import {computeInspectableViewLabel, EnableControl, getEnableControl, getItemSource, getItemSourceString, isEnabled, SourceType, userCanChangeEnablement} from './item_util.js';
 import {navigation, Page} from './navigation_helper.js';
@@ -56,8 +57,11 @@ export interface ItemDelegate {
 
 export interface ExtensionsItemElement {
   $: {
+    a11yAssociation: HTMLElement,
     detailsButton: HTMLElement,
     enableToggle: CrToggleElement,
+    name: HTMLElement,
+    removeButton: HTMLElement,
   };
 }
 
@@ -69,7 +73,7 @@ export class ExtensionsItemElement extends ExtensionsItemElementBase {
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
@@ -249,8 +253,9 @@ export class ExtensionsItemElement extends ExtensionsItemElementBase {
         return 'extensions-icons:unpacked';
       case SourceType.WEBSTORE:
         return '';
+      default:
+        assertNotReached();
     }
-    assertNotReached();
   }
 
   private computeSourceIndicatorText_(): string {
@@ -327,6 +332,12 @@ export class ExtensionsItemElement extends ExtensionsItemElementBase {
     // warning will still be shown in the item detail view.
     return this.data.showSafeBrowsingAllowlistWarning &&
         !this.hasSevereWarnings_();
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'extensions-item': ExtensionsItemElement;
   }
 }
 

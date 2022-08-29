@@ -13,7 +13,7 @@
 
 class ToolbarActionViewDelegateViews;
 
-// An abstract "View" for an ExtensionAction (either a BrowserAction or a
+// An abstract "View" for an ExtensionAction (Action, BrowserAction, or a
 // PageAction). This contains the logic for showing the action's popup and
 // the context menu. This class doesn't subclass View directly, as the
 // implementations for page actions/browser actions are different types of
@@ -40,10 +40,9 @@ class ExtensionActionPlatformDelegateViews
   // ExtensionActionPlatformDelegate:
   void RegisterCommand() override;
   void UnregisterCommand() override;
-  void ShowPopup(
-      std::unique_ptr<extensions::ExtensionViewHost> host,
-      bool grant_tab_permissions,
-      ExtensionActionViewController::PopupShowAction show_action) override;
+  void ShowPopup(std::unique_ptr<extensions::ExtensionViewHost> host,
+                 PopupShowAction show_action,
+                 ShowPopupCallback callback) override;
 
   // extensions::CommandService::Observer:
   void OnExtensionCommandAdded(const std::string& extension_id,

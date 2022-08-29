@@ -5,32 +5,39 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_RESOURCE_IMAGE_RESOURCE_CONTENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_RESOURCE_IMAGE_RESOURCE_CONTENT_H_
 
+#include <cstddef>
+
 #include "base/auto_reset.h"
 #include "base/dcheck_is_on.h"
+#include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/loader/resource/image_resource_observer.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
 #include "third_party/blink/renderer/platform/graphics/image_observer.h"
-#include "third_party/blink/renderer/platform/graphics/image_orientation.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_counted_set.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
+#include "third_party/blink/renderer/platform/heap/member.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
-#include "third_party/blink/renderer/platform/loader/fetch/resource_error.h"
-#include "third_party/blink/renderer/platform/loader/fetch/resource_load_priority.h"
+#include "third_party/blink/renderer/platform/loader/fetch/media_timing.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_status.h"
-#include "third_party/blink/renderer/platform/weborigin/kurl.h"
-#include "third_party/blink/renderer/platform/wtf/hash_map.h"
-#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size.h"
+
+namespace base {
+class TimeTicks;
+}
 
 namespace blink {
 
 class ExecutionContext;
 class FetchParameters;
 class ImageResourceInfo;
-class ImageResourceObserver;
+class KURL;
 class ResourceError;
 class ResourceFetcher;
 class ResourceResponse;
 class UseCounter;
+enum RespectImageOrientationEnum;
+struct ResourcePriority;
 
 // ImageResourceContent is a container that holds fetch result of
 // an ImageResource in a decoded form.
@@ -42,7 +49,8 @@ class UseCounter;
 // word 'observer' from ImageResource.
 class CORE_EXPORT ImageResourceContent final
     : public GarbageCollected<ImageResourceContent>,
-      public ImageObserver {
+      public ImageObserver,
+      public MediaTiming {
  public:
   // Used for loading.
   // Returned content will be associated immediately later with ImageResource.
@@ -79,6 +87,7 @@ class CORE_EXPORT ImageResourceContent final
 
   void AddObserver(ImageResourceObserver*);
   void RemoveObserver(ImageResourceObserver*);
+  void DidRemoveObserver();
 
   // The device pixel ratio we got from the server for this image, or 1.0.
   float DevicePixelRatioHeaderValue() const;
@@ -105,14 +114,17 @@ class CORE_EXPORT ImageResourceContent final
   // ImageResourceContent::GetContentStatus() can be different from
   // ImageResource::GetStatus(). Use ImageResourceContent::GetContentStatus().
   ResourceStatus GetContentStatus() const;
+  bool IsSufficientContentLoadedForPaint() const override;
   bool IsLoaded() const;
   bool IsLoading() const;
   bool ErrorOccurred() const;
   bool LoadFailedOrCanceled() const;
-  bool IsAnimatedImageWithPaintedFirstFrame() const;
+  bool IsAnimatedImage() const override;
+  bool IsPaintedFirstFrame() const override;
+  bool TimingAllowPassed() const override;
 
   // Redirecting methods to Resource.
-  const KURL& Url() const;
+  const KURL& Url() const override;
   base::TimeTicks LoadResponseEnd() const;
   bool IsAccessAllowed() const;
   const ResourceResponse& GetResponse() const;
@@ -158,11 +170,11 @@ class CORE_EXPORT ImageResourceContent final
     // Only occurs when UpdateImage or ClearAndUpdateImage is specified.
     kShouldDecodeError,
   };
-  WARN_UNUSED_RESULT UpdateImageResult UpdateImage(scoped_refptr<SharedBuffer>,
-                                                   ResourceStatus,
-                                                   UpdateImageOption,
-                                                   bool all_data_received,
-                                                   bool is_multipart);
+  [[nodiscard]] UpdateImageResult UpdateImage(scoped_refptr<SharedBuffer>,
+                                              ResourceStatus,
+                                              UpdateImageOption,
+                                              bool all_data_received,
+                                              bool is_multipart);
 
   void NotifyStartLoad();
   void DestroyDecodedData();
@@ -181,6 +193,13 @@ class CORE_EXPORT ImageResourceContent final
   }
 
   ImageDecoder::CompressionFormat GetCompressionFormat() const;
+
+  // Returns the number of bytes of image data which should be used for entropy
+  // calculations. Ideally this should exclude metadata from within the image
+  // file, but currently just returns the complete file size.
+  // TODO(iclelland): Eventually switch this, and related calculations, to bits
+  // rather than bytes.
+  uint64_t ContentSizeForEntropy() const override;
 
   // Returns true if the image content is well-compressed (and not full of
   // extraneous metadata). "well-compressed" is determined by comparing the

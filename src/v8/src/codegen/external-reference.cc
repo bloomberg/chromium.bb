@@ -5,7 +5,7 @@
 #include "src/codegen/external-reference.h"
 
 #include "include/v8-fast-api-calls.h"
-#include "src/api/api.h"
+#include "src/api/api-inl.h"
 #include "src/base/ieee754.h"
 #include "src/codegen/cpu-features.h"
 #include "src/common/globals.h"
@@ -29,6 +29,7 @@
 #include "src/objects/object-type.h"
 #include "src/objects/objects-inl.h"
 #include "src/objects/ordered-hash-table.h"
+#include "src/objects/simd.h"
 #include "src/regexp/experimental/experimental.h"
 #include "src/regexp/regexp-interpreter.h"
 #include "src/regexp/regexp-macro-assembler-arch.h"
@@ -214,40 +215,33 @@ ExternalReference ExternalReference::builtins_table(Isolate* isolate) {
   return ExternalReference(isolate->builtin_table());
 }
 
-#ifdef V8_EXTERNAL_CODE_SPACE
-ExternalReference ExternalReference::builtins_code_data_container_table(
-    Isolate* isolate) {
-  return ExternalReference(isolate->builtin_code_data_container_table());
-}
-#endif  // V8_EXTERNAL_CODE_SPACE
-
 ExternalReference ExternalReference::handle_scope_implementer_address(
     Isolate* isolate) {
   return ExternalReference(isolate->handle_scope_implementer_address());
 }
 
-#ifdef V8_CAGED_POINTERS
-ExternalReference ExternalReference::virtual_memory_cage_base_address() {
-  return ExternalReference(GetProcessWideVirtualMemoryCage()->base_address());
+#ifdef V8_SANDBOXED_POINTERS
+ExternalReference ExternalReference::sandbox_base_address() {
+  return ExternalReference(GetProcessWideSandbox()->base_address());
 }
 
-ExternalReference ExternalReference::virtual_memory_cage_end_address() {
-  return ExternalReference(GetProcessWideVirtualMemoryCage()->end_address());
+ExternalReference ExternalReference::sandbox_end_address() {
+  return ExternalReference(GetProcessWideSandbox()->end_address());
 }
 
 ExternalReference ExternalReference::empty_backing_store_buffer() {
-  return ExternalReference(GetProcessWideVirtualMemoryCage()
+  return ExternalReference(GetProcessWideSandbox()
                                ->constants()
                                .empty_backing_store_buffer_address());
 }
-#endif  // V8_CAGED_POINTERS
+#endif  // V8_SANDBOXED_POINTERS
 
-#ifdef V8_HEAP_SANDBOX
+#ifdef V8_SANDBOXED_EXTERNAL_POINTERS
 ExternalReference ExternalReference::external_pointer_table_address(
     Isolate* isolate) {
   return ExternalReference(isolate->external_pointer_table_address());
 }
-#endif
+#endif  // V8_SANDBOXED_EXTERNAL_POINTERS
 
 ExternalReference ExternalReference::interpreter_dispatch_table_address(
     Isolate* isolate) {
@@ -326,13 +320,13 @@ struct IsValidExternalReferenceType<Result (Class::*)(Args...)> {
 
 #define FUNCTION_REFERENCE(Name, Target)                                   \
   ExternalReference ExternalReference::Name() {                            \
-    STATIC_ASSERT(IsValidExternalReferenceType<decltype(&Target)>::value); \
+    static_assert(IsValidExternalReferenceType<decltype(&Target)>::value); \
     return ExternalReference(Redirect(FUNCTION_ADDR(Target)));             \
   }
 
 #define FUNCTION_REFERENCE_WITH_TYPE(Name, Target, Type)                   \
   ExternalReference ExternalReference::Name() {                            \
-    STATIC_ASSERT(IsValidExternalReferenceType<decltype(&Target)>::value); \
+    static_assert(IsValidExternalReferenceType<decltype(&Target)>::value); \
     return ExternalReference(Redirect(FUNCTION_ADDR(Target), Type));       \
   }
 
@@ -444,6 +438,8 @@ IF_WASM(FUNCTION_REFERENCE, wasm_float64_pow, wasm::float64_pow_wrapper)
 IF_WASM(FUNCTION_REFERENCE, wasm_call_trap_callback_for_testing,
         wasm::call_trap_callback_for_testing)
 IF_WASM(FUNCTION_REFERENCE, wasm_array_copy, wasm::array_copy_wrapper)
+IF_WASM(FUNCTION_REFERENCE, wasm_array_fill_with_zeroes,
+        wasm::array_fill_with_zeroes_wrapper)
 
 static void f64_acos_wrapper(Address data) {
   double input = ReadUnalignedValue<double>(data);
@@ -557,12 +553,22 @@ ExternalReference::address_of_mock_arraybuffer_allocator_flag() {
   return ExternalReference(&FLAG_mock_arraybuffer_allocator);
 }
 
+// TODO(jgruber): Update the other extrefs pointing at FLAG_ addresses to be
+// called address_of_FLAG_foo (easier grep-ability).
+ExternalReference ExternalReference::address_of_FLAG_trace_osr() {
+  return ExternalReference(&FLAG_trace_osr);
+}
+
 ExternalReference ExternalReference::address_of_builtin_subclassing_flag() {
   return ExternalReference(&FLAG_builtin_subclassing);
 }
 
 ExternalReference ExternalReference::address_of_runtime_stats_flag() {
   return ExternalReference(&TracingFlags::runtime_stats);
+}
+
+ExternalReference ExternalReference::address_of_shared_string_table_flag() {
+  return ExternalReference(&FLAG_shared_string_table);
 }
 
 ExternalReference ExternalReference::address_of_load_from_stack_count(
@@ -665,6 +671,11 @@ ExternalReference ExternalReference::address_of_wasm_uint32_max_as_double() {
 ExternalReference ExternalReference::address_of_wasm_int32_overflow_as_float() {
   return ExternalReference(
       reinterpret_cast<Address>(&wasm_int32_overflow_as_float));
+}
+
+ExternalReference ExternalReference::supports_cetss_address() {
+  return ExternalReference(
+      reinterpret_cast<Address>(&CpuFeatures::supports_cetss_));
 }
 
 ExternalReference
@@ -989,7 +1000,12 @@ FUNCTION_REFERENCE(copy_typed_array_elements_to_typed_array,
 FUNCTION_REFERENCE(copy_typed_array_elements_slice, CopyTypedArrayElementsSlice)
 FUNCTION_REFERENCE(try_string_to_index_or_lookup_existing,
                    StringTable::TryStringToIndexOrLookupExisting)
+FUNCTION_REFERENCE(string_from_forward_table,
+                   StringForwardingTable::GetForwardStringAddress)
 FUNCTION_REFERENCE(string_to_array_index_function, String::ToArrayIndex)
+FUNCTION_REFERENCE(array_indexof_includes_smi_or_object,
+                   ArrayIndexOfIncludesSmiOrObject)
+FUNCTION_REFERENCE(array_indexof_includes_double, ArrayIndexOfIncludesDouble)
 
 static Address LexicographicCompareWrapper(Isolate* isolate, Address smi_x,
                                            Address smi_y) {
@@ -1377,9 +1393,9 @@ FUNCTION_REFERENCE(
     js_finalization_registry_remove_cell_from_unregister_token_map,
     JSFinalizationRegistry::RemoveCellFromUnregisterTokenMap)
 
-#ifdef V8_HEAP_SANDBOX
-FUNCTION_REFERENCE(external_pointer_table_grow_table_function,
-                   ExternalPointerTable::GrowTable)
+#ifdef V8_SANDBOXED_EXTERNAL_POINTERS
+FUNCTION_REFERENCE(external_pointer_table_allocate_entry,
+                   ExternalPointerTable::AllocateEntry)
 #endif
 
 bool operator==(ExternalReference lhs, ExternalReference rhs) {

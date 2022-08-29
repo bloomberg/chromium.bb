@@ -236,6 +236,11 @@ class Xcode11LogParser(object):
           continue
         for test in test_suite['subtests']['_values']:
           test_name = _sanitize_str(test['identifier']['_value'])
+          duration = test.get('duration', {}).get('_value')
+          if duration:
+            # Raw duration is a str in seconds with decimals if it exists.
+            # Convert to milliseconds as int as used in |TestResult|.
+            duration = int(float(duration) * 1000)
           if any(
               test_name.endswith(suffix)
               for suffix in SYSTEM_ERROR_TEST_NAME_SUFFIXES):
@@ -247,7 +252,8 @@ class Xcode11LogParser(object):
           # |test| objects of it. Each |test| corresponds to an execution of the
           # test case.
           if test['testStatus']['_value'] == 'Success':
-            result.add_test_result(TestResult(test_name, TestStatus.PASS))
+            result.add_test_result(
+                TestResult(test_name, TestStatus.PASS, duration=duration))
           else:
             # Parse data for failed test by its id. See SINGLE_TEST_SUMMARY_REF
             # in xcode_log_parser_test.py for an example of |summary_ref|.
@@ -275,6 +281,7 @@ class Xcode11LogParser(object):
                 TestResult(
                     test_name,
                     TestStatus.FAIL,
+                    duration=duration,
                     test_log=failure_message,
                     attachments=attachments))
     return result
@@ -497,16 +504,16 @@ class Xcode11LogParser(object):
       for attachment in activity_summary.get('attachments',
                                              {}).get('_values', []):
         payload_ref = attachment['payloadRef']['id']['_value']
-        _, file_name_extension = os.path.splitext(
-            str(attachment['filename']['_value']))
+        raw_file_name = str(attachment['filename']['_value'])
+        _, file_name_extension = os.path.splitext(raw_file_name)
+
         if not include_jpg and file_name_extension in ['.jpg', '.jpeg']:
           continue
 
-        attachment_index = len(attachments) + 1
         attachment_filename = (
-            '%s_%s_%d%s' %
+            '%s_%s_%s' %
             (os.path.splitext(os.path.basename(xcresult))[0],
-             test.replace('/', '_'), attachment_index, file_name_extension))
+             test.replace('/', '_'), raw_file_name))
         # Extracts attachment to the same folder containing xcresult.
         attachment_output_path = os.path.abspath(
             os.path.join(xcresult, os.pardir, attachment_filename))

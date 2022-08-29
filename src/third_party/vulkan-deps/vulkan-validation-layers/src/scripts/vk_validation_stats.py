@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-# Copyright (c) 2015-2021 The Khronos Group Inc.
-# Copyright (c) 2015-2021 Valve Corporation
-# Copyright (c) 2015-2021 LunarG, Inc.
-# Copyright (c) 2015-2021 Google Inc.
+# Copyright (c) 2015-2022 The Khronos Group Inc.
+# Copyright (c) 2015-2022 Valve Corporation
+# Copyright (c) 2015-2022 LunarG, Inc.
+# Copyright (c) 2015-2022 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -55,6 +55,7 @@ layer_source_files = [common_codegen.repo_relative(path) for path in [
     'layers/buffer_validation.cpp',
     'layers/core_validation.cpp',
     'layers/descriptor_sets.cpp',
+    'layers/descriptor_validation.cpp',
     'layers/drawdispatch.cpp',
     'layers/gpu_vuids.h',
     'layers/parameter_validation_utils.cpp',
@@ -477,8 +478,8 @@ class OutputDatabase:
 /*
  * Vulkan
  *
- * Copyright (c) 2016-2021 Google Inc.
- * Copyright (c) 2016-2021 LunarG, Inc.
+ * Copyright (c) 2016-2022 Google Inc.
+ * Copyright (c) 2016-2022 LunarG, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.

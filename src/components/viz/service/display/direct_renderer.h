@@ -13,6 +13,7 @@
 #include "base/containers/circular_deque.h"
 #include "base/containers/flat_map.h"
 #include "base/memory/raw_ptr.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/viz/common/quads/aggregated_render_pass.h"
 #include "components/viz/common/quads/tile_draw_quad.h"
@@ -22,8 +23,8 @@
 #include "components/viz/service/display/overlay_candidate.h"
 #include "components/viz/service/display/overlay_processor_interface.h"
 #include "components/viz/service/viz_service_export.h"
-#include "gpu/command_buffer/common/texture_in_use_response.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/gfx/ca_layer_result.h"
 #include "ui/gfx/delegated_ink_metadata.h"
 #include "ui/gfx/display_color_spaces.h"
 #include "ui/gfx/geometry/quad_f.h"
@@ -73,6 +74,7 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
   bool use_partial_swap() const { return use_partial_swap_; }
 
   void SetVisible(bool visible);
+  void ReallocatedFrameBuffers();
   void DecideRenderPassAllocationsForFrame(
       const AggregatedRenderPassList& render_passes_in_draw_order);
   void DrawFrame(AggregatedRenderPassList* render_passes_in_draw_order,
@@ -99,13 +101,15 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
 
     std::vector<ui::LatencyInfo> latency_info;
     bool top_controls_visible_height_changed = false;
+#if BUILDFLAG(IS_MAC)
+    gfx::CALayerResult ca_layer_error_code = gfx::kCALayerSuccess;
+#endif
+    absl::optional<int64_t> choreographer_vsync_id;
   };
   virtual void SwapBuffers(SwapFrameData swap_frame_data) = 0;
   virtual void SwapBuffersSkipped() {}
   virtual void SwapBuffersComplete(gfx::GpuFenceHandle release_fence) {}
   virtual void BuffersPresented() {}
-  virtual void DidReceiveTextureInUseResponses(
-      const gpu::TextureInUseResponses& responses) {}
   virtual void DidReceiveReleasedOverlays(
       const std::vector<gpu::Mailbox>& released_overlays) {}
 
@@ -257,7 +261,6 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
   virtual void DoDrawQuad(const DrawQuad* quad,
                           const gfx::QuadF* clip_region) = 0;
   virtual void BeginDrawingFrame() = 0;
-  virtual void FlushOverdrawFeedback(const gfx::Rect& output_rect) {}
   virtual void FinishDrawingFrame() = 0;
   // If a pass contains a single tile draw quad and can be drawn without
   // a render pass (e.g. applying a filter directly to the tile quad)
@@ -275,13 +278,24 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
   virtual void GenerateMipmap() = 0;
 
   gfx::Size surface_size_for_swap_buffers() const {
-    return reshape_surface_size_;
+    return reshape_params_ ? reshape_params_->size : gfx::Size();
+  }
+  gfx::Size viewport_size_for_swap_buffers() const {
+    return device_viewport_size_;
   }
 
   bool ShouldApplyRoundedCorner(const DrawQuad* quad) const;
 
+  float CurrentFrameSDRWhiteLevel() const;
   gfx::ColorSpace RootRenderPassColorSpace() const;
   gfx::ColorSpace CurrentRenderPassColorSpace() const;
+  // Return the SkColorSpace for rendering to the current render pass. Unlike
+  // CurrentRenderPassColorSpace, this color space has the value of
+  // CurrentFrameSDRWhiteLevel incorporated into it.
+  sk_sp<SkColorSpace> CurrentRenderPassSkColorSpace() const {
+    return CurrentRenderPassColorSpace().ToSkColorSpace(
+        CurrentFrameSDRWhiteLevel());
+  }
 
   const raw_ptr<const RendererSettings> settings_;
   // Points to the viz-global singleton.
@@ -298,8 +312,6 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
   bool allow_empty_swap_ = false;
   // Whether partial swap can be used.
   bool use_partial_swap_ = false;
-  // Whether overdraw feedback is enabled and can be used.
-  bool overdraw_feedback_ = false;
 
   // A map from RenderPass id to the single quad present in and replacing the
   // RenderPass. The DrawQuads are owned by their RenderPasses, which outlive
@@ -340,10 +352,13 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
     return &current_frame_;
   }
   gfx::BufferFormat reshape_buffer_format() const {
-    DCHECK(reshape_buffer_format_);
-    return reshape_buffer_format_.value();
+    DCHECK(reshape_params_);
+    return reshape_params_->format;
   }
-  gfx::ColorSpace reshape_color_space() const { return reshape_color_space_; }
+  gfx::ColorSpace reshape_color_space() const {
+    DCHECK(reshape_params_);
+    return reshape_params_->color_space;
+  }
 
   // Sets a DelegatedInkPointRendererSkiaForTest to be used for testing only, in
   // order to save delegated ink metadata values that would otherwise be reset.
@@ -354,11 +369,7 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
   virtual void DrawDelegatedInkTrail();
 
   bool initialized_ = false;
-#if DCHECK_IS_ON()
-  bool overdraw_feedback_support_missing_logged_once_ = false;
-  bool overdraw_tracing_support_missing_logged_once_ = false;
-  bool supports_occlusion_query_ = false;
-#endif
+
   gfx::Rect last_root_render_pass_scissor_rect_;
   gfx::Size enlarge_pass_texture_amount_;
 
@@ -369,18 +380,18 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
   bool current_frame_valid_ = false;
 
   // Time of most recent reshape that ended up with |device_viewport_size_| !=
-  // |reshape_surface_size_|.
+  // |reshape_params->size|.
   base::TimeTicks last_viewport_resize_time_;
 
-  // Cached values given to Reshape(). The |reshape_buffer_format_| is optional
-  // to prevent use of uninitialized values. This may be larger than the
-  // |device_viewport_size_| that users see.
-  gfx::Size reshape_surface_size_;
+  bool next_frame_needs_full_frame_redraw_ = false;
+
+  // Cached values given to Reshape(). The `reshape_params_` is optional
+  // to prevent use of uninitialized values. The size in these parameters
+  // may be larger than the `device_viewport_size_` that users see.
+  absl::optional<OutputSurface::ReshapeParams> reshape_params_;
   gfx::Size device_viewport_size_;
-  float reshape_device_scale_factor_ = 0.f;
-  gfx::ColorSpace reshape_color_space_;
-  absl::optional<gfx::BufferFormat> reshape_buffer_format_;
-  bool reshape_use_stencil_ = false;
+  gfx::OverlayTransform reshape_display_transform_ =
+      gfx::OVERLAY_TRANSFORM_INVALID;
 };
 
 }  // namespace viz

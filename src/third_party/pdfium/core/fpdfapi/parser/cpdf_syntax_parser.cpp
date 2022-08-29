@@ -9,7 +9,6 @@
 #include <ctype.h>
 
 #include <algorithm>
-#include <sstream>
 #include <utility>
 
 #include "core/fpdfapi/parser/cpdf_array.h"
@@ -186,7 +185,7 @@ CPDF_SyntaxParser::WordType CPDF_SyntaxParser::GetNextWordInternal() {
 
     m_WordBuffer[m_WordSize++] = ch;
     if (ch == '/') {
-      while (1) {
+      while (true) {
         if (!GetNextChar(ch))
           return word_type;
 
@@ -218,7 +217,7 @@ CPDF_SyntaxParser::WordType CPDF_SyntaxParser::GetNextWordInternal() {
     return word_type;
   }
 
-  while (1) {
+  while (true) {
     if (m_WordSize < sizeof(m_WordBuffer) - 1)
       m_WordBuffer[m_WordSize++] = ch;
 
@@ -241,11 +240,11 @@ ByteString CPDF_SyntaxParser::ReadString() {
   if (!GetNextChar(ch))
     return ByteString();
 
-  std::ostringstream buf;
+  ByteString buf;
   int32_t parlevel = 0;
   ReadStatus status = ReadStatus::kNormal;
   int32_t iEscCode = 0;
-  while (1) {
+  while (true) {
     switch (status) {
       case ReadStatus::kNormal:
         if (ch == ')') {
@@ -258,7 +257,7 @@ ByteString CPDF_SyntaxParser::ReadString() {
         if (ch == '\\')
           status = ReadStatus::kBackslash;
         else
-          buf << static_cast<char>(ch);
+          buf += static_cast<char>(ch);
         break;
       case ReadStatus::kBackslash:
         if (FXSYS_IsOctalDigit(ch)) {
@@ -266,23 +265,22 @@ ByteString CPDF_SyntaxParser::ReadString() {
           status = ReadStatus::kOctal;
           break;
         }
-
         if (ch == '\r') {
           status = ReadStatus::kCarriageReturn;
           break;
         }
         if (ch == 'n') {
-          buf << '\n';
+          buf += '\n';
         } else if (ch == 'r') {
-          buf << '\r';
+          buf += '\r';
         } else if (ch == 't') {
-          buf << '\t';
+          buf += '\t';
         } else if (ch == 'b') {
-          buf << '\b';
+          buf += '\b';
         } else if (ch == 'f') {
-          buf << '\f';
+          buf += '\f';
         } else if (ch != '\n') {
-          buf << static_cast<char>(ch);
+          buf += static_cast<char>(ch);
         }
         status = ReadStatus::kNormal;
         break;
@@ -292,7 +290,7 @@ ByteString CPDF_SyntaxParser::ReadString() {
               iEscCode * 8 + FXSYS_DecimalCharToInt(static_cast<wchar_t>(ch));
           status = ReadStatus::kFinishOctal;
         } else {
-          buf << static_cast<char>(iEscCode);
+          buf += static_cast<char>(iEscCode);
           status = ReadStatus::kNormal;
           continue;
         }
@@ -302,9 +300,9 @@ ByteString CPDF_SyntaxParser::ReadString() {
         if (FXSYS_IsOctalDigit(ch)) {
           iEscCode =
               iEscCode * 8 + FXSYS_DecimalCharToInt(static_cast<wchar_t>(ch));
-          buf << static_cast<char>(iEscCode);
+          buf += static_cast<char>(iEscCode);
         } else {
-          buf << static_cast<char>(iEscCode);
+          buf += static_cast<char>(iEscCode);
           continue;
         }
         break;
@@ -320,7 +318,7 @@ ByteString CPDF_SyntaxParser::ReadString() {
   }
 
   GetNextChar(ch);
-  return ByteString(buf);
+  return buf;
 }
 
 ByteString CPDF_SyntaxParser::ReadHexString() {
@@ -328,10 +326,10 @@ ByteString CPDF_SyntaxParser::ReadHexString() {
   if (!GetNextChar(ch))
     return ByteString();
 
-  std::ostringstream buf;
+  ByteString buf;
   bool bFirst = true;
   uint8_t code = 0;
-  while (1) {
+  while (true) {
     if (ch == '>')
       break;
 
@@ -341,7 +339,7 @@ ByteString CPDF_SyntaxParser::ReadHexString() {
         code = val * 16;
       } else {
         code += val;
-        buf << static_cast<char>(code);
+        buf += static_cast<char>(code);
       }
       bFirst = !bFirst;
     }
@@ -350,9 +348,9 @@ ByteString CPDF_SyntaxParser::ReadHexString() {
       break;
   }
   if (!bFirst)
-    buf << static_cast<char>(code);
+    buf += static_cast<char>(code);
 
-  return ByteString(buf);
+  return buf;
 }
 
 void CPDF_SyntaxParser::ToNextLine() {
@@ -380,7 +378,7 @@ void CPDF_SyntaxParser::ToNextWord() {
   if (!GetNextChar(ch))
     return;
 
-  while (1) {
+  while (true) {
     while (PDFCharIsWhitespace(ch)) {
       if (!GetNextChar(ch))
         return;
@@ -389,7 +387,7 @@ void CPDF_SyntaxParser::ToNextWord() {
     if (ch != '%')
       break;
 
-    while (1) {
+    while (true) {
       if (!GetNextChar(ch))
         return;
       if (PDFCharIsLineEnding(ch))
@@ -416,7 +414,7 @@ void CPDF_SyntaxParser::RecordingToNextWord() {
   EofState eof_state = EofState::kInitial;
   // Find the first character which is neither whitespace, nor part of a
   // comment.
-  while (1) {
+  while (true) {
     uint8_t ch;
     if (!GetNextChar(ch))
       return;
@@ -483,6 +481,7 @@ ByteString CPDF_SyntaxParser::GetKeyword() {
 }
 
 void CPDF_SyntaxParser::SetPos(FX_FILESIZE pos) {
+  DCHECK_GE(pos, 0);
   m_Pos = std::min(pos, m_FileLen);
 }
 
@@ -558,7 +557,7 @@ RetainPtr<CPDF_Object> CPDF_SyntaxParser::GetObjectBodyInternal(
   if (word == "<<") {
     RetainPtr<CPDF_Dictionary> pDict =
         pdfium::MakeRetain<CPDF_Dictionary>(m_pPool);
-    while (1) {
+    while (true) {
       WordResult inner_word_result = GetNextWord();
       const ByteString& inner_word = inner_word_result.word;
       if (inner_word.IsEmpty())
@@ -861,7 +860,7 @@ bool CPDF_SyntaxParser::BackwardsSearchToWord(ByteStringView word,
 
   FX_FILESIZE pos = m_Pos;
   int32_t offset = taglen - 1;
-  while (1) {
+  while (true) {
     if (limit && pos <= m_Pos - limit)
       return false;
 
@@ -893,7 +892,7 @@ FX_FILESIZE CPDF_SyntaxParser::FindTag(ByteStringView tag) {
   DCHECK_GT(taglen, 0);
 
   int32_t match = 0;
-  while (1) {
+  while (true) {
     uint8_t ch;
     if (!GetNextChar(ch))
       return -1;

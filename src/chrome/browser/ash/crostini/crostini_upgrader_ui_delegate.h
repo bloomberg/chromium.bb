@@ -7,7 +7,11 @@
 
 #include <string>
 
-#include "chrome/browser/ui/webui/chromeos/crostini_upgrader/crostini_upgrader.mojom.h"
+#include "chrome/browser/ui/webui/chromeos/crostini_upgrader/crostini_upgrader.mojom-forward.h"
+
+namespace base {
+class FilePath;
+}  // namespace base
 
 namespace content {
 class WebContents;
@@ -32,6 +36,7 @@ class CrostiniUpgraderUIObserver {
   virtual void OnRestoreSucceeded() = 0;
   virtual void OnRestoreFailed() = 0;
   virtual void OnCanceled() = 0;
+  virtual void OnLogFileCreated(const base::FilePath& path) {}
 };
 
 class CrostiniUpgraderUIDelegate {
@@ -41,12 +46,18 @@ class CrostiniUpgraderUIDelegate {
   virtual void AddObserver(CrostiniUpgraderUIObserver* observer) = 0;
   virtual void RemoveObserver(CrostiniUpgraderUIObserver* observer) = 0;
 
+  // Signal to the delegate that a new dialogue instance has been opened. The
+  // dialogue currently automatically re-tries the upgrade up to three
+  // times. This method allows the delegate to distinguish between these retries
+  // and upgrades from separate sessions.
+  virtual void PageOpened() = 0;
+
   // Back up the current container before upgrading. If |show_file_chooser|
   // is true, the user will be able to select the backup location via a file
   // chooser.
   virtual void Backup(const ContainerId& container_id,
                       bool show_file_chooser,
-                      content::WebContents* web_contents) = 0;
+                      base::WeakPtr<content::WebContents> web_contents) = 0;
 
   virtual void StartPrechecks() = 0;
 
@@ -55,7 +66,7 @@ class CrostiniUpgraderUIDelegate {
 
   // Restore the container to the backed up state if an upgrade has failed.
   virtual void Restore(const ContainerId& container_id,
-                       content::WebContents* web_contents) = 0;
+                       base::WeakPtr<content::WebContents> web_contents) = 0;
 
   // Cancel the ongoing upgrade.
   virtual void Cancel() = 0;

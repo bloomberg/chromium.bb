@@ -243,11 +243,14 @@ static int numberOfCachePages(PCache *p){
     ** suggested cache size is set to N. */
     return p->szCache;
   }else{
+    i64 n;
     /* IMPLEMANTATION-OF: R-59858-46238 If the argument N is negative, then the
     ** number of cache pages is adjusted to be a number of pages that would
     ** use approximately abs(N*1024) bytes of memory based on the current
     ** page size. */
-    return (int)((-1024*(i64)p->szCache)/(p->szPage+p->szExtra));
+    n = ((-1024*(i64)p->szCache)/(p->szPage+p->szExtra));
+    if( n>1000000000 ) n = 1000000000;
+    return (int)n;
   }
 }
 
@@ -548,7 +551,8 @@ void sqlite3PcacheDrop(PgHdr *p){
 ** make it so.
 */
 void sqlite3PcacheMakeDirty(PgHdr *p){
-  assert( p->nRef>0 );
+  assert( p->nRef>0 || p->pCache->bPurgeable==0 );
+  testcase( p->nRef==0 );
   assert( sqlite3PcachePageSanity(p) );
   if( p->flags & (PGHDR_CLEAN|PGHDR_DONT_WRITE) ){    /*OPTIMIZATION-IF-FALSE*/
     p->flags &= ~PGHDR_DONT_WRITE;

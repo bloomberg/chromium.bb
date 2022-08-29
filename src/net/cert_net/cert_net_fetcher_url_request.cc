@@ -71,6 +71,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "net/base/io_buffer.h"
 #include "net/base/isolation_info.h"
@@ -294,8 +295,8 @@ struct CertNetFetcherURLRequest::RequestParams {
   bool operator<(const RequestParams& other) const;
 
   GURL url;
-  HttpMethod http_method;
-  size_t max_response_bytes;
+  HttpMethod http_method = HTTP_METHOD_GET;
+  size_t max_response_bytes = 0;
 
   // If set to a value <= 0 then means "no timeout".
   base::TimeDelta timeout;
@@ -303,8 +304,7 @@ struct CertNetFetcherURLRequest::RequestParams {
   // IMPORTANT: When adding fields to this structure, update operator<().
 };
 
-CertNetFetcherURLRequest::RequestParams::RequestParams()
-    : http_method(HTTP_METHOD_GET), max_response_bytes(0) {}
+CertNetFetcherURLRequest::RequestParams::RequestParams() = default;
 
 bool CertNetFetcherURLRequest::RequestParams::operator<(
     const RequestParams& other) const {

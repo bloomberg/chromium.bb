@@ -624,14 +624,6 @@ inline void DirectionalZone2FromLeftCol_4x4_SSE4_1(
   }
 }
 
-// The height at which a load of 16 bytes will not contain enough source pixels
-// from |left_column| to supply an accurate row when computing 8 pixels at a
-// time. The values are found by inspection. By coincidence, all angles that
-// satisfy (ystep >> 6) == 2 map to the same value, so it is enough to look up
-// by ystep >> 6. The largest index for this lookup is 1023 >> 6 == 15.
-constexpr int kDirectionalZone2ShuffleInvalidHeight[16] = {
-    1024, 1024, 16, 16, 16, 16, 0, 0, 18, 0, 0, 0, 0, 0, 0, 40};
-
 template <bool upsampled>
 inline void DirectionalZone2FromLeftCol_8x8_SSE4_1(
     uint8_t* dst, ptrdiff_t stride, const uint8_t* const left_column,
@@ -729,6 +721,103 @@ inline void DirectionalZone1Blend_8xH(
   }
 }
 
+template <bool shuffle_left_column, bool upsampled_left, bool upsampled_top>
+inline void DirectionalZone2_8xH(
+    uint8_t* LIBGAV1_RESTRICT const dst, const ptrdiff_t stride,
+    const uint8_t* LIBGAV1_RESTRICT const top_row,
+    const uint8_t* LIBGAV1_RESTRICT const left_column, const int height,
+    const int xstep, const int ystep, const int x, const int left_offset,
+    const __m128i& xstep_for_shift, const __m128i& xstep_bounds_base,
+    const __m128i& left_y) {
+  const int upsample_left_shift = static_cast<int>(upsampled_left);
+  const int upsample_top_shift = static_cast<int>(upsampled_top);
+
+  // Loop incrementers for moving by block (8x8). This function handles blocks
+  // with height 4 as well. They are calculated in one pass so these variables
+  // do not get used.
+  const ptrdiff_t stride8 = stride << 3;
+  const int xstep8 = xstep << 3;
+  const __m128i xstep8_vect = _mm_set1_epi16(xstep8);
+
+  // Cover 8x4 case.
+  const int min_height = (height == 4) ? 4 : 8;
+
+  // The first stage, before the first y-loop, covers blocks that are only
+  // computed from the top row. The second stage, comprising two y-loops, covers
+  // blocks that have a mixture of values computed from top or left. The final
+  // stage covers blocks that are only computed from the left.
+  uint8_t* dst_x = dst + x;
+
+  // Round down to the nearest multiple of 8 (or 4, if height is 4).
+  const int max_top_only_y =
+      std::min(((x + 1) << 6) / xstep, height) & ~(min_height - 1);
+  DirectionalZone1_4xH(dst_x, stride, top_row + (x << upsample_top_shift),
+                       max_top_only_y, -xstep, upsampled_top);
+  DirectionalZone1_4xH(dst_x + 4, stride,
+                       top_row + ((x + 4) << upsample_top_shift),
+                       max_top_only_y, -xstep, upsampled_top);
+  if (max_top_only_y == height) return;
+
+  const __m128i max_shift = _mm_set1_epi8(32);
+  const __m128i shift_mask = _mm_set1_epi32(0x003F003F);
+  const __m128i dest_index_x =
+      _mm_set_epi32(0x00070006, 0x00050004, 0x00030002, 0x00010000);
+  const __m128i sampler_top =
+      upsampled_top
+          ? _mm_set_epi32(0x0F0E0D0C, 0x0B0A0908, 0x07060504, 0x03020100)
+          : _mm_set_epi32(0x08070706, 0x06050504, 0x04030302, 0x02010100);
+  int y = max_top_only_y;
+  dst_x += stride * y;
+  const int xstep_y = xstep * y;
+  const __m128i xstep_y_vect = _mm_set1_epi16(xstep_y);
+  // All rows from |min_left_only_y| down for this set of columns, only need
+  // |left_column| to compute.
+  const int min_left_only_y =
+      Align(std::min(((x + 8) << 6) / xstep, height), 8);
+
+  __m128i xstep_bounds = _mm_add_epi16(xstep_bounds_base, xstep_y_vect);
+  __m128i xstep_for_shift_y = _mm_sub_epi16(xstep_for_shift, xstep_y_vect);
+  int top_x = -xstep_y;
+
+  const auto base_left_y = static_cast<int16_t>(_mm_extract_epi16(left_y, 0));
+  for (; y < min_left_only_y;
+       y += 8, dst_x += stride8,
+       xstep_bounds = _mm_add_epi16(xstep_bounds, xstep8_vect),
+       xstep_for_shift_y = _mm_sub_epi16(xstep_for_shift_y, xstep8_vect),
+       top_x -= xstep8) {
+    // Pick up from the last y-value, using the 10% slower but secure method for
+    // left prediction.
+    if (shuffle_left_column) {
+      DirectionalZone2FromLeftCol_8x8_SSE4_1<upsampled_left>(
+          dst_x, stride,
+          left_column + ((left_offset + y) << upsample_left_shift), left_y);
+    } else {
+      DirectionalZone3_8xH<upsampled_left, 8>(
+          dst_x, stride,
+          left_column + ((left_offset + y) << upsample_left_shift), base_left_y,
+          -ystep);
+    }
+
+    __m128i shifts = _mm_srli_epi16(
+        _mm_and_si128(_mm_slli_epi16(xstep_for_shift_y, upsample_top_shift),
+                      shift_mask),
+        1);
+    shifts = _mm_packus_epi16(shifts, shifts);
+    __m128i opposite_shifts = _mm_sub_epi8(max_shift, shifts);
+    shifts = _mm_unpacklo_epi8(opposite_shifts, shifts);
+    __m128i xstep_bounds_off = _mm_srai_epi16(xstep_bounds, 6);
+    DirectionalZone1Blend_8xH<upsampled_top, 8>(
+        dst_x, top_row + (x << upsample_top_shift), stride, sampler_top,
+        xstep_bounds_off, shifts, dest_index_x, top_x, xstep);
+  }
+  // Loop over y for left_only rows.
+  for (; y < height; y += 8, dst_x += stride8) {
+    DirectionalZone3_8xH<upsampled_left, 8>(
+        dst_x, stride, left_column + ((left_offset + y) << upsample_left_shift),
+        base_left_y, -ystep);
+  }
+}
+
 // 7.11.2.4 (8) 90 < angle > 180
 // The strategy for this function is to know how many blocks can be processed
 // with just pixels from |top_ptr|, then handle mixed blocks, then handle only
@@ -742,29 +831,11 @@ inline void DirectionalZone2_SSE4_1(void* dest, ptrdiff_t stride,
                                     const int width, const int height,
                                     const int xstep, const int ystep) {
   auto* dst = static_cast<uint8_t*>(dest);
-  const int upsample_left_shift = static_cast<int>(upsampled_left);
   const int upsample_top_shift = static_cast<int>(upsampled_top);
-  const __m128i max_shift = _mm_set1_epi8(32);
-  const ptrdiff_t stride8 = stride << 3;
-  const __m128i dest_index_x =
-      _mm_set_epi32(0x00070006, 0x00050004, 0x00030002, 0x00010000);
-  const __m128i sampler_top =
-      upsampled_top
-          ? _mm_set_epi32(0x0F0E0D0C, 0x0B0A0908, 0x07060504, 0x03020100)
-          : _mm_set_epi32(0x08070706, 0x06050504, 0x04030302, 0x02010100);
-  const __m128i shift_mask = _mm_set1_epi32(0x003F003F);
-  // All columns from |min_top_only_x| to the right will only need |top_row| to
-  // compute. This assumes minimum |xstep| is 3.
+  // All columns from |min_top_only_x| to the right will only need |top_row|
+  // to compute. This assumes minimum |xstep| is 3.
   const int min_top_only_x = std::min((height * xstep) >> 6, width);
 
-  // For steep angles, the source pixels from left_column may not fit in a
-  // 16-byte load for shuffling.
-  // TODO(petersonab): Find a more precise formula for this subject to x.
-  const int max_shuffle_height =
-      std::min(height, kDirectionalZone2ShuffleInvalidHeight[ystep >> 6]);
-
-  const int xstep8 = xstep << 3;
-  const __m128i xstep8_vect = _mm_set1_epi16(xstep8);
   // Accumulate xstep across 8 rows.
   const __m128i xstep_dup = _mm_set1_epi16(-xstep);
   const __m128i increments = _mm_set_epi16(8, 7, 6, 5, 4, 3, 2, 1);
@@ -787,105 +858,39 @@ inline void DirectionalZone2_SSE4_1(void* dest, ptrdiff_t stride,
   // offset. Following values need the full ystep as a relative offset.
   const __m128i ystep_init = _mm_set1_epi16(-ystep_remainder);
   const __m128i ystep_dup = _mm_set1_epi16(-ystep);
+  const __m128i dest_index_x =
+      _mm_set_epi32(0x00070006, 0x00050004, 0x00030002, 0x00010000);
   __m128i left_y = _mm_mullo_epi16(ystep_dup, dest_index_x);
   left_y = _mm_add_epi16(ystep_init, left_y);
 
+  // Analysis finds that, for most angles (ystep < 132), all segments that use
+  // both top_row and left_column can compute from left_column using byte
+  // shuffles from a single vector. For steeper angles, the shuffle is also
+  // fully reliable when x >= 32.
+  const int shuffle_left_col_x = (ystep < 132) ? 0 : 32;
+  const int min_shuffle_x = std::min(min_top_only_x, shuffle_left_col_x);
   const __m128i increment_top8 = _mm_set1_epi16(8 << 6);
   int x = 0;
 
-  // This loop treats each set of 4 columns in 3 stages with y-value boundaries.
-  // The first stage, before the first y-loop, covers blocks that are only
-  // computed from the top row. The second stage, comprising two y-loops, covers
-  // blocks that have a mixture of values computed from top or left. The final
-  // stage covers blocks that are only computed from the left.
+  for (int left_offset = -left_base_increment; x < min_shuffle_x;
+       x += 8,
+           xstep_bounds_base = _mm_sub_epi16(xstep_bounds_base, increment_top8),
+           // Watch left_y because it can still get big.
+       left_y = _mm_add_epi16(left_y, increment_left8),
+           left_offset -= left_base_increment8) {
+    DirectionalZone2_8xH<false, upsampled_left, upsampled_top>(
+        dst, stride, top_row, left_column, height, xstep, ystep, x, left_offset,
+        xstep_for_shift, xstep_bounds_base, left_y);
+  }
   for (int left_offset = -left_base_increment; x < min_top_only_x;
        x += 8,
            xstep_bounds_base = _mm_sub_epi16(xstep_bounds_base, increment_top8),
            // Watch left_y because it can still get big.
        left_y = _mm_add_epi16(left_y, increment_left8),
            left_offset -= left_base_increment8) {
-    uint8_t* dst_x = dst + x;
-
-    // Round down to the nearest multiple of 8.
-    const int max_top_only_y = std::min(((x + 1) << 6) / xstep, height) & ~7;
-    DirectionalZone1_4xH(dst_x, stride, top_row + (x << upsample_top_shift),
-                         max_top_only_y, -xstep, upsampled_top);
-    DirectionalZone1_4xH(dst_x + 4, stride,
-                         top_row + ((x + 4) << upsample_top_shift),
-                         max_top_only_y, -xstep, upsampled_top);
-
-    int y = max_top_only_y;
-    dst_x += stride * y;
-    const int xstep_y = xstep * y;
-    const __m128i xstep_y_vect = _mm_set1_epi16(xstep_y);
-    // All rows from |min_left_only_y| down for this set of columns, only need
-    // |left_column| to compute.
-    const int min_left_only_y = std::min(((x + 8) << 6) / xstep, height);
-    // At high angles such that min_left_only_y < 8, ystep is low and xstep is
-    // high. This means that max_shuffle_height is unbounded and xstep_bounds
-    // will overflow in 16 bits. This is prevented by stopping the first
-    // blending loop at min_left_only_y for such cases, which means we skip over
-    // the second blending loop as well.
-    const int left_shuffle_stop_y =
-        std::min(max_shuffle_height, min_left_only_y);
-    __m128i xstep_bounds = _mm_add_epi16(xstep_bounds_base, xstep_y_vect);
-    __m128i xstep_for_shift_y = _mm_sub_epi16(xstep_for_shift, xstep_y_vect);
-    int top_x = -xstep_y;
-
-    for (; y < left_shuffle_stop_y;
-         y += 8, dst_x += stride8,
-         xstep_bounds = _mm_add_epi16(xstep_bounds, xstep8_vect),
-         xstep_for_shift_y = _mm_sub_epi16(xstep_for_shift_y, xstep8_vect),
-         top_x -= xstep8) {
-      DirectionalZone2FromLeftCol_8x8_SSE4_1<upsampled_left>(
-          dst_x, stride,
-          left_column + ((left_offset + y) << upsample_left_shift), left_y);
-
-      __m128i shifts = _mm_srli_epi16(
-          _mm_and_si128(_mm_slli_epi16(xstep_for_shift_y, upsample_top_shift),
-                        shift_mask),
-          1);
-      shifts = _mm_packus_epi16(shifts, shifts);
-      __m128i opposite_shifts = _mm_sub_epi8(max_shift, shifts);
-      shifts = _mm_unpacklo_epi8(opposite_shifts, shifts);
-      __m128i xstep_bounds_off = _mm_srai_epi16(xstep_bounds, 6);
-      DirectionalZone1Blend_8xH<upsampled_top, 8>(
-          dst_x, top_row + (x << upsample_top_shift), stride, sampler_top,
-          xstep_bounds_off, shifts, dest_index_x, top_x, xstep);
-    }
-    // Pick up from the last y-value, using the 10% slower but secure method for
-    // left prediction.
-    const auto base_left_y = static_cast<int16_t>(_mm_extract_epi16(left_y, 0));
-    for (; y < min_left_only_y;
-         y += 8, dst_x += stride8,
-         xstep_bounds = _mm_add_epi16(xstep_bounds, xstep8_vect),
-         xstep_for_shift_y = _mm_sub_epi16(xstep_for_shift_y, xstep8_vect),
-         top_x -= xstep8) {
-      const __m128i xstep_bounds_off = _mm_srai_epi16(xstep_bounds, 6);
-
-      DirectionalZone3_8xH<upsampled_left, 8>(
-          dst_x, stride,
-          left_column + ((left_offset + y) << upsample_left_shift), base_left_y,
-          -ystep);
-
-      __m128i shifts = _mm_srli_epi16(
-          _mm_and_si128(_mm_slli_epi16(xstep_for_shift_y, upsample_top_shift),
-                        shift_mask),
-          1);
-      shifts = _mm_packus_epi16(shifts, shifts);
-      __m128i opposite_shifts = _mm_sub_epi8(max_shift, shifts);
-      shifts = _mm_unpacklo_epi8(opposite_shifts, shifts);
-      DirectionalZone1Blend_8xH<upsampled_top, 8>(
-          dst_x, top_row + (x << upsample_top_shift), stride, sampler_top,
-          xstep_bounds_off, shifts, dest_index_x, top_x, xstep);
-    }
-    // Loop over y for left_only rows.
-    for (; y < height; y += 8, dst_x += stride8) {
-      DirectionalZone3_8xH<upsampled_left, 8>(
-          dst_x, stride,
-          left_column + ((left_offset + y) << upsample_left_shift), base_left_y,
-          -ystep);
-    }
+    DirectionalZone2_8xH<true, upsampled_left, upsampled_top>(
+        dst, stride, top_row, left_column, height, xstep, ystep, x, left_offset,
+        xstep_for_shift, xstep_bounds_base, left_y);
   }
   for (; x < width; x += 4) {
     DirectionalZone1_4xH(dst + x, stride, top_row + (x << upsample_top_shift),
@@ -952,8 +957,8 @@ inline void DirectionalZone2_4_SSE4_1(void* dest, ptrdiff_t stride,
            left_offset -= left_base_increment4) {
     uint8_t* dst_x = dst + x;
 
-    // Round down to the nearest multiple of 8.
-    const int max_top_only_y = std::min((x << 6) / xstep, height) & 0xFFFFFFF4;
+    // Round down to the nearest multiple of 4.
+    const int max_top_only_y = std::min((x << 6) / xstep, height) & ~3;
     DirectionalZone1_4xH(dst_x, stride, top_row + (x << upsample_top_shift),
                          max_top_only_y, -xstep, upsampled_top);
     int y = max_top_only_y;

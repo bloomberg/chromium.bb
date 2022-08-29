@@ -10,6 +10,7 @@
 
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
 #include "base/strings/strcat.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
@@ -24,6 +25,10 @@ using SmoothEffectDrivingThread = FrameInfo::SmoothEffectDrivingThread;
 
 bool ShouldReportForAnimation(FrameSequenceTrackerType sequence_type,
                               SmoothEffectDrivingThread thread_type) {
+  // kSETMainThreadAnimation and kSETCompositorAnimation sequences are a subset
+  // of kMainThreadAnimation and kCompositorAnimation sequences. So these are
+  // excluded from the AllAnimation metric to avoid double counting.
+
   if (sequence_type == FrameSequenceTrackerType::kCompositorAnimation)
     return thread_type == SmoothEffectDrivingThread::kCompositor;
 
@@ -80,6 +85,20 @@ std::string GetThroughputHistogramName(FrameSequenceTrackerType type,
                                        const char* thread_name) {
   return base::StrCat(
       {"Graphics.Smoothness.PercentDroppedFrames.", thread_name, ".",
+       FrameSequenceTracker::GetFrameSequenceTrackerTypeName(type)});
+}
+
+std::string GetThroughputV2HistogramName(FrameSequenceTrackerType type,
+                                         const char* thread_name) {
+  return base::StrCat(
+      {"Graphics.Smoothness.PercentDroppedFrames2.", thread_name, ".",
+       FrameSequenceTracker::GetFrameSequenceTrackerTypeName(type)});
+}
+
+std::string GetThroughputV3HistogramName(FrameSequenceTrackerType type,
+                                         const char* thread_name) {
+  return base::StrCat(
+      {"Graphics.Smoothness.PercentDroppedFrames3.", thread_name, ".",
        FrameSequenceTracker::GetFrameSequenceTrackerTypeName(type)});
 }
 
@@ -141,11 +160,13 @@ void FrameSequenceMetrics::SetCustomReporter(CustomReporter custom_reporter) {
 SmoothEffectDrivingThread FrameSequenceMetrics::GetEffectiveThread() const {
   switch (type_) {
     case FrameSequenceTrackerType::kCompositorAnimation:
+    case FrameSequenceTrackerType::kSETCompositorAnimation:
     case FrameSequenceTrackerType::kPinchZoom:
     case FrameSequenceTrackerType::kVideo:
       return SmoothEffectDrivingThread::kCompositor;
 
     case FrameSequenceTrackerType::kMainThreadAnimation:
+    case FrameSequenceTrackerType::kSETMainThreadAnimation:
     case FrameSequenceTrackerType::kRAF:
     case FrameSequenceTrackerType::kCanvasAnimation:
     case FrameSequenceTrackerType::kJSAnimation:
@@ -178,6 +199,9 @@ void FrameSequenceMetrics::Merge(
   v2_.frames_expected += metrics->v2_.frames_expected;
   v2_.frames_dropped += metrics->v2_.frames_dropped;
 
+  v3_.frames_expected += metrics->v3_.frames_expected;
+  v3_.frames_dropped += metrics->v3_.frames_dropped;
+
   if (jank_reporter_)
     jank_reporter_->Merge(std::move(metrics->jank_reporter_));
 
@@ -190,12 +214,14 @@ void FrameSequenceMetrics::Merge(
 
 bool FrameSequenceMetrics::HasEnoughDataForReporting() const {
   return impl_throughput_.frames_expected >= kMinFramesForThroughputMetric ||
-         main_throughput_.frames_expected >= kMinFramesForThroughputMetric;
+         main_throughput_.frames_expected >= kMinFramesForThroughputMetric ||
+         v2_.frames_expected >= kMinFramesForThroughputMetric ||
+         v3_.frames_expected >= kMinFramesForThroughputMetric;
 }
 
 bool FrameSequenceMetrics::HasDataLeftForReporting() const {
-  return impl_throughput_.frames_expected > 0 ||
-         main_throughput_.frames_expected > 0;
+  return impl_throughput_.frames_expected > 0 || v2_.frames_expected > 0 ||
+         main_throughput_.frames_expected > 0 || v3_.frames_expected > 0;
 }
 
 void FrameSequenceMetrics::AdoptTrace(FrameSequenceMetrics* adopt_from) {
@@ -205,7 +231,24 @@ void FrameSequenceMetrics::AdoptTrace(FrameSequenceMetrics* adopt_from) {
 }
 
 void FrameSequenceMetrics::AdvanceTrace(base::TimeTicks timestamp) {
-  trace_data_.Advance(timestamp);
+  uint32_t expected = 0, dropped = 0;
+  switch (GetEffectiveThread()) {
+    case SmoothEffectDrivingThread::kCompositor:
+      expected = impl_throughput_.frames_expected;
+      dropped =
+          impl_throughput_.frames_expected - impl_throughput_.frames_produced;
+      break;
+
+    case SmoothEffectDrivingThread::kMain:
+      expected = main_throughput_.frames_expected;
+      dropped =
+          main_throughput_.frames_expected - main_throughput_.frames_produced;
+      break;
+
+    case SmoothEffectDrivingThread::kUnknown:
+      NOTREACHED();
+  }
+  trace_data_.Advance(timestamp, expected, dropped);
 }
 
 void FrameSequenceMetrics::ReportMetrics() {
@@ -238,11 +281,12 @@ void FrameSequenceMetrics::ReportMetrics() {
   const bool compositor_report = ThroughputData::CanReportHistogram(
       this, SmoothEffectDrivingThread::kCompositor, impl_throughput_);
 
+  const auto thread_type = GetEffectiveThread();
+  const bool is_animation = ShouldReportForAnimation(type(), thread_type);
+  const bool is_interaction =
+      ShouldReportForInteraction(type(), thread_type, thread_type);
+
   if (v2_.frames_expected >= kMinFramesForThroughputMetric) {
-    const auto thread_type = GetEffectiveThread();
-    const bool is_animation = ShouldReportForAnimation(type(), thread_type);
-    const bool is_interaction =
-        ShouldReportForInteraction(type(), thread_type, thread_type);
     int percent = v2_.frames_expected == 0
                       ? 0
                       : std::ceil(100. * v2_.frames_dropped /
@@ -260,7 +304,55 @@ void FrameSequenceMetrics::ReportMetrics() {
       UMA_HISTOGRAM_PERCENTAGE(
           "Graphics.Smoothness.PercentDroppedFrames2.AllSequences", percent);
     }
+
+    const char* thread_name =
+        thread_type == SmoothEffectDrivingThread::kCompositor
+            ? "CompositorThread"
+            : "MainThread";
+
+    STATIC_HISTOGRAM_POINTER_GROUP(
+        GetThroughputV2HistogramName(type(), thread_name),
+        GetIndexForMetric(thread_type, type_), kMaximumHistogramIndex,
+        Add(percent),
+        base::LinearHistogram::FactoryGet(
+            GetThroughputV2HistogramName(type(), thread_name), 1, 100, 101,
+            base::HistogramBase::kUmaTargetedHistogramFlag));
     v2_ = {};
+  }
+
+  if (v3_.frames_expected >= kMinFramesForThroughputMetric) {
+    int percent = v3_.frames_expected == 0
+                      ? 0
+                      : std::ceil(100. * v3_.frames_dropped /
+                                  static_cast<double>(v3_.frames_expected));
+
+    if (is_animation) {
+      UMA_HISTOGRAM_PERCENTAGE(
+          "Graphics.Smoothness.PercentDroppedFrames3.AllAnimations", percent);
+    }
+    if (is_interaction) {
+      UMA_HISTOGRAM_PERCENTAGE(
+          "Graphics.Smoothness.PercentDroppedFrames3.AllInteractions", percent);
+    }
+    if (is_animation || is_interaction) {
+      UMA_HISTOGRAM_PERCENTAGE(
+          "Graphics.Smoothness.PercentDroppedFrames3.AllSequences", percent);
+    }
+
+    const char* thread_name =
+        thread_type == SmoothEffectDrivingThread::kCompositor
+            ? "CompositorThread"
+            : "MainThread";
+
+    STATIC_HISTOGRAM_POINTER_GROUP(
+        GetThroughputV3HistogramName(type(), thread_name),
+        GetIndexForMetric(thread_type, type_), kMaximumHistogramIndex,
+        Add(percent),
+        base::LinearHistogram::FactoryGet(
+            GetThroughputV3HistogramName(type(), thread_name), 1, 100, 101,
+            base::HistogramBase::kUmaTargetedHistogramFlag));
+
+    v3_ = {};
   }
 
   absl::optional<int> impl_throughput_percent_dropped;
@@ -426,14 +518,16 @@ bool FrameSequenceMetrics::ThroughputData::CanReportHistogram(
   const auto sequence_type = metrics->type();
   DCHECK_LT(sequence_type, FrameSequenceTrackerType::kMaxType);
 
-  // All video frames are compositor thread only.
-  if (sequence_type == FrameSequenceTrackerType::kVideo &&
+  // All video frames and SET compositor animations are compositor thread only.
+  if ((sequence_type == FrameSequenceTrackerType::kVideo ||
+       sequence_type == FrameSequenceTrackerType::kSETCompositorAnimation) &&
       thread_type == SmoothEffectDrivingThread::kMain)
     return false;
 
-  // RAF and CanvasAnimation are main thread only.
+  // RAF, CanvasAnimation and SET main thread animations are main thread only.
   if ((sequence_type == FrameSequenceTrackerType::kRAF ||
-       sequence_type == FrameSequenceTrackerType::kCanvasAnimation) &&
+       sequence_type == FrameSequenceTrackerType::kCanvasAnimation ||
+       sequence_type == FrameSequenceTrackerType::kSETMainThreadAnimation) &&
       thread_type == SmoothEffectDrivingThread::kCompositor)
     return false;
 
@@ -446,7 +540,9 @@ bool FrameSequenceMetrics::ThroughputData::CanReportHistogram(
   return is_animation || IsInteractionType(sequence_type) ||
          sequence_type == FrameSequenceTrackerType::kVideo ||
          sequence_type == FrameSequenceTrackerType::kRAF ||
-         sequence_type == FrameSequenceTrackerType::kCanvasAnimation;
+         sequence_type == FrameSequenceTrackerType::kCanvasAnimation ||
+         sequence_type == FrameSequenceTrackerType::kSETMainThreadAnimation ||
+         sequence_type == FrameSequenceTrackerType::kSETCompositorAnimation;
 }
 
 int FrameSequenceMetrics::ThroughputData::ReportDroppedFramePercentHistogram(
@@ -621,7 +717,9 @@ void FrameSequenceMetrics::TraceData::Terminate() {
   trace_id = nullptr;
 }
 
-void FrameSequenceMetrics::TraceData::Advance(base::TimeTicks new_timestamp) {
+void FrameSequenceMetrics::TraceData::Advance(base::TimeTicks new_timestamp,
+                                              uint32_t expected,
+                                              uint32_t dropped) {
   if (!enabled)
     return;
   if (!trace_id) {
@@ -638,9 +736,10 @@ void FrameSequenceMetrics::TraceData::Advance(base::TimeTicks new_timestamp) {
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP0(
       "cc,benchmark", trace_names[++this->frame_count % 3],
       TRACE_ID_LOCAL(trace_id), this->last_timestamp);
-  TRACE_EVENT_NESTABLE_ASYNC_END_WITH_TIMESTAMP0(
+  TRACE_EVENT_NESTABLE_ASYNC_END_WITH_TIMESTAMP2(
       "cc,benchmark", trace_names[this->frame_count % 3],
-      TRACE_ID_LOCAL(trace_id), new_timestamp);
+      TRACE_ID_LOCAL(trace_id), new_timestamp, "expected", expected, "dropped",
+      dropped);
   this->last_timestamp = new_timestamp;
 }
 
@@ -648,13 +747,21 @@ void FrameSequenceMetrics::AddSortedFrame(const viz::BeginFrameArgs& args,
                                           const FrameInfo& frame_info) {
   switch (GetEffectiveThread()) {
     case SmoothEffectDrivingThread::kCompositor:
-      if (frame_info.WasCompositorUpdateDropped()) {
+      if (frame_info.WasSmoothCompositorUpdateDropped()) {
         ++v2_.frames_dropped;
+        ++v3_.frames_dropped;
       }
       ++v2_.frames_expected;
+      ++v3_.frames_expected;
       break;
     case SmoothEffectDrivingThread::kMain:
-      if (frame_info.WasMainUpdateDropped()) {
+      if (frame_info.WasSmoothMainUpdateExpected()) {
+        if (frame_info.WasSmoothMainUpdateDropped()) {
+          ++v3_.frames_dropped;
+        }
+        ++v3_.frames_expected;
+      }
+      if (frame_info.WasSmoothMainUpdateDropped()) {
         ++v2_.frames_dropped;
       }
       ++v2_.frames_expected;

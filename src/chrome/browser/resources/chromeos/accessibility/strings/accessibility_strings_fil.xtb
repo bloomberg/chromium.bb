@@ -536,6 +536,7 @@
 <translation id="4601367666219428522">tbl <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">Babalewalain ang susunod na pagpindot ng key</translation>
 <translation id="4623097797855662355">Colophon</translation>
+<translation id="4624970070706497034">Hindi na nagbibigay ang TalkBack ng pag-customize para sa mga Chromebook. Magagamit mo pa rin ito, pero gamitin ang mga default na keyboard shortcut ng TalkBack. Pindutin ang Search+A, pagkatapos ay K para makita ang lahat ng available na shortcut. Kung gusto mo pa ring gamitin ang TalkBack, pindutin ulit ang command.</translation>
 <translation id="463135993322337640">Pindutin ang ChromeVox o, n upang malaman kung ano ang bago</translation>
 <translation id="4649220074413114917">Puwedeng i-tap ang screen gamit ang dalawang daliri para ihinto ang anumang kasalukuyang speech. Kapaki-pakinabang ito kung ayaw mong magbasa ang ChromeVox. Para magpatuloy, i-tap ang screen gamit ang dalawang daliri.</translation>
 <translation id="4660783501463101648">Inalis ang classic. Inalis ang toggle ng keyboard upang lumipat sa ChromeVox Classic.</translation>
@@ -618,7 +619,6 @@
 <translation id="5170206230005240598">Na-enable ang mga caption ng braille</translation>
 <translation id="5183440668879371625">Nakaraang Linya ng Braille</translation>
 <translation id="5189244881767082992">Linya</translation>
-<translation id="5234747236692380506">i-type ang <ph name="TEXT" /></translation>
 <translation id="5263034204789987535">Cornsilk</translation>
 <translation id="5263344797180442561">h2</translation>
 <translation id="528468243742722775">Tapusin</translation>
@@ -666,6 +666,7 @@
 <translation id="5522423213731659107">Tapos na ang mabilisang orientation!</translation>
 <translation id="5534303576632885660">hdr</translation>
 <translation id="5539820223028224601">Gainsboro</translation>
+<translation id="554893713779400387">I-toggle ang pagdidikta</translation>
 <translation id="5549179427201066174">I-on o i-off ang feedback ng tunog (mga earcon)</translation>
 <translation id="556042886152191864">Pindutan</translation>
 <translation id="5561345396546889625">Susunod na listahan</translation>
@@ -684,6 +685,8 @@
 <translation id="5623842676595125836">Log</translation>
 <translation id="5628125749885014029">h4</translation>
 <translation id="5632083598315326067">Simbolo ng graphics</translation>
+<translation id="5648939288050772726">Congratulations! Matagumpay mong natutunan ang mga kinakailangan sa paggamit ng ChromeVox. Tandaang mabubuksan mo ang menu ng command sa ChromeVox anumang oras sa pamamagitan ng pagpindot sa Paghahanap+Tuldok. Para matuto pa tungkol sa ChromeVox at ChromeOS, bisitahin ang mga sumusunod na artikulo.
+    Kung tapos ka na sa tutorial, gamitin ang ChromeVox para mag-navigate papunta sa button na Isara at i-click ito.</translation>
 <translation id="5653397561111110475">Gamitin ang mga feature sa pagiging naa-access ng touch screen ng Chromebook</translation>
 <translation id="5655682562155942719">Mga Command sa Paglaktaw</translation>
 <translation id="56637627897541303">Lugar ng text</translation>
@@ -793,6 +796,7 @@
 <translation id="641759969622533235">{COUNT,plural, =1{tutuldok}one{# tutuldok}other{# na tutuldok}}</translation>
 <translation id="6444046323172968959">Dialog ng alerto</translation>
 <translation id="6452403590345320472">Talaan ng mga nilalaman</translation>
+<translation id="6457542714329819968">uri</translation>
 <translation id="6468049171101508116">Susunod na button</translation>
 <translation id="646954774886932461">Index</translation>
 <translation id="6475604559827479857">Kulay para sa mga pag-highlight ng salita:</translation>
@@ -965,8 +969,6 @@
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7713139339518499741">Natural na boses</translation>
 <translation id="7714340021005120797">Walang susunod na combo box</translation>
-<translation id="772146615414628379">Binabati ka namin! Matagumpay mong natutunan ang mga kinakailangan sa paggamit ng ChromeVox. Tandaang mabubuksan mo ang menu ng command sa ChromeVox anumang oras sa pamamagitan ng pagpindot sa Paghahanap+Tuldok. Para matuto pa tungkol sa ChromeVox at Chrome OS, bisitahin ang mga sumusunod na artikulo.
-    Kung tapos ka na sa tutorial, gamitin ang ChromeVox para mag-navigate sa button na Isara at i-click ito.</translation>
 <translation id="7724603315864178912">I-cut</translation>
 <translation id="7731785449856576010">Walang susunod na widget ng media</translation>
 <translation id="7735498529470878067">Makakatulong sa iyo ang explore by touch na makakuha kaagad ng ideya kung ano ang nasa screen.</translation>
@@ -1168,6 +1170,7 @@
 <translation id="9223032053830369045">Dark Red</translation>
 <translation id="923331726185079994">Na-update ang ChromeVox</translation>
 <translation id="93384979447910801">Dark Sea Green</translation>
+<translation id="937605981140327129">Kasalukuyang hindi naka-install ang TalkBack. Paki-install ang Accessibility Suite ng Android sa pamamagitan ng Play Store at subukan ulit.</translation>
 <translation id="948171205378458592">Bawasan ang rate ng speech</translation>
 <translation id="957570623732056069">Mag-swipe pakaliwa o pakanan gamit ang isang daliri para i-navigate ang araling ito</translation>
 <translation id="958854023026327378">Mag-swipe pababa gamit ang isang daliri</translation>

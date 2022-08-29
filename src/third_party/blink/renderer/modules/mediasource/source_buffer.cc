@@ -43,6 +43,7 @@
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_source_buffer.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_throw_dom_exception.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_audio_decoder_config.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_encoded_audio_chunk.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_encoded_video_chunk.h"
@@ -55,7 +56,7 @@
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/events/event_queue.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
-#include "third_party/blink/renderer/core/frame/deprecation.h"
+#include "third_party/blink/renderer/core/frame/deprecation/deprecation.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/html/time_ranges.h"
 #include "third_party/blink/renderer/core/html/track/audio_track.h"
@@ -219,9 +220,7 @@ SourceBuffer::SourceBuffer(std::unique_ptr<WebSourceBuffer> web_source_buffer,
   DCHECK(web_source_buffer_);
   DCHECK(source_);
 
-  scoped_refptr<MediaSourceAttachmentSupplement> attachment;
-  MediaSourceTracer* tracer;
-  std::tie(attachment, tracer) = source_->AttachmentAndTracer();
+  auto [attachment, tracer] = source_->AttachmentAndTracer();
   DCHECK(attachment);
 
   if (GetExecutionContext()->IsWindow()) {
@@ -1157,7 +1156,8 @@ void SourceBuffer::AbortIfUpdating() {
     // TODO(crbug.com/1144908): Consider moving this verbosity to eventual
     // specification.
     DCHECK(append_encoded_chunks_resolver_);
-    append_encoded_chunks_resolver_->Reject(MakeGarbageCollected<DOMException>(
+    append_encoded_chunks_resolver_->Reject(V8ThrowDOMException::CreateOrDie(
+        append_encoded_chunks_resolver_->GetScriptState()->GetIsolate(),
         DOMExceptionCode::kAbortError, "Aborted by explicit abort()"));
     append_encoded_chunks_resolver_ = nullptr;
     TRACE_EVENT_NESTABLE_ASYNC_END0(
@@ -1231,9 +1231,7 @@ void SourceBuffer::RemoveMediaTracks() {
   DCHECK(HTMLMediaElement::MediaTracksEnabledInternally());
   DCHECK(source_);
 
-  scoped_refptr<MediaSourceAttachmentSupplement> attachment;
-  MediaSourceTracer* tracer;
-  std::tie(attachment, tracer) = source_->AttachmentAndTracer();
+  auto [attachment, tracer] = source_->AttachmentAndTracer();
   DCHECK(attachment);
 
   // One path leading to here is from |source_|'s ContextDestroyed(), so we
@@ -1345,9 +1343,7 @@ void SourceBuffer::RemoveMediaTracks() {
 
 double SourceBuffer::GetMediaTime() {
   DCHECK(source_);
-  scoped_refptr<MediaSourceAttachmentSupplement> attachment;
-  MediaSourceTracer* tracer;
-  std::tie(attachment, tracer) = source_->AttachmentAndTracer();
+  auto [attachment, tracer] = source_->AttachmentAndTracer();
   DCHECK(attachment);
   return attachment->GetRecentMediaTime(tracer).InSecondsF();
 }
@@ -1521,9 +1517,7 @@ bool SourceBuffer::InitializationSegmentReceived(
   DCHECK(source_);
   source_->AssertAttachmentsMutexHeldIfCrossThreadForDebugging();
 
-  scoped_refptr<MediaSourceAttachmentSupplement> attachment;
-  MediaSourceTracer* tracer;
-  std::tie(attachment, tracer) = source_->AttachmentAndTracer();
+  auto [attachment, tracer] = source_->AttachmentAndTracer();
   DCHECK(attachment);
   DCHECK_EQ(!tracer, !IsMainThread());
 
@@ -1902,8 +1896,8 @@ bool SourceBuffer::AllocatePendingAppendData(wtf_size_t size) {
   DCHECK(!pending_append_data_offset_);
 
   pending_append_data_.reset(static_cast<unsigned char*>(
-      WTF::Partitions::BufferPartition()->AllocFlags(
-          base::PartitionAllocReturnNull, size, "MsePendingAppend")));
+      WTF::Partitions::BufferPartition()->AllocWithFlags(
+          partition_alloc::AllocFlags::kReturnNull, size, "MsePendingAppend")));
 
   if (!pending_append_data_)
     return false;
@@ -1931,9 +1925,7 @@ bool SourceBuffer::PrepareAppend(double media_time,
   // 3. If the HTMLMediaElement.error attribute is not null, then throw an
   //    InvalidStateError exception and abort these steps.
   DCHECK(source_);
-  scoped_refptr<MediaSourceAttachmentSupplement> attachment;
-  MediaSourceTracer* tracer;
-  std::tie(attachment, tracer) = source_->AttachmentAndTracer();
+  auto [attachment, tracer] = source_->AttachmentAndTracer();
   DCHECK(attachment);
   DCHECK_EQ(!tracer, !IsMainThread());
   if (attachment->GetElementError(tracer)) {
@@ -2174,7 +2166,8 @@ void SourceBuffer::AppendEncodedChunksAsyncPart_Locked(
     // attachment will send updated buffered and seekable information to the
     // main thread here, too.
     AppendError(pass_key);
-    append_encoded_chunks_resolver_->Reject(MakeGarbageCollected<DOMException>(
+    append_encoded_chunks_resolver_->Reject(V8ThrowDOMException::CreateOrDie(
+        append_encoded_chunks_resolver_->GetScriptState()->GetIsolate(),
         DOMExceptionCode::kSyntaxError,
         "Parsing or frame processing error while buffering encoded chunks."));
     append_encoded_chunks_resolver_ = nullptr;

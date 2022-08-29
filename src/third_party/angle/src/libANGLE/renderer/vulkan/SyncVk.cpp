@@ -93,7 +93,10 @@ angle::Result SyncHelper::initialize(ContextVk *contextVk, bool isEglSyncObject)
     //   will also be aware that it's finished (based on the serial) and won't incur a further wait
     //   (for example when a buffer is mapped).
     //
-    retain(&contextVk->getResourceUseList());
+    ResourceUseList resourceUseList;
+    retain(&resourceUseList);
+    contextVk->getShareGroupVk()->acquireResourceUseList(std::move(resourceUseList));
+
     return contextVk->flushImpl(nullptr, RenderPassClosureReason::SyncObjectInit);
 }
 
@@ -143,7 +146,7 @@ angle::Result SyncHelper::serverWait(ContextVk *contextVk)
     // Every resource already tracks its usage and issues the appropriate barriers, so there's
     // really nothing to do here.  An execution barrier is issued to strictly satisfy what the
     // application asked for.
-    vk::CommandBuffer *commandBuffer;
+    vk::OutsideRenderPassCommandBuffer *commandBuffer;
     ANGLE_TRY(contextVk->getOutsideRenderPassCommandBuffer({}, &commandBuffer));
     commandBuffer->pipelineBarrier(VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
                                    VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, 0, 0, nullptr, 0, nullptr, 0,
@@ -226,7 +229,9 @@ angle::Result SyncHelperNativeFence::initializeWithFd(ContextVk *contextVk, int 
     // Flush first because the fence comes after current pending set of commands.
     ANGLE_TRY(contextVk->flushImpl(nullptr, RenderPassClosureReason::SyncObjectWithFdInit));
 
-    retain(&contextVk->getResourceUseList());
+    ResourceUseList resourceUseList;
+    retain(&resourceUseList);
+    contextVk->getShareGroupVk()->acquireResourceUseList(std::move(resourceUseList));
 
     Serial serialOut;
     // exportFd is exporting VK_EXTERNAL_FENCE_HANDLE_TYPE_SYNC_FD_BIT_KHR type handle which
@@ -279,7 +284,7 @@ angle::Result SyncHelperNativeFence::clientWait(Context *context,
     }
 
     VkResult status = VK_SUCCESS;
-    if (mUse.valid())
+    if (mUse.getSerial().valid())
     {
         // We have a valid serial to wait on
         ANGLE_TRY(
@@ -318,9 +323,6 @@ angle::Result SyncHelperNativeFence::serverWait(ContextVk *contextVk)
     importFdInfo.fd                         = dup(mNativeFenceFd);
     ANGLE_VK_TRY(contextVk, waitSemaphore.get().importFd(device, importFdInfo));
 
-    // Flush current work, block after current pending commands.
-    ANGLE_TRY(contextVk->flushImpl(nullptr, RenderPassClosureReason::SyncObjectServerWait));
-
     // Add semaphore to next submit job.
     contextVk->addWaitSemaphore(waitSemaphore.get().getHandle(),
                                 VK_PIPELINE_STAGE_ALL_COMMANDS_BIT);
@@ -331,7 +333,7 @@ angle::Result SyncHelperNativeFence::serverWait(ContextVk *contextVk)
 angle::Result SyncHelperNativeFence::getStatus(Context *context, bool *signaled) const
 {
     // We've got a serial, check if the serial is still in use
-    if (mUse.valid())
+    if (mUse.getSerial().valid())
     {
         *signaled = !isCurrentlyInUse(context->getRenderer()->getLastCompletedQueueSerial());
         return angle::Result::Continue;

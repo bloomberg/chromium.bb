@@ -23,7 +23,7 @@ public:
     inline static constexpr Kind kProgramElementKind = Kind::kModifiers;
 
     ModifiersDeclaration(const Modifiers* modifiers)
-        : INHERITED(-1, kProgramElementKind)
+        : INHERITED(Position(), kProgramElementKind)
         , fModifiers(modifiers) {}
 
     const Modifiers& modifiers() const {
@@ -34,7 +34,7 @@ public:
         return std::make_unique<ModifiersDeclaration>(&this->modifiers());
     }
 
-    String description() const override {
+    std::string description() const override {
         return this->modifiers().description() + ";";
     }
 

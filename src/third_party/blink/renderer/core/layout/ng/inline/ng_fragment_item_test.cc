@@ -18,13 +18,8 @@ using testing::ElementsAre;
 
 namespace blink {
 
-// We enable LayoutNGFragmentTraversal here, so that we get the "first/last for
-// node" bits set as appropriate.
-class NGFragmentItemTest : public NGLayoutTest,
-                           ScopedLayoutNGFragmentTraversalForTest {
+class NGFragmentItemTest : public NGLayoutTest {
  public:
-  NGFragmentItemTest() : ScopedLayoutNGFragmentTraversalForTest(true) {}
-
   void ForceLayout() { RunDocumentLifecycle(); }
 
   LayoutBlockFlow* GetLayoutBlockFlowByElementId(const char* id) {
@@ -105,8 +100,6 @@ TEST_F(NGFragmentItemTest, CopyMove) {
   // Test moving a line item.
   NGFragmentItem move_of_line(std::move(copy_of_line));
   EXPECT_EQ(move_of_line.LineBoxFragment(), line_item->LineBoxFragment());
-  // After the move, the source fragment should be released.
-  EXPECT_EQ(copy_of_line.LineBoxFragment(), nullptr);
   EXPECT_TRUE(move_of_line.IsInkOverflowComputed());
 
   // To test moving ink overflow, add an ink overflow to |move_of_line|.

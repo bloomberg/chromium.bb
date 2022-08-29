@@ -33,6 +33,7 @@
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_manager.h"
 #include "media/audio/mac/scoped_audio_unit.h"
+#include "media/audio/system_glitch_reporter.h"
 #include "media/base/audio_parameters.h"
 
 namespace media {
@@ -65,7 +66,7 @@ class AudioPullFifo;
 // TODO(tommi): Since the callback audio thread is shared for all instances of
 // AUHALStream, one stream blocking, can cause others to be delayed.  Several
 // occurrances of this can cause a buildup of delay which forces the OS
-// to skip rendering frames. One known cause of this is the synchronzation
+// to skip rendering frames. One known cause of this is the synchronization
 // between the browser and render process in AudioSyncReader.
 // We need to fix this.
 
@@ -200,9 +201,10 @@ class AUHALStream : public AudioOutputStream {
   // NOTE: Float64 and UInt32 types are used for native API compatibility.
   Float64 last_sample_time_ GUARDED_BY(lock_);
   UInt32 last_number_of_frames_ GUARDED_BY(lock_);
-  UInt32 total_lost_frames_ GUARDED_BY(lock_);
-  UInt32 largest_glitch_frames_ GUARDED_BY(lock_);
-  int glitches_detected_ GUARDED_BY(lock_);
+
+  // Used to aggregate and report glitch metrics to UMA (periodically) and to
+  // text logs (when a stream ends).
+  SystemGlitchReporter glitch_reporter_ GUARDED_BY(lock_);
 
   // Used to defer Start() to workaround http://crbug.com/160920.
   base::CancelableOnceClosure deferred_start_cb_;

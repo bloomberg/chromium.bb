@@ -12,7 +12,6 @@
 #include <string>
 #include <vector>
 
-#include "base/compiler_specific.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
@@ -41,6 +40,7 @@ class TextureLayer;
 namespace gfx {
 class RoundedCornersF;
 class Transform;
+class LinearGradient;
 }  // namespace gfx
 
 namespace viz {
@@ -122,6 +122,11 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   void SetCompositor(Compositor* compositor,
                      scoped_refptr<cc::Layer> root_layer);
   void ResetCompositor();
+
+  // These should be private, but they're used by HideHelper, which needs to
+  // do part but not all of what SetCompositor/ResetCompositor do.
+  void SetCompositorForAnimatorsInTree(Compositor* compositor);
+  void ResetCompositorForAnimatorsInTree(Compositor* compositor);
 
   LayerDelegate* delegate() { return delegate_; }
   void set_delegate(LayerDelegate* delegate) { delegate_ = delegate; }
@@ -319,6 +324,12 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   void SetRoundedCornerRadius(const gfx::RoundedCornersF& corner_radii);
   const gfx::RoundedCornersF& rounded_corner_radii() const {
     return cc_layer_->corner_radii();
+  }
+
+  // Gets/sets a gradient mask that is applied to the clip bounds on the layer
+  void SetGradientMask(const gfx::LinearGradient& linear_gradient);
+  const gfx::LinearGradient gradient_mask() const {
+    return cc_layer_->gradient_mask();
   }
 
   // If set to true, this layer would not trigger a render surface (if possible)
@@ -578,6 +589,8 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   void SetRoundedCornersFromAnimation(
       const gfx::RoundedCornersF& rounded_corners,
       PropertyChangeReason reason) override;
+  void SetGradientMaskFromAnimation(const gfx::LinearGradient& gradient_mask,
+                                    PropertyChangeReason reason) override;
   void ScheduleDrawForAnimation() override;
   const gfx::Rect& GetBoundsForAnimation() const override;
   gfx::Transform GetTransformForAnimation() const override;
@@ -588,6 +601,7 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   SkColor GetColorForAnimation() const override;
   gfx::Rect GetClipRectForAnimation() const override;
   gfx::RoundedCornersF GetRoundedCornersForAnimation() const override;
+  gfx::LinearGradient GetGradientMaskForAnimation() const override;
   float GetDeviceScaleFactor() const override;
   Layer* GetLayer() override;
   cc::Layer* GetCcLayer() const override;
@@ -613,10 +627,7 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   // animations handled by old cc layer before the switch, |this| could be
   // released by an animation observer. Returns false when it happens and
   // callers should take cautions as well. Otherwise returns true.
-  bool SwitchToLayer(scoped_refptr<cc::Layer> new_layer) WARN_UNUSED_RESULT;
-
-  void SetCompositorForAnimatorsInTree(Compositor* compositor);
-  void ResetCompositorForAnimatorsInTree(Compositor* compositor);
+  [[nodiscard]] bool SwitchToLayer(scoped_refptr<cc::Layer> new_layer);
 
   void OnMirrorDestroyed(LayerMirror* mirror);
 

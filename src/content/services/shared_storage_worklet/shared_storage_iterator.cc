@@ -4,6 +4,7 @@
 
 #include "content/services/shared_storage_worklet/shared_storage_iterator.h"
 
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/services/shared_storage_worklet/worklet_v8_helper.h"
 #include "gin/arguments.h"
 #include "gin/dictionary.h"
@@ -64,7 +65,7 @@ v8::Local<v8::Promise> SharedStorageIterator::Next(gin::Arguments* args) {
 v8::Local<v8::Promise> SharedStorageIterator::NextHelper(
     v8::Isolate* isolate,
     v8::Local<v8::Promise::Resolver> resolver) {
-  v8::Local<v8::Context> context = resolver->CreationContext();
+  v8::Local<v8::Context> context = resolver->GetCreationContextChecked();
   v8::Local<v8::Promise> promise = resolver->GetPromise();
 
   if (has_error_) {
@@ -132,7 +133,7 @@ void SharedStorageIterator::DidReadEntries(
         global_resolver.Get(isolate);
     global_resolver.Reset();
 
-    v8::Local<v8::Context> context = next_resolver->CreationContext();
+    v8::Local<v8::Context> context = next_resolver->GetCreationContextChecked();
     v8::Context::Scope context_scope(context);
 
     NextHelper(isolate, next_resolver);
@@ -151,10 +152,11 @@ v8::Local<v8::Object> SharedStorageIterator::CreateIteratorResult(
 
   switch (mode_) {
     case Mode::kKey:
-      dict.Set<std::string>("value", entry->key);
+      dict.Set<std::u16string>("value", entry->key);
       break;
     case Mode::kKeyValue:
-      dict.Set<std::vector<std::string>>("value", {entry->key, entry->value});
+      dict.Set<std::vector<std::u16string>>("value",
+                                            {entry->key, entry->value});
       break;
   }
   return obj;

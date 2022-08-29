@@ -10,6 +10,7 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.price_tracking.PriceDropNotificationManager;
+import org.chromium.chrome.browser.price_tracking.PriceTrackingUtilities;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.state.ShoppingPersistedTabData;
 
@@ -189,8 +190,11 @@ public class PriceMessageService extends MessageService {
                 return false;
             }
             // When PriceWelcomeMessageCard is available, it takes priority over
-            // PriceAlertsMessageCard.
-            PriceTrackingUtilities.decreasePriceAlertsMessageCardShowCount();
+            // PriceAlertsMessageCard which will be removed first. This should be called only if
+            // PriceAlertsMessageCard is currently enabled.
+            if (PriceTrackingUtilities.isPriceAlertsMessageCardEnabled()) {
+                PriceTrackingUtilities.decreasePriceAlertsMessageCardShowCount();
+            }
         } else if (type == PriceMessageType.PRICE_ALERTS) {
             PriceTrackingUtilities.increasePriceAlertsMessageCardShowCount();
             if (PriceTrackingUtilities.getPriceAlertsMessageCardShowCount()

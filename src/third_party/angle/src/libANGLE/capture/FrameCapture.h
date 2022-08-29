@@ -11,6 +11,7 @@
 #define LIBANGLE_FRAME_CAPTURE_H_
 
 #include "common/PackedEnums.h"
+#include "common/system_utils.h"
 #include "libANGLE/Context.h"
 #include "libANGLE/angletypes.h"
 #include "libANGLE/capture/frame_capture_utils_autogen.h"
@@ -217,6 +218,7 @@ class ReplayWriter final : angle::NonCopyable
     ReplayWriter();
     ~ReplayWriter();
 
+    void setSourceFileSizeThreshold(size_t sourceFileSizeThreshold);
     void setFilenamePattern(const std::string &pattern);
     void setCaptureLabel(const std::string &label);
     void setSourcePrologue(const std::string &prologue);
@@ -235,7 +237,8 @@ class ReplayWriter final : angle::NonCopyable
                                                const std::vector<std::string> &strings,
                                                bool *isNewEntryOut);
 
-    void saveFrame(uint32_t frameIndex);
+    void saveFrame();
+    void saveFrameIfFull();
     void saveIndexFilesAndHeader();
     void saveSetupFile();
 
@@ -247,6 +250,10 @@ class ReplayWriter final : angle::NonCopyable
     void saveHeader();
     void writeReplaySource(const std::string &filename);
     void addWrittenFile(const std::string &filename);
+    size_t getStoredReplaySourceSize() const;
+
+    size_t mSourceFileSizeThreshold;
+    size_t mFrameIndex;
 
     DataTracker mDataTracker;
     std::string mFilenamePattern;
@@ -283,9 +290,13 @@ class TrackedResource final : angle::NonCopyable
     TrackedResource();
     ~TrackedResource();
 
+    const ResourceSet &getStartingResources() const { return mStartingResources; }
     ResourceSet &getStartingResources() { return mStartingResources; }
+    const ResourceSet &getNewResources() const { return mNewResources; }
     ResourceSet &getNewResources() { return mNewResources; }
+    const ResourceSet &getResourcesToRegen() const { return mResourcesToRegen; }
     ResourceSet &getResourcesToRegen() { return mResourcesToRegen; }
+    const ResourceSet &getResourcesToRestore() const { return mResourcesToRestore; }
     ResourceSet &getResourcesToRestore() { return mResourcesToRestore; }
 
     void setGennedResource(GLuint id);
@@ -297,7 +308,7 @@ class TrackedResource final : angle::NonCopyable
     ResourceCalls &getResourceRestoreCalls() { return mResourceRestoreCalls; }
 
   private:
-    // Resource regen calls will delete and gen a resource
+    // Resource regen calls will gen a resource
     ResourceCalls mResourceRegenCalls;
     // Resource restore calls will restore the contents of a resource
     ResourceCalls mResourceRestoreCalls;
@@ -416,6 +427,32 @@ using SurfaceParamsMap = std::map<gl::ContextID, SurfaceParams>;
 
 using CallVector = std::vector<std::vector<CallCapture> *>;
 
+// A map from API entry point to calls
+using CallResetMap = std::map<angle::EntryPoint, std::vector<CallCapture>>;
+
+// StateResetHelper provides a simple way to track whether an entry point has been called during the
+// trace, along with the reset calls to get it back to starting state.  This is useful for things
+// that are one dimensional, like context bindings or context state.
+class StateResetHelper final : angle::NonCopyable
+{
+  public:
+    StateResetHelper();
+    ~StateResetHelper();
+
+    const std::set<angle::EntryPoint> &getDirtyEntryPoints() const { return mDirtyEntryPoints; }
+    void setEntryPointDirty(EntryPoint entryPoint) { mDirtyEntryPoints.insert(entryPoint); }
+
+    CallResetMap &getResetCalls() { return mResetCalls; }
+    const CallResetMap &getResetCalls() const { return mResetCalls; }
+
+  private:
+    // Dirty state per entry point
+    std::set<angle::EntryPoint> mDirtyEntryPoints;
+
+    // Reset calls per API entry point
+    CallResetMap mResetCalls;
+};
+
 class FrameCapture final : angle::NonCopyable
 {
   public:
@@ -425,10 +462,126 @@ class FrameCapture final : angle::NonCopyable
     std::vector<CallCapture> &getSetupCalls() { return mSetupCalls; }
     void clearSetupCalls() { mSetupCalls.clear(); }
 
+    StateResetHelper &getStateResetHelper() { return mStateResetHelper; }
+    const StateResetHelper &getStateResetHelper() const { return mStateResetHelper; }
+
     void reset();
 
   private:
     std::vector<CallCapture> mSetupCalls;
+
+    StateResetHelper mStateResetHelper;
+};
+
+// Page range inside a coherent buffer
+struct PageRange
+{
+    PageRange(size_t start, size_t end);
+    ~PageRange();
+
+    // Relative start page
+    size_t start;
+
+    // First page after the relative end
+    size_t end;
+};
+
+// Memory address range defined by start and size
+struct AddressRange
+{
+    AddressRange();
+    AddressRange(uintptr_t start, size_t size);
+    ~AddressRange();
+
+    uintptr_t end();
+
+    uintptr_t start;
+    size_t size;
+};
+
+// Used to handle protection of buffers that overlap in pages.
+enum class PageSharingType
+{
+    NoneShared,
+    FirstShared,
+    LastShared,
+    FirstAndLastShared
+};
+
+class CoherentBuffer
+{
+  public:
+    CoherentBuffer(uintptr_t start, size_t size, size_t pageSize);
+    ~CoherentBuffer();
+
+    // Sets the a range in the buffer clean and protects a selected range
+    void protectPageRange(const PageRange &pageRange);
+
+    // Sets a page dirty state and sets it's protection
+    void setDirty(size_t relativePage, bool dirty);
+
+    // Removes protection
+    void removeProtection(PageSharingType sharingType);
+
+    bool contains(size_t page, size_t *relativePage);
+    bool isDirty();
+
+    // Returns dirty page ranges
+    std::vector<PageRange> getDirtyPageRanges();
+
+    // Calculates address range from page range
+    AddressRange getDirtyAddressRange(const PageRange &dirtyPageRange);
+    AddressRange getRange();
+
+  private:
+    // Actual buffer start and size
+    AddressRange mRange;
+
+    // Start and size of page aligned protected area
+    AddressRange mProtectionRange;
+
+    // Start and end of protection in relative pages, calculated from mProtectionRange.
+    size_t mProtectionStartPage;
+    size_t mProtectionEndPage;
+
+    size_t mPageCount;
+    size_t mPageSize;
+
+    // Clean pages are protected
+    std::vector<bool> mDirtyPages;
+};
+
+class CoherentBufferTracker final : angle::NonCopyable
+{
+  public:
+    CoherentBufferTracker();
+    ~CoherentBufferTracker();
+
+    bool isDirty(gl::BufferID id);
+    void addBuffer(gl::BufferID id, uintptr_t start, size_t size);
+    void removeBuffer(gl::BufferID id);
+    void disable();
+    void enable();
+    void onEndFrame();
+
+  private:
+    // Detect overlapping pages when removing protection
+    PageSharingType doesBufferSharePage(gl::BufferID id);
+
+    // Returns a map to found buffers and the corresponding pages for a given address.
+    // For addresses that are in a page shared by 2 buffers, 2 results are returned.
+    HashMap<std::shared_ptr<CoherentBuffer>, size_t> getBufferPagesForAddress(uintptr_t address);
+    PageFaultHandlerRangeType handleWrite(uintptr_t address);
+    bool haveBuffer(gl::BufferID id);
+
+  public:
+    std::mutex mMutex;
+    HashMap<GLuint, std::shared_ptr<CoherentBuffer>> mBuffers;
+
+  private:
+    bool mEnabled = false;
+    std::unique_ptr<PageFaultHandler> mPageFaultHandler;
+    size_t mPageSize;
 };
 
 // Shared class for any items that need to be tracked by FrameCapture across shared contexts
@@ -454,9 +607,11 @@ class FrameCaptureShared final : angle::NonCopyable
 
     void trackBufferMapping(CallCapture *call,
                             gl::BufferID id,
+                            gl::Buffer *buffer,
                             GLintptr offset,
                             GLsizeiptr length,
-                            bool writable);
+                            bool writable,
+                            bool coherent);
 
     void trackTextureUpdate(const gl::Context *context, const CallCapture &call);
 
@@ -484,6 +639,9 @@ class FrameCaptureShared final : angle::NonCopyable
                                                     gl::TextureTarget target,
                                                     GLint level,
                                                     EntryPoint entryPoint);
+
+    // Capture coherent buffer storages
+    void captureCoherentBufferSnapshot(const gl::Context *context, gl::BufferID bufferID);
 
     // Remove any cached texture levels on deletion
     void deleteCachedTextureLevelData(gl::TextureID id);
@@ -565,7 +723,8 @@ class FrameCaptureShared final : angle::NonCopyable
     void writeJSON(const gl::Context *context);
     void writeCppReplayIndexFiles(const gl::Context *context, bool writeResetContextCall);
     void writeMainContextCppReplay(const gl::Context *context,
-                                   const std::vector<CallCapture> &setupCalls);
+                                   const std::vector<CallCapture> &setupCalls,
+                                   const StateResetHelper &StateResetHelper);
 
     void captureClientArraySnapshot(const gl::Context *context,
                                     size_t vertexCount,
@@ -592,6 +751,7 @@ class FrameCaptureShared final : angle::NonCopyable
     void maybeCaptureDrawElementsClientData(const gl::Context *context,
                                             CallCapture &call,
                                             size_t instanceCount);
+    void maybeCaptureCoherentBuffers(const gl::Context *context);
     void updateCopyImageSubData(CallCapture &call);
     void overrideProgramBinary(const gl::Context *context,
                                CallCapture &call,
@@ -635,6 +795,7 @@ class FrameCaptureShared final : angle::NonCopyable
     std::string mValidationExpression;
     bool mTrimEnabled = true;
     PackedEnumMap<ResourceIDType, uint32_t> mMaxAccessedResourceIDs;
+    CoherentBufferTracker mCoherentBufferTracker;
 
     ResourceTracker mResourceTracker;
     ReplayWriter mReplayWriter;
@@ -647,12 +808,11 @@ class FrameCaptureShared final : angle::NonCopyable
     bool mCaptureActive;
     std::vector<uint32_t> mActiveFrameIndices;
 
+    bool mMidExecutionCaptureActive;
+
     // Cache most recently compiled and linked sources.
     ShaderSourceMap mCachedShaderSource;
     ProgramSourceMap mCachedProgramSources;
-
-    // Cache a shadow copy of texture level data
-    TextureLevelDataMap mCachedTextureLevelData;
 
     gl::ContextID mWindowSurfaceContextID;
 
@@ -790,6 +950,16 @@ void WriteParamValueReplay<ParamType::TGLfloatConstPointer>(std::ostream &os,
                                                             const GLfloat *value);
 
 template <>
+void WriteParamValueReplay<ParamType::TGLintConstPointer>(std::ostream &os,
+                                                          const CallCapture &call,
+                                                          const GLint *value);
+
+template <>
+void WriteParamValueReplay<ParamType::TGLsizeiPointer>(std::ostream &os,
+                                                       const CallCapture &call,
+                                                       GLsizei *value);
+
+template <>
 void WriteParamValueReplay<ParamType::TGLuintConstPointer>(std::ostream &os,
                                                            const CallCapture &call,
                                                            const GLuint *value);
@@ -923,6 +1093,10 @@ template <>
 void WriteParamValueReplay<ParamType::TEGLSetBlobFuncANDROID>(std::ostream &os,
                                                               const CallCapture &call,
                                                               EGLSetBlobFuncANDROID value);
+template <>
+void WriteParamValueReplay<ParamType::TEGLClientBuffer>(std::ostream &os,
+                                                        const CallCapture &call,
+                                                        EGLClientBuffer value);
 
 // General fallback for any unspecific type.
 template <ParamType ParamT, typename T>

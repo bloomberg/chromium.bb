@@ -45,14 +45,13 @@ class IVFVideoSource : public CompressedVideoSource {
   virtual void Init() {
     // Allocate a buffer for read in the compressed video frame.
     compressed_frame_buf_ = new uint8_t[kCodeBufferSize];
-    ASSERT_TRUE(compressed_frame_buf_ != NULL)
-        << "Allocate frame buffer failed";
+    ASSERT_NE(compressed_frame_buf_, nullptr) << "Allocate frame buffer failed";
     ASAN_POISON_MEMORY_REGION(compressed_frame_buf_, kCodeBufferSize);
   }
 
   virtual void Begin() {
     input_file_ = OpenTestDataFile(file_name_);
-    ASSERT_TRUE(input_file_ != NULL)
+    ASSERT_NE(input_file_, nullptr)
         << "Input file open failed. Filename: " << file_name_;
 
     // Read file header
@@ -73,7 +72,7 @@ class IVFVideoSource : public CompressedVideoSource {
   }
 
   void FillFrame() {
-    ASSERT_TRUE(input_file_ != NULL);
+    ASSERT_NE(input_file_, nullptr);
     uint8_t frame_hdr[kIvfFrameHdrSize];
     // Check frame header and read a frame from input_file.
     if (fread(frame_hdr, 1, kIvfFrameHdrSize, input_file_) !=

@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/run_loop.h"
+#include "base/strings/escape.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
@@ -62,10 +63,11 @@
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/browsing_data_remover_test_util.h"
+#include "content/public/test/fenced_frame_test_util.h"
 #include "content/public/test/no_renderer_crashes_assertion.h"
+#include "content/public/test/prerender_test_util.h"
 #include "content/public/test/url_loader_interceptor.h"
 #include "content/public/test/url_loader_monitor.h"
-#include "net/base/escape.h"
 #include "net/base/features.h"
 #include "net/base/load_flags.h"
 #include "net/base/request_priority.h"
@@ -88,7 +90,7 @@ const char kExpectedPurposeHeaderOnPrefetch[] = "Purpose";
 
 std::string CreateServerRedirect(const std::string& dest_url) {
   const char* const kServerRedirectBase = "/server-redirect?";
-  return kServerRedirectBase + net::EscapeQueryParamValue(dest_url, false);
+  return kServerRedirectBase + base::EscapeQueryParamValue(dest_url, false);
 }
 
 // This is the public key of tools/origin_trials/eftest.key, used to validate
@@ -280,7 +282,7 @@ class NoStatePrefetchBrowserTest
     command_line->AppendSwitchASCII(embedder_support::kOriginTrialPublicKey,
                                     kOriginTrialPublicKeyForTesting);
     command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
-                                    "SpeculationRulesPrefetchProxy");
+                                    "SpeculationRulesPrefetchWithSubresources");
   }
 
   void SetUpOnMainThread() override {
@@ -367,7 +369,7 @@ class NoStatePrefetchBrowserTest
     base::ListValue* history_list;
     if (!prerender_dict->GetList("history", &history_list))
       return std::numeric_limits<size_t>::max();
-    return history_list->GetList().size();
+    return history_list->GetListDeprecated().size();
   }
 
   // Clears the specified data using BrowsingDataRemover.
@@ -391,7 +393,8 @@ class NoStatePrefetchBrowserTest
                          const GURL& ping_url,
                          bool new_web_contents) const {
     content::WebContents* web_contents = GetActiveWebContents();
-    content::RenderFrameHost* render_frame_host = web_contents->GetMainFrame();
+    content::RenderFrameHost* render_frame_host =
+        web_contents->GetPrimaryMainFrame();
     // Extra arguments in JS are ignored.
     std::string javascript =
         base::StringPrintf("%s('%s', '%s')", javascript_function_name.c_str(),
@@ -400,7 +403,7 @@ class NoStatePrefetchBrowserTest
     if (new_web_contents) {
       NewTabNavigationOrSwapObserver observer;
       render_frame_host->ExecuteJavaScriptWithUserGestureForTests(
-          base::ASCIIToUTF16(javascript));
+          base::ASCIIToUTF16(javascript), base::NullCallback());
       observer.Wait();
     } else {
       NavigationOrSwapObserver observer(current_browser()->tab_strip_model(),
@@ -416,7 +419,7 @@ class NoStatePrefetchBrowserTest
   }
 
   void OpenDestURLViaClickNewForegroundTab(GURL& dest_url) const {
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
     OpenURLWithJSImpl("MetaShiftClick", dest_url, GURL(), true);
 #else
     OpenURLWithJSImpl("CtrlShiftClick", dest_url, GURL(), true);
@@ -436,8 +439,9 @@ class NoStatePrefetchBrowserTestHttpCache
   void SetUp() override {
     bool split_cache_by_network_isolation_key = GetParam();
     if (split_cache_by_network_isolation_key) {
-      feature_list_.InitAndEnableFeature(
-          net::features::kSplitCacheByNetworkIsolationKey);
+      feature_list_.InitWithFeatures(
+          {net::features::kSplitCacheByNetworkIsolationKey},
+          {net::features::kForceIsolationInfoFrameOriginToTopLevelFrame});
     } else {
       feature_list_.InitAndDisableFeature(
           net::features::kSplitCacheByNetworkIsolationKey);
@@ -1050,7 +1054,7 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchSimultaneous) {
   // back/forward cache to ensure that it doesn't get preserved in the cache.
   content::DisableBackForwardCacheForTesting(
       GetActiveWebContents(),
-      content::BackForwardCache::TEST_ASSUMES_NO_CACHING);
+      content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
   GURL first_url = src_server()->GetURL("/hung");
 
   // Start the first prefetch directly instead of via PrefetchFromFile for the
@@ -1140,7 +1144,7 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, Prefetch301Subresource) {
 // Checks a client redirect is not followed.
 IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchClientRedirect) {
   PrefetchFromFile(
-      "/client-redirect/?" + net::EscapeQueryParamValue(kPrefetchPage, false),
+      "/client-redirect/?" + base::EscapeQueryParamValue(kPrefetchPage, false),
       FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
   ASSERT_TRUE(ui_test_utils::NavigateToURL(
       current_browser(), src_server()->GetURL(kPrefetchPage2)));
@@ -1380,7 +1384,7 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, IssuesIdlePriorityRequests) {
   WaitForRequestCount(script_url, 1);
   monitor.WaitForUrls();
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // On Android requests from prerenders do not get downgraded
   // priority. See: https://crbug.com/652746.
   constexpr net::RequestPriority kExpectedPriority = net::HIGHEST;
@@ -1747,7 +1751,7 @@ IN_PROC_BROWSER_TEST_F(SpeculationNoStatePrefetchBrowserTest,
   // back/forward cache to ensure that it doesn't get preserved in the cache.
   content::DisableBackForwardCacheForTesting(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      content::BackForwardCache::TEST_ASSUMES_NO_CACHING);
+      content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
   UseHttpsSrcServer();
   GetNoStatePrefetchManager()->mutable_config().abandon_time_to_live =
       base::Milliseconds(500);
@@ -1755,6 +1759,110 @@ IN_PROC_BROWSER_TEST_F(SpeculationNoStatePrefetchBrowserTest,
       current_browser(), src_server()->GetURL("/defaultresponse?landing")));
   InsertSpeculation(src_server()->GetURL("/hung"), FINAL_STATUS_TIMED_OUT,
                     /*should_navigate_away=*/true);
+}
+
+class NoStatePrefetchMPArchBrowserTest : public NoStatePrefetchBrowserTest {
+ public:
+  NoStatePrefetchMPArchBrowserTest() = default;
+  ~NoStatePrefetchMPArchBrowserTest() override = default;
+
+  content::WebContents* GetWebContents() {
+    return browser()->tab_strip_model()->GetActiveWebContents();
+  }
+};
+
+class NoStatePrefetchPrerenderBrowserTest
+    : public NoStatePrefetchMPArchBrowserTest {
+ public:
+  NoStatePrefetchPrerenderBrowserTest()
+      : prerender_helper_(base::BindRepeating(
+            &NoStatePrefetchPrerenderBrowserTest::GetWebContents,
+            base::Unretained(this))) {}
+  ~NoStatePrefetchPrerenderBrowserTest() override = default;
+
+  void SetUp() override {
+    prerender_helper_.SetUp(embedded_test_server());
+    NoStatePrefetchMPArchBrowserTest::SetUp();
+  }
+
+  content::test::PrerenderTestHelper* prerender_helper() {
+    return &prerender_helper_;
+  }
+
+ private:
+  content::test::PrerenderTestHelper prerender_helper_;
+};
+
+IN_PROC_BROWSER_TEST_F(NoStatePrefetchPrerenderBrowserTest,
+                       ShouldNotRecordNavigation) {
+  const GURL initial_url = embedded_test_server()->GetURL("/empty.html");
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), initial_url));
+  bool recorded = GetNoStatePrefetchManager()->HasRecentlyBeenNavigatedTo(
+      ORIGIN_NONE, initial_url);
+  EXPECT_TRUE(recorded);
+
+  const GURL prerender_url = embedded_test_server()->GetURL(kPrefetchPage);
+
+  // Loads a page in the prerender.
+  const int host_id = prerender_helper()->AddPrerender(prerender_url);
+  content::test::PrerenderHostObserver host_observer(*GetWebContents(),
+                                                     host_id);
+  EXPECT_FALSE(host_observer.was_activated());
+  // NoStatePrefetchManager should not record the navigation in prerendering.
+  recorded = GetNoStatePrefetchManager()->HasRecentlyBeenNavigatedTo(
+      ORIGIN_NONE, prerender_url);
+  EXPECT_FALSE(recorded);
+
+  // Activate the page from the prerendering.
+  prerender_helper()->NavigatePrimaryPage(prerender_url);
+  EXPECT_TRUE(host_observer.was_activated());
+  recorded = GetNoStatePrefetchManager()->HasRecentlyBeenNavigatedTo(
+      ORIGIN_NONE, prerender_url);
+  EXPECT_TRUE(recorded);
+}
+
+class NoStatePrefetchFencedFrameBrowserTest
+    : public NoStatePrefetchMPArchBrowserTest {
+ public:
+  NoStatePrefetchFencedFrameBrowserTest() = default;
+  ~NoStatePrefetchFencedFrameBrowserTest() override = default;
+  NoStatePrefetchFencedFrameBrowserTest(
+      const NoStatePrefetchFencedFrameBrowserTest&) = delete;
+
+  NoStatePrefetchFencedFrameBrowserTest& operator=(
+      const NoStatePrefetchFencedFrameBrowserTest&) = delete;
+
+  content::test::FencedFrameTestHelper& fenced_frame_test_helper() {
+    return fenced_frame_helper_;
+  }
+
+ private:
+  content::test::FencedFrameTestHelper fenced_frame_helper_;
+};
+
+IN_PROC_BROWSER_TEST_F(NoStatePrefetchFencedFrameBrowserTest,
+                       ShouldNotRecordNavigation) {
+  const GURL initial_url = embedded_test_server()->GetURL("/empty.html");
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), initial_url));
+  bool recorded = GetNoStatePrefetchManager()->HasRecentlyBeenNavigatedTo(
+      ORIGIN_NONE, initial_url);
+  EXPECT_TRUE(recorded);
+
+  // Create a FencedFrame and navigate the given URL.
+  const GURL fenced_frame_url =
+      embedded_test_server()->GetURL("/fenced_frames/title1.html");
+  content::RenderFrameHost* fenced_frame_host =
+      fenced_frame_test_helper().CreateFencedFrame(browser()
+                                                       ->tab_strip_model()
+                                                       ->GetActiveWebContents()
+                                                       ->GetPrimaryMainFrame(),
+                                                   fenced_frame_url);
+  ASSERT_TRUE(fenced_frame_host);
+  // NoStatePrefetchManager should not record the navigation on fenced frame
+  // navigation.
+  recorded = GetNoStatePrefetchManager()->HasRecentlyBeenNavigatedTo(
+      ORIGIN_NONE, fenced_frame_url);
+  EXPECT_FALSE(recorded);
 }
 
 }  // namespace prerender

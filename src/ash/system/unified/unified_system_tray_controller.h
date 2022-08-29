@@ -12,6 +12,8 @@
 #include "ash/public/cpp/session/session_observer.h"
 #include "ash/system/audio/unified_volume_slider_controller.h"
 #include "ash/system/media/unified_media_controls_controller.h"
+#include "ash/system/time/calendar_metrics.h"
+#include "ash/system/time/calendar_model.h"
 #include "ash/system/unified/unified_system_tray_model.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -45,6 +47,15 @@ class ASH_EXPORT UnifiedSystemTrayController
       public UnifiedVolumeSliderController::Delegate,
       public UnifiedMediaControlsController::Delegate {
  public:
+  class Observer : public base::CheckedObserver {
+   public:
+    // Gets called when `ShowCalendarView`, right as animations starts.
+    virtual void OnOpeningCalendarView() {}
+
+    // Gets called when leaving from the calendar view to main view.
+    virtual void OnTransitioningFromCalendarToMainView() {}
+  };
+
   explicit UnifiedSystemTrayController(
       scoped_refptr<UnifiedSystemTrayModel> model,
       UnifiedSystemTrayBubble* bubble = nullptr,
@@ -55,6 +66,9 @@ class ASH_EXPORT UnifiedSystemTrayController
       delete;
 
   ~UnifiedSystemTrayController() override;
+
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
   // Registers pref to preserve tray expanded state between reboots.
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
@@ -74,6 +88,8 @@ class ASH_EXPORT UnifiedSystemTrayController
   void HandlePageSwitchAction(int page);
   // Show date and time settings. Called from the view.
   void HandleOpenDateTimeSettingsAction();
+  // Show power settings. Called from the view.
+  void HandleOpenPowerSettingsAction();
   // Show enterprise managed device info. Called from the view.
   void HandleEnterpriseInfoAction();
   // Toggle expanded state of UnifiedSystemTrayView. Called from the view.
@@ -105,14 +121,13 @@ class ASH_EXPORT UnifiedSystemTrayController
   void ShowLocaleDetailedView();
   // Show the detailed view of audio. Called from the view.
   void ShowAudioDetailedView();
-  // Show the detailed view for dark mode. Called from the feature pod button.
-  void ShowDarkModeDetailedView();
   // Show the detailed view of notifier settings. Called from the view.
   void ShowNotifierSettingsView();
   // Show the detailed view of media controls. Called from the view.
   void ShowMediaControlsDetailedView();
   // Show the detailed view of Calendar. Called from the view.
-  void ShowCalendarView();
+  void ShowCalendarView(calendar_metrics::CalendarViewShowSource show_source,
+                        calendar_metrics::CalendarEventSource event_source);
 
   // If you want to add a new detailed view, add here.
 
@@ -157,6 +172,9 @@ class ASH_EXPORT UnifiedSystemTrayController
   void ShowMediaControls() override;
   void OnMediaControlsViewClicked() override;
 
+  // Return true if UnifiedSystemTray is expanded.
+  bool IsExpanded() const;
+
   scoped_refptr<UnifiedSystemTrayModel> model() { return model_; }
 
   PaginationController* pagination_controller() {
@@ -170,6 +188,8 @@ class ASH_EXPORT UnifiedSystemTrayController
   bool showing_audio_detailed_view() const {
     return showing_audio_detailed_view_;
   }
+
+  bool showing_calendar_view() const { return showing_calendar_view_; }
 
  private:
   friend class SystemTrayTestApi;
@@ -214,9 +234,6 @@ class ASH_EXPORT UnifiedSystemTrayController
   // value. For example, if the view is expanded and it's dragged to the top, it
   // keeps returning 1.0.
   double GetDragExpandedAmount(const gfx::PointF& location) const;
-
-  // Return true if UnifiedSystemTray is expanded.
-  bool IsExpanded() const;
 
   // Return true if message center needs to be collapsed due to limited
   // screen height.
@@ -278,6 +295,10 @@ class ASH_EXPORT UnifiedSystemTrayController
   absl::optional<ui::ThroughputTracker> animation_tracker_;
 
   bool showing_audio_detailed_view_ = false;
+
+  bool showing_calendar_view_ = false;
+
+  base::ObserverList<Observer> observers_;
 };
 
 }  // namespace ash

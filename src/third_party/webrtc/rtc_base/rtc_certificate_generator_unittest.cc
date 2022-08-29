@@ -70,11 +70,12 @@ class RTCCertificateGeneratorFixture : public RTCCertificateGeneratorCallback {
 class RTCCertificateGeneratorTest : public ::testing::Test {
  public:
   RTCCertificateGeneratorTest()
-      : fixture_(new RefCountedObject<RTCCertificateGeneratorFixture>()) {}
+      : fixture_(make_ref_counted<RTCCertificateGeneratorFixture>()) {}
 
  protected:
   static constexpr int kGenerationTimeoutMs = 10000;
 
+  rtc::AutoThread main_thread_;
   scoped_refptr<RTCCertificateGeneratorFixture> fixture_;
 };
 

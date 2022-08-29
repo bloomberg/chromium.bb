@@ -34,12 +34,12 @@
 #include "base/json/json_reader.h"
 #endif
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "components/policy/core/common/policy_loader_win.h"
-#elif defined(OS_APPLE)
+#elif BUILDFLAG(IS_APPLE)
 #include "components/policy/core/common/policy_loader_mac.h"
 #include "components/policy/core/common/preferences_mac.h"
-#elif defined(OS_POSIX) && !defined(OS_ANDROID)
+#elif BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_ANDROID)
 #include "components/policy/core/common/config_dir_policy_loader.h"
 #endif
 
@@ -49,7 +49,7 @@ namespace key = ::policy::key;
 
 namespace {
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 constexpr wchar_t kChromePolicyKey[] = L"SOFTWARE\\Policies\\Google\\Chrome";
 #endif
 
@@ -98,7 +98,8 @@ std::unique_ptr<base::DictionaryValue> CopyChromotingPoliciesIntoDictionary(
       new base::DictionaryValue());
   for (const auto& entry : current) {
     const std::string& key = entry.first;
-    const base::Value* value = entry.second.value();
+    // |value_unsafe| is used due to multiple policy types being handled.
+    const base::Value* value = entry.second.value_unsafe();
 
     // Copying only Chromoting-specific policies helps avoid false alarms
     // raised by NormalizePolicies below (such alarms shutdown the host).
@@ -174,30 +175,30 @@ std::unique_ptr<base::DictionaryValue> PolicyWatcher::GetPlatformPolicies() {
 
 std::unique_ptr<base::DictionaryValue> PolicyWatcher::GetDefaultPolicies() {
   auto result = std::make_unique<base::DictionaryValue>();
-  result->SetBoolean(key::kRemoteAccessHostFirewallTraversal, true);
-  result->SetBoolean(key::kRemoteAccessHostRequireCurtain, false);
-  result->SetBoolean(key::kRemoteAccessHostMatchUsername, false);
+  result->SetBoolKey(key::kRemoteAccessHostFirewallTraversal, true);
+  result->SetBoolKey(key::kRemoteAccessHostRequireCurtain, false);
+  result->SetBoolKey(key::kRemoteAccessHostMatchUsername, false);
   result->Set(key::kRemoteAccessHostClientDomainList,
               std::make_unique<base::ListValue>());
   result->Set(key::kRemoteAccessHostDomainList,
               std::make_unique<base::ListValue>());
-  result->SetString(key::kRemoteAccessHostTokenUrl, std::string());
-  result->SetString(key::kRemoteAccessHostTokenValidationUrl, std::string());
-  result->SetString(key::kRemoteAccessHostTokenValidationCertificateIssuer,
-                    std::string());
-  result->SetBoolean(key::kRemoteAccessHostAllowClientPairing, true);
-  result->SetBoolean(key::kRemoteAccessHostAllowGnubbyAuth, true);
-  result->SetBoolean(key::kRemoteAccessHostAllowRelayedConnection, true);
-  result->SetString(key::kRemoteAccessHostUdpPortRange, "");
-  result->SetBoolean(key::kRemoteAccessHostAllowUiAccessForRemoteAssistance,
+  result->SetStringKey(key::kRemoteAccessHostTokenUrl, std::string());
+  result->SetStringKey(key::kRemoteAccessHostTokenValidationUrl, std::string());
+  result->SetStringKey(key::kRemoteAccessHostTokenValidationCertificateIssuer,
+                       std::string());
+  result->SetBoolKey(key::kRemoteAccessHostAllowClientPairing, true);
+  result->SetBoolKey(key::kRemoteAccessHostAllowGnubbyAuth, true);
+  result->SetBoolKey(key::kRemoteAccessHostAllowRelayedConnection, true);
+  result->SetStringKey(key::kRemoteAccessHostUdpPortRange, "");
+  result->SetBoolKey(key::kRemoteAccessHostAllowUiAccessForRemoteAssistance,
                      false);
-  result->SetInteger(key::kRemoteAccessHostClipboardSizeBytes, -1);
-  result->SetBoolean(key::kRemoteAccessHostAllowRemoteSupportConnections, true);
+  result->SetIntKey(key::kRemoteAccessHostClipboardSizeBytes, -1);
+  result->SetBoolKey(key::kRemoteAccessHostAllowRemoteSupportConnections, true);
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
-  result->SetBoolean(key::kRemoteAccessHostAllowFileTransfer, true);
-  result->SetBoolean(key::kRemoteAccessHostEnableUserInterface, true);
-  result->SetBoolean(key::kRemoteAccessHostAllowRemoteAccessConnections, true);
-  result->SetInteger(key::kRemoteAccessHostMaximumSessionDurationMinutes, 0);
+  result->SetBoolKey(key::kRemoteAccessHostAllowFileTransfer, true);
+  result->SetBoolKey(key::kRemoteAccessHostEnableUserInterface, true);
+  result->SetBoolKey(key::kRemoteAccessHostAllowRemoteAccessConnections, true);
+  result->SetIntKey(key::kRemoteAccessHostMaximumSessionDurationMinutes, 0);
 #endif
   return result;
 }
@@ -268,8 +269,8 @@ bool PolicyWatcher::NormalizePolicies(base::DictionaryValue* policy_dict) {
 
 void PolicyWatcher::HandleDeprecatedPolicies(base::DictionaryValue* dict) {
   // RemoteAccessHostDomain
-  if (dict->HasKey(policy::key::kRemoteAccessHostDomain)) {
-    if (!dict->HasKey(policy::key::kRemoteAccessHostDomainList)) {
+  if (dict->FindKey(policy::key::kRemoteAccessHostDomain)) {
+    if (!dict->FindKey(policy::key::kRemoteAccessHostDomainList)) {
       std::string domain;
       dict->GetString(policy::key::kRemoteAccessHostDomain, &domain);
       if (!domain.empty()) {
@@ -282,13 +283,12 @@ void PolicyWatcher::HandleDeprecatedPolicies(base::DictionaryValue* dict) {
   }
 
   // RemoteAccessHostClientDomain
-  if (dict->HasKey(policy::key::kRemoteAccessHostClientDomain)) {
-    if (!dict->HasKey(policy::key::kRemoteAccessHostClientDomainList)) {
-      std::string domain;
-      dict->GetString(policy::key::kRemoteAccessHostClientDomain, &domain);
-      if (!domain.empty()) {
+  if (const std::string* domain =
+          dict->FindStringKey(policy::key::kRemoteAccessHostClientDomain)) {
+    if (!dict->FindKey(policy::key::kRemoteAccessHostClientDomainList)) {
+      if (!domain->empty()) {
         auto list = std::make_unique<base::ListValue>();
-        list->Append(domain);
+        list->Append(*domain);
         dict->Set(policy::key::kRemoteAccessHostClientDomainList,
                   std::move(list));
       }
@@ -326,9 +326,9 @@ PolicyWatcher::StoreNewAndReturnChangedPolicies(
   }
 
   // If one of ThirdPartyAuthConfig policies changed, we need to include all.
-  if (changed_policies->HasKey(key::kRemoteAccessHostTokenUrl) ||
-      changed_policies->HasKey(key::kRemoteAccessHostTokenValidationUrl) ||
-      changed_policies->HasKey(
+  if (changed_policies->FindKey(key::kRemoteAccessHostTokenUrl) ||
+      changed_policies->FindKey(key::kRemoteAccessHostTokenValidationUrl) ||
+      changed_policies->FindKey(
           key::kRemoteAccessHostTokenValidationCertificateIssuer)) {
     CopyDictionaryValue(*new_policies, *changed_policies,
                         key::kRemoteAccessHostTokenUrl);
@@ -384,7 +384,7 @@ void PolicyWatcher::OnPolicyServiceInitialized(policy::PolicyDomain domain) {
   const policy::PolicyMap& current = policy_service_->GetPolicies(ns);
   OnPolicyUpdated(ns, current, current);
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   WatchForRegistryChanges();
 #endif
 }
@@ -416,7 +416,7 @@ std::unique_ptr<PolicyWatcher> PolicyWatcher::CreateWithPolicyService(
                                             CreateSchemaRegistry()));
 }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 void PolicyWatcher::WatchForRegistryChanges() {
   if (!policy_key_.Valid()) {
     auto open_result =
@@ -451,21 +451,21 @@ std::unique_ptr<PolicyWatcher> PolicyWatcher::CreateWithTaskRunner(
   // (even on Chromium) so that policy enforcement can't be bypassed by running
   // Chromium.
   std::unique_ptr<policy::AsyncPolicyLoader> policy_loader;
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   policy_loader = std::make_unique<policy::PolicyLoaderWin>(
       file_task_runner, management_service, kChromePolicyKey);
-#elif defined(OS_APPLE)
+#elif BUILDFLAG(IS_APPLE)
   CFStringRef bundle_id = CFSTR("com.google.Chrome");
   policy_loader = std::make_unique<policy::PolicyLoaderMac>(
       file_task_runner,
       policy::PolicyLoaderMac::GetManagedPolicyPath(bundle_id),
       new MacPreferences(), bundle_id);
-#elif defined(OS_POSIX) && !defined(OS_ANDROID)
+#elif BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_ANDROID)
   policy_loader = std::make_unique<policy::ConfigDirPolicyLoader>(
       file_task_runner,
       base::FilePath(FILE_PATH_LITERAL("/etc/opt/chrome/policies")),
       policy::POLICY_SCOPE_MACHINE);
-#elif defined(OS_ANDROID)
+#elif BUILDFLAG(IS_ANDROID)
   NOTIMPLEMENTED();
   policy::PolicyServiceImpl::Providers providers;
   std::unique_ptr<policy::PolicyService> owned_policy_service(
