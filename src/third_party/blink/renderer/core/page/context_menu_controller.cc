@@ -792,17 +792,17 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
 
 static void ExposeInt(v8::Isolate* isolate, const v8::Handle<v8::Object>& obj, const char* name, int value)
 {
-  obj->Set(obj->CreationContext(), v8::String::NewFromUtf8(isolate, name).ToLocalChecked(), v8::Integer::New(isolate, value)).Check();
+  obj->Set(obj->GetCreationContextChecked(), v8::String::NewFromUtf8(isolate, name).ToLocalChecked(), v8::Integer::New(isolate, value)).Check();
 }
 
 static void ExposeBool(v8::Isolate* isolate, const v8::Handle<v8::Object>& obj, const char* name, bool value)
 {
-  obj->Set(obj->CreationContext(), v8::String::NewFromUtf8(isolate, name).ToLocalChecked(), v8::Boolean::New(isolate, value)).Check();
+  obj->Set(obj->GetCreationContextChecked(), v8::String::NewFromUtf8(isolate, name).ToLocalChecked(), v8::Boolean::New(isolate, value)).Check();
 }
 
 static void ExposeString(v8::Isolate* isolate, const v8::Handle<v8::Object>& obj, const char* name, const std::string& value)
 {
-  obj->Set(obj->CreationContext(),
+  obj->Set(obj->GetCreationContextChecked(),
            v8::String::NewFromUtf8(isolate, name).ToLocalChecked(),
            v8::String::NewFromUtf8(isolate, value.data(), v8::NewStringType::kNormal, static_cast<int>(value.length())).ToLocalChecked()).Check();
 }
@@ -810,7 +810,7 @@ static void ExposeString(v8::Isolate* isolate, const v8::Handle<v8::Object>& obj
 static void ExposeStringVector(v8::Isolate* isolate, const v8::Handle<v8::Object>& obj, const char* name, const std::vector<std::u16string>& value)
 {
   v8::Handle<v8::Array> array = v8::Array::New(isolate);
-  v8::Handle<v8::Context> context = obj->CreationContext();
+  v8::Handle<v8::Context> context = obj->GetCreationContextChecked();
 
   for (unsigned i = 0; i < value.size(); ++i) {
     std::string item = blink::WebString::FromUTF16(value[i]).Utf8();
