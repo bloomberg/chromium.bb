@@ -6423,7 +6423,6 @@ v8_executable("d8") {
     ":v8_libplatform",
     ":v8_tracing",
     "//build/win:default_exe_manifest",
-    "//base/allocator"
   ]
 
   if (is_posix || is_fuchsia) {

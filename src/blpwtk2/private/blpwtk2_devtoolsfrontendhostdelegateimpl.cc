@@ -33,7 +33,6 @@
 #include <base/json/string_escape.h>
 #include <base/strings/string_number_conversions.h>
 #include <base/strings/utf_string_conversions.h>
-#include <base/task/post_task.h>
 #include <base/values.h>
 #include <content/public/browser/browser_context.h>
 #include <content/public/browser/browser_task_traits.h>
@@ -208,7 +207,7 @@ void DevToolsFrontendHostDelegateImpl::RenderFrameCreated(
     }
 }
 
-void DevToolsFrontendHostDelegateImpl::DocumentAvailableInMainFrame(content::RenderFrameHost *)
+void DevToolsFrontendHostDelegateImpl::PrimaryMainDocumentElementAvailable()
 {
     agent_host_ = content::DevToolsAgentHost::GetOrCreateFor(d_inspectedContents);
     agent_host_->AttachClient(this);
@@ -243,7 +242,7 @@ void DevToolsFrontendHostDelegateImpl::HandleMessageFromDevToolsFrontend(
   // Since we've received message by value, we can take the list.
   base::Value::ListStorage params;
   if (params_value) {
-    params = std::move(*params_value).TakeList();
+    params = std::move(*params_value).TakeListDeprecated();
   }
 
   if (*method == "dispatchProtocolMessage" && params.size() == 1) {
@@ -405,7 +404,7 @@ void DevToolsFrontendHostDelegateImpl::CallClientFunction(
 
   web_contents()->GetMainFrame()->AllowInjectingJavaScript();
 
-  base::Value arguments(base::Value::Type::LIST);
+  base::Value::List arguments;
   if (!arg1.is_none()) {
     arguments.Append(std::move(arg1));
     if (!arg2.is_none()) {

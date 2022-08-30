@@ -18,7 +18,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequence_local_storage_slot.h"
-#include <base/task/post_task.h>
 #include <base/task/task_traits.h>
 #include "base/threading/thread.h"
 #include "build/build_config.h"
@@ -388,7 +387,7 @@ void ShellContentBrowserClient::StartInProcessRendererThread(
 
   g_in_process_renderer_thread =
       CreateInProcessRendererThread(InProcessChildThreadParams(
-          base::CreateSingleThreadTaskRunner({BrowserThread::IO}),
+          content::GetIOThreadTaskRunner({}),
           broker_client_invitation), renderer_client_id);
 
   base::Thread::Options options;

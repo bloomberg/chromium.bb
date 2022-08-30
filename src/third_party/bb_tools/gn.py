@@ -151,6 +151,9 @@ def get_config(is_component_mode, is_debug_mode, cpu, defines):
     # Disable multicast DNS support.
     'enable_mdns': False,
 
+    # Disable print content analysis
+    'enable_print_content_analysis': False,
+
     # Apply the content shell version.
     'content_shell_version': chromium_version,
     'content_shell_major_version': chromium_version.split('.')[0],
