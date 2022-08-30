@@ -11,7 +11,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/views/accessibility/non_accessible_image_view.h"
+#include "chrome/browser/ui/views/accessibility/theme_tracking_non_accessible_image_view.h"
 #include "chrome/browser/ui/views/bubble_anchor_util_views.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/page_info/page_info_view_factory.h"
@@ -32,28 +32,6 @@
 #include "ui/views/style/typography.h"
 #include "ui/views/widget/widget.h"
 #include "url/gurl.h"
-
-namespace {
-
-int GetSafetyTipBannerId(security_state::SafetyTipStatus safety_tip_status,
-                         bool is_dark) {
-  switch (safety_tip_status) {
-    case security_state::SafetyTipStatus::kBadReputation:
-    case security_state::SafetyTipStatus::kLookalike:
-      return is_dark ? IDR_SAFETY_TIP_ILLUSTRATION_DARK
-                     : IDR_SAFETY_TIP_ILLUSTRATION_LIGHT;
-    case security_state::SafetyTipStatus::kBadReputationIgnored:
-    case security_state::SafetyTipStatus::kLookalikeIgnored:
-    case security_state::SafetyTipStatus::kDigitalAssetLinkMatch:
-    case security_state::SafetyTipStatus::kBadKeyword:
-    case security_state::SafetyTipStatus::kUnknown:
-    case security_state::SafetyTipStatus::kNone:
-      NOTREACHED();
-      return 0;
-  }
-}
-
-}  // namespace
 
 SafetyTipPageInfoBubbleView::SafetyTipPageInfoBubbleView(
     views::View* anchor_view,
@@ -98,7 +76,7 @@ SafetyTipPageInfoBubbleView::SafetyTipPageInfoBubbleView(
   new_title->SetText(title_text);
   new_title->AddStyleRange(gfx::Range(0, title_text.length()), name_style);
   GetBubbleFrameView()->SetTitleView(std::move(new_title));
-  set_margins(gfx::Insets(0, 0, margins().bottom(), 0));
+  set_margins(gfx::Insets::TLBR(0, 0, margins().bottom(), 0));
 
   // Configure layout.
   ChromeLayoutProvider* layout_provider = ChromeLayoutProvider::Get();
@@ -106,19 +84,17 @@ SafetyTipPageInfoBubbleView::SafetyTipPageInfoBubbleView(
       views::DialogContentType::kText, views::DialogContentType::kText);
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical,
-      gfx::Insets(insets.top(), insets.left(), 0, insets.right()),
+      gfx::Insets::TLBR(insets.top(), insets.left(), 0, insets.right()),
       insets.bottom()));
 
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  const bool use_dark =
-      color_utils::IsDark(GetBubbleFrameView()->GetBackgroundColor());
-  const gfx::ImageSkia* image =
-      rb.GetNativeImageNamed(GetSafetyTipBannerId(safety_tip_status, use_dark))
-          .ToImageSkia();
-  auto image_view = std::make_unique<NonAccessibleImageView>();
-  image_view->SetImage(*image);
-  views::BubbleFrameView* frame_view = GetBubbleFrameView();
-  frame_view->SetHeaderView(std::move(image_view));
+  // Configure header view.
+  auto& bundle = ui::ResourceBundle::GetSharedInstance();
+  auto header_view = std::make_unique<ThemeTrackingNonAccessibleImageView>(
+      *bundle.GetImageSkiaNamed(IDR_SAFETY_TIP_ILLUSTRATION_LIGHT),
+      *bundle.GetImageSkiaNamed(IDR_SAFETY_TIP_ILLUSTRATION_DARK),
+      base::BindRepeating(&views::BubbleDialogDelegate::GetBackgroundColor,
+                          base::Unretained(this)));
+  GetBubbleFrameView()->SetHeaderView(std::move(header_view));
 
   // Add text description.
   auto* text_label = AddChildView(std::make_unique<views::Label>(
@@ -213,7 +189,7 @@ void SafetyTipPageInfoBubbleView::OpenHelpCenter() {
 
 void SafetyTipPageInfoBubbleView::RenderFrameDeleted(
     content::RenderFrameHost* render_frame_host) {
-  if (render_frame_host != web_contents()->GetMainFrame()) {
+  if (render_frame_host != web_contents()->GetPrimaryMainFrame()) {
     return;
   }
 

@@ -4,6 +4,7 @@
 
 #include "content/browser/devtools/protocol/target_auto_attacher.h"
 
+#include "base/observer_list.h"
 #include "content/browser/devtools/devtools_renderer_channel.h"
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
@@ -150,12 +151,12 @@ RendererAutoAttacherBase::RendererAutoAttacherBase(
 RendererAutoAttacherBase::~RendererAutoAttacherBase() = default;
 
 void RendererAutoAttacherBase::UpdateAutoAttach(base::OnceClosure callback) {
-  DevToolsRendererChannel::ChildWorkerCreatedCallback report_worker_callback;
+  DevToolsRendererChannel::ChildTargetCreatedCallback report_worker_callback;
   if (auto_attach()) {
     report_worker_callback = base::BindRepeating(
         &RendererAutoAttacherBase::ChildWorkerCreated, base::Unretained(this));
   }
-  renderer_channel_->SetReportChildWorkers(std::move(report_worker_callback),
+  renderer_channel_->SetReportChildTargets(std::move(report_worker_callback),
                                            wait_for_debugger_on_start(),
                                            std::move(callback));
 }

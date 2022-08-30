@@ -12,7 +12,9 @@ namespace blink {
 LayoutDocumentTransitionContent::LayoutDocumentTransitionContent(
     DocumentTransitionContentElement* element)
     : LayoutReplaced(element),
-      layer_(cc::SharedElementLayer::Create(element->resource_id())) {
+      layer_(cc::DocumentTransitionContentLayer::Create(
+          element->resource_id(),
+          element->is_live_content_element())) {
   SetIntrinsicSize(element->intrinsic_size());
 }
 
@@ -29,12 +31,6 @@ void LayoutDocumentTransitionContent::OnIntrinsicSizeUpdated(
 PaintLayerType LayoutDocumentTransitionContent::LayerTypeRequired() const {
   NOT_DESTROYED();
   return kNormalPaintLayer;
-}
-
-CompositingReasons
-LayoutDocumentTransitionContent::AdditionalCompositingReasons() const {
-  NOT_DESTROYED();
-  return CompositingReason::kDocumentTransitionContentElement;
 }
 
 void LayoutDocumentTransitionContent::PaintReplaced(

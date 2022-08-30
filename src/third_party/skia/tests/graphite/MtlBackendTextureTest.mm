@@ -7,20 +7,20 @@
 
 #include "tests/Test.h"
 
-#include "experimental/graphite/include/BackendTexture.h"
-#include "experimental/graphite/include/Context.h"
-#include "experimental/graphite/include/mtl/MtlTypes.h"
+#include "include/gpu/graphite/BackendTexture.h"
+#include "include/gpu/graphite/Context.h"
+#include "include/gpu/graphite/mtl/MtlTypes.h"
 
 #import <Metal/Metal.h>
 
-using namespace skgpu;
+using namespace skgpu::graphite;
 
 namespace {
     const SkISize kSize = {16, 16};
 }
 
 DEF_GRAPHITE_TEST_FOR_CONTEXTS(MtlBackendTextureTest, reporter, context) {
-    mtl::TextureInfo textureInfo;
+    MtlTextureInfo textureInfo;
     textureInfo.fSampleCount = 1;
     textureInfo.fLevelCount = 1;
     textureInfo.fFormat = MTLPixelFormatRGBA8Unorm;
@@ -42,8 +42,8 @@ DEF_GRAPHITE_TEST_FOR_CONTEXTS(MtlBackendTextureTest, reporter, context) {
     REPORTER_ASSERT(reporter, beTexture.isValid());
     context->deleteBackendTexture(beTexture);
 
-    // It should fail with a format that isn't rgba8
-    textureInfo.fFormat = MTLPixelFormatR8Unorm;
+    // It should fail with a format that isn't one of our supported formats
+    textureInfo.fFormat = MTLPixelFormatRGB9E5Float;
     beTexture = context->createBackendTexture(kSize, textureInfo);
     REPORTER_ASSERT(reporter, !beTexture.isValid());
     context->deleteBackendTexture(beTexture);

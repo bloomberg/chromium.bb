@@ -16,7 +16,7 @@
 #include "chrome/installer/util/google_update_settings.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #include "chrome/browser/mac/keystone_glue.h"
 #elif BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/google/google_brand_chromeos.h"
@@ -36,7 +36,7 @@ namespace google_brand {
 
 // Global functions -----------------------------------------------------------
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 
 bool GetBrand(std::string* brand) {
   if (g_brand_for_testing) {
@@ -76,7 +76,7 @@ bool GetBrand(std::string* brand) {
     return true;
   }
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   brand->assign(keystone_glue::BrandCode());
 #elif BUILDFLAG(IS_CHROMEOS_ASH)
   brand->assign(google_brand::chromeos::GetBrand());
@@ -119,7 +119,7 @@ bool IsOrganic(const std::string& brand) {
       "CHOU", "CHOX", "CHOY", "CHOZ", "CHPD", "CHPE", "CHPF", "CHPG", "ECBA",
       "ECBB", "ECDA", "ECDB", "ECSA", "ECSB", "ECVA", "ECVB", "ECWA", "ECWB",
       "ECWC", "ECWD", "ECWE", "ECWF", "EUBB", "EUBC", "GGLA", "GGLS"};
-  const char* const* end = &kOrganicBrands[base::size(kOrganicBrands)];
+  const char* const* end = &kOrganicBrands[std::size(kOrganicBrands)];
   if (std::binary_search(&kOrganicBrands[0], end, brand))
     return true;
 

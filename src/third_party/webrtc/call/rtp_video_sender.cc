@@ -17,6 +17,7 @@
 
 #include "absl/algorithm/container.h"
 #include "absl/strings/match.h"
+#include "absl/strings/string_view.h"
 #include "api/array_view.h"
 #include "api/transport/field_trial_based_config.h"
 #include "api/video_codecs/video_codec.h"
@@ -25,7 +26,6 @@
 #include "modules/rtp_rtcp/include/rtp_rtcp_defines.h"
 #include "modules/rtp_rtcp/source/rtp_rtcp_impl2.h"
 #include "modules/rtp_rtcp/source/rtp_sender.h"
-#include "modules/utility/include/process_thread.h"
 #include "modules/video_coding/include/video_codec_interface.h"
 #include "rtc_base/checks.h"
 #include "rtc_base/location.h"
@@ -56,9 +56,10 @@ static const size_t kPathMTU = 1500;
 
 using webrtc_internal_rtp_video_sender::RtpStreamSender;
 
-bool PayloadTypeSupportsSkippingFecPackets(const std::string& payload_name,
-                                           const WebRtcKeyValueConfig& trials) {
-  const VideoCodecType codecType = PayloadStringToCodecType(payload_name);
+bool PayloadTypeSupportsSkippingFecPackets(absl::string_view payload_name,
+                                           const FieldTrialsView& trials) {
+  const VideoCodecType codecType =
+      PayloadStringToCodecType(std::string(payload_name));
   if (codecType == kVideoCodecVP8 || codecType == kVideoCodecVP9) {
     return true;
   }
@@ -71,7 +72,7 @@ bool PayloadTypeSupportsSkippingFecPackets(const std::string& payload_name,
 
 bool ShouldDisableRedAndUlpfec(bool flexfec_enabled,
                                const RtpConfig& rtp_config,
-                               const WebRtcKeyValueConfig& trials) {
+                               const FieldTrialsView& trials) {
   // Consistency of NACK and RED+ULPFEC parameters is checked in this function.
   const bool nack_enabled = rtp_config.nack.rtp_history_ms > 0;
 
@@ -127,7 +128,7 @@ std::unique_ptr<VideoFecGenerator> MaybeCreateFecGenerator(
     const RtpConfig& rtp,
     const std::map<uint32_t, RtpState>& suspended_ssrcs,
     int simulcast_index,
-    const WebRtcKeyValueConfig& trials) {
+    const FieldTrialsView& trials) {
   // If flexfec is configured that takes priority.
   if (rtp.flexfec.payload_type >= 0) {
     RTC_DCHECK_GE(rtp.flexfec.payload_type, 0);
@@ -198,7 +199,7 @@ std::vector<RtpStreamSender> CreateRtpStreamSenders(
     FrameEncryptorInterface* frame_encryptor,
     const CryptoOptions& crypto_options,
     rtc::scoped_refptr<FrameTransformerInterface> frame_transformer,
-    const WebRtcKeyValueConfig& trials) {
+    const FieldTrialsView& trials) {
   RTC_DCHECK_GT(rtp_config.ssrcs.size(), 0);
 
   RtpRtcpInterface::Configuration configuration;
@@ -237,6 +238,12 @@ std::vector<RtpStreamSender> CreateRtpStreamSenders(
 
   RTC_DCHECK(rtp_config.rtx.ssrcs.empty() ||
              rtp_config.rtx.ssrcs.size() == rtp_config.ssrcs.size());
+
+  // Some streams could have been disabled, but the rids are still there.
+  // This will occur when simulcast has been disabled for a codec (e.g. VP9)
+  RTC_DCHECK(rtp_config.rids.empty() ||
+             rtp_config.rids.size() >= rtp_config.ssrcs.size());
+
   for (size_t i = 0; i < rtp_config.ssrcs.size(); ++i) {
     RTPSenderVideo::Config video_config;
     configuration.local_media_ssrc = rtp_config.ssrcs[i];
@@ -249,6 +256,8 @@ std::vector<RtpStreamSender> CreateRtpStreamSenders(
         rtp_config.GetRtxSsrcAssociatedWithMediaSsrc(rtp_config.ssrcs[i]);
     RTC_DCHECK_EQ(configuration.rtx_send_ssrc.has_value(),
                   !rtp_config.rtx.ssrcs.empty());
+
+    configuration.rid = (i < rtp_config.rids.size()) ? rtp_config.rids[i] : "";
 
     configuration.need_rtp_packet_infos = rtp_config.lntf.enabled;
 
@@ -359,17 +368,16 @@ RtpVideoSender::RtpVideoSender(
     std::unique_ptr<FecController> fec_controller,
     FrameEncryptorInterface* frame_encryptor,
     const CryptoOptions& crypto_options,
-    rtc::scoped_refptr<FrameTransformerInterface> frame_transformer)
-    : send_side_bwe_with_overhead_(!absl::StartsWith(
+    rtc::scoped_refptr<FrameTransformerInterface> frame_transformer,
+    const FieldTrialsView& field_trials)
+    : field_trials_(field_trials),
+      send_side_bwe_with_overhead_(!absl::StartsWith(
           field_trials_.Lookup("WebRTC-SendSideBwe-WithOverhead"),
           "Disabled")),
       use_frame_rate_for_overhead_(absl::StartsWith(
           field_trials_.Lookup("WebRTC-Video-UseFrameRateForOverhead"),
           "Enabled")),
       has_packet_feedback_(TransportSeqNumExtensionConfigured(rtp_config)),
-      simulate_generic_structure_(absl::StartsWith(
-          field_trials_.Lookup("WebRTC-GenericCodecDependencyDescriptor"),
-          "Enabled")),
       active_(false),
       fec_controller_(std::move(fec_controller)),
       fec_allowed_(true),
@@ -394,6 +402,7 @@ RtpVideoSender::RtpVideoSender(
       encoder_target_rate_bps_(0),
       frame_counts_(rtp_config.ssrcs.size()),
       frame_count_observer_(observers.frame_count_observer) {
+  transport_checker_.Detach();
   RTC_DCHECK_EQ(rtp_config_.ssrcs.size(), rtp_streams_.size());
   if (send_side_bwe_with_overhead_ && has_packet_feedback_)
     transport_->IncludeOverheadInPacedSender();
@@ -421,7 +430,6 @@ RtpVideoSender::RtpVideoSender(
   }
 
   ConfigureSsrcs(suspended_ssrcs);
-  ConfigureRids();
 
   if (!rtp_config_.mid.empty()) {
     for (const RtpStreamSender& stream : rtp_streams_) {
@@ -445,9 +453,6 @@ RtpVideoSender::RtpVideoSender(
   fec_controller_->SetProtectionMethod(fec_enabled, NackEnabled());
 
   fec_controller_->SetProtectionCallback(this);
-  // Signal congestion controller this object is ready for OnPacket* callbacks.
-  transport_->GetStreamFeedbackProvider()->RegisterStreamFeedbackObserver(
-      rtp_config_.ssrcs, this);
 
   // Construction happens on the worker thread (see Call::CreateVideoSendStream)
   // but subseqeuent calls to the RTP state will happen on one of two threads:
@@ -460,27 +465,44 @@ RtpVideoSender::RtpVideoSender(
 }
 
 RtpVideoSender::~RtpVideoSender() {
+  // TODO(bugs.webrtc.org/13517): Remove once RtpVideoSender gets deleted on the
+  // transport task queue.
+  transport_checker_.Detach();
+
   SetActiveModulesLocked(
       std::vector<bool>(rtp_streams_.size(), /*active=*/false));
-  transport_->GetStreamFeedbackProvider()->DeRegisterStreamFeedbackObserver(
-      this);
+
+  RTC_DCHECK(!registered_for_feedback_);
 }
 
 void RtpVideoSender::SetActive(bool active) {
+  RTC_DCHECK_RUN_ON(&transport_checker_);
   MutexLock lock(&mutex_);
   if (active_ == active)
     return;
+
   const std::vector<bool> active_modules(rtp_streams_.size(), active);
   SetActiveModulesLocked(active_modules);
+
+  auto* feedback_provider = transport_->GetStreamFeedbackProvider();
+  if (active && !registered_for_feedback_) {
+    feedback_provider->RegisterStreamFeedbackObserver(rtp_config_.ssrcs, this);
+    registered_for_feedback_ = true;
+  } else if (!active && registered_for_feedback_) {
+    feedback_provider->DeRegisterStreamFeedbackObserver(this);
+    registered_for_feedback_ = false;
+  }
 }
 
 void RtpVideoSender::SetActiveModules(const std::vector<bool> active_modules) {
+  RTC_DCHECK_RUN_ON(&transport_checker_);
   MutexLock lock(&mutex_);
   return SetActiveModulesLocked(active_modules);
 }
 
 void RtpVideoSender::SetActiveModulesLocked(
     const std::vector<bool> active_modules) {
+  RTC_DCHECK_RUN_ON(&transport_checker_);
   RTC_DCHECK_EQ(rtp_streams_.size(), active_modules.size());
   active_ = false;
   for (size_t i = 0; i < active_modules.size(); ++i) {
@@ -514,6 +536,7 @@ void RtpVideoSender::SetActiveModulesLocked(
 }
 
 bool RtpVideoSender::IsActive() {
+  RTC_DCHECK_RUN_ON(&transport_checker_);
   MutexLock lock(&mutex_);
   return IsActiveLocked();
 }
@@ -566,32 +589,21 @@ EncodedImageCallback::Result RtpVideoSender::OnEncodedImage(
   }
 
   if (IsFirstFrameOfACodedVideoSequence(encoded_image, codec_specific_info)) {
-    // If encoder adapter produce FrameDependencyStructure, pass it so that
-    // dependency descriptor rtp header extension can be used.
-    // If not supported, disable using dependency descriptor by passing nullptr.
+    // In order to use the dependency descriptor RTP header extension:
+    //  - Pass along any `FrameDependencyStructure` templates produced by the
+    //    encoder adapter.
+    //  - If none were produced the `RtpPayloadParams::*ToGeneric` for the
+    //    particular codec have simulated a dependency structure, so provide a
+    //    minimal set of templates.
+    //  - Otherwise, don't pass along any templates at all which will disable
+    //    the generation of a dependency descriptor.
     RTPSenderVideo& sender_video = *rtp_streams_[stream_index].sender_video;
     if (codec_specific_info && codec_specific_info->template_structure) {
       sender_video.SetVideoStructure(&*codec_specific_info->template_structure);
-    } else if (codec_specific_info &&
-               codec_specific_info->codecType == kVideoCodecVP9) {
-      const CodecSpecificInfoVP9& vp9 = codec_specific_info->codecSpecific.VP9;
-
-      FrameDependencyStructure structure =
-          RtpPayloadParams::MinimalisticStructure(vp9.num_spatial_layers,
-                                                  kMaxTemporalStreams);
-      if (vp9.ss_data_available && vp9.spatial_layer_resolution_present) {
-        for (size_t i = 0; i < vp9.num_spatial_layers; ++i) {
-          structure.resolutions.emplace_back(vp9.width[i], vp9.height[i]);
-        }
-      }
-      sender_video.SetVideoStructure(&structure);
-    } else if (simulate_generic_structure_ && codec_specific_info &&
-               codec_specific_info->codecType == kVideoCodecGeneric) {
-      FrameDependencyStructure structure =
-          RtpPayloadParams::MinimalisticStructure(
-              /*num_spatial_layers=*/1,
-              /*num_temporal_layers=*/1);
-      sender_video.SetVideoStructure(&structure);
+    } else if (absl::optional<FrameDependencyStructure> structure =
+                   params_[stream_index].GenericStructure(
+                       codec_specific_info)) {
+      sender_video.SetVideoStructure(&*structure);
     } else {
       sender_video.SetVideoStructure(nullptr);
     }
@@ -622,6 +634,7 @@ EncodedImageCallback::Result RtpVideoSender::OnEncodedImage(
 
 void RtpVideoSender::OnBitrateAllocationUpdated(
     const VideoBitrateAllocation& bitrate) {
+  RTC_DCHECK_RUN_ON(&transport_checker_);
   MutexLock lock(&mutex_);
   if (IsActiveLocked()) {
     if (rtp_streams_.size() == 1) {
@@ -726,18 +739,6 @@ void RtpVideoSender::ConfigureSsrcs(
           rtp_config_.ulpfec.red_rtx_payload_type,
           rtp_config_.ulpfec.red_payload_type);
     }
-  }
-}
-
-void RtpVideoSender::ConfigureRids() {
-  if (rtp_config_.rids.empty())
-    return;
-
-  // Some streams could have been disabled, but the rids are still there.
-  // This will occur when simulcast has been disabled for a codec (e.g. VP9)
-  RTC_DCHECK(rtp_config_.rids.size() >= rtp_streams_.size());
-  for (size_t i = 0; i < rtp_streams_.size(); ++i) {
-    rtp_streams_[i].rtp_rtcp->SetRid(rtp_config_.rids[i]);
   }
 }
 

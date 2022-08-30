@@ -13,12 +13,28 @@
 #include "third_party/blink/renderer/platform/heap/write_barrier.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/partition_allocator.h"
 #include "v8/include/cppgc/explicit-management.h"
 #include "v8/include/cppgc/heap-consistency.h"
 #include "v8/include/cppgc/trace-trait.h"
 #include "v8/include/cppgc/visitor.h"
 
 namespace blink {
+
+template <typename T>
+void GenerationalBarrierForBacking(
+    const cppgc::subtle::HeapConsistency::WriteBarrierParams& params,
+    T* slot_in_backing);
+
+template <typename K, typename V>
+void GenerationalBarrierForBacking(
+    const cppgc::subtle::HeapConsistency::WriteBarrierParams& params,
+    std::pair<K, V>* slot_in_backing);
+
+template <typename K, typename V>
+void GenerationalBarrierForBacking(
+    const cppgc::subtle::HeapConsistency::WriteBarrierParams& params,
+    WTF::KeyValuePair<K, V>* slot_in_backing);
 
 class PLATFORM_EXPORT HeapAllocator {
   STATIC_ONLY(HeapAllocator);
@@ -31,13 +47,13 @@ class PLATFORM_EXPORT HeapAllocator {
 
   static constexpr bool kIsGarbageCollected = true;
 
-  // See wtf/size_t.h for details.
-  static constexpr size_t kMaxHeapObjectSizeLog2 = 27;
-  static constexpr size_t kMaxHeapObjectSize = 1 << kMaxHeapObjectSizeLog2;
-
   template <typename T>
   static size_t MaxElementCountInBackingStore() {
-    return kMaxHeapObjectSize / sizeof(T);
+    // Oilpan doesn't have a limit for supported capacity and instead supports
+    // arbitrary sized allocations. Delegate to PA to keep limits in sync which
+    // may be enforced for security reasons. E.g. PA may cap the limit below
+    // 32-bit sizes to avoid integer overflows in old code.
+    return WTF::PartitionAllocator::MaxElementCountInBackingStore<T>();
   }
 
   template <typename T>
@@ -166,7 +182,7 @@ class PLATFORM_EXPORT HeapAllocator {
             TraceCollectionIfEnabled<WTF::kNoWeakHandling, T, Traits>::Trace);
         break;
       case HeapConsistency::WriteBarrierType::kGenerational:
-        HeapConsistency::GenerationalBarrier(params, slot_in_backing);
+        GenerationalBarrierForBacking(params, slot_in_backing);
         break;
       case HeapConsistency::WriteBarrierType::kNone:
         break;
@@ -191,7 +207,7 @@ class PLATFORM_EXPORT HeapAllocator {
             TraceCollectionIfEnabled<WTF::kNoWeakHandling, T, Traits>::Trace);
         break;
       case HeapConsistency::WriteBarrierType::kGenerational:
-        HeapConsistency::GenerationalBarrier(params, first_element);
+        GenerationalBarrierForBacking(params, first_element);
         break;
       case HeapConsistency::WriteBarrierType::kNone:
         break;
@@ -250,6 +266,36 @@ class PLATFORM_EXPORT HeapAllocator {
                                                           deferred_size);
   }
 };
+
+template <typename T>
+void GenerationalBarrierForBacking(
+    const cppgc::subtle::HeapConsistency::WriteBarrierParams& params,
+    T* slot_in_backing) {
+  if constexpr (WTF::IsMemberOrWeakMemberType<std::decay_t<T>>::value) {
+    // TODO(1029379): Provide Member::GetSlot() and call it here.
+    cppgc::subtle::HeapConsistency::GenerationalBarrier(params,
+                                                        slot_in_backing);
+  } else if constexpr (WTF::IsTraceable<std::decay_t<T>>::value) {
+    cppgc::subtle::HeapConsistency::GenerationalBarrierForSourceObject(
+        params, slot_in_backing);
+  }
+}
+
+template <typename K, typename V>
+void GenerationalBarrierForBacking(
+    const cppgc::subtle::HeapConsistency::WriteBarrierParams& params,
+    std::pair<K, V>* slot_in_backing) {
+  GenerationalBarrierForBacking(params, &slot_in_backing->first);
+  GenerationalBarrierForBacking(params, &slot_in_backing->second);
+}
+
+template <typename K, typename V>
+void GenerationalBarrierForBacking(
+    const cppgc::subtle::HeapConsistency::WriteBarrierParams& params,
+    WTF::KeyValuePair<K, V>* slot_in_backing) {
+  GenerationalBarrierForBacking(params, &slot_in_backing->key);
+  GenerationalBarrierForBacking(params, &slot_in_backing->value);
+}
 
 }  // namespace blink
 

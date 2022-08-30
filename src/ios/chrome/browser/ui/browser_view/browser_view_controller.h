@@ -8,6 +8,7 @@
 #import <UIKit/UIKit.h>
 
 #import "base/ios/block_types.h"
+#import "ios/chrome/browser/ui/authentication/signin_presenter.h"
 #import "ios/chrome/browser/ui/find_bar/find_bar_coordinator.h"
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_consumer.h"
 #import "ios/chrome/browser/ui/ntp/logo_animation_controller.h"
@@ -22,13 +23,41 @@
 @protocol ActivityServicePositioner;
 class Browser;
 @class BrowserContainerViewController;
-@class BrowserViewControllerDependencyFactory;
+@class BrowserViewControllerHelper;
+@class BubblePresenter;
 @class CommandDispatcher;
 @protocol CRWResponderInputView;
 @class DefaultBrowserPromoNonModalScheduler;
 @protocol DefaultPromoNonModalPresentationDelegate;
+// TODO(crbug.com/1331229): Remove all use of the download manager coordinator
+// from BVC
+@class DownloadManagerCoordinator;
+@class KeyCommandsProvider;
+// TODO(crbug.com/1328039): Remove all use of the prerender service from BVC
+@protocol PopupMenuUIUpdating;
+class PrerenderService;
+@class PrimaryToolbarCoordinator;
+@class SecondaryToolbarCoordinator;
+@class TabStripCoordinator;
+@class TabStripLegacyCoordinator;
 @class ToolbarAccessoryPresenter;
+@protocol ToolbarCoordinating;
 @protocol IncognitoReauthCommands;
+
+// TODO(crbug.com/1328039): Remove all use of the prerender service from BVC
+// TODO(crbug.com/1331229): Remove all use of the download manager coordinator
+// from BVC
+typedef struct {
+  PrerenderService* prerenderService;
+  BubblePresenter* bubblePresenter;
+  DownloadManagerCoordinator* downloadManagerCoordinator;
+  id<ToolbarCoordinating> toolbarInterface;
+  id<PopupMenuUIUpdating> UIUpdater;
+  PrimaryToolbarCoordinator* primaryToolbarCoordinator;
+  SecondaryToolbarCoordinator* secondaryToolbarCoordinator;
+  TabStripCoordinator* tabStripCoordinator;
+  TabStripLegacyCoordinator* legacyTabStripCoordinator;
+} BrowserViewControllerDependencies;
 
 // The top-level view controller for the browser UI. Manages other controllers
 // which implement the interface.
@@ -38,6 +67,7 @@ class Browser;
                         LogoAnimationControllerOwnerOwner,
                         PageInfoPresentation,
                         PrintControllerDelegate,
+                        SigninPresenter,
                         SyncPresenter,
                         ThumbStripSupporting,
                         ToolbarCoordinatorDelegate,
@@ -46,18 +76,20 @@ class Browser;
 
 // Initializes a new BVC.
 // |browser| is the browser whose tabs this BVC will display.
-// |factory| is the dependency factory created for this BVC instance.
 // |browserContainerViewController| is the container object this BVC will exist
 // inside.
-// |dispatcher| is the dispatcher instance this BVC will use.
+// `dispatcher` is the dispatcher instance this BVC will use.
 // TODO(crbug.com/992582): Remove references to model objects -- including
 //   |browser| and |dispatcher| -- from this class.
 - (instancetype)initWithBrowser:(Browser*)browser
-                 dependencyFactory:
-                     (BrowserViewControllerDependencyFactory*)factory
     browserContainerViewController:
         (BrowserContainerViewController*)browserContainerViewController
+       browserViewControllerHelper:
+           (BrowserViewControllerHelper*)browserViewControllerHelper
                         dispatcher:(CommandDispatcher*)dispatcher
+               keyCommandsProvider:(KeyCommandsProvider*)keyCommandsProvider
+                      dependencies:
+                          (BrowserViewControllerDependencies)dependencies
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithNibName:(NSString*)nibNameOrNil
@@ -71,7 +103,9 @@ class Browser;
 // Handler for reauth commands.
 @property(nonatomic, weak) id<IncognitoReauthCommands> reauthHandler;
 
-// Returns whether or not text to speech is playing.
+// TODO(crbug.com/1329104): Move voice search controller/coordinator to
+// BrowserCoordinator, remove this as a public property. Returns whether or not
+// text to speech is playing.
 @property(nonatomic, assign, readonly, getter=isPlayingTTS) BOOL playingTTS;
 
 // The container used for infobar banner overlays.
@@ -81,6 +115,12 @@ class Browser;
 // The container used for infobar modal overlays.
 @property(nonatomic, strong)
     UIViewController* infobarModalOverlayContainerViewController;
+
+// The sad tab view controller. Only used to add the sad tab view (if any) to
+// snapshots.
+// TODO(crbug.com/1272491): Refactor snapshotting to remove the need for this
+// property.
+@property(nonatomic, strong) UIViewController* sadTabViewController;
 
 // Presenter used to display accessories over the toolbar (e.g. Find In Page).
 @property(nonatomic, strong)
@@ -105,12 +145,12 @@ class Browser;
 // Called when the user explicitly opens the tab switcher.
 - (void)userEnteredTabSwitcher;
 
-// Opens a new tab as if originating from |originPoint| and |focusOmnibox|.
+// Opens a new tab as if originating from `originPoint` and `focusOmnibox`.
 - (void)openNewTabFromOriginPoint:(CGPoint)originPoint
                      focusOmnibox:(BOOL)focusOmnibox
                     inheritOpener:(BOOL)inheritOpener;
 
-// Adds |tabAddedCompletion| to the completion block (if any) that will be run
+// Adds `tabAddedCompletion` to the completion block (if any) that will be run
 // the next time a tab is added to the Browser this object was initialized
 // with.
 - (void)appendTabAddedCompletion:(ProceduralBlock)tabAddedCompletion;
@@ -119,6 +159,7 @@ class Browser;
 // intended to be called before setWebUsageSuspended:NO in cases where a new tab
 // is about to appear in order to allow the BVC to avoid doing unnecessary work
 // related to showing the previously selected tab.
+// TODO(crbug.com/1329109): Move this to a browser agent or web event mediator.
 - (void)expectNewForegroundTab;
 
 // Shows the voice search UI.

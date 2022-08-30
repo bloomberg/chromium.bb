@@ -29,15 +29,32 @@
 #include "net/dcsctp/packet/parameter/outgoing_ssn_reset_request_parameter.h"
 #include "net/dcsctp/packet/parameter/reconfiguration_response_parameter.h"
 #include "net/dcsctp/public/dcsctp_message.h"
+#include "net/dcsctp/rx/interleaved_reassembly_streams.h"
 #include "net/dcsctp/rx/reassembly_streams.h"
 #include "net/dcsctp/rx/traditional_reassembly_streams.h"
 #include "rtc_base/logging.h"
 
 namespace dcsctp {
+namespace {
+std::unique_ptr<ReassemblyStreams> CreateStreams(
+    absl::string_view log_prefix,
+    ReassemblyStreams::OnAssembledMessage on_assembled_message,
+    bool use_message_interleaving,
+    const DcSctpSocketHandoverState* handover_state) {
+  if (use_message_interleaving) {
+    return std::make_unique<InterleavedReassemblyStreams>(
+        log_prefix, std::move(on_assembled_message), handover_state);
+  }
+  return std::make_unique<TraditionalReassemblyStreams>(
+      log_prefix, std::move(on_assembled_message), handover_state);
+}
+}  // namespace
+
 ReassemblyQueue::ReassemblyQueue(
     absl::string_view log_prefix,
     TSN peer_initial_tsn,
     size_t max_size_bytes,
+    bool use_message_interleaving,
     const DcSctpSocketHandoverState* handover_state)
     : log_prefix_(std::string(log_prefix) + "reasm: "),
       max_size_bytes_(max_size_bytes),
@@ -50,12 +67,13 @@ ReassemblyQueue::ReassemblyQueue(
               ? ReconfigRequestSN(
                     handover_state->rx.last_completed_deferred_reset_req_sn)
               : ReconfigRequestSN(0)),
-      streams_(std::make_unique<TraditionalReassemblyStreams>(
+      streams_(CreateStreams(
           log_prefix_,
           [this](rtc::ArrayView<const UnwrappedTSN> tsns,
                  DcSctpMessage message) {
             AddReassembledMessage(tsns, std::move(message));
           },
+          use_message_interleaving,
           handover_state)) {}
 
 void ReassemblyQueue::Add(TSN tsn, Data data) {
@@ -175,9 +193,7 @@ bool ReassemblyQueue::MaybeResetStreamsDeferred(TSN cum_ack_tsn) {
       // https://tools.ietf.org/html/rfc6525#section-5.2.2
       // "Any queued TSNs (queued at step E2) MUST now be released and processed
       // normally."
-      for (auto& p : deferred_chunks) {
-        const TSN& tsn = p.first;
-        Data& data = p.second;
+      for (auto& [tsn, data] : deferred_chunks) {
         queued_bytes_ -= data.size();
         Add(tsn, std::move(data));
       }
@@ -212,8 +228,16 @@ void ReassemblyQueue::AddReassembledMessage(
                        << ", payload=" << message.payload().size() << " bytes";
 
   for (const UnwrappedTSN tsn : tsns) {
-    // Update watermark, or insert into delivered_tsns_
-    if (tsn == last_assembled_tsn_watermark_.next_value()) {
+    if (tsn <= last_assembled_tsn_watermark_) {
+      // This can be provoked by a misbehaving peer by sending FORWARD-TSN with
+      // invalid SSNs, allowing ordered messages to stay in the queue that
+      // should've been discarded.
+      RTC_DLOG(LS_VERBOSE)
+          << log_prefix_
+          << "Message is built from fragments already seen - skipping";
+      return;
+    } else if (tsn == last_assembled_tsn_watermark_.next_value()) {
+      // Update watermark, or insert into delivered_tsns_
       last_assembled_tsn_watermark_.Increment();
     } else {
       delivered_tsns_.insert(tsn);

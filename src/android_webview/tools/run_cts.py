@@ -16,11 +16,10 @@ import sys
 import tempfile
 import zipfile
 
-
 sys.path.append(os.path.join(
     os.path.dirname(__file__), os.pardir, os.pardir, 'build', 'android'))
+# pylint: disable=wrong-import-position,import-error
 import devil_chromium  # pylint: disable=unused-import
-from devil.android import device_utils
 from devil.android.ndk import abis
 from devil.android.sdk import version_codes
 from devil.android.tools import script_common
@@ -45,6 +44,8 @@ _CTS_ARCHIVE_DIR = os.path.join(os.path.dirname(__file__), 'cts_archive')
 
 _CTS_WEBKIT_PACKAGES = ["com.android.cts.webkit", "android.webkit.cts"]
 
+_TEST_APK_AS_INSTANT_ARG = '--test-apk-as-instant'
+
 SDK_PLATFORM_DICT = {
     version_codes.MARSHMALLOW: 'M',
     version_codes.NOUGAT: 'N',
@@ -53,6 +54,9 @@ SDK_PLATFORM_DICT = {
     version_codes.OREO_MR1: 'O',
     version_codes.PIE: 'P',
     version_codes.Q: 'Q',
+    version_codes.R: 'R',
+    version_codes.S: 'S',
+    version_codes.S_V2: 'S',
 }
 
 # The test apks are apparently compatible across all architectures, the
@@ -83,9 +87,10 @@ def GetCtsInfo(arch, cts_release, item):
   try:
     if item in _ARCH_SPECIFIC_CTS_INFO:
       return cts_gcs_path_info[cts_release]['arch'][arch][item]
-    else:
-      return cts_gcs_path_info[cts_release][item]
+    return cts_gcs_path_info[cts_release][item]
   except KeyError:
+    # pylint: disable=raise-missing-from
+    # This script is executed with python2, and cannot use 'from'.
     raise Exception('No %s info available for arch:%s, android:%s' %
                     (item, arch, cts_release))
 
@@ -96,7 +101,7 @@ def GetCTSModuleNames(arch, cts_release):
   return [os.path.basename(r['apk']) for r in test_runs]
 
 
-def GetTestRunFilterArg(args, test_run):
+def GetTestRunFilterArg(args, test_run, arch=None):
   """ Merges json file filters with cmdline filters using
       test_filter.InitializeFilterFromArgs
   """
@@ -104,27 +109,42 @@ def GetTestRunFilterArg(args, test_run):
   # Convert cmdline filters to test-filter style
   filter_string = test_filter.InitializeFilterFromArgs(args)
 
+  test_app_mode = 'instant' if args.test_apk_as_instant else 'full'
+
+  # Get all the filters for either include or exclude patterns
+  # and filter where an architecture is provided and does not match
+  # The architecture is used when tests only fail on one architecture
+  def getTestRunFilters(key):
+    filters = test_run.get(key, [])
+    return [
+        filter_["match"] for filter_ in filters
+        if 'arch' not in filter_ or filter_['arch'] == arch
+        if 'mode' not in filter_ or filter_['mode'] == test_app_mode
+    ]
+
   # Only add inclusion filters if there's not already one specified, since
   # they would conflict, see test_filter.ConflictingPositiveFiltersException.
   if not test_filter.HasPositivePatterns(filter_string):
-    includes = test_run.get("includes", [])
+    patterns = getTestRunFilters("includes")
     filter_string = test_filter.AppendPatternsToFilter(
-        filter_string,
-        positive_patterns=[i["match"] for i in includes])
+        filter_string, positive_patterns=patterns)
 
   if args.skip_expected_failures:
-    excludes = test_run.get("excludes", [])
+    patterns = getTestRunFilters("excludes")
     filter_string = test_filter.AppendPatternsToFilter(
-        filter_string,
-        negative_patterns=[e["match"] for e in excludes])
+        filter_string, negative_patterns=patterns)
 
   if filter_string:
     return [TEST_FILTER_OPT + '=' + filter_string]
-  else:
-    return []
+  return []
 
 
-def RunCTS(test_runner_args, local_cts_dir, apk, json_results_file=None):
+def RunCTS(test_runner_args,
+           local_cts_dir,
+           apk,
+           voice_service=None,
+           additional_apks=None,
+           json_results_file=None):
   """Run tests in apk using test_runner script at _TEST_RUNNER_PATH.
 
   Returns the script result code, test results will be stored in
@@ -134,9 +154,23 @@ def RunCTS(test_runner_args, local_cts_dir, apk, json_results_file=None):
   local_test_runner_args = test_runner_args + ['--test-apk',
                                                os.path.join(local_cts_dir, apk)]
 
+  if voice_service:
+    local_test_runner_args += ['--use-voice-interaction-service', voice_service]
+
+  if additional_apks:
+    for additional_apk in additional_apks:
+      additional_apk_tmp = os.path.join(local_cts_dir, additional_apk['apk'])
+      local_test_runner_args += ['--additional-apk', additional_apk_tmp]
+
+      if additional_apk.get('forced_queryable', False):
+        local_test_runner_args += [
+            '--forced-queryable-additional-apk', additional_apk_tmp
+        ]
+
   if json_results_file:
     local_test_runner_args += ['--json-results-file=%s' %
                                json_results_file]
+
   return cmd_helper.RunCmd(
       [_TEST_RUNNER_PATH, 'instrumentation'] + local_test_runner_args)
 
@@ -214,23 +248,30 @@ def RunAllCTSTests(args, arch, cts_release, test_runner_args):
       iteration_cts_result = 0
 
       test_apk = cts_test_run['apk']
+      voice_service = cts_test_run.get('voice_service')
+      # Some tests need additional APKs that providing mocking
+      # services to run
+      additional_apks = cts_test_run.get('additional_apks')
+
       # If --module-apk is specified then skip tests in all other modules
       if args.module_apk and os.path.basename(test_apk) != args.module_apk:
         continue
 
       iter_test_runner_args = test_runner_args + GetTestRunFilterArg(
-          args, cts_test_run)
+          args, cts_test_run, arch)
 
       if json_results_file:
         with tempfile.NamedTemporaryFile() as iteration_json_file:
           iteration_cts_result = RunCTS(iter_test_runner_args, local_cts_dir,
-                                        test_apk, iteration_json_file.name)
+                                        test_apk, voice_service,
+                                        additional_apks,
+                                        iteration_json_file.name)
           with open(iteration_json_file.name) as f:
             additional_results_json = json.load(f)
             MergeTestResults(cts_results_json, additional_results_json)
       else:
         iteration_cts_result = RunCTS(iter_test_runner_args, local_cts_dir,
-                                      test_apk)
+                                      test_apk, voice_service, additional_apks)
       if iteration_cts_result:
         cts_result = iteration_cts_result
     if json_results_file:
@@ -309,7 +350,8 @@ def ForwardArgsToTestRunner(known_args):
     forwarded_args.extend(['--device'] + known_args.devices)
   if known_args.denylist_file:
     forwarded_args.extend(['--denylist-file', known_args.denylist_file])
-
+  if known_args.test_apk_as_instant:
+    forwarded_args.extend([_TEST_APK_AS_INSTANT_ARG])
   if known_args.verbose:
     forwarded_args.extend(['-' + 'v' * known_args.verbose])
   #TODO: Pass quiet to test runner when it becomes supported
@@ -327,7 +369,6 @@ def GetDevice(args):
       # Start the emulator w/ -writable-system s.t. we can remount the system
       # partition r/w and install our own webview provider.
       emulator_instance.Start(writable_system=True)
-      device_utils.DeviceUtils(emulator_instance.serial).WaitUntilFullyBooted()
 
     devices = script_common.GetDevices(args.devices, args.denylist_file)
     device = devices[0]
@@ -390,6 +431,19 @@ def main():
       help='Path to the avd config textpb. '
            '(See //tools/android/avd/proto for message definition'
            ' and existing textpb files.)')
+  # We are re-using this argument that is used by our test runner
+  # to detect if we are testing against an instant app
+  # This allows us to know if we should filter tests based off the app
+  # app mode or not
+  # We are adding this filter directly instead of calling a function like
+  # we do with test_filter.AddFilterOptions below because this would make
+  # test-apk a required argument which would make this script fail
+  # because we provide this later programmatically in this script
+  parser.add_argument(
+      _TEST_APK_AS_INSTANT_ARG,
+      action='store_true',
+      help='Run CTS tests in instant app mode. '
+      'Instant apps run in a more restrictive execution environment.')
 
 
   test_filter.AddFilterOptions(parser)

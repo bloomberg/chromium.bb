@@ -8,6 +8,7 @@
 #include "src/image/SkImage_Lazy.h"
 
 #include "include/core/SkBitmap.h"
+#include "include/core/SkColorSpace.h"
 #include "include/core/SkData.h"
 #include "include/core/SkImageGenerator.h"
 #include "src/core/SkBitmapCache.h"
@@ -18,20 +19,20 @@
 #if SK_SUPPORT_GPU
 #include "include/gpu/GrDirectContext.h"
 #include "include/gpu/GrRecordingContext.h"
-#include "include/private/GrResourceKey.h"
 #include "src/core/SkResourceCache.h"
 #include "src/core/SkYUVPlanesCache.h"
-#include "src/gpu/GrCaps.h"
-#include "src/gpu/GrColorSpaceXform.h"
-#include "src/gpu/GrGpuResourcePriv.h"
-#include "src/gpu/GrPaint.h"
-#include "src/gpu/GrProxyProvider.h"
-#include "src/gpu/GrRecordingContextPriv.h"
-#include "src/gpu/GrSamplerState.h"
-#include "src/gpu/GrYUVATextureProxies.h"
-#include "src/gpu/SkGr.h"
-#include "src/gpu/SurfaceFillContext.h"
-#include "src/gpu/effects/GrYUVtoRGBEffect.h"
+#include "src/gpu/ResourceKey.h"
+#include "src/gpu/ganesh/GrCaps.h"
+#include "src/gpu/ganesh/GrColorSpaceXform.h"
+#include "src/gpu/ganesh/GrGpuResourcePriv.h"
+#include "src/gpu/ganesh/GrPaint.h"
+#include "src/gpu/ganesh/GrProxyProvider.h"
+#include "src/gpu/ganesh/GrRecordingContextPriv.h"
+#include "src/gpu/ganesh/GrSamplerState.h"
+#include "src/gpu/ganesh/GrYUVATextureProxies.h"
+#include "src/gpu/ganesh/SkGr.h"
+#include "src/gpu/ganesh/SurfaceFillContext.h"
+#include "src/gpu/ganesh/effects/GrYUVtoRGBEffect.h"
 #endif
 
 // Ref-counted tuple(SkImageGenerator, SkMutex) which allows sharing one generator among N images
@@ -426,7 +427,7 @@ GrSurfaceProxyView SkImage_Lazy::lockTextureProxyView(GrRecordingContext* rConte
 
     enum { kLockTexturePathCount = kRGBA_LockTexturePath + 1 };
 
-    GrUniqueKey key;
+    skgpu::UniqueKey key;
     if (texGenPolicy == GrImageTexGenPolicy::kDraw) {
         GrMakeKeyFromImageID(&key, this->uniqueID(), SkIRect::MakeSize(this->dimensions()));
     }
@@ -449,8 +450,9 @@ GrSurfaceProxyView SkImage_Lazy::lockTextureProxyView(GrRecordingContext* rConte
     if (key.isValid()) {
         auto proxy = proxyProvider->findOrCreateProxyByUniqueKey(key);
         if (proxy) {
-            GrSwizzle swizzle = caps->getReadSwizzle(proxy->backendFormat(), ct);
-            GrSurfaceProxyView view(std::move(proxy), kTopLeft_GrSurfaceOrigin, swizzle);
+            skgpu::Swizzle swizzle = caps->getReadSwizzle(proxy->backendFormat(), ct);
+            GrSurfaceOrigin origin = ScopedGenerator(fSharedGenerator)->origin();
+            GrSurfaceProxyView view(std::move(proxy), origin, swizzle);
             if (mipmapped == GrMipmapped::kNo ||
                 view.asTextureProxy()->mipmapped() == GrMipmapped::kYes) {
                 return view;

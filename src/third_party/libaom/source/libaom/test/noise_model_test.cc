@@ -9,6 +9,7 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
+#include <limits.h>
 #include <math.h>
 #include <algorithm>
 #include <vector>
@@ -77,8 +78,16 @@ std::vector<float> get_noise_psd(double *noise, int width, int height,
   float *block =
       (float *)aom_memalign(32, block_size * block_size * sizeof(block));
   std::vector<float> psd(block_size * block_size);
+  if (block == nullptr) {
+    EXPECT_NE(block, nullptr);
+    return psd;
+  }
   int num_blocks = 0;
   struct aom_noise_tx_t *tx = aom_noise_tx_malloc(block_size);
+  if (tx == nullptr) {
+    EXPECT_NE(tx, nullptr);
+    return psd;
+  }
   for (int y = 0; y <= height - block_size; y += block_size / 2) {
     for (int x = 0; x <= width - block_size; x += block_size / 2) {
       for (int yy = 0; yy < block_size; ++yy) {
@@ -145,7 +154,7 @@ TEST(NoiseStrengthSolver, GetCenters256Bins) {
 TEST(NoiseStrengthSolver, ObserveIdentity) {
   const int num_bins = 256;
   aom_noise_strength_solver_t solver;
-  EXPECT_EQ(1, aom_noise_strength_solver_init(&solver, num_bins, 8));
+  ASSERT_EQ(1, aom_noise_strength_solver_init(&solver, num_bins, 8));
 
   // We have to add a big more strength to constraints at the boundary to
   // overcome any regularization.
@@ -327,6 +336,22 @@ TEST(NoiseModel, InitFailsWithInvalidShape) {
   aom_noise_model_params_t params = { aom_noise_shape(100), 3, 8, 0 };
   EXPECT_FALSE(aom_noise_model_init(&model, params));
   aom_noise_model_free(&model);
+}
+
+TEST(NoiseModel, InitFailsWithInvalidBitdepth) {
+  aom_noise_model_t model;
+  aom_noise_model_params_t params = { AOM_NOISE_SHAPE_SQUARE, 2, 8, 0 };
+  for (int i = 0; i <= 32; ++i) {
+    params.bit_depth = i;
+    if (i == 8 || i == 10 || i == 12) {
+      EXPECT_TRUE(aom_noise_model_init(&model, params)) << "bit_depth: " << i;
+      aom_noise_model_free(&model);
+    } else {
+      EXPECT_FALSE(aom_noise_model_init(&model, params)) << "bit_depth: " << i;
+    }
+  }
+  params.bit_depth = INT_MAX;
+  EXPECT_FALSE(aom_noise_model_init(&model, params));
 }
 
 // A container template class to hold a data type and extra arguments.

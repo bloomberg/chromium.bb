@@ -12,6 +12,7 @@
 #include "content/public/common/window_container_type.mojom-shared.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
+#include "third_party/blink/public/mojom/mediastream/media_stream.mojom.h"
 #include "url/gurl.h"
 
 namespace background_loader {
@@ -36,10 +37,11 @@ class BackgroundLoaderContentsTest : public testing::Test,
   bool download() { return download_; }
   bool can_download_delegate_called() { return delegate_called_; }
 
-  void MediaAccessCallback(const blink::MediaStreamDevices& devices,
-                           blink::mojom::MediaStreamRequestResult result,
-                           std::unique_ptr<content::MediaStreamUI> ui);
-  blink::MediaStreamDevices devices() { return devices_; }
+  void MediaAccessCallback(
+      const blink::mojom::StreamDevicesSet& stream_devices_set,
+      blink::mojom::MediaStreamRequestResult result,
+      std::unique_ptr<content::MediaStreamUI> ui);
+  blink::mojom::StreamDevices& devices() { return devices_; }
   blink::mojom::MediaStreamRequestResult request_result() {
     return request_result_;
   }
@@ -50,8 +52,8 @@ class BackgroundLoaderContentsTest : public testing::Test,
  private:
   std::unique_ptr<BackgroundLoaderContents> contents_;
   bool download_;
-  bool delegate_called_;
-  blink::MediaStreamDevices devices_;
+  bool delegate_called_ = false;
+  blink::mojom::StreamDevices devices_;
   blink::mojom::MediaStreamRequestResult request_result_;
   std::unique_ptr<content::MediaStreamUI> media_stream_ui_;
   base::WaitableEvent waiter_;
@@ -59,7 +61,6 @@ class BackgroundLoaderContentsTest : public testing::Test,
 
 BackgroundLoaderContentsTest::BackgroundLoaderContentsTest()
     : download_(false),
-      delegate_called_(false),
       waiter_(base::WaitableEvent::ResetPolicy::MANUAL,
               base::WaitableEvent::InitialState::NOT_SIGNALED) {}
 
@@ -91,10 +92,15 @@ void BackgroundLoaderContentsTest::SetDelegate() {
 }
 
 void BackgroundLoaderContentsTest::MediaAccessCallback(
-    const blink::MediaStreamDevices& devices,
+    const blink::mojom::StreamDevicesSet& stream_devices_set,
     blink::mojom::MediaStreamRequestResult result,
     std::unique_ptr<content::MediaStreamUI> ui) {
-  devices_ = devices;
+  if (result == blink::mojom::MediaStreamRequestResult::OK) {
+    ASSERT_FALSE(stream_devices_set.stream_devices.empty());
+    devices_ = *stream_devices_set.stream_devices[0];
+  } else {
+    ASSERT_TRUE(stream_devices_set.stream_devices.empty());
+  }
   request_result_ = result;
   media_stream_ui_.reset(ui.get());
   waiter_.Signal();
@@ -171,7 +177,8 @@ TEST_F(BackgroundLoaderContentsTest, DoesNotGiveMediaAccessPermission) {
                           base::Unretained(this)));
   WaitForSignal();
   // No devices allowed.
-  ASSERT_TRUE(devices().empty());
+  ASSERT_TRUE(!devices().audio_device.has_value() &&
+              !devices().video_device.has_value());
   // Permission has been dismissed rather than denied.
   ASSERT_EQ(blink::mojom::MediaStreamRequestResult::PERMISSION_DISMISSED,
             request_result());
@@ -182,18 +189,6 @@ TEST_F(BackgroundLoaderContentsTest, CheckMediaAccessPermissionFalse) {
   ASSERT_FALSE(contents()->CheckMediaAccessPermission(
       nullptr /* contents */, GURL::EmptyGURL() /* security_origin */,
       blink::mojom::MediaStreamType::GUM_TAB_VIDEO_CAPTURE /* type */));
-}
-
-TEST_F(BackgroundLoaderContentsTest, AdjustPreviewsState) {
-  blink::PreviewsState previews_state;
-
-  // If the state starts out as off or disabled, it should stay that way.
-  previews_state = blink::PreviewsTypes::PREVIEWS_OFF;
-  contents()->AdjustPreviewsStateForNavigation(nullptr, &previews_state);
-  EXPECT_EQ(previews_state, blink::PreviewsTypes::PREVIEWS_OFF);
-  previews_state = blink::PreviewsTypes::PREVIEWS_NO_TRANSFORM;
-  contents()->AdjustPreviewsStateForNavigation(nullptr, &previews_state);
-  EXPECT_EQ(previews_state, blink::PreviewsTypes::PREVIEWS_NO_TRANSFORM);
 }
 
 }  // namespace background_loader

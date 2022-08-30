@@ -87,7 +87,7 @@ class COMPONENT_EXPORT(NETWORK_CPP_BASE)
     return status.ssl_info;
   }
 
-  static absl::optional<network::mojom::BlockedByResponseReason>
+  static const absl::optional<network::mojom::BlockedByResponseReason>&
   blocked_by_response_reason(const network::URLLoaderCompletionStatus& status) {
     return status.blocked_by_response_reason;
   }
@@ -110,6 +110,11 @@ class COMPONENT_EXPORT(NETWORK_CPP_BASE)
   static bool should_collapse_initiator(
       const network::URLLoaderCompletionStatus& status) {
     return status.should_collapse_initiator;
+  }
+
+  static bool pervasive_payload_requested(
+      const network::URLLoaderCompletionStatus& status) {
+    return status.pervasive_payload_requested;
   }
 
   static bool Read(network::mojom::URLLoaderCompletionStatusDataView data,

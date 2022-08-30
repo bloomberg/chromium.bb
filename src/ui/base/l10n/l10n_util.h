@@ -17,14 +17,17 @@
 #include "base/component_export.h"
 #include "build/build_config.h"
 
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
 #include "ui/base/l10n/l10n_util_mac.h"
-#endif  // OS_APPLE
+#endif  // BUILDFLAG(IS_APPLE)
 
 namespace l10n_util {
 
 // Takes normalized locale as |locale|. Returns language part (before '-').
 COMPONENT_EXPORT(UI_BASE) std::string GetLanguage(const std::string& locale);
+
+// Takes normalized locale as |locale|. Returns country part (after '-').
+COMPONENT_EXPORT(UI_BASE) std::string GetCountry(const std::string& locale);
 
 // This method translates a generic locale name to one of the locally defined
 // ones. This method returns true if it succeeds.

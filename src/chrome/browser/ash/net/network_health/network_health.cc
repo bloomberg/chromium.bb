@@ -18,10 +18,14 @@
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "chromeos/services/network_health/public/mojom/network_health.mojom.h"
 
-namespace chromeos {
+namespace ash {
 namespace network_health {
 
 namespace {
+
+// TODO(https://crbug.com/1164001): remove when migrated to namespace ash.
+namespace mojom = ::chromeos::network_health::mojom;
+namespace network_config = ::chromeos::network_config;
 
 constexpr mojom::NetworkState DeviceStateToNetworkState(
     network_config::mojom::DeviceStateType device_state) {
@@ -100,6 +104,8 @@ NetworkHealth::NetworkHealth() {
       cros_network_config_observer_receiver_.BindNewPipeAndPassRemote());
   RefreshNetworkHealthState();
   SetTimer(std::make_unique<base::RepeatingTimer>());
+  tracked_guids_timer_.Start(FROM_HERE, kUpdateTrackedGuidsInterval, this,
+                             &NetworkHealth::UpdateTrackedGuids);
 }
 
 void NetworkHealth::SetTimer(std::unique_ptr<base::RepeatingTimer> timer) {
@@ -115,9 +121,14 @@ void NetworkHealth::BindReceiver(
   receivers_.Add(this, std::move(receiver));
 }
 
-const mojom::NetworkHealthStatePtr NetworkHealth::GetNetworkHealthState() {
+const mojom::NetworkHealthState& NetworkHealth::GetNetworkHealthState() {
   NET_LOG(EVENT) << "Network Health State Requested";
-  return network_health_state_.Clone();
+  return network_health_state_;
+}
+
+const std::map<std::string, base::Time>&
+NetworkHealth::GetTrackedGuidsForTest() {
+  return guid_to_active_time_;
 }
 
 void NetworkHealth::AddObserver(
@@ -131,6 +142,15 @@ void NetworkHealth::GetNetworkList(GetNetworkListCallback callback) {
 
 void NetworkHealth::GetHealthSnapshot(GetHealthSnapshotCallback callback) {
   std::move(callback).Run(network_health_state_.Clone());
+}
+
+void NetworkHealth::GetRecentlyActiveNetworks(
+    GetRecentlyActiveNetworksCallback callback) {
+  std::vector<std::string> networks;
+  for (auto const& [guid, timestamp] : guid_to_active_time_) {
+    networks.push_back(guid);
+  }
+  std::move(callback).Run(std::move(networks));
 }
 
 void NetworkHealth::OnNetworkStateListChanged() {
@@ -156,10 +176,6 @@ void NetworkHealth::OnNetworkStateChanged(
   HandleNetworkEventsForInactiveNetworks(std::move(network_state));
   RequestNetworkStateList();
 }
-
-void NetworkHealth::OnVpnProvidersChanged() {}
-
-void NetworkHealth::OnNetworkCertificatesChanged() {}
 
 void NetworkHealth::OnNetworkStateListReceived(
     std::vector<network_config::mojom::NetworkStatePropertiesPtr> props) {
@@ -218,6 +234,8 @@ void NetworkHealth::CreateNetworkHealthState() {
     network_health_state_.networks.push_back(
         CreateNetwork(device_prop.second, nullptr));
   }
+
+  UpdateTrackedGuids();
 }
 
 void NetworkHealth::RefreshNetworkHealthState() {
@@ -364,10 +382,33 @@ void NetworkHealth::AnalyzeSignalStrength() {
     if (!analyzed_networks.count(it->first)) {
       it = signal_strength_trackers_.erase(it);
     } else {
+      ++it;
+    }
+  }
+}
+
+bool NetworkHealth::IsActive(const mojom::NetworkPtr& network) {
+  return network->state == mojom::NetworkState::kConnecting ||
+         network->state == mojom::NetworkState::kPortal ||
+         network->state == mojom::NetworkState::kConnected ||
+         network->state == mojom::NetworkState::kOnline;
+}
+
+void NetworkHealth::UpdateTrackedGuids() {
+  for (auto& network : network_health_state_.networks) {
+    if (network->guid.has_value() && IsActive(network)) {
+      guid_to_active_time_[network->guid.value()] = base::Time::Now();
+    }
+  }
+  for (auto it = guid_to_active_time_.begin();
+       it != guid_to_active_time_.end();) {
+    if (base::Time::Now() - it->second > kUpdateTrackedGuidsInterval) {
+      it = guid_to_active_time_.erase(it);
+    } else {
       it++;
     }
   }
 }
 
 }  // namespace network_health
-}  // namespace chromeos
+}  // namespace ash

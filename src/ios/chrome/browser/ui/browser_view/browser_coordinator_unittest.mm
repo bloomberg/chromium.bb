@@ -4,17 +4,20 @@
 
 #import "ios/chrome/browser/ui/browser_view/browser_coordinator.h"
 
-#include "base/files/file_util.h"
-#include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
-#include "ios/chrome/browser/download/download_directory_util.h"
+#import "base/files/file_util.h"
+#import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#import "ios/chrome/browser/download/download_directory_util.h"
 #import "ios/chrome/browser/download/external_app_util.h"
-#include "ios/chrome/browser/favicon/favicon_service_factory.h"
-#include "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
-#include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
-#include "ios/chrome/browser/history/history_service_factory.h"
-#include "ios/chrome/browser/main/test_browser.h"
-#include "ios/chrome/browser/search_engines/template_url_service_factory.h"
+#import "ios/chrome/browser/favicon/favicon_service_factory.h"
+#import "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
+#import "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
+#import "ios/chrome/browser/history/history_service_factory.h"
+#import "ios/chrome/browser/main/test_browser.h"
+#import "ios/chrome/browser/prerender/prerender_service_factory.h"
+#import "ios/chrome/browser/search_engines/template_url_service_factory.h"
+#import "ios/chrome/browser/sync/sync_error_browser_agent.h"
 #import "ios/chrome/browser/ui/commands/activity_service_commands.h"
+#import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_coordinator_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
@@ -30,12 +33,12 @@
 #import "ios/chrome/browser/web/web_state_delegate_browser_agent.h"
 #import "ios/chrome/browser/web_state_list/tab_insertion_browser_agent.h"
 #import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
-#include "ios/web/public/test/web_task_environment.h"
-#include "testing/gtest/include/gtest/gtest.h"
-#include "testing/gtest_mac.h"
-#include "testing/platform_test.h"
+#import "ios/web/public/test/web_task_environment.h"
+#import "testing/gtest/include/gtest/gtest.h"
+#import "testing/gtest_mac.h"
+#import "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
-#include "third_party/ocmock/gtest_support.h"
+#import "third_party/ocmock/gtest_support.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -63,9 +66,14 @@ class BrowserCoordinatorTest : public PlatformTest {
     test_cbs_builder.AddTestingFactory(
         ios::FaviconServiceFactory::GetInstance(),
         ios::FaviconServiceFactory::GetDefaultFactory());
+    test_cbs_builder.AddTestingFactory(
+        ios::HistoryServiceFactory::GetInstance(),
+        ios::HistoryServiceFactory::GetDefaultFactory());
+    test_cbs_builder.AddTestingFactory(
+        PrerenderServiceFactory::GetInstance(),
+        PrerenderServiceFactory::GetDefaultFactory());
 
     chrome_browser_state_ = test_cbs_builder.Build();
-    CHECK(chrome_browser_state_->CreateHistoryService());
     browser_ = std::make_unique<TestBrowser>(chrome_browser_state_.get());
     UrlLoadingNotifierBrowserAgent::CreateForBrowser(browser_.get());
     SceneStateBrowserAgent::CreateForBrowser(browser_.get(), scene_state_);
@@ -73,6 +81,7 @@ class BrowserCoordinatorTest : public PlatformTest {
     TabInsertionBrowserAgent::CreateForBrowser(browser_.get());
     WebStateDelegateBrowserAgent::CreateForBrowser(
         browser_.get(), TabInsertionBrowserAgent::FromBrowser(browser_.get()));
+    SyncErrorBrowserAgent::CreateForBrowser(browser_.get());
 
     IncognitoReauthSceneAgent* reauthAgent = [[IncognitoReauthSceneAgent alloc]
         initWithReauthModule:[[ReauthenticationModule alloc] init]];
@@ -81,6 +90,19 @@ class BrowserCoordinatorTest : public PlatformTest {
     CommandDispatcher* dispatcher = browser_->GetCommandDispatcher();
     [dispatcher startDispatchingToTarget:reauthAgent
                              forProtocol:@protocol(IncognitoReauthCommands)];
+
+    // Set up ApplicationCommands mock. Because ApplicationCommands conforms
+    // to ApplicationSettingsCommands, that needs to be mocked and dispatched
+    // as well.
+    id mockApplicationCommandHandler =
+        OCMProtocolMock(@protocol(ApplicationCommands));
+    id mockApplicationSettingsCommandHandler =
+        OCMProtocolMock(@protocol(ApplicationSettingsCommands));
+    [dispatcher startDispatchingToTarget:mockApplicationCommandHandler
+                             forProtocol:@protocol(ApplicationCommands)];
+    [dispatcher
+        startDispatchingToTarget:mockApplicationSettingsCommandHandler
+                     forProtocol:@protocol(ApplicationSettingsCommands)];
   }
 
   BrowserCoordinator* GetBrowserCoordinator() {

@@ -25,8 +25,9 @@ pages](/developers/design-documents/displaying-a-web-page-in-chrome).
 
 ## Top-level projects
 
-When you check out Chromium, you will notice a number of top-level directories.
-These projects are as follows:
+When you [Browse and Search the Chromium Code](https://source.chromium.org/chromium)
+or [Checkout the Chromium Code](https://www.chromium.org/developers/how-tos/get-the-code/)
+you will notice a number of top-level directories:
 
 *   **android_webview:** Provides a facade over src/content suitable for
             integration into the android platform. NOT intended for usage in

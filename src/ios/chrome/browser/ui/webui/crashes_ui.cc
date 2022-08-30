@@ -80,10 +80,10 @@ class CrashesDOMHandler : public web::WebUIIOSMessageHandler {
   void OnUploadListAvailable();
 
   // Asynchronously fetches the list of crashes. Called from JS.
-  void HandleRequestCrashes(const base::ListValue* args);
+  void HandleRequestCrashes(const base::Value::List& args);
 
   // Asynchronously requests a user triggered upload. Called from JS.
-  void HandleRequestSingleCrashUpload(base::Value::ConstListView args);
+  void HandleRequestSingleCrashUpload(const base::Value::List& args);
 
   // Sends the recent crashes list JS.
   void UpdateUI();
@@ -105,7 +105,7 @@ CrashesDOMHandler::~CrashesDOMHandler() {
 void CrashesDOMHandler::RegisterMessages() {
   upload_list_->Load(base::BindOnce(&CrashesDOMHandler::OnUploadListAvailable,
                                     base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       crash_reporter::kCrashesUIRequestCrashList,
       base::BindRepeating(&CrashesDOMHandler::HandleRequestCrashes,
                           base::Unretained(this)));
@@ -115,7 +115,7 @@ void CrashesDOMHandler::RegisterMessages() {
                           base::Unretained(this)));
 }
 
-void CrashesDOMHandler::HandleRequestCrashes(const base::ListValue* args) {
+void CrashesDOMHandler::HandleRequestCrashes(const base::Value::List& args) {
   if (first_load_) {
     first_load_ = false;
     if (list_available_)
@@ -128,7 +128,7 @@ void CrashesDOMHandler::HandleRequestCrashes(const base::ListValue* args) {
 }
 
 void CrashesDOMHandler::HandleRequestSingleCrashUpload(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   DCHECK(crash_reporter::IsCrashpadRunning());
   if (!IOSChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled()) {
     return;
@@ -147,17 +147,17 @@ void CrashesDOMHandler::OnUploadListAvailable() {
 void CrashesDOMHandler::UpdateUI() {
   bool crash_reporting_enabled =
       IOSChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled();
-  base::ListValue crash_list;
+  base::Value::List crash_list;
   if (crash_reporting_enabled)
     crash_reporter::UploadListToValue(upload_list_.get(), &crash_list);
 
   base::Value result(base::Value::Type::DICTIONARY);
-  result.SetBoolPath("enabled", crash_reporting_enabled);
-  result.SetBoolPath("dynamicBackend", false);
-  result.SetBoolPath("manualUploads", crash_reporter::IsCrashpadRunning());
-  result.SetPath("crashes", std::move(crash_list));
-  result.SetStringPath("version", version_info::GetVersionNumber());
-  result.SetStringPath("os", base::SysInfo::OperatingSystemName() + " " +
+  result.GetDict().Set("enabled", crash_reporting_enabled);
+  result.GetDict().Set("dynamicBackend", false);
+  result.GetDict().Set("manualUploads", crash_reporter::IsCrashpadRunning());
+  result.GetDict().Set("crashes", std::move(crash_list));
+  result.GetDict().Set("version", version_info::GetVersionNumber());
+  result.GetDict().Set("os", base::SysInfo::OperatingSystemName() + " " +
                                  base::SysInfo::OperatingSystemVersion());
 
   base::Value event_name(crash_reporter::kCrashesUIUpdateCrashList);

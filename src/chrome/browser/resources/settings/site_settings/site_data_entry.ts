@@ -17,11 +17,12 @@ import '../site_favicon.js';
 
 import {FocusRowBehavior} from 'chrome://resources/js/cr/ui/focus_row_behavior.m.js';
 import {I18nMixin, I18nMixinInterface} from 'chrome://resources/js/i18n_mixin.js';
-import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {MetricsBrowserProxyImpl, PrivacyElementInteractions} from '../metrics_browser_proxy.js';
 
 import {LocalDataBrowserProxyImpl, LocalDataItem} from './local_data_browser_proxy.js';
+import {getTemplate} from './site_data_entry.html.js';
 
 const SiteDataEntryElementBase =
     mixinBehaviors([FocusRowBehavior], I18nMixin(PolymerElement)) as
@@ -33,7 +34,7 @@ class SiteDataEntryElement extends SiteDataEntryElementBase {
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {

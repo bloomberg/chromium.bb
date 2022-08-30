@@ -1,6 +1,6 @@
-/* Copyright (c) 2021 The Khronos Group Inc.
- * Copyright (c) 2021 Valve Corporation
- * Copyright (c) 2021 LunarG, Inc.
+/* Copyright (c) 2022 The Khronos Group Inc.
+ * Copyright (c) 2022 Valve Corporation
+ * Copyright (c) 2022 LunarG, Inc.
  * Modifications Copyright (C) 2020 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -33,6 +33,7 @@ typedef struct {
     CHECK_DISABLED &disables;
     std::vector<uint32_t> &message_filter_list;
     int32_t *duplicate_message_limit;
+    bool *fine_grained_locking;
 } ConfigAndEnvSettings;
 
 static const layer_data::unordered_map<std::string, VkValidationFeatureDisableEXT> VkValFeatureDisableLookup = {
@@ -69,7 +70,10 @@ static const layer_data::unordered_map<std::string, ValidationCheckDisables> Val
 static const layer_data::unordered_map<std::string, ValidationCheckEnables> ValidationEnableLookup = {
     {"VALIDATION_CHECK_ENABLE_VENDOR_SPECIFIC_ARM", VALIDATION_CHECK_ENABLE_VENDOR_SPECIFIC_ARM},
     {"VALIDATION_CHECK_ENABLE_VENDOR_SPECIFIC_AMD", VALIDATION_CHECK_ENABLE_VENDOR_SPECIFIC_AMD},
+    {"VALIDATION_CHECK_ENABLE_VENDOR_SPECIFIC_IMG", VALIDATION_CHECK_ENABLE_VENDOR_SPECIFIC_IMG},
     {"VALIDATION_CHECK_ENABLE_VENDOR_SPECIFIC_ALL", VALIDATION_CHECK_ENABLE_VENDOR_SPECIFIC_ALL},
+    {"VALIDATION_CHECK_ENABLE_SYNCHRONIZATION_VALIDATION_QUEUE_SUBMIT",
+     VALIDATION_CHECK_ENABLE_SYNCHRONIZATION_VALIDATION_QUEUE_SUBMIT},
 };
 
 // This should mirror the 'DisableFlags' enumerated type
@@ -94,8 +98,10 @@ static const std::vector<std::string> EnableFlagNameHelper = {
     "VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT",                     // best_practices,
     "VALIDATION_CHECK_ENABLE_VENDOR_SPECIFIC_ARM",                         // vendor_specific_arm,
     "VALIDATION_CHECK_ENABLE_VENDOR_SPECIFIC_AMD",                         // vendor_specific_amd,
+    "VALIDATION_CHECK_ENABLE_VENDOR_SPECIFIC_IMG",                         // vendor_specific_img,
     "VK_VALIDATION_FEATURE_ENABLE_DEBUG_PRINTF_EXT",                       // debug_printf,
-    "VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION"              // sync_validation,
+    "VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION",             // sync_validation,
+    "VALIDATION_CHECK_ENABLE_SYNCHRONIZATION_VALIDATION_QUEUE_SUBMIT",     // queuesubmit time sync_validation,
 };
 
 void ProcessConfigAndEnvSettings(ConfigAndEnvSettings *settings_data);

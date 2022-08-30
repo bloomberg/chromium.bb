@@ -13,6 +13,22 @@ package perfetto.protos;
 
 option go_package = "github.com/google/perfetto/perfetto_proto";
 
+// Begin of protos/perfetto/common/ftrace_descriptor.proto
+
+message FtraceDescriptor {
+  message AtraceCategory {
+    optional string name = 1;
+    optional string description = 2;
+  }
+
+  // Report the available atrace categories.
+  //
+  // Used by Traceur via `perfetto --query`.
+  repeated AtraceCategory atrace_categories = 1;
+}
+
+// End of protos/perfetto/common/ftrace_descriptor.proto
+
 // Begin of protos/perfetto/common/gpu_counter_descriptor.proto
 
 // Description of GPU counters.
@@ -186,6 +202,8 @@ message DataSourceDescriptor {
   optional GpuCounterDescriptor gpu_counter_descriptor = 5 [lazy = true];
 
   optional TrackEventDescriptor track_event_descriptor = 6 [lazy = true];
+
+  optional FtraceDescriptor ftrace_descriptor = 8 [lazy = true];
 }
 
 // End of protos/perfetto/common/data_source_descriptor.proto
@@ -203,6 +221,10 @@ message TracingServiceState {
 
     // Typically matches the process name.
     optional string name = 2;
+
+    // Unix pid of the remote process. Supported only on Linux-based systems.
+    // Introduced in v24 / Android T.
+    optional int32 pid = 5;
 
     // Unix uid of the remote process.
     optional int32 uid = 3;
@@ -224,11 +246,52 @@ message TracingServiceState {
     optional int32 producer_id = 2;
   }
 
+  message TracingSession {
+    // The TracingSessionID.
+    optional uint64 id = 1;
+
+    // The Unix uid of the consumer that started the session.
+    // This is meaningful only if the caller is root. In all other cases only
+    // tracing sessions that match the caller UID will be displayed.
+    optional int32 consumer_uid = 2;
+
+    // Internal state of the tracing session.
+    // These strings are FYI only and subjected to change.
+    optional string state = 3;
+
+    // The unique_session_name as set in the trace config (might be empty).
+    optional string unique_session_name = 4;
+
+    // The number and size of each buffer.
+    repeated uint32 buffer_size_kb = 5;
+
+    // Duration, as specified in the TraceConfig.duration_ms.
+    optional uint32 duration_ms = 6;
+
+    // Number of data sources involved in the session.
+    optional uint32 num_data_sources = 7;
+
+    // Time when the session was started, in the CLOCK_REALTIME domain.
+    // Available only on Linux-based systems.
+    optional int64 start_realtime_ns = 8;
+  }
+
   // Lists all the producers connected.
   repeated Producer producers = 1;
 
   // Lists the data sources available.
   repeated DataSource data_sources = 2;
+
+  // Lists the tracing sessions active AND owned by a consumer that has the same
+  // UID of the caller (or all of them if the caller is root).
+  // Introduced in v24 / Android T.
+  repeated TracingSession tracing_sessions = 6;
+
+  // This is always set to true from v24 and beyond. This flag is only used to
+  // tell the difference between: (1) talking to a recent service which happens
+  // to have no tracing session active; (2) talking to an older version of the
+  // service which will never report any tracing session.
+  optional bool supports_tracing_sessions = 7;
 
   // Total number of tracing sessions.
   optional int32 num_sessions = 3;
@@ -258,9 +321,25 @@ enum BuiltinClock {
   BUILTIN_CLOCK_MAX_ID = 63;
 
   reserved 7, 8;
+
+  // An internal CL (ag/16521245) has taken this for BUILTIN_CLOCK_TSC.
+  // That might get upstreamed later on. Avoid diverging on this ID in future.
+  reserved 9;
 }
 
 // End of protos/perfetto/common/builtin_clock.proto
+
+// Begin of protos/perfetto/config/android/android_game_intervention_list_config.proto
+
+// Data source that lists game modes and game interventions of games
+// on an Android device.
+message AndroidGameInterventionListConfig {
+  // If not empty, emit info about only the following list of package names
+  // (exact match, no regex). Otherwise, emit info about all packages.
+  repeated string package_name_filter = 1;
+}
+
+// End of protos/perfetto/config/android/android_game_intervention_list_config.proto
 
 // Begin of protos/perfetto/common/android_log_constants.proto
 
@@ -417,6 +496,15 @@ message FtraceConfig {
   // TODO(kaleshsingh): implement the logic behind this. Right now this flag
   // does nothing.
   optional bool throttle_rss_stat = 15;
+
+  // If true, avoid enabling events that aren't statically known by
+  // traced_probes. Otherwise, the default is to emit such events as
+  // GenericFtraceEvent protos.
+  // Prefer to keep this flag at its default. This was added for Android
+  // tracing, where atrace categories and/or atrace HAL requested events can
+  // expand to events that aren't of interest to the tracing user.
+  // Introduced in: Android T.
+  optional bool disable_generic_events = 16;
 }
 
 // End of protos/perfetto/config/ftrace/ftrace_config.proto
@@ -583,12 +671,11 @@ message ProcessStatsConfig {
   // multiple.
   optional uint32 proc_stats_cache_ttl_ms = 6;
 
-  // Whether to record /proc/tid/time_in_state.
-  optional bool record_thread_time_in_state = 7;
+  // DEPRECATED record_thread_time_in_state
+  reserved 7;
 
-  // Size of the cache for thread time_in_state cpu freq values.
-  // If not specificed, the default is used.
-  optional uint32 thread_time_in_state_cache_size = 8;
+  // DEPRECATED thread_time_in_state_cache_size
+  reserved 8;
 }
 
 // End of protos/perfetto/config/process_stats/process_stats_config.proto
@@ -622,6 +709,10 @@ message HeapprofdConfig {
   //
   // BUGS
   // Before Android 12, setting this to 0 would crash the target process.
+  //
+  // N.B. This must be explicitly set to a non-zero value for all heaps (with
+  // this field or with heap_sampling_intervals), otherwise the producer will
+  // not start.
   optional uint64 sampling_interval_bytes = 1;
 
   // If less than the given numbers of bytes are left free in the shared
@@ -676,6 +767,8 @@ message HeapprofdConfig {
   // crash the target process before Android 12.
   //
   // Introduced in Android 12.
+  //
+  // All values must be non-zero or the producer will not start.
   repeated uint64 heap_sampling_intervals = 22;
 
   // Sample all heaps registered by target process. Introduced in Android 12.
@@ -776,7 +869,7 @@ message HeapprofdConfig {
 
 // Begin of protos/perfetto/config/profiling/java_hprof_config.proto
 
-// Configuration for go/heapprofd.
+// Configuration for managed app heap graph snapshots.
 message JavaHprofConfig {
   // If dump_interval_ms != 0, the following configuration is used.
   message ContinuousDumpConfig {
@@ -794,12 +887,27 @@ message JavaHprofConfig {
     optional bool scan_pids_only_on_start = 3;
   }
 
-  // This input is normalized in the following way: if it contains slashes,
-  // everything up to the last slash is discarded. If it contains "@",
-  // everything after the first @ is discared.
-  // E.g. /system/bin/surfaceflinger@1.0 normalizes to surfaceflinger.
-  // This transformation is also applied to the processes' command lines when
-  // matching.
+  // Command line allowlist, matched against the /proc/<pid>/cmdline (not the
+  // comm string). The semantics of this field were changed since its original
+  // introduction.
+  //
+  // On Android T+ (13+), this field can specify a single wildcard (*), and
+  // the profiler will attempt to match it in two possible ways:
+  // * if the pattern starts with a '/', then it is matched against the first
+  //   segment of the cmdline (i.e. argv0). For example "/bin/e*" would match
+  //   "/bin/echo".
+  // * otherwise the pattern is matched against the part of argv0
+  //   corresponding to the binary name (this is unrelated to /proc/pid/exe).
+  //   For example "echo" would match "/bin/echo".
+  //
+  // On Android S (12) and below, both this pattern and /proc/pid/cmdline get
+  // normalized prior to an exact string comparison. Normalization is as
+  // follows: (1) trim everything beyond the first null or "@" byte; (2) if
+  // the string contains forward slashes, trim everything up to and including
+  // the last one.
+  //
+  // Implementation note: in either case, at most 511 characters of cmdline
+  // are considered.
   repeated string process_cmdline = 1;
 
   // For watermark based triggering or local debugging.
@@ -882,14 +990,56 @@ message PerfEvents {
     optional string name = 10;
   }
 
+  // Builtin counter names from the uapi header. Commented with their perf tool
+  // aliases.
+  // TODO(rsavitski): consider generating enums for cache events (should be
+  // finite), and generally make this list as extensive as possible. Excluding
+  // things like dynamic PMUs since those don't fit into a static enum.
+  // Next id: 21
   enum Counter {
     UNKNOWN_COUNTER = 0;
-    // software:
+
+    // cpu-clock
     SW_CPU_CLOCK = 1;
+    // page-faults, faults
     SW_PAGE_FAULTS = 2;
-    // hardware:
+    // task-clock
+    SW_TASK_CLOCK = 3;
+    // context-switches, cs
+    SW_CONTEXT_SWITCHES = 4;
+    // cpu-migrations, migrations
+    SW_CPU_MIGRATIONS = 5;
+    // minor-faults
+    SW_PAGE_FAULTS_MIN = 6;
+    // major-faults
+    SW_PAGE_FAULTS_MAJ = 7;
+    // alignment-faults
+    SW_ALIGNMENT_FAULTS = 8;
+    // emulation-faults
+    SW_EMULATION_FAULTS = 9;
+    // dummy
+    SW_DUMMY = 20;
+
+    // cpu-cycles, cycles
     HW_CPU_CYCLES = 10;
+    // instructions
     HW_INSTRUCTIONS = 11;
+    // cache-references
+    HW_CACHE_REFERENCES = 12;
+    // cache-misses
+    HW_CACHE_MISSES = 13;
+    // branch-instructions, branches
+    HW_BRANCH_INSTRUCTIONS = 14;
+    // branch-misses
+    HW_BRANCH_MISSES = 15;
+    // bus-cycles
+    HW_BUS_CYCLES = 16;
+    // stalled-cycles-frontend, idle-cycles-frontend
+    HW_STALLED_CYCLES_FRONTEND = 17;
+    // stalled-cycles-backend, idle-cycles-backend
+    HW_STALLED_CYCLES_BACKEND = 18;
+    // ref-cycles
+    HW_REF_CPU_CYCLES = 19;
   }
 
   message Tracepoint {
@@ -1051,6 +1201,12 @@ message PerfEventConfig {
     // on debug builds.
     // This does *not* disclose KASLR, as only the function names are emitted.
     optional bool kernel_frames = 2;
+
+    // Whether to record and unwind userspace callstacks. If unset, defaults to
+    // including userspace (UNWIND_DWARF) both for backwards compatibility and
+    // as the most common default (this defaulting is only applicable if the
+    // outer CallstackSampling message is explicitly set).
+    optional UnwindMode user_frames = 3;
   }
 
   message Scope {
@@ -1060,24 +1216,50 @@ message PerfEventConfig {
     // process.
     repeated int32 target_pid = 1;
 
-    // Command line allowlist, matched against the
-    // /proc/<pid>/cmdline (not the comm string), with both sides being
-    // "normalized". Normalization is as follows: (1) trim everything beyond the
-    // first null or "@" byte; (2) if the string contains forward slashes, trim
-    // everything up to and including the last one.
+    // Command line allowlist, matched against the /proc/<pid>/cmdline (not the
+    // comm string). The semantics of this field were changed since its original
+    // introduction.
+    //
+    // On Android T+ (13+), this field can specify a single wildcard (*), and
+    // the profiler will attempt to match it in two possible ways:
+    // * if the pattern starts with a '/', then it is matched against the first
+    //   segment of the cmdline (i.e. argv0). For example "/bin/e*" would match
+    //   "/bin/echo".
+    // * otherwise the pattern is matched against the part of argv0
+    //   corresponding to the binary name (this is unrelated to /proc/pid/exe).
+    //   For example "echo" would match "/bin/echo".
+    //
+    // On Android S (12) and below, both this pattern and /proc/pid/cmdline get
+    // normalized prior to an exact string comparison. Normalization is as
+    // follows: (1) trim everything beyond the first null or "@" byte; (2) if
+    // the string contains forward slashes, trim everything up to and including
+    // the last one.
+    //
+    // Implementation note: in either case, at most 511 characters of cmdline
+    // are considered.
     repeated string target_cmdline = 2;
 
     // List of excluded pids.
     repeated int32 exclude_pid = 3;
 
-    // List of excluded cmdlines. Normalized in the same way as
-    // |target_cmdline|.
+    // List of excluded cmdlines. See description of |target_cmdline| for how
+    // this is handled.
     repeated string exclude_cmdline = 4;
 
     // Number of additional command lines to sample. Only those which are
     // neither explicitly included nor excluded will be considered. Processes
     // are accepted on a first come, first served basis.
     optional uint32 additional_cmdline_count = 5;
+  }
+
+  // Userspace unwinding mode. A possible future addition is kernel-unwound
+  // callchains for frame pointer based systems.
+  enum UnwindMode {
+    UNWIND_UNKNOWN = 0;
+    // Do not unwind userspace:
+    UNWIND_SKIP = 1;
+    // Use libunwindstack (default):
+    UNWIND_DWARF = 2;
   }
 }
 
@@ -1305,6 +1487,10 @@ message SysStatsConfig {
   // This option can be used to record unchanging values.
   // Updates from frequency changes can come from ftrace/set_clock_rate.
   optional uint32 devfreq_period_ms = 7;
+
+  // Polls /sys/devices/system/cpu/cpu*/cpufreq/cpuinfo_cur_freq every X ms.
+  // This is required to be > 10ms to avoid excessive CPU usage.
+  optional uint32 cpufreq_period_ms = 8;
 }
 
 // End of protos/perfetto/config/sys_stats/sys_stats_config.proto
@@ -1405,6 +1591,37 @@ message TrackEventConfig {
 
   // Default: []
   repeated string enabled_tags = 4;
+
+  // Default: false (i.e. enabled by default)
+  optional bool disable_incremental_timestamps = 5;
+
+  // Allows to specify a custom unit different than the default (ns).
+  // Also affects thread timestamps if enable_thread_time_sampling = true.
+  // A multiplier of 1000 means that a timestamp = 3 should be interpreted as
+  // 3000 ns = 3 us.
+  // Default: 1 (if unset, it should be read as 1).
+  optional uint64 timestamp_unit_multiplier = 6;
+
+  // Default: false (i.e. debug_annotations is NOT filtered out by default)
+  // When true, any debug annotations provided as arguments to the
+  // TRACE_EVENT macros are not written into the trace. Typed arguments will
+  // still be emitted even if set to true.
+  optional bool filter_debug_annotations = 7;
+
+  // Default : false (i.e. disabled)
+  // When true, the SDK samples and emits the current thread time counter value
+  // for each event on the current thread's track. This value represents the
+  // total CPU time consumed by that thread since its creation. Note that if a
+  // thread is not scheduled by OS for some duration, that time won't be
+  // included in thread_time.
+  // Learn more : "CLOCK_THREAD_CPUTIME_ID" flag at
+  // https://linux.die.net/man/3/clock_gettime
+  optional bool enable_thread_time_sampling = 8;
+
+  // Default: false (i.e. dynamic event names are NOT filtered out by default)
+  // When true, event_names wrapped in perfetto::DynamicString will be filtered
+  // out.
+  optional bool filter_dynamic_event_names = 9;
 }
 
 // End of protos/perfetto/config/track_event/track_event_config.proto
@@ -1488,6 +1705,9 @@ message DataSourceConfig {
   optional AndroidLogConfig android_log_config = 107 [lazy = true];
   // TODO(fmayer): Add data source name for this.
   optional GpuCounterConfig gpu_counter_config = 108 [lazy = true];
+  // Data source name: android.game_intervention_list
+  optional AndroidGameInterventionListConfig
+      android_game_intervention_list_config = 116 [lazy = true];
   // Data source name: android.packages_list
   optional PackagesListConfig packages_list_config = 109 [lazy = true];
   // Data source name: linux.perf
@@ -1541,7 +1761,7 @@ message DataSourceConfig {
 // It contains the general config for the logging buffer(s) and the configs for
 // all the data source being enabled.
 //
-// Next id: 34.
+// Next id: 35.
 message TraceConfig {
   message BufferConfig {
     optional uint32 size_kb = 1;
@@ -1952,6 +2172,66 @@ message TraceConfig {
   // old field number for trace_filter
   reserved 32;
   optional TraceFilter trace_filter = 33;
+
+  // Android-only. Not for general use. If set, reports the trace to the
+  // Android framework. This field is read by perfetto_cmd, rather than the
+  // tracing service. This field must be set when passing the --upload flag to
+  // perfetto_cmd.
+  message AndroidReportConfig {
+    // In this message, either:
+    //  * |reporter_service_package| and |reporter_service_class| must be set.
+    //  * |skip_reporting| must be explicitly set to true.
+
+    optional string reporter_service_package = 1;
+    optional string reporter_service_class = 2;
+
+    // If true, then skips reporting the trace to Android framework.
+    //
+    // This flag is useful in testing (e.g. Perfetto-statsd integration tests)
+    // or when we explicitly don't want to report traces to the framework even
+    // when they usually would (e.g. configs deployed using statsd but only
+    // used for inclusion in bugreports using |bugreport_score|).
+    //
+    // The motivation for having this flag, instead of just not setting
+    // |framework_report_config|, is prevent accidents where
+    // |framework_report_config| is omitted by mistake.
+    optional bool skip_report = 3;
+
+    // If true, will direct the Android framework to read the data in trace
+    // file and pass it to the reporter class over a pipe instead of passing
+    // the file descriptor directly.
+    //
+    // This flag is needed because the Android test framework does not
+    // currently support priv-app helper apps (in terms of SELinux) and we
+    // really don't want to add an allow rule for untrusted_app to receive
+    // trace fds.
+    //
+    // Because of this, we instead will direct the framework to create a new
+    // pipe and pass this to the reporter process instead. As the pipe is
+    // created by the framework, we won't have any problems with SELinux
+    // (system_server is already allowed to pass pipe fds, even
+    // to untrusted apps).
+    //
+    // As the name suggests this option *MUST* only be used for testing.
+    // Note that the framework will reject (and drop) files which are too
+    // large both for simplicity and to be minimize the amount of data we
+    // pass to a non-priv app (note that the framework will still check
+    // manifest permissions even though SELinux permissions are worked around).
+    optional bool use_pipe_in_framework_for_testing = 4;
+  }
+  optional AndroidReportConfig android_report_config = 34;
+
+  // If set, delays the start of tracing by a random duration. The duration is
+  // chosen from a uniform distribution between the specified minimum and
+  // maximum.
+  // Note: this delay is implemented by perfetto_cmd *not* by traced so will
+  // not work if you communicate with traced directly over the consumer API.
+  // Introduced in Android T.
+  message CmdTraceStartDelay {
+    optional uint32 min_delay_ms = 1;
+    optional uint32 max_delay_ms = 2;
+  }
+  optional CmdTraceStartDelay cmd_trace_start_delay = 35;
 }
 
 // End of protos/perfetto/config/trace_config.proto

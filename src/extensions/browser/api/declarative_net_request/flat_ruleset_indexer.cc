@@ -9,11 +9,11 @@
 #include "base/check_op.h"
 #include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/strings/escape.h"
 #include "base/strings/string_util.h"
 #include "extensions/browser/api/declarative_net_request/constants.h"
 #include "extensions/browser/api/declarative_net_request/indexed_rule.h"
 #include "extensions/browser/api/declarative_net_request/utils.h"
-#include "net/base/escape.h"
 
 namespace extensions {
 namespace declarative_net_request {
@@ -134,7 +134,7 @@ FlatOffset<flat::UrlTransform> BuildTransformOffset(
     for (const std::string& remove_param :
          *transform.query_transform->remove_params) {
       remove_params_escaped.insert(
-          net::EscapeQueryParamValue(remove_param, use_plus));
+          base::EscapeQueryParamValue(remove_param, use_plus));
     }
 
     remove_query_params =
@@ -151,9 +151,9 @@ FlatOffset<flat::UrlTransform> BuildTransformOffset(
     for (const dnr_api::QueryKeyValue& query_pair :
          *transform.query_transform->add_or_replace_params) {
       FlatStringOffset key = builder->CreateSharedString(
-          net::EscapeQueryParamValue(query_pair.key, use_plus));
+          base::EscapeQueryParamValue(query_pair.key, use_plus));
       FlatStringOffset value = builder->CreateSharedString(
-          net::EscapeQueryParamValue(query_pair.value, use_plus));
+          base::EscapeQueryParamValue(query_pair.value, use_plus));
       bool replace_only = query_pair.replace_only && *query_pair.replace_only;
       add_or_replace_queries.push_back(
           flat::CreateQueryKeyValue(*builder, key, value, replace_only));
@@ -243,10 +243,16 @@ void FlatRulesetIndexer::AddUrlRule(const IndexedRule& indexed_rule) {
 
   ++indexed_rules_count_;
 
-  FlatStringListOffset domains_included_offset =
-      BuildVectorOfSharedStrings(&builder_, indexed_rule.domains);
-  FlatStringListOffset domains_excluded_offset =
-      BuildVectorOfSharedStrings(&builder_, indexed_rule.excluded_domains);
+  FlatStringListOffset initiator_domains_included_offset =
+      BuildVectorOfSharedStrings(&builder_, indexed_rule.initiator_domains);
+  FlatStringListOffset initiator_domains_excluded_offset =
+      BuildVectorOfSharedStrings(&builder_,
+                                 indexed_rule.excluded_initiator_domains);
+  FlatStringListOffset request_domains_included_offset =
+      BuildVectorOfSharedStrings(&builder_, indexed_rule.request_domains);
+  FlatStringListOffset request_domains_excluded_offset =
+      BuildVectorOfSharedStrings(&builder_,
+                                 indexed_rule.excluded_request_domains);
   FlatStringOffset url_pattern_offset =
       builder_.CreateSharedString(indexed_rule.url_pattern);
   auto embedder_conditions_offset =
@@ -256,8 +262,9 @@ void FlatRulesetIndexer::AddUrlRule(const IndexedRule& indexed_rule) {
       builder_, indexed_rule.options, indexed_rule.element_types,
       indexed_rule.request_methods, indexed_rule.activation_types,
       indexed_rule.url_pattern_type, indexed_rule.anchor_left,
-      indexed_rule.anchor_right, domains_included_offset,
-      domains_excluded_offset, url_pattern_offset, indexed_rule.id,
+      indexed_rule.anchor_right, initiator_domains_included_offset,
+      initiator_domains_excluded_offset, request_domains_included_offset,
+      request_domains_excluded_offset, url_pattern_offset, indexed_rule.id,
       indexed_rule.priority, embedder_conditions_offset);
 
   if (indexed_rule.url_pattern_type !=

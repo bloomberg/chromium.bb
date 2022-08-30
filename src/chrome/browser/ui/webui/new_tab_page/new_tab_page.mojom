@@ -46,6 +46,8 @@ struct BackgroundImage {
   string? repeat_y;
   string? position_x;
   string? position_y;
+  // The CSS styling property set on the background image's scrim.
+  string? scrim_display;
 };
 
 // A generic theme.
@@ -204,6 +206,13 @@ enum CustomizeDialogAction {
   kShortcutsVisibilityToggleClicked,
 };
 
+// Opt in status. Used for metrics logging only.
+enum OptInStatus {
+  kExplicitOptIn,
+  kImplicitOptIn,
+  kOptOut,
+};
+
 // Used by the WebUI page to bootstrap bidirectional communication.
 interface PageHandlerFactory {
   // The WebUI page's |BrowserProxy| singleton calls this method when the page
@@ -259,6 +268,14 @@ interface PageHandler {
   // Returns the order of modules or an empty array if the user has not
   // reordered them before.
   GetModulesOrder() => (array<string> module_ids);
+  // Increment the number of times the user has seen modules.
+  IncrementModulesShownCount();
+  // If |visible| Modular NTP Desktop v1 First Run Experience will be shown.
+  SetModulesFreVisible(bool visible);
+  // Triggers a call to |SetModulesFreVisibility|.
+  UpdateModulesFreVisibility();
+  // Log user's FRE |optInStatus|.
+  LogModulesFreOptInStatus(OptInStatus opt_in_status);
 
   // ======= METRICS =======
   // Logs that the One Google Bar was added to the DOM / loaded in an iframe at
@@ -300,4 +317,6 @@ interface Page {
   // Disables the modules in |ids|. If |all|, disables all modules and passes an
   // empty list for |ids|.
   SetDisabledModules(bool all, array<string> ids);
+  // Sets Modular NTP Desktop v1 First Run Experience's visibility to |visible|.
+  SetModulesFreVisibility(bool visible);
 };

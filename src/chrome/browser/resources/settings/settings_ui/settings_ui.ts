@@ -13,22 +13,22 @@
 import 'chrome://resources/cr_elements/cr_drawer/cr_drawer.js';
 import 'chrome://resources/cr_elements/cr_toolbar/cr_toolbar.js';
 import 'chrome://resources/cr_elements/cr_toolbar/cr_toolbar_search_field.js';
-import 'chrome://resources/cr_elements/cr_page_host_style_css.js';
+import 'chrome://resources/cr_elements/cr_page_host_style.css.js';
 import 'chrome://resources/cr_elements/icons.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import 'chrome://resources/polymer/v3_0/paper-styles/color.js';
-import '../icons.js';
+import '../icons.html.js';
 import '../settings_main/settings_main.js';
 import '../settings_menu/settings_menu.js';
 import '../settings_shared_css.js';
-import '../settings_vars_css.js';
+import '../settings_vars.css.js';
 
 import {CrContainerShadowMixin, CrContainerShadowMixinInterface} from 'chrome://resources/cr_elements/cr_container_shadow_mixin.js';
 import {CrDrawerElement} from 'chrome://resources/cr_elements/cr_drawer/cr_drawer.js';
 import {CrToolbarElement} from 'chrome://resources/cr_elements/cr_toolbar/cr_toolbar.js';
 import {FindShortcutMixin, FindShortcutMixinInterface} from 'chrome://resources/cr_elements/find_shortcut_mixin.js';
 import {listenOnce} from 'chrome://resources/js/util.m.js';
-import {DomIf, html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {DomIf, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {resetGlobalScrollTargetForTesting, setGlobalScrollTarget} from '../global_scroll_target_mixin.js';
 import {loadTimeData} from '../i18n_setup.js';
@@ -39,13 +39,15 @@ import {Route, RouteObserverMixin, RouteObserverMixinInterface, Router} from '..
 import {SettingsMainElement} from '../settings_main/settings_main.js';
 import {SettingsMenuElement} from '../settings_menu/settings_menu.js';
 
+import {getTemplate} from './settings_ui.html.js';
+
 declare global {
   interface HTMLElementEventMap {
     'refresh-pref': CustomEvent<string>;
   }
 
   interface Window {
-    CrPolicyStrings: {[key: string]: string},
+    CrPolicyStrings: {[key: string]: string};
   }
 }
 
@@ -64,7 +66,7 @@ export interface SettingsUiElement {
 const SettingsUiElementBase = RouteObserverMixin(CrContainerShadowMixin(
                                   FindShortcutMixin(PolymerElement))) as {
   new (): PolymerElement & RouteObserverMixinInterface &
-  FindShortcutMixinInterface & CrContainerShadowMixinInterface
+      FindShortcutMixinInterface & CrContainerShadowMixinInterface,
 };
 
 export class SettingsUiElement extends SettingsUiElementBase {
@@ -73,7 +75,7 @@ export class SettingsUiElement extends SettingsUiElementBase {
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
@@ -82,20 +84,6 @@ export class SettingsUiElement extends SettingsUiElementBase {
        * Preferences state.
        */
       prefs: Object,
-
-      advancedOpenedInMain_: {
-        type: Boolean,
-        value: false,
-        notify: true,
-        observer: 'onAdvancedOpenedInMainChanged_',
-      },
-
-      advancedOpenedInMenu_: {
-        type: Boolean,
-        value: false,
-        notify: true,
-        observer: 'onAdvancedOpenedInMenuChanged_',
-      },
 
       toolbarSpinnerActive_: {
         type: Boolean,
@@ -116,8 +104,6 @@ export class SettingsUiElement extends SettingsUiElementBase {
     };
   }
 
-  private advancedOpenedInMain_: boolean;
-  private advancedOpenedInMenu_: boolean;
   private toolbarSpinnerActive_: boolean;
   private narrow_: boolean;
   private pageVisibility_: PageVisibility;
@@ -129,7 +115,7 @@ export class SettingsUiElement extends SettingsUiElementBase {
     Router.getInstance().initializeRouteFromUrl();
   }
 
-  ready() {
+  override ready() {
     super.ready();
 
     // Lazy-create the drawer the first time it is opened or swiped into view.
@@ -152,7 +138,7 @@ export class SettingsUiElement extends SettingsUiElementBase {
           loadTimeData.getString('controlledSettingRecommendedMatches'),
       controlledSettingRecommendedDiffers:
           loadTimeData.getString('controlledSettingRecommendedDiffers'),
-      // <if expr="chromeos">
+      // <if expr="chromeos_ash">
       controlledSettingShared:
           loadTimeData.getString('controlledSettingShared'),
       controlledSettingWithOwner:
@@ -177,7 +163,7 @@ export class SettingsUiElement extends SettingsUiElementBase {
     this.addEventListener('refresh-pref', this.onRefreshPref_.bind(this));
   }
 
-  connectedCallback() {
+  override connectedCallback() {
     super.connectedCallback();
 
     document.documentElement.classList.remove('loading');
@@ -194,24 +180,26 @@ export class SettingsUiElement extends SettingsUiElementBase {
     setGlobalScrollTarget(this.$.container);
   }
 
-  disconnectedCallback() {
+  override disconnectedCallback() {
     super.disconnectedCallback();
 
     Router.getInstance().resetRouteForTesting();
     resetGlobalScrollTargetForTesting();
   }
 
-  currentRouteChanged(route: Route) {
-    if (document.documentElement.hasAttribute('enable-branding-update')) {
-      if (route.depth <= 1) {
-        // Main page uses scroll position to determine whether a shadow should
-        // be shown.
-        this.enableShadowBehavior(true);
-      } else if (!route.isNavigableDialog) {
-        // Sub-pages always show the top shadow, regardless of scroll position.
-        this.enableShadowBehavior(false);
-        this.showDropShadows();
-      }
+  override currentRouteChanged(route: Route) {
+    if (route === routes.PRIVACY_GUIDE) {
+      // Privacy guide has a multi-card layout, which only needs shadows to
+      // show when there is more content to scroll.
+      this.enableShadowBehavior(true);
+    } else if (route.depth <= 1) {
+      // Main page uses scroll position to determine whether a shadow should
+      // be shown.
+      this.enableShadowBehavior(true);
+    } else if (!route.isNavigableDialog) {
+      // Sub-pages always show the top shadow, regardless of scroll position.
+      this.enableShadowBehavior(false);
+      this.showDropShadows();
     }
 
     const urlSearchQuery =
@@ -238,7 +226,7 @@ export class SettingsUiElement extends SettingsUiElementBase {
   }
 
   // Override FindShortcutMixin methods.
-  handleFindShortcut(modalContextOpen: boolean) {
+  override handleFindShortcut(modalContextOpen: boolean) {
     if (modalContextOpen) {
       return false;
     }
@@ -249,7 +237,7 @@ export class SettingsUiElement extends SettingsUiElementBase {
   }
 
   // Override FindShortcutMixin methods.
-  searchInputHasFocus() {
+  override searchInputHasFocus() {
     return this.shadowRoot!.querySelector<CrToolbarElement>('cr-toolbar')!
         .getSearchField()
         .isSearchFocused();
@@ -307,18 +295,6 @@ export class SettingsUiElement extends SettingsUiElementBase {
     });
   }
 
-  private onAdvancedOpenedInMainChanged_() {
-    if (this.advancedOpenedInMain_) {
-      this.advancedOpenedInMenu_ = true;
-    }
-  }
-
-  private onAdvancedOpenedInMenuChanged_() {
-    if (this.advancedOpenedInMenu_) {
-      this.advancedOpenedInMain_ = true;
-    }
-  }
-
   private onNarrowChanged_() {
     if (this.$.drawer.open && !this.narrow_) {
       this.$.drawer.close();
@@ -347,19 +323,11 @@ export class SettingsUiElement extends SettingsUiElementBase {
       this.$.drawer.addEventListener('close', boundCloseListener);
     }
   }
+}
 
-  /**
-   * Only used in tests.
-   */
-  getAdvancedOpenedInMainForTest(): boolean {
-    return this.advancedOpenedInMain_;
-  }
-
-  /**
-   * Only used in tests.
-   */
-  getAdvancedOpenedInMenuForTest(): boolean {
-    return this.advancedOpenedInMenu_;
+declare global {
+  interface HTMLElementTagNameMap {
+    'settings-ui': SettingsUiElement;
   }
 }
 

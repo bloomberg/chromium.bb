@@ -9,7 +9,6 @@
 
 #include "base/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
-#include "base/threading/hang_watcher.h"
 #include "build/build_config.h"
 #include "content/browser/startup_data_impl.h"
 #include "content/common/content_export.h"
@@ -28,7 +27,6 @@ class DiscardableSharedMemoryManager;
 }
 
 namespace content {
-class ContentClient;
 class MojoIpcSupport;
 
 class ContentMainRunnerImpl : public ContentMainRunner {
@@ -55,9 +53,6 @@ class ContentMainRunnerImpl : public ContentMainRunner {
                  bool start_minimal_browser);
 
   bool is_browser_main_loop_started_ = false;
-
-  // The hang watcher is leaked to make sure it survives all watched threads.
-  raw_ptr<base::HangWatcher> hang_watcher_;
 
   // Unregisters UI thread from hang watching on destruction.
   // NOTE: The thread should be unregistered before HangWatcher stops so this
@@ -91,8 +86,7 @@ class ContentMainRunnerImpl : public ContentMainRunner {
 // GetContentMainDelegateForTesting() and GetContentClientForTesting().
 // BrowserTestBase is implemented in content/public and GetContentClient() is
 // only available to the implementation of content. Hence these functions.
-CONTENT_EXPORT ContentClient* GetContentClientForTesting();
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 CONTENT_EXPORT ContentMainDelegate* GetContentMainDelegateForTesting();
 #endif
 

@@ -26,7 +26,9 @@ TINYCBOR_FREESTANDING_SOURCES = \
 	src/cborerrorstrings.c \
 	src/cborencoder.c \
 	src/cborencoder_close_container_checked.c \
+	src/cborencoder_float.c \
 	src/cborparser.c \
+	src/cborparser_float.c \
 	src/cborpretty.c \
 #
 CBORDUMP_SOURCES = tools/cbordump/cbordump.c
@@ -234,7 +236,10 @@ tag: distcheck
 .SECONDARY:
 
 cflags := $(CPPFLAGS) -I$(SRCDIR)src
-cflags += -std=gnu99 $(CFLAGS)
+cflags += -std=gnu99 $(CFLAGS) \
+	-Werror=incompatible-pointer-types \
+	-Werror=implicit-function-declaration \
+	-Werror=int-conversion
 %.o: %.c
 	@test -d $(@D) || $(MKDIR) $(@D)
 	$(CC) $(cflags) $($(basename $(notdir $@))_CCFLAGS) -c -o $@ $<

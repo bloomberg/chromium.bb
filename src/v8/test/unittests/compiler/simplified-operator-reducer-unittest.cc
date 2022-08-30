@@ -35,7 +35,8 @@ class SimplifiedOperatorReducerTest : public GraphTest {
     JSGraph jsgraph(isolate(), graph(), common(), &javascript, simplified(),
                     &machine);
     GraphReducer graph_reducer(zone(), graph(), tick_counter(), broker());
-    SimplifiedOperatorReducer reducer(&graph_reducer, &jsgraph, broker());
+    SimplifiedOperatorReducer reducer(&graph_reducer, &jsgraph, broker(),
+                                      BranchSemantics::kJS);
     return reducer.Reduce(node);
   }
 
@@ -95,8 +96,8 @@ const int32_t kInt32Values[] = {
 
 const double kNaNs[] = {-std::numeric_limits<double>::quiet_NaN(),
                         std::numeric_limits<double>::quiet_NaN(),
-                        bit_cast<double>(uint64_t{0x7FFFFFFFFFFFFFFF}),
-                        bit_cast<double>(uint64_t{0xFFFFFFFFFFFFFFFF})};
+                        base::bit_cast<double>(uint64_t{0x7FFFFFFFFFFFFFFF}),
+                        base::bit_cast<double>(uint64_t{0xFFFFFFFFFFFFFFFF})};
 
 const CheckForMinusZeroMode kCheckForMinusZeroModes[] = {
     CheckForMinusZeroMode::kDontCheckForMinusZero,

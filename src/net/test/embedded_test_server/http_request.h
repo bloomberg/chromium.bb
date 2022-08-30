@@ -36,12 +36,15 @@ enum HttpMethod {
   METHOD_OPTIONS,
 };
 
-// Represents a HTTP request. Since it can be big, use scoped_ptr to pass it
-// instead of copying. However, the struct is copyable so tests can save and
+// Represents a HTTP request. Since it can be big, `use std::unique_ptr` to pass
+// it instead of copying. However, the struct is copyable so tests can save and
 // examine a HTTP request.
 struct HttpRequest {
   struct CaseInsensitiveStringComparator {
-    bool operator()(const std::string& left, const std::string& right) const {
+    // Allow using StringPiece instead of string for `find()`.
+    using is_transparent = void;
+
+    bool operator()(base::StringPiece left, base::StringPiece right) const {
       return base::CompareCaseInsensitiveASCII(left, right) < 0;
     }
   };
@@ -58,12 +61,12 @@ struct HttpRequest {
 
   std::string relative_url;  // Starts with '/'. Example: "/test?query=foo"
   GURL base_url;
-  HttpMethod method;
+  HttpMethod method = METHOD_UNKNOWN;
   std::string method_string;
   std::string all_headers;
   HeaderMap headers;
   std::string content;
-  bool has_content;
+  bool has_content = false;
   absl::optional<SSLInfo> ssl_info;
 };
 
@@ -132,10 +135,10 @@ class HttpRequestParser {
 
   std::unique_ptr<HttpRequest> http_request_;
   std::string buffer_;
-  size_t buffer_position_;  // Current position in the internal buffer.
-  State state_;
+  size_t buffer_position_ = 0;  // Current position in the internal buffer.
+  State state_ = STATE_HEADERS;
   // Content length of the request currently being parsed.
-  size_t declared_content_length_;
+  size_t declared_content_length_ = 0;
 
   std::unique_ptr<HttpChunkedDecoder> chunked_decoder_;
 };

@@ -45,6 +45,9 @@
 namespace sandbox {
 
 using bpf_dsl::Allow;
+using bpf_dsl::Arg;
+using bpf_dsl::Error;
+using bpf_dsl::If;
 using bpf_dsl::ResultExpr;
 using bpf_dsl::Trap;
 
@@ -310,7 +313,8 @@ class IPCSyscaller : public Syscaller {
 
 // Only use syscall(...) on x64 to avoid having to reimplement a libc-like
 // layer that uses different syscalls on different architectures.
-#if (defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)) && \
+#if (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || \
+     BUILDFLAG(IS_ANDROID)) &&                        \
     defined(__x86_64__)
 #define DIRECT_SYSCALLER_ENABLED
 #endif
@@ -511,16 +515,21 @@ class HandleFilesystemViaBrokerPolicy : public bpf_dsl::Policy {
     DCHECK(SandboxBPF::IsValidSyscallNumber(sysno));
     // Broker everything that we're supposed to broker.
     if (broker_process_->IsSyscallAllowed(sysno)) {
-      return sandbox::bpf_dsl::Trap(
-          sandbox::syscall_broker::BrokerClient::SIGSYS_Handler,
-          broker_process_->GetBrokerClientSignalBased());
+      return Trap(BrokerClient::SIGSYS_Handler,
+                  broker_process_->GetBrokerClientSignalBased());
     }
 
     // Otherwise, if this is a syscall that takes a pathname but isn't an
     // allowed command, deny it.
     if (broker_process_->IsSyscallBrokerable(sysno,
                                              /*fast_check_in_client=*/false)) {
-      return bpf_dsl::Error(denied_errno_);
+      return Error(denied_errno_);
+    }
+
+    if (sysno == __NR_statx) {
+      const Arg<int> mask(3);
+      return If(mask == STATX_BASIC_STATS, Error(ENOSYS))
+          .Else(Error(denied_errno_));
     }
 
     // Allow everything else that doesn't take a pathname.

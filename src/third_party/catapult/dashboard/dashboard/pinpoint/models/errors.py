@@ -11,13 +11,16 @@ Here's the exception hierarchy:
 
   JobError
    +-- FatalError
-   |    +-- BuildIsolateNotFound
-   |    +-- SwarmingExpired
    |    +-- AllRunsFailed
+   |    +-- BuildCancelledFatal
+   |    +-- BuildFailedFatal
+   |    +-- BuildIsolateNotFound
    |    +-- ExecutionEngineErrors
+   |    +-- SwarmingExpired
    +-- InformationalError
    |    +-- BuildFailed
    |    +-- BuildCancelled
+   |    +-- BuildNumberExceeded
    |    +-- BuildGerritUrlNotFound
    |    +-- BuildGerritURLInvalid
    |    +-- CancelError
@@ -101,6 +104,12 @@ class BuildFailed(InformationalError):
         'revision.' % reason)
 
 
+class BuildFailedFatal(BuildFailed, FatalError):
+
+  def __init__(self, reason):
+    super(BuildFailedFatal, self).__init__(reason)
+
+
 class BuildCancelled(InformationalError):
 
   def __init__(self, reason):
@@ -110,13 +119,27 @@ class BuildCancelled(InformationalError):
         "revision.' % reason)
 
 
+class BuildCancelledFatal(BuildCancelled, FatalError):
+
+  def __init__(self, reason):
+    super(BuildCancelledFatal, self).__init__(reason)
+
+
+class BuildNumberExceeded(InformationalError):
+
+  def __init__(self, reason):
+    # pylint: disable=line-too-long
+    super(BuildNumberExceeded,
+          self).__init__('Bisected max number of times: %d. To bisect further, consult '\
+            'https://chromium.googlesource.com/catapult/+/HEAD/dashboard/dashboard/pinpoint/docs/abort_error.md' % reason)
+
+
 class BuildGerritUrlNotFound(InformationalError):
 
   def __init__(self, reason):
     super(BuildGerritUrlNotFound, self).__init__(
         'Unable to find gerrit url for commit %s. Pinpoint will be unable '\
         'to run any tests against this revision.' % reason)
-
 
 class BuildGerritURLInvalid(InformationalError):
   category = 'request'
@@ -127,13 +150,11 @@ class BuildGerritURLInvalid(InformationalError):
         'redirected patch URL, ie. https://chromium-review.googlesource.com/'\
         'c/chromium/src/+/12345' % reason)
 
-
 class CancelError(InformationalError):
 
   def __init__(self, reason):
     super(CancelError,
           self).__init__('Cancellation request failed: {}'.format(reason))
-
 
 class SwarmingExpired(FatalError):
 

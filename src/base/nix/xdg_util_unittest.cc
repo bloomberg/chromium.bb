@@ -34,10 +34,12 @@ const char* const kDesktopKDE4 = "kde4";
 const char* const kDesktopKDE = "kde";
 const char* const kDesktopXFCE = "xfce";
 const char* const kXdgDesktopCinnamon = "X-Cinnamon";
+const char* const kXdgDesktopDeepin = "Deepin";
 const char* const kXdgDesktopGNOME = "GNOME";
 const char* const kXdgDesktopGNOMEClassic = "GNOME:GNOME-Classic";
 const char* const kXdgDesktopKDE = "KDE";
 const char* const kXdgDesktopPantheon = "Pantheon";
+const char* const kXdgDesktopUKUI = "UKUI";
 const char* const kXdgDesktopUnity = "Unity";
 const char* const kXdgDesktopUnity7 = "Unity:Unity7";
 const char* const kXdgDesktopUnity8 = "Unity:Unity8";
@@ -102,6 +104,15 @@ TEST(XDGUtilTest, GetXdgDesktopCinnamon) {
   EXPECT_EQ(DESKTOP_ENVIRONMENT_CINNAMON, GetDesktopEnvironment(&getter));
 }
 
+TEST(XDGUtilTest, GetXdgDesktopDeepin) {
+  MockEnvironment getter;
+  EXPECT_CALL(getter, GetVar(_, _)).WillRepeatedly(Return(false));
+  EXPECT_CALL(getter, GetVar(Eq(kXdgCurrentDesktopEnvVar), _))
+      .WillOnce(DoAll(SetArgPointee<1>(kXdgDesktopDeepin), Return(true)));
+
+  EXPECT_EQ(DESKTOP_ENVIRONMENT_DEEPIN, GetDesktopEnvironment(&getter));
+}
+
 TEST(XDGUtilTest, GetXdgDesktopGnome) {
   MockEnvironment getter;
   EXPECT_CALL(getter, GetVar(_, _)).WillRepeatedly(Return(false));
@@ -158,6 +169,15 @@ TEST(XDGUtilTest, GetXdgDesktopPantheon) {
       .WillOnce(DoAll(SetArgPointee<1>(kXdgDesktopPantheon), Return(true)));
 
   EXPECT_EQ(DESKTOP_ENVIRONMENT_PANTHEON, GetDesktopEnvironment(&getter));
+}
+
+TEST(XDGUtilTest, GetXdgDesktopUKUI) {
+  MockEnvironment getter;
+  EXPECT_CALL(getter, GetVar(_, _)).WillRepeatedly(Return(false));
+  EXPECT_CALL(getter, GetVar(Eq(kXdgCurrentDesktopEnvVar), _))
+      .WillOnce(DoAll(SetArgPointee<1>(kXdgDesktopUKUI), Return(true)));
+
+  EXPECT_EQ(DESKTOP_ENVIRONMENT_UKUI, GetDesktopEnvironment(&getter));
 }
 
 TEST(XDGUtilTest, GetXdgDesktopUnity) {

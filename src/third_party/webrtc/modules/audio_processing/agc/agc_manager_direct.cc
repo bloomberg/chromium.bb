@@ -13,6 +13,7 @@
 #include <algorithm>
 #include <cmath>
 
+#include "api/array_view.h"
 #include "common_audio/include/audio_util.h"
 #include "modules/audio_processing/agc/gain_control.h"
 #include "modules/audio_processing/agc/gain_map_internal.h"
@@ -51,7 +52,7 @@ constexpr int kSurplusCompressionGain = 6;
 
 // History size for the clipping predictor evaluator (unit: number of 10 ms
 // frames).
-constexpr int kClippingPredictorEvaluatorHistorySize = 32;
+constexpr int kClippingPredictorEvaluatorHistorySize = 500;
 
 using ClippingPredictorConfig = AudioProcessing::Config::GainController1::
     AnalogGainController::ClippingPredictor;
@@ -62,28 +63,27 @@ bool UseMaxAnalogChannelLevel() {
   return field_trial::IsEnabled("WebRTC-UseMaxAnalogAgcChannelLevel");
 }
 
-// Returns kMinMicLevel if no field trial exists or if it has been disabled.
-// Returns a value between 0 and 255 depending on the field-trial string.
-// Example: 'WebRTC-Audio-AgcMinMicLevelExperiment/Enabled-80' => returns 80.
-int GetMinMicLevel() {
-  RTC_LOG(LS_INFO) << "[agc] GetMinMicLevel";
+// If the "WebRTC-Audio-AgcMinMicLevelExperiment" field trial is specified,
+// parses it and returns a value between 0 and 255 depending on the field-trial
+// string. Returns an unspecified value if the field trial is not specified, if
+// disabled or if it cannot be parsed. Example:
+// 'WebRTC-Audio-AgcMinMicLevelExperiment/Enabled-80' => returns 80.
+absl::optional<int> GetMinMicLevelOverride() {
   constexpr char kMinMicLevelFieldTrial[] =
       "WebRTC-Audio-AgcMinMicLevelExperiment";
   if (!webrtc::field_trial::IsEnabled(kMinMicLevelFieldTrial)) {
-    RTC_LOG(LS_INFO) << "[agc] Using default min mic level: " << kMinMicLevel;
-    return kMinMicLevel;
+    return absl::nullopt;
   }
   const auto field_trial_string =
       webrtc::field_trial::FindFullName(kMinMicLevelFieldTrial);
   int min_mic_level = -1;
   sscanf(field_trial_string.c_str(), "Enabled-%d", &min_mic_level);
   if (min_mic_level >= 0 && min_mic_level <= 255) {
-    RTC_LOG(LS_INFO) << "[agc] Experimental min mic level: " << min_mic_level;
     return min_mic_level;
   } else {
     RTC_LOG(LS_WARNING) << "[agc] Invalid parameter for "
                         << kMinMicLevelFieldTrial << ", ignored.";
-    return kMinMicLevel;
+    return absl::nullopt;
   }
 }
 
@@ -124,7 +124,7 @@ float ComputeClippedRatio(const float* const* audio,
     int num_clipped_in_ch = 0;
     for (size_t i = 0; i < samples_per_channel; ++i) {
       RTC_DCHECK(audio[ch]);
-      if (audio[ch][i] >= 32767.f || audio[ch][i] <= -32768.f) {
+      if (audio[ch][i] >= 32767.0f || audio[ch][i] <= -32768.0f) {
         ++num_clipped_in_ch;
       }
     }
@@ -204,9 +204,7 @@ void MonoAgc::Initialize() {
   check_volume_on_next_process_ = true;
 }
 
-void MonoAgc::Process(const int16_t* audio,
-                      size_t samples_per_channel,
-                      int sample_rate_hz) {
+void MonoAgc::Process(rtc::ArrayView<const int16_t> audio) {
   new_compression_to_set_ = absl::nullopt;
 
   if (check_volume_on_next_process_) {
@@ -216,7 +214,7 @@ void MonoAgc::Process(const int16_t* audio,
     CheckVolumeAndReset();
   }
 
-  agc_->Process(audio, samples_per_channel, sample_rate_hz);
+  agc_->Process(audio);
 
   UpdateGain();
   if (!disable_digital_adaptive_) {
@@ -447,7 +445,6 @@ AgcManagerDirect::AgcManagerDirect(
     Agc* agc,
     int startup_min_level,
     int clipped_level_min,
-    int sample_rate_hz,
     int clipped_level_step,
     float clipped_ratio_threshold,
     int clipped_wait_frames,
@@ -456,7 +453,6 @@ AgcManagerDirect::AgcManagerDirect(
                        startup_min_level,
                        clipped_level_min,
                        /*disable_digital_adaptive*/ false,
-                       sample_rate_hz,
                        clipped_level_step,
                        clipped_ratio_threshold,
                        clipped_wait_frames,
@@ -471,15 +467,14 @@ AgcManagerDirect::AgcManagerDirect(
     int startup_min_level,
     int clipped_level_min,
     bool disable_digital_adaptive,
-    int sample_rate_hz,
     int clipped_level_step,
     float clipped_ratio_threshold,
     int clipped_wait_frames,
     const ClippingPredictorConfig& clipping_config)
-    : data_dumper_(
+    : min_mic_level_override_(GetMinMicLevelOverride()),
+      data_dumper_(
           new ApmDataDumper(rtc::AtomicOps::Increment(&instance_counter_))),
       use_min_channel_level_(!UseMaxAnalogChannelLevel()),
-      sample_rate_hz_(sample_rate_hz),
       num_capture_channels_(num_capture_channels),
       disable_digital_adaptive_(disable_digital_adaptive),
       frames_since_clipped_(clipped_wait_frames),
@@ -497,7 +492,11 @@ AgcManagerDirect::AgcManagerDirect(
       clipping_predictor_log_counter_(0),
       clipping_rate_log_(0.0f),
       clipping_rate_log_counter_(0) {
-  const int min_mic_level = GetMinMicLevel();
+  const int min_mic_level = min_mic_level_override_.value_or(kMinMicLevel);
+  RTC_LOG(LS_INFO) << "[agc] Min mic level: " << min_mic_level
+                   << " (overridden: "
+                   << (min_mic_level_override_.has_value() ? "yes" : "no")
+                   << ")";
   for (size_t ch = 0; ch < channel_agcs_.size(); ++ch) {
     ApmDataDumper* data_dumper_ch = ch == 0 ? data_dumper_.get() : nullptr;
 
@@ -610,9 +609,14 @@ void AgcManagerDirect::AnalyzePreProcess(const float* const* audio,
       }
     }
     // Clipping prediction evaluation.
+    // `clipping_detected` is not used to evaluate the clipping predictor
+    // since for this purpose a single clipping sample counts as clipping.
+    const bool one_or_more_clipped_samples =
+        clipped_ratio >= (1.0f / samples_per_channel);
     absl::optional<int> prediction_interval =
-        clipping_predictor_evaluator_.Observe(clipping_detected,
-                                              clipping_predicted);
+        clipping_predictor_evaluator_.Observe(
+            /*clipping_detected=*/one_or_more_clipped_samples,
+            clipping_predicted);
     if (prediction_interval.has_value()) {
       RTC_HISTOGRAM_COUNTS_LINEAR(
           "WebRTC.Audio.Agc.ClippingPredictor.PredictionInterval",
@@ -652,27 +656,20 @@ void AgcManagerDirect::AnalyzePreProcess(const float* const* audio,
 }
 
 void AgcManagerDirect::Process(const AudioBuffer* audio) {
+  RTC_DCHECK(audio);
   AggregateChannelLevels();
 
   if (!capture_output_used_) {
     return;
   }
 
+  const size_t num_frames_per_band = audio->num_frames_per_band();
   for (size_t ch = 0; ch < channel_agcs_.size(); ++ch) {
-    int16_t* audio_use = nullptr;
     std::array<int16_t, AudioBuffer::kMaxSampleRate / 100> audio_data;
-    int num_frames_per_band;
-    if (audio) {
-      FloatS16ToS16(audio->split_bands_const_f(ch)[0],
-                    audio->num_frames_per_band(), audio_data.data());
-      audio_use = audio_data.data();
-      num_frames_per_band = audio->num_frames_per_band();
-    } else {
-      // Only used for testing.
-      // TODO(peah): Change unittests to only allow on non-null audio input.
-      num_frames_per_band = 320;
-    }
-    channel_agcs_[ch]->Process(audio_use, num_frames_per_band, sample_rate_hz_);
+    int16_t* audio_use = audio_data.data();
+    FloatS16ToS16(audio->split_bands_const_f(ch)[0], num_frames_per_band,
+                  audio_use);
+    channel_agcs_[ch]->Process({audio_use, num_frames_per_band});
     new_compressions_to_set_[ch] = channel_agcs_[ch]->new_compression();
   }
 
@@ -726,6 +723,10 @@ void AgcManagerDirect::AggregateChannelLevels() {
         channel_controlling_gain_ = static_cast<int>(ch);
       }
     }
+  }
+  if (min_mic_level_override_.has_value()) {
+    stream_analog_level_ =
+        std::max(stream_analog_level_, *min_mic_level_override_);
   }
 }
 

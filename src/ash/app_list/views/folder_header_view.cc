@@ -27,7 +27,6 @@
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/focus/focus_manager.h"
-#include "ui/views/native_cursor.h"
 #include "ui/views/painter.h"
 #include "ui/views/view_targeter_delegate.h"
 
@@ -96,9 +95,11 @@ class FolderHeaderView::FolderNameView : public views::Textfield,
 
     const bool is_active = has_mouse_already_entered_ || HasFocus();
     SetBackground(views::CreateRoundedRectBackground(
-        GetFolderBackgroundColor(is_active), kFolderNameBorderRadius));
+        GetFolderBackgroundColor(is_active), kFolderNameBorderRadius,
+        kFolderNameBorderThickness));
 
     AppListColorProvider* color_provider = AppListColorProvider::Get();
+    set_placeholder_text_color(color_provider->GetFolderHintTextColor());
     const SkColor text_color = color_provider->GetFolderTitleTextColor();
     SetTextColor(text_color);
     SetSelectionTextColor(text_color);
@@ -106,8 +107,8 @@ class FolderHeaderView::FolderNameView : public views::Textfield,
     SetNameViewBorderAndBackground(is_active);
   }
 
-  gfx::NativeCursor GetCursor(const ui::MouseEvent& event) override {
-    return views::GetNativeIBeamCursor();
+  ui::Cursor GetCursor(const ui::MouseEvent& event) override {
+    return ui::mojom::CursorType::kIBeam;
   }
 
   void SetNameViewBorderAndBackground(bool is_active) {
@@ -115,7 +116,7 @@ class FolderHeaderView::FolderNameView : public views::Textfield,
         views::CreateRoundedRectBorder(
             kFolderNameBorderThickness, kFolderNameBorderRadius,
             AppListColorProvider::Get()->GetFolderNameBorderColor(is_active)),
-        gfx::Insets(0, kFolderNamePadding)));
+        gfx::Insets::VH(0, kFolderNamePadding)));
     UpdateBackgroundColor(is_active);
   }
 
@@ -218,7 +219,7 @@ class FolderHeaderView::FolderNameView : public views::Textfield,
     int min_width =
         std::max(kFolderHeaderMinTapWidth, textfield_bounds.width());
     int horizontal_padding = -((min_width - textfield_bounds.width()) / 2);
-    textfield_bounds.Inset(gfx::Insets(0, horizontal_padding));
+    textfield_bounds.Inset(gfx::Insets::VH(0, horizontal_padding));
 
     return textfield_bounds.Intersects(rect);
   }

@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/metrics/user_metrics.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "content/public/browser/web_ui.h"
 
@@ -18,12 +19,12 @@ UserActionsUIHandler::~UserActionsUIHandler() {
 }
 
 void UserActionsUIHandler::RegisterMessages() {
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "pageLoaded", base::BindRepeating(&UserActionsUIHandler::HandlePageLoaded,
                                         base::Unretained(this)));
 }
 
-void UserActionsUIHandler::HandlePageLoaded(const base::ListValue* args) {
+void UserActionsUIHandler::HandlePageLoaded(const base::Value::List& args) {
   AllowJavascript();
 }
 

@@ -4,21 +4,22 @@
 
 #include "chrome/browser/ash/login/easy_unlock/smartlock_feature_usage_metrics.h"
 
+#include "ash/services/multidevice_setup/public/cpp/multidevice_setup_client.h"
 #include "chromeos/components/feature_usage/feature_usage_metrics.h"
-#include "chromeos/services/multidevice_setup/public/cpp/multidevice_setup_client.h"
 
 namespace ash {
 
 namespace {
 
+using multidevice_setup::mojom::Feature;
+using multidevice_setup::mojom::FeatureState;
+
 const char kFeatureName[] = "SmartLock";
 }  // namespace
 
 SmartLockFeatureUsageMetrics::SmartLockFeatureUsageMetrics(
-    base::RepeatingCallback<bool()> is_eligible_callback,
-    base::RepeatingCallback<bool()> is_enabled_callback)
-    : is_eligible_callback_(is_eligible_callback),
-      is_enabled_callback_(is_enabled_callback),
+    multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client)
+    : multidevice_setup_client_(multidevice_setup_client),
       feature_usage_metrics_(kFeatureName, this) {}
 
 SmartLockFeatureUsageMetrics::~SmartLockFeatureUsageMetrics() = default;
@@ -28,11 +29,40 @@ void SmartLockFeatureUsageMetrics::RecordUsage(bool success) {
 }
 
 bool SmartLockFeatureUsageMetrics::IsEligible() const {
-  return is_eligible_callback_.Run();
+  switch (multidevice_setup_client_->GetFeatureState(Feature::kSmartLock)) {
+    case FeatureState::kUnavailableNoVerifiedHost_NoEligibleHosts:
+      [[fallthrough]];
+    case FeatureState::kUnavailableNoVerifiedHost_ClientNotReady:
+      [[fallthrough]];
+    case FeatureState::kNotSupportedByChromebook:
+      [[fallthrough]];
+    case FeatureState::kNotSupportedByPhone:
+      return false;
+
+    case FeatureState::
+        kUnavailableNoVerifiedHost_HostExistsButNotSetAndVerified:
+      [[fallthrough]];
+    case FeatureState::kProhibitedByPolicy:
+      [[fallthrough]];
+    case FeatureState::kDisabledByUser:
+      [[fallthrough]];
+    case FeatureState::kEnabledByUser:
+      [[fallthrough]];
+    case FeatureState::kUnavailableInsufficientSecurity:
+      [[fallthrough]];
+    case FeatureState::kUnavailableSuiteDisabled:
+      [[fallthrough]];
+    case FeatureState::kFurtherSetupRequired:
+      [[fallthrough]];
+    case FeatureState::kUnavailableTopLevelFeatureDisabled:
+      return true;
+  }
 }
 
 bool SmartLockFeatureUsageMetrics::IsEnabled() const {
-  return is_enabled_callback_.Run();
+  return multidevice_setup_client_->GetFeatureState(
+             multidevice_setup::mojom::Feature::kSmartLock) ==
+         multidevice_setup::mojom::FeatureState::kEnabledByUser;
 }
 
 }  // namespace ash

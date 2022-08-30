@@ -472,7 +472,7 @@ class GitMutableFunctionsTest(git_test_utils.GitRepoReadWriteTestBase,
     self.repo.git('commit', '--allow-empty', '-am', 'foooooo')
     self.assertEqual(self.repo.run(self.gc.upstream, 'bobly'), None)
     self.assertEqual(self.repo.run(self.gc.upstream, 'main'), None)
-    self.repo.git('checkout', '-tb', 'happybranch', 'main')
+    self.repo.git('checkout', '-t', '-b', 'happybranch', 'main')
     self.assertEqual(self.repo.run(self.gc.upstream, 'happybranch'),
                      'main')
 
@@ -482,12 +482,12 @@ class GitMutableFunctionsTest(git_test_utils.GitRepoReadWriteTestBase,
 
   def testGetBranchesInfo(self):
     self.repo.git('commit', '--allow-empty', '-am', 'foooooo')
-    self.repo.git('checkout', '-tb', 'happybranch', 'main')
+    self.repo.git('checkout', '-t', '-b', 'happybranch', 'main')
     self.repo.git('commit', '--allow-empty', '-am', 'foooooo')
-    self.repo.git('checkout', '-tb', 'child', 'happybranch')
+    self.repo.git('checkout', '-t', '-b', 'child', 'happybranch')
 
-    self.repo.git('checkout', '-tb', 'to_delete', 'main')
-    self.repo.git('checkout', '-tb', 'parent_gone', 'to_delete')
+    self.repo.git('checkout', '-t', '-b', 'to_delete', 'main')
+    self.repo.git('checkout', '-t', '-b', 'parent_gone', 'to_delete')
     self.repo.git('branch', '-D', 'to_delete')
 
     supports_track = (
@@ -527,7 +527,7 @@ class GitMutableFunctionsTest(git_test_utils.GitRepoReadWriteTestBase,
 
   def testGetBranchesInfoWithReset(self):
     self.repo.git('commit', '--allow-empty', '-am', 'foooooo')
-    self.repo.git('checkout','-tb', 'foobarA', 'main')
+    self.repo.git('checkout','-t', '-b', 'foobarA', 'main')
     self.repo.git('config', 'branch.foobarA.base',
       self.repo.run(self.gc.hash_one, 'main'))
     self.repo.git('config', 'branch.foobarA.base-upstream', 'main')
@@ -542,7 +542,7 @@ class GitMutableFunctionsTest(git_test_utils.GitRepoReadWriteTestBase,
     self.repo.git('add', 'foobar2')
     self.repo.git_commit('commit2')
 
-    self.repo.git('checkout','-tb', 'foobarB', 'foobarA')
+    self.repo.git('checkout','-t', '-b', 'foobarB', 'foobarA')
     self.repo.git('config', 'branch.foobarB.base',
       self.repo.run(self.gc.hash_one, 'foobarA'))
     self.repo.git('config', 'branch.foobarB.base-upstream', 'foobarA')

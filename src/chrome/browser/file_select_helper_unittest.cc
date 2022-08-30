@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/file_select_helper.h"
+
 #include <stddef.h>
 
 #include <string>
@@ -9,7 +11,6 @@
 #include <vector>
 
 #include "base/command_line.h"
-#include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -17,7 +18,6 @@
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "build/build_config.h"
-#include "chrome/browser/file_select_helper.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/file_select_listener.h"
@@ -107,7 +107,7 @@ TEST_F(FileSelectHelperTest, IsAcceptTypeValid) {
   EXPECT_FALSE(FileSelectHelper::IsAcceptTypeValid("abc/def "));
 }
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 TEST_F(FileSelectHelperTest, ZipPackage) {
   // Zip the package.
   const char app_name[] = "CalculatorFake.app";
@@ -131,7 +131,7 @@ TEST_F(FileSelectHelperTest, ZipPackage) {
   const char* files_to_verify[] = {"Contents/Info.plist",
                                    "Contents/MacOS/Calculator",
                                    "Contents/_CodeSignature/CodeResources"};
-  size_t file_count = base::size(files_to_verify);
+  size_t file_count = std::size(files_to_verify);
   for (size_t i = 0; i < file_count; i++) {
     const char* relative_path = files_to_verify[i];
     base::FilePath orig_file = src.Append(relative_path);
@@ -140,7 +140,7 @@ TEST_F(FileSelectHelperTest, ZipPackage) {
     EXPECT_TRUE(base::ContentsEqual(orig_file, final_file));
   }
 }
-#endif  // defined(OS_MAC)
+#endif  // BUILDFLAG(IS_MAC)
 
 TEST_F(FileSelectHelperTest, GetSanitizedFileName) {
   // The empty path should be preserved.
@@ -157,7 +157,7 @@ TEST_F(FileSelectHelperTest, GetSanitizedFileName) {
             FileSelectHelper::GetSanitizedFileName(
                 base::FilePath(FILE_PATH_LITERAL("path/components/in/name"))));
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // Invalid UTF-16. However, note that on Windows, the invalid UTF-16 will pass
   // through without error.
   base::FilePath::CharType kBadName[] = {0xd801, 0xdc37, 0xdc17, 0};
@@ -363,6 +363,74 @@ TEST_F(FileSelectHelperTest, ContentAnalysisCompletionCallback_OKBadFiles) {
             files[0]->get_native_file()->file_path);
 }
 
+TEST_F(FileSelectHelperTest,
+       ContentAnalysisCompletionCallback_SystemFilesSkipped) {
+  content::BrowserTaskEnvironment task_environment;
+  TestingProfile profile;
+  scoped_refptr<FileSelectHelper> file_select_helper =
+      new FileSelectHelper(&profile);
+
+  std::vector<blink::mojom::FileChooserFileInfoPtr> files;
+  auto listener = base::MakeRefCounted<TestFileSelectListener>(&files);
+  file_select_helper->SetFileSelectListenerForTesting(std::move(listener));
+  file_select_helper->DontAbortOnMissingWebContentsForTesting();
+
+  std::vector<blink::mojom::FileChooserFileInfoPtr> orig_files;
+  enterprise_connectors::ContentAnalysisDelegate::Data data;
+  enterprise_connectors::ContentAnalysisDelegate::Result result;
+
+  for (int i = 0; i < 5; ++i) {
+    orig_files.push_back(blink::mojom::FileChooserFileInfo::NewFileSystem(
+        blink::mojom::FileSystemFileInfo::New()));
+  }
+
+  file_select_helper->AddRef();  // Normally called by RunFileChooser().
+  file_select_helper->ContentAnalysisCompletionCallback(std::move(orig_files),
+                                                        data, result);
+
+  ASSERT_EQ(5u, files.size());
+  for (int i = 0; i < 5; ++i)
+    EXPECT_TRUE(files[i]->is_file_system());
+}
+
+TEST_F(FileSelectHelperTest,
+       ContentAnalysisCompletionCallback_SystemOKBadFiles) {
+  content::BrowserTaskEnvironment task_environment;
+  TestingProfile profile;
+  scoped_refptr<FileSelectHelper> file_select_helper =
+      new FileSelectHelper(&profile);
+
+  std::vector<blink::mojom::FileChooserFileInfoPtr> files;
+  auto listener = base::MakeRefCounted<TestFileSelectListener>(&files);
+  file_select_helper->SetFileSelectListenerForTesting(std::move(listener));
+  file_select_helper->DontAbortOnMissingWebContentsForTesting();
+
+  std::vector<blink::mojom::FileChooserFileInfoPtr> orig_files;
+  enterprise_connectors::ContentAnalysisDelegate::Data data;
+  enterprise_connectors::ContentAnalysisDelegate::Result result;
+
+  // Add 1 non-native file at the start and end of the files list, which should
+  // be skipped.
+  orig_files.push_back(blink::mojom::FileChooserFileInfo::NewFileSystem(
+      blink::mojom::FileSystemFileInfo::New()));
+  PrepareContentAnalysisCompletionCallbackArgs(
+      {data_dir_.AppendASCII("foo.doc"), data_dir_.AppendASCII("bar.doc")},
+      {false, true}, &orig_files, &data, &result);
+  orig_files.push_back(blink::mojom::FileChooserFileInfo::NewFileSystem(
+      blink::mojom::FileSystemFileInfo::New()));
+
+  file_select_helper->AddRef();  // Normally called by RunFileChooser().
+  file_select_helper->ContentAnalysisCompletionCallback(std::move(orig_files),
+                                                        data, result);
+
+  ASSERT_EQ(3u, files.size());
+  EXPECT_TRUE(files[0]->is_file_system());
+  EXPECT_TRUE(files[1]->is_native_file());
+  EXPECT_EQ(data_dir_.AppendASCII("bar.doc"),
+            files[1]->get_native_file()->file_path);
+  EXPECT_TRUE(files[2]->is_file_system());
+}
+
 TEST_F(FileSelectHelperTest, GetFileTypesFromAcceptType) {
   content::BrowserTaskEnvironment task_environment;
   TestingProfile profile;
@@ -386,12 +454,45 @@ TEST_F(FileSelectHelperTest, GetFileTypesFromAcceptType) {
 
   std::vector<std::vector<base::FilePath::StringType>> expected_extensions{
       std::vector<base::FilePath::StringType>{
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
           L"mp4", L"斤拷锟", L"🔥", L"png"}};
 #else
           "mp4", "斤拷锟", "🔥", "png"}};
 #endif
   ASSERT_EQ(expected_extensions, file_type_info->extensions);
 }
+
+// This test depends on platform-specific mappings from mime types to file
+// extensions in PlatformMimeUtil. It would seem that Linux does not offer a way
+// to get extensions, and our Windows implementation still needs to be updated.
+#if BUILDFLAG(IS_MAC)
+TEST_F(FileSelectHelperTest, MultipleFileExtensionsForMime) {
+  content::BrowserTaskEnvironment task_environment;
+  TestingProfile profile;
+  scoped_refptr<FileSelectHelper> file_select_helper =
+      new FileSelectHelper(&profile);
+
+  std::vector<std::u16string> accept_types{u"application/vnd.ms-powerpoint"};
+  std::unique_ptr<ui::SelectFileDialog::FileTypeInfo> file_type_info =
+      file_select_helper->GetFileTypesFromAcceptType(accept_types);
+
+  std::vector<base::FilePath::StringType> expected_extensions {
+#if BUILDFLAG(IS_WIN)
+    L"ppt", L"pot", L"pps"
+  };
+#else
+    "ppt", "pot", "pps"
+  };
+#endif
+  std::sort(expected_extensions.begin(), expected_extensions.end());
+
+  ASSERT_EQ(file_type_info->extensions.size(), 1u);
+  std::vector<base::FilePath::StringType> actual_extensions =
+      file_type_info->extensions[0];
+  std::sort(actual_extensions.begin(), actual_extensions.end());
+
+  EXPECT_EQ(expected_extensions, actual_extensions);
+}
+#endif
 
 #endif  // BUILDFLAG(FULL_SAFE_BROWSING)

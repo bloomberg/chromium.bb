@@ -148,9 +148,8 @@ void NavigateToFeedAndValidate(net::EmbeddedTestServer* server,
     // TODO(finnur): Implement this is a non-flaky way.
   }
 
-  content::DOMMessageQueue message_queue;
-
   WebContents* tab = browser->tab_strip_model()->GetActiveWebContents();
+  content::DOMMessageQueue message_queue(tab);
   NamedFrameCreatedObserver subframe_observer(tab, "preview");
 
   // Navigate to the subscribe page directly.
@@ -166,8 +165,8 @@ void NavigateToFeedAndValidate(net::EmbeddedTestServer* server,
   content::RenderFrameHost* frame = content::FrameMatchingPredicate(
       tab->GetPrimaryPage(),
       base::BindRepeating(&content::FrameMatchesName, "preview"));
-  ASSERT_TRUE(ValidatePageElement(
-      tab->GetMainFrame(), kScriptFeedTitle, expected_feed_title));
+  ASSERT_TRUE(ValidatePageElement(tab->GetPrimaryMainFrame(), kScriptFeedTitle,
+                                  expected_feed_title));
   ASSERT_TRUE(ValidatePageElement(frame, kScriptAnchor, expected_item_title));
   ASSERT_TRUE(ValidatePageElement(frame, kScriptDesc, expected_item_desc));
   ASSERT_TRUE(ValidatePageElement(frame, kScriptError, expected_error));

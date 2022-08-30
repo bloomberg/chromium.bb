@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "extensions/common/manifest_handlers/externally_connectable.h"
+
 #include <stddef.h>
 
 #include <algorithm>
 
-#include "base/cxx17_backports.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/manifest_constants.h"
-#include "extensions/common/manifest_handlers/externally_connectable.h"
 #include "extensions/common/manifest_test.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -195,7 +195,7 @@ TEST_F(ExternallyConnectableTest, IdCanConnect) {
   // Not in order to test that ExternallyConnectableInfo sorts it.
   std::string matches_ids_array[] = {"g", "h", "c", "i", "a", "z", "b"};
   std::vector<std::string> matches_ids(
-      matches_ids_array, matches_ids_array + base::size(matches_ids_array));
+      matches_ids_array, matches_ids_array + std::size(matches_ids_array));
 
   std::string nomatches_ids_array[] = {"2", "3", "1"};
 
@@ -204,7 +204,7 @@ TEST_F(ExternallyConnectableTest, IdCanConnect) {
     ExternallyConnectableInfo info(URLPatternSet(), matches_ids, false, false);
     for (size_t i = 0; i < matches_ids.size(); ++i)
       EXPECT_TRUE(info.IdCanConnect(matches_ids[i]));
-    for (size_t i = 0; i < base::size(nomatches_ids_array); ++i)
+    for (size_t i = 0; i < std::size(nomatches_ids_array); ++i)
       EXPECT_FALSE(info.IdCanConnect(nomatches_ids_array[i]));
   }
 
@@ -213,7 +213,7 @@ TEST_F(ExternallyConnectableTest, IdCanConnect) {
     ExternallyConnectableInfo info(URLPatternSet(), matches_ids, true, false);
     for (size_t i = 0; i < matches_ids.size(); ++i)
       EXPECT_TRUE(info.IdCanConnect(matches_ids[i]));
-    for (size_t i = 0; i < base::size(nomatches_ids_array); ++i)
+    for (size_t i = 0; i < std::size(nomatches_ids_array); ++i)
       EXPECT_TRUE(info.IdCanConnect(nomatches_ids_array[i]));
   }
 }
@@ -248,24 +248,24 @@ TEST_F(ExternallyConnectableTest, WarningNoAllURLs) {
   EXPECT_TRUE(info->matches.MatchesURL(GURL("http://build.chromium.org")));
 }
 
-TEST_F(ExternallyConnectableTest, AllURLsNotWhitelisted) {
+TEST_F(ExternallyConnectableTest, AllURLsNotAllowlisted) {
   scoped_refptr<Extension> extension = LoadAndExpectSuccess(
-      "externally_connectable_all_urls_not_whitelisted.json");
+      "externally_connectable_all_urls_not_allowlisted.json");
   ExternallyConnectableInfo* info = GetExternallyConnectableInfo(extension);
   EXPECT_FALSE(info->matches.MatchesAllURLs());
 }
 
-TEST_F(ExternallyConnectableTest, AllHttpsURLsNotWhitelisted) {
+TEST_F(ExternallyConnectableTest, AllHttpsURLsNotAllowlisted) {
   scoped_refptr<Extension> extension = LoadAndExpectSuccess(
-      "externally_connectable_all_https_urls_not_whitelisted.json");
+      "externally_connectable_all_https_urls_not_allowlisted.json");
   ExternallyConnectableInfo* info = GetExternallyConnectableInfo(extension);
   EXPECT_FALSE(info->matches.MatchesAllURLs());
   EXPECT_FALSE(info->matches.MatchesURL(GURL("https://example.com")));
 }
 
-TEST_F(ExternallyConnectableTest, AllURLsWhitelisted) {
+TEST_F(ExternallyConnectableTest, AllURLsAllowlisted) {
   scoped_refptr<Extension> extension =
-      LoadAndExpectSuccess("externally_connectable_all_urls_whitelisted.json");
+      LoadAndExpectSuccess("externally_connectable_all_urls_allowlisted.json");
   ExternallyConnectableInfo* info = GetExternallyConnectableInfo(extension);
   EXPECT_TRUE(info->matches.MatchesAllURLs());
   URLPattern pattern(URLPattern::SCHEME_ALL, "<all_urls>");
@@ -274,9 +274,9 @@ TEST_F(ExternallyConnectableTest, AllURLsWhitelisted) {
   EXPECT_TRUE(info->matches.MatchesURL(GURL("http://build.chromium.org")));
 }
 
-TEST_F(ExternallyConnectableTest, AllHttpsURLsWhitelisted) {
+TEST_F(ExternallyConnectableTest, AllHttpsURLsAllowlisted) {
   scoped_refptr<Extension> extension = LoadAndExpectSuccess(
-      "externally_connectable_all_https_urls_whitelisted.json");
+      "externally_connectable_all_https_urls_allowlisted.json");
   ExternallyConnectableInfo* info = GetExternallyConnectableInfo(extension);
 
   URLPattern all_urls_pattern(URLPattern::SCHEME_ALL, "<all_urls>");

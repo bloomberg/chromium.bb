@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/metrics/histogram_functions.h"
+#include "base/time/time.h"
 #include "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"
 
@@ -66,6 +67,15 @@ SyncSessionDurationsMetricsRecorder::~SyncSessionDurationsMetricsRecorder() {
   sync_observation_.Reset();
   DCHECK(identity_manager_observation_.IsObserving());
   identity_manager_observation_.Reset();
+}
+
+bool SyncSessionDurationsMetricsRecorder::IsSignedIn() const {
+  return identity_manager_->HasPrimaryAccount(signin::ConsentLevel::kSignin);
+}
+
+bool SyncSessionDurationsMetricsRecorder::IsSyncing() const {
+  return account_status_ == FeatureState::ON &&
+         sync_status_ == FeatureState::ON;
 }
 
 void SyncSessionDurationsMetricsRecorder::OnSessionStarted(
@@ -224,7 +234,7 @@ void SyncSessionDurationsMetricsRecorder::LogSigninDuration(
     case FeatureState::UNKNOWN:
       // Since the feature wasn't working for the user if we didn't know its
       // state, log the status as off.
-      FALLTHROUGH;
+      [[fallthrough]];
     case FeatureState::OFF:
       LogDuration("Session.TotalDuration.WithoutAccount", session_length);
       break;
@@ -246,7 +256,7 @@ void SyncSessionDurationsMetricsRecorder::LogSyncAndAccountDuration(
       break;
     case GetFeatureStates(FeatureState::ON, FeatureState::UNKNOWN):
       // Sync engine not initialized yet, default to it being off.
-      FALLTHROUGH;
+      [[fallthrough]];
     case GetFeatureStates(FeatureState::ON, FeatureState::OFF):
       LogDuration("Session.TotalDuration.NotOptedInToSyncWithAccount",
                   session_length);
@@ -257,7 +267,7 @@ void SyncSessionDurationsMetricsRecorder::LogSyncAndAccountDuration(
       break;
     case GetFeatureStates(FeatureState::OFF, FeatureState::UNKNOWN):
       // Sync engine not initialized yet, default to it being off.
-      FALLTHROUGH;
+      [[fallthrough]];
     case GetFeatureStates(FeatureState::OFF, FeatureState::OFF):
       LogDuration("Session.TotalDuration.NotOptedInToSyncWithoutAccount",
                   session_length);

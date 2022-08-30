@@ -16,8 +16,9 @@
 #include "chrome/browser/power_bookmarks/proto/power_bookmark_meta.pb.h"
 #include "chrome/browser/power_bookmarks/proto/shopping_specifics.pb.h"
 #include "chrome/common/chrome_isolated_world_ids.h"
-#include "chrome/grit/browser_resources.h"
+#include "components/commerce/core/commerce_feature_list.h"
 #include "components/commerce/core/proto/price_tracking.pb.h"
+#include "components/grit/components_resources.h"
 #include "components/optimization_guide/core/optimization_guide_util.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "content/public/browser/navigation_handle.h"
@@ -35,7 +36,7 @@ const long kToMicroCurrency = 1e6;
 
 ShoppingDataProvider::ShoppingDataProvider(
     content::WebContents* content,
-    optimization_guide::OptimizationGuideDecider* optimization_guide)
+    optimization_guide::NewOptimizationGuideDecider* optimization_guide)
     : content::WebContentsObserver(content),
       content::WebContentsUserData<ShoppingDataProvider>(*content),
       run_javascript_on_load_(false),
@@ -48,12 +49,9 @@ ShoppingDataProvider::ShoppingDataProvider(
 
 ShoppingDataProvider::~ShoppingDataProvider() = default;
 
-void ShoppingDataProvider::DidFinishNavigation(
-    content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->HasCommitted() ||
-      !navigation_handle->IsInPrimaryMainFrame() || !optimization_guide_) {
+void ShoppingDataProvider::PrimaryPageChanged(content::Page& page) {
+  if (!optimization_guide_)
     return;
-  }
 
   run_javascript_on_load_ = false;
   meta_for_navigation_.reset();
@@ -61,8 +59,8 @@ void ShoppingDataProvider::DidFinishNavigation(
   // they do not conflict with the new ones for this navigation.
   weak_ptr_factory_.InvalidateWeakPtrs();
 
-  optimization_guide_->CanApplyOptimizationAsync(
-      navigation_handle,
+  optimization_guide_->CanApplyOptimization(
+      web_contents()->GetURL(),
       optimization_guide::proto::OptimizationType::PRICE_TRACKING,
       base::BindOnce(&ShoppingDataProvider::OnOptimizationGuideDecision,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -86,7 +84,7 @@ void ShoppingDataProvider::DidFinishLoad(
   base::OnceCallback<void(base::Value)> callback =
       base::BindOnce(&ShoppingDataProvider::OnJavascriptExecutionCompleted,
                      weak_ptr_factory_.GetWeakPtr());
-  web_contents()->GetMainFrame()->ExecuteJavaScriptInIsolatedWorld(
+  web_contents()->GetPrimaryMainFrame()->ExecuteJavaScriptInIsolatedWorld(
       base::UTF8ToUTF16(script), std::move(callback),
       ISOLATED_WORLD_ID_CHROME_INTERNAL);
 }
@@ -119,7 +117,8 @@ void ShoppingDataProvider::OnOptimizationGuideDecision(
     if (parsed_any.has_value() && price_data.IsInitialized()) {
       commerce::BuyableProduct buyable_product = price_data.buyable_product();
 
-      if (buyable_product.has_image_url()) {
+      if (buyable_product.has_image_url() &&
+          base::FeatureList::IsEnabled(commerce::kCommerceAllowServerImages)) {
         meta_for_navigation_->mutable_lead_image()->set_url(
             buyable_product.image_url());
       }
@@ -191,13 +190,17 @@ void MergeData(power_bookmarks::PowerBookmarkMeta* meta,
       // retrieved from the proto received from optimization guide before this
       // callback runs.
       if (!meta->has_lead_image()) {
-        meta->mutable_lead_image()->set_url(it.second.GetString());
+        if (base::FeatureList::IsEnabled(commerce::kCommerceAllowLocalImages)) {
+          meta->mutable_lead_image()->set_url(it.second.GetString());
+        }
         base::UmaHistogramEnumeration(
             "Commerce.PowerBookmarks.ShoppingDataProvider.FallbackDataContent",
             ShoppingDataProviderFallback::kLeadImage,
             ShoppingDataProviderFallback::kMaxValue);
       } else {
-        meta->add_fallback_images()->set_url(it.second.GetString());
+        if (base::FeatureList::IsEnabled(commerce::kCommerceAllowLocalImages)) {
+          meta->add_fallback_images()->set_url(it.second.GetString());
+        }
         base::UmaHistogramEnumeration(
             "Commerce.PowerBookmarks.ShoppingDataProvider.FallbackDataContent",
             ShoppingDataProviderFallback::kFallbackImage,
@@ -252,6 +255,10 @@ void PopulateShoppingSpecifics(
         shopping_specifics->mutable_current_price();
     price->set_currency_code(data.current_price().currency_code());
     price->set_amount_micros(data.current_price().amount_micros());
+  }
+
+  if (data.has_country_code()) {
+    shopping_specifics->set_country_code(data.country_code());
   }
 }
 

@@ -292,7 +292,7 @@ ArchOpcode SelectLoadOpcode(LoadRepresentation load_rep) {
       break;
     case MachineRepresentation::kCompressedPointer:  // Fall through.
     case MachineRepresentation::kCompressed:
-    case MachineRepresentation::kCagedPointer:  // Fall through.
+    case MachineRepresentation::kSandboxedPointer:  // Fall through.
 #ifdef V8_COMPRESS_POINTERS
       opcode = kS390_LoadWordS32;
       break;
@@ -320,6 +320,7 @@ ArchOpcode SelectLoadOpcode(LoadRepresentation load_rep) {
     case MachineRepresentation::kSimd128:
       opcode = kS390_LoadSimd128;
       break;
+    case MachineRepresentation::kSimd256:  // Fall through.
     case MachineRepresentation::kMapWord:  // Fall through.
     case MachineRepresentation::kNone:
     default:
@@ -775,7 +776,7 @@ static void VisitGeneralStore(
         break;
       case MachineRepresentation::kCompressedPointer:  // Fall through.
       case MachineRepresentation::kCompressed:
-      case MachineRepresentation::kCagedPointer:  // Fall through.
+      case MachineRepresentation::kSandboxedPointer:  // Fall through.
 #ifdef V8_COMPRESS_POINTERS
         opcode = kS390_StoreCompressTagged;
         break;
@@ -801,6 +802,7 @@ static void VisitGeneralStore(
           value = value->InputAt(0);
         }
         break;
+      case MachineRepresentation::kSimd256:  // Fall through.
       case MachineRepresentation::kMapWord:  // Fall through.
       case MachineRepresentation::kNone:
         UNREACHABLE();
@@ -2113,6 +2115,11 @@ bool InstructionSelector::ZeroExtendsWord32ToWord64NoPhis(Node* node) {
   UNIMPLEMENTED();
 }
 
+void InstructionSelector::EmitMoveParamToFPR(Node* node, int index) {}
+
+void InstructionSelector::EmitMoveFPRToParam(InstructionOperand* op,
+                                             LinkageLocation location) {}
+
 void InstructionSelector::EmitPrepareArguments(
     ZoneVector<PushParameter>* arguments, const CallDescriptor* call_descriptor,
     Node* node) {
@@ -2470,6 +2477,7 @@ void InstructionSelector::VisitWord64AtomicStore(Node* node) {
   V(I32x4Shl)              \
   V(I32x4ShrS)             \
   V(I32x4ShrU)             \
+  V(I32x4DotI16x8S)        \
   V(I16x8Add)              \
   V(I16x8Sub)              \
   V(I16x8Mul)              \
@@ -2484,6 +2492,7 @@ void InstructionSelector::VisitWord64AtomicStore(Node* node) {
   V(I16x8GtU)              \
   V(I16x8GeU)              \
   V(I16x8SConvertI32x4)    \
+  V(I16x8UConvertI32x4)    \
   V(I16x8RoundingAverageU) \
   V(I16x8ExtMulLowI8x16S)  \
   V(I16x8ExtMulHighI8x16S) \
@@ -2505,6 +2514,7 @@ void InstructionSelector::VisitWord64AtomicStore(Node* node) {
   V(I8x16GtU)              \
   V(I8x16GeU)              \
   V(I8x16SConvertI16x8)    \
+  V(I8x16UConvertI16x8)    \
   V(I8x16RoundingAverageU) \
   V(I8x16Shl)              \
   V(I8x16ShrS)             \
@@ -2515,19 +2525,16 @@ void InstructionSelector::VisitWord64AtomicStore(Node* node) {
   V(S128AndNot)
 
 #define SIMD_BINOP_UNIQUE_REGISTER_LIST(V) \
-  V(I32x4DotI16x8S)                        \
   V(I16x8AddSatS)                          \
   V(I16x8SubSatS)                          \
   V(I16x8AddSatU)                          \
   V(I16x8SubSatU)                          \
   V(I16x8Q15MulRSatS)                      \
-  V(I16x8UConvertI32x4)                    \
   V(I8x16AddSatS)                          \
   V(I8x16SubSatS)                          \
   V(I8x16AddSatU)                          \
   V(I8x16SubSatU)                          \
-  V(I8x16Swizzle)                          \
-  V(I8x16UConvertI16x8)
+  V(I8x16Swizzle)
 
 #define SIMD_UNOP_LIST(V)    \
   V(F64x2Abs)                \
@@ -2543,8 +2550,6 @@ void InstructionSelector::VisitWord64AtomicStore(Node* node) {
   V(F64x2Splat)              \
   V(F32x4Abs)                \
   V(F32x4Neg)                \
-  V(F32x4RecipApprox)        \
-  V(F32x4RecipSqrtApprox)    \
   V(F32x4Sqrt)               \
   V(F32x4Ceil)               \
   V(F32x4Floor)              \
@@ -2565,6 +2570,8 @@ void InstructionSelector::VisitWord64AtomicStore(Node* node) {
   V(I64x2AllTrue)            \
   V(I32x4Neg)                \
   V(I32x4Abs)                \
+  V(I32x4SConvertF32x4)      \
+  V(I32x4UConvertF32x4)      \
   V(I32x4SConvertI16x8Low)   \
   V(I32x4SConvertI16x8High)  \
   V(I32x4UConvertI16x8Low)   \
@@ -2593,8 +2600,6 @@ void InstructionSelector::VisitWord64AtomicStore(Node* node) {
   V(V128AnyTrue)
 
 #define SIMD_UNOP_UNIQUE_REGISTER_LIST(V) \
-  V(I32x4SConvertF32x4)                   \
-  V(I32x4UConvertF32x4)                   \
   V(I32x4ExtAddPairwiseI16x8S)            \
   V(I32x4ExtAddPairwiseI16x8U)            \
   V(I16x8ExtAddPairwiseI8x16S)            \
@@ -2744,10 +2749,10 @@ void InstructionSelector::VisitS128Const(Node* node) {
     // We have to use Pack4Lanes to reverse the bytes (lanes) on BE,
     // Which in this case is ineffective on LE.
     Emit(kS390_S128Const, dst,
-         g.UseImmediate(Pack4Lanes(bit_cast<uint8_t*>(&val[0]))),
-         g.UseImmediate(Pack4Lanes(bit_cast<uint8_t*>(&val[0]) + 4)),
-         g.UseImmediate(Pack4Lanes(bit_cast<uint8_t*>(&val[0]) + 8)),
-         g.UseImmediate(Pack4Lanes(bit_cast<uint8_t*>(&val[0]) + 12)));
+         g.UseImmediate(Pack4Lanes(base::bit_cast<uint8_t*>(&val[0]))),
+         g.UseImmediate(Pack4Lanes(base::bit_cast<uint8_t*>(&val[0]) + 4)),
+         g.UseImmediate(Pack4Lanes(base::bit_cast<uint8_t*>(&val[0]) + 8)),
+         g.UseImmediate(Pack4Lanes(base::bit_cast<uint8_t*>(&val[0]) + 12)));
   }
 }
 

@@ -38,9 +38,11 @@ import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.app.ChromeActivity;
-import org.chromium.chrome.browser.compositor.layouts.OverviewModeController;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.layouts.LayoutManager;
+import org.chromium.chrome.browser.layouts.LayoutTestUtils;
+import org.chromium.chrome.browser.layouts.LayoutType;
 import org.chromium.chrome.browser.omnibox.UrlBar;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabStateBrowserControlsVisibilityDelegate;
@@ -145,12 +147,16 @@ public class FullscreenManagerTest {
             + "  <div style='width: 150vw'>wide</div>"
             + "  <script>"
             + "    load_promise = new Promise(r => {onload = r});"
-            + "    resize_promise = new Promise(r => {onresize = r});"
+            + "    resize_promise = null;"
             + "    reached_bottom = () => {"
             + "      return Math.abs("
             + "        (se => se.scrollHeight - (se.scrollTop + visualViewport.offsetTop +"
             + "          visualViewport.height))(document.scrollingElement)"
             + "      ) < 1;"
+            + "    };"
+            + "    start_listening_for_on_resize = () => {"
+            + "      resize_promise = new Promise(r => {onresize = r});"
+            + "      return true;"
             + "    };"
             + "  </script>"
             + "</body>"
@@ -247,6 +253,49 @@ public class FullscreenManagerTest {
     @Test
     @LargeTest
     @Feature({"Fullscreen"})
+    public void testFullscreenOptionsUpdatedCorrectly() throws InterruptedException {
+        mActivityTestRule.startMainActivityWithURL(LONG_HTML_TEST_PAGE);
+
+        final Tab tab = mActivityTestRule.getActivity().getActivityTab();
+        final TabWebContentsDelegateAndroid delegate = TabTestUtils.getTabWebContentsDelegate(tab);
+
+        FullscreenTestUtils.waitForFullscreenFlag(tab, false, mActivityTestRule.getActivity());
+        FullscreenTestUtils.waitForPersistentFullscreen(delegate, false);
+
+        // Enter fullscreen w/ all system UI hidden:
+        FullscreenTestUtils.togglePersistentFullscreenAndAssert(
+                tab, true, mActivityTestRule.getActivity(), false, false);
+
+        UiUtils.settleDownUI(InstrumentationRegistry.getInstrumentation());
+
+        // We should be in fullscreen, navigation should be hidden:
+        FullscreenTestUtils.waitForFullscreenFlag(tab, true, mActivityTestRule.getActivity());
+        FullscreenTestUtils.waitForHideNavigationFlag(tab, true, mActivityTestRule.getActivity());
+
+        // Adjust the fullscreen options to show navigation bar mid-fullscreen:
+        FullscreenTestUtils.togglePersistentFullscreenAndAssert(
+                tab, true, mActivityTestRule.getActivity(), true, false);
+
+        UiUtils.settleDownUI(InstrumentationRegistry.getInstrumentation());
+
+        // We should be in fullscreen, navigation should be visible:
+        FullscreenTestUtils.waitForFullscreenFlag(tab, true, mActivityTestRule.getActivity());
+        FullscreenTestUtils.waitForHideNavigationFlag(tab, false, mActivityTestRule.getActivity());
+
+        // Adjust the fullscreen options to show status bar mid-fullscreen:
+        FullscreenTestUtils.togglePersistentFullscreenAndAssert(
+                tab, true, mActivityTestRule.getActivity(), false, true);
+
+        UiUtils.settleDownUI(InstrumentationRegistry.getInstrumentation());
+
+        // We should not be in fullscreen, navigation should be hidden:
+        FullscreenTestUtils.waitForFullscreenFlag(tab, false, mActivityTestRule.getActivity());
+        FullscreenTestUtils.waitForHideNavigationFlag(tab, true, mActivityTestRule.getActivity());
+    }
+
+    @Test
+    @LargeTest
+    @Feature({"Fullscreen"})
     @DisabledTest(message = "crbug.com/1046749")
     public void testExitPersistentFullscreenAllowsManualFullscreen() {
         FullscreenManagerTestUtils.disableBrowserOverrides();
@@ -276,8 +325,8 @@ public class FullscreenManagerTest {
     }
 
     @Test
-    //@LargeTest
-    //@Feature({"Fullscreen"})
+    @LargeTest
+    @Feature({"Fullscreen"})
     @DisabledTest(message = "crbug.com/901280")
     public void testManualHidingShowingBrowserControls() {
         FullscreenManagerTestUtils.disableBrowserOverrides();
@@ -428,21 +477,31 @@ public class FullscreenManagerTest {
     @Test
     @LargeTest
     @Features.DisableFeatures({ChromeFeatureList.OFFLINE_INDICATOR})
-    @DisabledTest(message = "Disabled while investigating. crbug.com/1280192")
     public void testHidingBrowserControlsPreservesScrollOffset() throws TimeoutException {
         FullscreenManagerTestUtils.disableBrowserOverrides();
         mActivityTestRule.startMainActivityWithURL(SCROLL_OFFSET_TEST_PAGE);
 
         ChromeActivity activity = mActivityTestRule.getActivity();
-        BrowserControlsManager browserControlsManager = activity.getBrowserControlsManager();
+        WebContents webContents = activity.getActivityTab().getWebContents();
 
+        // Browser startup generates resize events as part of compositor initialization. Depending
+        // on the relative timing of that initialization and the initial navigation, the test page
+        // may receive these onResize events. To ensure that the test page's onResize handler
+        // triggers only for the fling we initiate below, we tell the test page to start listening
+        // for onResize only now that browser startup has fully completed (note that
+        // startMainActivityWithURL() waits for full browser initialization before returning, and
+        // hence the renderer's processing of the earlier resize events will be ordered before its
+        // reception of the message sent below).
+        JavaScriptUtils.runJavascriptWithAsyncResult(
+                webContents, "domAutomationController.send(start_listening_for_on_resize());");
+
+        BrowserControlsManager browserControlsManager = activity.getBrowserControlsManager();
         CriteriaHelper.pollUiThread(
                 () -> { return browserControlsManager.getTopControlOffset() == 0f; });
 
         Point displaySize = new Point();
         activity.getWindowManager().getDefaultDisplay().getSize(displaySize);
 
-        WebContents webContents = activity.getActivityTab().getWebContents();
         FullscreenManagerTestUtils.waitForPageToBeScrollable(activity.getActivityTab());
 
         JavaScriptUtils.runJavascriptWithAsyncResult(
@@ -557,10 +616,9 @@ public class FullscreenManagerTest {
         FullscreenTestUtils.waitForPersistentFullscreen(delegate, true);
     }
 
-    /* @LargeTest
-     * @Feature({"Fullscreen"})
-     */
     @Test
+    @LargeTest
+    @Feature({"Fullscreen"})
     @DisabledTest(message = "crbug.com/698413")
     public void testBrowserControlsShownWhenInputIsFocused() throws TimeoutException {
         FullscreenManagerTestUtils.disableBrowserOverrides();
@@ -593,8 +651,8 @@ public class FullscreenManagerTest {
     }
 
     @Test
-    //@LargeTest
-    //@Feature({"Fullscreen"})
+    @LargeTest
+    @Feature({"Fullscreen"})
     @DisabledTest(message = "crbug.com/979189")
     public void testPersistentFullscreenWithOptions() {
         FullscreenManagerTestUtils.disableBrowserOverrides();
@@ -658,11 +716,9 @@ public class FullscreenManagerTest {
      * @param inSwitcher Whether to enter or exit the tab switcher.
      */
     private void setTabSwitcherModeAndWait(boolean inSwitcher) {
-        OverviewModeController controller = mActivityTestRule.getActivity().getLayoutManager();
-        if (inSwitcher) {
-            TestThreadUtils.runOnUiThreadBlocking(() -> controller.showOverview(false));
-        } else {
-            TestThreadUtils.runOnUiThreadBlocking(() -> controller.hideOverview(false));
-        }
+        LayoutManager layoutManager = mActivityTestRule.getActivity().getLayoutManager();
+        @LayoutType
+        int layout = inSwitcher ? LayoutType.TAB_SWITCHER : LayoutType.BROWSING;
+        LayoutTestUtils.startShowingAndWaitForLayout(layoutManager, layout, false);
     }
 }

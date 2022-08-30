@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_UPDATED_SCRIPT_LOADER_H_
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_UPDATED_SCRIPT_LOADER_H_
 
+#include "base/time/time.h"
 #include "content/browser/service_worker/service_worker_cache_writer.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
@@ -63,7 +64,6 @@ class CONTENT_EXPORT ServiceWorkerUpdatedScriptLoader final
   enum class LoaderState {
     kNotStarted,
     kLoadingHeader,
-    kWaitingForBody,
     kLoadingBody,
     kCompleted,
   };
@@ -98,8 +98,8 @@ class CONTENT_EXPORT ServiceWorkerUpdatedScriptLoader final
 
   // network::mojom::URLLoaderClient for the network load:
   void OnReceiveEarlyHints(network::mojom::EarlyHintsPtr early_hints) override;
-  void OnReceiveResponse(
-      network::mojom::URLResponseHeadPtr response_head) override;
+  void OnReceiveResponse(network::mojom::URLResponseHeadPtr response_head,
+                         mojo::ScopedDataPipeConsumerHandle body) override;
   void OnReceiveRedirect(
       const net::RedirectInfo& redirect_info,
       network::mojom::URLResponseHeadPtr response_head) override;
@@ -108,8 +108,6 @@ class CONTENT_EXPORT ServiceWorkerUpdatedScriptLoader final
                         OnUploadProgressCallback ack_callback) override;
   void OnReceiveCachedMetadata(mojo_base::BigBuffer data) override;
   void OnTransferSizeUpdated(int32_t transfer_size_diff) override;
-  void OnStartLoadingResponseBody(
-      mojo::ScopedDataPipeConsumerHandle body) override;
   void OnComplete(const network::URLLoaderCompletionStatus& status) override;
 
   // Implements ServiceWorkerCacheWriter::WriteObserver.
@@ -193,8 +191,7 @@ class CONTENT_EXPORT ServiceWorkerUpdatedScriptLoader final
   // Corresponds to the steps of calls as a URLLoaderClient.
   //
   // CreateLoaderAndStart(): kNotStarted -> kLoadingHeader
-  // OnReceiveResponse(): kLoadingHeader -> kWaitingForBody
-  // OnStartLoadingResponseBody(): kWaitingForBody -> kLoadingBody
+  // OnReceiveResponse(): kLoadingHeader -> kLoadingBody
   // OnComplete(): kLoadingBody -> kCompleted
   //
   // When this loader is created, the state should be kLoadingBody or kCompleted

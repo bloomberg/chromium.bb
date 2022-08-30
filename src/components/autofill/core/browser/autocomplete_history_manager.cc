@@ -16,6 +16,7 @@
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_regexes.h"
 #include "components/autofill/core/browser/metrics/autofill_metrics.h"
+#include "components/autofill/core/browser/suggestions_context.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/browser/webdata/autofill_entry.h"
@@ -26,9 +27,10 @@
 #include "components/prefs/pref_service.h"
 #include "components/version_info/version_info.h"
 
-using NotificationType = autofill::AutofillObserver::NotificationType;
-
 namespace autofill {
+
+using NotificationType = AutofillObserver::NotificationType;
+
 namespace {
 
 // Limit on the number of suggestions to appear in the pop-up menu under an
@@ -50,7 +52,8 @@ bool IsTextField(const FormFieldData& field) {
 // totally different purpose.
 bool IsMeaningfulFieldName(const std::u16string& name) {
   return !MatchesPattern(
-      name, u"^(((field|input)(_|-)?\\d+)|tan|otp|title|captcha)$");
+      name,
+      u"^(((field|input)(_|-)?\\d+)|title|otp|tan)$|(cvc|cvn|cvv|captcha)");
 }
 
 }  // namespace
@@ -82,7 +85,8 @@ void AutocompleteHistoryManager::OnGetSingleFieldSuggestions(
     const std::u16string& name,
     const std::u16string& prefix,
     const std::string& form_control_type,
-    base::WeakPtr<SuggestionsHandler> handler) {
+    base::WeakPtr<SuggestionsHandler> handler,
+    const SuggestionsContext& context) {
   CancelPendingQueries(handler.get());
 
   if (!IsMeaningfulFieldName(name) || !is_autocomplete_enabled ||
@@ -107,24 +111,22 @@ void AutocompleteHistoryManager::OnGetSingleFieldSuggestions(
   }
 }
 
-void AutocompleteHistoryManager::OnWillSubmitForm(
-    const FormData& form,
+void AutocompleteHistoryManager::OnWillSubmitFormWithFields(
+    const std::vector<FormFieldData>& fields,
     bool is_autocomplete_enabled) {
   if (!is_autocomplete_enabled || is_off_the_record_) {
     Notify(NotificationType::AutocompleteFormSkipped);
     return;
   }
-
-  std::vector<FormFieldData> values;
-  for (const FormFieldData& field : form.fields) {
+  std::vector<FormFieldData> autocomplete_saveable_fields;
+  autocomplete_saveable_fields.reserve(fields.size());
+  for (const FormFieldData& field : fields) {
     if (IsFieldValueSaveable(field)) {
-      values.push_back(field);
+      autocomplete_saveable_fields.push_back(field);
     }
   }
-
-  if (!values.empty() && profile_database_.get()) {
-    profile_database_->AddFormFields(values);
-
+  if (!autocomplete_saveable_fields.empty() && profile_database_.get()) {
+    profile_database_->AddFormFields(autocomplete_saveable_fields);
     Notify(NotificationType::AutocompleteFormSubmitted);
   }
 }
@@ -132,11 +134,9 @@ void AutocompleteHistoryManager::OnWillSubmitForm(
 void AutocompleteHistoryManager::CancelPendingQueries(
     const SuggestionsHandler* handler) {
   if (handler && profile_database_) {
-    for (auto iter : pending_queries_) {
-      const QueryHandler& query_handler = iter.second;
-
+    for (const auto& [handle, query_handler] : pending_queries_) {
       if (query_handler.handler_ && query_handler.handler_.get() == handler) {
-        profile_database_->CancelRequest(iter.first);
+        profile_database_->CancelRequest(handle);
       }
     }
   }
@@ -148,13 +148,15 @@ void AutocompleteHistoryManager::CancelPendingQueries(
 
 void AutocompleteHistoryManager::OnRemoveCurrentSingleFieldSuggestion(
     const std::u16string& field_name,
-    const std::u16string& value) {
+    const std::u16string& value,
+    int frontend_id) {
   if (profile_database_)
     profile_database_->RemoveFormValueForElementName(field_name, value);
 }
 
 void AutocompleteHistoryManager::OnSingleFieldSuggestionSelected(
-    const std::u16string& value) {
+    const std::u16string& value,
+    int frontend_id) {
   // Try to find the AutofillEntry associated with the given suggestion.
   auto last_entries_iter = last_entries_.find(value);
   if (last_entries_iter == last_entries_.end()) {
@@ -258,21 +260,6 @@ void AutocompleteHistoryManager::UMARecorder::OnWebDataServiceRequestDone(
   AutofillMetrics::LogAutocompleteSuggestions(has_suggestion);
 }
 
-AutocompleteHistoryManager::QueryHandler::QueryHandler(
-    int client_query_id,
-    bool autoselect_first_suggestion,
-    std::u16string prefix,
-    base::WeakPtr<SuggestionsHandler> handler)
-    : client_query_id_(client_query_id),
-      autoselect_first_suggestion_(autoselect_first_suggestion),
-      prefix_(prefix),
-      handler_(std::move(handler)) {}
-
-AutocompleteHistoryManager::QueryHandler::QueryHandler(
-    const QueryHandler& original) = default;
-
-AutocompleteHistoryManager::QueryHandler::~QueryHandler() = default;
-
 void AutocompleteHistoryManager::SendSuggestions(
     const std::vector<AutofillEntry>& entries,
     const QueryHandler& query_handler) {
@@ -303,8 +290,8 @@ void AutocompleteHistoryManager::SendSuggestions(
 
 void AutocompleteHistoryManager::CancelAllPendingQueries() {
   if (profile_database_) {
-    for (const auto& pending_query : pending_queries_) {
-      profile_database_->CancelRequest(pending_query.first);
+    for (const auto& [handle, query_handler] : pending_queries_) {
+      profile_database_->CancelRequest(handle);
     }
   }
 
