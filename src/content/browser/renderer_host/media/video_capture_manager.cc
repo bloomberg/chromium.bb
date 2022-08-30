@@ -17,6 +17,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/observer_list.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -75,20 +76,20 @@ VideoCaptureManager::CaptureDeviceStartRequest::CaptureDeviceStartRequest(
 
 VideoCaptureManager::VideoCaptureManager(
     std::unique_ptr<VideoCaptureProvider> video_capture_provider,
-    base::RepeatingCallback<void(const std::string&)> emit_log_message_cb,
-    ScreenlockMonitor* monitor)
+    base::RepeatingCallback<void(const std::string&)> emit_log_message_cb)
     : video_capture_provider_(std::move(video_capture_provider)),
-      emit_log_message_cb_(std::move(emit_log_message_cb)),
-      screenlock_monitor_(monitor) {
-  if (screenlock_monitor_) {
-    screenlock_monitor_->AddObserver(this);
+      emit_log_message_cb_(std::move(emit_log_message_cb)) {
+  ScreenlockMonitor* screenlock_monitor = ScreenlockMonitor::Get();
+  if (screenlock_monitor) {
+    screenlock_monitor->AddObserver(this);
   }
 }
 
 VideoCaptureManager::~VideoCaptureManager() {
   DCHECK(device_start_request_queue_.empty());
-  if (screenlock_monitor_) {
-    screenlock_monitor_->RemoveObserver(this);
+  ScreenlockMonitor* screenlock_monitor = ScreenlockMonitor::Get();
+  if (screenlock_monitor) {
+    screenlock_monitor->RemoveObserver(this);
   }
 }
 
@@ -109,7 +110,7 @@ void VideoCaptureManager::RegisterListener(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(listener);
   listeners_.AddObserver(listener);
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   application_state_has_running_activities_ = true;
   app_status_listener_ = base::android::ApplicationStatusListener::New(
       base::BindRepeating(&VideoCaptureManager::OnApplicationStateChange,
@@ -215,6 +216,7 @@ void VideoCaptureManager::Close(
 void VideoCaptureManager::Crop(
     const base::UnguessableToken& session_id,
     const base::Token& crop_id,
+    uint32_t crop_version,
     base::OnceCallback<void(media::mojom::CropRequestResult)> callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -224,7 +226,7 @@ void VideoCaptureManager::Crop(
     std::move(callback).Run(media::mojom::CropRequestResult::kErrorGeneric);
     return;
   }
-  controller->Crop(crop_id, std::move(callback));
+  controller->Crop(crop_id, crop_version, std::move(callback));
 }
 
 void VideoCaptureManager::QueueStartDevice(
@@ -594,6 +596,29 @@ VideoCaptureManager::GetDeviceFormatInUse(
   return device_in_use ? device_in_use->GetVideoCaptureFormat() : absl::nullopt;
 }
 
+GlobalRoutingID VideoCaptureManager::GetGlobalRoutingID(
+    const base::UnguessableToken& session_id) const {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  VideoCaptureController* const controller =
+      LookupControllerBySessionId(session_id);
+  if (!controller || !controller->IsDeviceAlive() ||
+      !blink::IsVideoDesktopCaptureMediaType(controller->stream_type())) {
+    return GlobalRoutingID();
+  }
+
+  const DesktopMediaID desktop_media_id =
+      DesktopMediaID::Parse(controller->device_id());
+
+  if (desktop_media_id.type != DesktopMediaID::Type::TYPE_WEB_CONTENTS ||
+      desktop_media_id.web_contents_id.is_null()) {
+    return GlobalRoutingID();
+  }
+
+  return GlobalRoutingID(desktop_media_id.web_contents_id.render_process_id,
+                         desktop_media_id.web_contents_id.main_render_frame_id);
+}
+
 void VideoCaptureManager::SetDesktopCaptureWindowId(
     const media::VideoCaptureSessionId& session_id,
     gfx::NativeViewId window_id) {
@@ -796,7 +821,7 @@ void VideoCaptureManager::DestroyControllerIfNoClients(
 }
 
 VideoCaptureController* VideoCaptureManager::LookupControllerBySessionId(
-    const base::UnguessableToken& session_id) {
+    const base::UnguessableToken& session_id) const {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   SessionMap::const_iterator session_it = sessions_.find(session_id);
   if (session_it == sessions_.end())
@@ -862,6 +887,9 @@ VideoCaptureController* VideoCaptureManager::GetOrCreateController(
       LookupControllerByMediaTypeAndDeviceId(device_info.type, device_info.id);
   if (existing_device) {
     DCHECK_EQ(device_info.type, existing_device->stream_type());
+    if (existing_device->was_crop_ever_called()) {
+      return nullptr;
+    }
     return existing_device;
   }
 
@@ -872,7 +900,7 @@ VideoCaptureController* VideoCaptureManager::GetOrCreateController(
   return new_controller;
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 void VideoCaptureManager::OnApplicationStateChange(
     base::android::ApplicationState state) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -933,7 +961,7 @@ void VideoCaptureManager::ResumeDevices() {
 }
 
 void VideoCaptureManager::OnScreenLocked() {
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   // Stop screen sharing when screen is locked on desktop platforms only.
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   EmitLogMessage("VideoCaptureManager::OnScreenLocked", 1);
@@ -960,7 +988,7 @@ void VideoCaptureManager::OnScreenLocked() {
   for (auto session_id : desktopcapture_session_ids) {
     Close(session_id);
   }
-#endif  // OS_ANDROID
+#endif  // BUILDFLAG(IS_ANDROID)
 }
 
 void VideoCaptureManager::OnScreenUnlocked() {

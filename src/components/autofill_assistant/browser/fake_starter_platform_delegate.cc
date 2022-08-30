@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "components/autofill_assistant/browser/fake_starter_platform_delegate.h"
+#include "components/autofill_assistant/browser/mock_assistant_field_trial_util.h"
 
 namespace autofill_assistant {
 
@@ -19,7 +20,7 @@ FakeStarterPlatformDelegate::GetTriggerScriptRequestSenderToInject() {
   return std::move(trigger_script_request_sender_for_test_);
 }
 
-void FakeStarterPlatformDelegate::StartRegularScript(
+void FakeStarterPlatformDelegate::StartScriptDefaultUi(
     GURL url,
     std::unique_ptr<TriggerContext> trigger_context,
     const absl::optional<TriggerScriptProto>& trigger_script) {
@@ -102,12 +103,51 @@ bool FakeStarterPlatformDelegate::GetMakeSearchesAndBrowsingBetterEnabled()
   return msbb_enabled_;
 }
 
+bool FakeStarterPlatformDelegate::GetIsLoggedIn() {
+  return is_logged_in_;
+}
+
+bool FakeStarterPlatformDelegate::GetIsSupervisedUser() {
+  return is_supervised_user_;
+}
+
 bool FakeStarterPlatformDelegate::GetIsCustomTab() const {
   return is_custom_tab_;
 }
 
+bool FakeStarterPlatformDelegate::GetIsWebLayer() const {
+  return is_web_layer_;
+}
+
 bool FakeStarterPlatformDelegate::GetIsTabCreatedByGSA() const {
   return is_tab_created_by_gsa_;
+}
+
+std::unique_ptr<AssistantFieldTrialUtil>
+FakeStarterPlatformDelegate::CreateFieldTrialUtil() {
+  if (field_trial_util_) {
+    return std::move(field_trial_util_);
+  }
+  return std::make_unique<MockAssistantFieldTrialUtil>();
+}
+
+bool FakeStarterPlatformDelegate::IsAttached() {
+  return is_attached_;
+}
+
+const CommonDependencies* FakeStarterPlatformDelegate::GetCommonDependencies()
+    const {
+  return nullptr;
+}
+
+const PlatformDependencies*
+FakeStarterPlatformDelegate::GetPlatformDependencies() const {
+  return nullptr;
+}
+
+base::WeakPtr<StarterPlatformDelegate>
+FakeStarterPlatformDelegate::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
 }
 
 }  // namespace autofill_assistant

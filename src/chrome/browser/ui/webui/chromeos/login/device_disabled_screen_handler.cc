@@ -5,45 +5,29 @@
 #include "chrome/browser/ui/webui/chromeos/login/device_disabled_screen_handler.h"
 
 #include "chrome/browser/ash/login/oobe_screen.h"
-#include "chrome/browser/ash/login/screens/device_disabled_screen.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/login/localized_values_builder.h"
 
 namespace chromeos {
 
-constexpr StaticOobeScreenId DeviceDisabledScreenView::kScreenId;
+DeviceDisabledScreenHandler::DeviceDisabledScreenHandler()
+    : BaseScreenHandler(kScreenId) {}
 
-DeviceDisabledScreenHandler::DeviceDisabledScreenHandler(
-    JSCallsContainer* js_calls_container)
-    : BaseScreenHandler(kScreenId, js_calls_container) {
-}
-
-DeviceDisabledScreenHandler::~DeviceDisabledScreenHandler() {
-  if (screen_)
-    screen_->OnViewDestroyed(this);
-}
+DeviceDisabledScreenHandler::~DeviceDisabledScreenHandler() = default;
 
 void DeviceDisabledScreenHandler::Show(const std::string& serial,
                                        const std::string& domain,
                                        const std::string& message) {
-  base::DictionaryValue screen_data;
-  screen_data.SetStringPath("serial", serial);
-  screen_data.SetStringPath("domain", domain);
-  screen_data.SetStringPath("message", message);
-  ShowScreenWithData(kScreenId, &screen_data);
-}
-
-void DeviceDisabledScreenHandler::Hide() {
-  NOTREACHED() << "Device should reboot upon removing device disabled flag";
-}
-
-void DeviceDisabledScreenHandler::Bind(DeviceDisabledScreen* screen) {
-  screen_ = screen;
+  base::Value::Dict screen_data;
+  screen_data.Set("serial", serial);
+  screen_data.Set("domain", domain);
+  screen_data.Set("message", message);
+  ShowInWebUI(std::move(screen_data));
 }
 
 void DeviceDisabledScreenHandler::UpdateMessage(const std::string& message) {
-  CallJS("login.DeviceDisabledScreen.setMessage", message);
+  CallExternalAPI("setMessage", message);
 }
 
 void DeviceDisabledScreenHandler::DeclareLocalizedValues(
@@ -53,12 +37,6 @@ void DeviceDisabledScreenHandler::DeclareLocalizedValues(
                IDS_DEVICE_DISABLED_EXPLANATION_WITH_DOMAIN);
   builder->Add("deviceDisabledExplanationWithoutDomain",
                IDS_DEVICE_DISABLED_EXPLANATION_WITHOUT_DOMAIN);
-}
-
-void DeviceDisabledScreenHandler::Initialize() {
-}
-
-void DeviceDisabledScreenHandler::RegisterMessages() {
 }
 
 }  // namespace chromeos

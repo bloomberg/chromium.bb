@@ -24,10 +24,8 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/string_util.h"
 #include "base/system/sys_info.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
-#include "chrome/browser/ash/arc/arc_web_contents_data.h"
 #include "chrome/browser/ash/arc/policy/arc_policy_util.h"
 #include "chrome/browser/ash/arc/session/arc_session_manager.h"
 #include "chrome/browser/ash/file_manager/path_util.h"
@@ -41,6 +39,7 @@
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/arc/arc_web_contents_data.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
@@ -53,7 +52,6 @@
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
-#include "components/version_info/version_info.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
@@ -61,6 +59,10 @@
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
+
+// Enable VLOG level 1.
+#undef ENABLED_VLOG_LEVEL
+#define ENABLED_VLOG_LEVEL 1
 
 namespace arc {
 
@@ -107,10 +109,10 @@ bool IsArcCompatibleFilesystem(const base::FilePath& path) {
 
 FileSystemCompatibilityState GetFileSystemCompatibilityPref(
     const AccountId& account_id) {
-  int pref_value = kFileSystemIncompatible;
-  user_manager::known_user::GetIntegerPref(
-      account_id, prefs::kArcCompatibleFilesystemChosen, &pref_value);
-  return static_cast<FileSystemCompatibilityState>(pref_value);
+  user_manager::KnownUser known_user(g_browser_process->local_state());
+  return static_cast<FileSystemCompatibilityState>(
+      known_user.FindIntPath(account_id, prefs::kArcCompatibleFilesystemChosen)
+          .value_or(kFileSystemIncompatible));
 }
 
 // Stores the result of IsArcCompatibleFilesystem posted back from the blocking
@@ -119,9 +121,9 @@ void StoreCompatibilityCheckResult(const AccountId& account_id,
                                    base::OnceClosure callback,
                                    bool is_compatible) {
   if (is_compatible) {
-    user_manager::known_user::SetIntegerPref(
-        account_id, prefs::kArcCompatibleFilesystemChosen,
-        kFileSystemCompatible);
+    user_manager::KnownUser known_user(g_browser_process->local_state());
+    known_user.SetIntegerPref(account_id, prefs::kArcCompatibleFilesystemChosen,
+                              kFileSystemCompatible);
 
     // TODO(kinaba): Remove this code for accounts without user prefs.
     // See the comment for |g_known_compatible_users| for the detail.
@@ -172,7 +174,7 @@ bool IsArcAllowedForProfileInternal(const Profile* profile,
     return false;
   }
 
-  if (!chromeos::ProfileHelper::IsPrimaryProfile(profile)) {
+  if (!ash::ProfileHelper::IsPrimaryProfile(profile)) {
     VLOG_IF(1, should_report_reason)
         << "Non-primary users are not supported in ARC.";
     return false;
@@ -190,7 +192,7 @@ bool IsArcAllowedForProfileInternal(const Profile* profile,
   // different application install mechanism. ARC is not allowed otherwise
   // (e.g. in public sessions). cf) crbug.com/605545
   const user_manager::User* user =
-      chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
+      ash::ProfileHelper::Get()->GetUserByProfile(profile);
   if (!IsArcAllowedForUser(user)) {
     VLOG_IF(1, should_report_reason) << "ARC is not allowed for the user.";
     return false;
@@ -250,7 +252,7 @@ void SharePathIfRequired(ConvertToContentUrlsAndShareCallback callback,
 
 bool IsRealUserProfile(const Profile* profile) {
   // Return false for signin, lock screen and incognito profiles.
-  return profile && chromeos::ProfileHelper::IsRegularProfile(profile) &&
+  return profile && ash::ProfileHelper::IsRegularProfile(profile) &&
          !profile->IsOffTheRecord();
 }
 
@@ -294,7 +296,7 @@ void ClearArcAllowedCheckForTesting() {
 
 bool IsArcBlockedDueToIncompatibleFileSystem(const Profile* profile) {
   const user_manager::User* user =
-      chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
+      ash::ProfileHelper::Get()->GetUserByProfile(profile);
 
   // Return true for public accounts as they only have ext4 and
   // for ARC kiosk as migration to ext4 should always be triggered.
@@ -365,7 +367,7 @@ bool SetArcPlayStoreEnabledForProfile(Profile* profile, bool enabled) {
   if (IsArcPlayStoreEnabledPreferenceManagedForProfile(profile)) {
     if (enabled && !IsArcPlayStoreEnabledForProfile(profile)) {
       LOG(WARNING) << "Attempt to enable disabled by policy ARC.";
-      if (chromeos::switches::IsTabletFormFactor()) {
+      if (ash::switches::IsTabletFormFactor()) {
         VLOG(1) << "Showing contact admin dialog managed user of tablet form "
                    "factor devices.";
         base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -410,7 +412,7 @@ bool AreArcAllOptInPreferencesIgnorableForProfile(const Profile* profile) {
 
 bool IsActiveDirectoryUserForProfile(const Profile* profile) {
   const user_manager::User* user =
-      chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
+      ash::ProfileHelper::Get()->GetUserByProfile(profile);
   return user ? user->IsActiveDirectoryUser() : false;
 }
 
@@ -602,10 +604,7 @@ bool IsPlayStoreAvailable() {
   if (!ash::DemoSession::IsDeviceInDemoMode())
     return false;
 
-  // TODO(b/154290639): Remove check for |IsDemoModeOfflineEnrolled| when fixed
-  //                    in Play Store.
-  return !ash::DemoSession::IsDemoModeOfflineEnrolled() &&
-         chromeos::features::ShouldShowPlayStoreInDemoMode();
+  return chromeos::features::ShouldShowPlayStoreInDemoMode();
 }
 
 bool ShouldStartArcSilentlyForManagedProfile(const Profile* profile) {
@@ -639,8 +638,7 @@ std::unique_ptr<content::WebContents> CreateArcCustomTabWebContents(
   // also for |structured_ua.platform_version| below.
   constexpr char kOsOverrideForTabletSite[] = "Linux; Android 9; Chrome tablet";
   // Override the user agent to request mobile version web sites.
-  const std::string product =
-      version_info::GetProductNameAndVersionForUserAgent();
+  const std::string product = embedder_support::GetProductAndVersion();
   blink::UserAgentOverride ua_override;
   ua_override.ua_string_override = content::BuildUserAgentFromOSAndProduct(
       kOsOverrideForTabletSite, product);
@@ -677,8 +675,7 @@ std::string GetHistogramNameByUserType(const std::string& base_name,
   if (IsRobotOrOfflineDemoAccountMode()) {
     auto* demo_session = ash::DemoSession::Get();
     if (demo_session && demo_session->started()) {
-      return demo_session->offline_enrolled() ? base_name + ".OfflineDemoMode"
-                                              : base_name + ".DemoMode";
+      return base_name + ".DemoMode";
     }
     return base_name + ".RobotAccount";
   }

@@ -23,6 +23,7 @@
 #include "ash/system/tray/tri_view.h"
 #include "base/check.h"
 #include "base/memory/ptr_util.h"
+#include "device/bluetooth/chromeos/bluetooth_utils.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -34,7 +35,6 @@
 #include "ui/views/view.h"
 
 namespace ash {
-namespace tray {
 
 BluetoothDetailedViewImpl::BluetoothDetailedViewImpl(
     DetailedViewDelegate* detailed_view_delegate,
@@ -48,6 +48,8 @@ BluetoothDetailedViewImpl::BluetoothDetailedViewImpl(
   CreateDisabledView();
   CreatePairNewDeviceView();
   UpdateBluetoothEnabledState(/*enabled=*/false);
+  device::RecordUiSurfaceDisplayed(
+      device::BluetoothUiSurface::kBluetoothQuickSettings);
 }
 
 BluetoothDetailedViewImpl::~BluetoothDetailedViewImpl() = default;
@@ -176,8 +178,7 @@ void BluetoothDetailedViewImpl::CreatePairNewDeviceView() {
   // and add it to both the top and bottom of the hover highlight view.
   separator->SetBorder(/*b=*/nullptr);
   hover_highlight_view->SetBorder(views::CreateEmptyBorder(
-      gfx::Insets(/*top=*/padding.top(), /*left=*/0, /*bottom=*/padding.top(),
-                  /*right=*/0)));
+      gfx::Insets::TLBR(padding.top(), 0, padding.top(), 0)));
 
   pair_new_device_view_->AddChildViewAt(hover_highlight_view.release(), 0);
 }
@@ -224,5 +225,4 @@ void BluetoothDetailedViewImpl::OnToggleClicked() {
   UpdateBluetoothEnabledState(toggle_state);
 }
 
-}  // namespace tray
 }  // namespace ash

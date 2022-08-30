@@ -5,11 +5,10 @@
 #include "chrome/browser/crash_upload_list/crash_upload_list.h"
 
 #include "build/build_config.h"
-#include "build/chromeos_buildflags.h"
 
-#if defined(OS_MAC) || defined(OS_WIN)
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
 #include "components/crash/core/browser/crash_upload_list_crashpad.h"
-#elif defined(OS_FUCHSIA)
+#elif BUILDFLAG(IS_FUCHSIA)
 #include "chrome/browser/crash_upload_list/crash_upload_list_fuchsia.h"
 #else
 #include "base/files/file_path.h"
@@ -20,30 +19,30 @@
 #include "components/upload_list/text_log_upload_list.h"
 #endif
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "base/android/path_utils.h"
 #include "chrome/browser/crash_upload_list/crash_upload_list_android.h"
 #endif
 
-#if !(BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS))
+#if !BUILDFLAG(IS_CHROMEOS)
 #include "components/crash/core/browser/crash_upload_list_crashpad.h"
 #endif
 
-#if defined(OS_LINUX)
+#if BUILDFLAG(IS_LINUX)
 #include "components/upload_list/combining_upload_list.h"
 #endif
 
 scoped_refptr<UploadList> CreateCrashUploadList() {
-#if defined(OS_MAC) || defined(OS_WIN)
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
   return new CrashUploadListCrashpad();
-#elif defined(OS_ANDROID)
+#elif BUILDFLAG(IS_ANDROID)
   base::FilePath cache_dir;
   base::android::GetCacheDirectory(&cache_dir);
   base::FilePath upload_log_path =
       cache_dir.Append("Crash Reports")
           .AppendASCII(CrashUploadList::kReporterLogFilename);
   return new CrashUploadListAndroid(upload_log_path);
-#elif defined(OS_FUCHSIA)
+#elif BUILDFLAG(IS_FUCHSIA)
   return new CrashUploadListFuchsia();
 #else
 
@@ -51,8 +50,7 @@ scoped_refptr<UploadList> CreateCrashUploadList() {
 // which isn't compatible with CrashUploadListCrashpad. crash_sender continues
 // to log uploads in CrashUploadList::kReporterLogFilename.
 // Linux is handled below.
-#if !(BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS) || \
-      defined(OS_LINUX))
+#if !(BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX))
   if (crash_reporter::IsCrashpadEnabled()) {
     return new CrashUploadListCrashpad();
   }
@@ -65,7 +63,7 @@ scoped_refptr<UploadList> CreateCrashUploadList() {
   scoped_refptr<UploadList> result =
       base::MakeRefCounted<TextLogUploadList>(upload_log_path);
 
-#if defined(OS_LINUX)
+#if BUILDFLAG(IS_LINUX)
   if (crash_reporter::IsCrashpadEnabled()) {
     // Crashpad keeps the records of C++ crashes (segfaults, etc) in its
     // internal database. The JavaScript error reporter writes JS error upload
@@ -77,5 +75,5 @@ scoped_refptr<UploadList> CreateCrashUploadList() {
   }
 #endif
   return result;
-#endif  // defined(OS_MAC) || defined(OS_WIN)
+#endif  // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
 }

@@ -18,6 +18,9 @@ const DEBUG_ENABLED = Boolean(process.env['DEBUG_TEST']);
 const REPEAT_ENABLED = Boolean(process.env['REPEAT']);
 const COVERAGE_ENABLED = Boolean(process.env['COVERAGE']) || Boolean(USER_DEFINED_COVERAGE_FOLDERS);
 const EXPANDED_REPORTING = Boolean(process.env['EXPANDED_REPORTING']);
+const KARMA_TIMEOUT = process.env['KARMA_TIMEOUT'] ? Number(process.env['KARMA_TIMEOUT']) : undefined;
+
+const MOCHA_FGREP = process.env['MOCHA_FGREP'] || undefined;
 
 // true by default
 const TEXT_COVERAGE_ENABLED = COVERAGE_ENABLED && !process.env['NO_TEXT_COVERAGE'];
@@ -48,7 +51,7 @@ target with is_debug = true in the args.gn file.`;
 
 const GEN_DIRECTORY = path.join(__dirname, '..', '..');
 const ROOT_DIRECTORY = path.join(GEN_DIRECTORY, '..', '..', '..');
-const browsers = DEBUG_ENABLED ? ['Chrome'] : ['ChromeHeadless'];
+const browser = DEBUG_ENABLED ? 'Chrome' : 'ChromeHeadless';
 const singleRun = !(DEBUG_ENABLED || REPEAT_ENABLED);
 
 const coverageReporters = COVERAGE_ENABLED ? ['coverage'] : [];
@@ -103,6 +106,8 @@ const USER_DEFINED_PROCESSING_FOLDERS = {
 const COVERAGE_PREPROCESSING_FOLDERS =
     USER_DEFINED_COVERAGE_FOLDERS ? USER_DEFINED_PROCESSING_FOLDERS : DEFAULT_PREPROCESSING_FOLDERS;
 
+const REMOTE_DEBUGGING_PORT = 7722;
+
 // Locate the test setup file in all the gathered files. This is so we can
 // ensure that it goes first and registers its global hooks before anything else.
 const testSetupFilePattern = {
@@ -151,7 +156,13 @@ module.exports = function(config) {
       ...coverageReporters,
     ],
 
-    browsers,
+    browsers: ['BrowserWithArgs'],
+    customLaunchers: {
+      'BrowserWithArgs': {
+        base: browser,
+        flags: [`--remote-debugging-port=${REMOTE_DEBUGGING_PORT}`],
+      }
+    },
 
     frameworks: ['mocha', 'chai', 'sinon'],
 
@@ -162,6 +173,11 @@ module.exports = function(config) {
        * so.
        */
       targetDir,
+
+      mocha: {
+        grep: MOCHA_FGREP,
+      },
+      remoteDebuggingPort: REMOTE_DEBUGGING_PORT,
     },
 
     plugins: [
@@ -182,7 +198,8 @@ module.exports = function(config) {
 
     proxies: {
       '/Images': `/base/${targetDir}/front_end/Images`,
-      '/locales': `/base/${targetDir}/front_end/core/i18n/locales`
+      '/locales': `/base/${targetDir}/front_end/core/i18n/locales`,
+      '/json/new': `http://localhost:${REMOTE_DEBUGGING_PORT}/json/new`,
     },
 
     coverageReporter: {
@@ -193,9 +210,14 @@ module.exports = function(config) {
 
     singleRun,
 
+    pingTimeout: KARMA_TIMEOUT,
+    browserNoActivityTimeout: KARMA_TIMEOUT,
+    browserSocketTimeout: KARMA_TIMEOUT,
+
     mochaReporter: {
       showDiff: true,
-    }
+    },
+
   };
 
   config.set(options);

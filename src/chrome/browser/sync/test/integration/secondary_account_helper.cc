@@ -16,10 +16,10 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/net/network_portal_detector_test_impl.h"
+#include "chromeos/ash/components/network/portal_detector/network_portal_detector.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
-#include "chromeos/network/portal_detector/network_portal_detector.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace secondary_account_helper {
@@ -45,7 +45,7 @@ base::CallbackListSubscription SetUpSigninClient(
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 void InitNetwork() {
-  auto* portal_detector = new chromeos::NetworkPortalDetectorTestImpl();
+  auto* portal_detector = new ash::NetworkPortalDetectorTestImpl();
 
   const chromeos::NetworkState* default_network =
       chromeos::NetworkHandler::Get()
@@ -56,7 +56,7 @@ void InitNetwork() {
 
   portal_detector->SetDetectionResultsForTesting(
       default_network->guid(),
-      chromeos::NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE, 204);
+      ash::NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE, 204);
 
   // Takes ownership.
   chromeos::network_portal_detector::InitializeForTesting(portal_detector);
@@ -98,7 +98,8 @@ void GrantSyncConsent(Profile* profile, const std::string& email) {
   AccountInfo account =
       identity_manager->FindExtendedAccountInfoByEmailAddress(email);
   DCHECK(!account.IsEmpty());
-  auto* primary_account_mutator = identity_manager->GetPrimaryAccountMutator();
+  signin::PrimaryAccountMutator* primary_account_mutator =
+      identity_manager->GetPrimaryAccountMutator();
   primary_account_mutator->SetPrimaryAccount(account.account_id,
                                              signin::ConsentLevel::kSync);
 }

@@ -4,14 +4,16 @@
 
 module crosapi.mojom;
 
+import "mojo/public/mojom/base/values.mojom";
+
 // Copy of UsbDetachableAllowlistProto from chrome_device_policy.proto.
-[Stable, Extensible]
+[Stable]
 struct UsbDetachableAllowlist {
   array<UsbDeviceId> usb_device_ids@0;
 };
 
 // Copy of UsbDeviceIdInclusiveProto from chrome_device_policy.proto.
-[Stable, Extensible]
+[Stable]
 struct UsbDeviceId {
   // USB Vendor Identifier (aka idVendor).
   bool has_vendor_id@0;
@@ -22,7 +24,7 @@ struct UsbDeviceId {
 };
 
 // All the device settings data that are needed in Lacros should be here.
-[Stable, Extensible]
+[Stable]
 struct DeviceSettings {
   // The value of AttestationForContentProtectionEnabled device setting.
   OptionalBool attestation_for_content_protection_enabled@0;
@@ -32,6 +34,9 @@ struct DeviceSettings {
 
   // The value of UsbDetachableAllowlist device policy.
   UsbDetachableAllowlist? usb_detachable_allow_list@2;
+
+  // The value of DeviceEphemeralUsersEnabled device policy.
+  [MinVersion=1] OptionalBool device_ephemeral_users_enabled@3;
 
   [Stable]
   enum OptionalBool {
@@ -56,4 +61,12 @@ interface DeviceSettingsObserver {
 interface DeviceSettingsService {
   // Adds an observer for device settings updates.
   AddDeviceSettingsObserver@0(pending_remote<DeviceSettingsObserver> observer);
+
+  // Returns all the device policy from Ash for display purpose. The
+  // |device_policy| is the DictionaryValue containing policy data and
+  // |legend_data| is DictionaryValue containing legend data - that is the data
+  // displayed at the top of the page describing the status of device policy.
+  [MinVersion=1]
+  GetDevicePolicy@1() => (mojo_base.mojom.Value device_policy,
+                          mojo_base.mojom.Value legend_data);
 };

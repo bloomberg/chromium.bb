@@ -79,15 +79,19 @@ class AV1CompMaskVarianceTest
 };
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(AV1CompMaskVarianceTest);
 
-AV1CompMaskVarianceTest::~AV1CompMaskVarianceTest() { ; }
+AV1CompMaskVarianceTest::~AV1CompMaskVarianceTest() {}
 
 void AV1CompMaskVarianceTest::SetUp() {
   rnd_.Reset(libaom_test::ACMRandom::DeterministicSeed());
   av1_init_wedge_masks();
   comp_pred1_ = (uint8_t *)aom_memalign(16, MAX_SB_SQUARE);
+  ASSERT_NE(comp_pred1_, nullptr);
   comp_pred2_ = (uint8_t *)aom_memalign(16, MAX_SB_SQUARE);
+  ASSERT_NE(comp_pred2_, nullptr);
   pred_ = (uint8_t *)aom_memalign(16, MAX_SB_SQUARE);
+  ASSERT_NE(pred_, nullptr);
   ref_buffer_ = (uint8_t *)aom_memalign(16, MAX_SB_SQUARE + (8 * MAX_SB_SIZE));
+  ASSERT_NE(ref_buffer_, nullptr);
   ref_ = ref_buffer_ + (8 * MAX_SB_SIZE);
   for (int i = 0; i < MAX_SB_SQUARE; ++i) {
     pred_[i] = rnd_.Rand8();
@@ -184,7 +188,7 @@ class AV1CompMaskUpVarianceTest : public AV1CompMaskVarianceTest {
                     int havSub);
 };
 
-AV1CompMaskUpVarianceTest::~AV1CompMaskUpVarianceTest() { ; }
+AV1CompMaskUpVarianceTest::~AV1CompMaskUpVarianceTest() {}
 
 void AV1CompMaskUpVarianceTest::RunCheckOutput(comp_mask_pred_func test_impl,
                                                BLOCK_SIZE bsize, int inv) {
@@ -322,7 +326,7 @@ class AV1HighbdCompMaskVarianceTest
 };
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(AV1HighbdCompMaskVarianceTest);
 
-AV1HighbdCompMaskVarianceTest::~AV1HighbdCompMaskVarianceTest() { ; }
+AV1HighbdCompMaskVarianceTest::~AV1HighbdCompMaskVarianceTest() {}
 
 void AV1HighbdCompMaskVarianceTest::SetUp() {
   rnd_.Reset(libaom_test::ACMRandom::DeterministicSeed());
@@ -330,11 +334,15 @@ void AV1HighbdCompMaskVarianceTest::SetUp() {
 
   comp_pred1_ =
       (uint16_t *)aom_memalign(16, MAX_SB_SQUARE * sizeof(*comp_pred1_));
+  ASSERT_NE(comp_pred1_, nullptr);
   comp_pred2_ =
       (uint16_t *)aom_memalign(16, MAX_SB_SQUARE * sizeof(*comp_pred2_));
+  ASSERT_NE(comp_pred2_, nullptr);
   pred_ = (uint16_t *)aom_memalign(16, MAX_SB_SQUARE * sizeof(*pred_));
+  ASSERT_NE(pred_, nullptr);
   ref_buffer_ = (uint16_t *)aom_memalign(
       16, (MAX_SB_SQUARE + (8 * MAX_SB_SIZE)) * sizeof(*ref_buffer_));
+  ASSERT_NE(ref_buffer_, nullptr);
   ref_ = ref_buffer_ + (8 * MAX_SB_SIZE);
 }
 
@@ -453,7 +461,7 @@ class AV1HighbdCompMaskUpVarianceTest : public AV1HighbdCompMaskVarianceTest {
                     int havSub);
 };
 
-AV1HighbdCompMaskUpVarianceTest::~AV1HighbdCompMaskUpVarianceTest() { ; }
+AV1HighbdCompMaskUpVarianceTest::~AV1HighbdCompMaskUpVarianceTest() {}
 
 void AV1HighbdCompMaskUpVarianceTest::RunCheckOutput(
     highbd_comp_mask_pred_func test_impl, BLOCK_SIZE bsize, int inv) {

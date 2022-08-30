@@ -8,19 +8,16 @@
 #ifndef SKSL_CONTEXT
 #define SKSL_CONTEXT
 
-#include <memory>
-
 #include "src/sksl/SkSLBuiltinTypes.h"
-#include "src/sksl/SkSLUtil.h"
-#include "src/sksl/ir/SkSLType.h"
 
 namespace SkSL {
 
+class BuiltinMap;
 class ErrorReporter;
-class IntrinsicMap;
 class Mangler;
 class ModifiersPool;
 struct ProgramConfig;
+struct ShaderCaps;
 
 /**
  * Contains compiler-wide objects, which currently means the core types.
@@ -49,7 +46,7 @@ public:
     Mangler* fMangler = nullptr;
 
     // Symbols which have definitions in the include files.
-    IntrinsicMap* fIntrinsics = nullptr;
+    BuiltinMap* fBuiltins = nullptr;
 };
 
 }  // namespace SkSL

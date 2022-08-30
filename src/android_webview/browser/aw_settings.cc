@@ -13,6 +13,7 @@
 #include "android_webview/browser/renderer_host/aw_render_view_host_ext.h"
 #include "android_webview/browser_jni_headers/AwSettings_jni.h"
 #include "android_webview/common/aw_content_client.h"
+#include "android_webview/common/aw_features.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/memory/raw_ptr.h"
@@ -77,6 +78,9 @@ AwSettings::AwSettings(JNIEnv* env,
       javascript_can_open_windows_automatically_(false),
       allow_third_party_cookies_(false),
       allow_file_access_(false),
+      enterprise_authentication_app_link_policy_enabled_(
+          true),  // TODO(b/222053757,ayushsha): Change this policy to be by
+                  // default false from next Android version(Maybe Android U).
       aw_settings_(env, obj) {
   web_contents->SetUserData(kAwSettingsUserDataKey,
                             std::make_unique<AwSettingsUserData>(this));
@@ -114,6 +118,25 @@ AwSettings* AwSettings::FromWebContents(content::WebContents* web_contents) {
 bool AwSettings::GetAllowSniffingFileUrls() {
   JNIEnv* env = base::android::AttachCurrentThread();
   return Java_AwSettings_getAllowSniffingFileUrls(env);
+}
+
+AwSettings::RequestedWithHeaderMode
+AwSettings::GetDefaultRequestedWithHeaderMode() {
+  if (base::FeatureList::IsEnabled(features::kWebViewXRequestedWithHeader)) {
+    int configuredValue = features::kWebViewXRequestedWithHeaderMode.Get();
+    switch (configuredValue) {
+      case AwSettings::RequestedWithHeaderMode::CONSTANT_WEBVIEW:
+        return AwSettings::RequestedWithHeaderMode::CONSTANT_WEBVIEW;
+      case AwSettings::RequestedWithHeaderMode::NO_HEADER:
+        return AwSettings::RequestedWithHeaderMode::NO_HEADER;
+      default:
+        // If the field trial config is broken for some reason, use the
+        // package name, since the feature is still enabled.
+        return AwSettings::RequestedWithHeaderMode::APP_PACKAGE_NAME;
+    }
+  } else {
+    return AwSettings::RequestedWithHeaderMode::NO_HEADER;
+  }
 }
 
 AwRenderViewHostExt* AwSettings::GetAwRenderViewHostExt() {
@@ -508,15 +531,33 @@ void AwSettings::PopulateWebPreferencesLocked(JNIEnv* env,
   if (AwDarkMode* aw_dark_mode = AwDarkMode::FromWebContents(web_contents())) {
     aw_dark_mode->PopulateWebPreferences(
         web_prefs, Java_AwSettings_getForceDarkModeLocked(env, obj),
-        Java_AwSettings_getForceDarkBehaviorLocked(env, obj));
+        Java_AwSettings_getForceDarkBehaviorLocked(env, obj),
+        Java_AwSettings_isAlgorithmicDarkeningAllowedLocked(env, obj));
   }
+
+  // WebView does not support WebAuthn yet.
+  web_prefs->disable_webauthn = true;
 }
 
-bool AwSettings::IsDarkMode(JNIEnv* env, const JavaParamRef<jobject>& obj) {
+bool AwSettings::IsForceDarkApplied(JNIEnv* env,
+                                    const JavaParamRef<jobject>& obj) {
   if (AwDarkMode* aw_dark_mode = AwDarkMode::FromWebContents(web_contents())) {
-    return aw_dark_mode->is_dark_mode();
+    return aw_dark_mode->is_force_dark_applied();
   }
   return false;
+}
+
+void AwSettings::SetEnterpriseAuthenticationAppLinkPolicyEnabled(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    jboolean enabled) {
+  enterprise_authentication_app_link_policy_enabled_ = enabled;
+}
+
+bool AwSettings::GetEnterpriseAuthenticationAppLinkPolicyEnabled(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  return enterprise_authentication_app_link_policy_enabled();
 }
 
 bool AwSettings::GetAllowFileAccess() {

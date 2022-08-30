@@ -36,10 +36,12 @@ enum class AppTypeName {
   kChromeBrowser = 12,
   kStandaloneBrowserChromeApp = 13,
   kExtension = 14,
+  kStandaloneBrowserExtension = 15,
+  kStandaloneBrowserWebApp = 16,
 
   // Add any new values above this one, and update kMaxValue to the highest
   // enumerator value.
-  kMaxValue = kExtension,
+  kMaxValue = kStandaloneBrowserWebApp,
 };
 
 // This is used for logging, so do not remove or reorder existing entries.
@@ -64,18 +66,53 @@ enum class AppTypeNameV2 {
   kBorealis = 12,
   kSystemWeb = 13,
   kChromeBrowser = 14,
+  // Deprecated. Replaced by kStandaloneBrowserChromeAppWindow and
+  // kStandaloneBrowserChromeAppTab.
   kStandaloneBrowserChromeApp = 15,
   kExtension = 16,
+  kStandaloneBrowserExtension = 17,
+  kStandaloneBrowserChromeAppWindow = 18,
+  kStandaloneBrowserChromeAppTab = 19,
+  kStandaloneBrowserWebAppWindow = 20,
+  kStandaloneBrowserWebAppTab = 21,
 
   // Add any new values above this one, and update kMaxValue to the highest
   // enumerator value.
-  kMaxValue = kExtension,
+  kMaxValue = kStandaloneBrowserWebAppTab,
 };
 
 extern const base::TimeDelta kMinDuration;
 extern const base::TimeDelta kMaxUsageDuration;
 extern const int kDurationBuckets;
 extern const int kUsageTimeBuckets;
+
+constexpr char kArcHistogramName[] = "Arc";
+constexpr char kBuiltInHistogramName[] = "BuiltIn";
+constexpr char kCrostiniHistogramName[] = "Crostini";
+constexpr char kChromeAppHistogramName[] = "ChromeApp";
+constexpr char kWebAppHistogramName[] = "WebApp";
+constexpr char kMacOsHistogramName[] = "MacOs";
+constexpr char kPluginVmHistogramName[] = "PluginVm";
+constexpr char kStandaloneBrowserHistogramName[] = "StandaloneBrowser";
+constexpr char kRemoteHistogramName[] = "RemoteApp";
+constexpr char kBorealisHistogramName[] = "Borealis";
+constexpr char kSystemWebAppHistogramName[] = "SystemWebApp";
+constexpr char kChromeBrowserHistogramName[] = "ChromeBrowser";
+constexpr char kStandaloneBrowserChromeAppHistogramName[] =
+    "StandaloneBrowserChromeApp";
+constexpr char kExtensionHistogramName[] = "Extension";
+constexpr char kStandaloneBrowserExtensionHistogramName[] =
+    "StandaloneBrowserExtension";
+constexpr char kStandaloneBrowserChromeAppWindowHistogramName[] =
+    "StandaloneBrowserChromeAppWindow";
+constexpr char kStandaloneBrowserChromeAppTabHistogramName[] =
+    "StandaloneBrowserChromeAppTab";
+constexpr char kStandaloneBrowserWebAppHistogramName[] =
+    "StandaloneBrowserWebApp";
+constexpr char kStandaloneBrowserWebAppWindowHistogramName[] =
+    "StandaloneBrowserWebAppWindow";
+constexpr char kStandaloneBrowserWebAppTabHistogramName[] =
+    "StandaloneBrowserWebAppTab";
 
 // Determines what app type a web app should be logged as based on its launch
 // container and app id. In particular, web apps in tabs are logged as part of
@@ -84,13 +121,34 @@ AppTypeName GetAppTypeNameForWebApp(Profile* profile,
                                     const std::string& app_id,
                                     apps::mojom::LaunchContainer container);
 
+// Determines what app type a chrome app in Lacros should be logged as based on
+// its launch container and app id. In particular, chrome apps in Lacros tabs
+// are logged as part of Lacros browser.
+AppTypeName GetAppTypeNameForStandaloneBrowserChromeApp(
+    Profile* profile,
+    const std::string& app_id,
+    apps::mojom::LaunchContainer container);
+
 // Returns false if |window| is a Chrome app window or a standalone web app
-// window. Otherwise, return true;
-bool IsBrowser(aura::Window* window);
+// window. Otherwise, return true.
+bool IsAshBrowserWindow(aura::Window* window);
+
+// Returns true if `window` is a lacros browser window. Otherwise, returns false
+// for non Lacros windows, or Lacros standalone app windows.
+bool IsLacrosBrowserWindow(Profile* profile, aura::Window* window);
+
+// Returns true if `window` is a lacros window. Otherwise, returns false.
+bool IsLacrosWindow(aura::Window* window);
 
 // Returns true if the app with |app_id| is opened as a tab in a browser window.
-// Otherwise, return false;
+// Otherwise, return false.
 bool IsAppOpenedInTab(AppTypeName app_type_name, const std::string& app_id);
+
+// Returns true if the app with |app_type| is opened with a browser window.
+// Otherwise, return false.
+bool IsAppOpenedWithBrowserWindow(Profile* profile,
+                                  AppType app_type,
+                                  const std::string& app_id);
 
 // Determines what app type a web app should be logged as based on |window|. In
 // particular, web apps in tabs are logged as part of Chrome browser.
@@ -100,9 +158,16 @@ AppTypeName GetAppTypeNameForWebAppWindow(Profile* profile,
 
 // Returns AppTypeName used for app running metrics.
 AppTypeName GetAppTypeNameForWindow(Profile* profile,
-                                    apps::mojom::AppType app_type,
+                                    AppType app_type,
                                     const std::string& app_id,
                                     aura::Window* window);
+
+// Returns the string for `app_type_name` to present the histogram name and save
+// the app type in the user pref for the usage time and input event metrics.
+std::string GetAppTypeHistogramName(apps::AppTypeName app_type_name);
+
+// Returns AppTypeName for the given `app_type_name` string.
+AppTypeName GetAppTypeNameFromString(const std::string& app_type_name);
 
 // Returns true if we are allowed to record UKM for `profile`. Otherwise,
 // returns false.
@@ -121,14 +186,14 @@ int GetUserTypeByDeviceTypeMetrics();
 
 // Returns AppTypeName used for app launch metrics.
 AppTypeName GetAppTypeName(Profile* profile,
-                           apps::mojom::AppType app_type,
+                           AppType app_type,
                            const std::string& app_id,
                            apps::mojom::LaunchContainer container);
 
 // Gets the app type of a given app_id. Checks multiple sources, not just the
 // app registry cache, so can identify apps which aren't registered with app
 // service.
-mojom::AppType GetAppType(Profile* profile, const std::string& app_id);
+AppType GetAppType(Profile* profile, const std::string& app_id);
 
 }  // namespace apps
 

@@ -5,10 +5,12 @@
 #ifndef CC_TREES_MUTATOR_HOST_CLIENT_H_
 #define CC_TREES_MUTATOR_HOST_CLIENT_H_
 
+#include "cc/base/protected_sequence_synchronizer.h"
 #include "cc/paint/element_id.h"
 #include "cc/paint/paint_worklet_input.h"
 #include "cc/trees/property_animation_state.h"
 #include "cc/trees/target_property.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace gfx {
 class Transform;
@@ -28,7 +30,7 @@ enum class AnimationWorkletMutationState {
   CANCELED
 };
 
-class MutatorHostClient {
+class MutatorHostClient : public ProtectedSequenceSynchronizer {
  public:
   virtual bool IsElementInPropertyTrees(ElementId element_id,
                                         ElementListType list_type) const = 0;
@@ -74,6 +76,8 @@ class MutatorHostClient {
   virtual void OnCustomPropertyMutated(
       PaintWorkletInput::PropertyKey property_key,
       PaintWorkletInput::PropertyValue property_value) = 0;
+
+  virtual bool RunsOnCurrentThread() const = 0;
 };
 
 }  // namespace cc

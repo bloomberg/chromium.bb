@@ -132,7 +132,7 @@ static const uint8_t kBoringSSLBinaryTag[18] = {
     0x8c, 0x62, 0x20, 0x0b, 0xd2, 0xa0, 0x72, 0x58,
     0x44, 0xa8, 0x96, 0x69, 0xad, 0x55, 0x7e, 0xec,
     // Current source iteration. Incremented ~monthly.
-    2, 0,
+    3, 0,
 };
 
 void *OPENSSL_malloc(size_t size) {
@@ -180,11 +180,17 @@ void OPENSSL_free(void *orig_ptr) {
 
   size_t size = *(size_t *)ptr;
   OPENSSL_cleanse(ptr, size + OPENSSL_MALLOC_PREFIX);
+
+// ASan knows to intercept malloc and free, but not sdallocx.
+#if defined(OPENSSL_ASAN)
+  free(ptr);
+#else
   if (sdallocx) {
     sdallocx(ptr, size + OPENSSL_MALLOC_PREFIX, 0 /* flags */);
   } else {
     free(ptr);
   }
+#endif
 }
 
 void *OPENSSL_realloc(void *orig_ptr, size_t new_size) {

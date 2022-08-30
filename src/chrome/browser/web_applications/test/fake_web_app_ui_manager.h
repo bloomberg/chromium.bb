@@ -38,16 +38,15 @@ class FakeWebAppUiManager : public WebAppUiManager {
   bool IsAppInQuickLaunchBar(const AppId& app_id) const override;
   bool IsInAppWindow(content::WebContents* web_contents,
                      const AppId* app_id) const override;
-  void NotifyOnAssociatedAppChanged(content::WebContents* web_contents,
-                                    const AppId& previous_app_id,
-                                    const AppId& new_app_id) const override {}
+  void NotifyOnAssociatedAppChanged(
+      content::WebContents* web_contents,
+      const absl::optional<AppId>& previous_app_id,
+      const absl::optional<AppId>& new_app_id) const override {}
   bool CanReparentAppTabToWindow(const AppId& app_id,
                                  bool shortcut_created) const override;
   void ReparentAppTabToWindow(content::WebContents* contents,
                               const AppId& app_id,
                               bool shortcut_created) override;
-  content::WebContents* NavigateExistingWindow(const AppId& app_id,
-                                               const GURL& url) override;
   void ShowWebAppIdentityUpdateDialog(
       const std::string& app_id,
       bool title_change,

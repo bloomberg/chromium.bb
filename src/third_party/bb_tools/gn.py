@@ -137,6 +137,10 @@ def get_config(is_component_mode, is_debug_mode, cpu, defines):
     'proprietary_codecs': True,
     'ffmpeg_branding': 'Chrome',
 
+    # This COM check hook seems to cause some problems on some developer
+    # workstations.
+    'com_init_check_hook_disabled': True,
+
     # Disable field-trial testing feature.
     'disable_fieldtrial_testing_config': True,
 

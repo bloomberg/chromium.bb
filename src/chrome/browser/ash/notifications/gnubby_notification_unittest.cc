@@ -9,7 +9,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "chromeos/dbus/concierge/concierge_client.h"
+#include "chromeos/ash/components/dbus/concierge/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/gnubby/fake_gnubby_client.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -27,7 +27,7 @@ class GnubbyNotificationTest : public BrowserWithTestWindowTest {
     DBusThreadManager::GetSetterForTesting()->SetGnubbyClient(
         std::unique_ptr<chromeos::GnubbyClient>(
             new chromeos::FakeGnubbyClient));
-    chromeos::ConciergeClient::InitializeFake(/*fake_cicerone_client=*/nullptr);
+    ConciergeClient::InitializeFake(/*fake_cicerone_client=*/nullptr);
     BrowserWithTestWindowTest::SetUp();
 
     TestingBrowserProcess::GetGlobal()->SetSystemNotificationHelper(
@@ -48,7 +48,7 @@ class GnubbyNotificationTest : public BrowserWithTestWindowTest {
     gnubby_notification_.reset();
     tester_.reset();
     BrowserWithTestWindowTest::TearDown();
-    chromeos::ConciergeClient::Shutdown();
+    ConciergeClient::Shutdown();
     DBusThreadManager::Shutdown();
   }
 

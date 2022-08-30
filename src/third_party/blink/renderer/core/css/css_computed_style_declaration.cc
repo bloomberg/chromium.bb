@@ -24,7 +24,7 @@
 
 #include "third_party/blink/renderer/core/css/css_computed_style_declaration.h"
 
-#include "base/cxx17_backports.h"
+#include "base/memory/values_equivalent.h"
 #include "third_party/blink/renderer/core/css/computed_style_css_value_mapping.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/core/css/properties/css_property_ref.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/css/zoom_adjusted_pixel_value.h"
+#include "third_party/blink/renderer/core/display_lock/display_lock_document_state.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
@@ -82,7 +83,7 @@ CSSComputedStyleDeclaration::ComputableProperties(
   if (properties.IsEmpty()) {
     CSSProperty::FilterWebExposedCSSPropertiesIntoVector(
         execution_context, kCSSComputableProperties,
-        base::size(kCSSComputableProperties), properties);
+        std::size(kCSSComputableProperties), properties);
   }
   return properties;
 }
@@ -245,8 +246,10 @@ void CSSComputedStyleDeclaration::UpdateStyleAndLayoutTreeIfNeeded(
         property_name && !property_name->IsCustomProperty() &&
         CSSProperty::Get(property_name->Id()).IsLayoutDependentProperty();
     if (is_for_layout_dependent_property) {
-      owner->GetDocument().UpdateStyleAndLayout(
-          DocumentUpdateReason::kJavaScript);
+      auto& owner_doc = owner->GetDocument();
+      owner_doc.GetDisplayLockDocumentState().UnlockShapingDeferredElements(
+          *styled_node, property_name->Id());
+      owner_doc.UpdateStyleAndLayout(DocumentUpdateReason::kJavaScript);
       // The style recalc could have caused the styled node to be discarded or
       // replaced if it was a PseudoElement so we need to update it.
       styled_node = StyledNode();
@@ -263,12 +266,18 @@ void CSSComputedStyleDeclaration::UpdateStyleAndLayoutIfNeeded(
     return;
 
   bool is_for_layout_dependent_property =
-      property &&
-      property->IsLayoutDependent(ComputeComputedStyle(), StyledLayoutObject());
+      property && property->IsLayoutDependent(styled_node->GetComputedStyle(),
+                                              StyledLayoutObject());
 
   if (is_for_layout_dependent_property) {
-    styled_node->GetDocument().UpdateStyleAndLayoutForNode(
-        styled_node, DocumentUpdateReason::kJavaScript);
+    auto& doc = styled_node->GetDocument();
+    // EditingStyle uses this class with DisallowTransitionScope.
+    if (!doc.Lifecycle().StateTransitionDisallowed()) {
+      doc.GetDisplayLockDocumentState().UnlockShapingDeferredElements(
+          *styled_node, property->PropertyID());
+      doc.UpdateStyleAndLayoutForNode(styled_node,
+                                      DocumentUpdateReason::kJavaScript);
+    }
   }
 }
 
@@ -361,7 +370,7 @@ bool CSSComputedStyleDeclaration::CssPropertyMatches(
     }
   }
   const CSSValue* value = GetPropertyCSSValue(property_id);
-  return DataEquivalent(value, &property_value);
+  return base::ValuesEquivalent(value, &property_value);
 }
 
 MutableCSSPropertyValueSet* CSSComputedStyleDeclaration::CopyProperties()
@@ -371,7 +380,7 @@ MutableCSSPropertyValueSet* CSSComputedStyleDeclaration::CopyProperties()
 
 MutableCSSPropertyValueSet* CSSComputedStyleDeclaration::CopyPropertiesInSet(
     const Vector<const CSSProperty*>& properties) const {
-  HeapVector<CSSPropertyValue, 256> list;
+  HeapVector<CSSPropertyValue, 64> list;
   list.ReserveInitialCapacity(properties.size());
   for (unsigned i = 0; i < properties.size(); ++i) {
     CSSPropertyName name = properties[i]->GetCSSPropertyName();

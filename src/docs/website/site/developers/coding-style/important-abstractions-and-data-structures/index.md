@@ -10,7 +10,7 @@ title: Important Abstractions and Data Structures
 
 [TOC]
 
-## [TaskRunner](https://code.google.com/p/chromium/codesearch#chromium/src/base/task_runner.h&q=TaskRunner&sq=package:chromium&type=cs) & [SequencedTaskRunner](https://code.google.com/p/chromium/codesearch#chromium/src/base/sequenced_task_runner.h&q=SequencedTaskRunner&sq=package:chromium&type=cs) & [SingleThreadTaskRunner](https://code.google.com/p/chromium/codesearch#chromium/src/base/single_thread_task_runner.h&q=SingleThreadTaskRunner&sq=package:chromium&type=cs)
+## [TaskRunner](https://source.chromium.org/chromium/chromium/src/+/main:base/task/task_runner.h) & [SequencedTaskRunner](https://source.chromium.org/chromium/chromium/src/+/main:base/task/sequenced_task_runner.h) & [SingleThreadTaskRunner](https://source.chromium.org/chromium/chromium/src/+/main:base/task/single_thread_task_runner.h)
 
 Interfaces for posting base::Callbacks "tasks" to be run by the TaskRunner.
 TaskRunner makes no guarantees about execution (order, concurrency, or if it's
@@ -27,7 +27,7 @@ run.
 which will post a task to a target TaskRunner and on completion post a "reply"
 task to the origin TaskRunner.
 
-## [MessageLoop](https://code.google.com/p/chromium/codesearch#chromium/src/base/message_loop/message_loop.h&q=MessageLoop&sq=package:chromium&type=cs&l=46) & [MessageLoopProxy](https://code.google.com/p/chromium/codesearch#chromium/src/base/message_loop/message_loop_proxy.h&q=MessageLoopProxy&sq=package:chromium&type=cs&l=17) & [BrowserThread](https://code.google.com/p/chromium/codesearch#chromium/src/content/public/browser/browser_thread.h&q=BrowserThread&sq=package:chromium&type=cs) & [RunLoop](https://code.google.com/p/chromium/codesearch#chromium/src/base/run_loop.h&q=run_loop.h&sq=package:chromium&type=cs&l=31)
+## [MessageLoop](https://source.chromium.org/chromium/chromium/src/+/main:ppapi/cpp/message_loop.h) & [MessageLoopProxy](https://source.chromium.org/chromium/chromium/src/+/main:ppapi/proxy/ppb_message_loop_proxy.h) & [BrowserThread](https://source.chromium.org/chromium/chromium/src/+/main:content/public/browser/browser_thread.h) & [RunLoop](https://source.chromium.org/chromium/chromium/src/+/main:base/run_loop.h)
 
 These are various APIs for posting a task. MessageLoop is a concrete object used
 by MessageLoopProxy (the most widely used task runner in Chromium code). You
@@ -49,7 +49,7 @@ code from BrowserThread to a TaskRunner subtype when necessary. MessageLoopProxy
 should probably always be passed around as a SingleThreadTaskRunner or a parent
 interface like SequencedTaskRunner.
 
-## [base::SequencedWorkerPool](https://code.google.com/p/chromium/codesearch#chromium/src/base/threading/sequenced_worker_pool.h&q=base::SequencedWorkerPool&sq=package:chromium&l=72&type=cs) & [base::WorkerPool](https://code.google.com/p/chromium/codesearch#chromium/src/base/threading/worker_pool.h&q=base::WorkerPool&sq=package:chromium&l=30&type=cs)
+## [base::SequencedWorkerPool](https://code.google.com/p/chromium/codesearch#chromium/src/base/threading/sequenced_worker_pool.h&q=base::SequencedWorkerPool&sq=package:chromium&l=72&type=cs) & [base::WorkerPool](https://source.chromium.org/chromium/chromium/src/+/main:content/renderer/categorized_worker_pool.h)
 
 These are the two primary worker pools in Chromium. SequencedWorkerPool is a
 more complicated worker pool that inherits from TaskRunner and provides ways to
@@ -66,7 +66,7 @@ joined. It's generally unadvisable to use base::WorkerPool since tasks may have
 dependencies on other objects that may be in the process of being destroyed
 during browser shutdown.
 
-## [base::Callback](https://code.google.com/p/chromium/codesearch#chromium/src/base/callback.h) and [base::Bind()](https://code.google.com/p/chromium/codesearch#chromium/src/base/bind.h&q=Base::bind&sq=package:chromium&type=cs)
+## [base::Callback](https://source.chromium.org/chromium/chromium/src/+/main:base/callback.h) and [base::Bind()](https://source.chromium.org/chromium/chromium/src/+/main:base/bind.h)
 
 base::Callback is a set of internally refcounted templated callback classes with
 different arities and return values (including void). Note that these callbacks
@@ -81,7 +81,7 @@ function is a member function and will complain if the type is not refcounted
 function arguments, it will use a COMPILE_ASSERT to try to verify they are not
 raw pointers to a refcounted type (only possible with full type information, not
 forward declarations). Instead, use scoped_refptrs or call make_scoped_refptr()
-to prevent [bugs](http://code.google.com/p/chromium/issues/detail?id=28083). In
+to prevent [bugs](https://crbug.com/28083). In
 addition, base::Bind() understands base::WeakPtr. If the function is a member
 function and the first argument is a base::WeakPtr to the object, base::Bind()
 will inject a wrapper function that only invokes the function pointer if the
@@ -121,14 +121,14 @@ for arguments.
             usable with a TaskRunner which only takes Closures (callbacks with
             no parameters nor return values).
 
-## [scoped_refptr&lt;T&gt; & base::RefCounted & base::RefCountedThreadSafe](https://code.google.com/p/chromium/codesearch#chromium/src/base/memory/ref_counted.h)
+## [scoped_refptr&lt;T&gt; & base::RefCounted & base::RefCountedThreadSafe](https://source.chromium.org/chromium/chromium/src/+/main:base/memory/ref_counted.h)
 
 Reference counting is occasionally useful but is more often a sign that someone
 isn't thinking carefully about ownership. Use it when ownership is truly shared
 (for example, multiple tabs sharing the same renderer process), **not** for when
 lifetime management is difficult to reason about.
 
-## [Singleton](https://code.google.com/p/chromium/codesearch#chromium/src/base/memory/singleton.h&q=singleton&sq=package:chromium&type=cs) & [base::LazyInstance](https://code.google.com/p/chromium/codesearch#chromium/src/base/lazy_instance.h&q=base::LazyInstance&sq=package:chromium&type=cs)
+## [Singleton](https://source.chromium.org/chromium/chromium/src/+/main:base/memory/singleton.h) & [base::LazyInstance](https://source.chromium.org/chromium/chromium/src/+/main:base/lazy_instance.h)
 
 They're globals, so you generally should [avoid using
 them](http://www.object-oriented-security.org/lets-argue/singletons), as per the
@@ -151,13 +151,13 @@ dynamically loaded into another process's address space or when data needs to be
 flushed on process shutdown) in order to not to slow down shutdown. There are
 valgrind suppressions for these "leaky" traits.
 
-## [base::Thread](https://code.google.com/p/chromium/codesearch#chromium/src/base/threading/thread.h&q=base::Thread&sq=package:chromium&type=cs) & [base::PlatformThread](https://code.google.com/p/chromium/codesearch#chromium/src/base/threading/platform_thread.h&q=base::PlatformThread&sq=package:chromium&type=cs)
+## [base::Thread](https://source.chromium.org/chromium/chromium/src/+/main:base/threading/thread.h) & [base::PlatformThread](https://source.chromium.org/chromium/chromium/src/+/main:base/threading/platform_thread.h)
 
 Generally you shouldn't use these, since you should usually post tasks to an
 existing TaskRunner. PlatformThread is a platform-specific thread. base::Thread
 contains a MessageLoop running on a PlatformThread.
 
-## [base::WeakPtr](https://code.google.com/p/chromium/codesearch#chromium/src/base/memory/weak_ptr.h&q=base::WeakPtr&sq=package:chromium&type=cs) & [base::WeakPtrFactory](https://code.google.com/p/chromium/codesearch#chromium/src/base/memory/weak_ptr.h&q=base::WeakPtrFactory&sq=package:chromium&type=cs&l=246)
+## [base::WeakPtr](https://source.chromium.org/chromium/chromium/src/+/main:base/memory/weak_ptr.h) & [base::WeakPtrFactory](https://source.chromium.org/chromium/chromium/src/+/main:base/memory/weak_ptr.h;l=221)
 
 Mostly thread-unsafe weak pointer that returns NULL if the referent has been
 destroyed. It's safe to pass across threads (and to destroy on other threads),
@@ -165,12 +165,12 @@ but it should only be used on the original thread it was created on.
 base::WeakPtrFactory is useful for automatically canceling base::Callbacks when
 the referent of the base::WeakPtr gets destroyed.
 
-## [FilePath](https://code.google.com/p/chromium/codesearch#chromium/src/base/files/file_path.h&q=FilePath&sq=package:chromium&type=cs&l=132)
+## [FilePath](https://source.chromium.org/chromium/chromium/src/+/main:base/files/file_path.h)
 
 A cross-platform representation of a file path. You should generally use this
 instead of platform-specific representations.
 
-## [ObserverList](https://code.google.com/p/chromium/codesearch#chromium/src/base/observer_list.h&q=ObserverList&sq=package:chromium&l=54) & [ObserverListThreadSafe](https://code.google.com/p/chromium/codesearch#chromium/src/base/observer_list_threadsafe.h&q=ObserverListThreadSafe&sq=package:chromium&type=cs&l=94)
+## [ObserverList](https://source.chromium.org/chromium/chromium/src/+/main:base/observer_list.h) & [ObserverListThreadSafe](https://source.chromium.org/chromium/chromium/src/+/main:base/observer_list_threadsafe.h)
 
 ObserverList is a thread-unsafe object that is intended to be used as a member
 variable of a class. It provides a simple interface for iterating on a bunch of
@@ -182,18 +182,18 @@ registered on, thereby allowing proxying notifications across threads and
 allowing the individual observers to receive notifications in a single threaded
 manner.
 
-## [Pickle](https://code.google.com/p/chromium/codesearch#chromium/src/base/pickle.h&q=Pickle&sq=package:chromium&type=cs)
+## [Pickle](https://source.chromium.org/chromium/chromium/src/+/main:base/pickle.h)
 
 Pickle provides a basic facility for object serialization and deserialization in
 binary form.
 
-## [Value](https://code.google.com/p/chromium/codesearch#chromium/src/base/values.h&sq=package:chromium&rcl=1367374264&l=55)
+## [Value](https://source.chromium.org/chromium/chromium/src/+/main:base/values.h)
 
 Values allow for specifying recursive data classes (lists and dictionaries)
 containing simple values (bool/int/string/etc). These values can also be
 serialized to JSON and back.
 
-## [LOG](https://code.google.com/p/chromium/codesearch#chromium/src/base/logging.h&sq=package:chromium)
+## [LOG](https://source.chromium.org/chromium/chromium/src/+/main:base/logging.h)
 
 This is the basic interface for logging in Chromium.
 
@@ -203,12 +203,12 @@ Generally you should not do file I/O on jank-sensitive threads
 (BrowserThread::UI and BrowserThread::IO), so you can proxy them to another
 thread (such as BrowserThread::FILE) via these utilities.
 
-## [Time](https://code.google.com/p/chromium/codesearch#chromium/src/base/time/time.h&sq=package:chromium), [TimeDelta](https://code.google.com/p/chromium/codesearch#chromium/src/base/time/time.h&sq=package:chromium), [TimeTicks](https://code.google.com/p/chromium/codesearch#chromium/src/base/time/time.h&sq=package:chromium), [Timer](https://code.google.com/p/chromium/codesearch#chromium/src/base/timer/timer.h&sq=package:chromium)
+## [Time](https://source.chromium.org/chromium/chromium/src/+/main:base/time/time.h), [TimeDelta](https://source.chromium.org/chromium/chromium/src/+/main:base/time/time.h;l=121), [TimeTicks](https://source.chromium.org/chromium/chromium/src/+/main:base/time/time.h;l=983), [Timer](https://source.chromium.org/chromium/chromium/src/+/main:base/timer/timer.h)
 
 Generally use TimeTicks instead of Time to keep a stable tick counter (Time may
 change if the user changes the computer clock).
 
-## [PrefService](https://code.google.com/p/chromium/codesearch#chromium/src/components/prefs/pref_service.h&q=PrefService&sq=package:chromium&type=cs), [ExtensionPrefs](https://code.google.com/p/chromium/codesearch#chromium/src/extensions/browser/extension_prefs.h)
+## [PrefService](https://source.chromium.org/chromium/chromium/src/+/main:components/prefs/pref_service.h), [ExtensionPrefs](https://source.chromium.org/chromium/chromium/src/+/main:extensions/browser/extension_prefs.h)
 
 Containers for persistent state associated with a user
 [Profile](http://code.google.com/searchframe#OAMlx_jo-ck/src/chrome/browser/profiles/profile.h).

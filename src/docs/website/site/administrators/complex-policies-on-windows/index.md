@@ -14,61 +14,57 @@ Chrome represents policies as JSON values internally. Up until version 37 all
 Chrome policies were of simple types:
 
 *   **Booleans** (example:
-            [SafeBrowsingEnabled](/administrators/policy-list-3#SafeBrowsingEnabled))
+            [SafeBrowsingEnabled](https://chromeenterprise.google/policies/#SafeBrowsingEnabled))
 *   **Integers** (example:
-            [DefaultCookiesSetting](/administrators/policy-list-3#DefaultCookiesSetting))
+            [DefaultCookiesSetting](https://chromeenterprise.google/policies/#DefaultCookiesSetting))
 *   **Strings** (example:
-            [ProxyPacUrl](/administrators/policy-list-3#ProxyPacUrl))
+            [ProxyPacUrl](https://chromeenterprise.google/policies/#ProxyPacUrl))
 
 Additionally, Chrome has supported some policies as **Lists of Strings**
-(example: [URLBlacklist](/administrators/policy-list-3#URLBlacklist)).
+(example: [URLBlocklist](https://chromeenterprise.google/policies/#URLBlocklist)).
 
 These policy types match what GPO can represent natively on Windows using
 Administrative Template files (ADM or ADMX).
 
 Some policies need more complex values that don't fit well in any of these
 types. For example,
-[ExtensionInstallForcelist](/administrators/policy-list-3#ExtensionInstallForcelist)
+[ExtensionInstallForcelist](https://chromeenterprise.google/policies/#ExtensionInstallForcelist)
 defines a list of extensions to install automatically. Each extension is defined
 by its extension ID and a remote update URL (to support extensions from private
 stores). This can be easily represented in JSON as a list of objects, where each
 object has two strings:
 
-<table>
-<tr>
-<td>\[</td>
-<td> {</td>
-<td> "id": "public-ext-id-1",</td>
-<td> "update_url": "https://clients2.google.com/service/update2/crx"</td>
-<td> },</td>
-<td> {</td>
-<td> "id": "private-ext-id-2",</td>
-<td> "update_url": "http://www.local/chrome/updates.xml"</td>
-<td> }</td>
-<td>\]</td>
-</tr>
-</table>
+```
+[
+  {
+    "id": "public-ext-id-1",
+    "update_url": "https://clients2.google.com/service/update2/crx"
+  },
+  {
+    "id": "private-ext-id-2",
+    "update_url": "http://www.local/chrome/updates.xml"
+  }
+]
+```
 
 Unfortunately there is no native GPO type to represent this and the policy needs
 to be configured as a List of Strings, where each string contains both the ID
 and the update URL separated by a semicolon:
 
-<table>
-<tr>
-<td>\[</td>
-<td> "public-ext-id-1;https://clients2.google.com/service/update2/crx",</td>
-<td> "private-ext-id-2;http://www.local/chrome/updates.xml"</td>
-<td>\]</td>
-</tr>
-</table>
+```
+[
+  "public-ext-id-1;https://clients2.google.com/service/update2/crx",
+  "private-ext-id-2;http://www.local/chrome/updates.xml"
+]
+```
 
 ## New in Chrome 37: complex policies
 
 Chrome 37 introduced new policies with complex values that don't fit in any of
 the native GPO or Registry types:
-[RegisteredProtocolHandlers](http://www.chromium.org/administrators/policy-list-3#RegisteredProtocolHandlers)
+[RegisteredProtocolHandlers](https://chromeenterprise.google/policies/#RegisteredProtocolHandlers)
 and [Managed
-Bookmarks](http://www.chromium.org/administrators/policy-list-3#ManagedBookmarks).
+Bookmarks](https://chromeenterprise.google/policies/#ManagedBookmarks).
 
 There are 3 ways to configure the values for these policies: as a JSON string in
 the GPO editor, as a JSON string in the registry, or as an expanded JSON object
@@ -95,7 +91,7 @@ object/dictionary): { "key": "string value", "key that maps to integer": 123,
 "key that maps to list": \[ 1, 2, 3 \] }
 
 The examples below will configure the [Managed
-Bookmarks](http://www.chromium.org/administrators/policy-list-3#ManagedBookmarks)
+Bookmarks](https://chromeenterprise.google/policies/#ManagedBookmarks)
 policy to build this bookmark structure:
 
 *   Google (google.com)
@@ -103,7 +99,7 @@ policy to build this bookmark structure:
 *   Chrome links
     *   Chromium (chromium.org)
     *   List of Policies
-                (http://www.chromium.org/administrators/policy-list-3)
+                (https://chromeenterprise.google/policies/)
 
 Each bookmark is a JSON object with a "name" key indicating its name, and a
 "url" key indicating the URL or a "children" key that maps to another list of
@@ -111,10 +107,31 @@ bookmarks, to create folders.
 
 The JSON string for the structure listed above is:
 
-\[ { "name": "Google", "url": "google.com" }, { "name": "YouTube", "url":
-"youtube.com" }, { "name": "Chrome links", "children": \[ { "name": "Chromium",
-"url": "chromium.org" }, { "name": "List of Policies", "url":
-"http://www.chromium.org/administrators/policy-list-3" } \] } \]
+```
+[
+  {
+    "name":"Google",
+    "url":"google.com"
+  },
+  {
+    "name":"YouTube",
+    "url":"youtube.com"
+  },
+  {
+    "name":"Chrome links",
+    "children":[
+      {
+        "name":"Chromium",
+        "url":"chromium.org"
+      },
+      {
+        "name":"List of Policies",
+        "url":"https://chromeenterprise.google/policies/"
+      }
+    ]
+  }
+]
+```
 
 [<img alt="image"
 src="/administrators/complex-policies-on-windows/bookmarks4.png">](/administrators/complex-policies-on-windows/bookmarks4.png)

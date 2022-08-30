@@ -90,16 +90,8 @@ OutputSurfaceProviderWebView::OutputSurfaceProviderWebView(
   // Webview does not own the surface so should not clear it.
   renderer_settings_.should_clear_root_render_pass = false;
 
-  renderer_settings_.use_skia_renderer = features::IsUsingSkiaRenderer();
-  LOG_IF(FATAL, !renderer_settings_.use_skia_renderer)
-      << "WebView requires skia renderer";
-
   enable_vulkan_ = features::IsUsingVulkan();
   DCHECK(!enable_vulkan_ || vulkan_context_provider_);
-
-  LOG_IF(FATAL, enable_vulkan_ && !renderer_settings_.use_skia_renderer)
-      << "--webview-enable-vulkan only works with skia renderer "
-         "(--enable-features=UseSkiaRenderer).";
 
   auto* command_line = base::CommandLine::ForCurrentProcess();
   debug_settings_.tint_composited_content =
@@ -116,21 +108,22 @@ OutputSurfaceProviderWebView::~OutputSurfaceProviderWebView() {
 
 void OutputSurfaceProviderWebView::InitializeContext() {
   DCHECK(!gl_surface_) << "InitializeContext() called twice";
+  gl::GLDisplayEGL* display = gl::GLSurfaceEGL::GetGLDisplayEGL();
   // If EGL supports EGL_ANGLE_external_context_and_surface, then we will create
   // an ANGLE context for the current native GL context.
   const bool is_angle =
-      !enable_vulkan_ &&
-      gl::GLSurfaceEGL::IsANGLEExternalContextAndSurfaceSupported();
+      !enable_vulkan_ && display->IsANGLEExternalContextAndSurfaceSupported();
 
   GLSurfaceContextPair real_context;
   if (enable_vulkan_) {
     DCHECK(!is_angle);
     real_context = GetRealContextForVulkan();
-    gl_surface_ =
-        base::MakeRefCounted<AwGLSurface>(std::move(real_context.first));
+    gl_surface_ = base::MakeRefCounted<AwGLSurface>(
+        display, std::move(real_context.first));
   } else {
     // We need to draw to FBO for External Stencil support with SkiaRenderer
-    gl_surface_ = base::MakeRefCounted<AwGLSurfaceExternalStencil>(is_angle);
+    gl_surface_ =
+        base::MakeRefCounted<AwGLSurfaceExternalStencil>(display, is_angle);
   }
 
   bool result = gl_surface_->Initialize(gl::GLSurfaceFormat());
@@ -180,17 +173,8 @@ void OutputSurfaceProviderWebView::InitializeContext() {
         std::move(feature_info));
   }
 
-  // As most of the GPU resources used for compositing are created on Chrome
-  // side this affects only validation inside Skia. The workaround effectively
-  // clamps max frame buffer size that comes from Android. As we don't control
-  // frame buffer size using this workaround leads to not drawing anything on
-  // screen.
-  // TODO(vasilyt): Remove this once it handles on Skia side.
-  gpu::GpuDriverBugWorkarounds workarounds_for_skia = workarounds;
-  workarounds_for_skia.max_texture_size_limit_4096 = false;
-
   shared_context_state_->InitializeGrContext(
-      GpuServiceWebView::GetInstance()->gpu_preferences(), workarounds_for_skia,
+      GpuServiceWebView::GetInstance()->gpu_preferences(), workarounds,
       nullptr /* gr_shader_cache */);
 }
 

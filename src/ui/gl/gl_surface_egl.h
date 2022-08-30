@@ -5,9 +5,10 @@
 #ifndef UI_GL_GL_SURFACE_EGL_H_
 #define UI_GL_GL_SURFACE_EGL_H_
 
+#include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include <windows.h>
 #endif
 
@@ -23,57 +24,14 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/vsync_provider.h"
 #include "ui/gl/egl_timestamps.h"
+#include "ui/gl/gl_display.h"
 #include "ui/gl/gl_export.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gl_surface_overlay.h"
 
 namespace gl {
 
-class EGLDisplayPlatform {
- public:
-  constexpr EGLDisplayPlatform()
-      : display_(EGL_DEFAULT_DISPLAY), platform_(0), valid_(false) {}
-  explicit constexpr EGLDisplayPlatform(EGLNativeDisplayType display,
-                                        int platform = 0)
-      : display_(display), platform_(platform), valid_(true) {}
-
-  bool Valid() const { return valid_; }
-  int GetPlatform() const { return platform_; }
-  EGLNativeDisplayType GetDisplay() const { return display_; }
-
- private:
-  EGLNativeDisplayType display_;
-  // 0 for default, or EGL_PLATFORM_* enum.
-  int platform_;
-  bool valid_;
-};
-
 class GLSurfacePresentationHelper;
-
-// If adding a new type, also add it to EGLDisplayType in
-// tools/metrics/histograms/enums.xml. Don't remove or reorder entries.
-enum DisplayType {
-  DEFAULT = 0,
-  SWIFT_SHADER = 1,
-  ANGLE_WARP = 2,
-  ANGLE_D3D9 = 3,
-  ANGLE_D3D11 = 4,
-  ANGLE_OPENGL = 5,
-  ANGLE_OPENGLES = 6,
-  ANGLE_NULL = 7,
-  ANGLE_D3D11_NULL = 8,
-  ANGLE_OPENGL_NULL = 9,
-  ANGLE_OPENGLES_NULL = 10,
-  ANGLE_VULKAN = 11,
-  ANGLE_VULKAN_NULL = 12,
-  ANGLE_D3D11on12 = 13,
-  ANGLE_SWIFTSHADER = 14,
-  ANGLE_OPENGL_EGL = 15,
-  ANGLE_OPENGLES_EGL = 16,
-  ANGLE_METAL = 17,
-  ANGLE_METAL_NULL = 18,
-  DISPLAY_TYPE_MAX = 19,
-};
 
 GL_EXPORT void GetEGLInitDisplays(bool supports_angle_d3d,
                                   bool supports_angle_opengl,
@@ -88,70 +46,53 @@ GL_EXPORT void GetEGLInitDisplays(bool supports_angle_d3d,
 // Interface for EGL surface.
 class GL_EXPORT GLSurfaceEGL : public GLSurface {
  public:
-  GLSurfaceEGL();
-
+  explicit GLSurfaceEGL(GLDisplayEGL* display);
   GLSurfaceEGL(const GLSurfaceEGL&) = delete;
   GLSurfaceEGL& operator=(const GLSurfaceEGL&) = delete;
+  virtual EGLint GetNativeVisualID() const;
 
   // Implement GLSurface.
-  EGLDisplay GetDisplay() override;
+  GLDisplay* GetGLDisplay() override;
   EGLConfig GetConfig() override;
   GLSurfaceFormat GetFormat() override;
 
-  static bool InitializeOneOff(EGLDisplayPlatform native_display);
-  static bool InitializeOneOffForTesting();
-  static bool InitializeExtensionSettingsOneOff();
-  static void ShutdownOneOff();
-  static EGLDisplay GetHardwareDisplay();
-  static EGLDisplay InitializeDisplay(EGLDisplayPlatform native_display);
-  static EGLNativeDisplayType GetNativeDisplay();
-  static DisplayType GetDisplayType();
+  EGLDisplay GetEGLDisplay();
 
-  // These aren't particularly tied to surfaces, but since we already
-  // have the static InitializeOneOff here, it's easiest to reuse its
-  // initialization guards.
-  static const char* GetEGLClientExtensions();
-  static const char* GetEGLExtensions();
-  static bool HasEGLClientExtension(const char* name);
-  static bool HasEGLExtension(const char* name);
-  static bool IsCreateContextRobustnessSupported();
-  static bool IsRobustnessVideoMemoryPurgeSupported();
-  static bool IsCreateContextBindGeneratesResourceSupported();
-  static bool IsCreateContextWebGLCompatabilitySupported();
-  static bool IsEGLSurfacelessContextSupported();
-  static bool IsEGLContextPrioritySupported();
-  static bool IsEGLNoConfigContextSupported();
-  static bool IsRobustResourceInitSupported();
-  static bool IsDisplayTextureShareGroupSupported();
-  static bool IsDisplaySemaphoreShareGroupSupported();
-  static bool IsCreateContextClientArraysSupported();
-  static bool IsAndroidNativeFenceSyncSupported();
-  static bool IsPixelFormatFloatSupported();
-  static bool IsANGLEFeatureControlSupported();
-  static bool IsANGLEPowerPreferenceSupported();
-  static bool IsANGLEDisplayPowerPreferenceSupported();
-  static bool IsANGLEExternalContextAndSurfaceSupported();
-  static bool IsANGLEContextVirtualizationSupported();
-  static bool IsANGLEVulkanImageClientBufferSupported();
+  static GLDisplayEGL* GetGLDisplayEGL();
 
-  static bool IsEGLQueryDeviceSupported();
+  // |system_device_id| specifies which GPU to use on a multi-GPU system.
+  // If its value is 0, use the default GPU of the system.
+  // Calling this functionm a second time on the same |system_device_id|
+  // is a no-op and returns the same GLDisplayEGL.
+  // TODO(https://crbug.com/1251724): This will be called once per display
+  // when Chrome begins to support multi-gpu rendering.
+  static GLDisplayEGL* InitializeOneOff(EGLDisplayPlatform native_display,
+                                        uint64_t system_device_id);
+  static GLDisplayEGL* InitializeOneOffForTesting();
+  static bool InitializeExtensionSettingsOneOff(GLDisplayEGL* display);
+  static void ShutdownOneOff(GLDisplayEGL* display);
+  // |system_device_id| specifies which GPU to use on a multi-GPU system.
+  // If its value is 0, use the default GPU of the system.
+  static GLDisplayEGL* InitializeDisplay(EGLDisplayPlatform native_display,
+                                         uint64_t system_device_id);
 
  protected:
   ~GLSurfaceEGL() override;
 
   EGLConfig config_ = nullptr;
   GLSurfaceFormat format_;
+  raw_ptr<GLDisplayEGL> display_ = nullptr;
 
  private:
-  static bool InitializeOneOffCommon();
-  static bool initialized_;
+  static void InitializeOneOffCommon(GLDisplayEGL* display);
 };
 
 // Encapsulates an EGL surface bound to a view.
 class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL,
                                          public EGLTimestampClient {
  public:
-  NativeViewGLSurfaceEGL(EGLNativeWindowType window,
+  NativeViewGLSurfaceEGL(GLDisplayEGL* display,
+                         EGLNativeWindowType window,
                          std::unique_ptr<gfx::VSyncProvider> vsync_provider);
 
   NativeViewGLSurfaceEGL(const NativeViewGLSurfaceEGL&) = delete;
@@ -256,7 +197,7 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL,
 // Encapsulates a pbuffer EGL surface.
 class GL_EXPORT PbufferGLSurfaceEGL : public GLSurfaceEGL {
  public:
-  explicit PbufferGLSurfaceEGL(const gfx::Size& size);
+  PbufferGLSurfaceEGL(GLDisplayEGL* display, const gfx::Size& size);
 
   PbufferGLSurfaceEGL(const PbufferGLSurfaceEGL&) = delete;
   PbufferGLSurfaceEGL& operator=(const PbufferGLSurfaceEGL&) = delete;
@@ -287,7 +228,7 @@ class GL_EXPORT PbufferGLSurfaceEGL : public GLSurfaceEGL {
 // need to create a dummy EGLsurface in case we render to client API targets.
 class GL_EXPORT SurfacelessEGL : public GLSurfaceEGL {
  public:
-  explicit SurfacelessEGL(const gfx::Size& size);
+  SurfacelessEGL(GLDisplayEGL* display, const gfx::Size& size);
 
   SurfacelessEGL(const SurfacelessEGL&) = delete;
   SurfacelessEGL& operator=(const SurfacelessEGL&) = delete;

@@ -55,6 +55,7 @@ config("test_warning_suppressions") {
     cflags = [
       "-Wno-unknown-warning-option",
       "-Wno-deprecated-copy",
+      "-Wno-uninitialized",
     ]
   }
 }
@@ -772,6 +773,8 @@ source_set("benchmark") {
     "benchmark/src/json_reporter.cc",
     "benchmark/src/log.h",
     "benchmark/src/mutex.h",
+    "benchmark/src/perf_counters.cc",
+    "benchmark/src/perf_counters.h",
     "benchmark/src/re.h",
     "benchmark/src/reporter.cc",
     "benchmark/src/sleep.cc",
@@ -852,6 +855,11 @@ config("sqlite_config") {
     "-DSQLITE_OMIT_AUTOINIT",
     "-DSQLITE_ENABLE_JSON1",
   ]
+  if (is_clang && is_win) {
+    # SQLite uses __int64 which clang complains about unless
+    # we specify this flag.
+    cflags += [ "-Wno-language-extension-token" ]
+  }
 }
 
 source_set("sqlite") {
@@ -974,6 +982,12 @@ config("zlib_config") {
   ]
 }
 
+# Here be dragons. Used only by standalone profiler builds, which are
+# considered best effort. Since the headers use c++17 features, this source_set
+# pushes -std=c++17 flags up the dependency tree, whereas the rest of the
+# project continues to build under c++11. So the profilers end up linking
+# together code built under different standards, and rely on that to be ABI
+# compatible.
 source_set("libunwindstack") {
   visibility = _buildtools_visibility
   include_dirs = [
@@ -1007,7 +1021,6 @@ source_set("libunwindstack") {
     "android-unwinding/libunwindstack/ElfInterfaceArm.cpp",
     "android-unwinding/libunwindstack/Global.cpp",
     "android-unwinding/libunwindstack/JitDebug.cpp",
-    "android-unwinding/libunwindstack/LocalUnwinder.cpp",
     "android-unwinding/libunwindstack/MapInfo.cpp",
     "android-unwinding/libunwindstack/Maps.cpp",
     "android-unwinding/libunwindstack/Memory.cpp",
@@ -1033,9 +1046,7 @@ source_set("libunwindstack") {
       "android-unwinding/libunwindstack/MemoryMte.cpp",
     ]
   } else {
-    sources += [
-      "android-unwinding/libunwindstack/LogAndroid.cpp",
-    ]
+    sources += [ "android-unwinding/libunwindstack/LogAndroid.cpp" ]
   }
   if (current_cpu == "x86") {
     sources += [ "android-unwinding/libunwindstack/AsmGetRegsX86.S" ]
@@ -1146,4 +1157,40 @@ if (use_libfuzzer) {
     ]
     deps = [ "//gn:default_deps" ]
   }
+}
+
+config("llvm_demangle_config") {
+  visibility = _buildtools_visibility
+  include_dirs = [ "llvm-project/llvm/include" ]
+}
+
+# NB: this is built under c++14 and linked into code that is c++11 by default.
+# We rely on the ABIs being compatible for this to be sane. At the time of
+# writing, the only c++14 specific code is behind an #ifndef NDEBUG, so we
+# could keep building as c++11 in non-debug builds, but we always use c++14 for
+# consistency.
+source_set("llvm_demangle") {
+  visibility = _buildtools_visibility
+  configs -= [
+    "//gn/standalone:extra_warnings",
+    "//gn/standalone:c++11",
+  ]
+  configs += [ "//gn/standalone:c++14" ]
+  public_configs = [ ":llvm_demangle_config" ]
+  sources = [
+    "llvm-project/llvm/include/llvm/Demangle/Demangle.h",
+    "llvm-project/llvm/include/llvm/Demangle/DemangleConfig.h",
+    "llvm-project/llvm/include/llvm/Demangle/ItaniumDemangle.h",
+    "llvm-project/llvm/include/llvm/Demangle/MicrosoftDemangle.h",
+    "llvm-project/llvm/include/llvm/Demangle/MicrosoftDemangleNodes.h",
+    "llvm-project/llvm/include/llvm/Demangle/StringView.h",
+    "llvm-project/llvm/include/llvm/Demangle/Utility.h",
+    "llvm-project/llvm/lib/Demangle/DLangDemangle.cpp",
+    "llvm-project/llvm/lib/Demangle/Demangle.cpp",
+    "llvm-project/llvm/lib/Demangle/ItaniumDemangle.cpp",
+    "llvm-project/llvm/lib/Demangle/MicrosoftDemangle.cpp",
+    "llvm-project/llvm/lib/Demangle/MicrosoftDemangleNodes.cpp",
+    "llvm-project/llvm/lib/Demangle/RustDemangle.cpp",
+  ]
+  deps = [ "//gn:default_deps" ]
 }

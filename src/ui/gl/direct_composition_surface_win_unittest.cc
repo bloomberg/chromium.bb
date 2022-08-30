@@ -8,6 +8,7 @@
 #include <wrl/implements.h>
 
 #include "base/callback_helpers.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
@@ -123,10 +124,10 @@ class DirectCompositionSurfaceTest : public testing::Test {
     fake_power_monitor_source_.SetOnBatteryPower(true);
 
     // Without this, the following check always fails.
-    gl::init::InitializeGLNoExtensionsOneOff(/*init_bindings*/ true);
-    if (!QueryDirectCompositionDevice(QueryD3D11DeviceObjectFromANGLE())) {
-      LOG(WARNING)
-          << "GL implementation not using DirectComposition, skipping test.";
+    display_ = gl::init::InitializeGLNoExtensionsOneOff(
+        /*init_bindings=*/true, /*system_device_id=*/0);
+    if (!DirectCompositionSurfaceWin::GetDirectCompositionDevice()) {
+      LOG(WARNING) << "DirectComposition not supported, skipping test.";
       return;
     }
     surface_ = CreateDirectCompositionSurfaceWin();
@@ -142,7 +143,7 @@ class DirectCompositionSurfaceTest : public testing::Test {
     context_ = nullptr;
     if (surface_)
       DestroySurface(std::move(surface_));
-    gl::init::ShutdownGL(false);
+    gl::init::ShutdownGL(display_, false);
   }
 
   scoped_refptr<DirectCompositionSurfaceWin>
@@ -150,8 +151,8 @@ class DirectCompositionSurfaceTest : public testing::Test {
     DirectCompositionSurfaceWin::Settings settings;
     scoped_refptr<DirectCompositionSurfaceWin> surface =
         base::MakeRefCounted<DirectCompositionSurfaceWin>(
-            parent_window_, DirectCompositionSurfaceWin::VSyncCallback(),
-            settings);
+            gl::GLSurfaceEGL::GetGLDisplayEGL(), parent_window_,
+            DirectCompositionSurfaceWin::VSyncCallback(), settings);
     EXPECT_TRUE(surface->Initialize(GLSurfaceFormat()));
 
     // ImageTransportSurfaceDelegate::DidCreateAcceleratedSurfaceChildWindow()
@@ -176,6 +177,7 @@ class DirectCompositionSurfaceTest : public testing::Test {
   scoped_refptr<DirectCompositionSurfaceWin> surface_;
   scoped_refptr<GLContext> context_;
   base::test::ScopedPowerMonitorTestSource fake_power_monitor_source_;
+  raw_ptr<GLDisplay> display_ = nullptr;
 };
 
 TEST_F(DirectCompositionSurfaceTest, TestMakeCurrent) {
@@ -833,7 +835,7 @@ TEST_F(DirectCompositionVideoPixelTest, SRGB) {
 
 TEST_F(DirectCompositionVideoPixelTest, SCRGBLinear) {
   // SCRGB doesn't make sense on an NV12 input, but don't crash.
-  TestVideo(gfx::ColorSpace::CreateSCRGBLinear(), SK_ColorTRANSPARENT, false);
+  TestVideo(gfx::ColorSpace::CreateSRGBLinear(), SK_ColorTRANSPARENT, false);
 }
 
 TEST_F(DirectCompositionVideoPixelTest, InvalidColorSpace) {

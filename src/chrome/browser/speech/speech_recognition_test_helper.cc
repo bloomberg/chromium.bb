@@ -6,6 +6,7 @@
 
 #include "ash/constants/ash_features.h"
 #include "base/bind.h"
+#include "base/run_loop.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/speech/cros_speech_recognition_service_factory.h"
 #include "chrome/browser/speech/fake_speech_recognition_service.h"
@@ -14,6 +15,7 @@
 #include "components/soda/soda_installer.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/test/fake_speech_recognition_manager.h"
+#include "media/mojo/mojom/speech_recognition.mojom.h"
 
 SpeechRecognitionTestHelper::SpeechRecognitionTestHelper(
     speech::SpeechRecognitionType type)
@@ -38,6 +40,8 @@ void SpeechRecognitionTestHelper::SetUpNetworkRecognition() {
 void SpeechRecognitionTestHelper::SetUpOnDeviceRecognition(Profile* profile) {
   // Fake that SODA is installed so SpeechRecognitionPrivate uses
   // OnDeviceSpeechRecognizer.
+  speech::SodaInstaller::GetInstance()->NotifySodaInstalledForTesting(
+      speech::LanguageCode::kEnUs);
   speech::SodaInstaller::GetInstance()->NotifySodaInstalledForTesting();
   CrosSpeechRecognitionServiceFactory::GetInstanceForTest()
       ->SetTestingFactoryAndUse(
@@ -77,6 +81,16 @@ void SpeechRecognitionTestHelper::WaitForRecognitionStopped() {
   base::RunLoop().RunUntilIdle();
 }
 
+void SpeechRecognitionTestHelper::SendInterimResultAndWait(
+    const std::string& transcript) {
+  SendFakeSpeechResultAndWait(transcript, /*is_final=*/false);
+}
+
+void SpeechRecognitionTestHelper::SendFinalResultAndWait(
+    const std::string& transcript) {
+  SendFakeSpeechResultAndWait(transcript, /*is_final=*/true);
+}
+
 void SpeechRecognitionTestHelper::SendFakeSpeechResultAndWait(
     const std::string& transcript,
     bool is_final) {
@@ -94,12 +108,7 @@ void SpeechRecognitionTestHelper::SendFakeSpeechResultAndWait(
   }
 }
 
-void SpeechRecognitionTestHelper::SendFinalFakeSpeechResultAndWait(
-    const std::string& transcript) {
-  SendFakeSpeechResultAndWait(transcript, /*is_final=*/true);
-}
-
-void SpeechRecognitionTestHelper::SendFakeSpeechRecognitionErrorAndWait() {
+void SpeechRecognitionTestHelper::SendErrorAndWait() {
   base::RunLoop loop;
   if (type_ == speech::SpeechRecognitionType::kNetwork) {
     fake_speech_recognition_manager_->SendFakeError(loop.QuitClosure());

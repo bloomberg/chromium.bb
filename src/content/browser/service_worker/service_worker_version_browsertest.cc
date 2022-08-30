@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/service_worker/service_worker_version.h"
+
 #include <stddef.h>
 #include <stdint.h>
 
@@ -13,7 +15,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
-#include "base/cxx17_backports.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/statistics_recorder.h"
@@ -23,6 +24,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/task_traits.h"
 #include "base/test/bind.h"
+#include "base/test/values_test_util.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/browser/service_worker/embedded_worker_instance.h"
@@ -35,7 +37,6 @@
 #include "content/browser/service_worker/service_worker_host.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
-#include "content/browser/service_worker/service_worker_version.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -69,6 +70,9 @@ using blink::mojom::CacheStorageError;
 namespace content {
 
 namespace {
+
+using ::testing::Eq;
+using ::testing::Pointee;
 
 // V8ScriptRunner::setCacheTimeStamp() stores 16 byte data (marker + tag +
 // timestamp).
@@ -215,7 +219,7 @@ CreateMainScriptResponse() {
       "Content-Type: application/javascript\0"
       "\0";
   response_head.headers =
-      new net::HttpResponseHeaders(std::string(data, base::size(data)));
+      new net::HttpResponseHeaders(std::string(data, std::size(data)));
   return std::make_unique<ServiceWorkerVersion::MainScriptResponse>(
       response_head);
 }
@@ -440,7 +444,6 @@ class ServiceWorkerVersionBrowserTest : public ContentBrowserTest {
     version_ = CreateNewServiceWorkerVersion(
         wrapper()->context()->registry(), registration_.get(),
         embedded_test_server()->GetURL(worker_url), script_type);
-    version_->set_initialize_global_scope_after_main_script_loaded();
     // Make the registration findable via storage functions.
     wrapper()->context()->registry()->NotifyInstallingRegistration(
         registration_.get());
@@ -1447,8 +1450,59 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
   // Once it's started, the worker script is read from the network and the COEP
   // value is set to the version.
   ASSERT_EQ(StartWorker(), blink::ServiceWorkerStatusCode::kOk);
-  EXPECT_EQ(CrossOriginEmbedderPolicyRequireCorp(),
-            version_->cross_origin_embedder_policy());
+  EXPECT_THAT(version_->cross_origin_embedder_policy(),
+              Pointee(Eq(CrossOriginEmbedderPolicyRequireCorp())));
+}
+
+// Tests that JS can be executed in the context of a running service worker.
+IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
+                       ExecuteScriptForTesting) {
+  StartServerAndNavigateToSetup();
+  SetUpRegistration("/service_worker/execute_script_worker.js");
+  ASSERT_EQ(StartWorker(), blink::ServiceWorkerStatusCode::kOk);
+  ASSERT_TRUE(version_);
+
+  auto execute_script_helper = [this](const std::string& script,
+                                      base::Value* value_out,
+                                      std::string* error_out) {
+    base::RunLoop run_loop;
+    auto callback = [&run_loop, value_out, error_out](
+                        base::Value value,
+                        const absl::optional<std::string>& error) {
+      *value_out = std::move(value);
+      *error_out = error.value_or("<no error>");
+      run_loop.Quit();
+    };
+
+    version_->ExecuteScriptForTest(script,
+                                   base::BindLambdaForTesting(callback));
+    run_loop.Run();
+  };
+
+  {
+    base::Value value;
+    std::string error;
+    execute_script_helper("self.workerFlag;", &value, &error);
+    EXPECT_THAT(value, base::test::IsJson(R"("worker flag")"));
+    EXPECT_EQ("<no error>", error);
+  }
+  {
+    base::Value value;
+    std::string error;
+    // Execute a script that will hit an exception.
+    execute_script_helper("foo = bar + baz;", &value, &error);
+    EXPECT_TRUE(value.is_none());
+    EXPECT_EQ("Uncaught ReferenceError: bar is not defined", error);
+  }
+  {
+    base::Value value;
+    std::string error;
+    // Execute a script that evaluates to undefined. This converts to an empty
+    // base::Value, and should not throw an error.
+    execute_script_helper("(function() { })();", &value, &error);
+    EXPECT_TRUE(value.is_none());
+    EXPECT_EQ("<no error>", error);
+  }
 }
 
 class ServiceWorkerVersionBrowserV8FullCodeCacheTest

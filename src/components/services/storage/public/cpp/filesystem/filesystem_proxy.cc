@@ -12,7 +12,6 @@
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/files/important_file_writer.h"
-#include "base/task/post_task.h"
 #include "base/types/pass_key.h"
 #include "build/build_config.h"
 #include "components/services/storage/public/cpp/filesystem/filesystem_impl.h"
@@ -22,12 +21,6 @@
 namespace storage {
 
 namespace {
-
-size_t GetNumPathComponents(const base::FilePath& path) {
-  std::vector<base::FilePath::StringType> components;
-  path.GetComponents(&components);
-  return components.size();
-}
 
 class LocalFileLockImpl : public FilesystemProxy::FileLock {
  public:
@@ -41,7 +34,7 @@ class LocalFileLockImpl : public FilesystemProxy::FileLock {
   // FilesystemProxy::FileLock implementation:
   base::File::Error Release() override {
     base::File::Error error = base::File::FILE_OK;
-#if !defined(OS_FUCHSIA)
+#if !BUILDFLAG(IS_FUCHSIA)
     error = lock_.Unlock();
 #endif
     lock_.Close();
@@ -89,7 +82,7 @@ FilesystemProxy::FilesystemProxy(
     mojo::PendingRemote<mojom::Directory> directory,
     scoped_refptr<base::SequencedTaskRunner> ipc_task_runner)
     : root_(root),
-      num_root_components_(GetNumPathComponents(root_)),
+      num_root_components_(root_.GetComponents().size()),
       remote_directory_(std::move(directory), ipc_task_runner) {
   DCHECK(root_.IsAbsolute());
 }
@@ -380,8 +373,7 @@ base::FilePath FilesystemProxy::MakeRelative(const base::FilePath& path) const {
     return base::FilePath();
 
   // Absolute paths need to be rebased onto |root_|.
-  std::vector<base::FilePath::StringType> components;
-  path.GetComponents(&components);
+  std::vector<base::FilePath::StringType> components = path.GetComponents();
   base::FilePath relative_path;
   for (size_t i = num_root_components_; i < components.size(); ++i)
     relative_path = relative_path.Append(components[i]);

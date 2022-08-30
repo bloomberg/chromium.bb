@@ -40,7 +40,6 @@
 #include "third_party/blink/renderer/core/animation/compositor_animations.h"
 #include "third_party/blink/renderer/core/animation/css/compositor_keyframe_value_factory.h"
 #include "third_party/blink/renderer/core/animation/css/css_animation.h"
-#include "third_party/blink/renderer/core/animation/css/css_animation_update_scope.h"
 #include "third_party/blink/renderer/core/animation/css/css_keyframe_effect_model.h"
 #include "third_party/blink/renderer/core/animation/css/css_scroll_timeline.h"
 #include "third_party/blink/renderer/core/animation/css/css_transition.h"
@@ -62,6 +61,7 @@
 #include "third_party/blink/renderer/core/css/css_property_equality.h"
 #include "third_party/blink/renderer/core/css/css_value_list.h"
 #include "third_party/blink/renderer/core/css/parser/css_variable_parser.h"
+#include "third_party/blink/renderer/core/css/post_style_update_scope.h"
 #include "third_party/blink/renderer/core/css/properties/computed_style_utils.h"
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
 #include "third_party/blink/renderer/core/css/properties/css_property_ref.h"
@@ -534,7 +534,8 @@ void CSSAnimations::CalculateCompositorAnimationUpdate(
   }
 
   bool transform_zoom_changed =
-      old_style->HasCurrentTransformAnimation() &&
+      (old_style->HasCurrentTranslateAnimation() ||
+       old_style->HasCurrentTransformAnimation()) &&
       old_style->EffectiveZoom() != style.EffectiveZoom();
 
   const auto& snapshot = [&](AnimationEffect* effect) {
@@ -879,12 +880,14 @@ void UpdateAnimationFlagsForEffect(const AnimationEffect& effect,
                                    ComputedStyle& style) {
   if (effect.Affects(PropertyHandle(GetCSSPropertyOpacity())))
     style.SetHasCurrentOpacityAnimation(true);
-  if (effect.Affects(PropertyHandle(GetCSSPropertyTransform())) ||
-      effect.Affects(PropertyHandle(GetCSSPropertyRotate())) ||
-      effect.Affects(PropertyHandle(GetCSSPropertyScale())) ||
-      effect.Affects(PropertyHandle(GetCSSPropertyTranslate()))) {
+  if (effect.Affects(PropertyHandle(GetCSSPropertyTransform())))
     style.SetHasCurrentTransformAnimation(true);
-  }
+  if (effect.Affects(PropertyHandle(GetCSSPropertyRotate())))
+    style.SetHasCurrentRotateAnimation(true);
+  if (effect.Affects(PropertyHandle(GetCSSPropertyScale())))
+    style.SetHasCurrentScaleAnimation(true);
+  if (effect.Affects(PropertyHandle(GetCSSPropertyTranslate())))
+    style.SetHasCurrentTranslateAnimation(true);
   if (effect.Affects(PropertyHandle(GetCSSPropertyFilter())))
     style.SetHasCurrentFilterAnimation(true);
   if (effect.Affects(PropertyHandle(GetCSSPropertyBackdropFilter())))
@@ -999,6 +1002,21 @@ void CSSAnimations::UpdateAnimationFlags(Element& animating_element,
       style.SetIsRunningTransformAnimationOnCompositor(
           effect_stack.HasActiveAnimationsOnCompositor(
               PropertyHandle(GetCSSPropertyTransform())));
+    }
+    if (style.HasCurrentScaleAnimation()) {
+      style.SetIsRunningScaleAnimationOnCompositor(
+          effect_stack.HasActiveAnimationsOnCompositor(
+              PropertyHandle(GetCSSPropertyScale())));
+    }
+    if (style.HasCurrentRotateAnimation()) {
+      style.SetIsRunningRotateAnimationOnCompositor(
+          effect_stack.HasActiveAnimationsOnCompositor(
+              PropertyHandle(GetCSSPropertyRotate())));
+    }
+    if (style.HasCurrentTranslateAnimation()) {
+      style.SetIsRunningTranslateAnimationOnCompositor(
+          effect_stack.HasActiveAnimationsOnCompositor(
+              PropertyHandle(GetCSSPropertyTranslate())));
     }
     if (style.HasCurrentFilterAnimation()) {
       style.SetIsRunningFilterAnimationOnCompositor(
@@ -1494,10 +1512,8 @@ void CSSAnimations::CalculateTransitionUpdate(CSSAnimationUpdate& update,
   bool any_transition_had_transition_all = false;
   const ComputedStyle* old_style = animating_element.GetComputedStyle();
 
-  if (RuntimeEnabledFeatures::CSSDelayedAnimationUpdatesEnabled()) {
-    if (auto* data = CSSAnimationUpdateScope::CurrentData())
-      old_style = data->GetOldStyle(animating_element);
-  }
+  if (auto* data = PostStyleUpdateScope::CurrentAnimationData())
+    old_style = data->GetOldStyle(animating_element);
 
   if (!animation_style_recalc && style.Display() != EDisplay::kNone &&
       old_style && !old_style->IsEnsuredInDisplayNone()) {
@@ -1954,7 +1970,8 @@ const StylePropertyShorthand& CSSAnimations::PropertiesForTransitionAll() {
 }
 
 // Properties that affect animations are not allowed to be affected by
-// animations. https://drafts.csswg.org/web-animations/#not-animatable-section
+// animations.
+// https://w3.org/TR/web-animations-1/#animating-properties
 bool CSSAnimations::IsAnimationAffectingProperty(const CSSProperty& property) {
   switch (property.PropertyID()) {
     case CSSPropertyID::kAnimation:
@@ -1969,10 +1986,15 @@ bool CSSAnimations::IsAnimationAffectingProperty(const CSSProperty& property) {
     case CSSPropertyID::kAnimationTimingFunction:
     case CSSPropertyID::kContentVisibility:
     case CSSPropertyID::kContain:
+    case CSSPropertyID::kContainerName:
+    case CSSPropertyID::kContainerType:
     case CSSPropertyID::kDirection:
     case CSSPropertyID::kDisplay:
     case CSSPropertyID::kTextCombineUpright:
     case CSSPropertyID::kTextOrientation:
+    case CSSPropertyID::kToggleGroup:
+    case CSSPropertyID::kToggleRoot:
+    case CSSPropertyID::kToggleTrigger:
     case CSSPropertyID::kTransition:
     case CSSPropertyID::kTransitionDelay:
     case CSSPropertyID::kTransitionDuration:

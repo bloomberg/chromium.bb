@@ -8,13 +8,14 @@ load("//lib/branches.star", "branches")
 load("//lib/try.star", "try_")
 load("//lib/consoles.star", "consoles")
 load("//project.star", "BRANCH_TYPES", "branch_type")
+load("../fallback-cq.star", "fallback_cq")
 
 try_.defaults.set(
     cores = 8,
     execution_timeout = 15 * time.minute,
     list_view = "presubmit",
     main_list_view = "try",
-    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
+    os = os.LINUX_DEFAULT,
     pool = try_.DEFAULT_POOL,
     # Default priority for buildbucket is 30, see
     # https://chromium.googlesource.com/infra/infra/+/bb68e62b4380ede486f65cd32d9ff3f1bbe288e4/appengine/cr-buildbucket/creation.py#42
@@ -38,10 +39,11 @@ def presubmit_builder(*, name, tryjob, **kwargs):
     against generated files being out of date, so they MUST run quickly so that
     the submit after a CQ dry run doesn't take long.
     """
-    tryjob_args = {a: getattr(tryjob, a) for a in dir(tryjob)}
-    tryjob_args["disable_reuse"] = True
-    tryjob_args["add_default_excludes"] = False
-    tryjob = try_.job(**tryjob_args)
+    if tryjob:
+        tryjob_args = {a: getattr(tryjob, a) for a in dir(tryjob)}
+        tryjob_args["disable_reuse"] = True
+        tryjob_args["add_default_excludes"] = False
+        tryjob = try_.job(**tryjob_args)
     return try_.builder(name = name, tryjob = tryjob, **kwargs)
 
 # Errors that this builder would catch would go unnoticed until a project is set
@@ -103,7 +105,22 @@ presubmit_builder(
         ],
     },
     tryjob = try_.job(
-        location_regexp = [r".+/[+]/tools/clang/scripts/update.py"],
+        location_regexp = [
+            r".+/[+]/tools/clang/scripts/update.py",
+            r".+/[+]/DEPS",
+        ],
+    ),
+)
+
+presubmit_builder(
+    name = "builder-config-verifier",
+    description_html = "checks that builder configs in properties files match the recipe-side configs",
+    executable = "recipe:chromium/builder_config_verifier",
+    properties = {
+        "builder_config_directory": "infra/config/generated/builders",
+    },
+    tryjob = try_.job(
+        location_regexp = [r".+/[+]/infra/config/generated/builders/.*"],
     ),
 )
 
@@ -119,5 +136,13 @@ presubmit_builder(
         },
         "repo_name": "chromium",
     },
+    tryjob = try_.job(),
+)
+
+presubmit_builder(
+    name = "requires-testing-checker",
+    cq_group = fallback_cq.GROUP,
+    description_html = "prevents CLs that requires testing from landing on branches with no CQ",
+    executable = "recipe:requires_testing_checker",
     tryjob = try_.job(),
 )

@@ -5,12 +5,14 @@
 #include "content/browser/prerender/prerender_host.h"
 
 #include "base/feature_list.h"
-#include "base/metrics/histogram_functions.h"
+#include "base/observer_list.h"
 #include "base/run_loop.h"
 #include "base/trace_event/common/trace_event_common.h"
 #include "base/trace_event/trace_conversion_helper.h"
 #include "base/trace_event/typed_macros.h"
+#include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/prerender/prerender_host_registry.h"
+#include "content/browser/prerender/prerender_metrics.h"
 #include "content/browser/renderer_host/frame_tree.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/navigation_controller_impl.h"
@@ -37,15 +39,6 @@ namespace content {
 
 namespace {
 
-struct ActivateResult {
-  ActivateResult(PrerenderHost::FinalStatus status,
-                 std::unique_ptr<StoredPage> page)
-      : status(status), page(std::move(page)) {}
-
-  PrerenderHost::FinalStatus status = PrerenderHost::FinalStatus::kActivated;
-  std::unique_ptr<StoredPage> page;
-};
-
 bool AreHttpRequestHeadersCompatible(
     const std::string& potential_activation_headers_str,
     const std::string& prerender_headers_str) {
@@ -56,12 +49,15 @@ bool AreHttpRequestHeadersCompatible(
   potential_activation_headers.AddHeadersFromString(
       potential_activation_headers_str);
 
-  // `prerender_headers` contains the "Purpose: prefetch" to notify servers of
-  // prerender requests, while `potential_activation_headers` doesn't contain
-  // it. Remove "Purpose" matching from consideration so that activation works
-  // with the header.
+  // `prerender_headers` contains the "Purpose: prefetch" and "Sec-Purpose:
+  // prefetch;prerender" to notify servers of prerender requests, while
+  // `potential_activation_headers` doesn't contain it. Remove "Purpose" and
+  // "Sec-Purpose" matching from consideration so that activation works with the
+  // header.
   prerender_headers.RemoveHeader("Purpose");
   potential_activation_headers.RemoveHeader("Purpose");
+  prerender_headers.RemoveHeader("Sec-Purpose");
+  potential_activation_headers.RemoveHeader("Sec-Purpose");
 
   return prerender_headers.ToString() ==
          potential_activation_headers.ToString();
@@ -90,17 +86,17 @@ class PrerenderHost::PageHolder : public FrameTree::Delegate,
         SiteInstance::Create(web_contents.GetBrowserContext());
     frame_tree_->Init(site_instance.get(),
                       /*renderer_initiated_creation=*/false,
-                      /*main_frame_name=*/"", /*opener=*/nullptr);
+                      /*main_frame_name=*/"", /*opener=*/nullptr,
+                      /*frame_policy=*/blink::FramePolicy());
 
-    const auto& site_info =
-        static_cast<SiteInstanceImpl*>(site_instance.get())->GetSiteInfo();
     // Use the same SessionStorageNamespace as the primary page for the
     // prerendering page.
     frame_tree_->controller().SetSessionStorageNamespace(
-        site_info.GetStoragePartitionId(site_instance->GetBrowserContext()),
+        site_instance->GetStoragePartitionConfig(),
         web_contents_.GetPrimaryFrameTree()
             .controller()
-            .GetSessionStorageNamespace(site_info));
+            .GetSessionStorageNamespace(
+                site_instance->GetStoragePartitionConfig()));
 
     // TODO(https://crbug.com/1199679): This should be moved to FrameTree::Init
     web_contents_.NotifySwappedFromRenderManager(
@@ -138,6 +134,12 @@ class PrerenderHost::PageHolder : public FrameTree::Delegate,
 
   void DidChangeLoadProgress() override {}
   bool IsHidden() override { return true; }
+  FrameTree* LoadingTree() override {
+    // For prerendering loading tree is the same as its frame tree as loading is
+    // done at a frame tree level in the background, unlike the loading visible
+    // to the user where we account for nested frame tree loading state.
+    return frame_tree_.get();
+  }
   void NotifyPageChanged(PageImpl& page) override {}
   int GetOuterDelegateFrameTreeNodeId() override {
     // A prerendered FrameTree is not "inner to" or "nested inside" another
@@ -159,7 +161,10 @@ class PrerenderHost::PageHolder : public FrameTree::Delegate,
   void NotifyNavigationListPruned(
       const PrunedDetails& pruned_details) override {}
   void NotifyNavigationEntriesDeleted() override {}
-  void ActivateAndShowRepostFormWarningDialog() override {}
+  void ActivateAndShowRepostFormWarningDialog() override {
+    // Not supported, cancel pending reload.
+    GetNavigationController().CancelPendingReload();
+  }
   bool ShouldPreserveAbortedURLs() override { return false; }
   WebContents* DeprecatedGetWebContents() override { return GetWebContents(); }
   void UpdateOverridingUserAgent() override {}
@@ -174,7 +179,7 @@ class PrerenderHost::PageHolder : public FrameTree::Delegate,
     return web_contents_.GetPrimaryFrameTree();
   }
 
-  ActivateResult Activate(NavigationRequest& navigation_request) {
+  std::unique_ptr<StoredPage> Activate(NavigationRequest& navigation_request) {
     // There should be no ongoing main-frame navigation during activation.
     // TODO(https://crbug.com/1190644): Make sure sub-frame navigations are
     // fine.
@@ -186,7 +191,26 @@ class PrerenderHost::PageHolder : public FrameTree::Delegate,
     std::vector<FrameTreeNode*> subframe_nodes(std::next(node_range.begin()),
                                                node_range.end());
 
-    // NOTE: TakePrerenderedPage() clears the current_frame_host value of
+    // Before the root's current_frame_host is cleared, collect the replication
+    // state so that it can be used for post-activation validation.
+    blink::mojom::FrameReplicationState prior_replication_state =
+        frame_tree_->root()->current_replication_state();
+
+    // Update FrameReplicationState::has_received_user_gesture_before_nav of the
+    // prerendered page.
+    //
+    // On regular navigation, it is updated via a renderer => browser IPC
+    // (RenderFrameHostImpl::HadStickyUserActivationBeforeNavigationChanged),
+    // which is sent from blink::DocumentLoader::CommitNavigation. However,
+    // this doesn't happen on prerender page activation, so the value is not
+    // correctly updated without this treatment.
+    //
+    // The updated value will be sent to the renderer on
+    // blink::mojom::Page::ActivatePrerenderedPage.
+    prior_replication_state.has_received_user_gesture_before_nav =
+        navigation_request.frame_tree_node()
+            ->has_received_user_gesture_before_nav();
+
     // frame_tree_->root(). Do not add any code between here and
     // frame_tree_.reset() that calls into observer functions to minimize the
     // duration of current_frame_host being null.
@@ -204,7 +228,7 @@ class PrerenderHost::PageHolder : public FrameTree::Delegate,
             ->CloneWithoutSharing(context.get());
 
     navigation_request.SetPrerenderActivationNavigationState(
-        std::move(nav_entry), frame_tree_->root()->current_replication_state());
+        std::move(nav_entry), prior_replication_state);
 
     FrameTree& target_frame_tree = GetPrimaryFrameTree();
     DCHECK_EQ(&target_frame_tree,
@@ -221,10 +245,10 @@ class PrerenderHost::PageHolder : public FrameTree::Delegate,
     // TODO(https://crbug.com/1237091): Copying frame name here is suboptimal
     // and ideally we'd do this at the same time when transferring the proxies
     // from the StoredPage into RenderFrameHostManager. However, this is a
-    // temporary solution until we move this into BrowsingInstanceFrameState,
+    // temporary solution until we move this into BrowsingContextState,
     // along with RenderFrameProxyHost.
     page->render_frame_host->frame_tree_node()->set_frame_name_for_activation(
-        frame_tree_->root()->unique_name(), frame_tree_->root()->frame_name());
+        prior_replication_state.unique_name, prior_replication_state.name);
     for (auto& it : page->proxy_hosts) {
       it.second->set_frame_tree_node(*(target_frame_tree.root()));
     }
@@ -261,7 +285,7 @@ class PrerenderHost::PageHolder : public FrameTree::Delegate,
     frame_tree_->Shutdown();
     frame_tree_.reset();
 
-    return ActivateResult(FinalStatus::kActivated, std::move(page));
+    return page;
   }
 
   PrerenderHost::LoadingOutcome WaitForLoadCompletionForTesting() {
@@ -308,6 +332,30 @@ PrerenderHost::PrerenderHost(const PrerenderAttributes& attributes,
                              WebContents& web_contents)
     : attributes_(attributes) {
   DCHECK(blink::features::IsPrerender2Enabled());
+  // If the prerendering is browser-initiated, it is expected to have no
+  // initiator. All initiator related information should be null or invalid. On
+  // the other hand, renderer-initiated prerendering should have valid initiator
+  // information.
+  if (attributes.IsBrowserInitiated()) {
+    DCHECK(!attributes.initiator_origin.has_value());
+    DCHECK(!attributes.initiator_frame_token.has_value());
+    DCHECK_EQ(attributes.initiator_process_id,
+              ChildProcessHost::kInvalidUniqueID);
+    DCHECK_EQ(attributes.initiator_ukm_id, ukm::kInvalidSourceId);
+    DCHECK_EQ(attributes.initiator_frame_tree_node_id,
+              RenderFrameHost::kNoFrameTreeNodeId);
+  } else {
+    DCHECK(attributes.initiator_origin.has_value());
+    DCHECK(attributes.initiator_frame_token.has_value());
+    // TODO(https://crbug.com/1325211): Add back the following DCHECKs after
+    // fixing prerendering activation for embedder-triggered prerendering in
+    // unittests.
+    // DCHECK_NE(attributes.initiator_process_id,
+    // ChildProcessHost::kInvalidUniqueID);
+    // DCHECK_NE(attributes.initiator_ukm_id, ukm::kInvalidSourceId);
+    // DCHECK_NE(attributes.initiator_frame_tree_node_id,
+    //           RenderFrameHost::kNoFrameTreeNodeId);
+  }
   CreatePageHolder(*static_cast<WebContentsImpl*>(&web_contents));
 }
 
@@ -320,7 +368,8 @@ PrerenderHost::~PrerenderHost() {
     observer.OnHostDestroyed();
 
   if (!final_status_)
-    RecordFinalStatus(FinalStatus::kDestroyed);
+    RecordFinalStatus(FinalStatus::kDestroyed, attributes_.initiator_ukm_id,
+                      ukm::kInvalidSourceId);
 }
 
 // TODO(https://crbug.com/1132746): Inspect diffs from the current
@@ -338,6 +387,7 @@ bool PrerenderHost::StartPrerendering() {
   load_url_params.initiator_origin = attributes_.initiator_origin;
   load_url_params.initiator_process_id = attributes_.initiator_process_id;
   load_url_params.initiator_frame_token = attributes_.initiator_frame_token;
+  load_url_params.is_renderer_initiated = !attributes_.IsBrowserInitiated();
   load_url_params.transition_type =
       ui::PageTransitionFromInt(attributes_.transition_type);
 
@@ -459,17 +509,18 @@ std::unique_ptr<StoredPage> PrerenderHost::Activate(
   DCHECK(is_ready_for_activation_);
   is_ready_for_activation_ = false;
 
-  ActivateResult result = page_holder_->Activate(navigation_request);
-  if (result.status != FinalStatus::kActivated) {
-    RecordFinalStatus(result.status);
-    return nullptr;
-  }
+  std::unique_ptr<StoredPage> page = page_holder_->Activate(navigation_request);
 
   for (auto& observer : observers_)
     observer.OnActivated();
 
-  RecordFinalStatus(FinalStatus::kActivated);
-  return std::move(result.page);
+  // TODO(crbug.com/1299330): Replace
+  // `navigation_request.GetNextPageUkmSourceId()` with prerendered page's UKM
+  // source ID.
+  RecordFinalStatus(FinalStatus::kActivated, attributes_.initiator_ukm_id,
+                    navigation_request.GetNextPageUkmSourceId());
+  devtools_instrumentation::DidActivatePrerender(navigation_request);
+  return page;
 }
 
 // Ensure that the frame policies are compatible between primary main frame and
@@ -642,8 +693,12 @@ bool PrerenderHost::AreCommonNavigationParamsCompatibleWithNavigation(
   // initial and activation prerender navigations, as the PrerenderHost
   // selection would have already checked for matching values. Adding a DCHECK
   // here to be safe.
-  DCHECK_EQ(potential_activation.url, common_params_->url);
-
+  if (attributes_.url_match_predicate) {
+    DCHECK(
+        attributes_.url_match_predicate.value().Run(potential_activation.url));
+  } else {
+    DCHECK_EQ(potential_activation.url, common_params_->url);
+  }
   if (potential_activation.initiator_origin !=
       common_params_->initiator_origin) {
     return false;
@@ -758,7 +813,8 @@ FrameTree& PrerenderHost::GetPrerenderFrameTree() {
 
 void PrerenderHost::RecordFinalStatus(base::PassKey<PrerenderHostRegistry>,
                                       FinalStatus status) {
-  RecordFinalStatus(status);
+  RecordFinalStatus(status, attributes_.initiator_ukm_id,
+                    ukm::kInvalidSourceId);
 }
 
 void PrerenderHost::CreatePageHolder(WebContentsImpl& web_contents) {
@@ -771,11 +827,12 @@ PrerenderHost::LoadingOutcome PrerenderHost::WaitForLoadStopForTesting() {
   return page_holder_->WaitForLoadCompletionForTesting();  // IN-TEST
 }
 
-void PrerenderHost::RecordFinalStatus(FinalStatus status) {
+void PrerenderHost::RecordFinalStatus(FinalStatus status,
+                                      ukm::SourceId initiator_ukm_id,
+                                      ukm::SourceId prerendered_ukm_id) {
   DCHECK(!final_status_);
   final_status_ = status;
-  base::UmaHistogramEnumeration(
-      "Prerender.Experimental.PrerenderHostFinalStatus", status);
+  RecordPrerenderHostFinalStatus(status, attributes_, prerendered_ukm_id);
 }
 
 const GURL& PrerenderHost::GetInitialUrl() const {
@@ -799,6 +856,18 @@ void PrerenderHost::SetInitialNavigation(NavigationRequest* navigation) {
   initial_navigation_id_ = navigation->GetNavigationId();
   begin_params_ = navigation->begin_params().Clone();
   common_params_ = navigation->common_params().Clone();
+}
+
+bool PrerenderHost::IsUrlMatch(const GURL& url) const {
+  // If the trigger defines its predicate, respect it.
+  if (attributes_.url_match_predicate) {
+    // Triggers are not allowed to treat a cross-origin url as a matched url. It
+    // would cause security risks.
+    if (!url::IsSameOriginWith(attributes_.prerendering_url, url))
+      return false;
+    return attributes_.url_match_predicate.value().Run(url);
+  }
+  return GetInitialUrl() == url;
 }
 
 void PrerenderHost::Cancel(FinalStatus status) {

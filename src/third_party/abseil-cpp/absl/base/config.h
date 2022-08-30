@@ -269,6 +269,8 @@ static_assert(ABSL_INTERNAL_INLINE_NAMESPACE_STR[0] != 'h' ||
 #define ABSL_HAVE_SOURCE_LOCATION_CURRENT 1
 #elif ABSL_INTERNAL_HAVE_MIN_GNUC_VERSION(5, 0)
 #define ABSL_HAVE_SOURCE_LOCATION_CURRENT 1
+#elif defined(_MSC_VER) && _MSC_VER >= 1926
+#define ABSL_HAVE_SOURCE_LOCATION_CURRENT 1
 #endif
 #endif
 
@@ -414,7 +416,8 @@ static_assert(ABSL_INTERNAL_INLINE_NAMESPACE_STR[0] != 'h' ||
     defined(_AIX) || defined(__ros__) || defined(__native_client__) ||    \
     defined(__asmjs__) || defined(__wasm__) || defined(__Fuchsia__) ||    \
     defined(__sun) || defined(__ASYLO__) || defined(__myriad2__) ||       \
-    defined(__HAIKU__)
+    defined(__HAIKU__) || defined(__OpenBSD__) || defined(__NetBSD__) ||  \
+    defined(__QNX__)
 #define ABSL_HAVE_MMAP 1
 #endif
 
@@ -425,7 +428,8 @@ static_assert(ABSL_INTERNAL_INLINE_NAMESPACE_STR[0] != 'h' ||
 #ifdef ABSL_HAVE_PTHREAD_GETSCHEDPARAM
 #error ABSL_HAVE_PTHREAD_GETSCHEDPARAM cannot be directly set
 #elif defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__) || \
-    defined(_AIX) || defined(__ros__)
+    defined(_AIX) || defined(__ros__) || defined(__OpenBSD__) ||          \
+    defined(__NetBSD__)
 #define ABSL_HAVE_PTHREAD_GETSCHEDPARAM 1
 #endif
 
@@ -751,8 +755,6 @@ static_assert(ABSL_INTERNAL_INLINE_NAMESPACE_STR[0] != 'h' ||
 // a compiler instrumentation module and a run-time library.
 #ifdef ABSL_HAVE_MEMORY_SANITIZER
 #error "ABSL_HAVE_MEMORY_SANITIZER cannot be directly set."
-#elif defined(__SANITIZE_MEMORY__)
-#define ABSL_HAVE_MEMORY_SANITIZER 1
 #elif !defined(__native_client__) && ABSL_HAVE_FEATURE(memory_sanitizer)
 #define ABSL_HAVE_MEMORY_SANITIZER 1
 #endif
@@ -779,6 +781,45 @@ static_assert(ABSL_INTERNAL_INLINE_NAMESPACE_STR[0] != 'h' ||
 #define ABSL_HAVE_ADDRESS_SANITIZER 1
 #endif
 
+// ABSL_HAVE_HWADDRESS_SANITIZER
+//
+// Hardware-Assisted AddressSanitizer (or HWASAN) is even faster than asan
+// memory error detector which can use CPU features like ARM TBI, Intel LAM or
+// AMD UAI.
+#ifdef ABSL_HAVE_HWADDRESS_SANITIZER
+#error "ABSL_HAVE_HWADDRESS_SANITIZER cannot be directly set."
+#elif defined(__SANITIZE_HWADDRESS__)
+#define ABSL_HAVE_HWADDRESS_SANITIZER 1
+#elif ABSL_HAVE_FEATURE(hwaddress_sanitizer)
+#define ABSL_HAVE_HWADDRESS_SANITIZER 1
+#endif
+
+// ABSL_HAVE_LEAK_SANITIZER
+//
+// LeakSanitizer (or lsan) is a detector of memory leaks.
+// https://clang.llvm.org/docs/LeakSanitizer.html
+// https://github.com/google/sanitizers/wiki/AddressSanitizerLeakSanitizer
+//
+// The macro ABSL_HAVE_LEAK_SANITIZER can be used to detect at compile-time
+// whether the LeakSanitizer is potentially available. However, just because the
+// LeakSanitizer is available does not mean it is active. Use the
+// always-available run-time interface in //absl/debugging/leak_check.h for
+// interacting with LeakSanitizer.
+#ifdef ABSL_HAVE_LEAK_SANITIZER
+#error "ABSL_HAVE_LEAK_SANITIZER cannot be directly set."
+#elif defined(LEAK_SANITIZER)
+// GCC provides no method for detecting the presense of the standalone
+// LeakSanitizer (-fsanitize=leak), so GCC users of -fsanitize=leak should also
+// use -DLEAK_SANITIZER.
+#define ABSL_HAVE_LEAK_SANITIZER 1
+// Clang standalone LeakSanitizer (-fsanitize=leak)
+#elif ABSL_HAVE_FEATURE(leak_sanitizer)
+#define ABSL_HAVE_LEAK_SANITIZER 1
+#elif defined(ABSL_HAVE_ADDRESS_SANITIZER)
+// GCC or Clang using the LeakSanitizer integrated into AddressSanitizer.
+#define ABSL_HAVE_LEAK_SANITIZER 1
+#endif
+
 // ABSL_HAVE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION
 //
 // Class template argument deduction is a language feature added in C++17.
@@ -795,5 +836,50 @@ static_assert(ABSL_INTERNAL_INLINE_NAMESPACE_STR[0] != 'h' ||
 #elif !defined(__GNUC__) || defined(__GXX_RTTI)
 #define ABSL_INTERNAL_HAS_RTTI 1
 #endif  // !defined(__GNUC__) || defined(__GXX_RTTI)
+
+// ABSL_INTERNAL_HAVE_SSE is used for compile-time detection of SSE support.
+// See https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html for an overview of
+// which architectures support the various x86 instruction sets.
+#ifdef ABSL_INTERNAL_HAVE_SSE
+#error ABSL_INTERNAL_HAVE_SSE cannot be directly set
+#elif defined(__SSE__)
+#define ABSL_INTERNAL_HAVE_SSE 1
+#elif defined(_M_X64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)
+// MSVC only defines _M_IX86_FP for x86 32-bit code, and _M_IX86_FP >= 1
+// indicates that at least SSE was targeted with the /arch:SSE option.
+// All x86-64 processors support SSE, so support can be assumed.
+// https://docs.microsoft.com/en-us/cpp/preprocessor/predefined-macros
+#define ABSL_INTERNAL_HAVE_SSE 1
+#endif
+
+// ABSL_INTERNAL_HAVE_SSE2 is used for compile-time detection of SSE2 support.
+// See https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html for an overview of
+// which architectures support the various x86 instruction sets.
+#ifdef ABSL_INTERNAL_HAVE_SSE2
+#error ABSL_INTERNAL_HAVE_SSE2 cannot be directly set
+#elif defined(__SSE2__)
+#define ABSL_INTERNAL_HAVE_SSE2 1
+#elif defined(_M_X64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)
+// MSVC only defines _M_IX86_FP for x86 32-bit code, and _M_IX86_FP >= 2
+// indicates that at least SSE2 was targeted with the /arch:SSE2 option.
+// All x86-64 processors support SSE2, so support can be assumed.
+// https://docs.microsoft.com/en-us/cpp/preprocessor/predefined-macros
+#define ABSL_INTERNAL_HAVE_SSE2 1
+#endif
+
+// ABSL_INTERNAL_HAVE_SSSE3 is used for compile-time detection of SSSE3 support.
+// See https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html for an overview of
+// which architectures support the various x86 instruction sets.
+//
+// MSVC does not have a mode that targets SSSE3 at compile-time. To use SSSE3
+// with MSVC requires either assuming that the code will only every run on CPUs
+// that support SSSE3, otherwise __cpuid() can be used to detect support at
+// runtime and fallback to a non-SSSE3 implementation when SSSE3 is unsupported
+// by the CPU.
+#ifdef ABSL_INTERNAL_HAVE_SSSE3
+#error ABSL_INTERNAL_HAVE_SSSE3 cannot be directly set
+#elif defined(__SSSE3__)
+#define ABSL_INTERNAL_HAVE_SSSE3 1
+#endif
 
 #endif  // ABSL_BASE_CONFIG_H_

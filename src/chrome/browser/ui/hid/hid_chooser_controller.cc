@@ -20,7 +20,6 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
-#include "services/device/public/cpp/hid/hid_blocklist.h"
 #include "services/device/public/cpp/hid/hid_switches.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -38,20 +37,63 @@ std::string PhysicalDeviceIdFromDeviceInfo(
                                            : device.physical_device_id;
 }
 
+bool FilterMatch(const blink::mojom::HidDeviceFilterPtr& filter,
+                 const device::mojom::HidDeviceInfo& device) {
+  if (filter->device_ids) {
+    if (filter->device_ids->is_vendor()) {
+      if (filter->device_ids->get_vendor() != device.vendor_id)
+        return false;
+    } else if (filter->device_ids->is_vendor_and_product()) {
+      const auto& vendor_and_product =
+          filter->device_ids->get_vendor_and_product();
+      if (vendor_and_product->vendor != device.vendor_id)
+        return false;
+      if (vendor_and_product->product != device.product_id)
+        return false;
+    }
+  }
+
+  if (filter->usage) {
+    if (filter->usage->is_page()) {
+      const uint16_t usage_page = filter->usage->get_page();
+      auto find_it =
+          std::find_if(device.collections.begin(), device.collections.end(),
+                       [=](const device::mojom::HidCollectionInfoPtr& c) {
+                         return usage_page == c->usage->usage_page;
+                       });
+      if (find_it == device.collections.end())
+        return false;
+    } else if (filter->usage->is_usage_and_page()) {
+      const auto& usage_and_page = filter->usage->get_usage_and_page();
+      auto find_it = std::find_if(
+          device.collections.begin(), device.collections.end(),
+          [&usage_and_page](const device::mojom::HidCollectionInfoPtr& c) {
+            return usage_and_page->usage_page == c->usage->usage_page &&
+                   usage_and_page->usage == c->usage->usage;
+          });
+      if (find_it == device.collections.end())
+        return false;
+    }
+  }
+  return true;
+}
+
 }  // namespace
 
 HidChooserController::HidChooserController(
     content::RenderFrameHost* render_frame_host,
     std::vector<blink::mojom::HidDeviceFilterPtr> filters,
+    std::vector<blink::mojom::HidDeviceFilterPtr> exclusion_filters,
     content::HidChooser::Callback callback)
     : ChooserController(CreateExtensionAwareChooserTitle(
           render_frame_host,
           IDS_HID_CHOOSER_PROMPT_ORIGIN,
           IDS_HID_CHOOSER_PROMPT_EXTENSION_NAME)),
       filters_(std::move(filters)),
+      exclusion_filters_(std::move(exclusion_filters)),
       callback_(std::move(callback)),
-      origin_(render_frame_host->GetMainFrame()->GetLastCommittedOrigin()),
-      frame_tree_node_id_(render_frame_host->GetFrameTreeNodeId()) {
+      initiator_document_(render_frame_host->GetWeakDocumentPtr()),
+      origin_(render_frame_host->GetMainFrame()->GetLastCommittedOrigin()) {
   // The use above of GetMainFrame is safe as content::HidService instances are
   // not created for fenced frames.
   DCHECK(!render_frame_host->IsNestedWithinFencedFrame());
@@ -165,8 +207,13 @@ void HidChooserController::Close() {
 }
 
 void HidChooserController::OpenHelpCenterUrl() const {
-  auto* web_contents =
-      content::WebContents::FromFrameTreeNodeId(frame_tree_node_id_);
+  auto* rfh = initiator_document_.AsRenderFrameHostIfValid();
+  auto* web_contents = rfh && rfh->IsActive()
+                           ? content::WebContents::FromRenderFrameHost(rfh)
+                           : nullptr;
+  if (!web_contents)
+    return;
+
   web_contents->OpenURL(content::OpenURLParams(
       GURL(chrome::kChooserHidOverviewUrl), content::Referrer(),
       WindowOpenDisposition::NEW_FOREGROUND_TAB,
@@ -240,29 +287,43 @@ void HidChooserController::OnGotDevices(
 
 bool HidChooserController::DisplayDevice(
     const device::mojom::HidDeviceInfo& device) const {
-  // Do not pass the device to the chooser if it is excluded by the blocklist.
-  if (device::HidBlocklist::IsDeviceExcluded(device))
-    return false;
+  // Check if `device` has a top-level collection with a FIDO usage. FIDO
+  // devices may be displayed if the origin is privileged or the blocklist is
+  // disabled.
+  const bool has_fido_collection =
+      base::Contains(device.collections, device::mojom::kPageFido,
+                     [](const auto& c) { return c->usage->usage_page; });
+  if (has_fido_collection) {
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kDisableHidBlocklist) ||
+        (chooser_context_ &&
+         chooser_context_->IsFidoAllowedForOrigin(origin_))) {
+      return FilterMatchesAny(device) && !IsExcluded(device);
+    }
 
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableHidBlocklist)) {
-    // Do not pass the device to the chooser if it has a top-level collection
-    // with the FIDO usage page.
-    //
-    // Note: The HID blocklist also blocks top-level collections with the FIDO
-    // usage page, but will not block the device if it has other (non-FIDO)
-    // collections. The check below will exclude the device from the chooser
-    // if it has any top-level FIDO collection.
-    auto find_it =
-        std::find_if(device.collections.begin(), device.collections.end(),
-                     [](const device::mojom::HidCollectionInfoPtr& c) {
-                       return c->usage->usage_page == device::mojom::kPageFido;
-                     });
-    if (find_it != device.collections.end())
-      return false;
+    AddMessageToConsole(
+        blink::mojom::ConsoleMessageLevel::kInfo,
+        base::StringPrintf(
+            "Chooser dialog is not displaying a FIDO HID device: vendorId=%d, "
+            "productId=%d, name='%s', serial='%s'",
+            device.vendor_id, device.product_id, device.product_name.c_str(),
+            device.serial_number.c_str()));
+    return false;
   }
 
-  return FilterMatchesAny(device);
+  if (device.is_excluded_by_blocklist) {
+    AddMessageToConsole(
+        blink::mojom::ConsoleMessageLevel::kInfo,
+        base::StringPrintf(
+            "Chooser dialog is not displaying a device excluded by "
+            "the HID blocklist: vendorId=%d, "
+            "productId=%d, name='%s', serial='%s'",
+            device.vendor_id, device.product_id, device.product_name.c_str(),
+            device.serial_number.c_str()));
+    return false;
+  }
+
+  return FilterMatchesAny(device) && !IsExcluded(device);
 }
 
 bool HidChooserController::FilterMatchesAny(
@@ -271,47 +332,28 @@ bool HidChooserController::FilterMatchesAny(
     return true;
 
   for (const auto& filter : filters_) {
-    if (filter->device_ids) {
-      if (filter->device_ids->is_vendor()) {
-        if (filter->device_ids->get_vendor() != device.vendor_id)
-          continue;
-      } else if (filter->device_ids->is_vendor_and_product()) {
-        const auto& vendor_and_product =
-            filter->device_ids->get_vendor_and_product();
-        if (vendor_and_product->vendor != device.vendor_id)
-          continue;
-        if (vendor_and_product->product != device.product_id)
-          continue;
-      }
-    }
-
-    if (filter->usage) {
-      if (filter->usage->is_page()) {
-        const uint16_t usage_page = filter->usage->get_page();
-        auto find_it =
-            std::find_if(device.collections.begin(), device.collections.end(),
-                         [=](const device::mojom::HidCollectionInfoPtr& c) {
-                           return usage_page == c->usage->usage_page;
-                         });
-        if (find_it == device.collections.end())
-          continue;
-      } else if (filter->usage->is_usage_and_page()) {
-        const auto& usage_and_page = filter->usage->get_usage_and_page();
-        auto find_it = std::find_if(
-            device.collections.begin(), device.collections.end(),
-            [&usage_and_page](const device::mojom::HidCollectionInfoPtr& c) {
-              return usage_and_page->usage_page == c->usage->usage_page &&
-                     usage_and_page->usage == c->usage->usage;
-            });
-        if (find_it == device.collections.end())
-          continue;
-      }
-    }
-
-    return true;
+    if (FilterMatch(filter, device))
+      return true;
   }
-
   return false;
+}
+
+bool HidChooserController::IsExcluded(
+    const device::mojom::HidDeviceInfo& device) const {
+  for (const auto& exclusion_filter : exclusion_filters_) {
+    if (FilterMatch(exclusion_filter, device))
+      return true;
+  }
+  return false;
+}
+
+void HidChooserController::AddMessageToConsole(
+    blink::mojom::ConsoleMessageLevel level,
+    const std::string& message) const {
+  if (content::RenderFrameHost* rfh =
+          initiator_document_.AsRenderFrameHostIfValid()) {
+    rfh->AddMessageToConsole(level, message);
+  }
 }
 
 bool HidChooserController::AddDeviceInfo(

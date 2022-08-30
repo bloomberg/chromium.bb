@@ -9,11 +9,9 @@
         flex: 3;
       }
 
-      #headers .shortcut {
-        flex: 4;
-      }
-
-      #headers .url {
+      #headers .shortcut,
+      #headers .url,
+      #headers .url-padded {
         flex: 4;
       }
 
@@ -54,7 +52,8 @@
               hidden="[[isActiveSearchEnginesFlagEnabled]]">
             $i18n{searchEnginesQueryURL}
           </span>
-          <span class="url" role="columnheader" hidden="[[!showQueryUrl]]">
+          <span class="url-padded" role="columnheader"
+                hidden="[[!showQueryUrl]]">
             $i18n{searchEnginesQueryURL}
           </span>
           <span class="icon-placeholder"></span>

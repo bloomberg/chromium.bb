@@ -8,6 +8,7 @@
 
 #include "base/notreached.h"
 #include "base/pickle.h"
+#include "base/time/time.h"
 #include "components/download/public/common/download_features.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
 
@@ -166,7 +167,8 @@ download_pb::InProgressInfo DownloadDBConversions::InProgressInfoToProto(
   for (size_t i = 0; i < in_progress_info.url_chain.size(); ++i)
     proto.add_url_chain(in_progress_info.url_chain[i].spec());
   proto.set_referrer_url(in_progress_info.referrer_url.spec());
-  proto.set_site_url(in_progress_info.site_url.spec());
+  proto.set_serialized_embedder_download_data(
+      in_progress_info.serialized_embedder_download_data);
   proto.set_tab_url(in_progress_info.tab_url.spec());
   proto.set_tab_referrer_url(in_progress_info.tab_referrer_url.spec());
   proto.set_fetch_error_body(in_progress_info.fetch_error_body);
@@ -238,7 +240,8 @@ InProgressInfo DownloadDBConversions::InProgressInfoFromProto(
   for (const auto& url : proto.url_chain())
     info.url_chain.emplace_back(url);
   info.referrer_url = GURL(proto.referrer_url());
-  info.site_url = GURL(proto.site_url());
+  info.serialized_embedder_download_data =
+      proto.serialized_embedder_download_data();
   info.tab_url = GURL(proto.tab_url());
   info.tab_referrer_url = GURL(proto.tab_referrer_url());
   info.fetch_error_body = proto.fetch_error_body();

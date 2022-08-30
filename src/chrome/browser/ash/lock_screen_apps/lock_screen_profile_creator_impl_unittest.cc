@@ -21,6 +21,7 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "chrome/browser/ash/arc/session/arc_session_manager.h"
 #include "chrome/browser/ash/arc/test/test_arc_session_manager.h"
+#include "chrome/browser/ash/lock_screen_apps/lock_screen_helper.h"
 #include "chrome/browser/ash/login/users/scoped_test_user_manager.h"
 #include "chrome/browser/ash/note_taking_helper.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
@@ -33,7 +34,7 @@
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chromeos/dbus/concierge/concierge_client.h"
+#include "chromeos/ash/components/dbus/concierge/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/crx_file/id_util.h"
 #include "components/prefs/pref_service.h"
@@ -47,7 +48,7 @@
 
 namespace {
 
-using chromeos::ProfileHelper;
+using ::ash::ProfileHelper;
 using extensions::DictionaryBuilder;
 using extensions::ListBuilder;
 using lock_screen_apps::LockScreenProfileCreator;
@@ -225,7 +226,7 @@ class LockScreenProfileCreatorImplTest : public testing::Test {
     // Need to initialize DBusThreadManager before ArcSessionManager's
     // constructor calls DBusThreadManager::Get().
     chromeos::DBusThreadManager::Initialize();
-    chromeos::ConciergeClient::InitializeFake(/*fake_cicerone_client=*/nullptr);
+    ash::ConciergeClient::InitializeFake(/*fake_cicerone_client=*/nullptr);
 
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         extensions::switches::kAllowlistedExtensionID,
@@ -246,6 +247,7 @@ class LockScreenProfileCreatorImplTest : public testing::Test {
 
     AddTestUserProfile();
 
+    ash::LockScreenHelper::GetInstance().Initialize(primary_profile_);
     lock_screen_profile_creator_ =
         std::make_unique<LockScreenProfileCreatorImpl>(primary_profile_,
                                                        &tick_clock_);
@@ -254,10 +256,11 @@ class LockScreenProfileCreatorImplTest : public testing::Test {
   void TearDown() override {
     lock_screen_profile_creator_.reset();
     arc_session_manager_.reset();
+    ash::LockScreenHelper::GetInstance().Shutdown();
     ash::NoteTakingHelper::Shutdown();
     TestingBrowserProcess::GetGlobal()->SetProfileManager(nullptr);
 
-    chromeos::ConciergeClient::Shutdown();
+    ash::ConciergeClient::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
   }
 
@@ -360,9 +363,6 @@ class LockScreenProfileCreatorImplTest : public testing::Test {
     profile_manager_->RegisterTestingProfile(std::move(primary_profile),
                                              false /*add_to_storage*/);
     InitExtensionSystem(primary_profile_);
-
-    ash::NoteTakingHelper::Get()->SetProfileWithEnabledLockScreenApps(
-        primary_profile_);
   }
 
   base::ScopedTempDir user_data_dir_;

@@ -27,7 +27,7 @@ MediaHistoryWebUIBrowserTest.prototype = {
 };
 
 // https://crbug.com/1045500: Flaky on Windows.
-GEN('#if defined(OS_WIN)');
+GEN('#if BUILDFLAG(IS_WIN)');
 GEN('#define MAYBE_All DISABLED_All');
 GEN('#else');
 GEN('#define MAYBE_All All');
@@ -46,13 +46,14 @@ MediaHistoryStatsWebUIBrowserTest.prototype = {
   browsePreload: 'chrome://media-history#tab-stats',
 };
 
-TEST_F('MediaHistoryStatsWebUIBrowserTest', 'MAYBE_All', function() {
+TEST_F('MediaHistoryStatsWebUIBrowserTest', 'MAYBE_All', async function() {
+  await import('chrome://webui-test/mojo_webui_test_support.js');
   suiteSetup(function() {
     return whenPageIsPopulatedForTest();
   });
 
   test('check stats table is loaded', () => {
-    let statsRows =
+    const statsRows =
         Array.from(document.getElementById('stats-table-body').children);
 
     assertDeepEquals(
@@ -84,13 +85,14 @@ MediaHistoryOriginsWebUIBrowserTest.prototype = {
   browsePreload: 'chrome://media-history#tab-origins',
 };
 
-TEST_F('MediaHistoryOriginsWebUIBrowserTest', 'MAYBE_All', function() {
+TEST_F('MediaHistoryOriginsWebUIBrowserTest', 'MAYBE_All', async function() {
+  await import('chrome://webui-test/mojo_webui_test_support.js');
   suiteSetup(function() {
     return whenPageIsPopulatedForTest();
   });
 
   test('check data table is loaded', () => {
-    let dataHeaderRows =
+    const dataHeaderRows =
         Array.from(document.querySelector('#origins-table thead tr').children);
 
     assertDeepEquals(
@@ -117,13 +119,14 @@ MediaHistoryPlaybacksWebUIBrowserTest.prototype = {
   browsePreload: 'chrome://media-history#tab-playbacks',
 };
 
-TEST_F('MediaHistoryPlaybacksWebUIBrowserTest', 'MAYBE_All', function() {
+TEST_F('MediaHistoryPlaybacksWebUIBrowserTest', 'MAYBE_All', async function() {
+  await import('chrome://webui-test/mojo_webui_test_support.js');
   suiteSetup(function() {
     return whenPageIsPopulatedForTest();
   });
 
   test('check data table is loaded', () => {
-    let dataHeaderRows = Array.from(
+    const dataHeaderRows = Array.from(
         document.querySelector('#playbacks-table thead tr').children);
 
     assertDeepEquals(
@@ -147,13 +150,14 @@ MediaHistorySessionsWebUIBrowserTest.prototype = {
   browsePreload: 'chrome://media-history#tab-sessions',
 };
 
-TEST_F('MediaHistorySessionsWebUIBrowserTest', 'MAYBE_All', function() {
+TEST_F('MediaHistorySessionsWebUIBrowserTest', 'MAYBE_All', async function() {
+  await import('chrome://webui-test/mojo_webui_test_support.js');
   suiteSetup(function() {
     return whenPageIsPopulatedForTest();
   });
 
   test('check data table is loaded', () => {
-    let dataHeaderRows =
+    const dataHeaderRows =
         Array.from(document.querySelector('#sessions-table thead tr').children);
 
     assertDeepEquals(

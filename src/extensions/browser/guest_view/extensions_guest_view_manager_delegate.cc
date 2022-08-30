@@ -17,6 +17,7 @@
 #include "content/public/common/child_process_host.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/extension_util.h"
 #include "extensions/browser/guest_view/app_view/app_view_guest.h"
 #include "extensions/browser/guest_view/extension_options/extension_options_guest.h"
 #include "extensions/browser/guest_view/guest_view_events.h"
@@ -59,8 +60,8 @@ void ExtensionsGuestViewManagerDelegate::DispatchEvent(
   mojom::EventFilteringInfoPtr info = mojom::EventFilteringInfo::New();
   info->has_instance_id = true;
   info->instance_id = instance_id;
-  std::unique_ptr<base::ListValue> event_args(new base::ListValue());
-  event_args->Append(std::move(args));
+  base::Value::List event_args;
+  event_args.Append(std::move(*args));
 
   // GetEventHistogramValue maps guest view event names to their histogram
   // value. It needs to be like this because the guest view component doesn't
@@ -76,7 +77,7 @@ void ExtensionsGuestViewManagerDelegate::DispatchEvent(
     return;  // Could happen at tab shutdown.
 
   EventRouter::DispatchEventToSender(
-      owner->GetMainFrame()->GetProcess(), guest->browser_context(),
+      owner->GetPrimaryMainFrame()->GetProcess(), guest->browser_context(),
       guest->owner_host(), histogram_value, event_name,
       content::ChildProcessHost::kInvalidUniqueID, extensions::kMainThreadId,
       blink::mojom::kInvalidServiceWorkerVersionId, std::move(event_args),
@@ -96,15 +97,19 @@ bool ExtensionsGuestViewManagerDelegate::IsGuestAvailableToContext(
   const Extension* owner_extension = ProcessManager::Get(context_)->
       GetExtensionForWebContents(guest->owner_web_contents());
 
+  // Using `GetOwnerSiteURL` in the case of MimeHandlerViewGuest is safe, since
+  // mimeHandlerViewGuestInternal allows all urls.
   const GURL& owner_site_url = guest->GetOwnerSiteURL();
   // Ok for |owner_extension| to be nullptr, the embedder might be WebUI.
   Feature::Availability availability = feature->IsAvailableToContext(
       owner_extension,
-      process_map->GetMostLikelyContextType(
-          owner_extension,
-          guest->owner_web_contents()->GetMainFrame()->GetProcess()->GetID(),
-          &owner_site_url),
-      owner_site_url);
+      process_map->GetMostLikelyContextType(owner_extension,
+                                            guest->owner_web_contents()
+                                                ->GetPrimaryMainFrame()
+                                                ->GetProcess()
+                                                ->GetID(),
+                                            &owner_site_url),
+      owner_site_url, util::GetBrowserContextId(context_));
 
   return availability.is_available();
 }

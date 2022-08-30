@@ -18,15 +18,23 @@
 
 #include <grpc/support/port_platform.h>
 
-#include <string.h>
+#include <inttypes.h>
+#include <stdlib.h>
 
+#include <algorithm>
+#include <map>
 #include <string>
+#include <utility>
+#include <vector>
 
+#include "absl/base/attributes.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
+#include "absl/strings/string_view.h"
 
 #include <grpc/support/log.h>
 
+#include "src/core/lib/iomgr/error.h"
 #include "src/core/lib/json/json.h"
 
 #define GRPC_JSON_MAX_DEPTH 255
@@ -471,6 +479,11 @@ JsonReader::Status JsonReader::Run() {
             }
             if (c == '"') {
               state_ = State::GRPC_JSON_STATE_OBJECT_KEY_END;
+              // Once the key is parsed, there should no un-matched utf8
+              // encoded bytes.
+              if (utf8_bytes_remaining_ != 0) {
+                return Status::GRPC_JSON_PARSE_ERROR;
+              }
               SetKey();
             } else {
               if (c < 32) return Status::GRPC_JSON_PARSE_ERROR;
@@ -484,6 +497,11 @@ JsonReader::Status JsonReader::Run() {
             }
             if (c == '"') {
               state_ = State::GRPC_JSON_STATE_VALUE_END;
+              // Once the value is parsed, there should no un-matched utf8
+              // encoded bytes.
+              if (utf8_bytes_remaining_ != 0) {
+                return Status::GRPC_JSON_PARSE_ERROR;
+              }
               SetString();
             } else {
               if (c < 32) return Status::GRPC_JSON_PARSE_ERROR;
