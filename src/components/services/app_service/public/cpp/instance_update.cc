@@ -125,28 +125,29 @@ bool InstanceUpdate::WindowChanged() const {
 }
 
 const std::string& InstanceUpdate::LaunchId() const {
-  GET_VALUE_WITH_CHECK_AND_DEFAULT_RETURN(LaunchId, empty, base::EmptyString());
+  GET_VALUE_WITH_CHECK_AND_DEFAULT_RETURN(LaunchId(), empty,
+                                          base::EmptyString());
 }
 
 bool InstanceUpdate::LaunchIdChanged() const {
-  IS_VALUE_CHANGED_WITH_CHECK(LaunchId, empty);
+  IS_VALUE_CHANGED_WITH_CHECK(LaunchId(), empty);
 }
 
 InstanceState InstanceUpdate::State() const {
-  GET_VALUE_WITH_DEFAULT_VALUE(State, InstanceState::kUnknown);
+  GET_VALUE_WITH_DEFAULT_VALUE(State(), InstanceState::kUnknown);
 }
 
 bool InstanceUpdate::StateChanged() const {
-  IS_VALUE_CHANGED_WITH_DEFAULT_VALUE(State, InstanceState::kUnknown);
+  IS_VALUE_CHANGED_WITH_DEFAULT_VALUE(State(), InstanceState::kUnknown);
 }
 
 base::Time InstanceUpdate::LastUpdatedTime() const {
-  GET_VALUE_WITH_CHECK_AND_DEFAULT_RETURN(LastUpdatedTime, is_null,
+  GET_VALUE_WITH_CHECK_AND_DEFAULT_RETURN(LastUpdatedTime(), is_null,
                                           base::Time());
 }
 
 bool InstanceUpdate::LastUpdatedTimeChanged() const {
-  IS_VALUE_CHANGED_WITH_CHECK(LastUpdatedTime, is_null);
+  IS_VALUE_CHANGED_WITH_CHECK(LastUpdatedTime(), is_null);
 }
 
 content::BrowserContext* InstanceUpdate::BrowserContext() const {

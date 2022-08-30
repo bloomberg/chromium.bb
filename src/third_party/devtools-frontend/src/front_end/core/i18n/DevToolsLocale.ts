@@ -55,6 +55,10 @@ export class DevToolsLocale {
     return devToolsLocaleInstance as DevToolsLocale;
   }
 
+  static removeInstance(): void {
+    devToolsLocaleInstance = null;
+  }
+
   forceFallbackLocale(): void {
     // Locale is 'readonly', this is the only case where we want to forceably
     // overwrite the locale.
@@ -77,9 +81,7 @@ export class DevToolsLocale {
  * return false.
  */
 export function localeLanguagesMatch(localeString1: string, localeString2: string): boolean {
-  // @ts-ignore TODO(crbug.com/1163928) Wait for Intl support.
   const locale1 = new Intl.Locale(localeString1);
-  // @ts-ignore TODO(crbug.com/1163928) Wait for Intl support.
   const locale2 = new Intl.Locale(localeString2);
   return locale1.language === locale2.language;
 }

@@ -17,15 +17,13 @@
 #ifndef SRC_TRACE_PROCESSOR_DYNAMIC_EXPERIMENTAL_COUNTER_DUR_GENERATOR_H_
 #define SRC_TRACE_PROCESSOR_DYNAMIC_EXPERIMENTAL_COUNTER_DUR_GENERATOR_H_
 
-#include "src/trace_processor/sqlite/db_sqlite_table.h"
-
+#include "src/trace_processor/dynamic/dynamic_table_generator.h"
 #include "src/trace_processor/storage/trace_storage.h"
 
 namespace perfetto {
 namespace trace_processor {
 
-class ExperimentalCounterDurGenerator
-    : public DbSqliteTable::DynamicTableGenerator {
+class ExperimentalCounterDurGenerator : public DynamicTableGenerator {
  public:
   explicit ExperimentalCounterDurGenerator(const tables::CounterTable& table);
   virtual ~ExperimentalCounterDurGenerator() override;
@@ -33,9 +31,11 @@ class ExperimentalCounterDurGenerator
   Table::Schema CreateSchema() override;
   std::string TableName() override;
   uint32_t EstimateRowCount() override;
-  util::Status ValidateConstraints(const QueryConstraints&) override;
-  std::unique_ptr<Table> ComputeTable(const std::vector<Constraint>&,
-                                      const std::vector<Order>&) override;
+  base::Status ValidateConstraints(const QueryConstraints&) override;
+  base::Status ComputeTable(const std::vector<Constraint>& cs,
+                            const std::vector<Order>& ob,
+                            const BitVector& cols_used,
+                            std::unique_ptr<Table>& table_return) override;
 
   // public + static for testing
   static NullableVector<int64_t> ComputeDurColumn(const Table& table);
@@ -43,8 +43,7 @@ class ExperimentalCounterDurGenerator
 
  private:
   const tables::CounterTable* counter_table_ = nullptr;
-  std::unique_ptr<NullableVector<int64_t>> dur_column_;
-  std::unique_ptr<NullableVector<double>> delta_column_;
+  std::unique_ptr<Table> counter_dur_table_;
 };
 
 }  // namespace trace_processor

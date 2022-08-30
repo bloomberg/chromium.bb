@@ -13,6 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/threading/thread_checker.h"
 #include "base/token.h"
 #include "build/build_config.h"
 #include "media/base/video_frame.h"
@@ -29,7 +30,6 @@
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/web/modules/mediastream/encoded_video_frame.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
-#include "third_party/webrtc_overrides/metronome_provider.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -67,9 +67,6 @@ class BLINK_MODULES_EXPORT MediaStreamVideoSource
 
   explicit MediaStreamVideoSource(
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner);
-  MediaStreamVideoSource(
-      scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
-      scoped_refptr<MetronomeProvider> metronome_provider);
   MediaStreamVideoSource(const MediaStreamVideoSource&) = delete;
   MediaStreamVideoSource& operator=(const MediaStreamVideoSource&) = delete;
   ~MediaStreamVideoSource() override;
@@ -177,14 +174,36 @@ class BLINK_MODULES_EXPORT MediaStreamVideoSource
   // Returns true if encoded output can be enabled in the source.
   virtual bool SupportsEncodedOutput() const;
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   // Start/stop cropping a video track.
+  //
   // Non-empty |crop_id| sets (or changes) the crop-target.
   // Empty |crop_id| reverts the capture to its original, uncropped state.
+  //
+  // |crop_version| is plumbed down to Viz, which associates that value with
+  // all subsequent frames.
+  // For a given device, new calls to Crop() must be with a |crop_version| that
+  // is greater than the value from the previous call, but not necessarily by
+  // exactly one. (If a call to cropTo is rejected earlier in the pipeline,
+  // the crop-version can increase in Blink, and later calls to cropTo()
+  // can appear over this mojom pipe with a higher version.)
+  //
   // The callback reports success/failure.
   virtual void Crop(
       const base::Token& crop_id,
+      uint32_t crop_version,
       base::OnceCallback<void(media::mojom::CropRequestResult)> callback);
+
+  // If a new |crop_version| can be assigned, returns it.
+  // Otherwise, returns nullopt. (Can happen if the source does not support
+  // cropping, or if a change of crop-target is not possible at this time,
+  // due to technical limitations, e.g. if clones exist.)
+  //
+  // For an explanation of what a |crop_version| is, see Crop().
+  //
+  // TODO(crbug.com/1332628): Make the crop-version an implementation detail
+  // that is not exposed to the entity calling Crop().
+  virtual absl::optional<uint32_t> GetNextCropVersion();
 #endif
 
   // Notifies the source about that the number of encoded sinks have been
@@ -272,6 +291,12 @@ class BLINK_MODULES_EXPORT MediaStreamVideoSource
   // and false if the source is stopped.
   void OnRestartDone(bool did_restart);
 
+  // This method should be called by implementations after an attempt to switch
+  // the device of this source (e.g., via ChangeSource()) if the source
+  // is in state STOPPED_FOR_RESTART. |did_restart| must be true if the
+  // source is running and false if the source is stopped.
+  void OnRestartBySourceSwitchDone(bool did_restart);
+
   // An implementation must immediately stop producing video frames after this
   // method has been called. After this method has been called,
   // MediaStreamVideoSource may be deleted.
@@ -321,10 +346,6 @@ class BLINK_MODULES_EXPORT MediaStreamVideoSource
   // to this object being deleted.
   void FinalizeAddPendingTracks(mojom::MediaStreamRequestResult result);
 
-  // Actually adds |track| to this source, provided the source has started.
-  void FinalizeAddTrack(MediaStreamVideoTrack* track,
-                        const VideoCaptureDeliverFrameCB& frame_callback,
-                        const VideoTrackAdapterSettings& adapter_settings);
   void StartFrameMonitoring();
   void UpdateTrackSettings(MediaStreamVideoTrack* track,
                            const VideoTrackAdapterSettings& adapter_settings);
@@ -365,7 +386,6 @@ class BLINK_MODULES_EXPORT MediaStreamVideoSource
   // for both at the same time.
   RestartCallback restart_callback_;
 
-  const scoped_refptr<MetronomeProvider> metronome_provider_;
   // |track_adapter_| delivers video frames to the tracks on the IO-thread.
   scoped_refptr<VideoTrackAdapter> track_adapter_;
 

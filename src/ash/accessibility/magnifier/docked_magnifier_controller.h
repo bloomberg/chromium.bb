@@ -10,6 +10,7 @@
 #include "ash/ash_export.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/public/cpp/session/session_observer.h"
+#include "ui/base/cursor/cursor_size.h"
 #include "ui/events/event_handler.h"
 #include "ui/views/widget/widget_observer.h"
 
@@ -63,10 +64,12 @@ class ASH_EXPORT DockedMagnifierController
   // Get the Docked Magnifier settings for the current active user prefs.
   bool GetEnabled() const;
   float GetScale() const;
+  float GetScreenHeightDivisor() const;
 
   // Set the Docked Magnifier settings in the current active user prefs.
   void SetEnabled(bool enabled);
   void SetScale(float scale);
+  void SetScreenHeightDivisor(float screen_height_divisor);
 
   // Maps the current scale value to an index in the range between the minimum
   // and maximum scale values, and steps up or down the scale depending on the
@@ -121,6 +124,10 @@ class ASH_EXPORT DockedMagnifierController
   float GetMinimumPointOfInterestHeightForTesting() const;
 
  private:
+  // If user has large cursor enabled, don't change the cursor size.
+  // Otherwise, set the cursor to be the specified size.
+  void MaybeSetCursorSize(ui::CursorSize cursor_size);
+
   // If user is starting or continuing to drag the separator, move the
   // separator and resize the viewport.
   void MaybePerformViewportResizing(ui::MouseEvent* event);
@@ -165,17 +172,12 @@ class ASH_EXPORT DockedMagnifierController
   void OnMoveMagnifierTimer();
 
   // Whether or not user has started resizing the Docked Magnifier.
-  bool has_started_resize_ = false;
+  bool is_resizing_ = false;
 
   // Vertical offset from user's mouse cursor to the top of separator. Stored to
   // later compute how far offset the new separator position should be based on
   // location user initially clicked separator.
   int resize_offset_ = 0;
-
-  // The value by which the screen height is divided to calculate the height of
-  // the magnifier viewport.
-  float screen_height_divisor_ =
-      DockedMagnifierController::kDefaultScreenHeightDivisor;
 
   // The current root window of the source display from which we are reflecting
   // and magnifying into the viewport. It is set to |nullptr| when the magnifier
@@ -188,6 +190,9 @@ class ASH_EXPORT DockedMagnifierController
 
   // Indicates the the above value is valid and doesn't need to be recalculated.
   bool is_minimum_point_of_interest_height_valid_ = false;
+
+  // Indicates cursor is locked, because cursor has moved over separator.
+  bool is_cursor_locked_ = false;
 
   // The viewport widget which occupies the top 1/4th of the current display on
   // which it is shown. It contains all the magnifier related layer.

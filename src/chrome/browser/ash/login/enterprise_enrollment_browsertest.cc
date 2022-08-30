@@ -4,7 +4,6 @@
 
 #include "base/base64.h"
 #include "base/bind.h"
-#include "base/cxx17_backports.h"
 #include "base/json/json_reader.h"
 #include "base/json/string_escape.h"
 #include "base/strings/string_number_conversions.h"
@@ -23,12 +22,12 @@
 #include "chrome/browser/ash/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/ash/login/ui/login_display_host.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
+#include "chrome/browser/ash/policy/enrollment/enrollment_status.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/policy/enrollment_status.h"
-#include "chromeos/dbus/authpolicy/fake_authpolicy_client.h"
+#include "chromeos/ash/components/dbus/authpolicy/fake_authpolicy_client.h"
+#include "chromeos/ash/components/dbus/upstart/upstart_client.h"
 #include "chromeos/dbus/constants/dbus_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/upstart/upstart_client.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
@@ -156,7 +155,8 @@ class EnterpriseEnrollmentTestBase : public OobeBaseTest {
   // Submits regular enrollment credentials.
   void SubmitEnrollmentCredentials() {
     enrollment_screen()->OnLoginDone(
-        "testuser@test.com", test::EnrollmentHelperMixin::kTestAuthCode);
+        "testuser@test.com", static_cast<int>(policy::LicenseType::kEnterprise),
+        test::EnrollmentHelperMixin::kTestAuthCode);
     ExecutePendingJavaScript();
   }
 
@@ -290,8 +290,8 @@ class ActiveDirectoryJoinTest : public EnterpriseEnrollmentTest {
     base::DictionaryValue custom_option;
     custom_option.SetKey("name", base::Value("Custom"));
     options->Append(std::move(custom_option));
-    for (size_t i = 0; i < options->GetList().size(); ++i) {
-      const base::Value& option = options->GetList()[i];
+    for (size_t i = 0; i < options->GetListDeprecated().size(); ++i) {
+      const base::Value& option = options->GetListDeprecated()[i];
       // Select configuration value.
       test::OobeJS().SelectElementInPath(base::NumberToString(i),
                                          kAdConfigurationSelect);
@@ -521,7 +521,7 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
       enrollment_screen(), kAdUserDomain, std::string(), kDMToken);
   SubmitEnrollmentCredentials();
 
-  chromeos::UpstartClient::Get()->StartAuthPolicyService();
+  UpstartClient::Get()->StartAuthPolicyService();
 
   CheckActiveDirectoryCredentialsShown();
   CheckConfigurationSelectionVisible(false);
@@ -551,7 +551,7 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
 
   SubmitEnrollmentCredentials();
 
-  chromeos::UpstartClient::Get()->StartAuthPolicyService();
+  UpstartClient::Get()->StartAuthPolicyService();
 
   content::DOMMessageQueue message_queue;
   SetupActiveDirectoryJSNotifications();
@@ -560,7 +560,7 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
       authpolicy::KerberosEncryptionTypes::ENC_TYPES_STRONG,
       std::vector<std::string>(
           kAdOrganizationalUnit,
-          kAdOrganizationalUnit + base::size(kAdOrganizationalUnit)),
+          kAdOrganizationalUnit + std::size(kAdOrganizationalUnit)),
       kAdTestUser, kDMToken);
   SubmitActiveDirectoryCredentials("machine_name", kAdMachineDomainDN,
                                    "" /* encryption_types */, kAdTestUser,
@@ -577,14 +577,22 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
 // Directory domain join screen. Verifies the domain join screen is displayed.
 // Submits Active Directory different incorrect credentials. Verifies that the
 // correct error is displayed.
+// TODO(crbug.com/1318903): Re-enable this test on linux-chromeos-dbg.
+#if !defined(NDEBUG)
+#define MAYBE_TestActiveDirectoryEnrollment_UIErrors \
+  DISABLED_TestActiveDirectoryEnrollment_UIErrors
+#else
+#define MAYBE_TestActiveDirectoryEnrollment_UIErrors \
+  TestActiveDirectoryEnrollment_UIErrors
+#endif
 IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
-                       TestActiveDirectoryEnrollment_UIErrors) {
+                       MAYBE_TestActiveDirectoryEnrollment_UIErrors) {
   ShowEnrollmentScreen();
   enrollment_helper_.SetupActiveDirectoryJoin(
       enrollment_screen(), kAdUserDomain, std::string(), kDMToken);
   SubmitEnrollmentCredentials();
 
-  chromeos::UpstartClient::Get()->StartAuthPolicyService();
+  UpstartClient::Get()->StartAuthPolicyService();
 
   content::DOMMessageQueue message_queue;
   // Checking error in case of empty password. Whether password is not empty
@@ -629,7 +637,7 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
       enrollment_screen(), kAdUserDomain, std::string(), kDMToken);
   SubmitEnrollmentCredentials();
 
-  chromeos::UpstartClient::Get()->StartAuthPolicyService();
+  UpstartClient::Get()->StartAuthPolicyService();
 
   content::DOMMessageQueue message_queue;
   SetupActiveDirectoryJSNotifications();
@@ -644,8 +652,10 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
 
 // Check that configuration for the streamline Active Directory domain join
 // propagates correctly to the Domain Join UI.
+//
+// TODO(crbug.com/1316567): Re-enable this test.
 IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
-                       TestActiveDirectoryEnrollment_Streamline) {
+                       DISABLED_TestActiveDirectoryEnrollment_Streamline) {
   ShowEnrollmentScreen();
   std::string binary_config;
   EXPECT_TRUE(base::Base64Decode(kAdDomainJoinEncryptedConfig, &binary_config));
@@ -653,7 +663,7 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
       enrollment_screen(), kAdUserDomain, binary_config, kDMToken);
   SubmitEnrollmentCredentials();
 
-  chromeos::UpstartClient::Get()->StartAuthPolicyService();
+  UpstartClient::Get()->StartAuthPolicyService();
 
   ExecutePendingJavaScript();
   content::DOMMessageQueue message_queue;

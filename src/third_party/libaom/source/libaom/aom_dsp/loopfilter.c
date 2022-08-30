@@ -158,6 +158,15 @@ void aom_lpf_horizontal_4_dual_c(uint8_t *s, int p, const uint8_t *blimit0,
   aom_lpf_horizontal_4_c(s + 4, p, blimit1, limit1, thresh1);
 }
 
+void aom_lpf_horizontal_4_quad_c(uint8_t *s, int p, const uint8_t *blimit0,
+                                 const uint8_t *limit0,
+                                 const uint8_t *thresh0) {
+  aom_lpf_horizontal_4_c(s, p, blimit0, limit0, thresh0);
+  aom_lpf_horizontal_4_c(s + 4, p, blimit0, limit0, thresh0);
+  aom_lpf_horizontal_4_c(s + 8, p, blimit0, limit0, thresh0);
+  aom_lpf_horizontal_4_c(s + 12, p, blimit0, limit0, thresh0);
+}
+
 void aom_lpf_vertical_4_c(uint8_t *s, int pitch, const uint8_t *blimit,
                           const uint8_t *limit, const uint8_t *thresh) {
   int i;
@@ -180,6 +189,14 @@ void aom_lpf_vertical_4_dual_c(uint8_t *s, int pitch, const uint8_t *blimit0,
                                const uint8_t *thresh1) {
   aom_lpf_vertical_4_c(s, pitch, blimit0, limit0, thresh0);
   aom_lpf_vertical_4_c(s + 4 * pitch, pitch, blimit1, limit1, thresh1);
+}
+
+void aom_lpf_vertical_4_quad_c(uint8_t *s, int pitch, const uint8_t *blimit0,
+                               const uint8_t *limit0, const uint8_t *thresh0) {
+  aom_lpf_vertical_4_c(s, pitch, blimit0, limit0, thresh0);
+  aom_lpf_vertical_4_c(s + 4 * pitch, pitch, blimit0, limit0, thresh0);
+  aom_lpf_vertical_4_c(s + 8 * pitch, pitch, blimit0, limit0, thresh0);
+  aom_lpf_vertical_4_c(s + 12 * pitch, pitch, blimit0, limit0, thresh0);
 }
 
 static INLINE void filter6(int8_t mask, uint8_t thresh, int8_t flat,
@@ -247,6 +264,15 @@ void aom_lpf_horizontal_6_dual_c(uint8_t *s, int p, const uint8_t *blimit0,
   aom_lpf_horizontal_6_c(s + 4, p, blimit1, limit1, thresh1);
 }
 
+void aom_lpf_horizontal_6_quad_c(uint8_t *s, int p, const uint8_t *blimit0,
+                                 const uint8_t *limit0,
+                                 const uint8_t *thresh0) {
+  aom_lpf_horizontal_6_c(s, p, blimit0, limit0, thresh0);
+  aom_lpf_horizontal_6_c(s + 4, p, blimit0, limit0, thresh0);
+  aom_lpf_horizontal_6_c(s + 8, p, blimit0, limit0, thresh0);
+  aom_lpf_horizontal_6_c(s + 12, p, blimit0, limit0, thresh0);
+}
+
 void aom_lpf_horizontal_8_c(uint8_t *s, int p, const uint8_t *blimit,
                             const uint8_t *limit, const uint8_t *thresh) {
   int i;
@@ -275,6 +301,15 @@ void aom_lpf_horizontal_8_dual_c(uint8_t *s, int p, const uint8_t *blimit0,
   aom_lpf_horizontal_8_c(s + 4, p, blimit1, limit1, thresh1);
 }
 
+void aom_lpf_horizontal_8_quad_c(uint8_t *s, int p, const uint8_t *blimit0,
+                                 const uint8_t *limit0,
+                                 const uint8_t *thresh0) {
+  aom_lpf_horizontal_8_c(s, p, blimit0, limit0, thresh0);
+  aom_lpf_horizontal_8_c(s + 4, p, blimit0, limit0, thresh0);
+  aom_lpf_horizontal_8_c(s + 8, p, blimit0, limit0, thresh0);
+  aom_lpf_horizontal_8_c(s + 12, p, blimit0, limit0, thresh0);
+}
+
 void aom_lpf_vertical_6_c(uint8_t *s, int pitch, const uint8_t *blimit,
                           const uint8_t *limit, const uint8_t *thresh) {
   int i;
@@ -297,6 +332,14 @@ void aom_lpf_vertical_6_dual_c(uint8_t *s, int pitch, const uint8_t *blimit0,
                                const uint8_t *thresh1) {
   aom_lpf_vertical_6_c(s, pitch, blimit0, limit0, thresh0);
   aom_lpf_vertical_6_c(s + 4 * pitch, pitch, blimit1, limit1, thresh1);
+}
+
+void aom_lpf_vertical_6_quad_c(uint8_t *s, int pitch, const uint8_t *blimit0,
+                               const uint8_t *limit0, const uint8_t *thresh0) {
+  aom_lpf_vertical_6_c(s, pitch, blimit0, limit0, thresh0);
+  aom_lpf_vertical_6_c(s + 4 * pitch, pitch, blimit0, limit0, thresh0);
+  aom_lpf_vertical_6_c(s + 8 * pitch, pitch, blimit0, limit0, thresh0);
+  aom_lpf_vertical_6_c(s + 12 * pitch, pitch, blimit0, limit0, thresh0);
 }
 
 void aom_lpf_vertical_8_c(uint8_t *s, int pitch, const uint8_t *blimit,
@@ -322,6 +365,14 @@ void aom_lpf_vertical_8_dual_c(uint8_t *s, int pitch, const uint8_t *blimit0,
                                const uint8_t *thresh1) {
   aom_lpf_vertical_8_c(s, pitch, blimit0, limit0, thresh0);
   aom_lpf_vertical_8_c(s + 4 * pitch, pitch, blimit1, limit1, thresh1);
+}
+
+void aom_lpf_vertical_8_quad_c(uint8_t *s, int pitch, const uint8_t *blimit0,
+                               const uint8_t *limit0, const uint8_t *thresh0) {
+  aom_lpf_vertical_8_c(s, pitch, blimit0, limit0, thresh0);
+  aom_lpf_vertical_8_c(s + 4 * pitch, pitch, blimit0, limit0, thresh0);
+  aom_lpf_vertical_8_c(s + 8 * pitch, pitch, blimit0, limit0, thresh0);
+  aom_lpf_vertical_8_c(s + 12 * pitch, pitch, blimit0, limit0, thresh0);
 }
 
 static INLINE void filter14(int8_t mask, uint8_t thresh, int8_t flat,
@@ -410,6 +461,15 @@ void aom_lpf_horizontal_14_dual_c(uint8_t *s, int p, const uint8_t *blimit0,
   mb_lpf_horizontal_edge_w(s + 4, p, blimit1, limit1, thresh1, 1);
 }
 
+void aom_lpf_horizontal_14_quad_c(uint8_t *s, int p, const uint8_t *blimit0,
+                                  const uint8_t *limit0,
+                                  const uint8_t *thresh0) {
+  mb_lpf_horizontal_edge_w(s, p, blimit0, limit0, thresh0, 1);
+  mb_lpf_horizontal_edge_w(s + 4, p, blimit0, limit0, thresh0, 1);
+  mb_lpf_horizontal_edge_w(s + 8, p, blimit0, limit0, thresh0, 1);
+  mb_lpf_horizontal_edge_w(s + 12, p, blimit0, limit0, thresh0, 1);
+}
+
 static void mb_lpf_vertical_edge_w(uint8_t *s, int p, const uint8_t *blimit,
                                    const uint8_t *limit, const uint8_t *thresh,
                                    int count) {
@@ -442,6 +502,14 @@ void aom_lpf_vertical_14_dual_c(uint8_t *s, int pitch, const uint8_t *blimit0,
                                 const uint8_t *thresh1) {
   mb_lpf_vertical_edge_w(s, pitch, blimit0, limit0, thresh0, 4);
   mb_lpf_vertical_edge_w(s + 4 * pitch, pitch, blimit1, limit1, thresh1, 4);
+}
+
+void aom_lpf_vertical_14_quad_c(uint8_t *s, int pitch, const uint8_t *blimit0,
+                                const uint8_t *limit0, const uint8_t *thresh0) {
+  mb_lpf_vertical_edge_w(s, pitch, blimit0, limit0, thresh0, 4);
+  mb_lpf_vertical_edge_w(s + 4 * pitch, pitch, blimit0, limit0, thresh0, 4);
+  mb_lpf_vertical_edge_w(s + 8 * pitch, pitch, blimit0, limit0, thresh0, 4);
+  mb_lpf_vertical_edge_w(s + 12 * pitch, pitch, blimit0, limit0, thresh0, 4);
 }
 
 #if CONFIG_AV1_HIGHBITDEPTH

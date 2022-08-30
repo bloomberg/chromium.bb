@@ -10,26 +10,26 @@
 #include "include/core/SkColor.h"
 #include "include/gpu/GrBackendSurface.h"
 #include "include/gpu/GrDirectContext.h"
-#include "include/private/GrImageContext.h"
-#include "src/gpu/GrDirectContextPriv.h"
-#include "src/gpu/GrDrawingManager.h"
-#include "src/gpu/GrGpu.h"
-#include "src/gpu/GrImageContextPriv.h"
-#include "src/gpu/GrPixmap.h"
-#include "src/gpu/GrProgramInfo.h"
-#include "src/gpu/GrProxyProvider.h"
-#include "src/gpu/SkGr.h"
-#include "src/gpu/SurfaceContext.h"
+#include "include/private/gpu/ganesh/GrImageContext.h"
+#include "src/gpu/ganesh/GrDirectContextPriv.h"
+#include "src/gpu/ganesh/GrDrawingManager.h"
+#include "src/gpu/ganesh/GrGpu.h"
+#include "src/gpu/ganesh/GrImageContextPriv.h"
+#include "src/gpu/ganesh/GrPixmap.h"
+#include "src/gpu/ganesh/GrProgramInfo.h"
+#include "src/gpu/ganesh/GrProxyProvider.h"
+#include "src/gpu/ganesh/SkGr.h"
+#include "src/gpu/ganesh/SurfaceContext.h"
 #include "src/image/SkImage_Base.h"
 
 #if SK_GPU_V1
-#include "src/gpu/ops/GrSimpleMeshDrawOpHelper.h"
+#include "src/gpu/ganesh/ops/GrSimpleMeshDrawOpHelper.h"
 #endif
 
 namespace sk_gpu_test {
 
 GrTextureProxy* GetTextureImageProxy(SkImage* image, GrRecordingContext* rContext) {
-    if (!image->isTextureBacked() || as_IB(image)->isYUVA()) {
+    if (!as_IB(image)->isGaneshBacked() || as_IB(image)->isYUVA()) {
         return nullptr;
     }
     if (!rContext) {
@@ -66,7 +66,7 @@ GrSurfaceProxyView MakeTextureProxyViewFromData(GrDirectContext* dContext,
     if (!format.isValid()) {
         return {};
     }
-    GrSwizzle swizzle = caps->getReadSwizzle(format, pixmap.colorType());
+    skgpu::Swizzle swizzle = caps->getReadSwizzle(format, pixmap.colorType());
 
     sk_sp<GrTextureProxy> proxy;
     proxy = dContext->priv().proxyProvider()->createProxy(format,
@@ -76,7 +76,8 @@ GrSurfaceProxyView MakeTextureProxyViewFromData(GrDirectContext* dContext,
                                                           GrMipmapped::kNo,
                                                           SkBackingFit::kExact,
                                                           SkBudgeted::kYes,
-                                                          GrProtected::kNo);
+                                                          GrProtected::kNo,
+                                                          /*label=*/"TextureProxyViewFromData");
     if (!proxy) {
         return {};
     }

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 # Copyright 2015 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -7,52 +7,69 @@
 
 import glob
 import os
+from pathlib import Path
+import shutil
 import sys
-import urllib
-from zipfile import ZipFile
+import urllib.request
+import zipfile
 
 
-def main():
-  if not os.getcwd().endswith("hunspell_dictionaries"):
-    print "Please run this file from the hunspell_dictionaries directory"
-  dictionaries = (
-      ("https://sourceforge.net/projects/wordlist/files/speller/2019.10.06/"
-       "hunspell-en_US-2019.10.06.zip",
-       "en_US.zip"),
-      ("https://sourceforge.net/projects/wordlist/files/speller/2019.10.06/"
-       "hunspell-en_CA-2019.10.06.zip",
-       "en_CA.zip"),
-      ("https://sourceforge.net/projects/wordlist/files/speller/2019.10.06/"
-       "hunspell-en_GB-ise-2019.10.06.zip",
-       "en_GB.zip"),
-      ("https://sourceforge.net/projects/wordlist/files/speller/2019.10.06/"
-       "hunspell-en_GB-ize-2019.10.06.zip",
-       "en_GB_oxendict.zip"),
-      ("https://sourceforge.net/projects/wordlist/files/speller/2019.10.06/"
-       "hunspell-en_AU-2019.10.06.zip",
-       "en_AU.zip"),
-      ("https://github.com/b00f/lilak/releases/latest/download/"
-       "fa-IR.zip",
-       "fa_IR.zip"),
-      # NOTE: need to remove IGNORE from uk_UA.aff
-      ("https://github.com/brown-uk/dict_uk/releases/latest/download/"
-       "hunspell-uk_UA.zip",
-       "uk_UA.zip"),
-  )
-  for pair in dictionaries:
-    url = pair[0]
-    file_name = pair[1]
+DIR = Path(__file__).resolve().parent
+CACHE_DIR = DIR / "cache"
 
-    urllib.urlretrieve(url, file_name)
-    ZipFile(file_name).extractall()
+
+DICTIONARIES = (
+    "https://sourceforge.net/projects/wordlist/files/speller/2020.12.07/"
+    "hunspell-en_US-2020.12.07.zip",
+    "https://sourceforge.net/projects/wordlist/files/speller/2020.12.07/"
+    "hunspell-en_CA-2020.12.07.zip",
+    "https://sourceforge.net/projects/wordlist/files/speller/2020.12.07/"
+    "hunspell-en_GB-ise-2020.12.07.zip",
+    "https://sourceforge.net/projects/wordlist/files/speller/2020.12.07/"
+    "hunspell-en_GB-ize-2020.12.07.zip",
+    "https://sourceforge.net/projects/wordlist/files/speller/2020.12.07/"
+    "hunspell-en_AU-2020.12.07.zip",
+    "https://github.com/b00f/lilak/releases/latest/download/fa-IR.zip",
+    "https://github.com/brown-uk/dict_uk/releases/v5.6.0/download/"
+    "hunspell-uk_UA_5.6.0.zip",
+)
+
+
+def main(argv):
+    if argv:
+        sys.exit(f"{__file__}: script takes no args")
+    os.chdir(DIR)
+
+    CACHE_DIR.mkdir(exist_ok=True)
+
+    for url in DICTIONARIES:
+        cache = CACHE_DIR / url.rsplit("/", 1)[1]
+        if not cache.exists():
+            print(f"Downloading {url} to cache {cache}")
+            tmp = cache.with_suffix(".tmp")
+            with urllib.request.urlopen(url) as response:
+                tmp.write_bytes(response.read())
+            tmp.rename(cache)
+
+        print(f"Extracting {cache.name}")
+        zipfile.ZipFile(cache).extractall()
+
     for name in glob.glob("*en_GB-ise*"):
-      os.rename(name, name.replace("-ise", ""))
+        os.rename(name, name.replace("-ise", ""))
     for name in glob.glob("*en_GB-ize*"):
-      os.rename(name, name.replace("-ize", "_oxendict"))
-    for name in glob.glob("*fa-IR.*"):
-      os.rename(name, name.replace("-", "_"))
-    os.remove(file_name)
-  return 0
+        os.rename(name, name.replace("-ize", "_oxendict"))
+    for name in glob.glob("fa-IR/*fa-IR.*"):
+        os.rename(name, os.path.basename(name.replace("-", "_")))
+    shutil.rmtree("fa-IR")
+
+    # Need to remove IGNORE as our tools don't support it.
+    file = DIR / 'uk_UA.aff'
+    lines = file.read_bytes().splitlines(keepends=True)
+    lines.remove('IGNORE ́\n'.encode('utf-8'))
+    file.write_bytes(b''.join(lines))
+
+    return 0
+
 
 if __name__ == "__main__":
-  sys.exit(main())
+    sys.exit(main(sys.argv[1:]))

@@ -5,8 +5,8 @@
 #include "chrome/browser/ui/webui/version/version_handler_chromeos.h"
 
 #include "base/bind.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/version_info/channel.h"
@@ -30,8 +30,13 @@ VersionHandlerChromeOS::VersionHandlerChromeOS() {}
 
 VersionHandlerChromeOS::~VersionHandlerChromeOS() {}
 
+void VersionHandlerChromeOS::OnJavascriptDisallowed() {
+  VersionHandler::OnJavascriptDisallowed();
+  weak_factory_.InvalidateWeakPtrs();
+}
+
 void VersionHandlerChromeOS::HandleRequestVersionInfo(
-    const base::ListValue* args) {
+    const base::Value::List& args) {
   VersionHandler::HandleRequestVersionInfo(args);
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -49,7 +54,7 @@ void VersionHandlerChromeOS::HandleRequestVersionInfo(
                      weak_factory_.GetWeakPtr()));
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::BindOnce(&chromeos::version_loader::GetARCVersion),
+      base::BindOnce(&chromeos::version_loader::GetARCAndroidSDKVersion),
       base::BindOnce(&VersionHandlerChromeOS::OnARCVersion,
                      weak_factory_.GetWeakPtr()));
 
@@ -64,20 +69,22 @@ void VersionHandlerChromeOS::HandleRequestVersionInfo(
 void VersionHandlerChromeOS::RegisterMessages() {
   VersionHandler::RegisterMessages();
 
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       kCrosUrlVersionRedirect,
       base::BindRepeating(&VersionHandlerChromeOS::HandleCrosUrlVersionRedirect,
                           base::Unretained(this)));
 }
 
 void VersionHandlerChromeOS::HandleCrosUrlVersionRedirect(
-    const base::ListValue* args) {
+    const base::Value::List& args) {
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   lacros_url_handling::NavigateInAsh(GURL(chrome::kOsUIVersionURL));
 #else
   // Note: This will only be called by the UI when Lacros is available.
   DCHECK(crosapi::BrowserManager::Get());
-  crosapi::BrowserManager::Get()->OpenUrl(GURL(chrome::kChromeUIVersionURL));
+  crosapi::BrowserManager::Get()->SwitchToTab(
+      GURL(chrome::kChromeUIVersionURL),
+      /*path_behavior=*/NavigateParams::RESPECT);
 #endif
 }
 

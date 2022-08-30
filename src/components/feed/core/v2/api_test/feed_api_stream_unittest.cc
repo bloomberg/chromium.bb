@@ -9,7 +9,10 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/time/time.h"
 #include "components/feed/core/common/pref_names.h"
+#include "components/feed/core/proto/v2/wire/feed_query.pb.h"
+#include "components/feed/core/proto/v2/wire/info_card.pb.h"
 #include "components/feed/core/shared_prefs/pref_names.h"
 #include "components/feed/core/v2/api_test/feed_api_test.h"
 #include "components/feed/core/v2/config.h"
@@ -21,8 +24,8 @@
 #include "components/feed/core/v2/public/feed_api.h"
 #include "components/feed/core/v2/public/feed_service.h"
 #include "components/feed/core/v2/public/stream_type.h"
+#include "components/feed/core/v2/public/types.h"
 #include "components/feed/core/v2/scheduling.h"
-#include "components/feed/core/v2/stream/notice_card_tracker.h"
 #include "components/feed/core/v2/test/callback_receiver.h"
 #include "components/feed/core/v2/test/stream_builder.h"
 #include "components/feed/feed_feature_list.h"
@@ -36,7 +39,9 @@ namespace feed {
 namespace test {
 namespace {
 
-const char kTestKey[] = "Youtube";
+const int kTestInfoCardType1 = 101;
+const int kTestInfoCardType2 = 8888;
+const int kMinimumViewIntervalSeconds = 5 * 60;
 
 TEST_F(FeedApiTest, IsArticlesListVisibleByDefault) {
   EXPECT_TRUE(stream_->IsArticlesListVisible());
@@ -63,6 +68,9 @@ TEST_F(FeedApiTest, BackgroundRefreshForYouSuccess) {
       RefreshTaskId::kRefreshForYouFeed));
   EXPECT_EQ(LoadStreamStatus::kLoadedFromNetwork,
             metrics_reporter_->background_refresh_status);
+  EXPECT_TRUE(network_.query_request_sent);
+  EXPECT_EQ(feedwire::FeedQuery::SCHEDULED_REFRESH,
+            network_.query_request_sent->feed_request().feed_query().reason());
   EXPECT_TRUE(response_translator_.InjectedResponseConsumed());
   EXPECT_FALSE(stream_->GetModel(kForYouStream));
   TestForYouSurface surface(stream_.get());
@@ -127,12 +135,14 @@ TEST_F(FeedApiTest, BackgroundRefreshNotAttemptedAfterModelIsLoaded) {
 }
 
 TEST_F(FeedApiTest, SurfaceReceivesInitialContent) {
-  {
-    auto model = CreateStreamModel();
-    model->Update(MakeTypicalInitialModelState());
-    stream_->LoadModelForTesting(kForYouStream, std::move(model));
-  }
+  response_translator_.InjectResponse(MakeTypicalInitialModelState());
+  // Use `the_first_surface` to force loading content.
+  TestForYouSurface the_first_surface(stream_.get());
+  WaitForIdleTaskQueue();
+
   TestForYouSurface surface(stream_.get());
+  WaitForIdleTaskQueue();
+
   ASSERT_TRUE(surface.initial_state);
   const feedui::StreamUpdate& initial_state = surface.initial_state.value();
   ASSERT_EQ(2, initial_state.updated_slices().size());
@@ -156,13 +166,10 @@ TEST_F(FeedApiTest, SurfaceReceivesInitialContent) {
 }
 
 TEST_F(FeedApiTest, SurfaceReceivesInitialContentLoadedAfterAttach) {
+  response_translator_.InjectResponse(MakeTypicalInitialModelState());
   TestForYouSurface surface(stream_.get());
   ASSERT_FALSE(surface.initial_state);
-  {
-    auto model = CreateStreamModel();
-    model->Update(MakeTypicalInitialModelState());
-    stream_->LoadModelForTesting(kForYouStream, std::move(model));
-  }
+  WaitForIdleTaskQueue();
 
   ASSERT_EQ("loading -> [user@foo] 2 slices", surface.DescribeUpdates());
   const feedui::StreamUpdate& initial_state = surface.initial_state.value();
@@ -201,8 +208,7 @@ TEST_F(FeedApiTest, SurfaceReceivesUpdatedContent) {
   const feedui::StreamUpdate& initial_state = surface.initial_state.value();
   const feedui::StreamUpdate& update = surface.update.value();
 
-  ASSERT_EQ("[View logging only user@foo] 2 slices -> 2 slices",
-            surface.DescribeUpdates());
+  ASSERT_EQ("2 slices -> 2 slices", surface.DescribeUpdates());
   // First slice is just an ID that matches the old 1st slice ID.
   EXPECT_EQ(initial_state.updated_slices(0).slice().slice_id(),
             update.updated_slices(0).slice_id());
@@ -237,8 +243,7 @@ TEST_F(FeedApiTest, SurfaceReceivesSecondUpdatedContent) {
 
   // The last update should have only one new piece of content.
   // This verifies the current content set is tracked properly.
-  ASSERT_EQ("[View logging only user@foo] 2 slices -> 3 slices -> 4 slices",
-            surface.DescribeUpdates());
+  ASSERT_EQ("2 slices -> 3 slices -> 4 slices", surface.DescribeUpdates());
 
   ASSERT_EQ(4, surface.update->updated_slices().size());
   EXPECT_FALSE(surface.update->updated_slices(0).has_slice());
@@ -321,11 +326,100 @@ TEST_P(FeedStreamTestForAllStreamTypes, LoadFromNetwork) {
                        ModelStateFor(GetStreamType(), store_.get()));
 }
 
+TEST_F(FeedApiTest, OnboardingFetchAfterStartup) {
+  // Enable WebFeed and WebFeedOnboarding flags.
+  base::test::ScopedFeatureList features;
+  std::vector<base::Feature> enabled_features = {kWebFeed, kWebFeedOnboarding},
+                             disabled_features = {};
+  response_translator_.InjectResponse(MakeTypicalInitialModelState());
+  features.InitWithFeatures(enabled_features, disabled_features);
+
+  TestForYouSurface surface(stream_.get());
+  WaitForIdleTaskQueue();
+
+  // There should have been a fetch, even though there are no subscriptions.
+  ASSERT_TRUE(network_.query_request_sent);
+  ASSERT_EQ(1, network_.GetWebFeedListContentsCount());
+}
+
 TEST_F(FeedApiTest, WebFeedLoadWithNoSubscriptions) {
   TestWebFeedSurface surface(stream_.get());
   WaitForIdleTaskQueue();
 
   EXPECT_EQ("loading -> no-subscriptions", surface.DescribeUpdates());
+}
+
+TEST_F(FeedApiTest, WebFeedLoadWithNoSubscriptionsAndOnboarding) {
+  // Turn on the onboarding feature.
+  base::test::ScopedFeatureList features;
+  std::vector<base::Feature> enabled_features = {kWebFeedOnboarding},
+                             disabled_features = {};
+  response_translator_.InjectResponse(MakeTypicalInitialModelState());
+  features.InitWithFeatures(enabled_features, disabled_features);
+
+  // Scopes are to control the lifetime of the surface object.
+  {
+    TestWebFeedSurface surface(stream_.get());
+    WaitForIdleTaskQueue();
+  }
+  // The initial fetch should work fine.
+  ASSERT_EQ(1, network_.GetWebFeedListContentsCount());
+
+  // Prepare the next fetch response.
+  response_translator_.InjectResponse(MakeTypicalNextPageState());
+
+  // Make the content a bit less than the stale threshold, and make sure we
+  // don't fetch.
+  task_environment_.FastForwardBy(base::Days(6));
+  {
+    TestWebFeedSurface surface(stream_.get());
+    WaitForIdleTaskQueue();
+  }
+  ASSERT_EQ(1, network_.GetWebFeedListContentsCount());
+
+  // Make the content as stale as the threshold, and make sure we do fetch.
+  task_environment_.FastForwardBy(base::Days(2));
+  {
+    TestWebFeedSurface surface(stream_.get());
+    WaitForIdleTaskQueue();
+  }
+  ASSERT_EQ(2, network_.GetWebFeedListContentsCount());
+}
+
+TEST_F(FeedApiTest, WebFeedContentExprirationWithNoSubscriptionsAndOnboarding) {
+  // Turn on the onboarding feature.
+  base::test::ScopedFeatureList features;
+  std::vector<base::Feature> enabled_features = {kWebFeedOnboarding},
+                             disabled_features = {};
+  response_translator_.InjectResponse(MakeTypicalInitialModelState());
+  features.InitWithFeatures(enabled_features, disabled_features);
+
+  // Scopes are to control the lifetime of the surface object.
+  {
+    TestWebFeedSurface surface(stream_.get());
+    WaitForIdleTaskQueue();
+    // The initial fetch should work fine.
+    ASSERT_EQ("loading -> [user@foo] 2 slices", surface.DescribeUpdates());
+  }
+
+  // Don't prepare a fetch response to simulate fetch failure.
+
+  // Make the content a bit less than the expired threshold, and make sure we
+  // load the stale, but expired content.
+  task_environment_.FastForwardBy(base::Days(13));
+  {
+    TestWebFeedSurface surface(stream_.get());
+    WaitForIdleTaskQueue();
+    ASSERT_EQ("loading -> [user@foo] 2 slices", surface.DescribeUpdates());
+  }
+
+  // Make the content expired, and make sure we don't load it.
+  task_environment_.FastForwardBy(base::Days(2));
+  {
+    TestWebFeedSurface surface(stream_.get());
+    WaitForIdleTaskQueue();
+    ASSERT_EQ("loading -> cant-refresh", surface.DescribeUpdates());
+  }
 }
 
 // Test that we use QueryInteractiveFeedDiscoverApi and QueryNextPageDiscoverApi
@@ -518,7 +612,8 @@ TEST_F(FeedApiTest, ForceRefreshIfMissedScheduledRefresh) {
 
 TEST_F(FeedApiTest, LoadFromNetworkBecauseStoreIsStale_NetworkStaleAge) {
   base::TimeDelta default_staleness_threshold =
-      GetFeedConfig().GetStalenessThreshold(kForYouStream);
+      GetFeedConfig().GetStalenessThreshold(kForYouStream,
+                                            /*is_web_feed_subscriber=*/true);
   base::TimeDelta server_staleness_threshold = default_staleness_threshold / 2;
 
   {
@@ -613,7 +708,8 @@ TEST_P(FeedStreamTestForAllStreamTypes, LoadFromNetworkBecauseStoreIsStale) {
       MakeTypicalInitialModelState(
           /*first_cluster_id=*/0,
           kTestTimeEpoch -
-              GetFeedConfig().GetStalenessThreshold(GetStreamType()) -
+              GetFeedConfig().GetStalenessThreshold(
+                  GetStreamType(), /*is_web_feed_subscriber=*/true) -
               base::Minutes(1)),
       base::DoNothing());
 
@@ -783,7 +879,7 @@ TEST_F(FeedApiTest, ForceSignedOutRequestAfterHistoryIsDeleted) {
 
   // Validate that the network request was sent as signed out.
   ASSERT_EQ(1, network_.send_query_call_count);
-  EXPECT_EQ("", network_.last_gaia);
+  EXPECT_EQ(AccountInfo{}, network_.last_account_info);
   EXPECT_TRUE(network_.query_request_sent->feed_request()
                   .client_info()
                   .chrome_client_info()
@@ -791,10 +887,7 @@ TEST_F(FeedApiTest, ForceSignedOutRequestAfterHistoryIsDeleted) {
                   .empty());
 
   // Validate the downstream consumption of the response.
-  // TODO(crbug.com/1268575): We should disable view logging for the signed-out
-  // feed even if the user is signed-in.
-  EXPECT_EQ("loading -> [View logging only user@foo] 2 slices",
-            surface.DescribeUpdates());
+  EXPECT_EQ("loading -> 2 slices", surface.DescribeUpdates());
   EXPECT_EQ(kSessionId, stream_->GetMetadata().session_id().token());
   EXPECT_FALSE(stream_->GetModel(surface.GetStreamType())->signed_in());
 
@@ -811,7 +904,7 @@ TEST_F(FeedApiTest, ForceSignedOutRequestAfterHistoryIsDeleted) {
   // Validate that the network request was sent as signed out and
   // contained the session id.
   ASSERT_EQ(2, network_.send_query_call_count);
-  EXPECT_EQ("", network_.last_gaia);
+  EXPECT_EQ(AccountInfo{}, network_.last_account_info);
   EXPECT_EQ(kSessionId, stream_->GetMetadata().session_id().token());
   EXPECT_EQ(network_.query_request_sent->feed_request()
                 .client_info()
@@ -832,7 +925,7 @@ TEST_F(FeedApiTest, ForceSignedOutRequestAfterHistoryIsDeleted) {
 
   // Validate that a signed-in request was sent.
   ASSERT_EQ(3, network_.send_query_call_count);
-  EXPECT_NE("", network_.last_gaia);
+  EXPECT_NE(AccountInfo{}, network_.last_account_info);
 
   // The model should now be in the signed-in state.
   EXPECT_TRUE(stream_->GetModel(kForYouStream)->signed_in());
@@ -853,7 +946,7 @@ TEST_F(FeedApiTest, WebFeedUsesSignedInRequestAfterHistoryIsDeleted) {
   WaitForIdleTaskQueue();
 
   ASSERT_EQ(1, network_.send_query_call_count);
-  EXPECT_NE("", network_.last_gaia);
+  EXPECT_NE(AccountInfo{}, network_.last_account_info);
 }
 
 TEST_F(FeedApiTest, AllowSignedInRequestAfterHistoryIsDeletedAfterDelay) {
@@ -864,7 +957,7 @@ TEST_F(FeedApiTest, AllowSignedInRequestAfterHistoryIsDeletedAfterDelay) {
   WaitForIdleTaskQueue();
 
   EXPECT_EQ("loading -> [user@foo] 2 slices", surface.DescribeUpdates());
-  EXPECT_NE("", network_.last_gaia);
+  EXPECT_NE(AccountInfo{}, network_.last_account_info);
   EXPECT_TRUE(stream_->GetMetadata().session_id().token().empty());
 }
 
@@ -898,6 +991,20 @@ TEST_F(FeedApiTest, LoadStreamFromStore) {
   // Verify the model is filled correctly.
   EXPECT_STRINGS_EQUAL(ModelStateFor(MakeTypicalInitialModelState()),
                        stream_->GetModel(kForYouStream)->DumpStateForTesting());
+}
+
+TEST_F(FeedApiTest, LoadStreamFromStoreValidatesUser) {
+  // Fill the store with stream data for another user.
+  {
+    auto state = MakeTypicalInitialModelState();
+    state->stream_data.set_email("other@gmail.com");
+    store_->OverwriteStream(kForYouStream, std::move(state), base::DoNothing());
+  }
+
+  TestForYouSurface surface(stream_.get());
+  WaitForIdleTaskQueue();
+
+  ASSERT_EQ("loading -> cant-refresh", surface.DescribeUpdates());
 }
 
 TEST_F(FeedApiTest, LoadingSpinnerIsSentInitially) {
@@ -1154,7 +1261,7 @@ TEST_F(FeedApiTest, FollowForcesRefresh) {
             callback.RunAndGetResult().request_status);
 
   // Wait for model to unload and reattach surface. New content is loaded.
-  task_environment_.FastForwardBy(base::Seconds(5));
+  WaitForModelToAutoUnload();
   surface.Attach(stream_.get());
   WaitForIdleTaskQueue();
   ASSERT_EQ("loading -> 3 slices", surface.DescribeUpdates());
@@ -1209,9 +1316,8 @@ TEST_P(FeedStreamTestForAllStreamTypes, LoadMoreAppendsContent) {
   ASSERT_EQ(absl::optional<bool>(true), callback.GetResult());
   EXPECT_EQ("4 slices +spinner -> 6 slices", surface.DescribeUpdates());
   // The root ID should not change for next-page content.
-  EXPECT_EQ(
-      MakeRootEventId(),
-      stream_->GetLoggingParameters(surface.GetStreamType()).root_event_id);
+  EXPECT_EQ(MakeRootEventId(),
+            surface.update->logging_parameters().root_event_id());
 }
 
 TEST_P(FeedStreamTestForAllStreamTypes, LoadMorePersistsData) {
@@ -1422,7 +1528,7 @@ TEST_F(FeedApiTest, ReadNetworkResponse) {
             schedule.refresh_offsets);
 
   // The stream's user attributes are set, so activity logging is enabled.
-  EXPECT_TRUE(stream_->IsActivityLoggingEnabled(kForYouStream));
+  EXPECT_TRUE(surface.update->logging_parameters().logging_enabled());
   // This network response has content.
   EXPECT_TRUE(stream_->HasUnreadContent(kForYouStream));
 }
@@ -1480,21 +1586,23 @@ TEST_F(FeedApiTest, ClearAllWhileLoadingMoreDoesNotLoadMore) {
   EXPECT_EQ(false, cr.GetResult());
   EXPECT_EQ(
       "loading -> [user@foo] 2 slices -> 2 slices +spinner -> 2 slices -> "
-      "loading -> [NO logging user@foo] 2 slices",
+      "loading -> 2 slices",
       surface.DescribeUpdates());
 }
 
 TEST_F(FeedApiTest, ClearAllWipesAllState) {
   // Trigger saving a consistency token, so it can be cleared later.
   network_.consistency_token = "token-11";
-  stream_->UploadAction(MakeFeedAction(42ul), true, base::DoNothing());
+  stream_->UploadAction(MakeFeedAction(42ul), CreateLoggingParameters(), true,
+                        base::DoNothing());
   // Trigger saving a feed stream, so it can be cleared later.
   response_translator_.InjectResponse(MakeTypicalInitialModelState());
   TestForYouSurface surface(stream_.get());
   WaitForIdleTaskQueue();
 
   // Enqueue an action, so it can be cleared later.
-  stream_->UploadAction(MakeFeedAction(43ul), false, base::DoNothing());
+  stream_->UploadAction(MakeFeedAction(43ul), CreateLoggingParameters(), false,
+                        base::DoNothing());
 
   // Trigger ClearAll, this should erase everything.
   stream_->OnCacheDataCleared();
@@ -1511,11 +1619,12 @@ TEST_F(FeedApiTest, ClearAllWipesAllState) {
 )",
             DumpStoreState(true));
   EXPECT_EQ("", stream_->GetMetadata().consistency_token());
-  EXPECT_FALSE(stream_->IsActivityLoggingEnabled(kForYouStream));
+  EXPECT_FALSE(surface.update->logging_parameters().logging_enabled());
 }
 
 TEST_F(FeedApiTest, StorePendingAction) {
-  stream_->UploadAction(MakeFeedAction(42ul), false, base::DoNothing());
+  stream_->UploadAction(MakeFeedAction(42ul), CreateLoggingParameters(), false,
+                        base::DoNothing());
   WaitForIdleTaskQueue();
 
   std::vector<feedstore::StoredAction> result =
@@ -1527,17 +1636,19 @@ TEST_F(FeedApiTest, StorePendingAction) {
 }
 
 TEST_F(FeedApiTest, UploadActionWhileSignedOutIsNoOp) {
-  signed_in_gaia_ = "";
-  ASSERT_EQ(stream_->GetSyncSignedInGaia(), "");
-  stream_->UploadAction(MakeFeedAction(42ul), false, base::DoNothing());
+  account_info_ = {};
+  ASSERT_EQ(stream_->GetAccountInfo(), AccountInfo{});
+  stream_->UploadAction(MakeFeedAction(42ul), CreateLoggingParameters(), false,
+                        base::DoNothing());
   WaitForIdleTaskQueue();
 
   EXPECT_EQ(0ul, ReadStoredActions(stream_->GetStore()).size());
 }
 
 TEST_F(FeedApiTest, SignOutWhileUploadActionDoesNotUpload) {
-  stream_->UploadAction(MakeFeedAction(42ul), true, base::DoNothing());
-  signed_in_gaia_ = "";
+  stream_->UploadAction(MakeFeedAction(42ul), CreateLoggingParameters(), true,
+                        base::DoNothing());
+  account_info_ = {};
 
   WaitForIdleTaskQueue();
 
@@ -1548,7 +1659,8 @@ TEST_F(FeedApiTest, SignOutWhileUploadActionDoesNotUpload) {
 
 TEST_F(FeedApiTest, ClearAllWhileUploadActionDoesNotUpload) {
   CallbackReceiver<UploadActionsTask::Result> cr;
-  stream_->UploadAction(MakeFeedAction(42ul), true, cr.Bind());
+  stream_->UploadAction(MakeFeedAction(42ul), CreateLoggingParameters(), true,
+                        cr.Bind());
   stream_->OnCacheDataCleared();  // triggers ClearAll().
   WaitForIdleTaskQueue();
 
@@ -1561,14 +1673,32 @@ TEST_F(FeedApiTest, ClearAllWhileUploadActionDoesNotUpload) {
 
 TEST_F(FeedApiTest, WrongUserUploadActionDoesNotUpload) {
   CallbackReceiver<UploadActionsTask::Result> cr;
-  stream_->UploadAction(MakeFeedAction(42ul), true, cr.Bind());
-  // Sign in as another user.
-  signed_in_gaia_ = "someothergaia";
+  LoggingParameters logging_parameters = CreateLoggingParameters();
+  logging_parameters.email = "someothergaia";
+  stream_->UploadAction(MakeFeedAction(42ul), logging_parameters, true,
+                        cr.Bind());
 
   WaitForIdleTaskQueue();
 
   // Action should not upload.
   EXPECT_EQ(UploadActionsStatus::kAbortUploadForWrongUser,
+            metrics_reporter_->upload_action_status);
+  EXPECT_EQ(0, network_.GetActionRequestCount());
+  ASSERT_TRUE(cr.GetResult());
+  EXPECT_EQ(0ul, cr.GetResult()->upload_attempt_count);
+}
+
+TEST_F(FeedApiTest, LoggingPropertiesWithNoAccountDoesNotUpload) {
+  CallbackReceiver<UploadActionsTask::Result> cr;
+  LoggingParameters logging_parameters = CreateLoggingParameters();
+  logging_parameters.email.clear();
+  stream_->UploadAction(MakeFeedAction(42ul), logging_parameters, true,
+                        cr.Bind());
+
+  WaitForIdleTaskQueue();
+
+  // Action should not upload.
+  EXPECT_EQ(UploadActionsStatus::kAbortUploadForSignedOutUser,
             metrics_reporter_->upload_action_status);
   EXPECT_EQ(0, network_.GetActionRequestCount());
   ASSERT_TRUE(cr.GetResult());
@@ -1583,7 +1713,8 @@ TEST_F(FeedApiTest, StorePendingActionAndUploadNow) {
   {
     feedwire::ThereAndBackAgainData msg;
     *msg.mutable_action_payload() = MakeFeedAction(42ul).action_payload();
-    stream_->ProcessThereAndBackAgain(msg.SerializeAsString());
+    stream_->ProcessThereAndBackAgain(msg.SerializeAsString(),
+                                      CreateLoggingParameters());
   }
   WaitForIdleTaskQueue();
 
@@ -1597,7 +1728,8 @@ TEST_F(FeedApiTest, StorePendingActionAndUploadNow) {
 TEST_F(FeedApiTest, ProcessViewActionResultsInDelayedUpload) {
   network_.consistency_token = "token-11";
 
-  stream_->ProcessViewAction(MakeFeedAction(42ul).SerializeAsString());
+  stream_->ProcessViewAction(MakeFeedAction(42ul).SerializeAsString(),
+                             CreateLoggingParameters());
   WaitForIdleTaskQueue();
   // Verify it's not uploaded immediately.
   ASSERT_EQ(0, network_.GetActionRequestCount());
@@ -1610,16 +1742,30 @@ TEST_F(FeedApiTest, ProcessViewActionResultsInDelayedUpload) {
   EXPECT_EQ(1, network_.GetActionRequestCount());
 }
 
+TEST_F(FeedApiTest, ProcessViewActionDroppedBecauseNotEnabled) {
+  network_.consistency_token = "token-11";
+  LoggingParameters logging_parameters = CreateLoggingParameters();
+  logging_parameters.view_actions_enabled = false;
+  stream_->ProcessViewAction(MakeFeedAction(42ul).SerializeAsString(),
+                             logging_parameters);
+  WaitForIdleTaskQueue();
+  // Verify it's not uploaded, and not stored.
+  ASSERT_EQ(0, network_.GetActionRequestCount());
+  ASSERT_EQ(0ull, ReadStoredActions(stream_->GetStore()).size());
+}
+
 TEST_F(FeedApiTest, ActionsUploadWithoutConditionsWhenFeatureDisabled) {
   response_translator_.InjectResponse(MakeTypicalInitialModelState());
 
   TestForYouSurface surface(stream_.get());
   WaitForIdleTaskQueue();
   stream_->ProcessViewAction(
-      feedwire::FeedAction::default_instance().SerializeAsString());
+      feedwire::FeedAction::default_instance().SerializeAsString(),
+      surface.GetLoggingParameters());
   WaitForIdleTaskQueue();
   stream_->ProcessThereAndBackAgain(
-      MakeThereAndBackAgainData(42ul).SerializeAsString());
+      MakeThereAndBackAgainData(42ul).SerializeAsString(),
+      surface.GetLoggingParameters());
   WaitForIdleTaskQueue();
 
   // Verify the actions were uploaded.
@@ -1628,7 +1774,8 @@ TEST_F(FeedApiTest, ActionsUploadWithoutConditionsWhenFeatureDisabled) {
 }
 
 TEST_F(FeedApiTest, LoadStreamFromNetworkUploadsActions) {
-  stream_->UploadAction(MakeFeedAction(99ul), false, base::DoNothing());
+  stream_->UploadAction(MakeFeedAction(99ul), CreateLoggingParameters(), false,
+                        base::DoNothing());
   WaitForIdleTaskQueue();
 
   TestForYouSurface surface(stream_.get());
@@ -1638,7 +1785,8 @@ TEST_F(FeedApiTest, LoadStreamFromNetworkUploadsActions) {
   EXPECT_EQ(1, network_.GetActionRequestSent()->feed_actions_size());
 
   // Uploaded action should have been erased from store.
-  stream_->UploadAction(MakeFeedAction(100ul), true, base::DoNothing());
+  stream_->UploadAction(MakeFeedAction(100ul), CreateLoggingParameters(), true,
+                        base::DoNothing());
   WaitForIdleTaskQueue();
   EXPECT_EQ(2, network_.GetActionRequestCount());
   EXPECT_EQ(1, network_.GetActionRequestSent()->feed_actions_size());
@@ -1646,15 +1794,19 @@ TEST_F(FeedApiTest, LoadStreamFromNetworkUploadsActions) {
 
 TEST_F(FeedApiTest, UploadedActionsHaveSequentialNumbers) {
   // Send 3 actions.
-  stream_->UploadAction(MakeFeedAction(1ul), false, base::DoNothing());
-  stream_->UploadAction(MakeFeedAction(2ul), false, base::DoNothing());
-  stream_->UploadAction(MakeFeedAction(3ul), true, base::DoNothing());
+  stream_->UploadAction(MakeFeedAction(1ul), CreateLoggingParameters(), false,
+                        base::DoNothing());
+  stream_->UploadAction(MakeFeedAction(2ul), CreateLoggingParameters(), false,
+                        base::DoNothing());
+  stream_->UploadAction(MakeFeedAction(3ul), CreateLoggingParameters(), true,
+                        base::DoNothing());
   WaitForIdleTaskQueue();
   ASSERT_EQ(1, network_.GetActionRequestCount());
   feedwire::UploadActionsRequest request1 = *network_.GetActionRequestSent();
 
   // Send another action in a new request.
-  stream_->UploadAction(MakeFeedAction(4ul), true, base::DoNothing());
+  stream_->UploadAction(MakeFeedAction(4ul), CreateLoggingParameters(), true,
+                        base::DoNothing());
   WaitForIdleTaskQueue();
   ASSERT_EQ(2, network_.GetActionRequestCount());
   feedwire::UploadActionsRequest request2 = *network_.GetActionRequestSent();
@@ -1674,7 +1826,8 @@ TEST_F(FeedApiTest, LoadMoreUploadsActions) {
   TestForYouSurface surface(stream_.get());
   WaitForIdleTaskQueue();
 
-  stream_->UploadAction(MakeFeedAction(99ul), false, base::DoNothing());
+  stream_->UploadAction(MakeFeedAction(99ul), CreateLoggingParameters(), false,
+                        base::DoNothing());
   WaitForIdleTaskQueue();
 
   network_.consistency_token = "token-12";
@@ -1687,7 +1840,8 @@ TEST_F(FeedApiTest, LoadMoreUploadsActions) {
 
   // Uploaded action should have been erased from the store.
   network_.ClearTestData();
-  stream_->UploadAction(MakeFeedAction(100ul), true, base::DoNothing());
+  stream_->UploadAction(MakeFeedAction(100ul), CreateLoggingParameters(), true,
+                        base::DoNothing());
   WaitForIdleTaskQueue();
   EXPECT_EQ(1, network_.GetActionRequestSent()->feed_actions_size());
 
@@ -1697,32 +1851,26 @@ TEST_F(FeedApiTest, LoadMoreUploadsActions) {
           network_.GetActionRequestSent()->feed_actions(0).action_payload()));
 }
 
-TEST_F(FeedApiTest, LoadMoreUpdatesIsActivityLoggingEnabled) {
-  EXPECT_FALSE(stream_->IsActivityLoggingEnabled(kForYouStream));
+TEST_F(FeedApiTest, LoadMoreDoesNotUpdateLoggingEnabled) {
   response_translator_.InjectResponse(MakeTypicalInitialModelState());
   TestForYouSurface surface(stream_.get());
   WaitForIdleTaskQueue();
-  EXPECT_TRUE(stream_->IsActivityLoggingEnabled(kForYouStream));
+  EXPECT_TRUE(surface.update->logging_parameters().logging_enabled());
 
   int page = 2;
-  for (bool signed_in : {true, false}) {
-    for (bool waa_on : {true, false}) {
-      for (bool privacy_notice_fulfilled : {true, false}) {
-        response_translator_.InjectResponse(
-            MakeTypicalNextPageState(page++, kTestTimeEpoch, signed_in, waa_on,
-                                     privacy_notice_fulfilled));
-        CallbackReceiver<bool> callback;
-        stream_->LoadMore(surface, callback.Bind());
-        WaitForIdleTaskQueue();
-        EXPECT_EQ(
-            stream_->IsActivityLoggingEnabled(kForYouStream),
-            (signed_in && waa_on) ||
-                (!signed_in && GetFeedConfig().send_signed_out_session_logs))
-            << "signed_in=" << signed_in << " waa_on=" << waa_on
-            << " privacy_notice_fulfilled=" << privacy_notice_fulfilled
-            << " send_signed_out_session_logs="
-            << GetFeedConfig().send_signed_out_session_logs;
-      }
+  // A NextPage request will not work when signed-out.
+  const bool signed_in = true;
+
+  // Logging parameters are not updated on LoadMore(), so logging remains
+  // enabled until the next refresh.
+  for (bool waa_on : {true, false}) {
+    for (bool privacy_notice_fulfilled : {true, false}) {
+      response_translator_.InjectResponse(MakeTypicalNextPageState(
+          page++, kTestTimeEpoch, kTestTimeEpoch, signed_in, waa_on,
+          privacy_notice_fulfilled));
+      stream_->LoadMore(surface, base::DoNothing());
+      WaitForIdleTaskQueue();
+      EXPECT_TRUE(surface.update->logging_parameters().logging_enabled());
     }
   }
 }
@@ -1731,13 +1879,14 @@ TEST_F(FeedApiTest, LoadStreamWithLoggingEnabled) {
   response_translator_.InjectResponse(MakeTypicalInitialModelState());
   TestForYouSurface surface(stream_.get());
   WaitForIdleTaskQueue();
-  EXPECT_TRUE(stream_->IsActivityLoggingEnabled(kForYouStream));
 
+  EXPECT_TRUE(surface.update->logging_parameters().logging_enabled());
   EXPECT_EQ("loading -> [user@foo] 2 slices", surface.DescribeUpdates());
 }
 
 TEST_F(FeedApiTest, BackgroundingAppUploadsActions) {
-  stream_->UploadAction(MakeFeedAction(1ul), false, base::DoNothing());
+  stream_->UploadAction(MakeFeedAction(1ul), CreateLoggingParameters(), false,
+                        base::DoNothing());
   stream_->OnEnterBackground();
   WaitForIdleTaskQueue();
   EXPECT_EQ(1, network_.GetActionRequestSent()->feed_actions_size());
@@ -1752,14 +1901,16 @@ TEST_F(FeedApiTest, BackgroundingAppDoesNotUploadActions) {
   config.upload_actions_on_enter_background = false;
   SetFeedConfigForTesting(config);
 
-  stream_->UploadAction(MakeFeedAction(1ul), false, base::DoNothing());
+  stream_->UploadAction(MakeFeedAction(1ul), CreateLoggingParameters(), false,
+                        base::DoNothing());
   stream_->OnEnterBackground();
   WaitForIdleTaskQueue();
   EXPECT_EQ(0, network_.GetActionRequestCount());
 }
 
 TEST_F(FeedApiTest, UploadedActionsAreNotSentAgain) {
-  stream_->UploadAction(MakeFeedAction(1ul), false, base::DoNothing());
+  stream_->UploadAction(MakeFeedAction(1ul), CreateLoggingParameters(), false,
+                        base::DoNothing());
   stream_->OnEnterBackground();
   WaitForIdleTaskQueue();
   ASSERT_EQ(1, network_.GetActionRequestCount());
@@ -1777,7 +1928,8 @@ TEST_F(FeedApiTest, UploadActionsOneBatch) {
   EXPECT_EQ(1, network_.GetActionRequestCount());
   EXPECT_EQ(3, network_.GetActionRequestSent()->feed_actions_size());
 
-  stream_->UploadAction(MakeFeedAction(99ul), true, base::DoNothing());
+  stream_->UploadAction(MakeFeedAction(99ul), CreateLoggingParameters(), true,
+                        base::DoNothing());
   WaitForIdleTaskQueue();
   EXPECT_EQ(2, network_.GetActionRequestCount());
   EXPECT_EQ(1, network_.GetActionRequestSent()->feed_actions_size());
@@ -1799,20 +1951,23 @@ TEST_F(FeedApiTest, UploadActionsMultipleBatches) {
 
   EXPECT_EQ(3, network_.GetActionRequestCount());
 
-  stream_->UploadAction(MakeFeedAction(99ul), true, base::DoNothing());
+  stream_->UploadAction(MakeFeedAction(99ul), CreateLoggingParameters(), true,
+                        base::DoNothing());
   WaitForIdleTaskQueue();
   EXPECT_EQ(4, network_.GetActionRequestCount());
   EXPECT_EQ(1, network_.GetActionRequestSent()->feed_actions_size());
 }
 
 TEST_F(FeedApiTest, UploadActionsSkipsStaleActionsByTimestamp) {
-  stream_->UploadAction(MakeFeedAction(2ul), false, base::DoNothing());
+  stream_->UploadAction(MakeFeedAction(2ul), CreateLoggingParameters(), false,
+                        base::DoNothing());
   WaitForIdleTaskQueue();
   task_environment_.FastForwardBy(base::Hours(25));
 
   // Trigger upload
   CallbackReceiver<UploadActionsTask::Result> cr;
-  stream_->UploadAction(MakeFeedAction(3ul), true, cr.Bind());
+  stream_->UploadAction(MakeFeedAction(3ul), CreateLoggingParameters(), true,
+                        cr.Bind());
   WaitForIdleTaskQueue();
 
   // Just one action should have been uploaded.
@@ -1831,14 +1986,18 @@ TEST_F(FeedApiTest, UploadActionsSkipsStaleActionsByTimestamp) {
 TEST_F(FeedApiTest, UploadActionsErasesStaleActionsByAttempts) {
   // Three failed uploads, plus one more to cause the first action to be erased.
   network_.InjectEmptyActionRequestResult();
-  stream_->UploadAction(MakeFeedAction(0ul), true, base::DoNothing());
+  stream_->UploadAction(MakeFeedAction(0ul), CreateLoggingParameters(), true,
+                        base::DoNothing());
   network_.InjectEmptyActionRequestResult();
-  stream_->UploadAction(MakeFeedAction(1ul), true, base::DoNothing());
+  stream_->UploadAction(MakeFeedAction(1ul), CreateLoggingParameters(), true,
+                        base::DoNothing());
   network_.InjectEmptyActionRequestResult();
-  stream_->UploadAction(MakeFeedAction(2ul), true, base::DoNothing());
+  stream_->UploadAction(MakeFeedAction(2ul), CreateLoggingParameters(), true,
+                        base::DoNothing());
 
   CallbackReceiver<UploadActionsTask::Result> cr;
-  stream_->UploadAction(MakeFeedAction(3ul), true, cr.Bind());
+  stream_->UploadAction(MakeFeedAction(3ul), CreateLoggingParameters(), true,
+                        cr.Bind());
   WaitForIdleTaskQueue();
 
   // Four requests, three pending actions in the last request.
@@ -1858,7 +2017,7 @@ TEST_F(FeedApiTest, MetadataLoadedWhenDatabaseInitialized) {
     feedstore::Metadata initial_metadata;
     feedstore::SetSessionId(initial_metadata, "session-id", kExpiry);
     initial_metadata.set_consistency_token("token");
-    initial_metadata.set_gaia(GetSyncSignedInGaia());
+    initial_metadata.set_gaia(GetAccountInfo().gaia);
     store_->WriteMetadata(initial_metadata, base::DoNothing());
   }
 
@@ -2016,7 +2175,7 @@ TEST_F(FeedApiTest, SignedOutSessionIdConsistency) {
   const std::string kSessionToken1("session-token-1");
   const std::string kSessionToken2("session-token-2");
 
-  signed_in_gaia_ = "";
+  account_info_ = {};
 
   StreamModelUpdateRequestGenerator model_generator;
   model_generator.signed_in = false;
@@ -2116,7 +2275,7 @@ TEST_F(FeedApiTest, SignedOutSessionIdConsistency) {
 }
 
 TEST_F(FeedApiTest, ClearAllResetsSessionId) {
-  signed_in_gaia_ = "";
+  account_info_ = {};
 
   // Initialize a session id.
   feedstore::Metadata metadata = stream_->GetMetadata();
@@ -2137,7 +2296,7 @@ TEST_F(FeedApiTest, SignedOutSessionIdExpiry) {
   const std::string kSessionToken1("session-token-1");
   const std::string kSessionToken2("session-token-2");
 
-  signed_in_gaia_ = "";
+  account_info_ = {};
 
   StreamModelUpdateRequestGenerator model_generator;
   model_generator.signed_in = false;
@@ -2206,7 +2365,7 @@ TEST_F(FeedApiTest, SessionIdPersistsAcrossStreamLoads) {
 
   StreamModelUpdateRequestGenerator model_generator;
   model_generator.signed_in = false;
-  signed_in_gaia_ = "";
+  account_info_ = {};
 
   // (1) Do an initial load of the store
   //     - this should trigger a network request
@@ -2280,7 +2439,7 @@ TEST_F(FeedApiTest, UnloadOnlyOneOfMultipleModels) {
 
   for_you_surface.Detach();
 
-  task_environment_.FastForwardBy(base::Seconds(2));
+  WaitForModelToAutoUnload();
   WaitForIdleTaskQueue();
 
   EXPECT_TRUE(stream_->GetModel(kWebFeedStream));
@@ -2497,8 +2656,64 @@ TEST_F(FeedApiTest, ClearAllOnStartupIfFeedIsDisabled) {
 
   // Re-create the feed, and verify ClearAll isn't called again.
   on_clear_all.Clear();
+  base::HistogramTester histograms;
   CreateStream();
   EXPECT_FALSE(on_clear_all.called());
+  histograms.ExpectUniqueSample("ContentSuggestions.Feed.UserSettingsOnStart",
+                                UserSettingsOnStart::kFeedNotEnabledByPolicy,
+                                1);
+}
+
+TEST_F(FeedApiTest, FeedIsAblated) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  base::FieldTrialParams params;
+  scoped_feature_list.InitAndEnableFeature(kIsAblated);
+
+  base::HistogramTester histograms;
+  CreateStream();
+  histograms.ExpectUniqueSample("ContentSuggestions.Feed.UserSettingsOnStart",
+                                UserSettingsOnStart::kFeedNotEnabled, 1);
+
+  ASSERT_FALSE(network_.query_request_sent.has_value());
+}
+
+TEST_F(FeedApiTest, ReportUserSettingsFromMetadataWaaOnDpOff) {
+  // Fetch a feed, so that there's stored data.
+  {
+    RefreshResponseData response;
+    response.model_update_request = MakeTypicalInitialModelState();
+    response.web_and_app_activity_enabled = true;
+    response_translator_.InjectResponse(std::move(response));
+  }
+  TestForYouSurface surface(stream_.get());
+  WaitForIdleTaskQueue();
+
+  // Simulate a Chrome restart.
+  base::HistogramTester histograms;
+  CreateStream();
+  histograms.ExpectUniqueSample("ContentSuggestions.Feed.UserSettingsOnStart",
+                                UserSettingsOnStart::kSignedInWaaOnDpOff, 1);
+  EXPECT_EQ(
+      std::vector<std::string>({"SignedInNoRecentData", "SignedInWaaOnDpOff"}),
+      register_feed_user_settings_field_trial_calls_);
+}
+
+TEST_F(FeedApiTest, ReportUserSettingsFromMetadataWaaOffDpOn) {
+  // Fetch a feed, so that there's stored data.
+  {
+    RefreshResponseData response;
+    response.model_update_request = MakeTypicalInitialModelState();
+    response.discover_personalization_enabled = true;
+    response_translator_.InjectResponse(std::move(response));
+  }
+  TestForYouSurface surface(stream_.get());
+  WaitForIdleTaskQueue();
+
+  // Simulate a Chrome restart.
+  base::HistogramTester histograms;
+  CreateStream();
+  histograms.ExpectUniqueSample("ContentSuggestions.Feed.UserSettingsOnStart",
+                                UserSettingsOnStart::kSignedInWaaOffDpOn, 1);
 }
 
 TEST_F(FeedStreamTestForAllStreamTypes, ManualRefreshInterestFeedSuccess) {
@@ -2519,6 +2734,13 @@ TEST_F(FeedStreamTestForAllStreamTypes, ManualRefreshInterestFeedSuccess) {
   EXPECT_EQ("3 slices", surface.DescribeUpdates());
   EXPECT_EQ(LoadStreamStatus::kLoadedFromNetwork,
             metrics_reporter_->load_stream_status);
+
+  // Check that the root event ID has been updated.
+  EXPECT_EQ(MakeTypicalRefreshModelState()->stream_data.root_event_id(),
+            surface.update->logging_parameters().root_event_id());
+  EXPECT_NE(MakeTypicalInitialModelState()->stream_data.root_event_id(),
+            surface.update->logging_parameters().root_event_id());
+
   // Verify stored state is equivalent to in-memory model.
   EXPECT_STRINGS_EQUAL(
       stream_->GetModel(surface.GetStreamType())->DumpStateForTesting(),
@@ -2781,7 +3003,7 @@ TEST_F(FeedApiTest, ContentOrderPrefOverridesFinch) {
 
 // This is a regression test for crbug.com/1249772.
 TEST_F(FeedApiTest, SignInWhileSurfaceIsOpen) {
-  signed_in_gaia_.clear();  // not signed in initially.
+  account_info_ = {};  // not signed in initially.
   // Load content and simulate a restart, so that there is stored content.
   {
     response_translator_.InjectResponse(MakeTypicalInitialModelState());
@@ -2796,7 +3018,7 @@ TEST_F(FeedApiTest, SignInWhileSurfaceIsOpen) {
   stream_->ReportFeedViewed(surface.GetStreamType(), surface.GetSurfaceId());
   TestUnreadContentObserver observer;
   stream_->AddUnreadContentObserver(kForYouStream, &observer);
-  signed_in_gaia_ = "gaia";
+  account_info_ = TestAccountInfo();
   stream_->OnSignedIn();
   response_translator_.InjectResponse(MakeTypicalRefreshModelState());
   WaitForIdleTaskQueue();
@@ -2812,7 +3034,7 @@ TEST_F(FeedApiTest, SignOutWhileSurfaceIsOpen) {
   response_translator_.InjectResponse(MakeTypicalInitialModelState());
   TestForYouSurface surface(stream_.get());
   WaitForIdleTaskQueue();
-  signed_in_gaia_ = "";
+  account_info_ = {};
   stream_->OnSignedOut();
   response_translator_.InjectResponse(MakeTypicalRefreshModelState());
   WaitForIdleTaskQueue();
@@ -2822,65 +3044,506 @@ TEST_F(FeedApiTest, SignOutWhileSurfaceIsOpen) {
       surface.DescribeUpdates());
 }
 
-// TODO(crbug.com/1266030): Fix flakes.
-TEST_F(FeedApiTest, DISABLED_NoticeViewed) {
-  base::HistogramTester histograms;
-
-  for (int i = 1; i <= NoticeCardTracker::kViewCountThreshold; ++i) {
-    if (i > 1)
-      task_environment_.AdvanceClock(
-          GetFeedConfig().minimum_notice_view_interval);
-    stream_->ReportNoticeViewed(kForYouStream, kTestKey);
-    histograms.ExpectUniqueSample(
-        "ContentSuggestions.Feed.NoticeViewed.Youtube", true, i);
-    bool should_acknowledge = (i == NoticeCardTracker::kViewCountThreshold);
-    histograms.ExpectUniqueSample(
-        "ContentSuggestions.Feed.NoticeAcknowledged.Youtube", true,
-        should_acknowledge ? 1 : 0);
-    if (should_acknowledge) {
-      histograms.ExpectUniqueSample(
-          "ContentSuggestions.Feed.NoticeAcknowledgementPath.Youtube",
-          NoticeAcknowledgementPath::kViaViewing, 1);
-    }
-  }
-
-  // One more viewed report should only increase the NoticeViewed UMA count.
-  stream_->ReportNoticeViewed(kForYouStream, kTestKey);
-  histograms.ExpectUniqueSample("ContentSuggestions.Feed.NoticeViewed.Youtube",
-                                true,
-                                NoticeCardTracker::kViewCountThreshold + 1);
-  // NoticeAcknowledged UMA is only reported once.
-  histograms.ExpectUniqueSample(
-      "ContentSuggestions.Feed.NoticeAcknowledged.Youtube", true, 1);
+TEST_F(FeedApiTest, FollowedFromWebPageMenuCount) {
+  // Arrange.
+  TestWebFeedSurface surface(stream_.get());
+  // Act.
+  stream_->IncrementFollowedFromWebPageMenuCount();
+  // Assert.
+  EXPECT_EQ(1, stream_->GetMetadata().followed_from_web_page_menu_count());
+  EXPECT_EQ(1, stream_->GetRequestMetadata(kWebFeedStream, false)
+                   .followed_from_web_page_menu_count);
 }
 
-TEST_F(FeedApiTest, NoticeOpenAndDismissActions) {
+TEST_F(FeedApiTest, InfoCardTrackingActions) {
+  // Set up the server and client timestamps that affect the computation of
+  // the view timestamps in the info card tracking state.
+  base::Time server_timestamp = base::Time::Now();
+  task_environment_.AdvanceClock(base::Seconds(100));
+  base::Time client_timestamp = base::Time::Now();
+  base::TimeDelta timestamp_adjustment = server_timestamp - client_timestamp;
+  task_environment_.AdvanceClock(base::Seconds(200));
+
+  // Load the initial page.
+  response_translator_.InjectResponse(
+      MakeTypicalInitialModelState(0, client_timestamp, server_timestamp));
+  TestForYouSurface surface(stream_.get());
+  WaitForIdleTaskQueue();
+
   base::HistogramTester histograms;
 
-  for (int i = 1; i <= NoticeCardTracker::kClickCountThreshold; ++i) {
-    stream_->ReportNoticeOpenAction(kForYouStream, kTestKey);
-    histograms.ExpectUniqueSample(
-        "ContentSuggestions.Feed.NoticeOpenAction.Youtube", true, i);
-    bool should_acknowledge = (i == NoticeCardTracker::kClickCountThreshold);
-    histograms.ExpectUniqueSample(
-        "ContentSuggestions.Feed.NoticeAcknowledged.Youtube", true,
-        should_acknowledge ? 1 : 0);
-    if (should_acknowledge) {
-      histograms.ExpectUniqueSample(
-          "ContentSuggestions.Feed.NoticeAcknowledgementPath.Youtube",
-          NoticeAcknowledgementPath::kViaOpenAction, 1);
-    }
+  // Perform actions on one info card and verify the histograms.
+  base::Time first_view_timestamp2 = base::Time::Now() + timestamp_adjustment;
+  base::Time last_view_timestamp2 = first_view_timestamp2;
+  stream_->ReportInfoCardTrackViewStarted(kForYouStream, kTestInfoCardType2);
+  stream_->ReportInfoCardViewed(kForYouStream, kTestInfoCardType2,
+                                kMinimumViewIntervalSeconds);
+  stream_->ReportInfoCardClicked(kForYouStream, kTestInfoCardType2);
+  stream_->ReportInfoCardClicked(kForYouStream, kTestInfoCardType2);
+  histograms.ExpectUniqueSample("ContentSuggestions.Feed.InfoCard.Started",
+                                kTestInfoCardType2, 1);
+  histograms.ExpectBucketCount("ContentSuggestions.Feed.InfoCard.Viewed",
+                               kTestInfoCardType2, 1);
+  histograms.ExpectBucketCount("ContentSuggestions.Feed.InfoCard.Clicked",
+                               kTestInfoCardType2, 2);
+  histograms.ExpectBucketCount("ContentSuggestions.Feed.InfoCard.Dismissed",
+                               kTestInfoCardType2, 0);
+
+  // Perform actions on another info card and verify the histograms.
+  base::Time first_view_timestamp1 = base::Time::Now() + timestamp_adjustment;
+  stream_->ReportInfoCardViewed(kForYouStream, kTestInfoCardType1,
+                                kMinimumViewIntervalSeconds);
+  task_environment_.AdvanceClock(base::Seconds(kMinimumViewIntervalSeconds));
+  stream_->ReportInfoCardViewed(kForYouStream, kTestInfoCardType1,
+                                kMinimumViewIntervalSeconds);
+  task_environment_.AdvanceClock(base::Seconds(kMinimumViewIntervalSeconds));
+  base::Time last_view_timestamp1 = base::Time::Now() + timestamp_adjustment;
+  stream_->ReportInfoCardViewed(kForYouStream, kTestInfoCardType1,
+                                kMinimumViewIntervalSeconds);
+  stream_->ReportInfoCardClicked(kForYouStream, kTestInfoCardType1);
+  stream_->ReportInfoCardDismissedExplicitly(kForYouStream, kTestInfoCardType1);
+  histograms.ExpectBucketCount("ContentSuggestions.Feed.InfoCard.Started",
+                               kTestInfoCardType1, 0);
+  histograms.ExpectBucketCount("ContentSuggestions.Feed.InfoCard.Viewed",
+                               kTestInfoCardType1, 3);
+  histograms.ExpectBucketCount("ContentSuggestions.Feed.InfoCard.Clicked",
+                               kTestInfoCardType1, 1);
+  histograms.ExpectBucketCount("ContentSuggestions.Feed.InfoCard.Dismissed",
+                               kTestInfoCardType1, 1);
+
+  // Refresh the page so that a feed query including the info card tracking
+  // states is sent.
+  response_translator_.InjectResponse(MakeTypicalRefreshModelState());
+  stream_->ManualRefresh(kForYouStream, base::DoNothing());
+  WaitForIdleTaskQueue();
+
+  // Verify the info card tracking states. There should be 2 states with
+  // expected counts and view timestamps populated.
+  ASSERT_EQ(2, network_.query_request_sent->feed_request()
+                   .feed_query()
+                   .chrome_fulfillment_info()
+                   .info_card_tracking_state_size());
+  feedwire::InfoCardTrackingState state1;
+  state1.set_type(kTestInfoCardType1);
+  state1.set_view_count(3);
+  state1.set_click_count(1);
+  state1.set_explicitly_dismissed_count(1);
+  state1.set_first_view_timestamp(
+      feedstore::ToTimestampMillis(first_view_timestamp1));
+  state1.set_last_view_timestamp(
+      feedstore::ToTimestampMillis(last_view_timestamp1));
+  EXPECT_THAT(state1, EqualsProto(network_.query_request_sent->feed_request()
+                                      .feed_query()
+                                      .chrome_fulfillment_info()
+                                      .info_card_tracking_state(0)));
+  feedwire::InfoCardTrackingState state2;
+  state2.set_type(kTestInfoCardType2);
+  state2.set_view_count(1);
+  state2.set_click_count(2);
+  state2.set_first_view_timestamp(
+      feedstore::ToTimestampMillis(first_view_timestamp2));
+  state2.set_last_view_timestamp(
+      feedstore::ToTimestampMillis(last_view_timestamp2));
+  EXPECT_THAT(state2, EqualsProto(network_.query_request_sent->feed_request()
+                                      .feed_query()
+                                      .chrome_fulfillment_info()
+                                      .info_card_tracking_state(1)));
+}
+
+TEST_F(FeedApiTest, InvalidateFeedCache_CauseRefreshOnNextLoad) {
+  // Load the ForYou feed with initial content from the network.
+  response_translator_.InjectResponse(MakeTypicalInitialModelState());
+  TestForYouSurface surface(stream_.get());
+  WaitForIdleTaskQueue();
+  EXPECT_TRUE(response_translator_.InjectedResponseConsumed());
+  ASSERT_EQ("loading -> [user@foo] 2 slices", surface.DescribeUpdates());
+
+  // Invalidate cached content and reattach the surface, waiting for the model
+  // to unload. It should refresh from the network with refreshed content.
+  response_translator_.InjectResponse(MakeTypicalRefreshModelState());
+  stream_->InvalidateContentCacheFor(StreamKind::kForYou);
+  surface.Detach();
+  WaitForModelToAutoUnload();
+  surface.Attach(stream_.get());
+  WaitForIdleTaskQueue();
+  EXPECT_TRUE(response_translator_.InjectedResponseConsumed());
+  ASSERT_EQ("loading -> 3 slices", surface.DescribeUpdates());
+}
+
+TEST_F(FeedApiTest, InvalidateFeedCache_DoesNotForceRefreshFeedWhileInUse) {
+  // Load the ForYou feed with initial content from the network.
+  response_translator_.InjectResponse(MakeTypicalInitialModelState());
+  TestForYouSurface surface(stream_.get());
+  WaitForIdleTaskQueue();
+  EXPECT_TRUE(response_translator_.InjectedResponseConsumed());
+  ASSERT_EQ("loading -> [user@foo] 2 slices", surface.DescribeUpdates());
+
+  // Invalidate the ForYou feed and verify nothing changes right away.
+  response_translator_.InjectResponse(MakeTypicalRefreshModelState());
+  stream_->InvalidateContentCacheFor(StreamKind::kForYou);
+  WaitForIdleTaskQueue();
+  ASSERT_EQ("", surface.DescribeUpdates());
+  EXPECT_FALSE(response_translator_.InjectedResponseConsumed());
+}
+
+TEST_F(FeedApiTest, InvalidateFeedCache_UnknownDoesNotForceRefreshAnyFeeds) {
+  // Enable WebFeed and WebFeedOnboarding flags to force WebFeed to fetch
+  // without subscriptions.
+  base::test::ScopedFeatureList features;
+  std::vector<base::Feature> enabled_features = {kWebFeed, kWebFeedOnboarding},
+                             disabled_features = {};
+  features.InitWithFeatures(enabled_features, disabled_features);
+  {
+    // Load both feeds and allow them to fetch network contents.
+    response_translator_.InjectResponse(MakeTypicalInitialModelState());
+    response_translator_.InjectResponse(MakeTypicalInitialModelState());
+    TestForYouSurface for_you_surface(stream_.get());
+    TestWebFeedSurface web_feed_surface(stream_.get());
+    WaitForIdleTaskQueue();
+    ASSERT_EQ("loading -> [user@foo] 2 slices",
+              for_you_surface.DescribeUpdates());
+    ASSERT_EQ("loading -> [user@foo] 2 slices",
+              web_feed_surface.DescribeUpdates());
+    EXPECT_TRUE(response_translator_.InjectedResponseConsumed());
   }
 
-  stream_->ReportNoticeDismissed(kForYouStream, kTestKey);
-  histograms.ExpectUniqueSample(
-      "ContentSuggestions.Feed.NoticeOpenAction.Youtube", true,
-      NoticeCardTracker::kClickCountThreshold);
-  histograms.ExpectUniqueSample(
-      "ContentSuggestions.Feed.NoticeDismissed.Youtube", true, 1);
-  // NoticeAcknowledged UMA is only reported once.
-  histograms.ExpectUniqueSample(
-      "ContentSuggestions.Feed.NoticeAcknowledged.Youtube", true, 1);
+  // Both surfaces have been destroyed, so wait for the model to unload.
+  WaitForModelToAutoUnload();
+
+  // Invalidate with an unknown feed and recreate both surfaces. None should
+  // refresh from network.
+  response_translator_.InjectResponse(MakeTypicalRefreshModelState());
+  stream_->InvalidateContentCacheFor(StreamKind::kUnknown);
+  {
+    TestForYouSurface for_you_surface(stream_.get());
+    TestWebFeedSurface web_feed_surface(stream_.get());
+    WaitForIdleTaskQueue();
+    ASSERT_EQ("loading -> [user@foo] 2 slices",
+              for_you_surface.DescribeUpdates());
+    ASSERT_EQ("loading -> [user@foo] 2 slices",
+              web_feed_surface.DescribeUpdates());
+  }
+  EXPECT_FALSE(response_translator_.InjectedResponseConsumed());
+}
+
+TEST_F(FeedApiTest, InvalidateFeedCache_DoesNotRefreshOtherFeed) {
+  // Enable WebFeed and WebFeedOnboarding flags to force WebFeed to fetch
+  // without subscriptions.
+  base::test::ScopedFeatureList features;
+  std::vector<base::Feature> enabled_features = {kWebFeed, kWebFeedOnboarding},
+                             disabled_features = {};
+  features.InitWithFeatures(enabled_features, disabled_features);
+  {
+    // Load both feeds and allow them to fetch network contents.
+    response_translator_.InjectResponse(MakeTypicalInitialModelState());
+    response_translator_.InjectResponse(MakeTypicalInitialModelState());
+    TestForYouSurface for_you_surface(stream_.get());
+    TestWebFeedSurface web_feed_surface(stream_.get());
+    WaitForIdleTaskQueue();
+    ASSERT_EQ("loading -> [user@foo] 2 slices",
+              for_you_surface.DescribeUpdates());
+    ASSERT_EQ("loading -> [user@foo] 2 slices",
+              web_feed_surface.DescribeUpdates());
+    EXPECT_TRUE(response_translator_.InjectedResponseConsumed());
+  }
+
+  // Both surfaces have been destroyed, so wait for the model to unload.
+  WaitForModelToAutoUnload();
+
+  // Invalidate only the WebFeed feed and recreate both surfaces. Only the
+  // WebFeed should refresh from network.
+  response_translator_.InjectResponse(MakeTypicalRefreshModelState());
+  stream_->InvalidateContentCacheFor(StreamKind::kFollowing);
+  {
+    TestForYouSurface for_you_surface(stream_.get());
+    TestWebFeedSurface web_feed_surface(stream_.get());
+    WaitForIdleTaskQueue();
+    ASSERT_EQ("loading -> [user@foo] 2 slices",
+              for_you_surface.DescribeUpdates());
+    ASSERT_EQ("loading -> [user@foo] 3 slices",
+              web_feed_surface.DescribeUpdates());
+  }
+  EXPECT_TRUE(response_translator_.InjectedResponseConsumed());
+}
+
+TEST_F(FeedApiTest, FeedCloseRefresh_Scroll) {
+  // Sometimes the clock starts near zero; move it forward just in case.
+  task_environment_.AdvanceClock(base::Minutes(10));
+
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      kFeedCloseRefresh, {{"require_interaction", "true"}});
+  TestForYouSurface surface(stream_.get());
+  WaitForIdleTaskQueue();
+
+  // Simulate content being viewed. This shouldn't schedule a refresh itself,
+  // but it's required in order for scrolling to schedule a refresh.
+  stream_->ReportFeedViewed(kForYouStream, surface.GetSurfaceId());
+  EXPECT_EQ(base::Seconds(0),
+            refresh_scheduler_
+                .scheduled_run_times[RefreshTaskId::kRefreshForYouFeed]);
+
+  // Scrolling should cause a refresh to be scheduled.
+  stream_->ReportStreamScrolled(kForYouStream, 1);
+  EXPECT_EQ(base::Minutes(30),
+            refresh_scheduler_
+                .scheduled_run_times[RefreshTaskId::kRefreshForYouFeed]);
+
+  refresh_scheduler_.Clear();
+
+  // Scrolling shouldn't schedule a refresh for the next few minutes.
+  stream_->ReportStreamScrolled(kForYouStream, 1);
+  // Scheduler shouldn't have been called yet.
+  EXPECT_EQ(base::Seconds(0),
+            refresh_scheduler_
+                .scheduled_run_times[RefreshTaskId::kRefreshForYouFeed]);
+
+  refresh_scheduler_.Clear();
+  task_environment_.FastForwardBy(base::Minutes(5) + base::Seconds(1));
+  stream_->ReportStreamScrolled(kForYouStream, 1);
+  EXPECT_EQ(base::Minutes(30),
+            refresh_scheduler_
+                .scheduled_run_times[RefreshTaskId::kRefreshForYouFeed]);
+}
+
+TEST_F(FeedApiTest, FeedCloseRefresh_Open) {
+  // Sometimes the clock starts near zero; move it forward just in case.
+  task_environment_.AdvanceClock(base::Minutes(10));
+
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      kFeedCloseRefresh, {{"require_interaction", "true"}});
+  TestForYouSurface surface(stream_.get());
+  WaitForIdleTaskQueue();
+
+  // Opening should cause a refresh to be scheduled.
+  stream_->ReportOpenAction(GURL("http://example.com"), kForYouStream, "");
+  EXPECT_EQ(base::Minutes(30),
+            refresh_scheduler_
+                .scheduled_run_times[RefreshTaskId::kRefreshForYouFeed]);
+}
+
+TEST_F(FeedApiTest, FeedCloseRefresh_OpenInNewTab) {
+  // Sometimes the clock starts near zero; move it forward just in case.
+  task_environment_.AdvanceClock(base::Minutes(10));
+
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      kFeedCloseRefresh, {{"require_interaction", "true"}});
+  TestForYouSurface surface(stream_.get());
+  WaitForIdleTaskQueue();
+
+  // Should cause a refresh to be scheduled.
+  stream_->ReportOpenInNewTabAction(GURL("http://example.com"), kForYouStream,
+                                    "");
+  EXPECT_EQ(base::Minutes(30),
+            refresh_scheduler_
+                .scheduled_run_times[RefreshTaskId::kRefreshForYouFeed]);
+}
+
+TEST_F(FeedApiTest, FeedCloseRefresh_ManualRefreshResetsCoalesceTimestamp) {
+  // Sometimes the clock starts near zero; move it forward just in case.
+  task_environment_.AdvanceClock(base::Minutes(10));
+
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      kFeedCloseRefresh, {{"require_interaction", "true"}});
+  TestForYouSurface surface(stream_.get());
+  WaitForIdleTaskQueue();
+
+  // Simulate content being viewed. This shouldn't schedule a refresh itself,
+  // but it's required in order for later interaction to schedule a refresh.
+  stream_->ReportFeedViewed(kForYouStream, surface.GetSurfaceId());
+  EXPECT_EQ(base::Seconds(0),
+            refresh_scheduler_
+                .scheduled_run_times[RefreshTaskId::kRefreshForYouFeed]);
+
+  // Should cause a refresh to be scheduled.
+  stream_->ReportStreamScrolled(kForYouStream, 1);
+  refresh_scheduler_.Clear();
+  // Manual refresh resets the anti-jank timestamp, so the next
+  // ReportStreamScrolled() should update the schedule.
+  stream_->ManualRefresh(kForYouStream, base::DoNothing());
+  stream_->ReportStreamScrolled(kForYouStream, 1);
+  EXPECT_EQ(base::Minutes(30),
+            refresh_scheduler_
+                .scheduled_run_times[RefreshTaskId::kRefreshForYouFeed]);
+}
+
+TEST_F(FeedApiTest, FeedCloseRefresh_FeedViewed) {
+  // Sometimes the clock starts near zero; move it forward just in case.
+  task_environment_.AdvanceClock(base::Minutes(10));
+
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      kFeedCloseRefresh, {{"require_interaction", "false"}});
+  TestForYouSurface surface(stream_.get());
+  WaitForIdleTaskQueue();
+  stream_->ReportFeedViewed(kForYouStream, surface.GetSurfaceId());
+  // The schedule should have been updated.
+  EXPECT_EQ(base::Minutes(30),
+            refresh_scheduler_
+                .scheduled_run_times[RefreshTaskId::kRefreshForYouFeed]);
+
+  // Only a surface's first view should cause the schedule to be set.
+  refresh_scheduler_.Clear();
+  stream_->ReportFeedViewed(kForYouStream, surface.GetSurfaceId());
+  // Zero means the scheudle wasn't updated.
+  EXPECT_EQ(base::Seconds(0),
+            refresh_scheduler_
+                .scheduled_run_times[RefreshTaskId::kRefreshForYouFeed]);
+
+  task_environment_.AdvanceClock(base::Minutes(6));
+
+  // Opening another surface should cause a refresh to be scheduled.
+  refresh_scheduler_.Clear();
+  TestForYouSurface surface2(stream_.get());
+  WaitForIdleTaskQueue();
+  stream_->ReportFeedViewed(kForYouStream, surface2.GetSurfaceId());
+  // The schedule should have been updated.
+  EXPECT_EQ(base::Minutes(30),
+            refresh_scheduler_
+                .scheduled_run_times[RefreshTaskId::kRefreshForYouFeed]);
+
+  task_environment_.AdvanceClock(base::Minutes(6));
+
+  // Leaving the surface and returning should schedule a refresh.
+  refresh_scheduler_.Clear();
+  surface.Detach();
+  WaitForIdleTaskQueue();
+  surface.Attach(stream_.get());
+  WaitForIdleTaskQueue();
+  stream_->ReportFeedViewed(kForYouStream, surface.GetSurfaceId());
+  // The schedule should have been updated.
+  EXPECT_EQ(base::Minutes(30),
+            refresh_scheduler_
+                .scheduled_run_times[RefreshTaskId::kRefreshForYouFeed]);
+}
+
+TEST_F(FeedApiTest, FeedCloseRefresh_ExistingScheduleGetsReplaced) {
+  // Sometimes the clock starts near zero; move it forward just in case.
+  task_environment_.AdvanceClock(base::Minutes(10));
+
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      kFeedCloseRefresh, {{"require_interaction", "true"}});
+
+  // Inject a typical network response, with a server-defined request schedule.
+  {
+    RequestSchedule schedule;
+    schedule.anchor_time = kTestTimeEpoch;
+    schedule.refresh_offsets = {base::Minutes(12), base::Minutes(24)};
+    RefreshResponseData response_data;
+    response_data.model_update_request = MakeTypicalInitialModelState();
+    response_data.request_schedule = schedule;
+    response_translator_.InjectResponse(std::move(response_data));
+  }
+  TestForYouSurface surface(stream_.get());
+  WaitForIdleTaskQueue();
+  // Verify the first refresh was scheduled (epoch + 12 - 10)
+  EXPECT_EQ(base::Minutes(2),
+            refresh_scheduler_
+                .scheduled_run_times[RefreshTaskId::kRefreshForYouFeed]);
+
+  // Simulate content being viewed. This shouldn't schedule a refresh itself,
+  // but it's required in order for later interaction to schedule a refresh.
+  stream_->ReportFeedViewed(kForYouStream, surface.GetSurfaceId());
+
+  // Should cause a refresh to be scheduled.
+  stream_->ReportStreamScrolled(kForYouStream, 1);
+  EXPECT_EQ(base::Minutes(30),
+            refresh_scheduler_
+                .scheduled_run_times[RefreshTaskId::kRefreshForYouFeed]);
+}
+
+TEST_F(FeedApiTest, FeedCloseRefresh_Retry) {
+  // Sometimes the clock starts near zero; move it forward just in case.
+  task_environment_.AdvanceClock(base::Minutes(10));
+
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      kFeedCloseRefresh, {{"require_interaction", "false"}});
+  TestForYouSurface surface(stream_.get());
+  WaitForIdleTaskQueue();
+  // Update the schedule.
+  stream_->ReportFeedViewed(kForYouStream, surface.GetSurfaceId());
+  EXPECT_EQ(base::Minutes(30),
+            refresh_scheduler_
+                .scheduled_run_times[RefreshTaskId::kRefreshForYouFeed]);
+
+  // Simulate an allowed refresh that failed.
+  surface.Detach();
+  task_environment_.FastForwardBy(base::Minutes(35));
+  WaitForIdleTaskQueue();
+  refresh_scheduler_.Clear();
+  FeedNetwork::RawResponse raw_response;
+  raw_response.response_info.status_code = 400;
+  network_.InjectApiRawResponse<QueryBackgroundFeedDiscoverApi>(raw_response);
+  stream_->ExecuteRefreshTask(RefreshTaskId::kRefreshForYouFeed);
+  WaitForIdleTaskQueue();
+
+  // The next one should have been scheduled for 60 minutes after the anchor
+  // time, and the clock advanced 35 minutes, so the next one should be
+  // scheduled 25 minutes from now.
+  EXPECT_EQ(std::set<RefreshTaskId>({RefreshTaskId::kRefreshForYouFeed}),
+            refresh_scheduler_.completed_tasks);
+  EXPECT_EQ(base::Minutes(25),
+            refresh_scheduler_
+                .scheduled_run_times[RefreshTaskId::kRefreshForYouFeed]);
+
+  // Same thing again. There should be one more scheduled retry.
+  task_environment_.FastForwardBy(base::Minutes(35));
+  refresh_scheduler_.Clear();
+  network_.InjectApiRawResponse<QueryBackgroundFeedDiscoverApi>(raw_response);
+  stream_->ExecuteRefreshTask(RefreshTaskId::kRefreshForYouFeed);
+  WaitForIdleTaskQueue();
+
+  // The next one should have been scheduled for 90 minutes after the anchor
+  // time, and the clock advanced 70 minutes total, so the next one should be
+  // scheduled 20 minutes from now.
+  EXPECT_EQ(std::set<RefreshTaskId>({RefreshTaskId::kRefreshForYouFeed}),
+            refresh_scheduler_.completed_tasks);
+  EXPECT_EQ(base::Minutes(20),
+            refresh_scheduler_
+                .scheduled_run_times[RefreshTaskId::kRefreshForYouFeed]);
+}
+
+TEST_F(FeedApiTest, FeedCloseRefresh_RequestType) {
+  // Sometimes the clock starts near zero; move it forward just in case.
+  task_environment_.AdvanceClock(base::Minutes(10));
+
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      kFeedCloseRefresh, {{"require_interaction", "true"}});
+  response_translator_.InjectResponse(MakeTypicalInitialModelState());
+  TestForYouSurface surface(stream_.get());
+  WaitForIdleTaskQueue();
+
+  // Opening should cause a refresh to be scheduled.
+  stream_->ReportOpenAction(GURL("http://example.com"), kForYouStream, "");
+  EXPECT_EQ(base::Minutes(30),
+            refresh_scheduler_
+                .scheduled_run_times[RefreshTaskId::kRefreshForYouFeed]);
+
+  // Close the surface and unload the model.
+  surface.Detach();
+  task_environment_.FastForwardBy(base::Seconds(2));
+  WaitForIdleTaskQueue();
+
+  // Do the refresh.
+  response_translator_.InjectResponse(MakeTypicalInitialModelState());
+  stream_->ExecuteRefreshTask(RefreshTaskId::kRefreshForYouFeed);
+  WaitForIdleTaskQueue();
+
+  ASSERT_TRUE(refresh_scheduler_.completed_tasks.count(
+      RefreshTaskId::kRefreshForYouFeed));
+  EXPECT_EQ(LoadStreamStatus::kLoadedFromNetwork,
+            metrics_reporter_->background_refresh_status);
+  EXPECT_TRUE(network_.query_request_sent);
+  // Request reason should be set.
+  EXPECT_EQ(feedwire::FeedQuery::APP_CLOSE_REFRESH,
+            network_.query_request_sent->feed_request().feed_query().reason());
+  EXPECT_TRUE(response_translator_.InjectedResponseConsumed());
 }
 
 // Keep instantiations at the bottom.

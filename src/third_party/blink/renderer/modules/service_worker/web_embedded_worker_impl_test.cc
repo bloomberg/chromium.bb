@@ -21,11 +21,13 @@
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom-blink.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom-blink.h"
 #include "third_party/blink/public/mojom/timing/worker_timing_container.mojom-blink.h"
+#include "third_party/blink/public/platform/interface_registry.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_error.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_back_forward_cache_loader_helper.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/public/platform/web_url_loader_client.h"
+#include "third_party/blink/public/platform/web_url_loader_factory.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/public/platform/web_url_request_extra_data.h"
 #include "third_party/blink/public/platform/web_url_response.h"
@@ -140,9 +142,6 @@ class FakeWebServiceWorkerFetchContext final
     return {};
   }
   void SetIsOfflineMode(bool is_offline_mode) override {}
-  mojom::SubresourceLoaderUpdater* GetSubresourceLoaderUpdater() override {
-    return nullptr;
-  }
 
  private:
   FakeWebURLLoaderFactory fake_web_url_loader_factory_;
@@ -215,7 +214,6 @@ class MockServiceWorkerContextClient final
             KURL("https://example.com"), std::move(service_worker_object_host),
             service_worker_object.InitWithNewEndpointAndPassReceiver()),
         mojom::blink::FetchHandlerExistence::EXISTS,
-        /*subresource_loader_factories=*/nullptr,
         /*reporting_observer_receiver=*/mojo::NullReceiver());
 
     // To make the other side callable.
@@ -322,6 +320,7 @@ TEST_F(WebEmbeddedWorkerImplTest, TerminateSoonAfterStart) {
       /*content_settings_proxy=*/mojo::NullRemote(),
       /*cache_storage_remote=*/mojo::NullRemote(),
       browser_interface_broker.BindNewPipeAndPassRemote(),
+      InterfaceRegistry::GetEmptyInterfaceRegistry(),
       Thread::Current()->GetTaskRunner());
   testing::Mock::VerifyAndClearExpectations(mock_client_.get());
 
@@ -341,6 +340,7 @@ TEST_F(WebEmbeddedWorkerImplTest, TerminateWhileWaitingForDebugger) {
       /*content_settings_proxy=*/mojo::NullRemote(),
       /*cache_storage_remote=*/mojo::NullRemote(),
       browser_interface_broker.BindNewPipeAndPassRemote(),
+      InterfaceRegistry::GetEmptyInterfaceRegistry(),
       Thread::Current()->GetTaskRunner());
   testing::Mock::VerifyAndClearExpectations(mock_client_.get());
 
@@ -363,6 +363,7 @@ TEST_F(WebEmbeddedWorkerImplTest, ScriptNotFound) {
       /*content_settings_proxy=*/mojo::NullRemote(),
       /*cache_storage_remote=*/mojo::NullRemote(),
       browser_interface_broker.BindNewPipeAndPassRemote(),
+      InterfaceRegistry::GetEmptyInterfaceRegistry(),
       Thread::Current()->GetTaskRunner());
   testing::Mock::VerifyAndClearExpectations(mock_client_.get());
 

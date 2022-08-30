@@ -4,7 +4,9 @@
 
 #include "base/test/scoped_feature_list.h"
 
+#include "ash/app_list/model/app_list_model.h"
 #include "ash/constants/ash_features.h"
+#include "base/containers/cxx20_erase_vector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/app_list_test_util.h"
@@ -69,6 +71,88 @@ class TemporaryAppListSortTest : public test::AppListSyncableServiceTestBase {
   base::test::ScopedFeatureList feature_lists_;
   std::unique_ptr<test::TestAppListController> app_list_controller_;
 };
+
+// Verifies that sorting by app names is case insensitive.
+TEST_F(TemporaryAppListSortTest, SortIsCaseInsensitive) {
+  RemoveAllExistingItems();
+
+  // Add three apps.
+  const std::string kItemId1 = CreateNextAppId(GenerateId("app_id1"));
+  scoped_refptr<extensions::Extension> app1 =
+      MakeApp("aaa", kItemId1, extensions::Extension::NO_FLAGS);
+  InstallExtension(app1.get());
+
+  const std::string kItemId2 = CreateNextAppId(GenerateId("app_id2"));
+  scoped_refptr<extensions::Extension> app2 =
+      MakeApp("BBB", kItemId2, extensions::Extension::NO_FLAGS);
+  InstallExtension(app2.get());
+
+  const std::string kItemId3 = CreateNextAppId(GenerateId("app_id3"));
+  scoped_refptr<extensions::Extension> app3 =
+      MakeApp("ccc", kItemId3, extensions::Extension::NO_FLAGS);
+  InstallExtension(app3.get());
+
+  // Verify the default status. Note that when the order is kCustom, a new app
+  // should be placed at the front.
+  EXPECT_EQ(ash::AppListSortOrder::kCustom, GetSortOrderFromPrefs());
+  EXPECT_EQ(GetOrderedItemIdsFromModelUpdater(),
+            std::vector<std::string>({kItemId3, kItemId2, kItemId1}));
+
+  // Sort apps with name alphabetical order.
+  GetChromeModelUpdater()->RequestAppListSort(
+      ash::AppListSortOrder::kNameAlphabetical);
+
+  // The app positions stored in the model updater change, where the order of
+  // app names is case insensitive.
+  EXPECT_EQ(GetOrderedItemIdsFromModelUpdater(),
+            std::vector<std::string>({kItemId1, kItemId2, kItemId3}));
+}
+
+TEST_F(TemporaryAppListSortTest, AppInsertionInSortedAppListCaseInsensitive) {
+  RemoveAllExistingItems();
+
+  // Add three apps.
+  const std::string kItemId1 = CreateNextAppId(GenerateId("app_id1"));
+  scoped_refptr<extensions::Extension> app1 =
+      MakeApp("aaa", kItemId1, extensions::Extension::NO_FLAGS);
+  InstallExtension(app1.get());
+
+  const std::string kItemId2 = CreateNextAppId(GenerateId("app_id2"));
+  scoped_refptr<extensions::Extension> app2 =
+      MakeApp("BBB", kItemId2, extensions::Extension::NO_FLAGS);
+  InstallExtension(app2.get());
+
+  const std::string kItemId3 = CreateNextAppId(GenerateId("app_id3"));
+  scoped_refptr<extensions::Extension> app3 =
+      MakeApp("ccc", kItemId3, extensions::Extension::NO_FLAGS);
+  InstallExtension(app3.get());
+
+  // Verify the default status. Note that when the order is kCustom, a new app
+  // should be placed at the front.
+  EXPECT_EQ(ash::AppListSortOrder::kCustom, GetSortOrderFromPrefs());
+  EXPECT_EQ(GetOrderedItemIdsFromModelUpdater(),
+            std::vector<std::string>({kItemId3, kItemId2, kItemId1}));
+
+  // Sort apps with name alphabetical order.
+  GetChromeModelUpdater()->RequestAppListSort(
+      ash::AppListSortOrder::kNameAlphabetical);
+
+  // The app positions stored in the model updater change, where the order of
+  // app names is case insensitive.
+  EXPECT_EQ(GetOrderedItemIdsFromModelUpdater(),
+            std::vector<std::string>({kItemId1, kItemId2, kItemId3}));
+
+  // Install an additional app.
+  const std::string kItemId4 = GenerateId("app_id4");
+  scoped_refptr<extensions::Extension> app4 =
+      MakeApp("abc", kItemId4, extensions::Extension::NO_FLAGS);
+  InstallExtension(app4.get());
+
+  // The app positions stored in the model updater change, where the order of
+  // app names is case insensitive.
+  EXPECT_EQ(GetOrderedItemIdsFromModelUpdater(),
+            std::vector<std::string>({kItemId1, kItemId4, kItemId2, kItemId3}));
+}
 
 // Verifies sorting works as expected when the app list is under temporary sort.
 TEST_F(TemporaryAppListSortTest, SortUponTemporaryOrder) {
@@ -238,6 +322,276 @@ TEST_F(TemporaryAppListSortTest, HandleMoveItem) {
             std::vector<std::string>({kItemId3, kItemId4, kItemId2, kItemId1}));
 }
 
+// Verifies that moving an item within the app list resets the nominal app list
+// sort order (if the app list is sorted at the time).
+TEST_F(TemporaryAppListSortTest, MovingItemsResetsSortOrder) {
+  RemoveAllExistingItems();
+
+  std::vector<scoped_refptr<extensions::Extension>> apps;
+  for (int i = 0; i < 10; ++i) {
+    const std::string id = GenerateId(base::StringPrintf("app_id_%d", i));
+    const std::string name = base::StringPrintf("Item %d", i);
+    scoped_refptr<extensions::Extension> app =
+        MakeApp(name, id, extensions::Extension::NO_FLAGS);
+    apps.push_back(app);
+    InstallExtension(app.get());
+  }
+
+  // Sort with name alphabetical order.
+  GetChromeModelUpdater()->RequestAppListSort(
+      ash::AppListSortOrder::kNameAlphabetical);
+  Commit();
+  EXPECT_FALSE(IsUnderTemporarySort());
+  EXPECT_EQ(ash::AppListSortOrder::kNameAlphabetical, GetSortOrderFromPrefs());
+  EXPECT_EQ(GetOrderedNamesFromSyncableService(),
+            std::vector<std::string>({"Item 0", "Item 1", "Item 2", "Item 3",
+                                      "Item 4", "Item 5", "Item 6", "Item 7",
+                                      "Item 8", "Item 9"}));
+
+  // Move an item within the app list.
+  ChromeAppListModelUpdater* model_updater = GetChromeModelUpdater();
+  const syncer::StringOrdinal target_position =
+      model_updater->FindItem(apps[1]->id())
+          ->position()
+          .CreateBetween(model_updater->FindItem(apps[2]->id())->position());
+  model_updater->RequestPositionUpdate(
+      apps[7]->id(), target_position,
+      ash::RequestPositionUpdateReason::kMoveItem);
+
+  // Verify that the app list is no longer considered sorted - new items are
+  // added to the first position within the app list.
+  EXPECT_FALSE(IsUnderTemporarySort());
+  EXPECT_EQ(ash::AppListSortOrder::kCustom, GetSortOrderFromPrefs());
+  EXPECT_EQ(GetOrderedNamesFromSyncableService(),
+            std::vector<std::string>({"Item 0", "Item 1", "Item 7", "Item 2",
+                                      "Item 3", "Item 4", "Item 5", "Item 6",
+                                      "Item 8", "Item 9"}));
+
+  scoped_refptr<extensions::Extension> new_app = MakeApp(
+      "Item 10", GenerateId("new_install"), extensions::Extension::NO_FLAGS);
+  InstallExtension(new_app.get());
+
+  EXPECT_EQ(ash::AppListSortOrder::kCustom, GetSortOrderFromPrefs());
+  EXPECT_EQ(GetOrderedNamesFromSyncableService(),
+            std::vector<std::string>({"Item 10", "Item 0", "Item 1", "Item 7",
+                                      "Item 2", "Item 3", "Item 4", "Item 5",
+                                      "Item 6", "Item 8", "Item 9"}));
+}
+
+// Verifies that moving an item from a folder to root apps grid resets the
+// nominal app list sort order (if the app list is sorted at the time).
+TEST_F(TemporaryAppListSortTest, ReparentingItemToRootResetsSortOrder) {
+  RemoveAllExistingItems();
+
+  std::vector<scoped_refptr<extensions::Extension>> apps;
+  for (int i = 0; i < 10; ++i) {
+    const std::string id = GenerateId(base::StringPrintf("app_id_%d", i));
+    const std::string name = base::StringPrintf("Item %d", i);
+    scoped_refptr<extensions::Extension> app =
+        MakeApp(name, id, extensions::Extension::NO_FLAGS);
+    apps.push_back(app);
+    InstallExtension(app.get());
+  }
+
+  // Create a folder that contains three items.
+  const std::string kFolderItemId = GenerateId("folder_id");
+  syncer::SyncDataList sync_list;
+  sync_list.push_back(CreateAppRemoteData(
+      kFolderItemId, "Folder", "",
+      syncer::StringOrdinal::CreateInitialOrdinal().ToInternalValue(), kUnset,
+      sync_pb::AppListSpecifics_AppListItemType_TYPE_FOLDER));
+  syncer::StringOrdinal child_position =
+      syncer::StringOrdinal::CreateInitialOrdinal();
+  sync_list.push_back(
+      CreateAppRemoteData(apps[1]->id(), "Item 1", kFolderItemId,
+                          child_position.ToInternalValue(), kUnset));
+  child_position = child_position.CreateAfter();
+  sync_list.push_back(
+      CreateAppRemoteData(apps[2]->id(), "Item 2", kFolderItemId,
+                          child_position.ToInternalValue(), kUnset));
+  child_position = child_position.CreateAfter();
+  sync_list.push_back(
+      CreateAppRemoteData(apps[3]->id(), "Item 3", kFolderItemId,
+                          child_position.ToInternalValue(), kUnset));
+
+  app_list_syncable_service()->MergeDataAndStartSyncing(
+      syncer::APP_LIST, sync_list,
+      std::make_unique<syncer::FakeSyncChangeProcessor>(),
+      std::make_unique<syncer::SyncErrorFactoryMock>());
+  content::RunAllTasksUntilIdle();
+
+  // Sort with name alphabetical order.
+  GetChromeModelUpdater()->RequestAppListSort(
+      ash::AppListSortOrder::kNameAlphabetical);
+  Commit();
+  EXPECT_FALSE(IsUnderTemporarySort());
+  EXPECT_EQ(ash::AppListSortOrder::kNameAlphabetical, GetSortOrderFromPrefs());
+  EXPECT_EQ(GetOrderedNamesFromSyncableService(),
+            std::vector<std::string>({"Folder", "Item 0", "Item 1", "Item 2",
+                                      "Item 3", "Item 4", "Item 5", "Item 6",
+                                      "Item 7", "Item 8", "Item 9"}));
+
+  // Move an from the folder to root apps grid.
+  ChromeAppListModelUpdater* model_updater = GetChromeModelUpdater();
+  const syncer::StringOrdinal target_position =
+      model_updater->FindItem(apps[6]->id())
+          ->position()
+          .CreateBetween(model_updater->FindItem(apps[7]->id())->position());
+  model_updater->RequestMoveItemToRoot(apps[1]->id(), target_position);
+
+  // Verify that the app list is no longer considered sorted - new items are
+  // added to the first position within the app list.
+  EXPECT_FALSE(IsUnderTemporarySort());
+  EXPECT_EQ(ash::AppListSortOrder::kCustom, GetSortOrderFromPrefs());
+  EXPECT_EQ(GetOrderedNamesFromSyncableService(),
+            std::vector<std::string>({"Folder", "Item 0", "Item 2", "Item 3",
+                                      "Item 4", "Item 5", "Item 6", "Item 1",
+                                      "Item 7", "Item 8", "Item 9"}));
+
+  scoped_refptr<extensions::Extension> new_app = MakeApp(
+      "Item 10", GenerateId("new_install"), extensions::Extension::NO_FLAGS);
+  InstallExtension(new_app.get());
+
+  EXPECT_EQ(ash::AppListSortOrder::kCustom, GetSortOrderFromPrefs());
+  EXPECT_EQ(GetOrderedNamesFromSyncableService(),
+            std::vector<std::string>({"Item 10", "Folder", "Item 0", "Item 2",
+                                      "Item 3", "Item 4", "Item 5", "Item 6",
+                                      "Item 1", "Item 7", "Item 8", "Item 9"}));
+}
+
+// Verifies that merging two items to form a folder keeps the nominal app list
+// sort order (if the app list is sorted at the time) and positions the new
+// folder into sorted order.
+TEST_F(TemporaryAppListSortTest, MergingItemsKeepsSortOrder) {
+  RemoveAllExistingItems();
+
+  std::vector<scoped_refptr<extensions::Extension>> apps;
+  for (int i = 0; i < 10; ++i) {
+    const std::string id = GenerateId(base::StringPrintf("app_id_%d", i));
+    const std::string name = base::StringPrintf("Item %d", i);
+    scoped_refptr<extensions::Extension> app =
+        MakeApp(name, id, extensions::Extension::NO_FLAGS);
+    apps.push_back(app);
+    InstallExtension(app.get());
+  }
+
+  // Sort with name alphabetical order.
+  GetChromeModelUpdater()->RequestAppListSort(
+      ash::AppListSortOrder::kNameAlphabetical);
+  Commit();
+  EXPECT_FALSE(IsUnderTemporarySort());
+  EXPECT_EQ(ash::AppListSortOrder::kNameAlphabetical, GetSortOrderFromPrefs());
+  EXPECT_EQ(GetOrderedNamesFromSyncableService(),
+            std::vector<std::string>({"Item 0", "Item 1", "Item 2", "Item 3",
+                                      "Item 4", "Item 5", "Item 6", "Item 7",
+                                      "Item 8", "Item 9"}));
+
+  // Merge two items into a folder.
+  ChromeAppListModelUpdater* model_updater = GetChromeModelUpdater();
+  const std::string folder_id =
+      model_updater->model_for_test()->MergeItems(apps[8]->id(), apps[9]->id());
+
+  // Verify that the app list is still considered sorted, and that new installs
+  // keep getting added in the sorted order.
+  EXPECT_FALSE(IsUnderTemporarySort());
+  EXPECT_EQ(ash::AppListSortOrder::kNameAlphabetical, GetSortOrderFromPrefs());
+  std::vector<std::string> ordered_names = GetOrderedNamesFromSyncableService();
+  EXPECT_EQ(ordered_names, std::vector<std::string>(
+                               {"Item 0", "Item 1", "Item 2", "Item 3",
+                                "Item 4", "Item 5", "Item 6", "Item 7",
+                                "Item 8", "Item 9", "" /*"Unnamed" folder*/}));
+
+  scoped_refptr<extensions::Extension> new_app = MakeApp(
+      "Item 10", GenerateId("new_install"), extensions::Extension::NO_FLAGS);
+  InstallExtension(new_app.get());
+
+  EXPECT_EQ(ash::AppListSortOrder::kNameAlphabetical, GetSortOrderFromPrefs());
+  ordered_names = GetOrderedNamesFromSyncableService();
+  EXPECT_EQ(ordered_names,
+            std::vector<std::string>({"Item 0", "Item 1", "Item 10", "Item 2",
+                                      "Item 3", "Item 4", "Item 5", "Item 6",
+                                      "Item 7", "Item 8", "Item 9",
+                                      "" /*"Unnamed" folder*/}));
+}
+
+// Verifies that moving an item from a folder to root apps grid resets the
+// nominal app list sort order (if the app list is sorted at the time).
+TEST_F(TemporaryAppListSortTest, ReparentingItemToFolderDoesNotResetSortOrder) {
+  RemoveAllExistingItems();
+
+  std::vector<scoped_refptr<extensions::Extension>> apps;
+  for (int i = 0; i < 10; ++i) {
+    const std::string id = GenerateId(base::StringPrintf("app_id_%d", i));
+    const std::string name = base::StringPrintf("Item %d", i);
+    scoped_refptr<extensions::Extension> app =
+        MakeApp(name, id, extensions::Extension::NO_FLAGS);
+    apps.push_back(app);
+    InstallExtension(app.get());
+  }
+
+  // Create a folder that contains three items.
+  const std::string kFolderItemId = GenerateId("folder_id");
+  syncer::SyncDataList sync_list;
+  sync_list.push_back(CreateAppRemoteData(
+      kFolderItemId, "Folder", "",
+      syncer::StringOrdinal::CreateInitialOrdinal().ToInternalValue(), kUnset,
+      sync_pb::AppListSpecifics_AppListItemType_TYPE_FOLDER));
+
+  // Add three apps to the folder.
+  syncer::StringOrdinal child_position =
+      syncer::StringOrdinal::CreateInitialOrdinal();
+  sync_list.push_back(
+      CreateAppRemoteData(apps[1]->id(), "Item 1", kFolderItemId,
+                          child_position.ToInternalValue(), kUnset));
+  child_position = child_position.CreateAfter();
+  sync_list.push_back(
+      CreateAppRemoteData(apps[2]->id(), "Item 2", kFolderItemId,
+                          child_position.ToInternalValue(), kUnset));
+  child_position = child_position.CreateAfter();
+  sync_list.push_back(
+      CreateAppRemoteData(apps[3]->id(), "Item 3", kFolderItemId,
+                          child_position.ToInternalValue(), kUnset));
+
+  app_list_syncable_service()->MergeDataAndStartSyncing(
+      syncer::APP_LIST, sync_list,
+      std::make_unique<syncer::FakeSyncChangeProcessor>(),
+      std::make_unique<syncer::SyncErrorFactoryMock>());
+  content::RunAllTasksUntilIdle();
+
+  // Sort with name alphabetical order.
+  GetChromeModelUpdater()->RequestAppListSort(
+      ash::AppListSortOrder::kNameAlphabetical);
+  Commit();
+  EXPECT_FALSE(IsUnderTemporarySort());
+  EXPECT_EQ(ash::AppListSortOrder::kNameAlphabetical, GetSortOrderFromPrefs());
+  EXPECT_EQ(GetOrderedNamesFromSyncableService(),
+            std::vector<std::string>({"Folder", "Item 0", "Item 1", "Item 2",
+                                      "Item 3", "Item 4", "Item 5", "Item 6",
+                                      "Item 7", "Item 8", "Item 9"}));
+
+  // Move an from the folder to root apps grid.
+  ChromeAppListModelUpdater* model_updater = GetChromeModelUpdater();
+  model_updater->RequestMoveItemToFolder(apps[7]->id(), kFolderItemId);
+
+  // Verify that the app list is still considered sorted - new items are
+  // added to the app list to maintain sorted order.
+  EXPECT_FALSE(IsUnderTemporarySort());
+  EXPECT_EQ(ash::AppListSortOrder::kNameAlphabetical, GetSortOrderFromPrefs());
+  EXPECT_EQ(GetOrderedNamesFromSyncableService(),
+            std::vector<std::string>({"Folder", "Item 0", "Item 1", "Item 2",
+                                      "Item 3", "Item 4", "Item 5", "Item 6",
+                                      "Item 7", "Item 8", "Item 9"}));
+
+  scoped_refptr<extensions::Extension> new_app = MakeApp(
+      "Item 10", GenerateId("new_install"), extensions::Extension::NO_FLAGS);
+  InstallExtension(new_app.get());
+
+  EXPECT_EQ(ash::AppListSortOrder::kNameAlphabetical, GetSortOrderFromPrefs());
+  EXPECT_EQ(GetOrderedNamesFromSyncableService(),
+            std::vector<std::string>({"Folder", "Item 0", "Item 1", "Item 10",
+                                      "Item 2", "Item 3", "Item 4", "Item 5",
+                                      "Item 6", "Item 7", "Item 8", "Item 9"}));
+}
 // Verifies that reverting the temporary name sort order works as expected.
 TEST_F(TemporaryAppListSortTest, RevertNameOrder) {
   RemoveAllExistingItems();
@@ -447,31 +801,102 @@ TEST_F(TemporaryAppListSortTest, HandleItemMerge) {
   syncer::StringOrdinal position =
       model_updater->FindItem(kItemId4)->position().CreateBefore();
   const std::string kFolderItemId = GenerateId("folder_id1");
-  std::unique_ptr<ChromeAppListItem> folder_item =
-      std::make_unique<ChromeAppListItem>(profile_.get(), kFolderItemId,
-                                          model_updater);
-  folder_item->SetChromeIsFolder(true);
-  ChromeAppListItem::TestApi(folder_item.get()).SetPosition(position);
-  ChromeAppListItem::TestApi(folder_item.get()).SetName("Folder1");
-  app_list_syncable_service()->AddItem(std::move(folder_item));
-  model_updater->RequestMoveItemToFolder(
-      kItemId4, kFolderItemId, ash::RequestMoveToFolderReason::kMergeFirstItem);
-  model_updater->RequestMoveItemToFolder(
-      kItemId3, kFolderItemId,
-      ash::RequestMoveToFolderReason::kMergeSecondItem);
+  const std::string folder_item_id =
+      model_updater->model_for_test()->MergeItems(kItemId4, kItemId3);
+  model_updater->RequestFolderRename(folder_item_id, "Folder1");
 
   // Verify that:
   // (1) Temporary sort ends.
-  // (2) Sort order is cleared.
+  // (2) Sort order is committed.
   // (3) Local positions are committed.
   EXPECT_FALSE(IsUnderTemporarySort());
-  EXPECT_EQ(ash::AppListSortOrder::kCustom, GetSortOrderFromPrefs());
+  EXPECT_EQ(ash::AppListSortOrder::kNameReverseAlphabetical,
+            GetSortOrderFromPrefs());
   EXPECT_EQ(GetOrderedItemIdsFromSyncableService(),
             std::vector<std::string>(
-                {kFolderItemId, kItemId4, kItemId3, kItemId2, kItemId1}));
+                {folder_item_id, kItemId4, kItemId3, kItemId2, kItemId1}));
   EXPECT_EQ(GetOrderedItemIdsFromModelUpdater(),
             std::vector<std::string>(
-                {kFolderItemId, kItemId4, kItemId3, kItemId2, kItemId1}));
+                {folder_item_id, kItemId4, kItemId3, kItemId2, kItemId1}));
+}
+
+// Verifies that the app list under temporary sort works as expected when a
+// folder gets renamed.
+TEST_F(TemporaryAppListSortTest, HandleFolderRename) {
+  RemoveAllExistingItems();
+
+  // Configure sunc data with a folder containing two apps.
+  const std::string kFolderItemId = "folder_id";
+  syncer::SyncDataList sync_list;
+  sync_list.push_back(CreateAppRemoteData(
+      kFolderItemId, "Folder", "",
+      syncer::StringOrdinal::CreateInitialOrdinal().ToInternalValue(), kUnset,
+      sync_pb::AppListSpecifics_AppListItemType_TYPE_FOLDER));
+  const std::string kItemId1 = GenerateId("app_id1");
+  const std::string kItemId2 = GenerateId("app_id2");
+
+  syncer::StringOrdinal child_position =
+      syncer::StringOrdinal::CreateInitialOrdinal();
+  sync_list.push_back(CreateAppRemoteData(
+      kItemId1, "A", kFolderItemId, child_position.ToInternalValue(), kUnset));
+  child_position = child_position.CreateAfter();
+  sync_list.push_back(CreateAppRemoteData(
+      kItemId2, "B", kFolderItemId, child_position.ToInternalValue(), kUnset));
+  app_list_syncable_service()->MergeDataAndStartSyncing(
+      syncer::APP_LIST, sync_list,
+      std::make_unique<syncer::FakeSyncChangeProcessor>(),
+      std::make_unique<syncer::SyncErrorFactoryMock>());
+  content::RunAllTasksUntilIdle();
+
+  // Install four apps.
+  scoped_refptr<extensions::Extension> app1 =
+      MakeApp("A", kItemId1, extensions::Extension::NO_FLAGS);
+  InstallExtension(app1.get());
+
+  scoped_refptr<extensions::Extension> app2 =
+      MakeApp("B", kItemId2, extensions::Extension::NO_FLAGS);
+  InstallExtension(app2.get());
+
+  const std::string kItemId3 = CreateNextAppId(GenerateId("app_id3"));
+  scoped_refptr<extensions::Extension> app3 =
+      MakeApp("C", kItemId3, extensions::Extension::NO_FLAGS);
+  InstallExtension(app3.get());
+
+  const std::string kItemId4 = CreateNextAppId(GenerateId("app_id4"));
+  scoped_refptr<extensions::Extension> app4 =
+      MakeApp("D", kItemId4, extensions::Extension::NO_FLAGS);
+  InstallExtension(app4.get());
+
+  // Sort with the name alphabetical order.
+  ChromeAppListModelUpdater* model_updater = GetChromeModelUpdater();
+  model_updater->RequestAppListSort(ash::AppListSortOrder::kNameAlphabetical);
+  Commit();
+
+  // Sort with the name reverse alphabetical order without committing. The
+  // permanent sort order and the permanent item positions should not change.
+  model_updater->RequestAppListSort(
+      ash::AppListSortOrder::kNameReverseAlphabetical);
+  EXPECT_EQ(GetOrderedItemIdsFromSyncableService(),
+            std::vector<std::string>(
+                {kItemId1, kItemId2, kItemId3, kItemId4, kFolderItemId}));
+  EXPECT_EQ(ash::AppListSortOrder::kNameAlphabetical, GetSortOrderFromPrefs());
+
+  // Rename the test folder.
+  model_updater->RequestFolderRename(kFolderItemId, "A new folder name");
+
+  // Verify that:
+  // (1) Temporary sort ends.
+  // (2) Sort order is commited.
+  // (3) Local positions are committed.
+  EXPECT_FALSE(IsUnderTemporarySort());
+  EXPECT_EQ(ash::AppListSortOrder::kNameReverseAlphabetical,
+            GetSortOrderFromPrefs());
+  EXPECT_EQ(GetOrderedItemIdsFromSyncableService(),
+            std::vector<std::string>(
+                {kItemId4, kItemId3, kItemId2, kFolderItemId, kItemId1}));
+  EXPECT_EQ(GetOrderedItemIdsFromModelUpdater(),
+            std::vector<std::string>(
+                {kItemId4, kItemId3, kItemId2, kFolderItemId, kItemId1}));
 }
 
 // Verifies that the app list under temporary sort works as expected when moving
@@ -535,19 +960,18 @@ TEST_F(TemporaryAppListSortTest, HandleMoveItemToFolder) {
   // Sort with the name alphabetical order and commit.
   model_updater->RequestAppListSort(ash::AppListSortOrder::kNameAlphabetical);
   Commit();
-  EXPECT_EQ(std::vector<std::string>({"Folder", "A", "B", "C", "D", "E"}),
+  EXPECT_EQ(std::vector<std::string>({"A", "B", "C", "D", "E", "Folder"}),
             GetOrderedNamesFromSyncableService());
 
   // Sort with the name reverse alphabetical order without committing.
   model_updater->RequestAppListSort(
       ash::AppListSortOrder::kNameReverseAlphabetical);
   EXPECT_EQ(ash::AppListSortOrder::kNameAlphabetical, GetSortOrderFromPrefs());
-  EXPECT_EQ(std::vector<std::string>({"Folder", "A", "B", "C", "D", "E"}),
+  EXPECT_EQ(std::vector<std::string>({"A", "B", "C", "D", "E", "Folder"}),
             GetOrderedNamesFromSyncableService());
 
   // Move `app3` to the folder.
-  model_updater->RequestMoveItemToFolder(
-      kItemId3, kFolderItemId, ash::RequestMoveToFolderReason::kMoveItem);
+  model_updater->RequestMoveItemToFolder(kItemId3, kFolderItemId);
 
   // Verify that:
   // (1) Temporary sort ends.
@@ -556,6 +980,84 @@ TEST_F(TemporaryAppListSortTest, HandleMoveItemToFolder) {
   EXPECT_EQ(ash::AppListSortOrder::kNameReverseAlphabetical,
             GetSortOrderFromPrefs());
   EXPECT_EQ(std::vector<std::string>({"Folder", "E", "D", "C", "B", "A"}),
+            GetOrderedNamesFromSyncableService());
+}
+
+// Verifies that the app list under temporary sort works as expected when moving
+// an item from a folder to root apps grid.
+TEST_F(TemporaryAppListSortTest, HandleMoveItemToRootGrid) {
+  RemoveAllExistingItems();
+
+  // Add one folder containing three apps.
+  const std::string kFolderItemId = GenerateId("folder_id");
+  syncer::SyncDataList sync_list;
+  sync_list.push_back(CreateAppRemoteData(
+      kFolderItemId, "Folder", "",
+      syncer::StringOrdinal::CreateInitialOrdinal().ToInternalValue(), kUnset,
+      sync_pb::AppListSpecifics_AppListItemType_TYPE_FOLDER));
+  const std::string kItemId1 = GenerateId("app_id1");
+  const std::string kItemId2 = GenerateId("app_id2");
+  const std::string kItemId3 = GenerateId("app_id3");
+
+  syncer::StringOrdinal child_position =
+      syncer::StringOrdinal::CreateInitialOrdinal();
+  sync_list.push_back(CreateAppRemoteData(
+      kItemId1, "A", kFolderItemId, child_position.ToInternalValue(), kUnset));
+  child_position = child_position.CreateAfter();
+  sync_list.push_back(CreateAppRemoteData(
+      kItemId2, "B", kFolderItemId, child_position.ToInternalValue(), kUnset));
+  child_position = child_position.CreateAfter();
+  sync_list.push_back(CreateAppRemoteData(
+      kItemId3, "C", kFolderItemId, child_position.ToInternalValue(), kUnset));
+
+  app_list_syncable_service()->MergeDataAndStartSyncing(
+      syncer::APP_LIST, sync_list,
+      std::make_unique<syncer::FakeSyncChangeProcessor>(),
+      std::make_unique<syncer::SyncErrorFactoryMock>());
+  content::RunAllTasksUntilIdle();
+
+  // Install test apps that were added to the folder.
+  scoped_refptr<extensions::Extension> app1 =
+      MakeApp("A", kItemId1, extensions::Extension::NO_FLAGS);
+  InstallExtension(app1.get());
+  scoped_refptr<extensions::Extension> app2 =
+      MakeApp("B", kItemId2, extensions::Extension::NO_FLAGS);
+  InstallExtension(app2.get());
+  scoped_refptr<extensions::Extension> app3 =
+      MakeApp("C", kItemId3, extensions::Extension::NO_FLAGS);
+  InstallExtension(app3.get());
+
+  // Install an additional app.
+  const std::string kItemId4 = GenerateId("app_id4");
+  scoped_refptr<extensions::Extension> app4 =
+      MakeApp("G", kItemId4, extensions::Extension::NO_FLAGS);
+  InstallExtension(app4.get());
+
+  // Sort with the reverse alphabetical name order and commit.
+  ChromeAppListModelUpdater* model_updater = GetChromeModelUpdater();
+  model_updater->RequestAppListSort(
+      ash::AppListSortOrder::kNameReverseAlphabetical);
+  Commit();
+  EXPECT_EQ(std::vector<std::string>({"G", "Folder", "C", "B", "A"}),
+            GetOrderedNamesFromSyncableService());
+
+  // Sort with the name alphabetical order without committing.
+  model_updater->RequestAppListSort(ash::AppListSortOrder::kNameAlphabetical);
+  EXPECT_EQ(ash::AppListSortOrder::kNameReverseAlphabetical,
+            GetSortOrderFromPrefs());
+  EXPECT_EQ(std::vector<std::string>({"G", "Folder", "C", "B", "A"}),
+            GetOrderedNamesFromSyncableService());
+
+  // Move an folder item to root apps grid.
+  model_updater->RequestMoveItemToRoot(
+      kItemId1, model_updater->FindItem(kItemId4)->position().CreateAfter());
+
+  // Verify that:
+  // (1) Temporary sort ends.
+  // (2) Sort order pref reverts to custom.
+  EXPECT_FALSE(IsUnderTemporarySort());
+  EXPECT_EQ(ash::AppListSortOrder::kCustom, GetSortOrderFromPrefs());
+  EXPECT_EQ(std::vector<std::string>({"B", "C", "Folder", "G", "A"}),
             GetOrderedNamesFromSyncableService());
 }
 

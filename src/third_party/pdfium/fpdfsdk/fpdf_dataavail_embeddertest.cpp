@@ -9,9 +9,9 @@
 #include <vector>
 
 #include "core/fxcrt/bytestring.h"
-#include "core/fxcrt/widestring.h"
 #include "public/fpdfview.h"
 #include "testing/embedder_test.h"
+#include "testing/fx_string_testhelpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/range_set.h"
 #include "testing/utils/file_util.h"
@@ -318,9 +318,7 @@ TEST_F(FPDFDataAvailEmbedderTest, LoadInfoAfterReceivingFirstPage) {
   // Info was remapped to a dictionary with Type "Catalog"
   unsigned short buffer[100] = {0};
   EXPECT_TRUE(FPDF_GetMetaText(document(), "Type", buffer, sizeof(buffer)));
-  constexpr wchar_t kExpectedValue[] = L"Catalog";
-  EXPECT_EQ(WideString(kExpectedValue),
-            WideString::FromUTF16LE(buffer, FXSYS_len(kExpectedValue)));
+  EXPECT_EQ(L"Catalog", GetPlatformWString(buffer));
 }
 
 TEST_F(FPDFDataAvailEmbedderTest, TryLoadInvalidInfo) {
@@ -390,4 +388,18 @@ TEST_F(FPDFDataAvailEmbedderTest, NegativePageIndex) {
   ASSERT_EQ(PDF_DATA_AVAIL, FPDFAvail_IsDocAvail(avail(), loader.hints()));
   EXPECT_EQ(PDF_DATA_NOTAVAIL,
             FPDFAvail_IsPageAvail(avail(), -1, loader.hints()));
+}
+
+TEST_F(FPDFDataAvailEmbedderTest, Bug_1324189) {
+  // Test passes if it doesn't crash.
+  TestAsyncLoader loader("bug_1324189.pdf");
+  CreateAvail(loader.file_avail(), loader.file_access());
+  ASSERT_EQ(PDF_DATA_NOTAVAIL, FPDFAvail_IsDocAvail(avail(), loader.hints()));
+}
+
+TEST_F(FPDFDataAvailEmbedderTest, Bug_1324503) {
+  // Test passes if it doesn't crash.
+  TestAsyncLoader loader("bug_1324503.pdf");
+  CreateAvail(loader.file_avail(), loader.file_access());
+  ASSERT_EQ(PDF_DATA_NOTAVAIL, FPDFAvail_IsDocAvail(avail(), loader.hints()));
 }

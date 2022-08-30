@@ -77,15 +77,27 @@ TEST(InterestGroupMojomTraitsTest, SerializeAndDeserializeName) {
   SerializeAndDeserializeAndCompare(interest_group);
 }
 
+TEST(InterestGroupMojomTraitsTest, SerializeAndDeserializePriority) {
+  InterestGroup interest_group = CreateInterestGroup();
+  interest_group.priority = 5.0;
+  SerializeAndDeserializeAndCompare(interest_group);
+}
+
 TEST(InterestGroupMojomTraitsTest, SerializeAndDeserializeBiddingUrl) {
   InterestGroup interest_group = CreateInterestGroup();
   interest_group.bidding_url = GURL(kUrl1);
   SerializeAndDeserializeAndCompare(interest_group);
 }
 
+TEST(InterestGroupMojomTraitsTest, SerializeAndDeserializeWasmHelperUrl) {
+  InterestGroup interest_group = CreateInterestGroup();
+  interest_group.bidding_wasm_helper_url = GURL(kUrl1);
+  SerializeAndDeserializeAndCompare(interest_group);
+}
+
 TEST(InterestGroupMojomTraitsTest, SerializeAndDeserializeUpdateUrl) {
   InterestGroup interest_group = CreateInterestGroup();
-  interest_group.update_url = GURL(kUrl1);
+  interest_group.daily_update_url = GURL(kUrl1);
   SerializeAndDeserializeAndCompare(interest_group);
 }
 

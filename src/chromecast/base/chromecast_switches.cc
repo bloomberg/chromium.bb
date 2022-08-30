@@ -24,6 +24,9 @@ const char kCrashServerUrl[] = "crash-server-url";
 // Switch to disable Crash reporting
 const char kDisableCrashReporter[] = "disable-crash-reporter";
 
+// Switch to dumpstate binary path.
+const char kDumpstateBinPath[] = "dumpstate-path";
+
 // Enable file accesses. It should not be enabled for most Cast devices.
 const char kEnableLocalFileAccesses[] = "enable-local-file-accesses";
 
@@ -222,6 +225,15 @@ const char kExtensionsDir[] = "cast-extensions-dir";
 // Defer initialization of the base::FeatureList in an external service process,
 // allowing the process to include its own non-default features.
 const char kDeferFeatureList[] = "defer-feature-list";
+
+// Rather than share a common pref config file with cast_service, use a
+// dedicated browser pref config file. This must be set when `cast_browser` is
+// running in a different process from `cast_service`.
+const char kUseCastBrowserPrefConfig[] = "use-cast-browser-pref-config";
+
+// Creates the service broker inside of this process. Only one process should
+// host the service broker.
+const char kInProcessBroker[] = "in-process-broker";
 
 }  // namespace switches
 

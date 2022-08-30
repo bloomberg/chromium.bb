@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {ColorModeRestriction, Destination, DestinationConnectionStatus, DestinationOrigin, DestinationType, DuplexModeRestriction, Margins, PrintPreviewModelElement, Size} from 'chrome://print/print_preview.js';
-// <if expr="chromeos or lacros">
+import {ColorModeRestriction, Destination, DestinationOrigin, DuplexModeRestriction, Margins, PrintPreviewModelElement, Size} from 'chrome://print/print_preview.js';
+// <if expr="chromeos_ash or chromeos_lacros">
 import {PinModeRestriction} from 'chrome://print/print_preview.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 // </if>
@@ -35,9 +35,8 @@ suite('ModelSettingsPolicyTest', function() {
     model.margins = new Margins(72, 72, 72, 72);
 
     // Create a test destination.
-    model.destination = new Destination(
-        'FooDevice', DestinationType.LOCAL, DestinationOrigin.LOCAL, 'FooName',
-        DestinationConnectionStatus.ONLINE);
+    model.destination =
+        new Destination('FooDevice', DestinationOrigin.LOCAL, 'FooName');
     model.set(
         'destination.capabilities',
         getCddTemplate(model.destination.id).capabilities);
@@ -249,7 +248,7 @@ suite('ModelSettingsPolicyTest', function() {
     });
   });
 
-  // <if expr="chromeos or lacros">
+  // <if expr="chromeos_ash or chromeos_lacros">
   test('pin managed', function() {
     [{
       // No policies, settings is modifiable.

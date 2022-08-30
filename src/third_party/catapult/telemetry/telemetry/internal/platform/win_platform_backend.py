@@ -112,19 +112,28 @@ class WinPlatformBackend(desktop_platform_backend.DesktopPlatformBackend):
     return process_info
 
   def GetPcSystemType(self):
-    # use: wmic computersystem get pcsystemtype
-    # the return value of the communicate() looks like:
-    #  ('PCSystemType  \r\r\nX             \r\r\n\r\r\n', None)
-    # where X represents the system type.
-    # More on: https://docs.microsoft.com/en-us/windows/win32/cimwin32prov/win32-computersystem
+    # WMIC was introduced in Windows 2000, deprecated in Windows 10 21H1 (build
+    # 19043), and removed in Windows 10 22H1. Get-CimInstance is the recommended
+    # replacement, introduced in PowerShell 3.0, together with Windows 8. So to
+    # work with OSes starting from Windows 7, we need to keep them both.
+    # Details about computer system can be found at
+    # https://docs.microsoft.com/en-us/windows/win32/cimwin32prov/win32-computersystem
+
+    use_powershell = int(platform.version().split('.')[-1]) >= 19043
+
+    if use_powershell:
+      args = ['powershell', 'Get-CimInstance -ClassName Win32_ComputerSystem' \
+              ' | Select-Object -Property PCSystemType']
+    else:
+      args = ['wmic', 'computersystem', 'get', 'pcsystemtype']
     lines = six.ensure_str(
-        subprocess.Popen(
-            ['wmic', 'computersystem', 'get', 'pcsystemtype'],
-            stdout=subprocess.PIPE
-            ).communicate()[0]
-        ).split()
+        subprocess.Popen(args, stdout=subprocess.PIPE).communicate()[0]).split()
+
     if len(lines) > 1 and lines[0] == 'PCSystemType':
-      return lines[1]
+      if use_powershell:
+        return lines[2]
+      else:
+        return lines[1]
     return '0'
 
   def IsLaptop(self):
@@ -240,8 +249,7 @@ class WinPlatformBackend(desktop_platform_backend.DesktopPlatformBackend):
       handle = win32api.OpenProcess(mask, False, pid)
       return func(handle)
     except pywintypes.error as e:
-      errcode = e[0]
-      if errcode == 87:
+      if e.winerror == winerror.ERROR_INVALID_PARAMETER:
         raise exceptions.ProcessGoneException()
       raise
     finally:
@@ -345,10 +353,9 @@ class WinPlatformBackend(desktop_platform_backend.DesktopPlatformBackend):
             win32gui.GetClassName(hwnd).lower().startswith(app_name)):
           hwnds.append(hwnd)
       except pywintypes.error as e:
-        error_code = e[0]
         # Some windows may close after enumeration and before the calls above,
         # so ignore those.
-        if error_code != winerror.ERROR_INVALID_WINDOW_HANDLE:
+        if e.winerror != winerror.ERROR_INVALID_WINDOW_HANDLE:
           raise
       return True
     hwnds = []

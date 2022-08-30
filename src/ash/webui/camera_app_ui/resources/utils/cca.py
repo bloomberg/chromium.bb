@@ -6,6 +6,7 @@
 import ast
 import argparse
 import functools
+import glob
 import json
 import logging
 import os
@@ -14,6 +15,8 @@ import shlex
 import subprocess
 import sys
 import tempfile
+import time
+import xml.sax
 
 
 @functools.lru_cache(1)
@@ -30,6 +33,11 @@ def shell_join(cmd):
 def run(args, cwd=None):
     logging.debug(f'$ {shell_join(args)}')
     subprocess.check_call(args, cwd=cwd)
+
+
+def check_output(args, cwd=None):
+    logging.debug(f'$ {shell_join(args)}')
+    return subprocess.check_output(args, cwd=cwd, text=True)
 
 
 def run_node(args):
@@ -65,6 +73,41 @@ def gen_files_are_hard_links(gen_dir):
     return os.stat(util_js).st_ino == os.stat(util_js_in_gen).st_ino
 
 
+CCA_OVERRIDE_PATH = '/etc/camera/cca'
+CCA_OVERRIDE_FEATURE = 'CCALocalOverride'
+CHROME_DEV_CONF_PATH = '/etc/chrome_dev.conf'
+
+
+def local_override_enabled(device):
+    chrome_dev_conf = check_output(
+        ['ssh', device, '--', 'cat', CHROME_DEV_CONF_PATH])
+    # This is a simple heuristic that is not 100% accurate, since this only
+    # matches the feature name which can be in other irrevelant position in the
+    # file. This should be fine though since this is only used for developers
+    # and it's not expected to have the exact string match outside of
+    # --enable-features added by this script.
+    return CCA_OVERRIDE_FEATURE in chrome_dev_conf
+
+
+def ensure_local_override_enabled(device, force):
+    if local_override_enabled(device):
+        return
+    run([
+        'ssh', device, '--',
+        f'echo "--enable-features={CCA_OVERRIDE_FEATURE}"' +
+        f' >> {CHROME_DEV_CONF_PATH}'
+    ])
+    if not force:
+        prompt = input('Need to restart UI for deploy to take effect, ' +
+                       'do it now? (y/N): ').lower()
+        if prompt != 'y':
+            print(
+                'Not restarting UI. ' +
+                '`restart ui` on DUT manually for the change to take effect.')
+            return
+    run(['ssh', device, '--', 'restart', 'ui'])
+
+
 def deploy(args):
     root_dir = get_chromium_root()
     cca_root = os.getcwd()
@@ -72,6 +115,7 @@ def deploy(args):
 
     src_relative_dir = os.path.relpath(cca_root, root_dir)
     gen_dir = os.path.join(target_dir, 'gen', src_relative_dir)
+    tsc_dir = os.path.join(gen_dir, 'js/tsc/js')
 
     # Since CCA copy source to gen directory and place it together with other
     # generated files for TypeScript compilation, and GN use hard links when
@@ -83,7 +127,7 @@ def deploy(args):
     # TODO(pihsun): Support this case if there's some common scenario that
     # would cause this.
     assert gen_files_are_hard_links(gen_dir), (
-        'The generated files are not hard linked.')
+        'The generated files are not hard linked, compile Chrome first?')
 
     build_preload_images_js(os.path.join(gen_dir, 'js'))
 
@@ -94,69 +138,63 @@ def deploy(args):
         # For better debugging experience on DUT.
         '--inlineSourceMap',
         '--inlineSources',
+        # For easier developing / test cycle.
+        '--noUnusedLocals',
+        'false',
+        '--noUnusedParameters',
+        'false',
     ])
 
-    build_pak_cmd = [
-        'tools/grit/grit.py',
-        '-i',
-        os.path.join(gen_dir, '../ash_camera_app_resources.grd'),
-        'build',
-        '-o',
-        os.path.join(target_dir, 'gen/ash'),
-        '-f',
-        os.path.join(target_dir,
-                     'gen/tools/gritsettings/default_resource_ids'),
-        '-D',
-        f'SHARED_INTERMEDIATE_DIR={os.path.join(target_dir, "gen")}',
-        '-E',
-        f'root_src_dir={get_chromium_root()}',
-        '-E',
-        f'root_gen_dir={os.path.join(target_dir, "gen")}',
-    ]
-    # Since there is a constraint in grit.py which will replace ${root_gen_dir}
-    # in .grd file only if the script is executed in the parent directory of
-    # ${root_gen_dir}, execute the script in Chromium root as a workaround.
-    run(build_pak_cmd, get_chromium_root())
-
-    with tempfile.TemporaryDirectory() as tmp_dir:
-        pak_util_script = os.path.join(get_chromium_root(),
-                                       'tools/grit/pak_util.py')
-        extract_resources_pak_cmd = [
-            pak_util_script,
-            'extract',
-            '--raw',
-            os.path.join(target_dir, 'resources.pak'),
-            '-o',
-            tmp_dir,
-        ]
-        run(extract_resources_pak_cmd)
-
-        extract_camera_pak_cmd = [
-            pak_util_script,
-            'extract',
-            '--raw',
-            os.path.join(target_dir, 'gen/ash/ash_camera_app_resources.pak'),
-            '-o',
-            tmp_dir,
-        ]
-        run(extract_camera_pak_cmd)
-
-        create_new_resources_pak_cmd = [
-            pak_util_script,
-            'create',
-            '-i',
-            tmp_dir,
-            os.path.join(target_dir, 'resources.pak'),
-        ]
-        run(create_new_resources_pak_cmd)
-
-    deploy_new_resources_pak_cmd = [
+    deploy_new_tsc_files = [
         'rsync',
+        '--recursive',
         '--inplace',
-        os.path.join(target_dir, 'resources.pak'),
-        f'{args.device}:/opt/google/chrome/',
+        '--delete',
+        '--mkpath',
+        # rsync by default use source file permission masked by target file
+        # system umask while transferring new files, and since workstation
+        # defaults to have file not readable by others, this makes deployed
+        # file not readable by Chrome.
+        # Set --chmod=a+rX to rsync to fix this ('a' so it won't be affected by
+        # local umask, +r for read and +X for executable bit on folder), and
+        # set --perms so existing files that might have the wrong permission
+        # will have their permission fixed.
+        '--perms',
+        '--chmod=a+rX',
+        f'{tsc_dir}/',
+        f'{args.device}:{CCA_OVERRIDE_PATH}/js/',
     ]
-    run(deploy_new_resources_pak_cmd)
+    run(deploy_new_tsc_files)
+
+    for dir in ['css', 'images', 'views', 'sounds']:
+        deploy_new_assets = [
+            'rsync',
+            '--recursive',
+            '--inplace',
+            '--delete',
+            '--mkpath',
+            '--perms',
+            '--chmod=a+rX',
+            f'{os.path.join(cca_root, dir)}/',
+            f'{args.device}:{CCA_OVERRIDE_PATH}/{dir}/',
+        ]
+        run(deploy_new_assets)
+
+    current_time = time.strftime('%F %T%z')
+    run([
+        'ssh',
+        args.device,
+        '--',
+        'printf',
+        '%s',
+        shlex.quote(
+            f'export const DEPLOYED_VERSION = "cca.py deploy {current_time}";'
+        ),
+        '>',
+        f'{CCA_OVERRIDE_PATH}/js/deployed_version.js',
+    ])
+
+    ensure_local_override_enabled(args.device, args.force)
 
 
 def test(args):
@@ -171,6 +209,8 @@ def lint(args):
     cmd = [
         'eslint/bin/eslint.js',
         'js',
+        'eslint_plugin',
+        '.eslintrc.js',
         '--resolve-plugins-relative-to',
         os.path.join(get_chromium_root(), 'third_party/node'),
     ]
@@ -180,28 +220,6 @@ def lint(args):
         run_node(cmd)
     except subprocess.CalledProcessError as e:
         print('ESLint check failed, return code =', e.returncode)
-
-
-# List of files of entrypoints to TypeScript compilation.
-#
-# Since TypeScript can recognize ES6 module imports to find files to be
-# compiled, this list includes files that are not directly imported with ES6
-# module import, for example:
-# * files running in web worker
-# * files loaded in iframe by util.createUntrustedJSModule
-# * TypeScript type definitions (.d.ts)
-# * files directly referenced by <script> tag in HTML
-TS_ENTRY_FILES = [
-    "js/externs/types.d.ts",
-    "js/init.js",
-    "js/main.js",
-    "js/models/barcode_worker.js",
-    "js/models/ffmpeg/video_processor.js",
-    "js/test_bridge.js",
-    "js/untrusted_ga_helper.js",
-    "js/untrusted_script_loader.js",
-    "js/untrusted_video_processor_helper.js",
-]
 
 
 def get_tsc_paths(board):
@@ -229,7 +247,7 @@ def tsc(args):
     with open(os.path.join(cca_root, 'tsconfig_base.json')) as f:
         tsconfig = json.load(f)
 
-    tsconfig['files'] = TS_ENTRY_FILES
+    tsconfig['files'] = glob.glob('js/**/*.ts', recursive=True)
     tsconfig['compilerOptions']['noEmit'] = True
     tsconfig['compilerOptions']['paths'] = get_tsc_paths(args.board)
 
@@ -240,6 +258,88 @@ def tsc(args):
         run_node(['typescript/bin/tsc'])
     except subprocess.CalledProcessError as e:
         print('TypeScript check failed, return code =', e.returncode)
+
+
+RESOURCES_H_PATH = '../resources.h'
+I18N_STRING_TS_PATH = './js/i18n_string.ts'
+CAMERA_STRINGS_GRD_PATH = './strings/camera_strings.grd'
+
+
+def parse_resources_h():
+    with open(RESOURCES_H_PATH, 'r') as f:
+        content = f.read()
+        return set(re.findall(r'\{"(\w+)",\s*(\w+)\}', content))
+
+
+def parse_i18n_string_ts():
+    with open(I18N_STRING_TS_PATH, 'r') as f:
+        content = f.read()
+        return set([(name, f'IDS_{id}')
+                    for (id, name) in re.findall(r"(\w+) =\s*'(\w+)'", content)
+                    ])
+
+
+# Same as tools/check_grd_for_unused_strings.py
+class GrdIDExtractor(xml.sax.handler.ContentHandler):
+    """Extracts the IDs from messages in GRIT files"""
+
+    def __init__(self):
+        self.id_set_ = set()
+
+    def startElement(self, name, attrs):
+        if name == 'message':
+            self.id_set_.add(attrs['name'])
+
+    def allIDs(self):
+        """Return all the IDs found"""
+        return self.id_set_.copy()
+
+
+def parse_camera_strings_grd():
+    handler = GrdIDExtractor()
+    xml.sax.parse(CAMERA_STRINGS_GRD_PATH, handler)
+    return handler.allIDs()
+
+
+def check_strings(args):
+    returncode = 0
+
+    def check_name_id_consistent(strings, filename):
+        nonlocal returncode
+        bad = [(name, id) for (name, id) in strings
+               if id != f'IDS_{name.upper()}']
+        if bad:
+            print(f'{filename} includes string id with inconsistent name:')
+            for (name, id) in bad:
+                print(f'    {name}: Expect IDS_{name.upper()}, got {id}')
+            returncode = 1
+
+    def check_all_ids_exist(all_ids, ids, filename):
+        nonlocal returncode
+        missing = all_ids.difference(ids)
+        if missing:
+            print(f'{filename} is missing the following string id:')
+            print(f'    {", ".join(sorted(missing))}')
+            returncode = 1
+
+    resources_h_strings = parse_resources_h()
+    check_name_id_consistent(resources_h_strings, RESOURCES_H_PATH)
+    resources_h_ids = set([id for (name, id) in resources_h_strings])
+
+    i18n_string_ts_strings = parse_i18n_string_ts()
+    check_name_id_consistent(i18n_string_ts_strings, I18N_STRING_TS_PATH)
+    i18n_string_ts_ids = set([id for (name, id) in i18n_string_ts_strings])
+
+    camera_strings_grd_ids = parse_camera_strings_grd()
+
+    all_ids = resources_h_ids.union(i18n_string_ts_ids, camera_strings_grd_ids)
+
+    check_all_ids_exist(all_ids, resources_h_ids, RESOURCES_H_PATH)
+    check_all_ids_exist(all_ids, i18n_string_ts_ids, I18N_STRING_TS_PATH)
+    check_all_ids_exist(all_ids, camera_strings_grd_ids,
+                        CAMERA_STRINGS_GRD_PATH)
+
+    return returncode
 
 
 def parse_args(args):
@@ -255,6 +355,9 @@ def parse_args(args):
                                           )
     deploy_parser.add_argument('board')
     deploy_parser.add_argument('device')
+    deploy_parser.add_argument('--force',
+                               help="Don't prompt for restarting Chrome.",
+                               action='store_true')
     deploy_parser.set_defaults(func=deploy)
 
     test_parser = subparsers.add_parser('test',
@@ -280,6 +383,17 @@ def parse_args(args):
             Please build Chrome at least once before running the command.''')
     tsc_parser.set_defaults(func=tsc)
     tsc_parser.add_argument('board')
+
+    # TODO(pihsun): Add argument to automatically generate / fix the files to a
+    # consistent state.
+    check_strings_parser = subparsers.add_parser(
+        'check-strings',
+        help='check string resources',
+        description='''Ensure files related to string resources are having the
+            same strings. This includes resources.h,
+            resources/strings/camera_strings.grd and
+            resources/js/i18n_string.ts.''')
+    check_strings_parser.set_defaults(func=check_strings)
 
     parser.set_defaults(func=lambda _args: parser.print_help())
 

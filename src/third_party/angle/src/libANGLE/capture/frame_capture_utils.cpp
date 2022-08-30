@@ -344,6 +344,7 @@ Result SerializeFramebufferState(const gl::Context *context,
     json->addScalar("DefaultFixedSampleLocation",
                     framebufferState.getDefaultFixedSampleLocations());
     json->addScalar("DefaultLayers", framebufferState.getDefaultLayers());
+    json->addScalar("FlipY", framebufferState.getFlipY());
 
     {
         GroupScope attachmentsGroup(json, "Attachments");
@@ -428,15 +429,15 @@ void SerializeRectangle(JsonSerializer *json,
 void SerializeBlendStateExt(JsonSerializer *json, const gl::BlendStateExt &blendStateExt)
 {
     GroupScope group(json, "BlendStateExt");
-    json->addScalar("MaxDrawBuffers", blendStateExt.mMaxDrawBuffers);
-    json->addScalar("enableMask", blendStateExt.mEnabledMask.bits());
-    json->addScalar("DstColor", blendStateExt.mDstColor);
-    json->addScalar("DstAlpha", blendStateExt.mDstAlpha);
-    json->addScalar("SrcColor", blendStateExt.mSrcColor);
-    json->addScalar("SrcAlpha", blendStateExt.mSrcAlpha);
-    json->addScalar("EquationColor", blendStateExt.mEquationColor);
-    json->addScalar("EquationAlpha", blendStateExt.mEquationAlpha);
-    json->addScalar("ColorMask", blendStateExt.mColorMask);
+    json->addScalar("DrawBufferCount", blendStateExt.getDrawBufferCount());
+    json->addScalar("EnableMask", blendStateExt.getEnabledMask().bits());
+    json->addScalar("DstColor", blendStateExt.getDstColorBits());
+    json->addScalar("DstAlpha", blendStateExt.getDstAlphaBits());
+    json->addScalar("SrcColor", blendStateExt.getSrcColorBits());
+    json->addScalar("SrcAlpha", blendStateExt.getSrcAlphaBits());
+    json->addScalar("EquationColor", blendStateExt.getEquationColorBits());
+    json->addScalar("EquationAlpha", blendStateExt.getEquationAlphaBits());
+    json->addScalar("ColorMask", blendStateExt.getColorMaskBits());
 }
 
 void SerializeDepthStencilState(JsonSerializer *json,
@@ -603,7 +604,24 @@ void SerializeContextState(JsonSerializer *json, const gl::State &state)
     }
     json->addScalar("TexturesIncompatibleWithSamplers",
                     state.getTexturesIncompatibleWithSamplers().to_ulong());
-    SerializeBindingPointerVector<gl::Sampler>(json, state.getSamplers());
+
+    {
+        GroupScope texturesCacheGroup(json, "ActiveTexturesCache");
+
+        const gl::ActiveTexturesCache &texturesCache = state.getActiveTexturesCache();
+        for (GLuint textureIndex = 0; textureIndex < texturesCache.size(); ++textureIndex)
+        {
+            const gl::Texture *tex = texturesCache[textureIndex];
+            std::stringstream strstr;
+            strstr << "Tex " << std::setfill('0') << std::setw(2) << textureIndex;
+            json->addScalar(strstr.str(), tex ? tex->id().value : 0);
+        }
+    }
+
+    {
+        GroupScope samplersGroupScope(json, "Samplers");
+        SerializeBindingPointerVector<gl::Sampler>(json, state.getSamplers());
+    }
 
     {
         GroupScope imageUnitsGroup(json, "BoundImageUnits");
@@ -690,7 +708,7 @@ Result SerializeBuffer(const gl::Context *context,
 {
     GroupScope group(json, "Buffer", buffer->id().value);
     SerializeBufferState(json, buffer->getState());
-    if (buffer->getSize())
+    if (buffer->getSize() > 0)
     {
         MemoryBuffer *dataPtr = nullptr;
         ANGLE_CHECK_GL_ALLOC(
@@ -780,10 +798,20 @@ Result SerializeRenderbuffer(const gl::Context *context,
     SerializeRenderbufferState(json, renderbuffer->getState());
     json->addString("Label", renderbuffer->getLabel());
 
-    if (renderbuffer->initState(gl::ImageIndex()) == gl::InitState::Initialized)
+    if (renderbuffer->initState(GL_NONE, gl::ImageIndex()) == gl::InitState::Initialized)
     {
-
-        if (renderbuffer->getWidth() * renderbuffer->getHeight() > 0)
+        if (renderbuffer->getSamples() > 1 && renderbuffer->getFormat().info->depthBits > 0)
+        {
+            // Vulkan can't do resolve blits for multisampled depth attachemnts and
+            // we don't implement an emulation, therefore we can't read back any useful
+            // data here.
+            json->addCString("Pixels", "multisampled depth buffer");
+        }
+        else if (renderbuffer->getWidth() * renderbuffer->getHeight() <= 0)
+        {
+            json->addCString("Pixels", "no pixels");
+        }
+        else
         {
             const gl::InternalFormat &format = *renderbuffer->getFormat().info;
 
@@ -806,10 +834,6 @@ Result SerializeRenderbuffer(const gl::Context *context,
             ANGLE_TRY(renderbuffer->getImplementation()->getRenderbufferImage(
                 context, packState, nullptr, readFormat, readType, pixelsPtr->data()));
             json->addBlob("Pixels", pixelsPtr->data(), pixelsPtr->size());
-        }
-        else
-        {
-            json->addCString("Pixels", "no pixels");
         }
     }
     else
@@ -903,8 +927,6 @@ void SerializeShaderState(JsonSerializer *json, const gl::ShaderState &shaderSta
     SerializeShaderVariablesVector(json, shaderState.getAllAttributes());
     SerializeShaderVariablesVector(json, shaderState.getActiveAttributes());
     SerializeShaderVariablesVector(json, shaderState.getActiveOutputVariables());
-    json->addScalar("EarlyFragmentTestsOptimization",
-                    shaderState.getEarlyFragmentTestsOptimization());
     json->addScalar("NumViews", shaderState.getNumViews());
     json->addScalar("SpecConstUsageBits", shaderState.getSpecConstUsageBits().bits());
     if (shaderState.getGeometryShaderInputPrimitiveType().valid())
@@ -1021,8 +1043,6 @@ void SerializeProgramState(JsonSerializer *json, const gl::ProgramState &program
                                      programState.getSecondaryOutputLocations());
     json->addScalar("BinaryRetrieveableHint", programState.hasBinaryRetrieveableHint());
     json->addScalar("Separable", programState.isSeparable());
-    json->addScalar("EarlyFragmentTestsOptimization",
-                    programState.hasEarlyFragmentTestsOptimization());
     json->addScalar("NumViews", programState.getNumViews());
     json->addScalar("DrawIDLocation", programState.getDrawIDLocation());
     json->addScalar("BaseVertexLocation", programState.getBaseVertexLocation());
@@ -1198,7 +1218,9 @@ Result SerializeTextureData(JsonSerializer *json,
         ASSERT(index.getType() == gl::TextureType::_2D || index.getType() == gl::TextureType::_3D ||
                index.getType() == gl::TextureType::_2DArray ||
                index.getType() == gl::TextureType::CubeMap ||
-               index.getType() == gl::TextureType::CubeMapArray);
+               index.getType() == gl::TextureType::CubeMapArray ||
+               index.getType() == gl::TextureType::_2DMultisampleArray ||
+               index.getType() == gl::TextureType::_2DMultisample);
 
         GLenum glFormat = format.format;
         GLenum glType   = format.type;

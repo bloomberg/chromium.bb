@@ -39,7 +39,7 @@
 
 using pdfium::fxjse::kClassTag;
 
-const FXJSE_CLASS_DESCRIPTOR GlobalClassDescriptor = {
+const FXJSE_CLASS_DESCRIPTOR kGlobalClassDescriptor = {
     kClassTag,  // tag
     "Root",     // name
     nullptr,    // methods
@@ -50,7 +50,7 @@ const FXJSE_CLASS_DESCRIPTOR GlobalClassDescriptor = {
     CFXJSE_Engine::NormalMethodCall,
 };
 
-const FXJSE_CLASS_DESCRIPTOR NormalClassDescriptor = {
+const FXJSE_CLASS_DESCRIPTOR kNormalClassDescriptor = {
     kClassTag,    // tag
     "XFAObject",  // name
     nullptr,      // methods
@@ -61,7 +61,7 @@ const FXJSE_CLASS_DESCRIPTOR NormalClassDescriptor = {
     CFXJSE_Engine::NormalMethodCall,
 };
 
-const FXJSE_CLASS_DESCRIPTOR VariablesClassDescriptor = {
+const FXJSE_CLASS_DESCRIPTOR kVariablesClassDescriptor = {
     kClassTag,          // tag
     "XFAScriptObject",  // name
     nullptr,            // methods
@@ -124,7 +124,7 @@ CFXJSE_Engine::CFXJSE_Engine(CXFA_Document* pDocument,
       m_pSubordinateRuntime(fxjs_runtime),
       m_pDocument(pDocument),
       m_JsContext(CFXJSE_Context::Create(fxjs_runtime->GetIsolate(),
-                                         &GlobalClassDescriptor,
+                                         &kGlobalClassDescriptor,
                                          pDocument->GetRoot()->JSObject(),
                                          nullptr)),
       m_ResolveProcessor(std::make_unique<CFXJSE_ResolveProcessor>()) {
@@ -134,7 +134,7 @@ CFXJSE_Engine::CFXJSE_Engine(CXFA_Document* pDocument,
   // Don't know if this can happen before we remove the builtin objs and set
   // compatibility mode.
   m_pJsClass =
-      CFXJSE_Class::Create(m_JsContext.get(), &NormalClassDescriptor, false);
+      CFXJSE_Class::Create(m_JsContext.get(), &kNormalClassDescriptor, false);
 }
 
 CFXJSE_Engine::~CFXJSE_Engine() {
@@ -157,8 +157,8 @@ bool CFXJSE_Engine::RunScript(CXFA_Script::Type eScriptType,
 
   ByteString btScript;
   if (eScriptType == CXFA_Script::Type::Formcalc) {
-    if (!m_FM2JSContext) {
-      m_FM2JSContext = std::make_unique<CFXJSE_FormCalcContext>(
+    if (!m_FormCalcContext) {
+      m_FormCalcContext = std::make_unique<CFXJSE_FormCalcContext>(
           GetIsolate(), m_JsContext.get(), m_pDocument.Get());
     }
     absl::optional<CFX_WideTextBuf> wsJavaScript =
@@ -286,7 +286,7 @@ v8::Local<v8::Value> CFXJSE_Engine::GlobalPropertyGetter(
 
   if (pScriptContext->GetType() == CXFA_Script::Type::Formcalc) {
     if (szPropName == kFormCalcRuntime)
-      return pScriptContext->m_FM2JSContext->GlobalPropertyGetter();
+      return pScriptContext->m_FormCalcContext->GlobalPropertyGetter();
 
     XFA_HashCode uHashCode =
         static_cast<XFA_HashCode>(FX_HashCode_GetW(wsPropName.AsStringView()));
@@ -544,7 +544,7 @@ CFXJSE_Context* CFXJSE_Engine::CreateVariablesContext(CXFA_Node* pScriptNode,
       pScriptNode->GetDocument()->GetHeap()->GetAllocationHandle(), pSubform,
       pScriptNode);
   auto pNewContext = CFXJSE_Context::Create(
-      GetIsolate(), &VariablesClassDescriptor, proxy->JSObject(), proxy);
+      GetIsolate(), &kVariablesClassDescriptor, proxy->JSObject(), proxy);
   RemoveBuiltInObjs(pNewContext.get());
   pNewContext->EnableCompatibleMode();
   CFXJSE_Context* pResult = pNewContext.get();
@@ -697,6 +697,7 @@ CFXJSE_Engine::ResolveObjectsWithBindNode(CXFA_Object* refObject,
   std::vector<cppgc::Member<CXFA_Object>> findObjects;
   findObjects.emplace_back(refObject ? refObject : m_pDocument->GetRoot());
   int32_t nNodes = 0;
+  CFXJSE_ScopeUtil_IsolateHandleContext scope(GetJseContext());
   while (true) {
     nNodes = fxcrt::CollectionSize<int32_t>(findObjects);
     int32_t i = 0;

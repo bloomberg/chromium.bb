@@ -48,14 +48,16 @@ class MojoRendererFactory final : public RendererFactory {
       RequestOverlayInfoCB request_overlay_info_cb,
       const gfx::ColorSpace& target_color_space) final;
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   std::unique_ptr<MojoRenderer> CreateMediaFoundationRenderer(
       mojo::PendingRemote<mojom::MediaLog> media_log_remote,
       mojo::PendingReceiver<mojom::MediaFoundationRendererExtension>
           renderer_extension_receiver,
+      mojo::PendingRemote<mojom::MediaFoundationRendererClientExtension>
+          client_extension_remote,
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
       VideoRendererSink* video_renderer_sink);
-#endif  // defined (OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
 #if BUILDFLAG(ENABLE_CAST_RENDERER)
   std::unique_ptr<MojoRenderer> CreateCastRenderer(
@@ -63,7 +65,7 @@ class MojoRendererFactory final : public RendererFactory {
       VideoRendererSink* video_renderer_sink);
 #endif  // BUILDFLAG(ENABLE_CAST_RENDERER)
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   std::unique_ptr<MojoRenderer> CreateFlingingRenderer(
       const std::string& presentation_id,
       mojo::PendingRemote<mojom::FlingingRendererClientExtension>

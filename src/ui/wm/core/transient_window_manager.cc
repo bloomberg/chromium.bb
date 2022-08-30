@@ -8,7 +8,9 @@
 #include <functional>
 
 #include "base/auto_reset.h"
+#include "base/containers/adapters.h"
 #include "base/containers/contains.h"
+#include "base/observer_list.h"
 #include "ui/aura/client/transient_window_client.h"
 #include "ui/aura/client/transient_window_client_observer.h"
 #include "ui/aura/window.h"
@@ -141,13 +143,14 @@ void TransientWindowManager::RestackTransientDescendants() {
   // |window_|. The existing stacking order is preserved by iterating backwards
   // and always stacking on top.
   Window::Windows children(parent->children());
-  for (auto it = children.rbegin(); it != children.rend(); ++it) {
-    if ((*it) != window_ && HasTransientAncestor(*it, window_)) {
-      TransientWindowManager* descendant_manager = GetOrCreate(*it);
+  for (auto* child_window : base::Reversed(children)) {
+    if (child_window != window_ &&
+        HasTransientAncestor(child_window, window_)) {
+      TransientWindowManager* descendant_manager = GetOrCreate(child_window);
       base::AutoReset<Window*> resetter(
           &descendant_manager->stacking_target_,
           window_);
-      parent->StackChildAbove((*it), window_);
+      parent->StackChildAbove(child_window, window_);
     }
   }
 }

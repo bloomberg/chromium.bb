@@ -9,6 +9,7 @@
 
 #include "base/android/scoped_java_ref.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "url/origin.h"
 
@@ -89,12 +90,7 @@ class CONTENT_EXPORT NavigationControllerAndroid {
       const base::android::JavaParamRef<jobject>& j_initiator_origin,
       jboolean has_user_gesture,
       jboolean should_clear_history_list,
-      jlong input_start,
-      const base::android::JavaParamRef<jstring>& source_package_name,
-      const base::android::JavaParamRef<jstring>& attribution_source_event_id,
-      const base::android::JavaParamRef<jstring>& attribution_destination,
-      const base::android::JavaParamRef<jstring>& attribution_report_to,
-      jlong attributionExpiry);
+      jlong input_start);
   void ClearSslPreferences(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& /* obj */);
@@ -151,8 +147,12 @@ class CONTENT_EXPORT NavigationControllerAndroid {
       jint index);
 
  private:
+  void SetUseDesktopUserAgentInternal(bool enabled,
+                                      bool reload_on_state_change);
+
   raw_ptr<NavigationControllerImpl> navigation_controller_;
   base::android::ScopedJavaGlobalRef<jobject> obj_;
+  base::WeakPtrFactory<NavigationControllerAndroid> weak_factory_{this};
 };
 
 }  // namespace content

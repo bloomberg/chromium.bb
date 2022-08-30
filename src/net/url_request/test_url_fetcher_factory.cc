@@ -42,18 +42,7 @@ ScopedURLFetcherFactory::~ScopedURLFetcherFactory() {
 }
 
 TestURLFetcher::TestURLFetcher(int id, const GURL& url, URLFetcherDelegate* d)
-    : id_(id),
-      original_url_(url),
-      delegate_(d),
-      delegate_for_tests_(nullptr),
-      did_receive_last_chunk_(false),
-      fake_load_flags_(0),
-      fake_response_code_(-1),
-      fake_response_destination_(STRING),
-      write_response_file_(false),
-      fake_was_cached_(false),
-      fake_response_bytes_(0),
-      fake_max_retries_(0) {
+    : id_(id), original_url_(url), delegate_(d) {
   CHECK(original_url_.is_valid());
 }
 
@@ -143,7 +132,7 @@ int TestURLFetcher::GetMaxRetriesOn5xx() const {
 }
 
 base::TimeDelta TestURLFetcher::GetBackoffDelay() const {
-  return fake_backoff_delay_;
+  return base::TimeDelta();
 }
 
 void TestURLFetcher::SetAutomaticallyRetryOnNetworkChanges(int max_retries) {
@@ -286,10 +275,6 @@ void TestURLFetcher::set_was_cached(bool flag) {
 void TestURLFetcher::set_response_headers(
     scoped_refptr<HttpResponseHeaders> headers) {
   fake_response_headers_ = headers;
-}
-
-void TestURLFetcher::set_backoff_delay(base::TimeDelta backoff_delay) {
-  fake_backoff_delay_ = backoff_delay;
 }
 
 void TestURLFetcher::SetDelegateForTests(DelegateForTests* delegate_for_tests) {

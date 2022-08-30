@@ -32,6 +32,7 @@
 #include "services/metrics/public/cpp/mojo_ukm_recorder.h"
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/browser_interface_broker.mojom-blink.h"
+#include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-blink.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_url_request.h"
@@ -94,7 +95,7 @@ void RemoveURLFromMemoryCacheInternal(const KURL& url) {
 
 scoped_refptr<SecurityOrigin> CreateSecurityOrigin(
     GlobalScopeCreationParams* creation_params,
-    ExecutionContext* execution_context) {
+    bool is_service_worker_global_scope) {
   // A worker environment settings object's origin must be set as follows:
   //
   // - DedicatedWorkers and SharedWorkers
@@ -119,7 +120,7 @@ scoped_refptr<SecurityOrigin> CreateSecurityOrigin(
   // https://w3c.github.io/ServiceWorker/#start-register
   // Step 3: If scriptURL’s scheme is not one of "http" and "https", reject
   // promise with a TypeError and abort these steps. [spec text]
-  DCHECK(!execution_context->IsServiceWorkerGlobalScope() ||
+  DCHECK(!is_service_worker_global_scope ||
          !KURL(creation_params->script_url).ProtocolIsData());
 
   // TODO(https://crbug.com/1058305) Inherit |agent_cluster_id_| for dedicated
@@ -340,8 +341,6 @@ void WorkerGlobalScope::ImportScriptsInternal(const Vector<String>& urls) {
 
     // Step 5.2: "Run the classic script script, with the rethrow errors
     // argument set to true."
-    ReportingProxy().WillEvaluateImportedClassicScript(
-        source_code.length(), handler ? handler->GetCodeCacheSize() : 0);
     v8::HandleScope scope(isolate);
     ScriptEvaluationResult result =
         script->RunScriptOnScriptStateAndReturnValue(
@@ -490,22 +489,54 @@ void WorkerGlobalScope::RunWorkerScript() {
   if (debugger && stack_id_)
     debugger->ExternalAsyncTaskStarted(*stack_id_);
 
-  switch (worker_script_->GetScriptType()) {
-    case mojom::blink::ScriptType::kClassic: {
-      auto sizes = worker_script_->GetClassicScriptSizes();
-      ReportingProxy().WillEvaluateClassicScript(sizes.first, sizes.second);
-      break;
-    }
-    case mojom::blink::ScriptType::kModule:
-      ReportingProxy().WillEvaluateModuleScript();
-      break;
-  }
+  ReportingProxy().WillEvaluateScript();
 
   // Step 24. If script is a classic script, then run the classic script script.
   // Otherwise, it is a module script; run the module script script. [spec text]
-  bool is_success =
-      std::move(worker_script_)->RunScriptOnWorkerOrWorklet(*this);
-
+  bool is_success = false;
+  if (ScriptState* script_state = ScriptController()->GetScriptState()) {
+    v8::HandleScope handle_scope(script_state->GetIsolate());
+    ScriptEvaluationResult result =
+        std::move(worker_script_)
+            ->RunScriptOnScriptStateAndReturnValue(script_state);
+    switch (worker_script_->GetScriptType()) {
+      case mojom::blink::ScriptType::kClassic:
+        is_success = result.GetResultType() ==
+                     ScriptEvaluationResult::ResultType::kSuccess;
+        break;
+      case mojom::blink::ScriptType::kModule:
+        // Service workers prohibit async module graphs (those with top-level
+        // await), so the promise result from executing a service worker module
+        // is always settled. To maintain compatibility with synchronous module
+        // graphs, rejected promises are considered synchronous failures in
+        // service workers.
+        //
+        // https://w3c.github.io/ServiceWorker/#run-service-worker
+        // Step 14.2-14.4 https://github.com/w3c/ServiceWorker/pull/1444
+        if (IsServiceWorkerGlobalScope() &&
+            result.GetResultType() ==
+                ScriptEvaluationResult::ResultType::kSuccess) {
+          v8::Local<v8::Promise> promise =
+              result.GetSuccessValue().As<v8::Promise>();
+          switch (promise->State()) {
+            case v8::Promise::kFulfilled:
+              is_success = true;
+              break;
+            case v8::Promise::kRejected:
+              is_success = false;
+              break;
+            case v8::Promise::kPending:
+              NOTREACHED();
+              is_success = false;
+              break;
+          }
+        } else {
+          is_success = result.GetResultType() ==
+                       ScriptEvaluationResult::ResultType::kSuccess;
+        }
+        break;
+    }
+  }
   ReportingProxy().DidEvaluateTopLevelScript(is_success);
 
   if (debugger && stack_id_)
@@ -537,10 +568,13 @@ void WorkerGlobalScope::ReceiveMessage(BlinkTransferableMessage message) {
 WorkerGlobalScope::WorkerGlobalScope(
     std::unique_ptr<GlobalScopeCreationParams> creation_params,
     WorkerThread* thread,
-    base::TimeTicks time_origin)
+    base::TimeTicks time_origin,
+    bool is_service_worker_global_scope)
     : WorkerOrWorkletGlobalScope(
           thread->GetIsolate(),
-          CreateSecurityOrigin(creation_params.get(), GetExecutionContext()),
+          CreateSecurityOrigin(creation_params.get(),
+                               is_service_worker_global_scope),
+          creation_params->starter_secure_context,
           MakeGarbageCollected<Agent>(
               thread->GetIsolate(),
               (creation_params->agent_cluster_id.is_empty()

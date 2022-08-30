@@ -9,18 +9,18 @@
 
 #include "ash/components/tether/active_host.h"
 #include "ash/components/tether/connection_preserver.h"
+#include "ash/services/device_sync/public/cpp/device_sync_client.h"
+#include "ash/services/secure_channel/public/cpp/client/client_channel.h"
+#include "ash/services/secure_channel/public/cpp/client/connection_attempt.h"
+#include "ash/services/secure_channel/public/cpp/client/secure_channel_client.h"
+#include "ash/services/secure_channel/public/cpp/shared/connection_priority.h"
+#include "ash/services/secure_channel/public/mojom/secure_channel.mojom.h"
 #include "base/timer/timer.h"
 #include "base/unguessable_token.h"
-#include "chromeos/services/device_sync/public/cpp/device_sync_client.h"
-#include "chromeos/services/secure_channel/public/cpp/client/client_channel.h"
-#include "chromeos/services/secure_channel/public/cpp/client/connection_attempt.h"
-#include "chromeos/services/secure_channel/public/cpp/client/secure_channel_client.h"
-#include "chromeos/services/secure_channel/public/cpp/shared/connection_priority.h"
-#include "chromeos/services/secure_channel/public/mojom/secure_channel.mojom.h"
+// TODO(https://crbug.com/1164001): move to forward declaration
+#include "chromeos/network/network_state_handler.h"
 
-namespace chromeos {
-
-class NetworkStateHandler;
+namespace ash {
 
 namespace tether {
 
@@ -104,6 +104,6 @@ class ConnectionPreserverImpl
 
 }  // namespace tether
 
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // ASH_COMPONENTS_TETHER_CONNECTION_PRESERVER_IMPL_H_

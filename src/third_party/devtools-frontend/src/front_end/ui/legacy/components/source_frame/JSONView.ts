@@ -56,7 +56,6 @@ export class JSONView extends UI.Widget.VBox implements UI.SearchableView.Search
   constructor(parsedJSON: ParsedJSON, startCollapsed?: boolean) {
     super();
     this.initialized = false;
-    // eslint-disable-next-line no-restricted-syntax -- Should import styles https://crbug.com/1106746
     this.registerRequiredCSS(jsonViewStyles);
     this.parsedJSON = parsedJSON;
     this.startCollapsed = Boolean(startCollapsed);
@@ -231,7 +230,7 @@ export class JSONView extends UI.Widget.VBox implements UI.SearchableView.Search
     let newIndex: number = this.currentSearchFocusIndex;
     const previousSearchFocusElement = this.currentSearchTreeElements[newIndex];
     this.searchCanceled();
-    this.searchRegex = searchConfig.toSearchRegex(true);
+    this.searchRegex = searchConfig.toSearchRegex(true).regex;
 
     let element: UI.TreeOutline.TreeElement|null;
     for (element = this.treeOutline.rootElement(); element; element = element.traverseNextTreeElement(false)) {

@@ -13,17 +13,19 @@ import 'chrome://resources/cr_elements/shared_style_css.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import 'chrome://resources/cr_elements/md_select_css.m.js';
 import '../settings_shared_css.js';
-import '../settings_vars_css.js';
+import '../settings_vars.css.js';
 import '../controls/settings_textarea.js';
 
 import {CrButtonElement} from 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
 import {CrInputElement} from 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
-import {assertNotReached} from 'chrome://resources/js/assert.m.js';
+import {assertNotReached} from 'chrome://resources/js/assert_ts.js';
 import {I18nMixin} from 'chrome://resources/js/i18n_mixin.js';
-import {flush, html, microTask, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {flush, microTask, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {loadTimeData} from '../i18n_setup.js';
+
+import {getTemplate} from './address_edit_dialog.html.js';
 
 export interface SettingsAddressEditDialogElement {
   $: {
@@ -44,7 +46,7 @@ export class SettingsAddressEditDialogElement extends
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
@@ -92,7 +94,7 @@ export class SettingsAddressEditDialogElement extends
   private countryInfo_: CountryDetailManager =
       CountryDetailManagerImpl.getInstance();
 
-  connectedCallback() {
+  override connectedCallback() {
     super.connectedCallback();
 
     this.countryInfo_.getCountryList().then(countryList => {
@@ -146,6 +148,7 @@ export class SettingsAddressEditDialogElement extends
     // Default to the last country used if no country code is provided.
     const countryCode = this.countryCode_ || this.countries_[0].countryCode;
     this.countryInfo_.getAddressFormat(countryCode as string).then(format => {
+      this.address.languageCode = format.languageCode;
       this.addressWrapper_ = format.components.flatMap(component => {
         // If this is the name field, add a honorific title row before the
         // name.
@@ -239,24 +242,6 @@ export class SettingsAddressEditDialogElement extends
     this.countryCode_ = countrySelect!.value;
   }
 
-  /**
-   * Propagates focus to the <select> when country row is focused
-   * (e.g. using tab navigation).
-   */
-  private onCountryRowFocus_() {
-    this.shadowRoot!.querySelector('select')!.focus();
-  }
-
-  /**
-   * Prevents clicking random spaces within country row but outside of <select>
-   * from triggering focus.
-   */
-  private onCountryRowPointerDown_(e: Event) {
-    if ((e.composedPath()[0] as HTMLElement).tagName !== 'SELECT') {
-      e.preventDefault();
-    }
-  }
-
   createHonorificAddressComponentUI(
       address: chrome.autofillPrivate.AddressEntry): AddressComponentUI {
     return new AddressComponentUI(address, {
@@ -332,7 +317,6 @@ class AddressComponentUI {
         return address.countryCode;
       default:
         assertNotReached();
-        return '';
     }
   }
 

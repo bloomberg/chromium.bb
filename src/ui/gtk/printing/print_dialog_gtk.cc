@@ -17,7 +17,6 @@
 #include "base/no_destructor.h"
 #include "base/sequence_checker.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
@@ -182,7 +181,10 @@ printing::PrintDialogGtkInterface* PrintDialogGtk::CreatePrintDialog(
 PrintDialogGtk::PrintDialogGtk(PrintingContextLinux* context)
     : base::RefCountedDeleteOnSequence<PrintDialogGtk>(
           base::SequencedTaskRunnerHandle::Get()),
-      context_(context) {}
+      context_(context) {
+  // Paired with the ReleaseDialog() call.
+  AddRef();
+}
 
 PrintDialogGtk::~PrintDialogGtk() {
   DCHECK(owning_task_runner()->RunsTasksInCurrentSequence());
@@ -446,11 +448,8 @@ void PrintDialogGtk::PrintDocument(const printing::MetafilePlayer& metafile,
                                 document_name));
 }
 
-void PrintDialogGtk::AddRefToDialog() {
-  AddRef();
-}
-
 void PrintDialogGtk::ReleaseDialog() {
+  context_ = nullptr;
   Release();
 }
 
@@ -463,6 +462,11 @@ void PrintDialogGtk::OnResponse(GtkWidget* dialog, int response_id) {
 
   switch (response_id) {
     case GTK_RESPONSE_OK: {
+      if (!context_) {
+        std::move(callback_).Run(printing::mojom::ResultCode::kCanceled);
+        return;
+      }
+
       if (gtk_settings_)
         g_object_unref(gtk_settings_);
       gtk_settings_ =
@@ -567,17 +571,19 @@ void PrintDialogGtk::OnJobCompleted(GtkPrintJob* print_job,
   if (print_job)
     g_object_unref(print_job);
 
-  base::ThreadPool::PostTask(
-      FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-       base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
-      base::BindOnce(base::GetDeleteFileCallback(), path_to_pdf_));
+  base::ThreadPool::PostTask(FROM_HERE,
+                             {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+                              base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
+                             base::GetDeleteFileCallback(path_to_pdf_));
   // Printing finished. Matches AddRef() in PrintDocument();
   Release();
 }
 
 void PrintDialogGtk::InitPrintSettings(
     std::unique_ptr<PrintSettings> settings) {
+  if (!context_)
+    return;
+
   InitPrintSettingsGtk(gtk_settings_, page_setup_, settings.get());
   context_->InitWithSettings(std::move(settings));
 }

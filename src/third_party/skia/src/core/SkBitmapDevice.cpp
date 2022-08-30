@@ -215,10 +215,7 @@ SkBitmapDevice::SkBitmapDevice(const SkBitmap& bitmap)
         : INHERITED(bitmap.info(), SkSurfaceProps())
         , fBitmap(bitmap)
         , fRCStack(bitmap.width(), bitmap.height())
-        , fGlyphPainter(this->surfaceProps(),
-                        bitmap.colorType(),
-                        bitmap.colorSpace(),
-                        SkStrikeCache::GlobalStrikeCache()) {
+        , fGlyphPainter(this->surfaceProps(), bitmap.colorType(), bitmap.colorSpace()) {
     SkASSERT(valid_for_bitmap_device(bitmap.info(), nullptr));
 }
 
@@ -232,10 +229,7 @@ SkBitmapDevice::SkBitmapDevice(const SkBitmap& bitmap, const SkSurfaceProps& sur
         , fBitmap(bitmap)
         , fRasterHandle(hndl)
         , fRCStack(bitmap.width(), bitmap.height())
-        , fGlyphPainter(this->surfaceProps(),
-                        bitmap.colorType(),
-                        bitmap.colorSpace(),
-                        SkStrikeCache::GlobalStrikeCache()) {
+        , fGlyphPainter(this->surfaceProps(), bitmap.colorType(), bitmap.colorSpace()) {
     SkASSERT(valid_for_bitmap_device(bitmap.info(), nullptr));
 }
 
@@ -521,21 +515,31 @@ void SkBitmapDevice::drawImageRect(const SkImage* image, const SkRect* src, cons
     this->drawRect(*dstPtr, paintWithShader);
 }
 
-void SkBitmapDevice::onDrawGlyphRunList(const SkGlyphRunList& glyphRunList, const SkPaint& paint) {
+void SkBitmapDevice::onDrawGlyphRunList(SkCanvas* canvas,
+                                        const SkGlyphRunList& glyphRunList,
+                                        const SkPaint& initialPaint,
+                                        const SkPaint& drawingPaint) {
     SkASSERT(!glyphRunList.hasRSXForm());
-    LOOP_TILER( drawGlyphRunList(glyphRunList, paint, &fGlyphPainter), nullptr )
+    LOOP_TILER( drawGlyphRunList(canvas, &fGlyphPainter, glyphRunList, drawingPaint), nullptr )
 }
 
 void SkBitmapDevice::drawVertices(const SkVertices* vertices,
                                   sk_sp<SkBlender> blender,
-                                  const SkPaint& paint) {
+                                  const SkPaint& paint,
+                                  bool skipColorXform) {
 #ifdef SK_LEGACY_IGNORE_DRAW_VERTICES_BLEND_WITH_NO_SHADER
     if (!paint.getShader()) {
         blender = SkBlender::Mode(SkBlendMode::kDst);
     }
 #endif
-    BDDraw(this).drawVertices(vertices, std::move(blender), paint);
+    BDDraw(this).drawVertices(vertices, std::move(blender), paint, skipColorXform);
 }
+
+#ifdef SK_ENABLE_SKSL
+void SkBitmapDevice::drawMesh(const SkMesh&, sk_sp<SkBlender>, const SkPaint&) {
+    // TODO: Implement
+}
+#endif
 
 void SkBitmapDevice::drawAtlas(const SkRSXform xform[],
                                const SkRect tex[],
@@ -544,7 +548,7 @@ void SkBitmapDevice::drawAtlas(const SkRSXform xform[],
                                sk_sp<SkBlender> blender,
                                const SkPaint& paint) {
     // set this to true for performance comparisons with the old drawVertices way
-    if (false) {
+    if ((false)) {
         this->INHERITED::drawAtlas(xform, tex, colors, count, std::move(blender), paint);
         return;
     }
@@ -573,7 +577,9 @@ void SkBitmapDevice::drawSpecial(SkSpecialImage* src,
     if (src->getROPixels(&resultBM)) {
         SkDraw draw;
         SkMatrixProvider matrixProvider(localToDevice);
-        draw.fDst = fBitmap.pixmap();
+        if (!this->accessPixels(&draw.fDst)) {
+          return; // no pixels to draw to so skip it
+        }
         draw.fMatrixProvider = &matrixProvider;
         draw.fRC = &fRCStack.rc();
         draw.drawBitmap(resultBM, SkMatrix::I(), nullptr, sampling, paint);

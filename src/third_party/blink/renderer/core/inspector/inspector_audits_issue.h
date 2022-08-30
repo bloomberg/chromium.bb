@@ -25,6 +25,7 @@ class Element;
 class ExecutionContext;
 class LocalFrame;
 class ResourceError;
+class LocalDOMWindow;
 class LocalFrame;
 class SecurityPolicyViolationEventInit;
 class SourceLocation;
@@ -35,6 +36,62 @@ class InspectorIssue;
 }
 }  // namespace protocol
 
+// Please keep this alphabetized.
+enum class DeprecationIssueType {
+  kAuthorizationCoveredByWildcard,
+  kCanRequestURLHTTPContainingNewline,
+  kChromeLoadTimesConnectionInfo,
+  kChromeLoadTimesFirstPaintAfterLoadTime,
+  kChromeLoadTimesWasAlternateProtocolAvailable,
+  kCookieWithTruncatingChar,
+  kCrossOriginAccessBasedOnDocumentDomain,
+  kCrossOriginWindowAlert,
+  kCrossOriginWindowConfirm,
+  kCSSSelectorInternalMediaControlsOverlayCastButton,
+  kDeprecationExample,
+  kDocumentDomainSettingWithoutOriginAgentClusterHeader,
+  kEventPath,
+  kGeolocationInsecureOrigin,
+  kGeolocationInsecureOriginDeprecatedNotRemoved,
+  kGetUserMediaInsecureOrigin,
+  kHostCandidateAttributeGetter,
+  kIdentityInCanMakePaymentEvent,
+  kInsecurePrivateNetworkSubresourceRequest,
+  kLegacyConstraintGoogIPv6,
+  kLocalCSSFileExtensionRejected,
+  kMediaSourceAbortRemove,
+  kMediaSourceDurationTruncatingBuffered,
+  kNoSysexWebMIDIWithoutPermission,
+  kNotDeprecated,
+  kNotificationInsecureOrigin,
+  kNotificationPermissionRequestedIframe,
+  kObsoleteWebRtcCipherSuite,
+  kOpenWebDatabaseInsecureContext,
+  kPictureSourceSrc,
+  kPrefixedCancelAnimationFrame,
+  kPrefixedRequestAnimationFrame,
+  kPrefixedStorageInfo,
+  kPrefixedVideoDisplayingFullscreen,
+  kPrefixedVideoEnterFullScreen,
+  kPrefixedVideoEnterFullscreen,
+  kPrefixedVideoExitFullScreen,
+  kPrefixedVideoExitFullscreen,
+  kPrefixedVideoSupportsFullscreen,
+  kRangeExpand,
+  kRequestedSubresourceWithEmbeddedCredentials,
+  kRTCConstraintEnableDtlsSrtpFalse,
+  kRTCConstraintEnableDtlsSrtpTrue,
+  kRTCPeerConnectionComplexPlanBSdpUsingDefaultSdpSemantics,
+  kRTCPeerConnectionSdpSemanticsPlanB,
+  kRtcpMuxPolicyNegotiate,
+  kSharedArrayBufferConstructedWithoutIsolation,
+  kTextToSpeech_DisallowedByAutoplay,
+  kV8SharedArrayBufferConstructedInExtensionWithoutIsolation,
+  kXHRJSONEncodingDetection,
+  kXMLHttpRequestSynchronousInNonWorkerOutsideBeforeUnload,
+  kXRSupportsSession,
+};
+
 enum class RendererCorsIssueCode {
   kDisallowedByMode,
   kCorsDisabledScheme,
@@ -43,15 +100,9 @@ enum class RendererCorsIssueCode {
 
 enum class AttributionReportingIssueType {
   kPermissionPolicyDisabled,
-  kInvalidAttributionSourceEventId,
-  kInvalidAttributionData,
   kAttributionSourceUntrustworthyOrigin,
   kAttributionUntrustworthyOrigin,
-  kInvalidAttributionSourceExpiry,
-  kInvalidAttributionSourcePriority,
-  kInvalidEventSourceTriggerData,
-  kInvalidTriggerPriority,
-  kInvalidTriggerDedupKey,
+  kInvalidHeader,
 };
 
 enum class SharedArrayBufferIssueType {
@@ -63,6 +114,11 @@ enum class MixedContentResolutionStatus {
   kMixedContentBlocked,
   kMixedContentAutomaticallyUpgraded,
   kMixedContentWarning,
+};
+
+enum class ClientHintIssueReason {
+  kMetaTagAllowListInvalidOrigin,
+  kMetaTagModifiedHTML,
 };
 
 // |AuditsIssue| is a thin wrapper around the Audits::InspectorIssue
@@ -125,20 +181,19 @@ class CORE_EXPORT AuditsIssue {
       ExecutionContext* execution_context,
       WTF::String url);
 
-  static void ReportCrossOriginWasmModuleSharingIssue(
-      ExecutionContext* execution_context,
-      const std::string& wasm_source_url,
-      WTF::String source_origin,
-      WTF::String target_origin,
-      bool is_warning);
-
   static void ReportSharedArrayBufferIssue(
       ExecutionContext* execution_context,
       bool shared_buffer_transfer_allowed,
       SharedArrayBufferIssueType issue_type);
 
+  // Reports a Deprecation issue to DevTools.
+  // `execution_context` is used to extract the affected frame and source.
+  // `type` is the enum used to differentiate messages.
   static void ReportDeprecationIssue(ExecutionContext* execution_context,
-                                     const String& message);
+                                     DeprecationIssueType type);
+
+  static void ReportClientHintIssue(LocalDOMWindow* local_dom_window,
+                                    ClientHintIssueReason reason);
 
   static AuditsIssue CreateBlockedByResponseIssue(
       network::mojom::BlockedByResponseReason reason,

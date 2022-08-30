@@ -1,10 +1,19 @@
 # Open Screen Library
 
-The Open Screen Library implements the Open Screen Protocol and the Chromecast
-protocols (discovery, application control, and media streaming).
+The Open Screen Library implements the Open Screen Protocol, Multicast DNS and
+DNS-SD, and the Chromecast protocols (discovery, application control, and media
+streaming).
 
-Information about the Open Screen Protocol and its specification can be found
-[on GitHub](https://w3c.github.io/openscreenprotocol/).
+The library consists of feature modules that share a [common platform
+API](platform/README.md) that must be implemented and linked by the embedding
+application.
+
+The major feature modules in the library can be used independently and have
+their own documentation:
+
+  * [Cast protocols](cast/README.md) (aka `libcast`)
+  * [Open Screen Protocol](osp/README.md)
+  * [Multicast DNS and DNS-SD](discovery/README.md)
 
 # Getting the code
 
@@ -135,15 +144,14 @@ passed to every invocation of `gn gen`.
 
 # Building targets
 
-## OSP demo
-
-The following commands will build the Open Screen Protocol demo and run it.
+We use the Open Screen Protocol demo application as an example, however, the
+instructions are essentially the same for all executable targets.
 
 ``` bash
   mkdir out/debug
   gn gen out/debug             # Creates the build directory and necessary ninja files
   ninja -C out/debug osp_demo  # Builds the executable with ninja
-  ./out/debug/osp_demo          # Runs the executable
+  ./out/debug/osp_demo         # Runs the executable
 ```
 
 The `-C` argument to `ninja` works just like it does for GNU Make: it specifies
@@ -165,7 +173,7 @@ depending on number of processor cores, amount of RAM, etc.
 
 Also, while specifying build targets is possible while using ninja, typically
 for development it is sufficient to just build everything, especially since the
-Open Screen repository is still quite small. That makes the invokation to the
+Open Screen repository is still quite small. That makes the invocation to the
 build system simplify to:
 
 ```bash
@@ -174,31 +182,7 @@ build system simplify to:
 
 For details on running `osp_demo`, see its [README.md](osp/demo/README.md).
 
-## Cast Streaming sender and receiver
-
-The process for running the Cast Streaming sender and receiver applications
-is detailed in the [cast/README.md](cast/README.md). The build process is the
-same as the osp_demo, excepting the choice of targets:
-
-```bash
-gn gen out/debug
-autoninja -C out/debug cast_sender cast_receiver
-```
-
-However invokation is more complicated due to certificate requirements, as well
-as requiring a valid network address and path to a video for the sender to play.
-An example is provided below but the cast readme should be consulted for
-more information.
-
-```bash
-/path/to/out/Default/cast_receiver -g
-
-./out/Default/cast_receiver -d generated_root_cast_receiver.crt -p generated_root_cast_receiver.key lo0
-
-./out/Default/cast_sender -d generated_root_cast_receiver.crt lo0 ~/video-1080-mp4.mp4
-```
-
-## Building other targets
+## Building all targets
 
 Running `ninja -C out/debug gn_all` will build all non-test targets in the
 repository.

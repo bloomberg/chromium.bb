@@ -1,4 +1,3 @@
-// -*- C++ -*-
 //===----------------------------------------------------------------------===//
 //
 // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
@@ -14,10 +13,8 @@
 // RUN: %{cxx} -o %t.exe %t.first.o %t.second.o %{flags} %{link_flags}
 // RUN: %{run}
 
-// GCC 5 pretends it supports C++17 features, but some features like static_assert
-// without a message are not actually supported. This causes some headers to fail
-// when included.
-// UNSUPPORTED: gcc-5 && c++17
+// The system-provided <uchar.h> seems to be broken on AIX
+// XFAIL: LIBCXX-AIX-FIXME
 
 // Prevent <ext/hash_map> from generating deprecated warnings for this test.
 #if defined(__DEPRECATED)
@@ -37,9 +34,7 @@
 #include <algorithm>
 #include <any>
 #include <array>
-#ifndef _LIBCPP_HAS_NO_THREADS
-#    include <atomic>
-#endif
+#include <atomic>
 #ifndef _LIBCPP_HAS_NO_THREADS
 #    include <barrier>
 #endif
@@ -68,6 +63,9 @@
 #include <complex.h>
 #include <concepts>
 #include <condition_variable>
+#ifndef _LIBCPP_HAS_NO_CXX20_COROUTINES
+#    include <coroutine>
+#endif
 #include <csetjmp>
 #include <csignal>
 #include <cstdarg>
@@ -80,8 +78,13 @@
 #include <ctgmath>
 #include <ctime>
 #include <ctype.h>
-#include <cwchar>
-#include <cwctype>
+#include <cuchar>
+#ifndef _LIBCPP_HAS_NO_WIDE_CHARACTERS
+#    include <cwchar>
+#endif
+#ifndef _LIBCPP_HAS_NO_WIDE_CHARACTERS
+#    include <cwctype>
+#endif
 #include <deque>
 #include <errno.h>
 #include <exception>
@@ -91,7 +94,9 @@
 #    include <filesystem>
 #endif
 #include <float.h>
-#include <format>
+#ifndef _LIBCPP_HAS_NO_INCOMPLETE_FORMAT
+#    include <format>
+#endif
 #include <forward_list>
 #ifndef _LIBCPP_HAS_NO_LOCALIZATION
 #    include <fstream>
@@ -143,7 +148,9 @@
 #endif
 #include <queue>
 #include <random>
-#include <ranges>
+#ifndef _LIBCPP_HAS_NO_INCOMPLETE_RANGES
+#    include <ranges>
+#endif
 #include <ratio>
 #ifndef _LIBCPP_HAS_NO_LOCALIZATION
 #    include <regex>
@@ -186,6 +193,7 @@
 #include <type_traits>
 #include <typeindex>
 #include <typeinfo>
+#include <uchar.h>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
@@ -193,19 +201,20 @@
 #include <variant>
 #include <vector>
 #include <version>
-#include <wchar.h>
-#include <wctype.h>
+#ifndef _LIBCPP_HAS_NO_WIDE_CHARACTERS
+#    include <wchar.h>
+#endif
+#ifndef _LIBCPP_HAS_NO_WIDE_CHARACTERS
+#    include <wctype.h>
+#endif
 
 // experimental headers
 #if __cplusplus >= 201103L
 #    include <experimental/algorithm>
-#    if defined(__cpp_coroutines)
+#    ifndef _LIBCPP_HAS_NO_EXPERIMENTAL_COROUTINES
 #        include <experimental/coroutine>
 #    endif
 #    include <experimental/deque>
-#    ifndef _LIBCPP_HAS_NO_FILESYSTEM_LIBRARY
-#        include <experimental/filesystem>
-#    endif
 #    include <experimental/forward_list>
 #    include <experimental/functional>
 #    include <experimental/iterator>
@@ -225,10 +234,6 @@
 #    include <experimental/utility>
 #    include <experimental/vector>
 #endif // __cplusplus >= 201103L
-
-// extended headers
-#include <ext/hash_map>
-#include <ext/hash_set>
 
 // clang-format on
 

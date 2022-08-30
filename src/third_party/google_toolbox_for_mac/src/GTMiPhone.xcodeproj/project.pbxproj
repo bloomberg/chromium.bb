@@ -736,7 +736,6 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				GTM_HOST_OTHER_LDFLAGS = "-ObjC -lz";
 				INFOPLIST_FILE = "UnitTest-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -750,7 +749,6 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				GTM_HOST_OTHER_LDFLAGS = "-ObjC -lz";
 				INFOPLIST_FILE = "UnitTest-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -786,7 +784,7 @@
 				GCC_WARN_SHADOW = YES;
 				GTM_EXTRA_WARNING_OVERRIDE_CFLAGS = "-Wno-unused-parameter";
 				GTM_HOST_GCC_PREPROCESSOR_DEFINITIONS = "GTM_USING_XCTEST=1";
-				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				ONLY_ACTIVE_ARCH = YES;
 			};
 			name = Debug;
@@ -823,13 +821,14 @@
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_SHADOW = YES;
 				GTM_EXTRA_WARNING_OVERRIDE_CFLAGS = "-Wno-unused-parameter";
 				GTM_HOST_GCC_PREPROCESSOR_DEFINITIONS = "GTM_USING_XCTEST=1";
-				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 			};
 			name = Release;
 		};

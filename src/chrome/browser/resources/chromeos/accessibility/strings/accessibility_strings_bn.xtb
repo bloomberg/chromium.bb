@@ -536,6 +536,7 @@
 <translation id="4601367666219428522">সারণী <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">পরবর্তী কি টেপা উপেক্ষা করা হচ্ছে</translation>
 <translation id="4623097797855662355">বইটির সম্পর্কে</translation>
+<translation id="4624970070706497034">টকব্যাক আর Chromebook-এর জন্য কাস্টমাইজ করার সুবিধা প্রদান করে না। আপনি এখনও এটি ব্যবহার করতে পারেন, তবে টকব্যাক ডিফল্ট কীবোর্ড শর্টকাট ব্যবহার করুন। কী কী শর্টকাট উপলভ্য আছে দেখতে Search+A এবং তারপরে K প্রেস করুন। এখনও টকব্যাক ব্যবহার করতে চাইলে, আবার 'কমান্ড' কী প্রেস করুন।</translation>
 <translation id="463135993322337640">নতুন কি আছে তা দেখার জন্য ChromeVox o, n টিপুন</translation>
 <translation id="4649220074413114917">কোনও বর্তমান স্পিচ বন্ধ করতে দুই আঙুল দিয়ে স্ক্রিনে ট্যাপ করুন। ChromeVox-এর পড়ে শোনানো কোনও স্পিচ আপনি শুনতে না চাইলে এই পদ্ধতিটি কার্যকরী। চালিয়ে যেতে, দুই আঙুল দিয়ে স্ক্রিনে ট্যাপ করুন।</translation>
 <translation id="4660783501463101648">ক্লাসিক ভার্সন সরানো হয়েছে। কীবোর্ড টগল করে ChromeVox ক্লাসিক ভার্সনে ফিরে যাওয়ার সুবিধা সরিয়ে দেওয়া হয়েছে।</translation>
@@ -618,7 +619,6 @@
 <translation id="5170206230005240598">ব্রেইল ক্যাপশনগুলি চালু করা হয়েছে</translation>
 <translation id="5183440668879371625">ব্রেইল পূর্ববর্তী লাইন</translation>
 <translation id="5189244881767082992">লাইন</translation>
-<translation id="5234747236692380506"><ph name="TEXT" /> টাইপ করুন</translation>
 <translation id="5263034204789987535">কর্নসিল্ক</translation>
 <translation id="5263344797180442561">h2</translation>
 <translation id="528468243742722775">শেষ</translation>
@@ -666,6 +666,7 @@
 <translation id="5522423213731659107">'দ্রুত জ্ঞান অর্জন' সম্পূর্ণ হয়েছে!</translation>
 <translation id="5534303576632885660">hdr</translation>
 <translation id="5539820223028224601">খুব হালকা ধূসর</translation>
+<translation id="554893713779400387">ডিক্টেশন চালু বা বন্ধ করুন</translation>
 <translation id="5549179427201066174">আওয়াজে প্রতিক্রিয়া (ইয়ারকন) চালু বা বন্ধ করুন</translation>
 <translation id="556042886152191864">বোতাম</translation>
 <translation id="5561345396546889625">পরবর্তী তালিকা</translation>
@@ -684,6 +685,8 @@
 <translation id="5623842676595125836">লগ</translation>
 <translation id="5628125749885014029">h4</translation>
 <translation id="5632083598315326067">গ্রাফিক্স চিহ্ন</translation>
+<translation id="5648939288050772726">অভিনন্দন! ChromeVox-এর প্রয়োজনীয় উপাদানগুলির ব্যাপারে আপনার কাছে এখন যথেষ্ট তথ্য রয়েছে। মনে রাখবেন, আপনি যেকোনও সময় ChromeVox-এর পরিবর্তিত কীবোর্ডে গিয়ে 'সার্চ' কী ও 'পিরিয়ড' কী একসাথে প্রেস করে ChromeVox-এর 'কমান্ড' মেনু খুলতে পারেন। ChromeVox ও ChromeOS-এর ব্যাপারে আরও বিস্তারিত জানতে, নিচে দেওয়া নিবন্ধগুলি পড়ে দেখুন।
+    যদি আপনার টিউটোরিয়াল দেখা হয়ে গিয়ে থাকে, ChromeVox ব্যবহার করে 'বন্ধ করুন' বোতামে গিয়ে সেটিতে ক্লিক করুন।</translation>
 <translation id="5653397561111110475">Chromebook-এর টাচ স্ক্রিনের ব্যবহারযোগ্যতার বৈশিষ্ট্যগুলি ব্যবহার করুন</translation>
 <translation id="5655682562155942719">মন্তব্যগুলি ছেড়ে যান</translation>
 <translation id="56637627897541303">পাঠ্য ক্ষেত্র</translation>
@@ -793,6 +796,7 @@
 <translation id="641759969622533235">{COUNT,plural, =1{কোলন}one{#টি কোলন}other{#টি কোলন}}</translation>
 <translation id="6444046323172968959">সতর্কতা ডায়ালগ</translation>
 <translation id="6452403590345320472">সূচিপত্র</translation>
+<translation id="6457542714329819968">ধরন</translation>
 <translation id="6468049171101508116">পরবর্তী বোতাম</translation>
 <translation id="646954774886932461">সূচি</translation>
 <translation id="6475604559827479857">শব্দ হাইলাইট করার জন্য রং:</translation>
@@ -965,8 +969,6 @@
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7713139339518499741">খুব ভাল কোয়ালিটির ভয়েস</translation>
 <translation id="7714340021005120797">কোনও পরবর্তী কম্বোবক্স নেই</translation>
-<translation id="772146615414628379">অভিনন্দন! ChromeVox-এর প্রয়োজনীয় উপাদানগুলির ব্যাপারে আপনার কাছে এখন যথেষ্ট তথ্য রয়েছে। মনে রাখবেন, আপনি যেকোনও সময় ChromeVox-এর পরিবর্তিত কীবোর্ডে গিয়ে 'সার্চ' কী ও 'পিরিয়ড' কী একসাথে প্রেস করে ChromeVox-এর 'কমান্ড' মেনু খুলতে পারেন। ChromeVox ও Chrome OS-এর ব্যাপারে আরও বিস্তারিত জানতে, নিচে দেওয়া নিবন্ধগুলি পড়ে দেখুন।
-    যদি আপনার টিউটোরিয়াল দেখা হয়ে গিয়ে থাকে, ChromeVox ব্যবহার করে 'বন্ধ করুন' বোতামে গিয়ে সেটিতে ক্লিক করুন।</translation>
 <translation id="7724603315864178912">কাটুন</translation>
 <translation id="7731785449856576010">কোনও পরবর্তী মিডিয়া উইজেট নেই</translation>
 <translation id="7735498529470878067">স্ক্রিনে কী কী আছে তা 'টাচের মাধ্যমে এক্সপ্লোর করুন' সুবিধাটি আপনাকে দ্রুত জানিয়ে দেবে।</translation>
@@ -1168,6 +1170,7 @@
 <translation id="9223032053830369045">গাঢ় লাল</translation>
 <translation id="923331726185079994">ChromeVox আপডেট হয়েছে</translation>
 <translation id="93384979447910801">গাঢ় নীলাভ সবুজ</translation>
+<translation id="937605981140327129">টকব্যাক বর্তমানে ইনস্টল করা নেই। Play Store থেকে Android AccessibilitySuite ইনস্টল করে আবার চেষ্টা করুন।</translation>
 <translation id="948171205378458592">স্পিচের হার কমান</translation>
 <translation id="957570623732056069">এই টিউটোরিয়ালে নেভিগেট করতে একটি আঙুল দিয়ে বাঁদিকে বা ডানদিকে সোয়াইপ করুন</translation>
 <translation id="958854023026327378">এক আঙ্গুল দিয়ে নিচের দিকে সোয়াইপ করুন</translation>
