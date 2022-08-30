@@ -14,6 +14,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
+#include "base/threading/platform_thread.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -23,7 +25,6 @@
 #include "components/language/core/common/language_experiments.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
-#include "components/translate/core/browser/translate_accept_languages.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_pref_names.h"
 #include "components/translate/core/common/translate_util.h"
@@ -45,7 +46,8 @@ static void ExpectEqualLanguageLists(
     const base::Value& language_values,
     const std::vector<std::string>& languages) {
   const int input_size = languages.size();
-  base::Value::ConstListView language_values_view = language_values.GetList();
+  base::Value::ConstListView language_values_view =
+      language_values.GetListDeprecated();
   ASSERT_EQ(input_size, static_cast<int>(language_values_view.size()));
   for (int i = 0; i < input_size; ++i) {
     ASSERT_TRUE(language_values_view[i].is_string());
@@ -939,7 +941,7 @@ TEST_F(TranslatePrefsTest, MigrateNeverPromptSites) {
   translate_prefs_->AddValueToNeverPromptList(
       TranslatePrefs::kPrefNeverPromptSitesDeprecated, "migratedWrong.com");
   EXPECT_EQ(prefs_.Get(TranslatePrefs::kPrefNeverPromptSitesDeprecated)
-                ->GetList()
+                ->GetListDeprecated()
                 .size(),
             2u);
   // Also put one of those sites on the new pref but migrated incorrectly.
@@ -954,9 +956,38 @@ TEST_F(TranslatePrefsTest, MigrateNeverPromptSites) {
                   base::Time::Now() - base::Days(1), base::Time::Max()),
               ElementsAre("migratedWrong.com", "unmigrated.com"));
   EXPECT_EQ(prefs_.Get(TranslatePrefs::kPrefNeverPromptSitesDeprecated)
-                ->GetList()
+                ->GetListDeprecated()
                 .size(),
             0u);
+}
+
+// Regression test for https://crbug.com/1295549
+TEST_F(TranslatePrefsTest, InvalidNeverPromptSites) {
+  // Add sites with invalid times.
+  DictionaryPrefUpdate never_prompt_list_update(
+      &prefs_, TranslatePrefs::kPrefNeverPromptSitesWithTime);
+  base::Value* never_prompt_list = never_prompt_list_update.Get();
+  never_prompt_list->SetKey("not-a-string.com", base::Value(0));
+  never_prompt_list->SetKey("not-a-valid-time.com", base::Value("foo"));
+  // Add the null time (valid time).
+  never_prompt_list->SetKey("null-time.com", base::Value("0"));
+
+  // This should not crash, and filter invalid times.
+  EXPECT_THAT(translate_prefs_->GetNeverPromptSitesBetween(base::Time::Min(),
+                                                           base::Time::Max()),
+              ElementsAre("null-time.com"));
+}
+
+TEST_F(TranslatePrefsTest, MigrateInvalidNeverPromptSites) {
+  ListPrefUpdate update(&prefs_,
+                        TranslatePrefs::kPrefNeverPromptSitesDeprecated);
+  base::Value* never_prompt_list = update.Get();
+  never_prompt_list->Append(1);
+  never_prompt_list->Append("unmigrated.com");
+  translate_prefs_->MigrateNeverPromptSites();
+  EXPECT_THAT(translate_prefs_->GetNeverPromptSitesBetween(
+                  base::Time::Now() - base::Days(1), base::Time::Max()),
+              ElementsAre("unmigrated.com"));
 }
 
 TEST_F(TranslatePrefsTest, SiteNeverPromptList) {
@@ -1125,40 +1156,12 @@ TEST_F(TranslatePrefsTest, CanTranslateLanguage) {
 
   translate_prefs_->ResetToDefaults();
 
-  TranslateAcceptLanguages translate_accept_languages(
-      &prefs_, language::prefs::kAcceptLanguages);
-
   // Unblocked language.
-  EXPECT_TRUE(translate_prefs_->CanTranslateLanguage(
-      &translate_accept_languages, "fr"));
+  EXPECT_TRUE(translate_prefs_->CanTranslateLanguage("fr"));
 
   // Blocked language.
   translate_prefs_->BlockLanguage("en");
-  EXPECT_FALSE(translate_prefs_->CanTranslateLanguage(
-      &translate_accept_languages, "en"));
-
-  // Blocked languages that are not in accept languages are not blocked.
-  translate_prefs_->BlockLanguage("de");
-  EXPECT_TRUE(translate_prefs_->CanTranslateLanguage(
-      &translate_accept_languages, "de"));
-
-// When the detailed language settings are enabled blocked languages not in
-// accept languages can be translated.
-#if defined(OS_ANDROID)
-  {  // Android scoped feature.
-    base::test::ScopedFeatureList scoped_feature_list(
-        language::kDetailedLanguageSettings);
-    EXPECT_FALSE(translate_prefs_->CanTranslateLanguage(
-        &translate_accept_languages, "de"));
-  }
-#elif defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX)
-  {  // Desktop scoped feature.
-    base::test::ScopedFeatureList scoped_feature_list(
-        language::kDesktopDetailedLanguageSettings);
-    EXPECT_FALSE(translate_prefs_->CanTranslateLanguage(
-        &translate_accept_languages, "de"));
-  }
-#endif
+  EXPECT_FALSE(translate_prefs_->CanTranslateLanguage("en"));
 
   {  // English in force translate experiment scoped feature.
     base::test::ScopedFeatureList scoped_feature_list;
@@ -1167,8 +1170,7 @@ TEST_F(TranslatePrefsTest, CanTranslateLanguage) {
         {{"override_model", "heuristic"},
          {"enforce_ranker", "false"},
          {"backoff_threshold", "1"}});
-    EXPECT_TRUE(translate_prefs_->CanTranslateLanguage(
-        &translate_accept_languages, "en"));
+    EXPECT_TRUE(translate_prefs_->CanTranslateLanguage("en"));
   }
 }
 

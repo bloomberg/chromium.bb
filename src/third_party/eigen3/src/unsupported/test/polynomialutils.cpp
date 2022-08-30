@@ -25,12 +25,12 @@ struct increment_if_fixed_size
 }
 }
 
-template<typename Scalar_, int _Deg>
+template<typename Scalar_, int Deg_>
 void realRoots_to_monicPolynomial_test(int deg)
 {
-  typedef internal::increment_if_fixed_size<_Deg>            Dim;
+  typedef internal::increment_if_fixed_size<Deg_>            Dim;
   typedef Matrix<Scalar_,Dim::ret,1>                  PolynomialType;
-  typedef Matrix<Scalar_,_Deg,1>                      EvalRootsType;
+  typedef Matrix<Scalar_,Deg_,1>                      EvalRootsType;
 
   PolynomialType pols(deg+1);
   EvalRootsType roots = EvalRootsType::Random(deg);
@@ -63,12 +63,12 @@ template<typename Scalar_> void realRoots_to_monicPolynomial_scalar()
 
 
 
-template<typename Scalar_, int _Deg>
+template<typename Scalar_, int Deg_>
 void CauchyBounds(int deg)
 {
-  typedef internal::increment_if_fixed_size<_Deg>            Dim;
+  typedef internal::increment_if_fixed_size<Deg_>            Dim;
   typedef Matrix<Scalar_,Dim::ret,1>                  PolynomialType;
-  typedef Matrix<Scalar_,_Deg,1>                      EvalRootsType;
+  typedef Matrix<Scalar_,Deg_,1>                      EvalRootsType;
 
   PolynomialType pols(deg+1);
   EvalRootsType roots = EvalRootsType::Random(deg);

@@ -30,25 +30,27 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.omnibox.LocationBarLayout;
 import org.chromium.chrome.browser.omnibox.NewTabPageDelegate;
 import org.chromium.chrome.browser.omnibox.SearchEngineLogoUtils;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.TabImpl;
-import org.chromium.chrome.test.util.ToolbarTestUtils;
+import org.chromium.chrome.test.util.ToolbarUnitTestUtils;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.prefs.PrefService;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.components.security_state.SecurityStateModel;
 import org.chromium.components.security_state.SecurityStateModelJni;
 import org.chromium.content_public.browser.test.NativeLibraryTestUtils;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /**
- * Unit tests for {@link LocationBarLayout} class.
+ * Instrumentation tests for the toolbar security icon.
  */
 @RunWith(BaseJUnit4ClassRunner.class)
 @Batch(Batch.UNIT_TESTS)
-@Features.DisableFeatures(ChromeFeatureList.OMNIBOX_UPDATED_CONNECTION_SECURITY_INDICATORS)
+@Features.DisableFeatures({ChromeFeatureList.OMNIBOX_UPDATED_CONNECTION_SECURITY_INDICATORS,
+        ChromeFeatureList.LOCATION_BAR_MODEL_OPTIMIZATIONS})
 public final class ToolbarSecurityIconTest {
     private static final boolean IS_SMALL_DEVICE = true;
     private static final boolean IS_OFFLINE_PAGE = true;
@@ -76,6 +78,8 @@ public final class ToolbarSecurityIconTest {
 
     @Mock
     private PrefService mMockPrefService;
+    @Mock
+    private Profile mMockProfile;
 
     /**
      * Set up the lock icon policy for Mock PrefService.
@@ -103,10 +107,11 @@ public final class ToolbarSecurityIconTest {
         // clang-format off
         mLocationBarModel = spy(
                 new LocationBarModel(context, NewTabPageDelegate.EMPTY,
-                        (url) -> url.getSpec(), (window) -> null, ToolbarTestUtils.OFFLINE_STATUS,
+                        (url) -> url.getSpec(), (window) -> null, ToolbarUnitTestUtils.OFFLINE_STATUS,
                         mSearchEngineLogoUtils));
         // clang-format on
-        mLocationBarModel.initializeWithNative();
+        Profile.setLastUsedProfileForTesting(mMockProfile);
+        TestThreadUtils.runOnUiThreadBlocking(() -> mLocationBarModel.initializeWithNative());
 
         doReturn(mMockPrefService).when(mLocationBarModel).getPrefService();
         setupLockIconPolicyForTests(false);

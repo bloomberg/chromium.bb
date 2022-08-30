@@ -424,7 +424,7 @@ int av1_jacobi_sparse(const SPARSE_MTX *A, const double *b, int bl, double *x) {
 int av1_steepest_descent_sparse(const SPARSE_MTX *A, const double *b, int bl,
                                 double *x) {
   double *d = NULL, *Ad = NULL, *Ax = NULL;
-  double resi2, resi2_last, dAd, diff, temp;
+  double resi2, resi2_last, dAd, temp;
 
   d = aom_calloc(bl, sizeof(*d));
   Ax = aom_calloc(bl, sizeof(*Ax));
@@ -448,11 +448,9 @@ int av1_steepest_descent_sparse(const SPARSE_MTX *A, const double *b, int bl,
     // get A*x_last
     av1_mtx_vect_multi_right(A, d, Ad, bl);
     dAd = resi2 * bl / av1_vect_vect_multi(d, bl, Ad);
-    diff = 0;
     for (i = 0; i < bl; i++) {
       temp = dAd * d[i];
       x[i] = x[i] + temp;
-      diff += temp * temp;
     }
     av1_mtx_vect_multi_right(A, x, Ax, bl);
     resi2_last = resi2;

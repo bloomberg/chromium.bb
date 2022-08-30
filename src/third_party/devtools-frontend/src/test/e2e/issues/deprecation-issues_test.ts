@@ -4,14 +4,21 @@
 
 import {assertNotNullOrUndefined, getBrowserAndPages, goToResource} from '../../shared/helper.js';
 import {describe, it} from '../../shared/mocha-extensions.js';
-import {ensureResourceSectionIsExpanded, expandIssue, getIssueByTitle, getResourcesElement, navigateToIssuesTab, waitForTableFromResourceSectionContents} from '../helpers/issues-helpers.js';
+import {
+  ensureResourceSectionIsExpanded,
+  expandIssue,
+  getIssueByTitle,
+  getResourcesElement,
+  navigateToIssuesTab,
+  waitForTableFromResourceSectionContents,
+} from '../helpers/issues-helpers.js';
 
 describe('Deprecation Issues', async () => {
   beforeEach(async () => {
     await goToResource('empty.html');
   });
 
-  it('should display correct information', async () => {
+  it('evaluation works', async () => {
     await navigateToIssuesTab();
     const {frontend} = getBrowserAndPages();
     frontend.evaluate(() => {
@@ -24,7 +31,7 @@ describe('Deprecation Issues', async () => {
               lineNumber: 1,
               columnNumber: 1,
             },
-            message: 'Test',
+            type: 'DeprecationExample',
           },
         },
       };

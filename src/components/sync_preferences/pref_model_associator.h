@@ -10,7 +10,7 @@
 #include <string>
 #include <unordered_map>
 
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/memory/raw_ptr.h"
 #include "base/observer_list.h"
@@ -99,9 +99,9 @@ class PrefModelAssociator : public syncer::SyncableService {
   // value always takes precedence. Note that only certain preferences will
   // actually be merged, all others will return a copy of the server value. See
   // the method's implementation for details.
-  std::unique_ptr<base::Value> MergePreference(const std::string& name,
-                                               const base::Value& local_value,
-                                               const base::Value& server_value);
+  base::Value MergePreference(const std::string& name,
+                              const base::Value& local_value,
+                              const base::Value& server_value);
 
   // Fills |sync_data| with a sync representation of the preference data
   // provided.

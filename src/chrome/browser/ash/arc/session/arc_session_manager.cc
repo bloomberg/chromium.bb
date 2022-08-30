@@ -19,6 +19,7 @@
 #include "ash/components/arc/session/arc_management_transition.h"
 #include "ash/components/arc/session/arc_session.h"
 #include "ash/components/arc/session/arc_session_runner.h"
+#include "ash/components/cryptohome/cryptohome_parameters.h"
 #include "ash/constants/ash_switches.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -28,7 +29,6 @@
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
-#include "base/task/post_task.h"
 #include "base/task/task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
@@ -59,10 +59,10 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/arc/arc_fast_app_reinstall_starter.h"
 #include "chrome/browser/ui/app_list/arc/arc_pai_starter.h"
+#include "chrome/browser/ui/app_list/arc/intent.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/webui/chromeos/diagnostics_dialog.h"
-#include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/account_id/account_id.h"
@@ -76,6 +76,10 @@
 #include "crypto/random.h"
 #include "crypto/sha2.h"
 #include "ui/display/types/display_constants.h"
+
+// Enable VLOG level 1.
+#undef ENABLED_VLOG_LEVEL
+#define ENABLED_VLOG_LEVEL 1
 
 namespace arc {
 
@@ -472,7 +476,20 @@ ArcSessionManager::ExpansionResult ReadSaltInternal() {
 // for the presence of kEnableHoudiniDlc flag in the command line.
 bool IsDlcRequired() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      chromeos::switches::kEnableHoudiniDlc);
+      ash::switches::kEnableHoudiniDlc);
+}
+
+// Inform ArcMetricsServices about the starting time of ARC provisioning.
+void ReportProvisioningStartTime(const base::TimeTicks& start_time,
+                                 Profile* profile) {
+  ArcMetricsService* metrics_service =
+      ArcMetricsService::GetForBrowserContext(profile);
+  // metrics_service might be null in unit tests.
+  if (metrics_service) {
+    auto account_type_suffix = GetHistogramNameByUserType("", profile);
+    metrics_service->ReportProvisioningStartTime(start_time,
+                                                 account_type_suffix);
+  }
 }
 
 }  // namespace
@@ -552,7 +569,7 @@ ArcSessionManager::ArcSessionManager(
   if (chromeos::SessionManagerClient::Get())
     chromeos::SessionManagerClient::Get()->AddObserver(this);
   ResetStabilityMetrics();
-  chromeos::ConciergeClient::Get()->AddVmObserver(this);
+  ash::ConciergeClient::Get()->AddVmObserver(this);
   arc_dlc_installer_ = std::make_unique<ArcDlcInstaller>();
 }
 
@@ -560,7 +577,7 @@ ArcSessionManager::~ArcSessionManager() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   arc_dlc_installer_.reset();
 
-  chromeos::ConciergeClient::Get()->RemoveVmObserver(this);
+  ash::ConciergeClient::Get()->RemoveVmObserver(this);
 
   if (chromeos::SessionManagerClient::Get())
     chromeos::SessionManagerClient::Get()->RemoveObserver(this);
@@ -810,14 +827,15 @@ void ArcSessionManager::SetUserInfo() {
   const AccountId account(multi_user_util::GetAccountIdFromProfile(profile_));
   const cryptohome::Identification cryptohome_id(account);
   const std::string user_id_hash =
-      chromeos::ProfileHelper::GetUserIdHashFromProfile(profile_);
+      ash::ProfileHelper::GetUserIdHashFromProfile(profile_);
 
   std::string serialno = GetSerialNumber();
   arc_session_runner_->SetUserInfo(cryptohome_id, user_id_hash, serialno);
 }
 
-void ArcSessionManager::TrimVmMemory(TrimVmMemoryCallback callback) {
-  arc_session_runner_->TrimVmMemory(std::move(callback));
+void ArcSessionManager::TrimVmMemory(TrimVmMemoryCallback callback,
+                                     int page_limit) {
+  arc_session_runner_->TrimVmMemory(std::move(callback), page_limit);
 }
 
 std::string ArcSessionManager::GetSerialNumber() const {
@@ -826,7 +844,7 @@ std::string ArcSessionManager::GetSerialNumber() const {
 
   const AccountId account(multi_user_util::GetAccountIdFromProfile(profile_));
   const std::string user_id_hash =
-      chromeos::ProfileHelper::GetUserIdHashFromProfile(profile_);
+      ash::ProfileHelper::GetUserIdHashFromProfile(profile_);
 
   std::string serialno;
   // ARC container doesn't need the serial number.
@@ -1297,6 +1315,11 @@ void ArcSessionManager::MaybeStartTermsOfServiceNegotiation() {
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
+void ArcSessionManager::StartArcForTesting() {
+  enable_requested_ = true;
+  StartArc();
+}
+
 void ArcSessionManager::OnTermsOfServiceNegotiated(bool accepted) {
   DCHECK_EQ(state_, State::NEGOTIATING_TERMS_OF_SERVICE);
   DCHECK(profile_);
@@ -1589,6 +1612,7 @@ void ArcSessionManager::OnArcDataRemoved(absl::optional<bool> result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_EQ(state_, State::REMOVING_DATA_DIR);
   DCHECK(profile_);
+
   state_ = State::STOPPED;
 
   if (result.has_value()) {
@@ -1634,6 +1658,7 @@ void ArcSessionManager::MaybeStartTimer() {
 
   VLOG(1) << "Setup provisioning timer";
   sign_in_start_time_ = base::TimeTicks::Now();
+  ReportProvisioningStartTime(sign_in_start_time_, profile_);
   arc_sign_in_timer_.Start(
       FROM_HERE, GetArcSignInTimeout(),
       base::BindOnce(&ArcSessionManager::OnArcSignInTimeout,
@@ -1773,7 +1798,8 @@ void ArcSessionManager::EmitLoginPromptVisibleCalled() {
     VLOG(1) << "Starting ARCVM on login screen is not supported.";
     return;
   }
-  StartMiniArc();
+  if (!ShouldArcStartManually())
+    StartMiniArc();
 }
 
 void ArcSessionManager::ExpandPropertyFilesAndReadSalt() {
@@ -1782,30 +1808,14 @@ void ArcSessionManager::ExpandPropertyFilesAndReadSalt() {
   // For ARCVM, generate <dest_path>/{combined.prop,fstab}. For ARC, generate
   // <dest_path>/{default,build,vendor_build}.prop.
   const bool is_arcvm = arc::IsArcVmEnabled();
-  bool add_native_bridge_64bit_support = false;
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kArcEnableNativeBridge64BitSupportExperiment)) {
-    PrefService* local_pref_service = g_browser_process->local_state();
-    if (base::FeatureList::IsEnabled(
-            arc::kNativeBridge64BitSupportExperimentFeature)) {
-      // Note that we treat this experiment as a one-way off->on switch, across
-      // all users of the device, as the lifetime of ARC mini-container and user
-      // sessions are different in different scenarios, and removing the
-      // experiment after it has been in effect for a user's ARC instance can
-      // lead to unexpected, and unsupported, results.
-      local_pref_service->SetBoolean(
-          prefs::kNativeBridge64BitSupportExperimentEnabled, true);
-    }
-    add_native_bridge_64bit_support = local_pref_service->GetBoolean(
-        prefs::kNativeBridge64BitSupportExperimentEnabled);
-  }
 
   std::deque<JobDesc> jobs = {
       JobDesc{kArcPrepareHostGeneratedDirJobName,
               UpstartOperation::JOB_START,
               {std::string("IS_ARCVM=") + (is_arcvm ? "1" : "0"),
-               std::string("ADD_NATIVE_BRIDGE_64BIT_SUPPORT=") +
-                   (add_native_bridge_64bit_support ? "1" : "0")}},
+               // TODO(b/233107740) Remove this once crrev.com/c/3656121 has
+               // landed.
+               std::string("ADD_NATIVE_BRIDGE_64BIT_SUPPORT=0")}},
   };
   ConfigureUpstartJobs(std::move(jobs),
                        base::BindOnce(&ArcSessionManager::OnExpandPropertyFiles,

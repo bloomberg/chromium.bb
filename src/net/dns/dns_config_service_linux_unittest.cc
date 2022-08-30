@@ -14,12 +14,10 @@
 #include "base/bind.h"
 #include "base/cancelable_callback.h"
 #include "base/check.h"
-#include "base/cxx17_backports.h"
 #include "base/files/file_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/sys_byteorder.h"
-#include "base/task/post_task.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/task_traits.h"
@@ -52,7 +50,7 @@ const char* const kNameserversIPv4[] = {
 
 const char* const kNameserversIPv6[] = {
     nullptr,
-    "2001:DB8:0::42",
+    "2001:db8::42",
     nullptr,
     "::FFFF:129.144.52.38",
 };
@@ -82,7 +80,7 @@ void InitializeResState(res_state res) {
   res->dnsrch[0] = res->defdname;
   res->dnsrch[1] = res->defdname + sizeof("chromium.org");
 
-  for (unsigned i = 0; i < base::size(kNameserversIPv4) && i < MAXNS; ++i) {
+  for (unsigned i = 0; i < std::size(kNameserversIPv4) && i < MAXNS; ++i) {
     struct sockaddr_in sa;
     sa.sin_family = AF_INET;
     sa.sin_port = base::HostToNet16(NS_DEFAULTPORT + i);
@@ -93,7 +91,7 @@ void InitializeResState(res_state res) {
 
   // Install IPv6 addresses, replacing the corresponding IPv4 addresses.
   unsigned nscount6 = 0;
-  for (unsigned i = 0; i < base::size(kNameserversIPv6) && i < MAXNS; ++i) {
+  for (unsigned i = 0; i < std::size(kNameserversIPv6) && i < MAXNS; ++i) {
     if (!kNameserversIPv6[i])
       continue;
     // Must use malloc to mimic res_ninit. Expect to be freed in
@@ -121,13 +119,13 @@ void InitializeExpectedConfig(DnsConfig* config) {
   config->search.push_back("example.com");
 
   config->nameservers.clear();
-  for (unsigned i = 0; i < base::size(kNameserversIPv4) && i < MAXNS; ++i) {
+  for (unsigned i = 0; i < std::size(kNameserversIPv4) && i < MAXNS; ++i) {
     IPAddress ip;
     EXPECT_TRUE(ip.AssignFromIPLiteral(kNameserversIPv4[i]));
     config->nameservers.emplace_back(ip, NS_DEFAULTPORT + i);
   }
 
-  for (unsigned i = 0; i < base::size(kNameserversIPv6) && i < MAXNS; ++i) {
+  for (unsigned i = 0; i < std::size(kNameserversIPv6) && i < MAXNS; ++i) {
     if (!kNameserversIPv6[i])
       continue;
     IPAddress ip;
@@ -226,25 +224,44 @@ class BlockingHelper {
       base::ThreadTaskRunnerHandle::Get();
 };
 
+class TestScopedResState : public ScopedResState {
+ public:
+  explicit TestScopedResState(std::unique_ptr<struct __res_state> res)
+      : res_(std::move(res)) {}
+
+  ~TestScopedResState() override {
+    if (res_) {
+      // Assume `res->_u._ext.nsaddrs` memory allocated via malloc, e.g. by
+      // `InitializeResState()`.
+      for (int i = 0; i < res_->nscount; ++i) {
+        if (res_->_u._ext.nsaddrs[i] != nullptr)
+          free(res_->_u._ext.nsaddrs[i]);
+      }
+    }
+  }
+
+  const struct __res_state& state() const override {
+    EXPECT_TRUE(res_);
+    return *res_;
+  }
+
+ private:
+  std::unique_ptr<struct __res_state> res_;
+};
+
 class TestResolvReader : public ResolvReader {
  public:
-  ~TestResolvReader() override {
-    if (value_)
-      CloseResState(value_.get());
-  }
+  ~TestResolvReader() override = default;
 
   void set_value(std::unique_ptr<struct __res_state> value) {
     CHECK(!value_);
-    CHECK(closed_);
-
-    value_ = std::move(value);
-    closed_ = false;
+    value_ = std::make_unique<TestScopedResState>(std::move(value));
   }
 
-  bool closed() { return closed_; }
+  bool closed() { return !value_; }
 
   // ResolvReader:
-  std::unique_ptr<struct __res_state> GetResState() override {
+  std::unique_ptr<ScopedResState> GetResState() override {
     if (blocking_helper_)
       blocking_helper_->WaitUntilUnblocked();
 
@@ -252,24 +269,12 @@ class TestResolvReader : public ResolvReader {
     return std::move(value_);
   }
 
-  void CloseResState(struct __res_state* res) override {
-    closed_ = true;
-
-    // Assume `res->_u._ext.nsaddrs` memory allocated via malloc, e.g. by
-    // `InitializeResState()`.
-    for (int i = 0; i < res->nscount; ++i) {
-      if (res->_u._ext.nsaddrs[i] != nullptr)
-        free(res->_u._ext.nsaddrs[i]);
-    }
-  }
-
   void set_blocking_helper(BlockingHelper* blocking_helper) {
     blocking_helper_ = blocking_helper;
   }
 
  private:
-  std::unique_ptr<struct __res_state> value_;
-  bool closed_ = true;  // Start "closed" until a value is set.
+  std::unique_ptr<TestScopedResState> value_;
   BlockingHelper* blocking_helper_ = nullptr;
 };
 

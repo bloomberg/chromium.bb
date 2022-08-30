@@ -22,8 +22,8 @@ namespace web_app {
 namespace {
 
 int BucketedDailySeconds(base::TimeDelta delta) {
-  int64_t sample =
-      base::clamp(delta.InSeconds(), int64_t(0), base::Days(1).InSeconds());
+  int64_t sample = base::clamp(delta.InSeconds(), static_cast<int64_t>(0),
+                               base::Days(1).InSeconds());
   // Result between 1 sec and 1 day, in 50 linear buckets per day.
   int32_t bucket_size = base::Days(1).InSeconds() / 50;
   int result = ukm::GetLinearBucketMin(sample, bucket_size);
@@ -35,7 +35,7 @@ int BucketedDailySeconds(base::TimeDelta delta) {
 // This class exists just to be friended by |UkmRecorder|.
 class DesktopWebAppUkmRecorder {
  public:
-  static void Emit(DailyInteraction record) {
+  static void Emit(const DailyInteraction& record) {
     DCHECK(record.start_url.is_valid());
     ukm::SourceId source_id =
         ukm::UkmRecorder::GetSourceIdForDesktopWebAppStartUrl(record.start_url);
@@ -75,7 +75,7 @@ const char kBackgroundDurationSec[] = "background_duration_sec";
 const char kNumSessions[] = "num_sessions";
 
 optional<DailyInteraction> DictToRecord(const std::string& url,
-                                        const DictionaryValue& record_dict) {
+                                        const Value& record_dict) {
   GURL gurl(url);
   if (!gurl.is_valid())
     return absl::nullopt;
@@ -153,27 +153,25 @@ void EmitRecord(DailyInteraction record, Profile* profile) {
   url::Origin origin = url::Origin::Create(record.start_url);
   // Ensure origin is still in the history before emitting.
   ukm_background_service->GetBackgroundSourceIdIfAllowed(
-      origin, base::BindOnce(&EmitIfSourceIdExists, record));
+      origin, base::BindOnce(&EmitIfSourceIdExists, std::move(record)));
 }
 
 void EmitRecords(Profile* profile) {
-  const DictionaryValue* urls_to_features =
+  const Value* urls_to_features =
       profile->GetPrefs()->GetDictionary(prefs::kWebAppsDailyMetrics);
   DCHECK(urls_to_features);
 
-  for (DictionaryValue::Iterator iter(*urls_to_features); !iter.IsAtEnd();
-       iter.Advance()) {
-    const std::string& url = iter.key();
-    const Value& val = iter.value();
-    const DictionaryValue& dict = Value::AsDictionaryValue(val);
-    optional<DailyInteraction> record = DictToRecord(url, dict);
+  for (const auto iter : urls_to_features->DictItems()) {
+    const std::string& url = iter.first;
+    const Value& val = iter.second;
+    optional<DailyInteraction> record = DictToRecord(url, val);
     if (record)
       EmitRecord(*record, profile);
   }
 }
 
 void RemoveRecords(PrefService* prefs) {
-  const DictionaryValue* urls_to_features =
+  const Value* urls_to_features =
       prefs->GetDictionary(prefs::kWebAppsDailyMetrics);
   if (!urls_to_features)
     return;
@@ -184,14 +182,14 @@ void RemoveRecords(PrefService* prefs) {
 void UpdateRecord(DailyInteraction& record, PrefService* prefs) {
   DCHECK(record.start_url.is_valid());
   const std::string& url = record.start_url.spec();
-  const DictionaryValue* urls_to_features =
+  const Value* urls_to_features =
       prefs->GetDictionary(prefs::kWebAppsDailyMetrics);
   CHECK(urls_to_features);
   const Value* existing_val = urls_to_features->FindDictKey(url);
   if (existing_val) {
     // Sum duration and session values from existing record.
-    const DictionaryValue& dict = Value::AsDictionaryValue(*existing_val);
-    optional<DailyInteraction> existing_record = DictToRecord(url, dict);
+    optional<DailyInteraction> existing_record =
+        DictToRecord(url, *existing_val);
     if (existing_record) {
       record.foreground_duration += existing_record->foreground_duration;
       record.background_duration += existing_record->background_duration;
@@ -208,7 +206,8 @@ void UpdateRecord(DailyInteraction& record, PrefService* prefs) {
 }  // namespace
 
 DailyInteraction::DailyInteraction() = default;
-DailyInteraction::DailyInteraction(GURL start_url) : start_url(start_url) {}
+DailyInteraction::DailyInteraction(GURL start_url)
+    : start_url(std::move(start_url)) {}
 DailyInteraction::DailyInteraction(const DailyInteraction&) = default;
 DailyInteraction::~DailyInteraction() = default;
 

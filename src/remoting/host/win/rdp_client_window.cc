@@ -10,7 +10,6 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/cxx17_backports.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -75,7 +74,7 @@ HWND FindWindowRecursively(HWND parent, const std::wstring& class_name) {
     while (child != nullptr) {
       // See if the window class name matches |class_name|.
       WCHAR name[kMaxWindowClassLength];
-      int length = GetClassName(child, name, base::size(name));
+      int length = GetClassName(child, name, std::size(name));
       if (std::wstring(name, length) == class_name)
         return child;
 
@@ -404,7 +403,7 @@ void RdpClientWindow::OnDestroy() {
   apply_resolution_timer_.Stop();
 }
 
-COM_DECLSPEC_NOTHROW STDMETHODIMP
+STDMETHODIMP
 RdpClientWindow::OnAuthenticationWarningDisplayed() {
   LOG(WARNING) << "RDP: authentication warning is about to be shown.";
 
@@ -415,7 +414,7 @@ RdpClientWindow::OnAuthenticationWarningDisplayed() {
   return S_OK;
 }
 
-COM_DECLSPEC_NOTHROW STDMETHODIMP
+STDMETHODIMP
 RdpClientWindow::OnAuthenticationWarningDismissed() {
   LOG(WARNING) << "RDP: authentication warning has been dismissed.";
 
@@ -423,14 +422,14 @@ RdpClientWindow::OnAuthenticationWarningDismissed() {
   return S_OK;
 }
 
-COM_DECLSPEC_NOTHROW STDMETHODIMP RdpClientWindow::OnConnected() {
+STDMETHODIMP RdpClientWindow::OnConnected() {
   VLOG(1) << "RDP: successfully connected to " << server_endpoint_.ToString();
 
   NotifyConnected();
   return S_OK;
 }
 
-COM_DECLSPEC_NOTHROW STDMETHODIMP RdpClientWindow::OnLoginComplete() {
+STDMETHODIMP RdpClientWindow::OnLoginComplete() {
   VLOG(1) << "RDP: user successfully logged in.";
 
   user_logged_in_ = true;
@@ -449,7 +448,7 @@ COM_DECLSPEC_NOTHROW STDMETHODIMP RdpClientWindow::OnLoginComplete() {
   return S_OK;
 }
 
-COM_DECLSPEC_NOTHROW STDMETHODIMP RdpClientWindow::OnDisconnected(long reason) {
+STDMETHODIMP RdpClientWindow::OnDisconnected(long reason) {
   if (reason == kDisconnectReasonNoInfo ||
       reason == kDisconnectReasonLocalNotError ||
       reason == kDisconnectReasonRemoteByUser ||
@@ -485,8 +484,7 @@ COM_DECLSPEC_NOTHROW STDMETHODIMP RdpClientWindow::OnDisconnected(long reason) {
   return S_OK;
 }
 
-COM_DECLSPEC_NOTHROW STDMETHODIMP
-RdpClientWindow::OnFatalError(long error_code) {
+STDMETHODIMP RdpClientWindow::OnFatalError(long error_code) {
   LOG(ERROR) << "RDP: an error occured: error_code="
              << error_code;
 
@@ -494,8 +492,7 @@ RdpClientWindow::OnFatalError(long error_code) {
   return S_OK;
 }
 
-COM_DECLSPEC_NOTHROW STDMETHODIMP
-RdpClientWindow::OnConfirmClose(VARIANT_BOOL* allow_close) {
+STDMETHODIMP RdpClientWindow::OnConfirmClose(VARIANT_BOOL* allow_close) {
   *allow_close = VARIANT_TRUE;
 
   NotifyDisconnected();

@@ -8,16 +8,22 @@
 #include "base/feature_list.h"
 #include "base/time/time.h"
 
-extern const base::Feature kSearchPrefetchService;
 extern const base::Feature kSearchPrefetchServicePrefetching;
 
-extern const char kSearchPrefetchServiceCommandLineFlag[];
+extern const base::Feature kSearchPrefetchBlockBeforeHeaders;
 
-// Whether the search prefetch service and other objects should be created.
-bool SearchPrefetchServiceIsEnabled();
+extern const base::Feature kSearchPrefetchUsesNetworkCache;
+
+// Whether matching prefetches can block navigation until they are determined to
+// be serve-able or not based on headers.
+bool SearchPrefetchBlockBeforeHeadersIsEnabled();
 
 // Whether the search prefetch service actually initiates prefetches.
 bool SearchPrefetchServicePrefetchingIsEnabled();
+
+// Whether the search prefetch service uses the network cache instead of the in
+// memory cache.
+bool SearchPrefetchUsesNetworkCache();
 
 // The amount of time a response is considered valid after the prefetch starts.
 base::TimeDelta SearchPrefetchCachingLimit();
@@ -30,21 +36,18 @@ size_t SearchPrefetchMaxAttemptsPerCachingDuration();
 // service to stop prefetching responses.
 base::TimeDelta SearchPrefetchErrorBackoffDuration();
 
-// Only prefetch results when they are the top match and the default match.
-// Nothing is prefetched if the default match is not prefetchable.
-bool SearchPrefetchOnlyFetchDefaultMatch();
-
-// When a request is inflight, but no longer shows up in the match list, whether
-// the request is canceled or allowed to finish.
-bool SearchPrefetchShouldCancelUneededInflightRequests();
-
-// Whether Search Prefetch should use a streaming model to serve requests or
-// wait for the entire response to be streamed before being able to serve
-// requests.
-bool StreamSearchPrefetchResponses();
-
 // The max number of stored cached prefetch responses. This is stored as a list
 // of navigation URLs to prefetch URLs.
 size_t SearchPrefetchMaxCacheEntries();
+
+// The amount of time that needs to have elapsed before we consider a prefetch
+// eligible to be served.
+base::TimeDelta SearchPrefetchBlockHeadStart();
+
+extern const base::Feature kSearchNavigationPrefetch;
+
+// An experimental feature to measure if starting search prefetches at
+// navigation start provides benefit over the typical navigation flow.
+bool IsSearchNavigationPrefetchEnabled();
 
 #endif  // CHROME_BROWSER_PREFETCH_SEARCH_PREFETCH_FIELD_TRIAL_SETTINGS_H_

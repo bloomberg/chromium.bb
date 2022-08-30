@@ -2,36 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js';
-import 'chrome://resources/mojo/mojo/public/mojom/base/big_buffer.mojom-lite.js';
-import 'chrome://resources/mojo/mojo/public/mojom/base/string16.mojom-lite.js';
-// TODO(crbug.com/1010321): Use cros_bluetooth_config.mojom-webui.js instead
-// as non-module JS is deprecated.
-import 'chrome://resources/mojo/chromeos/services/bluetooth_config/public/mojom/cros_bluetooth_config.mojom-lite.js';
-
 import {stringToMojoString16} from 'chrome://resources/cr_components/chromeos/bluetooth/bluetooth_utils.js';
-import {assertFalse, assertTrue} from '../../../chai_assert.js';
-import {FakeDevicePairingHandler} from './fake_device_pairing_handler.js';
+import {AudioOutputCapability, BluetoothDeviceProperties, BluetoothDeviceStatusObserverInterface, BluetoothDiscoveryDelegateInterface, BluetoothModificationState, BluetoothSystemProperties, BluetoothSystemState, CrosBluetoothConfigInterface, DeviceConnectionState, DevicePairingHandlerReceiver, DeviceType, DiscoverySessionStatusObserverInterface, PairedBluetoothDeviceProperties, SystemPropertiesObserverInterface} from 'chrome://resources/mojo/chromeos/services/bluetooth_config/public/mojom/cros_bluetooth_config.mojom-webui.js';
 
-const mojom = chromeos.bluetoothConfig.mojom;
+import {assertFalse, assertNotReached, assertTrue} from '../../../chai_assert.js';
+
+import {FakeDevicePairingHandler} from './fake_device_pairing_handler.js';
 
 /**
  * @param {string} id
  * @param {string} publicName
- * @param {!chromeos.bluetoothConfig.mojom.DeviceConnectionState}
+ * @param {!DeviceConnectionState}
  *     connectionState
  * @param {string=} opt_nickname
- * @param {!chromeos.bluetoothConfig.mojom.AudioOutputCapability=}
+ * @param {!AudioOutputCapability=}
  *     opt_audioCapability
- * @param {!chromeos.bluetoothConfig.mojom.DeviceType=}
+ * @param {!DeviceType=}
  *     opt_deviceType
  * @param {boolean=} opt_isBlockedByPolicy
- * @return {!chromeos.bluetoothConfig.mojom.PairedBluetoothDeviceProperties}
+ * @return {!PairedBluetoothDeviceProperties}
  */
 export function createDefaultBluetoothDevice(
     id, publicName, connectionState, opt_nickname = undefined,
-    opt_audioCapability = mojom.AudioOutputCapability.kNotCapableOfAudioOutput,
-    opt_deviceType = mojom.DeviceType.kUnknown, opt_isBlockedByPolicy = false) {
+    opt_audioCapability = AudioOutputCapability.kNotCapableOfAudioOutput,
+    opt_deviceType = DeviceType.kUnknown, opt_isBlockedByPolicy = false) {
   return {
     deviceProperties: {
       id: id,
@@ -50,37 +44,35 @@ export function createDefaultBluetoothDevice(
  * @fileoverview Fake implementation of CrosBluetoothConfig for testing.
  */
 
-/** @implements {chromeos.bluetoothConfig.mojom.CrosBluetoothConfigInterface} */
+/** @implements {CrosBluetoothConfigInterface} */
 export class FakeBluetoothConfig {
   constructor() {
-    /** @private {!chromeos.bluetoothConfig.mojom.BluetoothSystemProperties} */
+    /** @private {!BluetoothSystemProperties} */
     this.systemProperties_ = {
-      systemState:
-          chromeos.bluetoothConfig.mojom.BluetoothSystemState.kDisabled,
-      modificationState: chromeos.bluetoothConfig.mojom
-                             .BluetoothModificationState.kCannotModifyBluetooth,
+      systemState: BluetoothSystemState.kDisabled,
+      modificationState: BluetoothModificationState.kCannotModifyBluetooth,
       pairedDevices: [],
     };
 
     /**
-     * @private {!Array<!chromeos.bluetoothConfig.mojom.BluetoothDeviceProperties>}
+     * @private {!Array<!BluetoothDeviceProperties>}
      */
     this.discoveredDevices_ = [];
 
     /**
      * @private {!Array<
-     *     !chromeos.bluetoothConfig.mojom.SystemPropertiesObserverInterface>}
+     *     !SystemPropertiesObserverInterface>}
      */
     this.system_properties_observers_ = [];
 
     /**
      * @private {!Array<
-     *     !chromeos.bluetoothConfig.mojom.BluetoothDeviceStatusObserverInterface>}
+     *     !BluetoothDeviceStatusObserverInterface>}
      */
     this.bluetooth_device_status_observers_ = [];
 
     /**
-     * @private {?chromeos.bluetoothConfig.mojom.BluetoothDiscoveryDelegateInterface}
+     * @private {?BluetoothDiscoveryDelegateInterface}
      */
     this.lastDiscoveryDelegate_ = null;
 
@@ -106,14 +98,19 @@ export class FakeBluetoothConfig {
     this.pendingForgetRequest_ = null;
 
     /**
+     * The last pairing handler created. If defined, indicates discovery in is
+     * progress. If null, indicates no discovery is occurring.
      * @private {?FakeDevicePairingHandler}
      */
     this.lastPairingHandler_ = null;
+
+    /** @private {number} */
+    this.numStartDiscoveryCalls_ = 0;
   }
 
   /**
    * @override
-   * @param {!chromeos.bluetoothConfig.mojom.SystemPropertiesObserverInterface}
+   * @param {!SystemPropertiesObserverInterface}
    *     observer
    */
   observeSystemProperties(observer) {
@@ -123,23 +120,34 @@ export class FakeBluetoothConfig {
 
   /**
    * @override
-   * @param {!chromeos.bluetoothConfig.mojom.BluetoothDeviceStatusObserverInterface}
+   * @param {!BluetoothDeviceStatusObserverInterface}
    *     observer
    */
   observeDeviceStatusChanges(observer) {
     this.bluetooth_device_status_observers_.push(observer);
   }
 
+  /**
+   * @override
+   * @param {!DiscoverySessionStatusObserverInterface}
+   *     observer
+   */
+  observeDiscoverySessionStatusChanges(observer) {
+    // This method is left unimplemented since the observer is not used in JS.
+    assertNotReached();
+  }
+
 
   /**
    * @override
-   * @param {!chromeos.bluetoothConfig.mojom.BluetoothDiscoveryDelegateInterface}
+   * @param {!BluetoothDiscoveryDelegateInterface}
    *     delegate
    */
   startDiscovery(delegate) {
     this.lastDiscoveryDelegate_ = delegate;
     this.notifyDiscoveryStarted_();
     this.notifyDelegatesPropertiesUpdated_();
+    this.numStartDiscoveryCalls_++;
   }
 
   /**
@@ -152,8 +160,7 @@ export class FakeBluetoothConfig {
    * @param {boolean} enabled
    */
   setBluetoothEnabledState(enabled) {
-    const bluetoothSystemState =
-        chromeos.bluetoothConfig.mojom.BluetoothSystemState;
+    const bluetoothSystemState = BluetoothSystemState;
     const systemState = this.systemProperties_.systemState;
     if ((enabled && systemState === bluetoothSystemState.kEnabled) ||
         (!enabled && systemState === bluetoothSystemState.kDisabled)) {
@@ -166,6 +173,15 @@ export class FakeBluetoothConfig {
   }
 
   /**
+   * @override
+   * @param {boolean} active
+   */
+  setBluetoothHidDetectionActive(active) {
+    // This method is left unimplemented as it is only used in OOBE.
+    assertNotReached();
+  }
+
+  /**
    * Initiates connecting to a device with id |deviceId|. To finish the
    * operation, call completeConnect().
    * @override
@@ -175,8 +191,7 @@ export class FakeBluetoothConfig {
 
     const device = this.systemProperties_.pairedDevices.find(
         d => d.deviceProperties.id === deviceId);
-    device.deviceProperties.connectionState =
-        mojom.DeviceConnectionState.kConnecting;
+    device.deviceProperties.connectionState = DeviceConnectionState.kConnecting;
     this.updatePairedDevice(device);
 
     return new Promise((resolve, reject) => {
@@ -226,16 +241,30 @@ export class FakeBluetoothConfig {
   }
 
   /**
-   * @param {chromeos.bluetoothConfig.mojom.BluetoothSystemState} systemState
+   * @param {BluetoothSystemState} systemState
    */
   setSystemState(systemState) {
     this.systemProperties_.systemState = systemState;
     this.systemProperties_ =
         /**
-         * @type {!chromeos.bluetoothConfig.mojom.BluetoothSystemProperties}
+         * @type {!BluetoothSystemProperties}
          */
         (Object.assign({}, this.systemProperties_));
     this.notifyObserversPropertiesUpdated_();
+
+    // If discovery is in progress and Bluetooth is no longer enabled, stop
+    // discovery and any pairing that may be occurring.
+    if (!this.lastPairingHandler_) {
+      return;
+    }
+
+    if (systemState === BluetoothSystemState.kEnabled) {
+      return;
+    }
+
+    this.lastPairingHandler_.rejectPairDevice();
+    this.lastPairingHandler_ = null;
+    this.notifyDiscoveryStopped_();
   }
 
   /**
@@ -245,8 +274,7 @@ export class FakeBluetoothConfig {
    * @param {boolean} success Whether the operation should succeed or not.
    */
   completeSetBluetoothEnabledState(success) {
-    const bluetoothSystemState =
-        chromeos.bluetoothConfig.mojom.BluetoothSystemState;
+    const bluetoothSystemState = BluetoothSystemState;
     const systemState = this.systemProperties_.systemState;
     if (systemState === bluetoothSystemState.kDisabled ||
         systemState === bluetoothSystemState.kEnabled) {
@@ -267,14 +295,14 @@ export class FakeBluetoothConfig {
   }
 
   /**
-   * @param {!chromeos.bluetoothConfig.mojom.BluetoothModificationState}
+   * @param {!BluetoothModificationState}
    *     modificationState
    */
   setModificationState(modificationState) {
     this.systemProperties_.modificationState = modificationState;
     this.systemProperties_ =
         /**
-         * @type {!chromeos.bluetoothConfig.mojom.BluetoothSystemProperties}
+         * @type {!BluetoothSystemProperties}
          */
         (Object.assign({}, this.systemProperties_));
     this.notifyObserversPropertiesUpdated_();
@@ -283,7 +311,7 @@ export class FakeBluetoothConfig {
   /**
    * Adds a list of devices to the current list of paired devices in
    * |systemProperties|.
-   * @param {Array<?chromeos.bluetoothConfig.mojom.PairedBluetoothDeviceProperties>}
+   * @param {Array<?PairedBluetoothDeviceProperties>}
    *     devices
    */
   appendToPairedDeviceList(devices) {
@@ -295,7 +323,7 @@ export class FakeBluetoothConfig {
         [...this.systemProperties_.pairedDevices, ...devices];
     this.systemProperties_ =
         /**
-         * @type {!chromeos.bluetoothConfig.mojom.BluetoothSystemProperties}
+         * @type {!BluetoothSystemProperties}
          */
         (Object.assign({}, this.systemProperties_));
     this.notifyObserversPropertiesUpdated_();
@@ -303,7 +331,7 @@ export class FakeBluetoothConfig {
 
   /**
    * Removes a |device| from the list of paired devices in |systemProperties|.
-   * @param {chromeos.bluetoothConfig.mojom.PairedBluetoothDeviceProperties}
+   * @param {PairedBluetoothDeviceProperties}
    *     device
    */
   removePairedDevice(device) {
@@ -312,7 +340,7 @@ export class FakeBluetoothConfig {
     this.systemProperties_.pairedDevices = pairedDevices;
     this.systemProperties_ =
         /**
-         * @type {!chromeos.bluetoothConfig.mojom.BluetoothSystemProperties}
+         * @type {!BluetoothSystemProperties}
          */
         (Object.assign({}, this.systemProperties_));
     this.notifyObserversPropertiesUpdated_();
@@ -321,7 +349,7 @@ export class FakeBluetoothConfig {
   /**
    * Adds a list of devices to the current list of discovered devices in
    * |discoveredDevices_|.
-   * @param {Array<!chromeos.bluetoothConfig.mojom.BluetoothDeviceProperties>}
+   * @param {Array<!BluetoothDeviceProperties>}
    *     devices
    */
   appendToDiscoveredDeviceList(devices) {
@@ -334,8 +362,16 @@ export class FakeBluetoothConfig {
   }
 
   /**
+   * Resets discovered devices list to an empty list.
+   */
+  resetDiscoveredDeviceList() {
+    this.discoveredDevices_ = [];
+    this.notifyDelegatesPropertiesUpdated_();
+  }
+
+  /**
    * Replaces device found in |systemProperties| with |device|.
-   * @param {chromeos.bluetoothConfig.mojom.PairedBluetoothDeviceProperties}
+   * @param {PairedBluetoothDeviceProperties}
    *     device
    */
   updatePairedDevice(device) {
@@ -345,7 +381,7 @@ export class FakeBluetoothConfig {
         [...pairedDevices, Object.assign({}, device)];
     this.systemProperties_ =
         /**
-         * @type {!chromeos.bluetoothConfig.mojom.BluetoothSystemProperties}
+         * @type {!BluetoothSystemProperties}
          */
         (Object.assign({}, this.systemProperties_));
     this.notifyObserversPropertiesUpdated_();
@@ -360,11 +396,11 @@ export class FakeBluetoothConfig {
     const device = this.systemProperties_.pairedDevices.find(
         d => d.deviceProperties.id === this.pendingConnectRequest_.deviceId);
     device.deviceProperties.connectionState =
-        mojom.DeviceConnectionState.kNotConnected;
+        DeviceConnectionState.kNotConnected;
 
     if (success) {
       device.deviceProperties.connectionState =
-          mojom.DeviceConnectionState.kConnected;
+          DeviceConnectionState.kConnected;
     }
 
     this.updatePairedDevice(device);
@@ -383,7 +419,7 @@ export class FakeBluetoothConfig {
           d => d.deviceProperties.id ===
               this.pendingDisconnectRequest_.deviceId);
       device.deviceProperties.connectionState =
-          mojom.DeviceConnectionState.kNotConnected;
+          DeviceConnectionState.kNotConnected;
       this.updatePairedDevice(device);
     }
     this.pendingDisconnectRequest_.callback({success});
@@ -436,10 +472,17 @@ export class FakeBluetoothConfig {
   notifyDiscoveryStarted_() {
     this.lastPairingHandler_ = new FakeDevicePairingHandler();
     const devicePairingHandlerReciever =
-        new chromeos.bluetoothConfig.mojom.DevicePairingHandlerReceiver(
-            this.lastPairingHandler_);
+        new DevicePairingHandlerReceiver(this.lastPairingHandler_);
     this.lastDiscoveryDelegate_.onBluetoothDiscoveryStarted(
         devicePairingHandlerReciever.$.bindNewPipeAndPassRemote());
+  }
+
+  /**
+   * @private
+   * Notifies the last delegate that device discovery has stopped.
+   */
+  notifyDiscoveryStopped_() {
+    this.lastDiscoveryDelegate_.onBluetoothDiscoveryStopped();
   }
 
   /**
@@ -451,11 +494,18 @@ export class FakeBluetoothConfig {
 
   /**
    * @param {string} deviceId
-   * @return {?chromeos.bluetoothConfig.mojom.PairedBluetoothDeviceProperties}
+   * @return {?PairedBluetoothDeviceProperties}
    */
   getPairedDeviceById(deviceId) {
     const device = this.systemProperties_.pairedDevices.find(
         d => d.deviceProperties.id === deviceId);
     return device ? device : null;
+  }
+
+  /**
+   * @return {number}
+   */
+  getNumStartDiscoveryCalls() {
+    return this.numStartDiscoveryCalls_;
   }
 }

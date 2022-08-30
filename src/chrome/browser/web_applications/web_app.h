@@ -10,24 +10,29 @@
 #include <string>
 #include <vector>
 
+#include "base/time/time.h"
 #include "base/values.h"
+#include "chrome/browser/ash/system_web_apps/types/system_web_app_data.h"
+#include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app_chromeos_data.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_id.h"
-#include "chrome/browser/web_applications/web_app_system_web_app_data.h"
-#include "chrome/browser/web_applications/web_application_info.h"
+#include "chrome/browser/web_applications/web_app_install_info.h"
 #include "components/services/app_service/public/cpp/file_handler.h"
 #include "components/services/app_service/public/cpp/protocol_handler_info.h"
 #include "components/services/app_service/public/cpp/share_target.h"
 #include "components/services/app_service/public/cpp/url_handler_info.h"
 #include "components/sync/model/string_ordinal.h"
+#include "components/webapps/browser/installable/installable_metrics.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/permissions_policy/permissions_policy.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "url/gurl.h"
 
 namespace web_app {
 
-using WebAppSources = std::bitset<Source::kMaxValue + 1>;
+using WebAppSources = std::bitset<WebAppManagement::kMaxValue + 1>;
+
 class WebApp {
  public:
   explicit WebApp(const AppId& app_id);
@@ -43,10 +48,13 @@ class WebApp {
 
   const AppId& app_id() const { return app_id_; }
 
-  // UTF8 encoded application name.
-  const std::string& name() const { return name_; }
-  // UTF8 encoded long application description (a full application name).
-  const std::string& description() const { return description_; }
+  // UTF8 encoded application name. This name is not translated, use
+  // WebAppRegistrar.GetAppShortName to get the translated name.
+  const std::string& untranslated_name() const { return name_; }
+  // UTF8 encoded long application description (a full application name). This
+  // description is not translated, use WebAppRegistrar.GetAppDescription to get
+  // the translated description.
+  const std::string& untranslated_description() const { return description_; }
 
   const GURL& start_url() const { return start_url_; }
 
@@ -71,7 +79,9 @@ class WebApp {
 
   DisplayMode display_mode() const { return display_mode_; }
 
-  DisplayMode user_display_mode() const { return user_display_mode_; }
+  absl::optional<UserDisplayMode> user_display_mode() const {
+    return user_display_mode_;
+  }
 
   const std::vector<DisplayMode>& display_mode_override() const {
     return display_mode_override_;
@@ -92,7 +102,7 @@ class WebApp {
     ClientData(const ClientData& client_data);
     base::Value AsDebugValue() const;
 
-    absl::optional<WebAppSystemWebAppData> system_web_app_data;
+    absl::optional<ash::SystemWebAppData> system_web_app_data;
   };
 
   const ClientData& client_data() const { return client_data_; }
@@ -170,6 +180,10 @@ class WebApp {
     return disallowed_launch_protocols_;
   }
 
+  // URL within scope to launch for a "show on lock screen" action. Valid iff
+  // this is considered a lock-screen-capable app.
+  const GURL& lock_screen_start_url() const { return lock_screen_start_url_; }
+
   // URL within scope to launch for a "new note" action. Valid iff this is
   // considered a note-taking app.
   const GURL& note_taking_new_note_url() const {
@@ -180,6 +194,11 @@ class WebApp {
 
   RunOnOsLoginMode run_on_os_login_mode() const {
     return run_on_os_login_mode_;
+  }
+
+  absl::optional<RunOnOsLoginMode> run_on_os_login_os_integration_state()
+      const {
+    return run_on_os_login_os_integration_state_;
   }
 
   bool window_controls_overlay_enabled() const {
@@ -196,6 +215,7 @@ class WebApp {
     ~SyncFallbackData();
     // Copyable and move-assignable to support Copy-on-Write with Commit.
     SyncFallbackData(const SyncFallbackData& sync_fallback_data);
+    SyncFallbackData(SyncFallbackData&& sync_fallback_data) noexcept;
     SyncFallbackData& operator=(SyncFallbackData&& sync_fallback_data);
 
     base::Value AsDebugValue() const;
@@ -223,6 +243,8 @@ class WebApp {
 
   blink::mojom::CaptureLinks capture_links() const { return capture_links_; }
 
+  blink::mojom::HandleLinks handle_links() const { return handle_links_; }
+
   const GURL& manifest_url() const { return manifest_url_; }
 
   const absl::optional<std::string>& manifest_id() const {
@@ -237,12 +259,47 @@ class WebApp {
 
   const absl::optional<AppId>& parent_app_id() const { return parent_app_id_; }
 
+  const blink::ParsedPermissionsPolicy& permissions_policy() const {
+    return permissions_policy_;
+  }
+
+  absl::optional<webapps::WebappInstallSource> install_source_for_metrics()
+      const {
+    return install_source_for_metrics_;
+  }
+
+  const absl::optional<int64_t>& app_size_in_bytes() const {
+    return app_size_in_bytes_;
+  }
+  const absl::optional<int64_t>& data_size_in_bytes() const {
+    return data_size_in_bytes_;
+  }
+
+  struct ExternalManagementConfig {
+    ExternalManagementConfig();
+    ~ExternalManagementConfig();
+    ExternalManagementConfig(
+        const ExternalManagementConfig& external_management_config);
+    ExternalManagementConfig& operator=(
+        ExternalManagementConfig&& external_management_config);
+
+    base::Value::Dict AsDebugValue() const;
+
+    bool is_placeholder = false;
+    base::flat_set<GURL> install_urls;
+  };
+
+  base::flat_map<WebAppManagement::Type, ExternalManagementConfig>
+  management_to_external_config_map() const {
+    return management_to_external_config_map_;
+  }
+
   // A Web App can be installed from multiple sources simultaneously. Installs
   // add a source to the app. Uninstalls remove a source from the app.
-  void AddSource(Source::Type source);
-  void RemoveSource(Source::Type source);
+  void AddSource(WebAppManagement::Type source);
+  void RemoveSource(WebAppManagement::Type source);
   bool HasAnySources() const;
-  bool HasOnlySource(Source::Type source) const;
+  bool HasOnlySource(WebAppManagement::Type source) const;
   WebAppSources GetSources() const;
 
   bool IsSynced() const;
@@ -255,7 +312,7 @@ class WebApp {
   bool WasInstalledByUser() const;
   // Returns the highest priority source. AppService assumes that every app has
   // just one install source.
-  Source::Type GetHighestPrioritySource() const;
+  WebAppManagement::Type GetHighestPrioritySource() const;
 
   void SetName(const std::string& name);
   void SetDescription(const std::string& description);
@@ -267,7 +324,7 @@ class WebApp {
   void SetBackgroundColor(absl::optional<SkColor> background_color);
   void SetDarkModeBackgroundColor(absl::optional<SkColor> background_color);
   void SetDisplayMode(DisplayMode display_mode);
-  void SetUserDisplayMode(DisplayMode user_display_mode);
+  void SetUserDisplayMode(UserDisplayMode user_display_mode);
   void SetDisplayModeOverride(std::vector<DisplayMode> display_mode_override);
   void SetUserPageOrdinal(syncer::StringOrdinal page_ordinal);
   void SetUserLaunchOrdinal(syncer::StringOrdinal launch_ordinal);
@@ -297,20 +354,48 @@ class WebApp {
   void SetDisallowedLaunchProtocols(
       base::flat_set<std::string> disallowed_launch_protocols);
   void SetUrlHandlers(apps::UrlHandlers url_handlers);
+  void SetLockScreenStartUrl(const GURL& lock_screen_start_url);
   void SetNoteTakingNewNoteUrl(const GURL& note_taking_new_note_url);
   void SetLastBadgingTime(const base::Time& time);
   void SetLastLaunchTime(const base::Time& time);
   void SetInstallTime(const base::Time& time);
   void SetManifestUpdateTime(const base::Time& time);
   void SetRunOnOsLoginMode(RunOnOsLoginMode mode);
+  void SetRunOnOsLoginOsIntegrationState(RunOnOsLoginMode os_integration_state);
   void SetSyncFallbackData(SyncFallbackData sync_fallback_data);
   void SetCaptureLinks(blink::mojom::CaptureLinks capture_links);
+  void SetHandleLinks(blink::mojom::HandleLinks handle_links);
   void SetManifestUrl(const GURL& manifest_url);
   void SetManifestId(const absl::optional<std::string>& manifest_id);
   void SetWindowControlsOverlayEnabled(bool enabled);
   void SetStorageIsolated(bool is_storage_isolated);
   void SetLaunchHandler(absl::optional<LaunchHandler> launch_handler);
   void SetParentAppId(const absl::optional<AppId>& parent_app_id);
+  void SetPermissionsPolicy(blink::ParsedPermissionsPolicy permissions_policy);
+  void SetInstallSourceForMetrics(
+      absl::optional<webapps::WebappInstallSource> install_source);
+  void SetAppSizeInBytes(absl::optional<int64_t> app_size_in_bytes);
+  void SetDataSizeInBytes(absl::optional<int64_t> data_size_in_bytes);
+  void SetWebAppManagementExternalConfigMap(
+      base::flat_map<WebAppManagement::Type, ExternalManagementConfig>
+          management_to_external_config_map);
+
+  void AddPlaceholderInfoToManagementExternalConfigMap(
+      WebAppManagement::Type source_type,
+      bool is_placeholder);
+
+  // This adds an install_url per management type (source) for the
+  // WebAppManagementToInstallURLsMap.
+  void AddInstallURLToManagementExternalConfigMap(WebAppManagement::Type type,
+                                                  GURL install_url);
+
+  // Encapsulate the addition of install_url and is_placeholder information
+  // for cases where both need to be added.
+  void AddExternalSourceInformation(WebAppManagement::Type source_type,
+                                    GURL install_url,
+                                    bool is_placeholder);
+
+  bool RemoveInstallUrlForSource(WebAppManagement::Type type, GURL install_url);
 
   // For logging and debug purposes.
   bool operator==(const WebApp&) const;
@@ -335,8 +420,8 @@ class WebApp {
   absl::optional<SkColor> dark_mode_theme_color_;
   absl::optional<SkColor> background_color_;
   absl::optional<SkColor> dark_mode_background_color_;
-  DisplayMode display_mode_;
-  DisplayMode user_display_mode_;
+  DisplayMode display_mode_ = DisplayMode::kUndefined;
+  absl::optional<UserDisplayMode> user_display_mode_ = absl::nullopt;
   std::vector<DisplayMode> display_mode_override_;
   syncer::StringOrdinal user_page_ordinal_;
   syncer::StringOrdinal user_launch_ordinal_;
@@ -362,15 +447,22 @@ class WebApp {
   base::flat_set<std::string> allowed_launch_protocols_;
   base::flat_set<std::string> disallowed_launch_protocols_;
   apps::UrlHandlers url_handlers_;
+  GURL lock_screen_start_url_;
   GURL note_taking_new_note_url_;
   base::Time last_badging_time_;
   base::Time last_launch_time_;
   base::Time install_time_;
   base::Time manifest_update_time_;
   RunOnOsLoginMode run_on_os_login_mode_ = RunOnOsLoginMode::kNotRun;
+  // Tracks if the app run on os login mode has been registered with the OS.
+  // This might go out of sync with actual OS integration status, as Chrome does
+  // not actively monitor OS registries.
+  absl::optional<RunOnOsLoginMode> run_on_os_login_os_integration_state_;
   SyncFallbackData sync_fallback_data_;
   blink::mojom::CaptureLinks capture_links_ =
       blink::mojom::CaptureLinks::kUndefined;
+  blink::mojom::HandleLinks handle_links_ =
+      blink::mojom::HandleLinks::kUndefined;
   ClientData client_data_;
   GURL manifest_url_;
   absl::optional<std::string> manifest_id_;
@@ -386,13 +478,30 @@ class WebApp {
   bool is_storage_isolated_ = false;
   absl::optional<LaunchHandler> launch_handler_;
   absl::optional<AppId> parent_app_id_;
+  blink::ParsedPermissionsPolicy permissions_policy_;
+  // The source of the latest install, used for logging metrics. WebAppRegistrar
+  // provides range validation. Optional only to support legacy installations,
+  // since this used to be tracked as a pref. It might also be null if the value
+  // read from the database is not recognized by this client.
+  absl::optional<webapps::WebappInstallSource> install_source_for_metrics_;
+
+  absl::optional<int64_t> app_size_in_bytes_;
+  absl::optional<int64_t> data_size_in_bytes_;
+
+  // Maps WebAppManagement::Type to config values for externally installed apps,
+  // like is_placeholder and install URLs.
+  base::flat_map<WebAppManagement::Type, ExternalManagementConfig>
+      management_to_external_config_map_;
+
   // New fields must be added to:
   //  - |operator==|
   //  - AsDebugValue()
   //  - WebAppDatabase::CreateWebApp()
   //  - WebAppDatabase::CreateWebAppProto()
   //  - CreateRandomWebApp()
+  // If parsed from manifest, also add to:
   //  - ManifestUpdateTask::IsUpdateNeededForManifest()
+  //  - SetWebAppManifestFields()
 };
 
 // For logging and debug purposes.
@@ -402,6 +511,11 @@ bool operator==(const WebApp::SyncFallbackData& sync_fallback_data1,
                 const WebApp::SyncFallbackData& sync_fallback_data2);
 bool operator!=(const WebApp::SyncFallbackData& sync_fallback_data1,
                 const WebApp::SyncFallbackData& sync_fallback_data2);
+
+bool operator==(const WebApp::ExternalManagementConfig& management_config1,
+                const WebApp::ExternalManagementConfig& management_config2);
+bool operator!=(const WebApp::ExternalManagementConfig& management_config1,
+                const WebApp::ExternalManagementConfig& management_config2);
 
 }  // namespace web_app
 

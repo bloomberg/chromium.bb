@@ -12,10 +12,11 @@
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "ui/gfx/geometry/insets_f.h"
+#include "ui/gfx/geometry/outsets_f.h"
 
-#if defined(OS_IOS)
+#if BUILDFLAG(IS_IOS)
 #include <CoreGraphics/CoreGraphics.h>
-#elif defined(OS_MAC)
+#elif BUILDFLAG(IS_MAC)
 #include <ApplicationServices/ApplicationServices.h>
 #endif
 
@@ -32,7 +33,7 @@ static void AdjustAlongAxis(float dst_origin,
     *origin = std::min(dst_origin + dst_size, *origin + *size) - *size;
 }
 
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
 RectF::RectF(const CGRect& r)
     : origin_(r.origin.x, r.origin.y), size_(r.size.width, r.size.height) {
 }
@@ -43,13 +44,9 @@ CGRect RectF::ToCGRect() const {
 #endif
 
 void RectF::Inset(const InsetsF& insets) {
-  Inset(insets.left(), insets.top(), insets.right(), insets.bottom());
-}
-
-void RectF::Inset(float left, float top, float right, float bottom) {
-  origin_ += Vector2dF(left, top);
-  set_width(std::max(width() - left - right, 0.0f));
-  set_height(std::max(height() - top - bottom, 0.0f));
+  origin_ += Vector2dF(insets.left(), insets.top());
+  set_width(width() - insets.width());
+  set_height(height() - insets.height());
 }
 
 void RectF::Offset(float horizontal, float vertical) {
@@ -65,10 +62,8 @@ void RectF::operator-=(const Vector2dF& offset) {
 }
 
 InsetsF RectF::InsetsFrom(const RectF& inner) const {
-  return InsetsF(inner.y() - y(),
-                 inner.x() - x(),
-                 bottom() - inner.bottom(),
-                 right() - inner.right());
+  return InsetsF::TLBR(inner.y() - y(), inner.x() - x(),
+                       bottom() - inner.bottom(), right() - inner.right());
 }
 
 bool RectF::operator<(const RectF& other) const {
@@ -342,6 +337,15 @@ RectF MapRect(const RectF& r, const RectF& src_rect, const RectF& dest_rect) {
 std::string RectF::ToString() const {
   return base::StringPrintf("%s %s", origin().ToString().c_str(),
                             size().ToString().c_str());
+}
+
+bool RectF::ApproximatelyEqual(const RectF& rect,
+                               float tolerance_x,
+                               float tolerance_y) const {
+  return std::abs(x() - rect.x()) <= tolerance_x &&
+         std::abs(y() - rect.y()) <= tolerance_y &&
+         std::abs(right() - rect.right()) <= tolerance_x &&
+         std::abs(bottom() - rect.bottom()) <= tolerance_y;
 }
 
 }  // namespace gfx

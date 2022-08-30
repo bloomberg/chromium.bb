@@ -90,7 +90,8 @@ bool DownloadManagerDelegateImpl::DetermineDownloadTarget(
         download::DownloadItem::TARGET_DISPOSITION_OVERWRITE,
         download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
         download::DownloadItem::MixedContentStatus::UNKNOWN,
-        item->GetForcedFilePath(), absl::nullopt /*download_schedule*/,
+        item->GetForcedFilePath(), base::FilePath(),
+        std::string() /*mime_type*/, absl::nullopt /*download_schedule*/,
         download::DOWNLOAD_INTERRUPT_REASON_NONE);
     return true;
   }
@@ -262,6 +263,7 @@ void DownloadManagerDelegateImpl::OnDownloadPathGenerated(
       download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
       download::DownloadItem::MixedContentStatus::UNKNOWN,
       suggested_path.AddExtension(FILE_PATH_LITERAL(".crdownload")),
+      base::FilePath(), std::string() /*mime_type*/,
       absl::nullopt /*download_schedule*/,
       download::DOWNLOAD_INTERRUPT_REASON_NONE);
 }

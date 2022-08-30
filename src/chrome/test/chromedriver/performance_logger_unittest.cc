@@ -64,12 +64,12 @@ class FakeDevToolsClient : public StubDevToolsClient {
   // Overridden from DevToolsClient:
   Status ConnectIfNecessary() override { return listener_->OnConnected(this); }
 
-  Status SendCommandAndGetResult(
-      const std::string& method,
-      const base::DictionaryValue& params,
-      std::unique_ptr<base::DictionaryValue>* result) override {
+  Status SendCommandAndGetResult(const std::string& method,
+                                 const base::DictionaryValue& params,
+                                 base::Value* result) override {
     sent_commands_.push_back(
         std::make_unique<DevToolsCommand>(method, params.DeepCopy()));
+    *result = base::Value(base::Value::Type::DICTIONARY);
     return Status(kOk);
   }
 
@@ -299,14 +299,13 @@ TEST(PerformanceLogger, TracingStartStop) {
   base::ListValue* categories;
   EXPECT_TRUE(cmd->params->GetList("traceConfig.includedCategories",
                                    &categories));
-  ASSERT_EQ(2u, categories->GetList().size());
-  ASSERT_TRUE(categories->GetList()[0].is_string());
-  EXPECT_EQ("benchmark", categories->GetList()[0].GetString());
-  ASSERT_TRUE(categories->GetList()[1].is_string());
-  EXPECT_EQ("blink.console", categories->GetList()[1].GetString());
-  int expected_interval = 0;
-  EXPECT_TRUE(cmd->params->GetInteger("bufferUsageReportingInterval",
-                                      &expected_interval));
+  ASSERT_EQ(2u, categories->GetListDeprecated().size());
+  ASSERT_TRUE(categories->GetListDeprecated()[0].is_string());
+  EXPECT_EQ("benchmark", categories->GetListDeprecated()[0].GetString());
+  ASSERT_TRUE(categories->GetListDeprecated()[1].is_string());
+  EXPECT_EQ("blink.console", categories->GetListDeprecated()[1].GetString());
+  int expected_interval =
+      cmd->params->FindIntKey("bufferUsageReportingInterval").value_or(-1);
   EXPECT_GT(expected_interval, 0);
   ASSERT_FALSE(client.PopSentCommand(&cmd));
 
@@ -398,5 +397,5 @@ TEST(PerformanceLogger, WarnWhenTraceBufferFull) {
   EXPECT_EQ("Tracing.bufferUsage", method);
   base::DictionaryValue* actual_params;
   EXPECT_TRUE(message->GetDictionary("message.params", &actual_params));
-  EXPECT_TRUE(actual_params->HasKey("error"));
+  EXPECT_TRUE(actual_params->FindKey("error"));
 }

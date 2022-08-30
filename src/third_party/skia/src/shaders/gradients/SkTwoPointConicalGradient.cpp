@@ -5,13 +5,19 @@
  * found in the LICENSE file.
  */
 
+#include "src/shaders/gradients/SkTwoPointConicalGradient.h"
+
 #include "include/private/SkFloatingPoint.h"
 #include "src/core/SkRasterPipeline.h"
 #include "src/core/SkReadBuffer.h"
 #include "src/core/SkWriteBuffer.h"
-#include "src/shaders/gradients/SkTwoPointConicalGradient.h"
 
 #include <utility>
+
+#ifdef SK_ENABLE_SKSL
+#include "src/core/SkKeyHelpers.h"
+#include "src/core/SkPaintParamsKey.h"
+#endif
 
 // Please see https://skia.org/dev/design/conical for how our shader works.
 
@@ -229,7 +235,7 @@ skvm::F32 SkTwoPointConicalGradient::transformT(skvm::Builder* p, skvm::Uniforms
 
     if (fType == Type::kStrip) {
         float r = fRadius1 / this->getCenterX1();
-        skvm::F32 t = x + sqrt(p->splat(r*r) - y*y);
+        skvm::F32 t = x + sqrt(p->uniformF(uniforms->pushF(r*r)) - y*y);
 
         *mask = (t == t);   // t != NaN
         return t;
@@ -266,11 +272,30 @@ skvm::F32 SkTwoPointConicalGradient::transformT(skvm::Builder* p, skvm::Uniforms
 
 #if SK_SUPPORT_GPU
 
-#include "src/gpu/gradients/GrGradientShader.h"
+#include "src/gpu/ganesh/gradients/GrGradientShader.h"
 
 std::unique_ptr<GrFragmentProcessor> SkTwoPointConicalGradient::asFragmentProcessor(
         const GrFPArgs& args) const {
     return GrGradientShader::MakeConical(*this, args);
 }
 
+#endif
+
+#ifdef SK_ENABLE_SKSL
+void SkTwoPointConicalGradient::addToKey(const SkKeyContext& keyContext,
+                                         SkPaintParamsKeyBuilder* builder,
+                                         SkPipelineDataGatherer* gatherer) const {
+    GradientShaderBlocks::GradientData data(kConical_GradientType,
+                                            SkM44(this->getLocalMatrix()),
+                                            fCenter1, fCenter2,
+                                            fRadius1, fRadius2,
+                                            0.0f, 0.0f,
+                                            fTileMode,
+                                            fColorCount,
+                                            fOrigColors4f,
+                                            fOrigPos);
+
+    GradientShaderBlocks::BeginBlock(keyContext, builder, gatherer, data);
+    builder->endBlock();
+}
 #endif

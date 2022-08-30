@@ -24,7 +24,6 @@
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -913,7 +912,7 @@ void UsbDeviceHandleWin::OpenInterfaceForControlTransfer(
       }
 
       index = endpoint_it->second.interface->interface_number;
-      FALLTHROUGH;
+      [[fallthrough]];
     }
 
     case UsbControlTransferRecipient::INTERFACE: {

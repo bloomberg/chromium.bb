@@ -8,6 +8,7 @@
 #include <tuple>
 
 #include "base/feature_list.h"
+#include "base/logging.h"
 #include "base/stl_util.h"
 #include "net/base/features.h"
 #include "net/cookies/cookie_constants.h"
@@ -59,8 +60,10 @@ bool CookiePartitionKey::Serialize(const absl::optional<CookiePartitionKey>& in,
     out = kEmptyCookiePartitionKey;
     return true;
   }
-  if (!in->IsSerializeable())
+  if (!in->IsSerializeable()) {
+    DLOG(WARNING) << "CookiePartitionKey is not serializeable";
     return false;
+  }
   out = in->site_.GetURL().SchemeIsFile()
             ? in->site_.SerializeFileSiteWithHost()
             : in->site_.Serialize();
@@ -74,12 +77,17 @@ bool CookiePartitionKey::Deserialize(const std::string& in,
     out = absl::nullopt;
     return true;
   }
-  if (!base::FeatureList::IsEnabled(features::kPartitionedCookies))
+  if (!base::FeatureList::IsEnabled(features::kPartitionedCookies)) {
+    DLOG(WARNING) << "Attempting to deserialize CookiePartitionKey when "
+                     "PartitionedCookies is disabled";
     return false;
+  }
   auto schemeful_site = SchemefulSite::Deserialize(in);
   // SchemfulSite is opaque if the input is invalid.
-  if (schemeful_site.opaque())
+  if (schemeful_site.opaque()) {
+    DLOG(WARNING) << "Cannot deserialize opaque origin to CookiePartitionKey";
     return false;
+  }
   out = absl::make_optional(CookiePartitionKey(schemeful_site, absl::nullopt));
   return true;
 }
@@ -87,8 +95,16 @@ bool CookiePartitionKey::Deserialize(const std::string& in,
 absl::optional<CookiePartitionKey> CookiePartitionKey::FromNetworkIsolationKey(
     const NetworkIsolationKey& network_isolation_key,
     const SchemefulSite* first_party_set_owner_site) {
-  if (!base::FeatureList::IsEnabled(features::kPartitionedCookies))
+  absl::optional<base::UnguessableToken> nonce =
+      network_isolation_key.GetNonce();
+  // If PartitionedCookies is enabled, all partitioned cookies are allowed.
+  // If NoncedPartitionedCookies is enabled, only partitioned cookies whose
+  // partition key has a nonce are allowed.
+  if (!base::FeatureList::IsEnabled(features::kPartitionedCookies) &&
+      (!base::FeatureList::IsEnabled(features::kNoncedPartitionedCookies) ||
+       !nonce)) {
     return absl::nullopt;
+  }
 
   // TODO(crbug.com/1225444): Check if the top frame site is in a First-Party
   // Set or if it is an extension URL.
@@ -99,15 +115,16 @@ absl::optional<CookiePartitionKey> CookiePartitionKey::FromNetworkIsolationKey(
   if (!partition_key_site)
     return absl::nullopt;
 
-  absl::optional<base::UnguessableToken> nonce =
-      network_isolation_key.GetNonce();
   return absl::make_optional(
       net::CookiePartitionKey(*partition_key_site, nonce));
 }
 
 bool CookiePartitionKey::IsSerializeable() const {
-  if (!base::FeatureList::IsEnabled(features::kPartitionedCookies))
+  if (!base::FeatureList::IsEnabled(features::kPartitionedCookies)) {
+    DLOG(WARNING) << "Attempting to serialize CookiePartitionKey when "
+                     "PartitionedCookies feature is disabled";
     return false;
+  }
   // We should not try to serialize a partition key created by a renderer.
   DCHECK(!from_script_);
   return !site_.opaque() && !nonce_.has_value();

@@ -65,8 +65,8 @@ TNode<JSArrayBuffer> TypedArrayBuiltinsAssembler::AllocateEmptyOnHeapBuffer(
 
   StoreObjectFieldNoWriteBarrier(buffer, JSArrayBuffer::kByteLengthOffset,
                                  UintPtrConstant(0));
-  StoreCagedPointerToObject(buffer, JSArrayBuffer::kBackingStoreOffset,
-                            EmptyBackingStoreBufferConstant());
+  StoreSandboxedPointerToObject(buffer, JSArrayBuffer::kBackingStoreOffset,
+                                EmptyBackingStoreBufferConstant());
   StoreObjectFieldNoWriteBarrier(buffer, JSArrayBuffer::kExtensionOffset,
                                  IntPtrConstant(0));
   for (int offset = JSArrayBuffer::kHeaderSize;
@@ -140,7 +140,7 @@ TF_BUILTIN(TypedArrayPrototypeByteLength, TypedArrayBuiltinsAssembler) {
     // Default to zero if the {receiver}s buffer was detached.
     TNode<UintPtrT> byte_length = Select<UintPtrT>(
         IsDetachedBuffer(receiver_buffer), [=] { return UintPtrConstant(0); },
-        [=] { return LoadJSArrayBufferViewByteLength(receiver_array); });
+        [=] { return LoadJSArrayBufferViewRawByteLength(receiver_array); });
     Return(ChangeUintPtrToTagged(byte_length));
   }
 }
@@ -186,13 +186,17 @@ TF_BUILTIN(TypedArrayPrototypeLength, TypedArrayBuiltinsAssembler) {
 
 TNode<BoolT> TypedArrayBuiltinsAssembler::IsUint8ElementsKind(
     TNode<Int32T> kind) {
-  return Word32Or(Word32Equal(kind, Int32Constant(UINT8_ELEMENTS)),
-                  Word32Equal(kind, Int32Constant(UINT8_CLAMPED_ELEMENTS)));
+  return Word32Or(
+      Word32Or(Word32Equal(kind, Int32Constant(UINT8_ELEMENTS)),
+               Word32Equal(kind, Int32Constant(UINT8_CLAMPED_ELEMENTS))),
+      Word32Or(
+          Word32Equal(kind, Int32Constant(RAB_GSAB_UINT8_ELEMENTS)),
+          Word32Equal(kind, Int32Constant(RAB_GSAB_UINT8_CLAMPED_ELEMENTS))));
 }
 
 TNode<BoolT> TypedArrayBuiltinsAssembler::IsBigInt64ElementsKind(
     TNode<Int32T> kind) {
-  STATIC_ASSERT(BIGUINT64_ELEMENTS + 1 == BIGINT64_ELEMENTS);
+  static_assert(BIGUINT64_ELEMENTS + 1 == BIGINT64_ELEMENTS);
   return Word32Or(
       IsElementsKindInRange(kind, BIGUINT64_ELEMENTS, BIGINT64_ELEMENTS),
       IsElementsKindInRange(kind, RAB_GSAB_BIGUINT64_ELEMENTS,
@@ -395,7 +399,7 @@ void TypedArrayBuiltinsAssembler::DispatchTypedArrayByElementsKind(
       TYPED_ARRAYS(TYPED_ARRAY_CASE) RAB_GSAB_TYPED_ARRAYS(TYPED_ARRAY_CASE)
 #undef TYPED_ARRAY_CASE
   };
-  STATIC_ASSERT(arraysize(elements_kinds) == arraysize(elements_kind_labels));
+  static_assert(arraysize(elements_kinds) == arraysize(elements_kind_labels));
 
   Switch(elements_kind, &if_unknown_type, elements_kinds, elements_kind_labels,
          arraysize(elements_kinds));

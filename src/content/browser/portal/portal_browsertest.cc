@@ -3,16 +3,15 @@
 // found in the LICENSE file.
 
 #include <memory>
-#include <tuple>
 
 #include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
-#include "base/ignore_result.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
+#include "base/strings/escape.h"
 #include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/bind.h"
@@ -50,6 +49,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/fenced_frame_test_util.h"
 #include "content/public/test/hit_test_region_observer.h"
 #include "content/public/test/navigation_handle_observer.h"
 #include "content/public/test/render_frame_host_test_support.h"
@@ -63,7 +63,6 @@
 #include "content/test/portal/portal_created_observer.h"
 #include "content/test/portal/portal_interceptor_for_testing.h"
 #include "content/test/test_render_frame_host_factory.h"
-#include "net/base/escape.h"
 #include "net/base/net_errors.h"
 #include "net/base/url_util.h"
 #include "net/dns/mock_host_resolver.h"
@@ -87,14 +86,11 @@ namespace content {
 
 class PortalBrowserTest : public ContentBrowserTest {
  protected:
-  PortalBrowserTest() {}
-
-  void SetUp() override {
+  PortalBrowserTest() {
     scoped_feature_list_.InitWithFeatures(
         /*enabled_features=*/{blink::features::kPortals,
                               blink::features::kPortalsCrossOrigin},
         /*disabled_features=*/{});
-    ContentBrowserTest::SetUp();
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -267,7 +263,7 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, NavigatePortal) {
   }
 }
 
-#if defined(OS_MAC) && defined(ARCH_CPU_ARM64)
+#if BUILDFLAG(IS_MAC) && defined(ARCH_CPU_ARM64)
 // Bulk disabled as part of arm64 bot stabilization: https://crbug.com/1154345
 #define MAYBE_ActivatePortal DISABLED_ActivatePortal
 #else
@@ -308,6 +304,26 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, MAYBE_ActivatePortal) {
   VerifyActivationTraceEvents(StopTracing());
 }
 
+// Test that portal uses own UKM source id during navigation.
+IN_PROC_BROWSER_TEST_F(PortalBrowserTest, GetPageUkmSourceId) {
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("portal.test", "/title1.html")));
+  WebContentsImpl* web_contents_impl =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  RenderFrameHostImpl* primary_rfh = web_contents_impl->GetMainFrame();
+
+  GURL portal_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  Portal* portal = CreatePortalToUrl(web_contents_impl, portal_url);
+  RenderFrameHostImpl* portal_rfh = portal->GetPortalContents()->GetMainFrame();
+  EXPECT_TRUE(portal_rfh);
+
+  // Ensure that portal uses own UKM source id, not from the primary main frame.
+  // TODO(crbug.com/1254770): Modify this test to check the source UKM ID during
+  // navigation as once portals are migrated to MPArch.
+  EXPECT_NE(primary_rfh->GetPageUkmSourceId(),
+            portal_rfh->GetPageUkmSourceId());
+}
+
 // This fixture enables PortalsDefaultActivation
 class PortalDefaultActivationBrowserTest : public PortalBrowserTest {
  protected:
@@ -318,7 +334,7 @@ class PortalDefaultActivationBrowserTest : public PortalBrowserTest {
   }
 };
 
-#if defined(OS_MAC) && defined(ARCH_CPU_ARM64)
+#if BUILDFLAG(IS_MAC) && defined(ARCH_CPU_ARM64)
 // Bulk disabled as part of arm64 bot stabilization: https://crbug.com/1154345
 #define MAYBE_DefaultActivatePortal DISABLED_DefaultActivatePortal
 #else
@@ -360,7 +376,7 @@ IN_PROC_BROWSER_TEST_F(PortalDefaultActivationBrowserTest,
   VerifyActivationTraceEvents(StopTracing());
 }
 
-#if defined(OS_MAC) && defined(ARCH_CPU_ARM64)
+#if BUILDFLAG(IS_MAC) && defined(ARCH_CPU_ARM64)
 // https://crbug.com/1222682
 #define MAYBE_AdoptPredecessor DISABLED_AdoptPredecessor
 #else
@@ -462,6 +478,37 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, DetachPortal) {
              "document.body.removeChild(document.querySelector('portal'));"));
   fdo1.Wait();
   fdo2.Wait();
+}
+
+// Test that FrameTree::CollectNodesForIsLoading doesn't include inner
+// WebContents nodes like portals.
+//
+// TODO(crbug.com/1254770): Modify this test accordingly once portals are
+// migrated to MPArch.
+IN_PROC_BROWSER_TEST_F(PortalBrowserTest, NodesForIsLoading) {
+  // 1. Navigate to an initial primary page.
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("portal.test", "/title1.html")));
+  WebContentsImpl* web_contents_impl =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  RenderFrameHostImpl* primary_rfh = web_contents_impl->GetMainFrame();
+
+  // 2. Create a portal.
+  GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  Portal* portal = CreatePortalToUrl(web_contents_impl, a_url);
+  RenderFrameHostImpl* portal_rfh = portal->GetPortalContents()->GetMainFrame();
+  EXPECT_TRUE(portal_rfh);
+
+  // 3. FrameTree::CollectNodesForIsLoading should only include primary_rfh but
+  // not portal_rfh.
+  std::vector<RenderFrameHostImpl*> outer_web_contents_frames;
+  for (auto* ftn :
+       web_contents_impl->GetPrimaryFrameTree().CollectNodesForIsLoading()) {
+    outer_web_contents_frames.push_back(ftn->current_frame_host());
+  }
+  EXPECT_EQ(outer_web_contents_frames.size(), 1u);
+  EXPECT_THAT(outer_web_contents_frames,
+              testing::UnorderedElementsAre(primary_rfh));
 }
 
 // This is for testing how portals interact with input hit testing. It is
@@ -627,7 +674,7 @@ IN_PROC_BROWSER_TEST_F(PortalHitTestBrowserTest, NoInputToOOPIFInPortal) {
 // Tests that an OOPIF inside a portal receives input events after the portal is
 // activated.
 // Flaky on macOS: https://crbug.com/1042703
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #define MAYBE_InputToOOPIFAfterActivation DISABLED_InputToOOPIFAfterActivation
 #else
 #define MAYBE_InputToOOPIFAfterActivation InputToOOPIFAfterActivation
@@ -651,7 +698,7 @@ IN_PROC_BROWSER_TEST_F(PortalHitTestBrowserTest,
     TestNavigationObserver navigation_observer(a_url);
     navigation_observer.StartWatchingNewWebContents();
     EXPECT_TRUE(ExecJs(
-        main_frame, JsReplace("var portal = document.createElement('portal');"
+        main_frame, JsReplace("let portal = document.createElement('portal');"
                               "portal.src = $1;"
                               "portal.style.width = '500px';"
                               "portal.style.height = '500px';"
@@ -810,7 +857,7 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, NavigateToChrome) {
       portal));
   RenderProcessHostBadIpcMessageWaiter kill_waiter(main_frame->GetProcess());
   GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
-  ignore_result(ExecJs(main_frame, JsReplace("portal.src = $1;", a_url)));
+  std::ignore = ExecJs(main_frame, JsReplace("portal.src = $1;", a_url));
 
   EXPECT_EQ(bad_message::RPH_MOJO_PROCESS_ERROR, kill_waiter.Wait());
 }
@@ -983,7 +1030,7 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, TouchAckAfterActivateAndReactivate) {
 
 // TODO(crbug.com/985078): Fix on Mac.
 // TODO(crbug.com/1191782): Test is flaky.
-#if !defined(OS_MAC)
+#if !BUILDFLAG(IS_MAC)
 IN_PROC_BROWSER_TEST_F(PortalBrowserTest,
                        DISABLED_TouchStateClearedBeforeActivation) {
   EXPECT_TRUE(NavigateToURL(
@@ -1054,7 +1101,7 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest,
 #endif
 
 // TODO(crbug.com/985078): Fix on Mac.
-#if !defined(OS_MAC)
+#if !BUILDFLAG(IS_MAC)
 IN_PROC_BROWSER_TEST_F(PortalBrowserTest, GestureCleanedUpBeforeActivation) {
   EXPECT_TRUE(NavigateToURL(
       shell(), embedded_test_server()->GetURL("portal.test", "/title1.html")));
@@ -1302,9 +1349,7 @@ class PortalOrphanedNavigationBrowserTest
   // Provides meaningful param names instead of /0, /1, ...
   static std::string DescribeParams(
       const ::testing::TestParamInfo<ParamType>& info) {
-    bool cross_site;
-    bool commit_after_adoption;
-    std::tie(cross_site, commit_after_adoption) = info.param;
+    auto [cross_site, commit_after_adoption] = info.param;
     return base::StringPrintf("%sSite_Commit%sAdoption",
                               cross_site ? "Cross" : "Same",
                               commit_after_adoption ? "After" : "Before");
@@ -1822,7 +1867,7 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest,
   FrameTreeNode* iframe_ftn = portal_main_frame->child_at(0);
   RenderFrameHostImpl* rfhi = iframe_ftn->current_frame_host();
   RenderFrameProxyHost* rfph =
-      iframe_ftn->render_manager()->GetRenderFrameProxyHost(
+      rfhi->browsing_context_state()->GetRenderFrameProxyHost(
           portal_main_frame->GetSiteInstance()->group());
 
   // Simulate renderer sending RemoteFrameHost::DidFocusFrame IPC.
@@ -1933,7 +1978,7 @@ namespace {
 void WaitForAccessibilityTree(WebContents* web_contents) {
   AccessibilityNotificationWaiter waiter(web_contents, ui::kAXModeComplete,
                                          ax::mojom::Event::kNone);
-  waiter.WaitForNotification();
+  ASSERT_TRUE(waiter.WaitForNotification());
 }
 }  // namespace
 
@@ -2020,10 +2065,10 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, OrphanedPortalAccessibilityReset) {
     AccessibilityNotificationWaiter waiter(web_contents_impl,
                                            ui::kAXModeComplete,
                                            ax::mojom::Event::kLayoutComplete);
-    waiter.WaitForNotification();
+    ASSERT_TRUE(waiter.WaitForNotification());
     EXPECT_EQ(blink::mojom::PortalActivateResult::kPredecessorWasAdopted,
               activated_observer.WaitForActivateResult());
-    waiter.WaitForNotification();
+    ASSERT_TRUE(waiter.WaitForNotification());
   }
   EXPECT_EQ(0, main_frame->accessibility_fatal_error_count_for_testing());
 }
@@ -2073,11 +2118,12 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest,
     AccessibilityNotificationWaiter waiter(web_contents_impl,
                                            ui::kAXModeComplete,
                                            ax::mojom::Event::kLayoutComplete);
-    waiter.WaitForNotification();
     EXPECT_EQ(blink::mojom::PortalActivateResult::kPredecessorWasAdopted,
               activated_observer.WaitForActivateResult());
     adoption_observer.WaitUntilPortalCreated();
-    waiter.WaitForNotification();
+    // TODO(https://crbug.com/1332461): Investigate why this does not return
+    // true.
+    std::ignore = waiter.WaitForNotification();
   }
   EXPECT_EQ(0, main_frame->accessibility_fatal_error_count_for_testing());
 }
@@ -2471,7 +2517,7 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, DownloadsBlockedInSubframe) {
   GURL download_url = embedded_test_server()->GetURL(
       "portal.test", "/set-header?Content-Disposition: attachment");
   GURL iframe_url = embedded_test_server()->GetURL(
-      "portal.test", "/iframe?" + net::EscapeQueryParamValue(
+      "portal.test", "/iframe?" + base::EscapeQueryParamValue(
                                       download_url.spec(), /*use_plus=*/false));
 
   DownloadObserver download_observer;
@@ -2502,7 +2548,7 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, DownloadsBlockedViaDownloadLink) {
 
 // The following tests check code paths that won't be hit on Android as we
 // do not create DevTools windows on Android.
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 IN_PROC_BROWSER_TEST_F(PortalBrowserTest, CallActivateOnTwoPortals) {
   EXPECT_TRUE(NavigateToURL(
       shell(), embedded_test_server()->GetURL("portal.test", "/title1.html")));
@@ -2586,9 +2632,7 @@ class PortalsValidConfigurationBrowserTest
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ContentBrowserTest::SetUpCommandLine(command_line);
 
-    std::string switch_name;
-    std::string switch_value;
-    std::tie(switch_name, switch_value) = GetParam();
+    auto [switch_name, switch_value] = GetParam();
     if (switch_name == switches::kEnableFeatures) {
       scoped_feature_list_.InitFromCommandLine(switch_value, "");
     } else {
@@ -2754,7 +2798,7 @@ class PortalPixelBrowserTest : public PortalBrowserTest {
 // as be re-rastered for the embedder's zoom so it should appear crisp.
 //
 // Flaky on Android: https://crbug.com/1120213
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #define MAYBE_PageScaleRaster DISABLED_PageScaleRaster
 #else
 #define MAYBE_PageScaleRaster PageScaleRaster
@@ -2850,6 +2894,44 @@ IN_PROC_BROWSER_TEST_F(PortalPixelBrowserTest, MAYBE_PageScaleRaster) {
                        "document.querySelector('portal').activate();");
     portal_frame_observer.WaitForExternalPageScaleFactor(1.f, kScaleTolerance);
   }
+}
+
+class PortalFencedFrameBrowserTest : public PortalBrowserTest {
+ public:
+  PortalFencedFrameBrowserTest() = default;
+  ~PortalFencedFrameBrowserTest() override = default;
+
+  RenderFrameHost* primary_main_frame_host() {
+    return shell()->web_contents()->GetMainFrame();
+  }
+
+ protected:
+  content::test::FencedFrameTestHelper fenced_frame_helper_;
+};
+
+// Create a fenced frame in the primary main page that creates a portal which
+// should fail. Ideally this would be a WPT test but that requires a special
+// virtual test suite which would just be for enabling fenced frames and
+// portals together.
+IN_PROC_BROWSER_TEST_F(PortalFencedFrameBrowserTest, CreatePortalBlocked) {
+  EXPECT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
+  const GURL fenced_frame_url =
+      embedded_test_server()->GetURL("/fenced_frames/title1.html");
+  RenderFrameHost* fenced_frame_rfh = fenced_frame_helper_.CreateFencedFrame(
+      primary_main_frame_host(), fenced_frame_url);
+  ASSERT_NE(nullptr, fenced_frame_rfh);
+
+  WebContentsConsoleObserver console_observer(shell()->web_contents());
+  console_observer.SetPattern(
+      "*Cannot use <portal> in a nested browsing context.*");
+
+  EXPECT_TRUE(ExecJs(fenced_frame_rfh,
+                     R"(let portal = document.createElement('portal');
+                        portal.src = new URL('about:blank', location.href);
+                        document.body.appendChild(portal);
+             )"));
+  console_observer.Wait();
 }
 
 }  // namespace content

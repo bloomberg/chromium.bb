@@ -37,8 +37,10 @@ import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 
 import * as ARIAUtils from './ARIAUtils.js';
+import * as ThemeSupport from './theme_support/theme_support.js';
 import * as Utils from './utils/utils.js';
 
+import type * as IconButton from '../components/icon_button/icon_button.js';
 import type {Icon} from './Icon.js';
 import type {Config} from './InplaceEditor.js';
 import {InplaceEditor} from './InplaceEditor.js';
@@ -46,6 +48,8 @@ import {Keys} from './KeyboardShortcut.js';
 import {Tooltip} from './Tooltip.js';
 import {deepElementFromPoint, enclosingNodeOrSelfWithNodeNameInArray, isEditing} from './UIUtils.js';
 import treeoutlineStyles from './treeoutline.css.legacy.js';
+
+type AnyIcon = Icon|IconButton.Icon.Icon;
 
 const nodeToParentTreeElementMap = new WeakMap<Node, TreeElement>();
 
@@ -400,7 +404,7 @@ export class TreeOutlineInShadow extends TreeOutline {
   }
 
   registerRequiredCSS(cssFile: {cssContent: string}): void {
-    Utils.appendStyle(this.shadowRoot, cssFile);
+    ThemeSupport.ThemeSupport.instance().appendStyle(this.shadowRoot, cssFile);
   }
 
   registerCSSFiles(cssFiles: CSSStyleSheet[]): void {
@@ -441,6 +445,7 @@ export class TreeElement {
   expanded: boolean;
   selected: boolean;
   private expandable!: boolean;
+  #expandRecursively: boolean = true;
   private collapsible: boolean;
   toggleOnClick: boolean;
   button: HTMLButtonElement|null;
@@ -779,7 +784,7 @@ export class TreeElement {
     }
   }
 
-  setLeadingIcons(icons: Icon[]): void {
+  setLeadingIcons(icons: AnyIcon[]): void {
     if (!this.leadingIconsElement && !icons.length) {
       return;
     }
@@ -796,7 +801,7 @@ export class TreeElement {
     }
   }
 
-  setTrailingIcons(icons: Icon[]): void {
+  setTrailingIcons(icons: AnyIcon[]): void {
     if (!this.trailingIconsElement && !icons.length) {
       return;
     }
@@ -843,6 +848,18 @@ export class TreeElement {
     } else {
       ARIAUtils.setExpanded(this.listItemNode, false);
     }
+  }
+
+  isExpandRecursively(): boolean {
+    return this.#expandRecursively;
+  }
+
+  setExpandRecursively(expandRecursively: boolean): void {
+    this.#expandRecursively = expandRecursively;
+  }
+
+  isCollapsible(): boolean {
+    return this.collapsible;
   }
 
   setCollapsible(collapsible: boolean): void {
@@ -920,7 +937,7 @@ export class TreeElement {
       }
     } else {
       if (event.altKey) {
-        this.expandRecursively();
+        void this.expandRecursively();
       } else {
         this.expand();
       }
@@ -1016,7 +1033,7 @@ export class TreeElement {
 
     this.expanded = true;
 
-    this.populateIfNeeded();
+    void this.populateIfNeeded();
     this.listItemNode.classList.add('expanded');
     this.childrenListNode.classList.add('expanded');
     ARIAUtils.setExpanded(this.listItemNode, true);
@@ -1039,16 +1056,17 @@ export class TreeElement {
       maxDepth = 3;
     }
 
-    while (item) {
-      await item.populateIfNeeded();
+    do {
+      if (item.isExpandRecursively()) {
+        await item.populateIfNeeded();
 
-      if (depth < maxDepth) {
-        item.expand();
+        if (depth < maxDepth) {
+          item.expand();
+        }
       }
-
-      item = item.traverseNextTreeElement(false, this, (depth >= maxDepth), info);
+      item = item.traverseNextTreeElement(!item.isExpandRecursively(), this, true, info);
       depth += info.depthChange;
-    }
+    } while (item !== null);
   }
 
   collapseOrAscend(altKey: boolean): boolean {
@@ -1089,7 +1107,7 @@ export class TreeElement {
 
     if (!this.expanded) {
       if (altKey) {
-        this.expandRecursively();
+        void this.expandRecursively();
       } else {
         this.expand();
       }
@@ -1288,7 +1306,7 @@ export class TreeElement {
     depthChange: number,
   }): TreeElement|null {
     if (!dontPopulate) {
-      this.populateIfNeeded();
+      void this.populateIfNeeded();
     }
 
     if (info) {
@@ -1334,14 +1352,14 @@ export class TreeElement {
     let element: (TreeElement|null) =
         skipUnrevealed ? (this.revealed() ? this.previousSibling : null) : this.previousSibling;
     if (!dontPopulate && element) {
-      element.populateIfNeeded();
+      void element.populateIfNeeded();
     }
 
     while (element &&
            (skipUnrevealed ? (element.revealed() && element.expanded ? element.lastChild() : null) :
                              element.lastChild())) {
       if (!dontPopulate) {
-        element.populateIfNeeded();
+        void element.populateIfNeeded();
       }
       element =
           (skipUnrevealed ? (element.revealed() && element.expanded ? element.lastChild() : null) :

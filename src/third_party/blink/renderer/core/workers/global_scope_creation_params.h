@@ -6,10 +6,10 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_GLOBAL_SCOPE_CREATION_PARAMS_H_
 
 #include <memory>
+
 #include "base/unguessable_token.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
-#include "services/network/public/mojom/ip_address_space.mojom-blink-forward.h"
 #include "services/network/public/mojom/referrer_policy.mojom-blink-forward.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/permissions_policy/permissions_policy.h"
@@ -26,13 +26,14 @@
 #include "third_party/blink/renderer/core/workers/worker_clients.h"
 #include "third_party/blink/renderer/core/workers/worker_settings.h"
 #include "third_party/blink/renderer/core/workers/worklet_module_responses_map.h"
-#include "third_party/blink/renderer/platform/graphics/begin_frame_provider.h"
+#include "third_party/blink/renderer/platform/graphics/begin_frame_provider_params.h"
 #include "third_party/blink/renderer/platform/loader/fetch/https_state.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
+class InterfaceRegistry;
 class WorkerClients;
 
 // GlobalScopeCreationParams contains parameters for initializing
@@ -58,8 +59,7 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
       HttpsState starter_https_state,
       WorkerClients*,
       std::unique_ptr<WebContentSettingsClient>,
-      absl::optional<network::mojom::IPAddressSpace>,
-      const Vector<String>* origin_trial_tokens,
+      const Vector<OriginTrialFeature>* inherited_trial_features,
       const base::UnguessableToken& parent_devtools_token,
       std::unique_ptr<WorkerSettings>,
       mojom::blink::V8CacheOptions,
@@ -75,7 +75,8 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
       const absl::optional<ExecutionContextToken>& parent_context_token =
           absl::nullopt,
       bool parent_cross_origin_isolated_capability = false,
-      bool parent_direct_socket_capability = false);
+      bool parent_direct_socket_capability = false,
+      InterfaceRegistry* interface_registry = nullptr);
   GlobalScopeCreationParams(const GlobalScopeCreationParams&) = delete;
   GlobalScopeCreationParams& operator=(const GlobalScopeCreationParams&) =
       delete;
@@ -116,7 +117,10 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
       response_content_security_policies;
 
   network::mojom::ReferrerPolicy referrer_policy;
-  std::unique_ptr<Vector<String>> origin_trial_tokens;
+
+  // Origin trial features to be inherited by worker/worklet from the document
+  // loading it.
+  std::unique_ptr<Vector<OriginTrialFeature>> inherited_trial_features;
 
   // The SecurityOrigin of the Document creating a Worker/Worklet.
   //
@@ -136,9 +140,9 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
   //
   // Worklets are defined to have a unique, opaque origin, so are not secure:
   // https://drafts.css-houdini.org/worklets/#script-settings-for-worklets
-  // Origin trials are only enabled in secure contexts, and the trial tokens are
-  // inherited from the document, so also consider the context of the document.
-  // The value should be supplied as the result of Document.IsSecureContext().
+  // Origin trials are only enabled in secure contexts so also consider the
+  // context of the document. The value should be supplied as the result of
+  // Document.IsSecureContext().
   bool starter_secure_context;
 
   HttpsState starter_https_state;
@@ -155,11 +159,6 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
   CrossThreadPersistent<WorkerClients> worker_clients;
 
   std::unique_ptr<WebContentSettingsClient> content_settings_client;
-
-  // Worker script response's address space. This is valid only when the worker
-  // script is fetched on the main thread (i.e., when
-  // |off_main_thread_fetch_option| is kDisabled).
-  absl::optional<network::mojom::IPAddressSpace> response_address_space;
 
   base::UnguessableToken parent_devtools_token;
 
@@ -200,6 +199,8 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
   //
   // TODO(mkwst): We need a specification for this capability.
   const bool parent_direct_socket_capability;
+
+  InterfaceRegistry* const interface_registry;
 };
 
 }  // namespace blink

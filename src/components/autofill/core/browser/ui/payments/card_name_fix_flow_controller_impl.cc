@@ -13,6 +13,7 @@
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/metrics/autofill_metrics.h"
+#include "components/autofill/core/browser/metrics/payments/save_credit_card_prompt_metrics.h"
 #include "components/autofill/core/browser/ui/payments/card_name_fix_flow_view.h"
 #include "components/grit/components_scaled_resources.h"
 #include "components/strings/grit/components_strings.h"
@@ -23,14 +24,7 @@ namespace autofill {
 CardNameFixFlowControllerImpl::CardNameFixFlowControllerImpl() {}
 
 CardNameFixFlowControllerImpl::~CardNameFixFlowControllerImpl() {
-  if (card_name_fix_flow_view_)
-    card_name_fix_flow_view_->ControllerGone();
-
-  if (shown_ && !had_user_interaction_) {
-    AutofillMetrics::LogCardholderNameFixFlowPromptEvent(
-        AutofillMetrics::
-            CARDHOLDER_NAME_FIX_FLOW_PROMPT_CLOSED_WITHOUT_INTERACTION);
-  }
+  MaybeDestroyCardNameFixFlowView(true);
 }
 
 void CardNameFixFlowControllerImpl::Show(
@@ -40,8 +34,7 @@ void CardNameFixFlowControllerImpl::Show(
   DCHECK(!name_accepted_callback.is_null());
   DCHECK(card_name_fix_flow_view);
 
-  if (card_name_fix_flow_view_)
-    card_name_fix_flow_view_->ControllerGone();
+  MaybeDestroyCardNameFixFlowView(false);
   card_name_fix_flow_view_ = card_name_fix_flow_view;
 
   name_accepted_callback_ = std::move(name_accepted_callback);
@@ -54,15 +47,19 @@ void CardNameFixFlowControllerImpl::Show(
   AutofillMetrics::LogCardholderNameFixFlowPromptEvent(
       AutofillMetrics::CARDHOLDER_NAME_FIX_FLOW_PROMPT_SHOWN);
   shown_ = true;
+  had_user_interaction_ = false;
 }
 
 void CardNameFixFlowControllerImpl::OnConfirmNameDialogClosed() {
-  card_name_fix_flow_view_ = nullptr;
+  MaybeDestroyCardNameFixFlowView(false);
 }
 
 void CardNameFixFlowControllerImpl::OnNameAccepted(const std::u16string& name) {
   AutofillMetrics::LogCardholderNameFixFlowPromptEvent(
       AutofillMetrics::CARDHOLDER_NAME_FIX_FLOW_PROMPT_ACCEPTED);
+  LogSaveCreditCardPromptResult(SaveCreditCardPromptResult::kAccepted, true,
+                                AutofillClient::SaveCreditCardOptions()
+                                    .with_should_request_name_from_user(true));
   had_user_interaction_ = true;
   AutofillMetrics::LogSaveCardCardholderNameWasEdited(
       inferred_cardholder_name_ != name);
@@ -74,6 +71,9 @@ void CardNameFixFlowControllerImpl::OnNameAccepted(const std::u16string& name) {
 void CardNameFixFlowControllerImpl::OnDismissed() {
   AutofillMetrics::LogCardholderNameFixFlowPromptEvent(
       AutofillMetrics::CARDHOLDER_NAME_FIX_FLOW_PROMPT_DISMISSED);
+  LogSaveCreditCardPromptResult(SaveCreditCardPromptResult::kDenied, true,
+                                AutofillClient::SaveCreditCardOptions()
+                                    .with_should_request_name_from_user(true));
   had_user_interaction_ = true;
 }
 
@@ -111,7 +111,7 @@ std::u16string CardNameFixFlowControllerImpl::GetInputPlaceholderText() const {
 }
 
 std::u16string CardNameFixFlowControllerImpl::GetSaveButtonLabel() const {
-#if defined(OS_IOS)
+#if BUILDFLAG(IS_IOS)
   return l10n_util::GetStringUTF16(IDS_SAVE);
 #else
   return l10n_util::GetStringUTF16(
@@ -122,6 +122,24 @@ std::u16string CardNameFixFlowControllerImpl::GetSaveButtonLabel() const {
 std::u16string CardNameFixFlowControllerImpl::GetTitleText() const {
   return l10n_util::GetStringUTF16(
       IDS_AUTOFILL_SAVE_CARD_CARDHOLDER_NAME_FIX_FLOW_HEADER);
+}
+
+void CardNameFixFlowControllerImpl::MaybeDestroyCardNameFixFlowView(
+    bool controller_gone) {
+  if (card_name_fix_flow_view_ == nullptr)
+    return;
+  if (controller_gone)
+    card_name_fix_flow_view_->ControllerGone();
+  if (shown_ && !had_user_interaction_) {
+    AutofillMetrics::LogCardholderNameFixFlowPromptEvent(
+        AutofillMetrics::
+            CARDHOLDER_NAME_FIX_FLOW_PROMPT_CLOSED_WITHOUT_INTERACTION);
+    LogSaveCreditCardPromptResult(
+        SaveCreditCardPromptResult::kInteractedAndIgnored, true,
+        AutofillClient::SaveCreditCardOptions()
+            .with_should_request_name_from_user(true));
+  }
+  card_name_fix_flow_view_ = nullptr;
 }
 
 }  // namespace autofill

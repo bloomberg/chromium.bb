@@ -5,7 +5,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_EXCLUSIONS_NG_EXCLUSION_SPACE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_EXCLUSIONS_NG_EXCLUSION_SPACE_H_
 
+#include "base/check_op.h"
 #include "base/dcheck_is_on.h"
+#include "base/notreached.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/ng/exclusions/ng_exclusion.h"
 #include "third_party/blink/renderer/core/layout/ng/exclusions/ng_layout_opportunity.h"
@@ -95,7 +97,7 @@ class CORE_EXPORT NGExclusionSpaceInternal final {
     switch (type) {
       default:
         NOTREACHED();
-        FALLTHROUGH;
+        [[fallthrough]];
       case EFloat::kLeft:
         has_break_before_left_float_ = true;
         break;
@@ -109,7 +111,7 @@ class CORE_EXPORT NGExclusionSpaceInternal final {
     switch (type) {
       default:
         NOTREACHED();
-        FALLTHROUGH;
+        [[fallthrough]];
       case EFloat::kLeft:
         has_break_inside_left_float_ = true;
         break;
@@ -124,7 +126,7 @@ class CORE_EXPORT NGExclusionSpaceInternal final {
     switch (type) {
       default:
         NOTREACHED();
-        FALLTHROUGH;
+        [[fallthrough]];
       case EClear::kNone:
         return false;
       case EClear::kLeft:
@@ -133,7 +135,7 @@ class CORE_EXPORT NGExclusionSpaceInternal final {
             has_break_inside_left_float_ || has_break_before_left_float_;
         if (type == EClear::kLeft)
           break;
-        FALLTHROUGH;
+        [[fallthrough]];
       case EClear::kRight:
         needs_clearance |=
             has_break_inside_right_float_ || has_break_before_right_float_;

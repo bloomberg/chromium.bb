@@ -5,7 +5,6 @@
 #include <array>
 
 #include "base/command_line.h"
-#include "base/cxx17_backports.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
@@ -20,13 +19,14 @@
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/common/switches.h"
+#include "extensions/test/test_extension_dir.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capture_types.h"
 
-#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ui/ozone/buildflags.h"
-#endif  // OS_LINUX || BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace extensions {
 
@@ -76,16 +76,16 @@ class DesktopCaptureApiTest : public ExtensionApiTest {
 
 // The build flag OZONE_PLATFORM_WAYLAND is only available on
 // Linux or ChromeOS, so this simplifies the next set of ifdefs.
-#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_ASH)
 #if BUILDFLAG(OZONE_PLATFORM_WAYLAND)
 #define OZONE_PLATFORM_WAYLAND
 #endif  // BUILDFLAG(OZONE_PLATFORM_WAYLAND)
-#endif  // OS_LINUX || BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_ASH)
 
 // TODO(https://crbug.com/1271673): Crashes on Lacros.
 // TODO(https://crbug.com/1271680): Fails on the linux-wayland-rel bot.
 // TODO(https://crbug.com/1271711): Fails on Mac.
-#if defined(OS_MAC) || defined(OZONE_PLATFORM_WAYLAND) || \
+#if BUILDFLAG(IS_MAC) || defined(OZONE_PLATFORM_WAYLAND) || \
     BUILDFLAG(IS_CHROMEOS_LACROS)
 #define MAYBE_ChooseDesktopMedia DISABLED_ChooseDesktopMedia
 #else
@@ -169,14 +169,14 @@ IN_PROC_BROWSER_TEST_F(DesktopCaptureApiTest, MAYBE_ChooseDesktopMedia) {
      .selected_source = DesktopMediaID(DesktopMediaID::TYPE_SCREEN,
                                        webrtc::kFullDesktopScreenId)},
   };
-  picker_factory_.SetTestFlags(test_flags, base::size(test_flags));
+  picker_factory_.SetTestFlags(test_flags, std::size(test_flags));
   ASSERT_TRUE(RunExtensionTest("desktop_capture")) << message_;
 }
 
 // TODO(https://crbug.com/1271673): Crashes on Lacros.
 // TODO(https://crbug.com/1271680): Fails on the linux-wayland-rel bot.
 // TODO(https://crbug.com/1271711): Fails on Mac.
-#if defined(OS_MAC) || defined(OZONE_PLATFORM_WAYLAND) || \
+#if BUILDFLAG(IS_MAC) || defined(OZONE_PLATFORM_WAYLAND) || \
     BUILDFLAG(IS_CHROMEOS_LACROS)
 #define MAYBE_Delegation DISABLED_Delegation
 #else
@@ -214,7 +214,7 @@ IN_PROC_BROWSER_TEST_F(DesktopCaptureApiTest, MAYBE_Delegation) {
            DesktopMediaID(DesktopMediaID::TYPE_SCREEN, DesktopMediaID::kNullId),
        .cancelled = true},
   };
-  picker_factory_.SetTestFlags(test_flags, base::size(test_flags));
+  picker_factory_.SetTestFlags(test_flags, std::size(test_flags));
 
   bool result;
 
@@ -240,6 +240,83 @@ IN_PROC_BROWSER_TEST_F(DesktopCaptureApiTest, MAYBE_Delegation) {
   web_contents->Close();
   destroyed_watcher.Wait();
   EXPECT_TRUE(test_flags[2].picker_deleted);
+}
+
+// Not specifying a tab defaults to the extension's background page.
+// Service worker-based extensions don't have one, so they must specify
+// a tab. This is a regression test for crbug.com/1271590.
+IN_PROC_BROWSER_TEST_F(DesktopCaptureApiTest, ServiceWorkerMustSpecifyTab) {
+  static constexpr char kManifest[] =
+      R"({
+           "name": "Desktop Capture",
+           "manifest_version": 3,
+           "version": "0.1",
+           "background": { "service_worker": "worker.js" },
+           "permissions": ["desktopCapture"]
+         })";
+
+  static constexpr char kWorker[] =
+      R"(chrome.test.runTests([
+           function noTabIdSpecified() {
+             chrome.desktopCapture.chooseDesktopMedia(
+               ["screen", "window"],
+               function(id) {
+                 chrome.test.assertLastError(
+                     'A target tab is required when called from a service ' +
+                     'worker context.');
+                 chrome.test.succeed();
+             });
+        }]))";
+
+  TestExtensionDir test_dir;
+  test_dir.WriteManifest(kManifest);
+  test_dir.WriteFile(FILE_PATH_LITERAL("worker.js"), kWorker);
+
+  ASSERT_TRUE(RunExtensionTest(test_dir.UnpackedPath(), {}, {})) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(DesktopCaptureApiTest, FromServiceWorker) {
+  static constexpr char kManifest[] =
+      R"({
+           "name": "Desktop Capture",
+           "manifest_version": 3,
+           "version": "0.1",
+           "background": { "service_worker": "worker.js" },
+           "permissions": ["desktopCapture", "tabs"]
+         })";
+
+  static constexpr char kWorker[] =
+      R"(chrome.test.runTests([
+           function tabIdSpecified() {
+             chrome.tabs.query({}, function(tabs) {
+               chrome.test.assertTrue(tabs.length == 1);
+               chrome.desktopCapture.chooseDesktopMedia(
+                 ["tab"], tabs[0],
+                 function(id) {
+                   chrome.test.assertEq("string", typeof id);
+                   chrome.test.assertTrue(id != "");
+                   chrome.test.succeed();
+                 });
+             });
+        }]))";
+
+  TestExtensionDir test_dir;
+  test_dir.WriteManifest(kManifest);
+  test_dir.WriteFile(FILE_PATH_LITERAL("worker.js"), kWorker);
+
+  // Open a tab to capture.
+  embedded_test_server()->ServeFilesFromDirectory(GetTestResourcesParentDir());
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), GetURLForPath("localhost", "/test_file.html")));
+
+  FakeDesktopMediaPickerFactory::TestFlags test_flags[] = {
+      {.expect_tabs = true,
+       .selected_source = MakeFakeWebContentsMediaId(true)},
+  };
+  picker_factory_.SetTestFlags(test_flags, std::size(test_flags));
+
+  ASSERT_TRUE(RunExtensionTest(test_dir.UnpackedPath(), {}, {})) << message_;
 }
 
 }  // namespace extensions

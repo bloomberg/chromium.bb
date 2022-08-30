@@ -44,7 +44,7 @@ export class CoverageModel extends SDK.SDKModel.SDKModel<EventTypes> {
   private cpuProfilerModel: SDK.CPUProfilerModel.CPUProfilerModel|null;
   private cssModel: SDK.CSSModel.CSSModel|null;
   private debuggerModel: SDK.DebuggerModel.DebuggerModel|null;
-  private coverageByURL: Map<string, URLCoverageInfo>;
+  private coverageByURL: Map<Platform.DevToolsPath.UrlString, URLCoverageInfo>;
   private coverageByContentProvider: Map<TextUtils.ContentProvider.ContentProvider, CoverageInfo>;
   private coverageUpdateTimes: Set<number>;
   private suspensionState: SuspensionState;
@@ -103,7 +103,7 @@ export class CoverageModel extends SDK.SDKModel.SDKModel<EventTypes> {
   preciseCoverageDeltaUpdate(timestamp: number, occasion: string, coverageData: Protocol.Profiler.ScriptCoverage[]):
       void {
     this.coverageUpdateTimes.add(timestamp);
-    this.backlogOrProcessJSCoverage(coverageData, timestamp);
+    void this.backlogOrProcessJSCoverage(coverageData, timestamp);
   }
 
   async stop(): Promise<void> {
@@ -216,7 +216,7 @@ export class CoverageModel extends SDK.SDKModel.SDKModel<EventTypes> {
     return Array.from(this.coverageByURL.values());
   }
 
-  getCoverageForUrl(url: string): URLCoverageInfo|null {
+  getCoverageForUrl(url: Platform.DevToolsPath.UrlString): URLCoverageInfo|null {
     return this.coverageByURL.get(url) || null;
   }
 
@@ -287,7 +287,7 @@ export class CoverageModel extends SDK.SDKModel.SDKModel<EventTypes> {
   }
 
   async processJSBacklog(): Promise<void> {
-    this.backlogOrProcessJSCoverage([], 0);
+    void this.backlogOrProcessJSCoverage([], 0);
   }
 
   private processJSCoverage(scriptsCoverage: Protocol.Profiler.ScriptCoverage[], stamp: number): CoverageInfo[] {
@@ -475,14 +475,14 @@ export class CoverageModel extends SDK.SDKModel.SDKModel<EventTypes> {
       result.push(...await urlInfo.entriesForExport());
     }
     await fos.write(JSON.stringify(result, undefined, 2));
-    fos.close();
+    void fos.close();
   }
 }
 
 SDK.SDKModel.SDKModel.register(CoverageModel, {capabilities: SDK.Target.Capability.None, autostart: false});
 
 export interface EntryForExport {
-  url: string;
+  url: Platform.DevToolsPath.UrlString;
   ranges: {start: number, end: number}[];
   text: string|null;
 }
@@ -495,14 +495,14 @@ function locationCompare(a: string, b: string): number {
 }
 
 export class URLCoverageInfo extends Common.ObjectWrapper.ObjectWrapper<URLCoverageInfo.EventTypes> {
-  private readonly urlInternal: string;
+  private readonly urlInternal: Platform.DevToolsPath.UrlString;
   private coverageInfoByLocation: Map<string, CoverageInfo>;
   private sizeInternal: number;
   private usedSizeInternal: number;
   private typeInternal!: CoverageType;
   private isContentScriptInternal: boolean;
 
-  constructor(url: string) {
+  constructor(url: Platform.DevToolsPath.UrlString) {
     super();
 
     this.urlInternal = url;
@@ -512,7 +512,7 @@ export class URLCoverageInfo extends Common.ObjectWrapper.ObjectWrapper<URLCover
     this.isContentScriptInternal = false;
   }
 
-  url(): string {
+  url(): Platform.DevToolsPath.UrlString {
     return this.urlInternal;
   }
 
@@ -746,7 +746,7 @@ export class CoverageInfo {
     return this.contentProvider;
   }
 
-  url(): string {
+  url(): Platform.DevToolsPath.UrlString {
     return this.contentProvider.contentURL();
   }
 

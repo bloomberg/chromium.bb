@@ -17,9 +17,11 @@
 #include "base/observer_list.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
+#include "chromeos/ash/components/network/portal_detector/network_portal_detector.h"
+#include "chromeos/ash/components/network/portal_detector/network_portal_detector_strategy.h"
+// TODO(https://crbug.com/1164001): move to forward declaration.
+#include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler_observer.h"
-#include "chromeos/network/portal_detector/network_portal_detector.h"
-#include "chromeos/network/portal_detector/network_portal_detector_strategy.h"
 #include "components/captive_portal/core/captive_portal_detector.h"
 #include "components/captive_portal/core/captive_portal_types.h"
 #include "content/public/browser/notification_observer.h"
@@ -37,9 +39,7 @@ class URLLoaderFactory;
 }
 }  // namespace network
 
-namespace chromeos {
-
-class NetworkState;
+namespace ash {
 
 // This class handles all notifications about network changes from
 // NetworkStateHandler and delegates portal detection for the default
@@ -232,6 +232,6 @@ class NetworkPortalDetectorImpl : public NetworkPortalDetector,
   base::WeakPtrFactory<NetworkPortalDetectorImpl> weak_factory_{this};
 };
 
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // CHROME_BROWSER_ASH_NET_NETWORK_PORTAL_DETECTOR_IMPL_H_

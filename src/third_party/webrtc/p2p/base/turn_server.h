@@ -81,7 +81,9 @@ class TurnServerAllocation : public rtc::MessageHandlerAutoCleanup,
   const std::string& transaction_id() const { return transaction_id_; }
   const std::string& username() const { return username_; }
   const std::string& last_nonce() const { return last_nonce_; }
-  void set_last_nonce(const std::string& nonce) { last_nonce_ = nonce; }
+  void set_last_nonce(absl::string_view nonce) {
+    last_nonce_ = std::string(nonce);
+  }
 
   std::string ToString() const;
 
@@ -108,7 +110,7 @@ class TurnServerAllocation : public rtc::MessageHandlerAutoCleanup,
                         const rtc::SocketAddress& addr,
                         const int64_t& packet_time_us);
 
-  static int ComputeLifetime(const TurnMessage* msg);
+  static int ComputeLifetime(const TurnMessage& msg);
   bool HasPermission(const rtc::IPAddress& addr);
   void AddPermission(const rtc::IPAddress& addr);
   Permission* FindPermission(const rtc::IPAddress& addr) const;
@@ -288,7 +290,7 @@ class TurnServer : public sigslot::has_slots<> {
                           const char* data,
                           size_t size,
                           const std::string& key) RTC_RUN_ON(thread_);
-  bool ValidateNonce(const std::string& nonce) const RTC_RUN_ON(thread_);
+  bool ValidateNonce(absl::string_view nonce) const RTC_RUN_ON(thread_);
 
   TurnServerAllocation* FindAllocation(TurnServerConnection* conn)
       RTC_RUN_ON(thread_);

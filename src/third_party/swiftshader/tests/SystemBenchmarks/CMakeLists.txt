@@ -14,7 +14,6 @@
 
 set(ROOT_PROJECT_COMPILE_OPTIONS
     ${SWIFTSHADER_COMPILE_OPTIONS}
-    ${WARNINGS_AS_ERRORS}
 )
 
 set(ROOT_PROJECT_LINK_LIBRARIES
@@ -25,6 +24,7 @@ set(ROOT_PROJECT_LINK_LIBRARIES
 set(SYSTEM_BENCHMARKS_SRC_FILES
     main.cpp
     LRUCacheBenchmarks.cpp
+    MathBenchmarks.cpp
 )
 
 add_executable(system-benchmarks

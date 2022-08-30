@@ -54,6 +54,10 @@ PermissionRepromptState ShouldRepromptUserForPermissions(
     content::WebContents* web_contents,
     const std::vector<ContentSettingsType>& content_settings_types);
 
+// Called to check whether chrome settings and permissions allow requesting site
+// level notification permission.
+bool DoesAppLevelSettingsAllowSiteNotifications();
+
 }  // namespace permissions
 
 #endif  // COMPONENTS_PERMISSIONS_ANDROID_ANDROID_PERMISSION_UTIL_H_

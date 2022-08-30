@@ -13,18 +13,18 @@
 #include "net/der/encode_values.h"
 #include "net/der/parse_values.h"
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #include "net/cert/cert_verify_proc_mac.h"
 #include "net/cert/internal/trust_store_mac.h"
 #endif
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "net/cert/cert_verify_proc_win.h"
 #endif
 
 namespace {
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 cert_verifier::mojom::CertVerifierDebugInfo::MacTrustImplType
 TrustImplTypeToMojom(net::TrustStoreMac::TrustImplType input) {
   switch (input) {
@@ -55,12 +55,15 @@ TrialComparisonCertVerifierMojo::TrialComparisonCertVerifierMojo(
     mojo::PendingRemote<mojom::TrialComparisonCertVerifierReportClient>
         report_client,
     scoped_refptr<net::CertVerifyProc> primary_verify_proc,
-    scoped_refptr<net::CertVerifyProc> trial_verify_proc)
+    scoped_refptr<net::CertVerifyProcFactory> primary_verify_proc_factory,
+    scoped_refptr<net::CertVerifyProc> trial_verify_proc,
+    scoped_refptr<net::CertVerifyProcFactory> trial_verify_proc_factory)
     : receiver_(this, std::move(config_client_receiver)),
       report_client_(std::move(report_client)) {
   trial_comparison_cert_verifier_ =
       std::make_unique<net::TrialComparisonCertVerifier>(
-          primary_verify_proc, trial_verify_proc,
+          primary_verify_proc, primary_verify_proc_factory, trial_verify_proc,
+          trial_verify_proc_factory,
           base::BindRepeating(
               &TrialComparisonCertVerifierMojo::OnSendTrialReport,
               // Unretained safe because the report_callback will not be called
@@ -85,6 +88,13 @@ void TrialComparisonCertVerifierMojo::SetConfig(const Config& config) {
   trial_comparison_cert_verifier_->SetConfig(config);
 }
 
+void TrialComparisonCertVerifierMojo::UpdateChromeRootStoreData(
+    scoped_refptr<net::CertNetFetcher> cert_net_fetcher,
+    const net::ChromeRootStoreData* root_store_data) {
+  trial_comparison_cert_verifier_->UpdateChromeRootStoreData(
+      std::move(cert_net_fetcher), root_store_data);
+}
+
 void TrialComparisonCertVerifierMojo::OnTrialConfigUpdated(bool allowed) {
   trial_comparison_cert_verifier_->set_trial_allowed(allowed);
 }
@@ -103,7 +113,7 @@ void TrialComparisonCertVerifierMojo::OnSendTrialReport(
   mojom::CertVerifierDebugInfoPtr debug_info =
       mojom::CertVerifierDebugInfo::New();
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   auto* mac_platform_debug_info =
       net::CertVerifyProcMac::ResultDebugData::Get(&primary_result);
   if (mac_platform_debug_info) {
@@ -130,9 +140,9 @@ void TrialComparisonCertVerifierMojo::OnSendTrialReport(
     debug_info->mac_trust_impl =
         TrustImplTypeToMojom(mac_trust_debug_info->trust_impl());
   }
-#endif  // defined(OS_MAC)
+#endif  // BUILDFLAG(IS_MAC)
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   auto* win_platform_debug_info =
       net::CertVerifyProcWin::ResultDebugData::Get(&primary_result);
   if (win_platform_debug_info) {
@@ -143,7 +153,7 @@ void TrialComparisonCertVerifierMojo::OnSendTrialReport(
     debug_info->win_platform_debug_info->authroot_sequence_number =
         win_platform_debug_info->authroot_sequence_number();
   }
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
   auto* cert_verify_proc_builtin_debug_data =
       net::CertVerifyProcBuiltinResultDebugData::Get(&trial_result);

@@ -5,10 +5,14 @@
 #ifndef CHROME_UPDATER_UTIL_H_
 #define CHROME_UPDATER_UTIL_H_
 
+#include <string>
+
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
+#include "chrome/updater/tag.h"
 #include "chrome/updater/updater_scope.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -68,10 +72,10 @@ absl::optional<base::FilePath> GetVersionedUpdaterFolderPath(
 // /Library/Google/GoogleUpdater
 absl::optional<base::FilePath> GetUpdaterFolderPath(UpdaterScope scope);
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 // For example: ~/Library/Google/GoogleUpdater/88.0.4293.0/GoogleUpdater.app
 absl::optional<base::FilePath> GetUpdaterAppBundlePath(UpdaterScope scope);
-#endif  // defined(OS_MAC)
+#endif  // BUILDFLAG(IS_MAC)
 
 // For user installations:
 // ~/Library/Google/GoogleUpdater/88.0.4293.0/GoogleUpdater.app/Contents/
@@ -94,17 +98,33 @@ absl::optional<base::FilePath> GetExecutableFolderPathForVersion(
 // "updater.exe" on Win.
 base::FilePath GetExecutableRelativePath();
 
-// Returns the parsed values from --tag command line argument. The function
-// implementation uses lazy initialization and caching to avoid reparsing
-// the tag.
-absl::optional<tagging::TagArgs> GetTagArgs();
+// Return the parsed values from --tag command line argument. The functions
+// return {} if there was no tag at all. An error is set if the tag fails to
+// parse.
+struct TagParsingResult {
+  TagParsingResult();
+  TagParsingResult(absl::optional<tagging::TagArgs> tag_args,
+                   tagging::ErrorCode error);
+  ~TagParsingResult();
+  TagParsingResult(const TagParsingResult&);
+  TagParsingResult& operator=(const TagParsingResult&);
+  absl::optional<tagging::TagArgs> tag_args;
+  tagging::ErrorCode error = tagging::ErrorCode::kSuccess;
+};
+TagParsingResult GetTagArgsForCommandLine(
+    const base::CommandLine& command_line);
+TagParsingResult GetTagArgs();
+
+// Returns the arguments corresponding to `app_id` from the command line tag.
+absl::optional<tagging::AppArgs> GetAppArgs(const std::string& app_id);
+
+std::string GetInstallDataIndexFromAppArgs(const std::string& app_id);
 
 // Returns true if the user running the updater also owns the `path`.
 bool PathOwnedByUser(const base::FilePath& path);
 
 // Initializes logging for an executable.
-void InitLogging(UpdaterScope updater_scope,
-                 const base::FilePath::StringType& filename);
+void InitLogging(UpdaterScope updater_scope);
 
 // Wraps the 'command_line' to be executed in an elevated context.
 // On macOS this is done with 'sudo'.
@@ -134,7 +154,7 @@ GURL AppendQueryParameter(const GURL& url,
                           const std::string& name,
                           const std::string& value);
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 // Uses the builtin unzip utility within macOS /usr/bin/unzip to unzip instead
 // of using the configurator's UnzipperFactory. The UnzipperFactory utilizes the
 // //third_party/zlib/google, which has a bug that does not preserve the
@@ -149,7 +169,35 @@ absl::optional<base::FilePath> GetKeystoneFolderPath(UpdaterScope scope);
 // permissions as the given permissions mask.
 bool ConfirmFilePermissions(const base::FilePath& root_path,
                             int kPermissionsMask);
-#endif  // defined(OS_MAC)
+#endif  // BUILDFLAG(IS_MAC)
+
+#if BUILDFLAG(IS_WIN)
+
+// Returns the versioned task name prefix in the following format:
+// "{ProductName}Task{System/User}{UpdaterVersion}".
+// For instance: "ChromiumUpdaterTaskSystem92.0.0.1".
+std::wstring GetTaskNamePrefix(UpdaterScope scope);
+
+// Returns the versioned task display name in the following format:
+// "{ProductName} Task {System/User} {UpdaterVersion}".
+// For instance: "ChromiumUpdater Task System 92.0.0.1".
+std::wstring GetTaskDisplayName(UpdaterScope scope);
+
+// Returns the value associated with the given switch when they are specified in
+// the legacy updater command line format. Example:
+//   program.exe /switch1 value1 /switch2 /switch3 value3
+// The equivalent Chromium format is:
+//   program.exe --switch1=value1 --switch2 --switch3=value3
+std::string GetSwitchValueInLegacyFormat(const std::wstring& command_line,
+                                         const std::wstring& switch_name);
+
+#endif  // BUILDFLAG(IS_WIN)
+
+// Writes the provided string prefixed with the UTF8 byte order mark to a
+// temporary file. The temporary file is created in the specified `directory`.
+absl::optional<base::FilePath> WriteInstallerDataToTempFile(
+    const base::FilePath& directory,
+    const std::string& installer_data);
 
 }  // namespace updater
 

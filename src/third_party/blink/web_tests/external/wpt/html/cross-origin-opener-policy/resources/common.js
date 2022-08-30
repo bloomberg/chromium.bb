@@ -1,3 +1,7 @@
+// To use the functions below, be sure to include the following files in your
+// test:
+// - "/common/get-host-info.sub.js" to get the different origin values.
+
 const SAME_ORIGIN = {origin: get_host_info().HTTPS_ORIGIN, name: "SAME_ORIGIN"};
 const SAME_SITE = {origin: get_host_info().HTTPS_REMOTE_ORIGIN, name: "SAME_SITE"};
 const CROSS_ORIGIN = {origin: get_host_info().HTTPS_NOTSAMESITE_ORIGIN, name: "CROSS_ORIGIN"}
@@ -56,33 +60,6 @@ function url_test(t, url, channelName, hasOpener, openerDOMAccess, callback) {
   t.add_cleanup(() => {
     bc.postMessage("close");
   });
-}
-
-function percent_encode(objectOrString) {
-  if (typeof objectOrString === "object") {
-    return objectOrString.percentEncoded;
-  }
-  return encodeURIComponent(objectOrString);
-}
-
-function coop_coep_test(t, host, coop, coep, channelName, hasOpener, openerDOMAccess, callback) {
-  const coopPercentEncoded = percent_encode(coop);
-  url_test(t, `${host.origin}/html/cross-origin-opener-policy/resources/coop-coep.py?coop=${coopPercentEncoded}&coep=${coep}&channel=${encodeURIComponent(channelName)}`, channelName, hasOpener, openerDOMAccess, callback);
-}
-
-function coop_test(t, host, coop, channelName, hasOpener, callback) {
-  coop_coep_test(t, host, coop, "", channelName, hasOpener, undefined /* openerDOMAccess */, callback);
-}
-
-function run_coop_tests(documentCOOPValueTitle, testArray) {
-  for (const test of testArray) {
-    let coopName = typeof test[1] === "object" ? test[1].percentEncoded : test[1];
-    async_test(t => {
-      coop_test(t, test[0], test[1],
-                `${documentCOOPValueTitle}_to_${test[0].name}_${coopName.replace(/ /g,"-")}`,
-                test[2], () => { t.done(); });
-    }, `${documentCOOPValueTitle} document opening popup to ${test[0].origin} with COOP: ${format_value(coopName)}`);
-  }
 }
 
 function run_coop_test_iframe (documentTitle, iframe_origin, popup_origin, popup_coop, expects_opener, expects_name) {

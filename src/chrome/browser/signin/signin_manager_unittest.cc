@@ -4,7 +4,11 @@
 #include "chrome/browser/signin/signin_manager.h"
 
 #include "base/memory/raw_ptr.h"
+#include "base/scoped_observation.h"
+#include "build/buildflag.h"
+#include "build/chromeos_buildflags.h"
 #include "components/signin/public/base/signin_pref_names.h"
+#include "components/signin/public/base/test_signin_client.h"
 #include "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
@@ -19,13 +23,17 @@ using ::testing::Mock;
 
 namespace signin {
 namespace {
+
 const char kTestEmail[] = "me@gmail.com";
 const char kTestEmail2[] = "me2@gmail.com";
 
 class FakeIdentityManagerObserver : public IdentityManager::Observer {
  public:
   explicit FakeIdentityManagerObserver(IdentityManager* identity_manager)
-      : identity_manager_(identity_manager) {}
+      : identity_manager_(identity_manager) {
+    identity_manager_observation_.Observe(identity_manager_);
+  }
+
   ~FakeIdentityManagerObserver() override = default;
 
   void OnPrimaryAccountChanged(
@@ -46,32 +54,30 @@ class FakeIdentityManagerObserver : public IdentityManager::Observer {
  private:
   raw_ptr<IdentityManager> identity_manager_;
   std::vector<PrimaryAccountChangeEvent> events_;
+  base::ScopedObservation<IdentityManager, IdentityManager::Observer>
+      identity_manager_observation_{this};
 };
+
 }  // namespace
 
 class SigninManagerTest : public testing::Test {
  public:
   SigninManagerTest()
-      : identity_test_env_(/*test_url_loader_factory=*/nullptr,
+      : client_(&prefs_),
+        identity_test_env_(/*test_url_loader_factory=*/nullptr,
                            /*pref_service=*/&prefs_,
                            signin::AccountConsistencyMethod::kDice,
-                           /*test_signin_client=*/nullptr),
-        observer_(identity_test_env_.identity_manager()) {}
+                           &client_),
+        observer_(identity_test_env_.identity_manager()) {
+    RecreateSigninManager();
+  }
 
   SigninManagerTest(const SigninManagerTest&) = delete;
   SigninManagerTest& operator=(const SigninManagerTest&) = delete;
 
-  void SetUp() override {
-    testing::Test::SetUp();
-    RecreateSigninManager();
-    identity_manager()->AddObserver(&observer_);
-  }
-
-  void TearDown() override { identity_manager()->RemoveObserver(&observer_); }
-
   void RecreateSigninManager() {
     signin_manger_ =
-        std::make_unique<SigninManager>(&prefs_, identity_manager());
+        std::make_unique<SigninManager>(&prefs_, identity_manager(), &client_);
   }
 
   AccountInfo GetAccountInfo(const std::string& email) {
@@ -156,6 +162,7 @@ class SigninManagerTest : public testing::Test {
 
   sync_preferences::TestingPrefServiceSyncable prefs_;
   content::BrowserTaskEnvironment task_environment_;
+  TestSigninClient client_;
   IdentityTestEnvironment identity_test_env_;
   std::unique_ptr<SigninManager> signin_manger_;
   FakeIdentityManagerObserver observer_;
@@ -180,14 +187,19 @@ TEST_F(
 
   // Invalid token.
   SetInvalidRefreshTokenForAccount(identity_manager(), account.account_id);
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // Lacros token service does not check for the validity of tokens.
+  // Therefore, the primary account should not be removed.
+  EXPECT_TRUE(identity_manager()->HasPrimaryAccount(ConsentLevel::kSignin));
+#else
   ExpectUnconsentedPrimaryAccountClearedEvent(account);
   EXPECT_FALSE(identity_manager()->HasPrimaryAccount(ConsentLevel::kSignin));
-
   // Update with a valid token.
   SetRefreshTokenForAccount(identity_manager(), account.account_id, "");
   ExpectUnconsentedPrimaryAccountSetEvent(account);
   EXPECT_EQ(identity_manager()->GetPrimaryAccountInfo(ConsentLevel::kSignin),
             account);
+#endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)
 }
 
 TEST_F(
@@ -234,6 +246,8 @@ TEST_F(SigninManagerTest, UnconsentedPrimaryAccountNotChangedOnSignout) {
   EXPECT_EQ(account, event.GetCurrentState().primary_account);
 }
 
+// Lacros does not use the cookies to compute the primary account.
+#if !BUILDFLAG(IS_CHROMEOS_LACROS)
 TEST_F(SigninManagerTest,
        UnconsentedPrimaryAccountTokenRevokedWithStaleCookies) {
   // Prerequisite: add an unconsented primary account, incl. proper cookies.
@@ -278,6 +292,7 @@ TEST_F(SigninManagerTest,
   EXPECT_FALSE(identity_manager()->HasPrimaryAccount(ConsentLevel::kSignin));
   ExpectUnconsentedPrimaryAccountClearedEvent(main_account);
 }
+#endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)
 
 TEST_F(SigninManagerTest, UnconsentedPrimaryAccountDuringLoad) {
   // Pre-requisite: Add two accounts with cookies.
@@ -316,6 +331,10 @@ TEST_F(SigninManagerTest, UnconsentedPrimaryAccountDuringLoad) {
             identity_manager()->GetPrimaryAccountInfo(ConsentLevel::kSignin));
   EXPECT_TRUE(observer().events().empty());
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // Assert secondary profile.
+  ASSERT_FALSE(client_.GetInitialPrimaryAccount().has_value());
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
   // Finish the token load should clear the primary account as the token of the
   // primary account was revoked.
   identity_test_env()->ReloadAccountsFromDisk();
@@ -360,10 +379,20 @@ TEST_F(SigninManagerTest,
       identity_manager()->HasPrimaryAccount(signin::ConsentLevel::kSync));
   EXPECT_FALSE(identity_manager()->HasPrimaryAccount(ConsentLevel::kSync));
   EXPECT_TRUE(identity_manager()->HasPrimaryAccount(ConsentLevel::kSignin));
-  EXPECT_EQ(first_account,
-            identity_manager()->GetPrimaryAccountInfo(ConsentLevel::kSignin));
+  EXPECT_EQ(
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+      // On Lacros, the UPA does not change on sync consent revoked.
+      second_account,
+#else
+      first_account,
+#endif
+      identity_manager()->GetPrimaryAccountInfo(ConsentLevel::kSignin));
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  EXPECT_EQ(1U, observer().events().size());
+#else
   EXPECT_EQ(2U, observer().events().size());
+#endif
   event = observer().events()[0];
   EXPECT_EQ(PrimaryAccountChangeEvent::Type::kCleared,
             event.GetEventTypeFor(ConsentLevel::kSync));
@@ -372,6 +401,7 @@ TEST_F(SigninManagerTest,
   EXPECT_EQ(second_account, event.GetPreviousState().primary_account);
   EXPECT_EQ(second_account, event.GetCurrentState().primary_account);
 
+#if !BUILDFLAG(IS_CHROMEOS_LACROS)
   event = observer().events()[1];
   EXPECT_EQ(PrimaryAccountChangeEvent::Type::kNone,
             event.GetEventTypeFor(ConsentLevel::kSync));
@@ -379,6 +409,7 @@ TEST_F(SigninManagerTest,
             event.GetEventTypeFor(ConsentLevel::kSignin));
   EXPECT_EQ(second_account, event.GetPreviousState().primary_account);
   EXPECT_EQ(first_account, event.GetCurrentState().primary_account);
+#endif
 }
 
 TEST_F(SigninManagerTest, ClearPrimaryAccountAndSignOut) {
@@ -398,6 +429,8 @@ TEST_F(SigninManagerTest, ClearPrimaryAccountAndSignOut) {
   EXPECT_TRUE(event.GetCurrentState().primary_account.IsEmpty());
 }
 
+// Disabling `kSigninAllowed` is not supported on Lacros.
+#if !BUILDFLAG(IS_CHROMEOS_LACROS)
 TEST_F(SigninManagerTest,
        UnconsentedPrimaryAccountClearedWhenSigninDisallowed) {
   // Prerequisite: add an unconsented primary account.
@@ -417,5 +450,6 @@ TEST_F(SigninManagerTest,
   EXPECT_EQ(account, event.GetPreviousState().primary_account);
   EXPECT_TRUE(event.GetCurrentState().primary_account.IsEmpty());
 }
+#endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)
 
 }  // namespace signin

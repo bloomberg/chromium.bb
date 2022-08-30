@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+#include <algorithm>
 #include <initializer_list>
 #include <vector>
 
@@ -64,7 +65,8 @@ class MultinomialOpModel : public SingleOpModel {
   MultinomialOpModel(InputType input_type,
                      const std::initializer_list<float>& logits,
                      int num_batches, int num_classes, int num_samples,
-                     int32_t seed = 0, int32_t seed2 = 0) {
+                     int32_t seed = 0, int32_t seed2 = 0,
+                     tflite::TensorType output_type = TensorType_INT64) {
     bool is_input_const = (input_type == InputType::kConst);
     auto logits_shape = {num_batches, num_classes};
     if (is_input_const) {
@@ -73,7 +75,7 @@ class MultinomialOpModel : public SingleOpModel {
       logits_ = AddInput({TensorType_FLOAT32, logits_shape});
     }
     num_samples_ = AddConstInput(TensorType_INT32, {num_samples}, {});
-    output_ = AddOutput({TensorType_INT64, {}});
+    output_ = AddOutput({output_type, {}});
     SetBuiltinOp(BuiltinOperator_MULTINOMIAL, BuiltinOptions_RandomOptions,
                  CreateRandomOptions(builder_, seed, seed2).Union());
     BuildInterpreter({GetShape(logits_), GetShape(num_samples_)});
@@ -86,6 +88,9 @@ class MultinomialOpModel : public SingleOpModel {
   int num_samples() { return num_samples_; }
   int output() { return output_; }
   std::vector<int64_t> GetOutput() { return ExtractVector<int64_t>(output_); }
+  std::vector<int32_t> GetInt32Output() {
+    return ExtractVector<int32_t>(output_);
+  }
 
  private:
   int logits_;
@@ -104,20 +109,20 @@ TEST_P(TestSuite, NonDeterministicOutputWithSeedsEqualToZero)
 
   RandomOpModel m1(op_code, input_type,
                    /*shape=*/{100, 50, 5}, /*seed=*/0, /*seed2=*/0);
-  m1.Invoke();
+  ASSERT_EQ(m1.Invoke(), kTfLiteOk);
   std::vector<float> output1a = m1.GetOutput();
   EXPECT_EQ(output1a.size(), 100 * 50 * 5);
-  m1.Invoke();
+  ASSERT_EQ(m1.Invoke(), kTfLiteOk);
   std::vector<float> output1b = m1.GetOutput();
   // Verify that consecutive outputs are different.
   EXPECT_NE(output1a, output1b);
 
   RandomOpModel m2(op_code, input_type,
                    /*shape=*/{100, 50, 5}, /*seed=*/0, /*seed2=*/0);
-  m2.Invoke();
+  ASSERT_EQ(m2.Invoke(), kTfLiteOk);
   std::vector<float> output2a = m2.GetOutput();
   EXPECT_EQ(output2a.size(), 100 * 50 * 5);
-  m2.Invoke();
+  ASSERT_EQ(m2.Invoke(), kTfLiteOk);
   std::vector<float> output2b = m2.GetOutput();
   // Verify that consecutive outputs are different.
   EXPECT_NE(output2a, output2b);
@@ -133,20 +138,20 @@ TEST_P(TestSuite, DeterministicOutputWithNonZeroSeeds) {
 
   RandomOpModel m1(op_code, input_type, /*shape=*/{100, 50, 5},
                    /*seed=*/1234, /*seed2=*/5678);
-  m1.Invoke();
+  ASSERT_EQ(m1.Invoke(), kTfLiteOk);
   std::vector<float> output1a = m1.GetOutput();
   EXPECT_EQ(output1a.size(), 100 * 50 * 5);
-  m1.Invoke();
+  ASSERT_EQ(m1.Invoke(), kTfLiteOk);
   std::vector<float> output1b = m1.GetOutput();
   // Verify that consecutive outputs are different.
   EXPECT_NE(output1a, output1b);
 
   RandomOpModel m2(op_code, input_type, /*shape=*/{100, 50, 5},
                    /*seed=*/1234, /*seed2=*/5678);
-  m2.Invoke();
+  ASSERT_EQ(m2.Invoke(), kTfLiteOk);
   std::vector<float> output2a = m2.GetOutput();
   EXPECT_EQ(output2a.size(), 100 * 50 * 5);
-  m2.Invoke();
+  ASSERT_EQ(m2.Invoke(), kTfLiteOk);
   std::vector<float> output2b = m2.GetOutput();
   // Verify that consecutive outputs are different.
   EXPECT_NE(output2a, output2b);
@@ -182,7 +187,7 @@ TEST(RandomUniformOpTest, OutputMeanAndVariance) {
   const std::vector<float> output_data(100 * 50 * 5,
                                        std::numeric_limits<float>::infinity());
   m.PopulateTensor(m.output(), output_data);
-  m.Invoke();
+  ASSERT_EQ(m.Invoke(), kTfLiteOk);
   auto output = m.GetOutput();
   EXPECT_EQ(output.size(), 100 * 50 * 5);
 
@@ -217,7 +222,7 @@ TEST(RandomStandardNormalOpTest, OutputMeanAndVariance) {
   const std::vector<float> output_data(100 * 50 * 5,
                                        std::numeric_limits<float>::infinity());
   m.PopulateTensor(m.output(), output_data);
-  m.Invoke();
+  ASSERT_EQ(m.Invoke(), kTfLiteOk);
   auto output = m.GetOutput();
   EXPECT_EQ(output.size(), 100 * 50 * 5);
 
@@ -248,23 +253,23 @@ TEST_P(MultinomialOpTestSuite, NonDeterministicOutputWithSeedsEqualToZero) {
   const std::initializer_list<float> kLogits = {log(0.3f), log(0.7f)};
   const int kNumBatches = 1;
   const int kNumClasses = 2;
-  const int kNumSamples = 10;
+  const int kNumSamples = 30;
   MultinomialOpModel m1(GetParam(), kLogits, kNumBatches, kNumClasses,
                         kNumSamples, /*seed=*/0, /*seed2=*/0);
-  m1.Invoke();
+  ASSERT_EQ(m1.Invoke(), kTfLiteOk);
   std::vector<int64_t> output1a = m1.GetOutput();
   EXPECT_EQ(output1a.size(), kNumSamples);
-  m1.Invoke();
+  ASSERT_EQ(m1.Invoke(), kTfLiteOk);
   std::vector<int64_t> output1b = m1.GetOutput();
   // Verify that consecutive outputs are different.
   EXPECT_NE(output1a, output1b);
 
   MultinomialOpModel m2(GetParam(), kLogits, kNumBatches, kNumClasses,
                         kNumSamples, /*seed=*/0, /*seed2=*/0);
-  m2.Invoke();
+  ASSERT_EQ(m2.Invoke(), kTfLiteOk);
   std::vector<int64_t> output2a = m2.GetOutput();
   EXPECT_EQ(output2a.size(), kNumSamples);
-  m2.Invoke();
+  ASSERT_EQ(m2.Invoke(), kTfLiteOk);
   std::vector<int64_t> output2b = m2.GetOutput();
   // Verify that consecutive outputs are different.
   EXPECT_NE(output2a, output2b);
@@ -281,10 +286,10 @@ TEST_P(MultinomialOpTestSuite, DeterministicOutputWithNonZeroSeeds) {
   const int kNumSamples = 30;
   MultinomialOpModel m1(GetParam(), kLogits, kNumBatches, kNumClasses,
                         kNumSamples, /*seed=*/123, /*seed2=*/456);
-  m1.Invoke();
+  ASSERT_EQ(m1.Invoke(), kTfLiteOk);
   std::vector<int64_t> output1a = m1.GetOutput();
   EXPECT_EQ(output1a.size(), kNumBatches * kNumSamples);
-  m1.Invoke();
+  ASSERT_EQ(m1.Invoke(), kTfLiteOk);
   std::vector<int64_t> output1b = m1.GetOutput();
   EXPECT_EQ(output1b.size(), kNumBatches * kNumSamples);
   // Verify that consecutive outputs are different.
@@ -292,10 +297,10 @@ TEST_P(MultinomialOpTestSuite, DeterministicOutputWithNonZeroSeeds) {
 
   MultinomialOpModel m2(GetParam(), kLogits, kNumBatches, kNumClasses,
                         kNumSamples, /*seed=*/123, /*seed2=*/456);
-  m2.Invoke();
+  ASSERT_EQ(m2.Invoke(), kTfLiteOk);
   std::vector<int64_t> output2a = m2.GetOutput();
   EXPECT_EQ(output2a.size(), kNumBatches * kNumSamples);
-  m2.Invoke();
+  ASSERT_EQ(m2.Invoke(), kTfLiteOk);
   std::vector<int64_t> output2b = m2.GetOutput();
   EXPECT_EQ(output2b.size(), kNumBatches * kNumSamples);
   // Verify that consecutive outputs are different.
@@ -316,16 +321,17 @@ INSTANTIATE_TEST_SUITE_P(
       return name;
     });
 
-TEST(MultinomialTest, ValidateTFLiteOutputisTheSameAsTFOutput_2Classes) {
+TEST(MultinomialTest, ValidateTFLiteOutputisTheSameAsTFOutput_OutputTypeInt32) {
   const std::initializer_list<float> kLogits = {-1.2039728, -0.35667497};
   const int kNumBatches = 1;
   const int kNumClasses = 2;
   const int kNumSamples = 10;
 
   MultinomialOpModel m(/*input_type=*/InputType::kConst, kLogits, kNumBatches,
-                       kNumClasses, kNumSamples, /*seed=*/1234, /*seed2=*/5678);
+                       kNumClasses, kNumSamples, /*seed=*/1234, /*seed2=*/5678,
+                       TensorType_INT32);
 
-  const std::vector<std::vector<int64_t>> expected_outputs = {
+  const std::vector<std::vector<int32_t>> expected_outputs = {
       {1, 0, 1, 0, 1, 1, 1, 1, 1, 1},
       {1, 1, 1, 0, 1, 1, 0, 0, 0, 1},
       {0, 1, 1, 0, 1, 1, 1, 1, 0, 1},
@@ -333,14 +339,14 @@ TEST(MultinomialTest, ValidateTFLiteOutputisTheSameAsTFOutput_2Classes) {
 
   // Validate output.
   for (int i = 0; i < expected_outputs.size(); i++) {
-    m.Invoke();
-    auto output = m.GetOutput();
+    ASSERT_EQ(m.Invoke(), kTfLiteOk);
+    auto output = m.GetInt32Output();
     EXPECT_EQ(output.size(), kNumBatches * kNumSamples);
     EXPECT_EQ(expected_outputs[i], output);
   }
 }
 
-TEST(MultinomialTest, ValidateTFLiteOutputisTheSameAsTFOutput_3Classes) {
+TEST(MultinomialTest, ValidateTFLiteOutputisTheSameAsTFOutput) {
   const std::initializer_list<float> kLogits = {-1.609438, -1.2039728,
                                                 -0.6931472};
   const int kNumBatches = 1;
@@ -359,14 +365,15 @@ TEST(MultinomialTest, ValidateTFLiteOutputisTheSameAsTFOutput_3Classes) {
 
   // Validate output.
   for (int i = 0; i < expected_outputs.size(); i++) {
-    m.Invoke();
+    ASSERT_EQ(m.Invoke(), kTfLiteOk);
     auto output = m.GetOutput();
     EXPECT_EQ(output.size(), kNumBatches * kNumSamples);
     EXPECT_EQ(expected_outputs[i], output);
   }
 }
 
-TEST(MultinomialTest, ValidateTFLiteOutputisTheSameAsTFOutput_MultiBatch) {
+TEST(MultinomialTest,
+     ValidateTFLiteOutputisTheSameAsTFOutput_MultiBatchMultiInvoke) {
   const std::vector<float> kProb = {0.1f, 0.2f, 0.7f, 0.2f, 0.3f,
                                     0.5f, 0.1f, 0.1f, 0.8f};
   const std::initializer_list<float> kLogits = {
@@ -374,25 +381,29 @@ TEST(MultinomialTest, ValidateTFLiteOutputisTheSameAsTFOutput_MultiBatch) {
       log(0.5f), log(0.1f), log(0.1f), log(0.8f)};
   const int kNumBatches = 3;
   const int kNumClasses = 3;
-  const int kNumSamples = 30;
+  const int kNumSamples = 10;
 
   MultinomialOpModel m(/*input_type=*/InputType::kConst, kLogits, kNumBatches,
                        kNumClasses, kNumSamples, /*seed=*/1234, /*seed2=*/5678);
-  m.Invoke();
-  auto output = m.GetOutput();
-  EXPECT_EQ(output.size(), kNumBatches * kNumSamples);
 
-  const std::vector<int64_t> expected_output = {
-      {2, 1, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1,
-       2, 2, 1, 2, 2, 2, 2, 0, 1, 2, 1, 2, 2, 2, 0, 1, 1, 2, 0, 0, 0, 2, 1,
-       2, 2, 2, 0, 2, 1, 2, 1, 2, 0, 2, 1, 0, 1, 2, 2, 2, 0, 2, 0, 2, 2, 2,
-       2, 2, 2, 2, 0, 0, 2, 2, 2, 2, 1, 1, 0, 1, 2, 2, 2, 2, 2, 2, 2}};
+  const std::vector<std::vector<int64_t>> expected_output = {
+      {2, 1, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 0, 2, 2,
+       2, 2, 1, 1, 2, 2, 2, 1, 2, 2, 1, 2, 2, 2, 2},
+      {2, 2, 2, 0, 2, 1, 0, 0, 2, 0, 2, 0, 2, 1, 2,
+       2, 0, 0, 2, 2, 2, 2, 2, 2, 1, 2, 1, 1, 2, 2},
+      {2, 0, 0, 0, 1, 2, 1, 2, 0, 0, 2, 2, 2, 2, 0,
+       2, 1, 2, 2, 1, 2, 2, 1, 2, 2, 2, 1, 2, 2, 2}};
 
   // Validate output.
-  EXPECT_EQ(expected_output, output);
+  for (int i = 0; i < 3; i++) {
+    ASSERT_EQ(m.Invoke(), kTfLiteOk);
+    auto output = m.GetOutput();
+    EXPECT_EQ(output.size(), kNumBatches * kNumSamples);
+    EXPECT_EQ(expected_output[i], output);
+  }
 }
 
-TEST(MultinomialTest, ValidateMultiBatchOutput) {
+TEST(MultinomialTest, ValidateClassProbabilities) {
   const std::vector<float> kProb = {0.1f, 0.9f, 0.2f, 0.8f, 0.3f,
                                     0.7f, 0.4f, 0.6f, 0.5f, 0.5f};
   const std::initializer_list<float> kLogits = {
@@ -404,7 +415,7 @@ TEST(MultinomialTest, ValidateMultiBatchOutput) {
 
   MultinomialOpModel m(/*input_type=*/InputType::kConst, kLogits, kNumBatches,
                        kNumClasses, kNumSamples, /*seed=*/1234, /*seed2=*/5678);
-  m.Invoke();
+  ASSERT_EQ(m.Invoke(), kTfLiteOk);
   auto output = m.GetOutput();
   EXPECT_EQ(output.size(), kNumBatches * kNumSamples);
 
@@ -434,7 +445,7 @@ TEST(MultinomialTest, ValidatePreciseOutput) {
 
   MultinomialOpModel m(/*input_type=*/InputType::kConst, kLogits, kNumBatches,
                        kNumClasses, kNumSamples, /*seed=*/1234, /*seed2=*/5678);
-  m.Invoke();
+  ASSERT_EQ(m.Invoke(), kTfLiteOk);
   auto output = m.GetOutput();
   EXPECT_EQ(output.size(), kNumBatches * kNumSamples);
 
