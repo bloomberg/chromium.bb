@@ -29,7 +29,6 @@ namespace vk {
 
 class Image;
 class ImageView;
-class Buffer;
 
 }  // namespace vk
 
@@ -146,7 +145,7 @@ public:
 
 	void blit(const vk::Image *src, vk::Image *dst, VkImageBlit2KHR region, VkFilter filter);
 	void resolve(const vk::Image *src, vk::Image *dst, VkImageResolve2KHR region);
-	void resolveDepthStencil(const vk::ImageView *src, vk::ImageView *dst, const VkSubpassDescriptionDepthStencilResolve &dsrDesc);
+	void resolveDepthStencil(const vk::ImageView *src, vk::ImageView *dst, VkResolveModeFlagBits depthResolveMode, VkResolveModeFlagBits stencilResolveMode);
 	void copy(const vk::Image *src, uint8_t *dst, unsigned int dstPitch);
 
 	void updateBorders(const vk::Image *image, const VkImageSubresource &subresource);
@@ -170,8 +169,6 @@ private:
 	static void ApplyScaleAndClamp(Float4 &value, const State &state, bool preScaled = false);
 	static Int ComputeOffset(Int &x, Int &y, Int &pitchB, int bytes);
 	static Int ComputeOffset(Int &x, Int &y, Int &z, Int &sliceB, Int &pitchB, int bytes);
-	static Float4 LinearToSRGB(const Float4 &color);
-	static Float4 sRGBtoLinear(const Float4 &color);
 
 	using BlitFunction = FunctionT<void(const BlitData *)>;
 	using BlitRoutineType = BlitFunction::RoutineType;

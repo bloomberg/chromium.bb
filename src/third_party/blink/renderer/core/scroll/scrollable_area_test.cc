@@ -13,7 +13,6 @@
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme_overlay_mock.h"
 #include "third_party/blink/renderer/core/testing/scoped_mock_overlay_scrollbars.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
-#include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
 #include "third_party/blink/renderer/platform/testing/paint_test_configurations.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
@@ -156,23 +155,6 @@ TEST_P(ScrollableAreaTest, InvalidatesNonCompositedScrollbarsWhenThumbMoves) {
   ThreadState::Current()->CollectAllGarbageForTesting();
 }
 
-TEST_P(ScrollableAreaTest, RecalculatesScrollbarOverlayIfBackgroundChanges) {
-  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
-      platform;
-
-  MockScrollableArea* scrollable_area =
-      MockScrollableArea::Create(ScrollOffset(0, 100));
-
-  EXPECT_EQ(kScrollbarOverlayColorThemeDark,
-            scrollable_area->GetScrollbarOverlayColorTheme());
-  scrollable_area->RecalculateScrollbarOverlayColorTheme(Color(34, 85, 51));
-  EXPECT_EQ(kScrollbarOverlayColorThemeLight,
-            scrollable_area->GetScrollbarOverlayColorTheme());
-  scrollable_area->RecalculateScrollbarOverlayColorTheme(Color(236, 143, 185));
-  EXPECT_EQ(kScrollbarOverlayColorThemeDark,
-            scrollable_area->GetScrollbarOverlayColorTheme());
-}
-
 TEST_P(ScrollableAreaTest, ScrollableAreaDidScroll) {
   ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
       platform;
@@ -310,6 +292,30 @@ TEST_P(ScrollableAreaTest, ScrollAnimatorCallbackFiresOnAnimationFinish) {
   EXPECT_FALSE(finished);
   scrollable_area->ServiceScrollAnimations(1000000);
   EXPECT_EQ(9.0, scrollable_area->GetScrollAnimator().CurrentOffset().y());
+  EXPECT_TRUE(finished);
+}
+
+TEST_P(ScrollableAreaTest, ScrollBackToInitialPosition) {
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
+      platform;
+
+  MockScrollableArea* scrollable_area =
+      MockScrollableArea::Create(ScrollOffset(0, 100));
+  EXPECT_CALL(*scrollable_area, ScheduleAnimation())
+      .WillRepeatedly(Return(true));
+  bool finished = false;
+  scrollable_area->SetScrollOffset(
+      ScrollOffset(0, 50), mojom::blink::ScrollType::kProgrammatic,
+      mojom::blink::ScrollBehavior::kSmooth,
+      ScrollableArea::ScrollCallback(
+          base::BindOnce([](bool* finished) { *finished = true; }, &finished)));
+  scrollable_area->SetScrollOffset(ScrollOffset(0, 0),
+                                   mojom::blink::ScrollType::kProgrammatic,
+                                   mojom::blink::ScrollBehavior::kSmooth);
+  scrollable_area->UpdateCompositorScrollAnimations();
+  scrollable_area->ServiceScrollAnimations(1);
+  scrollable_area->ServiceScrollAnimations(1000000);
+  EXPECT_EQ(0, scrollable_area->GetScrollOffset().y());
   EXPECT_TRUE(finished);
 }
 

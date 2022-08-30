@@ -12,11 +12,16 @@
 #include "chrome/browser/predictors/autocomplete_action_predictor_factory.h"
 #include "chrome/browser/predictors/loading_predictor.h"
 #include "chrome/browser/predictors/loading_predictor_factory.h"
+#include "chrome/browser/prefetch/search_prefetch/search_prefetch_service.h"
+#include "chrome/browser/prefetch/search_prefetch/search_prefetch_service_factory.h"
+#include "chrome/browser/prerender/prerender_manager.h"
+#include "chrome/browser/prerender/prerender_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/ui/android/omnibox/jni_headers/OmniboxPrerender_jni.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_result.h"
+#include "components/omnibox/browser/base_search_provider.h"
 #include "content/public/browser/web_contents.h"
 #include "url/gurl.h"
 
@@ -85,6 +90,13 @@ void OmniboxPrerender::PrerenderMaybe(
   if (!profile)
     return;
 
+  // TODO(https://crbug.com/1310147): Consider how to co-work with preconnect.
+  if (SearchPrefetchService* search_prefetch_service =
+          SearchPrefetchServiceFactory::GetForProfile(profile)) {
+    search_prefetch_service->OnResultChanged(web_contents,
+                                             *autocomplete_result);
+  }
+
   auto* default_match = autocomplete_result->default_match();
   if (!default_match)
     return;
@@ -129,6 +141,13 @@ void OmniboxPrerender::DoPrerender(const AutocompleteMatch& match,
   DCHECK(web_contents);
   if (!web_contents)
     return;
+
+  // AutocompleteActionPredictor does not perform prerendering for search
+  // AutocompleteMatches. See `AutocompleteActionPredictor::RecommendAction` for
+  // more information.
+  // SearchPrefetchService is responsible for handling search
+  // AutocompleteMatches and preloading search result pages when needed.
+  DCHECK(!AutocompleteMatch::IsSearchType(match.type));
   gfx::Rect container_bounds = web_contents->GetContainerBounds();
   predictors::AutocompleteActionPredictorFactory::GetForProfile(profile)
       ->StartPrerendering(match.destination_url, *web_contents,

@@ -11,7 +11,6 @@ import android.graphics.drawable.Drawable;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 
-import androidx.annotation.ColorInt;
 import androidx.core.graphics.drawable.RoundedBitmapDrawable;
 
 import org.chromium.chrome.browser.gsa.GSAState;
@@ -27,7 +26,7 @@ import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
-import org.chromium.components.browser_ui.styles.ChromeColors;
+import org.chromium.chrome.browser.ui.theme.BrandedColorScheme;
 import org.chromium.components.externalauth.ExternalAuthUtils;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.ui.base.ViewUtils;
@@ -103,10 +102,8 @@ class SearchBoxMediator
         Drawable drawable = mAssistantVoiceSearchService.getCurrentMicDrawable();
         mModel.set(SearchBoxProperties.VOICE_SEARCH_DRAWABLE, drawable);
 
-        final @ColorInt int primaryColor =
-                ChromeColors.getDefaultThemeColor(mContext, false /* forceDarkBgColor= */);
-        ColorStateList colorStateList =
-                mAssistantVoiceSearchService.getButtonColorStateList(primaryColor, mContext);
+        ColorStateList colorStateList = mAssistantVoiceSearchService.getButtonColorStateList(
+                BrandedColorScheme.APP_DEFAULT, mContext);
         mModel.set(SearchBoxProperties.VOICE_SEARCH_COLOR_STATE_LIST, colorStateList);
     }
 
@@ -166,6 +163,34 @@ class SearchBoxMediator
             @LensEntryPoint int lensEntryPoint, boolean isIncognito, boolean isTablet) {
         return LensController.getInstance().isLensEnabled(
                 new LensQueryParams.Builder(lensEntryPoint, isIncognito, isTablet).build());
+    }
+
+    void setHeight(int height) {
+        mModel.set(SearchBoxProperties.SEARCH_BOX_HEIGHT, height);
+    }
+
+    void setTopMargin(int topMargin) {
+        mModel.set(SearchBoxProperties.SEARCH_BOX_TOP_MARGIN, topMargin);
+    }
+
+    void setEndPadding(int endPadding) {
+        mModel.set(SearchBoxProperties.SEARCH_BOX_END_PADDING, endPadding);
+    }
+
+    void setTextViewTranslationX(float translationX) {
+        mModel.set(SearchBoxProperties.SEARCH_TEXT_TRANSLATION_X, translationX);
+    }
+
+    void setButtonsHeight(int height) {
+        mModel.set(SearchBoxProperties.BUTTONS_HEIGHT, height);
+    }
+
+    void setButtonsWidth(int width) {
+        mModel.set(SearchBoxProperties.BUTTONS_WIDTH, width);
+    }
+
+    void setLensButtonLeftMargin(int leftMargin) {
+        mModel.set(SearchBoxProperties.LENS_BUTTON_LEFT_MARGIN, leftMargin);
     }
 
     private Drawable getRoundedDrawable(Bitmap bitmap) {

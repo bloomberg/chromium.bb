@@ -17,6 +17,7 @@ from dashboard import update_bug_with_results
 from dashboard.common import utils
 from dashboard.services import issue_tracker_service
 from dashboard.models import histogram
+from dashboard.models import anomaly
 from dashboard.pinpoint.models import job_state
 from dashboard.pinpoint.models.change import commit as commit_module
 from dashboard.pinpoint.models.change import patch as patch_module
@@ -157,13 +158,13 @@ class DifferencesFoundBugUpdateBuilder(object):
     self._differences.append(_Difference(kind, commit_dict, values_a, values_b))
     self._cached_ordered_diffs_by_delta = None
 
-  def BuildUpdate(self, tags, url):
+  def BuildUpdate(self, tags, url, improvement_dir):
     """Return _BugUpdateInfo for the differences."""
     if len(self._differences) == 0:
       raise ValueError("BuildUpdate called with 0 differences")
-    differences = self._OrderedDifferencesByDelta()
+    differences = self._OrderedDifferencesByDelta(improvement_dir)
     missing_values = self._DifferencesWithNoValues()
-    owner, cc_list, notify_why_text = self._PeopleToNotify()
+    owner, cc_list, notify_why_text = self._PeopleToNotify(improvement_dir)
     status = None
 
     # Here we're only going to consider the cases where we find differences
@@ -207,7 +208,7 @@ class DifferencesFoundBugUpdateBuilder(object):
           self._differences[0].commit_info.get('git_hash'))
     return commit_cache_key
 
-  def _OrderedDifferencesByDelta(self):
+  def _OrderedDifferencesByDelta(self, improvement_dir):
     """Return the list of differences sorted by absolute change."""
     if self._cached_ordered_diffs_by_delta is not None:
       return self._cached_ordered_diffs_by_delta
@@ -215,10 +216,21 @@ class DifferencesFoundBugUpdateBuilder(object):
     diffs_with_deltas = [(diff.MeanDelta(), diff)
                          for diff in self._differences
                          if diff.values_a and diff.values_b]
-    ordered_diffs = [
-        diff for _, diff in sorted(
-            diffs_with_deltas, key=lambda i: abs(i[0]), reverse=True)
-    ]
+    if improvement_dir == anomaly.UP:
+      # improvement is positive, regression is negative
+      ordered_diffs = [
+          diff for _, diff in sorted(diffs_with_deltas, key=lambda i: i[0])
+      ]
+    elif improvement_dir == anomaly.DOWN:
+      ordered_diffs = [
+          diff for _, diff in sorted(
+              diffs_with_deltas, key=lambda i: i[0], reverse=True)
+      ]
+    else:
+      ordered_diffs = [
+          diff for _, diff in sorted(
+              diffs_with_deltas, key=lambda i: abs(i[0]), reverse=True)
+      ]
     self._cached_ordered_diffs_by_delta = ordered_diffs
     return ordered_diffs
 
@@ -233,7 +245,7 @@ class DifferencesFoundBugUpdateBuilder(object):
     ]
     return self._cached_commits_with_no_values
 
-  def _PeopleToNotify(self):
+  def _PeopleToNotify(self, improvement_dir):
     """Return the people to notify for these differences.
 
     This looks at the top commits (by absolute change), and returns a tuple of:
@@ -242,7 +254,8 @@ class DifferencesFoundBugUpdateBuilder(object):
       * why_text (str, text explaining why this owner was chosen)
     """
     ordered_commits = [
-        diff.commit_info for diff in self._OrderedDifferencesByDelta()
+        diff.commit_info
+        for diff in self._OrderedDifferencesByDelta(improvement_dir)
     ] + [diff.commit_info for diff in self._DifferencesWithNoValues()]
 
     # CC the folks in the top N commits.  N is scaled by the number of commits
@@ -385,11 +398,12 @@ def _FormatDocumentationUrls(tags):
   return footer
 
 
-def UpdatePostAndMergeDeferred(bug_update_builder, bug_id, tags, url, project):
+def UpdatePostAndMergeDeferred(bug_update_builder, bug_id, tags, url, project,
+                               improvement_dir):
   if not bug_id:
     return
   commit_cache_key = bug_update_builder.GenerateCommitCacheKey()
-  bug_update = bug_update_builder.BuildUpdate(tags, url)
+  bug_update = bug_update_builder.BuildUpdate(tags, url, improvement_dir)
   issue_tracker = issue_tracker_service.IssueTrackerService(
       utils.ServiceAccountHttp())
   merge_details, cc_list = _ComputePostMergeDetails(

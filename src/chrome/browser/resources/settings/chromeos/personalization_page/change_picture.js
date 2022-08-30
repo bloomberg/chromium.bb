@@ -7,132 +7,161 @@
  * 'settings-change-picture' is the settings subpage containing controls to
  * edit a ChromeOS user's picture.
  */
-import '//resources/cr_elements/chromeos/cr_picture/cr_picture_list.js';
-import '//resources/cr_elements/chromeos/cr_picture/cr_picture_pane.js';
+import 'chrome://resources/cr_elements/chromeos/cr_picture/cr_picture_list.js';
+import 'chrome://resources/cr_elements/chromeos/cr_picture/cr_picture_pane.js';
 import '../../settings_shared_css.js';
 
-import {CrPicture} from '//resources/cr_elements/chromeos/cr_picture/cr_picture_types.js';
-import {convertImageSequenceToPng, isEncodedPngDataUrlAnimated} from '//resources/cr_elements/chromeos/cr_picture/png.js';
-import {assert, assertNotReached} from '//resources/js/assert.m.js';
-import {I18nBehavior} from '//resources/js/i18n_behavior.m.js';
-import {WebUIListenerBehavior} from '//resources/js/web_ui_listener_behavior.m.js';
-import {IronA11yAnnouncer} from '//resources/polymer/v3_0/iron-a11y-announcer/iron-a11y-announcer.js';
-import {afterNextRender, flush, html, Polymer, TemplateInstanceBase, Templatizer} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {CrPicture} from 'chrome://resources/cr_elements/chromeos/cr_picture/cr_picture_types.js';
+import {isEncodedPngDataUrlAnimated} from 'chrome://resources/cr_elements/chromeos/cr_picture/png.js';
+import {getInstance as getAnnouncerInstance} from 'chrome://resources/cr_elements/cr_a11y_announcer/cr_a11y_announcer.js';
+import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
+import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/js/i18n_behavior.m.js';
+import {WebUIListenerBehavior, WebUIListenerBehaviorInterface} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
+import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {loadTimeData} from '../../i18n_setup.js';
-import {Route, Router} from '../../router.js';
-import {DeepLinkingBehavior} from '../deep_linking_behavior.m.js';
-import {recordClick, recordNavigation, recordPageBlur, recordPageFocus, recordSearch, recordSettingChange, setUserActionRecorderForTesting} from '../metrics_recorder.m.js';
-import {routes} from '../os_route.m.js';
-import {RouteObserverBehavior} from '../route_observer_behavior.js';
+import {DeepLinkingBehavior, DeepLinkingBehaviorInterface} from '../deep_linking_behavior.js';
+import {recordSettingChange} from '../metrics_recorder.js';
+import {routes} from '../os_route.js';
+import {RouteObserverBehavior, RouteObserverBehaviorInterface} from '../route_observer_behavior.js';
 
 import {ChangePictureBrowserProxy, ChangePictureBrowserProxyImpl, DefaultImage} from './change_picture_browser_proxy.js';
 
-Polymer({
-  _template: html`{__html_template__}`,
-  is: 'settings-change-picture',
+/**
+ * @constructor
+ * @extends {PolymerElement}
+ * @implements {DeepLinkingBehaviorInterface}
+ * @implements {RouteObserverBehaviorInterface}
+ * @implements {I18nBehaviorInterface}
+ * @implements {WebUIListenerBehaviorInterface}
+ */
+const SettingsChangePictureElementBase = mixinBehaviors(
+    [
+      DeepLinkingBehavior, RouteObserverBehavior, I18nBehavior,
+      WebUIListenerBehavior
+    ],
+    PolymerElement);
 
-  behaviors: [
-    DeepLinkingBehavior,
-    RouteObserverBehavior,
-    I18nBehavior,
-    WebUIListenerBehavior,
-  ],
+/** @polymer */
+class SettingsChangePictureElement extends SettingsChangePictureElementBase {
+  static get is() {
+    return 'settings-change-picture';
+  }
 
-  properties: {
-    /**
-     * True if the user has a plugged-in webcam.
-     * @private {boolean}
-     */
-    cameraPresent_: {
-      type: Boolean,
-      value: false,
-    },
+  static get template() {
+    return html`{__html_template__}`;
+  }
 
-    /**
-     * The currently selected item. This property is bound to the iron-selector
-     * and never directly assigned. This may be undefined momentarily as
-     * the selection changes due to iron-selector implementation details.
-     * @private {?CrPicture.ImageElement}
-     */
-    selectedItem_: {
-      type: Object,
-      value: null,
-    },
-
-    /**
-     * The current set of the default user images.
-     * @private {?Array<!DefaultImage>}
-     */
-    currentDefaultImages_: {
-      type: Object,
-      value: null,
-    },
-
-    /**
-     * True when camera video mode is enabled.
-     * @private {boolean}
-     */
-    cameraVideoModeEnabled_: {
-      type: Boolean,
-      value() {
-        return loadTimeData.getBoolean('changePictureVideoModeEnabled');
+  static get properties() {
+    return {
+      /**
+       * True if the user has a plugged-in webcam.
+       * @private {boolean}
+       */
+      cameraPresent_: {
+        type: Boolean,
+        value: false,
       },
-      readOnly: true,
-    },
 
-    /**
-     * Author info of the default image.
-     * @private {string}
-     */
-    authorInfo_: String,
+      /**
+       * The currently selected item. This property is bound to the
+       * iron-selector and never directly assigned. This may be undefined
+       * momentarily as the selection changes due to iron-selector
+       * implementation details.
+       * @private {?CrPicture.ImageElement}
+       */
+      selectedItem_: {
+        type: Object,
+        value: null,
+      },
 
-    /**
-     * Website info of the default image.
-     * @private {string}
-     */
-    websiteInfo_: String,
+      /**
+       * The current set of the default user images.
+       * @private {?Array<!DefaultImage>}
+       */
+      currentDefaultImages_: {
+        type: Object,
+        value: null,
+      },
 
-    /** @private */
-    oldImageLabel_: String,
+      /**
+       * True when camera video mode is enabled.
+       * @private {boolean}
+       */
+      cameraVideoModeEnabled_: {
+        type: Boolean,
+        value() {
+          return loadTimeData.getBoolean('changePictureVideoModeEnabled');
+        },
+        readOnly: true,
+      },
 
-    /**
-     * Used by DeepLinkingBehavior to focus this page's deep links.
-     * @type {!Set<!chromeos.settings.mojom.Setting>}
-     */
-    supportedSettingIds: {
-      type: Object,
-      value: () =>
-          new Set([chromeos.settings.mojom.Setting.kChangeDeviceAccountImage]),
-    },
-  },
+      /**
+       * Author info of the default image.
+       * @private {string}
+       */
+      authorInfo_: String,
 
-  listeners: {
-    'discard-image': 'onDiscardImage_',
-    'image-activate': 'onImageActivate_',
-    'focus-action': 'onFocusAction_',
-    'photo-taken': 'onPhotoTaken_',
-    'switch-mode': 'onSwitchMode_',
-  },
+      /**
+       * Website info of the default image.
+       * @private {string}
+       */
+      websiteInfo_: String,
 
-  /** @private {?ChangePictureBrowserProxy} */
-  browserProxy_: null,
+      /** @private */
+      oldImageLabel_: String,
 
-  /** @private {?CrPictureListElement} */
-  pictureList_: null,
+      /**
+       * Used by DeepLinkingBehavior to focus this page's deep links.
+       * @type {!Set<!chromeos.settings.mojom.Setting>}
+       */
+      supportedSettingIds: {
+        type: Object,
+        value: () => new Set(
+            [chromeos.settings.mojom.Setting.kChangeDeviceAccountImage]),
+      },
+    };
+  }
 
-  /** @private {boolean} */
-  oldImagePending_: false,
+  constructor() {
+    super();
+
+    /** @private {!ChangePictureBrowserProxy} */
+    this.browserProxy_ = ChangePictureBrowserProxyImpl.getInstance();
+
+    /** @private {?CrPictureListElement} */
+    this.pictureList_ = null;
+
+    /** @private {boolean} */
+    this.oldImagePending_ = false;
+  }
 
   /** @override */
   ready() {
-    this.browserProxy_ = ChangePictureBrowserProxyImpl.getInstance();
+    super.ready();
+
     this.pictureList_ =
         /** @type {CrPictureListElement} */ (this.$.pictureList);
-  },
+
+    this.addEventListener('discard-image', this.onDiscardImage_);
+    this.addEventListener('image-activate', (e) => {
+      this.onImageActivate_(
+          /** @type {!CustomEvent<!CrPicture.ImageElement>} */ (e));
+    });
+    this.addEventListener('focus-action', this.onFocusAction_);
+    this.addEventListener('photo-taken', (e) => {
+      this.onPhotoTaken_(
+          /** @type {!CustomEvent<{photoDataUrl: string}>} */ (e));
+    });
+    this.addEventListener('switch-mode', (e) => {
+      this.onSwitchMode_(/** @type {!CustomEvent<boolean>} */ (e));
+    });
+  }
 
   /** @override */
-  attached() {
+  connectedCallback() {
+    super.connectedCallback();
+
     this.addWebUIListener(
         'default-images-changed', this.receiveDefaultImages_.bind(this));
     this.addWebUIListener(
@@ -146,10 +175,7 @@ Polymer({
         'profile-image-changed', this.receiveProfileImage_.bind(this));
     this.addWebUIListener(
         'camera-presence-changed', this.receiveCameraPresence_.bind(this));
-
-    // Initialize the announcer once.
-    IronA11yAnnouncer.requestAvailability();
-  },
+  }
 
   /**
    * Overridden from DeepLinkingBehavior.
@@ -163,7 +189,7 @@ Polymer({
 
     this.pictureList_.setFocus();
     return false;
-  },
+  }
 
 
   /** @protected */
@@ -177,7 +203,7 @@ Polymer({
       // Ensure we deactivate the camera when we navigate away.
       this.selectedItem_ = null;
     }
-  },
+  }
 
   /**
    * Handler for the 'default-images-changed' event.
@@ -186,7 +212,7 @@ Polymer({
    */
   receiveDefaultImages_(info) {
     this.currentDefaultImages_ = info.current_default_images;
-  },
+  }
 
   /**
    * Handler for the 'selected-image-changed' event. Is only called with
@@ -196,7 +222,7 @@ Polymer({
    */
   receiveSelectedImage_(imageUrl) {
     this.pictureList_.setSelectedImageUrl(imageUrl);
-  },
+  }
 
   /**
    * Handler for the 'old-image-changed' event. The Old image is any selected
@@ -210,7 +236,7 @@ Polymer({
         isEncodedPngDataUrlAnimated(imageUrl) ? 'oldVideo' : 'oldPhoto');
     this.oldImagePending_ = false;
     this.pictureList_.setOldImageUrl(imageUrl);
-  },
+  }
 
   /**
    * Handler for the 'preview-deprecated-image' event.
@@ -226,7 +252,7 @@ Polymer({
         imageInfo.author ? this.i18n('authorCreditText', imageInfo.author) : '';
     this.websiteInfo_ = imageInfo.website;
     this.selectedItem_ = null;
-  },
+  }
 
   /**
    * Whether the source info should be shown.
@@ -237,7 +263,7 @@ Polymer({
    */
   shouldShowSourceInfo_(selectedItem, authorInfo, websiteInfo) {
     return !selectedItem && (authorInfo || websiteInfo);
-  },
+  }
 
   /**
    * Handler for the 'profile-image-changed' event.
@@ -247,7 +273,7 @@ Polymer({
    */
   receiveProfileImage_(imageUrl, selected) {
     this.pictureList_.setProfileImageUrl(imageUrl, selected);
-  },
+  }
 
   /**
    * Handler for the 'camera-presence-changed' event.
@@ -256,7 +282,7 @@ Polymer({
    */
   receiveCameraPresence_(cameraPresent) {
     this.cameraPresent_ = cameraPresent;
-  },
+  }
 
   /**
    * Selects an image element.
@@ -287,7 +313,7 @@ Polymer({
       default:
         assertNotReached('Selected unknown image type');
     }
-  },
+  }
 
   /**
    * Handler for when an image is activated.
@@ -296,12 +322,12 @@ Polymer({
    */
   onImageActivate_(event) {
     this.selectImage_(event.detail);
-  },
+  }
 
   /** Focus the action button in the picture pane. */
   onFocusAction_() {
     /** CrPicturePaneElement */ (this.$.picturePane).focusActionButton();
-  },
+  }
 
   /**
    * @param {!CustomEvent<{photoDataUrl: string}>} event
@@ -312,10 +338,9 @@ Polymer({
     this.browserProxy_.photoTaken(event.detail.photoDataUrl);
     this.pictureList_.setOldImageUrl(event.detail.photoDataUrl);
     this.pictureList_.setFocus();
-    this.fire(
-        'iron-announce',
-        {text: loadTimeData.getString('photoCaptureAccessibleText')});
-  },
+    getAnnouncerInstance().announce(
+        loadTimeData.getString('photoCaptureAccessibleText'));
+  }
 
   /**
    * @param {!CustomEvent<boolean>} event
@@ -323,11 +348,9 @@ Polymer({
    */
   onSwitchMode_(event) {
     const videomode = event.detail;
-    this.fire('iron-announce', {
-      text: this.i18n(
-          videomode ? 'videoModeAccessibleText' : 'photoModeAccessibleText')
-    });
-  },
+    getAnnouncerInstance().announce(this.i18n(
+        videomode ? 'videoModeAccessibleText' : 'photoModeAccessibleText'));
+  }
 
   /**
    * Callback the iron-a11y-keys "keys-pressed" event bubbles up from the
@@ -338,7 +361,7 @@ Polymer({
   onCameraPaneKeysPressed_(event) {
     this.$.pictureList.focus();
     this.$.pictureList.onKeysPressed(event);
-  },
+  }
 
   /** @private */
   onDiscardImage_() {
@@ -349,8 +372,14 @@ Polymer({
     this.pictureList_.setOldImageUrl(CrPicture.kDefaultImageUrl);
     // Revert to profile image as we don't know what last used default image is.
     this.browserProxy_.selectProfileImage();
-    this.fire('iron-announce', {text: this.i18n('photoDiscardAccessibleText')});
-  },
+
+    const event = new CustomEvent('iron-announce', {
+      bubbles: true,
+      composed: true,
+      detail: {text: this.i18n('photoDiscardAccessibleText')}
+    });
+    this.dispatchEvent(event);
+  }
 
   /**
    * @param {CrPicture.ImageElement} selectedItem
@@ -359,7 +388,7 @@ Polymer({
    */
   getImageSrc_(selectedItem) {
     return (selectedItem && selectedItem.dataset.url) || '';
-  },
+  }
 
   /**
    * @param {CrPicture.ImageElement} selectedItem
@@ -369,5 +398,8 @@ Polymer({
   getImageType_(selectedItem) {
     return (selectedItem && selectedItem.dataset.type) ||
         CrPicture.SelectionTypes.NONE;
-  },
-});
+  }
+}
+
+customElements.define(
+    SettingsChangePictureElement.is, SettingsChangePictureElement);

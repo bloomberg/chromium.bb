@@ -59,6 +59,7 @@ source_set("fxcrt") {
     "fx_stream.h",
     "fx_string.cpp",
     "fx_string.h",
+    "fx_string_wrappers.h",
     "fx_system.cpp",
     "fx_system.h",
     "fx_types.h",
@@ -98,7 +99,10 @@ source_set("fxcrt") {
     "xml/cfx_xmltext.cpp",
     "xml/cfx_xmltext.h",
   ]
-  configs += [ "../../:pdfium_strict_config" ]
+  configs += [
+    "../../:pdfium_strict_config",
+    "../../:pdfium_noshorten_config",
+  ]
   visibility = [
     "../*",
     "../../:*",
@@ -110,6 +114,7 @@ source_set("fxcrt") {
     "../../third_party:fx_agg",
     "../../third_party:fx_lcms2",
     "../../third_party:fx_libopenjpeg",
+    "../../third_party:fx_lpng",
     "../../third_party:fx_tiff",
     "../../xfa/*",
   ]
@@ -150,6 +155,7 @@ pdfium_unittest_source_set("unittests") {
     "byteorder_unittest.cpp",
     "bytestring_unittest.cpp",
     "cfx_bitstream_unittest.cpp",
+    "cfx_datetime_unittest.cpp",
     "cfx_seekablestreamproxy_unittest.cpp",
     "cfx_timer_unittest.cpp",
     "cfx_widetextbuf_unittest.cpp",
@@ -160,7 +166,9 @@ pdfium_unittest_source_set("unittests") {
     "fx_memory_wrappers_unittest.cpp",
     "fx_number_unittest.cpp",
     "fx_random_unittest.cpp",
+    "fx_safe_types_unittest.cpp",
     "fx_string_unittest.cpp",
+    "fx_string_wrappers_unittest.cpp",
     "fx_system_unittest.cpp",
     "mask_unittest.cpp",
     "maybe_owned_unittest.cpp",

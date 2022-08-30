@@ -6,18 +6,16 @@
  * @fileoverview Fake implementation of CrosNetworkConfig for testing.
  */
 
-// clang-format off
- // #import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
- // #import {OncMojo} from 'chrome://resources/cr_components/chromeos/network/onc_mojo.m.js';
- // #import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
-// clang-format on
+import {OncMojo} from 'chrome://resources/cr_components/chromeos/network/onc_mojo.m.js';
+import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
+import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
 
 // Default cellular pin, used when locking/unlocking cellular profiles.
-/* #export */ const DEFAULT_CELLULAR_PIN = '1111';
+export const DEFAULT_CELLULAR_PIN = '1111';
 
 // TODO(stevenjb): Include cros_network_config.mojom.js and extend
 // CrosNetworkConfigInterface
-/* #export */ class FakeNetworkConfig {
+export class FakeNetworkConfig {
   constructor() {
     /** @private {!Map<string, !PromiseResolver>} */
     this.resolverMap_ = new Map();
@@ -78,6 +76,9 @@
     /** @private {!Map<string, !Array<!Object>>} */
     this.trafficCountersMap_ = new Map();
 
+    /** @private {!Map<string, !Array<!Object>>} */
+    this.autoResetValuesMap_ = new Map();
+
     this.resetForTest();
   }
 
@@ -113,6 +114,7 @@
 
     this.globalPolicy_ =
         /** @type {!chromeos.networkConfig.mojom.GlobalPolicy} */ ({
+          allow_cellular_sim_lock: true,
           allow_only_policy_cellular_networks: false,
           allow_only_policy_networks_to_autoconnect: false,
           allow_only_policy_wifi_networks_to_connect: false,
@@ -128,6 +130,9 @@
 
     this.vpnProviders_ = [];
 
+    this.serverCas_ = [];
+    this.userCerts_ = [];
+
     ['getNetworkState',
      'getNetworkStateList',
      'getDeviceStateList',
@@ -140,11 +145,13 @@
      'setProperties',
      'setCellularSimState',
      'startConnect',
+     'startDisconnect',
      'configureNetwork',
      'getAlwaysOnVpn',
      'getSupportedVpnTypes',
      'requestTrafficCounters',
      'resetTrafficCounters',
+     'setTrafficCountersAutoReset',
     ].forEach((methodName) => {
       this.resolverMap_.set(methodName, new PromiseResolver());
     });
@@ -156,7 +163,7 @@
    * @private
    */
   getResolver_(methodName) {
-    let method = this.resolverMap_.get(methodName);
+    const method = this.resolverMap_.get(methodName);
     assert(!!method, `Method '${methodName}' not found.`);
     return method;
   }
@@ -212,6 +219,7 @@
     });
     if (idx >= 0) {
       this.networkStates_[idx] = networkState;
+      this.onNetworkStateChanged(networkState);
     } else {
       this.networkStates_.push(networkState);
     }
@@ -261,7 +269,31 @@
     assert(!!network, 'Network not found: ' + guid);
     const managed = this.managedProperties_.get(guid);
     if (managed) {
-      managed.trafficCounterResetTime = lastResetTime;
+      assert(
+          !!managed.trafficCounterProperties,
+          'Missing traffic counter properties for network: ' + guid);
+      managed.trafficCounterProperties.lastResetTime = lastResetTime;
+    }
+    this.onActiveNetworksChanged();
+  }
+
+  /**
+   * @param {string} guid
+   * @param {string} friendlyDate a human readable date representing
+   * the last reset time
+   *
+   */
+  setFriendlyDateForTest(guid, friendlyDate) {
+    const network = this.networkStates_.find(state => {
+      return state.guid === guid;
+    });
+    assert(!!network, 'Network not found: ' + guid);
+    const managed = this.managedProperties_.get(guid);
+    if (managed) {
+      assert(
+          !!managed.trafficCounterProperties,
+          'Missing traffic counter properties for network: ' + guid);
+      managed.trafficCounterProperties.friendlyDate = friendlyDate;
     }
     this.onActiveNetworksChanged();
   }
@@ -276,6 +308,24 @@
       this.methodCalled('startConnect');
       resolve(
           {result: chromeos.networkConfig.mojom.StartConnectResult.kCanceled});
+    });
+  }
+
+  /**
+   * @param { !string } guid
+   * @return {!Promise<{
+        success: !boolean,
+   *  }>}
+   */
+  startDisconnect(guid) {
+    return new Promise(resolve => {
+      const network = this.networkStates_.find(state => {
+        return state.guid === guid;
+      });
+      network.connectionState =
+          chromeos.networkConfig.mojom.ConnectionStateType.kNotConnected;
+      this.methodCalled('startDisconnect');
+      resolve({success: true});
     });
   }
 
@@ -355,6 +405,20 @@
 
   onNetworkStateListChanged() {
     this.observers_.forEach(o => o.onNetworkStateListChanged());
+  }
+
+  onNetworkStateChanged(networkState) {
+    // Calling onActiveNetworksChanged will trigger mojo checks on all
+    // NetworkStateProperties. Ensure the networkState has name and guid field.
+    if (networkState.name === undefined || networkState.guid === undefined) {
+      return;
+    }
+    this.observers_.forEach(o => o.onNetworkStateChanged(networkState));
+  }
+
+  /** @param {string} userhash */
+  onPoliciesApplied(userhash) {
+    this.observers_.forEach(o => o.onPoliciesApplied(userhash));
   }
 
   onDeviceStateListChanged() {
@@ -503,7 +567,7 @@
 
       // This is only called by cellular networks.
       const type = chromeos.networkConfig.mojom.NetworkType.kCellular;
-      let deviceState = this.deviceStates_.get(type);
+      const deviceState = this.deviceStates_.get(type);
       let simLockStatus = deviceState.simLockStatus;
       const pin = this.testPin ? this.testPin : DEFAULT_CELLULAR_PIN;
 
@@ -575,6 +639,12 @@
     });
   }
 
+  /** @param {!chromeos.networkConfig.mojom.GlobalPolicy} globalPolicy */
+  setGlobalPolicy(globalPolicy) {
+    this.globalPolicy_ = globalPolicy;
+    this.onPoliciesApplied(/*userhash=*/ '');
+  }
+
   /**
    * @return {!Promise<{
    *     result: !Array<!chromeos.networkConfig.mojom.VpnProvider>}>}
@@ -593,8 +663,10 @@
     return new Promise(resolve => {
       this.methodCalled('getSupportedVpnTypes');
       resolve({
-        vpnTypes:
-            ['l2tpipsec', 'openvpn', 'thirdpartyvpn', 'arcvpn', 'wireguard']
+        vpnTypes: [
+          'ikev2', 'l2tpipsec', 'openvpn', 'thirdpartyvpn', 'arcvpn',
+          'wireguard'
+        ]
       });
     });
   }
@@ -651,5 +723,37 @@
       counter.txBytes = 0;
     });
     this.methodCalled('resetTrafficCounters');
+  }
+
+  /**
+   * @param {string} guid
+   * @param {boolean} autoReset
+   * @param {?chromeos.networkConfig.mojom.UInt32Value} resetDay
+   */
+  setAutoResetValues_(guid, autoReset, resetDay) {
+    const network = this.networkStates_.find(state => {
+      return state.guid === guid;
+    });
+    assert(!!network, 'Network not found: ' + guid);
+    const managed = this.managedProperties_.get(guid);
+    if (managed) {
+      managed.trafficCounterProperties.autoReset = autoReset;
+      managed.trafficCounterProperties.userSpecifiedResetDay =
+          resetDay ? resetDay.value : 1;
+    }
+    this.onActiveNetworksChanged();
+  }
+
+  /**
+   * @param {string} guid
+   * @param {boolean} autoReset
+   * @param {?chromeos.networkConfig.mojom.UInt32Value} resetDay
+   */
+  setTrafficCountersAutoReset(guid, autoReset, resetDay) {
+    return new Promise(resolve => {
+      this.methodCalled('setTrafficCountersAutoReset');
+      this.setAutoResetValues_(guid, autoReset, resetDay);
+      resolve(true);
+    });
   }
 }

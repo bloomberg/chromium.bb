@@ -6,6 +6,8 @@
 #include <string>
 #include <vector>
 
+#include "ash/constants/ash_features.h"
+#include "ash/public/cpp/test/app_list_test_api.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -13,15 +15,18 @@
 #include "ash/system/message_center/unified_message_center_view.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/unified/unified_system_tray.h"
+#include "base/command_line.h"
 #include "base/scoped_observation.h"
 #include "base/strings/string_util.h"
 #include "base/test/bind.h"
 #include "base/test/icu_test_util.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/time/time.h"
 #include "chrome/browser/ui/ash/assistant/assistant_test_mixin.h"
 #include "chrome/browser/ui/ash/assistant/test_support/test_util.h"
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
 #include "chromeos/services/assistant/public/cpp/features.h"
+#include "chromeos/services/assistant/public/cpp/switches.h"
 #include "content/public/test/browser_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/aura/window.h"
@@ -104,21 +109,18 @@ std::vector<message_center::Notification*> FindVisibleNotificationsByPrefixedId(
 // Returns the view for the specified |notification|.
 message_center::MessageView* FindViewForNotification(
     const message_center::Notification* notification) {
-  ash::UnifiedMessageCenterView* unified_message_center_view =
+  ash::UnifiedMessageListView* unified_message_list_view =
       FindStatusAreaWidget()
           ->unified_system_tray()
           ->message_center_bubble()
-          ->message_center_view();
+          ->message_center_view()
+          ->message_list_view();
 
-  std::vector<message_center::MessageView*> message_views;
-  FindDescendentsOfClass(unified_message_center_view, &message_views);
-
-  for (message_center::MessageView* message_view : message_views) {
-    if (message_view->notification_id() == notification->id())
-      return message_view;
-  }
-
-  return nullptr;
+  // TODO(crbug/1335196): `FindDescendentsOfClass` returning empty list for
+  // `UnifiedMessageCenterView` even when `MessageView`s exist. Need to
+  // investigate and resolve.
+  return unified_message_list_view->GetMessageViewForNotificationId(
+      notification->id());
 }
 
 // Returns the action buttons for the specified |notification|.
@@ -194,6 +196,11 @@ class AssistantTimersBrowserTest : public MixinBasedInProcessBrowserTest {
     // TODO(b/190633242): enable sandbox in browser tests.
     feature_list_.InitAndDisableFeature(
         chromeos::assistant::features::kEnableLibAssistantSandbox);
+
+    // Do not log to file in test. Otherwise multiple tests may create/delete
+    // the log file at the same time. See http://crbug.com/1307868.
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kDisableLibAssistantLogfile);
   }
 
   AssistantTimersBrowserTest(const AssistantTimersBrowserTest&) = delete;
@@ -205,6 +212,10 @@ class AssistantTimersBrowserTest : public MixinBasedInProcessBrowserTest {
   void ShowAssistantUi() {
     if (!tester()->IsVisible())
       tester()->PressAssistantKey();
+    if (ash::features::IsProductivityLauncherEnabled()) {
+      ash::AppListTestApi().WaitForBubbleWindow(
+          /*wait_for_opening_animation=*/true);
+    }
   }
 
   AssistantTestMixin* tester() { return &tester_; }

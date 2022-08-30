@@ -13,10 +13,9 @@
 @class BubblePresenter;
 @class ContentSuggestionsHeaderViewController;
 @class ContentSuggestionsViewController;
-@class DiscoverFeedMetricsRecorder;
+@class FeedMetricsRecorder;
 @class DiscoverFeedWrapperViewController;
 @class FeedHeaderViewController;
-@protocol FeedMenuCommands;
 @protocol NewTabPageContentDelegate;
 @protocol OverscrollActionsControllerDelegate;
 @class ViewRevealingVerticalPanHandler;
@@ -54,13 +53,15 @@
 
 // View controller representing the NTP content suggestions. These suggestions
 // include the most visited site tiles, the shortcut tiles, the fake omnibox and
-// the Google doodle.
+// the Google doodle. |contentSuggestionsUIViewController| is used if
+// kContentSuggestionsUIViewControllerMigration is enabled.
 @property(nonatomic, strong)
-    UICollectionViewController* contentSuggestionsViewController;
+    UICollectionViewController* contentSuggestionsCollectionViewController;
+@property(nonatomic, strong)
+    ContentSuggestionsViewController* contentSuggestionsViewController;
 
-// Discover Feed metrics recorder.
-@property(nonatomic, strong)
-    DiscoverFeedMetricsRecorder* discoverFeedMetricsRecorder;
+// Feed metrics recorder.
+@property(nonatomic, strong) FeedMetricsRecorder* feedMetricsRecorder;
 
 // Whether or not the feed is visible.
 @property(nonatomic, assign, getter=isFeedVisible) BOOL feedVisible;
@@ -68,11 +69,19 @@
 // The view controller representing the NTP feed header.
 @property(nonatomic, assign) FeedHeaderViewController* feedHeaderViewController;
 
-// The handler for feed menu commands.
-@property(nonatomic, weak) id<FeedMenuCommands> feedMenuHandler;
+// The view controller representing the Feed top section (between the feed
+// header and the feed collection).
+@property(nonatomic, assign) UIViewController* feedTopSectionViewController;
 
 // Bubble presenter for displaying IPH bubbles relating to the NTP.
 @property(nonatomic, strong) BubblePresenter* bubblePresenter;
+
+// Whether or not this NTP has fully appeared for the first time yet. This value
+// remains YES if viewDidAppear has been called.
+@property(nonatomic, assign) BOOL viewDidAppear;
+
+// Whether the NTP should initially be scrolled into the feed.
+@property(nonatomic, assign) BOOL shouldScrollIntoFeed;
 
 // Initializes the new tab page view controller.
 - (instancetype)init NS_DESIGNATED_INITIALIZER;
@@ -109,6 +118,25 @@
 // collection view, so this property is used to track the total height of those
 // additional views.
 - (CGFloat)heightAboveFeed;
+
+// Lays out and re-configures the NTP content after changing the containing
+// collection view, such as when changing feeds.
+- (void)layoutContentInParentCollectionView;
+
+// Resets hierarchy of views and view controllers.
+- (void)resetViewHierarchy;
+
+// Returns the y content offset of the NTP collection view.
+- (CGFloat)scrollPosition;
+
+// Sets the NTP collection view's scroll position to |contentOffset|, unless it
+// is beyond the top of the feed. In that case, sets the scroll position to the
+// top of the feed.
+- (void)setContentOffsetToTopOfFeed:(CGFloat)contentOffset;
+
+// Checks the content size of the feed and updates the bottom content inset to
+// ensure the feed is still scrollable to the minimum height.
+- (void)updateFeedInsetsForMinimumHeight;
 
 @end
 

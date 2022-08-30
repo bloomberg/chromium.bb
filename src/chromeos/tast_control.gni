@@ -29,14 +29,6 @@ tast_disabled_tests_from_chrome_all = [
   "apps.SystemWebAppsReinstall.default_enabled_apps_stable",
   "camera.EncodeAccelJPEG",
 
-  # crbug.com/1247485
-  "inputs.PhysicalKeyboardInputFields.us_en",
-  "inputs.VirtualKeyboardAccent",
-
-  # crbug.com/1247177
-  "inputs.PhysicalKeyboardEnglishTyping",
-  "inputs.PhysicalKeyboardEmoji",
-
   # https://crbug.com/1252352
   "quicksettings.SignInScreen.battery",
   "quicksettings.SignInScreen.noaudio_nobattery",
@@ -45,42 +37,14 @@ tast_disabled_tests_from_chrome_all = [
   # crbug.com/1263234
   "quicksettings.ManagedDeviceInfo",
 
-  # b/201197372
-  "crostini.AppEmacs",
-
-  # crbug.com/1273743
-  "crostini.Launcher.local_wayland_bullseye_stable",
-  "crostini.Launcher.local_wayland_buster_stable",
-  "crostini.Launcher.local_x11_bullseye_stable",
-  "crostini.Launcher.system_wayland_bullseye_stable",
-  "crostini.Launcher.system_wayland_buster_stable",
-  "crostini.Launcher.system_x11_bullseye_stable",
-  "crostini.Launcher.system_x11_buster_stable",
-
   # crbug.com/1259127
   "ui.TabletOperations",
-
-  # crbug.com/1257474
-  "shelf.OpenCloseSwitchApps",
 
   # crbug.com/1239838
   "graphics.FPS",
 
-  # crbug.com/1186991
-  "launcher.SearchBuiltInApps",
-
-  # crbug.com/1263561
-  "camera.CCAUILauncher",
-
   # crbug.com/1263233
   "security.SharedFilesystemState",
-
-  # https://crbug.com/1267943: Flaky.
-  "ui.DesktopControl",
-  "ui.WindowControl",
-
-  # https://crbug.com/1269876: Flaky.
-  "arc.TextToSpeech",
 
   # https://crbug.com/1269880: Flaky.
   "ui.ChromeCrashReporterMetrics.success_crashpad",
@@ -91,24 +55,266 @@ tast_disabled_tests_from_chrome_all = [
   "ui.ChromeCrashReporterMetrics.success_breakpad",
   "ui.ChromeCrashReporterMetrics.miss_breakpad",
 
-  # https://crbug.com/1269075: Flaky.
-  "shelf.AutoHideSmoke.clamshell_mode",
-
   # https://crbug.com/1269124: Flaky.
   "quicksettings.LockScreen.no_battery",
 
-  # https://crbug.com/1271310: Flaky.
-  "quicksettings.OpenSettings",
-  "quicksettings.LockScreen",
-
   # https://crbug.com/1273485: Flaky.
   "printer.ProxyAdd.epson_software_collate",
+  "printer.ProxyAdd.epson_software_uncollated",
+
+  # https://crbug.com/1279285: Flaky.
+  "policy.AllowWakeLocks",
+
+  # https://crbug.com/1285206
+  "policy.DeveloperToolsAvailability",
+
+  # https://crbug.com/1311242
+  "policy.ImagesForURLCheck.allowlist",
+
+  # https://crbug.com/1281645
+  "quicksettings.LockScreen",
+
+  # https://crbug.com/1282372
+  "security.SELinuxFilesARC",
+  "security.NetworkListenersARC",
+  "security.SELinuxProcessesARC",
+
+  # https://crbug.com/1282369
+  "apps.LaunchHelpAppOffline",
+
+  # https://crbug.com/1282370
+  "arc.Boot.vm_with_per_vcpu_core_scheduling",
+
+  # https://crbug.com/1282481
+  "quicksettings.OpenSettings",
+
+  # http://b/212644512
+  "security.SELinuxFilesDataDir",
+
+  # https://crbug.com/1260046
+  "wmp.WindowCycle",
+
+  # b/217362120
+  "security.SELinuxFilesARC.vm",
+
+  # https://crbug.com/1297581
+  "policy.ImagesForURLCheck.blocklist",
+  "policy.ImagesForURLCheck.default",
+  "policy.Disable3DAPIs",
+  "policy.JavaScriptAllowedForUrls",
+  "policy.JavaScriptBlockedForUrls",
+  "policy.ImagesForURLCheck.default",
+
+  # https://crbug.com/1302469 (http://b/222407003)
+  "inputs.PhysicalKeyboardKoreanTyping",
+  "inputs.PhysicalKeyboardAutocorrect.en_us_2",
+
+  # https://crbug.com/1300941
+  "ui.WebUIJSErrors",
+
+  # https://crbug.com/1306441
+  "policy.UserAvatarImage",
+
+  # https://crbug.com/1308288
+  "policy.BasicAuthOverHTTPEnabled",
+  "policy.AllowCrossOriginAuthPrompt.lacros",
+  "policy.BlockThirdPartyCookies.lacros",
+  "policy.BookmarkBarEnabled.lacros",
+
+  # https://crbug.com/1310619
+  "policy.AutoOpenAllowedForURLs.lacros",
+
+  # https://crbug.com/1307671
+  "policy.SafeBrowsingProtectionLevel",
+
+  # https://crbug.com/1309331
+  "policy.CookiesAllowedForUrls",
+
+  # https://crbug.com/1307582
+  "policy.AccessibilityPolicies.docked_magnifier",
+
+  # https://crbug.com/1307940
+  "policy.URLCheck.blocklist",
+
+  # https://crbug.com/1309114
+  "policy.BlockThirdPartyCookies.lacros",
+
+  # https://crbug.com/1309288
+  "policy.AudioCaptureAllowed",
+  "policy.AlternateErrorPagesEnabled",
+
+  # https://crbug.com/1309289
+  "policy.AllowDeletingBrowserHistory",
+
+  # https://crbug.com/1307750
+  "dlp.DataLeakPreventionRulesListPrinting.ash_blocked",
+  "dlp.DataLeakPreventionRulesListPrinting.ash_allowed",
+
+  # https://crbug.com/1309052
+  "policy.ShowHomeButton",
+  "policy.ShowLogoutButtonInTray",
+
+  # https://crbug.com/1309075
+  "policy.AccessibilityPolicies.virtual_keyboard",
+  "policy.AccessibilityPolicies.spoken_feedback",
+
+  # https://crbug.com/1309466
+  "arc.StartStop.vm",
+
+  # https://crbug.com/1309492
+  "inputs.VirtualKeyboardGlideTyping.clamshell_a11y_floating",
+  "inputs.VirtualKeyboardChangeInput.a11y",
+  "arc.DragDrop.chrome_to_android",
+
+  # https://crbug.com/1311081
+  "policy.AutoOpenAllowedForURLs.lacros",
+
+  # https://crbug.com/1312121
+  "policy.DefaultJavaScriptSetting",
+  "policy.CookiesBlockedForUrls",
+
+  # https://crbug.com/1312965
+  "policy.AllowDinosaurEasterEggEnrolled",
+
+  # https://crbug.com/1312908
+  "policy.DefaultNotificationsSetting",
+
+  # https://crbug.com/1314935
+  "dlp.DataLeakPreventionRulesListClipboardShelf",
+
+  # https://crbug.com/1322973
+  "dlp.DataLeakPreventionRulesListClipboardShelf.ash",
+
+  # https://crbug.com/1314923
+  "dlp.DataLeakPreventionRulesListScreenshot.ash_allowed",
+
+  # https://crbug.com/1315123
+  "dlp.DataLeakPreventionRulesListScreenshot.ash_blocked",
+
+  # https://crbug.com/1318989
+  "assistant.StartupInSignedOutMode",
+  "login.ChangePassword",
+
+  # https://crbug.com/1322572
+  "policy.NotificationsAllowedForUrls",
+  "policy.NotificationsBlockedForUrls",
+  "policy.PolicyRefreshRate",
+  "policy.PopupsForURLCheck.allowlist",
+
+  # https://crbug.com/1323628
+  "crostini.AppVscode",
+  "crostini.AppGeditFilesharing",
+
+  # https://crbug.com/1326279
+  "policy.AccessibilityPolicies.focus_highlight",
+
+  # https://crbug.com/1326331
+  "policy.AccessibilityPolicies.high_contrast",
+
+  # https://crbug.com/1326403
+  "policy.AccessibilityPolicies.large_cursor",
+
+  # https://crbug.com/1327171
+  "policy.PopupsForURLCheck.default",
+
+  # https://crbug.com/1327345
+  "policy.ChromePolicyPageStatusTimestamps.ash",
+
+  # https://crbug.com/1327361
+  "policy.FullscreenAllowed",
+
+  # https://crbug.com/1328128
+  "policy.PopupsForURLCheck.blocklist",
+
+  # https://crbug.com/1329734
+  "health.DiagnosticsList",
+  "health.DiagnosticsCancel.urandom",
+
+  # https://crbug.com/1329761
+  "policy.DefaultSerialGuardSetting",
+
+  # https://crbug.com/1335176
+  "policy.ScreenBrightnessPercent",
+
+  # https://crbug.com/1334354
+  "arc.Boot.vm",
+  "arc.ChromeCrash.vm_logged_in",
+  "arc.Drivefs.vm",
+  "arc.OptinManaged.vm",
+  "arc.OptinNetworkError.vm",
+  "arc.RemovableMedia.vm",
+  "security.NetworkListenersARC.vm",
+  "security.SELinuxFilesDataDir.vm",
+
+  # b/233264555
+  "inputs.PhysicalKeyboardEmojiSuggestion",
+  "inputs.PhysicalKeyboardEmojiSuggestion.guest",
+  "inputs.PhysicalKeyboardEmojiSuggestion.incognito",
+
+  # http://b/229032436
+  "health.DiagnosticsRun.captive_portal",
+  "health.DiagnosticsRun.cpu_cache",
+  "health.DiagnosticsRun.cpu_stress",
+  "health.DiagnosticsRun.dns_latency",
+  "health.DiagnosticsRun.dns_resolution",
+  "health.DiagnosticsRun.dns_resolver_present",
+
+  # This is effectively the mirror of the crrev.com/c/3691078 in CrOS.
+  # Although the change is made, because CrOS SDK is not yet ready
+  # we're still blocked by the test failures. This is the short term
+  # mitigation. We can remove this when CrOS SDK 14903 gets ready
+  # and started to be used.
+  "crostini.LaunchTerminal.buster_stable",
+  "crostini.Notify.buster_stable",
+  "crostini.PackageInfo.buster_stable",
+  "crostini.NoSharedFolder.buster_stable",
+  "crostini.LaunchBrowser.buster_stable",
+  "crostini.SecureCopyPaste.copy_wayland_buster_stable",
+  "crostini.SecureCopyPaste.copy_x11_buster_stable",
+  "crostini.PackageInstallUninstall.buster_stable",
+  "crostini.Xattrs.buster_stable",
+  "crostini.SSHFSMount.buster_stable",
+  "crostini.SecureCopyPaste.paste_wayland_buster_stable",
+  "crostini.UninstallInvalidApp.buster_stable",
+  "crostini.SecureCopyPaste.paste_x11_buster_stable",
+  "crostini.SharedFontFiles.buster_stable",
+  "crostini.CrashReporter.buster_stable",
+  "crostini.HomeDirectoryCreateFile.buster_stable",
+  "crostini.Basic.buster_stable",
+  "crostini.GPUEnabled.gpu_buster_stable",
+  "crostini.GPUEnabled.gpu_bullseye_stable",
+  "crostini.CrashReporter.bullseye_stable",
+  "crostini.Basic.bullseye_stable",
+  "crostini.HomeDirectoryCreateFile.bullseye_stable",
+  "crostini.LaunchBrowser.bullseye_stable",
+  "crostini.SecureCopyPaste.copy_wayland_bullseye_stable",
+  "crostini.SharedFontFiles.bullseye_stable",
+  "crostini.SecureCopyPaste.paste_x11_bullseye_stable",
+  "crostini.PackageInfo.bullseye_stable",
+  "crostini.Notify.bullseye_stable",
+  "crostini.UninstallInvalidApp.bullseye_stable",
+  "crostini.LaunchTerminal.bullseye_stable",
+  "crostini.NoSharedFolder.bullseye_stable",
+  "crostini.Xattrs.bullseye_stable",
+  "crostini.PackageInstallUninstall.bullseye_stable",
+  "crostini.SecureCopyPaste.paste_wayland_bullseye_stable",
+  "crostini.SSHFSMount.bullseye_stable",
+  "crostini.SecureCopyPaste.copy_x11_bullseye_stable",
+
+  # http://b234699971
+  "crostini.AppGeditUnshareFolder",
+
+  # b/235279574
+  "wmp.DragAndDropWindow",
 ]
 
+# To create filters to be used on specific builders add them like this:
+# tast_disabled_tests_from_lacros_example = [ "lacros.Basic" ]
+# and add the name (i.e. 'tast_disabled_tests_from_lacros_example') to the
+# test config as 'tast_expr_key'
 # To disable a specific test in lacros_all_tast_tests, add it the following
 # list and cite a bug.
 tast_disabled_tests_from_lacros_all = [
-  # crbug.com/1250036
-  "a11y.Smoke.lacros",
-  "a11y.Smoke.lacros_rootfs",
+  # https://crbug.com/1329764
+  "policy.HistoryClustersVisible",
 ]

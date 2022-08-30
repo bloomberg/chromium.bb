@@ -6,16 +6,16 @@
 
 #include <memory>
 
+#include "ash/components/multidevice/remote_device_ref.h"
+#include "ash/components/multidevice/remote_device_test_util.h"
 #include "ash/components/tether/fake_tether_host_fetcher.h"
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "chromeos/components/multidevice/remote_device_ref.h"
-#include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace tether {
 
@@ -219,4 +219,4 @@ TEST_F(ActiveHostTest, TestObserverCalls) {
 
 }  // namespace tether
 
-}  // namespace chromeos
+}  // namespace ash

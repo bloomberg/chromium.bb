@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import {ExtensionServer} from './ExtensionServer.js';
+import type * as Platform from '../../core/platform/platform.js';
 
 export class ExtensionTraceProvider {
   private readonly extensionOrigin: string;
@@ -42,9 +43,6 @@ export class ExtensionTraceProvider {
 // eslint-disable-next-line @typescript-eslint/naming-convention
 let _lastSessionId = 0;
 
-/**
- * @interface
- */
 export interface TracingSession {
-  complete(url: string, timeOffsetMicroseconds: number): void;
+  complete(url: Platform.DevToolsPath.UrlString, timeOffsetMicroseconds: number): void;
 }

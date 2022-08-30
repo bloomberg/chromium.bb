@@ -36,54 +36,18 @@ class FederatedIdentitySharingPermissionContextTest : public testing::Test {
 };
 
 TEST_F(FederatedIdentitySharingPermissionContextTest,
-       GrantAndRevokeSingleGenericPermission) {
-  const auto rp_origin = url::Origin::Create(GURL("https://rp.example"));
-  const auto idp_origin = url::Origin::Create(GURL("https://idp.example"));
-
-  EXPECT_FALSE(context()->HasSharingPermission(idp_origin, rp_origin));
-
-  context()->GrantSharingPermission(idp_origin, rp_origin);
-  EXPECT_TRUE(context()->HasSharingPermission(idp_origin, rp_origin));
-
-  context()->RevokeSharingPermission(idp_origin, rp_origin);
-  EXPECT_FALSE(context()->HasSharingPermission(idp_origin, rp_origin));
-}
-
-// Ensure the context can handle multiple RPs per IdP origin.
-TEST_F(FederatedIdentitySharingPermissionContextTest,
-       GrantTwoGenericPermissionsAndRevokeOne) {
-  const auto rp_origin1 = url::Origin::Create(GURL("https://rp1.example"));
-  const auto rp_origin2 = url::Origin::Create(GURL("https://rp2.example"));
-  const auto idp_origin = url::Origin::Create(GURL("https://idp.example"));
-
-  EXPECT_FALSE(context()->HasSharingPermission(idp_origin, rp_origin1));
-  EXPECT_FALSE(context()->HasSharingPermission(idp_origin, rp_origin2));
-
-  context()->GrantSharingPermission(idp_origin, rp_origin1);
-  EXPECT_TRUE(context()->HasSharingPermission(idp_origin, rp_origin1));
-  EXPECT_FALSE(context()->HasSharingPermission(idp_origin, rp_origin2));
-  context()->GrantSharingPermission(idp_origin, rp_origin2);
-  EXPECT_TRUE(context()->HasSharingPermission(idp_origin, rp_origin1));
-  EXPECT_TRUE(context()->HasSharingPermission(idp_origin, rp_origin2));
-
-  context()->RevokeSharingPermission(idp_origin, rp_origin1);
-  EXPECT_FALSE(context()->HasSharingPermission(idp_origin, rp_origin1));
-  EXPECT_TRUE(context()->HasSharingPermission(idp_origin, rp_origin2));
-}
-
-TEST_F(FederatedIdentitySharingPermissionContextTest,
        GrantAndRevokeAccountSpecificGenericPermission) {
   const auto rp = url::Origin::Create(GURL("https://rp.example"));
   const auto idp = url::Origin::Create(GURL("https://idp.example"));
   std::string account{"consetogo"};
 
-  EXPECT_FALSE(context()->HasSharingPermissionForAccount(idp, rp, account));
+  EXPECT_FALSE(context()->HasSharingPermission(rp, idp, account));
 
-  context()->GrantSharingPermissionForAccount(idp, rp, account);
-  EXPECT_TRUE(context()->HasSharingPermissionForAccount(idp, rp, account));
+  context()->GrantSharingPermission(rp, idp, account);
+  EXPECT_TRUE(context()->HasSharingPermission(rp, idp, account));
 
-  context()->RevokeSharingPermissionForAccount(idp, rp, account);
-  EXPECT_FALSE(context()->HasSharingPermissionForAccount(idp, rp, account));
+  context()->RevokeSharingPermission(rp, idp, account);
+  EXPECT_FALSE(context()->HasSharingPermission(rp, idp, account));
 }
 
 // Ensure the context can handle multiple accounts per RP/IdP origin.
@@ -94,58 +58,58 @@ TEST_F(FederatedIdentitySharingPermissionContextTest,
   std::string account_a{"consetogo"};
   std::string account_b{"woolwich"};
 
-  EXPECT_FALSE(context()->HasSharingPermissionForAccount(idp, rp, account_a));
-  EXPECT_FALSE(context()->HasSharingPermissionForAccount(idp, rp, account_b));
+  EXPECT_FALSE(context()->HasSharingPermission(rp, idp, account_a));
+  EXPECT_FALSE(context()->HasSharingPermission(rp, idp, account_b));
 
-  context()->GrantSharingPermissionForAccount(idp, rp, account_a);
-  EXPECT_TRUE(context()->HasSharingPermissionForAccount(idp, rp, account_a));
-  EXPECT_FALSE(context()->HasSharingPermissionForAccount(idp, rp, account_b));
+  context()->GrantSharingPermission(rp, idp, account_a);
+  EXPECT_TRUE(context()->HasSharingPermission(rp, idp, account_a));
+  EXPECT_FALSE(context()->HasSharingPermission(rp, idp, account_b));
 
-  context()->GrantSharingPermissionForAccount(idp, rp, account_b);
-  EXPECT_TRUE(context()->HasSharingPermissionForAccount(idp, rp, account_a));
-  EXPECT_TRUE(context()->HasSharingPermissionForAccount(idp, rp, account_b));
+  context()->GrantSharingPermission(rp, idp, account_b);
+  EXPECT_TRUE(context()->HasSharingPermission(rp, idp, account_a));
+  EXPECT_TRUE(context()->HasSharingPermission(rp, idp, account_b));
 
-  context()->RevokeSharingPermissionForAccount(idp, rp, account_a);
-  EXPECT_FALSE(context()->HasSharingPermissionForAccount(idp, rp, account_a));
-  EXPECT_TRUE(context()->HasSharingPermissionForAccount(idp, rp, account_b));
+  context()->RevokeSharingPermission(rp, idp, account_a);
+  EXPECT_FALSE(context()->HasSharingPermission(rp, idp, account_a));
+  EXPECT_TRUE(context()->HasSharingPermission(rp, idp, account_b));
 
-  context()->RevokeSharingPermissionForAccount(idp, rp, account_b);
-  EXPECT_FALSE(context()->HasSharingPermissionForAccount(idp, rp, account_a));
-  EXPECT_FALSE(context()->HasSharingPermissionForAccount(idp, rp, account_b));
+  context()->RevokeSharingPermission(rp, idp, account_b);
+  EXPECT_FALSE(context()->HasSharingPermission(rp, idp, account_a));
+  EXPECT_FALSE(context()->HasSharingPermission(rp, idp, account_b));
 }
 
-// Ensure generic (i.e., non-account specific) permission and account-specific
-// permission do not affect each other.
+// Test granting permissions for multiple IDPs mapped to the same RP and
+// multiple RPs mapped to the same IDP.
 TEST_F(FederatedIdentitySharingPermissionContextTest,
-       GrantGenericAndAccountSpecificPermissionsAndRevokeThem) {
+       GrantPermissionsMultipleRpsMultipleIdps) {
+  const auto rp1 = url::Origin::Create(GURL("https://rp1.example"));
+  const auto rp2 = url::Origin::Create(GURL("https://rp2.example"));
+  const auto idp1 = url::Origin::Create(GURL("https://idp1.example"));
+  const auto idp2 = url::Origin::Create(GURL("https://idp2.example"));
+
+  context()->GrantSharingPermission(rp1, idp1, "consestogo");
+  context()->GrantSharingPermission(rp1, idp2, "woolwich");
+  context()->GrantSharingPermission(rp2, idp1, "wilmot");
+
+  EXPECT_EQ(3u, context()->GetAllGrantedObjects().size());
+  EXPECT_EQ(2u, context()->GetGrantedObjects(rp1).size());
+  EXPECT_EQ(1u, context()->GetGrantedObjects(rp2).size());
+}
+
+// Test that granting a permission for an account, if the permission has already
+// been granted, is a noop.
+TEST_F(FederatedIdentitySharingPermissionContextTest,
+       GrantPermissionForSameAccount) {
   const auto rp = url::Origin::Create(GURL("https://rp.example"));
   const auto idp = url::Origin::Create(GURL("https://idp.example"));
   std::string account{"consetogo"};
 
-  EXPECT_FALSE(context()->HasSharingPermission(idp, rp));
-  EXPECT_FALSE(context()->HasSharingPermissionForAccount(idp, rp, account));
+  EXPECT_FALSE(context()->HasSharingPermission(rp, idp, account));
 
-  context()->GrantSharingPermission(idp, rp);
-  EXPECT_TRUE(context()->HasSharingPermission(idp, rp));
-  EXPECT_FALSE(context()->HasSharingPermissionForAccount(idp, rp, account));
-
-  context()->GrantSharingPermissionForAccount(idp, rp, account);
-  EXPECT_TRUE(context()->HasSharingPermission(idp, rp));
-  EXPECT_TRUE(context()->HasSharingPermissionForAccount(idp, rp, account));
-
-  context()->RevokeSharingPermission(idp, rp);
-  EXPECT_FALSE(context()->HasSharingPermission(idp, rp));
-  EXPECT_TRUE(context()->HasSharingPermissionForAccount(idp, rp, account));
-
-  context()->GrantSharingPermission(idp, rp);
-  EXPECT_TRUE(context()->HasSharingPermission(idp, rp));
-  EXPECT_TRUE(context()->HasSharingPermissionForAccount(idp, rp, account));
-
-  context()->RevokeSharingPermissionForAccount(idp, rp, account);
-  EXPECT_TRUE(context()->HasSharingPermission(idp, rp));
-  EXPECT_FALSE(context()->HasSharingPermissionForAccount(idp, rp, account));
-
-  context()->RevokeSharingPermission(idp, rp);
-  EXPECT_FALSE(context()->HasSharingPermission(idp, rp));
-  EXPECT_FALSE(context()->HasSharingPermissionForAccount(idp, rp, account));
+  context()->GrantSharingPermission(rp, idp, account);
+  context()->GrantSharingPermission(rp, idp, account);
+  EXPECT_TRUE(context()->HasSharingPermission(rp, idp, account));
+  auto granted_object = context()->GetGrantedObject(rp, idp.Serialize());
+  EXPECT_EQ(1u,
+            granted_object->value.GetDict().FindList("account-ids")->size());
 }

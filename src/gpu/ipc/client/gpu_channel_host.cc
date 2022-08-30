@@ -19,6 +19,7 @@
 #include "gpu/ipc/common/gpu_watchdog_timeout.h"
 #include "ipc/ipc_channel_mojo.h"
 #include "mojo/public/cpp/bindings/lib/message_quota_checker.h"
+#include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 #include "url/gurl.h"
 
 using base::AutoLock;
@@ -62,9 +63,9 @@ GpuChannelHost::GpuChannelHost(
        i <= static_cast<int32_t>(GpuChannelReservedRoutes::kMaxValue); ++i)
     next_route_id_.GetNext();
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   gpu::SetMacOSSpecificTextureTarget(gpu_info.macos_specific_texture_target);
-#endif  // defined(OS_MAC)
+#endif  // BUILDFLAG(IS_MAC)
 }
 
 mojom::GpuChannel& GpuChannelHost::GetGpuChannel() {

@@ -32,7 +32,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/network_isolation_key.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "content/public/browser/android/child_process_importance.h"
 #endif
 
@@ -85,6 +85,9 @@ class MockRenderProcessHost : public RenderProcessHost {
   void SimulateRenderProcessExit(base::TerminationStatus termination_status,
                                  int exit_code);
 
+  // Simulates async launch happening.
+  void SimulateReady();
+
   using CreateNetworkFactoryCallback = base::RepeatingCallback<void(
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
       int process_id,
@@ -121,7 +124,8 @@ class MockRenderProcessHost : public RenderProcessHost {
   bool FastShutdownStarted() override;
   const base::Process& GetProcess() override;
   bool IsReady() override;
-  int GetID() override;
+  int GetID() const override;
+  base::SafeRef<RenderProcessHost> GetSafeRef() const override;
   bool IsInitializedAndNotDead() override;
   void SetBlocked(bool blocked) override;
   bool IsBlocked() override;
@@ -135,7 +139,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   void SetPriorityOverride(bool foreground) override;
   bool HasPriorityOverride() override;
   void ClearPriorityOverride() override;
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   ChildProcessImportance GetEffectiveImportance() override;
   void DumpProcessStack() override;
 #endif
@@ -187,7 +191,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   bool HostHasNotBeenUsed() override;
   void SetProcessLock(const IsolationContext& isolation_context,
                       const ProcessLock& process_lock) override;
-  ProcessLock GetProcessLock() override;
+  ProcessLock GetProcessLock() const override;
   bool IsProcessLockedToSiteForTesting() override;
   void StopTrackingProcessForShutdownDelay() override {}
   void BindCacheStorage(
@@ -206,7 +210,11 @@ class MockRenderProcessHost : public RenderProcessHost {
   void BindIndexedDB(
       const blink::StorageKey& storage_key,
       mojo::PendingReceiver<blink::mojom::IDBFactory> receiver) override;
-  void BindBucketManagerHost(
+  void BindBucketManagerHostForRenderFrame(
+      const GlobalRenderFrameHostId& render_frame_host_id,
+      mojo::PendingReceiver<blink::mojom::BucketManagerHost> receiver)
+      override {}
+  void BindBucketManagerHostForWorker(
       const url::Origin& origin,
       mojo::PendingReceiver<blink::mojom::BucketManagerHost> receiver)
       override {}
@@ -218,13 +226,11 @@ class MockRenderProcessHost : public RenderProcessHost {
       mojo::PendingReceiver<media::mojom::VideoDecodePerfHistory> receiver)
       override {}
   void BindQuotaManagerHost(
-      int render_frame_id,
-      const url::Origin& origin,
+      const blink::StorageKey& storage_key,
       mojo::PendingReceiver<blink::mojom::QuotaManagerHost> receiver) override {
   }
   void CreateLockManager(
-      int render_frame_id,
-      const url::Origin& origin,
+      const blink::StorageKey& storage_key,
       mojo::PendingReceiver<blink::mojom::LockManager> receiver) override {}
   void CreateOneShotSyncService(
       const url::Origin& origin,
@@ -252,14 +258,15 @@ class MockRenderProcessHost : public RenderProcessHost {
       mojo::PendingReceiver<blink::mojom::WebSocketConnector> receiver)
       override {}
 
-  void CleanupNetworkServicePluginExceptionsUponDestruction() override;
   std::string GetInfoForBrowserContextDestructionCrashReporting() override;
-  void WriteIntoTrace(perfetto::TracedValue context) override;
-  void WriteIntoTrace(
-      perfetto::TracedProto<perfetto::protos::pbzero::RenderProcessHost> proto)
-      override;
+  void WriteIntoTrace(perfetto::TracedProto<TraceProto> proto) const override;
   void EnableBlinkRuntimeFeatures(
       const std::vector<std::string>& features) override;
+
+  void PauseSocketManagerForRenderFrameHost(
+      const GlobalRenderFrameHostId& render_frame_host_id) override {}
+  void ResumeSocketManagerForRenderFrameHost(
+      const GlobalRenderFrameHostId& render_frame_host_id) override {}
 
   // IPC::Sender via RenderProcessHost.
   bool Send(IPC::Message* msg) override;
@@ -310,6 +317,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   bool is_for_guests_only_;
   bool is_process_backgrounded_;
   bool is_unused_;
+  bool is_ready_ = false;
   base::Process process;
   int keep_alive_ref_count_;
   int worker_ref_count_;

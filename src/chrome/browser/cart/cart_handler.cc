@@ -7,16 +7,19 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "chrome/browser/cart/cart_db_content.pb.h"
-#include "chrome/browser/cart/cart_features.h"
 #include "chrome/browser/cart/cart_service.h"
 #include "chrome/browser/cart/cart_service_factory.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "components/commerce/core/commerce_feature_list.h"
 #include "components/search/ntp_features.h"
 
 CartHandler::CartHandler(
     mojo::PendingReceiver<chrome_cart::mojom::CartHandler> handler,
-    Profile* profile)
+    Profile* profile,
+    content::WebContents* web_contents)
     : handler_(this, std::move(handler)),
-      cart_service_(CartServiceFactory::GetForProfile(profile)) {}
+      cart_service_(CartServiceFactory::GetForProfile(profile)),
+      web_contents_(web_contents) {}
 
 CartHandler::~CartHandler() = default;
 
@@ -70,16 +73,8 @@ void CartHandler::GetCartDataCallback(GetMerchantCartsCallback callback,
   for (CartDB::KeyAndValue proto_pair : res) {
     auto cart = chrome_cart::mojom::MerchantCart::New();
     cart->merchant = std::move(proto_pair.second.merchant());
-
-    if (cart_features::IsRuleDiscountPartnerMerchant(
-            GURL(proto_pair.second.merchant_cart_url()))) {
-      cart->cart_url = CartService::AppendUTM(
-          GURL(std::move(proto_pair.second.merchant_cart_url())),
-          show_discount);
-    } else {
-      cart->cart_url = GURL(std::move(proto_pair.second.merchant_cart_url()));
-    }
-
+    cart->cart_url =
+        cart_service_->AppendUTM(GURL(proto_pair.second.merchant_cart_url()));
     std::vector<std::string> image_urls;
     // Not show product images when showing welcome surface.
     if (!cart_service_->ShouldShowWelcomeSurface()) {
@@ -116,8 +111,28 @@ void CartHandler::GetDiscountConsentCardVisible(
   cart_service_->ShouldShowDiscountConsent(std::move(callback));
 }
 
+void CartHandler::GetDiscountToggleVisible(
+    GetDiscountToggleVisibleCallback callback) {
+  std::move(callback).Run(cart_service_->ShouldShowDiscountToggle());
+}
+
 void CartHandler::OnDiscountConsentAcknowledged(bool accept) {
   cart_service_->AcknowledgeDiscountConsent(accept);
+}
+
+void CartHandler::OnDiscountConsentDismissed() {
+  cart_service_->DismissedDiscountConsent();
+}
+
+void CartHandler::OnDiscountConsentContinued() {
+  cart_service_->InterestedInDiscountConsent();
+}
+
+void CartHandler::ShowNativeConsentDialog(
+    ShowNativeConsentDialogCallback callback) {
+  cart_service_->InterestedInDiscountConsent();
+  cart_service_->ShowNativeConsentDialog(
+      chrome::FindBrowserWithWebContents(web_contents_), std::move(callback));
 }
 
 void CartHandler::GetDiscountEnabled(GetDiscountEnabledCallback callback) {

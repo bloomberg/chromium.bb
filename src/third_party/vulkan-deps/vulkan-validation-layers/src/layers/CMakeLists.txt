@@ -1,6 +1,6 @@
 # ~~~
-# Copyright (c) 2014-2021 Valve Corporation
-# Copyright (c) 2014-2021 LunarG, Inc.
+# Copyright (c) 2014-2022 Valve Corporation
+# Copyright (c) 2014-2022 LunarG, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -50,8 +50,6 @@ if(BUILD_LAYER_SUPPORT_FILES)
         cast_utils.h
         hash_util.h
         hash_vk_types.h
-        vk_format_utils.h
-        vk_format_utils.cpp
         vk_layer_config.h
         vk_layer_config.cpp
         vk_layer_data.h
@@ -63,6 +61,8 @@ if(BUILD_LAYER_SUPPORT_FILES)
         vk_loader_platform.h
         xxhash.h
         xxhash.c
+        generated/vk_format_utils.h
+        generated/vk_format_utils.cpp
         generated/vk_validation_error_messages.h
         generated/vk_layer_dispatch_table.h
         generated/vk_dispatch_table_helper.h
@@ -162,6 +162,7 @@ set(CORE_VALIDATION_LIBRARY_FILES
     core_error_location.h
     core_error_location.cpp
     base_node.h
+    base_node.cpp
     device_memory_state.h
     device_memory_state.cpp
     buffer_state.h
@@ -172,6 +173,8 @@ set(CORE_VALIDATION_LIBRARY_FILES
     image_state.cpp
     pipeline_state.h
     pipeline_state.cpp
+    pipeline_layout_state.cpp
+    pipeline_sub_state.cpp
     queue_state.h
     queue_state.cpp
     query_state.h
@@ -183,6 +186,7 @@ set(CORE_VALIDATION_LIBRARY_FILES
     convert_to_renderpass2.cpp
     descriptor_sets.cpp
     descriptor_sets.h
+    descriptor_validation.cpp
     buffer_validation.cpp
     buffer_validation.h
     shader_module.cpp
@@ -269,8 +273,6 @@ if(INSTRUMENT_OPTICK)
 endif()
 
 if(BUILD_LAYERS)
-    find_package(SPIRV-Tools REQUIRED CONFIG)
-    find_package(SPIRV-Tools-opt REQUIRED CONFIG)
     AddVkLayer(khronos_validation "${KHRONOS_LAYER_COMPILE_DEFINITIONS}"
         ${CHASSIS_LIBRARY_FILES}
         ${CORE_VALIDATION_LIBRARY_FILES}
@@ -304,7 +306,8 @@ if(BUILD_LAYERS)
     if (USE_ROBIN_HOOD_HASHING)
         target_include_directories(VkLayer_khronos_validation PRIVATE ${ROBIN_HOOD_HASHING_INCLUDE_DIR})
     endif()
-    target_link_libraries(VkLayer_khronos_validation PRIVATE SPIRV-Headers::SPIRV-Headers SPIRV-Tools-static SPIRV-Tools-opt)
+    target_include_directories(VkLayer_khronos_validation PRIVATE ${SPIRV_HEADERS_INCLUDE_DIR})
+    target_link_libraries(VkLayer_khronos_validation PRIVATE ${SPIRV_TOOLS_TARGET} SPIRV-Tools-opt)
 
 
     # The output file needs Unix "/" separators or Windows "\" separators On top of that, Windows separators actually need to be doubled
@@ -320,7 +323,7 @@ if(BUILD_LAYERS)
     # TARGET_FILE_DIR, specifically)
     file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/generator.cmake" "configure_file(\"\${INPUT_FILE}\" \"\${OUTPUT_FILE}\" @ONLY)")
     foreach(TARGET_NAME ${TARGET_NAMES})
-        set(CONFIG_DEFINES -DINPUT_FILE="${CMAKE_CURRENT_SOURCE_DIR}/json/${TARGET_NAME}.json.in" -DVK_VERSION=1.2.${vk_header_version})
+        set(CONFIG_DEFINES -DINPUT_FILE="${CMAKE_CURRENT_SOURCE_DIR}/json/${TARGET_NAME}.json.in" -DVK_VERSION=1.3.${vk_header_version})
         # If this json file is not a metalayer, get the needed properties from that target
         if(TARGET ${TARGET_NAME})
             set(CONFIG_DEFINES
@@ -345,7 +348,7 @@ if(BUILD_LAYERS)
             set(INSTALL_DEFINES
                 -DINPUT_FILE="${CMAKE_CURRENT_SOURCE_DIR}/json/${TARGET_NAME}.json.in"
                 -DOUTPUT_FILE="${CMAKE_CURRENT_BINARY_DIR}/staging-json/${TARGET_NAME}.json"
-                -DVK_VERSION=1.2.${vk_header_version})
+                -DVK_VERSION=1.3.${vk_header_version})
             # If this json file is not a metalayer, get the needed properties from that target
             if(TARGET ${TARGET_NAME})
                 set(INSTALL_DEFINES ${INSTALL_DEFINES} -DRELATIVE_LAYER_BINARY="$<TARGET_FILE_NAME:${TARGET_NAME}>")

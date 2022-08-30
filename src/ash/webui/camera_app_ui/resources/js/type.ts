@@ -2,11 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {assertExists, assertInstanceof} from './assert.js';
+
 /**
  * Photo or video resolution.
  */
 export class Resolution {
-  constructor(readonly width: number, readonly height: number) {}
+  readonly width: number;
+
+  readonly height: number;
+
+  constructor();
+  constructor(width: number, height: number);
+  constructor(width?: number, height?: number) {
+    this.width = width ?? 0;
+    this.height = height ?? -1;
+  }
 
   /**
    * @return Total pixel number.
@@ -19,27 +30,56 @@ export class Resolution {
    * Aspect ratio calculates from width divided by height.
    */
   get aspectRatio(): number {
+    // Special aspect ratio mapping rule, see http://b/147986763.
+    if (this.width === 848 && this.height === 480) {
+      return (new Resolution(16, 9)).aspectRatio;
+    }
     // Approximate to 4 decimal places to prevent precision error during
     // comparing.
     return parseFloat((this.width / this.height).toFixed(4));
   }
 
   /**
+   * @return The amount of mega pixels to 1 decimal place.
+   */
+  get mp(): number {
+    return parseFloat((this.area / 1000000).toFixed(1));
+  }
+
+  /**
    * Compares width/height of resolutions, see if they are equal or not.
+   *
    * @param resolution Resolution to be compared with.
    * @return Whether width/height of resolutions are equal.
    */
-  equals(resolution: Resolution): boolean {
+  equals(resolution: Resolution|null): boolean {
+    if (resolution === null) {
+      return false;
+    }
     return this.width === resolution.width && this.height === resolution.height;
   }
 
   /**
+   * Compares width/height of resolutions, see if they are equal or not. It also
+   * returns true if the resolution is rotated.
+   *
+   * @param resolution Resolution to be compared with.
+   * @return Whether width/height of resolutions are equal.
+   */
+  equalsWithRotation(resolution: Resolution): boolean {
+    return (this.width === resolution.width &&
+            this.height === resolution.height) ||
+        (this.width === resolution.height && this.height === resolution.width);
+  }
+
+  /**
    * Compares aspect ratio of resolutions, see if they are equal or not.
+   *
    * @param resolution Resolution to be compared with.
    * @return Whether aspect ratio of resolutions are equal.
    */
   aspectRatioEquals(resolution: Resolution): boolean {
-    return this.width * resolution.height === this.height * resolution.width;
+    return this.aspectRatio === resolution.aspectRatio;
   }
 
   /**
@@ -61,6 +101,7 @@ export class Resolution {
 export enum MimeType {
   GIF = 'image/gif',
   JPEG = 'image/jpeg',
+  JSON = 'application/json',
   MP4 = 'video/mp4',
   PDF = 'application/pdf',
 }
@@ -71,7 +112,6 @@ export enum MimeType {
 export enum Mode {
   PHOTO = 'photo',
   VIDEO = 'video',
-  SQUARE = 'square',
   PORTRAIT = 'portrait',
   SCAN = 'scan',
 }
@@ -88,7 +128,7 @@ export enum Facing {
   VIRTUAL_USER = 'virtual_user',
   VIRTUAL_ENV = 'virtual_environment',
   VIRTUAL_EXT = 'virtual_external',
-  NOT_SET = '(not set)',
+  UNKNOWN = 'unknown',
 }
 
 export enum ViewName {
@@ -97,15 +137,14 @@ export enum ViewName {
   DOCUMENT_MODE_DIALOG = 'view-document-mode-dialog',
   EXPERT_SETTINGS = 'view-expert-settings',
   FLASH = 'view-flash',
-  GRID_SETTINGS = 'view-grid-settings',
   MESSAGE_DIALOG = 'view-message-dialog',
+  OPTION_PANEL = 'view-option-panel',
+  PHOTO_ASPECT_RATIO_SETTINGS = 'view-photo-aspect-ratio-settings',
   PHOTO_RESOLUTION_SETTINGS = 'view-photo-resolution-settings',
   PTZ_PANEL = 'view-ptz-panel',
-  RESOLUTION_SETTINGS = 'view-resolution-settings',
   REVIEW = 'view-review',
   SETTINGS = 'view-settings',
   SPLASH = 'view-splash',
-  TIMER_SETTINGS = 'view-timer-settings',
   VIDEO_RESOLUTION_SETTINGS = 'view-video-resolution-settings',
   WARNING = 'view-warning',
 }
@@ -114,6 +153,35 @@ export enum VideoType {
   MP4 = 'mp4',
   GIF = 'gif',
 }
+
+export enum PhotoResolutionLevel {
+  FULL = 'full',
+  MEDIUM = 'medium',
+  UNKNOWN = 'unknown',
+}
+
+export enum VideoResolutionLevel {
+  FULL = 'full',
+  MEDIUM = 'medium',
+  FOUR_K = '4K',
+  QUAD_HD = 'Quad HD',
+  FULL_HD = 'Full HD',
+  HD = 'HD',
+  UNKNOWN = 'unknown',
+}
+
+export enum AspectRatioSet {
+  RATIO_4_3 = 1.3333,
+  RATIO_16_9 = 1.7778,
+  RATIO_OTHER = 0.0000,
+  RATIO_SQUARE = 1.0000,
+}
+
+export const NON_CROP_ASPECT_RATIO_SETS = [
+  AspectRatioSet.RATIO_4_3,
+  AspectRatioSet.RATIO_16_9,
+  AspectRatioSet.RATIO_OTHER,
+];
 
 export enum Rotation {
   ANGLE_0 = 0,
@@ -173,6 +241,10 @@ export interface ImageBlob {
   resolution: Resolution;
 }
 
+// The key-value pair of the entries in metadata are stored as key-value of an
+// |Object| type
+export type Metadata = Record<string, unknown>;
+
 export interface PerfInformation {
   hasError?: boolean;
   resolution?: Resolution;
@@ -183,6 +255,65 @@ export interface PerfEntry {
   event: PerfEvent;
   duration: number;
   perfInfo?: PerfInformation;
+}
+
+export interface VideoTrackSettings {
+  deviceId: string;
+  width: number;
+  height: number;
+  frameRate: number;
+}
+
+/**
+ * Gets video track settings from a video track.
+ *
+ * This asserts that all property that should exists on video track settings
+ * (.width, .height, .deviceId, .frameRate) all exists and narrow the type.
+ */
+export function getVideoTrackSettings(videoTrack: MediaStreamTrack):
+    VideoTrackSettings {
+  // TODO(pihsun): The type from TypeScript lib.dom.d.ts is wrong on Chrome and
+  // the .deviceId should never be undefined. Try to override that when we have
+  // newer TypeScript compiler (>= 4.5) that supports overriding lib.dom.d.ts.
+  const {deviceId, width, height, frameRate} = videoTrack.getSettings();
+  return {
+    deviceId: assertExists(deviceId),
+    width: assertExists(width),
+    height: assertExists(height),
+    frameRate: assertExists(frameRate),
+  };
+}
+
+/**
+ * A proxy to get preview video or stream with notification of when the video
+ * stream is expired.
+ */
+export class PreviewVideo {
+  private expired = false;
+
+  constructor(
+      readonly video: HTMLVideoElement, readonly onExpired: Promise<void>) {
+    (async () => {
+      await this.onExpired;
+      this.expired = true;
+    })();
+  }
+
+  getStream(): MediaStream {
+    return assertInstanceof(this.video.srcObject, MediaStream);
+  }
+
+  getVideoTrack(): MediaStreamTrack {
+    return this.getStream().getVideoTracks()[0];
+  }
+
+  getVideoSettings(): VideoTrackSettings {
+    return getVideoTrackSettings(this.getVideoTrack());
+  }
+
+  isExpired(): boolean {
+    return this.expired;
+  }
 }
 
 /**
@@ -300,4 +431,42 @@ export class NoChunkError extends Error {
     super(message);
     this.name = this.constructor.name;
   }
+}
+
+/**
+ * Throws when the portrait mode fails to detect a human face.
+ */
+export class PortraitModeProcessError extends Error {
+  constructor(message = 'No human face detected in the scene') {
+    super(message);
+    this.name = this.constructor.name;
+  }
+}
+
+/**
+ * Types of local storage key.
+ */
+export enum LocalStorageKey {
+  CUSTOM_VIDEO_PARAMETERS = 'customVideoParameters',
+  DOC_MODE_DIALOG_SHOWN = 'isDocModeDialogShown',
+  DOC_MODE_TOAST_SHOWN = 'isDocModeToastShown',
+  ENABLE_FPS_PICKER = 'enableFPSPicker',
+  ENABLE_FULL_SIZED_VIDEO_SNAPSHOT = 'enableFullSizedVideoSnapshot',
+  ENABLE_MULTISTREAM_RECORDING = 'enableMultistreamRecording',
+  ENABLE_PTZ_FOR_BUILTIN = 'enablePTZForBuiltin',
+  EXPERT_MODE = 'expert',
+  GA_USER_ID = 'google-analytics.analytics.user-id',
+  MIRRORING_TOGGLES = 'mirroringToggles',
+  PREF_DEVICE_PHOTO_ASPECT_RATIO_SET = 'devicePhotoAspectRatioSet',
+  PREF_DEVICE_PHOTO_RESOLUTION_EXPERT = 'devicePhotoResolutionExpert',
+  PREF_DEVICE_PHOTO_RESOLUTION_LEVEL = 'devicePhotoResolutionLevel',
+  PREF_DEVICE_VIDEO_RESOLUTION_EXPERT = 'deviceVideoResolutionExpert',
+  PREF_DEVICE_VIDEO_RESOLUTION_FPS = 'deviceVideoResolutionFps',
+  PREF_DEVICE_VIDEO_RESOLUTION_LEVEL = 'deviceVideoResolutionLevel',
+  PRINT_PERFORMANCE_LOGS = 'printPerformanceLogs',
+  PTZ_TOAST_SHOWN = 'isPTZToastShown',
+  SAVE_METADATA = 'saveMetadata',
+  SHOW_ALL_RESOLUTIONS = 'showAllResolutions',
+  SHOW_METADATA = 'showMetadata',
+  TOGGLE_MIC = 'toggleMic',
 }

@@ -89,7 +89,7 @@ class FixedArrayBase
   // which is necessary for being able to create a free space filler for the
   // whole array of kMaxSize.
   static const int kMaxSize = 128 * kTaggedSize * MB - kTaggedSize;
-  STATIC_ASSERT(Smi::IsValid(kMaxSize));
+  static_assert(Smi::IsValid(kMaxSize));
 
  protected:
   TQ_OBJECT_CONSTRUCTORS(FixedArrayBase)
@@ -141,10 +141,13 @@ class FixedArray
   // Setters for frequently used oddballs located in old space.
   inline void set_undefined(int index);
   inline void set_undefined(Isolate* isolate, int index);
+  inline void set_undefined(ReadOnlyRoots ro_roots, int index);
   inline void set_null(int index);
   inline void set_null(Isolate* isolate, int index);
+  inline void set_null(ReadOnlyRoots ro_roots, int index);
   inline void set_the_hole(int index);
   inline void set_the_hole(Isolate* isolate, int index);
+  inline void set_the_hole(ReadOnlyRoots ro_roots, int index);
 
   inline ObjectSlot GetFirstElementAddress();
   inline bool ContainsOnlySmisOrHoles();
@@ -179,7 +182,7 @@ class FixedArray
 
   // Code Generation support.
   static constexpr int OffsetOfElementAt(int index) {
-    STATIC_ASSERT(kObjectsOffset == SizeFor(0));
+    static_assert(kObjectsOffset == SizeFor(0));
     return SizeFor(index);
   }
 
@@ -192,12 +195,13 @@ class FixedArray
                 "FixedArray maxLength not a Smi");
 
   // Maximally allowed length for regular (non large object space) object.
-  STATIC_ASSERT(kMaxRegularHeapObjectSize < kMaxSize);
+  static_assert(kMaxRegularHeapObjectSize < kMaxSize);
   static const int kMaxRegularLength =
       (kMaxRegularHeapObjectSize - kHeaderSize) / kTaggedSize;
 
   // Dispatched behavior.
   DECL_PRINTER(FixedArray)
+  DECL_VERIFIER(FixedArray)
 
   int AllocatedSize();
 
@@ -212,11 +216,7 @@ class FixedArray
                                        Object value);
 
  private:
-  STATIC_ASSERT(kHeaderSize == Internals::kFixedArrayHeaderSize);
-
-  inline void set_undefined(ReadOnlyRoots ro_roots, int index);
-  inline void set_null(ReadOnlyRoots ro_roots, int index);
-  inline void set_the_hole(ReadOnlyRoots ro_roots, int index);
+  static_assert(kHeaderSize == Internals::kFixedArrayHeaderSize);
 
   TQ_OBJECT_CONSTRUCTORS(FixedArray)
 };
@@ -315,7 +315,7 @@ class WeakFixedArray
   int AllocatedSize();
 
   static int OffsetOfElementAt(int index) {
-    STATIC_ASSERT(kObjectsOffset == SizeFor(0));
+    static_assert(kObjectsOffset == SizeFor(0));
     return SizeFor(index);
   }
 
@@ -383,7 +383,7 @@ class WeakArrayList
   inline void CopyElements(Isolate* isolate, int dst_index, WeakArrayList src,
                            int src_index, int len, WriteBarrierMode mode);
 
-  V8_EXPORT_PRIVATE bool IsFull();
+  V8_EXPORT_PRIVATE bool IsFull() const;
 
   int AllocatedSize();
 
@@ -483,7 +483,9 @@ class ArrayList : public TorqueGeneratedArrayList<ArrayList, FixedArray> {
 
   static const int kLengthIndex = 0;
   static const int kFirstIndex = 1;
-  STATIC_ASSERT(kHeaderFields == kFirstIndex);
+  static_assert(kHeaderFields == kFirstIndex);
+
+  DECL_VERIFIER(ArrayList)
 
  private:
   static Handle<ArrayList> EnsureSpace(Isolate* isolate,
@@ -592,6 +594,13 @@ class PodArray : public ByteArray {
   bool matches(const T* buffer, int length) {
     DCHECK_LE(length, this->length());
     return memcmp(GetDataStartAddress(), buffer, length * sizeof(T)) == 0;
+  }
+
+  bool matches(int offset, const T* buffer, int length) {
+    DCHECK_LE(offset, this->length());
+    DCHECK_LE(offset + length, this->length());
+    return memcmp(GetDataStartAddress() + sizeof(T) * offset, buffer,
+                  length * sizeof(T)) == 0;
   }
 
   T get(int index) {

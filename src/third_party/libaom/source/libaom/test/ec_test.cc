@@ -12,6 +12,8 @@
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 
 #include <cstdlib>
+#include <memory>
+#include <new>
 
 #include "aom_dsp/entenc.h"
 #include "aom_dsp/entdec.h"
@@ -37,18 +39,18 @@ TEST(EC_TEST, random_ec_test) {
   od_ec_enc_init(&enc, 1);
   /*Test compatibility between multiple different encode/decode routines.*/
   for (i = 0; i < 409600; i++) {
-    unsigned *fz;
-    unsigned *fts;
-    unsigned *data;
-    unsigned *tell;
-    unsigned *enc_method;
     int j;
     sz = rand() / ((RAND_MAX >> (rand() % 9U)) + 1U);
-    fz = (unsigned *)malloc(sz * sizeof(*fz));
-    fts = (unsigned *)malloc(sz * sizeof(*fts));
-    data = (unsigned *)malloc(sz * sizeof(*data));
-    tell = (unsigned *)malloc((sz + 1) * sizeof(*tell));
-    enc_method = (unsigned *)malloc(sz * sizeof(*enc_method));
+    std::unique_ptr<unsigned[]> fz(new (std::nothrow) unsigned[sz]);
+    ASSERT_NE(fz, nullptr);
+    std::unique_ptr<unsigned[]> fts(new (std::nothrow) unsigned[sz]);
+    ASSERT_NE(fts, nullptr);
+    std::unique_ptr<unsigned[]> data(new (std::nothrow) unsigned[sz]);
+    ASSERT_NE(data, nullptr);
+    std::unique_ptr<unsigned[]> tell(new (std::nothrow) unsigned[sz + 1]);
+    ASSERT_NE(tell, nullptr);
+    std::unique_ptr<unsigned[]> enc_method(new (std::nothrow) unsigned[sz]);
+    ASSERT_NE(enc_method, nullptr);
     od_ec_enc_reset(&enc);
     tell[0] = od_ec_enc_tell_frac(&enc);
     for (j = 0; j < sz; j++) {
@@ -124,11 +126,6 @@ TEST(EC_TEST, random_ec_test) {
           << " instead of " << tell[j + 1] << " (Random seed: " << seed
           << ").\n";
     }
-    free(enc_method);
-    free(tell);
-    free(data);
-    free(fts);
-    free(fz);
   }
   od_ec_enc_reset(&enc);
   if (CDF_SHIFT == 0) {

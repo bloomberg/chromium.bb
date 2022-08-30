@@ -5,9 +5,9 @@
 #ifndef ASH_COMPONENTS_TETHER_HOST_SCAN_DEVICE_PRIORITIZER_H_
 #define ASH_COMPONENTS_TETHER_HOST_SCAN_DEVICE_PRIORITIZER_H_
 
-#include "chromeos/components/multidevice/remote_device_ref.h"
+#include "ash/components/multidevice/remote_device_ref.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace tether {
 
@@ -36,6 +36,6 @@ class HostScanDevicePrioritizer {
 
 }  // namespace tether
 
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // ASH_COMPONENTS_TETHER_HOST_SCAN_DEVICE_PRIORITIZER_H_

@@ -257,10 +257,10 @@ bool CanSameSiteMainFrameNavigationsChangeSiteInstances() {
 void DisableProactiveBrowsingInstanceSwapFor(RenderFrameHost* rfh) {
   if (!CanSameSiteMainFrameNavigationsChangeSiteInstances())
     return;
-  // If the RFH is not a main frame, navigations on it will never result in a
-  // proactive BrowsingInstance swap, so we shouldn't call this function on
+  // If the RFH is not a primary main frame, navigations on it will never result
+  // in a proactive BrowsingInstance swap, so we shouldn't call this function on
   // subframes.
-  DCHECK(!rfh->GetParent());
+  DCHECK(rfh->IsInPrimaryMainFrame());
   static_cast<RenderFrameHostImpl*>(rfh)
       ->DisableProactiveBrowsingInstanceSwapForTesting();
 }
@@ -297,7 +297,8 @@ void AwaitDocumentOnLoadCompleted(WebContents* web_contents) {
    public:
     explicit Awaiter(content::WebContents* web_contents)
         : content::WebContentsObserver(web_contents),
-          observed_(web_contents->IsDocumentOnLoadCompletedInMainFrame()) {}
+          observed_(
+              web_contents->IsDocumentOnLoadCompletedInPrimaryMainFrame()) {}
 
     Awaiter(const Awaiter&) = delete;
     Awaiter& operator=(const Awaiter&) = delete;
@@ -307,12 +308,11 @@ void AwaitDocumentOnLoadCompleted(WebContents* web_contents) {
     void Await() {
       if (!observed_)
         run_loop_.Run();
-      DCHECK(web_contents()->IsDocumentOnLoadCompletedInMainFrame());
+      DCHECK(web_contents()->IsDocumentOnLoadCompletedInPrimaryMainFrame());
     }
 
     // WebContentsObserver:
-    void DocumentOnLoadCompletedInMainFrame(
-        RenderFrameHost* render_frame_host) override {
+    void DocumentOnLoadCompletedInPrimaryMainFrame() override {
       observed_ = true;
       if (run_loop_.running())
         run_loop_.Quit();
@@ -413,6 +413,21 @@ void WindowedNotificationObserver::Observe(int type,
   if (!callback_.is_null() && !callback_.Run(source, details))
     return;
 
+  seen_ = true;
+  run_loop_.Quit();
+}
+
+LoadStopObserver::LoadStopObserver(WebContents* web_contents)
+    : WebContentsObserver(web_contents) {}
+
+void LoadStopObserver::Wait() {
+  if (!seen_)
+    run_loop_.Run();
+
+  EXPECT_TRUE(seen_);
+}
+
+void LoadStopObserver::DidStopLoading() {
   seen_ = true;
   run_loop_.Quit();
 }

@@ -16,16 +16,16 @@ describe('The Console Tab', async () => {
   });
 
   it('shows the toolbar button for one issue correctly', async () => {
-    // Navigate to page which causes a SameSiteCookieIssue.
-    await goToResource('console/cookie-issue.html');
+    // Navigate to page which causes a single issue.
+    await goToResource('issues/cross-origin-portal-post.html');
     await navigateToConsoleTab();
 
     await waitForIssueButtonLabel('1 Issue:');
   });
 
   it('shows the toolbar button for two issues correctly', async () => {
-    // Navigate to page which causes two SameSiteCookieIssue.
-    await goToResource('console/two-cookie-issues.html');
+    // Navigate to page which causes two issues.
+    await goToResource('issues/cross-origin-portal-post-2.html');
     await navigateToConsoleTab();
 
     await waitForIssueButtonLabel('2 Issues:');
@@ -40,7 +40,7 @@ describe('The Console Tab', async () => {
 
     const {target} = getBrowserAndPages();
     await target.evaluate(() => {
-      // Trigger a SameSiteCookieIssue.
+      // Trigger a CookieIssue.
       document.cookie = 'foo=bar;samesite=None';
     });
 

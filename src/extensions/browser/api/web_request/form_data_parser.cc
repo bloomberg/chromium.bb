@@ -9,14 +9,13 @@
 #include <vector>
 
 #include "base/check.h"
-#include "base/cxx17_backports.h"
 #include "base/lazy_instance.h"
 #include "base/memory/raw_ptr.h"
 #include "base/notreached.h"
+#include "base/strings/escape.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
-#include "net/base/escape.h"
 #include "net/http/http_request_headers.h"
 #include "third_party/re2/src/re2/re2.h"
 
@@ -30,7 +29,7 @@ namespace extensions {
 namespace {
 
 const char kContentDisposition[] = "content-disposition:";
-const size_t kContentDispositionLength = base::size(kContentDisposition) - 1;
+const size_t kContentDispositionLength = std::size(kContentDisposition) - 1;
 // kCharacterPattern is an allowed character in a URL encoding. Definition is
 // from RFC 1738, end of section 2.2.
 const char kCharacterPattern[] =
@@ -399,14 +398,14 @@ bool FormDataParserUrlEncoded::GetNextNameValue(Result* result) {
 
   bool success = RE2::ConsumeN(&source_, pattern(), args_, args_size_);
   if (success) {
-    const net::UnescapeRule::Type kUnescapeRules =
-        net::UnescapeRule::REPLACE_PLUS_WITH_SPACE;
+    const base::UnescapeRule::Type kUnescapeRules =
+        base::UnescapeRule::REPLACE_PLUS_WITH_SPACE;
 
     std::string unescaped_name =
-        net::UnescapeBinaryURLComponent(name_, kUnescapeRules);
+        base::UnescapeBinaryURLComponent(name_, kUnescapeRules);
     result->set_name(unescaped_name);
     std::string unescaped_value =
-        net::UnescapeBinaryURLComponent(value_, kUnescapeRules);
+        base::UnescapeBinaryURLComponent(value_, kUnescapeRules);
     const base::StringPiece unescaped_data(unescaped_value.data(),
                                            unescaped_value.length());
     if (base::IsStringUTF8(unescaped_data)) {
@@ -555,7 +554,7 @@ bool FormDataParserMultipart::GetNextNameValue(Result* result) {
     return_value = FinishReadingPart(value_assigned ? nullptr : &value);
   }
 
-  result->set_name(net::UnescapeBinaryURLComponent(name));
+  result->set_name(base::UnescapeBinaryURLComponent(name));
   if (value_assigned) {
     // Hold filename as value.
     result->SetStringValue(std::string(value));

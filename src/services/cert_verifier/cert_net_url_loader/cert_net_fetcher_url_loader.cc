@@ -65,7 +65,6 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/check_op.h"
-#include "base/ignore_result.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
@@ -75,6 +74,7 @@
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/load_flags.h"
@@ -622,7 +622,7 @@ void CertNetFetcherURLLoader::AsyncCertNetFetcherURLLoader::
   // it, binding it to a new pipe, and dropping the PendingReceiver on the
   // floor.
   factory_.reset();
-  ignore_result(factory_.BindNewPipeAndPassReceiver());
+  std::ignore = factory_.BindNewPipeAndPassReceiver();
   factory_.FlushForTesting();
 }
 

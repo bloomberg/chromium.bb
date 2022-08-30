@@ -9,7 +9,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/soda/constants.h"
 #include "components/soda/soda_installer.h"
-#include "media/mojo/mojom/speech_recognition_service.mojom.h"
+#include "media/mojo/mojom/speech_recognition.mojom.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
 
@@ -45,9 +45,10 @@ class SpeechRecognitionClientBrowserInterface
           pending_remote) override;
 
   // SodaInstaller::Observer:
-  void OnSodaInstalled() override;
-  void OnSodaProgress(int combined_progress) override {}
-  void OnSodaError() override {}
+  void OnSodaInstalled(speech::LanguageCode language_code) override;
+  void OnSodaProgress(speech::LanguageCode language_code,
+                      int progress) override {}
+  void OnSodaError(speech::LanguageCode language_code) override {}
 
  private:
   void OnSpeechRecognitionAvailabilityChanged();

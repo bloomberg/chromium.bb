@@ -41,6 +41,9 @@ from blinkpy.web_tests.port.android import (
     PRODUCTS_TO_EXPECTATION_FILE_PATHS, ANDROID_DISABLED_TESTS,
     ANDROID_WEBLAYER)
 from blinkpy.web_tests.port.factory import platform_options
+from blinkpy.web_tests.port.linux import LinuxPort
+from blinkpy.web_tests.port.mac import MacPort
+from blinkpy.web_tests.port.win import WinPort
 
 from functools import reduce
 
@@ -48,21 +51,24 @@ _log = logging.getLogger(__name__)
 
 
 def lint(host, options):
-    port = host.port_factory.get(options.platform)
+    # lint against three major ports. This is a tradeoff between presubmit
+    # check speed and the completeness of the check.
+    full_port_names_to_lint = ["%s-%s" % (cls.port_name, cls.SUPPORTED_VERSIONS[-1])
+                               for cls in [LinuxPort, MacPort, WinPort]]
+    ports_to_lint = [
+        host.port_factory.get(name) for name in full_port_names_to_lint
+    ]
 
     # Add all extra expectation files to be linted.
     options.additional_expectations.extend(
         list(PRODUCTS_TO_EXPECTATION_FILE_PATHS.values()) +
         [ANDROID_DISABLED_TESTS] + [
-            host.filesystem.join(port.web_tests_dir(),
+            host.filesystem.join(ports_to_lint[0].web_tests_dir(),
                                  'WPTOverrideExpectations'),
-            host.filesystem.join(port.web_tests_dir(), 'WebGPUExpectations'),
+            host.filesystem.join(ports_to_lint[0].web_tests_dir(),
+                                 'WebGPUExpectations'),
         ])
 
-    ports_to_lint = [
-        host.port_factory.get(name, options=options)
-        for name in host.port_factory.all_port_names(options.platform)
-    ]
 
     # In general, the set of TestExpectation files should be the same for
     # all ports. However, the method used to list expectations files is
@@ -72,74 +78,31 @@ def lint(host, options):
 
     failures = []
     warnings = []
-    expectations_dict = {}
     all_system_specifiers = set()
     all_build_specifiers = set(ports_to_lint[0].ALL_BUILD_TYPES)
 
-    # TODO(crbug.com/986447) Remove the checks below after migrating the expectations
-    # parsing to Typ. All the checks below can be handled by Typ.
-
     for port in ports_to_lint:
-        expectations_dict.update(port.all_expectations_dict())
-        config_macro_dict = port.configuration_specifier_macros()
-        if config_macro_dict:
-            all_system_specifiers.update(
-                {s.lower()
-                 for s in config_macro_dict.keys()})
-            all_system_specifiers.update({
-                s.lower()
-                for s in reduce(lambda x, y: x + y, config_macro_dict.values())
-            })
+        expectations_dict = port.all_expectations_dict()
         for path in port.extra_expectations_files():
             if host.filesystem.exists(path):
                 expectations_dict[path] = host.filesystem.read_text_file(path)
 
-    for path, content in expectations_dict.items():
-        # Check the expectations file content
-        failures.extend(_check_expectations_file_content(content))
-
-        # Create a TestExpectations instance and see if an exception is raised
-        try:
-            test_expectations = TestExpectations(
-                ports_to_lint[0], expectations_dict={path: content})
-            # Check each expectation for issues
-            f, w = _check_expectations(host, ports_to_lint[0], path,
-                                       test_expectations, options)
-            failures += f
-            warnings += w
-        except ParseError as error:
-            _log.error(str(error))
-            failures.append(str(error))
-            _log.error('')
+        for path, content in expectations_dict.items():
+            # Create a TestExpectations instance and see if an exception is raised
+            try:
+                test_expectations = TestExpectations(
+                    port, expectations_dict={path: content})
+                # Check each expectation for issues
+                f, w = _check_expectations(host, port, path,
+                                           test_expectations, options)
+                failures += f
+                warnings += w
+            except ParseError as error:
+                _log.error(str(error))
+                failures.append(str(error))
+                _log.error('')
 
     return failures, warnings
-
-
-def _check_expectations_file_content(content):
-    failures = []
-    for lineno, line in enumerate(content.splitlines(), 1):
-        if not line.strip() or line.strip().startswith('#'):
-            continue
-        # check for test expectations that start with leading spaces
-        if line.startswith(' '):
-            error = (('%s:%d Line %d has a test expectation'
-                      ' that has leading spaces.') %
-                     (host.filesystem.basename(path), lineno, lineno))
-            _log.error(error)
-            failures.append(error)
-            _log.error('')
-
-        # check for test expectations that have a Bug(...) as the reason
-        if line.startswith('Bug('):
-            error = (
-                ("%s:%d Expectation '%s' has the Bug(...) token, "
-                 "The token has been removed in the new expectations format") %
-                (host.filesystem.basename(path), lineno, line))
-            _log.error(error)
-            failures.append(error)
-            _log.error('')
-
-    return failures
 
 
 def _check_test_existence(host, port, path, expectations):
@@ -254,10 +217,10 @@ def _check_not_slow_and_timeout(host, port, path, expectations):
     for i in range(len(expectations)):
         exp = expectations[i]
         if (ResultType.Timeout in exp.results and
-                (ResultType.Skip not in exp.results) and
+                len(exp.results) == 1 and
                 (test_expectations.get_expectations(exp.test).is_slow_test or
                     port.is_slow_wpt_test(exp.test))):
-            error = "{}:{} '{}' is a [ Slow ] and [ Timeout ] test.".format(
+            error = "{}:{} '{}' is a [ Slow ] and [ Timeout ] test: you must add [ Skip ] (see crrev.com/c/3381301).".format(
                 host.filesystem.basename(path), exp.lineno, exp.test)
             _log.warning(error)
             rv.append(error)
@@ -398,30 +361,37 @@ def check_virtual_test_suites(host, options):
 
 def check_smoke_tests(host, options):
     port = host.port_factory.get(options=options)
-    smoke_tests_file = host.filesystem.join(port.web_tests_dir(), 'SmokeTests')
+    smoke_tests_files = [
+        host.filesystem.join(port.web_tests_dir(), 'SmokeTests',
+                             'Default.txt'),
+        host.filesystem.join(port.web_tests_dir(), 'SmokeTests', 'Mac.txt')
+    ]
     failures = []
-    if not host.filesystem.exists(smoke_tests_file):
-        return failures
-
-    smoke_tests = host.filesystem.read_text_file(smoke_tests_file)
-    line_number = 0
-    parsed_lines = {}
-    for line in smoke_tests.split('\n'):
-        line_number += 1
-        line = line.split('#')[0].strip()
-        if not line:
-            continue
-        failure = ''
-        if line in parsed_lines:
-            failure = '%s:%d duplicate with line %d: %s' % \
-                (smoke_tests_file, line_number, parsed_lines[line], line)
-        elif not port.test_exists(line):
-            failure = '%s:%d Test does not exist: %s' % (smoke_tests_file,
-                                                         line_number, line)
-        if failure:
-            _log.error(failure)
+    for smoke_tests_file in smoke_tests_files:
+        if not host.filesystem.exists(smoke_tests_file):
+            failure = 'Smoke test file does not exist: %s' % smoke_tests_file
             failures.append(failure)
-        parsed_lines[line] = line_number
+            continue
+
+        smoke_tests = host.filesystem.read_text_file(smoke_tests_file)
+        line_number = 0
+        parsed_lines = {}
+        for line in smoke_tests.split('\n'):
+            line_number += 1
+            line = line.split('#')[0].strip()
+            if not line:
+                continue
+            failure = ''
+            if line in parsed_lines:
+                failure = '%s:%d duplicate with line %d: %s' % \
+                    (smoke_tests_file, line_number, parsed_lines[line], line)
+            elif not port.test_exists(line):
+                failure = '%s:%d Test does not exist: %s' % (smoke_tests_file,
+                                                             line_number, line)
+            if failure:
+                _log.error(failure)
+                failures.append(failure)
+            parsed_lines[line] = line_number
     if failures:
         _log.error('')
     return failures
@@ -435,7 +405,8 @@ def run_checks(host, options):
     failures += f
     warnings += w
     failures.extend(check_virtual_test_suites(host, options))
-    failures.extend(check_smoke_tests(host, options))
+    # Disabled until crbug.com/1322981 is fixed.
+    #failures.extend(check_smoke_tests(host, options))
 
     if options.json:
         with open(options.json, 'w') as f:

@@ -21,6 +21,7 @@
 #import "ios/chrome/browser/ui/reading_list/reading_list_table_view_item.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_utils.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/ui/favicon/favicon_constants.h"
 #import "ios/chrome/common/ui/favicon/favicon_view.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -32,11 +33,6 @@ namespace {
 bool EntrySorter(const ReadingListEntry* rhs, const ReadingListEntry* lhs) {
   return rhs->UpdateTime() > lhs->UpdateTime();
 }
-// Desired width and height of favicon.
-const CGFloat kFaviconWidthHeight = 24;
-// Minimum favicon size to retrieve.
-const CGFloat kFaviconMinWidthHeight = 16;
-
 }  // namespace
 
 @interface ReadingListMediator ()<ReadingListModelBridgeObserver> {
@@ -169,7 +165,7 @@ const CGFloat kFaviconMinWidthHeight = 16;
         [strongSelf.dataSink itemHasChangedAfterDelay:strongItem];
       };
   self.faviconLoader->FaviconForPageUrl(
-      item.faviconPageURL, kFaviconWidthHeight, kFaviconMinWidthHeight,
+      item.faviconPageURL, kDesiredSmallFaviconSizePt, kMinFaviconSizePt,
       /*fallback_to_google_server=*/false, completionBlock);
 }
 

@@ -12,7 +12,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "base/win/windows_version.h"
 #include "sandbox/policy/win/sandbox_test_utils.h"
 #include "sandbox/policy/win/sandbox_win.h"
@@ -31,14 +31,24 @@ class SandboxFeatureTest
           ::testing::tuple</* renderer app container feature */ bool,
                            /* ktm mitigation feature */ bool>> {
  public:
+  enum TestParameter { kEnableRendererAppContainer, kEnableKtmMitigation };
+
   SandboxFeatureTest();
+
+  virtual IntegrityLevel GetExpectedIntegrityLevel();
+  virtual TokenLevel GetExpectedLockdownTokenLevel();
+  virtual TokenLevel GetExpectedInitialTokenLevel();
+
+  virtual MitigationFlags GetExpectedMitigationFlags();
+  virtual MitigationFlags GetExpectedDelayedMitigationFlags();
 
   // App Containers are only available in Windows 8 and up
   virtual AppContainerType GetExpectedAppContainerType();
+  virtual std::vector<base::win::Sid> GetExpectedCapabilities();
 
-  virtual MitigationFlags GetExpectedMitigationFlags();
-
-  virtual MitigationFlags GetExpectedDelayedMitigationFlags();
+  void ValidateSecurityLevels(TargetPolicy* policy);
+  void ValidatePolicyFlagSettings(TargetPolicy* policy);
+  void ValidateAppContainerSettings(TargetPolicy* policy);
 
   base::test::ScopedFeatureList feature_list_;
 };

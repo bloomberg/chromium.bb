@@ -5,7 +5,6 @@
 #include "chrome/browser/ash/app_mode/web_app/web_kiosk_app_data.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/values.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_data_delegate.h"
@@ -13,7 +12,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/image_decoder/image_decoder.h"
 #include "chrome/browser/net/system_network_context_manager.h"
-#include "chrome/browser/web_applications/web_application_info.h"
+#include "chrome/browser/web_applications/web_app_install_info.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -167,19 +166,18 @@ bool WebKioskAppData::LoadFromCache() {
   PrefService* local_state = g_browser_process->local_state();
   const base::Value* dict = local_state->GetDictionary(dictionary_name());
 
-  if (!LoadFromDictionary(base::Value::AsDictionaryValue(*dict),
-                          /* lazy_icon_load= */ true))
-    return false;
-
-  // If the icon was previously downloaded using a different url, do not use
-  // that icon.
-  if (GetLastIconUrl(*dict) != icon_url_)
+  if (!LoadFromDictionary(*dict, /* lazy_icon_load= */ true))
     return false;
 
   if (LoadLaunchUrlFromDictionary(*dict)) {
     SetStatus(Status::kInstalled);
     return true;
   }
+
+  // If the icon was previously downloaded using a different url and the app has
+  // not been installed earlier, do not use that icon.
+  if (GetLastIconUrl(*dict) != icon_url_)
+    return false;
 
   // Wait while icon is loaded.
   if (status_ == Status::kInit)
@@ -214,16 +212,14 @@ GURL WebKioskAppData::GetLaunchableUrl() const {
                                                          : install_url();
 }
 
-void WebKioskAppData::UpdateFromWebAppInfo(
-    std::unique_ptr<WebApplicationInfo> app_info) {
-  DCHECK(app_info);
-  name_ = base::UTF16ToUTF8(app_info->title);
+void WebKioskAppData::UpdateFromWebAppInfo(const WebAppInstallInfo& app_info) {
+  name_ = base::UTF16ToUTF8(app_info.title);
   base::FilePath cache_dir;
   if (delegate_)
     delegate_->GetKioskAppIconCacheDir(&cache_dir);
 
-  auto it = app_info->icon_bitmaps.any.find(kIconSize);
-  if (it != app_info->icon_bitmaps.any.end()) {
+  auto it = app_info.icon_bitmaps.any.find(kIconSize);
+  if (it != app_info.icon_bitmaps.any.end()) {
     const SkBitmap& bitmap = it->second;
     icon_ = gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
     icon_.MakeThreadSafe();
@@ -234,7 +230,7 @@ void WebKioskAppData::UpdateFromWebAppInfo(
   DictionaryPrefUpdate dict_update(local_state, dictionary_name());
   SaveToDictionary(dict_update);
 
-  launch_url_ = GURL(app_info->start_url);
+  launch_url_ = GURL(app_info.start_url);
   dict_update->FindDictKey(KioskAppDataBase::kKeyApps)
       ->FindDictKey(app_id())
       ->SetStringKey(kKeyLaunchUrl, launch_url_.spec());

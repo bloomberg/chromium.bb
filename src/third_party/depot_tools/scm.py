@@ -71,23 +71,23 @@ def determine_scm(root):
   """
   if os.path.isdir(os.path.join(root, '.git')):
     return 'git'
-  else:
-    try:
-      subprocess2.check_call(
-          ['git', 'rev-parse', '--show-cdup'],
-          stdout=subprocess2.DEVNULL,
-          stderr=subprocess2.DEVNULL,
-          cwd=root)
-      return 'git'
-    except (OSError, subprocess2.CalledProcessError):
-      return None
+
+  try:
+    subprocess2.check_call(
+        ['git', 'rev-parse', '--show-cdup'],
+        stdout=subprocess2.DEVNULL,
+        stderr=subprocess2.DEVNULL,
+        cwd=root)
+    return 'git'
+  except (OSError, subprocess2.CalledProcessError):
+    return None
 
 
 def only_int(val):
   if val.isdigit():
     return int(val)
-  else:
-    return 0
+
+  return 0
 
 
 class GIT(object):
@@ -261,7 +261,8 @@ class GIT(object):
     if 'origin/main' in remote_branches:
       # Fall back on origin/main if it exits.
       return 'origin', 'refs/heads/main'
-    elif 'origin/master' in remote_branches:
+
+    if 'origin/master' in remote_branches:
       # Fall back on origin/master if it exits.
       return 'origin', 'refs/heads/master'
 

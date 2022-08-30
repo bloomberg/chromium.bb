@@ -25,6 +25,7 @@
 #include "chrome/browser/android/metrics/uma_utils.h"
 #include "chrome/browser/android/tab_printer.h"
 #include "chrome/browser/android/tab_web_contents_delegate_android.h"
+#include "chrome/browser/android/url_param_filter/cross_otr_observer_android.h"
 #include "chrome/browser/browser_about_handler.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/notifications/notification_permission_context.h"
@@ -138,7 +139,6 @@ std::vector<TabAndroid*> TabAndroid::GetAllNativeTabs(
 
 void TabAndroid::AttachTabHelpers(content::WebContents* web_contents) {
   DCHECK(web_contents);
-
   TabHelpers::AttachTabHelpers(web_contents);
 }
 
@@ -168,6 +168,11 @@ scoped_refptr<cc::Layer> TabAndroid::GetContentLayer() const {
 int TabAndroid::GetAndroidId() const {
   JNIEnv* env = base::android::AttachCurrentThread();
   return Java_TabImpl_getId(env, weak_java_tab_.get(env));
+}
+
+int TabAndroid::GetLaunchType() const {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  return Java_TabImpl_getLaunchType(env, weak_java_tab_.get(env));
 }
 
 bool TabAndroid::IsNativePage() const {
@@ -270,7 +275,6 @@ void TabAndroid::InitWebContents(
     jboolean incognito,
     jboolean is_background_tab,
     const JavaParamRef<jobject>& jweb_contents,
-    jint jparent_tab_id,
     const JavaParamRef<jobject>& jweb_contents_delegate,
     const JavaParamRef<jobject>& jcontext_menu_populator_factory) {
   web_contents_.reset(content::WebContents::FromJavaWebContents(jweb_contents));
@@ -283,13 +287,16 @@ void TabAndroid::InitWebContents(
   web_contents()->SetDelegate(web_contents_delegate_.get());
 
   AttachTabHelpers(web_contents_.get());
+  url_param_filter::MaybeCreateCrossOtrObserverForTabLaunchType(
+      web_contents_.get(),
+      static_cast<TabModel::TabLaunchType>(GetLaunchType()));
 
   SetWindowSessionID(session_window_id_);
 
   ContextMenuHelper::FromWebContents(web_contents())
       ->SetPopulatorFactory(jcontext_menu_populator_factory);
 
-  synced_tab_delegate_->SetWebContents(web_contents(), jparent_tab_id);
+  synced_tab_delegate_->SetWebContents(web_contents());
 
   // Verify that the WebContents this tab represents matches the expected
   // off the record state.
@@ -342,7 +349,7 @@ void TabAndroid::DestroyWebContents(JNIEnv* env) {
   // during shutdown. See https://codereview.chromium.org/146693011/
   // and http://crbug.com/338709 for details.
   content::RenderProcessHost* process =
-      web_contents()->GetMainFrame()->GetProcess();
+      web_contents()->GetPrimaryMainFrame()->GetProcess();
   if (process)
     process->FastShutdownIfPossible(1, false);
 
