@@ -213,7 +213,86 @@ void Init10bpp() {
 #endif
 #endif  // LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
 }
+#endif  // LIBGAV1_MAX_BITDEPTH >= 10
+
+#if LIBGAV1_MAX_BITDEPTH == 12
+void Init12bpp() {
+  Dsp* const dsp = dsp_internal::GetWritableDspTable(12);
+  assert(dsp != nullptr);
+#if LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
+  INIT_WEIGHT_MASK(8, 8, 12, 0, 0);
+  INIT_WEIGHT_MASK(8, 16, 12, 0, 1);
+  INIT_WEIGHT_MASK(8, 32, 12, 0, 2);
+  INIT_WEIGHT_MASK(16, 8, 12, 1, 0);
+  INIT_WEIGHT_MASK(16, 16, 12, 1, 1);
+  INIT_WEIGHT_MASK(16, 32, 12, 1, 2);
+  INIT_WEIGHT_MASK(16, 64, 12, 1, 3);
+  INIT_WEIGHT_MASK(32, 8, 12, 2, 0);
+  INIT_WEIGHT_MASK(32, 16, 12, 2, 1);
+  INIT_WEIGHT_MASK(32, 32, 12, 2, 2);
+  INIT_WEIGHT_MASK(32, 64, 12, 2, 3);
+  INIT_WEIGHT_MASK(64, 16, 12, 3, 1);
+  INIT_WEIGHT_MASK(64, 32, 12, 3, 2);
+  INIT_WEIGHT_MASK(64, 64, 12, 3, 3);
+  INIT_WEIGHT_MASK(64, 128, 12, 3, 4);
+  INIT_WEIGHT_MASK(128, 64, 12, 4, 3);
+  INIT_WEIGHT_MASK(128, 128, 12, 4, 4);
+#else  // !LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
+  static_cast<void>(dsp);
+#ifndef LIBGAV1_Dsp12bpp_WeightMask_8x8
+  INIT_WEIGHT_MASK(8, 8, 12, 0, 0);
 #endif
+#ifndef LIBGAV1_Dsp12bpp_WeightMask_8x16
+  INIT_WEIGHT_MASK(8, 16, 12, 0, 1);
+#endif
+#ifndef LIBGAV1_Dsp12bpp_WeightMask_8x32
+  INIT_WEIGHT_MASK(8, 32, 12, 0, 2);
+#endif
+#ifndef LIBGAV1_Dsp12bpp_WeightMask_16x8
+  INIT_WEIGHT_MASK(16, 8, 12, 1, 0);
+#endif
+#ifndef LIBGAV1_Dsp12bpp_WeightMask_16x16
+  INIT_WEIGHT_MASK(16, 16, 12, 1, 1);
+#endif
+#ifndef LIBGAV1_Dsp12bpp_WeightMask_16x32
+  INIT_WEIGHT_MASK(16, 32, 12, 1, 2);
+#endif
+#ifndef LIBGAV1_Dsp12bpp_WeightMask_16x64
+  INIT_WEIGHT_MASK(16, 64, 12, 1, 3);
+#endif
+#ifndef LIBGAV1_Dsp12bpp_WeightMask_32x8
+  INIT_WEIGHT_MASK(32, 8, 12, 2, 0);
+#endif
+#ifndef LIBGAV1_Dsp12bpp_WeightMask_32x16
+  INIT_WEIGHT_MASK(32, 16, 12, 2, 1);
+#endif
+#ifndef LIBGAV1_Dsp12bpp_WeightMask_32x32
+  INIT_WEIGHT_MASK(32, 32, 12, 2, 2);
+#endif
+#ifndef LIBGAV1_Dsp12bpp_WeightMask_32x64
+  INIT_WEIGHT_MASK(32, 64, 12, 2, 3);
+#endif
+#ifndef LIBGAV1_Dsp12bpp_WeightMask_64x16
+  INIT_WEIGHT_MASK(64, 16, 12, 3, 1);
+#endif
+#ifndef LIBGAV1_Dsp12bpp_WeightMask_64x32
+  INIT_WEIGHT_MASK(64, 32, 12, 3, 2);
+#endif
+#ifndef LIBGAV1_Dsp12bpp_WeightMask_64x64
+  INIT_WEIGHT_MASK(64, 64, 12, 3, 3);
+#endif
+#ifndef LIBGAV1_Dsp12bpp_WeightMask_64x128
+  INIT_WEIGHT_MASK(64, 128, 12, 3, 4);
+#endif
+#ifndef LIBGAV1_Dsp12bpp_WeightMask_128x64
+  INIT_WEIGHT_MASK(128, 64, 12, 4, 3);
+#endif
+#ifndef LIBGAV1_Dsp12bpp_WeightMask_128x128
+  INIT_WEIGHT_MASK(128, 128, 12, 4, 4);
+#endif
+#endif  // LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
+}
+#endif  // LIBGAV1_MAX_BITDEPTH == 12
 
 }  // namespace
 
@@ -221,6 +300,9 @@ void WeightMaskInit_C() {
   Init8bpp();
 #if LIBGAV1_MAX_BITDEPTH >= 10
   Init10bpp();
+#endif
+#if LIBGAV1_MAX_BITDEPTH == 12
+  Init12bpp();
 #endif
 }
 

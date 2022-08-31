@@ -18,11 +18,18 @@
 
 namespace weblayer {
 
+// TODO(https://crbug.com/1317494): Audit and use appropriate policy.
+page_load_metrics::PageLoadMetricsObserver::ObservePolicy
+PageLoadMetricsObserverImpl::OnFencedFramesStart(
+    content::NavigationHandle* navigation_handle,
+    const GURL& currently_committed_url) {
+  return STOP_OBSERVING;
+}
+
 PageLoadMetricsObserverImpl::ObservePolicy
 PageLoadMetricsObserverImpl::OnCommit(
-    content::NavigationHandle* navigation_handle,
-    ukm::SourceId source_id) {
-#if defined(OS_ANDROID)
+    content::NavigationHandle* navigation_handle) {
+#if BUILDFLAG(IS_ANDROID)
   if (!ukm::UkmRecorder::Get())
     return CONTINUE_OBSERVING;
 
@@ -33,7 +40,8 @@ PageLoadMetricsObserverImpl::OnCommit(
           navigation_handle->GetWebContents()->GetBrowserContext());
   if (!no_state_prefetch_manager)
     return CONTINUE_OBSERVING;
-  prerender::RecordNoStatePrefetchMetrics(navigation_handle, source_id,
+  prerender::RecordNoStatePrefetchMetrics(navigation_handle,
+                                          GetDelegate().GetPageUkmSourceId(),
                                           no_state_prefetch_manager);
 #endif
   return CONTINUE_OBSERVING;

@@ -7,14 +7,23 @@
 
 #include "src/utils/SkPolyUtils.h"
 
-#include <limits>
-
-#include "include/private/SkNx.h"
+#include "include/core/SkRect.h"
+#include "include/core/SkTypes.h"
+#include "include/private/SkFloatingPoint.h"
+#include "include/private/SkMalloc.h"
 #include "include/private/SkTArray.h"
+#include "include/private/SkTDArray.h"
 #include "include/private/SkTemplates.h"
+#include "include/private/SkVx.h"
 #include "src/core/SkPointPriv.h"
+#include "src/core/SkRectPriv.h"
 #include "src/core/SkTDPQueue.h"
 #include "src/core/SkTInternalLList.h"
+
+#include <algorithm>
+#include <cstdint>
+#include <limits>
+#include <new>
 
 //////////////////////////////////////////////////////////////////////////////////
 // Helper data structures and functions
@@ -184,17 +193,17 @@ bool SkIsConvexPolygon(const SkPoint* polygonVerts, int polygonSize) {
         return false;
     }
 
-    SkScalar lastArea = 0;
     SkScalar lastPerpDot = 0;
+    int xSignChangeCount = 0;
+    int ySignChangeCount = 0;
 
     int prevIndex = polygonSize - 1;
     int currIndex = 0;
     int nextIndex = 1;
-    SkPoint origin = polygonVerts[0];
     SkVector v0 = polygonVerts[currIndex] - polygonVerts[prevIndex];
+    SkScalar lastVx = v0.fX;
+    SkScalar lastVy = v0.fY;
     SkVector v1 = polygonVerts[nextIndex] - polygonVerts[currIndex];
-    SkVector w0 = polygonVerts[currIndex] - origin;
-    SkVector w1 = polygonVerts[nextIndex] - origin;
     for (int i = 0; i < polygonSize; ++i) {
         if (!polygonVerts[i].isFinite()) {
             return false;
@@ -209,23 +218,27 @@ bool SkIsConvexPolygon(const SkPoint* polygonVerts, int polygonSize) {
             lastPerpDot = perpDot;
         }
 
-        // If the signed area ever flips it's concave
-        // TODO: see if we can verify convexity only with signed area
-        SkScalar quadArea = w0.cross(w1);
-        if (quadArea*lastArea < 0) {
+        // Check that the signs of the edge vectors don't change more than twice per coordinate
+        if (lastVx*v1.fX < 0) {
+            xSignChangeCount++;
+        }
+        if (lastVy*v1.fY < 0) {
+            ySignChangeCount++;
+        }
+        if (xSignChangeCount > 2 || ySignChangeCount > 2) {
             return false;
         }
-        if (0 != quadArea) {
-            lastArea = quadArea;
-        }
-
         prevIndex = currIndex;
         currIndex = nextIndex;
         nextIndex = (currIndex + 1) % polygonSize;
+        if (v1.fX != 0) {
+            lastVx = v1.fX;
+        }
+        if (v1.fY != 0) {
+            lastVy = v1.fY;
+        }
         v0 = v1;
         v1 = polygonVerts[nextIndex] - polygonVerts[currIndex];
-        w0 = w1;
-        w1 = polygonVerts[nextIndex] - origin;
     }
 
     return true;
@@ -732,9 +745,17 @@ public:
                 curr->fAbove = pred;
                 curr->fBelow = succ;
                 if (pred) {
+                    if (pred->fSegment.fP0 == curr->fSegment.fP0 &&
+                        pred->fSegment.fV == curr->fSegment.fV) {
+                        return false;
+                    }
                     pred->fBelow = curr;
                 }
                 if (succ) {
+                    if (succ->fSegment.fP0 == curr->fSegment.fP0 &&
+                        succ->fSegment.fV == curr->fSegment.fV) {
+                        return false;
+                    }
                     succ->fAbove = curr;
                 }
                 if (IsRed(parent)) {
@@ -1089,6 +1110,10 @@ bool SkIsSimplePolygon(const SkPoint* polygon, int polygonSize) {
         newVertex.fPrevIndex = (i - 1 + polygonSize) % polygonSize;
         newVertex.fNextIndex = (i + 1) % polygonSize;
         newVertex.fFlags = 0;
+        // The two edges adjacent to this vertex are the same, so polygon is not simple
+        if (polygon[newVertex.fPrevIndex] == polygon[newVertex.fNextIndex]) {
+            return false;
+        }
         if (left(polygon[newVertex.fPrevIndex], polygon[i])) {
             newVertex.fFlags |= kPrevLeft_VertexFlag;
         }
@@ -1179,8 +1204,8 @@ bool SkOffsetSimplePolygon(const SkPoint* inputPolygonVerts, int inputPolygonSiz
     }
 
     // can't inset more than the half bounds of the polygon
-    if (offset > std::min(SkTAbs(SK_ScalarHalf*bounds.width()),
-                        SkTAbs(SK_ScalarHalf*bounds.height()))) {
+    if (offset > std::min(SkTAbs(SkRectPriv::HalfWidth(bounds)),
+                          SkTAbs(SkRectPriv::HalfHeight(bounds)))) {
         return false;
     }
 
@@ -1453,11 +1478,11 @@ struct TriangulationVertex {
 
 static void compute_triangle_bounds(const SkPoint& p0, const SkPoint& p1, const SkPoint& p2,
                                     SkRect* bounds) {
-    Sk4s min, max;
-    min = max = Sk4s(p0.fX, p0.fY, p0.fX, p0.fY);
-    Sk4s xy(p1.fX, p1.fY, p2.fX, p2.fY);
-    min = Sk4s::Min(min, xy);
-    max = Sk4s::Max(max, xy);
+    skvx::float4 min, max;
+    min = max = skvx::float4(p0.fX, p0.fY, p0.fX, p0.fY);
+    skvx::float4 xy(p1.fX, p1.fY, p2.fX, p2.fY);
+    min = skvx::min(min, xy);
+    max = skvx::max(max, xy);
     bounds->setLTRB(std::min(min[0], min[2]), std::min(min[1], min[3]),
                     std::max(max[0], max[2]), std::max(max[1], max[3]));
 }
@@ -1851,4 +1876,3 @@ bool SkIsPolyConvex_experimental(const SkPoint pts[], int count) {
     tracker.finalCross();
     return !tracker.fIsConcave;
 }
-

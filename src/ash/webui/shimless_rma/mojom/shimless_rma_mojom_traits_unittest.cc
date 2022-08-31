@@ -14,7 +14,7 @@
 #include "base/containers/fixed_flat_map.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
-#include "chromeos/dbus/rmad/rmad.pb.h"
+#include "chromeos/ash/components/dbus/rmad/rmad.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace ash {
@@ -68,6 +68,7 @@ TEST_F(ShimlessRmaMojoToProtoTest, StatesMatch) {
       {{mojom::State::kWelcomeScreen, rmad::RmadState::kWelcome},
        {mojom::State::kSelectComponents, rmad::RmadState::kComponentsRepair},
        {mojom::State::kChooseDestination, rmad::RmadState::kDeviceDestination},
+       {mojom::State::kChooseWipeDevice, rmad::RmadState::kWipeSelection},
        {mojom::State::kChooseWriteProtectDisableMethod,
         rmad::RmadState::kWpDisableMethod},
        {mojom::State::kEnterRSUWPDisableCode, rmad::RmadState::kWpDisableRsu},
@@ -188,7 +189,13 @@ TEST_F(ShimlessRmaMojoToProtoTest, ErrorsMatch) {
        {mojom::RmadErrorCode::kDaemonInitializationFailed,
         rmad::RmadErrorCode::RMAD_ERROR_DAEMON_INITIALIZATION_FAILED},
        {mojom::RmadErrorCode::kUpdateRoFirmwareFailed,
-        rmad::RmadErrorCode::RMAD_ERROR_UPDATE_RO_FIRMWARE_FAILED}});
+        rmad::RmadErrorCode::RMAD_ERROR_UPDATE_RO_FIRMWARE_FAILED},
+       {mojom::RmadErrorCode::kWpEnabled,
+        rmad::RmadErrorCode::RMAD_ERROR_WP_ENABLED},
+       {mojom::RmadErrorCode::kCannotWrite,
+        rmad::RmadErrorCode::RMAD_ERROR_CANNOT_WRITE},
+       {mojom::RmadErrorCode::kCannotSaveLog,
+        rmad::RmadErrorCode::RMAD_ERROR_CANNOT_SAVE_LOG}});
 
   TestProtoToMojo(enums);
   TestMojoToProto(enums);
@@ -285,7 +292,10 @@ TEST_F(ShimlessRmaMojoToProtoTest, WriteProtectDisableCompleteActionMatch) {
                 RMAD_WP_DISABLE_COMPLETE_ASSEMBLE_DEVICE},
            {mojom::WriteProtectDisableCompleteAction::kCompleteKeepDeviceOpen,
             rmad::WriteProtectDisableCompleteState::
-                RMAD_WP_DISABLE_COMPLETE_KEEP_DEVICE_OPEN}});
+                RMAD_WP_DISABLE_COMPLETE_KEEP_DEVICE_OPEN},
+           {mojom::WriteProtectDisableCompleteAction::kCompleteNoOp,
+            rmad::WriteProtectDisableCompleteState::
+                RMAD_WP_DISABLE_COMPLETE_NO_OP}});
 
   TestProtoToMojo(enums);
   TestMojoToProto(enums);

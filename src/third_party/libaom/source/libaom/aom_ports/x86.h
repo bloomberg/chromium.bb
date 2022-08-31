@@ -48,7 +48,7 @@ typedef enum {
 #define cpuid(func, func2, ax, bx, cx, dx)                      \
   __asm__ __volatile__("cpuid           \n\t"                   \
                        : "=a"(ax), "=b"(bx), "=c"(cx), "=d"(dx) \
-                       : "a"(func), "c"(func2));
+                       : "a"(func), "c"(func2))
 #else
 #define cpuid(func, func2, ax, bx, cx, dx)     \
   __asm__ __volatile__(                        \
@@ -56,7 +56,7 @@ typedef enum {
       "cpuid              \n\t"                \
       "xchg %%edi, %%ebx  \n\t"                \
       : "=a"(ax), "=D"(bx), "=c"(cx), "=d"(dx) \
-      : "a"(func), "c"(func2));
+      : "a"(func), "c"(func2))
 #endif
 #elif defined(__SUNPRO_C) || \
     defined(__SUNPRO_CC) /* end __GNUC__ or __ANDROID__*/
@@ -68,7 +68,7 @@ typedef enum {
       "movl %ebx, %edi \n\t"                   \
       "xchg %rsi, %rbx \n\t"                   \
       : "=a"(ax), "=D"(bx), "=c"(cx), "=d"(dx) \
-      : "a"(func), "c"(func2));
+      : "a"(func), "c"(func2))
 #else
 #define cpuid(func, func2, ax, bx, cx, dx)     \
   asm volatile(                                \
@@ -77,7 +77,7 @@ typedef enum {
       "movl %ebx, %edi  \n\t"                  \
       "popl %ebx        \n\t"                  \
       : "=a"(ax), "=D"(bx), "=c"(cx), "=d"(dx) \
-      : "a"(func), "c"(func2));
+      : "a"(func), "c"(func2))
 #endif
 #else /* end __SUNPRO__ */
 #if ARCH_X86_64

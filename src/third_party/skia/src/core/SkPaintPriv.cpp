@@ -6,6 +6,7 @@
  */
 
 #include "include/core/SkPaint.h"
+#include "src/core/SkBlenderBase.h"
 #include "src/core/SkColorFilterBase.h"
 #include "src/core/SkColorSpacePriv.h"
 #include "src/core/SkPaintPriv.h"

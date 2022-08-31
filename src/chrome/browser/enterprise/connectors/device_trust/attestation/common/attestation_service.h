@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/values.h"
 #include "chrome/browser/enterprise/connectors/device_trust/attestation/common/signals_type.h"
 
 namespace enterprise_connectors {
@@ -21,12 +22,13 @@ class AttestationService {
 
   virtual ~AttestationService() = default;
 
-  // If the `challenge` comes from Verified Access, builds a proper response
-  // including the `signals` and returns it via the given `callback`. If
-  // the challenge does not come from VA, runs `callback` with an empty string.
+  // If the `serialized_signed_challenge` comes from Verified Access
+  // builds a proper response including the `signals` and returns it via
+  // the given `callback`. If the challenge does not come from VA, runs
+  // `callback` with an empty string.
   virtual void BuildChallengeResponseForVAChallenge(
-      const std::string& challenge,
-      std::unique_ptr<SignalsType> signals,
+      const std::string& serialized_signed_challenge,
+      base::Value::Dict signals,
       AttestationCallback callback) = 0;
 };
 

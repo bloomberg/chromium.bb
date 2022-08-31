@@ -65,7 +65,6 @@ class NewTabPageHandler : public new_tab_page::mojom::PageHandler,
                     NtpCustomBackgroundService* ntp_custom_background_service,
                     ThemeService* theme_service,
                     search_provider_logos::LogoService* logo_service,
-                    const ui::ThemeProvider* theme_provider,
                     content::WebContents* web_contents,
                     const base::Time& ntp_navigation_start_time);
 
@@ -107,6 +106,11 @@ class NewTabPageHandler : public new_tab_page::mojom::PageHandler,
   void OnModulesLoadedWithData() override;
   void SetModulesOrder(const std::vector<std::string>& module_ids) override;
   void GetModulesOrder(GetModulesOrderCallback callback) override;
+  void IncrementModulesShownCount() override;
+  void SetModulesFreVisible(bool visible) override;
+  void UpdateModulesFreVisibility() override;
+  void LogModulesFreOptInStatus(
+      new_tab_page::mojom::OptInStatus opt_in_status) override;
   void OnAppRendered(double time) override;
   void OnOneGoogleBarRendered(double time) override;
   void OnPromoRendered(double time,

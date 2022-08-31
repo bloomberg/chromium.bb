@@ -13,8 +13,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
-#include "build/buildflag.h"
-#include "chromeos/assistant/internal/buildflags.h"
 #include "chromeos/assistant/internal/grpc_transport/request_utils.h"
 #include "chromeos/assistant/internal/internal_util.h"
 #include "chromeos/assistant/internal/libassistant/shared_headers.h"
@@ -29,6 +27,7 @@
 #include "chromeos/assistant/internal/proto/shared/proto/v2/speaker_id_enrollment_interface.pb.h"
 #include "chromeos/services/assistant/public/cpp/features.h"
 #include "chromeos/services/libassistant/callback_utils.h"
+#include "chromeos/services/libassistant/grpc/assistant_client.h"
 #include "chromeos/services/libassistant/grpc/utils/media_status_utils.h"
 #include "chromeos/services/libassistant/grpc/utils/settings_utils.h"
 #include "chromeos/services/libassistant/grpc/utils/timer_utils.h"
@@ -98,7 +97,7 @@ OnSpeakerIdEnrollmentEventRequest ConvertToGrpcEventRequest(
   return request;
 }
 
-assistant_client::InternalOptions* WARN_UNUSED_RESULT CreateInternalOptions(
+[[nodiscard]] assistant_client::InternalOptions* CreateInternalOptions(
     assistant_client::AssistantManagerInternal* assistant_manager_internal,
     const std::string& locale,
     bool spoken_feedback_enabled,
@@ -245,6 +244,71 @@ class AssistantClientV1::MediaManagerListener
 };
 
 ////////////////////////////////////////////////////////////////////////////////
+// AssistantClientV1::AssistantManagerDelegateImpl
+////////////////////////////////////////////////////////////////////////////////
+
+// Implementation of |AssistantManagerDelegate| that will forward all calls
+// to the correct observers.
+// It also keeps track of the last text query that was started, so we can
+// pass its metadata to |OnConversationTurnStarted|.
+class AssistantClientV1::AssistantManagerDelegateImpl
+    : public assistant_client::AssistantManagerDelegate {
+ public:
+  explicit AssistantManagerDelegateImpl(AssistantClientV1* assistant_client)
+      : assistant_client_(assistant_client),
+        task_runner_(base::SequencedTaskRunnerHandle::Get()) {}
+  AssistantManagerDelegateImpl(const AssistantManagerDelegateImpl&) = delete;
+  AssistantManagerDelegateImpl& operator=(const AssistantManagerDelegateImpl&) =
+      delete;
+  ~AssistantManagerDelegateImpl() override = default;
+
+  // assistant_client::AssistantManagerDelegate overrides:
+  void OnConversationTurnStartedInternal(
+      const assistant_client::ConversationTurnMetadata& metadata) override {
+    ENSURE_CALLING_SEQUENCE(
+        &AssistantManagerDelegateImpl::OnConversationTurnStartedInternal,
+        metadata);
+
+    OnConversationStateEventRequest request;
+    auto* turn_started = request.mutable_event()->mutable_on_turn_started();
+    turn_started->set_turn_id(metadata.id);
+    turn_started->set_is_mic_open(metadata.is_mic_open);
+    assistant_client_->NotifyConversationStateEvent(request);
+  }
+
+  void OnNotificationRemoved(const std::string& grouping_key) override {
+    ENSURE_CALLING_SEQUENCE(
+        &AssistantManagerDelegateImpl::OnNotificationRemoved, grouping_key);
+
+    OnDeviceStateEventRequest request;
+    auto* notification_removed =
+        request.mutable_event()->mutable_on_notification_removed();
+    notification_removed->set_grouping_id(grouping_key);
+    assistant_client_->NotifyDeviceStateEvent(request);
+  }
+
+  void OnCommunicationError(int error_code) override {
+    ENSURE_CALLING_SEQUENCE(&AssistantManagerDelegateImpl::OnCommunicationError,
+                            error_code);
+
+    if (assistant::IsAuthError(error_code)) {
+      OnDeviceStateEventRequest request;
+      auto* communication_error =
+          request.mutable_event()->mutable_on_communication_error();
+      communication_error->set_error_code(
+          ::assistant::api::events::DeviceStateEvent::OnCommunicationError::
+              AUTH_TOKEN_FAIL);
+      assistant_client_->NotifyDeviceStateEvent(request);
+    }
+  }
+
+ private:
+  AssistantClientV1* assistant_client_ = nullptr;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  base::WeakPtrFactory<AssistantManagerDelegateImpl> weak_factory_{this};
+};
+
+////////////////////////////////////////////////////////////////////////////////
 //   AssistantClientV1
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -254,7 +318,9 @@ AssistantClientV1::AssistantClientV1(
     : AssistantClient(std::move(manager), assistant_manager_internal),
       device_state_listener_(std::make_unique<DeviceStateListener>(this)),
       display_connection_(std::make_unique<DisplayConnectionImpl>()),
-      media_manager_listener_(std::make_unique<MediaManagerListener>(this)) {
+      media_manager_listener_(std::make_unique<MediaManagerListener>(this)),
+      assistant_manager_delegate_(
+          std::make_unique<AssistantManagerDelegateImpl>(this)) {
   assistant_manager()->AddDeviceStateListener(device_state_listener_.get());
 }
 
@@ -270,8 +336,6 @@ void AssistantClientV1::StartServices(
   DCHECK(services_status_observer);
   services_status_observer_ = services_status_observer;
 
-  assistant_manager()->Start();
-
   // Instead we will be checking the heartbeat signal sent back from Libassisant
   // in v2.
   if (!chromeos::assistant::features::IsLibAssistantV2Enabled()) {
@@ -282,15 +346,18 @@ void AssistantClientV1::StartServices(
 
 void AssistantClientV1::SetChromeOSApiDelegate(
     assistant_client::ChromeOSApiDelegate* delegate) {
-#if !BUILDFLAG(IS_PREBUILT_LIBASSISTANT)
   assistant_manager_internal()
       ->GetFuchsiaApiHelperOrDie()
       ->SetChromeOSApiDelegate(delegate);
-#endif  // !BUILDFLAG(IS_PREBUILT_LIBASSISTANT)
 }
 
 bool AssistantClientV1::StartGrpcServices() {
   return true;
+}
+
+void AssistantClientV1::StartGrpcHttpConnectionClient(
+    assistant_client::HttpConnectionFactory*) {
+  NOTIMPLEMENTED();
 }
 
 void AssistantClientV1::AddExperimentIds(
@@ -378,6 +445,17 @@ void AssistantClientV1::AddDeviceStateEventObserver(
   device_state_event_observer_list_.AddObserver(observer);
 }
 
+void AssistantClientV1::AddMediaActionFallbackEventObserver(
+    GrpcServicesObserver<OnMediaActionFallbackEventRequest>* observer) {
+  media_action_fallback_event_observer_list_.AddObserver(observer);
+
+  // Register handler for media actions.
+  auto callback = base::BindRepeating(&AssistantClientV1::HandleMediaAction,
+                                      weak_factory_.GetWeakPtr());
+  assistant_manager_internal()->RegisterFallbackMediaHandler(
+      ToStdFunctionRepeating(BindToCurrentSequenceRepeating(callback)));
+}
+
 void AssistantClientV1::SendVoicelessInteraction(
     const ::assistant::api::Interaction& interaction,
     const std::string& description,
@@ -409,6 +487,13 @@ void AssistantClientV1::StartVoiceInteraction() {
 void AssistantClientV1::StopAssistantInteraction(bool cancel_conversation) {
   assistant_manager_internal()->StopAssistantInteractionInternal(
       cancel_conversation);
+}
+
+void AssistantClientV1::AddConversationStateEventObserver(
+    GrpcServicesObserver<OnConversationStateEventRequest>* observer) {
+  conversation_state_event_observer_list_.AddObserver(observer);
+  assistant_manager_internal()->SetAssistantManagerDelegate(
+      assistant_manager_delegate_.get());
 }
 
 void AssistantClientV1::SetAuthenticationInfo(const AuthTokens& tokens) {
@@ -462,6 +547,26 @@ void AssistantClientV1::GetAssistantSettings(
 void AssistantClientV1::AddMediaManagerListener() {
   assistant_manager()->GetMediaManager()->AddListener(
       media_manager_listener_.get());
+}
+
+void AssistantClientV1::HandleMediaAction(
+    const std::string& action_name,
+    const std::string& media_action_args_proto) {
+  OnMediaActionFallbackEventRequest request;
+  auto* media_action = request.mutable_event()->mutable_on_media_action_event();
+  media_action->set_action_name(action_name);
+  media_action->set_action_args(media_action_args_proto);
+
+  for (auto& observer : media_action_fallback_event_observer_list_) {
+    observer.OnGrpcMessage(request);
+  }
+}
+
+void AssistantClientV1::NotifyConversationStateEvent(
+    const OnConversationStateEventRequest& request) {
+  for (auto& observer : conversation_state_event_observer_list_) {
+    observer.OnGrpcMessage(request);
+  }
 }
 
 void AssistantClientV1::NotifyDeviceStateEvent(

@@ -1,4 +1,7 @@
-include_directories(..)
+include_directories(
+	..
+	${DEQP_INL_DIR}
+)
 
 set(DEQP_VK_FRAGMENT_SHADING_RATE_SRCS
 	vktAttachmentRateTests.cpp
@@ -9,6 +12,7 @@ set(DEQP_VK_FRAGMENT_SHADING_RATE_SRCS
 	vktFragmentShadingRateBasic.hpp
 	vktFragmentShadingRatePixelConsistency.hpp
 	vktFragmentShadingRatePixelConsistency.cpp
+	vktFragmentShadingRateGroupParams.hpp
 )
 
 set(DEQP_VK_FRAGMENT_SHADING_RATE_LIBS

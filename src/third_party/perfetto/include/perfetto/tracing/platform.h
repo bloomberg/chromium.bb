@@ -25,6 +25,9 @@
 #include <string>
 
 #include "perfetto/base/export.h"
+#include "perfetto/base/logging.h"
+#include "perfetto/base/proc_utils.h"
+#include "perfetto/tracing/tracing.h"
 
 namespace perfetto {
 
@@ -41,7 +44,7 @@ class TaskRunner;
 
 // Base class for thread-local objects. This is to get a basic object vtable and
 // delegate destruction to the embedder. See Platform::CreateThreadLocalObject.
-class PERFETTO_EXPORT PlatformThreadLocalObject {
+class PERFETTO_EXPORT_COMPONENT PlatformThreadLocalObject {
  public:
   // Implemented by perfetto internal code. The embedder must call this when
   // implementing GetOrCreateThreadLocalObject() to create an instance for the
@@ -50,11 +53,28 @@ class PERFETTO_EXPORT PlatformThreadLocalObject {
   virtual ~PlatformThreadLocalObject();
 };
 
-class PERFETTO_EXPORT Platform {
+class PERFETTO_EXPORT_COMPONENT Platform {
  public:
   // Embedders can use this unless they have custom needs (e.g. Chrome wanting
   // to use its own base class for TLS).
   static Platform* GetDefaultPlatform();
+
+  // Embedders can call this to set process ID in those cases where getpid()
+  // returns incorrect values (e.g. for sandboxed processes in Chromium).
+  // Should only be called once, before tracing has been initialized.
+  static void SetCurrentProcessId(base::PlatformProcessId process_id) {
+    PERFETTO_CHECK(!process_id_);
+    PERFETTO_DCHECK(!Tracing::IsInitialized());
+    process_id_ = process_id;
+  }
+
+  // Returns process ID previously set by SetCurrentProcessId, or the process
+  // ID provided by the OS if no custom ID was provided.
+  static base::PlatformProcessId GetCurrentProcessId() {
+    if (process_id_)
+      return process_id_;
+    return base::GetProcessId();
+  }
 
   virtual ~Platform();
 
@@ -83,6 +103,9 @@ class PERFETTO_EXPORT Platform {
   // kSystemBackend mode. It can be an arbitrary string when using the
   // in-process mode.
   virtual std::string GetCurrentProcessName() = 0;
+
+ private:
+  static base::PlatformProcessId process_id_;
 };
 
 }  // namespace perfetto

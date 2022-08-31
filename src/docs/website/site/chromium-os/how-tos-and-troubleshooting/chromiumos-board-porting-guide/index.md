@@ -97,23 +97,6 @@ OS code base.
 
 Settled on a name? Hopefully it's nifty.
 
-### Board Variants *(advanced)*
-
-Often times you will have a base/reference board on which you will build other
-boards/devices, and you want to customize each in ways that are incompatible
-with the others. The board variant framework is designed to handle this setup.
-Note: at the moment, the variant framework is only one level deep. So you cannot
-do a variant of a variant. A need for this has not been found, so we haven't
-worried about it.
-
-When it comes to naming, you will take the existing reference board name and add
-on the new project's name separated by an underscore. Both projects must follow
-the naming convention laid out in the above section.
-
-As an example, Google has a reference board named `daisy`. Using that base,
-other board variations have been created such as the `snow` board. Thus the
-final board name is `daisy_snow`.
-
 ## Bare Framework
 
 Let's start by laying the ground work for the board. We won't worry about the
@@ -271,8 +254,6 @@ chromiumos:default/linux/amd64/10.0/chromeos
 Sometimes you will want to take an existing board and try out some tweaks on it.
 Perhaps you want to use a different kernel, or change one or two USE flags, or
 use a different compiler settings (like more debugging or technology like ASAN).
-You could create a board variant, but that is more for different boards, and is
-much more heavy handed.
 
 To create a sub-profile, simply make a new directory under the profiles/ and
 name it whatever you like. Many Google based systems have one called
@@ -314,37 +295,6 @@ are allowed on the final image. The scripts of interest here are
             for board specific modifications.
 *   disk_layout.json -- Used by boards that need a different disk
             partition than the default one.
-
-## Board Variant Framework *(advanced)*
-
-Note: No new boards should use the variant framework. Instead they should use
-the arbitrary overlay stacking system (where we have chipsets, baseboards,
-projects, etc...).
-
-Rather than create an entire hardware board from scratch every time a new
-project comes along, companies will often take existing projects and make tweaks
-to fit the new one. It's a common industry practice which allows for rapid
-expansion into more areas. Since these boards are pretty close to each other,
-it'd be annoying to have to duplicate the entire board settings just to make a
-handful of changes. The variant framework was designed to address this.
-
-Basically, refer to the sections above for creating a new board overlay.
-However, this time name it slightly different. If the base board is named
-`daisy` and the variant is named `snow`, we would create the directory
-`overlay-variant-daisy-snow`. Yes, the separator is now a dash rather than an
-underscore.
-
-You will still need to create at least these files (see the previous section for
-what to put into them):
-
-*   `metadata/layout.conf`
-
-*   Usually you can just copy the version verbatim from the parent board
-            and update the `repo-name` field
-
-The base board overlay will be set as the parent of this variant automatically.
-So settings/packages that exist in there will be the starting point for this
-variant.
 
 ## Testing Initial Build
 

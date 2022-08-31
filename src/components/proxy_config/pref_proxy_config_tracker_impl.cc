@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/observer_list.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/values.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -262,7 +263,7 @@ ProxyPrefs::ConfigState PrefProxyConfigTrackerImpl::ReadPrefConfig(
       pref_service->FindPreference(proxy_config::prefs::kProxy);
   DCHECK(pref);
 
-  const base::DictionaryValue* dict =
+  const base::Value* dict =
       pref_service->GetDictionary(proxy_config::prefs::kProxy);
   DCHECK(dict);
   ProxyConfigDictionary proxy_dict(dict->Clone());

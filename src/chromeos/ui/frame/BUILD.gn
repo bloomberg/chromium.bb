@@ -4,7 +4,7 @@
 
 import("//build/config/chromeos/ui_mode.gni")
 
-assert(is_chromeos_ash || is_chromeos_lacros,
+assert(is_chromeos,
        "Non-Chrome-OS or Lacros builds must not depend on //chromeos")
 
 # C++ headers and sources that can be used by both ash and lacros builds.
@@ -45,6 +45,8 @@ source_set("frame") {
     "immersive/immersive_revealed_lock.h",
     "interior_resize_handler_targeter.cc",
     "interior_resize_handler_targeter.h",
+    "multitask_menu/multitask_menu.cc",
+    "multitask_menu/multitask_menu.h",
   ]
 
   deps = [

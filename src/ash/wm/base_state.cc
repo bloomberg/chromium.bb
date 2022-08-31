@@ -8,6 +8,7 @@
 #include "ash/public/cpp/window_properties.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_utils.h"
@@ -32,11 +33,14 @@ void BaseState::OnWMEvent(WindowState* window_state, const WMEvent* event) {
     HandleWorkspaceEvents(window_state, event);
     if (window_state->IsPip())
       window_state->UpdatePipBounds();
+    if (window_state->IsSnapped() && !window_state->CanSnap())
+      window_state->Restore();
     return;
   }
   if ((window_state->IsTrustedPinned() || window_state->IsPinned()) &&
-      (event->type() != WM_EVENT_NORMAL && event->IsTransitionEvent())) {
-    // PIN state can be exited only by normal event.
+      (event->type() != WM_EVENT_NORMAL && event->type() != WM_EVENT_RESTORE &&
+       event->IsTransitionEvent())) {
+    // PIN state can be exited only by normal event or restore event.
     return;
   }
 
@@ -58,7 +62,8 @@ WindowStateType BaseState::GetType() const {
 }
 
 // static
-WindowStateType BaseState::GetStateForTransitionEvent(const WMEvent* event) {
+WindowStateType BaseState::GetStateForTransitionEvent(WindowState* window_state,
+                                                      const WMEvent* event) {
   switch (event->type()) {
     case WM_EVENT_NORMAL:
       return WindowStateType::kNormal;
@@ -72,12 +77,16 @@ WindowStateType BaseState::GetStateForTransitionEvent(const WMEvent* event) {
       return WindowStateType::kPrimarySnapped;
     case WM_EVENT_SNAP_SECONDARY:
       return WindowStateType::kSecondarySnapped;
+    case WM_EVENT_RESTORE:
+      return window_state->GetRestoreWindowState();
     case WM_EVENT_SHOW_INACTIVE:
       return WindowStateType::kInactive;
     case WM_EVENT_PIN:
       return WindowStateType::kPinned;
     case WM_EVENT_PIP:
       return WindowStateType::kPip;
+    case WM_EVENT_FLOAT:
+      return WindowStateType::kFloated;
     case WM_EVENT_TRUSTED_PIN:
       return WindowStateType::kTrustedPinned;
     default:
@@ -123,8 +132,9 @@ void BaseState::CenterWindow(WindowState* window_state) {
 
 // static
 void BaseState::CycleSnap(WindowState* window_state, WMEventType event) {
+  auto* shell = Shell::Get();
   // For tablet mode, use |TabletModeWindowState::CycleTabletSnap|.
-  DCHECK(!Shell::Get()->tablet_mode_controller()->InTabletMode());
+  DCHECK(!shell->tablet_mode_controller()->InTabletMode());
 
   WindowStateType desired_snap_state = event == WM_EVENT_CYCLE_SNAP_PRIMARY
                                            ? WindowStateType::kPrimarySnapped
@@ -134,26 +144,31 @@ void BaseState::CycleSnap(WindowState* window_state, WMEventType event) {
   // then snap |window| to the side that corresponds to |desired_snap_state|.
   if (window_state->CanSnap() &&
       window_state->GetStateType() != desired_snap_state) {
-    if (Shell::Get()->overview_controller()->InOverviewSession()) {
+    const bool is_desired_primary_snapped =
+        desired_snap_state == WindowStateType::kPrimarySnapped;
+    if (shell->overview_controller()->InOverviewSession()) {
       // |window| must already be in split view, and so we do not need to check
       // |SplitViewController::CanSnapWindow|, although in general it is more
       // restrictive than |WindowState::CanSnap|.
       DCHECK(SplitViewController::Get(window)->IsWindowInSplitView(window));
       SplitViewController::Get(window)->SnapWindow(
-          window, desired_snap_state == WindowStateType::kPrimarySnapped
-                      ? SplitViewController::LEFT
-                      : SplitViewController::RIGHT);
+          window, is_desired_primary_snapped ? SplitViewController::LEFT
+                                             : SplitViewController::RIGHT);
     } else {
-      const WMEvent event(desired_snap_state == WindowStateType::kPrimarySnapped
-                              ? WM_EVENT_SNAP_PRIMARY
-                              : WM_EVENT_SNAP_SECONDARY);
+      const WMEvent event(is_desired_primary_snapped ? WM_EVENT_SNAP_PRIMARY
+                                                     : WM_EVENT_SNAP_SECONDARY);
       window_state->OnWMEvent(&event);
     }
+    window_state->ReadOutWindowCycleSnapAction(
+        is_desired_primary_snapped ? IDS_WM_SNAP_WINDOW_TO_LEFT_ON_SHORTCUT
+                                   : IDS_WM_SNAP_WINDOW_TO_RIGHT_ON_SHORTCUT);
     return;
   }
   // If |window| is already in |desired_snap_state|, then unsnap |window|.
   if (window_state->IsSnapped()) {
     window_state->Restore();
+    window_state->ReadOutWindowCycleSnapAction(
+        IDS_WM_RESTORE_SNAPPED_WINDOW_ON_SHORTCUT);
     return;
   }
   // If |window| cannot be snapped, then do a window bounce animation.
@@ -165,20 +180,6 @@ void BaseState::UpdateMinimizedState(WindowState* window_state,
                                      WindowStateType previous_state_type) {
   aura::Window* window = window_state->window();
   if (window_state->IsMinimized()) {
-    // Save the previous show state when it is not minimized so that we can
-    // correctly restore it after exiting the minimized mode.
-    if (!IsMinimizedWindowStateType(previous_state_type)) {
-      // We must not save PIP to |kPreMinimizedShowStateKey|.
-      if (previous_state_type != WindowStateType::kPip)
-        window->SetProperty(aura::client::kPreMinimizedShowStateKey,
-                            ToWindowShowState(previous_state_type));
-      // We must not save MINIMIZED to |kPreMinimizedShowStateKey|.
-      else if (window->GetProperty(kPrePipWindowStateTypeKey) !=
-               WindowStateType::kMinimized)
-        window->SetProperty(
-            aura::client::kPreMinimizedShowStateKey,
-            ToWindowShowState(window->GetProperty(kPrePipWindowStateTypeKey)));
-    }
     // Count minimizing a PIP window as dismissing it. Android apps in PIP mode
     // don't exit when they are dismissed, they just go back to being a regular
     // app, but minimized.

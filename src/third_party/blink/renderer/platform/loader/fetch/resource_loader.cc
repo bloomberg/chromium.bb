@@ -37,6 +37,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "services/metrics/public/cpp/metrics_utils.h"
 #include "services/metrics/public/cpp/mojo_ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/network/public/cpp/cross_origin_embedder_policy.h"
@@ -49,6 +50,7 @@
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom-blink.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-blink.h"
+#include "third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom-shared.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_blob_info.h"
 #include "third_party/blink/public/platform/web_code_cache_loader.h"
@@ -356,6 +358,7 @@ void ResourceLoader::CodeCacheRequest::DidReceiveCachedCode(
   ProcessCodeCacheResponse(response_time, std::move(data), resource_loader);
   // Reset the deferred value to its original state.
   DCHECK(resource_loader);
+  resource_loader->code_cache_arrival_time_ = base::TimeTicks::Now();
   resource_loader->SetDefersLoading(freeze_mode_);
 }
 
@@ -610,6 +613,12 @@ void ResourceLoader::DidReceiveData(base::span<const char> data) {
   DidReceiveData(data.data(), base::checked_cast<int>(data.size()));
 }
 
+void ResourceLoader::DidReceiveDecodedData(
+    const String& data,
+    std::unique_ptr<ParkableStringImpl::SecureDigest> digest) {
+  resource_->DidReceiveDecodedData(data, std::move(digest));
+}
+
 void ResourceLoader::DidFinishLoadingBody() {
   has_seen_end_of_body_ = true;
 
@@ -653,6 +662,7 @@ void ResourceLoader::StartWith(const ResourceRequestHead& request) {
         fetcher_->GetProperties().FreezeMode());
   }
 
+  request_start_time_ = base::TimeTicks::Now();
   if (is_cache_aware_loading_activated_) {
     // Override cache policy for cache-aware loading. If this request fails, a
     // reload with original request will be triggered in DidFail().
@@ -901,9 +911,9 @@ bool ResourceLoader::WillFollowRedirect(
                            unused_virtual_time_pauser, resource_->GetType());
   DCHECK(!new_request->HttpBody());
   if (auto* observer = fetcher_->GetResourceLoadObserver()) {
-    observer->WillSendRequest(*new_request, redirect_response,
-                              resource_->GetType(), options,
-                              initial_request.GetRenderBlockingBehavior());
+    observer->WillSendRequest(
+        *new_request, redirect_response, resource_->GetType(), options,
+        initial_request.GetRenderBlockingBehavior(), resource_);
   }
 
   // First-party cookie logic moved from DocumentLoader in Blink to
@@ -972,6 +982,18 @@ void ResourceLoader::DidReceiveResponseInternal(
     const ResourceResponse& response) {
   const ResourceRequestHead& request = resource_->GetResourceRequest();
 
+  const auto response_arrival = response.ArrivalTimeAtRenderer();
+  const auto code_cache_arrival = code_cache_arrival_time_;
+  const auto request_start = request_start_time_;
+  if (response.WasCached() && !code_cache_arrival.is_null() &&
+      !response_arrival.is_null()) {
+    DCHECK(!request_start_time_.is_null());
+    base::UmaHistogramTimes("Blink.Loading.CodeCacheArrivalAtRenderer",
+                            code_cache_arrival - request_start);
+    base::UmaHistogramTimes("Blink.Loading.CachedResponseArrivalAtRenderer",
+                            response_arrival - request_start);
+  }
+
   if (response.HasAuthorizationCoveredByWildcardOnPreflight()) {
     fetcher_->GetUseCounter().CountDeprecation(
         mojom::WebFeature::kAuthorizationCoveredByWildcard);
@@ -987,13 +1009,6 @@ void ResourceLoader::DidReceiveResponseInternal(
                                response.HttpStatusCode(),
                                request.GetUkmSourceId(), recorder.get(),
                                resource_);
-  }
-
-  if (fetcher_->GetProperties().IsDetached()) {
-    // If the fetch context is already detached, we don't need further signals,
-    // so let's cancel the request.
-    HandleError(ResourceError::CancelledError(response.CurrentRequestUrl()));
-    return;
   }
 
   ResourceType resource_type = resource_->GetType();
@@ -1124,6 +1139,13 @@ void ResourceLoader::DidReceiveResponseInternal(
 
   resource_->ResponseReceived(response);
 
+  if (resource_->Loader() && fetcher_->GetProperties().IsDetached()) {
+    // If the fetch context is already detached, we don't need further signals,
+    // so let's cancel the request.
+    HandleError(ResourceError::CancelledError(response.CurrentRequestUrl()));
+    return;
+  }
+
   // Send the cached code after we notify that the response is received.
   // Resource expects that we receive the response first before the
   // corresponding cached code.
@@ -1150,7 +1172,7 @@ void ResourceLoader::DidReceiveResponseInternal(
 
   if (response.HttpStatusCode() >= 400 &&
       !resource_->ShouldIgnoreHTTPStatusCodeErrors()) {
-    HandleError(ResourceError::CancelledError(response.CurrentRequestUrl()));
+    HandleError(ResourceError::HttpError(response.CurrentRequestUrl()));
     return;
   }
 }
@@ -1212,14 +1234,27 @@ void ResourceLoader::DidFinishLoadingFirstPartInMultipart() {
                                0, false);
 }
 
-void ResourceLoader::DidFinishLoading(base::TimeTicks response_end_time,
-                                      int64_t encoded_data_length,
-                                      int64_t encoded_body_length,
-                                      int64_t decoded_body_length,
-                                      bool should_report_corb_blocking) {
+void ResourceLoader::DidFinishLoading(
+    base::TimeTicks response_end_time,
+    int64_t encoded_data_length,
+    int64_t encoded_body_length,
+    int64_t decoded_body_length,
+    bool should_report_corb_blocking,
+    absl::optional<bool> pervasive_payload_requested) {
   resource_->SetEncodedDataLength(encoded_data_length);
   resource_->SetEncodedBodyLength(encoded_body_length);
   resource_->SetDecodedBodyLength(decoded_body_length);
+
+  if (pervasive_payload_requested.has_value()) {
+    auto* ukm_recorder = ukm::UkmRecorder::Get();
+    ukm::SourceId ukm_source_id =
+        resource_->GetResourceRequest().GetUkmSourceId();
+    ukm::builders::Network_CacheTransparency builder(ukm_source_id);
+    builder.SetFoundPervasivePayload(pervasive_payload_requested.value());
+    builder.SetTotalBytesFetched(
+        ukm::GetExponentialBucketMinForBytes(encoded_data_length));
+    builder.Record(ukm_recorder->Get());
+  }
 
   response_end_time_for_error_cases_ = response_end_time;
 
@@ -1357,14 +1392,11 @@ void ResourceLoader::RequestSynchronously(const ResourceRequestHead& request) {
   WebBlobInfo downloaded_blob;
 
   if (CanHandleDataURLRequestLocally(request)) {
-    ResourceResponse response;
-    scoped_refptr<SharedBuffer> data;
-    int result;
-    // It doesn't have to verify mime type again since it's allowed to handle
+    // We don't have to verify mime type again since it's allowed to handle
     // the data url with invalid mime type in some cases.
     // CanHandleDataURLRequestLocally() has already checked if the data url can
     // be handled here.
-    std::tie(result, response, data) =
+    auto [result, response, data] =
         network_utils::ParseDataURL(resource_->Url(), request.HttpMethod());
     if (result != net::OK) {
       error_out = WebURLError(result, resource_->Url());
@@ -1496,9 +1528,7 @@ void ResourceLoader::ActivateCacheAwareLoadingIfNeeded(
 
 bool ResourceLoader::ShouldBeKeptAliveWhenDetached() const {
   return resource_->GetResourceRequest().GetKeepalive() &&
-         resource_->GetResponse().IsNull() &&
-         !base::FeatureList::IsEnabled(
-             network::features::kDisableKeepaliveFetch);
+         resource_->GetResponse().IsNull();
 }
 
 void ResourceLoader::AbortResponseBodyLoading() {
@@ -1587,14 +1617,11 @@ void ResourceLoader::HandleDataUrl() {
   }
 
   // Extract a ResourceResponse from the data url.
-  ResourceResponse response;
-  scoped_refptr<SharedBuffer> data;
-  int result;
-  // We doesn't have to verify mime type again since it's allowed to handle the
+  // We don't have to verify mime type again since it's allowed to handle the
   // data url with invalid mime type in some cases.
   // CanHandleDataURLRequestLocally() has already checked if the data url can be
   // handled here.
-  std::tie(result, response, data) = network_utils::ParseDataURL(
+  auto [result, response, data] = network_utils::ParseDataURL(
       resource_->Url(), resource_->GetResourceRequest().HttpMethod());
   if (result != net::OK) {
     HandleError(ResourceError(result, resource_->Url(), absl::nullopt));

@@ -9,6 +9,7 @@ import os
 import pathlib
 import re
 import sys
+import traceback
 
 from util import build_utils
 
@@ -25,7 +26,9 @@ import lookup_dep
 
 class JavacOutputProcessor:
   def __init__(self, target_name):
-    self._target_name = target_name
+    self._target_name = self._RemoveSuffixesIfPresent(
+        ["__compile_java", "__errorprone", "__header"], target_name)
+    self._suggested_deps = set()
 
     # Example: ../../ui/android/java/src/org/chromium/ui/base/Clipboard.java:45:
     fileline_prefix = (
@@ -40,8 +43,7 @@ class JavacOutputProcessor:
     # Matches output modification performed by _ElaborateLineForUnknownSymbol()
     # so that it can be colorized.
     # Example: org.chromium.base.Log found in dep //base:base_java.
-    self._please_add_dep_re = re.compile(
-        r'(?P<full_message>Please add //[\w/:]+ dep to //[\w/:]+.*)$')
+    self._please_add_dep_re = re.compile(r'(?P<full_message>Hint:.*)$')
 
     # First element in pair is bool which indicates whether the missing
     # class/package is part of the error message.
@@ -80,7 +82,13 @@ class JavacOutputProcessor:
       - Suggests GN dep to add for 'unresolved symbol in Java import' errors.
       """
     lines = self._ElaborateLinesForUnknownSymbol(iter(lines))
-    return (self._ApplyColors(l) for l in lines)
+    for line in lines:
+      yield self._ApplyColors(line)
+    if self._suggested_deps:
+      # Show them in quotes so they can be copy/pasted into BUILD.gn files.
+      yield "Full list of deps to add to {}:".format(self._target_name)
+      for dep in sorted(self._suggested_deps):
+        yield '    "{}",'.format(dep)
 
   def _ElaborateLinesForUnknownSymbol(self, lines):
     """ Elaborates passed-in javac output for unresolved symbols.
@@ -99,8 +107,14 @@ class JavacOutputProcessor:
     previous_line = next(lines, None)
     line = next(lines, None)
     while previous_line != None:
-      elaborated_lines = self._ElaborateLineForUnknownSymbol(
-          previous_line, line)
+      try:
+        elaborated_lines = self._ElaborateLineForUnknownSymbol(
+            previous_line, line)
+      except Exception:
+        elaborated_lines = ["Error in _ElaborateLineForUnknownSymbol ---"]
+        elaborated_lines += traceback.format_exc().splitlines()
+        elaborated_lines += ["--- end _ElaborateLineForUnknownSymbol error"]
+        elaborated_lines += [previous_line]
       for elaborated_line in elaborated_lines:
         yield elaborated_line
 
@@ -152,15 +166,14 @@ class JavacOutputProcessor:
 
     suggested_target = suggested_deps[0].target
 
-    target_name = self._RemoveSuffixesIfPresent(
-        ["__compile_java", "__errorprone", "__header"], self._target_name)
     if not has_missing_symbol_in_error_msg:
       line = "{} {}".format(line, class_to_lookup)
 
+    self._suggested_deps.add(suggested_target)
     return [
         line,
-        "Please add {} dep to {}. ".format(suggested_target, target_name) +
-        "File a crbug if this suggestion is incorrect.",
+        'Hint: Add "{}" to deps of {}'.format(suggested_target,
+                                              self._target_name),
     ]
 
   @staticmethod

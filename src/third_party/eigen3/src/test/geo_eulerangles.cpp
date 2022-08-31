@@ -26,7 +26,7 @@ void verify_euler(const Matrix<Scalar,3,1>& ea, int i, int j, int k)
   VERIFY_IS_APPROX(m,  mbis); 
   /* If I==K, and ea[1]==0, then there no unique solution. */ 
   /* The remark apply in the case where I!=K, and |ea[1]| is close to pi/2. */ 
-  if( (i!=k || ea[1]!=0) && (i==k || !internal::isApprox(abs(ea[1]),Scalar(EIGEN_PI/2),test_precision<Scalar>())) ) 
+  if((i!=k || !numext::is_exactly_zero(ea[1])) && (i == k || !internal::isApprox(abs(ea[1]), Scalar(EIGEN_PI / 2), test_precision<Scalar>())) )
     VERIFY((ea-eabis).norm() <= test_precision<Scalar>());
   
   // approx_or_less_than does not work for 0

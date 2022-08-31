@@ -40,9 +40,11 @@ LayoutWorkletGlobalScopeProxy::LayoutWorkletGlobalScopeProxy(
 
   LocalFrameClient* frame_client = frame->Client();
   const String user_agent =
-      RuntimeEnabledFeatures::UserAgentReductionEnabled(window)
-          ? frame_client->ReducedUserAgent()
-          : frame_client->UserAgent();
+      RuntimeEnabledFeatures::SendFullUserAgentAfterReductionEnabled(window)
+          ? frame_client->FullUserAgent()
+          : RuntimeEnabledFeatures::UserAgentReductionEnabled(window)
+                ? frame_client->ReducedUserAgent()
+                : frame_client->UserAgent();
 
   auto creation_params = std::make_unique<GlobalScopeCreationParams>(
       window->Url(), mojom::blink::ScriptType::kModule, global_scope_name,
@@ -53,8 +55,8 @@ LayoutWorkletGlobalScopeProxy::LayoutWorkletGlobalScopeProxy(
       window->GetReferrerPolicy(), window->GetSecurityOrigin(),
       window->IsSecureContext(), window->GetHttpsState(),
       nullptr /* worker_clients */,
-      frame_client->CreateWorkerContentSettingsClient(), window->AddressSpace(),
-      OriginTrialContext::GetTokens(window).get(),
+      frame_client->CreateWorkerContentSettingsClient(),
+      OriginTrialContext::GetInheritedTrialFeatures(window).get(),
       base::UnguessableToken::Create(), nullptr /* worker_settings */,
       mojom::blink::V8CacheOptions::kDefault, module_responses_map,
       mojo::NullRemote() /* browser_interface_broker */,

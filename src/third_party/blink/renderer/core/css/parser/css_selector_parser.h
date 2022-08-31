@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PARSER_CSS_SELECTOR_PARSER_H_
 
 #include <memory>
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_selector.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_token_range.h"
@@ -45,6 +46,19 @@ class CORE_EXPORT CSSSelectorParser {
   // '::highlight(foo)' it returns 'foo'.
   static AtomicString ParsePseudoElementArgument(const String&);
 
+  // https://drafts.csswg.org/css-cascade-6/#typedef-scope-start
+  // https://drafts.csswg.org/css-cascade-6/#typedef-scope-end
+  //
+  // Note that <scope-start> / <scope-end> are *forgiving* selector lists.
+  // Therefore empty lists, represented by !CSSSelectorList::IsValid(), are
+  // allowed.
+  //
+  // Parse errors are signalled by absl::nullopt.
+  static absl::optional<CSSSelectorList> ParseScopeBoundary(
+      CSSParserTokenRange,
+      const CSSParserContext*,
+      StyleSheetContents*);
+
  private:
   CSSSelectorParser(const CSSParserContext*, StyleSheetContents*);
 
@@ -62,7 +76,7 @@ class CORE_EXPORT CSSSelectorParser {
   CSSSelectorList ConsumeForgivingComplexSelectorList(CSSParserTokenRange&);
   CSSSelectorList ConsumeForgivingCompoundSelectorList(CSSParserTokenRange&);
   // https://drafts.csswg.org/selectors/#typedef-relative-selector-list
-  CSSSelectorList ConsumeRelativeSelectorList(CSSParserTokenRange&);
+  CSSSelectorList ConsumeForgivingRelativeSelectorList(CSSParserTokenRange&);
 
   std::unique_ptr<CSSParserSelector> ConsumeRelativeSelector(
       CSSParserTokenRange&);
@@ -149,6 +163,17 @@ class CORE_EXPORT CSSSelectorParser {
   // While this flag is true, the default namespace is ignored. In other words,
   // the default namespace is '*' while this flag is true.
   bool ignore_default_namespace_ = false;
+
+  // The 'found_pseudo_in_has_argument_' flag is true when we found any pseudo
+  // in :has() argument while parsing.
+  bool found_pseudo_in_has_argument_ = false;
+  bool is_inside_has_argument_ = false;
+
+  // The 'found_complex_logical_combinations_in_has_argument_' flag is true when
+  // we found any logical combinations (:is(), :where(), :not()) containing
+  // complex selector in :has() argument while parsing.
+  bool found_complex_logical_combinations_in_has_argument_ = false;
+  bool is_inside_logical_combination_in_has_argument_ = false;
 
   class DisallowPseudoElementsScope {
     STACK_ALLOCATED();

@@ -1,22 +1,17 @@
-<link rel="stylesheet"
-    href="chrome://resources/chromeos/colors/cros_styles.css">
-<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
-<link rel="stylesheet" href="chrome://resources/css/text_defaults_md.css">
-<link rel="stylesheet" href="chrome://resources/css/md_colors.css">
 <template>
-  <style include="cr-shared-style diagnostics-fonts">
+  <style include="cr-shared-style">
     :host {
-      --diagnostics-box-shadow: var(--cr-card-shadow);
-      --diagnostics-box-shadow-elevation-2: var(--cr-elevation-2);
+      --diagnostics-box-shadow: var(--cros-elevation-1-shadow);
+      --diagnostics-box-shadow-elevation-2: var(--cros-elevation-2-shadow);
 
-      --diagnostics-card-icon: {
-        --iron-icon-fill-color: var(--cros-color-prominent);
-        --iron-icon-height: 20px;
-        --iron-icon-width: 20px;
-        background-color: var(--cros-highlight-color);
-        border-radius: 50%;
-        padding: 8px;
-      };
+      --diagnostics-card-bg-color: var(--cros-bg-color);
+      --diagnostics-chip-bg-color: var(--cros-bg-color-dropped-elevation-2);
+
+      --diagnostics-google-sans-font-family: "Google Sans", sans-serif;
+      --diagnostics-roboto-font-family: Roboto, sans-serif;
+
+      --diagnostics-regular-font-weight: 400;
+      --diagnostics-medium-font-weight: 500;
     }
 
     hr {
@@ -28,6 +23,25 @@
       padding: 0;
       position: relative;
       top: 2px;
+    }
+
+    /* Style overrides variables with CrOS colors to match classic button.
+       Action buttons are primary and regular buttons are secondary. Diagnostics
+       only uses secondary, thus action variables are not overridden. */
+    cr-button {
+      --border-color: var(--cros-button-stroke-color-secondary);
+      --disabled-bg: var(--cros-button-background-color-secondary-disabled);
+      --disabled-border-color: var(--cros-button-stroke-color-secondary-disabled);
+      --focus-shadow-color: var(--cros-focus-ring-color);
+      --ink-color: var(--cros-button-label-color-secondary);
+      --hover-bg-color: var(--cros-button-background-color-secondary-hover);
+      --hover-border-color: var(--cros-button-stroke-color-secondary-hover);
+      --text-color: var(--cros-button-label-color-secondary);
+    }
+
+    cr-toast {
+      --cr-toast-background: var(--cros-toast-background-color);
+      --cr-toast-text-color: var(--cros-toast-text-color);
     }
 
     .card-width {
@@ -81,9 +95,12 @@
     }
 
     .diagnostics-chip {
-      @apply --diagnostics-overview-font;
-      background-color: var(--google-grey-200);
+      background-color: var(--diagnostics-chip-bg-color);
       border-radius: 16px;
+      color: var(--cros-text-color-secondary);
+      font-family: var(--diagnostics-roboto-font-family);
+      font-size: 13px;
+      font-weight: var(--diagnostics-regular-font-weight);
       height: 20px;
       line-height: 20px;
       padding: 0px 8px;
@@ -105,7 +122,7 @@
     }
 
     .grey-container {
-      background-color: rgba(var(--google-grey-200-rgb), .38);
+      background-color: rgba(var(--cros-bg-color-dropped-elevation-2-rgb), .38);
       border-radius: 4px;
       padding: 8px 20px;
     }
@@ -129,6 +146,13 @@
       margin-bottom: 16px;
       margin-top: 12px;
       padding-inline: 20px;
+    }
+
+    .diagnostics-caution-banner-font {
+      color: var(--cros-text-color-primary);
+      font-family: var(--diagnostics-roboto-font-family);
+      font-size: 14px;
+      font-weight: var(--diagnostics-regular-font-weight);
     }
 
     @media (min-width:600px) {
@@ -232,6 +256,17 @@
         --content-container-width: 720px;
         --chart-width: 620px;
         --data-point-container-padding: 64px;
+      }
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :host {
+        --diagnostics-card-bg-color: var(--cros-bg-color-elevation-1);
+        --diagnostics-chip-bg-color: var(--cros-bg-color-elevation-3);
+      }
+
+      .grey-container {
+        background-color: var(--cros-bg-color-dropped-elevation-2);
       }
     }
   </style>

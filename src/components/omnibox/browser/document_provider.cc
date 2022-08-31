@@ -9,11 +9,13 @@
 #include <algorithm>
 #include <map>
 #include <numeric>
+#include <tuple>
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/containers/adapters.h"
 #include "base/feature_list.h"
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/time_formatting.h"
@@ -24,7 +26,6 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/omnibox/browser/autocomplete_input.h"
@@ -72,6 +73,32 @@ enum DocumentRequestsHistogramValue {
 void LogOmniboxDocumentRequest(DocumentRequestsHistogramValue request_value) {
   UMA_HISTOGRAM_ENUMERATION("Omnibox.DocumentSuggest.Requests", request_value,
                             DOCUMENT_MAX_REQUEST_HISTOGRAM_VALUE);
+}
+
+void LogTotalTime(base::TimeTicks start_time, bool interrupted) {
+  DCHECK(!start_time.is_null());
+  const base::TimeDelta elapsed_time = base::TimeTicks::Now() - start_time;
+  UMA_HISTOGRAM_TIMES("Omnibox.DocumentSuggest.TotalTime", elapsed_time);
+  if (interrupted) {
+    UMA_HISTOGRAM_TIMES("Omnibox.DocumentSuggest.TotalTime.Interrupted",
+                        elapsed_time);
+  } else {
+    UMA_HISTOGRAM_TIMES("Omnibox.DocumentSuggest.TotalTime.NotInterrupted",
+                        elapsed_time);
+  }
+}
+
+void LogRequestTime(base::TimeTicks start_time, bool interrupted) {
+  DCHECK(!start_time.is_null());
+  const base::TimeDelta elapsed_time = base::TimeTicks::Now() - start_time;
+  UMA_HISTOGRAM_TIMES("Omnibox.DocumentSuggest.RequestTime", elapsed_time);
+  if (interrupted) {
+    UMA_HISTOGRAM_TIMES("Omnibox.DocumentSuggest.RequestTime.Interrupted",
+                        elapsed_time);
+  } else {
+    UMA_HISTOGRAM_TIMES("Omnibox.DocumentSuggest.RequestTime.NotInterrupted",
+                        elapsed_time);
+  }
 }
 
 // MIME types sent by the server for different document types.
@@ -135,7 +162,7 @@ struct FieldMatches {
               if (string) {
                 const auto string_words =
                     SplitByColon(String16VectorFromString16(
-                        base::UTF8ToUTF16(string->c_str()), false, nullptr));
+                        base::UTF8ToUTF16(string->c_str()), nullptr));
                 word_vec.insert(word_vec.end(), string_words.begin(),
                                 string_words.end());
               }
@@ -160,17 +187,18 @@ struct FieldMatches {
   double InvScore() { return std::pow(1 - weight, count); }
 };
 
-// Extracts a list of strings from a DictionaryValue containing a list of
-// objects containing a string field.
+// Extracts a list of pointers to strings from a DictionaryValue containing a
+// list of objects containing a string field of interest. Note that pointers may
+// be `nullptr` if the value at `field_path` is not found or is not a string.
 std::vector<const std::string*> ExtractResultList(
-    const base::DictionaryValue* result,
+    const base::Value* result,
     const base::StringPiece& list_path,
     const base::StringPiece& field_path) {
   const base::Value* values = result->FindListPath(list_path);
   if (!values)
     return {};
 
-  base::Value::ConstListView list = values->GetList();
+  auto list = values->GetListDeprecated();
   std::vector<const std::string*> extracted(list.size());
   std::transform(list.begin(), list.end(), extracted.begin(),
                  [field_path](const auto& value) {
@@ -185,8 +213,7 @@ double FieldWeight(const std::string& param_name, double default_weight) {
                                                    param_name, default_weight);
 }
 
-int CalculateScore(const std::u16string& input,
-                   const base::DictionaryValue* result) {
+int CalculateScore(const std::u16string& input, const base::Value* result) {
   // Suggestions scored lower than |raw_score_cutoff| will be discarded.
   double raw_score_cutoff = base::GetFieldTrialParamByFeatureAsDouble(
       omnibox::kDocumentProvider, "RawDocScoreCutoff", .25);
@@ -216,12 +243,18 @@ int CalculateScore(const std::u16string& input,
                    });
 
   String16Vector input_words =
-      SplitByColon(String16VectorFromString16(input, false, nullptr));
+      SplitByColon(String16VectorFromString16(input, nullptr));
 
   for (const auto& word : input_words) {
-    (void)std::find_if(
-        field_matches_vec.begin(), field_matches_vec.end(),
-        [word](auto& field_matches) { return field_matches.Includes(word); });
+    for (auto& field_matches : field_matches_vec) {
+      // This is calculating the proportion of the user input words that are
+      // included in the suggestion, so break after the first match. Otherwise,
+      // an input like 'wi' would be scored too highly for the suggestion "will
+      // william wilson win the winter windsurfing competition".
+      if (field_matches.Includes(word)) {
+        break;
+      }
+    }
   }
 
   // |score| is computed by subtracting the product of each field's inverse
@@ -246,7 +279,7 @@ int CalculateScore(const std::u16string& input,
 
 int BoostOwned(const int score,
                const std::string& owner,
-               const base::DictionaryValue* result) {
+               const base::Value* result) {
   int promotion = base::GetFieldTrialParamByFeatureAsInt(
       omnibox::kDocumentProvider, "OwnedDocPromotion", 0);
   int demotion = base::GetFieldTrialParamByFeatureAsInt(
@@ -318,6 +351,11 @@ std::string ExtractDocIdFromUrl(const std::string& url) {
     }
   }
   return std::string();
+}
+
+std::string FindStringKeyOrEmpty(const base::Value& value, std::string key) {
+  auto* ptr = value.FindStringKey(key);
+  return ptr ? *ptr : "";
 }
 
 }  // namespace
@@ -464,6 +502,7 @@ void DocumentProvider::Start(const AutocompleteInput& input,
 }
 
 void DocumentProvider::Run() {
+  time_run_invoked_ = base::TimeTicks::Now();
   client_->GetDocumentSuggestionsService(/*create_if_necessary=*/true)
       ->CreateDocumentSuggestionsRequest(
           input_.text(), client_->IsOffTheRecord(),
@@ -479,9 +518,26 @@ void DocumentProvider::Stop(bool clear_cached_results,
                             bool due_to_user_inactivity) {
   TRACE_EVENT0("omnibox", "DocumentProvider::Stop");
   debouncer_->CancelRequest();
-  if (loader_)
+
+  // If the request was sent, then log its duration and that it was invalidated.
+  if (loader_) {
+    DCHECK(!time_run_invoked_.is_null());
+    DCHECK(!time_request_sent_.is_null());
+    loader_.reset();
+    LogRequestTime(time_request_sent_, true);
+    time_request_sent_ = base::TimeTicks();
     LogOmniboxDocumentRequest(DOCUMENT_REQUEST_INVALIDATED);
-  loader_.reset();
+  }
+
+  // If `Run()` has been invoked, log its duration. It's possible `Stop()` is
+  // invoked before `Run()` has been invoked if 1) this is the first user input,
+  // 2) the previous call was debounced, or 3) the previous request was filtered
+  // (e.g. input too short).
+  if (!time_run_invoked_.is_null()) {
+    LogTotalTime(time_run_invoked_, true);
+    time_run_invoked_ = base::TimeTicks();
+  }
+
   auto* document_suggestions_service =
       client_->GetDocumentSuggestionsService(/*create_if_necessary=*/false);
   if (document_suggestions_service != nullptr) {
@@ -533,9 +589,10 @@ DocumentProvider::DocumentProvider(AutocompleteProviderClient* client,
       field_trial_triggered_in_session_(false),
       backoff_for_session_(false),
       client_(client),
-      listener_(listener),
       cache_size_(cache_size),
       matches_cache_(MatchesCache::NO_AUTO_EVICT) {
+  AddListener(listener);
+
   if (base::FeatureList::IsEnabled(omnibox::kDebounceDocumentProvider)) {
     bool from_last_run = base::GetFieldTrialParamByFeatureAsBool(
         omnibox::kDebounceDocumentProvider,
@@ -557,6 +614,7 @@ void DocumentProvider::OnURLLoadComplete(
   DCHECK(!done_);
   DCHECK_EQ(loader_.get(), source);
 
+  LogRequestTime(time_request_sent_, false);
   LogOmniboxDocumentRequest(DOCUMENT_REPLY_RECEIVED);
 
   int httpStatusCode = source->ResponseInfo() && source->ResponseInfo()->headers
@@ -570,9 +628,10 @@ void DocumentProvider::OnURLLoadComplete(
       response_body && source->NetError() == net::OK && httpStatusCode == 200 &&
       UpdateResults(SearchSuggestionParser::ExtractJsonData(
           source, std::move(response_body)));
+  LogTotalTime(time_run_invoked_, false);
   loader_.reset();
   done_ = true;
-  listener_->OnProviderUpdate(results_updated);
+  NotifyListeners(results_updated);
 }
 
 bool DocumentProvider::UpdateResults(const std::string& json_data) {
@@ -589,8 +648,8 @@ bool DocumentProvider::UpdateResults(const std::string& json_data) {
   // be hidden if the user clears their input and starts anew 'london'.
   SetCachedMatchesScoresTo0();
   // 3) Push the <N> new matches to the cache.
-  for (auto it = matches_.rbegin(); it != matches_.rend(); ++it)
-    matches_cache_.Put(it->stripped_destination_url, *it);
+  for (const AutocompleteMatch& match : base::Reversed(matches_))
+    matches_cache_.Put(match.stripped_destination_url, match);
   // 4) Copy the cached matches to |matches_|, skipping the most recent <N>
   // cached matches since they were already added in step (1). Pass
   // |set_scores_to_0| as true as we don't trust cached scores since they may no
@@ -611,6 +670,7 @@ bool DocumentProvider::UpdateResults(const std::string& json_data) {
 
 void DocumentProvider::OnDocumentSuggestionsLoaderAvailable(
     std::unique_ptr<network::SimpleURLLoader> loader) {
+  time_request_sent_ = base::TimeTicks::Now();
   loader_ = std::move(loader);
   LogOmniboxDocumentRequest(DOCUMENT_REQUEST_SENT);
 }
@@ -687,17 +747,13 @@ std::u16string DocumentProvider::GetMatchDescription(
 ACMatches DocumentProvider::ParseDocumentSearchResults(
     const base::Value& root_val) {
   ACMatches matches;
-  const base::DictionaryValue* root_dict = nullptr;
-  const base::ListValue* results_list = nullptr;
-  if (!root_val.GetAsDictionary(&root_dict)) {
-    return matches;
-  }
 
   // Parse the results.
-  if (!root_dict->GetList("results", &results_list)) {
+  const base::Value* results = root_val.FindListKey("results");
+  if (!results) {
     return matches;
   }
-  size_t num_results = results_list->GetList().size();
+  size_t num_results = results->GetListDeprecated().size();
   UMA_HISTOGRAM_COUNTS_1M("Omnibox.DocumentSuggest.ResultCount", num_results);
 
   // During development/quality iteration we may wish to defeat server scores.
@@ -728,16 +784,12 @@ ACMatches DocumentProvider::ParseDocumentSearchResults(
   // Ensure server's suggestions are added with monotonically decreasing scores.
   int previous_score = INT_MAX;
   for (size_t i = 0; i < num_results; i++) {
-    const base::Value& result_value = results_list->GetList()[i];
-    if (!result_value.is_dict()) {
+    const base::Value& result = results->GetListDeprecated()[i];
+    if (!result.is_dict()) {
       return matches;
     }
-    const base::DictionaryValue& result =
-        base::Value::AsDictionaryValue(result_value);
-    std::u16string title;
-    std::u16string url;
-    result.GetString("title", &title);
-    result.GetString("url", &url);
+    const std::string title = FindStringKeyOrEmpty(result, "title");
+    const std::string url = FindStringKeyOrEmpty(result, "url");
     if (title.empty() || url.empty()) {
       continue;
     }
@@ -772,10 +824,10 @@ ACMatches DocumentProvider::ParseDocumentSearchResults(
                             AutocompleteMatchType::DOCUMENT_SUGGESTION);
     // Use full URL for displayed text and navigation. Use "originalUrl" for
     // deduping if present.
-    match.fill_into_edit = url;
+    match.fill_into_edit = base::UTF8ToUTF16(url);
     match.destination_url = GURL(url);
-    std::u16string original_url;
-    if (result.GetString("originalUrl", &original_url)) {
+    const std::string* original_url = result.FindStringKey("originalUrl");
+    if (original_url) {
       // |AutocompleteMatch::GURLToStrippedGURL()| will try to use
       // |GetURLForDeduping()| to extract a doc ID and generate a canonical doc
       // URL; this is ideal as it handles different URL formats pointing to the
@@ -783,29 +835,30 @@ ACMatches DocumentProvider::ParseDocumentSearchResults(
       // generation that can still be used for generic deduping and as a key to
       // |matches_cache_|.
       match.stripped_destination_url = AutocompleteMatch::GURLToStrippedGURL(
-          GURL(original_url), input_, client_->GetTemplateURLService(),
+          GURL(*original_url), input_, client_->GetTemplateURLService(),
           std::u16string());
     }
 
-    match.contents = AutocompleteMatch::SanitizeString(title);
+    match.contents =
+        AutocompleteMatch::SanitizeString(base::UTF8ToUTF16(title));
     match.contents_class = Classify(match.contents, input_.text());
-    const base::DictionaryValue* metadata = nullptr;
-    if (result.GetDictionary("metadata", &metadata)) {
-      std::string mimetype;
-      if (metadata->GetString("mimeType", &mimetype)) {
+    const base::Value* metadata = result.FindDictKey("metadata");
+    if (metadata) {
+      const std::string update_time =
+          FindStringKeyOrEmpty(*metadata, "updateTime");
+      const std::string mimetype = FindStringKeyOrEmpty(*metadata, "mimeType");
+      if (metadata->FindStringKey("mimeType")) {
         match.document_type = GetIconForMIMEType(mimetype);
         match.RecordAdditionalInfo(
             "document type",
             AutocompleteMatch::DocumentTypeString(match.document_type));
       }
-      std::string update_time;
-      metadata->GetString("updateTime", &update_time);
       auto owners = ExtractResultList(&result, "metadata.owner.personNames",
                                       "displayName");
-      if (!owners.empty())
-        match.RecordAdditionalInfo("document owner", *owners[0]);
-      match.description = GetMatchDescription(
-          update_time, mimetype, !owners.empty() ? *owners[0] : "");
+      const std::string owner = !owners.empty() && owners[0] ? *owners[0] : "";
+      if (!owner.empty())
+        match.RecordAdditionalInfo("document owner", owner);
+      match.description = GetMatchDescription(update_time, mimetype, owner);
       AutocompleteMatch::AddLastClassificationIfNecessary(
           &match.description_class, 0, ACMatchClassification::DIM);
       // Exclude date & owner from description_for_shortcut to avoid showing
@@ -896,9 +949,10 @@ const GURL DocumentProvider::GetURLForDeduping(const GURL& url) {
   }
 
   // Unescape |url_str|
-  url_str = net::UnescapeURLComponent(
-      url_str, net::UnescapeRule::PATH_SEPARATORS |
-                   net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS);
+  url_str = base::UnescapeURLComponent(
+      url_str,
+      base::UnescapeRule::PATH_SEPARATORS |
+          base::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS);
 
   const std::string id = ExtractDocIdFromUrl(url_str);
 

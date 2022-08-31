@@ -4,7 +4,9 @@
 
 #include "third_party/blink/renderer/core/paint/ng/ng_text_painter.h"
 
+#include "base/auto_reset.h"
 #include "base/stl_util.h"
+#include "cc/paint/paint_flags.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/layout/layout_object_inlines.h"
@@ -27,7 +29,6 @@
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
-#include "third_party/blink/renderer/platform/graphics/paint/paint_flags.h"
 #include "third_party/blink/renderer/platform/wtf/text/character_names.h"
 
 namespace blink {
@@ -116,7 +117,7 @@ bool SetupPaintForSvgText(const NGTextPainter::SvgTextPaintState& state,
                           const ComputedStyle& style,
                           SvgPaintMode svg_paint_mode,
                           LayoutSVGResourceMode resource_mode,
-                          PaintFlags& flags) {
+                          cc::PaintFlags& flags) {
   const LayoutObject& layout_parent = svg_paint_mode == SvgPaintMode::kText
                                           ? *state.InlineText().Parent()
                                           : state.TextDecorationObject();
@@ -266,8 +267,8 @@ void NGTextPainter::PaintDecorationsExceptLineThrough(
     bool* has_line_through_decoration) {
   *has_line_through_decoration = false;
 
-  const NGTextDecorationOffset decoration_offset(decoration_info.Style(),
-                                                 text_item.Style(), nullptr);
+  const NGTextDecorationOffset decoration_offset(decoration_info.TargetStyle(),
+                                                 text_item.Style());
 
   if (svg_text_paint_state_.has_value()) {
     GraphicsContextStateSaver state_saver(paint_info.context, false);
@@ -393,11 +394,11 @@ void NGTextPainter::PaintSvgTextFragment(DOMNodeId node_id,
                                          const AutoDarkMode& auto_dark_mode) {
   const NGTextPainter::SvgTextPaintState& state = svg_text_paint_state_.value();
   if (state.IsPaintingTextMatch()) {
-    PaintFlags fill_flags;
+    cc::PaintFlags fill_flags;
     fill_flags.setColor(state.TextMatchColor().Rgb());
     fill_flags.setAntiAlias(true);
 
-    PaintFlags stroke_flags;
+    cc::PaintFlags stroke_flags;
     bool should_paint_stroke = false;
     if (SetupPaintForSvgText(state, graphics_context_, state.Style(),
                              SvgPaintMode::kText, kApplyToStrokeMode,
@@ -445,7 +446,7 @@ void NGTextPainter::PaintSvgTextFragment(DOMNodeId node_id,
     }
 
     if (resource_mode) {
-      PaintFlags flags;
+      cc::PaintFlags flags;
       if (SetupPaintForSvgText(state, graphics_context_, style_to_paint,
                                SvgPaintMode::kText, *resource_mode, flags)) {
         graphics_context_.DrawText(font_, fragment_paint_info_,
@@ -492,7 +493,7 @@ void NGTextPainter::PaintSvgDecorationsExceptLineThrough(
     }
 
     if (resource_mode) {
-      PaintFlags flags;
+      cc::PaintFlags flags;
       if (SetupPaintForSvgText(state, graphics_context_, style_to_paint,
                                SvgPaintMode::kTextDecoration, *resource_mode,
                                flags)) {
@@ -538,7 +539,7 @@ void NGTextPainter::PaintSvgDecorationsOnlyLineThrough(
     }
 
     if (resource_mode) {
-      PaintFlags flags;
+      cc::PaintFlags flags;
       if (SetupPaintForSvgText(state, graphics_context_, style_to_paint,
                                SvgPaintMode::kTextDecoration, *resource_mode,
                                flags)) {

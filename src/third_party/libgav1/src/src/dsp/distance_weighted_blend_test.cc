@@ -47,6 +47,7 @@ template <int bitdepth, typename Pixel>
 class DistanceWeightedBlendTest : public testing::TestWithParam<BlockSize>,
                                   public test_utils::MaxAlignedAllocable {
  public:
+  static_assert(bitdepth >= kBitdepth8 && bitdepth <= LIBGAV1_MAX_BITDEPTH, "");
   DistanceWeightedBlendTest() = default;
   ~DistanceWeightedBlendTest() override = default;
 
@@ -267,6 +268,56 @@ INSTANTIATE_TEST_SUITE_P(NEON, DistanceWeightedBlendTest10bpp,
                          testing::ValuesIn(kTestParam));
 #endif
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
+
+#if LIBGAV1_MAX_BITDEPTH == 12
+const char* GetDistanceWeightedBlendDigest12bpp(const BlockSize block_size) {
+  static const char* const kDigests[] = {
+      // 4xN
+      "e30bf8f5f294206ad1dd79bd10a20827",
+      "f0cfb60134562d9c5f2ec6ad106e01ef",
+      "ad0876244e1b769203266a9c75b74afc",
+      // 8xN
+      "5265b954479c15a80f427561c5f36ff4",
+      "7f157457d1671e4ecce7a0884e9e3f76",
+      "d2cef5cf217f2d1f787c8951b7fe7cb2",
+      "6d23059008adbbb84ac941c8b4968f5b",
+      // 16xN
+      "ae521a5656ed3440d1fa950c20d90a79",
+      "935bec0e12b5dd3e0c34b3de8ba51476",
+      "0334bafcdcd7ddddb673ded492bca25a",
+      "c5360f08d0be77c79dc19fb55a0c5fe0",
+      "c2d1e7a4244a8aaaac041aed0cefc148",
+      // 32xN
+      "ce7f3cf78ae4f836cf69763137f7f6a6",
+      "800e52ebb14d5831c047d391cd760f95",
+      "74aa2b412b42165f1967daf3042b4f17",
+      "140d4cc600944b629b1991e88a9fe97c",
+      // 64xN
+      "3d206f93229ee2cea5c5da4e0ac6445a",
+      "3d13028f8fffe79fd35752c0177291ca",
+      "e7a7669acb5979dc7b15a19eed09cd4c",
+      "599368f4971c203fc5fa32989fe8cb44",
+      // 128xN
+      "54b46af2e2c8d2081e26fa0315b4ffd7",
+      "602e769bb2104e78223e68e50e7e86a0",
+  };
+  assert(block_size < kMaxBlockSizes);
+  return kDigests[block_size];
+}
+
+using DistanceWeightedBlendTest12bpp = DistanceWeightedBlendTest<12, uint16_t>;
+
+TEST_P(DistanceWeightedBlendTest12bpp, Blending) {
+  Test(GetDistanceWeightedBlendDigest12bpp(GetParam()), 1);
+}
+
+TEST_P(DistanceWeightedBlendTest12bpp, DISABLED_Speed) {
+  Test(GetDistanceWeightedBlendDigest12bpp(GetParam()), kNumSpeedTests);
+}
+
+INSTANTIATE_TEST_SUITE_P(C, DistanceWeightedBlendTest12bpp,
+                         testing::ValuesIn(kTestParam));
+#endif  // LIBGAV1_MAX_BITDEPTH == 12
 
 }  // namespace
 }  // namespace dsp

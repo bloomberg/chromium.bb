@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/no_destructor.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -49,7 +48,7 @@ void GpuServiceFactory::RunMediaService(
   // operations are blocked, user may hear audio glitch or see video freezing,
   // hence "user blocking".
   scoped_refptr<base::SingleThreadTaskRunner> task_runner;
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // Run everything on the gpu main thread, since it's required for decode swap
   // chains. See SwapChainPresenter::TryPresentToDecodeSwapChain().
   task_runner = task_runner_;
@@ -57,7 +56,7 @@ void GpuServiceFactory::RunMediaService(
   // TODO(crbug.com/786169): Check whether this needs to be single threaded.
   task_runner = base::ThreadPool::CreateSingleThreadTaskRunner(
       {base::TaskPriority::USER_BLOCKING});
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
   using FactoryCallback =
       base::OnceCallback<std::unique_ptr<media::MediaService>()>;

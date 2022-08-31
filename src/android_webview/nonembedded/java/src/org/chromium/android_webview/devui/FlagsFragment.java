@@ -74,6 +74,8 @@ public class FlagsFragment extends DevUiBaseFragment {
             STATE_ENABLED,
     };
 
+    private final boolean mEnabled;
+
     private Map<String, Boolean> mOverriddenFlags = new HashMap<>();
     private FlagsListAdapter mListAdapter;
 
@@ -81,6 +83,10 @@ public class FlagsFragment extends DevUiBaseFragment {
     private EditText mSearchBar;
 
     private static volatile @Nullable Runnable sFilterListener;
+
+    public FlagsFragment(boolean enabled) {
+        mEnabled = enabled;
+    }
 
     @Override
     public void onAttach(Context context) {
@@ -318,15 +324,14 @@ public class FlagsFragment extends DevUiBaseFragment {
             return false;
         }
 
-        // Match if the flag name contains the query as a substring (case-insensitive)
+        // Split the query into words, and look for each word in either the name or the description,
+        // matching case insensitively.
         String lowerCaseName = flag.getName().toLowerCase(Locale.getDefault());
-        if (lowerCaseName.contains(lowerCaseQuery)) return true;
-
-        // Or if the flag description contains the query as a substring (case-insensitive)
         String lowerCaseDescription = flag.getDescription().toLowerCase(Locale.getDefault());
-        if (lowerCaseDescription.contains(lowerCaseQuery)) return true;
-
-        return false;
+        for (String word : lowerCaseQuery.split("\\s+")) {
+            if (!lowerCaseName.contains(word) && !lowerCaseDescription.contains(word)) return false;
+        }
+        return true;
     }
 
     /**
@@ -374,6 +379,7 @@ public class FlagsFragment extends DevUiBaseFragment {
             TextView flagName = view.findViewById(R.id.flag_name);
             TextView flagDescription = view.findViewById(R.id.flag_description);
             Spinner flagToggle = view.findViewById(R.id.flag_toggle);
+            flagToggle.setEnabled(mEnabled);
 
             String label = flag.getName();
             if (flag.getEnabledStateValue() != null) {

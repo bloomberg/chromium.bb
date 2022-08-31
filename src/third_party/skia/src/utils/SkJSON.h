@@ -10,10 +10,10 @@
 
 #include "include/core/SkTypes.h"
 #include "include/private/SkNoncopyable.h"
-#include "include/private/SkTo.h"
 #include "src/core/SkArenaAlloc.h"
 
 #include <cstring>
+#include <string_view>
 
 class SkString;
 class SkWStream;
@@ -313,6 +313,10 @@ public:
         return this->getTag() == Tag::kShortString
             ? strchr(this->cast<char>(), '\0')
             : this->cast<VectorValue<char, Value::Type::kString>>()->end();
+    }
+
+    std::string_view str() const {
+        return std::string_view(this->begin(), this->size());
     }
 };
 

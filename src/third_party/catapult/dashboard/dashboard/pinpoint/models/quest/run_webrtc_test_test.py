@@ -8,7 +8,6 @@ from __future__ import absolute_import
 
 import os
 import unittest
-import mock
 
 from dashboard.pinpoint.models.quest import run_webrtc_test
 from dashboard.pinpoint.models.quest import run_test_test
@@ -27,6 +26,7 @@ _BASE_EXTRA_ARGS = [
     '${ISOLATED_OUTDIR}/webrtc_perf_tests/perf_results.json',
 ]
 _WEBRTCTEST_COMMAND = [
+    'vpython3',
     '../../tools_webrtc/flags_compatibility.py',
     '../../testing/test_env.py',
     os.path.join('.', 'foo_test'),
@@ -52,6 +52,7 @@ class FromDictTest(unittest.TestCase):
     arguments = dict(_BASE_ARGUMENTS)
     arguments['configuration'] = '__android__'
     webrtc_android_command = [
+        'vpython3',
         '../../build/android/test_wrapper/logdog_wrapper.py',
         '--target',
         'foo_test',
@@ -110,11 +111,9 @@ class FromDictTest(unittest.TestCase):
     self.assertEqual(quest, expected)
 
 
-@mock.patch('dashboard.services.crrev_service.GetCommit')
 class StartTest(unittest.TestCase):
 
-  def testStart(self, get_commit):
-    get_commit.return_value = {'number': 675460}
+  def testStart(self):
     quest = run_webrtc_test.RunWebRtcTest('server', run_test_test.DIMENSIONS,
                                           _BASE_EXTRA_ARGS, _BASE_SWARMING_TAGS,
                                           _WEBRTCTEST_COMMAND,

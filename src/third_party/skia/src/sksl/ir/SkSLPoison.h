@@ -14,22 +14,22 @@ class Poison : public Expression {
 public:
     inline static constexpr Kind kExpressionKind = Kind::kPoison;
 
-    static std::unique_ptr<Expression> Make(int line, const Context& context) {
-        return std::make_unique<Poison>(line, context.fTypes.fPoison.get());
+    static std::unique_ptr<Expression> Make(Position pos, const Context& context) {
+        return std::make_unique<Poison>(pos, context.fTypes.fPoison.get());
     }
 
-    Poison(int line, const Type* type)
-        : INHERITED(line, kExpressionKind, type) {}
+    Poison(Position pos, const Type* type)
+        : INHERITED(pos, kExpressionKind, type) {}
 
     bool hasProperty(Property property) const override {
         return false;
     }
 
-    std::unique_ptr<Expression> clone() const override {
-        return std::make_unique<Poison>(fLine, &this->type());
+    std::unique_ptr<Expression> clone(Position pos) const override {
+        return std::make_unique<Poison>(pos, &this->type());
     }
 
-    String description() const override {
+    std::string description() const override {
         return Compiler::POISON_TAG;
     }
 

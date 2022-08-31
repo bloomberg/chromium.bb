@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+const GC = async () => {
+  await TestRunner.evaluateInPageAsync(`new Promise(resolve =>
+    GCController.asyncCollectAll(resolve))`);
+};
+
 (async function () {
   TestRunner.addResult(`Verify that SourceMap sources are correctly displayed in navigator.\n`);
   await TestRunner.loadLegacyModule('sources'); await TestRunner.loadTestModule('sources_test_runner');
@@ -31,12 +36,12 @@
 
   TestRunner.markStep('detachFrame1');
   await BindingsTestRunner.detachFrame('frame1', '_test_detachFrame1.js');
-  await TestRunner.evaluateInPageAnonymously('GCController.collectAll()');
+  await BindingsTestRunner.GC();
   SourcesTestRunner.dumpNavigatorView(sourcesNavigator, false);
 
   TestRunner.markStep('detachFrame2');
   await BindingsTestRunner.detachFrame('frame2', '_test_detachFrame2.js');
-  await TestRunner.evaluateInPageAnonymously('GCController.collectAll()');
+  await BindingsTestRunner.GC();
   SourcesTestRunner.dumpNavigatorView(sourcesNavigator, false);
 
   TestRunner.completeTest();

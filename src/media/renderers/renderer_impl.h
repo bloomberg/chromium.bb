@@ -5,7 +5,6 @@
 #ifndef MEDIA_RENDERERS_RENDERER_IMPL_H_
 #define MEDIA_RENDERERS_RENDERER_IMPL_H_
 
-#include <list>
 #include <memory>
 #include <vector>
 
@@ -63,7 +62,8 @@ class MEDIA_EXPORT RendererImpl final : public Renderer {
   void SetCdm(CdmContext* cdm_context, CdmAttachedCB cdm_attached_cb) final;
   void SetLatencyHint(absl::optional<base::TimeDelta> latency_hint) final;
   void SetPreservesPitch(bool preserves_pitch) final;
-  void SetAutoplayInitiated(bool autoplay_initiated) final;
+  void SetWasPlayedWithUserActivation(
+      bool was_played_with_user_activation) final;
   void Flush(base::OnceClosure flush_cb) final;
   void StartPlayingFrom(base::TimeDelta time) final;
   void SetPlaybackRate(double playback_rate) final;
@@ -196,6 +196,10 @@ class MEDIA_EXPORT RendererImpl final : public Renderer {
 
   // Callback executed when a runtime error happens.
   void OnError(PipelineStatus error);
+
+  // Callback executed when there is a fallback somewhere in the pipeline which
+  // should be recorded for metrics analysis.
+  void OnFallback(PipelineStatus fallback);
 
   void OnWaiting(WaitingReason reason);
   void OnVideoNaturalSizeChange(const gfx::Size& size);

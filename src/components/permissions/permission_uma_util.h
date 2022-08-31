@@ -66,7 +66,7 @@ enum class RequestTypeForUma {
   PERMISSION_STORAGE_ACCESS = 23,
   PERMISSION_CAMERA_PAN_TILT_ZOOM = 24,
   PERMISSION_WINDOW_PLACEMENT = 25,
-  PERMISSION_FONT_ACCESS = 26,
+  PERMISSION_LOCAL_FONTS = 26,
   PERMISSION_IDLE_DETECTION = 27,
   PERMISSION_FILE_HANDLING = 28,
   PERMISSION_U2F_API_REQUEST = 29,
@@ -191,6 +191,10 @@ enum class PermissionPromptDispositionReason {
 
   // Disposition was used as a fallback, if no selector made a decision.
   DEFAULT_FALLBACK = 3,
+
+  // Disposition was chosen based on grant likelihood predicted by the On-Device
+  // Permission Prediction Model.
+  ON_DEVICE_PREDICTION_MODEL = 4,
 };
 
 enum class AdaptiveTriggers {
@@ -239,6 +243,17 @@ enum class AutoDSEPermissionRevertTransition {
 
   // Always keep at the end.
   kMaxValue = INVALID_END_STATE,
+};
+
+// This enum backs up the 'PermissionPredictionSource` histogram enum. It
+// indicates whether the permission prediction was done by the local on device
+// model or by the server side model.
+enum class PermissionPredictionSource {
+  ON_DEVICE = 0,
+  SERVER_SIDE = 1,
+
+  // Always keep at the end.
+  kMaxValue = SERVER_SIDE,
 };
 
 // Provides a convenient way of logging UMA for permission related operations.
@@ -303,6 +318,7 @@ class PermissionUmaUtil {
       PermissionPromptDisposition ui_disposition,
       absl::optional<PermissionPromptDispositionReason> ui_reason,
       absl::optional<PredictionGrantLikelihood> predicted_grant_likelihood,
+      absl::optional<bool> prediction_decision_held_back,
       bool did_show_prompt,
       bool did_click_manage,
       bool did_click_learn_more);
@@ -326,7 +342,7 @@ class PermissionUmaUtil {
 
   static void RecordPermissionUsage(ContentSettingsType permission_type,
                                     content::BrowserContext* browser_context,
-                                    const content::WebContents* web_contents,
+                                    content::WebContents* web_contents,
                                     const GURL& requesting_origin);
 
   static void RecordTimeElapsedBetweenGrantAndUse(ContentSettingsType type,
@@ -344,8 +360,24 @@ class PermissionUmaUtil {
   static void RecordDSEEffectiveSetting(ContentSettingsType permission_type,
                                         ContentSetting setting);
 
+  static void RecordPermissionPredictionSource(
+      PermissionPredictionSource prediction_type);
+
+  static void RecordPermissionPredictionServiceHoldback(
+      RequestType request_type,
+      bool is_on_device,
+      bool is_heldback);
+
   static std::string GetPermissionActionString(
       PermissionAction permission_action);
+
+  static std::string GetPromptDispositionString(
+      PermissionPromptDisposition ui_disposition);
+
+  static std::string GetPromptDispositionReasonString(
+      PermissionPromptDispositionReason ui_disposition_reason);
+
+  static std::string GetRequestTypeString(RequestType request_type);
 
   static bool IsPromptDispositionQuiet(
       PermissionPromptDisposition prompt_disposition);
@@ -398,9 +430,10 @@ class PermissionUmaUtil {
       PermissionPromptDisposition ui_disposition,
       absl::optional<PermissionPromptDispositionReason> ui_reason,
       const GURL& requesting_origin,
-      const content::WebContents* web_contents,
+      content::WebContents* web_contents,
       content::BrowserContext* browser_context,
-      absl::optional<PredictionGrantLikelihood> predicted_grant_likelihood);
+      absl::optional<PredictionGrantLikelihood> predicted_grant_likelihood,
+      absl::optional<bool> prediction_decision_held_back);
 
   // Records |count| total prior actions for a prompt of type |permission|
   // for a single origin using |prefix| for the metric.

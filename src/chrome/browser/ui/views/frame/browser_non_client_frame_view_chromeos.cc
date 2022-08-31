@@ -11,10 +11,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/ash/system_web_apps/types/system_web_app_delegate.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
@@ -30,6 +32,7 @@
 #include "chrome/browser/ui/views/web_apps/frame_toolbar/web_app_frame_toolbar_view.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/ui/base/chromeos_ui_constants.h"
 #include "chromeos/ui/base/tablet_state.h"
 #include "chromeos/ui/base/window_properties.h"
@@ -37,6 +40,8 @@
 #include "chromeos/ui/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "chromeos/ui/frame/default_frame_header.h"
 #include "chromeos/ui/frame/frame_utils.h"
+#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -48,12 +53,16 @@
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/image_model.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/chromeos/styles/cros_styles.h"
 #include "ui/events/gestures/gesture_recognizer.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/scoped_canvas.h"
+#include "ui/views/animation/animation_builder.h"
+#include "ui/views/background.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/highlight_border.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/rect_based_targeting_utils.h"
 #include "ui/views/widget/widget.h"
@@ -65,6 +74,7 @@
 #endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_features.h"
 #include "ash/wm/window_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_helper.h"
 #include "chrome/browser/ui/ash/session_util.h"
@@ -76,12 +86,30 @@
 
 namespace {
 
-// Color for the window title text.
-constexpr SkColor kNormalWindowTitleTextColor = SkColorSetRGB(40, 40, 40);
-constexpr SkColor kIncognitoWindowTitleTextColor = SK_ColorWHITE;
-
 // The indicator for teleported windows has 8 DIPs before and below it.
 constexpr int kProfileIndicatorPadding = 8;
+
+// Returns the layer for the specified `web_view`'s native view.
+ui::Layer* GetNativeViewLayer(views::WebView* web_view) {
+  if (web_view) {
+    if (views::NativeViewHost* holder = web_view->holder(); holder) {
+      if (aura::Window* native_view = holder->native_view(); native_view)
+        return native_view->layer();
+    }
+  }
+  return nullptr;
+}
+
+// Returns the render widget host for the specified `web_view`.
+content::RenderWidgetHost* GetRenderWidgetHost(views::WebView* web_view) {
+  if (web_view) {
+    if (auto* web_contents = web_view->GetWebContents(); web_contents) {
+      if (auto* rvh = web_contents->GetRenderViewHost(); rvh)
+        return rvh->GetWidget();
+    }
+  }
+  return nullptr;
+}
 
 // Returns true if the header should be painted so that it looks the same as
 // the header used for packaged apps.
@@ -103,6 +131,19 @@ BrowserNonClientFrameViewChromeOS::BrowserNonClientFrameViewChromeOS(
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   ash::window_util::InstallResizeHandleWindowTargeterForWindow(
       frame->GetNativeWindow());
+
+  if (chromeos::features::IsDarkLightModeEnabled()) {
+    // To differentiate browser windows in dark/light mode, set a highlight
+    // border to the non client frame view. To avoid the border being covered by
+    // the client view, we should use a half insets border.
+    SetBorder(std::make_unique<views::HighlightBorder>(
+        0, views::HighlightBorder::Type::kHighlightBorder1,
+        /*use_light_colors=*/false,
+        views::HighlightBorder::InsetsType::kHalfInsets));
+    // Since highlight border has an inner border with opacity, we need to set a
+    // background underneath with frame color.
+    SetBackground(views::CreateSolidBackground(chromeos::kDefaultFrameColor));
+  }
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -157,18 +198,15 @@ void BrowserNonClientFrameViewChromeOS::Init() {
   if (frame()->ShouldDrawFrameHeader())
     frame_header_ = CreateFrameHeader();
 
-  if (browser_view()->GetIsWebAppType() && !browser->is_type_app_popup()) {
+  if (browser_view()->GetIsWebAppType() &&
+      (!browser->is_type_app_popup() ||
+       browser_view()->AppUsesWindowControlsOverlay())) {
     // Add the container for extra web app buttons (e.g app menu button).
     set_web_app_frame_toolbar(AddChildView(
         std::make_unique<WebAppFrameToolbarView>(frame(), browser_view())));
   }
 
   browser_view()->immersive_mode_controller()->AddObserver(this);
-
-  // Init caption button's WCO state on creation.
-  caption_button_container_->OnWindowControlsOverlayEnabledChanged(
-      browser_view()->IsWindowControlsOverlayEnabled(),
-      GetFrameHeaderColor(browser_view()->IsActive()));
 }
 
 gfx::Rect BrowserNonClientFrameViewChromeOS::GetBoundsForTabStripRegion(
@@ -238,25 +276,47 @@ bool BrowserNonClientFrameViewChromeOS::CanUserExitFullscreen() const {
 
 SkColor BrowserNonClientFrameViewChromeOS::GetCaptionColor(
     BrowserFrameActiveState active_state) const {
-  bool active = ShouldPaintAsActive(active_state);
+  // Web apps apply a theme color if specified by the extension/manifest.
+  absl::optional<SkColor> frame_theme_color =
+      browser_view()->browser()->app_controller()->GetThemeColor();
+  const SkColor frame_color =
+      frame_theme_color.value_or(GetFrameColor(active_state));
+  const SkColor active_caption_color =
+      views::FrameCaptionButton::GetButtonColor(frame_color);
 
-  SkColor active_color =
-      views::FrameCaptionButton::GetButtonColor(chromeos::kDefaultFrameColor);
+  if (ShouldPaintAsActive(active_state))
+    return active_caption_color;
 
-  // Web apps apply a theme color if specified by the extension.
-  Browser* browser = browser_view()->browser();
-  absl::optional<SkColor> theme_color =
-      browser->app_controller()->GetThemeColor();
-  if (theme_color)
-    active_color = views::FrameCaptionButton::GetButtonColor(*theme_color);
-
-  if (active)
-    return active_color;
-
-  // Add the container for extra web-app buttons (e.g app menu button).
   const float inactive_alpha_ratio =
       views::FrameCaptionButton::GetInactiveButtonColorAlphaRatio();
-  return SkColorSetA(active_color, inactive_alpha_ratio * SK_AlphaOPAQUE);
+  return SkColorSetA(active_caption_color,
+                     inactive_alpha_ratio * SK_AlphaOPAQUE);
+}
+
+SkColor BrowserNonClientFrameViewChromeOS::GetFrameColor(
+    BrowserFrameActiveState active_state) const {
+  if (!UsePackagedAppHeaderStyle(browser_view()->browser()))
+    return BrowserNonClientFrameView::GetFrameColor(active_state);
+
+  absl::optional<SkColor> color;
+  if (browser_view()->GetIsWebAppType())
+    color = browser_view()->browser()->app_controller()->GetThemeColor();
+
+  SkColor fallback_color = chromeos::kDefaultFrameColor;
+
+  if (chromeos::features::IsDarkLightModeEnabled() && GetWidget()) {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    bool use_debug_colors = base::FeatureList::IsEnabled(
+        ash::features::kSemanticColorsDebugOverride);
+#else
+    bool use_debug_colors = false;
+#endif
+    fallback_color = cros_styles::ResolveColor(
+        cros_styles::ColorName::kBgColor,
+        GetNativeTheme()->ShouldUseDarkColors(), use_debug_colors);
+  }
+
+  return color.value_or(fallback_color);
 }
 
 TabSearchBubbleHost*
@@ -280,7 +340,17 @@ gfx::Rect BrowserNonClientFrameViewChromeOS::GetBoundsForClientView() const {
   // and the top-of-window views are revealed, the TopContainerView paints the
   // window header by redirecting paints from its background to
   // BrowserNonClientFrameViewChromeOS.
-  return bounds();
+  gfx::Rect client_bounds(bounds());
+  if (chromeos::TabletState::Get()->InTabletMode() ||
+      browser_view()->IsFullscreen() || browser_view()->IsMaximized()) {
+    return client_bounds;
+  }
+
+  // If there is a border, inset the client bounds to show the border when the
+  // browser window is not fullscreened, maximized or in tablet mode.
+  if (auto* border = GetBorder())
+    client_bounds.Inset(border->GetInsets());
+  return client_bounds;
 }
 
 gfx::Rect BrowserNonClientFrameViewChromeOS::GetWindowBoundsForClientBounds(
@@ -362,6 +432,9 @@ void BrowserNonClientFrameViewChromeOS::OnPaint(gfx::Canvas* canvas) {
 
   if (frame_header_)
     frame_header_->PaintHeader(canvas);
+
+  OnPaintBackground(canvas);
+  OnPaintBorder(canvas);
 }
 
 void BrowserNonClientFrameViewChromeOS::LayoutWindowControlsOverlay() {
@@ -451,7 +524,11 @@ gfx::Size BrowserNonClientFrameViewChromeOS::GetMinimumSize() const {
 
 void BrowserNonClientFrameViewChromeOS::OnThemeChanged() {
   OnUpdateFrameColor();
+  caption_button_container_->OnWindowControlsOverlayEnabledChanged(
+      browser_view()->IsWindowControlsOverlayEnabled(),
+      GetFrameHeaderColor(browser_view()->IsActive()));
   BrowserNonClientFrameView::OnThemeChanged();
+  MaybeAnimateThemeChanged();
 }
 
 void BrowserNonClientFrameViewChromeOS::ChildPreferredSizeChanged(
@@ -472,7 +549,7 @@ bool BrowserNonClientFrameViewChromeOS::DoesIntersectRect(
   }
 
   bool should_leave_to_top_container = false;
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS)
   // In immersive mode, the caption buttons container is reparented to the
   // TopContainerView and hence |rect| should not be claimed here.  See
   // BrowserNonClientFrameViewChromeOS::OnImmersiveRevealStarted().
@@ -491,9 +568,7 @@ views::View::Views BrowserNonClientFrameViewChromeOS::GetChildrenInZOrder() {
 }
 
 SkColor BrowserNonClientFrameViewChromeOS::GetTitleColor() {
-  return browser_view()->GetRegularOrGuestSession()
-             ? kNormalWindowTitleTextColor
-             : kIncognitoWindowTitleTextColor;
+  return GetColorProvider()->GetColor(kColorCaptionForeground);
 }
 
 SkColor BrowserNonClientFrameViewChromeOS::GetFrameHeaderColor(bool active) {
@@ -702,6 +777,8 @@ void BrowserNonClientFrameViewChromeOS::PaintAsActiveChanged() {
 
   if (frame_header_)
     frame_header_->SetPaintAsActive(ShouldPaintAsActive());
+
+  UpdateBackgroundColor();
 }
 
 void BrowserNonClientFrameViewChromeOS::OnProfileAvatarChanged(
@@ -890,30 +967,86 @@ bool BrowserNonClientFrameViewChromeOS::GetHideCaptionButtonsForFullscreen()
 
 void BrowserNonClientFrameViewChromeOS::OnUpdateFrameColor() {
   aura::Window* window = frame()->GetNativeWindow();
-  absl::optional<SkColor> active_color, inactive_color;
-  if (!UsePackagedAppHeaderStyle(browser_view()->browser())) {
-    active_color = GetFrameColor(BrowserFrameActiveState::kActive);
-    inactive_color = GetFrameColor(BrowserFrameActiveState::kInactive);
-  } else if (browser_view()->GetIsWebAppType()) {
-    active_color = browser_view()->browser()->app_controller()->GetThemeColor();
-  } else if (!browser_view()->browser()->is_type_app() &&
-             !browser_view()->browser()->is_type_app_popup()) {
-    // TODO(crbug.com/836128): Remove when System Web Apps flag is removed, as
-    // the above web-app branch will render the theme color.
-    active_color = SK_ColorWHITE;
-  }
-
-  if (active_color) {
-    window->SetProperty(chromeos::kFrameActiveColorKey, *active_color);
-    window->SetProperty(chromeos::kFrameInactiveColorKey,
-                        inactive_color.value_or(*active_color));
-  } else {
-    window->ClearProperty(chromeos::kFrameActiveColorKey);
-    window->ClearProperty(chromeos::kFrameInactiveColorKey);
-  }
+  window->SetProperty(chromeos::kFrameActiveColorKey,
+                      GetFrameColor(BrowserFrameActiveState::kActive));
+  window->SetProperty(chromeos::kFrameInactiveColorKey,
+                      GetFrameColor(BrowserFrameActiveState::kInactive));
 
   if (frame_header_)
     frame_header_->UpdateFrameColors();
+
+  UpdateBackgroundColor();
+}
+
+void BrowserNonClientFrameViewChromeOS::UpdateBackgroundColor() {
+  // Update background color to current frame color.
+  if (auto* background = GetBackground()) {
+    background->SetNativeControlColor(
+        GetFrameColor(BrowserFrameActiveState::kUseCurrent));
+  }
+}
+
+void BrowserNonClientFrameViewChromeOS::MaybeAnimateThemeChanged() {
+  if (!browser_view())
+    return;
+
+  // Theme change events are only animated for system web apps which explicitly
+  // request the behavior.
+  Browser* browser = browser_view()->browser();
+  if (!browser || !web_app::IsSystemWebApp(browser) ||
+      !browser->app_controller()->system_app()->ShouldAnimateThemeChanges()) {
+    return;
+  }
+
+  views::WebView* web_view = browser_view()->contents_web_view();
+  ui::Layer* layer = GetNativeViewLayer(web_view);
+  content::RenderWidgetHost* render_widget_host = GetRenderWidgetHost(web_view);
+  if (!layer || !render_widget_host)
+    return;
+
+  // Immediately hide the layer associated with the `contents_web_view()` native
+  // view so that repainting of the web contents (which is janky) is hidden from
+  // user. Note that opacity is set just above `0.f` to pass a DCHECK that
+  // exists in `aura::Window` that might otherwise be tripped when changing
+  // window visibility (see https://crbug.com/351553).
+  layer->SetOpacity(std::nextafter(0.f, 1.f));
+
+  // Cache a callback to invoke to animate the layer back in. Note that because
+  // this is a cancelable callback, any previously created callback will be
+  // cancelled.
+  theme_changed_animation_callback_.Reset(base::BindOnce(
+      [](const base::WeakPtr<BrowserNonClientFrameViewChromeOS>& self,
+         base::TimeTicks theme_changed_time, bool success) {
+        if (!self || !self->browser_view())
+          return;
+
+        views::WebView* web_view = self->browser_view()->contents_web_view();
+        ui::Layer* layer = GetNativeViewLayer(web_view);
+        if (!layer)
+          return;
+
+        // Delay animating the layer back in at least until the
+        // `chromeos::DefaultFrameHeader` has had a chance to complete its own
+        // color change animation.
+        const base::TimeDelta offset =
+            chromeos::kDefaultFrameColorChangeAnimationDuration -
+            (base::TimeTicks::Now() - theme_changed_time);
+
+        views::AnimationBuilder()
+            .SetPreemptionStrategy(ui::LayerAnimator::PreemptionStrategy::
+                                       IMMEDIATELY_ANIMATE_TO_NEW_TARGET)
+            .Once()
+            .Offset(std::max(offset, base::TimeDelta()))
+            .SetDuration(chromeos::kDefaultFrameColorChangeAnimationDuration)
+            .SetOpacity(layer, 1.f);
+      },
+      weak_ptr_factory_.GetWeakPtr(), base::TimeTicks::Now()));
+
+  // Animate the layer back in only after a round trip through the renderer and
+  // compositor pipelines. This should ensure that the web contents has finished
+  // repainting theme changes.
+  render_widget_host->InsertVisualStateCallback(
+      theme_changed_animation_callback_.callback());
 }
 
 const aura::Window* BrowserNonClientFrameViewChromeOS::GetFrameWindow() const {

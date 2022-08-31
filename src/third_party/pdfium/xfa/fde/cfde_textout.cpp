@@ -22,6 +22,7 @@
 #include "core/fxge/fx_font.h"
 #include "core/fxge/text_char_pos.h"
 #include "third_party/base/check.h"
+#include "third_party/base/numerics/safe_conversions.h"
 #include "xfa/fgas/font/cfgas_gefont.h"
 #include "xfa/fgas/layout/cfgas_txtbreak.h"
 
@@ -58,7 +59,7 @@ bool CFDE_TextOut::DrawString(CFX_RenderDevice* device,
     }
   }
 
-#if !defined(OS_WIN)
+#if !BUILDFLAG(IS_WIN)
   uint32_t dwFontStyle = pFont->GetFontStyles();
   CFX_Font FxFont;
   auto SubstFxFont = std::make_unique<CFX_SubstFont>();
@@ -83,7 +84,7 @@ bool CFDE_TextOut::DrawString(CFX_RenderDevice* device,
         pFxFont = pCurFont->GetDevFont();
 
         CFX_Font* font;
-#if !defined(OS_WIN)
+#if !BUILDFLAG(IS_WIN)
         FxFont.SetFace(pFxFont->GetFace());
         FxFont.SetFontSpan(pFxFont->GetFontSpan());
         font = &FxFont;
@@ -91,8 +92,8 @@ bool CFDE_TextOut::DrawString(CFX_RenderDevice* device,
         font = pFxFont;
 #endif
 
-        device->DrawNormalText(iCurCount, pCurCP, font, -fFontSize, matrix,
-                               color, kOptions);
+        device->DrawNormalText(pdfium::make_span(pCurCP, iCurCount), font,
+                               -fFontSize, matrix, color, kOptions);
       }
       pCurFont = pSTFont;
       pCurCP = &pos;
@@ -106,7 +107,7 @@ bool CFDE_TextOut::DrawString(CFX_RenderDevice* device,
   if (pCurFont && iCurCount) {
     pFxFont = pCurFont->GetDevFont();
     CFX_Font* font;
-#if !defined(OS_WIN)
+#if !BUILDFLAG(IS_WIN)
     FxFont.SetFace(pFxFont->GetFace());
     FxFont.SetFontSpan(pFxFont->GetFontSpan());
     font = &FxFont;
@@ -114,8 +115,8 @@ bool CFDE_TextOut::DrawString(CFX_RenderDevice* device,
     font = pFxFont;
 #endif
 
-    bRet = device->DrawNormalText(iCurCount, pCurCP, font, -fFontSize, matrix,
-                                  color, kOptions);
+    bRet = device->DrawNormalText(pdfium::make_span(pCurCP, iCurCount), font,
+                                  -fFontSize, matrix, color, kOptions);
   }
 #if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
   device->Flush(false);
@@ -372,7 +373,7 @@ bool CFDE_TextOut::RetrievePieces(CFGAS_Char::BreakType dwBreakStatus,
   for (int32_t i = 0; i < iCount; i++) {
     const CFGAS_BreakPiece* pPiece = m_pTxtBreak->GetBreakPieceUnstable(i);
     int32_t iPieceChars = pPiece->GetLength();
-    int32_t iChar = *pStartChar;
+    size_t iChar = *pStartChar;
     int32_t iWidth = 0;
     int32_t j = 0;
     for (; j < iPieceChars; j++) {
@@ -505,9 +506,9 @@ size_t CFDE_TextOut::GetDisplayPos(const Piece* pPiece) {
     m_CharPos.resize(pPiece->char_count, TextCharPos());
 
   CFGAS_TxtBreak::Run tr;
-  tr.wsStr = m_wsText + pPiece->start_char;
+  tr.wsStr = m_wsText.Substr(pPiece->start_char);
   tr.pWidths = &m_CharWidths[pPiece->start_char];
-  tr.iLength = pPiece->char_count;
+  tr.iLength = pdfium::base::checked_cast<int32_t>(pPiece->char_count);
   tr.pFont = m_pFont;
   tr.fFontSize = m_fFontSize;
   tr.dwStyles = m_dwTxtBkStyles;

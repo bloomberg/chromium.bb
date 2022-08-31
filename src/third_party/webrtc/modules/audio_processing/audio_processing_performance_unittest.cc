@@ -343,7 +343,6 @@ class TimedThreadApiProcessor {
     frame_data_.input_stream_config.set_sample_rate_hz(
         simulation_config_->sample_rate_hz);
     frame_data_.input_stream_config.set_num_channels(num_channels_);
-    frame_data_.input_stream_config.set_has_keyboard(false);
     populate_audio_frame(input_level_, num_channels_,
                          (simulation_config_->sample_rate_hz *
                           AudioProcessing::kChunkSizeMs / 1000),
@@ -353,7 +352,6 @@ class TimedThreadApiProcessor {
     frame_data_.output_stream_config.set_sample_rate_hz(
         simulation_config_->sample_rate_hz);
     frame_data_.output_stream_config.set_num_channels(1);
-    frame_data_.output_stream_config.set_has_keyboard(false);
   }
 
   bool ReadyToProcess() {
@@ -443,7 +441,6 @@ class CallSimulator : public ::testing::TestWithParam<SimulationConfig> {
       apm_config.gain_controller1.enabled = true;
       apm_config.gain_controller1.mode =
           AudioProcessing::Config::GainController1::kAdaptiveDigital;
-      apm_config.voice_detection.enabled = true;
       apm->ApplyConfig(apm_config);
     };
 
@@ -455,7 +452,6 @@ class CallSimulator : public ::testing::TestWithParam<SimulationConfig> {
       apm_config.noise_suppression.enabled = true;
       apm_config.gain_controller1.mode =
           AudioProcessing::Config::GainController1::kAdaptiveDigital;
-      apm_config.voice_detection.enabled = true;
       apm->ApplyConfig(apm_config);
     };
 
@@ -466,7 +462,6 @@ class CallSimulator : public ::testing::TestWithParam<SimulationConfig> {
       apm_config.echo_canceller.enabled = false;
       apm_config.gain_controller1.enabled = false;
       apm_config.noise_suppression.enabled = false;
-      apm_config.voice_detection.enabled = false;
       apm->ApplyConfig(apm_config);
     };
 
