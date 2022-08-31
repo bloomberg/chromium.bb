@@ -79,7 +79,8 @@ HEAP_TEST(CompactionFullAbortedPage) {
 
       heap->set_force_oom(true);
       CcTest::CollectAllGarbage();
-      heap->mark_compact_collector()->EnsureSweepingCompleted();
+      heap->mark_compact_collector()->EnsureSweepingCompleted(
+          MarkCompactCollector::SweepingForcedFinalizationMode::kV8Only);
 
       // Check that all handles still point to the same page, i.e., compaction
       // has been aborted on the page.
@@ -160,7 +161,8 @@ HEAP_TEST(CompactionPartiallyAbortedPage) {
 
         heap->set_force_oom(true);
         CcTest::CollectAllGarbage();
-        heap->mark_compact_collector()->EnsureSweepingCompleted();
+        heap->mark_compact_collector()->EnsureSweepingCompleted(
+            MarkCompactCollector::SweepingForcedFinalizationMode::kV8Only);
 
         bool migration_aborted = false;
         for (Handle<FixedArray> object : compaction_page_handles) {
@@ -232,13 +234,15 @@ HEAP_TEST(CompactionPartiallyAbortedPageWithInvalidatedSlots) {
         }
       }
       // First object is going to be evacuated.
+      HeapObject front_object = *compaction_page_handles.front();
       to_be_aborted_page->RegisterObjectWithInvalidatedSlots<OLD_TO_NEW>(
-          *compaction_page_handles.front());
+          front_object, front_object.Size());
       // Last object is NOT going to be evacuated.
       // This happens since not all objects fit on the only other page in the
       // old space, the GC isn't allowed to allocate another page.
+      HeapObject back_object = *compaction_page_handles.back();
       to_be_aborted_page->RegisterObjectWithInvalidatedSlots<OLD_TO_NEW>(
-          *compaction_page_handles.back());
+          back_object, back_object.Size());
       to_be_aborted_page->SetFlag(
           MemoryChunk::FORCE_EVACUATION_CANDIDATE_FOR_TESTING);
 
@@ -256,7 +260,8 @@ HEAP_TEST(CompactionPartiallyAbortedPageWithInvalidatedSlots) {
 
         heap->set_force_oom(true);
         CcTest::CollectAllGarbage();
-        heap->mark_compact_collector()->EnsureSweepingCompleted();
+        heap->mark_compact_collector()->EnsureSweepingCompleted(
+            MarkCompactCollector::SweepingForcedFinalizationMode::kV8Only);
 
         CHECK_EQ(Page::FromHeapObject(*compaction_page_handles.front()),
                  page_to_fill);
@@ -334,7 +339,8 @@ HEAP_TEST(CompactionPartiallyAbortedPageIntraAbortedPointers) {
 
       heap->set_force_oom(true);
       CcTest::CollectAllGarbage();
-      heap->mark_compact_collector()->EnsureSweepingCompleted();
+      heap->mark_compact_collector()->EnsureSweepingCompleted(
+          MarkCompactCollector::SweepingForcedFinalizationMode::kV8Only);
 
       // The following check makes sure that we compacted "some" objects, while
       // leaving others in place.
@@ -435,7 +441,8 @@ HEAP_TEST(CompactionPartiallyAbortedPageWithRememberedSetEntries) {
 
       heap->set_force_oom(true);
       CcTest::CollectAllGarbage();
-      heap->mark_compact_collector()->EnsureSweepingCompleted();
+      heap->mark_compact_collector()->EnsureSweepingCompleted(
+          MarkCompactCollector::SweepingForcedFinalizationMode::kV8Only);
 
       // The following check makes sure that we compacted "some" objects, while
       // leaving others in place.

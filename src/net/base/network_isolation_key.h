@@ -116,9 +116,7 @@ class NET_EXPORT NetworkIsolationKey {
   const absl::optional<SchemefulSite>& GetTopFrameSite() const {
     return top_frame_site_;
   }
-  const absl::optional<SchemefulSite>& GetFrameSite() const {
-    return frame_site_;
-  }
+  const absl::optional<SchemefulSite>& GetFrameSite() const;
 
   // Getter for the nonce.
   const absl::optional<base::UnguessableToken>& GetNonce() const {
@@ -130,16 +128,16 @@ class NET_EXPORT NetworkIsolationKey {
 
   // Returns a representation of |this| as a base::Value. Returns false on
   // failure. Succeeds if either IsEmpty() or !IsTransient().
-  bool ToValue(base::Value* out_value) const WARN_UNUSED_RESULT;
+  [[nodiscard]] bool ToValue(base::Value* out_value) const;
 
   // Inverse of ToValue(). Writes the result to |network_isolation_key|. Returns
   // false on failure. Fails on values that could not have been produced by
   // ToValue(), like transient origins. If the value of
   // net::features::kAppendFrameOriginToNetworkIsolationKey has changed between
   // saving and loading the data, fails.
-  static bool FromValue(const base::Value& value,
-                        NetworkIsolationKey* out_network_isolation_key)
-      WARN_UNUSED_RESULT;
+  [[nodiscard]] static bool FromValue(
+      const base::Value& value,
+      NetworkIsolationKey* out_network_isolation_key);
 
  private:
   // Whether this key has opaque origins or a nonce.

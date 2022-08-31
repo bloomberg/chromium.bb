@@ -52,7 +52,9 @@ class HandleBase {
 
   // Returns the raw address where this handle is stored. This should only be
   // used for hashing handles; do not ever try to dereference it.
-  V8_INLINE Address address() const { return bit_cast<Address>(location_); }
+  V8_INLINE Address address() const {
+    return base::bit_cast<Address>(location_);
+  }
 
   // Returns the address to where the raw pointer is stored.
   // TODO(leszeks): This should probably be a const Address*, to encourage using
@@ -182,7 +184,7 @@ class Handle final : public HandleBase {
 };
 
 template <typename T>
-inline std::ostream& operator<<(std::ostream& os, Handle<T> handle);
+std::ostream& operator<<(std::ostream& os, Handle<T> handle);
 
 // ----------------------------------------------------------------------------
 // A stack-allocated class that governs a number of local handles.
@@ -278,6 +280,10 @@ class IdentityMap;
 class RootIndexMap;
 class OptimizedCompilationInfo;
 
+namespace maglev {
+class ExportedMaglevCompilationInfo;
+}  // namespace maglev
+
 using CanonicalHandlesMap = IdentityMap<Address*, ZoneAllocationPolicy>;
 
 // A CanonicalHandleScope does not open a new HandleScope. It changes the
@@ -285,27 +291,23 @@ using CanonicalHandlesMap = IdentityMap<Address*, ZoneAllocationPolicy>;
 // This does not apply to nested inner HandleScopes unless a nested
 // CanonicalHandleScope is introduced. Handles are only canonicalized within
 // the same CanonicalHandleScope, but not across nested ones.
-class V8_EXPORT_PRIVATE V8_NODISCARD CanonicalHandleScope final {
+class V8_EXPORT_PRIVATE V8_NODISCARD CanonicalHandleScope {
  public:
-  // If we passed a compilation info as parameter, we created the
-  // CanonicalHandlesMap on said compilation info's zone(). If so, in the
-  // CanonicalHandleScope destructor we hand off the canonical handle map to the
-  // compilation info. The compilation info is responsible for the disposal. If
-  // we don't have a compilation info, we create a zone in this constructor. To
-  // properly dispose of said zone, we need to first free the identity_map_
+  // If no Zone is passed to this constructor, we create (and own) a new zone.
+  // To properly dispose of said zone, we need to first free the identity_map_
   // which is done manually even though identity_map_ is a unique_ptr.
-  explicit CanonicalHandleScope(Isolate* isolate,
-                                OptimizedCompilationInfo* info = nullptr);
+  explicit CanonicalHandleScope(Isolate* isolate, Zone* zone = nullptr);
   ~CanonicalHandleScope();
+
+ protected:
+  std::unique_ptr<CanonicalHandlesMap> DetachCanonicalHandles();
+
+  Zone* zone_;  // *Not* const, may be mutated by subclasses.
 
  private:
   Address* Lookup(Address object);
 
-  std::unique_ptr<CanonicalHandlesMap> DetachCanonicalHandles();
-
-  Isolate* isolate_;
-  OptimizedCompilationInfo* info_;
-  Zone* zone_;
+  Isolate* const isolate_;
   RootIndexMap* root_index_map_;
   std::unique_ptr<CanonicalHandlesMap> identity_map_;
   // Ordinary nested handle scopes within the current one are not canonical.
@@ -315,6 +317,27 @@ class V8_EXPORT_PRIVATE V8_NODISCARD CanonicalHandleScope final {
 
   friend class HandleScope;
 };
+
+template <class CompilationInfoT>
+class V8_EXPORT_PRIVATE V8_NODISCARD CanonicalHandleScopeForOptimization final
+    : public CanonicalHandleScope {
+ public:
+  // We created the
+  // CanonicalHandlesMap on the compilation info's zone(). In the
+  // CanonicalHandleScope destructor we hand off the canonical handle map to the
+  // compilation info. The compilation info is responsible for the disposal.
+  explicit CanonicalHandleScopeForOptimization(Isolate* isolate,
+                                               CompilationInfoT* info);
+  ~CanonicalHandleScopeForOptimization();
+
+ private:
+  CompilationInfoT* const info_;
+};
+
+using CanonicalHandleScopeForTurbofan =
+    CanonicalHandleScopeForOptimization<OptimizedCompilationInfo>;
+using CanonicalHandleScopeForMaglev =
+    CanonicalHandleScopeForOptimization<maglev::ExportedMaglevCompilationInfo>;
 
 // Seal off the current HandleScope so that new handles can only be created
 // if a new HandleScope is entered.

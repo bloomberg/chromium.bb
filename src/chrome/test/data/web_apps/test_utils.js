@@ -14,8 +14,24 @@ function addManifestLinkTag(optionalCustomUrl) {
   linkTag.rel = "manifest";
   linkTag.href = `./${manifestUrl}`;
   document.head.append(linkTag);
+
+  setWindowControlsOverlayGeometryChange(document.title);
 }
 
-function startWorker(worker) {
-  navigator.serviceWorker.register(worker);
+function startWorker(worker, options) {
+  navigator.serviceWorker.register(worker, options);
+}
+
+// For this to work, the linked manifest.json must contain
+// "display_override": ["window-controls-overlay"].
+function setWindowControlsOverlayGeometryChange(siteTitle) {
+  document.title = siteTitle;
+  if (navigator.windowControlsOverlay) {
+    navigator.windowControlsOverlay.ongeometrychange = (e) => {
+      document.title =
+        navigator.windowControlsOverlay.visible
+          ? siteTitle + ": WCO Enabled"
+          : siteTitle;
+    }
+  }
 }

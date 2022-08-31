@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ash/dbus/encrypted_reporting_service_provider.h"
 
+#include <limits>
 #include <memory>
 #include <utility>
 
@@ -14,10 +15,11 @@
 #include "base/task/bind_post_task.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
+#include "chrome/browser/policy/messaging_layer/upload/event_upload_size_controller.h"
 #include "chrome/browser/policy/messaging_layer/upload/upload_client.h"
 #include "chrome/browser/policy/messaging_layer/upload/upload_provider.h"
 #include "chromeos/dbus/missive/missive_client.h"
-#include "components/reporting/proto/interface.pb.h"
+#include "components/reporting/proto/synced/interface.pb.h"
 #include "components/reporting/storage_selector/storage_selector.h"
 #include "components/reporting/util/status.h"
 #include "components/reporting/util/status.pb.h"
@@ -156,10 +158,23 @@ void EncryptedReportingServiceProvider::RequestUploadEncryptedRecords(
     return;
   }
 
-  auto records = std::make_unique<std::vector<reporting::EncryptedRecord>>();
-  for (auto& record : request.encrypted_record()) {
-    records->push_back(std::move(record));
-  }
+  // Missive should always send the remaining storage capacity and new events
+  // rate. If not, probably an outdated version of missive is running. In this
+  // case, we ignore the effect of remaining storage capacity/new events rate
+  // and give it the max/min possible value.
+  const auto remaining_storage_capacity =
+      request.has_remaining_storage_capacity()
+          ? request.remaining_storage_capacity()
+          : std::numeric_limits<uint64_t>::max();
+  const auto new_events_rate =
+      request.has_new_events_rate() ? request.new_events_rate() : 1U;
+  auto records{reporting::EventUploadSizeController::BuildEncryptedRecords(
+      request.encrypted_record(),
+      reporting::EventUploadSizeController(network_condition_service_,
+                                           new_events_rate,
+                                           remaining_storage_capacity,
+                                           /*enabled=*/false))};
+
   DCHECK(upload_provider_);
   MissiveClient* const missive_client = MissiveClient::Get();
   if (!missive_client) {

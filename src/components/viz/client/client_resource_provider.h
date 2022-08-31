@@ -18,9 +18,13 @@
 #include "components/viz/common/resources/returned_resource.h"
 #include "components/viz/common/resources/transferable_resource.h"
 #include "third_party/khronos/GLES2/gl2.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkSurface.h"
 
+class SkColorSpace;
+
 namespace gpu {
+struct Capabilities;
 namespace gles2 {
 class GLES2Interface;
 }
@@ -115,6 +119,7 @@ class VIZ_CLIENT_EXPORT ClientResourceProvider {
   class VIZ_CLIENT_EXPORT ScopedSkSurface {
    public:
     ScopedSkSurface(GrDirectContext* gr_context,
+                    const gpu::Capabilities& capabilities,
                     sk_sp<SkColorSpace> color_space,
                     GLuint texture_id,
                     GLenum texture_target,

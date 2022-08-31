@@ -10,21 +10,20 @@ import "url/mojom/url.mojom";
 //
 // Proposal: https://github.com/WICG/WebID
 
+// Represents the fetch result from a federated authentication request. It is
+// used to determine whether a JavaScript exception should be thrown, and what
+// the error message of such exception should say. This enum is a subset of
+// FederatedAuthRequestResult in
+// third_party/blink/public/mojom/devtools/inspector_issue.mojom.
 enum RequestIdTokenStatus {
   kSuccess,
   kApprovalDeclined,
   kErrorTooManyRequests,
-  kErrorFedCmNotSupportedByProvider,
-  kErrorFetchingWellKnown,
-  kErrorInvalidWellKnown,
-  kErrorFetchingSignin,
-  kErrorInvalidSigninResponse,
-  kErrorInvalidAccountsResponse,
-  kErrorInvalidTokenResponse,
+  kErrorCanceled,
   kError,
 };
 
-enum LogoutStatus {
+enum LogoutRpsStatus {
   kSuccess,
   kErrorTooManyRequests,
   kError,
@@ -35,16 +34,16 @@ enum RevokeStatus {
   kError
 };
 
-enum RequestMode {
-  kMediated,
-  kPermission,
+enum LogoutStatus {
+  kSuccess,
+  kNotLoggedIn
 };
 
 // The details of a single logout request from an identity provider.
-struct LogoutRequest {
-  // Endpoint to which the request will be sent. The origin is validated to
+struct LogoutRpsRequest {
+  // URL to which the request will be sent. The origin is validated to
   // have an associated active session.
-  url.mojom.Url endpoint;
+  url.mojom.Url url;
 
   // Identifier for the account being logged out. This is used to verify that
   // the logout request correlates to a previous sign-in event, and will
@@ -56,17 +55,18 @@ struct LogoutRequest {
 // This interface is called from a renderer process and implemented in the
 // browser process.
 interface FederatedAuthRequest {
-  // Requests an IdToken to be generated, given an IDP URL, some request
-  // parameters, and a mode that specifies the UI flow.
+  // Requests an IdToken to be generated, given an IDP URL.
   // |client_id| and |nonce| can be empty strings to omit the fields in the
   // request sent to the provider.
   // Returns the raw content of the IdToken.
   RequestIdToken(url.mojom.Url provider,
                  string client_id,
                  string nonce,
-                 RequestMode mode,
                  bool prefer_auto_sign_in) =>
       (RequestIdTokenStatus status, string? id_token);
+
+  // Cancels the pending token request, if any.
+  CancelTokenRequest();
 
   // Revokes a token for the specified |account_id| from |provider| for
   // the RP identified by |client_id|.
@@ -74,7 +74,10 @@ interface FederatedAuthRequest {
          string client_id,
          string account_id) => (RevokeStatus status);
 
+  // Clear internal login state for this RP/IDP/Account triple.
+  Logout(url.mojom.Url provider, string account_id) => (LogoutStatus status);
+
   // Contact the list of Relying Party logout endpoints and account IDs to
   // attempt to initiate user logout.
-  Logout(array<LogoutRequest> rp_logout_requests) => (LogoutStatus status);
+  LogoutRps(array<LogoutRpsRequest> rp_logout_requests) => (LogoutRpsStatus status);
 };

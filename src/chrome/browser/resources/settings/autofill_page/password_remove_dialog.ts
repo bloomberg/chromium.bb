@@ -16,34 +16,47 @@ import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
 import 'chrome://resources/cr_elements/shared_style_css.m.js';
 import './avatar_icon.js';
 
+import {CrCheckboxElement} from 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.m.js';
 import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
-import {assert} from 'chrome://resources/js/assert.m.js';
+import {assert} from 'chrome://resources/js/assert_ts.js';
 import {I18nMixin} from 'chrome://resources/js/i18n_mixin.js';
-import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {SyncBrowserProxyImpl} from '../people_page/sync_browser_proxy.js';
 
 import {MultiStorePasswordUiEntry} from './multi_store_password_ui_entry.js';
 import {PasswordManagerImpl} from './password_manager_proxy.js';
+import {getTemplate} from './password_remove_dialog.html.js';
 
 export type PasswordRemoveDialogPasswordsRemovedEvent =
     CustomEvent<{removedFromAccount: boolean, removedFromDevice: boolean}>;
 
-interface PasswordRemoveDialogElement {
+declare global {
+  interface HTMLElementEventMap {
+    'password-remove-dialog-passwords-removed':
+        PasswordRemoveDialogPasswordsRemovedEvent;
+  }
+}
+
+export interface PasswordRemoveDialogElement {
   $: {
     dialog: CrDialogElement,
+    removeButton: HTMLElement,
+    removeFromAccountCheckbox: CrCheckboxElement,
+    removeFromDeviceCheckbox: CrCheckboxElement,
   };
 }
 
 const PasswordRemoveDialogElementBase = I18nMixin(PolymerElement);
 
-class PasswordRemoveDialogElement extends PasswordRemoveDialogElementBase {
+export class PasswordRemoveDialogElement extends
+    PasswordRemoveDialogElementBase {
   static get is() {
     return 'password-remove-dialog';
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
@@ -78,7 +91,7 @@ class PasswordRemoveDialogElement extends PasswordRemoveDialogElementBase {
   private removeFromDeviceChecked_: boolean;
   private accountEmail_: string;
 
-  connectedCallback() {
+  override connectedCallback() {
     super.connectedCallback();
 
     // At creation time, the password should exist in both locations.
@@ -131,6 +144,12 @@ class PasswordRemoveDialogElement extends PasswordRemoveDialogElementBase {
     return this.i18nAdvanced(
         'passwordRemoveDialogBody',
         {substitutions: [this.duplicatedPassword.urls.shown], tags: ['b']});
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'password-remove-dialog': PasswordRemoveDialogElement;
   }
 }
 

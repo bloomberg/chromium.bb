@@ -127,9 +127,10 @@ class MSSymbolServerConverter {
  public:
   enum LocateResult {
     LOCATE_FAILURE = 0,
-    LOCATE_NOT_FOUND,    // Authoritative: the file is not present.
-    LOCATE_RETRY,        // Transient (network?) error, try again later.
-    LOCATE_SUCCESS
+    LOCATE_NOT_FOUND,  // Authoritative: the file is not present.
+    LOCATE_RETRY,      // Transient (network?) error, try again later.
+    LOCATE_SUCCESS,
+    LOCATE_HTTP_HTTPS_REDIR
   };
 
   // Create a new object.  local_cache is the location (pathname) of a local
@@ -141,8 +142,11 @@ class MSSymbolServerConverter {
   // store to try.  The vector must contain at least one string.  None of the
   // strings passed to this constructor may contain asterisk ('*') or semicolon
   // (';') characters, as the symbol engine uses these characters as separators.
+  // If |trace_symsrv| is set then callbacks from SymSrv will be logged to
+  // stderr.
   MSSymbolServerConverter(const string& local_cache,
-                          const vector<string>& symbol_servers);
+                          const vector<string>& symbol_servers,
+                          bool trace_symsrv);
 
   // Locates the PE file (DLL or EXE) specified by the identifying information
   // in |missing|, by checking the symbol stores identified when the object
@@ -226,8 +230,12 @@ class MSSymbolServerConverter {
   // SymFindFileInPath fails for an expected reason.
   bool fail_dns_;        // DNS failures (fail_not_found_ will also be set).
   bool fail_timeout_;    // Timeouts (fail_not_found_ will also be set).
+  bool fail_http_https_redir_;  // Bad URL-- we should be using HTTPS.
   bool fail_not_found_;  // The file could not be found.  If this is the only
                          // fail_* member set, then it is authoritative.
+
+  // If set then callbacks from SymSrv will be logged to stderr.
+  bool trace_symsrv_;
 };
 
 }  // namespace google_breakpad

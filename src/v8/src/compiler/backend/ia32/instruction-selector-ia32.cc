@@ -9,6 +9,7 @@
 #include <type_traits>
 #include <vector>
 
+#include "src/base/bits.h"
 #include "src/base/flags.h"
 #include "src/base/iterator.h"
 #include "src/base/logging.h"
@@ -105,7 +106,7 @@ class IA32OperandGenerator final : public OperandGenerator {
         return true;
       case IrOpcode::kNumberConstant: {
         const double value = OpParameter<double>(node->op());
-        return bit_cast<int64_t>(value) == 0;
+        return base::bit_cast<int64_t>(value) == 0;
       }
       case IrOpcode::kHeapConstant: {
 // TODO(bmeurer): We must not dereference handles concurrently. If we
@@ -132,11 +133,12 @@ class IA32OperandGenerator final : public OperandGenerator {
       size_t* input_count, RegisterMode register_mode = kRegister) {
     AddressingMode mode = kMode_MRI;
     if (displacement_mode == kNegativeDisplacement) {
-      displacement = -displacement;
+      displacement = base::bits::WraparoundNeg32(displacement);
     }
     if (base != nullptr) {
       if (base->opcode() == IrOpcode::kInt32Constant) {
-        displacement += OpParameter<int32_t>(base->op());
+        displacement = base::bits::WraparoundAdd32(
+            displacement, OpParameter<int32_t>(base->op()));
         base = nullptr;
       }
     }
@@ -274,9 +276,10 @@ ArchOpcode GetLoadOpcode(LoadRepresentation load_rep) {
     case MachineRepresentation::kSimd128:
       opcode = kIA32Movdqu;
       break;
+    case MachineRepresentation::kSimd256:            // Fall through.
     case MachineRepresentation::kCompressedPointer:  // Fall through.
     case MachineRepresentation::kCompressed:         // Fall through.
-    case MachineRepresentation::kCagedPointer:       // Fall through.
+    case MachineRepresentation::kSandboxedPointer:   // Fall through.
     case MachineRepresentation::kWord64:             // Fall through.
     case MachineRepresentation::kMapWord:            // Fall through.
     case MachineRepresentation::kNone:
@@ -630,9 +633,10 @@ ArchOpcode GetStoreOpcode(MachineRepresentation rep) {
       return kIA32Movl;
     case MachineRepresentation::kSimd128:
       return kIA32Movdqu;
+    case MachineRepresentation::kSimd256:            // Fall through.
     case MachineRepresentation::kCompressedPointer:  // Fall through.
     case MachineRepresentation::kCompressed:         // Fall through.
-    case MachineRepresentation::kCagedPointer:       // Fall through.
+    case MachineRepresentation::kSandboxedPointer:   // Fall through.
     case MachineRepresentation::kWord64:             // Fall through.
     case MachineRepresentation::kMapWord:            // Fall through.
     case MachineRepresentation::kNone:
@@ -1432,6 +1436,11 @@ void InstructionSelector::VisitFloat64Ieee754Unop(Node* node,
       ->MarkAsCall();
 }
 
+void InstructionSelector::EmitMoveParamToFPR(Node* node, int index) {}
+
+void InstructionSelector::EmitMoveFPRToParam(InstructionOperand* op,
+                                             LinkageLocation location) {}
+
 void InstructionSelector::EmitPrepareArguments(
     ZoneVector<PushParameter>* arguments, const CallDescriptor* call_descriptor,
     Node* node) {
@@ -1986,7 +1995,7 @@ void InstructionSelector::VisitFloat64InsertLowWord32(Node* node) {
   Node* right = node->InputAt(1);
   Float64Matcher mleft(left);
   if (mleft.HasResolvedValue() &&
-      (bit_cast<uint64_t>(mleft.ResolvedValue()) >> 32) == 0u) {
+      (base::bit_cast<uint64_t>(mleft.ResolvedValue()) >> 32) == 0u) {
     Emit(kIA32Float64LoadLowWord32, g.DefineAsRegister(node), g.Use(right));
     return;
   }
@@ -2364,8 +2373,6 @@ void InstructionSelector::VisitWord32AtomicPairCompareExchange(Node* node) {
   V(F32x4DemoteF64x2Zero)   \
   V(F32x4Sqrt)              \
   V(F32x4SConvertI32x4)     \
-  V(F32x4RecipApprox)       \
-  V(F32x4RecipSqrtApprox)   \
   V(I64x2BitMask)           \
   V(I64x2SConvertI32x4Low)  \
   V(I64x2SConvertI32x4High) \

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -41,7 +41,8 @@ def main(args):
   if not downstreams:
     print("No downstream branches")
     return 1
-  elif len(downstreams) == 1:
+
+  if len(downstreams) == 1:
     run('checkout', downstreams[0], stdout=sys.stdout, stderr=sys.stderr)
   else:
     high = len(downstreams) - 1

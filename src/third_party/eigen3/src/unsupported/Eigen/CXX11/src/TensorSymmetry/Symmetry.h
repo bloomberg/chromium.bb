@@ -239,11 +239,11 @@ struct tensor_symmetry_pre_analysis<NumIndices, Gen_, Gens_...>
   typedef tensor_static_symgroup_if<(sizeof...(Gens_) + 1 <= max_static_generators), NumIndices, Gen_, Gens_...> helper;
   constexpr static std::size_t possible_size = helper::size;
 
-  typedef typename conditional<
+  typedef std::conditional_t<
     possible_size == 0 || possible_size >= max_static_elements,
     DynamicSGroupFromTemplateArgs<Gen_, Gens_...>,
     typename helper::type
-  >::type root_type;
+  > root_type;
 };
 
 template<bool instantiate, std::size_t NumIndices, typename... Gens>

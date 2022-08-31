@@ -10,6 +10,7 @@
 #include "base/feature_list.h"
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/string_search.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -17,6 +18,7 @@
 #include "components/autofill/core/browser/address_normalizer.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_field.h"
+#include "components/autofill/core/browser/autofill_regexes.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/data_model/autofill_data_model.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
@@ -497,9 +499,9 @@ bool FillCreditCardTypeSelectControl(const std::u16string& value,
   return false;
 }
 
-// Return the appropriate credit card number from |credit_card|. Truncates the
+// Returns the appropriate credit card number from |credit_card|. Truncates the
 // credit card number to be split across HTML form input fields depending on if
-// |field.credit_card_number_offset()| is less than the length of the credit
+// 'field.credit_card_number_offset()' is less than the length of the credit
 // card number.
 std::u16string GetCreditCardNumberForInput(
     const CreditCard& credit_card,
@@ -517,7 +519,9 @@ std::u16string GetCreditCardNumberForInput(
           field.max_length >= credit_card.ObfuscatedLastFourDigits().length()));
 
     // If previewing a credit card number that needs to be split, pad the number
-    // to 16 digits rather than displaying a fancy string with RTL support.
+    // to 16 digits rather than displaying a fancy string with RTL support. This
+    // also returns 16 digits if there is only one field and it cannot fit the
+    // longer version CC number.
     value = is_single_field
                 ? credit_card.ObfuscatedLastFourDigits()
                 : credit_card.ObfuscatedLastFourDigitsForSplitFields();
@@ -534,6 +538,40 @@ std::u16string GetCreditCardNumberForInput(
         field.credit_card_number_offset(),
         field.max_length > 0 ? field.max_length : std::u16string::npos);
   }
+  return value;
+}
+
+// Returns the appropriate credit card number from |virtual_card|. Truncates the
+// credit card number to be split across HTML form input fields depending on if
+// 'field.credit_card_number_offset()' is less than the length of the credit
+// card number.
+std::u16string GetVirtualCardNumberForPreviewInput(
+    const CreditCard& virtual_card,
+    const AutofillField& field) {
+  std::u16string value =
+      l10n_util::GetStringUTF16(
+          IDS_AUTOFILL_VIRTUAL_CARD_SUGGESTION_OPTION_VALUE) +
+      u" " + virtual_card.CardIdentifierStringForAutofillDisplay();
+
+  // |field|'s max_length truncates the credit card number to fit within.
+  if (field.credit_card_number_offset() < value.length()) {
+    // A single field is detected when the offset begins at 0 and the field's
+    // max_length can hold the entire obfuscated credit card number.
+    bool is_single_field =
+        (field.credit_card_number_offset() == 0 &&
+         (field.max_length == 0 || field.max_length >= value.length()));
+
+    if (!is_single_field)
+      value = virtual_card.ObfuscatedLastFourDigitsForSplitFields();
+
+    // Take the substring of the credit card number starting from the offset and
+    // ending at the field's max_length (or the entire string if max_length is
+    // 0).
+    value = value.substr(
+        field.credit_card_number_offset(),
+        field.max_length > 0 ? field.max_length : std::u16string::npos);
+  }
+
   return value;
 }
 
@@ -677,10 +715,32 @@ std::u16string GetExpirationYearForInput(const CreditCard& credit_card,
   return value;
 }
 
+// Returns the appropriate virtual card expiration year for the field. Uses the
+// |field_type| and the |field|'s max_length attribute to determine if the year
+// needs to be truncated.
+std::u16string GetExpirationYearForVirtualCardPreviewInput(
+    ServerFieldType storable_type,
+    const AutofillField& field) {
+  if (storable_type == CREDIT_CARD_EXP_2_DIGIT_YEAR &&
+      (field.max_length == 2 || field.max_length == 0)) {
+    return CreditCard::GetMidlineEllipsisDots(2);
+  } else if (storable_type == CREDIT_CARD_EXP_4_DIGIT_YEAR &&
+             (field.max_length == 4 || field.max_length == 0)) {
+    return CreditCard::GetMidlineEllipsisDots(4);
+  }
+
+  if (field.max_length > 4) {
+    return CreditCard::GetMidlineEllipsisDots(4);
+  } else {
+    return CreditCard::GetMidlineEllipsisDots(field.max_length);
+  }
+}
+
 // Returns the appropriate expiration date from |credit_card| for the field
-// based on the |field_type|. Uses the |field|'s max_length attribute to
-// determine if the |value| needs to be truncated or padded. Returns an empty
-// string in case of a failure.
+// based on the |field_type|. If the field contains a recognized date format
+// string, the function follows that format. Otherwise, it uses the |field|'s
+// max_length attribute to determine if the |value| needs to be truncated or
+// padded. Returns an empty string in case of a failure.
 std::u16string GetExpirationDateForInput(const CreditCard& credit_card,
                                          const AutofillField& field,
                                          ServerFieldType field_type,
@@ -690,6 +750,38 @@ std::u16string GetExpirationDateForInput(const CreditCard& credit_card,
   std::u16string two_digit_year = credit_card.Expiration2DigitYearAsString();
   std::u16string four_digit_year = credit_card.Expiration4DigitYearAsString();
 
+  // Check whether we find one of the standard format descriptors like
+  // "mm/yy", "mm/yyyy", "mm / yy", "mm-yyyy", ... in one of the human
+  // readable labels. In that case, follow the specified pattern.
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillFillCreditCardAsPerFormatString)) {
+    std::vector<std::u16string> groups;
+    const char16_t* kFormatRegEx = u"mm(\\s?[/-]?\\s?)?yy(yy)?";
+    //                                  ^^^^ optional white space
+    //                                      ^^^^^ optional separator
+    //                                           ^^^ optional white space
+    //                                                   ^^^^^ 4 digit year?
+    if (MatchesPattern(field.placeholder, kFormatRegEx, &groups) ||
+        MatchesPattern(field.label, kFormatRegEx, &groups)) {
+      bool is_two_digit_year = groups[2].empty();
+      std::u16string expiration_candidate =
+          base::StrCat({month, groups[1],
+                        is_two_digit_year ? two_digit_year : four_digit_year});
+      if (field.max_length == 0 ||
+          expiration_candidate.size() <= field.max_length) {
+        return expiration_candidate;
+      }
+      // Try once more with a stripped version of the separator if the previous
+      // version did not fit.
+      expiration_candidate =
+          base::StrCat({month, base::TrimWhitespace(groups[1], base::TRIM_ALL),
+                        is_two_digit_year ? two_digit_year : four_digit_year});
+      if (field.max_length == 0 ||
+          expiration_candidate.size() <= field.max_length) {
+        return expiration_candidate;
+      }
+    }
+  }
 
   switch (field.max_length) {
     case 1:
@@ -717,6 +809,38 @@ std::u16string GetExpirationDateForInput(const CreditCard& credit_card,
       return field_type == CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR
                  ? month + kSeparator + two_digit_year
                  : month + kSeparator + four_digit_year;
+  }
+}
+
+// Returns the appropriate virtual_card expiration date from for the field based
+// on the |field|'s max_length. Returns an empty string in case of a failure.
+std::u16string GetExpirationDateForVirtualCardPreviewInput(
+    const AutofillField& field,
+    std::string* failure_to_fill) {
+  switch (field.max_length) {
+    case 1:
+    case 2:
+    case 3:
+      if (failure_to_fill) {
+        *failure_to_fill +=
+            "Field to fill must have a max length of at least 4. ";
+      }
+      return std::u16string();
+    case 4:
+      // Expects MMYY
+      return CreditCard::GetMidlineEllipsisDots(4);
+    case 5:
+      // Expects MM/YY
+      return CreditCard::GetMidlineEllipsisDots(2) + u"/" +
+             CreditCard::GetMidlineEllipsisDots(2);
+    case 6:
+      // Expects MMYYYY
+      return CreditCard::GetMidlineEllipsisDots(2) +
+             CreditCard::GetMidlineEllipsisDots(4);
+    default:
+      // Return MM/YYYY for default case
+      return CreditCard::GetMidlineEllipsisDots(2) + u"/" +
+             CreditCard::GetMidlineEllipsisDots(4);
   }
 }
 
@@ -828,6 +952,41 @@ std::u16string GetValueForProfile(const AutofillProfile& profile,
   return value;
 }
 
+// Returns the appropriate |virtual_card| value based on |storable_type| to
+// preview into |field|.
+std::u16string GetValueForVirtualCardPreview(const CreditCard& virtual_card,
+                                             const std::string& app_locale,
+                                             const AutofillField& field,
+                                             std::string* failure_to_fill) {
+  DCHECK_EQ(virtual_card.record_type(), CreditCard::VIRTUAL_CARD);
+
+  ServerFieldType storable_type = field.Type().GetStorableType();
+
+  switch (storable_type) {
+    case CREDIT_CARD_VERIFICATION_CODE:
+      // For preview virtual card CVC, return three dots unless for American
+      // Express, which uses 4-digit CVCs.
+      return virtual_card.network() == kAmericanExpressCard
+                 ? CreditCard::GetMidlineEllipsisDots(4)
+                 : CreditCard::GetMidlineEllipsisDots(3);
+    case CREDIT_CARD_NUMBER:
+      return GetVirtualCardNumberForPreviewInput(virtual_card, field);
+    case CREDIT_CARD_EXP_MONTH:
+      // Expects MM
+      return CreditCard::GetMidlineEllipsisDots(2);
+    case CREDIT_CARD_EXP_2_DIGIT_YEAR:
+    case CREDIT_CARD_EXP_4_DIGIT_YEAR:
+      return GetExpirationYearForVirtualCardPreviewInput(storable_type, field);
+    case CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR:
+    case CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR:
+      return GetExpirationDateForVirtualCardPreviewInput(field,
+                                                         failure_to_fill);
+    default:
+      // All other cases handled here.
+      return virtual_card.GetInfo(storable_type, app_locale);
+  }
+}
+
 }  // namespace
 
 FieldFiller::FieldFiller(const std::string& app_locale,
@@ -836,7 +995,7 @@ FieldFiller::FieldFiller(const std::string& app_locale,
 
 FieldFiller::~FieldFiller() {}
 
-bool FieldFiller::FillFormField(
+std::u16string FieldFiller::GetValueForFilling(
     const AutofillField& field,
     absl::variant<const AutofillProfile*, const CreditCard*>
         profile_or_credit_card,
@@ -844,15 +1003,21 @@ bool FieldFiller::FillFormField(
     const std::u16string& cvc,
     mojom::RendererFormDataAction action,
     std::string* failure_to_fill) {
-  const AutofillType type = field.Type();
   std::u16string value;
+  DCHECK(field_data);
 
   if (absl::holds_alternative<const CreditCard*>(profile_or_credit_card)) {
     const CreditCard* credit_card =
         absl::get<const CreditCard*>(profile_or_credit_card);
 
-    value = GetValueForCreditCard(*credit_card, cvc, app_locale_, action, field,
-                                  failure_to_fill);
+    if (credit_card->record_type() == CreditCard::VIRTUAL_CARD &&
+        action == mojom::RendererFormDataAction::kPreview) {
+      value = GetValueForVirtualCardPreview(*credit_card, app_locale_, field,
+                                            failure_to_fill);
+    } else {
+      value = GetValueForCreditCard(*credit_card, cvc, app_locale_, action,
+                                    field, failure_to_fill);
+    }
   }
 
   // Grab AutofillProfile data.
@@ -861,15 +1026,32 @@ bool FieldFiller::FillFormField(
         profile_or_credit_card));
     const AutofillProfile* profile =
         absl::get<const AutofillProfile*>(profile_or_credit_card);
-    if (profile->ShouldSkipFillingOrSuggesting(type.GetStorableType())) {
-      if (failure_to_fill)
-        *failure_to_fill += "ShouldSkipFillingOrSuggesting() returned true. ";
-      return false;
-    }
 
     value = GetValueForProfile(*profile, app_locale_, field, field_data,
                                failure_to_fill);
   }
+
+  return value;
+}
+
+bool FieldFiller::FillFormField(
+    const AutofillField& field,
+    absl::variant<const AutofillProfile*, const CreditCard*>
+        profile_or_credit_card,
+    const std::map<FieldGlobalId, std::u16string>& forced_fill_values,
+    FormFieldData* field_data,
+    const std::u16string& cvc,
+    mojom::RendererFormDataAction action,
+    std::string* failure_to_fill) {
+  const AutofillType type = field.Type();
+
+  auto it = forced_fill_values.find(field.global_id());
+  bool value_is_an_override = it != forced_fill_values.end();
+  std::u16string value =
+      value_is_an_override
+          ? it->second
+          : GetValueForFilling(field, profile_or_credit_card, field_data, cvc,
+                               action, failure_to_fill);
 
   // Do not attempt to fill empty values as it would skew the metrics.
   if (value.empty()) {
@@ -882,6 +1064,8 @@ bool FieldFiller::FillFormField(
                              field_data, address_normalizer_, failure_to_fill);
   }
   field_data->value = value;
+  if (value_is_an_override)
+    field_data->force_override = true;
   return true;
 }
 

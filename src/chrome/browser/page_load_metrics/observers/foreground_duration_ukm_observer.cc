@@ -31,11 +31,12 @@ ForegroundDurationUKMObserver::OnStart(
 }
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
-ForegroundDurationUKMObserver::OnCommit(
+ForegroundDurationUKMObserver::OnFencedFramesStart(
     content::NavigationHandle* navigation_handle,
-    ukm::SourceId source_id) {
-  source_id_ = source_id;
-  return CONTINUE_OBSERVING;
+    const GURL& currently_committed_url) {
+  // This class doesn't use information on subframes and inner pages. No need to
+  // forward.
+  return STOP_OBSERVING;
 }
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
@@ -78,7 +79,8 @@ void ForegroundDurationUKMObserver::RecordUkmIfInForeground(
   if (!currently_in_foreground_)
     return;
   base::TimeDelta foreground_duration = end_time - last_time_shown_;
-  ukm::builders::PageForegroundSession ukm_builder(source_id_);
+  ukm::builders::PageForegroundSession ukm_builder(
+      GetDelegate().GetPageUkmSourceId());
   ukm::UkmRecorder* ukm_recorder = ukm::UkmRecorder::Get();
   ukm_builder.SetForegroundDuration(foreground_duration.InMilliseconds());
   RecordInputTimingMetrics(&ukm_builder);

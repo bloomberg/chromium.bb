@@ -40,7 +40,7 @@ source "$base_dir/cipd_bin_setup.sh"
 cipd_bin_setup
 
 # Sync "gsutil.py".
-python "$base_dir/gsutil.py" -- version 1> /dev/null &
+python3 "$base_dir/gsutil.py" -- version 1> /dev/null &
 
 # Sync all the pylint versions.
 for script in "$base_dir"/pylint-[0-9].[0-9]; do

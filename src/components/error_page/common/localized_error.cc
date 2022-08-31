@@ -12,11 +12,11 @@
 
 #include "base/check_op.h"
 #include "base/command_line.h"
-#include "base/cxx17_backports.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/notreached.h"
+#include "base/strings/escape.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -31,13 +31,12 @@
 #include "components/strings/grit/components_chromium_strings.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/url_formatter.h"
-#include "net/base/escape.h"
 #include "net/base/net_errors.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "url/origin.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "base/win/windows_version.h"
 #endif
 
@@ -492,11 +491,11 @@ const LocalizedErrorMap* LookupErrorMap(const std::string& error_domain,
         net::IsHostnameResolutionError(error_code)) {
       return &secure_dns_network_error;
     }
-    return FindErrorMapInArray(net_error_options, base::size(net_error_options),
+    return FindErrorMapInArray(net_error_options, std::size(net_error_options),
                                error_code);
   } else if (error_domain == Error::kHttpErrorDomain) {
     const LocalizedErrorMap* map = FindErrorMapInArray(
-        http_error_options, base::size(http_error_options), error_code);
+        http_error_options, std::size(http_error_options), error_code);
     // Handle miscellaneous 400/500 errors.
     return !map && error_code >= 400 && error_code < 600
                ? &generic_4xx_5xx_error
@@ -504,7 +503,7 @@ const LocalizedErrorMap* LookupErrorMap(const std::string& error_domain,
   } else if (error_domain == Error::kDnsProbeErrorDomain) {
     const LocalizedErrorMap* map =
         FindErrorMapInArray(dns_probe_error_options,
-                            base::size(dns_probe_error_options), error_code);
+                            std::size(dns_probe_error_options), error_code);
     DCHECK(map);
     return map;
   } else {
@@ -525,19 +524,12 @@ base::DictionaryValue GetStandardMenuItemsText() {
   return standard_menu_items_text;
 }
 
-// Returns true if the error is due to a disconnected network.
-bool IsOfflineError(const std::string& error_domain, int error_code) {
-  return ((error_code == net::ERR_INTERNET_DISCONNECTED &&
-           error_domain == Error::kNetErrorDomain) ||
-          (error_code == error_page::DNS_PROBE_FINISHED_NO_INTERNET &&
-           error_domain == Error::kDnsProbeErrorDomain));
-}
-
 // Gets the icon class for a given |error_domain| and |error_code|.
 const char* GetIconClassForError(const std::string& error_domain,
                                  int error_code) {
-  return IsOfflineError(error_domain, error_code) ? "icon-offline"
-                                                  : "icon-generic";
+  return LocalizedError::IsOfflineError(error_domain, error_code)
+             ? "icon-offline"
+             : "icon-generic";
 }
 
 base::DictionaryValue SingleEntryDictionary(base::StringPiece path,
@@ -693,7 +685,7 @@ void GetSuggestionsSummaryList(
         "summary", IDS_ERRORPAGES_SUGGESTION_CHECK_CONNECTION_SUMMARY));
   }
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
   if (IsSuggested(suggestions, SUGGEST_DNS_CONFIG) &&
       IsSuggested(suggestions, SUGGEST_FIREWALL_CONFIG) &&
       IsSuggested(suggestions, SUGGEST_PROXY_CONFIG)) {
@@ -722,7 +714,7 @@ void GetSuggestionsSummaryList(
     DCHECK(!(suggestions & SUGGEST_DNS_CONFIG));
     DCHECK(!(suggestions & SUGGEST_SECURE_DNS_CONFIG));
   }
-#elif defined(OS_ANDROID)
+#elif BUILDFLAG(IS_ANDROID)
   if (IsSuggested(suggestions, SUGGEST_SECURE_DNS_CONFIG)) {
     suggestions_summary_list.push_back(SingleEntryDictionary(
         "summary", IDS_ERRORPAGES_SUGGESTION_CHECK_SECURE_DNS_SUMMARY));
@@ -730,7 +722,7 @@ void GetSuggestionsSummaryList(
 #endif
 
   if (IsSuggested(suggestions, SUGGEST_OFFLINE_CHECKS)) {
-#if defined(OS_ANDROID) || defined(OS_IOS)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
     suggestions_summary_list.push_back(SingleEntryDictionary(
         "summary", IDS_ERRORPAGES_SUGGESTION_TURN_OFF_AIRPLANE_SUMMARY));
     suggestions_summary_list.push_back(SingleEntryDictionary(
@@ -747,7 +739,7 @@ void GetSuggestionsSummaryList(
 
 // If the current platform has a directly accesible network diagnostics tool and
 // the URL is valid add a suggestion.
-#if BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_WIN) || defined(OS_MAC)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
   if (IsOnlySuggestion(suggestions, SUGGEST_DIAGNOSE_TOOL)) {
     int diagose_message_id =
         error_code == error_page::DNS_PROBE_FINISHED_NXDOMAIN
@@ -764,7 +756,7 @@ void GetSuggestionsSummaryList(
   }
 #else
   DCHECK(!IsSuggested(suggestions, SUGGEST_DIAGNOSE_TOOL));
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_WIN) || defined(OS_MAC)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
 
   // Add list prefix header.
   error_strings->SetStringPath(
@@ -804,7 +796,7 @@ void AddSuggestionsDetails(int error_code,
           IDS_ERRORPAGES_SUGGESTION_CHECK_CONNECTION_BODY, false);
   }
 
-#if !defined(OS_IOS)
+#if !BUILDFLAG(IS_IOS)
   if (suggestions & SUGGEST_SECURE_DNS_CONFIG) {
     AddSuggestionDetailDictionaryToList(
         suggestions_details, IDS_ERRORPAGES_SUGGESTION_SECURE_DNS_CONFIG_HEADER,
@@ -812,7 +804,7 @@ void AddSuggestionsDetails(int error_code,
   }
 #endif
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
   if (suggestions & SUGGEST_DNS_CONFIG) {
     AddSuggestionDetailDictionaryToList(suggestions_details,
           IDS_ERRORPAGES_SUGGESTION_DNS_CONFIG_HEADER,
@@ -834,7 +826,7 @@ void AddSuggestionsDetails(int error_code,
   }
 
   // TODO(https://crbug.com/1254714): Provide meaningful strings for Fuchsia.
-#if !defined(OS_FUCHSIA)
+#if !BUILDFLAG(IS_FUCHSIA)
   if (suggestions & SUGGEST_PROXY_CONFIG) {
     AddSuggestionDetailDictionaryToList(
         suggestions_details, IDS_ERRORPAGES_SUGGESTION_PROXY_CONFIG_HEADER, 0,
@@ -850,7 +842,7 @@ void AddSuggestionsDetails(int error_code,
         "proxyTitle",
         l10n_util::GetStringUTF16(IDS_OPTIONS_PROXIES_CONFIGURE_BUTTON));
   }
-#endif  //  !defined(OS_FUCHSIA)
+#endif  //  !BUILDFLAG(IS_FUCHSIA)
 #endif
 
   if (suggestions & SUGGEST_CONTACT_ADMINISTRATOR &&
@@ -894,7 +886,7 @@ LocalizedError::PageState LocalizedError::GetPageState(
     const std::string& locale,
     bool is_blocked_by_extension) {
   LocalizedError::PageState result;
-  if (IsOfflineError(error_domain, error_code)) {
+  if (LocalizedError::IsOfflineError(error_domain, error_code)) {
     result.is_offline_error = true;
 
     // These strings are to be read by a screen reader during the dino game.
@@ -920,7 +912,7 @@ LocalizedError::PageState LocalizedError::GetPageState(
         l10n_util::GetStringUTF16(IDS_ERRORPAGE_DINO_GAME_DESCRIPTION));
 
     if (EnableAltGameMode()) {
-      result.strings.SetBoolean("enableAltGameMode", true);
+      result.strings.SetBoolKey("enableAltGameMode", true);
       // We don't know yet which scale the page will use, so both 1x and 2x
       // should be loaded.
       result.strings.SetStringPath(
@@ -976,16 +968,24 @@ LocalizedError::PageState LocalizedError::GetPageState(
 
   std::u16string failed_url_string(url_formatter::FormatUrl(
       failed_url, url_formatter::kFormatUrlOmitNothing,
-      net::UnescapeRule::NORMAL, nullptr, nullptr, nullptr));
+      base::UnescapeRule::NORMAL, nullptr, nullptr, nullptr));
   // URLs are always LTR.
   if (base::i18n::IsRTL())
     base::i18n::WrapStringWithLTRFormatting(&failed_url_string);
 
   std::u16string host_name(url_formatter::IDNToUnicode(failed_url.host()));
-  if (failed_url.SchemeIsHTTPOrHTTPS())
+  if (failed_url.SchemeIsHTTPOrHTTPS()) {
     result.strings.SetStringPath("title", host_name);
-  else
+  } else {
     result.strings.SetStringPath("title", failed_url_string);
+
+    // If the page is blocked by policy, and no hostname is available to show,
+    // instead show the scheme.
+    if (error_code == net::ERR_BLOCKED_BY_ADMINISTRATOR && host_name.empty()) {
+      options.heading_resource_id = IDS_ERRORPAGES_HEADING_BLOCKED_SCHEME;
+      host_name = base::UTF8ToUTF16(failed_url.scheme());
+    }
+  }
 
   result.strings.SetStringPath("iconClass",
                                GetIconClassForError(error_domain, error_code));
@@ -1082,10 +1082,10 @@ LocalizedError::PageState LocalizedError::GetPageState(
   AddSuggestionsDetails(error_code, &result.strings, options.suggestions,
                         suggestions_details);
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   if (!is_post && !result.reload_button_shown && !is_incognito &&
       failed_url.is_valid() && failed_url.SchemeIsHTTPOrHTTPS() &&
-      IsOfflineError(error_domain, error_code)) {
+      LocalizedError::IsOfflineError(error_domain, error_code)) {
     if (!auto_fetch_feature_enabled) {
       result.download_button_shown = true;
       result.strings.SetPath({"downloadButton", "msg"},
@@ -1110,7 +1110,8 @@ LocalizedError::PageState LocalizedError::GetPageState(
       "closeDescriptionPopup",
       l10n_util::GetStringUTF16(IDS_ERRORPAGES_SUGGESTION_CLOSE_POPUP_BUTTON));
 
-  if (IsOfflineError(error_domain, error_code) && !is_incognito) {
+  if (LocalizedError::IsOfflineError(error_domain, error_code) &&
+      !is_incognito) {
     result.offline_content_feature_enabled = offline_content_feature_enabled;
     if (offline_content_feature_enabled) {
       result.strings.SetStringPath("suggestedOfflineContentPresentation", "on");
@@ -1129,12 +1130,39 @@ LocalizedError::PageState LocalizedError::GetPageState(
           base::Value(l10n_util::GetStringUTF16(IDS_HIDE_CONTENT)));
     }
   }
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 
   result.strings.SetPath("suggestionsSummaryList",
                          base::Value(std::move(suggestions_summary_list)));
   result.strings.SetPath("suggestionsDetails",
                          base::Value(std::move(suggestions_details)));
+  return result;
+}
+
+LocalizedError::PageState LocalizedError::GetPageStateForOverriddenErrorPage(
+    base::Value string_dict,
+    int error_code,
+    const std::string& error_domain,
+    const GURL& failed_url,
+    const std::string& locale) {
+  LocalizedError::PageState result;
+
+  result.strings.MergeDictionary(&string_dict);
+  webui::SetLoadTimeDataDefaults(locale, &result.strings);
+
+  if (failed_url.SchemeIsHTTPOrHTTPS()) {
+    result.strings.SetStringPath(
+        "title", url_formatter::IDNToUnicode(failed_url.host()));
+  } else {
+    std::u16string failed_url_string(url_formatter::FormatUrl(
+        failed_url, url_formatter::kFormatUrlOmitNothing,
+        base::UnescapeRule::NORMAL, nullptr, nullptr, nullptr));
+    // URLs are always LTR.
+    if (base::i18n::IsRTL())
+      base::i18n::WrapStringWithLTRFormatting(&failed_url_string);
+    result.strings.SetStringPath("title", failed_url_string);
+  }
+
   return result;
 }
 
@@ -1159,6 +1187,15 @@ bool LocalizedError::HasStrings(const std::string& error_domain,
   return LookupErrorMap(error_domain, error_code,
                         /*is_secure_dns_network_error=*/false,
                         /*is_post=*/false) != nullptr;
+}
+
+// Returns true if the error is due to a disconnected network.
+bool LocalizedError::IsOfflineError(const std::string& error_domain,
+                                    int error_code) {
+  return ((error_code == net::ERR_INTERNET_DISCONNECTED &&
+           error_domain == Error::kNetErrorDomain) ||
+          (error_code == error_page::DNS_PROBE_FINISHED_NO_INTERNET &&
+           error_domain == Error::kDnsProbeErrorDomain));
 }
 
 }  // namespace error_page

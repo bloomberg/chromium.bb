@@ -131,6 +131,16 @@ public class MessagesMetrics {
                 return "TailoredSecurityEnabled";
             case MessageIdentifier.VR_SERVICES_UPGRADE:
                 return "VrServicesUpgrade";
+            case MessageIdentifier.AR_CORE_UPGRADE:
+                return "ArCoreUpgrade";
+            case MessageIdentifier.INSTANT_APPS:
+                return "InstantApps";
+            case MessageIdentifier.ABOUT_THIS_SITE:
+                return "AboutThisSite";
+            case MessageIdentifier.TRANSLATE:
+                return "Translate";
+            case MessageIdentifier.OFFER_NOTIFICATION:
+                return "OfferNotification";
             default:
                 return "Unknown";
         }

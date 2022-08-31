@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/time/time.h"
 #include "build/chromeos_buildflags.h"
 #include "cc/base/region.h"
 #include "components/exo/buffer.h"
@@ -46,7 +47,7 @@ namespace gfx {
 class ColorSpace;
 class GpuFence;
 struct PresentationFeedback;
-}
+}  // namespace gfx
 
 namespace viz {
 class CompositorFrame;
@@ -54,6 +55,7 @@ class CompositorFrame;
 
 namespace exo {
 class Buffer;
+class Capabilities;
 class FrameSinkResourceManager;
 class SurfaceObserver;
 
@@ -178,6 +180,10 @@ class Surface final : public ui::PropertyHandler {
 
   void SetRoundedCorners(const gfx::RRectF& rounded_corners_bounds);
   void SetOverlayPriorityHint(OverlayPriority hint);
+
+  // Sets the background color that shall be associated with the next buffer
+  // commit.
+  void SetBackgroundColor(absl::optional<SkColor> background_color);
 
   // This sets the surface viewport for scaling.
   void SetViewport(const gfx::SizeF& viewport);
@@ -403,6 +409,23 @@ class Surface final : public ui::PropertyHandler {
   // Release the pinned mode and allows the user to do other things again.
   void Unpin();
 
+  // Starts or ends throttling on the surface.
+  void ThrottleFrameRate(bool on);
+
+  // If true is set, if this window has a focus, key events should be sent to
+  // the app, even if it is an ash shortcut (with some exceptions).
+  // See exo::Keyboard for more details.
+  void SetKeyboardShortcutsInhibited(bool inhibited);
+
+  // Returns whether keyboard shortcuts are inhibited.
+  bool is_keyboard_shortcuts_inhibited() const {
+    return keyboard_shortcuts_inhibited_;
+  }
+
+  // Returns the capability set associated with this surface, or nullptr if one
+  // can not be determined. See go/secure-exo-ids for more details.
+  Capabilities* GetCapabilities();
+
  private:
   struct State {
     State();
@@ -422,8 +445,11 @@ class Surface final : public ui::PropertyHandler {
     SkBlendMode blend_mode = SkBlendMode::kSrcOver;
     float alpha = 1.0f;
     gfx::Vector2d offset;
-    gfx::ColorSpace color_space;
+    gfx::ColorSpace color_space = gfx::ColorSpace::CreateSRGB();
     bool is_tracking_occlusion = false;
+    // Represents optional background color that must be associated with the
+    // next buffer commit.
+    absl::optional<SkColor> background_color;
   };
   class BufferAttachment {
    public:
@@ -434,6 +460,7 @@ class Surface final : public ui::PropertyHandler {
 
     ~BufferAttachment();
 
+    BufferAttachment(BufferAttachment&& buffer);
     BufferAttachment& operator=(BufferAttachment&& buffer);
 
     base::WeakPtr<Buffer>& buffer();
@@ -446,6 +473,23 @@ class Surface final : public ui::PropertyHandler {
     gfx::Size size_;
   };
 
+  // State for this surface. State is committed in a three step process:
+  // 1. Pending state is accummulated into before commit.
+  // 2. On commit, state is copied to a cached state. This is to support
+  //    synchronized commit of a tree of surfaces. When the tree of surfaces is
+  //    set to be synchronized, the state of the tree will not be committed
+  //    until the root of the tree (precisely, until a unsynchronized root of a
+  //    subtree) is committed.
+  // 3. State is committed.
+  // Some fields are persisted between commits (e.g. which buffer is attached),
+  // and some fields are not (e.g. acquire fence). For fields that are
+  // persisted, they either need to be copyable, or if they are move only, they
+  // need to be wrapped in absl::optional and only copied on commit if they
+  // have been changed. Not doing this can lead to broken behaviour, such as
+  // losing the attached buffer if some unrelated field is updated in a commit.
+  // If you add new fields to this struct, please document whether the field
+  // should be persisted between commits.
+  // See crbug.com/1283305 for context.
   struct ExtendedState {
     ExtendedState();
     ~ExtendedState();
@@ -453,25 +497,33 @@ class Surface final : public ui::PropertyHandler {
     State basic_state;
 
     // The buffer that will become the content of surface.
-    BufferAttachment buffer;
+    // Persisted between commits.
+    absl::optional<BufferAttachment> buffer;
     // The rounded corners bounds for the surface.
+    // Persisted between commits.
     gfx::RRectF rounded_corners_bounds;
     // The damage region to schedule paint for.
+    // Not persisted between commits.
     cc::Region damage;
     // These lists contain the callbacks to notify the client when it is a good
     // time to start producing a new frame.
+    // Not persisted between commits.
     std::list<FrameCallback> frame_callbacks;
     // These lists contain the callbacks to notify the client when surface
     // contents have been presented.
+    // Not persisted between commits.
     std::list<PresentationCallback> presentation_callbacks;
     // The acquire gpu fence to associate with the surface buffer.
+    // Not persisted between commits.
     std::unique_ptr<gfx::GpuFence> acquire_fence;
     // Callback to notify about the per-commit buffer release. The wayland
     // Exo backend uses this callback to implement the immediate_release
     // event of the explicit sync protocol.
+    // Not persisted between commits.
     Buffer::PerCommitExplicitReleaseCallback
         per_commit_explicit_release_callback_;
     // The hint for overlay prioritization
+    // Persisted between commits.
     OverlayPriority overlay_priority_hint = OverlayPriority::REGULAR;
   };
 
@@ -496,7 +548,9 @@ class Surface final : public ui::PropertyHandler {
   void UpdateContentSize();
 
   // This returns true when the surface has some contents assigned to it.
-  bool has_contents() const { return !state_.buffer.size().IsEmpty(); }
+  bool has_contents() const {
+    return state_.buffer.has_value() && !state_.buffer->size().IsEmpty();
+  }
 
   // This window has the layer which contains the Surface contents.
   std::unique_ptr<aura::Window> window_;
@@ -577,6 +631,8 @@ class Surface final : public ui::PropertyHandler {
   gfx::Size embedded_surface_size_;
 
   LeaveEnterCallback leave_enter_callback_;
+
+  bool keyboard_shortcuts_inhibited_ = false;
 };
 
 class ScopedSurface {

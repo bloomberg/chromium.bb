@@ -35,11 +35,16 @@ class InputMethodContextImplGtk : public ui::LinuxInputMethodContext {
   bool IsPeekKeyEvent(const ui::KeyEvent& key_event) override;
   void SetCursorLocation(const gfx::Rect& rect) override;
   void Reset() override;
-  void Focus() override;
-  void Blur() override;
+  void UpdateFocus(bool has_client,
+                   ui::TextInputType old_type,
+                   ui::TextInputType new_type) override;
   void SetSurroundingText(const std::u16string& text,
                           const gfx::Range& selection_range) override;
-  void SetContentType(ui::TextInputType input_type, int input_flags) override;
+  void SetContentType(ui::TextInputType type,
+                      ui::TextInputMode mode,
+                      uint32_t flags,
+                      bool should_do_learning) override;
+  ui::VirtualKeyboardController* GetVirtualKeyboardController() override;
 
  private:
   // GtkIMContext event handlers.  They are shared among |gtk_context_simple_|
@@ -61,6 +66,12 @@ class InputMethodContextImplGtk : public ui::LinuxInputMethodContext {
                      void,
                      OnPreeditStart,
                      GtkIMContext*);
+
+  // Called on getting focus.
+  void Focus();
+
+  // Called on loosing focus.
+  void Blur();
 
   // Only used on GTK3.
   void SetContextClientWindow(GdkWindow* window);

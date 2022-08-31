@@ -17,7 +17,9 @@ class DecoderBuffer;
 
 namespace blink {
 
+class CropTarget;
 class FileSystemHandle;
+class MediaSourceHandleImpl;
 class RTCEncodedAudioFrame;
 class RTCEncodedVideoFrame;
 class VideoFrameHandle;
@@ -53,6 +55,11 @@ class MODULES_EXPORT V8ScriptValueSerializerForModules final
   bool WriteMediaAudioBuffer(scoped_refptr<media::AudioBuffer>);
   bool WriteDecoderBuffer(scoped_refptr<media::DecoderBuffer> data,
                           bool for_audio);
+  bool WriteMediaStreamTrack(MediaStreamTrack* track,
+                             ExceptionState& exception_state);
+  bool WriteCropTarget(CropTarget*);
+  bool WriteMediaSourceHandle(MediaSourceHandleImpl* handle,
+                              ExceptionState& exception_state);
 };
 
 }  // namespace blink

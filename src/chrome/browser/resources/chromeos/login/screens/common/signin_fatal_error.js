@@ -20,7 +20,7 @@ const SigninFatalErrorBase = Polymer.mixinBehaviors(
 
 /**
  * @typedef {{
- *   actionButton:  OobeTextButtonElement,
+ *   actionButton:  OobeTextButton,
  * }}
  */
 SigninFatalErrorBase.$;
@@ -84,9 +84,12 @@ class SigninFatalScreen extends SigninFatalErrorBase {
 
   ready() {
     super.ready();
-    this.initializeLoginScreen('SignInFatalErrorScreen', {
-      resetAllowed: true,
-    });
+    this.initializeLoginScreen('SignInFatalErrorScreen');
+  }
+
+  /** Initial UI State for screen */
+  getOobeUIInitialState() {
+    return OOBE_UI_STATE.BLOCKING;
   }
 
   /**

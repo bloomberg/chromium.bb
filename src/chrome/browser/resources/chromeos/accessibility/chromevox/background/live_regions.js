@@ -5,6 +5,8 @@
 /**
  * @fileoverview Implements support for live regions in ChromeVox Next.
  */
+import {ChromeVoxState} from '/chromevox/background/chromevox_state.js';
+import {Output} from '/chromevox/background/output/output.js';
 
 const AutomationNode = chrome.automation.AutomationNode;
 const RoleType = chrome.automation.RoleType;
@@ -14,12 +16,13 @@ const TreeChangeObserverFilter = chrome.automation.TreeChangeObserverFilter;
 const TreeChangeType = chrome.automation.TreeChangeType;
 
 /**
- * ChromeVox2 live region handler.
+ * ChromeVox live region handler.
  */
 export class LiveRegions {
   /**
    * @param {!ChromeVoxState} chromeVoxState The ChromeVox state object,
    *     keeping track of the current mode and current range.
+   * @private
    */
   constructor(chromeVoxState) {
     /**
@@ -52,6 +55,17 @@ export class LiveRegions {
     chrome.automation.addTreeChangeObserver(
         TreeChangeObserverFilter.LIVE_REGION_TREE_CHANGES,
         this.onTreeChange.bind(this));
+  }
+
+  /**
+   * @param {!ChromeVoxState} chromeVoxState The ChromeVox state object,
+   *     keeping track of the current mode and current range.
+   */
+  static init(chromeVoxState) {
+    if (LiveRegions.instance) {
+      throw 'Error: Trying to create two instances of singleton LiveRegions';
+    }
+    LiveRegions.instance = new LiveRegions(chromeVoxState);
   }
 
   /**
@@ -243,22 +257,22 @@ export class LiveRegions {
 /**
  * Live region events received in fewer than this many milliseconds will
  * queue, otherwise they'll be output with a category flush.
- * @type {number}
- * @const
+ * @const {number}
  */
 LiveRegions.LIVE_REGION_QUEUE_TIME_MS = 5000;
 
 /**
  * Live region events received on the same node in fewer than this many
  * milliseconds will be dropped to avoid a stream of constant chatter.
- * @type {number}
- * @const
+ * @const {number}
  */
 LiveRegions.LIVE_REGION_MIN_SAME_NODE_MS = 20;
 
 /**
  * Whether live regions from background tabs should be announced or not.
- * @type {boolean}
- * @private
+ * @private {boolean}
  */
 LiveRegions.announceLiveRegionsFromBackgroundTabs_ = false;
+
+/** @type {LiveRegions} */
+LiveRegions.instance;

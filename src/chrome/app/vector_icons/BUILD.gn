@@ -43,6 +43,8 @@ aggregate_vector_icons("chrome_vector_icons") {
     "credit_card.icon",
     "default_touch_favicon.icon",
     "default_touch_favicon_mask.icon",
+    "download_in_progress.icon",
+    "download_toolbar_button.icon",
     "eol.icon",
     "extension_crashed.icon",
     "eye.icon",
@@ -61,7 +63,9 @@ aggregate_vector_icons("chrome_vector_icons") {
     "incognito.icon",
     "incognito_menu_art.icon",
     "incognito_profile.icon",
+    "ink_highlighter.icon",
     "input.icon",
+    "journeys.icon",
     "key.icon",
     "keyboard_arrow_down.icon",
     "keyboard_arrow_right.icon",
@@ -195,13 +199,21 @@ aggregate_vector_icons("chrome_vector_icons") {
   }
 
   if (is_chromeos) {
-    sources += [ "notification_download.icon" ]
+    sources += [
+      "crostini_mascot.icon",
+      "notification_download.icon",
+      "terminal_ssh.icon",
+    ]
   }
 
   if (is_chromeos_ash) {
     sources += [
       "autocorrect_undo.icon",
       "full_restore_notification.icon",
+      "mouse_left_click_edit.icon",
+      "mouse_left_click_view.icon",
+      "mouse_right_click_edit.icon",
+      "mouse_right_click_view.icon",
       "notification_battery.icon",
       "notification_captive_portal.icon",
       "notification_cellular_alert.icon",
@@ -227,6 +239,7 @@ aggregate_vector_icons("chrome_vector_icons") {
       "sharesheet_share_with_others.icon",
       "sharesheet_text.icon",
       "shutdown_guest_os.icon",
+      "tip.icon",
     ]
   }
 
@@ -245,20 +258,18 @@ aggregate_vector_icons("chrome_vector_icons") {
 
   if (is_chrome_branded) {
     sources += [
+      "google_chrome/assistant.icon",
       "google_chrome/google_calendar.icon",
       "google_chrome/google_g_logo.icon",
       "google_chrome/google_g_logo_monochrome.icon",
       "google_chrome/google_keep_note.icon",
       "google_chrome/google_lens_full_logo.icon",
       "google_chrome/google_lens_full_logo_dark.icon",
+      "google_chrome/google_password_manager.icon",
       "google_chrome/google_pay_logo.icon",
       "google_chrome/google_sites.icon",
       "google_chrome/google_super_g.icon",
     ]
-  }
-
-  if (is_chrome_branded && is_chromeos_ash) {
-    sources += [ "google_chrome/assistant.icon" ]
   }
 }
 

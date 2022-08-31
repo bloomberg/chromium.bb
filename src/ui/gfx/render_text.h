@@ -19,8 +19,8 @@
 #include "base/i18n/rtl.h"
 #include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
-#include "cc/paint/paint_canvas.h"
 #include "cc/paint/paint_flags.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkFont.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -42,6 +42,10 @@
 class SkDrawLooper;
 struct SkPoint;
 class SkTypeface;
+
+namespace cc {
+class PaintCanvas;
+}
 
 namespace gfx {
 namespace test {
@@ -211,7 +215,7 @@ void ApplyRenderParams(const FontRenderParams& params,
 // for rendering and translation between logical and visual data.
 class GFX_EXPORT RenderText {
  public:
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
   // On Mac, while selecting text if the cursor is outside the vertical text
   // bounds, drag to the end of the text.
   static constexpr bool kDragToEndIfOutsideVerticalBounds = true;

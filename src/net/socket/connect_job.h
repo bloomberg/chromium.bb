@@ -6,10 +6,11 @@
 #define NET_SOCKET_CONNECT_JOB_H_
 
 #include <memory>
+#include <set>
 #include <string>
-#include <vector>
 
 #include "base/callback_forward.h"
+#include "base/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
@@ -24,7 +25,7 @@
 #include "net/socket/connection_attempts.h"
 #include "net/socket/socket_tag.h"
 #include "net/socket/ssl_client_socket.h"
-#include "net/third_party/quiche/src/quic/core/quic_versions.h"
+#include "net/third_party/quiche/src/quiche/quic/core/quic_versions.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace net {
@@ -32,6 +33,7 @@ namespace net {
 class ClientSocketFactory;
 class HostPortPair;
 class HostResolver;
+struct HostResolverEndpointResult;
 class HttpAuthCache;
 class HttpAuthController;
 class HttpAuthHandlerFactory;
@@ -41,13 +43,13 @@ class NetLog;
 class NetLogWithSource;
 class NetworkQualityEstimator;
 class ProxyDelegate;
-class SocketPerformanceWatcherFactory;
-class StreamSocket;
-class WebSocketEndpointLockManager;
 class QuicStreamFactory;
+class SocketPerformanceWatcherFactory;
 class SocketTag;
 class SpdySessionPool;
 class SSLCertRequestInfo;
+class StreamSocket;
+class WebSocketEndpointLockManager;
 
 // Immutable socket parameters intended for shared use by all ConnectJob types.
 // Excludes priority because it can be modified over the lifetime of a
@@ -215,9 +217,8 @@ class NET_EXPORT_PRIVATE ConnectJob {
   // Not safe to call after NotifyComplete() is invoked.
   virtual bool HasEstablishedConnection() const = 0;
 
-  // If the ConnectJobFailed, this method returns a list of failed attempts to
-  // connect to the destination server. Returns an empty list if connecting to a
-  // proxy.
+  // Returns a list of failed attempts to connect to the destination server.
+  // Returns an empty list if connecting to a proxy.
   virtual ConnectionAttempts GetConnectionAttempts() const;
 
   // Returns error information about any host resolution attempt.
@@ -232,9 +233,20 @@ class NET_EXPORT_PRIVATE ConnectJob {
   // SSLCertRequestInfo received. Otherwise, returns nullptr.
   virtual scoped_refptr<SSLCertRequestInfo> GetCertRequestInfo();
 
+  // Returns the `HostResolverEndpointResult` structure corresponding to the
+  // chosen route. Should only be called on a successful connect. If the
+  // `ConnectJob` does not make DNS queries, or does not use the SVCB/HTTPS
+  // record, it may return `absl::nullopt`, to avoid callers getting confused by
+  // an empty `IPEndPoint` list.
+  virtual absl::optional<HostResolverEndpointResult>
+  GetHostResolverEndpointResult() const;
+
   const LoadTimingInfo::ConnectTiming& connect_timing() const {
     return connect_timing_;
   }
+
+  // Sets |done_closure_| which will be called when |this| is deleted.
+  void set_done_closure(base::OnceClosure done_closure);
 
   const NetLogWithSource& net_log() const { return net_log_; }
 
@@ -266,7 +278,7 @@ class NET_EXPORT_PRIVATE ConnectJob {
   }
 
   void SetSocket(std::unique_ptr<StreamSocket> socket,
-                 absl::optional<std::vector<std::string>> dns_aliases);
+                 absl::optional<std::set<std::string>> dns_aliases);
   void NotifyDelegateOfCompletion(int rv);
   void NotifyDelegateOfProxyAuth(const HttpResponseInfo& response,
                                  HttpAuthController* auth_controller,
@@ -312,6 +324,8 @@ class NET_EXPORT_PRIVATE ConnectJob {
   // ConnectJob has started / after it has completed.
   const bool top_level_job_;
   NetLogWithSource net_log_;
+  // This is called when |this| is deleted.
+  base::ScopedClosureRunner done_closure_;
   const NetLogEventType net_log_connect_event_type_;
 };
 

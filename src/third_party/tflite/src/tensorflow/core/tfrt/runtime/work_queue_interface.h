@@ -15,12 +15,13 @@ limitations under the License.
 #ifndef TENSORFLOW_CORE_TFRT_RUNTIME_WORK_QUEUE_INTERFACE_H_
 #define TENSORFLOW_CORE_TFRT_RUNTIME_WORK_QUEUE_INTERFACE_H_
 
+#include <cstdint>
+
 #include "tensorflow/core/platform/context.h"
-#include "tensorflow/core/platform/status.h"
+#include "tensorflow/core/platform/statusor.h"
 #include "tensorflow/core/platform/threadpool_interface.h"
 #include "tensorflow/core/profiler/lib/connected_traceme.h"
 #include "tensorflow/core/profiler/lib/traceme_encode.h"
-#include "tensorflow/core/tfrt/utils/statusor.h"
 #include "tfrt/host_context/concurrent_work_queue.h"  // from @tf_runtime
 #include "tfrt/support/error_util.h"  // from @tf_runtime
 
@@ -32,6 +33,8 @@ namespace tfrt_stub {
 // methods (eg. create an intra op thread pool) without changing TFRT core.
 class WorkQueueInterface : public tfrt::ConcurrentWorkQueue {
  public:
+  explicit WorkQueueInterface(int64_t id) : id_(id) {}
+  WorkQueueInterface() = default;
   ~WorkQueueInterface() override = 0;
 
   // Returns per-request work queue if possible. A nullptr should be returned if
@@ -47,6 +50,11 @@ class WorkQueueInterface : public tfrt::ConcurrentWorkQueue {
     *intra_op_threadpool = nullptr;
     return {nullptr};
   }
+
+  int64_t id() const { return id_; }
+
+ private:
+  int64_t id_ = 0;
 };
 
 inline WorkQueueInterface::~WorkQueueInterface() = default;

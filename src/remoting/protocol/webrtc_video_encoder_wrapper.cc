@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/cxx17_backports.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/task/bind_post_task.h"
@@ -19,9 +18,11 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "remoting/base/constants.h"
+#include "remoting/codec/webrtc_video_encoder_av1.h"
 #include "remoting/codec/webrtc_video_encoder_vpx.h"
 #include "remoting/protocol/video_channel_state_observer.h"
 #include "remoting/protocol/webrtc_video_frame_adapter.h"
+#include "third_party/webrtc/api/video_codecs/sdp_video_format.h"
 #include "third_party/webrtc/api/video_codecs/vp9_profile.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 #include "third_party/webrtc/modules/video_coding/include/video_codec_interface.h"
@@ -31,8 +32,7 @@
 #include "remoting/codec/webrtc_video_encoder_gpu.h"
 #endif
 
-namespace remoting {
-namespace protocol {
+namespace remoting::protocol {
 
 namespace {
 
@@ -102,9 +102,10 @@ WebrtcVideoEncoderWrapper::WebrtcVideoEncoderWrapper(
       encoder_ = WebrtcVideoEncoderVpx::CreateForVP8();
       break;
     case webrtc::kVideoCodecVP9: {
-      const auto iter = format.parameters.find(webrtc::kVP9FmtpProfileId);
-      bool lossless_color =
-          iter != format.parameters.end() && iter->second == "1";
+      absl::optional<webrtc::VP9Profile> profile =
+          webrtc::ParseSdpForVP9Profile(format.parameters);
+      bool lossless_color = profile.has_value() &&
+                            profile.value() == webrtc::VP9Profile::kProfile1;
       VLOG(0) << "Creating VP9 encoder, lossless_color="
               << (lossless_color ? "true" : "false");
       encoder_ = WebrtcVideoEncoderVpx::CreateForVP9();
@@ -118,6 +119,10 @@ WebrtcVideoEncoderWrapper::WebrtcVideoEncoderWrapper(
 #else
       NOTIMPLEMENTED();
 #endif
+      break;
+    case webrtc::kVideoCodecAV1:
+      VLOG(0) << "Creating AV1 encoder.";
+      encoder_ = std::make_unique<WebrtcVideoEncoderAV1>();
       break;
     default:
       LOG(FATAL) << "Unknown codec type: " << codec_type_;
@@ -174,6 +179,14 @@ int32_t WebrtcVideoEncoderWrapper::Encode(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   auto now = base::TimeTicks::Now();
+
+  // Simulcast is unsupported, so only the first vector element is needed.
+  bool key_frame_requested =
+      (frame_types && !frame_types->empty() &&
+       ((*frame_types)[0] == webrtc::VideoFrameType::kVideoFrameKey));
+  if (key_frame_requested) {
+    pending_key_frame_request_ = true;
+  }
 
   bool webrtc_dropped_frame = false;
   if (next_frame_id_ != frame.id()) {
@@ -255,6 +268,7 @@ int32_t WebrtcVideoEncoderWrapper::Encode(
   // Limit the encoding and sending of empty frames to |kKeepAliveInterval|.
   // This is done to save on network bandwidth and CPU usage.
   if (desktop_frame->updated_region().is_empty() && !top_off_active_ &&
+      !pending_key_frame_request_ &&
       (now - latest_frame_encode_start_time_ < kKeepAliveInterval)) {
     // Drop the frame. There is no need to track the update-rect as the
     // frame being dropped is empty.
@@ -283,10 +297,8 @@ int32_t WebrtcVideoEncoderWrapper::Encode(
   frame_params.vpx_max_quantizer = kMaxQuantizer;
   frame_params.clear_active_map = !top_off_active_;
 
-  // Simulcast is unsupported, so only the first vector element is needed.
-  frame_params.key_frame =
-      (frame_types && !frame_types->empty() &&
-       ((*frame_types)[0] == webrtc::VideoFrameType::kVideoFrameKey));
+  frame_params.key_frame = pending_key_frame_request_;
+  pending_key_frame_request_ = false;
 
   encode_pending_ = true;
 
@@ -335,7 +347,7 @@ WebrtcVideoEncoderWrapper::ReturnEncodedFrame(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   const uint8_t* buffer =
-      reinterpret_cast<const uint8_t*>(base::data(frame.data));
+      reinterpret_cast<const uint8_t*>(std::data(frame.data));
   size_t buffer_size = frame.data.size();
 
   // TODO(crbug.com/1208215): Avoid copying/allocating frame data here, by
@@ -388,6 +400,8 @@ WebrtcVideoEncoderWrapper::ReturnEncodedFrame(
 #else
     NOTREACHED();
 #endif
+  } else if (frame.codec == webrtc::kVideoCodecAV1) {
+    // TODO(joedow): Set codec specific params for AV1 here.
   } else {
     NOTREACHED();
   }
@@ -496,5 +510,4 @@ bool WebrtcVideoEncoderWrapper::ShouldDropQualityForLargeFrame(
   return should_drop_quality;
 }
 
-}  // namespace protocol
-}  // namespace remoting
+}  // namespace remoting::protocol

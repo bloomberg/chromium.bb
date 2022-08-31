@@ -172,7 +172,6 @@ protected:
         SkPaint paint;
 
         canvas->translate(4, 4);
-        int x = 0;
         for (auto mode : modes) {
             canvas->save();
             for (float alpha : {1.0f, 0.5f}) {
@@ -194,7 +193,6 @@ protected:
                                                           kMeshIndexCnt, kMeshFan);
                             canvas->drawVertices(v, mode, paint);
                             canvas->translate(40, 0);
-                            ++x;
                         }
                     }
                 }
@@ -310,4 +308,26 @@ DEF_SIMPLE_GM(vertices_perspective, canvas, 256, 256) {
     canvas->concat(persp);
     canvas->drawVertices(verts, SkBlendMode::kModulate, paint);
     canvas->restore();
+}
+
+DEF_SIMPLE_GM(skbug_13047, canvas, 200, 200) {
+    auto image = GetResourceAsImage("images/mandrill_128.png");
+
+    const float w = image->width();
+    const float h = image->height();
+
+    SkPoint verts[] = {{0, 0}, {200, 0}, {200, 200}, {0, 200}};
+    SkPoint texs[] = {{0, 0}, {w, 0}, {w, h}, {0, h}};
+    uint16_t indices[] = {0, 1, 2, 2, 3, 0};
+
+    auto v = SkVertices::MakeCopy(
+            SkVertices::kTriangles_VertexMode, 4, verts, texs, nullptr, 6, indices);
+
+    auto m = SkMatrix::Scale(2, 2);  // ignored in CPU ???
+    auto s = image->makeShader(SkSamplingOptions(SkFilterMode::kLinear), &m);
+
+    SkPaint p;
+    p.setShader(s);
+
+    canvas->drawVertices(v, SkBlendMode::kModulate, p);
 }

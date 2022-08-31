@@ -6,6 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
+#include "base/time/time.h"
 #include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/page_load_metrics/browser/page_load_tracker.h"
@@ -50,11 +51,11 @@ class TestAndroidPageLoadMetricsObserver
     return reported_first_contentful_paint_ms_;
   }
 
-  int64_t reported_navigation_start_tick_fcp() const {
+  base::TimeTicks reported_navigation_start_tick_fcp() const {
     return reported_navigation_start_tick_fcp_;
   }
 
-  int64_t reported_navigation_start_tick_load() const {
+  base::TimeTicks reported_navigation_start_tick_load() const {
     return reported_navigation_start_tick_load_;
   }
 
@@ -74,16 +75,18 @@ class TestAndroidPageLoadMetricsObserver
     reported_transport_rtt_ms_ = transport_rtt_ms;
   }
 
-  void ReportFirstContentfulPaint(int64_t navigation_start_tick,
-                                  int64_t first_contentful_paint_ms) override {
+  void ReportFirstContentfulPaint(
+      base::TimeTicks navigation_start_tick,
+      base::TimeDelta first_contentful_paint) override {
     reported_navigation_start_tick_fcp_ = navigation_start_tick;
-    reported_first_contentful_paint_ms_ = first_contentful_paint_ms;
+    reported_first_contentful_paint_ms_ =
+        first_contentful_paint.InMilliseconds();
   }
 
-  void ReportLoadEventStart(int64_t navigation_start_tick,
-                            int64_t load_event_start_ms) override {
+  void ReportLoadEventStart(base::TimeTicks navigation_start_tick,
+                            base::TimeDelta load_event_start) override {
     reported_navigation_start_tick_load_ = navigation_start_tick;
-    reported_load_event_start_ms_ = load_event_start_ms;
+    reported_load_event_start_ms_ = load_event_start.InMilliseconds();
   }
 
   void ReportLoadedMainResource(int64_t dns_start_ms,
@@ -102,8 +105,8 @@ class TestAndroidPageLoadMetricsObserver
   int64_t reported_http_rtt_ms_ = 0;
   int64_t reported_transport_rtt_ms_ = 0;
   int64_t reported_first_contentful_paint_ms_ = 0;
-  int64_t reported_navigation_start_tick_fcp_ = 0;
-  int64_t reported_navigation_start_tick_load_ = 0;
+  base::TimeTicks reported_navigation_start_tick_fcp_;
+  base::TimeTicks reported_navigation_start_tick_load_;
   int64_t reported_load_event_start_ms_ = 0;
   int64_t reported_dns_start_ms_ = 0;
 };
@@ -125,9 +128,7 @@ class AndroidPageLoadMetricsObserverTest
 
   TestAndroidPageLoadMetricsObserver* observer() const { return observer_ptr_; }
 
-  int64_t GetNavigationStartMicroseconds() const {
-    return (navigation_start_ - base::TimeTicks()).InMicroseconds();
-  }
+  base::TimeTicks GetNavigationStart() const { return navigation_start_; }
 
   void SetNetworkQualityMock() {
     EXPECT_CALL(mock_network_quality_tracker(), GetEffectiveConnectionType())
@@ -187,7 +188,8 @@ TEST_F(AndroidPageLoadMetricsObserverTest, LoadTimingInfo) {
   SetNetworkQualityMock();
   auto navigation_simulator =
       content::NavigationSimulator::CreateRendererInitiated(
-          GURL("https://www.example.com"), web_contents()->GetMainFrame());
+          GURL("https://www.example.com"),
+          web_contents()->GetPrimaryMainFrame());
   navigation_simulator->Start();
   int frame_tree_node_id =
       navigation_simulator->GetNavigationHandle()->GetFrameTreeNodeId();
@@ -197,7 +199,7 @@ TEST_F(AndroidPageLoadMetricsObserverTest, LoadTimingInfo) {
   const base::TimeTicks kNow = base::TimeTicks::Now();
   load_timing_info->connect_timing.dns_start = kNow;
   page_load_metrics::ExtraRequestCompleteInfo info(
-      url::Origin::Create(GURL("https://ignored.com")), net::IPEndPoint(),
+      url::SchemeHostPort(GURL("https://ignored.com")), net::IPEndPoint(),
       frame_tree_node_id, false, /* cached */
       10 * 1024 /* size */, 0 /* original_network_content_length */,
       network::mojom::RequestDestination::kDocument, 0,
@@ -222,9 +224,9 @@ TEST_F(AndroidPageLoadMetricsObserverTest, LoadEvents) {
   NavigateAndCommit(GURL("https://www.example.com"));
   tester()->SimulateTimingUpdate(timing);
   EXPECT_EQ(30, observer()->reported_load_event_start_ms());
-  EXPECT_EQ(GetNavigationStartMicroseconds(),
+  EXPECT_EQ(GetNavigationStart(),
             observer()->reported_navigation_start_tick_load());
   EXPECT_EQ(20, observer()->reported_first_contentful_paint_ms());
-  EXPECT_EQ(GetNavigationStartMicroseconds(),
+  EXPECT_EQ(GetNavigationStart(),
             observer()->reported_navigation_start_tick_fcp());
 }

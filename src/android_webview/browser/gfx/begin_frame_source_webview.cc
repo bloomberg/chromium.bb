@@ -119,6 +119,11 @@ void BeginFrameSourceWebView::AddBeginFrameCompletionCallback(
   parent_->AddBeginFrameCompletionCallback(std::move(callback));
 }
 
+const viz::BeginFrameArgs&
+BeginFrameSourceWebView::LastDispatchedBeginFrameArgs() {
+  return parent_observer_->LastUsedBeginFrameArgs();
+}
+
 // static
 RootBeginFrameSourceWebView* RootBeginFrameSourceWebView::GetInstance() {
   static base::NoDestructor<RootBeginFrameSourceWebView> instance;
@@ -126,7 +131,9 @@ RootBeginFrameSourceWebView* RootBeginFrameSourceWebView::GetInstance() {
 }
 
 RootBeginFrameSourceWebView::RootBeginFrameSourceWebView()
-    : begin_frame_source_(kNotRestartableId, 60.0f),
+    : begin_frame_source_(kNotRestartableId,
+                          60.0f,
+                          /*requires_align_with_java=*/true),
       j_object_(Java_RootBeginFrameSourceWebView_Constructor(
           base::android::AttachCurrentThread(),
           reinterpret_cast<jlong>(this))) {

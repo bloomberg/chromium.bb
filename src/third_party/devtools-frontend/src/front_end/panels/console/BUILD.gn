@@ -21,6 +21,7 @@ devtools_module("console") {
   sources = [
     "ConsoleContextSelector.ts",
     "ConsoleFilter.ts",
+    "ConsoleFormat.ts",
     "ConsolePanel.ts",
     "ConsolePinPane.ts",
     "ConsolePrompt.ts",
@@ -28,6 +29,7 @@ devtools_module("console") {
     "ConsoleView.ts",
     "ConsoleViewMessage.ts",
     "ConsoleViewport.ts",
+    "ErrorStackParser.ts",
   ]
 
   deps = [
@@ -40,6 +42,7 @@ devtools_module("console") {
     "../../models/bindings:bundle",
     "../../models/issues_manager:bundle",
     "../../models/logs:bundle",
+    "../../models/source_map_scopes:bundle",
     "../../models/text_utils:bundle",
     "../../third_party/codemirror.next:bundle",
     "../../ui/components/code_highlighter:bundle",
@@ -66,6 +69,7 @@ devtools_entrypoint("bundle") {
   visibility = [
     ":*",
     "../../../test/unittests/front_end/entrypoints/missing_entrypoints/*",
+    "../../../test/unittests/front_end/panels/console/*",
     "../../entrypoints/*",
   ]
 

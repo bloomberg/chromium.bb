@@ -73,6 +73,8 @@ export class SizeInputElement extends HTMLElement {
           max-height: 18px;
           margin: 0 2px;
           text-align: center;
+          font-size: inherit;
+          font-family: inherit;
         }
 
         input:disabled {
@@ -91,24 +93,28 @@ export class SizeInputElement extends HTMLElement {
              placeholder=${this.#placeholder}
              ?disabled=${this.#disabled}
              .value=${this.#size}
-             @change=${this.fireSizeChange}
-             @keydown=${this.handleModifierKeys} />
+             @change=${this.#fireSizeChange}
+             @keydown=${this.#handleModifierKeys} />
     `,
         this.#root, {host: this});
   }
 
-  private fireSizeChange(event: Event): void {
+  #fireSizeChange(event: Event): void {
     this.dispatchEvent(new SizeChangedEvent(getInputValue(event)));
   }
 
-  private handleModifierKeys(event: Event): void {
-    const modifiedValue = UILegacy.UIUtils.modifiedFloatNumber(getInputValue(event), event);
+  #handleModifierKeys(event: Event): void {
+    let modifiedValue = UILegacy.UIUtils.modifiedFloatNumber(getInputValue(event), event);
     if (modifiedValue === null) {
       return;
     }
 
+    modifiedValue = Math.min(modifiedValue, EmulationModel.DeviceModeModel.MaxDeviceSize);
+    modifiedValue = Math.max(modifiedValue, EmulationModel.DeviceModeModel.MinDeviceSize);
+
     event.preventDefault();
     (event.target as HTMLInputElement).value = String(modifiedValue);
+    this.dispatchEvent(new SizeChangedEvent(modifiedValue));
   }
 }
 

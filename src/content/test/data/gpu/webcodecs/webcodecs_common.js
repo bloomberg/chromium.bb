@@ -7,10 +7,17 @@
 class TestHarness {
   finished = false;
   success = false;
+  skipped = false;
   message = 'ok';
   logs = [];
 
   constructor() {}
+
+  skip(message) {
+    this.skipped = true;
+    this.finished = true;
+    this.message = message;
+  }
 
   reportSuccess() {
     this.finished = true;
@@ -168,6 +175,8 @@ class FrameSource {
   async getNextFrame() {
     return null;
   }
+
+  close() {}
 }
 
 // Source of video frames coming from taking snapshots of a canvas.
@@ -206,6 +215,36 @@ class StreamSource extends FrameSource {
     const result = await this.reader.read();
     const frame = result.value;
     return frame;
+  }
+
+  close() {
+    if (this.reader)
+      this.reader.cancel();
+  }
+}
+
+class ArrayBufferSource extends FrameSource {
+  constructor(width, height) {
+    super();
+    this.inner_src = new CanvasSource(width, height);
+    this.width = width;
+    this.height = height;
+  }
+
+  async getNextFrame() {
+    let prototype_frame = await this.inner_src.getNextFrame();
+    let size = prototype_frame.allocationSize();
+    let buf = new ArrayBuffer(size);
+    let layout = await prototype_frame.copyTo(buf);
+    let init = {
+        format: prototype_frame.format,
+        timestamp: prototype_frame.timestamp,
+        codedWidth: prototype_frame.codedWidth,
+        codedHeight: prototype_frame.codedHeight,
+        colorSpace: prototype_frame.colorSpace,
+        layout: layout
+    };
+    return new VideoFrame(buf, init);
   }
 }
 
@@ -261,6 +300,11 @@ class DecoderSource extends FrameSource {
 
     return next.promise;
   }
+
+  close() {
+    if (this.decoder)
+      this.decoder.close();
+  }
 }
 
 function createCanvasCaptureSource(width, height) {
@@ -305,9 +349,13 @@ async function prepareDecoderSource(
     hardwareAcceleration: acceleration
   };
 
-  let support = await VideoDecoder.isConfigSupported(decoder_config);
-  if (!support.supported)
+  try {
+    let support = await VideoDecoder.isConfigSupported(decoder_config);
+    if (!support.supported)
+      return null;
+  } catch (e) {
     return null;
+  }
 
   let chunks = [];
   let errors = 0;
@@ -335,7 +383,15 @@ async function prepareDecoderSource(
     encoder.encode(frame, {keyFrame: false});
     frame.close();
   }
-  await encoder.flush();
+  try {
+    await encoder.flush();
+    encoder.close();
+    canvasSource.close();
+  } catch (e) {
+    errors++;
+    TEST.log(e);
+  }
+
   if (errors > 0)
     return null;
 
@@ -359,12 +415,13 @@ async function createFrameSource(type, width, height) {
     }
     case 'hw_decoder': {
       // Trying to find any hardware decoder supported by the platform.
-      let src = prepareDecoderSource(
+      let src = await prepareDecoderSource(
           40, width, height, 'avc1.42001E', 'prefer-hardware');
       if (!src)
-        src = prepareDecoderSource(40, width, height, 'vp8', 'prefer-hardware');
+        src = await prepareDecoderSource(
+            40, width, height, 'vp8', 'prefer-hardware');
       if (!src) {
-        src = prepareDecoderSource(
+        src = await prepareDecoderSource(
             40, width, height, 'vp09.00.10.08', 'prefer-hardware');
       }
       if (!src) {
@@ -373,7 +430,11 @@ async function createFrameSource(type, width, height) {
       return src;
     }
     case 'sw_decoder': {
-      return prepareDecoderSource(40, width, height, 'vp8', 'prefer-software');
+      return await prepareDecoderSource(
+          40, width, height, 'vp8', 'prefer-software');
+    }
+    case 'arraybuffer': {
+      return new ArrayBufferSource(width, height);
     }
   }
 }

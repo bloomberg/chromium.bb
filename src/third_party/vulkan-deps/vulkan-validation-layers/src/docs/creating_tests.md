@@ -33,6 +33,10 @@ ASSERT_NO_FATAL_FAILURE(Init());
 
 ASSERT_NO_FATAL_FAILURE(InitFramework());
 ASSERT_NO_FATAL_FAILURE(InitState());
+
+// For Best Practices tests
+ASSERT_NO_FATAL_FAILURE(InitBestPracticesFramework());
+ASSERT_NO_FATAL_FAILURE(InitState());
 ```
 
 to set it up. This will create the `VkInstance` and `VkDevice` for you.
@@ -53,12 +57,11 @@ AddRequiredExtensions(VK_KHR_SAMPLER_YCBCR_CONVERSION_EXTENSION_NAME);
 ASSERT_NO_FATAL_FAILURE(InitFramework());
 
 // Check that all extensions and their dependencies were enabled successfully
-if (!IsRequestedExtensionsEnabled()) {
-    printf("%s test requires KHR multiplane extensions, not available.  Skipping.\n", kSkipPrefix);
-    return;
+if (!AreRequiredExtensionsEnabled()) {
+    GTEST_SKIP() << RequiredExtensionsNotSupported() << " not supported";
 }
 
-// Finish initializing state, including creating the VkDevice that will be used for the test
+// Finish initializing state, including creating the VkDevice (whith extensions added) that will be used for the test
 ASSERT_NO_FATAL_FAILURE(InitState());
 ```
 
@@ -67,7 +70,43 @@ The pattern breaks down to
 - Init Framework which creates `VkInstance`
 - Check and add Device extensions to list
 - Init State which creates the `VkDevice`
-- **Optional**: skip if test is not worth moving out without extension support
+- **Optional**: skip if test is not worth moving out without extension support (more below)
+
+### Pattern for optional extensions
+
+Sometimes it is worth checking for an extension, but still running the parts of a test if the extension is not supported
+
+```cpp
+AddRequiredExtensions(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+AddOptionalExtensions(VK_KHR_COPY_COMMANDS_2_EXTENSION_NAME);
+ASSERT_NO_FATAL_FAILURE(Init());
+
+// need to wait until after phyiscal device creation to know if it was enabled
+const bool copy_commands2 = IsExtensionsEnabled(VK_KHR_COPY_COMMANDS_2_EXTENSION_NAME);
+
+// Check required (not optional) extensions are still supported
+if (!AreRequiredExtensionsEnabled()) {
+    GTEST_SKIP() << RequiredExtensionsNotSupported() << " not supported";
+}
+
+// If the optional extension has a command, it will need a vkGetDeviceProcAddr call
+PFN_vkCmdCopyBuffer2KHR vkCmdCopyBuffer2KHR = nullptr;
+if (copy_commands2) {
+    vkCmdCopyBuffer2KHR = (PFN_vkCmdCopyBuffer2KHR)vk::GetDeviceProcAddr(m_device->handle(), "vkCmdCopyBuffer2KHR");
+}
+
+// Validate core copy command
+m_errorMonitor->SetDesiredFailureMsg(kErrorBit, vuid);
+vk::CmdCopyBuffer( /* */ );
+m_errorMonitor->VerifyFound();
+
+// optional test using VK_KHR_copy_commands2
+if (copy_commands2) {
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, vuid);
+    vkCmdCopyBuffer2KHR( /* */  );
+    m_errorMonitor->VerifyFound();
+}
+```
 
 ### Vulkan Version
 
@@ -187,6 +226,31 @@ This is an example of injecting the `VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT` featur
 fpvkGetOriginalPhysicalDeviceFormatPropertiesEXT(gpu(), VK_FORMAT_R32G32B32A32_UINT, &formatProps);
 formatProps.optimalTilingFeatures |= VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT;
 fpvkSetPhysicalDeviceFormatPropertiesEXT(gpu(), VK_FORMAT_R32G32B32A32_UINT, formatProps);
+```
+
+If you are in need of `VkFormatProperties3` the following is an example how to use the layer
+
+```cpp
+PFN_vkSetPhysicalDeviceFormatProperties2EXT fpvkSetPhysicalDeviceFormatProperties2EXT = nullptr;
+PFN_vkGetOriginalPhysicalDeviceFormatProperties2EXT fpvkGetOriginalPhysicalDeviceFormatProperties2EXT = nullptr;
+if (!LoadDeviceProfileLayer(fpvkSetPhysicalDeviceFormatProperties2EXT, fpvkGetOriginalPhysicalDeviceFormatProperties2EXT)) {
+    printf("%s Failed to device profile layer.\n", kSkipPrefix);
+    return;
+}
+
+auto fmt_props_3 = LvlInitStruct<VkFormatProperties3>();
+auto fmt_props = LvlInitStruct<VkFormatProperties2>(&fmt_props_3);
+
+// Removes unwanted support
+fpvkGetOriginalPhysicalDeviceFormatProperties2EXT(gpu(), image_format, &fmt_props);
+// VK_FORMAT_FEATURE_2_STORAGE_IMAGE_BIT == VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT
+// Need to edit both VkFormatFeatureFlags/VkFormatFeatureFlags2
+fmt_props.formatProperties.optimalTilingFeatures = (fmt_props.formatProperties.optimalTilingFeatures & ~VK_FORMAT_FEATURE_2_STORAGE_IMAGE_BIT);
+fmt_props_3.optimalTilingFeatures = (fmt_props_3.optimalTilingFeatures & ~VK_FORMAT_FEATURE_2_STORAGE_IMAGE_BIT);
+// Was added with VkFormatFeatureFlags2 so only need to edit here
+fmt_props_3.optimalTilingFeatures = (fmt_props_3.optimalTilingFeatures & ~VK_FORMAT_FEATURE_2_STORAGE_WRITE_WITHOUT_FORMAT_BIT);
+fpvkSetPhysicalDeviceFormatProperties2EXT(gpu(), image_format, fmt_props);
+
 ```
 
 ### Device Profile Limits

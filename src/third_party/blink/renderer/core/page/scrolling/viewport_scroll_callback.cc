@@ -11,7 +11,7 @@
 #include "third_party/blink/renderer/core/page/scrolling/overscroll_controller.h"
 #include "third_party/blink/renderer/core/page/scrolling/scroll_state.h"
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
-#include "third_party/blink/renderer/platform/geometry/float_size.h"
+#include "ui/gfx/geometry/size_f.h"
 
 namespace blink {
 
@@ -34,9 +34,9 @@ void ViewportScrollCallback::Trace(Visitor* visitor) const {
 
 bool ViewportScrollCallback::ShouldScrollBrowserControls(
     const ScrollOffset& delta,
-    ScrollGranularity granularity) const {
-  if (granularity != ScrollGranularity::kScrollByPixel &&
-      granularity != ScrollGranularity::kScrollByPrecisePixel)
+    ui::ScrollGranularity granularity) const {
+  if (granularity != ui::ScrollGranularity::kScrollByPixel &&
+      granularity != ui::ScrollGranularity::kScrollByPrecisePixel)
     return false;
 
   if (!root_frame_viewport_)
@@ -59,7 +59,7 @@ bool ViewportScrollCallback::ScrollBrowserControls(ScrollState& state) {
       browser_controls_->ScrollBegin();
 
     ScrollOffset delta(state.deltaX(), state.deltaY());
-    ScrollGranularity granularity = state.delta_granularity();
+    ui::ScrollGranularity granularity = state.delta_granularity();
     if (ShouldScrollBrowserControls(delta, granularity)) {
       ScrollOffset remaining_delta = browser_controls_->ScrollBy(delta);
       ScrollOffset consumed = delta - remaining_delta;
@@ -100,7 +100,7 @@ ScrollResult ViewportScrollCallback::PerformNativeScroll(ScrollState& state) {
   DCHECK(root_frame_viewport_);
 
   ScrollOffset delta(state.deltaX(), state.deltaY());
-  ScrollGranularity granularity = state.delta_granularity();
+  ui::ScrollGranularity granularity = state.delta_granularity();
 
   ScrollResult result = root_frame_viewport_->UserScroll(
       granularity, delta, ScrollableArea::ScrollCallback());

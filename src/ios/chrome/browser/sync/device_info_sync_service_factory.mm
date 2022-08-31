@@ -48,7 +48,9 @@ class DeviceInfoSyncClient : public syncer::DeviceInfoSyncClient {
 
   // syncer::DeviceInfoSyncClient:
   bool GetSendTabToSelfReceivingEnabled() const override {
-    return send_tab_to_self::IsReceivingEnabledByUserOnThisDevice(prefs_);
+    // Always true starting with M101, see crbug.com/1299833. Older clients and
+    // clients from other embedders might still return false.
+    return true;
   }
 
   // syncer::DeviceInfoSyncClient:

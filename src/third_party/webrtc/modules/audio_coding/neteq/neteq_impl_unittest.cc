@@ -320,7 +320,7 @@ TEST_F(NetEqImplTest, InsertPacket) {
         *dec = std::move(mock_decoder);
       }));
   DecoderDatabase::DecoderInfo info(SdpAudioFormat("pcmu", 8000, 1),
-                                    absl::nullopt, mock_decoder_factory);
+                                    absl::nullopt, mock_decoder_factory.get());
 
   // Expectations for decoder database.
   EXPECT_CALL(*mock_decoder_database_, GetDecoderInfo(kPayloadType))
@@ -651,8 +651,8 @@ TEST_F(NetEqImplTest, ReorderedPacket) {
   // out-of-order packet should have been discarded.
   EXPECT_TRUE(packet_buffer_->Empty());
 
-  // NetEq `discarded_primary_packets` should capture this packet discard.
-  EXPECT_EQ(1u, neteq_->GetOperationsAndState().discarded_primary_packets);
+  // NetEq `packets_discarded` should capture this packet discard.
+  EXPECT_EQ(1u, neteq_->GetLifetimeStatistics().packets_discarded);
 
   // Verify `output.packet_infos_`. Expect to only see the second packet.
   ASSERT_THAT(output.packet_infos_, SizeIs(1));
@@ -1367,13 +1367,6 @@ TEST_F(NetEqImplTest, DecodingError) {
   // We are not expecting anything for output.speech_type_, since an error was
   // returned.
 
-  // Pull audio again, should continue an expansion.
-  EXPECT_EQ(NetEq::kOK, neteq_->GetAudio(&output, &muted));
-  EXPECT_EQ(kMaxOutputSize, output.samples_per_channel_);
-  EXPECT_EQ(1u, output.num_channels_);
-  EXPECT_EQ(AudioFrame::kPLC, output.speech_type_);
-  EXPECT_THAT(output.packet_infos_, IsEmpty());
-
   // Pull audio again, should behave normal.
   EXPECT_EQ(NetEq::kOK, neteq_->GetAudio(&output, &muted));
   EXPECT_EQ(kMaxOutputSize, output.samples_per_channel_);
@@ -1640,7 +1633,7 @@ TEST_F(NetEqImplTest, NoCrashWith1000Channels) {
         decoder = dec->get();
       }));
   DecoderDatabase::DecoderInfo info(SdpAudioFormat("pcmu", 8000, 1),
-                                    absl::nullopt, mock_decoder_factory);
+                                    absl::nullopt, mock_decoder_factory.get());
   // Expectations for decoder database.
   EXPECT_CALL(*mock_decoder_database_, GetDecoderInfo(kPayloadType))
       .WillRepeatedly(Return(&info));

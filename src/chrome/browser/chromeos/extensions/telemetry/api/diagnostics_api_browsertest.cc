@@ -4,8 +4,7 @@
 
 #include "chrome/browser/ash/wilco_dtc_supportd/mojo_utils.h"
 #include "chrome/browser/chromeos/extensions/telemetry/api/base_telemetry_extension_browser_test.h"
-#include "chromeos/dbus/cros_healthd/fake_cros_healthd_client.h"
-#include "chromeos/dbus/cros_healthd/fake_cros_healthd_service.h"
+#include "chromeos/services/cros_healthd/public/cpp/fake_cros_healthd.h"
 #include "chromeos/services/cros_healthd/public/mojom/cros_healthd_diagnostics.mojom.h"
 #include "content/public/test/browser_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -16,16 +15,22 @@ namespace chromeos {
 using TelemetryExtensionDiagnosticsApiBrowserTest =
     BaseTelemetryExtensionBrowserTest;
 
-IN_PROC_BROWSER_TEST_P(TelemetryExtensionDiagnosticsApiBrowserTest,
+IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiBrowserTest,
                        GetAvailableRoutinesSuccess) {
-  cros_healthd::FakeCrosHealthdClient::Get()->SetAvailableRoutinesForTesting({
+  cros_healthd::FakeCrosHealthd::Get()->SetAvailableRoutinesForTesting({
       cros_healthd::mojom::DiagnosticRoutineEnum::kBatteryCapacity,
       cros_healthd::mojom::DiagnosticRoutineEnum::kBatteryCharge,
       cros_healthd::mojom::DiagnosticRoutineEnum::kBatteryDischarge,
       cros_healthd::mojom::DiagnosticRoutineEnum::kBatteryHealth,
       cros_healthd::mojom::DiagnosticRoutineEnum::kCpuCache,
+      cros_healthd::mojom::DiagnosticRoutineEnum::kFloatingPointAccuracy,
+      cros_healthd::mojom::DiagnosticRoutineEnum::kPrimeSearch,
       cros_healthd::mojom::DiagnosticRoutineEnum::kCpuStress,
+      cros_healthd::mojom::DiagnosticRoutineEnum::kDiskRead,
+      cros_healthd::mojom::DiagnosticRoutineEnum::kLanConnectivity,
       cros_healthd::mojom::DiagnosticRoutineEnum::kMemory,
+      cros_healthd::mojom::DiagnosticRoutineEnum::kNvmeWearLevel,
+      cros_healthd::mojom::DiagnosticRoutineEnum::kSmartctlCheck,
   });
 
   CreateExtensionAndRunServiceWorker(R"(
@@ -41,8 +46,14 @@ IN_PROC_BROWSER_TEST_P(TelemetryExtensionDiagnosticsApiBrowserTest,
               "battery_discharge",
               "battery_health",
               "cpu_cache",
+              "cpu_floating_point_accuracy",
+              "cpu_prime_search",
               "cpu_stress",
-              "memory"
+              "disk_read",
+              "lan_connectivity",
+              "memory",
+              "nvme_wear_level",
+              "smartctl_check"
             ]
           }, response);
         chrome.test.succeed();
@@ -51,7 +62,7 @@ IN_PROC_BROWSER_TEST_P(TelemetryExtensionDiagnosticsApiBrowserTest,
   )");
 }
 
-IN_PROC_BROWSER_TEST_P(TelemetryExtensionDiagnosticsApiBrowserTest,
+IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiBrowserTest,
                        GetRoutineUpdateNonInteractiveSuccess) {
   // Configure FakeCrosHealthd to return noninteractive response for
   // GetRoutineUpdate().
@@ -61,16 +72,16 @@ IN_PROC_BROWSER_TEST_P(TelemetryExtensionDiagnosticsApiBrowserTest,
       cros_healthd::mojom::DiagnosticRoutineStatusEnum::kReady;
   nonInteractiveRoutineUpdate->status_message = "Routine ran by Google.";
 
-  auto routineUpdateUnion = cros_healthd::mojom::RoutineUpdateUnion::New();
-  routineUpdateUnion->set_noninteractive_update(
-      std::move(nonInteractiveRoutineUpdate));
+  auto routineUpdateUnion =
+      cros_healthd::mojom::RoutineUpdateUnion::NewNoninteractiveUpdate(
+          std::move(nonInteractiveRoutineUpdate));
 
   auto response = cros_healthd::mojom::RoutineUpdate::New();
   response->progress_percent = 87;
   response->routine_update_union = std::move(routineUpdateUnion);
 
-  cros_healthd::FakeCrosHealthdClient::Get()
-      ->SetGetRoutineUpdateResponseForTesting(response);
+  cros_healthd::FakeCrosHealthd::Get()->SetGetRoutineUpdateResponseForTesting(
+      response);
 
   CreateExtensionAndRunServiceWorker(R"(
     chrome.test.runTests([
@@ -95,9 +106,9 @@ IN_PROC_BROWSER_TEST_P(TelemetryExtensionDiagnosticsApiBrowserTest,
   )");
 
   // Verify that CrosHealthd is called with the correct parameters.
-  absl::optional<cros_healthd::FakeCrosHealthdService::RoutineUpdateParams>
+  absl::optional<cros_healthd::FakeCrosHealthd::RoutineUpdateParams>
       update_params =
-          cros_healthd::FakeCrosHealthdClient::Get()->GetRoutineUpdateParams();
+          cros_healthd::FakeCrosHealthd::Get()->GetRoutineUpdateParams();
 
   ASSERT_TRUE(update_params.has_value());
   EXPECT_EQ(123456, update_params->id);
@@ -105,7 +116,7 @@ IN_PROC_BROWSER_TEST_P(TelemetryExtensionDiagnosticsApiBrowserTest,
             update_params->command);
 }
 
-IN_PROC_BROWSER_TEST_P(TelemetryExtensionDiagnosticsApiBrowserTest,
+IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiBrowserTest,
                        GetRoutineUpdateInteractiveSuccess) {
   // Configure FakeCrosHealthd to return interactive response for
   // GetRoutineUpdate().
@@ -114,9 +125,9 @@ IN_PROC_BROWSER_TEST_P(TelemetryExtensionDiagnosticsApiBrowserTest,
   interactiveRoutineUpdate->user_message =
       cros_healthd::mojom::DiagnosticRoutineUserMessageEnum::kUnplugACPower;
 
-  auto routineUpdateUnion = cros_healthd::mojom::RoutineUpdateUnion::New();
-  routineUpdateUnion->set_interactive_update(
-      std::move(interactiveRoutineUpdate));
+  auto routineUpdateUnion =
+      cros_healthd::mojom::RoutineUpdateUnion::NewInteractiveUpdate(
+          std::move(interactiveRoutineUpdate));
 
   auto response = cros_healthd::mojom::RoutineUpdate::New();
   response->progress_percent = 50;
@@ -124,8 +135,8 @@ IN_PROC_BROWSER_TEST_P(TelemetryExtensionDiagnosticsApiBrowserTest,
       "routine is running...");
   response->routine_update_union = std::move(routineUpdateUnion);
 
-  cros_healthd::FakeCrosHealthdClient::Get()
-      ->SetGetRoutineUpdateResponseForTesting(response);
+  cros_healthd::FakeCrosHealthd::Get()->SetGetRoutineUpdateResponseForTesting(
+      response);
 
   CreateExtensionAndRunServiceWorker(R"(
     chrome.test.runTests([
@@ -152,9 +163,9 @@ IN_PROC_BROWSER_TEST_P(TelemetryExtensionDiagnosticsApiBrowserTest,
   )");
 
   // Verify that CrosHealthd is called with the correct parameters.
-  absl::optional<cros_healthd::FakeCrosHealthdService::RoutineUpdateParams>
+  absl::optional<cros_healthd::FakeCrosHealthd::RoutineUpdateParams>
       update_params =
-          cros_healthd::FakeCrosHealthdClient::Get()->GetRoutineUpdateParams();
+          cros_healthd::FakeCrosHealthd::Get()->GetRoutineUpdateParams();
 
   ASSERT_TRUE(update_params.has_value());
   EXPECT_EQ(654321, update_params->id);
@@ -162,7 +173,7 @@ IN_PROC_BROWSER_TEST_P(TelemetryExtensionDiagnosticsApiBrowserTest,
             update_params->command);
 }
 
-IN_PROC_BROWSER_TEST_P(TelemetryExtensionDiagnosticsApiBrowserTest,
+IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiBrowserTest,
                        RunBatteryCapacityRoutineSuccess) {
   CreateExtensionAndRunServiceWorker(R"(
     chrome.test.runTests([
@@ -174,13 +185,12 @@ IN_PROC_BROWSER_TEST_P(TelemetryExtensionDiagnosticsApiBrowserTest,
       }
     ]);
   )");
-  EXPECT_EQ(cros_healthd::FakeCrosHealthdClient::Get()->GetLastRunRoutine(),
+  EXPECT_EQ(cros_healthd::FakeCrosHealthd::Get()->GetLastRunRoutine(),
             cros_healthd::mojom::DiagnosticRoutineEnum::kBatteryCapacity);
 }
 
-// Crashes on ChromeOS: crbug.com/1274591
-IN_PROC_BROWSER_TEST_P(TelemetryExtensionDiagnosticsApiBrowserTest,
-                       DISABLED_RunBatteryChargeRoutineSuccess) {
+IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiBrowserTest,
+                       RunBatteryChargeRoutineSuccess) {
   CreateExtensionAndRunServiceWorker(R"(
     chrome.test.runTests([
       async function runBatteryChargeRoutine() {
@@ -196,11 +206,11 @@ IN_PROC_BROWSER_TEST_P(TelemetryExtensionDiagnosticsApiBrowserTest,
       }
     ]);
   )");
-  EXPECT_EQ(cros_healthd::FakeCrosHealthdClient::Get()->GetLastRunRoutine(),
+  EXPECT_EQ(cros_healthd::FakeCrosHealthd::Get()->GetLastRunRoutine(),
             cros_healthd::mojom::DiagnosticRoutineEnum::kBatteryCharge);
 }
 
-IN_PROC_BROWSER_TEST_P(TelemetryExtensionDiagnosticsApiBrowserTest,
+IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiBrowserTest,
                        RunBatteryDischargeRoutineSuccess) {
   CreateExtensionAndRunServiceWorker(R"(
     chrome.test.runTests([
@@ -217,11 +227,11 @@ IN_PROC_BROWSER_TEST_P(TelemetryExtensionDiagnosticsApiBrowserTest,
       }
     ]);
   )");
-  EXPECT_EQ(cros_healthd::FakeCrosHealthdClient::Get()->GetLastRunRoutine(),
+  EXPECT_EQ(cros_healthd::FakeCrosHealthd::Get()->GetLastRunRoutine(),
             cros_healthd::mojom::DiagnosticRoutineEnum::kBatteryDischarge);
 }
 
-IN_PROC_BROWSER_TEST_P(TelemetryExtensionDiagnosticsApiBrowserTest,
+IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiBrowserTest,
                        RunBatteryHealthRoutineSuccess) {
   CreateExtensionAndRunServiceWorker(R"(
     chrome.test.runTests([
@@ -233,11 +243,11 @@ IN_PROC_BROWSER_TEST_P(TelemetryExtensionDiagnosticsApiBrowserTest,
       }
     ]);
   )");
-  EXPECT_EQ(cros_healthd::FakeCrosHealthdClient::Get()->GetLastRunRoutine(),
+  EXPECT_EQ(cros_healthd::FakeCrosHealthd::Get()->GetLastRunRoutine(),
             cros_healthd::mojom::DiagnosticRoutineEnum::kBatteryHealth);
 }
 
-IN_PROC_BROWSER_TEST_P(TelemetryExtensionDiagnosticsApiBrowserTest,
+IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiBrowserTest,
                        RunCpuCacheRoutineSuccess) {
   CreateExtensionAndRunServiceWorker(R"(
     chrome.test.runTests([
@@ -253,11 +263,51 @@ IN_PROC_BROWSER_TEST_P(TelemetryExtensionDiagnosticsApiBrowserTest,
       }
     ]);
   )");
-  EXPECT_EQ(cros_healthd::FakeCrosHealthdClient::Get()->GetLastRunRoutine(),
+  EXPECT_EQ(cros_healthd::FakeCrosHealthd::Get()->GetLastRunRoutine(),
             cros_healthd::mojom::DiagnosticRoutineEnum::kCpuCache);
 }
 
-IN_PROC_BROWSER_TEST_P(TelemetryExtensionDiagnosticsApiBrowserTest,
+IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiBrowserTest,
+                       RunCpuFloatingPointAccuracyRoutineSuccess) {
+  CreateExtensionAndRunServiceWorker(R"(
+    chrome.test.runTests([
+      async function runCpuFloatingPointAccuracyRoutine() {
+        const response =
+          await chrome.os.diagnostics.runCpuFloatingPointAccuracyRoutine(
+            {
+              length_seconds: 120
+            }
+          );
+        chrome.test.assertEq({id: 0, status: "ready"}, response);
+        chrome.test.succeed();
+      }
+    ]);
+  )");
+  EXPECT_EQ(cros_healthd::FakeCrosHealthd::Get()->GetLastRunRoutine(),
+            cros_healthd::mojom::DiagnosticRoutineEnum::kFloatingPointAccuracy);
+}
+
+IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiBrowserTest,
+                       RunCpuPrimeSearchRoutineSuccess) {
+  CreateExtensionAndRunServiceWorker(R"(
+    chrome.test.runTests([
+      async function runCpuPrimeSearchRoutine() {
+        const response =
+          await chrome.os.diagnostics.runCpuPrimeSearchRoutine(
+            {
+              length_seconds: 120
+            }
+          );
+        chrome.test.assertEq({id: 0, status: "ready"}, response);
+        chrome.test.succeed();
+      }
+    ]);
+  )");
+  EXPECT_EQ(cros_healthd::FakeCrosHealthd::Get()->GetLastRunRoutine(),
+            cros_healthd::mojom::DiagnosticRoutineEnum::kPrimeSearch);
+}
+
+IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiBrowserTest,
                        RunCpuStressRoutineSuccess) {
   CreateExtensionAndRunServiceWorker(R"(
     chrome.test.runTests([
@@ -273,13 +323,50 @@ IN_PROC_BROWSER_TEST_P(TelemetryExtensionDiagnosticsApiBrowserTest,
       }
     ]);
   )");
-  EXPECT_EQ(cros_healthd::FakeCrosHealthdClient::Get()->GetLastRunRoutine(),
+  EXPECT_EQ(cros_healthd::FakeCrosHealthd::Get()->GetLastRunRoutine(),
             cros_healthd::mojom::DiagnosticRoutineEnum::kCpuStress);
 }
 
-// Crashes on ChromeOS: crbug.com/1274591
-IN_PROC_BROWSER_TEST_P(TelemetryExtensionDiagnosticsApiBrowserTest,
-                       DISABLED_RunMemoryRoutineSuccess) {
+IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiBrowserTest,
+                       RunDiskReadRoutineSuccess) {
+  CreateExtensionAndRunServiceWorker(R"(
+    chrome.test.runTests([
+      async function runDiskReadRoutine() {
+        const response =
+          await chrome.os.diagnostics.runDiskReadRoutine(
+            {
+                type: "linear",
+                length_seconds: 20,
+                file_size_mb: 1000
+            }
+          );
+        chrome.test.assertEq({id: 0, status: "ready"}, response);
+        chrome.test.succeed();
+      }
+    ]);
+  )");
+  EXPECT_EQ(cros_healthd::FakeCrosHealthd::Get()->GetLastRunRoutine(),
+            cros_healthd::mojom::DiagnosticRoutineEnum::kDiskRead);
+}
+
+IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiBrowserTest,
+                       RunLanConnectivityRoutineSuccess) {
+  CreateExtensionAndRunServiceWorker(R"(
+    chrome.test.runTests([
+      async function runLanConnectivityRoutine() {
+        const response =
+          await chrome.os.diagnostics.runLanConnectivityRoutine();
+        chrome.test.assertEq({id: 0, status: "ready"}, response);
+        chrome.test.succeed();
+      }
+    ]);
+  )");
+  EXPECT_EQ(cros_healthd::FakeCrosHealthd::Get()->GetLastRunRoutine(),
+            cros_healthd::mojom::DiagnosticRoutineEnum::kLanConnectivity);
+}
+
+IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiBrowserTest,
+                       RunMemoryRoutineSuccess) {
   CreateExtensionAndRunServiceWorker(R"(
     chrome.test.runTests([
       async function runMemoryRoutine() {
@@ -290,16 +377,44 @@ IN_PROC_BROWSER_TEST_P(TelemetryExtensionDiagnosticsApiBrowserTest,
       }
     ]);
   )");
-  EXPECT_EQ(cros_healthd::FakeCrosHealthdClient::Get()->GetLastRunRoutine(),
+  EXPECT_EQ(cros_healthd::FakeCrosHealthd::Get()->GetLastRunRoutine(),
             cros_healthd::mojom::DiagnosticRoutineEnum::kMemory);
 }
 
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    TelemetryExtensionDiagnosticsApiBrowserTest,
-    testing::Combine(
-        testing::Bool(),
-        testing::ValuesIn(
-            BaseTelemetryExtensionBrowserTest::kAllExtensionInfoTestParams)));
+IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiBrowserTest,
+                       RunNvmeWearLevelRoutineSuccess) {
+  CreateExtensionAndRunServiceWorker(R"(
+    chrome.test.runTests([
+      async function runNvmeWearLevelRoutine() {
+        const response =
+          await chrome.os.diagnostics.runNvmeWearLevelRoutine(
+            {
+              wear_level_threshold: 80
+            }
+          );
+        chrome.test.assertEq({id: 0, status: "ready"}, response);
+        chrome.test.succeed();
+      }
+    ]);
+  )");
+  EXPECT_EQ(cros_healthd::FakeCrosHealthd::Get()->GetLastRunRoutine(),
+            cros_healthd::mojom::DiagnosticRoutineEnum::kNvmeWearLevel);
+}
+
+IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiBrowserTest,
+                       RunSmartctlCheckRoutineSuccess) {
+  CreateExtensionAndRunServiceWorker(R"(
+    chrome.test.runTests([
+      async function runSmartctlCheckRoutine() {
+        const response =
+          await chrome.os.diagnostics.runSmartctlCheckRoutine();
+        chrome.test.assertEq({id: 0, status: "ready"}, response);
+        chrome.test.succeed();
+      }
+    ]);
+  )");
+  EXPECT_EQ(cros_healthd::FakeCrosHealthd::Get()->GetLastRunRoutine(),
+            cros_healthd::mojom::DiagnosticRoutineEnum::kSmartctlCheck);
+}
 
 }  // namespace chromeos

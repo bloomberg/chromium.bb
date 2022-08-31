@@ -49,17 +49,15 @@ export class SecurityModel extends SDK.SDKModel.SDKModel<EventTypes> {
     this.dispatcher = new SecurityDispatcher(this);
     this.securityAgent = target.securityAgent();
     target.registerSecurityDispatcher(this.dispatcher);
-    this.securityAgent.invoke_enable();
+    void this.securityAgent.invoke_enable();
   }
 
   resourceTreeModel(): SDK.ResourceTreeModel.ResourceTreeModel {
-    return /** @type {!SDK.ResourceTreeModel.ResourceTreeModel} */ this.target().model(
-               SDK.ResourceTreeModel.ResourceTreeModel) as SDK.ResourceTreeModel.ResourceTreeModel;
+    return this.target().model(SDK.ResourceTreeModel.ResourceTreeModel) as SDK.ResourceTreeModel.ResourceTreeModel;
   }
 
   networkManager(): SDK.NetworkManager.NetworkManager {
-    return /** @type {!SDK.NetworkManager.NetworkManager} */ this.target().model(SDK.NetworkManager.NetworkManager) as
-        SDK.NetworkManager.NetworkManager;
+    return this.target().model(SDK.NetworkManager.NetworkManager) as SDK.NetworkManager.NetworkManager;
   }
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
