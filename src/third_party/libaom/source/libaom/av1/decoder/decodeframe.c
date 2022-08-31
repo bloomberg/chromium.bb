@@ -109,18 +109,16 @@ static AOM_INLINE void set_planes_to_neutral_grey(
     for (int plane = only_chroma; plane < MAX_MB_PLANE; plane++) {
       const int is_uv = plane > 0;
       for (int row_idx = 0; row_idx < buf->crop_heights[is_uv]; row_idx++) {
-        memset(&buf->buffers[plane][row_idx * buf->uv_stride], 1 << 7,
+        memset(&buf->buffers[plane][row_idx * buf->strides[is_uv]], 1 << 7,
                buf->crop_widths[is_uv]);
       }
     }
   }
 }
 
-#if !CONFIG_REALTIME_ONLY
 static AOM_INLINE void loop_restoration_read_sb_coeffs(
     const AV1_COMMON *const cm, MACROBLOCKD *xd, aom_reader *const r, int plane,
     int runit_idx);
-#endif
 
 static int read_is_valid(const uint8_t *start, size_t len, const uint8_t *end) {
   return len != 0 && len <= (size_t)(end - start);
@@ -915,14 +913,6 @@ static AOM_INLINE void decode_token_recon_block(AV1Decoder *const pbi,
           if (plane && !xd->is_chroma_ref) break;
           const struct macroblockd_plane *const pd = &xd->plane[plane];
           const TX_SIZE tx_size = av1_get_tx_size(plane, xd);
-#if CONFIG_REALTIME_ONLY
-          // Realtime only build doesn't support 4x rectangular txfm sizes.
-          if (tx_size >= TX_4X16) {
-            aom_internal_error(xd->error_info, AOM_CODEC_UNSUP_FEATURE,
-                               "Realtime only build doesn't support 4x "
-                               "rectangular txfm sizes");
-          }
-#endif
           const int stepr = tx_size_high_unit[tx_size];
           const int stepc = tx_size_wide_unit[tx_size];
 
@@ -1282,9 +1272,6 @@ static AOM_INLINE void decode_partition(AV1Decoder *const pbi,
   if (parse_decode_flag & 1) {
     const int num_planes = av1_num_planes(cm);
     for (int plane = 0; plane < num_planes; ++plane) {
-#if CONFIG_REALTIME_ONLY
-      assert(cm->rst_info[plane].frame_restoration_type == RESTORE_NONE);
-#else
       int rcol0, rcol1, rrow0, rrow1;
       if (av1_loop_restoration_corners_in_sb(cm, plane, mi_row, mi_col, bsize,
                                              &rcol0, &rcol1, &rrow0, &rrow1)) {
@@ -1296,7 +1283,6 @@ static AOM_INLINE void decode_partition(AV1Decoder *const pbi,
           }
         }
       }
-#endif
     }
 
     partition = (bsize < BLOCK_8X8) ? PARTITION_NONE
@@ -1307,6 +1293,10 @@ static AOM_INLINE void decode_partition(AV1Decoder *const pbi,
   }
   subsize = get_partition_subsize(bsize, partition);
   if (subsize == BLOCK_INVALID) {
+    // When an internal error occurs ensure that xd->mi_row is set appropriately
+    // w.r.t. current tile, which is used to signal processing of current row is
+    // done.
+    xd->mi_row = mi_row;
     aom_internal_error(xd->error_info, AOM_CODEC_CORRUPT_FRAME,
                        "Partition is invalid for block size %dx%d",
                        block_size_wide[bsize], block_size_high[bsize]);
@@ -1316,6 +1306,10 @@ static AOM_INLINE void decode_partition(AV1Decoder *const pbi,
   const struct macroblockd_plane *const pd_u = &xd->plane[1];
   if (get_plane_block_size(subsize, pd_u->subsampling_x, pd_u->subsampling_y) ==
       BLOCK_INVALID) {
+    // When an internal error occurs ensure that xd->mi_row is set appropriately
+    // w.r.t. current tile, which is used to signal processing of current row is
+    // done.
+    xd->mi_row = mi_row;
     aom_internal_error(xd->error_info, AOM_CODEC_CORRUPT_FRAME,
                        "Block size %dx%d invalid with this subsampling mode",
                        block_size_wide[subsize], block_size_high[subsize]);
@@ -1393,19 +1387,30 @@ static AOM_INLINE void decode_partition(AV1Decoder *const pbi,
 }
 
 static AOM_INLINE void setup_bool_decoder(
-    const uint8_t *data, const uint8_t *data_end, const size_t read_size,
-    struct aom_internal_error_info *error_info, aom_reader *r,
-    uint8_t allow_update_cdf) {
+    MACROBLOCKD *const xd, const uint8_t *data, const uint8_t *data_end,
+    const size_t read_size, struct aom_internal_error_info *error_info,
+    aom_reader *r, uint8_t allow_update_cdf) {
   // Validate the calculated partition length. If the buffer
   // described by the partition can't be fully read, then restrict
   // it to the portion that can be (for EC mode) or throw an error.
-  if (!read_is_valid(data, read_size, data_end))
+  if (!read_is_valid(data, read_size, data_end)) {
+    // When internal error occurs ensure that xd->mi_row is set appropriately
+    // w.r.t. current tile, which is used to signal processing of current row is
+    // done in row-mt decoding.
+    xd->mi_row = xd->tile.mi_row_start;
+
     aom_internal_error(error_info, AOM_CODEC_CORRUPT_FRAME,
                        "Truncated packet or corrupt tile length");
+  }
+  if (aom_reader_init(r, data, read_size)) {
+    // When internal error occurs ensure that xd->mi_row is set appropriately
+    // w.r.t. current tile, which is used to signal processing of current row is
+    // done in row-mt decoding.
+    xd->mi_row = xd->tile.mi_row_start;
 
-  if (aom_reader_init(r, data, read_size))
     aom_internal_error(error_info, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate bool decoder %d", 1);
+  }
 
   r->allow_update_cdf = allow_update_cdf;
 }
@@ -1506,10 +1511,6 @@ static AOM_INLINE void decode_restoration_mode(AV1_COMMON *cm,
     }
   }
   if (!all_none) {
-#if CONFIG_REALTIME_ONLY
-    aom_internal_error(cm->error, AOM_CODEC_UNSUP_FEATURE,
-                       "Realtime only build doesn't support loop restoration");
-#endif
     assert(cm->seq_params->sb_size == BLOCK_64X64 ||
            cm->seq_params->sb_size == BLOCK_128X128);
     const int sb_size = cm->seq_params->sb_size == BLOCK_128X128 ? 128 : 64;
@@ -1546,7 +1547,6 @@ static AOM_INLINE void decode_restoration_mode(AV1_COMMON *cm,
   }
 }
 
-#if !CONFIG_REALTIME_ONLY
 static AOM_INLINE void read_wiener_filter(int wiener_win,
                                           WienerInfo *wiener_info,
                                           WienerInfo *ref_wiener_info,
@@ -1687,7 +1687,6 @@ static AOM_INLINE void loop_restoration_read_sb_coeffs(
     }
   }
 }
-#endif  // !CONFIG_REALTIME_ONLY
 
 static AOM_INLINE void setup_loopfilter(AV1_COMMON *cm,
                                         struct aom_read_bit_buffer *rb) {
@@ -1892,16 +1891,14 @@ static AOM_INLINE void resize_context_buffers(AV1_COMMON *cm, int width,
                        width, height, DECODE_WIDTH_LIMIT, DECODE_HEIGHT_LIMIT);
 #endif
   if (cm->width != width || cm->height != height) {
-    const int new_mi_rows =
-        ALIGN_POWER_OF_TWO(height, MI_SIZE_LOG2) >> MI_SIZE_LOG2;
-    const int new_mi_cols =
-        ALIGN_POWER_OF_TWO(width, MI_SIZE_LOG2) >> MI_SIZE_LOG2;
+    const int new_mi_rows = CEIL_POWER_OF_TWO(height, MI_SIZE_LOG2);
+    const int new_mi_cols = CEIL_POWER_OF_TWO(width, MI_SIZE_LOG2);
 
     // Allocations in av1_alloc_context_buffers() depend on individual
     // dimensions as well as the overall size.
     if (new_mi_cols > cm->mi_params.mi_cols ||
         new_mi_rows > cm->mi_params.mi_rows) {
-      if (av1_alloc_context_buffers(cm, width, height, 0, BLOCK_4X4)) {
+      if (av1_alloc_context_buffers(cm, width, height, BLOCK_4X4)) {
         // The cm->mi_* values have been cleared and any existing context
         // buffers have been freed. Clear cm->width and cm->height to be
         // consistent and to force a realloc next time.
@@ -1911,7 +1908,7 @@ static AOM_INLINE void resize_context_buffers(AV1_COMMON *cm, int width,
                            "Failed to allocate context buffers");
       }
     } else {
-      cm->mi_params.set_mb_mi(&cm->mi_params, width, height, 0, BLOCK_4X4);
+      cm->mi_params.set_mb_mi(&cm->mi_params, width, height, BLOCK_4X4);
     }
     av1_init_mi_buffers(&cm->mi_params);
     cm->width = width;
@@ -1932,7 +1929,7 @@ static AOM_INLINE void setup_buffer_pool(AV1_COMMON *cm) {
           &cm->cur_frame->buf, cm->width, cm->height, seq_params->subsampling_x,
           seq_params->subsampling_y, seq_params->use_highbitdepth,
           AOM_DEC_BORDER_IN_PIXELS, cm->features.byte_alignment,
-          &cm->cur_frame->raw_frame_buffer, pool->get_fb_cb, pool->cb_priv,
+          &cm->cur_frame->raw_frame_buffer, pool->get_fb_cb, pool->cb_priv, 0,
           0)) {
     unlock_buffer_pool(pool);
     aom_internal_error(cm->error, AOM_CODEC_MEM_ERROR,
@@ -2076,12 +2073,10 @@ static AOM_INLINE void read_tile_info_max_tile(
     AV1_COMMON *const cm, struct aom_read_bit_buffer *const rb) {
   const SequenceHeader *const seq_params = cm->seq_params;
   CommonTileParams *const tiles = &cm->tiles;
-  int width_mi =
-      ALIGN_POWER_OF_TWO(cm->mi_params.mi_cols, seq_params->mib_size_log2);
-  int height_mi =
-      ALIGN_POWER_OF_TWO(cm->mi_params.mi_rows, seq_params->mib_size_log2);
-  int width_sb = width_mi >> seq_params->mib_size_log2;
-  int height_sb = height_mi >> seq_params->mib_size_log2;
+  int width_sb =
+      CEIL_POWER_OF_TWO(cm->mi_params.mi_cols, seq_params->mib_size_log2);
+  int height_sb =
+      CEIL_POWER_OF_TWO(cm->mi_params.mi_rows, seq_params->mib_size_log2);
 
   av1_get_tile_limits(cm);
   tiles->uniform_spacing = aom_rb_read_bit(rb);
@@ -2577,28 +2572,55 @@ static INLINE void sync_write(AV1DecRowMTSync *const dec_row_mt_sync, int r,
 #endif  // CONFIG_MULTITHREAD
 }
 
+static INLINE void signal_decoding_done_for_erroneous_row(
+    AV1Decoder *const pbi, const MACROBLOCKD *const xd) {
+  AV1_COMMON *const cm = &pbi->common;
+  const TileInfo *const tile = &xd->tile;
+  const int sb_row_in_tile =
+      ((xd->mi_row - tile->mi_row_start) >> cm->seq_params->mib_size_log2);
+  const int sb_cols_in_tile = av1_get_sb_cols_in_tile(cm, tile);
+  TileDataDec *const tile_data =
+      pbi->tile_data + tile->tile_row * cm->tiles.cols + tile->tile_col;
+  AV1DecRowMTSync *dec_row_mt_sync = &tile_data->dec_row_mt_sync;
+
+  sync_write(dec_row_mt_sync, sb_row_in_tile, sb_cols_in_tile - 1,
+             sb_cols_in_tile);
+}
+
 static AOM_INLINE void decode_tile_sb_row(AV1Decoder *pbi, ThreadData *const td,
-                                          TileInfo tile_info,
+                                          const TileInfo *tile_info,
                                           const int mi_row) {
   AV1_COMMON *const cm = &pbi->common;
   const int num_planes = av1_num_planes(cm);
-  TileDataDec *const tile_data =
-      pbi->tile_data + tile_info.tile_row * cm->tiles.cols + tile_info.tile_col;
+  TileDataDec *const tile_data = pbi->tile_data +
+                                 tile_info->tile_row * cm->tiles.cols +
+                                 tile_info->tile_col;
   const int sb_cols_in_tile = av1_get_sb_cols_in_tile(cm, tile_info);
   const int sb_row_in_tile =
-      (mi_row - tile_info.mi_row_start) >> cm->seq_params->mib_size_log2;
+      (mi_row - tile_info->mi_row_start) >> cm->seq_params->mib_size_log2;
   int sb_col_in_tile = 0;
+  int row_mt_exit = 0;
 
-  for (int mi_col = tile_info.mi_col_start; mi_col < tile_info.mi_col_end;
+  for (int mi_col = tile_info->mi_col_start; mi_col < tile_info->mi_col_end;
        mi_col += cm->seq_params->mib_size, sb_col_in_tile++) {
     set_cb_buffer(pbi, &td->dcb, pbi->cb_buffer_base, num_planes, mi_row,
                   mi_col);
 
     sync_read(&tile_data->dec_row_mt_sync, sb_row_in_tile, sb_col_in_tile);
 
-    // Decoding of the super-block
-    decode_partition(pbi, td, mi_row, mi_col, td->bit_reader,
-                     cm->seq_params->sb_size, 0x2);
+#if CONFIG_MULTITHREAD
+    pthread_mutex_lock(pbi->row_mt_mutex_);
+#endif
+    row_mt_exit = pbi->frame_row_mt_info.row_mt_exit;
+#if CONFIG_MULTITHREAD
+    pthread_mutex_unlock(pbi->row_mt_mutex_);
+#endif
+
+    if (!row_mt_exit) {
+      // Decoding of the super-block
+      decode_partition(pbi, td, mi_row, mi_col, td->bit_reader,
+                       cm->seq_params->sb_size, 0x2);
+    }
 
     sync_write(&tile_data->dec_row_mt_sync, sb_row_in_tile, sb_col_in_tile,
                sb_cols_in_tile);
@@ -2797,8 +2819,9 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
       av1_zero(td->cb_buffer_base.dqcoeff);
       av1_tile_init(&td->dcb.xd.tile, cm, row, col);
       td->dcb.xd.current_base_qindex = cm->quant_params.base_qindex;
-      setup_bool_decoder(tile_bs_buf->data, data_end, tile_bs_buf->size,
-                         &pbi->error, td->bit_reader, allow_update_cdf);
+      setup_bool_decoder(&td->dcb.xd, tile_bs_buf->data, data_end,
+                         tile_bs_buf->size, &pbi->error, td->bit_reader,
+                         allow_update_cdf);
 #if CONFIG_ACCOUNTING
       if (pbi->acct_enabled) {
         td->bit_reader->accounting = &pbi->accounting;
@@ -2870,7 +2893,8 @@ static AOM_INLINE void tile_worker_hook_init(
   MACROBLOCKD *const xd = &td->dcb.xd;
   av1_tile_init(&xd->tile, cm, tile_row, tile_col);
   xd->current_base_qindex = cm->quant_params.base_qindex;
-  setup_bool_decoder(tile_buffer->data, thread_data->data_end,
+
+  setup_bool_decoder(xd, tile_buffer->data, thread_data->data_end,
                      tile_buffer->size, &thread_data->error_info,
                      td->bit_reader, allow_update_cdf);
 #if CONFIG_ACCOUNTING
@@ -2941,7 +2965,7 @@ static int tile_worker_hook(void *arg1, void *arg2) {
 }
 
 static INLINE int get_max_row_mt_workers_per_tile(AV1_COMMON *cm,
-                                                  TileInfo tile) {
+                                                  const TileInfo *tile) {
   // NOTE: Currently value of max workers is calculated based
   // on the parse and decode time. As per the theoretical estimate
   // when percentage of parse time is equal to percentage of decode
@@ -2971,7 +2995,6 @@ static int get_next_job_info(AV1Decoder *const pbi,
   TileDataDec *tile_data;
   AV1DecRowMTSync *dec_row_mt_sync;
   AV1DecRowMTInfo *frame_row_mt_info = &pbi->frame_row_mt_info;
-  TileInfo tile_info;
   const int tile_rows_start = frame_row_mt_info->tile_rows_start;
   const int tile_rows_end = frame_row_mt_info->tile_rows_end;
   const int tile_cols_start = frame_row_mt_info->tile_cols_start;
@@ -3035,7 +3058,7 @@ static int get_next_job_info(AV1Decoder *const pbi,
         if (num_threads_working == min_threads_working &&
             num_mis_to_decode > max_mis_to_decode &&
             num_threads_working <
-                get_max_row_mt_workers_per_tile(cm, tile_data->tile_info)) {
+                get_max_row_mt_workers_per_tile(cm, &tile_data->tile_info)) {
           max_mis_to_decode = num_mis_to_decode;
           tile_row = tile_row_idx;
           tile_col = tile_col_idx;
@@ -3047,13 +3070,12 @@ static int get_next_job_info(AV1Decoder *const pbi,
   if (tile_row == -1 || tile_col == -1) return 0;
 
   tile_data = pbi->tile_data + tile_row * cm->tiles.cols + tile_col;
-  tile_info = tile_data->tile_info;
   dec_row_mt_sync = &tile_data->dec_row_mt_sync;
 
   next_job_info->tile_row = tile_row;
   next_job_info->tile_col = tile_col;
-  next_job_info->mi_row =
-      dec_row_mt_sync->mi_rows_decode_started + tile_info.mi_row_start;
+  next_job_info->mi_row = dec_row_mt_sync->mi_rows_decode_started +
+                          tile_data->tile_info.mi_row_start;
 
   dec_row_mt_sync->num_threads_working++;
   dec_row_mt_sync->mi_rows_decode_started += sb_mi_size;
@@ -3098,21 +3120,21 @@ static AOM_INLINE void parse_tile_row_mt(AV1Decoder *pbi, ThreadData *const td,
   AV1_COMMON *const cm = &pbi->common;
   const int sb_mi_size = mi_size_wide[cm->seq_params->sb_size];
   const int num_planes = av1_num_planes(cm);
-  TileInfo tile_info = tile_data->tile_info;
-  int tile_row = tile_info.tile_row;
+  const TileInfo *const tile_info = &tile_data->tile_info;
+  int tile_row = tile_info->tile_row;
   DecoderCodingBlock *const dcb = &td->dcb;
   MACROBLOCKD *const xd = &dcb->xd;
 
-  av1_zero_above_context(cm, xd, tile_info.mi_col_start, tile_info.mi_col_end,
+  av1_zero_above_context(cm, xd, tile_info->mi_col_start, tile_info->mi_col_end,
                          tile_row);
   av1_reset_loop_filter_delta(xd, num_planes);
   av1_reset_loop_restoration(xd, num_planes);
 
-  for (int mi_row = tile_info.mi_row_start; mi_row < tile_info.mi_row_end;
+  for (int mi_row = tile_info->mi_row_start; mi_row < tile_info->mi_row_end;
        mi_row += cm->seq_params->mib_size) {
     av1_zero_left_context(xd);
 
-    for (int mi_col = tile_info.mi_col_start; mi_col < tile_info.mi_col_end;
+    for (int mi_col = tile_info->mi_col_start; mi_col < tile_info->mi_col_end;
          mi_col += cm->seq_params->mib_size) {
       set_cb_buffer(pbi, dcb, pbi->cb_buffer_base, num_planes, mi_row, mi_col);
 
@@ -3136,7 +3158,6 @@ static AOM_INLINE void parse_tile_row_mt(AV1Decoder *pbi, ThreadData *const td,
 static int row_mt_worker_hook(void *arg1, void *arg2) {
   DecWorkerData *const thread_data = (DecWorkerData *)arg1;
   AV1Decoder *const pbi = (AV1Decoder *)arg2;
-  AV1_COMMON *cm = &pbi->common;
   ThreadData *const td = thread_data->td;
   uint8_t allow_update_cdf;
   AV1DecRowMTInfo *frame_row_mt_info = &pbi->frame_row_mt_info;
@@ -3152,6 +3173,14 @@ static int row_mt_worker_hook(void *arg1, void *arg2) {
     pthread_mutex_lock(pbi->row_mt_mutex_);
 #endif
     frame_row_mt_info->row_mt_exit = 1;
+
+    // If any SB row (erroneous row) processed by a thread encounters an
+    // internal error, there is a need to indicate other threads that decoding
+    // of the erroneous row is complete. This ensures that other threads which
+    // wait upon the completion of SB's present in erroneous row are not waiting
+    // indefinitely.
+    signal_decoding_done_for_erroneous_row(pbi, &thread_data->td->dcb.xd);
+
 #if CONFIG_MULTITHREAD
     pthread_cond_broadcast(pbi->row_mt_cond_);
     pthread_mutex_unlock(pbi->row_mt_mutex_);
@@ -3160,6 +3189,7 @@ static int row_mt_worker_hook(void *arg1, void *arg2) {
   }
   thread_data->error_info.setjmp = 1;
 
+  AV1_COMMON *cm = &pbi->common;
   allow_update_cdf = cm->tiles.large_scale ? 0 : 1;
   allow_update_cdf = allow_update_cdf && !cm->features.disable_cdf_update;
 
@@ -3235,13 +3265,12 @@ static int row_mt_worker_hook(void *arg1, void *arg2) {
     TileDataDec *tile_data =
         pbi->tile_data + tile_row * cm->tiles.cols + tile_col;
     AV1DecRowMTSync *dec_row_mt_sync = &tile_data->dec_row_mt_sync;
-    TileInfo tile_info = tile_data->tile_info;
 
     av1_tile_init(&td->dcb.xd.tile, cm, tile_row, tile_col);
     av1_init_macroblockd(cm, &td->dcb.xd);
     td->dcb.xd.error_info = &thread_data->error_info;
 
-    decode_tile_sb_row(pbi, td, tile_info, mi_row);
+    decode_tile_sb_row(pbi, td, &tile_data->tile_info, mi_row);
 
 #if CONFIG_MULTITHREAD
     pthread_mutex_lock(pbi->row_mt_mutex_);
@@ -3635,16 +3664,16 @@ static AOM_INLINE void row_mt_frame_init(AV1Decoder *pbi, int tile_rows_start,
 
       TileDataDec *const tile_data =
           pbi->tile_data + tile_row * cm->tiles.cols + tile_col;
-      TileInfo tile_info = tile_data->tile_info;
+      const TileInfo *const tile_info = &tile_data->tile_info;
 
       tile_data->dec_row_mt_sync.mi_rows_parse_done = 0;
       tile_data->dec_row_mt_sync.mi_rows_decode_started = 0;
       tile_data->dec_row_mt_sync.num_threads_working = 0;
       tile_data->dec_row_mt_sync.mi_rows =
-          ALIGN_POWER_OF_TWO(tile_info.mi_row_end - tile_info.mi_row_start,
+          ALIGN_POWER_OF_TWO(tile_info->mi_row_end - tile_info->mi_row_start,
                              cm->seq_params->mib_size_log2);
       tile_data->dec_row_mt_sync.mi_cols =
-          ALIGN_POWER_OF_TWO(tile_info.mi_col_end - tile_info.mi_col_start,
+          ALIGN_POWER_OF_TWO(tile_info->mi_col_end - tile_info->mi_col_start,
                              cm->seq_params->mib_size_log2);
 
       frame_row_mt_info->mi_rows_to_decode +=
@@ -3760,8 +3789,8 @@ static const uint8_t *decode_tiles_row_mt(AV1Decoder *pbi, const uint8_t *data,
       av1_tile_init(&tile_data->tile_info, cm, row, col);
 
       max_sb_rows = AOMMAX(max_sb_rows,
-                           av1_get_sb_rows_in_tile(cm, tile_data->tile_info));
-      num_workers += get_max_row_mt_workers_per_tile(cm, tile_data->tile_info);
+                           av1_get_sb_rows_in_tile(cm, &tile_data->tile_info));
+      num_workers += get_max_row_mt_workers_per_tile(cm, &tile_data->tile_info);
     }
   }
   num_workers = AOMMIN(num_workers, max_threads);
@@ -4292,14 +4321,10 @@ static int read_global_motion_params(WarpedMotionParams *params,
                        trans_dec_factor;
   }
 
-#if !CONFIG_REALTIME_ONLY
-  // For realtime only build, warped motion is disabled, so this section is not
-  // needed.
   if (params->wmtype <= AFFINE) {
     int good_shear_params = av1_get_shear_params(params);
     if (!good_shear_params) return 0;
   }
-#endif
 
   return 1;
 }
@@ -4642,7 +4667,9 @@ static int read_uncompressed_header(AV1Decoder *pbi,
 
     current_frame->order_hint = aom_rb_read_literal(
         rb, seq_params->order_hint_info.order_hint_bits_minus_1 + 1);
-    current_frame->frame_number = current_frame->order_hint;
+
+    if (seq_params->order_hint_info.enable_order_hint)
+      current_frame->frame_number = current_frame->order_hint;
 
     if (!features->error_resilient_mode && !frame_is_intra_only(cm)) {
       features->primary_ref_frame = aom_rb_read_literal(rb, PRIMARY_REF_BITS);
@@ -4735,7 +4762,8 @@ static int read_uncompressed_header(AV1Decoder *pbi,
                   seq_params->max_frame_height, seq_params->subsampling_x,
                   seq_params->subsampling_y, seq_params->use_highbitdepth,
                   AOM_BORDER_IN_PIXELS, features->byte_alignment,
-                  &buf->raw_frame_buffer, pool->get_fb_cb, pool->cb_priv, 0)) {
+                  &buf->raw_frame_buffer, pool->get_fb_cb, pool->cb_priv, 0,
+                  0)) {
             decrease_ref_count(buf, pool);
             unlock_buffer_pool(pool);
             aom_internal_error(&pbi->error, AOM_CODEC_MEM_ERROR,
@@ -5089,7 +5117,6 @@ BITSTREAM_PROFILE av1_read_profile(struct aom_read_bit_buffer *rb) {
   return (BITSTREAM_PROFILE)profile;
 }
 
-#if !CONFIG_REALTIME_ONLY
 static AOM_INLINE void superres_post_decode(AV1Decoder *pbi) {
   AV1_COMMON *const cm = &pbi->common;
   BufferPool *const pool = cm->buffer_pool;
@@ -5099,7 +5126,6 @@ static AOM_INLINE void superres_post_decode(AV1Decoder *pbi) {
 
   av1_superres_upscale(cm, pool);
 }
-#endif
 
 uint32_t av1_decode_frame_headers_and_setup(AV1Decoder *pbi,
                                             struct aom_read_bit_buffer *rb,
@@ -5109,8 +5135,14 @@ uint32_t av1_decode_frame_headers_and_setup(AV1Decoder *pbi,
   MACROBLOCKD *const xd = &pbi->dcb.xd;
 
 #if CONFIG_BITSTREAM_DEBUG
-  aom_bitstream_queue_set_frame_read(cm->current_frame.order_hint * 2 +
-                                     cm->show_frame);
+  if (cm->seq_params->order_hint_info.enable_order_hint) {
+    aom_bitstream_queue_set_frame_read(cm->current_frame.order_hint * 2 +
+                                       cm->show_frame);
+  } else {
+    // This is currently used in RTC encoding. cm->show_frame is always 1.
+    assert(cm->show_frame);
+    aom_bitstream_queue_set_frame_read(cm->current_frame.frame_number);
+  }
 #endif
 #if CONFIG_MISMATCH_DEBUG
   mismatch_move_frame_idx_r();
@@ -5179,13 +5211,12 @@ uint32_t av1_decode_frame_headers_and_setup(AV1Decoder *pbi,
 static AOM_INLINE void setup_frame_info(AV1Decoder *pbi) {
   AV1_COMMON *const cm = &pbi->common;
 
-#if !CONFIG_REALTIME_ONLY
   if (cm->rst_info[0].frame_restoration_type != RESTORE_NONE ||
       cm->rst_info[1].frame_restoration_type != RESTORE_NONE ||
       cm->rst_info[2].frame_restoration_type != RESTORE_NONE) {
     av1_alloc_restoration_buffers(cm);
   }
-#endif
+
   const int use_highbd = cm->seq_params->use_highbitdepth;
   const int buf_size = MC_TEMP_BUF_PELS << use_highbd;
   if (pbi->td.mc_buf_size != buf_size) {
@@ -5242,8 +5273,6 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
          cm->cdef_info.cdef_uv_strengths[0]);
     const int do_superres = av1_superres_scaled(cm);
     const int optimized_loop_restoration = !do_cdef && !do_superres;
-
-#if !CONFIG_REALTIME_ONLY
     const int do_loop_restoration =
         cm->rst_info[0].frame_restoration_type != RESTORE_NONE ||
         cm->rst_info[1].frame_restoration_type != RESTORE_NONE ||
@@ -5296,20 +5325,6 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
         }
       }
     }
-#else
-    if (!optimized_loop_restoration) {
-      if (do_cdef) {
-        if (pbi->num_workers > 1) {
-          av1_cdef_frame_mt(cm, &pbi->dcb.xd, pbi->cdef_worker,
-                            pbi->tile_workers, &pbi->cdef_sync,
-                            pbi->num_workers, av1_cdef_init_fb_row_mt);
-        } else {
-          av1_cdef_frame(&pbi->common.cur_frame->buf, cm, &pbi->dcb.xd,
-                         av1_cdef_init_fb_row);
-        }
-      }
-    }
-#endif  // !CONFIG_REALTIME_ONLY
   }
 
   if (!pbi->dcb.corrupted) {
@@ -5332,5 +5347,9 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
   // Non frame parallel update frame context here.
   if (!tiles->large_scale) {
     cm->cur_frame->frame_context = *cm->fc;
+  }
+
+  if (cm->show_frame && !cm->seq_params->order_hint_info.enable_order_hint) {
+    ++cm->current_frame.frame_number;
   }
 }

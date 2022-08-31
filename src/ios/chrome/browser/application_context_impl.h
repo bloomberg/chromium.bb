@@ -18,7 +18,6 @@ class SequencedTaskRunner;
 }
 
 namespace breadcrumbs {
-class BreadcrumbManager;
 class BreadcrumbPersistentStorageManager;
 }
 
@@ -81,6 +80,7 @@ class ApplicationContextImpl : public ApplicationContext {
   BrowserPolicyConnectorIOS* GetBrowserPolicyConnector() override;
   breadcrumbs::BreadcrumbPersistentStorageManager*
   GetBreadcrumbPersistentStorageManager() override;
+  id<SingleSignOnService> GetSSOService() override;
 
  private:
   // Sets the locale used by the application.
@@ -94,11 +94,8 @@ class ApplicationContextImpl : public ApplicationContext {
 
   base::ThreadChecker thread_checker_;
 
-  // Breadcrumb manager used to store application wide breadcrumb events. Will
-  // be null if breadcrumbs feature is not enabled.
-  std::unique_ptr<breadcrumbs::BreadcrumbManager> breadcrumb_manager_;
-  // Logger which observers and logs application wide events to
-  // |breadcrumb_manager_|. Will be null if breadcrumbs feature is not enabled.
+  // Logger which observers and logs application wide events to breadcrumbs.
+  // Will be null if breadcrumbs feature is not enabled.
   std::unique_ptr<ApplicationBreadcrumbsLogger> application_breadcrumbs_logger_;
 
   // Must be destroyed after |local_state_|. BrowserStatePolicyConnector isn't a
@@ -126,6 +123,8 @@ class ApplicationContextImpl : public ApplicationContext {
       network_connection_tracker_;
 
   scoped_refptr<SafeBrowsingService> safe_browsing_service_;
+
+  __strong id<SingleSignOnService> single_sign_on_service_ = nil;
 };
 
 #endif  // IOS_CHROME_BROWSER_APPLICATION_CONTEXT_IMPL_H_

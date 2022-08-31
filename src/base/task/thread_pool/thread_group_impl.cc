@@ -27,6 +27,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool/task_tracker.h"
 #include "base/threading/platform_thread.h"
@@ -38,12 +39,12 @@
 #include "build/build_config.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/scoped_windows_thread_environment.h"
 #include "base/win/scoped_winrt_initializer.h"
 #include "base/win/windows_version.h"
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
 namespace base {
 namespace internal {
@@ -182,7 +183,8 @@ class ThreadGroupImpl::ScopedCommandsExecutor
     // enters its main function, is descheduled because it wasn't woken up yet,
     // and is woken up immediately after.
     workers_to_start_.ForEachWorker([&](WorkerThread* worker) {
-      worker->Start(outer_->after_start().worker_thread_observer);
+      worker->Start(outer_->after_start().service_thread_task_runner,
+                    outer_->after_start().worker_thread_observer);
       if (outer_->worker_started_for_testing_)
         outer_->worker_started_for_testing_->Wait();
     });
@@ -298,9 +300,9 @@ class ThreadGroupImpl::WorkerThreadDelegateImpl : public WorkerThread::Delegate,
     // Associated WorkerThread, if any, initialized in OnMainEntry().
     raw_ptr<WorkerThread> worker_thread_;
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
     std::unique_ptr<win::ScopedWindowsThreadEnvironment> win_thread_environment;
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
   } worker_only_;
 
   // Writes from the worker thread protected by |outer_->lock_|. Reads from any
@@ -385,10 +387,10 @@ ThreadGroupImpl::ThreadGroupImpl(StringPiece histogram_label,
 }
 
 void ThreadGroupImpl::Start(
-    int max_tasks,
-    int max_best_effort_tasks,
+    size_t max_tasks,
+    size_t max_best_effort_tasks,
     TimeDelta suggested_reclaim_time,
-    scoped_refptr<SequencedTaskRunner> service_thread_task_runner,
+    scoped_refptr<SingleThreadTaskRunner> service_thread_task_runner,
     WorkerThreadObserver* worker_thread_observer,
     WorkerEnvironment worker_environment,
     bool synchronous_thread_start_for_testing,
@@ -571,10 +573,10 @@ void ThreadGroupImpl::WorkerThreadDelegateImpl::OnMainEntry(
 #endif
   }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   worker_only().win_thread_environment = GetScopedWindowsThreadEnvironment(
       outer_->after_start().worker_environment);
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
   PlatformThread::SetName(
       StringPrintf("ThreadPool%sWorker", outer_->thread_group_label_.c_str()));
@@ -761,7 +763,8 @@ void ThreadGroupImpl::WorkerThreadDelegateImpl::CleanupLockRequired(
   if (outer_->num_tasks_before_detach_histogram_) {
     executor->ScheduleAddHistogramSample(
         outer_->num_tasks_before_detach_histogram_,
-        worker_only().num_tasks_since_last_detach);
+        saturated_cast<HistogramBase::Sample>(
+            worker_only().num_tasks_since_last_detach));
   }
   worker->Cleanup();
   outer_->idle_workers_stack_.Remove(worker);
@@ -803,9 +806,9 @@ void ThreadGroupImpl::WorkerThreadDelegateImpl::OnMainExit(
   }
 #endif
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   worker_only().win_thread_environment.reset();
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
   // Count cleaned up workers for tests. It's important to do this here instead
   // of at the end of CleanupLockRequired() because some side-effects of
@@ -1172,7 +1175,7 @@ void ThreadGroupImpl::AdjustMaxTasks() {
 void ThreadGroupImpl::ScheduleAdjustMaxTasks() {
   // |adjust_max_tasks_posted_| can't change before the task posted below runs.
   // Skip check on NaCl to avoid unsafe reference acquisition warning.
-#if !defined(OS_NACL)
+#if !BUILDFLAG(IS_NACL)
   DCHECK(TS_UNCHECKED_READ(adjust_max_tasks_posted_));
 #endif
 

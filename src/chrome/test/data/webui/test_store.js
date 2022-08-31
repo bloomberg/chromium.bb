@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {Store} from 'chrome://resources/js/cr/ui/store.js';
+import {Action, Store} from 'chrome://resources/js/cr/ui/store.js';
 import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
 
 /**
@@ -62,10 +62,10 @@ export class TestStore extends Store {
   }
 
   /** @override */
-  reduce_(action) {
+  reduce(action) {
     this.lastAction_ = action;
     if (this.enableReducers_) {
-      this.storeImplClass.prototype.reduce_.call(this, action);
+      this.storeImplClass.prototype.reduce.call(this, action);
     }
     if (this.resolverMap_.has(action.name)) {
       this.resolverMap_.get(action.name).resolve(action);

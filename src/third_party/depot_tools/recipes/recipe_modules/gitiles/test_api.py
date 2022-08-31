@@ -90,12 +90,23 @@ class GitilesTestApi(recipe_test_api.RecipeTestApi):
     return hashlib.sha1(':'.join(bases).encode('utf-8')).hexdigest()
 
   def make_encoded_file(self, data):
-    value = None
-    # TODO(crbug.com/1227140): Clean up when py2 is no longer supported.
-    try:
-      value = base64.b64encode(data.encode('utf-8')).decode('utf-8')
-    except UnicodeDecodeError:  #pragma: nocover
-      value = base64.b64encode(data)
+    """Encodes data into base64.
+
+    Args:
+      data (str): unicode-encodable string.
+    Returns: (str) base64-encoded data string.
+    """
     return self.m.json.output({
-        'value': value,
+        'value': base64.b64encode(data.encode('utf-8')).decode('utf-8'),
+    })
+
+  def make_encoded_file_from_bytes(self, data):
+    """Encodes data into base64.
+
+    Args:
+      data (bytes): byte string to encode.
+    Returns: (str) base64-encoded data string.
+    """
+    return self.m.json.output({
+        'value': base64.b64encode(data).decode('utf-8'),
     })

@@ -6,6 +6,8 @@
 
 #include "fpdfsdk/cpdfsdk_baannot.h"
 
+#include <vector>
+
 #include "constants/annotation_common.h"
 #include "constants/annotation_flags.h"
 #include "constants/form_fields.h"
@@ -17,8 +19,12 @@
 #include "core/fpdfapi/parser/cpdf_stream.h"
 #include "core/fpdfapi/parser/cpdf_string.h"
 #include "core/fpdfapi/parser/fpdf_parser_decode.h"
+#include "core/fpdfapi/parser/fpdf_parser_utility.h"
+#include "core/fxge/cfx_drawutils.h"
+#include "fpdfsdk/cpdfsdk_formfillenvironment.h"
 #include "fpdfsdk/cpdfsdk_pageview.h"
 #include "third_party/base/check.h"
+#include "third_party/base/containers/contains.h"
 
 CPDFSDK_BAAnnot::CPDFSDK_BAAnnot(CPDF_Annot* pAnnot,
                                  CPDFSDK_PageView* pPageView)
@@ -27,6 +33,10 @@ CPDFSDK_BAAnnot::CPDFSDK_BAAnnot(CPDF_Annot* pAnnot,
 CPDFSDK_BAAnnot::~CPDFSDK_BAAnnot() = default;
 
 CPDFSDK_BAAnnot* CPDFSDK_BAAnnot::AsBAAnnot() {
+  return this;
+}
+
+CPDFSDK_Annot::UnsafeInputHandlers* CPDFSDK_BAAnnot::GetUnsafeInputHandlers() {
   return this;
 }
 
@@ -43,11 +53,17 @@ CPDF_Dictionary* CPDFSDK_BAAnnot::GetAnnotDict() const {
 }
 
 CPDF_Dictionary* CPDFSDK_BAAnnot::GetAPDict() const {
-  CPDF_Dictionary* pAPDict =
-      GetAnnotDict()->GetDictFor(pdfium::annotation::kAP);
-  if (pAPDict)
-    return pAPDict;
-  return GetAnnotDict()->SetNewFor<CPDF_Dictionary>(pdfium::annotation::kAP);
+  return GetOrCreateDict(GetAnnotDict(), pdfium::annotation::kAP);
+}
+
+void CPDFSDK_BAAnnot::ClearCachedAnnotAP() {
+  m_pAnnot->ClearCachedAP();
+}
+
+bool CPDFSDK_BAAnnot::IsFocusableAnnot(
+    const CPDF_Annot::Subtype& annot_type) const {
+  return pdfium::Contains(
+      m_pPageView->GetFormFillEnv()->GetFocusableAnnotSubtypes(), annot_type);
 }
 
 CFX_FloatRect CPDFSDK_BAAnnot::GetRect() const {
@@ -71,10 +87,11 @@ bool CPDFSDK_BAAnnot::IsAppearanceValid() {
 
 void CPDFSDK_BAAnnot::SetAnnotName(const WideString& sName) {
   CPDF_Dictionary* pDict = GetAnnotDict();
-  if (sName.IsEmpty())
+  if (sName.IsEmpty()) {
     pDict->RemoveFor(pdfium::annotation::kNM);
-  else
-    pDict->SetNewFor<CPDF_String>(pdfium::annotation::kNM, sName);
+    return;
+  }
+  pDict->SetNewFor<CPDF_String>(pdfium::annotation::kNM, sName.AsStringView());
 }
 
 WideString CPDFSDK_BAAnnot::GetAnnotName() const {
@@ -105,9 +122,7 @@ void CPDFSDK_BAAnnot::SetBorderWidth(int nWidth) {
   if (pBorder) {
     pBorder->SetNewAt<CPDF_Number>(2, nWidth);
   } else {
-    CPDF_Dictionary* pBSDict = GetAnnotDict()->GetDictFor("BS");
-    if (!pBSDict)
-      pBSDict = GetAnnotDict()->SetNewFor<CPDF_Dictionary>("BS");
+    CPDF_Dictionary* pBSDict = GetOrCreateDict(GetAnnotDict(), "BS");
     pBSDict->SetNewFor<CPDF_Number>("W", nWidth);
   }
 }
@@ -125,10 +140,7 @@ int CPDFSDK_BAAnnot::GetBorderWidth() const {
 }
 
 void CPDFSDK_BAAnnot::SetBorderStyle(BorderStyle nStyle) {
-  CPDF_Dictionary* pBSDict = GetAnnotDict()->GetDictFor("BS");
-  if (!pBSDict)
-    pBSDict = GetAnnotDict()->SetNewFor<CPDF_Dictionary>("BS");
-
+  CPDF_Dictionary* pBSDict = GetOrCreateDict(GetAnnotDict(), "BS");
   const char* name = nullptr;
   switch (nStyle) {
     case BorderStyle::kSolid:
@@ -212,11 +224,194 @@ void CPDFSDK_BAAnnot::SetOpenState(bool bOpenState) {
     pAnnot->SetOpenState(bOpenState);
 }
 
+void CPDFSDK_BAAnnot::UpdateAnnotRects() {
+  std::vector<CFX_FloatRect> rects;
+  rects.push_back(GetRect());
+  CPDF_Annot* popup = GetPDFPopupAnnot();
+  if (popup)
+    rects.push_back(popup->GetRect());
+
+  // Make the rects round up to avoid https://crbug.com/662804
+  for (CFX_FloatRect& rect : rects)
+    rect.Inflate(1, 1);
+
+  GetPageView()->UpdateRects(rects);
+}
+
+void CPDFSDK_BAAnnot::InvalidateRect() {
+  CFX_FloatRect view_bounding_box = GetViewBBox();
+  if (view_bounding_box.IsEmpty())
+    return;
+
+  view_bounding_box.Inflate(1, 1);
+  view_bounding_box.Normalize();
+  FX_RECT rect = view_bounding_box.GetOuterRect();
+  m_pPageView->GetFormFillEnv()->Invalidate(GetPage(), rect);
+}
+
 int CPDFSDK_BAAnnot::GetLayoutOrder() const {
   if (m_pAnnot->GetSubtype() == CPDF_Annot::Subtype::POPUP)
     return 1;
 
   return CPDFSDK_Annot::GetLayoutOrder();
+}
+
+void CPDFSDK_BAAnnot::OnDraw(CFX_RenderDevice* pDevice,
+                             const CFX_Matrix& mtUser2Device,
+                             bool bDrawAnnots) {
+  if (!IsVisible())
+    return;
+
+  const CPDF_Annot::Subtype annot_type = GetAnnotSubtype();
+  if (bDrawAnnots && annot_type == CPDF_Annot::Subtype::POPUP) {
+    DrawAppearance(pDevice, mtUser2Device, CPDF_Annot::AppearanceMode::kNormal);
+    return;
+  }
+
+  if (!is_focused_ || !IsFocusableAnnot(annot_type) ||
+      this != m_pPageView->GetFormFillEnv()->GetFocusAnnot()) {
+    return;
+  }
+
+  CFX_FloatRect view_bounding_box = GetViewBBox();
+  if (view_bounding_box.IsEmpty())
+    return;
+
+  view_bounding_box.Normalize();
+  CFX_DrawUtils::DrawFocusRect(pDevice, mtUser2Device, view_bounding_box);
+}
+
+bool CPDFSDK_BAAnnot::DoHitTest(const CFX_PointF& point) {
+  return false;
+}
+
+CFX_FloatRect CPDFSDK_BAAnnot::GetViewBBox() {
+  return GetRect();
+}
+
+void CPDFSDK_BAAnnot::OnMouseEnter(Mask<FWL_EVENTFLAG> nFlags) {
+  SetOpenState(true);
+  UpdateAnnotRects();
+}
+
+void CPDFSDK_BAAnnot::OnMouseExit(Mask<FWL_EVENTFLAG> nFlags) {
+  SetOpenState(false);
+  UpdateAnnotRects();
+}
+
+bool CPDFSDK_BAAnnot::OnLButtonDown(Mask<FWL_EVENTFLAG> nFlags,
+                                    const CFX_PointF& point) {
+  return false;
+}
+
+bool CPDFSDK_BAAnnot::OnLButtonUp(Mask<FWL_EVENTFLAG> nFlags,
+                                  const CFX_PointF& point) {
+  return false;
+}
+
+bool CPDFSDK_BAAnnot::OnLButtonDblClk(Mask<FWL_EVENTFLAG> nFlags,
+                                      const CFX_PointF& point) {
+  return false;
+}
+
+bool CPDFSDK_BAAnnot::OnMouseMove(Mask<FWL_EVENTFLAG> nFlags,
+                                  const CFX_PointF& point) {
+  return false;
+}
+
+bool CPDFSDK_BAAnnot::OnMouseWheel(Mask<FWL_EVENTFLAG> nFlags,
+                                   const CFX_PointF& point,
+                                   const CFX_Vector& delta) {
+  return false;
+}
+
+bool CPDFSDK_BAAnnot::OnRButtonDown(Mask<FWL_EVENTFLAG> nFlags,
+                                    const CFX_PointF& point) {
+  return false;
+}
+
+bool CPDFSDK_BAAnnot::OnRButtonUp(Mask<FWL_EVENTFLAG> nFlags,
+                                  const CFX_PointF& point) {
+  return false;
+}
+
+bool CPDFSDK_BAAnnot::OnChar(uint32_t nChar, Mask<FWL_EVENTFLAG> nFlags) {
+  return false;
+}
+
+bool CPDFSDK_BAAnnot::OnKeyDown(FWL_VKEYCODE nKeyCode,
+                                Mask<FWL_EVENTFLAG> nFlags) {
+  // OnKeyDown() is implemented only for link annotations for now. As
+  // OnKeyDown() is implemented for other subtypes, following check should be
+  // modified.
+  if (nKeyCode != FWL_VKEY_Return ||
+      GetAnnotSubtype() != CPDF_Annot::Subtype::LINK) {
+    return false;
+  }
+
+  CPDF_Action action = GetAAction(CPDF_AAction::kKeyStroke);
+  CPDFSDK_FormFillEnvironment* env = m_pPageView->GetFormFillEnv();
+  if (action.GetDict()) {
+    return env->DoActionLink(action, CPDF_AAction::kKeyStroke, nFlags);
+  }
+
+  return env->DoActionDestination(GetDestination());
+}
+
+bool CPDFSDK_BAAnnot::OnSetFocus(Mask<FWL_EVENTFLAG> nFlags) {
+  if (!IsFocusableAnnot(GetAnnotSubtype()))
+    return false;
+
+  is_focused_ = true;
+  InvalidateRect();
+  return true;
+}
+
+bool CPDFSDK_BAAnnot::OnKillFocus(Mask<FWL_EVENTFLAG> nFlags) {
+  if (!IsFocusableAnnot(GetAnnotSubtype()))
+    return false;
+
+  is_focused_ = false;
+  InvalidateRect();
+  return true;
+}
+
+bool CPDFSDK_BAAnnot::CanUndo() {
+  return false;
+}
+
+bool CPDFSDK_BAAnnot::CanRedo() {
+  return false;
+}
+
+bool CPDFSDK_BAAnnot::Undo() {
+  return false;
+}
+
+bool CPDFSDK_BAAnnot::Redo() {
+  return false;
+}
+
+WideString CPDFSDK_BAAnnot::GetText() {
+  return WideString();
+}
+
+WideString CPDFSDK_BAAnnot::GetSelectedText() {
+  return WideString();
+}
+
+void CPDFSDK_BAAnnot::ReplaceSelection(const WideString& text) {}
+
+bool CPDFSDK_BAAnnot::SelectAllText() {
+  return false;
+}
+
+bool CPDFSDK_BAAnnot::SetIndexSelected(int index, bool selected) {
+  return false;
+}
+
+bool CPDFSDK_BAAnnot::IsIndexSelected(int index) {
+  return false;
 }
 
 CPDF_Dest CPDFSDK_BAAnnot::GetDestination() const {

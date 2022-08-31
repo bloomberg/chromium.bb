@@ -56,11 +56,10 @@ function getLocaleFetchUrl(locale: Intl.UnicodeBCP47LocaleIdentifier): string {
  * fetched locally or remotely.
  */
 export async function fetchAndRegisterLocaleData(locale: Intl.UnicodeBCP47LocaleIdentifier): Promise<void> {
-  const localeDataTextPromise = Root.Runtime.loadResourcePromise(getLocaleFetchUrl(locale));
+  const localeDataTextPromise = fetch(getLocaleFetchUrl(locale)).then(result => result.json());
   const timeoutPromise =
-      new Promise((resolve, reject) => setTimeout(() => reject(new Error('timed out fetching locale')), 5000));
-  const localeDataText = await Promise.race([timeoutPromise, localeDataTextPromise]);
-  const localeData = JSON.parse(localeDataText as string);
+      new Promise((resolve, reject) => window.setTimeout(() => reject(new Error('timed out fetching locale')), 5000));
+  const localeData = await Promise.race([timeoutPromise, localeDataTextPromise]);
   i18nInstance.registerLocaleData(locale, localeData);
 }
 
@@ -104,40 +103,18 @@ export function getFormatLocalizedString(
   const formatter =
       registeredStrings.getLocalizedStringSetFor(DevToolsLocale.instance().locale).getMessageFormatterFor(stringId);
 
-  const icuElements = formatter.getAst();
-  const args: Array<Object> = [];
-  let formattedString = '';
-  for (const element of icuElements) {
-    if (element.type === /* argumentElement */ 1) {
-      const placeholderValue = placeholders[element.value];
+  const element = document.createElement('span');
+  for (const icuElement of formatter.getAst()) {
+    if (icuElement.type === /* argumentElement */ 1) {
+      const placeholderValue = placeholders[icuElement.value];
       if (placeholderValue) {
-        args.push(placeholderValue);
-        element.value = '%s';  // convert the {PH} back to %s to use Platform.UIString
+        element.append(placeholderValue as Node | string);
       }
-    }
-    if ('value' in element) {
-      formattedString += element.value;
+    } else if ('value' in icuElement) {
+      element.append(String(icuElement.value));
     }
   }
-  return formatLocalized(formattedString, args);
-}
-
-export function formatLocalized(formattedString: string, args: Array<Object>): Element {
-  const substitution: Platform.StringUtilities.FormatterFunction<Object> = substitution => {
-    return substitution;
-  };
-
-  function append(a: Element, b: undefined|string|Node): Element {
-    if (b) {
-      a.appendChild(typeof b === 'string' ? document.createTextNode(b) : b);
-    }
-
-    return a;
-  }
-
-  const formatters = {s: substitution};
-  return Platform.StringUtilities.format(formattedString, args, formatters, document.createElement('span'), append)
-      .formattedResult;
+  return element;
 }
 
 export function serializeUIString(string: string, values: Record<string, Object> = {}): string {
@@ -180,13 +157,11 @@ export function lockedLazyString(str: string): () => Platform.UIString.Localized
 export function getLocalizedLanguageRegion(
     localeString: Intl.UnicodeBCP47LocaleIdentifier,
     devtoolsLocale: DevToolsLocale): Platform.UIString.LocalizedString {
-  // @ts-ignore TODO(crbug.com/1163928) Wait for Intl support.
   const locale = new Intl.Locale(localeString);
   Platform.DCHECK(() => locale.language !== undefined);
   Platform.DCHECK(() => locale.baseName !== undefined);
   const localLanguage = locale.language || 'en';
   const localBaseName = locale.baseName || 'en-US';
-  // @ts-ignore TODO(crbug.com/1163928) Wait for Intl support.
   const devtoolsLoc = new Intl.Locale(devtoolsLocale.locale);
   const targetLanguage = localLanguage === devtoolsLoc.language ? 'en' : localBaseName;
   const languageInCurrentLocale = new Intl.DisplayNames([devtoolsLocale.locale], {type: 'language'}).of(localLanguage);

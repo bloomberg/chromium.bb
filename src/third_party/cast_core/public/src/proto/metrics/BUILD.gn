@@ -13,8 +13,10 @@
 # limitations under the License.
 
 import("//third_party/cast_core/public/src/proto/proto.gni")
-cast_core_grpc_library("metrics_recorder") {
+cast_core_grpc_library("metrics_recorder_proto") {
     sources = [
         "metrics_recorder.proto",
     ]
+    generate_castcore_stubs = true
+    proto_in_dir = "//third_party/cast_core/public/src"
 }

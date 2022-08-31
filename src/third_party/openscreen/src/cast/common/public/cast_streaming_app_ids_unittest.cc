@@ -25,11 +25,22 @@ TEST(CastStreamingAppIdsTest, Test) {
   EXPECT_FALSE(IsCastStreamingAudioOnlyAppId("DEADBEEF"));
 
   EXPECT_TRUE(IsCastStreamingReceiverAppId("0F5096E8"));
+  EXPECT_TRUE(IsCastStreamingReceiverAppId("0F5096e8"));
   EXPECT_TRUE(IsCastStreamingReceiverAppId("85CDB22F"));
+  EXPECT_TRUE(IsCastStreamingReceiverAppId("85cdB22F"));
   EXPECT_TRUE(IsCastStreamingReceiverAppId("674A0243"));
   EXPECT_TRUE(IsCastStreamingReceiverAppId("8E6C866D"));
+  EXPECT_TRUE(IsCastStreamingReceiverAppId("8e6C866D"));
   EXPECT_TRUE(IsCastStreamingReceiverAppId("96084372"));
   EXPECT_TRUE(IsCastStreamingReceiverAppId("BFD92C23"));
+  EXPECT_TRUE(IsCastStreamingReceiverAppId("35708D08"));
+  EXPECT_TRUE(IsCastStreamingReceiverAppId("35708d08"));
+  EXPECT_TRUE(IsCastStreamingReceiverAppId("E28F3A40"));
+  EXPECT_TRUE(IsCastStreamingReceiverAppId("5864F981"));
+  EXPECT_TRUE(IsCastStreamingReceiverAppId("225DAEF5"));
+  EXPECT_TRUE(IsCastStreamingReceiverAppId("225daef5"));
+  EXPECT_TRUE(IsCastStreamingReceiverAppId("D4BA69B9"));
+  EXPECT_TRUE(IsCastStreamingReceiverAppId("B27C9432"));
   EXPECT_FALSE(IsCastStreamingReceiverAppId("DEADBEEF"));
   EXPECT_FALSE(IsCastStreamingReceiverAppId(""));
   EXPECT_FALSE(IsCastStreamingReceiverAppId("foo"));

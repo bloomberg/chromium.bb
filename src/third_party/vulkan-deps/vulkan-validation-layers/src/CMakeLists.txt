@@ -1,6 +1,6 @@
 # ~~~
-# Copyright (c) 2014-2021 Valve Corporation
-# Copyright (c) 2014-2021 LunarG, Inc.
+# Copyright (c) 2014-2022 Valve Corporation
+# Copyright (c) 2014-2022 LunarG, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -188,9 +188,9 @@ if(MAKE_C_COMPILER_ID MATCHES "Clang")
                         #      Leave off until further investigation.
                         -Wno-sign-conversion
                         -Wno-shorten-64-to-32
-                        -Wno-string-conversion
                         -Wno-implicit-int-conversion
-                        -Wno-enum-enum-conversion)
+                        -Wno-enum-enum-conversion
+                        -Wstring-conversion)
 
 endif()
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_C_COMPILER_ID MATCHES "Clang")
@@ -233,29 +233,53 @@ elseif(MSVC)
     add_compile_options("/w34245")
 endif()
 
-if(MAKE_C_COMPILER_ID MATCHES "Clang")
-    add_compile_options(-Wconversion
-
-                        # TODO These warnings also get turned on with -Wconversion in some versions of clang.
-                        #      Leave off until further investigation.
-                        -Wno-sign-conversion
-                        -Wno-shorten-64-to-32
-                        -Wno-string-conversion
-                        -Wno-implicit-int-conversion
-                        -Wno-enum-enum-conversion)
-
-endif()
-
 option(INSTALL_TESTS "Install tests" OFF)
 option(BUILD_LAYERS "Build layers" ON)
 option(BUILD_LAYER_SUPPORT_FILES "Generate layer files" OFF) # For generating files when not building layers
 option(USE_ROBIN_HOOD_HASHING "Use robin-hood-hashing" ON)
 if (USE_ROBIN_HOOD_HASHING)
-    find_package(robin_hood REQUIRED CONFIG)
+    if (NOT TARGET robin_hood::robin_hood)
+        find_package(robin_hood REQUIRED CONFIG)
+    endif()
 endif()
 
 if(BUILD_LAYERS OR BUILD_TESTS)
-    find_package(SPIRV-Headers REQUIRED CONFIG)
+    find_package(SPIRV-Headers CONFIG QUIET)
+    if(SPIRV-Headers_FOUND)
+	# pefer the package if found. Note that if SPIRV_HEADERS_INSTALL_DIR points at an 'installed'
+	# version of SPIRV-Headers, the package will be found.
+	get_target_property(SPIRV_HEADERS_INCLUDE_DIR SPIRV-Headers::SPIRV-Headers INTERFACE_INCLUDE_DIRECTORIES)
+    elseif(SPIRV_HEADERS_INCLUDE_DIR)
+	# This is set by SPIRV-Tools (in parent scope!) and also some packages that include VVL with add_subdirectory
+	if (NOT EXISTS "${SPIRV_HEADERS_INCLUDE_DIR}/spirv/unified1/spirv.h")
+	    message(FATAL_ERROR "Cannot find SPIRV-Headers from SPIRV_HEADERS_INCLUDE_DIR: ${SPIRV_HEADERS_INCLUDE_DIR}")
+        endif()
+    elseif(SPIRV_HEADERS_INSTALL_DIR)
+        # This is our official variable for setting SPIRV-Headers location, but pointing at the raw source of SPIRV-Headers
+	if (NOT EXISTS "${SPIRV_HEADERS_INSTALL_DIR}/include/spirv/unified1/spirv.h")
+	    message(FATAL_ERROR "Cannot find SPIRV-Headers from SPIRV_HEADERS_INSTALL_DIR: ${SPIRV_HEADERS_INSTALL_DIR}")
+        endif()
+	set(SPIRV_HEADERS_INCLUDE_DIR "${SPIRV_HEADERS_INSTALL_DIR}/include")
+    endif()
+    if (NOT TARGET SPIRV-Tools)
+        find_package(SPIRV-Tools REQUIRED CONFIG)
+	# See https://github.com/KhronosGroup/SPIRV-Tools/issues/3909 for background on this.
+	# The targets available from SPIRV-Tools change depending on how SPIRV_TOOLS_BUILD_STATIC is set.
+	# Try to handle all possible combinations so that we work with externally built packages.
+	if (TARGET SPIRV-Tools)
+	    set(SPIRV_TOOLS_TARGET "SPIRV-Tools")
+	elseif(TARGET SPIRV-Tools-static)
+	    set(SPIRV_TOOLS_TARGET "SPIRV-Tools-static")
+	elseif(TARGET SPIRV-Tools-shared)
+	    set(SPIRV_TOOLS_TARGET "SPIRV-Tools-shared")
+	else()
+	    message(FATAL_ERROR "Cannot determine SPIRV-Tools target name")
+	endif()
+    endif()
+    # Thankfully SPIRV-Tools-opt has only one target name.
+    if (NOT TARGET SPIRV-Tools-opt)
+        find_package(SPIRV-Tools-opt REQUIRED CONFIG)
+    endif()
 endif()
 
 if(BUILD_TESTS)
@@ -318,7 +342,7 @@ add_library(VkLayer_utils
             layers/vk_layer_config.cpp
             layers/vk_layer_extension_utils.cpp
             layers/vk_layer_utils.cpp
-            layers/vk_format_utils.cpp)
+            layers/generated/vk_format_utils.cpp)
 target_link_libraries(VkLayer_utils PUBLIC Vulkan::Headers)
 set_target_properties(VkLayer_utils PROPERTIES CXX_STANDARD ${VVL_CPP_STANDARD})
 if (VVL_ENABLE_ASAN)

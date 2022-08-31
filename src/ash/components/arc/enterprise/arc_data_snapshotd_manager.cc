@@ -9,6 +9,7 @@
 #include "ash/components/arc/arc_prefs.h"
 #include "ash/components/arc/enterprise/arc_data_remove_requested_pref_handler.h"
 #include "ash/components/arc/enterprise/arc_data_snapshotd_bridge.h"
+#include "ash/components/cryptohome/cryptohome_parameters.h"
 #include "ash/constants/ash_switches.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -20,9 +21,8 @@
 #include "base/system/sys_info.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "chromeos/cryptohome/cryptohome_parameters.h"
+#include "chromeos/ash/components/dbus/upstart/upstart_client.h"
 #include "chromeos/dbus/constants/dbus_switches.h"
-#include "chromeos/dbus/upstart/upstart_client.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
@@ -53,8 +53,8 @@ constexpr base::TimeDelta kSnapshotMaxLifetime = base::Days(30);
 bool IsRestoredSession() {
   auto* command_line = base::CommandLine::ForCurrentProcess();
 
-  return command_line->HasSwitch(chromeos::switches::kLoginUser) &&
-         !command_line->HasSwitch(chromeos::switches::kLoginManager);
+  return command_line->HasSwitch(ash::switches::kLoginUser) &&
+         !command_line->HasSwitch(ash::switches::kLoginManager);
 }
 
 // Returns true if it is the first Chrome start up after reboot.
@@ -75,7 +75,9 @@ void EnableHeadlessMode() {
   auto* command_line = base::CommandLine::ForCurrentProcess();
   command_line->AppendSwitchASCII(switches::kOzonePlatform, kHeadless);
   command_line->AppendSwitchASCII(switches::kUseGL,
-                                  gl::kGLImplementationSwiftShaderName);
+                                  gl::kGLImplementationANGLEName);
+  command_line->AppendSwitchASCII(switches::kUseANGLE,
+                                  gl::kANGLEImplementationSwiftShaderName);
 }
 
 // Disables D-Bus clients:
@@ -255,7 +257,7 @@ ArcDataSnapshotdManager::Snapshot::CreateForTesting(
 }
 
 void ArcDataSnapshotdManager::Snapshot::Parse() {
-  const base::DictionaryValue* dict =
+  const base::Value* dict =
       local_state_->GetDictionary(arc::prefs::kArcSnapshotInfo);
   if (!dict)
     return;
@@ -415,7 +417,7 @@ void ArcDataSnapshotdManager::EnsureDaemonStarted(base::OnceClosure callback) {
   }
   VLOG(1) << "Starting arc-data-snapshotd";
   daemon_weak_ptr_factory_.InvalidateWeakPtrs();
-  chromeos::UpstartClient::Get()->StartArcDataSnapshotd(
+  ash::UpstartClient::Get()->StartArcDataSnapshotd(
       GetStartEnvVars(),
       base::BindOnce(&ArcDataSnapshotdManager::OnDaemonStarted,
                      daemon_weak_ptr_factory_.GetWeakPtr(),
@@ -665,7 +667,7 @@ void ArcDataSnapshotdManager::OnLocalStateInitialized(bool initialized) {
 void ArcDataSnapshotdManager::StopDaemon(base::OnceClosure callback) {
   VLOG(1) << "Stopping arc-data-snapshotd";
   daemon_weak_ptr_factory_.InvalidateWeakPtrs();
-  chromeos::UpstartClient::Get()->StopArcDataSnapshotd(base::BindOnce(
+  ash::UpstartClient::Get()->StopArcDataSnapshotd(base::BindOnce(
       &ArcDataSnapshotdManager::OnDaemonStopped,
       daemon_weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }

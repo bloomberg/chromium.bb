@@ -83,7 +83,7 @@ private:
             // For visualization purposes, we want the output bounds in layer space, before it's
             // been transformed to device space. To achieve that, we mock a new mapping with the
             // identity matrix transform.
-            skif::Mapping layerOnly = skif::Mapping(SkMatrix::I(), fMapping.layerMatrix());
+            skif::Mapping layerOnly{fMapping.layerMatrix()};
             skif::DeviceSpace<SkIRect> pseudoDeviceBounds =
                     as_IFB(fFilter)->getOutputBounds(layerOnly, fContent);
             // Since layerOnly's device matrix is I, this is effectively a cast to layer space
@@ -146,7 +146,7 @@ static void draw_node(SkCanvas* canvas, const FilterNode& node) {
     line.setStyle(SkPaint::kStroke_Style);
 
     canvas->save();
-    canvas->concat(node.fMapping.deviceMatrix());
+    canvas->concat(node.fMapping.layerToDevice());
     canvas->save();
     canvas->concat(node.fMapping.layerMatrix());
 
@@ -221,8 +221,13 @@ static float print_info(SkCanvas* canvas, const FilterNode& node) {
             // The mapping is the same for all nodes, so only print at the root
             y = print_matrix(canvas, "Param->Layer", node.fMapping.layerMatrix(),
                         kLineInset, y, font, text);
-            y = print_matrix(canvas, "Layer->Device", node.fMapping.deviceMatrix(),
-                        kLineInset, y, font, text);
+            y = print_matrix(canvas,
+                             "Layer->Device",
+                             node.fMapping.layerToDevice(),
+                             kLineInset,
+                             y,
+                             font,
+                             text);
         }
 
         y = print_size(canvas, "Layer Size", SkIRect(node.fUnhintedLayerBounds),

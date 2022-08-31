@@ -33,10 +33,10 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/task/single_thread_task_runner.h"
+#include "base/time/time.h"
 #include "base/types/pass_key.h"
 #include "build/build_config.h"
 #include "cc/input/event_listener_properties.h"
-#include "cc/input/layer_selection_bound.h"
 #include "cc/input/overscroll_behavior.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/paint_holding_reason.h"
@@ -56,9 +56,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/exported/web_page_popup_impl.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
-#include "third_party/blink/renderer/core/html/battery_savings.h"
 #include "third_party/blink/renderer/core/page/event_with_hit_test_results.h"
-#include "third_party/blink/renderer/core/page/page_widget_delegate.h"
 #include "third_party/blink/renderer/core/page/viewport_description.h"
 #include "third_party/blink/renderer/platform/graphics/apply_viewport_changes.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_image.h"
@@ -74,6 +72,7 @@
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom-shared.h"
 #include "ui/base/mojom/ui_base_types.mojom-shared.h"
+#include "ui/gfx/ca_layer_result.h"
 
 namespace gfx {
 class Point;
@@ -85,13 +84,13 @@ class AnimationWorkletMutatorDispatcherImpl;
 class HitTestResult;
 class HTMLPlugInElement;
 class Page;
-class PageWidgetEventHandler;
 class PaintWorkletPaintDispatcher;
 class RemoteFrame;
 class WebLocalFrameImpl;
 class WebPlugin;
 class WebViewImpl;
 class WidgetBase;
+class WidgetEventHandler;
 class ScreenMetricsEmulator;
 
 // Implements WebFrameWidget for both main frames and child local root frame
@@ -104,8 +103,24 @@ class CORE_EXPORT WebFrameWidgetImpl
       public viz::mojom::blink::InputTargetClient,
       public mojom::blink::FrameWidgetInputHandler,
       public FrameWidget,
-      public PageWidgetEventHandler {
+      public WidgetEventHandler {
  public:
+  struct PromiseCallbacks {
+    base::OnceCallback<void(base::TimeTicks)> swap_time_callback;
+    base::OnceCallback<void(base::TimeTicks)> presentation_time_callback;
+#if BUILDFLAG(IS_MAC)
+    base::OnceCallback<void(gfx::CALayerResult)>
+        core_animation_error_code_callback;
+#endif
+    bool IsEmpty() {
+      return (!swap_time_callback &&
+#if BUILDFLAG(IS_MAC)
+              !core_animation_error_code_callback &&
+#endif
+              !presentation_time_callback);
+    }
+  };
+
   WebFrameWidgetImpl(
       base::PassKey<WebLocalFrame>,
       CrossVariantMojoAssociatedRemote<
@@ -121,7 +136,8 @@ class CORE_EXPORT WebFrameWidgetImpl
       bool hidden,
       bool never_composited,
       bool is_for_child_local_root,
-      bool is_for_nested_main_frame);
+      bool is_for_nested_main_frame,
+      bool is_for_scalable_page);
   ~WebFrameWidgetImpl() override;
 
   virtual void Trace(Visitor*) const;
@@ -185,9 +201,7 @@ class CORE_EXPORT WebFrameWidgetImpl
   // is fired with the submission (aka swap) timestamp when the frame is
   // submitted to Viz; `presentation_callback` is fired with the presentation
   // timestamp after the frame is presented to the user.
-  void NotifySwapAndPresentationTimeForTesting(
-      base::OnceCallback<void(base::TimeTicks)> swap_callback,
-      base::OnceCallback<void(base::TimeTicks)> presentation_callback);
+  void NotifySwapAndPresentationTimeForTesting(PromiseCallbacks callbacks);
 
   // Process the input event, invoking the callback when complete. This
   // method will call the callback synchronously.
@@ -201,7 +215,6 @@ class CORE_EXPORT WebFrameWidgetImpl
       const cc::OverscrollBehavior& overscroll_behavior) final;
   void RequestAnimationAfterDelay(const base::TimeDelta&) final;
   void SetRootLayer(scoped_refptr<cc::Layer>) override;
-  void RegisterSelection(cc::LayerSelection selection) final;
   void RequestDecode(const cc::PaintImage&,
                      base::OnceCallback<void(bool)>) override;
   void NotifyPresentationTimeInBlink(
@@ -261,8 +274,7 @@ class CORE_EXPORT WebFrameWidgetImpl
                   int relative_cursor_pos) override;
   void FinishComposingText(bool keep_selection) override;
   bool IsProvisional() override;
-  uint64_t GetScrollableContainerIdAt(
-      const gfx::PointF& point_in_dips) override;
+  uint64_t GetScrollableContainerIdAt(const gfx::PointF& point) override;
   bool ShouldHandleImeEvents() override;
   void SetEditCommandsForNextKeyEvent(
       Vector<mojom::blink::EditCommandPtr> edit_commands) override;
@@ -315,6 +327,10 @@ class CORE_EXPORT WebFrameWidgetImpl
       mojom::blink::ViewportIntersectionStatePtr intersection_state);
   void NotifyPresentationTime(
       base::OnceCallback<void(base::TimeTicks)> callback) override;
+#if BUILDFLAG(IS_MAC)
+  void NotifyCoreAnimationErrorCode(
+      base::OnceCallback<void(gfx::CALayerResult)> callback) override;
+#endif
   scheduler::WebRenderWidgetSchedulingState* RendererWidgetSchedulingState()
       override;
   void WaitForDebuggerWhenShown() override;
@@ -513,7 +529,8 @@ class CORE_EXPORT WebFrameWidgetImpl
   // pixels).
   gfx::Size DIPsToCeiledBlinkSpace(const gfx::Size& size);
 
-  void SetWindowRect(const gfx::Rect& window_rect);
+  void SetWindowRect(const gfx::Rect& requested_rect,
+                     const gfx::Rect& adjusted_rect);
   void SetWindowRectSynchronouslyForTesting(const gfx::Rect& new_window_rect);
 
   void UpdateTooltipUnderCursor(const String& tooltip_text, TextDirection dir);
@@ -550,10 +567,6 @@ class CORE_EXPORT WebFrameWidgetImpl
                                   float maximum);
   void UpdateViewportDescription(
       const ViewportDescription& viewport_description);
-
-  // The value of the applied battery-savings META element in the document
-  // changed.
-  void BatterySavingsChanged(BatterySavingsFlags savings);
 
   const viz::LocalSurfaceId& LocalSurfaceIdFromParent();
 
@@ -625,6 +638,8 @@ class CORE_EXPORT WebFrameWidgetImpl
   // overridden by tests to disable this.
   virtual bool ShouldAutoDetermineCompositingToLCDTextSetting();
 
+  WidgetBase* widget_base_for_testing() const { return widget_base_.get(); }
+
   // WebFrameWidget overrides.
   cc::LayerTreeHost* LayerTreeHost() override;
 
@@ -634,9 +649,7 @@ class CORE_EXPORT WebFrameWidgetImpl
   friend class WebViewImpl;
   friend class ReportTimeSwapPromise;
 
-  void NotifySwapAndPresentationTime(
-      base::OnceCallback<void(base::TimeTicks)> swap_callback,
-      base::OnceCallback<void(base::TimeTicks)> presentation_callback);
+  void NotifySwapAndPresentationTime(PromiseCallbacks callbacks);
 
   // WidgetBaseClient overrides.
   void BeginCommitCompositorFrame() override;
@@ -674,7 +687,7 @@ class CORE_EXPORT WebFrameWidgetImpl
   WebTextInputType GetTextInputType() override;
   void SetCursorVisibilityState(bool is_visible) override;
   blink::FrameWidget* FrameWidget() override { return this; }
-  void FocusChanged(bool enable) override;
+  void FocusChanged(mojom::blink::FocusState focus_state) override;
   bool ShouldAckSyntheticInputImmediately() override;
   void UpdateVisualProperties(
       const VisualProperties& visual_properties) override;
@@ -733,7 +746,7 @@ class CORE_EXPORT WebFrameWidgetImpl
   // Sets the inert bit on an out-of-process iframe, causing it to ignore
   // input.
   void SetIsInertForSubFrame(bool inert) override;
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   void GetStringAtPoint(const gfx::Point& point_in_local_root,
                         GetStringAtPointCallback callback) override;
 #endif
@@ -775,10 +788,11 @@ class CORE_EXPORT WebFrameWidgetImpl
       int32_t end,
       mojom::blink::SelectionMenuBehavior behavior) override;
   void MoveRangeSelectionExtent(const gfx::Point& extent_in_dips) override;
-  void ScrollFocusedEditableNodeIntoRect(
-      const gfx::Rect& rect_in_dips) override;
+  void ScrollFocusedEditableNodeIntoView() override;
+  void WaitForPageScaleAnimationForTesting(
+      WaitForPageScaleAnimationForTestingCallback callback) override;
   void MoveCaret(const gfx::Point& point_in_dips) override;
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   void SelectAroundCaret(mojom::blink::SelectionGranularity granularity,
                          bool should_show_handle,
                          bool should_show_context_menu,
@@ -810,14 +824,6 @@ class CORE_EXPORT WebFrameWidgetImpl
   void SendScrollEndEventFromImplSide(cc::ElementId scroll_latched_element_id);
 
   void RecordManipulationTypeCounts(cc::ManipulationInfo info);
-
-  // Finds the parameters required for scrolling the focused editable |element|
-  // into view. |out_rect_to_scroll| is used for recursive scrolling of the
-  // element into view and contains all or part of element's bounding box and
-  // always includes the caret and is with respect to absolute coordinates.
-  mojom::blink::ScrollIntoViewParamsPtr
-  GetScrollParamsForFocusedEditableElement(const Element& element,
-                                           PhysicalRect& out_rect_to_scroll);
 
   enum DragAction { kDragEnter, kDragOver };
   // Consolidate some common code between starting a drag over a target and
@@ -1080,7 +1086,18 @@ class CORE_EXPORT WebFrameWidgetImpl
   }
 
   // Whether this widget is for a child local root, or otherwise a main frame.
+  // Prefer using |ForSubframe()| for distinguishing subframes and
+  // |widget_base_.is_embedded()| for subframes and embedded main frames (i.e.,
+  // all embedded scenarios).
   const bool is_for_child_local_root_;
+
+  // Whether this widget is for a portal, guest view, or top level frame.
+  // These may have a page scale node, so it is important to plumb this
+  // information through to avoid breaking assumptions.
+  const bool is_for_scalable_page_;
+
+  WaitForPageScaleAnimationForTestingCallback
+      page_scale_animation_for_testing_callback_;
 
   // This stores the last hidden page popup. If a GestureTap attempts to open
   // the popup that is closed by its previous GestureTapDown, the popup remains

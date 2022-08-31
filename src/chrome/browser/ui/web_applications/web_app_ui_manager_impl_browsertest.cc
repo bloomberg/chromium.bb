@@ -14,17 +14,18 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
-#include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/web_applications/test/fake_os_integration_manager.h"
 #include "chrome/browser/web_applications/test/fake_web_app_provider.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/test/web_app_test_observers.h"
+#include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_install_finalizer.h"
+#include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
-#include "chrome/browser/web_applications/web_application_info.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
+#include "components/webapps/browser/uninstall_result_code.h"
 #include "content/public/test/browser_test.h"
 #include "url/gurl.h"
 
@@ -55,10 +56,10 @@ class WebAppUiManagerImplBrowserTest : public InProcessBrowserTest {
 
   Profile* profile() { return browser()->profile(); }
 
-  const AppId InstallWebApp(const GURL& start_url) {
-    auto web_app_info = std::make_unique<WebApplicationInfo>();
+  AppId InstallWebApp(const GURL& start_url) {
+    auto web_app_info = std::make_unique<WebAppInstallInfo>();
     web_app_info->start_url = start_url;
-    web_app_info->user_display_mode = DisplayMode::kStandalone;
+    web_app_info->user_display_mode = UserDisplayMode::kStandalone;
     return web_app::test::InstallWebApp(profile(), std::move(web_app_info));
   }
 
@@ -122,18 +123,19 @@ IN_PROC_BROWSER_TEST_F(WebAppUiManagerImplBrowserTest,
   web_app::CloseAndWait(browser());
   EXPECT_EQ(1u, BrowserList::GetInstance()->size());
   Browser* app_browser = BrowserList::GetInstance()->GetLastActive();
+  BrowserWaiter waiter(app_browser);
   // Uninstalling should close the |app_browser|, but keep the browser
   // object alive long enough to complete the uninstall.
   base::RunLoop run_loop;
   DCHECK(provider->install_finalizer().CanUserUninstallWebApp(foo_app_id));
   provider->install_finalizer().UninstallWebApp(
       foo_app_id, webapps::WebappUninstallSource::kAppMenu,
-      base::BindLambdaForTesting([&](bool success) {
-        EXPECT_TRUE(success);
+      base::BindLambdaForTesting([&](webapps::UninstallResultCode code) {
+        EXPECT_EQ(code, webapps::UninstallResultCode::kSuccess);
         run_loop.Quit();
       }));
   run_loop.Run();
-  web_app::BrowserWaiter(app_browser).AwaitRemoved();
+  waiter.AwaitRemoved();
 
   EXPECT_EQ(0u, BrowserList::GetInstance()->size());
 }

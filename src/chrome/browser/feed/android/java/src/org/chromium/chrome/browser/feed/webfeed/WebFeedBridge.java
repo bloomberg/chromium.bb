@@ -92,12 +92,13 @@ public class WebFeedBridge {
      * subscribed, recently subscribed, or recommended Web Feed.
      * @param tab The tab showing the page.
      * @param url The URL for which the status is being requested.
+     * @param reason The reason why the information is being requested.
      * @param callback The callback to receive the Web Feed metadata, or null if it is not found.
      */
-    public static void getWebFeedMetadataForPage(
-            Tab tab, GURL url, Callback<WebFeedMetadata> callback) {
+    public static void getWebFeedMetadataForPage(Tab tab, GURL url,
+            @WebFeedPageInformationRequestReason int reason, Callback<WebFeedMetadata> callback) {
         WebFeedBridgeJni.get().findWebFeedInfoForPage(
-                new WebFeedPageInformation(url, tab), callback);
+                new WebFeedPageInformation(url, tab), reason, callback);
     }
 
     /**
@@ -140,6 +141,11 @@ public class WebFeedBridge {
         WebFeedBridgeJni.get().refreshRecommendedFeeds(callback);
     }
 
+    /** Increase the count of the number of times the user has followed from the web page menu. */
+    public static void incrementFollowedFromWebPageMenuCount() {
+        WebFeedBridgeJni.get().incrementFollowedFromWebPageMenuCount();
+    }
+
     /** Container for results from a follow request. */
     public static class FollowResults {
         /** Status of follow request. */
@@ -180,8 +186,9 @@ public class WebFeedBridge {
      * @param webFeedId The identifier of the Web Feed to be followed.
      * @param callback The callback to receive the follow results.
      */
-    public static void followFromId(byte[] webFeedId, Callback<FollowResults> callback) {
-        WebFeedBridgeJni.get().followWebFeedById(webFeedId, callback);
+    public static void followFromId(
+            byte[] webFeedId, boolean isDurable, Callback<FollowResults> callback) {
+        WebFeedBridgeJni.get().followWebFeedById(webFeedId, isDurable, callback);
     }
 
     /**
@@ -189,8 +196,9 @@ public class WebFeedBridge {
      * @param webFeedId The Web Feed identifier.
      * @param callback The callback to receive the unfollow result.
      */
-    public static void unfollow(byte[] webFeedId, Callback<UnfollowResults> callback) {
-        WebFeedBridgeJni.get().unfollowWebFeed(webFeedId, callback);
+    public static void unfollow(
+            byte[] webFeedId, boolean isDurable, Callback<UnfollowResults> callback) {
+        WebFeedBridgeJni.get().unfollowWebFeed(webFeedId, isDurable, callback);
     }
 
     /** This is deprecated, do not use. */
@@ -234,14 +242,18 @@ public class WebFeedBridge {
     @NativeMethods
     public interface Natives {
         void followWebFeed(WebFeedPageInformation pageInfo, Callback<FollowResults> callback);
-        void followWebFeedById(byte[] webFeedId, Callback<FollowResults> callback);
-        void unfollowWebFeed(byte[] webFeedId, Callback<UnfollowResults> callback);
-        void findWebFeedInfoForPage(
-                WebFeedPageInformation pageInfo, Callback<WebFeedMetadata> callback);
+        void followWebFeedById(
+                byte[] webFeedId, boolean isDurable, Callback<FollowResults> callback);
+        void unfollowWebFeed(
+                byte[] webFeedId, boolean isDurable, Callback<UnfollowResults> callback);
+        void findWebFeedInfoForPage(WebFeedPageInformation pageInfo,
+                @WebFeedPageInformationRequestReason int reason,
+                Callback<WebFeedMetadata> callback);
         void findWebFeedInfoForWebFeedId(byte[] webFeedId, Callback<WebFeedMetadata> callback);
         void getAllSubscriptions(Callback<Object[]> callback);
         void refreshSubscriptions(Callback<Boolean> callback);
         void refreshRecommendedFeeds(Callback<Boolean> callback);
         void getRecentVisitCountsToHost(GURL url, Callback<int[]> callback);
+        void incrementFollowedFromWebPageMenuCount();
     }
 }

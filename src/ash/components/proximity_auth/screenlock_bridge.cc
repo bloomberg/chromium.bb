@@ -9,8 +9,8 @@
 
 #include <memory>
 
+#include "ash/components/multidevice/logging/logging.h"
 #include "build/build_config.h"
-#include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 
 namespace proximity_auth {
@@ -60,20 +60,20 @@ ScreenlockBridge::UserPodCustomIconInfo::~UserPodCustomIconInfo() {}
 std::unique_ptr<base::DictionaryValue>
 ScreenlockBridge::UserPodCustomIconInfo::ToDictionaryValue() const {
   auto result = std::make_unique<base::DictionaryValue>();
-  result->SetString("id", GetIDString());
+  result->SetStringKey("id", GetIDString());
 
   if (!tooltip_.empty()) {
     base::DictionaryValue tooltip_options;
-    tooltip_options.SetString("text", tooltip_);
-    tooltip_options.SetBoolean("autoshow", autoshow_tooltip_);
+    tooltip_options.SetStringKey("text", tooltip_);
+    tooltip_options.SetBoolKey("autoshow", autoshow_tooltip_);
     result->SetKey("tooltip", std::move(tooltip_options));
   }
 
   if (!aria_label_.empty())
-    result->SetString("ariaLabel", aria_label_);
+    result->SetStringKey("ariaLabel", aria_label_);
 
   if (hardlock_on_click_)
-    result->SetBoolean("hardlockOnClick", true);
+    result->SetBoolKey("hardlockOnClick", true);
 
   return result;
 }

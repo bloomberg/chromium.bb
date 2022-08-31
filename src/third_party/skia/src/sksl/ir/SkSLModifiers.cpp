@@ -7,12 +7,14 @@
 
 #include "include/private/SkSLModifiers.h"
 
+#include "include/core/SkTypes.h"
 #include "include/sksl/SkSLErrorReporter.h"
+#include "include/sksl/SkSLPosition.h"
 #include "src/sksl/SkSLContext.h"
 
 namespace SkSL {
 
-bool Modifiers::checkPermitted(const Context& context, int line, int permittedModifierFlags,
+bool Modifiers::checkPermitted(const Context& context, Position pos, int permittedModifierFlags,
         int permittedLayoutFlags) const {
     static constexpr struct { Modifiers::Flag flag; const char* name; } kModifierFlags[] = {
         { Modifiers::kConst_Flag,          "const" },
@@ -35,7 +37,7 @@ bool Modifiers::checkPermitted(const Context& context, int line, int permittedMo
     for (const auto& f : kModifierFlags) {
         if (modifierFlags & f.flag) {
             if (!(permittedModifierFlags & f.flag)) {
-                context.fErrors->error(line, "'" + String(f.name) + "' is not permitted here");
+                context.fErrors->error(pos, "'" + std::string(f.name) + "' is not permitted here");
                 success = false;
             }
             modifierFlags &= ~f.flag;
@@ -61,8 +63,8 @@ bool Modifiers::checkPermitted(const Context& context, int line, int permittedMo
     for (const auto& lf : kLayoutFlags) {
         if (layoutFlags & lf.flag) {
             if (!(permittedLayoutFlags & lf.flag)) {
-                context.fErrors->error(
-                        line, "layout qualifier '" + String(lf.name) + "' is not permitted here");
+                context.fErrors->error(pos, "layout qualifier '" + std::string(lf.name) +
+                        "' is not permitted here");
                 success = false;
             }
             layoutFlags &= ~lf.flag;

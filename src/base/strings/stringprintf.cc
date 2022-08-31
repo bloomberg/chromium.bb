@@ -9,11 +9,9 @@
 
 #include <vector>
 
-#include "base/cxx17_backports.h"
 #include "base/logging.h"
 #include "base/scoped_clear_last_error.h"
 #include "base/strings/string_util.h"
-#include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 
 namespace base {
@@ -33,7 +31,7 @@ inline int vsnprintfT(char* buffer,
   return base::vsnprintf(buffer, buf_size, format, argptr);
 }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 inline int vsnprintfT(wchar_t* buffer,
                       size_t buf_size,
                       const wchar_t* format,
@@ -64,20 +62,20 @@ static void StringAppendVT(std::basic_string<CharT>* dst,
   va_copy(ap_copy, ap);
 
   base::ScopedClearLastError last_error;
-  int result = vsnprintfT(stack_buf, base::size(stack_buf), format, ap_copy);
+  int result = vsnprintfT(stack_buf, std::size(stack_buf), format, ap_copy);
   va_end(ap_copy);
 
-  if (result >= 0 && result < static_cast<int>(base::size(stack_buf))) {
+  if (result >= 0 && result < static_cast<int>(std::size(stack_buf))) {
     // It fit.
     dst->append(stack_buf, result);
     return;
   }
 
   // Repeatedly increase buffer size until it fits.
-  int mem_length = base::size(stack_buf);
+  int mem_length = std::size(stack_buf);
   while (true) {
     if (result < 0) {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
       // On Windows, vsnprintfT always returns the number of characters in a
       // fully-formatted string, so if we reach this point, something else is
       // wrong and no amount of buffer-doubling is going to fix it.
@@ -128,7 +126,7 @@ std::string StringPrintf(const char* format, ...) {
   return result;
 }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 std::wstring StringPrintf(const wchar_t* format, ...) {
   va_list ap;
   va_start(ap, format);
@@ -163,7 +161,7 @@ const std::string& SStringPrintf(std::string* dst, const char* format, ...) {
   return *dst;
 }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 const std::wstring& SStringPrintf(std::wstring* dst,
                                   const wchar_t* format, ...) {
   va_list ap;
@@ -193,7 +191,7 @@ void StringAppendF(std::string* dst, const char* format, ...) {
   va_end(ap);
 }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 void StringAppendF(std::wstring* dst, const wchar_t* format, ...) {
   va_list ap;
   va_start(ap, format);
@@ -213,7 +211,7 @@ void StringAppendV(std::string* dst, const char* format, va_list ap) {
   StringAppendVT(dst, format, ap);
 }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 void StringAppendV(std::wstring* dst, const wchar_t* format, va_list ap) {
   StringAppendVT(dst, format, ap);
 }

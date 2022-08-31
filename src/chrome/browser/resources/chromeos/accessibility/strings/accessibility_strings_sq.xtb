@@ -536,6 +536,7 @@ Për të hapur menynë e shfletuesit Chrome, shtyp Alt+F.</translation>
 <translation id="4601367666219428522">tbl <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">Po shpërfill shtypjen tjetër të çelësit</translation>
 <translation id="4623097797855662355">Kolofon</translation>
+<translation id="4624970070706497034">TalkBack nuk e ofron më personalizimin për pajisjet Chromebook. Mund ta përdorësh përsëri, por përdor shkurtoret e parazgjedhura të tastierës të TalkBack. Shtyp Kërko+A dhe më pas K për të parë shkurtoret e disponueshme. Nëse dëshiron të përdorësh përsëri TalkBack, shtyp përsëri komandën.</translation>
 <translation id="463135993322337640">Shtyp ChromeVox o, n për të zbuluar të rejat</translation>
 <translation id="4649220074413114917">Trokitja me dy gishta në ekran mund të përdoret për të ndaluar çdo ligjërim aktual. Kjo është e dobishme nëse nuk dëshiron që ChromeVox të lexojë diçka. Për të vazhduar, trokit në ekran me dy gishta.</translation>
 <translation id="4660783501463101648">Versioni klasik u hoq. Ndryshimi i tastierës për të kaluar përsëri te versioni klasik i ChromeVox është hequr.</translation>
@@ -618,7 +619,6 @@ Për të hapur menynë e shfletuesit Chrome, shtyp Alt+F.</translation>
 <translation id="5170206230005240598">Titrat në breil janë aktivizuar</translation>
 <translation id="5183440668879371625">Rreshti i mëparshëm Braille</translation>
 <translation id="5189244881767082992">Rreshti</translation>
-<translation id="5234747236692380506">shkruaj <ph name="TEXT" /></translation>
 <translation id="5263034204789987535">Mustaqe misri</translation>
 <translation id="5263344797180442561">h2</translation>
 <translation id="528468243742722775">Fundi</translation>
@@ -666,6 +666,7 @@ Për të hapur menynë e shfletuesit Chrome, shtyp Alt+F.</translation>
 <translation id="5522423213731659107">Orientimi i shpejtë përfundoi!</translation>
 <translation id="5534303576632885660">hdr</translation>
 <translation id="5539820223028224601">Gainsboro</translation>
+<translation id="554893713779400387">Ndërro diktimin</translation>
 <translation id="5549179427201066174">Aktivizo ose çaktivizo reagimet e tingujve (tingujt e shkurtër)</translation>
 <translation id="556042886152191864">Buton</translation>
 <translation id="5561345396546889625">Lista tjetër</translation>
@@ -684,6 +685,8 @@ Për të hapur menynë e shfletuesit Chrome, shtyp Alt+F.</translation>
 <translation id="5623842676595125836">Ditari</translation>
 <translation id="5628125749885014029">h4</translation>
 <translation id="5632083598315326067">Simbol grafik</translation>
+<translation id="5648939288050772726">Urime! Ke mësuar me sukses bazat e përdorimit të ChromeVox. Ki parasysh se mund ta hapësh menynë e komandës së ChromeVox në çdo moment duke shtypur Kërko+Pikë. Për të mësuar edhe më shumë rreth ChromeVox dhe ChromeOS, vizito artikujt e mëposhtëm.
+    Nëse ke mbaruar me udhëzuesin, përdor ChromeVox për të naviguar te butoni "Mbyll" dhe kliko tek ai.</translation>
 <translation id="5653397561111110475">Përdor veçoritë e qasshmërisë së ekranit me prekje të Chromebook</translation>
 <translation id="5655682562155942719">Komandat e kërcimit</translation>
 <translation id="56637627897541303">Zona e tekstit</translation>
@@ -793,6 +796,7 @@ Për të hapur menynë e shfletuesit Chrome, shtyp Alt+F.</translation>
 <translation id="641759969622533235">{COUNT,plural, =1{karakter "dy pika"}other{# karaktere "dy pika"}}</translation>
 <translation id="6444046323172968959">Dialogu i sinjalizimit</translation>
 <translation id="6452403590345320472">Tabela e përmbajtjes</translation>
+<translation id="6457542714329819968">shkruaj</translation>
 <translation id="6468049171101508116">Butoni tjetër</translation>
 <translation id="646954774886932461">Indeks</translation>
 <translation id="6475604559827479857">Ngjyra për theksimet e fjalëve:</translation>
@@ -965,8 +969,6 @@ Për të hapur menynë e shfletuesit Chrome, shtyp Alt+F.</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7713139339518499741">Zë natyral</translation>
 <translation id="7714340021005120797">Nuk ka kuti tjetër të kombinuar</translation>
-<translation id="772146615414628379">Urime! Ke mësuar me sukses bazat e përdorimit të ChromeVox. Ki parasysh se mund ta hapësh menynë e komandës së ChromeVox në çdo moment duke shtypur Kërko+Pikë. Për të mësuar edhe më shumë rreth ChromeVox dhe Chrome OS, vizito artikujt e mëposhtëm.
-    Nëse ke mbaruar me udhëzuesin, përdor ChromeVox për të naviguar te butoni "Mbyll" dhe kliko tek ai.</translation>
 <translation id="7724603315864178912">Prite</translation>
 <translation id="7731785449856576010">Nuk ka asnjë miniaplikacion tjetër të medias</translation>
 <translation id="7735498529470878067">Eksplorimi me prekje mund të të ndihmojë të kuptosh me shpejtësi se çfarë ka në ekran.</translation>
@@ -1168,6 +1170,7 @@ Për të hapur menynë e shfletuesit Chrome, shtyp Alt+F.</translation>
 <translation id="9223032053830369045">E kuqe e errët</translation>
 <translation id="923331726185079994">ChromeVox është përditësuar</translation>
 <translation id="93384979447910801">E gjelbër deti e errët</translation>
+<translation id="937605981140327129">TalkBack nuk është instaluar aktualisht. Instalo AccessibilitySuite të Android nëpërmjet "Dyqanit të Play" dhe provo sërish.</translation>
 <translation id="948171205378458592">Ul shpejtësinë e ligjërimit</translation>
 <translation id="957570623732056069">Rrëshqit shpejt majtas ose djathtas me një gisht për të naviguar në këtë mësim</translation>
 <translation id="958854023026327378">Rrëshqit shpejt një gisht poshtë</translation>

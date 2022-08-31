@@ -22,13 +22,12 @@
  */
 
 #include "avformat.h"
+#include "demux.h"
 #include "internal.h"
 #include "isom.h"
 #include "libavcodec/mpeg4audio.h"
 #include "libavcodec/mpegaudiodata.h"
-#include "libavutil/avstring.h"
 #include "libavutil/channel_layout.h"
-#include "libavutil/intreadwrite.h"
 
 /* http://www.mp4ra.org */
 /* ordered by muxing preference */
@@ -360,15 +359,16 @@ int ff_mp4_read_dec_config_descr(AVFormatContext *fc, AVStream *st, AVIOContext 
                                                 st->codecpar->extradata_size, 1, fc);
             if (ret < 0)
                 return ret;
-            st->codecpar->channels = cfg.channels;
+            st->codecpar->ch_layout.order = AV_CHANNEL_ORDER_UNSPEC;
+            st->codecpar->ch_layout.nb_channels = cfg.channels;
             if (cfg.object_type == 29 && cfg.sampling_index < 3) // old mp3on4
-                st->codecpar->sample_rate = avpriv_mpa_freq_tab[cfg.sampling_index];
+                st->codecpar->sample_rate = ff_mpa_freq_tab[cfg.sampling_index];
             else if (cfg.ext_sample_rate)
                 st->codecpar->sample_rate = cfg.ext_sample_rate;
             else
                 st->codecpar->sample_rate = cfg.sample_rate;
             av_log(fc, AV_LOG_TRACE, "mp4a config channels %d obj %d ext obj %d "
-                    "sample rate %d ext sample rate %d\n", st->codecpar->channels,
+                    "sample rate %d ext sample rate %d\n", cfg.channels,
                     cfg.object_type, cfg.ext_object_type,
                     cfg.sample_rate, cfg.ext_sample_rate);
             if (!(st->codecpar->codec_id = ff_codec_get_id(mp4_audio_types,

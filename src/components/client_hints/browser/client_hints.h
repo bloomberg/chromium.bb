@@ -8,16 +8,19 @@
 #include <memory>
 
 #include "base/memory/raw_ptr.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/client_hints_controller_delegate.h"
-#include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 
 class GURL;
 class HostContentSettingsMap;
 class PrefService;
+
+namespace blink {
+struct UserAgentMetadata;
+class EnabledClientHints;
+}  // namespace blink
 
 namespace client_hints {
 
@@ -39,16 +42,18 @@ class ClientHints : public KeyedService,
   network::NetworkQualityTracker* GetNetworkQualityTracker() override;
 
   void GetAllowedClientHintsFromSource(
-      const GURL& url,
+      const url::Origin& origin,
       blink::EnabledClientHints* client_hints) override;
 
-  bool IsJavaScriptAllowed(const GURL& url) override;
+  bool IsJavaScriptAllowed(const GURL& url,
+                           content::RenderFrameHost* parent_rfh) override;
 
   bool AreThirdPartyCookiesBlocked(const GURL& url) override;
 
   blink::UserAgentMetadata GetUserAgentMetadata() override;
 
   void PersistClientHints(const url::Origin& primary_origin,
+                          content::RenderFrameHost* parent_rfh,
                           const std::vector<network::mojom::WebClientHintsType>&
                               client_hints) override;
 

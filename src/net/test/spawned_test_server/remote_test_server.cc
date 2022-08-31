@@ -36,8 +36,6 @@ namespace {
 // Please keep in sync with dictionary SERVER_TYPES in testserver.py
 std::string GetServerTypeString(BaseTestServer::Type type) {
   switch (type) {
-    case BaseTestServer::TYPE_HTTP:
-      return "http";
     case BaseTestServer::TYPE_WS:
     case BaseTestServer::TYPE_WSS:
       return "ws";
@@ -50,7 +48,7 @@ std::string GetServerTypeString(BaseTestServer::Type type) {
 // Returns platform-specific path to the config file for the test server.
 base::FilePath GetTestServerConfigFilePath() {
   base::FilePath dir;
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   base::PathService::Get(base::DIR_ANDROID_EXTERNAL_STORAGE, &dir);
 #else
   base::PathService::Get(base::DIR_TEMP, &dir);
@@ -109,19 +107,19 @@ bool RemoteTestServer::StartInBackground() {
   DCHECK(!started());
   DCHECK(!start_request_);
 
-  base::DictionaryValue arguments_dict;
-  if (!GenerateArguments(&arguments_dict))
+  absl::optional<base::Value::Dict> arguments_dict = GenerateArguments();
+  if (!arguments_dict)
     return false;
 
-  arguments_dict.SetKey("on-remote-server", base::Value());
+  arguments_dict->Set("on-remote-server", base::Value());
 
   // Append the 'server-type' argument which is used by spawner server to
   // pass right server type to Python test server.
-  arguments_dict.SetString("server-type", GetServerTypeString(type()));
+  arguments_dict->Set("server-type", GetServerTypeString(type()));
 
   // Generate JSON-formatted argument string.
   std::string arguments_string;
-  base::JSONWriter::Write(arguments_dict, &arguments_string);
+  base::JSONWriter::Write(*arguments_dict, &arguments_string);
   if (arguments_string.empty())
     return false;
 

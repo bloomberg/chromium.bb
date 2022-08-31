@@ -41,12 +41,18 @@ class CC_PAINT_EXPORT PaintFlags {
     return static_cast<Style>(bitfields_.style_);
   }
   ALWAYS_INLINE void setStyle(Style style) { bitfields_.style_ = style; }
-  ALWAYS_INLINE SkColor getColor() const { return color_; }
-  ALWAYS_INLINE void setColor(SkColor color) { color_ = color; }
-  ALWAYS_INLINE uint8_t getAlpha() const { return SkColorGetA(color_); }
+  // TODO(crbug.com/1308932): Remove this function
+  ALWAYS_INLINE SkColor getColor() const { return color_.toSkColor(); }
+  ALWAYS_INLINE SkColor4f getColor4f() const { return color_; }
+  ALWAYS_INLINE void setColor(SkColor color) {
+    color_ = SkColor4f::FromColor(color);
+  }
+  ALWAYS_INLINE void setColor(SkColor4f color) { color_ = color; }
+  ALWAYS_INLINE uint8_t getAlpha() const {
+    return SkColorGetA(color_.toSkColor());
+  }
   ALWAYS_INLINE void setAlpha(uint8_t a) {
-    color_ = SkColorSetARGB(a, SkColorGetR(color_), SkColorGetG(color_),
-                            SkColorGetB(color_));
+    color_ = SkColor4f::FromColor(SkColorSetA(color_.toSkColor(), a));
   }
   ALWAYS_INLINE SkColor getBbLcdBackgroundColor() const { return bb_lcd_background_color_; }
   ALWAYS_INLINE void setBbLcdBackgroundColor(SkColor color) { bb_lcd_background_color_ = color; }
@@ -202,8 +208,8 @@ class CC_PAINT_EXPORT PaintFlags {
 
   // Match(ish) SkPaint defaults.  SkPaintDefaults is not public, so this
   // just uses these values and ignores any SkUserConfig overrides.
-  SkColor color_ = SK_ColorBLACK;
-  SkColor bb_lcd_background_color_ = SK_ColorTRANSPARENT;
+  SkColor4f color_ = SkColors::kBlack;
+  SkColor4f bb_lcd_background_color_ = SkColors::kTransparent;
   float width_ = 0.f;
   float miter_limit_ = 4.f;
   uint32_t blend_mode_ = static_cast<uint32_t>(SkBlendMode::kSrcOver);

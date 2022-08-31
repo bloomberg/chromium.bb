@@ -120,7 +120,7 @@ class CookieTreeNode : public ui::TreeNode<CookieTreeNode> {
     DetailedInfo& InitCacheStorage(
         const content::StorageUsageInfo* storage_usage_info);
     DetailedInfo& InitMediaLicense(
-        const BrowsingDataMediaLicenseHelper::MediaLicenseInfo* media_license);
+        const content::StorageUsageInfo* storage_usage_info);
 
     NodeType node_type;
     url::Origin origin;
@@ -133,8 +133,7 @@ class CookieTreeNode : public ui::TreeNode<CookieTreeNode> {
     raw_ptr<const BrowsingDataQuotaHelper::QuotaInfo> quota_info = nullptr;
     raw_ptr<const browsing_data::SharedWorkerHelper::SharedWorkerInfo>
         shared_worker_info = nullptr;
-    raw_ptr<const BrowsingDataMediaLicenseHelper::MediaLicenseInfo>
-        media_license_info = nullptr;
+    raw_ptr<const content::StorageUsageInfo> media_license_usage_info = nullptr;
   };
 
   CookieTreeNode() {}
@@ -317,7 +316,7 @@ class CookiesTreeModel : public ui::TreeNodeModel<CookieTreeNode> {
   // ui::TreeModel methods:
   // Returns the set of icons for the nodes in the tree. You only need override
   // this if you don't want to use the default folder icons.
-  void GetIcons(std::vector<gfx::ImageSkia>* icons) override;
+  void GetIcons(std::vector<ui::ImageModel>* icons) override;
 
   // Returns the index of the icon to use for |node|. Return -1 to use the
   // default icon. The index is relative to the list of icons returned from

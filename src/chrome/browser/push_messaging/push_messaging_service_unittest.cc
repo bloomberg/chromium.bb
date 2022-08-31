@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/browser/push_messaging_service.h"
-
 #include <stdint.h>
 
 #include <string>
@@ -11,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/cxx17_backports.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -34,16 +31,17 @@
 #include "components/gcm_driver/fake_gcm_profile_service.h"
 #include "components/gcm_driver/gcm_profile_service.h"
 #include "components/permissions/permission_manager.h"
+#include "content/public/browser/push_messaging_service.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/push_messaging/push_messaging_status.mojom.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "components/gcm_driver/instance_id/instance_id_android.h"
 #include "components/gcm_driver/instance_id/scoped_use_fake_instance_id_android.h"
-#endif  // OS_ANDROID
+#endif  // BUILDFLAG(IS_ANDROID)
 
 namespace {
 
@@ -194,7 +192,8 @@ class PushMessagingServiceTest : public ::testing::Test {
         kTestSenderId + sizeof(kTestSenderId) / sizeof(char) - 1);
 
     push_service->SubscribeFromWorker(
-        origin, kTestServiceWorkerId, std::move(options),
+        origin, kTestServiceWorkerId, /*render_process_id=*/-1,
+        std::move(options),
         base::BindOnce(&PushMessagingServiceTest::DidRegister,
                        base::Unretained(this), &subscription_id, &endpoint,
                        &expiration_time, &p256dh, &auth,
@@ -230,14 +229,14 @@ class PushMessagingServiceTest : public ::testing::Test {
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   PushMessagingTestingProfile profile_;
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   instance_id::InstanceIDAndroid::ScopedBlockOnAsyncTasksForTesting
       block_async_;
-#endif  // OS_ANDROID
+#endif  // BUILDFLAG(IS_ANDROID)
 };
 
 // Fails too often on Linux TSAN builder: http://crbug.com/1211350.
-#if defined(OS_LINUX) && defined(THREAD_SANITIZER)
+#if BUILDFLAG(IS_LINUX) && defined(THREAD_SANITIZER)
 #define MAYBE_PayloadEncryptionTest DISABLED_PayloadEncryptionTest
 #else
 #define MAYBE_PayloadEncryptionTest PayloadEncryptionTest
@@ -317,7 +316,7 @@ TEST_F(PushMessagingServiceTest, NormalizeSenderInfo) {
   PushMessagingServiceImpl* push_service = profile()->GetPushMessagingService();
   ASSERT_TRUE(push_service);
 
-  std::string p256dh(kTestP256Key, kTestP256Key + base::size(kTestP256Key));
+  std::string p256dh(kTestP256Key, kTestP256Key + std::size(kTestP256Key));
   ASSERT_EQ(65u, p256dh.size());
 
   // NIST P-256 public keys in uncompressed format will be encoded using the
@@ -334,7 +333,7 @@ TEST_F(PushMessagingServiceTest, NormalizeSenderInfo) {
 }
 
 // Fails too often on Linux TSAN builder: http://crbug.com/1211350.
-#if defined(OS_LINUX) && defined(THREAD_SANITIZER)
+#if BUILDFLAG(IS_LINUX) && defined(THREAD_SANITIZER)
 #define MAYBE_RemoveExpiredSubscriptions DISABLED_RemoveExpiredSubscriptions
 #else
 #define MAYBE_RemoveExpiredSubscriptions RemoveExpiredSubscriptions

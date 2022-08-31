@@ -26,5 +26,5 @@ will guide you from equipment procurement to successfully run your first test.
 for getting the latest version of Moblab.
 
 We also encourage all Moblab users join [Moblab
-Forums](https://groups.google.com/a/google.com/forum/#!forum/chromeos-moblab)
-for discussion.
+Forums](https://groups.google.com/u/2/a/chromium.org/g/moblab-discuss) for
+discussion.

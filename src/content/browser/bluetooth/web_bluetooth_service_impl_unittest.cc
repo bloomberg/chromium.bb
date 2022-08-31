@@ -9,8 +9,10 @@
 
 #include "base/memory/raw_ptr.h"
 #include "base/test/bind.h"
+#include "base/test/gmock_callback_support.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/test_future.h"
 #include "content/browser/bluetooth/bluetooth_adapter_factory_wrapper.h"
 #include "content/browser/bluetooth/bluetooth_allowed_devices.h"
 #include "content/browser/bluetooth/web_bluetooth_pairing_manager.h"
@@ -38,6 +40,7 @@ namespace content {
 
 namespace {
 
+using ::base::test::TestFuture;
 using ::blink::mojom::WebBluetoothCharacteristicClient;
 using ::blink::mojom::WebBluetoothGATTQueryQuantity;
 using ::blink::mojom::WebBluetoothRemoteGATTCharacteristicPtr;
@@ -198,7 +201,9 @@ class FakeBluetoothDevice : public NiceMock<MockBluetoothDevice> {
                                       /*paired=*/false,
                                       /*connected=*/true) {}
 
-  bool IsGattServicesDiscoveryComplete() const override { return true; }
+  bool IsGattServicesDiscoveryComplete() const override {
+    return gatt_services_discovery_complete_;
+  }
 
   std::vector<BluetoothRemoteGattService*> GetGattServices() const override {
     return GetMockServices();
@@ -291,6 +296,11 @@ class TestBluetoothDelegate : public BluetoothDelegate {
                                    CredentialsCallback callback) override {
     std::move(callback).Run(DeviceCredentialsPromptResult::kCancelled, u"");
   }
+  void ShowDevicePairConfirmPrompt(content::RenderFrameHost* frame,
+                                   const std::u16string& device_identifier,
+                                   PairConfirmCallback callback) override {
+    std::move(callback).Run(DevicePairConfirmPromptResult::kCancelled);
+  }
   blink::WebBluetoothDeviceId GetWebBluetoothDeviceId(
       RenderFrameHost* frame,
       const std::string& device_address) override {
@@ -316,6 +326,9 @@ class TestBluetoothDelegate : public BluetoothDelegate {
       const blink::WebBluetoothDeviceId& device_id) override {
     return false;
   }
+  void RevokeDevicePermissionWebInitiated(
+      RenderFrameHost* frame,
+      const blink::WebBluetoothDeviceId& device_id) override {}
   bool IsAllowedToAccessService(RenderFrameHost* frame,
                                 const blink::WebBluetoothDeviceId& device_id,
                                 const device::BluetoothUUID& service) override {
@@ -495,11 +508,16 @@ class WebBluetoothServiceImplTest : public RenderViewHostImplTestHarness,
     service_ =
         contents()->GetMainFrame()->CreateWebBluetoothServiceForTesting();
 
-    // GetAvailability connects the Web Bluetooth service to the adapter.
-    base::RunLoop run_loop;
-    service_->GetAvailability(base::BindLambdaForTesting(
-        [&run_loop](bool success) { run_loop.Quit(); }));
-    run_loop.Run();
+    // GetAvailability connects the Web Bluetooth service to the adapter. Call
+    // it twice in parallel to exercise what happens when multiple requests to
+    // acquire the BluetoothAdapter are in flight.
+    TestFuture<bool> future_1;
+    TestFuture<bool> future_2;
+    service_->GetAvailability(future_1.GetCallback());
+    service_->GetAvailability(future_2.GetCallback());
+    // Use Wait() instead of Get() because we don't care about the result.
+    EXPECT_TRUE(future_1.Wait());
+    EXPECT_TRUE(future_2.Wait());
   }
 
   void TearDown() override {
@@ -578,6 +596,9 @@ class WebBluetoothServiceImplTest : public RenderViewHostImplTestHarness,
         service_->allowed_devices().AddDevice(
             test_bundle().device().GetAddress(), device_options);
 
+    auto& device = battery_object_bundle_->device();
+    device.SetGattServicesDiscoveryComplete(true);
+
     FakeBluetoothCharacteristic& test_characteristic =
         test_bundle().characteristic();
 
@@ -627,22 +648,6 @@ class WebBluetoothServiceImplTest : public RenderViewHostImplTestHarness,
   FakeWebBluetoothCharacteristicClient characteristic_client_;
 };
 
-// TODO(crbug.com/1213499): Delete parameterized test when bonding is deemed
-// stable, and the flag is removed.
-class WebBluetoothServiceImplBondingTest : public WebBluetoothServiceImplTest {
- public:
-  void SetUp() override {
-    feature_list_.InitWithFeatureState(features::kWebBluetoothBondOnDemand,
-                                       on_demand_bonding_enabled());
-    WebBluetoothServiceImplTest::SetUp();
-  }
-
-  bool on_demand_bonding_enabled() const { return GetParam(); }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
 TEST_F(WebBluetoothServiceImplTest, DestroyedDuringRequestDevice) {
   auto options = blink::mojom::WebBluetoothRequestDeviceOptions::New();
   options->accept_all_devices = true;
@@ -652,7 +657,7 @@ TEST_F(WebBluetoothServiceImplTest, DestroyedDuringRequestDevice) {
   service_->RequestDevice(std::move(options), callback.Get());
 
   base::RunLoop loop;
-  delete service_;
+  std::exchange(service_, nullptr)->ResetAndDeleteThis();
   loop.RunUntilIdle();
 }
 
@@ -685,20 +690,22 @@ TEST_F(WebBluetoothServiceImplTest, DestroyedDuringRequestScanningStart) {
   options->filters.emplace();
   options->filters->push_back(std::move(filter));
 
-  // Check that a the callback is never called, as the service gets deleted
-  // during the scanning request.
+  // The callback is currently called before delete is completed, during
+  // the scanning request. Though, this is a behavior that is not mandatory
+  // so not calling the callback would also be valid.
   base::RunLoop loop;
   base::MockCallback<WebBluetoothServiceImpl::RequestScanningStartCallback>
       callback;
-  EXPECT_CALL(callback, Run).Times(0);
+  EXPECT_CALL(callback, Run).Times(1);
   service_->RequestScanningStart(std::move(client), std::move(options),
                                  callback.Get());
 
   // Post a task to delete the WebBluetoothService state during a call to
-  // RequestScanningStart(). This should cause the callback to be dropped
-  // without being called.
+  // RequestScanningStart().
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindLambdaForTesting([this]() { delete service_; }));
+      FROM_HERE, base::BindLambdaForTesting([this]() {
+        std::exchange(service_, nullptr)->ResetAndDeleteThis();
+      }));
 
   loop.RunUntilIdle();
 }
@@ -858,8 +865,7 @@ TEST_F(WebBluetoothServiceImplTest,
 }
 
 #if PAIR_BLUETOOTH_ON_DEMAND()
-TEST_P(WebBluetoothServiceImplBondingTest,
-       ReadCharacteristicValueNotAuthorized) {
+TEST_F(WebBluetoothServiceImplTest, ReadCharacteristicValueNotAuthorized) {
   const std::vector<uint8_t> read_error_value = {1, 2, 3};
   bool read_value_callback_called = false;
 
@@ -872,8 +878,7 @@ TEST_P(WebBluetoothServiceImplBondingTest,
   service_->SetPairingManagerForTesting(
       std::unique_ptr<WebBluetoothPairingManager>(pairing_manager));
 
-  EXPECT_CALL(*pairing_manager, PairForCharacteristicReadValue(_, _))
-      .Times(on_demand_bonding_enabled() ? 1 : 0);
+  EXPECT_CALL(*pairing_manager, PairForCharacteristicReadValue(_, _)).Times(1);
 
   service_->OnCharacteristicReadValue(
       test_characteristic.GetIdentifier(),
@@ -888,12 +893,32 @@ TEST_P(WebBluetoothServiceImplBondingTest,
           }),
       device::BluetoothGattService::GATT_ERROR_NOT_AUTHORIZED,
       read_error_value);
-  EXPECT_EQ(!on_demand_bonding_enabled(), read_value_callback_called);
+  EXPECT_FALSE(read_value_callback_called);
 }
 
-INSTANTIATE_TEST_SUITE_P(All,
-                         WebBluetoothServiceImplBondingTest,
-                         testing::Values(false, true));
+TEST_F(WebBluetoothServiceImplTest, IncompletePairingOnShutdown) {
+  RegisterTestCharacteristic();
+
+  EXPECT_CALL(test_bundle().characteristic(), ReadRemoteCharacteristic_(_))
+      .WillOnce(base::test::RunOnceCallback<0>(
+          device::BluetoothGattService::GATT_ERROR_NOT_AUTHORIZED,
+          std::vector<uint8_t>()));
+
+  base::MockCallback<
+      WebBluetoothServiceImpl::RemoteCharacteristicReadValueCallback>
+      callback;
+
+  // The pairing is never completed so the callback won't be run before the
+  // test ends.
+  EXPECT_CALL(callback, Run(_, _)).Times(0);
+
+  service_->RemoteCharacteristicReadValue(
+      test_bundle().characteristic().GetIdentifier(), callback.Get());
+
+  // Simulate the WebBluetoothServiceImpl being destroyed due to a navigation or
+  // tab closure while the pairing request is in progress.
+  std::exchange(service_, nullptr)->ResetAndDeleteThis();
+}
 #endif  // PAIR_BLUETOOTH_ON_DEMAND()
 
 TEST_F(WebBluetoothServiceImplTest, DeferredStartNotifySession) {
@@ -954,6 +979,54 @@ TEST_F(WebBluetoothServiceImplTest, DeferredStartNotifySession) {
 
     run_loop.Run();
   }
+}
+
+TEST_F(WebBluetoothServiceImplTest, DeviceGattServicesDiscoveryTimeout) {
+  auto device_options = blink::mojom::WebBluetoothRequestDeviceOptions::New();
+  device_options->accept_all_devices = true;
+  device_options->optional_services.push_back(
+      test_bundle().service().GetUUID());
+  const blink::WebBluetoothDeviceId& test_device_id =
+      service_->allowed_devices().AddDevice(test_bundle().device().GetAddress(),
+                                            device_options);
+
+  auto& device = battery_object_bundle_->device();
+  device.SetGattServicesDiscoveryComplete(false);
+
+  TestFuture<WebBluetoothResult,
+             absl::optional<std::vector<WebBluetoothRemoteGATTServicePtr>>>
+      get_primary_services_future;
+  service_->RemoteServerGetPrimaryServices(
+      test_device_id, WebBluetoothGATTQueryQuantity::SINGLE,
+      test_bundle().service().GetUUID(),
+      get_primary_services_future.GetCallback());
+  device.SetConnected(false);
+  service_->DeviceChanged(device.GetAdapter(), &device);
+  EXPECT_EQ(get_primary_services_future.Get<0>(),
+            blink::mojom::WebBluetoothResult::NO_SERVICES_FOUND);
+}
+
+TEST_F(WebBluetoothServiceImplTest, DeviceDisconnected) {
+  auto device_options = blink::mojom::WebBluetoothRequestDeviceOptions::New();
+  device_options->accept_all_devices = true;
+  device_options->optional_services.push_back(
+      test_bundle().service().GetUUID());
+  const blink::WebBluetoothDeviceId& test_device_id =
+      service_->allowed_devices().AddDevice(test_bundle().device().GetAddress(),
+                                            device_options);
+
+  auto& device = battery_object_bundle_->device();
+  device.SetConnected(false);
+
+  TestFuture<WebBluetoothResult,
+             absl::optional<std::vector<WebBluetoothRemoteGATTServicePtr>>>
+      get_primary_services_future;
+  service_->RemoteServerGetPrimaryServices(
+      test_device_id, WebBluetoothGATTQueryQuantity::SINGLE,
+      test_bundle().service().GetUUID(),
+      get_primary_services_future.GetCallback());
+  EXPECT_EQ(get_primary_services_future.Get<0>(),
+            blink::mojom::WebBluetoothResult::NO_SERVICES_FOUND);
 }
 
 }  // namespace content

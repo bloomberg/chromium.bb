@@ -10,17 +10,17 @@
 #include "build/build_config.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/extensions/extension_action_runner.h"
+#include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/scripting_permissions_modifier.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/toolbar/test_toolbar_actions_bar_bubble_delegate.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
-#include "chrome/browser/ui/toolbar/toolbar_actions_bar_bubble_delegate.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
-#include "chrome/browser/ui/views/extensions/extensions_toolbar_browsertest.h"
+#include "chrome/browser/ui/views/extensions/extensions_toolbar_button.h"
+#include "chrome/browser/ui/views/extensions/extensions_toolbar_interactive_uitest.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/interactive_test_utils.h"
@@ -29,6 +29,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/disable_reason.h"
+#include "extensions/browser/extension_host_test_helper.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/process_manager.h"
@@ -40,8 +41,10 @@
 #include "net/dns/mock_host_resolver.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/views/bubble/bubble_dialog_model_host.h"
 #include "ui/views/layout/animating_layout_manager_test_util.h"
 #include "ui/views/test/widget_test.h"
+#include "ui/views/widget/widget.h"
 
 namespace {
 
@@ -71,10 +74,18 @@ class BlockedActionWaiter
   std::unique_ptr<base::RunLoop> run_loop_;
 };
 
+views::Widget* CreateBubble(views::View* anchor_point) {
+  std::unique_ptr<ui::DialogModel> dialog_model =
+      ui::DialogModel::Builder().SetTitle(u"Title").Build();
+  auto bubble = std::make_unique<views::BubbleDialogModelHost>(
+      std::move(dialog_model), anchor_point, views::BubbleBorder::TOP_RIGHT);
+
+  return views::BubbleDialogDelegate::CreateBubble(std::move(bubble));
+}
+
 }  // namespace
 
-class ExtensionsToolbarContainerBrowserTest
-    : public ExtensionsToolbarBrowserTest {
+class ExtensionsToolbarContainerUITest : public ExtensionsToolbarUITest {
  public:
   enum class ExtensionRemovalMethod {
     kDisable,
@@ -83,15 +94,15 @@ class ExtensionsToolbarContainerBrowserTest
     kTerminate,
   };
 
-  ExtensionsToolbarContainerBrowserTest() = default;
-  ExtensionsToolbarContainerBrowserTest(
-      const ExtensionsToolbarContainerBrowserTest&) = delete;
-  ExtensionsToolbarContainerBrowserTest& operator=(
-      const ExtensionsToolbarContainerBrowserTest&) = delete;
-  ~ExtensionsToolbarContainerBrowserTest() override = default;
+  ExtensionsToolbarContainerUITest() = default;
+  ExtensionsToolbarContainerUITest(const ExtensionsToolbarContainerUITest&) =
+      delete;
+  ExtensionsToolbarContainerUITest& operator=(
+      const ExtensionsToolbarContainerUITest&) = delete;
+  ~ExtensionsToolbarContainerUITest() override = default;
 
   void SetUpOnMainThread() override {
-    ExtensionsToolbarBrowserTest::SetUpOnMainThread();
+    ExtensionsToolbarUITest::SetUpOnMainThread();
     // InProcessBrowserTest will create the browser and request the hosting
     // NativeWidget's window activate. However, the NativeWidget's window can
     // resolve this activation request asynchronously. Showing the extension
@@ -178,8 +189,7 @@ class ExtensionsToolbarContainerBrowserTest
 
 // Tests that invocation metrics are properly recorded when triggering
 // extensions from the toolbar.
-IN_PROC_BROWSER_TEST_F(ExtensionsToolbarContainerBrowserTest,
-                       InvocationMetrics) {
+IN_PROC_BROWSER_TEST_F(ExtensionsToolbarContainerUITest, InvocationMetrics) {
   base::HistogramTester histogram_tester;
   scoped_refptr<const extensions::Extension> extension =
       LoadTestExtension("extensions/uitest/extension_with_action_and_command");
@@ -208,22 +218,22 @@ IN_PROC_BROWSER_TEST_F(ExtensionsToolbarContainerBrowserTest,
       ToolbarActionViewController::InvocationSource::kToolbarButton, 1);
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionsToolbarContainerBrowserTest,
+IN_PROC_BROWSER_TEST_F(ExtensionsToolbarContainerUITest,
                        InvisibleWithoutExtension_Disable) {
   VerifyContainerVisibility(ExtensionRemovalMethod::kDisable, false);
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionsToolbarContainerBrowserTest,
+IN_PROC_BROWSER_TEST_F(ExtensionsToolbarContainerUITest,
                        InvisibleWithoutExtension_Uninstall) {
   VerifyContainerVisibility(ExtensionRemovalMethod::kUninstall, false);
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionsToolbarContainerBrowserTest,
+IN_PROC_BROWSER_TEST_F(ExtensionsToolbarContainerUITest,
                        InvisibleWithoutExtension_Blocklist) {
   VerifyContainerVisibility(ExtensionRemovalMethod::kBlocklist, false);
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionsToolbarContainerBrowserTest,
+IN_PROC_BROWSER_TEST_F(ExtensionsToolbarContainerUITest,
                        InvisibleWithoutExtension_Terminate) {
   // TODO(pbos): Keep the container visible when extensions are terminated
   // (crash). This lets users find and restart them. Then update this test
@@ -235,7 +245,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionsToolbarContainerBrowserTest,
 
 // Tests that clicking on a second extension action will close a first if its
 // popup was open.
-IN_PROC_BROWSER_TEST_F(ExtensionsToolbarContainerBrowserTest,
+IN_PROC_BROWSER_TEST_F(ExtensionsToolbarContainerUITest,
                        ClickingOnASecondActionClosesTheFirst) {
   std::vector<std::unique_ptr<extensions::TestExtensionDir>> test_dirs;
   auto load_extension = [&](const char* extension_name) {
@@ -298,8 +308,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionsToolbarContainerBrowserTest,
 
   {
     // Click on Alpha and wait for it to open the popup.
-    ExtensionTestMessageListener listener("alpha popup opened",
-                                          /*will_reply=*/false);
+    ExtensionTestMessageListener listener("alpha popup opened");
     ClickOnAction(alpha_action);
     EXPECT_TRUE(listener.WaitUntilSatisfied());
   }
@@ -320,8 +329,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionsToolbarContainerBrowserTest,
         *process_manager->GetRenderFrameHostsForExtension(alpha->id()).begin();
     content::WebContentsDestroyedWatcher popup_destroyed(
         content::WebContents::FromRenderFrameHost(popup_frame));
-    ExtensionTestMessageListener listener("beta popup opened",
-                                          /*will_reply=*/false);
+    ExtensionTestMessageListener listener("beta popup opened");
     ClickOnAction(beta_action);
     EXPECT_TRUE(listener.WaitUntilSatisfied());
     popup_destroyed.Wait();
@@ -336,46 +344,89 @@ IN_PROC_BROWSER_TEST_F(ExtensionsToolbarContainerBrowserTest,
   EXPECT_TRUE(beta_action->view_controller()->IsShowingPopup());
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionsToolbarContainerBrowserTest,
-                       ShowToolbarActionsBarBubbleForExtension_Pinned) {
+// Tests that clicking an extension toolbar icon when the popup is open closes
+// the popup.
+IN_PROC_BROWSER_TEST_F(ExtensionsToolbarContainerUITest,
+                       DoubleClickToolbarActionToClose) {
+  scoped_refptr<const extensions::Extension> extension =
+      LoadTestExtension("extensions/ui/browser_action_popup");
+  ASSERT_TRUE(extension);
+
+  ToolbarActionsModel* const toolbar_model =
+      ToolbarActionsModel::Get(profile());
+  toolbar_model->SetActionVisibility(extension->id(), true);
+  EXPECT_TRUE(toolbar_model->IsActionPinned(extension->id()));
+
+  ExtensionsToolbarContainer* const container = GetExtensionsToolbarContainer();
+  views::test::WaitForAnimatingLayoutManager(container);
+
+  ToolbarActionViewController* const view_controller =
+      container->GetActionForId(extension->id());
+  EXPECT_TRUE(container->IsActionVisibleOnToolbar(view_controller));
+  ToolbarActionView* const action_view =
+      container->GetViewForId(extension->id());
+  EXPECT_TRUE(action_view->GetVisible());
+
+  ExtensionTestMessageListener listener("Popup opened");
+  EXPECT_TRUE(ui_test_utils::SendMouseMoveSync(
+      ui_test_utils::GetCenterInScreenCoordinates(action_view)));
+  EXPECT_TRUE(ui_controls::SendMouseClick(ui_controls::LEFT));
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
+  EXPECT_TRUE(view_controller->IsShowingPopup());
+  EXPECT_EQ(view_controller, container->popup_owner_for_testing());
+
+  extensions::ExtensionHostTestHelper host_helper(profile(), extension->id());
+  EXPECT_TRUE(
+      ui_test_utils::SendMouseEventsSync(ui_controls::LEFT, ui_controls::DOWN));
+  host_helper.WaitForHostDestroyed();
+
+  EXPECT_FALSE(view_controller->IsShowingPopup());
+  EXPECT_EQ(nullptr, container->popup_owner_for_testing());
+
+  // Releasing the mouse shouldn't result in the popup being shown again.
+  EXPECT_TRUE(
+      ui_test_utils::SendMouseEventsSync(ui_controls::LEFT, ui_controls::UP));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(view_controller->IsShowingPopup());
+  EXPECT_EQ(nullptr, container->popup_owner_for_testing());
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionsToolbarContainerUITest,
+                       ShowWidgetForExtension_Pinned) {
   scoped_refptr<const extensions::Extension> extension =
       LoadTestExtension("extensions/simple_with_popup");
   ASSERT_TRUE(extension);
 
+  ExtensionsToolbarContainer* const container = GetExtensionsToolbarContainer();
+  ToolbarActionViewController* const action =
+      container->GetActionForId(extension->id());
+
   ToolbarActionsModel* const model = ToolbarActionsModel::Get(profile());
   model->SetActionVisibility(extension->id(), true);
-  ExtensionsToolbarContainer* const container = GetExtensionsToolbarContainer();
   container->GetWidget()->LayoutRootViewIfNecessary();
 
-  {
-    auto visible_actions = GetVisibleToolbarActionViews();
-    ASSERT_EQ(1u, visible_actions.size());
-    EXPECT_EQ(extension->id(), visible_actions[0]->view_controller()->GetId());
-  }
+  auto visible_actions = GetVisibleToolbarActionViews();
+  ASSERT_EQ(1u, visible_actions.size());
+  EXPECT_EQ(extension->id(), visible_actions[0]->view_controller()->GetId());
 
-  TestToolbarActionsBarBubbleDelegate test_delegate(u"Heading", u"Body",
-                                                    u"Action");
-  test_delegate.set_action_id(extension->id());
-  container->ShowToolbarActionBubble(test_delegate.GetDelegate());
+  views::Widget* bubble = CreateBubble(container->GetExtensionsButton());
+  container->ShowWidgetForExtension(bubble, extension->id());
+
   views::Widget* const bubble_widget =
       container->GetAnchoredWidgetForExtensionForTesting(extension->id());
   ASSERT_TRUE(bubble_widget);
   views::test::WidgetVisibleWaiter(bubble_widget).Wait();
 
-  EXPECT_TRUE(test_delegate.shown());
-  {
-    views::test::WidgetDestroyedWaiter destroyed_waiter(bubble_widget);
-    bubble_widget->Close();
-    destroyed_waiter.Wait();
-  }
+  views::test::WidgetDestroyedWaiter destroyed_waiter(bubble_widget);
+  bubble_widget->CloseWithReason(
+      views::Widget::ClosedReason::kCloseButtonClicked);
+  destroyed_waiter.Wait();
 
-  ASSERT_TRUE(test_delegate.close_action());
-  EXPECT_EQ(ToolbarActionsBarBubbleDelegate::CLOSE_DISMISS_DEACTIVATION,
-            *test_delegate.close_action());
+  EXPECT_TRUE(container->IsActionVisibleOnToolbar(action));
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionsToolbarContainerBrowserTest,
-                       ShowToolbarActionsBarBubbleForExtension_Unpinned) {
+IN_PROC_BROWSER_TEST_F(ExtensionsToolbarContainerUITest,
+                       ShowWidgetForExtension_Unpinned) {
   scoped_refptr<const extensions::Extension> extension =
       LoadTestExtension("extensions/simple_with_popup");
   ASSERT_TRUE(extension);
@@ -386,10 +437,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionsToolbarContainerBrowserTest,
 
   EXPECT_EQ(0u, GetVisibleToolbarActionViews().size());
 
-  TestToolbarActionsBarBubbleDelegate test_delegate(u"Heading", u"Body",
-                                                    u"Action");
-  test_delegate.set_action_id(extension->id());
-  container->ShowToolbarActionBubble(test_delegate.GetDelegate());
+  views::Widget* bubble = CreateBubble(container->GetExtensionsButton());
+  container->ShowWidgetForExtension(bubble, extension->id());
+
   views::Widget* const bubble_widget =
       container->GetAnchoredWidgetForExtensionForTesting(extension->id());
   ASSERT_TRUE(bubble_widget);
@@ -397,22 +447,16 @@ IN_PROC_BROWSER_TEST_F(ExtensionsToolbarContainerBrowserTest,
 
   EXPECT_TRUE(container->IsActionVisibleOnToolbar(action));
 
-  EXPECT_TRUE(test_delegate.shown());
-  {
-    views::test::WidgetDestroyedWaiter destroyed_waiter(bubble_widget);
-    bubble_widget->Close();
-    destroyed_waiter.Wait();
-  }
-
-  ASSERT_TRUE(test_delegate.close_action());
-  EXPECT_EQ(ToolbarActionsBarBubbleDelegate::CLOSE_DISMISS_DEACTIVATION,
-            *test_delegate.close_action());
+  views::test::WidgetDestroyedWaiter destroyed_waiter(bubble_widget);
+  bubble_widget->CloseWithReason(
+      views::Widget::ClosedReason::kCloseButtonClicked);
+  destroyed_waiter.Wait();
 
   EXPECT_FALSE(container->IsActionVisibleOnToolbar(action));
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionsToolbarContainerBrowserTest,
-                       ShowToolbarActionsBarBubbleForExtension_NoAction) {
+IN_PROC_BROWSER_TEST_F(ExtensionsToolbarContainerUITest,
+                       ShowWidgetForExtension_NoAction) {
   scoped_refptr<const extensions::Extension> extension =
       LoadTestExtension("extensions/simple_with_popup");
   ASSERT_TRUE(extension);
@@ -428,10 +472,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionsToolbarContainerBrowserTest,
 
   EXPECT_EQ(0u, GetVisibleToolbarActionViews().size());
 
-  TestToolbarActionsBarBubbleDelegate test_delegate(u"Heading", u"Body",
-                                                    u"Action");
-  test_delegate.set_action_id(extension->id());
-  container->ShowToolbarActionBubble(test_delegate.GetDelegate());
+  views::Widget* bubble = CreateBubble(container->GetExtensionsButton());
+  container->ShowWidgetForExtension(bubble, extension->id());
+
   views::Widget* const bubble_widget =
       container->GetAnchoredWidgetForExtensionForTesting(extension->id());
   ASSERT_TRUE(bubble_widget);
@@ -439,52 +482,40 @@ IN_PROC_BROWSER_TEST_F(ExtensionsToolbarContainerBrowserTest,
 
   EXPECT_EQ(0u, GetVisibleToolbarActionViews().size());
 
-  EXPECT_TRUE(test_delegate.shown());
-  {
-    views::test::WidgetDestroyedWaiter destroyed_waiter(bubble_widget);
-    bubble_widget->Close();
-    destroyed_waiter.Wait();
-  }
-
-  ASSERT_TRUE(test_delegate.close_action());
-  EXPECT_EQ(ToolbarActionsBarBubbleDelegate::CLOSE_DISMISS_DEACTIVATION,
-            *test_delegate.close_action());
+  views::test::WidgetDestroyedWaiter destroyed_waiter(bubble_widget);
+  bubble_widget->CloseWithReason(
+      views::Widget::ClosedReason::kCloseButtonClicked);
+  destroyed_waiter.Wait();
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionsToolbarContainerBrowserTest,
-                       UninstallExtensionWithActivelyShownToolbarActionBubble) {
+IN_PROC_BROWSER_TEST_F(ExtensionsToolbarContainerUITest,
+                       UninstallExtensionWithActivelyShownWidget) {
   scoped_refptr<const extensions::Extension> extension =
       LoadTestExtension("extensions/simple_with_popup");
   ASSERT_TRUE(extension);
 
+  ExtensionsToolbarContainer* const container = GetExtensionsToolbarContainer();
+
   ToolbarActionsModel* const model = ToolbarActionsModel::Get(profile());
   model->SetActionVisibility(extension->id(), true);
-  ExtensionsToolbarContainer* const container = GetExtensionsToolbarContainer();
   container->GetWidget()->LayoutRootViewIfNecessary();
 
-  {
-    auto visible_actions = GetVisibleToolbarActionViews();
-    ASSERT_EQ(1u, visible_actions.size());
-    EXPECT_EQ(extension->id(), visible_actions[0]->view_controller()->GetId());
-  }
+  auto visible_actions = GetVisibleToolbarActionViews();
+  ASSERT_EQ(1u, visible_actions.size());
+  EXPECT_EQ(extension->id(), visible_actions[0]->view_controller()->GetId());
 
-  TestToolbarActionsBarBubbleDelegate test_delegate(u"Heading", u"Body",
-                                                    u"Action");
-  test_delegate.set_action_id(extension->id());
-  container->ShowToolbarActionBubble(test_delegate.GetDelegate());
+  views::Widget* bubble = CreateBubble(container->GetExtensionsButton());
+  container->ShowWidgetForExtension(bubble, extension->id());
+
   views::Widget* const bubble_widget =
       container->GetAnchoredWidgetForExtensionForTesting(extension->id());
   ASSERT_TRUE(bubble_widget);
   views::test::WidgetVisibleWaiter(bubble_widget).Wait();
 
-  EXPECT_TRUE(test_delegate.shown());
-
-  {
-    extensions::ExtensionService* const extension_service =
-        extensions::ExtensionSystem::Get(profile())->extension_service();
-    extension_service->UninstallExtension(
-        extension->id(), extensions::UNINSTALL_REASON_FOR_TESTING, nullptr);
-  }
+  extensions::ExtensionService* const extension_service =
+      extensions::ExtensionSystem::Get(profile())->extension_service();
+  extension_service->UninstallExtension(
+      extension->id(), extensions::UNINSTALL_REASON_FOR_TESTING, nullptr);
 
   EXPECT_EQ(0u, GetVisibleToolbarActionViews().size());
   EXPECT_FALSE(container->GetActionForId(extension->id()));
@@ -494,13 +525,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionsToolbarContainerBrowserTest,
   // should very likely close the bubble as well. I wouldn't be surprised if
   // some bubble handlers don't expect the extension to be gone.
   views::test::WidgetDestroyedWaiter destroyed_waiter(bubble_widget);
-  bubble_widget->Close();
+  bubble_widget->CloseWithReason(views::Widget::ClosedReason::kUnspecified);
   destroyed_waiter.Wait();
 }
 
 // Verifies that dragging extension icons is disabled in incognito windows.
 // https://crbug.com/1203833.
-IN_PROC_BROWSER_TEST_F(ExtensionsToolbarContainerBrowserTest,
+IN_PROC_BROWSER_TEST_F(ExtensionsToolbarContainerUITest,
                        IncognitoDraggingIsDisabled) {
   // Load an extension, pin it, and enable it in incognito.
   scoped_refptr<const extensions::Extension> extension =
@@ -554,11 +585,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionsToolbarContainerBrowserTest,
 
 namespace {
 
-class IncognitoExtensionsToolbarContainerBrowserTest
-    : public ExtensionsToolbarContainerBrowserTest {
+class IncognitoExtensionsToolbarContainerUITest
+    : public ExtensionsToolbarContainerUITest {
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    ExtensionsToolbarContainerBrowserTest::SetUpCommandLine(command_line);
+    ExtensionsToolbarContainerUITest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kIncognito);
   }
 };
@@ -569,7 +600,7 @@ class IncognitoExtensionsToolbarContainerBrowserTest
 // removing the incognito profile and using the extension action in a normal
 // profile doesn't crash.
 // Regression test for crbug.com/663726.
-IN_PROC_BROWSER_TEST_F(IncognitoExtensionsToolbarContainerBrowserTest,
+IN_PROC_BROWSER_TEST_F(IncognitoExtensionsToolbarContainerUITest,
                        TestExtensionFirstLoadedInIncognitoMode) {
   EXPECT_TRUE(browser()->profile()->IsOffTheRecord());
 
@@ -592,7 +623,7 @@ IN_PROC_BROWSER_TEST_F(IncognitoExtensionsToolbarContainerBrowserTest,
 }
 
 class ExtensionsToolbarRuntimeHostPermissionsBrowserTest
-    : public ExtensionsToolbarContainerBrowserTest {
+    : public ExtensionsToolbarContainerUITest {
  public:
   enum class ContentScriptRunLocation {
     DOCUMENT_START,
@@ -607,7 +638,7 @@ class ExtensionsToolbarRuntimeHostPermissionsBrowserTest
   ~ExtensionsToolbarRuntimeHostPermissionsBrowserTest() override = default;
 
   void SetUpOnMainThread() override {
-    ExtensionsToolbarContainerBrowserTest::SetUpOnMainThread();
+    ExtensionsToolbarContainerUITest::SetUpOnMainThread();
     host_resolver()->AddRule("*", "127.0.0.1");
     ASSERT_TRUE(embedded_test_server()->Start());
   }
@@ -653,7 +684,8 @@ class ExtensionsToolbarRuntimeHostPermissionsBrowserTest
     ToolbarActionViewController* const controller =
         GetExtensionsToolbarContainer()->GetActionForId(extension_->id());
     return static_cast<extensions::ExtensionContextMenuModel*>(
-        controller->GetContextMenu());
+        controller->GetContextMenu(extensions::ExtensionContextMenuModel::
+                                       ContextMenuSource::kToolbarAction));
   }
 
   std::u16string GetActionTooltip() {
@@ -681,8 +713,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionsToolbarRuntimeHostPermissionsBrowserTest,
        l10n_util::GetStringUTF16(IDS_EXTENSIONS_HAS_ACCESS_TO_SITE)},
       u"\n");
 
-  ExtensionTestMessageListener injection_listener(kInjectionSucceededMessage,
-                                                  false /* will_reply */);
+  ExtensionTestMessageListener injection_listener(kInjectionSucceededMessage);
   injection_listener.set_extension_id(extension()->id());
 
   GURL url = embedded_test_server()->GetURL("example.com", "/title1.html");
@@ -714,9 +745,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionsToolbarRuntimeHostPermissionsBrowserTest,
   // bubble. Accept the bubble.
   {
     content::TestNavigationObserver observer(web_contents);
-    runner->set_default_bubble_close_action_for_testing(
-        std::make_unique<ToolbarActionsBarBubbleDelegate::CloseAction>(
-            ToolbarActionsBarBubbleDelegate::CLOSE_EXECUTE));
+    runner->accept_bubble_for_testing(true);
     extension_menu->ExecuteCommand(
         extensions::ExtensionContextMenuModel::PAGE_ACCESS_RUN_ON_SITE,
         0 /* event_flags */);
@@ -748,9 +777,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionsToolbarRuntimeHostPermissionsBrowserTest,
 
   // Allow the extension to run on all sites this time. This should again show a
   // refresh bubble. Dismiss it.
-  runner->set_default_bubble_close_action_for_testing(
-      std::make_unique<ToolbarActionsBarBubbleDelegate::CloseAction>(
-          ToolbarActionsBarBubbleDelegate::CLOSE_DISMISS_USER_ACTION));
+  runner->accept_bubble_for_testing(false);
   extension_menu->ExecuteCommand(
       extensions::ExtensionContextMenuModel::PAGE_ACCESS_RUN_ON_ALL_SITES,
       0 /* event_flags */);
@@ -777,8 +804,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionsToolbarRuntimeHostPermissionsBrowserTest,
        l10n_util::GetStringUTF16(IDS_EXTENSIONS_HAS_ACCESS_TO_SITE)},
       u"\n");
 
-  ExtensionTestMessageListener injection_listener(kInjectionSucceededMessage,
-                                                  false /* will_reply */);
+  ExtensionTestMessageListener injection_listener(kInjectionSucceededMessage);
   injection_listener.set_extension_id(extension()->id());
 
   GURL url = embedded_test_server()->GetURL("example.com", "/title1.html");

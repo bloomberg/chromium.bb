@@ -49,14 +49,14 @@ import org.chromium.components.feature_engagement.SnoozeAction;
 import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.components.feature_engagement.TriggerDetails;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
-import org.chromium.ui.test.util.DummyUiActivity;
+import org.chromium.ui.test.util.BlankUiTestActivity;
 
 /** Integration tests for UserEducationHelper. */
 @RunWith(BaseJUnit4ClassRunner.class)
 public final class UserEducationHelperTest {
     @ClassRule
-    public static BaseActivityTestRule<DummyUiActivity> activityTestRule =
-            new BaseActivityTestRule<>(DummyUiActivity.class);
+    public static BaseActivityTestRule<BlankUiTestActivity> activityTestRule =
+            new BaseActivityTestRule<>(BlankUiTestActivity.class);
 
     @Mock
     private Tracker mTracker;
@@ -112,6 +112,8 @@ public final class UserEducationHelperTest {
     public void testShowIPHWithSnooze() throws Throwable {
         mTestValues.addFeatureFlagOverride(ChromeFeatureList.SNOOZABLE_IPH, true);
         mTestValues.addFeatureFlagOverride(ChromeFeatureList.ENABLE_AUTOMATIC_SNOOZE, false);
+        mTestValues.addFeatureFlagOverride(ChromeFeatureList.ENABLE_IPH, true);
+        mTestValues.addFeatureFlagOverride(ChromeFeatureList.ANDROID_SCROLL_OPTIMIZATIONS, false);
         FeatureList.setTestValues(mTestValues);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             when(mTracker.shouldTriggerHelpUIWithSnooze(FeatureConstants.DOWNLOAD_HOME_FEATURE))

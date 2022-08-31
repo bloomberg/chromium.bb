@@ -8,11 +8,10 @@
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_masker.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources.h"
-#include "ui/gfx/geometry/rect_conversions.h"
 
 namespace blink {
 
-absl::optional<gfx::Rect> CSSMaskPainter::MaskBoundingBox(
+absl::optional<gfx::RectF> CSSMaskPainter::MaskBoundingBox(
     const LayoutObject& object,
     const PhysicalOffset& paint_offset) {
   if (!object.IsBoxModelObject() && !object.IsSVGChild())
@@ -26,15 +25,15 @@ absl::optional<gfx::Rect> CSSMaskPainter::MaskBoundingBox(
       if (masker) {
         const gfx::RectF reference_box =
             SVGResources::ReferenceBoxForEffects(object);
-        const float reference_box_zoom =
-            object.IsSVGForeignObject() ? object.StyleRef().EffectiveZoom() : 1;
-        return gfx::ToEnclosingRect(
-            masker->ResourceBoundingBox(reference_box, reference_box_zoom));
+        const float reference_box_zoom = object.IsSVGForeignObjectIncludingNG()
+                                             ? object.StyleRef().EffectiveZoom()
+                                             : 1;
+        return masker->ResourceBoundingBox(reference_box, reference_box_zoom);
       }
     }
   }
 
-  if (object.IsSVGChild() && !object.IsSVGForeignObject())
+  if (object.IsSVGChild() && !object.IsSVGForeignObjectIncludingNG())
     return absl::nullopt;
 
   if (!style.HasMask())
@@ -56,7 +55,7 @@ absl::optional<gfx::Rect> CSSMaskPainter::MaskBoundingBox(
   if (style.HasMaskBoxImageOutsets())
     maximum_mask_region.Expand(style.MaskBoxImageOutsets());
   maximum_mask_region.offset += paint_offset;
-  return ToPixelSnappedRect(maximum_mask_region);
+  return gfx::RectF(maximum_mask_region);
 }
 
 }  // namespace blink

@@ -14,7 +14,6 @@
 
 #include "base/gtest_prod_util.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/model/metadata_batch.h"
 #include "components/sync/model/sync_metadata_store.h"
 #include "components/webdata/common/web_database_table.h"
 
@@ -24,12 +23,16 @@ namespace base {
 class Time;
 }
 
+namespace syncer {
+class MetadataBatch;
+}
+
 namespace autofill {
 
 class AutofillChange;
 class AutofillEntry;
 struct AutofillMetadata;
-struct AutofillOfferData;
+class AutofillOfferData;
 class AutofillProfile;
 class AutofillTableEncryptor;
 class AutofillTableTest;
@@ -93,13 +96,6 @@ struct PaymentsCustomerData;
 //                      code starts with the postal code, but a JP address with
 //                      "ja-latn" language code starts with the recipient name.
 //                      Added in version 56.
-//   validity_bitfield  A bitfield representing the validity state of different
-//                      fields in the profile.
-//                      Added in version 75.
-//   is_client_validity_states_updated
-//                      A flag indicating whether the validity states of
-//                      different fields according to the client validity api is
-//                      updated or not. Added in version 80.
 //   disallow_settings_visible_updates
 //                      If true, a profile does not qualify to get merged with
 //                      a profile observed in a form submission.
@@ -208,12 +204,15 @@ struct PaymentsCustomerData;
 //                      phone number belongs.
 //   number
 //
-// autofill_profiles_trash
-//                      This table contains guids of "trashed" autofill
-//                      profiles.  When a profile is removed its guid is added
-//                      to this table so that Sync can perform deferred removal.
+// autofill_profile_birthdates
+//                      This table contains the multi-valued birthdate fields
+//                      associated with a profile.
 //
-//   guid               The guid string that identifies the trashed profile.
+//   guid               The guid string that identifies the profile to which the
+//                      birthdate number belongs.
+//   day                As an integer between 1 and 31 inclusive, or 0 if unset.
+//   month              As an integer between 1 and 12 inclusive, or 0 if unset.
+//   year               As a 4 digit integer, or 0 if unset.
 //
 // credit_cards         This table contains credit card data added by the user
 //                      with the Autofill dialog.  Most of the columns are
@@ -277,6 +276,9 @@ struct PaymentsCustomerData;
 //                      cards. ENROLLED means the card has been enrolled and
 //                      has related virtual credit cards.
 //   card_art_url       URL to generate the card art image for this card.
+//   product_description
+//                      The product description for the card. Used to be shown
+//                      in the UI when card is presented. Added in version 102.
 //
 // unmasked_credit_cards
 //                      When a masked credit credit card is unmasked and the
@@ -427,14 +429,6 @@ struct PaymentsCustomerData;
 //                      offer_id in the offer_data table.
 //   merchant_domain    List of full origins for merchant websites on which
 //                      this offer would apply.
-// TODO(crbug.com/1196021): Remove unused table.
-// credit_card_art_images
-//                      Contains the card art image for the server credit card.
-//
-//   id                 The server id of the credit card.
-//   instrument_id      The non-legacy server instrument id of the card.
-//   card_art_image     The customized card art image. Stored in the form of
-//                      BLOB.
 
 class AutofillTable : public WebDatabaseTable,
                       public syncer::SyncMetadataStore {
@@ -721,6 +715,11 @@ class AutofillTable : public WebDatabaseTable,
   bool MigrateToVersion95AddVirtualCardMetadata();
   bool MigrateToVersion96AddAutofillProfileDisallowConfirmableMergesColumn();
   bool MigrateToVersion98RemoveStatusColumnMaskedCreditCards();
+  bool MigrateToVersion99RemoveAutofillProfilesTrashTable();
+  bool MigrateToVersion100RemoveProfileValidityBitfieldColumn();
+  bool MigrateToVersion101RemoveCreditCardArtImageTable();
+  bool MigrateToVersion102AddAutofillBirthdatesTable();
+  bool MigrateToVersion104AddProductDescriptionColumn();
 
   // Max data length saved in the table, AKA the maximum length allowed for
   // form data.
@@ -794,12 +793,6 @@ class AutofillTable : public WebDatabaseTable,
   // Insert a single AutofillEntry into the autofill table.
   bool InsertAutofillEntry(const AutofillEntry& entry);
 
-  // Checks if the trash is empty.
-  bool IsAutofillProfilesTrashEmpty();
-
-  // Checks if the guid is in the trash.
-  bool IsAutofillGUIDInTrash(const std::string& guid);
-
   // Adds to |masked_credit_cards| and updates |server_card_metadata|.
   // Must already be in a transaction.
   void AddMaskedCreditCards(const std::vector<CreditCard>& credit_cards);
@@ -819,7 +812,7 @@ class AutofillTable : public WebDatabaseTable,
   bool InitProfileNamesTable();
   bool InitProfileEmailsTable();
   bool InitProfilePhonesTable();
-  bool InitProfileTrashTable();
+  bool InitProfileBirthdatesTable();
   bool InitMaskedCreditCardsTable();
   bool InitUnmaskedCreditCardsTable();
   bool InitServerCardMetadataTable();
@@ -833,7 +826,6 @@ class AutofillTable : public WebDatabaseTable,
   bool InitOfferDataTable();
   bool InitOfferEligibleInstrumentTable();
   bool InitOfferMerchantDomainTable();
-  bool InitCreditCardArtImagesTable();
 
   std::unique_ptr<AutofillTableEncryptor> autofill_table_encryptor_;
 };

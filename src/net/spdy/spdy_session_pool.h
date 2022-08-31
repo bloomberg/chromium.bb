@@ -32,8 +32,8 @@
 #include "net/spdy/server_push_delegate.h"
 #include "net/spdy/spdy_session_key.h"
 #include "net/ssl/ssl_config_service.h"
-#include "net/third_party/quiche/src/quic/core/quic_versions.h"
-#include "net/third_party/quiche/src/spdy/core/spdy_protocol.h"
+#include "net/third_party/quiche/src/quiche/quic/core/quic_versions.h"
+#include "net/third_party/quiche/src/quiche/spdy/core/spdy_protocol.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace net {
@@ -145,7 +145,8 @@ class NET_EXPORT SpdySessionPool
                   bool enable_priority_update,
                   bool go_away_on_ip_change,
                   SpdySessionPool::TimeFunc time_func,
-                  NetworkQualityEstimator* network_quality_estimator);
+                  NetworkQualityEstimator* network_quality_estimator,
+                  bool cleanup_sessions_on_ip_address_changed);
 
   SpdySessionPool(const SpdySessionPool&) = delete;
   SpdySessionPool& operator=(const SpdySessionPool&) = delete;
@@ -202,6 +203,9 @@ class NET_EXPORT SpdySessionPool
       bool enable_ip_based_pooling,
       bool is_websocket,
       const NetLogWithSource& net_log);
+
+  // Returns true if there is an available session for |key|.
+  bool HasAvailableSession(const SpdySessionKey& key, bool is_websocket) const;
 
   // Just like FindAvailableSession.
   //
@@ -312,7 +316,7 @@ class NET_EXPORT SpdySessionPool
   }
 
   // Returns the stored DNS aliases for the session key.
-  std::vector<std::string> GetDnsAliasesForSessionKey(
+  std::set<std::string> GetDnsAliasesForSessionKey(
       const SpdySessionKey& key) const;
 
  private:
@@ -324,7 +328,7 @@ class NET_EXPORT SpdySessionPool
       std::map<SpdySessionKey, base::WeakPtr<SpdySession>>;
   using AliasMap = std::multimap<IPEndPoint, SpdySessionKey>;
   using DnsAliasesBySessionKeyMap =
-      std::map<SpdySessionKey, std::vector<std::string>>;
+      std::map<SpdySessionKey, std::set<std::string>>;
   using RequestSet = std::set<SpdySessionRequest*>;
 
   struct RequestInfoForKey {
@@ -355,7 +359,7 @@ class NET_EXPORT SpdySessionPool
   // given key, replaces them.
   void MapKeyToAvailableSession(const SpdySessionKey& key,
                                 const base::WeakPtr<SpdySession>& session,
-                                std::vector<std::string> dns_aliases);
+                                std::set<std::string> dns_aliases);
 
   // Returns an iterator into |available_sessions_| for the given key,
   // which may be equal to |available_sessions_.end()|.
@@ -391,7 +395,7 @@ class NET_EXPORT SpdySessionPool
       const SpdySessionKey& key,
       std::unique_ptr<SpdySession> new_session,
       const NetLogWithSource& source_net_log,
-      std::vector<std::string> dns_aliases);
+      std::set<std::string> dns_aliases);
 
   // If a session with the specified |key| exists, invokes
   // OnSpdySessionAvailable on all matching members of
@@ -438,7 +442,7 @@ class NET_EXPORT SpdySessionPool
   const quic::ParsedQuicVersionVector quic_supported_versions_;
 
   // Defaults to true. May be controlled via SpdySessionPoolPeer for tests.
-  bool enable_sending_initial_data_;
+  bool enable_sending_initial_data_ = true;
   bool enable_ping_based_connection_checking_;
 
   const bool is_http2_enabled_;
@@ -489,9 +493,11 @@ class NET_EXPORT SpdySessionPool
   SpdySessionRequestMap spdy_session_request_map_;
 
   TimeFunc time_func_;
-  raw_ptr<ServerPushDelegate> push_delegate_;
+  raw_ptr<ServerPushDelegate> push_delegate_ = nullptr;
 
   raw_ptr<NetworkQualityEstimator> network_quality_estimator_;
+
+  const bool cleanup_sessions_on_ip_address_changed_;
 
   base::WeakPtrFactory<SpdySessionPool> weak_ptr_factory_{this};
 };

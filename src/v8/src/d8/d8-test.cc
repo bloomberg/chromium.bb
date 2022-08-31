@@ -17,7 +17,8 @@
 // and resetting these counters.
 
 // Make sure to sync the following with src/compiler/globals.h.
-#if defined(V8_TARGET_ARCH_X64) || defined(V8_TARGET_ARCH_ARM64)
+#if defined(V8_TARGET_ARCH_X64) || defined(V8_TARGET_ARCH_ARM64) || \
+    defined(V8_TARGET_ARCH_MIPS64) || defined(V8_TARGET_ARCH_LOONG64)
 #define V8_ENABLE_FP_PARAMS_IN_C_LINKAGE
 #endif
 
@@ -39,6 +40,8 @@ namespace {
 
 class FastCApiObject {
  public:
+  static FastCApiObject& instance();
+
 #ifdef V8_USE_SIMULATOR_WITH_GENERIC_C_CALLS
   static AnyCType AddAllFastCallbackPatch(AnyCType receiver,
                                           AnyCType should_fallback,
@@ -65,16 +68,58 @@ class FastCApiObject {
     self->fast_call_count_++;
 
     if (should_fallback) {
-      options.fallback = 1;
+      options.fallback = true;
       return 0;
     } else {
-      options.fallback = 0;
+      options.fallback = false;
     }
 
     return static_cast<double>(arg_i32) + static_cast<double>(arg_u32) +
            static_cast<double>(arg_i64) + static_cast<double>(arg_u64) +
            static_cast<double>(arg_f32) + arg_f64;
   }
+
+#ifdef V8_USE_SIMULATOR_WITH_GENERIC_C_CALLS
+  static AnyCType AddAllFastCallbackNoOptionsPatch(
+      AnyCType receiver, AnyCType should_fallback, AnyCType arg_i32,
+      AnyCType arg_u32, AnyCType arg_i64, AnyCType arg_u64, AnyCType arg_f32,
+      AnyCType arg_f64) {
+    AnyCType ret;
+    ret.double_value = AddAllFastCallbackNoOptions(
+        receiver.object_value, should_fallback.bool_value, arg_i32.int32_value,
+        arg_u32.uint32_value, arg_i64.int64_value, arg_u64.uint64_value,
+        arg_f32.float_value, arg_f64.double_value);
+    return ret;
+  }
+#endif  //  V8_USE_SIMULATOR_WITH_GENERIC_C_CALLS
+  static double AddAllFastCallbackNoOptions(Local<Object> receiver,
+                                            bool should_fallback,
+                                            int32_t arg_i32, uint32_t arg_u32,
+                                            int64_t arg_i64, uint64_t arg_u64,
+                                            float arg_f32, double arg_f64) {
+    FastCApiObject* self;
+
+    // For Wasm call, we don't pass FastCApiObject as the receiver, so we need
+    // to retrieve the FastCApiObject instance from a static variable.
+    if (Utils::OpenHandle(*receiver)->IsJSGlobalProxy() ||
+        Utils::OpenHandle(*receiver)->IsUndefined()) {
+      // Note: FastCApiObject::instance() returns the reference of an object
+      // allocated in thread-local storage, its value cannot be stored in a
+      // static variable here.
+      self = &FastCApiObject::instance();
+    } else {
+      // Fuzzing code can call this function from JS; in this case the receiver
+      // should be a FastCApiObject.
+      self = UnwrapObject(receiver);
+      CHECK_NOT_NULL(self);
+    }
+    self->fast_call_count_++;
+
+    return static_cast<double>(arg_i32) + static_cast<double>(arg_u32) +
+           static_cast<double>(arg_i64) + static_cast<double>(arg_u64) +
+           static_cast<double>(arg_f32) + arg_f64;
+  }
+
   static void AddAllSlowCallback(const FunctionCallbackInfo<Value>& args) {
     Isolate* isolate = args.GetIsolate();
 
@@ -143,13 +188,13 @@ class FastCApiObject {
     self->fast_call_count_++;
 
     if (should_fallback) {
-      options.fallback = 1;
+      options.fallback = true;
       return 0;
     }
 
     uint32_t length = seq_arg->Length();
     if (length > 1024) {
-      options.fallback = 1;
+      options.fallback = true;
       return 0;
     }
 
@@ -157,7 +202,7 @@ class FastCApiObject {
     bool result = TryToCopyAndConvertArrayToCppBuffer<
         CTypeInfoBuilder<Type>::Build().GetId(), Type>(seq_arg, buffer, 1024);
     if (!result) {
-      options.fallback = 1;
+      options.fallback = true;
       return 0;
     }
     DCHECK_EQ(seq_arg->Length(), length);
@@ -288,7 +333,7 @@ class FastCApiObject {
     self->fast_call_count_++;
 
     if (should_fallback) {
-      options.fallback = 1;
+      options.fallback = true;
       return 0;
     }
 
@@ -385,7 +430,7 @@ class FastCApiObject {
     self->fast_call_count_++;
 
     if (should_fallback) {
-      options.fallback = 1;
+      options.fallback = true;
       return 0;
     }
 
@@ -444,7 +489,7 @@ class FastCApiObject {
     self->fast_call_count_++;
 
     if (should_fallback) {
-      options.fallback = 1;
+      options.fallback = true;
       return 0;
     }
 
@@ -504,7 +549,7 @@ class FastCApiObject {
     self->fast_call_count_++;
 
     if (should_fallback) {
-      options.fallback = 1;
+      options.fallback = true;
       return false;
     }
 
@@ -619,6 +664,9 @@ class FastCApiObject {
 // will take care of managing their C++ objects lifetime.
 thread_local FastCApiObject kFastCApiObject;
 }  // namespace
+
+// static
+FastCApiObject& FastCApiObject::instance() { return kFastCApiObject; }
 
 void CreateFastCAPIObject(const FunctionCallbackInfo<Value>& info) {
   if (!info.IsConstructCall()) {
@@ -765,12 +813,23 @@ Local<FunctionTemplate> Shell::CreateTestFastCApiTemplate(Isolate* isolate) {
             FastCApiObject::AddAll32BitIntFastCallback_5ArgsPatch));
     const CFunction c_function_overloads[] = {add_all_32bit_int_6args_c_func,
                                               add_all_32bit_int_5args_c_func};
+
     api_obj_ctor->PrototypeTemplate()->Set(
         isolate, "overloaded_add_all_32bit_int",
         FunctionTemplate::NewWithCFunctionOverloads(
             isolate, FastCApiObject::AddAll32BitIntSlowCallback, Local<Value>(),
             signature, 1, ConstructorBehavior::kThrow,
             SideEffectType::kHasSideEffect, {c_function_overloads, 2}));
+
+    CFunction add_all_no_options_c_func = CFunction::Make(
+        FastCApiObject::AddAllFastCallbackNoOptions V8_IF_USE_SIMULATOR(
+            FastCApiObject::AddAllFastCallbackNoOptionsPatch));
+    api_obj_ctor->PrototypeTemplate()->Set(
+        isolate, "add_all_no_options",
+        FunctionTemplate::New(
+            isolate, FastCApiObject::AddAllSlowCallback, Local<Value>(),
+            Local<Signature>(), 1, ConstructorBehavior::kThrow,
+            SideEffectType::kHasSideEffect, &add_all_no_options_c_func));
 
     CFunction add_32bit_int_c_func = CFunction::Make(
         FastCApiObject::Add32BitIntFastCallback V8_IF_USE_SIMULATOR(
@@ -781,6 +840,7 @@ Local<FunctionTemplate> Shell::CreateTestFastCApiTemplate(Isolate* isolate) {
             isolate, FastCApiObject::Add32BitIntSlowCallback, Local<Value>(),
             signature, 1, ConstructorBehavior::kThrow,
             SideEffectType::kHasSideEffect, &add_32bit_int_c_func));
+
     CFunction is_valid_api_object_c_func =
         CFunction::Make(FastCApiObject::IsFastCApiObjectFastCallback);
     api_obj_ctor->PrototypeTemplate()->Set(
@@ -789,6 +849,7 @@ Local<FunctionTemplate> Shell::CreateTestFastCApiTemplate(Isolate* isolate) {
             isolate, FastCApiObject::IsFastCApiObjectSlowCallback,
             Local<Value>(), signature, 1, ConstructorBehavior::kThrow,
             SideEffectType::kHasSideEffect, &is_valid_api_object_c_func));
+
     api_obj_ctor->PrototypeTemplate()->Set(
         isolate, "fast_call_count",
         FunctionTemplate::New(

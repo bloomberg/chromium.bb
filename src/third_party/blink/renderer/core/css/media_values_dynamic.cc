@@ -45,6 +45,23 @@ MediaValuesDynamic::MediaValuesDynamic(LocalFrame* frame,
   DCHECK(frame_);
 }
 
+float MediaValuesDynamic::EmFontSize() const {
+  return CalculateEmSize(frame_);
+}
+
+float MediaValuesDynamic::RemFontSize() const {
+  // For media queries rem and em units are both based on the initial font.
+  return CalculateEmSize(frame_);
+}
+
+float MediaValuesDynamic::ExFontSize() const {
+  return CalculateExSize(frame_);
+}
+
+float MediaValuesDynamic::ChFontSize() const {
+  return CalculateChSize(frame_);
+}
+
 double MediaValuesDynamic::ViewportWidth() const {
   if (viewport_dimensions_overridden_)
     return viewport_width_override_;
@@ -57,21 +74,36 @@ double MediaValuesDynamic::ViewportHeight() const {
   return CalculateViewportHeight(frame_);
 }
 
-float MediaValuesDynamic::EmSize() const {
-  return CalculateEmSize(frame_);
+double MediaValuesDynamic::SmallViewportWidth() const {
+  return CalculateSmallViewportWidth(frame_);
 }
 
-float MediaValuesDynamic::RemSize() const {
-  // For media queries rem and em units are both based on the initial font.
-  return CalculateEmSize(frame_);
+double MediaValuesDynamic::SmallViewportHeight() const {
+  return CalculateSmallViewportHeight(frame_);
 }
 
-float MediaValuesDynamic::ExSize() const {
-  return CalculateExSize(frame_);
+double MediaValuesDynamic::LargeViewportWidth() const {
+  return CalculateLargeViewportWidth(frame_);
 }
 
-float MediaValuesDynamic::ChSize() const {
-  return CalculateChSize(frame_);
+double MediaValuesDynamic::LargeViewportHeight() const {
+  return CalculateLargeViewportHeight(frame_);
+}
+
+double MediaValuesDynamic::DynamicViewportWidth() const {
+  return CalculateDynamicViewportWidth(frame_);
+}
+
+double MediaValuesDynamic::DynamicViewportHeight() const {
+  return CalculateDynamicViewportHeight(frame_);
+}
+
+double MediaValuesDynamic::ContainerWidth() const {
+  return SmallViewportWidth();
+}
+
+double MediaValuesDynamic::ContainerHeight() const {
+  return SmallViewportHeight();
 }
 
 int MediaValuesDynamic::DeviceWidth() const {

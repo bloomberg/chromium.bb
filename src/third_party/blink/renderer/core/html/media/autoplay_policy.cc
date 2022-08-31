@@ -13,6 +13,7 @@
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/media/autoplay_uma_helper.h"
@@ -102,7 +103,8 @@ bool AutoplayPolicy::IsDocumentAllowedToPlay(const Document& document) {
 
     if (RuntimeEnabledFeatures::
             MediaEngagementBypassAutoplayPoliciesEnabled() &&
-        frame->IsMainFrame() && DocumentHasHighMediaEngagement(document)) {
+        frame->IsOutermostMainFrame() &&
+        DocumentHasHighMediaEngagement(document)) {
       return true;
     }
 
@@ -341,8 +343,12 @@ void AutoplayPolicy::OnIntersectionChangedForAutoplay(
 
   if (!is_visible) {
     auto pause_and_preserve_autoplay = [](AutoplayPolicy* self) {
+      if (!self)
+        return;
+
       if (self->element_->can_autoplay_ && self->element_->Autoplay()) {
-        self->element_->PauseInternal();
+        self->element_->PauseInternal(
+            HTMLMediaElement::PlayPromiseError::kPaused_AutoplayAutoPause);
         self->element_->can_autoplay_ = true;
       }
     };
@@ -355,6 +361,9 @@ void AutoplayPolicy::OnIntersectionChangedForAutoplay(
   }
 
   auto maybe_autoplay = [](AutoplayPolicy* self) {
+    if (!self)
+      return;
+
     if (self->ShouldAutoplay()) {
       self->element_->paused_ = false;
       self->element_->SetShowPosterFlag(false);

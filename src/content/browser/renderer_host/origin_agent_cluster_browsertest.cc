@@ -2,10 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/raw_ptr.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 
+#include "base/command_line.h"
 #include "base/test/scoped_feature_list.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/browser/content_browser_client.h"
+#include "content/public/common/content_client.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_base.h"
 #include "content/public/test/browser_test_utils.h"
@@ -20,27 +24,33 @@
 
 namespace content {
 
+namespace {
+
+class MockContentBrowserClient : public ContentBrowserClient {
+ public:
+  bool ShouldDisableOriginAgentClusterDefault(BrowserContext*) override {
+    return should_disable_origin_agent_cluster_default_;
+  }
+
+  bool should_disable_origin_agent_cluster_default_ = false;
+};
+
+}  // anonymous namespace
+
 // Test the effect of the OriginAgentCluster: header on document.domain
 // settability and how it (doesn't) affect process assignment.
 class OriginAgentClusterBrowserTest : public ContentBrowserTest {
  public:
   OriginAgentClusterBrowserTest()
-      : OriginAgentClusterBrowserTest(false, false) {}
+      : OriginAgentClusterBrowserTest(
+            /* origin_cluster_default_enabled */ false,
+            /* origin_cluster_absent_warning */ false,
+            /* secure_context */ true) {}
   ~OriginAgentClusterBrowserTest() override = default;
 
   void SetUp() override {
     mock_cert_verifier_.SetUpCommandLine(
         base::CommandLine::ForCurrentProcess());
-
-    // SetUp gets called before the test body, which is why we have to
-    // enable/disable the feature awkwardly through the constructor, instead
-    // of having a more straightforward setup call in the test body.
-    std::vector<base::Feature> enabled, disabled;
-    (origin_cluster_default_enabled_ ? enabled : disabled)
-        .push_back(blink::features::kOriginAgentClusterDefaultEnabled);
-    (origin_cluster_absent_warning_ ? enabled : disabled)
-        .push_back(blink::features::kOriginAgentClusterDefaultWarning);
-    features_.InitWithFeatures(enabled, disabled);
 
     ContentBrowserTest::SetUp();
   }
@@ -49,11 +59,22 @@ class OriginAgentClusterBrowserTest : public ContentBrowserTest {
   enum OriginAgentClusterState { kUnset, kSetTrue, kSetFalse, kMalformed };
 
   OriginAgentClusterBrowserTest(bool origin_cluster_default_enabled,
-                                bool origin_cluster_absent_warning)
+                                bool origin_cluster_absent_warning,
+                                bool secure_context)
       : server_(net::EmbeddedTestServer::TYPE_HTTPS),
         origin_cluster_default_enabled_(origin_cluster_default_enabled),
-        origin_cluster_absent_warning_(origin_cluster_absent_warning) {
+        origin_cluster_absent_warning_(origin_cluster_absent_warning),
+        secure_context_(secure_context) {
     server_.AddDefaultHandlers(GetTestDataFilePath());
+
+    // InitWithFeatures needs to be called in the constructor in multi-threaded
+    // tests.
+    std::vector<base::Feature> enabled, disabled;
+    (origin_cluster_default_enabled_ ? enabled : disabled)
+        .push_back(blink::features::kOriginAgentClusterDefaultEnabled);
+    (origin_cluster_absent_warning_ ? enabled : disabled)
+        .push_back(blink::features::kOriginAgentClusterDefaultWarning);
+    features_.InitWithFeatures(enabled, disabled);
   }
 
   void SetUpOnMainThread() override {
@@ -61,6 +82,12 @@ class OriginAgentClusterBrowserTest : public ContentBrowserTest {
     host_resolver()->AddRule("*", "127.0.0.1");
     SetupCrossSiteRedirector(server());
     ASSERT_TRUE(server()->Start());
+    original_browser_client_ = SetBrowserClientForTesting(&browser_client_);
+  }
+
+  void TearDownOnMainThread() override {
+    SetBrowserClientForTesting(original_browser_client_);
+    original_browser_client_ = nullptr;
   }
 
   void SetUpInProcessBrowserTestFixture() override {
@@ -73,7 +100,9 @@ class OriginAgentClusterBrowserTest : public ContentBrowserTest {
     mock_cert_verifier_.TearDownInProcessBrowserTestFixture();
   }
 
-  net::EmbeddedTestServer* server() { return &server_; }
+  net::EmbeddedTestServer* server() {
+    return secure_context_ ? &server_ : embedded_test_server();
+  }
 
   RenderProcessHost* NavigateAndGetProcess(const char* domain,
                                            OriginAgentClusterState oac_state) {
@@ -106,6 +135,16 @@ class OriginAgentClusterBrowserTest : public ContentBrowserTest {
     console.SetPattern("document.domain mutation is ignored*");
     CHECK(ExecJs(contents, SetDocumentDomainTo(to)));
     return !console.messages().size();
+  }
+
+  // Simulate setting the OriginAgentClusterDefaultEnabled enterprise policy.
+  void SetEnterprisePolicy(bool value) {
+    // Note that the enterprise policy has different 'polarity', and true
+    // means Chromium picks the default and false is legacy behaviour, while
+    // ContentBrowserClientShould::DisableOriginAgentClusterDefault is a
+    // disable switch, meaning that false means Chromium picks the default
+    // and true is legacy behaviour.
+    browser_client_.should_disable_origin_agent_cluster_default_ = !value;
   }
 
  private:
@@ -154,8 +193,12 @@ class OriginAgentClusterBrowserTest : public ContentBrowserTest {
   net::EmbeddedTestServer server_;
   content::ContentMockCertVerifier mock_cert_verifier_;
 
+  MockContentBrowserClient browser_client_;
+  raw_ptr<ContentBrowserClient> original_browser_client_ = nullptr;
+
   const bool origin_cluster_default_enabled_;
   const bool origin_cluster_absent_warning_;
+  const bool secure_context_;
   base::test::ScopedFeatureList features_;
 };
 
@@ -165,7 +208,10 @@ class OriginAgentClusterEnabledBrowserTest
     : public OriginAgentClusterBrowserTest {
  public:
   OriginAgentClusterEnabledBrowserTest()
-      : OriginAgentClusterBrowserTest(true, false) {}
+      : OriginAgentClusterBrowserTest(
+            /* origin_cluster_default_enabled */ true,
+            /* origin_cluster_absent_warning */ false,
+            /* secure_context */ true) {}
   ~OriginAgentClusterEnabledBrowserTest() override = default;
 };
 
@@ -175,8 +221,24 @@ class OriginAgentClusterWarningBrowserTest
     : public OriginAgentClusterBrowserTest {
  public:
   OriginAgentClusterWarningBrowserTest()
-      : OriginAgentClusterBrowserTest(false, true) {}
+      : OriginAgentClusterBrowserTest(
+            /* origin_cluster_default_enabled */ false,
+            /* origin_cluster_absent_warning */ true,
+            /* secure_context */ true) {}
   ~OriginAgentClusterWarningBrowserTest() override = default;
+};
+
+// Test fixture wih the default behaviour change enabled, but using an insecure
+// context. (blink::features::kOriginAgentClusterDefaultEnabled + http:)
+class OriginAgentClusterInsecureEnabledBrowserTest
+    : public OriginAgentClusterBrowserTest {
+ public:
+  OriginAgentClusterInsecureEnabledBrowserTest()
+      : OriginAgentClusterBrowserTest(
+            /* origin_cluster_default_enabled */ true,
+            /* origin_cluster_absent_warning */ false,
+            /* secure_context */ false) {}
+  ~OriginAgentClusterInsecureEnabledBrowserTest() override = default;
 };
 
 // DocumentDomain: Can we set document.domain?
@@ -347,4 +409,86 @@ IN_PROC_BROWSER_TEST_F(OriginAgentClusterWarningBrowserTest,
   EXPECT_TRUE(
       CanDocumentDomainMessage("a.domain.test", "domain.test", kMalformed));
 }
+
+// Policy: Ensure that the legacy behaviour remains if the appropriate
+// enterprise policy is set.
+//
+// (The case without policy is adequately covered by the tests above, since
+// none of them modify the policy.)
+
+IN_PROC_BROWSER_TEST_F(OriginAgentClusterEnabledBrowserTest,
+                       Policy_SetTrue_Default) {
+  SetEnterprisePolicy(false);
+  EXPECT_TRUE(CanDocumentDomain("a.domain.test", "domain.test", kUnset));
+}
+
+IN_PROC_BROWSER_TEST_F(OriginAgentClusterEnabledBrowserTest,
+                       Policy_SetFalse_Default) {
+  SetEnterprisePolicy(true);
+  EXPECT_FALSE(CanDocumentDomain("a.domain.test", "domain.test", kUnset));
+}
+
+IN_PROC_BROWSER_TEST_F(OriginAgentClusterEnabledBrowserTest,
+                       Policy_SetTrue_Enabled) {
+  SetEnterprisePolicy(false);
+  EXPECT_FALSE(CanDocumentDomain("a.domain.test", "domain.test", kSetTrue));
+}
+
+IN_PROC_BROWSER_TEST_F(OriginAgentClusterEnabledBrowserTest,
+                       Policy_SetFalse_Enabled) {
+  SetEnterprisePolicy(true);
+  EXPECT_FALSE(CanDocumentDomain("a.domain.test", "domain.test", kSetTrue));
+}
+
+IN_PROC_BROWSER_TEST_F(OriginAgentClusterEnabledBrowserTest,
+                       Policy_SetTrue_Disabled) {
+  SetEnterprisePolicy(false);
+  EXPECT_TRUE(CanDocumentDomain("a.domain.test", "domain.test", kSetFalse));
+}
+
+IN_PROC_BROWSER_TEST_F(OriginAgentClusterEnabledBrowserTest,
+                       Policy_SetFalse_Disabled) {
+  SetEnterprisePolicy(true);
+  EXPECT_TRUE(CanDocumentDomain("a.domain.test", "domain.test", kSetFalse));
+}
+
+IN_PROC_BROWSER_TEST_F(OriginAgentClusterEnabledBrowserTest,
+                       Policy_SetTrue_Malformed) {
+  SetEnterprisePolicy(false);
+  EXPECT_TRUE(CanDocumentDomain("a.domain.test", "domain.test", kMalformed));
+}
+
+IN_PROC_BROWSER_TEST_F(OriginAgentClusterEnabledBrowserTest,
+                       Policy_SetFalse_Malformed) {
+  SetEnterprisePolicy(true);
+  EXPECT_FALSE(CanDocumentDomain("a.domain.test", "domain.test", kMalformed));
+}
+
+// Test that the legacy behaviour continues working in insecure contexts.
+//
+// Origin-Agent-Cluster: is supposed to be a "powerful feature", which is
+// restricted to secure contexts. But disabling it is certainly not powerful,
+// and is specifically geared towards legacy applications, which means we
+// should ensure that one can still set document.domain in an insecure context
+// when Origin-Agent-Cluster: ?0 is set.
+
+IN_PROC_BROWSER_TEST_F(OriginAgentClusterInsecureEnabledBrowserTest,
+                       DocumentDomain_Default) {
+  EXPECT_TRUE(CanDocumentDomain("a.domain.test", "domain.test", kUnset));
+}
+
+IN_PROC_BROWSER_TEST_F(OriginAgentClusterInsecureEnabledBrowserTest,
+                       DocumentDomain_Disabled) {
+  EXPECT_TRUE(CanDocumentDomain("a.domain.test", "domain.test", kSetFalse));
+}
+
+IN_PROC_BROWSER_TEST_F(OriginAgentClusterInsecureEnabledBrowserTest,
+                       DocumentDomain_Malformed) {
+  EXPECT_TRUE(CanDocumentDomain("a.domain.test", "domain.test", kMalformed));
+}
+
+// We are (deliberately) not testing the kSetTrue case in this set of tests,
+// since that is bound to a secure context. But the disable cases should
+// continue to remain compatible with legacy behaviour.
+
 }  // namespace content

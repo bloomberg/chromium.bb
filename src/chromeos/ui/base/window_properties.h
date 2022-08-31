@@ -45,20 +45,36 @@ COMPONENT_EXPORT(CHROMEOS_UI_BASE)
 extern const ui::ClassProperty<bool>* const
     kIsDeferredTabDraggingTargetWindowKey;
 
-// Whether holding esc should exit fullscreen. Used by Borealis and Plugin VM.
+// Whether holding esc should exit fullscreen. Used by Plugin VM.
 COMPONENT_EXPORT(CHROMEOS_UI_BASE)
 extern const ui::ClassProperty<bool>* const kEscHoldToExitFullscreen;
 
-// Whether screen should minimize when using esc hold to exit fullscreen.
+// Whether to promote users to use Overview to exit fullscreen.
 // Borealis apps set this since they do not handle window size changes.
 COMPONENT_EXPORT(CHROMEOS_UI_BASE)
-extern const ui::ClassProperty<bool>* const kEscHoldExitFullscreenToMinimized;
+extern const ui::ClassProperty<bool>* const kUseOverviewToExitFullscreen;
+
+// If true, Exo clients may request pointer lock for this window.
+// When the lock activates, users will be notified to use Overview to exit
+// pointer lock.
+// Only ARC++ and Lacros may use pointer lock without this property being set.
+COMPONENT_EXPORT(CHROMEOS_UI_BASE)
+extern const ui::ClassProperty<bool>* const kUseOverviewToExitPointerLock;
+
+// True if clients expect the window to track the system's default frame colors.
+// This is used to determine whether a frame's color should be kept in sync with
+// default colors during system theme transitions, or if frame colors should be
+// left unmodified (e.g. system app custom frame colors).
+COMPONENT_EXPORT(CHROMEOS_UI_BASE)
+extern const ui::ClassProperty<bool>* const kTrackDefaultFrameColors;
 
 // A property key to store the active color on the window frame.
+// `kTrackDefaultFrameColors` must be set to false for this to take effect.
 COMPONENT_EXPORT(CHROMEOS_UI_BASE)
 extern const ui::ClassProperty<SkColor>* const kFrameActiveColorKey;
 
 // A property key to store the inactive color on the window frame.
+// `kTrackDefaultFrameColors` must be set to false for this to take effect.
 COMPONENT_EXPORT(CHROMEOS_UI_BASE)
 extern const ui::ClassProperty<SkColor>* const kFrameInactiveColorKey;
 
@@ -99,6 +115,10 @@ extern const ui::ClassProperty<bool>* const kWindowManagerManagesOpacityKey;
 // A property key to indicate ash's extended window state.
 COMPONENT_EXPORT(CHROMEOS_UI_BASE)
 extern const ui::ClassProperty<WindowStateType>* const kWindowStateTypeKey;
+
+// A property key to toggle Float window state change.
+COMPONENT_EXPORT(CHROMEOS_UI_BASE)
+extern const ui::ClassProperty<bool>* const kWindowToggleFloatKey;
 
 // A property key whose value is shown in alt-tab/overview mode. If non-value
 // is set, the window's title is used.

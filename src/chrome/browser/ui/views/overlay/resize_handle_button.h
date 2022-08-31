@@ -9,8 +9,6 @@
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/controls/button/image_button.h"
 
-namespace views {
-
 // An image button representing a white resize handle affordance.
 class ResizeHandleButton : public views::ImageButton {
  public:
@@ -21,16 +19,18 @@ class ResizeHandleButton : public views::ImageButton {
   ResizeHandleButton& operator=(const ResizeHandleButton&) = delete;
   ~ResizeHandleButton() override;
 
+  void OnThemeChanged() override;
+
   void SetPosition(const gfx::Size& size,
                    OverlayWindowViews::WindowQuadrant quadrant);
   int GetHTComponent() const;
+  void SetQuadrant(OverlayWindowViews::WindowQuadrant quadrant);
 
  private:
-  void SetImageForQuadrant(OverlayWindowViews::WindowQuadrant quadrant);
+  void UpdateImageForQuadrant();
 
-  absl::optional<OverlayWindowViews::WindowQuadrant> current_quadrant_;
+  OverlayWindowViews::WindowQuadrant current_quadrant_ =
+      OverlayWindowViews::WindowQuadrant::kBottomRight;
 };
-
-}  // namespace views
 
 #endif  // CHROME_BROWSER_UI_VIEWS_OVERLAY_RESIZE_HANDLE_BUTTON_H_

@@ -11,30 +11,27 @@ title: View Test Result via WMatrix
 ---
 
 \*\*\*DEPRECATED, PLEASE VISIT
-https://sites.google.com/a/chromium.org/dev/chromium-os/testing/moblab \*\*\*
+https://www.chromium.org/chromium-os/testing/moblab \*\*\*
 (20170714)
 
 Starting with M52, Moblab AFE UI will have a link to WMatrix, which will present
 a better test result viewing UI for Moblab users.
 
-[<img alt="image"
-src="/chromium-os/testing/moblab/view-test-result-vis-wmatrix/Selection_980.png">](/chromium-os/testing/moblab/view-test-result-vis-wmatrix/Selection_980.png)
+![](/chromium-os/testing/moblab/view-test-result-vis-wmatrix/Selection_980.png)
 
 The Test Results UI might look a little overwhelming. It includes all tests that
 currently existing in Chrome OS autotest.git. But might not be relevant to
 Partners initially. We recommend to start with 'Suite List" in the "Quick links"
 section.
 
-[<img alt="image"
-src="/chromium-os/testing/moblab/view-test-result-vis-wmatrix/Selection_982.png">](/chromium-os/testing/moblab/view-test-result-vis-wmatrix/Selection_982.png)
+![](/chromium-os/testing/moblab/view-test-result-vis-wmatrix/Selection_982.png)
 
 Depends on the type of test suites you have run on your moblab unit, the type of
 suite in the subsequent screens may differ. You may have faft, storage qual,
 bvt, cts tests show up. Here is one example from our faft tests. From here you
 could drill down further to see aggregated test results.
 
-[<img alt="image"
-src="/chromium-os/testing/moblab/view-test-result-vis-wmatrix/Selection_978.png">](/chromium-os/testing/moblab/view-test-result-vis-wmatrix/Selection_978.png)
+![](/chromium-os/testing/moblab/view-test-result-vis-wmatrix/Selection_978.png)
 
 Aggregated test results of one particular suites across build and devices. Here
 is a simple example of one device and one build test results. If you have your
@@ -49,5 +46,4 @@ click on the Suite Name from screen shown earlier. One work around is to add
 build comparing to today's build) to see the result. We are aware of this flaw
 and working on a fix for next release.
 
-[<img alt="image"
-src="/chromium-os/testing/moblab/view-test-result-vis-wmatrix/Selection_977.png">](/chromium-os/testing/moblab/view-test-result-vis-wmatrix/Selection_977.png)
+[](/chromium-os/testing/moblab/view-test-result-vis-wmatrix/Selection_977.png)

@@ -34,8 +34,8 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/media_values_cached.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
-#include "third_party/blink/renderer/core/html/parser/compact_html_token.h"
 #include "third_party/blink/renderer/core/html/parser/css_preload_scanner.h"
 #include "third_party/blink/renderer/core/html/parser/html_token.h"
 #include "third_party/blink/renderer/core/html/parser/preload_request.h"
@@ -46,13 +46,12 @@
 
 namespace blink {
 
-typedef wtf_size_t TokenPreloadScannerCheckpoint;
-
 class HTMLParserOptions;
 class HTMLTokenizer;
-class LazyLoadImageObserver;
 class SegmentedString;
-class SubresourceRedirectOriginsPreloader;
+
+bool Match(const StringImpl* impl, const QualifiedName& q_name);
+const StringImpl* TagImplFor(const HTMLToken::DataVector& data);
 
 struct CORE_EXPORT CachedDocumentParameters {
   USING_FAST_MALLOC(CachedDocumentParameters);
@@ -68,10 +67,8 @@ struct CORE_EXPORT CachedDocumentParameters {
   network::mojom::ReferrerPolicy referrer_policy;
   SubresourceIntegrity::IntegrityFeatures integrity_features;
   LocalFrame::LazyLoadImageSetting lazy_load_image_setting;
-  WeakPersistent<LazyLoadImageObserver> lazy_load_image_observer;
-  WeakPersistent<SubresourceRedirectOriginsPreloader>
-      subresource_redirect_origins_preloader;
   HashSet<String> disabled_image_types;
+  WeakPersistent<LocalDOMWindow> local_dom_window;
 };
 
 class TokenPreloadScanner {
@@ -94,60 +91,24 @@ class TokenPreloadScanner {
             PreloadRequestStream& requests,
             absl::optional<ViewportDescription>*,
             bool* is_csp_meta_tag);
-  void Scan(const CompactHTMLToken&,
-            const SegmentedString&,
-            PreloadRequestStream& requests,
-            absl::optional<ViewportDescription>*,
-            bool* is_csp_meta_tag);
 
   void SetPredictedBaseElementURL(const KURL& url) {
     predicted_base_element_url_ = url;
   }
 
-  // A TokenPreloadScannerCheckpoint is valid until the next call to rewindTo,
-  // at which point all outstanding checkpoints are invalidated.
-  TokenPreloadScannerCheckpoint CreateCheckpoint();
-  void RewindTo(TokenPreloadScannerCheckpoint);
-
  private:
   class StartTagScanner;
 
-  template <typename Token>
-  void HandleMetaNameAttribute(const Token& token,
+  void HandleMetaNameAttribute(const HTMLToken& token,
                                absl::optional<ViewportDescription>* viewport);
 
-  template <typename Token>
-  inline void ScanCommon(const Token&,
+  inline void ScanCommon(const HTMLToken&,
                          const SegmentedString&,
                          PreloadRequestStream& requests,
                          absl::optional<ViewportDescription>*,
                          bool* is_csp_meta_tag);
 
-  template <typename Token>
-  void UpdatePredictedBaseURL(const Token&);
-
-  struct Checkpoint {
-    Checkpoint(
-        const KURL& predicted_base_element_url,
-        bool in_style,
-        bool in_script,
-        bool in_script_web_bundle,
-        size_t template_count,
-        scoped_refptr<const PreloadRequest::ExclusionInfo> exclusion_info)
-        : predicted_base_element_url(predicted_base_element_url),
-          in_style(in_style),
-          in_script(in_script),
-          in_script_web_bundle(in_script_web_bundle),
-          template_count(template_count),
-          exclusion_info(std::move(exclusion_info)) {}
-
-    KURL predicted_base_element_url;
-    bool in_style;
-    bool in_script;
-    bool in_script_web_bundle;
-    size_t template_count;
-    scoped_refptr<const PreloadRequest::ExclusionInfo> exclusion_info;
-  };
+  void UpdatePredictedBaseURL(const HTMLToken&);
 
   struct PictureData {
     PictureData() : source_size(0.0), source_size_set(false), picked(false) {}
@@ -179,10 +140,6 @@ class TokenPreloadScanner {
   // cannot determine an Origin Trial's status, so we accept this information in
   // the constructor and set this flag accordingly.
   bool priority_hints_origin_trial_enabled_;
-
-  bool did_rewind_ = false;
-
-  Vector<Checkpoint> checkpoints_;
 };
 
 class CORE_EXPORT HTMLPreloadScanner {

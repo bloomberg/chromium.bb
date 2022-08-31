@@ -9,8 +9,8 @@
 namespace blink {
 
 void PaintLayerFragment::Trace(Visitor* visitor) const {
-  visitor->Trace(root_fragment_data);
   visitor->Trace(fragment_data);
+  visitor->Trace(physical_fragment);
 }
 
 }  // namespace blink

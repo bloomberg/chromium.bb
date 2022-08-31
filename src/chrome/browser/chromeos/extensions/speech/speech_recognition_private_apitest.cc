@@ -39,8 +39,7 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(speech::SpeechRecognitionType::kOnDevice));
 
 IN_PROC_BROWSER_TEST_P(SpeechRecognitionPrivateApiTest, Simple) {
-  ASSERT_TRUE(RunExtensionTest("speech/speech_recognition_private/simple"))
-      << message_;
+  ASSERT_TRUE(RunSpeechRecognitionPrivateTest("simple")) << message_;
 }
 
 // An end-to-end test that starts speech recognition and ensures that the
@@ -49,8 +48,7 @@ IN_PROC_BROWSER_TEST_P(SpeechRecognitionPrivateApiTest, Simple) {
 IN_PROC_BROWSER_TEST_P(SpeechRecognitionPrivateApiTest, OnStart) {
   SetCustomArg(api::speech_recognition_private::ToString(
       speech::SpeechRecognitionTypeToApiType(GetParam())));
-  ASSERT_TRUE(RunExtensionTest("speech/speech_recognition_private/on_start"))
-      << message_;
+  ASSERT_TRUE(RunSpeechRecognitionPrivateTest("on_start")) << message_;
 }
 
 // An end-to-end test that starts speech recognition, waits for results, then
@@ -58,27 +56,22 @@ IN_PROC_BROWSER_TEST_P(SpeechRecognitionPrivateApiTest, OnStart) {
 IN_PROC_BROWSER_TEST_P(SpeechRecognitionPrivateApiTest, StartResultStop) {
   // This test requires some back and forth communication between C++ and JS.
   // Use message listeners to force the synchronicity of this test.
-  ExtensionTestMessageListener start_listener("Started", false);
-  ExtensionTestMessageListener first_result_listener("Received first result",
-                                                     false);
-  ExtensionTestMessageListener second_result_listener("Received second result",
-                                                      true);
+  ExtensionTestMessageListener start_listener("Started");
+  ExtensionTestMessageListener first_result_listener("Received first result");
+  ExtensionTestMessageListener second_result_listener(
+      "Received second result", ReplyBehavior::kWillReply);
 
   // Load the extension and wait for speech recognition to start.
   ResultCatcher result_catcher;
-  const Extension* extension = LoadExtension(test_data_dir_.AppendASCII(
-      "speech/speech_recognition_private/start_result_stop"));
+  const Extension* extension = LoadExtensionAsComponent("start_result_stop");
   ASSERT_TRUE(extension);
   ASSERT_TRUE(start_listener.WaitUntilSatisfied());
 
-  // Send a non-final speech result and wait for confirmation from the
-  // extension.
-  SendFakeSpeechResultAndWait("First result", /*is_final=*/false);
+  SendInterimResultAndWait("First result");
   ASSERT_TRUE(first_result_listener.WaitUntilSatisfied());
   ASSERT_FALSE(second_result_listener.was_satisfied());
 
-  // Send a final speech result and wait for confirmation from the extension.
-  SendFakeSpeechResultAndWait("Second result", /*is_final=*/true);
+  SendFinalResultAndWait("Second result");
   ASSERT_TRUE(second_result_listener.WaitUntilSatisfied());
 
   // Replying will trigger the extension to stop speech recogntition. As done
@@ -90,15 +83,14 @@ IN_PROC_BROWSER_TEST_P(SpeechRecognitionPrivateApiTest, StartResultStop) {
 // An end-to-end test that starts speech recognition, fires a fake error, then
 // waits for the extension to handle both an onError and an onStop event.
 IN_PROC_BROWSER_TEST_P(SpeechRecognitionPrivateApiTest, StartErrorStop) {
-  ExtensionTestMessageListener start_listener("Started", false);
+  ExtensionTestMessageListener start_listener("Started");
 
   ResultCatcher result_catcher;
-  const Extension* extension = LoadExtension(test_data_dir_.AppendASCII(
-      "speech/speech_recognition_private/start_error_stop"));
+  const Extension* extension = LoadExtensionAsComponent("start_error_stop");
   ASSERT_TRUE(extension);
   ASSERT_TRUE(start_listener.WaitUntilSatisfied());
 
-  SendFakeSpeechRecognitionErrorAndWait();
+  SendErrorAndWait();
   ASSERT_TRUE(result_catcher.GetNextResult()) << result_catcher.message();
 }
 
