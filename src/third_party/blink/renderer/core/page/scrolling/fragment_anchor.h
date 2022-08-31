@@ -7,7 +7,8 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
+#include "third_party/blink/renderer/platform/heap/member.h"
 
 namespace blink {
 class Element;
@@ -51,16 +52,13 @@ class CORE_EXPORT FragmentAnchor : public GarbageCollected<FragmentAnchor> {
   virtual void Installed() = 0;
 
   virtual void DidScroll(mojom::blink::ScrollType type) = 0;
-  virtual void PerformPreRafActions() = 0;
-
-  // Dismissing the fragment anchor removes indicators of the anchor, such as
-  // text highlighting on a text fragment anchor. If true, the anchor has been
-  // dismissed and can be disposed.
-  virtual bool Dismiss() = 0;
+  virtual void PerformScriptableActions() = 0;
 
   virtual void Trace(Visitor*) const;
 
   virtual bool IsTextFragmentAnchor() { return false; }
+
+  virtual bool IsSelectorFragmentAnchor() { return false; }
 
   virtual void ScrollElementIntoViewWithOptions(Element* element_to_scroll,
                                                 ScrollIntoViewOptions* options);

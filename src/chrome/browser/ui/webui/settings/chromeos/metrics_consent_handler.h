@@ -9,6 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
+#include "components/metrics/metrics_service.h"
 #include "components/user_manager/user_manager.h"
 
 namespace chromeos {
@@ -24,6 +25,7 @@ class MetricsConsentHandler : public ::settings::SettingsPageUIHandler {
   static const char kUpdateMetricsConsent[];
 
   MetricsConsentHandler(Profile* profile,
+                        metrics::MetricsService* metrics_service,
                         user_manager::UserManager* user_manager);
 
   MetricsConsentHandler(const MetricsConsentHandler&) = delete;
@@ -40,18 +42,23 @@ class MetricsConsentHandler : public ::settings::SettingsPageUIHandler {
   friend class TestMetricsConsentHandler;
 
   // Handles updating metrics consent for the user.
-  void HandleUpdateMetricsConsent(base::Value::ConstListView args);
+  void HandleUpdateMetricsConsent(const base::Value::List& args);
 
   // Handles fetching metrics consent state. The callback will return two
   // values: a string pref name and a boolean indicating whether the current
   // user may change that pref.
-  void HandleGetMetricsConsentState(base::Value::ConstListView args);
+  void HandleGetMetricsConsentState(const base::Value::List& args);
 
   // Returns true if user with |profile_| has permissions to change the metrics
   // consent pref.
   bool IsMetricsConsentConfigurable() const;
 
+  // Returns true if the user metrics consent should be used rather than the
+  // device metrics consent.
+  bool ShouldUseUserConsent() const;
+
   Profile* const profile_;
+  metrics::MetricsService* const metrics_service_;
   user_manager::UserManager* const user_manager_;
 
   // Used for callbacks.

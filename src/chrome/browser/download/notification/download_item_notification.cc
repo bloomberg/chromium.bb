@@ -16,8 +16,8 @@
 #include "base/i18n/rtl.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/app/vector_icons/vector_icons.h"
@@ -53,7 +53,9 @@
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/mime_util.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkImage.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -66,9 +68,9 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/ash_features.h"
-#include "chrome/browser/ash/note_taking_helper.h"
+#include "ash/constants/notifier_catalogs.h"
 #elif BUILDFLAG(IS_CHROMEOS_LACROS)
-#include "chromeos/lacros/lacros_service.h"
+#include "chromeos/startup/browser_init_params.h"
 #endif
 
 using base::UserMetricsAction;
@@ -189,10 +191,6 @@ void RecordButtonClickAction(DownloadCommands::Command command) {
       base::RecordAction(
           UserMetricsAction("DownloadNotification.Button_CopyToClipboard"));
       break;
-    case DownloadCommands::ANNOTATE:
-      base::RecordAction(
-          UserMetricsAction("DownloadNotification.Button_Annotate"));
-      break;
     case DownloadCommands::DEEP_SCAN:
       base::RecordAction(
           UserMetricsAction("DownloadNotification.Button_DeepScan"));
@@ -214,15 +212,10 @@ bool IsExtensionDownload(DownloadUIModel* item) {
 
 bool IsHoldingSpaceIncognitoProfileIntegrationEnabled() {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  return ash::features::IsHoldingSpaceIncognitoProfileIntegrationEnabled();
+  return true;
 #elif BUILDFLAG(IS_CHROMEOS_LACROS)
-  auto* lacros_service = chromeos::LacrosService::Get();
-  if (lacros_service) {
-    auto* init_params = lacros_service->init_params();
-    return init_params &&
-           init_params->is_holding_space_incognito_profile_integration_enabled;
-  }
-  return false;
+  return chromeos::BrowserInitParams::Get()
+      ->is_holding_space_incognito_profile_integration_enabled;
 #else
   return false;
 #endif
@@ -233,14 +226,8 @@ bool IsHoldingSpaceInProgressDownloadsNotificationSuppressionEnabled() {
   return ash::features::
       IsHoldingSpaceInProgressDownloadsNotificationSuppressionEnabled();
 #elif BUILDFLAG(IS_CHROMEOS_LACROS)
-  auto* lacros_service = chromeos::LacrosService::Get();
-  if (lacros_service) {
-    auto* init_params = lacros_service->init_params();
-    return init_params &&
-           init_params
-               ->is_holding_space_in_progress_downloads_notification_suppression_enabled;
-  }
-  return false;
+  return chromeos::BrowserInitParams::Get()
+      ->is_holding_space_in_progress_downloads_notification_suppression_enabled;
 #else
   return false;
 #endif
@@ -276,12 +263,19 @@ DownloadItemNotification::DownloadItemNotification(
       message_center::NOTIFICATION_TYPE_PROGRESS, GetNotificationId(),
       std::u16string(),  // title
       std::u16string(),  // body
-      gfx::Image(),      // icon
+      ui::ImageModel(),  // icon
       l10n_util::GetStringUTF16(
           IDS_DOWNLOAD_NOTIFICATION_DISPLAY_SOURCE),  // display_source
       GURL(kDownloadNotificationOrigin),              // origin_url
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+      message_center::NotifierId(
+          message_center::NotifierType::SYSTEM_COMPONENT,
+          kDownloadNotificationNotifierId,
+          ash::NotificationCatalogName::kDownloadNotification),
+#else
       message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
                                  kDownloadNotificationNotifierId),
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
       rich_notification_data,
       base::MakeRefCounted<message_center::ThunkNotificationDelegate>(
           weak_factory_.GetWeakPtr()));
@@ -316,10 +310,10 @@ void DownloadItemNotification::OnDownloadDestroyed() {
   // |this| will be deleted before there's a chance for Close() to be called
   // through the delegate, so preemptively call it now.
   Close(false);
+  ShutDown();
 
+  // This object may get deleted after this call.
   observer_->OnDownloadDestroyed(item_->GetContentId());
-
-  item_.reset();
 }
 
 void DownloadItemNotification::DisablePopup() {
@@ -792,14 +786,8 @@ DownloadItemNotification::GetExtraActions() const {
       break;
     case download::DownloadItem::COMPLETE:
       actions->push_back(DownloadCommands::SHOW_IN_FOLDER);
-      if (!notification_->image().IsEmpty()) {
+      if (!notification_->image().IsEmpty())
         actions->push_back(DownloadCommands::COPY_TO_CLIPBOARD);
-// TODO(crbug.com/1267466): Support NoteTakingHelper in Lacros.
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-        if (ash::NoteTakingHelper::Get()->IsAppAvailable(profile()))
-          actions->push_back(DownloadCommands::ANNOTATE);
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-      }
       break;
     case download::DownloadItem::MAX_DOWNLOAD_STATE:
       NOTREACHED();
@@ -904,9 +892,6 @@ std::u16string DownloadItemNotification::GetCommandLabel(
     case DownloadCommands::COPY_TO_CLIPBOARD:
       id = IDS_DOWNLOAD_NOTIFICATION_COPY_TO_CLIPBOARD;
       break;
-    case DownloadCommands::ANNOTATE:
-      id = IDS_DOWNLOAD_NOTIFICATION_ANNOTATE;
-      break;
     case DownloadCommands::LEARN_MORE_MIXED_CONTENT:
       id = IDS_LEARN_MORE;
       break;
@@ -950,18 +935,10 @@ std::u16string DownloadItemNotification::GetWarningStatusString() const {
       }
     }
     case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT:
-    case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST: {
+    case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST:
+    case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_ACCOUNT_COMPROMISE: {
       return l10n_util::GetStringFUTF16(IDS_PROMPT_MALICIOUS_DOWNLOAD_CONTENT,
                                         elided_filename);
-    }
-    case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_ACCOUNT_COMPROMISE: {
-      return base::FeatureList::IsEnabled(
-                 safe_browsing::kSafeBrowsingCTDownloadWarning)
-                 ? l10n_util::GetStringFUTF16(
-                       IDS_PROMPT_DANGEROUS_DOWNLOAD_ACCOUNT_COMPROMISE,
-                       elided_filename)
-                 : l10n_util::GetStringFUTF16(
-                       IDS_PROMPT_MALICIOUS_DOWNLOAD_CONTENT, elided_filename);
     }
     case download::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT: {
       bool requests_ap_verdicts =
@@ -1103,7 +1080,7 @@ std::u16string DownloadItemNotification::GetSubStatusString() const {
         DCHECK(!interrupt_text.empty());
         return interrupt_text;
       }
-      FALLTHROUGH;  // Same as download::DownloadItem::CANCELLED.
+      [[fallthrough]];  // Same as download::DownloadItem::CANCELLED.
     }
     case download::DownloadItem::CANCELLED:
       // "Cancelled"

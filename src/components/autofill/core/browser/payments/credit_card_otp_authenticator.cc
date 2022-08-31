@@ -144,8 +144,8 @@ void CreditCardOtpAuthenticator::OnDidSelectChallengeOption(
   }
 
   bool server_success = result == AutofillClient::PaymentsRpcResult::kSuccess;
-  // Dismiss the pending authentication selection dialog so that other dialogs
-  // can be shown.
+  // Dismiss the pending authentication selection dialog if it is visible so
+  // that other dialogs can be shown.
   autofill_client_->DismissUnmaskAuthenticatorSelectionDialog(server_success);
   if (server_success) {
     DCHECK(!context_token.empty());
@@ -156,6 +156,11 @@ void CreditCardOtpAuthenticator::OnDidSelectChallengeOption(
     return;
   }
 
+  // If the OTP input dialog is visible, also dismiss it. The two dialogs will
+  // not be shown at the same time but either one of them can be visible when
+  // this function is invoked.
+  autofill_client_->OnUnmaskOtpVerificationResult(
+      OtpUnmaskResult::kPermanentFailure);
   // Show the virtual card permanent error dialog if server explicitly returned
   // vcn permanent error, show temporary error dialog for the rest failure cases
   // since currently only virtual card is supported.
@@ -185,8 +190,6 @@ void CreditCardOtpAuthenticator::ShowOtpDialog() {
   // Before showing OTP dialog, let's load required risk data if it's not
   // prepared. Risk data is only required for unmask request. Not required for
   // select challenge option request.
-  // TODO(crbug.com/1243475): Explore the possibility of sending one
-  // LoadRiskData request per session.
   if (risk_data_.empty()) {
     autofill_client_->LoadRiskData(
         base::BindOnce(&CreditCardOtpAuthenticator::OnDidGetUnmaskRiskData,

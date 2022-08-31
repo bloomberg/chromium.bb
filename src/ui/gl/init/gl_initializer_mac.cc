@@ -18,6 +18,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
+#include "ui/gl/gl_display_manager.h"
 #include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
@@ -94,10 +95,11 @@ bool InitializeStaticCGLInternal(GLImplementation implementation) {
 const char kGLESv2ANGLELibraryName[] = "libGLESv2.dylib";
 const char kEGLANGLELibraryName[] = "libEGL.dylib";
 
-const char kGLESv2SwiftShaderLibraryName[] = "libswiftshader_libGLESv2.dylib";
-const char kEGLSwiftShaderLibraryName[] = "libswiftshader_libEGL.dylib";
-
 bool InitializeStaticEGLInternalFromLibrary(GLImplementation implementation) {
+#if BUILDFLAG(USE_STATIC_ANGLE)
+  NOTREACHED();
+#endif
+
   // Some unit test targets depend on Angle/SwiftShader but aren't built
   // as app bundles. In that case, the .dylib is next to the executable.
   base::FilePath base_dir;
@@ -111,28 +113,13 @@ bool InitializeStaticEGLInternalFromLibrary(GLImplementation implementation) {
     base_dir = base_dir.DirName();
   }
 
-  base::FilePath glesv2_path;
-  base::FilePath egl_path;
-  if (implementation == kGLImplementationSwiftShaderGL) {
-#if BUILDFLAG(ENABLE_SWIFTSHADER)
-    glesv2_path = base_dir.Append(kGLESv2SwiftShaderLibraryName);
-    egl_path = base_dir.Append(kEGLSwiftShaderLibraryName);
-#else
-    return false;
-#endif
-  } else {
-    glesv2_path = base_dir.Append(kGLESv2ANGLELibraryName);
-    egl_path = base_dir.Append(kEGLANGLELibraryName);
-#if BUILDFLAG(USE_STATIC_ANGLE)
-    NOTREACHED();
-#endif
-  }
-
+  base::FilePath glesv2_path = base_dir.Append(kGLESv2ANGLELibraryName);
   base::NativeLibrary gles_library = LoadLibraryAndPrintError(glesv2_path);
   if (!gles_library) {
     return false;
   }
 
+  base::FilePath egl_path = base_dir.Append(kEGLANGLELibraryName);
   base::NativeLibrary egl_library = LoadLibraryAndPrintError(egl_path);
   if (!egl_library) {
     base::UnloadNativeLibrary(gles_library);
@@ -184,28 +171,29 @@ bool InitializeStaticEGLInternal(GLImplementationParts implementation) {
 
 }  // namespace
 
-bool InitializeGLOneOffPlatform() {
+GLDisplay* InitializeGLOneOffPlatform(uint64_t system_device_id) {
   switch (GetGLImplementation()) {
     case kGLImplementationDesktopGL:
     case kGLImplementationDesktopGLCoreProfile:
     case kGLImplementationAppleGL:
       if (!InitializeOneOffForSandbox()) {
         LOG(ERROR) << "GLSurfaceCGL::InitializeOneOff failed.";
-        return false;
       }
-      return true;
+      return GLDisplayManagerEGL::GetInstance()->GetDisplay(system_device_id);
 #if defined(USE_EGL)
     case kGLImplementationEGLGLES2:
-    case kGLImplementationEGLANGLE:
-    case kGLImplementationSwiftShaderGL:
-      if (!GLSurfaceEGL::InitializeOneOff(EGLDisplayPlatform(0))) {
+    case kGLImplementationEGLANGLE: {
+      GLDisplay* display = GLSurfaceEGL::InitializeOneOff(EGLDisplayPlatform(0),
+                                                          system_device_id);
+      if (!display) {
         LOG(ERROR) << "GLSurfaceEGL::InitializeOneOff failed.";
-        return false;
+        return nullptr;
       }
-      return true;
+      return display;
+    }
 #endif  // defined(USE_EGL)
     default:
-      return true;
+      return GLDisplayManagerEGL::GetInstance()->GetDisplay(system_device_id);
   }
 }
 
@@ -229,7 +217,6 @@ bool InitializeStaticGLBindings(GLImplementationParts implementation) {
 #if defined(USE_EGL)
     case kGLImplementationEGLGLES2:
     case kGLImplementationEGLANGLE:
-    case kGLImplementationSwiftShaderGL:
       return InitializeStaticEGLInternal(implementation);
 #endif  // #if defined(USE_EGL)
     case kGLImplementationMockGL:
@@ -244,10 +231,10 @@ bool InitializeStaticGLBindings(GLImplementationParts implementation) {
   return false;
 }
 
-void ShutdownGLPlatform() {
+void ShutdownGLPlatform(GLDisplay* display) {
   ClearBindingsGL();
 #if defined(USE_EGL)
-  GLSurfaceEGL::ShutdownOneOff();
+  GLSurfaceEGL::ShutdownOneOff(static_cast<GLDisplayEGL*>(display));
   ClearBindingsEGL();
 #endif  // defined(USE_EGL)
 }

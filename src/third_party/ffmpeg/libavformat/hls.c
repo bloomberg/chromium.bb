@@ -27,7 +27,10 @@
  * https://www.rfc-editor.org/rfc/rfc8216.txt
  */
 
+#include "config_components.h"
+
 #include "libavformat/http.h"
+#include "libavutil/aes.h"
 #include "libavutil/avstring.h"
 #include "libavutil/avassert.h"
 #include "libavutil/intreadwrite.h"
@@ -36,6 +39,7 @@
 #include "libavutil/dict.h"
 #include "libavutil/time.h"
 #include "avformat.h"
+#include "demux.h"
 #include "internal.h"
 #include "avio_internal.h"
 #include "id3v2.h"
@@ -817,10 +821,16 @@ static int parse_playlist(HLSContext *c, const char *url,
                                &info);
             new_rendition(c, &info, url);
         } else if (av_strstart(line, "#EXT-X-TARGETDURATION:", &ptr)) {
+            int64_t t;
             ret = ensure_playlist(c, &pls, url);
             if (ret < 0)
                 goto fail;
-            pls->target_duration = strtoll(ptr, NULL, 10) * AV_TIME_BASE;
+            t = strtoll(ptr, NULL, 10);
+            if (t < 0 || t >= INT64_MAX / AV_TIME_BASE) {
+                ret = AVERROR_INVALIDDATA;
+                goto fail;
+            }
+            pls->target_duration = t * AV_TIME_BASE;
         } else if (av_strstart(line, "#EXT-X-MEDIA-SEQUENCE:", &ptr)) {
             uint64_t seq_no;
             ret = ensure_playlist(c, &pls, url);
@@ -914,7 +924,7 @@ static int parse_playlist(HLSContext *c, const char *url,
                 if (has_iv) {
                     memcpy(seg->iv, iv, sizeof(iv));
                 } else {
-                    int64_t seq = pls->start_seq_no + pls->n_segments;
+                    uint64_t seq = pls->start_seq_no + (uint64_t)pls->n_segments;
                     memset(seg->iv, 0, sizeof(seg->iv));
                     AV_WB64(seg->iv + 8, seq);
                 }
@@ -1284,7 +1294,6 @@ static int open_input(HLSContext *c, struct playlist *pls, struct segment *seg, 
         char iv[33], key[33], url[MAX_URL_SIZE];
         ff_data_to_hex(iv, seg->iv, sizeof(seg->iv), 0);
         ff_data_to_hex(key, pls->key, sizeof(pls->key), 0);
-        iv[32] = key[32] = '\0';
         if (strstr(seg->url, "://"))
             snprintf(url, sizeof(url), "crypto+%s", seg->url);
         else
@@ -1654,7 +1663,8 @@ static void add_metadata_from_renditions(AVFormatContext *s, struct playlist *pl
 /* if timestamp was in valid range: returns 1 and sets seq_no
  * if not: returns 0 and sets seq_no to closest segment */
 static int find_timestamp_in_playlist(HLSContext *c, struct playlist *pls,
-                                      int64_t timestamp, int64_t *seq_no)
+                                      int64_t timestamp, int64_t *seq_no,
+                                      int64_t *seg_start_ts)
 {
     int i;
     int64_t pos = c->first_timestamp == AV_NOPTS_VALUE ?
@@ -1669,6 +1679,9 @@ static int find_timestamp_in_playlist(HLSContext *c, struct playlist *pls,
         int64_t diff = pos + pls->segments[i]->duration - timestamp;
         if (diff > 0) {
             *seq_no = pls->start_seq_no + i;
+            if (seg_start_ts) {
+                *seg_start_ts = pos;
+            }
             return 1;
         }
         pos += pls->segments[i]->duration;
@@ -1692,7 +1705,7 @@ static int64_t select_cur_seq_no(HLSContext *c, struct playlist *pls)
      * playlist) and this is a complete file, find the matching segment
      * by counting durations. */
     if (pls->finished && c->cur_timestamp != AV_NOPTS_VALUE) {
-        find_timestamp_in_playlist(c, pls, c->cur_timestamp, &seq_no);
+        find_timestamp_in_playlist(c, pls, c->cur_timestamp, &seq_no, NULL);
         return seq_no;
     }
 
@@ -1716,28 +1729,6 @@ static int64_t select_cur_seq_no(HLSContext *c, struct playlist *pls)
 
     /* Otherwise just start on the first segment. */
     return pls->start_seq_no;
-}
-
-static int save_avio_options(AVFormatContext *s)
-{
-    HLSContext *c = s->priv_data;
-    static const char * const opts[] = {
-        "headers", "http_proxy", "user_agent", "cookies", "referer", "rw_timeout", "icy", NULL };
-    const char * const * opt = opts;
-    uint8_t *buf;
-    int ret = 0;
-
-    while (*opt) {
-        if (av_opt_get(s->pb, *opt, AV_OPT_SEARCH_CHILDREN | AV_OPT_ALLOW_NULL, &buf) >= 0) {
-            ret = av_dict_set(&c->avio_opts, *opt, buf,
-                              AV_DICT_DONT_STRDUP_VAL);
-            if (ret < 0)
-                return ret;
-        }
-        opt++;
-    }
-
-    return ret;
 }
 
 static int nested_io_open(AVFormatContext *s, AVIOContext **pb, const char *url,
@@ -1885,7 +1876,7 @@ static int hls_read_header(AVFormatContext *s)
     c->first_timestamp = AV_NOPTS_VALUE;
     c->cur_timestamp = AV_NOPTS_VALUE;
 
-    if ((ret = save_avio_options(s)) < 0)
+    if ((ret = ffio_copy_url_options(s->pb, &c->avio_opts)) < 0)
         return ret;
 
     /* XXX: Some HLS servers don't like being sent the range header,
@@ -2047,7 +2038,7 @@ static int hls_read_header(AVFormatContext *s)
         if (seg && seg->key_type == KEY_SAMPLE_AES && pls->is_id3_timestamped &&
             pls->audio_setup_info.codec_id != AV_CODEC_ID_NONE) {
             void *iter = NULL;
-            while ((in_fmt = (const AVInputFormat *)av_demuxer_iterate(&iter)))
+            while ((in_fmt = av_demuxer_iterate(&iter)))
                 if (in_fmt->raw_codec_id == pls->audio_setup_info.codec_id)
                     break;
         } else {
@@ -2074,8 +2065,7 @@ static int hls_read_header(AVFormatContext *s)
             if (strstr(in_fmt->name, "mov")) {
                 char key[33];
                 ff_data_to_hex(key, pls->key, sizeof(pls->key), 0);
-                key[32] = '\0';
-                av_dict_set(&options, "decryption_key", key, AV_OPT_FLAG_DECODING_PARAM);
+                av_dict_set(&options, "decryption_key", key, 0);
             } else if (!c->crypto_ctx.aes_ctx) {
                 c->crypto_ctx.aes_ctx = av_aes_alloc();
                 if (!c->crypto_ctx.aes_ctx) {
@@ -2386,7 +2376,7 @@ static int hls_read_seek(AVFormatContext *s, int stream_index,
     int i, j;
     int stream_subdemuxer_index;
     int64_t first_timestamp, seek_timestamp, duration;
-    int64_t seq_no;
+    int64_t seq_no, seg_start_ts;
 
     if ((flags & AVSEEK_FLAG_BYTE) || (c->ctx->ctx_flags & AVFMTCTX_UNSEEKABLE))
         return AVERROR(ENOSYS);
@@ -2396,8 +2386,7 @@ static int hls_read_seek(AVFormatContext *s, int stream_index,
 
     seek_timestamp = av_rescale_rnd(timestamp, AV_TIME_BASE,
                                     s->streams[stream_index]->time_base.den,
-                                    flags & AVSEEK_FLAG_BACKWARD ?
-                                    AV_ROUND_DOWN : AV_ROUND_UP);
+                                    AV_ROUND_DOWN);
 
     duration = s->duration == AV_NOPTS_VALUE ?
                0 : s->duration;
@@ -2418,8 +2407,15 @@ static int hls_read_seek(AVFormatContext *s, int stream_index,
     }
     /* check if the timestamp is valid for the playlist with the
      * specified stream index */
-    if (!seek_pls || !find_timestamp_in_playlist(c, seek_pls, seek_timestamp, &seq_no))
+    if (!seek_pls || !find_timestamp_in_playlist(c, seek_pls, seek_timestamp, &seq_no, &seg_start_ts))
         return AVERROR(EIO);
+
+    if (s->streams[stream_index]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO &&
+        flags & AVSEEK_FLAG_BACKWARD && !(flags & AVSEEK_FLAG_ANY)) {
+        /* Seeking to start of segment ensures we seek to a keyframe located
+         * before the given timestamp. */
+        seek_timestamp = seg_start_ts;
+    }
 
     /* set segment now so we do not need to search again below */
     seek_pls->cur_seq_no = seq_no;
@@ -2447,7 +2443,7 @@ static int hls_read_seek(AVFormatContext *s, int stream_index,
 
         if (pls != seek_pls) {
             /* set closest segment seq_no for playlists not handled above */
-            find_timestamp_in_playlist(c, pls, seek_timestamp, &pls->cur_seq_no);
+            find_timestamp_in_playlist(c, pls, seek_timestamp, &pls->cur_seq_no, NULL);
             /* seek the playlist to the given position without taking
              * keyframes into account since this playlist does not have the
              * specified stream where we should look for the keyframes */
@@ -2511,7 +2507,7 @@ const AVInputFormat ff_hls_demuxer = {
     .long_name      = NULL_IF_CONFIG_SMALL("Apple HTTP Live Streaming"),
     .priv_class     = &hls_class,
     .priv_data_size = sizeof(HLSContext),
-    .flags          = AVFMT_NOGENSEARCH | AVFMT_TS_DISCONT,
+    .flags          = AVFMT_NOGENSEARCH | AVFMT_TS_DISCONT | AVFMT_NO_BYTE_SEEK,
     .flags_internal = FF_FMT_INIT_CLEANUP,
     .read_probe     = hls_probe,
     .read_header    = hls_read_header,

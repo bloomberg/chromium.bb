@@ -220,6 +220,9 @@ enum {
   // Uses the default number of winner modes, which is 3 for intra mode, and 1
   // for inter mode.
   MULTI_WINNER_MODE_DEFAULT = 2,
+
+  // Maximum number of winner modes allowed.
+  MULTI_WINNER_MODE_LEVELS,
 } UENUM1BYTE(MULTI_WINNER_MODE_TYPE);
 
 enum {
@@ -311,9 +314,17 @@ enum {
  * more flexibility in update frequency. This enum is separate from \ref
  * COST_UPDATE_TYPE because although \ref COST_UPDATE_TYPE is not exposed, its
  * values are public so it cannot be modified without breaking public API.
+ * Due to the use of AOMMIN() in populate_unified_cost_update_freq() to
+ * compute the unified cost update frequencies (out of COST_UPDATE_TYPE and
+ * INTERNAL_COST_UPDATE_TYPE), the values of this enum type must be listed in
+ * the order of increasing frequencies.
+ *
+ * \warning  In case of any updates/modifications to the enum COST_UPDATE_TYPE,
+ * update the enum INTERNAL_COST_UPDATE_TYPE as well.
  */
 typedef enum {
   INTERNAL_COST_UPD_OFF,       /*!< Turn off cost updates. */
+  INTERNAL_COST_UPD_TILE,      /*!< Update every tile. */
   INTERNAL_COST_UPD_SBROW_SET, /*!< Update every row_set of height 256 pixs. */
   INTERNAL_COST_UPD_SBROW,     /*!< Update every sb rows inside a tile. */
   INTERNAL_COST_UPD_SB,        /*!< Update every sb. */
@@ -341,6 +352,33 @@ typedef enum {
   TOTAL_AGG_LVLS = TOTAL_SIMPLE_AGG_LVLS +
                    TOTAL_QINDEX_BASED_AGG_LVLS, /*!< Total number of levels. */
 } SIMPLE_MOTION_SEARCH_PRUNE_LEVEL;
+
+/*!\enum PRUNE_MESH_SEARCH_LEVEL
+ * \brief This enumeration defines a variety of mesh search prune levels.
+ */
+typedef enum {
+  PRUNE_MESH_SEARCH_DISABLED = 0, /*!< Prune mesh search level 0. */
+  PRUNE_MESH_SEARCH_LVL_1 = 1,    /*!< Prune mesh search level 1. */
+  PRUNE_MESH_SEARCH_LVL_2 = 2,    /*!< Prune mesh search level 2. */
+} PRUNE_MESH_SEARCH_LEVEL;
+
+/*!\enum INTER_SEARCH_EARLY_TERM_IDX
+ * \brief This enumeration defines inter search early termination index in
+ * non-rd path based on sse value.
+ */
+typedef enum {
+  EARLY_TERM_DISABLED =
+      0, /*!< Early terminate inter mode search based on sse disabled. */
+  EARLY_TERM_IDX_1 =
+      1, /*!< Early terminate inter mode search based on sse, index 1. */
+  EARLY_TERM_IDX_2 =
+      2, /*!< Early terminate inter mode search based on sse, index 2. */
+  EARLY_TERM_IDX_3 =
+      3, /*!< Early terminate inter mode search based on sse, index 3. */
+  EARLY_TERM_IDX_4 =
+      4, /*!< Early terminate inter mode search based on sse, index 4. */
+  EARLY_TERM_INDICES, /*!< Total number of early terminate indices */
+} INTER_SEARCH_EARLY_TERM_IDX;
 
 /*!
  * \brief Sequence/frame level speed vs quality features
@@ -391,6 +429,12 @@ typedef struct HIGH_LEVEL_SPEED_FEATURES {
    * Enable/disable second_alt_ref temporal filtering.
    */
   int second_alt_ref_filtering;
+
+  /*!
+   * Number of frames to be used in temporal filtering controlled based on noise
+   * levels and arf-q.
+   */
+  int num_frames_used_in_tf;
 } HIGH_LEVEL_SPEED_FEATURES;
 
 /*!
@@ -720,7 +764,7 @@ typedef struct MV_SPEED_FEATURES {
   int reduce_search_range;
 
   // Prune mesh search.
-  int prune_mesh_search;
+  PRUNE_MESH_SEARCH_LEVEL prune_mesh_search;
 
   // Use the rd cost around the best FULLPEL_MV to speed up subpel search
   int use_fullpel_costlist;
@@ -745,6 +789,9 @@ typedef struct MV_SPEED_FEATURES {
   // 1: use var as the metric
   // 2: disable second MV
   int disable_second_mv;
+
+  // Skips full pixel search based on start mv of prior ref_mv_idx.
+  int skip_fullpel_search_using_startmv;
 } MV_SPEED_FEATURES;
 
 typedef struct INTER_MODE_SPEED_FEATURES {
@@ -785,6 +832,17 @@ typedef struct INTER_MODE_SPEED_FEATURES {
   // 1 prune inter modes w.r.t ALTREF2 and ALTREF reference frames
   // 2 prune inter modes w.r.t BWDREF, ALTREF2 and ALTREF reference frames
   int alt_ref_search_fp;
+
+  // Prune compound reference frames
+  // 0 no pruning
+  // 1 prune compound references which do not satisfy the two conditions:
+  //   a) The references are at a nearest distance from the current frame in
+  //   both past and future direction.
+  //   b) The references have minimum pred_mv_sad in both past and future
+  //   direction.
+  // 2 prune compound references except the one with nearest distance from the
+  //   current frame in both past and future direction.
+  int prune_comp_ref_frames;
 
   // Skip the current ref_mv in NEW_MV mode based on mv, rate cost, etc.
   // This speed feature equaling 0 means no skipping.
@@ -1193,6 +1251,20 @@ typedef struct WINNER_MODE_SPEED_FEATURES {
   // performs it during winner mode processing by \ref
   // tx_search_best_inter_candidates.
   int winner_mode_ifs;
+
+  // Controls the disabling of winner mode processing. Speed feature levels
+  // are ordered in increasing aggressiveness of pruning. The method considered
+  // for disabling, depends on the sf level value and it is described as below.
+  // 0: Do not disable
+  // 1: Disable for blocks with low source variance.
+  // 2: Disable for blocks which turn out to be transform skip (skipped based on
+  // eob) during MODE_EVAL stage except NEWMV mode.
+  // 3: Disable for blocks which turn out to be transform skip during MODE_EVAL
+  // stage except NEWMV mode. For high quantizers, prune conservatively based on
+  // transform skip (skipped based on eob) except for NEWMV mode.
+  // 4: Disable for blocks which turn out to be transform skip during MODE_EVAL
+  // stage.
+  int prune_winner_mode_eval_level;
 } WINNER_MODE_SPEED_FEATURES;
 
 typedef struct LOOP_FILTER_SPEED_FEATURES {
@@ -1238,14 +1310,21 @@ typedef struct LOOP_FILTER_SPEED_FEATURES {
 
   // Disable loop restoration filter
   int disable_lr_filter;
+
+  // Whether to downsample the rows in computation of wiener stats.
+  int use_downsampled_wiener_stats;
 } LOOP_FILTER_SPEED_FEATURES;
 
 typedef struct REAL_TIME_SPEED_FEATURES {
   // check intra prediction for non-RD mode.
   int check_intra_pred_nonrd;
 
-  // skip checking intra prediction if TX is skipped
-  int skip_intra_pred_if_tx_skip;
+  // Skip checking intra prediction.
+  // 0 - don't skip
+  // 1 - skip if TX is skipped and best mode is not NEWMV
+  // 2 - skip if TX is skipped
+  // Skipping aggressiveness increases from level 1 to 2.
+  int skip_intra_pred;
 
   // Perform coarse ME before calculating variance in variance-based partition
   int estimate_motion_for_var_based_partition;
@@ -1254,6 +1333,7 @@ typedef struct REAL_TIME_SPEED_FEATURES {
   // 0 - don't check merge
   // 1 - always check merge
   // 2 - check merge and prune checking final split
+  // 3 - check merge and prune checking final split based on bsize and qindex
   int nonrd_check_partition_merge_mode;
 
   // For nonrd_use_partition: check of leaf partition extra split
@@ -1299,9 +1379,6 @@ typedef struct REAL_TIME_SPEED_FEATURES {
   // Number of best inter modes to search transform. INT_MAX - search all.
   int num_inter_modes_for_tx_search;
 
-  // Forces TX search off for RDCost calulation.
-  int force_tx_search_off;
-
   // Use interpolation filter search in non-RD mode decision.
   int use_nonrd_filter_search;
 
@@ -1311,9 +1388,11 @@ typedef struct REAL_TIME_SPEED_FEATURES {
   // If set forces interpolation filter to EIGHTTAP_REGULAR
   int skip_interp_filter_search;
 
-  // For nonrd mode: use hybrid (rd for bsize < 16x16, otherwise nonrd)
-  // intra mode search for intra only frames. If set to 0 then nonrd pick
-  // intra is used for all blocks.
+  // For nonrd mode: use hybrid intra mode search for intra only frames based on
+  // block properties.
+  // 0 : use nonrd pick intra for all blocks
+  // 1 : use rd for bsize < 16x16, nonrd otherwise
+  // 2 : use rd for bsize < 16x16 and src var >= 101, nonrd otherwise
   int hybrid_intra_pickmode;
 
   // Compute variance/sse on source difference, prior to encoding superblock.
@@ -1384,6 +1463,61 @@ typedef struct REAL_TIME_SPEED_FEATURES {
   // based partitioning. The minimum values should be 7 to avoid left shifting
   // by a negative number.
   int var_part_split_threshold_shift;
+
+  // Qindex based variance partition threshold index, which determines
+  // the aggressiveness of partition pruning
+  // 0: disabled for speeds 9,10
+  // 1,2: (rd-path) lowers qindex thresholds conditionally (for low SAD sb)
+  // 3,4: (non-rd path) uses pre-tuned qindex thresholds
+  int var_part_based_on_qidx;
+
+  // Enable GF refresh based on Q value.
+  int gf_refresh_based_on_qp;
+
+  // Temporal filtering
+  int use_rtc_tf;
+
+  // Prune the use of the identity transform in nonrd_pickmode,
+  // used for screen content mode: only for smaller blocks
+  // and higher spatial variance, and when skip_txfm is not
+  // already set.
+  int prune_idtx_nonrd;
+
+  // Skip loopfilter, for static content after slide change
+  // or key frame, once quality has ramped up.
+  int skip_lf_screen;
+
+  // For nonrd: early exit out of variance partition that sets the
+  // block size to superblock size, and sets mode to zeromv-last skip.
+  int part_early_exit_zeromv;
+
+  // Early terminate inter mode search based on sse in non-rd path.
+  INTER_SEARCH_EARLY_TERM_IDX sse_early_term_inter_search;
+
+  // SAD based adaptive altref selection
+  int sad_based_adp_altref_lag;
+
+  // Enable/disable partition direct merging.
+  int partition_direct_merging;
+
+  // SAD based compound mode pruning
+  int sad_based_comp_prune;
+
+  // Level of aggressiveness for obtaining tx size based on qstep
+  int tx_size_level_based_on_qstep;
+
+  // Reduce the mv resolution for zero mv if the variance is low.
+  bool reduce_zeromv_mvres;
+
+  // Avoid the partitioning of a 16x16 block in variance based partitioning
+  // (VBP) by making use of minimum and maximum sub-block variances.
+  // For allintra encode, this speed feature reduces instruction count by 5.39%
+  // for speed 9 on a typical video dataset with coding performance gain
+  // of 1.44%.
+  // For AVIF image encode, this speed feature reduces encode time
+  // by 8.44% for speed 9 on a typical image dataset with coding performance
+  // gain of 0.78%.
+  bool vbp_prune_16x16_split_using_min_max_sub_blk_var;
 } REAL_TIME_SPEED_FEATURES;
 
 /*!\endcond */

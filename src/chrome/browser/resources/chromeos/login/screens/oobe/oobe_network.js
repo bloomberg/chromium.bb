@@ -6,73 +6,90 @@
  * @fileoverview Polymer element for displaying network selection OOBE dialog.
  */
 
-Polymer({
-  is: 'oobe-network-element',
+/* #js_imports_placeholder */
 
-  behaviors: [OobeI18nBehavior, OobeDialogHostBehavior, LoginScreenBehavior],
+/**
+ * @constructor
+ * @extends {PolymerElement}
+ * @implements {LoginScreenBehaviorInterface}
+ * @implements {OobeI18nBehaviorInterface}
+ */
+const NetworkScreenBase = Polymer.mixinBehaviors(
+    [OobeI18nBehavior, OobeDialogHostBehavior, LoginScreenBehavior],
+    Polymer.Element);
+/**
+ * @typedef {{
+ *   networkSelectLogin:  NetworkSelectLogin,
+ *   networkDialog:  HTMLElement,
+ *   nextButton:  HTMLElement,
+ * }}
+ */
+NetworkScreenBase.$;
 
-  EXTERNAL_API: [
-    'setOfflineDemoModeEnabled',
-    'setError',
-  ],
+/**
+ * @polymer
+ */
+class NetworkScreen extends NetworkScreenBase {
+  static get is() {
+    return 'oobe-network-element';
+  }
 
-  properties: {
-    /**
-     * Whether network dialog is shown as a part of demo mode setup flow.
-     * Additional custom elements can be displayed on network list in demo mode
-     * setup.
-     * @type {boolean}
-     */
-    isDemoModeSetup: {
-      type: Boolean,
-      value: false,
-    },
+  /* #html_template_placeholder */
 
-    /**
-     * Whether offline demo mode is enabled. If it is enabled offline setup
-     * option will be shown in UI.
-     * @type {boolean}
-     */
-    offlineDemoModeEnabled: {
-      type: Boolean,
-      value: false,
-    },
+  static get properties() {
+    return {
+      /**
+       * Whether network dialog is shown as a part of demo mode setup flow.
+       * Additional custom elements can be displayed on network list in demo
+       * mode setup.
+       * @type {boolean}
+       */
+      isDemoModeSetup: {
+        type: Boolean,
+        value: false,
+      },
 
-    /**
-     * Network error message.
-     * @type {string}
-     * @private
-     */
-    errorMessage_: {
-      type: String,
-      value: '',
-    },
+      /**
+       * Network error message.
+       * @type {string}
+       * @private
+       */
+      errorMessage_: {
+        type: String,
+        value: '',
+      },
 
-    /**
-     * Whether device is connected to the network.
-     * @type {boolean}
-     * @private
-     */
-    isConnected_: {
-      type: Boolean,
-      value: false,
-    },
+      /**
+       * Whether device is connected to the network.
+       * @type {boolean}
+       * @private
+       */
+      isConnected_: {
+        type: Boolean,
+        value: false,
+      },
 
-    /**
-     * Controls if periodic background Wi-Fi scans are enabled to update the
-     * list of available networks. It is enabled by default so that when user
-     * gets to screen networks are already listed, but should be off when user
-     * leaves the screen, as scanning can reduce effective bandwidth.
-     * @private
-     */
-    enableWifiScans_: {
-      type: Boolean,
-      value: true,
-    },
-  },
+      /**
+       * Controls if periodic background Wi-Fi scans are enabled to update the
+       * list of available networks. It is enabled by default so that when user
+       * gets to screen networks are already listed, but should be off when user
+       * leaves the screen, as scanning can reduce effective bandwidth.
+       * @private
+       */
+      enableWifiScans_: {
+        type: Boolean,
+        value: true,
+      },
+    };
+  }
 
-  observers:
-      ['onDemoModeSetupChanged_(isDemoModeSetup, offlineDemoModeEnabled)'],
+  static get observers() {
+    return [];
+  }
+
+  get EXTERNAL_API() {
+    return ['setError'];
+  }
 
   /** Called when dialog is shown. */
   onBeforeShow(data) {
@@ -84,35 +101,34 @@ Polymer({
     this.errorMessage_ = '';
     this.$.networkSelectLogin.onBeforeShow();
     this.show();
-  },
+  }
 
   /** Called when dialog is hidden. */
   onBeforeHide() {
-    cr.ui.login.invokePolymerMethod(this.$.networkSelectLogin, 'onBeforeHide');
+    this.$.networkSelectLogin.onBeforeHide();
     this.enableWifiScans_ = false;
-  },
+  }
 
   /** @override */
   ready() {
-    this.initializeLoginScreen('NetworkScreen', {
-      resetAllowed: true,
-    });
+    super.ready();
+    this.initializeLoginScreen('NetworkScreen');
     this.updateLocalizedContent();
-  },
+  }
 
   /** Shows the dialog. */
   show() {
     this.$.networkDialog.show();
-  },
+  }
 
   focus() {
     this.$.networkDialog.focus();
-  },
+  }
 
   /** Updates localized elements of the UI. */
   updateLocalizedContent() {
     this.i18nUpdateLocale();
-  },
+  }
 
   /**
    * Sets the network error message.
@@ -120,15 +136,7 @@ Polymer({
    */
   setError(message) {
     this.errorMessage_ = message;
-  },
-
-  /**
-   * Enables or disables the offline Demo Mode option.
-   * @param {boolean} enabled
-   */
-  setOfflineDemoModeEnabled(enabled) {
-    this.offlineDemoModeEnabled = enabled;
-  },
+  }
 
   /**
    * Returns element of the network list selected by the query.
@@ -137,11 +145,12 @@ Polymer({
    * @return {NetworkList.NetworkListItemType}
    */
   getNetworkListItemWithQueryForTest(query) {
-    let networkList =
-        this.$.networkSelectLogin.shadowRoot.querySelector('#networkSelect').getNetworkListForTest();
+    const networkList =
+        this.$.networkSelectLogin.shadowRoot.querySelector('#networkSelect')
+            .getNetworkListForTest();
     assert(networkList);
     return networkList.querySelector(query);
-  },
+  }
 
   /**
    * Returns element of the network list with the given name.
@@ -152,7 +161,7 @@ Polymer({
   getNetworkListItemByNameForTest(name) {
     return this.$.networkSelectLogin.shadowRoot.querySelector('#networkSelect')
         .getNetworkListItemByNameForTest(name);
-  },
+  }
 
   /**
    * Called after dialog is shown. Refreshes the list of the networks.
@@ -160,15 +169,16 @@ Polymer({
    */
   onShown_() {
     this.$.networkSelectLogin.refresh();
-    this.async(function() {
-      if (this.isConnected_)
+    setTimeout(() => {
+      if (this.isConnected_) {
         this.$.nextButton.focus();
-      else
+      } else {
         this.$.networkSelectLogin.focus();
-    }.bind(this), 300);
+      }
+    }, 300);
     // Timeout is a workaround to correctly propagate focus to
     // RendererFrameHostImpl see https://crbug.com/955129 for details.
-  },
+  }
 
   /**
    * Next button click handler.
@@ -176,7 +186,7 @@ Polymer({
    */
   onNextClicked_() {
     chrome.send('login.NetworkScreen.userActed', ['continue']);
-  },
+  }
 
   /**
    * Back button click handler.
@@ -184,17 +194,7 @@ Polymer({
    */
   onBackClicked_() {
     chrome.send('login.NetworkScreen.userActed', ['back']);
-  },
-
-  /**
-   * Updates custom elements on network list when demo mode setup properties
-   * changed.
-   * @private
-   */
-  onDemoModeSetupChanged_() {
-    this.$.networkSelectLogin.isOfflineDemoModeSetup =
-        this.isDemoModeSetup && this.offlineDemoModeEnabled;
-  },
+  }
 
   /**
    * This is called when network setup is done.
@@ -202,5 +202,7 @@ Polymer({
    */
   onNetworkConnected_() {
     chrome.send('login.NetworkScreen.userActed', ['continue']);
-  },
-});
+  }
+}
+
+customElements.define(NetworkScreen.is, NetworkScreen);

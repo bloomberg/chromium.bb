@@ -216,6 +216,9 @@ config("pdfium_common_config") {
     # TODO(crbug.com/1213098): Remove once this is in //build.
     cflags += [ "-Wdeprecated-copy" ]
 
+    # May flag some issues when converting int to size_t.
+    cflags += [ "-Wtautological-unsigned-zero-compare" ]
+
     # Catch misuse of cppgc in XFA.
     if (pdf_enable_xfa && clang_use_chrome_plugins) {
       cflags += [
@@ -228,8 +231,14 @@ config("pdfium_common_config") {
   }
 
   if (!is_win && !is_clang) {
-    # Override -Wno-narrowing.
-    cflags += [ "-Wnarrowing" ]
+    cflags += [
+      # Override -Wno-narrowing for GCC.
+      "-Wnarrowing",
+
+      # GCC assumes that control can get past an exhaustive switch and then
+      # warns if there's no return there.
+      "-Wno-return-type",
+    ]
   }
 }
 
@@ -260,10 +269,6 @@ config("pdfium_public_config") {
       }
     }
   }
-
-  if (pdf_use_win32_gdi) {
-    defines += [ "PDFIUM_PRINT_TEXT_WITH_GDI" ]
-  }
 }
 
 config("pdfium_core_config") {
@@ -288,6 +293,13 @@ config("pdfium_strict_config") {
     "//build/config/compiler:wexit_time_destructors",
     "//build/config/compiler:wglobal_constructors",
   ]
+}
+
+config("pdfium_noshorten_config") {
+  cflags = []
+  if (is_clang) {
+    cflags += [ "-Wshorten-64-to-32" ]
+  }
 }
 
 source_set("pdfium_public_headers_impl") {
@@ -448,7 +460,7 @@ test("pdfium_unittests") {
         "xfa/fgas/font:unittests",
         "xfa/fgas/layout:unittests",
         "xfa/fxfa:unittests",
-        "xfa/fxfa/fm2js:unittests",
+        "xfa/fxfa/formcalc:unittests",
         "xfa/fxfa/parser:unittests",
       ]
     }

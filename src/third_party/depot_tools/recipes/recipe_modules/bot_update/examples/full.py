@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from recipe_engine import post_process
+
 PYTHON_VERSION_COMPATIBILITY = 'PY2+3'
 
 DEPS = [
@@ -79,7 +81,6 @@ def RunSteps(api):
       suffix=suffix,
       gerrit_no_reset=gerrit_no_reset,
       gerrit_no_rebase_patch_ref=gerrit_no_rebase_patch_ref,
-      disable_syntax_validation=True,
       patch_refs=patch_refs,
       add_blamelists=add_blamelists,
       set_output_commit=set_output_commit,
@@ -181,6 +182,11 @@ def GenTests(api):
       api.properties(fail_patch='download') +
       api.step_data('bot_update', retcode=87)
   )
+  yield (api.test('tryjob_fail_missing_bot_update_json') + try_build() +
+         api.override_step_data('bot_update', retcode=1) +
+         api.post_process(post_process.ResultReasonRE, 'Infra Failure.*') +
+         api.post_process(post_process.StatusException) +
+         api.post_process(post_process.DropExpectation))
   yield (
       api.test('clobber') +
       api.properties(clobber=1)

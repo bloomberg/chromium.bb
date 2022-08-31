@@ -8,7 +8,7 @@
 #include <memory>
 #include <vector>
 
-#include "ash/components/pcie_peripheral/pcie_peripheral_manager.h"
+#include "ash/components/peripheral_notification/peripheral_notification_manager.h"
 #include "ash/components/settings/cros_settings_names.h"
 #include "ash/components/timezone/timezone_resolver.h"
 #include "ash/constants/ash_features.h"
@@ -33,12 +33,11 @@
 #include "chrome/browser/ash/drive/file_system_util.h"
 #include "chrome/browser/ash/input_method/input_method_persistence.h"
 #include "chrome/browser/ash/input_method/input_method_syncer.h"
+#include "chrome/browser/ash/login/consolidated_consent_field_trial.h"
 #include "chrome/browser/ash/login/login_pref_names.h"
 #include "chrome/browser/ash/login/session/user_session_manager.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
-#include "chrome/browser/ash/sync/ash_turn_sync_on_helper.h"
-#include "chrome/browser/ash/sync/sync_consent_optional_field_trial.h"
 #include "chrome/browser/ash/system/input_device_settings.h"
 #include "chrome/browser/ash/system/timezone_resolver_manager.h"
 #include "chrome/browser/ash/system/timezone_util.h"
@@ -50,7 +49,11 @@
 #include "chrome/browser/ui/ash/system_tray_client_impl.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/dbus/pciguard/pciguard_client.h"
+#include "chromeos/ash/components/dbus/pciguard/pciguard_client.h"
+#include "chromeos/components/disks/disks_prefs.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/update_engine/update_engine.pb.h"
+#include "chromeos/dbus/update_engine/update_engine_client.h"
 #include "chromeos/system/devicemode.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/drive/drive_pref_names.h"
@@ -66,6 +69,7 @@
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/speech/speech_synthesis.mojom.h"
 #include "third_party/cros_system_api/dbus/update_engine/dbus-constants.h"
 #include "third_party/icu/source/i18n/unicode/timezone.h"
@@ -82,10 +86,10 @@ namespace ash {
 
 namespace {
 
-// The keyboard preferences that determine how we remap modifier keys. These
-// preferences will be saved in global user preferences dictionary so that they
-// can be used on signin screen.
-const char* const kLanguageRemapPrefs[] = {
+// These preferences will be saved in global user preferences dictionary so that
+// they can be used on the signin screen.
+const char* const kCopyToKnownUserPrefs[] = {
+    // The keyboard preferences that determine how we remap modifier keys.
     ::prefs::kLanguageRemapSearchKeyTo,
     ::prefs::kLanguageRemapControlKeyTo,
     ::prefs::kLanguageRemapAltKeyTo,
@@ -93,7 +97,11 @@ const char* const kLanguageRemapPrefs[] = {
     ::prefs::kLanguageRemapEscapeKeyTo,
     ::prefs::kLanguageRemapBackspaceKeyTo,
     ::prefs::kLanguageRemapExternalCommandKeyTo,
-    ::prefs::kLanguageRemapExternalMetaKeyTo};
+    ::prefs::kLanguageRemapExternalMetaKeyTo,
+
+    prefs::kLoginDisplayPasswordButtonEnabled,
+    ::prefs::kUse24HourClock,
+    prefs::kDarkModeEnabled};
 
 bool AreScrollSettingsAllowed() {
   return base::FeatureList::IsEnabled(features::kAllowScrollSettings);
@@ -105,9 +113,9 @@ Preferences::Preferences()
     : Preferences(input_method::InputMethodManager::Get()) {}
 
 Preferences::Preferences(input_method::InputMethodManager* input_method_manager)
-    : prefs_(NULL),
+    : prefs_(nullptr),
       input_method_manager_(input_method_manager),
-      user_(NULL),
+      user_(nullptr),
       user_is_primary_(false) {
   BindCrosDisplayConfigController(
       cros_display_config_.BindNewPipeAndPassReceiver());
@@ -116,6 +124,7 @@ Preferences::Preferences(input_method::InputMethodManager* input_method_manager)
 Preferences::~Preferences() {
   prefs_->RemoveObserver(this);
   user_manager::UserManager::Get()->RemoveSessionStateObserver(this);
+  DBusThreadManager::Get()->GetUpdateEngineClient()->RemoveObserver(this);
 }
 
 // static
@@ -137,23 +146,23 @@ void Preferences::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(::prefs::kMinimumAllowedChromeVersion, "");
   registry->RegisterIntegerPref(
       ::prefs::kLacrosLaunchSwitch,
-      static_cast<int>(crosapi::browser_util::LacrosLaunchSwitch::kUserChoice));
+      static_cast<int>(crosapi::browser_util::LacrosAvailability::kUserChoice));
   registry->RegisterBooleanPref(prefs::kDeviceSystemWideTracingEnabled, true);
   registry->RegisterBooleanPref(
       prefs::kLocalStateDevicePeripheralDataAccessEnabled, false);
   registry->RegisterBooleanPref(prefs::kDeviceI18nShortcutsEnabled, true);
   registry->RegisterBooleanPref(prefs::kChromadToCloudMigrationEnabled, false);
   registry->RegisterBooleanPref(prefs::kLoginScreenWebUILazyLoading, false);
+  registry->RegisterBooleanPref(::prefs::kConsumerAutoUpdateToggle, true);
 
   RegisterLocalStatePrefs(registry);
-  sync_consent_optional_field_trial::RegisterLocalStatePrefs(registry);
+  ash::consolidated_consent_field_trial::RegisterLocalStatePrefs(registry);
 }
 
 // static
 void Preferences::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   // Some classes register their own prefs.
-  AshTurnSyncOnHelper::RegisterProfilePrefs(registry);
   input_method::InputMethodSyncer::RegisterProfilePrefs(registry);
   crosapi::browser_util::RegisterProfilePrefs(registry);
 
@@ -170,11 +179,6 @@ void Preferences::RegisterProfilePrefs(
   }
 
   registry->RegisterBooleanPref(::prefs::kPerformanceTracingEnabled, false);
-
-  // This pref is device specific and must not be synced.
-  registry->RegisterIntegerPref(
-      ::prefs::kAccountManagerNumTimesWelcomeScreenShown,
-      0 /* default_value */);
 
   registry->RegisterBooleanPref(
       ::prefs::kTapToClickEnabled, true,
@@ -257,6 +261,9 @@ void Preferences::RegisterProfilePrefs(
   registry->RegisterBooleanPref(drive::prefs::kDriveFsPinnedMigrated, false);
   registry->RegisterBooleanPref(drive::prefs::kDriveFsEnableVerboseLogging,
                                 false);
+  // Do not sync drive::prefs::kDriveFsEnableMirrorSync because we're syncing
+  // local files and users may wish to turn this off on a per device basis.
+  registry->RegisterBooleanPref(drive::prefs::kDriveFsEnableMirrorSync, false);
   // We don't sync ::prefs::kLanguageCurrentInputMethod and PreviousInputMethod
   // because they're just used to track the logout state of the device.
   registry->RegisterStringPref(::prefs::kLanguageCurrentInputMethod, "");
@@ -326,7 +333,7 @@ void Preferences::RegisterProfilePrefs(
   // The following pref isn't synced since the user may desire a different value
   // depending on whether an external keyboard is attached to a particular
   // device.
-  registry->RegisterBooleanPref(::prefs::kLanguageSendFunctionKeys, false);
+  registry->RegisterBooleanPref(prefs::kSendFunctionKeys, false);
 
   // Don't sync the note-taking app; it may not be installed on other devices.
   registry->RegisterStringPref(::prefs::kNoteTakingAppId, std::string());
@@ -345,9 +352,7 @@ void Preferences::RegisterProfilePrefs(
       ::prefs::kChromeOSReleaseNotesVersion, "0.0.0.0",
       user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
 
-  registry->RegisterBooleanPref(::prefs::kExternalStorageDisabled, false);
-
-  registry->RegisterBooleanPref(::prefs::kExternalStorageReadOnly, false);
+  disks::prefs::RegisterProfilePrefs(registry);
 
   registry->RegisterStringPref(::prefs::kTermsOfServiceURL, "");
 
@@ -361,10 +366,6 @@ void Preferences::RegisterProfilePrefs(
   // |current_timezone_id| will be empty if CrosSettings doesn't know the
   // timezone yet.
   registry->RegisterStringPref(::prefs::kUserTimezone, current_timezone_id);
-
-  registry->RegisterBooleanPref(
-      ::prefs::kResolveTimezoneByGeolocation, true,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
 
   registry->RegisterBooleanPref(
       ::prefs::kResolveTimezoneByGeolocationMigratedToMethod, false,
@@ -396,9 +397,12 @@ void Preferences::RegisterProfilePrefs(
   registry->RegisterBooleanPref(
       ::prefs::kCaptivePortalAuthenticationIgnoresProxy, true);
 
-  registry->RegisterBooleanPref(::prefs::kForceMaximizeOnFirstRun, false);
-
   registry->RegisterBooleanPref(::prefs::kLanguageImeMenuActivated, false);
+
+  // TODO(b/227674947): Eventually delete this after Sign in with Smart Lock has
+  // been removed and enough time has elapsed for users to be notified.
+  registry->RegisterBooleanPref(
+      ::prefs::kHasSeenSmartLockSignInRemovedNotification, false);
 
   registry->RegisterInt64Pref(::prefs::kHatsLastInteractionTimestamp, 0);
 
@@ -422,6 +426,38 @@ void Preferences::RegisterProfilePrefs(
   registry->RegisterInt64Pref(::prefs::kHatsArcGamesSurveyCycleEndTs, 0);
 
   registry->RegisterBooleanPref(::prefs::kHatsArcGamesDeviceIsSelected, false);
+
+  registry->RegisterInt64Pref(::prefs::kHatsAudioSurveyCycleEndTs, 0);
+
+  registry->RegisterBooleanPref(::prefs::kHatsAudioDeviceIsSelected, false);
+
+  registry->RegisterInt64Pref(::prefs::kHatsEntSurveyCycleEndTs, 0);
+
+  registry->RegisterBooleanPref(::prefs::kHatsEntDeviceIsSelected, false);
+
+  registry->RegisterInt64Pref(::prefs::kHatsStabilitySurveyCycleEndTs, 0);
+
+  registry->RegisterBooleanPref(::prefs::kHatsStabilityDeviceIsSelected, false);
+
+  registry->RegisterInt64Pref(::prefs::kHatsPerformanceSurveyCycleEndTs, 0);
+
+  registry->RegisterBooleanPref(::prefs::kHatsPerformanceDeviceIsSelected,
+                                false);
+
+  // Personalization HaTS survey prefs for avatar, screensaver, and wallpaper
+  // features.
+  registry->RegisterInt64Pref(
+      ::prefs::kHatsPersonalizationAvatarSurveyCycleEndTs, 0);
+  registry->RegisterBooleanPref(
+      ::prefs::kHatsPersonalizationAvatarSurveyIsSelected, false);
+  registry->RegisterInt64Pref(
+      ::prefs::kHatsPersonalizationScreensaverSurveyCycleEndTs, 0);
+  registry->RegisterBooleanPref(
+      ::prefs::kHatsPersonalizationScreensaverSurveyIsSelected, false);
+  registry->RegisterInt64Pref(
+      ::prefs::kHatsPersonalizationWallpaperSurveyCycleEndTs, 0);
+  registry->RegisterBooleanPref(
+      ::prefs::kHatsPersonalizationWallpaperSurveyIsSelected, false);
 
   registry->RegisterBooleanPref(::prefs::kPinUnlockFeatureNotificationShown,
                                 false);
@@ -453,9 +489,6 @@ void Preferences::RegisterProfilePrefs(
       ::prefs::kTextToSpeechVolume, blink::mojom::kSpeechSynthesisDefaultVolume,
       user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
 
-  // By default showing Sync Consent is set to true. It can changed by policy.
-  registry->RegisterBooleanPref(::prefs::kEnableSyncConsent, true);
-
   registry->RegisterBooleanPref(prefs::kSyncOobeCompleted, false);
 
   registry->RegisterBooleanPref(::prefs::kTPMFirmwareUpdateCleanupDismissed,
@@ -467,9 +500,9 @@ void Preferences::RegisterProfilePrefs(
   registry->RegisterBooleanPref(::prefs::kSettingsShowOSBanner, true);
 
   // This pref is a per-session pref and must not be synced.
-  registry->RegisterStringPref(::prefs::kLoginExtensionApiLaunchExtensionId,
-                               std::string(),
-                               PrefRegistry::NO_REGISTRATION_FLAGS);
+  registry->RegisterBooleanPref(
+      ::prefs::kLoginExtensionApiCanLockManagedGuestSession, false,
+      PrefRegistry::NO_REGISTRATION_FLAGS);
 
   registry->RegisterBooleanPref(prefs::kLoginDisplayPasswordButtonEnabled,
                                 true);
@@ -482,9 +515,6 @@ void Preferences::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
 
   registry->RegisterDictionaryPref(prefs::kLauncherSearchNormalizerParameters);
-
-  registry->RegisterListPref(
-      ::prefs::kRestrictedManagedGuestSessionExtensionCleanupExemptList);
 
   registry->RegisterListPref(
       prefs::kFilesAppFolderShortcuts,
@@ -562,18 +592,33 @@ void Preferences::InitUserPrefs(sync_preferences::PrefServiceSyncable* prefs) {
       prefs::kLocalStateDevicePeripheralDataAccessEnabled,
       g_browser_process->local_state(), callback);
 
+  consumer_auto_update_toggle_pref_.Init(::prefs::kConsumerAutoUpdateToggle,
+                                         g_browser_process->local_state(),
+                                         callback);
+
   pref_change_registrar_.Init(prefs);
   pref_change_registrar_.Add(::prefs::kUserTimezone, callback);
   pref_change_registrar_.Add(::prefs::kResolveTimezoneByGeolocationMethod,
                              callback);
-  pref_change_registrar_.Add(::prefs::kUse24HourClock, callback);
   pref_change_registrar_.Add(::prefs::kParentAccessCodeConfig, callback);
-  for (auto* remap_pref : kLanguageRemapPrefs)
-    pref_change_registrar_.Add(remap_pref, callback);
+  for (auto* copy_pref : kCopyToKnownUserPrefs)
+    pref_change_registrar_.Add(copy_pref, callback);
 
-  // Deprecated 7/2021
-  // TODO(https://crbug.com/783367) Remove outdated prefs.
-  prefs->ClearPref(::prefs::kResolveTimezoneByGeolocation);
+  // Re-enable OTA update when feature flag is disabled by owner.
+  auto* update_engine_client =
+      DBusThreadManager::Get()->GetUpdateEngineClient();
+  if (user_manager::UserManager::Get()->IsCurrentUserOwner() &&
+      !features::IsConsumerAutoUpdateToggleAllowed()) {
+    // Write into the platform will signal back so pref gets synced.
+    update_engine_client->ToggleFeature(
+        update_engine::kFeatureConsumerAutoUpdate, true);
+  } else {
+    // Otherwise, trigger a read + sync with signal.
+    update_engine_client->IsFeatureEnabled(
+        update_engine::kFeatureConsumerAutoUpdate,
+        base::BindOnce(&Preferences::OnIsConsumerAutoUpdateEnabled,
+                       weak_ptr_factory_.GetWeakPtr()));
+  }
 }
 
 void Preferences::Init(Profile* profile, const user_manager::User* user) {
@@ -584,6 +629,8 @@ void Preferences::Init(Profile* profile, const user_manager::User* user) {
   // This causes OnIsSyncingChanged to be called when the value of
   // PrefService::IsSyncing() changes.
   prefs->AddObserver(this);
+  DBusThreadManager::Get()->GetUpdateEngineClient()->AddObserver(this);
+
   user_ = user;
   user_is_primary_ =
       user_manager::UserManager::Get()->GetPrimaryUser() == user_;
@@ -649,6 +696,10 @@ void Preferences::InitUserPrefsForTesting(
 
   InitUserPrefs(prefs);
 
+  auto* update_engine_client =
+      DBusThreadManager::Get()->GetUpdateEngineClient();
+  update_engine_client->AddObserver(this);
+
   input_method_syncer_ =
       std::make_unique<input_method::InputMethodSyncer>(prefs, ime_state_);
   input_method_syncer_->Initialize();
@@ -697,6 +748,7 @@ void Preferences::ApplyPreferences(ApplyReason reason,
   system::TouchpadSettings touchpad_settings;
   system::MouseSettings mouse_settings;
   system::PointingStickSettings pointing_stick_settings;
+  user_manager::KnownUser known_user(g_browser_process->local_state());
 
   if (user_is_primary_ && (reason == REASON_INITIALIZATION ||
                            pref_name == ::prefs::kPerformanceTracingEnabled)) {
@@ -925,8 +977,8 @@ void Preferences::ApplyPreferences(ApplyReason reason,
           ->GetImeKeyboard()
           ->SetAutoRepeatEnabled(enabled);
 
-      user_manager::known_user::SetBooleanPref(
-          user_->GetAccountId(), prefs::kXkbAutoRepeatEnabled, enabled);
+      known_user.SetBooleanPref(user_->GetAccountId(),
+                                prefs::kXkbAutoRepeatEnabled, enabled);
     }
   }
   if (reason != REASON_PREF_CHANGED ||
@@ -941,7 +993,14 @@ void Preferences::ApplyPreferences(ApplyReason reason,
         allowed_input_methods_.GetValue();
 
     bool managed_by_policy =
-        ime_state_->SetAllowedInputMethods(allowed_input_methods, false);
+        ime_state_->SetAllowedInputMethods(allowed_input_methods);
+    bool success = ime_state_->ReplaceEnabledInputMethods(
+        ime_state_->GetEnabledInputMethodIds());
+    if (!success) {
+      const std::vector<std::string> fallback = {
+          ime_state_->GetAllowedFallBackKeyboardLayout()};
+      ime_state_->ReplaceEnabledInputMethods(fallback);
+    }
 
     if (managed_by_policy) {
       preload_engines_.SetValue(
@@ -1034,13 +1093,6 @@ void Preferences::ApplyPreferences(ApplyReason reason,
     }
   }
 
-  if (pref_name == ::prefs::kUse24HourClock ||
-      reason != REASON_ACTIVE_USER_CHANGED) {
-    const bool value = prefs_->GetBoolean(::prefs::kUse24HourClock);
-    user_manager::known_user::SetBooleanPref(user_->GetAccountId(),
-                                             ::prefs::kUse24HourClock, value);
-  }
-
   if (pref_name == ::prefs::kParentAccessCodeConfig ||
       reason != REASON_PREF_CHANGED) {
     const base::Value* value =
@@ -1048,39 +1100,33 @@ void Preferences::ApplyPreferences(ApplyReason reason,
     if (value &&
         prefs_->IsManagedPreference(::prefs::kParentAccessCodeConfig) &&
         user_->IsChild()) {
-      user_manager::known_user::SetPref(
-          user_->GetAccountId(), ::prefs::kKnownUserParentAccessCodeConfig,
-          value->Clone());
+      known_user.SetPath(user_->GetAccountId(),
+                         ::prefs::kKnownUserParentAccessCodeConfig,
+                         value->Clone());
       parent_access::ParentAccessService::Get().LoadConfigForUser(user_);
     } else {
-      user_manager::known_user::RemovePref(
-          user_->GetAccountId(), ::prefs::kKnownUserParentAccessCodeConfig);
+      known_user.RemovePref(user_->GetAccountId(),
+                            ::prefs::kKnownUserParentAccessCodeConfig);
     }
   }
 
-  for (auto* remap_pref : kLanguageRemapPrefs) {
-    if (pref_name == remap_pref || reason != REASON_ACTIVE_USER_CHANGED) {
-      const int value = prefs_->GetInteger(remap_pref);
-      user_manager::known_user::SetIntegerPref(user_->GetAccountId(),
-                                               remap_pref, value);
+  for (auto* copy_pref : kCopyToKnownUserPrefs) {
+    if (pref_name == copy_pref || reason != REASON_ACTIVE_USER_CHANGED) {
+      absl::optional<base::Value> opt_value = absl::nullopt;
+      if (const base::Value* value = prefs_->Get(copy_pref)) {
+        opt_value = value->Clone();
+      }
+      known_user.SetPath(user_->GetAccountId(), copy_pref,
+                         std::move(opt_value));
     }
-  }
-
-  if (pref_name == prefs::kLoginDisplayPasswordButtonEnabled ||
-      reason != REASON_ACTIVE_USER_CHANGED) {
-    const bool value =
-        prefs_->GetBoolean(prefs::kLoginDisplayPasswordButtonEnabled);
-    user_manager::known_user::SetBooleanPref(
-        user_->GetAccountId(), prefs::kLoginDisplayPasswordButtonEnabled,
-        value);
   }
 
   if (pref_name == prefs::kLocalStateDevicePeripheralDataAccessEnabled &&
       reason == REASON_PREF_CHANGED) {
     const bool value = g_browser_process->local_state()->GetBoolean(
         prefs::kLocalStateDevicePeripheralDataAccessEnabled);
-    if (PciePeripheralManager::IsInitialized()) {
-      PciePeripheralManager::Get()->SetPcieTunnelingAllowedState(value);
+    if (PeripheralNotificationManager::IsInitialized()) {
+      PeripheralNotificationManager::Get()->SetPcieTunnelingAllowedState(value);
     }
     PciguardClient::Get()->SendExternalPciDevicesPermissionState(value);
   }
@@ -1164,18 +1210,46 @@ void Preferences::UpdateAutoRepeatRate() {
   input_method::InputMethodManager::Get()->GetImeKeyboard()->SetAutoRepeatRate(
       rate);
 
-  user_manager::known_user::SetIntegerPref(user_->GetAccountId(),
-                                           prefs::kXkbAutoRepeatDelay,
-                                           rate.initial_delay_in_ms);
-  user_manager::known_user::SetIntegerPref(user_->GetAccountId(),
-                                           prefs::kXkbAutoRepeatInterval,
-                                           rate.repeat_interval_in_ms);
+  user_manager::KnownUser known_user(g_browser_process->local_state());
+  known_user.SetIntegerPref(user_->GetAccountId(), prefs::kXkbAutoRepeatDelay,
+                            rate.initial_delay_in_ms);
+  known_user.SetIntegerPref(user_->GetAccountId(),
+                            prefs::kXkbAutoRepeatInterval,
+                            rate.repeat_interval_in_ms);
 }
 
 void Preferences::ActiveUserChanged(user_manager::User* active_user) {
   if (active_user != user_)
     return;
   ApplyPreferences(REASON_ACTIVE_USER_CHANGED, "");
+}
+
+void Preferences::UpdateStatusChanged(
+    const update_engine::StatusResult& status) {
+  DVLOG(1) << "UpdateStatusChanged";
+  for (int i = 0; i < status.features_size(); ++i) {
+    const update_engine::Feature& feature = status.features(i);
+    bool enabled = feature.enabled();
+    DVLOG(1) << "Feature name=" << feature.name() << " enabled=" << enabled;
+    if (feature.name() == update_engine::kFeatureConsumerAutoUpdate) {
+      // Writes into this preference are only flushed by listening to
+      // platform side signals. This means Chrome side writes into this
+      // preference will not be visible outside of Chrome. This preference
+      // should be updated by making DBus calls into the platform side, which
+      // will signal out the true value of this preference as the true value is
+      // managed by the update_engine daemon.
+      consumer_auto_update_toggle_pref_.SetValue(enabled);
+    }
+  }
+}
+
+void Preferences::OnIsConsumerAutoUpdateEnabled(absl::optional<bool> enabled) {
+  DVLOG(1) << "OnIsConsumerAutoUpdateEnabled";
+  if (!enabled.has_value()) {
+    VLOG(1) << "Failed to retrieve consumer auto update feature value.";
+    return;
+  }
+  consumer_auto_update_toggle_pref_.SetValue(enabled.value());
 }
 
 }  // namespace ash

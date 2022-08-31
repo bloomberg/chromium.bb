@@ -20,7 +20,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace tether {
 
@@ -181,8 +181,7 @@ class WifiHotspotDisconnectorImplTest : public testing::Test {
       network_handler::RunErrorCallback(
           std::move(test_network_connection_handler_
                         ->last_disconnect_error_callback()),
-          wifi_service_path_, NetworkConnectionHandler::kErrorDisconnectFailed,
-          std::string() /* error_detail */);
+          NetworkConnectionHandler::kErrorDisconnectFailed);
     }
 
     // Now that the callbacks have been invoked, both the network
@@ -281,4 +280,4 @@ TEST_F(WifiHotspotDisconnectorImplTest, WifiDisconnectionSucceeds) {
 
 }  // namespace tether
 
-}  // namespace chromeos
+}  // namespace ash

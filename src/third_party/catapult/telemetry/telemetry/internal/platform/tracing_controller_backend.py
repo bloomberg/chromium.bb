@@ -12,6 +12,7 @@ import traceback
 import uuid
 
 from py_trace_event import trace_event
+from telemetry.core import exceptions
 from telemetry.internal.platform.tracing_agent import atrace_tracing_agent
 from telemetry.internal.platform.tracing_agent import chrome_report_events_tracing_agent
 from telemetry.internal.platform.tracing_agent import chrome_return_as_stream_tracing_agent
@@ -129,7 +130,17 @@ class TracingControllerBackend(object):
 
   def StopTracing(self):
     assert self.is_tracing_running, 'Can only stop tracing when tracing is on.'
-    self._IssueClockSyncMarker()
+    # Ideally, we would never get into a state where we're trying to issue a
+    # clock sync marker when we can't. However, it's unclear if we can actually
+    # ensure that we never get into that state. Since this seems to occur during
+    # browser shutdown after a failed test, it seems like it should be safe to
+    # continue stopping tracing even if this fails. See crbug.com/1320873 as an
+    # example case of when this can happen.
+    try:
+      self._IssueClockSyncMarker()
+    except exceptions.Error as e:
+      logging.error(
+          'Failed to issue clock sync marker during tracing shutdown: %s', e)
     builder = self._current_state.builder
 
     for agent in reversed(self._active_agents_instances):
@@ -151,7 +162,16 @@ class TracingControllerBackend(object):
 
   def FlushTracing(self, discard_current=False):
     assert self.is_tracing_running, 'Can only flush tracing when tracing is on.'
-    self._IssueClockSyncMarker()
+    # Similar to what we do in StopTracing, but if we fail to flush, then we
+    # should turn off tracing since we're in a bad state.
+    try:
+      self._IssueClockSyncMarker()
+    except exceptions.Error as e:
+      logging.error(
+          'Failed to issue clock sync marker during tracing flush: %s', e)
+      logging.error('Forcibly stopping tracing due to above error.')
+      self.StopTracing()
+      return
 
     # pylint: disable=redefined-variable-type
     # See: https://github.com/PyCQA/pylint/issues/710

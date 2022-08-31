@@ -33,8 +33,8 @@ import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.test.util.BlankUiTestActivity;
 import org.chromium.ui.test.util.DisableAnimationsTestRule;
-import org.chromium.ui.test.util.DummyUiActivity;
 
 /**
  * Tests for {@link SingleActionMessage}.
@@ -45,8 +45,8 @@ public class SingleActionMessageTest {
     public static DisableAnimationsTestRule sDisableAnimationsRule =
             new DisableAnimationsTestRule();
     @ClassRule
-    public static BaseActivityTestRule<DummyUiActivity> sActivityTestRule =
-            new BaseActivityTestRule<>(DummyUiActivity.class);
+    public static BaseActivityTestRule<BlankUiTestActivity> sActivityTestRule =
+            new BaseActivityTestRule<>(BlankUiTestActivity.class);
 
     private static Activity sActivity;
 
@@ -248,7 +248,10 @@ public class SingleActionMessageTest {
                         ApiCompatibilityUtils.getDrawable(
                                 sActivity.getResources(), android.R.drawable.ic_menu_add))
                 .with(MessageBannerProperties.ON_PRIMARY_ACTION,
-                        () -> { mPrimaryActionCallback.notifyCalled(); })
+                        () -> {
+                            mPrimaryActionCallback.notifyCalled();
+                            return PrimaryActionClickBehavior.DISMISS_IMMEDIATELY;
+                        })
                 .with(MessageBannerProperties.ON_SECONDARY_ACTION,
                         () -> { mSecondaryActionCallback.notifyCalled(); })
                 .with(MessageBannerProperties.ON_TOUCH_RUNNABLE, () -> {})

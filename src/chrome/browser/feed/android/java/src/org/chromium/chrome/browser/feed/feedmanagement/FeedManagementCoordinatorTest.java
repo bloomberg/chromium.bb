@@ -22,16 +22,17 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.Robolectric;
 
+import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.feed.FeedServiceBridge;
 import org.chromium.chrome.browser.feed.FeedServiceBridgeJni;
-import org.chromium.chrome.browser.feed.R;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
+import org.chromium.chrome.browser.feed.StreamKind;
+import org.chromium.chrome.browser.feed.test.R;
 
 /**
  * Tests {@link FeedManagementCoordinator}.
  */
-@RunWith(LocalRobolectricTestRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 public class FeedManagementCoordinatorTest {
     private TestActivity mActivity;
     private FeedManagementCoordinator mFeedManagementCoordinator;
@@ -58,7 +59,8 @@ public class FeedManagementCoordinatorTest {
         MockitoAnnotations.initMocks(this);
         mocker.mock(FeedServiceBridgeJni.TEST_HOOKS, mFeedServiceBridgeJniMock);
 
-        mFeedManagementCoordinator = new FeedManagementCoordinator(mActivity, null, null);
+        mFeedManagementCoordinator =
+                new FeedManagementCoordinator(mActivity, null, null, StreamKind.UNKNOWN);
 
         verify(mFeedServiceBridgeJniMock).isAutoplayEnabled();
     }
@@ -75,7 +77,7 @@ public class FeedManagementCoordinatorTest {
         // Note that finding the back arrow view is ugly because it doesn't
         // have an ID.
         boolean clicked = false;
-        ViewGroup actionBar = (ViewGroup) outerView.findViewById(R.id.action_bar);
+        ViewGroup actionBar = outerView.findViewById(R.id.action_bar);
         for (int i = 0; i < actionBar.getChildCount(); i++) {
             try {
                 AppCompatImageButton button = (AppCompatImageButton) actionBar.getChildAt(i);

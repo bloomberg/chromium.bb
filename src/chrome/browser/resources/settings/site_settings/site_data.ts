@@ -19,11 +19,12 @@ import '../settings_shared_css.js';
 import './site_data_entry.js';
 
 import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
-import {assert} from 'chrome://resources/js/assert.m.js';
+import {assert} from 'chrome://resources/js/assert_ts.js';
 import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
 import {ListPropertyUpdateMixin} from 'chrome://resources/js/list_property_update_mixin.js';
 import {WebUIListenerMixin} from 'chrome://resources/js/web_ui_listener_mixin.js';
-import {html, microTask, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {IronListElement} from 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
+import {DomRepeatEvent, microTask, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {BaseMixin} from '../base_mixin.js';
 import {GlobalScrollTargetMixin} from '../global_scroll_target_mixin.js';
@@ -33,6 +34,7 @@ import {routes} from '../route.js';
 import {Route, Router} from '../router.js';
 
 import {LocalDataBrowserProxy, LocalDataBrowserProxyImpl, LocalDataItem} from './local_data_browser_proxy.js';
+import {getTemplate} from './site_data.html.js';
 
 type FocusConfig = Map<string, string|(() => void)>;
 
@@ -41,14 +43,11 @@ type SelectedItem = {
   index: number,
 };
 
-type RepeaterEvent = {
-  model: SelectedItem,
-};
-
-interface SiteDataElement {
+export interface SiteDataElement {
   $: {
     confirmDeleteDialog: CrDialogElement,
     confirmDeleteThirdPartyDialog: CrDialogElement,
+    list: IronListElement,
     removeShowingSites: HTMLElement,
     removeAllThirdPartyCookies: HTMLElement,
   };
@@ -57,13 +56,13 @@ interface SiteDataElement {
 const SiteDataElementBase = ListPropertyUpdateMixin(
     GlobalScrollTargetMixin(WebUIListenerMixin(BaseMixin(PolymerElement))));
 
-class SiteDataElement extends SiteDataElementBase {
+export class SiteDataElement extends SiteDataElementBase {
   static get is() {
     return 'site-data';
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
@@ -125,7 +124,7 @@ class SiteDataElement extends SiteDataElementBase {
     this.lastSelected_ = null;
   }
 
-  ready() {
+  override ready() {
     super.ready();
 
     this.addWebUIListener('on-tree-item-removed', () => this.updateSiteList_());
@@ -136,7 +135,7 @@ class SiteDataElement extends SiteDataElementBase {
    *
    * RouteObserverMixin
    */
-  currentRouteChanged(currentRoute: Route, previousRoute: Route) {
+  override currentRouteChanged(currentRoute: Route, previousRoute: Route) {
     super.currentRouteChanged(currentRoute);
     // Reload cookies on navigation to the site data page from a different
     // page. Avoid reloading on repeated navigations to the same page, as these
@@ -194,8 +193,9 @@ class SiteDataElement extends SiteDataElementBase {
     const siteToSelect = this.sites[index].site.replace(/[.]/g, '\\.');
     const button =
         this.$$(`#siteItem_${siteToSelect}`)!.shadowRoot!.querySelector(
-            '.subpage-arrow')!;
-    focusWithoutInk(assert(button));
+            '.subpage-arrow');
+    assert(button);
+    focusWithoutInk(button);
   }
 
   private onFilterChanged_(_current: string, previous?: string) {
@@ -242,11 +242,11 @@ class SiteDataElement extends SiteDataElementBase {
   }
 
   private onConfirmDeleteDialogClosed_() {
-    focusWithoutInk(assert(this.$.removeShowingSites));
+    focusWithoutInk(this.$.removeShowingSites);
   }
 
   private onConfirmDeleteThirdPartyDialogClosed_() {
-    focusWithoutInk(assert(this.$.removeAllThirdPartyCookies));
+    focusWithoutInk(this.$.removeAllThirdPartyCookies);
   }
 
   /**
@@ -297,7 +297,7 @@ class SiteDataElement extends SiteDataElementBase {
     });
   }
 
-  private onSiteClick_(event: RepeaterEvent) {
+  private onSiteClick_(event: DomRepeatEvent<LocalDataItem>) {
     // If any delete button is selected, the focus will be in a bad state when
     // returning to this page. To avoid this, the site select button is given
     // focus. See https://crbug.com/872197.
@@ -311,6 +311,12 @@ class SiteDataElement extends SiteDataElementBase {
   private showRemoveThirdPartyCookies_(): boolean {
     return loadTimeData.getBoolean('enableRemovingAllThirdPartyCookies') &&
         this.sites.length > 0 && this.filter.length === 0;
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'site-data': SiteDataElement;
   }
 }
 

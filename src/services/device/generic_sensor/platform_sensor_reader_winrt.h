@@ -16,6 +16,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
+#include "base/time/time.h"
 #include "services/device/generic_sensor/platform_sensor_reader_win_base.h"
 #include "services/device/public/cpp/generic_sensor/sensor_reading.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -67,10 +68,10 @@ class PlatformSensorReaderWinrtBase : public PlatformSensorReaderWinBase {
   // for testing purposes.
   bool IsUnderlyingWinrtObjectValidForTesting() { return sensor_; }
 
-  bool Initialize() WARN_UNUSED_RESULT;
+  [[nodiscard]] bool Initialize();
 
-  bool StartSensor(const PlatformSensorConfiguration& configuration) override
-      WARN_UNUSED_RESULT;
+  [[nodiscard]] bool StartSensor(
+      const PlatformSensorConfiguration& configuration) override;
   base::TimeDelta GetMinimalReportingInterval() const override;
   void StopSensor() override;
 

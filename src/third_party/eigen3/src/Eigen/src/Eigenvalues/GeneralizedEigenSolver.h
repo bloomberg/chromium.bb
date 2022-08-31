@@ -212,7 +212,7 @@ template<typename MatrixType_> class GeneralizedEigenSolver
       * This vector permits to reconstruct the j-th eigenvalues as alphas(i)/betas(j).
       *
       * \sa betas(), eigenvalues() */
-    ComplexVectorType alphas() const
+    const ComplexVectorType& alphas() const
     {
       eigen_assert(m_valuesOkay && "GeneralizedEigenSolver is not initialized.");
       return m_alphas;
@@ -223,7 +223,7 @@ template<typename MatrixType_> class GeneralizedEigenSolver
       * This vector permits to reconstruct the j-th eigenvalues as alphas(i)/betas(j).
       *
       * \sa alphas(), eigenvalues() */
-    VectorType betas() const
+    const VectorType& betas() const
     {
       eigen_assert(m_valuesOkay && "GeneralizedEigenSolver is not initialized.");
       return m_betas;

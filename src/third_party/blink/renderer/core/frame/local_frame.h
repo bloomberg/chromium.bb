@@ -33,6 +33,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/time/default_tick_clock.h"
+#include "base/time/time.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
@@ -40,7 +41,6 @@
 #include "services/device/public/mojom/device_posture_provider.mojom-blink-forward.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink-forward.h"
 #include "third_party/blink/public/common/frame/frame_ad_evidence.h"
-#include "third_party/blink/public/common/frame/payment_request_token.h"
 #include "third_party/blink/public/common/frame/transient_allow_fullscreen.h"
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom-blink-forward.h"
@@ -58,7 +58,7 @@
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/navigation/renderer_eviction_reason.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/reporting/reporting.mojom-blink-forward.h"
-#include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/web/web_script_execution_callback.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -70,7 +70,9 @@
 #include "third_party/blink/renderer/core/loader/back_forward_cache_loader_helper_impl.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/platform/graphics/touch_action.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_map.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_set.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/loader/fetch/client_hints_preferences.h"
 #include "third_party/blink/renderer/platform/loader/fetch/loader_freeze_mode.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_associated_remote.h"
@@ -79,7 +81,7 @@
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
-#include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/perfetto/include/perfetto/tracing/traced_value_forward.h"
 #include "ui/gfx/geometry/transform.h"
 
 namespace base {
@@ -96,6 +98,7 @@ class SizeF;
 namespace blink {
 
 class AdTracker;
+class AttributionSrcLoader;
 class AssociatedInterfaceProvider;
 class BrowserInterfaceBrokerProxy;
 class Color;
@@ -141,6 +144,10 @@ class WebPluginContainerImpl;
 class WebPrescientNetworking;
 class WebURLLoaderFactory;
 struct BlinkTransferableMessage;
+
+#if !BUILDFLAG(IS_ANDROID)
+class WindowControlsOverlayChangedDelegate;
+#endif
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<LocalFrame>;
 
@@ -210,7 +217,7 @@ class CORE_EXPORT LocalFrame final
   void SetInheritedEffectiveTouchAction(TouchAction) override;
   bool BubbleLogicalScrollFromChildFrame(
       mojom::blink::ScrollDirection direction,
-      ScrollGranularity granularity,
+      ui::ScrollGranularity granularity,
       Frame* child) override;
   void DidFocus() override;
   bool IsAdSubframe() const override;
@@ -231,10 +238,11 @@ class CORE_EXPORT LocalFrame final
 
   void Reload(WebFrameLoadType);
 
-  // Note: these two functions are not virtual but intentionally shadow the
+  // Note: these three functions are not virtual but intentionally shadow the
   // corresponding method in the Frame base class to return the
   // LocalFrame-specific subclass.
   LocalWindowProxy* WindowProxy(DOMWrapperWorld&);
+  LocalWindowProxy* WindowProxyMaybeUninitialized(DOMWrapperWorld&);
   LocalDOMWindow* DomWindow();
   const LocalDOMWindow* DomWindow() const;
   void SetDOMWindow(LocalDOMWindow*);
@@ -268,8 +276,9 @@ class CORE_EXPORT LocalFrame final
   CoreProbeSink* GetProbeSink() { return probe_sink_.Get(); }
   scoped_refptr<InspectorTaskRunner> GetInspectorTaskRunner();
 
-  // Returns ContentCaptureManager in LocalFrameRoot.
-  ContentCaptureManager* GetContentCaptureManager();
+  // Returns ContentCaptureManager in LocalFrameRoot, create or destroy it as
+  // needed.
+  ContentCaptureManager* GetOrResetContentCaptureManager();
 
   // Returns the current state of caret browsing mode.
   bool IsCaretBrowsingEnabled() const;
@@ -309,7 +318,7 @@ class CORE_EXPORT LocalFrame final
   // All public functions below this point are candidates to move out of
   // LocalFrame into another class.
 
-  // See GraphicsLayerClient.h for accepted flags.
+  // See layers_as_json.h for accepted flags.
   String GetLayerTreeAsTextForTesting(unsigned flags = 0) const;
 
   // Begin printing with the given page size information.
@@ -375,6 +384,9 @@ class CORE_EXPORT LocalFrame final
 
   bool ShouldThrottleRendering() const;
 
+  // Called on the main frame of the portal is activated or adopted.
+  void PortalStateChanged();
+
   // Returns frame scheduler for this frame.
   // FrameScheduler is destroyed during frame detach and nullptr will be
   // returned after it.
@@ -388,6 +400,13 @@ class CORE_EXPORT LocalFrame final
   // framebusting defenses, in order to give the option of restarting the
   // navigation at a later time.
   bool CanNavigate(const Frame&, const KURL& destination_url = KURL());
+
+  // Whether a navigation should replace the current history entry or not.
+  // Note this isn't exhaustive; there are other cases where a navigation does a
+  // replacement which this function doesn't cover.
+  bool NavigationShouldReplaceCurrentHistoryEntry(
+      const FrameLoadRequest& request,
+      WebFrameLoadType frame_load_type);
 
   // Return this frame's BrowserInterfaceBroker. Must not be called on detached
   // frames (that is, frames where `Client()` returns nullptr).
@@ -405,7 +424,7 @@ class CORE_EXPORT LocalFrame final
   //
   // Navigation-associated interfaces are currently implemented as
   // channel-associated interfaces. See
-  // https://chromium.googlesource.com/chromium/src/+/master/docs/mojo_ipc_conversion.md#Channel_Associated-Interfaces
+  // https://chromium.googlesource.com/chromium/src/+/main/docs/mojo_ipc_conversion.md#Channel_Associated-Interfaces
   AssociatedInterfaceProvider* GetRemoteNavigationAssociatedInterfaces();
 
   LocalFrameClient* Client() const;
@@ -425,12 +444,11 @@ class CORE_EXPORT LocalFrame final
   IdlenessDetector* GetIdlenessDetector() { return idleness_detector_; }
   AdTracker* GetAdTracker() { return ad_tracker_; }
   void SetAdTrackerForTesting(AdTracker* ad_tracker);
+  AttributionSrcLoader* GetAttributionSrcLoader() {
+    return attribution_src_loader_;
+  }
 
-  enum class LazyLoadImageSetting {
-    kDisabled,
-    kEnabledExplicit,
-    kEnabledAutomatic
-  };
+  enum class LazyLoadImageSetting { kDisabled, kEnabledExplicit };
   // Returns the enabled state of lazyloading of images.
   LazyLoadImageSetting GetLazyLoadImageSetting() const;
 
@@ -454,7 +472,7 @@ class CORE_EXPORT LocalFrame final
       const mojom::blink::ViewportIntersectionState& intersection_state);
 
   gfx::Size GetMainFrameViewportSize() const override;
-  gfx::Point GetMainFrameScrollOffset() const override;
+  gfx::Point GetMainFrameScrollPosition() const override;
 
   void SetOpener(Frame* opener) override;
 
@@ -513,6 +531,10 @@ class CORE_EXPORT LocalFrame final
   // all other documents, just before commit (ReadyToCommitNavigation time).
   void SetAdEvidence(const blink::FrameAdEvidence& ad_evidence);
 
+  // This is used to check if a script tagged as an ad is currently on the v8
+  // stack.
+  bool IsAdScriptInStack() const;
+
   // The evidence for or against a frame being an ad. `absl::nullopt` if not yet
   // set or if the frame is a top-level frame as only subframes can be tagged as
   // ads.
@@ -563,7 +585,6 @@ class CORE_EXPORT LocalFrame final
   void SetSubframeColorOverlay(SkColor color);
   void UpdateFrameColorOverlayPrePaint();
 
-  // For CompositeAfterPaint.
   void PaintFrameColorOverlay(GraphicsContext&);
 
   // To be called from OomInterventionImpl.
@@ -633,7 +654,7 @@ class CORE_EXPORT LocalFrame final
       mojom::blink::UserActivationNotificationType notification_type);
   void AddInspectorIssue(mojom::blink::InspectorIssueInfoPtr);
   void SaveImageAt(const gfx::Point& window_point);
-  void AdvanceFocusInForm(mojom::blink::FocusType focus_type);
+  void AdvanceFocusForIME(mojom::blink::FocusType focus_type);
   void PostMessageEvent(
       const absl::optional<RemoteFrameToken>& source_frame_token,
       const String& source_origin,
@@ -644,10 +665,15 @@ class CORE_EXPORT LocalFrame final
   void ClosePageForTesting();
   void SetInitialFocus(bool reverse);
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   void GetCharacterIndexAtPoint(const gfx::Point& point);
 #endif
+
+#if !BUILDFLAG(IS_ANDROID)
   void UpdateWindowControlsOverlay(const gfx::Rect& bounding_rect_in_dips);
+  void RegisterWindowControlsOverlayChangedDelegate(
+      WindowControlsOverlayChangedDelegate*);
+#endif
 
   SystemClipboard* GetSystemClipboard();
 
@@ -667,24 +693,16 @@ class CORE_EXPORT LocalFrame final
     transient_allow_fullscreen_.Activate();
   }
 
-  // Returns the state of the |PaymentRequestToken| in the current |Frame|.
-  bool IsPaymentRequestTokenActive() const;
-
-  // Consumes the |PaymentRequestToken| of the current |Frame| if it was active.
-  bool ConsumePaymentRequestToken();
-
   LocalFrameToken GetLocalFrameToken() const;
-
-  TextFragmentHandler* GetTextFragmentHandler() const {
-    // |text_fragment_handler_| is always set on the main frame and created
-    // lazily for child frames.
-    return text_fragment_handler_;
-  }
 
   LoaderFreezeMode GetLoaderFreezeMode();
 
+  // Swaps `this` LocalFrame in to replace the current frame  (e.g. in the case
+  // of subframes, `Owner()->frame()`, or in the case of the main frame,
+  // `GetPage()->Frame()`). Must only be called on provisional frames.
   bool SwapIn();
 
+#if !BUILDFLAG(IS_ANDROID)
   // For PWAs with display_overrides, these getters are information about the
   // titlebar bounds sent over from the browser via UpdateWindowControlsOverlay
   // in LocalMainFrame that are needed to persist the lifetime of the frame.
@@ -694,6 +712,7 @@ class CORE_EXPORT LocalFrame final
   const gfx::Rect& GetWindowControlsOverlayRect() const {
     return window_controls_overlay_rect_;
   }
+#endif
 
   void LoadJavaScriptURL(const KURL& url);
 
@@ -706,6 +725,10 @@ class CORE_EXPORT LocalFrame final
   // https://github.com/jeremyroman/alternate-loading-modes/blob/main/browsing-context.md#session-history
   bool ShouldMaintainTrivialSessionHistory() const;
 
+  TextFragmentHandler* GetTextFragmentHandler() const {
+    return text_fragment_handler_;
+  }
+
   void BindTextFragmentReceiver(
       mojo::PendingReceiver<mojom::blink::TextFragmentReceiver> receiver);
 
@@ -714,11 +737,15 @@ class CORE_EXPORT LocalFrame final
   // Invokes on first paint, this method could be invoked multiple times, refer
   // to FrameFirstPaint.
   void OnFirstPaint(bool text_painted, bool image_painted);
+  void IncrementNavigationId() { navigation_id_++; }
+  uint32_t GetNavigationId() { return navigation_id_; }
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   void ResetTextInputHostForTesting();
   void RebindTextInputHostForTesting();
 #endif
+
+  void WriteIntoTrace(perfetto::TracedValue ctx) const;
 
  private:
   friend class FrameNavigationDisabler;
@@ -794,13 +821,6 @@ class CORE_EXPORT LocalFrame final
                                     String& clip_html,
                                     gfx::Rect& clip_rect);
 
-  // Whether a navigation should replace the current history entry or not.
-  // Note this isn't exhaustive; there are other cases where a navigation does a
-  // replacement which this function doesn't cover.
-  bool NavigationShouldReplaceCurrentHistoryEntry(
-      const FrameLoadRequest& request,
-      WebFrameLoadType frame_load_type);
-
   std::unique_ptr<FrameScheduler> frame_scheduler_;
 
   // Holds all PauseSubresourceLoadingHandles allowing either |this| to delete
@@ -854,11 +874,14 @@ class CORE_EXPORT LocalFrame final
   Member<PerformanceMonitor> performance_monitor_;
   Member<AdTracker> ad_tracker_;
   Member<IdlenessDetector> idleness_detector_;
+  Member<AttributionSrcLoader> attribution_src_loader_;
   Member<InspectorIssueReporter> inspector_issue_reporter_;
   Member<InspectorTraceEvents> inspector_trace_events_;
   // SmoothScrollSequencer is only populated for local roots; all local frames
   // use the instance owned by their local root.
   Member<SmoothScrollSequencer> smooth_scroll_sequencer_;
+  // Access content_capture_manager_ through GetOrResetContentCaptureManager()
+  // because WebContentCaptureClient might already stop the capture.
   Member<ContentCaptureManager> content_capture_manager_;
 
   InterfaceRegistry* const interface_registry_;
@@ -869,16 +892,6 @@ class CORE_EXPORT LocalFrame final
   std::unique_ptr<WebURLLoaderFactory> url_loader_factory_;
 
   ClientHintsPreferences client_hints_preferences_;
-
-  // The value of |is_save_data_enabled_| is read once per frame from
-  // NetworkStateNotifier, which is guarded by a mutex lock, and cached locally
-  // here for performance.
-  // TODO(sclittle): This field doesn't really belong here - we should find some
-  // way to make the state of NetworkStateNotifier accessible without needing to
-  // acquire a mutex, such as by adding thread-local objects to hold the network
-  // state that get updated whenever the network state changes. That way, this
-  // field would be no longer necessary.
-  const bool is_save_data_enabled_;
 
   IsCapturingMediaCallback is_capturing_media_callback_;
 
@@ -918,17 +931,20 @@ class CORE_EXPORT LocalFrame final
   using SavedScrollOffsets = HeapHashMap<Member<Node>, ScrollOffset>;
   Member<SavedScrollOffsets> saved_scroll_offsets_;
 
-  // Always non-null for the main frame and created lazily for child frames;
-  // null otherwise.
+  // Created lazily when needed, either via the browser's SharedHighlighting
+  // binding to it or via a context menu with a selection being opened in a
+  // frame.
   Member<TextFragmentHandler> text_fragment_handler_;
 
   // Manages a transient affordance for this frame to enter fullscreen.
   TransientAllowFullscreen transient_allow_fullscreen_;
 
-  PaymentRequestToken payment_request_token_;
-
+#if !BUILDFLAG(IS_ANDROID)
   bool is_window_controls_overlay_visible_ = false;
   gfx::Rect window_controls_overlay_rect_;
+  WeakMember<WindowControlsOverlayChangedDelegate>
+      window_controls_overlay_changed_delegate_;
+#endif
 
   // The evidence for or against a frame being an ad frame. `absl::nullopt` if
   // not yet set or if the frame is a top-level frame. (Only subframes can be
@@ -944,12 +960,17 @@ class CORE_EXPORT LocalFrame final
   // True if this frame is a subframe that had a script tagged as an ad on the
   // v8 stack at the time of creation. This is updated in `SetAdEvidence()`,
   // allowing the bit to be propagated when a frame navigates cross-origin.
+  // Fenced frames do not set this bit for the initial empty document, see
+  // SubresourceFilterAgent::Initialize.
   bool is_subframe_created_by_ad_script_ = false;
 
   bool evict_cached_session_storage_on_freeze_or_unload_ = false;
 
   // Indicate if the current document's color scheme was notified.
   bool notified_color_scheme_ = false;
+  // Tracks the number of times this document has been retrieved from the
+  // bfcache.
+  uint32_t navigation_id_ = 1;
 };
 
 inline FrameLoader& LocalFrame::Loader() const {

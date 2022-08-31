@@ -88,17 +88,16 @@ std::string ParamsToString(const base::ListValue& parameters) {
 }
 
 void InitializeTestMetaData(base::ListValue* parameters) {
-  std::unique_ptr<base::DictionaryValue> meta_data_entry(
-      new base::DictionaryValue());
-  meta_data_entry->SetString("key", kTestLoggingSessionIdKey);
-  meta_data_entry->SetString("value", kTestLoggingSessionIdValue);
-  std::unique_ptr<base::ListValue> meta_data(new base::ListValue());
-  meta_data->Append(std::move(meta_data_entry));
-  meta_data_entry = std::make_unique<base::DictionaryValue>();
-  meta_data_entry->SetString("key", "url");
-  meta_data_entry->SetString("value", kTestLoggingUrl);
-  meta_data->Append(std::move(meta_data_entry));
-  parameters->Append(std::move(meta_data));
+  base::Value::Dict meta_data_entry;
+  meta_data_entry.Set("key", kTestLoggingSessionIdKey);
+  meta_data_entry.Set("value", kTestLoggingSessionIdValue);
+  base::Value::List meta_data;
+  meta_data.Append(meta_data_entry.Clone());
+  meta_data_entry.clear();
+  meta_data_entry.Set("key", "url");
+  meta_data_entry.Set("value", kTestLoggingUrl);
+  meta_data.Append(std::move(meta_data_entry));
+  parameters->Append(base::Value(std::move(meta_data)));
 }
 
 class WebrtcLoggingPrivateApiTest : public extensions::ExtensionApiTest {
@@ -148,11 +147,10 @@ class WebrtcLoggingPrivateApiTest : public extensions::ExtensionApiTest {
   }
 
   void AppendTabIdAndUrl(base::ListValue* parameters) {
-    std::unique_ptr<base::DictionaryValue> request_info(
-        new base::DictionaryValue());
-    request_info->SetInteger(
-        "tabId", extensions::ExtensionTabUtil::GetTabId(web_contents()));
-    parameters->Append(std::move(request_info));
+    base::Value::Dict request_info;
+    request_info.Set("tabId",
+                     extensions::ExtensionTabUtil::GetTabId(web_contents()));
+    parameters->Append(base::Value(std::move(request_info)));
     parameters->Append(web_contents()
                            ->GetLastCommittedURL()
                            .DeprecatedGetOriginAsURL()
@@ -403,7 +401,7 @@ class WebrtcLoggingPrivateApiTest : public extensions::ExtensionApiTest {
     auto* manager = WebRtcEventLogManager::GetInstance();
 
     content::RenderFrameHost* render_frame_host =
-        web_contents()->GetMainFrame();
+        web_contents()->GetPrimaryMainFrame();
     const content::GlobalRenderFrameHostId frame_id =
         render_frame_host->GetGlobalId();
     const base::ProcessId pid =
@@ -673,7 +671,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest,
   ASSERT_TRUE(StartAudioDebugRecordings(1));
 }
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 
 // Fixture for various tests over StartEventLogging. Intended to be sub-classed
 // to test different scenarios.
@@ -1011,4 +1009,4 @@ IN_PROC_BROWSER_TEST_F(
                     error_message);
 }
 
-#endif  // !defined(OS_ANDROID)
+#endif  // !BUILDFLAG(IS_ANDROID)

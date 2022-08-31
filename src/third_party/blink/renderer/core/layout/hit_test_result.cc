@@ -21,6 +21,8 @@
 
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 
+#include "cc/base/region.h"
+#include "third_party/abseil-cpp/absl/types/variant.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
 #include "third_party/blink/renderer/core/dom/pseudo_element.h"
@@ -38,6 +40,7 @@
 #include "third_party/blink/renderer/core/html/html_image_element.h"
 #include "third_party/blink/renderer/core/html/html_map_element.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
+#include "third_party/blink/renderer/core/html/media/media_source_handle.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
@@ -50,8 +53,8 @@
 #include "third_party/blink/renderer/core/page/scrolling/top_document_root_scroller_controller.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar.h"
 #include "third_party/blink/renderer/core/svg/svg_element.h"
-#include "third_party/blink/renderer/platform/geometry/region.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_descriptor.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 
 namespace blink {
 
@@ -144,7 +147,7 @@ void HitTestResult::Trace(Visitor* visitor) const {
 
 void HitTestResult::SetNodeAndPosition(
     Node* node,
-    scoped_refptr<const NGPhysicalBoxFragment> box_fragment,
+    const NGPhysicalBoxFragment* box_fragment,
     const PhysicalOffset& position) {
   if (box_fragment) {
     local_point_ = position + box_fragment->OffsetFromOwnerLayoutBox();
@@ -244,6 +247,12 @@ void HitTestResult::SetToShadowHostIfInRestrictedShadowRoot() {
 
 CompositorElementId HitTestResult::GetScrollableContainer() const {
   DCHECK(InnerNode());
+  // TODO(1303411): Some users encounter InnerNode() == null here, but we don't
+  // know why. Return an invalid element ID in this case, which we check for in
+  // InputHandlerProxy::ContinueScrollBeginAfterMainThreadHitTest.
+  if (!InnerNode())
+    return CompositorElementId();
+
   LayoutBox* cur_box = InnerNode()->GetLayoutObject()->EnclosingBox();
 
   // Scrolling propagates along the containing block chain and ends at the
@@ -391,10 +400,10 @@ Image* HitTestResult::GetImage(const Node* node) {
 gfx::Rect HitTestResult::ImageRect() const {
   if (!GetImage())
     return gfx::Rect();
-  return InnerNodeOrImageMapImage()
-      ->GetLayoutBox()
-      ->AbsoluteContentQuad()
-      .EnclosingBoundingBox();
+  return gfx::ToEnclosingRect(InnerNodeOrImageMapImage()
+                                  ->GetLayoutBox()
+                                  ->AbsoluteContentQuad()
+                                  .BoundingBox());
 }
 
 KURL HitTestResult::AbsoluteImageURL(const Node* node) {
@@ -433,8 +442,26 @@ KURL HitTestResult::AbsoluteMediaURL() const {
 }
 
 MediaStreamDescriptor* HitTestResult::GetMediaStreamDescriptor() const {
-  if (HTMLMediaElement* media_elt = MediaElement())
-    return media_elt->GetSrcObject();
+  if (HTMLMediaElement* media_elt = MediaElement()) {
+    auto variant = media_elt->GetSrcObjectVariant();
+    if (absl::holds_alternative<MediaStreamDescriptor*>(variant)) {
+      // It might be nullptr-valued variant, too, here, but we return nullptr
+      // for that, regardless.
+      return absl::get<MediaStreamDescriptor*>(variant);
+    }
+  }
+  return nullptr;
+}
+
+MediaSourceHandle* HitTestResult::GetMediaSourceHandle() const {
+  if (HTMLMediaElement* media_elt = MediaElement()) {
+    auto variant = media_elt->GetSrcObjectVariant();
+    if (absl::holds_alternative<MediaSourceHandle*>(variant)) {
+      // It might be a nullptr-valued MediaStreamDescriptor* variant, here, but
+      // we return nullptr for that, regardless.
+      return absl::get<MediaSourceHandle*>(variant);
+    }
+  }
   return nullptr;
 }
 
@@ -524,14 +551,14 @@ ListBasedHitTestBehavior HitTestResult::AddNodeToListBasedTestResult(
 ListBasedHitTestBehavior HitTestResult::AddNodeToListBasedTestResult(
     Node* node,
     const HitTestLocation& location,
-    const FloatQuad& quad) {
+    const gfx::QuadF& quad) {
   bool should_check_containment;
   ListBasedHitTestBehavior behavior;
   std::tie(should_check_containment, behavior) =
       AddNodeToListBasedTestResultInternal(node, location);
   if (!should_check_containment)
     return behavior;
-  return quad.ContainsQuad(FloatRect(location.BoundingBox()))
+  return quad.ContainsQuad(gfx::QuadF(gfx::RectF(location.BoundingBox())))
              ? kStopHitTesting
              : kContinueHitTesting;
 }
@@ -539,7 +566,7 @@ ListBasedHitTestBehavior HitTestResult::AddNodeToListBasedTestResult(
 ListBasedHitTestBehavior HitTestResult::AddNodeToListBasedTestResult(
     Node* node,
     const HitTestLocation& location,
-    const Region& region) {
+    const cc::Region& region) {
   bool should_check_containment;
   ListBasedHitTestBehavior behavior;
   std::tie(should_check_containment, behavior) =

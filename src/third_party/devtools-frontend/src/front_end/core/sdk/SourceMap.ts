@@ -59,15 +59,17 @@ const str_ = i18n.i18n.registerUIStrings('core/sdk/SourceMap.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 
 export interface SourceMap {
-  compiledURL(): string;
-  url(): string;
-  sourceURLs(): string[];
-  sourceContentProvider(sourceURL: string, contentType: Common.ResourceType.ResourceType):
+  compiledURL(): Platform.DevToolsPath.UrlString;
+  url(): Platform.DevToolsPath.UrlString;
+  sourceURLs(): Platform.DevToolsPath.UrlString[];
+  sourceContentProvider(sourceURL: Platform.DevToolsPath.UrlString, contentType: Common.ResourceType.ResourceType):
       TextUtils.ContentProvider.ContentProvider;
-  embeddedContentByURL(sourceURL: string): string|null;
+  embeddedContentByURL(sourceURL: Platform.DevToolsPath.UrlString): string|null;
   findEntry(lineNumber: number, columnNumber: number): SourceMapEntry|null;
-  findReverseRanges(sourceURL: string, lineNumber: number, columnNumber: number): TextUtils.TextRange.TextRange[];
-  sourceLineMapping(sourceURL: string, lineNumber: number, columnNumber: number): SourceMapEntry|null;
+  findReverseRanges(sourceURL: Platform.DevToolsPath.UrlString, lineNumber: number, columnNumber: number):
+      TextUtils.TextRange.TextRange[];
+  sourceLineMapping(sourceURL: Platform.DevToolsPath.UrlString, lineNumber: number, columnNumber: number):
+      SourceMapEntry|null;
   mappings(): SourceMapEntry[];
   mapsOrigin(): boolean;
 }
@@ -75,10 +77,10 @@ export interface SourceMap {
 export class SourceMapV3 {
   version!: number;
   file!: string|undefined;
-  sources!: string[];
+  sources!: Platform.DevToolsPath.UrlString[];
   sections!: Section[]|undefined;
   mappings!: string;
-  sourceRoot!: string|undefined;
+  sourceRoot!: Platform.DevToolsPath.UrlString|undefined;
   names!: string[]|undefined;
   sourcesContent!: string|undefined;
   constructor() {
@@ -88,7 +90,7 @@ export class SourceMapV3 {
 export class Section {
   map!: SourceMapV3;
   offset!: Offset;
-  url!: string|undefined;
+  url!: Platform.DevToolsPath.UrlString|undefined;
   constructor() {
   }
 }
@@ -103,13 +105,13 @@ export class Offset {
 export class SourceMapEntry {
   lineNumber: number;
   columnNumber: number;
-  sourceURL: string|undefined;
+  sourceURL: Platform.DevToolsPath.UrlString|undefined;
   sourceLineNumber: number;
   sourceColumnNumber: number;
   name: string|undefined;
 
   constructor(
-      lineNumber: number, columnNumber: number, sourceURL?: string, sourceLineNumber?: number,
+      lineNumber: number, columnNumber: number, sourceURL?: Platform.DevToolsPath.UrlString, sourceLineNumber?: number,
       sourceColumnNumber?: number, name?: string) {
     this.lineNumber = lineNumber;
     this.columnNumber = columnNumber;
@@ -134,28 +136,29 @@ for (let i = 0; i < base64Digits.length; ++i) {
   base64Map.set(base64Digits.charAt(i), i);
 }
 
-const sourceMapToSourceList = new WeakMap<SourceMapV3, string[]>();
+const sourceMapToSourceList = new WeakMap<SourceMapV3, Platform.DevToolsPath.UrlString[]>();
 
 export class TextSourceMap implements SourceMap {
   readonly #initiator: PageResourceLoadInitiator;
   #json: SourceMapV3|null;
-  readonly #compiledURLInternal: string;
-  readonly #sourceMappingURL: string;
-  readonly #baseURL: string;
+  readonly #compiledURLInternal: Platform.DevToolsPath.UrlString;
+  readonly #sourceMappingURL: Platform.DevToolsPath.UrlString;
+  readonly #baseURL: Platform.DevToolsPath.UrlString;
   #mappingsInternal: SourceMapEntry[]|null;
-  readonly #sourceInfos: Map<string, TextSourceMap.SourceInfo>;
+  readonly #sourceInfos: Map<Platform.DevToolsPath.UrlString, TextSourceMap.SourceInfo>;
 
   /**
    * Implements Source Map V3 model. See https://github.com/google/closure-compiler/wiki/Source-Maps
    * for format description.
    */
   constructor(
-      compiledURL: string, sourceMappingURL: string, payload: SourceMapV3, initiator: PageResourceLoadInitiator) {
+      compiledURL: Platform.DevToolsPath.UrlString, sourceMappingURL: Platform.DevToolsPath.UrlString,
+      payload: SourceMapV3, initiator: PageResourceLoadInitiator) {
     this.#initiator = initiator;
     this.#json = payload;
     this.#compiledURLInternal = compiledURL;
     this.#sourceMappingURL = sourceMappingURL;
-    this.#baseURL = sourceMappingURL.startsWith('data:') ? compiledURL : sourceMappingURL;
+    this.#baseURL = (sourceMappingURL.startsWith('data:') ? compiledURL : sourceMappingURL);
 
     this.#mappingsInternal = null;
     this.#sourceInfos = new Map();
@@ -172,8 +175,9 @@ export class TextSourceMap implements SourceMap {
   /**
    * @throws {!Error}
    */
-  static async load(sourceMapURL: string, compiledURL: string, initiator: PageResourceLoadInitiator):
-      Promise<TextSourceMap> {
+  static async load(
+      sourceMapURL: Platform.DevToolsPath.UrlString, compiledURL: Platform.DevToolsPath.UrlString,
+      initiator: PageResourceLoadInitiator): Promise<TextSourceMap> {
     let updatedContent;
     try {
       const {content} = await PageResourceLoader.instance().loadResource(sourceMapURL, initiator);
@@ -193,19 +197,19 @@ export class TextSourceMap implements SourceMap {
     }
   }
 
-  compiledURL(): string {
+  compiledURL(): Platform.DevToolsPath.UrlString {
     return this.#compiledURLInternal;
   }
 
-  url(): string {
+  url(): Platform.DevToolsPath.UrlString {
     return this.#sourceMappingURL;
   }
 
-  sourceURLs(): string[] {
+  sourceURLs(): Platform.DevToolsPath.UrlString[] {
     return [...this.#sourceInfos.keys()];
   }
 
-  sourceContentProvider(sourceURL: string, contentType: Common.ResourceType.ResourceType):
+  sourceContentProvider(sourceURL: Platform.DevToolsPath.UrlString, contentType: Common.ResourceType.ResourceType):
       TextUtils.ContentProvider.ContentProvider {
     const info = this.#sourceInfos.get(sourceURL);
     if (info && info.content) {
@@ -214,7 +218,7 @@ export class TextSourceMap implements SourceMap {
     return new CompilerSourceMappingContentProvider(sourceURL, contentType, this.#initiator);
   }
 
-  embeddedContentByURL(sourceURL: string): string|null {
+  embeddedContentByURL(sourceURL: Platform.DevToolsPath.UrlString): string|null {
     const entry = this.#sourceInfos.get(sourceURL);
     if (!entry) {
       return null;
@@ -229,7 +233,8 @@ export class TextSourceMap implements SourceMap {
     return index ? mappings[index - 1] : null;
   }
 
-  sourceLineMapping(sourceURL: string, lineNumber: number, columnNumber: number): SourceMapEntry|null {
+  sourceLineMapping(sourceURL: Platform.DevToolsPath.UrlString, lineNumber: number, columnNumber: number):
+      SourceMapEntry|null {
     const mappings = this.mappings();
     const reverseMappings = this.reversedMappings(sourceURL);
     const first = Platform.ArrayUtilities.lowerBound(reverseMappings, lineNumber, lineComparator);
@@ -251,7 +256,8 @@ export class TextSourceMap implements SourceMap {
     }
   }
 
-  private findReverseIndices(sourceURL: string, lineNumber: number, columnNumber: number): number[] {
+  private findReverseIndices(sourceURL: Platform.DevToolsPath.UrlString, lineNumber: number, columnNumber: number):
+      number[] {
     const mappings = this.mappings();
     const reverseMappings = this.reversedMappings(sourceURL);
     const endIndex = Platform.ArrayUtilities.upperBound(
@@ -269,12 +275,14 @@ export class TextSourceMap implements SourceMap {
     return reverseMappings.slice(startIndex, endIndex);
   }
 
-  findReverseEntries(sourceURL: string, lineNumber: number, columnNumber: number): SourceMapEntry[] {
+  findReverseEntries(sourceURL: Platform.DevToolsPath.UrlString, lineNumber: number, columnNumber: number):
+      SourceMapEntry[] {
     const mappings = this.mappings();
     return this.findReverseIndices(sourceURL, lineNumber, columnNumber).map(i => mappings[i]);
   }
 
-  findReverseRanges(sourceURL: string, lineNumber: number, columnNumber: number): TextUtils.TextRange.TextRange[] {
+  findReverseRanges(sourceURL: Platform.DevToolsPath.UrlString, lineNumber: number, columnNumber: number):
+      TextUtils.TextRange.TextRange[] {
     const mappings = this.mappings();
     const indices = this.findReverseIndices(sourceURL, lineNumber, columnNumber);
     const ranges: TextUtils.TextRange.TextRange[] = [];
@@ -288,10 +296,19 @@ export class TextSourceMap implements SourceMap {
         ++endIndex;
         ++i;
       }
-      const endLine = endIndex < mappings.length ? mappings[endIndex].lineNumber : Infinity;
-      const endColumn = endIndex < mappings.length ? mappings[endIndex].columnNumber : 0;
-      ranges.push(new TextUtils.TextRange.TextRange(
-          mappings[startIndex].lineNumber, mappings[startIndex].columnNumber, endLine, endColumn));
+
+      // Source maps don't contain end positions for entries, but each entry is assumed to
+      // span until the following entry. This doesn't work however in case of the last
+      // entry, where there's no following entry. We also don't know the number of lines
+      // and columns in the original source code (which might not be available at all), so
+      // for that case we store the maximum signed 32-bit integer, which is definitely going
+      // to be larger than any script we can process and can safely be serialized as part of
+      // the skip list we send to V8 with `Debugger.stepOver` (http://crbug.com/1305956).
+      const startLine = mappings[startIndex].lineNumber;
+      const startColumn = mappings[startIndex].columnNumber;
+      const endLine = endIndex < mappings.length ? mappings[endIndex].lineNumber : 2 ** 31 - 1;
+      const endColumn = endIndex < mappings.length ? mappings[endIndex].columnNumber : 2 ** 31 - 1;
+      ranges.push(new TextUtils.TextRange.TextRange(startLine, startColumn, endLine, endColumn));
     }
 
     return ranges;
@@ -303,10 +320,10 @@ export class TextSourceMap implements SourceMap {
       this.eachSection(this.parseMap.bind(this));
       this.#json = null;
     }
-    return /** @type {!Array<!SourceMapEntry>} */ this.#mappingsInternal as SourceMapEntry[];
+    return this.#mappingsInternal;
   }
 
-  private reversedMappings(sourceURL: string): number[] {
+  private reversedMappings(sourceURL: Platform.DevToolsPath.UrlString): number[] {
     const info = this.#sourceInfos.get(sourceURL);
     if (!info) {
       return [];
@@ -352,16 +369,28 @@ export class TextSourceMap implements SourceMap {
 
   private parseSources(sourceMap: SourceMapV3): void {
     const sourcesList = [];
-    let sourceRoot = sourceMap.sourceRoot || '';
-    if (sourceRoot && !sourceRoot.endsWith('/')) {
-      sourceRoot += '/';
-    }
+    const sourceRoot = sourceMap.sourceRoot || Platform.DevToolsPath.EmptyUrlString;
     for (let i = 0; i < sourceMap.sources.length; ++i) {
-      const href = sourceRoot + sourceMap.sources[i];
+      let href = sourceMap.sources[i];
+      // The source map v3 proposal says to prepend the sourceRoot to the source URL
+      // and if the resulting URL is not absolute, then resolve the source URL against
+      // the source map URL. Appending the sourceRoot (if one exists) is not likely to
+      // be meaningful or useful if the source URL is already absolute though. In this
+      // case, use the source URL as is without prepending the sourceRoot.
+      if (Common.ParsedURL.ParsedURL.isRelativeURL(href)) {
+        if (sourceRoot && !sourceRoot.endsWith('/') && href && !href.startsWith('/')) {
+          href = Common.ParsedURL.ParsedURL.concatenate(sourceRoot, '/', href);
+        } else {
+          href = Common.ParsedURL.ParsedURL.concatenate(sourceRoot, href);
+        }
+      }
       let url = Common.ParsedURL.ParsedURL.completeURL(this.#baseURL, href) || href;
       const source = sourceMap.sourcesContent && sourceMap.sourcesContent[i];
       if (url === this.#compiledURLInternal && source) {
-        url += '? [sm]';
+        url = Common.ParsedURL.ParsedURL.concatenate(url, '? [sm]');
+      }
+      if (this.#sourceInfos.has(url)) {
+        continue;
       }
       this.#sourceInfos.set(url, new TextSourceMap.SourceInfo(source || null, null));
       sourcesList.push(url);
@@ -383,7 +412,7 @@ export class TextSourceMap implements SourceMap {
     const sources = sourceMapToSourceList.get(map);
     const names = map.names || [];
     const stringCharIterator = new TextSourceMap.StringCharIterator(map.mappings);
-    let sourceURL: string|(string | undefined) = sources && sources[sourceIndex];
+    let sourceURL: Platform.DevToolsPath.UrlString|undefined = sources && sources[sourceIndex];
 
     while (true) {
       if (stringCharIterator.peek() === ',') {
@@ -451,7 +480,8 @@ export class TextSourceMap implements SourceMap {
     return negative ? -result : result;
   }
 
-  reverseMapTextRange(url: string, textRange: TextUtils.TextRange.TextRange): TextUtils.TextRange.TextRange|null {
+  reverseMapTextRange(url: Platform.DevToolsPath.UrlString, textRange: TextUtils.TextRange.TextRange):
+      TextUtils.TextRange.TextRange|null {
     function comparator(
         position: {
           lineNumber: number,

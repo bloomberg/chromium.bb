@@ -11,6 +11,8 @@
 #include "chrome/browser/ash/crostini/crostini_pref_names.h"
 #include "chrome/browser/ash/crostini/crostini_util.h"
 #include "chrome/browser/ash/crostini/fake_crostini_features.h"
+#include "chrome/browser/ash/guest_os/public/guest_os_service.h"
+#include "chrome/browser/ash/guest_os/public/guest_os_wayland_server.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
@@ -69,7 +71,11 @@ class CrostiniBrowserTestChromeBrowserMainExtraParts
   // Ideally we'd call SetConnectionType in PostCreateThreads, but currently we
   // have to wait for PreProfileInit to complete, since that creatse the
   // ash::Shell that AshService needs in order to start.
-  void PostProfileInit() override {
+  void PostProfileInit(Profile* profile, bool is_initial_profile) override {
+    // The setup below is intended to run for only the initial profile.
+    if (!is_initial_profile)
+      return;
+
     connection_change_simulator_.SetConnectionType(
         network::mojom::ConnectionType::CONNECTION_WIFI);
   }
@@ -128,6 +134,10 @@ void CrostiniBrowserTestBase::CreatedBrowserMainParts(
 void CrostiniBrowserTestBase::SetUpOnMainThread() {
   browser()->profile()->GetPrefs()->SetBoolean(
       crostini::prefs::kCrostiniEnabled, true);
+
+  guest_os::GuestOsService::GetForProfile(browser()->profile())
+      ->WaylandServer()
+      ->OverrideServerForTesting(vm_tools::launch::TERMINA, nullptr, {});
 }
 
 void CrostiniBrowserTestBase::SetConnectionType(

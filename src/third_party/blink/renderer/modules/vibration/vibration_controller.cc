@@ -72,14 +72,18 @@ enum class NavigatorVibrationType {
   kSameOriginSubFrameWithUserGesture = 3,
   kCrossOriginSubFrameNoUserGesture = 4,
   kCrossOriginSubFrameWithUserGesture = 5,
-  kMaxValue = kCrossOriginSubFrameWithUserGesture,
+  kInFencedFrameTree = 6,
+  kMaxValue = kInFencedFrameTree,
 };
 
 void CollectHistogramMetrics(LocalDOMWindow* window) {
   NavigatorVibrationType type;
   bool user_gesture = window->GetFrame()->HasStickyUserActivation();
   UseCounter::Count(window, WebFeature::kNavigatorVibrate);
-  if (!window->GetFrame()->IsMainFrame()) {
+  if (window->GetFrame()->IsInFencedFrameTree()) {
+    type = NavigatorVibrationType::kInFencedFrameTree;
+  } else if (!window->GetFrame()->IsMainFrame()) {
+    // TODO(crbug.com/1254770): Update for embedded portals.
     UseCounter::Count(window, WebFeature::kNavigatorVibrateSubFrame);
     if (window->GetFrame()->IsCrossOriginToMainFrame()) {
       if (user_gesture)
@@ -174,11 +178,19 @@ bool VibrationController::Vibrate(const VibrationPattern& pattern) {
   CollectHistogramMetrics(DomWindow());
 
   LocalFrame* frame = DomWindow()->GetFrame();
+  if (frame->IsInFencedFrameTree()) {
+    Intervention::GenerateReport(
+        frame, "NavigatorVibrate",
+        "Blocked call to navigator.vibrate inside a fenced frame.");
+    return false;
+  }
+
   if (!frame->GetPage()->IsPageVisible())
     return false;
 
   if (!frame->HasStickyUserActivation()) {
     String message;
+    // TODO(crbug.com/1254770): Update for embedded portals.
     if (frame->IsCrossOriginToMainFrame()) {
       message =
           "Blocked call to navigator.vibrate inside a cross-origin "

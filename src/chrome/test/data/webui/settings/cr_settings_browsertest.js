@@ -12,10 +12,12 @@ GEN('#include "build/build_config.h"');
 GEN('#include "build/chromeos_buildflags.h"');
 GEN('#include "chrome/browser/ui/ui_features.h"');
 GEN('#include "chrome/common/chrome_features.h"');
+GEN('#include "components/privacy_sandbox/privacy_sandbox_features.h"');
 GEN('#include "components/autofill/core/common/autofill_features.h"');
+GEN('#include "content/public/common/content_features.h"');
 GEN('#include "content/public/test/browser_test.h"');
 
-GEN('#if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)');
+GEN('#if !BUILDFLAG(IS_CHROMEOS)');
 GEN('#include "components/language/core/common/language_experiments.h"');
 GEN('#endif');
 
@@ -76,10 +78,25 @@ var CrSettingsBasicPageTest = class extends CrSettingsBrowserTest {
   get browsePreload() {
     return 'chrome://settings/test_loader.html?module=settings/basic_page_test.js&host=webui-test';
   }
+
+  /** @override */
+  get featureListInternal() {
+    return {enabled: ['features::kPrivacyGuide']};
+  }
 };
 
-TEST_F('CrSettingsBasicPageTest', 'All', function() {
+// TODO(crbug.com/1298753): Flaky on Mac.
+GEN('#if BUILDFLAG(IS_MAC)');
+GEN('#define MAYBE_BasicPage DISABLED_BasicPage');
+GEN('#else');
+GEN('#define MAYBE_BasicPage BasicPage');
+GEN('#endif');
+TEST_F('CrSettingsBasicPageTest', 'MAYBE_BasicPage', function() {
   runMochaSuite('SettingsBasicPage');
+});
+
+TEST_F('CrSettingsBasicPageTest', 'PrivacyGuidePromo', function() {
+  runMochaSuite('PrivacyGuidePromo');
 });
 
 GEN('#if !BUILDFLAG(IS_CHROMEOS_ASH)');
@@ -90,10 +107,6 @@ var CrSettingsLanguagesPageTest = class extends CrSettingsBrowserTest {
   }
 };
 
-TEST_F('CrSettingsLanguagesPageTest', 'LanguageSettings', function() {
-  mocha.grep(languages_page_tests.TestNames.LanguageSettings).run();
-});
-
 TEST_F('CrSettingsLanguagesPageTest', 'Spellcheck', function() {
   mocha.grep(languages_page_tests.TestNames.Spellcheck).run();
 });
@@ -102,22 +115,6 @@ GEN('#if BUILDFLAG(GOOGLE_CHROME_BRANDING)');
 TEST_F('CrSettingsLanguagesPageTest', 'SpellcheckOfficialBuild', function() {
   mocha.grep(languages_page_tests.TestNames.SpellcheckOfficialBuild).run();
 });
-GEN('#endif');
-
-GEN('#if !BUILDFLAG(IS_CHROMEOS_LACROS)');
-var CrSettingsLanguagesPageRestructuredTest =
-    class extends CrSettingsLanguagesPageTest {
-  /** @override */
-  get featureListInternal() {
-    return {enabled: ['language::kDesktopRestructuredLanguageSettings']};
-  }
-};
-TEST_F(
-    'CrSettingsLanguagesPageRestructuredTest', 'RestructuredLanguageSettings',
-    function() {
-      mocha.grep(languages_page_tests.TestNames.RestructuredLanguageSettings)
-          .run();
-    });
 GEN('#endif');
 
 var CrSettingsLanguagesSubpageTest = class extends CrSettingsBrowserTest {
@@ -180,15 +177,10 @@ var CrSettingsClearBrowsingDataTest = class extends CrSettingsBrowserTest {
   get browsePreload() {
     return 'chrome://settings/test_loader.html?module=settings/clear_browsing_data_test.js&host=webui-test';
   }
-
-  /** @override */
-  get featureList() {
-    return {enabled: ['features::kSearchHistoryLink']};
-  }
 };
 
 // TODO(crbug.com/1107652): Flaky on Mac.
-GEN('#if defined(OS_MAC)');
+GEN('#if BUILDFLAG(IS_MAC)');
 GEN('#define MAYBE_ClearBrowsingDataAllPlatforms DISABLED_ClearBrowsingDataAllPlatforms');
 GEN('#else');
 GEN('#define MAYBE_ClearBrowsingDataAllPlatforms ClearBrowsingDataAllPlatforms');
@@ -325,16 +317,10 @@ var CrSettingsPasswordsCheckTest = class extends CrSettingsBrowserTest {
   }
 };
 
-// Flaky on Mac builds https://crbug.com/1143801
-GEN('#if (defined(OS_MAC)) || (defined(OS_LINUX))');
-GEN('#define MAYBE_All DISABLED_All');
-GEN('#else');
-GEN('#define MAYBE_All All');
-GEN('#endif');
-TEST_F('CrSettingsPasswordsCheckTest', 'MAYBE_All', function() {
+// Flaky https://crbug.com/1143801
+TEST_F('CrSettingsPasswordsCheckTest', 'DISABLED_All', function() {
   mocha.run();
 });
-GEN('#undef MAYBE_All');
 
 var CrSettingsSafetyCheckPageTest = class extends CrSettingsBrowserTest {
   /** @override */
@@ -347,7 +333,7 @@ TEST_F('CrSettingsSafetyCheckPageTest', 'All', function() {
   mocha.run();
 });
 
-GEN('#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)');
+GEN('#if BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)');
 var CrSettingsSafetyCheckChromeCleanerTest =
     class extends CrSettingsBrowserTest {
   /** @override */
@@ -359,7 +345,7 @@ var CrSettingsSafetyCheckChromeCleanerTest =
 TEST_F('CrSettingsSafetyCheckChromeCleanerTest', 'All', function() {
   mocha.run();
 });
-GEN('#endif  // defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)');
+GEN('#endif');
 
 var CrSettingsSiteListTest = class extends CrSettingsBrowserTest {
   /** @override */
@@ -398,7 +384,7 @@ var CrSettingsSiteDetailsTest = class extends CrSettingsBrowserTest {
 // Disabling on debug due to flaky timeout on Win7 Tests (dbg)(1) bot.
 // https://crbug.com/825304 - later for other platforms in crbug.com/1021219.
 // Disabling on Linux CFI due to flaky timeout (crbug.com/1031960).
-GEN('#if (!defined(NDEBUG)) || ((defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(IS_CFI))');
+GEN('#if (!defined(NDEBUG)) || ((BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)) && defined(IS_CFI))');
 GEN('#define MAYBE_SiteDetails DISABLED_SiteDetails');
 GEN('#else');
 GEN('#define MAYBE_SiteDetails SiteDetails');
@@ -433,12 +419,24 @@ var CrSettingsPrivacyPageTest = class extends CrSettingsBrowserTest {
 
   /** @override */
   get featureListInternal() {
-    return {enabled: ['features::kPrivacyReview']};
+    return {
+      enabled: [
+        'features::kPrivacyGuide',
+        'features::kPrivacyGuide2',
+      ]
+    };
+  }
+
+  get featuresWithParameters() {
+    return [{
+      featureName: 'features::kFedCm',
+      parameters: [{name: 'DesktopSettings', value: true}]
+    }];
   }
 };
 
 // TODO(crbug.com/1263420): Flaky on Linux Tests(dbg).
-GEN('#if defined(OS_LINUX)');
+GEN('#if BUILDFLAG(IS_LINUX)');
 GEN('#define MAYBE_PrivacyPageTests DISABLED_PrivacyPageTests');
 GEN('#else');
 GEN('#define MAYBE_PrivacyPageTests PrivacyPageTests');
@@ -447,8 +445,16 @@ TEST_F('CrSettingsPrivacyPageTest', 'PrivacyPageTests', function() {
   runMochaSuite('PrivacyPage');
 });
 
-TEST_F('CrSettingsPrivacyPageTest', 'PrivacyReviewEnabled', function() {
-  runMochaSuite('PrivacyReviewEnabled');
+TEST_F('CrSettingsPrivacyPageTest', 'PrivacySandboxEnabled', function() {
+  runMochaSuite('PrivacySandboxEnabled');
+});
+
+TEST_F('CrSettingsPrivacyPageTest', 'PrivacyGuideEnabled', function() {
+  runMochaSuite('PrivacyGuideEnabled');
+});
+
+TEST_F('CrSettingsPrivacyPageTest', 'PrivacyGuide2Disabled', function() {
+  runMochaSuite('PrivacyGuide2Disabled');
 });
 
 // TODO(crbug.com/1043665): flaky crash on Linux Tests (dbg).
@@ -464,7 +470,7 @@ TEST_F(
       runMochaSuite('HappinessTrackingSurveys');
     });
 
-GEN('#if defined(OS_MAC) || defined(OS_WIN)');
+GEN('#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)');
 // TODO(crbug.com/1043665): disabling due to failures on several builders.
 TEST_F(
     'CrSettingsPrivacyPageTest', 'DISABLED_CertificateManagerTests',
@@ -473,26 +479,149 @@ TEST_F(
     });
 GEN('#endif');
 
-var CrSettingsPrivacyReviewPageTest = class extends CrSettingsBrowserTest {
+var CrSettingsPrivacyGuidePageTest = class extends CrSettingsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/privacy_review_page_test.js&host=webui-test';
+    return 'chrome://settings/test_loader.html?module=settings/privacy_guide_page_test.js&host=webui-test';
   }
 
   /** @override */
   get featureListInternal() {
-    return {enabled: ['features::kPrivacyReview']};
+    return {
+      enabled: [
+        'features::kPrivacyGuide',
+        'features::kPrivacyGuide2',
+      ]
+    };
   }
 };
 
-TEST_F('CrSettingsPrivacyReviewPageTest', 'PrivacyReviewPageTests', function() {
-  runMochaSuite('PrivacyReviewPage');
-});
+// TODO(crbug.com/1307443): disabling due to flakiness on several builders.
+TEST_F(
+    'CrSettingsPrivacyGuidePageTest', 'DISABLED_PrivacyGuidePageTests',
+    function() {
+        runMochaSuite('PrivacyGuidePage');
+    });
 
+// TODO(crbug.com/1328037): Flaky on Linux Tests(dbg).
+GEN('#if BUILDFLAG(IS_LINUX) && !defined(NDEBUG)');
+GEN('#define MAYBE_PrivacyGuideFragmentMetricsTests \\');
+GEN('  DISABLED_PrivacyGuideFragmentMetricsTests');
+GEN('#else');
+GEN('#define MAYBE_PrivacyGuideFragmentMetricsTests \\');
+GEN('  PrivacyGuideFragmentMetricsTests');
+GEN('#endif');
+TEST_F(
+    'CrSettingsPrivacyGuidePageTest', 'MAYBE_PrivacyGuideFragmentMetricsTests',
+    function() {
+      runMochaSuite('PrivacyGuideFragmentMetrics');
+    });
 
 TEST_F(
-    'CrSettingsPrivacyReviewPageTest', 'HistorySyncFragmentTests', function() {
+    'CrSettingsPrivacyGuidePageTest', 'HistorySyncFragmentTests', function() {
       runMochaSuite('HistorySyncFragment');
+    });
+
+TEST_F('CrSettingsPrivacyGuidePageTest', 'CompletionFragmentTests', function() {
+  runMochaSuite('CompletionFragment');
+});
+
+TEST_F(
+    'CrSettingsPrivacyGuidePageTest',
+    'CompletionFragmentPrivacySandboxRestricted', function() {
+      runMochaSuite('CompletionFragmentPrivacySandboxRestricted');
+    });
+
+TEST_F(
+    'CrSettingsPrivacyGuidePageTest',
+    'CompletionFragmentPrivacyGuide2DisabledTests', function() {
+      runMochaSuite('CompletionFragmentPrivacyGuide2Disabled');
+    });
+
+TEST_F('CrSettingsPrivacyGuidePageTest', 'PrivacyGuideDialogTests', function() {
+  runMochaSuite('PrivacyGuideDialog');
+});
+
+TEST_F(
+    'CrSettingsPrivacyGuidePageTest', 'CardHeaderTestsPrivacyGuide2Enabled',
+    function() {
+      runMochaSuite('CardHeaderTestsPrivacyGuide2Enabled');
+    });
+
+TEST_F(
+    'CrSettingsPrivacyGuidePageTest', 'CardHeaderTestsPrivacyGuide2Disabled',
+    function() {
+      runMochaSuite('CardHeaderTestsPrivacyGuide2Disabled');
+    });
+
+var CrSettingsCookiesPageTest = class extends CrSettingsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/cookies_page_test.js&host=webui-test';
+  }
+
+  /** @override */
+  get featureListInternal() {
+    return {
+      enabled: [
+        'features::kConsolidatedSiteStorageControls',
+      ]
+    };
+  }
+};
+
+// Flaky on MacOS bots and times out on Linux Dbg: https://crbug.com/1240747
+GEN('#if (BUILDFLAG(IS_MAC)) || (BUILDFLAG(IS_LINUX) && !defined(NDEBUG))');
+GEN('#define MAYBE_CookiesPageTest DISABLED_CookiesPageTest');
+GEN('#else');
+GEN('#define MAYBE_CookiesPageTest CookiesPageTest');
+GEN('#endif');
+TEST_F('CrSettingsCookiesPageTest', 'MAYBE_CookiesPageTest', function() {
+  runMochaSuite('CrSettingsCookiesPageTest');
+});
+
+// Flaky on MacOS bots and times out on Linux Dbg: https://crbug.com/1240747
+GEN('#if (BUILDFLAG(IS_MAC)) || (BUILDFLAG(IS_LINUX) && !defined(NDEBUG))');
+GEN('#define MAYBE_ConsolidatedControlsEnabled DISABLED_ConsolidatedControlsEnabled');
+GEN('#else');
+GEN('#define MAYBE_ConsolidatedControlsEnabled ConsolidatedControlsEnabled');
+GEN('#endif');
+TEST_F(
+    'CrSettingsCookiesPageTest', 'MAYBE_ConsolidatedControlsEnabled',
+    function() {
+      runMochaSuite('CrSettingsCookiesPageTest_consolidatedControlsEnabled');
+    });
+
+var CrSettingsCookiesPageConsolidatedDisabledTest =
+    class extends CrSettingsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/cookies_page_test.js&host=webui-test';
+  }
+
+  /** @override */
+  get featureListInternal() {
+    return {
+      disabled: [
+        'features::kConsolidatedSiteStorageControls',
+        // TODO(crbug.com/1238757)- Remove this when consolidated storage
+        // launches.
+        'privacy_sandbox::kPrivacySandboxSettings3',
+      ]
+    };
+  }
+};
+
+// Flaky on MacOS bots and times out on Linux Dbg: https://crbug.com/1240747
+GEN('#if (BUILDFLAG(IS_MAC)) || (BUILDFLAG(IS_LINUX) && !defined(NDEBUG))');
+GEN('#define MAYBE_ConsolidatedControlsDisabled DISABLED_ConsolidatedControlsDisabled');
+GEN('#else');
+GEN('#define MAYBE_ConsolidatedControlsDisabled ConsolidatedControlsDisaled');
+GEN('#endif');
+TEST_F(
+    'CrSettingsCookiesPageConsolidatedDisabledTest',
+    'MAYBE_ConsolidatedControlsDisabled', function() {
+      runMochaSuite('CrSettingsCookiesPageTest_consolidatedControlsDisabled');
     });
 
 var CrSettingsRouteTest = class extends CrSettingsBrowserTest {
@@ -501,6 +630,12 @@ var CrSettingsRouteTest = class extends CrSettingsBrowserTest {
     return 'chrome://settings/test_loader.html?module=settings/route_tests.js&host=webui-test';
   }
 };
+
+GEN('#if BUILDFLAG(IS_CHROMEOS_LACROS)');
+TEST_F('CrSettingsCookiesPageTest', 'LacrosSecondaryProfile', function() {
+  runMochaSuite('CrSettingsCookiesPageTest_lacrosSecondaryProfile');
+});
+GEN('#endif');
 
 TEST_F('CrSettingsRouteTest', 'Basic', function() {
   runMochaSuite('route');
@@ -512,7 +647,7 @@ TEST_F('CrSettingsRouteTest', 'DynamicParameters', function() {
 
 // Copied from Polymer 2 test:
 // Failing on ChromiumOS dbg. https://crbug.com/709442
-GEN('#if (defined(OS_WIN) || BUILDFLAG(IS_CHROMEOS_ASH)) && !defined(NDEBUG)');
+GEN('#if (BUILDFLAG(IS_WIN) || BUILDFLAG(IS_CHROMEOS_ASH)) && !defined(NDEBUG)');
 GEN('#define MAYBE_NonExistentRoute DISABLED_NonExistentRoute');
 GEN('#else');
 GEN('#define MAYBE_NonExistentRoute NonExistentRoute');
@@ -542,8 +677,54 @@ TEST_F('CrSettingsAdvancedPageTest', 'MAYBE_Load', function() {
   mocha.run();
 });
 
-[['AllSites', 'all_sites_tests.js'],
- ['AppearanceFontsPage', 'appearance_fonts_page_test.js'],
+
+var CrSettingsSiteDataTest = class extends CrSettingsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/site_data_test.js&host=webui-test';
+  }
+
+  /** @override */
+  get featureList() {
+    return {
+      disabled: [
+        'features::kConsolidatedSiteStorageControls',
+        // TODO(crbug.com/1238757)- Remove this when consolidated storage
+        // launches.
+        'privacy_sandbox::kPrivacySandboxSettings3',
+      ]
+    };
+  }
+};
+
+TEST_F('CrSettingsSiteDataTest', 'All', function() {
+  mocha.run();
+});
+
+var CrSettingsSiteDataDetailsSubpageTest = class extends CrSettingsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/site_data_details_subpage_tests.js&host=webui-test';
+  }
+
+  /** @override */
+  get featureList() {
+    return {
+      disabled: [
+        'features::kConsolidatedSiteStorageControls',
+        // TODO(crbug.com/1238757)- Remove this when consolidated storage
+        // launches.
+        'privacy_sandbox::kPrivacySandboxSettings3',
+      ]
+    };
+  }
+};
+
+TEST_F('CrSettingsSiteDataDetailsSubpageTest', 'All', function() {
+  mocha.run();
+});
+
+[['AppearanceFontsPage', 'appearance_fonts_page_test.js'],
  ['AppearancePage', 'appearance_page_test.js'],
  [
    'SettingsCategoryDefaultRadioGroup',
@@ -563,6 +744,7 @@ TEST_F('CrSettingsAdvancedPageTest', 'MAYBE_Load', function() {
  ['ExtensionControlledIndicator', 'extension_controlled_indicator_tests.js'],
  ['HelpPage', 'help_page_test.js'],
  ['Menu', 'settings_menu_test.js'],
+ ['PasswordView', 'password_view_test.js'],
  ['PaymentsSection', 'payments_section_test.js'],
  ['PeoplePage', 'people_page_test.js'],
  ['PeoplePageSyncControls', 'people_page_sync_controls_test.js'],
@@ -578,9 +760,8 @@ TEST_F('CrSettingsAdvancedPageTest', 'MAYBE_Load', function() {
  ['SearchPage', 'search_page_test.js'],
  ['Search', 'search_settings_test.js'],
  ['SecurityKeysSubpage', 'security_keys_subpage_test.js'],
+ ['SecurityKeysPhonesSubpage', 'security_keys_phones_subpage_test.js'],
  ['SecureDns', 'secure_dns_test.js'],
- ['SiteData', 'site_data_test.js'],
- ['SiteDataDetails', 'site_data_details_subpage_tests.js'],
  ['SiteDetailsPermission', 'site_details_permission_tests.js'],
  ['SiteEntry', 'site_entry_tests.js'],
  ['SiteFavicon', 'site_favicon_test.js'],
@@ -588,68 +769,65 @@ TEST_F('CrSettingsAdvancedPageTest', 'MAYBE_Load', function() {
  ['SiteSettingsPage', 'site_settings_page_test.js'],
  ['Slider', 'settings_slider_tests.js'],
  ['StartupUrlsPage', 'startup_urls_page_test.js'],
- ['Subpage', 'settings_subpage_test.js'],
+ // Flaky on all OSes. TODO(crbug.com/1302405): Enable the test.
+ ['Subpage', 'settings_subpage_test.js', 'DISABLED_All'],
  ['SyncAccountControl', 'sync_account_control_test.js'],
- ['Textarea', 'settings_textarea_tests.js'],
  ['ToggleButton', 'settings_toggle_button_tests.js'],
  ['ZoomLevels', 'zoom_levels_tests.js'],
 ].forEach(test => registerTest(...test));
 
-// Timeout on Linux and MacOS dbg bots: https://crbug.com/1133412
-// Fails on Mac/Arm: https://crbug.com/1222886
-GEN('#if (!defined(OS_LINUX) && !defined(OS_MAC)) || ' +
-    '(defined(NDEBUG) && !defined(ARCH_CPU_ARM64))');
+// Timeout on Linux dbg bots: https://crbug.com/1133412
+// Fails on Mac bots: https://crbug.com/1222886
+GEN('#if !((BUILDFLAG(IS_LINUX) && !defined(NDEBUG)) || BUILDFLAG(IS_MAC))');
 [['SecurityPage', 'security_page_test.js'],
 ].forEach(test => registerTest(...test));
 GEN('#endif');
 
-
-// Flaky on MacOS bots and times out on Linux Dbg: https://crbug.com/1240747
-GEN('#if (!defined(OS_MAC)) && (!defined(OS_LINUX) || defined(NDEBUG))');
-[['CookiesPage', 'cookies_page_test.js'],
-].forEach(test => registerTest(...test));
+// Timeout on Linux dbg bots: https://crbug.com/1311163
+GEN('#if !(BUILDFLAG(IS_LINUX) && !defined(NDEBUG))');
+[['AllSites', 'all_sites_tests.js'], ].forEach(test => registerTest(...test));
 GEN('#endif');
 
-GEN('#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)');
+GEN('#if BUILDFLAG(IS_CHROMEOS)');
 [['PasswordsSectionCros', 'passwords_section_test_cros.js'],
 ].forEach(test => registerTest(...test));
-GEN('#endif  // BUILDFLAG(IS_CHROMEOS_ASH)) || BUILDFLAG(IS_CHROMEOS_LACROS)');
+GEN('#endif');
 
 GEN('#if BUILDFLAG(IS_CHROMEOS_ASH)');
 [['PeoplePageChromeOS', 'people_page_test_cros.js'],
  // Copied from Polymer 2 test. TODO(crbug.com/929455): flaky, fix.
  ['SiteListChromeOS', 'site_list_tests_cros.js', 'DISABLED_AndroidSmsInfo'],
 ].forEach(test => registerTest(...test));
-GEN('#endif  // BUILDFLAG(IS_CHROMEOS_ASH)');
+GEN('#endif');
 
-GEN('#if !defined(OS_MAC) && !BUILDFLAG(IS_CHROMEOS_ASH)');
+GEN('#if !BUILDFLAG(IS_MAC) && !BUILDFLAG(IS_CHROMEOS_ASH)');
 [['EditDictionaryPage', 'edit_dictionary_page_test.js'],
 ].forEach(test => registerTest(...test));
-GEN('#endif  // !defined(OS_MAC) && !BUILDFLAG(IS_CHROMEOS_ASH)');
+GEN('#endif');
 
-GEN('#if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)');
+GEN('#if !BUILDFLAG(IS_CHROMEOS)');
 [['DefaultBrowser', 'default_browser_test.js'],
  ['ImportDataDialog', 'import_data_dialog_test.js'],
  ['SystemPage', 'system_page_tests.js'],
 ].forEach(test => registerTest(...test));
-GEN('#endif  // !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)');
+GEN('#endif');
 
 GEN('#if !BUILDFLAG(IS_CHROMEOS_ASH)');
 [['PeoplePageManageProfile', 'people_page_manage_profile_test.js'],
  ['Languages', 'languages_tests.js'],
+ ['RelaunchConfirmationDialog', 'relaunch_confirmation_dialog_test.js'],
 ].forEach(test => registerTest(...test));
-GEN('#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)');
+GEN('#endif');
 
-GEN('#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)');
+GEN('#if BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)');
 [['ChromeCleanupPage', 'chrome_cleanup_page_test.js'],
  ['IncompatibleApplicationsPage', 'incompatible_applications_page_test.js'],
 ].forEach(test => registerTest(...test));
-GEN('#endif  // defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)');
+GEN('#endif');
 
 GEN('#if BUILDFLAG(GOOGLE_CHROME_BRANDING) && !BUILDFLAG(IS_CHROMEOS_ASH)');
 registerTest('MetricsReporting', 'metrics_reporting_tests.js');
-GEN('#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING) ' +
-    '&& !BUILDFLAG(IS_CHROMEOS_ASH)');
+GEN('#endif');
 
 function registerTest(testName, module, caseName) {
   const className = `CrSettings${testName}Test`;

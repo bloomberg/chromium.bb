@@ -2,10 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {$$, click, getBrowserAndPages, goToResource, setCheckBox, waitFor, waitForFunction} from '../../shared/helper.js';
+import {
+  $,
+  $$,
+  click,
+  getBrowserAndPages,
+  goToResource,
+  setCheckBox,
+  waitFor,
+  waitForFunction,
+} from '../../shared/helper.js';
 
 import type {puppeteer} from '../../shared/helper.js';
-const REQUEST_LIST_SELECTOR = '.network-log-grid .data';
+const REQUEST_LIST_SELECTOR = '.network-log-grid tbody';
 
 /**
  * Select the Network tab in DevTools
@@ -35,7 +44,10 @@ export async function getAllRequestNames() {
 }
 
 export async function getSelectedRequestName() {
-  const request = await waitFor(REQUEST_LIST_SELECTOR + ' tr.selected .name-column');
+  const request = await $(REQUEST_LIST_SELECTOR + ' tr.selected .name-column');
+  if (!request) {
+    return null;
+  }
   return await request.evaluate(node => {
     return node && node.childNodes[1].textContent;
   });

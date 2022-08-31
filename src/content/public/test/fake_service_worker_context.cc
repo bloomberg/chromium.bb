@@ -42,6 +42,7 @@ void FakeServiceWorkerContext::UnregisterServiceWorker(
 ServiceWorkerExternalRequestResult
 FakeServiceWorkerContext::StartingExternalRequest(
     int64_t service_worker_version_id,
+    ServiceWorkerExternalRequestTimeoutType timeout_type,
     const std::string& request_uuid) {
   NOTREACHED();
   return ServiceWorkerExternalRequestResult::kWorkerNotFound;
@@ -57,6 +58,13 @@ size_t FakeServiceWorkerContext::CountExternalRequestsForTest(
     const blink::StorageKey& key) {
   NOTREACHED();
   return 0u;
+}
+bool FakeServiceWorkerContext::ExecuteScriptForTest(
+    const std::string& script,
+    int64_t version_id,
+    ServiceWorkerScriptExecutionCallback callback) {
+  NOTREACHED();
+  return false;
 }
 bool FakeServiceWorkerContext::MaybeHasRegistrationForStorageKey(
     const blink::StorageKey& key) {
@@ -93,6 +101,22 @@ void FakeServiceWorkerContext::StartWorkerForScope(
     ServiceWorkerContext::StatusCodeCallback failure_callback) {
   NOTREACHED();
 }
+
+bool FakeServiceWorkerContext::IsLiveRunningServiceWorker(
+    int64_t service_worker_version_id) {
+  NOTREACHED();
+  return false;
+}
+
+service_manager::InterfaceProvider&
+FakeServiceWorkerContext::GetRemoteInterfaces(
+    int64_t service_worker_version_id) {
+  NOTREACHED();
+  static service_manager::InterfaceProvider interface_provider(
+      base::ThreadTaskRunnerHandle::Get());
+  return interface_provider;
+}
+
 void FakeServiceWorkerContext::StartServiceWorkerForNavigationHint(
     const GURL& document_url,
     const blink::StorageKey& key,

@@ -7,7 +7,10 @@
 
 #include "base/callback.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/run_loop.h"
+#include "content/browser/direct_sockets/direct_udp_socket_impl.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -15,7 +18,9 @@
 #include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
+#include "net/http/http_response_headers.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/udp_socket.mojom.h"
 #include "third_party/blink/public/mojom/direct_sockets/direct_sockets.mojom.h"
 
@@ -32,19 +37,6 @@ class CONTENT_EXPORT DirectSocketsServiceImpl
     : public blink::mojom::DirectSocketsService,
       public WebContentsObserver {
  public:
-  // This enum is used to track how often each permission check cause
-  // Permission Denied failures.
-  enum class FailureType {
-    kPermissionsPolicy = 0,
-    kTransientActivation = 1,
-    kUserDialog = 2,
-    kResolvingToNonPublic = 3,
-    kRateLimiting = 4,
-    kCORS = 5,
-    kEnterprisePolicy = 6,
-    kMaxValue = kEnterprisePolicy,
-  };
-
   enum class ProtocolType { kTcp, kUdp };
 
   using PermissionCallback = base::RepeatingCallback<net::Error(
@@ -77,15 +69,15 @@ class CONTENT_EXPORT DirectSocketsServiceImpl
   void WebContentsDestroyed() override;
 
   network::mojom::NetworkContext* GetNetworkContext();
+  RenderFrameHost* GetFrameHost();
 
-  mojo::UniqueReceiverSet<blink::mojom::DirectUDPSocket>&
-  direct_udp_socket_receivers() {
-    return direct_udp_socket_receivers_;
-  }
+  void AddDirectUDPSocketReceiver(
+      std::unique_ptr<DirectUDPSocketImpl> socket,
+      mojo::PendingReceiver<blink::mojom::DirectUDPSocket> receiver);
 
-  static net::MutableNetworkTrafficAnnotationTag TrafficAnnotation();
-
-  static void SetConnectionDialogBypassForTesting(bool bypass);
+  static net::MutableNetworkTrafficAnnotationTag MutableTrafficAnnotation();
+  static net::NetworkTrafficAnnotationTag TrafficAnnotation();
+  static int32_t GetMaxBufferSize();
 
   static void SetEnterpriseManagedForTesting(bool enterprise_managed);
 
@@ -99,37 +91,14 @@ class CONTENT_EXPORT DirectSocketsServiceImpl
  private:
   friend class DirectSocketsUnitTest;
 
-  class ResolveHostAndOpenSocket;
-
-  // Compares the last committed origin with allowed restricted API origins.
-  static bool IsAllowedRestrictedApiOrigin(
-      const url::Origin& last_committed_origin);
-
   // Returns net::OK if the options are valid and the connection is permitted.
   net::Error ValidateOptions(const blink::mojom::DirectSocketOptions& options);
-
-  // DirectSocketsRequestDialogController:
-  void OnDialogProceedTcp(
-      blink::mojom::DirectSocketOptionsPtr options,
-      mojo::PendingReceiver<network::mojom::TCPConnectedSocket> receiver,
-      mojo::PendingRemote<network::mojom::SocketObserver> observer,
-      OpenTcpSocketCallback callback,
-      bool accepted,
-      const std::string& address,
-      const std::string& port);
-  void OnDialogProceedUdp(
-      blink::mojom::DirectSocketOptionsPtr options,
-      mojo::PendingReceiver<blink::mojom::DirectUDPSocket> receiver,
-      mojo::PendingRemote<network::mojom::UDPSocketListener> listener,
-      OpenUdpSocketCallback callback,
-      bool accepted,
-      const std::string& address,
-      const std::string& port);
 
   raw_ptr<RenderFrameHost> frame_host_;
   mojo::UniqueReceiverSet<blink::mojom::DirectUDPSocket>
       direct_udp_socket_receivers_;
 
+  std::unique_ptr<network::SimpleURLLoader> loader_;
   base::WeakPtrFactory<DirectSocketsServiceImpl> weak_ptr_factory_{this};
 };
 
