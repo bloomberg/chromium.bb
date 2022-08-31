@@ -32,7 +32,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -84,6 +83,7 @@
 #include "content/web_test/common/web_test_constants.h"
 #include "content/web_test/common/web_test_string_util.h"
 #include "content/web_test/common/web_test_switches.h"
+#include "ipc/ipc_channel_proxy.h"
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/network_context.mojom.h"
@@ -94,6 +94,7 @@
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/page_state/page_state.h"
 #include "third_party/blink/public/common/page_state/page_state_serialization.h"
+#include "third_party/blink/public/common/permissions/permission_utils.h"
 #include "third_party/blink/public/common/switches.h"
 #include "third_party/blink/public/common/unique_name/unique_name_helper.h"
 #include "ui/base/ui_base_switches.h"
@@ -103,7 +104,7 @@
 #include "ui/shell_dialogs/select_file_policy.h"
 #include "url/url_constants.h"
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #include "base/mac/foundation_util.h"
 #endif
 
@@ -273,14 +274,14 @@ void ApplyWebTestDefaultPreferences(blink::web_pref::WebPreferences* prefs) {
       command_line.HasSwitch(switches::kForcePresentationReceiverForTesting);
   prefs->translate_service_available = true;
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   prefs->editing_behavior = blink::mojom::EditingBehavior::kEditingMacBehavior;
 #else
   prefs->editing_behavior =
       blink::mojom::EditingBehavior::kEditingWindowsBehavior;
 #endif
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   prefs->cursive_font_family_map[blink::web_pref::kCommonScript] =
       u"Apple Chancery";
   prefs->fantasy_font_family_map[blink::web_pref::kCommonScript] = u"Papyrus";
@@ -794,7 +795,7 @@ void WebTestControlHost::InitiateCaptureDump(
   if (!renderer_dump_result_->layout) {
     DCHECK_EQ(0, waiting_for_layout_dumps_);
 
-    main_window_->web_contents()->ForEachRenderFrameHost(
+    main_window_->web_contents()->GetMainFrame()->ForEachRenderFrameHost(
         base::BindLambdaForTesting([&](RenderFrameHost* render_frame_host) {
           if (!render_frame_host->IsRenderFrameLive())
             return;
@@ -842,10 +843,10 @@ void WebTestControlHost::TestFinishedInSecondaryRenderer() {
 void WebTestControlHost::EnqueueSurfaceCopyRequest() {
   // Under fuzzing, the renderer may close the |main_window_| while we're
   // capturing test results, as demonstrated by https://crbug.com/1098835.
-  // We must handle this bad behaviour, and we just end the test without
-  // recording any results.
+  // We must handle this bad behaviour.
   if (!main_window_) {
-    OnTestFinished();
+    // DiscardMainWindow has already called OnTestFinished().
+    CHECK_EQ(test_phase_, CLEAN_UP);
     return;
   }
 
@@ -1106,8 +1107,7 @@ void WebTestControlHost::RenderProcessExited(
   }
 }
 
-void WebTestControlHost::OnGpuProcessCrashed(
-    base::TerminationStatus exit_code) {
+void WebTestControlHost::OnGpuProcessCrashed() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   printer_->AddErrorMessage("#CRASHED - gpu");
   DiscardMainWindow();
@@ -1133,13 +1133,20 @@ void WebTestControlHost::DiscardMainWindow() {
   // Shell windows, to avoid using the potentially-bad pointer.
   CloseAllWindows();
 
-  // Then we immediately end the current test instead of timing out. This is
-  // like ReportResults() except we report only messages added to the
-  // |printer_| and no other test results.
-  printer_->StartStateDump();
-  printer_->PrintTextHeader();
-  printer_->PrintTextFooter();
-  OnTestFinished();
+  if (test_phase_ == DURING_TEST) {
+    // Then we immediately end the current test instead of timing out. This is
+    // like ReportResults() except we report only messages added to the
+    // |printer_| and no other test results.
+    printer_->StartStateDump();
+    printer_->PrintTextHeader();
+    printer_->PrintTextFooter();
+    OnTestFinished();
+  } else {
+    // Given that main_window_ is null, this is (at the time of writing)
+    // equivalent to calling Shell::QuitMainMessageLoopForTesting(), but it
+    // seems cleaner to call it.
+    PrepareRendererForNextWebTest();
+  }
 }
 
 void WebTestControlHost::HandleNewRenderFrameHost(RenderFrameHost* frame) {
@@ -1215,6 +1222,8 @@ void WebTestControlHost::HandleNewRenderFrameHost(RenderFrameHost* frame) {
 }
 
 void WebTestControlHost::OnTestFinished() {
+  CHECK_EQ(test_phase_, DURING_TEST);
+
   test_phase_ = CLEAN_UP;
   if (!printer_->output_finished())
     printer_->PrintImageFooter();
@@ -1340,10 +1349,6 @@ void WebTestControlHost::OnImageDump(const std::string& actual_pixel_hash,
     std::vector<unsigned char> png;
 
     bool discard_transparency = true;
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kForceOverlayFullscreenVideo)) {
-      discard_transparency = false;
-    }
     if (web_test_runtime_flags().dump_drag_image())
       discard_transparency = false;
 
@@ -1420,45 +1425,45 @@ void WebTestControlHost::SetPermission(const std::string& name,
                                        blink::mojom::PermissionStatus status,
                                        const GURL& origin,
                                        const GURL& embedding_origin) {
-  content::PermissionType type;
+  blink::PermissionType type;
   if (name == "midi") {
-    type = PermissionType::MIDI;
+    type = blink::PermissionType::MIDI;
   } else if (name == "midi-sysex") {
-    type = PermissionType::MIDI_SYSEX;
+    type = blink::PermissionType::MIDI_SYSEX;
   } else if (name == "push-messaging" || name == "notifications") {
-    type = PermissionType::NOTIFICATIONS;
+    type = blink::PermissionType::NOTIFICATIONS;
   } else if (name == "geolocation") {
-    type = PermissionType::GEOLOCATION;
+    type = blink::PermissionType::GEOLOCATION;
   } else if (name == "protected-media-identifier") {
-    type = PermissionType::PROTECTED_MEDIA_IDENTIFIER;
+    type = blink::PermissionType::PROTECTED_MEDIA_IDENTIFIER;
   } else if (name == "background-sync") {
-    type = PermissionType::BACKGROUND_SYNC;
+    type = blink::PermissionType::BACKGROUND_SYNC;
   } else if (name == "accessibility-events") {
-    type = PermissionType::ACCESSIBILITY_EVENTS;
+    type = blink::PermissionType::ACCESSIBILITY_EVENTS;
   } else if (name == "clipboard-read-write") {
-    type = PermissionType::CLIPBOARD_READ_WRITE;
+    type = blink::PermissionType::CLIPBOARD_READ_WRITE;
   } else if (name == "clipboard-sanitized-write") {
-    type = PermissionType::CLIPBOARD_SANITIZED_WRITE;
+    type = blink::PermissionType::CLIPBOARD_SANITIZED_WRITE;
   } else if (name == "payment-handler") {
-    type = PermissionType::PAYMENT_HANDLER;
+    type = blink::PermissionType::PAYMENT_HANDLER;
   } else if (name == "accelerometer" || name == "gyroscope" ||
              name == "magnetometer" || name == "ambient-light-sensor") {
-    type = PermissionType::SENSORS;
+    type = blink::PermissionType::SENSORS;
   } else if (name == "background-fetch") {
-    type = PermissionType::BACKGROUND_FETCH;
+    type = blink::PermissionType::BACKGROUND_FETCH;
   } else if (name == "periodic-background-sync") {
-    type = PermissionType::PERIODIC_BACKGROUND_SYNC;
+    type = blink::PermissionType::PERIODIC_BACKGROUND_SYNC;
   } else if (name == "wake-lock-screen") {
-    type = PermissionType::WAKE_LOCK_SCREEN;
+    type = blink::PermissionType::WAKE_LOCK_SCREEN;
   } else if (name == "wake-lock-system") {
-    type = PermissionType::WAKE_LOCK_SYSTEM;
+    type = blink::PermissionType::WAKE_LOCK_SYSTEM;
   } else if (name == "nfc") {
-    type = PermissionType::NFC;
+    type = blink::PermissionType::NFC;
   } else if (name == "storage-access") {
-    type = PermissionType::STORAGE_ACCESS_GRANT;
+    type = blink::PermissionType::STORAGE_ACCESS_GRANT;
   } else {
     NOTREACHED();
-    type = PermissionType::NOTIFICATIONS;
+    type = blink::PermissionType::NOTIFICATIONS;
   }
 
   WebTestContentBrowserClient::Get()
@@ -1786,6 +1791,21 @@ void WebTestControlHost::PrepareRendererForNextWebTest() {
   // Consider removing it to understand what happens without.
   web_contents->Stop();
 
+  // Disable back/forward cache before the current test page navigates away so
+  // that the test page does not remain in the back/forward cache after the
+  // test.
+  BackForwardCache::DisableForRenderFrameHost(
+      web_contents->GetMainFrame(),
+      BackForwardCache::DisabledReason(
+          {BackForwardCache::DisabledSource::kTesting, 0,
+           "disabled for web_test not to cache the test page after the test "
+           "ends."}));
+
+  // Flush all the back/forward cache to avoid side effects in the next test.
+  for (auto* shell : Shell::windows()) {
+    shell->web_contents()->GetController().GetBackForwardCache().Flush();
+  }
+
   // Navigate to about:blank in between two consecutive web tests.
   //
   // Note: this navigation might happen in a new process, depending on the
@@ -1794,6 +1814,12 @@ void WebTestControlHost::PrepareRendererForNextWebTest() {
   params.transition_type = ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED);
   params.should_clear_history_list = true;
   params.initiator_origin = url::Origin();  // Opaque initiator.
+  // We should always reset the browsing instance, but it slows down tests
+  // significantly. For efficiency, this is limited to tests known to be
+  // affected.
+  params.force_new_browsing_instance =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kResetBrowsingInstanceBetweenTests);
   web_contents->GetController().LoadURLWithParams(params);
 
   // The navigation might have to wait for before unload handler to execute. The

@@ -21,6 +21,7 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
@@ -37,7 +38,9 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/layout/layout_provider.h"
 #include "ui/views/mouse_constants.h"
+#include "ui/views/view_class_properties.h"
 
 namespace ash {
 
@@ -45,27 +48,30 @@ namespace {
 
 constexpr const char kLoginExpandedPublicAccountViewClassName[] =
     "LoginExpandedPublicAccountView";
-constexpr int kExpandedViewWidthDp = 628;
-constexpr int kExpandedViewHeightDp = 324;
+
+constexpr int kPaddingDp = 24;
+
+// TODO(b/1312900): Width increases by 40dp if we add the gutter.
+constexpr int kLandscapeWidthDp = 723;
+constexpr int kLandscapeHeightDp = 269;
+
+constexpr int kPortraitWidthDp = 458;
+constexpr int kPortraitHeightDp = 485;
+
+constexpr int kLandscapeLeftPaneWidthDp = 253;
+constexpr int kSeparatorThicknessDp = 1;
+constexpr int kSeparatorMarginDp = 20;
+
+constexpr int kPortraitPaneSpacing = 24;
 
 constexpr int kTextLineHeightDp = 16;
 constexpr int kRoundRectCornerRadiusDp = 2;
-constexpr int kBorderThicknessDp = 1;
-constexpr int kHorizontalMarginPaneDp = 28;
-constexpr int kLabelMarginDp = 20;
 
 constexpr int kDropDownIconSizeDp = 16;
 constexpr int kArrowButtonSizeDp = 48;
 constexpr int kAdvancedViewButtonWidthDp = 190;
 constexpr int kAdvancedViewButtonHeightDp = 16;
-constexpr int kTopSpacingForLabelInAdvancedViewDp = 7;
-constexpr int kTopSpacingForLabelInRegularViewDp = 65;
-constexpr int kSpacingBetweenLabelsDp = 17;
-constexpr int kSpacingBetweenSelectionMenusDp = 7;
-constexpr int kSpacingBetweenSelectionTitleAndButtonDp = 3;
-constexpr int kSpacingBetweenLanguageMenuAndAdvancedViewButtonDp = 4;
-constexpr int kSpacingBetweenAdvancedViewButtonAndLabelDp = 32;
-constexpr int kTopSpacingForUserViewDp = 62;
+constexpr int kSpacingBetweenSelectionTitleAndButtonDp = 4;
 
 constexpr int kNonEmptyWidth = 1;
 constexpr int kNonEmptyHeight = 1;
@@ -75,7 +81,6 @@ constexpr int kSpacingBetweenMonitoringWarningIconAndLabelDp = 8;
 constexpr int kMonitoringWarningIconSizeDp = 20;
 
 constexpr char kRightPaneViewClassName[] = "RightPaneView";
-constexpr char kRightPaneLabelsViewClassName[] = "RightPaneLabelsView";
 constexpr char kRightPaneAdvancedViewClassName[] = "RightPaneAdvancedView";
 
 views::Label* CreateLabel(const std::u16string& text, SkColor color) {
@@ -221,16 +226,13 @@ class SelectionButtonView : public LoginButton {
   views::View* right_margin_view_ = nullptr;
 };
 
-// Container for the device monitoring warning.
+// Container for the device monitoring warning. Composed of an optional warning
+// icon on the left and a label to the right.
 class MonitoringWarningView : public NonAccessibleView {
  public:
   MonitoringWarningView()
       : NonAccessibleView(kMonitoringWarningClassName),
         warning_type_(WarningType::kNone) {
-    SetLayoutManager(std::make_unique<views::BoxLayout>(
-        views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
-        kSpacingBetweenMonitoringWarningIconAndLabelDp));
-
     image_ = new views::ImageView();
     image_->SetImage(gfx::CreateVectorIcon(
         vector_icons::kWarningIcon, kMonitoringWarningIconSizeDp,
@@ -268,6 +270,32 @@ class MonitoringWarningView : public NonAccessibleView {
 
   ~MonitoringWarningView() override = default;
 
+  // TODO(crbug/682266): MonitoringWarningview is effectively laid out as
+  // BoxLayout with kSpacingBetweenMonitoringWarningIconAndLabelDp spacing
+  // between its two child views. However, horizontal BoxLayout and FlexLayout
+  // do not handle views that override GetHeightForWidth well, so it's
+  // implemented ad-hoc here.
+  int GetHeightForWidth(int w) const override {
+    return image_->GetPreferredSize().height() +
+           kSpacingBetweenMonitoringWarningIconAndLabelDp +
+           label_->GetHeightForWidth(w);
+  }
+
+  void Layout() override {
+    int y = 0;
+
+    image_->SizeToPreferredSize();
+    image_->SetPosition(gfx::Point{0, y});
+    y = image_->bounds().bottom();
+
+    y += kSpacingBetweenMonitoringWarningIconAndLabelDp;
+
+    int label_height = label_->GetHeightForWidth(size().width());
+    label_->SetSize(gfx::Size{size().width(), label_height});
+    label_->SetPosition(gfx::Point{0, y});
+    y = label_->bounds().bottom();
+  }
+
  private:
   void UpdateLabel() {
     // Call sequence of UpdateForUser() and SetWarningType() is not clear.
@@ -288,6 +316,8 @@ class MonitoringWarningView : public NonAccessibleView {
       image_->SetVisible(false);
     }
     label_->SetText(label_text);
+    InvalidateLayout();
+    Layout();
   }
 
   friend class LoginExpandedPublicAccountView::TestApi;
@@ -303,30 +333,17 @@ class RightPaneView : public NonAccessibleView {
  public:
   explicit RightPaneView(const base::RepeatingClosure& on_learn_more_tapped)
       : NonAccessibleView(kRightPaneViewClassName) {
-    SetPreferredSize(
-        gfx::Size(kExpandedViewWidthDp / 2, kExpandedViewHeightDp));
-    SetBorder(views::CreateEmptyBorder(gfx::Insets(kHorizontalMarginPaneDp)));
+    auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
+        views::BoxLayout::Orientation::kVertical));
+    layout->set_cross_axis_alignment(
+        views::BoxLayout::CrossAxisAlignment::kStart);
 
-    // Create labels view.
-    labels_view_ = new NonAccessibleView(kRightPaneLabelsViewClassName);
-    labels_view_->SetLayoutManager(std::make_unique<views::BoxLayout>(
-        views::BoxLayout::Orientation::kVertical, gfx::Insets(),
-        kSpacingBetweenLabelsDp));
-    AddChildView(labels_view_);
-
-    const bool enable_warning = Shell::Get()->local_state()->GetBoolean(
-        prefs::kManagedGuestSessionPrivacyWarningsEnabled);
-    if (enable_warning) {
-      monitoring_warning_view_ = new MonitoringWarningView();
-      labels_view_->AddChildView(monitoring_warning_view_);
-    }
-
+    // Create "learn more" label.
     const std::u16string link = l10n_util::GetStringUTF16(IDS_ASH_LEARN_MORE);
     size_t offset;
     const std::u16string text = l10n_util::GetStringFUTF16(
         IDS_ASH_LOGIN_PUBLIC_ACCOUNT_SIGNOUT_REMINDER, link, &offset);
-    learn_more_label_ =
-        labels_view_->AddChildView(std::make_unique<views::StyledLabel>());
+    learn_more_label_ = AddChildView(std::make_unique<views::StyledLabel>());
     learn_more_label_->SetText(text);
 
     views::StyledLabel::RangeStyleInfo style;
@@ -345,6 +362,12 @@ class RightPaneView : public NonAccessibleView {
                                      link_style);
     learn_more_label_->SetAutoColorReadabilityEnabled(false);
 
+    learn_more_label_->SetProperty(
+        views::kMarginsKey,
+        gfx::Insets().set_bottom(
+            views::LayoutProvider::Get()->GetDistanceMetric(
+                views::DISTANCE_UNRELATED_CONTROL_VERTICAL)));
+
     // Create button to show/hide advanced view.
     advanced_view_button_ = new SelectionButtonView(
         base::BindRepeating(&RightPaneView::AdvancedViewButtonPressed,
@@ -357,46 +380,40 @@ class RightPaneView : public NonAccessibleView {
         gfx::Size(kAdvancedViewButtonWidthDp, kAdvancedViewButtonHeightDp));
     AddChildView(advanced_view_button_);
 
+    advanced_view_button_->SetProperty(
+        views::kMarginsKey, gfx::Insets().set_bottom(
+                                views::LayoutProvider::Get()->GetDistanceMetric(
+                                    views::DISTANCE_RELATED_CONTROL_VERTICAL)));
+
     // Create advanced view.
     advanced_view_ = new NonAccessibleView(kRightPaneAdvancedViewClassName);
     advanced_view_->SetLayoutManager(std::make_unique<views::BoxLayout>(
         views::BoxLayout::Orientation::kVertical));
+    advanced_view_->SetVisible(false);
     AddChildView(advanced_view_);
 
     const SkColor selection_menu_title_color =
         AshColorProvider::Get()->GetContentLayerColor(
             AshColorProvider::ContentLayerType::kTextColorSecondary);
 
-    auto create_padding = [](int amount) -> views::View* {
-      auto* padding = new NonAccessibleView();
-      padding->SetPreferredSize(gfx::Size(kNonEmptyWidth, amount));
-      return padding;
-    };
-
     language_title_ = CreateLabel(
         l10n_util::GetStringUTF16(IDS_ASH_LOGIN_LANGUAGE_SELECTION_SELECT),
         selection_menu_title_color);
+    advanced_view_->AddChildView(language_title_);
+    language_title_->SetProperty(
+        views::kMarginsKey,
+        gfx::Insets().set_bottom(kSpacingBetweenSelectionTitleAndButtonDp));
 
     keyboard_title_ = CreateLabel(
         l10n_util::GetStringUTF16(IDS_ASH_LOGIN_KEYBOARD_SELECTION_SELECT),
         selection_menu_title_color);
-
-    advanced_view_->AddChildView(language_title_);
-    advanced_view_->AddChildView(
-        create_padding(kSpacingBetweenSelectionTitleAndButtonDp));
-    advanced_view_->AddChildView(
-        create_padding(kSpacingBetweenSelectionMenusDp));
     advanced_view_->AddChildView(keyboard_title_);
-    advanced_view_->AddChildView(
-        create_padding(kSpacingBetweenSelectionTitleAndButtonDp));
-
-    submit_button_ = new ArrowButtonView(
-        base::BindRepeating(&RightPaneView::SubmitButtonPressed,
-                            base::Unretained(this)),
-        kArrowButtonSizeDp);
-    submit_button_->SetAccessibleName(l10n_util::GetStringUTF16(
-        IDS_ASH_LOGIN_PUBLIC_ACCOUNT_LOG_IN_BUTTON_ACCESSIBLE_NAME));
-    AddChildView(submit_button_);
+    keyboard_title_->SetProperty(
+        views::kMarginsKey,
+        gfx::Insets()
+            .set_top(views::LayoutProvider::Get()->GetDistanceMetric(
+                views::DISTANCE_UNRELATED_CONTROL_VERTICAL))
+            .set_bottom(kSpacingBetweenSelectionTitleAndButtonDp));
   }
 
   RightPaneView(const RightPaneView&) = delete;
@@ -404,46 +421,9 @@ class RightPaneView : public NonAccessibleView {
 
   ~RightPaneView() override = default;
 
-  void Layout() override {
-    const gfx::Rect bounds = GetContentsBounds();
-    // Place the labels.
-    const int label_width = bounds.width() - kLabelMarginDp;
-    labels_view_->SetBounds(
-        bounds.x(),
-        show_advanced_view_ ? kTopSpacingForLabelInAdvancedViewDp + bounds.y()
-                            : kTopSpacingForLabelInRegularViewDp + bounds.y(),
-        label_width, labels_view_->GetHeightForWidth(label_width));
-
-    // Place the advanced_view_button_.
-    advanced_view_button_->SizeToPreferredSize();
-    advanced_view_button_->SetPosition(gfx::Point(
-        bounds.x(),
-        show_advanced_view_
-            ? labels_view_->bounds().bottom() + kSpacingBetweenLabelsDp
-            : labels_view_->bounds().bottom() +
-                  kSpacingBetweenAdvancedViewButtonAndLabelDp));
-
-    // Place the advanced view.
-    advanced_view_->SetVisible(show_advanced_view_);
-    if (show_advanced_view_) {
-      advanced_view_->SizeToPreferredSize();
-      advanced_view_->SetPosition(gfx::Point(
-          bounds.x(), advanced_view_button_->bounds().bottom() +
-                          kSpacingBetweenLanguageMenuAndAdvancedViewButtonDp));
-    }
-
-    // Place the submit button.
-    submit_button_->SizeToPreferredSize();
-    submit_button_->SetPosition(
-        gfx::Point(bounds.right() - kArrowButtonSizeDp,
-                   bounds.bottom() - kArrowButtonSizeDp));
-  }
-
   void UpdateForUser(const LoginUserInfo& user) {
     DCHECK_EQ(user.basic_user_info.type,
               user_manager::USER_TYPE_PUBLIC_ACCOUNT);
-    if (monitoring_warning_view_)
-      monitoring_warning_view_->UpdateForUser(user);
     current_user_ = user;
     if (!language_changed_by_user_)
       selected_language_item_value_ = user.public_account_info->default_locale;
@@ -455,17 +435,7 @@ class RightPaneView : public NonAccessibleView {
       PopulateKeyboardItems(user.public_account_info->keyboard_layouts);
 
     if (!show_advanced_changed_by_user_)
-      show_advanced_view_ = user.public_account_info->show_advanced_view;
-
-    Layout();
-  }
-
-  void SetShowFullManagementDisclosure(bool show_full_management_disclosure) {
-    if (monitoring_warning_view_)
-      monitoring_warning_view_->SetWarningType(
-          show_full_management_disclosure
-              ? MonitoringWarningView::WarningType::kFullWarning
-              : MonitoringWarningView::WarningType::kSoftWarning);
+      advanced_view_->SetVisible(user.public_account_info->show_advanced_view);
   }
 
   void OnLanguageSelected(const std::string& value) {
@@ -505,21 +475,20 @@ class RightPaneView : public NonAccessibleView {
     }
 
     if (language_menu_view_) {
-      advanced_view_->RemoveChildView(language_menu_view_);
-      delete language_menu_view_;
+      advanced_view_->RemoveChildViewT(language_menu_view_);
+      language_menu_view_ = nullptr;
     }
-    language_menu_view_ = new PublicAccountMenuView(
+    auto language_menu_view = std::make_unique<PublicAccountMenuView>(
         language_items_, selected_language_index,
         base::BindRepeating(&RightPaneView::OnLanguageSelected,
                             weak_factory_.GetWeakPtr()));
-    language_menu_view_->SetTooltipTextAndAccessibleName(
+    language_menu_view->SetTooltipTextAndAccessibleName(
         l10n_util::GetStringUTF16(
             IDS_ASH_LOGIN_PUBLIC_ACCOUNT_LANGUAGE_MENU_ACCESSIBLE_NAME));
 
-    int after_title_after_padding_index =
-        advanced_view_->GetIndexOf(language_title_) + 2;
-    advanced_view_->AddChildViewAt(language_menu_view_,
-                                   after_title_after_padding_index);
+    const int index = advanced_view_->GetIndexOf(language_title_) + 1;
+    language_menu_view_ =
+        advanced_view_->AddChildViewAt(std::move(language_menu_view), index);
   }
 
   void PopulateKeyboardItems(
@@ -540,21 +509,20 @@ class RightPaneView : public NonAccessibleView {
     }
 
     if (keyboard_menu_view_) {
-      advanced_view_->RemoveChildView(keyboard_menu_view_);
-      delete keyboard_menu_view_;
+      advanced_view_->RemoveChildViewT(keyboard_menu_view_);
+      keyboard_menu_view_ = nullptr;
     }
-    keyboard_menu_view_ = new PublicAccountMenuView(
+    auto keyboard_menu_view = std::make_unique<PublicAccountMenuView>(
         keyboard_items_, selected_keyboard_index,
         base::BindRepeating(&RightPaneView::OnKeyboardSelected,
                             weak_factory_.GetWeakPtr()));
-    keyboard_menu_view_->SetTooltipTextAndAccessibleName(
+    keyboard_menu_view->SetTooltipTextAndAccessibleName(
         l10n_util::GetStringUTF16(
             IDS_ASH_LOGIN_PUBLIC_ACCOUNT_KEYBOARD_MENU_ACCESSIBLE_NAME));
 
-    int after_title_after_padding_index =
-        advanced_view_->GetIndexOf(keyboard_title_) + 2;
-    advanced_view_->AddChildViewAt(keyboard_menu_view_,
-                                   after_title_after_padding_index);
+    const int index = advanced_view_->GetIndexOf(keyboard_title_) + 1;
+    keyboard_menu_view_ =
+        advanced_view_->AddChildViewAt(std::move(keyboard_menu_view), index);
   }
 
   PublicAccountMenuView* GetLanguageMenuView() { return language_menu_view_; }
@@ -567,16 +535,7 @@ class RightPaneView : public NonAccessibleView {
     language_changed_by_user_ = false;
   }
 
- private:
-  friend class LoginExpandedPublicAccountView::TestApi;
-
-  void AdvancedViewButtonPressed() {
-    show_advanced_view_ = !show_advanced_view_;
-    show_advanced_changed_by_user_ = true;
-    Layout();
-  }
-
-  void SubmitButtonPressed() {
+  void Login() {
     // TODO(crbug.com/984021) change to LaunchSamlPublicSession which would
     // take |selected_language_item_value_| and |selected_keyboard_item_value_|
     // too.
@@ -590,17 +549,21 @@ class RightPaneView : public NonAccessibleView {
     }
   }
 
-  bool show_advanced_view_ = false;
+ private:
+  friend class LoginExpandedPublicAccountView::TestApi;
+
+  void AdvancedViewButtonPressed() {
+    show_advanced_changed_by_user_ = true;
+    advanced_view_->SetVisible(!advanced_view_->GetVisible());
+  }
+
   LoginUserInfo current_user_;
 
-  views::View* labels_view_ = nullptr;
   SelectionButtonView* advanced_view_button_ = nullptr;
   views::View* advanced_view_ = nullptr;
   views::View* language_title_ = nullptr;
   views::View* keyboard_title_ = nullptr;
-  ArrowButtonView* submit_button_ = nullptr;
   views::StyledLabel* learn_more_label_ = nullptr;
-  MonitoringWarningView* monitoring_warning_view_ = nullptr;
 
   PublicAccountMenuView* language_menu_view_ = nullptr;
   PublicAccountMenuView* keyboard_menu_view_ = nullptr;
@@ -637,7 +600,7 @@ views::View* LoginExpandedPublicAccountView::TestApi::advanced_view_button() {
 }
 
 ArrowButtonView* LoginExpandedPublicAccountView::TestApi::submit_button() {
-  return view_->right_pane_->submit_button_;
+  return view_->submit_button_;
 }
 
 views::View* LoginExpandedPublicAccountView::TestApi::advanced_view() {
@@ -676,21 +639,21 @@ LoginExpandedPublicAccountView::TestApi::selected_keyboard_item_value() {
 
 views::ImageView*
 LoginExpandedPublicAccountView::TestApi::monitoring_warning_icon() {
-  if (view_->right_pane_->monitoring_warning_view_)
-    return view_->right_pane_->monitoring_warning_view_->image_;
+  if (view_->monitoring_warning_view_)
+    return view_->monitoring_warning_view_->image_;
   return nullptr;
 }
 
 views::Label*
 LoginExpandedPublicAccountView::TestApi::monitoring_warning_label() {
-  if (view_->right_pane_->monitoring_warning_view_)
-    return view_->right_pane_->monitoring_warning_view_->label_;
+  if (view_->monitoring_warning_view_)
+    return view_->monitoring_warning_view_->label_;
   return nullptr;
 }
 
 void LoginExpandedPublicAccountView::TestApi::ResetUserForTest() {
-  if (view_->right_pane_->monitoring_warning_view_)
-    view_->right_pane_->monitoring_warning_view_->device_manager_.reset();
+  if (view_->monitoring_warning_view_)
+    view_->monitoring_warning_view_->device_manager_.reset();
 }
 
 bool LoginExpandedPublicAccountView::TestApi::SelectLanguage(
@@ -732,30 +695,34 @@ LoginExpandedPublicAccountView::LoginExpandedPublicAccountView(
       on_dismissed_(on_dismissed),
       event_handler_(
           std::make_unique<LoginExpandedPublicAccountEventHandler>(this)) {
-  SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kHorizontal));
-  SetPreferredSize(gfx::Size(kExpandedViewWidthDp, kExpandedViewHeightDp));
+  SetPreferredSize(GetPreferredSizeLandscape());
+  layout_ = SetLayoutManager(std::make_unique<views::BoxLayout>());
 
   user_view_ = new LoginUserView(
-      LoginDisplayStyle::kLarge, false /*show_dropdown*/, base::DoNothing(),
-      base::RepeatingClosure(), base::RepeatingClosure());
+      LoginDisplayStyle::kExtraSmall, false /*show_dropdown*/,
+      base::DoNothing(), base::RepeatingClosure(), base::RepeatingClosure());
   user_view_->SetForceOpaque(true);
   user_view_->SetTapEnabled(false);
 
-  auto* left_pane = new NonAccessibleView();
-  AddChildView(left_pane);
-  left_pane->SetLayoutManager(std::make_unique<views::BoxLayout>(
+  left_pane_ = new NonAccessibleView();
+  AddChildView(left_pane_);
+  left_pane_->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));
-  left_pane->SetPreferredSize(
-      gfx::Size(kExpandedViewWidthDp / 2, kExpandedViewHeightDp));
 
-  auto* top_spacing = new NonAccessibleView();
-  top_spacing->SetPreferredSize(
-      gfx::Size(kNonEmptyWidth, kTopSpacingForUserViewDp));
-  left_pane->AddChildView(top_spacing);
-  left_pane->AddChildView(user_view_);
-  left_pane->SetBorder(views::CreateSolidSidedBorder(
-      0, 0, 0, kBorderThicknessDp,
+  left_pane_->AddChildView(user_view_);
+
+  const bool enable_warning = Shell::Get()->local_state()->GetBoolean(
+      prefs::kManagedGuestSessionPrivacyWarningsEnabled);
+  if (enable_warning) {
+    views::View* padding =
+        left_pane_->AddChildView(std::make_unique<NonAccessibleView>());
+    padding->SetPreferredSize(gfx::Size{kNonEmptyWidth, 24});
+    monitoring_warning_view_ =
+        left_pane_->AddChildView(std::make_unique<MonitoringWarningView>());
+  }
+
+  separator_ = AddChildView(std::make_unique<views::View>());
+  separator_->SetBackground(views::CreateSolidBackground(
       AshColorProvider::Get()->GetContentLayerColor(
           AshColorProvider::ContentLayerType::kSeparatorColor)));
 
@@ -763,6 +730,15 @@ LoginExpandedPublicAccountView::LoginExpandedPublicAccountView(
       base::BindRepeating(&LoginExpandedPublicAccountView::ShowWarningDialog,
                           base::Unretained(this)));
   AddChildView(right_pane_);
+
+  submit_button_ = AddChildView(std::make_unique<ArrowButtonView>(
+      base::BindRepeating(&RightPaneView::Login, base::Unretained(right_pane_)),
+      kArrowButtonSizeDp));
+  submit_button_->SetAccessibleName(l10n_util::GetStringUTF16(
+      IDS_ASH_LOGIN_PUBLIC_ACCOUNT_LOG_IN_BUTTON_ACCESSIBLE_NAME));
+  // `submit_button_` has absolute position and is laid out in our `Layout()`
+  // override.
+  submit_button_->SetProperty(views::kViewIgnoredByLayoutKey, true);
 }
 
 LoginExpandedPublicAccountView::~LoginExpandedPublicAccountView() = default;
@@ -814,6 +790,8 @@ void LoginExpandedPublicAccountView::ProcessPressedEvent(
 void LoginExpandedPublicAccountView::UpdateForUser(const LoginUserInfo& user) {
   user_view_->UpdateForUser(user, false /*animate*/);
   right_pane_->UpdateForUser(user);
+  if (monitoring_warning_view_)
+    monitoring_warning_view_->UpdateForUser(user);
 }
 
 const LoginUserInfo& LoginExpandedPublicAccountView::current_user() const {
@@ -839,7 +817,46 @@ void LoginExpandedPublicAccountView::OnLearnMoreDialogClosed() {
 
 void LoginExpandedPublicAccountView::SetShowFullManagementDisclosure(
     bool show_full_management_disclosure) {
-  right_pane_->SetShowFullManagementDisclosure(show_full_management_disclosure);
+  if (monitoring_warning_view_) {
+    monitoring_warning_view_->SetWarningType(
+        show_full_management_disclosure
+            ? MonitoringWarningView::WarningType::kFullWarning
+            : MonitoringWarningView::WarningType::kSoftWarning);
+  }
+}
+
+gfx::Size LoginExpandedPublicAccountView::GetPreferredSizeLandscape() {
+  return gfx::Size{kLandscapeWidthDp, kLandscapeHeightDp};
+}
+gfx::Size LoginExpandedPublicAccountView::GetPreferredSizePortrait() {
+  return gfx::Size{kPortraitWidthDp, kPortraitHeightDp};
+}
+
+void LoginExpandedPublicAccountView::OnBoundsChanged(
+    const gfx::Rect& previous_bounds) {
+  if (bounds().width() >= bounds().height()) {
+    UseLandscapeLayout();
+  } else {
+    UsePortraitLayout();
+  }
+}
+
+int LoginExpandedPublicAccountView::GetHeightForWidth(int width) const {
+  if (width >= GetPreferredSizeLandscape().width()) {
+    return GetPreferredSizeLandscape().height();
+  }
+  return GetPreferredSizePortrait().height();
+}
+
+void LoginExpandedPublicAccountView::Layout() {
+  View::Layout();
+
+  submit_button_->SizeToPreferredSize();
+  const int submit_button_x =
+      size().width() - kPaddingDp - submit_button_->size().width();
+  const int submit_button_y =
+      size().height() - kPaddingDp - submit_button_->size().height();
+  submit_button_->SetPosition(gfx::Point{submit_button_x, submit_button_y});
 }
 
 void LoginExpandedPublicAccountView::OnPaint(gfx::Canvas* canvas) {
@@ -864,6 +881,44 @@ void LoginExpandedPublicAccountView::OnKeyEvent(ui::KeyEvent* event) {
   if (event->key_code() == ui::KeyboardCode::VKEY_ESCAPE) {
     Hide();
   }
+}
+
+void LoginExpandedPublicAccountView::UseLandscapeLayout() {
+  layout_->SetOrientation(views::BoxLayout::Orientation::kHorizontal);
+
+  left_pane_->SetPreferredSize(
+      gfx::Size{kLandscapeLeftPaneWidthDp, size().height() - 2 * kPaddingDp});
+  left_pane_->SetProperty(
+      views::kMarginsKey,
+      gfx::Insets::TLBR(kPaddingDp, kPaddingDp, kPaddingDp, 0));
+
+  separator_->SetVisible(true);
+  separator_->SetPreferredSize(
+      gfx::Size{kSeparatorThicknessDp, kNonEmptyHeight});
+  separator_->SetProperty(views::kCrossAxisAlignmentKey,
+                          views::LayoutAlignment::kStretch);
+  separator_->SetProperty(
+      views::kMarginsKey,
+      gfx::Insets::TLBR(0, kSeparatorMarginDp, 0, kSeparatorMarginDp));
+
+  right_pane_->SetProperty(
+      views::kMarginsKey,
+      gfx::Insets::TLBR(kPaddingDp, 0, kPaddingDp, kPaddingDp));
+}
+
+void LoginExpandedPublicAccountView::UsePortraitLayout() {
+  layout_->SetOrientation(views::BoxLayout::Orientation::kVertical);
+
+  left_pane_->SetPreferredSize(absl::nullopt);
+  left_pane_->SetProperty(views::kMarginsKey,
+                          gfx::Insets::TLBR(kPaddingDp, kPaddingDp,
+                                            kPortraitPaneSpacing, kPaddingDp));
+
+  separator_->SetVisible(false);
+
+  right_pane_->SetProperty(
+      views::kMarginsKey,
+      gfx::Insets::TLBR(0, kPaddingDp, kPaddingDp, kPaddingDp));
 }
 
 }  // namespace ash

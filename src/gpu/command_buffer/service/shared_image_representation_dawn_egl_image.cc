@@ -5,28 +5,35 @@
 #include "gpu/command_buffer/service/shared_image_representation_dawn_egl_image.h"
 
 #include "build/build_config.h"
-#if defined(OS_WIN)
-#include "gpu/command_buffer/service/shared_image_backing_d3d.h"
-#endif
+#include "components/viz/common/resources/resource_format_utils.h"
+#include "gpu/command_buffer/service/texture_manager.h"
 
-#include <dawn_native/OpenGLBackend.h>
+#include <dawn/native/OpenGLBackend.h>
+
+namespace {
+GLenum ToSharedImageAccessGLMode(WGPUTextureUsage usage) {
+  if (usage & (WGPUTextureUsage_CopyDst | WGPUTextureUsage_RenderAttachment |
+               WGPUTextureUsage_StorageBinding | WGPUTextureUsage_Present)) {
+    return GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM;
+  } else {
+    return GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM;
+  }
+}
+}  // namespace
 
 namespace gpu {
 
 SharedImageRepresentationDawnEGLImage::SharedImageRepresentationDawnEGLImage(
+    std::unique_ptr<SharedImageRepresentationGLTextureBase> gl_representation,
     SharedImageManager* manager,
     SharedImageBacking* backing,
     MemoryTypeTracker* tracker,
-    WGPUDevice device,
-    EGLImage image,
-    const WGPUTextureDescriptor& texture_descriptor)
+    WGPUDevice device)
     : SharedImageRepresentationDawn(manager, backing, tracker),
+      gl_representation_(std::move(gl_representation)),
       device_(device),
-      image_(image),
-      texture_descriptor_(texture_descriptor),
-      dawn_procs_(dawn_native::GetProcs()) {
+      dawn_procs_(dawn::native::GetProcs()) {
   DCHECK(device_);
-  DCHECK(image_);
 
   // Keep a reference to the device so that it stays valid.
   dawn_procs_.deviceReference(device_);
@@ -41,19 +48,34 @@ SharedImageRepresentationDawnEGLImage::
 
 WGPUTexture SharedImageRepresentationDawnEGLImage::BeginAccess(
     WGPUTextureUsage usage) {
-#if defined(OS_WIN)
-  // On D3D11 backings, we must acquire the keyed mutex to do interop. If we
-  // ever switch to non-D3D backings on Windows, this code will break horribly.
-  // TODO(senorblanco): This should probably be a virtual on SharedImageBacking
-  // to avoid this cast.
-  static_cast<SharedImageBackingD3D*>(backing())->BeginAccessD3D11();
-#endif
-  dawn_native::opengl::ExternalImageDescriptorEGLImage externalImageDesc;
-  externalImageDesc.cTextureDescriptor = &texture_descriptor_;
-  externalImageDesc.image = image_;
+  gl_representation_->BeginAccess(ToSharedImageAccessGLMode(usage));
+  WGPUTextureDescriptor texture_descriptor = {};
+  texture_descriptor.nextInChain = nullptr;
+  texture_descriptor.format = viz::ToWGPUFormat(format());
+  texture_descriptor.usage = WGPUTextureUsage_CopySrc |
+                             WGPUTextureUsage_CopyDst |
+                             WGPUTextureUsage_RenderAttachment;
+  texture_descriptor.dimension = WGPUTextureDimension_2D;
+  texture_descriptor.size = {static_cast<uint32_t>(size().width()),
+                             static_cast<uint32_t>(size().height()), 1};
+  texture_descriptor.mipLevelCount = 1;
+  texture_descriptor.sampleCount = 1;
+  dawn::native::opengl::ExternalImageDescriptorEGLImage externalImageDesc;
+  externalImageDesc.cTextureDescriptor = &texture_descriptor;
+  const gl::GLImage* image;
+  gpu::TextureBase* texture = gl_representation_->GetTextureBase();
+  if (texture->GetType() == gpu::TextureBase::Type::kPassthrough) {
+    image = static_cast<gles2::TexturePassthrough*>(texture)->GetLevelImage(
+        texture->target(), 0u);
+  } else {
+    image = static_cast<gles2::Texture*>(texture)->GetLevelImage(
+        texture->target(), 0u);
+  }
+  externalImageDesc.image = image->GetEGLImage();
+  DCHECK(externalImageDesc.image);
   externalImageDesc.isInitialized = true;
   texture_ =
-      dawn_native::opengl::WrapExternalEGLImage(device_, &externalImageDesc);
+      dawn::native::opengl::WrapExternalEGLImage(device_, &externalImageDesc);
   return texture_;
 }
 
@@ -61,14 +83,10 @@ void SharedImageRepresentationDawnEGLImage::EndAccess() {
   if (!texture_) {
     return;
   }
-  if (dawn_native::IsTextureSubresourceInitialized(texture_, 0, 1, 0, 1)) {
+  if (dawn::native::IsTextureSubresourceInitialized(texture_, 0, 1, 0, 1)) {
     SetCleared();
   }
-#if defined(OS_WIN)
-  // TODO(senorblanco): This should probably be a virtual on SharedImageBacking
-  // to avoid this cast.
-  static_cast<SharedImageBackingD3D*>(backing())->EndAccessD3D11();
-#endif
+  gl_representation_->EndAccess();
   // All further operations on the textures are errors (they would be racy
   // with other backings).
   dawn_procs_.textureDestroy(texture_);

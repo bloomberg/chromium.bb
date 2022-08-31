@@ -34,8 +34,9 @@ FindMyDeviceController* FakePhoneHubManager::GetFindMyDeviceController() {
   return &fake_find_my_device_controller_;
 }
 
-NotificationAccessManager* FakePhoneHubManager::GetNotificationAccessManager() {
-  return &fake_notification_access_manager_;
+MultideviceFeatureAccessManager*
+FakePhoneHubManager::GetMultideviceFeatureAccessManager() {
+  return &fake_multidevice_feature_access_manager_;
 }
 
 NotificationInteractionHandler*
@@ -58,9 +59,8 @@ PhoneModel* FakePhoneHubManager::GetPhoneModel() {
 
 RecentAppsInteractionHandler*
 FakePhoneHubManager::GetRecentAppsInteractionHandler() {
-  return features::IsPhoneHubRecentAppsEnabled()
-             ? &fake_recent_apps_interaction_handler_
-             : nullptr;
+  return features::IsEcheSWAEnabled() ? &fake_recent_apps_interaction_handler_
+                                      : nullptr;
 }
 
 ScreenLockManager* FakePhoneHubManager::GetScreenLockManager() {
@@ -77,6 +77,11 @@ ConnectionScheduler* FakePhoneHubManager::GetConnectionScheduler() {
 
 UserActionRecorder* FakePhoneHubManager::GetUserActionRecorder() {
   return &fake_user_action_recorder_;
+}
+
+void FakePhoneHubManager::GetHostLastSeenTimestamp(
+    base::OnceCallback<void(absl::optional<base::Time>)> callback) {
+  std::move(callback).Run(host_last_seen_timestamp_);
 }
 
 }  // namespace phonehub

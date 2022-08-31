@@ -15,12 +15,11 @@ class GPU_GLES2_EXPORT SharedImageRepresentationDawnEGLImage
     : public SharedImageRepresentationDawn {
  public:
   SharedImageRepresentationDawnEGLImage(
+      std::unique_ptr<SharedImageRepresentationGLTextureBase> gl_representation,
       SharedImageManager* manager,
       SharedImageBacking* backing,
       MemoryTypeTracker* tracker,
-      WGPUDevice device,
-      EGLImage image,
-      const WGPUTextureDescriptor& texture_descriptor);
+      WGPUDevice device);
   ~SharedImageRepresentationDawnEGLImage() override;
 
  private:
@@ -28,9 +27,8 @@ class GPU_GLES2_EXPORT SharedImageRepresentationDawnEGLImage
   void EndAccess() override;
 
  private:
+  std::unique_ptr<SharedImageRepresentationGLTextureBase> gl_representation_;
   WGPUDevice device_;
-  EGLImage image_;
-  WGPUTextureDescriptor texture_descriptor_;
   DawnProcTable dawn_procs_;
   WGPUTexture texture_ = nullptr;
 };

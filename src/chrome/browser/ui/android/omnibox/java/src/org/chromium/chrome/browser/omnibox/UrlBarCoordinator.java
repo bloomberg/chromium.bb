@@ -18,7 +18,7 @@ import org.chromium.base.Callback;
 import org.chromium.chrome.browser.omnibox.UrlBar.ScrollType;
 import org.chromium.chrome.browser.omnibox.UrlBar.UrlBarDelegate;
 import org.chromium.chrome.browser.omnibox.UrlBar.UrlTextChangeListener;
-import org.chromium.chrome.browser.omnibox.styles.OmniboxTheme;
+import org.chromium.chrome.browser.ui.theme.BrandedColorScheme;
 import org.chromium.ui.KeyboardVisibilityDelegate;
 import org.chromium.ui.base.WindowDelegate;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -69,12 +69,15 @@ public class UrlBarCoordinator implements UrlBarEditingTextStateProvider, UrlFoc
      *         visibility.
      * @param isIncognito Whether incognito mode is initially enabled. This can later be changed
      *         using {@link #setIncognitoColorsEnabled(boolean)}.
+     * @param reportExceptionCallback A {@link Callback} to report exceptions.
      */
     public UrlBarCoordinator(@NonNull UrlBar urlBar, @Nullable WindowDelegate windowDelegate,
             @NonNull ActionMode.Callback actionModeCallback,
             @NonNull Callback<Boolean> focusChangeCallback, @NonNull UrlBarDelegate delegate,
-            @NonNull KeyboardVisibilityDelegate keyboardVisibilityDelegate, boolean isIncognito) {
+            @NonNull KeyboardVisibilityDelegate keyboardVisibilityDelegate, boolean isIncognito,
+            Callback<Throwable> reportExceptionCallback) {
         mUrlBar = urlBar;
+        urlBar.setTag(R.id.report_exception_callback, reportExceptionCallback);
         mKeyboardVisibilityDelegate = keyboardVisibilityDelegate;
         mWindowDelegate = windowDelegate;
         mFocusChangeCallback = focusChangeCallback;
@@ -122,9 +125,9 @@ public class UrlBarCoordinator implements UrlBarEditingTextStateProvider, UrlFoc
         mMediator.setAutocompleteText(userText, autocompleteText);
     }
 
-    /** @see UrlBarMediator#setOmniboxTheme(int) */
-    public boolean setOmniboxTheme(@OmniboxTheme int omniboxTheme) {
-        return mMediator.setOmniboxTheme(omniboxTheme);
+    /** @see UrlBarMediator#setBrandedColorScheme(int) */
+    public boolean setBrandedColorScheme(@BrandedColorScheme int brandedColorScheme) {
+        return mMediator.setBrandedColorScheme(brandedColorScheme);
     }
 
     /** @see UrlBarMediator#setIncognitoColorsEnabled(boolean) */
@@ -193,6 +196,10 @@ public class UrlBarCoordinator implements UrlBarEditingTextStateProvider, UrlFoc
 
     /* package */ void clearFocus() {
         mUrlBar.clearFocus();
+    }
+
+    /* package */ void requestAccessibilityFocus() {
+        mUrlBar.requestAccessibilityFocus();
     }
 
     /**
@@ -269,5 +276,10 @@ public class UrlBarCoordinator implements UrlBarEditingTextStateProvider, UrlFoc
             if (imm.isActive(mUrlBar)) setKeyboardVisibility(false, false);
         }
         mFocusChangeCallback.onResult(hasFocus);
+    }
+
+    /** Signals that's it safe to call code that requires native to be loaded. */
+    public void onFinishNativeInitialization() {
+        mUrlBar.onFinishNativeInitialization();
     }
 }

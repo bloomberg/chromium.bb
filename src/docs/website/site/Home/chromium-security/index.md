@@ -98,6 +98,7 @@ to get involved, check out how to become an IPC reviewer
 [here](/Home/chromium-security/ipc-security-reviews).
 
 **Join the team**
+
 Access to Chromium security bugs and our team mailing list is restricted, for
 obvious reasons. Before applying to join the team, applicants must be committers
 and are expected to have made and continue to make active and significant
@@ -118,7 +119,7 @@ before applying:
 To apply for membership, please email
 [security@chromium.org](mailto:security@chromium.org).
 
-How can I get access to Chromium vulnerabilities?
+### How can I get access to Chromium vulnerabilities?
 
 A history of fixed Chromium security bugs is best found via [security notes in
 Stable Channel updates on the Google Chrome releases

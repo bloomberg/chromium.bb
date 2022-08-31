@@ -12,18 +12,19 @@ import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js
  */
 export class ProjectorBrowserProxy {
   /**
-   * Notifies the embedder content that tool has been set for annotator.
-   * @param {!projectorApp.AnnotatorToolParams} tool
-   */
-  onToolSet(tool) {}
-
-  /**
    * Notifies the embedder content that undo/redo availability changed for
    * annotator.
    * @param {boolean} undoAvailable
    * @param {boolean} redoAvailable
    */
   onUndoRedoAvailabilityChanged(undoAvailable, redoAvailable) {}
+
+  /**
+   * Notifies the embedder content that the canvas has either succeeded or
+   * failed to initialize.
+   * @param {boolean} success
+   */
+  onCanvasInitialized(success) {}
 
   /**
    * Gets the list of primary and secondary accounts currently available on the
@@ -114,6 +115,13 @@ export class ProjectorBrowserProxy {
    * @return {!Promise} Promise resolved when the request was handled.
    */
   setUserPref(userPref, value) {}
+
+  /**
+   * Opens the Chrome feedback dialog. The returned promise will be rejected if
+   * the dialog open is not successful.
+   * @return {!Promise}
+   */
+  openFeedbackDialog() {}
 }
 
 /**
@@ -121,14 +129,14 @@ export class ProjectorBrowserProxy {
  */
 export class ProjectorBrowserProxyImpl {
   /** @override */
-  onToolSet(tool) {
-    return chrome.send('onToolSet', [tool]);
-  }
-
-  /** @override */
   onUndoRedoAvailabilityChanged(undoAvailable, redoAvailable) {
     return chrome.send(
         'onUndoRedoAvailabilityChanged', [undoAvailable, redoAvailable]);
+  }
+
+  /** @override */
+  onCanvasInitialized(success) {
+    return chrome.send('onCanvasInitialized', [success]);
   }
 
   /** @override */
@@ -185,6 +193,11 @@ export class ProjectorBrowserProxyImpl {
   /** @override */
   setUserPref(userPref, value) {
     return sendWithPromise('setUserPref', [userPref, value]);
+  }
+
+  /** @override */
+  openFeedbackDialog() {
+    return sendWithPromise('openFeedbackDialog');
   }
 }
 

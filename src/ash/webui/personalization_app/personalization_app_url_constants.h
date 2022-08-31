@@ -6,12 +6,15 @@
 #define ASH_WEBUI_PERSONALIZATION_APP_PERSONALIZATION_APP_URL_CONSTANTS_H_
 
 namespace ash {
+namespace personalization_app {
 
 extern const char kChromeUIPersonalizationAppHost[];
 extern const char kChromeUIPersonalizationAppURL[];
-extern const char kChromeUIPersonalizationAppWallpaperSubpageURL[];
-extern const char kChromeUIUntrustedPersonalizationAppURL[];
+extern const char kAmbientSubpageRelativeUrl[];
+extern const char kUserSubpageRelativeUrl[];
+extern const char kWallpaperSubpageRelativeUrl[];
 
+}  // namespace personalization_app
 }  // namespace ash
 
 #endif  // ASH_WEBUI_PERSONALIZATION_APP_PERSONALIZATION_APP_URL_CONSTANTS_H_

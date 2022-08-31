@@ -19,14 +19,13 @@
 
 #include <set>
 
-#include "src/trace_processor/sqlite/db_sqlite_table.h"
+#include "src/trace_processor/dynamic/dynamic_table_generator.h"
 #include "src/trace_processor/storage/trace_storage.h"
 
 namespace perfetto {
 namespace trace_processor {
 
-class ExperimentalSchedUpidGenerator
-    : public DbSqliteTable::DynamicTableGenerator {
+class ExperimentalSchedUpidGenerator : public DynamicTableGenerator {
  public:
   ExperimentalSchedUpidGenerator(const tables::SchedSliceTable&,
                                  const tables::ThreadTable&);
@@ -35,16 +34,18 @@ class ExperimentalSchedUpidGenerator
   Table::Schema CreateSchema() override;
   std::string TableName() override;
   uint32_t EstimateRowCount() override;
-  util::Status ValidateConstraints(const QueryConstraints&) override;
-  std::unique_ptr<Table> ComputeTable(const std::vector<Constraint>&,
-                                      const std::vector<Order>&) override;
+  base::Status ValidateConstraints(const QueryConstraints&) override;
+  base::Status ComputeTable(const std::vector<Constraint>& cs,
+                            const std::vector<Order>& ob,
+                            const BitVector& cols_used,
+                            std::unique_ptr<Table>& table_return) override;
 
  private:
   NullableVector<uint32_t> ComputeUpidColumn();
 
   const tables::SchedSliceTable* sched_slice_table_;
   const tables::ThreadTable* thread_table_;
-  std::unique_ptr<NullableVector<uint32_t>> upid_column_;
+  std::unique_ptr<Table> sched_upid_table_;
 };
 
 }  // namespace trace_processor

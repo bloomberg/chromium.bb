@@ -10,8 +10,10 @@
 #include <tuple>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/containers/flat_map.h"
 #include "base/memory/ref_counted.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class GURL;
 class PrefService;
@@ -28,6 +30,10 @@ class NetworkFetcherFactory;
 class PatcherFactory;
 class ProtocolHandlerFactory;
 class UnzipperFactory;
+
+using UpdaterStateAttributes = base::flat_map<std::string, std::string>;
+using UpdaterStateProvider =
+    base::RepeatingCallback<UpdaterStateAttributes(bool is_machine)>;
 
 // Controls the component updater behavior.
 // TODO(sorin): this class will be split soon in two. One class controls
@@ -50,7 +56,8 @@ class Configurator : public base::RefCountedThreadSafe<Configurator> {
   virtual int UpdateDelay() const = 0;
 
   // The URLs for the update checks. The URLs are tried in order, the first one
-  // that succeeds wins.
+  // that succeeds wins. Since some components cannot be updated over HTTP,
+  // HTTPS URLs should appear first.
   virtual std::vector<GURL> UpdateUrl() const = 0;
 
   // The URLs for pings. Returns an empty vector if and only if pings are
@@ -133,6 +140,15 @@ class Configurator : public base::RefCountedThreadSafe<Configurator> {
   // serializer object instances.
   virtual std::unique_ptr<ProtocolHandlerFactory> GetProtocolHandlerFactory()
       const = 0;
+
+  // Returns true if Chrome is installed on a system managed by cloud or
+  // group policies, false if the system is not managed, or nullopt if the
+  // platform does not support client management at all.
+  virtual absl::optional<bool> IsMachineExternallyManaged() const = 0;
+
+  // Returns a callable to get the state of the platform updater, if the
+  // embedder includes an updater. Returns a null callback otherwise.
+  virtual UpdaterStateProvider GetUpdaterStateProvider() const = 0;
 
  protected:
   friend class base::RefCountedThreadSafe<Configurator>;

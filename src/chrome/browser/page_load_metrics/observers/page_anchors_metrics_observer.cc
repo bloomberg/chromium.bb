@@ -62,6 +62,15 @@ void PageAnchorsMetricsObserver::RecordUkm() {
   data->Clear();
 }
 
+page_load_metrics::PageLoadMetricsObserver::ObservePolicy
+PageAnchorsMetricsObserver::OnFencedFramesStart(
+    content::NavigationHandle* navigation_handle,
+    const GURL& currently_committed_url) {
+  // This class is interested only in the primary page's end of life timing,
+  // and doesn't need to continue observing FencedFrame pages.
+  return STOP_OBSERVING;
+}
+
 void PageAnchorsMetricsObserver::OnComplete(
     const page_load_metrics::mojom::PageLoadTiming&) {
   RecordUkm();

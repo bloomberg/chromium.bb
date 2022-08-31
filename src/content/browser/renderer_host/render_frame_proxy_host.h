@@ -18,6 +18,7 @@
 #include "ipc/ipc_sender.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
+#include "third_party/blink/public/common/metrics/post_message_counter.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-forward.h"
@@ -30,6 +31,7 @@ class AssociatedInterfaceProvider;
 
 namespace gfx {
 class Rect;
+class RectF;
 }
 
 namespace perfetto {
@@ -112,20 +114,20 @@ class CONTENT_EXPORT RenderFrameProxyHost
 
   ~RenderFrameProxyHost() override;
 
-  RenderProcessHost* GetProcess() { return process_; }
+  RenderProcessHost* GetProcess() const { return process_; }
 
   // Initializes the object and creates the RenderFrameProxy in the process
   // for the SiteInstanceGroup.
   bool InitRenderFrameProxy();
 
-  int GetRoutingID() { return routing_id_; }
+  int GetRoutingID() const { return routing_id_; }
 
   // Each RenderFrameProxyHost belongs to a SiteInstanceGroup, where it is a
   // placeholder for a frame in a different SiteInstanceGroup.
   // TODO(crbug.com/1195535): Remove GetSiteInstance() in favor of
   // site_instance_group().
-  SiteInstance* GetSiteInstance() { return site_instance_.get(); }
-  SiteInstanceGroup* site_instance_group() {
+  SiteInstance* GetSiteInstance() const { return site_instance_.get(); }
+  SiteInstanceGroup* site_instance_group() const {
     return site_instance_group_.get();
   }
 
@@ -176,7 +178,7 @@ class CONTENT_EXPORT RenderFrameProxyHost
   // element in the frame's parent. Calling this continues a scroll started in
   // the frame's current process. |rect_to_scroll| is with respect to the
   // coordinates of the originating frame in OOPIF process.
-  void ScrollRectToVisible(const gfx::Rect& rect_to_scroll,
+  void ScrollRectToVisible(const gfx::RectF& rect_to_scroll,
                            blink::mojom::ScrollIntoViewParamsPtr params);
 
   // Sets render frame proxy created state. If |created| is false, any existing
@@ -184,7 +186,9 @@ class CONTENT_EXPORT RenderFrameProxyHost
   void SetRenderFrameProxyCreated(bool created);
 
   // Returns if the RenderFrameProxy for this host is alive.
-  bool is_render_frame_proxy_live() { return render_frame_proxy_created_; }
+  bool is_render_frame_proxy_live() const {
+    return render_frame_proxy_created_;
+  }
 
   // Returns associated remote for the blink::mojom::RemoteFrame Mojo interface.
   const mojo::AssociatedRemote<blink::mojom::RemoteFrame>&
@@ -274,10 +278,9 @@ class CONTENT_EXPORT RenderFrameProxyHost
   //   speculative RenderFrameHost by swapping it back to a RenderFrameProxy.
   void TearDownMojoConnection();
 
+  using TraceProto = perfetto::protos::pbzero::RenderFrameProxyHost;
   // Write a representation of this object into a trace.
-  void WriteIntoTrace(
-      perfetto::TracedProto<perfetto::protos::pbzero::RenderFrameProxyHost>
-          proto);
+  void WriteIntoTrace(perfetto::TracedProto<TraceProto> proto) const;
 
  private:
   // These interceptor need access to frame_host_receiver_for_testing().
@@ -357,6 +360,10 @@ class CONTENT_EXPORT RenderFrameProxyHost
       remote_main_frame_host_receiver_{this};
 
   blink::RemoteFrameToken frame_token_;
+
+  // Tracks metrics related to postMessage usage.
+  // TODO(crbug.com/1159586): Remove when no longer needed.
+  blink::PostMessageCounter post_message_counter_;
 };
 
 }  // namespace content

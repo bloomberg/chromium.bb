@@ -9,6 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
+#include <memory>
+#include <new>
 #include <tuple>
 
 #include "aom/aom_integer.h"
@@ -32,10 +34,14 @@ constexpr float kAbsEpsilon = 5e-3f;
 
 class FastSoftmaxTest : public ::testing::TestWithParam<FastSoftmaxTestParams> {
  public:
-  FastSoftmaxTest()
-      : target_fn_{ GET_PARAM(0) }, num_classes_(GET_PARAM(1)),
-        ref_buf_(new float[num_classes_]()),
-        dst_buf_(new float[num_classes_]()), input_(new float[num_classes_]()) {
+  FastSoftmaxTest() : target_fn_(GET_PARAM(0)), num_classes_(GET_PARAM(1)) {}
+  virtual void SetUp() {
+    ref_buf_.reset(new (std::nothrow) float[num_classes_]());
+    ASSERT_NE(ref_buf_, nullptr);
+    dst_buf_.reset(new (std::nothrow) float[num_classes_]());
+    ASSERT_NE(dst_buf_, nullptr);
+    input_.reset(new (std::nothrow) float[num_classes_]());
+    ASSERT_NE(input_, nullptr);
   }
   void RunSoftmaxTest();
   void RunSoftmaxSpeedTest(const int run_times);

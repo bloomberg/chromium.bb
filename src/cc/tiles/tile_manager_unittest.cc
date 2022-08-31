@@ -111,6 +111,15 @@ class TileManagerTilePriorityQueueTest : public TestLayerTreeHostBase {
   }
 
   TileManager* tile_manager() { return host_impl()->tile_manager(); }
+
+  class StubGpuBacking : public ResourcePool::GpuBacking {
+   public:
+    void OnMemoryDump(
+        base::trace_event::ProcessMemoryDump* pmd,
+        const base::trace_event::MemoryAllocatorDumpGuid& buffer_dump_guid,
+        uint64_t tracing_process_id,
+        int importance) const override {}
+  };
 };
 
 TEST_F(TileManagerTilePriorityQueueTest, RasterTilePriorityQueue) {
@@ -527,7 +536,7 @@ TEST_F(TileManagerTilePriorityQueueTest, RasterTilePriorityQueueInvalidation) {
   // ensure that border math doesn't invalidate neighbouring tiles.
   gfx::Rect invalidation =
       active_layer()->HighResTiling()->TileAt(1, 0)->content_rect();
-  invalidation.Inset(2, 2);
+  invalidation.Inset(2);
 
   pending_layer()->set_invalidation(invalidation);
   pending_layer()->HighResTiling()->Invalidate(invalidation);
@@ -1174,7 +1183,7 @@ TEST_F(TileManagerTilePriorityQueueTest,
 
   const int soon_border_outset = 312;
   gfx::Rect soon_rect = viewport;
-  soon_rect.Inset(-soon_border_outset, -soon_border_outset);
+  soon_rect.Inset(-soon_border_outset);
 
   client.SetTileSize(gfx::Size(30, 30));
   LayerTreeSettings settings;
@@ -1310,7 +1319,7 @@ TEST_F(TileManagerTilePriorityQueueTest,
 
   const int soon_border_outset = 312;
   gfx::Rect soon_rect = moved_viewport;
-  soon_rect.Inset(-soon_border_outset, -soon_border_outset);
+  soon_rect.Inset(-soon_border_outset);
 
   // There are 3 bins in TilePriority.
   bool have_tiles[3] = {};
@@ -1419,6 +1428,7 @@ TEST_F(TileManagerTilePriorityQueueTest,
   ResourcePool::InUsePoolResource resource =
       host_impl()->resource_pool()->AcquireResource(
           gfx::Size(256, 256), viz::RGBA_8888, gfx::ColorSpace());
+  resource.set_gpu_backing(std::make_unique<StubGpuBacking>());
 
   host_impl()->tile_manager()->CheckIfMoreTilesNeedToBePreparedForTesting();
   EXPECT_FALSE(host_impl()->is_likely_to_require_a_draw());
@@ -1893,7 +1903,7 @@ TEST_F(PixelInspectTileManagerTest, LowResHasNoImage) {
   gfx::Size size(10, 12);
   TileResolution resolutions[] = {HIGH_RESOLUTION, LOW_RESOLUTION};
 
-  for (size_t i = 0; i < base::size(resolutions); ++i) {
+  for (size_t i = 0; i < std::size(resolutions); ++i) {
     SCOPED_TRACE(resolutions[i]);
 
     // Make a RasterSource that will draw a blue bitmap image.
@@ -1905,7 +1915,7 @@ TEST_F(PixelInspectTileManagerTest, LowResHasNoImage) {
 
     std::unique_ptr<FakeRecordingSource> recording_source =
         FakeRecordingSource::CreateFilledRecordingSource(size);
-    recording_source->SetBackgroundColor(SK_ColorTRANSPARENT);
+    recording_source->SetBackgroundColor(SkColors::kTransparent);
     recording_source->SetRequiresClear(true);
     PaintFlags flags;
     flags.setColor(SK_ColorGREEN);
@@ -3493,9 +3503,9 @@ TEST_F(DecodedImageTrackerTileManagerTest, DecodedImageTrackerDropsLocksOnUse) {
 
   // Add the images to our decoded_image_tracker.
   host_impl()->tile_manager()->decoded_image_tracker().QueueImageDecode(
-      image1, gfx::ColorSpace(), base::DoNothing());
+      image1, TargetColorParams(), base::DoNothing());
   host_impl()->tile_manager()->decoded_image_tracker().QueueImageDecode(
-      image2, gfx::ColorSpace(), base::DoNothing());
+      image2, TargetColorParams(), base::DoNothing());
   EXPECT_EQ(0u, host_impl()
                     ->tile_manager()
                     ->decoded_image_tracker()
@@ -3559,7 +3569,7 @@ TEST_F(DecodedImageTrackerTileManagerTest, DecodedImageTrackerDropsLocksOnUse) {
 
 class HdrImageTileManagerTest : public CheckerImagingTileManagerTest {
  public:
-  void DecodeHdrImage(const gfx::ColorSpace& raster_cs) {
+  void DecodeHdrImage(const gfx::ColorSpace& output_cs) {
     auto color_space = gfx::ColorSpace::CreateHDR10();
     auto size = gfx::Size(250, 250);
     auto info =
@@ -3575,8 +3585,10 @@ class HdrImageTileManagerTest : public CheckerImagingTileManagerTest {
                                .TakePaintImage();
 
     // Add the image to our decoded_image_tracker.
+    TargetColorParams target_color_params;
+    target_color_params.color_space = output_cs;
     host_impl()->tile_manager()->decoded_image_tracker().QueueImageDecode(
-        hdr_image, raster_cs, base::DoNothing());
+        hdr_image, target_color_params, base::DoNothing());
     FlushDecodeTasks();
 
     // Add images to a fake recording source.
@@ -3594,9 +3606,9 @@ class HdrImageTileManagerTest : public CheckerImagingTileManagerTest {
     SetupPendingTree(raster_source, kTileSize, invalidation);
 
     constexpr float kCustomWhiteLevel = 200.f;
-    auto display_cs = gfx::DisplayColorSpaces(raster_cs);
-    if (raster_cs.IsHDR())
-      display_cs.SetSDRWhiteLevel(kCustomWhiteLevel);
+    auto display_cs = gfx::DisplayColorSpaces(output_cs);
+    if (output_cs.IsHDR())
+      display_cs.SetSDRMaxLuminanceNits(kCustomWhiteLevel);
 
     pending_layer()->layer_tree_impl()->SetDisplayColorSpaces(display_cs);
     PictureLayerTilingSet* tiling_set =
@@ -3616,7 +3628,8 @@ class HdrImageTileManagerTest : public CheckerImagingTileManagerTest {
     auto pending_tiles = pending_tiling->AllTilesForTesting();
     ASSERT_FALSE(pending_tiles.empty());
 
-    if (raster_cs.IsHDR()) {
+    const auto raster_cs = gfx::ColorSpace::CreateExtendedSRGB();
+    if (output_cs.IsHDR()) {
       // Only the last tile will have any pending tasks.
       const auto& pending_tasks =
           host_impl()->tile_manager()->decode_tasks_for_testing(
@@ -3635,7 +3648,7 @@ class HdrImageTileManagerTest : public CheckerImagingTileManagerTest {
     ASSERT_FALSE(
         host_impl()->tile_manager()->HasScheduledTileTasksForTesting());
 
-    auto expected_format = raster_cs.IsHDR() ? viz::RGBA_F16 : viz::RGBA_8888;
+    auto expected_format = output_cs.IsHDR() ? viz::RGBA_F16 : viz::RGBA_8888;
     auto all_tiles = host_impl()->tile_manager()->AllTilesForTesting();
     for (const auto* tile : all_tiles)
       EXPECT_EQ(expected_format, tile->draw_info().resource_format());
@@ -3661,8 +3674,8 @@ TEST_F(HdrImageTileManagerTest, DecodeHdrImagesToSdrP3) {
 class TileManagerCheckRasterQueriesTest : public TileManagerTest {
  public:
   TileManagerCheckRasterQueriesTest()
-      : pending_raster_queries_(viz::TestContextProvider::CreateWorker().get(),
-                                /*oop_rasterization_enabled=*/false) {}
+      : pending_raster_queries_(
+            viz::TestContextProvider::CreateWorker().get()) {}
   ~TileManagerCheckRasterQueriesTest() override {
     // Ensure that the host impl doesn't outlive |raster_buffer_provider_|.
     TakeHostImpl();
@@ -3676,11 +3689,9 @@ class TileManagerCheckRasterQueriesTest : public TileManagerTest {
  protected:
   class MockRasterQueryQueue : public FakeRasterQueryQueue {
    public:
-    MockRasterQueryQueue(
-        viz::RasterContextProvider* const worker_context_provider,
-        bool oop_rasterization_enabled)
-        : FakeRasterQueryQueue(worker_context_provider,
-                               oop_rasterization_enabled) {}
+    explicit MockRasterQueryQueue(
+        viz::RasterContextProvider* const worker_context_provider)
+        : FakeRasterQueryQueue(worker_context_provider) {}
     MOCK_METHOD0(CheckRasterFinishedQueries, bool());
   };
 

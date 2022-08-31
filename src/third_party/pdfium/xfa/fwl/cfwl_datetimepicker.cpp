@@ -18,9 +18,10 @@
 
 namespace {
 
-const int kDateTimePickerHeight = 20;
+constexpr int kDateTimePickerHeight = 20;
 
 }  // namespace
+
 CFWL_DateTimePicker::CFWL_DateTimePicker(CFWL_App* app)
     : CFWL_Widget(app,
                   Properties{0, FWL_STYLEEXT_DTP_ShortDateFormat, 0},
@@ -158,7 +159,7 @@ WideString CFWL_DateTimePicker::GetEditText() const {
   return m_pEdit ? m_pEdit->GetText() : WideString();
 }
 
-int32_t CFWL_DateTimePicker::GetEditTextLength() const {
+size_t CFWL_DateTimePicker::GetEditTextLength() const {
   return m_pEdit ? m_pEdit->GetTextLength() : 0;
 }
 

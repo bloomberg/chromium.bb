@@ -29,6 +29,12 @@ class CORE_EXPORT MediaValuesCached final : public MediaValues {
     // thread
     double viewport_width = 0;
     double viewport_height = 0;
+    double small_viewport_width = 0;
+    double small_viewport_height = 0;
+    double large_viewport_width = 0;
+    double large_viewport_height = 0;
+    double dynamic_viewport_width = 0;
+    double dynamic_viewport_height = 0;
     int device_width = 0;
     int device_height = 0;
     float device_pixel_ratio = 1.0;
@@ -89,7 +95,7 @@ class CORE_EXPORT MediaValuesCached final : public MediaValues {
       data.three_d_enabled = three_d_enabled;
       data.immersive_mode = immersive_mode;
       data.strict_mode = strict_mode;
-      data.media_type = media_type.IsolatedCopy();
+      data.media_type = media_type;
       data.display_mode = display_mode;
       data.color_gamut = color_gamut;
       data.preferred_color_scheme = preferred_color_scheme;
@@ -142,12 +148,21 @@ class CORE_EXPORT MediaValuesCached final : public MediaValues {
   void OverrideViewportDimensions(double width, double height);
 
  protected:
+  // CSSLengthResolver
+  float EmFontSize() const override;
+  float RemFontSize() const override;
+  float ExFontSize() const override;
+  float ChFontSize() const override;
   double ViewportWidth() const override;
   double ViewportHeight() const override;
-  float EmSize() const override;
-  float RemSize() const override;
-  float ExSize() const override;
-  float ChSize() const override;
+  double SmallViewportWidth() const override;
+  double SmallViewportHeight() const override;
+  double LargeViewportWidth() const override;
+  double LargeViewportHeight() const override;
+  double DynamicViewportWidth() const override;
+  double DynamicViewportHeight() const override;
+  double ContainerWidth() const override;
+  double ContainerHeight() const override;
   WritingMode GetWritingMode() const override {
     return WritingMode::kHorizontalTb;
   }

@@ -6,6 +6,7 @@
 #define IOS_WEB_PUBLIC_TEST_FAKES_FAKE_COOKIE_STORE_H_
 
 #include "net/cookies/cookie_store.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace web {
 
@@ -23,10 +24,13 @@ class FakeCookieStore : public net::CookieStore {
   // Methods below have not been implemented in this fake. Implement them when
   // necessary.
 
-  void SetCanonicalCookieAsync(std::unique_ptr<net::CanonicalCookie> cookie,
-                               const GURL& source_url,
-                               const net::CookieOptions& options,
-                               SetCookiesCallback callback) override;
+  void SetCanonicalCookieAsync(
+      std::unique_ptr<net::CanonicalCookie> cookie,
+      const GURL& source_url,
+      const net::CookieOptions& options,
+      SetCookiesCallback callback,
+      absl::optional<net::CookieAccessResult> cookie_access_result =
+          absl::nullopt) override;
   void GetCookieListWithOptionsAsync(
       const GURL& url,
       const net::CookieOptions& options,

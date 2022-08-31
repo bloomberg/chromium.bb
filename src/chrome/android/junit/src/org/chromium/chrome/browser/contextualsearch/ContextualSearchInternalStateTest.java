@@ -17,15 +17,15 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchInternalStateController.InternalState;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 /**
  * Tests for the {@link ContextualSearchInternalStateController} class.
  */
-@RunWith(LocalRobolectricTestRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 public class ContextualSearchInternalStateTest {
     private ContextualSearchInternalStateController mInternalStateController;
 
@@ -74,6 +74,21 @@ public class ContextualSearchInternalStateTest {
                 mDidResolve = true;
                 mInternalStateController.notifyFinishedWorkOn(InternalState.RESOLVING);
             }
+        }
+
+        @Override
+        public void showingTapSearch() {
+            stubForWorkOnState(InternalState.SHOWING_TAP_SEARCH);
+        }
+
+        @Override
+        public void showingIntelligentLongpress() {
+            stubForWorkOnState(InternalState.SHOWING_RESOLVED_LONG_PRESS_SEARCH);
+        }
+
+        @Override
+        public void completeSearch() {
+            stubForWorkOnState(InternalState.SEARCH_COMPLETED);
         }
 
         @Override

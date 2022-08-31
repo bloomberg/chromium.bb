@@ -4,7 +4,15 @@
 
 import {reloadDevTools} from '../../shared/helper.js';
 import {describe, it} from '../../shared/mocha-extensions.js';
-import {closeSecurityTab, navigateToSecurityTab, openSecurityPanelFromCommandMenu, openSecurityPanelFromMoreTools, securityPanelContentIsLoaded, securityTabDoesNotExist, securityTabExists} from '../helpers/security-helpers.js';
+import {
+  closeSecurityTab,
+  navigateToSecurityTab,
+  openSecurityPanelFromCommandMenu,
+  openSecurityPanelFromMoreTools,
+  securityPanelContentIsLoaded,
+  securityTabDoesNotExist,
+  securityTabExists,
+} from '../helpers/security-helpers.js';
 
 describe('The Security Panel', async () => {
   it('is open by default when devtools initializes', async () => {
@@ -24,8 +32,7 @@ describe('The Security Panel', async () => {
     await securityTabExists();
   });
 
-  // Test flaky on Windows
-  it.skipOnPlatforms(['win32'], '[crbug.com/1183304]: can be opened from command menu after being closed', async () => {
+  it('can be opened from command menu after being closed', async () => {
     await closeSecurityTab();
     await openSecurityPanelFromCommandMenu();
   });

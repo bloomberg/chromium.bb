@@ -1771,6 +1771,9 @@
   <message desc="Spoken when earcons are off." name="IDS_CHROMEVOX_EARCONS_OFF">
     Earcons off
   </message>
+  <message desc="Description of the toggle dictation key combination. Shown in the ChromeVox menus." name="IDS_CHROMEVOX_TOGGLE_DICTATION">
+    Toggle dictation
+  </message>
   <message desc="Description of the toggle earcons key. Shown in options page." name="IDS_CHROMEVOX_TOGGLE_EARCONS">
     Turn sound feedback (earcons) on or off
   </message>
@@ -2150,7 +2153,7 @@
     Learn More
   </message>
   <message desc="Part of the ChromeVox tutorial, explaining that this is the end of the tutorial and that there are links to more information." name="IDS_CHROMEVOX_TUTORIAL_LEARN_MORE">
-    Congratulations! You’ve learned the essentials to use ChromeVox successfully. Remember that you can open the ChromeVox command menu at any time by pressing Search+Period. To learn even more about ChromeVox and Chrome OS, visit the following articles.
+    Congratulations! You’ve learned the essentials to use ChromeVox successfully. Remember that you can open the ChromeVox command menu at any time by pressing Search+Period. To learn even more about ChromeVox and ChromeOS, visit the following articles.
     If you're done with the tutorial, use ChromeVox to navigate to the Close button and click it.
   </message>
   <message desc="Part of the ChromeVox update notes for m63, title." name="IDS_CHROMEVOX_UPDATE_63_TITLE">
@@ -3322,7 +3325,7 @@
     You can also swipe one finger from right to left to move to the previous item. Try it now.
   </message>
   <message desc="Text content for the next/previous item lesson in the touch orientation." name="IDS_CHROMEVOX_TUTORIAL_TOUCH_ORIENTATION_NEXT_PREVIOUS_CONTINUE_TEXT">
-    Once you’ve had some practice, find the Next lesson button. Then double-tap to continue. 
+    Once you’ve had some practice, find the Next lesson button. Then double-tap to continue.
   </message>
   <message desc="Title for the touch explore lesson in the touch orientation." name="IDS_CHROMEVOX_TUTORIAL_TOUCH_ORIENTATION_TOUCH_EXPLORE_TITLE">
     Explore by touch
@@ -3377,5 +3380,11 @@
   </message>
   <message desc="Spoken to describe a &lt;abbr&gt; tag. For example, &lt;abbr title='uniform resource locator'&gt;URL/&lt;abbr&gt; would be spoken as 'URL, uniform resource locator, Abbreviation'" name="IDS_CHROMEVOX_TAG_ABBR" is_accessibility_with_no_ui="true">
     Abbreviation
+  </message>
+  <message desc="Spoken message asking users to install the Accessibility Suite app from the Play Store when users tried to turn on Talkback without installing Accessibility Suite." name="IDS_CHROMEVOX_ANNOUNCE_INSTALL_TALKBACK" is_accessibility_with_no_ui="true">
+    TalkBack is currently not installed. Please install Android AccessibilitySuite through Play Store and try again.
+  </message>
+  <message desc="Spoken message notifying users that using TalkBack on Chromebook is no longer supported and keyboard shortcut are no longer customized for Chromebooks." name="IDS_CHROMEVOX_ANNOUNCE_TALKBACK_DEPRECATION" is_accessibility_with_no_ui="true">
+    TalkBack no longer provides customization for Chromebooks. You can still use it, but use TalkBack default keyboard shortcuts. Press Search+A, then K to see available shortcuts. If you still want to use TalkBack, press the command again.
   </message>
 </grit-part>

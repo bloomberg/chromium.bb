@@ -22,6 +22,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/input/synthetic_web_input_event_builders.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
+#include "third_party/blink/public/mojom/fenced_frame/fenced_frame.mojom.h"
 #include "ui/base/page_transition_types.h"
 
 #if defined(USE_AURA)
@@ -42,6 +43,7 @@ struct WebPreferences;
 
 namespace display {
 class Screen;
+class ScopedNativeScreen;
 }
 
 namespace net {
@@ -135,6 +137,11 @@ class RenderFrameHostTester {
 
   // Simulates the receipt of a manifest URL.
   virtual void SimulateManifestURLUpdate(const GURL& manifest_url) = 0;
+
+  // Creates and appends a fenced frame.
+  virtual RenderFrameHost* AppendFencedFrame(
+      blink::mojom::FencedFrameMode mode =
+          blink::mojom::FencedFrameMode::kDefault) = 0;
 };
 
 // An interface and utility for driving tests of RenderViewHost.
@@ -172,7 +179,18 @@ class RenderViewHostTester {
 // RenderViewHostTester and RenderFrameHostTester respectively.
 class RenderViewHostTestEnabler {
  public:
-  RenderViewHostTestEnabler();
+  // Whether this RenderViewHostTestEnabler should create
+  // TestNavigationURLLoaderFactory or not.
+  enum class NavigationURLLoaderFactoryType {
+    // Create TestNavigationURLLoaderFactory.
+    kTest,
+    // Do not create TestRenderViewHostFactory. Useful for the tests which want
+    // to mock or customise the NavigationURLLoader creation logic themselves.
+    kNone,
+  };
+  explicit RenderViewHostTestEnabler(
+      NavigationURLLoaderFactoryType navigation_url_loader_factory_type =
+          NavigationURLLoaderFactoryType::kTest);
 
   RenderViewHostTestEnabler(const RenderViewHostTestEnabler&) = delete;
   RenderViewHostTestEnabler& operator=(const RenderViewHostTestEnabler&) =
@@ -182,7 +200,7 @@ class RenderViewHostTestEnabler {
 
   friend class RenderViewHostTestHarness;
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   std::unique_ptr<display::Screen> screen_;
 #endif
   std::unique_ptr<base::test::SingleThreadTaskEnvironment> task_environment_;
@@ -305,8 +323,11 @@ class RenderViewHostTestHarness : public ::testing::Test {
   std::unique_ptr<RenderViewHostTestEnabler> rvh_test_enabler_;
 
   std::unique_ptr<WebContents> contents_;
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   std::unique_ptr<ui::ScopedOleInitializer> ole_initializer_;
+#endif
+#if BUILDFLAG(IS_MAC)
+  std::unique_ptr<display::ScopedNativeScreen> screen_;
 #endif
 #if defined(USE_AURA)
   std::unique_ptr<aura::test::AuraTestHelper> aura_test_helper_;

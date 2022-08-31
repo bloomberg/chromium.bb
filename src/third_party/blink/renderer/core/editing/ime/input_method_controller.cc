@@ -26,7 +26,8 @@
 
 #include "third_party/blink/renderer/core/editing/ime/input_method_controller.h"
 
-#include "base/ignore_result.h"
+#include <tuple>
+
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
@@ -396,9 +397,12 @@ void InputMethodController::DispatchBeforeInputFromComposition(
     return;
   // TODO(editing-dev): Pass appropriate |ranges| after it's defined on spec.
   // http://w3c.github.io/editing/input-events.html#dom-inputevent-inputtype
+  const StaticRangeVector* ranges = nullptr;
+  if (auto* node = target->ToNode())
+    ranges = TargetRangesForInputEvent(*node);
   InputEvent* before_input_event = InputEvent::CreateBeforeInput(
       input_type, data, InputTypeIsCancelable(input_type),
-      InputEvent::EventIsComposing::kIsComposing, nullptr);
+      InputEvent::EventIsComposing::kIsComposing, ranges);
   target->DispatchEvent(*before_input_event);
 }
 
@@ -597,7 +601,7 @@ bool InputMethodController::FinishComposingText(
     RevealSelectionScope reveal_selection_scope(GetFrame());
 
     if (is_too_long) {
-      ignore_result(ReplaceComposition(ComposingText()));
+      std::ignore = ReplaceComposition(ComposingText());
     } else {
       Clear();
       DispatchCompositionEndEvent(GetFrame(), composing);
@@ -1411,7 +1415,7 @@ void InputMethodController::ExtendSelectionAndDelete(int before, int after) {
                                    .End() &&
            before <= static_cast<int>(selection_offsets.Start()));
   // TODO(editing-dev): Find a way to distinguish Forward and Backward.
-  ignore_result(DeleteSelection());
+  std::ignore = DeleteSelection();
 }
 
 // TODO(ctzsm): We should reduce the number of selectionchange events.
@@ -1580,7 +1584,8 @@ WebTextInputInfo InputMethodController::TextInputInfo() const {
 
   // TODO(editing-dev): The use of UpdateStyleAndLayout
   // needs to be audited.  see http://crbug.com/590369 for more details.
-  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
+  const EphemeralRange& first_range = FirstEphemeralRangeOf(
+      GetFrame().Selection().ComputeVisibleSelectionInDOMTreeDeprecated());
 
   DocumentLifecycle::DisallowTransitionScope disallow_transition(
       GetDocument().Lifecycle());
@@ -1593,8 +1598,6 @@ WebTextInputInfo InputMethodController::TextInputInfo() const {
   if (info.value.IsEmpty())
     return info;
 
-  const EphemeralRange& first_range = FirstEphemeralRangeOf(
-      GetFrame().Selection().ComputeVisibleSelectionInDOMTreeDeprecated());
   const PlainTextRange& selection_plain_text_range =
       cached_text_input_info_.GetSelection(first_range);
   if (selection_plain_text_range.IsNotNull()) {
@@ -1665,11 +1668,11 @@ int InputMethodController::ComputeWebTextInputNextPreviousFlags() const {
     return kWebTextInputFlagNone;
 
   int flags = kWebTextInputFlagNone;
-  if (page->GetFocusController().NextFocusableElementInForm(
+  if (page->GetFocusController().NextFocusableElementForIME(
           element, mojom::blink::FocusType::kForward))
     flags |= kWebTextInputFlagHaveNextFocusableElement;
 
-  if (page->GetFocusController().NextFocusableElementInForm(
+  if (page->GetFocusController().NextFocusableElementForIME(
           element, mojom::blink::FocusType::kBackward))
     flags |= kWebTextInputFlagHavePreviousFocusableElement;
 

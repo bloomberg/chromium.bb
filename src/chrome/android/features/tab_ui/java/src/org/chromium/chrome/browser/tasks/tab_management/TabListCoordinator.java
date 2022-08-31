@@ -11,6 +11,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Rect;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnLayoutChangeListener;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.ImageView;
@@ -23,12 +24,12 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import org.chromium.base.MathUtils;
 import org.chromium.chrome.browser.lifecycle.DestroyObserver;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabUtils;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
-import org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil;
+import org.chromium.chrome.browser.tasks.ReturnToChromeUtil;
 import org.chromium.chrome.browser.tasks.pseudotab.PseudoTab;
 import org.chromium.chrome.browser.tasks.tab_management.TabProperties.UiType;
 import org.chromium.chrome.tab_ui.R;
@@ -67,8 +68,11 @@ public class TabListCoordinator
         int NUM_ENTRIES = 4;
     }
 
-    static final int GRID_LAYOUT_SPAN_COUNT_PORTRAIT = 2;
-    static final int GRID_LAYOUT_SPAN_COUNT_LANDSCAPE = 3;
+    static final int GRID_LAYOUT_SPAN_COUNT_COMPACT = 2;
+    static final int GRID_LAYOUT_SPAN_COUNT_MEDIUM = 3;
+    static final int GRID_LAYOUT_SPAN_COUNT_LARGE = 4;
+    static final int MAX_SCREEN_WIDTH_COMPACT_DP = 600;
+    static final int MAX_SCREEN_WIDTH_MEDIUM_DP = 800;
     private final TabListMediator mMediator;
     private final TabListRecyclerView mRecyclerView;
     private final SimpleRecyclerViewAdapter mAdapter;
@@ -81,6 +85,7 @@ public class TabListCoordinator
 
     private boolean mIsInitialized;
     private ViewTreeObserver.OnGlobalLayoutListener mGlobalLayoutListener;
+    private OnLayoutChangeListener mListLayoutListener;
 
     /**
      * Construct a coordinator for UI that shows a list of tabs.
@@ -163,9 +168,7 @@ public class TabListCoordinator
 
                 if (TabUiFeatureUtilities.isTabThumbnailAspectRatioNotOne()) {
                     float expectedThumbnailAspectRatio =
-                            (float) TabUiFeatureUtilities.THUMBNAIL_ASPECT_RATIO.getValue();
-                    expectedThumbnailAspectRatio =
-                            MathUtils.clamp(expectedThumbnailAspectRatio, 0.5f, 2.0f);
+                            TabUtils.getTabThumbnailAspectRatio(context);
                     int height = (int) (thumbnail.getWidth() * 1.0 / expectedThumbnailAspectRatio);
                     thumbnail.setMinimumHeight(Math.min(thumbnail.getHeight(), height));
                     thumbnail.setImageDrawable(null);
@@ -242,11 +245,12 @@ public class TabListCoordinator
 
         if (mMode == TabListMode.GRID) {
             GridLayoutManager gridLayoutManager =
-                    new GridLayoutManager(context, GRID_LAYOUT_SPAN_COUNT_PORTRAIT);
+                    new GridLayoutManager(context, GRID_LAYOUT_SPAN_COUNT_COMPACT);
             mRecyclerView.setLayoutManager(gridLayoutManager);
             mMediator.registerOrientationListener(gridLayoutManager);
-            mMediator.updateSpanCountForOrientation(
-                    gridLayoutManager, context.getResources().getConfiguration().orientation);
+            mMediator.updateSpanCount(gridLayoutManager,
+                    context.getResources().getConfiguration().orientation,
+                    context.getResources().getConfiguration().screenWidthDp);
             mMediator.setupAccessibilityDelegate(mRecyclerView);
         } else if (mMode == TabListMode.STRIP || mMode == TabListMode.CAROUSEL
                 || mMode == TabListMode.LIST) {
@@ -257,9 +261,11 @@ public class TabListCoordinator
         }
 
         if (mMode == TabListMode.GRID && selectionDelegateProvider == null) {
-            // TODO(crbug.com/964406): unregister the listener when we don't need it.
             mGlobalLayoutListener = this::updateThumbnailLocation;
-            mRecyclerView.getViewTreeObserver().addOnGlobalLayoutListener(mGlobalLayoutListener);
+            if (TabUiFeatureUtilities.isTabletGridTabSwitcherEnabled(mContext)) {
+                mListLayoutListener = (view, left, top, right, bottom, oldLeft, oldTop, oldRight,
+                        oldBottom) -> updateGridCardLayout(right - left);
+            }
         }
     }
 
@@ -311,12 +317,28 @@ public class TabListCoordinator
         return true;
     }
 
+    private void updateGridCardLayout(int viewWidth) {
+        // Determine and set span count
+        final GridLayoutManager layoutManager =
+                (GridLayoutManager) mRecyclerView.getLayoutManager();
+        mMediator.updateSpanCount(layoutManager,
+                mContext.getResources().getConfiguration().orientation,
+                mContext.getResources().getConfiguration().screenWidthDp);
+        // Determine grid card width and account for margins on left and right.
+        final int cardWidthPx = (viewWidth / layoutManager.getSpanCount());
+        final int cardHeightPx = TabUtils.deriveGridCardHeight(cardWidthPx, mContext);
+        for (int i = 0; i < mModel.size(); i++) {
+            mModel.get(i).model.set(TabProperties.GRID_CARD_WIDTH, cardWidthPx);
+            mModel.get(i).model.set(TabProperties.GRID_CARD_HEIGHT, cardHeightPx);
+        }
+    }
+
     /**
      * @return The top offset from top toolbar to the tab list recycler view. Used to adjust the
      *         animations for tab switcher.
      */
     int getTabListTopOffset() {
-        if (!ReturnToChromeExperimentsUtil.isStartSurfaceEnabled(mContext)) return 0;
+        if (!ReturnToChromeUtil.isStartSurfaceEnabled(mContext)) return 0;
         Rect tabListRect = getRecyclerViewLocation();
         Rect parentRect = new Rect();
         mRootView.getGlobalVisibleRect(parentRect);
@@ -370,12 +392,24 @@ public class TabListCoordinator
         mMediator.softCleanup();
     }
 
-    void prepareOverview() {
-        mRecyclerView.prepareOverview();
-        mMediator.prepareOverview();
+    void prepareTabSwitcherView() {
+        if (mGlobalLayoutListener != null) {
+            mRecyclerView.getViewTreeObserver().addOnGlobalLayoutListener(mGlobalLayoutListener);
+        }
+        if (mListLayoutListener != null) {
+            mRecyclerView.addOnLayoutChangeListener(mListLayoutListener);
+        }
+        mRecyclerView.prepareTabSwitcherView();
+        mMediator.prepareTabSwitcherView();
     }
 
     void postHiding() {
+        if (mGlobalLayoutListener != null) {
+            mRecyclerView.getViewTreeObserver().removeOnGlobalLayoutListener(mGlobalLayoutListener);
+        }
+        if (mListLayoutListener != null) {
+            mRecyclerView.removeOnLayoutChangeListener(mListLayoutListener);
+        }
         mRecyclerView.postHiding();
         mMediator.postHiding();
     }
@@ -388,6 +422,9 @@ public class TabListCoordinator
         mMediator.destroy();
         if (mGlobalLayoutListener != null) {
             mRecyclerView.getViewTreeObserver().removeOnGlobalLayoutListener(mGlobalLayoutListener);
+        }
+        if (mListLayoutListener != null) {
+            mRecyclerView.removeOnLayoutChangeListener(mListLayoutListener);
         }
         mRecyclerView.setRecyclerListener(null);
     }

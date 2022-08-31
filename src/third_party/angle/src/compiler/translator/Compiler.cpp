@@ -206,7 +206,7 @@ int GetMaxUniformVectorsForShaderType(GLenum shaderType, const ShBuiltInResource
 namespace
 {
 
-class TScopedPoolAllocator
+class ANGLE_NO_DISCARD TScopedPoolAllocator
 {
   public:
     TScopedPoolAllocator(angle::PoolAllocator *allocator) : mAllocator(allocator)
@@ -224,7 +224,7 @@ class TScopedPoolAllocator
     angle::PoolAllocator *mAllocator;
 };
 
-class TScopedSymbolTableLevel
+class ANGLE_NO_DISCARD TScopedSymbolTableLevel
 {
   public:
     TScopedSymbolTableLevel(TSymbolTable *table) : mTable(table)
@@ -346,6 +346,7 @@ TCompiler::TCompiler(sh::GLenum type, ShShaderSpec spec, ShShaderOutput output)
       mTessEvaluationShaderInputOrderingType(EtetUndefined),
       mTessEvaluationShaderInputPointType(EtetUndefined),
       mHasAnyPreciseType(false),
+      mAdvancedBlendEquations(0),
       mCompileOptions(0)
 {}
 
@@ -460,7 +461,7 @@ TIntermBlock *TCompiler::compileTreeImpl(const char *const shaderStrings[],
         return nullptr;
     }
 
-    if (parseContext.getTreeRoot() == nullptr)
+    if (!postParseChecks(parseContext))
     {
         return nullptr;
     }
@@ -553,6 +554,8 @@ void TCompiler::setASTMetadata(const TParseContext &parseContext)
 
     mEarlyFragmentTestsSpecified = parseContext.isEarlyFragmentTestsSpecified();
 
+    mEnablesPerSampleShading = parseContext.isSampleQualifierSpecified();
+
     mComputeShaderLocalSizeDeclared = parseContext.isComputeShaderLocalSizeDeclared();
     mComputeShaderLocalSize         = parseContext.getComputeShaderLocalSize();
 
@@ -560,6 +563,10 @@ void TCompiler::setASTMetadata(const TParseContext &parseContext)
 
     mHasAnyPreciseType = parseContext.hasAnyPreciseType();
 
+    if (mShaderType == GL_FRAGMENT_SHADER)
+    {
+        mAdvancedBlendEquations = parseContext.getAdvancedBlendEquations();
+    }
     if (mShaderType == GL_GEOMETRY_SHADER_EXT)
     {
         mGeometryShaderInputPrimitiveType  = parseContext.getGeometryShaderInputPrimitiveType();
@@ -710,6 +717,7 @@ bool TCompiler::checkAndSimplifyAST(TIntermBlock *root,
     {
         return false;
     }
+    mValidateASTOptions.validateNoStatementsAfterBranch = true;
 
     // We need to generate globals early if we have non constant initializers enabled
     bool initializeLocalsAndGlobals = (compileOptions & SH_INITIALIZE_UNINITIALIZED_LOCALS) != 0 &&
@@ -1100,14 +1108,27 @@ bool TCompiler::checkAndSimplifyAST(TIntermBlock *root,
         }
     }
 
-    mEarlyFragmentTestsOptimized = false;
-    if ((compileOptions & SH_EARLY_FRAGMENT_TESTS_OPTIMIZATION) != 0)
+    return true;
+}
+
+bool TCompiler::postParseChecks(const TParseContext &parseContext)
+{
+    std::stringstream errorMessage;
+
+    if (parseContext.getTreeRoot() == nullptr)
     {
-        if (mShaderVersion <= 300 && mShaderType == GL_FRAGMENT_SHADER &&
-            !isEarlyFragmentTestsSpecified())
-        {
-            mEarlyFragmentTestsOptimized = CheckEarlyFragmentTestsFeasible(this, root);
-        }
+        errorMessage << "Shader parsing failed (mTreeRoot == nullptr)";
+    }
+
+    for (TType *type : parseContext.getDeferredArrayTypesToSize())
+    {
+        errorMessage << "Unsized global array type: " << type->getBasicString();
+    }
+
+    if (!errorMessage.str().empty())
+    {
+        mDiagnostics.globalError(errorMessage.str().c_str());
+        return false;
     }
 
     return true;
@@ -1236,6 +1257,7 @@ void TCompiler::setResourceString()
         << ":EXT_blend_func_extended:" << mResources.EXT_blend_func_extended
         << ":EXT_frag_depth:" << mResources.EXT_frag_depth
         << ":EXT_primitive_bounding_box:" << mResources.EXT_primitive_bounding_box
+        << ":OES_primitive_bounding_box:" << mResources.OES_primitive_bounding_box
         << ":EXT_shader_texture_lod:" << mResources.EXT_shader_texture_lod
         << ":EXT_shader_framebuffer_fetch:" << mResources.EXT_shader_framebuffer_fetch
         << ":EXT_shader_framebuffer_fetch_non_coherent:" << mResources.EXT_shader_framebuffer_fetch_non_coherent

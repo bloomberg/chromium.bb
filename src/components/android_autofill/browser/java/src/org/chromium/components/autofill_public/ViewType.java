@@ -4,13 +4,12 @@
 
 package org.chromium.components.autofill_public;
 
-import android.annotation.TargetApi;
 import android.os.Build;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.view.autofill.AutofillId;
 
-import org.chromium.base.annotations.VerifiesOnO;
+import androidx.annotation.RequiresApi;
 
 /**
  * This class is used to send the server and computed view type to the autofill service.
@@ -18,8 +17,7 @@ import org.chromium.base.annotations.VerifiesOnO;
  * components/autofill/core/browser/field_types.cc. Note that the list of possibly returned strings
  * can and will change in the future.
  */
-@TargetApi(Build.VERSION_CODES.O)
-@VerifiesOnO
+@RequiresApi(Build.VERSION_CODES.O)
 public class ViewType implements Parcelable {
     /**
      * The AutofillId of the view that types are for.

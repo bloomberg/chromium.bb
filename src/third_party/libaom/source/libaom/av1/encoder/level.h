@@ -185,6 +185,10 @@ aom_codec_err_t av1_get_seq_level_idx(const SequenceHeader *seq_params,
                                       const AV1LevelParams *level_params,
                                       int *seq_level_idx);
 
+aom_codec_err_t av1_get_target_seq_level_idx(const SequenceHeader *seq_params,
+                                             const AV1LevelParams *level_params,
+                                             int *target_seq_level_idx);
+
 // Print the status of the decoder model(for debugging).
 void av1_decoder_model_print_status(const DECODER_MODEL *const decoder_model);
 

@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_DISPLAY_ITEM_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_DISPLAY_ITEM_H_
 
+#include "base/check_op.h"
 #include "base/dcheck_is_on.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
 #include "third_party/blink/renderer/platform/graphics/paint_invalidation_reason.h"
@@ -105,7 +106,6 @@ class PLATFORM_EXPORT DisplayItem {
     kForeignLayerPlugin,
     kForeignLayerVideo,
     kForeignLayerRemoteFrame,
-    kForeignLayerContentsWrapper,
     kForeignLayerLinkHighlight,
     kForeignLayerViewportScroll,
     kForeignLayerViewportScrollbar,
@@ -144,8 +144,9 @@ class PLATFORM_EXPORT DisplayItem {
     kResizerScrollHitTest,
     // Used to prevent composited scrolling on plugins with wheel handlers.
     kPluginScrollHitTest,
-    // Used to prevent composited scrolling on custom scrollbars.
-    kCustomScrollbarHitTest,
+    // Used to prevent composited scrolling and set touch action region, on
+    // custom scrollbars and non-composited native scrollbars.
+    kScrollbarHitTest,
 
     // These are for paint chunks that are forced for layers.
     kLayerChunk,
@@ -297,7 +298,7 @@ class PLATFORM_EXPORT DisplayItem {
               const gfx::Rect& visual_rect,
               RasterEffectOutset raster_effect_outset,
               PaintInvalidationReason paint_invalidation_reason,
-              bool draws_content = false)
+              bool draws_content)
       : client_id_(client_id),
         visual_rect_(visual_rect),
         fragment_(0),

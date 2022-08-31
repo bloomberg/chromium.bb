@@ -17,6 +17,8 @@ namespace cast {
 
 using ::cast::channel::CastMessage;
 
+VirtualConnectionRouter::SocketErrorHandler::~SocketErrorHandler() = default;
+
 VirtualConnectionRouter::VirtualConnectionRouter() = default;
 
 VirtualConnectionRouter::~VirtualConnectionRouter() = default;

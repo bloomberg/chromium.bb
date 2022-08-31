@@ -18,6 +18,7 @@
 #include "fpdfsdk/cpdfsdk_baannot.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
+class CFFL_InteractiveFormFiller;
 class CFX_RenderDevice;
 class CPDF_Annot;
 class CPDF_FormControl;
@@ -49,9 +50,25 @@ class CPDFSDK_Widget final : public CPDFSDK_BAAnnot {
   ~CPDFSDK_Widget() override;
 
   // CPDFSDK_BAAnnot:
+  void OnLoad() override;
   CPDF_Action GetAAction(CPDF_AAction::AActionType eAAT) override;
   bool IsAppearanceValid() override;
   int GetLayoutOrder() const override;
+  void OnDraw(CFX_RenderDevice* pDevice,
+              const CFX_Matrix& mtUser2Device,
+              bool bDrawAnnots) override;
+  bool DoHitTest(const CFX_PointF& point) override;
+  CFX_FloatRect GetViewBBox() override;
+  bool CanUndo() override;
+  bool CanRedo() override;
+  bool Undo() override;
+  bool Redo() override;
+  WideString GetText() override;
+  WideString GetSelectedText() override;
+  void ReplaceSelection(const WideString& text) override;
+  bool SelectAllText() override;
+  bool SetIndexSelected(int index, bool selected) override;
+  bool IsIndexSelected(int index) override;
   void DrawAppearance(CFX_RenderDevice* pDevice,
                       const CFX_Matrix& mtUser2Device,
                       CPDF_Annot::AppearanceMode mode) override;
@@ -129,6 +146,31 @@ class CPDFSDK_Widget final : public CPDFSDK_BAAnnot {
   CFX_Color GetFillPWLColor() const;
 
  private:
+  // CPDFSDK_Annot::UnsafeInputHandlers:
+  void OnMouseEnter(Mask<FWL_EVENTFLAG> nFlags) override;
+  void OnMouseExit(Mask<FWL_EVENTFLAG> nFlags) override;
+  bool OnLButtonDown(Mask<FWL_EVENTFLAG> nFlags,
+                     const CFX_PointF& point) override;
+  bool OnLButtonUp(Mask<FWL_EVENTFLAG> nFlags,
+                   const CFX_PointF& point) override;
+  bool OnLButtonDblClk(Mask<FWL_EVENTFLAG> nFlags,
+                       const CFX_PointF& point) override;
+  bool OnMouseMove(Mask<FWL_EVENTFLAG> nFlags,
+                   const CFX_PointF& point) override;
+  bool OnMouseWheel(Mask<FWL_EVENTFLAG> nFlags,
+                    const CFX_PointF& point,
+                    const CFX_Vector& delta) override;
+  bool OnRButtonDown(Mask<FWL_EVENTFLAG> nFlags,
+                     const CFX_PointF& point) override;
+  bool OnRButtonUp(Mask<FWL_EVENTFLAG> nFlags,
+                   const CFX_PointF& point) override;
+  bool OnChar(uint32_t nChar, Mask<FWL_EVENTFLAG> nFlags) override;
+  bool OnKeyDown(FWL_VKEYCODE nKeyCode, Mask<FWL_EVENTFLAG> nFlags) override;
+  bool OnSetFocus(Mask<FWL_EVENTFLAG> nFlags) override;
+  bool OnKillFocus(Mask<FWL_EVENTFLAG> nFlags) override;
+
+  CFFL_InteractiveFormFiller* GetInteractiveFormFiller();
+
 #ifdef PDF_ENABLE_XFA
   CXFA_FFWidgetHandler* GetXFAWidgetHandler() const;
   CXFA_FFWidget* GetGroupMixXFAWidget() const;

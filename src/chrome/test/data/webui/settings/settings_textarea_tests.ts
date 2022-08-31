@@ -4,8 +4,10 @@
 
 import 'chrome://settings/lazy_load.js';
 
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {SettingsTextareaElement} from 'chrome://settings/lazy_load.js';
-import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
+import {assertEquals, assertFalse, assertNotEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
+import {eventToPromise} from 'chrome://webui-test/test_util.js';
 
 /** @fileoverview Suite of tests for settings-textarea. */
 suite('SettingsTextarea', function() {
@@ -17,6 +19,7 @@ suite('SettingsTextarea', function() {
     settingsTextarea = document.createElement('settings-textarea');
     document.body.appendChild(settingsTextarea);
     textarea = settingsTextarea.$.input;
+    flush();
   });
 
   test('propertyBindings', function() {
@@ -62,5 +65,45 @@ suite('SettingsTextarea', function() {
     assertEquals(kDefaultRows, textarea.rows);
     settingsTextarea.rows = kNewRows;
     assertEquals(kNewRows, textarea.rows);
+  });
+
+  test('underlineAndFooterColorsWhenFocused', async function() {
+    const firstFooter = settingsTextarea.$.firstFooter;
+    const underline = settingsTextarea.$.underline;
+
+    const whenTransitionEnd = eventToPromise('transitionend', underline);
+    settingsTextarea.firstFooter = 'first footer';
+    flush();
+
+    assertEquals('0', getComputedStyle(underline).opacity);
+    const currentColor = getComputedStyle(firstFooter).color;
+
+    settingsTextarea.$.input.focus();
+    flush();
+
+    return whenTransitionEnd.then(() => {
+      assertEquals('1', getComputedStyle(underline).opacity);
+      assertEquals(currentColor, getComputedStyle(firstFooter).color);
+    });
+  });
+
+  test('underlineAndFooterColorsWhenInvalid', function() {
+    const firstFooter = settingsTextarea.$.firstFooter;
+    const underline = settingsTextarea.$.underline;
+
+    const whenTransitionEnd = eventToPromise('transitionend', underline);
+    settingsTextarea.firstFooter = 'first footer';
+    flush();
+
+    assertEquals('0', getComputedStyle(underline).opacity);
+    const currentColor = getComputedStyle(firstFooter).color;
+
+    settingsTextarea.invalid = true;
+    flush();
+
+    return whenTransitionEnd.then(() => {
+      assertEquals('1', getComputedStyle(underline).opacity);
+      assertNotEquals(currentColor, getComputedStyle(firstFooter).color);
+    });
   });
 });

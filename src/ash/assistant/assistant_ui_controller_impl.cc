@@ -14,7 +14,8 @@
 #include "ash/public/cpp/assistant/assistant_setup.h"
 #include "ash/public/cpp/assistant/assistant_state.h"
 #include "ash/public/cpp/assistant/controller/assistant_interaction_controller.h"
-#include "ash/public/cpp/toast_data.h"
+#include "ash/public/cpp/system/toast_catalog.h"
+#include "ash/public/cpp/system/toast_data.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -44,15 +45,14 @@ PrefService* pref_service() {
 
 // Toast -----------------------------------------------------------------------
 
-constexpr int kToastDurationMs = 2500;
-
 constexpr char kStylusPromptToastId[] = "stylus_prompt_for_embedded_ui";
 constexpr char kUnboundServiceToastId[] =
     "assistant_controller_unbound_service";
 
-void ShowToast(const std::string& id, int message_id) {
-  ToastData toast(id, l10n_util::GetStringUTF16(message_id), kToastDurationMs,
-                  absl::nullopt);
+void ShowToast(const std::string& id,
+               ToastCatalogName catalog_name,
+               int message_id) {
+  ToastData toast(id, catalog_name, l10n_util::GetStringUTF16(message_id));
   Shell::Get()->toast_manager()->Show(toast);
 }
 
@@ -99,6 +99,11 @@ bool AssistantUiControllerImpl::HasShownOnboarding() const {
   return has_shown_onboarding_;
 }
 
+void AssistantUiControllerImpl::SetKeyboardTraversalMode(
+    bool keyboard_traversal_mode) {
+  model_.SetKeyboardTraversalMode(keyboard_traversal_mode);
+}
+
 void AssistantUiControllerImpl::ShowUi(AssistantEntryPoint entry_point) {
   // Skip if the opt-in window is active.
   auto* assistant_setup = AssistantSetup::GetInstance();
@@ -115,12 +120,12 @@ void AssistantUiControllerImpl::ShowUi(AssistantEntryPoint entry_point) {
   // TODO(dmblack): Show a more helpful message to the user.
   if (assistant_state->assistant_status() ==
       chromeos::assistant::AssistantStatus::NOT_READY) {
-    ShowToast(kUnboundServiceToastId, IDS_ASH_ASSISTANT_ERROR_GENERIC);
+    ShowUnboundErrorToast();
     return;
   }
 
   if (!assistant_) {
-    ShowToast(kUnboundServiceToastId, IDS_ASH_ASSISTANT_ERROR_GENERIC);
+    ShowUnboundErrorToast();
     return;
   }
 
@@ -145,6 +150,10 @@ absl::optional<base::ScopedClosureRunner> AssistantUiControllerImpl::CloseUi(
           weak_ptr->model_.SetClosed(exit_point);
       },
       weak_factory_for_delayed_visibility_changes_.GetWeakPtr(), exit_point));
+}
+
+void AssistantUiControllerImpl::SetAppListBubbleWidth(int width) {
+  model_.SetAppListBubbleWidth(width);
 }
 
 void AssistantUiControllerImpl::ToggleUi(
@@ -237,12 +246,6 @@ void AssistantUiControllerImpl::OnUiVisibilityChanged(
 }
 
 void AssistantUiControllerImpl::OnOnboardingShown() {
-  using chromeos::assistant::prefs::AssistantOnboardingMode;
-  base::UmaHistogramEnumeration(
-      "Assistant.BetterOnboarding.Shown",
-      AssistantState::Get()->onboarding_mode().value_or(
-          AssistantOnboardingMode::kDefault));
-
   if (has_shown_onboarding_)
     return;
 
@@ -258,13 +261,19 @@ void AssistantUiControllerImpl::OnHighlighterEnabledChanged(
   if (state != HighlighterEnabledState::kEnabled)
     return;
 
-  ShowToast(kStylusPromptToastId, IDS_ASH_ASSISTANT_PROMPT_STYLUS);
+  ShowToast(kStylusPromptToastId, ToastCatalogName::kStylusPrompt,
+            IDS_ASH_ASSISTANT_PROMPT_STYLUS);
   CloseUi(AssistantExitPoint::kStylus);
 }
 
 void AssistantUiControllerImpl::OnOverviewModeWillStart() {
   // Close Assistant UI before entering overview mode.
   CloseUi(AssistantExitPoint::kOverviewMode);
+}
+
+void AssistantUiControllerImpl::ShowUnboundErrorToast() {
+  ShowToast(kUnboundServiceToastId, ToastCatalogName::kAssistantUnboundService,
+            IDS_ASH_ASSISTANT_ERROR_GENERIC);
 }
 
 void AssistantUiControllerImpl::UpdateUiMode(

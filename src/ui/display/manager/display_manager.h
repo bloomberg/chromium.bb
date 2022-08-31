@@ -170,8 +170,18 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
   // Returns the actual display layout after it has been resolved and applied.
   const DisplayLayout& GetCurrentResolvedDisplayLayout() const;
 
-  // Returns the current display list.
-  DisplayIdList GetCurrentDisplayIdList() const;
+  // Returns the currently connected display list.
+  DisplayIdList GetConnectedDisplayIdList() const;
+
+  // Test if the `connected_display_id_list_` matches the internal state of
+  // DisplayManager, which is a combinatino of
+  // `hardware_mirroring_display_id_list_`, `software_mirroring_display_list_`
+  // and the `display_id_list` argument which is the list of displays that host
+  // the desktop environment. In unified desktop mode, the `active_id_list` will
+  // be ignored because it is not a real display but virtual (i.e. not a
+  // physical display).
+  bool IsConnectedDisplayIdListInSyncWithCurrentState(
+      const DisplayIdList& display_id_list) const;
 
   // Sets the layout for the current display pair. The |layout| specifies the
   // locaion of the displays relative to their parents.
@@ -268,10 +278,6 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
   void OnNativeDisplaysChanged(
       const std::vector<ManagedDisplayInfo>& display_info_list);
 
-  // Updates the internal display data and notifies observers about the changes.
-  void UpdateDisplaysWith(
-      const std::vector<ManagedDisplayInfo>& display_info_list);
-
   // Updates current displays using current |display_info_|.
   void UpdateDisplays();
 
@@ -310,9 +316,11 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
   // connected and active. (mirroring display isn't active, for example).
   bool IsActiveDisplayId(int64_t display_id) const;
 
-  // Returns the number of connected displays. This returns 2 when displays are
-  // mirrored.
-  size_t num_connected_displays() const { return num_connected_displays_; }
+  // Returns the number of connected displays. For exampe, this returns 2 in
+  // mirror mode with one external display.
+  size_t num_connected_displays() const {
+    return connected_display_id_list_.size();
+  }
 
   // Returns true if either software or hardware mirror mode is active.
   bool IsInMirrorMode() const;
@@ -505,6 +513,7 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
 
  private:
   friend class test::DisplayManagerTestApi;
+  friend class DisplayLayoutStore;
 
   // See description above |notify_depth_| for details.
   class BeginEndNotifier {
@@ -523,6 +532,11 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
   void set_change_display_upon_host_resize(bool value) {
     change_display_upon_host_resize_ = value;
   }
+
+  // Updates the internal display data using `updated_display_info_list` and
+  // notifies observers about the changes.
+  void UpdateDisplaysWith(
+      const std::vector<ManagedDisplayInfo>& updated_display_info_list);
 
   // Creates software mirroring display related information. The display used to
   // mirror the content is removed from the |display_info_list|.
@@ -579,6 +593,8 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
 
   void UpdatePrimaryDisplayIdIfNecessary();
 
+  void UpdateLayoutForMixedMode();
+
   Delegate* delegate_ = nullptr;  // not owned.
 
   // When set to true, DisplayManager will use DisplayConfigurator to configure
@@ -601,7 +617,10 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
 
   int64_t first_display_id_ = kInvalidDisplayId;
 
-  // List of current active displays.
+  // List of current active displays. Active displays are the ones used to host
+  // the user's desktop environment and exclude displays that mirror other
+  // displays. This may contain the off-screen, virtual display (e.g. in unified
+  // desktop mode).
   Displays active_display_list_;
   // This list does not include the displays that will be removed if
   // |UpdateDisplaysWith| is under execution.
@@ -613,7 +632,7 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
   // See https://crbug.com/632755
   bool is_updating_display_list_ = false;
 
-  size_t num_connected_displays_ = 0;
+  DisplayIdList connected_display_id_list_;
 
   bool force_bounds_changed_ = false;
 

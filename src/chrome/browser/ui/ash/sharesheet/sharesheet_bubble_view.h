@@ -16,7 +16,7 @@
 #include "ui/views/widget/widget.h"
 
 namespace views {
-class GridLayout;
+class TableLayoutView;
 class Separator;
 }  // namespace views
 
@@ -83,8 +83,8 @@ class SharesheetBubbleView : public views::BubbleDialogDelegateView,
   std::unique_ptr<views::View> MakeScrollableTargetView(
       std::vector<TargetInfo> targets);
   void PopulateLayoutsWithTargets(std::vector<TargetInfo> targets,
-                                  views::GridLayout* default_layout,
-                                  views::GridLayout* expanded_layout);
+                                  views::TableLayoutView* default_view,
+                                  views::TableLayoutView* expanded_view);
   void ExpandButtonPressed();
   void AnimateToExpandedState();
   void TargetButtonPressed(TargetInfo target);
@@ -93,7 +93,6 @@ class SharesheetBubbleView : public views::BubbleDialogDelegateView,
   void ShowWidgetWithAnimateFadeIn();
   void CloseWidgetWithAnimateFadeOut(views::Widget::ClosedReason closed_reason);
   void CloseWidgetWithReason(views::Widget::ClosedReason closed_reason);
-  void RecordFormFactorMetric();
 
   // Owns this class.
   ::sharesheet::SharesheetServiceDelegator* delegator_;

@@ -24,7 +24,7 @@ namespace {
 std::u16string FormatUrlToSubdomain(const GURL& url) {
   std::u16string formated_url = url_formatter::FormatUrl(
       url, url_formatter::kFormatUrlOmitTrivialSubdomains,
-      net::UnescapeRule::SPACES, nullptr, nullptr, nullptr);
+      base::UnescapeRule::SPACES, nullptr, nullptr, nullptr);
   return base::UTF8ToUTF16(GURL(formated_url).host());
 }
 
@@ -47,7 +47,7 @@ std::u16string TabUIHelper::GetTitle() const {
   if (tab_ui_data_)
     return tab_ui_data_->title;
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   return l10n_util::GetStringUTF16(IDS_BROWSER_WINDOW_MAC_TAB_UNTITLED);
 #else
   return std::u16string();

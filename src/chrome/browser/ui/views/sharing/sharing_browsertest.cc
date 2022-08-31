@@ -179,13 +179,13 @@ std::unique_ptr<TestRenderViewContextMenu> SharingBrowserTest::InitContextMenu(
   params.link_text = base::ASCIIToUTF16(link_text);
   params.page_url = web_contents_->GetVisibleURL();
   params.source_type = ui::MenuSourceType::MENU_SOURCE_MOUSE;
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   params.writing_direction_default = 0;
   params.writing_direction_left_to_right = 0;
   params.writing_direction_right_to_left = 0;
 #endif
   auto menu = std::make_unique<TestRenderViewContextMenu>(
-      *web_contents_->GetMainFrame(), params);
+      *web_contents_->GetPrimaryMainFrame(), params);
   menu->Init();
   return menu;
 }

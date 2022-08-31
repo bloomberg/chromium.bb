@@ -104,10 +104,6 @@ MediaRouterMetrics::~MediaRouterMetrics() = default;
 // static
 const char MediaRouterMetrics::kHistogramCloseLatency[] =
     "MediaRouter.Ui.Action.CloseLatency";
-const char MediaRouterMetrics::kHistogramCloudPrefAtDialogOpen[] =
-    "MediaRouter.Cloud.PrefAtDialogOpen";
-const char MediaRouterMetrics::kHistogramCloudPrefAtInit[] =
-    "MediaRouter.Cloud.PrefAtInit";
 const char MediaRouterMetrics::kHistogramIconClickLocation[] =
     "MediaRouter.Icon.Click.Location";
 const char MediaRouterMetrics::kHistogramMediaRouterFileFormat[] =
@@ -140,6 +136,10 @@ const char MediaRouterMetrics::kHistogramUiFirstAction[] =
     "MediaRouter.Ui.FirstAction";
 const char MediaRouterMetrics::kHistogramUiIconStateAtInit[] =
     "MediaRouter.Ui.IconStateAtInit";
+const char MediaRouterMetrics::kHistogramUiAndroidDialogType[] =
+    "MediaRouter.Ui.Android.DialogType";
+const char MediaRouterMetrics::kHistogramUiAndroidDialogAction[] =
+    "MediaRouter.Ui.Android.DialogAction";
 
 // static
 const base::TimeDelta MediaRouterMetrics::kDeviceCountMetricDelay =
@@ -314,16 +314,6 @@ void MediaRouterMetrics::RecordIconStateAtInit(bool is_pinned) {
 }
 
 // static
-void MediaRouterMetrics::RecordCloudPrefAtDialogOpen(bool enabled) {
-  base::UmaHistogramBoolean(kHistogramCloudPrefAtDialogOpen, enabled);
-}
-
-// static
-void MediaRouterMetrics::RecordCloudPrefAtInit(bool enabled) {
-  base::UmaHistogramBoolean(kHistogramCloudPrefAtInit, enabled);
-}
-
-// static
 void MediaRouterMetrics::RecordCreateRouteResultCode(
     RouteRequestResult::ResultCode result_code,
     absl::optional<mojom::MediaRouteProviderId> provider_id) {
@@ -354,6 +344,18 @@ void MediaRouterMetrics::RecordMediaRouteProviderTerminateRoute(
       GetHistogramNameForProvider(kHistogramProviderTerminateRouteResult,
                                   provider_id),
       result_code, RouteRequestResult::TOTAL_COUNT);
+}
+
+// static
+void MediaRouterMetrics::RecordMediaRouterAndroidDialogType(
+    MediaRouterAndroidDialogType type) {
+  base::UmaHistogramEnumeration(kHistogramUiAndroidDialogType, type);
+}
+
+// static
+void MediaRouterMetrics::RecordMediaRouterAndroidDialogAction(
+    MediaRouterAndroidDialogAction action) {
+  base::UmaHistogramEnumeration(kHistogramUiAndroidDialogAction, action);
 }
 
 }  // namespace media_router

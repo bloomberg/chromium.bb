@@ -2,6 +2,13 @@
 
 ## System requirements
 
+ * Git
+ * CMake (3.10.2 or later) (if desired)
+ * GN (if desired)
+ * Ninja (or other build tool)
+ * Python, for fetching dependencies
+ * [depot_tools] in your path
+
 - Linux
   - The `pkg-config` command:
     ```sh
@@ -37,10 +44,47 @@ gclient sync
 
 ## Build Dawn
 
-Then generate build files using `gn args out/Debug` or `gn args out/Release`.
-A text editor will appear asking build options, the most common option is `is_debug=true/false`; otherwise `gn args out/Release --list` shows all the possible options.
+### Compiling using CMake + Ninja
+```sh
+mkdir -p out/Debug
+cd out/Debug
+cmake -GNinja ../..
+ninja # or autoninja
+```
 
-On macOS you'll want to add the `use_system_xcode=true` in most cases. (and if you're a googler please get XCode from go/xcode).
+### Compiling using CMake + make
+```sh
+mkdir -p out/Debug
+cd out/Debug
+cmake ../..
+make # -j N for N-way parallel build
+```
 
-Then use `ninja -C out/Release` to build dawn and for example `./out/Release/dawn_end2end_tests` to run the tests.
+### Compiling using gn + ninja
+```sh
+mkdir -p out/Debug
+gn gen out/Debug
+autoninja -C out/Debug
+```
+
+The most common GN build option is `is_debug=true/false`; otherwise
+`gn args out/Debug --list` shows all the possible options.
+
+On macOS you'll want to add the `use_system_xcode=true` in most cases.
+(and if you're a googler please get XCode from go/xcode).
+
+
+### Fuzzers on MacOS
+If you are attempting fuzz, using `TINT_BUILD_FUZZERS=ON`, the version of llvm
+in the XCode SDK does not have the needed libfuzzer functionality included.
+
+The build error that you will see from using the XCode SDK will look something
+like this:
+```
+ld: file not found:/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/11.0.0/lib/darwin/libclang_rt.fuzzer_osx.a
+```
+
+The solution to this problem is to use a full version llvm, like what you would
+get via homebrew, `brew install llvm`, and use something like `CC=<path to full
+clang> cmake ..` to setup a build using that toolchain.
 

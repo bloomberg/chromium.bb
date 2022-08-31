@@ -24,4 +24,14 @@ public class ChromeSemanticColorUtils {
     public static @ColorInt int getOverlayPanelBarBackgroundColor(Context context) {
         return SemanticColorUtils.getDefaultBgColor(context);
     }
+
+    /** Returns the semantic color value that corresponds to payment_request_bg. */
+    public static @ColorInt int getPaymentRequestBg(Context context) {
+        return SemanticColorUtils.getSheetBgColor(context);
+    }
+
+    /** Returns the semantic color value that corresponds to offline_indicator_back_online_color. */
+    public static @ColorInt int getOfflineIndicatorBackOnlineColor(Context context) {
+        return SemanticColorUtils.getDefaultControlColorActive(context);
+    }
 }
