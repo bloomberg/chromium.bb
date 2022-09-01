@@ -11,6 +11,7 @@
 #include <array>
 #include <utility>
 
+#include "absl/strings/match.h"
 #include "absl/strings/string_view.h"
 #include "platform/base/error.h"
 #include "util/osp_logging.h"
@@ -39,7 +40,7 @@ template <typename Enum, size_t Size>
 ErrorOr<Enum> GetEnum(const EnumNameTable<Enum, Size>& map,
                       absl::string_view name) {
   for (auto pair : map) {
-    if (pair.first == name) {
+    if (absl::EqualsIgnoreCase(pair.first, name)) {
       return pair.second;
     }
   }

@@ -204,8 +204,8 @@ String ProfileImpl::registerScreenForStreaming(NativeScreen screen)
 static void onWebViewCreated(
         std::unique_ptr<WebViewProxy>  proxy,
         WebViewDelegate               *delegate,
-        mojom::WebViewHostPtr          webViewHostPtr,
-        mojom::WebViewClientRequest    webViewClientRequest,
+        mojo::Remote<mojom::WebViewHost> webViewHostPtr,
+        mojo::PendingReceiver<mojom::WebViewClient> webViewClientReceiver,
         int                            status)
 {
     DCHECK(0 == status);
@@ -222,9 +222,6 @@ static void onWebViewCreated(
                                                 proxy.get());
 
         proxy->setClient(webViewClientImpl.get());
-
-        mojo::PendingReceiver<mojom::WebViewClient> webViewClientReceiver =
-            std::move(webViewClientRequest);
 
         // Bind the webview client to the request from process host.  This
         // will make its lifetime managed by Mojo.
@@ -290,12 +287,12 @@ void ProfileImpl::createWebView(WebViewDelegate            *delegate,
     }
 
     // Ask the process host to create a webview host. 
-    mojom::WebViewHostPtr webViewHostPtr;
-    auto request = mojo::MakeRequest(&webViewHostPtr,
+    mojo::Remote<mojom::WebViewHost> webViewHostPtr;
+    auto receiver = webViewHostPtr.BindNewPipeAndPassReceiver(
                                      base::ThreadTaskRunnerHandle::Get());
 
     d_hostPtr->createWebView(
-        std::move(request),
+        std::move(receiver),
         createParams->Clone(),
         base::BindOnce(
             &onWebViewCreated,

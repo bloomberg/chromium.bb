@@ -25,6 +25,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint_worklet_paint_dispatcher.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_copier_base.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 
 namespace blink {
@@ -200,7 +201,7 @@ sk_sp<PaintRecord> PaintWorkletProxyClient::Paint(
 
   const CSSPaintWorkletInput* input =
       To<CSSPaintWorkletInput>(compositor_input);
-  device_pixel_ratio_ = input->DeviceScaleFactor() * input->EffectiveZoom();
+  device_pixel_ratio_ = input->EffectiveZoom();
   definition = global_scope->FindDefinition(input->NameCopy());
   return definition->Paint(compositor_input, animated_property_values);
 }

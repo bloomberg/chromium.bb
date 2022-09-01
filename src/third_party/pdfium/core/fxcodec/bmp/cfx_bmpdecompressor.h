@@ -14,6 +14,7 @@
 #include "core/fxcrt/fx_memory_wrappers.h"
 #include "core/fxcrt/retain_ptr.h"
 #include "core/fxcrt/unowned_ptr.h"
+#include "third_party/base/span.h"
 
 class CFX_CodecMemory;
 
@@ -49,6 +50,8 @@ class CFX_BmpDecompressor {
     kTail,
   };
 
+  enum class PalType : bool { kNew, kOld };
+
   BmpDecoder::Status ReadBmpHeader();
   BmpDecoder::Status ReadBmpHeaderIfh();
   BmpDecoder::Status ReadBmpHeaderDimensions();
@@ -59,11 +62,12 @@ class CFX_BmpDecompressor {
   BmpDecoder::Status DecodeRGB();
   BmpDecoder::Status DecodeRLE8();
   BmpDecoder::Status DecodeRLE4();
-  bool ReadData(uint8_t* destination, uint32_t size);
+  bool ReadData(pdfium::span<uint8_t> buf);
   void SaveDecodingStatus(DecodeStatus status);
   bool ValidateColorIndex(uint8_t val) const;
   bool ValidateFlag() const;
   bool SetHeight(int32_t signed_height);
+  int PaletteChannelCount() const { return pal_type_ == PalType::kNew ? 4 : 3; }
 
   UnownedPtr<const CFX_BmpContext> const context_;
   std::vector<uint8_t, FxAllocAllocator<uint8_t>> out_row_buffer_;
@@ -79,7 +83,7 @@ class CFX_BmpDecompressor {
   uint16_t bit_counts_ = 0;
   uint32_t color_used_ = 0;
   int32_t pal_num_ = 0;
-  int32_t pal_type_ = 0;
+  PalType pal_type_ = PalType::kNew;
   uint32_t data_size_ = 0;
   uint32_t img_ifh_size_ = 0;
   uint32_t row_num_ = 0;

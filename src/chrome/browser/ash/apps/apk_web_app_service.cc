@@ -11,9 +11,13 @@
 #include "ash/components/arc/session/connection_holder.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/ash/apps/apk_web_app_service_factory.h"
+#include "chrome/browser/ash/crosapi/crosapi_ash.h"
+#include "chrome/browser/ash/crosapi/crosapi_manager.h"
+#include "chrome/browser/ash/crosapi/web_app_service_ash.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -23,9 +27,11 @@
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
-#include "chrome/common/chrome_features.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/services/app_service/public/cpp/app_registry_cache.h"
+#include "components/services/app_service/public/cpp/app_types.h"
+#include "components/webapps/browser/install_result_code.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
 #include "url/gurl.h"
 
@@ -82,6 +88,19 @@ ApkWebAppService::ApkWebAppService(Profile* profile)
     : profile_(profile), arc_app_list_prefs_(nullptr) {
   DCHECK(web_app::AreWebAppsEnabled(profile));
 
+  if (web_app::IsWebAppsCrosapiEnabled()) {
+    apps::AppRegistryCache& app_registry_cache =
+        apps::AppServiceProxyFactory::GetForProfile(profile)
+            ->AppRegistryCache();
+    app_registry_cache_observer_.Observe(&app_registry_cache);
+
+    // null in unit tests
+    if (auto* browser_manager = crosapi::BrowserManager::Get()) {
+      keep_alive_ = browser_manager->KeepAlive(
+          crosapi::BrowserManager::Feature::kApkWebAppService);
+    }
+  }
+
   // Can be null in tests.
   arc_app_list_prefs_ = ArcAppListPrefs::Get(profile);
   if (arc_app_list_prefs_)
@@ -89,14 +108,18 @@ ApkWebAppService::ApkWebAppService(Profile* profile)
 
   provider_ = web_app::WebAppProvider::GetDeprecated(profile);
   DCHECK(provider_);
-  registrar_observer_.Observe(&provider_->registrar());
+  if (!web_app::IsWebAppsCrosapiEnabled()) {
+    install_manager_observer_.Observe(&provider_->install_manager());
+  }
 }
 
 ApkWebAppService::~ApkWebAppService() = default;
 
 bool ApkWebAppService::IsWebOnlyTwa(const web_app::AppId& app_id) {
-  if (!IsWebAppInstalledFromArc(app_id))
+  if (!web_app::IsWebAppsCrosapiEnabled() &&
+      !IsWebAppInstalledFromArc(app_id)) {
     return false;
+  }
 
   DictionaryPrefUpdate web_apps_to_apks(profile_->GetPrefs(),
                                         kWebAppToApkDictPref);
@@ -109,9 +132,37 @@ bool ApkWebAppService::IsWebOnlyTwa(const web_app::AppId& app_id) {
 
 bool ApkWebAppService::IsWebAppInstalledFromArc(
     const web_app::AppId& web_app_id) {
-  web_app::WebAppRegistrar& registrar = provider_->registrar();
-  const web_app::WebApp* app = registrar.GetAppById(web_app_id);
-  return app ? app->IsWebAppStoreInstalledApp() : false;
+  if (web_app::IsWebAppsCrosapiEnabled()) {
+    // The web app will only be in prefs under this key if it was installed from
+    // ARC++.
+    DictionaryPrefUpdate web_apps_to_apks(profile_->GetPrefs(),
+                                          kWebAppToApkDictPref);
+    const base::Value* v = web_apps_to_apks->FindKeyOfType(
+        web_app_id, base::Value::Type::DICTIONARY);
+    return v != nullptr;
+  } else {
+    web_app::WebAppRegistrar& registrar = provider_->registrar();
+    const web_app::WebApp* app = registrar.GetAppById(web_app_id);
+    return app ? app->IsWebAppStoreInstalledApp() : false;
+  }
+}
+
+bool ApkWebAppService::IsWebAppShellPackage(const std::string& package_name) {
+  DictionaryPrefUpdate web_apps_to_apks(profile_->GetPrefs(),
+                                        kWebAppToApkDictPref);
+
+  // Search the pref dict for any web app id that has a value matching the
+  // provided package name.
+  for (const auto it : web_apps_to_apks->DictItems()) {
+    const base::Value* v =
+        it.second.FindKeyOfType(kPackageNameKey, base::Value::Type::STRING);
+    if (v && (v->GetString() == package_name))
+      return true;
+  }
+
+  // If there is no associated web app id, the package name is not a
+  // web app shell package.
+  return false;
 }
 
 absl::optional<std::string> ApkWebAppService::GetPackageNameForWebApp(
@@ -142,8 +193,10 @@ absl::optional<std::string> ApkWebAppService::GetPackageNameForWebApp(
 
 absl::optional<std::string> ApkWebAppService::GetCertificateSha256Fingerprint(
     const web_app::AppId& app_id) {
-  if (!IsWebAppInstalledFromArc(app_id))
+  if (!web_app::IsWebAppsCrosapiEnabled() &&
+      !IsWebAppInstalledFromArc(app_id)) {
     return absl::nullopt;
+  }
 
   DictionaryPrefUpdate web_apps_to_apks(profile_->GetPrefs(),
                                         kWebAppToApkDictPref);
@@ -178,14 +231,31 @@ void ApkWebAppService::SetWebAppUninstalledCallbackForTesting(
 }
 
 void ApkWebAppService::UninstallWebApp(const web_app::AppId& web_app_id) {
-  if (!IsWebAppInstalledFromArc(web_app_id)) {
+  if (!web_app::IsWebAppsCrosapiEnabled() &&
+      !IsWebAppInstalledFromArc(web_app_id)) {
     // Do not uninstall a web app that was not installed via ApkWebAppInstaller.
     return;
   }
 
-  DCHECK(provider_);
-  provider_->install_finalizer().UninstallExternalWebApp(
-      web_app_id, webapps::WebappUninstallSource::kArc, base::DoNothing());
+  if (web_app::IsWebAppsCrosapiEnabled()) {
+    crosapi::mojom::WebAppProviderBridge* web_app_provider_bridge =
+        crosapi::CrosapiManager::Get()
+            ->crosapi_ash()
+            ->web_app_service_ash()
+            ->GetWebAppProviderBridge();
+    if (!web_app_provider_bridge) {
+      // TODO(crbug.com/1311501): make uninstallation idempotent: handle
+      // WebAppProviderBridge reconnect events.
+      return;
+    }
+    web_app_provider_bridge->WebAppUninstalledInArc(web_app_id,
+                                                    base::DoNothing());
+  } else {
+    DCHECK(provider_);
+    provider_->install_finalizer().UninstallExternalWebApp(
+        web_app_id, web_app::WebAppManagement::kWebAppStore,
+        webapps::WebappUninstallSource::kArc, base::DoNothing());
+  }
 }
 
 void ApkWebAppService::UpdateShelfPin(
@@ -252,9 +322,6 @@ void ApkWebAppService::Shutdown() {
 
 void ApkWebAppService::OnPackageInstalled(
     const arc::mojom::ArcPackageInfo& package_info) {
-  if (!base::FeatureList::IsEnabled(features::kApkWebAppInstalls))
-    return;
-
   // Automatically generated WebAPKs have their lifecycle managed by
   // WebApkManager and do not need to be considered here.
   if (base::StartsWith(package_info.package_name,
@@ -340,9 +407,6 @@ void ApkWebAppService::OnPackageRemoved(const std::string& package_name,
   // will trigger the uninstallation of the web app. Similarly, this method
   // removes the associated web_app_id before triggering uninstallation, so
   // OnWebAppWillBeUninstalled() will do nothing.
-  if (!base::FeatureList::IsEnabled(features::kApkWebAppInstalls))
-    return;
-
   DictionaryPrefUpdate web_apps_to_apks(profile_->GetPrefs(),
                                         kWebAppToApkDictPref);
 
@@ -368,9 +432,6 @@ void ApkWebAppService::OnPackageRemoved(const std::string& package_name,
 }
 
 void ApkWebAppService::OnPackageListInitialRefreshed() {
-  if (!base::FeatureList::IsEnabled(features::kApkWebAppInstalls))
-    return;
-
   // Scan through the list of apps to see if any were uninstalled while ARC
   // wasn't running.
   DictionaryPrefUpdate web_apps_to_apks(profile_->GetPrefs(),
@@ -420,9 +481,27 @@ void ApkWebAppService::OnArcAppListPrefsDestroyed() {
 
 void ApkWebAppService::OnWebAppWillBeUninstalled(
     const web_app::AppId& web_app_id) {
-  if (!base::FeatureList::IsEnabled(features::kApkWebAppInstalls))
-    return;
+  MaybeRemoveArcPackageForWebApp(web_app_id);
+}
 
+void ApkWebAppService::OnWebAppInstallManagerDestroyed() {
+  install_manager_observer_.Reset();
+}
+
+void ApkWebAppService::OnAppUpdate(const apps::AppUpdate& update) {
+  if (update.AppType() == apps::AppType::kWeb &&
+      update.Readiness() == apps::Readiness::kUninstalledByUser) {
+    MaybeRemoveArcPackageForWebApp(update.AppId());
+  }
+}
+
+void ApkWebAppService::OnAppRegistryCacheWillBeDestroyed(
+    apps::AppRegistryCache* cache) {
+  app_registry_cache_observer_.Reset();
+}
+
+void ApkWebAppService::MaybeRemoveArcPackageForWebApp(
+    const web_app::AppId& web_app_id) {
   DictionaryPrefUpdate web_apps_to_apks(profile_->GetPrefs(),
                                         kWebAppToApkDictPref);
 
@@ -474,31 +553,31 @@ void ApkWebAppService::OnDidFinishInstall(
     const web_app::AppId& web_app_id,
     bool is_web_only_twa,
     const absl::optional<std::string> sha256_fingerprint,
-    web_app::InstallResultCode code) {
-  // Do nothing: any error cancels installation.
-  if (code != web_app::InstallResultCode::kSuccessNewInstall)
-    return;
+    webapps::InstallResultCode code) {
+  if (code == webapps::InstallResultCode::kSuccessNewInstall) {
+    // Set a pref to map |web_app_id| to |package_name| for future
+    // uninstallation.
+    DictionaryPrefUpdate dict_update(profile_->GetPrefs(),
+                                     kWebAppToApkDictPref);
+    dict_update->SetPath({web_app_id, kPackageNameKey},
+                         base::Value(package_name));
 
-  // Set a pref to map |web_app_id| to |package_name| for future uninstallation.
-  DictionaryPrefUpdate dict_update(profile_->GetPrefs(), kWebAppToApkDictPref);
-  dict_update->SetPath({web_app_id, kPackageNameKey},
-                       base::Value(package_name));
+    // Set that the app should not be removed next time the ARC container starts
+    // up. This is to ensure that web apps which are uninstalled in the browser
+    // while the ARC container isn't running can be marked for uninstallation
+    // when the container starts up again.
+    dict_update->SetPath({web_app_id, kShouldRemoveKey}, base::Value(false));
 
-  // Set that the app should not be removed next time the ARC container starts
-  // up. This is to ensure that web apps which are uninstalled in the browser
-  // while the ARC container isn't running can be marked for uninstallation
-  // when the container starts up again.
-  dict_update->SetPath({web_app_id, kShouldRemoveKey}, base::Value(false));
+    // Set a pref to indicate if the |web_app_id| is a web-only TWA.
+    dict_update->SetPath({web_app_id, kIsWebOnlyTwaKey},
+                         base::Value(is_web_only_twa));
 
-  // Set a pref to indicate if the |web_app_id| is a web-only TWA.
-  dict_update->SetPath({web_app_id, kIsWebOnlyTwaKey},
-                       base::Value(is_web_only_twa));
-
-  if (sha256_fingerprint.has_value()) {
-    // Set a pref to hold the APK's certificate SHA256 fingerprint to use for
-    // digital asset link verification.
-    dict_update->SetPath({web_app_id, kSha256FingerprintKey},
-                         base::Value(sha256_fingerprint.value()));
+    if (sha256_fingerprint.has_value()) {
+      // Set a pref to hold the APK's certificate SHA256 fingerprint to use for
+      // digital asset link verification.
+      dict_update->SetPath({web_app_id, kSha256FingerprintKey},
+                           base::Value(sha256_fingerprint.value()));
+    }
   }
 
   // For testing.

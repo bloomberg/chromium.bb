@@ -39,7 +39,6 @@ import org.chromium.base.process_launcher.ChildProcessConstants;
 import org.chromium.base.process_launcher.ChildProcessLauncher;
 import org.chromium.base.process_launcher.FileDescriptorInfo;
 import org.chromium.base.task.PostTask;
-import org.chromium.build.BuildConfig;
 import org.chromium.content.app.SandboxedProcessService;
 import org.chromium.content.common.ContentSwitchUtils;
 import org.chromium.content_public.browser.ChildProcessImportance;
@@ -380,17 +379,8 @@ public final class ChildProcessLauncherHelperImpl {
                 // We only support sandboxed utility processes now.
                 assert ContentSwitches.SWITCH_UTILITY_PROCESS.equals(processType);
 
-                String serviceSandboxType = ContentSwitchUtils.getSwitchValue(
-                        commandLine, ContentSwitches.SWITCH_SERVICE_SANDBOX_TYPE);
-
-                // Non-sandboxed utility processes only supported for non-public Chromecast.
-                if (BuildConfig.IS_CHROMECAST_BRANDING_INTERNAL
-                        && ContentSwitches.NONE_SANDBOX_TYPE.equals(serviceSandboxType)) {
-                    sandboxed = false;
-                }
-
-                // Remove sandbox restriction on network service process.
-                if (ContentSwitches.NETWORK_SANDBOX_TYPE.equals(serviceSandboxType)) {
+                if (ContentSwitches.NONE_SANDBOX_TYPE.equals(ContentSwitchUtils.getSwitchValue(
+                            commandLine, ContentSwitches.SWITCH_SERVICE_SANDBOX_TYPE))) {
                     sandboxed = false;
                 }
             }
@@ -454,14 +444,11 @@ public final class ChildProcessLauncherHelperImpl {
             public void run() {
                 ChildConnectionAllocator allocator =
                         getConnectionAllocator(context, true /* sandboxed */);
-                boolean bindWaiveCpu = ContentFeatureList.isEnabled(
-                        ContentFeatureList.BINDING_MANAGEMENT_WAIVE_CPU);
                 if (ChildProcessConnection.supportVariableConnections()) {
-                    sBindingManager = new BindingManager(
-                            context, sSandboxedChildConnectionRanking, bindWaiveCpu);
+                    sBindingManager = new BindingManager(context, sSandboxedChildConnectionRanking);
                 } else {
                     sBindingManager = new BindingManager(context, allocator.getNumberOfServices(),
-                            sSandboxedChildConnectionRanking, bindWaiveCpu);
+                            sSandboxedChildConnectionRanking);
                 }
             }
         });
@@ -704,7 +691,7 @@ public final class ChildProcessLauncherHelperImpl {
                     // Nothing to add.
                     break;
                 case ChildProcessImportance.MODERATE:
-                    connection.addModerateBinding(false);
+                    connection.addModerateBinding();
                     break;
                 case ChildProcessImportance.IMPORTANT:
                     connection.addStrongBinding();
@@ -729,7 +716,7 @@ public final class ChildProcessLauncherHelperImpl {
                         // Nothing to remove.
                         break;
                     case ChildProcessImportance.MODERATE:
-                        connection.removeModerateBinding(false);
+                        connection.removeModerateBinding();
                         break;
                     case ChildProcessImportance.IMPORTANT:
                         connection.removeStrongBinding();

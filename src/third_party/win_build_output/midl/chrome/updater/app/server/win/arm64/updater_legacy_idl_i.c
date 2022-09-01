@@ -9,7 +9,7 @@
 /* at a redacted point in time
  */
 /* Compiler settings for ../../chrome/updater/app/server/win/updater_legacy_idl.template:
-    Oicf, W1, Zp8, env=Win64 (32b run), target_arch=ARM64 8.01.0622 
+    Oicf, W1, Zp8, env=Win64 (32b run), target_arch=ARM64 8.01.0626 
     protocol : dce , ms_ext, c_ext, robust
     error checks: allocation ref bounds_check enum stub_data 
     VC __declspec() decoration level: 
@@ -77,6 +77,9 @@ MIDL_DEFINE_GUID(IID, IID_IAppBundleWeb,0xDD42475D,0x6D46,0x496a,0x92,0x4E,0xBD,
 
 
 MIDL_DEFINE_GUID(IID, IID_IAppWeb,0x18D0F672,0x18B4,0x48e6,0xAD,0x36,0x6E,0x6B,0xF0,0x1D,0xBB,0xC4);
+
+
+MIDL_DEFINE_GUID(IID, IID_IAppCommandWeb,0x8476CE12,0xAE1F,0x4198,0x80,0x5C,0xBA,0x0F,0x9B,0x78,0x3F,0x57);
 
 
 MIDL_DEFINE_GUID(IID, IID_IProcessLauncher,0x128C2DA6,0x2BC0,0x44c0,0xB3,0xF6,0x4E,0xC2,0x2E,0x64,0x79,0x64);

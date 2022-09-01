@@ -37,7 +37,7 @@ VectorSupportLibrary::VectorSupportLibrary(PrimitiveType primitive_type,
   vector_pointer_type_ = llvm::PointerType::getUnqual(vector_type_);
 }
 
-static string TypeToString(llvm::Type* type) {
+static std::string TypeToString(llvm::Type* type) {
   std::string o;
   llvm::raw_string_ostream ostream(o);
   type->print(ostream);
@@ -422,7 +422,7 @@ LlvmVariable::LlvmVariable(llvm::Type* type, llvm::IRBuilder<>* b) : b_(b) {
 }
 
 llvm::Value* LlvmVariable::Get() const {
-  return b_->CreateLoad(alloca_->getType()->getPointerElementType(), alloca_);
+  return b_->CreateLoad(alloca_->getAllocatedType(), alloca_);
 }
 
 void LlvmVariable::Set(llvm::Value* new_value) {

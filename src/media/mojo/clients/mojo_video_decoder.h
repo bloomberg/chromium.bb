@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
+#include "base/time/time.h"
 #include "media/base/status.h"
 #include "media/base/video_decoder.h"
 #include "media/base/video_frame.h"
@@ -91,12 +92,12 @@ class MojoVideoDecoder final : public VideoDecoder,
   }
 
  private:
-  void FailInit(InitCB init_cb, Status err);
-  void OnInitializeDone(const Status& status,
+  void FailInit(InitCB init_cb, DecoderStatus err);
+  void OnInitializeDone(const DecoderStatus& status,
                         bool needs_bitstream_conversion,
                         int32_t max_decode_requests,
                         VideoDecoderType decoder_type);
-  void OnDecodeDone(uint64_t decode_id, const Status& status);
+  void OnDecodeDone(uint64_t decode_id, const DecoderStatus& status);
   void OnResetDone();
 
   void InitAndBindRemoteDecoder(base::OnceClosure complete_cb);

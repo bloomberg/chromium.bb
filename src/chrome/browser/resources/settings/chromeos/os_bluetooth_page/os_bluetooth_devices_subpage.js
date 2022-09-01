@@ -11,20 +11,36 @@ import '../../settings_shared_css.js';
 import './os_paired_bluetooth_list.js';
 import './settings_fast_pair_toggle.js';
 
+import {BluetoothUiSurface, recordBluetoothUiSurfaceMetrics} from '//resources/cr_components/chromeos/bluetooth/bluetooth_metrics_utils.js';
 import {I18nBehavior, I18nBehaviorInterface} from '//resources/js/i18n_behavior.m.js';
+import {WebUIListenerBehavior, WebUIListenerBehaviorInterface} from '//resources/js/web_ui_listener_behavior.m.js';
 import {html, mixinBehaviors, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {getBluetoothConfig} from 'chrome://resources/cr_components/chromeos/bluetooth/cros_bluetooth_config.js';
+import {getInstance as getAnnouncerInstance} from 'chrome://resources/cr_elements/cr_a11y_announcer/cr_a11y_announcer.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {BluetoothSystemProperties, BluetoothSystemState, DeviceConnectionState, PairedBluetoothDeviceProperties} from 'chrome://resources/mojo/chromeos/services/bluetooth_config/public/mojom/cros_bluetooth_config.mojom-webui.js';
 
-const mojom = chromeos.bluetoothConfig.mojom;
+import {Route, Router} from '../../router.js';
+import {DeepLinkingBehavior, DeepLinkingBehaviorInterface} from '../deep_linking_behavior.js';
+import {routes} from '../os_route.js';
+import {RouteObserverBehavior, RouteObserverBehaviorInterface} from '../route_observer_behavior.js';
+
+import {OsBluetoothDevicesSubpageBrowserProxy, OsBluetoothDevicesSubpageBrowserProxyImpl} from './os_bluetooth_devices_subpage_browser_proxy.js';
 
 /**
  * @constructor
  * @extends {PolymerElement}
  * @implements {I18nBehaviorInterface}
+ * @implements {RouteObserverBehaviorInterface}
+ * @implements {DeepLinkingBehaviorInterface}
+ * @implements {WebUIListenerBehaviorInterface}
  */
-const SettingsBluetoothDevicesSubpageElementBase =
-    mixinBehaviors([I18nBehavior], PolymerElement);
+const SettingsBluetoothDevicesSubpageElementBase = mixinBehaviors(
+    [
+      I18nBehavior, RouteObserverBehavior, DeepLinkingBehavior,
+      WebUIListenerBehavior
+    ],
+    PolymerElement);
 
 /** @polymer */
 class SettingsBluetoothDevicesSubpageElement extends
@@ -46,11 +62,23 @@ class SettingsBluetoothDevicesSubpageElement extends
       },
 
       /**
-       * @type {!chromeos.bluetoothConfig.mojom.BluetoothSystemProperties}
+       * @type {!BluetoothSystemProperties}
        */
       systemProperties: {
         type: Object,
         observer: 'onSystemPropertiesChanged_',
+      },
+
+      /**
+       * Used by DeepLinkingBehavior to focus this page's deep links.
+       * @type {!Set<!chromeos.settings.mojom.Setting>}
+       */
+      supportedSettingIds: {
+        type: Object,
+        value: () => new Set([
+          chromeos.settings.mojom.Setting.kBluetoothOnOff,
+          chromeos.settings.mojom.Setting.kFastPairOnOff
+        ]),
       },
 
       /**
@@ -65,19 +93,16 @@ class SettingsBluetoothDevicesSubpageElement extends
       },
 
       /**
-       * Whether or not the fast pair feature flag is enabled which controls if
-       * the fast pair toggle shows up.
+       * Whether or not this device has the requirements to support fast pair.
        * @private {boolean}
        */
-      isFastPairAllowed_: {
+      isFastPairSupportedByDevice_: {
         type: Boolean,
-        value: function() {
-          return loadTimeData.getBoolean('enableFastPairFlag');
-        }
+        value: true,
       },
 
       /**
-       * @private {!Array<!chromeos.bluetoothConfig.mojom.PairedBluetoothDeviceProperties>}
+       * @private {!Array<!PairedBluetoothDeviceProperties>}
        */
       connectedDevices_: {
         type: Array,
@@ -85,7 +110,7 @@ class SettingsBluetoothDevicesSubpageElement extends
       },
 
       /**
-       * @private {!Array<!chromeos.bluetoothConfig.mojom.PairedBluetoothDeviceProperties>}
+       * @private {!Array<!PairedBluetoothDeviceProperties>}
        */
       unconnectedDevices_: {
         type: Array,
@@ -94,22 +119,114 @@ class SettingsBluetoothDevicesSubpageElement extends
     };
   }
 
+  constructor() {
+    super();
+
+    /**
+     * The id of the last device that was selected to view its detail page.
+     * @private {?string}
+     */
+    this.lastSelectedDeviceId_ = null;
+
+    /** @private {?OsBluetoothDevicesSubpageBrowserProxy} */
+    this.browserProxy_ =
+        OsBluetoothDevicesSubpageBrowserProxyImpl.getInstance();
+  }
+
+  /** @override */
+  ready() {
+    super.ready();
+    if (loadTimeData.getBoolean('enableFastPairFlag')) {
+      this.addWebUIListener(
+          'fast-pair-device-supported-status', (isSupported) => {
+            this.isFastPairSupportedByDevice_ = isSupported;
+          });
+      this.browserProxy_.requestFastPairDeviceSupport();
+    }
+  }
+
+  /**
+   * RouteObserverBehaviorInterface override
+   * @param {!Route} route
+   * @param {!Route=} oldRoute
+   */
+  currentRouteChanged(route, oldRoute) {
+    // If we're navigating to a device's detail page, save the id of the device.
+    if (route === routes.BLUETOOTH_DEVICE_DETAIL &&
+        oldRoute === routes.BLUETOOTH_DEVICES) {
+      const queryParams = Router.getInstance().getQueryParameters();
+      this.lastSelectedDeviceId_ = queryParams.get('id');
+      return;
+    }
+
+    if (route !== routes.BLUETOOTH_DEVICES) {
+      return;
+    }
+    recordBluetoothUiSurfaceMetrics(
+        BluetoothUiSurface.SETTINGS_DEVICE_LIST_SUBPAGE);
+
+    this.attemptDeepLink();
+
+    // If a backwards navigation occurred from a Bluetooth device's detail page,
+    // focus the list item corresponding to that device.
+    if (oldRoute !== routes.BLUETOOTH_DEVICE_DETAIL) {
+      return;
+    }
+
+    // Don't attempt to focus any item unless the last navigation was a
+    // 'pop' (backwards) navigation.
+    if (!Router.getInstance().lastRouteChangeWasPopstate()) {
+      return;
+    }
+
+    this.focusLastSelectedDeviceItem_();
+  }
+
   /** @private */
   onSystemPropertiesChanged_() {
     if (this.isToggleDisabled_()) {
       return;
     }
-    this.isBluetoothToggleOn_ = this.systemProperties.systemState ===
-            mojom.BluetoothSystemState.kEnabled ||
-        this.systemProperties.systemState ===
-            mojom.BluetoothSystemState.kEnabling;
+    this.isBluetoothToggleOn_ =
+        this.systemProperties.systemState === BluetoothSystemState.kEnabled ||
+        this.systemProperties.systemState === BluetoothSystemState.kEnabling;
 
     this.connectedDevices_ = this.systemProperties.pairedDevices.filter(
-        device => device.deviceProperties.connectionState !==
-            mojom.DeviceConnectionState.kNotConnected);
-    this.unconnectedDevices_ = this.systemProperties.pairedDevices.filter(
         device => device.deviceProperties.connectionState ===
-            mojom.DeviceConnectionState.kNotConnected);
+            DeviceConnectionState.kConnected);
+    this.unconnectedDevices_ = this.systemProperties.pairedDevices.filter(
+        device => device.deviceProperties.connectionState !==
+            DeviceConnectionState.kConnected);
+  }
+
+  /** @private */
+  focusLastSelectedDeviceItem_() {
+    const focusItem = (deviceListSelector, index) => {
+      const deviceList = this.shadowRoot.querySelector(deviceListSelector);
+      const items = deviceList.shadowRoot.querySelectorAll(
+          'os-settings-paired-bluetooth-list-item');
+      if (index >= items.length) {
+        return;
+      }
+      items[index].focus();
+    };
+
+    // Search |connectedDevices_| for the device.
+    let index = this.connectedDevices_.findIndex(
+        device => device.deviceProperties.id === this.lastSelectedDeviceId_);
+    if (index >= 0) {
+      focusItem(/*deviceListSelector=*/ '#connectedDeviceList', index);
+      return;
+    }
+
+    // If |connectedDevices_| doesn't contain the device, search
+    // |unconnectedDevices_|.
+    index = this.unconnectedDevices_.findIndex(
+        device => device.deviceProperties.id === this.lastSelectedDeviceId_);
+    if (index < 0) {
+      return;
+    }
+    focusItem(/*deviceListSelector=*/ '#unconnectedDeviceList', index);
   }
 
   /**
@@ -124,6 +241,7 @@ class SettingsBluetoothDevicesSubpageElement extends
       return;
     }
     getBluetoothConfig().setBluetoothEnabledState(this.isBluetoothToggleOn_);
+    this.annouceBluetoothStateChange_();
   }
 
   /**
@@ -134,7 +252,7 @@ class SettingsBluetoothDevicesSubpageElement extends
     // TODO(crbug.com/1010321): Add check for modification state when variable
     // is available.
     return this.systemProperties.systemState ===
-        mojom.BluetoothSystemState.kUnavailable;
+        BluetoothSystemState.kUnavailable;
   }
 
   /**
@@ -149,7 +267,7 @@ class SettingsBluetoothDevicesSubpageElement extends
   }
 
   /**
-   * @param {!Array<!chromeos.bluetoothConfig.mojom.PairedBluetoothDeviceProperties>}
+   * @param {!Array<!PairedBluetoothDeviceProperties>}
    *     devices
    * @return boolean
    * @private
@@ -164,6 +282,22 @@ class SettingsBluetoothDevicesSubpageElement extends
    */
   shouldShowNoDevicesFound_() {
     return !this.connectedDevices_.length && !this.unconnectedDevices_.length;
+  }
+
+  /** @private */
+  annouceBluetoothStateChange_() {
+    getAnnouncerInstance().announce(
+        this.isBluetoothToggleOn_ ? this.i18n('bluetoothEnabledA11YLabel') :
+                                    this.i18n('bluetoothDisabledA11YLabel'));
+  }
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  isFastPairToggleVisible_() {
+    return this.isFastPairSupportedByDevice_ &&
+        loadTimeData.getBoolean('enableFastPairFlag');
   }
 }
 

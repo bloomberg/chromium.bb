@@ -26,15 +26,20 @@ namespace trace_processor {
 ProcessTracker::ProcessTracker(TraceProcessorContext* context)
     : context_(context), args_tracker_(context) {
   // Reserve utid/upid 0. These are special as embedders (e.g. Perfetto UI)
-  // exclude them by filtering them out. If the parsed trace contains ftrace
-  // data, SetPidZeroIgnoredForIdleProcess will create a mapping
-  // to these rows for tid/pid 0.
+  // exclude them from certain views (e.g. thread state) under the assumption
+  // that they correspond to the idle (swapper) process. When parsing Linux
+  // system traces, SetPidZeroIsUpidZeroIdleProcess will be called to associate
+  // tid0/pid0 to utid0/upid0. If other types of traces refer to tid0/pid0,
+  // then they will get their own non-zero utid/upid, so that those threads are
+  // still surfaced in embedder UIs.
   tables::ThreadTable::Row thread_row;
-  thread_row.tid = 0;
+  thread_row.tid = 0u;
+  thread_row.upid = 0u;
+  thread_row.is_main_thread = true;
   context_->storage->mutable_thread_table()->Insert(thread_row);
 
   tables::ProcessTable::Row process_row;
-  process_row.pid = 0;
+  process_row.pid = 0u;
   context_->storage->mutable_process_table()->Insert(process_row);
 
   // An element to match the reserved tid = 0.
@@ -220,6 +225,48 @@ UniqueTid ProcessTracker::UpdateThread(uint32_t tid, uint32_t pid) {
   return utid;
 }
 
+void ProcessTracker::UpdateTrustedPid(uint32_t trusted_pid, uint64_t uuid) {
+  trusted_pids_[uuid] = trusted_pid;
+}
+
+base::Optional<uint32_t> ProcessTracker::GetTrustedPid(uint64_t uuid) {
+  if (trusted_pids_.find(uuid) == trusted_pids_.end())
+    return base::nullopt;
+  return trusted_pids_[uuid];
+}
+
+base::Optional<uint32_t> ProcessTracker::ResolveNamespacedTid(
+    uint32_t root_level_pid,
+    uint32_t tid) {
+  if (root_level_pid <= 0)  // Not a valid pid.
+    return base::nullopt;
+
+  // If the process doesn't run in a namespace (or traced_probes doesn't observe
+  // that), return base::nullopt as failure to resolve.
+  auto process_it = namespaced_processes_.find(root_level_pid);
+  if (process_it == namespaced_processes_.end())
+    return base::nullopt;
+
+  // Check if it's the main thread.
+  const auto& process = process_it->second;
+  auto ns_level = process.nspid.size() - 1;
+  auto pid_local = process.nspid.back();
+  if (pid_local == tid)
+    return root_level_pid;
+
+  // Check if any non-main thread has a matching ns-local thread ID.
+  for (const auto& root_level_tid : process.threads) {
+    const auto& thread = namespaced_threads_[root_level_tid];
+    PERFETTO_DCHECK(thread.nstid.size() > ns_level);
+    auto tid_ns_local = thread.nstid[ns_level];
+    if (tid_ns_local == tid)
+      return thread.tid;
+  }
+
+  // Failed to resolve or the thread isn't namespaced
+  return base::nullopt;
+}
+
 UniquePid ProcessTracker::StartNewProcess(base::Optional<int64_t> timestamp,
                                           base::Optional<uint32_t> parent_tid,
                                           uint32_t pid,
@@ -243,7 +290,7 @@ UniquePid ProcessTracker::StartNewProcess(base::Optional<int64_t> timestamp,
   auto* process_table = context_->storage->mutable_process_table();
   auto* thread_table = context_->storage->mutable_thread_table();
 
-  PERFETTO_DCHECK(process_table->name()[upid].is_null());
+  PERFETTO_DCHECK(!process_table->name()[upid].has_value());
   PERFETTO_DCHECK(!process_table->start_ts()[upid].has_value());
 
   if (timestamp) {
@@ -297,7 +344,7 @@ void ProcessTracker::SetProcessUid(UniquePid upid, uint32_t uid) {
 void ProcessTracker::SetProcessNameIfUnset(UniquePid upid,
                                            StringId process_name_id) {
   auto* process_table = context_->storage->mutable_process_table();
-  if (process_table->name()[upid].is_null())
+  if (!process_table->name()[upid].has_value())
     process_table->mutable_name()->Set(upid, process_name_id);
 }
 
@@ -459,10 +506,10 @@ void ProcessTracker::AssociateThreadToProcess(UniqueTid utid, UniquePid upid) {
   thread_table->mutable_is_main_thread()->Set(utid, main_thread);
 }
 
-void ProcessTracker::SetPidZeroIgnoredForIdleProcess() {
+void ProcessTracker::SetPidZeroIsUpidZeroIdleProcess() {
   // Create a mapping from (t|p)id 0 -> u(t|p)id 0 for the idle process.
   tids_.Insert(0, std::vector<UniqueTid>{0});
-  pids_.Insert(0, 0);
+  pids_.Insert(0, UniquePid{0});
 
   auto swapper_id = context_->storage->InternString("swapper");
   UpdateThreadName(0, swapper_id, ThreadNamePriority::kTraceProcessorConstant);
@@ -474,6 +521,30 @@ ArgsTracker::BoundInserter ProcessTracker::AddArgsTo(UniquePid upid) {
 
 void ProcessTracker::NotifyEndOfFile() {
   args_tracker_.Flush();
+  tids_.Clear();
+  pids_.Clear();
+  pending_assocs_.clear();
+  pending_parent_assocs_.clear();
+  thread_name_priorities_.clear();
+  trusted_pids_.clear();
+  namespaced_threads_.clear();
+  namespaced_processes_.clear();
+}
+
+void ProcessTracker::UpdateNamespacedProcess(uint32_t pid,
+                                             std::vector<uint32_t> nspid) {
+  namespaced_processes_[pid] = {pid, std::move(nspid), {}};
+}
+
+void ProcessTracker::UpdateNamespacedThread(uint32_t pid,
+                                            uint32_t tid,
+                                            std::vector<uint32_t> nstid) {
+  PERFETTO_DCHECK(namespaced_processes_.find(pid) !=
+                  namespaced_processes_.end());
+  auto& process = namespaced_processes_[pid];
+  process.threads.emplace(tid);
+
+  namespaced_threads_[tid] = {pid, tid, std::move(nstid)};
 }
 
 }  // namespace trace_processor

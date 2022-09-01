@@ -4,7 +4,7 @@
 
 import {assert} from 'chrome://resources/js/assert.m.js';
 
-import {fakeCalibrationComponents, fakeChromeVersion, fakeComponents, fakeDeviceRegions, fakeDeviceSkus, fakeDeviceWhiteLabels, fakeLog, fakeRsuChallengeCode, fakeRsuChallengeQrCode, fakeStates} from './fake_data.js';
+import {fakeCalibrationComponentsWithFails, fakeChromeVersion, fakeComponents, fakeDeviceRegions, fakeDeviceSkus, fakeDeviceWhiteLabels, fakeLog, fakeLogSavePath, fakeRsuChallengeCode, fakeRsuChallengeQrCode, fakeStates} from './fake_data.js';
 import {FakeShimlessRmaService} from './fake_shimless_rma_service.js';
 import {CalibrationSetupInstruction, NetworkConfigServiceInterface, RmadErrorCode, ShimlessRmaService, ShimlessRmaServiceInterface, WriteProtectDisableCompleteAction} from './shimless_rma_types.js';
 
@@ -42,13 +42,13 @@ function setupFakeShimlessRmaService_() {
 
   service.setAsyncOperationDelayMs(500);
 
-  service.setAbortRmaResult(RmadErrorCode.kOk);
+  service.setAbortRmaResult(RmadErrorCode.kRmaNotRequired);
 
   service.automaticallyTriggerHardwareVerificationStatusObservation();
 
   service.setGetCurrentOsVersionResult(fakeChromeVersion[0]);
-  service.setCheckForOsUpdatesResult(true, 'fake version 1.2.3.4');
-  service.setUpdateOsResult(false);
+  service.setCheckForOsUpdatesResult('99.0.4844.74');
+  service.setUpdateOsResult(true);
   service.automaticallyTriggerOsUpdateObservation();
 
   service.setGetComponentListResult(fakeComponents);
@@ -74,16 +74,20 @@ function setupFakeShimlessRmaService_() {
   service.setGetOriginalSkuResult(1);
   service.setGetWhiteLabelListResult(fakeDeviceWhiteLabels);
   service.setGetOriginalWhiteLabelResult(1);
+  service.setGetOriginalDramPartNumberResult('dram# 0123');
 
   service.setGetCalibrationSetupInstructionsResult(
       CalibrationSetupInstruction.kCalibrationInstructionPlaceLidOnFlatSurface);
-  service.setGetCalibrationComponentListResult(fakeCalibrationComponents);
+  service.setGetCalibrationComponentListResult(
+      fakeCalibrationComponentsWithFails);
 
   service.automaticallyTriggerProvisioningObservation();
   service.automaticallyTriggerFinalizationObservation();
 
   service.automaticallyTriggerPowerCableStateObservation();
   service.setGetLogResult(fakeLog);
+  service.setSaveLogResult({'path': fakeLogSavePath});
+  service.setGetPowerwashRequiredResult(true);
 
   // Set the fake service.
   setShimlessRmaServiceForTesting(service);
@@ -130,20 +134,4 @@ export function getNetworkConfigService() {
 
   assert(!!networkConfigService);
   return networkConfigService;
-}
-
-/**
- * @param {number} error
- * @return {string}
- */
-export function rmadErrorString(error) {
-  if (error === RmadErrorCode.kOk) {
-    return '';
-  }
-  for (const [k, v] of Object.entries(RmadErrorCode)) {
-    if (v === error) {
-      return 'Error: ' + k + '(' + error + ')';
-    }
-  }
-  return 'Error: unknown (' + error + ')';
 }

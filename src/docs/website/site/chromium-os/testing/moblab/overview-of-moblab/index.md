@@ -11,7 +11,7 @@ title: Overview of MobLab
 ---
 
 ## \*\*\*DEPRECATED, PLEASE VISIT
-https://sites.google.com/a/chromium.org/dev/chromium-os/testing/moblab \*\*\*
+https://www.chromium.org/chromium-os/testing/moblab \*\*\*
 (20170714)
 
 ## [TOC]
@@ -158,9 +158,7 @@ email: sannychiu@synnex.com.tw
 
 This diagram shows a typical configuration of MobLab on a partner’s network:
 
-[<img alt="image"
-src="/chromium-os/testing/moblab/overview-of-moblab/image00.png" height=283
-width=400>](/chromium-os/testing/moblab/overview-of-moblab/image00.png)
+![](/chromium-os/testing/moblab/overview-of-moblab/image00.png)
 
 MobLab establishes a test subnet to isolate testing activities and machines from
 the rest of the corporate network. It handles network setup and configuration

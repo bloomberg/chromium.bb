@@ -15,6 +15,7 @@
 #include "src/base/macros.h"
 #include "src/heap/cppgc/compactor.h"
 #include "src/heap/cppgc/garbage-collector.h"
+#include "src/heap/cppgc/heap-object-header.h"
 #include "src/heap/cppgc/marker.h"
 #include "src/heap/cppgc/metric-recorder.h"
 #include "src/heap/cppgc/object-allocator.h"
@@ -23,10 +24,15 @@
 #include "src/heap/cppgc/process-heap.h"
 #include "src/heap/cppgc/raw-heap.h"
 #include "src/heap/cppgc/sweeper.h"
+#include "src/heap/cppgc/write-barrier.h"
 #include "v8config.h"  // NOLINT(build/include_directory)
 
 #if defined(CPPGC_CAGED_HEAP)
 #include "src/heap/cppgc/caged-heap.h"
+#endif
+
+#if defined(CPPGC_YOUNG_GENERATION)
+#include "src/heap/cppgc/remembered-set.h"
 #endif
 
 namespace v8 {
@@ -66,6 +72,8 @@ class FatalOutOfMemoryHandler;
 class PageBackend;
 class PreFinalizerHandler;
 class StatsCollector;
+
+enum class HeapObjectNameForUnnamedObject : uint8_t;
 
 // Base class for heap implementations.
 class V8_EXPORT_PRIVATE HeapBase : public cppgc::HeapHandle {
@@ -162,7 +170,7 @@ class V8_EXPORT_PRIVATE HeapBase : public cppgc::HeapHandle {
   }
 
 #if defined(CPPGC_YOUNG_GENERATION)
-  std::set<void*>& remembered_slots() { return remembered_slots_; }
+  OldToNewRememberedSet& remembered_set() { return remembered_set_; }
 #endif  // defined(CPPGC_YOUNG_GENERATION)
 
   size_t ObjectPayloadSize() const;
@@ -207,8 +215,32 @@ class V8_EXPORT_PRIVATE HeapBase : public cppgc::HeapHandle {
   int GetCreationThreadId() const { return creation_thread_id_; }
 
   MarkingType marking_support() const { return marking_support_; }
+  SweepingType sweeping_support() const { return sweeping_support_; }
+
+  bool generational_gc_supported() const {
+    const bool supported =
+        (generation_support_ == GenerationSupport::kYoungAndOldGenerations);
+#if defined(CPPGC_YOUNG_GENERATION)
+    DCHECK_IMPLIES(supported, YoungGenerationEnabler::IsEnabled());
+#endif  // defined(CPPGC_YOUNG_GENERATION)
+    return supported;
+  }
+
+  // Returns whether objects should derive their name from C++ class names. Also
+  // requires build-time support through `CPPGC_SUPPORTS_OBJECT_NAMES`.
+  HeapObjectNameForUnnamedObject name_of_unnamed_object() const {
+    return name_for_unnamed_object_;
+  }
+  void set_name_of_unnamed_object(HeapObjectNameForUnnamedObject value) {
+    name_for_unnamed_object_ = value;
+  }
 
  protected:
+  enum class GenerationSupport : uint8_t {
+    kSingleGeneration,
+    kYoungAndOldGenerations,
+  };
+
   // Used by the incremental scheduler to finalize a GC if supported.
   virtual void FinalizeIncrementalGarbageCollectionIfNeeded(
       cppgc::Heap::StackState) = 0;
@@ -221,6 +253,7 @@ class V8_EXPORT_PRIVATE HeapBase : public cppgc::HeapHandle {
   size_t ExecutePreFinalizers();
 
 #if defined(CPPGC_YOUNG_GENERATION)
+  void EnableGenerationalGC();
   void ResetRememberedSet();
 #endif  // defined(CPPGC_YOUNG_GENERATION)
 
@@ -259,8 +292,8 @@ class V8_EXPORT_PRIVATE HeapBase : public cppgc::HeapHandle {
   ProcessHeapStatisticsUpdater::AllocationObserverImpl
       allocation_observer_for_PROCESS_HEAP_STATISTICS_;
 #if defined(CPPGC_YOUNG_GENERATION)
-  std::set<void*> remembered_slots_;
-#endif
+  OldToNewRememberedSet remembered_set_;
+#endif  // defined(CPPGC_YOUNG_GENERATION)
 
   size_t no_gc_scope_ = 0;
   size_t disallow_gc_scope_ = 0;
@@ -278,8 +311,12 @@ class V8_EXPORT_PRIVATE HeapBase : public cppgc::HeapHandle {
 
   int creation_thread_id_ = v8::base::OS::GetCurrentThreadId();
 
-  const MarkingType marking_support_;
-  const SweepingType sweeping_support_;
+  MarkingType marking_support_;
+  SweepingType sweeping_support_;
+  GenerationSupport generation_support_;
+
+  HeapObjectNameForUnnamedObject name_for_unnamed_object_ =
+      HeapObjectNameForUnnamedObject::kUseHiddenName;
 
   friend class MarkerBase::IncrementalMarkingTask;
   friend class cppgc::subtle::DisallowGarbageCollectionScope;

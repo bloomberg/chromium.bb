@@ -8,6 +8,7 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
+#include "ash/system/tray/system_nudge_label.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/text_constants.h"
@@ -35,27 +36,17 @@ constexpr char kDictationNudgeName[] = "DictationOfflineContextualNudge";
 }  // namespace
 
 DictationNudge::DictationNudge(DictationNudgeController* controller)
-    : SystemNudge(kDictationNudgeName), controller_(controller) {}
+    : SystemNudge(kDictationNudgeName,
+                  kIconSize,
+                  kIconLabelSpacing,
+                  kNudgePadding),
+      controller_(controller) {}
 
 DictationNudge::~DictationNudge() = default;
 
-std::unique_ptr<views::View> DictationNudge::CreateLabelView() const {
-  std::unique_ptr<views::Label> label = std::make_unique<views::Label>();
-  label->SetPaintToLayer();
-  label->layer()->SetFillsBoundsOpaquely(false);
-  label->SetPosition(
-      gfx::Point(kNudgePadding + kIconSize + kIconLabelSpacing, kNudgePadding));
-
-  label->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
-  label->SetEnabledColor(AshColorProvider::Get()->GetContentLayerColor(
-      AshColorProvider::ContentLayerType::kTextColorPrimary));
-  label->SetAutoColorReadabilityEnabled(false);
-
-  label->SetText(GetAccessibilityText());
-  label->SetMultiLine(true);
-  label->SizeToFit(kMinLabelWidth);
-
-  return std::move(label);
+std::unique_ptr<SystemNudgeLabel> DictationNudge::CreateLabelView() const {
+  return std::make_unique<SystemNudgeLabel>(GetAccessibilityText(),
+                                            kMinLabelWidth);
 }
 
 const gfx::VectorIcon& DictationNudge::GetIcon() const {

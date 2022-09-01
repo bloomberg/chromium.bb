@@ -31,6 +31,7 @@
 
 #include "third_party/blink/renderer/platform/mediastream/media_stream_component.h"
 
+#include "base/synchronization/lock.h"
 #include "third_party/blink/public/platform/web_audio_source_provider.h"
 #include "third_party/blink/renderer/platform/audio/audio_bus.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
@@ -43,6 +44,23 @@ namespace {
 
 static int g_unique_media_stream_component_id = 0;
 
+void CheckSourceAndTrackSameType(
+    const MediaStreamSource* source,
+    const MediaStreamTrackPlatform* platform_track) {
+  // Ensure the source and platform_track have the same types.
+  switch (source->GetType()) {
+    case MediaStreamSource::kTypeAudio:
+      CHECK(platform_track->Type() ==
+            MediaStreamTrackPlatform::StreamType::kAudio);
+      return;
+    case MediaStreamSource::kTypeVideo:
+      CHECK(platform_track->Type() ==
+            MediaStreamTrackPlatform::StreamType::kVideo);
+      return;
+  }
+  NOTREACHED();
+}
+
 }  // namespace
 
 // static
@@ -52,6 +70,7 @@ int MediaStreamComponent::GenerateUniqueId() {
 
 MediaStreamComponent::MediaStreamComponent(MediaStreamSource* source)
     : MediaStreamComponent(WTF::CreateCanonicalUUIDString(), source) {}
+
 MediaStreamComponent::MediaStreamComponent(const String& id,
                                            MediaStreamSource* source)
     : source_(source), id_(id), unique_id_(GenerateUniqueId()) {
@@ -59,8 +78,37 @@ MediaStreamComponent::MediaStreamComponent(const String& id,
   DCHECK(source_);
 }
 
-MediaStreamComponent* MediaStreamComponent::Clone() const {
-  auto* cloned_component = MakeGarbageCollected<MediaStreamComponent>(Source());
+MediaStreamComponent::MediaStreamComponent(
+    const String& id,
+    MediaStreamSource* source,
+    std::unique_ptr<MediaStreamTrackPlatform> platform_track)
+    : MediaStreamComponent(id, source) {
+  // TODO(https://crbug.com/1302689): Change to a DCHECK(platform_track) once
+  // all callers provide a platform_track here, rather than using
+  // SetPlatformTrack().
+  if (platform_track) {
+    CheckSourceAndTrackSameType(source, platform_track.get());
+  }
+  platform_track_ = std::move(platform_track);
+}
+
+MediaStreamComponent::MediaStreamComponent(
+    MediaStreamSource* source,
+    std::unique_ptr<MediaStreamTrackPlatform> platform_track)
+    : MediaStreamComponent(source) {
+  // TODO(https://crbug.com/1302689): Change to a DCHECK(platform_track) once
+  // all callers provide a platform_track here, rather than using
+  // SetPlatformTrack().
+  if (platform_track) {
+    CheckSourceAndTrackSameType(source, platform_track.get());
+  }
+  platform_track_ = std::move(platform_track);
+}
+
+MediaStreamComponent* MediaStreamComponent::Clone(
+    std::unique_ptr<MediaStreamTrackPlatform> cloned_platform_track) const {
+  auto* cloned_component = MakeGarbageCollected<MediaStreamComponent>(
+      Source(), std::move(cloned_platform_track));
   cloned_component->SetEnabled(enabled_);
   cloned_component->SetMuted(muted_);
   cloned_component->SetContentHint(content_hint_);
@@ -74,7 +122,7 @@ void MediaStreamComponent::Dispose() {
 
 void MediaStreamComponent::AudioSourceProviderImpl::Wrap(
     WebAudioSourceProvider* provider) {
-  MutexLocker locker(provide_input_lock_);
+  base::AutoLock locker(provide_input_lock_);
   web_audio_source_provider_ = provider;
 }
 
@@ -122,8 +170,8 @@ void MediaStreamComponent::AudioSourceProviderImpl::ProvideInput(
   if (!bus)
     return;
 
-  MutexTryLocker try_locker(provide_input_lock_);
-  if (!try_locker.Locked() || !web_audio_source_provider_) {
+  base::AutoTryLock try_locker(provide_input_lock_);
+  if (!try_locker.is_acquired() || !web_audio_source_provider_) {
     bus->Zero();
     return;
   }
@@ -147,6 +195,17 @@ String MediaStreamComponent::ToString() const {
 
 void MediaStreamComponent::Trace(Visitor* visitor) const {
   visitor->Trace(source_);
+}
+
+MediaStreamComponents::MediaStreamComponents(MediaStreamComponent* audio_track,
+                                             MediaStreamComponent* video_track)
+    : audio_track_(audio_track), video_track_(video_track) {
+  DCHECK(audio_track_ || video_track_);
+}
+
+void MediaStreamComponents::Trace(Visitor* visitor) const {
+  visitor->Trace(audio_track_);
+  visitor->Trace(video_track_);
 }
 
 }  // namespace blink

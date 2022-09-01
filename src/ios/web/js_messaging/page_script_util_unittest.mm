@@ -14,6 +14,7 @@
 #import "ios/web/public/test/fakes/fake_web_client.h"
 #import "ios/web/public/test/js_test_util.h"
 #include "ios/web/public/test/web_test.h"
+#import "ios/web/test/js_test_util_internal.h"
 #import "testing/gtest_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -29,9 +30,9 @@ NSString* GetSharedScripts() {
   // Scripts must be all injected at once because as soon as __gCrWeb exists,
   // injection is assumed to be done and __gCrWeb.message is used.
   return [NSString stringWithFormat:@"%@; %@; %@",
-                                    web::test::GetPageScript(@"base_js"),
-                                    web::test::GetPageScript(@"common_js"),
-                                    web::test::GetPageScript(@"message_js")];
+                                    web::test::GetPageScript(@"base"),
+                                    web::test::GetPageScript(@"common"),
+                                    web::test::GetPageScript(@"message")];
 }
 
 void AddSharedScriptsToWebView(WKWebView* web_view) {

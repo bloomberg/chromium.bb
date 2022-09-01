@@ -7,28 +7,30 @@
 
 #include "content/browser/webid/idp_network_request_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace content {
 
 class MockIdpNetworkRequestManager : public IdpNetworkRequestManager {
  public:
-  MockIdpNetworkRequestManager(const GURL& provider,
-                               const url::Origin& relaying_party_origin);
-
+  MockIdpNetworkRequestManager();
   ~MockIdpNetworkRequestManager() override;
 
   MockIdpNetworkRequestManager(const MockIdpNetworkRequestManager&) = delete;
   MockIdpNetworkRequestManager& operator=(const MockIdpNetworkRequestManager&) =
       delete;
 
-  MOCK_METHOD1(FetchIdpWellKnown, void(FetchWellKnownCallback));
-  MOCK_METHOD3(FetchClientIdMetadata,
+  MOCK_METHOD1(FetchManifestList, void(FetchManifestListCallback));
+  MOCK_METHOD3(FetchManifest,
+               void(absl::optional<int>,
+                    absl::optional<int>,
+                    FetchManifestCallback));
+  MOCK_METHOD3(FetchClientMetadata,
                void(const GURL&,
                     const std::string&,
-                    FetchClientIdMetadataCallback));
-  MOCK_METHOD3(SendSigninRequest,
-               void(const GURL&, const std::string&, SigninRequestCallback));
-  MOCK_METHOD2(SendAccountsRequest, void(const GURL&, AccountsRequestCallback));
+                    FetchClientMetadataCallback));
+  MOCK_METHOD3(SendAccountsRequest,
+               void(const GURL&, const std::string&, AccountsRequestCallback));
   MOCK_METHOD4(SendTokenRequest,
                void(const GURL&,
                     const std::string&,

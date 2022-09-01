@@ -19,6 +19,7 @@
 #include <vector>
 
 #include "absl/types/optional.h"
+#include "api/field_trials_view.h"
 #include "api/video/encoded_image.h"
 #include "api/video/video_bitrate_allocation.h"
 #include "api/video/video_bitrate_allocator.h"
@@ -45,7 +46,7 @@ namespace internal {
 
 // Pacing buffer config; overridden by ALR config if provided.
 struct PacingConfig {
-  PacingConfig();
+  explicit PacingConfig(const FieldTrialsView& field_trials);
   PacingConfig(const PacingConfig&);
   PacingConfig& operator=(const PacingConfig&) = default;
   ~PacingConfig();
@@ -73,11 +74,12 @@ class VideoSendStreamImpl : public webrtc::BitrateAllocatorObserver,
                       int initial_encoder_max_bitrate,
                       double initial_encoder_bitrate_priority,
                       VideoEncoderConfig::ContentType content_type,
-                      RtpVideoSenderInterface* rtp_video_sender);
+                      RtpVideoSenderInterface* rtp_video_sender,
+                      const FieldTrialsView& field_trials);
   ~VideoSendStreamImpl() override;
 
   void DeliverRtcp(const uint8_t* packet, size_t length);
-  void UpdateActiveSimulcastLayers(const std::vector<bool> active_layers);
+  void UpdateActiveSimulcastLayers(std::vector<bool> active_layers);
   void Start();
   void Stop();
 

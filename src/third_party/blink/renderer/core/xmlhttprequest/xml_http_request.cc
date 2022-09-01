@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/xml_document.h"
 #include "third_party/blink/renderer/core/editing/serializers/serialization.h"
+#include "third_party/blink/renderer/core/event_target_names.h"
 #include "third_party/blink/renderer/core/events/progress_event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fetch/trust_token_issuance_authorization.h"
@@ -54,7 +55,7 @@
 #include "third_party/blink/renderer/core/fileapi/file_reader_loader_client.h"
 #include "third_party/blink/renderer/core/fileapi/public_url_manager.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
-#include "third_party/blink/renderer/core/frame/deprecation.h"
+#include "third_party/blink/renderer/core/frame/deprecation/deprecation.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/page_dismissal_scope.h"
@@ -1057,8 +1058,6 @@ void XMLHttpRequest::CreateRequest(scoped_refptr<EncodedFormData> http_body,
       with_credentials_ ? network::mojom::CredentialsMode::kInclude
                         : network::mojom::CredentialsMode::kSameOrigin);
   request.SetSkipServiceWorker(world_ && world_->IsIsolatedWorld());
-  request.SetExternalRequestStateFromRequestorAddressSpace(
-      execution_context.AddressSpace());
   if (trust_token_params_)
     request.SetTrustTokenParams(*trust_token_params_);
 
@@ -1112,22 +1111,20 @@ void XMLHttpRequest::CreateRequest(scoped_refptr<EncodedFormData> http_body,
     UseCounter::Count(&execution_context, WebFeature::kXMLHttpRequestSynchronous);
     if (auto* window = DynamicTo<LocalDOMWindow>(GetExecutionContext())) {
       if (Frame* frame = window->GetFrame()) {
-        if (frame->IsMainFrame()) {
-          UseCounter::Count(&execution_context,
-                            WebFeature::kXMLHttpRequestSynchronousInMainFrame);
-        } else if (frame->IsCrossOriginToMainFrame()) {
+        if (frame->IsCrossOriginToOutermostMainFrame()) {
           UseCounter::Count(
               &execution_context,
               WebFeature::kXMLHttpRequestSynchronousInCrossOriginSubframe);
+        } else if (frame->IsMainFrame()) {
+          UseCounter::Count(&execution_context,
+                            WebFeature::kXMLHttpRequestSynchronousInMainFrame);
         } else {
           UseCounter::Count(
               &execution_context,
               WebFeature::kXMLHttpRequestSynchronousInSameOriginSubframe);
         }
       }
-      if (PageDismissalScope::IsActive() &&
-          !RuntimeEnabledFeatures::AllowSyncXHRInPageDismissalEnabled(
-              &execution_context)) {
+      if (PageDismissalScope::IsActive()) {
         HandleNetworkError();
         ThrowForLoadFailureIfNeeded(exception_state,
                                     "Synchronous XHR in page dismissal. See "
@@ -1718,13 +1715,10 @@ void XMLHttpRequest::DidFinishLoading(uint64_t identifier) {
 
 void XMLHttpRequest::DidFinishLoadingInternal() {
   if (response_document_parser_) {
-    // |DocumentParser::finish()| tells the parser that we have reached end of
-    // the data.  When using |HTMLDocumentParser|, which works asynchronously,
-    // we do not have the complete document just after the
-    // |DocumentParser::finish()| call.  Wait for the parser to call us back in
-    // |notifyParserStopped| to progress state.
     response_document_parser_->Finish();
-    DCHECK(response_document_);
+    // The remaining logic lives in `XMLHttpRequest::NotifyParserStopped()`
+    // which is called by `DocumentParser::Finish()` synchronously or
+    // asynchronously.
     return;
   }
 
@@ -1837,10 +1831,8 @@ void XMLHttpRequest::ParseDocumentChunk(const char* data, unsigned len) {
     if (!response_document_)
       return;
 
-    response_document_parser_ = response_document_->ImplicitOpen(
-        RuntimeEnabledFeatures::ForceSynchronousHTMLParsingEnabled()
-            ? kAllowDeferredParsing
-            : kAllowAsynchronousParsing);
+    response_document_parser_ =
+        response_document_->ImplicitOpen(kAllowDeferredParsing);
     response_document_parser_->AddClient(this);
   }
   DCHECK(response_document_parser_);
@@ -1876,7 +1868,7 @@ std::unique_ptr<TextResourceDecoder> XMLHttpRequest::CreateDecoder() const {
     case kResponseTypeDefault:
       if (ResponseIsXML())
         return std::make_unique<TextResourceDecoder>(decoder_options_for_xml);
-      FALLTHROUGH;
+      [[fallthrough]];
     case kResponseTypeText:
       return std::make_unique<TextResourceDecoder>(TextResourceDecoderOptions(
           TextResourceDecoderOptions::kPlainTextContent, UTF8Encoding()));

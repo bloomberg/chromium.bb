@@ -243,9 +243,12 @@ FieldAccess AccessBuilder::ForJSGeneratorObjectContext() {
 
 // static
 FieldAccess AccessBuilder::ForJSGeneratorObjectFunction() {
-  FieldAccess access = {kTaggedBase,         JSGeneratorObject::kFunctionOffset,
-                        Handle<Name>(),      MaybeHandle<Map>(),
-                        Type::Function(),    MachineType::TaggedPointer(),
+  FieldAccess access = {kTaggedBase,
+                        JSGeneratorObject::kFunctionOffset,
+                        Handle<Name>(),
+                        MaybeHandle<Map>(),
+                        Type::CallableFunction(),
+                        MachineType::TaggedPointer(),
                         kPointerWriteBarrier};
   return access;
 }
@@ -421,9 +424,9 @@ FieldAccess AccessBuilder::ForJSTypedArrayExternalPointer() {
       JSTypedArray::kExternalPointerOffset,
       MaybeHandle<Name>(),
       MaybeHandle<Map>(),
-#ifdef V8_CAGED_POINTERS
-      Type::CagedPointer(),
-      MachineType::CagedPointer(),
+#ifdef V8_SANDBOXED_POINTERS
+      Type::SandboxedPointer(),
+      MachineType::SandboxedPointer(),
 #else
       Type::ExternalPointer(),
       MachineType::Pointer(),
@@ -442,9 +445,9 @@ FieldAccess AccessBuilder::ForJSDataViewDataPointer() {
       JSDataView::kDataPointerOffset,
       MaybeHandle<Name>(),
       MaybeHandle<Map>(),
-#ifdef V8_CAGED_POINTERS
-      Type::CagedPointer(),
-      MachineType::CagedPointer(),
+#ifdef V8_SANDBOXED_POINTERS
+      Type::SandboxedPointer(),
+      MachineType::SandboxedPointer(),
 #else
       Type::ExternalPointer(),
       MachineType::Pointer(),
@@ -753,13 +756,12 @@ FieldAccess AccessBuilder::ForExternalStringResourceData() {
       ExternalString::kResourceDataOffset,
       Handle<Name>(),
       MaybeHandle<Map>(),
-      V8_HEAP_SANDBOX_BOOL ? Type::SandboxedExternalPointer()
-                           : Type::ExternalPointer(),
+      Type::ExternalPointer(),
       MachineType::Pointer(),
       kNoWriteBarrier,
       ConstFieldInfo::None(),
       false,
-#ifdef V8_HEAP_SANDBOX
+#ifdef V8_SANDBOXED_EXTERNAL_POINTERS
       kExternalStringResourceDataTag,
 #endif
   };
@@ -852,7 +854,7 @@ FieldAccess AccessBuilder::ForJSStringIteratorIndex() {
 // static
 FieldAccess AccessBuilder::ForArgumentsLength() {
   constexpr int offset = JSStrictArgumentsObject::kLengthOffset;
-  STATIC_ASSERT(offset == JSSloppyArgumentsObject::kLengthOffset);
+  static_assert(offset == JSSloppyArgumentsObject::kLengthOffset);
   FieldAccess access = {kTaggedBase,         offset,
                         Handle<Name>(),      MaybeHandle<Map>(),
                         Type::NonInternal(), MachineType::AnyTagged(),
@@ -1133,7 +1135,7 @@ FieldAccess AccessBuilder::ForHashTableBaseCapacity() {
 FieldAccess AccessBuilder::ForOrderedHashMapOrSetNextTable() {
   // TODO(turbofan): This will be redundant with the HashTableBase
   // methods above once the hash table unification is done.
-  STATIC_ASSERT(OrderedHashMap::NextTableOffset() ==
+  static_assert(OrderedHashMap::NextTableOffset() ==
                 OrderedHashSet::NextTableOffset());
   FieldAccess const access = {
       kTaggedBase,         OrderedHashMap::NextTableOffset(),
@@ -1147,7 +1149,7 @@ FieldAccess AccessBuilder::ForOrderedHashMapOrSetNextTable() {
 FieldAccess AccessBuilder::ForOrderedHashMapOrSetNumberOfBuckets() {
   // TODO(turbofan): This will be redundant with the HashTableBase
   // methods above once the hash table unification is done.
-  STATIC_ASSERT(OrderedHashMap::NumberOfBucketsOffset() ==
+  static_assert(OrderedHashMap::NumberOfBucketsOffset() ==
                 OrderedHashSet::NumberOfBucketsOffset());
   FieldAccess const access = {kTaggedBase,
                               OrderedHashMap::NumberOfBucketsOffset(),
@@ -1163,7 +1165,7 @@ FieldAccess AccessBuilder::ForOrderedHashMapOrSetNumberOfBuckets() {
 FieldAccess AccessBuilder::ForOrderedHashMapOrSetNumberOfDeletedElements() {
   // TODO(turbofan): This will be redundant with the HashTableBase
   // methods above once the hash table unification is done.
-  STATIC_ASSERT(OrderedHashMap::NumberOfDeletedElementsOffset() ==
+  static_assert(OrderedHashMap::NumberOfDeletedElementsOffset() ==
                 OrderedHashSet::NumberOfDeletedElementsOffset());
   FieldAccess const access = {kTaggedBase,
                               OrderedHashMap::NumberOfDeletedElementsOffset(),
@@ -1179,7 +1181,7 @@ FieldAccess AccessBuilder::ForOrderedHashMapOrSetNumberOfDeletedElements() {
 FieldAccess AccessBuilder::ForOrderedHashMapOrSetNumberOfElements() {
   // TODO(turbofan): This will be redundant with the HashTableBase
   // methods above once the hash table unification is done.
-  STATIC_ASSERT(OrderedHashMap::NumberOfElementsOffset() ==
+  static_assert(OrderedHashMap::NumberOfElementsOffset() ==
                 OrderedHashSet::NumberOfElementsOffset());
   FieldAccess const access = {kTaggedBase,
                               OrderedHashMap::NumberOfElementsOffset(),
@@ -1255,7 +1257,7 @@ FieldAccess AccessBuilder::ForFeedbackVectorInvocationCount() {
 FieldAccess AccessBuilder::ForFeedbackVectorFlags() {
   FieldAccess access = {
       kTaggedBase,        FeedbackVector::kFlagsOffset, Handle<Name>(),
-      MaybeHandle<Map>(), TypeCache::Get()->kUint32,    MachineType::Uint32(),
+      MaybeHandle<Map>(), TypeCache::Get()->kUint16,    MachineType::Uint16(),
       kNoWriteBarrier};
   return access;
 }

@@ -7,7 +7,14 @@
 #include <memory>
 #include <utility>
 
+#include "ash/components/multidevice/logging/logging.h"
+#include "ash/components/multidevice/remote_device_ref.h"
+#include "ash/components/multidevice/remote_device_test_util.h"
+#include "ash/components/multidevice/software_feature_state.h"
 #include "ash/components/proximity_auth/proximity_monitor_observer.h"
+#include "ash/services/multidevice_setup/public/cpp/fake_multidevice_setup_client.h"
+#include "ash/services/secure_channel/fake_connection.h"
+#include "ash/services/secure_channel/public/cpp/client/fake_client_channel.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/test/gmock_move_support.h"
@@ -17,13 +24,6 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "chromeos/components/multidevice/logging/logging.h"
-#include "chromeos/components/multidevice/remote_device_ref.h"
-#include "chromeos/components/multidevice/remote_device_test_util.h"
-#include "chromeos/components/multidevice/software_feature_state.h"
-#include "chromeos/services/multidevice_setup/public/cpp/fake_multidevice_setup_client.h"
-#include "chromeos/services/secure_channel/fake_connection.h"
-#include "chromeos/services/secure_channel/public/cpp/client/fake_client_channel.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -77,8 +77,8 @@ class ProximityAuthProximityMonitorImplTest : public testing::Test {
                                  false /* paired */,
                                  true /* connected */),
         fake_client_channel_(
-            std::make_unique<chromeos::secure_channel::FakeClientChannel>()),
-        remote_device_(chromeos::multidevice::RemoteDeviceRefBuilder()
+            std::make_unique<ash::secure_channel::FakeClientChannel>()),
+        remote_device_(ash::multidevice::RemoteDeviceRefBuilder()
                            .SetUserEmail(kRemoteDeviceUserEmail)
                            .SetName(kRemoteDeviceName)
                            .Build()),
@@ -88,8 +88,8 @@ class ProximityAuthProximityMonitorImplTest : public testing::Test {
   ~ProximityAuthProximityMonitorImplTest() override {}
 
   void InitializeTest(bool multidevice_flags_enabled) {
-    fake_multidevice_setup_client_ = std::make_unique<
-        chromeos::multidevice_setup::FakeMultiDeviceSetupClient>();
+    fake_multidevice_setup_client_ =
+        std::make_unique<ash::multidevice_setup::FakeMultiDeviceSetupClient>();
 
     monitor_ = std::make_unique<ProximityMonitorImpl>(
         remote_device_, fake_client_channel_.get());
@@ -106,24 +106,21 @@ class ProximityAuthProximityMonitorImplTest : public testing::Test {
   void ProvideRssi(absl::optional<int32_t> rssi) {
     RunPendingTasks();
 
-    std::vector<chromeos::secure_channel::mojom::ConnectionCreationDetail>
-        creation_details{
-            chromeos::secure_channel::mojom::ConnectionCreationDetail::
-                REMOTE_DEVICE_USED_BACKGROUND_BLE_ADVERTISING};
+    std::vector<ash::secure_channel::mojom::ConnectionCreationDetail>
+        creation_details{ash::secure_channel::mojom::ConnectionCreationDetail::
+                             REMOTE_DEVICE_USED_BACKGROUND_BLE_ADVERTISING};
 
-    chromeos::secure_channel::mojom::BluetoothConnectionMetadataPtr
+    ash::secure_channel::mojom::BluetoothConnectionMetadataPtr
         bluetooth_connection_metadata_ptr;
     if (rssi) {
       bluetooth_connection_metadata_ptr =
-          chromeos::secure_channel::mojom::BluetoothConnectionMetadata::New(
-              *rssi);
+          ash::secure_channel::mojom::BluetoothConnectionMetadata::New(*rssi);
     }
 
-    chromeos::secure_channel::mojom::ConnectionMetadataPtr
-        connection_metadata_ptr =
-            chromeos::secure_channel::mojom::ConnectionMetadata::New(
-                creation_details, std::move(bluetooth_connection_metadata_ptr),
-                "channel_binding_data");
+    ash::secure_channel::mojom::ConnectionMetadataPtr connection_metadata_ptr =
+        ash::secure_channel::mojom::ConnectionMetadata::New(
+            creation_details, std::move(bluetooth_connection_metadata_ptr),
+            "channel_binding_data");
     fake_client_channel_->InvokePendingGetConnectionMetadataCallback(
         std::move(connection_metadata_ptr));
   }
@@ -135,10 +132,9 @@ class ProximityAuthProximityMonitorImplTest : public testing::Test {
   // Mocks used for verifying interactions with the Bluetooth subsystem.
   scoped_refptr<device::MockBluetoothAdapter> bluetooth_adapter_;
   NiceMock<device::MockBluetoothDevice> remote_bluetooth_device_;
-  std::unique_ptr<chromeos::secure_channel::FakeClientChannel>
-      fake_client_channel_;
-  chromeos::multidevice::RemoteDeviceRef remote_device_;
-  std::unique_ptr<chromeos::multidevice_setup::FakeMultiDeviceSetupClient>
+  std::unique_ptr<ash::secure_channel::FakeClientChannel> fake_client_channel_;
+  ash::multidevice::RemoteDeviceRef remote_device_;
+  std::unique_ptr<ash::multidevice_setup::FakeMultiDeviceSetupClient>
       fake_multidevice_setup_client_;
 
   // The proximity monitor under test.
@@ -148,7 +144,7 @@ class ProximityAuthProximityMonitorImplTest : public testing::Test {
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle thread_task_runner_handle_;
   BluetoothDevice::ConnectionInfoCallback connection_info_callback_;
-  chromeos::multidevice::ScopedDisableLoggingForTesting disable_logging_;
+  ash::multidevice::ScopedDisableLoggingForTesting disable_logging_;
 
   base::test::ScopedFeatureList scoped_feature_list_;
 };
@@ -389,8 +385,8 @@ TEST_F(ProximityAuthProximityMonitorImplTest,
   InitializeTest(true /* multidevice_flags_enabled */);
 
   // Note: A device without a recorded name will have "Unknown" as its name.
-  chromeos::multidevice::RemoteDeviceRef remote_device =
-      chromeos::multidevice::RemoteDeviceRefBuilder()
+  ash::multidevice::RemoteDeviceRef remote_device =
+      ash::multidevice::RemoteDeviceRefBuilder()
           .SetUserEmail(kRemoteDeviceUserEmail)
           .SetName(std::string())
           .Build();

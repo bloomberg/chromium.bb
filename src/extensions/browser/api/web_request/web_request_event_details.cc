@@ -51,15 +51,29 @@ WebRequestEventDetails::WebRequestEventDetails(const WebRequestInfo& request,
                                                int extra_info_spec)
     : extra_info_spec_(extra_info_spec),
       render_process_id_(content::ChildProcessHost::kInvalidUniqueID) {
-  dict_.SetString(keys::kMethodKey, request.method);
-  dict_.SetString(keys::kRequestIdKey, base::NumberToString(request.id));
+  dict_.SetStringKey(keys::kMethodKey, request.method);
+  dict_.SetStringKey(keys::kRequestIdKey, base::NumberToString(request.id));
   dict_.SetDoubleKey(keys::kTimeStampKey, base::Time::Now().ToDoubleT() * 1000);
-  dict_.SetString(keys::kTypeKey,
-                  WebRequestResourceTypeToString(request.web_request_type));
-  dict_.SetString(keys::kUrlKey, request.url.spec());
-  dict_.SetInteger(keys::kTabIdKey, request.frame_data.tab_id);
-  dict_.SetInteger(keys::kFrameIdKey, request.frame_data.frame_id);
-  dict_.SetInteger(keys::kParentFrameIdKey, request.frame_data.parent_frame_id);
+  dict_.SetStringKey(keys::kTypeKey,
+                     WebRequestResourceTypeToString(request.web_request_type));
+  dict_.SetStringKey(keys::kUrlKey, request.url.spec());
+  dict_.SetIntKey(keys::kTabIdKey, request.frame_data.tab_id);
+  dict_.SetIntKey(keys::kFrameIdKey, request.frame_data.frame_id);
+  dict_.SetIntKey(keys::kParentFrameIdKey, request.frame_data.parent_frame_id);
+  if (request.frame_data.document_id) {
+    dict_.SetStringKey(keys::kDocumentIdKey,
+                       request.frame_data.document_id.ToString());
+  }
+  if (request.frame_data.parent_document_id) {
+    dict_.SetStringKey(keys::kParentDocumentIdKey,
+                       request.frame_data.parent_document_id.ToString());
+  }
+  if (request.frame_data.frame_id >= 0) {
+    dict_.SetStringKey(keys::kFrameTypeKey,
+                       ToString(request.frame_data.frame_type));
+    dict_.SetStringKey(keys::kDocumentLifecycleKey,
+                       ToString(request.frame_data.document_lifecycle));
+  }
   initiator_ = request.initiator;
   render_process_id_ = request.render_process_id;
 }
@@ -79,17 +93,18 @@ void WebRequestEventDetails::SetRequestHeaders(
 
   base::ListValue* headers = new base::ListValue();
   for (net::HttpRequestHeaders::Iterator it(request_headers); it.GetNext();)
-    headers->Append(helpers::CreateHeaderDictionary(it.name(), it.value()));
+    headers->Append(
+        base::Value(helpers::CreateHeaderDictionary(it.name(), it.value())));
   request_headers_.reset(headers);
 }
 
 void WebRequestEventDetails::SetAuthInfo(
     const net::AuthChallengeInfo& auth_info) {
-  dict_.SetBoolean(keys::kIsProxyKey, auth_info.is_proxy);
+  dict_.SetBoolKey(keys::kIsProxyKey, auth_info.is_proxy);
   if (!auth_info.scheme.empty())
-    dict_.SetString(keys::kSchemeKey, auth_info.scheme);
+    dict_.SetStringKey(keys::kSchemeKey, auth_info.scheme);
   if (!auth_info.realm.empty())
-    dict_.SetString(keys::kRealmKey, auth_info.realm);
+    dict_.SetStringKey(keys::kRealmKey, auth_info.realm);
   base::Value challenger(base::Value::Type::DICTIONARY);
   challenger.SetStringKey(keys::kHostKey, auth_info.challenger.host());
   challenger.SetIntKey(keys::kPortKey, auth_info.challenger.port());
@@ -102,11 +117,11 @@ void WebRequestEventDetails::SetResponseHeaders(
   if (!response_headers) {
     // Not all URLRequestJobs specify response headers. E.g. URLRequestFTPJob,
     // URLRequestFileJob and some redirects.
-    dict_.SetInteger(keys::kStatusCodeKey, request.response_code);
-    dict_.SetString(keys::kStatusLineKey, "");
+    dict_.SetIntKey(keys::kStatusCodeKey, request.response_code);
+    dict_.SetStringKey(keys::kStatusLineKey, "");
   } else {
-    dict_.SetInteger(keys::kStatusCodeKey, response_headers->response_code());
-    dict_.SetString(keys::kStatusLineKey, response_headers->GetStatusLine());
+    dict_.SetIntKey(keys::kStatusCodeKey, response_headers->response_code());
+    dict_.SetStringKey(keys::kStatusLineKey, response_headers->GetStatusLine());
   }
 
   if (extra_info_spec_ & ExtraInfoSpec::RESPONSE_HEADERS) {
@@ -120,7 +135,8 @@ void WebRequestEventDetails::SetResponseHeaders(
                                                                  name)) {
           continue;
         }
-        headers->Append(helpers::CreateHeaderDictionary(name, value));
+        headers->Append(
+            base::Value(helpers::CreateHeaderDictionary(name, value)));
       }
     }
     response_headers_.reset(headers);
@@ -128,9 +144,9 @@ void WebRequestEventDetails::SetResponseHeaders(
 }
 
 void WebRequestEventDetails::SetResponseSource(const WebRequestInfo& request) {
-  dict_.SetBoolean(keys::kFromCache, request.response_from_cache);
+  dict_.SetBoolKey(keys::kFromCache, request.response_from_cache);
   if (!request.response_ip.empty())
-    dict_.SetString(keys::kIpKey, request.response_ip);
+    dict_.SetStringKey(keys::kIpKey, request.response_ip);
 }
 
 std::unique_ptr<base::DictionaryValue> WebRequestEventDetails::GetFilteredDict(
@@ -169,7 +185,7 @@ std::unique_ptr<base::DictionaryValue> WebRequestEventDetails::GetFilteredDict(
         WebRequestPermissions::CanExtensionAccessInitiator(
             permission_helper, extension_id, initiator_, tab_id,
             crosses_incognito)) {
-      result->SetString(keys::kInitiatorKey, initiator_->Serialize());
+      result->SetStringKey(keys::kInitiatorKey, initiator_->Serialize());
     }
   }
   return result;
@@ -200,10 +216,11 @@ WebRequestEventDetails::CreatePublicSessionCopy() {
   }
 
   // URL is stripped down to the origin.
-  std::string url;
-  dict_.GetString(keys::kUrlKey, &url);
-  GURL gurl(url);
-  copy->dict_.SetString(keys::kUrlKey, gurl.DeprecatedGetOriginAsURL().spec());
+  const std::string* url = dict_.FindStringKey(keys::kUrlKey);
+  DCHECK(url);
+  GURL gurl(*url);
+  copy->dict_.SetStringKey(keys::kUrlKey,
+                           gurl.DeprecatedGetOriginAsURL().spec());
 
   return copy;
 }

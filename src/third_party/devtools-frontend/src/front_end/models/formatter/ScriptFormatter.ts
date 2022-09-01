@@ -31,7 +31,9 @@
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 
-import type {FormatMapping} from './FormatterWorkerPool.js';
+// eslint-disable-next-line rulesdir/es_modules_import
+import type * as FormatterActions from '../../entrypoints/formatter_worker/FormatterActions.js';
+
 import {formatterWorkerPool} from './FormatterWorkerPool.js';
 
 function locationToPosition(lineEndings: number[], lineNumber: number, columnNumber: number): number {
@@ -102,9 +104,9 @@ class IdentityFormatterSourceMapping implements FormatterSourceMapping {
 class FormatterSourceMappingImpl implements FormatterSourceMapping {
   private readonly originalLineEndings: number[];
   private readonly formattedLineEndings: number[];
-  private readonly mapping: FormatMapping;
+  private readonly mapping: FormatterActions.FormatMapping;
 
-  constructor(originalLineEndings: number[], formattedLineEndings: number[], mapping: FormatMapping) {
+  constructor(originalLineEndings: number[], formattedLineEndings: number[], mapping: FormatterActions.FormatMapping) {
     this.originalLineEndings = originalLineEndings;
     this.formattedLineEndings = formattedLineEndings;
     this.mapping = mapping;

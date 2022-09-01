@@ -16,6 +16,7 @@
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_file.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/services/filesystem/lock_table.h"
 #include "components/services/filesystem/shared_temp_dir.h"
@@ -65,7 +66,7 @@ bool FileImpl::IsValid() const {
   return file_.IsValid();
 }
 
-#if !defined(OS_FUCHSIA)
+#if !BUILDFLAG(IS_FUCHSIA)
 base::File::Error FileImpl::RawLockFile() {
   return file_.Lock(base::File::LockMode::kExclusive);
 }
@@ -73,7 +74,7 @@ base::File::Error FileImpl::RawLockFile() {
 base::File::Error FileImpl::RawUnlockFile() {
   return file_.Unlock();
 }
-#endif  // !OS_FUCHSIA
+#endif  // !BUILDFLAG(IS_FUCHSIA)
 
 void FileImpl::Close(CloseCallback callback) {
   if (!file_.IsValid()) {
@@ -143,7 +144,7 @@ void FileImpl::Write(const std::vector<uint8_t>& bytes_to_write,
   // Who knows what |write()| would return if the size is that big (and it
   // actually wrote that much).
   if (bytes_to_write.size() >
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
       static_cast<size_t>(std::numeric_limits<int>::max())) {
 #else
       static_cast<size_t>(std::numeric_limits<ssize_t>::max())) {

@@ -9,4 +9,4 @@ title: ChromeVox (for developers)
 ---
 
 Moved to:
-<https://chromium.googlesource.com/chromium/src/+/lkgr/docs/accessibility/chromevox.md>
+<https://chromium.googlesource.com/chromium/src/+/lkgr/docs/accessibility/os/chromevox.md>

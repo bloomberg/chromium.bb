@@ -14,24 +14,47 @@ import six
 
 from telemetry.core import util
 
-FUCHSIA_BROWSERS = ['web-engine-shell']
+FUCHSIA_BROWSERS = [
+    'fuchsia-chrome',
+    'web-engine-shell'
+]
+
+_SDK_ROOT_IN_CATAPULT = os.path.join(util.GetCatapultDir(), 'third_party',
+                                     'fuchsia-sdk', 'sdk')
+_SDK_ROOT_IN_CHROMIUM = os.path.join(util.GetCatapultDir(), '..',
+                                     'fuchsia-sdk', 'sdk')
+if os.path.exists(_SDK_ROOT_IN_CHROMIUM):
+  SDK_ROOT = _SDK_ROOT_IN_CHROMIUM
+else:
+  SDK_ROOT = _SDK_ROOT_IN_CATAPULT
 
 
 class CommandRunner(object):
   """Helper class used to execute commands on Fuchsia devices on a remote host
   over SSH."""
 
-  def __init__(self, config_path, host, port):
+  def __init__(self, config_path, host, port, node_name=None):
     """Creates a CommandRunner that connects to the specified |host| and |port|
-    using the ssh config at the specified |config_path|.
+    using the ssh config at the specified |config_path|. Provides
+    optional |node_name| to indicate name of Fuchsia target.
 
     Args:
       config_path: Full path to SSH configuration.
       host: The hostname or IP address of the remote host.
-      port: The port to connect to."""
+      port: The port to connect to.
+      node_name: Optional node-name of fuchsia target."""
     self._config_path = config_path
     self._host = host
     self._port = port
+    self._node_name = node_name
+
+  @property
+  def node_name(self):
+    return self._node_name
+
+  @property
+  def host(self):
+    return self._host
 
   def _GetSshCommandLinePrefix(self):
     prefix_cmd = ['ssh', '-F', self._config_path, self._host]
@@ -72,11 +95,11 @@ class CommandRunner(object):
     return cmd_proc.returncode, stdout, stderr
 
 
-def _GetHostArchFromPlatform():
+def GetHostArchFromPlatform():
   host_arch = platform.machine()
-  if host_arch == 'x86_64':
+  if host_arch in ['x86_64', 'AMD64']:
     return 'x64'
-  if host_arch == 'aarch64':
+  if host_arch in ['arm64', 'aarch64']:
     return 'arm64'
   raise Exception('Unsupported host architecture: %s' % host_arch)
 
@@ -94,11 +117,10 @@ def StartSymbolizerForProcessIfPossible(input_file, output_file, build_id_file):
       A subprocess.Popen object for the started process, None if symbolizer
       fails to start."""
   if os.path.isfile(build_id_file):
-    sdk_root = os.path.join(util.GetCatapultDir(), '..', 'fuchsia-sdk', 'sdk')
-    symbolizer = os.path.join(sdk_root, 'tools', _GetHostArchFromPlatform(),
+    symbolizer = os.path.join(SDK_ROOT, 'tools', GetHostArchFromPlatform(),
                               'symbolizer')
     symbolizer_cmd = [
-        symbolizer, '--build-id-dir', os.path.join(sdk_root, '.build-id'),
+        symbolizer, '--build-id-dir', os.path.join(SDK_ROOT, '.build-id'),
         '--ids-txt', build_id_file
     ]
 

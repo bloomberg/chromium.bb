@@ -101,7 +101,7 @@ class LabelButtonTest : public test::WidgetTest {
     // ColorProvider and use a hardcoded black or (on Mac) have a ColorProvider
     // that reliably returns black.
     styled_normal_text_color_ = SK_ColorBLACK;
-#if (defined(OS_LINUX) || defined(OS_CHROMEOS)) && \
+#if (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)) && \
     BUILDFLAG(ENABLE_DESKTOP_AURA)
     // The Linux theme provides a non-black highlight text color, but it's not
     // used for styled buttons.
@@ -222,8 +222,8 @@ TEST_F(LabelButtonTest, LabelPreferredSizeWithMaxWidth) {
 
     bool preferred_size_is_sometimes_narrower_than_max = false;
 
-    for (size_t i = 0; i < base::size(text_cases); ++i) {
-      for (size_t j = 0; j < base::size(width_cases); ++j) {
+    for (size_t i = 0; i < std::size(text_cases); ++i) {
+      for (size_t j = 0; j < std::size(width_cases); ++j) {
         button_->SetText(ASCIIToUTF16(text_cases[i]));
         button_->SetMaxSize(gfx::Size(width_cases[j], 30));
 
@@ -721,7 +721,8 @@ TEST_F(LabelButtonTest, ImageOrLabelGetClipped) {
 
   button_->SetBoundsRect(gfx::Rect(button_->GetPreferredSize()));
   // The border size + the content height is more than button's preferred size.
-  button_->SetBorder(CreateEmptyBorder(image_size / 2, 0, image_size / 2, 0));
+  button_->SetBorder(CreateEmptyBorder(
+      gfx::Insets::TLBR(image_size / 2, 0, image_size / 2, 0)));
   button_->Layout();
 
   // Ensure that content (image and label) doesn't get clipped by the border.
@@ -904,7 +905,7 @@ TEST_F(LabelButtonVisualStateTest, ChildWidget) {
   EXPECT_EQ(child_button->GetVisualState(), style_of_inactive_widget_);
 
   child_widget->Show();
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   // Child widget is in a key window and it will lock its parent.
   // See crrev.com/c/2048144.
   EXPECT_EQ(button_->GetVisualState(), Button::STATE_NORMAL);

@@ -5,6 +5,7 @@
 #ifndef ASH_COMPONENTS_ARC_METRICS_ARC_METRICS_SERVICE_H_
 #define ASH_COMPONENTS_ARC_METRICS_ARC_METRICS_SERVICE_H_
 
+#include <map>
 #include <memory>
 #include <string>
 #include <utility>
@@ -31,6 +32,11 @@
 #include "ui/wm/public/activation_change_observer.h"
 
 class BrowserContextKeyedServiceFactory;
+class PrefService;
+
+namespace metrics {
+class PSIMemoryParser;
+}  // namespace metrics
 
 namespace aura {
 class Window;
@@ -41,6 +47,8 @@ class BrowserContext;
 }  // namespace content
 
 namespace arc {
+
+class ArcMetricsAnr;
 
 namespace mojom {
 class AppInstance;
@@ -137,6 +145,9 @@ class ArcMetricsService : public KeyedService,
   void ReportAppPrimaryAbi(mojom::AppPrimaryAbi abi) override;
   void ReportDataRestore(mojom::DataRestoreStatus status,
                          int64_t duration_ms) override;
+  void ReportMemoryPressure(const std::vector<uint8_t>& psiFile) override;
+  void ReportProvisioningPreSignIn() override;
+  void ReportWaylandLateTimingDuration(base::TimeDelta duration) override;
 
   // wm::ActivationChangeObserver overrides.
   // Records to UMA when a user has interacted with an ARC app window.
@@ -155,6 +166,11 @@ class ArcMetricsService : public KeyedService,
                      const std::string& intent);
   void OnTaskDestroyed(int32_t task_id);
 
+  // ArcSessionManagerObserver callbacks which are called through
+  // ArcMetricsServiceProxy.
+  void OnArcStarted();
+  void OnArcSessionStopped();
+
   void AddAppKillObserver(AppKillObserver* obs);
   void RemoveAppKillObserver(AppKillObserver* obs);
 
@@ -171,6 +187,16 @@ class ArcMetricsService : public KeyedService,
   // Forwards reports of app kills resulting from a MemoryPressureArcvm signal
   // to MemoryKillsMonitor via ArcMetricsServiceProxy.
   void ReportMemoryPressureArcVmKills(int count, int estimated_freed_kb);
+
+  // Make a request to ArcProcessService for App kill counts, so that those
+  // counts can be logged to UMA. Public for testing.
+  void RequestLowMemoryKillCountsForTesting();
+
+  void set_prefs(PrefService* prefs) { prefs_ = prefs; }
+
+  // Record the starting time of ARC provisioning, for later use.
+  void ReportProvisioningStartTime(const base::TimeTicks& start_time,
+                                   const std::string& account_type_suffix);
 
  private:
   // Adapter to be able to also observe ProcessInstance events.
@@ -253,6 +279,9 @@ class ArcMetricsService : public KeyedService,
   void RequestProcessList();
   void ParseProcessList(std::vector<mojom::RunningAppProcessInfoPtr> processes);
 
+  void RequestLowMemoryKillCounts();
+  void LogLowMemoryKillCounts(mojom::LowMemoryKillCountsPtr counts);
+
   // DBus callbacks.
   void OnArcStartTimeRetrieved(std::vector<mojom::BootProgressEventPtr> events,
                                mojom::BootType boot_type,
@@ -264,6 +293,12 @@ class ArcMetricsService : public KeyedService,
   // Notify AppKillObservers.
   void NotifyLowMemoryKill();
   void NotifyOOMKillCount(unsigned long count);
+
+  // Calls sysinfo() to get the load average value and store it.
+  void MeasureLoadAverage(size_t index);
+
+  // Records load average with the appropriate histogram name if ready.
+  void MaybeRecordLoadAveragePerProcessor();
 
   THREAD_CHECKER(thread_checker_);
 
@@ -278,10 +313,14 @@ class ArcMetricsService : public KeyedService,
 
   ProcessObserver process_observer_;
   base::RepeatingTimer request_process_list_timer_;
+  base::RepeatingTimer request_kill_count_timer_;
+
+  mojom::LowMemoryKillCountsPtr prev_logged_memory_kills_;
 
   ArcBridgeServiceObserver arc_bridge_service_observer_;
   IntentHelperObserver intent_helper_observer_;
   AppLauncherObserver app_launcher_observer_;
+  std::unique_ptr<metrics::PSIMemoryParser> psi_parser_;
 
   bool was_arc_window_active_ = false;
   std::vector<int32_t> task_ids_;
@@ -290,6 +329,19 @@ class ArcMetricsService : public KeyedService,
 
   base::ObserverList<AppKillObserver> app_kill_observers_;
   base::ObserverList<UserInteractionObserver> user_interaction_observers_;
+
+  PrefService* prefs_ = nullptr;
+  std::unique_ptr<ArcMetricsAnr> metrics_anr_;
+
+  // For reporting Arc.Provisioning.PreSignInTimeDelta.
+  absl::optional<base::TimeTicks> arc_provisioning_start_time_;
+  absl::optional<std::string> arc_provisioning_account_type_suffix_;
+
+  // Load average values returned by sysinfo() after ARC start.
+  // Maps from the index of the value to the value itself.
+  std::map<size_t, int> load_averages_after_arc_start_;
+
+  mojom::BootType boot_type_ = mojom::BootType::UNKNOWN;
 
   // Always keep this the last member of this class to make sure it's the
   // first thing to be destructed.

@@ -37,42 +37,4 @@ TEST_F(WebContentsNSViewTest, NonWebDragSourceTest) {
       [view draggingSourceOperationMaskForLocal:NO]);
 }
 
-namespace {
-
-class WebContentsViewMacTest : public RenderViewHostTestHarness {
- public:
-  WebContentsViewMacTest(const WebContentsViewMacTest&) = delete;
-  WebContentsViewMacTest& operator=(const WebContentsViewMacTest&) = delete;
-
- protected:
-  WebContentsViewMacTest() = default;
-
-  void SetUp() override {
-    RenderViewHostTestHarness::SetUp();
-    window_.reset([[CocoaTestHelperWindow alloc] init]);
-    [[window_ contentView]
-        addSubview:web_contents()->GetNativeView().GetNativeNSView()];
-  }
-
-  base::scoped_nsobject<CocoaTestHelperWindow> window_;
-};
-
-}  // namespace
-
-TEST_F(WebContentsViewMacTest, ShowHideParent) {
-  EXPECT_EQ(Visibility::VISIBLE, web_contents()->GetVisibility());
-  [[window_ contentView] setHidden:YES];
-  EXPECT_EQ(Visibility::HIDDEN, web_contents()->GetVisibility());
-  [[window_ contentView] setHidden:NO];
-  EXPECT_EQ(Visibility::VISIBLE, web_contents()->GetVisibility());
-}
-
-TEST_F(WebContentsViewMacTest, OccludeView) {
-  EXPECT_EQ(Visibility::VISIBLE, web_contents()->GetVisibility());
-  [window_ setPretendIsOccluded:YES];
-  EXPECT_EQ(Visibility::OCCLUDED, web_contents()->GetVisibility());
-  [window_ setPretendIsOccluded:NO];
-  EXPECT_EQ(Visibility::VISIBLE, web_contents()->GetVisibility());
-}
-
 }  // namespace content

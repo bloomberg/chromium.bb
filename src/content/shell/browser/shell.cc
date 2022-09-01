@@ -18,9 +18,12 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "components/custom_handlers/protocol_handler.h"
+#include "components/custom_handlers/protocol_handler_registry.h"
+#include "components/custom_handlers/simple_protocol_handler_registry_factory.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -122,7 +125,7 @@ Shell* Shell::CreateShell(std::unique_ptr<WebContents> web_contents,
   // for windows opened from the renderer) then the Shell won't hear about the
   // main frame being created as a WebContentsObservers. This gives the delegate
   // a chance to act on the main frame accordingly.
-  if (raw_web_contents->GetMainFrame()->IsRenderFrameCreated())
+  if (raw_web_contents->GetMainFrame()->IsRenderFrameLive())
     g_platform->MainFrameCreated(shell);
 
   return shell;
@@ -249,7 +252,7 @@ void Shell::LoadDataWithBaseURL(const GURL& url,
   LoadDataWithBaseURLInternal(url, data, base_url, load_as_string);
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 void Shell::LoadDataAsStringWithBaseURL(const GURL& url,
                                         const std::string& data,
                                         const GURL& base_url) {
@@ -262,7 +265,7 @@ void Shell::LoadDataWithBaseURLInternal(const GURL& url,
                                         const std::string& data,
                                         const GURL& base_url,
                                         bool load_as_string) {
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   DCHECK(!load_as_string);  // Only supported on Android.
 #endif
 
@@ -271,7 +274,7 @@ void Shell::LoadDataWithBaseURLInternal(const GURL& url,
   if (load_as_string) {
     params.url = GURL(data_url_header);
     std::string data_url_as_string = data_url_header + data;
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     params.data_url_as_string =
         base::RefCountedString::TakeString(&data_url_as_string);
 #endif
@@ -353,13 +356,13 @@ gfx::NativeView Shell::GetContentView() {
   return web_contents_->GetNativeView();
 }
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 gfx::NativeWindow Shell::window() {
   return g_platform->GetNativeWindow(this);
 }
 #endif
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 void Shell::ActionPerformed(int control) {
   switch (control) {
     case IDC_NAV_BACK:
@@ -442,7 +445,7 @@ void Shell::LoadingStateChanged(WebContents* source,
   g_platform->SetIsLoading(this, source->IsLoading());
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 void Shell::SetOverlayMode(bool use_overlay_mode) {
   g_platform->SetOverlayMode(this, use_overlay_mode);
 }
@@ -461,7 +464,7 @@ void Shell::ExitFullscreenModeForTab(WebContents* web_contents) {
 
 void Shell::ToggleFullscreenModeForTab(WebContents* web_contents,
                                        bool enter_fullscreen) {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   g_platform->ToggleFullscreenModeForTab(this, web_contents, enter_fullscreen);
 #endif
   if (is_fullscreen_ != enter_fullscreen) {
@@ -474,7 +477,7 @@ void Shell::ToggleFullscreenModeForTab(WebContents* web_contents,
 }
 
 bool Shell::IsFullscreenForTabOrPending(const WebContents* web_contents) {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   return g_platform->IsFullscreenForTabOrPending(this, web_contents);
 #else
   return is_fullscreen_;
@@ -490,6 +493,53 @@ blink::mojom::DisplayMode Shell::GetDisplayMode(
              ? blink::mojom::DisplayMode::kFullscreen
              : blink::mojom::DisplayMode::kBrowser;
 }
+
+#if !BUILDFLAG(IS_ANDROID)
+void Shell::RegisterProtocolHandler(RenderFrameHost* requesting_frame,
+                                    const std::string& protocol,
+                                    const GURL& url,
+                                    bool user_gesture) {
+  content::BrowserContext* context = requesting_frame->GetBrowserContext();
+  if (context->IsOffTheRecord())
+    return;
+
+  custom_handlers::ProtocolHandler handler =
+      custom_handlers::ProtocolHandler::CreateProtocolHandler(
+          protocol, url, GetProtocolHandlerSecurityLevel(requesting_frame));
+
+  // The parameters's normalization process defined in the spec has been already
+  // applied in the WebContentImpl class, so at this point it shouldn't be
+  // possible to create an invalid handler.
+  // https://html.spec.whatwg.org/multipage/system-state.html#normalize-protocol-handler-parameters
+  DCHECK(handler.IsValid());
+
+  custom_handlers::ProtocolHandlerRegistry* registry = custom_handlers::
+      SimpleProtocolHandlerRegistryFactory::GetForBrowserContext(context, true);
+  DCHECK(registry);
+  if (registry->SilentlyHandleRegisterHandlerRequest(handler))
+    return;
+
+  if (!user_gesture && !windows_.empty()) {
+    // TODO(jfernandez): This is not strictly needed, but we need a way to
+    // inform the observers in browser tests that the request has been
+    // cancelled, to avoid timeouts. Chrome just holds the handler as pending in
+    // the PageContentSettingsDelegate, but we don't have such thing in the
+    // Content Shell.
+    registry->OnDenyRegisterProtocolHandler(handler);
+    return;
+  }
+
+  // FencedFrames can not register to handle any protocols.
+  if (requesting_frame->IsNestedWithinFencedFrame()) {
+    registry->OnIgnoreRegisterProtocolHandler(handler);
+    return;
+  }
+
+  // TODO(jfernandez): Are we interested at all on using the
+  // PermissionRequestManager in the ContentShell ?
+  registry->OnAcceptRegisterProtocolHandler(handler);
+}
+#endif
 
 void Shell::RequestToLockMouse(WebContents* web_contents,
                                bool user_gesture,
@@ -537,7 +587,7 @@ JavaScriptDialogManager* Shell::GetJavaScriptDialogManager(
   return dialog_manager_.get();
 }
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 void Shell::DidNavigatePrimaryMainFramePostCommit(WebContents* contents) {
   g_platform->DidNavigatePrimaryMainFramePostCommit(this, contents);
 }
@@ -568,7 +618,7 @@ void Shell::RendererUnresponsive(
 }
 
 void Shell::ActivateContents(WebContents* contents) {
-#if !defined(OS_MAC)
+#if !BUILDFLAG(IS_MAC)
   // TODO(danakj): Move this to ShellPlatformDelegate.
   contents->Focus();
 #else
@@ -584,7 +634,7 @@ bool Shell::IsBackForwardCacheSupported() {
   return true;
 }
 
-bool Shell::IsPrerender2Supported() {
+bool Shell::IsPrerender2Supported(WebContents& web_contents) {
   return true;
 }
 
@@ -638,10 +688,7 @@ bool Shell::ShouldAllowRunningInsecureContent(WebContents* web_contents,
   return g_platform->ShouldAllowRunningInsecureContent(this);
 }
 
-PictureInPictureResult Shell::EnterPictureInPicture(
-    WebContents* web_contents,
-    const viz::SurfaceId& surface_id,
-    const gfx::Size& natural_size) {
+PictureInPictureResult Shell::EnterPictureInPicture(WebContents* web_contents) {
   // During tests, returning success to pretend the window was created and allow
   // tests to run accordingly.
   if (!switches::IsRunWebTestsSwitchPresent())
@@ -692,7 +739,7 @@ gfx::Size Shell::GetShellDefaultSize() {
   return default_shell_size;
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 void Shell::LoadProgressChanged(double progress) {
   g_platform->LoadProgressChanged(this, progress);
 }

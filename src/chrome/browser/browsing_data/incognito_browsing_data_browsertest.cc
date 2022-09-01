@@ -28,6 +28,8 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/browser/storage_usage_info.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
@@ -40,7 +42,7 @@
 #include "url/gurl.h"
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #include "base/threading/platform_thread.h"
 #endif
 #include "base/memory/scoped_refptr.h"
@@ -165,12 +167,11 @@ class IncognitoBrowsingDataBrowserTest
         BrowsingDataMediaLicenseHelper::Create(
             partition->GetFileSystemContext());
     media_license_helper->StartFetching(base::BindLambdaForTesting(
-        [&](const std::list<BrowsingDataMediaLicenseHelper::MediaLicenseInfo>&
-                licenses) {
+        [&](const std::list<content::StorageUsageInfo>& licenses) {
           count = licenses.size();
           LOG(INFO) << "Found " << count << " licenses.";
           for (const auto& license : licenses)
-            LOG(INFO) << license.last_modified_time;
+            LOG(INFO) << license.last_modified;
           run_loop.Quit();
         }));
     run_loop.Run();
@@ -387,7 +388,7 @@ IN_PROC_BROWSER_TEST_F(IncognitoBrowsingDataBrowserTest,
   Profile* profile = GetBrowser()->profile();
   url::Origin test_origin = url::Origin::Create(GURL("https://example.test/"));
   const std::string serialized_test_origin = test_origin.Serialize();
-  base::DictionaryValue origin_pref;
+  base::Value origin_pref(base::Value::Type::DICTIONARY);
   origin_pref.SetKey(serialized_test_origin,
                      base::Value(base::Value::Type::DICTIONARY));
   base::Value* allowed_protocols_for_origin =
@@ -512,10 +513,18 @@ IN_PROC_BROWSER_TEST_F(IncognitoBrowsingDataBrowserTest, MediaLicenseDeletion) {
   ExpectCookieTreeModelCount(GetBrowser(), 0);
   EXPECT_FALSE(HasDataForType(kMediaLicenseType));
 
+  // The new media license backend will not store media licenses explicitly
+  // within CookieTreeModel, but the data will still be tracked through the
+  // quota system. GetMediaLicenseCount() is expected to always return 0 using
+  // the new backend.
+  // TODO(crbug.com/1307796): Fix GetCookiesTreeModelCount() to include quota
+  // nodes.
+  int count =
+      base::FeatureList::IsEnabled(features::kMediaLicenseBackend) ? 0 : 1;
   SetDataForType(kMediaLicenseType);
   EXPECT_EQ(1, GetSiteDataCount());
-  EXPECT_EQ(1, GetMediaLicenseCount());
-  ExpectCookieTreeModelCount(GetBrowser(), 1);
+  EXPECT_EQ(count, GetMediaLicenseCount());
+  ExpectCookieTreeModelCount(GetBrowser(), count);
   EXPECT_TRUE(HasDataForType(kMediaLicenseType));
 
   // No residue in regular mode.
@@ -537,8 +546,8 @@ IN_PROC_BROWSER_TEST_F(IncognitoBrowsingDataBrowserTest, MediaLicenseDeletion) {
 
 // Note that |"StorageFoundation"| is not supported in Incognito.
 const std::vector<std::string> kStorageTypes{
-    "Cookie",    "LocalStorage", "FileSystem",    "SessionStorage",
-    "IndexedDb", "WebSql",       "ServiceWorker", "CacheStorage"};
+    "Cookie", "LocalStorage",  "FileSystem",   "SessionStorage", "IndexedDb",
+    "WebSql", "ServiceWorker", "CacheStorage", "MediaLicense"};
 
 // Test that storage doesn't leave any traces on disk.
 IN_PROC_BROWSER_TEST_F(IncognitoBrowsingDataBrowserTest,

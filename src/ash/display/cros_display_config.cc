@@ -31,7 +31,7 @@
 #include "ui/display/display_layout_builder.h"
 #include "ui/display/display_observer.h"
 #include "ui/display/manager/display_manager.h"
-#include "ui/display/manager/display_util.h"
+#include "ui/display/manager/display_manager_util.h"
 #include "ui/display/mojom/display_mojom_traits.h"
 #include "ui/display/screen.h"
 
@@ -210,7 +210,7 @@ mojom::DisplayConfigResult SetDisplayLayoutMode(
       absl::in_place, source.id(), destination_ids);
   const display::MixedMirrorModeParamsErrors error_type =
       display::ValidateParamsForMixedMirrorMode(
-          display_manager->GetCurrentDisplayIdList(), *mixed_params);
+          display_manager->GetConnectedDisplayIdList(), *mixed_params);
   switch (error_type) {
     case display::MixedMirrorModeParamsErrors::kErrorSingleDisplay:
       return mojom::DisplayConfigResult::kMirrorModeSingleDisplayError;
@@ -643,7 +643,7 @@ mojom::DisplayConfigResult SetDisplayLayouts(
   }
 
   const display::DisplayIdList display_ids =
-      display_manager->GetCurrentDisplayIdList();
+      display_manager->GetConnectedDisplayIdList();
   std::unique_ptr<display::DisplayLayout> layout = builder.Build();
   if (display_manager->IsInUnifiedMode()) {
     if (root_id == display::kInvalidDisplayId) {

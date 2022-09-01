@@ -11,8 +11,11 @@
 #include "ash/ash_export.h"
 #include "ash/components/geolocation/simple_geolocation_provider.h"
 #include "ash/components/settings/timezone_settings.h"
+#include "base/observer_list.h"
+#include "base/observer_list_types.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace base {
@@ -43,12 +46,15 @@ struct SimpleGeoposition {
 // TODO(crbug.com/1272178): `GeolocationController` should observe the sleep
 // and update next request time.
 class ASH_EXPORT GeolocationController
-    : public chromeos::system::TimezoneSettings::Observer {
+    : public chromeos::system::TimezoneSettings::Observer,
+      public chromeos::PowerManagerClient::Observer {
  public:
   class Observer : public base::CheckedObserver {
    public:
-    // Emitted when the Geoposition is updated.
-    virtual void OnGeopositionChanged(SimpleGeoposition position) {}
+    // Emitted when the Geoposition is updated with
+    // |possible_change_in_timezone| to indicate whether timezone might have
+    // changed as a result of the geoposition change.
+    virtual void OnGeopositionChanged(bool possible_change_in_timezone) {}
 
    protected:
     ~Observer() override = default;
@@ -59,6 +65,8 @@ class ASH_EXPORT GeolocationController
   GeolocationController(const GeolocationController&) = delete;
   GeolocationController& operator=(const GeolocationController&) = delete;
   ~GeolocationController() override;
+
+  static GeolocationController* Get();
 
   const base::OneShotTimer& timer() const { return *timer_; }
 
@@ -76,12 +84,23 @@ class ASH_EXPORT GeolocationController
   // chromeos::system::TimezoneSettings::Observer:
   void TimezoneChanged(const icu::TimeZone& timezone) override;
 
+  // chromeos::PowerManagerClient::Observer:
+  void SuspendDone(base::TimeDelta sleep_duration) override;
+
   // Returns sunset and sunrise time calculated from `geoposition_`. If the
   // position is not set, returns the default sunset 6 PM and sunrise 6 AM.
   base::Time GetSunsetTime() const { return GetSunRiseSet(/*sunrise=*/false); }
   base::Time GetSunriseTime() const { return GetSunRiseSet(/*sunrise=*/true); }
 
   static base::TimeDelta GetNextRequestDelayAfterSuccessForTesting();
+
+  network::SharedURLLoaderFactory* GetFactoryForTesting() { return factory_; }
+
+  base::OneShotTimer* GetTimerForTesting() { return timer_.get(); }
+
+  bool HasObserverForTesting(const Observer* obs) const {
+    return observers_.HasObserver(obs);
+  }
 
   void SetTimerForTesting(std::unique_ptr<base::OneShotTimer> timer);
 
@@ -99,6 +118,10 @@ class ASH_EXPORT GeolocationController
                      bool server_error,
                      const base::TimeDelta elapsed);
 
+  // Virtual so that it can be overridden by a fake implementation in unit tests
+  // that doesn't request actual geopositions.
+  virtual void RequestGeoposition();
+
  private:
   // Gets now time from the `clock_` or `base::Time::Now()` if `clock_` does
   // not exist.
@@ -107,18 +130,18 @@ class ASH_EXPORT GeolocationController
   // Calls `RequestGeoposition()` after `delay`.
   void ScheduleNextRequest(base::TimeDelta delay);
 
-  // Broadcasts the new position obtained from the request to all observers.
-  void NotifyWithCurrentGeoposition(SimpleGeoposition position);
-
-  // Virtual so that it can be overridden by a fake implementation in unit tests
-  // that doesn't request actual geopositions.
-  virtual void RequestGeoposition();
+  // Broadcasts the change in geoposition to all observers with
+  // |possible_change_in_timezone| to indicate whether timezone might have
+  // changed as a result of the geoposition change.
+  void NotifyGeopositionChange(bool possible_change_in_timezone);
 
   // Note that the below computation is intentionally performed every time
   // GetSunsetTime() or GetSunriseTime() is called rather than once whenever we
   // receive a geoposition (which happens at least once a day). This reduces
   // the chances of getting inaccurate values, especially around DST changes.
   base::Time GetSunRiseSet(bool sunrise) const;
+
+  network::SharedURLLoaderFactory* const factory_;
 
   // The IP-based geolocation provider.
   SimpleGeolocationProvider provider_;

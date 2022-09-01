@@ -30,12 +30,14 @@
 
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
+import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as NetworkForward from '../../panels/network/forward/forward.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import * as NetworkComponents from './components/components.js';
 
+import * as NetworkComponents from './components/components.js';
 import {EventSourceMessagesView} from './EventSourceMessagesView.js';
+
 import type {NetworkTimeCalculator} from './NetworkTimeCalculator.js';
 import {RequestCookiesView} from './RequestCookiesView.js';
 import {RequestHeadersView} from './RequestHeadersView.js';
@@ -130,6 +132,7 @@ export class NetworkItemView extends UI.TabbedPane.TabbedPane {
   private requestInternal: SDK.NetworkRequest.NetworkRequest;
   private readonly resourceViewTabSetting: Common.Settings.Setting<NetworkForward.UIRequestLocation.UIRequestTabs>;
   private readonly headersView: RequestHeadersView;
+  private readonly headersViewComponent: NetworkComponents.RequestHeadersView.RequestHeadersView;
   private payloadView: RequestPayloadView|null;
   private readonly responseView: RequestResponseView|undefined;
   private cookiesView: RequestCookiesView|null;
@@ -143,15 +146,21 @@ export class NetworkItemView extends UI.TabbedPane.TabbedPane {
     this.element.classList.add('network-item-view');
 
     this.resourceViewTabSetting = Common.Settings.Settings.instance().createSetting(
-        'resourceViewTab', NetworkForward.UIRequestLocation.UIRequestTabs.Preview);
+        'resourceViewTab', NetworkForward.UIRequestLocation.UIRequestTabs.Headers);
 
     this.headersView = new RequestHeadersView(request);
     this.appendTab(
         NetworkForward.UIRequestLocation.UIRequestTabs.Headers, i18nString(UIStrings.headers), this.headersView,
         i18nString(UIStrings.headers));
+    this.headersViewComponent = new NetworkComponents.RequestHeadersView.RequestHeadersView(request);
+    if (Root.Runtime.experiments.isEnabled(Root.Runtime.ExperimentName.HEADER_OVERRIDES)) {
+      this.appendTab(
+          NetworkForward.UIRequestLocation.UIRequestTabs.HeadersComponent, i18nString(UIStrings.headers),
+          this.headersViewComponent, i18nString(UIStrings.headers));
+    }
 
     this.payloadView = null;
-    this.maybeAppendPayloadPanel();
+    void this.maybeAppendPayloadPanel();
 
     this.addEventListener(UI.TabbedPane.Events.TabSelected, this.tabSelected, this);
 
@@ -235,7 +244,7 @@ export class NetworkItemView extends UI.TabbedPane.TabbedPane {
 
   private async requestHeadersChanged(): Promise<void> {
     this.maybeAppendCookiesPanel();
-    this.maybeAppendPayloadPanel();
+    void this.maybeAppendPayloadPanel();
   }
 
   private maybeAppendCookiesPanel(): void {
@@ -275,7 +284,7 @@ export class NetworkItemView extends UI.TabbedPane.TabbedPane {
     if (!this.selectTab(tabId)) {
       // maybeAppendPayloadPanel might cause payload tab to appear asynchronously, so
       // it makes sense to retry on the next tick
-      setTimeout(() => {
+      window.setTimeout(() => {
         if (!this.selectTab(tabId)) {
           this.selectTab('headers');
         }

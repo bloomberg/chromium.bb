@@ -23,6 +23,7 @@ export interface DataGridControllerData {
    */
   initialSort?: SortState;
   contextMenus?: DataGridContextMenusConfiguration;
+  label?: string;
 }
 
 export class DataGridController extends HTMLElement {
@@ -33,6 +34,7 @@ export class DataGridController extends HTMLElement {
   #columns: readonly Column[] = [];
   #rows: Row[] = [];
   #contextMenus?: DataGridContextMenusConfiguration = undefined;
+  #label?: string = undefined;
 
   /**
    * Because the controller will sort data in place (e.g. mutate it) when we get
@@ -56,6 +58,7 @@ export class DataGridController extends HTMLElement {
       rows: this.#originalRows as Row[],
       filters: this.#filters,
       contextMenus: this.#contextMenus,
+      label: this.#label,
     };
   }
 
@@ -65,22 +68,23 @@ export class DataGridController extends HTMLElement {
     this.#contextMenus = data.contextMenus;
     this.#filters = data.filters || [];
     this.#contextMenus = data.contextMenus;
+    this.#label = data.label;
 
     this.#columns = [...this.#originalColumns];
-    this.#rows = this.cloneAndFilterRows(data.rows, this.#filters);
+    this.#rows = this.#cloneAndFilterRows(data.rows, this.#filters);
 
     if (!this.#hasRenderedAtLeastOnce && data.initialSort) {
       this.#sortState = data.initialSort;
     }
 
     if (this.#sortState) {
-      this.sortRows(this.#sortState);
+      this.#sortRows(this.#sortState);
     }
 
-    this.render();
+    this.#render();
   }
 
-  private testRowWithFilter(row: Row, filter: TextUtils.TextUtils.ParsedFilter): boolean {
+  #testRowWithFilter(row: Row, filter: TextUtils.TextUtils.ParsedFilter): boolean {
     let rowMatchesFilter = false;
 
     const {key, text, negative, regex} = filter;
@@ -107,7 +111,7 @@ export class DataGridController extends HTMLElement {
     return negative ? !rowMatchesFilter : rowMatchesFilter;
   }
 
-  private cloneAndFilterRows(rows: Row[], filters: readonly TextUtils.TextUtils.ParsedFilter[]): Row[] {
+  #cloneAndFilterRows(rows: Row[], filters: readonly TextUtils.TextUtils.ParsedFilter[]): Row[] {
     if (filters.length === 0) {
       return [...rows];
     }
@@ -116,7 +120,7 @@ export class DataGridController extends HTMLElement {
       // We assume that the row should be visible by default.
       let rowShouldBeVisible = true;
       for (const filter of filters) {
-        const rowMatchesFilter = this.testRowWithFilter(row, filter);
+        const rowMatchesFilter = this.#testRowWithFilter(row, filter);
         // If there are multiple filters, if any return false we hide the row.
         // So if we get a false from testRowWithFilter, we can break early and return false.
         if (!rowMatchesFilter) {
@@ -131,7 +135,7 @@ export class DataGridController extends HTMLElement {
     });
   }
 
-  private sortRows(state: SortState): void {
+  #sortRows(state: SortState): void {
     const {columnId, direction} = state;
 
     this.#rows.sort((row1, row2) => {
@@ -148,15 +152,17 @@ export class DataGridController extends HTMLElement {
       }
       return 0;
     });
-    this.render();
+    this.#render();
   }
 
-  private onColumnHeaderClick(event: ColumnHeaderClickEvent): void {
+  #onColumnHeaderClick(event: ColumnHeaderClickEvent): void {
     const {column} = event.data;
-    this.applySortOnColumn(column);
+    if (column.sortable) {
+      this.#applySortOnColumn(column);
+    }
   }
 
-  private applySortOnColumn(column: Column): void {
+  #applySortOnColumn(column: Column): void {
     if (this.#sortState && this.#sortState.columnId === column.id) {
       const {columnId, direction} = this.#sortState;
 
@@ -181,25 +187,25 @@ export class DataGridController extends HTMLElement {
     }
 
     if (this.#sortState) {
-      this.sortRows(this.#sortState);
+      this.#sortRows(this.#sortState);
     } else {
       // No sortstate = render the original rows.
-      this.#rows = this.cloneAndFilterRows(this.#originalRows, this.#filters);
-      this.render();
+      this.#rows = this.#cloneAndFilterRows(this.#originalRows, this.#filters);
+      this.#render();
     }
   }
 
-  private onContextMenuColumnSortClick(event: ContextMenuColumnSortClickEvent): void {
-    this.applySortOnColumn(event.data.column);
+  #onContextMenuColumnSortClick(event: ContextMenuColumnSortClickEvent): void {
+    this.#applySortOnColumn(event.data.column);
   }
 
-  private onContextMenuHeaderResetClick(): void {
+  #onContextMenuHeaderResetClick(): void {
     this.#sortState = null;
     this.#rows = [...this.#originalRows];
-    this.render();
+    this.#render();
   }
 
-  private render(): void {
+  #render(): void {
     // Disabled until https://crbug.com/1079231 is fixed.
     // clang-format off
     LitHtml.render(LitHtml.html`
@@ -208,10 +214,11 @@ export class DataGridController extends HTMLElement {
           rows: this.#rows,
           activeSort: this.#sortState,
           contextMenus: this.#contextMenus,
+          label: this.#label,
         } as DataGridData}
-        @columnheaderclick=${this.onColumnHeaderClick}
-        @contextmenucolumnsortclick=${this.onContextMenuColumnSortClick}
-        @contextmenuheaderresetclick=${this.onContextMenuHeaderResetClick}
+        @columnheaderclick=${this.#onColumnHeaderClick}
+        @contextmenucolumnsortclick=${this.#onContextMenuColumnSortClick}
+        @contextmenuheaderresetclick=${this.#onContextMenuHeaderResetClick}
      ></${DataGrid.litTagName}>
     `, this.#shadow, {
       host: this,

@@ -26,6 +26,7 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
@@ -36,7 +37,6 @@
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/test_extension_dir.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "net/base/features.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_request_headers.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
@@ -149,7 +149,7 @@ class ExtensionCookiesTest : public ExtensionBrowserTest {
   content::RenderFrameHost* NavigateMainFrameToExtensionPage() {
     EXPECT_TRUE(content::NavigateToURL(
         web_contents(), extension_->GetResourceURL("/empty.html")));
-    return web_contents()->GetMainFrame();
+    return web_contents()->GetPrimaryMainFrame();
   }
 
   // Appends a child iframe via JS and waits for it to load. Returns a pointer
@@ -653,7 +653,7 @@ IN_PROC_BROWSER_TEST_P(ExtensionSameSiteCookiesTest,
       ProcessManager::Get(profile())
           ->GetBackgroundHostForExtension(extension->id())
           ->host_contents()
-          ->GetMainFrame();
+          ->GetPrimaryMainFrame();
 
   // Set up a test scenario:
   // - top-level frame: kActiveTabHost
@@ -834,7 +834,7 @@ IN_PROC_BROWSER_TEST_P(ExtensionSameSiteCookiesTest,
 
     // Use `fetch_script` to ask the service worker to perform a `fetch` and
     // reply with the response.
-    content::DOMMessageQueue queue;
+    content::DOMMessageQueue queue(extension_frame);
     content::ExecuteScriptAsync(extension_frame, fetch_script);
 
     // Provide the HTTP response.
@@ -866,7 +866,7 @@ IN_PROC_BROWSER_TEST_P(ExtensionSameSiteCookiesTest,
   extension_dir.WriteFile(FILE_PATH_LITERAL("bg_worker.js"), kServiceWorker);
   extension_dir.WriteFile(FILE_PATH_LITERAL("frame.html"),
                           "<p>Extension frame</p>");
-  ExtensionTestMessageListener worker_listener("WORKER_RUNNING", false);
+  ExtensionTestMessageListener worker_listener("WORKER_RUNNING");
   const Extension* extension = LoadExtension(extension_dir.UnpackedPath());
   ASSERT_TRUE(extension);
   EXPECT_TRUE(worker_listener.WaitUntilSatisfied());
@@ -879,8 +879,9 @@ IN_PROC_BROWSER_TEST_P(ExtensionSameSiteCookiesTest,
   GURL original_document_url =
       test_server()->GetURL(kActiveTabHost, "/title1.html");
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), original_document_url));
-  EXPECT_EQ(kActiveTabHost,
-            web_contents()->GetMainFrame()->GetLastCommittedURL().host());
+  EXPECT_EQ(
+      kActiveTabHost,
+      web_contents()->GetPrimaryMainFrame()->GetLastCommittedURL().host());
   SetCookies(kActiveTabHost);
   GURL extension_frame_url = extension->GetResourceURL("frame.html");
   ui_test_utils::NavigateToURLWithDisposition(
@@ -888,7 +889,7 @@ IN_PROC_BROWSER_TEST_P(ExtensionSameSiteCookiesTest,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP |
           ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
   content::RenderFrameHost* extension_frame =
-      browser()->tab_strip_model()->GetWebContentsAt(1)->GetMainFrame();
+      browser()->tab_strip_model()->GetWebContentsAt(1)->GetPrimaryMainFrame();
   EXPECT_EQ(extension_frame_url, extension_frame->GetLastCommittedURL());
 
   // Based on activeTab, the extension shouldn't be initially granted access to
@@ -976,7 +977,7 @@ class ExtensionSamePartyCookiesTest : public ExtensionCookiesTest {
                             std::end(kSamePartyCookies)),
         no_same_party_cookies_(std::begin(kNoSamePartyCookies),
                                std::end(kNoSamePartyCookies)) {
-    feature_list_.InitAndEnableFeature(net::features::kFirstPartySets);
+    feature_list_.InitAndEnableFeature(features::kFirstPartySets);
   }
   ~ExtensionSamePartyCookiesTest() override = default;
   ExtensionSamePartyCookiesTest(const ExtensionSamePartyCookiesTest&) = delete;

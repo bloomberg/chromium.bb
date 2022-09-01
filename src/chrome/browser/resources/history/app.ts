@@ -2,23 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'chrome://resources/cr_components/history_clusters/clusters.js';
 import 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.m.js';
 import 'chrome://resources/cr_elements/shared_style_css.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import 'chrome://resources/cr_elements/cr_tabs/cr_tabs.js';
 import 'chrome://resources/polymer/v3_0/iron-media-query/iron-media-query.js';
 import 'chrome://resources/polymer/v3_0/iron-pages/iron-pages.js';
-import './history_clusters/clusters.js';
 import './history_list.js';
 import './history_toolbar.js';
 import './query_manager.js';
-import './shared_style.js';
+import './shared_style.css.js';
 import './side_bar.js';
 import './strings.m.js';
 
 import {CrDrawerElement} from 'chrome://resources/cr_elements/cr_drawer/cr_drawer.js';
 import {CrLazyRenderElement} from 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.m.js';
 import {FindShortcutMixin, FindShortcutMixinInterface} from 'chrome://resources/cr_elements/find_shortcut_mixin.js';
+import {assert} from 'chrome://resources/js/assert_ts.js';
 import {EventTracker} from 'chrome://resources/js/event_tracker.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {hasKeyModifiers} from 'chrome://resources/js/util.m.js';
@@ -26,16 +27,16 @@ import {WebUIListenerMixin, WebUIListenerMixinInterface} from 'chrome://resource
 import {IronA11yAnnouncer} from 'chrome://resources/polymer/v3_0/iron-a11y-announcer/iron-a11y-announcer.js';
 import {IronPagesElement} from 'chrome://resources/polymer/v3_0/iron-pages/iron-pages.js';
 import {IronScrollTargetBehavior} from 'chrome://resources/polymer/v3_0/iron-scroll-target-behavior/iron-scroll-target-behavior.js';
-import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {BrowserService} from './browser_service.js';
+import {getTemplate} from './app.html.js';
+import {BrowserService, BrowserServiceImpl} from './browser_service.js';
 import {HistoryPageViewHistogram} from './constants.js';
 import {ForeignSession, QueryResult, QueryState} from './externs.js';
 import {HistoryListElement} from './history_list.js';
 import {HistoryToolbarElement} from './history_toolbar.js';
-import {HistoryQueryManagerElement} from './query_manager.js';
 import {Page, TABBED_PAGES} from './router.js';
-import {FooterInfo} from './side_bar.js';
+import {FooterInfo, HistorySideBarElement} from './side_bar.js';
 
 let lazyLoadPromise: Promise<void>|null = null;
 export function ensureLazyLoaded(): Promise<void> {
@@ -101,7 +102,7 @@ export function listenForPrivilegedLinkClicks() {
 
       if ((anchor.protocol === 'file:' || anchor.protocol === 'about:') &&
           (e.button === 0 || e.button === 1)) {
-        BrowserService.getInstance().navigateToUrl(
+        BrowserServiceImpl.getInstance().navigateToUrl(
             anchor.href, anchor.target, e);
         e.preventDefault();
       }
@@ -119,6 +120,7 @@ declare global {
 export interface HistoryAppElement {
   $: {
     'content': IronPagesElement,
+    'content-side-bar': HistorySideBarElement,
     'drawer': CrLazyRenderElement<CrDrawerElement>,
     'history': HistoryListElement,
     'tabs-container': Element,
@@ -132,12 +134,16 @@ const HistoryAppElementBase =
         [IronScrollTargetBehavior],
         FindShortcutMixin(WebUIListenerMixin(PolymerElement))) as {
       new (): PolymerElement & FindShortcutMixinInterface &
-      IronScrollTargetBehavior & WebUIListenerMixinInterface
+          IronScrollTargetBehavior & WebUIListenerMixinInterface,
     };
 
 export class HistoryAppElement extends HistoryAppElementBase {
   static get is() {
     return 'history-app';
+  }
+
+  static get template() {
+    return getTemplate();
   }
 
   static get properties() {
@@ -236,6 +242,7 @@ export class HistoryAppElement extends HistoryAppElementBase {
   private tabsIcons_: Array<string>;
   private tabsNames_: Array<string>;
   private toolbarShadow_: boolean;
+  private historyClustersViewStartTime_: Date|null = null;
 
   constructor() {
     super();
@@ -249,12 +256,13 @@ export class HistoryAppElement extends HistoryAppElementBase {
     listenForPrivilegedLinkClicks();
   }
 
-  /** @override */
-  connectedCallback() {
+  override connectedCallback() {
     super.connectedCallback();
 
     this.eventTracker_.add(
         document, 'keydown', e => this.onKeyDown_(e as KeyboardEvent));
+    this.eventTracker_.add(
+        document, 'visibilitychange', this.onVisibilityChange_.bind(this));
     this.addWebUIListener(
         'sign-in-state-changed',
         (signedIn: boolean) => this.onSignInStateChanged_(signedIn));
@@ -266,13 +274,13 @@ export class HistoryAppElement extends HistoryAppElementBase {
         'foreign-sessions-changed',
         (sessionList: Array<ForeignSession>) =>
             this.setForeignSessions_(sessionList));
-    this.browserService_ = BrowserService.getInstance();
+    this.browserService_ = BrowserServiceImpl.getInstance();
     this.shadowRoot!.querySelector('history-query-manager')!.initialize();
     this.browserService_!.getForeignSessions().then(
         sessionList => this.setForeignSessions_(sessionList));
   }
 
-  ready() {
+  override ready() {
     super.ready();
 
     this.addEventListener('cr-toolbar-menu-tap', this.onCrToolbarMenuTap_);
@@ -283,8 +291,7 @@ export class HistoryAppElement extends HistoryAppElementBase {
     this.addEventListener('unselect-all', this.unselectAll);
   }
 
-  /** @override */
-  disconnectedCallback() {
+  override disconnectedCallback() {
     super.disconnectedCallback();
     this.eventTracker_.removeAll();
   }
@@ -327,7 +334,7 @@ export class HistoryAppElement extends HistoryAppElementBase {
   }
 
   /** Overridden from IronScrollTargetBehavior */
-  _scrollHandler() {
+  override _scrollHandler() {
     if (this.scrollTarget) {
       // When the tabs are visible, show the toolbar shadow for the synced
       // devices page only.
@@ -401,6 +408,21 @@ export class HistoryAppElement extends HistoryAppElementBase {
     }
   }
 
+  private onVisibilityChange_() {
+    if (this.selectedPage_ !== Page.HISTORY_CLUSTERS) {
+      return;
+    }
+
+    if (document.visibilityState === 'hidden') {
+      this.recordHistoryClustersDuration_();
+    } else if (
+        document.visibilityState === 'visible' &&
+        this.historyClustersViewStartTime_ === null) {
+      // Restart the timer if the user switches back to the History tab.
+      this.historyClustersViewStartTime_ = new Date();
+    }
+  }
+
   private onDeleteCommand_() {
     if (this.$.toolbar.count === 0 || this.pendingDelete_) {
       return;
@@ -457,10 +479,18 @@ export class HistoryAppElement extends HistoryAppElementBase {
     return querying && !incremental && searchTerm !== '';
   }
 
-  private selectedPageChanged_() {
+  private selectedPageChanged_(newPage: Page, oldPage: Page) {
     this.unselectAll();
     this.historyViewChanged_();
     this.maybeUpdateSelectedHistoryTab_();
+
+    if (oldPage === Page.HISTORY_CLUSTERS &&
+        newPage !== Page.HISTORY_CLUSTERS) {
+      this.recordHistoryClustersDuration_();
+    }
+    if (newPage === Page.HISTORY_CLUSTERS) {
+      this.historyClustersViewStartTime_ = new Date();
+    }
   }
 
   private updateScrollTarget_() {
@@ -502,6 +532,18 @@ export class HistoryAppElement extends HistoryAppElementBase {
       this._scrollHandler();
     });
     this.recordHistoryPageView_();
+  }
+
+  // Records the history clusters page duration.
+  private recordHistoryClustersDuration_() {
+    assert(this.historyClustersViewStartTime_ !== null);
+
+    const duration =
+        new Date().getTime() - this.historyClustersViewStartTime_.getTime();
+    this.browserService_!.recordLongTime(
+        'History.Clusters.WebUISessionDuration', duration);
+
+    this.historyClustersViewStartTime_ = null;
   }
 
   private hasDrawerChanged_() {
@@ -550,7 +592,7 @@ export class HistoryAppElement extends HistoryAppElementBase {
   }
 
   // Override FindShortcutMixin methods.
-  handleFindShortcut(modalContextOpen: boolean): boolean {
+  override handleFindShortcut(modalContextOpen: boolean): boolean {
     if (modalContextOpen) {
       return false;
     }
@@ -559,12 +601,18 @@ export class HistoryAppElement extends HistoryAppElementBase {
   }
 
   // Override FindShortcutMixin methods.
-  searchInputHasFocus(): boolean {
+  override searchInputHasFocus(): boolean {
     return this.$.toolbar.searchField.isSearchFocused();
   }
 
-  static get template() {
-    return html`{__html_template__}`;
+  setHasDrawerForTesting(enabled: boolean) {
+    this.hasDrawer_ = enabled;
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'history-app': HistoryAppElement;
   }
 }
 

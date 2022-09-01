@@ -47,6 +47,11 @@ void WaylandDragDropTest::SendDndMotion(const gfx::Point& location) {
   data_device_manager_->data_device()->OnMotion(NextTime(), x, y);
 }
 
+void WaylandDragDropTest::SendDndDrop() {
+  EXPECT_TRUE(data_source_);
+  data_source_->OnFinished();
+}
+
 void WaylandDragDropTest::SendDndCancelled() {
   EXPECT_TRUE(data_source_);
   data_source_->OnCancelled();
@@ -98,6 +103,12 @@ void WaylandDragDropTest::SendTouchDown(WaylandWindow* window,
   wl_touch_send_down(
       touch_->resource(), NextSerial(), NextTime(), surface->resource(), id,
       wl_fixed_from_double(location.x()), wl_fixed_from_double(location.y()));
+  wl_touch_send_frame(touch_->resource());
+}
+
+void WaylandDragDropTest::SendTouchUp(int id) {
+  wl_touch_send_up(touch_->resource(), NextSerial(), NextTime(), id);
+  wl_touch_send_frame(touch_->resource());
 }
 
 void WaylandDragDropTest::SendTouchMotion(WaylandWindow* window,
@@ -107,6 +118,7 @@ void WaylandDragDropTest::SendTouchMotion(WaylandWindow* window,
   wl_touch_send_motion(touch_->resource(), NextSerial(), id,
                        wl_fixed_from_double(location.x()),
                        wl_fixed_from_double(location.y()));
+  wl_touch_send_frame(touch_->resource());
 }
 
 void WaylandDragDropTest::SetUp() {

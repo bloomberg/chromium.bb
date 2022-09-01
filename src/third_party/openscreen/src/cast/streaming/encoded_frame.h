@@ -38,6 +38,13 @@ struct EncodedFrame {
     KEY_FRAME,
   };
 
+  EncodedFrame(Dependency dependency,
+               FrameId frame_id,
+               FrameId referenced_frame_id,
+               RtpTimeTicks rtp_timestamp,
+               Clock::time_point reference_time,
+               std::chrono::milliseconds new_playout_delay,
+               absl::Span<uint8_t> data);
   EncodedFrame();
   ~EncodedFrame();
 

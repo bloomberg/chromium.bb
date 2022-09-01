@@ -346,7 +346,6 @@ shared_library("blpwtk2") {
     "//content",
     "//content:content_resources",
     "//content:sandbox_helper_win",
-    "//content/app/resources",
     "//ipc",
     "//net",
     "//net:extras",
@@ -433,7 +432,6 @@ executable("blpwtk2_shell") {
 
   deps = [
     ":blpwtk2",
-    "//base/allocator",
   ]
 
 }

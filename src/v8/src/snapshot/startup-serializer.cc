@@ -77,10 +77,10 @@ StartupSerializer::StartupSerializer(
 
 StartupSerializer::~StartupSerializer() {
   for (Handle<AccessorInfo> info : accessor_infos_) {
-    RestoreExternalReferenceRedirector(isolate(), info);
+    RestoreExternalReferenceRedirector(isolate(), *info);
   }
   for (Handle<CallHandlerInfo> info : call_handler_infos_) {
-    RestoreExternalReferenceRedirector(isolate(), info);
+    RestoreExternalReferenceRedirector(isolate(), *info);
   }
   OutputStatistics("StartupSerializer");
 }
@@ -104,10 +104,8 @@ bool IsUnexpectedCodeObject(Isolate* isolate, HeapObject obj) {
     case Builtin::kAbort:
     case Builtin::kCEntry_Return1_DontSaveFPRegs_ArgvOnStack_NoBuiltinExit:
     case Builtin::kInterpreterEntryTrampoline:
-    case Builtin::kRecordWriteEmitRememberedSetSaveFP:
-    case Builtin::kRecordWriteOmitRememberedSetSaveFP:
-    case Builtin::kRecordWriteEmitRememberedSetIgnoreFP:
-    case Builtin::kRecordWriteOmitRememberedSetIgnoreFP:
+    case Builtin::kRecordWriteSaveFP:
+    case Builtin::kRecordWriteIgnoreFP:
 #ifdef V8_IS_TSAN
     case Builtin::kTSANRelaxedStore8IgnoreFP:
     case Builtin::kTSANRelaxedStore8SaveFP:
@@ -132,7 +130,6 @@ bool IsUnexpectedCodeObject(Isolate* isolate, HeapObject obj) {
 
 }  // namespace
 #endif  // DEBUG
-
 void StartupSerializer::SerializeObjectImpl(Handle<HeapObject> obj) {
   PtrComprCageBase cage_base(isolate());
 #ifdef DEBUG
@@ -145,13 +142,17 @@ void StartupSerializer::SerializeObjectImpl(Handle<HeapObject> obj) {
         "the isolate snapshot");
   }
 #endif  // DEBUG
-  DCHECK(!IsUnexpectedCodeObject(isolate(), *obj));
+  {
+    DisallowGarbageCollection no_gc;
+    HeapObject raw = *obj;
+    DCHECK(!IsUnexpectedCodeObject(isolate(), raw));
+    if (SerializeHotObject(raw)) return;
+    if (IsRootAndHasBeenSerialized(raw) && SerializeRoot(raw)) return;
+  }
 
-  if (SerializeHotObject(obj)) return;
-  if (IsRootAndHasBeenSerialized(*obj) && SerializeRoot(obj)) return;
   if (SerializeUsingReadOnlyObjectCache(&sink_, obj)) return;
   if (SerializeUsingSharedHeapObjectCache(&sink_, obj)) return;
-  if (SerializeBackReference(obj)) return;
+  if (SerializeBackReference(*obj)) return;
 
   bool use_simulator = false;
 #ifdef USE_SIMULATOR

@@ -284,10 +284,6 @@ static void apply_ltp_mips(AACContext *ac, SingleChannelElement *sce)
     }
 }
 
-/* Chromium: Does not compile with clang:
-        error: couldn't allocate output register for constraint 'r'
-*/
-#if 0 //HAVE_MIPSFPU
 static av_always_inline void fmul_and_reverse(float *dst, const float *src0, const float *src1, int count)
 {
     /* Multiply 'count' floats in src0 by src1 and store the results in dst in reverse */
@@ -432,7 +428,6 @@ static void update_ltp_mips(AACContext *ac, SingleChannelElement *sce)
     float_copy(sce->ltp_state + 1024, sce->ret, 1024);
     float_copy(sce->ltp_state + 2048, saved_ltp, 1024);
 }
-#endif /* 0 */
 #endif /* HAVE_MIPSFPU */
 #endif /* HAVE_INLINE_ASM */
 
@@ -442,9 +437,7 @@ void ff_aacdec_init_mips(AACContext *c)
 #if HAVE_MIPSFPU
     c->imdct_and_windowing         = imdct_and_windowing_mips;
     c->apply_ltp                   = apply_ltp_mips;
-#if 0 // Does not compile.
     c->update_ltp                  = update_ltp_mips;
-#endif /* 0 */
 #endif /* HAVE_MIPSFPU */
 #endif /* HAVE_INLINE_ASM */
 }

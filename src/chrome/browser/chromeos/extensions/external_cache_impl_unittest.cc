@@ -14,7 +14,6 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/values.h"
 #include "chrome/browser/ash/settings/scoped_cros_settings_test_helper.h"
@@ -115,19 +114,19 @@ class ExternalCacheImplTest : public testing::Test,
 
   base::DictionaryValue CreateEntryWithUpdateUrl(bool from_webstore) {
     base::DictionaryValue entry;
-    entry.SetString(extensions::ExternalProviderImpl::kExternalUpdateUrl,
-                    from_webstore
-                        ? extension_urls::GetWebstoreUpdateUrl().spec()
-                        : kNonWebstoreUpdateUrl);
+    entry.SetStringKey(extensions::ExternalProviderImpl::kExternalUpdateUrl,
+                       from_webstore
+                           ? extension_urls::GetWebstoreUpdateUrl().spec()
+                           : kNonWebstoreUpdateUrl);
     return entry;
   }
 
   base::DictionaryValue CreateEntryWithExternalCrx() {
     base::DictionaryValue entry;
-    entry.SetString(extensions::ExternalProviderImpl::kExternalCrx,
-                    kExternalCrxPath);
-    entry.SetString(extensions::ExternalProviderImpl::kExternalVersion,
-                    kExternalCrxVersion);
+    entry.SetStringKey(extensions::ExternalProviderImpl::kExternalCrx,
+                       kExternalCrxPath);
+    entry.SetStringKey(extensions::ExternalProviderImpl::kExternalVersion,
+                       kExternalCrxVersion);
     return entry;
   }
 

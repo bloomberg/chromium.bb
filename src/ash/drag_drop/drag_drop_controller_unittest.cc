@@ -13,6 +13,8 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test_shell_delegate.h"
+#include "ash/wm/splitview/split_view_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
@@ -20,6 +22,7 @@
 #include "base/notreached.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -38,7 +41,6 @@
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
-#include "ui/base/ui_base_switches.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
@@ -135,12 +137,6 @@ class DragTestView : public views::View {
   }
 
   void OnDragExited() override { num_drag_exits_++; }
-
-  DragOperation OnPerformDrop(const ui::DropTargetEvent& event) override {
-    DragOperation output_drag_op = DragOperation::kNone;
-    PerformDrop(event, output_drag_op);
-    return output_drag_op;
-  }
 
   DropCallback GetDropCallback(const ui::DropTargetEvent& event) override {
     return base::BindOnce(&DragTestView::PerformDrop, base::Unretained(this));
@@ -240,10 +236,9 @@ class TestDragDropController : public DragDropController {
 class MockObserver : public aura::client::DragDropClientObserver {
  public:
   // aura::client::DragDropClientObserver
-
   MOCK_METHOD(void, OnDragStarted, (), (override));
   MOCK_METHOD(void, OnDragUpdated, (const ui::DropTargetEvent&), (override));
-  MOCK_METHOD(void, OnDragEnded, (), (override));
+  MOCK_METHOD(void, OnDragCompleted, (const ui::DropTargetEvent&), (override));
 };
 
 class TestObserver : public aura::client::DragDropClientObserver {
@@ -258,13 +253,12 @@ class TestObserver : public aura::client::DragDropClientObserver {
   State state() const { return state_; }
 
   // aura::client::DragDropClientObserver
-
   void OnDragStarted() override {
     EXPECT_EQ(State::kNotInvoked, state_);
     state_ = State::kDragStartedInvoked;
   }
 
-  void OnDragEnded() override {
+  void OnDragCompleted(const ui::DropTargetEvent& event) override {
     EXPECT_EQ(State::kDragStartedInvoked, state_);
     state_ = State::kDragEndedInvoked;
   }
@@ -311,23 +305,13 @@ class EventTargetTestDelegate : public aura::client::DragDropDelegate {
                 State::kDragUpdateInvoked == state_);
     state_ = State::kDragExitInvoked;
   }
-  DragOperation OnPerformDrop(
-      const ui::DropTargetEvent& event,
-      std::unique_ptr<ui::OSExchangeData> data) override {
-    DragOperation output_drag_op = DragOperation::kNone;
-    PerformDrop(event, std::move(data), output_drag_op);
-
-    return output_drag_op;
-  }
-
   DropCallback GetDropCallback(const ui::DropTargetEvent& event) override {
     return base::BindOnce(&EventTargetTestDelegate::PerformDrop,
                           base::Unretained(this));
   }
 
  private:
-  void PerformDrop(const ui::DropTargetEvent& event,
-                   std::unique_ptr<ui::OSExchangeData> data,
+  void PerformDrop(std::unique_ptr<ui::OSExchangeData> data,
                    ui::mojom::DragOperation& output_drag_op) {
     EXPECT_EQ(State::kDragUpdateInvoked, state_);
 
@@ -394,10 +378,13 @@ class TestToplevelWindowDragDelegate : public ToplevelWindowDragDelegate {
   void OnToplevelWindowDragStarted(const gfx::PointF& start_location,
                                    ui::mojom::DragEventSource source,
                                    aura::Window* source_window) override {
-    EXPECT_EQ(State::kNotInvoked, state_);
+    ASSERT_EQ(State::kNotInvoked, state_);
+    ASSERT_TRUE(source_window);
     state_ = State::kDragStartedInvoked;
     current_location_.emplace(start_location);
     source_ = source;
+    if (source == ui::mojom::DragEventSource::kMouse)
+      source_window->SetCapture();
   }
 
   DragOperation OnToplevelWindowDragDropped() override {
@@ -416,6 +403,7 @@ class TestToplevelWindowDragDelegate : public ToplevelWindowDragDelegate {
     EXPECT_TRUE(current_location_.has_value());
     current_location_.emplace(event->root_location_f());
     events_forwarded_++;
+    event->StopPropagation();
   }
 
  private:
@@ -450,7 +438,8 @@ class MockNewWindowDelegate : public TestNewWindowDelegate {
 
 class DragDropControllerTest : public AshTestBase {
  public:
-  DragDropControllerTest() = default;
+  DragDropControllerTest()
+      : AshTestBase(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
 
   DragDropControllerTest(const DragDropControllerTest&) = delete;
   DragDropControllerTest& operator=(const DragDropControllerTest&) = delete;
@@ -540,6 +529,19 @@ class DragDropControllerTest : public AshTestBase {
   std::unique_ptr<TestNewWindowDelegateProvider>
       test_new_window_delegate_provider_;
   NiceMock<MockNewWindowDelegate>* mock_new_window_delegate_ptr_ = nullptr;
+
+  bool quit_ = false;
+
+  void RunWithClosure(base::RepeatingCallback<void(bool)> loop) {
+    quit_ = false;
+
+    drag_drop_controller_->SetLoopClosureForTesting(
+        base::BindLambdaForTesting([&]() { loop.Run(/*inside=*/true); }),
+        base::BindLambdaForTesting([&]() { quit_ = true; }));
+    while (!quit_) {
+      loop.Run(/*inside=*/false);
+    }
+  }
 };
 
 TEST_F(DragDropControllerTest, DragDropInSingleViewTest) {
@@ -569,6 +571,36 @@ TEST_F(DragDropControllerTest, DragDropInSingleViewTest) {
   EXPECT_EQ(1, drag_view->num_drops_);
   EXPECT_EQ(0, drag_view->num_drag_exits_);
   EXPECT_TRUE(drag_view->drag_done_received_);
+}
+
+TEST_F(DragDropControllerTest, DragDropMouseReleasesWindowCapture) {
+  std::unique_ptr<views::Widget> widget = CreateFramelessWidget();
+  DragTestView* drag_view = new DragTestView;
+  AddViewToWidgetAndResize(widget.get(), drag_view);
+  aura::Window* window = widget->GetNativeView();
+
+  EXPECT_FALSE(window->HasCapture());
+
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(), window);
+
+  generator.PressLeftButton();
+  window->SetCapture();  // aura::Window do not explicitly take capture, so call
+                         // this
+  // manually to simulate dragging a view which does take capture.
+  EXPECT_TRUE(window->HasCapture());
+
+  int n = 0;
+  auto loop_task = [&](bool inside) {
+    generator.MoveMouseBy(0, 1);
+    n++;
+
+    if (n == 17)
+      generator.ReleaseLeftButton();
+  };
+  RunWithClosure(base::BindLambdaForTesting(loop_task));
+
+  EXPECT_TRUE(drag_view->drag_done_received_);
+  EXPECT_FALSE(window->HasCapture());
 }
 
 TEST_F(DragDropControllerTest, DragDropWithZeroDragUpdates) {
@@ -762,37 +794,53 @@ TEST_F(DragDropControllerTest, DragLeavesClipboardAloneTest) {
   ui::Clipboard::DestroyClipboardForCurrentThread();
 }
 
-TEST_F(DragDropControllerTest, WindowDestroyedDuringDragDrop) {
+// Cancelling followed by closing window should not cause use after free.
+// This happens when closing a browser window while dragging.
+// crbug.com/1282480
+TEST_F(DragDropControllerTest, DragCanceledThenWindowDestroyedDuringDragDrop) {
   std::unique_ptr<views::Widget> widget = CreateFramelessWidget();
   DragTestView* drag_view = new DragTestView;
   AddViewToWidgetAndResize(widget.get(), drag_view);
   aura::Window* window = widget->GetNativeView();
 
+  EventTargetTestDelegate delegate(window);
+  aura::client::SetDragDropDelegate(window, &delegate);
+
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
                                      widget->GetNativeView());
   generator.PressLeftButton();
 
-  int num_drags = 17;
-  for (int i = 0; i < num_drags; ++i) {
+  int n = 0;
+  bool dragged = false;
+  auto loop_task = [&](bool inside) {
     generator.MoveMouseBy(0, 1);
+    base::RunLoop().RunUntilIdle();
+    n++;
 
-    if (i > drag_view->VerticalDragThreshold())
+    if (inside && window) {
+      dragged = true;
       EXPECT_EQ(window, GetDragWindow());
-  }
+      EXPECT_GT(n, drag_view->VerticalDragThreshold());
+    }
 
-  widget->CloseNow();
+    if (n == 18) {
+      drag_drop_controller_->DragCancel();
+      widget->CloseNow();
+      EXPECT_FALSE(this->GetDragWindow());
+      window = nullptr;
+    }
+  };
+  RunWithClosure(base::BindLambdaForTesting(loop_task));
+  EXPECT_TRUE(dragged);
   EXPECT_FALSE(GetDragWindow());
-
-  num_drags = 23;
-  for (int i = 0; i < num_drags; ++i) {
-    generator.MoveMouseBy(0, 1);
-    // We should not crash here.
-  }
-
   generator.ReleaseLeftButton();
 
   EXPECT_TRUE(drag_drop_controller_->drag_start_received_);
-  EXPECT_TRUE(drag_drop_controller_->drop_received_);
+  // Drag must have been canceled.
+  EXPECT_TRUE(drag_drop_controller_->drag_canceled_);
+  EXPECT_FALSE(drag_drop_controller_->drop_received_);
+
+  EXPECT_EQ(EventTargetTestDelegate::State::kDragExitInvoked, delegate.state());
 }
 
 TEST_F(DragDropControllerTest, SyntheticEventsDuringDragDrop) {
@@ -898,9 +946,6 @@ TEST_F(DragDropControllerTest, CaptureLostDoesNotCancelsDragDrop) {
 }
 
 TEST_F(DragDropControllerTest, TouchDragDropInMultipleWindows) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableTouchDragDrop);
-
   std::unique_ptr<views::Widget> widget1 = CreateFramelessWidget();
   DragTestView* drag_view1 = new DragTestView;
   AddViewToWidgetAndResize(widget1.get(), drag_view1);
@@ -949,8 +994,6 @@ TEST_F(DragDropControllerTest, TouchDragDropInMultipleWindows) {
 }
 
 TEST_F(DragDropControllerTest, TouchDragDropCancelsOnLongTap) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableTouchDragDrop);
   std::unique_ptr<views::Widget> widget = CreateFramelessWidget();
   DragTestView* drag_view = new DragTestView;
   AddViewToWidgetAndResize(widget.get(), drag_view);
@@ -974,8 +1017,6 @@ TEST_F(DragDropControllerTest, TouchDragDropCancelsOnLongTap) {
 }
 
 TEST_F(DragDropControllerTest, TouchDragDropLongTapGestureIsForwarded) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableTouchDragDrop);
   std::unique_ptr<views::Widget> widget = CreateFramelessWidget();
   DragTestView* drag_view = new DragTestView;
   AddViewToWidgetAndResize(widget.get(), drag_view);
@@ -1193,9 +1234,6 @@ TEST_F(DragDropControllerTest, DragCancelOnDisplayDisconnect) {
 }
 
 TEST_F(DragDropControllerTest, TouchDragDropCompletesOnFling) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableTouchDragDrop);
-
   ui::GestureConfiguration::GetInstance()
       ->set_max_touch_move_in_pixels_for_click(1);
   std::unique_ptr<views::Widget> widget = CreateFramelessWidget();
@@ -1273,7 +1311,7 @@ TEST_F(DragDropControllerTest, DragObserverEvents) {
             EXPECT_EQ(gfx::Point(200, 0), root_location_in_screen);
             EXPECT_EQ(&event.data(), data_ptr);
           }));
-      EXPECT_CALL(observer, OnDragEnded);
+      EXPECT_CALL(observer, OnDragCompleted);
     }
 
     drag_drop_controller_->Drop(window, e);
@@ -1375,6 +1413,43 @@ TEST_F(DragDropControllerTest, DragTabChangesDragOperationToMove) {
   EXPECT_EQ(operation, DragOperation::kMove);
 }
 
+// Verifies that a tab drag does not crash (UAF) on source window destruction.
+TEST_F(DragDropControllerTest, DragTabDoesNotCrashOnSourceWindowDestruction) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kWebUITabStripTabDragIntegration);
+
+  EXPECT_CALL(*mock_shell_delegate(), IsTabDrag(_))
+      .Times(1)
+      .WillOnce(Return(true));
+
+  std::unique_ptr<views::Widget> widget = CreateFramelessWidget();
+  aura::Window* window = widget->GetNativeWindow();
+
+  // Posted task will be run when the inner loop runs in StartDragAndDrop.
+  ui::test::EventGenerator generator(window->GetRootWindow(), window);
+  generator.PressLeftButton();
+  // For drag enter.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&ui::test::EventGenerator::MoveMouseBy,
+                                base::Unretained(&generator), 0, 1));
+  // Forces a |TabDragDropDelegate::source_window_| destruction.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce([](std::unique_ptr<views::Widget>) {}, std::move(widget)));
+  // For perform drop.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&ui::test::EventGenerator::ReleaseLeftButton,
+                                base::Unretained(&generator)));
+
+  drag_drop_controller_->set_should_block_during_drag_drop(true);
+  DragOperation operation = drag_drop_controller_->StartDragAndDrop(
+      std::make_unique<ui::OSExchangeData>(), window->GetRootWindow(), window,
+      gfx::Point(5, 5), ui::DragDropTypes::DRAG_NONE,
+      ui::mojom::DragEventSource::kMouse);
+
+  EXPECT_EQ(operation, DragOperation::kNone);
+}
+
 TEST_F(DragDropControllerTest, ToplevelWindowDragDelegate) {
   std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithDelegate(
       aura::test::TestWindowDelegate::CreateSelfDestroyingDelegate(), -1,
@@ -1447,6 +1522,66 @@ TEST_F(DragDropControllerTest, ToplevelWindowDragDelegate) {
     EXPECT_EQ(gfx::PointF(52, 52), *delegate.current_location());
     EXPECT_EQ(2, delegate.events_forwarded());
   }
+
+  // Regression test for https://crbug.com/1280128.
+  // With 2 side-by-side displays, ensures that, when ext-dragging a toplevel
+  // window from the rightmost display, entering in the leftmost display results
+  // in correct mouse (drag update) events being sent over to toplevel window
+  // drag delegate, i.e: negative 'x' coordinates.
+  {
+    UpdateDisplay("800x600,800x600");
+    aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+    ASSERT_EQ(2u, root_windows.size());
+
+    aura::client::SetDragDropClient(root_windows[0],
+                                    drag_drop_controller_.get());
+    aura::client::SetDragDropClient(root_windows[1],
+                                    drag_drop_controller_.get());
+
+    const gfx::Rect bounds_within_root1(0, 0, 800, 600);
+    const gfx::Rect bounds_within_root2(800, 0, 800, 600);
+    std::unique_ptr<aura::Window> window1 =
+        CreateTestWindow(bounds_within_root1);
+    std::unique_ptr<aura::Window> window2 =
+        CreateTestWindow(bounds_within_root2);
+    ASSERT_EQ(root_windows[0], window1->GetRootWindow());
+    ASSERT_EQ(root_windows[1], window2->GetRootWindow());
+
+    TestToplevelWindowDragDelegate delegate;
+    drag_drop_controller_->set_toplevel_window_drag_delegate(&delegate);
+
+    // Press and hold left mouse button at (0,0) in the rightmost display.
+    ui::test::EventGenerator generator(window2->GetRootWindow(), {0, 0});
+    generator.PressLeftButton();
+
+    auto data(std::make_unique<ui::OSExchangeData>());
+    drag_drop_controller_->StartDragAndDrop(
+        std::move(data), window2->GetRootWindow(), window2.get(),
+        gfx::Point(5, 5), ui::DragDropTypes::DRAG_MOVE,
+        ui::mojom::DragEventSource::kMouse);
+
+    EXPECT_EQ(TestToplevelWindowDragDelegate::State::kDragStartedInvoked,
+              delegate.state());
+    EXPECT_EQ(ui::mojom::DragEventSource::kMouse, delegate.source());
+    EXPECT_TRUE(delegate.current_location().has_value());
+    EXPECT_EQ(gfx::PointF(5, 5), *delegate.current_location());
+    EXPECT_EQ(0, delegate.events_forwarded());
+
+    // Drag to (790,0) in the root window corresponding to the leftmost display,
+    // and ensure that the latest drag event received by toplevel window drag
+    // delegate targets (-10, 0) location.
+    generator.SetTargetWindow(root_windows[0]);
+    generator.MoveMouseTo(gfx::Point(790, 0));
+
+    EXPECT_TRUE(delegate.current_location().has_value());
+    EXPECT_EQ(gfx::PointF(-10, 0), *delegate.current_location());
+    EXPECT_EQ(1, delegate.events_forwarded());
+
+    generator.ReleaseLeftButton();
+    EXPECT_EQ(TestToplevelWindowDragDelegate::State::kDragDroppedInvoked,
+              delegate.state());
+    EXPECT_EQ(2, delegate.events_forwarded());
+  }
 }
 
 TEST_F(DragDropControllerTest, ToplevelWindowDragDelegateWithTouch) {
@@ -1470,6 +1605,8 @@ TEST_F(DragDropControllerTest, ToplevelWindowDragDelegateWithTouch) {
   EXPECT_TRUE(delegate.current_location().has_value());
   EXPECT_EQ(gfx::PointF(5, 5), *delegate.current_location());
   EXPECT_EQ(0, delegate.events_forwarded());
+
+  drag_drop_controller_->DragCancel();
 }
 
 TEST_F(DragDropControllerTest, ToplevelWindowDragDelegateWithTouch2) {
@@ -1540,6 +1677,56 @@ TEST_F(DragDropControllerTest, DragWithChromeTabDelegateTakesCapture) {
   EXPECT_TRUE(drag_drop_controller_->get_capture_delegate());
 
   drag_drop_controller_.reset();
+}
+
+// Regression test for crbug.com/1297209.
+// In tablet mode split view, with the browser tab strip on one side and desks
+// overview (or any other window) on the other, touch and hold a desk mini view
+// (or that other window) and drag a browser tab simultaneously.
+TEST_F(DragDropControllerTest, TabletSplitViewDragTwoBrowserTabs) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kWebUITabStripTabDragIntegration);
+
+  // Enter tablet mode. Avoid TabletModeController::OnGetSwitchStates() from
+  // disabling tablet mode.
+  base::RunLoop().RunUntilIdle();
+  ash::TabletModeControllerTestApi().EnterTabletMode();
+
+  // Enter tablet split view mode by snapping a tab window on each side.
+  // A generic top level window is enough to fake a chrome tab.
+  std::unique_ptr<aura::Window> tab_window1 = CreateToplevelTestWindow();
+  std::unique_ptr<aura::Window> tab_window2 = CreateToplevelTestWindow();
+  SplitViewController* const split_view_controller =
+      SplitViewController::Get(tab_window1.get());
+  split_view_controller->SnapWindow(tab_window1.get(),
+                                    SplitViewController::SnapPosition::LEFT);
+  split_view_controller->SnapWindow(tab_window2.get(),
+                                    SplitViewController::SnapPosition::RIGHT);
+  EXPECT_TRUE(split_view_controller->InTabletSplitViewMode());
+
+  // Touch and hold the right tab window.
+  GetEventGenerator()->PressTouch(
+      tab_window2->GetBoundsInScreen().CenterPoint());
+
+  // Prepare to drag the left tab window.
+  EXPECT_CALL(*mock_shell_delegate(), IsTabDrag(_)).WillOnce(Return(true));
+
+  // Drag and drop needs a drag image to work.
+  auto data = std::make_unique<ui::OSExchangeData>();
+  data->SetString(u"I am being dragged");
+  gfx::ImageSkiaRep image_rep(gfx::Size(10, 20), 1.0f);
+  gfx::ImageSkia image_skia(image_rep);
+  data->provider().SetDragImage(image_skia, gfx::Vector2d());
+
+  // Start drag and drop on the left tab window.
+  auto drag_operation = drag_drop_controller_->StartDragAndDrop(
+      std::move(data), tab_window1->GetRootWindow(), tab_window1.get(),
+      tab_window1->GetBoundsInScreen().CenterPoint(),
+      ui::DragDropTypes::DRAG_MOVE, ui::mojom::DragEventSource::kTouch);
+  EXPECT_EQ(drag_operation, DragOperation::kNone);
+  EXPECT_FALSE(drag_drop_controller_->IsDragDropInProgress());
+  EXPECT_FALSE(drag_drop_controller_->get_capture_delegate());
+  EXPECT_FALSE(tab_window1->HasObserver(drag_drop_controller_.get()));
 }
 
 namespace {
@@ -1688,42 +1875,94 @@ TEST_F(DragDropControllerTest, DlpAsyncDrop) {
             delegate.state());
 }
 
-TEST_F(DragDropControllerTest,
-       ToplevelWindowDragDelegateForwardsMouseReleased) {
-  std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithDelegate(
-      aura::test::TestWindowDelegate::CreateSelfDestroyingDelegate(), -1,
-      gfx::Rect(0, 0, 100, 100)));
+class MouseOrTouchDragDropControllerTest
+    : public DragDropControllerTest,
+      public testing::WithParamInterface<bool> {
+ public:
+  MouseOrTouchDragDropControllerTest() = default;
+  MouseOrTouchDragDropControllerTest(
+      const MouseOrTouchDragDropControllerTest&) = delete;
+  MouseOrTouchDragDropControllerTest& operator=(
+      const MouseOrTouchDragDropControllerTest&) = delete;
+  ~MouseOrTouchDragDropControllerTest() = default;
 
-  // Emulate a drag session completion to verify that the ET_MOUSE_RELEASED
-  // event can release capture.
-  {
-    TestToplevelWindowDragDelegate delegate;
-    drag_drop_controller_->set_toplevel_window_drag_delegate(&delegate);
+  bool IsMouse() const { return GetParam(); }
 
-    ui::test::EventGenerator generator(window->GetRootWindow(), window.get());
-    generator.PressLeftButton();
-
-    auto data(std::make_unique<ui::OSExchangeData>());
-    drag_drop_controller_->StartDragAndDrop(
-        std::move(data), window->GetRootWindow(), window.get(),
-        gfx::Point(5, 5), ui::DragDropTypes::DRAG_MOVE,
-        ui::mojom::DragEventSource::kMouse);
-
-    // Send a fake mouse up event and assert that it can continue
-    // propagation.
-    auto event = std::make_unique<ui::MouseEvent>(
-        ui::ET_MOUSE_RELEASED, gfx::Point(5, 5), gfx::Point(5, 5),
-        ui::EventTimeForNow(), 0, 0);
-    ui::Event::DispatcherApi(event.get()).set_phase(ui::EP_PRETARGET);
-    ui::Event::DispatcherApi(event.get())
-        .set_target(window->GetToplevelWindow());
-
-    drag_drop_controller_->OnMouseEvent(event.get());
-
-    EXPECT_EQ(TestToplevelWindowDragDelegate::State::kDragDroppedInvoked,
-              delegate.state());
-    EXPECT_FALSE(event.get()->stopped_propagation());
+  void Press(ui::test::EventGenerator& generator) {
+    if (IsMouse()) {
+      generator.PressLeftButton();
+    } else {
+      generator.PressTouch();
+      // long press requires > 1.15s
+      task_environment()->AdvanceClock(base::Seconds(2));
+    }
   }
+  void MoveBy(ui::test::EventGenerator& generator, int x, int y) {
+    if (IsMouse())
+      generator.MoveMouseBy(x, y);
+    else
+      generator.MoveTouchBy(x, y);
+  }
+
+  void Release(ui::test::EventGenerator& generator) {
+    if (IsMouse())
+      generator.ReleaseLeftButton();
+    else
+      generator.ReleaseTouch();
+  }
+};
+
+// Ensures that the drag drop continues after window destruction.
+TEST_P(MouseOrTouchDragDropControllerTest, WindowDestroyedDuringDragDrop) {
+  std::unique_ptr<views::Widget> widget = CreateFramelessWidget();
+  DragTestView* drag_view = new DragTestView;
+  AddViewToWidgetAndResize(widget.get(), drag_view);
+  aura::Window* window = widget->GetNativeView();
+
+  EventTargetTestDelegate delegate(window);
+  aura::client::SetDragDropDelegate(window, &delegate);
+
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                     widget->GetNativeView());
+  Press(generator);
+
+  int n = 0;
+  bool dragged = false;
+  auto loop_task = [&](bool inside) {
+    MoveBy(generator, 0, 1);
+    base::RunLoop().RunUntilIdle();
+    n++;
+    if (inside && window) {
+      dragged = true;
+      if (IsMouse()) {
+        EXPECT_EQ(window, GetDragWindow());
+        EXPECT_GT(n, drag_view->VerticalDragThreshold());
+      } else if (n > 5) {
+        EXPECT_EQ(window, GetDragWindow());
+      }
+    }
+
+    if (n == 18) {
+      widget->CloseNow();
+      EXPECT_FALSE(this->GetDragWindow());
+      window = nullptr;
+    }
+    if (n == 100)
+      Release(generator);
+  };
+  RunWithClosure(base::BindLambdaForTesting(loop_task));
+  EXPECT_TRUE(dragged);
+  EXPECT_FALSE(GetDragWindow());
+  EXPECT_GT(n, 50);
+
+  EXPECT_TRUE(drag_drop_controller_->drag_start_received_);
+  EXPECT_FALSE(drag_drop_controller_->drag_canceled_);
+  EXPECT_TRUE(drag_drop_controller_->drop_received_);
+  EXPECT_EQ(EventTargetTestDelegate::State::kDragExitInvoked, delegate.state());
 }
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         MouseOrTouchDragDropControllerTest,
+                         testing::Bool());
 
 }  // namespace ash

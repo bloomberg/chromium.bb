@@ -32,7 +32,6 @@
 
 #include <memory>
 
-#include "base/cxx17_backports.h"
 #include "base/memory/scoped_refptr.h"
 #include "components/viz/common/resources/release_callback.h"
 #include "components/viz/common/resources/transferable_resource.h"
@@ -666,7 +665,7 @@ TEST(DrawingBufferDepthStencilTest, packedDepthStencilSupported) {
       DepthStencilTestCase(true, true, 1, "both"),
   };
 
-  for (size_t i = 0; i < base::size(cases); i++) {
+  for (size_t i = 0; i < std::size(cases); i++) {
     SCOPED_TRACE(cases[i].test_case_name);
     auto gl = std::make_unique<DepthStencilTrackingGLES2Interface>();
     DepthStencilTrackingGLES2Interface* tracking_gl = gl.get();
@@ -687,8 +686,8 @@ TEST(DrawingBufferDepthStencilTest, packedDepthStencilSupported) {
         gfx::Size(10, 10), premultiplied_alpha, want_alpha_channel,
         want_depth_buffer, want_stencil_buffer, want_antialiasing, preserve,
         DrawingBuffer::kWebGL1, DrawingBuffer::kAllowChromiumImage,
-        cc::PaintFlags::FilterQuality::kLow, CanvasColorParams(),
-        gl::GpuPreference::kHighPerformance);
+        cc::PaintFlags::FilterQuality::kLow, PredefinedColorSpace::kSRGB,
+        CanvasPixelFormat::kUint8, gl::GpuPreference::kHighPerformance);
 
     // When we request a depth or a stencil buffer, we will get both.
     EXPECT_EQ(cases[i].request_depth || cases[i].request_stencil,
@@ -759,8 +758,8 @@ TEST_F(DrawingBufferTest,
       nullptr, graphics_info, false /* using_swap_chain */, nullptr,
       too_big_size, false, false, false, false, false, DrawingBuffer::kDiscard,
       DrawingBuffer::kWebGL1, DrawingBuffer::kAllowChromiumImage,
-      cc::PaintFlags::FilterQuality::kLow, CanvasColorParams(),
-      gl::GpuPreference::kHighPerformance);
+      cc::PaintFlags::FilterQuality::kLow, PredefinedColorSpace::kSRGB,
+      CanvasPixelFormat::kUint8, gl::GpuPreference::kHighPerformance);
   EXPECT_EQ(too_big_drawing_buffer, nullptr);
   drawing_buffer_->BeginDestruction();
 }
