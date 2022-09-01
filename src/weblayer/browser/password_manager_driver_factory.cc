@@ -5,7 +5,6 @@
 #include "weblayer/browser/password_manager_driver_factory.h"
 
 #include "base/memory/raw_ptr.h"
-#include "base/stl_util.h"
 #include "components/password_manager/content/browser/bad_message.h"
 #include "components/password_manager/content/browser/form_meta_data.h"
 #include "components/site_isolation/site_isolation_policy.h"
@@ -73,7 +72,13 @@ class PasswordManagerDriverFactory::PasswordManagerDriver
                                const std::u16string& typed_username,
                                int options,
                                const gfx::RectF& bounds) override {}
-  void ShowTouchToFill() override {}
+
+#if BUILDFLAG(IS_ANDROID)
+  void ShowTouchToFill(
+      autofill::mojom::SubmissionReadinessState submission_readiness) override {
+  }
+#endif
+
   void CheckSafeBrowsingReputation(const GURL& form_action,
                                    const GURL& frame_url) override {}
   void FocusedInputChanged(
@@ -119,13 +124,11 @@ PasswordManagerDriverFactory::GetDriverForFrame(
     content::RenderFrameHost* render_frame_host) {
   DCHECK_EQ(web_contents(),
             content::WebContents::FromRenderFrameHost(render_frame_host));
-  DCHECK(render_frame_host->IsRenderFrameCreated());
+  DCHECK(render_frame_host->IsRenderFrameLive());
 
-  // TryEmplace() will return an iterator to the driver corresponding to
-  // `render_frame_host`. It creates a new one if required.
-  return &base::TryEmplace(frame_driver_map_, render_frame_host,
-                           render_frame_host)
-              .first->second;
+  auto [it, inserted] =
+      frame_driver_map_.try_emplace(render_frame_host, render_frame_host);
+  return &it->second;
 }
 
 void PasswordManagerDriverFactory::RenderFrameDeleted(

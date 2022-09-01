@@ -95,10 +95,10 @@ void DynPropGetterAdapter_MethodCallback(
 
   auto* pClassDescriptor = static_cast<const FXJSE_CLASS_DESCRIPTOR*>(
       hCallBackInfo->GetAlignedPointerFromInternalField(0));
-  if (pClassDescriptor != &GlobalClassDescriptor &&
-      pClassDescriptor != &NormalClassDescriptor &&
-      pClassDescriptor != &VariablesClassDescriptor &&
-      pClassDescriptor != &kFormCalcFM2JSDescriptor) {
+  if (pClassDescriptor != &kGlobalClassDescriptor &&
+      pClassDescriptor != &kNormalClassDescriptor &&
+      pClassDescriptor != &kVariablesClassDescriptor &&
+      pClassDescriptor != &kFormCalcDescriptor) {
     return;
   }
 

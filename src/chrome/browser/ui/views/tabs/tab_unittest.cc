@@ -16,11 +16,12 @@
 #include "chrome/browser/ui/tabs/tab_enums.h"
 #include "chrome/browser/ui/tabs/tab_types.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
-#include "chrome/browser/ui/views/tabs/alert_indicator.h"
+#include "chrome/browser/ui/views/tabs/alert_indicator_button.h"
 #include "chrome/browser/ui/views/tabs/fake_base_tab_strip_controller.h"
+#include "chrome/browser/ui/views/tabs/fake_tab_slot_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_close_button.h"
-#include "chrome/browser/ui/views/tabs/tab_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_icon.h"
+#include "chrome/browser/ui/views/tabs/tab_slot_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_slot_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/tabs/tab_style_views.h"
@@ -41,124 +42,6 @@
 
 using views::Widget;
 
-class FakeTabController : public TabController {
- public:
-  FakeTabController() = default;
-  FakeTabController(const FakeTabController&) = delete;
-  FakeTabController& operator=(const FakeTabController&) = delete;
-
-  void set_active_tab(bool value) { active_tab_ = value; }
-  void set_paint_throbber_to_layer(bool value) {
-    paint_throbber_to_layer_ = value;
-  }
-
-  const ui::ListSelectionModel& GetSelectionModel() const override {
-    return selection_model_;
-  }
-  void SelectTab(Tab* tab, const ui::Event& event) override {}
-  void ExtendSelectionTo(Tab* tab) override {}
-  void ToggleSelected(Tab* tab) override {}
-  void AddSelectionFromAnchorTo(Tab* tab) override {}
-  void CloseTab(Tab* tab, CloseTabSource source) override {}
-  void ShiftTabNext(Tab* tab) override {}
-  void ShiftTabPrevious(Tab* tab) override {}
-  void MoveTabFirst(Tab* tab) override {}
-  void MoveTabLast(Tab* tab) override {}
-  void ShowContextMenuForTab(Tab* tab,
-                             const gfx::Point& p,
-                             ui::MenuSourceType source_type) override {}
-  bool IsActiveTab(const Tab* tab) const override { return active_tab_; }
-  bool IsTabSelected(const Tab* tab) const override { return false; }
-  bool IsTabPinned(const Tab* tab) const override { return false; }
-  bool IsTabFirst(const Tab* tab) const override { return false; }
-  bool IsFocusInTabs() const override { return false; }
-  void MaybeStartDrag(
-      TabSlotView* source,
-      const ui::LocatedEvent& event,
-      const ui::ListSelectionModel& original_selection) override {}
-  void ContinueDrag(views::View* view, const ui::LocatedEvent& event) override {
-  }
-  bool EndDrag(EndDragReason reason) override { return false; }
-  Tab* GetTabAt(const gfx::Point& point) override { return nullptr; }
-  const Tab* GetAdjacentTab(const Tab* tab, int offset) override {
-    return nullptr;
-  }
-  void OnMouseEventInTab(views::View* source,
-                         const ui::MouseEvent& event) override {}
-  void UpdateHoverCard(Tab* tab, HoverCardUpdateType update_type) override {}
-  bool ShowDomainInHoverCards() const override { return true; }
-  bool HoverCardIsShowingForTab(Tab* tab) override { return false; }
-  int GetBackgroundOffset() const override { return 0; }
-  bool ShouldPaintAsActiveFrame() const override { return true; }
-  int GetStrokeThickness() const override { return 0; }
-  bool CanPaintThrobberToLayer() const override {
-    return paint_throbber_to_layer_;
-  }
-  bool HasVisibleBackgroundTabShapes() const override { return false; }
-  SkColor GetToolbarTopSeparatorColor() const override { return SK_ColorBLACK; }
-  SkColor GetTabSeparatorColor() const override { return SK_ColorBLACK; }
-  SkColor GetTabBackgroundColor(
-      TabActive active,
-      BrowserFrameActiveState active_state) const override {
-    return active == TabActive::kActive ? tab_bg_color_active_
-                                        : tab_bg_color_inactive_;
-  }
-  SkColor GetTabForegroundColor(TabActive active,
-                                SkColor background_color) const override {
-    return active == TabActive::kActive ? tab_fg_color_active_
-                                        : tab_fg_color_inactive_;
-  }
-  absl::optional<int> GetCustomBackgroundId(
-      BrowserFrameActiveState active_state) const override {
-    return absl::nullopt;
-  }
-  gfx::Rect GetTabAnimationTargetBounds(const Tab* tab) override {
-    return tab->bounds();
-  }
-  std::u16string GetAccessibleTabName(const Tab* tab) const override {
-    return std::u16string();
-  }
-  float GetHoverOpacityForTab(float range_parameter) const override {
-    return 1.0f;
-  }
-  float GetHoverOpacityForRadialHighlight() const override { return 1.0f; }
-
-  std::u16string GetGroupTitle(
-      const tab_groups::TabGroupId& group_id) const override {
-    return std::u16string();
-  }
-
-  tab_groups::TabGroupColorId GetGroupColorId(
-      const tab_groups::TabGroupId& group_id) const override {
-    return tab_groups::TabGroupColorId();
-  }
-
-  SkColor GetPaintedGroupColor(
-      const tab_groups::TabGroupColorId& color_id) const override {
-    return SkColor();
-  }
-
-  void SetTabColors(SkColor bg_color_active,
-                    SkColor fg_color_active,
-                    SkColor bg_color_inactive,
-                    SkColor fg_color_inactive) {
-    tab_bg_color_active_ = bg_color_active;
-    tab_fg_color_active_ = fg_color_active;
-    tab_bg_color_inactive_ = bg_color_inactive;
-    tab_fg_color_inactive_ = fg_color_inactive;
-  }
-
- private:
-  ui::ListSelectionModel selection_model_;
-  bool active_tab_ = false;
-  bool paint_throbber_to_layer_ = true;
-
-  SkColor tab_bg_color_active_ = gfx::kPlaceholderColor;
-  SkColor tab_fg_color_active_ = gfx::kPlaceholderColor;
-  SkColor tab_bg_color_inactive_ = gfx::kPlaceholderColor;
-  SkColor tab_fg_color_inactive_ = gfx::kPlaceholderColor;
-};
-
 class TabTest : public ChromeViewsTestBase {
  public:
   TabTest() {
@@ -171,8 +54,8 @@ class TabTest : public ChromeViewsTestBase {
 
   static views::Label* GetTabTitle(Tab* tab) { return tab->title_; }
 
-  static views::ImageView* GetAlertIndicator(Tab* tab) {
-    return tab->alert_indicator_;
+  static views::ImageButton* GetAlertIndicator(Tab* tab) {
+    return tab->alert_indicator_button_;
   }
 
   static views::ImageButton* GetCloseButton(Tab* tab) {
@@ -319,33 +202,33 @@ class TabTest : public ChromeViewsTestBase {
   static void StopFadeAnimationIfNecessary(const Tab& tab) {
     // Stop the fade animation directly instead of waiting an unknown number of
     // seconds.
-    gfx::Animation* fade_animation =
-        tab.alert_indicator_->fade_animation_.get();
-    if (fade_animation)
+    if (gfx::Animation* fade_animation =
+            tab.alert_indicator_button_->fade_animation_.get()) {
       fade_animation->Stop();
+    }
   }
 
   void SetupFakeClock(TabIcon* icon) { icon->clock_ = &fake_clock_; }
 
  private:
   static gfx::Rect GetAlertIndicatorBounds(const Tab& tab) {
-    if (!tab.alert_indicator_) {
+    if (!tab.alert_indicator_button_) {
       ADD_FAILURE();
       return gfx::Rect();
     }
-    return tab.alert_indicator_->bounds();
+    return tab.alert_indicator_button_->bounds();
   }
 
   std::string original_locale_;
   base::SimpleTestTickClock fake_clock_;
 };
 
-class AlertIndicatorTest : public ChromeViewsTestBase {
+class AlertIndicatorButtonTest : public ChromeViewsTestBase {
  public:
-  AlertIndicatorTest() = default;
-  AlertIndicatorTest(const AlertIndicatorTest&) = delete;
-  AlertIndicatorTest& operator=(const AlertIndicatorTest&) = delete;
-  ~AlertIndicatorTest() override = default;
+  AlertIndicatorButtonTest() = default;
+  AlertIndicatorButtonTest(const AlertIndicatorButtonTest&) = delete;
+  AlertIndicatorButtonTest& operator=(const AlertIndicatorButtonTest&) = delete;
+  ~AlertIndicatorButtonTest() override = default;
 
   void SetUp() override {
     ChromeViewsTestBase::SetUp();
@@ -387,8 +270,8 @@ class AlertIndicatorTest : public ChromeViewsTestBase {
   }
 
   void StopAnimation(Tab* tab) {
-    ASSERT_TRUE(tab->alert_indicator_->fade_animation_);
-    tab->alert_indicator_->fade_animation_->Stop();
+    ASSERT_TRUE(tab->alert_indicator_button_->fade_animation_);
+    tab->alert_indicator_button_->fade_animation_->Stop();
   }
 
   // Owned by TabStrip.
@@ -398,10 +281,10 @@ class AlertIndicatorTest : public ChromeViewsTestBase {
 };
 
 TEST_F(TabTest, HitTestTopPixel) {
-  auto tab_controller = std::make_unique<FakeTabController>();
+  auto tab_slot_controller = std::make_unique<FakeTabSlotController>();
   std::unique_ptr<views::Widget> widget = CreateTestWidget();
   Tab* tab =
-      widget->SetContentsView(std::make_unique<Tab>(tab_controller.get()));
+      widget->SetContentsView(std::make_unique<Tab>(tab_slot_controller.get()));
   tab->SizeToPreferredSize();
 
   // Tabs are slanted, so a click halfway down the left edge won't hit it.
@@ -432,7 +315,7 @@ TEST_F(TabTest, LayoutAndVisibilityOfElements) {
       TabAlertState::PIP_PLAYING,
   };
 
-  auto controller = std::make_unique<FakeTabController>();
+  auto controller = std::make_unique<FakeTabSlotController>();
   std::unique_ptr<views::Widget> widget = CreateTestWidget();
   Tab* tab = widget->SetContentsView(std::make_unique<Tab>(controller.get()));
 
@@ -454,7 +337,7 @@ TEST_F(TabTest, LayoutAndVisibilityOfElements) {
             << (alert_state ? static_cast<int>(alert_state.value()) : -1));
 
         data.pinned = is_pinned_tab;
-        controller->set_active_tab(is_active_tab);
+        controller->set_active_tab(is_active_tab ? tab : nullptr);
         if (alert_state)
           data.alert_state = {alert_state.value()};
         else
@@ -485,8 +368,8 @@ TEST_F(TabTest, LayoutAndVisibilityOfElements) {
 // Regression test for http://crbug.com/226253. Calling Layout() more than once
 // shouldn't change the insets of the close button.
 TEST_F(TabTest, CloseButtonLayout) {
-  FakeTabController tab_controller;
-  Tab tab(&tab_controller);
+  FakeTabSlotController tab_slot_controller;
+  Tab tab(&tab_slot_controller);
   tab.SetBounds(0, 0, 100, 50);
   LayoutTab(&tab);
   gfx::Insets close_button_insets = GetCloseButton(&tab)->GetInsets();
@@ -504,7 +387,7 @@ TEST_F(TabTest, CloseButtonLayout) {
 // Regression test for http://crbug.com/609701. Ensure TabCloseButton does not
 // get focus on right click.
 TEST_F(TabTest, CloseButtonFocus) {
-  auto controller = std::make_unique<FakeTabController>();
+  auto controller = std::make_unique<FakeTabSlotController>();
   std::unique_ptr<views::Widget> widget = CreateTestWidget();
   Tab* tab = widget->SetContentsView(std::make_unique<Tab>(controller.get()));
 
@@ -522,10 +405,10 @@ TEST_F(TabTest, CloseButtonFocus) {
 // Tests expected changes to the ThrobberView state when the WebContents loading
 // state changes or the animation timer (usually in BrowserView) triggers.
 TEST_F(TabTest, LayeredThrobber) {
-  auto tab_controller = std::make_unique<FakeTabController>();
+  auto tab_slot_controller = std::make_unique<FakeTabSlotController>();
   std::unique_ptr<views::Widget> widget = CreateTestWidget();
   Tab* tab =
-      widget->SetContentsView(std::make_unique<Tab>(tab_controller.get()));
+      widget->SetContentsView(std::make_unique<Tab>(tab_slot_controller.get()));
   tab->SizeToPreferredSize();
 
   TabIcon* icon = GetTabIcon(tab);
@@ -538,7 +421,7 @@ TEST_F(TabTest, LayeredThrobber) {
   // Simulate a "normal" tab load: should paint to a layer.
   data.network_state = TabNetworkState::kWaiting;
   tab->SetData(data);
-  EXPECT_TRUE(tab_controller->CanPaintThrobberToLayer());
+  EXPECT_TRUE(tab_slot_controller->CanPaintThrobberToLayer());
   EXPECT_TRUE(icon->GetShowingLoadingAnimation());
   EXPECT_TRUE(icon->layer());
   data.network_state = TabNetworkState::kLoading;
@@ -567,7 +450,7 @@ TEST_F(TabTest, LayeredThrobber) {
   data.should_hide_throbber = false;
   data.network_state = TabNetworkState::kWaiting;
   tab->SetData(data);
-  EXPECT_TRUE(tab_controller->CanPaintThrobberToLayer());
+  EXPECT_TRUE(tab_slot_controller->CanPaintThrobberToLayer());
   EXPECT_TRUE(icon->GetShowingLoadingAnimation());
   EXPECT_TRUE(icon->layer());
   data.network_state = TabNetworkState::kLoading;
@@ -594,11 +477,11 @@ TEST_F(TabTest, LayeredThrobber) {
   tab->SetData(data);
   EXPECT_TRUE(icon->GetShowingLoadingAnimation());
   EXPECT_TRUE(icon->layer());
-  tab_controller->set_paint_throbber_to_layer(false);
+  tab_slot_controller->set_paint_throbber_to_layer(false);
   tab->StepLoadingAnimation(base::Milliseconds(100));
   EXPECT_TRUE(icon->GetShowingLoadingAnimation());
   EXPECT_FALSE(icon->layer());
-  tab_controller->set_paint_throbber_to_layer(true);
+  tab_slot_controller->set_paint_throbber_to_layer(true);
   tab->StepLoadingAnimation(base::Milliseconds(100));
   EXPECT_TRUE(icon->GetShowingLoadingAnimation());
   EXPECT_TRUE(icon->layer());
@@ -606,9 +489,9 @@ TEST_F(TabTest, LayeredThrobber) {
   tab->SetData(data);
   EXPECT_FALSE(icon->GetShowingLoadingAnimation());
 
-  // Simulate a tab load starting and stopping during tab dragging (or with
-  // stacked tabs): no layer painting.
-  tab_controller->set_paint_throbber_to_layer(false);
+  // Simulate a tab load starting and stopping during tab dragging:
+  // no layer painting.
+  tab_slot_controller->set_paint_throbber_to_layer(false);
   data.network_state = TabNetworkState::kWaiting;
   tab->SetData(data);
   EXPECT_TRUE(icon->GetShowingLoadingAnimation());
@@ -619,8 +502,8 @@ TEST_F(TabTest, LayeredThrobber) {
 }
 
 TEST_F(TabTest, TitleHiddenWhenSmall) {
-  FakeTabController tab_controller;
-  Tab tab(&tab_controller);
+  FakeTabSlotController tab_slot_controller;
+  Tab tab(&tab_slot_controller);
   tab.SetBounds(0, 0, 100, 50);
   EXPECT_GT(GetTitleWidth(&tab), 0);
   tab.SetBounds(0, 0, 0, 50);
@@ -628,12 +511,12 @@ TEST_F(TabTest, TitleHiddenWhenSmall) {
 }
 
 TEST_F(TabTest, FaviconDoesntMoveWhenShowingAlertIndicator) {
-  auto controller = std::make_unique<FakeTabController>();
+  auto controller = std::make_unique<FakeTabSlotController>();
   std::unique_ptr<views::Widget> widget = CreateTestWidget();
 
   for (bool is_active_tab : {false, true}) {
-    controller->set_active_tab(is_active_tab);
     Tab* tab = widget->SetContentsView(std::make_unique<Tab>(controller.get()));
+    controller->set_active_tab(is_active_tab ? tab : nullptr);
     tab->SizeToPreferredSize();
 
     views::View* icon = GetTabIcon(tab);
@@ -646,8 +529,7 @@ TEST_F(TabTest, FaviconDoesntMoveWhenShowingAlertIndicator) {
 }
 
 TEST_F(TabTest, SmallTabsHideCloseButton) {
-  auto controller = std::make_unique<FakeTabController>();
-  controller->set_active_tab(false);
+  auto controller = std::make_unique<FakeTabSlotController>();
   std::unique_ptr<views::Widget> widget = CreateTestWidget();
   Tab* tab = widget->SetContentsView(std::make_unique<Tab>(controller.get()));
   const int width = tab->tab_style()->GetContentsInsets().width() +
@@ -666,10 +548,10 @@ TEST_F(TabTest, SmallTabsHideCloseButton) {
 }
 
 TEST_F(TabTest, ExtraLeftPaddingNotShownOnSmallActiveTab) {
-  auto controller = std::make_unique<FakeTabController>();
-  controller->set_active_tab(true);
+  auto controller = std::make_unique<FakeTabSlotController>();
   std::unique_ptr<views::Widget> widget = CreateTestWidget();
   Tab* tab = widget->SetContentsView(std::make_unique<Tab>(controller.get()));
+  controller->set_active_tab(tab);
   tab->SetBounds(0, 0, 200, 50);
   const views::View* close = GetCloseButton(tab);
   EXPECT_TRUE(close->GetVisible());
@@ -684,7 +566,7 @@ TEST_F(TabTest, ExtraLeftPaddingNotShownOnSmallActiveTab) {
 }
 
 TEST_F(TabTest, ExtraLeftPaddingShownOnSiteWithoutFavicon) {
-  auto controller = std::make_unique<FakeTabController>();
+  auto controller = std::make_unique<FakeTabSlotController>();
   std::unique_ptr<views::Widget> widget = CreateTestWidget();
   Tab* tab = widget->SetContentsView(std::make_unique<Tab>(controller.get()));
 
@@ -703,10 +585,10 @@ TEST_F(TabTest, ExtraLeftPaddingShownOnSiteWithoutFavicon) {
 }
 
 TEST_F(TabTest, ExtraAlertPaddingNotShownOnSmallActiveTab) {
-  auto controller = std::make_unique<FakeTabController>();
-  controller->set_active_tab(true);
+  auto controller = std::make_unique<FakeTabSlotController>();
   std::unique_ptr<views::Widget> widget = CreateTestWidget();
   Tab* tab = widget->SetContentsView(std::make_unique<Tab>(controller.get()));
+  controller->set_active_tab(tab);
   TabRendererData data;
   data.alert_state = {TabAlertState::AUDIO_PLAYING};
   tab->SetData(data);
@@ -745,7 +627,7 @@ TEST_F(TabTest, TitleTextHasSufficientContrast) {
       },
   };
 
-  auto controller = std::make_unique<FakeTabController>();
+  auto controller = std::make_unique<FakeTabSlotController>();
   // Create a tab inside a Widget, so it has a theme provider, so the call to
   // UpdateForegroundColors() below doesn't no-op.
   std::unique_ptr<views::Widget> widget = CreateTestWidget();
@@ -755,7 +637,7 @@ TEST_F(TabTest, TitleTextHasSufficientContrast) {
     controller->SetTabColors(colors.bg_active, colors.fg_active,
                              colors.bg_inactive, colors.fg_inactive);
     for (TabActive active : {TabActive::kInactive, TabActive::kActive}) {
-      controller->set_active_tab(active == TabActive::kActive);
+      controller->set_active_tab(active == TabActive::kActive ? tab : nullptr);
       tab->UpdateForegroundColors();
       const SkColor fg_color = tab->title_->GetEnabledColor();
       const SkColor bg_color = controller->GetTabBackgroundColor(
@@ -768,7 +650,7 @@ TEST_F(TabTest, TitleTextHasSufficientContrast) {
 
 // This test verifies that the tab has its icon state updated when the alert
 // animation fade-out finishes.
-TEST_F(AlertIndicatorTest, ShowsAndHidesAlertIndicator) {
+TEST_F(AlertIndicatorButtonTest, ShowsAndHidesAlertIndicator) {
   controller_->AddPinnedTab(0, false);
   controller_->AddTab(1, true);
   Tab* media_tab = tab_strip_->tab_at(0);

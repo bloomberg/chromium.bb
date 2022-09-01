@@ -10,7 +10,9 @@
 #include <bitset>
 #include <limits>
 
-#include "base/allocator/buildflags.h"
+#include "base/allocator/partition_allocator/partition_alloc_base/compiler_specific.h"
+#include "base/allocator/partition_allocator/partition_alloc_base/component_export.h"
+#include "base/allocator/partition_allocator/partition_alloc_buildflags.h"
 #include "base/allocator/partition_allocator/partition_alloc_check.h"
 #include "base/allocator/partition_allocator/partition_alloc_config.h"
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
@@ -19,7 +21,7 @@
 
 #if !defined(PA_HAS_64_BITS_POINTERS)
 
-namespace base {
+namespace partition_alloc {
 
 namespace internal {
 
@@ -28,7 +30,7 @@ namespace internal {
 // support it. All PartitionAlloc allocations must be in either of the pools.
 //
 // This code is specific to 32-bit systems.
-class BASE_EXPORT AddressPoolManagerBitmap {
+class PA_COMPONENT_EXPORT(PARTITION_ALLOC) AddressPoolManagerBitmap {
  public:
   static constexpr uint64_t kGiB = 1024 * 1024 * 1024ull;
   static constexpr uint64_t kAddressSpaceSize = 4ull * kGiB;
@@ -84,7 +86,7 @@ class BASE_EXPORT AddressPoolManagerBitmap {
     // It is safe to read |regular_pool_bits_| without a lock since the caller
     // is responsible for guaranteeing that the address is inside a valid
     // allocation and the deallocation call won't race with this call.
-    return TS_UNCHECKED_READ(
+    return PA_TS_UNCHECKED_READ(
         regular_pool_bits_)[address >> kBitShiftOfRegularPoolBitmap];
   }
 
@@ -97,37 +99,17 @@ class BASE_EXPORT AddressPoolManagerBitmap {
     // It is safe to read |brp_pool_bits_| without a lock since the caller
     // is responsible for guaranteeing that the address is inside a valid
     // allocation and the deallocation call won't race with this call.
-    return TS_UNCHECKED_READ(
+    return PA_TS_UNCHECKED_READ(
         brp_pool_bits_)[address >> kBitShiftOfBRPPoolBitmap];
   }
 
 #if BUILDFLAG(USE_BACKUP_REF_PTR)
-  static void IncrementOutsideOfBRPPoolPtrRefCount(uintptr_t address) {
-#if BUILDFLAG(NEVER_REMOVE_FROM_BRP_POOL_BLOCKLIST)
+  static void BanSuperPageFromBRPPool(uintptr_t address) {
     brp_forbidden_super_page_map_[address >> kSuperPageShift].store(
         true, std::memory_order_relaxed);
-#else
-    super_page_refcount_map_[address >> kSuperPageShift].fetch_add(
-        1, std::memory_order_relaxed);
-#endif  // BUILDFLAG(NEVER_REMOVE_FROM_BRP_POOL_BLOCKLIST)
   }
 
-  static void DecrementOutsideOfBRPPoolPtrRefCount(uintptr_t address) {
-#if BUILDFLAG(NEVER_REMOVE_FROM_BRP_POOL_BLOCKLIST)
-    // No-op. In this mode, we only use one bit per super-page and, therefore,
-    // can't tell if there's more than one associated raw_ptr<T> at a given
-    // time. There's a small risk is that we may exhaust the entire address
-    // space. On the other hand, a single relaxed store (in the above function)
-    // is much less expensive than two CAS operations.
-#else
-    super_page_refcount_map_[address >> kSuperPageShift].fetch_sub(
-        1, std::memory_order_relaxed);
-#endif  // BUILDFLAG(NEVER_REMOVE_FROM_BRP_POOL_BLOCKLIST)
-  }
-
-  static bool IsAllowedSuperPageForBRPPool(const void* address) {
-    uintptr_t address_as_uintptr = reinterpret_cast<uintptr_t>(address);
-
+  static bool IsAllowedSuperPageForBRPPool(uintptr_t address) {
     // The only potentially dangerous scenario, in which this check is used, is
     // when the assignment of the first raw_ptr<T> object for a non-GigaCage
     // address is racing with the allocation of a new GigCage super-page at the
@@ -140,38 +122,32 @@ class BASE_EXPORT AddressPoolManagerBitmap {
     // reserving the super-page region and, thus, having the race condition.
     // Since we rely on that external synchronization, the relaxed memory
     // ordering should be sufficient.
-#if BUILDFLAG(NEVER_REMOVE_FROM_BRP_POOL_BLOCKLIST)
-    return !brp_forbidden_super_page_map_[address_as_uintptr >> kSuperPageShift]
-                .load(std::memory_order_relaxed);
-#else
-    return super_page_refcount_map_[address_as_uintptr >> kSuperPageShift].load(
-               std::memory_order_relaxed) == 0;
-#endif  // BUILDFLAG(NEVER_REMOVE_FROM_BRP_POOL_BLOCKLIST)
+    return !brp_forbidden_super_page_map_[address >> kSuperPageShift].load(
+        std::memory_order_relaxed);
   }
+
+  static void IncrementBlocklistHitCount() { ++blocklist_hit_count_; }
 #endif  // BUILDFLAG(USE_BACKUP_REF_PTR)
 
  private:
   friend class AddressPoolManager;
 
-  static PartitionLock& GetLock();
+  static Lock& GetLock();
 
-  static std::bitset<kRegularPoolBits> regular_pool_bits_ GUARDED_BY(GetLock());
-  static std::bitset<kBRPPoolBits> brp_pool_bits_ GUARDED_BY(GetLock());
+  static std::bitset<kRegularPoolBits> regular_pool_bits_
+      PA_GUARDED_BY(GetLock());
+  static std::bitset<kBRPPoolBits> brp_pool_bits_ PA_GUARDED_BY(GetLock());
 #if BUILDFLAG(USE_BACKUP_REF_PTR)
-#if BUILDFLAG(NEVER_REMOVE_FROM_BRP_POOL_BLOCKLIST)
   static std::array<std::atomic_bool, kAddressSpaceSize / kSuperPageSize>
       brp_forbidden_super_page_map_;
-#else
-  static std::array<std::atomic_uint32_t, kAddressSpaceSize / kSuperPageSize>
-      super_page_refcount_map_;
-#endif
+  static std::atomic_size_t blocklist_hit_count_;
 #endif  // BUILDFLAG(USE_BACKUP_REF_PTR)
 };
 
 }  // namespace internal
 
 // Returns false for nullptr.
-ALWAYS_INLINE bool IsManagedByPartitionAlloc(uintptr_t address) {
+PA_ALWAYS_INLINE bool IsManagedByPartitionAlloc(uintptr_t address) {
   // When USE_BACKUP_REF_PTR is off, BRP pool isn't used.
   // No need to add IsManagedByConfigurablePool, because Configurable Pool
   // doesn't exist on 32-bit.
@@ -186,28 +162,28 @@ ALWAYS_INLINE bool IsManagedByPartitionAlloc(uintptr_t address) {
 }
 
 // Returns false for nullptr.
-ALWAYS_INLINE bool IsManagedByPartitionAllocRegularPool(uintptr_t address) {
+PA_ALWAYS_INLINE bool IsManagedByPartitionAllocRegularPool(uintptr_t address) {
   return internal::AddressPoolManagerBitmap::IsManagedByRegularPool(address);
 }
 
 // Returns false for nullptr.
-ALWAYS_INLINE bool IsManagedByPartitionAllocBRPPool(uintptr_t address) {
+PA_ALWAYS_INLINE bool IsManagedByPartitionAllocBRPPool(uintptr_t address) {
   return internal::AddressPoolManagerBitmap::IsManagedByBRPPool(address);
 }
 
 // Returns false for nullptr.
-ALWAYS_INLINE bool IsManagedByPartitionAllocConfigurablePool(
+PA_ALWAYS_INLINE bool IsManagedByPartitionAllocConfigurablePool(
     uintptr_t address) {
   // The Configurable Pool is only available on 64-bit builds.
   return false;
 }
 
-ALWAYS_INLINE bool IsConfigurablePoolAvailable() {
+PA_ALWAYS_INLINE bool IsConfigurablePoolAvailable() {
   // The Configurable Pool is only available on 64-bit builds.
   return false;
 }
 
-}  // namespace base
+}  // namespace partition_alloc
 
 #endif  // !defined(PA_HAS_64_BITS_POINTERS)
 

@@ -14,7 +14,6 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
-#include "base/task/post_task.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
@@ -57,8 +56,7 @@ void IOSChromeNetworkDelegate::InitializePrefsOnUIThread(
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
   if (enable_do_not_track) {
     enable_do_not_track->Init(prefs::kEnableDoNotTrack, pref_service);
-    enable_do_not_track->MoveToSequence(
-        base::CreateSingleThreadTaskRunner({web::WebThread::IO}));
+    enable_do_not_track->MoveToSequence(web::GetIOThreadTaskRunner({}));
   }
 }
 
@@ -108,17 +106,20 @@ bool IOSChromeNetworkDelegate::OnCanSetCookie(
              request.url(), request.site_for_cookies().RepresentativeUrl());
 }
 
-bool IOSChromeNetworkDelegate::OnForcePrivacyMode(
+net::NetworkDelegate::PrivacySetting
+IOSChromeNetworkDelegate::OnForcePrivacyMode(
     const GURL& url,
     const net::SiteForCookies& site_for_cookies,
     const absl::optional<url::Origin>& top_frame_origin,
     net::SamePartyContext::Type same_party_context_type) const {
   // Null during tests, or when we're running in the system context.
   if (!cookie_settings_.get())
-    return false;
+    return net::NetworkDelegate::PrivacySetting::kStateAllowed;
 
-  return !cookie_settings_->IsFullCookieAccessAllowed(url, site_for_cookies,
-                                                      top_frame_origin);
+  return cookie_settings_->IsFullCookieAccessAllowed(url, site_for_cookies,
+                                                     top_frame_origin)
+             ? net::NetworkDelegate::PrivacySetting::kStateAllowed
+             : net::NetworkDelegate::PrivacySetting::kStateDisallowed;
 }
 
 bool IOSChromeNetworkDelegate::

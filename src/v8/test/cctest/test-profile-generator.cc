@@ -48,17 +48,17 @@ TEST(ProfileNodeFindOrAddChild) {
   CcTest::InitializeVM();
   ProfileTree tree(CcTest::i_isolate());
   ProfileNode* node = tree.root();
-  CodeEntry entry1(i::CodeEventListener::FUNCTION_TAG, "aaa");
+  CodeEntry entry1(i::LogEventListener::FUNCTION_TAG, "aaa");
   ProfileNode* childNode1 = node->FindOrAddChild(&entry1);
   CHECK(childNode1);
   CHECK_EQ(childNode1, node->FindOrAddChild(&entry1));
-  CodeEntry entry2(i::CodeEventListener::FUNCTION_TAG, "bbb");
+  CodeEntry entry2(i::LogEventListener::FUNCTION_TAG, "bbb");
   ProfileNode* childNode2 = node->FindOrAddChild(&entry2);
   CHECK(childNode2);
   CHECK_NE(childNode1, childNode2);
   CHECK_EQ(childNode1, node->FindOrAddChild(&entry1));
   CHECK_EQ(childNode2, node->FindOrAddChild(&entry2));
-  CodeEntry entry3(i::CodeEventListener::FUNCTION_TAG, "ccc");
+  CodeEntry entry3(i::LogEventListener::FUNCTION_TAG, "ccc");
   ProfileNode* childNode3 = node->FindOrAddChild(&entry3);
   CHECK(childNode3);
   CHECK_NE(childNode1, childNode3);
@@ -72,13 +72,13 @@ TEST(ProfileNodeFindOrAddChildWithLineNumber) {
   CcTest::InitializeVM();
   ProfileTree tree(CcTest::i_isolate());
   ProfileNode* root = tree.root();
-  CodeEntry a(i::CodeEventListener::FUNCTION_TAG, "a");
+  CodeEntry a(i::LogEventListener::FUNCTION_TAG, "a");
   ProfileNode* a_node = root->FindOrAddChild(&a, -1);
 
   // a --(22)--> child1
   //   --(23)--> child1
 
-  CodeEntry child1(i::CodeEventListener::FUNCTION_TAG, "child1");
+  CodeEntry child1(i::LogEventListener::FUNCTION_TAG, "child1");
   ProfileNode* child1_node = a_node->FindOrAddChild(&child1, 22);
   CHECK(child1_node);
   CHECK_EQ(child1_node, a_node->FindOrAddChild(&child1, 22));
@@ -93,15 +93,15 @@ TEST(ProfileNodeFindOrAddChildForSameFunction) {
   const char* aaa = "aaa";
   ProfileTree tree(CcTest::i_isolate());
   ProfileNode* node = tree.root();
-  CodeEntry entry1(i::CodeEventListener::FUNCTION_TAG, aaa);
+  CodeEntry entry1(i::LogEventListener::FUNCTION_TAG, aaa);
   ProfileNode* childNode1 = node->FindOrAddChild(&entry1);
   CHECK(childNode1);
   CHECK_EQ(childNode1, node->FindOrAddChild(&entry1));
   // The same function again.
-  CodeEntry entry2(i::CodeEventListener::FUNCTION_TAG, aaa);
+  CodeEntry entry2(i::LogEventListener::FUNCTION_TAG, aaa);
   CHECK_EQ(childNode1, node->FindOrAddChild(&entry2));
   // Now with a different security token.
-  CodeEntry entry3(i::CodeEventListener::FUNCTION_TAG, aaa);
+  CodeEntry entry3(i::LogEventListener::FUNCTION_TAG, aaa);
   CHECK_EQ(childNode1, node->FindOrAddChild(&entry3));
 }
 
@@ -137,9 +137,9 @@ class ProfileTreeTestHelper {
 
 TEST(ProfileTreeAddPathFromEnd) {
   CcTest::InitializeVM();
-  CodeEntry entry1(i::CodeEventListener::FUNCTION_TAG, "aaa");
-  CodeEntry entry2(i::CodeEventListener::FUNCTION_TAG, "bbb");
-  CodeEntry entry3(i::CodeEventListener::FUNCTION_TAG, "ccc");
+  CodeEntry entry1(i::LogEventListener::FUNCTION_TAG, "aaa");
+  CodeEntry entry2(i::LogEventListener::FUNCTION_TAG, "bbb");
+  CodeEntry entry3(i::LogEventListener::FUNCTION_TAG, "ccc");
   ProfileTree tree(CcTest::i_isolate());
   ProfileTreeTestHelper helper(&tree);
   CHECK(!helper.Walk(&entry1));
@@ -197,9 +197,9 @@ TEST(ProfileTreeAddPathFromEnd) {
 
 TEST(ProfileTreeAddPathFromEndWithLineNumbers) {
   CcTest::InitializeVM();
-  CodeEntry a(i::CodeEventListener::FUNCTION_TAG, "a");
-  CodeEntry b(i::CodeEventListener::FUNCTION_TAG, "b");
-  CodeEntry c(i::CodeEventListener::FUNCTION_TAG, "c");
+  CodeEntry a(i::LogEventListener::FUNCTION_TAG, "a");
+  CodeEntry b(i::LogEventListener::FUNCTION_TAG, "b");
+  CodeEntry c(i::LogEventListener::FUNCTION_TAG, "c");
   ProfileTree tree(CcTest::i_isolate());
   ProfileTreeTestHelper helper(&tree);
 
@@ -226,7 +226,7 @@ TEST(ProfileTreeCalculateTotalTicks) {
   empty_tree.root()->IncrementSelfTicks();
   CHECK_EQ(1u, empty_tree.root()->self_ticks());
 
-  CodeEntry entry1(i::CodeEventListener::FUNCTION_TAG, "aaa");
+  CodeEntry entry1(i::LogEventListener::FUNCTION_TAG, "aaa");
   CodeEntry* e1_path[] = {&entry1};
   std::vector<CodeEntry*> e1_path_vec(e1_path, e1_path + arraysize(e1_path));
 
@@ -240,7 +240,7 @@ TEST(ProfileTreeCalculateTotalTicks) {
   CHECK_EQ(1u, single_child_tree.root()->self_ticks());
   CHECK_EQ(1u, node1->self_ticks());
 
-  CodeEntry entry2(i::CodeEventListener::FUNCTION_TAG, "bbb");
+  CodeEntry entry2(i::LogEventListener::FUNCTION_TAG, "bbb");
   CodeEntry* e2_e1_path[] = {&entry2, &entry1};
   std::vector<CodeEntry*> e2_e1_path_vec(e2_e1_path,
                                          e2_e1_path + arraysize(e2_e1_path));
@@ -266,7 +266,7 @@ TEST(ProfileTreeCalculateTotalTicks) {
 
   CodeEntry* e2_path[] = {&entry2};
   std::vector<CodeEntry*> e2_path_vec(e2_path, e2_path + arraysize(e2_path));
-  CodeEntry entry3(i::CodeEventListener::FUNCTION_TAG, "ccc");
+  CodeEntry entry3(i::LogEventListener::FUNCTION_TAG, "ccc");
   CodeEntry* e3_path[] = {&entry3};
   std::vector<CodeEntry*> e3_path_vec(e3_path, e3_path + arraysize(e3_path));
 
@@ -315,10 +315,10 @@ static inline void* ToPointer(int n) { return reinterpret_cast<void*>(n); }
 TEST(CodeMapAddCode) {
   CodeEntryStorage storage;
   CodeMap code_map(storage);
-  CodeEntry* entry1 = storage.Create(i::CodeEventListener::FUNCTION_TAG, "aaa");
-  CodeEntry* entry2 = storage.Create(i::CodeEventListener::FUNCTION_TAG, "bbb");
-  CodeEntry* entry3 = storage.Create(i::CodeEventListener::FUNCTION_TAG, "ccc");
-  CodeEntry* entry4 = storage.Create(i::CodeEventListener::FUNCTION_TAG, "ddd");
+  CodeEntry* entry1 = storage.Create(i::LogEventListener::FUNCTION_TAG, "aaa");
+  CodeEntry* entry2 = storage.Create(i::LogEventListener::FUNCTION_TAG, "bbb");
+  CodeEntry* entry3 = storage.Create(i::LogEventListener::FUNCTION_TAG, "ccc");
+  CodeEntry* entry4 = storage.Create(i::LogEventListener::FUNCTION_TAG, "ddd");
   code_map.AddCode(ToAddress(0x1500), entry1, 0x200);
   code_map.AddCode(ToAddress(0x1700), entry2, 0x100);
   code_map.AddCode(ToAddress(0x1900), entry3, 0x50);
@@ -345,8 +345,8 @@ TEST(CodeMapAddCode) {
 TEST(CodeMapMoveAndDeleteCode) {
   CodeEntryStorage storage;
   CodeMap code_map(storage);
-  CodeEntry* entry1 = storage.Create(i::CodeEventListener::FUNCTION_TAG, "aaa");
-  CodeEntry* entry2 = storage.Create(i::CodeEventListener::FUNCTION_TAG, "bbb");
+  CodeEntry* entry1 = storage.Create(i::LogEventListener::FUNCTION_TAG, "aaa");
+  CodeEntry* entry2 = storage.Create(i::LogEventListener::FUNCTION_TAG, "bbb");
   code_map.AddCode(ToAddress(0x1500), entry1, 0x200);
   code_map.AddCode(ToAddress(0x1700), entry2, 0x100);
   CHECK_EQ(entry1, code_map.FindEntry(ToAddress(0x1500)));
@@ -359,8 +359,8 @@ TEST(CodeMapMoveAndDeleteCode) {
 TEST(CodeMapClear) {
   CodeEntryStorage storage;
   CodeMap code_map(storage);
-  CodeEntry* entry1 = storage.Create(i::CodeEventListener::FUNCTION_TAG, "aaa");
-  CodeEntry* entry2 = storage.Create(i::CodeEventListener::FUNCTION_TAG, "bbb");
+  CodeEntry* entry1 = storage.Create(i::LogEventListener::FUNCTION_TAG, "aaa");
+  CodeEntry* entry2 = storage.Create(i::LogEventListener::FUNCTION_TAG, "bbb");
   code_map.AddCode(ToAddress(0x1500), entry1, 0x200);
   code_map.AddCode(ToAddress(0x1700), entry2, 0x100);
 
@@ -396,9 +396,9 @@ TEST(SymbolizeTickSample) {
   CodeEntryStorage storage;
   CodeMap code_map(storage);
   Symbolizer symbolizer(&code_map);
-  CodeEntry* entry1 = storage.Create(i::Logger::FUNCTION_TAG, "aaa");
-  CodeEntry* entry2 = storage.Create(i::Logger::FUNCTION_TAG, "bbb");
-  CodeEntry* entry3 = storage.Create(i::Logger::FUNCTION_TAG, "ccc");
+  CodeEntry* entry1 = storage.Create(i::V8FileLogger::FUNCTION_TAG, "aaa");
+  CodeEntry* entry2 = storage.Create(i::V8FileLogger::FUNCTION_TAG, "bbb");
+  CodeEntry* entry3 = storage.Create(i::V8FileLogger::FUNCTION_TAG, "ccc");
   symbolizer.code_map()->AddCode(ToAddress(0x1500), entry1, 0x200);
   symbolizer.code_map()->AddCode(ToAddress(0x1700), entry2, 0x100);
   symbolizer.code_map()->AddCode(ToAddress(0x1900), entry3, 0x50);
@@ -461,13 +461,14 @@ TEST(SampleIds) {
   CpuProfiler profiler(isolate);
   CpuProfilesCollection profiles(isolate);
   profiles.set_cpu_profiler(&profiler);
-  profiles.StartProfiling("", {CpuProfilingMode::kLeafNodeLineNumbers});
+  ProfilerId id =
+      profiles.StartProfiling("", {CpuProfilingMode::kLeafNodeLineNumbers}).id;
   CodeEntryStorage storage;
   CodeMap code_map(storage);
   Symbolizer symbolizer(&code_map);
-  CodeEntry* entry1 = storage.Create(i::Logger::FUNCTION_TAG, "aaa");
-  CodeEntry* entry2 = storage.Create(i::Logger::FUNCTION_TAG, "bbb");
-  CodeEntry* entry3 = storage.Create(i::Logger::FUNCTION_TAG, "ccc");
+  CodeEntry* entry1 = storage.Create(i::V8FileLogger::FUNCTION_TAG, "aaa");
+  CodeEntry* entry2 = storage.Create(i::V8FileLogger::FUNCTION_TAG, "bbb");
+  CodeEntry* entry3 = storage.Create(i::V8FileLogger::FUNCTION_TAG, "ccc");
   symbolizer.code_map()->AddCode(ToAddress(0x1500), entry1, 0x200);
   symbolizer.code_map()->AddCode(ToAddress(0x1700), entry2, 0x100);
   symbolizer.code_map()->AddCode(ToAddress(0x1900), entry3, 0x50);
@@ -477,7 +478,7 @@ TEST(SampleIds) {
   // (root)#1 -> aaa #2 -> bbb #4 -> ccc #5 - sample2
   //                    -> ccc #6 -> aaa #7 - sample3
   TickSample sample1;
-  sample1.timestamp = v8::base::TimeTicks::HighResolutionNow();
+  sample1.timestamp = v8::base::TimeTicks::Now();
   sample1.pc = ToPointer(0x1600);
   sample1.stack[0] = ToPointer(0x1510);
   sample1.frames_count = 1;
@@ -487,7 +488,7 @@ TEST(SampleIds) {
       base::TimeDelta(), StateTag::JS, EmbedderStateTag::EMPTY);
 
   TickSample sample2;
-  sample2.timestamp = v8::base::TimeTicks::HighResolutionNow();
+  sample2.timestamp = v8::base::TimeTicks::Now();
   sample2.pc = ToPointer(0x1925);
   sample2.stack[0] = ToPointer(0x1780);
   sample2.stack[1] = ToPointer(0x10000);  // non-existent.
@@ -499,7 +500,7 @@ TEST(SampleIds) {
       base::TimeDelta(), StateTag::JS, EmbedderStateTag::EMPTY);
 
   TickSample sample3;
-  sample3.timestamp = v8::base::TimeTicks::HighResolutionNow();
+  sample3.timestamp = v8::base::TimeTicks::Now();
   sample3.pc = ToPointer(0x1510);
   sample3.stack[0] = ToPointer(0x1910);
   sample3.stack[1] = ToPointer(0x1610);
@@ -509,7 +510,7 @@ TEST(SampleIds) {
       sample3.timestamp, symbolized.stack_trace, symbolized.src_line, true,
       base::TimeDelta(), StateTag::JS, EmbedderStateTag::EMPTY);
 
-  CpuProfile* profile = profiles.StopProfiling("");
+  CpuProfile* profile = profiles.StopProfiling(id);
   unsigned nodeId = 1;
   CheckNodeIds(profile->top_down()->root(), &nodeId);
   CHECK_EQ(7u, nodeId - 1);
@@ -521,24 +522,56 @@ TEST(SampleIds) {
   }
 }
 
+TEST(SampleIds_StopProfilingByProfilerId) {
+  TestSetup test_setup;
+  i::Isolate* isolate = CcTest::i_isolate();
+  CpuProfiler profiler(isolate);
+  CpuProfilesCollection profiles(isolate);
+  profiles.set_cpu_profiler(&profiler);
+  CpuProfilingResult result =
+      profiles.StartProfiling("", {CpuProfilingMode::kLeafNodeLineNumbers});
+  CHECK_EQ(result.status, CpuProfilingStatus::kStarted);
+
+  CpuProfile* profile = profiles.StopProfiling(result.id);
+  CHECK_NE(profile, nullptr);
+}
+
+TEST(CpuProfilesCollectionDuplicateId) {
+  CpuProfilesCollection collection(CcTest::i_isolate());
+  CpuProfiler profiler(CcTest::i_isolate());
+  collection.set_cpu_profiler(&profiler);
+
+  auto profile_result = collection.StartProfiling();
+  CHECK_EQ(CpuProfilingStatus::kStarted, profile_result.status);
+  CHECK_EQ(CpuProfilingStatus::kAlreadyStarted,
+           collection.StartProfilingForTesting(profile_result.id).status);
+
+  collection.StopProfiling(profile_result.id);
+}
+
+TEST(CpuProfilesCollectionDuplicateTitle) {
+  CpuProfilesCollection collection(CcTest::i_isolate());
+  CpuProfiler profiler(CcTest::i_isolate());
+  collection.set_cpu_profiler(&profiler);
+
+  auto profile_result = collection.StartProfiling("duplicate");
+  CHECK_EQ(CpuProfilingStatus::kStarted, profile_result.status);
+  CHECK_EQ(CpuProfilingStatus::kAlreadyStarted,
+           collection.StartProfiling("duplicate").status);
+
+  collection.StopProfiling(profile_result.id);
+}
+
 namespace {
 class DiscardedSamplesDelegateImpl : public v8::DiscardedSamplesDelegate {
  public:
   DiscardedSamplesDelegateImpl() : DiscardedSamplesDelegate() {}
-  void Notify() override {}
+  void Notify() override { CHECK_GT(GetId(), 0); }
 };
 
-class MockPlatform : public TestPlatform {
+class MockPlatform final : public TestPlatform {
  public:
-  MockPlatform()
-      : old_platform_(i::V8::GetCurrentPlatform()),
-        mock_task_runner_(new MockTaskRunner()) {
-    // Now that it's completely constructed, make this the current platform.
-    i::V8::SetPlatformForTesting(this);
-  }
-
-  // When done, explicitly revert to old_platform_.
-  ~MockPlatform() override { i::V8::SetPlatformForTesting(old_platform_); }
+  MockPlatform() : mock_task_runner_(new MockTaskRunner()) {}
 
   std::shared_ptr<v8::TaskRunner> GetForegroundTaskRunner(
       v8::Isolate*) override {
@@ -566,6 +599,8 @@ class MockPlatform : public TestPlatform {
     }
 
     bool IdleTasksEnabled() override { return false; }
+    bool NonNestableTasksEnabled() const override { return true; }
+    bool NonNestableDelayedTasksEnabled() const override { return true; }
 
     int posted_count() { return posted_count_; }
 
@@ -575,30 +610,31 @@ class MockPlatform : public TestPlatform {
     std::unique_ptr<Task> task_;
   };
 
-  v8::Platform* old_platform_;
   std::shared_ptr<MockTaskRunner> mock_task_runner_;
 };
 }  // namespace
 
-TEST(MaxSamplesCallback) {
+TEST_WITH_PLATFORM(MaxSamplesCallback, MockPlatform) {
   i::Isolate* isolate = CcTest::i_isolate();
   CpuProfilesCollection profiles(isolate);
   CpuProfiler profiler(isolate);
   profiles.set_cpu_profiler(&profiler);
-  MockPlatform* mock_platform = new MockPlatform();
   std::unique_ptr<DiscardedSamplesDelegateImpl> impl =
       std::make_unique<DiscardedSamplesDelegateImpl>(
           DiscardedSamplesDelegateImpl());
-  profiles.StartProfiling("",
+  ProfilerId id =
+      profiles
+          .StartProfiling("",
                           {v8::CpuProfilingMode::kLeafNodeLineNumbers, 1, 1,
                            MaybeLocal<v8::Context>()},
-                          std::move(impl));
+                          std::move(impl))
+          .id;
 
   CodeEntryStorage storage;
   CodeMap code_map(storage);
   Symbolizer symbolizer(&code_map);
   TickSample sample1;
-  sample1.timestamp = v8::base::TimeTicks::HighResolutionNow();
+  sample1.timestamp = v8::base::TimeTicks::Now();
   sample1.pc = ToPointer(0x1600);
   sample1.stack[0] = ToPointer(0x1510);
   sample1.frames_count = 1;
@@ -606,9 +642,9 @@ TEST(MaxSamplesCallback) {
   profiles.AddPathToCurrentProfiles(
       sample1.timestamp, symbolized.stack_trace, symbolized.src_line, true,
       base::TimeDelta(), StateTag::JS, EmbedderStateTag::EMPTY);
-  CHECK_EQ(0, mock_platform->posted_count());
+  CHECK_EQ(0, platform.posted_count());
   TickSample sample2;
-  sample2.timestamp = v8::base::TimeTicks::HighResolutionNow();
+  sample2.timestamp = v8::base::TimeTicks::Now();
   sample2.pc = ToPointer(0x1925);
   sample2.stack[0] = ToPointer(0x1780);
   sample2.frames_count = 2;
@@ -616,20 +652,19 @@ TEST(MaxSamplesCallback) {
   profiles.AddPathToCurrentProfiles(
       sample2.timestamp, symbolized.stack_trace, symbolized.src_line, true,
       base::TimeDelta(), StateTag::JS, EmbedderStateTag::EMPTY);
-  CHECK_EQ(1, mock_platform->posted_count());
+  CHECK_EQ(1, platform.posted_count());
   TickSample sample3;
-  sample3.timestamp = v8::base::TimeTicks::HighResolutionNow();
+  sample3.timestamp = v8::base::TimeTicks::Now();
   sample3.pc = ToPointer(0x1510);
   sample3.frames_count = 3;
   symbolized = symbolizer.SymbolizeTickSample(sample3);
   profiles.AddPathToCurrentProfiles(
       sample3.timestamp, symbolized.stack_trace, symbolized.src_line, true,
       base::TimeDelta(), StateTag::JS, EmbedderStateTag::EMPTY);
-  CHECK_EQ(1, mock_platform->posted_count());
+  CHECK_EQ(1, platform.posted_count());
 
   // Teardown
-  profiles.StopProfiling("");
-  delete mock_platform;
+  profiles.StopProfiling(id);
 }
 
 TEST(NoSamples) {
@@ -638,11 +673,11 @@ TEST(NoSamples) {
   CpuProfiler profiler(isolate);
   CpuProfilesCollection profiles(isolate);
   profiles.set_cpu_profiler(&profiler);
-  profiles.StartProfiling("");
+  ProfilerId id = profiles.StartProfiling().id;
   CodeEntryStorage storage;
   CodeMap code_map(storage);
   Symbolizer symbolizer(&code_map);
-  CodeEntry* entry1 = storage.Create(i::Logger::FUNCTION_TAG, "aaa");
+  CodeEntry* entry1 = storage.Create(i::V8FileLogger::FUNCTION_TAG, "aaa");
   symbolizer.code_map()->AddCode(ToAddress(0x1500), entry1, 0x200);
 
   // We are building the following calls tree:
@@ -652,12 +687,11 @@ TEST(NoSamples) {
   sample1.stack[0] = ToPointer(0x1510);
   sample1.frames_count = 1;
   auto symbolized = symbolizer.SymbolizeTickSample(sample1);
-  profiles.AddPathToCurrentProfiles(v8::base::TimeTicks::HighResolutionNow(),
-                                    symbolized.stack_trace, symbolized.src_line,
-                                    true, base::TimeDelta(), StateTag::JS,
-                                    EmbedderStateTag::EMPTY);
+  profiles.AddPathToCurrentProfiles(
+      v8::base::TimeTicks::Now(), symbolized.stack_trace, symbolized.src_line,
+      true, base::TimeDelta(), StateTag::JS, EmbedderStateTag::EMPTY);
 
-  CpuProfile* profile = profiles.StopProfiling("");
+  CpuProfile* profile = profiles.StopProfiling(id);
   unsigned nodeId = 1;
   CheckNodeIds(profile->top_down()->root(), &nodeId);
   CHECK_EQ(3u, nodeId - 1);
@@ -732,15 +766,14 @@ TEST(Issue51919) {
     base::Vector<char> title = v8::base::Vector<char>::New(16);
     base::SNPrintF(title, "%d", i);
     CHECK_EQ(CpuProfilingStatus::kStarted,
-             collection.StartProfiling(title.begin()));
+             collection.StartProfiling(title.begin()).status);
     titles[i] = title.begin();
   }
   CHECK_EQ(CpuProfilingStatus::kErrorTooManyProfilers,
-           collection.StartProfiling("maximum"));
+           collection.StartProfiling("maximum").status);
   for (int i = 0; i < CpuProfilesCollection::kMaxSimultaneousProfiles; ++i)
     i::DeleteArray(titles[i]);
 }
-
 
 static const v8::CpuProfileNode* PickChild(const v8::CpuProfileNode* parent,
                                            const char* name) {
@@ -857,8 +890,8 @@ TEST(LineNumber) {
 TEST(BailoutReason) {
 #ifndef V8_LITE_MODE
   i::FLAG_allow_natives_syntax = true;
-  i::FLAG_always_opt = false;
-  i::FLAG_opt = true;
+  i::FLAG_always_turbofan = false;
+  i::FLAG_turbofan = true;
   v8::HandleScope scope(CcTest::isolate());
   v8::Local<v8::Context> env = CcTest::NewContext({PROFILER_EXTENSION_ID});
   v8::Context::Scope context_scope(env);
@@ -904,15 +937,15 @@ TEST(BailoutReason) {
 
 TEST(NodeSourceTypes) {
   ProfileTree tree(CcTest::i_isolate());
-  CodeEntry function_entry(CodeEventListener::FUNCTION_TAG, "function");
+  CodeEntry function_entry(LogEventListener::FUNCTION_TAG, "function");
   tree.AddPathFromEnd({&function_entry});
-  CodeEntry builtin_entry(CodeEventListener::BUILTIN_TAG, "builtin");
+  CodeEntry builtin_entry(LogEventListener::BUILTIN_TAG, "builtin");
   tree.AddPathFromEnd({&builtin_entry});
-  CodeEntry callback_entry(CodeEventListener::CALLBACK_TAG, "callback");
+  CodeEntry callback_entry(LogEventListener::CALLBACK_TAG, "callback");
   tree.AddPathFromEnd({&callback_entry});
-  CodeEntry regex_entry(CodeEventListener::REG_EXP_TAG, "regex");
+  CodeEntry regex_entry(LogEventListener::REG_EXP_TAG, "regex");
   tree.AddPathFromEnd({&regex_entry});
-  CodeEntry stub_entry(CodeEventListener::STUB_TAG, "stub");
+  CodeEntry stub_entry(LogEventListener::STUB_TAG, "stub");
   tree.AddPathFromEnd({&stub_entry});
 
   tree.AddPathFromEnd({CodeEntry::gc_entry()});
@@ -965,7 +998,7 @@ TEST(CodeMapRemoveCode) {
   CodeEntryStorage storage;
   CodeMap code_map(storage);
 
-  CodeEntry* entry = storage.Create(i::CodeEventListener::FUNCTION_TAG, "aaa");
+  CodeEntry* entry = storage.Create(i::LogEventListener::FUNCTION_TAG, "aaa");
   code_map.AddCode(ToAddress(0x1000), entry, 0x100);
   CHECK(code_map.RemoveCode(entry));
   CHECK(!code_map.FindEntry(ToAddress(0x1000)));
@@ -973,9 +1006,9 @@ TEST(CodeMapRemoveCode) {
   // Test that when two entries share the same address, we remove only the
   // entry that we desired to.
   CodeEntry* colliding_entry1 =
-      storage.Create(i::CodeEventListener::FUNCTION_TAG, "aaa");
+      storage.Create(i::LogEventListener::FUNCTION_TAG, "aaa");
   CodeEntry* colliding_entry2 =
-      storage.Create(i::CodeEventListener::FUNCTION_TAG, "aaa");
+      storage.Create(i::LogEventListener::FUNCTION_TAG, "aaa");
   code_map.AddCode(ToAddress(0x1000), colliding_entry1, 0x100);
   code_map.AddCode(ToAddress(0x1000), colliding_entry2, 0x100);
 
@@ -990,11 +1023,11 @@ TEST(CodeMapMoveOverlappingCode) {
   CodeEntryStorage storage;
   CodeMap code_map(storage);
   CodeEntry* colliding_entry1 =
-      storage.Create(i::CodeEventListener::FUNCTION_TAG, "aaa");
+      storage.Create(i::LogEventListener::FUNCTION_TAG, "aaa");
   CodeEntry* colliding_entry2 =
-      storage.Create(i::CodeEventListener::FUNCTION_TAG, "bbb");
+      storage.Create(i::LogEventListener::FUNCTION_TAG, "bbb");
   CodeEntry* after_entry =
-      storage.Create(i::CodeEventListener::FUNCTION_TAG, "ccc");
+      storage.Create(i::LogEventListener::FUNCTION_TAG, "ccc");
 
   code_map.AddCode(ToAddress(0x1400), colliding_entry1, 0x200);
   code_map.AddCode(ToAddress(0x1400), colliding_entry2, 0x200);

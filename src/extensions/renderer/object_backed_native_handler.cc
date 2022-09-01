@@ -190,7 +190,7 @@ bool ObjectBackedNativeHandler::ContextCanAccessObject(
     bool allow_null_context) {
   if (object->IsNull())
     return true;
-  if (context == object->CreationContext())
+  if (context == object->GetCreationContextChecked())
     return true;
   // TODO(lazyboy): ScriptContextSet isn't available on worker threads. We
   // should probably use WorkerScriptContextSet somehow.
@@ -204,24 +204,25 @@ bool ObjectBackedNativeHandler::ContextCanAccessObject(
   return blink::WebFrame::ScriptCanAccess(other_script_context->web_frame());
 }
 
-void ObjectBackedNativeHandler::SetPrivate(v8::Local<v8::Object> obj,
+bool ObjectBackedNativeHandler::SetPrivate(v8::Local<v8::Object> obj,
                                            const char* key,
                                            v8::Local<v8::Value> value) {
-  SetPrivate(context_->v8_context(), obj, key, value);
+  return SetPrivate(context_->v8_context(), obj, key, value);
 }
 
 // static
-void ObjectBackedNativeHandler::SetPrivate(v8::Local<v8::Context> context,
+bool ObjectBackedNativeHandler::SetPrivate(v8::Local<v8::Context> context,
                                            v8::Local<v8::Object> obj,
                                            const char* key,
                                            v8::Local<v8::Value> value) {
-  obj->SetPrivate(
-         context,
-         v8::Private::ForApi(context->GetIsolate(),
-                             v8::String::NewFromUtf8(context->GetIsolate(), key,
-                                                     v8::NewStringType::kNormal)
-                                 .ToLocalChecked()),
-         value)
+  return obj
+      ->SetPrivate(context,
+                   v8::Private::ForApi(
+                       context->GetIsolate(),
+                       v8::String::NewFromUtf8(context->GetIsolate(), key,
+                                               v8::NewStringType::kNormal)
+                           .ToLocalChecked()),
+                   value)
       .FromJust();
 }
 

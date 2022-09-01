@@ -5,12 +5,9 @@
 #ifndef CONTENT_BROWSER_MEDIA_MEDIA_INTERNALS_CDM_HELPER_H_
 #define CONTENT_BROWSER_MEDIA_MEDIA_INTERNALS_CDM_HELPER_H_
 
-#include <set>
-#include <string>
-
 #include "base/memory/weak_ptr.h"
-#include "content/browser/media/key_system_support_impl.h"
-#include "media/mojo/mojom/key_system_support.mojom-forward.h"
+#include "content/browser/media/cdm_registry_impl.h"
+#include "content/public/common/cdm_info.h"
 
 namespace content {
 
@@ -27,13 +24,7 @@ class MediaInternalsCdmHelper {
   void GetRegisteredCdms();
 
  private:
-  void OnCdmInfoFinalized(const std::string& key_system,
-                          bool success,
-                          media::mojom::KeySystemCapabilityPtr capability);
-  void SendCdmUpdate();
-
-  KeySystemSupportImpl key_system_support_impl_;
-  std::set<std::string> pending_key_systems_;
+  void OnKeySystemCapabilitiesUpdated(KeySystemCapabilities capabilities);
 
   base::WeakPtrFactory<MediaInternalsCdmHelper> weak_factory_{this};
 };

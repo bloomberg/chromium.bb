@@ -186,7 +186,8 @@ class PageTestResultsTest(unittest.TestCase):
 
   def testDiagnosticsAsArtifact(self):
     with self.CreateResults(benchmark_name='some benchmark',
-                            benchmark_description='a description') as results:
+                            benchmark_description='a description',
+                            bot_id_name='some bot ID') as results:
       results.AddSharedDiagnostics(
           owners=['test'],
           bug_components=['1', '2'],
@@ -195,6 +196,7 @@ class PageTestResultsTest(unittest.TestCase):
           device_id='id',
           os_name='os',
           os_version='ver',
+          os_detail_vers='detailed_ver'
       )
       with results.CreateStoryRun(self.stories[0]):
         pass
@@ -213,6 +215,7 @@ class PageTestResultsTest(unittest.TestCase):
           'diagnostics': {
               'benchmarks': ['some benchmark'],
               'benchmarkDescriptions': ['a description'],
+              'botId': ['some bot ID'],
               'owners': ['test'],
               'bugComponents': ['1', '2'],
               'documentationLinks': [['documentation', 'url']],
@@ -220,6 +223,7 @@ class PageTestResultsTest(unittest.TestCase):
               'deviceIds': ['id'],
               'osNames': ['os'],
               'osVersions': ['ver'],
+              'osDetailedVersions': ['detailed_ver'],
           },
       })
 

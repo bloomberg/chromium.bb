@@ -20,7 +20,6 @@
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/resources/grit/webui_resources.h"
 
 class WebUIResourceBrowserTest : public InProcessBrowserTest {
  public:
@@ -61,10 +60,6 @@ IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, CrReloadTest) {
   LoadTestUrl("cr_reload_test.html");
 }
 #endif
-
-IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, EventTargetModuleTest) {
-  LoadTestUrl("?module=js/cr/event_target_test.js");
-}
 
 IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, I18nProcessCssTest) {
   LoadTestUrl("i18n_process_css_test.html");

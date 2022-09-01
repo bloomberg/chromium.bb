@@ -13,6 +13,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/download/download_core_service.h"
 #include "chrome/browser/download/download_core_service_factory.h"
@@ -25,6 +26,7 @@
 #include "components/history/core/browser/download_row.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/download_manager.h"
+#include "content/public/browser/storage_partition_config.h"
 #include "content/public/test/browser_test.h"
 #include "extensions/buildflags/buildflags.h"
 #include "url/origin.h"
@@ -127,8 +129,10 @@ class DownloadsCounterTest : public InProcessBrowserTest,
         guid, download::DownloadItem::kInvalidId + (++items_count_),
         base::FilePath(FILE_PATH_LITERAL("current/path")),
         base::FilePath(FILE_PATH_LITERAL("target/path")), url_chain, GURL(),
-        GURL(), GURL(), GURL(), url::Origin(), mime_type, std::string(), time_,
-        time_, std::string(), std::string(), 1, 1, std::string(), state, danger,
+        content::StoragePartitionConfig::CreateDefault(
+            manager->GetBrowserContext()),
+        GURL(), GURL(), url::Origin(), mime_type, std::string(), time_, time_,
+        std::string(), std::string(), 1, 1, std::string(), state, danger,
         reason, false, time_, false,
         std::vector<download::DownloadItem::ReceivedSlice>(),
         download::DownloadItemRerouteInfo());
@@ -327,7 +331,7 @@ IN_PROC_BROWSER_TEST_F(DownloadsCounterTest, NotPersisted) {
 
 // Tests that the counter takes time ranges into account.
 // Flaky on Mac (crbug.com/736820)
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #define MAYBE_TimeRanges DISABLED_TimeRanges
 #else
 #define MAYBE_TimeRanges TimeRanges

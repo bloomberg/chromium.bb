@@ -13,7 +13,6 @@
 #include "base/build_time.h"
 #include "base/check_op.h"
 #include "base/compiler_specific.h"
-#include "base/cxx17_backports.h"
 #include "base/environment.h"
 #include "base/test/gtest_util.h"
 #include "base/threading/platform_thread.h"
@@ -22,12 +21,14 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/icu/source/common/unicode/utypes.h"
+#include "third_party/icu/source/i18n/unicode/timezone.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "base/android/jni_android.h"
-#elif defined(OS_FUCHSIA) || defined(OS_CHROMEOS)
+#elif BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(IS_CHROMEOS)
 #include "base/test/icu_test_util.h"
-#elif defined(OS_WIN)
+#elif BUILDFLAG(IS_WIN)
 #include <windows.h>
 #endif
 
@@ -35,7 +36,7 @@ namespace base {
 
 namespace {
 
-#if defined(OS_FUCHSIA)
+#if BUILDFLAG(IS_FUCHSIA)
 // Hawaii does not observe daylight saving time, which is useful for having a
 // constant offset when faking the time zone.
 const char kHonoluluTimeZoneId[] = "Pacific/Honolulu";
@@ -43,7 +44,34 @@ const int kHonoluluOffsetHours = -10;
 const int kHonoluluOffsetSeconds = kHonoluluOffsetHours * 60 * 60;
 #endif
 
-#if defined(OS_FUCHSIA) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(IS_CHROMEOS)
+
+const char kThaiLocale[] = "th-TH";
+const char kBangkokTimeZoneId[] = "Asia/Bangkok";
+
+// Returns the total offset (including Daylight Saving Time) of the timezone
+// with |timezone_id| at |time|, or absl::nullopt in case of failure.
+absl::optional<base::TimeDelta> GetTimeZoneOffsetAtTime(const char* timezone_id,
+                                                        Time time) {
+  std::unique_ptr<icu::TimeZone> tz(icu::TimeZone::createTimeZone(timezone_id));
+  if (*tz == icu::TimeZone::getUnknown()) {
+    return {};
+  }
+  int32_t raw_offset = 0;
+  int32_t dst_offset = 0;
+  UErrorCode ec = U_ZERO_ERROR;
+  tz->getOffset(time.ToDoubleT(), false, raw_offset, dst_offset, ec);
+  if (!U_SUCCESS(ec)) {
+    return {};
+  }
+  return base::Milliseconds(raw_offset + dst_offset);
+}
+
+TimeDelta TimePassedAfterMidnight(const Time::Exploded& time) {
+  return base::Hours(time.hour) + base::Minutes(time.minute) +
+         base::Seconds(time.second) + base::Milliseconds(time.millisecond);
+}
+
 // Timezone environment variable
 
 class ScopedLibcTZ {
@@ -83,7 +111,7 @@ class ScopedLibcTZ {
 
 constexpr char ScopedLibcTZ::kTZ[];
 
-#endif  //  defined(OS_FUCHSIA) || defined(OS_CHROMEOS)
+#endif  //  BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(IS_CHROMEOS)
 
 TEST(TimeTestOutOfBounds, FromExplodedOutOfBoundsTime) {
   // FromUTCExploded must set time to Time(0) and failure, if the day is set to
@@ -146,7 +174,7 @@ TEST(TimeTestOutOfBounds, FromExplodedOutOfBoundsTime) {
 // See also pr_time_unittests.cc
 class TimeTest : public testing::Test {
  protected:
-#if defined(OS_FUCHSIA)
+#if BUILDFLAG(IS_FUCHSIA)
   // POSIX local time functions always use UTC on Fuchsia. As this is not very
   // interesting for any "local" tests, set a different default ICU timezone for
   // the test. This only affects code that uses ICU, such as Exploded time.
@@ -187,7 +215,7 @@ class TimeTest : public testing::Test {
 // Test conversion to/from TimeDeltas elapsed since the Windows epoch.
 // Conversions should be idempotent and non-lossy.
 TEST_F(TimeTest, DeltaSinceWindowsEpoch) {
-  const TimeDelta delta = Microseconds(123);
+  constexpr TimeDelta delta = Microseconds(123);
   EXPECT_EQ(delta,
             Time::FromDeltaSinceWindowsEpoch(delta).ToDeltaSinceWindowsEpoch());
 
@@ -202,6 +230,14 @@ TEST_F(TimeTest, DeltaSinceWindowsEpoch) {
   const Time should_be_null =
       Time::FromDeltaSinceWindowsEpoch(Time().ToDeltaSinceWindowsEpoch());
   EXPECT_TRUE(should_be_null.is_null());
+
+  {
+    constexpr Time constexpr_time =
+        Time::FromDeltaSinceWindowsEpoch(Microseconds(123));
+    constexpr TimeDelta constexpr_delta =
+        constexpr_time.ToDeltaSinceWindowsEpoch();
+    static_assert(constexpr_delta == delta, "");
+  }
 }
 
 // Test conversion to/from time_t.
@@ -219,9 +255,9 @@ TEST_F(TimeTest, UTCTimeT) {
   // C library time and exploded time.
   time_t now_t_1 = time(nullptr);
   struct tm tms;
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   gmtime_s(&tms, &now_t_1);
-#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
+#elif BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
   gmtime_r(&now_t_1, &tms);
 #endif
 
@@ -253,11 +289,11 @@ TEST_F(TimeTest, LocalTimeT) {
   time_t now_t_1 = time(nullptr);
   struct tm tms;
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   localtime_s(&tms, &now_t_1);
-#elif defined(OS_POSIX)
+#elif BUILDFLAG(IS_POSIX)
   localtime_r(&now_t_1, &tms);
-#elif defined(OS_FUCHSIA)
+#elif BUILDFLAG(IS_FUCHSIA)
   // POSIX local time functions always use UTC on Fuchsia, so set a known time
   // zone and manually obtain the local |tms| values by using an adjusted input.
   test::ScopedRestoreDefaultTimezone honolulu_time(kHonoluluTimeZoneId);
@@ -304,13 +340,13 @@ TEST_F(TimeTest, JsTime) {
   EXPECT_EQ(kWindowsEpoch, time.ToJsTimeIgnoringNull());
 }
 
-#if defined(OS_POSIX) || defined(OS_FUCHSIA)
+#if BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
 TEST_F(TimeTest, FromTimeVal) {
   Time now = Time::Now();
   Time also_now = Time::FromTimeVal(now.ToTimeVal());
   EXPECT_EQ(now, also_now);
 }
-#endif  // defined(OS_POSIX) || defined(OS_FUCHSIA)
+#endif  // BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
 
 TEST_F(TimeTest, FromExplodedWithMilliseconds) {
   // Some platform implementations of FromExploded are liable to drop
@@ -384,7 +420,7 @@ TEST_F(TimeTest, LocalMidnight) {
 }
 
 // These tests require the ability to fake the local time zone.
-#if defined(OS_FUCHSIA)
+#if BUILDFLAG(IS_FUCHSIA)
 TEST_F(TimeTest, LocalExplodeIsLocal) {
   // Set the default time zone to a zone with an offset different from UTC.
   test::ScopedRestoreDefaultTimezone honolulu_time(kHonoluluTimeZoneId);
@@ -468,7 +504,7 @@ TEST_F(TimeTest, LocalMidnightIsLocal) {
   EXPECT_EQ(0, local_midnight_exploded.second);
   EXPECT_EQ(0, local_midnight_exploded.millisecond);
 }
-#endif  // defined(OS_FUCHSIA)
+#endif  // BUILDFLAG(IS_FUCHSIA)
 
 TEST_F(TimeTest, ParseTimeTest1) {
   time_t current_time = 0;
@@ -476,10 +512,10 @@ TEST_F(TimeTest, ParseTimeTest1) {
 
   struct tm local_time = {};
   char time_buf[64] = {};
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   localtime_s(&local_time, &current_time);
-  asctime_s(time_buf, base::size(time_buf), &local_time);
-#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
+  asctime_s(time_buf, std::size(time_buf), &local_time);
+#elif BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
   localtime_r(&current_time, &local_time);
   asctime_r(&local_time, time_buf);
 #endif
@@ -840,7 +876,7 @@ TEST_F(TimeTest, MaxConversions) {
   EXPECT_TRUE(t.is_max());
   EXPECT_EQ(std::numeric_limits<time_t>::max(), t.ToTimeT());
 
-#if defined(OS_POSIX) || defined(OS_FUCHSIA)
+#if BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
   struct timeval tval;
   tval.tv_sec = std::numeric_limits<time_t>::max();
   tval.tv_usec = static_cast<suseconds_t>(Time::kMicrosecondsPerSecond) - 1;
@@ -852,14 +888,14 @@ TEST_F(TimeTest, MaxConversions) {
       tval.tv_usec);
 #endif
 
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
   t = Time::FromCFAbsoluteTime(std::numeric_limits<CFAbsoluteTime>::infinity());
   EXPECT_TRUE(t.is_max());
   EXPECT_EQ(std::numeric_limits<CFAbsoluteTime>::infinity(),
             t.ToCFAbsoluteTime());
 #endif
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   FILETIME ftime;
   ftime.dwHighDateTime = std::numeric_limits<DWORD>::max();
   ftime.dwLowDateTime = std::numeric_limits<DWORD>::max();
@@ -871,7 +907,7 @@ TEST_F(TimeTest, MaxConversions) {
 #endif
 }
 
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
 TEST_F(TimeTest, TimeTOverflow) {
   constexpr Time kMaxMinusOne =
       Time::FromInternalValue(std::numeric_limits<int64_t>::max() - 1);
@@ -880,7 +916,7 @@ TEST_F(TimeTest, TimeTOverflow) {
 }
 #endif
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 TEST_F(TimeTest, FromLocalExplodedCrashOnAndroid) {
   // This crashed inside Time:: FromLocalExploded() on Android 4.1.2.
   // See http://crbug.com/287821
@@ -901,7 +937,7 @@ TEST_F(TimeTest, FromLocalExplodedCrashOnAndroid) {
   EXPECT_TRUE(Time::FromLocalExploded(midnight, &t));
   EXPECT_EQ(1381633200, t.ToTimeT());
 }
-#endif  // OS_ANDROID
+#endif  // BUILDFLAG(IS_ANDROID)
 
 // Regression test for https://crbug.com/1104442
 TEST_F(TimeTest, Explode_Y10KCompliance) {
@@ -1029,19 +1065,19 @@ TEST_F(TimeTest, Explode_Y10KCompliance) {
   }
 }
 
-#if defined(OS_FUCHSIA) || defined(OS_CHROMEOS)
-// Regression test for https://crbug.com/1198313: base::Time::UTCExplode and
+#if BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(IS_CHROMEOS)
+// Regression tests for https://crbug.com/1198313: base::Time::UTCExplode and
 // base::Time::LocalExplode should not be locale-dependent.
-TEST_F(TimeTest, ExplodedIsLocaleIndependent) {
+TEST_F(TimeTest, UTCExplodedIsLocaleIndependent) {
   // Time-to-Exploded could be using libc or ICU functions.
   // Set the ICU locale and timezone and the libc timezone.
   // We're not setting the libc locale because the libc time functions are
   // locale-independent and the th_TH.utf8 locale was not available on all
   // trybots at the time this test was added.
   // th-TH maps to a non-gregorian calendar.
-  test::ScopedRestoreICUDefaultLocale scoped_icu_locale("th-TH");
-  test::ScopedRestoreDefaultTimezone scoped_timezone("Asia/Bangkok");
-  ScopedLibcTZ scoped_libc_tz("Asia/Bangkok");
+  test::ScopedRestoreICUDefaultLocale scoped_icu_locale(kThaiLocale);
+  test::ScopedRestoreDefaultTimezone scoped_timezone(kBangkokTimeZoneId);
+  ScopedLibcTZ scoped_libc_tz(kBangkokTimeZoneId);
   ASSERT_TRUE(scoped_libc_tz.is_success());
 
   Time::Exploded utc_exploded_orig;
@@ -1068,27 +1104,54 @@ TEST_F(TimeTest, ExplodedIsLocaleIndependent) {
   EXPECT_EQ(utc_exploded_orig.minute, utc_exploded.minute);
   EXPECT_EQ(utc_exploded_orig.second, utc_exploded.second);
   EXPECT_EQ(utc_exploded_orig.millisecond, utc_exploded.millisecond);
+}
 
-  // "Local" exploded is also in Gregorian calendar, and also assumes that 0 is
-  // sunday. The only difference to UTCExplode is the time zone. In this
-  // particular example, the time zone difference between UTC and Asia/Bangkok
-  // is 7 hours. It can be assumed that it does not change because there is no
-  // daylight saving time in the Asia/Bangkok timezone. A difference of 7 hours
-  // does not lead to the local time showing a different day because the UTC
-  // time was chosen with utc_exploded_orign.hour = 12;
-  // TODO(https://crbug.com/1200769): Avoid the hard-coded time zone offset.
+TEST_F(TimeTest, LocalExplodedIsLocaleIndependent) {
+  // Time-to-Exploded could be using libc or ICU functions.
+  // Set the ICU locale and timezone and the libc timezone.
+  // We're not setting the libc locale because the libc time functions are
+  // locale-independent and the th_TH.utf8 locale was not available on all
+  // trybots at the time this test was added.
+  // th-TH maps to a non-gregorian calendar.
+  test::ScopedRestoreICUDefaultLocale scoped_icu_locale(kThaiLocale);
+  test::ScopedRestoreDefaultTimezone scoped_timezone(kBangkokTimeZoneId);
+  ScopedLibcTZ scoped_libc_tz(kBangkokTimeZoneId);
+  ASSERT_TRUE(scoped_libc_tz.is_success());
+
+  Time::Exploded utc_exploded_orig;
+  utc_exploded_orig.year = 2020;
+  utc_exploded_orig.month = 7;
+  utc_exploded_orig.day_of_week = 5;  // Friday
+  utc_exploded_orig.day_of_month = 3;
+  utc_exploded_orig.hour = 12;
+  utc_exploded_orig.minute = 0;
+  utc_exploded_orig.second = 0;
+  utc_exploded_orig.millisecond = 0;
+
+  Time time;
+  ASSERT_TRUE(base::Time::FromUTCExploded(utc_exploded_orig, &time));
+
+  absl::optional<TimeDelta> expected_delta =
+      GetTimeZoneOffsetAtTime(kBangkokTimeZoneId, time);
+
+  ASSERT_TRUE(expected_delta.has_value());
+
+  // This is to be sure that the day has not changed
+  ASSERT_LT(*expected_delta, base::Hours(12));
+
   Time::Exploded local_exploded;
   time.LocalExplode(&local_exploded);
+
+  TimeDelta actual_delta = TimePassedAfterMidnight(local_exploded) -
+                           TimePassedAfterMidnight(utc_exploded_orig);
+
   EXPECT_EQ(utc_exploded_orig.year, local_exploded.year);
   EXPECT_EQ(utc_exploded_orig.month, local_exploded.month);
   EXPECT_EQ(utc_exploded_orig.day_of_week, local_exploded.day_of_week);
   EXPECT_EQ(utc_exploded_orig.day_of_month, local_exploded.day_of_month);
-  EXPECT_EQ(utc_exploded_orig.hour, local_exploded.hour - 7);
-  EXPECT_EQ(utc_exploded_orig.minute, local_exploded.minute);
-  EXPECT_EQ(utc_exploded_orig.second, local_exploded.second);
-  EXPECT_EQ(utc_exploded_orig.millisecond, local_exploded.millisecond);
+  EXPECT_EQ(actual_delta, *expected_delta);
 }
-#endif  // defined(OS_FUCHSIA) || defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(IS_CHROMEOS)
 
 TEST_F(TimeTest, FromExploded_MinMax) {
   Time::Exploded exploded = {0};
@@ -1100,12 +1163,12 @@ TEST_F(TimeTest, FromExploded_MinMax) {
   if (Time::kExplodedMinYear != std::numeric_limits<int>::min()) {
     exploded.year = Time::kExplodedMinYear;
     EXPECT_TRUE(Time::FromUTCExploded(exploded, &parsed_time));
-#if defined(OS_POSIX) || defined(OS_FUCHSIA)
+#if BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
     // On Windows, January 1, 1601 00:00:00 is actually the null time.
     EXPECT_FALSE(parsed_time.is_null());
 #endif
 
-#if !defined(OS_ANDROID) && !defined(OS_APPLE)
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_APPLE)
     // The dates earlier than |kExplodedMinYear| that don't work are OS version
     // dependent on Android and Mac (for example, macOS 10.13 seems to support
     // dates before 1902).
@@ -1145,7 +1208,7 @@ class TimeOverride {
 // static
 Time TimeOverride::now_time_;
 
-#if defined(OS_FUCHSIA)
+#if BUILDFLAG(IS_FUCHSIA)
 // TODO(https://crbug.com/1060357): Enable when RTC flake is fixed.
 #define MAYBE_NowOverride DISABLED_NowOverride
 #else
@@ -1205,7 +1268,13 @@ TEST_F(TimeTest, MAYBE_NowOverride) {
 
 #undef MAYBE_NowOverride
 
-#if defined(OS_FUCHSIA)
+TEST_F(TimeTest, TimeFormatHTTP) {
+  base::Time time;
+  ASSERT_TRUE(base::Time::FromString("1994-11-06T08:49:37Z", &time));
+  EXPECT_EQ("Sun, 06 Nov 1994 08:49:37 GMT", TimeFormatHTTP(time));
+}
+
+#if BUILDFLAG(IS_FUCHSIA)
 TEST(ZxTimeTest, ToFromConversions) {
   Time unix_epoch = Time::UnixEpoch();
   EXPECT_EQ(unix_epoch.ToZxTime(), 0);
@@ -1223,7 +1292,7 @@ TEST(ZxTimeTest, ToFromConversions) {
   EXPECT_EQ(Seconds(2).ToZxDuration(), 2000000000);
   EXPECT_EQ(TimeDelta::FromZxDuration(4000000000), Seconds(4));
 }
-#endif  // defined(OS_FUCHSIA)
+#endif  // BUILDFLAG(IS_FUCHSIA)
 
 TEST(TimeTicks, Deltas) {
   for (int index = 0; index < 50; index++) {
@@ -1354,7 +1423,7 @@ class ThreadTicksOverride {
 ThreadTicks ThreadTicksOverride::now_ticks_;
 
 // IOS doesn't support ThreadTicks::Now().
-#if defined(OS_IOS)
+#if BUILDFLAG(IS_IOS)
 #define MAYBE_NowOverride DISABLED_NowOverride
 #else
 #define MAYBE_NowOverride NowOverride
@@ -1470,7 +1539,7 @@ TEST(TimeTicks, SnappedToNextTickOverflow) {
                 .ToInternalValue());
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 TEST(TimeTicks, Android_FromUptimeMillis_ClocksMatch) {
   JNIEnv* const env = android::AttachCurrentThread();
   android::ScopedJavaLocalRef<jclass> clazz(
@@ -1480,7 +1549,7 @@ TEST(TimeTicks, Android_FromUptimeMillis_ClocksMatch) {
       android::MethodID::Get<android::MethodID::TYPE_STATIC>(
           env, clazz.obj(), "uptimeMillis", "()J");
   ASSERT_FALSE(!method_id);
-  // Subtract 1ms from the expected lower bound to allow millisecon-level
+  // Subtract 1ms from the expected lower bound to allow millisecond-level
   // truncation performed in uptimeMillis().
   const TimeTicks lower_bound_ticks = TimeTicks::Now() - Milliseconds(1);
   const TimeTicks converted_ticks = TimeTicks::FromUptimeMillis(
@@ -1489,7 +1558,26 @@ TEST(TimeTicks, Android_FromUptimeMillis_ClocksMatch) {
   EXPECT_LE(lower_bound_ticks, converted_ticks);
   EXPECT_GE(upper_bound_ticks, converted_ticks);
 }
-#endif  // OS_ANDROID
+
+TEST(TimeTicks, Android_FromJavaNanoTime_ClocksMatch) {
+  JNIEnv* const env = android::AttachCurrentThread();
+  android::ScopedJavaLocalRef<jclass> clazz(
+      android::GetClass(env, "java/lang/System"));
+  ASSERT_TRUE(clazz.obj());
+  const jmethodID method_id =
+      android::MethodID::Get<android::MethodID::TYPE_STATIC>(env, clazz.obj(),
+                                                             "nanoTime", "()J");
+  ASSERT_FALSE(!method_id);
+  const TimeTicks lower_bound_ticks = TimeTicks::Now();
+  const TimeTicks converted_ticks = TimeTicks::FromJavaNanoTime(
+      env->CallStaticLongMethod(clazz.obj(), method_id));
+  // Add 1us to the expected upper bound to allow microsecond-level
+  // truncation performed in TimeTicks::Now().
+  const TimeTicks upper_bound_ticks = TimeTicks::Now() + Microseconds(1);
+  EXPECT_LE(lower_bound_ticks, converted_ticks);
+  EXPECT_GE(upper_bound_ticks, converted_ticks);
+}
+#endif  // BUILDFLAG(IS_ANDROID)
 
 TEST(TimeDelta, FromAndIn) {
   // static_assert also checks that the contained expression is a constant
@@ -1586,7 +1674,7 @@ TEST(TimeDelta, InXXXOverflow) {
       "");
 }
 
-#if defined(OS_POSIX) || defined(OS_FUCHSIA)
+#if BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
 TEST(TimeDelta, TimeSpecConversion) {
   TimeDelta delta = Seconds(0);
   struct timespec result = delta.ToTimeSpec();
@@ -1612,7 +1700,7 @@ TEST(TimeDelta, TimeSpecConversion) {
   EXPECT_EQ(result.tv_nsec, 1000);
   EXPECT_EQ(delta, TimeDelta::FromTimeSpec(result));
 }
-#endif  // defined(OS_POSIX) || defined(OS_FUCHSIA)
+#endif  // BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
 
 // Our internal time format is serialized in things like databases, so it's
 // important that it's consistent across all our platforms.  We use the 1601

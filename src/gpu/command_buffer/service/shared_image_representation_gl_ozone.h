@@ -21,15 +21,20 @@ namespace gpu {
 
 class SharedImageRepresentationGLOzoneShared {
  public:
-  static bool BeginAccess(SharedImageBackingOzone* ozone_backing);
-  static void EndAccess(GLenum mode, SharedImageBackingOzone* ozone_backing);
+  static bool BeginAccess(GLenum mode,
+                          SharedImageBackingOzone* ozone_backing,
+                          bool& need_end_fence);
+  static void EndAccess(bool need_end_fence,
+                        GLenum mode,
+                        SharedImageBackingOzone* ozone_backing);
   static absl::optional<GLuint> SetupTexture(
       scoped_refptr<gl::GLImageNativePixmap> image,
       GLenum target);
   static scoped_refptr<gl::GLImageNativePixmap> CreateGLImage(
       scoped_refptr<gfx::NativePixmap> pixmap,
       gfx::BufferFormat buffer_format,
-      gfx::BufferPlane plane);
+      gfx::BufferPlane plane,
+      gfx::Size size);
 };
 
 // Representation of an Ozone-backed SharedImage that can be accessed as a
@@ -66,6 +71,7 @@ class SharedImageRepresentationGLTextureOzone
 
   gles2::Texture* texture_;
   GLenum current_access_mode_ = 0;
+  bool need_end_fence_;
 };
 
 // Representation of an Ozone-backed SharedImage that can be accessed as a
@@ -105,6 +111,7 @@ class SharedImageRepresentationGLTexturePassthroughOzone
 
   scoped_refptr<gles2::TexturePassthrough> texture_passthrough_;
   GLenum current_access_mode_ = 0;
+  bool need_end_fence_;
 };
 
 }  // namespace gpu

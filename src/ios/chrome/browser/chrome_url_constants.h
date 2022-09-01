@@ -44,6 +44,7 @@ extern const char kChromeUIHistogramHost[];
 extern const char kChromeUIHistoryHost[];
 extern const char kChromeUIInspectHost[];
 extern const char kChromeUIIntersitialsHost[];
+extern const char kChromeUILocalStateHost[];
 extern const char kChromeUIManagementHost[];
 extern const char kChromeUINetExportHost[];
 extern const char kChromeUINewTabHost[];
@@ -68,6 +69,12 @@ extern const size_t kNumberOfChromeHostURLs;
 // URL to the sync google dashboard.
 extern const char kSyncGoogleDashboardURL[];
 
+// URL to opt-in to on-device encryption.
+extern const char kOnDeviceEncryptionOptInURL[];
+
+// URL to learn more about on-device encryption when the user opted-in.
+extern const char kOnDeviceEncryptionLearnMoreURL[];
+
 // "What do these mean?" URL for the Page Info bubble.
 extern const char kPageInfoHelpCenterURL[];
 
@@ -76,6 +83,12 @@ extern const char kCrashReasonURL[];
 
 // "Learn more" URL for the Privacy section under Options.
 extern const char kPrivacyLearnMoreURL[];
+
+// "Terms of service" URL.
+extern const char kTermsOfServiceURL[];
+
+// "Terms of service" URL for mobile view.
+extern const char kEmbeddedTermsOfServiceURL[];
 
 // "Learn more" URL for the "Do not track" setting in the privacy section.
 extern const char kDoNotTrackLearnMoreURL[];

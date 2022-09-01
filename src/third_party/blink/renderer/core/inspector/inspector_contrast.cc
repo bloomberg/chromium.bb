@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/css/css_computed_style_declaration.h"
 #include "third_party/blink/renderer/core/css/css_gradient_value.h"
 #include "third_party/blink/renderer/core/css/properties/computed_style_utils.h"
+#include "third_party/blink/renderer/core/display_lock/display_lock_document_state.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
 #include "third_party/blink/renderer/core/dom/node.h"
@@ -139,13 +140,14 @@ void InspectorContrast::CollectNodesAndBuildRTreeIfNeeded() {
   if (!layout_view)
     return;
 
+  document_->GetDisplayLockDocumentState().UnlockShapingDeferredElements();
   if (!layout_view->GetFrameView()->UpdateLifecycleToPrePaintClean(
           DocumentUpdateReason::kInspector)) {
     return;
   }
 
   InspectorDOMAgent::CollectNodes(
-      document_, INT_MAX, true,
+      document_, INT_MAX, true, InspectorDOMAgent::IncludeWhitespaceEnum::NONE,
       WTF::BindRepeating(&NodeIsElementWithLayoutObject), &elements_);
   SortElementsByPaintOrder(elements_, document_);
   rtree_.Build(
@@ -271,6 +273,10 @@ Vector<Color> InspectorContrast::GetBackgroundColors(Element* element,
     return colors;
   }
 
+  if (RuntimeEnabledFeatures::DeferredShapingEnabled()) {
+    document_->GetDisplayLockDocumentState().UnlockShapingDeferredElements();
+    document_->UpdateStyleAndLayout(DocumentUpdateReason::kInspector);
+  }
   PhysicalRect content_bounds = GetNodeRect(text_node);
   LocalFrameView* view = text_node->GetDocument().View();
   if (!view)

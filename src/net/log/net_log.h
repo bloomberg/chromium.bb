@@ -136,8 +136,8 @@ class NET_EXPORT NetLog {
     friend class NetLog;
 
     // Both of these values are only modified by the NetLog.
-    NetLogCaptureMode capture_mode_;
-    raw_ptr<NetLog> net_log_;
+    NetLogCaptureMode capture_mode_ = NetLogCaptureMode::kDefault;
+    raw_ptr<NetLog> net_log_ = nullptr;
   };
 
   // An observer that is notified of changes in the capture mode set, and has
@@ -333,9 +333,6 @@ class NET_EXPORT NetLog {
   // Same as above but takes a base::Time. Should not be used if precise
   // timestamps are desired, but is suitable for e.g. expiration times.
   static std::string TimeToString(const base::Time& time);
-
-  // Returns a C-String symbolic name for |event_type|.
-  static const char* EventTypeToString(NetLogEventType event_type);
 
   // Returns a dictionary that maps event type symbolic names to their enum
   // values.

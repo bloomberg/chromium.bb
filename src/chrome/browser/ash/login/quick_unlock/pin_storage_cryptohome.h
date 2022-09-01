@@ -5,18 +5,24 @@
 #ifndef CHROME_BROWSER_ASH_LOGIN_QUICK_UNLOCK_PIN_STORAGE_CRYPTOHOME_H_
 #define CHROME_BROWSER_ASH_LOGIN_QUICK_UNLOCK_PIN_STORAGE_CRYPTOHOME_H_
 
+#include <memory>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
-// TODO(https://crbug.com/1164001): move to forward declaration
-#include "chromeos/login/auth/user_context.h"
+#include "chrome/browser/ash/login/quick_unlock/pin_salt_storage.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 class AccountId;
 
 namespace ash {
+
+class Key;
+class UserContext;
+
 namespace quick_unlock {
+enum class Purpose;
 
 class PinStorageCryptohome {
  public:
@@ -27,8 +33,10 @@ class PinStorageCryptohome {
 
   // Transforms `key` for usage in PIN. Returns nullopt if the key could not be
   // transformed.
-  static absl::optional<Key> TransformKey(const AccountId& account_id,
-                                          const Key& key);
+  static absl::optional<Key> TransformPinKey(
+      const PinSaltStorage* pin_salt_storage,
+      const AccountId& account_id,
+      const Key& key);
 
   PinStorageCryptohome();
 
@@ -46,10 +54,16 @@ class PinStorageCryptohome {
               const absl::optional<std::string>& pin_salt,
               BoolCallback did_set);
   void RemovePin(const UserContext& user_context, BoolCallback did_remove);
-  void CanAuthenticate(const AccountId& account_id, BoolCallback result) const;
+  void CanAuthenticate(const AccountId& account_id,
+                       Purpose purpose,
+                       BoolCallback result) const;
   void TryAuthenticate(const AccountId& account_id,
                        const Key& key,
+                       Purpose purpose,
                        BoolCallback result);
+
+  void SetPinSaltStorageForTesting(
+      std::unique_ptr<PinSaltStorage> pin_salt_storage);
 
  private:
   void OnSystemSaltObtained(const std::string& system_salt);
@@ -57,6 +71,7 @@ class PinStorageCryptohome {
   bool salt_obtained_ = false;
   std::string system_salt_;
   std::vector<base::OnceClosure> system_salt_callbacks_;
+  std::unique_ptr<PinSaltStorage> pin_salt_storage_;
 
   base::WeakPtrFactory<PinStorageCryptohome> weak_factory_{this};
 };

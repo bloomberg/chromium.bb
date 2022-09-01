@@ -8,6 +8,9 @@
 #include "base/location.h"
 #include "base/time/default_tick_clock.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/modules/webcodecs/codec_pressure_manager.h"
+#include "third_party/blink/renderer/modules/webcodecs/codec_pressure_manager_provider.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -21,14 +24,16 @@ const base::Feature kOnlyReclaimBackgroundWebCodecs{
     "OnlyReclaimBackgroundWebCodecs", base::FEATURE_ENABLED_BY_DEFAULT};
 
 constexpr base::TimeDelta ReclaimableCodec::kInactivityReclamationThreshold;
-constexpr base::TimeDelta ReclaimableCodec::kTimerPeriod;
 
-ReclaimableCodec::ReclaimableCodec(ExecutionContext* context)
-    : tick_clock_(base::DefaultTickClock::GetInstance()),
+ReclaimableCodec::ReclaimableCodec(CodecType type, ExecutionContext* context)
+    : ExecutionContextLifecycleObserver(context),
+      codec_type_(type),
+      tick_clock_(base::DefaultTickClock::GetInstance()),
+      inactivity_threshold_(kInactivityReclamationThreshold),
       last_activity_(tick_clock_->NowTicks()),
       activity_timer_(Thread::Current()->GetTaskRunner(),
                       this,
-                      &ReclaimableCodec::ActivityTimerFired) {
+                      &ReclaimableCodec::OnActivityTimerFired) {
   DCHECK(context);
   if (base::FeatureList::IsEnabled(kOnlyReclaimBackgroundWebCodecs)) {
     // Do this last, it will immediately re-enter via OnLifecycleStateChanged().
@@ -40,6 +45,71 @@ ReclaimableCodec::ReclaimableCodec(ExecutionContext* context)
     // Pretend we're always in the background to _always_ reclaim.
     is_backgrounded_ = true;
   }
+}
+
+void ReclaimableCodec::Trace(Visitor* visitor) const {
+  visitor->Trace(activity_timer_);
+  ExecutionContextLifecycleObserver::Trace(visitor);
+}
+
+void ReclaimableCodec::ApplyCodecPressure() {
+  if (is_applying_pressure_)
+    return;
+
+  is_applying_pressure_ = true;
+
+  if (auto* pressure_manager = PressureManager())
+    pressure_manager->AddCodec(this);
+}
+
+void ReclaimableCodec::ReleaseCodecPressure() {
+  if (!is_applying_pressure_) {
+    DCHECK(!activity_timer_.IsActive());
+    return;
+  }
+
+  if (auto* pressure_manager = PressureManager()) {
+    // If we fail to get |pressure_manager| here (say, because the
+    // ExecutionContext is being destroyed), this is harmless. The
+    // CodecPressureManager maintains its own local pressure count, and it will
+    // properly decrement it from the global pressure count upon the manager's
+    // disposal. The CodecPressureManager's WeakMember reference to |this| will
+    // be cleared by the GC when |this| is disposed. The manager might still
+    // call into SetGlobalPressureExceededFlag() before |this| is disposed, but
+    // we will simply noop those calls.
+    pressure_manager->RemoveCodec(this);
+  }
+
+  // We might still exceed global codec pressure at this point, but this codec
+  // isn't contributing to it, and needs to reset its own flag.
+  SetGlobalPressureExceededFlag(false);
+
+  is_applying_pressure_ = false;
+}
+
+void ReclaimableCodec::Dispose() {
+  if (!is_applying_pressure_)
+    return;
+
+  if (auto* pressure_manager = PressureManager())
+    pressure_manager->OnCodecDisposed(this);
+}
+
+void ReclaimableCodec::SetGlobalPressureExceededFlag(
+    bool global_pressure_exceeded) {
+  if (!is_applying_pressure_) {
+    // We should only hit this call because we failed to get the
+    // PressureManager() in ReleaseCodecPressure(). See the note above.
+    DCHECK(!PressureManager());
+    return;
+  }
+
+  if (global_pressure_exceeded_ == global_pressure_exceeded)
+    return;
+
+  global_pressure_exceeded_ = global_pressure_exceeded;
+
+  OnReclamationPreconditionsUpdated();
 }
 
 void ReclaimableCodec::OnLifecycleStateChanged(
@@ -56,35 +126,17 @@ void ReclaimableCodec::OnLifecycleStateChanged(
 
   is_backgrounded_ = is_backgrounded;
 
-  // Nothing to do when paused.
-  if (is_reclamation_paused_) {
-    DCHECK(!activity_timer_.IsActive());
-    return;
-  }
-
-  if (is_backgrounded_) {
-    // (Re)entered background, so start timer again from "now".
+  // Make sure we wait the full inactivity timer period before reclaiming a
+  // newly backgrounded codec.
+  if (is_backgrounded_)
     MarkCodecActive();
-    DCHECK(activity_timer_.IsActive());
-  } else {
-    // We're in foreground, so pause reclamation to improve UX.
-    PauseCodecReclamationInternal();
-  }
+
+  OnReclamationPreconditionsUpdated();
 }
 
-void ReclaimableCodec::MarkCodecActive() {
-  DVLOG(5) << __func__;
-  is_reclamation_paused_ = false;
-  last_activity_ = tick_clock_->NowTicks();
-  last_tick_was_inactive_ = false;
-
-  if (!is_backgrounded_) {
-    DCHECK(!activity_timer_.IsActive());
-    DVLOG(5) << __func__ << " Suppressing reclamation of foreground codec.";
-    return;
-  }
-
-  StartTimer();
+void ReclaimableCodec::SimulateLifecycleStateForTesting(
+    scheduler::SchedulingLifecycleState state) {
+  OnLifecycleStateChanged(state);
 }
 
 void ReclaimableCodec::SimulateCodecReclaimedForTesting() {
@@ -93,45 +145,53 @@ void ReclaimableCodec::SimulateCodecReclaimedForTesting() {
 }
 
 void ReclaimableCodec::SimulateActivityTimerFiredForTesting() {
-  ActivityTimerFired(nullptr);
+  OnActivityTimerFired(nullptr);
 }
 
-void ReclaimableCodec::SimulateLifecycleStateForTesting(
-    scheduler::SchedulingLifecycleState state) {
-  OnLifecycleStateChanged(state);
+void ReclaimableCodec::MarkCodecActive() {
+  last_activity_ = tick_clock_->NowTicks();
+  last_tick_was_inactive_ = false;
 }
 
-void ReclaimableCodec::PauseCodecReclamation() {
-  DVLOG(5) << __func__;
-  is_reclamation_paused_ = true;
-  PauseCodecReclamationInternal();
+void ReclaimableCodec::OnReclamationPreconditionsUpdated() {
+  if (AreReclamationPreconditionsMet())
+    StartIdleReclamationTimer();
+  else
+    StopIdleReclamationTimer();
 }
 
-void ReclaimableCodec::PauseCodecReclamationInternal() {
-  DVLOG(5) << __func__;
-  activity_timer_.Stop();
+bool ReclaimableCodec::AreReclamationPreconditionsMet() {
+  // If |global_pressure_exceeded_| is true, so should |is_applying_pressure_|.
+  DCHECK_EQ(global_pressure_exceeded_,
+            global_pressure_exceeded_ && is_applying_pressure_);
+
+  return is_applying_pressure_ && global_pressure_exceeded_ && is_backgrounded_;
 }
 
-void ReclaimableCodec::StartTimer() {
-  DCHECK(is_backgrounded_);
-  DCHECK(!is_reclamation_paused_);
+void ReclaimableCodec::StartIdleReclamationTimer() {
+  DCHECK(AreReclamationPreconditionsMet());
 
   if (activity_timer_.IsActive())
     return;
 
   if (base::FeatureList::IsEnabled(kReclaimInactiveWebCodecs)) {
     DVLOG(5) << __func__ << " Starting timer.";
-    activity_timer_.StartRepeating(kTimerPeriod, FROM_HERE);
+    activity_timer_.StartRepeating(inactivity_threshold_ / 2, FROM_HERE);
   }
 }
 
-void ReclaimableCodec::ActivityTimerFired(TimerBase*) {
-  DCHECK(is_backgrounded_);
-  DCHECK(!is_reclamation_paused_);
+void ReclaimableCodec::StopIdleReclamationTimer() {
+  DCHECK(!AreReclamationPreconditionsMet());
+
+  activity_timer_.Stop();
+}
+
+void ReclaimableCodec::OnActivityTimerFired(TimerBase*) {
   DCHECK(base::FeatureList::IsEnabled(kReclaimInactiveWebCodecs));
+  DCHECK(AreReclamationPreconditionsMet());
 
   auto time_inactive = tick_clock_->NowTicks() - last_activity_;
-  bool is_inactive = time_inactive >= kInactivityReclamationThreshold;
+  bool is_inactive = time_inactive >= inactivity_threshold_;
 
   // Do not immediately reclaim. Make sure the codec is inactive for 2 ticks.
   // Otherwise, tabs that were suspended could see their codecs reclaimed
@@ -143,12 +203,24 @@ void ReclaimableCodec::ActivityTimerFired(TimerBase*) {
         "Codec reclaimed due to inactivity."));
   }
 
-  last_tick_was_inactive_ =
-      time_inactive >= (kInactivityReclamationThreshold / 2);
+  last_tick_was_inactive_ = time_inactive >= (inactivity_threshold_ / 2);
 }
 
-void ReclaimableCodec::Trace(Visitor* visitor) const {
-  visitor->Trace(activity_timer_);
+CodecPressureManager* ReclaimableCodec::PressureManager() {
+  auto* execution_context = GetExecutionContext();
+
+  if (!execution_context || execution_context->IsContextDestroyed())
+    return nullptr;
+
+  auto& manager_provider =
+      CodecPressureManagerProvider::From(*execution_context);
+
+  switch (codec_type_) {
+    case CodecType::kDecoder:
+      return manager_provider.GetDecoderPressureManager();
+    case CodecType::kEncoder:
+      return manager_provider.GetEncoderPressureManager();
+  }
 }
 
 }  // namespace blink

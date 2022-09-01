@@ -65,7 +65,9 @@
 #include <content/public/renderer/render_view.h>
 #include <content/renderer/render_view_impl.h>
 #include <third_party/blink/public/mojom/frame/find_in_page.mojom.h>
+#include <third_party/blink/public/mojom/mediastream/media_stream.mojom.h>
 #include <third_party/blink/public/web/web_view.h>
+#include <ui/aura/window.h>
 #include <ui/base/win/hidden_window.h>
 
 
@@ -655,6 +657,8 @@ int WebViewImpl::createWidget(blpwtk2::NativeView parent)
     d_widget = new blpwtk2::NativeViewWidget(
         d_webContents->GetNativeView(),
         this,
+        d_properties.width,
+        d_properties.height,
         d_properties.rerouteMouseWheelToAnyRelatedWindow);
 
     status = d_widget->setParent(parent);
@@ -704,7 +708,7 @@ void WebViewImpl::RequestMediaAccessPermission(
 {
     class DummyMediaStreamUI final : public content::MediaStreamUI {
       public:
-        gfx::NativeViewId OnStarted(base::OnceClosure stop,
+        gfx::NativeViewId OnStarted(base::RepeatingClosure stop,
                                    SourceCallback source,
                                    const std::string& label,
                                    std::vector<content::DesktopMediaID> screen_capture_ids,
@@ -712,6 +716,11 @@ void WebViewImpl::RequestMediaAccessPermission(
           return 0;
         }
 
+        void OnDeviceStoppedForSourceChange(
+            const std::string& label,
+            const content::DesktopMediaID& old_media_id,
+            const content::DesktopMediaID& new_media_id) override {
+        }
 
         void OnDeviceStopped(const std::string& label,
                              const content::DesktopMediaID& media_id) override {
@@ -724,36 +733,45 @@ void WebViewImpl::RequestMediaAccessPermission(
         content::MediaCaptureDevices::GetInstance()->GetVideoCaptureDevices();
 
     std::unique_ptr<content::MediaStreamUI> ui(new DummyMediaStreamUI());
-    blink::MediaStreamDevices devices;
+
+    blink::mojom::StreamDevicesPtr stream_devices = blink::mojom::StreamDevices::New();
     if (request.requested_video_device_id.empty()) {
         if (request.video_type != blink::mojom::MediaStreamType::NO_SERVICE && !videoDevices.empty()) {
-            devices.push_back(videoDevices[0]);
+            stream_devices->video_device = videoDevices[0];
         }
     }
     else {
         const blink::MediaStreamDevice *device = findDeviceById(request.requested_video_device_id, videoDevices);
         if (device) {
-            devices.push_back(*device);
+            stream_devices->video_device = *device;
         }
         else {
             blink::MediaStreamDevice desktop_device = DesktopStreamsRegistry::GetInstance()->RequestMediaForStreamId(request.requested_video_device_id);
             if (desktop_device.type != blink::mojom::MediaStreamType::NO_SERVICE) {
-                devices.push_back(desktop_device);
+                stream_devices->video_device = desktop_device;
             }
         }
     }
     if (request.requested_audio_device_id.empty()) {
         if (request.audio_type != blink::mojom::MediaStreamType::NO_SERVICE && !audioDevices.empty()) {
-            devices.push_back(audioDevices[0]);
+            stream_devices->audio_device = audioDevices[0];
         }
     }
     else {
         const blink::MediaStreamDevice *device = findDeviceById(request.requested_audio_device_id, audioDevices);
         if (device) {
-            devices.push_back(*device);
+            stream_devices->audio_device = *device;
         }
     }
-    std::move(callback).Run(devices, blink::mojom::MediaStreamRequestResult::OK, std::move(ui));
+
+    blink::mojom::StreamDevicesSet stream_devices_set;
+    if (stream_devices->video_device.has_value() ||
+        stream_devices->audio_device.has_value()) {
+        stream_devices_set.stream_devices.emplace_back(std::move(stream_devices));
+    }
+    std::move(callback).Run(stream_devices_set,
+                            blink::mojom::MediaStreamRequestResult::OK,
+                            std::move(ui));
 }
 
 bool WebViewImpl::CheckMediaAccessPermission(content::RenderFrameHost*,
@@ -879,7 +897,45 @@ aura::Window *WebViewImpl::GetDefaultActivationWindow()
     if (d_webContents) {
         content::RenderWidgetHostView *rwhv = d_webContents->GetRenderWidgetHostView();
         if (rwhv) {
-            return rwhv->GetNativeView();
+            // The aura::Window hierarchy under a DesktopNativeWidgetAura
+            // looks like this:
+            //
+            //  - DesktopNativeWidgetAura
+            //   - NativeViewHostAuraClip
+            //    - WebContentsViewAura
+            //     - RenderWidgetHostViewAura
+            //
+            // By default, DesktopNativeWidgetAura::HandleActivationChanged
+            // activates the root aura::Window when the OS window receives
+            // keyboard focus. In order to make sure the logical focus is
+            // moved into the webview, we override the activation window from
+            // DesktopNativeWidgetAura to RenderWidgetHostViewAura (which is
+            // returned by rwhv->GetNativeView()).
+            //
+            // DesktopFocusRules::CanFocusWindow requires this function to
+            // return a window that is rooted under aura::WindowTreeHost.
+            //
+            if (rwhv->GetNativeView()->GetRootWindow()) {
+                return rwhv->GetNativeView();
+            }
+            else {
+                // Ideally RenderWidgetHostViewAura should always be rooted
+                // under a DesktopNativeWidgetAura, which is rooted under a
+                // aura::WindowTreeHost. There have been some reports where the
+                // RenderWidgetHostViewAura is detached from an
+                // aura::WindowTreeHost, which would violate a requirement of
+                // DesktopFocusRules. It's unclear where the detachment comes
+                // from so we trace out the parents iteratively starting from
+                // RenderWidgetHostViewAura.
+
+                LOG(WARNING) << "RenderWidgetHostViewAura is not attached to root window";
+
+                const aura::Window *current = rwhv->GetNativeView();
+                while (current) {
+                    LOG(INFO) << "window name: " << current->GetName();
+                    current = current->parent();
+                }
+            }
         }
     }
     return nullptr;

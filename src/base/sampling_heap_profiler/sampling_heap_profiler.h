@@ -69,7 +69,7 @@ class BASE_EXPORT SamplingHeapProfiler
   void Stop();
 
   // Sets sampling interval in bytes.
-  void SetSamplingInterval(size_t sampling_interval);
+  void SetSamplingInterval(size_t sampling_interval_bytes);
 
   // Enables recording thread name that made the sampled allocation.
   void SetRecordThreadNames(bool value);
@@ -144,7 +144,7 @@ class BASE_EXPORT SamplingHeapProfiler
   // Whether it should record thread names.
   std::atomic<bool> record_thread_names_{false};
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // Whether to use CFI unwinder or default unwinder.
   std::atomic<bool> use_default_unwinder_{false};
 #endif

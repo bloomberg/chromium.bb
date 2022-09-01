@@ -150,7 +150,8 @@ IN_PROC_BROWSER_TEST_F(BrowserViewTest, CloseWithTabsStartWithActive) {
 
 // Verifies that page and devtools WebViews are being correctly layed out
 // when DevTools is opened/closed/updated/undocked.
-IN_PROC_BROWSER_TEST_F(BrowserViewTest, DevToolsUpdatesBrowserWindow) {
+// TODO(crbug.com/1316663): Re-enable; currently failing on multiple platforms.
+IN_PROC_BROWSER_TEST_F(BrowserViewTest, DISABLED_DevToolsUpdatesBrowserWindow) {
   gfx::Rect full_bounds =
       browser_view()->GetContentsContainerForTest()->GetLocalBounds();
   gfx::Rect small_bounds(10, 20, 30, 40);
@@ -324,7 +325,7 @@ IN_PROC_BROWSER_TEST_F(BrowserViewTest, ShowFaviconInTab) {
 
 // On Mac, voiceover treats tab modal dialogs as native windows, so setting an
 // accessible title for tab-modal dialogs is not necessary.
-#if !defined(OS_MAC)
+#if !BUILDFLAG(IS_MAC)
 
 // Open a tab-modal dialog and check that the accessible window title is the
 // title of the dialog.
@@ -355,7 +356,7 @@ IN_PROC_BROWSER_TEST_F(BrowserViewTest, GetAccessibleTabModalDialogTree) {
       browser_view()->GetWidget()->GetRootView()->GetNativeViewAccessible());
 // We expect this conversion to be safe on Windows, but can't guarantee that it
 // is safe on other platforms.
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   ASSERT_TRUE(ax_node);
 #else
   if (!ax_node)
@@ -381,4 +382,4 @@ IN_PROC_BROWSER_TEST_F(BrowserViewTest, GetAccessibleTabModalDialogTree) {
             nullptr);
 }
 
-#endif  // !defined(OS_MAC)
+#endif  // !BUILDFLAG(IS_MAC)

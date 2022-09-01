@@ -49,6 +49,28 @@ constexpr char kProfileUpdateNumberOfEditsHistogram[] =
 constexpr char kProfileUpdateNumberOfAffectedTypesHistogram[] =
     "Autofill.ProfileImport.UpdateProfileNumberOfAffectedFields";
 
+// Histograms related to |kAutofillComplementCountryCodeOnImport|
+// TODO(crbug.com/1297032): Cleanup when launched.
+constexpr char kNewProfileWithComplementedCountryDecisionHistogram[] =
+    "Autofill.ProfileImport.NewProfileWithComplementedCountryDecision";
+constexpr char kProfileUpdateWithComplementedCountryDecisionHistogram[] =
+    "Autofill.ProfileImport.UpdateProfileWithComplementedCountryDecision";
+constexpr char kNewProfileEditComplementedCountryHistogram[] =
+    "Autofill.ProfileImport.NewProfileEditedComplementedCountry";
+constexpr char kProfileUpdateEditComplementedCountryHistogram[] =
+    "Autofill.ProfileImport.UpdateProfileEditedComplementedCountry";
+
+// Histograms related to |kAutofillRemoveInvalidPhoneNumberOnImport|
+// TODO(crbug.com/1298424): Cleanup when launched.
+constexpr char kNewProfileWithRemovedPhoneNumberDecisionHistogram[] =
+    "Autofill.ProfileImport.NewProfileWithRemovedPhoneNumberDecision";
+constexpr char kProfileUpdateWithRemovedPhoneNumberDecisionHistogram[] =
+    "Autofill.ProfileImport.UpdateProfileWithRemovedPhoneNumberDecision";
+constexpr char
+    kSilentUpdatesWithRemovedPhoneNumberProfileImportTypeHistogram[] =
+        "Autofill.ProfileImport."
+        "SilentUpdatesWithRemovedPhoneNumberProfileImportType";
+
 class MockPersonalDataManager : public TestPersonalDataManager {
  public:
   MockPersonalDataManager() = default;
@@ -146,9 +168,13 @@ struct ImportScenarioTestCase {
   bool allow_only_silent_updates = false;
 };
 
-class AddressProfileSaveManagerTest : public testing::Test {
+class AddressProfileSaveManagerTest
+    : public testing::Test,
+      public testing::WithParamInterface<std::tuple<bool, bool>> {
  public:
   void SetUp() override {
+    complement_country_ = std::get<0>(GetParam());
+    remove_invalid_phone_number_ = std::get<1>(GetParam());
     // Enable both explicit save prompts and structured names.
     // The latter is needed to test the concept of silent updates.
     scoped_feature_list_.InitWithFeatures(
@@ -171,6 +197,8 @@ class AddressProfileSaveManagerTest : public testing::Test {
   TestAutofillClient autofill_client_;
   MockPersonalDataManager mock_personal_data_manager_;
   base::test::ScopedFeatureList scoped_feature_list_;
+  bool complement_country_;
+  bool remove_invalid_phone_number_;
 };
 
 void AddressProfileSaveManagerTest::TestImportScenario(
@@ -229,9 +257,13 @@ void AddressProfileSaveManagerTest::TestImportScenario(
   mock_personal_data_manager_.SetProfiles(&test_scenario.existing_profiles);
 
   // Initiate the profile import.
+  ProfileImportMetadata import_metadata{
+      .did_complement_country = complement_country_,
+      .did_remove_invalid_phone_number = remove_invalid_phone_number_};
   save_manager.ImportProfileFromForm(
       test_scenario.observed_profile, "en-US", url,
-      /*allow_only_silent_updates=*/test_scenario.allow_only_silent_updates);
+      /*allow_only_silent_updates=*/test_scenario.allow_only_silent_updates,
+      import_metadata);
 
   // Assert that there is a finished import process on record.
   ASSERT_NE(save_manager.last_import(), nullptr);
@@ -259,6 +291,11 @@ void AddressProfileSaveManagerTest::TestImportScenario(
           ? kSilentUpdatesProfileImportTypeHistogram
           : kProfileImportTypeHistogram,
       test_scenario.expected_import_type, 1);
+  if (test_scenario.allow_only_silent_updates && remove_invalid_phone_number_) {
+    histogram_tester.ExpectUniqueSample(
+        kSilentUpdatesWithRemovedPhoneNumberProfileImportTypeHistogram,
+        test_scenario.expected_import_type, 1);
+  }
 
   const bool is_new_profile = test_scenario.expected_import_type ==
                               AutofillProfileImportType::kNewProfile;
@@ -273,8 +310,12 @@ void AddressProfileSaveManagerTest::TestImportScenario(
   if (!is_new_profile && !is_confirmable_merge) {
     histogram_tester.ExpectTotalCount(kNewProfileEditsHistogram, 0);
     histogram_tester.ExpectTotalCount(kNewProfileDecisionHistogram, 0);
+    histogram_tester.ExpectTotalCount(
+        kNewProfileWithComplementedCountryDecisionHistogram, 0);
     histogram_tester.ExpectTotalCount(kProfileUpdateEditsHistogram, 0);
     histogram_tester.ExpectTotalCount(kProfileUpdateDecisionHistogram, 0);
+    histogram_tester.ExpectTotalCount(
+        kProfileUpdateWithComplementedCountryDecisionHistogram, 0);
   } else {
     DCHECK(!is_new_profile || !is_confirmable_merge);
 
@@ -307,6 +348,72 @@ void AddressProfileSaveManagerTest::TestImportScenario(
     histogram_tester.ExpectTotalCount(
         affected_edits_histo,
         test_scenario.expected_edited_types_for_metrics.size());
+
+    // Metrics related to country complemention.
+    if (complement_country_) {
+      if (is_new_profile) {
+        histogram_tester.ExpectTotalCount(
+            kProfileUpdateWithComplementedCountryDecisionHistogram, 0);
+        histogram_tester.ExpectUniqueSample(
+            kNewProfileWithComplementedCountryDecisionHistogram,
+            test_scenario.user_decision, 1);
+      } else {
+        histogram_tester.ExpectTotalCount(
+            kNewProfileWithComplementedCountryDecisionHistogram, 0);
+        // For updates we only expect a difference if the country changed.
+        if (test_scenario.observed_profile.GetRawInfo(ADDRESS_HOME_COUNTRY) !=
+            test_scenario.merge_candidate->GetRawInfo(ADDRESS_HOME_COUNTRY)) {
+          histogram_tester.ExpectUniqueSample(
+              kProfileUpdateWithComplementedCountryDecisionHistogram,
+              test_scenario.user_decision, 1);
+        } else {
+          histogram_tester.ExpectTotalCount(
+              kProfileUpdateWithComplementedCountryDecisionHistogram, 0);
+        }
+      }
+
+      // In case the country was edited, expect increased metrics.
+      if (base::Contains(
+              test_scenario.expected_edited_types_for_metrics,
+              AutofillMetrics::SettingsVisibleFieldTypeForMetrics::kCountry)) {
+        histogram_tester.ExpectTotalCount(
+            !is_new_profile ? kNewProfileEditComplementedCountryHistogram
+                            : kProfileUpdateEditComplementedCountryHistogram,
+            0);
+        histogram_tester.ExpectTotalCount(
+            is_new_profile ? kNewProfileEditComplementedCountryHistogram
+                           : kProfileUpdateEditComplementedCountryHistogram,
+            1);
+      } else {
+        histogram_tester.ExpectTotalCount(
+            kNewProfileEditComplementedCountryHistogram, 0);
+        histogram_tester.ExpectTotalCount(
+            kProfileUpdateEditComplementedCountryHistogram, 0);
+      }
+    } else {
+      histogram_tester.ExpectTotalCount(
+          kNewProfileWithComplementedCountryDecisionHistogram, 0);
+      histogram_tester.ExpectTotalCount(
+          kProfileUpdateWithComplementedCountryDecisionHistogram, 0);
+      histogram_tester.ExpectTotalCount(
+          kNewProfileEditComplementedCountryHistogram, 0);
+      histogram_tester.ExpectTotalCount(
+          kProfileUpdateEditComplementedCountryHistogram, 0);
+    }
+
+    // Metrics related to removing invalid phone numbers for non silent updates.
+    if (remove_invalid_phone_number_) {
+      histogram_tester.ExpectTotalCount(
+          !is_new_profile
+              ? kNewProfileWithRemovedPhoneNumberDecisionHistogram
+              : kProfileUpdateWithRemovedPhoneNumberDecisionHistogram,
+          0);
+      histogram_tester.ExpectUniqueSample(
+          is_new_profile
+              ? kNewProfileWithRemovedPhoneNumberDecisionHistogram
+              : kProfileUpdateWithRemovedPhoneNumberDecisionHistogram,
+          test_scenario.user_decision, 1);
+    }
 
     for (auto edited_type : test_scenario.expected_edited_types_for_metrics) {
       histogram_tester.ExpectBucketCount(affected_edits_histo, edited_type, 1);
@@ -395,7 +502,7 @@ void AddressProfileSaveManagerTest::TestImportScenario(
 
 // Test that a profile is correctly imported when no other profile is stored
 // yet.
-TEST_F(AddressProfileSaveManagerTest, SaveNewProfile) {
+TEST_P(AddressProfileSaveManagerTest, SaveNewProfile) {
   AutofillProfile observed_profile = test::StandardProfile();
 
   ImportScenarioTestCase test_scenario{
@@ -414,7 +521,7 @@ TEST_F(AddressProfileSaveManagerTest, SaveNewProfile) {
 
 // Test that a profile is correctly imported when no other profile is stored
 // yet but another profile is added while waiting for the user response.
-TEST_F(AddressProfileSaveManagerTest, SaveNewProfile_ProfileAddedWhileWaiting) {
+TEST_P(AddressProfileSaveManagerTest, SaveNewProfile_ProfileAddedWhileWaiting) {
   AutofillProfile observed_profile = test::StandardProfile();
   AutofillProfile profile_added_while_waiting =
       test::DifferentFromStandardProfile();
@@ -436,8 +543,8 @@ TEST_F(AddressProfileSaveManagerTest, SaveNewProfile_ProfileAddedWhileWaiting) {
 }
 
 // Test that a profile is not imported and that the user is not prompted if the
-// domain is blocked for imorting new profiles.
-TEST_F(AddressProfileSaveManagerTest, SaveNewProfileOnBlockedDomain) {
+// domain is blocked for importing new profiles.
+TEST_P(AddressProfileSaveManagerTest, SaveNewProfileOnBlockedDomain) {
   AutofillProfile observed_profile = test::StandardProfile();
 
   ImportScenarioTestCase test_scenario{
@@ -458,7 +565,7 @@ TEST_F(AddressProfileSaveManagerTest, SaveNewProfileOnBlockedDomain) {
 // Test that a profile is correctly imported when no other profile is stored
 // yet. Here, `kUserNotAsked` is supplied which is done as a fallback in case
 // the UI is unavailable for technical reasons.
-TEST_F(AddressProfileSaveManagerTest, SaveNewProfile_UserNotAskedFallback) {
+TEST_P(AddressProfileSaveManagerTest, SaveNewProfile_UserNotAskedFallback) {
   AutofillProfile observed_profile = test::StandardProfile();
 
   ImportScenarioTestCase test_scenario{
@@ -477,7 +584,7 @@ TEST_F(AddressProfileSaveManagerTest, SaveNewProfile_UserNotAskedFallback) {
 
 // Test that a profile is correctly imported when no other profile is stored
 // yet. Here, the profile is edited by the user.
-TEST_F(AddressProfileSaveManagerTest, SaveNewProfile_Edited) {
+TEST_P(AddressProfileSaveManagerTest, SaveNewProfile_Edited) {
   AutofillProfile observed_profile = test::StandardProfile();
   AutofillProfile edited_profile = test::DifferentFromStandardProfile();
   // The edited profile must have the same GUID then the observed one.
@@ -503,8 +610,32 @@ TEST_F(AddressProfileSaveManagerTest, SaveNewProfile_Edited) {
   TestImportScenario(test_scenario);
 }
 
+// Test that the country complemention metric is correctly increased.
+TEST_P(AddressProfileSaveManagerTest, SaveNewProfile_EditedCountry) {
+  AutofillProfile observed_profile = test::StandardProfile();
+  AutofillProfile edited_profile = observed_profile;
+  edited_profile.SetRawInfoWithVerificationStatus(
+      ADDRESS_HOME_COUNTRY, u"DE", VerificationStatus::kObserved);
+
+  ImportScenarioTestCase test_scenario{
+      .existing_profiles = {},
+      .observed_profile = observed_profile,
+      .is_prompt_expected = true,
+      .user_decision = UserDecision::kEditAccepted,
+      .edited_profile = edited_profile,
+      .expected_import_type = AutofillProfileImportType::kNewProfile,
+      .is_profile_change_expected = true,
+      .merge_candidate = absl::nullopt,
+      .import_candidate = observed_profile,
+      .expected_final_profiles = {edited_profile},
+      .expected_edited_types_for_metrics = {
+          AutofillMetrics::SettingsVisibleFieldTypeForMetrics::kCountry}};
+
+  TestImportScenario(test_scenario);
+}
+
 // Test that a decline to import a new profile is handled correctly.
-TEST_F(AddressProfileSaveManagerTest, SaveNewProfile_Declined) {
+TEST_P(AddressProfileSaveManagerTest, SaveNewProfile_Declined) {
   AutofillProfile observed_profile = test::StandardProfile();
 
   ImportScenarioTestCase test_scenario{
@@ -523,7 +654,7 @@ TEST_F(AddressProfileSaveManagerTest, SaveNewProfile_Declined) {
 
 // Test that a decline to import a new profile in the message UI is handled
 // correctly.
-TEST_F(AddressProfileSaveManagerTest, SaveNewProfile_MessageDeclined) {
+TEST_P(AddressProfileSaveManagerTest, SaveNewProfile_MessageDeclined) {
   AutofillProfile observed_profile = test::StandardProfile();
 
   ImportScenarioTestCase test_scenario{
@@ -541,7 +672,7 @@ TEST_F(AddressProfileSaveManagerTest, SaveNewProfile_MessageDeclined) {
 }
 
 // Test that the observation of a duplicate profile has no effect.
-TEST_F(AddressProfileSaveManagerTest, ImportDuplicateProfile) {
+TEST_P(AddressProfileSaveManagerTest, ImportDuplicateProfile) {
   // Note that the profile is created twice to enforce different GUIDs.
   AutofillProfile existing_profile = test::StandardProfile();
   AutofillProfile observed_profile = test::StandardProfile();
@@ -562,7 +693,7 @@ TEST_F(AddressProfileSaveManagerTest, ImportDuplicateProfile) {
 
 // Test that the observation of quasi identical profile that has a different
 // structure in the name will result in a silent update.
-TEST_F(AddressProfileSaveManagerTest, SilentlyUpdateProfile) {
+TEST_P(AddressProfileSaveManagerTest, SilentlyUpdateProfile) {
   AutofillProfile observed_profile = test::StandardProfile();
   AutofillProfile updateable_profile = test::UpdateableStandardProfile();
   AutofillProfile final_profile = observed_profile;
@@ -583,7 +714,7 @@ TEST_F(AddressProfileSaveManagerTest, SilentlyUpdateProfile) {
 // Test that the observation of quasi identical profile that has a different
 // structure in the name will result in a silent update even though the domain
 // is blocked for new profile imports.
-TEST_F(AddressProfileSaveManagerTest, SilentlyUpdateProfileOnBlockedDomain) {
+TEST_P(AddressProfileSaveManagerTest, SilentlyUpdateProfileOnBlockedDomain) {
   AutofillProfile observed_profile = test::StandardProfile();
   AutofillProfile updateable_profile = test::UpdateableStandardProfile();
   AutofillProfile final_profile = observed_profile;
@@ -605,7 +736,7 @@ TEST_F(AddressProfileSaveManagerTest, SilentlyUpdateProfileOnBlockedDomain) {
 // Test that the observation of quasi identical profile that has a different
 // structure in the name will result in a silent update even when the profile
 // has the legacy property of being verified.
-TEST_F(AddressProfileSaveManagerTest, SilentlyUpdateVerifiedProfile) {
+TEST_P(AddressProfileSaveManagerTest, SilentlyUpdateVerifiedProfile) {
   AutofillProfile observed_profile = test::StandardProfile();
 
   AutofillProfile updateable_profile = test::UpdateableStandardProfile();
@@ -630,7 +761,7 @@ TEST_F(AddressProfileSaveManagerTest, SilentlyUpdateVerifiedProfile) {
 // Test the observation of a profile that can only be merged with a
 // settings-visible change. Here, `kUserNotAsked` is returned as the fallback
 // mechanism when the UI is not available for technical reasons.
-TEST_F(AddressProfileSaveManagerTest,
+TEST_P(AddressProfileSaveManagerTest,
        UserConfirmableMerge_UserNotAskedFallback) {
   AutofillProfile observed_profile = test::StandardProfile();
   AutofillProfile mergeable_profile = test::SubsetOfStandardProfile();
@@ -653,7 +784,7 @@ TEST_F(AddressProfileSaveManagerTest,
 
 // Test the observation of a profile that can only be merged with a
 // settings-visible change.
-TEST_F(AddressProfileSaveManagerTest, UserConfirmableMerge) {
+TEST_P(AddressProfileSaveManagerTest, UserConfirmableMerge) {
   AutofillProfile observed_profile = test::StandardProfile();
   AutofillProfile mergeable_profile = test::SubsetOfStandardProfile();
   AutofillProfile final_profile = observed_profile;
@@ -678,7 +809,7 @@ TEST_F(AddressProfileSaveManagerTest, UserConfirmableMerge) {
 
 // Test the observation of a profile that can only be merged with a
 // settings-visible change but the mergeable profile is blocked for updates.
-TEST_F(AddressProfileSaveManagerTest, UserConfirmableMerge_BlockedProfile) {
+TEST_P(AddressProfileSaveManagerTest, UserConfirmableMerge_BlockedProfile) {
   AutofillProfile observed_profile = test::StandardProfile();
   AutofillProfile mergeable_profile = test::SubsetOfStandardProfile();
   AutofillProfile final_profile = observed_profile;
@@ -701,7 +832,7 @@ TEST_F(AddressProfileSaveManagerTest, UserConfirmableMerge_BlockedProfile) {
 // Test the observation of a profile that can only be merged with a
 // settings-visible change. The existing profile has the legacy property of
 // being verified.
-TEST_F(AddressProfileSaveManagerTest, UserConfirmableMerge_VerifiedProfile) {
+TEST_P(AddressProfileSaveManagerTest, UserConfirmableMerge_VerifiedProfile) {
   AutofillProfile observed_profile = test::StandardProfile();
 
   AutofillProfile mergeable_profile = test::SubsetOfStandardProfile();
@@ -730,7 +861,7 @@ TEST_F(AddressProfileSaveManagerTest, UserConfirmableMerge_VerifiedProfile) {
 
 // Test the observation of a profile that can only be merged with a
 // settings-visible change.
-TEST_F(AddressProfileSaveManagerTest, UserConfirmableMerge_Edited) {
+TEST_P(AddressProfileSaveManagerTest, UserConfirmableMerge_Edited) {
   AutofillProfile observed_profile = test::StandardProfile();
   AutofillProfile mergeable_profile = test::SubsetOfStandardProfile();
   AutofillProfile edited_profile = test::DifferentFromStandardProfile();
@@ -761,7 +892,7 @@ TEST_F(AddressProfileSaveManagerTest, UserConfirmableMerge_Edited) {
 
 // Test the observation of a profile that can only be merged with a
 // settings-visible change but the import is declined by the user.
-TEST_F(AddressProfileSaveManagerTest, UserConfirmableMerge_Declined) {
+TEST_P(AddressProfileSaveManagerTest, UserConfirmableMerge_Declined) {
   AutofillProfile observed_profile = test::StandardProfile();
   AutofillProfile mergeable_profile = test::SubsetOfStandardProfile();
   AutofillProfile final_profile = observed_profile;
@@ -783,7 +914,7 @@ TEST_F(AddressProfileSaveManagerTest, UserConfirmableMerge_Declined) {
 
 // Test a mixed scenario in which a duplicate profile already exists, but a
 // another profile is mergeable with the observed profile.
-TEST_F(AddressProfileSaveManagerTest, UserConfirmableMergeAndDuplicate) {
+TEST_P(AddressProfileSaveManagerTest, UserConfirmableMergeAndDuplicate) {
   AutofillProfile observed_profile = test::StandardProfile();
   AutofillProfile existing_duplicate = test::StandardProfile();
   AutofillProfile mergeable_profile = test::SubsetOfStandardProfile();
@@ -812,7 +943,7 @@ TEST_F(AddressProfileSaveManagerTest, UserConfirmableMergeAndDuplicate) {
 // another profile is mergeable with the observed profile. The result should not
 // be affected by the fact that the domain is blocked for the import of new
 // profiles.
-TEST_F(AddressProfileSaveManagerTest,
+TEST_P(AddressProfileSaveManagerTest,
        UserConfirmableMergeAndDuplicateOnBlockedDomain) {
   AutofillProfile observed_profile = test::StandardProfile();
   AutofillProfile existing_duplicate = test::StandardProfile();
@@ -842,7 +973,7 @@ TEST_F(AddressProfileSaveManagerTest,
 // Test a mixed scenario in which a duplicate profile already exists, but a
 // another profile is mergeable with the observed profile and yet another
 // profile can be silently updated.
-TEST_F(AddressProfileSaveManagerTest,
+TEST_P(AddressProfileSaveManagerTest,
        UserConfirmableMergeAndUpdateAndDuplicate) {
   AutofillProfile observed_profile = test::StandardProfile();
   AutofillProfile existing_duplicate = test::StandardProfile();
@@ -878,7 +1009,7 @@ TEST_F(AddressProfileSaveManagerTest,
 }
 
 // Same as above, but the merge candidate is blocked for updates.
-TEST_F(AddressProfileSaveManagerTest,
+TEST_P(AddressProfileSaveManagerTest,
        UserConfirmableMergeAndUpdateAndDuplicate_Blocked) {
   AutofillProfile observed_profile = test::StandardProfile();
   AutofillProfile existing_duplicate = test::StandardProfile();
@@ -912,7 +1043,7 @@ TEST_F(AddressProfileSaveManagerTest,
 // Test a mixed scenario in which a duplicate profile already exists, but a
 // another profile is mergeable with the observed profile and yet another
 // profile can be silently updated. Here, the merge is declined.
-TEST_F(AddressProfileSaveManagerTest,
+TEST_P(AddressProfileSaveManagerTest,
        UserConfirmableMergeAndUpdateAndDuplicate_Declined) {
   AutofillProfile observed_profile = test::StandardProfile();
   AutofillProfile existing_duplicate = test::StandardProfile();
@@ -947,7 +1078,7 @@ TEST_F(AddressProfileSaveManagerTest,
 // Test a mixed scenario in which a duplicate profile already exists, but a
 // another profile is mergeable with the observed profile and yet another
 // profile can be silently updated. Here, the merge is accepted with edits.
-TEST_F(AddressProfileSaveManagerTest,
+TEST_P(AddressProfileSaveManagerTest,
        UserConfirmableMergeAndUpdateAndDuplicate_Edited) {
   AutofillProfile observed_profile = test::StandardProfile();
   AutofillProfile existing_duplicate = test::StandardProfile();
@@ -987,7 +1118,7 @@ TEST_F(AddressProfileSaveManagerTest,
   TestImportScenario(test_scenario);
 }
 
-TEST_F(AddressProfileSaveManagerTest, SaveProfileWhenNoSavePrompt) {
+TEST_P(AddressProfileSaveManagerTest, SaveProfileWhenNoSavePrompt) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndDisableFeature(
       features::kAutofillAddressProfileSavePrompt);
@@ -998,12 +1129,13 @@ TEST_F(AddressProfileSaveManagerTest, SaveProfileWhenNoSavePrompt) {
   EXPECT_CALL(mock_personal_data_manager_, SaveImportedProfile(test_profile));
   save_manager.ImportProfileFromForm(test_profile, "en_US",
                                      GURL("https://www.noprompt.com"),
-                                     /*allow_only_silent_updates=*/false);
+                                     /*allow_only_silent_updates=*/false,
+                                     /*import_metadata=*/{});
 }
 
 // Tests that a new profile is not imported when only silent updates are
 // allowed.
-TEST_F(AddressProfileSaveManagerTest, SilentlyUpdateProfile_SaveNewProfile) {
+TEST_P(AddressProfileSaveManagerTest, SilentlyUpdateProfile_SaveNewProfile) {
   AutofillProfile observed_profile = test::StandardProfile();
 
   ImportScenarioTestCase test_scenario{
@@ -1023,7 +1155,7 @@ TEST_F(AddressProfileSaveManagerTest, SilentlyUpdateProfile_SaveNewProfile) {
 // Test that the observation of quasi identical profile that has a different
 // structure in the name will result in a silent update when only silent updates
 // are allowed.
-TEST_F(AddressProfileSaveManagerTest,
+TEST_P(AddressProfileSaveManagerTest,
        SilentlyUpdateProfile_WithIncompleteProfile) {
   AutofillProfile observed_profile = test::StandardProfile();
   AutofillProfile updateable_profile = test::UpdateableStandardProfile();
@@ -1045,7 +1177,7 @@ TEST_F(AddressProfileSaveManagerTest,
 // Tests that the profile's structured name information is silently updated when
 // an updated profile is observed with no settings visible difference.
 // Silent Update is enabled for the test.
-TEST_F(AddressProfileSaveManagerTest,
+TEST_P(AddressProfileSaveManagerTest,
        SilentlyUpdateProfile_UpdateStructuredName) {
   AutofillProfile updateable_profile;
   test::SetProfileTestValues(
@@ -1094,7 +1226,7 @@ TEST_F(AddressProfileSaveManagerTest,
 // an updated profile with no address data is observed with no settings visible
 // difference.
 // Silent Update is enabled for the test.
-TEST_F(AddressProfileSaveManagerTest,
+TEST_P(AddressProfileSaveManagerTest,
        SilentlyUpdateProfile_UpdateStructuredNameWithIncompleteProfile) {
   AutofillProfile updateable_profile;
   test::SetProfileTestValues(
@@ -1148,7 +1280,7 @@ TEST_F(AddressProfileSaveManagerTest,
 // Test that the observation of quasi identical profile that has a different
 // structure in the name will result in a silent update even though the domain
 // is blocked for new profile imports when silent updates are enforced.
-TEST_F(AddressProfileSaveManagerTest, SilentlyUpdateProfile_OnBlockedDomain) {
+TEST_P(AddressProfileSaveManagerTest, SilentlyUpdateProfile_OnBlockedDomain) {
   AutofillProfile observed_profile = test::StandardProfile();
   AutofillProfile updateable_profile = test::UpdateableStandardProfile();
   AutofillProfile final_profile = observed_profile;
@@ -1171,7 +1303,7 @@ TEST_F(AddressProfileSaveManagerTest, SilentlyUpdateProfile_OnBlockedDomain) {
 // another profile is mergeable with the observed profile and yet another
 // profile can be silently updated. Only silent updates are allowed for this
 // test.
-TEST_F(AddressProfileSaveManagerTest,
+TEST_P(AddressProfileSaveManagerTest,
        SilentlyUpdateProfile_UserConfirmableMergeAndUpdateAndDuplicate) {
   AutofillProfile observed_profile = test::StandardProfile();
   AutofillProfile existing_duplicate = test::StandardProfile();
@@ -1200,7 +1332,7 @@ TEST_F(AddressProfileSaveManagerTest,
 
 // Tests that the mergeable profiles are not merged when only silent updates
 // are allowed.
-TEST_F(AddressProfileSaveManagerTest,
+TEST_P(AddressProfileSaveManagerTest,
        SilentlyUpdateProfile_UserConfirmableMergeNotAllowed) {
   AutofillProfile observed_profile = test::StandardProfile();
   AutofillProfile mergeable_profile = test::SubsetOfStandardProfile();
@@ -1218,6 +1350,13 @@ TEST_F(AddressProfileSaveManagerTest,
 
   TestImportScenario(test_scenario);
 }
+
+// Runs the suite as if the the country was (not) complemented using
+// |kAutofillComplementCountryCodeOnImport| and as if the phone number was (not)
+// removed with |kAutofillRemoveInvalidPhoneNumberOnImport|.
+INSTANTIATE_TEST_SUITE_P(,
+                         AddressProfileSaveManagerTest,
+                         testing::Combine(testing::Bool(), testing::Bool()));
 
 }  // namespace
 

@@ -25,8 +25,7 @@ const char kDefaultInterfaceToForward[] = "wlan0";
 const char kPortNumberKey[] = "port_number";
 const char kPortProtocolKey[] = "protocol_type";
 const char kPortLabelKey[] = "label";
-const char kPortVmNameKey[] = "vm_name";
-const char kPortContainerNameKey[] = "container_name";
+const char kPortContainerIdKey[] = "container_id";
 
 class CrostiniPortForwarderFactory : public BrowserContextKeyedServiceFactory {
  public:
@@ -79,36 +78,30 @@ bool CrostiniPortForwarder::MatchPortRuleDict(const base::Value& dict,
                                               const PortRuleKey& key) {
   absl::optional<int> port_number = dict.FindIntKey(kPortNumberKey);
   absl::optional<int> protocol_type = dict.FindIntKey(kPortProtocolKey);
-  const std::string* vm_name = dict.FindStringKey(kPortVmNameKey);
-  const std::string* container_name = dict.FindStringKey(kPortContainerNameKey);
   return (port_number && port_number.value() == key.port_number) &&
          (protocol_type &&
           protocol_type.value() == static_cast<int>(key.protocol_type)) &&
-         (vm_name && *vm_name == key.container_id.vm_name) &&
-         (container_name && *container_name == key.container_id.container_name);
+         ContainerId(dict) == ContainerId(key.container_id);
 }
 
 bool CrostiniPortForwarder::MatchPortRuleContainerId(
     const base::Value& dict,
     const ContainerId& container_id) {
-  const std::string* vm_name = dict.FindStringKey(kPortVmNameKey);
-  const std::string* container_name = dict.FindStringKey(kPortContainerNameKey);
-  return (vm_name && *vm_name == container_id.vm_name) &&
-         (container_name && *container_name == container_id.container_name);
+  return ContainerId(dict) == container_id;
 }
 
 void CrostiniPortForwarder::AddNewPortPreference(const PortRuleKey& key,
                                                  const std::string& label) {
   PrefService* pref_service = profile_->GetPrefs();
   ListPrefUpdate update(pref_service, crostini::prefs::kCrostiniPortForwarding);
-  base::ListValue* all_ports = update.Get();
+  base::Value* all_ports = update.Get();
   base::Value new_port_metadata(base::Value::Type::DICTIONARY);
   new_port_metadata.SetIntKey(kPortNumberKey, key.port_number);
   new_port_metadata.SetIntKey(kPortProtocolKey,
                               static_cast<int>(key.protocol_type));
   new_port_metadata.SetStringKey(kPortLabelKey, label);
-  new_port_metadata.SetStringKey(kPortVmNameKey, key.container_id.vm_name);
-  new_port_metadata.SetStringKey(kPortContainerNameKey,
+  new_port_metadata.SetStringKey(prefs::kVmKey, key.container_id.vm_name);
+  new_port_metadata.SetStringKey(prefs::kContainerKey,
                                  key.container_id.container_name);
   all_ports->Append(std::move(new_port_metadata));
 }
@@ -116,8 +109,8 @@ void CrostiniPortForwarder::AddNewPortPreference(const PortRuleKey& key,
 bool CrostiniPortForwarder::RemovePortPreference(const PortRuleKey& key) {
   PrefService* pref_service = profile_->GetPrefs();
   ListPrefUpdate update(pref_service, crostini::prefs::kCrostiniPortForwarding);
-  base::ListValue* all_ports = update.Get();
-  base::Value::ListView list_view = all_ports->GetList();
+  base::Value* all_ports = update.Get();
+  base::Value::ListView list_view = all_ports->GetListDeprecated();
   auto it = std::find_if(
       list_view.begin(), list_view.end(),
       [&key, this](const auto& dict) { return MatchPortRuleDict(dict, key); });
@@ -131,9 +124,10 @@ absl::optional<base::Value> CrostiniPortForwarder::ReadPortPreference(
   const base::Value* all_ports =
       pref_service->GetList(crostini::prefs::kCrostiniPortForwarding);
   auto it = std::find_if(
-      all_ports->GetList().begin(), all_ports->GetList().end(),
+      all_ports->GetListDeprecated().begin(),
+      all_ports->GetListDeprecated().end(),
       [&key, this](const auto& dict) { return MatchPortRuleDict(dict, key); });
-  if (it == all_ports->GetList().end()) {
+  if (it == all_ports->GetListDeprecated().end()) {
     return absl::nullopt;
   }
   return absl::optional<base::Value>(it->Clone());
@@ -371,10 +365,10 @@ void CrostiniPortForwarder::RemoveAllPorts(const ContainerId& container_id) {
 base::ListValue CrostiniPortForwarder::GetActivePorts() {
   base::ListValue forwarded_ports_list;
   for (const auto& port : forwarded_ports_) {
-    base::Value port_info(base::Value::Type::DICTIONARY);
-    port_info.SetKey("port_number", base::Value(port.first.port_number));
-    port_info.SetKey("protocol_type",
-                     base::Value(static_cast<int>(port.first.protocol_type)));
+    base::Value::Dict port_info;
+    port_info.Set(kPortNumberKey, port.first.port_number);
+    port_info.Set(kPortProtocolKey, static_cast<int>(port.first.protocol_type));
+    port_info.Set(kPortContainerIdKey, port.first.container_id.ToDictValue());
     forwarded_ports_list.Append(std::move(port_info));
   }
   return forwarded_ports_list;

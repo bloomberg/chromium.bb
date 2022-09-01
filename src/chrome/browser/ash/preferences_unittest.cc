@@ -22,6 +22,8 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/update_engine/fake_update_engine_client.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_member.h"
 #include "components/sync/base/client_tag_hash.h"
@@ -152,15 +154,15 @@ class PreferencesTest : public testing::Test {
         TestingBrowserProcess::GetGlobal());
     ASSERT_TRUE(profile_manager_->SetUp());
 
-    auto* user_manager = new FakeChromeUserManager();
+    user_manager_ = new FakeChromeUserManager();
     user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
-        base::WrapUnique(user_manager));
+        base::WrapUnique(user_manager_));
 
     const char test_user_email[] = "test_user@example.com";
     const AccountId test_account_id(AccountId::FromUserEmail(test_user_email));
-    test_user_ = user_manager->AddUser(test_account_id);
-    user_manager->LoginUser(test_account_id);
-    user_manager->SwitchActiveUser(test_account_id);
+    test_user_ = user_manager_->AddUser(test_account_id);
+    user_manager_->LoginUser(test_account_id);
+    user_manager_->SwitchActiveUser(test_account_id);
 
     test_profile_ = profile_manager_->CreateTestingProfile(
         chrome::kInitialProfile);
@@ -172,10 +174,21 @@ class PreferencesTest : public testing::Test {
     current_input_method_.Init(
         prefs::kLanguageCurrentInputMethod, pref_service_);
     current_input_method_.SetValue("KeyboardB");
+    consumer_auto_update_toggle_.Init(::prefs::kConsumerAutoUpdateToggle,
+                                      g_browser_process->local_state());
+    consumer_auto_update_toggle_.SetValue(true);
 
     mock_manager_ = new input_method::MyMockInputMethodManager(
         &previous_input_method_, &current_input_method_);
     input_method::InitializeForTesting(mock_manager_);
+
+    if (!chromeos::DBusThreadManager::IsInitialized()) {
+      chromeos::DBusThreadManager::Initialize();
+    }
+    fake_update_engine_client_ = new chromeos::FakeUpdateEngineClient();
+    chromeos::DBusThreadManager::GetSetterForTesting()->SetUpdateEngineClient(
+        std::unique_ptr<chromeos::UpdateEngineClient>(
+            fake_update_engine_client_));
 
     prefs_ = std::make_unique<Preferences>(mock_manager_);
   }
@@ -200,12 +213,16 @@ class PreferencesTest : public testing::Test {
   std::unique_ptr<Preferences> prefs_;
   StringPrefMember previous_input_method_;
   StringPrefMember current_input_method_;
+  BooleanPrefMember consumer_auto_update_toggle_;
+  base::test::ScopedFeatureList feature_list_;
 
   // Not owned.
+  FakeChromeUserManager* user_manager_;
   const user_manager::User* test_user_;
   TestingProfile* test_profile_;
   sync_preferences::TestingPrefServiceSyncable* pref_service_;
   input_method::MyMockInputMethodManager* mock_manager_;
+  chromeos::FakeUpdateEngineClient* fake_update_engine_client_;
 };
 
 TEST_F(PreferencesTest, TestUpdatePrefOnBrowserScreenDetails) {
@@ -215,6 +232,52 @@ TEST_F(PreferencesTest, TestUpdatePrefOnBrowserScreenDetails) {
   EXPECT_EQ("KeyboardA", previous_input_method_.GetValue());
   EXPECT_EQ("KeyboardB", current_input_method_.GetValue());
   EXPECT_EQ("KeyboardB", mock_manager_->last_input_method_id_);
+}
+
+TEST_F(PreferencesTest, TestConsumerAutoUpdateToggleOnSignals) {
+  InitPreferences();
+
+  auto CreateCAUFeatureStatus = [](bool enabled) {
+    update_engine::StatusResult status;
+    auto* feature = status.add_features();
+    feature->set_name(update_engine::kFeatureConsumerAutoUpdate);
+    feature->set_enabled(enabled);
+    return status;
+  };
+
+  consumer_auto_update_toggle_.SetValue(true);
+
+  fake_update_engine_client_->NotifyObserversThatStatusChanged(
+      CreateCAUFeatureStatus(false));
+  EXPECT_FALSE(consumer_auto_update_toggle_.GetValue());
+
+  fake_update_engine_client_->NotifyObserversThatStatusChanged(
+      CreateCAUFeatureStatus(true));
+  EXPECT_TRUE(consumer_auto_update_toggle_.GetValue());
+}
+
+TEST_F(PreferencesTest, TestDeviceOwnerInitCAUFeatureEnabled) {
+  feature_list_.InitAndEnableFeature(
+      features::kConsumerAutoUpdateToggleAllowed);
+  user_manager_->SetOwnerId(test_user_->GetAccountId());
+  InitPreferences();
+  EXPECT_EQ(0, fake_update_engine_client_->toggle_feature_count());
+  EXPECT_EQ(1, fake_update_engine_client_->is_feature_enabled_count());
+}
+
+TEST_F(PreferencesTest, TestDeviceOwnerInitCAUFeatureDisabled) {
+  feature_list_.InitAndDisableFeature(
+      features::kConsumerAutoUpdateToggleAllowed);
+  user_manager_->SetOwnerId(test_user_->GetAccountId());
+  InitPreferences();
+  EXPECT_EQ(1, fake_update_engine_client_->toggle_feature_count());
+  EXPECT_EQ(0, fake_update_engine_client_->is_feature_enabled_count());
+}
+
+TEST_F(PreferencesTest, TestNonDeviceOwnerInitCAUCheck) {
+  InitPreferences();
+  EXPECT_EQ(0, fake_update_engine_client_->toggle_feature_count());
+  EXPECT_EQ(1, fake_update_engine_client_->is_feature_enabled_count());
 }
 
 class InputMethodPreferencesTest : public PreferencesTest,
@@ -402,8 +465,6 @@ class InputMethodPreferencesTest : public PreferencesTest,
   StringPrefMember preload_engines_syncable_;
   StringPrefMember enabled_imes_;
   StringPrefMember enabled_imes_syncable_;
-
-  base::test::ScopedFeatureList feature_list_;
 };
 
 // Tests that the server values are added to the values chosen at OOBE.

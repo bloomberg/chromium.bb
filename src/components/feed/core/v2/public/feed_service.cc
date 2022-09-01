@@ -105,10 +105,12 @@ class FeedService::NetworkDelegateImpl : public FeedNetworkImpl::Delegate {
     return service_delegate_->GetLanguageTag();
   }
 
-  std::string GetSyncSignedInGaia() override {
-    return identity_manager_->GetPrimaryAccountInfo(signin::ConsentLevel::kSync)
-        .gaia;
+  AccountInfo GetAccountInfo() override {
+    return AccountInfo(
+        identity_manager_->GetPrimaryAccountInfo(signin::ConsentLevel::kSync));
   }
+
+  bool IsOffline() override { return net::NetworkChangeNotifier::IsOffline(); }
 
  private:
   raw_ptr<FeedService::Delegate> service_delegate_;
@@ -151,13 +153,9 @@ class FeedService::StreamDelegateImpl : public FeedStream::Delegate {
   void PrefetchImage(const GURL& url) override {
     service_delegate_->PrefetchImage(url);
   }
-  std::string GetSyncSignedInGaia() override {
-    return identity_manager_->GetPrimaryAccountInfo(signin::ConsentLevel::kSync)
-        .gaia;
-  }
-  std::string GetSyncSignedInEmail() override {
-    return identity_manager_->GetPrimaryAccountInfo(signin::ConsentLevel::kSync)
-        .email;
+  AccountInfo GetAccountInfo() override {
+    return AccountInfo(
+        identity_manager_->GetPrimaryAccountInfo(signin::ConsentLevel::kSync));
   }
   void RegisterExperiments(const Experiments& experiments) override {
     service_delegate_->RegisterExperiments(experiments);
@@ -165,6 +163,9 @@ class FeedService::StreamDelegateImpl : public FeedStream::Delegate {
   void RegisterFollowingFeedFollowCountFieldTrial(
       size_t follow_count) override {
     service_delegate_->RegisterFollowingFeedFollowCountFieldTrial(follow_count);
+  }
+  void RegisterFeedUserSettingsFieldTrial(base::StringPiece group) override {
+    service_delegate_->RegisterFeedUserSettingsFieldTrial(group);
   }
 
  private:
@@ -256,7 +257,7 @@ FeedService::FeedService(
 
   delegate_->RegisterExperiments(prefs::GetExperiments(*profile_prefs));
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   application_status_listener_ =
       base::android::ApplicationStatusListener::New(base::BindRepeating(
           &FeedService::OnApplicationStateChange, base::Unretained(this)));
@@ -284,7 +285,8 @@ void FeedService::ClearCachedData() {
 
 // static
 bool FeedService::IsEnabled(const PrefService& pref_service) {
-  return pref_service.GetBoolean(feed::prefs::kEnableSnippets);
+  return !base::FeatureList::IsEnabled(kIsAblated) &&
+         pref_service.GetBoolean(feed::prefs::kEnableSnippets);
 }
 
 // static
@@ -305,7 +307,7 @@ uint64_t FeedService::GetReliabilityLoggingId(const std::string& metrics_id,
       {metrics_id, std::string(reinterpret_cast<char*>(&salt), sizeof(salt))}));
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 void FeedService::OnApplicationStateChange(
     base::android::ApplicationState state) {
   if (state == base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES) {

@@ -78,7 +78,7 @@ bool GetByteRangeFromStr(const std::string& content_range_str,
 bool GetByteRangeFromHeaders(const std::string& headers, int* start, int* end) {
   net::HttpUtil::HeadersIterator it(headers.begin(), headers.end(), "\n");
   while (it.GetNext()) {
-    if (base::LowerCaseEqualsASCII(it.name_piece(), "content-range")) {
+    if (base::EqualsCaseInsensitiveASCII(it.name_piece(), "content-range")) {
       if (GetByteRangeFromStr(it.values().c_str(), start, end))
         return true;
     }
@@ -154,16 +154,17 @@ void URLLoaderWrapperImpl::OpenRange(const std::string& url,
                                      const std::string& referrer_url,
                                      uint32_t position,
                                      uint32_t size,
-                                     ResultCallback callback) {
+                                     base::OnceCallback<void(int)> callback) {
   url_loader_->Open(
       MakeRangeRequest(url, referrer_url, position, size),
       base::BindOnce(&URLLoaderWrapperImpl::DidOpen, weak_factory_.GetWeakPtr(),
                      std::move(callback)));
 }
 
-void URLLoaderWrapperImpl::ReadResponseBody(char* buffer,
-                                            int buffer_size,
-                                            ResultCallback callback) {
+void URLLoaderWrapperImpl::ReadResponseBody(
+    char* buffer,
+    int buffer_size,
+    base::OnceCallback<void(int)> callback) {
   buffer_ = buffer;
   buffer_size_ = buffer_size;
   read_starter_.Start(
@@ -172,7 +173,8 @@ void URLLoaderWrapperImpl::ReadResponseBody(char* buffer,
                      base::Unretained(this), std::move(callback)));
 }
 
-void URLLoaderWrapperImpl::ReadResponseBodyImpl(ResultCallback callback) {
+void URLLoaderWrapperImpl::ReadResponseBodyImpl(
+    base::OnceCallback<void(int)> callback) {
   url_loader_->ReadResponseBody(
       base::make_span(buffer_.get(), buffer_size_),
       base::BindOnce(&URLLoaderWrapperImpl::DidRead, weak_factory_.GetWeakPtr(),
@@ -196,13 +198,14 @@ void URLLoaderWrapperImpl::ParseHeaders(const std::string& response_headers) {
                                     response_headers.end(), "\n");
   while (it.GetNext()) {
     base::StringPiece name = it.name_piece();
-    if (base::LowerCaseEqualsASCII(name, "content-length")) {
+    if (base::EqualsCaseInsensitiveASCII(name, "content-length")) {
       content_length_ = atoi(it.values().c_str());
-    } else if (base::LowerCaseEqualsASCII(name, "accept-ranges")) {
-      accept_ranges_bytes_ = base::LowerCaseEqualsASCII(it.values(), "bytes");
-    } else if (base::LowerCaseEqualsASCII(name, "content-encoding")) {
+    } else if (base::EqualsCaseInsensitiveASCII(name, "accept-ranges")) {
+      accept_ranges_bytes_ =
+          base::EqualsCaseInsensitiveASCII(it.values(), "bytes");
+    } else if (base::EqualsCaseInsensitiveASCII(name, "content-encoding")) {
       content_encoded_ = true;
-    } else if (base::LowerCaseEqualsASCII(name, "content-type")) {
+    } else if (base::EqualsCaseInsensitiveASCII(name, "content-type")) {
       content_type_ = it.values();
       size_t semi_colon_pos = content_type_.find(';');
       if (semi_colon_pos != std::string::npos) {
@@ -219,9 +222,9 @@ void URLLoaderWrapperImpl::ParseHeaders(const std::string& response_headers) {
           is_multipart_ = !multipart_boundary_.empty();
         }
       }
-    } else if (base::LowerCaseEqualsASCII(name, "content-disposition")) {
+    } else if (base::EqualsCaseInsensitiveASCII(name, "content-disposition")) {
       content_disposition_ = it.values();
-    } else if (base::LowerCaseEqualsASCII(name, "content-range")) {
+    } else if (base::EqualsCaseInsensitiveASCII(name, "content-range")) {
       int start = 0;
       int end = 0;
       if (GetByteRangeFromStr(it.values().c_str(), &start, &end)) {
@@ -231,12 +234,14 @@ void URLLoaderWrapperImpl::ParseHeaders(const std::string& response_headers) {
   }
 }
 
-void URLLoaderWrapperImpl::DidOpen(ResultCallback callback, int32_t result) {
+void URLLoaderWrapperImpl::DidOpen(base::OnceCallback<void(int)> callback,
+                                   int32_t result) {
   SetHeadersFromLoader();
   std::move(callback).Run(result);
 }
 
-void URLLoaderWrapperImpl::DidRead(ResultCallback callback, int32_t result) {
+void URLLoaderWrapperImpl::DidRead(base::OnceCallback<void(int)> callback,
+                                   int32_t result) {
   if (multi_part_processed_) {
     // Reset this flag so we look inside the buffer in calls of DidRead for this
     // response only once.  Note that this code DOES NOT handle multi part

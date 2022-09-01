@@ -79,6 +79,8 @@
 #include "absl/container/inlined_vector.h"
 #include "absl/functional/function_ref.h"
 #include "absl/meta/type_traits.h"
+#include "absl/strings/cord_analysis.h"
+#include "absl/strings/internal/cord_data_edge.h"
 #include "absl/strings/internal/cord_internal.h"
 #include "absl/strings/internal/cord_rep_btree.h"
 #include "absl/strings/internal/cord_rep_btree_reader.h"
@@ -101,6 +103,20 @@ class CordTestPeer;
 template <typename Releaser>
 Cord MakeCordFromExternal(absl::string_view, Releaser&&);
 void CopyCordToString(const Cord& src, std::string* dst);
+
+// Cord memory accounting modes
+enum class CordMemoryAccounting {
+  // Counts the *approximate* number of bytes held in full or in part by this
+  // Cord (which may not remain the same between invocations). Cords that share
+  // memory could each be "charged" independently for the same shared memory.
+  kTotal,
+
+  // Counts the *approximate* number of bytes held in full or in part by this
+  // Cord weighted by the sharing ratio of that data. For example, if some data
+  // edge is shared by 4 different Cords, then each cord is attributed 1/4th of
+  // the total memory usage as a 'fair share' of the total memory usage.
+  kFairShare,
+};
 
 // Cord
 //
@@ -272,11 +288,10 @@ class Cord {
 
   // Cord::EstimatedMemoryUsage()
   //
-  // Returns the *approximate* number of bytes held in full or in part by this
-  // Cord (which may not remain the same between invocations).  Note that Cords
-  // that share memory could each be "charged" independently for the same shared
-  // memory.
-  size_t EstimatedMemoryUsage() const;
+  // Returns the *approximate* number of bytes held by this cord.
+  // See CordMemoryAccounting for more information on accounting method used.
+  size_t EstimatedMemoryUsage(CordMemoryAccounting accounting_method =
+                                  CordMemoryAccounting::kTotal) const;
 
   // Cord::Compare()
   //
@@ -374,12 +389,6 @@ class Cord {
     using CordRepBtree = absl::cord_internal::CordRepBtree;
     using CordRepBtreeReader = absl::cord_internal::CordRepBtreeReader;
 
-    // Stack of right children of concat nodes that we have to visit.
-    // Keep this at the end of the structure to avoid cache-thrashing.
-    // TODO(jgm): Benchmark to see if there's a more optimal value than 47 for
-    // the inlined vector size (47 exists for backward compatibility).
-    using Stack = absl::InlinedVector<absl::cord_internal::CordRep*, 47>;
-
     // Constructs a `begin()` iterator from `tree`. `tree` must not be null.
     explicit ChunkIterator(cord_internal::CordRep* tree);
 
@@ -395,16 +404,9 @@ class Cord {
     Cord AdvanceAndReadBytes(size_t n);
     void AdvanceBytes(size_t n);
 
-    // Stack specific operator++
-    ChunkIterator& AdvanceStack();
-
     // Btree specific operator++
     ChunkIterator& AdvanceBtree();
     void AdvanceBytesBtree(size_t n);
-
-    // Iterates `n` bytes, where `n` is expected to be greater than or equal to
-    // `current_chunk_.size()`.
-    void AdvanceBytesSlowPath(size_t n);
 
     // A view into bytes of the current `CordRep`. It may only be a view to a
     // suffix of bytes if this is being used by `CharIterator`.
@@ -418,9 +420,6 @@ class Cord {
 
     // Cord reader for cord btrees. Empty if not traversing a btree.
     CordRepBtreeReader btree_reader_;
-
-    // See 'Stack' alias definition.
-    Stack stack_of_right_children_;
   };
 
   // Cord::ChunkIterator::chunk_begin()
@@ -711,7 +710,8 @@ class Cord {
   // be used by spelling absl::strings_internal::MakeStringConstant, which is
   // also an internal API.
   template <typename T>
-  explicit constexpr Cord(strings_internal::StringConstant<T>);
+  // NOLINTNEXTLINE(google-explicit-constructor)
+  constexpr Cord(strings_internal::StringConstant<T>);
 
  private:
   using CordRep = absl::cord_internal::CordRep;
@@ -763,12 +763,12 @@ class Cord {
     bool empty() const;
     size_t size() const;
     const char* data() const;  // Returns nullptr if holding pointer
-    void set_data(const char* data, size_t n,
-                  bool nullify_tail);  // Discards pointer, if any
-    char* set_data(size_t n);          // Write data to the result
+    void set_data(const char* data, size_t n);  // Discards pointer, if any
+    char* set_data(size_t n);                   // Write data to the result
     // Returns nullptr if holding bytes
     absl::cord_internal::CordRep* tree() const;
     absl::cord_internal::CordRep* as_tree() const;
+    const char* as_chars() const;
     // Returns non-null iff was holding a pointer
     absl::cord_internal::CordRep* clear();
     // Converts to pointer if necessary.
@@ -857,7 +857,7 @@ class Cord {
     bool is_profiled() const { return data_.is_tree() && data_.is_profiled(); }
 
     // Returns the available inlined capacity, or 0 if is_tree() == true.
-    size_t inline_capacity() const {
+    size_t remaining_inline_capacity() const {
       return data_.is_tree() ? 0 : kMaxInline - data_.inline_size();
     }
 
@@ -890,9 +890,6 @@ class Cord {
     cord_internal::InlineData data_;
   };
   InlineRep contents_;
-
-  // Helper for MemoryUsage().
-  static size_t MemoryUsageAux(const absl::cord_internal::CordRep* rep);
 
   // Helper for GetFlat() and TryFlat().
   static bool GetFlatAux(absl::cord_internal::CordRep* rep,
@@ -968,8 +965,8 @@ namespace cord_internal {
 // Fast implementation of memmove for up to 15 bytes. This implementation is
 // safe for overlapping regions. If nullify_tail is true, the destination is
 // padded with '\0' up to 16 bytes.
-inline void SmallMemmove(char* dst, const char* src, size_t n,
-                         bool nullify_tail = false) {
+template <bool nullify_tail = false>
+inline void SmallMemmove(char* dst, const char* src, size_t n) {
   if (n >= 8) {
     assert(n <= 16);
     uint64_t buf1;
@@ -1006,22 +1003,16 @@ inline void SmallMemmove(char* dst, const char* src, size_t n,
 }
 
 // Does non-template-specific `CordRepExternal` initialization.
-// Expects `data` to be non-empty.
+// Requires `data` to be non-empty.
 void InitializeCordRepExternal(absl::string_view data, CordRepExternal* rep);
 
 // Creates a new `CordRep` that owns `data` and `releaser` and returns a pointer
-// to it, or `nullptr` if `data` was empty.
+// to it. Requires `data` to be non-empty.
 template <typename Releaser>
 // NOLINTNEXTLINE - suppress clang-tidy raw pointer return.
 CordRep* NewExternalRep(absl::string_view data, Releaser&& releaser) {
+  assert(!data.empty());
   using ReleaserType = absl::decay_t<Releaser>;
-  if (data.empty()) {
-    // Never create empty external nodes.
-    InvokeReleaser(Rank0{}, ReleaserType(std::forward<Releaser>(releaser)),
-                   data);
-    return nullptr;
-  }
-
   CordRepExternal* rep = new CordRepExternalImpl<ReleaserType>(
       std::forward<Releaser>(releaser), 0);
   InitializeCordRepExternal(data, rep);
@@ -1041,10 +1032,15 @@ inline CordRep* NewExternalRep(absl::string_view data,
 template <typename Releaser>
 Cord MakeCordFromExternal(absl::string_view data, Releaser&& releaser) {
   Cord cord;
-  if (auto* rep = ::absl::cord_internal::NewExternalRep(
-          data, std::forward<Releaser>(releaser))) {
-    cord.contents_.EmplaceTree(rep,
+  if (ABSL_PREDICT_TRUE(!data.empty())) {
+    cord.contents_.EmplaceTree(::absl::cord_internal::NewExternalRep(
+                                   data, std::forward<Releaser>(releaser)),
                                Cord::MethodIdentifier::kMakeCordFromExternal);
+  } else {
+    using ReleaserType = absl::decay_t<Releaser>;
+    cord_internal::InvokeReleaser(
+        cord_internal::Rank0{}, ReleaserType(std::forward<Releaser>(releaser)),
+        data);
   }
   return cord;
 }
@@ -1097,6 +1093,11 @@ inline void Cord::InlineRep::Swap(Cord::InlineRep* rhs) {
 
 inline const char* Cord::InlineRep::data() const {
   return is_tree() ? nullptr : data_.as_chars();
+}
+
+inline const char* Cord::InlineRep::as_chars() const {
+  assert(!data_.is_tree());
+  return data_.as_chars();
 }
 
 inline absl::cord_internal::CordRep* Cord::InlineRep::as_tree() const {
@@ -1237,10 +1238,15 @@ inline size_t Cord::size() const {
 
 inline bool Cord::empty() const { return contents_.empty(); }
 
-inline size_t Cord::EstimatedMemoryUsage() const {
+inline size_t Cord::EstimatedMemoryUsage(
+    CordMemoryAccounting accounting_method) const {
   size_t result = sizeof(Cord);
   if (const absl::cord_internal::CordRep* rep = contents_.tree()) {
-    result += MemoryUsageAux(rep);
+    if (accounting_method == CordMemoryAccounting::kFairShare) {
+      result += cord_internal::GetEstimatedFairShareMemoryUsage(rep);
+    } else {
+      result += cord_internal::GetEstimatedMemoryUsage(rep);
+    }
   }
   return result;
 }
@@ -1307,25 +1313,24 @@ inline void Cord::ChunkIterator::InitTree(cord_internal::CordRep* tree) {
   tree = cord_internal::SkipCrcNode(tree);
   if (tree->tag == cord_internal::BTREE) {
     current_chunk_ = btree_reader_.Init(tree->btree());
-    return;
+  } else {
+    current_leaf_ = tree;
+    current_chunk_ = cord_internal::EdgeData(tree);
   }
-
-  stack_of_right_children_.push_back(tree);
-  operator++();
 }
 
-inline Cord::ChunkIterator::ChunkIterator(cord_internal::CordRep* tree)
-    : bytes_remaining_(tree->length) {
+inline Cord::ChunkIterator::ChunkIterator(cord_internal::CordRep* tree) {
+  bytes_remaining_ = tree->length;
   InitTree(tree);
 }
 
-inline Cord::ChunkIterator::ChunkIterator(const Cord* cord)
-    : bytes_remaining_(cord->size()) {
-  if (cord->contents_.is_tree()) {
-    InitTree(cord->contents_.as_tree());
+inline Cord::ChunkIterator::ChunkIterator(const Cord* cord) {
+  if (CordRep* tree = cord->contents_.tree()) {
+    bytes_remaining_ = tree->length;
+    InitTree(tree);
   } else {
-    current_chunk_ =
-        absl::string_view(cord->contents_.data(), bytes_remaining_);
+    bytes_remaining_ = cord->contents_.inline_size();
+    current_chunk_ = {cord->contents_.data(), bytes_remaining_};
   }
 }
 
@@ -1355,8 +1360,11 @@ inline Cord::ChunkIterator& Cord::ChunkIterator::operator++() {
   assert(bytes_remaining_ >= current_chunk_.size());
   bytes_remaining_ -= current_chunk_.size();
   if (bytes_remaining_ > 0) {
-    return btree_reader_ ? AdvanceBtree() : AdvanceStack();
-  } else {
+    if (btree_reader_) {
+      return AdvanceBtree();
+    } else {
+      assert(!current_chunk_.empty());  // Called on invalid iterator.
+    }
     current_chunk_ = {};
   }
   return *this;
@@ -1397,7 +1405,11 @@ inline void Cord::ChunkIterator::AdvanceBytes(size_t n) {
   if (ABSL_PREDICT_TRUE(n < current_chunk_.size())) {
     RemoveChunkPrefix(n);
   } else if (n != 0) {
-    btree_reader_ ? AdvanceBytesBtree(n) : AdvanceBytesSlowPath(n);
+    if (btree_reader_) {
+      AdvanceBytesBtree(n);
+    } else {
+      bytes_remaining_ = 0;
+    }
   }
 }
 
@@ -1539,7 +1551,6 @@ class CordTestAccess {
  public:
   static size_t FlatOverhead();
   static size_t MaxFlatLength();
-  static size_t SizeofCordRepConcat();
   static size_t SizeofCordRepExternal();
   static size_t SizeofCordRepSubstring();
   static size_t FlatTagToLength(uint8_t tag);

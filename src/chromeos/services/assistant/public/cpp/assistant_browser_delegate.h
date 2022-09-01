@@ -7,7 +7,7 @@
 
 #include "ash/public/mojom/assistant_volume_control.mojom.h"
 #include "base/component_export.h"
-#include "chromeos/assistant/buildflags.h"
+#include "chromeos/ash/components/assistant/buildflags.h"
 #include "chromeos/services/assistant/public/cpp/assistant_enums.h"
 #include "chromeos/services/assistant/public/mojom/assistant_audio_decoder.mojom.h"
 #include "chromeos/services/libassistant/public/cpp/assistant_notification.h"
@@ -37,13 +37,6 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) AssistantBrowserDelegate {
   virtual ~AssistantBrowserDelegate();
 
   static AssistantBrowserDelegate* Get();
-
-  using RequestAssistantStructureCallback =
-      base::OnceCallback<void(ax::mojom::AssistantExtraPtr,
-                              std::unique_ptr<ui::AssistantTree>)>;
-  // Requests Assistant structure for the active browser or ARC++ app window.
-  virtual void RequestAssistantStructure(
-      RequestAssistantStructureCallback callback) = 0;
 
   // Notifies assistant client that assistant running status has changed.
   virtual void OnAssistantStatusChanged(AssistantStatus new_status) = 0;
@@ -87,6 +80,10 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) AssistantBrowserDelegate {
   virtual void RequestNetworkConfig(
       mojo::PendingReceiver<chromeos::network_config::mojom::CrosNetworkConfig>
           receiver) = 0;
+
+  // Opens the specified `url` in a new browser tab. Special handling is applied
+  // to OS Settings url which may cause deviation from this behavior.
+  virtual void OpenUrl(GURL url) = 0;
 
 #if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
   // Requests a connection to Libassistant service interface via the browser.

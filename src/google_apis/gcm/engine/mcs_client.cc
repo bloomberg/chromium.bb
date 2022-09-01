@@ -13,6 +13,7 @@
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -56,7 +57,7 @@ const size_t kMaxSendQueueSize = 10 * 1024;
 const int kMaxMessageBytes = 4 * 1024;  // 4KB, like the server.
 
 // Helper for converting a proto persistent id list to a vector of strings.
-bool BuildPersistentIdListFromProto(const google::protobuf::string& bytes,
+bool BuildPersistentIdListFromProto(const std::string& bytes,
                                     std::vector<std::string>* id_list) {
   mcs_proto::SelectiveAck selective_ack;
   if (!selective_ack.ParseFromString(bytes))

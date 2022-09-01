@@ -324,7 +324,8 @@ void ExtensionManagementPrefUpdaterBase::AddStringToList(
     list_value_weak = list_value.get();
     pref_->Set(path, std::move(list_value));
   }
-  CHECK(!base::Contains(list_value_weak->GetList(), base::Value(str)));
+  CHECK(
+      !base::Contains(list_value_weak->GetListDeprecated(), base::Value(str)));
   list_value_weak->Append(str);
 }
 
@@ -343,9 +344,10 @@ ExtensionManagementPolicyUpdater::ExtensionManagementPolicyUpdater(
     : provider_(policy_provider), policies_(new policy::PolicyBundle) {
   policies_->CopyFrom(provider_->policies());
   const base::Value* policy_value =
-      policies_->Get(policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME,
-                                             std::string()))
-          .GetValue(policy::key::kExtensionSettings);
+      policies_
+          ->Get(policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME,
+                                        std::string()))
+          .GetValue(policy::key::kExtensionSettings, base::Value::Type::DICT);
   const base::DictionaryValue* dict_value = nullptr;
   if (policy_value && policy_value->GetAsDictionary(&dict_value))
     SetPref(dict_value->DeepCopy());

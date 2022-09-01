@@ -275,6 +275,7 @@ class StateCache final : angle::NonCopyable
     void onColorMaskChange(Context *context);
     void onBufferBindingChange(Context *context);
     void onBlendFuncIndexedChange(Context *context);
+    void onBlendEquationChange(Context *context);
 
   private:
     // Cache update functions.
@@ -455,6 +456,11 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
                      unsigned int line);
 
     void validationError(angle::EntryPoint entryPoint, GLenum errorCode, const char *message) const;
+    ANGLE_FORMAT_PRINTF(4, 5)
+    void validationErrorF(angle::EntryPoint entryPoint,
+                          GLenum errorCode,
+                          const char *format,
+                          ...) const;
 
     void markContextLost(GraphicsResetStatus status);
 
@@ -579,7 +585,20 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
     static int TexCoordArrayIndex(unsigned int unit);
 
     // GL_KHR_parallel_shader_compile
-    std::shared_ptr<angle::WorkerThreadPool> getWorkerThreadPool() const { return mThreadPool; }
+    std::shared_ptr<angle::WorkerThreadPool> getShaderCompileThreadPool() const
+    {
+        if (mState.mExtensions.parallelShaderCompileKHR)
+        {
+            return mMultiThreadPool;
+        }
+        return mSingleThreadPool;
+    }
+
+    // Generic multithread pool.
+    std::shared_ptr<angle::WorkerThreadPool> getWorkerThreadPool() const
+    {
+        return mMultiThreadPool;
+    }
 
     const StateCache &getStateCache() const { return mStateCache; }
     StateCache &getStateCache() { return mStateCache; }
@@ -630,6 +649,8 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
 
     // Needed by capture serialization logic that works with a "const" Context pointer.
     void finishImmutable() const;
+
+    const angle::PerfMonitorCounterGroups &getPerfMonitorCounterGroups() const;
 
   private:
     void initializeDefaultResources();
@@ -771,7 +792,8 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
     State::DirtyObjects mComputeDirtyObjects;
     State::DirtyBits mCopyImageDirtyBits;
     State::DirtyObjects mCopyImageDirtyObjects;
-    State::DirtyBits mInvalidateDirtyBits;
+    State::DirtyBits mReadInvalidateDirtyBits;
+    State::DirtyBits mDrawInvalidateDirtyBits;
 
     // Binding to container objects that use dependent state updates.
     angle::ObserverBinding mVertexArrayObserverBinding;
@@ -788,7 +810,11 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
     mutable Optional<angle::ScratchBuffer> mScratchBuffer;
     mutable Optional<angle::ScratchBuffer> mZeroFilledBuffer;
 
-    std::shared_ptr<angle::WorkerThreadPool> mThreadPool;
+    // Single-threaded pool may not always be initialized. It currently depends on the extension
+    // GL_KHR_parallel_shader_compile being disabled.
+    std::shared_ptr<angle::WorkerThreadPool> mSingleThreadPool;
+    // Multithreaded pool will always be initialized so it can be used for more generic work.
+    std::shared_ptr<angle::WorkerThreadPool> mMultiThreadPool;
 
     // Note: we use a raw pointer here so we can exclude frame capture sources from the build.
     std::unique_ptr<angle::FrameCapture> mFrameCapture;
@@ -806,7 +832,7 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
     bool mIsDestroyed;
 };
 
-class ScopedContextRef
+class ANGLE_NO_DISCARD ScopedContextRef
 {
   public:
     ScopedContextRef(Context *context) : mContext(context)

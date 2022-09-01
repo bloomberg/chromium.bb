@@ -12,29 +12,30 @@
 
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
+#include "base/time/time.h"
 #include "components/autofill/core/browser/browser_autofill_manager.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-using base::TimeTicks;
-
 namespace autofill {
 
-class AutofillClient;
-class AutofillDriver;
+class TestAutofillClient;
+class TestAutofillDriver;
 class FormStructure;
 class TestPersonalDataManager;
 
 class TestBrowserAutofillManager : public BrowserAutofillManager {
  public:
-  TestBrowserAutofillManager(AutofillDriver* driver,
-                             AutofillClient* client,
-                             TestPersonalDataManager* personal_data);
+  TestBrowserAutofillManager(TestAutofillDriver* driver,
+                             TestAutofillClient* client);
 
   TestBrowserAutofillManager(const TestBrowserAutofillManager&) = delete;
   TestBrowserAutofillManager& operator=(const TestBrowserAutofillManager&) =
       delete;
 
   ~TestBrowserAutofillManager() override;
+
+  TestAutofillClient* client() { return client_; }
+  TestAutofillDriver* driver() { return driver_; }
 
   // BrowserAutofillManager overrides.
   bool IsAutofillProfileEnabled() const override;
@@ -48,6 +49,8 @@ class TestBrowserAutofillManager : public BrowserAutofillManager {
                                    const base::TimeTicks& interaction_time,
                                    const base::TimeTicks& submission_time,
                                    bool observed_submission) override;
+  // Immediately triggers the refill.
+  void ScheduleRefill(const FormData& form) override;
 
   // Unique to TestBrowserAutofillManager:
 
@@ -57,11 +60,26 @@ class TestBrowserAutofillManager : public BrowserAutofillManager {
                    const std::vector<ServerFieldType>& heuristic_types,
                    const std::vector<ServerFieldType>& server_types);
 
+  void AddSeenForm(
+      const FormData& form,
+      const std::vector<std::vector<std::pair<PatternSource, ServerFieldType>>>&
+          heuristic_types,
+      const std::vector<ServerFieldType>& server_types);
+
   void AddSeenFormStructure(std::unique_ptr<FormStructure> form_structure);
 
   void ClearFormStructures();
 
   const std::string GetSubmittedFormSignature();
+
+  // Helper to skip irrelevant params.
+  void OnAskForValuesToFillTest(
+      const FormData& form,
+      const FormFieldData& field,
+      int query_id = 0,
+      const gfx::RectF& bounding_box = {},
+      bool autoselect_first_suggestion = false,
+      TouchToFillEligible touch_to_fill_eligible = TouchToFillEligible(false));
 
   void SetAutofillProfileEnabled(bool profile_enabled);
 
@@ -77,7 +95,9 @@ class TestBrowserAutofillManager : public BrowserAutofillManager {
   using BrowserAutofillManager::pending_form_data;
 
  private:
-  raw_ptr<TestPersonalDataManager> personal_data_;  // Weak reference.
+  raw_ptr<TestAutofillClient> client_;
+  raw_ptr<TestAutofillDriver> driver_;
+
   bool autofill_profile_enabled_ = true;
   bool autofill_credit_card_enabled_ = true;
   bool call_parent_upload_form_data_ = false;

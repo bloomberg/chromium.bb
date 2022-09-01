@@ -32,7 +32,7 @@
 #include "content/public/browser/web_contents.h"
 #include "net/base/filename_util.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
-#include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
+#include "third_party/blink/public/mojom/mediastream/media_stream.mojom.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertUTF16ToJavaString;
@@ -45,15 +45,6 @@ using blink::mojom::FileChooserParams;
 using content::WebContents;
 
 namespace android_webview {
-
-namespace {
-
-// WARNING: these constants are exposed in the public interface Java side, so
-// must remain in sync with what clients are expecting.
-const int kFileChooserModeOpenMultiple = 1 << 0;
-const int kFileChooserModeOpenFolder = 1 << 1;
-
-}
 
 AwWebContentsDelegate::AwWebContentsDelegate(JNIEnv* env, jobject obj)
     : WebContentsDelegateAndroid(env, obj), is_fullscreen_(false) {}
@@ -123,11 +114,10 @@ void AwWebContentsDelegate::RunFileChooser(
   }
 
   int mode_flags = 0;
-  if (params.mode == FileChooserParams::Mode::kOpenMultiple) {
-    mode_flags |= kFileChooserModeOpenMultiple;
-  } else if (params.mode == FileChooserParams::Mode::kUploadFolder) {
+  if (params.mode == FileChooserParams::Mode::kUploadFolder ||
+      params.mode == FileChooserParams::Mode::kOpenMultiple) {
     // Folder implies multiple in Chrome.
-    mode_flags |= kFileChooserModeOpenMultiple | kFileChooserModeOpenFolder;
+    mode_flags = static_cast<int>(FileChooserParams::Mode::kOpenMultiple);
   } else if (params.mode == FileChooserParams::Mode::kSave) {
     // Save not supported, so cancel it.
     listener->FileSelectionCanceled();
@@ -220,7 +210,7 @@ void AwWebContentsDelegate::WebContentsCreated(
     const std::string& frame_name,
     const GURL& target_url,
     content::WebContents* new_contents) {
-  AwContentsIoThreadClient::RegisterPendingContents(new_contents);
+  // Intentionally left empty to override implementation in superclasses.
 }
 
 void AwWebContentsDelegate::CloseContents(WebContents* source) {
@@ -267,7 +257,7 @@ void AwWebContentsDelegate::RequestMediaAccessPermission(
   AwContents* aw_contents = AwContents::FromWebContents(web_contents);
   if (!aw_contents) {
     std::move(callback).Run(
-        blink::MediaStreamDevices(),
+        blink::mojom::StreamDevicesSet(),
         blink::mojom::MediaStreamRequestResult::FAILED_DUE_TO_SHUTDOWN,
         nullptr);
     return;
@@ -365,11 +355,9 @@ static void JNI_AwWebContentsDelegate_FilesSelectedInChooser(
   }
   base::FilePath base_dir;
   FileChooserParams::Mode mode;
-  if (mode_flags & kFileChooserModeOpenFolder) {
-    mode = FileChooserParams::Mode::kUploadFolder;
-    // We'd like to set |base_dir| to a folder which a user selected. But it's
-    // impossible with WebChromeClient API in the current Android.
-  } else if (mode_flags & kFileChooserModeOpenMultiple) {
+  // We'd like to set |base_dir| to a folder which a user selected. But it's
+  // impossible with WebChromeClient API in the current Android.
+  if (mode_flags == static_cast<int>(FileChooserParams::Mode::kOpenMultiple)) {
     mode = FileChooserParams::Mode::kOpenMultiple;
   } else {
     mode = FileChooserParams::Mode::kOpen;

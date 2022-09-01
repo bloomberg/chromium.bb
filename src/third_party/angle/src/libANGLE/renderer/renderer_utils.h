@@ -16,7 +16,6 @@
 #include <map>
 
 #include "GLSLANG/ShaderLang.h"
-#include "common/Color.h"
 #include "common/angleutils.h"
 #include "common/utilities.h"
 #include "libANGLE/angletypes.h"
@@ -62,6 +61,8 @@ enum class SurfaceRotation
     EnumCount = InvalidEnum,
 };
 
+bool IsRotatedAspectRatio(SurfaceRotation rotation);
+
 using SpecConstUsageBits = angle::PackedEnumBitSet<sh::vk::SpecConstUsage, uint32_t>;
 
 void RotateRectangle(const SurfaceRotation rotation,
@@ -83,7 +84,14 @@ using MipGenerationFunction = void (*)(size_t sourceWidth,
 
 typedef void (*PixelReadFunction)(const uint8_t *source, uint8_t *dest);
 typedef void (*PixelWriteFunction)(const uint8_t *source, uint8_t *dest);
-typedef void (*PixelCopyFunction)(const uint8_t *source, uint8_t *dest);
+typedef void (*FastCopyFunction)(const uint8_t *source,
+                                 int srcXAxisPitch,
+                                 int srcYAxisPitch,
+                                 uint8_t *dest,
+                                 int destXAxisPitch,
+                                 int destYAxisPitch,
+                                 int width,
+                                 int height);
 
 class FastCopyFunctionMap
 {
@@ -91,7 +99,7 @@ class FastCopyFunctionMap
     struct Entry
     {
         angle::FormatID formatID;
-        PixelCopyFunction func;
+        FastCopyFunction func;
     };
 
     constexpr FastCopyFunctionMap() : FastCopyFunctionMap(nullptr, 0) {}
@@ -99,7 +107,7 @@ class FastCopyFunctionMap
     constexpr FastCopyFunctionMap(const Entry *data, size_t size) : mSize(size), mData(data) {}
 
     bool has(angle::FormatID formatID) const;
-    PixelCopyFunction get(angle::FormatID formatID) const;
+    FastCopyFunction get(angle::FormatID formatID) const;
 
   private:
     size_t mSize;
@@ -159,19 +167,7 @@ struct LoadImageFunctionInfo
     bool requiresConversion;
 };
 
-using LoadFunctionMap           = LoadImageFunctionInfo (*)(GLenum);
-using LoadTextureBorderFunction = void (*)(angle::ColorF &mBorderColor);
-struct LoadTextureBorderFunctionInfo
-{
-    LoadTextureBorderFunctionInfo() : loadFunction(nullptr) {}
-    LoadTextureBorderFunctionInfo(LoadTextureBorderFunction loadFunction)
-        : loadFunction(loadFunction)
-    {}
-
-    LoadTextureBorderFunction loadFunction;
-};
-
-using LoadTextureBorderFunctionMap = LoadTextureBorderFunctionInfo (*)();
+using LoadFunctionMap = LoadImageFunctionInfo (*)(GLenum);
 
 bool ShouldUseDebugLayers(const egl::AttributeMap &attribs);
 
@@ -448,6 +444,15 @@ class ResetBaseVertexBaseInstance : angle::NonCopyable
 angle::FormatID ConvertToSRGB(angle::FormatID formatID);
 angle::FormatID ConvertToLinear(angle::FormatID formatID);
 bool IsOverridableLinearFormat(angle::FormatID formatID);
+
+enum class PipelineType
+{
+    Graphics = 0,
+    Compute  = 1,
+
+    InvalidEnum = 2,
+    EnumCount   = 2,
+};
 }  // namespace rx
 
 // MultiDraw macro patterns
@@ -481,5 +486,14 @@ bool IsOverridableLinearFormat(angle::FormatID formatID);
     gl::MarkTransformFeedbackBufferUsage(context, counts[drawID], instanceCounts[drawID])
 #define ANGLE_MARK_TRANSFORM_FEEDBACK_USAGE(instanced) \
     ANGLE_MARK_TRANSFORM_FEEDBACK_USAGE##instanced
+
+// Helper macro that casts to a bitfield type then verifies no bits were dropped.
+#define SetBitField(lhs, rhs)                                                         \
+    do                                                                                \
+    {                                                                                 \
+        auto ANGLE_LOCAL_VAR = rhs;                                                   \
+        lhs = static_cast<typename std::decay<decltype(lhs)>::type>(ANGLE_LOCAL_VAR); \
+        ASSERT(static_cast<decltype(ANGLE_LOCAL_VAR)>(lhs) == ANGLE_LOCAL_VAR);       \
+    } while (0)
 
 #endif  // LIBANGLE_RENDERER_RENDERER_UTILS_H_

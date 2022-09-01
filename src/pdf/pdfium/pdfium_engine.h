@@ -136,7 +136,7 @@ class PDFiumEngine : public PDFEngine,
   std::vector<uint8_t> GetAttachmentData(size_t index) override;
   const DocumentMetadata& GetDocumentMetadata() const override;
   int GetNumberOfPages() const override;
-  base::Value GetBookmarks() override;
+  base::Value::List GetBookmarks() override;
   absl::optional<PDFEngine::NamedDestination> GetNamedDestination(
       const std::string& destination) override;
   int GetMostVisiblePage() override;
@@ -294,7 +294,7 @@ class PDFiumEngine : public PDFEngine,
   // This should only be called after `doc_` has been loaded and the document is
   // fully downloaded.
   // If this has been run once, it will not notify the client again.
-  void FinishLoadingDocument(int32_t /*unused_but_required*/);
+  void FinishLoadingDocument();
 
   // Loads information about the pages in the document and performs layout.
   void LoadPageInfo();
@@ -575,11 +575,12 @@ class PDFiumEngine : public PDFEngine,
   void KillTouchTimer();
   void HandleLongPress(const blink::WebTouchEvent& event);
 
-  // Returns a base::Value (representing a bookmark), which in turn contains
-  // child base::Value dictionaries (representing the child bookmarks).
-  // If nullptr is passed in as the bookmark then we traverse from the "root".
-  // Note that the "root" bookmark contains no useful information.
-  base::Value TraverseBookmarks(FPDF_BOOKMARK bookmark, unsigned int depth);
+  // Returns a dictionary representing a bookmark, which in turn contains child
+  // dictionaries representing the child bookmarks. If `bookmark` is null, then
+  // this method traverses from the root of the bookmarks tree. Note that the
+  // root bookmark contains no useful information.
+  base::Value::Dict TraverseBookmarks(FPDF_BOOKMARK bookmark,
+                                      unsigned int depth);
 
   void ScrollBasedOnScrollAlignment(
       const gfx::Rect& scroll_rect,
@@ -650,10 +651,6 @@ class PDFiumEngine : public PDFEngine,
   // Checks whether a given `page_index` exists in `pending_thumbnails_`. If so,
   // requests the thumbnail for that page.
   void MaybeRequestPendingThumbnail(int page_index);
-
-  // Keeps track of the most recently used plugin instance.
-  // TODO(crbug.com/702993): Remove when PPAPI is gone.
-  void SetLastInstance();
 
   const raw_ptr<PDFEngine::Client> client_;
 

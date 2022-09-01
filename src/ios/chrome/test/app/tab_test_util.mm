@@ -82,11 +82,20 @@ NSURL* SimulateExternalAppURLOpening() {
   return url;
 }
 
+void SimulateExternalAppURLOpeningWithURL(NSURL* URL) {
+  TestOpenURLContext* context = [[TestOpenURLContext alloc] init];
+  context.URL = URL;
+
+  UIApplication* application = UIApplication.sharedApplication;
+  UIScene* scene = application.connectedScenes.anyObject;
+  [scene.delegate scene:scene openURLContexts:[NSSet setWithObject:context]];
+}
+
 void SimulateAddAccountFromWeb() {
   id<ApplicationCommands, BrowserCommands> handler =
       chrome_test_util::HandlerForActiveBrowser();
   ShowSigninCommand* command = [[ShowSigninCommand alloc]
-      initWithOperation:AUTHENTICATION_OPERATION_ADD_ACCOUNT
+      initWithOperation:AuthenticationOperationAddAccount
             accessPoint:signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN];
   UIViewController* baseViewController = base::mac::ObjCCast<UIViewController>(
       GetForegroundActiveScene().interfaceProvider.mainInterface.bvc);

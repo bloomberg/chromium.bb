@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/cancelable_callback.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
@@ -150,6 +151,7 @@ using base::SysUTF8ToNSString;
 }
 
 - (void)checkForUpdateWithAppID:(NSString* _Nonnull)appID
+               installDataIndex:(NSString* _Nullable)installDataIndex
                        priority:(CRUPriorityWrapper* _Nonnull)priority
         policySameVersionUpdate:
             (CRUPolicySameVersionUpdateWrapper* _Nonnull)policySameVersionUpdate
@@ -164,12 +166,36 @@ using base::SysUTF8ToNSString;
 
   [[_updateCheckXPCConnection remoteObjectProxyWithErrorHandler:errorHandler]
       checkForUpdateWithAppID:appID
+             installDataIndex:installDataIndex
                      priority:priority
       policySameVersionUpdate:policySameVersionUpdate
                   updateState:updateState
                         reply:reply];
 }
 
+- (void)runInstallerWithAppId:(NSString* _Nonnull)appId
+                installerPath:(NSString* _Nonnull)installerPath
+                  installArgs:(NSString* _Nullable)installArgs
+                  installData:(NSString* _Nullable)installData
+              installSettings:(NSString* _Nullable)installSettings
+                  updateState:(id<CRUUpdateStateObserving> _Nonnull)updateState
+                        reply:(void (^_Nonnull)(
+                                  updater::UpdateService::Result rc))reply {
+  auto errorHandler = ^(NSError* xpcError) {
+    LOG(ERROR) << "XPC connection failed: "
+               << base::SysNSStringToUTF8([xpcError description]);
+    reply(updater::UpdateService::Result::kServiceFailed);
+  };
+
+  [[_updateCheckXPCConnection remoteObjectProxyWithErrorHandler:errorHandler]
+      runInstallerWithAppId:appId
+              installerPath:installerPath
+                installArgs:installArgs
+                installData:installData
+            installSettings:installSettings
+                updateState:updateState
+                      reply:reply];
+}
 @end
 
 namespace updater {
@@ -179,17 +205,23 @@ scoped_refptr<UpdateService> CreateUpdateServiceProxy(
   return base::MakeRefCounted<UpdateServiceProxy>(updater_scope);
 }
 
-UpdateServiceProxy::UpdateServiceProxy(UpdaterScope scope) {
+UpdateServiceProxy::UpdateServiceProxy(UpdaterScope scope) : scope_(scope) {
   client_.reset([[CRUUpdateServiceProxyImpl alloc] initWithScope:scope]);
   callback_runner_ = base::SequencedTaskRunnerHandle::Get();
 }
 
 void UpdateServiceProxy::GetVersion(
-    base::OnceCallback<void(const base::Version&)> callback) const {
+    base::OnceCallback<void(const base::Version&)> callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  auto timeout_callback = std::make_unique<base::CancelableOnceClosure>(
+      base::BindOnce(&UpdateServiceProxy::Reset, base::Unretained(this)));
+  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, timeout_callback->callback(), base::Minutes(2));
+
   __block base::OnceCallback<void(const base::Version&)> block_callback =
-      std::move(callback);
+      std::move(callback).Then(base::BindOnce(
+          &base::CancelableOnceClosure::Cancel, std::move(timeout_callback)));
   auto reply = ^(NSString* version) {
     callback_runner_->PostTask(
         FROM_HERE,
@@ -225,8 +257,8 @@ void UpdateServiceProxy::RegisterApp(
 }
 
 void UpdateServiceProxy::GetAppStates(
-    base::OnceCallback<void(
-        const std::vector<updater::UpdateService::AppState>&)> callback) const {
+    base::OnceCallback<
+        void(const std::vector<updater::UpdateService::AppState>&)> callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   __block base::OnceCallback<void(
       const std::vector<updater::UpdateService::AppState>&)>
@@ -243,8 +275,7 @@ void UpdateServiceProxy::RunPeriodicTasks(base::OnceClosure callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   __block base::OnceClosure block_callback = std::move(callback);
   auto reply = ^() {
-    callback_runner_->PostTask(FROM_HERE,
-                               base::BindOnce(std::move(block_callback)));
+    callback_runner_->PostTask(FROM_HERE, std::move(block_callback));
   };
   [client_ runPeriodicTasksWithReply:reply];
 }
@@ -270,6 +301,7 @@ void UpdateServiceProxy::UpdateAll(StateChangeCallback state_update,
 
 void UpdateServiceProxy::Update(
     const std::string& app_id,
+    const std::string& install_data_index,
     UpdateService::Priority priority,
     PolicySameVersionUpdate policy_same_version_update,
     StateChangeCallback state_update,
@@ -295,10 +327,47 @@ void UpdateServiceProxy::Update(
                      callbackRunner:callback_runner_]);
 
   [client_ checkForUpdateWithAppID:SysUTF8ToNSString(app_id)
+                  installDataIndex:SysUTF8ToNSString(install_data_index)
                           priority:priorityWrapper.get()
            policySameVersionUpdate:policySameVersionUpdateWrapper.get()
                        updateState:stateObserver.get()
                              reply:reply];
+}
+
+void UpdateServiceProxy::RunInstaller(const std::string& app_id,
+                                      const base::FilePath& installer_path,
+                                      const std::string& install_args,
+                                      const std::string& install_data,
+                                      const std::string& install_settings,
+                                      StateChangeCallback state_update,
+                                      Callback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  __block base::OnceCallback<void(UpdateService::Result)> block_callback =
+      std::move(callback);
+  auto reply = ^(updater::UpdateService::Result rc) {
+    callback_runner_->PostTask(FROM_HERE,
+                               base::BindOnce(std::move(block_callback), rc));
+  };
+
+  base::scoped_nsprotocol<id<CRUUpdateStateObserving>> stateObserver(
+      [[CRUUpdateStateObserver alloc]
+          initWithRepeatingCallback:state_update
+                     callbackRunner:callback_runner_]);
+
+  [client_ runInstallerWithAppId:SysUTF8ToNSString(app_id)
+                   installerPath:base::mac::FilePathToNSString(installer_path)
+                     installArgs:SysUTF8ToNSString(install_args)
+                     installData:SysUTF8ToNSString(install_data)
+                 installSettings:SysUTF8ToNSString(install_settings)
+                     updateState:stateObserver.get()
+                           reply:reply];
+}
+
+void UpdateServiceProxy::Reset() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  VLOG(1) << __func__;
+  client_.reset([[CRUUpdateServiceProxyImpl alloc] initWithScope:scope_]);
 }
 
 void UpdateServiceProxy::Uninitialize() {

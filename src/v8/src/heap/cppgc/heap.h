@@ -37,6 +37,11 @@ class V8_EXPORT_PRIVATE Heap final : public HeapBase,
   void FinalizeIncrementalGarbageCollectionIfRunning(Config);
 
   size_t epoch() const final { return epoch_; }
+  const EmbedderStackState* override_stack_state() const final {
+    return HeapBase::override_stack_state();
+  }
+
+  void EnableGenerationalGC();
 
   void DisableHeapGrowingForTesting();
 
@@ -52,6 +57,7 @@ class V8_EXPORT_PRIVATE Heap final : public HeapBase,
   Config config_;
   GCInvoker gc_invoker_;
   HeapGrowing growing_;
+  bool generational_gc_enabled_ = false;
 
   size_t epoch_ = 0;
 };

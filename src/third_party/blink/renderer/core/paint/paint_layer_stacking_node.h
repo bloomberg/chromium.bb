@@ -47,14 +47,13 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
 class PaintLayer;
-class PaintLayerCompositor;
 class ComputedStyle;
 
 // This class is only for PaintLayer, PaintLayerPaintOrderIterator and
@@ -137,8 +136,6 @@ class CORE_EXPORT PaintLayerStackingNode
 
   struct HighestLayers;
   void CollectLayers(PaintLayer&, HighestLayers*);
-
-  PaintLayerCompositor* Compositor() const;
 
   Member<PaintLayer> layer_;
 

@@ -27,12 +27,11 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_config.h"
+#include "chromeos/dbus/common/pipe_reader.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
-#include "chromeos/dbus/pipe_reader.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
@@ -173,6 +172,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
   void GetRoutes(
       bool numeric,
       bool ipv6,
+      bool all_tables,
       DBusMethodCallback<std::vector<std::string>> callback) override {
     dbus::MethodCall method_call(debugd::kDebugdInterface, debugd::kGetRoutes);
     dbus::MessageWriter writer(&method_call);
@@ -186,6 +186,10 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
     sub_writer.OpenDictEntry(&elem_writer);
     elem_writer.AppendString("v6");
     elem_writer.AppendVariantOfBool(ipv6);
+    sub_writer.CloseContainer(&elem_writer);
+    sub_writer.OpenDictEntry(&elem_writer);
+    elem_writer.AppendString("all");
+    elem_writer.AppendVariantOfBool(all_tables);
     sub_writer.CloseContainer(&elem_writer);
     writer.CloseContainer(&sub_writer);
     debugdaemon_proxy_->CallMethod(
@@ -212,16 +216,16 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
-  void GetPerfOutput(base::TimeDelta duration,
-                     const std::vector<std::string>& perf_args,
+  void GetPerfOutput(const std::vector<std::string>& quipper_args,
+                     bool disable_cpu_idle,
                      int file_descriptor,
                      DBusMethodCallback<uint64_t> callback) override {
     DCHECK(file_descriptor);
     dbus::MethodCall method_call(debugd::kDebugdInterface,
-                                 debugd::kGetPerfOutputFd);
+                                 debugd::kGetPerfOutputV2);
     dbus::MessageWriter writer(&method_call);
-    writer.AppendUint32(duration.InSeconds());
-    writer.AppendArrayOfStrings(perf_args);
+    writer.AppendArrayOfStrings(quipper_args);
+    writer.AppendBool(disable_cpu_idle);
     writer.AppendFileDescriptor(file_descriptor);
 
     debugdaemon_proxy_->CallMethod(
@@ -534,28 +538,6 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
                        std::move(error_callback)));
   }
 
-  void GetKernelFeatureList(KernelFeatureListCallback callback) override {
-    dbus::MethodCall method_call(debugd::kDebugdInterface,
-                                 debugd::kKernelFeatureList);
-    dbus::MessageWriter writer(&method_call);
-    debugdaemon_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(&DebugDaemonClientImpl::OnKernelFeatureList,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
-  }
-
-  void KernelFeatureEnable(const std::string& name,
-                           KernelFeatureEnableCallback callback) override {
-    dbus::MethodCall method_call(debugd::kDebugdInterface,
-                                 debugd::kKernelFeatureEnable);
-    dbus::MessageWriter writer(&method_call);
-    writer.AppendString(name);
-    debugdaemon_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(&DebugDaemonClientImpl::OnKernelFeatureEnable,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
-  }
-
   void StartPluginVmDispatcher(const std::string& owner_id,
                                const std::string& lang,
                                PluginVmDispatcherCallback callback) override {
@@ -755,54 +737,6 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
       logs[key] = value;
     }
     std::move(callback).Run(!sub_reader.HasMoreData() && !broken, logs);
-  }
-
-  void OnKernelFeatureList(KernelFeatureListCallback callback,
-                           dbus::Response* response) {
-    if (!response) {
-      std::move(callback).Run(false, "error: No Response");
-      return;
-    }
-
-    std::string csv;
-    bool result = false;
-
-    dbus::MessageReader reader(response);
-    if (!reader.PopBool(&result) || !reader.PopString(&csv)) {
-      std::move(callback).Run(false, "error: Failed to read response");
-      return;
-    }
-
-    if (!result) {
-      std::move(callback).Run(false, csv);
-      return;
-    }
-
-    std::move(callback).Run(true, csv);
-  }
-
-  void OnKernelFeatureEnable(KernelFeatureEnableCallback callback,
-                             dbus::Response* response) {
-    if (!response) {
-      std::move(callback).Run(false, "error: No Response");
-      return;
-    }
-
-    std::string err_str;
-    bool result = false;
-
-    dbus::MessageReader reader(response);
-    if (!reader.PopBool(&result) || !reader.PopString(&err_str)) {
-      std::move(callback).Run(false, "error: Failed to read response");
-      return;
-    }
-
-    if (!result) {
-      std::move(callback).Run(false, err_str);
-      return;
-    }
-
-    std::move(callback).Run(true, err_str);
   }
 
   void OnBigFeedbackLogsResponse(base::WeakPtr<PipeReaderWrapper> pipe_reader,

@@ -122,6 +122,11 @@ def main(request, response):
       response.headers.set(b"Content-Type", b"application/javascript")
       return b"self.postMessage('loaded');"
 
+    ## Return a valid worklet
+    if key.startswith(b"worklet"):
+      response.headers.set(b"Content-Type", b"application/javascript")
+      return b""
+
     ## Return a valid XSLT
     if key.startswith(b"xslt"):
       response.headers.set(b"Content-Type", b"text/xsl")
@@ -133,3 +138,7 @@ def main(request, response):
     </xsl:copy>
   </xsl:template>
 </xsl:stylesheet>"""
+
+    if key.startswith(b"script"):
+      response.headers.set(b"Content-Type", b"application/javascript")
+      return b"void 0;"

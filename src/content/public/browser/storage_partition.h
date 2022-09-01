@@ -10,10 +10,11 @@
 #include <set>
 
 #include "base/callback_forward.h"
+#include "base/observer_list_types.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "components/services/storage/privileged/mojom/indexed_db_control.mojom-forward.h"
 #include "components/services/storage/public/mojom/cache_storage_control.mojom-forward.h"
-#include "components/services/storage/public/mojom/indexed_db_control.mojom-forward.h"
 #include "components/services/storage/public/mojom/local_storage_control.mojom-forward.h"
 #include "content/common/content_export.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -48,9 +49,6 @@ namespace storage {
 class QuotaManager;
 class SpecialStoragePolicy;
 struct QuotaSettings;
-}
-
-namespace storage {
 class DatabaseTracker;
 }
 
@@ -62,20 +60,22 @@ namespace content {
 
 class BackgroundSyncContext;
 class BrowserContext;
+class BrowsingTopicsSiteDataManager;
 class ContentIndexContext;
 class DedicatedWorkerService;
 class DevToolsBackgroundServicesContext;
 class DOMStorageContext;
 class FileSystemAccessEntryFactory;
-class FontAccessContext;
 class GeneratedCodeCacheContext;
 class HostZoomLevelContext;
 class HostZoomMap;
+class InterestGroupManager;
 class NativeIOContext;
 class PlatformNotificationContext;
 class ServiceWorkerContext;
 class SharedWorkerService;
 class ZoomLevelDelegate;
+class NavigationRequest;
 
 // Defines what persistent state a child process can access.
 //
@@ -86,10 +86,6 @@ class ZoomLevelDelegate;
 class CONTENT_EXPORT StoragePartition {
  public:
   virtual base::FilePath GetPath() = 0;
-
-  // Retrieves the base path of the file directory where StorageBuckets data is
-  // stored.
-  virtual base::FilePath GetBucketBasePath() = 0;
 
   // Returns a raw mojom::NetworkContext pointer. When network service crashes
   // or restarts, the raw pointer will not be valid or safe to use. Therefore,
@@ -130,12 +126,11 @@ class CONTENT_EXPORT StoragePartition {
 
   virtual mojo::PendingRemote<network::mojom::URLLoaderNetworkServiceObserver>
   CreateURLLoaderNetworkObserverForNavigationRequest(
-      int frame_tree_node_id) = 0;
+      NavigationRequest& navigation_request) = 0;
 
   virtual storage::QuotaManager* GetQuotaManager() = 0;
   virtual BackgroundSyncContext* GetBackgroundSyncContext() = 0;
   virtual storage::FileSystemContext* GetFileSystemContext() = 0;
-  virtual FontAccessContext* GetFontAccessContext() = 0;
   virtual storage::DatabaseTracker* GetDatabaseTracker() = 0;
   virtual DOMStorageContext* GetDOMStorageContext() = 0;
   virtual storage::mojom::LocalStorageControl* GetLocalStorageControl() = 0;
@@ -154,6 +149,8 @@ class CONTENT_EXPORT StoragePartition {
   virtual HostZoomLevelContext* GetHostZoomLevelContext() = 0;
   virtual ZoomLevelDelegate* GetZoomLevelDelegate() = 0;
   virtual PlatformNotificationContext* GetPlatformNotificationContext() = 0;
+  virtual InterestGroupManager* GetInterestGroupManager() = 0;
+  virtual BrowsingTopicsSiteDataManager* GetBrowsingTopicsSiteDataManager() = 0;
 
   virtual leveldb_proto::ProtoDatabaseProvider* GetProtoDatabaseProvider() = 0;
   // Must be set before the first call to GetProtoDatabaseProvider(), or a new
@@ -172,13 +169,28 @@ class CONTENT_EXPORT StoragePartition {
     REMOVE_DATA_MASK_WEBSQL = 1 << 6,
     REMOVE_DATA_MASK_SERVICE_WORKERS = 1 << 7,
     REMOVE_DATA_MASK_CACHE_STORAGE = 1 << 8,
+    // TODO(crbug.com/1231162): Rename this to something like
+    // REMOVE_DATA_MASK_MEDIA_LICENSES once CDM data is moved off of the Plugin
+    // Private File System.
     REMOVE_DATA_MASK_PLUGIN_PRIVATE_DATA = 1 << 9,
     REMOVE_DATA_MASK_BACKGROUND_FETCH = 1 << 10,
-    REMOVE_DATA_MASK_CONVERSIONS = 1 << 11,
+    REMOVE_DATA_MASK_ATTRIBUTION_REPORTING_SITE_CREATED = 1 << 11,
     // Interest groups are stored as part of the Interest Group API experiment
     // Public explainer here:
     // https://github.com/WICG/turtledove/blob/main/FLEDGE.md
     REMOVE_DATA_MASK_INTEREST_GROUPS = 1 << 12,
+    REMOVE_DATA_MASK_AGGREGATION_SERVICE = 1 << 13,
+    // Shared storage data as part of the Shared Storage API.
+    // Public explainer: https://github.com/pythagoraskitty/shared-storage
+    REMOVE_DATA_MASK_SHARED_STORAGE = 1 << 14,
+    // Fairly obscure cache of .well-known responses for cross-origin
+    // joining/leaving of interest groups used by FLEDGE.
+    // Public explainer here:
+    // https://github.com/WICG/turtledove/blob/main/FLEDGE.md
+    REMOVE_DATA_MASK_INTEREST_GROUP_PERMISSIONS_CACHE = 1 << 15,
+
+    REMOVE_DATA_MASK_ATTRIBUTION_REPORTING_INTERNAL = 1 << 16,
+
     REMOVE_DATA_MASK_ALL = 0xFFFFFFFF,
 
     // Corresponds to storage::kStorageTypeTemporary.

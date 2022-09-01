@@ -6,7 +6,7 @@
 #include "third_party/blink/renderer/core/css/container_query.h"
 #include "third_party/blink/renderer/core/css/css_container_values.h"
 #include "third_party/blink/renderer/core/css/resolver/match_result.h"
-#include "third_party/blink/renderer/core/css/style_recalc.h"
+#include "third_party/blink/renderer/core/css/style_recalc_context.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
@@ -33,12 +33,12 @@ PhysicalAxes ContainerTypeAxes(const ComputedStyle& style) {
 bool NameMatches(const ComputedStyle& style,
                  const ContainerSelector& container_selector) {
   const AtomicString& name = container_selector.Name();
-  return name.IsNull() || (style.ContainerName() == name);
+  return name.IsNull() || (style.ContainerName().Contains(name));
 }
 
 bool TypeMatches(const ComputedStyle& style,
                  const ContainerSelector& container_selector) {
-  unsigned type = container_selector.Type();
+  unsigned type = container_selector.Type(style.GetWritingMode());
   return !type || ((style.ContainerType() & type) == type);
 }
 
@@ -58,14 +58,11 @@ Element* ContainerQueryEvaluator::FindContainer(
   if (!container)
     return nullptr;
 
-  if (container_selector.IsNearest())
-    return container;
-
   // TODO(crbug.com/1213888): Cache results.
   for (Element* element = container; element;
-       element = LayoutTreeBuilderTraversal::ParentElement(*element)) {
+       element = element->ParentOrShadowHostElement()) {
     if (const ComputedStyle* style = element->GetComputedStyle()) {
-      if (style->IsContainerForContainerQueries() &&
+      if (style->IsContainerForSizeContainerQueries() &&
           Matches(*style, container_selector)) {
         return element;
       }
@@ -73,6 +70,21 @@ Element* ContainerQueryEvaluator::FindContainer(
   }
 
   return nullptr;
+}
+
+bool ContainerQueryEvaluator::EvalAndAdd(const StyleRecalcContext& context,
+                                         const ContainerQuery& query,
+                                         MatchResult& match_result) {
+  Element* container = FindContainer(context, query.Selector());
+  if (!container)
+    return false;
+  ContainerQueryEvaluator* evaluator = container->GetContainerQueryEvaluator();
+  if (!evaluator)
+    return false;
+  Change change = (context.container == container)
+                      ? Change::kNearestContainer
+                      : Change::kDescendantContainers;
+  return evaluator->EvalAndAdd(query, change, match_result);
 }
 
 double ContainerQueryEvaluator::Width() const {
@@ -96,11 +108,8 @@ bool ContainerQueryEvaluator::Eval(const ContainerQuery& container_query,
          KleeneValue::kTrue;
 }
 
-void ContainerQueryEvaluator::Add(const ContainerQuery& query, bool result) {
-  results_.Set(&query, result);
-}
-
 bool ContainerQueryEvaluator::EvalAndAdd(const ContainerQuery& query,
+                                         Change change,
                                          MatchResult& match_result) {
   MediaQueryResultList viewport_dependent;
   unsigned unit_flags = MediaQueryExpValue::UnitFlags::kNone;
@@ -112,7 +121,7 @@ bool ContainerQueryEvaluator::EvalAndAdd(const ContainerQuery& query,
     match_result.SetDependsOnRemContainerQueries();
   if (unit_flags & MediaQueryExpValue::UnitFlags::kFontRelative)
     depends_on_font_ = true;
-  Add(query, result);
+  results_.Set(&query, Result{result, change});
   return result;
 }
 
@@ -189,11 +198,8 @@ ContainerQueryEvaluator::Change ContainerQueryEvaluator::ComputeChange() const {
     return Change::kDescendantContainers;
 
   for (const auto& result : results_) {
-    if (Eval(*result.key) != result.value) {
-      change = std::max(change, result.key->Selector().IsNearest()
-                                    ? Change::kNearestContainer
-                                    : Change::kDescendantContainers);
-    }
+    if (Eval(*result.key) != result.value.value)
+      change = std::max(change, result.value.change);
   }
 
   return change;

@@ -29,6 +29,33 @@ class HardwareDisplayControllerInfo;
 
 class DrmDisplay {
  public:
+  class PrivacyScreenProperty {
+   public:
+    explicit PrivacyScreenProperty(const scoped_refptr<DrmDevice>& drm,
+                                   drmModeConnector* connector);
+    PrivacyScreenProperty(const PrivacyScreenProperty&) = delete;
+    PrivacyScreenProperty& operator=(const PrivacyScreenProperty&) = delete;
+
+    ~PrivacyScreenProperty();
+
+    bool SetPrivacyScreenProperty(bool enabled);
+
+   private:
+    display::PrivacyScreenState GetPrivacyScreenState() const;
+    bool ValidateCurrentStateAgainst(bool enabled) const;
+    drmModePropertyRes* GetReadPrivacyScreenProperty() const;
+    drmModePropertyRes* GetWritePrivacyScreenProperty() const;
+
+    const scoped_refptr<DrmDevice> drm_;
+    drmModeConnector* connector_ = nullptr;  // not owned.
+
+    display::PrivacyScreenState property_last_ =
+        display::kPrivacyScreenStateLast;
+    ScopedDrmPropertyPtr privacy_screen_hw_state_;
+    ScopedDrmPropertyPtr privacy_screen_sw_state_;
+    ScopedDrmPropertyPtr privacy_screen_legacy_;
+  };
+
   explicit DrmDisplay(const scoped_refptr<DrmDevice>& drm);
 
   DrmDisplay(const DrmDisplay&) = delete;
@@ -37,6 +64,7 @@ class DrmDisplay {
   ~DrmDisplay();
 
   int64_t display_id() const { return display_id_; }
+  int64_t base_connector_id() const { return base_connector_id_; }
   scoped_refptr<DrmDevice> drm() const { return drm_; }
   uint32_t crtc() const { return crtc_; }
   uint32_t connector() const;
@@ -67,6 +95,7 @@ class DrmDisplay {
       const std::vector<display::GammaRampRGBEntry>& gamma_lut);
 
   int64_t display_id_ = -1;
+  int64_t base_connector_id_ = 0;
   const scoped_refptr<DrmDevice> drm_;
   uint32_t crtc_ = 0;
   ScopedDrmConnectorPtr connector_;
@@ -74,7 +103,7 @@ class DrmDisplay {
   gfx::Point origin_;
   bool is_hdr_capable_ = false;
   gfx::ColorSpace current_color_space_;
-  ScopedDrmPropertyPtr privacy_screen_property_;
+  std::unique_ptr<PrivacyScreenProperty> privacy_screen_property_;
 };
 
 }  // namespace ui
