@@ -588,12 +588,12 @@ void InProcessResourceContext::finish()
         LOG(WARNING) << "d_peer has been deleted before finishing loading";
     }
 
-    // This is to balance the AddRef from startLoad().
-    Release();
-
     if (d_bridge) {
         d_bridge->Finish(d_requestId);
     }
+
+    // This is to balance the AddRef from startLoad().
+    Release();
 }
 
 void InProcessResourceContext::startLoad()
