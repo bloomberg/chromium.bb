@@ -17,6 +17,7 @@ generate_css("css_files") {
     "navigatorTree.css",
     "navigatorView.css",
     "scopeChainSidebarPane.css",
+    "sourcesNavigator.css",
     "sourcesPanel.css",
     "sourcesView.css",
     "threadsSidebarPane.css",
@@ -50,7 +51,6 @@ devtools_module("sources") {
     "ScriptOriginPlugin.ts",
     "SearchSourcesView.ts",
     "SnippetsPlugin.ts",
-    "SourceMapNamesResolver.ts",
     "SourcesNavigator.ts",
     "SourcesPanel.ts",
     "SourcesSearchScope.ts",
@@ -72,6 +72,7 @@ devtools_module("sources") {
     "../../models/formatter:bundle",
     "../../models/issues_manager:bundle",
     "../../models/persistence:bundle",
+    "../../models/source_map_scopes:bundle",
     "../../models/text_utils:bundle",
     "../../models/workspace:bundle",
     "../../models/workspace_diff:bundle",
@@ -91,6 +92,7 @@ devtools_module("sources") {
     "../../ui/legacy/components/quick_open:bundle",
     "../../ui/legacy/components/source_frame:bundle",
     "../../ui/legacy/components/utils:bundle",
+    "./components:bundle",
   ]
 }
 
@@ -108,6 +110,7 @@ devtools_entrypoint("bundle") {
     "../../../test/unittests/front_end/entrypoints/missing_entrypoints/*",
     "../../../test/unittests/front_end/panels/sources/*",
     "../../entrypoints/*",
+    "../../panels/network/*",
 
     # TODO(crbug.com/1202788): Remove invalid dependents
     "../browser_debugger/*",

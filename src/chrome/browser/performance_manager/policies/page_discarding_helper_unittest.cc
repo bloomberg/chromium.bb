@@ -9,6 +9,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/performance_manager/policies/policy_features.h"
 #include "chrome/browser/performance_manager/test_support/page_discarding_utils.h"
@@ -78,13 +79,17 @@ TEST_F(PageDiscardingHelperTest, TestCannotDiscardRecentlyAudiblePage) {
           page_node()));
 }
 
-#if !defined(OS_CHROMEOS)
-TEST_F(PageDiscardingHelperTest, TestCannotDiscardRecentlyVisiblePage) {
+#if !BUILDFLAG(IS_CHROMEOS)
+TEST_F(PageDiscardingHelperTest,
+       TestCannotDiscardRecentlyVisiblePageUnlessExplicitlyRequested) {
   page_node()->SetIsVisible(true);
   page_node()->SetIsVisible(false);
   EXPECT_FALSE(
       PageDiscardingHelper::GetFromGraph(graph())->CanUrgentlyDiscardForTesting(
           page_node()));
+  EXPECT_TRUE(
+      PageDiscardingHelper::GetFromGraph(graph())->CanUrgentlyDiscardForTesting(
+          page_node(), /* consider_minimum_protection_time */ false));
 }
 #endif
 
@@ -183,7 +188,7 @@ TEST_F(PageDiscardingHelperTest, TestCannotDiscardIsConnectedToUSBDevice) {
           page_node()));
 }
 
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS)
 TEST_F(PageDiscardingHelperTest, TestCannotDiscardPageMultipleTimes) {
   PageLiveStateDecorator::Data::GetOrCreateForPageNode(page_node())
       ->SetWasDiscardedForTesting(true);
@@ -625,7 +630,7 @@ TEST_P(ParameterizedPageDiscardingHelperTest,
   ::testing::Mock::VerifyAndClearExpectations(discarder());
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     PageDiscardingHelperWithParamTest,
     ParameterizedPageDiscardingHelperTest,
     ::testing::Values(features::DiscardStrategy::LRU,

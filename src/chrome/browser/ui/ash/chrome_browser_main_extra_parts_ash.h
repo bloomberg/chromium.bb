@@ -12,7 +12,8 @@
 
 namespace ash {
 class NewWindowDelegateProvider;
-}
+class NightLightClient;
+}  // namespace ash
 
 namespace chromeos {
 class NetworkPortalNotificationController;
@@ -25,10 +26,11 @@ class DisplaySettingsHandler;
 class AccessibilityControllerClient;
 class AmbientClientImpl;
 class AppListClientImpl;
+class ArcOpenUrlDelegateImpl;
 class AshShellInit;
 class AshWebViewFactoryImpl;
 class CastConfigControllerMediaRouter;
-class DesksTemplatesClient;
+class DesksClient;
 class ImeControllerClientImpl;
 class InSessionAuthDialogClient;
 class LoginScreenClientImpl;
@@ -37,6 +39,9 @@ class MicrophoneMuteNotificationDelegateImpl;
 class MobileDataNotifications;
 class NetworkConnectDelegateChromeOS;
 class NightLightClient;
+class ProjectorAppClientImpl;
+class ProjectorClientImpl;
+class QuickAnswersController;
 class ScreenOrientationDelegateChromeos;
 class SessionControllerClientImpl;
 class SystemTrayClientImpl;
@@ -44,8 +49,6 @@ class TabClusterUIClient;
 class TabletModePageBehavior;
 class VpnListForwarder;
 class WallpaperControllerClientImpl;
-class ProjectorAppClientImpl;
-class ProjectorClientImpl;
 
 #if BUILDFLAG(ENABLE_WAYLAND_SERVER)
 class ExoParts;
@@ -71,7 +74,7 @@ class ChromeBrowserMainExtraPartsAsh : public ChromeBrowserMainExtraParts {
   // Overridden from ChromeBrowserMainExtraParts:
   void PreCreateMainMessageLoop() override;
   void PreProfileInit() override;
-  void PostProfileInit() override;
+  void PostProfileInit(Profile* profile, bool is_initial_profile) override;
   void PostBrowserStart() override;
   void PostMainMessageLoopRun() override;
 
@@ -93,6 +96,7 @@ class ChromeBrowserMainExtraPartsAsh : public ChromeBrowserMainExtraParts {
       accessibility_controller_client_;
   std::unique_ptr<AppListClientImpl> app_list_client_;
   std::unique_ptr<ash::NewWindowDelegateProvider> new_window_delegate_provider_;
+  std::unique_ptr<ArcOpenUrlDelegateImpl> arc_open_url_delegate_impl_;
   std::unique_ptr<ImeControllerClientImpl> ime_controller_client_;
   std::unique_ptr<InSessionAuthDialogClient> in_session_auth_dialog_client_;
   std::unique_ptr<ScreenOrientationDelegateChromeos>
@@ -103,8 +107,9 @@ class ChromeBrowserMainExtraPartsAsh : public ChromeBrowserMainExtraParts {
   std::unique_ptr<TabletModePageBehavior> tablet_mode_page_behavior_;
   std::unique_ptr<VpnListForwarder> vpn_list_forwarder_;
   std::unique_ptr<WallpaperControllerClientImpl> wallpaper_controller_client_;
-  std::unique_ptr<ProjectorAppClientImpl> projector_app_client_;
   std::unique_ptr<ProjectorClientImpl> projector_client_;
+  std::unique_ptr<ProjectorAppClientImpl> projector_app_client_;
+  std::unique_ptr<QuickAnswersController> quick_answers_controller_;
   // TODO(stevenjb): Move NetworkPortalNotificationController to c/b/ui/ash and
   // elim chromeos:: namespace. https://crbug.com/798569.
   std::unique_ptr<chromeos::NetworkPortalNotificationController>
@@ -112,7 +117,7 @@ class ChromeBrowserMainExtraPartsAsh : public ChromeBrowserMainExtraParts {
 
   std::unique_ptr<internal::ChromeShelfControllerInitializer>
       chrome_shelf_controller_initializer_;
-  std::unique_ptr<DesksTemplatesClient> desks_templates_client_;
+  std::unique_ptr<DesksClient> desks_client_;
 
 #if BUILDFLAG(ENABLE_WAYLAND_SERVER)
   std::unique_ptr<ExoParts> exo_parts_;
@@ -128,7 +133,7 @@ class ChromeBrowserMainExtraPartsAsh : public ChromeBrowserMainExtraParts {
 
   // Initialized in PostBrowserStart in all configs:
   std::unique_ptr<MobileDataNotifications> mobile_data_notifications_;
-  std::unique_ptr<NightLightClient> night_light_client_;
+  std::unique_ptr<ash::NightLightClient> night_light_client_;
   std::unique_ptr<AmbientClientImpl> ambient_client_;
 };
 

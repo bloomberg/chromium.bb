@@ -5,18 +5,11 @@
 #ifndef CHROME_BROWSER_UI_SYNC_PROFILE_SIGNIN_CONFIRMATION_HELPER_H_
 #define CHROME_BROWSER_UI_SYNC_PROFILE_SIGNIN_CONFIRMATION_HELPER_H_
 
-#include "base/callback.h"
-#include "third_party/skia/include/core/SkColor.h"
+#include "base/callback_forward.h"
 
 class Profile;
 
 namespace ui {
-
-class ColorProvider;
-
-// Create slightly different colors for the dialog prompt bar.
-SkColor GetSigninConfirmationPromptBarColor(const ColorProvider* color_provider,
-                                            SkAlpha alpha);
 
 // Determines whether the browser has ever been shutdown since the
 // profile was created.

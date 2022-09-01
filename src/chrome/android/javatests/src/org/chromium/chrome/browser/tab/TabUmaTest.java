@@ -89,7 +89,7 @@ public class TabUmaTest {
                 cta.getBrowserControlsManager(), cta.getActivityTabProvider(),
                 cta.getLifecycleDispatcher(), cta.getWindowAndroid(),
                 cta::getLastUserInteractionTime, cta::hadWarmStart, new DummyJankTracker(),
-                rootUiCoordinator.getToolbarManager()::getToolbar);
+                rootUiCoordinator.getToolbarManager()::getToolbar, /*crowButtonDelegate=*/ null);
         // clang-format on
     }
 
@@ -117,7 +117,7 @@ public class TabUmaTest {
             tab.loadUrl(new LoadUrlParams(mTestUrl));
 
             // Simulate the renderer being killed by the OS.
-            if (kill) ChromeTabUtils.simulateRendererKilledForTesting(tab, false);
+            if (kill) ChromeTabUtils.simulateRendererKilledForTesting(tab);
 
             tab.show(TabSelectionType.FROM_USER);
             return tab;

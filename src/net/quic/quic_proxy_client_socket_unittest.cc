@@ -49,14 +49,14 @@
 #include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
 #include "net/test/test_with_task_environment.h"
-#include "net/third_party/quiche/src/quic/core/crypto/null_encrypter.h"
-#include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/test_tools/crypto_test_utils.h"
-#include "net/third_party/quiche/src/quic/test_tools/mock_clock.h"
-#include "net/third_party/quiche/src/quic/test_tools/mock_random.h"
-#include "net/third_party/quiche/src/quic/test_tools/qpack/qpack_test_utils.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_connection_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
+#include "net/third_party/quiche/src/quiche/quic/core/crypto/null_encrypter.h"
+#include "net/third_party/quiche/src/quiche/quic/core/quic_utils.h"
+#include "net/third_party/quiche/src/quiche/quic/test_tools/crypto_test_utils.h"
+#include "net/third_party/quiche/src/quiche/quic/test_tools/mock_clock.h"
+#include "net/third_party/quiche/src/quiche/quic/test_tools/mock_random.h"
+#include "net/third_party/quiche/src/quiche/quic/test_tools/qpack/qpack_test_utils.h"
+#include "net/third_party/quiche/src/quiche/quic/test_tools/quic_connection_peer.h"
+#include "net/third_party/quiche/src/quiche/quic/test_tools/quic_test_utils.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -184,7 +184,6 @@ class QuicProxyClientSocketTest : public ::testing::TestWithParam<TestParams>,
                       kProxyHost,
                       quic::Perspective::IS_SERVER,
                       false),
-        random_generator_(0),
         user_agent_(kUserAgent),
         proxy_endpoint_(url::kHttpsScheme, kProxyHost, kProxyPort),
         destination_endpoint_(url::kHttpsScheme, kOriginHost, kOriginPort),
@@ -267,7 +266,8 @@ class QuicProxyClientSocketTest : public ::testing::TestWithParam<TestParams>,
         base::WrapUnique(static_cast<QuicServerInfo*>(nullptr)),
         QuicSessionKey("mail.example.org", 80, PRIVACY_MODE_DISABLED,
                        SocketTag(), NetworkIsolationKey(),
-                       SecureDnsPolicy::kAllow),
+                       SecureDnsPolicy::kAllow,
+                       /*require_dns_https_alpn=*/false),
         /*require_confirmation=*/false,
         /*migrate_session_early_v2=*/false,
         /*migrate_session_on_network_change_v2=*/false,
@@ -281,7 +281,6 @@ class QuicProxyClientSocketTest : public ::testing::TestWithParam<TestParams>,
         kQuicYieldAfterPacketsRead,
         quic::QuicTime::Delta::FromMilliseconds(
             kQuicYieldAfterDurationMilliseconds),
-        /*go_away_on_path_degrading*/ false,
         client_headers_include_h2_stream_dependency_, /*cert_verify_flags=*/0,
         quic::test::DefaultQuicConfig(),
         std::make_unique<TestQuicCryptoClientConfigHandle>(&crypto_config_),
@@ -292,9 +291,6 @@ class QuicProxyClientSocketTest : public ::testing::TestWithParam<TestParams>,
         /*socket_performance_watcher=*/nullptr, NetLog::Get());
 
     writer->set_delegate(session_.get());
-
-    session_handle_ = session_->CreateHandle(
-        url::SchemeHostPort(url::kHttpsScheme, "mail.example.org", 80));
 
     session_->Initialize();
 
@@ -308,6 +304,8 @@ class QuicProxyClientSocketTest : public ::testing::TestWithParam<TestParams>,
     EXPECT_THAT(session_->CryptoConnect(callback.callback()), IsOk());
     EXPECT_TRUE(session_->OneRttKeysAvailable());
 
+    session_handle_ = session_->CreateHandle(
+        url::SchemeHostPort(url::kHttpsScheme, "mail.example.org", 80));
     EXPECT_THAT(session_handle_->RequestStream(true, callback.callback(),
                                                TRAFFIC_ANNOTATION_FOR_TESTS),
                 IsOk());
@@ -606,13 +604,13 @@ class QuicProxyClientSocketTest : public ::testing::TestWithParam<TestParams>,
     if (!version_.HasIetfQuicFrames()) {
       return "";
     }
-    quic::QuicBuffer buffer = quic::HttpEncoder::SerializeDataFrameHeader(
-        body_len, quic::SimpleBufferAllocator::Get());
+    quiche::QuicheBuffer buffer = quic::HttpEncoder::SerializeDataFrameHeader(
+        body_len, quiche::SimpleBufferAllocator::Get());
     return std::string(buffer.data(), buffer.size());
   }
 
   RecordingNetLogObserver net_log_observer_;
-  QuicFlagSaver saver_;
+  quic::test::QuicFlagSaver saver_;
   const quic::ParsedQuicVersion version_;
   const quic::QuicStreamId client_data_stream_id1_;
   const bool client_headers_include_h2_stream_dependency_;
@@ -638,7 +636,7 @@ class QuicProxyClientSocketTest : public ::testing::TestWithParam<TestParams>,
   QuicTestPacketMaker client_maker_;
   QuicTestPacketMaker server_maker_;
   IPEndPoint peer_addr_;
-  quic::test::MockRandom random_generator_;
+  quic::test::MockRandom random_generator_{0};
   ProofVerifyDetailsChromium verify_details_;
   MockCryptoClientStreamFactory crypto_client_stream_factory_;
 
@@ -680,6 +678,14 @@ TEST_P(QuicProxyClientSocketTest, ConnectSendsCorrectRequest) {
   const HttpResponseInfo* response = sock_->GetConnectResponseInfo();
   ASSERT_TRUE(response != nullptr);
   ASSERT_EQ(200, response->headers->response_code());
+
+  // Although the underlying HTTP/3 connection uses TLS and negotiates ALPN, the
+  // tunnel itself is a TCP connection to the origin and should not report these
+  // values.
+  net::SSLInfo ssl_info;
+  EXPECT_FALSE(sock_->GetSSLInfo(&ssl_info));
+  EXPECT_FALSE(sock_->WasAlpnNegotiated());
+  EXPECT_EQ(sock_->GetNegotiatedProtocol(), NextProto::kProtoUnknown);
 }
 
 TEST_P(QuicProxyClientSocketTest, ProxyDelegateExtraHeaders) {

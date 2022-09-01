@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/values.h"
 #include "chrome/browser/ash/login/enrollment/enrollment_screen_view.h"
 #include "chrome/browser/ash/login/enrollment/enterprise_enrollment_helper.h"
 // TODO(https://crbug.com/1164001): move to forward declaration.
@@ -26,7 +27,7 @@ namespace chromeos {
 class CookieWaiter;
 
 // Possible error states of the Active Directory screen. Must be in the same
-// order as ACTIVE_DIRECTORY_ERROR_STATE enum values.
+// order as ActiveDirectoryErrorState ( in enterprise_enrollment.js ) values.
 enum class ActiveDirectoryErrorState {
   NONE = 0,
   MACHINE_NAME_INVALID = 1,
@@ -59,7 +60,6 @@ class EnrollmentScreenHandler
   using TView = EnrollmentScreenView;
 
   EnrollmentScreenHandler(
-      JSCallsContainer* js_calls_container,
       const scoped_refptr<NetworkStateInformer>& network_state_informer,
       ErrorScreen* error_screen);
 
@@ -78,6 +78,7 @@ class EnrollmentScreenHandler
   void SetEnterpriseDomainInfo(const std::string& manager,
                                const std::u16string& device_type) override;
   void SetFlowType(FlowType flow_type) override;
+  void SetGaiaButtonsType(GaiaButtonsType buttons_type) override;
   void Show() override;
   void Hide() override;
   void Bind(ash::EnrollmentScreen* screen) override;
@@ -85,7 +86,7 @@ class EnrollmentScreenHandler
   void ShowSigninScreen() override;
   void ShowUserError(UserErrorType error_type,
                      const std::string& email) override;
-  void ShowEnrollmentCloudReadyNotAllowedError() override;
+  void ShowEnrollmentDuringTrialNotAllowedError() override;
   void ShowActiveDirectoryScreen(const std::string& domain_join_config,
                                  const std::string& machine_name,
                                  const std::string& username,
@@ -100,27 +101,28 @@ class EnrollmentScreenHandler
   void ShowOtherError(
       EnterpriseEnrollmentHelper::OtherError error_code) override;
   void Shutdown() override;
-  void SetIsBrandedBuild(bool is_branded) override;
 
   // Implements BaseScreenHandler:
-  void Initialize() override;
+  void InitializeDeprecated() override;
   void DeclareLocalizedValues(
       ::login::LocalizedValuesBuilder* builder) override;
-  void GetAdditionalParameters(base::DictionaryValue* parameters) override;
+  void GetAdditionalParameters(base::Value::Dict* parameters) override;
 
   // Implements NetworkStateInformer::NetworkStateInformerObserver
   void UpdateState(NetworkError::ErrorReason reason) override;
 
-  void ContinueAuthenticationWhenCookiesAvailable(const std::string& user);
+  void ContinueAuthenticationWhenCookiesAvailable(const std::string& user,
+                                                  int license_type);
   void OnCookieWaitTimeout();
 
  private:
   // Handlers for WebUI messages.
   void HandleToggleFakeEnrollment();
   void HandleClose(const std::string& reason);
-  void HandleCompleteLogin(const std::string& user);
+  void HandleCompleteLogin(const std::string& user, int license_type);
   void OnGetCookiesForCompleteLogin(
       const std::string& user,
+      int license_type,
       const net::CookieAccessResultList& cookies,
       const net::CookieAccessResultList& excluded_cookies);
   void HandleAdCompleteLogin(const std::string& machine_name,
@@ -183,6 +185,8 @@ class EnrollmentScreenHandler
 
   // GAIA flow type parameter that is set to authenticator.
   FlowType flow_type_;
+
+  GaiaButtonsType gaia_buttons_type_;
 
   // Active Directory configuration in the form of encrypted binary data.
   std::string active_directory_domain_join_config_;

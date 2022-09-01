@@ -16,6 +16,7 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/scripting_permissions_modifier.h"
+#include "chrome/browser/extensions/site_permissions_helper.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -24,15 +25,19 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/fenced_frame_test_util.h"
 #include "extensions/browser/extension_action.h"
 #include "extensions/common/extension_features.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/test_extension_dir.h"
+#include "net/dns/mock_host_resolver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
 
 namespace {
+
+using SiteAccess = SitePermissionsHelper::SiteAccess;
 
 const char kAllHostsScheme[] = "*://*/*";
 const char kExplicitHostsScheme[] = "http://127.0.0.1/*";
@@ -70,19 +75,19 @@ bool RunAllPendingInRenderer(content::WebContents* web_contents) {
 }
 
 // For use with blocked actions browsertests that put the result in
-// window.localStorage. Returns the result or "undefined" if the result is not
-// set.
-std::string GetValue(content::WebContents* web_contents) {
+// window.localStorage. Returns whether the extension injected a script.
+bool DidInjectScript(content::WebContents* web_contents) {
   std::string out;
-  if (!content::ExecuteScriptAndExtractString(
-          web_contents,
-          "var res = window.localStorage.getItem('extResult') || 'undefined';"
-          "window.localStorage.removeItem('extResult');"
-          "window.domAutomationController.send(res);",
-          &out)) {
-    out = "Failed to inject script";
-  }
-  return out;
+  bool exec = content::ExecuteScriptAndExtractString(
+      web_contents,
+      "var res = window.localStorage.getItem('extResult') || 'undefined';"
+      "window.localStorage.removeItem('extResult');"
+      "window.domAutomationController.send(res);",
+      &out);
+  EXPECT_TRUE(exec);
+  EXPECT_TRUE(out == "success" || out == "undefined")
+      << "Unexpected script value: " << out;
+  return out == "success";
 }
 
 }  // namespace
@@ -167,7 +172,7 @@ const Extension* ExtensionActionRunnerBrowserTest::CreateExtension(
   if (injection_type == CONTENT_SCRIPT) {
     extension = LoadExtension(dir->UnpackedPath());
   } else {
-    ExtensionTestMessageListener listener("ready", false);
+    ExtensionTestMessageListener listener("ready");
     extension = LoadExtension(dir->UnpackedPath());
     EXPECT_TRUE(listener.WaitUntilSatisfied());
   }
@@ -207,9 +212,7 @@ void ExtensionActionRunnerBrowserTest::RunActiveScriptsTest(
       ExtensionActionRunner::GetForWebContents(web_contents);
   ASSERT_TRUE(runner);
 
-  const bool will_reply = false;
-  ExtensionTestMessageListener inject_success_listener(kInjectSucceeded,
-                                                       will_reply);
+  ExtensionTestMessageListener inject_success_listener(kInjectSucceeded);
   auto navigate = [this]() {
     // Navigate to an URL (which matches the explicit host specified in the
     // extension content_scripts_explicit_hosts). All extensions should
@@ -339,8 +342,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionActionRunnerBrowserTest,
   EXPECT_FALSE(action_runner->WantsToRun(extension2.get()));
 
   // We should still be able to run the request for extension1.
-  ExtensionTestMessageListener inject_success_listener(kInjectSucceeded,
-                                                       false /* won't reply */);
+  ExtensionTestMessageListener inject_success_listener(kInjectSucceeded);
   inject_success_listener.set_extension_id(extension1->id());
   action_runner->RunAction(extension1.get(), true);
   EXPECT_TRUE(inject_success_listener.WaitUntilSatisfied());
@@ -362,8 +364,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionActionRunnerBrowserTest,
       ExtensionActionRunner::GetForWebContents(web_contents);
   ASSERT_TRUE(action_runner);
 
-  ExtensionTestMessageListener inject_success_listener(kInjectSucceeded,
-                                                       false /* won't reply */);
+  ExtensionTestMessageListener inject_success_listener(kInjectSucceeded);
   inject_success_listener.set_extension_id(extension->id());
 
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -404,89 +405,84 @@ IN_PROC_BROWSER_TEST_F(ExtensionActionRunnerBrowserTest,
   // Load an extension that wants to run on every page at document start, and
   // load a test page.
   ASSERT_TRUE(embedded_test_server()->Start());
-  const GURL url = embedded_test_server()->GetURL("/simple.html");
   const Extension* extension = LoadExtension(
       test_data_dir_.AppendASCII("blocked_actions/content_scripts"));
   ASSERT_TRUE(extension);
   ScriptingPermissionsModifier(profile(), extension)
       .SetWithholdHostPermissions(true);
 
+  // Navigate to a page where the extension wants to run.
+  const GURL url = embedded_test_server()->GetURL("/simple.html");
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_TRUE(content::WaitForLoadStop(web_contents));
+  content::NavigationController& web_controller = web_contents->GetController();
+  const int nav_id = web_controller.GetLastCommittedEntry()->GetUniqueID();
 
-  // The extension should want to run on the page, and should not have
-  // injected.
+  // The extension should want to run on the page, should not have
+  // injected, and should have "on click" access.
   ExtensionActionRunner* runner =
       ExtensionActionRunner::GetForWebContents(web_contents);
   ASSERT_TRUE(runner);
   EXPECT_TRUE(runner->WantsToRun(extension));
-  EXPECT_EQ("undefined", GetValue(web_contents));
+  EXPECT_FALSE(DidInjectScript(web_contents));
+  SitePermissionsHelper permissions(profile());
+  EXPECT_EQ(permissions.GetSiteAccess(*extension, url), SiteAccess::kOnClick);
 
-  // Wire up the runner to automatically accept the bubble to prompt for page
-  // refresh.
-  runner->set_default_bubble_close_action_for_testing(
-      std::make_unique<ToolbarActionsBarBubbleDelegate::CloseAction>(
-          ToolbarActionsBarBubbleDelegate::CLOSE_EXECUTE));
-
-  content::NavigationEntry* entry =
-      web_contents->GetController().GetLastCommittedEntry();
-  ASSERT_TRUE(entry);
-  const int first_nav_id = entry->GetUniqueID();
-
-  // Run the extension action, which should cause a page refresh (since we
-  // automatically accepted the bubble prompting us), and the extension should
-  // have injected at document start.
+  // Wire up the runner to reject the blocked action bubble prompting for
+  // page refresh, and run the action.
+  runner->accept_bubble_for_testing(false);
   runner->RunAction(extension, true);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(content::WaitForLoadStop(web_contents));
-  entry = web_contents->GetController().GetLastCommittedEntry();
-  ASSERT_TRUE(entry);
-  // Confirm that we refreshed the page.
-  EXPECT_GE(entry->GetUniqueID(), first_nav_id);
-  EXPECT_EQ("success", GetValue(web_contents));
+
+  // Nothing should happen, because the user didn't agree to refresh the page.
+  // The extension should still want to run.
+  EXPECT_EQ(web_controller.GetLastCommittedEntry()->GetUniqueID(), nav_id);
+  EXPECT_FALSE(DidInjectScript(web_contents));
+  EXPECT_TRUE(runner->WantsToRun(extension));
+
+  // Wire up the runner to automatically accept the blocked action bubble with
+  // no checkbox marked, and run the action.
+  runner->accept_bubble_for_testing(true);
+  runner->bubble_is_checked_for_testing(false);
+  runner->RunAction(extension, true);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(content::WaitForLoadStop(web_contents));
+
+  // Since we automatically accepted the bubble prompting us, the page should
+  // have refreshed, the extension should have injected at document start and
+  // the site access should still be "on click".
+  EXPECT_GE(web_controller.GetLastCommittedEntry()->GetUniqueID(), nav_id);
+  EXPECT_TRUE(DidInjectScript(web_contents));
   EXPECT_FALSE(runner->WantsToRun(extension));
+  EXPECT_EQ(permissions.GetSiteAccess(*extension, url), SiteAccess::kOnClick);
 
   // Revoke permission and reload to try different bubble options.
   ActiveTabPermissionGranter* active_tab_granter =
       TabHelper::FromWebContents(web_contents)->active_tab_permission_granter();
   ASSERT_TRUE(active_tab_granter);
   active_tab_granter->RevokeForTesting();
-  web_contents->GetController().Reload(content::ReloadType::NORMAL, true);
+  web_controller.Reload(content::ReloadType::NORMAL, true);
   EXPECT_TRUE(content::WaitForLoadStop(web_contents));
-
-  // The extension should again want to run. Automatically dismiss the bubble
-  // that pops up prompting for page refresh.
   EXPECT_TRUE(runner->WantsToRun(extension));
-  EXPECT_EQ("undefined", GetValue(web_contents));
-  const int next_nav_id =
-      web_contents->GetController().GetLastCommittedEntry()->GetUniqueID();
-  runner->set_default_bubble_close_action_for_testing(
-      std::make_unique<ToolbarActionsBarBubbleDelegate::CloseAction>(
-          ToolbarActionsBarBubbleDelegate::CLOSE_DISMISS_USER_ACTION));
 
-  // Try running the extension. Nothing should happen, because the user
-  // didn't agree to refresh the page. The extension should still want to run.
+  // Wire up the runner to automatically accept the blocked action bubble with
+  // the checkbox marked, and run the action.
+  runner->accept_bubble_for_testing(true);
+  runner->bubble_is_checked_for_testing(true);
   runner->RunAction(extension, true);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(content::WaitForLoadStop(web_contents));
-  EXPECT_EQ("undefined", GetValue(web_contents));
-  EXPECT_EQ(
-      next_nav_id,
-      web_contents->GetController().GetLastCommittedEntry()->GetUniqueID());
 
-  // Repeat with a dismissal from bubble deactivation - same story.
-  runner->set_default_bubble_close_action_for_testing(
-      std::make_unique<ToolbarActionsBarBubbleDelegate::CloseAction>(
-          ToolbarActionsBarBubbleDelegate::CLOSE_DISMISS_DEACTIVATION));
-  runner->RunAction(extension, true);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(content::WaitForLoadStop(web_contents));
-  EXPECT_EQ("undefined", GetValue(web_contents));
-  EXPECT_EQ(
-      next_nav_id,
-      web_contents->GetController().GetLastCommittedEntry()->GetUniqueID());
+  // Since we automatically accepted the bubble (with checkbox selected)
+  // prompting us, the page should have refreshed, the extension should have
+  // injected at document start and the site access should now be "on site".
+  EXPECT_GE(web_controller.GetLastCommittedEntry()->GetUniqueID(), nav_id);
+  EXPECT_TRUE(DidInjectScript(web_contents));
+  EXPECT_FALSE(runner->WantsToRun(extension));
+  EXPECT_EQ(permissions.GetSiteAccess(*extension, url), SiteAccess::kOnSite);
 }
 
 // If we don't withhold permissions, extensions should execute normally.
@@ -521,6 +517,132 @@ IN_PROC_BROWSER_TEST_F(FlagOffExtensionActionRunnerBrowserTest,
                        ScriptsExecuteWhenFlagAbsent_ExecuteScripts) {
   RunActiveScriptsTest("execute_scripts_all_hosts", ALL_HOSTS, EXECUTE_SCRIPT,
                        DONT_WITHHOLD_PERMISSIONS, DOES_NOT_REQUIRE_CONSENT);
+}
+
+class ExtensionActionRunnerFencedFrameBrowserTest
+    : public ExtensionActionRunnerBrowserTest {
+ public:
+  ExtensionActionRunnerFencedFrameBrowserTest() = default;
+  ~ExtensionActionRunnerFencedFrameBrowserTest() override = default;
+
+  ExtensionActionRunnerFencedFrameBrowserTest(
+      const ExtensionActionRunnerFencedFrameBrowserTest&) = delete;
+  ExtensionActionRunnerFencedFrameBrowserTest& operator=(
+      const ExtensionActionRunnerFencedFrameBrowserTest&) = delete;
+
+  void SetUpOnMainThread() override {
+    host_resolver()->AddRule("*", "127.0.0.1");
+    ASSERT_TRUE(embedded_test_server()->Start());
+    ExtensionActionRunnerBrowserTest::SetUpOnMainThread();
+  }
+
+ protected:
+  content::test::FencedFrameTestHelper fenced_frame_helper_;
+};
+
+// Tests that a fenced frame doesn't clear active extensions.
+IN_PROC_BROWSER_TEST_F(ExtensionActionRunnerFencedFrameBrowserTest,
+                       FencedFrameDoesNotClearActiveExtensions) {
+  // Set a situation that |granted_extensions_| of ActiveTabPermissionGranter is
+  // not empty to test a fenced frame doesn't clear active extensions.
+  const Extension* extension = LoadExtension(
+      test_data_dir_.AppendASCII("blocked_actions/content_scripts"));
+  ASSERT_TRUE(extension);
+  ScriptingPermissionsModifier(profile(), extension)
+      .SetWithholdHostPermissions(true);
+
+  GURL initial_url = embedded_test_server()->GetURL("a.com", "/simple.html");
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), initial_url));
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  ExtensionActionRunner* runner =
+      ExtensionActionRunner::GetForWebContents(web_contents);
+  ASSERT_TRUE(runner);
+
+  runner->accept_bubble_for_testing(true);
+
+  content::NavigationEntry* entry =
+      web_contents->GetController().GetLastCommittedEntry();
+  ASSERT_TRUE(entry);
+  const int first_nav_id = entry->GetUniqueID();
+
+  runner->RunAction(extension, true);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(content::WaitForLoadStop(web_contents));
+  entry = web_contents->GetController().GetLastCommittedEntry();
+  ASSERT_TRUE(entry);
+  EXPECT_GE(entry->GetUniqueID(), first_nav_id);
+  EXPECT_TRUE(DidInjectScript(web_contents));
+  EXPECT_FALSE(runner->WantsToRun(extension));
+
+  ActiveTabPermissionGranter* active_tab_granter =
+      TabHelper::FromWebContents(web_contents)->active_tab_permission_granter();
+  ASSERT_TRUE(active_tab_granter);
+  EXPECT_EQ(active_tab_granter->granted_extensions_.size(), 1U);
+
+  // The origin of |url| and |fenced_frame_url| should be different because
+  // ActiveTabPermissionGranter::DidFinishNavigation is only able to clear
+  // active extensions when the origins are different.
+  GURL fenced_frame_url =
+      embedded_test_server()->GetURL("b.com", "/fenced_frames/title1.html");
+  // Create a fenced frame and load the test url. Active extensions should not
+  // be cleared by the fenced frame navigation.
+  content::RenderFrameHost* fenced_frame_host =
+      fenced_frame_helper_.CreateFencedFrame(
+          web_contents->GetPrimaryMainFrame(), fenced_frame_url);
+  ASSERT_TRUE(fenced_frame_host);
+  EXPECT_EQ(active_tab_granter->granted_extensions_.size(), 1U);
+
+  // Active extensions should be cleared after navigating a test url on the
+  // primary main frame.
+  GURL test_url = embedded_test_server()->GetURL("c.com", "/simple.html");
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), test_url));
+  EXPECT_EQ(active_tab_granter->granted_extensions_.size(), 0U);
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionActionRunnerFencedFrameBrowserTest,
+                       DoNotResetExtensionActionRunner) {
+  // Loadup an extension and navigate to test that a fenced frame doesn't reset
+  // ExtensionActionRunner's member variables.
+  const Extension* extension =
+      CreateExtension(ALL_HOSTS, CONTENT_SCRIPT, WITHHOLD_PERMISSIONS);
+  ASSERT_TRUE(extension);
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(web_contents);
+  ExtensionActionRunner* action_runner =
+      ExtensionActionRunner::GetForWebContents(web_contents);
+  ASSERT_TRUE(action_runner);
+
+  ExtensionTestMessageListener inject_success_listener(kInjectSucceeded);
+  inject_success_listener.set_extension_id(extension->id());
+
+  GURL url = embedded_test_server()->GetURL("/extensions/test_file.html");
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
+
+  ScriptingPermissionsModifier modifier(profile(), extension);
+  modifier.SetWithholdHostPermissions(false);
+  EXPECT_TRUE(RunAllPendingInRenderer(web_contents));
+
+  // Create a fenced frame and navigate the fenced frame url.
+  GURL fenced_frame_url =
+      embedded_test_server()->GetURL("/fenced_frames/title1.html");
+  content::RenderFrameHost* fenced_frame_host =
+      fenced_frame_helper_.CreateFencedFrame(
+          web_contents->GetPrimaryMainFrame(), fenced_frame_url);
+  ASSERT_TRUE(fenced_frame_host);
+  // Fenced frame doesn't clear pending script injection requests and the
+  // scripts.
+  EXPECT_EQ(1, action_runner->num_page_requests());
+  EXPECT_EQ(1U, action_runner->pending_scripts_.size());
+
+  // Navigate again on the primary main frame. Pending script injection requests
+  // and scripts should be cleared.
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
+  EXPECT_EQ(0, action_runner->num_page_requests());
+  EXPECT_EQ(0U, action_runner->pending_scripts_.size());
 }
 
 }  // namespace extensions

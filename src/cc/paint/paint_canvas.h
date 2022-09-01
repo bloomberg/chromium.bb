@@ -12,7 +12,9 @@
 #include "cc/paint/node_id.h"
 #include "cc/paint/paint_export.h"
 #include "cc/paint/paint_image.h"
+#include "cc/paint/skottie_color_map.h"
 #include "cc/paint/skottie_frame_data.h"
+#include "cc/paint/skottie_text_property_value.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 
 class SkTextBlob;
@@ -190,7 +192,9 @@ class CC_PAINT_EXPORT PaintCanvas {
   virtual void drawSkottie(scoped_refptr<SkottieWrapper> skottie,
                            const SkRect& dst,
                            float t,
-                           SkottieFrameDataMap images) = 0;
+                           SkottieFrameDataMap images,
+                           const SkottieColorMap& color_map,
+                           SkottieTextPropertyValueMap text_map) = 0;
 
   virtual void drawTextBlob(sk_sp<SkTextBlob> blob,
                             SkScalar x,

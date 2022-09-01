@@ -19,6 +19,7 @@
 #include "base/system/sys_info.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/values.h"
+#include "build/build_config.h"
 
 namespace base {
 namespace {
@@ -145,10 +146,10 @@ TimeDelta ProcessMetrics::GetCumulativeCPUUsage() {
   FILETIME kernel_time;
   FILETIME user_time;
 
-  if (!process_.IsValid())
+  if (!process_.is_valid())
     return TimeDelta();
 
-  if (!GetProcessTimes(process_.Get(), &creation_time, &exit_time, &kernel_time,
+  if (!GetProcessTimes(process_.get(), &creation_time, &exit_time, &kernel_time,
                        &user_time)) {
     // This should never fail because we duplicate the handle to guarantee it
     // will remain valid.
@@ -160,11 +161,36 @@ TimeDelta ProcessMetrics::GetCumulativeCPUUsage() {
          TimeDelta::FromFileTime(user_time);
 }
 
+TimeDelta ProcessMetrics::GetPreciseCumulativeCPUUsage() {
+#if defined(ARCH_CPU_ARM64)
+  // Precise CPU usage is not available on Arm CPUs because they don't support
+  // constant rate TSC.
+  return GetCumulativeCPUUsage();
+#else   // !defined(ARCH_CPU_ARM64)
+  if (!time_internal::HasConstantRateTSC())
+    return GetCumulativeCPUUsage();
+
+  ULONG64 process_cycle_time = 0;
+  if (!QueryProcessCycleTime(process_.get(), &process_cycle_time)) {
+    NOTREACHED();
+    return TimeDelta();
+  }
+
+  const double tsc_ticks_per_second = time_internal::TSCTicksPerSecond();
+  if (tsc_ticks_per_second == 0) {
+    return TimeDelta();
+  }
+
+  const double process_time_seconds = process_cycle_time / tsc_ticks_per_second;
+  return Seconds(process_time_seconds);
+#endif  // !defined(ARCH_CPU_ARM64)
+}
+
 bool ProcessMetrics::GetIOCounters(IoCounters* io_counters) const {
-  if (!process_.IsValid())
+  if (!process_.is_valid())
     return false;
 
-  return GetProcessIoCounters(process_.Get(), io_counters) != FALSE;
+  return GetProcessIoCounters(process_.get(), io_counters) != FALSE;
 }
 
 uint64_t ProcessMetrics::GetCumulativeDiskUsageInBytes() {

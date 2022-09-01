@@ -23,6 +23,7 @@ MetricEventObserverManager::MetricEventObserverManager(
     MetricReportQueue* metric_report_queue,
     ReportingSettings* reporting_settings,
     const std::string& enable_setting_path,
+    bool setting_enabled_default_value,
     std::vector<Sampler*> additional_samplers)
     : event_observer_(std::move(event_observer)),
       metric_report_queue_(metric_report_queue),
@@ -39,7 +40,7 @@ MetricEventObserverManager::MetricEventObserverManager(
       base::SequencedTaskRunnerHandle::Get(), std::move(on_event_observed_cb)));
 
   reporting_controller_ = std::make_unique<MetricReportingController>(
-      reporting_settings, enable_setting_path,
+      reporting_settings, enable_setting_path, setting_enabled_default_value,
       base::BindRepeating(&MetricEventObserverManager::SetReportingEnabled,
                           base::Unretained(this),
                           /*is_enabled=*/true),
@@ -72,8 +73,13 @@ void MetricEventObserverManager::OnEventObserved(MetricData metric_data) {
       std::move(metric_data));
 }
 
-void MetricEventObserverManager::Report(MetricData metric_data) {
+void MetricEventObserverManager::Report(
+    absl::optional<MetricData> metric_data) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!metric_data.has_value()) {
+    NOTREACHED() << "Reporting requested for empty metric data.";
+    return;
+  }
 
   auto enqueue_cb = base::BindOnce([](Status status) {
     if (!status.ok()) {
@@ -82,6 +88,8 @@ void MetricEventObserverManager::Report(MetricData metric_data) {
           << status;
     }
   });
-  metric_report_queue_->Enqueue(metric_data, std::move(enqueue_cb));
+  metric_report_queue_->Enqueue(
+      std::make_unique<MetricData>(std::move(metric_data.value())),
+      std::move(enqueue_cb));
 }
 }  // namespace reporting

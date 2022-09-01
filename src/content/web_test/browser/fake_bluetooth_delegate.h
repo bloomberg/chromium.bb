@@ -53,6 +53,9 @@ class FakeBluetoothDelegate : public BluetoothDelegate {
   void ShowDeviceCredentialsPrompt(RenderFrameHost* frame,
                                    const std::u16string& device_identifier,
                                    CredentialsCallback callback) override;
+  void ShowDevicePairConfirmPrompt(RenderFrameHost* frame,
+                                   const std::u16string& device_identifier,
+                                   PairConfirmCallback callback) override;
   blink::WebBluetoothDeviceId GetWebBluetoothDeviceId(
       RenderFrameHost* frame,
       const std::string& device_address) override;
@@ -66,6 +69,9 @@ class FakeBluetoothDelegate : public BluetoothDelegate {
       const device::BluetoothDevice* device,
       const blink::mojom::WebBluetoothRequestDeviceOptions* options) override;
   bool HasDevicePermission(
+      RenderFrameHost* frame,
+      const blink::WebBluetoothDeviceId& device_id) override;
+  void RevokeDevicePermissionWebInitiated(
       RenderFrameHost* frame,
       const blink::WebBluetoothDeviceId& device_id) override;
   bool IsAllowedToAccessService(RenderFrameHost* frame,

@@ -10,7 +10,7 @@
 
 #include "include/gpu/GrBackendSurface.h"
 #include "src/core/SkCachedData.h"
-#include "src/gpu/GrYUVATextureProxies.h"
+#include "src/gpu/ganesh/GrYUVATextureProxies.h"
 #include "src/image/SkImage_GpuBase.h"
 
 class GrDirectContext;
@@ -32,7 +32,7 @@ public:
 
     GrSemaphoresSubmitted onFlush(GrDirectContext*, const GrFlushInfo&) const override;
 
-    bool onIsTextureBacked() const override { return true; }
+    bool isGaneshBacked() const override { return true; }
 
     size_t onTextureSize() const override;
 

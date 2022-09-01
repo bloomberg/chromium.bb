@@ -14,6 +14,7 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/ash/login/quick_unlock/quick_unlock_utils.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/webui/settings/chromeos/metrics_consent_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_features_util.h"
 #include "chrome/browser/ui/webui/settings/chromeos/peripheral_data_access_handler.h"
@@ -29,6 +30,7 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
+#include "ui/chromeos/devicetype_utils.h"
 
 namespace chromeos {
 namespace settings {
@@ -261,9 +263,7 @@ PrivacySection::PrivacySection(Profile* profile,
     UpdateRemoveFingerprintSearchTags();
   }
 
-  if (chromeos::features::IsPciguardUiEnabled()) {
-    updater.AddSearchTags(GetPciguardSearchConcepts());
-  }
+  updater.AddSearchTags(GetPciguardSearchConcepts());
 
   // Conditionally adds search tags concepts based on the subset of smart
   // privacy functionality enabled.
@@ -278,7 +278,8 @@ void PrivacySection::AddHandlers(content::WebUI* web_ui) {
 
   web_ui->AddMessageHandler(
       std::make_unique<chromeos::settings::MetricsConsentHandler>(
-          profile(), user_manager::UserManager::Get()));
+          profile(), g_browser_process->metrics_service(),
+          user_manager::UserManager::Get()));
 
   if (IsSecureDnsAvailable())
     web_ui->AddMessageHandler(std::make_unique<::settings::SecureDnsHandler>());
@@ -309,8 +310,6 @@ void PrivacySection::AddLoadTimeData(content::WebUIDataSource* html_source) {
        IDS_OS_SETTINGS_DATA_ACCESS_PROTECTION_CONFIRM_DIALOG_DISABLE_BUTTON_LABEL},
       {"privacyPageTitle", IDS_SETTINGS_PRIVACY_V2},
       {"smartPrivacyTitle", IDS_OS_SETTINGS_SMART_PRIVACY_TITLE},
-      {"smartPrivacySubtext", IDS_OS_SETTINGS_SMART_PRIVACY_SUBTEXT},
-      {"smartPrivacyDesc", IDS_OS_SETTINGS_SMART_PRIVACY_DESC},
       {"smartPrivacyQuickDimTitle",
        IDS_OS_SETTINGS_SMART_PRIVACY_QUICK_DIM_TITLE},
       {"smartPrivacyQuickDimSubtext",
@@ -319,8 +318,10 @@ void PrivacySection::AddLoadTimeData(content::WebUIDataSource* html_source) {
        IDS_OS_SETTINGS_SMART_PRIVACY_SNOOPING_TITLE},
       {"smartPrivacySnoopingSubtext",
        IDS_OS_SETTINGS_SMART_PRIVACY_SNOOPING_SUBTEXT},
-      {"smartPrivacySnoopingIcon", IDS_OS_SETTINGS_SMART_PRIVACY_SNOOPING_ICON},
-      {"smartPrivacySnoopingDim", IDS_OS_SETTINGS_SMART_PRIVACY_SNOOPING_DIM},
+      {"smartPrivacySnoopingNotifications",
+       IDS_OS_SETTINGS_SMART_PRIVACY_SNOOPING_NOTIFICATIONS},
+      {"privacyHubTitle", IDS_OS_SETTINGS_PRIVACY_HUB_TITLE},
+      {"cameraToggleTitle", IDS_OS_SETTINGS_CAMERA_TOGGLE_TITLE},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 
@@ -328,6 +329,16 @@ void PrivacySection::AddLoadTimeData(content::WebUIDataSource* html_source) {
                           ash::features::IsSnoopingProtectionEnabled());
   html_source->AddBoolean("isQuickDimEnabled",
                           ash::features::IsQuickDimEnabled());
+
+  html_source->AddBoolean("showPrivacyHub", base::FeatureList::IsEnabled(
+                                                ::features::kCrosPrivacyHub));
+
+  html_source->AddString(
+      "smartPrivacyDesc",
+      ui::SubstituteChromeOSDeviceType(IDS_OS_SETTINGS_SMART_PRIVACY_DESC));
+
+  html_source->AddString("smartPrivacyLearnMoreURL",
+                         chrome::kSmartPrivacySettingsLearnMoreURL);
 
   html_source->AddString("suggestedContentLearnMoreURL",
                          chrome::kSuggestedContentLearnMoreURL);
@@ -338,18 +349,14 @@ void PrivacySection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   html_source->AddString("peripheralDataAccessLearnMoreURL",
                          chrome::kPeripheralDataAccessHelpURL);
 
-  html_source->AddBoolean("pciguardUiEnabled",
-                          chromeos::features::IsPciguardUiEnabled());
-
   html_source->AddBoolean("showSecureDnsSetting", IsSecureDnsAvailable());
   html_source->AddBoolean("showSecureDnsOsSettingLink", false);
 
   ::settings::AddPersonalizationOptionsStrings(html_source);
   ::settings::AddSecureDnsStrings(html_source);
 
-  html_source->AddBoolean("isRevenBranding",
-                          chromeos::switches::IsRevenBranding());
-  if (chromeos::switches::IsRevenBranding()) {
+  html_source->AddBoolean("isRevenBranding", switches::IsRevenBranding());
+  if (switches::IsRevenBranding()) {
     html_source->AddString(
         "enableHWDataUsage",
         l10n_util::GetStringFUTF8(
@@ -451,10 +458,19 @@ void PrivacySection::RegisterHierarchy(HierarchyGenerator* generator) const {
       mojom::Subpage::kSmartPrivacy,
       {{mojom::Setting::kSnoopingProtection, mojom::Setting::kQuickDim}},
       generator);
+
+  // Privacy hub.
+  generator->RegisterTopLevelSubpage(
+      IDS_OS_SETTINGS_PRIVACY_HUB_TITLE, mojom::Subpage::kPrivacyHub,
+      mojom::SearchResultIcon::kShield, mojom::SearchResultDefaultRank::kMedium,
+      mojom::kPrivacyHubSubpagePath);
+  RegisterNestedSettingBulk(mojom::Subpage::kPrivacyHub,
+                            {{mojom::Setting::kCameraOnOff}}, generator);
 }
 
 bool PrivacySection::AreFingerprintSettingsAllowed() {
-  return quick_unlock::IsFingerprintEnabled(profile());
+  return quick_unlock::IsFingerprintEnabled(profile(),
+                                            quick_unlock::Purpose::kAny);
 }
 
 void PrivacySection::UpdateRemoveFingerprintSearchTags() {

@@ -13,28 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import * as childProcess from 'child_process';
-import extractZip from 'extract-zip';
-import * as fs from 'fs';
-import * as http from 'http';
-import * as https from 'https';
-import createHttpsProxyAgent from 'https-proxy-agent';
 import * as os from 'os';
+import * as fs from 'fs';
 import * as path from 'path';
-import { getProxyForUrl } from 'proxy-from-env';
+import * as util from 'util';
+import * as childProcess from 'child_process';
+import * as https from 'https';
+import * as http from 'http';
+import extractZip from 'extract-zip';
+import { debug } from '../common/Debug.js';
+import { promisify } from 'util';
 import removeRecursive from 'rimraf';
 import * as URL from 'url';
-import * as util from 'util';
-import { promisify } from 'util';
-
+import createHttpsProxyAgent from 'https-proxy-agent';
+import { getProxyForUrl } from 'proxy-from-env';
 import { assert } from '../common/assert.js';
-import { debug } from '../common/Debug.js';
-
+import tar from 'tar-fs';
+import bzip from 'unbzip2-stream';
+const { PUPPETEER_EXPERIMENTAL_CHROMIUM_MAC_ARM } = process.env;
 const debugFetcher = debug('puppeteer:fetcher');
 const downloadURLs = {
     chrome: {
         linux: '%s/chromium-browser-snapshots/Linux_x64/%d/%s.zip',
         mac: '%s/chromium-browser-snapshots/Mac/%d/%s.zip',
+        mac_arm: '%s/chromium-browser-snapshots/Mac_Arm/%d/%s.zip',
         win32: '%s/chromium-browser-snapshots/Win/%d/%s.zip',
         win64: '%s/chromium-browser-snapshots/Win_x64/%d/%s.zip',
     },
@@ -59,7 +61,7 @@ function archiveName(product, platform, revision) {
     if (product === 'chrome') {
         if (platform === 'linux')
             return 'chrome-linux';
-        if (platform === 'mac')
+        if (platform === 'mac' || platform === 'mac_arm')
             return 'chrome-mac';
         if (platform === 'win32' || platform === 'win64') {
             // Windows archive name changed at r591479.
@@ -138,17 +140,26 @@ export class BrowserFetcher {
             options.path ||
                 path.join(projectRoot, browserConfig[this._product].destination);
         this._downloadHost = options.host || browserConfig[this._product].host;
-        this.setPlatform(options.platform);
+        this.setPlatform(options.platform, this._product);
         assert(downloadURLs[this._product][this._platform], 'Unsupported platform: ' + this._platform);
     }
-    setPlatform(platformFromOptions) {
+    setPlatform(platformFromOptions, productFromOptions) {
         if (platformFromOptions) {
             this._platform = platformFromOptions;
             return;
         }
         const platform = os.platform();
-        if (platform === 'darwin')
-            this._platform = 'mac';
+        if (platform === 'darwin') {
+            if (productFromOptions === 'chrome') {
+                this._platform =
+                    os.arch() === 'arm64' && PUPPETEER_EXPERIMENTAL_CHROMIUM_MAC_ARM
+                        ? 'mac_arm'
+                        : 'mac';
+            }
+            else if (productFromOptions === 'firefox') {
+                this._platform = 'mac';
+            }
+        }
         else if (platform === 'linux')
             this._platform = 'linux';
         else if (platform === 'win32')
@@ -189,7 +200,7 @@ export class BrowserFetcher {
         return new Promise((resolve) => {
             const request = httpRequest(url, 'HEAD', (response) => {
                 resolve(response.statusCode === 200);
-            });
+            }, false);
             request.on('error', (error) => {
                 console.error(error);
                 resolve(false);
@@ -215,8 +226,7 @@ export class BrowserFetcher {
             return this.revisionInfo(revision);
         if (!(await existsAsync(this._downloadsFolder)))
             await mkdirAsync(this._downloadsFolder);
-        // Use Intel x86 builds on Apple M1 until native macOS arm64
-        // Chromium builds are available.
+        // Use system Chromium builds on Linux ARM devices
         if (os.platform() !== 'darwin' && os.arch() === 'arm64') {
             handleArm64();
             return;
@@ -269,7 +279,7 @@ export class BrowserFetcher {
         const folderPath = this._getFolderPath(revision);
         let executablePath = '';
         if (this._product === 'chrome') {
-            if (this._platform === 'mac')
+            if (this._platform === 'mac' || this._platform === 'mac_arm')
                 executablePath = path.join(folderPath, archiveName(this._product, this._platform, revision), 'Chromium.app', 'Contents', 'MacOS', 'Chromium');
             else if (this._platform === 'linux')
                 executablePath = path.join(folderPath, archiveName(this._product, this._platform, revision), 'chrome');
@@ -279,7 +289,7 @@ export class BrowserFetcher {
                 throw new Error('Unsupported platform: ' + this._platform);
         }
         else if (this._product === 'firefox') {
-            if (this._platform === 'mac')
+            if (this._platform === 'mac' || this._platform === 'mac_arm')
                 executablePath = path.join(folderPath, 'Firefox Nightly.app', 'Contents', 'MacOS', 'firefox');
             else if (this._platform === 'linux')
                 executablePath = path.join(folderPath, 'firefox', 'firefox');
@@ -377,10 +387,6 @@ function install(archivePath, folderPath) {
  * @internal
  */
 function extractTar(tarPath, folderPath) {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const tar = require('tar-fs');
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const bzip = require('unbzip2-stream');
     return new Promise((fulfill, reject) => {
         const tarStream = tar.extract(folderPath);
         tarStream.on('error', reject);
@@ -436,11 +442,16 @@ function installDMG(dmgPath, folderPath) {
     })
         .finally(unmount);
 }
-function httpRequest(url, method, response) {
+function httpRequest(url, method, response, keepAlive = true) {
     const urlParsed = URL.parse(url);
     let options = {
         ...urlParsed,
         method,
+        headers: keepAlive
+            ? {
+                Connection: 'keep-alive',
+            }
+            : undefined,
     };
     const proxyURL = getProxyForUrl(url);
     if (proxyURL) {

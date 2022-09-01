@@ -46,14 +46,13 @@ void CFX_CSSStyleSelector::SetUAStyleSheet(
 }
 
 void CFX_CSSStyleSelector::UpdateStyleIndex() {
-  m_UARules.Clear();
-  m_UARules.AddRulesFrom(m_UAStyles.get());
+  m_UARules.SetRulesFromSheet(m_UAStyles.get());
 }
 
 std::vector<const CFX_CSSDeclaration*> CFX_CSSStyleSelector::MatchDeclarations(
     const WideString& tagname) {
   std::vector<const CFX_CSSDeclaration*> matchedDecls;
-  if (m_UARules.CountSelectors() == 0 || tagname.IsEmpty())
+  if (tagname.IsEmpty())
     return matchedDecls;
 
   auto* rules = m_UARules.GetTagRuleData(tagname);
@@ -147,7 +146,7 @@ void CFX_CSSStyleSelector::AppendInlineStyle(CFX_CSSDeclaration* pDecl,
   int32_t iLen2 = 0;
   const CFX_CSSData::Property* property = nullptr;
   WideString wsName;
-  while (1) {
+  while (true) {
     CFX_CSSSyntaxParser::Status eStatus = pSyntax->DoSyntaxParse();
     if (eStatus == CFX_CSSSyntaxParser::Status::kPropertyName) {
       WideStringView strValue = pSyntax->GetCurrentString();

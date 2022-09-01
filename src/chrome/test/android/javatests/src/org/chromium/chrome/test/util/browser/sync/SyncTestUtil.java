@@ -21,7 +21,6 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -39,36 +38,37 @@ public final class SyncTestUtil {
      * Returns whether sync is requested.
      */
     public static boolean isSyncRequested() {
-        return TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
-            @Override
-            public Boolean call() {
-                return SyncService.get().isSyncRequested();
-            }
-        });
+        return TestThreadUtils.runOnUiThreadBlockingNoException(
+                () -> SyncService.get().isSyncRequested());
     }
 
     /**
      * Returns whether sync-the-feature can start.
      */
     public static boolean canSyncFeatureStart() {
-        return TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
-            @Override
-            public Boolean call() {
-                return SyncService.get().canSyncFeatureStart();
-            }
-        });
+        return TestThreadUtils.runOnUiThreadBlockingNoException(
+                () -> SyncService.get().canSyncFeatureStart());
     }
 
     /**
      * Returns whether sync-the-feature is active.
      */
     public static boolean isSyncFeatureActive() {
-        return TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
-            @Override
-            public Boolean call() {
-                return SyncService.get().isSyncFeatureActive();
-            }
-        });
+        return TestThreadUtils.runOnUiThreadBlockingNoException(
+                () -> SyncService.get().isSyncFeatureActive());
+    }
+
+    /**
+     * Waits for sync-the-feature to become enabled.
+     * WARNING: This is does not wait for the feature to be active, see the distinction in
+     * components/sync/driver/sync_service.h. If the FakeServer isn't running - e.g. because of
+     * SyncTestRule - this is all you can hope for. For tests that don't rely on sync data this
+     * might just be enough.
+     */
+    public static void waitForSyncFeatureEnabled() {
+        CriteriaHelper.pollUiThread(()
+                                            -> SyncService.get().isSyncFeatureEnabled(),
+                "Timed out waiting for sync to become enabled.", TIMEOUT_MS, INTERVAL_MS);
     }
 
     /**
@@ -78,6 +78,15 @@ public final class SyncTestUtil {
         CriteriaHelper.pollUiThread(()
                                             -> SyncService.get().isSyncFeatureActive(),
                 "Timed out waiting for sync to become active.", TIMEOUT_MS, INTERVAL_MS);
+    }
+
+    /**
+     * Waits for canSyncFeatureStart() to return true.
+     */
+    public static void waitForCanSyncFeatureStart() {
+        CriteriaHelper.pollUiThread(()
+                                            -> SyncService.get().canSyncFeatureStart(),
+                "Timed out waiting for sync being able to start.", TIMEOUT_MS, INTERVAL_MS);
     }
 
     /**
@@ -142,12 +151,8 @@ public final class SyncTestUtil {
     }
 
     private static long getCurrentSyncTime() {
-        return TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<Long>() {
-            @Override
-            public Long call() {
-                return SyncService.get().getLastSyncedTimeForDebugging();
-            }
-        });
+        return TestThreadUtils.runOnUiThreadBlockingNoException(
+                () -> SyncService.get().getLastSyncedTimeForDebugging());
     }
 
     /**

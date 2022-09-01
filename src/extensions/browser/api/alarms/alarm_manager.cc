@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/json/json_writer.h"
@@ -50,11 +51,11 @@ class DefaultAlarmDelegate : public AlarmManager::Delegate {
   ~DefaultAlarmDelegate() override {}
 
   void OnAlarm(const std::string& extension_id, const Alarm& alarm) override {
-    std::unique_ptr<base::ListValue> args(new base::ListValue());
-    args->Append(alarm.js_alarm->ToValue());
-    std::unique_ptr<Event> event(
-        new Event(events::ALARMS_ON_ALARM, alarms::OnAlarm::kEventName,
-                  std::move(*args).TakeList(), browser_context_));
+    std::vector<base::Value> args;
+    args.push_back(base::Value::FromUniquePtrValue(alarm.js_alarm->ToValue()));
+    std::unique_ptr<Event> event(new Event(events::ALARMS_ON_ALARM,
+                                           alarms::OnAlarm::kEventName,
+                                           std::move(args), browser_context_));
     EventRouter::Get(browser_context_)
         ->DispatchEventToExtension(extension_id, std::move(event));
   }
@@ -104,7 +105,7 @@ std::unique_ptr<base::ListValue> AlarmsToValue(
         alarms[i]->js_alarm->ToValue();
     alarm->SetKey(kAlarmGranularity,
                   base::TimeDeltaToValue(alarms[i]->granularity));
-    list->Append(std::move(alarm));
+    list->GetList().Append(base::Value::FromUniquePtrValue(std::move(alarm)));
   }
   return list;
 }
@@ -334,7 +335,7 @@ void AlarmManager::ReadFromStorage(const std::string& extension_id,
                                    std::unique_ptr<base::Value> value) {
   if (value.get() && value->is_list()) {
     AlarmList alarm_states =
-        AlarmsFromValue(extension_id, is_unpacked, value->GetList());
+        AlarmsFromValue(extension_id, is_unpacked, value->GetListDeprecated());
     for (auto& alarm : alarm_states)
       AddAlarmImpl(extension_id, std::move(alarm));
   }

@@ -519,7 +519,7 @@ void FullPivLU<MatrixType>::computeInPlace()
     row_of_biggest_in_corner += k; // correct the values! since they were computed in the corner,
     col_of_biggest_in_corner += k; // need to add k to them.
 
-    if(biggest_in_corner==Score(0))
+    if(numext::is_exactly_zero(biggest_in_corner))
     {
       // before exiting, make sure to initialize the still uninitialized transpositions
       // in a sane state without destroying what we already have.
@@ -616,9 +616,9 @@ struct kernel_retval<FullPivLU<MatrixType_> >
 {
   EIGEN_MAKE_KERNEL_HELPERS(FullPivLU<MatrixType_>)
 
-  enum { MaxSmallDimAtCompileTime = EIGEN_SIZE_MIN_PREFER_FIXED(
-            MatrixType::MaxColsAtCompileTime,
-            MatrixType::MaxRowsAtCompileTime)
+  enum { MaxSmallDimAtCompileTime = min_size_prefer_fixed(
+              MatrixType::MaxColsAtCompileTime,
+              MatrixType::MaxRowsAtCompileTime)
   };
 
   template<typename Dest> void evalTo(Dest& dst) const
@@ -702,9 +702,9 @@ struct image_retval<FullPivLU<MatrixType_> >
 {
   EIGEN_MAKE_IMAGE_HELPERS(FullPivLU<MatrixType_>)
 
-  enum { MaxSmallDimAtCompileTime = EIGEN_SIZE_MIN_PREFER_FIXED(
-            MatrixType::MaxColsAtCompileTime,
-            MatrixType::MaxRowsAtCompileTime)
+  enum { MaxSmallDimAtCompileTime = min_size_prefer_fixed(
+              MatrixType::MaxColsAtCompileTime,
+              MatrixType::MaxRowsAtCompileTime)
   };
 
   template<typename Dest> void evalTo(Dest& dst) const

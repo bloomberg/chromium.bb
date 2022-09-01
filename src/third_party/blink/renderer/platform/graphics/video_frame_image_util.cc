@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/platform/graphics/canvas_resource_provider.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "third_party/skia/include/gpu/GrDriverBugWorkarounds.h"
@@ -37,7 +38,7 @@ bool CanUseZeroCopyImages(const media::VideoFrame& frame) {
   // TODO(sandersd): Handle high bit depth formats.
   // TODO(crbug.com/1203713): Figure out why macOS zero copy ends up with y-flip
   // images in zero copy mode.
-#if defined(OS_ANDROID) || defined(OS_MAC)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_MAC)
   return false;
 #else
   return frame.NumTextures() == 1 &&
@@ -176,7 +177,11 @@ scoped_refptr<StaticBitmapImage> CreateImageFromVideoFrame(
         // |is_cross_thread|.
         base::PlatformThreadRef(),
         // The task runner is only used for |release_callback|.
-        Thread::Current()->GetTaskRunner(), std::move(release_callback));
+        Thread::Current()->GetTaskRunner(), std::move(release_callback),
+        /*supports_display_compositing=*/true,
+        // TODO(junov): Figure out how to determine whether frame is an
+        // overlay candidate. StorageType info seems insufficient.
+        /*is_overlay_candidate=*/false);
   }
 
   gfx::Rect final_dest_rect = dest_rect;
@@ -272,6 +277,10 @@ bool DrawVideoFrameIntoResourceProvider(
   if (frame->HasGpuMemoryBuffer() && !frame->IsMappable() &&
       !resource_provider->IsAccelerated()) {
     frame = media::ConvertToMemoryMappedFrame(std::move(frame));
+    if (!frame) {
+      DLOG(ERROR) << "Failed to map VideoFrame.";
+      return false;
+    }
   }
 
   video_renderer->Paint(

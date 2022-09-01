@@ -34,12 +34,13 @@ import org.chromium.chrome.browser.tabmodel.TabModelFilter;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
-import org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil;
+import org.chromium.chrome.browser.tasks.ReturnToChromeUtil;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.components.browser_ui.share.ShareParams;
+import org.chromium.components.browser_ui.widget.gesture.BackPressHandler;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.KeyboardVisibilityDelegate;
@@ -56,7 +57,7 @@ public class TabGridDialogMediator implements SnackbarManager.SnackbarController
     /**
      * Defines an interface for a {@link TabGridDialogMediator} to control dialog.
      */
-    interface DialogController {
+    interface DialogController extends BackPressHandler {
         /**
          * Handles a reset event originated from {@link TabGridDialogMediator} and {@link
          * TabSwitcherMediator}.
@@ -521,7 +522,7 @@ public class TabGridDialogMediator implements SnackbarManager.SnackbarController
                             TabLaunchType.FROM_TAB_GROUP_UI, parentTabToAttach);
             RecordUserAction.record("MobileNewTabOpened." + mComponentName);
             if (!currentTab.isIncognito()) {
-                ReturnToChromeExperimentsUtil.onNewTabOpened();
+                ReturnToChromeUtil.onNewTabOpened();
             }
         };
     }

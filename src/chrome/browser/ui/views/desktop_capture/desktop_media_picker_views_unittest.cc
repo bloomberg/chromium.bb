@@ -13,7 +13,6 @@
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/media/webrtc/desktop_media_picker_manager.h"
@@ -93,7 +92,7 @@ class DesktopMediaPickerViewsTestBase : public testing::Test {
   ~DesktopMediaPickerViewsTestBase() override = default;
 
   void SetUp() override {
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
     // These tests create actual child Widgets, which normally have a closure
     // animation on Mac; inhibit it here to avoid the tests flakily hanging.
     base::CommandLine::ForCurrentProcess()->AppendSwitch(

@@ -34,6 +34,7 @@
 #include "remoting/host/ipc_url_forwarder_configurator.h"
 #include "remoting/host/ipc_video_frame_capturer.h"
 #include "remoting/host/remote_open_url/remote_open_url_util.h"
+#include "remoting/host/webauthn/remote_webauthn_delegated_state_change_notifier.h"
 #include "remoting/proto/audio.pb.h"
 #include "remoting/proto/control.pb.h"
 #include "remoting/proto/event.pb.h"
@@ -43,9 +44,9 @@
 #include "third_party/webrtc/modules/desktop_capture/mouse_cursor.h"
 #include "third_party/webrtc/modules/desktop_capture/shared_memory.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "base/win/scoped_handle.h"
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
 namespace remoting {
 
@@ -143,8 +144,7 @@ std::unique_ptr<ScreenControls> DesktopSessionProxy::CreateScreenControls() {
   return std::make_unique<IpcScreenControls>(this);
 }
 
-std::unique_ptr<webrtc::DesktopCapturer>
-DesktopSessionProxy::CreateVideoCapturer() {
+std::unique_ptr<DesktopCapturer> DesktopSessionProxy::CreateVideoCapturer() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   return std::make_unique<IpcVideoFrameCapturer>(this);
@@ -172,6 +172,14 @@ DesktopSessionProxy::CreateUrlForwarderConfigurator() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   return std::make_unique<IpcUrlForwarderConfigurator>(this);
+}
+
+std::unique_ptr<RemoteWebAuthnStateChangeNotifier>
+DesktopSessionProxy::CreateRemoteWebAuthnStateChangeNotifier() {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+
+  return std::make_unique<RemoteWebAuthnDelegatedStateChangeNotifier>(
+      base::BindRepeating(&DesktopSessionProxy::SignalWebAuthnExtension, this));
 }
 
 std::string DesktopSessionProxy::GetCapabilities() const {
@@ -232,22 +240,6 @@ bool DesktopSessionProxy::OnMessageReceived(const IPC::Message& message) {
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(DesktopSessionProxy, message)
-    IPC_MESSAGE_HANDLER(ChromotingDesktopNetworkMsg_AudioPacket,
-                        OnAudioPacket)
-    IPC_MESSAGE_HANDLER(ChromotingDesktopNetworkMsg_CaptureResult,
-                        OnCaptureResult)
-    IPC_MESSAGE_HANDLER(ChromotingDesktopNetworkMsg_DisplayChanged,
-                        OnDesktopDisplayChanged)
-    IPC_MESSAGE_HANDLER(ChromotingDesktopNetworkMsg_MouseCursor,
-                        OnMouseCursor)
-    IPC_MESSAGE_HANDLER(ChromotingDesktopNetworkMsg_CreateSharedBuffer,
-                        OnCreateSharedBuffer)
-    IPC_MESSAGE_HANDLER(ChromotingDesktopNetworkMsg_ReleaseSharedBuffer,
-                        OnReleaseSharedBuffer)
-    IPC_MESSAGE_HANDLER(ChromotingDesktopNetworkMsg_KeyboardChanged,
-                        OnKeyboardChanged)
-    IPC_MESSAGE_HANDLER(ChromotingDesktopNetworkMsg_DisconnectSession,
-                        DisconnectSession)
     IPC_MESSAGE_FORWARD(ChromotingDesktopNetworkMsg_FileResult,
                         &ipc_file_operations_factory_,
                         IpcFileOperations::ResultHandler::OnResult)
@@ -267,6 +259,11 @@ void DesktopSessionProxy::OnChannelConnected(int32_t peer_pid) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   VLOG(1) << "IPC: network <- desktop (" << peer_pid << ")";
+
+  desktop_session_agent_->Start(
+      client_session_control_->client_jid(), screen_resolution_, options_,
+      base::BindOnce(&DesktopSessionProxy::OnDesktopSessionAgentStarted,
+                     base::Unretained(this)));
 }
 
 void DesktopSessionProxy::OnChannelError() {
@@ -290,6 +287,16 @@ void DesktopSessionProxy::OnAssociatedInterfaceRequest(
     mojo::PendingAssociatedReceiver<mojom::DesktopSessionEventHandler>
         pending_receiver(std::move(handle));
     desktop_session_event_handler_.Bind(std::move(pending_receiver));
+  } else if (interface_name == mojom::DesktopSessionStateHandler::Name_) {
+    if (desktop_session_state_handler_.is_bound()) {
+      LOG(ERROR) << "Receiver already bound for associated interface: "
+                 << mojom::DesktopSessionStateHandler::Name_;
+      CrashProcess(base::Location::Current());
+    }
+
+    mojo::PendingAssociatedReceiver<mojom::DesktopSessionStateHandler>
+        pending_receiver(std::move(handle));
+    desktop_session_state_handler_.Bind(std::move(pending_receiver));
   } else {
     LOG(ERROR) << "Unknown associated interface requested: " << interface_name
                << ", crashing this process";
@@ -298,31 +305,26 @@ void DesktopSessionProxy::OnAssociatedInterfaceRequest(
 }
 
 bool DesktopSessionProxy::AttachToDesktop(
-    const IPC::ChannelHandle& desktop_pipe,
+    mojo::ScopedMessagePipeHandle desktop_pipe,
     int session_id) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
   DCHECK(!desktop_channel_);
 
-  if (client_session_events_) {
-    client_session_events_->OnDesktopAttached(session_id);
-  }
-
-  // Ignore the attach notification if the client session has been disconnected
-  // already.
+  // Ignore the attach event if the client session has already disconnected.
   if (!client_session_control_.get())
     return false;
 
   // Connect to the desktop process.
   desktop_channel_ = IPC::ChannelProxy::Create(
-      desktop_pipe, IPC::Channel::MODE_CLIENT, this, io_task_runner_.get(),
-      base::ThreadTaskRunnerHandle::Get());
+      desktop_pipe.release(), IPC::Channel::MODE_CLIENT, this,
+      io_task_runner_.get(), base::ThreadTaskRunnerHandle::Get());
 
-  // Pass ID of the client (which is authenticated at this point) to the desktop
-  // session agent and start the agent.
-  SendToDesktop(new ChromotingNetworkDesktopMsg_StartSessionAgent(
-      client_session_control_->client_jid(), screen_resolution_, options_));
-
-  desktop_channel_->GetRemoteAssociatedInterface(&desktop_session_control_);
+  // Reset the associated remote to allow us to connect to the new desktop
+  // process. This is needed as the desktop may crash and the daemon process
+  // will restart it however the remote will still be bound to the previous
+  // process since DetachFromDesktop() will not be called.
+  desktop_session_agent_.reset();
+  desktop_channel_->GetRemoteAssociatedInterface(&desktop_session_agent_);
 
   desktop_session_id_ = session_id;
 
@@ -333,8 +335,10 @@ void DesktopSessionProxy::DetachFromDesktop() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   desktop_channel_.reset();
+  desktop_session_agent_.reset();
   desktop_session_control_.reset();
   desktop_session_event_handler_.reset();
+  desktop_session_state_handler_.reset();
   desktop_session_id_ = UINT32_MAX;
 
   current_url_forwarder_state_ = mojom::UrlForwarderState::kUnknown;
@@ -345,13 +349,27 @@ void DesktopSessionProxy::DetachFromDesktop() {
 
   // Generate fake responses to keep the video capturer in sync.
   while (pending_capture_frame_requests_) {
-    --pending_capture_frame_requests_;
-    video_capturer_->OnCaptureResult(
-        webrtc::DesktopCapturer::Result::ERROR_TEMPORARY, nullptr);
+    OnCaptureResult(mojom::CaptureResult::NewCaptureError(
+        webrtc::DesktopCapturer::Result::ERROR_TEMPORARY));
   }
 
   if (client_session_events_) {
     client_session_events_->OnDesktopDetached();
+  }
+}
+
+void DesktopSessionProxy::OnDesktopSessionAgentStarted(
+    mojo::PendingAssociatedRemote<mojom::DesktopSessionControl>
+        pending_remote) {
+  // Reset the associated remote to allow us to connect to the new desktop
+  // process. This is needed as the desktop may crash and the daemon process
+  // will restart it however the remote will still be bound to the previous
+  // process since DetachFromDesktop() will not be called.
+  desktop_session_control_.reset();
+  desktop_session_control_.Bind(std::move(pending_remote));
+
+  if (client_session_events_) {
+    client_session_events_->OnDesktopAttached(desktop_session_id_);
   }
 }
 
@@ -365,9 +383,9 @@ void DesktopSessionProxy::SetAudioCapturer(
 void DesktopSessionProxy::CaptureFrame() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
-  if (desktop_channel_) {
+  if (desktop_session_control_) {
     ++pending_capture_frame_requests_;
-    SendToDesktop(new ChromotingNetworkDesktopMsg_CaptureFrame());
+    desktop_session_control_->CaptureFrame();
   } else {
     video_capturer_->OnCaptureResult(
         webrtc::DesktopCapturer::Result::ERROR_TEMPORARY, nullptr);
@@ -376,7 +394,9 @@ void DesktopSessionProxy::CaptureFrame() {
 
 bool DesktopSessionProxy::SelectSource(webrtc::DesktopCapturer::SourceId id) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
-  SendToDesktop(new ChromotingNetworkDesktopMsg_SelectSource(id));
+  if (desktop_session_control_) {
+    desktop_session_control_->SelectSource(id);
+  }
   return true;
 }
 
@@ -492,15 +512,29 @@ void DesktopSessionProxy::SetScreenResolution(
 
   // Passing an empty |screen_resolution_| value to the desktop process
   // indicates that the original resolution, if one exists, should be restored.
-  SendToDesktop(
-      new ChromotingNetworkDesktopMsg_SetScreenResolution(screen_resolution_));
+  if (desktop_session_control_) {
+    desktop_session_control_->SetScreenResolution(screen_resolution_);
+  }
 }
 
 void DesktopSessionProxy::ExecuteAction(
     const protocol::ActionRequest& request) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
-  SendToDesktop(new ChromotingNetworkDesktopMsg_ExecuteActionRequest(request));
+  if (!desktop_session_control_) {
+    return;
+  }
+
+  switch (request.action()) {
+    case protocol::ActionRequest::LOCK_WORKSTATION:
+      desktop_session_control_->LockWorkstation();
+      break;
+    case protocol::ActionRequest::SEND_ATTENTION_SEQUENCE:
+      desktop_session_control_->InjectSendAttentionSequence();
+      break;
+    default:
+      LOG(WARNING) << "Unknown action requested: " << request.action();
+  }
 }
 
 void DesktopSessionProxy::ReadFile(std::uint64_t file_id) {
@@ -565,7 +599,7 @@ void DesktopSessionProxy::SetUpUrlForwarder(
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
   DCHECK(!set_up_url_forwarder_callback_);
 
-  if (!desktop_session_control_.is_connected()) {
+  if (!desktop_session_control_) {
     LOG(ERROR) << "The UrlForwarderConfigurator remote is not connected. Setup "
                << "request ignored.";
     callback.Run(SetUpUrlForwarderResponse::FAILED);
@@ -598,7 +632,7 @@ void DesktopSessionProxy::OnUrlForwarderStateChange(
         // SET_UP or FAILED. NOT_SET_UP must come from a freshly started agent.
         LOG(WARNING) << "Setup process failed because the previous desktop "
                      << "session agent has exited";
-        FALLTHROUGH;
+        [[fallthrough]];
       case mojom::UrlForwarderState::kFailed:
         set_up_url_forwarder_callback_.Run(SetUpUrlForwarderResponse::FAILED);
         // Cleanup callback due to terminating state.
@@ -634,24 +668,17 @@ DesktopSessionProxy::GetSharedBufferCore(int id) {
   }
 }
 
-void DesktopSessionProxy::OnAudioPacket(const std::string& serialized_packet) {
+void DesktopSessionProxy::OnAudioPacket(
+    std::unique_ptr<AudioPacket> audio_packet) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
-  // Parse a serialized audio packet. No further validation is done since
-  // the message was sent by more privileged process.
-  std::unique_ptr<AudioPacket> packet(new AudioPacket());
-  if (!packet->ParseFromString(serialized_packet)) {
-    LOG(ERROR) << "Failed to parse AudioPacket.";
-    return;
-  }
-
-  // Pass a captured audio packet to |audio_capturer_|.
+  // Pass the captured audio packet to |audio_capturer_|.
   audio_capture_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&IpcAudioCapturer::OnAudioPacket,
-                                audio_capturer_, std::move(packet)));
+                                audio_capturer_, std::move(audio_packet)));
 }
 
-void DesktopSessionProxy::OnCreateSharedBuffer(
+void DesktopSessionProxy::OnSharedMemoryRegionCreated(
     int id,
     base::ReadOnlySharedMemoryRegion region,
     uint32_t size) {
@@ -666,7 +693,7 @@ void DesktopSessionProxy::OnCreateSharedBuffer(
   }
 }
 
-void DesktopSessionProxy::OnReleaseSharedBuffer(int id) {
+void DesktopSessionProxy::OnSharedMemoryRegionReleased(int id) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   // Drop the cached reference to the buffer.
@@ -691,9 +718,7 @@ void DesktopSessionProxy::OnDesktopDisplayChanged(
   }
 }
 
-void DesktopSessionProxy::OnCaptureResult(
-    webrtc::DesktopCapturer::Result result,
-    const SerializedDesktopFrame& serialized_frame) {
+void DesktopSessionProxy::OnCaptureResult(mojom::CaptureResultPtr result) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   --pending_capture_frame_requests_;
@@ -702,26 +727,27 @@ void DesktopSessionProxy::OnCaptureResult(
     return;
   }
 
-  if (result != webrtc::DesktopCapturer::Result::SUCCESS) {
-    video_capturer_->OnCaptureResult(result, nullptr);
+  if (result->is_capture_error()) {
+    video_capturer_->OnCaptureResult(result->get_capture_error(), nullptr);
     return;
   }
 
-  // Assume that |serialized_frame| is well-formed because it was received from
-  // a more privileged process.
+  // Assume that |desktop_frame| is well-formed because it was received from a
+  // more privileged process.
+  mojom::DesktopFramePtr& desktop_frame = result->get_desktop_frame();
   scoped_refptr<IpcSharedBufferCore> shared_buffer_core =
-      GetSharedBufferCore(serialized_frame.shared_buffer_id);
+      GetSharedBufferCore(desktop_frame->shared_buffer_id);
   CHECK(shared_buffer_core.get());
 
-  std::unique_ptr<webrtc::DesktopFrame> frame(
-      new webrtc::SharedMemoryDesktopFrame(
-          serialized_frame.dimensions, serialized_frame.bytes_per_row,
-          new IpcSharedBuffer(shared_buffer_core)));
-  frame->set_capture_time_ms(serialized_frame.capture_time_ms);
-  frame->set_dpi(serialized_frame.dpi);
-  frame->set_capturer_id(serialized_frame.capturer_id);
+  std::unique_ptr<webrtc::DesktopFrame> frame =
+      std::make_unique<webrtc::SharedMemoryDesktopFrame>(
+          desktop_frame->size, desktop_frame->stride,
+          new IpcSharedBuffer(shared_buffer_core));
+  frame->set_capture_time_ms(desktop_frame->capture_time_ms);
+  frame->set_dpi(desktop_frame->dpi);
+  frame->set_capturer_id(desktop_frame->capturer_id);
 
-  for (const auto& rect : serialized_frame.dirty_region) {
+  for (const auto& rect : desktop_frame->dirty_region) {
     frame->mutable_updated_region()->AddRect(rect);
   }
 
@@ -729,7 +755,7 @@ void DesktopSessionProxy::OnCaptureResult(
                                    std::move(frame));
 }
 
-void DesktopSessionProxy::OnMouseCursor(
+void DesktopSessionProxy::OnMouseCursorChanged(
     const webrtc::MouseCursor& mouse_cursor) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
@@ -739,7 +765,7 @@ void DesktopSessionProxy::OnMouseCursor(
   }
 }
 
-void DesktopSessionProxy::OnKeyboardChanged(
+void DesktopSessionProxy::OnKeyboardLayoutChanged(
     const protocol::KeyboardLayout& layout) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
@@ -755,6 +781,14 @@ void DesktopSessionProxy::OnClipboardEvent(
 
   if (client_clipboard_) {
     client_clipboard_->InjectClipboardEvent(event);
+  }
+}
+
+void DesktopSessionProxy::SignalWebAuthnExtension() {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+
+  if (desktop_session_control_) {
+    desktop_session_control_->SignalWebAuthnExtension();
   }
 }
 

@@ -8,7 +8,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/task/post_task.h"
 #include "base/task/task_runner.h"
 #include "chrome/browser/policy/messaging_layer/upload/dm_server_upload_service.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
@@ -46,7 +45,7 @@ class UploadClient {
 
   virtual Status EnqueueUpload(
       bool need_encryption_key,
-      std::unique_ptr<std::vector<EncryptedRecord>> record,
+      std::vector<EncryptedRecord> record,
       ReportSuccessfulUploadCallback report_upload_success_cb,
       EncryptionKeyAttachedCallback encryption_key_attached_cb);
 

@@ -16,7 +16,7 @@
 #include "device/bluetooth/bluetooth_device_mac.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-#if !defined(OS_IOS)
+#if !BUILDFLAG(IS_IOS)
 #import <IOBluetooth/IOBluetooth.h>
 #endif
 
@@ -83,6 +83,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLowEnergyDeviceMac
       const device::BluetoothUUID& uuid,
       ConnectToServiceCallback callback,
       ConnectToServiceErrorCallback error_callback) override;
+  bool IsLowEnergyDevice() override;
 
  protected:
   // BluetoothDevice override.

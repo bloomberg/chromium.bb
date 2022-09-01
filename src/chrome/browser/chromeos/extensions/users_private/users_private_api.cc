@@ -44,7 +44,7 @@ bool IsDeviceEnterpriseManaged() {
 
 bool IsChild(Profile* profile) {
   const user_manager::User* user =
-      chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
+      ash::ProfileHelper::Get()->GetUserByProfile(profile);
   if (!user)
     return false;
 
@@ -121,7 +121,7 @@ std::unique_ptr<base::ListValue> GetUsersList(
   // Remove all supervised users. On the next step only supervised users
   // present on the device will be added back. Thus not present SU are
   // removed. No need to remove usual users as they can simply login back.
-  base::Value::ListView email_list_view = email_list.GetList();
+  base::Value::ListView email_list_view = email_list.GetListDeprecated();
   for (size_t i = 0; i < email_list_view.size(); ++i) {
     const std::string* email = email_list_view[i].GetIfString();
     if (email && user_manager->IsDeprecatedSupervisedAccountId(
@@ -150,9 +150,9 @@ std::unique_ptr<base::ListValue> GetUsersList(
     std::string email = maybe_email ? *maybe_email : std::string();
     AccountId account_id = AccountId::FromUserEmail(email);
     const user_manager::User* user = user_manager->FindUser(account_id);
-    user_list->Append(
+    user_list->Append(base::Value::FromUniquePtrValue(
         (user ? CreateApiUser(email, *user) : CreateUnknownApiUser(email))
-            .ToValue());
+            .ToValue()));
   }
 
   return user_list;
@@ -277,9 +277,8 @@ UsersPrivateGetCurrentUserFunction::~UsersPrivateGetCurrentUserFunction() =
     default;
 
 ExtensionFunction::ResponseAction UsersPrivateGetCurrentUserFunction::Run() {
-  const user_manager::User* user =
-      chromeos::ProfileHelper::Get()->GetUserByProfile(
-          Profile::FromBrowserContext(browser_context()));
+  const user_manager::User* user = ash::ProfileHelper::Get()->GetUserByProfile(
+      Profile::FromBrowserContext(browser_context()));
   return user ? RespondNow(OneArgument(base::Value::FromUniquePtrValue(
                     CreateApiUser(user->GetAccountId().GetUserEmail(), *user)
                         .ToValue())))

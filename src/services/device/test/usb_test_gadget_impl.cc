@@ -24,18 +24,16 @@
 #include "base/run_loop.h"
 #include "base/scoped_observation.h"
 #include "base/stl_util.h"
+#include "base/strings/escape.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "net/base/elements_upload_data_stream.h"
-#include "net/base/escape.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/proxy_resolution/configured_proxy_resolution_service.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -184,10 +182,10 @@ int SimplePOSTRequest(
     const GURL& url,
     const std::string& form_data) {
   net::TestDelegate delegate;
-  net::TestURLRequestContext request_context;
+  auto request_context = net::CreateTestURLRequestContextBuilder()->Build();
 
   std::unique_ptr<net::URLRequest> request =
-      CreateSimpleRequest(request_context, &delegate, url,
+      CreateSimpleRequest(*request_context, &delegate, url,
                           "application/x-www-form-urlencoded", form_data);
   request->set_method("POST");
 
@@ -202,7 +200,8 @@ class UsbGadgetFactory : public UsbService::Observer {
   // TODO(crbug.com/1010491): Remove `io_task_runner` parameter.
   UsbGadgetFactory(UsbService* usb_service,
                    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
-      : usb_service_(usb_service) {
+      : usb_service_(usb_service),
+        request_context_(net::CreateTestURLRequestContextBuilder()->Build()) {
     // Gadget tests shouldn't be enabled without available |usb_service|.
     DCHECK(usb_service_);
 
@@ -276,10 +275,10 @@ class UsbGadgetFactory : public UsbService::Observer {
 
     GURL url("http://" + serial_number_ + "/claim");
     std::string form_data = base::StringPrintf(
-        "session_id=%s", net::EscapeUrlEncodedData(session_id_, true).c_str());
+        "session_id=%s", base::EscapeUrlEncodedData(session_id_, true).c_str());
 
     std::unique_ptr<net::URLRequest> request =
-        CreateSimpleRequest(request_context_, &delegate_, url,
+        CreateSimpleRequest(*request_context_, &delegate_, url,
                             "application/x-www-form-urlencoded", form_data);
     request->set_method("POST");
     request->Start();
@@ -292,7 +291,7 @@ class UsbGadgetFactory : public UsbService::Observer {
     GURL url("http://" + serial_number_ + "/version");
 
     std::unique_ptr<net::URLRequest> request = CreateSimpleRequest(
-        request_context_, &delegate_, url, std::string(), std::string());
+        *request_context_, &delegate_, url, std::string(), std::string());
     request->set_method("GET");
     request->Start();
     delegate_.set_on_complete(
@@ -320,7 +319,7 @@ class UsbGadgetFactory : public UsbService::Observer {
     }
 
     std::unique_ptr<net::URLRequest> request = CreateSimpleRequest(
-        request_context_, &delegate_, url, "multipart/form-data; boundary=foo",
+        *request_context_, &delegate_, url, "multipart/form-data; boundary=foo",
         mime_header + package + mime_footer);
     request->set_method("POST");
     request->Start();
@@ -405,7 +404,7 @@ class UsbGadgetFactory : public UsbService::Observer {
 
   raw_ptr<UsbService> usb_service_ = nullptr;
   net::TestDelegate delegate_;
-  net::TestURLRequestContext request_context_;
+  std::unique_ptr<net::URLRequestContext> request_context_;
   std::string session_id_;
   scoped_refptr<UsbDevice> device_;
   std::string serial_number_;
@@ -452,7 +451,7 @@ class DeviceAddListener : public UsbService::Observer {
       const uint16_t product_id = device->product_id();
       if (product_id_ == -1) {
         bool found = false;
-        for (size_t i = 0; i < base::size(kConfigurations); ++i) {
+        for (size_t i = 0; i < std::size(kConfigurations); ++i) {
           if (product_id == kConfigurations[i].product_id) {
             found = true;
             break;
@@ -579,7 +578,7 @@ bool UsbTestGadgetImpl::Unclaim() {
 
 bool UsbTestGadgetImpl::SetType(Type type) {
   const struct UsbTestGadgetConfiguration* config = NULL;
-  for (size_t i = 0; i < base::size(kConfigurations); ++i) {
+  for (size_t i = 0; i < std::size(kConfigurations); ++i) {
     if (kConfigurations[i].type == type) {
       config = &kConfigurations[i];
     }

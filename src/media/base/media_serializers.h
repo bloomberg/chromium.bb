@@ -16,7 +16,6 @@
 #include "media/base/media_serializers_base.h"
 #include "media/base/renderer_factory_selector.h"
 #include "media/base/status.h"
-#include "media/base/status_codes.h"
 #include "media/base/text_track_config.h"
 #include "media/base/video_decoder_config.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -154,6 +153,16 @@ template <>
 struct MediaSerializer<base::TimeDelta> {
   static inline base::Value Serialize(const base::TimeDelta value) {
     return MediaSerializer<double>::Serialize(value.InSecondsF());
+  }
+};
+
+// enum (simple)
+template <>
+struct MediaSerializer<base::Time> {
+  static inline base::Value Serialize(const base::Time value) {
+    std::stringstream formatted;
+    formatted << value;
+    return MediaSerializer<std::string>::Serialize(formatted.str());
   }
 };
 
@@ -351,8 +360,9 @@ struct MediaSerializer<TextTrackConfig> {
     base::Value result(base::Value::Type::DICTIONARY);
     FIELD_SERIALIZE("kind", value.kind());
     FIELD_SERIALIZE("language", value.language());
-    if (value.label().length())
+    if (value.label().length()) {
       FIELD_SERIALIZE("label", value.label());
+    }
     return result;
   }
 };
@@ -431,14 +441,6 @@ struct MediaSerializer<SerializableBufferingState<T>> {
   }
 };
 
-// enum (simple)
-template <>
-struct MediaSerializer<StatusCode> {
-  static inline base::Value Serialize(StatusCode code) {
-    return base::Value(static_cast<int>(code));
-  }
-};
-
 // Class (complex)
 template <typename T>
 struct MediaSerializer<TypedStatus<T>> {
@@ -458,12 +460,13 @@ struct MediaSerializer<StatusData> {
     base::Value result(base::Value::Type::DICTIONARY);
     // TODO: replace code with a stringified version, since
     // this representation will only go to medialog anyway.
-    FIELD_SERIALIZE("code", status.code);
-    FIELD_SERIALIZE("group", status.group);
-    FIELD_SERIALIZE("message", status.message);
-    FIELD_SERIALIZE("stack", status.frames);
-    FIELD_SERIALIZE("data", status.data);
-    FIELD_SERIALIZE("causes", status.causes);
+    FIELD_SERIALIZE(StatusConstants::kCodeKey, status.code);
+    FIELD_SERIALIZE(StatusConstants::kGroupKey, status.group);
+    FIELD_SERIALIZE(StatusConstants::kMsgKey, status.message);
+    FIELD_SERIALIZE(StatusConstants::kStackKey, status.frames);
+    FIELD_SERIALIZE(StatusConstants::kDataKey, status.data);
+    if (status.cause)
+      FIELD_SERIALIZE(StatusConstants::kCauseKey, *status.cause);
     return result;
   }
 };
@@ -473,8 +476,9 @@ template <>
 struct MediaSerializer<base::Location> {
   static base::Value Serialize(const base::Location& value) {
     base::Value result(base::Value::Type::DICTIONARY);
-    FIELD_SERIALIZE("file", value.file_name() ? value.file_name() : "unknown");
-    FIELD_SERIALIZE("line", value.line_number());
+    FIELD_SERIALIZE(StatusConstants::kFileKey,
+                    value.file_name() ? value.file_name() : "unknown");
+    FIELD_SERIALIZE(StatusConstants::kLineKey, value.line_number());
     return result;
   }
 };

@@ -101,9 +101,7 @@ void LevelDBScopesTestBase::SetUpBreakableDB(
     TearDown();
   ASSERT_TRUE(temp_directory_.CreateUniqueTempDir());
 
-  leveldb::Status status;
-  std::unique_ptr<leveldb::DB> temp_real_db;
-  std::tie(temp_real_db, status) =
+  auto [temp_real_db, status] =
       leveldb_factory_->OpenDB(temp_directory_.GetPath().AsUTF8Unsafe(),
                                /*create_if_missing=*/true, kWriteBufferSize);
   ASSERT_TRUE(status.ok());
@@ -124,10 +122,8 @@ void LevelDBScopesTestBase::SetUpFlakyDB(
   if (leveldb_)
     TearDown();
   ASSERT_TRUE(temp_directory_.CreateUniqueTempDir());
-  leveldb::Status status;
 
-  std::unique_ptr<leveldb::DB> temp_db;
-  std::tie(temp_db, status) =
+  auto [temp_db, status] =
       leveldb_factory_->OpenDB(temp_directory_.GetPath().AsUTF8Unsafe(),
                                /*create_if_missing=*/true, kWriteBufferSize);
   ASSERT_TRUE(status.ok());
@@ -230,34 +226,34 @@ bool LevelDBScopesTestBase::ScopeDataExistsOnDisk() {
              scopes_encoder_.TasksKeyPrefix(metadata_prefix_));
 }
 
-ScopesLockManager::ScopeLockRequest
+LeveledLockManager::LeveledLockRequest
 LevelDBScopesTestBase::CreateSimpleSharedLock() {
   return {0,
           {simple_lock_begin_, simple_lock_end_},
-          ScopesLockManager::LockType::kShared};
+          LeveledLockManager::LockType::kShared};
 }
 
-ScopesLockManager::ScopeLockRequest
+LeveledLockManager::LeveledLockRequest
 LevelDBScopesTestBase::CreateSimpleExclusiveLock() {
   return {0,
           {simple_lock_begin_, simple_lock_end_},
-          ScopesLockManager::LockType::kExclusive};
+          LeveledLockManager::LockType::kExclusive};
 }
 
-ScopesLockManager::ScopeLockRequest LevelDBScopesTestBase::CreateSharedLock(
+LeveledLockManager::LeveledLockRequest LevelDBScopesTestBase::CreateSharedLock(
     int i) {
   return {0,
           {base::StringPrintf("%010d", i * 2),
            base::StringPrintf("%010d", i * 2 + 1)},
-          ScopesLockManager::LockType::kShared};
+          LeveledLockManager::LockType::kShared};
 }
 
-ScopesLockManager::ScopeLockRequest LevelDBScopesTestBase::CreateExclusiveLock(
-    int i) {
+LeveledLockManager::LeveledLockRequest
+LevelDBScopesTestBase::CreateExclusiveLock(int i) {
   return {0,
           {base::StringPrintf("%010d", i * 2),
            base::StringPrintf("%010d", i * 2 + 1)},
-          ScopesLockManager::LockType::kExclusive};
+          LeveledLockManager::LockType::kExclusive};
 }
 
 const base::FilePath& LevelDBScopesTestBase::DatabaseDirFilePath() {

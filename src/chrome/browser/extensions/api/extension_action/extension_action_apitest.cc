@@ -270,7 +270,7 @@ class MultiActionAPICanvasTest : public MultiActionAPITest {
 // cause a disk write (since we only persist the defaults).
 // Only browser actions persist settings.
 IN_PROC_BROWSER_TEST_F(BrowserActionAPITest, TestNoUnnecessaryIO) {
-  ExtensionTestMessageListener ready_listener("ready", false);
+  ExtensionTestMessageListener ready_listener("ready");
 
   TestExtensionDir test_dir;
   test_dir.WriteManifest(
@@ -449,8 +449,7 @@ IN_PROC_BROWSER_TEST_P(MultiActionAPITest, OnClickedDispatching) {
            chrome.test.assertTrue(tab.id > 0);
            chrome.test.assertTrue(tab.index > -1);
            chrome.test.notifyPass();
-         });
-         chrome.test.sendMessage('ready');)";
+         });)";
 
   const char* background_specification =
       GetParam() == ActionInfo::TYPE_ACTION
@@ -472,10 +471,8 @@ IN_PROC_BROWSER_TEST_P(MultiActionAPITest, OnClickedDispatching) {
       ExtensionActionTestHelper::Create(browser());
   EXPECT_EQ(0, toolbar_helper->NumberOfBrowserActions());
 
-  ExtensionTestMessageListener listener("ready", /*will_reply=*/false);
   const Extension* extension = LoadExtension(test_dir.UnpackedPath());
   ASSERT_TRUE(extension);
-  ASSERT_TRUE(listener.WaitUntilSatisfied());
   ASSERT_EQ(1, toolbar_helper->NumberOfBrowserActions());
   EXPECT_TRUE(toolbar_helper->HasAction(extension->id()));
 
@@ -560,7 +557,7 @@ IN_PROC_BROWSER_TEST_P(MultiActionAPITest, PopupCreation) {
 // Tests that sessionStorage does not persist between closing and opening of a
 // popup.
 // TODO(crbug/1256760): Flaky on Linux.
-#if defined(OS_LINUX)
+#if BUILDFLAG(IS_LINUX)
 #define MAYBE_SessionStorageDoesNotPersistBetweenOpenings \
   DISABLED_SessionStorageDoesNotPersistBetweenOpenings
 #else
@@ -1007,6 +1004,112 @@ IN_PROC_BROWSER_TEST_P(MultiActionAPITest, SetIconWithSelfDefined) {
                            base::StringPrintf(kSetIconScript, tab_id));
 }
 
+// Tests calling setIcon() for a tab with an invalid icon path specified.
+IN_PROC_BROWSER_TEST_P(MultiActionAPITest, SetIconInTabWithInvalidPath) {
+  constexpr char kManifestTemplate[] =
+      R"({
+           "name": "Bad Icon Path",
+           "manifest_version": %d,
+           "version": "0.1",
+           "%s": {}
+         })";
+
+  constexpr char kPageJsTemplate[] =
+      R"(function setIcon(details) {
+           chrome.%s.setIcon(details, () => {
+             chrome.test.assertLastError("%s");
+             chrome.test.notifyPass();
+           });
+         })";
+
+  constexpr char kExpectedError[] =
+      "Could not load action icon 'does_not_exist.png'.";
+
+  TestExtensionDir test_dir;
+  test_dir.WriteManifest(base::StringPrintf(
+      kManifestTemplate, GetManifestVersionForActionType(GetParam()),
+      GetManifestKeyForActionType(GetParam())));
+
+  test_dir.WriteFile(FILE_PATH_LITERAL("page.html"), kPageHtmlTemplate);
+  test_dir.WriteFile(
+      FILE_PATH_LITERAL("page.js"),
+      base::StringPrintf(kPageJsTemplate, GetAPINameForActionType(GetParam()),
+                         kExpectedError));
+
+  const Extension* extension = LoadExtension(test_dir.UnpackedPath());
+  ASSERT_TRUE(extension);
+
+  ExtensionAction* action = GetExtensionAction(*extension);
+  ASSERT_TRUE(action);
+
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), extension->GetResourceURL("page.html")));
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  int tab_id = GetActiveTabId();
+  EXPECT_TRUE(ActionHasDefaultState(*action, tab_id));
+  EnsureActionIsEnabledOnActiveTab(action);
+
+  // Calling setIcon with an invalid path in a non-service worker context should
+  // emit a console error in that context and call the callback with lastError
+  // set.
+  content::WebContentsConsoleObserver console_observer(web_contents);
+  console_observer.SetPattern(kExpectedError);
+
+  constexpr char kSetIconScript[] =
+      "setIcon({tabId: %d, path: 'does_not_exist.png'});";
+  RunTestAndWaitForSuccess(web_contents,
+                           base::StringPrintf(kSetIconScript, tab_id));
+  console_observer.Wait();
+}
+
+// Tests calling setIcon() in the service worker with an invalid icon path
+// specified. Regression test for https://crbug.com/1262029.
+IN_PROC_BROWSER_TEST_F(ExtensionActionAPITest, SetIconInWorkerWithInvalidPath) {
+  constexpr char kManifestTemplate[] =
+      R"({
+           "name": "Bad Icon Path In Worker",
+           "manifest_version": 3,
+           "version": "0.1",
+           "action": {},
+           "background": {"service_worker": "worker.js" }
+         })";
+
+  constexpr char kBackgroundJs[] =
+      R"(let expectedError = "%s";
+         chrome.test.runTests([
+           function withCallback() {
+             chrome.action.setIcon({path: 'does_not_exist.png'}, () => {
+               chrome.test.assertLastError(expectedError);
+               chrome.test.succeed();
+             });
+           },
+           async function withPromise() {
+             await chrome.test.assertPromiseRejects(
+                 chrome.action.setIcon({path: 'does_not_exist.png'}),
+                 'Error: ' + expectedError);
+             chrome.test.succeed();
+           }
+         ]);)";
+
+  constexpr char kExpectedError[] =
+      "Failed to set icon 'does_not_exist.png': Failed to fetch";
+
+  TestExtensionDir test_dir;
+  test_dir.WriteManifest(kManifestTemplate);
+
+  test_dir.WriteFile(FILE_PATH_LITERAL("worker.js"),
+                     base::StringPrintf(kBackgroundJs, kExpectedError));
+
+  // Calling setIcon with an invalid path in a service worker context should
+  // reject the promise or call the callback with lastError set.
+  ResultCatcher result_catcher;
+  const Extension* extension = LoadExtension(test_dir.UnpackedPath());
+  ASSERT_TRUE(extension);
+  EXPECT_TRUE(result_catcher.GetNextResult()) << result_catcher.message();
+}
+
 // Tests various getter and setter methods.
 IN_PROC_BROWSER_TEST_P(MultiActionAPITest, GettersAndSetters) {
   // Load up an extension with default values.
@@ -1358,7 +1461,7 @@ IN_PROC_BROWSER_TEST_F(ActionAPITest, TestGetUserSettings) {
 
   const Extension* extension = nullptr;
   {
-    ExtensionTestMessageListener listener("ready", /*will_reply=*/false);
+    ExtensionTestMessageListener listener("ready");
     extension = LoadExtension(test_dir.UnpackedPath());
     ASSERT_TRUE(extension);
     ASSERT_TRUE(listener.WaitUntilSatisfied());
@@ -1372,7 +1475,7 @@ IN_PROC_BROWSER_TEST_F(ActionAPITest, TestGetUserSettings) {
       ExtensionActionTestHelper::Create(browser());
 
   auto get_response = [extension, toolbar_helper = toolbar_helper.get()]() {
-    ExtensionTestMessageListener listener(/*will_reply=*/false);
+    ExtensionTestMessageListener listener;
     listener.set_extension_id(extension->id());
     toolbar_helper->Press(extension->id());
     EXPECT_TRUE(listener.WaitUntilSatisfied());

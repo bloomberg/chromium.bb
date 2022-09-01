@@ -228,6 +228,12 @@ aomenc_encode_test_rt_params() {
 }
 
 # Echoes yes to stdout when aom_config_option_enabled() reports yes for
+# CONFIG_AV1_HIGHBITDEPTH.
+highbitdepth_available() {
+  [ "$(aom_config_option_enabled CONFIG_AV1_HIGHBITDEPTH)" = "yes" ] && echo yes
+}
+
+# Echoes yes to stdout when aom_config_option_enabled() reports yes for
 # CONFIG_WEBM_IO.
 webm_io_available() {
   [ "$(aom_config_option_enabled CONFIG_WEBM_IO)" = "yes" ] && echo yes

@@ -9,13 +9,13 @@
 #include <map>
 #include <memory>
 #include <sstream>
+#include <type_traits>
 
 // Clients of this interface shouldn't depend on lots of compiler internals.
 // Do not include anything from src/compiler here!
 #include "include/cppgc/source-location.h"
 #include "src/base/macros.h"
 #include "src/base/optional.h"
-#include "src/base/type-traits.h"
 #include "src/builtins/builtins.h"
 #include "src/codegen/atomic-memory-order.h"
 #include "src/codegen/code-factory.h"
@@ -523,18 +523,19 @@ class V8_EXPORT_PRIVATE CodeAssembler {
   TNode<Int32T> Int32Constant(int32_t value);
   TNode<Int64T> Int64Constant(int64_t value);
   TNode<Uint64T> Uint64Constant(uint64_t value) {
-    return Unsigned(Int64Constant(bit_cast<int64_t>(value)));
+    return Unsigned(Int64Constant(base::bit_cast<int64_t>(value)));
   }
   TNode<IntPtrT> IntPtrConstant(intptr_t value);
   TNode<Uint32T> Uint32Constant(uint32_t value) {
-    return Unsigned(Int32Constant(bit_cast<int32_t>(value)));
+    return Unsigned(Int32Constant(base::bit_cast<int32_t>(value)));
   }
   TNode<UintPtrT> UintPtrConstant(uintptr_t value) {
-    return Unsigned(IntPtrConstant(bit_cast<intptr_t>(value)));
+    return Unsigned(IntPtrConstant(base::bit_cast<intptr_t>(value)));
   }
   TNode<TaggedIndex> TaggedIndexConstant(intptr_t value);
   TNode<RawPtrT> PointerConstant(void* value) {
-    return ReinterpretCast<RawPtrT>(IntPtrConstant(bit_cast<intptr_t>(value)));
+    return ReinterpretCast<RawPtrT>(
+        IntPtrConstant(base::bit_cast<intptr_t>(value)));
   }
   TNode<Number> NumberConstant(double value);
   TNode<Smi> SmiConstant(Smi value);
@@ -542,7 +543,7 @@ class V8_EXPORT_PRIVATE CodeAssembler {
   template <typename E,
             typename = typename std::enable_if<std::is_enum<E>::value>::type>
   TNode<Smi> SmiConstant(E value) {
-    STATIC_ASSERT(sizeof(E) <= sizeof(int));
+    static_assert(sizeof(E) <= sizeof(int));
     return SmiConstant(static_cast<int>(value));
   }
   TNode<HeapObject> UntypedHeapConstant(Handle<HeapObject> object);
@@ -1086,6 +1087,20 @@ class V8_EXPORT_PRIVATE CodeAssembler {
   TNode<Word32T> Word32Shr(TNode<Word32T> value, int shift);
   TNode<Word32T> Word32Sar(TNode<Word32T> value, int shift);
 
+  // Convenience overloads.
+  TNode<Int32T> Int32Sub(TNode<Int32T> left, int right) {
+    return Int32Sub(left, Int32Constant(right));
+  }
+  TNode<Word32T> Word32And(TNode<Word32T> left, int right) {
+    return Word32And(left, Int32Constant(right));
+  }
+  TNode<Int32T> Word32Shl(TNode<Int32T> left, int right) {
+    return Word32Shl(left, Int32Constant(right));
+  }
+  TNode<BoolT> Word32Equal(TNode<Word32T> left, int right) {
+    return Word32Equal(left, Int32Constant(right));
+  }
+
 // Unary
 #define DECLARE_CODE_ASSEMBLER_UNARY_OP(name, ResType, ArgType) \
   TNode<ResType> name(TNode<ArgType> a);
@@ -1160,13 +1175,13 @@ class V8_EXPORT_PRIVATE CodeAssembler {
   template <class T = Object, class... TArgs>
   TNode<T> CallStub(Callable const& callable, TNode<Object> context,
                     TArgs... args) {
-    TNode<Code> target = HeapConstant(callable.code());
+    TNode<CodeT> target = HeapConstant(callable.code());
     return CallStub<T>(callable.descriptor(), target, context, args...);
   }
 
   template <class T = Object, class... TArgs>
   TNode<T> CallStub(const CallInterfaceDescriptor& descriptor,
-                    TNode<Code> target, TNode<Object> context, TArgs... args) {
+                    TNode<CodeT> target, TNode<Object> context, TArgs... args) {
     return UncheckedCast<T>(CallStubR(StubCallMode::kCallCodeObject, descriptor,
                                       target, context, args...));
   }
@@ -1182,13 +1197,13 @@ class V8_EXPORT_PRIVATE CodeAssembler {
   template <class... TArgs>
   void TailCallStub(Callable const& callable, TNode<Object> context,
                     TArgs... args) {
-    TNode<Code> target = HeapConstant(callable.code());
+    TNode<CodeT> target = HeapConstant(callable.code());
     TailCallStub(callable.descriptor(), target, context, args...);
   }
 
   template <class... TArgs>
   void TailCallStub(const CallInterfaceDescriptor& descriptor,
-                    TNode<Code> target, TNode<Object> context, TArgs... args) {
+                    TNode<CodeT> target, TNode<Object> context, TArgs... args) {
     TailCallStubImpl(descriptor, target, context, {args...});
   }
 
@@ -1211,7 +1226,7 @@ class V8_EXPORT_PRIVATE CodeAssembler {
   // Note that no arguments adaption is going on here - all the JavaScript
   // arguments are left on the stack unmodified. Therefore, this tail call can
   // only be used after arguments adaptation has been performed already.
-  void TailCallJSCode(TNode<Code> code, TNode<Context> context,
+  void TailCallJSCode(TNode<CodeT> code, TNode<Context> context,
                       TNode<JSFunction> function, TNode<Object> new_target,
                       TNode<Int32T> arg_count);
 
@@ -1220,7 +1235,7 @@ class V8_EXPORT_PRIVATE CodeAssembler {
                        Node* receiver, TArgs... args) {
     int argc = JSParameterCount(static_cast<int>(sizeof...(args)));
     TNode<Int32T> arity = Int32Constant(argc);
-    TNode<Code> target = HeapConstant(callable.code());
+    TNode<CodeT> target = HeapConstant(callable.code());
     return CAST(CallJSStubImpl(callable.descriptor(), target, CAST(context),
                                CAST(function), {}, arity, {receiver, args...}));
   }
@@ -1231,7 +1246,7 @@ class V8_EXPORT_PRIVATE CodeAssembler {
     int argc = JSParameterCount(static_cast<int>(sizeof...(args)));
     TNode<Int32T> arity = Int32Constant(argc);
     TNode<Object> receiver = LoadRoot(RootIndex::kUndefinedValue);
-    TNode<Code> target = HeapConstant(callable.code());
+    TNode<CodeT> target = HeapConstant(callable.code());
     return CallJSStubImpl(callable.descriptor(), target, CAST(context),
                           CAST(function), CAST(new_target), arity,
                           {receiver, args...});
@@ -1253,9 +1268,9 @@ class V8_EXPORT_PRIVATE CodeAssembler {
   template <class... CArgs>
   Node* CallCFunction(Node* function, base::Optional<MachineType> return_type,
                       CArgs... cargs) {
-    static_assert(v8::internal::conjunction<
-                      std::is_convertible<CArgs, CFunctionArg>...>::value,
-                  "invalid argument types");
+    static_assert(
+        std::conjunction_v<std::is_convertible<CArgs, CFunctionArg>...>,
+        "invalid argument types");
     return CallCFunction(function, return_type, {cargs...});
   }
 
@@ -1264,9 +1279,9 @@ class V8_EXPORT_PRIVATE CodeAssembler {
   Node* CallCFunctionWithoutFunctionDescriptor(Node* function,
                                                MachineType return_type,
                                                CArgs... cargs) {
-    static_assert(v8::internal::conjunction<
-                      std::is_convertible<CArgs, CFunctionArg>...>::value,
-                  "invalid argument types");
+    static_assert(
+        std::conjunction_v<std::is_convertible<CArgs, CFunctionArg>...>,
+        "invalid argument types");
     return CallCFunctionWithoutFunctionDescriptor(function, return_type,
                                                   {cargs...});
   }
@@ -1277,9 +1292,9 @@ class V8_EXPORT_PRIVATE CodeAssembler {
                                               MachineType return_type,
                                               SaveFPRegsMode mode,
                                               CArgs... cargs) {
-    static_assert(v8::internal::conjunction<
-                      std::is_convertible<CArgs, CFunctionArg>...>::value,
-                  "invalid argument types");
+    static_assert(
+        std::conjunction_v<std::is_convertible<CArgs, CFunctionArg>...>,
+        "invalid argument types");
     return CallCFunctionWithCallerSavedRegisters(function, return_type, mode,
                                                  {cargs...});
   }
@@ -1330,7 +1345,7 @@ class V8_EXPORT_PRIVATE CodeAssembler {
                            std::initializer_list<TNode<Object>> args);
 
   void TailCallStubImpl(const CallInterfaceDescriptor& descriptor,
-                        TNode<Code> target, TNode<Object> context,
+                        TNode<CodeT> target, TNode<Object> context,
                         std::initializer_list<Node*> args);
 
   void TailCallStubThenBytecodeDispatchImpl(
@@ -1570,7 +1585,7 @@ class CodeAssemblerParameterizedLabel
             {PhiMachineRepresentationOf<Types>...});
     auto it = phi_nodes.begin();
     USE(it);
-    ITERATE_PACK(AssignPhi(results, *(it++)));
+    (AssignPhi(results, *(it++)), ...);
   }
   template <class T>
   static void AssignPhi(TNode<T>* result, Node* phi) {

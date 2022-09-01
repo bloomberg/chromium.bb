@@ -31,6 +31,28 @@ included in Chrome are for the auto-upgrade mechanism and for a list of
 popular/relevant options as a convenience (see the [requirements and
 process](https://docs.google.com/document/d/128i2YTV2C7T6Gr3I-81zlQ-_Lprnsp24qzy_20Z1Psw/edit?usp=sharing)).
 
+Chromium users (or administrators of managed deployments) can specify a custom
+configuration as a [DoH URI
+template](https://datatracker.ietf.org/doc/html/rfc8484#section-3).  If the
+template includes a `dns` variable, Chromium will issue DoH requests using the
+`GET` HTTP method; otherwise it will use `POST`.  Users can also enter multiple
+templates separated by whitespace, improving reliability if one DoH server
+fails.  Starting in M103, a JSON configuration format is supported for advanced
+uses and debugging of the [Enhanced
+Bootstrap](https://docs.google.com/document/d/1OBiAK9bfFNfmezP-trlAL6v5kz1D0xXCg_nmcSM2so8/edit#heading=h.7nki9mck5t64)
+feature:
+
+~~~JSON
+{
+    "servers": [{
+        "template": "https://dnsserver.example.net/dns-query{?dns}",
+        "endpoints": [{
+            "ips": ["192.0.2.1", "2001:db8::1"]
+        }]
+    }]
+}
+~~~
+
 For technical questions, please send an email to
 [net-dev@](https://groups.google.com/a/chromium.org/forum/#!forum/net-dev/) with
 the \[DoH\] prefix in the subject line.

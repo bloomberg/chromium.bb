@@ -46,7 +46,7 @@ def ConfigureAndBuildFFmpeg(robo_configuration, platform, architecture):
   robo_configuration.chdir_to_ffmpeg_home();
   # Include --fast so that we don't rebuild the same directory once we get it
   # right.  This saves time when only one platform is failing.
-  command = ["python2", "./chromium/scripts/build_ffmpeg.py", "--fast",
+  command = ["python3", "./chromium/scripts/build_ffmpeg.py", "--fast",
              platform]
   if architecture:
     command.append(architecture)

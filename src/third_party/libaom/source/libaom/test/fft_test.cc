@@ -92,6 +92,9 @@ class FFT2DTest : public ::testing::TestWithParam<FFTTestArg> {
     input_ = (float *)aom_memalign(32, sizeof(*input_) * n * n);
     temp_ = (float *)aom_memalign(32, sizeof(*temp_) * n * n);
     output_ = (float *)aom_memalign(32, sizeof(*output_) * n * n * 2);
+    ASSERT_NE(input_, nullptr);
+    ASSERT_NE(temp_, nullptr);
+    ASSERT_NE(output_, nullptr);
     memset(input_, 0, sizeof(*input_) * n * n);
     memset(temp_, 0, sizeof(*temp_) * n * n);
     memset(output_, 0, sizeof(*output_) * n * n * 2);
@@ -179,6 +182,9 @@ class IFFT2DTest : public ::testing::TestWithParam<IFFTTestArg> {
     input_ = (float *)aom_memalign(32, sizeof(*input_) * n * n * 2);
     temp_ = (float *)aom_memalign(32, sizeof(*temp_) * n * n * 2);
     output_ = (float *)aom_memalign(32, sizeof(*output_) * n * n);
+    ASSERT_NE(input_, nullptr);
+    ASSERT_NE(temp_, nullptr);
+    ASSERT_NE(output_, nullptr);
     memset(input_, 0, sizeof(*input_) * n * n * 2);
     memset(temp_, 0, sizeof(*temp_) * n * n * 2);
     memset(output_, 0, sizeof(*output_) * n * n);
@@ -218,7 +224,7 @@ TEST_P(IFFT2DTest, Correctness) {
       expected[y * n + x] = 0;
     }
   }
-};
+}
 
 TEST_P(IFFT2DTest, Benchmark) {
   int n = GetParam().n;

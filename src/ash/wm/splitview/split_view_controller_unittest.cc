@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <memory>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -19,7 +20,6 @@
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/test/keyboard_test_util.h"
 #include "ash/public/cpp/fps_counter.h"
-#include "ash/public/cpp/presentation_time_recorder.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/window_backdrop.h"
 #include "ash/public/cpp/window_properties.h"
@@ -59,7 +59,6 @@
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
 #include "base/containers/contains.h"
-#include "base/ignore_result.h"
 #include "base/memory/ptr_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -69,6 +68,7 @@
 #include "ui/aura/test/test_windows.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ime/dummy_text_input_client.h"
+#include "ui/compositor/presentation_time_recorder.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/test/test_utils.h"
 #include "ui/compositor_extra/shadow.h"
@@ -168,7 +168,7 @@ class TestTextInputClient : public ui::DummyTextInputClient {
     if (window_)
       window_->Focus();
 
-    ime->ShowVirtualKeyboardIfEnabled();
+    ime->SetVirtualKeyboardVisibilityIfEnabled(true);
     ASSERT_TRUE(keyboard::WaitUntilShown());
   }
 
@@ -209,10 +209,11 @@ class SplitViewControllerTest : public AshTestBase {
     base::RunLoop().RunUntilIdle();
     Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
     FpsCounter::SetForceReportZeroAnimationForTest(true);
-    PresentationTimeRecorder::SetReportPresentationTimeImmediatelyForTest(true);
+    ui::PresentationTimeRecorder::SetReportPresentationTimeImmediatelyForTest(
+        true);
   }
   void TearDown() override {
-    PresentationTimeRecorder::SetReportPresentationTimeImmediatelyForTest(
+    ui::PresentationTimeRecorder::SetReportPresentationTimeImmediatelyForTest(
         false);
     FpsCounter::SetForceReportZeroAnimationForTest(false);
     trace_names_.clear();
@@ -314,9 +315,9 @@ class SplitViewControllerTest : public AshTestBase {
     // on the next frame presented after animation stops. Wait for the next
     // frame with a 100ms timeout for the report, regardless of whether there
     // is a next frame.
-    ignore_result(ui::WaitForNextFrameToBePresented(
+    std::ignore = ui::WaitForNextFrameToBePresented(
         Shell::GetPrimaryRootWindow()->layer()->GetCompositor(),
-        base::Milliseconds(100)));
+        base::Milliseconds(100));
 
     {
       SCOPED_TRACE(trace + std::string(".Enter"));
@@ -358,7 +359,11 @@ class TestWindowStateDelegate : public WindowStateDelegate {
   ~TestWindowStateDelegate() override = default;
 
   // WindowStateDelegate:
-  void OnDragStarted(int component) override { drag_in_progress_ = true; }
+  std::unique_ptr<PresentationTimeRecorder> OnDragStarted(
+      int component) override {
+    drag_in_progress_ = true;
+    return nullptr;
+  }
   void OnDragFinished(bool cancel, const gfx::PointF& location) override {
     drag_in_progress_ = false;
   }
@@ -652,11 +657,31 @@ TEST_F(SplitViewControllerTest, WindowActivationTest) {
             SplitViewController::State::kBothSnapped);
 }
 
+// Test that if the overview mode is active in clamshell mode, the window with
+// |kUnresizableSnappedSizeKey| property can be snapped with size constraints.
+TEST_F(SplitViewControllerTest, SnapWindowWithUnresizableSnapProperty) {
+  UpdateDisplay("800x600");
+  const gfx::Rect bounds(0, 0, 400, 400);
+  std::unique_ptr<aura::Window> window(CreateWindow(bounds));
+  window->SetProperty(aura::client::kResizeBehaviorKey,
+                      aura::client::kResizeBehaviorNone);
+  window->SetProperty(kUnresizableSnappedSizeKey, new gfx::Size(300, 0));
+
+  // Switch to clamshell mode and enter overview mode.
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
+  ToggleOverview();
+  ASSERT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+
+  split_view_controller()->SnapWindow(window.get(), SplitViewController::LEFT);
+  EXPECT_EQ(window->GetBoundsInScreen().width(), 300);
+}
+
 // Tests that if split view mode and overview mode are active at the same time,
 // i.e., half of the screen is occupied by a snapped window and half of the
 // screen is occupied by the overview windows grid, the next activatable window
 // will be picked to snap when exiting the overview mode.
-TEST_F(SplitViewControllerTest, ExitOverviewTest) {
+// TODO(crbug.com/1312252): Re-enable this test
+TEST_F(SplitViewControllerTest, DISABLED_ExitOverviewTest) {
   ui::ScopedAnimationDurationScaleMode anmatin_scale(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
 
@@ -1762,6 +1787,32 @@ TEST_F(SplitViewControllerTest, SnapWindowWithMinimumSizeTest) {
   EXPECT_TRUE(split_view_controller()->CanSnapWindow(window1.get()));
   delegate->set_minimum_size(gfx::Size(396, 0));
   EXPECT_FALSE(split_view_controller()->CanSnapWindow(window1.get()));
+}
+
+// Test that |SplitViewController::CanSnapWindow| property checks that the
+// unresizable snapping condition.
+TEST_F(SplitViewControllerTest, CanSnapWindowWithUnresizableSnapProperty) {
+  UpdateDisplay("800x600");
+  const gfx::Rect bounds(0, 0, 400, 400);
+  std::unique_ptr<aura::Window> window(CreateWindow(bounds));
+  window->SetProperty(aura::client::kResizeBehaviorKey,
+                      aura::client::kResizeBehaviorNone);
+  EXPECT_FALSE(split_view_controller()->CanSnapWindow(window.get()));
+
+  // Clamshell mode supports unresizable snapping.
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
+  window->SetProperty(kUnresizableSnappedSizeKey, new gfx::Size(300, 0));
+  EXPECT_TRUE(split_view_controller()->CanSnapWindow(window.get()));
+
+  // Tablet mode doesn't support unresizable snapping.
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  EXPECT_FALSE(split_view_controller()->CanSnapWindow(window.get()));
+
+  // If the display is too small for the unresizable snapping, it can't be
+  // snapped.
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
+  UpdateDisplay("200x100");
+  EXPECT_FALSE(split_view_controller()->CanSnapWindow(window.get()));
 }
 
 // Tests that the snapped window can not be moved outside of work area when its
@@ -4267,28 +4318,32 @@ TEST_F(SplitViewTabDraggingTest, AdjustOverviewBoundsDuringDragging) {
   EXPECT_EQ(drop_target_widget->GetNativeWindow()->bounds(),
             GetDropTargetBoundsDuringDrag(window1.get()));
   EXPECT_NE(drop_target_widget->GetNativeWindow()->bounds(), window1->bounds());
-  EXPECT_EQ(
-      current_grid->bounds(),
-      split_view_controller()->GetSnappedWindowBoundsInScreen(
-          SplitViewController::RIGHT, /*window_for_minimum_size=*/nullptr));
+  EXPECT_EQ(current_grid->bounds(),
+            ShrinkBoundsByHotseatInset(
+                split_view_controller()->GetSnappedWindowBoundsInScreen(
+                    SplitViewController::RIGHT,
+                    /*window_for_minimum_size=*/nullptr)));
 
   // Drag |window1| to the right preview split area.
   DragWindowTo(resizer.get(), gfx::Point(work_area_bounds.right(),
                                          work_area_bounds.CenterPoint().y()));
+
   // Overview bounds stays the same.
-  EXPECT_EQ(
-      current_grid->bounds(),
-      split_view_controller()->GetSnappedWindowBoundsInScreen(
-          SplitViewController::RIGHT, /*window_for_minimum_size=*/nullptr));
+  EXPECT_EQ(current_grid->bounds(),
+            ShrinkBoundsByHotseatInset(
+                split_view_controller()->GetSnappedWindowBoundsInScreen(
+                    SplitViewController::RIGHT,
+                    /*window_for_minimum_size=*/nullptr)));
   EXPECT_EQ(0.f, target_opacity(drop_target_widget));
 
   // Drag |window1| to the left preview split area.
   DragWindowTo(resizer.get(),
                gfx::Point(0, work_area_bounds.CenterPoint().y()));
-  EXPECT_EQ(
-      current_grid->bounds(),
-      split_view_controller()->GetSnappedWindowBoundsInScreen(
-          SplitViewController::RIGHT, /*window_for_minimum_size=*/nullptr));
+  EXPECT_EQ(current_grid->bounds(),
+            ShrinkBoundsByHotseatInset(
+                split_view_controller()->GetSnappedWindowBoundsInScreen(
+                    SplitViewController::RIGHT,
+                    /*window_for_minimum_size=*/nullptr)));
   EXPECT_EQ(0.f, target_opacity(drop_target_widget));
 
   CompleteDrag(std::move(resizer));
@@ -5510,7 +5565,9 @@ TEST_F(SplitViewAppDraggingTest, BackdropBoundsDuringDrag) {
 // virtual keyboard improvement and the virtual keyboard.
 class SplitViewKeyboardTest : public SplitViewControllerTest {
  public:
-  SplitViewKeyboardTest() = default;
+  SplitViewKeyboardTest() {
+    scoped_feature_list_.InitAndEnableFeature(features::kAdjustSplitViewForVK);
+  }
 
   SplitViewKeyboardTest(const SplitViewKeyboardTest&) = delete;
   SplitViewKeyboardTest& operator=(const SplitViewKeyboardTest&) = delete;
@@ -5520,7 +5577,6 @@ class SplitViewKeyboardTest : public SplitViewControllerTest {
   // SplitViewControllerTest:
   void SetUp() override {
     SplitViewControllerTest::SetUp();
-    scoped_feature_list_.InitAndEnableFeature(features::kAdjustSplitViewForVK);
     SetVirtualKeyboardEnabled(true);
   }
 
@@ -5787,6 +5843,97 @@ TEST_F(SplitViewKeyboardTest, RestoreByActivatingTopWindow) {
                                      ->divider_widget()
                                      ->GetWindowBoundsInScreen());
   EXPECT_TRUE(split_view_controller()->split_view_divider()->IsAdjustable());
+}
+
+// Tests that when there is no activated input field in the bottom window,
+// showing keyboard (on-screen keyboard) will not change the split view layout.
+TEST_F(SplitViewKeyboardTest, NoInputField) {
+  UpdateDisplay("1200x800");
+  int64_t display_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
+  display::DisplayManager* display_manager = Shell::Get()->display_manager();
+  display::test::ScopedSetInternalDisplayId set_internal(display_manager,
+                                                         display_id);
+  ScreenOrientationControllerTestApi test_api(
+      Shell::Get()->screen_orientation_controller());
+  ASSERT_EQ(chromeos::OrientationType::kLandscapePrimary,
+            test_api.GetCurrentOrientation());
+
+  gfx::Rect bounds(0, 0, 400, 400);
+  std::unique_ptr<aura::Window> bottom_window(CreateWindow(bounds));
+
+  split_view_controller()->SnapWindow(bottom_window.get(),
+                                      SplitViewController::RIGHT);
+
+  test_api.SetDisplayRotation(display::Display::ROTATE_270,
+                              display::Display::RotationSource::ACTIVE);
+  EXPECT_EQ(chromeos::OrientationType::kPortraitPrimary,
+            test_api.GetCurrentOrientation());
+  EXPECT_FALSE(split_view_controller()->IsPhysicalLeftOrTop(
+      SplitViewController::RIGHT, bottom_window.get()));
+
+  const gfx::Rect orig_bottom_bounds = bottom_window->GetBoundsInScreen();
+  const gfx::Rect orig_divider_bounds = split_view_controller()
+                                            ->split_view_divider()
+                                            ->divider_widget()
+                                            ->GetWindowBoundsInScreen();
+  // Enable keyboard. The bottom window and divider will not move since there is
+  // no input field.
+  keyboard_controller()->ShowKeyboard(/*lock=*/false);
+  EXPECT_TRUE(keyboard_controller()->IsKeyboardVisible());
+  EXPECT_EQ(orig_bottom_bounds, bottom_window->GetBoundsInScreen());
+  EXPECT_EQ(orig_divider_bounds, split_view_controller()
+                                     ->split_view_divider()
+                                     ->divider_widget()
+                                     ->GetWindowBoundsInScreen());
+  EXPECT_TRUE(split_view_controller()->split_view_divider()->IsAdjustable());
+}
+
+// Tests that in the split view with Overview enabled, the snapped window bounds
+// will be updated when the on-screen keyboard is enabled and disabled.
+TEST_F(SplitViewKeyboardTest, ShowHideOnScreenKeyboardWithOverviewEnabled) {
+  UpdateDisplay("1200x800");
+  int64_t display_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
+  display::DisplayManager* display_manager = Shell::Get()->display_manager();
+  display::test::ScopedSetInternalDisplayId set_internal(display_manager,
+                                                         display_id);
+  ScreenOrientationControllerTestApi test_api(
+      Shell::Get()->screen_orientation_controller());
+  std::unique_ptr<aura::Window> right_window(
+      CreateWindow(gfx::Rect(0, 0, 400, 400)));
+  for (auto rotation :
+       {display::Display::ROTATE_0, display::Display::ROTATE_270}) {
+    EXPECT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
+    test_api.SetDisplayRotation(rotation,
+                                display::Display::RotationSource::ACTIVE);
+    // Cache the original work area.
+    const gfx::Rect origin_work_area =
+        screen_util::GetDisplayWorkAreaBoundsInParent(right_window.get());
+
+    // Enable an on-screen virtual keyboard. The display work area should shrink
+    // the size of intersection between on-screen keyboard and original work
+    // area.
+    keyboard_controller()->ShowKeyboard(/*lock=*/true);
+    const gfx::Rect shrink_work_area =
+        screen_util::GetDisplayWorkAreaBoundsInParent(right_window.get());
+    const gfx::Rect keyboard_bounds =
+        keyboard_controller()->GetKeyboardWindow()->GetBoundsInScreen();
+    EXPECT_EQ(origin_work_area.height() - shrink_work_area.height(),
+              gfx::IntersectRects(keyboard_bounds, origin_work_area).height());
+
+    // Snapping the window will enable Overview, the window's bottom is equal to
+    // the shrunk work area bottom.
+    split_view_controller()->SnapWindow(right_window.get(),
+                                        SplitViewController::RIGHT);
+    EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+    EXPECT_EQ(right_window->bounds().bottom(), shrink_work_area.bottom());
+
+    // Dismiss on-screen keyboard, the window's bottom is equal to the original
+    // work area bottom.
+    keyboard_controller()->HideKeyboardByUser();
+    EXPECT_EQ(right_window->bounds().bottom(), origin_work_area.bottom());
+    EndSplitView();
+    ExitOverview();
+  }
 }
 
 }  // namespace ash

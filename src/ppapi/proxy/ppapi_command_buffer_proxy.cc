@@ -227,11 +227,6 @@ bool PpapiCommandBufferProxy::CanWaitUnverifiedSyncToken(
   return false;
 }
 
-void PpapiCommandBufferProxy::SetDisplayTransform(
-    gfx::OverlayTransform transform) {
-  NOTREACHED();
-}
-
 void PpapiCommandBufferProxy::SignalQuery(uint32_t query,
                                           base::OnceClosure callback) {
   NOTREACHED();
@@ -255,17 +250,6 @@ void PpapiCommandBufferProxy::SetGpuControlClient(gpu::GpuControlClient*) {
 
 const gpu::Capabilities& PpapiCommandBufferProxy::GetCapabilities() const {
   return capabilities_;
-}
-
-int32_t PpapiCommandBufferProxy::CreateImage(ClientBuffer buffer,
-                                             size_t width,
-                                             size_t height) {
-  NOTREACHED();
-  return -1;
-}
-
-void PpapiCommandBufferProxy::DestroyImage(int32_t id) {
-  NOTREACHED();
 }
 
 bool PpapiCommandBufferProxy::Send(IPC::Message* msg) {

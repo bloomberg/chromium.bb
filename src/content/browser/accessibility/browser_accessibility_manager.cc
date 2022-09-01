@@ -12,6 +12,7 @@
 #include <utility>
 
 #include "base/auto_reset.h"
+#include "base/containers/adapters.h"
 #include "base/debug/crash_logging.h"
 #include "base/logging.h"
 #include "base/metrics/user_metrics.h"
@@ -22,7 +23,6 @@
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/common/render_accessibility.mojom.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "ui/accessibility/ax_language_detection.h"
 #include "ui/accessibility/ax_tree_data.h"
 #include "ui/accessibility/ax_tree_manager_map.h"
@@ -394,6 +394,10 @@ const ui::AXTreeData& BrowserAccessibilityManager::GetTreeData() const {
   return ax_tree()->data();
 }
 
+std::string BrowserAccessibilityManager::ToString() const {
+  return GetTreeData().ToString();
+}
+
 void BrowserAccessibilityManager::OnWindowFocused() {
   if (IsRootTree())
     FireFocusEventsIfNeeded();
@@ -446,8 +450,8 @@ bool BrowserAccessibilityManager::OnAccessibilityEvents(
 #endif  // DCHECK_IS_ON()
 
   // Update the cached device scale factor.
-  if (delegate_ && !use_custom_device_scale_factor_for_testing_)
-    device_scale_factor_ = delegate_->AccessibilityGetDeviceScaleFactor();
+  if (!use_custom_device_scale_factor_for_testing_)
+    UpdateDeviceScaleFactor();
 
   // Optionally merge multiple tree updates into fewer updates.
   const std::vector<ui::AXTreeUpdate>* tree_updates = &details.updates;
@@ -474,9 +478,21 @@ bool BrowserAccessibilityManager::OnAccessibilityEvents(
     DCHECK_LE(static_cast<int>(tree_update.nodes.size()), ax_tree()->size());
   }
 
-  // If this page is hidden by an interstitial, suppress all events.
+  // If this page is hidden by an interstitial or frozen inside the
+  // back/forward cache, suppress all the events. If/when the page becomes
+  // visible, the correct set of accessibility events will be generated.
+  //
+  // Rationale for the back/forward cache behavior:
+  // https://docs.google.com/document/d/1_jaEAXurfcvriwcNU-5u0h8GGioh0LelagUIIGFfiuU/
   BrowserAccessibilityManager* root_manager = GetRootManager();
-  if (root_manager && root_manager->hidden_by_interstitial_page()) {
+  bool rfh_in_bfcache = false;
+  // |delegate_| can be nullptr in unittests.
+  if (delegate_) {
+    RenderFrameHostImpl* rfh = delegate_->AccessibilityRenderFrameHost();
+    rfh_in_bfcache = rfh ? rfh->IsInBackForwardCache() : false;
+  }
+  if ((root_manager && root_manager->hidden_by_interstitial_page()) ||
+      rfh_in_bfcache) {
     event_generator().ClearEvents();
     return true;
   }
@@ -503,6 +519,7 @@ bool BrowserAccessibilityManager::OnAccessibilityEvents(
   // reparented node or a newly-shown dialog box.
   BrowserAccessibility* focus = GetFocus();
   std::vector<ui::AXEventGenerator::TargetedEvent> deferred_events;
+  bool received_load_start_event = false;
   bool received_load_complete_event = false;
   for (const auto& targeted_event : event_generator()) {
     BrowserAccessibility* event_target = GetFromID(targeted_event.node_id);
@@ -517,6 +534,9 @@ bool BrowserAccessibilityManager::OnAccessibilityEvents(
     if (targeted_event.event_params.event ==
         ui::AXEventGenerator::Event::LOAD_COMPLETE) {
       received_load_complete_event = true;
+    } else if (targeted_event.event_params.event ==
+               ui::AXEventGenerator::Event::LOAD_START) {
+      received_load_start_event = true;
     }
 
     // IsDescendantOf() also returns true in the case of equality.
@@ -572,7 +592,32 @@ bool BrowserAccessibilityManager::OnAccessibilityEvents(
     if (root_manager && event.event_type == ax::mojom::Event::kHover)
       root_manager->CacheHitTestResult(event_target);
 
-    FireBlinkEvent(event.event_type, retargeted);
+    // TODO(accessibility): No platform is doing anything with kLoadComplete
+    // events from Blink, even though we sometimes fire this event explicitly
+    // for the purpose of notifying platform ATs. See, for instance,
+    // RenderAccessibilityImpl::SendPendingAccessibilityEvents(). This should
+    // be resolved in a to-be-determined fashion. In the meantime, if we have
+    // a Blink load-complete event and do not have a generated load-complete
+    // event, behave as if we did have the generated event so platforms are
+    // notified.
+    if (event.event_type == ax::mojom::Event::kLoadComplete &&
+        !received_load_complete_event) {
+      FireGeneratedEvent(ui::AXEventGenerator::Event::LOAD_COMPLETE,
+                         retargeted);
+      received_load_complete_event = true;
+    } else if (event.event_type == ax::mojom::Event::kLoadStart &&
+               !received_load_start_event) {
+      // If we already have a load-complete event, the load-start event is no
+      // longer relevant. In addition, some code checks for the presence of
+      // the "busy" state when firing a platform load-start event. If the page
+      // is no longer loading, this state will have been removed and the check
+      // will fail.
+      if (!received_load_complete_event)
+        FireGeneratedEvent(ui::AXEventGenerator::Event::LOAD_START, retargeted);
+      received_load_start_event = true;
+    }
+
+    FireBlinkEvent(event.event_type, retargeted, event.action_request_id);
   }
 
   if (received_load_complete_event) {
@@ -660,7 +705,8 @@ void BrowserAccessibilityManager::ActivateFindInPageResult(int request_id) {
 
   // The "scrolled to anchor" notification is a great way to get a
   // screen reader to jump directly to a specific location in a document.
-  FireBlinkEvent(ax::mojom::Event::kScrolledToAnchor, node);
+  FireBlinkEvent(ax::mojom::Event::kScrolledToAnchor, node,
+                 /*action_request_id=*/-1);
 }
 
 BrowserAccessibility* BrowserAccessibilityManager::GetActiveDescendant(
@@ -888,6 +934,29 @@ void BrowserAccessibilityManager::SignalEndOfTest() {
   delegate_->AccessibilityPerformAction(action_data);
 }
 
+void BrowserAccessibilityManager::Scroll(const BrowserAccessibility& node,
+                                         ax::mojom::Action scroll_action) {
+  if (!delegate_)
+    return;
+
+  switch (scroll_action) {
+    case ax::mojom::Action::kScrollBackward:
+    case ax::mojom::Action::kScrollForward:
+    case ax::mojom::Action::kScrollUp:
+    case ax::mojom::Action::kScrollDown:
+    case ax::mojom::Action::kScrollLeft:
+    case ax::mojom::Action::kScrollRight:
+      break;
+    default:
+      NOTREACHED() << "Cannot call Scroll with action=" << scroll_action;
+  }
+  ui::AXActionData action_data;
+  action_data.action = scroll_action;
+  action_data.target_node_id = node.GetId();
+  delegate_->AccessibilityPerformAction(action_data);
+  BrowserAccessibilityStateImpl::GetInstance()->OnAccessibilityApiUsage();
+}
+
 void BrowserAccessibilityManager::ScrollToMakeVisible(
     const BrowserAccessibility& node,
     gfx::Rect subfocus,
@@ -1011,11 +1080,14 @@ void BrowserAccessibilityManager::ClearAccessibilityFocus(
   BrowserAccessibilityStateImpl::GetInstance()->OnAccessibilityApiUsage();
 }
 
-void BrowserAccessibilityManager::HitTest(const gfx::Point& frame_point) const {
+void BrowserAccessibilityManager::HitTest(const gfx::Point& frame_point,
+                                          int request_id) const {
   if (!delegate_)
     return;
 
-  delegate_->AccessibilityHitTest(frame_point, ax::mojom::Event::kHover, 0, {});
+  delegate_->AccessibilityHitTest(frame_point, ax::mojom::Event::kHover,
+                                  request_id,
+                                  /*opt_callback=*/{});
   BrowserAccessibilityStateImpl::GetInstance()->OnAccessibilityApiUsage();
 }
 
@@ -1028,15 +1100,14 @@ gfx::Rect BrowserAccessibilityManager::GetViewBoundsInScreenCoordinates()
     // http://www.chromium.org/developers/design-documents/blink-coordinate-spaces
     // The bounds returned by the delegate are always in device-independent
     // pixels (DIPs), meaning physical pixels divided by device scale factor
-    // (DSF). However, if UseZoomForDSF is enabled, then Blink does not apply
-    // DSF when going from physical to screen pixels. In that case, we need to
-    // multiply DSF back in to get to Blink's notion of "screen pixels."
+    // (DSF). However, Blink does not apply DSF when going from physical to
+    // screen pixels. In that case, we need to multiply DSF back in to get to
+    // Blink's notion of "screen pixels."
     //
     // TODO(vmpstr): This should return physical coordinates always to avoid
     // confusion in the calling code. The calling code should be responsible
     // for converting to whatever space necessary.
-    if (IsUseZoomForDSFEnabled() && device_scale_factor() > 0.0 &&
-        device_scale_factor() != 1.0) {
+    if (device_scale_factor() > 0.0 && device_scale_factor() != 1.0) {
       bounds = ScaleToEnclosingRect(bounds, device_scale_factor());
     }
     return bounds;
@@ -1133,28 +1204,24 @@ bool BrowserAccessibilityManager::FindIndicesInCommonParent(
     const BrowserAccessibility& object1,
     const BrowserAccessibility& object2,
     BrowserAccessibility** common_parent,
-    int* child_index1,
-    int* child_index2) {
+    size_t* child_index1,
+    size_t* child_index2) {
   DCHECK(common_parent && child_index1 && child_index2);
   auto* ancestor1 = const_cast<BrowserAccessibility*>(&object1);
   auto* ancestor2 = const_cast<BrowserAccessibility*>(&object2);
   do {
-    *child_index1 = ancestor1->GetIndexInParent();
+    *child_index1 = ancestor1->GetIndexInParent().value_or(0);
     ancestor1 = ancestor1->PlatformGetParent();
   } while (
       ancestor1 &&
       // |BrowserAccessibility::IsAncestorOf| returns true if objects are equal.
       (ancestor1 == ancestor2 || !ancestor2->IsDescendantOf(ancestor1)));
 
-  if (!ancestor1) {
-    *common_parent = nullptr;
-    *child_index1 = -1;
-    *child_index2 = -1;
+  if (!ancestor1)
     return false;
-  }
 
   do {
-    *child_index2 = ancestor2->GetIndexInParent();
+    *child_index2 = ancestor2->GetIndexInParent().value();
     ancestor2 = ancestor2->PlatformGetParent();
   } while (ancestor1 != ancestor2);
 
@@ -1170,8 +1237,8 @@ ax::mojom::TreeOrder BrowserAccessibilityManager::CompareNodes(
     return ax::mojom::TreeOrder::kEqual;
 
   BrowserAccessibility* common_parent;
-  int child_index1;
-  int child_index2;
+  size_t child_index1;
+  size_t child_index2;
   if (FindIndicesInCommonParent(object1, object2, &common_parent, &child_index1,
                                 &child_index2)) {
     if (child_index1 < child_index2)
@@ -1193,8 +1260,8 @@ BrowserAccessibilityManager::FindTextOnlyObjectsInRange(
     const BrowserAccessibility& start_object,
     const BrowserAccessibility& end_object) {
   std::vector<const BrowserAccessibility*> text_only_objects;
-  int child_index1 = -1;
-  int child_index2 = -1;
+  size_t child_index1 = 0;
+  size_t child_index2 = 0;
   if (&start_object != &end_object) {
     BrowserAccessibility* common_parent;
     if (!FindIndicesInCommonParent(start_object, end_object, &common_parent,
@@ -1203,8 +1270,6 @@ BrowserAccessibilityManager::FindTextOnlyObjectsInRange(
     }
 
     DCHECK(common_parent);
-    DCHECK_GE(child_index1, 0);
-    DCHECK_GE(child_index2, 0);
     // If the child indices are equal, one object is a descendant of the other.
     DCHECK(child_index1 != child_index2 ||
            start_object.IsDescendantOf(&end_object) ||
@@ -1466,7 +1531,18 @@ void BrowserAccessibilityManager::OnNodeDeleted(ui::AXTree* tree,
 void BrowserAccessibilityManager::OnNodeReparented(ui::AXTree* tree,
                                                    ui::AXNode* node) {
   DCHECK(node);
-  id_wrapper_map_[node->id()] = BrowserAccessibility::Create(this, node);
+  auto iter = id_wrapper_map_.find(node->id());
+  // TODO(crbug.com/1315661): This if statement ideally should never be entered.
+  // Identify why we are entering this code path and fix the root cause.
+  if (iter == id_wrapper_map_.end()) {
+    bool success;
+    std::tie(iter, success) = id_wrapper_map_.insert(
+        {node->id(), BrowserAccessibility::Create(this, node)});
+    DCHECK(success);
+  }
+  DCHECK(iter != id_wrapper_map_.end());
+  BrowserAccessibility* wrapper = iter->second.get();
+  wrapper->SetNode(*node);
 }
 
 void BrowserAccessibilityManager::OnRoleChanged(ui::AXTree* tree,
@@ -1667,11 +1743,7 @@ BrowserAccessibility* BrowserAccessibilityManager::CachingAsyncHitTest(
   if (root_manager && root_manager != this)
     return root_manager->CachingAsyncHitTest(physical_pixel_point);
 
-  gfx::Point blink_screen_point =
-      IsUseZoomForDSFEnabled()
-          ? physical_pixel_point
-          : ScaleToRoundedPoint(physical_pixel_point,
-                                1.0 / device_scale_factor());
+  gfx::Point blink_screen_point = physical_pixel_point;
 
   gfx::Rect screen_view_bounds = GetViewBoundsInScreenCoordinates();
 
@@ -1687,7 +1759,7 @@ BrowserAccessibility* BrowserAccessibilityManager::CachingAsyncHitTest(
 
     // This triggers an asynchronous request to compute the true object that's
     // under the point.
-    HitTest(frame_point);
+    HitTest(frame_point, /*request_id=*/0);
 
     // Unfortunately we still have to return an answer synchronously because
     // the APIs were designed that way. The best case scenario is that the
@@ -1710,7 +1782,79 @@ BrowserAccessibility* BrowserAccessibilityManager::CachingAsyncHitTest(
   // more complicated layouts. The hope is that if the user is moving the
   // mouse, this fallback will only be used transiently, and the asynchronous
   // result will be used for the next call.
+  return ApproximateHitTest(blink_screen_point);
+}
+
+BrowserAccessibility* BrowserAccessibilityManager::ApproximateHitTest(
+    const gfx::Point& blink_screen_point) const {
+  if (cached_node_rtree_)
+    return AXTreeHitTest(blink_screen_point);
+
   return GetRoot()->ApproximateHitTest(blink_screen_point);
+}
+
+void BrowserAccessibilityManager::BuildAXTreeHitTestCache() {
+  auto* root = GetRoot();
+  if (!root)
+    return;
+
+  std::vector<const BrowserAccessibility*> storage;
+  BuildAXTreeHitTestCacheInternal(root, &storage);
+  // Use AXNodeID for this as nodes are unchanging with this cache.
+  cached_node_rtree_ = std::make_unique<cc::RTree<ui::AXNodeID>>();
+  cached_node_rtree_->Build(
+      storage,
+      [](const std::vector<const BrowserAccessibility*>& storage,
+         size_t index) {
+        return storage[index]->GetUnclippedRootFrameBoundsRect();
+      },
+      [](const std::vector<const BrowserAccessibility*>& storage,
+         size_t index) { return storage[index]->GetId(); });
+}
+
+void BrowserAccessibilityManager::BuildAXTreeHitTestCacheInternal(
+    const BrowserAccessibility* node,
+    std::vector<const BrowserAccessibility*>* storage) {
+  // Based on behavior in ApproximateHitTest() and node ordering in Blink:
+  // Generated backwards so that in the absence of any other information, we
+  // assume the object that occurs later in the tree is on top of one that comes
+  // before it.
+  auto range = node->PlatformChildren();
+  for (const auto& child : base::Reversed(range)) {
+    // Skip table columns because cells are only contained in rows,
+    // not columns.
+    if (child.GetRole() == ax::mojom::Role::kColumn)
+      continue;
+
+    BuildAXTreeHitTestCacheInternal(&child, storage);
+  }
+
+  storage->push_back(node);
+}
+
+BrowserAccessibility* BrowserAccessibilityManager::AXTreeHitTest(
+    const gfx::Point& blink_screen_point) const {
+  // TODO(crbug.com/1287526): assert that this gets called on a valid node. This
+  // should usually be the root node except for Paint Preview.
+  DCHECK(cached_node_rtree_);
+
+  std::vector<ui::AXNodeID> results;
+  std::vector<gfx::Rect> rects;
+  cached_node_rtree_->Search(
+      gfx::Rect(blink_screen_point.x(), blink_screen_point.y(), /*width=*/1,
+                /*height=*/1),
+      &results, &rects);
+
+  if (results.empty())
+    return nullptr;
+
+  // Find the tightest enclosing rect. Work backwards as leaf nodes come
+  // last and should be preferred.
+  auto rit = std::min_element(rects.rbegin(), rects.rend(),
+                              [](const gfx::Rect& a, const gfx::Rect& b) {
+                                return a.size().Area64() < b.size().Area64();
+                              });
+  return GetFromID(results[std::distance(rects.begin(), rit.base()) - 1]);
 }
 
 void BrowserAccessibilityManager::CacheHitTestResult(
@@ -1811,6 +1955,15 @@ bool BrowserAccessibilityManager::ShouldFireEventForNode(
     return false;
 
   return true;
+}
+
+float BrowserAccessibilityManager::device_scale_factor() const {
+  return device_scale_factor_;
+}
+
+void BrowserAccessibilityManager::UpdateDeviceScaleFactor() {
+  if (delegate_)
+    device_scale_factor_ = delegate_->AccessibilityGetDeviceScaleFactor();
 }
 
 }  // namespace content

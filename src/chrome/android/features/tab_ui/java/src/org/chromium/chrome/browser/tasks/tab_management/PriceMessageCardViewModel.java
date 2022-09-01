@@ -103,7 +103,7 @@ public class PriceMessageCardViewModel {
 
     private static Drawable getIconDrawable(Context context, @PriceMessageType int type) {
         if (type == PriceMessageType.PRICE_ALERTS) {
-            return AppCompatResources.getDrawable(context, R.drawable.ic_add_alert_blue);
+            return AppCompatResources.getDrawable(context, R.drawable.ic_price_alert_blue);
         }
         return null;
     }

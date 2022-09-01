@@ -35,7 +35,9 @@
 #include "components/sync_bookmarks/bookmark_model_observer_impl.h"
 #include "components/sync_bookmarks/bookmark_remote_updates_handler.h"
 #include "components/sync_bookmarks/bookmark_specifics_conversions.h"
+#include "components/sync_bookmarks/parent_guid_preprocessing.h"
 #include "components/sync_bookmarks/switches.h"
+#include "components/sync_bookmarks/synced_bookmark_tracker_entity.h"
 #include "components/undo/bookmark_undo_utils.h"
 
 namespace sync_bookmarks {
@@ -154,7 +156,7 @@ void BookmarkModelTypeProcessor::OnCommitCompleted(
   // |error_response_list| is ignored, because all errors are treated as
   // transient and the processor with eventually retry.
   for (const syncer::CommitResponseData& response : committed_response_list) {
-    const SyncedBookmarkTracker::Entity* entity =
+    const SyncedBookmarkTrackerEntity* entity =
         bookmark_tracker_->GetEntityForClientTagHash(response.client_tag_hash);
     if (!entity) {
       DLOG(WARNING) << "Received a commit response for an unknown entity.";
@@ -182,15 +184,12 @@ void BookmarkModelTypeProcessor::OnUpdateReceived(
       syncer::BOOKMARKS,
       /*is_initial_sync=*/!bookmark_tracker_, updates.size());
 
+  // Clients before M94 did not populate the parent GUID in specifics.
+  PopulateParentGuidInSpecifics(bookmark_tracker_.get(), &updates);
+
   if (!bookmark_tracker_) {
     OnInitialUpdateReceived(model_type_state, std::move(updates));
     return;
-  }
-
-  // Before applying incremental updates, run a quirk to mitigate some data
-  // corruption issue introduced by crbug.com/1231450.
-  for (syncer::UpdateResponseData& update : updates) {
-    MaybeFixGuidInSpecificsDueToPastBug(*bookmark_tracker_, &update.entity);
   }
 
   // Incremental updates.
@@ -202,7 +201,6 @@ void BookmarkModelTypeProcessor::OnUpdateReceived(
       bookmark_tracker_->model_type_state().encryption_key_name() !=
       model_type_state.encryption_key_name();
   bookmark_tracker_->set_model_type_state(model_type_state);
-  bookmark_tracker_->UpdateLastSyncTime();
   updates_handler.Process(updates, got_new_encryption_requirements);
   if (bookmark_tracker_->ReuploadBookmarksOnLoadIfNeeded()) {
     NudgeForCommitIfNeeded();
@@ -240,6 +238,7 @@ void BookmarkModelTypeProcessor::ModelReadyToSync(
     const base::RepeatingClosure& schedule_save_closure,
     bookmarks::BookmarkModel* model) {
   DCHECK(model);
+  DCHECK(model->loaded());
   DCHECK(!bookmark_model_);
   DCHECK(!bookmark_tracker_);
   DCHECK(!bookmark_model_observer_);
@@ -257,7 +256,6 @@ void BookmarkModelTypeProcessor::ModelReadyToSync(
       model, std::move(model_metadata));
 
   if (bookmark_tracker_) {
-    bookmark_tracker_->CheckAllNodesTracked(bookmark_model_);
     StartTrackingMetadata();
   } else if (!metadata_str.empty()) {
     DLOG(WARNING)
@@ -477,23 +475,24 @@ void BookmarkModelTypeProcessor::GetAllNodesForDebugging(
   auto all_nodes = std::make_unique<base::ListValue>();
   // Create a permanent folder since sync server no longer create root folders,
   // and USS won't migrate root folders from directory, we create root folders.
-  auto root_node = std::make_unique<base::DictionaryValue>();
+  base::Value::Dict root_node;
   // Function isTypeRootNode in sync_node_browser.js use PARENT_ID and
   // UNIQUE_SERVER_TAG to check if the node is root node. isChildOf in
   // sync_node_browser.js uses modelType to check if root node is parent of real
   // data node. NON_UNIQUE_NAME will be the name of node to display.
-  root_node->SetString("ID", "BOOKMARKS_ROOT");
-  root_node->SetString("PARENT_ID", "r");
-  root_node->SetString("UNIQUE_SERVER_TAG", "Bookmarks");
-  root_node->SetBoolean("IS_DIR", true);
-  root_node->SetString("modelType", "Bookmarks");
-  root_node->SetString("NON_UNIQUE_NAME", "Bookmarks");
-  all_nodes->Append(std::move(root_node));
+  root_node.Set("ID", "BOOKMARKS_ROOT");
+  root_node.Set("PARENT_ID", "r");
+  root_node.Set("UNIQUE_SERVER_TAG", "Bookmarks");
+  root_node.Set("IS_DIR", true);
+  root_node.Set("modelType", "Bookmarks");
+  root_node.Set("NON_UNIQUE_NAME", "Bookmarks");
+  all_nodes->Append(base::Value(std::move(root_node)));
 
   const bookmarks::BookmarkNode* model_root_node = bookmark_model_->root_node();
   int i = 0;
-  for (const auto& child : model_root_node->children())
+  for (const auto& child : model_root_node->children()) {
     AppendNodeAndChildrenForDebugging(child.get(), i++, all_nodes.get());
+  }
 
   std::move(callback).Run(syncer::BOOKMARKS, std::move(all_nodes));
 }
@@ -502,7 +501,7 @@ void BookmarkModelTypeProcessor::AppendNodeAndChildrenForDebugging(
     const bookmarks::BookmarkNode* node,
     int index,
     base::ListValue* all_nodes) const {
-  const SyncedBookmarkTracker::Entity* entity =
+  const SyncedBookmarkTrackerEntity* entity =
       bookmark_tracker_->GetEntityForBookmarkNode(node);
   // Include only tracked nodes. Newly added nodes are tracked even before being
   // sent to the server. Managed bookmarks (that are installed by a policy)
@@ -529,20 +528,17 @@ void BookmarkModelTypeProcessor::AppendNodeAndChildrenForDebugging(
     // Set the parent to empty string to indicate it's parent of the root node
     // for bookmarks. The code in sync_node_browser.js links nodes with the
     // "modelType" when they are lacking a parent id.
-    data.parent_id = "";
+    data.legacy_parent_id = "";
   } else {
     const bookmarks::BookmarkNode* parent = node->parent();
-    const SyncedBookmarkTracker::Entity* parent_entity =
+    const SyncedBookmarkTrackerEntity* parent_entity =
         bookmark_tracker_->GetEntityForBookmarkNode(parent);
     DCHECK(parent_entity);
-    data.parent_id = parent_entity->metadata()->server_id();
+    data.legacy_parent_id = parent_entity->metadata()->server_id();
   }
 
   std::unique_ptr<base::DictionaryValue> data_dictionary =
       data.ToDictionaryValue();
-  // TODO(https://crbug.com/516866): Prepending the ID with an "s" is consistent
-  // with the implementation in ClientTagBasedModelTypeProcessor. Double check
-  // if this is actually needed and update both implementations if makes sense.
   // Set ID value as in legacy directory-based implementation, "s" means server.
   data_dictionary->SetString("ID", "s" + metadata->server_id());
   if (node->is_permanent_node()) {
@@ -551,7 +547,7 @@ void BookmarkModelTypeProcessor::AppendNodeAndChildrenForDebugging(
     data_dictionary->SetString("UNIQUE_SERVER_TAG",
                                data.server_defined_unique_tag);
   } else {
-    data_dictionary->SetString("PARENT_ID", "s" + data.parent_id);
+    data_dictionary->SetString("PARENT_ID", "s" + data.legacy_parent_id);
   }
   data_dictionary->SetInteger("LOCAL_EXTERNAL_ID", node->id());
   data_dictionary->SetInteger("positionIndex", index);
@@ -560,11 +556,13 @@ void BookmarkModelTypeProcessor::AppendNodeAndChildrenForDebugging(
                               syncer::EntityMetadataToValue(*metadata)));
   data_dictionary->SetString("modelType", "Bookmarks");
   data_dictionary->SetBoolean("IS_DIR", node->is_folder());
-  all_nodes->Append(std::move(data_dictionary));
+  all_nodes->Append(
+      base::Value::FromUniquePtrValue(std::move(data_dictionary)));
 
   int i = 0;
-  for (const auto& child : node->children())
+  for (const auto& child : node->children()) {
     AppendNodeAndChildrenForDebugging(child.get(), i++, all_nodes);
+  }
 }
 
 void BookmarkModelTypeProcessor::GetTypeEntitiesCountForDebugging(

@@ -10,4 +10,4 @@ page_name: mob-monitor
 title: Mob Monitor
 ---
 
-## \*\*\*DEPRECATED, PLEASE VISIT <https://sites.google.com/a/chromium.org/dev/chromium-os/testing/moblab> \*\*\* (20170714)
+## \*\*\*DEPRECATED, PLEASE VISIT <https://www.chromium.org/chromium-os/testing/moblab> \*\*\* (20170714)

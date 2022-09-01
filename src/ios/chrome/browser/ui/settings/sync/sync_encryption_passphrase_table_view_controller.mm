@@ -21,6 +21,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/main/browser.h"
+#import "ios/chrome/browser/net/crurl.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
@@ -146,7 +147,7 @@ const CGFloat kSpinnerButtonPadding = 18;
   SyncSetupService::SyncServiceState syncServiceState =
       service->GetSyncServiceState();
 
-  // Passphrase error directly set |_syncErrorMessage|.
+  // Passphrase error directly set `_syncErrorMessage`.
   if (syncServiceState == SyncSetupService::kSyncServiceNeedsPassphrase)
     return nil;
 
@@ -159,11 +160,10 @@ const CGFloat kSpinnerButtonPadding = 18;
   [super viewDidLoad];
   [self loadModel];
   [self setRightNavBarItem];
-  if (base::ios::IsSceneStartupSupported()) {
-    SceneState* sceneState =
-        SceneStateBrowserAgent::FromBrowser(self.browser)->GetSceneState();
-    _uiBlocker = std::make_unique<ScopedUIBlocker>(sceneState);
-  }
+
+  SceneState* sceneState =
+      SceneStateBrowserAgent::FromBrowser(self.browser)->GetSceneState();
+  _uiBlocker = std::make_unique<ScopedUIBlocker>(sceneState);
 }
 
 - (void)didReceiveMemoryWarning {
@@ -249,7 +249,7 @@ const CGFloat kSpinnerButtonPadding = 18;
   return item;
 }
 
-// Returns a passphrase error item having |errorMessage| as title.
+// Returns a passphrase error item having `errorMessage` as title.
 - (TableViewItem*)passphraseErrorItemWithMessage:(NSString*)errorMessage {
   PassphraseErrorItem* item =
       [[PassphraseErrorItem alloc] initWithType:ItemTypeError];
@@ -262,9 +262,10 @@ const CGFloat kSpinnerButtonPadding = 18;
   TableViewLinkHeaderFooterItem* footerItem =
       [[TableViewLinkHeaderFooterItem alloc] initWithType:ItemTypeFooter];
   footerItem.text = self.footerMessage;
-  footerItem.urls = std::vector<GURL>{google_util::AppendGoogleLocaleParam(
-      GURL(kSyncGoogleDashboardURL),
-      GetApplicationContext()->GetApplicationLocale())};
+  footerItem.urls = @[ [[CrURL alloc]
+      initWithGURL:google_util::AppendGoogleLocaleParam(
+                       GURL(kSyncGoogleDashboardURL),
+                       GetApplicationContext()->GetApplicationLocale())] ];
   return footerItem;
 }
 
@@ -284,7 +285,7 @@ const CGFloat kSpinnerButtonPadding = 18;
     viewForFooterInSection:(NSInteger)section {
   UIView* view = [super tableView:tableView viewForFooterInSection:section];
   if (SectionIdentifierPassphrase ==
-      [self.tableViewModel sectionIdentifierForSection:section]) {
+      [self.tableViewModel sectionIdentifierForSectionIndex:section]) {
     TableViewLinkHeaderFooterView* linkView =
         base::mac::ObjCCastStrict<TableViewLinkHeaderFooterView>(view);
     linkView.delegate = self;
@@ -338,7 +339,7 @@ const CGFloat kSpinnerButtonPadding = 18;
 }
 
 // Sets up the navigation bar's right button. The button will be enabled iff
-// |-areAllFieldsFilled| returns YES.
+// `-areAllFieldsFilled` returns YES.
 - (void)setRightNavBarItem {
   UIBarButtonItem* submitButtonItem = self.navigationItem.rightBarButtonItem;
   if (!submitButtonItem) {

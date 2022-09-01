@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {Destination, DestinationConnectionStatus, DestinationOrigin, DestinationType, PrintPreviewDestinationDropdownCrosElement} from 'chrome://print/print_preview.js';
+import {Destination, DestinationOrigin, PrintPreviewDestinationDropdownCrosElement} from 'chrome://print/print_preview.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {keyDownOn, move} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -79,9 +79,7 @@ suite(destination_dropdown_cros_test.suiteName, function() {
 
   function createDestination(
       displayName: string, destinationOrigin: DestinationOrigin): Destination {
-    return new Destination(
-        displayName, DestinationType.LOCAL, destinationOrigin, displayName,
-        DestinationConnectionStatus.ONLINE);
+    return new Destination(displayName, destinationOrigin, displayName);
   }
 
   setup(function() {
@@ -91,7 +89,7 @@ suite(destination_dropdown_cros_test.suiteName, function() {
         document.createElement('print-preview-destination-dropdown-cros');
     document.body.appendChild(dropdown);
     dropdown.noDestinations = false;
-    dropdown.driveDestinationKey = getGoogleDriveDestination('account').key;
+    dropdown.driveDestinationKey = getGoogleDriveDestination().key;
     dropdown.pdfDestinationKey = getSaveAsPdfDestination().key;
   });
 
@@ -189,8 +187,7 @@ suite(destination_dropdown_cros_test.suiteName, function() {
             eventToPromise('dropdown-value-selected', dropdown);
         down();
         whenSelectedAfterDownPress.then(event => {
-          assertEquals(
-              getGoogleDriveDestination('account').key, event.detail.value);
+          assertEquals(getGoogleDriveDestination().key, event.detail.value);
         });
       });
 

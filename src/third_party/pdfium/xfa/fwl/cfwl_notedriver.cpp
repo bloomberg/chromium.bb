@@ -67,7 +67,7 @@ void CFWL_NoteDriver::UnregisterEventTarget(CFWL_Widget* pListener) {
 
   auto it = m_eventTargets.find(key);
   if (it != m_eventTargets.end())
-    it->second->FlagInvalid();
+    it->second->Invalidate();
 }
 
 void CFWL_NoteDriver::NotifyTargetHide(CFWL_Widget* pNoteTarget) {
@@ -155,7 +155,7 @@ bool CFWL_NoteDriver::DoKillFocus(CFWL_Message* pMessage,
 
 bool CFWL_NoteDriver::DoKey(CFWL_Message* pMessage, CFWL_Widget* pMessageForm) {
   CFWL_MessageKey* pMsg = static_cast<CFWL_MessageKey*>(pMessage);
-#if !defined(OS_APPLE)
+#if !BUILDFLAG(IS_APPLE)
   if (pMsg->m_dwCmd == CFWL_MessageKey::KeyCommand::kKeyDown &&
       pMsg->m_dwKeyCodeOrChar == XFA_FWL_VKEY_Tab) {
     return true;
