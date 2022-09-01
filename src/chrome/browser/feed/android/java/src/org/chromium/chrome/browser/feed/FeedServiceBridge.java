@@ -4,10 +4,11 @@
 
 package org.chromium.chrome.browser.feed;
 
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.os.Build;
 import android.util.DisplayMetrics;
+
+import androidx.annotation.RequiresApi;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
@@ -81,7 +82,7 @@ public final class FeedServiceBridge {
     }
 
     /** Returns the top user specified locale. */
-    @TargetApi(Build.VERSION_CODES.N)
+    @RequiresApi(Build.VERSION_CODES.N)
     private static Locale getLocale(Context context) {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
                 ? context.getResources().getConfiguration().getLocales().get(0)
@@ -119,10 +120,6 @@ public final class FeedServiceBridge {
     /** Called at startup to trigger creation of |FeedService|. */
     public static void startup() {
         FeedServiceBridgeJni.get().startup();
-    }
-
-    public static String getClientInstanceId() {
-        return FeedServiceBridgeJni.get().getClientInstanceId();
     }
 
     /** Retrieves the config value for load_more_trigger_lookahead. */
@@ -168,8 +165,9 @@ public final class FeedServiceBridge {
      * Reports that a user action occurred which is untied to a Feed tab. Use
      * FeedStream.reportOtherUserAction for stream-specific actions.
      */
-    public static void reportOtherUserAction(@FeedUserActionType int userAction) {
-        FeedServiceBridgeJni.get().reportOtherUserAction(userAction);
+    public static void reportOtherUserAction(
+            @StreamKind int streamKind, @FeedUserActionType int userAction) {
+        FeedServiceBridgeJni.get().reportOtherUserAction(streamKind, userAction);
     }
 
     /** Observes whether or not the Feed stream contains unread content */
@@ -205,13 +203,12 @@ public final class FeedServiceBridge {
         void startup();
         int getLoadMoreTriggerLookahead();
         int getLoadMoreTriggerScrollDistanceDp();
-        String getClientInstanceId();
         void reportOpenVisitComplete(long visitTimeMs);
         int getVideoPreviewsTypePreference();
         void setVideoPreviewsTypePreference(int videoPreviewsType);
         long getReliabilityLoggingId();
         boolean isAutoplayEnabled();
-        void reportOtherUserAction(@FeedUserActionType int userAction);
+        void reportOtherUserAction(@StreamKind int streamKind, @FeedUserActionType int userAction);
         @ContentOrder
         int getContentOrderForWebFeed();
         void setContentOrderForWebFeed(@ContentOrder int contentOrder);

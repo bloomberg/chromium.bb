@@ -34,7 +34,7 @@ COMPONENTS_DOWNLOAD_EXPORT extern const base::Feature kParallelDownloading;
 // Whether to enable download later feature.
 COMPONENTS_DOWNLOAD_EXPORT extern const base::Feature kDownloadLater;
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 // Whether download expiration date will be refreshed on resumption.
 COMPONENTS_DOWNLOAD_EXPORT extern const base::Feature kRefreshExpirationDate;
 
@@ -70,13 +70,6 @@ COMPONENTS_DOWNLOAD_EXPORT extern const base::Feature
 // Whether to allow changing the size of file buffer.
 COMPONENTS_DOWNLOAD_EXPORT extern const base::Feature
     kAllowFileBufferSizeControl;
-
-// Whether to allow scanning save packages before saving them to disk.
-COMPONENTS_DOWNLOAD_EXPORT extern const base::Feature kAllowSavePackageScanning;
-
-// Whether to show warning when downloading in incognito.
-COMPONENTS_DOWNLOAD_EXPORT extern const base::Feature
-    kIncognitoDownloadsWarning;
 
 // Arbitrary range request support for download system.
 COMPONENTS_DOWNLOAD_EXPORT extern const base::Feature kDownloadRange;

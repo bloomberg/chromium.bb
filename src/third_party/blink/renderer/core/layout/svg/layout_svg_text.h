@@ -50,6 +50,7 @@ class LayoutSVGText final : public LayoutSVGBlock {
   bool IsObjectBoundingBoxValid() const;
 
   void AddOutlineRects(Vector<PhysicalRect>&,
+                       OutlineInfo*,
                        const PhysicalOffset& additional_offset,
                        NGOutlineType) const override;
 
@@ -77,7 +78,7 @@ class LayoutSVGText final : public LayoutSVGBlock {
   }
 
  private:
-  bool AllowsNonVisibleOverflow() const override {
+  bool RespectsCSSOverflow() const override {
     NOT_DESTROYED();
     return false;
   }
@@ -96,7 +97,7 @@ class LayoutSVGText final : public LayoutSVGBlock {
 
   void UpdateLayout() override;
 
-  void AbsoluteQuads(Vector<FloatQuad>&,
+  void AbsoluteQuads(Vector<gfx::QuadF>&,
                      MapCoordinatesFlags mode = 0) const override;
 
   void AddChild(LayoutObject* child,

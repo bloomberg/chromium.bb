@@ -177,9 +177,11 @@ TEST_F(RootWindowDeskSwitchAnimatorTest, SimpleAnimation) {
   EXPECT_EQ(2, test_api()->GetEndingDeskIndex());
 }
 
+// TODO(b/219068687): Re-enable chained desk animation tests.
 // Tests a chained animation where the replaced animation already has a
 // screenshot layer stored.
-TEST_F(RootWindowDeskSwitchAnimatorTest, ChainedAnimationNoNewScreenshot) {
+TEST_F(RootWindowDeskSwitchAnimatorTest,
+       DISABLED_ChainedAnimationNoNewScreenshot) {
   InitAnimator(1, 2);
   TakeStartingDeskScreenshotAndWait();
   TakeEndingDeskScreenshotAndWait();
@@ -210,9 +212,10 @@ TEST_F(RootWindowDeskSwitchAnimatorTest, ChainedAnimationNoNewScreenshot) {
                              animation_layer));
 }
 
+// TODO(b/219068687): Re-enable chained desk animation tests.
 // Tests a chained animation where we are adding an animation to the right of
 // the current animating desks, causing the animation layer to shift left.
-TEST_F(RootWindowDeskSwitchAnimatorTest, ChainedAnimationMovingLeft) {
+TEST_F(RootWindowDeskSwitchAnimatorTest, DISABLED_ChainedAnimationMovingLeft) {
   InitAnimator(1, 2);
   TakeStartingDeskScreenshotAndWait();
   TakeEndingDeskScreenshotAndWait();
@@ -252,9 +255,10 @@ TEST_F(RootWindowDeskSwitchAnimatorTest, ChainedAnimationMovingLeft) {
                              animation_layer));
 }
 
+// TODO(b/219068687): Re-enable chained desk animation tests.
 // Tests a chained animation where we are adding an animation to the left of
 // the current animating desks, causing the animation layer to shift right.
-TEST_F(RootWindowDeskSwitchAnimatorTest, ChainedAnimationMovingRight) {
+TEST_F(RootWindowDeskSwitchAnimatorTest, DISABLED_ChainedAnimationMovingRight) {
   InitAnimator(3, 2);
   TakeStartingDeskScreenshotAndWait();
   TakeEndingDeskScreenshotAndWait();
@@ -291,8 +295,9 @@ TEST_F(RootWindowDeskSwitchAnimatorTest, ChainedAnimationMovingRight) {
                              animation_layer));
 }
 
+// TODO(b/219068687): Re-enable chained desk animation tests.
 // Tests a complex animation which multiple animations are started and replaced.
-TEST_F(RootWindowDeskSwitchAnimatorTest, MultipleReplacements) {
+TEST_F(RootWindowDeskSwitchAnimatorTest, DISABLED_MultipleReplacements) {
   InitAnimator(1, 2);
   TakeStartingDeskScreenshotAndWait();
   TakeEndingDeskScreenshotAndWait();

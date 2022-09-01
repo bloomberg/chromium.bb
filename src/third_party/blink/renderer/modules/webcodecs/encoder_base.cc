@@ -18,6 +18,7 @@
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_dom_exception.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_audio_encoder_init.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_video_encoder_config.h"
@@ -56,21 +57,19 @@ template <typename Traits>
 EncoderBase<Traits>::EncoderBase(ScriptState* script_state,
                                  const InitType* init,
                                  ExceptionState& exception_state)
-    : ReclaimableCodec(ExecutionContext::From(script_state)),
-      ExecutionContextLifecycleObserver(ExecutionContext::From(script_state)),
+    : ReclaimableCodec(ReclaimableCodec::CodecType::kEncoder,
+                       ExecutionContext::From(script_state)),
       state_(V8CodecState::Enum::kUnconfigured),
       script_state_(script_state),
       trace_counter_id_(g_sequence_num_for_counters.GetNext()) {
   auto* context = ExecutionContext::From(script_state);
   callback_runner_ = context->GetTaskRunner(TaskType::kInternalMediaRealTime);
 
-  logger_ =
-      std::make_unique<CodecLogger>(GetExecutionContext(), callback_runner_);
+  logger_ = std::make_unique<CodecLogger<media::EncoderStatus>>(
+      GetExecutionContext(), callback_runner_);
 
   media::MediaLog* log = logger_->log();
-
-  log->SetProperty<media::MediaLogProperty::kFrameTitle>(
-      std::string(Traits::GetNameForDevTools()));
+  logger_->SendPlayerNameInformation(*context, Traits::GetName());
   log->SetProperty<media::MediaLogProperty::kFrameUrl>(
       GetExecutionContext()->Url().GetString().Ascii());
 
@@ -112,8 +111,7 @@ void EncoderBase<Traits>::configure(const ConfigType* config,
 
   Request* request = MakeGarbageCollected<Request>();
   request->reset_count = reset_count_;
-  if (media_encoder_ && active_config_ &&
-      state_.AsEnum() == V8CodecState::Enum::kConfigured &&
+  if (active_config_ && state_.AsEnum() == V8CodecState::Enum::kConfigured &&
       CanReconfigure(*active_config_, *parsed_config)) {
     request->type = Request::Type::kReconfigure;
   } else {
@@ -205,10 +203,6 @@ void EncoderBase<Traits>::reset(ExceptionState& exception_state) {
 
   state_ = V8CodecState(V8CodecState::Enum::kUnconfigured);
   ResetInternal();
-
-  // This codec isn't holding on to any resources, and doesn't need to be
-  // reclaimed.
-  PauseCodecReclamation();
 }
 
 template <typename Traits>
@@ -232,6 +226,10 @@ void EncoderBase<Traits>::ResetInternal() {
   // the call stack and continu executing code belonging to deleted
   // |media_encoder_|.
   callback_runner_->DeleteSoon(FROM_HERE, std::move(media_encoder_));
+
+  // This codec isn't holding on to any resources, and doesn't need to be
+  // reclaimed.
+  ReleaseCodecPressure();
 }
 
 template <typename Traits>
@@ -247,7 +245,6 @@ void EncoderBase<Traits>::HandleError(DOMException* ex) {
   state_ = V8CodecState(V8CodecState::Enum::kClosed);
 
   ResetInternal();
-  PauseCodecReclamation();
 
   // Errors are permanent. Shut everything down.
   error_callback_.Clear();
@@ -310,7 +307,7 @@ void EncoderBase<Traits>::ProcessFlush(Request* request) {
   DCHECK_EQ(request->type, Request::Type::kFlush);
 
   auto done_callback = [](EncoderBase<Traits>* self, Request* req,
-                          media::Status status) {
+                          media::EncoderStatus status) {
     DCHECK(req);
     DCHECK(req->resolver);
 
@@ -330,7 +327,7 @@ void EncoderBase<Traits>::ProcessFlush(Request* request) {
       req->resolver.Release()->Resolve();
     } else {
       self->HandleError(
-          self->logger_->MakeException("Flushing error.", status));
+          self->logger_->MakeException("Flushing error.", std::move(status)));
       req->resolver.Release()->Reject();
     }
     req->EndTracing();
@@ -412,13 +409,16 @@ const char* EncoderBase<Traits>::Request::TraceNameFromType() {
 }
 
 template <typename Traits>
-void EncoderBase<Traits>::Request::StartTracingVideoEncode(bool is_keyframe) {
+void EncoderBase<Traits>::Request::StartTracingVideoEncode(
+    bool is_keyframe,
+    base::TimeDelta timestamp) {
 #if DCHECK_IS_ON()
   DCHECK(!is_tracing);
   is_tracing = true;
 #endif
-  TRACE_EVENT_NESTABLE_ASYNC_BEGIN1(kCategory, TraceNameFromType(), this,
-                                    "key_frame", is_keyframe);
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN2(kCategory, TraceNameFromType(), this,
+                                    "key_frame", is_keyframe, "timestamp",
+                                    timestamp);
 }
 
 template <typename Traits>

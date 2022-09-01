@@ -22,8 +22,25 @@
     container-type: size;
 }
 
-@container size(min-width: 50px) {
+@container (min-width: 50px) {
     #inspected {
         padding-right: 10px;
+    }
+}
+
+@supports (display: grid) or (display: inline-grid) {
+    #inspected {
+        display: grid;
+    }
+}
+
+@layer base {
+    #inspected {
+        background-color: blue;
+    }
+    @layer nested {
+        body {
+            background-color: green;
+        }
     }
 }

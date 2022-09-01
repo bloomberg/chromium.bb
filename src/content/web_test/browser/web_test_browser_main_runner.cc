@@ -25,6 +25,7 @@
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/viz/common/switches.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/browser/webid/federated_auth_request_impl.h"
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
@@ -102,7 +103,7 @@ void RunTests(content::BrowserMainRunner* main_runner) {
 }  // namespace
 
 void WebTestBrowserMainRunner::Initialize() {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   bool layout_system_deps_ok = content::WebTestBrowserCheckLayoutSystemDeps();
   CHECK(layout_system_deps_ok);
 #endif
@@ -139,12 +140,7 @@ void WebTestBrowserMainRunner::Initialize() {
   // only default to a software GL if the flag isn't already specified.
   if (!command_line.HasSwitch(switches::kUseGpuInTests) &&
       !command_line.HasSwitch(switches::kUseGL)) {
-    bool legacy_software_gl = true;
-#if defined(OS_LINUX) || defined(OS_WIN)
-    // This setting makes web tests run on SwANGLE instead of SwiftShader GL.
-    legacy_software_gl = false;
-#endif
-    gl::SetSoftwareGLCommandLineSwitches(&command_line, legacy_software_gl);
+    gl::SetSoftwareGLCommandLineSwitches(&command_line);
   }
   command_line.AppendSwitchASCII(switches::kTouchEventFeatureDetection,
                                  switches::kTouchEventFeatureDetectionEnabled);
@@ -183,13 +179,14 @@ void WebTestBrowserMainRunner::Initialize() {
 
   command_line.AppendSwitchASCII(network::switches::kHostResolverRules,
                                  "MAP nonexistent.*.test ~NOTFOUND,"
+                                 "MAP web-platform.test:443 127.0.0.1:8444,"
                                  "MAP *.test. 127.0.0.1,"
                                  "MAP *.test 127.0.0.1");
 
   // These must be kept in sync with //third_party/wpt_tools/wpt.config.json.
   command_line.AppendSwitchASCII(network::switches::kIpAddressSpaceOverrides,
                                  "127.0.0.1:8082=private,"
-                                 "127.0.0.1:8083=public,"
+                                 "127.0.0.1:8093=public,"
                                  "127.0.0.1:8446=private,"
                                  "127.0.0.1:8447=public");
 
@@ -216,6 +213,9 @@ void WebTestBrowserMainRunner::Initialize() {
   command_line.AppendSwitch(switches::kUseFakeUIForMediaStream);
   command_line.AppendSwitch(switches::kUseFakeDeviceForMediaStream);
 
+  // Always run with fake FedCM UI.
+  command_line.AppendSwitch(switches::kUseFakeUIForFedCM);
+
   // Enable the deprecated WebAuthn Mojo Testing API.
   command_line.AppendSwitch(switches::kEnableWebAuthDeprecatedMojoTestingApi);
 
@@ -223,8 +223,8 @@ void WebTestBrowserMainRunner::Initialize() {
   // interference. This GPU process is launched 120 seconds after chrome starts.
   command_line.AppendSwitch(switches::kDisableGpuProcessForDX12InfoCollection);
 
-#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
-    defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
+    BUILDFLAG(IS_CHROMEOS)
   content::WebTestBrowserPlatformInitialize();
 #endif
 

@@ -5,14 +5,15 @@
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/cr_elements/cr_search_field/cr_search_field.js';
 import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
-import '../shared_style.js';
+import '../shared_style.css.js';
 import './activity_log_stream_item.js';
 
 import {ChromeEvent} from '/tools/typescript/definitions/chrome_event.js';
-import {assert} from 'chrome://resources/js/assert.m.js';
-import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {assert} from 'chrome://resources/js/assert_ts.js';
+import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {StreamArgItem, StreamItem} from './activity_log_stream_item.js';
+import {getTemplate} from './activity_log_stream.html.js';
+import {StreamItem} from './activity_log_stream_item.js';
 
 export interface ActivityLogEventDelegate {
   getOnExtensionActivity(): ChromeEvent<
@@ -56,13 +57,13 @@ function processActivityForStream(
                              }));
 }
 
-class ActivityLogStreamElement extends PolymerElement {
+export class ActivityLogStreamElement extends PolymerElement {
   static get is() {
     return 'activity-log-stream';
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
@@ -111,7 +112,7 @@ class ActivityLogStreamElement extends PolymerElement {
     this.listenerInstance_ = () => {};
   }
 
-  connectedCallback() {
+  override connectedCallback() {
     super.connectedCallback();
 
     // Since this component is not restamped, this will only be called once

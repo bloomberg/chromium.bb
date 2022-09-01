@@ -10,12 +10,13 @@
 
 #include "ash/components/tether/active_host.h"
 #include "base/gtest_prod_util.h"
+#include "base/time/time.h"
 
 namespace base {
 class Clock;
-}
+}  // namespace base
 
-namespace chromeos {
+namespace ash {
 
 namespace tether {
 
@@ -210,6 +211,6 @@ class HostConnectionMetricsLogger : public ActiveHost::Observer {
 
 }  // namespace tether
 
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // ASH_COMPONENTS_TETHER_HOST_CONNECTION_METRICS_LOGGER_H_

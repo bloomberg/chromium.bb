@@ -90,6 +90,31 @@ struct RTCContentType {
   static const char* const kScreenshare;
 };
 
+// https://w3c.github.io/webrtc-stats/#dom-rtcdtlsrole
+struct RTCDtlsRole {
+  static const char* const kUnknown;
+  static const char* const kClient;
+  static const char* const kServer;
+};
+
+// https://www.w3.org/TR/webrtc/#rtcicerole
+struct RTCIceRole {
+  static const char* const kUnknown;
+  static const char* const kControlled;
+  static const char* const kControlling;
+};
+
+// https://www.w3.org/TR/webrtc/#dom-rtcicetransportstate
+struct RTCIceTransportState {
+  static const char* const kNew;
+  static const char* const kChecking;
+  static const char* const kConnected;
+  static const char* const kCompleted;
+  static const char* const kDisconnected;
+  static const char* const kFailed;
+  static const char* const kClosed;
+};
+
 // https://w3c.github.io/webrtc-stats/#certificatestats-dict*
 class RTC_EXPORT RTCCertificateStats final : public RTCStats {
  public:
@@ -104,6 +129,20 @@ class RTC_EXPORT RTCCertificateStats final : public RTCStats {
   RTCStatsMember<std::string> fingerprint_algorithm;
   RTCStatsMember<std::string> base64_certificate;
   RTCStatsMember<std::string> issuer_certificate_id;
+};
+
+// Non standard extension mapping to rtc::AdapterType
+struct RTCNetworkAdapterType {
+  static constexpr char kUnknown[] = "unknown";
+  static constexpr char kEthernet[] = "ethernet";
+  static constexpr char kWifi[] = "wifi";
+  static constexpr char kCellular[] = "cellular";
+  static constexpr char kLoopback[] = "loopback";
+  static constexpr char kAny[] = "any";
+  static constexpr char kCellular2g[] = "cellular2g";
+  static constexpr char kCellular3g[] = "cellular3g";
+  static constexpr char kCellular4g[] = "cellular4g";
+  static constexpr char kCellular5g[] = "cellular5g";
 };
 
 // https://w3c.github.io/webrtc-stats/#codec-dict*
@@ -225,8 +264,10 @@ class RTC_EXPORT RTCIceCandidateStats : public RTCStats {
   // TODO(hbos): Support enum types? "RTCStatsMember<RTCIceCandidateType>"?
   RTCStatsMember<std::string> candidate_type;
   RTCStatsMember<int32_t> priority;
-  // TODO(hbos): Not collected by `RTCStatsCollector`. crbug.com/632723
   RTCStatsMember<std::string> url;
+
+  RTCNonStandardStatsMember<bool> vpn;
+  RTCNonStandardStatsMember<std::string> network_adapter_type;
 
  protected:
   RTCIceCandidateStats(const std::string& id,
@@ -464,7 +505,6 @@ class RTC_EXPORT RTCInboundRTPStreamStats final
   RTCStatsMember<double> audio_level;
   RTCStatsMember<double> total_audio_energy;
   RTCStatsMember<double> total_samples_duration;
-  RTCStatsMember<int32_t> frames_received;
   // TODO(hbos): Collect and populate this value. https://bugs.webrtc.org/7065
   RTCStatsMember<double> round_trip_time;
   // TODO(hbos): Collect and populate this value. https://bugs.webrtc.org/7065
@@ -485,6 +525,8 @@ class RTC_EXPORT RTCInboundRTPStreamStats final
   RTCStatsMember<double> gap_loss_rate;
   // TODO(hbos): Collect and populate this value. https://bugs.webrtc.org/7065
   RTCStatsMember<double> gap_discard_rate;
+  // Stats below are only implemented or defined for video.
+  RTCStatsMember<int32_t> frames_received;
   RTCStatsMember<uint32_t> frame_width;
   RTCStatsMember<uint32_t> frame_height;
   RTCStatsMember<uint32_t> frame_bit_depth;
@@ -493,6 +535,10 @@ class RTC_EXPORT RTCInboundRTPStreamStats final
   RTCStatsMember<uint32_t> key_frames_decoded;
   RTCStatsMember<uint32_t> frames_dropped;
   RTCStatsMember<double> total_decode_time;
+  RTCStatsMember<double> total_processing_delay;
+  // TODO(bugs.webrtc.org/13986): standardize
+  RTCNonStandardStatsMember<double> total_assembly_time;
+  RTCNonStandardStatsMember<uint32_t> frames_assembled_from_multiple_packets;
   RTCStatsMember<double> total_inter_frame_delay;
   RTCStatsMember<double> total_squared_inter_frame_delay;
   // https://henbos.github.io/webrtc-provisional-stats/#dom-rtcinboundrtpstreamstats-contenttype
@@ -502,11 +548,14 @@ class RTC_EXPORT RTCInboundRTPStreamStats final
   // TODO(hbos): This is only implemented for video; implement it for audio as
   // well.
   RTCStatsMember<std::string> decoder_implementation;
-  // FIR and PLI counts are only defined for |media_type == "video"|.
+  // FIR and PLI counts are only defined for |kind == "video"|.
   RTCStatsMember<uint32_t> fir_count;
   RTCStatsMember<uint32_t> pli_count;
   RTCStatsMember<uint32_t> nack_count;
   RTCStatsMember<uint64_t> qp_sum;
+
+  // The former googMinPlayoutDelayMs (in seconds).
+  RTCNonStandardStatsMember<double> min_playout_delay;
 };
 
 // https://w3c.github.io/webrtc-stats/#outboundrtpstats-dict*
@@ -553,7 +602,7 @@ class RTC_EXPORT RTCOutboundRTPStreamStats final : public RTCRTPStreamStats {
   // TODO(hbos): This is only implemented for video; implement it for audio as
   // well.
   RTCStatsMember<std::string> encoder_implementation;
-  // FIR and PLI counts are only defined for |media_type == "video"|.
+  // FIR and PLI counts are only defined for |kind == "video"|.
   RTCStatsMember<uint32_t> fir_count;
   RTCStatsMember<uint32_t> pli_count;
   RTCStatsMember<uint32_t> nack_count;
@@ -673,8 +722,12 @@ class RTC_EXPORT RTCTransportStats final : public RTCStats {
   RTCStatsMember<std::string> remote_certificate_id;
   RTCStatsMember<std::string> tls_version;
   RTCStatsMember<std::string> dtls_cipher;
+  RTCStatsMember<std::string> dtls_role;
   RTCStatsMember<std::string> srtp_cipher;
   RTCStatsMember<uint32_t> selected_candidate_pair_changes;
+  RTCStatsMember<std::string> ice_role;
+  RTCStatsMember<std::string> ice_local_username_fragment;
+  RTCStatsMember<std::string> ice_state;
 };
 
 }  // namespace webrtc

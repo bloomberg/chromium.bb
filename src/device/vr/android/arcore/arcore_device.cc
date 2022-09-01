@@ -11,7 +11,6 @@
 #include "base/containers/contains.h"
 #include "base/no_destructor.h"
 #include "base/numerics/math_constants.h"
-#include "base/task/post_task.h"
 #include "base/trace_event/trace_event.h"
 #include "device/base/features.h"
 #include "device/vr/android/arcore/ar_image_transport.h"
@@ -51,7 +50,7 @@ mojom::VRDisplayInfoPtr CreateVRDisplayInfo(const gfx::Size& frame_size) {
   view->field_of_view->right_degrees = horizontal_degrees;
   view->field_of_view->up_degrees = vertical_degrees;
   view->field_of_view->down_degrees = vertical_degrees;
-  view->viewport = gfx::Size(width, height);
+  view->viewport = gfx::Rect(0, 0, width, height);
 
   mojom::VRDisplayInfoPtr device = mojom::VRDisplayInfo::New();
   device->views.emplace_back(std::move(view));
@@ -151,6 +150,9 @@ void ArCoreDevice::RequestSession(
   DCHECK(options->mode == device::mojom::XRSessionMode::kImmersiveAr);
 
   if (HasExclusiveSession()) {
+    TRACE_EVENT("xr", "ArCoreDevice::RequestSession: session already exists",
+                perfetto::Flow::Global(options->trace_id));
+
     DVLOG(1) << __func__ << ": Rejecting additional session request";
     std::move(callback).Run(nullptr);
     return;
@@ -165,6 +167,7 @@ void ArCoreDevice::RequestSession(
                                             options->required_features.end());
   session_state_->optional_features_.insert(options->optional_features.begin(),
                                             options->optional_features.end());
+  session_state_->request_session_trace_id_ = options->trace_id;
 
   const bool use_dom_overlay =
       base::Contains(options->required_features,
@@ -328,6 +331,13 @@ void ArCoreDevice::CallDeferredRequestSessionCallback(
       std::move(session_state_->pending_request_session_callback_);
 
   if (!initialize_result) {
+    TRACE_EVENT_WITH_FLOW0(
+        "xr",
+        "ArCoreDevice::CallDeferredRequestSessionCallback: GL initialization "
+        "failed",
+        TRACE_ID_GLOBAL(session_state_->request_session_trace_id_),
+        TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
+
     std::move(deferred_callback).Run(nullptr);
     return;
   }

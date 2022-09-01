@@ -9,13 +9,15 @@
 
 #include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
+#include "base/values.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "chrome/browser/web_applications/app_registrar_observer.h"
 #include "chrome/browser/web_applications/web_app_id.h"
+#include "chrome/browser/web_applications/web_app_install_manager.h"
+#include "chrome/browser/web_applications/web_app_install_manager_observer.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "components/custom_handlers/protocol_handler_registry.h"
-#include "content/public/common/custom_handlers/protocol_handler.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // ProtocolHandlersHandler
@@ -25,18 +27,13 @@
 // application to handle clicks on a link with a specified protocol (i.e.
 // mailto: -> Gmail).
 
-namespace base {
-class DictionaryValue;
-}
-
-using content::ProtocolHandler;
-
 namespace settings {
 
 class ProtocolHandlersHandler
     : public SettingsPageUIHandler,
       public custom_handlers::ProtocolHandlerRegistry::Observer,
-      public web_app::AppRegistrarObserver {
+      public web_app::AppRegistrarObserver,
+      public web_app::WebAppInstallManagerObserver {
  public:
   explicit ProtocolHandlersHandler(Profile* profile);
 
@@ -53,38 +50,42 @@ class ProtocolHandlersHandler
   // ProtocolHandlerRegistry::Observer:
   void OnProtocolHandlerRegistryChanged() override;
 
-  // web_app::AppRegistrarObserver:
+  // web_app::WebAppInstallManagerObserver:
   void OnWebAppUninstalled(const web_app::AppId& app_id) override;
+  void OnWebAppInstallManagerDestroyed() override;
+
+  // web_app::AppRegistrarObserver:
   void OnWebAppProtocolSettingsChanged() override;
 
  private:
   // Called to fetch the state of the protocol handlers. If the full list of
   // handlers is not needed, consider HandleObserveProtocolHandlersEnabledState
   // instead.
-  void HandleObserveProtocolHandlers(const base::ListValue* args);
+  void HandleObserveProtocolHandlers(const base::Value::List& args);
 
   // Called to begin updates to the handlers enabled status. This is a subset
   // (lighter alternative) of HandleObserveProtocolHandlers. There's no need to
   // call this function if HandleObserveProtocolHandlers is called.
-  void HandleObserveProtocolHandlersEnabledState(const base::ListValue* args);
+  void HandleObserveProtocolHandlersEnabledState(const base::Value::List& args);
 
   // Notifies the JS side whether the handlers are enabled or not.
   void SendHandlersEnabledValue();
 
   // Called when the user toggles whether custom handlers are enabled.
-  void HandleSetHandlersEnabled(const base::ListValue* args);
+  void HandleSetHandlersEnabled(const base::Value::List& args);
 
   // Called when the user sets a new default handler for a protocol.
-  void HandleSetDefault(const base::ListValue* args);
+  void HandleSetDefault(const base::Value::List& args);
 
   // Parses a ProtocolHandler out of the arguments passed back from the view.
   // |args| is a list of [protocol, url].
-  ProtocolHandler ParseHandlerFromArgs(const base::ListValue* args) const;
+  custom_handlers::ProtocolHandler ParseHandlerFromArgs(
+      const base::Value::List& args) const;
 
-  // Returns a JSON object describing the set of protocol handlers for the
+  // Populates a JSON object describing the set of protocol handlers for the
   // given protocol.
   void GetHandlersForProtocol(const std::string& protocol,
-                              base::DictionaryValue* value);
+                              base::Value::Dict* value);
 
   // Returns a JSON list of the ignored protocol handlers.
   void GetIgnoredHandlers(base::ListValue* handlers);
@@ -94,7 +95,7 @@ class ProtocolHandlersHandler
 
   // Remove a handler.
   // |args| is a list of [protocol, url].
-  void HandleRemoveHandler(const base::ListValue* args);
+  void HandleRemoveHandler(const base::Value::List& args);
 
   custom_handlers::ProtocolHandlerRegistry* GetProtocolHandlerRegistry();
 
@@ -105,12 +106,12 @@ class ProtocolHandlersHandler
   // Web App Protocol Handler specific functions:
 
   // Called to fetch the state of the app protocol handlers.
-  void HandleObserveAppProtocolHandlers(base::Value::ConstListView args);
+  void HandleObserveAppProtocolHandlers(const base::Value::List& args);
 
   // Parses an App ProtocolHandler out of |args|, which is a list of [protocol,
   // url, app_id].
-  content::ProtocolHandler ParseAppHandlerFromArgs(
-      base::Value::ConstListView args) const;
+  custom_handlers::ProtocolHandler ParseAppHandlerFromArgs(
+      const base::Value::List& args) const;
 
   // Returns a DictionaryValue describing the set of app protocol handlers for
   // the given |protocol| in the given |handlers| list.
@@ -126,11 +127,11 @@ class ProtocolHandlersHandler
 
   // Remove an approved app handler.
   // |args| is a list of [protocol, url, app_id].
-  void HandleRemoveAllowedAppHandler(base::Value::ConstListView args);
+  void HandleRemoveAllowedAppHandler(const base::Value::List& args);
 
   // Remove a disallowed app handler.
   // |args| is a list of [protocol, url, app_id].
-  void HandleRemoveDisallowedAppHandler(base::Value::ConstListView args);
+  void HandleRemoveDisallowedAppHandler(const base::Value::List& args);
 
   const raw_ptr<Profile> profile_;
   const raw_ptr<web_app::WebAppProvider> web_app_provider_;
@@ -138,6 +139,9 @@ class ProtocolHandlersHandler
   base::ScopedObservation<web_app::WebAppRegistrar,
                           web_app::AppRegistrarObserver>
       app_observation_{this};
+  base::ScopedObservation<web_app::WebAppInstallManager,
+                          web_app::WebAppInstallManagerObserver>
+      install_manager_observation_{this};
 };
 
 }  // namespace settings

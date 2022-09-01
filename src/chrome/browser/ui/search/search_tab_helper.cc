@@ -26,8 +26,8 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
+#include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
-#include "chrome/browser/ui/search/ntp_user_data_logger.h"
 #include "chrome/browser/ui/search/omnibox_utils.h"
 #include "chrome/browser/ui/search/search_ipc_router_policy_impl.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
@@ -60,6 +60,7 @@
 #include "extensions/common/constants.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/color/color_provider.h"
 #include "ui/gfx/vector_icon_types.h"
 #include "url/gurl.h"
 
@@ -90,7 +91,7 @@ bool InInstantProcess(const InstantService* instant_service,
     return false;
 
   return instant_service->IsInstantProcess(
-      contents->GetMainFrame()->GetProcess()->GetID());
+      contents->GetPrimaryMainFrame()->GetProcess()->GetID());
 }
 
 // Called when an NTP finishes loading. If the load start time was noted,
@@ -254,29 +255,20 @@ void SearchTabHelper::NavigationEntryCommitted(
   if (!load_details.is_main_frame)
     return;
 
-  if (search::IsInstantNTP(web_contents())) {
-    // We (re)create the logger here because
-    // 1. The logger tries to detect whether the NTP is being created at startup
-    //    or from the user opening a new tab, and if we wait until later, it
-    //    won't correctly detect this case.
-    // 2. There can be multiple navigations to NTPs in a single web contents.
-    //    The navigations can be user-triggered or automatic, e.g. we fall back
-    //    to the local NTP if a remote NTP fails to load. Since logging should
-    //    be scoped to the life time of a single NTP we reset the logger every
-    //    time we reach a new NTP.
-    logger_ = std::make_unique<NTPUserDataLogger>(
-        Profile::FromBrowserContext(web_contents()->GetBrowserContext()),
-        // We use the NavigationController's URL since it might differ from the
-        // WebContents URL which is usually chrome://newtab/.
-        web_contents()->GetController().GetVisibleEntry()->GetURL());
+  if (search::IsInstantNTP(web_contents()))
     ipc_router_.SetInputInProgress(IsInputInProgress());
-  }
 
   if (InInstantProcess(instant_service_, web_contents()))
     ipc_router_.OnNavigationEntryCommitted();
 }
 
-void SearchTabHelper::NtpThemeChanged(const NtpTheme& theme) {
+void SearchTabHelper::NtpThemeChanged(NtpTheme theme) {
+  // Populate theme colors for this tab.
+  const auto& color_provider = web_contents()->GetColorProvider();
+  theme.background_color = color_provider.GetColor(kColorNewTabPageBackground);
+  theme.text_color = color_provider.GetColor(kColorNewTabPageText);
+  theme.text_color_light = color_provider.GetColor(kColorNewTabPageTextLight);
+
   ipc_router_.SendNtpTheme(theme);
 }
 

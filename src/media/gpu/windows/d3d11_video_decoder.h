@@ -15,6 +15,7 @@
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/sequence_bound.h"
+#include "base/time/time.h"
 #include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "gpu/config/gpu_preferences.h"
 #include "media/base/callback_registry.h"
@@ -212,16 +213,16 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder,
     kError,
   };
 
-  // Enter the kError state.  This will fail any pending |init_cb_| and / or
-  // pending decode as well.  Do not add new uses of the char* overload; send a
-  // Status instead.
-  void NotifyError(const char* reason);
-  // void NotifyError(D3D11Status&& reason);
-  // This one sends the Status upwards, since VideoDecoder still returns a
-  // Status rather than a decoder-specific variant.  This sends the correct
-  // status code (DECODE_ERROR, for example), and attaches `reason` as the thing
-  // that caused it.
-  void NotifyError(D3D11Status reason);
+  // Enter the kError state. This will fail any pending |init_cb_| and/or
+  // pending decodes as well. |opt_decoder_code| can be optionally provided for
+  // a more descriptive reason passed back up to the decoder stream rather than
+  // just kFailed.
+  void NotifyError(
+      D3D11Status reason,
+      DecoderStatus::Codes opt_decoder_code = DecoderStatus::Codes::kFailed);
+
+  // Posts |status| to any pending initialization or decode callbacks.
+  void PostDecoderStatus(DecoderStatus status);
 
   // The implementation, which lives on the GPU main thread.
   base::SequenceBound<D3D11VideoDecoderImpl> impl_;

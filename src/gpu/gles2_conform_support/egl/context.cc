@@ -173,15 +173,6 @@ const gpu::Capabilities& Context::GetCapabilities() const {
   return capabilities_;
 }
 
-int32_t Context::CreateImage(ClientBuffer buffer, size_t width, size_t height) {
-  NOTREACHED();
-  return -1;
-}
-
-void Context::DestroyImage(int32_t id) {
-  NOTREACHED();
-}
-
 void Context::SignalQuery(uint32_t query, base::OnceClosure callback) {
   NOTREACHED();
 }
@@ -237,10 +228,6 @@ void Context::WaitSyncToken(const gpu::SyncToken& sync_token) {
 
 bool Context::CanWaitUnverifiedSyncToken(const gpu::SyncToken& sync_token) {
   return false;
-}
-
-void Context::SetDisplayTransform(gfx::OverlayTransform transform) {
-  NOTREACHED();
 }
 
 void Context::ApplyCurrentContext(gl::GLSurface* current_surface) {

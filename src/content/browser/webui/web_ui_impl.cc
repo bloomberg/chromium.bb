@@ -20,7 +20,6 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/frame_tree.h"
-#include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -35,6 +34,7 @@
 #include "content/public/browser/web_ui_message_handler.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/url_constants.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 
 namespace content {
@@ -90,7 +90,7 @@ void WebUIImpl::SetProperty(const std::string& name, const std::string& value) {
   remote_->SetProperty(name, value);
 }
 
-void WebUIImpl::Send(const std::string& message, base::Value args) {
+void WebUIImpl::Send(const std::string& message, base::Value::List args) {
   const GURL& source_url = frame_host_->GetLastCommittedURL();
   if (!ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
           frame_host_->GetProcess()->GetID()) ||
@@ -109,7 +109,7 @@ void WebUIImpl::Send(const std::string& message, base::Value args) {
     return;
   }
 
-  ProcessWebUIMessage(source_url, message, base::Value::AsListValue(args));
+  ProcessWebUIMessage(source_url, message, std::move(args));
 }
 
 void WebUIImpl::WebUIRenderFrameCreated(RenderFrameHost* render_frame_host) {
@@ -117,7 +117,8 @@ void WebUIImpl::WebUIRenderFrameCreated(RenderFrameHost* render_frame_host) {
 }
 
 void WebUIImpl::RenderFrameReused(RenderFrameHost* render_frame_host) {
-  if (!render_frame_host->GetParent()) {
+  // This is expected to be called only for outermost main frames.
+  if (!render_frame_host->GetParentOrOuterDocument()) {
     GURL site_url = render_frame_host->GetSiteInstance()->GetSiteURL();
     GetContentClient()->browser()->LogWebUIUrl(site_url);
   }
@@ -133,8 +134,9 @@ void WebUIImpl::RenderFrameDeleted() {
 
 void WebUIImpl::SetUpMojoConnection() {
   // TODO(nasko): WebUI mojo might be useful to be registered for
-  // subframes as well, though at this time there is no such usage.
-  if (frame_host_->GetParent())
+  // subframes as well, though at this time there is no such usage but currently
+  // this is expected to be called only for outermost main frames.
+  if (frame_host_->GetParentOrOuterDocument())
     return;
 
   frame_host_->GetFrameBindingsControl()->BindWebUI(
@@ -143,7 +145,8 @@ void WebUIImpl::SetUpMojoConnection() {
 }
 
 void WebUIImpl::TearDownMojoConnection() {
-  if (frame_host_->GetParent())
+  // This is expected to be called only for outermost main frames.
+  if (frame_host_->GetParentOrOuterDocument())
     return;
 
   remote_.reset();
@@ -258,38 +261,40 @@ void WebUIImpl::CallJavascriptFunctionUnsafe(
 
 void WebUIImpl::RegisterMessageCallback(base::StringPiece message,
                                         MessageCallback callback) {
-  message_callbacks_.emplace(std::string(message), std::move(callback));
+  message_callbacks_.emplace(message, std::move(callback));
 }
 
 void WebUIImpl::RegisterDeprecatedMessageCallback(
     base::StringPiece message,
     const DeprecatedMessageCallback& callback) {
-  deprecated_message_callbacks_.emplace(std::string(message), callback);
+  deprecated_message_callbacks_.emplace(message, callback);
 }
 
 void WebUIImpl::ProcessWebUIMessage(const GURL& source_url,
                                     const std::string& message,
-                                    const base::ListValue& args) {
+                                    base::Value::List args) {
   if (controller_->OverrideHandleWebUIMessage(source_url, message, args))
     return;
 
-  // Look up the callback for this message.
   auto callback_pair = message_callbacks_.find(message);
   if (callback_pair != message_callbacks_.end()) {
     // Forward this message and content on.
-    callback_pair->second.Run(args.GetList());
+    callback_pair->second.Run(args);
     return;
   }
 
   // Look up the deprecated callback for this message.
   auto deprecated_callback_pair = deprecated_message_callbacks_.find(message);
   if (deprecated_callback_pair != deprecated_message_callbacks_.end()) {
+    base::Value value(std::move(args));
+    const base::ListValue& list_value = base::Value::AsListValue(value);
     // Forward this message and content on.
-    deprecated_callback_pair->second.Run(&args);
+    deprecated_callback_pair->second.Run(&list_value);
     return;
   }
 
-  NOTREACHED() << "Unhandled chrome.send(\"" << message << "\");";
+  NOTREACHED() << "Unhandled chrome.send(\"" << message << "\", " << args
+               << "); from " << source_url;
 }
 
 std::vector<std::unique_ptr<WebUIMessageHandler>>*

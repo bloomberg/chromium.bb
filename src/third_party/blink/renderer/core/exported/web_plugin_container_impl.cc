@@ -67,7 +67,6 @@
 #include "third_party/blink/renderer/core/events/web_input_event_conversion.h"
 #include "third_party/blink/renderer/core/events/wheel_event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
-#include "third_party/blink/renderer/core/exported/web_document_loader_impl.h"
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/event_handler_registry.h"
@@ -97,7 +96,6 @@
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_response.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
-#include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/graphics/paint/cull_rect.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/foreign_layer_display_item.h"
@@ -112,7 +110,7 @@ namespace blink {
 
 namespace {
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 const WebInputEvent::Modifiers kEditingModifier = WebInputEvent::kMetaKey;
 #else
 const WebInputEvent::Modifiers kEditingModifier = WebInputEvent::kControlKey;
@@ -165,7 +163,7 @@ void WebPluginContainerImpl::UpdateAllLifecyclePhases() {
 }
 
 void WebPluginContainerImpl::Paint(GraphicsContext& context,
-                                   const GlobalPaintFlags,
+                                   PaintFlags,
                                    const CullRect& cull_rect,
                                    const gfx::Vector2d& paint_offset) const {
   // Don't paint anything if the plugin doesn't intersect.
@@ -186,12 +184,12 @@ void WebPluginContainerImpl::Paint(GraphicsContext& context,
         visual_rect);
   }
 
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() && layer_) {
+  if (layer_) {
     layer_->SetBounds(Size());
     layer_->SetIsDrawable(true);
     layer_->SetHitTestable(true);
-    // When compositing is after paint, composited plugins should have their
-    // layers inserted rather than invoking WebPlugin::paint.
+    // Composited plugins should have their layers inserted rather than invoking
+    // WebPlugin::paint.
     RecordForeignLayer(context, *element_->GetLayoutObject(),
                        DisplayItem::kForeignLayerPlugin, layer_,
                        FrameRect().origin() + paint_offset);
@@ -332,13 +330,6 @@ void WebPluginContainerImpl::ReportFindInPageSelection(int identifier,
     return;
   frame->GetFindInPage()->ReportFindInPageSelection(
       identifier, index, gfx::Rect(), false /* final_update */);
-}
-
-float WebPluginContainerImpl::DeviceScaleFactor() {
-  Page* page = element_->GetDocument().GetPage();
-  if (!page)
-    return 1.0;
-  return page->DeviceScaleFactorDeprecated();
 }
 
 float WebPluginContainerImpl::PageScaleFactor() {
@@ -864,8 +855,8 @@ void WebPluginContainerImpl::HandleDragEvent(MouseEvent& event) {
   DragOperationsMask drag_operation_mask = data_transfer->SourceOperation();
   gfx::PointF drag_screen_location(event.screenX(), event.screenY());
   gfx::Point location(Location());
-  gfx::PointF drag_location(event.AbsoluteLocation().X() - location.x(),
-                            event.AbsoluteLocation().Y() - location.y());
+  gfx::PointF drag_location(event.AbsoluteLocation().x() - location.x(),
+                            event.AbsoluteLocation().y() - location.y());
 
   web_plugin_->HandleDragStatusUpdate(drag_status, drag_data,
                                       drag_operation_mask, drag_location,

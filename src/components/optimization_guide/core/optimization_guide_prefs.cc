@@ -49,6 +49,11 @@ const char kPendingHintsProcessingVersion[] =
 const char kPreviouslyRegisteredOptimizationTypes[] =
     "optimization_guide.previously_registered_optimization_types";
 
+// A dictionary pref that stores the file paths that need to be deleted as keys.
+// The value will not be used.
+const char kStoreFilePathsToDelete[] =
+    "optimization_guide.store_file_paths_to_delete";
+
 void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterInt64Pref(
       kHintsFetcherLastFetchAttempt,
@@ -66,6 +71,8 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(kPendingHintsProcessingVersion, "",
                                PrefRegistry::LOSSY_PREF);
   registry->RegisterDictionaryPref(kPreviouslyRegisteredOptimizationTypes,
+                                   PrefRegistry::LOSSY_PREF);
+  registry->RegisterDictionaryPref(kStoreFilePathsToDelete,
                                    PrefRegistry::LOSSY_PREF);
 }
 

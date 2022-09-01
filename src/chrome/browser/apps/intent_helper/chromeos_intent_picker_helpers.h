@@ -10,8 +10,6 @@
 #include "chrome/browser/apps/intent_helper/apps_navigation_types.h"
 #include "url/gurl.h"
 
-class IntentPickerAutoDisplayService;
-
 namespace content {
 class NavigationHandle;
 class WebContents;
@@ -22,9 +20,6 @@ namespace apps {
 void MaybeShowIntentPickerBubble(content::NavigationHandle* navigation_handle,
                                  std::vector<IntentPickerAppInfo> apps);
 
-bool ContainsOnlyPwasAndMacApps(
-    const std::vector<apps::IntentPickerAppInfo>& apps);
-
 // These enums are used to define the intent picker show state, whether the
 // picker is popped out or just displayed as a clickable omnibox icon.
 enum class PickerShowState {
@@ -32,15 +27,18 @@ enum class PickerShowState {
   kPopOut = 2,   // show the intent picker icon and pop out bubble
 };
 
-void OnIntentPickerClosedChromeOs(
-    content::WebContents* web_contents,
-    IntentPickerAutoDisplayService* ui_auto_display_service,
-    PickerShowState show_state,
-    const GURL& url,
-    const std::string& launch_name,
-    PickerEntryType entry_type,
-    IntentPickerCloseReason close_reason,
-    bool should_persist);
+void OnIntentPickerClosedChromeOs(content::WebContents* web_contents,
+                                  PickerShowState show_state,
+                                  const GURL& url,
+                                  const std::string& launch_name,
+                                  PickerEntryType entry_type,
+                                  IntentPickerCloseReason close_reason,
+                                  bool should_persist);
+
+void LaunchAppFromIntentPickerChromeOs(content::WebContents* web_contents,
+                                       const GURL& url,
+                                       const std::string& launch_name,
+                                       PickerEntryType app_type);
 
 }  // namespace apps
 

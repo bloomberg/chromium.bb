@@ -16,13 +16,17 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
+#include "chrome/browser/favicon/favicon_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_util.h"
+#include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/tabs/saved_tab_groups/saved_tab_group_keyed_service.h"
+#include "chrome/browser/ui/tabs/saved_tab_groups/saved_tab_group_service_factory.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view_test_helper.h"
 #include "chrome/browser/ui/views/native_widget_factory.h"
-#include "chrome/browser/ui/views/read_later/read_later_button.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/test_browser_window.h"
 #include "chrome/test/base/testing_profile.h"
@@ -31,7 +35,6 @@
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/prefs/pref_service.h"
-#include "components/reading_list/features/reading_list_switches.h"
 #include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/search_engines/template_url_service_client.h"
@@ -41,6 +44,8 @@
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/menu_button.h"
+#include "ui/views/view_utils.h"
+#include "url/gurl.h"
 
 using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
@@ -50,8 +55,6 @@ namespace {
 class BookmarkBarViewBaseTest : public ChromeViewsTestBase {
  public:
   BookmarkBarViewBaseTest() {
-    feature_list_.InitAndEnableFeature(reading_list::switches::kReadLater);
-
     TestingProfile::Builder profile_builder;
     profile_builder.AddTestingFactory(
         TemplateURLServiceFactory::GetInstance(),
@@ -220,38 +223,19 @@ TEST_F(BookmarkBarViewTest, AppsShortcutVisibility) {
   EXPECT_FALSE(test_helper_->apps_page_shortcut()->GetVisible());
 
   // Try to make the Apps shortcut visible. Its visibility depends on whether
-  // the app launcher is enabled.
+  // the Apps shortcut is enabled.
   browser()->profile()->GetPrefs()->SetBoolean(
       bookmarks::prefs::kShowAppsShortcutInBookmarkBar, true);
-  if (IsAppLauncherEnabled()) {
-    EXPECT_FALSE(test_helper_->apps_page_shortcut()->GetVisible());
-  } else {
+  if (chrome::IsAppsShortcutEnabled(browser()->profile())) {
     EXPECT_TRUE(test_helper_->apps_page_shortcut()->GetVisible());
+  } else {
+    EXPECT_FALSE(test_helper_->apps_page_shortcut()->GetVisible());
   }
 
   // Make sure we can also properly transition from true to false.
   browser()->profile()->GetPrefs()->SetBoolean(
       bookmarks::prefs::kShowAppsShortcutInBookmarkBar, false);
   EXPECT_FALSE(test_helper_->apps_page_shortcut()->GetVisible());
-}
-
-// Verify that in instant extended mode the visibility of the reading list
-// button properly follows the pref value.
-TEST_F(BookmarkBarViewTest, ReadingListVisibility) {
-  browser()->profile()->GetPrefs()->SetBoolean(
-      bookmarks::prefs::kShowReadingListInBookmarkBar, false);
-  EXPECT_FALSE(bookmark_bar_view()->read_later_button()->GetVisible());
-
-  // Try to make the Apps shortcut visible. Its visibility depends on whether
-  // the app launcher is enabled.
-  browser()->profile()->GetPrefs()->SetBoolean(
-      bookmarks::prefs::kShowReadingListInBookmarkBar, true);
-  EXPECT_TRUE(bookmark_bar_view()->read_later_button()->GetVisible());
-
-  // Make sure we can also properly transition from true to false.
-  browser()->profile()->GetPrefs()->SetBoolean(
-      bookmarks::prefs::kShowReadingListInBookmarkBar, false);
-  EXPECT_FALSE(bookmark_bar_view()->read_later_button()->GetVisible());
 }
 
 // Various assertions around visibility of the overflow_button.
@@ -296,7 +280,7 @@ TEST_F(BookmarkBarViewTest, ButtonsDynamicallyAddedAfterModelHasNodes) {
 
   // Ensure buttons were added in the correct place.
   auto button_iter =
-      bookmark_bar_view()->FindChild(test_helper_->managed_bookmarks_button());
+      bookmark_bar_view()->FindChild(test_helper_->saved_tab_group_bar());
   for (size_t i = 0; i < test_helper_->GetBookmarkButtonCount(); ++i) {
     ++button_iter;
     ASSERT_NE(bookmark_bar_view()->children().cend(), button_iter);
@@ -318,7 +302,7 @@ TEST_F(BookmarkBarViewTest, ButtonsDynamicallyAdded) {
   EXPECT_EQ(6u, test_helper_->GetBookmarkButtonCount());
   // Ensure buttons were added in the correct place.
   auto button_iter =
-      bookmark_bar_view()->FindChild(test_helper_->managed_bookmarks_button());
+      bookmark_bar_view()->FindChild(test_helper_->saved_tab_group_bar());
   for (size_t i = 0; i < test_helper_->GetBookmarkButtonCount(); ++i) {
     ++button_iter;
     ASSERT_NE(bookmark_bar_view()->children().cend(), button_iter);
@@ -493,28 +477,78 @@ TEST_F(BookmarkBarViewTest, DropCallback_InvalidatePtrTest) {
   EXPECT_EQ(output_drag_op, ui::mojom::DragOperation::kNone);
 }
 
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
+#if !BUILDFLAG(IS_CHROMEOS)
 // Verifies that the apps shortcut is shown or hidden following the policy
 // value. This policy (and the apps shortcut) isn't present on ChromeOS.
 TEST_F(BookmarkBarViewTest, ManagedShowAppsShortcutInBookmarksBar) {
-  // By default, the pref is not managed and the apps shortcut is shown.
+  // By default, the pref is not managed and the apps shortcut is not shown.
   sync_preferences::TestingPrefServiceSyncable* prefs =
       profile()->GetTestingPrefService();
   EXPECT_FALSE(prefs->IsManagedPreference(
       bookmarks::prefs::kShowAppsShortcutInBookmarkBar));
-  EXPECT_TRUE(test_helper_->apps_page_shortcut()->GetVisible());
-
-  // Hide the apps shortcut by policy, via the managed pref.
-  prefs->SetManagedPref(bookmarks::prefs::kShowAppsShortcutInBookmarkBar,
-                        std::make_unique<base::Value>(false));
   EXPECT_FALSE(test_helper_->apps_page_shortcut()->GetVisible());
 
-  // And try showing it via policy too.
+  // Shows the apps shortcut by policy, via the managed pref.
   prefs->SetManagedPref(bookmarks::prefs::kShowAppsShortcutInBookmarkBar,
                         std::make_unique<base::Value>(true));
   EXPECT_TRUE(test_helper_->apps_page_shortcut()->GetVisible());
+
+  // And try hiding it via policy too.
+  prefs->SetManagedPref(bookmarks::prefs::kShowAppsShortcutInBookmarkBar,
+                        std::make_unique<base::Value>(false));
+  EXPECT_FALSE(test_helper_->apps_page_shortcut()->GetVisible());
 }
 #endif
+
+// Verifies the SavedTabGroupBar's page navigator is set when the
+// bookmarkbarview's page navigator is set.
+TEST_F(BookmarkBarViewTest, PageNavigatorSet) {
+  // Expect SavedTabGroupBar to have a page navigator when BookmarkBarView
+  // does.
+  EXPECT_FALSE(test_helper_->saved_tab_group_bar()->page_navigator());
+  bookmark_bar_view()->SetPageNavigator(browser());
+  EXPECT_TRUE(test_helper_->saved_tab_group_bar()->page_navigator());
+
+  // Reset both page navigators.
+  bookmark_bar_view()->SetPageNavigator(nullptr);
+
+  // Expect we can set the SaveTabGroupBar's page navigator without affecting
+  // BookmarkBarView.
+  test_helper_->saved_tab_group_bar()->SetPageNavigator(browser());
+  EXPECT_TRUE(test_helper_->saved_tab_group_bar()->page_navigator());
+}
+
+TEST_F(BookmarkBarViewTest, OnSavedTabGroupUpdateBookmarkBarCallsLayout) {
+  SavedTabGroupKeyedService* keyed_service =
+      SavedTabGroupServiceFactory::GetForProfile(browser()->profile());
+  ASSERT_TRUE(keyed_service);
+  ASSERT_TRUE(keyed_service->model());
+
+  // Add 3 saved tab groups.
+  keyed_service->model()->Add(SavedTabGroup(
+      tab_groups::TabGroupId::GenerateNew(), std::u16string(u"tab group 1"),
+      tab_groups::TabGroupColorId::kGrey, {}));
+
+  tab_groups::TabGroupId button_2_id = tab_groups::TabGroupId::GenerateNew();
+  keyed_service->model()->Add(
+      SavedTabGroup(button_2_id, std::u16string(u"tab group 2"),
+                    tab_groups::TabGroupColorId::kGrey, {}));
+
+  keyed_service->model()->Add(SavedTabGroup(
+      tab_groups::TabGroupId::GenerateNew(), std::u16string(u"tab group 3"),
+      tab_groups::TabGroupColorId::kGrey, {}));
+
+  // Save the position of the 3rd button.
+  ASSERT_EQ(3u, test_helper_->saved_tab_group_bar()->children().size());
+  const auto* button_3 = test_helper_->saved_tab_group_bar()->children()[2];
+  gfx::Rect bounds_in_screen = button_3->GetBoundsInScreen();
+
+  // Remove the middle tab group.
+  keyed_service->model()->Remove(button_2_id);
+
+  // Make sure the positions of the buttons were updated.
+  EXPECT_EQ(bounds_in_screen, button_3->GetBoundsInScreen());
+}
 
 TEST_F(BookmarkBarViewInWidgetTest, UpdateTooltipText) {
   widget()->Show();

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-licenses(["notice"])  # FreeType License, zlib
+licenses(["notice"])
 
 # We can't just glob *.c, since Freetype has .c files that include other .c
 # files all over the place.  In order to simplify the process of listing them
@@ -104,7 +104,10 @@ cc_library(
         "src/**/*.h",
         "include/**/*.h",
     ]),
-    copts = ["-DFT2_BUILD_LIBRARY", "-UDEBUG"],
+    copts = [
+        "-DFT2_BUILD_LIBRARY",
+        "-UDEBUG",
+    ],
     includes = ["include"],
     textual_hdrs = glob(["src/**/*.c"]),
     visibility = ["//visibility:public"],

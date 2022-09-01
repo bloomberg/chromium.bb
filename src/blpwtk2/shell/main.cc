@@ -33,7 +33,7 @@
 #include <set>
 #include <unordered_map>
 #include <vector>
-
+#include <iostream>
 #include <blpwtk2.h>
 
 #include <v8.h>
@@ -872,6 +872,14 @@ void runHost()
     ::CloseHandle(g_hJob);
 }
 
+void logMessageHandler(blpwtk2::ToolkitCreateParams::LogMessageSeverity severity,
+                       const char* file,
+                       int line,
+                       const char* message)
+{
+    std::cout << "[" << ::GetCurrentProcessId() << ":" << GetCurrentThreadId()
+              << "][" << file << ":" << line << "]: " << message << std::endl;
+}
 
 
 // patch section: log message handler
@@ -1053,6 +1061,7 @@ int main(int, const char**)
     toolkitParams.setHeaderFooterHTML(getHeaderFooterHTMLContent());
     toolkitParams.enablePrintBackgroundGraphics();
     toolkitParams.setDictionaryPath(g_dictDir);
+    toolkitParams.setLogMessageHandler(logMessageHandler);
 
     if (!noRendererIOThread) {
         toolkitParams.enableRendererIOThread();

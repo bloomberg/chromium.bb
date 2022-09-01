@@ -76,6 +76,7 @@ class TParseContext : angle::NonCopyable
     }
 
     bool isEarlyFragmentTestsSpecified() const { return mEarlyFragmentTestsSpecified; }
+    bool isSampleQualifierSpecified() const { return mSampleQualifierSpecified; }
 
     void setLoopNestingLevel(int loopNestintLevel) { mLoopNestingLevel = loopNestintLevel; }
 
@@ -192,6 +193,12 @@ class TParseContext : angle::NonCopyable
                                         const TSourceLoc &qualifierLocation);
     void checkLocalVariableConstStorageQualifier(const TQualifierWrapperBase &qualifier);
     void checkTCSOutVarIndexIsValid(TIntermBinary *binaryExpression, const TSourceLoc &location);
+
+    void checkAdvancedBlendEquationsNotSpecified(
+        const TSourceLoc &location,
+        const AdvancedBlendEquations &advancedBlendEquations,
+        const TQualifier &qualifier);
+
     const TPragma &pragma() const { return mDirectiveHandler.pragma(); }
     const TExtensionBehavior &extensionBehavior() const
     {
@@ -493,8 +500,14 @@ class TParseContext : angle::NonCopyable
         return mTessEvaluationShaderInputPointType;
     }
 
+    const TVector<TType *> &getDeferredArrayTypesToSize() const
+    {
+        return mDeferredArrayTypesToSize;
+    }
+
     void markShaderHasPrecise() { mHasAnyPreciseType = true; }
     bool hasAnyPreciseType() const { return mHasAnyPreciseType; }
+    AdvancedBlendEquations getAdvancedBlendEquations() const { return mAdvancedBlendEquations; }
 
     ShShaderOutput getOutputType() const { return mOutputType; }
 
@@ -679,6 +692,7 @@ class TParseContext : angle::NonCopyable
     bool mFragmentPrecisionHighOnESSL1;  // true if highp precision is supported when compiling
                                          // ESSL1.
     bool mEarlyFragmentTestsSpecified;   // true if layout(early_fragment_tests) in; is specified.
+    bool mSampleQualifierSpecified;      // true if the |sample| qualifier is used
     TLayoutMatrixPacking mDefaultUniformMatrixPacking;
     TLayoutBlockStorage mDefaultUniformBlockStorage;
     TLayoutMatrixPacking mDefaultBufferMatrixPacking;
@@ -731,9 +745,11 @@ class TParseContext : angle::NonCopyable
     TLayoutTessEvaluationType mTessEvaluationShaderInputPointType;
     // List of array declarations without an explicit size that have come before layout(vertices=N).
     // Once the vertex count is specified, these arrays are sized.
-    TVector<TType *> mTessControlDeferredArrayTypesToSize;
+    TVector<TType *> mDeferredArrayTypesToSize;
     // Whether the |precise| keyword has been seen in the shader.
     bool mHasAnyPreciseType;
+
+    AdvancedBlendEquations mAdvancedBlendEquations;
 
     // Track when we add new scope for func body in ESSL 1.00 spec
     bool mFunctionBodyNewScope;

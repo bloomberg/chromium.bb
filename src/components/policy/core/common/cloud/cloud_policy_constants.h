@@ -63,6 +63,7 @@ POLICY_EXPORT extern const char kValueRequestUploadPolicyValidationReport[];
 POLICY_EXPORT extern const char kValueRequestPublicSamlUser[];
 POLICY_EXPORT extern const char kValueRequestChromeOsUserReport[];
 POLICY_EXPORT extern const char kValueRequestCertProvisioningRequest[];
+POLICY_EXPORT extern const char kValueRequestChromeProfileReport[];
 
 // Policy type strings for the policy_type field in PolicyFetchRequest.
 POLICY_EXPORT extern const char kChromeDevicePolicyType[];
@@ -135,6 +136,8 @@ enum DeviceManagementStatus {
   DM_STATUS_REQUEST_TOO_LARGE = 16,
   // Client error: Too many request.
   DM_STATUS_SERVICE_TOO_MANY_REQUESTS = 17,
+  // Service error: The device needs to be reset (ex. for re-enrollment).
+  DM_STATUS_SERVICE_DEVICE_NEEDS_RESET = 18,
   // Service error: Policy not found. Error code defined by the DM folks.
   DM_STATUS_SERVICE_POLICY_NOT_FOUND = 902,
   // Service error: ARC is not enabled on this domain.

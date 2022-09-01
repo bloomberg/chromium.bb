@@ -36,6 +36,7 @@
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/wtf.h"
+#include "third_party/skia/include/core/SkColorSpace.h"
 #include "third_party/skia/include/core/SkData.h"
 
 #if defined(ARCH_CPU_BIG_ENDIAN)
@@ -794,7 +795,7 @@ bool WEBPImageDecoder::DecodeSingleFrame(const uint8_t* data_bytes,
         ApplyPostProcessing(frame_index);
         return false;
       }
-      FALLTHROUGH;
+      [[fallthrough]];
     default:
       Clear();
       return SetFailed();

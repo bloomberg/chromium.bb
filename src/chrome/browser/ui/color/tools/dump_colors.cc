@@ -30,11 +30,12 @@ const char* enum_names[] = {
 
 #include "ui/color/color_id_macros.inc"
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #include "ui/color/color_mixers.h"
 #endif
 
-constexpr size_t kColorColumnWidth = 19 + 1;  // 'kGoogleGreenDark500 '
+// Longest color name, plus a space.  Currently, "SK_ColorTRANSPARENT ".
+constexpr size_t kColorColumnWidth = 19 + 1;
 
 std::string SkColorToString(SkColor color) {
   std::string color_string = ui::SkColorName(color);
@@ -51,7 +52,8 @@ int main(int argc, const char* argv[]) {
                              auto contrast_mode) {
     const ui::ColorProviderManager::Key key = {
         color_mode, contrast_mode,
-        ui::ColorProviderManager::SystemTheme::kDefault, nullptr};
+        ui::ColorProviderManager::SystemTheme::kDefault,
+        ui::ColorProviderManager::FrameType::kChromium, nullptr};
     ui::AddColorMixers(provider, key);
     AddChromeColorMixers(provider, key);
   };

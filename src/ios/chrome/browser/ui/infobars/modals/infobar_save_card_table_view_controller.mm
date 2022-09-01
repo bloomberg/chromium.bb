@@ -10,18 +10,19 @@
 #include "base/metrics/user_metrics_action.h"
 #import "components/autofill/core/common/autofill_features.h"
 #include "ios/chrome/browser/infobars/infobar_metrics_recorder.h"
+#import "ios/chrome/browser/net/crurl.h"
 #import "ios/chrome/browser/ui/autofill/cells/target_account_item.h"
 #import "ios/chrome/browser/ui/autofill/save_card_infobar_metrics_recorder.h"
 #import "ios/chrome/browser/ui/autofill/save_card_message_with_links.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_modal_constants.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_save_card_modal_delegate.h"
-#import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_button_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_edit_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_link_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
+#import "ios/chrome/common/ui/table_view/table_view_cells_constants.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
@@ -194,29 +195,23 @@ typedef NS_ENUM(NSInteger, ItemType) {
       self.displayedTargetAccountAvatar != nil;
 
   // Concatenate legal lines and maybe add the extra one.
-  // TODO(crbug.com/1224680): In reality the server sends a single legal line.
-  // The extra text should be added directly to the server string instead of
-  // here (see b/192290070).
-  NSMutableString* joinedMessage = [[NSMutableString alloc] init];
-  BOOL shouldAddSpace = NO;
   for (SaveCardMessageWithLinks* message in self.legalMessages) {
-    if (shouldAddSpace)
-      [joinedMessage appendString:@" "];
-    [joinedMessage appendString:message.messageText];
-    shouldAddSpace = YES;
+    TableViewTextLinkItem* legalMessageItem =
+        [[TableViewTextLinkItem alloc] initWithType:ItemTypeCardLegalMessage];
+    legalMessageItem.text = message.messageText;
+    legalMessageItem.linkURLs = message.linkURLs;
+    legalMessageItem.linkRanges = message.linkRanges;
+    [model addItem:legalMessageItem
+        toSectionWithIdentifier:SectionIdentifierContent];
   }
   if (shouldShowExtraLegalLineAndAccountInfo) {
-    if (shouldAddSpace)
-      [joinedMessage appendString:@" "];
-    [joinedMessage appendString:l10n_util::GetNSString(
-                                    IDS_IOS_CARD_WILL_BE_SAVED_TO_ACCOUNT)];
+    TableViewTextLinkItem* legalMessageItem =
+        [[TableViewTextLinkItem alloc] initWithType:ItemTypeCardLegalMessage];
+    legalMessageItem.text =
+        l10n_util::GetNSString(IDS_IOS_CARD_WILL_BE_SAVED_TO_ACCOUNT);
+    [model addItem:legalMessageItem
+        toSectionWithIdentifier:SectionIdentifierContent];
   }
-
-  TableViewTextLinkItem* legalMessageItem =
-      [[TableViewTextLinkItem alloc] initWithType:ItemTypeCardLegalMessage];
-  legalMessageItem.text = joinedMessage;
-  [model addItem:legalMessageItem
-      toSectionWithIdentifier:SectionIdentifierContent];
 
   if (shouldShowExtraLegalLineAndAccountInfo) {
     TargetAccountItem* targetTargetAccountItem =
@@ -327,13 +322,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
     case ItemTypeCardLegalMessage: {
       TableViewTextLinkCell* linkCell =
           base::mac::ObjCCast<TableViewTextLinkCell>(cell);
-      for (SaveCardMessageWithLinks* message in self.legalMessages) {
-        [message.linkRanges enumerateObjectsUsingBlock:^(
-                                NSValue* rangeValue, NSUInteger i, BOOL* stop) {
-          [linkCell setLinkURL:message.linkURLs[i]
-                      forRange:rangeValue.rangeValue];
-        }];
-      }
       linkCell.delegate = self;
       linkCell.separatorInset =
           UIEdgeInsetsMake(0, self.tableView.bounds.size.width, 0, 0);
@@ -374,8 +362,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 #pragma mark - TableViewTextLinkCellDelegate
 
 - (void)tableViewTextLinkCell:(TableViewTextLinkCell*)cell
-            didRequestOpenURL:(const GURL&)URL {
-  [self.saveCardModalDelegate dismissModalAndOpenURL:URL];
+            didRequestOpenURL:(CrURL*)URL {
+  [self.saveCardModalDelegate dismissModalAndOpenURL:URL.gurl];
 }
 
 #pragma mark - Private Methods

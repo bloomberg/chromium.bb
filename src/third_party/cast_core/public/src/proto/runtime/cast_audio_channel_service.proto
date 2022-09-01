@@ -113,7 +113,6 @@ service CastAudioChannelService {
   //
   // May only be called in the 'Playing' or 'Paused' states, and following
   // this call the state machine will remain the same state.
-  //
   rpc PushBuffer(PushBufferRequest) returns (PushBufferResponse);
 
   // Returns the current media time that has been rendered.

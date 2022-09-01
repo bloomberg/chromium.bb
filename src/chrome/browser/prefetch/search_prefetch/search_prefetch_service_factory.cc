@@ -4,6 +4,7 @@
 
 #include "chrome/browser/prefetch/search_prefetch/search_prefetch_service_factory.h"
 
+#include "base/no_destructor.h"
 #include "chrome/browser/prefetch/search_prefetch/field_trial_settings.h"
 #include "chrome/browser/prefetch/search_prefetch/search_prefetch_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -13,11 +14,8 @@
 // static
 SearchPrefetchService* SearchPrefetchServiceFactory::GetForProfile(
     Profile* profile) {
-  if (SearchPrefetchServiceIsEnabled()) {
-    return static_cast<SearchPrefetchService*>(
-        GetInstance()->GetServiceForBrowserContext(profile, true));
-  }
-  return nullptr;
+  return static_cast<SearchPrefetchService*>(
+      GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 // static

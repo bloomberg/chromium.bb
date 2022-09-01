@@ -110,12 +110,19 @@ ABSL_FLAG(int32_t, soak_overall_timeout_seconds, 0,
           "The overall number of seconds after which a soak test should "
           "stop and fail, if the desired number of iterations have not yet "
           "completed.");
+ABSL_FLAG(int32_t, soak_min_time_ms_between_rpcs, 0,
+          "The minimum time in milliseconds between consecutive RPCs in a "
+          "soak test (rpc_soak or channel_soak), useful for limiting QPS");
 ABSL_FLAG(int32_t, iteration_interval, 10,
           "The interval in seconds between rpcs. This is used by "
           "long_connection test");
 ABSL_FLAG(std::string, additional_metadata, "",
           "Additional metadata to send in each request, as a "
           "semicolon-separated list of key:value pairs.");
+ABSL_FLAG(
+    bool, log_metadata_and_status, false,
+    "If set to 'true', will print received initial and trailing metadata, "
+    "grpc-status and error message to the console, in a stable format.");
 
 using grpc::testing::CreateChannelForTestCase;
 using grpc::testing::GetServiceAccountJsonKey;
@@ -180,7 +187,7 @@ bool ParseAdditionalMetadataFlag(
 }  // namespace
 
 int main(int argc, char** argv) {
-  grpc::testing::TestEnvironment env(argc, argv);
+  grpc::testing::TestEnvironment env(&argc, argv);
   grpc::testing::InitTest(&argc, &argv, true);
   gpr_log(GPR_INFO, "Testing these cases: %s",
           absl::GetFlag(FLAGS_test_case).c_str());
@@ -190,7 +197,14 @@ int main(int argc, char** argv) {
   std::string test_case = absl::GetFlag(FLAGS_test_case);
   if (absl::GetFlag(FLAGS_additional_metadata).empty()) {
     channel_creation_func = [test_case]() {
-      return CreateChannelForTestCase(test_case);
+      std::vector<std::unique_ptr<
+          grpc::experimental::ClientInterceptorFactoryInterface>>
+          factories;
+      if (absl::GetFlag(FLAGS_log_metadata_and_status)) {
+        factories.emplace_back(
+            new grpc::testing::MetadataAndStatusLoggerInterceptorFactory());
+      }
+      return CreateChannelForTestCase(test_case, std::move(factories));
     };
   } else {
     std::multimap<std::string, std::string> additional_metadata;
@@ -206,6 +220,10 @@ int main(int argc, char** argv) {
       factories.emplace_back(
           new grpc::testing::AdditionalMetadataInterceptorFactory(
               additional_metadata));
+      if (absl::GetFlag(FLAGS_log_metadata_and_status)) {
+        factories.emplace_back(
+            new grpc::testing::MetadataAndStatusLoggerInterceptorFactory());
+      }
       return CreateChannelForTestCase(test_case, std::move(factories));
     };
   }
@@ -280,19 +298,19 @@ int main(int argc, char** argv) {
       std::bind(&grpc::testing::InteropClient::DoUnimplementedMethod, &client);
   actions["unimplemented_service"] =
       std::bind(&grpc::testing::InteropClient::DoUnimplementedService, &client);
-  actions["cacheable_unary"] =
-      std::bind(&grpc::testing::InteropClient::DoCacheableUnary, &client);
   actions["channel_soak"] = std::bind(
       &grpc::testing::InteropClient::DoChannelSoakTest, &client,
       absl::GetFlag(FLAGS_soak_iterations),
       absl::GetFlag(FLAGS_soak_max_failures),
       absl::GetFlag(FLAGS_soak_per_iteration_max_acceptable_latency_ms),
+      absl::GetFlag(FLAGS_soak_min_time_ms_between_rpcs),
       absl::GetFlag(FLAGS_soak_overall_timeout_seconds));
   actions["rpc_soak"] = std::bind(
       &grpc::testing::InteropClient::DoRpcSoakTest, &client,
       absl::GetFlag(FLAGS_soak_iterations),
       absl::GetFlag(FLAGS_soak_max_failures),
       absl::GetFlag(FLAGS_soak_per_iteration_max_acceptable_latency_ms),
+      absl::GetFlag(FLAGS_soak_min_time_ms_between_rpcs),
       absl::GetFlag(FLAGS_soak_overall_timeout_seconds));
   actions["long_lived_channel"] =
       std::bind(&grpc::testing::InteropClient::DoLongLivedChannelTest, &client,

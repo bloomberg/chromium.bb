@@ -134,9 +134,9 @@ TEST_F(CPDFSecurityHandlerEmbedderTest, OwnerPassword) {
 }
 
 TEST_F(CPDFSecurityHandlerEmbedderTest, PasswordAfterGenerateSave) {
-#if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
-  const char kChecksum[] = "c3c4fc0032f5d252327bf52d29a074fa";
-#elif defined(OS_APPLE)
+#if defined(_SKIA_SUPPORT_)
+  const char kChecksum[] = "df9fe67555b7ceb59c99036e8d2c1c76";
+#elif BUILDFLAG(IS_APPLE) && !defined(_SKIA_SUPPORT_PATHS_)
   const char kChecksum[] = "2a308e8cc20a6221112c387d122075a8";
 #else
   const char kChecksum[] = "9fe7eef8e51d15a604001854be6ed1ee";
@@ -660,6 +660,6 @@ TEST_F(CPDFSecurityHandlerEmbedderTest, UserPasswordVersion6Latin1) {
   VerifySavedModifiedHelloWorldDocumentWithPassword(kHotelUTF8);
 }
 
-TEST_F(CPDFSecurityHandlerEmbedderTest, BUG_1124998) {
+TEST_F(CPDFSecurityHandlerEmbedderTest, Bug1124998) {
   OpenAndVerifyHelloWorldDocumentWithPassword("bug_1124998.pdf", "test");
 }

@@ -8,6 +8,7 @@
 #include "base/i18n/time_formatting.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill_assistant/browser/field_formatter.h"
 #include "components/autofill_assistant/browser/script_executor_delegate.h"
@@ -135,14 +136,20 @@ bool ValueToString(UserModel* user_model,
           return false;
         }
         auto date = value->dates().values(i);
+
+        // Technically we are setting the wrong |day_of_week|, but it's ignored
+        // in practice and the formatted string will have the correct day for
+        // the date. Setting an invalid value here (e.g. -1) causes issues on
+        // Windows.
         base::Time::Exploded exploded_time = {static_cast<int>(date.year()),
                                               date.month(),
-                                              /* day_of_week = */ -1,
+                                              /* day_of_week = */ 0,
                                               date.day(),
                                               /* hour = */ 0,
                                               /* minute = */ 0,
                                               /* second = */ 0,
                                               /* millisecond = */ 0};
+
         base::Time time;
         if (!base::Time::FromLocalExploded(exploded_time, &time)) {
           DVLOG(2) << "Error evaluating " << __func__ << ": invalid date "
@@ -382,8 +389,18 @@ bool CreateLoginOptionResponse(UserModel* user_model,
   }
 
   // The result is intentionally not client_side_only, irrespective of input.
+  const LoginOptionProto& login_option = value->login_options().values(0);
   ValueProto result;
-  result.set_server_payload(value->login_options().values(0).payload());
+  switch (login_option.payload_or_tag_case()) {
+    case LoginOptionProto::kPayload:
+    case LoginOptionProto::PAYLOAD_OR_TAG_NOT_SET:
+      result.set_server_payload(login_option.payload());
+      break;
+
+    case LoginOptionProto::kTag:
+      result.mutable_strings()->add_values(login_option.tag());
+      break;
+  }
   user_model->SetValue(result_model_identifier, result);
   return true;
 }
@@ -415,26 +432,27 @@ base::WeakPtr<BasicInteractions> BasicInteractions::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
-BasicInteractions::BasicInteractions(ScriptExecutorDelegate* delegate,
-                                     ClientSettings* settings)
-    : delegate_(delegate), settings_(settings) {}
+BasicInteractions::BasicInteractions(ScriptExecutorUiDelegate* ui_delegate,
+                                     ExecutionDelegate* execution_delegate)
+    : ui_delegate_(ui_delegate), execution_delegate_(execution_delegate) {}
 
 BasicInteractions::~BasicInteractions() {}
 
 const ClientSettings& BasicInteractions::GetClientSettings() {
-  return *settings_;
+  return execution_delegate_->GetClientSettings();
 }
 bool BasicInteractions::SetValue(const SetModelValueProto& proto) {
   if (proto.model_identifier().empty()) {
     DVLOG(2) << "Error setting value: model_identifier empty";
     return false;
   }
-  auto value = delegate_->GetUserModel()->GetValue(proto.value());
+  auto value = execution_delegate_->GetUserModel()->GetValue(proto.value());
   if (!value.has_value()) {
     DVLOG(2) << "Error setting value: " << proto.value() << " not found";
     return false;
   }
-  delegate_->GetUserModel()->SetValue(proto.model_identifier(), *value);
+  execution_delegate_->GetUserModel()->SetValue(proto.model_identifier(),
+                                                *value);
   return true;
 }
 
@@ -451,7 +469,7 @@ bool BasicInteractions::ComputeValue(const ComputeValueProto& proto) {
                     "values specified";
         return false;
       }
-      return BooleanAnd(delegate_->GetUserModel(),
+      return BooleanAnd(execution_delegate_->GetUserModel(),
                         proto.result_model_identifier(), proto.boolean_and());
     case ComputeValueProto::kBooleanOr:
       if (proto.boolean_or().values().size() == 0) {
@@ -459,7 +477,7 @@ bool BasicInteractions::ComputeValue(const ComputeValueProto& proto) {
                     "values specified";
         return false;
       }
-      return BooleanOr(delegate_->GetUserModel(),
+      return BooleanOr(execution_delegate_->GetUserModel(),
                        proto.result_model_identifier(), proto.boolean_or());
     case ComputeValueProto::kBooleanNot:
       if (!proto.boolean_not().has_value()) {
@@ -467,7 +485,7 @@ bool BasicInteractions::ComputeValue(const ComputeValueProto& proto) {
                     "value not specified";
         return false;
       }
-      return BooleanNot(delegate_->GetUserModel(),
+      return BooleanNot(execution_delegate_->GetUserModel(),
                         proto.result_model_identifier(), proto.boolean_not());
     case ComputeValueProto::kToString:
       if (!proto.to_string().has_value()) {
@@ -475,18 +493,18 @@ bool BasicInteractions::ComputeValue(const ComputeValueProto& proto) {
                     "value not specified";
         return false;
       }
-      return ValueToString(delegate_->GetUserModel(),
+      return ValueToString(execution_delegate_->GetUserModel(),
                            proto.result_model_identifier(), proto.to_string());
     case ComputeValueProto::kComparison:
-      return Compare(delegate_->GetUserModel(), proto.result_model_identifier(),
-                     proto.comparison());
+      return Compare(execution_delegate_->GetUserModel(),
+                     proto.result_model_identifier(), proto.comparison());
     case ComputeValueProto::kIntegerSum:
       if (proto.integer_sum().values().size() == 0) {
         DVLOG(2) << "Error computing ComputeValue::IntegerSum: "
                     "no values specified";
         return false;
       }
-      return IntegerSum(delegate_->GetUserModel(),
+      return IntegerSum(execution_delegate_->GetUserModel(),
                         proto.result_model_identifier(), proto.integer_sum());
     case ComputeValueProto::kCreateCreditCardResponse:
       if (!proto.create_credit_card_response().has_value()) {
@@ -494,7 +512,7 @@ bool BasicInteractions::ComputeValue(const ComputeValueProto& proto) {
                     "no value specified";
         return false;
       }
-      return CreateCreditCardResponse(delegate_->GetUserModel(),
+      return CreateCreditCardResponse(execution_delegate_->GetUserModel(),
                                       proto.result_model_identifier(),
                                       proto.create_credit_card_response());
     case ComputeValueProto::kCreateLoginOptionResponse:
@@ -503,7 +521,7 @@ bool BasicInteractions::ComputeValue(const ComputeValueProto& proto) {
                     "no value specified";
         return false;
       }
-      return CreateLoginOptionResponse(delegate_->GetUserModel(),
+      return CreateLoginOptionResponse(execution_delegate_->GetUserModel(),
                                        proto.result_model_identifier(),
                                        proto.create_login_option_response());
     case ComputeValueProto::kStringEmpty:
@@ -512,7 +530,7 @@ bool BasicInteractions::ComputeValue(const ComputeValueProto& proto) {
             << "Error computing ComputeValue::StringEmpty: no value specified";
         return false;
       }
-      return StringEmpty(delegate_->GetUserModel(),
+      return StringEmpty(execution_delegate_->GetUserModel(),
                          proto.result_model_identifier(), proto.string_empty());
     case ComputeValueProto::KIND_NOT_SET:
       DVLOG(2) << "Error computing value: kind not set";
@@ -526,7 +544,7 @@ bool BasicInteractions::SetUserActions(const SetUserActionsProto& proto) {
     return false;
   }
   auto user_actions_value =
-      delegate_->GetUserModel()->GetValue(proto.user_actions());
+      execution_delegate_->GetUserModel()->GetValue(proto.user_actions());
   if (!user_actions_value.has_value()) {
     DVLOG(2) << "Error setting user actions: " << proto.user_actions()
              << " not found in model";
@@ -547,12 +565,12 @@ bool BasicInteractions::SetUserActions(const SetUserActionsProto& proto) {
     user_actions->back().SetCallback(base::DoNothing());
   }
 
-  delegate_->SetUserActions(std::move(user_actions));
+  ui_delegate_->SetUserActions(std::move(user_actions));
   return true;
 }
 
 bool BasicInteractions::ToggleUserAction(const ToggleUserActionProto& proto) {
-  auto user_actions_value = delegate_->GetUserModel()->GetValue(
+  auto user_actions_value = execution_delegate_->GetUserModel()->GetValue(
       proto.user_actions_model_identifier());
   if (!user_actions_value.has_value()) {
     DVLOG(2) << "Error evaluating " << __func__ << ": "
@@ -567,7 +585,8 @@ bool BasicInteractions::ToggleUserAction(const ToggleUserActionProto& proto) {
     return false;
   }
 
-  auto enabled_value = delegate_->GetUserModel()->GetValue(proto.enabled());
+  auto enabled_value =
+      execution_delegate_->GetUserModel()->GetValue(proto.enabled());
   if (!enabled_value.has_value()) {
     DVLOG(2) << "Error evaluating " << __func__ << ": " << proto.enabled()
              << " not found in model";
@@ -597,8 +616,8 @@ bool BasicInteractions::ToggleUserAction(const ToggleUserActionProto& proto) {
   user_actions_value->mutable_user_actions()
       ->mutable_values(user_action_index)
       ->set_enabled(enabled_value->booleans().values(0));
-  delegate_->GetUserModel()->SetValue(proto.user_actions_model_identifier(),
-                                      *user_actions_value);
+  execution_delegate_->GetUserModel()->SetValue(
+      proto.user_actions_model_identifier(), *user_actions_value);
   return true;
 }
 
@@ -666,7 +685,7 @@ bool BasicInteractions::RunConditionalCallback(
     const std::string& condition_identifier,
     base::RepeatingCallback<void()> callback) {
   auto condition_value =
-      delegate_->GetUserModel()->GetValue(condition_identifier);
+      execution_delegate_->GetUserModel()->GetValue(condition_identifier);
   if (!condition_value.has_value()) {
     DVLOG(2) << "Error evaluating " << __func__ << ": " << condition_identifier
              << " not found in model";

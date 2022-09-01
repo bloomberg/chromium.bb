@@ -1345,19 +1345,11 @@ void TestView::OnDidSchedulePaint(const gfx::Rect& rect) {
 namespace {
 
 void RotateCounterclockwise(gfx::Transform* transform) {
-  // clang-format off
-  transform->matrix().set3x3(0, -1, 0,
-                             1,  0, 0,
-                             0,  0, 1);
-  // clang-format on
+  transform->matrix().setRotateAboutZAxisSinCos(-1, 0);
 }
 
 void RotateClockwise(gfx::Transform* transform) {
-  // clang-format off
-  transform->matrix().set3x3( 0, 1, 0,  // NOLINT
-                             -1, 0, 0,
-                              0, 0, 1);
-  // clang-format on
+  transform->matrix().setRotateAboutZAxisSinCos(1, 0);
 }
 
 }  // namespace
@@ -2290,7 +2282,7 @@ TEST_F(ViewTest, HandleAccelerator) {
 // TODO(themblsha): Bring this up on non-Mac platforms. It currently fails
 // because TestView::AcceleratorPressed() is not called. See
 // http://crbug.com/667757.
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 // Test that BridgedContentView correctly handles Accelerator key events when
 // subject to OS event dispatch.
 TEST_F(ViewTest, ActivateAcceleratorOnMac) {
@@ -2333,11 +2325,11 @@ TEST_F(ViewTest, ActivateAcceleratorOnMac) {
                              key_down_accelerator.modifiers());
   EXPECT_EQ(view->accelerator_count_map_[key_down_accelerator], 1);
 }
-#endif  // OS_MAC
+#endif  // BUILDFLAG(IS_MAC)
 
 // TODO(crbug.com/667757): these tests were initially commented out when getting
 // aura to run. Figure out if still valuable and either nuke or fix.
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 TEST_F(ViewTest, ActivateAccelerator) {
   ui::Accelerator return_accelerator(ui::VKEY_RETURN, ui::EF_NONE);
   TestViewWidget test_widget(CreateParams(Widget::InitParams::TYPE_POPUP),
@@ -2419,7 +2411,7 @@ TEST_F(ViewTest, ViewInHiddenWidgetWithAccelerator) {
   EXPECT_FALSE(focus_manager->ProcessAccelerator(return_accelerator));
   EXPECT_EQ(1, view->accelerator_count_map_[return_accelerator]);
 }
-#endif  // OS_MAC
+#endif  // BUILDFLAG(IS_MAC)
 
 ////////////////////////////////////////////////////////////////////////////////
 // Native view hierachy
@@ -2550,7 +2542,7 @@ TEST_F(ViewTest, TransformPaint) {
   // Rotate |v1| counter-clockwise.
   gfx::Transform transform;
   RotateCounterclockwise(&transform);
-  transform.matrix().set(1, 3, 500.0);
+  transform.matrix().setRC(1, 3, 500.0);
   v1->SetTransform(transform);
 
   // |v2| now occupies (100, 200) to (200, 400) in |root|.
@@ -2584,7 +2576,7 @@ TEST_F(ViewTest, TransformEvent) {
   // Rotate |v1| counter-clockwise.
   gfx::Transform transform(v1->GetTransform());
   RotateCounterclockwise(&transform);
-  transform.matrix().set(1, 3, 500.0);
+  transform.matrix().setRC(1, 3, 500.0);
   v1->SetTransform(transform);
 
   // |v2| now occupies (100, 200) to (200, 400) in |root|.
@@ -2607,7 +2599,7 @@ TEST_F(ViewTest, TransformEvent) {
   // Now rotate |v2| inside |v1| clockwise.
   transform = v2->GetTransform();
   RotateClockwise(&transform);
-  transform.matrix().set(0, 3, 100.f);
+  transform.matrix().setRC(0, 3, 100.f);
   v2->SetTransform(transform);
 
   // Now, |v2| occupies (100, 100) to (200, 300) in |v1|, and (100, 300) to
@@ -2637,13 +2629,13 @@ TEST_F(ViewTest, TransformEvent) {
   // Rotate |v3| clockwise with respect to |v2|.
   transform = v1->GetTransform();
   RotateClockwise(&transform);
-  transform.matrix().set(0, 3, 30.f);
+  transform.matrix().setRC(0, 3, 30.f);
   v3->SetTransform(transform);
 
   // Scale |v2| with respect to |v1| along both axis.
   transform = v2->GetTransform();
-  transform.matrix().set(0, 0, 0.8f);
-  transform.matrix().set(1, 1, 0.5f);
+  transform.matrix().setRC(0, 0, 0.8f);
+  transform.matrix().setRC(1, 1, 0.5f);
   v2->SetTransform(transform);
 
   // |v3| occupies (108, 105) to (132, 115) in |root|.
@@ -2674,7 +2666,7 @@ TEST_F(ViewTest, TransformEvent) {
   // Rotate |v3| clockwise with respect to |v2|, and scale it along both axis.
   transform = v3->GetTransform();
   RotateClockwise(&transform);
-  transform.matrix().set(0, 3, 30.f);
+  transform.matrix().setRC(0, 3, 30.f);
   // Rotation sets some scaling transformation. Using SetScale would overwrite
   // that and pollute the rotation. So combine the scaling with the existing
   // transforamtion.
@@ -2685,8 +2677,8 @@ TEST_F(ViewTest, TransformEvent) {
 
   // Translate |v2| with respect to |v1|.
   transform = v2->GetTransform();
-  transform.matrix().set(0, 3, 10.f);
-  transform.matrix().set(1, 3, 10.f);
+  transform.matrix().setRC(0, 3, 10.f);
+  transform.matrix().setRC(1, 3, 10.f);
   v2->SetTransform(transform);
 
   // |v3| now occupies (120, 120) to (144, 130) in |root|.
@@ -2727,7 +2719,7 @@ TEST_F(ViewTest, TransformVisibleBound) {
   // Rotate |child| counter-clockwise
   gfx::Transform transform;
   RotateCounterclockwise(&transform);
-  transform.matrix().set(1, 3, 50.f);
+  transform.matrix().setRC(1, 3, 50.f);
   child->SetTransform(transform);
   EXPECT_EQ(gfx::Rect(40, 0, 10, 50), child->GetVisibleBounds());
 
@@ -2932,7 +2924,7 @@ TEST_F(ViewTest, ConversionsWithTransform) {
     transform.Translate(1.0, 1.0);
 
     // convert to a 3x3 matrix.
-    const SkMatrix& matrix = SkMatrix(transform.matrix());
+    SkMatrix matrix = transform.matrix().asM33();
 
     EXPECT_EQ(210, matrix.getTranslateX());
     EXPECT_EQ(-55, matrix.getTranslateY());
@@ -2953,7 +2945,7 @@ TEST_F(ViewTest, ConversionsWithTransform) {
     transform.ConcatTransform(t3);
 
     // convert to a 3x3 matrix
-    const SkMatrix& matrix = SkMatrix(transform.matrix());
+    SkMatrix matrix = transform.matrix().asM33();
 
     EXPECT_EQ(210, matrix.getTranslateX());
     EXPECT_EQ(-55, matrix.getTranslateY());
@@ -3136,7 +3128,7 @@ TEST_F(ViewTest, ConvertRectWithTransform) {
   // Rotate |v2|
   gfx::Transform t2;
   RotateCounterclockwise(&t2);
-  t2.matrix().set(1, 3, 100.f);
+  t2.matrix().setRC(1, 3, 100.f);
   v2->SetTransform(t2);
 
   // |v2| now occupies (30, 30) to (230, 130) in |widget|
@@ -3879,13 +3871,24 @@ class TestingLayerViewObserver : public ViewObserver {
     return value;
   }
 
+  gfx::Rect GetLastClipRectAndReset() {
+    gfx::Rect value = last_clip_rect_;
+    last_clip_rect_ = gfx::Rect();
+    return value;
+  }
+
  private:
   // ViewObserver:
   void OnLayerTargetBoundsChanged(View* view) override {
     last_layer_bounds_ = view->layer()->bounds();
   }
 
+  void OnViewLayerClipRectChanged(View* view) override {
+    last_clip_rect_ = view->layer()->clip_rect();
+  }
+
   gfx::Rect last_layer_bounds_;
+  gfx::Rect last_clip_rect_;
   raw_ptr<View> view_;
 };
 
@@ -4130,6 +4133,27 @@ TEST_F(ViewLayerTest, BoundsChangeWithLayer) {
   EXPECT_EQ(v2->layer()->bounds(), v2_observer.GetLastLayerBoundsAndReset());
 }
 
+// Verifies the view observer is triggered when the clip rect of view's layer is
+// updated.
+TEST_F(ViewLayerTest, LayerClipRectChanged) {
+  View* content_view = widget()->SetContentsView(std::make_unique<View>());
+
+  View* v1 = content_view->AddChildView(std::make_unique<View>());
+  v1->SetPaintToLayer();
+
+  auto* v1_layer = v1->layer();
+  ASSERT_TRUE(v1_layer != nullptr);
+
+  TestingLayerViewObserver v1_observer(v1);
+  v1_layer->SetClipRect(gfx::Rect(10, 10, 20, 20));
+  EXPECT_EQ(v1_layer->clip_rect(), gfx::Rect(10, 10, 20, 20));
+  EXPECT_EQ(v1_layer->clip_rect(), v1_observer.GetLastClipRectAndReset());
+
+  v1_layer->SetClipRect(gfx::Rect(20, 20, 40, 40));
+  EXPECT_EQ(v1_layer->clip_rect(), gfx::Rect(20, 20, 40, 40));
+  EXPECT_EQ(v1_layer->clip_rect(), v1_observer.GetLastClipRectAndReset());
+}
+
 // Make sure layers are positioned correctly in RTL.
 TEST_F(ViewLayerTest, BoundInRTL) {
   base::test::ScopedRestoreICUDefaultLocale scoped_locale_("he");
@@ -4233,13 +4257,13 @@ TEST_F(ViewLayerTest, ToggleVisibilityWithTransform) {
   gfx::Transform transform;
   transform.Scale(2.0, 2.0);
   view->SetTransform(transform);
-  EXPECT_EQ(2.0f, view->GetTransform().matrix().get(0, 0));
+  EXPECT_EQ(2.0f, view->GetTransform().matrix().rc(0, 0));
 
   view->SetVisible(false);
-  EXPECT_EQ(2.0f, view->GetTransform().matrix().get(0, 0));
+  EXPECT_EQ(2.0f, view->GetTransform().matrix().rc(0, 0));
 
   view->SetVisible(true);
-  EXPECT_EQ(2.0f, view->GetTransform().matrix().get(0, 0));
+  EXPECT_EQ(2.0f, view->GetTransform().matrix().rc(0, 0));
 }
 
 // Verifies a transform persists after removing/adding a view with a transform.
@@ -4248,17 +4272,17 @@ TEST_F(ViewLayerTest, ResetTransformOnLayerAfterAdd) {
   gfx::Transform transform;
   transform.Scale(2.0, 2.0);
   view->SetTransform(transform);
-  EXPECT_EQ(2.0f, view->GetTransform().matrix().get(0, 0));
+  EXPECT_EQ(2.0f, view->GetTransform().matrix().rc(0, 0));
   ASSERT_TRUE(view->layer() != nullptr);
-  EXPECT_EQ(2.0f, view->layer()->transform().matrix().get(0, 0));
+  EXPECT_EQ(2.0f, view->layer()->transform().matrix().rc(0, 0));
 
   View* parent = view->parent();
   parent->RemoveChildView(view);
   parent->AddChildView(view);
 
-  EXPECT_EQ(2.0f, view->GetTransform().matrix().get(0, 0));
+  EXPECT_EQ(2.0f, view->GetTransform().matrix().rc(0, 0));
   ASSERT_TRUE(view->layer() != nullptr);
-  EXPECT_EQ(2.0f, view->layer()->transform().matrix().get(0, 0));
+  EXPECT_EQ(2.0f, view->layer()->transform().matrix().rc(0, 0));
 }
 
 // Makes sure that layer visibility is correct after toggling View visibility.
@@ -5549,60 +5573,28 @@ TEST_F(ViewTest, RemoveAllChildViewsNullsFocusListPointers) {
   delete last;
 }
 
-namespace {
-
-// Traverses the focus list starting at |first| and returns the views in
-// order as a vector. Checks the consistency of the list as it goes.
-std::vector<View*> ViewsInFocusList(View* first) {
-  std::vector<View*> result;
-
-  // Tracks the views traversed so far. Used to check for cycles.
-  std::set<View*> seen_views;
-
-  View* cur = first;
-  while (cur != nullptr) {
-    // Check a cycle hasn't been found. If there is a cycle, return early.
-    const bool seen = base::Contains(seen_views, cur);
-    EXPECT_FALSE(seen);
-    if (seen)
-      return result;
-
-    seen_views.insert(cur);
-    result.push_back(cur);
-
-    View* const next = cur->GetNextFocusableView();
-    if (next)
-      EXPECT_EQ(next->GetPreviousFocusableView(), cur);
-    cur = next;
-  }
-
-  return result;
-}
-
-}  // namespace
-
 TEST_F(ViewTest, InsertBeforeInFocusList) {
   View parent;
   View* const v1 = parent.AddChildView(std::make_unique<View>());
   View* const v2 = parent.AddChildView(std::make_unique<View>());
   View* const v3 = parent.AddChildView(std::make_unique<View>());
 
-  EXPECT_THAT(ViewsInFocusList(v1), ElementsAre(v1, v2, v3));
+  EXPECT_THAT(parent.GetChildrenFocusList(), ElementsAre(v1, v2, v3));
 
   v2->InsertBeforeInFocusList(v1);
-  EXPECT_THAT(ViewsInFocusList(v2), ElementsAre(v2, v1, v3));
+  EXPECT_THAT(parent.GetChildrenFocusList(), ElementsAre(v2, v1, v3));
 
   v3->InsertBeforeInFocusList(v1);
-  EXPECT_THAT(ViewsInFocusList(v2), ElementsAre(v2, v3, v1));
+  EXPECT_THAT(parent.GetChildrenFocusList(), ElementsAre(v2, v3, v1));
 
   v1->InsertBeforeInFocusList(v2);
-  EXPECT_THAT(ViewsInFocusList(v1), ElementsAre(v1, v2, v3));
+  EXPECT_THAT(parent.GetChildrenFocusList(), ElementsAre(v1, v2, v3));
 
   v1->InsertBeforeInFocusList(v3);
-  EXPECT_THAT(ViewsInFocusList(v2), ElementsAre(v2, v1, v3));
+  EXPECT_THAT(parent.GetChildrenFocusList(), ElementsAre(v2, v1, v3));
 
   v1->InsertBeforeInFocusList(v3);
-  EXPECT_THAT(ViewsInFocusList(v2), ElementsAre(v2, v1, v3));
+  EXPECT_THAT(parent.GetChildrenFocusList(), ElementsAre(v2, v1, v3));
 }
 
 TEST_F(ViewTest, InsertAfterInFocusList) {
@@ -5611,25 +5603,25 @@ TEST_F(ViewTest, InsertAfterInFocusList) {
   View* const v2 = parent.AddChildView(std::make_unique<View>());
   View* const v3 = parent.AddChildView(std::make_unique<View>());
 
-  EXPECT_THAT(ViewsInFocusList(v1), ElementsAre(v1, v2, v3));
+  EXPECT_THAT(parent.GetChildrenFocusList(), ElementsAre(v1, v2, v3));
 
   v1->InsertAfterInFocusList(v2);
-  EXPECT_THAT(ViewsInFocusList(v2), ElementsAre(v2, v1, v3));
+  EXPECT_THAT(parent.GetChildrenFocusList(), ElementsAre(v2, v1, v3));
 
   v1->InsertAfterInFocusList(v3);
-  EXPECT_THAT(ViewsInFocusList(v2), ElementsAre(v2, v3, v1));
+  EXPECT_THAT(parent.GetChildrenFocusList(), ElementsAre(v2, v3, v1));
 
   v2->InsertAfterInFocusList(v1);
-  EXPECT_THAT(ViewsInFocusList(v3), ElementsAre(v3, v1, v2));
+  EXPECT_THAT(parent.GetChildrenFocusList(), ElementsAre(v3, v1, v2));
 
   v3->InsertAfterInFocusList(v2);
-  EXPECT_THAT(ViewsInFocusList(v1), ElementsAre(v1, v2, v3));
+  EXPECT_THAT(parent.GetChildrenFocusList(), ElementsAre(v1, v2, v3));
 
   v1->InsertAfterInFocusList(v3);
-  EXPECT_THAT(ViewsInFocusList(v2), ElementsAre(v2, v3, v1));
+  EXPECT_THAT(parent.GetChildrenFocusList(), ElementsAre(v2, v3, v1));
 
   v1->InsertAfterInFocusList(v3);
-  EXPECT_THAT(ViewsInFocusList(v2), ElementsAre(v2, v3, v1));
+  EXPECT_THAT(parent.GetChildrenFocusList(), ElementsAre(v2, v3, v1));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

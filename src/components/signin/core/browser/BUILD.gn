@@ -42,12 +42,8 @@ static_library("browser") {
     "signin_internals_util.h",
     "signin_investigator.cc",
     "signin_investigator.h",
-    "signin_status_metrics_provider.cc",
-    "signin_status_metrics_provider.h",
-    "signin_status_metrics_provider_base.cc",
-    "signin_status_metrics_provider_base.h",
-    "signin_status_metrics_provider_delegate.cc",
-    "signin_status_metrics_provider_delegate.h",
+    "signin_status_metrics_provider_helpers.cc",
+    "signin_status_metrics_provider_helpers.h",
   ]
 
   public_deps = [
@@ -84,12 +80,8 @@ static_library("browser") {
       "active_directory_account_reconcilor_delegate.h",
     ]
     deps += [
+      "//ash/components/tpm",
       "//chromeos/crosapi/mojom",
-      "//chromeos/tpm:tpm",
-    ]
-    sources -= [
-      "signin_status_metrics_provider.cc",
-      "signin_status_metrics_provider_delegate.cc",
     ]
   }
 
@@ -97,6 +89,12 @@ static_library("browser") {
     deps += [
       "//chromeos/crosapi/mojom",
       "//chromeos/lacros",
+    ]
+    sources += [
+      "consistency_cookie_manager.cc",
+      "consistency_cookie_manager.h",
+      "mirror_landing_account_reconcilor_delegate.cc",
+      "mirror_landing_account_reconcilor_delegate.h",
     ]
   }
 
@@ -116,11 +114,10 @@ source_set("unit_tests") {
     "account_investigator_unittest.cc",
     "account_reconcilor_delegate_unittest.cc",
     "account_reconcilor_unittest.cc",
-    "dice_account_reconcilor_delegate_unittest.cc",
     "signin_error_controller_unittest.cc",
     "signin_header_helper_unittest.cc",
     "signin_investigator_unittest.cc",
-    "signin_status_metrics_provider_unittest.cc",
+    "signin_status_metrics_provider_helpers_unittest.cc",
   ]
 
   deps = [
@@ -147,12 +144,12 @@ source_set("unit_tests") {
 
   if (is_chromeos_ash) {
     deps += [
+      "//ash/components/tpm:test_support",
       "//chromeos/crosapi/mojom",
-      "//chromeos/tpm:test_support",
     ]
     sources -= [
       "account_investigator_unittest.cc",
-      "signin_status_metrics_provider_unittest.cc",
+      "signin_status_metrics_provider_helpers_unittest.cc",
     ]
   }
 
@@ -162,10 +159,10 @@ source_set("unit_tests") {
       "//chromeos/lacros",
       "//chromeos/lacros:test_support",
     ]
-  }
-
-  if (!enable_dice_support) {
-    sources -= [ "dice_account_reconcilor_delegate_unittest.cc" ]
+    sources += [
+      "consistency_cookie_manager_unittest.cc",
+      "mirror_landing_account_reconcilor_delegate_unittest.cc",
+    ]
   }
 }
 

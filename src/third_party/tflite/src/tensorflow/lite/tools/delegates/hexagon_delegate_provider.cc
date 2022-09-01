@@ -56,7 +56,10 @@ std::vector<Flag> HexagonDelegateProvider::CreateFlags(
       CreateFlag<bool>("use_hexagon", params, "Use Hexagon delegate"),
       CreateFlag<std::string>(
           "hexagon_lib_path", params,
-          "The library path for the underlying Hexagon libraries."),
+          "The library path for the underlying Hexagon libraries. The library "
+          "path ONLY for the libhexagon_nn_skel*.so files. For "
+          "libhexagon_interface.so, it needs to be on a system library search "
+          "path such as LD_LIBRARY_PATH."),
       CreateFlag<bool>("hexagon_profiling", params,
                        "Enables Hexagon profiling")};
   return flags;
@@ -78,7 +81,7 @@ void HexagonDelegateProvider::LogParams(const ToolParams& params,
 
 TfLiteDelegatePtr HexagonDelegateProvider::CreateTfLiteDelegate(
     const ToolParams& params) const {
-  TfLiteDelegatePtr delegate(nullptr, [](TfLiteDelegate*) {});
+  TfLiteDelegatePtr delegate = CreateNullDelegate();
 #if defined(TFLITE_ENABLE_HEXAGON)
   if (params.Get<bool>("use_hexagon")) {
     TfLiteHexagonDelegateOptions options = {0};

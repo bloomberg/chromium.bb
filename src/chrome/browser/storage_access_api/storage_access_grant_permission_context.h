@@ -30,7 +30,7 @@ class StorageAccessGrantPermissionContext
                            ImplicitGrantLimitPerRequestingOrigin);
   FRIEND_TEST_ALL_PREFIXES(StorageAccessGrantPermissionContextAPIEnabledTest,
                            ExplicitGrantDenial);
-  FRIEND_TEST_ALL_PREFIXES(StorageAccessGrantPermissionContextTest,
+  FRIEND_TEST_ALL_PREFIXES(StorageAccessGrantPermissionContextAPIEnabledTest,
                            ExplicitGrantAccept);
   friend class StorageAccessGrantPermissionContextTest;
   friend class StorageAccessGrantPermissionContextAPIEnabledTest;
@@ -43,7 +43,6 @@ class StorageAccessGrantPermissionContext
   // PermissionContextBase:
   bool IsRestrictedToSecureOrigins() const override;
   void DecidePermission(
-      content::WebContents* web_contents,
       const permissions::PermissionRequestID& id,
       const GURL& requesting_origin,
       const GURL& embedding_origin,

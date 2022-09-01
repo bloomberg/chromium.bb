@@ -74,20 +74,17 @@ export function onboardingLandingPageTest() {
     assertEquals('Hardware verification is not complete.', savedError.message);
   });
 
-  test('OnBoardingPageValidationCompleteEnablesNextButton', async () => {
-    await initializeLandingPage();
-    let disableNextButtonEventFired = false;
-    let disableNextButton = true;
-    component.addEventListener('disable-next-button', (e) => {
-      disableNextButtonEventFired = true;
-      disableNextButton = e.detail;
-    });
+  /**
+   * @param {string} buttonNameSelector
+   * @return {!Promise}
+   */
+  function clickButton(buttonNameSelector) {
+    assertTrue(!!component);
 
-    service.triggerHardwareVerificationStatusObserver(true, '', 0);
-    await flushTasks();
-    assertTrue(disableNextButtonEventFired);
-    assertFalse(disableNextButton);
-  });
+    const button = component.shadowRoot.querySelector(buttonNameSelector);
+    button.click();
+    return flushTasks();
+  }
 
   test(
       'OnBoardingPageValidationCompleteOnNextCallsBeginFinalization',
@@ -140,8 +137,13 @@ export function onboardingLandingPageTest() {
     assertFalse(isVisible(error));
   });
 
-  test('OnBoardingPageValidationFailedWarningAndErrorVisible', async () => {
+  test('OnBoardingPageValidationFailedWarning', async () => {
     await initializeLandingPage();
+
+    // Link should not be created before the failure occurs.
+    assertFalse(
+        !!component.shadowRoot.querySelector('#unqualifiedComponentsLink'));
+
     service.triggerHardwareVerificationStatusObserver(false, 'FAILURE', 0);
     await flushTasks();
 
@@ -151,8 +153,60 @@ export function onboardingLandingPageTest() {
     const error = component.shadowRoot.querySelector('#errorMessage');
     assertTrue(busy.hidden);
     assertTrue(isVisible(verification));
-    assertEquals('shimless-icon:warning', verification.icon);
-    assertTrue(isVisible(error));
-    assertEquals('FAILURE', error.innerHTML);
+    assertTrue(
+        !!component.shadowRoot.querySelector('#unqualifiedComponentsLink'));
   });
+
+  test('OnBoardingPageValidationFailedOpenDialog', async () => {
+    await initializeLandingPage();
+
+    const failedComponent = 'Keyboard';
+    service.triggerHardwareVerificationStatusObserver(
+        false, failedComponent, 0);
+    await flushTasks();
+
+    component.shadowRoot.querySelector('#unqualifiedComponentsLink').click();
+
+    assertTrue(
+        component.shadowRoot.querySelector('#unqualifiedComponentsDialog')
+            .open);
+    assertEquals(
+        failedComponent,
+        component.shadowRoot.querySelector('#dialogBody').textContent.trim());
+  });
+
+  test('OnBoardingPageExitButtonDispatchesExitEvent', async () => {
+    await initializeLandingPage();
+
+    let exitButtonEventFired = false;
+    component.addEventListener('click-exit-button', (e) => {
+      exitButtonEventFired = true;
+    });
+
+    await clickButton('#landingExit');
+    await flushTasks();
+
+    assertTrue(exitButtonEventFired);
+  });
+
+  test(
+      'OnBoardingPageGetStartedButtonDispatchesTransitionStateEvent',
+      async () => {
+        await initializeLandingPage();
+
+        let getStartedButtonEventFired = false;
+        component.addEventListener('transition-state', (e) => {
+          getStartedButtonEventFired = true;
+        });
+
+        const getStartedButton =
+            component.shadowRoot.querySelector('#getStartedButton');
+        getStartedButton.disabled = false;
+
+        await clickButton('#getStartedButton');
+
+        await flushTasks();
+
+        assertTrue(getStartedButtonEventFired);
+      });
 }

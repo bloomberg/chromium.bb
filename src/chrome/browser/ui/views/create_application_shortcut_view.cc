@@ -8,10 +8,9 @@
 #include "base/callback_helpers.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/web_applications/extensions/web_app_extension_shortcut.h"
-#include "chrome/browser/web_applications/os_integration_manager.h"
+#include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
@@ -24,10 +23,10 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "base/win/shortcut.h"
 #include "base/win/windows_version.h"
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
 namespace chrome {
 
@@ -103,9 +102,6 @@ CreateChromeApplicationShortcutView::CreateChromeApplicationShortcutView(
   SetCancelCallback(base::BindOnce(canceled, base::Unretained(this)));
   SetCloseCallback(base::BindOnce(canceled, base::Unretained(this)));
   InitControls();
-
-  chrome::RecordDialogCreation(
-      chrome::DialogIdentifier::CREATE_CHROME_APPLICATION_SHORTCUT);
 }
 
 CreateChromeApplicationShortcutView::~CreateChromeApplicationShortcutView() {}
@@ -123,7 +119,7 @@ void CreateChromeApplicationShortcutView::InitControls() {
   std::unique_ptr<views::Checkbox> menu_check_box;
   std::unique_ptr<views::Checkbox> quick_launch_check_box;
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   base::win::Version version = base::win::GetVersion();
   // Do not allow creating shortcuts on the Start Screen for Windows 8.
   if (version != base::win::Version::WIN8 &&
@@ -143,7 +139,7 @@ void CreateChromeApplicationShortcutView::InitControls() {
                               IDS_CREATE_SHORTCUTS_QUICK_LAUNCH_BAR_CHKBOX),
                     prefs::kWebAppCreateInQuickLaunchBar);
   }
-#elif defined(OS_POSIX)
+#elif BUILDFLAG(IS_POSIX)
   menu_check_box =
       AddCheckbox(l10n_util::GetStringUTF16(IDS_CREATE_SHORTCUTS_MENU_CHKBOX),
                   prefs::kWebAppCreateInAppsMenu);
@@ -204,10 +200,10 @@ void CreateChromeApplicationShortcutView::OnDialogAccepted() {
         web_app::APP_MENU_LOCATION_SUBDIR_CHROMEAPPS;
   }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   creation_locations.in_quick_launch_bar =
       quick_launch_check_box_ && quick_launch_check_box_->GetChecked();
-#elif defined(OS_POSIX)
+#elif BUILDFLAG(IS_POSIX)
   // Create shortcut in Mac dock or as Linux (gnome/kde) application launcher
   // are not implemented yet.
   creation_locations.in_quick_launch_bar = false;

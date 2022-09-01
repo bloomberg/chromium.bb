@@ -43,7 +43,9 @@ class ThreadTaskRunnerHandle;
 //
 //   - Methods RunsTasksInCurrentSequence() and Post[Delayed]Task() can be
 //     called from any thread, but the rest of the methods must be called on
-//     the same thread the TestMockTimeTaskRunner was created on.
+//     the same thread the TestMockTimeTaskRunner was created on unless a call
+//     is made to DetachFromThread(), in which case usage can switch to a
+//     different thread.
 //   - It allows for reentrancy, in that it handles the running of tasks that in
 //     turn call back into it (e.g., to post more tasks).
 //   - Tasks are stored in a priority queue, and executed in the increasing
@@ -201,11 +203,20 @@ class TestMockTimeTaskRunner : public SingleThreadTaskRunner,
   size_t GetPendingTaskCount();
   TimeDelta NextPendingTaskDelay();
 
+  // Allow invoking methods from different threads.
+  // It is the caller's responsibility to ensure there are no data races.
+  void DetachFromThread();
+
   // SingleThreadTaskRunner:
   bool RunsTasksInCurrentSequence() const override;
   bool PostDelayedTask(const Location& from_here,
                        OnceClosure task,
                        TimeDelta delay) override;
+  bool PostDelayedTaskAt(subtle::PostDelayedTaskPassKey,
+                         const Location& from_here,
+                         OnceClosure task,
+                         TimeTicks delayed_run_time,
+                         subtle::DelayPolicy deadline_policy) override;
   bool PostNonNestableDelayedTask(const Location& from_here,
                                   OnceClosure task,
                                   TimeDelta delay) override;

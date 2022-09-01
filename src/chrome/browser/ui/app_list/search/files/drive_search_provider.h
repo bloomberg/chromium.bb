@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "ash/components/drivefs/mojom/drivefs.mojom-forward.h"
+#include "ash/components/drivefs/mojom/drivefs.mojom.h"
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
@@ -28,6 +28,20 @@ namespace app_list {
 
 class DriveSearchProvider : public SearchProvider {
  public:
+  struct ItemInfo {
+    base::FilePath reparented_path;
+    drivefs::mojom::FileMetadataPtr metadata;
+    absl::optional<base::Time> last_accessed;
+
+    ItemInfo(const base::FilePath& reparented_path,
+             drivefs::mojom::FileMetadataPtr metadata,
+             const absl::optional<base::Time>& last_accessed);
+    ~ItemInfo();
+
+    ItemInfo(const ItemInfo&) = delete;
+    ItemInfo& operator=(const ItemInfo&) = delete;
+  };
+
   explicit DriveSearchProvider(Profile* profile);
   ~DriveSearchProvider() override;
 
@@ -35,14 +49,18 @@ class DriveSearchProvider : public SearchProvider {
   DriveSearchProvider& operator=(const DriveSearchProvider&) = delete;
 
   // SearchProvider:
-  ash::AppListSearchResultType ResultType() override;
+  ash::AppListSearchResultType ResultType() const override;
   void Start(const std::u16string& query) override;
 
  private:
-  void SetSearchResults(drive::FileError error,
-                        std::vector<drivefs::mojom::QueryItemPtr> paths);
-  std::unique_ptr<FileResult> MakeResult(const base::FilePath& path,
-                                         FileResult::Type type);
+  void OnSearchDriveByFileName(drive::FileError error,
+                               std::vector<drivefs::mojom::QueryItemPtr> items);
+  void SetSearchResults(std::vector<std::unique_ptr<ItemInfo>> items);
+  std::unique_ptr<FileResult> MakeResult(
+      const base::FilePath& path,
+      double relevance,
+      FileResult::Type type,
+      const absl::optional<std::string>& drive_id);
 
   base::TimeTicks query_start_time_;
   std::u16string last_query_;

@@ -1,0 +1,143 @@
+Tests Application Panel preview for resources of different types.
+
+Initial state:
+Application
+  Manifest (selected)
+  Service Workers
+  Storage
+Storage
+  Local Storage
+    http://127.0.0.1:8000
+  Session Storage
+    http://127.0.0.1:8000
+  IndexedDB
+  Web SQL
+  Cookies
+    http://127.0.0.1:8000
+  Trust Tokens
+  Interest Groups
+Cache
+  Cache Storage
+  Back/forward cache
+Background Services
+  Background Fetch
+  Background Sync
+  Notifications
+  Payment Handler
+  Periodic Background Sync
+  Push Messaging
+  Reporting API
+Frames
+  top
+    Images
+      image.png
+    Scripts
+      json-value.js
+    inspected-page.html
+log: visible view: unknown
+Revealed json-value.js:
+Application
+  Manifest
+  Service Workers
+  Storage
+Storage
+  Local Storage
+    http://127.0.0.1:8000
+  Session Storage
+    http://127.0.0.1:8000
+  IndexedDB
+  Web SQL
+  Cookies
+    http://127.0.0.1:8000
+  Trust Tokens
+  Interest Groups
+Cache
+  Cache Storage
+  Back/forward cache
+Background Services
+  Background Fetch
+  Background Sync
+  Notifications
+  Payment Handler
+  Periodic Background Sync
+  Push Messaging
+  Reporting API
+Frames
+  top
+    Images
+      image.png
+    Scripts
+      json-value.js (selected)
+    inspected-page.html
+log: visible view: json
+Revealed image.png:
+Application
+  Manifest
+  Service Workers
+  Storage
+Storage
+  Local Storage
+    http://127.0.0.1:8000
+  Session Storage
+    http://127.0.0.1:8000
+  IndexedDB
+  Web SQL
+  Cookies
+    http://127.0.0.1:8000
+  Trust Tokens
+  Interest Groups
+Cache
+  Cache Storage
+  Back/forward cache
+Background Services
+  Background Fetch
+  Background Sync
+  Notifications
+  Payment Handler
+  Periodic Background Sync
+  Push Messaging
+  Reporting API
+Frames
+  top
+    Images
+      image.png (selected)
+    Scripts
+      json-value.js
+    inspected-page.html
+log: visible view: image
+Revealed resources-panel-resource-preview.js:
+Application
+  Manifest
+  Service Workers
+  Storage
+Storage
+  Local Storage
+    http://127.0.0.1:8000
+  Session Storage
+    http://127.0.0.1:8000
+  IndexedDB
+  Web SQL
+  Cookies
+    http://127.0.0.1:8000
+  Trust Tokens
+  Interest Groups
+Cache
+  Cache Storage
+  Back/forward cache
+Background Services
+  Background Fetch
+  Background Sync
+  Notifications
+  Payment Handler
+  Periodic Background Sync
+  Push Messaging
+  Reporting API
+Frames
+  top
+    Images
+      image.png
+    Scripts
+      json-value.js (selected)
+    inspected-page.html
+log: visible view: json
+

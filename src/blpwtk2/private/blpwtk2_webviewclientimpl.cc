@@ -37,7 +37,7 @@ namespace blpwtk2 {
                         // class WebViewClientImpl
                         // -----------------------
 
-WebViewClientImpl::WebViewClientImpl(mojom::WebViewHostPtr  hostPtr,
+WebViewClientImpl::WebViewClientImpl(mojo::Remote<mojom::WebViewHost> hostPtr,
                                      WebViewClientDelegate *delegate)
     : d_hostPtr(std::move(hostPtr))
     , d_delegate(delegate)

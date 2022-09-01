@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/cast_streaming/public/remoting_message_factories.h"
+
 #include "components/cast_streaming/public/remoting_proto_enum_utils.h"
 #include "components/cast_streaming/public/remoting_proto_utils.h"
 #include "media/base/audio_decoder_config.h"
@@ -113,6 +115,52 @@ CreateMessageForInitializationComplete(bool has_succeeded) {
 
 std::unique_ptr<openscreen::cast::RpcMessage> CreateMessageForFlushComplete() {
   return CreateMessage(openscreen::cast::RpcMessage::RPC_R_FLUSHUNTIL_CALLBACK);
+}
+
+std::unique_ptr<openscreen::cast::RpcMessage>
+CreateMessageForAcquireRendererDone(
+    openscreen::cast::RpcMessenger::Handle receiver_renderer_handle) {
+  auto rpc =
+      CreateMessage(openscreen::cast::RpcMessage::RPC_ACQUIRE_RENDERER_DONE);
+  rpc->set_integer_value(receiver_renderer_handle);
+  return rpc;
+}
+
+std::unique_ptr<openscreen::cast::RpcMessage>
+CreateMessageForDemuxerStreamInitialize(
+    openscreen::cast::RpcMessenger::Handle local_handle) {
+  DCHECK_NE(local_handle, openscreen::cast::RpcMessenger::kInvalidHandle);
+  auto rpc = std::make_unique<openscreen::cast::RpcMessage>();
+  rpc->set_proc(openscreen::cast::RpcMessage::RPC_DS_INITIALIZE);
+  rpc->set_integer_value(local_handle);
+  return rpc;
+}
+
+std::unique_ptr<openscreen::cast::RpcMessage>
+CreateMessageForDemuxerStreamReadUntil(
+    openscreen::cast::RpcMessenger::Handle local_handle,
+    uint32_t buffers_requested) {
+  DCHECK_NE(local_handle, openscreen::cast::RpcMessenger::kInvalidHandle);
+  auto rpc = std::make_unique<openscreen::cast::RpcMessage>();
+  rpc->set_proc(openscreen::cast::RpcMessage::RPC_DS_READUNTIL);
+  auto* message = rpc->mutable_demuxerstream_readuntil_rpc();
+  message->set_count(buffers_requested);
+  message->set_callback_handle(local_handle);
+  return rpc;
+}
+
+std::unique_ptr<openscreen::cast::RpcMessage>
+CreateMessageForDemuxerStreamEnableBitstreamConverter() {
+  auto rpc = std::make_unique<openscreen::cast::RpcMessage>();
+  rpc->set_proc(openscreen::cast::RpcMessage::RPC_DS_ENABLEBITSTREAMCONVERTER);
+  return rpc;
+}
+
+std::unique_ptr<openscreen::cast::RpcMessage>
+CreateMessageForDemuxerStreamError() {
+  auto rpc = std::make_unique<openscreen::cast::RpcMessage>();
+  rpc->set_proc(openscreen::cast::RpcMessage::RPC_DS_ONERROR);
+  return rpc;
 }
 
 }  // namespace remoting

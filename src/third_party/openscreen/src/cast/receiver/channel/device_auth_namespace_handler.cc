@@ -48,6 +48,9 @@ CastMessage GenerateErrorMessage(AuthError::ErrorType error_type) {
 
 }  // namespace
 
+DeviceAuthNamespaceHandler::CredentialsProvider::~CredentialsProvider() =
+    default;
+
 DeviceAuthNamespaceHandler::DeviceAuthNamespaceHandler(
     CredentialsProvider* creds_provider)
     : creds_provider_(creds_provider) {}

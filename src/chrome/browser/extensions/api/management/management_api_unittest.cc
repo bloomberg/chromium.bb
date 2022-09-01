@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/stringprintf.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
@@ -36,7 +37,8 @@
 #include "extensions/common/permissions/permission_set.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+// TODO(https://crbug.com/1218633): Fix and include extensions tests on LaCrOS.
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS) && !BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
 #include "chrome/browser/background/background_contents.h"
@@ -113,7 +115,8 @@ bool ManagementApiUnitTest::RunFunction(
     const scoped_refptr<ExtensionFunction>& function,
     const base::Value& args) {
   return extension_function_test_utils::RunFunction(
-      function.get(), base::Value::AsListValue(args).CreateDeepCopy(),
+      function.get(),
+      base::ListValue::From(base::Value::ToUniquePtrValue(args.Clone())),
       browser(), api_test_utils::NONE);
 }
 
@@ -134,7 +137,7 @@ bool ManagementApiUnitTest::RunSetEnabledFunction(
   scoped_refptr<ManagementSetEnabledFunction> function =
       base::MakeRefCounted<ManagementSetEnabledFunction>();
   if (web_contents)
-    function->SetRenderFrameHost(web_contents->GetMainFrame());
+    function->SetRenderFrameHost(web_contents->GetPrimaryMainFrame());
   base::Value args(base::Value::Type::LIST);
   args.Append(extension_id);
   args.Append(enabled);
@@ -386,7 +389,7 @@ TEST_F(ManagementApiUnitTest, ManagementUninstall) {
     // If we try uninstall the extension itself, the uninstall should succeed
     // (even though we auto-cancel any dialog), because the dialog is never
     // shown.
-    uninstall_args.EraseListIter(uninstall_args.GetList().begin());
+    uninstall_args.EraseListIter(uninstall_args.GetListDeprecated().begin());
     function = new ManagementUninstallSelfFunction();
     function->set_extension(extension);
     EXPECT_TRUE(registry()->enabled_extensions().Contains(extension_id));
@@ -758,7 +761,8 @@ TEST_F(ManagementApiUnitTest, SetEnabledAfterIncreasedPermissions) {
   EXPECT_FALSE(known_perms->IsEmpty());
 }
 
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+// TODO(https://crbug.com/1218633): Fix and include extensions tests on LaCrOS.
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS) && !BUILDFLAG(IS_CHROMEOS_LACROS)
 
 // A delegate that senses when extensions are enabled or disabled.
 class TestManagementAPIDelegate : public ManagementAPIDelegate {
@@ -1671,7 +1675,7 @@ TEST_F(ManagementApiSupervisedUserTestWithSetup,
   // Extension was not enabled.
   EXPECT_EQ(0, delegate_->enable_count_);
 }
-#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
+#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS) && !BUILDFLAG(IS_CHROMEOS_LACROS)
 
 }  // namespace
 }  // namespace extensions

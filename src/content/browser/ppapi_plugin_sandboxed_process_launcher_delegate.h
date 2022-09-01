@@ -9,7 +9,6 @@
 
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "content/public/common/zygote/zygote_buildflags.h"
-#include "ppapi/shared_impl/ppapi_permissions.h"
 
 #if BUILDFLAG(USE_ZYGOTE_HANDLE)
 #include "content/public/common/zygote/zygote_handle.h"  // nogncheck
@@ -20,8 +19,7 @@ namespace content {
 class CONTENT_EXPORT PpapiPluginSandboxedProcessLauncherDelegate
     : public content::SandboxedProcessLauncherDelegate {
  public:
-  explicit PpapiPluginSandboxedProcessLauncherDelegate(
-      const ppapi::PpapiPermissions& permissions);
+  PpapiPluginSandboxedProcessLauncherDelegate() = default;
 
   PpapiPluginSandboxedProcessLauncherDelegate(
       const PpapiPluginSandboxedProcessLauncherDelegate&) = delete;
@@ -30,9 +28,9 @@ class CONTENT_EXPORT PpapiPluginSandboxedProcessLauncherDelegate
 
   ~PpapiPluginSandboxedProcessLauncherDelegate() override = default;
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   bool PreSpawnTarget(sandbox::TargetPolicy* policy) override;
-#endif  // OS_WIN
+#endif  // BUILDFLAG(IS_WIN)
 
 #if BUILDFLAG(USE_ZYGOTE_HANDLE)
   ZygoteHandle GetZygote() override;
@@ -40,14 +38,9 @@ class CONTENT_EXPORT PpapiPluginSandboxedProcessLauncherDelegate
 
   sandbox::mojom::Sandbox GetSandboxType() override;
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   bool DisclaimResponsibility() override;
   bool EnableCpuSecurityMitigations() override;
-#endif
-
- private:
-#if defined(OS_WIN)
-  const ppapi::PpapiPermissions permissions_;
 #endif
 };
 }  // namespace content

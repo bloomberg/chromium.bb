@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/cxx17_backports.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "extensions/common/api/messaging/message.h"
@@ -313,9 +312,10 @@ TEST_F(OneTimeMessageHandlerTest, DeliverMessageToReceiverWithNoReply) {
   const PortId port_id(other_context_id, 0, false, SerializationFormat::kJson);
 
   EXPECT_FALSE(message_handler()->HasPort(script_context(), port_id));
-  v8::Local<v8::Object> sender = gin::DataObjectBuilder(isolate())
-                                     .Set("key", std::string("sender"))
-                                     .Build();
+  v8::Local<v8::Object> sender =
+      gin::DataObjectBuilder(isolate())
+          .Set("origin", std::string("https://example.com"))
+          .Build();
   message_handler()->AddReceiver(script_context(), port_id, sender,
                                  messaging_util::kOnMessageEvent);
   EXPECT_TRUE(message_handler()->HasPort(script_context(), port_id));
@@ -323,11 +323,14 @@ TEST_F(OneTimeMessageHandlerTest, DeliverMessageToReceiverWithNoReply) {
   EXPECT_EQ("undefined", GetGlobalProperty(context, "eventMessage"));
   EXPECT_EQ("undefined", GetGlobalProperty(context, "eventSender"));
 
+  EXPECT_CALL(*ipc_message_sender(),
+              SendMessageResponsePending(MSG_ROUTING_NONE, port_id));
   const Message message("\"Hi\"", SerializationFormat::kJson, false);
   message_handler()->DeliverMessage(script_context(), message, port_id);
 
   EXPECT_EQ("\"Hi\"", GetGlobalProperty(context, "eventMessage"));
-  EXPECT_EQ(R"({"key":"sender"})", GetGlobalProperty(context, "eventSender"));
+  EXPECT_EQ(R"({"origin":"https://example.com"})",
+            GetGlobalProperty(context, "eventSender"));
 
   // TODO(devlin): Right now, the port lives eternally. In JS bindings, we have
   // two ways of dealing with this:
@@ -405,6 +408,8 @@ TEST_F(OneTimeMessageHandlerTest, TryReplyingMultipleTimes) {
                                  messaging_util::kOnMessageEvent);
   const Message message("\"Hi\"", SerializationFormat::kJson, false);
 
+  EXPECT_CALL(*ipc_message_sender(),
+              SendMessageResponsePending(MSG_ROUTING_NONE, port_id));
   message_handler()->DeliverMessage(script_context(), message, port_id);
 
   v8::Local<v8::Value> reply =
@@ -421,13 +426,13 @@ TEST_F(OneTimeMessageHandlerTest, TryReplyingMultipleTimes) {
           port_id, Message("\"hi\"", SerializationFormat::kJson, false)));
   EXPECT_CALL(*ipc_message_sender(),
               SendCloseMessagePort(MSG_ROUTING_NONE, port_id, true));
-  RunFunction(reply.As<v8::Function>(), context, base::size(args), args);
+  RunFunction(reply.As<v8::Function>(), context, std::size(args), args);
   ::testing::Mock::VerifyAndClearExpectations(ipc_message_sender());
   EXPECT_FALSE(message_handler()->HasPort(script_context(), port_id));
 
   // Running the reply function a second time shouldn't do anything.
   // TODO(devlin): Add an error message.
-  RunFunction(reply.As<v8::Function>(), context, base::size(args), args);
+  RunFunction(reply.As<v8::Function>(), context, std::size(args), args);
   EXPECT_FALSE(message_handler()->HasPort(script_context(), port_id));
 }
 
@@ -551,6 +556,8 @@ TEST_F(OneTimeMessageHandlerTest, ResponseCallbackGarbageCollected) {
   const Message message("\"Hi\"", SerializationFormat::kJson, false);
 
   EXPECT_CALL(*ipc_message_sender(),
+              SendMessageResponsePending(MSG_ROUTING_NONE, port_id));
+  EXPECT_CALL(*ipc_message_sender(),
               SendCloseMessagePort(MSG_ROUTING_NONE, port_id, false));
   message_handler()->DeliverMessage(script_context(), message, port_id);
   EXPECT_TRUE(message_handler()->HasPort(script_context(), port_id));
@@ -611,6 +618,8 @@ TEST_F(OneTimeMessageHandlerTest, ChannelClosedIfTrueNotReturned) {
                                  messaging_util::kOnMessageEvent);
   EXPECT_TRUE(message_handler()->HasPort(script_context(), port_id));
 
+  EXPECT_CALL(*ipc_message_sender(),
+              SendMessageResponsePending(MSG_ROUTING_NONE, port_id));
   message_handler()->DeliverMessage(script_context(), message, port_id);
   EXPECT_TRUE(message_handler()->HasPort(script_context(), port_id));
 }
