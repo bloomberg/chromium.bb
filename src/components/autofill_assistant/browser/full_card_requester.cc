@@ -38,16 +38,20 @@ void FullCardRequester::GetFullCard(
   }
 
   autofill::ContentAutofillDriver* driver =
-      factory->DriverForFrame(web_contents->GetMainFrame());
+      factory->DriverForFrame(web_contents->GetPrimaryMainFrame());
   if (!driver) {
     OnFullCardRequestFailed(FullCardRequest::FailureType::GENERIC_FAILURE);
     return;
   }
 
-  driver->browser_autofill_manager()->GetOrCreateFullCardRequest()->GetFullCard(
+  autofill::CreditCardCVCAuthenticator* cvc_authenticator =
+      driver->autofill_manager()
+          ->GetCreditCardAccessManager()
+          ->GetOrCreateCVCAuthenticator();
+  cvc_authenticator->GetFullCardRequest()->GetFullCard(
       *card, autofill::AutofillClient::UnmaskCardReason::kAutofill,
       weak_ptr_factory_.GetWeakPtr(),
-      driver->browser_autofill_manager()->GetAsFullCardRequestUIDelegate());
+      cvc_authenticator->GetAsFullCardRequestUIDelegate());
 }
 
 FullCardRequester::~FullCardRequester() = default;

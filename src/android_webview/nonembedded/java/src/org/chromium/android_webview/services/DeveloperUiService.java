@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 package org.chromium.android_webview.services;
 
-import android.annotation.TargetApi;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -21,6 +20,7 @@ import android.os.IBinder;
 import android.os.Process;
 import android.os.RemoteException;
 
+import androidx.annotation.RequiresApi;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.android_webview.common.DeveloperModeUtils;
@@ -54,10 +54,9 @@ public final class DeveloperUiService extends Service {
     private static final int FRAGMENT_ID_CRASHES = 1;
     private static final int FRAGMENT_ID_FLAGS = 2;
 
-    public static final String NOTIFICATION_TITLE =
-            "WARNING: experimental WebView features enabled";
-    public static final String NOTIFICATION_CONTENT = "Tap to see experimental features.";
-    public static final String NOTIFICATION_TICKER = "Experimental WebView features enabled";
+    public static final String NOTIFICATION_TITLE = "Experimental WebView features active";
+    public static final String NOTIFICATION_CONTENT = "Tap to see experimental WebView features.";
+    public static final String NOTIFICATION_TICKER = "Experimental WebView features active";
 
     private static final Object sLock = new Object();
     @GuardedBy("sLock")
@@ -205,7 +204,6 @@ public final class DeveloperUiService extends Service {
         return mBinder;
     }
 
-    @TargetApi(Build.VERSION_CODES.O)
     private Notification.Builder createNotificationBuilder() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             return new Notification.Builder(this, CHANNEL_ID);
@@ -213,7 +211,7 @@ public final class DeveloperUiService extends Service {
         return new Notification.Builder(this);
     }
 
-    @TargetApi(Build.VERSION_CODES.O)
+    @RequiresApi(Build.VERSION_CODES.O)
     private void registerDefaultNotificationChannel() {
         assert Build.VERSION.SDK_INT >= Build.VERSION_CODES.O;
         CharSequence name = "WebView DevTools alerts";
@@ -231,21 +229,22 @@ public final class DeveloperUiService extends Service {
             registerDefaultNotificationChannel();
         }
 
-        Intent notificationIntent = new Intent();
+        Intent notificationIntent = new Intent("com.android.webview.SHOW_DEV_UI");
         notificationIntent.setClassName(
                 getPackageName(), "org.chromium.android_webview.devui.MainActivity");
         notificationIntent.putExtra(FRAGMENT_ID_INTENT_EXTRA, FRAGMENT_ID_FLAGS);
         PendingIntent pendingIntent = PendingIntent.getActivity(
                 this, 0, notificationIntent, IntentUtils.getPendingIntentMutabilityFlag(false));
 
-        Notification.Builder builder = createNotificationBuilder()
-                                               .setContentTitle(NOTIFICATION_TITLE)
-                                               .setContentText(NOTIFICATION_CONTENT)
-                                               .setSmallIcon(android.R.drawable.stat_notify_error)
-                                               .setContentIntent(pendingIntent)
-                                               .setOngoing(true)
-                                               .setVisibility(Notification.VISIBILITY_PUBLIC)
-                                               .setTicker(NOTIFICATION_TICKER);
+        Notification.Builder builder =
+                createNotificationBuilder()
+                        .setContentTitle(NOTIFICATION_TITLE)
+                        .setContentText(NOTIFICATION_CONTENT)
+                        .setSmallIcon(org.chromium.android_webview.devui.R.drawable.ic_flag)
+                        .setContentIntent(pendingIntent)
+                        .setOngoing(true)
+                        .setVisibility(Notification.VISIBILITY_PUBLIC)
+                        .setTicker(NOTIFICATION_TICKER);
 
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
             builder = builder

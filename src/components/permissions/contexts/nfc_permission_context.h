@@ -17,7 +17,7 @@ class NfcPermissionContext : public PermissionContextBase {
    public:
     virtual ~Delegate() = default;
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     // Returns whether or not this |web_contents| is interactable.
     virtual bool IsInteractable(content::WebContents* web_contents) = 0;
 #endif
@@ -36,14 +36,13 @@ class NfcPermissionContext : public PermissionContextBase {
 
  private:
   // PermissionContextBase:
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   ContentSetting GetPermissionStatusInternal(
       content::RenderFrameHost* render_frame_host,
       const GURL& requesting_origin,
       const GURL& embedding_origin) const override;
 #endif
-  void DecidePermission(content::WebContents* web_contents,
-                        const PermissionRequestID& id,
+  void DecidePermission(const PermissionRequestID& id,
                         const GURL& requesting_origin,
                         const GURL& embedding_origin,
                         bool user_gesture,

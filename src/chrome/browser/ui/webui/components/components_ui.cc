@@ -36,7 +36,7 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-#include "chromeos/lacros/lacros_service.h"
+#include "chromeos/startup/browser_init_params.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 namespace {
@@ -60,7 +60,7 @@ content::WebUIDataSource* CreateComponentsUIHTMLSource(Profile* profile) {
     {"noComponents", IDS_COMPONENTS_NO_COMPONENTS},
     {"statusLabel", IDS_COMPONENTS_STATUS_LABEL},
     {"checkingLabel", IDS_COMPONENTS_CHECKING_LABEL},
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
     {"os-components-text1", IDS_COMPONENTS_OS_TEXT1_LABEL},
     {"os-components-text2", IDS_COMPONENTS_OS_TEXT2_LABEL},
     {"os-components-link", IDS_COMPONENTS_OS_LINK},
@@ -74,9 +74,9 @@ content::WebUIDataSource* CreateComponentsUIHTMLSource(Profile* profile) {
       user_manager::UserManager::Get()->IsLoggedInAsGuest() ||
           user_manager::UserManager::Get()->IsLoggedInAsPublicAccount()
 #elif BUILDFLAG(IS_CHROMEOS_LACROS)
-      chromeos::LacrosService::Get()->init_params()->session_type ==
-              crosapi::mojom::SessionType::kPublicSession ||
-          profile->IsGuestSession()
+                      chromeos::BrowserInitParams::Get()->session_type ==
+                              crosapi::mojom::SessionType::kPublicSession ||
+                          profile->IsGuestSession()
 #else
       profile->IsOffTheRecord()
 #endif

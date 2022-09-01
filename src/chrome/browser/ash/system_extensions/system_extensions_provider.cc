@@ -5,13 +5,16 @@
 #include "chrome/browser/ash/system_extensions/system_extensions_provider.h"
 
 #include "ash/constants/ash_features.h"
+#include "ash/constants/ash_switches.h"
+#include "base/command_line.h"
 #include "base/feature_list.h"
 #include "chrome/browser/ash/system_extensions/system_extension.h"
 #include "chrome/browser/ash/system_extensions/system_extensions_install_manager.h"
 #include "chrome/browser/ash/system_extensions/system_extensions_provider_factory.h"
-#include "chrome/browser/ash/system_extensions/system_extensions_web_ui_config_map.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/url_constants.h"
+
+namespace ash {
 
 // TODO:(https://crbug.com/1192426): Change this to system extension scheme when
 // it's ready.
@@ -27,8 +30,13 @@ bool SystemExtensionsProvider::IsEnabled() {
   return base::FeatureList::IsEnabled(ash::features::kSystemExtensions);
 }
 
+// static
+bool SystemExtensionsProvider::IsDebugMode() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      ash::switches::kSystemExtensionsDebug);
+}
+
 SystemExtensionsProvider::SystemExtensionsProvider(Profile* profile) {
-  SystemExtensionsWebUIConfigMap::RegisterInstance();
   install_manager_ = std::make_unique<SystemExtensionsInstallManager>(profile);
 }
 
@@ -56,3 +64,5 @@ void SystemExtensionsProvider::WillStartServiceWorker(
 }
 
 SystemExtensionsProvider::~SystemExtensionsProvider() = default;
+
+}  // namespace ash

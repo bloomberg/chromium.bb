@@ -13,6 +13,7 @@
 #include "ash/components/arc/session/arc_service_manager.h"
 #include "ash/components/arc/test/connection_holder_util.h"
 #include "ash/components/arc/test/fake_wallpaper_instance.h"
+#include "ash/components/cryptohome/system_salt_getter.h"
 #include "ash/constants/ash_pref_names.h"
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
@@ -23,7 +24,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chromeos/cryptohome/system_salt_getter.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/user_manager/scoped_user_manager.h"
@@ -167,4 +167,12 @@ TEST_F(ArcWallpaperServiceTest, SetWallpaperFailure) {
   ASSERT_EQ(2u, wallpaper_instance_->changed_ids().size());
   EXPECT_EQ(10, wallpaper_instance_->changed_ids()[0]);
   EXPECT_EQ(-1, wallpaper_instance_->changed_ids()[1]);
+}
+
+// For crbug.com/1325863
+TEST_F(ArcWallpaperServiceTest, GetEmptyWallpaper) {
+  test_wallpaper_controller_.ShowWallpaperImage(gfx::ImageSkia{});
+
+  service_->GetWallpaper(base::DoNothing());
+  content::RunAllTasksUntilIdle();
 }

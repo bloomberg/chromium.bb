@@ -4,16 +4,16 @@
 
 #import "ios/web/download/download_native_task_impl.h"
 
-#include "base/strings/sys_string_conversions.h"
+#import "base/bind.h"
+#import "base/callback.h"
+#import "base/notreached.h"
+#import "base/strings/sys_string_conversions.h"
+#import "base/task/sequenced_task_runner.h"
 #import "ios/web/download/download_native_task_bridge.h"
-#include "ios/web/public/thread/web_thread.h"
-#import "net/base/filename_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-using web::WebThread;
 
 namespace web {
 
@@ -25,8 +25,8 @@ DownloadNativeTaskImpl::DownloadNativeTaskImpl(
     int64_t total_bytes,
     const std::string& mime_type,
     NSString* identifier,
-    DownloadNativeTaskBridge* download,
-    Delegate* delegate)
+    const scoped_refptr<base::SequencedTaskRunner>& task_runner,
+    DownloadNativeTaskBridge* download)
     : DownloadTaskImpl(web_state,
                        original_url,
                        http_method,
@@ -34,127 +34,77 @@ DownloadNativeTaskImpl::DownloadNativeTaskImpl(
                        total_bytes,
                        mime_type,
                        identifier,
-                       delegate),
+                       task_runner),
       download_bridge_(download) {
   DCHECK(download_bridge_);
 }
 
 DownloadNativeTaskImpl::~DownloadNativeTaskImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (@available(iOS 15, *)) {
-    [download_bridge_ cancel];
-    download_bridge_ = nil;
-  }
+  CancelInternal();
 }
 
-void DownloadNativeTaskImpl::Start(const base::FilePath& path,
-                                   Destination destination_hint) {
+void DownloadNativeTaskImpl::StartInternal(const base::FilePath& path) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DownloadTaskImpl::Start(path, destination_hint);
-  download_path_ = path;
-  // WKDownload can only download to a file. If the user has
-  // not specified a destination path, save the file to the
-  // suggested file name in a temporary directory.
-  if (download_path_.empty()) {
-    NSString* temporary_directory = NSTemporaryDirectory();
-    NSString* temporary_filename = [temporary_directory
-        stringByAppendingPathComponent:base::SysUTF16ToNSString(
-                                           GetSuggestedFilename())];
-    download_path_ =
-        base::FilePath(base::SysNSStringToUTF8(temporary_filename));
-  }
+  DCHECK(!path.empty());
 
   if (@available(iOS 15, *)) {
     DCHECK(download_bridge_);
-    NSURL* downloadURL = [NSURL
-        fileURLWithPath:base::SysUTF8ToNSString(download_path_.AsUTF8Unsafe())];
 
-    base::WeakPtr<DownloadNativeTaskImpl> weak_this =
-        weak_factory_.GetWeakPtr();
-    [download_bridge_ startDownload:downloadURL
-        progressionHandler:^() {
-          DownloadNativeTaskImpl* task = weak_this.get();
-          if (task)
-            task->OnDownloadUpdated();
-        }
-        completionHandler:^(int error_code) {
-          DownloadNativeTaskImpl* task = weak_this.get();
-          if (task)
-            task->OnDownloadFinished(error_code);
-        }];
+    NativeDownloadTaskProgressCallback progress_callback =
+        base::BindRepeating(&DownloadNativeTaskImpl::OnDownloadProgress,
+                            weak_factory_.GetWeakPtr());
+
+    NativeDownloadTaskResponseCallback response_callback =
+        base::BindOnce(&DownloadNativeTaskImpl::OnResponseReceived,
+                       weak_factory_.GetWeakPtr());
+
+    NativeDownloadTaskCompleteCallback complete_callback =
+        base::BindOnce(&DownloadNativeTaskImpl::OnDownloadFinished,
+                       weak_factory_.GetWeakPtr());
+
+    [download_bridge_ startDownload:path
+                   progressCallback:std::move(progress_callback)
+                   responseCallback:std::move(response_callback)
+                   completeCallback:std::move(complete_callback)];
   }
 }
 
-void DownloadNativeTaskImpl::Cancel() {
-  DCHECK_CURRENTLY_ON(web::WebThread::UI);
+void DownloadNativeTaskImpl::CancelInternal() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  weak_factory_.InvalidateWeakPtrs();
   if (@available(iOS 15, *)) {
     [download_bridge_ cancel];
     download_bridge_ = nil;
   }
-  DownloadTaskImpl::Cancel();
 }
 
-void DownloadNativeTaskImpl::ShutDown() {
-  DCHECK_CURRENTLY_ON(web::WebThread::UI);
-  if (@available(iOS 15, *)) {
-    [download_bridge_ cancel];
-    download_bridge_ = nil;
-  }
-  DownloadTaskImpl::ShutDown();
-}
-
-NSData* DownloadNativeTaskImpl::GetResponseData() const {
-  if (@available(iOS 15, *)) {
-    return [NSData dataWithContentsOfURL:[download_bridge_ urlForDownload]];
-  }
-  return nil;
-}
-
-const base::FilePath& DownloadNativeTaskImpl::GetResponsePath() const {
+std::string DownloadNativeTaskImpl::GetSuggestedName() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (@available(iOS 15, *)) {
-    return download_path_;
+    return base::SysNSStringToUTF8(download_bridge_.suggestedFilename);
   }
-  static const base::FilePath kEmptyPath;
-  return kEmptyPath;
+  NOTREACHED();
+  return std::string();
 }
 
-int64_t DownloadNativeTaskImpl::GetTotalBytes() const {
+void DownloadNativeTaskImpl::OnDownloadProgress(int64_t bytes_received,
+                                                int64_t total_bytes,
+                                                double fraction_complete) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (@available(iOS 15, *)) {
-    return download_bridge_.progress.totalUnitCount;
-  }
-  return total_bytes_;
+  total_bytes_ = total_bytes;
+  received_bytes_ = bytes_received;
+  percent_complete_ = static_cast<int>(fraction_complete * 100);
+  OnDownloadUpdated();
 }
 
-int64_t DownloadNativeTaskImpl::GetReceivedBytes() const {
+void DownloadNativeTaskImpl::OnResponseReceived(int http_error_code,
+                                                NSString* mime_type) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (@available(iOS 15, *)) {
-    return download_bridge_.progress.completedUnitCount;
+  http_code_ = http_error_code;
+  if (mime_type.length) {
+    mime_type_ = base::SysNSStringToUTF8(mime_type);
   }
-  return received_bytes_;
-}
-
-int DownloadNativeTaskImpl::GetPercentComplete() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (@available(iOS 15, *)) {
-    return static_cast<int>(download_bridge_.progress.fractionCompleted * 100);
-  }
-  return percent_complete_;
-}
-
-std::u16string DownloadNativeTaskImpl::GetSuggestedFilename() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  std::string suggested_filename;
-  if (@available(iOS 15, *)) {
-    suggested_filename =
-        base::SysNSStringToUTF8(download_bridge_.suggestedFilename);
-  }
-  return net::GetSuggestedFilename(GetOriginalUrl(), GetContentDisposition(),
-                                   /*referrer_charset=*/std::string(),
-                                   /*suggested_name=*/suggested_filename,
-                                   /*mime_type=*/std::string(),
-                                   /*default_name=*/"document");
 }
 
 }  // namespace web

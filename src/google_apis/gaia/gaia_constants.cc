@@ -15,14 +15,6 @@ const char kUnexpectedServiceResponse[] = "UnexpectedServiceResponse";
 
 // Service name for Gaia.  Used to convert to cookie auth.
 const char kGaiaService[] = "gaia";
-// Service name for Picasa API. API is used to get user's image.
-const char kPicasaService[] = "lh2";
-
-// Service/scope names for sync.
-const char kSyncService[] = "chromiumsync";
-
-// Service name for remoting.
-const char kRemotingService[] = "chromoting";
 
 // OAuth scopes.
 const char kOAuth1LoginScope[] = "https://www.google.com/accounts/OAuthLogin";
@@ -40,10 +32,6 @@ const char kChromeSyncOAuth2Scope[] =
 // OAuth2 scope for access to the Chrome Sync APIs for managed profiles.
 const char kChromeSyncSupervisedOAuth2Scope[] =
     "https://www.googleapis.com/auth/chromesync_playpen";
-
-// OAuth2 scope for access to Kid Management API.
-const char kKidManagementOAuth2Scope[] =
-    "https://www.googleapis.com/auth/kid.management";
 
 // OAuth2 scope for parental consent logging for secondary account addition.
 const char kKidManagementPrivilegedOAuth2Scope[] =
@@ -95,6 +83,10 @@ const char kTachyonOAuthScope[] = "https://www.googleapis.com/auth/tachyon";
 
 // OAuth2 scope for access to the Photos API.
 const char kPhotosOAuth2Scope[] = "https://www.googleapis.com/auth/photos";
+
+// OAuth2 scope for access to the SecureConnect API.
+extern const char kSecureConnectOAuth2Scope[] =
+    "https://www.googleapis.com/auth/bce.secureconnect";
 
 // OAuth2 scope for access to Cast backdrop API.
 const char kCastBackdropOAuth2Scope[] =
@@ -175,7 +167,6 @@ const char kGaiaLsid[] = "lsid";
 const char kGaiaOAuthToken[] = "oauthToken";
 const char kGaiaOAuthSecret[] = "oauthSecret";
 const char kGaiaOAuthDuration[] = "3600";
-const char kGaiaOAuth2LoginRefreshToken[] = "oauth2LoginRefreshToken";
 
 // Used to construct a channel ID for push messaging.
 const char kObfuscatedGaiaId[] = "obfuscatedGaiaId";

@@ -19,10 +19,6 @@ namespace aura {
 class Window;
 }
 
-namespace base {
-class CommandLine;
-}
-
 namespace ui {
 class KeyEvent;
 }
@@ -33,7 +29,7 @@ const char* GtkCssMenu();
 const char* GtkCssMenuItem();
 const char* GtkCssMenuScrollbar();
 
-void GtkInitFromCommandLine(const base::CommandLine& command_line);
+[[nodiscard]] bool GtkInitFromCommandLine(int* argc, char** argv);
 
 // Sets |dialog| as transient for |parent|, which will keep it on top and center
 // it above |parent|. Do nothing if |parent| is nullptr.
@@ -243,9 +239,6 @@ float GetDeviceScaleFactor();
 
 // This should only be called on Gtk4.
 GdkTexture* GetTextureFromRenderNode(GskRenderNode* node);
-
-// Gets the GTK theme color for a given `color_id`.
-absl::optional<SkColor> SkColorFromColorId(ui::ColorId color_id);
 
 }  // namespace gtk
 

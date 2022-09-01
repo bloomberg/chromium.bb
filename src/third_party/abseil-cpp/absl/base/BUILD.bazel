@@ -75,6 +75,7 @@ cc_library(
         ":atomic_hook",
         ":config",
         ":core_headers",
+        ":errno_saver",
         ":log_severity",
     ],
 )
@@ -151,7 +152,9 @@ cc_library(
         "internal/direct_mmap.h",
         "internal/low_level_alloc.h",
     ],
-    copts = ABSL_DEFAULT_COPTS,
+    copts = ABSL_DEFAULT_COPTS + select({
+        "//conditions:default": [],
+    }),
     linkopts = select({
         "//absl:msvc_compiler": [],
         "//absl:clang-cl_compiler": [],
@@ -692,6 +695,31 @@ cc_test(
     linkopts = ABSL_DEFAULT_LINKOPTS,
     deps = [
         ":fast_type_id",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "prefetch",
+    hdrs = ["internal/prefetch.h"],
+    copts = ABSL_DEFAULT_COPTS,
+    linkopts = ABSL_DEFAULT_LINKOPTS,
+    visibility = [
+        "//absl:__subpackages__",
+    ],
+    deps = [
+        ":config",
+    ],
+)
+
+cc_test(
+    name = "prefetch_test",
+    size = "small",
+    srcs = ["internal/prefetch_test.cc"],
+    copts = ABSL_TEST_COPTS,
+    linkopts = ABSL_DEFAULT_LINKOPTS,
+    deps = [
+        ":prefetch",
         "@com_google_googletest//:gtest_main",
     ],
 )

@@ -5,38 +5,56 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_WEB_APP_CONSTANTS_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_WEB_APP_CONSTANTS_H_
 
+#include <stddef.h>
+
 #include <iosfwd>
 #include <vector>
 
+#include "chrome/browser/web_applications/user_display_mode.h"
+#include "components/services/app_service/public/cpp/run_on_os_login_types.h"
 #include "components/services/app_service/public/mojom/types.mojom-forward.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 
 namespace web_app {
 
-// Install sources are listed in the order of priority (from top to bottom).
+// Installations of Web Apps have different sources of management. Apps can be
+// installed by different management systems - for example an app can be both
+// installed by the user and by policy. Keeping track of the which installation
+// managers have installed a web app allows for them to be installed by multiple
+// at the same time, and uninstalls from one manager doesn't affect another -
+// the app will stay installed as long as at least one management source has it
+// installed.
 //
+// This enum is also used to rank installation sources, so the ordering matters.
 // This enum should be zero based: values are used as index in a bitset.
 // We don't use this enum values in prefs or metrics: enumerators can be
 // reordered. This enum is not strongly typed enum class: it supports implicit
 // conversion to int and <> comparison operators.
-namespace Source {
+namespace WebAppManagement {
 enum Type {
   kMinValue = 0,
   kSystem = kMinValue,
   kPolicy,
   kSubApp,
   kWebAppStore,
-  // We sync only regular user-installed apps from the open web. For
+  // User-installed web apps are managed by the sync system.or
   // user-installed apps without overlaps this is the only source that will be
   // set.
   kSync,
+  // This value is used by both the PreinstalledWebAppManager AND the
+  // AndroidSmsAppSetupControllerImpl, which is a potential conflict in the
+  // future.
+  // TODO(dmurph): Add a new source here so that the
+  // AndroidSmsAppSetupControllerImpl has it's own source, and migrate those
+  // installations to have the new source.
+  // https://crbug.com/1314055
   kDefault,
   kMaxValue = kDefault,
 };
-}  // namespace Source
+}  // namespace WebAppManagement
 
-std::ostream& operator<<(std::ostream& os, Source::Type type);
+std::ostream& operator<<(std::ostream& os, WebAppManagement::Type type);
 
 // Type of OS hook.
 //
@@ -55,84 +73,6 @@ enum Type {
   kMaxValue = kUrlHandlers,
 };
 }  // namespace OsHookType
-
-// The result of an attempted web app installation, uninstallation or update.
-//
-// This is an enum, instead of a struct with multiple fields (e.g. one field for
-// success or failure, one field for whether action was taken), because we want
-// to track metrics for the overall cross product of the these axes.
-//
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused. Update corresponding enums.xml entry
-// when making changes here.
-enum class InstallResultCode {
-  // Success category:
-  kSuccessNewInstall = 0,
-  kSuccessAlreadyInstalled = 1,
-
-  // Failure category:
-  // An inter-process request to blink renderer failed.
-  kGetWebApplicationInfoFailed = 3,
-  // A user previously uninstalled the app, user doesn't want to see it again.
-  kPreviouslyUninstalled = 4,
-  // The blink renderer used to install the app was destroyed.
-  kWebContentsDestroyed = 5,
-  // I/O error: Disk output failed.
-  kWriteDataFailed = 6,
-  // A user rejected installation prompt.
-  kUserInstallDeclined = 7,
-  // |require_manifest| was specified but the app had no valid manifest.
-  kNotValidManifestForWebApp = 10,
-  // We have terminated the installation pipeline and intented to the Play
-  // Store, where the user still needs to accept the Play installation prompt to
-  // install.
-  kIntentToPlayStore = 11,
-  // A web app has been disabled by device policy or by other reasons.
-  kWebAppDisabled = 12,
-  // The network request for the install URL was redirected.
-  kInstallURLRedirected = 13,
-  // The network request for the install URL failed.
-  kInstallURLLoadFailed = 14,
-  // The requested app_id check failed: actual resulting app_id doesn't match.
-  kExpectedAppIdCheckFailed = 15,
-  // The network request for the install URL timed out.
-  kInstallURLLoadTimeOut = 16,
-  // Placeholder uninstall fails (in ExternallyManagedAppManager).
-  kFailedPlaceholderUninstall = 17,
-  // Web App is not considered installable, i.e. missing manifest fields, no
-  // service worker, etc.
-  kNotInstallable = 18,
-  // Apk Web App install fails.
-  kApkWebAppInstallFailed = 20,
-  // App managers are shutting down. For example, when user logs out immediately
-  // after login.
-  kCancelledOnWebAppProviderShuttingDown = 21,
-  // The Web Apps system is not ready: registry is not yet opened or already
-  // closed.
-  kWebAppProviderNotReady = 22,
-
-  // Success category for background installs:
-  kSuccessOfflineOnlyInstall = 23,
-  kSuccessOfflineFallbackInstall = 24,
-
-  // Failure category:
-  // The install task was destroyed, most likely due to WebAppInstallManager
-  // shutdown.
-  kInstallTaskDestroyed = 25,
-
-  // Web App update due to manifest change failed.
-  kUpdateTaskFailed = 26,
-
-  kMaxValue = kUpdateTaskFailed,
-};
-
-// Checks if InstallResultCode is not a failure.
-bool IsSuccess(InstallResultCode code);
-
-// Checks if InstallResultCode indicates a new app was installed.
-bool IsNewInstall(InstallResultCode code);
-
-std::ostream& operator<<(std::ostream& os, InstallResultCode code);
 
 // ExternallyManagedAppManager: Where an app was installed from. This affects
 // what flags will be used when installing the app.
@@ -162,6 +102,9 @@ std::ostream& operator<<(std::ostream& os, InstallResultCode code);
 // In practice, every kExternalXxx enum definition should correspond to
 // exactly one place in the code where
 // ExternallyManagedAppManager::SynchronizeInstalledApps is called.
+// TODO(dmurph): Remove this and merge it into WebAppManagement after it has a
+// new source for the  AndroidSmsAppSetupControllerImpl.
+// https://crbug.com/1314055
 enum class ExternalInstallSource {
   // Do not remove or re-order the names, only append to the end. Their
   // integer values are persisted in the preferences.
@@ -187,7 +130,7 @@ enum class ExternalInstallSource {
   // Installed as a Chrome component, such as a help app, or a settings app.
   // The corresponding ExternallyManagedAppManager::SynchronizeInstalledApps
   // call site is
-  // in SystemWebAppManager::RefreshPolicyInstalledApps.
+  // in ash::SystemWebAppManager::RefreshPolicyInstalledApps.
   kSystemInstalled = 3,
 
   // Installed from ARC.
@@ -201,6 +144,9 @@ enum class ExternalInstallSource {
 // Small icons are used in confirmation dialogs and app windows.
 constexpr int kWebAppIconSmall = 32;
 
+// Limit on the number of jump list entries per web app.
+constexpr size_t kMaxApplicationDockMenuItems = 10;
+
 using DisplayMode = blink::mojom::DisplayMode;
 
 // When user_display_mode indicates a user preference for opening in
@@ -209,10 +155,14 @@ using DisplayMode = blink::mojom::DisplayMode;
 // attempt honor those preferences. Otherwise, we open in a standalone
 // window (for app_display_mode 'standalone' or 'fullscreen'), or a minimal-ui
 // window (for app_display_mode 'browser' or 'minimal-ui').
+//
+// |is_isolated| overrides browser display mode for isolated apps because they
+// can't be open as a tab.
 DisplayMode ResolveEffectiveDisplayMode(
     DisplayMode app_display_mode,
     const std::vector<DisplayMode>& app_display_mode_overrides,
-    DisplayMode user_display_mode);
+    UserDisplayMode user_display_mode,
+    bool is_isolated);
 
 apps::mojom::LaunchContainer ConvertDisplayModeToAppLaunchContainer(
     DisplayMode display_mode);
@@ -248,18 +198,9 @@ enum class RunOnOsLoginPolicy {
 
 std::string RunOnOsLoginModeToString(RunOnOsLoginMode mode);
 
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-// Records result of user reaction to install in-product help promo.
-enum class InstallIphResult {
-  // Installed the web app after IPH was shown.
-  kInstalled = 0,
-  // Clicked the install icon but canceled install after IPH was shown.
-  kCanceled = 1,
-  // Ignored IPH, didn't click install.
-  kIgnored = 2,
-  kMaxValue = kIgnored,
-};
+// Converts RunOnOsLoginMode from web_app::RunOnOsLoginMode to
+// apps::RunOnOsLoginMode.
+apps::RunOnOsLoginMode ConvertOsLoginMode(web_app::RunOnOsLoginMode login_mode);
 
 // Number of times IPH can be ignored for this app before it's muted.
 constexpr int kIphMuteAfterConsecutiveAppSpecificIgnores = 3;
@@ -303,6 +244,9 @@ enum class OsIntegrationState {
 using LaunchHandler = blink::Manifest::LaunchHandler;
 
 // A result how `WebAppIconDownloader` processed the list of icon urls.
+//
+// Entries should not be renumbered and numeric values should never be reused.
+// Update corresponding enums.xml entry when making changes here.
 enum class IconsDownloadedResult {
   // All the requested icon urls have been processed and `icons_map` populated
   // for successful http responses. `icons_http_results` contains success and
@@ -317,6 +261,7 @@ enum class IconsDownloadedResult {
   // `WebAppIconDownloader::FailAllIfAnyFail()` flag was specified.
   // `icons_http_results` contains the failed url and http status code.
   kAbortedDueToFailure,
+  kMaxValue = kAbortedDueToFailure,
 };
 
 const char* IconsDownloadedResultToString(IconsDownloadedResult result);

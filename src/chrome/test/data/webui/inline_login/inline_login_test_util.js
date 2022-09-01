@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {AuthMode, AuthParams} from 'chrome://chrome-signin/gaia_auth_host/authenticator.m.js';
 import {InlineLoginBrowserProxy} from 'chrome://chrome-signin/inline_login_browser_proxy.js';
 import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.m.js';
-
+// <if expr="chromeos_ash">
+import {AccountAdditionOptions} from 'chrome://chrome-signin/arc_account_picker/arc_util.js';
+// </if>
 import {TestBrowserProxy} from '../test_browser_proxy.js';
 
 /** @return {!Array<string>} */
@@ -25,22 +28,26 @@ export const fakeAuthExtensionDataWithEmail = {
   email: 'example@gmail.com',
 };
 
+/*
+ * Fake data used for `show-signin-error-page` web listener in
+ * chrome/browser/resources/inline_login/inline_login_app.js.
+ */
+export const fakeSigninBlockedByPolicyData = {
+  email: 'john.doe@example.com',
+  hostedDomain: 'example.com',
+  deviceType: 'Chromebook',
+  signinBlockedByPolicy: true,
+};
+
 export class TestAuthenticator extends EventTarget {
   constructor() {
     super();
-    // Note: We cannot import types from authenticator.m.js because we replace
-    // "chrome://chrome-signin/" with "chrome/browser/resources/inline_login/"
-    // and authenticator is in "chrome/browser/resources/gaia_auth_host/"
-    // folder.
-
     /**
-     * Type AuthMode (see Authenticator).
-     * @type {?Object}
+     * @type {?AuthMode}
      */
     this.authMode = null;
     /**
-     * Type AuthParams (see Authenticator).
-     * @type {?Object}
+     * @type {?AuthParams}
      */
     this.data = null;
     /** @type {number} */
@@ -52,9 +59,8 @@ export class TestAuthenticator extends EventTarget {
   }
 
   /**
-   * @param {Object} authMode Authorization mode (type AuthMode).
-   * @param {Object} data Parameters for the authorization flow (type
-   *     AuthParams).
+   * @param {AuthMode} authMode Authorization mode.
+   * @param {AuthParams} data Parameters for the authorization flow.
    */
   load(authMode, data) {
     this.loadCalls++;
@@ -84,11 +90,29 @@ export class TestInlineLoginBrowserProxy extends TestBrowserProxy {
       'showIncognito',
       'getAccounts',
       'dialogClose',
-      // <if expr="chromeos">
+      // <if expr="chromeos_ash">
       'skipWelcomePage',
+      'openGuestWindow',
+      'getDialogArguments',
       // </if>
     ]);
+
+    // <if expr="chromeos_ash">
+    /**
+     * @private {?AccountAdditionOptions}
+     */
+    this.dialogArguments_ = null;
+    // </if>
   }
+
+  // <if expr="chromeos_ash">
+  /**
+   * @param {?AccountAdditionOptions} dialogArguments
+   */
+  setDialogArguments(dialogArguments) {
+    this.dialogArguments_ = dialogArguments;
+  }
+  // </if>
 
   /** @override */
   initialize() {
@@ -136,10 +160,20 @@ export class TestInlineLoginBrowserProxy extends TestBrowserProxy {
     this.methodCalled('dialogClose');
   }
 
-  // <if expr="chromeos">
+  // <if expr="chromeos_ash">
   /** @override */
   skipWelcomePage(skip) {
     this.methodCalled('skipWelcomePage', skip);
+  }
+
+  /** @override */
+  openGuestWindow() {
+    this.methodCalled('openGuestWindow');
+  }
+
+  /** @override */
+  getDialogArguments() {
+    return JSON.stringify(this.dialogArguments_);
   }
   // </if>
 }

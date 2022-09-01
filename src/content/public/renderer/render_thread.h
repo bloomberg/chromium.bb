@@ -9,13 +9,11 @@
 #include <stdint.h>
 #include <memory>
 
-#include "base/callback.h"
-#include "base/metrics/user_metrics_action.h"
+#include "base/callback_forward.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/task/single_thread_task_runner.h"
-#include "base/tracing/protos/chrome_track_event.pbzero.h"
 #include "content/common/content_export.h"
 #include "content/public/child/child_thread.h"
-#include "ipc/ipc_channel_proxy.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/perfetto/include/perfetto/tracing/traced_proto.h"
@@ -35,15 +33,16 @@ class WebThreadScheduler;
 }
 }  // namespace blink
 
+namespace perfetto::protos::pbzero {
+class RenderProcessHost;
+}
+
 namespace IPC {
+class Listener;
 class MessageFilter;
 class SyncChannel;
 class SyncMessageFilter;
 }  // namespace IPC
-
-namespace v8 {
-class Extension;
-}  // namespace v8
 
 namespace content {
 class InProcessChildThreadParams;
@@ -105,9 +104,6 @@ class CONTENT_EXPORT RenderThread : virtual public ChildThread {
   virtual void SetResourceRequestSenderDelegate(
       blink::WebResourceRequestSenderDelegate* delegate) = 0;
 
-  // Registers the given V8 extension with WebKit.
-  virtual void RegisterExtension(std::unique_ptr<v8::Extension> extension) = 0;
-
   // Post task to all worker threads. Returns number of workers.
   virtual int PostTaskToAllWebWorkers(base::RepeatingClosure closure) = 0;
 
@@ -123,11 +119,9 @@ class CONTENT_EXPORT RenderThread : virtual public ChildThread {
 
   // Returns the user-agent string.
   virtual blink::WebString GetUserAgent() = 0;
+  virtual blink::WebString GetFullUserAgent() = 0;
   virtual blink::WebString GetReducedUserAgent() = 0;
   virtual const blink::UserAgentMetadata& GetUserAgentMetadata() = 0;
-
-  // Returns whether or not the use-zoom-for-dsf flag is enabled.
-  virtual bool IsUseZoomForDSF() = 0;
 
   // Write a representation of the current Renderer process into a trace.
   virtual void WriteIntoTrace(

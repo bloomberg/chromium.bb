@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -116,7 +116,7 @@ class Mirror(object):
 
   def __init__(self, url, refs=None, commits=None, print_func=None):
     self.url = url
-    self.fetch_specs = set([self.parse_fetch_spec(ref) for ref in (refs or [])])
+    self.fetch_specs = {self.parse_fetch_spec(ref) for ref in (refs or [])}
     self.fetch_commits = set(commits or [])
     self.basedir = self.UrlToCacheDir(url)
     self.mirror_path = os.path.join(self.GetCachePath(), self.basedir)
@@ -348,6 +348,7 @@ class Mirror(object):
       self.RunGit(['cat-file', '-e', needle])
       return True
     except subprocess.CalledProcessError:
+      self.print('Commit with hash "%s" not found' % revision, file=sys.stderr)
       return False
 
   def exists(self):
@@ -398,10 +399,6 @@ class Mirror(object):
       if depth and os.path.exists(os.path.join(self.mirror_path, 'shallow')):
         logging.warning(
             'Shallow fetch requested, but repo cache already exists.')
-      # Old boostraps may have old default HEAD, so this ensures main is always
-      # used.
-      self.RunGit(['symbolic-ref', 'HEAD', 'refs/heads/main'],
-                  cwd=self.mirror_path)
       return
 
     if not self.exists():
@@ -425,10 +422,15 @@ class Mirror(object):
         # 2. Project doesn't have a bootstrap folder.
         # Start with a bare git dir.
         self.RunGit(['init', '--bare'], cwd=self.mirror_path)
-        # Set HEAD to main. -b is introduced in 2.28 and may not be available
-        # everywhere.
-        self.RunGit(['symbolic-ref', 'HEAD', 'refs/heads/main'],
-                    cwd=self.mirror_path)
+        # Set appropriate symbolic-ref
+        remote_info = subprocess.check_output(
+            [self.git_exe, 'remote', 'show', self.url],
+            cwd=self.mirror_path).decode('utf-8', 'ignore').strip()
+        default_branch_regexp = re.compile(r'HEAD branch: (.*)$')
+        m = default_branch_regexp.search(remote_info, re.MULTILINE)
+        if m:
+          self.RunGit(['symbolic-ref', 'HEAD', 'refs/heads/' + m.groups()[0]],
+                      cwd=self.mirror_path)
       else:
         # Bootstrap failed, previous cache exists; warn and continue.
         logging.warning(
@@ -575,8 +577,7 @@ class Mirror(object):
     if not prev_dest_prefix:
       return
     for path in ls_out_set:
-      if (path == prev_dest_prefix + '/' or
-          path == prev_dest_prefix + '.ready'):
+      if path in (prev_dest_prefix + '/', prev_dest_prefix + '.ready'):
         continue
       if path.endswith('.ready'):
         gsutil.call('rm', path)

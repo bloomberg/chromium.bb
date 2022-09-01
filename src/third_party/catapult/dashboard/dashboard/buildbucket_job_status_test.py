@@ -16,6 +16,8 @@ import webtest
 
 from dashboard import buildbucket_job_status
 from dashboard.common import testing_common
+from dashboard.common import utils
+from dashboard.services import request
 
 SAMPLE_RESPONSE = r"""{
  "build": {
@@ -113,6 +115,7 @@ class BuildbucketJobStatusTest(testing_common.TestCase):
 
   @mock.patch.object(buildbucket_job_status.buildbucket_service, 'GetJobStatus',
                      mock.MagicMock(return_value=json.loads(SAMPLE_RESPONSE)))
+  @mock.patch.object(utils, 'IsRunningBuildBucketV2', lambda: False)
   def testGet_ExistingJob(self):
     response = self.testapp.get('/buildbucket_job_status/9046721402459257808')
     # Verify that a human-readable creation time is presented. We check for the
@@ -129,11 +132,51 @@ class BuildbucketJobStatusTest(testing_common.TestCase):
   @mock.patch.object(
       buildbucket_job_status.buildbucket_service, 'GetJobStatus',
       mock.MagicMock(return_value=json.loads(SAMPLE_RESPONSE_NOT_FOUND)))
+  @mock.patch.object(utils, 'IsRunningBuildBucketV2', lambda: False)
   def testGet_JobNotFound(self):
     response = self.testapp.get('/buildbucket_job_status/9046721402459257808')
     # If the error code is shown somewhere in the page and no exception is
     # raised, that's good enough.
     self.assertIn('BUILD_NOT_FOUND', response)
+
+  @mock.patch.object(
+      buildbucket_job_status.buildbucket_service, 'GetJobStatus',
+      mock.MagicMock(return_value=json.loads(r"""{"status": "SUCCESS"}""")))
+  @mock.patch.object(buildbucket_job_status.BuildbucketJobStatusHandler,
+                     'RenderHtml')
+  @mock.patch.object(utils, 'IsRunningBuildBucketV2', lambda: True)
+  def testGet_ExistingJobV2(self, render):
+    self.testapp.get('/buildbucket_job_status/12345')
+    render.assert_called_once_with(
+        'buildbucket_job_status.html', {
+            'job_id': '12345',
+            'status_text': 'DATA:{\n    "status": "SUCCESS"\n}',
+            'build': {
+                "status": "SUCCESS"
+            },
+            'error': None,
+            'original_response': {
+                "status": "SUCCESS"
+            }
+        })
+
+  @mock.patch.object(buildbucket_job_status.buildbucket_service, 'GetJobStatus',
+                     mock.MagicMock(
+                         side_effect=request.NotFoundError(
+                             'oops', {'x-prpc-grpc-code': '5'}, 'Error msg.')))
+  @mock.patch.object(buildbucket_job_status.BuildbucketJobStatusHandler,
+                     'RenderHtml')
+  @mock.patch.object(utils, 'IsRunningBuildBucketV2', lambda: True)
+  def testGet_JobNotFoundV2(self, render):
+    self.testapp.get('/buildbucket_job_status/12345')
+    render.assert_called_once_with(
+        'buildbucket_job_status.html', {
+            'job_id': '12345',
+            'status_text': 'DATA:Error msg.',
+            'build': None,
+            'error': 'gRPC code: 5',
+            'original_response': 'Error msg.'
+        })
 
 
 if __name__ == '__main__':

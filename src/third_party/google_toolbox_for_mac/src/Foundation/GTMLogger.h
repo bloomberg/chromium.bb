@@ -444,8 +444,27 @@ typedef enum {
 
 // Protocol to be implemented by a GTMLogFilter instance.
 @protocol GTMLogFilter <NSObject>
+
 // Returns YES if |msg| at |level| should be logged; NO otherwise.
 - (BOOL)filterAllowsMessage:(NSString *)msg level:(GTMLoggerLevel)level;
+
+@optional
+
+// Optionally implemented by the instance to set up the filter before the logger
+// starts to use it.
+//
+// Filter implementations may require setup/teardown that is not feasible in
+// init/dealloc. For example, if the filter uses KVO (say, to observe
+// NSUserDefaults), the unregistration must happen before dealloc in order to
+// avoid a race condition that could lead to an overrelease of the filter.
+- (void)didAttachToLogger;
+
+// Optionally implemented by the instance to tear down the filter after the
+// logger is done using it.
+//
+// See above didAttachToLogger comments.
+- (void)willDetachFromLogger;
+
 @end  // GTMLogFilter
 
 
@@ -456,7 +475,6 @@ typedef enum {
 // never filtered.
 @interface GTMLogLevelFilter : NSObject <GTMLogFilter> {
  @private
-  BOOL verboseLoggingEnabled_;
   NSUserDefaults *userDefaults_;
 }
 @end  // GTMLogLevelFilter

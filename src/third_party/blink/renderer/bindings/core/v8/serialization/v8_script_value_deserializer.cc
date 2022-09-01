@@ -225,6 +225,16 @@ void V8ScriptValueDeserializer::Transfer() {
   }
 }
 
+bool V8ScriptValueDeserializer::ReadUnguessableToken(
+    base::UnguessableToken* token_out) {
+  uint64_t high;
+  uint64_t low;
+  if (!ReadUint64(&high) || !ReadUint64(&low))
+    return false;
+  *token_out = base::UnguessableToken::Deserialize(high, low);
+  return true;
+}
+
 bool V8ScriptValueDeserializer::ReadUTF8String(String* string) {
   uint32_t utf8_length = 0;
   const void* utf8_data = nullptr;
@@ -306,7 +316,9 @@ ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(
       return file_list;
     }
     case kImageBitmapTag: {
-      SerializedColorSpace canvas_color_space = SerializedColorSpace::kSRGB;
+      SerializedPredefinedColorSpace predefined_color_space =
+          SerializedPredefinedColorSpace::kSRGB;
+      Vector<double> sk_color_space;
       SerializedPixelFormat canvas_pixel_format =
           SerializedPixelFormat::kNative8_LegacyObsolete;
       SerializedOpacityMode canvas_opacity_mode =
@@ -325,9 +337,18 @@ ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(
             case ImageSerializationTag::kEndTag:
               is_done = true;
               break;
-            case ImageSerializationTag::kCanvasColorSpaceTag:
-              if (!ReadUint32Enum<SerializedColorSpace>(&canvas_color_space))
+            case ImageSerializationTag::kPredefinedColorSpaceTag:
+              if (!ReadUint32Enum<SerializedPredefinedColorSpace>(
+                      &predefined_color_space)) {
                 return nullptr;
+              }
+              break;
+            case ImageSerializationTag::kParametricColorSpaceTag:
+              sk_color_space.resize(kSerializedParametricColorSpaceLength);
+              for (double& value : sk_color_space) {
+                if (!ReadDouble(&value))
+                  return nullptr;
+              }
               break;
             case ImageSerializationTag::kCanvasPixelFormatTag:
               if (!ReadUint32Enum<SerializedPixelFormat>(&canvas_pixel_format))
@@ -358,7 +379,8 @@ ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(
           !ReadUint32(&byte_length) || !ReadRawBytes(byte_length, &pixels))
         return nullptr;
       SkImageInfo info =
-          SerializedImageBitmapSettings(canvas_color_space, canvas_pixel_format,
+          SerializedImageBitmapSettings(predefined_color_space, sk_color_space,
+                                        canvas_pixel_format,
                                         canvas_opacity_mode, is_premultiplied)
               .GetSkImageInfo(width, height);
       base::CheckedNumeric<uint32_t> computed_byte_length =
@@ -384,7 +406,8 @@ ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(
       return transferred_image_bitmaps[index].Get();
     }
     case kImageDataTag: {
-      SerializedColorSpace canvas_color_space = SerializedColorSpace::kSRGB;
+      SerializedPredefinedColorSpace predefined_color_space =
+          SerializedPredefinedColorSpace::kSRGB;
       SerializedImageDataStorageFormat image_data_storage_format =
           SerializedImageDataStorageFormat::kUint8Clamped;
       uint32_t width = 0, height = 0;
@@ -399,8 +422,9 @@ ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(
             case ImageSerializationTag::kEndTag:
               is_done = true;
               break;
-            case ImageSerializationTag::kCanvasColorSpaceTag:
-              if (!ReadUint32Enum<SerializedColorSpace>(&canvas_color_space))
+            case ImageSerializationTag::kPredefinedColorSpaceTag:
+              if (!ReadUint32Enum<SerializedPredefinedColorSpace>(
+                      &predefined_color_space))
                 return nullptr;
               break;
             case ImageSerializationTag::kImageDataStorageFormatTag:
@@ -412,6 +436,7 @@ ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(
             case ImageSerializationTag::kOriginCleanTag:
             case ImageSerializationTag::kIsPremultipliedTag:
             case ImageSerializationTag::kCanvasOpacityModeTag:
+            case ImageSerializationTag::kParametricColorSpaceTag:
               // Does not apply to ImageData.
               return nullptr;
           }
@@ -427,22 +452,16 @@ ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(
         return nullptr;
       }
 
-      SerializedImageDataSettings settings(canvas_color_space,
+      SerializedImageDataSettings settings(predefined_color_space,
                                            image_data_storage_format);
-      base::CheckedNumeric<size_t> computed_byte_length = width;
-      computed_byte_length *= height;
-      computed_byte_length *=
-          ImageData::StorageFormatBytesPerPixel(settings.GetStorageFormat());
-      if (!computed_byte_length.IsValid() ||
-          computed_byte_length.ValueOrDie() != byte_length)
-        return nullptr;
       ImageData* image_data = ImageData::ValidateAndCreate(
           width, height, absl::nullopt, settings.GetImageDataSettings(),
           ImageData::ValidateAndCreateParams(), exception_state);
       if (!image_data)
         return nullptr;
       SkPixmap image_data_pixmap = image_data->GetSkPixmap();
-      DCHECK_EQ(image_data_pixmap.computeByteSize(), byte_length);
+      if (image_data_pixmap.computeByteSize() != byte_length)
+        return nullptr;
       memcpy(image_data_pixmap.writable_addr(), pixels, byte_length);
       return image_data;
     }
@@ -493,7 +512,7 @@ ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(
         if (!ReadDouble(&d))
           return nullptr;
       }
-      return DOMMatrix::CreateForSerialization(values, base::size(values));
+      return DOMMatrix::CreateForSerialization(values, std::size(values));
     }
     case kDOMMatrix2DReadOnlyTag: {
       double values[6];
@@ -502,7 +521,7 @@ ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(
           return nullptr;
       }
       return DOMMatrixReadOnly::CreateForSerialization(values,
-                                                       base::size(values));
+                                                       std::size(values));
     }
     case kDOMMatrixTag: {
       double values[16];
@@ -510,7 +529,7 @@ ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(
         if (!ReadDouble(&d))
           return nullptr;
       }
-      return DOMMatrix::CreateForSerialization(values, base::size(values));
+      return DOMMatrix::CreateForSerialization(values, std::size(values));
     }
     case kDOMMatrixReadOnlyTag: {
       double values[16];
@@ -519,7 +538,7 @@ ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(
           return nullptr;
       }
       return DOMMatrixReadOnly::CreateForSerialization(values,
-                                                       base::size(values));
+                                                       std::size(values));
     }
     case kMessagePortTag: {
       uint32_t index = 0;
@@ -744,22 +763,8 @@ v8::MaybeLocal<v8::WasmModuleObject>
 V8ScriptValueDeserializer::GetWasmModuleFromId(v8::Isolate* isolate,
                                                uint32_t id) {
   if (id < serialized_script_value_->WasmModules().size()) {
-    ExecutionContext* execution_context = ExecutionContext::From(script_state_);
-    DCHECK(serialized_script_value_->origin());
-    UseCounter::Count(execution_context, WebFeature::kWasmModuleSharing);
-    const v8::CompiledWasmModule& wasm_module =
-        serialized_script_value_->WasmModules()[id];
-    if (!serialized_script_value_->origin()->IsSameOriginWith(
-            execution_context->GetSecurityOrigin())) {
-      UseCounter::Count(execution_context,
-                        WebFeature::kCrossOriginWasmModuleSharing);
-      AuditsIssue::ReportCrossOriginWasmModuleSharingIssue(
-          execution_context, wasm_module.source_url(),
-          serialized_script_value_->origin()->ToString(),
-          execution_context->GetSecurityOrigin()->ToString(),
-          true /* is_warning */);
-    }
-    return v8::WasmModuleObject::FromCompiledModule(isolate, wasm_module);
+    return v8::WasmModuleObject::FromCompiledModule(
+        isolate, serialized_script_value_->WasmModules()[id]);
   }
   CHECK(serialized_script_value_->WasmModules().IsEmpty());
   return v8::MaybeLocal<v8::WasmModuleObject>();

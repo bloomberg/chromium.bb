@@ -58,7 +58,7 @@ id<GREYMatcher> PasswordsInOtherAppsListItemMatcher() {
 // Matcher for turn off instructions.
 id<GREYMatcher> PasswordsInOtherAppsTurnOffInstruction() {
   NSString* turnOffInstructionText =
-      @"To turn off, open Settings and go to Passwords.";
+      @"To turn off, open Settings and go to AutoFill Passwords.";
   return grey_text(turnOffInstructionText);
 }
 
@@ -101,12 +101,6 @@ void OpensPasswordsInOtherApps() {
   [super tearDown];
   [PasswordsInOtherAppsAppInterface resetManager];
   _passwordAutoFillStatusSwizzler.reset();
-}
-
-- (AppLaunchConfiguration)appConfigurationForTestCase {
-  AppLaunchConfiguration config;
-  config.features_enabled.push_back(kCredentialProviderExtensionPromo);
-  return config;
 }
 
 #pragma mark - helper functions

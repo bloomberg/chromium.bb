@@ -10,8 +10,10 @@
 #include <vector>
 
 #include "base/containers/adapters.h"
+#include "base/containers/flat_map.h"
 #include "base/containers/stack.h"
 #include "base/logging.h"
+#include "base/notreached.h"
 #include "build/build_config.h"
 #include "cc/base/math_util.h"
 #include "cc/layers/draw_properties.h"
@@ -26,7 +28,9 @@
 #include "cc/trees/property_tree_builder.h"
 #include "cc/trees/scroll_node.h"
 #include "cc/trees/transform_node.h"
+#include "cc/trees/viewport_property_ids.h"
 #include "components/viz/common/display/de_jelly.h"
+#include "components/viz/common/shared_element_resource_id.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
 namespace cc {
@@ -66,10 +70,10 @@ bool ConvertRectBetweenSurfaceSpaces(const PropertyTrees* property_trees,
                                      gfx::RectF clip_in_source_space,
                                      gfx::RectF* clip_in_dest_space) {
   const EffectNode* source_effect_node =
-      property_trees->effect_tree.Node(source_effect_id);
+      property_trees->effect_tree().Node(source_effect_id);
   int source_transform_id = source_effect_node->transform_id;
   const EffectNode* dest_effect_node =
-      property_trees->effect_tree.Node(dest_effect_id);
+      property_trees->effect_tree().Node(dest_effect_id);
   int dest_transform_id = dest_effect_node->transform_id;
   gfx::Transform source_to_dest;
   if (source_transform_id > dest_transform_id) {
@@ -146,13 +150,13 @@ ConditionalClip ComputeCurrentClip(const ClipNode* clip_node,
                                          target_transform_id, target_effect_id);
   }
 
-  const EffectTree& effect_tree = property_trees->effect_tree;
+  const EffectTree& effect_tree = property_trees->effect_tree();
   gfx::RectF current_clip = clip_node->clip;
   gfx::Vector2dF surface_contents_scale =
       effect_tree.Node(target_effect_id)->surface_contents_scale;
   // The viewport clip should not be scaled.
   if (surface_contents_scale.x() > 0 && surface_contents_scale.y() > 0 &&
-      clip_node->transform_id != TransformTree::kRootNodeId)
+      clip_node->transform_id != kRootPropertyNodeId)
     current_clip.Scale(surface_contents_scale.x(), surface_contents_scale.y());
   return ConditionalClip{true /* is_clipped */, current_clip};
 }
@@ -182,7 +186,7 @@ bool ApplyClipNodeToAccumulatedClip(const PropertyTrees* property_trees,
 
       // Bring the accumulated clip to the space of the expanding effect.
       const EffectNode* expanding_effect_node =
-          property_trees->effect_tree.Node(
+          property_trees->effect_tree().Node(
               clip_node->clip_expander->target_effect_id());
       gfx::RectF accumulated_clip_rect_in_expanding_space;
       bool success = ConvertRectBetweenSurfaceSpaces(
@@ -218,15 +222,15 @@ ConditionalClip ComputeAccumulatedClip(PropertyTrees* property_trees,
                                        int target_id) {
   ClipRectData* cached_data =
       property_trees->FetchClipRectFromCache(local_clip_id, target_id);
-  if (cached_data->target_id != EffectTree::kInvalidNodeId) {
+  if (cached_data->target_id != kInvalidPropertyNodeId) {
     // Cache hit
     return cached_data->clip;
   }
   cached_data->target_id = target_id;
 
-  const ClipTree& clip_tree = property_trees->clip_tree;
+  const ClipTree& clip_tree = property_trees->clip_tree();
   const ClipNode* clip_node = clip_tree.Node(local_clip_id);
-  const EffectTree& effect_tree = property_trees->effect_tree;
+  const EffectTree& effect_tree = property_trees->effect_tree();
   const EffectNode* target_node = effect_tree.Node(target_id);
   int target_transform_id = target_node->transform_id;
 
@@ -242,7 +246,8 @@ ConditionalClip ComputeAccumulatedClip(PropertyTrees* property_trees,
   // contributing layer that escapes clip, this will find the nearest ancestor
   // that doesn't.
   while (target_node->clip_id > clip_node->id ||
-         effect_tree.GetRenderSurface(target_node->id)
+         property_trees->effect_tree()
+             .GetRenderSurface(target_node->id)
              ->has_contributing_layer_that_escapes_clip()) {
     target_node = effect_tree.Node(target_node->target_id);
   }
@@ -384,7 +389,7 @@ bool IsTargetSpaceTransformBackFaceVisible(
     LayerImpl* layer,
     int transform_tree_index,
     const PropertyTrees* property_trees) {
-  const TransformTree& transform_tree = property_trees->transform_tree;
+  const TransformTree& transform_tree = property_trees->transform_tree();
   const TransformNode& transform_node =
       *transform_tree.Node(transform_tree_index);
   if (transform_node.delegates_to_parent_for_backface)
@@ -410,7 +415,7 @@ bool IsTransformToRootOf3DRenderingContextBackFaceVisible(
     LayerImpl* layer,
     int transform_tree_index,
     const PropertyTrees* property_trees) {
-  const TransformTree& transform_tree = property_trees->transform_tree;
+  const TransformTree& transform_tree = property_trees->transform_tree();
 
   const TransformNode& transform_node =
       *transform_tree.Node(transform_tree_index);
@@ -423,7 +428,7 @@ bool IsTransformToRootOf3DRenderingContextBackFaceVisible(
   int root_id = transform_tree_index;
   int sorting_context_id = transform_node.sorting_context_id;
 
-  while (root_id > TransformTree::kRootNodeId) {
+  while (root_id > kRootPropertyNodeId) {
     int parent_id = root_node->parent_id;
     const TransformNode* parent_node = transform_tree.Node(parent_id);
     if (parent_node->sorting_context_id != sorting_context_id)
@@ -436,7 +441,7 @@ bool IsTransformToRootOf3DRenderingContextBackFaceVisible(
   // |to_target| and |to_screen|.
   gfx::Transform to_3d_root;
   if (transform_tree_index != root_id)
-    property_trees->transform_tree.CombineTransformsBetween(
+    property_trees->transform_tree().CombineTransformsBetween(
         transform_tree_index, root_id, &to_3d_root);
   to_3d_root.PreconcatTransform(root_node->to_parent);
   return to_3d_root.IsBackFaceVisible();
@@ -478,12 +483,12 @@ bool LayerNeedsUpdate(LayerType* layer,
   if (!layer_is_drawn)
     return false;
 
-  if (!layer->DrawsContent() || layer->bounds().IsEmpty())
+  if (!layer->draws_content() || layer->bounds().IsEmpty())
     return false;
 
   // The layer should not be drawn if (1) it is not double-sided and (2) the
   // back of the layer is known to be facing the screen.
-  const TransformTree& tree = property_trees->transform_tree;
+  const TransformTree& tree = property_trees->transform_tree();
   if (layer->should_check_backface_visibility()) {
     int backface_transform_id =
         TransformTreeIndexForBackfaceVisibility(layer, tree);
@@ -534,7 +539,7 @@ gfx::Rect LayerDrawableContentRect(
 void SetSurfaceIsClipped(const ClipTree& clip_tree,
                          RenderSurfaceImpl* render_surface) {
   bool is_clipped;
-  if (render_surface->EffectTreeIndex() == EffectTree::kContentsRootNodeId) {
+  if (render_surface->EffectTreeIndex() == kContentsRootPropertyNodeId) {
     // Root render surface is always clipped.
     is_clipped = true;
   } else if (render_surface->has_contributing_layer_that_escapes_clip()) {
@@ -604,13 +609,13 @@ void SetSurfaceClipRect(const ClipNode* parent_clip_node,
     return;
   }
 
-  const EffectTree& effect_tree = property_trees->effect_tree;
-  const ClipTree& clip_tree = property_trees->clip_tree;
+  const EffectTree& effect_tree = property_trees->effect_tree();
+  const ClipTree& clip_tree = property_trees->clip_tree();
   const EffectNode* effect_node =
       effect_tree.Node(render_surface->EffectTreeIndex());
   const EffectNode* target_node = effect_tree.Node(effect_node->target_id);
   bool include_expanding_clips = false;
-  if (render_surface->EffectTreeIndex() == EffectTree::kContentsRootNodeId) {
+  if (render_surface->EffectTreeIndex() == kContentsRootPropertyNodeId) {
     render_surface->SetClipRect(
         ToEnclosingClipRect(clip_tree.Node(effect_node->clip_id)->clip));
   } else {
@@ -624,14 +629,14 @@ void SetSurfaceClipRect(const ClipNode* parent_clip_node,
 
 void SetSurfaceDrawTransform(const PropertyTrees* property_trees,
                              RenderSurfaceImpl* render_surface) {
-  const TransformTree& transform_tree = property_trees->transform_tree;
-  const EffectTree& effect_tree = property_trees->effect_tree;
+  const TransformTree& transform_tree = property_trees->transform_tree();
+  const EffectTree& effect_tree = property_trees->effect_tree();
   const TransformNode* transform_node =
       transform_tree.Node(render_surface->TransformTreeIndex());
   const EffectNode* effect_node =
       effect_tree.Node(render_surface->EffectTreeIndex());
   // The draw transform of root render surface is identity tranform.
-  if (render_surface->EffectTreeIndex() == EffectTree::kContentsRootNodeId) {
+  if (render_surface->EffectTreeIndex() == kContentsRootPropertyNodeId) {
     render_surface->SetDrawTransform(gfx::Transform());
     return;
   }
@@ -648,7 +653,7 @@ void SetSurfaceDrawTransform(const PropertyTrees* property_trees,
 
 gfx::Rect LayerVisibleRect(PropertyTrees* property_trees, LayerImpl* layer) {
   const EffectNode* effect_node =
-      property_trees->effect_tree.Node(layer->effect_tree_index());
+      property_trees->effect_tree().Node(layer->effect_tree_index());
   int lower_effect_closest_ancestor =
       effect_node->closest_ancestor_with_cached_render_surface_id;
   lower_effect_closest_ancestor =
@@ -657,8 +662,11 @@ gfx::Rect LayerVisibleRect(PropertyTrees* property_trees, LayerImpl* layer) {
   lower_effect_closest_ancestor =
       std::max(lower_effect_closest_ancestor,
                effect_node->closest_ancestor_being_captured_id);
+  lower_effect_closest_ancestor =
+      std::max(lower_effect_closest_ancestor,
+               effect_node->closest_ancestor_with_shared_element_id);
   const bool non_root_with_render_surface =
-      lower_effect_closest_ancestor > EffectTree::kContentsRootNodeId;
+      lower_effect_closest_ancestor > kContentsRootPropertyNodeId;
   gfx::Rect layer_content_rect = gfx::Rect(layer->bounds());
 
   gfx::RectF accumulated_clip_in_root_space;
@@ -672,15 +680,15 @@ gfx::Rect LayerVisibleRect(PropertyTrees* property_trees, LayerImpl* layer) {
     accumulated_clip_in_root_space = accumulated_clip.clip_rect;
   } else {
     const ClipNode* clip_node =
-        property_trees->clip_tree.Node(layer->clip_tree_index());
+        property_trees->clip_tree().Node(layer->clip_tree_index());
     accumulated_clip_in_root_space =
         clip_node->cached_accumulated_rect_in_screen_space;
   }
 
   const EffectNode* root_effect_node =
       non_root_with_render_surface
-          ? property_trees->effect_tree.Node(lower_effect_closest_ancestor)
-          : property_trees->effect_tree.Node(EffectTree::kContentsRootNodeId);
+          ? property_trees->effect_tree().Node(lower_effect_closest_ancestor)
+          : property_trees->effect_tree().Node(kContentsRootPropertyNodeId);
   ConditionalClip accumulated_clip_in_layer_space =
       ComputeTargetRectInLocalSpace(
           accumulated_clip_in_root_space, property_trees,
@@ -698,14 +706,14 @@ gfx::Rect LayerVisibleRect(PropertyTrees* property_trees, LayerImpl* layer) {
     if (layer->IsAffectedByPageScale()) {
       padding_amount /= layer->layer_tree_impl()->current_page_scale_factor();
     }
-    visible_rect.Inset(0.0f, -padding_amount);
+    visible_rect.Inset(gfx::Insets::VH(-padding_amount, 0.0f));
   }
   visible_rect.Intersect(layer_content_rect);
   return visible_rect;
 }
 
 ConditionalClip LayerClipRect(PropertyTrees* property_trees, LayerImpl* layer) {
-  const EffectTree* effect_tree = &property_trees->effect_tree;
+  const EffectTree* effect_tree = &property_trees->effect_tree();
   const EffectNode* effect_node = effect_tree->Node(layer->effect_tree_index());
   const EffectNode* target_node =
       effect_node->HasRenderSurface()
@@ -723,7 +731,7 @@ std::pair<gfx::MaskFilterInfo, bool> GetMaskFilterInfoPair(
   static const std::pair<gfx::MaskFilterInfo, bool> kEmptyMaskFilterInfoPair =
       std::make_pair(gfx::MaskFilterInfo(), false);
 
-  const EffectTree* effect_tree = &property_trees->effect_tree;
+  const EffectTree* effect_tree = &property_trees->effect_tree();
   const EffectNode* effect_node = effect_tree->Node(effect_tree_index);
   const int target_id = effect_node->target_id;
 
@@ -733,14 +741,14 @@ std::pair<gfx::MaskFilterInfo, bool> GetMaskFilterInfoPair(
     return kEmptyMaskFilterInfoPair;
 
   // Traverse the parent chain up to the render target to find a node which has
-  // a rounded corner bounds set.
+  // mask filter info set.
   const EffectNode* node = effect_node;
-  bool found_rounded_corner = false;
+  bool found_mask_filter_info = false;
+
   while (node) {
-    if (node->mask_filter_info.HasRoundedCorners()) {
-      found_rounded_corner = true;
+    found_mask_filter_info = !node->mask_filter_info.IsEmpty();
+    if (found_mask_filter_info)
       break;
-    }
 
     // If the iteration has reached a node in the parent chain that has a render
     // surface, then break. If this iteration is for a render surface to begin
@@ -757,9 +765,9 @@ std::pair<gfx::MaskFilterInfo, bool> GetMaskFilterInfoPair(
     node = effect_tree->parent(node);
   }
 
-  // While traversing up the parent chain we did not find any node with a
-  // rounded corner.
-  if (!node || !found_rounded_corner)
+  // While traversing up the parent chain we did not find any node with mask
+  // filter info.
+  if (!node || !found_mask_filter_info)
     return kEmptyMaskFilterInfoPair;
 
   gfx::Transform to_target;
@@ -777,12 +785,13 @@ std::pair<gfx::MaskFilterInfo, bool> GetMaskFilterInfoPair(
 
 void UpdateRenderTarget(EffectTree* effect_tree) {
   int last_backdrop_filter = kInvalidNodeId;
-  for (int i = EffectTree::kContentsRootNodeId;
+
+  for (int i = kContentsRootPropertyNodeId;
        i < static_cast<int>(effect_tree->size()); ++i) {
     EffectNode* node = effect_tree->Node(i);
-    if (i == EffectTree::kContentsRootNodeId) {
+    if (i == kContentsRootPropertyNodeId) {
       // Render target of the node corresponding to root is itself.
-      node->target_id = EffectTree::kContentsRootNodeId;
+      node->target_id = kContentsRootPropertyNodeId;
     } else if (effect_tree->parent(node)->HasRenderSurface()) {
       node->target_id = node->parent_id;
     } else {
@@ -799,7 +808,7 @@ void UpdateRenderTarget(EffectTree* effect_tree) {
 
   // Update effect nodes for the backdrop filter due to the target id change.
   int current_target_id = effect_tree->Node(last_backdrop_filter)->target_id;
-  for (int i = last_backdrop_filter - 1; EffectTree::kContentsRootNodeId <= i;
+  for (int i = last_backdrop_filter - 1; kContentsRootPropertyNodeId <= i;
        --i) {
     EffectNode* node = effect_tree->Node(i);
     node->affected_by_backdrop_filter = current_target_id <= i ? true : false;
@@ -815,19 +824,19 @@ void UpdateRenderTarget(EffectTree* effect_tree) {
 }
 
 void ComputeClips(PropertyTrees* property_trees) {
-  DCHECK(!property_trees->transform_tree.needs_update());
-  ClipTree* clip_tree = &property_trees->clip_tree;
+  DCHECK(!property_trees->transform_tree().needs_update());
+  ClipTree* clip_tree = &property_trees->clip_tree_mutable();
   if (!clip_tree->needs_update())
     return;
-  const int target_effect_id = EffectTree::kContentsRootNodeId;
-  const int target_transform_id = TransformTree::kRootNodeId;
+  const int target_effect_id = kContentsRootPropertyNodeId;
+  const int target_transform_id = kRootPropertyNodeId;
   const bool include_expanding_clips = true;
-  for (int i = ClipTree::kViewportNodeId;
-       i < static_cast<int>(clip_tree->size()); ++i) {
+  for (int i = kViewportPropertyNodeId; i < static_cast<int>(clip_tree->size());
+       ++i) {
     ClipNode* clip_node = clip_tree->Node(i);
     // Clear the clip rect cache
     clip_node->cached_clip_rects->clear();
-    if (clip_node->id == ClipTree::kViewportNodeId) {
+    if (clip_node->id == kViewportPropertyNodeId) {
       clip_node->cached_accumulated_rect_in_screen_space = clip_node->clip;
       continue;
     }
@@ -846,8 +855,8 @@ void ComputeClips(PropertyTrees* property_trees) {
 
 void ComputeSurfaceDrawProperties(PropertyTrees* property_trees,
                                   RenderSurfaceImpl* render_surface) {
-  SetSurfaceIsClipped(property_trees->clip_tree, render_surface);
-  SetSurfaceDrawOpacity(property_trees->effect_tree, render_surface);
+  SetSurfaceIsClipped(property_trees->clip_tree(), render_surface);
+  SetSurfaceDrawOpacity(property_trees->effect_tree(), render_surface);
   SetSurfaceDrawTransform(property_trees, render_surface);
 
   render_surface->SetMaskFilterInfo(
@@ -860,7 +869,7 @@ void ComputeSurfaceDrawProperties(PropertyTrees* property_trees,
           render_surface->EffectTreeIndex()));
 
   const ClipNode* clip_node =
-      property_trees->clip_tree.Node(render_surface->ClipTreeIndex());
+      property_trees->clip_tree().Node(render_surface->ClipTreeIndex());
   SetSurfaceClipRect(clip_node, property_trees, render_surface);
 }
 
@@ -871,7 +880,7 @@ void AddSurfaceToRenderSurfaceList(RenderSurfaceImpl* render_surface,
   // target is in the list.
   RenderSurfaceImpl* target = render_surface->render_target();
   bool is_root =
-      render_surface->EffectTreeIndex() == EffectTree::kContentsRootNodeId;
+      render_surface->EffectTreeIndex() == kContentsRootPropertyNodeId;
   if (!is_root && !target->is_render_surface_list_member()) {
     AddSurfaceToRenderSurfaceList(target, render_surface_list, property_trees);
   }
@@ -884,7 +893,7 @@ void AddSurfaceToRenderSurfaceList(RenderSurfaceImpl* render_surface,
     render_surface->set_contributes_to_drawn_surface(false);
   } else {
     bool contributes_to_drawn_surface =
-        property_trees->effect_tree.ContributesToDrawnSurface(
+        property_trees->effect_tree().ContributesToDrawnSurface(
             render_surface->EffectTreeIndex());
     render_surface->set_contributes_to_drawn_surface(
         contributes_to_drawn_surface);
@@ -916,12 +925,12 @@ void AddSurfaceToRenderSurfaceList(RenderSurfaceImpl* render_surface,
 bool SkipForInvertibility(const LayerImpl* layer,
                           PropertyTrees* property_trees) {
   const TransformNode* transform_node =
-      property_trees->transform_tree.Node(layer->transform_tree_index());
+      property_trees->transform_tree().Node(layer->transform_tree_index());
   const EffectNode* effect_node =
-      property_trees->effect_tree.Node(layer->effect_tree_index());
+      property_trees->effect_tree().Node(layer->effect_tree_index());
   bool non_root_copy_request =
       effect_node->closest_ancestor_with_copy_request_id >
-      EffectTree::kContentsRootNodeId;
+      kContentsRootPropertyNodeId;
   gfx::Transform from_target;
   // If there is a copy request, we check the invertibility of the transform
   // between the node corresponding to the layer and the node corresponding to
@@ -938,8 +947,8 @@ bool SkipForInvertibility(const LayerImpl* layer,
 void ComputeInitialRenderSurfaceList(LayerTreeImpl* layer_tree_impl,
                                      PropertyTrees* property_trees,
                                      RenderSurfaceList* render_surface_list) {
-  EffectTree& effect_tree = property_trees->effect_tree;
-  for (int i = EffectTree::kContentsRootNodeId;
+  EffectTree& effect_tree = property_trees->effect_tree_mutable();
+  for (int i = kContentsRootPropertyNodeId;
        i < static_cast<int>(effect_tree.size()); ++i) {
     if (RenderSurfaceImpl* render_surface = effect_tree.GetRenderSurface(i)) {
       render_surface->set_is_render_surface_list_member(false);
@@ -948,10 +957,28 @@ void ComputeInitialRenderSurfaceList(LayerTreeImpl* layer_tree_impl,
   }
 
   RenderSurfaceImpl* root_surface =
-      effect_tree.GetRenderSurface(EffectTree::kContentsRootNodeId);
+      effect_tree.GetRenderSurface(kContentsRootPropertyNodeId);
   // The root surface always gets added to the render surface  list.
   AddSurfaceToRenderSurfaceList(root_surface, render_surface_list,
                                 property_trees);
+
+  // Add all of the render surfaces for the transition pseudo elements early,
+  // since they will need to be added before the shared elements in the layer
+  // lists below, which isn't reflected in the dependency. This can't be done
+  // with dependency ordering because other things require correct dependency
+  // ordering (the AppendQuads pass). By adding the render surfaces right after
+  // the root, we guarantee that the pseudo element tree's render surfaces will
+  // come _after_ any render passes that they reference in the render pass
+  // order.
+  auto transition_pseudo_render_surfaces =
+      effect_tree.GetTransitionPseudoElementRenderSurfaces();
+  for (auto* surface : transition_pseudo_render_surfaces) {
+    if (!surface->is_render_surface_list_member()) {
+      AddSurfaceToRenderSurfaceList(surface, render_surface_list,
+                                    property_trees);
+    }
+  }
+
   // For all non-skipped layers, add their target to the render surface list if
   // it's not already been added, and add their content rect to the target
   // surface's accumulated content rect.
@@ -974,7 +1001,8 @@ void ComputeInitialRenderSurfaceList(LayerTreeImpl* layer_tree_impl,
                                    skip_for_invertibility);
 
     TransformNode* transform_noe =
-        property_trees->transform_tree.Node(layer->transform_tree_index());
+        property_trees->transform_tree_mutable().Node(
+            layer->transform_tree_index());
     const bool has_will_change_transform_hint =
         transform_noe && transform_noe->will_change_transform;
     // Raster layers that are animated but currently have a non-invertible
@@ -986,8 +1014,9 @@ void ComputeInitialRenderSurfaceList(LayerTreeImpl* layer_tree_impl,
     if (skip_layer)
       continue;
 
-    bool layer_is_drawn =
-        property_trees->effect_tree.Node(layer->effect_tree_index())->is_drawn;
+    bool layer_is_drawn = property_trees->effect_tree()
+                              .Node(layer->effect_tree_index())
+                              ->is_drawn;
     bool layer_should_be_drawn =
         LayerNeedsUpdate(layer, layer_is_drawn, property_trees);
     if (!layer_should_be_drawn)
@@ -1014,7 +1043,7 @@ void ComputeSurfaceContentRects(PropertyTrees* property_trees,
   // target's content rect.
   for (RenderSurfaceImpl* render_surface :
        base::Reversed(*render_surface_list)) {
-    if (render_surface->EffectTreeIndex() == EffectTree::kContentsRootNodeId) {
+    if (render_surface->EffectTreeIndex() == kContentsRootPropertyNodeId) {
       // The root surface's content rect is always the entire viewport.
       render_surface->SetContentRectToViewport();
       continue;
@@ -1045,8 +1074,7 @@ void ComputeListOfNonEmptySurfaces(LayerTreeImpl* layer_tree_impl,
   // the final list do not get added to the final list.
   bool removed_surface = false;
   for (RenderSurfaceImpl* surface : *initial_surface_list) {
-    bool is_root =
-        surface->EffectTreeIndex() == EffectTree::kContentsRootNodeId;
+    bool is_root = surface->EffectTreeIndex() == kContentsRootPropertyNodeId;
     RenderSurfaceImpl* target_surface = surface->render_target();
     if (!is_root && (surface->content_rect().IsEmpty() ||
                      !target_surface->is_render_surface_list_member())) {
@@ -1107,7 +1135,7 @@ void RecordRenderSurfaceReasonsForTracing(
   int reason_counts[kNumReasons] = {0};
   for (const auto* render_surface : *render_surface_list) {
     const auto* effect_node =
-        property_trees->effect_tree.Node(render_surface->EffectTreeIndex());
+        property_trees->effect_tree().Node(render_surface->EffectTreeIndex());
     reason_counts[static_cast<size_t>(effect_node->render_surface_reason)]++;
   }
   for (size_t i = 0; i < kNumReasons; i++) {
@@ -1126,7 +1154,7 @@ void UpdateElasticOverscroll(
     ElementId overscroll_elasticity_effect_element_id,
     const gfx::Vector2dF& elastic_overscroll,
     const ScrollNode* inner_viewport) {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // On android, elastic overscroll is implemented by stretching the content
   // from the overscrolled edge.
   if (!overscroll_elasticity_effect_element_id &&
@@ -1136,16 +1164,16 @@ void UpdateElasticOverscroll(
   }
   if (overscroll_elasticity_effect_element_id) {
     if (elastic_overscroll.IsZero() || !inner_viewport) {
-      property_trees->effect_tree.OnFilterAnimated(
+      property_trees->effect_tree_mutable().OnFilterAnimated(
           overscroll_elasticity_effect_element_id, FilterOperations());
       return;
     }
     // The inner viewport container size takes into account the size change as a
     // result of the top controls, see ScrollTree::container_bounds.
     gfx::Size scroller_size =
-        property_trees->scroll_tree.container_bounds(inner_viewport->id);
+        property_trees->scroll_tree().container_bounds(inner_viewport->id);
 
-    property_trees->effect_tree.OnFilterAnimated(
+    property_trees->effect_tree_mutable().OnFilterAnimated(
         overscroll_elasticity_effect_element_id,
         FilterOperations(
             std::vector<FilterOperation>({FilterOperation::CreateStretchFilter(
@@ -1165,7 +1193,7 @@ void UpdateElasticOverscroll(
     // The inner viewport container size takes into account the size change as a
     // result of the top controls, see ScrollTree::container_bounds.
     gfx::Size scroller_size =
-        property_trees->scroll_tree.container_bounds(inner_viewport->id);
+        property_trees->scroll_tree().container_bounds(inner_viewport->id);
 
     overscroll_elasticity_transform_node->local.Scale(
         1.f + std::abs(elastic_overscroll.x()) / scroller_size.width(),
@@ -1183,8 +1211,8 @@ void UpdateElasticOverscroll(
     }
   }
   overscroll_elasticity_transform_node->needs_local_transform_update = true;
-  property_trees->transform_tree.set_needs_update(true);
-#else  // defined(OS_ANDROID)
+  property_trees->transform_tree_mutable().set_needs_update(true);
+#else  // BUILDFLAG(IS_ANDROID)
   if (!overscroll_elasticity_transform_node) {
     DCHECK(elastic_overscroll.IsZero());
     return;
@@ -1200,9 +1228,9 @@ void UpdateElasticOverscroll(
   overscroll_elasticity_transform_node->scroll_offset = overscroll_offset;
 
   overscroll_elasticity_transform_node->needs_local_transform_update = true;
-  property_trees->transform_tree.set_needs_update(true);
+  property_trees->transform_tree_mutable().set_needs_update(true);
 
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 }
 
 void ComputeDrawPropertiesOfVisibleLayers(const LayerImplList* layer_list,
@@ -1210,12 +1238,12 @@ void ComputeDrawPropertiesOfVisibleLayers(const LayerImplList* layer_list,
   // Compute transforms
   for (LayerImpl* layer : *layer_list) {
     const TransformNode* transform_node =
-        property_trees->transform_tree.Node(layer->transform_tree_index());
+        property_trees->transform_tree().Node(layer->transform_tree_index());
 
     layer->draw_properties().screen_space_transform =
-        ScreenSpaceTransformInternal(layer, property_trees->transform_tree);
+        ScreenSpaceTransformInternal(layer, property_trees->transform_tree());
     layer->draw_properties().target_space_transform = DrawTransform(
-        layer, property_trees->transform_tree, property_trees->effect_tree);
+        layer, property_trees->transform_tree(), property_trees->effect_tree());
     layer->draw_properties().screen_space_transform_is_animating =
         transform_node->to_screen_is_potentially_animated;
     auto mask_filter_info_pair =
@@ -1230,15 +1258,15 @@ void ComputeDrawPropertiesOfVisibleLayers(const LayerImplList* layer_list,
   // that escape clip.
   for (LayerImpl* layer : *layer_list) {
     layer->draw_properties().opacity =
-        LayerDrawOpacity(layer, property_trees->effect_tree);
+        LayerDrawOpacity(layer, property_trees->effect_tree());
     RenderSurfaceImpl* render_target = layer->render_target();
     int lca_clip_id = LowestCommonAncestor(layer->clip_tree_index(),
                                            render_target->ClipTreeIndex(),
-                                           &property_trees->clip_tree);
+                                           &property_trees->clip_tree());
     if (lca_clip_id != render_target->ClipTreeIndex()) {
-      SetHasContributingLayerThatEscapesClip(lca_clip_id,
-                                             render_target->EffectTreeIndex(),
-                                             &property_trees->effect_tree);
+      SetHasContributingLayerThatEscapesClip(
+          lca_clip_id, render_target->EffectTreeIndex(),
+          &property_trees->effect_tree_mutable());
     }
   }
 
@@ -1255,9 +1283,9 @@ void ComputeDrawPropertiesOfVisibleLayers(const LayerImplList* layer_list,
 
   // Compute drawable content rects
   for (LayerImpl* layer : *layer_list) {
-    bool only_draws_visible_content =
-        property_trees->effect_tree.Node(layer->effect_tree_index())
-            ->only_draws_visible_content;
+    bool only_draws_visible_content = property_trees->effect_tree()
+                                          .Node(layer->effect_tree_index())
+                                          ->only_draws_visible_content;
     gfx::Rect drawable_bounds = gfx::Rect(layer->visible_layer_rect());
     if (!only_draws_visible_content) {
       drawable_bounds = gfx::Rect(layer->bounds());
@@ -1291,8 +1319,8 @@ bool NodeMayContainBackdropBlurFilter(const EffectNode& node) {
 bool CC_EXPORT LayerShouldBeSkippedForDrawPropertiesComputation(
     LayerImpl* layer,
     const PropertyTrees* property_trees) {
-  const TransformTree& transform_tree = property_trees->transform_tree;
-  const EffectTree& effect_tree = property_trees->effect_tree;
+  const TransformTree& transform_tree = property_trees->transform_tree();
+  const EffectTree& effect_tree = property_trees->effect_tree();
   const EffectNode* effect_node = effect_tree.Node(layer->effect_tree_index());
 
   if (effect_node->HasRenderSurface() && effect_node->subtree_has_copy_request)
@@ -1359,8 +1387,8 @@ void ConcatInverseSurfaceContentsScale(const EffectNode* effect_node,
 void FindLayersThatNeedUpdates(LayerTreeHost* layer_tree_host,
                                LayerList* update_layer_list) {
   const PropertyTrees* property_trees = layer_tree_host->property_trees();
-  const TransformTree& transform_tree = property_trees->transform_tree;
-  const EffectTree& effect_tree = property_trees->effect_tree;
+  const TransformTree& transform_tree = property_trees->transform_tree();
+  const EffectTree& effect_tree = property_trees->effect_tree();
   for (auto* layer : *layer_tree_host) {
     if (!IsRootLayer(layer) && LayerShouldBeSkippedForDrawPropertiesComputation(
                                    layer, transform_tree, effect_tree))
@@ -1378,7 +1406,7 @@ void FindLayersThatNeedUpdates(LayerTreeHost* layer_tree_host,
 void FindLayersThatNeedUpdates(LayerTreeImpl* layer_tree_impl,
                                std::vector<LayerImpl*>* visible_layer_list) {
   const PropertyTrees* property_trees = layer_tree_impl->property_trees();
-  const EffectTree& effect_tree = property_trees->effect_tree;
+  const EffectTree& effect_tree = property_trees->effect_tree();
 
   for (auto* layer_impl : *layer_tree_impl) {
     DCHECK(layer_impl);
@@ -1398,28 +1426,29 @@ void FindLayersThatNeedUpdates(LayerTreeImpl* layer_tree_impl,
   }
 }
 
-void ComputeTransforms(TransformTree* transform_tree) {
+void ComputeTransforms(TransformTree* transform_tree,
+                       const ViewportPropertyIds& viewport_property_ids) {
   if (!transform_tree->needs_update()) {
 #if DCHECK_IS_ON()
     // If the transform tree does not need an update, no TransformNode should
     // need a local transform update.
-    for (int i = TransformTree::kContentsRootNodeId;
+    for (int i = kContentsRootPropertyNodeId;
          i < static_cast<int>(transform_tree->size()); ++i) {
       DCHECK(!transform_tree->Node(i)->needs_local_transform_update);
     }
 #endif
     return;
   }
-  for (int i = TransformTree::kContentsRootNodeId;
+  for (int i = kContentsRootPropertyNodeId;
        i < static_cast<int>(transform_tree->size()); ++i)
-    transform_tree->UpdateTransforms(i);
+    transform_tree->UpdateTransforms(i, &viewport_property_ids);
   transform_tree->set_needs_update(false);
 }
 
 void ComputeEffects(EffectTree* effect_tree) {
   if (!effect_tree->needs_update())
     return;
-  for (int i = EffectTree::kContentsRootNodeId;
+  for (int i = kContentsRootPropertyNodeId;
        i < static_cast<int>(effect_tree->size()); ++i)
     effect_tree->UpdateEffects(i);
   effect_tree->set_needs_update(false);
@@ -1429,27 +1458,30 @@ void UpdatePropertyTrees(LayerTreeHost* layer_tree_host) {
   DCHECK(layer_tree_host);
   auto* property_trees = layer_tree_host->property_trees();
   DCHECK(property_trees);
-  if (property_trees->transform_tree.needs_update()) {
-    property_trees->clip_tree.set_needs_update(true);
-    property_trees->effect_tree.set_needs_update(true);
+  if (property_trees->transform_tree().needs_update()) {
+    property_trees->clip_tree_mutable().set_needs_update(true);
+    property_trees->effect_tree_mutable().set_needs_update(true);
   }
-  ComputeTransforms(&property_trees->transform_tree);
-  ComputeEffects(&property_trees->effect_tree);
+
+  ComputeTransforms(&property_trees->transform_tree_mutable(),
+                    layer_tree_host->viewport_property_ids());
+  ComputeEffects(&property_trees->effect_tree_mutable());
   // Computation of clips uses ToScreen which is updated while computing
   // transforms. So, ComputeTransforms should be before ComputeClips.
   ComputeClips(property_trees);
 }
 
-void UpdatePropertyTreesAndRenderSurfaces(LayerImpl* root_layer,
+void UpdatePropertyTreesAndRenderSurfaces(LayerTreeImpl* layer_tree_impl,
                                           PropertyTrees* property_trees) {
-  if (property_trees->transform_tree.needs_update()) {
-    property_trees->clip_tree.set_needs_update(true);
-    property_trees->effect_tree.set_needs_update(true);
+  if (property_trees->transform_tree().needs_update()) {
+    property_trees->clip_tree_mutable().set_needs_update(true);
+    property_trees->effect_tree_mutable().set_needs_update(true);
   }
-  UpdateRenderTarget(&property_trees->effect_tree);
+  UpdateRenderTarget(&property_trees->effect_tree_mutable());
 
-  ComputeTransforms(&property_trees->transform_tree);
-  ComputeEffects(&property_trees->effect_tree);
+  ComputeTransforms(&property_trees->transform_tree_mutable(),
+                    layer_tree_impl->viewport_property_ids());
+  ComputeEffects(&property_trees->effect_tree_mutable());
   // Computation of clips uses ToScreen which is updated while computing
   // transforms. So, ComputeTransforms should be before ComputeClips.
   ComputeClips(property_trees);
@@ -1485,18 +1517,20 @@ void UpdatePageScaleFactor(PropertyTrees* property_trees,
                            float page_scale_factor) {
   // TODO(wjmaclean): Once Issue #845097 is resolved, we can change the nullptr
   // check below to a DCHECK.
-  if (property_trees->transform_tree.page_scale_factor() == page_scale_factor ||
+  if (property_trees->transform_tree().page_scale_factor() ==
+          page_scale_factor ||
       !page_scale_node) {
     return;
   }
 
-  property_trees->transform_tree.set_page_scale_factor(page_scale_factor);
+  property_trees->transform_tree_mutable().set_page_scale_factor(
+      page_scale_factor);
 
   page_scale_node->local.MakeIdentity();
   page_scale_node->local.Scale(page_scale_factor, page_scale_factor);
 
   page_scale_node->needs_local_transform_update = true;
-  property_trees->transform_tree.set_needs_update(true);
+  property_trees->transform_tree_mutable().set_needs_update(true);
 }
 
 void CalculateDrawProperties(
@@ -1522,12 +1556,11 @@ void CalculateDrawProperties(
       layer_tree_impl->InnerViewportScrollNode());
   // Similarly, the device viewport and device transform are shared
   // by both trees.
-  property_trees->clip_tree.SetViewportClip(
+  property_trees->clip_tree_mutable().SetViewportClip(
       gfx::RectF(layer_tree_impl->GetDeviceViewport()));
-  property_trees->transform_tree.SetRootScaleAndTransform(
+  property_trees->transform_tree_mutable().SetRootScaleAndTransform(
       layer_tree_impl->device_scale_factor(), layer_tree_impl->DrawTransform());
-  UpdatePropertyTreesAndRenderSurfaces(layer_tree_impl->root_layer(),
-                                       property_trees);
+  UpdatePropertyTreesAndRenderSurfaces(layer_tree_impl, property_trees);
 
   {
     TRACE_EVENT0("cc", "draw_property_utils::FindLayersThatNeedUpdates");
@@ -1559,8 +1592,8 @@ void CalculateDrawProperties(
 
   // A root layer render_surface should always exist after
   // CalculateDrawProperties.
-  DCHECK(property_trees->effect_tree.GetRenderSurface(
-      EffectTree::kContentsRootNodeId));
+  DCHECK(property_trees->effect_tree().GetRenderSurface(
+      kContentsRootPropertyNodeId));
 
   if (output_update_layer_list_for_testing)
     *output_update_layer_list_for_testing = std::move(visible_layer_list);
@@ -1575,7 +1608,7 @@ bool LogDoubleBackgroundBlur(const LayerTreeImpl& layer_tree_impl,
 
   for (const auto* render_surface : render_surface_list) {
     const auto* effect_node =
-        property_trees.effect_tree.Node(render_surface->EffectTreeIndex());
+        property_trees.effect_tree().Node(render_surface->EffectTreeIndex());
     if (NodeMayContainBackdropBlurFilter(*effect_node)) {
       const FilterOperations& filters = render_surface->BackdropFilters();
       if (filters.HasFilterOfType(FilterOperation::BLUR)) {

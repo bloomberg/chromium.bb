@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_token_range.h"
 #include "third_party/blink/renderer/core/css/properties/css_parsing_utils.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/decimal.h"
@@ -452,15 +453,7 @@ absl::optional<MediaQueryExpValue> MediaQueryExpValue::Consume(
                                 numeric_literal->GetType());
     }
 
-    const auto* math_value = To<CSSMathFunctionValue>(value);
-    CSSPrimitiveValue::UnitType expression_unit =
-        math_value->ExpressionNode()->ResolvedUnitType();
-    if (expression_unit == CSSPrimitiveValue::UnitType::kUnknown) {
-      // TODO(crbug.com/982542): Support math expressions involving type
-      // conversions properly. For example, calc(10px + 1em).
-      return absl::nullopt;
-    }
-    return MediaQueryExpValue(math_value->DoubleValue(), expression_unit);
+    return MediaQueryExpValue(*value);
   }
 
   return absl::nullopt;
@@ -497,6 +490,10 @@ MediaQueryExp MediaQueryExp::Create(const String& media_feature,
 
 MediaQueryExp::~MediaQueryExp() = default;
 
+void MediaQueryExp::Trace(Visitor* visitor) const {
+  visitor->Trace(bounds_);
+}
+
 bool MediaQueryExp::operator==(const MediaQueryExp& other) const {
   return (other.media_feature_ == media_feature_) && (bounds_ == other.bounds_);
 }
@@ -509,9 +506,9 @@ String MediaQueryExp::Serialize() const {
   // <mf-plain>  e.g. (width: 100px)
   if (!bounds_.IsRange()) {
     result.Append(name);
-    if (ExpValue().IsValid()) {
+    if (bounds_.right.IsValid()) {
       result.Append(": ");
-      result.Append(ExpValue().CssText());
+      result.Append(bounds_.right.value.CssText());
     }
   } else {
     if (bounds_.left.IsValid()) {
@@ -562,6 +559,9 @@ String MediaQueryExpValue::CssText() const {
     case Type::kId:
       output.Append(getValueName(Id()));
       break;
+    case Type::kCSSValue:
+      output.Append(GetCSSValue().CssText());
+      break;
   }
 
   return output.ReleaseString();
@@ -577,6 +577,13 @@ MediaQueryExpValue::UnitFlags MediaQueryExpValue::GetUnitFlags() const {
       return UnitFlags::kFontRelative;
     case CSSPrimitiveValue::UnitType::kRems:
       return UnitFlags::kRootFontRelative;
+    case CSSPrimitiveValue::UnitType::kDynamicViewportWidth:
+    case CSSPrimitiveValue::UnitType::kDynamicViewportHeight:
+    case CSSPrimitiveValue::UnitType::kDynamicViewportInlineSize:
+    case CSSPrimitiveValue::UnitType::kDynamicViewportBlockSize:
+    case CSSPrimitiveValue::UnitType::kDynamicViewportMin:
+    case CSSPrimitiveValue::UnitType::kDynamicViewportMax:
+      return UnitFlags::kDynamicViewport;
     default:
       return UnitFlags::kNone;
   }
@@ -588,44 +595,69 @@ String MediaQueryExpNode::Serialize() const {
   return builder.ReleaseString();
 }
 
-std::unique_ptr<MediaQueryExpNode> MediaQueryExpNode::Not(
-    std::unique_ptr<MediaQueryExpNode> operand) {
+const MediaQueryExpNode* MediaQueryExpNode::Not(
+    const MediaQueryExpNode* operand) {
   if (!operand)
     return nullptr;
-  return std::make_unique<MediaQueryNotExpNode>(std::move(operand));
+  return MakeGarbageCollected<MediaQueryNotExpNode>(operand);
 }
 
-std::unique_ptr<MediaQueryExpNode> MediaQueryExpNode::Nested(
-    std::unique_ptr<MediaQueryExpNode> operand) {
+const MediaQueryExpNode* MediaQueryExpNode::Nested(
+    const MediaQueryExpNode* operand) {
   if (!operand)
     return nullptr;
-  return std::make_unique<MediaQueryNestedExpNode>(std::move(operand));
+  return MakeGarbageCollected<MediaQueryNestedExpNode>(operand);
 }
 
-std::unique_ptr<MediaQueryExpNode> MediaQueryExpNode::Function(
-    std::unique_ptr<MediaQueryExpNode> operand,
+const MediaQueryExpNode* MediaQueryExpNode::Function(
+    const MediaQueryExpNode* operand,
     const AtomicString& name) {
   if (!operand)
     return nullptr;
-  return std::make_unique<MediaQueryFunctionExpNode>(std::move(operand), name);
+  return MakeGarbageCollected<MediaQueryFunctionExpNode>(operand, name);
 }
 
-std::unique_ptr<MediaQueryExpNode> MediaQueryExpNode::And(
-    std::unique_ptr<MediaQueryExpNode> left,
-    std::unique_ptr<MediaQueryExpNode> right) {
+const MediaQueryExpNode* MediaQueryExpNode::And(
+    const MediaQueryExpNode* left,
+    const MediaQueryExpNode* right) {
   if (!left || !right)
     return nullptr;
-  return std::make_unique<MediaQueryAndExpNode>(std::move(left),
-                                                std::move(right));
+  return MakeGarbageCollected<MediaQueryAndExpNode>(left, right);
 }
 
-std::unique_ptr<MediaQueryExpNode> MediaQueryExpNode::Or(
-    std::unique_ptr<MediaQueryExpNode> left,
-    std::unique_ptr<MediaQueryExpNode> right) {
+const MediaQueryExpNode* MediaQueryExpNode::Or(const MediaQueryExpNode* left,
+                                               const MediaQueryExpNode* right) {
   if (!left || !right)
     return nullptr;
-  return std::make_unique<MediaQueryOrExpNode>(std::move(left),
-                                               std::move(right));
+  return MakeGarbageCollected<MediaQueryOrExpNode>(left, right);
+}
+
+bool MediaQueryFeatureExpNode::IsViewportDependent() const {
+  return exp_.IsViewportDependent();
+}
+
+bool MediaQueryFeatureExpNode::IsDeviceDependent() const {
+  return exp_.IsDeviceDependent();
+}
+
+unsigned MediaQueryFeatureExpNode::GetUnitFlags() const {
+  return exp_.GetUnitFlags();
+}
+
+bool MediaQueryFeatureExpNode::IsWidthDependent() const {
+  return exp_.IsWidthDependent();
+}
+
+bool MediaQueryFeatureExpNode::IsHeightDependent() const {
+  return exp_.IsHeightDependent();
+}
+
+bool MediaQueryFeatureExpNode::IsInlineSizeDependent() const {
+  return exp_.IsInlineSizeDependent();
+}
+
+bool MediaQueryFeatureExpNode::IsBlockSizeDependent() const {
+  return exp_.IsBlockSizeDependent();
 }
 
 void MediaQueryFeatureExpNode::SerializeTo(StringBuilder& builder) const {
@@ -633,35 +665,50 @@ void MediaQueryFeatureExpNode::SerializeTo(StringBuilder& builder) const {
 }
 
 void MediaQueryFeatureExpNode::CollectExpressions(
-    Vector<MediaQueryExp>& result) const {
+    HeapVector<MediaQueryExp>& result) const {
   result.push_back(exp_);
 }
 
-bool MediaQueryFeatureExpNode::HasUnknown() const {
-  return false;
+MediaQueryExpNode::FeatureFlags MediaQueryFeatureExpNode::CollectFeatureFlags()
+    const {
+  FeatureFlags flags = 0;
+
+  if (exp_.IsWidthDependent())
+    flags |= kFeatureWidth;
+  if (exp_.IsHeightDependent())
+    flags |= kFeatureHeight;
+  if (exp_.IsInlineSizeDependent())
+    flags |= kFeatureInlineSize;
+  if (exp_.IsBlockSizeDependent())
+    flags |= kFeatureBlockSize;
+
+  return flags;
 }
 
-std::unique_ptr<MediaQueryExpNode> MediaQueryFeatureExpNode::Copy() const {
-  return std::make_unique<MediaQueryFeatureExpNode>(exp_);
+void MediaQueryFeatureExpNode::Trace(Visitor* visitor) const {
+  visitor->Trace(exp_);
+  MediaQueryExpNode::Trace(visitor);
+}
+
+void MediaQueryUnaryExpNode::Trace(Visitor* visitor) const {
+  visitor->Trace(operand_);
+  MediaQueryExpNode::Trace(visitor);
 }
 
 void MediaQueryUnaryExpNode::CollectExpressions(
-    Vector<MediaQueryExp>& result) const {
+    HeapVector<MediaQueryExp>& result) const {
   operand_->CollectExpressions(result);
 }
 
-bool MediaQueryUnaryExpNode::HasUnknown() const {
-  return operand_->HasUnknown();
+MediaQueryExpNode::FeatureFlags MediaQueryUnaryExpNode::CollectFeatureFlags()
+    const {
+  return operand_->CollectFeatureFlags();
 }
 
 void MediaQueryNestedExpNode::SerializeTo(StringBuilder& builder) const {
   builder.Append("(");
   Operand().SerializeTo(builder);
   builder.Append(")");
-}
-
-std::unique_ptr<MediaQueryExpNode> MediaQueryNestedExpNode::Copy() const {
-  return std::make_unique<MediaQueryNestedExpNode>(Operand().Copy());
 }
 
 void MediaQueryFunctionExpNode::SerializeTo(StringBuilder& builder) const {
@@ -671,27 +718,26 @@ void MediaQueryFunctionExpNode::SerializeTo(StringBuilder& builder) const {
   builder.Append(")");
 }
 
-std::unique_ptr<MediaQueryExpNode> MediaQueryFunctionExpNode::Copy() const {
-  return std::make_unique<MediaQueryFunctionExpNode>(Operand().Copy(), name_);
-}
-
 void MediaQueryNotExpNode::SerializeTo(StringBuilder& builder) const {
   builder.Append("not ");
   Operand().SerializeTo(builder);
 }
 
-std::unique_ptr<MediaQueryExpNode> MediaQueryNotExpNode::Copy() const {
-  return std::make_unique<MediaQueryNotExpNode>(Operand().Copy());
+void MediaQueryCompoundExpNode::Trace(Visitor* visitor) const {
+  visitor->Trace(left_);
+  visitor->Trace(right_);
+  MediaQueryExpNode::Trace(visitor);
 }
 
 void MediaQueryCompoundExpNode::CollectExpressions(
-    Vector<MediaQueryExp>& result) const {
+    HeapVector<MediaQueryExp>& result) const {
   left_->CollectExpressions(result);
   right_->CollectExpressions(result);
 }
 
-bool MediaQueryCompoundExpNode::HasUnknown() const {
-  return left_->HasUnknown() || right_->HasUnknown();
+MediaQueryExpNode::FeatureFlags MediaQueryCompoundExpNode::CollectFeatureFlags()
+    const {
+  return left_->CollectFeatureFlags() | right_->CollectFeatureFlags();
 }
 
 void MediaQueryAndExpNode::SerializeTo(StringBuilder& builder) const {
@@ -700,18 +746,10 @@ void MediaQueryAndExpNode::SerializeTo(StringBuilder& builder) const {
   Right().SerializeTo(builder);
 }
 
-std::unique_ptr<MediaQueryExpNode> MediaQueryAndExpNode::Copy() const {
-  return std::make_unique<MediaQueryAndExpNode>(Left().Copy(), Right().Copy());
-}
-
 void MediaQueryOrExpNode::SerializeTo(StringBuilder& builder) const {
   Left().SerializeTo(builder);
   builder.Append(" or ");
   Right().SerializeTo(builder);
-}
-
-std::unique_ptr<MediaQueryExpNode> MediaQueryOrExpNode::Copy() const {
-  return std::make_unique<MediaQueryOrExpNode>(Left().Copy(), Right().Copy());
 }
 
 void MediaQueryUnknownExpNode::SerializeTo(StringBuilder& builder) const {
@@ -719,14 +757,11 @@ void MediaQueryUnknownExpNode::SerializeTo(StringBuilder& builder) const {
 }
 
 void MediaQueryUnknownExpNode::CollectExpressions(
-    Vector<MediaQueryExp>&) const {}
+    HeapVector<MediaQueryExp>&) const {}
 
-bool MediaQueryUnknownExpNode::HasUnknown() const {
-  return true;
-}
-
-std::unique_ptr<MediaQueryExpNode> MediaQueryUnknownExpNode::Copy() const {
-  return std::make_unique<MediaQueryUnknownExpNode>(string_);
+MediaQueryExpNode::FeatureFlags MediaQueryUnknownExpNode::CollectFeatureFlags()
+    const {
+  return kFeatureUnknown;
 }
 
 }  // namespace blink

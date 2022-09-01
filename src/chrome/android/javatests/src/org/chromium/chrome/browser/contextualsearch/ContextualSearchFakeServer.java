@@ -11,7 +11,9 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
+import org.junit.Assert;
 
 import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayContentDelegate;
@@ -39,8 +41,6 @@ class ContextualSearchFakeServer
         implements ContextualSearchNetworkCommunicator, OverlayPanelContentFactory {
     private static final String SIMPLE_SERP_URL =
             "/chrome/test/data/android/contextualsearch/simple_serp.html";
-
-    static final long LOGGED_EVENT_ID = 1L << 50; // Arbitrary value larger than 32 bits.
 
     private final ContextualSearchPolicy mPolicy;
 
@@ -71,6 +71,13 @@ class ContextualSearchFakeServer
 
     private boolean mDidEverCallWebContentsOnShow;
 
+    /** An expected search, to be returned by this fake server when non-null. */
+    private FakeResolveSearch mExpectedFakeResolveSearch;
+
+    /**
+     * Provides access to the test host so this fake server can drive actions when simulating a
+     * search.
+     */
     interface ContextualSearchTestHost {
         /**
          * Simulates a non-resolve trigger on the given node and waits for the panel to peek.
@@ -135,6 +142,10 @@ class ContextualSearchFakeServer
 
     boolean isContentVisible() {
         return mContentsObserver.isVisible();
+    }
+
+    WebContentsObserver getContentsObserver() {
+        return mContentsObserver;
     }
 
     //============================================================================================
@@ -265,7 +276,11 @@ class ContextualSearchFakeServer
             mDidStartResolution = false;
             mDidFinishResolution = false;
 
-            mTestHost.triggerResolve(getNodeId());
+            if (mPolicy.shouldPreviousGestureResolve()) {
+                mTestHost.triggerResolve(getNodeId());
+            } else {
+                mTestHost.triggerNonResolve(getNodeId());
+            }
             mTestHost.waitForSelectionToBe(getSearchTerm());
 
             if (mPolicy.shouldPreviousGestureResolve()) {
@@ -528,6 +543,7 @@ class ContextualSearchFakeServer
         mActuallyLoadALiveSerp = false;
         mIsExactResolve = false;
         mSearchContext = null;
+        mExpectedFakeResolveSearch = null;
     }
 
     /**
@@ -562,6 +578,16 @@ class ContextualSearchFakeServer
     @VisibleForTesting
     ContextualSearchContext getSearchContext() {
         return mSearchContext;
+    }
+
+    /**
+     * Sets the result of the resolve request that this fake server is expected to return.
+     * @param nodeId the node that will trigger this resolve when selected.
+     * @param resolvedSearchTermResponse the response from this fake server to return from
+     *      the fake resolve request.
+     */
+    void setExpectations(String nodeId, ResolvedSearchTerm resolvedSearchTermResponse) {
+        mExpectedFakeResolveSearch = new FakeResolveSearch(nodeId, resolvedSearchTermResponse);
     }
 
     //============================================================================================
@@ -643,6 +669,8 @@ class ContextualSearchFakeServer
         registerFakeResolveSearch(new FakeResolveSearch("term", "Term"));
         registerFakeResolveSearch(new FakeResolveSearch("resolution", "Resolution"));
 
+        // These resolved searches are effectively deprecated.
+        // Use setExpectations() instead.
         ResolvedSearchTerm germanSearchTerm =
                 new ResolvedSearchTerm.Builder(false, 200, "Deutsche", "Deutsche")
                         .setContextLanguage("de")
@@ -651,35 +679,8 @@ class ContextualSearchFakeServer
         registerFakeResolveSearch(germanFakeTapSearch);
 
         // Setup the "intelligence" node to return Related Searches along with the usual result.
-        JSONObject rSearch1 = new JSONObject();
-        rSearch1.put("title", "Related Search 1");
-        JSONObject rSearch2 = new JSONObject();
-        rSearch2.put("title", "Related Search 2");
-        JSONObject rSearch3 = new JSONObject();
-        rSearch3.put("title", "Related Search 3");
-        JSONArray rSearches = new JSONArray();
-        rSearches.put(rSearch1);
-        rSearches.put(rSearch2);
-        rSearches.put(rSearch3);
-        JSONObject suggestions = new JSONObject();
-        suggestions.put("content", rSearches);
-        // Also add selection suggestions, which are shown in the Bar, so we can exercise that code.
-        JSONObject rBar1 = new JSONObject();
-        rBar1.put("title", "Selection Related 1");
-        JSONObject rBar2 = new JSONObject();
-        rBar2.put("title", "Selection Related 2");
-        JSONObject rBar3 = new JSONObject();
-        rBar3.put("title", "Selection Related 3");
-        JSONArray selectionSearches = new JSONArray();
-        selectionSearches.put(rBar1);
-        selectionSearches.put(rBar2);
-        selectionSearches.put(rBar3);
-        suggestions.put("selection", selectionSearches);
-
         ResolvedSearchTerm intelligenceWithRelatedSearches =
-                new ResolvedSearchTerm.Builder(false, 200, "Intelligence", "Intelligence")
-                        .setRelatedSearchesJson(suggestions.toString())
-                        .build();
+                buildResolvedSearchTermWithRelatedSearches("Intelligence");
         FakeResolveSearch fakeSearchWithRelatedSearches =
                 new FakeResolveSearch("intelligence", intelligenceWithRelatedSearches);
         registerFakeResolveSearch(fakeSearchWithRelatedSearches);
@@ -687,9 +688,7 @@ class ContextualSearchFakeServer
         // Register a fake tap search that will fake a logged event ID from the server, when
         // a fake tap is done on the intelligence-logged-event-id element in the test file.
         ResolvedSearchTerm searchTermWithId =
-                new ResolvedSearchTerm.Builder(false, 200, "Intelligence", "Intelligence")
-                        .setLoggedEventId(LOGGED_EVENT_ID)
-                        .build();
+                new ResolvedSearchTerm.Builder(false, 200, "Intelligence", "Intelligence").build();
         FakeResolveSearch loggedIdFakeTapSearch =
                 new FakeResolveSearch("intelligence-logged-event-id", searchTermWithId);
         registerFakeResolveSearch(loggedIdFakeTapSearch);
@@ -721,7 +720,51 @@ class ContextualSearchFakeServer
      * @return The FakeResolveSearch with the given ID.
      */
     public FakeResolveSearch getFakeResolveSearch(String id) {
-        return mFakeResolveSearches.get(id);
+        if (mExpectedFakeResolveSearch != null) {
+            Assert.assertEquals("The expectations node ID does not match the given node!",
+                    mExpectedFakeResolveSearch.getNodeId(), id);
+            return mExpectedFakeResolveSearch;
+        } else {
+            return mFakeResolveSearches.get(id);
+        }
+    }
+
+    /**
+     * Returns a {@link ResolvedSearchTerm} build to include sample Related Searches that uses the
+     * given string for the Search Term.
+     * @param searchTerm The string to use for the Search Term and Display Text.
+     * @return a {@link ResolvedSearchTerm} that includes some sample Related Searches of all types.
+     * @throws JSONException
+     */
+    public ResolvedSearchTerm buildResolvedSearchTermWithRelatedSearches(String searchTerm)
+            throws JSONException {
+        JSONObject rSearch1 = new JSONObject();
+        rSearch1.put("title", "Related Search 1");
+        JSONObject rSearch2 = new JSONObject();
+        rSearch2.put("title", "Related Search 2");
+        JSONObject rSearch3 = new JSONObject();
+        rSearch3.put("title", "Related Search 3");
+        JSONArray rSearches = new JSONArray();
+        rSearches.put(rSearch1);
+        rSearches.put(rSearch2);
+        rSearches.put(rSearch3);
+        JSONObject suggestions = new JSONObject();
+        suggestions.put("content", rSearches);
+        // Also add selection suggestions, which are shown in the Bar, so we can exercise that code.
+        JSONObject rBar1 = new JSONObject();
+        rBar1.put("title", "Selection Related 1");
+        JSONObject rBar2 = new JSONObject();
+        rBar2.put("title", "Selection Related 2");
+        JSONObject rBar3 = new JSONObject();
+        rBar3.put("title", "Selection Related 3");
+        JSONArray selectionSearches = new JSONArray();
+        selectionSearches.put(rBar1);
+        selectionSearches.put(rBar2);
+        selectionSearches.put(rBar3);
+        suggestions.put("selection", selectionSearches);
+        return new ResolvedSearchTerm.Builder(false, 200, searchTerm, searchTerm)
+                .setRelatedSearchesJson(suggestions.toString())
+                .build();
     }
 
     /**

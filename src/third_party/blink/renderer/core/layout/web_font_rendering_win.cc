@@ -4,6 +4,7 @@
 
 #include "third_party/blink/public/web/win/web_font_rendering.h"
 
+#include "third_party/blink/public/platform/web_font_rendering_client.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
 
 namespace blink {
@@ -16,6 +17,18 @@ void WebFontRendering::SetSkiaFontManager(sk_sp<SkFontMgr> font_mgr) {
 // static
 void WebFontRendering::SetFontPrewarmer(WebFontPrewarmer* prewarmer) {
   FontCache::SetFontPrewarmer(prewarmer);
+}
+
+// static
+WebFontPrewarmer* WebFontRendering::GetFontPrewarmer() {
+  return FontCache::GetFontPrewarmer();
+}
+
+// static
+void WebFontRendering::SetFontRenderingClient(
+    WebFontRenderingClient* rendering_client) {
+  FontCache::SetFontPrewarmer(rendering_client);
+  // TODO(yosin): Call `FontThreadPool::SetFontRenderingClient()`.
 }
 
 // static

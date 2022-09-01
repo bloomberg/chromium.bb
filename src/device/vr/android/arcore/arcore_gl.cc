@@ -17,7 +17,6 @@
 #include "base/cxx17_backports.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
@@ -83,10 +82,10 @@ gfx::Transform GetContentTransform(const gfx::RectF& bounds) {
   // old WebVR convention with origin at top left, so the Y range needs to be
   // mirrored.
   gfx::Transform transform;
-  transform.matrix().set(0, 0, bounds.width());
-  transform.matrix().set(1, 1, bounds.height());
-  transform.matrix().set(0, 3, bounds.x());
-  transform.matrix().set(1, 3, 1.f - bounds.y() - bounds.height());
+  transform.matrix().setRC(0, 0, bounds.width());
+  transform.matrix().setRC(1, 1, bounds.height());
+  transform.matrix().setRC(0, 3, bounds.x());
+  transform.matrix().setRC(1, 3, 1.f - bounds.y() - bounds.height());
   return transform;
 }
 
@@ -98,9 +97,9 @@ gfx::Size GetCameraImageSize(const gfx::Size& in, const gfx::Transform& xform) {
   double x = in.width();
   double y = in.height();
   int width = std::round(
-      std::abs(x * xform.matrix().get(0, 0) + y * xform.matrix().get(1, 0)));
+      std::abs(x * xform.matrix().rc(0, 0) + y * xform.matrix().rc(1, 0)));
   int height = std::round(
-      std::abs(x * xform.matrix().get(0, 1) + y * xform.matrix().get(1, 1)));
+      std::abs(x * xform.matrix().rc(0, 1) + y * xform.matrix().rc(1, 1)));
 
   DVLOG(3) << __func__ << ": uncropped size=" << in.ToString()
            << " cropped/rotated size=" << gfx::Size(width, height).ToString()
@@ -438,7 +437,7 @@ bool ArCoreGl::InitializeGl(gfx::AcceleratedWidget drawing_widget) {
   gl::init::DisableANGLE();
 
   if (gl::GetGLImplementation() == gl::kGLImplementationNone &&
-      !gl::init::InitializeGLOneOff()) {
+      !gl::init::InitializeGLOneOff(/*system_device_id=*/0)) {
     DLOG(ERROR) << "gl::init::InitializeGLOneOff failed";
     return false;
   }
@@ -563,10 +562,10 @@ void ArCoreGl::RecalculateUvsAndProjection() {
   constexpr float depth_far = 1000.f;
   projection_ = arcore_->GetProjectionMatrix(depth_near, depth_far);
   auto m = projection_.matrix();
-  float left = depth_near * (m.get(2, 0) - 1.f) / m.get(0, 0);
-  float right = depth_near * (m.get(2, 0) + 1.f) / m.get(0, 0);
-  float bottom = depth_near * (m.get(2, 1) - 1.f) / m.get(1, 1);
-  float top = depth_near * (m.get(2, 1) + 1.f) / m.get(1, 1);
+  float left = depth_near * (m.rc(2, 0) - 1.f) / m.rc(0, 0);
+  float right = depth_near * (m.rc(2, 0) + 1.f) / m.rc(0, 0);
+  float bottom = depth_near * (m.rc(2, 1) - 1.f) / m.rc(1, 1);
+  float top = depth_near * (m.rc(2, 1) + 1.f) / m.rc(1, 1);
 
   // Also calculate the inverse projection which is needed for converting
   // screen touches to world rays.
@@ -1309,12 +1308,6 @@ void ArCoreGl::OnTransportFrameAvailable(const gfx::Transform& uv_transform) {
   }
 }
 
-void ArCoreGl::SubmitFrameWithTextureHandle(
-    int16_t frame_index,
-    mojo::PlatformHandle texture_handle) {
-  NOTIMPLEMENTED();
-}
-
 void ArCoreGl::SubmitFrameDrawnIntoTexture(int16_t frame_index,
                                            const gpu::SyncToken& sync_token,
                                            base::TimeDelta time_waited) {
@@ -1374,10 +1367,11 @@ void ArCoreGl::SubmitVizFrame(int16_t frame_index,
   TryRunPendingGetFrameData();
 }
 
-void ArCoreGl::UpdateLayerBounds(int16_t frame_index,
-                                 const gfx::RectF& left_bounds,
-                                 const gfx::RectF& right_bounds,
-                                 const gfx::Size& source_size) {
+void ArCoreGl::UpdateLayerBounds(
+    int16_t frame_index,
+    const gfx::RectF& left_bounds,
+    [[maybe_unused]] const gfx::RectF& right_bounds,
+    const gfx::Size& source_size) {
   DVLOG(2) << __func__ << " source_size=" << source_size.ToString()
            << " left_bounds=" << left_bounds.ToString();
 
@@ -1385,9 +1379,9 @@ void ArCoreGl::UpdateLayerBounds(int16_t frame_index,
   // no animating frame yet. In that case, just save it in viewport_bounds_
   // so that it's applied to the next animating frame.
   if (webxr_->HaveAnimatingFrame()) {
-    // Handheld AR mode is monoscopic and only uses the left bounds.
+    // Handheld AR mode is monoscopic and only uses the left bounds, thus the
+    // [[maybe_unused]] on `right_bounds`.
     webxr_->GetAnimatingFrame()->bounds_left = left_bounds;
-    (void)right_bounds;
   }
   viewport_bounds_ = left_bounds;
 

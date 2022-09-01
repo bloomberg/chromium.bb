@@ -12,6 +12,7 @@
 #define TEST_PC_E2E_ANALYZER_VIDEO_DEFAULT_VIDEO_QUALITY_ANALYZER_H_
 
 #include <atomic>
+#include <cstdint>
 #include <deque>
 #include <map>
 #include <memory>
@@ -22,12 +23,15 @@
 #include "api/array_view.h"
 #include "api/numerics/samples_stats_counter.h"
 #include "api/test/video_quality_analyzer_interface.h"
+#include "api/units/data_size.h"
 #include "api/units/timestamp.h"
 #include "api/video/encoded_image.h"
 #include "api/video/video_frame.h"
+#include "api/video/video_frame_type.h"
 #include "rtc_base/event.h"
 #include "rtc_base/platform_thread.h"
 #include "rtc_base/synchronization/mutex.h"
+#include "rtc_base/thread_annotations.h"
 #include "system_wrappers/include/clock.h"
 #include "test/pc/e2e/analyzer/video/default_video_quality_analyzer_cpu_measurer.h"
 #include "test/pc/e2e/analyzer/video/default_video_quality_analyzer_frames_comparator.h"
@@ -83,7 +87,9 @@ class DefaultVideoQualityAnalyzer : public VideoQualityAnalyzerInterface {
   // Returns set of stream labels, that were met during test call.
   std::set<StatsKey> GetKnownVideoStreams() const;
   VideoStreamsInfo GetKnownStreams() const;
-  const FrameCounters& GetGlobalCounters() const;
+  FrameCounters GetGlobalCounters() const;
+  // Returns frame counter for frames received without frame id set.
+  std::map<std::string, FrameCounters> GetUnknownSenderFrameCounters() const;
   // Returns frame counter per stream label. Valid stream labels can be obtained
   // by calling GetKnownVideoStreams()
   std::map<StatsKey, FrameCounters> GetPerStreamCounters() const;
@@ -179,6 +185,10 @@ class DefaultVideoQualityAnalyzer : public VideoQualityAnalyzerInterface {
     Timestamp rendered_time = Timestamp::MinusInfinity();
     Timestamp prev_frame_rendered_time = Timestamp::MinusInfinity();
 
+    // Type and encoded size of received frame.
+    VideoFrameType frame_type = VideoFrameType::kEmptyFrame;
+    DataSize encoded_image_size = DataSize::Bytes(0);
+
     absl::optional<int> rendered_frame_width = absl::nullopt;
     absl::optional<int> rendered_frame_height = absl::nullopt;
 
@@ -217,7 +227,8 @@ class DefaultVideoQualityAnalyzer : public VideoQualityAnalyzerInterface {
     void SetPreEncodeTime(webrtc::Timestamp time) { pre_encode_time_ = time; }
 
     void OnFrameEncoded(webrtc::Timestamp time,
-                        int64_t encoded_image_size,
+                        VideoFrameType frame_type,
+                        DataSize encoded_image_size,
                         uint32_t target_encode_bitrate,
                         StreamCodecInfo used_encoder);
 
@@ -225,7 +236,9 @@ class DefaultVideoQualityAnalyzer : public VideoQualityAnalyzerInterface {
 
     void OnFramePreDecode(size_t peer,
                           webrtc::Timestamp received_time,
-                          webrtc::Timestamp decode_start_time);
+                          webrtc::Timestamp decode_start_time,
+                          VideoFrameType frame_type,
+                          DataSize encoded_image_size);
 
     bool HasReceivedTime(size_t peer) const;
 
@@ -267,7 +280,9 @@ class DefaultVideoQualityAnalyzer : public VideoQualityAnalyzerInterface {
     Timestamp captured_time_;
     Timestamp pre_encode_time_ = Timestamp::MinusInfinity();
     Timestamp encoded_time_ = Timestamp::MinusInfinity();
-    int64_t encoded_image_size_ = 0;
+    // Type and encoded size of sent frame.
+    VideoFrameType frame_type_ = VideoFrameType::kEmptyFrame;
+    DataSize encoded_image_size_ = DataSize::Bytes(0);
     uint32_t target_encode_bitrate_ = 0;
     // Can be not set if frame was dropped by encoder.
     absl::optional<StreamCodecInfo> used_encoder_ = absl::nullopt;
@@ -303,6 +318,10 @@ class DefaultVideoQualityAnalyzer : public VideoQualityAnalyzerInterface {
     std::map<absl::string_view, size_t> index_;
   };
 
+  // Returns next frame id to use. Frame ID can't be `VideoFrame::kNotSetId`,
+  // because this value is reserved by `VideoFrame` as "ID not set".
+  uint16_t GetNextFrameId() RTC_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+
   // Report results for all metrics for all streams.
   void ReportResults();
   void ReportResults(const std::string& test_case_name,
@@ -326,13 +345,15 @@ class DefaultVideoQualityAnalyzer : public VideoQualityAnalyzerInterface {
   std::string ToMetricName(const InternalStatsKey& key) const
       RTC_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
 
+  static const uint16_t kStartingFrameId = 1;
+
   const DefaultVideoQualityAnalyzerOptions options_;
   webrtc::Clock* const clock_;
-  std::atomic<uint16_t> next_frame_id_{0};
 
   std::string test_label_;
 
   mutable Mutex mutex_;
+  uint16_t next_frame_id_ RTC_GUARDED_BY(mutex_) = kStartingFrameId;
   std::unique_ptr<NamesCollection> peers_ RTC_GUARDED_BY(mutex_);
   State state_ RTC_GUARDED_BY(mutex_) = State::kNew;
   Timestamp start_time_ RTC_GUARDED_BY(mutex_) = Timestamp::MinusInfinity();
@@ -354,6 +375,10 @@ class DefaultVideoQualityAnalyzer : public VideoQualityAnalyzerInterface {
       RTC_GUARDED_BY(mutex_);
   // Global frames count for all video streams.
   FrameCounters frame_counters_ RTC_GUARDED_BY(mutex_);
+  // Frame counters for received frames without video frame id set.
+  // Map from peer name to the frame counters.
+  std::map<std::string, FrameCounters> unknown_sender_frame_counters_
+      RTC_GUARDED_BY(mutex_);
   // Frame counters per each stream per each receiver.
   std::map<InternalStatsKey, FrameCounters> stream_frame_counters_
       RTC_GUARDED_BY(mutex_);

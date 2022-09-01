@@ -11,6 +11,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/process/memory.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "cc/base/math_util.h"
 #include "cc/paint/image_provider.h"
 #include "cc/paint/render_surface_filters.h"
@@ -133,7 +134,6 @@ void SoftwareRenderer::EnsureScissorTestDisabled() {
 }
 
 void SoftwareRenderer::BindFramebufferToOutputSurface() {
-  DCHECK(!output_surface_->HasExternalStencilTest());
   DCHECK(!root_canvas_);
 
   current_framebuffer_canvas_.reset();
@@ -169,7 +169,7 @@ void SoftwareRenderer::SetClipRect(const gfx::Rect& rect) {
   // Checks below are incompatible with WebView as the canvas size and clip
   // provided by Android or embedder app. And Chrome doesn't use
   // SoftwareRenderer on Android.
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   // SetClipRect is assumed to be applied temporarily, on an
   // otherwise-unclipped canvas.
   DCHECK_EQ(current_canvas_->getDeviceClipBounds().width(),
@@ -188,7 +188,7 @@ void SoftwareRenderer::SetClipRRect(const gfx::RRectF& rrect) {
   gfx::Transform screen_transform =
       current_frame()->window_matrix * current_frame()->projection_matrix;
   SkRRect result;
-  if (SkRRect(rrect).transform(SkMatrix(screen_transform.matrix()), &result)) {
+  if (SkRRect(rrect).transform(screen_transform.matrix().asM33(), &result)) {
     // Skia applies the current matrix to clip rects so we reset it temporarily.
     SkMatrix current_matrix = current_canvas_->getTotalMatrix();
     current_canvas_->resetMatrix();
@@ -366,21 +366,20 @@ void SoftwareRenderer::DoDrawQuad(const DrawQuad* quad,
 }
 
 void SoftwareRenderer::DrawDebugBorderQuad(const DebugBorderDrawQuad* quad) {
-  // We need to apply the matrix manually to have pixel-sized stroke width.
-  SkPoint vertices[4];
-  gfx::RectFToSkRect(QuadVertexRect()).toQuad(vertices);
-  SkPoint transformed_vertices[4];
-  current_canvas_->getTotalMatrix().mapPoints(transformed_vertices, vertices,
-                                              4);
+  SkMatrix m = current_canvas_->getTotalMatrix();
   current_canvas_->resetMatrix();
 
+  SkPath path;
+  path.addRect(gfx::RectFToSkRect(QuadVertexRect()));
+  path.transform(m);
+
   current_paint_.setColor(quad->color);
-  current_paint_.setAlpha(quad->shared_quad_state->opacity *
-                          SkColorGetA(quad->color));
+  current_paint_.setAlphaf(quad->shared_quad_state->opacity * quad->color.fA);
   current_paint_.setStyle(SkPaint::kStroke_Style);
+  current_paint_.setStrokeJoin(SkPaint::kMiter_Join);
   current_paint_.setStrokeWidth(quad->width);
-  current_canvas_->drawPoints(SkCanvas::kPolygon_PointMode, 4,
-                              transformed_vertices, current_paint_);
+
+  current_canvas_->drawPath(path, current_paint_);
 }
 
 void SoftwareRenderer::DrawPictureQuad(const PictureDrawQuad* quad) {
@@ -428,8 +427,7 @@ void SoftwareRenderer::DrawSolidColorQuad(const SolidColorDrawQuad* quad) {
   gfx::RectF visible_quad_vertex_rect = cc::MathUtil::ScaleRectProportional(
       QuadVertexRect(), gfx::RectF(quad->rect), gfx::RectF(quad->visible_rect));
   current_paint_.setColor(quad->color);
-  current_paint_.setAlpha(quad->shared_quad_state->opacity *
-                          SkColorGetA(quad->color));
+  current_paint_.setAlphaf(quad->shared_quad_state->opacity * quad->color.fA);
   current_canvas_->drawRect(gfx::RectFToSkRect(visible_quad_vertex_rect),
                             current_paint_);
 }
@@ -461,7 +459,7 @@ void SoftwareRenderer::DrawTextureQuad(const TextureDrawQuad* quad) {
     current_canvas_->scale(1, -1);
 
   bool blend_background =
-      quad->background_color != SK_ColorTRANSPARENT && !image->isOpaque();
+      quad->background_color != SkColors::kTransparent && !image->isOpaque();
   bool needs_layer = blend_background && (current_paint_.getAlpha() != 0xFF);
   if (needs_layer) {
     current_canvas_->saveLayerAlpha(&quad_rect, current_paint_.getAlpha());
@@ -591,9 +589,9 @@ void SoftwareRenderer::DrawRenderPassQuad(
 
 void SoftwareRenderer::DrawUnsupportedQuad(const DrawQuad* quad) {
 #ifdef NDEBUG
-  current_paint_.setColor(SK_ColorWHITE);
+  current_paint_.setColor(SkColors::kWhite);
 #else
-  current_paint_.setColor(SK_ColorMAGENTA);
+  current_paint_.setColor(SkColors::kMagenta);
 #endif
   current_paint_.setAlpha(quad->shared_quad_state->opacity * 255);
   current_canvas_->drawRect(gfx::RectFToSkRect(QuadVertexRect()),
@@ -603,8 +601,7 @@ void SoftwareRenderer::DrawUnsupportedQuad(const DrawQuad* quad) {
 void SoftwareRenderer::CopyDrawnRenderPass(
     const copy_output::RenderPassGeometry& geometry,
     std::unique_ptr<CopyOutputRequest> request) {
-  sk_sp<SkColorSpace> color_space =
-      CurrentRenderPassColorSpace().ToSkColorSpace();
+  sk_sp<SkColorSpace> color_space = CurrentRenderPassSkColorSpace();
   DCHECK(color_space);
 
   SkBitmap bitmap;
@@ -824,7 +821,7 @@ sk_sp<SkShader> SoftwareRenderer::GetBackdropFilterShader(
     return nullptr;
 
   SkMatrix filter_backdrop_transform =
-      SkMatrix(contents_device_transform_inverse.matrix());
+      contents_device_transform_inverse.matrix().asM33();
   filter_backdrop_transform.preTranslate(backdrop_rect.x(), backdrop_rect.y());
 
   SkBitmap backdrop_bitmap = GetBackdropBitmap(backdrop_rect);
@@ -876,7 +873,7 @@ sk_sp<SkShader> SoftwareRenderer::GetBackdropFilterShader(
 
   // Clip the filtered image to the (rounded) bounding box of the element.
   if (backdrop_filter_bounds) {
-    canvas.setMatrix(SkMatrix(backdrop_filter_bounds_transform.matrix()));
+    canvas.setMatrix(backdrop_filter_bounds_transform.matrix().asM33());
     canvas.clipRRect(SkRRect(*backdrop_filter_bounds), SkClipOp::kIntersect,
                      true /* antialias */);
     canvas.resetMatrix();

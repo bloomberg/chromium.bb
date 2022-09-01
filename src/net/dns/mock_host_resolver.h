@@ -154,11 +154,9 @@ class MockHostResolverBase
     RuleResolver(RuleResolver&&);
     RuleResolver& operator=(RuleResolver&&);
 
-    const RuleResult& Resolve(
-        const absl::variant<url::SchemeHostPort, HostPortPair>&
-            request_endpoint,
-        DnsQueryType request_type,
-        HostResolverSource request_source) const;
+    const RuleResult& Resolve(const Host& request_endpoint,
+                              DnsQueryTypeSet request_types,
+                              HostResolverSource request_source) const;
 
     void ClearRules();
 
@@ -180,6 +178,9 @@ class MockHostResolverBase
     void AddIPLiteralRuleWithDnsAliases(base::StringPiece hostname_pattern,
                                         base::StringPiece ip_literal,
                                         std::vector<std::string> dns_aliases);
+    void AddIPLiteralRuleWithDnsAliases(base::StringPiece hostname_pattern,
+                                        base::StringPiece ip_literal,
+                                        std::set<std::string> dns_aliases);
     void AddSimulatedFailure(base::StringPiece hostname_pattern);
     void AddSimulatedTimeoutFailure(base::StringPiece hostname_pattern);
     void AddRuleWithFlags(base::StringPiece host_pattern,
@@ -192,12 +193,60 @@ class MockHostResolverBase
     absl::optional<RuleResult> default_result_;
   };
 
+  using RequestMap = std::map<size_t, RequestImpl*>;
+
+  // A set of states in MockHostResolver. This is used to observe the internal
+  // state variables after destructing a MockHostResolver.
+  class State : public base::RefCounted<State> {
+   public:
+    State();
+
+    bool has_pending_requests() const { return !requests_.empty(); }
+    bool IsDohProbeRunning() const { return !!doh_probe_request_; }
+    size_t num_resolve() const { return num_resolve_; }
+    size_t num_resolve_from_cache() const { return num_resolve_from_cache_; }
+    size_t num_non_local_resolves() const { return num_non_local_resolves_; }
+
+    RequestMap& mutable_requests() { return requests_; }
+    void IncrementNumResolve() { ++num_resolve_; }
+    void IncrementNumResolveFromCache() { ++num_resolve_from_cache_; }
+    void IncrementNumNonLocalResolves() { ++num_non_local_resolves_; }
+    void ClearDohProbeRequest() { doh_probe_request_ = nullptr; }
+    void ClearDohProbeRequestIfMatching(ProbeRequestImpl* request) {
+      if (request == doh_probe_request_) {
+        doh_probe_request_ = nullptr;
+      }
+    }
+    void set_doh_probe_request(ProbeRequestImpl* request) {
+      DCHECK(request);
+      DCHECK(!doh_probe_request_);
+      doh_probe_request_ = request;
+    }
+
+   private:
+    friend class RefCounted<State>;
+
+    ~State();
+
+    // Maintain non-owning pointers to outstanding requests and listeners to
+    // allow completing/notifying them. The objects are owned by callers, and
+    // should be removed from |this| on destruction by calling DetachRequest()
+    // or RemoveCancelledListener().
+    RequestMap requests_;
+    raw_ptr<ProbeRequestImpl> doh_probe_request_ = nullptr;
+    size_t num_resolve_ = 0;
+    size_t num_resolve_from_cache_ = 0;
+    size_t num_non_local_resolves_ = 0;
+  };
+
   MockHostResolverBase(const MockHostResolverBase&) = delete;
   MockHostResolverBase& operator=(const MockHostResolverBase&) = delete;
 
   ~MockHostResolverBase() override;
 
   RuleResolver* rules() { return &rule_resolver_; }
+
+  scoped_refptr<const State> state() const { return state_; }
 
   // Controls whether resolutions complete synchronously or asynchronously.
   void set_synchronous_mode(bool is_synchronous) {
@@ -235,13 +284,13 @@ class MockHostResolverBase
   // Preloads the cache with what would currently be the result of a request
   // with the given parameters. Returns the net error of the cached result.
   int LoadIntoCache(
-      const absl::variant<url::SchemeHostPort, HostPortPair>& endpoint,
+      const Host& endpoint,
       const NetworkIsolationKey& network_isolation_key,
       const absl::optional<ResolveHostParameters>& optional_parameters);
 
   // Returns true if there are pending requests that can be resolved by invoking
   // ResolveAllPending().
-  bool has_pending_requests() const { return !requests_.empty(); }
+  bool has_pending_requests() const { return state_->has_pending_requests(); }
 
   // Resolves all pending requests. It is only valid to invoke this if
   // set_ondemand_mode was set before. The requests are resolved asynchronously,
@@ -276,17 +325,17 @@ class MockHostResolverBase
   void ResolveOnlyRequestNow();
 
   // The number of times that Resolve() has been called.
-  size_t num_resolve() const {
-    return num_resolve_;
-  }
+  size_t num_resolve() const { return state_->num_resolve(); }
 
   // The number of times that ResolveFromCache() has been called.
   size_t num_resolve_from_cache() const {
-    return num_resolve_from_cache_;
+    return state_->num_resolve_from_cache();
   }
 
   // The number of times resolve was attempted non-locally.
-  size_t num_non_local_resolves() const { return num_non_local_resolves_; }
+  size_t num_non_local_resolves() const {
+    return state_->num_non_local_resolves();
+  }
 
   // Returns the RequestPriority of the last call to Resolve() (or
   // DEFAULT_PRIORITY if Resolve() hasn't been called yet).
@@ -307,7 +356,7 @@ class MockHostResolverBase
     return last_secure_dns_policy_;
   }
 
-  bool IsDohProbeRunning() const { return !!doh_probe_request_; }
+  bool IsDohProbeRunning() const { return state_->IsDohProbeRunning(); }
 
   void TriggerMdnsListeners(const HostPortPair& host,
                             DnsQueryType query_type,
@@ -334,8 +383,6 @@ class MockHostResolverBase
   friend class MockCachingHostResolver;
   friend class MockHostResolverFactory;
 
-  typedef std::map<size_t, RequestImpl*> RequestMap;
-
   // Returns the request with the given id.
   RequestImpl* request(size_t id);
 
@@ -353,7 +400,7 @@ class MockHostResolverBase
   // Resolve as IP or from |cache_| return cached error or
   // DNS_CACHE_MISS if failed.
   int ResolveFromIPLiteralOrCache(
-      const absl::variant<url::SchemeHostPort, HostPortPair>& endpoint,
+      const Host& endpoint,
       const NetworkIsolationKey& network_isolation_key,
       DnsQueryType dns_query_type,
       HostResolverFlags flags,
@@ -366,31 +413,24 @@ class MockHostResolverBase
   void AddListener(MdnsListenerImpl* listener);
   void RemoveCancelledListener(MdnsListenerImpl* listener);
 
-  RequestPriority last_request_priority_;
+  RequestPriority last_request_priority_ = DEFAULT_PRIORITY;
   absl::optional<NetworkIsolationKey> last_request_network_isolation_key_;
-  SecureDnsPolicy last_secure_dns_policy_;
-  bool synchronous_mode_;
-  bool ondemand_mode_;
+  SecureDnsPolicy last_secure_dns_policy_ = SecureDnsPolicy::kAllow;
+  bool synchronous_mode_ = false;
+  bool ondemand_mode_ = false;
   RuleResolver rule_resolver_;
   std::unique_ptr<HostCache> cache_;
 
   const int initial_cache_invalidation_num_;
   std::map<HostCache::Key, int> cache_invalidation_nums_;
 
-  // Maintain non-owning pointers to outstanding requests and listeners to allow
-  // completing/notifying them. The objects are owned by callers, and should be
-  // removed from |this| on destruction by calling DetachRequest() or
-  // RemoveCancelledListener().
-  RequestMap requests_;
-  size_t next_request_id_;
-  raw_ptr<ProbeRequestImpl> doh_probe_request_ = nullptr;
   std::set<MdnsListenerImpl*> listeners_;
 
-  size_t num_resolve_;
-  size_t num_resolve_from_cache_;
-  size_t num_non_local_resolves_;
+  size_t next_request_id_ = 1;
 
   raw_ptr<const base::TickClock> tick_clock_;
+
+  scoped_refptr<State> state_;
 
   THREAD_CHECKER(thread_checker_);
 };
@@ -526,14 +566,6 @@ class RuleBasedHostResolverProc : public HostResolverProc {
       const std::string& host,
       HostResolverFlags flags = HOST_RESOLVER_LOOPBACK_ONLY);
 
-  // Simulate a lookup that returns ERR_DNS_NAME_HTTPS_ONLY regardless of the
-  // request's scheme. After the rule is used once, it is deleted.
-  //
-  // TODO(https://crbug.com/1206799) Once RuleBasedHostResolverProc::Resolve
-  // takes a url::SchemeHostPort parameter, change the semantics of this method
-  // to vary depending on request scheme.
-  void AddSimulatedHTTPSServiceFormRecord(const std::string& host);
-
   // Deletes all the rules that have been added.
   void ClearRules();
 
@@ -550,10 +582,10 @@ class RuleBasedHostResolverProc : public HostResolverProc {
               int* os_error) override;
 
   struct Rule {
+    // TODO(https://crbug.com/1298106) Deduplicate this enum's definition.
     enum ResolverType {
       kResolverTypeFail,
       kResolverTypeFailTimeout,
-      kResolverTypeFailHTTPSServiceFormRecord,
       // TODO(mmenke): Is it really reasonable for a "mock" host resolver to
       // fall back to the system resolver?
       kResolverTypeSystem,
@@ -594,7 +626,7 @@ class RuleBasedHostResolverProc : public HostResolverProc {
   base::Lock rule_lock_;
 
   // Whether changes are allowed.
-  bool modifications_allowed_;
+  bool modifications_allowed_ = true;
 };
 
 // Create rules that map all requests to localhost.
@@ -605,6 +637,24 @@ RuleBasedHostResolverProc* CreateCatchAllHostResolverProc();
 // in |ERR_DNS_CACHE_MISS|.
 class HangingHostResolver : public HostResolver {
  public:
+  // A set of states in HangingHostResolver. This is used to observe the
+  // internal state variables after destructing a MockHostResolver.
+  class State : public base::RefCounted<State> {
+   public:
+    State();
+
+    int num_cancellations() const { return num_cancellations_; }
+
+    void IncrementNumCancellations() { ++num_cancellations_; }
+
+   private:
+    friend class RefCounted<State>;
+
+    ~State();
+
+    int num_cancellations_ = 0;
+  };
+
   HangingHostResolver();
   ~HangingHostResolver() override;
   void OnShutdown() override;
@@ -622,9 +672,11 @@ class HangingHostResolver : public HostResolver {
 
   std::unique_ptr<ProbeRequest> CreateDohProbeRequest() override;
 
+  void SetRequestContext(URLRequestContext* url_request_context) override;
+
   // Use to detect cancellations since there's otherwise no externally-visible
   // differentiation between a cancelled and a hung task.
-  int num_cancellations() const { return num_cancellations_; }
+  int num_cancellations() const { return state_->num_cancellations(); }
 
   // Return the corresponding values passed to the most recent call to
   // CreateRequest()
@@ -633,6 +685,8 @@ class HangingHostResolver : public HostResolver {
     return last_network_isolation_key_;
   }
 
+  const scoped_refptr<const State> state() const { return state_; }
+
  private:
   class RequestImpl;
   class ProbeRequestImpl;
@@ -640,7 +694,7 @@ class HangingHostResolver : public HostResolver {
   HostPortPair last_host_;
   NetworkIsolationKey last_network_isolation_key_;
 
-  int num_cancellations_ = 0;
+  scoped_refptr<State> state_;
   bool shutting_down_ = false;
   base::WeakPtrFactory<HangingHostResolver> weak_ptr_factory_{this};
 };

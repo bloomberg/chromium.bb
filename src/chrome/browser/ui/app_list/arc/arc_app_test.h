@@ -15,11 +15,11 @@ namespace arc {
 namespace mojom {
 class AppInfo;
 }
-class ArcIntentHelperBridge;
 class ArcPlayStoreEnabledPreferenceHandler;
 class ArcServiceManager;
 class ArcSessionManager;
 class FakeAppInstance;
+class FakeIntentHelperHost;
 class FakeIntentHelperInstance;
 }  // namespace arc
 
@@ -61,6 +61,10 @@ class ArcAppTest {
   static std::vector<arc::mojom::ArcPackageInfoPtr> ClonePackages(
       const std::vector<arc::mojom::ArcPackageInfoPtr>& packages);
 
+  // Helper that clones app info array.
+  static std::vector<arc::mojom::AppInfoPtr> CloneApps(
+      const std::vector<arc::mojom::AppInfoPtr>& apps);
+
   const std::vector<arc::mojom::ArcPackageInfoPtr>& fake_packages() const {
     return fake_packages_;
   }
@@ -71,13 +75,14 @@ class ArcAppTest {
   void RemovePackage(const std::string& package_name);
 
   void WaitForDefaultApps();
+  void WaitForRemoveAllApps();
 
   // The 0th item is sticky but not the followings.
-  const std::vector<arc::mojom::AppInfo>& fake_apps() const {
+  const std::vector<arc::mojom::AppInfoPtr>& fake_apps() const {
     return fake_apps_;
   }
 
-  const std::vector<arc::mojom::AppInfo>& fake_default_apps() const {
+  const std::vector<arc::mojom::AppInfoPtr>& fake_default_apps() const {
     return fake_default_apps_;
   }
 
@@ -146,12 +151,12 @@ class ArcAppTest {
   std::unique_ptr<arc::ArcPlayStoreEnabledPreferenceHandler>
       arc_play_store_enabled_preference_handler_;
   std::unique_ptr<arc::FakeAppInstance> app_instance_;
-  std::unique_ptr<arc::ArcIntentHelperBridge> intent_helper_bridge_;
+  std::unique_ptr<arc::FakeIntentHelperHost> intent_helper_host_;
   std::unique_ptr<arc::FakeIntentHelperInstance> intent_helper_instance_;
 
   std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
-  std::vector<arc::mojom::AppInfo> fake_apps_;
-  std::vector<arc::mojom::AppInfo> fake_default_apps_;
+  std::vector<arc::mojom::AppInfoPtr> fake_apps_;
+  std::vector<arc::mojom::AppInfoPtr> fake_default_apps_;
   std::vector<arc::mojom::ArcPackageInfoPtr> fake_packages_;
   std::vector<arc::mojom::ShortcutInfo> fake_shortcuts_;
 

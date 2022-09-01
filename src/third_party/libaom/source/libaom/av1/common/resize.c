@@ -12,6 +12,7 @@
 #include <assert.h>
 #include <limits.h>
 #include <math.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -700,7 +701,7 @@ Error:
   aom_free(arrbuf2);
 }
 
-static void upscale_normative_rect(const uint8_t *const input, int height,
+static bool upscale_normative_rect(const uint8_t *const input, int height,
                                    int width, int in_stride, uint8_t *output,
                                    int height2, int width2, int out_stride,
                                    int x_step_qn, int x0_qn, int pad_left,
@@ -725,6 +726,7 @@ static void upscale_normative_rect(const uint8_t *const input, int height,
   uint8_t *const in_tr = (uint8_t *)(input + width);
   if (pad_left) {
     tmp_left = (uint8_t *)aom_malloc(sizeof(*tmp_left) * border_cols * height);
+    if (!tmp_left) return false;
     for (int i = 0; i < height; i++) {
       memcpy(tmp_left + i * border_cols, in_tl + i * in_stride, border_cols);
       memset(in_tl + i * in_stride, input[i * in_stride], border_cols);
@@ -733,6 +735,10 @@ static void upscale_normative_rect(const uint8_t *const input, int height,
   if (pad_right) {
     tmp_right =
         (uint8_t *)aom_malloc(sizeof(*tmp_right) * border_cols * height);
+    if (!tmp_right) {
+      aom_free(tmp_left);
+      return false;
+    }
     for (int i = 0; i < height; i++) {
       memcpy(tmp_right + i * border_cols, in_tr + i * in_stride, border_cols);
       memset(in_tr + i * in_stride, input[i * in_stride + width - 1],
@@ -757,6 +763,7 @@ static void upscale_normative_rect(const uint8_t *const input, int height,
     }
     aom_free(tmp_right);
   }
+  return true;
 }
 
 #if CONFIG_AV1_HIGHBITDEPTH
@@ -1045,7 +1052,7 @@ Error:
   aom_free(arrbuf2);
 }
 
-static void highbd_upscale_normative_rect(const uint8_t *const input,
+static bool highbd_upscale_normative_rect(const uint8_t *const input,
                                           int height, int width, int in_stride,
                                           uint8_t *output, int height2,
                                           int width2, int out_stride,
@@ -1073,6 +1080,7 @@ static void highbd_upscale_normative_rect(const uint8_t *const input,
   uint16_t *const in_tr = input16 + width;
   if (pad_left) {
     tmp_left = (uint16_t *)aom_malloc(sizeof(*tmp_left) * border_cols * height);
+    if (!tmp_left) return false;
     for (int i = 0; i < height; i++) {
       memcpy(tmp_left + i * border_cols, in_tl + i * in_stride, border_size);
       aom_memset16(in_tl + i * in_stride, input16[i * in_stride], border_cols);
@@ -1081,6 +1089,10 @@ static void highbd_upscale_normative_rect(const uint8_t *const input,
   if (pad_right) {
     tmp_right =
         (uint16_t *)aom_malloc(sizeof(*tmp_right) * border_cols * height);
+    if (!tmp_right) {
+      aom_free(tmp_left);
+      return false;
+    }
     for (int i = 0; i < height; i++) {
       memcpy(tmp_right + i * border_cols, in_tr + i * in_stride, border_size);
       aom_memset16(in_tr + i * in_stride, input16[i * in_stride + width - 1],
@@ -1106,6 +1118,7 @@ static void highbd_upscale_normative_rect(const uint8_t *const input,
     }
     aom_free(tmp_right);
   }
+  return true;
 }
 #endif  // CONFIG_AV1_HIGHBITDEPTH
 
@@ -1304,21 +1317,26 @@ void av1_upscale_normative_rows(const AV1_COMMON *cm, const uint8_t *src,
     const int pad_left = (j == 0);
     const int pad_right = (j == cm->tiles.cols - 1);
 
+    bool success;
 #if CONFIG_AV1_HIGHBITDEPTH
     if (cm->seq_params->use_highbitdepth)
-      highbd_upscale_normative_rect(src_ptr, rows, src_width, src_stride,
-                                    dst_ptr, rows, dst_width, dst_stride,
-                                    x_step_qn, x0_qn, pad_left, pad_right,
-                                    cm->seq_params->bit_depth);
+      success = highbd_upscale_normative_rect(
+          src_ptr, rows, src_width, src_stride, dst_ptr, rows, dst_width,
+          dst_stride, x_step_qn, x0_qn, pad_left, pad_right,
+          cm->seq_params->bit_depth);
     else
-      upscale_normative_rect(src_ptr, rows, src_width, src_stride, dst_ptr,
-                             rows, dst_width, dst_stride, x_step_qn, x0_qn,
-                             pad_left, pad_right);
+      success = upscale_normative_rect(src_ptr, rows, src_width, src_stride,
+                                       dst_ptr, rows, dst_width, dst_stride,
+                                       x_step_qn, x0_qn, pad_left, pad_right);
 #else
-    upscale_normative_rect(src_ptr, rows, src_width, src_stride, dst_ptr, rows,
-                           dst_width, dst_stride, x_step_qn, x0_qn, pad_left,
-                           pad_right);
+    success = upscale_normative_rect(src_ptr, rows, src_width, src_stride,
+                                     dst_ptr, rows, dst_width, dst_stride,
+                                     x_step_qn, x0_qn, pad_left, pad_right);
 #endif
+    if (!success) {
+      aom_internal_error(cm->error, AOM_CODEC_MEM_ERROR,
+                         "Error upscaling frame");
+    }
     // Update the fractional pixel offset to prepare for the next tile column.
     x0_qn += (dst_width * x_step_qn) - (src_width << RS_SCALE_SUBPEL_BITS);
   }
@@ -1362,7 +1380,7 @@ YV12_BUFFER_CONFIG *av1_realloc_and_scale_if_required(
             scaled, scaled_width, scaled_height, seq_params->subsampling_x,
             seq_params->subsampling_y, seq_params->use_highbitdepth,
             border_in_pixels, cm->features.byte_alignment, NULL, NULL, NULL,
-            alloc_y_buffer_8bit))
+            alloc_y_buffer_8bit, 0))
       aom_internal_error(cm->error, AOM_CODEC_MEM_ERROR,
                          "Failed to allocate scaled buffer");
 
@@ -1457,7 +1475,7 @@ void av1_superres_upscale(AV1_COMMON *cm, BufferPool *const pool) {
   if (aom_alloc_frame_buffer(
           &copy_buffer, aligned_width, cm->height, seq_params->subsampling_x,
           seq_params->subsampling_y, seq_params->use_highbitdepth,
-          AOM_BORDER_IN_PIXELS, byte_alignment))
+          AOM_BORDER_IN_PIXELS, byte_alignment, 0))
     aom_internal_error(cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate copy buffer for superres upscaling");
 
@@ -1489,7 +1507,7 @@ void av1_superres_upscale(AV1_COMMON *cm, BufferPool *const pool) {
             frame_to_show, cm->superres_upscaled_width,
             cm->superres_upscaled_height, seq_params->subsampling_x,
             seq_params->subsampling_y, seq_params->use_highbitdepth,
-            AOM_BORDER_IN_PIXELS, byte_alignment, fb, cb, cb_priv, 0)) {
+            AOM_BORDER_IN_PIXELS, byte_alignment, fb, cb, cb_priv, 0, 0)) {
       unlock_buffer_pool(pool);
       aom_internal_error(
           cm->error, AOM_CODEC_MEM_ERROR,
@@ -1506,7 +1524,7 @@ void av1_superres_upscale(AV1_COMMON *cm, BufferPool *const pool) {
             frame_to_show, cm->superres_upscaled_width,
             cm->superres_upscaled_height, seq_params->subsampling_x,
             seq_params->subsampling_y, seq_params->use_highbitdepth,
-            AOM_BORDER_IN_PIXELS, byte_alignment))
+            AOM_BORDER_IN_PIXELS, byte_alignment, 0))
       aom_internal_error(
           cm->error, AOM_CODEC_MEM_ERROR,
           "Failed to reallocate current frame buffer for superres upscaling");

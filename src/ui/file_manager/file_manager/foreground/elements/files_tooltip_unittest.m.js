@@ -121,6 +121,28 @@ export function testFocus(callback) {
       callback);
 }
 
+export function testFocusWithLabelChange(callback) {
+  chocolateButton.focus();
+
+  return reportPromise(
+      waitForMutation(tooltip)
+          .then(() => {
+            const label = tooltip.shadowRoot.querySelector('#label');
+            assertEquals('Chocolate!', label.textContent.trim());
+            // Change the button's aria-label attribute and the tooltip should
+            // also update.
+            chocolateButton.setAttribute('aria-label', 'New chocolate!');
+
+            tooltip.updateTooltipText(chocolateButton);
+            return waitForMutation(tooltip);
+          })
+          .then(() => {
+            const label = tooltip.shadowRoot.querySelector('#label');
+            assertEquals('New chocolate!', label.textContent.trim());
+          }),
+      callback);
+}
+
 export function testHover(callback) {
   chocolateButton.dispatchEvent(new MouseEvent('mouseover'));
 
@@ -224,7 +246,11 @@ export function testCardtooltipRTL(callback) {
             assertEquals('card-tooltip', tooltip.className);
             assertEquals('card-label', label.className);
 
-            assertEquals('962px', tooltip.style.left);
+            // A border with 1px insets (top=bottom=left=right=1px) will be
+            // applied to the window when drak/light feature is enabled. See
+            // more details at crrev.com/c/3656414.
+            assertTrue(
+                `962px` == tooltip.style.left || `960px` == tooltip.style.left);
             assertEquals('162px', tooltip.style.top);
 
             cheeseButton.dispatchEvent(new MouseEvent('mouseout'));

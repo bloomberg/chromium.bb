@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/check.h"
 #include "base/feature_list.h"
+#include "base/observer_list.h"
 #include "build/build_config.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -21,7 +22,7 @@
 #include "net/cookies/site_for_cookies.h"
 #include "url/gurl.h"
 
-#if defined(OS_IOS)
+#if BUILDFLAG(IS_IOS)
 #include "components/content_settings/core/common/features.h"
 #else
 #include "third_party/blink/public/common/features.h"
@@ -175,9 +176,8 @@ ContentSetting CookieSettings::GetCookieSettingInternal(
 
   // First get any host-specific settings.
   SettingInfo info;
-  std::unique_ptr<base::Value> value =
-      host_content_settings_map_->GetWebsiteSetting(
-          url, first_party_url, ContentSettingsType::COOKIES, &info);
+  const base::Value value = host_content_settings_map_->GetWebsiteSetting(
+      url, first_party_url, ContentSettingsType::COOKIES, &info);
   if (source)
     *source = info.source;
 
@@ -189,8 +189,8 @@ ContentSetting CookieSettings::GetCookieSettingInternal(
                      !first_party_url.SchemeIs(extension_scheme_);
 
   // We should always have a value, at least from the default provider.
-  DCHECK(value);
-  ContentSetting setting = ValueToContentSetting(value.get());
+  DCHECK(value.is_int());
+  ContentSetting setting = ValueToContentSetting(value);
   bool block = block_third && is_third_party_request;
 
   if (!block) {
@@ -198,7 +198,7 @@ ContentSetting CookieSettings::GetCookieSettingInternal(
         net::cookie_util::StorageAccessResult::ACCESS_ALLOWED);
   }
 
-#if !defined(OS_IOS)
+#if !BUILDFLAG(IS_IOS)
   // IOS doesn't use blink and as such cannot check our feature flag. Disabling
   // by default there should be no-op as the lack of Blink also means no grants
   // would be generated. Everywhere else we'll use |kStorageAccessAPI| to gate
@@ -231,7 +231,7 @@ CookieSettings::~CookieSettings() = default;
 bool CookieSettings::ShouldBlockThirdPartyCookiesInternal() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-#if defined(OS_IOS)
+#if BUILDFLAG(IS_IOS)
   if (!base::FeatureList::IsEnabled(kImprovedCookieControls))
     return false;
 #endif

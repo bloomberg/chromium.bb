@@ -1,43 +1,38 @@
 workspace(name = "skia")
 
+load("//toolchain:download_toolchains.bzl", "download_toolchains_for_skia")
+
+download_toolchains_for_skia("clang_linux_amd64", "clang_mac_m1")
+
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-load("//toolchain:build_toolchain.bzl", "build_cpp_toolchain")
 
 # See https://github.com/emscripten-core/emsdk/tree/85d27a4a2a60d591613a305b14ae438c2bb3ce11/bazel#setup-instructions
 http_archive(
     name = "emsdk",
-    sha256 = "457fa96d4d60867743df7f7e241c9852a3eb7fdbf3091eac7a5712ddc0a5221d",
-    strip_prefix = "emsdk-2.0.32/bazel",
-    url = "https://github.com/emscripten-core/emsdk/archive/refs/tags/2.0.32.tar.gz",
+    sha256 = "99de90a1827044c5430b926db947bcb266c8bdab1a0f20fe34a62431d9174376",
+    strip_prefix = "emsdk-3.1.9/bazel",
+    urls = [
+        "https://github.com/emscripten-core/emsdk/archive/refs/tags/3.1.9.tar.gz",
+        "https://storage.googleapis.com/skia-world-readable/bazel/99de90a1827044c5430b926db947bcb266c8bdab1a0f20fe34a62431d9174376.tar.gz",
+    ],
 )
 
 load("@emsdk//:deps.bzl", emsdk_deps = "deps")
 
+# One of the deps here is build_bazel_rules_nodejs, currently version 4.4.1
+# If we try to install it ourselves after this, it won't work.
 emsdk_deps()
 
 load("@emsdk//:emscripten_deps.bzl", emsdk_emscripten_deps = "emscripten_deps")
 
-# Use older version to work around https://github.com/emscripten-core/emscripten/issues/15528
-emsdk_emscripten_deps(emscripten_version = "2.0.13")
-
-build_cpp_toolchain(
-    # Meant to run on amd64 linux and compile for amd64 linux using musl as the c library.
-    name = "clang_linux_amd64_musl",
-    # From https://github.com/llvm/llvm-project/releases/download/llvmorg-13.0.0/clang+llvm-13.0.0-x86_64-linux-gnu-ubuntu-20.04.tar.xz.sha256
-    clang_prefix = "clang+llvm-13.0.0-x86_64-linux-gnu-ubuntu-20.04/",
-    clang_sha256 = "2c2fb857af97f41a5032e9ecadf7f78d3eff389a5cd3c9ec620d24f134ceb3c8",
-    clang_url = "https://github.com/llvm/llvm-project/releases/download/llvmorg-13.0.0/clang+llvm-13.0.0-x86_64-linux-gnu-ubuntu-20.04.tar.xz",
-    # From https://packages.debian.org/bullseye/amd64/musl-dev/download
-    musl_dev_sha256 = "b017792ad6ba3650b4889238c73cd19c1d6b0e39ca8319cdd3ad9e16374e614e",
-    musl_dev_url = "http://ftp.debian.org/debian/pool/main/m/musl/musl-dev_1.2.2-1_amd64.deb",
-)
+emsdk_emscripten_deps(emscripten_version = "3.1.9")
 
 http_archive(
     name = "bazel_skylib",
     sha256 = "c6966ec828da198c5d9adbaa94c05e3a1c7f21bd012a0b29ba8ddbccb2c93b0d",
     urls = [
-        "https://github.com/bazelbuild/bazel-skylib/releases/download/1.1.1/bazel-skylib-1.1.1.tar.gz",
         "https://mirror.bazel.build/github.com/bazelbuild/bazel-skylib/releases/download/1.1.1/bazel-skylib-1.1.1.tar.gz",
+        "https://github.com/bazelbuild/bazel-skylib/releases/download/1.1.1/bazel-skylib-1.1.1.tar.gz",
     ],
 )
 
@@ -46,9 +41,50 @@ load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
 bazel_skylib_workspace()
 
 http_archive(
+    name = "bazel_toolchains",
+    sha256 = "e52789d4e89c3e2dc0e3446a9684626a626b6bec3fde787d70bae37c6ebcc47f",
+    strip_prefix = "bazel-toolchains-5.1.1",
+    urls = [
+        "https://github.com/bazelbuild/bazel-toolchains/archive/refs/tags/v5.1.1.tar.gz",
+        "https://storage.googleapis.com/skia-world-readable/bazel/e52789d4e89c3e2dc0e3446a9684626a626b6bec3fde787d70bae37c6ebcc47f.tar.gz",
+    ],
+)
+
+load("@bazel_toolchains//repositories:repositories.bzl", bazel_toolchains_repositories = "repositories")
+
+bazel_toolchains_repositories()
+
+#######################################################################################
+# Python
+#######################################################################################
+
+# https://github.com/bazelbuild/rules_python
+http_archive(
     name = "rules_python",
-    sha256 = "cd6730ed53a002c56ce4e2f396ba3b3be262fd7cb68339f0377a45e8227fe332",
-    url = "https://github.com/bazelbuild/rules_python/releases/download/0.5.0/rules_python-0.5.0.tar.gz",
+    sha256 = "9fcf91dbcc31fde6d1edb15f117246d912c33c36f44cf681976bd886538deba6",
+    strip_prefix = "rules_python-0.8.0",
+    urls = [
+        "https://github.com/bazelbuild/rules_python/archive/refs/tags/0.8.0.tar.gz",
+        "https://storage.googleapis.com/skia-world-readable/bazel/9fcf91dbcc31fde6d1edb15f117246d912c33c36f44cf681976bd886538deba6.tar.gz",
+    ],
+)
+
+# This sets up a hermetic python3, rather than depending on what is installed.
+load("@rules_python//python:repositories.bzl", "python_register_toolchains")
+
+python_register_toolchains(
+    name = "python3_9",
+    # https://github.com/bazelbuild/rules_python/blob/main/python/versions.bzl
+    python_version = "3.9",
+)
+
+load("@python3_9//:defs.bzl", "interpreter")
+load("@rules_python//python:pip.bzl", "pip_install")
+
+pip_install(
+    name = "py_deps",
+    python_interpreter_target = interpreter,
+    requirements = "//:requirements.txt",
 )
 
 #######################################################################################
@@ -84,3 +120,163 @@ go_rules_dependencies()
 go_register_toolchains(version = "1.17.2")
 
 gazelle_dependencies(go_repository_default_config = "//:WORKSPACE.bazel")
+
+# Because the skia infra repo has a dependency on google.golang.org/grpc (aka
+# @org_golang_google_grpc), we need to have this library available to build protos.
+# https://github.com/bazelbuild/rules_go#protobuf-and-grpc
+http_archive(
+    name = "com_google_protobuf",
+    sha256 = "d0f5f605d0d656007ce6c8b5a82df3037e1d8fe8b121ed42e536f569dec16113",
+    strip_prefix = "protobuf-3.14.0",
+    urls = [
+        "https://mirror.bazel.build/github.com/protocolbuffers/protobuf/archive/v3.14.0.tar.gz",
+        "https://github.com/protocolbuffers/protobuf/archive/v3.14.0.tar.gz",
+    ],
+)
+
+load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
+
+protobuf_deps()
+
+###################################################
+# JavaScript / TypeScript rules and dependencies. #
+###################################################
+
+# The npm_install rule runs anytime the package.json or package-lock.json file changes. It also
+# extracts any Bazel rules distributed in an npm package.
+load("@build_bazel_rules_nodejs//:index.bzl", "npm_install")
+
+# Manages the node_modules directory.
+npm_install(
+    name = "npm",
+    package_json = "//:package.json",
+    package_lock_json = "//:package-lock.json",
+)
+
+# io_bazel_rules_webtesting allows us to download browsers in a hermetic, repeatable way. This
+# currently includes Chromium and Firefox. Note that the version on this does not necessarily
+# match the version below of the browsers-X.Y.Z below that is available.
+http_archive(
+    name = "io_bazel_rules_webtesting",
+    sha256 = "e9abb7658b6a129740c0b3ef6f5a2370864e102a5ba5ffca2cea565829ed825a",
+    urls = [
+        "https://github.com/bazelbuild/rules_webtesting/releases/download/0.3.5/rules_webtesting.tar.gz",
+        "https://storage.googleapis.com/skia-world-readable/bazel/e9abb7658b6a129740c0b3ef6f5a2370864e102a5ba5ffca2cea565829ed825a.tar.gz",
+    ],
+)
+
+# https://github.com/bazelbuild/rules_webtesting/blob/e9cf17123068b1123c68219edf9b274bf057b9cc/web/versioned/browsers-0.3.3.bzl
+load("@io_bazel_rules_webtesting//web/versioned:browsers-0.3.3.bzl", "browser_repositories")
+
+browser_repositories(
+    chromium = True,
+    firefox = True,
+)
+
+###################################################
+# External C++ deps with Bazel support            #
+###################################################
+# https://bazel.build/reference/be/workspace#local_repository
+local_repository(
+    name = "abseil_cpp",
+    path = "third_party/externals/abseil-cpp",
+)
+
+local_repository(
+    name = "spirv_tools",
+    path = "third_party/externals/spirv-tools",
+)
+
+local_repository(
+    # This name is important because spirv_tools expects @spirv_headers to exist by that name.
+    name = "spirv_headers",
+    path = "third_party/externals/spirv-headers",
+)
+
+###############################################################################
+# External C++ deps with NO Bazel support                                     #
+# In this case, we need to supply a BUILD file which exposes targets/files    #
+# we need. If these deps depend on other deps (e.g. @dawn -> @spirv_tools),   #
+# then we need to specify those here as well. The workspace_file_content is   #
+# generally ignored; external repos (i.e. the ones starting with @) will be   #
+# resolved with Skia's version of those repos, which is how Bazel avoids      #
+# multiple versions of the same project being compiled together.              #
+###############################################################################
+# https://bazel.build/reference/be/workspace#new_local_repository
+new_local_repository(
+    name = "dawn",
+    build_file = "bazel/external/dawn/BUILD.bazel",
+    path = "third_party/externals/dawn",
+    workspace_file_content = "",
+)
+
+new_local_repository(
+    name = "dng_sdk",
+    build_file = "bazel/external/dng_sdk/BUILD.bazel",
+    path = "third_party/externals/dng_sdk",
+    workspace_file_content = "",
+)
+
+new_local_repository(
+    name = "libjpeg_turbo",
+    build_file = "bazel/external/libjpeg_turbo/BUILD.bazel",
+    path = "third_party/externals/libjpeg-turbo",
+    workspace_file_content = "",
+)
+
+new_local_repository(
+    name = "libpng",
+    build_file = "bazel/external/libpng/BUILD.bazel",
+    path = "third_party/externals/libpng",
+    workspace_file_content = "",
+)
+
+new_local_repository(
+    name = "libwebp",
+    build_file = "bazel/external/libwebp/BUILD.bazel",
+    path = "third_party/externals/libwebp",
+    workspace_file_content = "",
+)
+
+new_local_repository(
+    name = "piex",
+    build_file = "bazel/external/piex/BUILD.bazel",
+    path = "third_party/externals/piex",
+    workspace_file_content = "",
+)
+
+new_local_repository(
+    name = "vulkan_headers",
+    build_file = "bazel/external/vulkan_headers/BUILD.bazel",
+    path = "third_party/externals/vulkan-headers",
+    workspace_file_content = "",
+)
+
+new_local_repository(
+    name = "vulkan_tools",
+    build_file = "bazel/external/vulkan_tools/BUILD.bazel",
+    path = "third_party/externals/vulkan-tools",
+    workspace_file_content = "",
+)
+
+new_local_repository(
+    name = "vulkanmemoryallocator",
+    build_file = "bazel/external/vulkanmemoryallocator/BUILD.bazel",
+    path = "third_party/externals/vulkanmemoryallocator",
+    workspace_file_content = "",
+)
+
+new_local_repository(
+    name = "wuffs",
+    build_file = "bazel/external/wuffs/BUILD.bazel",
+    path = "third_party/externals/wuffs",
+    workspace_file_content = "",
+)
+
+new_local_repository(
+    # Some other dependency downloads zlib but with their own rules
+    name = "zlib_skia",
+    build_file = "bazel/external/zlib/BUILD.bazel",
+    path = "third_party/externals/zlib",
+    workspace_file_content = "",
+)

@@ -291,10 +291,6 @@ void FakeDownloadItem::ValidateMixedContentDownload() {
   NOTREACHED();
 }
 
-void FakeDownloadItem::AcceptIncognitoWarning() {
-  NOTREACHED();
-}
-
 void FakeDownloadItem::StealDangerousDownload(bool delete_file_afterward,
                                               AcquireFileCallback callback) {
   NOTREACHED();
@@ -354,6 +350,11 @@ bool FakeDownloadItem::IsTemporary() const {
   return false;
 }
 
+bool FakeDownloadItem::RequireSafetyChecks() const {
+  NOTREACHED();
+  return false;
+}
+
 bool FakeDownloadItem::CanResume() const {
   NOTREACHED();
   return false;
@@ -374,9 +375,9 @@ const GURL& FakeDownloadItem::GetReferrerUrl() const {
   return dummy_url;
 }
 
-const GURL& FakeDownloadItem::GetSiteUrl() const {
+const std::string& FakeDownloadItem::GetSerializedEmbedderDownloadData() const {
   NOTREACHED();
-  return dummy_url;
+  return serialized_embedder_download_data;
 }
 
 const GURL& FakeDownloadItem::GetTabUrl() const {
@@ -485,10 +486,6 @@ bool FakeDownloadItem::IsDangerous() const {
 
 bool FakeDownloadItem::IsMixedContent() const {
   return is_mixed_content_;
-}
-
-bool FakeDownloadItem::ShouldShowIncognitoWarning() const {
-  return false;
 }
 
 download::DownloadDangerType FakeDownloadItem::GetDangerType() const {

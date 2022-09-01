@@ -2712,6 +2712,22 @@ TEST_F(BNTest, WriteIntoNegative) {
   EXPECT_FALSE(BN_is_negative(r.get()));
 }
 
+TEST_F(BNTest, ModSqrtInvalid) {
+  bssl::UniquePtr<BIGNUM> bn2140141 = ASCIIToBIGNUM("2140141");
+  ASSERT_TRUE(bn2140141);
+  bssl::UniquePtr<BIGNUM> bn2140142 = ASCIIToBIGNUM("2140142");
+  ASSERT_TRUE(bn2140142);
+  bssl::UniquePtr<BIGNUM> bn4588033 = ASCIIToBIGNUM("4588033");
+  ASSERT_TRUE(bn4588033);
+
+  // |BN_mod_sqrt| may fail or return an arbitrary value, so we do not use
+  // |TestModSqrt| or |TestNotModSquare|. We only promise it will not crash or
+  // infinite loop. (For some invalid inputs, it may even be non-deterministic.)
+  // See CVE-2022-0778.
+  BN_free(BN_mod_sqrt(nullptr, bn2140141.get(), bn4588033.get(), ctx()));
+  BN_free(BN_mod_sqrt(nullptr, bn2140142.get(), bn4588033.get(), ctx()));
+}
+
 #if defined(OPENSSL_BN_ASM_MONT) && defined(SUPPORTS_ABI_TEST)
 TEST_F(BNTest, BNMulMontABI) {
   for (size_t words : {4, 5, 6, 7, 8, 16, 32}) {
@@ -2772,15 +2788,6 @@ TEST_F(BNTest, BNMulMont5ABI) {
                 words, 13);
       CHECK_ABI(bn_power5, r.data(), a.data(), table.data(), m->d, mont->n0,
                 words, 13);
-      EXPECT_EQ(1, CHECK_ABI(bn_from_montgomery, r.data(), r.data(), nullptr,
-                             m->d, mont->n0, words));
-      EXPECT_EQ(1, CHECK_ABI(bn_from_montgomery, r.data(), a.data(), nullptr,
-                             m->d, mont->n0, words));
-    } else {
-      EXPECT_EQ(0, CHECK_ABI(bn_from_montgomery, r.data(), r.data(), nullptr,
-                             m->d, mont->n0, words));
-      EXPECT_EQ(0, CHECK_ABI(bn_from_montgomery, r.data(), a.data(), nullptr,
-                             m->d, mont->n0, words));
     }
   }
 }

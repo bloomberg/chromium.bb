@@ -18,6 +18,12 @@ AccessibilityAnimationOneShot::AccessibilityAnimationOneShot(
   display::Display display =
       display::Screen::GetScreen()->GetDisplayMatching(bounds_in_dip);
   aura::Window* root_window = Shell::GetRootWindowForDisplayId(display.id());
+  if (!root_window) {
+    // `root_window` can be invalid in some scenarios e.g. if an external
+    // display is unplugged or disconnected.
+    return;
+  }
+
   ui::Compositor* compositor = root_window->layer()->GetCompositor();
   animation_observation_.Observe(compositor);
 }

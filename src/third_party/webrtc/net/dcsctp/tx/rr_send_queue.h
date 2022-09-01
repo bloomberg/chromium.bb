@@ -15,6 +15,7 @@
 #include <map>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "absl/algorithm/container.h"
 #include "absl/strings/string_view.h"
@@ -40,15 +41,12 @@ namespace dcsctp {
 // established, this send queue is always present - even for closed connections.
 class RRSendQueue : public SendQueue {
  public:
-  // How small a data chunk's payload may be, if having to fragment a message.
-  static constexpr size_t kMinimumFragmentedPayload = 10;
-
   RRSendQueue(absl::string_view log_prefix,
               size_t buffer_size,
+              StreamPriority default_priority,
               std::function<void(StreamID)> on_buffered_amount_low,
               size_t total_buffered_amount_low_threshold,
-              std::function<void()> on_total_buffered_amount_low,
-              const DcSctpSocketHandoverState* handover_state = nullptr);
+              std::function<void()> on_total_buffered_amount_low);
 
   // Indicates if the buffer is full. Note that it's up to the caller to ensure
   // that the buffer is not full prior to adding new items to it.
@@ -69,8 +67,9 @@ class RRSendQueue : public SendQueue {
   bool Discard(IsUnordered unordered,
                StreamID stream_id,
                MID message_id) override;
-  void PrepareResetStreams(rtc::ArrayView<const StreamID> streams) override;
-  bool CanResetStreams() const override;
+  void PrepareResetStream(StreamID streams) override;
+  bool HasStreamsReadyToBeReset() const override;
+  std::vector<StreamID> GetStreamsReadyToBeReset() override;
   void CommitResetStreams() override;
   void RollbackResetStreams() override;
   void Reset() override;
@@ -81,6 +80,8 @@ class RRSendQueue : public SendQueue {
   size_t buffered_amount_low_threshold(StreamID stream_id) const override;
   void SetBufferedAmountLowThreshold(StreamID stream_id, size_t bytes) override;
 
+  void SetStreamPriority(StreamID stream_id, StreamPriority priority);
+  StreamPriority GetStreamPriority(StreamID stream_id) const;
   HandoverReadinessStatus GetHandoverReadiness() const;
   void AddHandoverState(DcSctpSocketHandoverState& state);
   void RestoreFromState(const DcSctpSocketHandoverState& state);
@@ -112,22 +113,29 @@ class RRSendQueue : public SendQueue {
   // Per-stream information.
   class OutgoingStream {
    public:
-    explicit OutgoingStream(
+    OutgoingStream(
+        StreamID stream_id,
+        StreamPriority priority,
         std::function<void()> on_buffered_amount_low,
         ThresholdWatcher& total_buffered_amount,
         const DcSctpSocketHandoverState::OutgoingStream* state = nullptr)
-        : next_unordered_mid_(MID(state ? state->next_unordered_mid : 0)),
+        : stream_id_(stream_id),
+          priority_(priority),
+          next_unordered_mid_(MID(state ? state->next_unordered_mid : 0)),
           next_ordered_mid_(MID(state ? state->next_ordered_mid : 0)),
           next_ssn_(SSN(state ? state->next_ssn : 0)),
           buffered_amount_(std::move(on_buffered_amount_low)),
           total_buffered_amount_(total_buffered_amount) {}
+
+    StreamID stream_id() const { return stream_id_; }
 
     // Enqueues a message to this stream.
     void Add(DcSctpMessage message,
              TimeMs expires_at,
              const SendOptions& send_options);
 
-    // Possibly produces a data chunk to send.
+    // Produces a data chunk to send, or `absl::nullopt` if nothing could be
+    // produced, e.g. if all messages have expired.
     absl::optional<DataToSend> Produce(TimeMs now, size_t max_size);
 
     const ThresholdWatcher& buffered_amount() const { return buffered_amount_; }
@@ -140,9 +148,18 @@ class RRSendQueue : public SendQueue {
     void Pause();
 
     // Resumes a paused stream.
-    void Resume() { is_paused_ = false; }
+    void Resume();
 
-    bool is_paused() const { return is_paused_; }
+    bool IsReadyToBeReset() const {
+      return pause_state_ == PauseState::kPaused;
+    }
+
+    bool IsResetting() const { return pause_state_ == PauseState::kResetting; }
+
+    void SetAsResetting() {
+      RTC_DCHECK(pause_state_ == PauseState::kPaused);
+      pause_state_ = PauseState::kResetting;
+    }
 
     // Resets this stream, meaning MIDs and SSNs are set to zero.
     void Reset();
@@ -150,14 +167,37 @@ class RRSendQueue : public SendQueue {
     // Indicates if this stream has a partially sent message in it.
     bool has_partially_sent_message() const;
 
-    // Indicates if the stream has data to send. It will also try to remove any
-    // expired non-partially sent message.
-    bool HasDataToSend(TimeMs now);
+    // Indicates if the stream possibly has data to send. Note that it may
+    // return `true` for streams that have enqueued, but expired, messages.
+    bool HasDataToSend() const;
+
+    void set_priority(StreamPriority priority) { priority_ = priority; }
+    StreamPriority priority() const { return priority_; }
 
     void AddHandoverState(
         DcSctpSocketHandoverState::OutgoingStream& state) const;
 
    private:
+    // Streams are paused before they can be reset. To reset a stream, the
+    // socket sends an outgoing stream reset command with the TSN of the last
+    // fragment of the last message, so that receivers and senders can agree on
+    // when it stopped. And if the send queue is in the middle of sending a
+    // message, and without fragments not yet sent and without TSNs allocated to
+    // them, it will keep sending data until that message has ended.
+    enum class PauseState {
+      // The stream is not paused, and not scheduled to be reset.
+      kNotPaused,
+      // The stream has requested to be reset/paused but is still producing
+      // fragments of a message that hasn't ended yet. When it does, it will
+      // transition to the `kPaused` state.
+      kPending,
+      // The stream is fully paused and can be reset.
+      kPaused,
+      // The stream has been added to an outgoing stream reset request and a
+      // response from the peer hasn't been received yet.
+      kResetting,
+    };
+
     // An enqueued message and metadata.
     struct Item {
       explicit Item(DcSctpMessage msg,
@@ -185,8 +225,9 @@ class RRSendQueue : public SendQueue {
 
     bool IsConsistent() const;
 
-    // Streams are pause when they are about to be reset.
-    bool is_paused_ = false;
+    const StreamID stream_id_;
+    StreamPriority priority_;
+    PauseState pause_state_ = PauseState::kNotPaused;
     // MIDs are different for unordered and ordered messages sent on a stream.
     MID next_unordered_mid_;
     MID next_ordered_mid_;
@@ -211,10 +252,11 @@ class RRSendQueue : public SendQueue {
       size_t max_size);
 
   // Return the next stream, in round-robin fashion.
-  std::map<StreamID, OutgoingStream>::iterator GetNextStream(TimeMs now);
+  std::map<StreamID, OutgoingStream>::iterator GetNextStream();
 
   const std::string log_prefix_;
   const size_t buffer_size_;
+  const StreamPriority default_priority_;
 
   // Called when the buffered amount is below what has been set using
   // `SetBufferedAmountLowThreshold`.

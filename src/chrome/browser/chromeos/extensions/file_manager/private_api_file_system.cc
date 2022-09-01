@@ -9,41 +9,53 @@
 
 #include <algorithm>
 #include <cctype>
+#include <memory>
 #include <utility>
+#include <vector>
 
 #include "ash/components/disks/disk.h"
 #include "ash/components/disks/disk_mount_manager.h"
+#include "ash/constants/ash_features.h"
 #include "base/bind.h"
+#include "base/files/file.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/strings/escape.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/system/sys_info.h"
 #include "base/task/task_runner_util.h"
 #include "base/task/thread_pool.h"
+#include "base/values.h"
 #include "chrome/browser/ash/arc/fileapi/arc_documents_provider_root.h"
 #include "chrome/browser/ash/arc/fileapi/arc_documents_provider_root_map.h"
 #include "chrome/browser/ash/arc/fileapi/arc_documents_provider_util.h"
 #include "chrome/browser/ash/drive/file_system_util.h"
 #include "chrome/browser/ash/file_manager/copy_or_move_io_task.h"
 #include "chrome/browser/ash/file_manager/delete_io_task.h"
+#include "chrome/browser/ash/file_manager/extract_io_task.h"
+#include "chrome/browser/ash/file_manager/file_manager_copy_or_move_hook_delegate.h"
 #include "chrome/browser/ash/file_manager/fileapi_util.h"
 #include "chrome/browser/ash/file_manager/io_task.h"
 #include "chrome/browser/ash/file_manager/path_util.h"
 #include "chrome/browser/ash/file_manager/volume_manager.h"
 #include "chrome/browser/ash/file_manager/zip_io_task.h"
+#include "chrome/browser/ash/policy/dlp/dlp_files_controller.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/extensions/file_manager/event_router.h"
 #include "chrome/browser/chromeos/extensions/file_manager/event_router_factory.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_stream_md5_digester.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager_factory.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/api/file_manager_private.h"
 #include "chrome/common/extensions/api/file_manager_private_internal.h"
 #include "components/drive/event_logger.h"
@@ -58,15 +70,16 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/extension_util.h"
-#include "net/base/escape.h"
 #include "services/device/public/mojom/mtp_manager.mojom.h"
 #include "services/device/public/mojom/mtp_storage_info.mojom.h"
 #include "storage/browser/file_system/external_mount_points.h"
 #include "storage/browser/file_system/file_stream_reader.h"
 #include "storage/browser/file_system/file_system_context.h"
 #include "storage/browser/file_system/file_system_file_util.h"
+#include "storage/browser/file_system/file_system_operation.h"
 #include "storage/browser/file_system/file_system_operation_context.h"
 #include "storage/browser/file_system/file_system_operation_runner.h"
+#include "storage/browser/file_system/file_system_url.h"
 #include "storage/common/file_system/file_system_info.h"
 #include "storage/common/file_system/file_system_types.h"
 #include "storage/common/file_system/file_system_util.h"
@@ -144,7 +157,7 @@ file_manager::EventRouter* GetEventRouterByProfileId(void* profile_id) {
 void NotifyCopyProgress(
     void* profile_id,
     storage::FileSystemOperationRunner::OperationID operation_id,
-    storage::FileSystemOperation::CopyOrMoveProgressType type,
+    file_manager::FileManagerCopyOrMoveHookDelegate::ProgressType type,
     const FileSystemURL& source_url,
     const FileSystemURL& destination_url,
     int64_t size) {
@@ -162,7 +175,7 @@ void NotifyCopyProgress(
 void OnCopyProgress(
     void* profile_id,
     storage::FileSystemOperationRunner::OperationID* operation_id,
-    storage::FileSystemOperation::CopyOrMoveProgressType type,
+    file_manager::FileManagerCopyOrMoveHookDelegate::ProgressType type,
     const FileSystemURL& source_url,
     const FileSystemURL& destination_url,
     int64_t size) {
@@ -235,7 +248,7 @@ storage::FileSystemOperationRunner::OperationID StartCopyOnIOThread(
   // loop or later, so at least during this invocation it should alive.
   //
   // TODO(yawano): change ERROR_BEHAVIOR_ABORT to ERROR_BEHAVIOR_SKIP after
-  //     error messages of individual operations become appear in the Files app
+  //     error messages of individual operations become visible in the Files app
   //     UI.
   storage::FileSystemOperationRunner::OperationID* operation_id =
       new storage::FileSystemOperationRunner::OperationID;
@@ -245,8 +258,9 @@ storage::FileSystemOperationRunner::OperationID StartCopyOnIOThread(
           storage::FileSystemOperation::CopyOrMoveOption::
               kPreserveLastModified),
       storage::FileSystemOperation::ERROR_BEHAVIOR_ABORT,
-      base::BindRepeating(&OnCopyProgress, profile_id,
-                          base::Unretained(operation_id)),
+      std::make_unique<file_manager::FileManagerCopyOrMoveHookDelegate>(
+          base::BindRepeating(&OnCopyProgress, profile_id,
+                              base::Unretained(operation_id))),
       base::BindOnce(&OnCopyCompleted, profile_id, base::Owned(operation_id),
                      source_url, destination_url));
   // Notify the start of copy to send total size.
@@ -385,10 +399,14 @@ absl::optional<file_manager::io_task::OperationType> IOTaskTypeToChromeEnum(
   switch (type) {
     case api::file_manager_private::IO_TASK_TYPE_COPY:
       return file_manager::io_task::OperationType::kCopy;
-    case api::file_manager_private::IO_TASK_TYPE_MOVE:
-      return file_manager::io_task::OperationType::kMove;
     case api::file_manager_private::IO_TASK_TYPE_DELETE:
       return file_manager::io_task::OperationType::kDelete;
+    case api::file_manager_private::IO_TASK_TYPE_EXTRACT:
+      return file_manager::io_task::OperationType::kExtract;
+    case api::file_manager_private::IO_TASK_TYPE_MOVE:
+      return file_manager::io_task::OperationType::kMove;
+    case api::file_manager_private::IO_TASK_TYPE_TRASH:
+      return file_manager::io_task::OperationType::kTrash;
     case api::file_manager_private::IO_TASK_TYPE_ZIP:
       return file_manager::io_task::OperationType::kZip;
     case api::file_manager_private::IO_TASK_TYPE_NONE:
@@ -501,7 +519,7 @@ ExtensionFunction::ResponseAction FileWatchFunctionBase::Run() {
       file_system_context->CrackURLInFirstPartyContext(GURL(url));
   if (file_system_url.path().empty()) {
     auto result_list = std::make_unique<base::ListValue>();
-    result_list->Append(std::make_unique<base::Value>(false));
+    result_list->Append(false);
     return RespondNow(Error("Invalid URL"));
   }
 
@@ -620,7 +638,18 @@ FileManagerPrivateGetSizeStatsFunction::Run() {
   base::WeakPtr<Volume> volume =
       volume_manager->FindVolumeById(params->volume_id);
   if (!volume.get())
-    return RespondNow(Error("Volume not found"));
+    return RespondNow(
+        Error("GetSizeStats: volume with ID * not found", params->volume_id));
+
+  // For fusebox volumes, get the underlying (aka original) volume.
+  const auto fusebox = base::StringPiece(file_manager::util::kFuseBox);
+  if (base::StartsWith(volume->file_system_type(), fusebox)) {
+    auto volume_id = params->volume_id.substr(fusebox.length());
+    volume = volume_manager->FindVolumeById(volume_id);
+    if (!volume.get())
+      return RespondNow(
+          Error("GetSizeStats: volume with ID * not found", volume_id));
+  }
 
   if (volume->type() == file_manager::VOLUME_TYPE_MTP) {
     // Resolve storage_name.
@@ -780,7 +809,8 @@ FileManagerPrivateFormatVolumeFunction::Run() {
   base::WeakPtr<Volume> volume =
       volume_manager->FindVolumeById(params->volume_id);
   if (!volume)
-    return RespondNow(Error("Volume not found"));
+    return RespondNow(
+        Error("FormatVolume: volume with ID * not found", params->volume_id));
 
   DiskMountManager::GetInstance()->FormatMountedDevice(
       volume->mount_path().AsUTF8Unsafe(),
@@ -840,7 +870,8 @@ FileManagerPrivateRenameVolumeFunction::Run() {
   base::WeakPtr<Volume> volume =
       volume_manager->FindVolumeById(params->volume_id);
   if (!volume)
-    return RespondNow(Error("Volume not found"));
+    return RespondNow(
+        Error("RenameVolume: volume with ID * not found", params->volume_id));
 
   DiskMountManager::GetInstance()->RenameMountedDevice(
       volume->mount_path().AsUTF8Unsafe(), params->new_name);
@@ -880,10 +911,170 @@ std::vector<int64_t> GetLocalDiskSpaces(
 FileManagerPrivateInternalGetDisallowedTransfersFunction::
     FileManagerPrivateInternalGetDisallowedTransfersFunction() = default;
 
+FileManagerPrivateInternalGetDisallowedTransfersFunction::
+    ~FileManagerPrivateInternalGetDisallowedTransfersFunction() = default;
+
 ExtensionFunction::ResponseAction
 FileManagerPrivateInternalGetDisallowedTransfersFunction::Run() {
-  // TODO(crbug.com/1261761): Add implementation.
-  return RespondNow(Error("NOTIMPLEMENTED"));
+  if (!base::FeatureList::IsEnabled(
+          features::kDataLeakPreventionFilesRestriction)) {
+    return RespondNow(OneArgument(base::Value(base::Value::Type::LIST)));
+  }
+
+  policy::DlpRulesManager* rules_manager =
+      policy::DlpRulesManagerFactory::GetForPrimaryProfile();
+  if (!rules_manager) {
+    return RespondNow(OneArgument(base::Value(base::Value::Type::LIST)));
+  }
+
+  using extensions::api::file_manager_private_internal::GetDisallowedTransfers::
+      Params;
+  const std::unique_ptr<Params> params(Params::Create(args()));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  profile_ = Profile::FromBrowserContext(browser_context());
+  scoped_refptr<storage::FileSystemContext> file_system_context =
+      file_manager::util::GetFileSystemContextForRenderFrameHost(
+          profile_, render_frame_host());
+
+  for (const std::string& url : params->entries) {
+    FileSystemURL file_system_url(
+        file_system_context->CrackURLInFirstPartyContext(GURL(url)));
+    if (!file_system_url.is_valid()) {
+      return RespondNow(Error("File URL was invalid"));
+    }
+    source_urls_.push_back(file_system_url);
+  }
+
+  destination_url_ = file_system_context->CrackURLInFirstPartyContext(
+      GURL(params->destination_entry));
+  if (!destination_url_.is_valid()) {
+    return RespondNow(Error("File URL was invalid"));
+  }
+
+  files_controller_ = std::make_unique<policy::DlpFilesController>();
+  files_controller_->GetDisallowedTransfers(
+      source_urls_, destination_url_,
+      base::BindOnce(&FileManagerPrivateInternalGetDisallowedTransfersFunction::
+                         OnGetDisallowedFiles,
+                     this));
+
+  return RespondLater();
+}
+
+void FileManagerPrivateInternalGetDisallowedTransfersFunction::
+    OnGetDisallowedFiles(std::vector<storage::FileSystemURL> disallowed_files) {
+  file_manager::util::FileDefinitionList file_definition_list;
+  for (const auto& file : disallowed_files) {
+    file_manager::util::FileDefinition file_definition;
+    // Disallowed transfers lists regular files not directories.
+    file_definition.is_directory = false;
+    file_definition.virtual_path = file.virtual_path();
+    file_definition.absolute_path = file.path();
+    file_definition_list.emplace_back(std::move(file_definition));
+  }
+
+  file_manager::util::ConvertFileDefinitionListToEntryDefinitionList(
+      file_manager::util::GetFileSystemContextForSourceURL(profile_,
+                                                           source_url()),
+      url::Origin::Create(source_url().DeprecatedGetOriginAsURL()),
+      file_definition_list,  // Safe, since copied internally.
+      base::BindOnce(&FileManagerPrivateInternalGetDisallowedTransfersFunction::
+                         OnConvertFileDefinitionListToEntryDefinitionList,
+                     this));
+}
+
+void FileManagerPrivateInternalGetDisallowedTransfersFunction::
+    OnConvertFileDefinitionListToEntryDefinitionList(
+        std::unique_ptr<file_manager::util::EntryDefinitionList>
+            entry_definition_list) {
+  DCHECK(entry_definition_list);
+
+  Respond(OneArgument(base::Value::FromUniquePtrValue(
+      file_manager::util::ConvertEntryDefinitionListToListValue(
+          *entry_definition_list))));
+}
+
+FileManagerPrivateInternalGetFilesRestrictedByDlpFunction::
+    FileManagerPrivateInternalGetFilesRestrictedByDlpFunction() = default;
+
+FileManagerPrivateInternalGetFilesRestrictedByDlpFunction::
+    ~FileManagerPrivateInternalGetFilesRestrictedByDlpFunction() = default;
+
+ExtensionFunction::ResponseAction
+FileManagerPrivateInternalGetFilesRestrictedByDlpFunction::Run() {
+  if (!base::FeatureList::IsEnabled(
+          features::kDataLeakPreventionFilesRestriction)) {
+    return RespondNow(OneArgument(base::Value(base::Value::Type::LIST)));
+  }
+
+  policy::DlpRulesManager* rules_manager =
+      policy::DlpRulesManagerFactory::GetForPrimaryProfile();
+  if (!rules_manager) {
+    return RespondNow(OneArgument(base::Value(base::Value::Type::LIST)));
+  }
+
+  using extensions::api::file_manager_private_internal::
+      GetFilesRestrictedByDlp::Params;
+  const std::unique_ptr<Params> params(Params::Create(args()));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  scoped_refptr<storage::FileSystemContext> file_system_context =
+      file_manager::util::GetFileSystemContextForRenderFrameHost(
+          Profile::FromBrowserContext(browser_context()), render_frame_host());
+
+  for (const std::string& url : params->entries) {
+    FileSystemURL file_system_url(
+        file_system_context->CrackURLInFirstPartyContext(GURL(url)));
+    if (!file_system_url.is_valid()) {
+      return RespondNow(Error("File URL was invalid"));
+    }
+    source_urls_.push_back(file_system_url);
+  }
+
+  files_controller_ = std::make_unique<policy::DlpFilesController>();
+  files_controller_->GetFilesRestrictedByAnyRule(
+      source_urls_,
+      base::BindOnce(
+          &FileManagerPrivateInternalGetFilesRestrictedByDlpFunction::
+              OnGetFilesRestrictedByDlp,
+          this));
+
+  return RespondLater();
+}
+
+void FileManagerPrivateInternalGetFilesRestrictedByDlpFunction::
+    OnGetFilesRestrictedByDlp(
+        std::vector<storage::FileSystemURL> restricted_files) {
+  file_manager::util::FileDefinitionList file_definition_list;
+  for (const auto& file : restricted_files) {
+    file_manager::util::FileDefinition file_definition;
+    file_definition.is_directory = false;
+    file_definition.virtual_path = file.virtual_path();
+    file_definition.absolute_path = file.path();
+    file_definition_list.emplace_back(std::move(file_definition));
+  }
+
+  file_manager::util::ConvertFileDefinitionListToEntryDefinitionList(
+      file_manager::util::GetFileSystemContextForSourceURL(
+          Profile::FromBrowserContext(browser_context()), source_url()),
+      url::Origin::Create(source_url().DeprecatedGetOriginAsURL()),
+      file_definition_list,  // Safe, since copied internally.
+      base::BindOnce(
+          &FileManagerPrivateInternalGetFilesRestrictedByDlpFunction::
+              OnConvertFileDefinitionListToEntryDefinitionList,
+          this));
+}
+
+void FileManagerPrivateInternalGetFilesRestrictedByDlpFunction::
+    OnConvertFileDefinitionListToEntryDefinitionList(
+        std::unique_ptr<file_manager::util::EntryDefinitionList>
+            entry_definition_list) {
+  DCHECK(entry_definition_list);
+
+  Respond(OneArgument(base::Value::FromUniquePtrValue(
+      file_manager::util::ConvertEntryDefinitionListToListValue(
+          *entry_definition_list))));
 }
 
 FileManagerPrivateInternalStartCopyFunction::
@@ -913,7 +1104,7 @@ FileManagerPrivateInternalStartCopyFunction::Run() {
   std::string destination_url_string = params->parent_url;
   if (destination_url_string.back() != '/')
     destination_url_string += '/';
-  destination_url_string += net::EscapePath(params->new_name);
+  destination_url_string += base::EscapePath(params->new_name);
 
   source_url_ =
       file_system_context->CrackURLInFirstPartyContext(GURL(params->url));
@@ -1287,7 +1478,7 @@ void FileManagerPrivateSearchFilesByHashesFunction::OnSearchByHashes(
   }
 
   for (const auto& hashAndPath : search_results) {
-    DCHECK(result->HasKey(hashAndPath.hash));
+    DCHECK(result->FindKey(hashAndPath.hash));
     base::ListValue* list;
     result->GetListWithoutPathExpansion(hashAndPath.hash, &list);
     list->Append(hashAndPath.path.value());
@@ -1464,14 +1655,29 @@ FileManagerPrivateInternalStartIOTaskFunction::Run() {
       task = std::make_unique<file_manager::io_task::DeleteIOTask>(
           std::move(source_urls), file_system_context);
       break;
+    case file_manager::io_task::OperationType::kExtract:
+      if (base::FeatureList::IsEnabled(
+              chromeos::features::kFilesExtractArchive)) {
+        std::string password;
+        if (params->params.password) {
+          password = *params->params.password;
+        }
+        task = std::make_unique<file_manager::io_task::ExtractIOTask>(
+            std::move(source_urls), std::move(password),
+            std::move(destination_folder_url), profile, file_system_context);
+        break;
+      }
+      // Fall through
+      ABSL_FALLTHROUGH_INTENDED;
     default:
       // TODO(b/199804935): Replace with MoveIOTask when implemented.
       task = std::make_unique<file_manager::io_task::DummyIOTask>(
           std::move(source_urls), std::move(destination_folder_url), *type);
       break;
   }
-  volume_manager->io_task_controller()->Add(std::move(task));
-  return RespondNow(NoArguments());
+  const auto taskId =
+      volume_manager->io_task_controller()->Add(std::move(task));
+  return RespondNow(OneArgument(base::Value(static_cast<int>(taskId))));
 }
 
 ExtensionFunction::ResponseAction

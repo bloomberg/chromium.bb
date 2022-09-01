@@ -48,8 +48,7 @@ class COMPONENT_EXPORT(UI_BASE_IME_ASH) IMEInputContextHandlerInterface {
   virtual gfx::Rect GetTextFieldBounds() = 0;
   // Sets the autocorrect range to be `range`.
   virtual bool SetAutocorrectRange(const gfx::Range& range) = 0;
-  virtual absl::optional<GrammarFragment> GetGrammarFragment(
-      const gfx::Range& range) = 0;
+  virtual absl::optional<GrammarFragment> GetGrammarFragmentAtCursor() = 0;
   virtual bool ClearGrammarFragments(const gfx::Range& range) = 0;
   virtual bool AddGrammarFragments(
       const std::vector<GrammarFragment>& fragements) = 0;
@@ -86,6 +85,8 @@ class COMPONENT_EXPORT(UI_BASE_IME_ASH) IMEInputContextHandlerInterface {
 
   // Returns true if there is any composition text.
   virtual bool HasCompositionText() = 0;
+
+  virtual std::u16string GetCompositionText() = 0;
 
   // Returns the ukm::SourceId that identifies the currently focused client.
   virtual ukm::SourceId GetClientSourceForMetrics() = 0;

@@ -40,7 +40,6 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/input/web_menu_source_type.h"
 #include "third_party/blink/public/mojom/context_menu/context_menu.mojom-blink.h"
-#include "third_party/blink/public/platform/impression_conversions.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_plugin.h"
 #include "third_party/blink/public/web/web_text_check_client.h"
@@ -60,13 +59,13 @@
 #include "third_party/blink/renderer/core/events/mouse_event.h"
 #include "third_party/blink/renderer/core/exported/web_plugin_container_impl.h"
 #include "third_party/blink/renderer/core/fragment_directive/text_fragment_handler.h"
+#include "third_party/blink/renderer/core/frame/attribution_src_loader.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/picture_in_picture_controller.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/web_frame_widget_impl.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
-#include "third_party/blink/renderer/core/html/conversion_measurement_parsing.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/html_anchor_element.h"
@@ -168,8 +167,8 @@ void ContextMenuController::DocumentDetached(Document* document) {
 void ContextMenuController::HandleContextMenuEvent(MouseEvent* mouse_event) {
   DCHECK(mouse_event->type() == event_type_names::kContextmenu);
   LocalFrame* frame = mouse_event->target()->ToNode()->GetDocument().GetFrame();
-  PhysicalOffset location = PhysicalOffset::FromPointFRound(
-      gfx::PointF(mouse_event->AbsoluteLocation()));
+  PhysicalOffset location =
+      PhysicalOffset::FromPointFRound(mouse_event->AbsoluteLocation());
 
   if (ShowContextMenu(frame, location, mouse_event->GetMenuSourceType(),
                       mouse_event))
@@ -318,15 +317,13 @@ void ContextMenuController::CustomContextMenuAction(uint32_t action) {
 }
 
 void ContextMenuController::ContextMenuClosed(const KURL& link_followed) {
-  if (!link_followed.IsValid())
-    return;
-
-  WebLocalFrameImpl* selected_web_frame =
-      WebLocalFrameImpl::FromFrame(hit_test_result_.InnerNodeFrame());
-  if (!selected_web_frame)
-    return;
-
-  selected_web_frame->SendPings(link_followed);
+  if (link_followed.IsValid()) {
+    WebLocalFrameImpl* selected_web_frame =
+        WebLocalFrameImpl::FromFrame(hit_test_result_.InnerNodeFrame());
+    if (selected_web_frame)
+      selected_web_frame->SendPings(link_followed);
+  }
+  ClearContextMenu();
 }
 
 static int ComputeEditFlags(Document& selected_document, Editor& editor) {
@@ -479,7 +476,7 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
       result.SetURLElement(target_node->EnclosingLinkEventParentOrSelf());
     }
   }
-  data.link_url = result.AbsoluteLinkURL();
+  data.link_url = GURL(result.AbsoluteLinkURL());
 
   auto* html_element = DynamicTo<HTMLElement>(result.InnerNode());
   if (html_element) {
@@ -487,12 +484,13 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
     data.alt_text = html_element->AltText().Utf8();
   }
   if (!result.AbsoluteMediaURL().IsEmpty() ||
-      result.GetMediaStreamDescriptor()) {
+      result.GetMediaStreamDescriptor() || result.GetMediaSourceHandle()) {
     if (!result.AbsoluteMediaURL().IsEmpty())
-      data.src_url = result.AbsoluteMediaURL();
+      data.src_url = GURL(result.AbsoluteMediaURL());
 
     // We know that if absoluteMediaURL() is not empty or element has a media
-    // stream descriptor, then this is a media element.
+    // stream descriptor or element has a media source handle, then this is a
+    // media element.
     auto* media_element = To<HTMLMediaElement>(result.InnerNode());
     if (IsA<HTMLVideoElement>(*media_element)) {
       // A video element should be presented as an audio element when it has an
@@ -544,14 +542,11 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
         data.media_type = mojom::blink::ContextMenuDataMediaType::kPlugin;
 
         WebPlugin* plugin = plugin_view->Plugin();
-        data.link_url = KURL(plugin->LinkAtPosition(data.mouse_position)
-                                 .GetString()
-                                 .Utf8()
-                                 .c_str());
+        data.link_url = GURL(KURL(plugin->LinkAtPosition(data.mouse_position)));
 
         auto* plugin_element = To<HTMLPlugInElement>(result.InnerNode());
-        data.src_url =
-            plugin_element->GetDocument().CompleteURL(plugin_element->Url());
+        data.src_url = GURL(
+            plugin_element->GetDocument().CompleteURL(plugin_element->Url()));
 
         // Figure out the text selection and text edit flags.
         WebString text = plugin->SelectionAsText();
@@ -607,7 +602,8 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
     } else if (potential_image_node != nullptr &&
                !HitTestResult::AbsoluteImageURL(potential_image_node)
                     .IsEmpty()) {
-      data.src_url = HitTestResult::AbsoluteImageURL(potential_image_node);
+      data.src_url =
+          GURL(HitTestResult::AbsoluteImageURL(potential_image_node));
       data.media_type = mojom::blink::ContextMenuDataMediaType::kImage;
       data.media_flags |= ContextMenuData::kMediaCanPrint;
       data.has_image_contents =
@@ -644,7 +640,7 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
         << selected_frame->Selection()
                .ComputeVisibleSelectionInDOMTreeDeprecated();
     if (!result.IsContentEditable()) {
-      UpdateTextFragmentHandler(selected_frame);
+      TextFragmentHandler::OpenedContextMenuOverSelection(selected_frame);
     }
   }
 
@@ -740,14 +736,15 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
 
     data.link_text = anchor->innerText().Utf8();
 
-    if (anchor->HasImpression()) {
-      absl::optional<WebImpression> web_impression =
-          GetImpressionForAnchor(anchor);
-      data.impression =
-          web_impression.has_value()
-              ? absl::optional<Impression>(
-                    ConvertWebImpressionToImpression(web_impression.value()))
-              : absl::nullopt;
+    if (anchor->FastHasAttribute(html_names::kAttributionsrcAttr)) {
+      const AtomicString& attribution_src_value =
+          anchor->FastGetAttribute(html_names::kAttributionsrcAttr);
+      if (!attribution_src_value.IsNull()) {
+        data.impression =
+            selected_frame->GetAttributionSrcLoader()->RegisterNavigation(
+                selected_frame->GetDocument()->CompleteURL(
+                    attribution_src_value));
+      }
     }
   }
 
@@ -780,20 +777,6 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
       data, host_context_menu_location);
 
   return true;
-}
-
-void ContextMenuController::UpdateTextFragmentHandler(
-    LocalFrame* selected_frame) {
-  if (!selected_frame->GetTextFragmentHandler()) {
-    if (!base::FeatureList::IsEnabled(
-            shared_highlighting::kSharedHighlightingAmp)) {
-      return;
-    }
-
-    selected_frame->CreateTextFragmentHandler();
-  }
-
-  selected_frame->GetTextFragmentHandler()->StartPreemptiveGenerationIfNeeded();
 }
 
 }  // namespace blink

@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
+#include "base/time/time.h"
 #include "components/query_tiles/internal/tile_config.h"
 #include "components/query_tiles/internal/tile_store.h"
 #include "components/query_tiles/switches.h"
@@ -453,7 +454,6 @@ TEST_F(TileManagerTest, TrendingTopTilesRemovedAfterShown) {
 
   // Click the 2nd tile.
   OnTileClicked("trending_2");
-  GetTiles(expected);
 
   // Both the first and the second tile will be removed.
   expected.erase(expected.begin(), expected.begin() + 2);
@@ -463,7 +463,6 @@ TEST_F(TileManagerTest, TrendingTopTilesRemovedAfterShown) {
                           MockTileStore::UpdateCallback callback) {
         std::move(callback).Run(true);
       }));
-  GetTiles(expected);
   GetTiles(expected);
 
   // The 3rd tile will be removed due to max impression threshold.
@@ -546,10 +545,6 @@ TEST_F(TileManagerTest, GetSingleTileAfterOnTileClicked) {
   OnTileClicked("parent");
   GetSingleTile("parent", get_single_tile_expected);
 
-  // Click the parent tile to show the subtiles.
-  OnTileClicked("parent");
-  GetSingleTile("parent", get_single_tile_expected);
-
   // Click a trending tile will not reset its impression.
   OnTileClicked("trending_1");
 
@@ -566,9 +561,6 @@ TEST_F(TileManagerTest, GetSingleTileAfterOnTileClicked) {
   get_single_tile_expected->sub_tiles.clear();
   get_single_tile_expected->sub_tiles.emplace_back(
       std::make_unique<Tile>(std::move(trending_3)));
-  OnTileClicked("parent");
-  GetSingleTile("parent", get_single_tile_expected);
-
   OnTileClicked("parent");
   GetSingleTile("parent", get_single_tile_expected);
 

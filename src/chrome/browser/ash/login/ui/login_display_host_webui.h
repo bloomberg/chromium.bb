@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/scoped_observation.h"
+#include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ash/login/existing_user_controller.h"
@@ -23,6 +24,7 @@
 #include "chrome/browser/ash/login/ui/login_display_host_common.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_helper.h"
+#include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/session_manager/core/session_manager_observer.h"
@@ -56,7 +58,8 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
                               public ui::InputDeviceEventObserver,
                               public views::WidgetRemovalsObserver,
                               public views::WidgetObserver,
-                              public MultiUserWindowManagerObserver {
+                              public MultiUserWindowManagerObserver,
+                              public OobeUI::Observer {
  public:
   LoginDisplayHostWebUI();
 
@@ -69,6 +72,7 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
   LoginDisplay* GetLoginDisplay() override;
   ExistingUserController* GetExistingUserController() override;
   gfx::NativeWindow GetNativeWindow() const override;
+  views::Widget* GetLoginWindowWidget() const override;
   OobeUI* GetOobeUI() const override;
   content::WebContents* GetOobeWebContents() const override;
   WebUILoginView* GetWebUILoginView() const override;
@@ -79,13 +83,12 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
   void OnStartUserAdding() override;
   void CancelUserAdding() override;
   void OnStartSignInScreen() override;
-  void OnPreferencesChanged() override;
   void OnStartAppLaunch() override;
   void OnBrowserCreated() override;
   void ShowGaiaDialog(const AccountId& prefilled_account) override;
   void ShowOsInstallScreen() override;
   void ShowGuestTosScreen() override;
-  void HideOobeDialog() override;
+  void HideOobeDialog(bool saml_video_timeout = false) override;
   void SetShelfButtonsEnabled(bool enabled) override;
   void UpdateOobeDialogState(OobeDialogState state) override;
   void HandleDisplayCaptivePortal() override;
@@ -156,6 +159,12 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
   // MultiUserWindowManagerObserver:
   void OnUserSwitchAnimationFinished() override;
 
+  // OobeUI::Observer:
+  void OnCurrentScreenChanged(OobeScreenId current_screen,
+                              OobeScreenId new_screen) override;
+  void OnDestroyingOobeUI() override;
+
+  // LoginDisplayHostCommon:
   bool IsOobeUIDialogVisible() const override;
 
  private:
@@ -236,9 +245,6 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
   // Login display we are using.
   std::unique_ptr<LoginDisplayWebUI> login_display_;
 
-  // True if the login display is the current screen.
-  bool is_showing_login_ = false;
-
   // Stores status area current visibility to be applied once login WebUI
   // is shown.
   bool status_area_saved_visibility_ = false;
@@ -256,7 +262,7 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
   RestorePath restore_path_ = RESTORE_UNKNOWN;
 
   // Stored parameters for StartWizard, required to restore in case of crash.
-  OobeScreenId first_screen_ = OobeScreen::SCREEN_UNKNOWN;
+  OobeScreenId first_screen_ = ash::OOBE_SCREEN_UNKNOWN;
 
   // A focus ring controller to draw focus ring around view for keyboard
   // driven oobe.

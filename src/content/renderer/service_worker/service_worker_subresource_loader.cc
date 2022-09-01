@@ -13,7 +13,6 @@
 #include "base/strings/strcat.h"
 #include "base/trace_event/trace_event.h"
 #include "content/common/fetch/fetch_request_type_converters.h"
-#include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_blink_platform_impl.h"
 #include "content/renderer/service_worker/controller_service_worker_connector.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
@@ -81,11 +80,12 @@ class HeaderRewritingURLLoaderClient : public network::mojom::URLLoaderClient {
     url_loader_client_->OnReceiveEarlyHints(std::move(early_hints));
   }
 
-  void OnReceiveResponse(
-      network::mojom::URLResponseHeadPtr response_head) override {
+  void OnReceiveResponse(network::mojom::URLResponseHeadPtr response_head,
+                         mojo::ScopedDataPipeConsumerHandle body) override {
     DCHECK(url_loader_client_.is_bound());
     url_loader_client_->OnReceiveResponse(
-        rewrite_header_callback_.Run(std::move(response_head)));
+        rewrite_header_callback_.Run(std::move(response_head)),
+        std::move(body));
   }
 
   void OnReceiveRedirect(
@@ -112,12 +112,6 @@ class HeaderRewritingURLLoaderClient : public network::mojom::URLLoaderClient {
   void OnTransferSizeUpdated(int32_t transfer_size_diff) override {
     DCHECK(url_loader_client_.is_bound());
     url_loader_client_->OnTransferSizeUpdated(transfer_size_diff);
-  }
-
-  void OnStartLoadingResponseBody(
-      mojo::ScopedDataPipeConsumerHandle body) override {
-    DCHECK(url_loader_client_.is_bound());
-    url_loader_client_->OnStartLoadingResponseBody(std::move(body));
   }
 
   void OnComplete(const network::URLLoaderCompletionStatus& status) override {
@@ -593,14 +587,14 @@ void ServiceWorkerSubresourceLoader::StartResponse(
 void ServiceWorkerSubresourceLoader::CommitResponseHeaders() {
   TransitionToStatus(Status::kSentHeader);
   DCHECK(url_loader_client_.is_bound());
-  // TODO(kinuko): Fill the ssl_info.
-  url_loader_client_->OnReceiveResponse(response_head_.Clone());
 }
 
 void ServiceWorkerSubresourceLoader::CommitResponseBody(
     mojo::ScopedDataPipeConsumerHandle response_body) {
   TransitionToStatus(Status::kSentBody);
-  url_loader_client_->OnStartLoadingResponseBody(std::move(response_body));
+  // TODO(kinuko): Fill the ssl_info.
+  url_loader_client_->OnReceiveResponse(response_head_.Clone(),
+                                        std::move(response_body));
 }
 
 void ServiceWorkerSubresourceLoader::CommitEmptyResponseAndComplete() {
@@ -803,11 +797,14 @@ void ServiceWorkerSubresourceLoader::OnSideDataReadingComplete(
   DCHECK(!side_data_reading_complete_);
   side_data_reading_complete_ = true;
 
-  if (metadata.has_value())
-    url_loader_client_->OnReceiveCachedMetadata(std::move(metadata.value()));
-
   DCHECK(data_pipe.is_valid());
   CommitResponseBody(std::move(data_pipe));
+
+  // See https://crbug.com/1294238. The cached meta data needs to be sent after
+  // the response head.
+  if (metadata.has_value()) {
+    url_loader_client_->OnReceiveCachedMetadata(std::move(metadata.value()));
+  }
 
   // If the blob reading completed before the side data reading, then we
   // must manually finalize the blob reading now.

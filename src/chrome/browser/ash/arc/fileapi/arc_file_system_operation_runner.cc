@@ -155,26 +155,6 @@ void ArcFileSystemOperationRunner::GetMimeType(const GURL& url,
   file_system_instance->GetMimeType(url.spec(), std::move(callback));
 }
 
-void ArcFileSystemOperationRunner::OpenFileToRead(
-    const GURL& url,
-    OpenFileToReadCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (should_defer_) {
-    deferred_operations_.emplace_back(base::BindOnce(
-        &ArcFileSystemOperationRunner::OpenFileToRead,
-        weak_ptr_factory_.GetWeakPtr(), url, std::move(callback)));
-    return;
-  }
-  auto* file_system_instance = ARC_GET_INSTANCE_FOR_METHOD(
-      arc_bridge_service_->file_system(), OpenFileToRead);
-  if (!file_system_instance) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), mojo::ScopedHandle()));
-    return;
-  }
-  file_system_instance->OpenFileToRead(url.spec(), std::move(callback));
-}
-
 void ArcFileSystemOperationRunner::OpenThumbnail(
     const GURL& url,
     const gfx::Size& size,
@@ -196,24 +176,65 @@ void ArcFileSystemOperationRunner::OpenThumbnail(
   file_system_instance->OpenThumbnail(url.spec(), size, std::move(callback));
 }
 
-void ArcFileSystemOperationRunner::OpenFileToWrite(
+void ArcFileSystemOperationRunner::CloseFileSession(
+    const std::string& url_id,
+    const std::string& error_message) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (should_defer_) {
+    deferred_operations_.emplace_back(
+        base::BindOnce(&ArcFileSystemOperationRunner::CloseFileSession,
+                       weak_ptr_factory_.GetWeakPtr(), url_id, error_message));
+    return;
+  }
+  auto* file_system_instance = ARC_GET_INSTANCE_FOR_METHOD(
+      arc_bridge_service_->file_system(), CloseFileSession);
+  if (!file_system_instance) {
+    LOG(WARNING) << "Failed to call CloseFileSession.";
+    return;
+  }
+  file_system_instance->CloseFileSession(url_id, error_message);
+}
+
+void ArcFileSystemOperationRunner::OpenFileSessionToWrite(
     const GURL& url,
-    OpenFileToWriteCallback callback) {
+    OpenFileSessionToWriteCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (should_defer_) {
     deferred_operations_.emplace_back(base::BindOnce(
-        &ArcFileSystemOperationRunner::OpenFileToWrite,
+        &ArcFileSystemOperationRunner::OpenFileSessionToWrite,
         weak_ptr_factory_.GetWeakPtr(), url, std::move(callback)));
     return;
   }
   auto* file_system_instance = ARC_GET_INSTANCE_FOR_METHOD(
-      arc_bridge_service_->file_system(), OpenFileToWrite);
+      arc_bridge_service_->file_system(), OpenFileSessionToWrite);
   if (!file_system_instance) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), mojo::ScopedHandle()));
+        FROM_HERE,
+        base::BindOnce(std::move(callback), mojom::FileSessionPtr()));
     return;
   }
-  file_system_instance->OpenFileToWrite(url.spec(), std::move(callback));
+  file_system_instance->OpenFileSessionToWrite(url, std::move(callback));
+}
+
+void ArcFileSystemOperationRunner::OpenFileSessionToRead(
+    const GURL& url,
+    OpenFileSessionToReadCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (should_defer_) {
+    deferred_operations_.emplace_back(base::BindOnce(
+        &ArcFileSystemOperationRunner::OpenFileSessionToRead,
+        weak_ptr_factory_.GetWeakPtr(), url, std::move(callback)));
+    return;
+  }
+  auto* file_system_instance = ARC_GET_INSTANCE_FOR_METHOD(
+      arc_bridge_service_->file_system(), OpenFileSessionToRead);
+  if (!file_system_instance) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(callback), mojom::FileSessionPtr()));
+    return;
+  }
+  file_system_instance->OpenFileSessionToRead(url, std::move(callback));
 }
 
 void ArcFileSystemOperationRunner::GetDocument(const std::string& authority,

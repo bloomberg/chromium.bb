@@ -6,17 +6,18 @@
 
 #include <memory>
 
-#include "ash/grit/ash_print_management_resources.h"
+#include "ash/webui/grit/ash_print_management_resources.h"
 #include "ash/webui/print_management/url_constants.h"
 #include "chrome/browser/ash/web_applications/system_web_app_install_utils.h"
-#include "chrome/browser/web_applications/web_application_info.h"
+#include "chrome/browser/web_applications/user_display_mode.h"
+#include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
-std::unique_ptr<WebApplicationInfo> CreateWebAppInfoForPrintManagementApp() {
-  std::unique_ptr<WebApplicationInfo> info =
-      std::make_unique<WebApplicationInfo>();
+std::unique_ptr<WebAppInstallInfo> CreateWebAppInfoForPrintManagementApp() {
+  std::unique_ptr<WebAppInstallInfo> info =
+      std::make_unique<WebAppInstallInfo>();
   info->start_url = GURL(ash::kChromeUIPrintManagementAppUrl);
   info->scope = GURL(ash::kChromeUIPrintManagementAppUrl);
   info->title = l10n_util::GetStringUTF16(IDS_PRINT_MANAGEMENT_TITLE);
@@ -31,19 +32,19 @@ std::unique_ptr<WebApplicationInfo> CreateWebAppInfoForPrintManagementApp() {
   info->dark_mode_background_color = info->dark_mode_theme_color;
 
   info->display_mode = blink::mojom::DisplayMode::kStandalone;
-  info->user_display_mode = blink::mojom::DisplayMode::kStandalone;
+  info->user_display_mode = web_app::UserDisplayMode::kStandalone;
 
   return info;
 }
 
 PrintManagementSystemAppDelegate::PrintManagementSystemAppDelegate(
     Profile* profile)
-    : web_app::SystemWebAppDelegate(web_app::SystemAppType::PRINT_MANAGEMENT,
-                                    "PrintManagement",
-                                    GURL("chrome://print-management/pwa.html"),
-                                    profile) {}
+    : ash::SystemWebAppDelegate(ash::SystemWebAppType::PRINT_MANAGEMENT,
+                                "PrintManagement",
+                                GURL("chrome://print-management/pwa.html"),
+                                profile) {}
 
-std::unique_ptr<WebApplicationInfo>
+std::unique_ptr<WebAppInstallInfo>
 PrintManagementSystemAppDelegate::GetWebAppInfo() const {
   return CreateWebAppInfoForPrintManagementApp();
 }

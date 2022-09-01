@@ -24,6 +24,7 @@
 #include "ui/ozone/platform/wayland/host/wayland_event_source.h"
 #include "ui/ozone/platform/wayland/host/wayland_pointer.h"
 #include "ui/ozone/platform/wayland/host/wayland_popup.h"
+#include "ui/ozone/platform/wayland/host/wayland_seat.h"
 #include "ui/ozone/platform/wayland/host/wayland_serial_tracker.h"
 #include "ui/ozone/platform/wayland/host/wayland_toplevel_window.h"
 #include "ui/ozone/platform/wayland/host/wayland_zaura_shell.h"
@@ -162,7 +163,7 @@ bool XDGPopupWrapperImpl::Initialize(const ShellPopupParams& params) {
       &XDGPopupWrapperImpl::Repositioned,
   };
 
-  auto positioner = CreatePositioner(wayland_window_->parent_window());
+  auto positioner = CreatePositioner();
   if (!positioner)
     return false;
 
@@ -213,7 +214,7 @@ bool XDGPopupWrapperImpl::SetBounds(const gfx::Rect& new_bounds) {
   params_.bounds = new_bounds;
 
   // Create a new positioner with new bounds.
-  auto positioner = CreatePositioner(wayland_window_->parent_window());
+  auto positioner = CreatePositioner();
   if (!positioner)
     return false;
 
@@ -234,11 +235,10 @@ void XDGPopupWrapperImpl::SetWindowGeometry(const gfx::Rect& bounds) {
 }
 
 void XDGPopupWrapperImpl::Grab(uint32_t serial) {
-  xdg_popup_grab(xdg_popup_.get(), connection_->seat(), serial);
+  xdg_popup_grab(xdg_popup_.get(), connection_->seat()->wl_object(), serial);
 }
 
-wl::Object<xdg_positioner> XDGPopupWrapperImpl::CreatePositioner(
-    WaylandWindow* parent_window) {
+wl::Object<xdg_positioner> XDGPopupWrapperImpl::CreatePositioner() {
   wl::Object<xdg_positioner> positioner(
       xdg_wm_base_create_positioner(connection_->shell()));
   if (!positioner)

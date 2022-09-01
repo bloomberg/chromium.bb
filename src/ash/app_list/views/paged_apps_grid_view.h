@@ -13,13 +13,15 @@
 #include "ash/ash_export.h"
 #include "ash/public/cpp/pagination/pagination_model.h"
 #include "ash/public/cpp/pagination/pagination_model_observer.h"
-#include "ash/public/cpp/presentation_time_recorder.h"
 #include "base/memory/ref_counted.h"
+#include "base/time/time.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/compositor/layer_animation_observer.h"
+#include "ui/compositor/presentation_time_recorder.h"
 #include "ui/compositor/throughput_tracker.h"
 #include "ui/events/types/event_type.h"
 #include "ui/gfx/geometry/point_f.h"
+#include "ui/views/view_targeter_delegate.h"
 
 namespace gfx {
 class Vector2d;
@@ -40,7 +42,8 @@ class PaginationController;
 // for the transition into and out of the "cardified" state.
 class ASH_EXPORT PagedAppsGridView : public AppsGridView,
                                      public PaginationModelObserver,
-                                     public ui::ImplicitAnimationObserver {
+                                     public ui::ImplicitAnimationObserver,
+                                     public views::ViewTargeterDelegate {
  public:
   class ContainerDelegate {
    public:
@@ -55,6 +58,13 @@ class ASH_EXPORT PagedAppsGridView : public AppsGridView,
     virtual bool IsPointWithinBottomDragBuffer(
         const gfx::Point& point,
         int page_flip_zone_size) const = 0;
+
+    // Triggered when cardified state begins before animations start.
+    virtual void OnCardifiedStateStarted() {}
+
+    // Triggered when cardified state ends and the bounds animations for leaving
+    // cardified state have completed.
+    virtual void OnCardifiedStateEnded() {}
   };
 
   PagedAppsGridView(ContentsView* contents_view,
@@ -96,12 +106,13 @@ class ASH_EXPORT PagedAppsGridView : public AppsGridView,
 
   // views::View:
   void Layout() override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  void OnThemeChanged() override;
 
   // AppsGridView:
   gfx::Size GetTileViewSize() const override;
   gfx::Insets GetTilePadding(int page) const override;
   gfx::Size GetTileGridSize() const override;
-  int GetPaddingBetweenPages() const override;
   int GetTotalPages() const override;
   int GetSelectedPage() const override;
   bool IsScrollAxisVertical() const override;
@@ -114,8 +125,7 @@ class ASH_EXPORT PagedAppsGridView : public AppsGridView,
   void StopAutoScroll() override {}
   void HandleScrollFromParentView(const gfx::Vector2d& offset,
                                   ui::EventType type) override;
-  void SetFocusAfterEndDrag() override;
-  void CalculateIdealBoundsForNonFolder() override;
+  void SetFocusAfterEndDrag(AppListItem* drag_item) override;
   void RecordAppMovingTypeMetrics(AppListAppMovingType type) override;
   int GetMaxRowsInPage(int page) const override;
   gfx::Vector2d GetGridCenteringOffset(int page) const override;
@@ -124,6 +134,9 @@ class ASH_EXPORT PagedAppsGridView : public AppsGridView,
   const gfx::Vector2d CalculateTransitionOffset(
       int page_of_view) const override;
   void EnsureViewVisible(const GridIndex& index) override;
+  absl::optional<VisibleItemIndexRange> GetVisibleItemIndexRange()
+      const override;
+  base::ScopedClosureRunner LockAppsGridOpacity() override;
 
   // PaginationModelObserver:
   void TotalPagesChanged(int previous_page_count, int new_page_count) override;
@@ -138,12 +151,17 @@ class ASH_EXPORT PagedAppsGridView : public AppsGridView,
   // ui::ImplicitAnimationObserver:
   void OnImplicitAnimationsCompleted() override;
 
+  // views::ViewTargeterDelegate:
+  bool DoesIntersectRect(const views::View* target,
+                         const gfx::Rect& rect) const override;
+
   bool FirePageFlipTimerForTest();
   bool cardified_state_for_testing() const { return cardified_state_; }
   int BackgroundCardCountForTesting() const { return background_cards_.size(); }
   // Returns bounds within the apps grid view for the background card layer
   // with provided card index.
   gfx::Rect GetBackgroundCardBoundsForTesting(size_t card_index);
+  ui::Layer* GetBackgroundCardLayerForTesting(size_t card_index) const;
   void set_page_flip_delay_for_testing(base::TimeDelta page_flip_delay) {
     page_flip_delay_ = page_flip_delay;
   }
@@ -151,10 +169,22 @@ class ASH_EXPORT PagedAppsGridView : public AppsGridView,
   // Gets the PaginationModel used for the grid view.
   PaginationModel* pagination_model() { return &pagination_model_; }
 
-  void set_first_page_offset(int offset) { first_page_offset_ = offset; }
+  // Sets `first_page_offset_` and `shown_under_recent_apps_`, which are used to
+  // calculate the first apps grid page layout (number of rows and the padding
+  // between them).
+  // `offset` is reserved space for continue section in the apps
+  // container (which is shown above the grid on the first app list page with
+  // productivity launcher).
+  // `shown_under_recent_apps` indicates whether the
+  // continue section contains list of recent apps. If this is the case, the
+  // apps grid will add additional padding above the apps grid (i.e. treat the
+  // recent apps row as additional row of apps).
+  // Returns whether the first page configuration changed.
+  bool ConfigureFirstPagePadding(int offset, bool shown_under_recent_apps);
 
   // Calculates the maximum number of rows on the first page. Relies on tile
-  // size, `first_page_offset_`, and the bounds of the apps grid.
+  // size, `first_page_offset_`, `shown_under_recent_apps_` and the bounds of
+  // the apps grid.
   int CalculateFirstPageMaxRows(int available_height, int preferred_rows);
 
   // Calculates the maximum number of rows. Relies on tile size and the bounds
@@ -164,10 +194,29 @@ class ASH_EXPORT PagedAppsGridView : public AppsGridView,
   int GetFirstPageRowsForTesting() const { return max_rows_on_first_page_; }
   int GetRowsForTesting() const { return max_rows_; }
 
+  void set_margin_for_gradient_mask(int margin) {
+    margin_for_gradient_mask_ = margin;
+  }
+
+  // Gets the first page vertical tile padding, ignoring scaling for cardified
+  // state.
+  int GetUnscaledFirstPageTilePadding() {
+    return unscaled_first_page_vertical_tile_padding_;
+  }
+
+  // Animates items to their ideal bounds when the reorder nudge gets removed.
+  void AnimateOnNudgeRemoved();
+
  private:
   friend class test::AppsGridViewTest;
 
-  class FadeoutLayerDelegate;
+  class BackgroundCardLayer;
+
+  // Gets the leading padding for app list item grid on the first app list page.
+  // Includes the space reserved for the continue seaction of the app list UI,
+  // and additional vertical tile padding before the first row of apps when
+  // needed (i.e. if the grid is shown under a row of recent apps).
+  int GetTotalTopPaddingOnFirstPage() const;
 
   // Returns the size reserved for a single apps grid page. May not match the
   // tile grid size when the first page selected, as the first page may have
@@ -180,11 +229,6 @@ class ASH_EXPORT PagedAppsGridView : public AppsGridView,
   // Indicates whether the drag event (from the gesture or mouse) should be
   // handled by PagedAppsGridView.
   bool ShouldHandleDragEvent(const ui::LocatedEvent& event);
-
-  // Creates a layer mask for gradient alpha when the feature is enabled. The
-  // gradient appears at the top and bottom of the apps grid to create a
-  // "fade out" effect when dragging the whole page.
-  void MaybeCreateGradientMask();
 
   // Returns true if the page is the right target to flip to.
   bool IsValidPageFlipTarget(int page) const;
@@ -232,6 +276,10 @@ class ASH_EXPORT PagedAppsGridView : public AppsGridView,
   // Update the padding of tile view based on the contents bounds.
   void UpdateTilePadding();
 
+  // Returns the padding between each page of the apps grid, or zero if the grid
+  // does not use pages.
+  int GetPaddingBetweenPages() const;
+
   // Created by AppListMainView, owned by views hierarchy.
   ContentsView* const contents_view_;
 
@@ -265,22 +313,18 @@ class ASH_EXPORT PagedAppsGridView : public AppsGridView,
   // between-item drags that move the entire grid, not for app icon drags.
   gfx::PointF last_mouse_drag_point_;
 
-  // Implements a "fade out" gradient at the top and bottom of the grid. Used
-  // during page flip transitions and for cardified drags.
-  std::unique_ptr<FadeoutLayerDelegate> fadeout_layer_delegate_;
-
   // Records smoothness of pagination animation.
   absl::optional<ui::ThroughputTracker> pagination_metrics_tracker_;
 
   // Records the presentation time for apps grid dragging.
-  std::unique_ptr<PresentationTimeRecorder> presentation_time_recorder_;
+  std::unique_ptr<ui::PresentationTimeRecorder> presentation_time_recorder_;
 
   // The highlighted page during cardified state.
   int highlighted_page_ = -1;
 
   // Layer array for apps grid background cards. Used to display the background
   // card during cardified state.
-  std::vector<std::unique_ptr<ui::Layer>> background_cards_;
+  std::vector<std::unique_ptr<BackgroundCardLayer>> background_cards_;
 
   // Whether the feature ProductivityLauncher is enabled.
   const bool is_productivity_launcher_enabled_;
@@ -297,8 +341,30 @@ class ASH_EXPORT PagedAppsGridView : public AppsGridView,
   // with the recent apps and continue section.
   int first_page_offset_ = 0;
 
+  // Whether the apps grid is shown underneath recent apps container. If this is
+  // the case, layout will add additional vertical tile padding before the first
+  // apps grid row on the first page.
+  bool shown_under_recent_apps_ = false;
+
   // Vertical tile spacing between the tile views on the first page.
   int first_page_vertical_tile_padding_ = 0;
+
+  // Vertical tile spacing between the tile views on the first page, without
+  // scaling applied from cardified state.
+  int unscaled_first_page_vertical_tile_padding_ = 0;
+
+  // Cardified animation observers.
+  std::vector<std::unique_ptr<ui::ImplicitAnimationObserver>>
+      animation_observers_;
+
+  // A margin added to the height of the clip rect used for clipping the
+  // cardified state's background cards.
+  int margin_for_gradient_mask_ = 0;
+
+  void StackCardsAtBottom() override;
+
+  // If true, ignore the calls on `UpdateOpacity()`.
+  bool lock_opacity_ = false;
 
   base::WeakPtrFactory<PagedAppsGridView> weak_ptr_factory_{this};
 };

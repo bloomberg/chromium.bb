@@ -11,8 +11,6 @@
 GuideName* const kContentAreaGuide = @"ContentAreaGuide";
 GuideName* const kPrimaryToolbarGuide = @"kPrimaryToolbarGuide";
 GuideName* const kSecondaryToolbarGuide = @"kSecondaryToolbarGuide";
-GuideName* const kSecondaryToolbarNoFullscreenGuide =
-    @"kSecondaryToolbarNoFullscreenGuide";
 GuideName* const kBadgeOverflowMenuGuide = @"kBadgeOverflowMenuGuide";
 GuideName* const kOmniboxGuide = @"kOmniboxGuide";
 GuideName* const kOmniboxLeadingImageGuide = @"kOmniboxLeadingImageGuide";
@@ -22,10 +20,10 @@ GuideName* const kForwardButtonGuide = @"kForwardButtonGuide";
 GuideName* const kNewTabButtonGuide = @"kNewTabButtonGuide";
 GuideName* const kTabSwitcherGuide = @"kTabSwitcherGuide";
 GuideName* const kToolsMenuGuide = @"kToolsMenuGuide";
-GuideName* const kTranslateInfobarOptionsGuide =
-    @"kTranslateInfobarOptionsGuide";
 GuideName* const kVoiceSearchButtonGuide = @"kVoiceSearchButtonGuide";
 GuideName* const kDiscoverFeedHeaderMenuGuide = @"kDiscoverFeedHeaderMenuGuide";
 GuideName* const kPrimaryToolbarLocationViewGuide =
     @"kPrimaryToolbarLocationViewGuide";
 GuideName* const kTabGridBottomToolbarGuide = @"kTabGridBottomToolbarGuide";
+GuideName* const kAutofillFirstSuggestionGuide =
+    @"kAutofillFirstSuggestionGuide";
