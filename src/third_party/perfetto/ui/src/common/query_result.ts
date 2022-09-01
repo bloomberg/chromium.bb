@@ -129,7 +129,7 @@ function columnTypeToString(t: ColumnType): string {
 // accepting the 2**53 limitation. This is consistent with passing
 // --force-number in the protobuf.js codegen invocation in //ui/BUILD.gn .
 // See also https://github.com/protobufjs/protobuf.js/issues/1253 .
-(protobuf.util as {} as {Long: undefined}).Long = undefined;
+(protobuf.util as {} as {Long: undefined}).Long = undefined;
 protobuf.configure();
 
 // This has to match CellType in trace_processor.proto.
@@ -187,6 +187,14 @@ export interface QueryResult {
   // This should be called only after having awaited for at least one batch.
   columns(): string[];
 
+  // Returns the number of SQL statements in the query
+  // (e.g. 2 'if SELECT 1; SELECT 2;')
+  statementCount(): number;
+
+  // Returns the number of SQL statement that produced output rows. This number
+  // is <= statementCount().
+  statementWithOutputCount(): number;
+
   // TODO(primiano): next CLs will introduce a waitMoreRows() to allow tracks
   // to await until some more data (but not necessarily all) is available. For
   // now everything uses waitAllRows().
@@ -218,6 +226,8 @@ class QueryResultImpl implements QueryResult, WritableQueryResult {
   private _numRows = 0;
   private _isComplete = false;
   private _errorInfo: QueryErrorInfo;
+  private _statementCount = 0;
+  private _statementWithOutputCount = 0;
 
   constructor(errorInfo: QueryErrorInfo) {
     this._errorInfo = errorInfo;
@@ -249,6 +259,12 @@ class QueryResultImpl implements QueryResult, WritableQueryResult {
   }
   columns(): string[] {
     return this.columnNames;
+  }
+  statementCount(): number {
+    return this._statementCount;
+  }
+  statementWithOutputCount(): number {
+    return this._statementWithOutputCount;
   }
 
   iter<T extends Row>(spec: T): RowIterator<T> {
@@ -337,6 +353,15 @@ class QueryResultImpl implements QueryResult, WritableQueryResult {
             assertTrue(parsedBatch.numCells === 0);
           }
           break;
+
+        case 4:
+          this._statementCount = reader.uint32();
+          break;
+
+        case 5:
+          this._statementWithOutputCount = reader.uint32();
+          break;
+
         default:
           console.warn(`Unexpected QueryResult field ${tag >>> 3}`);
           reader.skipType(tag & 7);
@@ -356,7 +381,7 @@ class QueryResultImpl implements QueryResult, WritableQueryResult {
     return assertExists(this.allRowsPromise);
   }
 
-  private resolveOrReject(promise: Deferred<QueryResult>, arg: QueryResult) {
+  private resolveOrReject(promise: Deferred<QueryResult>, arg: QueryResult) {
     if (this._error === undefined) {
       promise.resolve(arg);
     } else {
@@ -735,25 +760,31 @@ class WaitableQueryResultImpl implements QueryResult, WritableQueryResult,
 
   // QueryResult implementation. Proxies all calls to the impl object.
   iter<T extends Row>(spec: T) {
-     return this.impl.iter(spec);
+    return this.impl.iter(spec);
   }
   firstRow<T extends Row>(spec: T) {
-     return this.impl.firstRow(spec);
+    return this.impl.firstRow(spec);
   }
   waitAllRows() {
-     return this.impl.waitAllRows();
+    return this.impl.waitAllRows();
   }
   isComplete() {
-     return this.impl.isComplete();
+    return this.impl.isComplete();
   }
   numRows() {
-     return this.impl.numRows();
+    return this.impl.numRows();
   }
   columns() {
     return this.impl.columns();
   }
   error() {
-     return this.impl.error();
+    return this.impl.error();
+  }
+  statementCount() {
+    return this.impl.statementCount();
+  }
+  statementWithOutputCount() {
+    return this.impl.statementWithOutputCount();
   }
 
   // WritableQueryResult implementation.
@@ -780,6 +811,9 @@ class WaitableQueryResultImpl implements QueryResult, WritableQueryResult,
     return this.impl.ensureAllRowsPromise().finally(callback);
   }
 
+  // eslint and clang-format disagree on how to format get[foo](). Let
+  // clang-format win:
+  // eslint-disable-next-line keyword-spacing
   get[Symbol.toStringTag](): string {
     return 'Promise<WaitableQueryResult>';
   }

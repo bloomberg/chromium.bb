@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ash/login/screens/multidevice_setup_screen.h"
 
+#include "ash/services/multidevice_setup/public/cpp/multidevice_setup_client.h"
+#include "ash/services/multidevice_setup/public/cpp/oobe_completion_tracker.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -12,8 +14,10 @@
 #include "chrome/browser/ash/multidevice_setup/oobe_completion_tracker_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/multidevice_setup_screen_handler.h"
-#include "chromeos/services/multidevice_setup/public/cpp/multidevice_setup_client.h"
-#include "chromeos/services/multidevice_setup/public/cpp/oobe_completion_tracker.h"
+
+// Enable VLOG level 1.
+#undef ENABLED_VLOG_LEVEL
+#define ENABLED_VLOG_LEVEL 1
 
 namespace ash {
 namespace {
@@ -56,9 +60,10 @@ void MultiDeviceSetupScreen::TryInitSetupClient() {
   }
 }
 
-bool MultiDeviceSetupScreen::MaybeSkip(WizardContext* /*context*/) {
+bool MultiDeviceSetupScreen::MaybeSkip(WizardContext* context) {
   // Only attempt the setup flow for non-guest users.
-  if (chrome_user_manager_util::IsPublicSessionOrEphemeralLogin()) {
+  if (context->skip_post_login_screens_for_tests ||
+      chrome_user_manager_util::IsPublicSessionOrEphemeralLogin()) {
     exit_callback_.Run(Result::NOT_APPLICABLE);
     return true;
   }
@@ -71,8 +76,7 @@ bool MultiDeviceSetupScreen::MaybeSkip(WizardContext* /*context*/) {
     return true;
   }
   if (setup_client_->GetHostStatus().first !=
-      chromeos::multidevice_setup::mojom::HostStatus::
-          kEligibleHostExistsButNoHostSet) {
+      multidevice_setup::mojom::HostStatus::kEligibleHostExistsButNoHostSet) {
     VLOG(1) << "Skipping MultiDevice setup screen; host status: "
             << setup_client_->GetHostStatus().first;
     exit_callback_.Run(Result::NOT_APPLICABLE);
@@ -98,7 +102,8 @@ void MultiDeviceSetupScreen::HideImpl() {
   view_->Hide();
 }
 
-void MultiDeviceSetupScreen::OnUserAction(const std::string& action_id) {
+void MultiDeviceSetupScreen::OnUserActionDeprecated(
+    const std::string& action_id) {
   if (action_id == kAcceptedSetupUserAction) {
     RecordMultiDeviceSetupOOBEUserChoiceHistogram(
         MultiDeviceSetupOOBEUserChoice::kAccepted);
@@ -108,7 +113,7 @@ void MultiDeviceSetupScreen::OnUserAction(const std::string& action_id) {
         MultiDeviceSetupOOBEUserChoice::kDeclined);
     exit_callback_.Run(Result::NEXT);
   } else {
-    BaseScreen::OnUserAction(action_id);
+    BaseScreen::OnUserActionDeprecated(action_id);
     NOTREACHED();
   }
 }

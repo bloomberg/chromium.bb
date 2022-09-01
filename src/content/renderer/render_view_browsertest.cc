@@ -12,8 +12,6 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
-#include "base/cxx17_backports.h"
-#include "base/ignore_result.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/location.h"
@@ -39,7 +37,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
-#include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/fake_render_widget_host.h"
@@ -51,6 +48,7 @@
 #include "content/renderer/accessibility/render_accessibility_impl.h"
 #include "content/renderer/accessibility/render_accessibility_manager.h"
 #include "content/renderer/agent_scheduling_group.h"
+#include "content/renderer/document_state.h"
 #include "content/renderer/navigation_state.h"
 #include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/render_process.h"
@@ -117,14 +115,14 @@
 #include "ui/gfx/range/range.h"
 #include "url/url_constants.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "third_party/blink/public/common/input/web_coalesced_input_event.h"
 #include "third_party/blink/public/common/input/web_gesture_device.h"
 #include "third_party/blink/public/common/input/web_gesture_event.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #endif
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "base/win/windows_version.h"
 #endif
 
@@ -162,7 +160,7 @@ int ConvertMockKeyboardModifier(MockKeyboard::Modifiers modifiers) {
       {MockKeyboard::RIGHT_ALT, ui::EF_ALT_DOWN},
   };
   int flags = 0;
-  for (size_t i = 0; i < base::size(kModifierMap); ++i) {
+  for (size_t i = 0; i < std::size(kModifierMap); ++i) {
     if (kModifierMap[i].src & modifiers) {
       flags |= kModifierMap[i].dst;
     }
@@ -273,11 +271,37 @@ mojom::RemoteMainFrameInterfacesPtr CreateStubRemoteFrameInterfaces() {
   interfaces->main_frame = main_frame.BindNewEndpointAndPassDedicatedReceiver();
 
   mojo::AssociatedRemote<blink::mojom::RemoteMainFrameHost> main_frame_host;
-  ignore_result(main_frame_host.BindNewEndpointAndPassDedicatedReceiver());
+  std::ignore = main_frame_host.BindNewEndpointAndPassDedicatedReceiver();
   interfaces->main_frame_host = main_frame_host.Unbind();
 
   return interfaces;
 }
+
+// Helper that collects the CommonNavigationParams off of WebDocumentLoader's
+// NavigationState during commit. The NavigationState is cleared when commit
+// notifications are done, so any assertions about the CommonNavigationParams
+// post-commit require the CommonNavigationParams to be stored manually.
+class CommonParamsFrameLoadWaiter : public FrameLoadWaiter {
+ public:
+  explicit CommonParamsFrameLoadWaiter(RenderFrameImpl* frame)
+      : FrameLoadWaiter(frame), frame_(frame) {}
+
+  const blink::mojom::CommonNavigationParamsPtr& common_params() {
+    return common_params_;
+  }
+
+ private:
+  void DidCommitProvisionalLoad(ui::PageTransition transition) override {
+    NavigationState* navigation_state =
+        DocumentState::FromDocumentLoader(
+            frame_->GetWebFrame()->GetDocumentLoader())
+            ->navigation_state();
+    common_params_ = navigation_state->common_params().Clone();
+  }
+
+  blink::mojom::CommonNavigationParamsPtr common_params_;
+  const RenderFrameImpl* frame_;
+};
 
 }  // namespace
 
@@ -334,7 +358,7 @@ class RenderViewImplTest : public RenderViewTest {
     web_view_->EnableDeviceEmulation(params);
   }
 
-  void GoToOffsetWithParams(
+  blink::mojom::CommonNavigationParamsPtr GoToOffsetWithParams(
       int offset,
       const blink::PageState& state,
       blink::mojom::CommonNavigationParamsPtr common_params,
@@ -342,6 +366,10 @@ class RenderViewImplTest : public RenderViewTest {
     EXPECT_TRUE(common_params->transition & ui::PAGE_TRANSITION_FORWARD_BACK);
     blink::WebView* webview = web_view_;
     int pending_offset = offset + webview->HistoryBackListCount();
+
+    // The load actually happens asynchronously, so we pump messages to process
+    // the pending continuation.
+    CommonParamsFrameLoadWaiter waiter(frame());
 
     commit_params->page_state = state.ToEncodedData();
     commit_params->nav_entry_id = pending_offset + 1;
@@ -353,9 +381,8 @@ class RenderViewImplTest : public RenderViewTest {
         1;
     frame()->Navigate(std::move(common_params), std::move(commit_params));
 
-    // The load actually happens asynchronously, so we pump messages to process
-    // the pending continuation.
-    FrameLoadWaiter(frame()).Wait();
+    waiter.Wait();
+    return waiter.common_params()->Clone();
   }
 
   template <class T>
@@ -406,7 +433,7 @@ class RenderViewImplTest : public RenderViewTest {
                    int key_code,
                    MockKeyboard::Modifiers modifiers,
                    std::u16string* output) {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
     // Retrieve the Unicode character for the given tuple (keyboard-layout,
     // key-code, and modifiers).
     // Exit when a keyboard-layout driver cannot assign a Unicode character to
@@ -493,12 +520,10 @@ class RenderViewImplBlinkSettingsTest : public RenderViewImplTest {
   void SetUp() override {}
 };
 
-// This test class enables UseZoomForDSF based on the platform default value.
 class RenderViewImplScaleFactorTest : public RenderViewImplTest {
  protected:
   void SetUp() override {
     render_thread_ = std::make_unique<MockRenderThread>();
-    SetUseZoomForDSFEnabled(content::IsUseZoomForDSFEnabled());
     RenderViewImplTest::SetUp();
   }
 
@@ -558,28 +583,6 @@ class RenderViewImplScaleFactorTest : public RenderViewImplTest {
  private:
   gfx::Size min_size_for_autoresize_;
   gfx::Size max_size_for_autoresize_;
-};
-
-// This test class forces UseZoomForDSF to be on for all platforms.
-class RenderViewImplEnableZoomForDSFTest
-    : public RenderViewImplScaleFactorTest {
- protected:
-  void SetUp() override {
-    render_thread_ = std::make_unique<MockRenderThread>();
-    SetUseZoomForDSFEnabled(true);
-    RenderViewImplTest::SetUp();
-  }
-};
-
-// This test class forces UseZoomForDSF to be off for all platforms.
-class RenderViewImplDisableZoomForDSFTest
-    : public RenderViewImplScaleFactorTest {
- protected:
-  void SetUp() override {
-    render_thread_ = std::make_unique<MockRenderThread>();
-    SetUseZoomForDSFEnabled(false);
-    RenderViewImplTest::SetUp();
-  }
 };
 
 TEST_F(RenderViewImplTest, IsPinchGestureActivePropagatesToProxies) {
@@ -683,7 +686,7 @@ TEST_F(RenderViewImplTest, OnNavigationHttpPost) {
 
   // Set up post data.
   const char raw_data[] = "post \0\ndata";
-  const size_t length = base::size(raw_data);
+  const size_t length = std::size(raw_data);
   scoped_refptr<network::ResourceRequestBody> post_data(
       new network::ResourceRequestBody);
   post_data->AppendBytes(raw_data, length);
@@ -718,7 +721,7 @@ TEST_F(RenderViewImplTest, OnNavigationHttpPost) {
   EXPECT_EQ(0, memcmp(raw_data, flat_data.get(), length));
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 namespace {
 class UpdateTitleLocalFrameHost : public LocalFrameHostInterceptor {
  public:
@@ -746,7 +749,7 @@ class RenderViewImplUpdateTitleTest : public RenderViewImplTest {
   }
 };
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 // Failing on Android: http://crbug.com/1080328
 #define MAYBE_OnNavigationLoadDataWithBaseURL \
   DISABLED_OnNavigationLoadDataWithBaseURL
@@ -865,7 +868,7 @@ TEST_F(RenderViewImplTest, BeginNavigationHandlesAllTopLevel) {
       blink::kWebNavigationTypeOther,
   };
 
-  for (size_t i = 0; i < base::size(kNavTypes); ++i) {
+  for (size_t i = 0; i < std::size(kNavTypes); ++i) {
     auto navigation_info = std::make_unique<blink::WebNavigationInfo>();
     navigation_info->url_request = blink::WebURLRequest(GURL("http://foo.com"));
     navigation_info->url_request.SetRequestorOrigin(
@@ -1070,8 +1073,7 @@ TEST_F(RenderViewImplTest, OriginReplicationForUnload) {
 // RenderWidget, that the device scale is set correctly for that RenderWidget
 // the WebView and frames.
 // See crbug.com/737777#c37.
-TEST_F(RenderViewImplEnableZoomForDSFTest,
-       DeviceScaleCorrectAfterCrossOriginNav) {
+TEST_F(RenderViewImplScaleFactorTest, DeviceScaleCorrectAfterCrossOriginNav) {
   const float device_scale = 3.0f;
   SetDeviceScaleFactor(device_scale);
   EXPECT_EQ(device_scale, GetMainRenderFrame()->GetDeviceScaleFactor());
@@ -1107,7 +1109,7 @@ TEST_F(RenderViewImplEnableZoomForDSFTest,
       blink_widget.BindNewEndpointAndPassDedicatedReceiver();
 
   mojo::AssociatedRemote<blink::mojom::WidgetHost> blink_widget_host;
-  ignore_result(blink_widget_host.BindNewEndpointAndPassDedicatedReceiver());
+  std::ignore = blink_widget_host.BindNewEndpointAndPassDedicatedReceiver();
 
   mojo::AssociatedRemote<blink::mojom::FrameWidget> blink_frame_widget;
   mojo::PendingAssociatedReceiver<blink::mojom::FrameWidget>
@@ -1115,8 +1117,8 @@ TEST_F(RenderViewImplEnableZoomForDSFTest,
           blink_frame_widget.BindNewEndpointAndPassDedicatedReceiver();
 
   mojo::AssociatedRemote<blink::mojom::FrameWidgetHost> blink_frame_widget_host;
-  ignore_result(
-      blink_frame_widget_host.BindNewEndpointAndPassDedicatedReceiver());
+  std::ignore =
+      blink_frame_widget_host.BindNewEndpointAndPassDedicatedReceiver();
 
   widget_params->frame_widget = std::move(blink_frame_widget_receiver);
   widget_params->frame_widget_host = blink_frame_widget_host.Unbind();
@@ -1218,8 +1220,7 @@ TEST_F(RenderViewImplTest, DetachingProxyAlsoDestroysProvisionalFrame) {
 // Verify that the renderer process doesn't crash when device scale factor
 // changes after a cross-process navigation has commited.
 // See https://crbug.com/571603.
-TEST_F(RenderViewImplEnableZoomForDSFTest,
-       SetZoomLevelAfterCrossProcessNavigation) {
+TEST_F(RenderViewImplScaleFactorTest, SetZoomLevelAfterCrossProcessNavigation) {
   LoadHTML("Hello world!");
 
   // Unload the main frame after which it should become a WebRemoteFrame.
@@ -1339,7 +1340,7 @@ TEST_F(RenderViewImplTextInputStateChanged, OnImeTypeChanged) {
     input_mode = updated_states()[0]->mode;
     EXPECT_EQ(ui::TEXT_INPUT_TYPE_PASSWORD, type);
 
-    for (size_t test = 0; test < base::size(kInputModeTestCases); test++) {
+    for (size_t test = 0; test < std::size(kInputModeTestCases); test++) {
       const InputModeTestCase* test_case = &kInputModeTestCases[test];
       std::u16string javascript = base::ASCIIToUTF16(base::StringPrintf(
           "document.getElementById('%s').focus();", test_case->input_id));
@@ -1427,7 +1428,7 @@ TEST_F(RenderViewImplTextInputStateChanged,
       "</body>"
       "</html>");
   ClearState();
-  GetWidgetInputHandler()->SetFocus(true);
+  GetWidgetInputHandler()->SetFocus(blink::mojom::FocusState::kFocused);
   // Create an EditContext with control and selection bounds and set input
   // panel policy to auto.
   ExecuteJavaScriptForTests(
@@ -1471,7 +1472,7 @@ TEST_F(RenderViewImplTextInputStateChanged,
       "</body>"
       "</html>");
   ClearState();
-  GetWidgetInputHandler()->SetFocus(true);
+  GetWidgetInputHandler()->SetFocus(blink::mojom::FocusState::kFocused);
   // Create an EditContext with control and selection bounds and set input
   // panel policy to auto.
   ExecuteJavaScriptForTests(
@@ -1515,7 +1516,7 @@ TEST_F(RenderViewImplTextInputStateChanged,
       "</body>"
       "</html>");
   ClearState();
-  GetWidgetInputHandler()->SetFocus(true);
+  GetWidgetInputHandler()->SetFocus(blink::mojom::FocusState::kFocused);
   // Create an EditContext with control and selection bounds and set input
   // panel policy to auto.
   ExecuteJavaScriptForTests(
@@ -1537,7 +1538,7 @@ TEST_F(RenderViewImplTextInputStateChanged,
   EXPECT_EQ(1u, updated_states().size());
   gfx::Rect edit_context_control_bounds_expected =
       main_frame_widget()->BlinkSpaceToEnclosedDIPs(
-          gfx::Rect(-2147483648, -2147483648, 0, 2147483647));
+          gfx::Rect(-2147483648, -1073741825, 0, 2147483647));
   gfx::Rect edit_context_selection_bounds_expected =
       main_frame_widget()->BlinkSpaceToEnclosedDIPs(gfx::Rect(10, 20, 1, 5));
   gfx::Rect actual_active_element_control_bounds(
@@ -1914,7 +1915,7 @@ TEST_F(RenderViewImplTest, ImeComposition) {
       {IME_FINISHCOMPOSINGTEXT, false, -1, -1, L"", L"\xC548\xB155"},
   };
 
-  for (size_t i = 0; i < base::size(kImeMessages); i++) {
+  for (size_t i = 0; i < std::size(kImeMessages); i++) {
     const ImeMessage* ime_message = &kImeMessages[i];
     switch (ime_message->command) {
       case IME_INITIALIZE:
@@ -1937,7 +1938,10 @@ TEST_F(RenderViewImplTest, ImeComposition) {
 
       case IME_SETFOCUS:
         // Update the window focus.
-        GetWidgetInputHandler()->SetFocus(ime_message->enable);
+        GetWidgetInputHandler()->SetFocus(
+            ime_message->enable
+                ? blink::mojom::FocusState::kFocused
+                : blink::mojom::FocusState::kNotFocusedAndActive);
         break;
 
       case IME_SETCOMPOSITION:
@@ -2083,7 +2087,7 @@ class RenderViewImplContextMenuTest : public RenderViewImplTest {
   }
 };
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 TEST_F(RenderViewImplContextMenuTest, ContextMenu) {
   LoadHTML("<div>Page A</div>");
 
@@ -2210,7 +2214,7 @@ TEST_F(RenderViewImplTest, TestBackForward) {
   EXPECT_EQ(1, was_page_b);
 }
 
-#if defined(OS_MAC) || defined(USE_AURA)
+#if BUILDFLAG(IS_MAC) || defined(USE_AURA)
 TEST_F(RenderViewImplTest, GetCompositionCharacterBoundsTest) {
   LoadHTML("<textarea id=\"test\" cols=\"100\"></textarea>");
   ExecuteJavaScriptForTests("document.getElementById('test').focus();");
@@ -2219,7 +2223,7 @@ TEST_F(RenderViewImplTest, GetCompositionCharacterBoundsTest) {
   const std::u16string empty_string;
   const std::vector<ui::ImeTextSpan> empty_ime_text_span;
   std::vector<gfx::Rect> bounds;
-  widget_input_handler->SetFocus(true);
+  widget_input_handler->SetFocus(blink::mojom::FocusState::kFocused);
 
   // ASCII composition
   const std::u16string ascii_composition = u"aiueo";
@@ -2402,7 +2406,7 @@ TEST_F(RenderViewImplTest, OnDeleteSurroundingText) {
   EXPECT_EQ(0, info.selection_end);
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 // Failing on Android M: http://crbug.com/873580
 #define MAYBE_OnDeleteSurroundingTextInCodePoints \
   DISABLED_OnDeleteSurroundingTextInCodePoints
@@ -2519,7 +2523,7 @@ class RenderViewImplTextInputMessageOrder : public RenderViewImplTest {
 };
 
 // Failing on Windows; see https://crbug.com/1134571.
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #define MAYBE_MessageOrderInDidChangeSelection \
   DISABLED_MessageOrderInDidChangeSelection
 #else
@@ -2562,6 +2566,8 @@ class RendererErrorPageTest : public RenderViewImplTest {
     void PrepareErrorPage(content::RenderFrame* render_frame,
                           const blink::WebURLError& error,
                           const std::string& http_method,
+                          content::mojom::AlternativeErrorPageOverrideInfoPtr
+                              alternative_error_page_info,
                           std::string* error_html) override {
       if (error_html)
         *error_html = "A suffusion of yellow.";
@@ -2631,16 +2637,14 @@ TEST_F(RenderViewImplTest, AccessibilityModeOnClosingConnection) {
 // recorded at an appropriate time and is passed in the corresponding message.
 TEST_F(RenderViewImplTest, RendererNavigationStartTransmittedToBrowser) {
   base::TimeTicks lower_bound_navigation_start(base::TimeTicks::Now());
-  FrameLoadWaiter waiter(frame());
+  CommonParamsFrameLoadWaiter waiter(frame());
   frame()->LoadHTMLStringForTesting("hello world", GURL("data:text/html,"),
                                     "UTF-8", GURL(),
                                     false /* replace_current_item */);
   waiter.Wait();
-  NavigationState* navigation_state = NavigationState::FromDocumentLoader(
-      frame()->GetWebFrame()->GetDocumentLoader());
-  EXPECT_FALSE(navigation_state->common_params().navigation_start.is_null());
+  EXPECT_FALSE(waiter.common_params()->navigation_start.is_null());
   EXPECT_LE(lower_bound_navigation_start,
-            navigation_state->common_params().navigation_start);
+            waiter.common_params()->navigation_start);
 }
 
 // Checks that a browser-initiated navigation in an initial document that was
@@ -2650,13 +2654,11 @@ TEST_F(RenderViewImplTest, RendererNavigationStartTransmittedToBrowser) {
 TEST_F(RenderViewImplTest, BrowserNavigationStart) {
   auto common_params = MakeCommonNavigationParams(-base::Seconds(1));
 
-  FrameLoadWaiter waiter(frame());
+  CommonParamsFrameLoadWaiter waiter(frame());
   frame()->Navigate(common_params.Clone(), DummyCommitNavigationParams());
   waiter.Wait();
-  NavigationState* navigation_state = NavigationState::FromDocumentLoader(
-      frame()->GetWebFrame()->GetDocumentLoader());
   EXPECT_EQ(common_params->navigation_start,
-            navigation_state->common_params().navigation_start);
+            waiter.common_params()->navigation_start);
 }
 
 // Sanity check for the Navigation Timing API |navigationStart| override. We
@@ -2687,13 +2689,11 @@ TEST_F(RenderViewImplTest, NavigationStartWhenInitialDocumentWasAccessed) {
   ExecuteJavaScriptForTests("document.title = 'Hi!';");
 
   auto common_params = MakeCommonNavigationParams(-base::Seconds(1));
-  FrameLoadWaiter waiter(frame());
+  CommonParamsFrameLoadWaiter waiter(frame());
   frame()->Navigate(common_params.Clone(), DummyCommitNavigationParams());
   waiter.Wait();
-  NavigationState* navigation_state = NavigationState::FromDocumentLoader(
-      frame()->GetWebFrame()->GetDocumentLoader());
   EXPECT_EQ(common_params->navigation_start,
-            navigation_state->common_params().navigation_start);
+            waiter.common_params()->navigation_start);
 }
 
 TEST_F(RenderViewImplTest, NavigationStartForReload) {
@@ -2711,15 +2711,13 @@ TEST_F(RenderViewImplTest, NavigationStartForReload) {
 
   // The browser navigation_start should not be used because beforeunload will
   // be fired during Navigate.
-  FrameLoadWaiter waiter(frame());
+  CommonParamsFrameLoadWaiter waiter(frame());
   frame()->Navigate(common_params.Clone(), DummyCommitNavigationParams());
   waiter.Wait();
 
   // The browser navigation_start is always used.
-  NavigationState* navigation_state = NavigationState::FromDocumentLoader(
-      frame()->GetWebFrame()->GetDocumentLoader());
   EXPECT_EQ(common_params->navigation_start,
-            navigation_state->common_params().navigation_start);
+            waiter.common_params()->navigation_start);
 }
 
 TEST_F(RenderViewImplTest, NavigationStartForSameProcessHistoryNavigation) {
@@ -2738,14 +2736,13 @@ TEST_F(RenderViewImplTest, NavigationStartForSameProcessHistoryNavigation) {
   common_params_back->transition = ui::PAGE_TRANSITION_FORWARD_BACK;
   common_params_back->navigation_type =
       blink::mojom::NavigationType::HISTORY_DIFFERENT_DOCUMENT;
-  GoToOffsetWithParams(-1, back_state, common_params_back.Clone(),
-                       DummyCommitNavigationParams());
-  NavigationState* navigation_state = NavigationState::FromDocumentLoader(
-      frame()->GetWebFrame()->GetDocumentLoader());
+  auto final_common_params =
+      GoToOffsetWithParams(-1, back_state, common_params_back.Clone(),
+                           DummyCommitNavigationParams());
 
   // The browser navigation_start is always used.
   EXPECT_EQ(common_params_back->navigation_start,
-            navigation_state->common_params().navigation_start);
+            final_common_params->navigation_start);
 
   // Go forward.
   auto common_params_forward = blink::CreateCommonNavigationParams();
@@ -2754,12 +2751,11 @@ TEST_F(RenderViewImplTest, NavigationStartForSameProcessHistoryNavigation) {
   common_params_forward->transition = ui::PAGE_TRANSITION_FORWARD_BACK;
   common_params_forward->navigation_type =
       blink::mojom::NavigationType::HISTORY_DIFFERENT_DOCUMENT;
-  GoToOffsetWithParams(1, forward_state, common_params_forward.Clone(),
-                       DummyCommitNavigationParams());
-  navigation_state = NavigationState::FromDocumentLoader(
-      frame()->GetWebFrame()->GetDocumentLoader());
+  auto final_common_params2 =
+      GoToOffsetWithParams(-1, back_state, common_params_back.Clone(),
+                           DummyCommitNavigationParams());
   EXPECT_EQ(common_params_forward->navigation_start,
-            navigation_state->common_params().navigation_start);
+            final_common_params2->navigation_start);
 }
 
 TEST_F(RenderViewImplTest, NavigationStartForCrossProcessHistoryNavigation) {
@@ -2776,14 +2772,12 @@ TEST_F(RenderViewImplTest, NavigationStartForCrossProcessHistoryNavigation) {
   commit_params->pending_history_list_offset = 1;
   commit_params->current_history_list_offset = 0;
   commit_params->current_history_list_length = 1;
-  FrameLoadWaiter waiter(frame());
+  CommonParamsFrameLoadWaiter waiter(frame());
   frame()->Navigate(common_params.Clone(), std::move(commit_params));
   waiter.Wait();
 
-  NavigationState* navigation_state = NavigationState::FromDocumentLoader(
-      frame()->GetWebFrame()->GetDocumentLoader());
   EXPECT_EQ(common_params->navigation_start,
-            navigation_state->common_params().navigation_start);
+            waiter.common_params()->navigation_start);
 }
 
 TEST_F(RenderViewImplTest, PreferredSizeZoomed) {
@@ -3058,14 +3052,6 @@ TEST_F(RenderViewImplBlinkSettingsTest, DefaultPageScaleSettings) {
   EXPECT_EQ(5.5f, web_view_->MaximumPageScaleFactor());
 }
 
-TEST_F(RenderViewImplDisableZoomForDSFTest,
-       ConverViewportToWindowWithoutZoomForDSF) {
-  SetDeviceScaleFactor(2.f);
-  gfx::Rect rect(20, 10, 200, 100);
-  gfx::Rect rect_in_dips = main_frame_widget()->BlinkSpaceToEnclosedDIPs(rect);
-  EXPECT_EQ(rect, rect_in_dips);
-}
-
 TEST_F(RenderViewImplScaleFactorTest, ScreenMetricsEmulationWithOriginalDSF1) {
   SetDeviceScaleFactor(1.f);
 
@@ -3123,8 +3109,7 @@ TEST_F(RenderViewImplScaleFactorTest, ScreenMetricsEmulationWithOriginalDSF2) {
   // Don't disable here to test that emulation is being shutdown properly.
 }
 
-TEST_F(RenderViewImplEnableZoomForDSFTest,
-       ConverViewportToWindowWithZoomForDSF) {
+TEST_F(RenderViewImplScaleFactorTest, ConvertViewportToWindow) {
   SetDeviceScaleFactor(1.f);
   {
     gfx::Rect rect(20, 10, 200, 100);
@@ -3144,11 +3129,11 @@ TEST_F(RenderViewImplEnableZoomForDSFTest,
   }
 }
 
-#if defined(OS_MAC) || defined(USE_AURA)
-TEST_F(RenderViewImplEnableZoomForDSFTest,
+#if BUILDFLAG(IS_MAC) || defined(USE_AURA)
+TEST_F(RenderViewImplScaleFactorTest,
        DISABLED_GetCompositionCharacterBoundsTest) {  // http://crbug.com/582016
   SetDeviceScaleFactor(1.f);
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // http://crbug.com/508747
   if (base::win::GetVersion() >= base::win::Version::WIN10)
     return;
@@ -3161,7 +3146,7 @@ TEST_F(RenderViewImplEnableZoomForDSFTest,
   const std::u16string empty_string;
   const std::vector<ui::ImeTextSpan> empty_ime_text_span;
   std::vector<gfx::Rect> bounds_at_1x;
-  widget_input_handler->SetFocus(true);
+  widget_input_handler->SetFocus(blink::mojom::FocusState::kFocused);
 
   // ASCII composition
   const std::u16string ascii_composition = u"aiueo";
@@ -3189,7 +3174,7 @@ TEST_F(RenderViewImplEnableZoomForDSFTest,
 }
 #endif
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 // No extensions/autoresize on Android.
 namespace {
 
@@ -3200,19 +3185,7 @@ const char kAutoResizeTestPage[] =
 
 }  // namespace
 
-TEST_F(RenderViewImplEnableZoomForDSFTest, AutoResizeWithZoomForDSF) {
-  EnableAutoResize(gfx::Size(5, 5), gfx::Size(1000, 1000));
-  LoadHTML(kAutoResizeTestPage);
-  gfx::Size size_at_1x = MainWidgetSizeInDIPS();
-  ASSERT_FALSE(size_at_1x.IsEmpty());
-
-  SetDeviceScaleFactor(2.f);
-  LoadHTML(kAutoResizeTestPage);
-  gfx::Size size_at_2x = MainWidgetSizeInDIPS();
-  EXPECT_EQ(size_at_1x, size_at_2x);
-}
-
-TEST_F(RenderViewImplScaleFactorTest, AutoResizeWithoutZoomForDSF) {
+TEST_F(RenderViewImplScaleFactorTest, AutoResize) {
   EnableAutoResize(gfx::Size(5, 5), gfx::Size(1000, 1000));
   LoadHTML(kAutoResizeTestPage);
   gfx::Size size_at_1x = MainWidgetSizeInDIPS();

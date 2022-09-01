@@ -9,10 +9,18 @@
 #define SKSL_FUNCTIONDEFINITION
 
 #include "include/private/SkSLProgramElement.h"
-#include "src/sksl/ir/SkSLBlock.h"
+#include "include/private/SkSLStatement.h"
+#include "include/sksl/SkSLPosition.h"
 #include "src/sksl/ir/SkSLFunctionDeclaration.h"
 
+#include <memory>
+#include <string>
+#include <unordered_set>
+#include <utility>
+
 namespace SkSL {
+
+class Context;
 
 /**
  * A function definition (a declaration plus an associated block of code).
@@ -21,15 +29,15 @@ class FunctionDefinition final : public ProgramElement {
 public:
     inline static constexpr Kind kProgramElementKind = Kind::kFunction;
 
-    using IntrinsicSet = std::unordered_set<const FunctionDeclaration*>;
+    using FunctionSet = std::unordered_set<const FunctionDeclaration*>;
 
-    FunctionDefinition(int line, const FunctionDeclaration* declaration, bool builtin,
-                       std::unique_ptr<Statement> body, IntrinsicSet referencedIntrinsics)
-        : INHERITED(line, kProgramElementKind)
+    FunctionDefinition(Position pos, const FunctionDeclaration* declaration, bool builtin,
+                       std::unique_ptr<Statement> body, FunctionSet referencedBuiltinFunctions)
+        : INHERITED(pos, kProgramElementKind)
         , fDeclaration(declaration)
         , fBuiltin(builtin)
         , fBody(std::move(body))
-        , fReferencedIntrinsics(std::move(referencedIntrinsics)) {}
+        , fReferencedBuiltinFunctions(std::move(referencedBuiltinFunctions)) {}
 
     /**
      * Coerces `return` statements to the return type of the function, and reports errors in the
@@ -43,7 +51,7 @@ public:
      * errors when trying to call a function with an error in it.)
      */
     static std::unique_ptr<FunctionDefinition> Convert(const Context& context,
-                                                       int line,
+                                                       Position pos,
                                                        const FunctionDeclaration& function,
                                                        std::unique_ptr<Statement> body,
                                                        bool builtin);
@@ -64,17 +72,17 @@ public:
         return fBody;
     }
 
-    const std::unordered_set<const FunctionDeclaration*>& referencedIntrinsics() const {
-        return fReferencedIntrinsics;
+    const FunctionSet& referencedBuiltinFunctions() const {
+        return fReferencedBuiltinFunctions;
     }
 
     std::unique_ptr<ProgramElement> clone() const override {
-        return std::make_unique<FunctionDefinition>(fLine, &this->declaration(),
+        return std::make_unique<FunctionDefinition>(fPosition, &this->declaration(),
                                                     /*builtin=*/false, this->body()->clone(),
-                                                    this->referencedIntrinsics());
+                                                    this->referencedBuiltinFunctions());
     }
 
-    String description() const override {
+    std::string description() const override {
         return this->declaration().description() + " " + this->body()->description();
     }
 
@@ -82,9 +90,9 @@ private:
     const FunctionDeclaration* fDeclaration;
     bool fBuiltin;
     std::unique_ptr<Statement> fBody;
-    // We track intrinsic functions we reference so that we can ensure that all of them end up
+    // We track the builtin functions we reference so that we can ensure that all of them end up
     // copied into the final output.
-    IntrinsicSet fReferencedIntrinsics;
+    FunctionSet fReferencedBuiltinFunctions;
 
     using INHERITED = ProgramElement;
 };

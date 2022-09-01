@@ -72,7 +72,7 @@ bool IsFilesApp(const ui::DataTransferEndpoint* const data_dst) {
   if (!data_dst || !data_dst->IsUrlType())
     return false;
 
-  GURL url = data_dst->GetOrigin()->GetURL();
+  GURL url = *data_dst->GetURL();
   // TODO(b/207576430): Once Files Extension is removed, remove this condition.
   bool is_files_extension =
       url.has_scheme() && url.SchemeIs(extensions::kExtensionScheme) &&
@@ -124,7 +124,7 @@ DlpRulesManager::Level IsDataTransferAllowed(
     return DlpRulesManager::Level::kAllow;
   }
 
-  const GURL src_url = data_src->GetOrigin()->GetURL();
+  const GURL src_url = *data_src->GetURL();
   ui::EndpointType dst_type =
       data_dst ? data_dst->type() : ui::EndpointType::kDefault;
 
@@ -153,6 +153,13 @@ DlpRulesManager::Level IsDataTransferAllowed(
       break;
     }
 
+    case ui::EndpointType::kLacros: {
+      // Return ALLOW for Lacros destinations, as Lacros itself will make DLP
+      // checks.
+      level = DlpRulesManager::Level::kAllow;
+      break;
+    }
+
     case ui::EndpointType::kUnknownVm:
     case ui::EndpointType::kBorealis:
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
@@ -166,7 +173,7 @@ DlpRulesManager::Level IsDataTransferAllowed(
     }
 
     case ui::EndpointType::kUrl: {
-      GURL dst_url = data_dst->GetOrigin()->GetURL();
+      GURL dst_url = *data_dst->GetURL();
       level = dlp_rules_manager.IsRestrictedDestination(
           src_url, dst_url, DlpRulesManager::Restriction::kClipboard,
           src_pattern, dst_pattern);
@@ -197,13 +204,11 @@ void ReportWarningProceededEvent(const ui::DataTransferEndpoint* const data_src,
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     reporting_manager->ReportWarningProceededEvent(
         src_pattern, GetComponent(data_dst->type()),
-        DlpRulesManager::Restriction::kClipboard,
-        DlpRulesManager::Level::kNotSet);
+        DlpRulesManager::Restriction::kClipboard);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   } else {
     reporting_manager->ReportWarningProceededEvent(
-        src_pattern, dst_pattern, DlpRulesManager::Restriction::kClipboard,
-        DlpRulesManager::Level::kNotSet);
+        src_pattern, dst_pattern, DlpRulesManager::Restriction::kClipboard);
   }
 }
 
@@ -252,22 +257,22 @@ bool DataTransferDlpController::IsClipboardReadAllowed(
       is_read_allowed = false;
       break;
     case DlpRulesManager::Level::kWarn:
-      if (notify_on_paste) {
-        if (data_dst && IsVM(data_dst->type())) {
+      if (data_dst && IsVM(data_dst->type())) {
+        if (notify_on_paste) {
           ReportEvent(data_src, data_dst, src_pattern, dst_pattern,
                       DlpRulesManager::Level::kWarn,
                       /*is_clipboard_event=*/true);
           WarnOnPaste(data_src, data_dst);
-        } else if (ShouldCancelOnWarn(data_dst)) {
-          is_read_allowed = false;
-        } else if (!(data_dst && data_dst->IsUrlType()) &&
-                   !ShouldPasteOnWarn(data_dst)) {
-          ReportEvent(data_src, data_dst, src_pattern, dst_pattern,
-                      DlpRulesManager::Level::kWarn,
-                      /*is_clipboard_event=*/true);
-          WarnOnPaste(data_src, data_dst);
-          is_read_allowed = false;
         }
+      } else if (ShouldCancelOnWarn(data_dst)) {
+        is_read_allowed = false;
+      } else if (notify_on_paste && !(data_dst && data_dst->IsUrlType()) &&
+                 !ShouldPasteOnWarn(data_dst)) {
+        ReportEvent(data_src, data_dst, src_pattern, dst_pattern,
+                    DlpRulesManager::Level::kWarn,
+                    /*is_clipboard_event=*/true);
+        WarnOnPaste(data_src, data_dst);
+        is_read_allowed = false;
       }
       break;
     default:
@@ -311,14 +316,16 @@ void DataTransferDlpController::PasteIfAllowed(
 
   DCHECK_EQ(level, DlpRulesManager::Level::kWarn);
 
-  if (ShouldNotifyOnPaste(data_dst)) {
-    if (ShouldPasteOnWarn(data_dst)) {
+  if (ShouldPasteOnWarn(data_dst)) {
+    if (ShouldNotifyOnPaste(data_dst)) {
       ReportWarningProceededEvent(data_src, data_dst, src_pattern, dst_pattern,
                                   dlp_rules_manager_.GetReportingManager());
-      std::move(callback).Run(true);
-    } else if (ShouldCancelOnWarn(data_dst)) {
-      std::move(callback).Run(false);
-    } else {
+    }
+    std::move(callback).Run(true);
+  } else if (ShouldCancelOnWarn(data_dst)) {
+    std::move(callback).Run(false);
+  } else {
+    if (ShouldNotifyOnPaste(data_dst)) {
       auto reporting_callback = base::BindOnce(
           &MaybeReportWarningProceededEvent, *data_src, *data_dst, src_pattern,
           dst_pattern, dlp_rules_manager_.GetReportingManager());
@@ -326,9 +333,9 @@ void DataTransferDlpController::PasteIfAllowed(
                   DlpRulesManager::Level::kWarn, /*is_clipboard_event=*/true);
       WarnOnBlinkPaste(data_src, data_dst, web_contents,
                        std::move(reporting_callback).Then(std::move(callback)));
+    } else {
+      std::move(callback).Run(true);
     }
-  } else {
-    std::move(callback).Run(true);
   }
 }
 
@@ -355,7 +362,7 @@ void DataTransferDlpController::DropIfAllowed(
       break;
 
     case DlpRulesManager::Level::kAllow:
-      FALLTHROUGH;
+      [[fallthrough]];
     case DlpRulesManager::Level::kReport:
       std::move(drop_cb).Run();
       break;
@@ -374,6 +381,10 @@ DataTransferDlpController::DataTransferDlpController(
     : dlp_rules_manager_(dlp_rules_manager) {}
 
 DataTransferDlpController::~DataTransferDlpController() = default;
+
+base::TimeDelta DataTransferDlpController::GetSkipReportingTimeout() {
+  return kSkipReportingTimeout;
+}
 
 void DataTransferDlpController::NotifyBlockedPaste(
     const ui::DataTransferEndpoint* const data_src,
@@ -440,7 +451,7 @@ bool DataTransferDlpController::ShouldSkipReporting(
     base::UmaHistogramTimes(
         GetDlpHistogramPrefix() + dlp::kDataTransferReportingTimeDiffUMA,
         time_diff);
-    return time_diff < kSkipReportingTimeout;
+    return time_diff < GetSkipReportingTimeout();
   }
   return false;
 }

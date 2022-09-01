@@ -7,7 +7,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/cxx17_backports.h"
 #include "build/build_config.h"
 #include "components/viz/common/resources/resource_sizes.h"
 #include "gpu/command_buffer/service/external_vk_image_gl_representation.h"
@@ -31,11 +30,11 @@
 #include "ui/gl/gl_version_info.h"
 #include "ui/gl/scoped_binders.h"
 
-#if (defined(OS_LINUX) || defined(OS_CHROMEOS)) && BUILDFLAG(USE_DAWN)
+#if (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)) && BUILDFLAG(USE_DAWN)
 #include "gpu/command_buffer/service/external_vk_image_dawn_representation.h"
 #endif
 
-#if defined(OS_FUCHSIA)
+#if BUILDFLAG(IS_FUCHSIA)
 #include "gpu/vulkan/fuchsia/vulkan_fuchsia_ext.h"
 #endif
 
@@ -80,7 +79,7 @@ static const struct {
     {GL_ZERO, GL_ZERO, 0},                         // YUV_420_BIPLANAR
     {GL_ZERO, GL_ZERO, 0},                         // P010
 };
-static_assert(base::size(kFormatTable) == (viz::RESOURCE_FORMAT_MAX + 1),
+static_assert(std::size(kFormatTable) == (viz::RESOURCE_FORMAT_MAX + 1),
               "kFormatTable does not handle all cases.");
 
 class ScopedDedicatedMemoryObject {
@@ -254,8 +253,9 @@ std::unique_ptr<ExternalVkImageBacking> ExternalVkImageBacking::CreateFromGMB(
   auto* vulkan_implementation =
       context_state->vk_context_provider()->GetVulkanImplementation();
   auto resource_format = viz::GetResourceFormat(buffer_format);
-  if (vulkan_implementation->CanImportGpuMemoryBuffer(handle.type)) {
-    auto* device_queue = context_state->vk_context_provider()->GetDeviceQueue();
+  auto* device_queue = context_state->vk_context_provider()->GetDeviceQueue();
+  if (vulkan_implementation->CanImportGpuMemoryBuffer(device_queue,
+                                                      handle.type)) {
     VkFormat vk_format = ToVkFormat(resource_format);
     auto image = vulkan_implementation->CreateImageFromGpuMemoryHandle(
         device_queue, std::move(handle), size, vk_format);
@@ -424,20 +424,27 @@ bool ExternalVkImageBacking::BeginAccess(
         backend_texture_,
         GrBackendSurfaceMutableState(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
                                      VK_QUEUE_FAMILY_EXTERNAL));
-    auto semaphore = external_semaphore_pool()->GetOrCreateSemaphore();
-    VkSemaphore vk_semaphore = semaphore.GetVkSemaphore();
-    GrBackendSemaphore backend_semaphore;
-    backend_semaphore.initVulkan(vk_semaphore);
-    GrFlushInfo flush_info = {
-        .fNumSemaphores = 1,
-        .fSignalSemaphores = &backend_semaphore,
-    };
-    gpu::AddVulkanCleanupTaskForSkiaFlush(
-        context_state()->vk_context_provider(), &flush_info);
-    auto flush_result = gr_context->flush(flush_info);
-    DCHECK_EQ(flush_result, GrSemaphoresSubmitted::kYes);
-    gr_context->submit();
-    external_semaphores->push_back(std::move(semaphore));
+
+    ExternalSemaphore external_semaphore =
+        external_semaphore_pool()->GetOrCreateSemaphore();
+    GrBackendSemaphore semaphore;
+    semaphore.initVulkan(external_semaphore.GetVkSemaphore());
+
+    GrFlushInfo flush_info;
+    flush_info.fNumSemaphores = 1;
+    flush_info.fSignalSemaphores = &semaphore;
+
+    if (gr_context->flush(flush_info) != GrSemaphoresSubmitted::kYes) {
+      LOG(ERROR) << "Failed to create a signaled semaphore";
+      return false;
+    }
+
+    if (!gr_context->submit()) {
+      LOG(ERROR) << "Failed GrContext submit";
+      return false;
+    }
+
+    external_semaphores->push_back(std::move(external_semaphore));
   }
 
   if (readonly) {
@@ -564,7 +571,7 @@ ExternalVkImageBacking::ProduceDawn(SharedImageManager* manager,
                                     MemoryTypeTracker* tracker,
                                     WGPUDevice wgpuDevice,
                                     WGPUBackendType backend_type) {
-#if (defined(OS_LINUX) || defined(OS_CHROMEOS)) && BUILDFLAG(USE_DAWN)
+#if (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)) && BUILDFLAG(USE_DAWN)
   auto wgpu_format = viz::ToWGPUFormat(format());
 
   if (wgpu_format == WGPUTextureFormat_Undefined) {
@@ -583,7 +590,8 @@ ExternalVkImageBacking::ProduceDawn(SharedImageManager* manager,
 
   return std::make_unique<ExternalVkImageDawnRepresentation>(
       manager, this, tracker, wgpuDevice, wgpu_format, std::move(memory_fd));
-#else  // (!defined(OS_LINUX) && !defined(OS_CHROMEOS)) || !BUILDFLAG(USE_DAWN)
+#else  // (!BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CHROMEOS)) ||
+       // !BUILDFLAG(USE_DAWN)
   NOTIMPLEMENTED_LOG_ONCE();
   return nullptr;
 #endif
@@ -596,7 +604,7 @@ GLuint ExternalVkImageBacking::ProduceGLTextureInternal() {
   gl::GLApi* api = gl::g_current_gl_context;
   absl::optional<ScopedDedicatedMemoryObject> memory_object;
   if (!use_separate_gl_texture()) {
-#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
+#if BUILDFLAG(IS_POSIX)
     auto memory_fd = image_->GetMemoryFd();
     if (!memory_fd.is_valid())
       return 0;
@@ -604,7 +612,7 @@ GLuint ExternalVkImageBacking::ProduceGLTextureInternal() {
     api->glImportMemoryFdEXTFn(memory_object->id(), image_info.fAlloc.fSize,
                                GL_HANDLE_TYPE_OPAQUE_FD_EXT,
                                memory_fd.release());
-#elif defined(OS_WIN)
+#elif BUILDFLAG(IS_WIN)
     auto memory_handle = image_->GetMemoryHandle();
     if (!memory_handle.IsValid()) {
       return 0;
@@ -613,7 +621,7 @@ GLuint ExternalVkImageBacking::ProduceGLTextureInternal() {
     api->glImportMemoryWin32HandleEXTFn(
         memory_object->id(), image_info.fAlloc.fSize,
         GL_HANDLE_TYPE_OPAQUE_WIN32_EXT, memory_handle.Take());
-#elif defined(OS_FUCHSIA)
+#elif BUILDFLAG(IS_FUCHSIA)
     zx::vmo vmo = image_->GetMemoryZirconHandle();
     if (!vmo)
       return 0;
@@ -637,7 +645,11 @@ GLuint ExternalVkImageBacking::ProduceGLTextureInternal() {
   if (use_separate_gl_texture()) {
     DCHECK(!memory_object);
     if (UseTexStorage2D(context_state_.get())) {
-      GLuint internal_format = viz::TextureStorageFormat(format());
+      bool use_rgbx = context_state()
+                          ->feature_info()
+                          ->feature_flags()
+                          .angle_rgbx_internal_format;
+      GLuint internal_format = viz::TextureStorageFormat(format(), use_rgbx);
       api->glTexStorage2DEXTFn(GL_TEXTURE_2D, 1, internal_format,
                                size().width(), size().height());
     } else {
@@ -657,7 +669,11 @@ GLuint ExternalVkImageBacking::ProduceGLTextureInternal() {
     // when creating the image, so communicate that information to ANGLE.  This
     // makes sure that ANGLE recreates the VkImage identically to Chromium.
     DCHECK(image_->usage() != 0);
-    GLuint internal_format = viz::TextureStorageFormat(format());
+    bool use_rgbx = context_state()
+                        ->feature_info()
+                        ->feature_flags()
+                        .angle_rgbx_internal_format;
+    GLuint internal_format = viz::TextureStorageFormat(format(), use_rgbx);
     if (UseMinimalUsageFlags(context_state())) {
       api->glTexStorageMemFlags2DANGLEFn(
           GL_TEXTURE_2D, 1, internal_format, size().width(), size().height(),
@@ -685,7 +701,11 @@ ExternalVkImageBacking::ProduceGLTexture(SharedImageManager* manager,
     GLuint texture_service_id = ProduceGLTextureInternal();
     if (!texture_service_id)
       return nullptr;
-    GLuint internal_format = viz::TextureStorageFormat(format());
+    bool use_rgbx = context_state()
+                        ->feature_info()
+                        ->feature_flags()
+                        .angle_rgbx_internal_format;
+    GLuint internal_format = viz::TextureStorageFormat(format(), use_rgbx);
     GLenum gl_format = viz::GLDataFormat(format());
     GLenum gl_type = viz::GLDataType(format());
 
@@ -724,7 +744,11 @@ ExternalVkImageBacking::ProduceGLTexturePassthrough(
     GLuint texture_service_id = ProduceGLTextureInternal();
     if (!texture_service_id)
       return nullptr;
-    GLuint internal_format = viz::TextureStorageFormat(format());
+    bool use_rgbx = context_state()
+                        ->feature_info()
+                        ->feature_flags()
+                        .angle_rgbx_internal_format;
+    GLuint internal_format = viz::TextureStorageFormat(format(), use_rgbx);
     GLenum gl_format = viz::GLDataFormat(format());
     GLenum gl_type = viz::GLDataType(format());
 

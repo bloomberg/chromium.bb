@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
+#include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/node_list.h"
 #include "third_party/blink/renderer/core/dom/node_traversal.h"
@@ -50,13 +51,13 @@
 #include "third_party/blink/renderer/core/editing/visible_position.h"
 #include "third_party/blink/renderer/core/editing/visible_selection.h"
 #include "third_party/blink/renderer/core/editing/visible_units.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/html/html_font_element.h"
 #include "third_party/blink/renderer/core/html/html_span_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -965,7 +966,10 @@ void ApplyStyleCommand::ApplyInlineStyleToNodeRange(
   if (remove_only_)
     return;
 
-  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
+  Range* range = MakeGarbageCollected<Range>(GetDocument(), StartPosition(),
+                                             EndPosition());
+  GetDocument().UpdateStyleAndLayoutForRange(range,
+                                             DocumentUpdateReason::kEditing);
 
   HeapVector<InlineRunToApplyStyle> runs;
   Node* node = start_node;
@@ -1041,7 +1045,8 @@ void ApplyStyleCommand::ApplyInlineStyleToNodeRange(
     }
   }
 
-  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
+  GetDocument().UpdateStyleAndLayoutForRange(range,
+                                             DocumentUpdateReason::kEditing);
 
   for (auto& run : runs) {
     if (run.position_for_style_computation.IsNotNull())

@@ -15,7 +15,7 @@
 namespace ui {
 
 // Dummy implementation of TextInputClient. All functions do nothing.
-// TODO(crbug.com/1148157): Replace this class with FakeTextInputClient.
+// TODO(crbug.com/1277388): Replace this class with FakeTextInputClient.
 class DummyTextInputClient : public TextInputClient {
  public:
   DummyTextInputClient();
@@ -63,29 +63,28 @@ class DummyTextInputClient : public TextInputClient {
   ukm::SourceId GetClientSourceForMetrics() const override;
   bool ShouldDoLearning() override;
 
-#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
   bool SetCompositionFromExistingText(
       const gfx::Range& range,
       const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) override;
 #endif
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
   gfx::Range GetAutocorrectRange() const override;
   gfx::Rect GetAutocorrectCharacterBounds() const override;
   bool SetAutocorrectRange(const gfx::Range& range) override;
-  absl::optional<GrammarFragment> GetGrammarFragment(
-      const gfx::Range& range) override;
+  absl::optional<GrammarFragment> GetGrammarFragmentAtCursor() const override;
   bool ClearGrammarFragments(const gfx::Range& range) override;
   bool AddGrammarFragments(
       const std::vector<GrammarFragment>& fragments) override;
 #endif
 
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_CHROMEOS)
   void GetActiveTextInputControlLayoutBounds(
       absl::optional<gfx::Rect>* control_bounds,
       absl::optional<gfx::Rect>* selection_bounds) override;
 #endif
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   void SetActiveCompositionForAccessibility(
       const gfx::Range& range,
       const std::u16string& active_composition_text,
@@ -119,6 +118,7 @@ class DummyTextInputClient : public TextInputClient {
   std::vector<gfx::Range> selection_history_;
   gfx::Range autocorrect_range_;
   std::vector<GrammarFragment> grammar_fragments_;
+  gfx::Range cursor_range_ = gfx::Range::InvalidRange();
 };
 
 }  // namespace ui

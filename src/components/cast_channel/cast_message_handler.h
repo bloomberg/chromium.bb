@@ -11,6 +11,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/sequence_checker.h"
 #include "base/time/tick_clock.h"
 #include "base/timer/timer.h"
@@ -104,7 +105,7 @@ struct InternalMessage {
   ~InternalMessage();
 
   CastMessageType type;
-  // TODO(jrw): This field is only needed to communicate the namespace
+  // This field is only needed to communicate the namespace
   // information from CastMessageHandler::OnMessage to
   // MirroringActivityRecord::OnInternalMessage.  Maybe there's a better way?
   // One possibility is to derive namespace when it's needed based on the
@@ -204,7 +205,8 @@ class CastMessageHandler : public CastSocket::Observer {
   // Sends |message| to the device given by |channel_id|. The caller may use
   // this method to forward app messages from the SDK client to the device.
   //
-  // TODO(jrw): Could this be merged with SendAppMessage()?  Note from mfoltz:
+  // TODO(crbug.com/1291734): Could this be merged with SendAppMessage()?  Note
+  // from mfoltz:
   //
   // The two differences between an app message and a protocol message:
   // - app message has a sender ID that comes from the clientId of the SDK

@@ -6,13 +6,9 @@
  * @fileoverview A base class for Tts living on Chrome platforms.
  *
  */
+import {AbstractTts} from '/chromevox/common/abstract_tts.js';
 
-goog.provide('ChromeTtsBase');
-
-goog.require('AbstractTts');
-
-
-ChromeTtsBase = class extends AbstractTts {
+export class ChromeTtsBase extends AbstractTts {
   constructor() {
     super();
     this.propertyDefault['pitch'] = 1;
@@ -27,4 +23,4 @@ ChromeTtsBase = class extends AbstractTts {
     this.propertyMin['volume'] = 0.2;
     this.propertyMax['volume'] = 1.0;
   }
-};
+}

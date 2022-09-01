@@ -14,16 +14,18 @@
 #include "cc/paint/clear_for_opaque_raster.h"
 #include "cc/paint/scoped_raster_flags.h"
 #include "skia/ext/legacy_display_globals.h"
+#include "third_party/skia/include/core/SkColorSpace.h"
 #include "ui/gfx/geometry/skia_conversions.h"
 
 namespace cc {
 namespace {
 
-
 PlaybackParams MakeParams(const SkCanvas* canvas) {
   // We don't use an ImageProvider here since the ops are played onto a no-draw
   // canvas for state tracking and don't need decoded images.
-  return PlaybackParams(nullptr, canvas->getLocalToDevice());
+  PlaybackParams params(nullptr, canvas->getLocalToDevice());
+  params.is_analyzing = true;
+  return params;
 }
 
 std::unique_ptr<SkCanvas> MakeAnalysisCanvas(
@@ -140,7 +142,8 @@ void PaintOpBufferSerializer::ClearForOpaqueRaster(
                              SkClipOp::kDifference, false);
     SerializeOp(canvas, &inner_clip_op, nullptr, params);
   }
-  DrawColorOp clear_op(preamble.background_color, SkBlendMode::kSrc);
+  DrawColorOp clear_op(SkColor4f::FromColor(preamble.background_color),
+                       SkBlendMode::kSrc);
   SerializeOp(canvas, &clear_op, nullptr, params);
   RestoreToCount(canvas, 1, params);
 }
@@ -163,7 +166,7 @@ void PaintOpBufferSerializer::SerializePreamble(SkCanvas* canvas,
     // There's not enough information at this point to know if this texture is
     // being reused from another tile, so the external texels could have been
     // cleared to some wrong value.
-    DrawColorOp clear(SK_ColorTRANSPARENT, SkBlendMode::kSrc);
+    DrawColorOp clear(SkColors::kTransparent, SkBlendMode::kSrc);
     SerializeOp(canvas, &clear, nullptr, params);
   }
 
@@ -194,7 +197,7 @@ void PaintOpBufferSerializer::SerializePreamble(SkCanvas* canvas,
   // section that is being rastered.  If this is opaque, trust the raster
   // to write all the pixels inside of the full_raster_rect.
   if (preamble.requires_clear && is_partial_raster) {
-    DrawColorOp clear_op(SK_ColorTRANSPARENT, SkBlendMode::kSrc);
+    DrawColorOp clear_op(SkColors::kTransparent, SkBlendMode::kSrc);
     SerializeOp(canvas, &clear_op, nullptr, params);
   }
 }

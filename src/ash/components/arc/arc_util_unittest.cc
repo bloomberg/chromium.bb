@@ -18,10 +18,9 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
-#include "chromeos/dbus/upstart/fake_upstart_client.h"
+#include "chromeos/ash/components/dbus/upstart/fake_upstart_client.h"
 #include "components/account_id/account_id.h"
 #include "components/exo/shell_surface_util.h"
 #include "components/prefs/testing_pref_service.h"
@@ -106,7 +105,7 @@ class FakeUser : public user_manager::User {
 
 class ArcUtilTest : public testing::Test {
  public:
-  ArcUtilTest() { chromeos::UpstartClient::InitializeFake(); }
+  ArcUtilTest() { ash::UpstartClient::InitializeFake(); }
   ArcUtilTest(const ArcUtilTest&) = delete;
   ArcUtilTest& operator=(const ArcUtilTest&) = delete;
   ~ArcUtilTest() override = default;
@@ -120,7 +119,7 @@ class ArcUtilTest : public testing::Test {
 
  protected:
   void InjectUpstartStartJobFailure(const std::string& job_name_to_fail) {
-    auto* upstart_client = chromeos::FakeUpstartClient::Get();
+    auto* upstart_client = ash::FakeUpstartClient::Get();
     upstart_client->set_start_job_cb(base::BindLambdaForTesting(
         [job_name_to_fail](const std::string& job_name,
                            const std::vector<std::string>& env) {
@@ -130,7 +129,7 @@ class ArcUtilTest : public testing::Test {
   }
 
   void InjectUpstartStopJobFailure(const std::string& job_name_to_fail) {
-    auto* upstart_client = chromeos::FakeUpstartClient::Get();
+    auto* upstart_client = ash::FakeUpstartClient::Get();
     upstart_client->set_stop_job_cb(base::BindLambdaForTesting(
         [job_name_to_fail](const std::string& job_name,
                            const std::vector<std::string>& env) {
@@ -140,7 +139,7 @@ class ArcUtilTest : public testing::Test {
   }
 
   void StartRecordingUpstartOperations() {
-    auto* upstart_client = chromeos::FakeUpstartClient::Get();
+    auto* upstart_client = ash::FakeUpstartClient::Get();
     upstart_client->set_start_job_cb(
         base::BindLambdaForTesting([this](const std::string& job_name,
                                           const std::vector<std::string>& env) {
@@ -165,11 +164,11 @@ class ArcUtilTest : public testing::Test {
 
  private:
   void RemoveUpstartStartStopJobFailures() {
-    auto* upstart_client = chromeos::FakeUpstartClient::Get();
+    auto* upstart_client = ash::FakeUpstartClient::Get();
     upstart_client->set_start_job_cb(
-        chromeos::FakeUpstartClient::StartStopJobCallback());
+        ash::FakeUpstartClient::StartStopJobCallback());
     upstart_client->set_stop_job_cb(
-        chromeos::FakeUpstartClient::StartStopJobCallback());
+        ash::FakeUpstartClient::StartStopJobCallback());
   }
 
   std::unique_ptr<base::RunLoop> run_loop_;
@@ -323,6 +322,15 @@ TEST_F(ArcUtilTest, IsArcVmDevConfIgnored) {
   EXPECT_TRUE(IsArcVmDevConfIgnored());
 }
 
+TEST_F(ArcUtilTest, GetShouldMountVmDebugFs) {
+  auto* command_line = base::CommandLine::ForCurrentProcess();
+  command_line->InitFromArgv({""});
+  EXPECT_FALSE(ShouldMountVmDebugFs());
+
+  command_line->InitFromArgv({"", "--arcvm-mount-debugfs"});
+  EXPECT_TRUE(ShouldMountVmDebugFs());
+}
+
 TEST_F(ArcUtilTest, GetArcVmUreadaheadMode) {
   constexpr char kArcMemProfile4GbName[] = "4G";
   constexpr char kArcMemProfile8GbName[] = "8G";
@@ -430,6 +438,20 @@ TEST_F(ArcUtilTest, ArcStartModeWithoutPlayStore) {
        "--arc-start-mode=always-start-with-no-play-store"});
   EXPECT_TRUE(ShouldArcAlwaysStart());
   EXPECT_TRUE(ShouldArcAlwaysStartWithNoPlayStore());
+}
+
+// Verifies that ARC manual start is activated by switch.
+TEST_F(ArcUtilTest, ArcStartModeManually) {
+  base::CommandLine::ForCurrentProcess()->InitFromArgv(
+      {"", "--arc-start-mode=manual"});
+  EXPECT_FALSE(ShouldArcAlwaysStart());
+  EXPECT_TRUE(ShouldArcStartManually());
+}
+
+// Verifies that ARC manual start is disabled by default.
+TEST_F(ArcUtilTest, ArcStartModeManuallyDisabledByDefault) {
+  EXPECT_FALSE(ShouldArcAlwaysStart());
+  EXPECT_FALSE(ShouldArcStartManually());
 }
 
 TEST_F(ArcUtilTest, ScaleFactorToDensity) {

@@ -16,6 +16,8 @@ class Profile;
 
 namespace web_app {
 
+extern const char kCrxAppPrefix[];
+
 // Compute a deterministic name based on the URL. We use this pseudo name
 // as a key to store window location per application URLs in Browser and
 // as app id for BrowserWindow, shortcut and jump list.
@@ -42,12 +44,13 @@ AppId GetAppIdFromApplicationName(const std::string& app_name);
 //
 // App ID and App Key match Extension ID and Extension Key for migration.
 
-// Generate App id using manfiest_id, if null, use start_url instead.
+// Generate App id using manifest_id, if null, use start_url instead.
 AppId GenerateAppId(const absl::optional<std::string>& manifest_id,
                     const GURL& start_url);
 std::string GenerateAppIdUnhashed(
     const absl::optional<std::string>& manifest_id,
     const GURL& start_url);
+AppId GenerateAppIdFromUnhashed(std::string unhashed_app_id);
 
 std::string GenerateAppIdUnhashedFromManifest(
     const blink::mojom::Manifest& manifest);

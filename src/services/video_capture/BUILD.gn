@@ -17,8 +17,6 @@ source_set("lib") {
     "gpu_memory_buffer_virtual_device_mojo_adapter.h",
     "push_video_stream_subscription_impl.cc",
     "push_video_stream_subscription_impl.h",
-    "receiver_mojo_to_media_adapter.cc",
-    "receiver_mojo_to_media_adapter.h",
     "shared_memory_virtual_device_mojo_adapter.cc",
     "shared_memory_virtual_device_mojo_adapter.h",
     "testing_controls_impl.cc",
@@ -70,6 +68,8 @@ source_set("lib") {
       "lacros/device_factory_adapter_lacros.h",
       "lacros/device_proxy_lacros.cc",
       "lacros/device_proxy_lacros.h",
+      "lacros/video_buffer_adapters.cc",
+      "lacros/video_buffer_adapters.h",
       "lacros/video_frame_handler_proxy_lacros.cc",
       "lacros/video_frame_handler_proxy_lacros.h",
     ]

@@ -30,6 +30,7 @@ constexpr char kAuthority[] = "authority";
 constexpr char kDocumentId[] = "document_id";
 constexpr char kRootId[] = "root_id";
 constexpr char kUrl[] = "content://test";
+constexpr char kUrlId[] = "url_id";
 
 }  // namespace
 
@@ -122,16 +123,17 @@ class ArcFileSystemOperationRunnerTest : public testing::Test {
         base::BindOnce(
             [](int* counter, mojom::RootSizePtr root_size) { ++*counter; },
             counter));
-    runner_->OpenFileToRead(
+    runner_->OpenFileSessionToWrite(
         GURL(kUrl),
-        base::BindOnce(
-            [](int* counter, mojo::ScopedHandle handle) { ++*counter; },
-            counter));
-    runner_->OpenFileToWrite(
+        base::BindOnce([](int* counter,
+                          mojom::FileSessionPtr file_session) { ++*counter; },
+                       counter));
+    runner_->OpenFileSessionToRead(
         GURL(kUrl),
-        base::BindOnce(
-            [](int* counter, mojo::ScopedHandle handle) { ++*counter; },
-            counter));
+        base::BindOnce([](int* counter,
+                          mojom::FileSessionPtr file_session) { ++*counter; },
+                       counter));
+    runner_->CloseFileSession(kUrlId, /*error_message=*/std::string());
 
     // RemoveWatcher() is never deferred.
     runner_->RemoveWatcher(

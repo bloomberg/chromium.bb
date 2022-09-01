@@ -14,6 +14,12 @@ extern NSString* const kNTPCollectionViewIdentifier;
 extern NSString* const kNTPIncognitoViewIdentifier;
 
 // Represents the menu button of the feed header.
-extern NSString* const kNTPFeedHeaderButtonIdentifier;
+extern NSString* const kNTPFeedHeaderMenuButtonIdentifier;
+
+// Represents the sort button of the feed header.
+extern NSString* const kNTPFeedHeaderSortButtonIdentifier;
+
+// Represents the segmented control of the feed header.
+extern NSString* const kNTPFeedHeaderSegmentedControlIdentifier;
 
 #endif  // IOS_CHROME_BROWSER_UI_NTP_NEW_TAB_PAGE_CONSTANTS_H_

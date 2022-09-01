@@ -7,11 +7,14 @@
 #include <memory>
 
 #include "base/time/time.h"
+#include "chromeos/assistant/internal/internal_constants.h"
+#include "chromeos/assistant/internal/libassistant/shared_headers.h"
 #include "chromeos/assistant/internal/proto/shared/proto/v2/delegate/event_handler_interface.pb.h"
 #include "chromeos/assistant/internal/proto/shared/proto/v2/delegate/event_handler_service.grpc.pb.h"
 #include "chromeos/services/libassistant/grpc/external_services/action_service.h"
 #include "chromeos/services/libassistant/grpc/external_services/customer_registration_client.h"
 #include "chromeos/services/libassistant/grpc/external_services/heartbeat_event_handler_driver.h"
+#include "chromeos/services/libassistant/grpc/grpc_http_connection_client.h"
 #include "chromeos/services/libassistant/grpc/grpc_libassistant_client.h"
 #include "chromeos/services/libassistant/grpc/grpc_util.h"
 #include "third_party/grpc/src/include/grpc/grpc_security_constants.h"
@@ -86,10 +89,34 @@ void GrpcServicesInitializer::AddAssistantDisplayEventObserver(
   assistant_display_event_handler_driver_->AddObserver(observer);
 }
 
+void GrpcServicesInitializer::AddConversationStateEventObserver(
+    GrpcServicesObserver<::assistant::api::OnConversationStateEventRequest>*
+        observer) {
+  conversation_state_event_handler_driver_->AddObserver(observer);
+}
+
 void GrpcServicesInitializer::AddDeviceStateEventObserver(
     GrpcServicesObserver<::assistant::api::OnDeviceStateEventRequest>*
         observer) {
   device_state_event_handler_driver_->AddObserver(observer);
+}
+
+void GrpcServicesInitializer::AddMediaActionFallbackEventObserver(
+    GrpcServicesObserver<::assistant::api::OnMediaActionFallbackEventRequest>*
+        observer) {
+  media_action_fallback_event_handler_driver_->AddObserver(observer);
+}
+
+void GrpcServicesInitializer::AddSpeakerIdEnrollmentEventObserver(
+    GrpcServicesObserver<::assistant::api::OnSpeakerIdEnrollmentEventRequest>*
+        observer) {
+  speaker_id_enrollment_event_handler_driver_->AddObserver(observer);
+}
+
+void GrpcServicesInitializer::RemoveSpeakerIdEnrollmentEventObserver(
+    GrpcServicesObserver<::assistant::api::OnSpeakerIdEnrollmentEventRequest>*
+        observer) {
+  speaker_id_enrollment_event_handler_driver_->RemoveObserver(observer);
 }
 
 ActionService* GrpcServicesInitializer::GetActionService() {
@@ -123,10 +150,33 @@ void GrpcServicesInitializer::InitDrivers(grpc::ServerBuilder* server_builder) {
       &server_builder_, libassistant_client_.get(), assistant_service_address_);
   service_drivers_.emplace_back(assistant_display_event_handler_driver_.get());
 
+  conversation_state_event_handler_driver_ =
+      std::make_unique<EventHandlerDriver<
+          ::assistant::api::ConversationStateEventHandlerInterface>>(
+          &server_builder_, libassistant_client_.get(),
+          assistant_service_address_);
+  service_drivers_.emplace_back(conversation_state_event_handler_driver_.get());
+
   device_state_event_handler_driver_ = std::make_unique<
       EventHandlerDriver<::assistant::api::DeviceStateEventHandlerInterface>>(
       &server_builder_, libassistant_client_.get(), assistant_service_address_);
   service_drivers_.emplace_back(device_state_event_handler_driver_.get());
+
+  media_action_fallback_event_handler_driver_ =
+      std::make_unique<EventHandlerDriver<
+          ::assistant::api::MediaActionFallbackEventHandlerInterface>>(
+          &server_builder_, libassistant_client_.get(),
+          assistant_service_address_);
+  service_drivers_.emplace_back(
+      media_action_fallback_event_handler_driver_.get());
+
+  speaker_id_enrollment_event_handler_driver_ =
+      std::make_unique<EventHandlerDriver<
+          ::assistant::api::SpeakerIdEnrollmentEventHandlerInterface>>(
+          &server_builder_, libassistant_client_.get(),
+          assistant_service_address_);
+  service_drivers_.emplace_back(
+      speaker_id_enrollment_event_handler_driver_.get());
 }
 
 void GrpcServicesInitializer::InitLibassistGrpcClient() {
@@ -145,6 +195,13 @@ void GrpcServicesInitializer::InitLibassistGrpcClient() {
       std::make_unique<chromeos::libassistant::GrpcLibassistantClient>(channel);
 }
 
+void GrpcServicesInitializer::StartGrpcHttpConnectionClient(
+    assistant_client::HttpConnectionFactory* factory) {
+  http_connection_client_ = std::make_unique<GrpcHttpConnectionClient>(
+      factory, assistant::kHttpConnectionServiceAddress);
+  http_connection_client_->Start();
+}
+
 void GrpcServicesInitializer::InitAssistantGrpcServer() {
   auto connect_type = GetGrpcLocalConnectType(assistant_service_address_);
   // Listen on the given address with the specified credentials.
@@ -157,7 +214,10 @@ void GrpcServicesInitializer::InitAssistantGrpcServer() {
 void GrpcServicesInitializer::RegisterEventHandlers() {
   alarm_timer_event_handler_driver_->StartRegistration();
   assistant_display_event_handler_driver_->StartRegistration();
+  conversation_state_event_handler_driver_->StartRegistration();
   device_state_event_handler_driver_->StartRegistration();
+  media_action_fallback_event_handler_driver_->StartRegistration();
+  speaker_id_enrollment_event_handler_driver_->StartRegistration();
 }
 
 }  // namespace libassistant

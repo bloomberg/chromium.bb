@@ -5,6 +5,7 @@
     --ntp-one-google-bar-height: 56px;
     --ntp-search-box-width: 337px;
     --ntp-module-width: var(--ntp-search-box-width);
+    --ntp-module-layout-width: var(--ntp-search-box-width);
     --ntp-module-border-radius: 5px;
   }
 
@@ -28,7 +29,24 @@
 
   :host([modules-redesigned-enabled_]) {
     --ntp-module-border-radius: 24px;
+    --ntp-module-layout-width: 360px;
     --ntp-module-width: 360px;
+  }
+
+  :host([modules-redesigned-layout-enabled_]) {
+    --ntp-module-layout-width: 360px;
+  }
+
+  @media (min-width: 960px) {
+    :host([modules-redesigned-layout-enabled_]) {
+      --ntp-module-layout-width: 780px;
+    }
+  }
+
+  @media (min-width: 1440px) {
+    :host([modules-redesigned-layout-enabled_]) {
+      --ntp-module-layout-width: 1170px;
+    }
   }
 
   :host([show-background-image_]) {
@@ -69,7 +87,7 @@
 
   ntp-modules {
     flex-shrink: 0;
-    width: var(--ntp-module-width);
+    width: var(--ntp-module-layout-width);
   }
 
   ntp-middle-slot-promo {
@@ -161,6 +179,34 @@
     }
 
     #customizeText {
+      display: none;
+    }
+  }
+
+  @media (max-width: 970px) {
+    :host([modules-shown-to-user]) #customizeButton {
+      padding: 0;
+    }
+
+    :host([modules-shown-to-user]) #customizeIcon {
+      margin: 0;
+    }
+
+    :host([modules-shown-to-user]) #customizeText {
+      display: none;
+    }
+  }
+
+  @media (max-width: 1020px) {
+    :host([modules-fre-shown]) #customizeButton {
+      padding: 0;
+    }
+
+    :host([modules-fre-shown]) #customizeIcon {
+      margin: 0;
+    }
+
+    :host([modules-fre-shown]) #customizeText {
       display: none;
     }
   }
@@ -271,10 +317,12 @@
             hidden="[[!promoAndModulesLoaded_]]">
         </ntp-middle-slot-promo>
       </template>
-      <template is="dom-if" if="[[modulesEnabled_]]" >
+      <template is="dom-if" if="[[modulesEnabled_]]">
         <ntp-modules id="modules"
-            on-modules-loaded="onModulesLoaded_"
+            modules-fre-shown="{{modulesFreShown}}"
+            modules-shown-to-user="{{modulesShownToUser}}"
             on-customize-module="onCustomizeModule_"
+            on-modules-loaded="onModulesLoaded_"
             hidden="[[!promoAndModulesLoaded_]]">
         </ntp-modules>
       </template>
@@ -282,7 +330,7 @@
           href="[[backgroundImageAttributionUrl_]]"
           hidden="[[!backgroundImageAttribution1_]]">
         <div id="backgroundImageAttribution1Container">
-          <div id="linkIcon"></div>
+          <div id="linkIcon" hidden="[[!backgroundImageAttributionUrl_]]"></div>
           <div id="backgroundImageAttribution1">
             [[backgroundImageAttribution1_]]
           </div>
@@ -294,19 +342,19 @@
       </a>
       <!-- cr-button has a transparent background. This leads to incorrect
            results when a custom background is set. Therefore, wrap customize
-           button in container to enfore solid background color. -->
+           button in container to enforce solid background color. -->
       <div id="customizeButtonContainer">
         <cr-button id="customizeButton" on-click="onCustomizeClick_"
-            title="[[i18n('customizeThisPage')]]">
+            title="$i18n{customizeThisPage}">
           <div id="customizeIcon"></div>
           <div id="customizeText" hidden$="[[showBackgroundImage_]]">
-            [[i18n('customizeButton')]]
+            $i18n{customizeButton}
           </div>
         </cr-button>
       </div>
       <div id="themeAttribution"
           hidden$="[[!theme_.backgroundImage.attributionUrl]]">
-        <div>[[i18n('themeCreatedBy')]]</div>
+        <div>$i18n{themeCreatedBy}</div>
         <img src="[[theme_.backgroundImage.attributionUrl.url]]"><img>
       </div>
     </template>

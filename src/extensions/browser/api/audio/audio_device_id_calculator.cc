@@ -35,9 +35,9 @@ void AudioDeviceIdCalculator::LoadStableIdMap() {
 
   PrefService* pref_service =
       ExtensionsBrowserClient::Get()->GetPrefServiceForContext(context_);
-  const base::ListValue* audio_service_stable_ids =
+  const base::Value* audio_service_stable_ids =
       pref_service->GetList(kAudioApiStableDeviceIds);
-  base::Value::ConstListView ids_list = audio_service_stable_ids->GetList();
+  const base::Value::List& ids_list = audio_service_stable_ids->GetList();
   for (size_t i = 0; i < ids_list.size(); ++i) {
     const std::string* audio_service_stable_id = ids_list[i].GetIfString();
     if (!audio_service_stable_id) {

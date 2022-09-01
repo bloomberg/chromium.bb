@@ -14,12 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Protocol } from 'devtools-protocol';
-
-import { CDPSession } from './Connection.js';
+import { ProtocolMapping } from 'devtools-protocol/types/protocol-mapping.js';
+import { EventEmitter } from './EventEmitter.js';
 import { Frame } from './FrameManager.js';
 import { HTTPResponse } from './HTTPResponse.js';
-
+import { Protocol } from 'devtools-protocol';
 /**
  * @public
  */
@@ -31,6 +30,13 @@ export interface ContinueRequestOverrides {
     method?: string;
     postData?: string;
     headers?: Record<string, string>;
+}
+/**
+ * @public
+ */
+export interface InterceptResolutionState {
+    action: InterceptResolutionAction;
+    priority?: number;
 }
 /**
  * Required response data to fulfill a request with.
@@ -52,6 +58,15 @@ export interface ResponseForRequest {
  * @public
  */
 export declare type ResourceType = Lowercase<Protocol.Network.ResourceType>;
+/**
+ * The default cooperative request interception resolution priority
+ *
+ * @public
+ */
+export declare const DEFAULT_INTERCEPT_RESOLUTION_PRIORITY = 0;
+interface CDPSession extends EventEmitter {
+    send<T extends keyof ProtocolMapping.Commands>(method: T, ...paramArgs: ProtocolMapping.Commands[T]['paramsType']): Promise<ProtocolMapping.Commands[T]['returnType']>;
+}
 /**
  *
  * Represents an HTTP request sent by a page.
@@ -122,9 +137,8 @@ export declare class HTTPRequest {
     private _continueRequestOverrides;
     private _responseForRequest;
     private _abortErrorReason;
-    private _currentStrategy;
-    private _currentPriority;
-    private _interceptActions;
+    private _interceptResolutionState;
+    private _interceptHandlers;
     private _initiator;
     /**
      * @internal
@@ -144,21 +158,32 @@ export declare class HTTPRequest {
      * @returns The `ResponseForRequest` that gets used if the
      * interception is allowed to respond (ie, `abort()` is not called).
      */
-    responseForRequest(): Partial<ResponseForRequest>;
+    responseForRequest(): Partial<ResponseForRequest> | null;
     /**
      * @returns the most recent reason for aborting the request
      */
-    abortErrorReason(): Protocol.Network.ErrorReason;
+    abortErrorReason(): Protocol.Network.ErrorReason | null;
     /**
-     * @returns An array of the current intercept resolution strategy and priority
-     * `[strategy,priority]`. Strategy is one of: `abort`, `respond`, `continue`,
+     * @returns An InterceptResolutionState object describing the current resolution
+     *  action and priority.
+     *
+     *  InterceptResolutionState contains:
+     *    action: InterceptResolutionAction
+     *    priority?: number
+     *
+     *  InterceptResolutionAction is one of: `abort`, `respond`, `continue`,
      *  `disabled`, `none`, or `already-handled`.
      */
-    private interceptResolution;
+    interceptResolutionState(): InterceptResolutionState;
+    /**
+     * @returns `true` if the intercept resolution has already been handled,
+     * `false` otherwise.
+     */
+    isInterceptResolutionHandled(): boolean;
     /**
      * Adds an async request handler to the processing queue.
      * Deferred handlers are not guaranteed to execute in any particular order,
-     * but they are guarnateed to resolve before the request interception
+     * but they are guaranteed to resolve before the request interception
      * is finalized.
      */
     enqueueInterceptAction(pendingHandler: () => void | PromiseLike<unknown>): void;
@@ -248,7 +273,7 @@ export declare class HTTPRequest {
      *
      * @returns `null` unless the request failed. If the request fails this can
      * return an object with `errorText` containing a human-readable error
-     * message, e.g. `net::ERR_FAILED`. It is not guaranteeded that there will be
+     * message, e.g. `net::ERR_FAILED`. It is not guaranteed that there will be
      * failure text if the request fails.
      */
     failure(): {
@@ -336,7 +361,20 @@ export declare class HTTPRequest {
 /**
  * @public
  */
-export declare type InterceptResolutionStrategy = 'abort' | 'respond' | 'continue' | 'disabled' | 'none' | 'alreay-handled';
+export declare enum InterceptResolutionAction {
+    Abort = "abort",
+    Respond = "respond",
+    Continue = "continue",
+    Disabled = "disabled",
+    None = "none",
+    AlreadyHandled = "already-handled"
+}
+/**
+ * @public
+ *
+ * @deprecated please use {@link InterceptResolutionAction} instead.
+ */
+export declare type InterceptResolutionStrategy = InterceptResolutionAction;
 /**
  * @public
  */
@@ -345,4 +383,5 @@ export declare type ErrorCode = 'aborted' | 'accessdenied' | 'addressunreachable
  * @public
  */
 export declare type ActionResult = 'continue' | 'abort' | 'respond';
+export {};
 //# sourceMappingURL=HTTPRequest.d.ts.map

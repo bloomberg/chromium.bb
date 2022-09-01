@@ -25,7 +25,7 @@ export interface BrowserLaunchArgumentOptions {
      * Whether to run the browser in headless mode.
      * @defaultValue true
      */
-    headless?: boolean;
+    headless?: boolean | 'chrome';
     /**
      * Path to a user data directory.
      * {@link https://chromium.googlesource.com/chromium/src/+/refs/heads/main/docs/user_data_dir.md | see the Chromium docs}
@@ -34,7 +34,7 @@ export interface BrowserLaunchArgumentOptions {
     userDataDir?: string;
     /**
      * Whether to auto-open a DevTools panel for each tab. If this is set to
-     * `true`, then `headless` will be set to `false` automatically.
+     * `true`, then `headless` will be forced to `false`.
      * @defaultValue `false`
      */
     devtools?: boolean;

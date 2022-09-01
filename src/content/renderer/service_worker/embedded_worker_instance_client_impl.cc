@@ -43,16 +43,6 @@ void EmbeddedWorkerInstanceClientImpl::Create(
                                        cors_exempt_header_list);
 }
 
-void EmbeddedWorkerInstanceClientImpl::CreateForRequest(
-    scoped_refptr<base::SingleThreadTaskRunner> initiator_thread_task_runner,
-    const std::vector<std::string>& cors_exempt_header_list,
-    mojo::PendingReceiver<blink::mojom::EmbeddedWorkerInstanceClient>
-        receiver) {
-  EmbeddedWorkerInstanceClientImpl::Create(
-      std::move(initiator_thread_task_runner), cors_exempt_header_list,
-      std::move(receiver));
-}
-
 void EmbeddedWorkerInstanceClientImpl::WorkerContextDestroyed() {
   DCHECK(initiator_thread_task_runner_->BelongsToCurrentThread());
   TRACE_EVENT0("ServiceWorker",
@@ -103,7 +93,8 @@ void EmbeddedWorkerInstanceClientImpl::StartWorker(
       std::move(params->renderer_preferences),
       std::move(params->service_worker_receiver),
       std::move(params->controller_receiver), std::move(params->instance_host),
-      std::move(params->provider_info), this, std::move(start_timing),
+      std::move(params->interface_provider), std::move(params->provider_info),
+      this, std::move(start_timing),
       std::move(params->preference_watcher_receiver),
       std::move(params->subresource_loader_factories),
       std::move(params->subresource_loader_updater),

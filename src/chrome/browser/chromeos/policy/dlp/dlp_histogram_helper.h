@@ -15,6 +15,7 @@ namespace dlp {
 
 // Constants with UMA histogram name suffixes.
 constexpr char kCaptureModeInitBlockedUMA[] = "CaptureModeInitBlocked";
+constexpr char kCaptureModeInitWarnedUMA[] = "CaptureModeInitWarned";
 constexpr char kClipboardReadBlockedUMA[] = "ClipboardReadBlocked";
 constexpr char kDataTransferReportingTimeDiffUMA[] =
     "DataTransferReportingTimeDiff";
@@ -24,10 +25,22 @@ constexpr char kDlpPolicyPresentUMA[] = "DlpPolicyPresent";
 constexpr char kDragDropBlockedUMA[] = "DragDropBlocked";
 constexpr char kFilesDaemonStartedUMA[] = "FilesDaemonStarted";
 constexpr char kPrintingBlockedUMA[] = "PrintingBlocked";
+constexpr char kPrintingWarnedUMA[] = "PrintingWarned";
+constexpr char kPrintingWarnProceededUMA[] = "PrintingWarnProceeded";
+constexpr char kPrintingWarnSilentProceededUMA[] =
+    "PrintingWarnSilentProceeded";
 constexpr char kPrivacyScreenEnforcedUMA[] = "PrivacyScreenEnforced";
 constexpr char kScreenShareBlockedUMA[] = "ScreenShareBlocked";
+constexpr char kScreenShareWarnedUMA[] = "ScreenShareWarned";
+constexpr char kScreenShareWarnProceededUMA[] = "ScreenShareWarnProceeded";
+constexpr char kScreenShareWarnSilentProceededUMA[] =
+    "ScreenShareWarnSilentProceeded";
 constexpr char kScreenSharePausedOrResumedUMA[] = "ScreenSharePausedOrResumed";
 constexpr char kScreenshotBlockedUMA[] = "ScreenshotBlocked";
+constexpr char kScreenshotWarnedUMA[] = "ScreenshotWarned";
+constexpr char kScreenshotWarnProceededUMA[] = "ScreenshotWarnProceeded";
+constexpr char kScreenshotWarnSilentProceededUMA[] =
+    "ScreenshotWarnSilentProceeded";
 constexpr char kVideoCaptureInterruptedUMA[] = "VideoCaptureInterrupted";
 constexpr char kReportedBlockLevelRestriction[] =
     "ReportedBlockLevelRestriction";
@@ -37,12 +50,17 @@ constexpr char kReportedWarnLevelRestriction[] = "ReportedWarnLevelRestriction";
 constexpr char kReportedWarnProceedLevelRestriction[] =
     "ReportedWarnProceedLevelRestriction";
 constexpr char kReportedEventStatus[] = "ReportedEventStatus";
+constexpr char kConfidentialContentsCount[] = "ConfidentialContentsCount";
 
 }  // namespace dlp
 
 std::string GetDlpHistogramPrefix();
 
 void DlpBooleanHistogram(const std::string& suffix, bool value);
+
+void DlpConfidentialContentsCountHistogram(const std::string& suffix,
+                                           int sample,
+                                           int max);
 
 void DlpRestrictionConfiguredHistogram(DlpRulesManager::Restriction value);
 

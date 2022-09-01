@@ -41,9 +41,12 @@ std::ostream& operator<<(std::ostream& out, const ClientStatus& status) {
     out << " " << error_info.source_file() << ":"
         << error_info.source_line_number();
     if (!error_info.js_exception_classname().empty()) {
-      out << " JS error " << error_info.js_exception_classname() << " at "
-          << error_info.js_exception_line_number() << ":"
-          << error_info.js_exception_column_number();
+      out << " JS error " << error_info.js_exception_classname();
+      if (!error_info.js_exception_line_numbers().empty() &&
+          !error_info.js_exception_column_numbers().empty()) {
+        out << " at " << error_info.js_exception_line_numbers(0) << ":"
+            << error_info.js_exception_column_numbers(0);
+      }
     }
   }
 #endif
@@ -158,11 +161,14 @@ std::ostream& operator<<(std::ostream& out,
     case ProcessedActionStatusProto::EMPTY_VALUE_EXPRESSION_RESULT:
       out << "EMPTY_VALUE_EXPRESSION_RESULT";
       break;
-    case ProcessedActionStatusProto::RESEND_USER_DATA:
-      out << "RESEND_USER_DATA";
-      break;
     case ProcessedActionStatusProto::NO_RENDER_FRAME:
       out << "NO_RENDER_FRAME";
+      break;
+    case ProcessedActionStatusProto::USER_DATA_REQUEST_FAILED:
+      out << "USER_DATA_REQUEST_FAILED";
+      break;
+    case ProcessedActionStatusProto::JS_FORCED_ROUNDTRIP:
+      out << "JS_FORCED_ROUNDTRIP";
       break;
 
       // Intentionally no default case to make compilation fail if a new value

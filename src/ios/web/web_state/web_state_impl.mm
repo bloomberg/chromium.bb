@@ -8,11 +8,15 @@
 #include <stdint.h>
 
 #import "base/compiler_specific.h"
+#include "base/debug/dump_without_crashing.h"
 #import "base/feature_list.h"
 #import "ios/web/common/features.h"
 #import "ios/web/public/js_messaging/web_frame.h"
+#import "ios/web/public/permissions/permissions.h"
+#import "ios/web/public/session/crw_session_storage.h"
 #import "ios/web/session/session_certificate_policy_cache_impl.h"
 #import "ios/web/web_state/global_web_state_event_tracker.h"
+#import "ios/web/web_state/ui/crw_web_controller.h"
 #import "ios/web/web_state/web_state_impl_realized_web_state.h"
 #import "ios/web/web_state/web_state_impl_serialized_data.h"
 #import "url/gurl.h"
@@ -23,11 +27,38 @@
 
 namespace web {
 namespace {
-// Function used to implement the default WebState getters.
-WebState* ReturnWeakReference(base::WeakPtr<WebStateImpl> weak_web_state) {
-  return weak_web_state.get();
+
+// With |kEnableUnrealizedWebStates|, detect inefficient usage of WebState
+// realization. Various bugs have triggered the realization of the entire
+// WebStateList. Detect this by checking for the realization of 3 WebStates
+// within one second. Only report this error once per launch.
+constexpr size_t kMaxEvents = 3;
+constexpr CFTimeInterval kWindowSizeInSeconds = 1.0f;
+size_t g_last_realized_count = 0;
+CFTimeInterval g_last_creation_time = 0;
+bool g_has_reported_once = false;
+void CheckForOverRealization() {
+  if (g_has_reported_once)
+    return;
+  CFTimeInterval now = CACurrentMediaTime();
+  if (now - g_last_creation_time < kWindowSizeInSeconds) {
+    g_last_realized_count++;
+    if (g_last_realized_count >= kMaxEvents) {
+      base::debug::DumpWithoutCrashing();
+      g_has_reported_once = true;
+      NOTREACHED();
+    }
+  } else {
+    g_last_creation_time = now;
+    g_last_realized_count = 0;
+  }
 }
+
 }  // namespace
+
+void IgnoreOverRealizationCheck() {
+  g_last_realized_count = 0;
+}
 
 #pragma mark - WebState factory methods
 
@@ -140,8 +171,17 @@ void WebStateImpl::OnFaviconUrlUpdated(
   RealizedState()->OnFaviconUrlUpdated(candidates);
 }
 
+void WebStateImpl::OnStateChangedForPermission(Permission permission) {
+  RealizedState()->OnStateChangedForPermission(permission);
+}
+
 NavigationManagerImpl& WebStateImpl::GetNavigationManagerImpl() {
   return RealizedState()->GetNavigationManager();
+}
+
+int WebStateImpl::GetNavigationItemCount() const {
+  return LIKELY(pimpl_) ? pimpl_->GetNavigationItemCount()
+                        : saved_->GetNavigationItemCount();
 }
 
 WebFramesManagerImpl& WebStateImpl::GetWebFramesManagerImpl() {
@@ -276,14 +316,6 @@ void WebStateImpl::RemoveAllWebFrames() {
 
 #pragma mark - WebState implementation
 
-WebState::Getter WebStateImpl::CreateDefaultGetter() {
-  return base::BindRepeating(&ReturnWeakReference, weak_factory_.GetWeakPtr());
-}
-
-WebState::OnceGetter WebStateImpl::CreateDefaultOnceGetter() {
-  return base::BindOnce(&ReturnWeakReference, weak_factory_.GetWeakPtr());
-}
-
 WebStateDelegate* WebStateImpl::GetDelegate() {
   return LIKELY(pimpl_) ? pimpl_->GetDelegate() : nullptr;
 }
@@ -303,6 +335,7 @@ WebState* WebStateImpl::ForceRealized() {
     DCHECK(saved_);
     const CreateParams params = saved_->GetCreateParams();
     CRWSessionStorage* session_storage = saved_->GetSessionStorage();
+    FaviconStatus favicon_status = saved_->GetFaviconStatus();
     DCHECK(session_storage);
 
     // Create the RealizedWebState. At this point the WebStateImpl has
@@ -320,10 +353,13 @@ WebState* WebStateImpl::ForceRealized() {
     // code should be able to observe the WebStateImpl with both `saved_`
     // and `pimpl_` set.
     pimpl_->Init(params, session_storage);
+    pimpl_->SetFaviconStatus(favicon_status);
 
     // Notify all observers that the WebState has become realized.
     for (auto& observer : observers_)
       observer.WebStateRealized(this);
+
+    CheckForOverRealization();
   }
 
   return this;
@@ -351,6 +387,11 @@ void WebStateImpl::DidRevealWebContent() {
   RealizedState()->DidRevealWebContent();
 }
 
+base::Time WebStateImpl::GetLastActiveTime() const {
+  return LIKELY(pimpl_) ? pimpl_->GetLastActiveTime()
+                        : saved_->GetLastActiveTime();
+}
+
 void WebStateImpl::WasShown() {
   RealizedState()->WasShown();
 }
@@ -367,8 +408,30 @@ BrowserState* WebStateImpl::GetBrowserState() const {
   return LIKELY(pimpl_) ? pimpl_->GetBrowserState() : saved_->GetBrowserState();
 }
 
+base::WeakPtr<WebState> WebStateImpl::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
+}
+
 void WebStateImpl::OpenURL(const WebState::OpenURLParams& params) {
   RealizedState()->OpenURL(params);
+}
+
+void WebStateImpl::LoadSimulatedRequest(const GURL& url,
+                                        NSString* response_html_string) {
+  CRWWebController* web_controller = GetWebController();
+  DCHECK(web_controller);
+  [web_controller loadSimulatedRequest:url
+                    responseHTMLString:response_html_string];
+}
+
+void WebStateImpl::LoadSimulatedRequest(const GURL& url,
+                                        NSData* response_data,
+                                        NSString* mime_type) {
+  CRWWebController* web_controller = GetWebController();
+  DCHECK(web_controller);
+  [web_controller loadSimulatedRequest:url
+                          responseData:response_data
+                              MIMEType:mime_type];
 }
 
 void WebStateImpl::Stop() {
@@ -429,6 +492,11 @@ void WebStateImpl::ExecuteUserJavaScript(NSString* javascript) {
   RealizedState()->ExecuteUserJavaScript(javascript);
 }
 
+NSString* WebStateImpl::GetStableIdentifier() const {
+  return LIKELY(pimpl_) ? pimpl_->GetStableIdentifier()
+                        : saved_->GetStableIdentifier();
+}
+
 const std::string& WebStateImpl::GetContentsMimeType() const {
   static std::string kEmptyString;
   return LIKELY(pimpl_) ? pimpl_->GetContentsMimeType() : kEmptyString;
@@ -464,6 +532,19 @@ bool WebStateImpl::IsEvicted() const {
 
 bool WebStateImpl::IsBeingDestroyed() const {
   return is_being_destroyed_;
+}
+
+const FaviconStatus& WebStateImpl::GetFaviconStatus() const {
+  return LIKELY(pimpl_) ? pimpl_->GetFaviconStatus()
+                        : saved_->GetFaviconStatus();
+}
+
+void WebStateImpl::SetFaviconStatus(const FaviconStatus& favicon_status) {
+  if (LIKELY(pimpl_)) {
+    pimpl_->SetFaviconStatus(favicon_status);
+  } else {
+    saved_->SetFaviconStatus(favicon_status);
+  }
 }
 
 const GURL& WebStateImpl::GetVisibleURL() const {
@@ -523,6 +604,12 @@ void WebStateImpl::CreateFullPagePdf(
   RealizedState()->CreateFullPagePdf(std::move(callback));
 }
 
+void WebStateImpl::CloseMediaPresentations() {
+  if (pimpl_) {
+    pimpl_->CloseMediaPresentations();
+  }
+}
+
 void WebStateImpl::AddObserver(WebStateObserver* observer) {
   observers_.AddObserver(observer);
 }
@@ -541,6 +628,23 @@ bool WebStateImpl::SetSessionStateData(NSData* data) {
 
 NSData* WebStateImpl::SessionStateData() {
   return LIKELY(pimpl_) ? pimpl_->SessionStateData() : nil;
+}
+
+PermissionState WebStateImpl::GetStateForPermission(
+    Permission permission) const {
+  return LIKELY(pimpl_) ? pimpl_->GetStateForPermission(permission)
+                        : PermissionStateNotAccessible;
+}
+
+void WebStateImpl::SetStateForPermission(PermissionState state,
+                                         Permission permission) {
+  RealizedState()->SetStateForPermission(state, permission);
+}
+
+NSDictionary<NSNumber*, NSNumber*>* WebStateImpl::GetStatesForAllPermissions()
+    const {
+  return LIKELY(pimpl_) ? pimpl_->GetStatesForAllPermissions()
+                        : [NSDictionary dictionary];
 }
 
 void WebStateImpl::AddPolicyDecider(WebStatePolicyDecider* decider) {

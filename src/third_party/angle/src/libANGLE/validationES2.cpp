@@ -103,6 +103,7 @@ bool IsValidCopyTextureDestinationInternalFormatEnum(GLint internalFormat)
         case GL_RGBA:
         case GL_RGB8:
         case GL_RGBA8:
+        case GL_RGBX8_ANGLE:
         case GL_BGRA_EXT:
         case GL_BGRA8_EXT:
         case GL_SRGB_EXT:
@@ -424,6 +425,7 @@ bool ValidateES2CopyTexImageParameters(const Context *context,
                     colorbufferFormat != GL_RGBA4 && colorbufferFormat != GL_RGB5_A1 &&
                     colorbufferFormat != GL_RGBA8_OES && colorbufferFormat != GL_BGRA8_EXT &&
                     colorbufferFormat != GL_BGR5_A1_ANGLEX &&
+                    colorbufferFormat != GL_BGRX8_ANGLEX && colorbufferFormat != GL_RGBX8_ANGLE &&
                     !Valid1to4ComponentFloatColorBufferFormat(context, colorbufferFormat))
                 {
                     context->validationError(entryPoint, GL_INVALID_OPERATION, kInvalidFormat);
@@ -438,6 +440,7 @@ bool ValidateES2CopyTexImageParameters(const Context *context,
                     colorbufferFormat != GL_RG32F && colorbufferFormat != GL_RGB32F &&
                     colorbufferFormat != GL_RGBA32F && colorbufferFormat != GL_BGRA8_EXT &&
                     colorbufferFormat != GL_BGR5_A1_ANGLEX &&
+                    colorbufferFormat != GL_BGRX8_ANGLEX && colorbufferFormat != GL_RGBX8_ANGLE &&
                     !Valid1to4ComponentFloatColorBufferFormat(context, colorbufferFormat))
                 {
                     context->validationError(entryPoint, GL_INVALID_OPERATION, kInvalidFormat);
@@ -451,6 +454,7 @@ bool ValidateES2CopyTexImageParameters(const Context *context,
                     colorbufferFormat != GL_RG32F && colorbufferFormat != GL_RGB32F &&
                     colorbufferFormat != GL_RGBA32F && colorbufferFormat != GL_BGRA8_EXT &&
                     colorbufferFormat != GL_BGR5_A1_ANGLEX &&
+                    colorbufferFormat != GL_BGRX8_ANGLEX && colorbufferFormat != GL_RGBX8_ANGLE &&
                     !Valid2to4ComponentFloatColorBufferFormat(context, colorbufferFormat))
                 {
                     context->validationError(entryPoint, GL_INVALID_OPERATION, kInvalidFormat);
@@ -513,6 +517,7 @@ bool ValidateES2CopyTexImageParameters(const Context *context,
                     colorbufferFormat != GL_RGBA4 && colorbufferFormat != GL_RGB5_A1 &&
                     colorbufferFormat != GL_BGRA8_EXT && colorbufferFormat != GL_RGBA8_OES &&
                     colorbufferFormat != GL_BGR5_A1_ANGLEX &&
+                    colorbufferFormat != GL_BGRX8_ANGLEX && colorbufferFormat != GL_RGBX8_ANGLE &&
                     !Valid1to4ComponentFloatColorBufferFormat(context, colorbufferFormat))
                 {
                     context->validationError(entryPoint, GL_INVALID_OPERATION, kInvalidFormat);
@@ -524,6 +529,7 @@ bool ValidateES2CopyTexImageParameters(const Context *context,
                     colorbufferFormat != GL_RGB8_OES && colorbufferFormat != GL_RGBA4 &&
                     colorbufferFormat != GL_RGB5_A1 && colorbufferFormat != GL_BGRA8_EXT &&
                     colorbufferFormat != GL_RGBA8_OES && colorbufferFormat != GL_BGR5_A1_ANGLEX &&
+                    colorbufferFormat != GL_BGRX8_ANGLEX && colorbufferFormat != GL_RGBX8_ANGLE &&
                     !Valid2to4ComponentFloatColorBufferFormat(context, colorbufferFormat))
                 {
                     context->validationError(entryPoint, GL_INVALID_OPERATION, kInvalidFormat);
@@ -535,6 +541,7 @@ bool ValidateES2CopyTexImageParameters(const Context *context,
                     colorbufferFormat != GL_RGBA4 && colorbufferFormat != GL_RGB5_A1 &&
                     colorbufferFormat != GL_BGRA8_EXT && colorbufferFormat != GL_RGBA8_OES &&
                     colorbufferFormat != GL_BGR5_A1_ANGLEX &&
+                    colorbufferFormat != GL_BGRX8_ANGLEX && colorbufferFormat != GL_RGBX8_ANGLE &&
                     !Valid3to4ComponentFloatColorBufferFormat(context, colorbufferFormat))
                 {
                     context->validationError(entryPoint, GL_INVALID_OPERATION, kInvalidFormat);
@@ -625,6 +632,8 @@ bool ValidCap(const Context *context, GLenum cap, bool queryOnly)
             break;
         case GL_SAMPLE_SHADING:
             return context->getExtensions().sampleShadingOES;
+        case GL_SHADING_RATE_PRESERVE_ASPECT_RATIO_QCOM:
+            return context->getExtensions().shadingRateQCOM;
     }
 
     // GLES1 emulation: GLES1-specific caps after this point
@@ -1450,6 +1459,15 @@ bool ValidateES2TexImageParametersBase(const Context *context,
                 case GL_RGB5_A1:
                     if (context->getExtensions().textureType2101010REVEXT &&
                         type == GL_UNSIGNED_INT_2_10_10_10_REV_EXT && format == GL_RGBA)
+                    {
+                        nonEqualFormatsAllowed = true;
+                    }
+
+                    break;
+
+                case GL_RGBX8_ANGLE:
+                    if (context->getExtensions().rgbxInternalFormatANGLE &&
+                        type == GL_UNSIGNED_BYTE && format == GL_RGB)
                     {
                         nonEqualFormatsAllowed = true;
                     }
@@ -2479,8 +2497,10 @@ bool ValidateBlitFramebufferANGLE(const Context *context,
                     if (!Format::EquivalentForBlit(attachment->getFormat(),
                                                    readColorAttachment->getFormat()))
                     {
-                        context->validationError(entryPoint, GL_INVALID_OPERATION,
-                                                 kBlitExtensionFormatMismatch);
+                        context->validationErrorF(
+                            entryPoint, GL_INVALID_OPERATION, kBlitExtensionFormatMismatch,
+                            readColorAttachment->getFormat().info->sizedInternalFormat,
+                            attachment->getFormat().info->sizedInternalFormat);
                         return false;
                     }
                 }
@@ -3620,7 +3640,7 @@ bool ValidateBufferSubData(const Context *context,
     }
 
     // Check for possible overflow of size + offset
-    angle::CheckedNumeric<size_t> checkedSize(size);
+    angle::CheckedNumeric<decltype(size + offset)> checkedSize(size);
     checkedSize += offset;
     if (!checkedSize.IsValid())
     {
@@ -3725,7 +3745,7 @@ bool ValidateBindAttribLocation(const Context *context,
                                 GLuint index,
                                 const GLchar *name)
 {
-    if (index >= MAX_VERTEX_ATTRIBS)
+    if (index >= static_cast<GLuint>(context->getCaps().maxVertexAttributes))
     {
         context->validationError(entryPoint, GL_INVALID_VALUE, kIndexExceedsMaxVertexAttribute);
         return false;
@@ -3793,6 +3813,33 @@ static bool ValidBlendEquationMode(const Context *context, GLenum mode)
     }
 }
 
+static bool ValidAdvancedBlendEquationMode(const Context *context, GLenum mode)
+{
+    switch (mode)
+    {
+        case GL_MULTIPLY_KHR:
+        case GL_SCREEN_KHR:
+        case GL_OVERLAY_KHR:
+        case GL_DARKEN_KHR:
+        case GL_LIGHTEN_KHR:
+        case GL_COLORDODGE_KHR:
+        case GL_COLORBURN_KHR:
+        case GL_HARDLIGHT_KHR:
+        case GL_SOFTLIGHT_KHR:
+        case GL_DIFFERENCE_KHR:
+        case GL_EXCLUSION_KHR:
+        case GL_HSL_HUE_KHR:
+        case GL_HSL_SATURATION_KHR:
+        case GL_HSL_COLOR_KHR:
+        case GL_HSL_LUMINOSITY_KHR:
+            return context->getClientVersion() >= ES_3_2 ||
+                   context->getExtensions().blendEquationAdvancedKHR;
+
+        default:
+            return false;
+    }
+}
+
 bool ValidateBlendColor(const Context *context,
                         angle::EntryPoint entryPoint,
                         GLfloat red,
@@ -3805,7 +3852,7 @@ bool ValidateBlendColor(const Context *context,
 
 bool ValidateBlendEquation(const Context *context, angle::EntryPoint entryPoint, GLenum mode)
 {
-    if (!ValidBlendEquationMode(context, mode))
+    if (!ValidBlendEquationMode(context, mode) && !ValidAdvancedBlendEquationMode(context, mode))
     {
         context->validationError(entryPoint, GL_INVALID_ENUM, kInvalidBlendEquation);
         return false;
@@ -4196,7 +4243,7 @@ bool ValidateDisableVertexAttribArray(const Context *context,
                                       angle::EntryPoint entryPoint,
                                       GLuint index)
 {
-    if (index >= MAX_VERTEX_ATTRIBS)
+    if (index >= static_cast<GLuint>(context->getCaps().maxVertexAttributes))
     {
         context->validationError(entryPoint, GL_INVALID_VALUE, kIndexExceedsMaxVertexAttribute);
         return false;
@@ -4209,7 +4256,7 @@ bool ValidateEnableVertexAttribArray(const Context *context,
                                      angle::EntryPoint entryPoint,
                                      GLuint index)
 {
-    if (index >= MAX_VERTEX_ATTRIBS)
+    if (index >= static_cast<GLuint>(context->getCaps().maxVertexAttributes))
     {
         context->validationError(entryPoint, GL_INVALID_VALUE, kIndexExceedsMaxVertexAttribute);
         return false;
@@ -6080,7 +6127,7 @@ bool ValidateVertexAttribDivisorANGLE(const Context *context,
         return false;
     }
 
-    if (index >= MAX_VERTEX_ATTRIBS)
+    if (index >= static_cast<GLuint>(context->getCaps().maxVertexAttributes))
     {
         context->validationError(entryPoint, GL_INVALID_VALUE, kIndexExceedsMaxVertexAttribute);
         return false;
@@ -6114,7 +6161,7 @@ bool ValidateVertexAttribDivisorEXT(const Context *context,
         return false;
     }
 
-    if (index >= MAX_VERTEX_ATTRIBS)
+    if (index >= static_cast<GLuint>(context->getCaps().maxVertexAttributes))
     {
         context->validationError(entryPoint, GL_INVALID_VALUE, kIndexExceedsMaxVertexAttribute);
         return false;

@@ -46,7 +46,7 @@ LocalFontFaceSource::~LocalFontFaceSource() {}
 
 bool LocalFontFaceSource::IsLocalNonBlocking() const {
   FontUniqueNameLookup* unique_name_lookup =
-      FontGlobalContext::Get()->GetFontUniqueNameLookup();
+      FontGlobalContext::Get().GetFontUniqueNameLookup();
   if (!unique_name_lookup)
     return true;
   return unique_name_lookup->IsFontUniqueNameLookupReadyForSyncLookup();
@@ -60,7 +60,7 @@ bool LocalFontFaceSource::IsLocalFontAvailable(
     AdjustedFontDescriptionForBoldItalic(adjustedFontDescription, adjustedFontNameStr);
     WTF::AtomicString adjustedFontName(adjustedFontNameStr);
     bool adjustedFontAvailable =
-      FontCache::GetFontCache()->IsPlatformFontUniqueNameMatchAvailable(
+      FontCache::Get().IsPlatformFontUniqueNameMatchAvailable(
         adjustedFontDescription, adjustedFontName);
     if (adjustedFontAvailable)
       font_selector_->ReportSuccessfulLocalFontMatch(adjustedFontName);
@@ -71,9 +71,8 @@ bool LocalFontFaceSource::IsLocalFontAvailable(
 
   // TODO(crbug.com/1027158): Remove metrics code after metrics collected.
   // TODO(crbug.com/1025945): Properly handle Windows prior to 10 and Android.
-  bool font_available =
-      FontCache::GetFontCache()->IsPlatformFontUniqueNameMatchAvailable(
-          font_description, font_name_);
+  bool font_available = FontCache::Get().IsPlatformFontUniqueNameMatchAvailable(
+      font_description, font_name_);
   if (font_available)
     font_selector_->ReportSuccessfulLocalFontMatch(font_name_);
   else
@@ -86,8 +85,8 @@ LocalFontFaceSource::CreateLoadingFallbackFontData(
     const FontDescription& font_description) {
   FontCachePurgePreventer font_cache_purge_preventer;
   scoped_refptr<SimpleFontData> temporary_font =
-      FontCache::GetFontCache()->GetLastResortFallbackFont(font_description,
-                                                           kDoNotRetain);
+      FontCache::Get().GetLastResortFallbackFont(font_description,
+                                                 kDoNotRetain);
   if (!temporary_font) {
     NOTREACHED();
     return nullptr;
@@ -132,7 +131,7 @@ scoped_refptr<SimpleFontData> LocalFontFaceSource::CreateFontData(
   // Fonts sends, compare crbug.com/765980. So for now, we continue to
   // pass font_description to avoid breaking Google Fonts.
   FontDescription unstyled_description(font_description);
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   unstyled_description.SetStretch(NormalWidthValue());
   unstyled_description.SetStyle(NormalSlopeValue());
   unstyled_description.SetWeight(NormalWeightValue());
@@ -143,13 +142,13 @@ scoped_refptr<SimpleFontData> LocalFontFaceSource::CreateFontData(
       WTF::String adjustedFontName = font_name_.GetString();
       AdjustedFontDescriptionForBoldItalic(adjustedFontDescription, adjustedFontName);
 
-      font_data = FontCache::GetFontCache()->GetFontData(
+      font_data = FontCache::Get().GetFontData(
           adjustedFontDescription,
           WTF::AtomicString(adjustedFontName),
           AlternateFontName::kLocalUniqueFace);
   }
   else {
-      font_data = FontCache::GetFontCache()->GetFontData(
+      font_data = FontCache::Get().GetFontData(
           unstyled_description, font_name_,  AlternateFontName::kLocalUniqueFace);
   }
 
@@ -164,7 +163,7 @@ void LocalFontFaceSource::BeginLoadIfNeeded() {
     return;
 
   FontUniqueNameLookup* unique_name_lookup =
-      FontGlobalContext::Get()->GetFontUniqueNameLookup();
+      FontGlobalContext::Get().GetFontUniqueNameLookup();
   DCHECK(unique_name_lookup);
   unique_name_lookup->PrepareFontUniqueNameLookup(
       WTF::Bind(&LocalFontFaceSource::NotifyFontUniqueNameLookupReady,

@@ -5,6 +5,7 @@
 #include "ash/assistant/ui/main_stage/assistant_card_element_view.h"
 
 #include <memory>
+#include <tuple>
 
 #include "ash/assistant/model/ui/assistant_card_element.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
@@ -12,7 +13,6 @@
 #include "ash/assistant/ui/main_stage/assistant_ui_element_view_animator.h"
 #include "ash/assistant/util/deep_link_util.h"
 #include "ash/public/cpp/assistant/controller/assistant_controller.h"
-#include "base/ignore_result.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/event.h"
@@ -55,7 +55,7 @@ void CreateAndSendMouseClick(aura::WindowTreeHost* host,
                                ui::EF_LEFT_MOUSE_BUTTON);
 
   // Send an ET_MOUSE_RELEASED event.
-  ignore_result(host->GetEventSink()->OnEventFromSource(&release_event));
+  std::ignore = host->GetEventSink()->OnEventFromSource(&release_event);
 }
 
 }  // namespace
@@ -80,6 +80,10 @@ const char* AssistantCardElementView::GetClassName() const {
 }
 
 ui::Layer* AssistantCardElementView::GetLayerForAnimating() {
+  // native_view() can be nullptr if this runs in unit test.
+  if (!native_view())
+    return nullptr;
+
   return native_view()->layer();
 }
 
@@ -88,6 +92,10 @@ std::string AssistantCardElementView::ToStringForTesting() const {
 }
 
 void AssistantCardElementView::AddedToWidget() {
+  // native_view() can be nullptr if this runs in unit test.
+  if (!native_view())
+    return;
+
   aura::Window* const top_level_window = native_view()->GetToplevelWindow();
 
   // Find the window for the Assistant card.

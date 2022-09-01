@@ -431,12 +431,12 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewAuraDSFBrowserTest,
 
   // Calculate the DIP size from the bounds in pixel. Follow exactly what is
   // done in `WebFrameWidgetImpl`.
-  const base::ListValue eval_result =
+  const base::Value eval_result =
       EvalJs(wc, "getSelectionBounds();").ExtractList();
-  const int x = floor(eval_result.GetList()[0].GetDouble());
-  const int right = ceil(eval_result.GetList()[1].GetDouble());
-  const int y = floor(eval_result.GetList()[2].GetDouble());
-  const int bottom = ceil(eval_result.GetList()[3].GetDouble());
+  const int x = floor(eval_result.GetListDeprecated()[0].GetDouble());
+  const int right = ceil(eval_result.GetListDeprecated()[1].GetDouble());
+  const int y = floor(eval_result.GetListDeprecated()[2].GetDouble());
+  const int bottom = ceil(eval_result.GetListDeprecated()[3].GetDouble());
   const int expected_dip_width = floor(right / scale()) - ceil(x / scale());
   const int expected_dip_height = floor(bottom / scale()) - ceil(y / scale());
 
@@ -473,6 +473,14 @@ class RenderWidgetHostViewAuraActiveWidgetTest : public ContentBrowserTest {
     return active;
   }
 
+  bool FrameIsFocused(content::RenderFrameHost* rfh) {
+    bool is_focused = false;
+    EXPECT_TRUE(ExecuteScriptAndExtractBool(
+        rfh, "window.domAutomationController.send(document.hasFocus())",
+        &is_focused));
+    return is_focused;
+  }
+
   RenderViewHost* GetRenderViewHost() const {
     RenderViewHost* const rvh =
         shell()->web_contents()->GetMainFrame()->GetRenderViewHost();
@@ -502,12 +510,14 @@ class RenderWidgetHostViewAuraActiveWidgetTest : public ContentBrowserTest {
 };
 
 // In this test, toggling the value of 'active' state changes the
-// active state of frame on the renderer side.
-// SimulateActiveStateForWidget toggles the 'active' state of widget
-// over IPC.
+// active state of frame on the renderer side. Cross origin iframes
+// are checked to ensure the active state is replicated across all
+// processes. SimulateActiveStateForWidget toggles the 'active' state
+// of widget over IPC.
 IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewAuraActiveWidgetTest,
                        FocusIsInactive) {
-  GURL main_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
   content::WebContents* web_contents = shell()->web_contents();
@@ -516,25 +526,46 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewAuraActiveWidgetTest,
   // On renderer side, blink::FocusController's both 'active' and
   //'focus' states are set to true.
   content::RenderFrameHost* main_frame = web_contents->GetMainFrame();
-  EXPECT_TRUE(FrameIsActivated(main_frame));
+  content::RenderFrameHost* iframe = ChildFrameAt(main_frame, 0);
+  EXPECT_TRUE(FrameIsFocused(main_frame));
+  EXPECT_TRUE(FrameIsActivated(iframe));
+  EXPECT_TRUE(FrameIsFocused(main_frame));
+  EXPECT_FALSE(FrameIsFocused(iframe));
 
   // After changing the 'active' state of main_frame to false
-  // blink::FocusController's 'active' set to false.
+  // blink::FocusController's 'active' set to false and
+  // document.hasFocus() will return false.
   content::SimulateActiveStateForWidget(main_frame, false);
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(FrameIsActivated(main_frame));
+  EXPECT_FALSE(FrameIsActivated(iframe));
+  EXPECT_FALSE(FrameIsFocused(main_frame));
+  EXPECT_FALSE(FrameIsFocused(iframe));
 
   // After changing the 'active' state of main_frame to true
-  // blink::FocusController's 'active' set to true.
+  // blink::FocusController's 'active' set to true and
+  // document.hasFocus() will return true.
   content::SimulateActiveStateForWidget(main_frame, true);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(FrameIsActivated(main_frame));
+  EXPECT_TRUE(FrameIsActivated(iframe));
+  EXPECT_TRUE(FrameIsFocused(main_frame));
+  EXPECT_FALSE(FrameIsFocused(iframe));
+
+  // Now unfocus the main frame, this should keep the active state.
+  main_frame->GetRenderWidgetHost()->Blur();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(FrameIsActivated(main_frame));
+  EXPECT_TRUE(FrameIsActivated(iframe));
+  EXPECT_FALSE(FrameIsFocused(main_frame));
+  EXPECT_FALSE(FrameIsFocused(iframe));
 }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Verifies that getting active input control accounts for iframe positioning.
+// Flaky: crbug.com/1293700
 IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewAuraActiveWidgetTest,
-                       TextControlBoundingRegionInIframe) {
+                       DISABLED_TextControlBoundingRegionInIframe) {
   GURL page(
       embedded_test_server()->GetURL("example.com", "/input_in_iframe.html"));
   EXPECT_TRUE(NavigateToURL(shell(), page));

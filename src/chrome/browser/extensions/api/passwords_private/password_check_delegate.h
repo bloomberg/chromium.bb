@@ -18,13 +18,17 @@
 #include "components/password_manager/core/browser/bulk_leak_check_service.h"
 #include "components/password_manager/core/browser/leak_detection/bulk_leak_check.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_delegate_interface.h"
-#include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/ui/bulk_leak_check_service_adapter.h"
+#include "components/password_manager/core/browser/ui/credential_ui_entry.h"
 #include "components/password_manager/core/browser/ui/credential_utils.h"
 #include "components/password_manager/core/browser/ui/insecure_credentials_manager.h"
 #include "components/password_manager/core/browser/ui/saved_passwords_presenter.h"
 
 class Profile;
+
+namespace password_manager {
+class PasswordChangeSuccessTracker;
+}  // namespace password_manager
 
 namespace extensions {
 
@@ -75,6 +79,22 @@ class PasswordCheckDelegate
   bool RemoveInsecureCredential(
       const api::passwords_private::InsecureCredential& credential);
 
+  // Attempts to mute |credential| from the password store. Returns whether
+  // the mute succeeded.
+  bool MuteInsecureCredential(
+      const api::passwords_private::InsecureCredential& credential);
+
+  // Attempts to unmute |credential| from the password store. Returns whether
+  // the unmute succeeded.
+  bool UnmuteInsecureCredential(
+      const api::passwords_private::InsecureCredential& credential);
+
+  // Records that a change password flow was started for |credential| and
+  // whether |is_manual_flow| applies to the flow.
+  void RecordChangePasswordFlowStarted(
+      const api::passwords_private::InsecureCredential& credential,
+      bool is_manual_flow);
+
   // Requests to start a check for insecure passwords. Invokes |callback| once a
   // check is running or the request was stopped via StopPasswordCheck().
   void StartPasswordCheck(
@@ -114,14 +134,13 @@ class PasswordCheckDelegate
   void OnCredentialDone(const password_manager::LeakCheckCredential& credential,
                         password_manager::IsLeaked is_leaked) override;
 
-  // Tries to find the matching CredentialWithPassword for |credential|. It
+  // Tries to find the matching CredentialUIEntry for |credential|. It
   // performs a look-up in |insecure_credential_id_generator_| using
   // |credential.id|. If a matching value exists it also verifies that signon
   // realm, username and when possible password match.
-  // Returns a pointer to the matching CredentialWithPassword on success or
+  // Returns a pointer to the matching CredentialUIEntry on success or
   // nullptr otherwise.
-  const password_manager::CredentialWithPassword*
-  FindMatchingInsecureCredential(
+  const password_manager::CredentialUIEntry* FindMatchingEntry(
       const api::passwords_private::InsecureCredential& credential) const;
 
   // Invoked when a compromised password check completes. Records the current
@@ -137,9 +156,14 @@ class PasswordCheckDelegate
   // OnStateChanged.
   void NotifyPasswordCheckStatusChanged();
 
-  // Constructs |InsecureCredential| from |CredentialWithPassword|.
+  // Constructs |InsecureCredential| from |CredentialUIEntry|.
   api::passwords_private::InsecureCredential ConstructInsecureCredential(
-      const password_manager::CredentialWithPassword& credential);
+      const password_manager::CredentialUIEntry& entry);
+
+  // Obtain a raw pointer to the |PasswordChangeSuccessTracker| associated
+  // with |profile_|.
+  password_manager::PasswordChangeSuccessTracker*
+  GetPasswordChangeSuccessTracker();
 
   // Raw pointer to the underlying profile. Needs to outlive this instance.
   raw_ptr<Profile> profile_ = nullptr;
@@ -194,10 +218,10 @@ class PasswordCheckDelegate
 
   // An id generator for insecure credentials. Required to match
   // api::passwords_private::InsecureCredential instances passed to the UI
-  // with the underlying CredentialWithPassword they are based on.
-  IdGenerator<password_manager::CredentialWithPassword,
+  // with the underlying CredentialUIEntry they are based on.
+  IdGenerator<password_manager::CredentialUIEntry,
               int,
-              password_manager::PasswordCredentialLess>
+              password_manager::CredentialUIEntry::Less>
       insecure_credential_id_generator_;
 
   base::WeakPtrFactory<PasswordCheckDelegate> weak_ptr_factory_{this};

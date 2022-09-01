@@ -16,13 +16,14 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/web_applications/test/fake_data_retriever.h"
 #include "chrome/browser/web_applications/test/test_web_app_url_loader.h"
-#include "chrome/browser/web_applications/web_application_info.h"
+#include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/exo/shell_surface_util.h"
 #include "components/exo/wm_helper_chromeos.h"
 #include "components/user_manager/scoped_user_manager.h"
+#include "components/webapps/browser/install_result_code.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -62,10 +63,10 @@ const char16_t kAppTitle[] = u"app";
 std::unique_ptr<web_app::WebAppDataRetriever> CreateDataRetrieverWithData(
     const GURL& url) {
   auto data_retriever = std::make_unique<web_app::FakeDataRetriever>();
-  auto info = std::make_unique<WebApplicationInfo>();
+  auto info = std::make_unique<WebAppInstallInfo>();
   info->start_url = url;
   info->title = kAppTitle;
-  data_retriever->SetRendererWebApplicationInfo(std::move(info));
+  data_retriever->SetRendererWebAppInstallInfo(std::move(info));
   return std::unique_ptr<web_app::WebAppDataRetriever>(
       std::move(data_retriever));
 }
@@ -130,10 +131,10 @@ class WebKioskAppLauncherTest : public BrowserWithTestWindowTest {
     app_manager_->AddAppForTesting(account_id_, GURL(kAppInstallUrl));
 
     if (installed) {
-      auto info = std::make_unique<WebApplicationInfo>();
-      info->start_url = GURL(kAppLaunchUrl);
-      info->title = kAppTitle;
-      app_manager_->UpdateAppByAccountId(account_id_, std::move(info));
+      WebAppInstallInfo info;
+      info.start_url = GURL(kAppLaunchUrl);
+      info.title = kAppTitle;
+      app_manager_->UpdateAppByAccountId(account_id_, info);
     }
   }
 
@@ -302,6 +303,8 @@ TEST_F(WebKioskAppLauncherTest, InstallationRestarted) {
 }
 
 TEST_F(WebKioskAppLauncherTest, UrlNotLoaded) {
+  base::HistogramTester histogram;
+
   SetupAppData(/*installed*/ false);
 
   base::RunLoop loop1;
@@ -322,6 +325,11 @@ TEST_F(WebKioskAppLauncherTest, UrlNotLoaded) {
   loop2.Run();
 
   EXPECT_NE(app_data()->status(), WebKioskAppData::Status::kInstalled);
+
+  content::FetchHistogramsFromChildProcesses();
+  histogram.ExpectUniqueSample(
+      "Kiosk.WebApp.InstallError",
+      webapps::InstallResultCode::kInstallURLLoadTimeOut, 1);
 }
 
 TEST_F(WebKioskAppLauncherTest, SkipInstallation) {
