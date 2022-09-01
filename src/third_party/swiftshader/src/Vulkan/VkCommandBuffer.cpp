@@ -120,6 +120,116 @@ public:
 	std::string description() override { return "vkCmdEndRenderPass()"; }
 };
 
+class CmdBeginRendering : public vk::CommandBuffer::Command
+{
+public:
+	CmdBeginRendering(const VkRenderingInfo *pRenderingInfo)
+	    : dynamicRendering(pRenderingInfo)
+	{
+	}
+
+	void execute(vk::CommandBuffer::ExecutionState &executionState) override
+	{
+		executionState.dynamicRendering = &dynamicRendering;
+
+		if(!executionState.dynamicRendering->resume())
+		{
+			VkRect2D renderArea = executionState.dynamicRendering->getRenderArea();
+			uint32_t viewMask = executionState.dynamicRendering->getViewMask();
+
+			// Vulkan specifies that the attachments' `loadOp` gets executed "at the beginning of the subpass where it is first used."
+			// Since we don't discard any contents between subpasses, this is equivalent to executing it at the start of the renderpass.
+			for(uint32_t i = 0; i < dynamicRendering.getColorAttachmentCount(); i++)
+			{
+				const VkRenderingAttachmentInfo *colorAttachment = dynamicRendering.getColorAttachment(i);
+
+				if(colorAttachment->loadOp == VK_ATTACHMENT_LOAD_OP_CLEAR)
+				{
+					vk::ImageView *imageView = vk::Cast(colorAttachment->imageView);
+					if(imageView)
+					{
+						imageView->clear(colorAttachment->clearValue, VK_IMAGE_ASPECT_COLOR_BIT, renderArea, viewMask);
+					}
+				}
+			}
+
+			const VkRenderingAttachmentInfo &stencilAttachment = dynamicRendering.getStencilAttachment();
+			if(stencilAttachment.loadOp == VK_ATTACHMENT_LOAD_OP_CLEAR)
+			{
+				vk::ImageView *imageView = vk::Cast(stencilAttachment.imageView);
+				if(imageView)
+				{
+					imageView->clear(stencilAttachment.clearValue, VK_IMAGE_ASPECT_STENCIL_BIT, renderArea, viewMask);
+				}
+			}
+
+			const VkRenderingAttachmentInfo &depthAttachment = dynamicRendering.getDepthAttachment();
+			if(depthAttachment.loadOp == VK_ATTACHMENT_LOAD_OP_CLEAR)
+			{
+				vk::ImageView *imageView = vk::Cast(depthAttachment.imageView);
+
+				if(imageView)
+				{
+					imageView->clear(depthAttachment.clearValue, VK_IMAGE_ASPECT_DEPTH_BIT, renderArea, viewMask);
+				}
+			}
+		}
+	}
+
+	std::string description() override { return "vkCmdBeginRendering()"; }
+
+private:
+	vk::DynamicRendering dynamicRendering;
+};
+
+class CmdEndRendering : public vk::CommandBuffer::Command
+{
+public:
+	void execute(vk::CommandBuffer::ExecutionState &executionState) override
+	{
+		// TODO(b/197691918): Avoid halt-the-world synchronization.
+		executionState.renderer->synchronize();
+
+		if(!executionState.dynamicRendering->suspend())
+		{
+			uint32_t viewMask = executionState.dynamicRendering->getViewMask();
+
+			// TODO(b/197691917): Eliminate redundant resolve operations.
+			uint32_t colorAttachmentCount = executionState.dynamicRendering->getColorAttachmentCount();
+			for(uint32_t i = 0; i < colorAttachmentCount; i++)
+			{
+				const VkRenderingAttachmentInfo *colorAttachment = executionState.dynamicRendering->getColorAttachment(i);
+				if(colorAttachment && colorAttachment->resolveMode != VK_RESOLVE_MODE_NONE)
+				{
+					vk::ImageView *imageView = vk::Cast(colorAttachment->imageView);
+					vk::ImageView *resolveImageView = vk::Cast(colorAttachment->resolveImageView);
+					imageView->resolve(resolveImageView, viewMask);
+				}
+			}
+
+			const VkRenderingAttachmentInfo &depthAttachment = executionState.dynamicRendering->getDepthAttachment();
+			if(depthAttachment.resolveMode != VK_RESOLVE_MODE_NONE)
+			{
+				vk::ImageView *imageView = vk::Cast(depthAttachment.imageView);
+				vk::ImageView *resolveImageView = vk::Cast(depthAttachment.resolveImageView);
+				imageView->resolveDepthStencil(resolveImageView, depthAttachment.resolveMode, VK_RESOLVE_MODE_NONE);
+			}
+
+			const VkRenderingAttachmentInfo &stencilAttachment = executionState.dynamicRendering->getStencilAttachment();
+			if(stencilAttachment.resolveMode != VK_RESOLVE_MODE_NONE)
+			{
+				vk::ImageView *imageView = vk::Cast(stencilAttachment.imageView);
+				vk::ImageView *resolveImageView = vk::Cast(stencilAttachment.resolveImageView);
+				imageView->resolveDepthStencil(resolveImageView, VK_RESOLVE_MODE_NONE, stencilAttachment.resolveMode);
+			}
+		}
+
+		executionState.dynamicRendering = nullptr;
+	}
+
+	std::string description() override { return "vkCmdEndRendering()"; }
+};
+
 class CmdExecuteCommands : public vk::CommandBuffer::Command
 {
 public:
@@ -230,16 +340,18 @@ private:
 class CmdVertexBufferBind : public vk::CommandBuffer::Command
 {
 public:
-	CmdVertexBufferBind(uint32_t binding, vk::Buffer *buffer, const VkDeviceSize offset)
+	CmdVertexBufferBind(uint32_t binding, vk::Buffer *buffer, const VkDeviceSize offset, const VkDeviceSize size, const VkDeviceSize stride)
 	    : binding(binding)
 	    , buffer(buffer)
 	    , offset(offset)
+	    , size(size)
+	    , stride(stride)
 	{
 	}
 
 	void execute(vk::CommandBuffer::ExecutionState &executionState) override
 	{
-		executionState.vertexInputBindings[binding] = { buffer, offset };
+		executionState.vertexInputBindings[binding] = { buffer, offset, size, stride };
 	}
 
 	std::string description() override { return "vkCmdVertexBufferBind()"; }
@@ -248,6 +360,8 @@ private:
 	const uint32_t binding;
 	vk::Buffer *const buffer;
 	const VkDeviceSize offset;
+	const VkDeviceSize size;
+	const VkDeviceSize stride;
 };
 
 class CmdIndexBufferBind : public vk::CommandBuffer::Command
@@ -262,7 +376,7 @@ public:
 
 	void execute(vk::CommandBuffer::ExecutionState &executionState) override
 	{
-		executionState.indexBufferBinding = { buffer, offset };
+		executionState.indexBufferBinding = { buffer, offset, 0, 0 };
 		executionState.indexType = indexType;
 	}
 
@@ -314,6 +428,25 @@ public:
 private:
 	const VkRect2D scissor;
 	const uint32_t scissorID;
+};
+
+class CmdSetLineWidth : public vk::CommandBuffer::Command
+{
+public:
+	CmdSetLineWidth(float lineWidth)
+	    : lineWidth(lineWidth)
+	{
+	}
+
+	void execute(vk::CommandBuffer::ExecutionState &executionState) override
+	{
+		executionState.dynamicState.lineWidth = lineWidth;
+	}
+
+	std::string description() override { return "vkCmdSetLineWidth()"; }
+
+private:
+	const float lineWidth;
 };
 
 class CmdSetDepthBias : public vk::CommandBuffer::Command
@@ -395,12 +528,12 @@ public:
 	{
 		if(faceMask & VK_STENCIL_FACE_FRONT_BIT)
 		{
-			executionState.dynamicState.compareMask[0] = compareMask;
+			executionState.dynamicState.frontStencil.compareMask = compareMask;
 		}
 
 		if(faceMask & VK_STENCIL_FACE_BACK_BIT)
 		{
-			executionState.dynamicState.compareMask[1] = compareMask;
+			executionState.dynamicState.backStencil.compareMask = compareMask;
 		}
 	}
 
@@ -424,12 +557,12 @@ public:
 	{
 		if(faceMask & VK_STENCIL_FACE_FRONT_BIT)
 		{
-			executionState.dynamicState.writeMask[0] = writeMask;
+			executionState.dynamicState.frontStencil.writeMask = writeMask;
 		}
 
 		if(faceMask & VK_STENCIL_FACE_BACK_BIT)
 		{
-			executionState.dynamicState.writeMask[1] = writeMask;
+			executionState.dynamicState.backStencil.writeMask = writeMask;
 		}
 	}
 
@@ -453,11 +586,11 @@ public:
 	{
 		if(faceMask & VK_STENCIL_FACE_FRONT_BIT)
 		{
-			executionState.dynamicState.reference[0] = reference;
+			executionState.dynamicState.frontStencil.reference = reference;
 		}
 		if(faceMask & VK_STENCIL_FACE_BACK_BIT)
 		{
-			executionState.dynamicState.reference[1] = reference;
+			executionState.dynamicState.backStencil.reference = reference;
 		}
 	}
 
@@ -466,6 +599,295 @@ public:
 private:
 	const VkStencilFaceFlags faceMask;
 	const uint32_t reference;
+};
+
+class CmdSetCullMode : public vk::CommandBuffer::Command
+{
+public:
+	CmdSetCullMode(VkCullModeFlags cullMode)
+	    : cullMode(cullMode)
+	{}
+
+	void execute(vk::CommandBuffer::ExecutionState &executionState) override
+	{
+		executionState.dynamicState.cullMode = cullMode;
+	}
+
+	std::string description() override { return "vkCmdSetCullModeEXT()"; }
+
+private:
+	const VkCullModeFlags cullMode;
+};
+
+class CmdSetDepthBoundsTestEnable : public vk::CommandBuffer::Command
+{
+public:
+	CmdSetDepthBoundsTestEnable(VkBool32 depthBoundsTestEnable)
+	    : depthBoundsTestEnable(depthBoundsTestEnable)
+	{}
+
+	void execute(vk::CommandBuffer::ExecutionState &executionState) override
+	{
+		executionState.dynamicState.depthBoundsTestEnable = depthBoundsTestEnable;
+	}
+
+	std::string description() override { return "vkCmdSetDepthBoundsTestEnableEXT()"; }
+
+private:
+	const VkBool32 depthBoundsTestEnable;
+};
+
+class CmdSetDepthCompareOp : public vk::CommandBuffer::Command
+{
+public:
+	CmdSetDepthCompareOp(VkCompareOp depthCompareOp)
+	    : depthCompareOp(depthCompareOp)
+	{}
+
+	void execute(vk::CommandBuffer::ExecutionState &executionState) override
+	{
+		executionState.dynamicState.depthCompareOp = depthCompareOp;
+	}
+
+	std::string description() override { return "vkCmdSetDepthCompareOpEXT()"; }
+
+private:
+	const VkCompareOp depthCompareOp;
+};
+
+class CmdSetDepthTestEnable : public vk::CommandBuffer::Command
+{
+public:
+	CmdSetDepthTestEnable(VkBool32 depthTestEnable)
+	    : depthTestEnable(depthTestEnable)
+	{}
+
+	void execute(vk::CommandBuffer::ExecutionState &executionState) override
+	{
+		executionState.dynamicState.depthTestEnable = depthTestEnable;
+	}
+
+	std::string description() override { return "vkCmdSetDepthTestEnableEXT()"; }
+
+private:
+	const VkBool32 depthTestEnable;
+};
+
+class CmdSetDepthWriteEnable : public vk::CommandBuffer::Command
+{
+public:
+	CmdSetDepthWriteEnable(VkBool32 depthWriteEnable)
+	    : depthWriteEnable(depthWriteEnable)
+	{}
+
+	void execute(vk::CommandBuffer::ExecutionState &executionState) override
+	{
+		executionState.dynamicState.depthWriteEnable = depthWriteEnable;
+	}
+
+	std::string description() override { return "vkCmdSetDepthWriteEnableEXT()"; }
+
+private:
+	const VkBool32 depthWriteEnable;
+};
+
+class CmdSetFrontFace : public vk::CommandBuffer::Command
+{
+public:
+	CmdSetFrontFace(VkFrontFace frontFace)
+	    : frontFace(frontFace)
+	{}
+
+	void execute(vk::CommandBuffer::ExecutionState &executionState) override
+	{
+		executionState.dynamicState.frontFace = frontFace;
+	}
+
+	std::string description() override { return "vkCmdSetFrontFaceEXT()"; }
+
+private:
+	const VkFrontFace frontFace;
+};
+
+class CmdSetPrimitiveTopology : public vk::CommandBuffer::Command
+{
+public:
+	CmdSetPrimitiveTopology(VkPrimitiveTopology primitiveTopology)
+	    : primitiveTopology(primitiveTopology)
+	{}
+
+	void execute(vk::CommandBuffer::ExecutionState &executionState) override
+	{
+		executionState.dynamicState.primitiveTopology = primitiveTopology;
+	}
+
+	std::string description() override { return "vkCmdSetPrimitiveTopologyEXT()"; }
+
+private:
+	const VkPrimitiveTopology primitiveTopology;
+};
+
+class CmdSetScissorWithCount : public vk::CommandBuffer::Command
+{
+public:
+	CmdSetScissorWithCount(uint32_t scissorCount, const VkRect2D *pScissors)
+	    : scissorCount(scissorCount)
+	{
+		memcpy(&(scissors[0]), pScissors, scissorCount * sizeof(VkRect2D));
+	}
+
+	void execute(vk::CommandBuffer::ExecutionState &executionState) override
+	{
+		executionState.dynamicState.scissorCount = scissorCount;
+		for(uint32_t i = 0; i < scissorCount; i++)
+		{
+			executionState.dynamicState.scissors[i] = scissors[i];
+		}
+	}
+
+	std::string description() override { return "vkCmdSetScissorWithCountEXT()"; }
+
+private:
+	const uint32_t scissorCount;
+	VkRect2D scissors[vk::MAX_VIEWPORTS];
+};
+
+class CmdSetStencilOp : public vk::CommandBuffer::Command
+{
+public:
+	CmdSetStencilOp(VkStencilFaceFlags faceMask, VkStencilOp failOp, VkStencilOp passOp, VkStencilOp depthFailOp, VkCompareOp compareOp)
+	    : faceMask(faceMask)
+	    , failOp(failOp)
+	    , passOp(passOp)
+	    , depthFailOp(depthFailOp)
+	    , compareOp(compareOp)
+	{}
+
+	void execute(vk::CommandBuffer::ExecutionState &executionState) override
+	{
+		executionState.dynamicState.faceMask |= faceMask;
+
+		if(faceMask & VK_STENCIL_FACE_FRONT_BIT)
+		{
+			executionState.dynamicState.frontStencil.failOp = failOp;
+			executionState.dynamicState.frontStencil.passOp = passOp;
+			executionState.dynamicState.frontStencil.depthFailOp = depthFailOp;
+			executionState.dynamicState.frontStencil.compareOp = compareOp;
+		}
+		if(faceMask & VK_STENCIL_FACE_BACK_BIT)
+		{
+			executionState.dynamicState.backStencil.failOp = failOp;
+			executionState.dynamicState.backStencil.passOp = passOp;
+			executionState.dynamicState.backStencil.depthFailOp = depthFailOp;
+			executionState.dynamicState.backStencil.compareOp = compareOp;
+		}
+	}
+
+	std::string description() override { return "vkCmdSetStencilOpEXT()"; }
+
+private:
+	const VkStencilFaceFlags faceMask;
+	const VkStencilOp failOp;
+	const VkStencilOp passOp;
+	const VkStencilOp depthFailOp;
+	const VkCompareOp compareOp;
+};
+
+class CmdSetStencilTestEnable : public vk::CommandBuffer::Command
+{
+public:
+	CmdSetStencilTestEnable(VkBool32 stencilTestEnable)
+	    : stencilTestEnable(stencilTestEnable)
+	{}
+
+	void execute(vk::CommandBuffer::ExecutionState &executionState) override
+	{
+		executionState.dynamicState.stencilTestEnable = stencilTestEnable;
+	}
+
+	std::string description() override { return "vkCmdSetStencilTestEnableEXT()"; }
+
+private:
+	const VkBool32 stencilTestEnable;
+};
+
+class CmdSetViewportWithCount : public vk::CommandBuffer::Command
+{
+public:
+	CmdSetViewportWithCount(uint32_t viewportCount, const VkViewport *pViewports)
+	    : viewportCount(viewportCount)
+	{
+		memcpy(&(viewports[0]), pViewports, viewportCount * sizeof(VkRect2D));
+	}
+
+	void execute(vk::CommandBuffer::ExecutionState &executionState) override
+	{
+		executionState.dynamicState.viewportCount = viewportCount;
+		for(uint32_t i = 0; i < viewportCount; i++)
+		{
+			executionState.dynamicState.viewports[i] = viewports[i];
+		}
+	}
+
+	std::string description() override { return "vkCmdSetViewportWithCountEXT()"; }
+
+private:
+	const uint32_t viewportCount;
+	VkRect2D viewports[vk::MAX_VIEWPORTS];
+};
+
+class CmdSetRasterizerDiscardEnable : public vk::CommandBuffer::Command
+{
+public:
+	CmdSetRasterizerDiscardEnable(VkBool32 rasterizerDiscardEnable)
+	    : rasterizerDiscardEnable(rasterizerDiscardEnable)
+	{}
+
+	void execute(vk::CommandBuffer::ExecutionState &executionState) override
+	{
+		executionState.dynamicState.rasterizerDiscardEnable = rasterizerDiscardEnable;
+	}
+
+	std::string description() override { return "vkCmdSetRasterizerDiscardEnable()"; }
+
+private:
+	const VkBool32 rasterizerDiscardEnable;
+};
+
+class CmdSetDepthBiasEnable : public vk::CommandBuffer::Command
+{
+public:
+	CmdSetDepthBiasEnable(VkBool32 depthBiasEnable)
+	    : depthBiasEnable(depthBiasEnable)
+	{}
+
+	void execute(vk::CommandBuffer::ExecutionState &executionState) override
+	{
+		executionState.dynamicState.depthBiasEnable = depthBiasEnable;
+	}
+
+	std::string description() override { return "vkCmdSetDepthBiasEnable()"; }
+
+private:
+	const VkBool32 depthBiasEnable;
+};
+
+class CmdSetPrimitiveRestartEnable : public vk::CommandBuffer::Command
+{
+public:
+	CmdSetPrimitiveRestartEnable(VkBool32 primitiveRestartEnable)
+	    : primitiveRestartEnable(primitiveRestartEnable)
+	{}
+
+	void execute(vk::CommandBuffer::ExecutionState &executionState) override
+	{
+		executionState.dynamicState.primitiveRestartEnable = primitiveRestartEnable;
+	}
+
+	std::string description() override { return "vkCmdSetPrimitiveRestartEnable()"; }
+
+private:
+	const VkBool32 primitiveRestartEnable;
 };
 
 class CmdDrawBase : public vk::CommandBuffer::Command
@@ -477,6 +899,7 @@ public:
 		auto const &pipelineState = executionState.pipelineState[VK_PIPELINE_BIND_POINT_GRAPHICS];
 
 		auto *pipeline = static_cast<vk::GraphicsPipeline *>(pipelineState.pipeline);
+		bool hasDynamicVertexStride = pipeline->hasDynamicVertexStride();
 
 		vk::Attachments &attachments = pipeline->getAttachments();
 		executionState.bindAttachments(&attachments);
@@ -486,33 +909,34 @@ public:
 		                            pipelineState.descriptorSets,
 		                            pipelineState.descriptorDynamicOffsets);
 		inputs.setVertexInputBinding(executionState.vertexInputBindings);
-		inputs.bindVertexInputs(firstInstance);
+		inputs.bindVertexInputs(firstInstance, hasDynamicVertexStride);
 
 		vk::IndexBuffer &indexBuffer = pipeline->getIndexBuffer();
 		indexBuffer.setIndexBufferBinding(executionState.indexBufferBinding, executionState.indexType);
 
 		std::vector<std::pair<uint32_t, void *>> indexBuffers;
-		pipeline->getIndexBuffers(count, first, indexed, &indexBuffers);
+		pipeline->getIndexBuffers(executionState.dynamicState, count, first, indexed, &indexBuffers);
+
+		VkRect2D renderArea = executionState.getRenderArea();
 
 		for(uint32_t instance = firstInstance; instance != firstInstance + instanceCount; instance++)
 		{
 			// FIXME: reconsider instances/views nesting.
-			auto viewMask = executionState.renderPass->getViewMask(executionState.subpassIndex);
-			while(viewMask)
+			auto layerMask = executionState.getLayerMask();
+			while(layerMask)
 			{
-				int viewID = sw::log2i(viewMask);
-				viewMask &= ~(1 << viewID);
+				int layer = sw::log2i(layerMask);
+				layerMask &= ~(1 << layer);
 
 				for(auto indexBuffer : indexBuffers)
 				{
 					executionState.renderer->draw(pipeline, executionState.dynamicState, indexBuffer.first, vertexOffset,
-					                              executionState.events, instance, viewID, indexBuffer.second,
-					                              executionState.renderPassFramebuffer->getExtent(),
-					                              executionState.pushConstants);
+					                              executionState.events, instance, layer, indexBuffer.second,
+					                              renderArea, executionState.pushConstants);
 				}
 			}
 
-			inputs.advanceInstanceAttributes();
+			inputs.advanceInstanceAttributes(hasDynamicVertexStride);
 		}
 	}
 };
@@ -630,7 +1054,7 @@ private:
 class CmdCopyImage : public vk::CommandBuffer::Command
 {
 public:
-	CmdCopyImage(const vk::Image *srcImage, vk::Image *dstImage, const VkImageCopy2KHR &region)
+	CmdCopyImage(const vk::Image *srcImage, vk::Image *dstImage, const VkImageCopy2 &region)
 	    : srcImage(srcImage)
 	    , dstImage(dstImage)
 	    , region(region)
@@ -647,13 +1071,13 @@ public:
 private:
 	const vk::Image *const srcImage;
 	vk::Image *const dstImage;
-	const VkImageCopy2KHR region;
+	const VkImageCopy2 region;
 };
 
 class CmdCopyBuffer : public vk::CommandBuffer::Command
 {
 public:
-	CmdCopyBuffer(const vk::Buffer *srcBuffer, vk::Buffer *dstBuffer, const VkBufferCopy2KHR &region)
+	CmdCopyBuffer(const vk::Buffer *srcBuffer, vk::Buffer *dstBuffer, const VkBufferCopy2 &region)
 	    : srcBuffer(srcBuffer)
 	    , dstBuffer(dstBuffer)
 	    , region(region)
@@ -670,13 +1094,13 @@ public:
 private:
 	const vk::Buffer *const srcBuffer;
 	vk::Buffer *const dstBuffer;
-	const VkBufferCopy2KHR region;
+	const VkBufferCopy2 region;
 };
 
 class CmdCopyImageToBuffer : public vk::CommandBuffer::Command
 {
 public:
-	CmdCopyImageToBuffer(vk::Image *srcImage, vk::Buffer *dstBuffer, const VkBufferImageCopy2KHR &region)
+	CmdCopyImageToBuffer(vk::Image *srcImage, vk::Buffer *dstBuffer, const VkBufferImageCopy2 &region)
 	    : srcImage(srcImage)
 	    , dstBuffer(dstBuffer)
 	    , region(region)
@@ -693,13 +1117,13 @@ public:
 private:
 	vk::Image *const srcImage;
 	vk::Buffer *const dstBuffer;
-	const VkBufferImageCopy2KHR region;
+	const VkBufferImageCopy2 region;
 };
 
 class CmdCopyBufferToImage : public vk::CommandBuffer::Command
 {
 public:
-	CmdCopyBufferToImage(vk::Buffer *srcBuffer, vk::Image *dstImage, const VkBufferImageCopy2KHR &region)
+	CmdCopyBufferToImage(vk::Buffer *srcBuffer, vk::Image *dstImage, const VkBufferImageCopy2 &region)
 	    : srcBuffer(srcBuffer)
 	    , dstImage(dstImage)
 	    , region(region)
@@ -716,7 +1140,7 @@ public:
 private:
 	vk::Buffer *const srcBuffer;
 	vk::Image *const dstImage;
-	const VkBufferImageCopy2KHR region;
+	const VkBufferImageCopy2 region;
 };
 
 class CmdFillBuffer : public vk::CommandBuffer::Command
@@ -828,7 +1252,54 @@ public:
 		// however, we don't do the clear through the rasterizer, so need to ensure prior drawing
 		// has completed first.
 		executionState.renderer->synchronize();
-		executionState.renderPassFramebuffer->clearAttachment(executionState.renderPass, executionState.subpassIndex, attachment, rect);
+
+		if(executionState.renderPassFramebuffer)
+		{
+			executionState.renderPassFramebuffer->clearAttachment(executionState.renderPass, executionState.subpassIndex, attachment, rect);
+		}
+		else if(executionState.dynamicRendering)
+		{
+			uint32_t viewMask = executionState.dynamicRendering->getViewMask();
+
+			if(attachment.aspectMask & VK_IMAGE_ASPECT_COLOR_BIT)
+			{
+				ASSERT(attachment.colorAttachment < executionState.dynamicRendering->getColorAttachmentCount());
+
+				const VkRenderingAttachmentInfo *colorAttachment =
+				    executionState.dynamicRendering->getColorAttachment(attachment.colorAttachment);
+
+				if(colorAttachment)
+				{
+					vk::ImageView *imageView = vk::Cast(colorAttachment->imageView);
+					if(imageView)
+					{
+						imageView->clear(attachment.clearValue, VK_IMAGE_ASPECT_COLOR_BIT, rect, viewMask);
+					}
+				}
+			}
+
+			if(attachment.aspectMask & VK_IMAGE_ASPECT_DEPTH_BIT)
+			{
+				const VkRenderingAttachmentInfo &depthAttachment = executionState.dynamicRendering->getDepthAttachment();
+
+				vk::ImageView *imageView = vk::Cast(depthAttachment.imageView);
+				if(imageView)
+				{
+					imageView->clear(attachment.clearValue, VK_IMAGE_ASPECT_DEPTH_BIT, rect, viewMask);
+				}
+			}
+
+			if(attachment.aspectMask & VK_IMAGE_ASPECT_STENCIL_BIT)
+			{
+				const VkRenderingAttachmentInfo &stencilAttachment = executionState.dynamicRendering->getStencilAttachment();
+
+				vk::ImageView *imageView = vk::Cast(stencilAttachment.imageView);
+				if(imageView)
+				{
+					imageView->clear(attachment.clearValue, VK_IMAGE_ASPECT_STENCIL_BIT, rect, viewMask);
+				}
+			}
+		}
 	}
 
 	std::string description() override { return "vkCmdClearAttachment()"; }
@@ -841,7 +1312,7 @@ private:
 class CmdBlitImage : public vk::CommandBuffer::Command
 {
 public:
-	CmdBlitImage(const vk::Image *srcImage, vk::Image *dstImage, const VkImageBlit2KHR &region, VkFilter filter)
+	CmdBlitImage(const vk::Image *srcImage, vk::Image *dstImage, const VkImageBlit2 &region, VkFilter filter)
 	    : srcImage(srcImage)
 	    , dstImage(dstImage)
 	    , region(region)
@@ -859,14 +1330,14 @@ public:
 private:
 	const vk::Image *const srcImage;
 	vk::Image *const dstImage;
-	const VkImageBlit2KHR region;
+	const VkImageBlit2 region;
 	const VkFilter filter;
 };
 
 class CmdResolveImage : public vk::CommandBuffer::Command
 {
 public:
-	CmdResolveImage(const vk::Image *srcImage, vk::Image *dstImage, const VkImageResolve2KHR &region)
+	CmdResolveImage(const vk::Image *srcImage, vk::Image *dstImage, const VkImageResolve2 &region)
 	    : srcImage(srcImage)
 	    , dstImage(dstImage)
 	    , region(region)
@@ -883,7 +1354,7 @@ public:
 private:
 	const vk::Image *const srcImage;
 	vk::Image *const dstImage;
-	const VkImageResolve2KHR region;
+	const VkImageResolve2 region;
 };
 
 class CmdPipelineBarrier : public vk::CommandBuffer::Command
@@ -907,9 +1378,8 @@ public:
 class CmdSignalEvent : public vk::CommandBuffer::Command
 {
 public:
-	CmdSignalEvent(vk::Event *ev, VkPipelineStageFlags stageMask)
+	CmdSignalEvent(vk::Event *ev)
 	    : ev(ev)
-	    , stageMask(stageMask)
 	{
 	}
 
@@ -923,13 +1393,12 @@ public:
 
 private:
 	vk::Event *const ev;
-	const VkPipelineStageFlags stageMask;  // TODO(b/117835459): We currently ignore the flags and signal the event at the last stage
 };
 
 class CmdResetEvent : public vk::CommandBuffer::Command
 {
 public:
-	CmdResetEvent(vk::Event *ev, VkPipelineStageFlags stageMask)
+	CmdResetEvent(vk::Event *ev, VkPipelineStageFlags2 stageMask)
 	    : ev(ev)
 	    , stageMask(stageMask)
 	{
@@ -944,7 +1413,7 @@ public:
 
 private:
 	vk::Event *const ev;
-	const VkPipelineStageFlags stageMask;  // FIXME(b/117835459): We currently ignore the flags and reset the event at the last stage
+	const VkPipelineStageFlags2 stageMask;  // FIXME(b/117835459): We currently ignore the flags and reset the event at the last stage
 };
 
 class CmdWaitEvent : public vk::CommandBuffer::Command
@@ -983,7 +1452,7 @@ public:
 		{
 			// We need both a descriptor set object for updates and a descriptor set data pointer for routines
 			descriptorSetObjects[firstSet + i] = vk::Cast(pDescriptorSets[i]);
-			descriptorSets[firstSet + i] = vk::Cast(pDescriptorSets[i])->data;
+			descriptorSets[firstSet + i] = vk::Cast(pDescriptorSets[i])->getDataAddress();
 		}
 
 		for(uint32_t i = 0; i < dynamicOffsetCount; i++)
@@ -1144,7 +1613,7 @@ private:
 class CmdWriteTimeStamp : public vk::CommandBuffer::Command
 {
 public:
-	CmdWriteTimeStamp(vk::QueryPool *queryPool, uint32_t query, VkPipelineStageFlagBits stage)
+	CmdWriteTimeStamp(vk::QueryPool *queryPool, uint32_t query, VkPipelineStageFlagBits2 stage)
 	    : queryPool(queryPool)
 	    , query(query)
 	    , stage(stage)
@@ -1153,7 +1622,7 @@ public:
 
 	void execute(vk::CommandBuffer::ExecutionState &executionState) override
 	{
-		if(stage & ~(VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT | VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT))
+		if(stage & ~(VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT | VK_PIPELINE_STAGE_2_DRAW_INDIRECT_BIT))
 		{
 			// The `top of pipe` and `draw indirect` stages are handled in command buffer processing so a timestamp write
 			// done in those stages can just be done here without any additional synchronization.
@@ -1177,7 +1646,7 @@ public:
 private:
 	vk::QueryPool *const queryPool;
 	const uint32_t query;
-	const VkPipelineStageFlagBits stage;
+	const VkPipelineStageFlagBits2 stage;
 };
 
 class CmdCopyQueryPoolResults : public vk::CommandBuffer::Command
@@ -1216,6 +1685,43 @@ private:
 }  // anonymous namespace
 
 namespace vk {
+
+DynamicRendering::DynamicRendering(const VkRenderingInfo *pRenderingInfo)
+    : renderArea(pRenderingInfo->renderArea)
+    , layerCount(pRenderingInfo->layerCount)
+    , viewMask(pRenderingInfo->viewMask)
+    , colorAttachmentCount(pRenderingInfo->colorAttachmentCount)
+    , flags(pRenderingInfo->flags)
+{
+	if(colorAttachmentCount > 0)
+	{
+		for(uint32_t i = 0; i < colorAttachmentCount; ++i)
+		{
+			colorAttachments[i] = pRenderingInfo->pColorAttachments[i];
+		}
+	}
+
+	if(pRenderingInfo->pDepthAttachment)
+	{
+		depthAttachment = *pRenderingInfo->pDepthAttachment;
+	}
+
+	if(pRenderingInfo->pStencilAttachment)
+	{
+		stencilAttachment = *pRenderingInfo->pStencilAttachment;
+	}
+}
+
+void DynamicRendering::getAttachments(Attachments *attachments) const
+{
+	for(uint32_t i = 0; i < sw::MAX_COLOR_BUFFERS; ++i)
+	{
+		attachments->colorBuffer[i] =
+		    (i < colorAttachmentCount) ? vk::Cast(colorAttachments[i].imageView) : nullptr;
+	}
+	attachments->depthBuffer = vk::Cast(depthAttachment.imageView);
+	attachments->stencilBuffer = vk::Cast(stencilAttachment.imageView);
+}
 
 CommandBuffer::CommandBuffer(Device *device, VkCommandBufferLevel pLevel)
     : device(device)
@@ -1300,7 +1806,7 @@ VkResult CommandBuffer::reset(VkCommandPoolResetFlags flags)
 }
 
 template<typename T, typename... Args>
-void CommandBuffer::addCommand(Args &&... args)
+void CommandBuffer::addCommand(Args &&...args)
 {
 	// FIXME (b/119409619): use an allocator here so we can control all memory allocations
 	commands.push_back(std::make_unique<T>(std::forward<Args>(args)...));
@@ -1344,6 +1850,20 @@ void CommandBuffer::executeCommands(uint32_t commandBufferCount, const VkCommand
 	}
 }
 
+void CommandBuffer::beginRendering(const VkRenderingInfo *pRenderingInfo)
+{
+	ASSERT(state == RECORDING);
+
+	addCommand<::CmdBeginRendering>(pRenderingInfo);
+}
+
+void CommandBuffer::endRendering()
+{
+	ASSERT(state == RECORDING);
+
+	addCommand<::CmdEndRendering>();
+}
+
 void CommandBuffer::setDeviceMask(uint32_t deviceMask)
 {
 	// SwiftShader only has one device, so we ignore the device mask
@@ -1355,11 +1875,7 @@ void CommandBuffer::dispatchBase(uint32_t baseGroupX, uint32_t baseGroupY, uint3
 	addCommand<::CmdDispatch>(baseGroupX, baseGroupY, baseGroupZ, groupCountX, groupCountY, groupCountZ);
 }
 
-void CommandBuffer::pipelineBarrier(VkPipelineStageFlags srcStageMask, VkPipelineStageFlags dstStageMask,
-                                    VkDependencyFlags dependencyFlags,
-                                    uint32_t memoryBarrierCount, const VkMemoryBarrier *pMemoryBarriers,
-                                    uint32_t bufferMemoryBarrierCount, const VkBufferMemoryBarrier *pBufferMemoryBarriers,
-                                    uint32_t imageMemoryBarrierCount, const VkImageMemoryBarrier *pImageMemoryBarriers)
+void CommandBuffer::pipelineBarrier(const VkDependencyInfo &pDependencyInfo)
 {
 	addCommand<::CmdPipelineBarrier>();
 }
@@ -1378,11 +1894,14 @@ void CommandBuffer::bindPipeline(VkPipelineBindPoint pipelineBindPoint, Pipeline
 }
 
 void CommandBuffer::bindVertexBuffers(uint32_t firstBinding, uint32_t bindingCount,
-                                      const VkBuffer *pBuffers, const VkDeviceSize *pOffsets)
+                                      const VkBuffer *pBuffers, const VkDeviceSize *pOffsets,
+                                      const VkDeviceSize *pSizes, const VkDeviceSize *pStrides)
 {
 	for(uint32_t i = 0; i < bindingCount; ++i)
 	{
-		addCommand<::CmdVertexBufferBind>(i + firstBinding, vk::Cast(pBuffers[i]), pOffsets[i]);
+		addCommand<::CmdVertexBufferBind>(i + firstBinding, vk::Cast(pBuffers[i]), pOffsets[i],
+		                                  pSizes ? pSizes[i] : 0,
+		                                  pStrides ? pStrides[i] : 0);
 	}
 }
 
@@ -1401,7 +1920,7 @@ void CommandBuffer::resetQueryPool(QueryPool *queryPool, uint32_t firstQuery, ui
 	addCommand<::CmdResetQueryPool>(queryPool, firstQuery, queryCount);
 }
 
-void CommandBuffer::writeTimestamp(VkPipelineStageFlagBits pipelineStage, QueryPool *queryPool, uint32_t query)
+void CommandBuffer::writeTimestamp(VkPipelineStageFlags2 pipelineStage, QueryPool *queryPool, uint32_t query)
 {
 	addCommand<::CmdWriteTimeStamp>(queryPool, query, pipelineStage);
 }
@@ -1446,8 +1965,7 @@ void CommandBuffer::setScissor(uint32_t firstScissor, uint32_t scissorCount, con
 
 void CommandBuffer::setLineWidth(float lineWidth)
 {
-	// If the wide lines feature is not enabled, lineWidth must be 1.0
-	ASSERT(lineWidth == 1.0f);
+	addCommand<::CmdSetLineWidth>(lineWidth);
 }
 
 void CommandBuffer::setDepthBias(float depthBiasConstantFactor, float depthBiasClamp, float depthBiasSlopeFactor)
@@ -1489,6 +2007,76 @@ void CommandBuffer::setStencilReference(VkStencilFaceFlags faceMask, uint32_t re
 	addCommand<::CmdSetStencilReference>(faceMask, reference);
 }
 
+void CommandBuffer::setCullMode(VkCullModeFlags cullMode)
+{
+	addCommand<::CmdSetCullMode>(cullMode);
+}
+
+void CommandBuffer::setDepthBoundsTestEnable(VkBool32 depthBoundsTestEnable)
+{
+	addCommand<::CmdSetDepthBoundsTestEnable>(depthBoundsTestEnable);
+}
+
+void CommandBuffer::setDepthCompareOp(VkCompareOp depthCompareOp)
+{
+	addCommand<::CmdSetDepthCompareOp>(depthCompareOp);
+}
+
+void CommandBuffer::setDepthTestEnable(VkBool32 depthTestEnable)
+{
+	addCommand<::CmdSetDepthTestEnable>(depthTestEnable);
+}
+
+void CommandBuffer::setDepthWriteEnable(VkBool32 depthWriteEnable)
+{
+	addCommand<::CmdSetDepthWriteEnable>(depthWriteEnable);
+}
+
+void CommandBuffer::setFrontFace(VkFrontFace frontFace)
+{
+	addCommand<::CmdSetFrontFace>(frontFace);
+}
+
+void CommandBuffer::setPrimitiveTopology(VkPrimitiveTopology primitiveTopology)
+{
+	addCommand<::CmdSetPrimitiveTopology>(primitiveTopology);
+}
+
+void CommandBuffer::setScissorWithCount(uint32_t scissorCount, const VkRect2D *pScissors)
+{
+	addCommand<::CmdSetScissorWithCount>(scissorCount, pScissors);
+}
+
+void CommandBuffer::setStencilOp(VkStencilFaceFlags faceMask, VkStencilOp failOp, VkStencilOp passOp, VkStencilOp depthFailOp, VkCompareOp compareOp)
+{
+	addCommand<::CmdSetStencilOp>(faceMask, failOp, passOp, depthFailOp, compareOp);
+}
+
+void CommandBuffer::setStencilTestEnable(VkBool32 stencilTestEnable)
+{
+	addCommand<::CmdSetStencilTestEnable>(stencilTestEnable);
+}
+
+void CommandBuffer::setViewportWithCount(uint32_t viewportCount, const VkViewport *pViewports)
+{
+	addCommand<::CmdSetViewportWithCount>(viewportCount, pViewports);
+}
+
+void CommandBuffer::setRasterizerDiscardEnable(VkBool32 rasterizerDiscardEnable)
+{
+	addCommand<::CmdSetRasterizerDiscardEnable>(rasterizerDiscardEnable);
+}
+
+void CommandBuffer::setDepthBiasEnable(VkBool32 depthBiasEnable)
+{
+	addCommand<::CmdSetDepthBiasEnable>(depthBiasEnable);
+}
+
+void CommandBuffer::setPrimitiveRestartEnable(VkBool32 primitiveRestartEnable)
+{
+	addCommand<::CmdSetPrimitiveRestartEnable>(primitiveRestartEnable);
+}
+
 void CommandBuffer::bindDescriptorSets(VkPipelineBindPoint pipelineBindPoint, const PipelineLayout *pipelineLayout,
                                        uint32_t firstSet, uint32_t descriptorSetCount, const VkDescriptorSet *pDescriptorSets,
                                        uint32_t dynamicOffsetCount, const uint32_t *pDynamicOffsets)
@@ -1517,7 +2105,7 @@ void CommandBuffer::dispatchIndirect(Buffer *buffer, VkDeviceSize offset)
 	addCommand<::CmdDispatchIndirect>(buffer, offset);
 }
 
-void CommandBuffer::copyBuffer(const VkCopyBufferInfo2KHR &copyBufferInfo)
+void CommandBuffer::copyBuffer(const VkCopyBufferInfo2 &copyBufferInfo)
 {
 	ASSERT(state == RECORDING);
 
@@ -1530,7 +2118,7 @@ void CommandBuffer::copyBuffer(const VkCopyBufferInfo2KHR &copyBufferInfo)
 	}
 }
 
-void CommandBuffer::copyImage(const VkCopyImageInfo2KHR &copyImageInfo)
+void CommandBuffer::copyImage(const VkCopyImageInfo2 &copyImageInfo)
 {
 	ASSERT(state == RECORDING);
 	ASSERT(copyImageInfo.srcImageLayout == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL ||
@@ -1547,7 +2135,7 @@ void CommandBuffer::copyImage(const VkCopyImageInfo2KHR &copyImageInfo)
 	}
 }
 
-void CommandBuffer::blitImage(const VkBlitImageInfo2KHR &blitImageInfo)
+void CommandBuffer::blitImage(const VkBlitImageInfo2 &blitImageInfo)
 {
 	ASSERT(state == RECORDING);
 	ASSERT(blitImageInfo.srcImageLayout == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL ||
@@ -1565,7 +2153,7 @@ void CommandBuffer::blitImage(const VkBlitImageInfo2KHR &blitImageInfo)
 	}
 }
 
-void CommandBuffer::copyBufferToImage(const VkCopyBufferToImageInfo2KHR &copyBufferToImageInfo)
+void CommandBuffer::copyBufferToImage(const VkCopyBufferToImageInfo2 &copyBufferToImageInfo)
 {
 	ASSERT(state == RECORDING);
 
@@ -1578,7 +2166,7 @@ void CommandBuffer::copyBufferToImage(const VkCopyBufferToImageInfo2KHR &copyBuf
 	}
 }
 
-void CommandBuffer::copyImageToBuffer(const VkCopyImageToBufferInfo2KHR &copyImageToBufferInfo)
+void CommandBuffer::copyImageToBuffer(const VkCopyImageToBufferInfo2 &copyImageToBufferInfo)
 {
 	ASSERT(state == RECORDING);
 	ASSERT(copyImageToBufferInfo.srcImageLayout == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL ||
@@ -1643,7 +2231,7 @@ void CommandBuffer::clearAttachments(uint32_t attachmentCount, const VkClearAtta
 	}
 }
 
-void CommandBuffer::resolveImage(const VkResolveImageInfo2KHR &resolveImageInfo)
+void CommandBuffer::resolveImage(const VkResolveImageInfo2 &resolveImageInfo)
 {
 	ASSERT(state == RECORDING);
 	ASSERT(resolveImageInfo.srcImageLayout == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL ||
@@ -1660,24 +2248,23 @@ void CommandBuffer::resolveImage(const VkResolveImageInfo2KHR &resolveImageInfo)
 	}
 }
 
-void CommandBuffer::setEvent(Event *event, VkPipelineStageFlags stageMask)
+void CommandBuffer::setEvent(Event *event, const VkDependencyInfo &pDependencyInfo)
 {
 	ASSERT(state == RECORDING);
 
-	addCommand<::CmdSignalEvent>(event, stageMask);
+	// TODO(b/117835459): We currently ignore the flags and signal the event at the last stage
+
+	addCommand<::CmdSignalEvent>(event);
 }
 
-void CommandBuffer::resetEvent(Event *event, VkPipelineStageFlags stageMask)
+void CommandBuffer::resetEvent(Event *event, VkPipelineStageFlags2 stageMask)
 {
 	ASSERT(state == RECORDING);
 
 	addCommand<::CmdResetEvent>(event, stageMask);
 }
 
-void CommandBuffer::waitEvents(uint32_t eventCount, const VkEvent *pEvents, VkPipelineStageFlags srcStageMask,
-                               VkPipelineStageFlags dstStageMask, uint32_t memoryBarrierCount, const VkMemoryBarrier *pMemoryBarriers,
-                               uint32_t bufferMemoryBarrierCount, const VkBufferMemoryBarrier *pBufferMemoryBarriers,
-                               uint32_t imageMemoryBarrierCount, const VkImageMemoryBarrier *pImageMemoryBarriers)
+void CommandBuffer::waitEvents(uint32_t eventCount, const VkEvent *pEvents, const VkDependencyInfo &pDependencyInfo)
 {
 	ASSERT(state == RECORDING);
 
@@ -1776,43 +2363,77 @@ void CommandBuffer::ExecutionState::bindAttachments(Attachments *attachments)
 	// there is too much stomping of the renderer's state by setContext() in
 	// draws.
 
-	auto const &subpass = renderPass->getSubpass(subpassIndex);
-
-	for(auto i = 0u; i < subpass.colorAttachmentCount; i++)
+	if(renderPass)
 	{
-		auto attachmentReference = subpass.pColorAttachments[i];
-		if(attachmentReference.attachment != VK_ATTACHMENT_UNUSED)
+		auto const &subpass = renderPass->getSubpass(subpassIndex);
+
+		for(auto i = 0u; i < subpass.colorAttachmentCount; i++)
 		{
-			attachments->colorBuffer[i] = renderPassFramebuffer->getAttachment(attachmentReference.attachment);
+			auto attachmentReference = subpass.pColorAttachments[i];
+			if(attachmentReference.attachment != VK_ATTACHMENT_UNUSED)
+			{
+				attachments->colorBuffer[i] = renderPassFramebuffer->getAttachment(attachmentReference.attachment);
+			}
+		}
+
+		auto attachmentReference = subpass.pDepthStencilAttachment;
+		if(attachmentReference && attachmentReference->attachment != VK_ATTACHMENT_UNUSED)
+		{
+			auto attachment = renderPassFramebuffer->getAttachment(attachmentReference->attachment);
+			if(attachment->hasDepthAspect())
+			{
+				attachments->depthBuffer = attachment;
+			}
+			if(attachment->hasStencilAspect())
+			{
+				attachments->stencilBuffer = attachment;
+			}
 		}
 	}
-
-	auto attachmentReference = subpass.pDepthStencilAttachment;
-	if(attachmentReference && attachmentReference->attachment != VK_ATTACHMENT_UNUSED)
+	else if(dynamicRendering)
 	{
-		auto attachment = renderPassFramebuffer->getAttachment(attachmentReference->attachment);
-		if(attachment->hasDepthAspect())
-		{
-			attachments->depthBuffer = attachment;
-		}
-		if(attachment->hasStencilAspect())
-		{
-			attachments->stencilBuffer = attachment;
-		}
+		dynamicRendering->getAttachments(attachments);
 	}
+}
+
+VkRect2D CommandBuffer::ExecutionState::getRenderArea() const
+{
+	VkRect2D renderArea = {};
+
+	if(renderPassFramebuffer)
+	{
+		renderArea.extent = renderPassFramebuffer->getExtent();
+	}
+	else if(dynamicRendering)
+	{
+		renderArea = dynamicRendering->getRenderArea();
+	}
+
+	return renderArea;
+}
+
+// The layer mask is the same as the view mask when multiview is enabled,
+// or 1 if multiview is disabled.
+uint32_t CommandBuffer::ExecutionState::getLayerMask() const
+{
+	uint32_t layerMask = 1;
+
+	if(renderPass)
+	{
+		layerMask = renderPass->getViewMask(subpassIndex);
+	}
+	else if(dynamicRendering)
+	{
+		layerMask = dynamicRendering->getViewMask();
+	}
+
+	return sw::max(layerMask, 1u);
 }
 
 // Returns the number of bits set in the view mask, or 1 if multiview is disabled.
 uint32_t CommandBuffer::ExecutionState::viewCount() const
 {
-	uint32_t viewMask = 1;
-
-	if(renderPass)
-	{
-		viewMask = renderPass->getViewMask(subpassIndex);
-	}
-
-	return static_cast<uint32_t>(std::bitset<32>(viewMask).count());
+	return static_cast<uint32_t>(std::bitset<32>(getLayerMask()).count());
 }
 
 }  // namespace vk

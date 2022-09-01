@@ -1,788 +1,8 @@
-# https://github.com/bazelbuild/bazel-skylib
-load("@bazel_skylib//lib:selects.bzl", "selects")
-load("@rules_python//python:defs.bzl", "py_binary")
+load("//bazel:macros.bzl", "cc_library", "exports_files_legacy", "py_binary")
 
-package(default_visibility = ["//:__subpackages__"])
+licenses(["notice"])
 
-cc_library(
-    name = "skcms",
-    srcs = [
-        "skcms/skcms.cc",
-        "skcms/skcms_internal.h",
-        "skcms/src/Transform_inl.h",
-    ],
-    copts = [
-        "-isystem include/third_party/skcms/",
-    ],
-    deps = [
-        "//include/third_party/skcms:skcms_hdr",
-    ],
-)
-
-LIBPNG_SRCS = [
-    "externals/libpng/png.c",
-    "externals/libpng/pngconf.h",
-    "externals/libpng/pngdebug.h",
-    "externals/libpng/pngerror.c",
-    "externals/libpng/pngget.c",
-    "externals/libpng/pnginfo.h",
-    "externals/libpng/pngmem.c",
-    "externals/libpng/pngpread.c",
-    "externals/libpng/pngpriv.h",
-    "externals/libpng/pngread.c",
-    "externals/libpng/pngrio.c",
-    "externals/libpng/pngrtran.c",
-    "externals/libpng/pngrutil.c",
-    "externals/libpng/pngset.c",
-    "externals/libpng/pngstruct.h",
-    "externals/libpng/pngtrans.c",
-    "externals/libpng/pngwio.c",
-    "externals/libpng/pngwrite.c",
-    "externals/libpng/pngwtran.c",
-    "externals/libpng/pngwutil.c",
-    "libpng/pnglibconf.h",
-] + select({
-    "@platforms//cpu:x86_64": [
-        "externals/libpng/intel/filter_sse2_intrinsics.c",
-        "externals/libpng/intel/intel_init.c",
-    ],
-    "@platforms//cpu:arm": [
-        "externals/libpng/arm/arm_init.c",
-        "externals/libpng/arm/filter_neon_intrinsics.c",
-        "externals/libpng/arm/palette_neon_intrinsics.c",
-    ],
-    # No SIMD support in wasm for now
-    "//bazel/common_config_settings:cpu_wasm": [],
-    # The default is to avoid using SIMD
-    "//conditions:default": [],
-})
-
-PNG_DEFINES = ["PNG_SET_OPTION_SUPPORTED"] + select({
-    "@platforms//cpu:x86_64": ["PNG_INTEL_SSE"],
-    "//conditions:default": [],
-})
-
-cc_library(
-    name = "libpng",
-    srcs = LIBPNG_SRCS,
-    hdrs = [
-        "externals/libpng/png.h",
-    ],
-    copts = [
-        "-isystem third_party/libpng/",
-        #"-Wno-unused-but-set-variable",
-    ],
-    includes = [
-        # This adds -isystem "third_party/externals/libpng" to any dependent
-        # compilation steps. This allows #include <png.h> to work
-        "externals/libpng",
-        # png.h attempts to #include "pnglibconf.h" , which we store in //third_party/libpng/
-        # This rule adds -isystem "third_party/externals/libpng" to any dependent
-        # rule on this, which avoids having to add "-Ithird_party/libpng/" to copts for
-        # those dependent rules.
-        "libpng",
-    ],
-    local_defines = PNG_DEFINES,
-    # This is included by //third_party/libpng/pnglibconf.h, but because it is not a .h
-    # file, we must tell Bazel to explicitly bring it in as an "includable".
-    textual_hdrs = ["externals/libpng/scripts/pnglibconf.h.prebuilt"],
-    deps = [":zlib"],
-)
-
-ZLIB_SRCS = [
-    "externals/zlib/adler32.c",
-    "externals/zlib/compress.c",
-    "externals/zlib/contrib/optimizations/insert_string.h",
-    "externals/zlib/cpu_features.c",
-    "externals/zlib/cpu_features.h",
-    "externals/zlib/crc32.h",
-    "externals/zlib/crc32.c",
-    "externals/zlib/deflate.c",
-    "externals/zlib/deflate.h",
-    "externals/zlib/gzclose.c",
-    "externals/zlib/gzguts.h",
-    "externals/zlib/gzlib.c",
-    "externals/zlib/gzread.c",
-    "externals/zlib/gzwrite.c",
-    "externals/zlib/infback.c",
-    "externals/zlib/inffast.c",
-    "externals/zlib/inffast.h",
-    "externals/zlib/inflate.h",
-    "externals/zlib/inftrees.c",
-    "externals/zlib/inftrees.h",
-    "externals/zlib/trees.c",
-    "externals/zlib/trees.h",
-    "externals/zlib/uncompr.c",
-    "externals/zlib/inffixed.h",
-    "externals/zlib/zutil.c",
-    "externals/zlib/zutil.h",
-] + select({
-    "@platforms//cpu:x86_64": [
-        "externals/zlib/adler32_simd.h",
-        "externals/zlib/adler32_simd.c",
-        "externals/zlib/contrib/optimizations/chunkcopy.h",
-        "externals/zlib/contrib/optimizations/inffast_chunk.h",
-        "externals/zlib/contrib/optimizations/inffast_chunk.c",
-        "externals/zlib/contrib/optimizations/inflate.c",
-        "externals/zlib/crc32_simd.h",
-        "externals/zlib/crc32_simd.c",
-        "externals/zlib/crc_folding.c",
-        "externals/zlib/fill_window_sse.c",
-    ],
-    "@platforms//cpu:arm": [
-        "externals/zlib/adler32_simd.h",
-        "externals/zlib/adler32_simd.c",
-        "externals/zlib/contrib/optimizations/chunkcopy.h",
-        "externals/zlib/contrib/optimizations/inffast_chunk.h",
-        "externals/zlib/contrib/optimizations/inffast_chunk.c",
-        "externals/zlib/contrib/optimizations/inflate.c",
-        "externals/zlib/crc32_simd.h",
-        "externals/zlib/crc32_simd.c",
-    ],
-    # No SIMD support in wasm for now
-    "//bazel/common_config_settings:cpu_wasm": ["externals/zlib/inflate.c"],
-    # The default is to avoid using SIMD
-    "//conditions:default": ["externals/zlib/inflate.c"],
-})
-
-ZLIB_DEFINES = ["ZLIB_IMPLEMENTATION"] + select({
-    "@platforms//cpu:x86_64": [
-        "ADLER32_SIMD_SSSE3",
-        "CRC32_SIMD_SSE42_PCLMUL",
-        "INFLATE_CHUNK_READ_64LE",
-        "INFLATE_CHUNK_SIMD_SSE2",
-        "DEFLATE_FILL_WINDOW_SSE2",
-    ],
-    "@platforms//cpu:arm": [
-        "ADLER32_SIMD_NEON",
-        "INFLATE_CHUNK_SIMD_NEON",
-    ],
-    "//bazel/common_config_settings:cpu_wasm": ["CPU_NO_SIMD"],
-    "//conditions:default": ["CPU_NO_SIMD"],
-}) + select({
-    "//bazel/common_config_settings:windows_x64": ["X86_WINDOWS"],
-    "//bazel/common_config_settings:linux_x64": ["X86_NOT_WINDOWS"],
-    "//bazel/common_config_settings:fuchsia_arm64": [
-        "X86_NOT_WINDOWS",
-        "ARMV8_OS_FUCHSIA",
-    ],
-    # TODO(kjlubick) other arm flavors
-    "//conditions:default": ["X86_NOT_WINDOWS"],
-})
-
-ZLIB_COPTS = [
-    "-Wno-unused-function",
-    # Make the headers in contrib available, without exposing them in hdrs.
-    "-isystem third_party/externals/zlib/",
-] + select({
-    "//bazel/common_config_settings:linux_x64": [
-        "-mssse3",
-        "-msse4.2",
-        "-mpclmul",
-    ],
-    "@platforms//cpu:arm": ["-march=armv8-a+crc"],
-    # If empty list isn't set for wasm, select picks linux_x64
-    "//bazel/common_config_settings:cpu_wasm": [],
-    "//conditions:default": [],
-})
-
-cc_library(
-    name = "zlib",
-    srcs = ZLIB_SRCS,
-    hdrs = [
-        "externals/zlib/chromeconf.h",
-        "externals/zlib/zconf.h",
-        "externals/zlib/zlib.h",
-    ],
-    copts = ZLIB_COPTS,
-    local_defines = ZLIB_DEFINES,
-    # This allows users of zlib to just do #include "zlib.h"
-    strip_include_prefix = "externals/zlib/",
-)
-
-# This library is used to fix linking errors when trying to statically link in some symbols
-# The symbols defined here:
-# https://github.com/llvm/llvm-project/blob/main/libcxx/include/__support/musl/xlocale.h
-# are defined to be inlined, however they are missing during the final linking of a static
-# executable. By re-defining them in our own .a file, this makes the linker happy.
-cc_library(
-    name = "musl_compat",
-    srcs = [
-        "musl_compat/locale.c",
-    ],
-)
-
-JPEGTURBO_SRCS = [
-    "externals/libjpeg-turbo/jaricom.c",
-    "externals/libjpeg-turbo/jcapimin.c",
-    "externals/libjpeg-turbo/jcapistd.c",
-    "externals/libjpeg-turbo/jcarith.c",
-    "externals/libjpeg-turbo/jccoefct.c",
-    "externals/libjpeg-turbo/jccolor.c",
-    "externals/libjpeg-turbo/jcdctmgr.c",
-    "externals/libjpeg-turbo/jchuff.c",
-    "externals/libjpeg-turbo/jchuff.h",
-    "externals/libjpeg-turbo/jcinit.c",
-    "externals/libjpeg-turbo/jcmainct.c",
-    "externals/libjpeg-turbo/jcmarker.c",
-    "externals/libjpeg-turbo/jcmaster.c",
-    "externals/libjpeg-turbo/jcomapi.c",
-    "externals/libjpeg-turbo/jconfigint.h",
-    "externals/libjpeg-turbo/jcparam.c",
-    "externals/libjpeg-turbo/jcphuff.c",
-    "externals/libjpeg-turbo/jcprepct.c",
-    "externals/libjpeg-turbo/jcsample.c",
-    "externals/libjpeg-turbo/jdapimin.c",
-    "externals/libjpeg-turbo/jdapistd.c",
-    "externals/libjpeg-turbo/jdarith.c",
-    "externals/libjpeg-turbo/jdcoefct.c",
-    "externals/libjpeg-turbo/jdcoefct.h",
-    "externals/libjpeg-turbo/jdcolor.c",
-    "externals/libjpeg-turbo/jdct.h",
-    "externals/libjpeg-turbo/jddctmgr.c",
-    "externals/libjpeg-turbo/jdhuff.c",
-    "externals/libjpeg-turbo/jdhuff.h",
-    "externals/libjpeg-turbo/jdinput.c",
-    "externals/libjpeg-turbo/jdmainct.c",
-    "externals/libjpeg-turbo/jdmainct.h",
-    "externals/libjpeg-turbo/jdmarker.c",
-    "externals/libjpeg-turbo/jdmaster.c",
-    "externals/libjpeg-turbo/jdmaster.h",
-    "externals/libjpeg-turbo/jdmerge.c",
-    "externals/libjpeg-turbo/jdmerge.h",
-    "externals/libjpeg-turbo/jdphuff.c",
-    "externals/libjpeg-turbo/jdpostct.c",
-    "externals/libjpeg-turbo/jdsample.c",
-    "externals/libjpeg-turbo/jdsample.h",
-    "externals/libjpeg-turbo/jerror.c",
-    "externals/libjpeg-turbo/jfdctflt.c",
-    "externals/libjpeg-turbo/jfdctfst.c",
-    "externals/libjpeg-turbo/jfdctint.c",
-    "externals/libjpeg-turbo/jidctflt.c",
-    "externals/libjpeg-turbo/jidctfst.c",
-    "externals/libjpeg-turbo/jidctint.c",
-    "externals/libjpeg-turbo/jidctred.c",
-    "externals/libjpeg-turbo/jinclude.h",
-    "externals/libjpeg-turbo/jmemmgr.c",
-    "externals/libjpeg-turbo/jmemnobs.c",
-    "externals/libjpeg-turbo/jmemsys.h",
-    "externals/libjpeg-turbo/jpeg_nbits_table.c",
-    "externals/libjpeg-turbo/jpeg_nbits_table.h",
-    "externals/libjpeg-turbo/jpegcomp.h",
-    "externals/libjpeg-turbo/jpegint.h",
-    "externals/libjpeg-turbo/jquant1.c",
-    "externals/libjpeg-turbo/jquant2.c",
-    "externals/libjpeg-turbo/jsimd.h",
-    "externals/libjpeg-turbo/jsimddct.h",
-    "externals/libjpeg-turbo/jutils.c",
-    "externals/libjpeg-turbo/jversion.h",
-] + selects.with_or({
-    ("@platforms//cpu:arm", "@platforms//cpu:arm64"): [
-        "externals/libjpeg-turbo/simd/arm/jccolor-neon.c",
-        "externals/libjpeg-turbo/simd/arm/jcgray-neon.c",
-        "externals/libjpeg-turbo/simd/arm/jcphuff-neon.c",
-        "externals/libjpeg-turbo/simd/arm/jcsample-neon.c",
-        "externals/libjpeg-turbo/simd/arm/jdcolor-neon.c",
-        "externals/libjpeg-turbo/simd/arm/jdmerge-neon.c",
-        "externals/libjpeg-turbo/simd/arm/jdsample-neon.c",
-        "externals/libjpeg-turbo/simd/arm/jfdctfst-neon.c",
-        "externals/libjpeg-turbo/simd/arm/jfdctint-neon.c",
-        "externals/libjpeg-turbo/simd/arm/jidctfst-neon.c",
-        "externals/libjpeg-turbo/simd/arm/jidctint-neon.c",
-        "externals/libjpeg-turbo/simd/arm/jidctred-neon.c",
-        "externals/libjpeg-turbo/simd/arm/jquanti-neon.c",
-    ],
-    "//conditions:default": ["externals/libjpeg-turbo/jsimd_none.c"],
-}) + select({
-    "@platforms//cpu:arm": [
-        "externals/libjpeg-turbo/simd/arm/aarch32/jchuff-neon.c",
-        "externals/libjpeg-turbo/simd/arm/aarch32/jsimd.c",
-    ],
-    "@platforms//cpu:arm64": [
-        "externals/libjpeg-turbo/simd/arm/aarch64/jchuff-neon.c",
-        "externals/libjpeg-turbo/simd/arm/aarch64/jsimd.c",
-    ],
-    "//conditions:default": [],
-})
-
-JPEGTURBO_DEFINES = [
-    # Add support for arithmetic encoding (C_) and decoding (D_).
-    # This matches Android. Note that such JPEGs are likely rare, given lack of
-    # support by major browsers.
-    "C_ARITH_CODING_SUPPORTED=1",
-    "D_ARITH_CODING_SUPPORTED=1",
-] + selects.with_or({
-    ("@platforms//cpu:arm", "@platforms//cpu:arm64"): ["NEON_INTRINSICS"],
-    "//conditions:default": [],
-}) + select({
-    "@platforms//os:windows": [],
-    "//conditions:default": ["USE_CLZ_INTRINSIC"],  # Cuts a 64K table.
-})
-
-cc_library(
-    name = "libjpeg-turbo",
-    srcs = JPEGTURBO_SRCS,
-    hdrs = [
-        "externals/libjpeg-turbo/jconfig.h",
-        "externals/libjpeg-turbo/jerror.h",
-        "externals/libjpeg-turbo/jmorecfg.h",
-        "externals/libjpeg-turbo/jpeglib.h",
-        "externals/libjpeg-turbo/jpeglibmangler.h",
-    ],
-    local_defines = JPEGTURBO_DEFINES,
-    strip_include_prefix = "externals/libjpeg-turbo/",
-    textual_hdrs = [
-        "externals/libjpeg-turbo/jccolext.c",
-        "externals/libjpeg-turbo/jdmrgext.c",
-        "externals/libjpeg-turbo/jdcolext.c",
-        "externals/libjpeg-turbo/jdcol565.c",
-        "externals/libjpeg-turbo/jdmrg565.c",
-        "externals/libjpeg-turbo/jstdhuff.c",
-    ],
-)
-
-WEBP_SRCS = [
-    "externals/libwebp/src/dec/alpha_dec.c",
-    "externals/libwebp/src/dec/alphai_dec.h",
-    "externals/libwebp/src/dec/buffer_dec.c",
-    "externals/libwebp/src/dec/common_dec.h",
-    "externals/libwebp/src/dec/frame_dec.c",
-    "externals/libwebp/src/dec/idec_dec.c",
-    "externals/libwebp/src/dec/io_dec.c",
-    "externals/libwebp/src/dec/quant_dec.c",
-    "externals/libwebp/src/dec/tree_dec.c",
-    "externals/libwebp/src/dec/vp8_dec.c",
-    "externals/libwebp/src/dec/vp8_dec.h",
-    "externals/libwebp/src/dec/vp8i_dec.h",
-    "externals/libwebp/src/dec/vp8l_dec.c",
-    "externals/libwebp/src/dec/vp8li_dec.h",
-    "externals/libwebp/src/dec/webp_dec.c",
-    "externals/libwebp/src/dec/webpi_dec.h",
-    "externals/libwebp/src/demux/anim_decode.c",
-    "externals/libwebp/src/demux/demux.c",
-    "externals/libwebp/src/dsp/alpha_processing.c",
-    "externals/libwebp/src/dsp/alpha_processing_mips_dsp_r2.c",
-    "externals/libwebp/src/dsp/alpha_processing_neon.c",
-    "externals/libwebp/src/dsp/alpha_processing_sse2.c",
-    "externals/libwebp/src/dsp/common_sse2.h",
-    "externals/libwebp/src/dsp/common_sse41.h",
-    "externals/libwebp/src/dsp/cost.c",
-    "externals/libwebp/src/dsp/cost_mips32.c",
-    "externals/libwebp/src/dsp/cost_mips_dsp_r2.c",
-    "externals/libwebp/src/dsp/cost_neon.c",
-    "externals/libwebp/src/dsp/cost_sse2.c",
-    "externals/libwebp/src/dsp/cpu.c",
-    "externals/libwebp/src/dsp/dec.c",
-    "externals/libwebp/src/dsp/dec_clip_tables.c",
-    "externals/libwebp/src/dsp/dec_mips32.c",
-    "externals/libwebp/src/dsp/dec_mips_dsp_r2.c",
-    "externals/libwebp/src/dsp/dec_msa.c",
-    "externals/libwebp/src/dsp/dec_neon.c",
-    "externals/libwebp/src/dsp/dec_sse2.c",
-    "externals/libwebp/src/dsp/dsp.h",
-    "externals/libwebp/src/dsp/enc.c",
-    "externals/libwebp/src/dsp/enc_mips32.c",
-    "externals/libwebp/src/dsp/enc_mips_dsp_r2.c",
-    "externals/libwebp/src/dsp/enc_msa.c",
-    "externals/libwebp/src/dsp/enc_neon.c",
-    "externals/libwebp/src/dsp/enc_sse2.c",
-    "externals/libwebp/src/dsp/filters.c",
-    "externals/libwebp/src/dsp/filters_mips_dsp_r2.c",
-    "externals/libwebp/src/dsp/filters_msa.c",
-    "externals/libwebp/src/dsp/filters_neon.c",
-    "externals/libwebp/src/dsp/filters_sse2.c",
-    "externals/libwebp/src/dsp/lossless.c",
-    "externals/libwebp/src/dsp/lossless.h",
-    "externals/libwebp/src/dsp/lossless_common.h",
-    "externals/libwebp/src/dsp/lossless_enc.c",
-    "externals/libwebp/src/dsp/lossless_enc_mips32.c",
-    "externals/libwebp/src/dsp/lossless_enc_mips_dsp_r2.c",
-    "externals/libwebp/src/dsp/lossless_enc_msa.c",
-    "externals/libwebp/src/dsp/lossless_enc_neon.c",
-    "externals/libwebp/src/dsp/lossless_enc_sse2.c",
-    "externals/libwebp/src/dsp/lossless_mips_dsp_r2.c",
-    "externals/libwebp/src/dsp/lossless_msa.c",
-    "externals/libwebp/src/dsp/lossless_neon.c",
-    "externals/libwebp/src/dsp/lossless_sse2.c",
-    "externals/libwebp/src/dsp/mips_macro.h",
-    "externals/libwebp/src/dsp/msa_macro.h",
-    "externals/libwebp/src/dsp/neon.h",
-    "externals/libwebp/src/dsp/quant.h",
-    "externals/libwebp/src/dsp/rescaler.c",
-    "externals/libwebp/src/dsp/rescaler_mips32.c",
-    "externals/libwebp/src/dsp/rescaler_mips_dsp_r2.c",
-    "externals/libwebp/src/dsp/rescaler_msa.c",
-    "externals/libwebp/src/dsp/rescaler_neon.c",
-    "externals/libwebp/src/dsp/rescaler_sse2.c",
-    "externals/libwebp/src/dsp/ssim.c",
-    "externals/libwebp/src/dsp/ssim_sse2.c",
-    "externals/libwebp/src/dsp/upsampling.c",
-    "externals/libwebp/src/dsp/upsampling_mips_dsp_r2.c",
-    "externals/libwebp/src/dsp/upsampling_msa.c",
-    "externals/libwebp/src/dsp/upsampling_neon.c",
-    "externals/libwebp/src/dsp/upsampling_sse2.c",
-    "externals/libwebp/src/dsp/yuv.c",
-    "externals/libwebp/src/dsp/yuv.h",
-    "externals/libwebp/src/dsp/yuv_mips32.c",
-    "externals/libwebp/src/dsp/yuv_mips_dsp_r2.c",
-    "externals/libwebp/src/dsp/yuv_neon.c",
-    "externals/libwebp/src/dsp/yuv_sse2.c",
-    "externals/libwebp/src/enc/alpha_enc.c",
-    "externals/libwebp/src/enc/analysis_enc.c",
-    "externals/libwebp/src/enc/backward_references_cost_enc.c",
-    "externals/libwebp/src/enc/backward_references_enc.c",
-    "externals/libwebp/src/enc/backward_references_enc.h",
-    "externals/libwebp/src/enc/config_enc.c",
-    "externals/libwebp/src/enc/cost_enc.c",
-    "externals/libwebp/src/enc/cost_enc.h",
-    "externals/libwebp/src/enc/filter_enc.c",
-    "externals/libwebp/src/enc/frame_enc.c",
-    "externals/libwebp/src/enc/histogram_enc.c",
-    "externals/libwebp/src/enc/histogram_enc.h",
-    "externals/libwebp/src/enc/iterator_enc.c",
-    "externals/libwebp/src/enc/near_lossless_enc.c",
-    "externals/libwebp/src/enc/picture_csp_enc.c",
-    "externals/libwebp/src/enc/picture_enc.c",
-    "externals/libwebp/src/enc/picture_psnr_enc.c",
-    "externals/libwebp/src/enc/picture_rescale_enc.c",
-    "externals/libwebp/src/enc/picture_tools_enc.c",
-    "externals/libwebp/src/enc/predictor_enc.c",
-    "externals/libwebp/src/enc/quant_enc.c",
-    "externals/libwebp/src/enc/syntax_enc.c",
-    "externals/libwebp/src/enc/token_enc.c",
-    "externals/libwebp/src/enc/tree_enc.c",
-    "externals/libwebp/src/enc/vp8i_enc.h",
-    "externals/libwebp/src/enc/vp8l_enc.c",
-    "externals/libwebp/src/enc/vp8li_enc.h",
-    "externals/libwebp/src/enc/webp_enc.c",
-    "externals/libwebp/src/mux/anim_encode.c",
-    "externals/libwebp/src/mux/animi.h",
-    "externals/libwebp/src/mux/muxedit.c",
-    "externals/libwebp/src/mux/muxi.h",
-    "externals/libwebp/src/mux/muxinternal.c",
-    "externals/libwebp/src/mux/muxread.c",
-    "externals/libwebp/src/utils/bit_reader_inl_utils.h",
-    "externals/libwebp/src/utils/bit_reader_utils.c",
-    "externals/libwebp/src/utils/bit_reader_utils.h",
-    "externals/libwebp/src/utils/bit_writer_utils.c",
-    "externals/libwebp/src/utils/bit_writer_utils.h",
-    "externals/libwebp/src/utils/color_cache_utils.c",
-    "externals/libwebp/src/utils/color_cache_utils.h",
-    "externals/libwebp/src/utils/endian_inl_utils.h",
-    "externals/libwebp/src/utils/filters_utils.c",
-    "externals/libwebp/src/utils/filters_utils.h",
-    "externals/libwebp/src/utils/huffman_encode_utils.c",
-    "externals/libwebp/src/utils/huffman_encode_utils.h",
-    "externals/libwebp/src/utils/huffman_utils.c",
-    "externals/libwebp/src/utils/huffman_utils.h",
-    "externals/libwebp/src/utils/quant_levels_dec_utils.c",
-    "externals/libwebp/src/utils/quant_levels_dec_utils.h",
-    "externals/libwebp/src/utils/quant_levels_utils.c",
-    "externals/libwebp/src/utils/quant_levels_utils.h",
-    "externals/libwebp/src/utils/random_utils.c",
-    "externals/libwebp/src/utils/random_utils.h",
-    "externals/libwebp/src/utils/rescaler_utils.c",
-    "externals/libwebp/src/utils/rescaler_utils.h",
-    "externals/libwebp/src/utils/thread_utils.c",
-    "externals/libwebp/src/utils/thread_utils.h",
-    "externals/libwebp/src/utils/utils.c",
-    "externals/libwebp/src/utils/utils.h",
-] + select({
-    "@platforms//cpu:x86_64": [
-        "externals/libwebp/src/dsp/alpha_processing_sse41.c",
-        "externals/libwebp/src/dsp/dec_sse41.c",
-        "externals/libwebp/src/dsp/enc_sse41.c",
-        "externals/libwebp/src/dsp/lossless_enc_sse41.c",
-        "externals/libwebp/src/dsp/lossless_sse41.c",
-        "externals/libwebp/src/dsp/upsampling_sse41.c",
-        "externals/libwebp/src/dsp/yuv_sse41.c",
-    ],
-    "//bazel/common_config_settings:cpu_wasm": [],  # not sure why wasm doesn't use default
-    "//conditions:default": [],
-})
-
-WEBP_COPTS = [
-    "-isystem third_party/externals/libwebp/",
-] + select({
-    "@platforms//cpu:x86_64": ["-msse4.1"],
-    "//bazel/common_config_settings:cpu_wasm": [],  # not sure why wasm doesn't use default
-    "//conditions:default": [],
-})
-
-WEBP_DEFINES = [
-    # TODO(scroggo): swizzle ourself in SkWebpCodec instead of requiring this non-standard libwebp.
-    "WEBP_SWAP_16BIT_CSP",
-]
-
-cc_library(
-    name = "libwebp",
-    srcs = WEBP_SRCS,
-    hdrs = [
-        "externals/libwebp/src/webp/decode.h",
-        "externals/libwebp/src/webp/demux.h",
-        "externals/libwebp/src/webp/encode.h",
-        "externals/libwebp/src/webp/format_constants.h",
-        "externals/libwebp/src/webp/mux.h",
-        "externals/libwebp/src/webp/mux_types.h",
-        "externals/libwebp/src/webp/types.h",
-    ],
-    copts = WEBP_COPTS,
-    local_defines = WEBP_DEFINES,
-    strip_include_prefix = "externals/libwebp/src/",
-)
-
-cc_library(
-    name = "wuffs",
-    # We list this file both as a source file and a header file because it will be
-    # compiled for symbols *and* included as a header file.
-    srcs = ["externals/wuffs/release/c/wuffs-v0.3.c"],
-    # Thankfully, bazel doesn't mind a .c file being declared as a public "header".
-    hdrs = ["externals/wuffs/release/c/wuffs-v0.3.c"],
-    local_defines = [
-        # Copy/pasting from "externals/wuffs/release/c/wuffs-*.c":
-        #
-        # ----
-        #
-        # Wuffs ships as a "single file C library" or "header file library" as per
-        # https://github.com/nothings/stb/blob/master/docs/stb_howto.txt
-        #
-        # To use that single file as a "foo.c"-like implementation, instead of a
-        # "foo.h"-like header, #define WUFFS_IMPLEMENTATION before #include'ing or
-        # compiling it.
-        #
-        # ----
-        "WUFFS_IMPLEMENTATION",
-
-        # Continuing to copy/paste:
-        #
-        # ----
-        #
-        # Defining the WUFFS_CONFIG__MODULE* macros are optional, but it lets users
-        # of Wuffs' .c file specify which parts of Wuffs to build. That file
-        # contains the entire Wuffs standard library, implementing a variety of
-        # codecs and file formats. Without this macro definition, an optimizing
-        # compiler or linker may very well discard Wuffs code for unused codecs,
-        # but listing the Wuffs modules we use makes that process explicit.
-        # Preprocessing means that such code simply isn't compiled.
-        #
-        # ----
-        #
-        # For Skia, we're only interested in particular image codes (e.g. GIF) and
-        # their dependencies (e.g. BASE, LZW).
-        "WUFFS_CONFIG__MODULES",
-        "WUFFS_CONFIG__MODULE__BASE",
-        "WUFFS_CONFIG__MODULE__GIF",
-        "WUFFS_CONFIG__MODULE__LZW",
-    ],
-    strip_include_prefix = "externals/wuffs/release/c/",
-)
-
-cc_library(
-    name = "piex",
-    srcs = [
-        "externals/piex/src/binary_parse/cached_paged_byte_array.cc",
-        "externals/piex/src/binary_parse/cached_paged_byte_array.h",
-        "externals/piex/src/binary_parse/range_checked_byte_ptr.cc",
-        "externals/piex/src/binary_parse/range_checked_byte_ptr.h",
-        "externals/piex/src/image_type_recognition/image_type_recognition_lite.cc",
-        "externals/piex/src/image_type_recognition/image_type_recognition_lite.h",
-        "externals/piex/src/piex.cc",
-        "externals/piex/src/tiff_directory/tiff_directory.cc",
-        "externals/piex/src/tiff_directory/tiff_directory.h",
-        "externals/piex/src/tiff_parser.cc",
-        "externals/piex/src/tiff_parser.h",
-    ],
-    hdrs = [
-        "externals/piex/src/piex.h",
-        "externals/piex/src/piex_types.h",
-    ],
-    copts = [
-        "-isystem third_party/externals/piex/",
-    ],
-    local_defines = ["BREAK_IF_DEBUGGING_AND_OUT_OF_RANGE"],
-    strip_include_prefix = "externals/piex/",
-)
-
-cc_library(
-    name = "dng_sdk",
-    srcs = [
-        "externals/dng_sdk/source/dng_1d_function.cpp",
-        "externals/dng_sdk/source/dng_1d_table.cpp",
-        "externals/dng_sdk/source/dng_abort_sniffer.cpp",
-        "externals/dng_sdk/source/dng_area_task.cpp",
-        "externals/dng_sdk/source/dng_bad_pixels.cpp",
-        "externals/dng_sdk/source/dng_bottlenecks.cpp",
-        "externals/dng_sdk/source/dng_camera_profile.cpp",
-        "externals/dng_sdk/source/dng_color_space.cpp",
-        "externals/dng_sdk/source/dng_color_spec.cpp",
-        "externals/dng_sdk/source/dng_date_time.cpp",
-        "externals/dng_sdk/source/dng_exceptions.cpp",
-        "externals/dng_sdk/source/dng_exif.cpp",
-        "externals/dng_sdk/source/dng_file_stream.cpp",
-        "externals/dng_sdk/source/dng_filter_task.cpp",
-        "externals/dng_sdk/source/dng_fingerprint.cpp",
-        "externals/dng_sdk/source/dng_gain_map.cpp",
-        "externals/dng_sdk/source/dng_globals.cpp",
-        "externals/dng_sdk/source/dng_host.cpp",
-        "externals/dng_sdk/source/dng_hue_sat_map.cpp",
-        "externals/dng_sdk/source/dng_ifd.cpp",
-        "externals/dng_sdk/source/dng_image.cpp",
-        "externals/dng_sdk/source/dng_image_writer.cpp",
-        "externals/dng_sdk/source/dng_info.cpp",
-        "externals/dng_sdk/source/dng_iptc.cpp",
-        "externals/dng_sdk/source/dng_jpeg_image.cpp",
-        "externals/dng_sdk/source/dng_jpeg_memory_source.cpp",
-        "externals/dng_sdk/source/dng_lens_correction.cpp",
-        "externals/dng_sdk/source/dng_linearization_info.cpp",
-        "externals/dng_sdk/source/dng_lossless_jpeg.cpp",
-        "externals/dng_sdk/source/dng_matrix.cpp",
-        "externals/dng_sdk/source/dng_memory.cpp",
-        "externals/dng_sdk/source/dng_memory_stream.cpp",
-        "externals/dng_sdk/source/dng_misc_opcodes.cpp",
-        "externals/dng_sdk/source/dng_mosaic_info.cpp",
-        "externals/dng_sdk/source/dng_mutex.cpp",
-        "externals/dng_sdk/source/dng_negative.cpp",
-        "externals/dng_sdk/source/dng_opcode_list.cpp",
-        "externals/dng_sdk/source/dng_opcodes.cpp",
-        "externals/dng_sdk/source/dng_orientation.cpp",
-        "externals/dng_sdk/source/dng_parse_utils.cpp",
-        "externals/dng_sdk/source/dng_pixel_buffer.cpp",
-        "externals/dng_sdk/source/dng_point.cpp",
-        "externals/dng_sdk/source/dng_preview.cpp",
-        "externals/dng_sdk/source/dng_pthread.cpp",
-        "externals/dng_sdk/source/dng_rational.cpp",
-        "externals/dng_sdk/source/dng_read_image.cpp",
-        "externals/dng_sdk/source/dng_rect.cpp",
-        "externals/dng_sdk/source/dng_ref_counted_block.cpp",
-        "externals/dng_sdk/source/dng_reference.cpp",
-        "externals/dng_sdk/source/dng_render.cpp",
-        "externals/dng_sdk/source/dng_resample.cpp",
-        "externals/dng_sdk/source/dng_safe_arithmetic.cpp",
-        "externals/dng_sdk/source/dng_shared.cpp",
-        "externals/dng_sdk/source/dng_simple_image.cpp",
-        "externals/dng_sdk/source/dng_spline.cpp",
-        "externals/dng_sdk/source/dng_stream.cpp",
-        "externals/dng_sdk/source/dng_string.cpp",
-        "externals/dng_sdk/source/dng_string_list.cpp",
-        "externals/dng_sdk/source/dng_tag_types.cpp",
-        "externals/dng_sdk/source/dng_temperature.cpp",
-        "externals/dng_sdk/source/dng_tile_iterator.cpp",
-        "externals/dng_sdk/source/dng_tone_curve.cpp",
-        "externals/dng_sdk/source/dng_utils.cpp",
-        "externals/dng_sdk/source/dng_xy_coord.cpp",
-    ],
-    hdrs = [
-        "externals/dng_sdk/source/RawEnvironment.h",
-        "externals/dng_sdk/source/dng_1d_function.h",
-        "externals/dng_sdk/source/dng_1d_table.h",
-        "externals/dng_sdk/source/dng_abort_sniffer.h",
-        "externals/dng_sdk/source/dng_area_task.h",
-        "externals/dng_sdk/source/dng_assertions.h",
-        "externals/dng_sdk/source/dng_auto_ptr.h",
-        "externals/dng_sdk/source/dng_bad_pixels.h",
-        "externals/dng_sdk/source/dng_bottlenecks.h",
-        "externals/dng_sdk/source/dng_camera_profile.h",
-        "externals/dng_sdk/source/dng_classes.h",
-        "externals/dng_sdk/source/dng_color_space.h",
-        "externals/dng_sdk/source/dng_color_spec.h",
-        "externals/dng_sdk/source/dng_date_time.h",
-        "externals/dng_sdk/source/dng_errors.h",
-        "externals/dng_sdk/source/dng_exceptions.h",
-        "externals/dng_sdk/source/dng_exif.h",
-        "externals/dng_sdk/source/dng_fast_module.h",
-        "externals/dng_sdk/source/dng_file_stream.h",
-        "externals/dng_sdk/source/dng_filter_task.h",
-        "externals/dng_sdk/source/dng_fingerprint.h",
-        "externals/dng_sdk/source/dng_flags.h",
-        "externals/dng_sdk/source/dng_gain_map.h",
-        "externals/dng_sdk/source/dng_globals.h",
-        "externals/dng_sdk/source/dng_host.h",
-        "externals/dng_sdk/source/dng_hue_sat_map.h",
-        "externals/dng_sdk/source/dng_ifd.h",
-        "externals/dng_sdk/source/dng_image.h",
-        "externals/dng_sdk/source/dng_image_writer.h",
-        "externals/dng_sdk/source/dng_info.h",
-        "externals/dng_sdk/source/dng_iptc.h",
-        "externals/dng_sdk/source/dng_jpeg_image.h",
-        "externals/dng_sdk/source/dng_jpeg_memory_source.h",
-        "externals/dng_sdk/source/dng_jpeglib.h",
-        "externals/dng_sdk/source/dng_lens_correction.h",
-        "externals/dng_sdk/source/dng_linearization_info.h",
-        "externals/dng_sdk/source/dng_lossless_jpeg.h",
-        "externals/dng_sdk/source/dng_matrix.h",
-        "externals/dng_sdk/source/dng_memory.h",
-        "externals/dng_sdk/source/dng_memory_stream.h",
-        "externals/dng_sdk/source/dng_misc_opcodes.h",
-        "externals/dng_sdk/source/dng_mosaic_info.h",
-        "externals/dng_sdk/source/dng_mutex.h",
-        "externals/dng_sdk/source/dng_negative.h",
-        "externals/dng_sdk/source/dng_opcode_list.h",
-        "externals/dng_sdk/source/dng_opcodes.h",
-        "externals/dng_sdk/source/dng_orientation.h",
-        "externals/dng_sdk/source/dng_parse_utils.h",
-        "externals/dng_sdk/source/dng_pixel_buffer.h",
-        "externals/dng_sdk/source/dng_point.h",
-        "externals/dng_sdk/source/dng_preview.h",
-        "externals/dng_sdk/source/dng_pthread.h",
-        "externals/dng_sdk/source/dng_rational.h",
-        "externals/dng_sdk/source/dng_read_image.h",
-        "externals/dng_sdk/source/dng_rect.h",
-        "externals/dng_sdk/source/dng_ref_counted_block.h",
-        "externals/dng_sdk/source/dng_reference.h",
-        "externals/dng_sdk/source/dng_render.h",
-        "externals/dng_sdk/source/dng_resample.h",
-        "externals/dng_sdk/source/dng_safe_arithmetic.h",
-        "externals/dng_sdk/source/dng_sdk_limits.h",
-        "externals/dng_sdk/source/dng_shared.h",
-        "externals/dng_sdk/source/dng_simple_image.h",
-        "externals/dng_sdk/source/dng_spline.h",
-        "externals/dng_sdk/source/dng_stream.h",
-        "externals/dng_sdk/source/dng_string.h",
-        "externals/dng_sdk/source/dng_string_list.h",
-        "externals/dng_sdk/source/dng_tag_codes.h",
-        "externals/dng_sdk/source/dng_tag_types.h",
-        "externals/dng_sdk/source/dng_tag_values.h",
-        "externals/dng_sdk/source/dng_temperature.h",
-        "externals/dng_sdk/source/dng_tile_iterator.h",
-        "externals/dng_sdk/source/dng_tone_curve.h",
-        "externals/dng_sdk/source/dng_types.h",
-        "externals/dng_sdk/source/dng_uncopyable.h",
-        "externals/dng_sdk/source/dng_utils.h",
-        "externals/dng_sdk/source/dng_xy_coord.h",
-    ],
-    copts = [
-        "-isystem third_party/externals/dng_sdk/source/",
-    ],
-    defines = [
-        "qDNGBigEndian=0",  # The GN rules had this defined publicly
-    ] + selects.with_or({
-        ("@platforms//cpu:x86_64", "@platforms//cpu:arm"): [
-            # DNG SDK uses __builtin_smulll_overflow() to detect 64x64 bit multiply overflow.
-            # On some platforms, the compiler implements this with __mulodi4().
-            # I can't quite figure out how to link that here, so instead here's a shim for
-            # __builtin_smulll_overflow() that multiplies normally assuming no overflow.
-            # Previously tracked in b/29412086.
-            # Currently, without this define, we see:
-            # Error: cannot initialize a parameter of type 'long long *' with an rvalue of type 'std::int64_t *' (aka 'long *')
-            "__builtin_smulll_overflow(x,y,p)=(*(p)=(x)*(y),false)",
-        ],
-        "//conditions:default": [],
-    }),
-    local_defines = [
-        "qDNGReportErrors=0",
-        "qDNGThreadSafe=1",
-        "qDNGUseLibJPEG=1",
-        "qDNGUseXMP=0",
-        "qDNGValidate=0",
-        "qDNGValidateTarget=1",
-        "UNIX_ENV=1",
-    ],
-    strip_include_prefix = "externals/dng_sdk/source/",
-    deps = [
-        ":libjpeg-turbo",
-        ":zlib",
-    ],
-)
+exports_files_legacy()
 
 FREETYPE_DEFINES = ["FT2_BUILD_LIBRARY"] + select(
     {
@@ -811,6 +31,7 @@ cc_library(
         "externals/freetype/include/freetype/internal/ftgloadr.h",
         "externals/freetype/include/freetype/internal/fthash.h",
         "externals/freetype/include/freetype/internal/ftmemory.h",
+        "externals/freetype/include/freetype/internal/ftmmtypes.h",
         "externals/freetype/include/freetype/internal/ftobjs.h",
         "externals/freetype/include/freetype/internal/ftpsprop.h",
         "externals/freetype/include/freetype/internal/ftrfork.h",
@@ -841,9 +62,11 @@ cc_library(
         "externals/freetype/include/freetype/internal/services/svttglyf.h",
         "externals/freetype/include/freetype/internal/services/svwinfnt.h",
         "externals/freetype/include/freetype/internal/sfnt.h",
+        "externals/freetype/include/freetype/internal/svginterface.h",
         "externals/freetype/include/freetype/internal/t1types.h",
         "externals/freetype/include/freetype/internal/tttypes.h",
         "externals/freetype/include/freetype/internal/wofftypes.h",
+        "externals/freetype/include/freetype/otsvg.h",
         "externals/freetype/include/freetype/t1tables.h",
         "externals/freetype/include/freetype/ttnameid.h",
         "externals/freetype/include/freetype/tttables.h",
@@ -901,13 +124,13 @@ cc_library(
         "externals/freetype/src/cid/cidriver.h",
         "externals/freetype/src/cid/cidtoken.h",
         "externals/freetype/src/cid/type1cid.c",
+        "externals/freetype/src/gzip/crc32.h",
         "externals/freetype/src/gzip/ftgzip.c",
         "externals/freetype/src/gzip/ftzconf.h",
-        "externals/freetype/src/gzip/infblock.h",
-        "externals/freetype/src/gzip/infcodes.h",
+        "externals/freetype/src/gzip/inffast.h",
         "externals/freetype/src/gzip/inffixed.h",
+        "externals/freetype/src/gzip/inflate.h",
         "externals/freetype/src/gzip/inftrees.h",
-        "externals/freetype/src/gzip/infutil.h",
         "externals/freetype/src/gzip/zlib.h",
         "externals/freetype/src/gzip/zutil.h",
         "externals/freetype/src/psaux/afmparse.h",
@@ -968,6 +191,9 @@ cc_library(
         "externals/freetype/src/smooth/ftsmerrs.h",
         "externals/freetype/src/smooth/ftsmooth.h",
         "externals/freetype/src/smooth/smooth.c",
+        "externals/freetype/src/svg/ftsvg.h",
+        "externals/freetype/src/svg/svg.c",
+        "externals/freetype/src/svg/svgtypes.h",
         "externals/freetype/src/truetype/truetype.c",
         "externals/freetype/src/truetype/ttdriver.h",
         "externals/freetype/src/truetype/tterrors.h",
@@ -1041,6 +267,7 @@ cc_library(
         "externals/freetype/include/freetype/fttrigon.h",
         "externals/freetype/include/freetype/fttypes.h",
         "externals/freetype/include/freetype/ftwinfnt.h",
+        "externals/freetype/include/freetype/otsvg.h",
         "externals/freetype/include/freetype/t1tables.h",
         "externals/freetype/include/freetype/ttnameid.h",
         "externals/freetype/include/freetype/tttables.h",
@@ -1101,11 +328,10 @@ cc_library(
         "externals/freetype/src/cid/cidparse.c",
         "externals/freetype/src/cid/cidriver.c",
         "externals/freetype/src/gzip/adler32.c",
-        "externals/freetype/src/gzip/infblock.c",
-        "externals/freetype/src/gzip/infcodes.c",
+        "externals/freetype/src/gzip/crc32.c",
+        "externals/freetype/src/gzip/inffast.c",
         "externals/freetype/src/gzip/inflate.c",
         "externals/freetype/src/gzip/inftrees.c",
-        "externals/freetype/src/gzip/infutil.c",
         "externals/freetype/src/gzip/zutil.c",
         "externals/freetype/src/psaux/afmparse.c",
         "externals/freetype/src/psaux/cffdecode.c",
@@ -1144,9 +370,11 @@ cc_library(
         "externals/freetype/src/sfnt/ttmtx.c",
         "externals/freetype/src/sfnt/ttpost.c",
         "externals/freetype/src/sfnt/ttsbit.c",
+        "externals/freetype/src/sfnt/ttsvg.c",
         "externals/freetype/src/sfnt/woff2tags.c",
         "externals/freetype/src/smooth/ftgrays.c",
         "externals/freetype/src/smooth/ftsmooth.c",
+        "externals/freetype/src/svg/ftsvg.c",
         "externals/freetype/src/truetype/ttdriver.c",
         "externals/freetype/src/truetype/ttgload.c",
         "externals/freetype/src/truetype/ttgxvar.c",
@@ -1161,8 +389,9 @@ cc_library(
         "externals/freetype/src/type1/t1objs.c",
         "externals/freetype/src/type1/t1parse.c",
     ],
+    visibility = ["//:__subpackages__"],
     deps = [
-        ":libpng",  # TODO(kjlubick) add brotli option
+        "@libpng",  # TODO(kjlubick) add brotli option
     ],
 )
 
@@ -2077,6 +1306,7 @@ cc_library(
     hdrs = ICU_HDRS,
     copts = [
         "-Wno-deprecated-declarations",
+        "-Wno-unused-but-set-variable",
         "-Wno-unused-function",
     ],
     defines = [
@@ -2108,6 +1338,7 @@ cc_library(
         "//bazel/common_config_settings:cpu_wasm": ["__i386__"],
         "//conditions:default": [],
     }),
+    visibility = ["//:__subpackages__"],
 )
 
 _icu_version_major_num = "69"  # defined in source/common/unicode/uvernum.h
@@ -2204,6 +1435,28 @@ HARFBUZZ_HDRS = [
 ]
 
 HARFBUZZ_SRCS = [
+    "externals/harfbuzz/src/OT/Layout/GSUB/AlternateSet.hh",
+    "externals/harfbuzz/src/OT/Layout/GSUB/AlternateSubst.hh",
+    "externals/harfbuzz/src/OT/Layout/GSUB/AlternateSubstFormat1.hh",
+    "externals/harfbuzz/src/OT/Layout/GSUB/ChainContextSubst.hh",
+    "externals/harfbuzz/src/OT/Layout/GSUB/Common.hh",
+    "externals/harfbuzz/src/OT/Layout/GSUB/ContextSubst.hh",
+    "externals/harfbuzz/src/OT/Layout/GSUB/ExtensionSubst.hh",
+    "externals/harfbuzz/src/OT/Layout/GSUB/GSUB.hh",
+    "externals/harfbuzz/src/OT/Layout/GSUB/Ligature.hh",
+    "externals/harfbuzz/src/OT/Layout/GSUB/LigatureSet.hh",
+    "externals/harfbuzz/src/OT/Layout/GSUB/LigatureSubst.hh",
+    "externals/harfbuzz/src/OT/Layout/GSUB/LigatureSubstFormat1.hh",
+    "externals/harfbuzz/src/OT/Layout/GSUB/MultipleSubst.hh",
+    "externals/harfbuzz/src/OT/Layout/GSUB/MultipleSubstFormat1.hh",
+    "externals/harfbuzz/src/OT/Layout/GSUB/ReverseChainSingleSubst.hh",
+    "externals/harfbuzz/src/OT/Layout/GSUB/ReverseChainSingleSubstFormat1.hh",
+    "externals/harfbuzz/src/OT/Layout/GSUB/Sequence.hh",
+    "externals/harfbuzz/src/OT/Layout/GSUB/SingleSubst.hh",
+    "externals/harfbuzz/src/OT/Layout/GSUB/SingleSubstFormat1.hh",
+    "externals/harfbuzz/src/OT/Layout/GSUB/SingleSubstFormat2.hh",
+    "externals/harfbuzz/src/OT/Layout/GSUB/SubstLookup.hh",
+    "externals/harfbuzz/src/OT/Layout/GSUB/SubstLookupSubTable.hh",
     "externals/harfbuzz/src/hb-aat-layout-ankr-table.hh",
     "externals/harfbuzz/src/hb-aat-layout-bsln-table.hh",
     "externals/harfbuzz/src/hb-aat-layout-common.hh",
@@ -2231,6 +1484,7 @@ HARFBUZZ_SRCS = [
     "externals/harfbuzz/src/hb-buffer-deserialize-json.hh",
     "externals/harfbuzz/src/hb-buffer-deserialize-text.hh",
     "externals/harfbuzz/src/hb-buffer-serialize.cc",
+    "externals/harfbuzz/src/hb-buffer-verify.cc",
     "externals/harfbuzz/src/hb-buffer.cc",
     "externals/harfbuzz/src/hb-buffer.hh",
     "externals/harfbuzz/src/hb-cache.hh",
@@ -2256,7 +1510,6 @@ HARFBUZZ_SRCS = [
     "externals/harfbuzz/src/hb-map.cc",
     "externals/harfbuzz/src/hb-map.hh",
     "externals/harfbuzz/src/hb-meta.hh",
-    "externals/harfbuzz/src/hb-ms-feature-ranges.cc",
     "externals/harfbuzz/src/hb-ms-feature-ranges.hh",
     "externals/harfbuzz/src/hb-mutex.hh",
     "externals/harfbuzz/src/hb-null.hh",
@@ -2359,6 +1612,7 @@ HARFBUZZ_SRCS = [
     "externals/harfbuzz/src/hb-ot-tag-table.hh",
     "externals/harfbuzz/src/hb-ot-tag.cc",
     "externals/harfbuzz/src/hb-ot-var-avar-table.hh",
+    "externals/harfbuzz/src/hb-ot-var-common.hh",
     "externals/harfbuzz/src/hb-ot-var-fvar-table.hh",
     "externals/harfbuzz/src/hb-ot-var-gvar-table.hh",
     "externals/harfbuzz/src/hb-ot-var-hvar-table.hh",
@@ -2392,6 +1646,8 @@ HARFBUZZ_SRCS = [
     "externals/harfbuzz/src/hb-subset-input.hh",
     "externals/harfbuzz/src/hb-subset-plan.cc",
     "externals/harfbuzz/src/hb-subset-plan.hh",
+    "externals/harfbuzz/src/hb-subset-repacker.cc",
+    "externals/harfbuzz/src/hb-subset-repacker.h",
     "externals/harfbuzz/src/hb-subset.cc",
     "externals/harfbuzz/src/hb-subset.hh",
     "externals/harfbuzz/src/hb-ucd-table.hh",
@@ -2419,4 +1675,49 @@ cc_library(
         "HB_NO_FALLBACK_SHAPE",
         "HB_NO_WIN1256",
     ],
+    visibility = ["//:__subpackages__"],
+)
+
+cc_library(
+    name = "etc1",
+    srcs = [
+        "etc1/etc1.cpp",
+    ],
+    hdrs = [
+        "etc1/etc1.h",
+    ],
+    visibility = ["//:__subpackages__"],
+)
+
+cc_library(
+    name = "spirv_cross",
+    srcs = [
+        "externals/spirv-cross/GLSL.std.450.h",
+        "externals/spirv-cross/spirv.hpp",
+        "externals/spirv-cross/spirv_cfg.cpp",
+        "externals/spirv-cross/spirv_cfg.hpp",
+        "externals/spirv-cross/spirv_common.hpp",
+        "externals/spirv-cross/spirv_cpp.cpp",
+        "externals/spirv-cross/spirv_cpp.hpp",
+        "externals/spirv-cross/spirv_cross.cpp",
+        "externals/spirv-cross/spirv_cross.hpp",
+        "externals/spirv-cross/spirv_cross_containers.hpp",
+        "externals/spirv-cross/spirv_cross_error_handling.hpp",
+        "externals/spirv-cross/spirv_cross_parsed_ir.cpp",
+        "externals/spirv-cross/spirv_cross_parsed_ir.hpp",
+        "externals/spirv-cross/spirv_glsl.cpp",
+        "externals/spirv-cross/spirv_glsl.hpp",
+        "externals/spirv-cross/spirv_hlsl.cpp",
+        "externals/spirv-cross/spirv_msl.cpp",
+        "externals/spirv-cross/spirv_msl.hpp",
+        "externals/spirv-cross/spirv_parser.cpp",
+        "externals/spirv-cross/spirv_parser.hpp",
+        "externals/spirv-cross/spirv_reflect.cpp",
+        "externals/spirv-cross/spirv_reflect.hpp",
+    ],
+    hdrs = [
+        "externals/spirv-cross/spirv_hlsl.hpp",
+    ],
+    defines = ["SPIRV_CROSS_EXCEPTIONS_TO_ASSERTIONS"],
+    visibility = ["//:__subpackages__"],
 )

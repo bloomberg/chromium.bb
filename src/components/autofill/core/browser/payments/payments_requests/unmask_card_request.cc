@@ -5,12 +5,12 @@
 #include "components/autofill/core/browser/payments/payments_requests/unmask_card_request.h"
 
 #include "base/json/json_writer.h"
+#include "base/strings/escape.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
-#include "net/base/escape.h"
 
 namespace autofill {
 namespace payments {
@@ -86,9 +86,21 @@ std::string UnmaskCardRequest::GetRequestContentType() {
 }
 
 std::string UnmaskCardRequest::GetRequestContent() {
+  // Either non-legacy instrument id or legacy server id must be provided.
+  DCHECK(!request_details_.card.server_id().empty() ||
+         request_details_.card.instrument_id() != 0);
   base::Value request_dict(base::Value::Type::DICTIONARY);
-  request_dict.SetKey("credit_card_id",
-                      base::Value(request_details_.card.server_id()));
+  if (!request_details_.card.server_id().empty()) {
+    request_dict.SetKey("credit_card_id",
+                        base::Value(request_details_.card.server_id()));
+  }
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillEnableUnmaskCardRequestSetInstrumentId) &&
+      request_details_.card.instrument_id() != 0) {
+    request_dict.SetKey("instrument_id",
+                        base::Value(base::NumberToString(
+                            request_details_.card.instrument_id())));
+  }
   if (base::FeatureList::IsEnabled(
           features::kAutofillAlwaysReturnCloudTokenizedCard)) {
     // See b/140727361.
@@ -158,22 +170,22 @@ std::string UnmaskCardRequest::GetRequestContent() {
   if (is_cvc_auth) {
     request_content = base::StringPrintf(
         kUnmaskCardRequestFormatWithCvc,
-        net::EscapeUrlEncodedData(json_request, true).c_str(),
-        net::EscapeUrlEncodedData(
+        base::EscapeUrlEncodedData(json_request, true).c_str(),
+        base::EscapeUrlEncodedData(
             base::UTF16ToASCII(request_details_.user_response.cvc), true)
             .c_str());
   } else if (is_otp_auth) {
     request_content = base::StringPrintf(
         kUnmaskCardRequestFormatWithOtp,
-        net::EscapeUrlEncodedData(json_request, true).c_str(),
-        net::EscapeUrlEncodedData(base::UTF16ToASCII(request_details_.otp),
-                                  true)
+        base::EscapeUrlEncodedData(json_request, true).c_str(),
+        base::EscapeUrlEncodedData(base::UTF16ToASCII(request_details_.otp),
+                                   true)
             .c_str());
   } else {
     // If neither cvc nor otp request, use the normal request format.
     request_content = base::StringPrintf(
         kUnmaskCardRequestFormat,
-        net::EscapeUrlEncodedData(json_request, true).c_str());
+        base::EscapeUrlEncodedData(json_request, true).c_str());
   }
 
   VLOG(3) << "getrealpan request body: " << request_content;
@@ -214,7 +226,7 @@ void UnmaskCardRequest::ParseResponse(const base::Value& response) {
   if (challenge_option_list) {
     std::vector<CardUnmaskChallengeOption> card_unmask_challenge_options;
     for (const base::Value& challenge_option :
-         challenge_option_list->GetList()) {
+         challenge_option_list->GetListDeprecated()) {
       CardUnmaskChallengeOption parsed_challenge_option =
           ParseCardUnmaskChallengeOption(challenge_option);
       // Only return successfully parsed challenge option.
@@ -261,12 +273,8 @@ bool UnmaskCardRequest::IsResponseComplete() {
       // When pan is returned, it has to contain pan + expiry + cvv.
       // When pan is not returned, it has to contain context token to indicate
       // success.
-      if (base::FeatureList::IsEnabled(
-              features::kAutofillEnableVirtualCardsRiskBasedAuthentication)) {
-        return IsAllCardInformationValidIncludingDcvv() ||
-               CanPerformVirtualCardAuth();
-      }
-      return IsAllCardInformationValidIncludingDcvv();
+      return IsAllCardInformationValidIncludingDcvv() ||
+             CanPerformVirtualCardAuth();
   }
 }
 

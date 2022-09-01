@@ -8,8 +8,9 @@
 
 #include <math.h>
 
+#include <iterator>
+
 #include "core/fxge/cfx_path.h"
-#include "third_party/base/cxx17_backports.h"
 #include "xfa/fde/cfde_textout.h"
 #include "xfa/fgas/graphics/cfgas_gecolor.h"
 #include "xfa/fgas/graphics/cfgas_gegraphics.h"
@@ -37,7 +38,7 @@ CFWL_CheckBoxTP::CFWL_CheckBoxTP() = default;
 CFWL_CheckBoxTP::~CFWL_CheckBoxTP() = default;
 
 void CFWL_CheckBoxTP::DrawText(const CFWL_ThemeText& pParams) {
-  EnsureTTOInitialized();
+  EnsureTTOInitialized(pParams.GetWidget()->GetThemeProvider());
   m_pTextOut->SetTextColor(pParams.m_dwStates & CFWL_PartState::kDisabled
                                ? FWLTHEME_CAPACITY_TextDisColor
                                : FWLTHEME_CAPACITY_TextColor);
@@ -143,8 +144,8 @@ void CFWL_CheckBoxTP::DrawSignStar(CFGAS_GEGraphics* pGraphics,
 
   path.MoveTo(points[0]);
   int next = 0;
-  for (size_t i = 0; i < pdfium::size(points); ++i) {
-    next = (next + 2) % pdfium::size(points);
+  for (size_t i = 0; i < std::size(points); ++i) {
+    next = (next + 2) % std::size(points);
     path.LineTo(points[next]);
   }
   pGraphics->SaveGraphState();

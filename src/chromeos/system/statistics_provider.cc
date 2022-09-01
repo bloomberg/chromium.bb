@@ -12,13 +12,13 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/containers/flat_map.h"
-#include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -26,7 +26,6 @@
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/system/sys_info.h"
-#include "base/task/post_task.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/task_runner.h"
 #include "base/task/task_traits.h"
@@ -92,6 +91,7 @@ const char kKeyboardMechanicalLayoutPath[] = "keyboard_mechanical_layout";
 // devices. It's known *not* to be present on caroline.
 // TODO(tnagel): Remove "Product_S/N" after all devices that have it are AUE.
 const char* const kMachineInfoSerialNumberKeys[] = {
+    "flex_id",        // Used by Reven devices
     "Product_S/N",    // Samsung legacy
     "serial_number",  // VPD v2+ devices (Samsung: caroline and later)
 };
@@ -108,7 +108,7 @@ bool JoinListValuesToString(const base::Value& dictionary,
 
   std::string buffer;
   bool first = true;
-  for (const auto& v : list_value->GetList()) {
+  for (const auto& v : list_value->GetListDeprecated()) {
     const std::string* value = v.GetIfString();
     if (!value)
       return false;
@@ -132,10 +132,10 @@ bool GetFirstListValueAsString(const base::Value& dictionary,
                                const std::string key,
                                std::string* result) {
   const base::Value* list_value = dictionary.FindListKey(key);
-  if (list_value == nullptr || list_value->GetList().empty())
+  if (list_value == nullptr || list_value->GetListDeprecated().empty())
     return false;
 
-  const std::string* value = list_value->GetList()[0].GetIfString();
+  const std::string* value = list_value->GetListDeprecated()[0].GetIfString();
   if (value == nullptr)
     return false;
   if (result != nullptr)
@@ -166,6 +166,19 @@ bool GetInitialTimezoneFromRegionalData(const base::Value& region_dict,
 bool GetInitialLocaleFromRegionalData(const base::Value& region_dict,
                                       std::string* result) {
   return JoinListValuesToString(region_dict, kLocalesPath, result);
+}
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class VpdCacheReadResult {
+  kSuccess = 0,
+  KMissing = 1,
+  kParseFailed = 2,
+  kMaxValue = kParseFailed,
+};
+
+void ReportVpdCacheReadResult(VpdCacheReadResult result) {
+  base::UmaHistogramEnumeration("Enterprise.VPDCacheReadResult", result);
 }
 
 }  // namespace
@@ -372,7 +385,7 @@ bool StatisticsProviderImpl::GetMachineStatistic(const std::string& name,
 
   // Test region should override VPD values.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kCrosRegion) &&
+          ash::switches::kCrosRegion) &&
       GetRegionalInformation(name, result)) {
     return true;
   }
@@ -493,7 +506,7 @@ void StatisticsProviderImpl::LoadMachineStatistics(bool load_oem_manifest) {
   if (base::SysInfo::IsRunningOnChromeOS()) {
     // Parse all of the key/value pairs from the crossystem tool.
     if (!parser.ParseNameValuePairsFromTool(
-            base::size(kCrosSystemTool), kCrosSystemTool,
+            std::size(kCrosSystemTool), kCrosSystemTool,
             NameValuePairsFormat::kCrossystem)) {
       LOG(ERROR) << "Errors parsing output from: " << kCrosSystemTool;
     }
@@ -509,7 +522,7 @@ void StatisticsProviderImpl::LoadMachineStatistics(bool load_oem_manifest) {
   }
 
   base::FilePath machine_info_path;
-  base::PathService::Get(chromeos::FILE_MACHINE_INFO, &machine_info_path);
+  base::PathService::Get(FILE_MACHINE_INFO, &machine_info_path);
   if (!base::SysInfo::IsRunningOnChromeOS() &&
       !base::PathExists(machine_info_path)) {
     // Use time value to create an unique stub serial because clashes of the
@@ -528,13 +541,18 @@ void StatisticsProviderImpl::LoadMachineStatistics(bool load_oem_manifest) {
   }
 
   base::FilePath vpd_path;
-  base::PathService::Get(chromeos::FILE_VPD, &vpd_path);
-  if (!base::SysInfo::IsRunningOnChromeOS() && !base::PathExists(vpd_path)) {
-    std::string stub_contents = "\"ActivateDate\"=\"2000-01\"\n";
-    int bytes_written =
-        base::WriteFile(vpd_path, stub_contents.c_str(), stub_contents.size());
-    if (bytes_written < static_cast<int>(stub_contents.size())) {
-      PLOG(ERROR) << "Error writing VPD stub " << vpd_path.value();
+  base::PathService::Get(FILE_VPD, &vpd_path);
+  if (!base::PathExists(vpd_path)) {
+    if (base::SysInfo::IsRunningOnChromeOS()) {
+      ReportVpdCacheReadResult(VpdCacheReadResult::KMissing);
+      LOG(ERROR) << "Missing FILE_VPD: " << vpd_path;
+    } else {
+      std::string stub_contents = "\"ActivateDate\"=\"2000-01\"\n";
+      int bytes_written = base::WriteFile(vpd_path, stub_contents.c_str(),
+                                          stub_contents.size());
+      if (bytes_written < static_cast<int>(stub_contents.size())) {
+        PLOG(ERROR) << "Error writing VPD stub " << vpd_path.value();
+      }
     }
   }
 
@@ -544,7 +562,16 @@ void StatisticsProviderImpl::LoadMachineStatistics(bool load_oem_manifest) {
                                      NameValuePairsFormat::kMachineInfo);
   parser.ParseNameValuePairsFromFile(base::FilePath(kEchoCouponFile),
                                      NameValuePairsFormat::kVpdDump);
-  parser.ParseNameValuePairsFromFile(vpd_path, NameValuePairsFormat::kVpdDump);
+  bool vpd_parse_result = parser.ParseNameValuePairsFromFile(
+      vpd_path, NameValuePairsFormat::kVpdDump);
+  if (base::SysInfo::IsRunningOnChromeOS()) {
+    if (vpd_parse_result) {
+      ReportVpdCacheReadResult(VpdCacheReadResult::kSuccess);
+    } else {
+      ReportVpdCacheReadResult(VpdCacheReadResult::kParseFailed);
+      LOG(ERROR) << "Failed to parse FILE_VPD: " << vpd_path;
+    }
+  }
 
   // Ensure that the hardware class key is present with the expected
   // key name, and if it couldn't be retrieved, that the value is "unknown".
@@ -591,9 +618,8 @@ void StatisticsProviderImpl::LoadMachineStatistics(bool load_oem_manifest) {
     region_ = std::string();
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(chromeos::switches::kCrosRegion)) {
-    region_ =
-        command_line->GetSwitchValueASCII(chromeos::switches::kCrosRegion);
+  if (command_line->HasSwitch(ash::switches::kCrosRegion)) {
+    region_ = command_line->GetSwitchValueASCII(ash::switches::kCrosRegion);
     machine_info_[kRegionKey] = region_;
     VLOG(1) << "CrOS region set to '" << region_ << "'";
   }

@@ -8,6 +8,7 @@
 #include "base/containers/flat_set.h"
 #include "base/observer_list.h"
 #include "base/scoped_observation.h"
+#include "base/sequence_checker.h"
 #include "components/account_manager_core/account.h"
 #include "components/account_manager_core/account_manager_facade.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -28,6 +29,9 @@ class AccountAppsAvailability
       public account_manager::AccountManagerFacade::Observer,
       public signin::IdentityManager::Observer {
  public:
+  static const char kNumAccountsInArcMetricName[];
+  static const char kPercentAccountsInArcMetricName[];
+
   class Observer : public base::CheckedObserver {
    public:
     Observer() = default;
@@ -89,11 +93,8 @@ class AccountAppsAvailability
   bool IsInitialized() const;
 
  private:
-  enum InitializationState {
-    kUninitialized,
-    kInProgress,
-    kInitialized,
-  };
+  // `KeyedService`:
+  void Shutdown() override;
 
   // `IdentityManager::Observer`:
   void OnRefreshTokenUpdatedForAccount(
@@ -108,13 +109,28 @@ class AccountAppsAvailability
   void InitAccountsAvailableInArcPref(
       const std::vector<account_manager::Account>& accounts);
 
+  // Report metrics (e.g. number of accounts in ARC).
+  void ReportMetrics(const std::vector<account_manager::Account>& accounts);
+
+  // Call `GetAccounts` and find the account by `gaia_id`. Call the `callback`
+  // with the resulted account or with `nullopt` if requested account is not in
+  // Account Manager.
+  void FindAccountByGaiaId(
+      const std::string& gaia_id,
+      base::OnceCallback<void(const absl::optional<account_manager::Account>&)>
+          callback);
+
+  // Call `NotifyObservers` if account is not `nullopt`.
+  void MaybeNotifyObservers(
+      bool is_available_in_arc,
+      const absl::optional<account_manager::Account>& account);
+
   // Call `OnAccountAvailableInArc` if `is_available_in_arc` is `true`.
   // Otherwise call `OnAccountUnavailableInArc`.
   void NotifyObservers(const account_manager::Account& account,
                        bool is_available_in_arc);
 
-  InitializationState initialization_state_ =
-      InitializationState::kUninitialized;
+  bool is_initialized_ = false;
 
   // Callbacks waiting on class initialization.
   std::vector<base::OnceClosure> initialization_callbacks_;
@@ -138,6 +154,8 @@ class AccountAppsAvailability
   base::ScopedObservation<account_manager::AccountManagerFacade,
                           account_manager::AccountManagerFacade::Observer>
       account_manager_facade_observation_{this};
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<AccountAppsAvailability> weak_factory_{this};
 };

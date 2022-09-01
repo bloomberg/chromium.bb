@@ -18,6 +18,8 @@ class Value;
 namespace web {
 
 enum class NavigationInitiationType;
+enum Permission : NSUInteger;
+enum PermissionState : NSUInteger;
 enum class WKNavigationState;
 
 }  // namespace web
@@ -142,6 +144,22 @@ class WebStateImpl;
         MIMEType:(NSString*)MIMEType
           forURL:(const GURL&)URL;
 
+// Loads the web content from the HTML you provide as if the HTML were the
+// response to the request. This method does not create a new navigation entry
+// if |URL| matches the current page's URL. This method creates a new navigation
+// entry if |URL| differs from the current page's URL.
+- (void)loadSimulatedRequest:(const GURL&)URL
+          responseHTMLString:(NSString*)responseHTMLString
+    API_AVAILABLE(ios(15.0));
+
+// Loads the web content from the data you provide as if the data were the
+// response to the request. This method does not create a new navigation entry
+// if |URL| matches the current page's URL. This method creates a new navigation
+// entry if |URL| differs from the current page's URL.
+- (void)loadSimulatedRequest:(const GURL&)URL
+                responseData:(NSData*)responseData
+                    MIMEType:(NSString*)MIMEType API_AVAILABLE(ios(15.0));
+
 // Stops loading the page.
 - (void)stopLoading;
 
@@ -175,6 +193,10 @@ class WebStateImpl;
 - (void)createFullPagePDFWithCompletion:
     (void (^)(NSData* PDFDocumentData))completion;
 
+// Tries to dismiss the presented states of the media (fullscreen or Picture in
+// Picture).
+- (void)closeMediaPresentations;
+
 // Creates a web view if it's not yet created. Returns the web view.
 - (WKWebView*)ensureWebViewCreated;
 
@@ -192,6 +214,17 @@ class WebStateImpl;
 // a no-op, and |sessionStateData| will return nil.
 - (BOOL)setSessionStateData:(NSData*)data;
 - (NSData*)sessionStateData;
+
+// Gets and sets the web state's state of a permission; for example, the one to
+// use the camera on the device. Only works on iOS 15+.
+- (web::PermissionState)stateForPermission:(web::Permission)permission
+    API_AVAILABLE(ios(15.0));
+- (void)setState:(web::PermissionState)state
+    forPermission:(web::Permission)permission API_AVAILABLE(ios(15.0));
+
+// Gets a mapping of all permissions and their states. Only works on iOS 15+.
+- (NSDictionary<NSNumber*, NSNumber*>*)
+    statesForAllPermissions API_AVAILABLE(ios(15.0));
 
 // Injects the windowID into the main frame of the current webpage.
 // TODO(crbug.com/905939): Remove WindowID.

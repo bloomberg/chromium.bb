@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ash/constants/notifier_catalogs.h"
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/system/tray/tray_constants.h"
@@ -20,6 +21,8 @@
 using chromeos::NetworkHandler;
 
 namespace ash {
+
+const char SmsObserver::kNotificationPrefix[] = "chrome://network/sms";
 
 namespace {
 
@@ -36,19 +39,18 @@ void ShowNotification(const base::Value* message,
   if (!message_center)
     return;
 
-  const char kNotificationId[] = "chrome://network/sms";
   std::unique_ptr<message_center::Notification> notification;
 
   // TODO(estade): should SMS notifications really be shown to all users?
   notification = ash::CreateSystemNotification(
       message_center::NOTIFICATION_TYPE_SIMPLE,
-      kNotificationId + std::to_string(message_id),
+      SmsObserver::kNotificationPrefix + std::to_string(message_id),
       base::ASCIIToUTF16(message_number),
       base::CollapseWhitespace(base::UTF8ToUTF16(message_text),
                                false /* trim_sequences_with_line_breaks */),
       std::u16string(), GURL(),
       message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
-                                 kNotifierSms),
+                                 kNotifierSms, NotificationCatalogName::kSMS),
       message_center::RichNotificationData(), nullptr, kNotificationSmsSyncIcon,
       message_center::SystemNotificationWarningLevel::NORMAL);
   message_center->AddNotification(std::move(notification));

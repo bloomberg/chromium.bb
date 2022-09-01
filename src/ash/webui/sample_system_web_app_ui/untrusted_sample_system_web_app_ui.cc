@@ -4,7 +4,7 @@
 
 #include "ash/webui/sample_system_web_app_ui/untrusted_sample_system_web_app_ui.h"
 
-#include "ash/grit/ash_sample_system_web_app_untrusted_resources_map.h"
+#include "ash/webui/grit/ash_sample_system_web_app_untrusted_resources_map.h"
 #include "ash/webui/sample_system_web_app_ui/sample_system_web_app_ui.h"
 #include "ash/webui/sample_system_web_app_ui/url_constants.h"
 #include "content/public/browser/web_contents.h"
@@ -32,14 +32,13 @@ UntrustedSampleSystemWebAppUI::UntrustedSampleSystemWebAppUI(
     content::WebUI* web_ui)
     : ui::UntrustedWebUIController(web_ui) {
   content::WebUIDataSource* untrusted_source =
-      content::WebUIDataSource::Create(kChromeUIUntrustedSampleSystemWebAppURL);
+      content::WebUIDataSource::CreateAndAdd(
+          web_ui->GetWebContents()->GetBrowserContext(),
+          kChromeUIUntrustedSampleSystemWebAppURL);
   untrusted_source->AddResourcePaths(
       base::make_span(kAshSampleSystemWebAppUntrustedResources,
                       kAshSampleSystemWebAppUntrustedResourcesSize));
   untrusted_source->AddFrameAncestor(GURL(kChromeUISampleSystemWebAppURL));
-
-  auto* browser_context = web_ui->GetWebContents()->GetBrowserContext();
-  content::WebUIDataSource::Add(browser_context, untrusted_source);
 }
 
 UntrustedSampleSystemWebAppUI::~UntrustedSampleSystemWebAppUI() = default;
@@ -59,7 +58,7 @@ void UntrustedSampleSystemWebAppUI::CreateParentPage(
     mojo::PendingReceiver<mojom::sample_swa::ParentTrustedPage>
         parent_trusted_page) {
   // Find the parent frame's controller.
-  auto* chrome_frame = web_ui()->GetWebContents()->GetMainFrame();
+  auto* chrome_frame = web_ui()->GetWebContents()->GetPrimaryMainFrame();
   if (!chrome_frame)
     return;
 

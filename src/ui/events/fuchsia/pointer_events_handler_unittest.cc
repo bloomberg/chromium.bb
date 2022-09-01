@@ -20,9 +20,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/events/event.h"
+#include "ui/events/event_constants.h"
 #include "ui/events/fuchsia/fakes/fake_mouse_source.h"
 #include "ui/events/fuchsia/fakes/fake_touch_source.h"
 #include "ui/events/fuchsia/fakes/pointer_event_utility.h"
+#include "ui/events/types/event_type.h"
 
 namespace ui {
 namespace {
@@ -81,12 +83,14 @@ TEST_F(PointerEventsHandlerTest, Watch_EventCallbacksAreIndependent) {
 
   ASSERT_EQ(events.size(), 1u);
   EXPECT_TRUE(events[0]->IsTouchEvent());
+  EXPECT_EQ(events[0]->AsTouchEvent()->pointer_details().pointer_type,
+            EventPointerType::kTouch);
 
   std::vector<fup::MouseEvent> mouse_events =
       MouseEventBuilder()
           .AddTime(1111789u)
           .AddViewParameters(kRect, kRect, kIdentity)
-          .AddSample(kMouseDeviceId, {10.f, 10.f}, {0})
+          .AddSample(kMouseDeviceId, {10.f, 10.f}, {0}, {0, 0})
           .AddMouseDeviceInfo(kMouseDeviceId, {0, 1, 2})
           .BuildAsVector();
   mouse_source_->ScheduleCallback(std::move(mouse_events));
@@ -94,6 +98,8 @@ TEST_F(PointerEventsHandlerTest, Watch_EventCallbacksAreIndependent) {
 
   ASSERT_EQ(events.size(), 2u);
   EXPECT_TRUE(events[1]->IsMouseEvent());
+  EXPECT_EQ(events[1]->AsMouseEvent()->pointer_details().pointer_type,
+            EventPointerType::kMouse);
 }
 
 TEST_F(PointerEventsHandlerTest, Data_FuchsiaTimeVersusChromeTime) {
@@ -133,7 +139,7 @@ TEST_F(PointerEventsHandlerTest, Phase_ChromeMouseEventTypesAreSynthesized) {
       MouseEventBuilder()
           .AddTime(1111789u)
           .AddViewParameters(kRect, kRect, kIdentity)
-          .AddSample(kMouseDeviceId, {10.f, 10.f}, {0 /*button id*/})
+          .AddSample(kMouseDeviceId, {10.f, 10.f}, {0 /*button id*/}, {0, 0})
           .AddMouseDeviceInfo(kMouseDeviceId,
                               {2 /*first button id*/, 0 /*second button id*/,
                                1 /*third button id*/})
@@ -148,10 +154,11 @@ TEST_F(PointerEventsHandlerTest, Phase_ChromeMouseEventTypesAreSynthesized) {
 
   // Keep Fuchsia button press -> Chrome ET_MOUSE_DRAGGED and
   // EF_RIGHT_MOUSE_BUTTON
-  events = MouseEventBuilder()
-               .AddTime(1111789u)
-               .AddSample(kMouseDeviceId, {10.f, 10.f}, {0 /*button id*/})
-               .BuildAsVector();
+  events =
+      MouseEventBuilder()
+          .AddTime(1111789u)
+          .AddSample(kMouseDeviceId, {10.f, 10.f}, {0 /*button id*/}, {0, 0})
+          .BuildAsVector();
   mouse_source_->ScheduleCallback(std::move(events));
   RunLoopUntilIdle();
 
@@ -163,20 +170,20 @@ TEST_F(PointerEventsHandlerTest, Phase_ChromeMouseEventTypesAreSynthesized) {
   // Release Fuchsia button -> Chrome ET_MOUSE_RELEASED
   events = MouseEventBuilder()
                .AddTime(1111789u)
-               .AddSample(kMouseDeviceId, {10.f, 10.f}, {})
+               .AddSample(kMouseDeviceId, {10.f, 10.f}, {}, {0, 0})
                .BuildAsVector();
   mouse_source_->ScheduleCallback(std::move(events));
   RunLoopUntilIdle();
 
   ASSERT_EQ(mouse_events.size(), 1u);
   EXPECT_EQ(mouse_events[0].type(), ET_MOUSE_RELEASED);
-  EXPECT_EQ(mouse_events[0].flags(), EF_NONE);
+  EXPECT_EQ(mouse_events[0].flags(), EF_RIGHT_MOUSE_BUTTON);
   mouse_events.clear();
 
   // Release Fuchsia button -> Chrome ET_MOUSE_MOVED
   events = MouseEventBuilder()
                .AddTime(1111789u)
-               .AddSample(kMouseDeviceId, {10.f, 10.f}, {})
+               .AddSample(kMouseDeviceId, {10.f, 10.f}, {}, {0, 0})
                .BuildAsVector();
   mouse_source_->ScheduleCallback(std::move(events));
   RunLoopUntilIdle();
@@ -200,7 +207,7 @@ TEST_F(PointerEventsHandlerTest, Phase_ChromeMouseEventFlagsAreSynthesized) {
       MouseEventBuilder()
           .AddTime(1111789u)
           .AddViewParameters(kRect, kRect, kIdentity)
-          .AddSample(kMouseDeviceId, {10.f, 10.f}, {0})
+          .AddSample(kMouseDeviceId, {10.f, 10.f}, {0}, {0, 0})
           .AddMouseDeviceInfo(kMouseDeviceId, {2, 0, 1})
           .BuildAsVector();
   mouse_source_->ScheduleCallback(std::move(events));
@@ -215,14 +222,16 @@ TEST_F(PointerEventsHandlerTest, Phase_ChromeMouseEventFlagsAreSynthesized) {
   // EF_LEFT_MOUSE_BUTTON
   events = MouseEventBuilder()
                .AddTime(1111789u)
-               .AddSample(kMouseDeviceId, {10.f, 10.f}, {2})
+               .AddSample(kMouseDeviceId, {10.f, 10.f}, {2}, {0, 0})
                .BuildAsVector();
   mouse_source_->ScheduleCallback(std::move(events));
   RunLoopUntilIdle();
 
-  ASSERT_EQ(mouse_events.size(), 1u);
-  EXPECT_EQ(mouse_events[0].type(), ET_MOUSE_DRAGGED);
+  ASSERT_EQ(mouse_events.size(), 2u);
+  EXPECT_EQ(mouse_events[0].type(), ET_MOUSE_PRESSED);
   EXPECT_EQ(mouse_events[0].flags(), EF_LEFT_MOUSE_BUTTON);
+  EXPECT_EQ(mouse_events[1].type(), ET_MOUSE_RELEASED);
+  EXPECT_EQ(mouse_events[1].flags(), EF_RIGHT_MOUSE_BUTTON);
   mouse_events.clear();
 }
 
@@ -234,22 +243,225 @@ TEST_F(PointerEventsHandlerTest, Phase_ChromeMouseEventFlagCombo) {
       }));
   RunLoopUntilIdle();  // Server gets watch call.
 
-  // Fuchsia button press -> Chrome ET_MOUSE_PRESSED and EF_LEFT_MOUSE_BUTTON
-  // with EF_RIGHT_MOUSE_BUTTON
+  // Fuchsia button press -> Chrome ET_MOUSE_PRESSED on EF_LEFT_MOUSE_BUTTON
+  // and EF_RIGHT_MOUSE_BUTTON
   std::vector<fup::MouseEvent> events =
       MouseEventBuilder()
           .AddTime(1111789u)
           .AddViewParameters(kRect, kRect, kIdentity)
-          .AddSample(kMouseDeviceId, {10.f, 10.f}, {0, 1})
+          .AddSample(kMouseDeviceId, {10.f, 10.f}, {0, 1}, {0, 0})
+          .AddMouseDeviceInfo(kMouseDeviceId, {0, 1, 2})
+          .BuildAsVector();
+  mouse_source_->ScheduleCallback(std::move(events));
+  RunLoopUntilIdle();
+
+  ASSERT_EQ(mouse_events.size(), 2u);
+  EXPECT_EQ(mouse_events[0].type(), ET_MOUSE_PRESSED);
+  EXPECT_EQ(mouse_events[0].flags(), EF_LEFT_MOUSE_BUTTON);
+  EXPECT_EQ(mouse_events[1].type(), ET_MOUSE_PRESSED);
+  EXPECT_EQ(mouse_events[1].flags(), EF_RIGHT_MOUSE_BUTTON);
+  mouse_events.clear();
+}
+
+TEST_F(PointerEventsHandlerTest, MouseMultiButtonDrag) {
+  std::vector<MouseEvent> mouse_events;
+  pointer_handler_->StartWatching(
+      base::BindLambdaForTesting([&mouse_events](Event* event) {
+        mouse_events.push_back(*event->AsMouseEvent());
+      }));
+  RunLoopUntilIdle();  // Server gets watch call.
+
+  std::vector<fup::MouseEvent> events;
+  // Press left and right button.
+  events.push_back(MouseEventBuilder()
+                       .AddTime(1111789u)
+                       .AddViewParameters(kRect, kRect, kIdentity)
+                       .AddSample(kMouseDeviceId, {10.f, 10.f}, {0, 1}, {0, 0})
+                       .AddMouseDeviceInfo(kMouseDeviceId, {0, 1, 2})
+                       .Build());
+  // drag with left, right button pressing.
+  events.push_back(MouseEventBuilder()
+                       .AddTime(1111790u)
+                       .AddViewParameters(kRect, kRect, kIdentity)
+                       .AddSample(kMouseDeviceId, {11.f, 10.f}, {0, 1}, {0, 0})
+                       .Build());
+  // right button up.
+  events.push_back(MouseEventBuilder()
+                       .AddTime(1111791u)
+                       .AddViewParameters(kRect, kRect, kIdentity)
+                       .AddSample(kMouseDeviceId, {11.f, 10.f}, {0}, {0, 0})
+                       .Build());
+  // drag with left button pressing.
+  events.push_back(MouseEventBuilder()
+                       .AddTime(1111792u)
+                       .AddViewParameters(kRect, kRect, kIdentity)
+                       .AddSample(kMouseDeviceId, {11.f, 11.f}, {0}, {0, 0})
+                       .Build());
+  // left button up.
+  events.push_back(MouseEventBuilder()
+                       .AddTime(11117913u)
+                       .AddViewParameters(kRect, kRect, kIdentity)
+                       .AddSample(kMouseDeviceId, {11.f, 11.f}, {}, {0, 0})
+                       .Build());
+  // mouse move.
+  events.push_back(MouseEventBuilder()
+                       .AddTime(1111794u)
+                       .AddViewParameters(kRect, kRect, kIdentity)
+                       .AddSample(kMouseDeviceId, {12.f, 11.f}, {}, {0, 0})
+                       .Build());
+
+  mouse_source_->ScheduleCallback(std::move(events));
+  RunLoopUntilIdle();
+
+  ASSERT_EQ(mouse_events.size(), 7u);
+  EXPECT_EQ(mouse_events[0].type(), ET_MOUSE_PRESSED);
+  EXPECT_EQ(mouse_events[0].flags(), EF_LEFT_MOUSE_BUTTON);
+  EXPECT_EQ(mouse_events[1].type(), ET_MOUSE_PRESSED);
+  EXPECT_EQ(mouse_events[1].flags(), EF_RIGHT_MOUSE_BUTTON);
+  EXPECT_EQ(mouse_events[2].type(), ET_MOUSE_DRAGGED);
+  EXPECT_EQ(mouse_events[2].flags(),
+            EF_LEFT_MOUSE_BUTTON | EF_RIGHT_MOUSE_BUTTON);
+  EXPECT_EQ(mouse_events[3].type(), ET_MOUSE_RELEASED);
+  EXPECT_EQ(mouse_events[3].flags(), EF_RIGHT_MOUSE_BUTTON);
+  EXPECT_EQ(mouse_events[4].type(), ET_MOUSE_DRAGGED);
+  EXPECT_EQ(mouse_events[4].flags(), EF_LEFT_MOUSE_BUTTON);
+  EXPECT_EQ(mouse_events[5].type(), ET_MOUSE_RELEASED);
+  EXPECT_EQ(mouse_events[5].flags(), EF_LEFT_MOUSE_BUTTON);
+  EXPECT_EQ(mouse_events[6].type(), ET_MOUSE_MOVED);
+  EXPECT_EQ(mouse_events[6].flags(), 0);
+  mouse_events.clear();
+}
+
+TEST_F(PointerEventsHandlerTest, MouseWheelEvent) {
+  std::vector<MouseWheelEvent> mouse_events;
+  pointer_handler_->StartWatching(
+      base::BindLambdaForTesting([&mouse_events](Event* event) {
+        ASSERT_EQ(event->type(), ET_MOUSEWHEEL);
+        mouse_events.push_back(*event->AsMouseWheelEvent());
+      }));
+  RunLoopUntilIdle();  // Server gets watch call.
+
+  // receive a vertical scroll
+  std::vector<fup::MouseEvent> events =
+      MouseEventBuilder()
+          .AddTime(1111789u)
+          .AddViewParameters(kRect, kRect, kIdentity)
+          .AddSample(kMouseDeviceId, {10.f, 10.f}, {}, {0, 1})
           .AddMouseDeviceInfo(kMouseDeviceId, {0, 1, 2})
           .BuildAsVector();
   mouse_source_->ScheduleCallback(std::move(events));
   RunLoopUntilIdle();
 
   ASSERT_EQ(mouse_events.size(), 1u);
-  EXPECT_EQ(mouse_events[0].type(), ET_MOUSE_PRESSED);
-  EXPECT_EQ(mouse_events[0].flags(),
-            EF_LEFT_MOUSE_BUTTON | EF_RIGHT_MOUSE_BUTTON);
+  EXPECT_EQ(mouse_events[0].type(), ET_MOUSEWHEEL);
+  EXPECT_EQ(mouse_events[0].flags(), EF_NONE);
+  EXPECT_EQ(mouse_events[0].AsMouseWheelEvent()->x_offset(), 0);
+  EXPECT_EQ(mouse_events[0].AsMouseWheelEvent()->y_offset(), 120);
+  mouse_events.clear();
+
+  // receive a horizontal scroll
+  events = MouseEventBuilder()
+               .AddTime(1111789u)
+               .AddViewParameters(kRect, kRect, kIdentity)
+               .AddSample(kMouseDeviceId, {10.f, 10.f}, {}, {1, 0})
+               .AddMouseDeviceInfo(kMouseDeviceId, {0, 1, 2})
+               .BuildAsVector();
+  mouse_source_->ScheduleCallback(std::move(events));
+  RunLoopUntilIdle();
+
+  ASSERT_EQ(mouse_events.size(), 1u);
+  EXPECT_EQ(mouse_events[0].type(), ET_MOUSEWHEEL);
+  EXPECT_EQ(mouse_events[0].flags(), EF_NONE);
+  EXPECT_EQ(mouse_events[0].AsMouseWheelEvent()->x_offset(), 120);
+  EXPECT_EQ(mouse_events[0].AsMouseWheelEvent()->y_offset(), 0);
+  mouse_events.clear();
+}
+
+TEST_F(PointerEventsHandlerTest, MouseWheelEventWithButtonPressed) {
+  std::vector<std::unique_ptr<Event>> mouse_events;
+  pointer_handler_->StartWatching(
+      base::BindLambdaForTesting([&mouse_events](Event* event) {
+        ASSERT_TRUE(event->IsMouseEvent());
+        if (event->IsMouseWheelEvent()) {
+          auto e = Event::Clone(*event->AsMouseWheelEvent());
+          mouse_events.push_back(std::move(e));
+        } else if (event->IsMouseEvent()) {
+          auto e = Event::Clone(*event->AsMouseEvent());
+          mouse_events.push_back(std::move(e));
+        } else {
+          NOTREACHED();
+        }
+      }));
+  RunLoopUntilIdle();  // Server gets watch call.
+
+  // left button down
+  std::vector<fup::MouseEvent> events =
+      MouseEventBuilder()
+          .AddTime(1111000u)
+          .AddViewParameters(kRect, kRect, kIdentity)
+          .AddSample(kMouseDeviceId, {10.f, 10.f}, {0}, {0, 0})
+          .AddMouseDeviceInfo(kMouseDeviceId, {0, 1, 2})
+          .BuildAsVector();
+
+  // receive a vertical scroll with pressed button
+  events.push_back(MouseEventBuilder()
+                       .AddTime(1111789u)
+                       .AddViewParameters(kRect, kRect, kIdentity)
+                       .AddSample(kMouseDeviceId, {10.f, 10.f}, {0}, {0, 1})
+                       .Build());
+  mouse_source_->ScheduleCallback(std::move(events));
+
+  RunLoopUntilIdle();
+
+  ASSERT_EQ(mouse_events.size(), 2u);
+  EXPECT_EQ(mouse_events[0]->type(), ET_MOUSE_PRESSED);
+  EXPECT_EQ(mouse_events[0]->flags(), EF_LEFT_MOUSE_BUTTON);
+  EXPECT_EQ(mouse_events[1]->type(), ET_MOUSEWHEEL);
+  EXPECT_EQ(mouse_events[1]->flags(), EF_LEFT_MOUSE_BUTTON);
+  EXPECT_EQ(mouse_events[1]->AsMouseWheelEvent()->x_offset(), 0);
+  EXPECT_EQ(mouse_events[1]->AsMouseWheelEvent()->y_offset(), 120);
+
+  mouse_events.clear();
+}
+
+TEST_F(PointerEventsHandlerTest, MouseWheelEventWithButtonDownBundled) {
+  std::vector<std::unique_ptr<Event>> mouse_events;
+  pointer_handler_->StartWatching(
+      base::BindLambdaForTesting([&mouse_events](Event* event) {
+        ASSERT_TRUE(event->IsMouseEvent());
+        if (event->IsMouseWheelEvent()) {
+          auto e = Event::Clone(*event->AsMouseWheelEvent());
+          mouse_events.push_back(std::move(e));
+        } else if (event->IsMouseEvent()) {
+          auto e = Event::Clone(*event->AsMouseEvent());
+          mouse_events.push_back(std::move(e));
+        } else {
+          NOTREACHED();
+        }
+      }));
+  RunLoopUntilIdle();  // Server gets watch call.
+
+  // left button down and a vertical scroll bundled.
+  std::vector<fup::MouseEvent> events =
+      MouseEventBuilder()
+          .AddTime(1111000u)
+          .AddViewParameters(kRect, kRect, kIdentity)
+          .AddSample(kMouseDeviceId, {10.f, 10.f}, {0}, {0, 1})
+          .AddMouseDeviceInfo(kMouseDeviceId, {0, 1, 2})
+          .BuildAsVector();
+
+  mouse_source_->ScheduleCallback(std::move(events));
+
+  RunLoopUntilIdle();
+
+  ASSERT_EQ(mouse_events.size(), 2u);
+  EXPECT_EQ(mouse_events[0]->type(), ET_MOUSE_PRESSED);
+  EXPECT_EQ(mouse_events[0]->flags(), EF_LEFT_MOUSE_BUTTON);
+  EXPECT_EQ(mouse_events[1]->type(), ET_MOUSEWHEEL);
+  EXPECT_EQ(mouse_events[1]->flags(), EF_LEFT_MOUSE_BUTTON);
+  EXPECT_EQ(mouse_events[1]->AsMouseWheelEvent()->x_offset(), 0);
+  EXPECT_EQ(mouse_events[1]->AsMouseWheelEvent()->y_offset(), 120);
+
   mouse_events.clear();
 }
 

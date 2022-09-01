@@ -72,7 +72,7 @@ void CheckPendingCredentials(const PasswordForm& expected,
   EXPECT_EQ(expected.password_element, actual.password_element);
   EXPECT_EQ(expected.blocked_by_user, actual.blocked_by_user);
   EXPECT_TRUE(
-      autofill::FormDataEqualForTesting(expected.form_data, actual.form_data));
+      autofill::FormData::DeepEqual(expected.form_data, actual.form_data));
 }
 
 struct ExpectedGenerationUKM {
@@ -250,7 +250,7 @@ class PasswordSaveManagerImplTestBase : public testing::Test {
 // current navigation.
 // TODO(crbug.com/896689): Expand the logic/application of this to other
 // platforms and/or merge this concept with |unique_renderer_id|.
-#if defined(OS_IOS)
+#if BUILDFLAG(IS_IOS)
     for (auto& f : observed_form_.fields) {
       f.unique_id = f.id_attribute;
     }
@@ -375,6 +375,13 @@ class PasswordSaveManagerImplTestBase : public testing::Test {
     ON_CALL(*client()->GetPasswordFeatureManager(),
             IsOptedInForAccountStorage())
         .WillByDefault(Return(is_enabled));
+    ON_CALL(*client()->GetPasswordFeatureManager(),
+            ComputePasswordAccountStorageUsageLevel)
+        .WillByDefault(
+            Return(is_enabled ? metrics_util::PasswordAccountStorageUsageLevel::
+                                    kUsingAccountStorage
+                              : metrics_util::PasswordAccountStorageUsageLevel::
+                                    kNotUsingAccountStorage));
   }
 
   void SetDefaultPasswordStore(const PasswordForm::Store& store) {
@@ -614,6 +621,7 @@ TEST_P(PasswordSaveManagerImplTest, ResetPendingCredentials) {
   // Check that save manager is in None state.
   EXPECT_FALSE(password_save_manager_impl()->IsNewLogin());
   EXPECT_FALSE(password_save_manager_impl()->IsPasswordUpdate());
+  EXPECT_FALSE(password_save_manager_impl()->IsSamePassword());
   EXPECT_FALSE(password_save_manager_impl()->HasGeneratedPassword());
 }
 
@@ -734,6 +742,7 @@ TEST_P(PasswordSaveManagerImplTest, OverridePassword) {
       /*is_credential_api_save=*/false);
 
   EXPECT_FALSE(password_save_manager_impl()->IsNewLogin());
+  EXPECT_FALSE(password_save_manager_impl()->IsSamePassword());
   EXPECT_TRUE(password_save_manager_impl()->IsPasswordUpdate());
 
   PasswordForm updated_form;
@@ -848,6 +857,7 @@ TEST_P(PasswordSaveManagerImplTest, UpdateUsernameToAlreadyExisting) {
   CheckPendingCredentials(
       expected, password_save_manager_impl()->GetPendingCredentials());
   EXPECT_FALSE(password_save_manager_impl()->IsNewLogin());
+  EXPECT_FALSE(password_save_manager_impl()->IsSamePassword());
   EXPECT_TRUE(password_save_manager_impl()->IsPasswordUpdate());
 }
 
@@ -915,6 +925,7 @@ TEST_P(PasswordSaveManagerImplTest, UpdatePasswordValueToAlreadyExisting) {
 
   EXPECT_FALSE(password_save_manager_impl()->IsNewLogin());
   EXPECT_FALSE(password_save_manager_impl()->IsPasswordUpdate());
+  EXPECT_TRUE(password_save_manager_impl()->IsSamePassword());
 }
 
 TEST_P(PasswordSaveManagerImplTest, UpdatePasswordValueMultiplePasswordFields) {
@@ -1214,6 +1225,7 @@ TEST_P(PasswordSaveManagerImplTest, HTTPAuthPasswordOverridden) {
       /*is_credential_api_save=*/false);
 
   EXPECT_FALSE(password_save_manager_impl()->IsNewLogin());
+  EXPECT_FALSE(password_save_manager_impl()->IsSamePassword());
   EXPECT_TRUE(password_save_manager_impl()->IsPasswordUpdate());
 
   // Check that the password is updated in the stored credential.
@@ -1317,6 +1329,7 @@ TEST_F(MultiStorePasswordSaveManagerTest, UpdateInAccountStoreOnly) {
       /*is_credential_api_save=*/false);
 
   EXPECT_FALSE(password_save_manager_impl()->IsNewLogin());
+  EXPECT_FALSE(password_save_manager_impl()->IsSamePassword());
   // An update prompt should be shown.
   EXPECT_TRUE(password_save_manager_impl()->IsPasswordUpdate());
 
@@ -1341,6 +1354,7 @@ TEST_F(MultiStorePasswordSaveManagerTest, UpdateInProfileStoreOnly) {
       /*is_credential_api_save=*/false);
 
   EXPECT_FALSE(password_save_manager_impl()->IsNewLogin());
+  EXPECT_FALSE(password_save_manager_impl()->IsSamePassword());
   // An update prompt should be shown.
   EXPECT_TRUE(password_save_manager_impl()->IsPasswordUpdate());
 
@@ -1379,6 +1393,7 @@ TEST_F(MultiStorePasswordSaveManagerTest, UpdateInBothStores) {
       /*is_credential_api_save=*/false);
 
   EXPECT_FALSE(password_save_manager_impl()->IsNewLogin());
+  EXPECT_FALSE(password_save_manager_impl()->IsSamePassword());
   // An update prompt should be shown.
   EXPECT_TRUE(password_save_manager_impl()->IsPasswordUpdate());
 
@@ -1447,6 +1462,7 @@ TEST_F(MultiStorePasswordSaveManagerTest, AutomaticSaveInBothStores) {
 
   // No save or update prompts should be shown.
   EXPECT_FALSE(password_save_manager_impl()->IsNewLogin());
+  EXPECT_TRUE(password_save_manager_impl()->IsSamePassword());
   EXPECT_FALSE(password_save_manager_impl()->IsPasswordUpdate());
 
   // We still should update both credentials to update the |date_last_used| and
@@ -1926,8 +1942,7 @@ class MultiStorePasswordSaveManagerGenerationConflictTest
   // The test parameters determine which of the conflicts should be included.
   std::vector<PasswordForm> CreateProfileStoreMatchesForTestParameters(
       const std::u16string& username) const {
-    bool add_same_username_match, add_empty_username_match;
-    std::tie(add_same_username_match, add_empty_username_match) = GetParam();
+    auto [add_same_username_match, add_empty_username_match] = GetParam();
 
     std::vector<PasswordForm> profile_store_matches;
     if (add_same_username_match) {
@@ -2016,6 +2031,22 @@ TEST_P(MultiStorePasswordSaveManagerGenerationConflictTest,
       Save(MatchesUsernameAndPassword(parsed_submitted_form_.username_value,
                                       parsed_submitted_form_.password_value),
            _, _));
+
+  password_save_manager_impl()->PresaveGeneratedPassword(
+      parsed_submitted_form_);
+}
+
+// Regression test for https://crbug.com/1275457
+TEST_P(
+    MultiStorePasswordSaveManagerGenerationConflictTest,
+    PresaveGeneratedPasswordInProfileStoreIfUserOptedInToAccountStoreBeforeAndNowSyncing) {
+  ON_CALL(*client()->GetPasswordFeatureManager(),
+          ComputePasswordAccountStorageUsageLevel)
+      .WillByDefault(
+          Return(metrics_util::PasswordAccountStorageUsageLevel::kSyncing));
+
+  EXPECT_CALL(*mock_profile_form_saver(), Save).Times(1);
+  EXPECT_CALL(*mock_account_form_saver(), Save).Times(0);
 
   password_save_manager_impl()->PresaveGeneratedPassword(
       parsed_submitted_form_);

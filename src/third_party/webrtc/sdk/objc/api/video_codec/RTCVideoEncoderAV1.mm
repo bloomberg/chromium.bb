@@ -15,21 +15,28 @@
 #import "RTCVideoEncoderAV1.h"
 #import "RTCWrappedNativeVideoEncoder.h"
 
-#include "modules/video_coding/codecs/av1/libaom_av1_encoder.h"
+#if defined(RTC_USE_LIBAOM_AV1_ENCODER)
+#include "modules/video_coding/codecs/av1/libaom_av1_encoder.h"  // nogncheck
+#endif
 
 @implementation RTC_OBJC_TYPE (RTCVideoEncoderAV1)
 
 + (id<RTC_OBJC_TYPE(RTCVideoEncoder)>)av1Encoder {
+#if defined(RTC_USE_LIBAOM_AV1_ENCODER)
   std::unique_ptr<webrtc::VideoEncoder> nativeEncoder(webrtc::CreateLibaomAv1Encoder());
-  if (nativeEncoder == nullptr) {
-    return nil;
-  }
   return [[RTC_OBJC_TYPE(RTCWrappedNativeVideoEncoder) alloc]
       initWithNativeEncoder:std::move(nativeEncoder)];
+#else
+  return nil;
+#endif
 }
 
 + (bool)isSupported {
-  return webrtc::kIsLibaomAv1EncoderSupported;
+#if defined(RTC_USE_LIBAOM_AV1_ENCODER)
+  return true;
+#else
+  return false;
+#endif
 }
 
 @end

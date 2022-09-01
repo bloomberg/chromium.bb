@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/time/time.h"
 #include "components/download/public/common/download_danger_type.h"
 #include "components/download/public/common/download_item.h"
 #include "components/download/public/common/download_item_rename_progress_update.h"
@@ -37,8 +38,8 @@ struct InProgressInfo {
   // Referrer url.
   GURL referrer_url;
 
-  // Site url.
-  GURL site_url;
+  // The serialized embedder download data.
+  std::string serialized_embedder_download_data;
 
   // Tab url.
   GURL tab_url;

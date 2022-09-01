@@ -14,13 +14,13 @@
 #include "base/guid.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/clamped_math.h"
 #include "base/rand_util.h"
 #include "base/sequence_checker.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
@@ -136,10 +136,8 @@ class UpdateSieve {
     DCHECK(datatypes_to_migrate);
     datatypes_to_migrate->clear();
 
-    for (const auto& request_version : request_version_map_) {
-      const ModelType type = request_version.first;
-      const int client_migration_version =
-          request_version.second.migration_version();
+    for (const auto& [type, request_version] : request_version_map_) {
+      const int client_migration_version = request_version.migration_version();
 
       const int server_migration_version =
           GetServerMigrationVersion(server_migration_versions, type);
@@ -156,12 +154,11 @@ class UpdateSieve {
   // version between request progress markers and response entities.
   void SetProgressMarkers(
       sync_pb::GetUpdatesResponse* get_updates_response) const {
-    for (const auto& kv : response_version_map_) {
+    for (const auto& [type, response_version] : response_version_map_) {
       sync_pb::DataTypeProgressMarker* new_marker =
           get_updates_response->add_new_progress_marker();
-      new_marker->set_data_type_id(
-          GetSpecificsFieldNumberFromModelType(kv.first));
-      new_marker->set_token(kv.second.ToString());
+      new_marker->set_data_type_id(GetSpecificsFieldNumberFromModelType(type));
+      new_marker->set_token(response_version.ToString());
     }
   }
 
@@ -371,7 +368,8 @@ net::HttpStatusCode LoopbackServer::HandleCommand(
       }
     } else if (!throttled_datatypes_in_request.Empty()) {
       DLOG(WARNING) << "Throttled datatypes: "
-                    << ModelTypeSetToString(throttled_datatypes_in_request);
+                    << ModelTypeSetToDebugString(
+                           throttled_datatypes_in_request);
       response->set_error_code(sync_pb::SyncEnums::THROTTLED);
       response->mutable_error()->set_error_type(sync_pb::SyncEnums::THROTTLED);
       for (ModelType type : throttled_datatypes_in_request) {
@@ -381,9 +379,6 @@ net::HttpStatusCode LoopbackServer::HandleCommand(
       // Avoid tests waiting too long after throttling is disabled.
       response->mutable_client_command()->set_throttle_delay_seconds(1);
     } else {
-      UMA_HISTOGRAM_ENUMERATION(
-          "Sync.Local.RequestTypeOnError", message.message_contents(),
-          sync_pb::ClientToServerMessage_Contents_Contents_MAX);
       return net::HTTP_INTERNAL_SERVER_ERROR;
     }
   }
@@ -463,9 +458,9 @@ bool LoopbackServer::HandleGetUpdatesRequest(
   }
 
   std::vector<const LoopbackServerEntity*> wanted_entities;
-  for (const auto& id_and_entity : entities_) {
-    if (sieve->ClientWantsItem(*id_and_entity.second)) {
-      wanted_entities.push_back(id_and_entity.second.get());
+  for (const auto& [id, entity] : entities_) {
+    if (sieve->ClientWantsItem(*entity)) {
+      wanted_entities.push_back(entity.get());
     }
   }
 
@@ -497,7 +492,7 @@ bool LoopbackServer::HandleGetUpdatesRequest(
 
   if (send_encryption_keys_based_on_nigori ||
       get_updates.need_encryption_key()) {
-    for (const auto& key : keystore_keys_) {
+    for (const std::vector<uint8_t>& key : keystore_keys_) {
       response->add_encryption_keys(key.data(), key.size());
     }
   }
@@ -615,15 +610,15 @@ bool LoopbackServer::IsChild(const string& id,
 void LoopbackServer::DeleteChildren(const string& parent_id) {
   std::vector<sync_pb::SyncEntity> tombstones;
   // Find all the children of |parent_id|.
-  for (auto& entity : entities_) {
-    if (IsChild(entity.first, parent_id)) {
+  for (auto& [id, entity] : entities_) {
+    if (IsChild(id, parent_id)) {
       sync_pb::SyncEntity proto;
-      entity.second->SerializeAsProto(&proto);
+      entity->SerializeAsProto(&proto);
       tombstones.emplace_back(proto);
     }
   }
 
-  for (auto& tombstone : tombstones) {
+  for (sync_pb::SyncEntity& tombstone : tombstones) {
     SaveEntity(PersistentTombstoneEntity::CreateFromEntity(tombstone));
   }
 }
@@ -714,12 +709,11 @@ std::vector<sync_pb::SyncEntity> LoopbackServer::GetSyncEntitiesByModelType(
     ModelType model_type) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   std::vector<sync_pb::SyncEntity> sync_entities;
-  for (const auto& kv : entities_) {
-    const LoopbackServerEntity& entity = *kv.second;
-    if (!(entity.IsDeleted() || entity.IsPermanent()) &&
-        entity.GetModelType() == model_type) {
+  for (const auto& [id, entity] : entities_) {
+    if (!(entity->IsDeleted() || entity->IsPermanent()) &&
+        entity->GetModelType() == model_type) {
       sync_pb::SyncEntity sync_entity;
-      entity.SerializeAsProto(&sync_entity);
+      entity->SerializeAsProto(&sync_entity);
       sync_entities.push_back(sync_entity);
     }
   }
@@ -730,12 +724,11 @@ std::vector<sync_pb::SyncEntity>
 LoopbackServer::GetPermanentSyncEntitiesByModelType(ModelType model_type) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   std::vector<sync_pb::SyncEntity> sync_entities;
-  for (const auto& kv : entities_) {
-    const LoopbackServerEntity& entity = *kv.second;
-    if (!entity.IsDeleted() && entity.IsPermanent() &&
-        entity.GetModelType() == model_type) {
+  for (const auto& [id, entity] : entities_) {
+    if (!entity->IsDeleted() && entity->IsPermanent() &&
+        entity->GetModelType() == model_type) {
       sync_pb::SyncEntity sync_entity;
-      entity.SerializeAsProto(&sync_entity);
+      entity->SerializeAsProto(&sync_entity);
       sync_entities.push_back(sync_entity);
     }
   }
@@ -751,26 +744,25 @@ LoopbackServer::GetEntitiesAsDictionaryValue() {
   // Initialize an empty ListValue for all ModelTypes.
   ModelTypeSet all_types = ModelTypeSet::All();
   for (ModelType type : all_types) {
-    dictionary->SetKey(ModelTypeToString(type), base::ListValue());
+    dictionary->SetKey(ModelTypeToDebugString(type), base::ListValue());
   }
 
-  for (const auto& kv : entities_) {
-    const LoopbackServerEntity& entity = *kv.second;
-    if (entity.IsDeleted() || entity.IsPermanent()) {
+  for (const auto& [id, entity] : entities_) {
+    if (entity->IsDeleted() || entity->IsPermanent()) {
       // Tombstones are ignored as they don't represent current data. Folders
       // are also ignored as current verification infrastructure does not
       // consider them.
       continue;
     }
     base::ListValue* list_value;
-    if (!dictionary->GetList(ModelTypeToString(entity.GetModelType()),
+    if (!dictionary->GetList(ModelTypeToDebugString(entity->GetModelType()),
                              &list_value)) {
       return nullptr;
     }
     // TODO(pvalenzuela): Store more data for each entity so additional
     // verification can be performed. One example of additional verification
     // is checking the correctness of the bookmark hierarchy.
-    list_value->Append(entity.GetName());
+    list_value->Append(entity->GetName());
   }
 
   return dictionary;
@@ -821,11 +813,12 @@ void LoopbackServer::SerializeState(sync_pb::LoopbackServerProto* proto) const {
   proto->set_version(kCurrentLoopbackServerProtoVersion);
   proto->set_store_birthday(store_birthday_);
   proto->set_last_version_assigned(version_);
-  for (const auto& key : keystore_keys_)
+  for (const std::vector<uint8_t>& key : keystore_keys_)
     proto->add_keystore_keys(key.data(), key.size());
-  for (const auto& entity : entities_) {
-    auto* new_entity = proto->mutable_entities()->Add();
-    entity.second->SerializeAsLoopbackServerEntity(new_entity);
+  for (const auto& [id, entity] : entities_) {
+    sync_pb::LoopbackServerEntity* new_entity =
+        proto->mutable_entities()->Add();
+    entity->SerializeAsLoopbackServerEntity(new_entity);
   }
 }
 
@@ -891,9 +884,9 @@ bool LoopbackServer::LoadStateFromFile() {
   if (state_file_error != base::File::FILE_OK) {
     UMA_HISTOGRAM_ENUMERATION("Sync.Local.ReadPlatformFileError",
                               -state_file_error, -base::File::FILE_ERROR_MAX);
-    LOG(ERROR)
-        << "Loopback sync cannot read the persistent state file with error "
-        << base::File::ErrorToString(state_file_error);
+    LOG(ERROR) << "Loopback sync cannot read the persistent state file ("
+               << persistent_file_ << ") with error "
+               << base::File::ErrorToString(state_file_error);
     return false;
   }
 
@@ -903,10 +896,12 @@ bool LoopbackServer::LoadStateFromFile() {
     if (serialized.length() > 0 && proto.ParseFromString(serialized)) {
       return DeSerializeState(proto);
     }
-    LOG(ERROR) << "Loopback sync cannot parse the persistent state file.";
+    LOG(ERROR) << "Loopback sync cannot parse the persistent state file ("
+               << persistent_file_ << ").";
     return false;
   }
-  LOG(ERROR) << "Loopback sync cannot read the persistent state file.";
+  LOG(ERROR) << "Loopback sync cannot read the persistent state file ("
+             << persistent_file_ << ").";
   return false;
 }
 

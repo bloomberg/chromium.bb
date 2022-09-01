@@ -302,7 +302,7 @@ This section explains how the GPU delegate accelerates 8-bit quantized models.
 This includes all flavors of quantization, including:
 
 *   Models trained with
-    [Quantization-aware training](https://www.tensorflow.org/lite/convert/quantization)
+    [Quantization-aware training](https://www.tensorflow.org/lite/models/convert/quantization)
 *   [Post-training dynamic-range quantization](https://www.tensorflow.org/lite/performance/post_training_quant)
 *   [Post-training full-integer quantization](https://www.tensorflow.org/lite/performance/post_training_integer_quant)
 
@@ -452,7 +452,7 @@ internal dequantized buffer.
 
 Using serialization of GPU kernel code and model data from previous
 initializations can reduce latency of GPU delegate's initialization up to 90%.
-ThThis improvement is is achieved by exchanging disk space for time savings. You
+This improvement is achieved by exchanging disk space for time savings. You
 can enable this feature with a few configurations options, as shown in the
 following code examples:
 

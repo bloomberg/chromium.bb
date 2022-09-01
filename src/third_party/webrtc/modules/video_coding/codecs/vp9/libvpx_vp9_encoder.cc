@@ -27,6 +27,7 @@
 #include "common_video/libyuv/include/webrtc_libyuv.h"
 #include "modules/rtp_rtcp/include/rtp_rtcp_defines.h"
 #include "modules/video_coding/svc/create_scalability_structure.h"
+#include "modules/video_coding/svc/scalability_mode_util.h"
 #include "modules/video_coding/svc/scalable_video_controller.h"
 #include "modules/video_coding/svc/scalable_video_controller_no_layering.h"
 #include "modules/video_coding/svc/svc_rate_allocator.h"
@@ -142,7 +143,14 @@ std::unique_ptr<ScalableVideoController> CreateVp9ScalabilityStructure(
     }
   }
 
-  auto scalability_structure_controller = CreateScalabilityStructure(name);
+  absl::optional<ScalabilityMode> scalability_mode =
+      ScalabilityModeFromString(name);
+  if (!scalability_mode.has_value()) {
+    RTC_LOG(LS_WARNING) << "Invalid scalability mode " << name;
+    return nullptr;
+  }
+  auto scalability_structure_controller =
+      CreateScalabilityStructure(*scalability_mode);
   if (scalability_structure_controller == nullptr) {
     RTC_LOG(LS_WARNING) << "Unsupported scalability structure " << name;
   } else {
@@ -184,6 +192,17 @@ vpx_svc_ref_frame_config_t Vp9References(
   return ref_config;
 }
 
+bool AllowDenoising() {
+  // Do not enable the denoiser on ARM since optimization is pending.
+  // Denoiser is on by default on other platforms.
+#if !defined(WEBRTC_ARCH_ARM) && !defined(WEBRTC_ARCH_ARM64) && \
+    !defined(ANDROID)
+  return true;
+#else
+  return false;
+#endif
+}
+
 }  // namespace
 
 void LibvpxVp9Encoder::EncoderOutputCodedPacketCallback(vpx_codec_cx_pkt* pkt,
@@ -194,7 +213,7 @@ void LibvpxVp9Encoder::EncoderOutputCodedPacketCallback(vpx_codec_cx_pkt* pkt,
 
 LibvpxVp9Encoder::LibvpxVp9Encoder(const cricket::VideoCodec& codec,
                                    std::unique_ptr<LibvpxInterface> interface,
-                                   const WebRtcKeyValueConfig& trials)
+                                   const FieldTrialsView& trials)
     : libvpx_(std::move(interface)),
       encoded_image_(),
       encoded_complete_callback_(nullptr),
@@ -386,6 +405,15 @@ bool LibvpxVp9Encoder::SetSvcRates(
     }
   }
 
+  if (seen_active_layer && performance_flags_.use_per_layer_speed) {
+    bool denoiser_on =
+        AllowDenoising() && codec_.VP9()->denoisingOn &&
+        performance_flags_by_spatial_index_[num_active_spatial_layers_ - 1]
+            .allow_denoising;
+    libvpx_->codec_control(encoder_, VP9E_SET_NOISE_SENSITIVITY,
+                           denoiser_on ? 1 : 0);
+  }
+
   if (higher_layers_enabled && !force_key_frame_) {
     // Prohibit drop of all layers for the next frame, so newly enabled
     // layer would have a valid spatial reference.
@@ -471,7 +499,7 @@ void LibvpxVp9Encoder::SetActiveSpatialLayers() {
 
 void LibvpxVp9Encoder::SetRates(const RateControlParameters& parameters) {
   if (!inited_) {
-    RTC_LOG(LS_WARNING) << "SetRates() calll while uninitialzied.";
+    RTC_LOG(LS_WARNING) << "SetRates() called while uninitialized.";
     return;
   }
   if (encoder_->err) {
@@ -542,14 +570,32 @@ int LibvpxVp9Encoder::InitEncode(const VideoCodec* inst,
   force_key_frame_ = true;
   pics_since_key_ = 0;
 
-  num_spatial_layers_ = inst->VP9().numberOfSpatialLayers;
-  RTC_DCHECK_GT(num_spatial_layers_, 0);
-  num_temporal_layers_ = inst->VP9().numberOfTemporalLayers;
-  if (num_temporal_layers_ == 0) {
-    num_temporal_layers_ = 1;
+  absl::optional<ScalabilityMode> scalability_mode = inst->GetScalabilityMode();
+  if (scalability_mode.has_value()) {
+    // Use settings from `ScalabilityMode` identifier.
+    RTC_LOG(LS_INFO) << "Create scalability structure "
+                     << ScalabilityModeToString(*scalability_mode);
+    svc_controller_ = CreateScalabilityStructure(*scalability_mode);
+    if (!svc_controller_) {
+      RTC_LOG(LS_WARNING) << "Failed to create scalability structure.";
+      return WEBRTC_VIDEO_CODEC_ERR_PARAMETER;
+    }
+    ScalableVideoController::StreamLayersConfig info =
+        svc_controller_->StreamConfig();
+    num_spatial_layers_ = info.num_spatial_layers;
+    num_temporal_layers_ = info.num_temporal_layers;
+    inter_layer_pred_ = ScalabilityModeToInterLayerPredMode(*scalability_mode);
+  } else {
+    num_spatial_layers_ = inst->VP9().numberOfSpatialLayers;
+    RTC_DCHECK_GT(num_spatial_layers_, 0);
+    num_temporal_layers_ = inst->VP9().numberOfTemporalLayers;
+    if (num_temporal_layers_ == 0) {
+      num_temporal_layers_ = 1;
+    }
+    inter_layer_pred_ = inst->VP9().interLayerPred;
+    svc_controller_ = CreateVp9ScalabilityStructure(*inst);
   }
 
-  svc_controller_ = CreateVp9ScalabilityStructure(*inst);
   framerate_controller_ = std::vector<FramerateControllerDeprecated>(
       num_spatial_layers_, FramerateControllerDeprecated(codec_.maxFramerate));
 
@@ -601,7 +647,7 @@ int LibvpxVp9Encoder::InitEncode(const VideoCodec* inst,
   config_->g_lag_in_frames = 0;  // 0- no frame lagging
   config_->g_threads = 1;
   // Rate control settings.
-  config_->rc_dropframe_thresh = inst->VP9().frameDroppingOn ? 30 : 0;
+  config_->rc_dropframe_thresh = inst->GetFrameDropEnabled() ? 30 : 0;
   config_->rc_end_usage = VPX_CBR;
   config_->g_pass = VPX_RC_ONE_PASS;
   config_->rc_min_quantizer =
@@ -632,8 +678,6 @@ int LibvpxVp9Encoder::InitEncode(const VideoCodec* inst,
       NumberOfThreads(config_->g_w, config_->g_h, settings.number_of_cores);
 
   is_flexible_mode_ = inst->VP9().flexibleMode;
-
-  inter_layer_pred_ = inst->VP9().interLayerPred;
 
   if (num_spatial_layers_ > 1 &&
       codec_.mode == VideoCodecMode::kScreensharing && !is_flexible_mode_) {
@@ -775,6 +819,10 @@ int LibvpxVp9Encoder::InitAndSetControlSettings(const VideoCodec* inst) {
     }
   }
 
+  UpdatePerformanceFlags();
+  RTC_DCHECK_EQ(performance_flags_by_spatial_index_.size(),
+                static_cast<size_t>(num_spatial_layers_));
+
   SvcRateAllocator init_allocator(codec_);
   current_bitrate_allocation_ =
       init_allocator.Allocate(VideoBitrateAllocationParameters(
@@ -791,9 +839,6 @@ int LibvpxVp9Encoder::InitAndSetControlSettings(const VideoCodec* inst) {
     return WEBRTC_VIDEO_CODEC_UNINITIALIZED;
   }
 
-  UpdatePerformanceFlags();
-  RTC_DCHECK_EQ(performance_flags_by_spatial_index_.size(),
-                static_cast<size_t>(num_spatial_layers_));
   if (performance_flags_.use_per_layer_speed) {
     for (int si = 0; si < num_spatial_layers_; ++si) {
       svc_params_.speed_per_layer[si] =
@@ -801,6 +846,12 @@ int LibvpxVp9Encoder::InitAndSetControlSettings(const VideoCodec* inst) {
       svc_params_.loopfilter_ctrl[si] =
           performance_flags_by_spatial_index_[si].deblock_mode;
     }
+    bool denoiser_on =
+        AllowDenoising() && inst->VP9().denoisingOn &&
+        performance_flags_by_spatial_index_[num_spatial_layers_ - 1]
+            .allow_denoising;
+    libvpx_->codec_control(encoder_, VP9E_SET_NOISE_SENSITIVITY,
+                           denoiser_on ? 1 : 0);
   }
 
   libvpx_->codec_control(encoder_, VP8E_SET_MAX_INTRA_BITRATE_PCT,
@@ -888,13 +939,10 @@ int LibvpxVp9Encoder::InitAndSetControlSettings(const VideoCodec* inst) {
   // Turn on row-based multithreading.
   libvpx_->codec_control(encoder_, VP9E_SET_ROW_MT, 1);
 
-#if !defined(WEBRTC_ARCH_ARM) && !defined(WEBRTC_ARCH_ARM64) && \
-    !defined(ANDROID)
-  // Do not enable the denoiser on ARM since optimization is pending.
-  // Denoiser is on by default on other platforms.
-  libvpx_->codec_control(encoder_, VP9E_SET_NOISE_SENSITIVITY,
-                         inst->VP9().denoisingOn ? 1 : 0);
-#endif
+  if (AllowDenoising() && !performance_flags_.use_per_layer_speed) {
+    libvpx_->codec_control(encoder_, VP9E_SET_NOISE_SENSITIVITY,
+                           inst->VP9().denoisingOn ? 1 : 0);
+  }
 
   if (codec_.mode == VideoCodecMode::kScreensharing) {
     // Adjust internal parameters to screen content.
@@ -959,7 +1007,7 @@ int LibvpxVp9Encoder::Encode(const VideoFrame& input_image,
     const size_t gof_idx = (pics_since_key_ + 1) % gof_.num_frames_in_gof;
     layer_id.temporal_layer_id = gof_.temporal_idx[gof_idx];
 
-    if (VideoCodecMode::kScreensharing == codec_.mode) {
+    if (codec_.mode == VideoCodecMode::kScreensharing) {
       const uint32_t frame_timestamp_ms =
           1000 * input_image.timestamp() / kVideoPayloadTypeFrequency;
 
@@ -1212,8 +1260,7 @@ int LibvpxVp9Encoder::Encode(const VideoFrame& input_image,
 
 bool LibvpxVp9Encoder::PopulateCodecSpecific(CodecSpecificInfo* codec_specific,
                                              absl::optional<int>* spatial_idx,
-                                             const vpx_codec_cx_pkt& pkt,
-                                             uint32_t timestamp) {
+                                             const vpx_codec_cx_pkt& pkt) {
   RTC_CHECK(codec_specific != nullptr);
   codec_specific->codecType = kVideoCodecVP9;
   CodecSpecificInfoVP9* vp9_info = &(codec_specific->codecSpecific.VP9);
@@ -1248,9 +1295,6 @@ bool LibvpxVp9Encoder::PopulateCodecSpecific(CodecSpecificInfo* codec_specific,
     *spatial_idx = layer_id.spatial_layer_id;
   }
 
-  // TODO(asapersson): this info has to be obtained from the encoder.
-  vp9_info->temporal_up_switch = false;
-
   const bool is_key_pic = (pics_since_key_ == 0);
   const bool is_inter_layer_pred_allowed =
       (inter_layer_pred_ == InterLayerPredMode::kOn ||
@@ -1283,6 +1327,20 @@ bool LibvpxVp9Encoder::PopulateCodecSpecific(CodecSpecificInfo* codec_specific,
                        vp9_info);
   if (vp9_info->flexible_mode) {
     vp9_info->gof_idx = kNoGofIdx;
+    if (!svc_controller_) {
+      if (num_temporal_layers_ == 1) {
+        vp9_info->temporal_up_switch = true;
+      } else {
+        // In flexible mode with > 1 temporal layer but no SVC controller we
+        // can't techincally determine if a frame is an upswitch point, use
+        // gof-based data as proxy for now.
+        // TODO(sprang): Remove once SVC controller is the only choice.
+        vp9_info->gof_idx =
+            static_cast<uint8_t>(pics_since_key_ % gof_.num_frames_in_gof);
+        vp9_info->temporal_up_switch =
+            gof_.temporal_up_switch[vp9_info->gof_idx];
+      }
+    }
   } else {
     vp9_info->gof_idx =
         static_cast<uint8_t>(pics_since_key_ % gof_.num_frames_in_gof);
@@ -1351,6 +1409,23 @@ bool LibvpxVp9Encoder::PopulateCodecSpecific(CodecSpecificInfo* codec_specific,
                 svc_params_.scaling_factor_den[sid],
             /*height=*/codec_.height * svc_params_.scaling_factor_num[sid] /
                 svc_params_.scaling_factor_den[sid]);
+      }
+    }
+    if (is_flexible_mode_) {
+      // Populate data for legacy temporal-upswitch state.
+      // We can switch up to a higher temporal layer only if all temporal layers
+      // higher than this (within the current spatial layer) are switch points.
+      vp9_info->temporal_up_switch = true;
+      for (int i = layer_id.temporal_layer_id + 1; i < num_temporal_layers_;
+           ++i) {
+        // Assumes decode targets are always ordered first by spatial then by
+        // temporal id.
+        size_t dti_index =
+            (layer_id.spatial_layer_id * num_temporal_layers_) + i;
+        vp9_info->temporal_up_switch &=
+            (codec_specific->generic_frame_info
+                 ->decode_target_indications[dti_index] ==
+             DecodeTargetIndication::kSwitch);
       }
     }
   }
@@ -1428,8 +1503,6 @@ void LibvpxVp9Encoder::FillReferenceIndices(const vpx_codec_cx_pkt& pkt,
     ref_buf_list.push_back(ref_buf_.at(0));
   }
 
-  size_t max_ref_temporal_layer_id = 0;
-
   std::vector<size_t> ref_pid_list;
 
   vp9_info->num_ref_pics = 0;
@@ -1461,9 +1534,6 @@ void LibvpxVp9Encoder::FillReferenceIndices(const vpx_codec_cx_pkt& pkt,
 
       vp9_info->p_diff[vp9_info->num_ref_pics] = static_cast<uint8_t>(p_diff);
       ++vp9_info->num_ref_pics;
-
-      max_ref_temporal_layer_id =
-          std::max(max_ref_temporal_layer_id, ref_buf.temporal_layer_id);
     } else {
       RTC_DCHECK(inter_layer_predicted);
       // RTP spec only allows to use previous spatial layer for inter-layer
@@ -1471,10 +1541,6 @@ void LibvpxVp9Encoder::FillReferenceIndices(const vpx_codec_cx_pkt& pkt,
       RTC_DCHECK_EQ(ref_buf.spatial_layer_id + 1, layer_id.spatial_layer_id);
     }
   }
-
-  vp9_info->temporal_up_switch =
-      (max_ref_temporal_layer_id <
-       static_cast<size_t>(layer_id.temporal_layer_id));
 }
 
 void LibvpxVp9Encoder::UpdateReferenceBuffers(const vpx_codec_cx_pkt& pkt,
@@ -1634,8 +1700,19 @@ void LibvpxVp9Encoder::GetEncodedLayerFrame(const vpx_codec_cx_pkt* pkt) {
   encoded_image_.SetEncodedData(EncodedImageBuffer::Create(
       static_cast<const uint8_t*>(pkt->data.frame.buf), pkt->data.frame.sz));
 
+  codec_specific_ = {};
+  absl::optional<int> spatial_index;
+  if (!PopulateCodecSpecific(&codec_specific_, &spatial_index, *pkt)) {
+    // Drop the frame.
+    encoded_image_.set_size(0);
+    return;
+  }
+  encoded_image_.SetSpatialIndex(spatial_index);
+
   const bool is_key_frame =
-      (pkt->data.frame.flags & VPX_FRAME_IS_KEY) ? true : false;
+      ((pkt->data.frame.flags & VPX_FRAME_IS_KEY) ? true : false) &&
+      !codec_specific_.codecSpecific.VP9.inter_layer_predicted;
+
   // Ensure encoder issued key frame on request.
   RTC_DCHECK(is_key_frame || !force_key_frame_);
 
@@ -1645,16 +1722,6 @@ void LibvpxVp9Encoder::GetEncodedLayerFrame(const vpx_codec_cx_pkt* pkt) {
     encoded_image_._frameType = VideoFrameType::kVideoFrameKey;
     force_key_frame_ = false;
   }
-
-  codec_specific_ = {};
-  absl::optional<int> spatial_index;
-  if (!PopulateCodecSpecific(&codec_specific_, &spatial_index, *pkt,
-                             input_image_->timestamp())) {
-    // Drop the frame.
-    encoded_image_.set_size(0);
-    return;
-  }
-  encoded_image_.SetSpatialIndex(spatial_index);
 
   UpdateReferenceBuffers(*pkt, pics_since_key_);
 
@@ -1792,8 +1859,7 @@ size_t LibvpxVp9Encoder::SteadyStateSize(int sid, int tid) {
 
 // static
 LibvpxVp9Encoder::VariableFramerateExperiment
-LibvpxVp9Encoder::ParseVariableFramerateConfig(
-    const WebRtcKeyValueConfig& trials) {
+LibvpxVp9Encoder::ParseVariableFramerateConfig(const FieldTrialsView& trials) {
   FieldTrialFlag enabled = FieldTrialFlag("Enabled");
   FieldTrialParameter<double> framerate_limit("min_fps", 5.0);
   FieldTrialParameter<int> qp("min_qp", 32);
@@ -1815,7 +1881,7 @@ LibvpxVp9Encoder::ParseVariableFramerateConfig(
 
 // static
 LibvpxVp9Encoder::QualityScalerExperiment
-LibvpxVp9Encoder::ParseQualityScalerConfig(const WebRtcKeyValueConfig& trials) {
+LibvpxVp9Encoder::ParseQualityScalerConfig(const FieldTrialsView& trials) {
   FieldTrialFlag disabled = FieldTrialFlag("Disabled");
   FieldTrialParameter<int> low_qp("low_qp", kLowVp9QpThreshold);
   FieldTrialParameter<int> high_qp("hihg_qp", kHighVp9QpThreshold);
@@ -1832,14 +1898,30 @@ LibvpxVp9Encoder::ParseQualityScalerConfig(const WebRtcKeyValueConfig& trials) {
 }
 
 void LibvpxVp9Encoder::UpdatePerformanceFlags() {
+  flat_map<int, PerformanceFlags::ParameterSet> params_by_resolution;
+  if (codec_.GetVideoEncoderComplexity() ==
+      VideoCodecComplexity::kComplexityLow) {
+    // For low tier devices, always use speed 9. Only disable upper
+    // layer deblocking below QCIF.
+    params_by_resolution[0] = {.base_layer_speed = 9,
+                               .high_layer_speed = 9,
+                               .deblock_mode = 1,
+                               .allow_denoising = true};
+    params_by_resolution[352 * 288] = {.base_layer_speed = 9,
+                                       .high_layer_speed = 9,
+                                       .deblock_mode = 0,
+                                       .allow_denoising = true};
+  } else {
+    params_by_resolution = performance_flags_.settings_by_resolution;
+  }
+
   const auto find_speed = [&](int min_pixel_count) {
-    RTC_DCHECK(!performance_flags_.settings_by_resolution.empty());
-    auto it =
-        performance_flags_.settings_by_resolution.upper_bound(min_pixel_count);
+    RTC_DCHECK(!params_by_resolution.empty());
+    auto it = params_by_resolution.upper_bound(min_pixel_count);
     return std::prev(it)->second;
   };
-
   performance_flags_by_spatial_index_.clear();
+
   if (is_svc_) {
     for (int si = 0; si < num_spatial_layers_; ++si) {
       performance_flags_by_spatial_index_.push_back(find_speed(
@@ -1854,7 +1936,7 @@ void LibvpxVp9Encoder::UpdatePerformanceFlags() {
 // static
 LibvpxVp9Encoder::PerformanceFlags
 LibvpxVp9Encoder::ParsePerformanceFlagsFromTrials(
-    const WebRtcKeyValueConfig& trials) {
+    const FieldTrialsView& trials) {
   struct Params : public PerformanceFlags::ParameterSet {
     int min_pixel_count = 0;
   };
@@ -1867,7 +1949,9 @@ LibvpxVp9Encoder::ParsePerformanceFlagsFromTrials(
        FieldTrialStructMember("base_layer_speed",
                               [](Params* p) { return &p->base_layer_speed; }),
        FieldTrialStructMember("deblock_mode",
-                              [](Params* p) { return &p->deblock_mode; })},
+                              [](Params* p) { return &p->deblock_mode; }),
+       FieldTrialStructMember("denoiser",
+                              [](Params* p) { return &p->allow_denoising; })},
       {});
 
   FieldTrialFlag per_layer_speed("use_per_layer_speed");
@@ -1908,18 +1992,38 @@ LibvpxVp9Encoder::GetDefaultPerformanceFlags() {
   flags.use_per_layer_speed = true;
 #if defined(WEBRTC_ARCH_ARM) || defined(WEBRTC_ARCH_ARM64) || defined(ANDROID)
   // Speed 8 on all layers for all resolutions.
-  flags.settings_by_resolution[0] = {8, 8, 0};
+  flags.settings_by_resolution[0] = {.base_layer_speed = 8,
+                                     .high_layer_speed = 8,
+                                     .deblock_mode = 0,
+                                     .allow_denoising = true};
 #else
+
   // For smaller resolutions, use lower speed setting for the temporal base
   // layer (get some coding gain at the cost of increased encoding complexity).
   // Set encoder Speed 5 for TL0, encoder Speed 8 for upper temporal layers, and
   // disable deblocking for upper-most temporal layers.
-  flags.settings_by_resolution[0] = {5, 8, 1};
+  flags.settings_by_resolution[0] = {.base_layer_speed = 5,
+                                     .high_layer_speed = 8,
+                                     .deblock_mode = 1,
+                                     .allow_denoising = true};
 
   // Use speed 7 for QCIF and above.
   // Set encoder Speed 7 for TL0, encoder Speed 8 for upper temporal layers, and
   // enable deblocking for all temporal layers.
-  flags.settings_by_resolution[352 * 288] = {7, 8, 0};
+  flags.settings_by_resolution[352 * 288] = {.base_layer_speed = 7,
+                                             .high_layer_speed = 8,
+                                             .deblock_mode = 0,
+                                             .allow_denoising = true};
+
+  // For very high resolution (1080p and up), turn the speed all the way up
+  // since this is very CPU intensive. Also disable denoising to save CPU, at
+  // these resolutions denoising appear less effective and hopefully you also
+  // have a less noisy video source at this point.
+  flags.settings_by_resolution[1920 * 1080] = {.base_layer_speed = 9,
+                                               .high_layer_speed = 9,
+                                               .deblock_mode = 0,
+                                               .allow_denoising = false};
+
 #endif
   return flags;
 }

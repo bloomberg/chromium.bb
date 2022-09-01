@@ -313,7 +313,7 @@ bool ScrollManager::CanScroll(const ScrollState& scroll_state,
 }
 
 bool ScrollManager::LogicalScroll(mojom::blink::ScrollDirection direction,
-                                  ScrollGranularity granularity,
+                                  ui::ScrollGranularity granularity,
                                   Node* start_node,
                                   Node* mouse_press_node) {
   Node* node = start_node;
@@ -369,18 +369,18 @@ bool ScrollManager::LogicalScroll(mojom::blink::ScrollDirection direction,
     // the Home/End key is considered as a scroll with intended end position
     // only.
     switch (granularity) {
-      case ScrollGranularity::kScrollByLine:
-      case ScrollGranularity::kScrollByPercentage: {
+      case ui::ScrollGranularity::kScrollByLine:
+      case ui::ScrollGranularity::kScrollByPercentage: {
         if (scrollable_area->SnapForDirection(delta))
           return true;
         break;
       }
-      case ScrollGranularity::kScrollByPage: {
+      case ui::ScrollGranularity::kScrollByPage: {
         if (scrollable_area->SnapForEndAndDirection(delta))
           return true;
         break;
       }
-      case ScrollGranularity::kScrollByDocument: {
+      case ui::ScrollGranularity::kScrollByDocument: {
         gfx::PointF end_position = scrollable_area->ScrollPosition() + delta;
         bool scrolled_x = physical_direction == kScrollLeft ||
                           physical_direction == kScrollRight;
@@ -417,7 +417,7 @@ bool ScrollManager::LogicalScroll(mojom::blink::ScrollDirection direction,
 // TODO(bokan): This should be merged with logicalScroll assuming
 // defaultSpaceEventHandler's chaining scroll can be done crossing frames.
 bool ScrollManager::BubblingScroll(mojom::blink::ScrollDirection direction,
-                                   ScrollGranularity granularity,
+                                   ui::ScrollGranularity granularity,
                                    Node* starting_node,
                                    Node* mouse_press_node) {
   // The layout needs to be up to date to determine if we can scroll. We may be
@@ -589,30 +589,6 @@ WebInputEventResult ScrollManager::HandleGestureScrollUpdate(
     return WebInputEventResult::kNotHandled;
   }
 
-  Node* node = scroll_gesture_handling_node_.Get();
-  if (!node || !node->GetLayoutObject()) {
-    TRACE_EVENT_INSTANT0("input", "Lost scroll_gesture_handling_node",
-                         TRACE_EVENT_SCOPE_THREAD);
-    if (previous_gesture_scrolled_node_) {
-      // When the scroll_gesture_handling_node_ gets deleted in the middle of
-      // scrolling call HandleGestureScrollEvent to start scrolling a new node
-      // if possible.
-      ClearGestureScrollState();
-      WebGestureEvent scroll_begin =
-          SynthesizeGestureScrollBegin(gesture_event);
-      HandleGestureScrollEvent(scroll_begin);
-      node = scroll_gesture_handling_node_.Get();
-      if (!node || !node->GetLayoutObject()) {
-        TRACE_EVENT_INSTANT0("input", "Failed to find new node",
-                             TRACE_EVENT_SCOPE_THREAD);
-        return WebInputEventResult::kNotHandled;
-      }
-    } else {
-      TRACE_EVENT_INSTANT0("input", "No previously scrolled node",
-                           TRACE_EVENT_SCOPE_THREAD);
-      return WebInputEventResult::kNotHandled;
-    }
-  }
   if (snap_fling_controller_) {
     if (snap_fling_controller_->HandleGestureScrollUpdate(
             GetGestureScrollUpdateInfo(gesture_event))) {
@@ -633,7 +609,10 @@ WebInputEventResult ScrollManager::HandleGestureScrollUpdate(
   if (delta.IsZero())
     return WebInputEventResult::kNotHandled;
 
-  LayoutObject* layout_object = node->GetLayoutObject();
+  LayoutObject* layout_object =
+      scroll_gesture_handling_node_
+          ? scroll_gesture_handling_node_->GetLayoutObject()
+          : nullptr;
 
   // Try to send the event to the correct view.
   WebInputEventResult result =
@@ -872,7 +851,7 @@ bool ScrollManager::SnapAtGestureScrollEnd(
   bool is_mouse_wheel =
       end_event.SourceDevice() == WebGestureDevice::kTouchpad &&
       end_event.data.scroll_end.delta_units !=
-          ScrollGranularity::kScrollByPrecisePixel;
+          ui::ScrollGranularity::kScrollByPrecisePixel;
 
   // Treat mouse wheel scrolls as direction only scroll with its last scroll
   // delta amout. This means each wheel tick will prefer the next snap position
@@ -937,7 +916,7 @@ gfx::PointF ScrollManager::ScrollByForSnapFling(const gfx::Vector2dF& delta) {
   scroll_state_data->is_in_inertial_phase = true;
   scroll_state_data->from_user_input = true;
   scroll_state_data->delta_granularity =
-      ScrollGranularity::kScrollByPrecisePixel;
+      ui::ScrollGranularity::kScrollByPrecisePixel;
   scroll_state_data->delta_consumed_for_scroll_sequence =
       delta_consumed_for_scroll_sequence_;
   auto* scroll_state =
@@ -1210,8 +1189,8 @@ bool ScrollManager::HandleScrollGestureOnResizer(
     gfx::Point p = frame_->View()->ConvertFromRootFrame(
         gfx::ToFlooredPoint(gesture_event.PositionInRootFrame()));
     if (layer && layer->GetScrollableArea() &&
-        layer->GetScrollableArea()->IsPointInResizeControl(p,
-                                                           kResizerForTouch)) {
+        layer->GetScrollableArea()->IsAbsolutePointInResizeControl(
+            p, kResizerForTouch)) {
       resize_scrollable_area_ = layer->GetScrollableArea();
       resize_scrollable_area_->SetInResizeMode(true);
       offset_from_resize_corner_ =
@@ -1283,21 +1262,6 @@ bool ScrollManager::CanHandleGestureEvent(
     }
   }
   return false;
-}
-
-WebGestureEvent ScrollManager::SynthesizeGestureScrollBegin(
-    const WebGestureEvent& update_event) {
-  DCHECK_EQ(update_event.GetType(), WebInputEvent::Type::kGestureScrollUpdate);
-  WebGestureEvent scroll_begin(update_event);
-  scroll_begin.SetType(WebInputEvent::Type::kGestureScrollBegin);
-  scroll_begin.data.scroll_begin.delta_x_hint =
-      update_event.data.scroll_update.delta_x;
-  scroll_begin.data.scroll_begin.delta_y_hint =
-      update_event.data.scroll_update.delta_y;
-  scroll_begin.data.scroll_begin.delta_hint_units =
-      update_event.data.scroll_update.delta_units;
-  scroll_begin.data.scroll_begin.scrollable_area_element_id = 0;
-  return scroll_begin;
 }
 
 void ScrollManager::NotifyScrollPhaseBeginForCustomizedScroll(

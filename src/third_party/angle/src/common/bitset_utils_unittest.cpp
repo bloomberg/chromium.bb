@@ -98,23 +98,35 @@ TYPED_TEST(BitSetTest, Basic)
     EXPECT_FALSE(mBits.any());
     EXPECT_TRUE(mBits.none());
     EXPECT_EQ(mBits.count(), 0u);
+}
 
-    // Test that out-of-bound sets don't modify the bitset
-    constexpr uint32_t kMask = (1 << 12) - 1;
+// Test that BitSetT's initializer list constructor works correctly.
+TYPED_TEST(BitSetTest, InitializerList)
+{
+    TypeParam bits = TypeParam{
+        2, 5, 6, 9, 10,
+    };
 
-    EXPECT_EQ(mBits.set(12).bits() & ~kMask, 0u);
-    EXPECT_EQ(mBits.set(13).bits() & ~kMask, 0u);
-    EXPECT_EQ(mBits.flip(12).bits() & ~kMask, 0u);
-    EXPECT_EQ(mBits.flip(13).bits() & ~kMask, 0u);
+    for (size_t i = 0; i < bits.size(); ++i)
+    {
+        if (i == 2 || i == 5 || i == 6 || i == 9 || i == 10)
+        {
+            EXPECT_TRUE(bits[i]) << i;
+        }
+        else
+        {
+            EXPECT_FALSE(bits[i]) << i;
+        }
+    }
 }
 
 TYPED_TEST(BitSetTest, BitwiseOperators)
 {
     TypeParam mBits = this->mBits;
-    // Use a value that has a 1 in the 12th and 13th bits, to make sure masking to exactly 12 bits
-    // does not have an off-by-one error.
-    constexpr uint32_t kSelfValue  = 0xF9E4;
-    constexpr uint32_t kOtherValue = 0x5C6A;
+    // Use a value that has a 1 in the 12th bit, to make sure masking to exactly 12 bits does not
+    // have an off-by-one error.
+    constexpr uint32_t kSelfValue  = 0x9E4;
+    constexpr uint32_t kOtherValue = 0xC6A;
 
     constexpr uint32_t kMask             = (1 << 12) - 1;
     constexpr uint32_t kSelfMaskedValue  = kSelfValue & kMask;
@@ -573,6 +585,28 @@ TYPED_TEST(BitSetArrayTest, BasicTest)
     for (auto bit : mBits)
     {
         EXPECT_TRUE(testBitSet.test(bit));
+    }
+}
+
+// Test that BitSetArray's initializer list constructor works correctly.
+TEST(BitSetArrayTest, InitializerList)
+{
+    BitSetArray<500> bits = BitSetArray<500>{
+        0,   11,  22,  33,  44,  55,  66,  77,  88,  99,  110, 121, 132, 143, 154, 165,
+        176, 187, 198, 209, 220, 231, 242, 253, 264, 275, 286, 297, 308, 319, 330, 341,
+        352, 363, 374, 385, 396, 407, 418, 429, 440, 451, 462, 473, 484, 495,
+    };
+
+    for (size_t i = 0; i < bits.size(); ++i)
+    {
+        if (i % 11 == 0)
+        {
+            EXPECT_TRUE(bits[i]) << i;
+        }
+        else
+        {
+            EXPECT_FALSE(bits[i]) << i;
+        }
     }
 }
 

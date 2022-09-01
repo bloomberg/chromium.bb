@@ -6,7 +6,8 @@
 
 #include <stddef.h>
 
-#include "base/cxx17_backports.h"
+#include <iterator>
+
 #include "ios/components/webui/web_ui_url_constants.h"
 
 const char kChromeUIChromeURLsURL[] = "chrome://chrome-urls/";
@@ -40,6 +41,7 @@ const char kChromeUIHistogramHost[] = "histograms";
 const char kChromeUIHistoryHost[] = "history";
 const char kChromeUIInspectHost[] = "inspect";
 const char kChromeUIIntersitialsHost[] = "interstitials";
+const char kChromeUILocalStateHost[] = "local-state";
 const char kChromeUIManagementHost[] = "management";
 const char kChromeUINetExportHost[] = "net-export";
 const char kChromeUINewTabHost[] = "newtab";
@@ -77,10 +79,17 @@ const char* const kChromeHostURLs[] = {
     kChromeUIUserActionsHost,
     kChromeUIVersionHost,
 };
-const size_t kNumberOfChromeHostURLs = base::size(kChromeHostURLs);
+const size_t kNumberOfChromeHostURLs = std::size(kChromeHostURLs);
 
 const char kSyncGoogleDashboardURL[] =
     "https://www.google.com/settings/chrome/sync/";
+
+const char kOnDeviceEncryptionOptInURL[] =
+    "https://passwords.google.com/encryption/enroll/intro?"
+    "utm_source=chrome&utm_medium=ios&utm_campaign=encryption_enroll";
+
+const char kOnDeviceEncryptionLearnMoreURL[] =
+    "https://support.google.com/accounts?p=settings_password_ode";
 
 const char kPageInfoHelpCenterURL[] =
     "https://support.google.com/chrome?p=ui_security_indicator&ios=1";
@@ -90,6 +99,11 @@ const char kCrashReasonURL[] =
 
 const char kPrivacyLearnMoreURL[] =
     "https://support.google.com/chrome/answer/114836?p=settings_privacy&ios=1";
+
+const char kTermsOfServiceURL[] = "https://policies.google.com/terms";
+
+const char kEmbeddedTermsOfServiceURL[] =
+    "https://policies.google.com/terms/embedded";
 
 const char kDoNotTrackLearnMoreURL[] =
     "https://support.google.com/chrome/answer/"

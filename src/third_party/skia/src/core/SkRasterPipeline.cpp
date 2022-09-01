@@ -6,11 +6,13 @@
  */
 
 #include "include/private/SkImageInfoPriv.h"
-#include "include/private/SkNx.h"
 #include "include/private/SkTemplates.h"
+#include "include/private/SkVx.h"
+#include "include/third_party/skcms/skcms.h"
 #include "src/core/SkColorSpacePriv.h"
 #include "src/core/SkOpts.h"
 #include "src/core/SkRasterPipeline.h"
+
 #include <algorithm>
 
 bool gForceHighPrecisionRasterPipeline;
@@ -115,7 +117,7 @@ void SkRasterPipeline::append_constant_color(SkArenaAlloc* alloc, const float rg
         this->append(white_color);
     } else {
         auto ctx = alloc->make<SkRasterPipeline_UniformColorCtx>();
-        Sk4f color = Sk4f::Load(rgba);
+        skvx::float4 color = skvx::float4::Load(rgba);
         color.store(&ctx->r);
 
         // uniform_color requires colors in range and can go lowp,
@@ -190,6 +192,10 @@ void SkRasterPipeline::append_load(SkColorType ct, const SkRasterPipeline_Memory
                                              this->append(alpha_to_gray);
                                              break;
 
+        case kR8_unorm_SkColorType:          this->append(load_a8, ctx);
+                                             this->append(alpha_to_red);
+                                             break;
+
         case kRGB_888x_SkColorType:          this->append(load_8888, ctx);
                                              this->append(force_opaque);
                                              break;
@@ -241,6 +247,10 @@ void SkRasterPipeline::append_load_dst(SkColorType ct, const SkRasterPipeline_Me
                                               this->append(alpha_to_gray_dst);
                                               break;
 
+        case kR8_unorm_SkColorType:           this->append(load_a8_dst, ctx);
+                                              this->append(alpha_to_red_dst);
+                                              break;
+
         case kRGB_888x_SkColorType:           this->append(load_8888_dst, ctx);
                                               this->append(force_opaque_dst);
                                               break;
@@ -277,6 +287,7 @@ void SkRasterPipeline::append_store(SkColorType ct, const SkRasterPipeline_Memor
         case kUnknown_SkColorType: SkASSERT(false); break;
 
         case kAlpha_8_SkColorType:            this->append(store_a8,      ctx); break;
+        case kR8_unorm_SkColorType:           this->append(store_r8,      ctx); break;
         case kA16_unorm_SkColorType:          this->append(store_a16,     ctx); break;
         case kA16_float_SkColorType:          this->append(store_af16,    ctx); break;
         case kRGB_565_SkColorType:            this->append(store_565,     ctx); break;

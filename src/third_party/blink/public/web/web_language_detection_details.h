@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_LANGUAGE_DETECTION_DETAILS_H_
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_LANGUAGE_DETECTION_DETAILS_H_
 
+#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
 
@@ -20,6 +21,11 @@ struct WebLanguageDetectionDetails {
 
   BLINK_EXPORT static WebLanguageDetectionDetails
   CollectLanguageDetectionDetails(const WebDocument&);
+
+  // Use to record UMA metrics on the matches between the xml:lang value, html
+  // lang value and the Accept-Language request header values.
+  BLINK_EXPORT static void RecordAcceptLanguageAndXmlHtmlLangMetric(
+      const WebDocument&);
 };
 
 }  // namespace blink

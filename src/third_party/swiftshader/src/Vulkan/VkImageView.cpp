@@ -17,6 +17,7 @@
 #include "VkImage.hpp"
 #include "VkStructConversion.hpp"
 #include "System/Math.hpp"
+#include "System/Types.hpp"
 
 #include <climits>
 
@@ -208,6 +209,30 @@ void ImageView::clear(const VkClearValue &clearValue, const VkImageAspectFlags a
 	image->clear(clearValue, format, renderArea.rect, sr);
 }
 
+void ImageView::clear(const VkClearValue &clearValue, const VkImageAspectFlags aspectMask, const VkRect2D &renderArea, uint32_t layerMask)
+{
+	if(layerMask == 0)
+	{
+		clear(clearValue, aspectMask, renderArea);
+	}
+	else
+	{
+		clearWithLayerMask(clearValue, aspectMask, renderArea, layerMask);
+	}
+}
+
+void ImageView::clear(const VkClearValue &clearValue, const VkImageAspectFlags aspectMask, const VkClearRect &renderArea, uint32_t layerMask)
+{
+	if(layerMask == 0)
+	{
+		clear(clearValue, aspectMask, renderArea);
+	}
+	else
+	{
+		clearWithLayerMask(clearValue, aspectMask, renderArea.rect, layerMask);
+	}
+}
+
 void ImageView::clearWithLayerMask(const VkClearValue &clearValue, VkImageAspectFlags aspectMask, const VkRect2D &renderArea, uint32_t layerMask)
 {
 	while(layerMask)
@@ -220,7 +245,7 @@ void ImageView::clearWithLayerMask(const VkClearValue &clearValue, VkImageAspect
 	}
 }
 
-void ImageView::resolve(ImageView *resolveAttachment, int layer)
+void ImageView::resolveSingleLayer(ImageView *resolveAttachment, int layer)
 {
 	if((subresourceRange.levelCount != 1) || (resolveAttachment->subresourceRange.levelCount != 1))
 	{
@@ -280,17 +305,29 @@ void ImageView::resolve(ImageView *resolveAttachment)
 	image->resolveTo(resolveAttachment->image, region);
 }
 
+void ImageView::resolve(ImageView *resolveAttachment, uint32_t layerMask)
+{
+	if(layerMask == 0)
+	{
+		resolve(resolveAttachment);
+	}
+	else
+	{
+		resolveWithLayerMask(resolveAttachment, layerMask);
+	}
+}
+
 void ImageView::resolveWithLayerMask(ImageView *resolveAttachment, uint32_t layerMask)
 {
 	while(layerMask)
 	{
 		int layer = sw::log2i(layerMask);
 		layerMask &= ~(1 << layer);
-		resolve(resolveAttachment, layer);
+		resolveSingleLayer(resolveAttachment, layer);
 	}
 }
 
-void ImageView::resolveDepthStencil(ImageView *resolveAttachment, const VkSubpassDescriptionDepthStencilResolve &dsResolve)
+void ImageView::resolveDepthStencil(ImageView *resolveAttachment, VkResolveModeFlagBits depthResolveMode, VkResolveModeFlagBits stencilResolveMode)
 {
 	ASSERT(subresourceRange.levelCount == 1 && resolveAttachment->subresourceRange.levelCount == 1);
 	if((subresourceRange.layerCount != 1) || (resolveAttachment->subresourceRange.layerCount != 1))
@@ -298,7 +335,7 @@ void ImageView::resolveDepthStencil(ImageView *resolveAttachment, const VkSubpas
 		UNIMPLEMENTED("b/148242443: layerCount != 1");  // FIXME(b/148242443)
 	}
 
-	image->resolveDepthStencilTo(this, resolveAttachment, dsResolve);
+	image->resolveDepthStencilTo(this, resolveAttachment, depthResolveMode, stencilResolveMode);
 }
 
 const Image *ImageView::getImage(Usage usage) const
@@ -321,24 +358,24 @@ Format ImageView::getFormat(Usage usage) const
 	return imageFormat.getAspectFormat(subresourceRange.aspectMask);
 }
 
-int ImageView::rowPitchBytes(VkImageAspectFlagBits aspect, uint32_t mipLevel, Usage usage) const
+uint32_t ImageView::rowPitchBytes(VkImageAspectFlagBits aspect, uint32_t mipLevel, Usage usage) const
 {
-	return getImage(usage)->rowPitchBytes(aspect, subresourceRange.baseMipLevel + mipLevel);
+	return sw::assert_cast<uint32_t>(getImage(usage)->rowPitchBytes(aspect, subresourceRange.baseMipLevel + mipLevel));
 }
 
-int ImageView::slicePitchBytes(VkImageAspectFlagBits aspect, uint32_t mipLevel, Usage usage) const
+uint32_t ImageView::slicePitchBytes(VkImageAspectFlagBits aspect, uint32_t mipLevel, Usage usage) const
 {
-	return getImage(usage)->slicePitchBytes(aspect, subresourceRange.baseMipLevel + mipLevel);
+	return sw::assert_cast<uint32_t>(getImage(usage)->slicePitchBytes(aspect, subresourceRange.baseMipLevel + mipLevel));
 }
 
-int ImageView::getMipLevelSize(VkImageAspectFlagBits aspect, uint32_t mipLevel, Usage usage) const
+uint32_t ImageView::getMipLevelSize(VkImageAspectFlagBits aspect, uint32_t mipLevel, Usage usage) const
 {
-	return getImage(usage)->getMipLevelSize(aspect, subresourceRange.baseMipLevel + mipLevel);
+	return sw::assert_cast<uint32_t>(getImage(usage)->getMipLevelSize(aspect, subresourceRange.baseMipLevel + mipLevel));
 }
 
-int ImageView::layerPitchBytes(VkImageAspectFlagBits aspect, Usage usage) const
+uint32_t ImageView::layerPitchBytes(VkImageAspectFlagBits aspect, Usage usage) const
 {
-	return static_cast<int>(getImage(usage)->getLayerSize(aspect));
+	return sw::assert_cast<uint32_t>(getImage(usage)->getLayerSize(aspect));
 }
 
 VkExtent2D ImageView::getMipLevelExtent(uint32_t mipLevel) const
@@ -352,12 +389,12 @@ VkExtent2D ImageView::getMipLevelExtent(uint32_t mipLevel, VkImageAspectFlagBits
 	return Extent2D(image->getMipLevelExtent(aspect, subresourceRange.baseMipLevel + mipLevel));
 }
 
-int ImageView::getDepthOrLayerCount(uint32_t mipLevel) const
+uint32_t ImageView::getDepthOrLayerCount(uint32_t mipLevel) const
 {
 	VkExtent3D extent = image->getMipLevelExtent(static_cast<VkImageAspectFlagBits>(subresourceRange.aspectMask),
 	                                             subresourceRange.baseMipLevel + mipLevel);
-	int layers = subresourceRange.layerCount;
-	int depthOrLayers = layers > 1 ? layers : extent.depth;
+	uint32_t layers = subresourceRange.layerCount;
+	uint32_t depthOrLayers = layers > 1 ? layers : extent.depth;
 
 	// For cube images the number of whole cubes is returned
 	if(viewType == VK_IMAGE_VIEW_TYPE_CUBE ||

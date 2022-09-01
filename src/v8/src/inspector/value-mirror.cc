@@ -21,6 +21,7 @@
 #include "src/inspector/v8-debugger.h"
 #include "src/inspector/v8-inspector-impl.h"
 #include "src/inspector/v8-value-utils.h"
+#include "src/inspector/v8-webdriver-serializer.h"
 
 namespace v8_inspector {
 
@@ -94,7 +95,8 @@ std::unique_ptr<protocol::FundamentalValue> toProtocolValue(
     double doubleValue) {
   if (doubleValue >= std::numeric_limits<int>::min() &&
       doubleValue <= std::numeric_limits<int>::max() &&
-      bit_cast<int64_t>(doubleValue) != bit_cast<int64_t>(-0.0)) {
+      v8::base::bit_cast<int64_t>(doubleValue) !=
+          v8::base::bit_cast<int64_t>(-0.0)) {
     int intValue = static_cast<int>(doubleValue);
     if (intValue == doubleValue) {
       return protocol::FundamentalValue::create(intValue);
@@ -152,7 +154,7 @@ Response toProtocolValue(v8::Local<v8::Context> context,
                          v8::Local<v8::Value> value,
                          std::unique_ptr<protocol::Value>* result) {
   if (value->IsUndefined()) return Response::Success();
-#if defined(V8_USE_ADDRESS_SANITIZER) && V8_OS_MACOSX
+#if defined(V8_USE_ADDRESS_SANITIZER) && V8_OS_DARWIN
   // For whatever reason, ASan on MacOS has bigger stack frames.
   static const int kMaxDepth = 900;
 #else
@@ -209,10 +211,9 @@ String16 descriptionForSymbol(v8::Local<v8::Context> context,
 String16 descriptionForBigInt(v8::Local<v8::Context> context,
                               v8::Local<v8::BigInt> value) {
   v8::Isolate* isolate = context->GetIsolate();
-  v8::TryCatch tryCatch(isolate);
-  v8::Local<v8::String> description;
-  if (!value->ToString(context).ToLocal(&description)) return String16();
-  return toProtocolString(isolate, description) + "n";
+  v8::Local<v8::String> description =
+      v8::debug::GetBigIntDescription(isolate, value);
+  return toProtocolString(isolate, description);
 }
 
 String16 descriptionForPrimitiveType(v8::Local<v8::Context> context,
@@ -309,11 +310,7 @@ String16 descriptionForObject(v8::Isolate* isolate,
 String16 descriptionForDate(v8::Local<v8::Context> context,
                             v8::Local<v8::Date> date) {
   v8::Isolate* isolate = context->GetIsolate();
-  v8::TryCatch tryCatch(isolate);
-  v8::Local<v8::String> description;
-  if (!date->ToString(context).ToLocal(&description)) {
-    return descriptionForObject(isolate, date);
-  }
+  v8::Local<v8::String> description = v8::debug::GetDateDescription(date);
   return toProtocolString(isolate, description);
 }
 
@@ -443,6 +440,42 @@ class PrimitiveValueMirror final : public ValueMirror {
       (*preview)->setSubtype(RemoteObject::SubtypeEnum::Null);
   }
 
+  std::unique_ptr<protocol::Runtime::WebDriverValue> buildWebDriverValue(
+      v8::Local<v8::Context> context, int max_depth) const override {
+    // https://w3c.github.io/webdriver-bidi/#data-types-protocolValue-primitiveProtocolValue-serialization
+
+    if (m_value->IsUndefined()) {
+      return protocol::Runtime::WebDriverValue::create()
+          .setType(protocol::Runtime::WebDriverValue::TypeEnum::Undefined)
+          .build();
+    }
+    if (m_value->IsNull()) {
+      return protocol::Runtime::WebDriverValue::create()
+          .setType(protocol::Runtime::WebDriverValue::TypeEnum::Null)
+          .build();
+    }
+    if (m_value->IsString()) {
+      return protocol::Runtime::WebDriverValue::create()
+          .setType(protocol::Runtime::WebDriverValue::TypeEnum::String)
+          .setValue(protocol::StringValue::create(toProtocolString(
+              context->GetIsolate(), m_value.As<v8::String>())))
+          .build();
+    }
+    if (m_value->IsBoolean()) {
+      return protocol::Runtime::WebDriverValue::create()
+          .setType(protocol::Runtime::WebDriverValue::TypeEnum::Boolean)
+          .setValue(protocol::FundamentalValue::create(
+              m_value.As<v8::Boolean>()->Value()))
+          .build();
+    }
+
+    DCHECK(false);
+    // Fallback.
+    return protocol::Runtime::WebDriverValue::create()
+        .setType(protocol::Runtime::WebDriverValue::TypeEnum::Object)
+        .build();
+  }
+
  private:
   v8::Local<v8::Value> m_value;
   String16 m_type;
@@ -493,6 +526,23 @@ class NumberMirror final : public ValueMirror {
             .build();
   }
 
+  std::unique_ptr<protocol::Runtime::WebDriverValue> buildWebDriverValue(
+      v8::Local<v8::Context> context, int max_depth) const override {
+    // https://w3c.github.io/webdriver-bidi/#data-types-protocolValue-primitiveProtocolValue-serialization
+    std::unique_ptr<protocol::Runtime::WebDriverValue> result =
+        protocol::Runtime::WebDriverValue::create()
+            .setType(protocol::Runtime::WebDriverValue::TypeEnum::Number)
+            .build();
+    bool unserializable = false;
+    String16 descriptionValue = description(&unserializable);
+    if (unserializable) {
+      result->setValue(protocol::StringValue::create(descriptionValue));
+    } else {
+      result->setValue(toProtocolValue(m_value.As<v8::Number>()->Value()));
+    }
+    return result;
+  }
+
  private:
   String16 description(bool* unserializable) const {
     *unserializable = true;
@@ -520,7 +570,7 @@ class BigIntMirror final : public ValueMirror {
     *result = RemoteObject::create()
                   .setType(RemoteObject::TypeEnum::Bigint)
                   .setUnserializableValue(description)
-                  .setDescription(description)
+                  .setDescription(abbreviateString(description, kMiddle))
                   .build();
     return Response::Success();
   }
@@ -544,13 +594,25 @@ class BigIntMirror final : public ValueMirror {
     *preview =
         ObjectPreview::create()
             .setType(RemoteObject::TypeEnum::Bigint)
-            .setDescription(descriptionForBigInt(context, m_value))
+            .setDescription(abbreviateString(
+                descriptionForBigInt(context, m_value), kMiddle))
             .setOverflow(false)
             .setProperties(std::make_unique<protocol::Array<PropertyPreview>>())
             .build();
   }
 
   v8::Local<v8::Value> v8Value() const override { return m_value; }
+
+  std::unique_ptr<protocol::Runtime::WebDriverValue> buildWebDriverValue(
+      v8::Local<v8::Context> context, int max_depth) const override {
+    // https://w3c.github.io/webdriver-bidi/#data-types-protocolValue-primitiveProtocolValue-serialization
+
+    return protocol::Runtime::WebDriverValue::create()
+        .setType(protocol::Runtime::WebDriverValue::TypeEnum::Bigint)
+        .setValue(protocol::StringValue::create(
+            descriptionForBigInt(context, m_value)))
+        .build();
+  }
 
  private:
   v8::Local<v8::BigInt> m_value;
@@ -587,6 +649,14 @@ class SymbolMirror final : public ValueMirror {
   }
 
   v8::Local<v8::Value> v8Value() const override { return m_symbol; }
+
+  std::unique_ptr<protocol::Runtime::WebDriverValue> buildWebDriverValue(
+      v8::Local<v8::Context> context, int max_depth) const override {
+    // https://w3c.github.io/webdriver-bidi/#data-types-protocolValue-RemoteValue-serialization
+    return protocol::Runtime::WebDriverValue::create()
+        .setType(protocol::Runtime::WebDriverValue::TypeEnum::Symbol)
+        .build();
+  }
 
  private:
   v8::Local<v8::Symbol> m_symbol;
@@ -631,6 +701,13 @@ class LocationMirror final : public ValueMirror {
     return Response::Success();
   }
   v8::Local<v8::Value> v8Value() const override { return m_value; }
+
+  std::unique_ptr<protocol::Runtime::WebDriverValue> buildWebDriverValue(
+      v8::Local<v8::Context> context, int max_depth) const override {
+    return protocol::Runtime::WebDriverValue::create()
+        .setType(protocol::Runtime::WebDriverValue::TypeEnum::Object)
+        .build();
+  }
 
  private:
   static std::unique_ptr<LocationMirror> create(v8::Local<v8::Value> value,
@@ -707,6 +784,14 @@ class FunctionMirror final : public ValueMirror {
             .setOverflow(false)
             .setProperties(std::make_unique<protocol::Array<PropertyPreview>>())
             .build();
+  }
+
+  std::unique_ptr<protocol::Runtime::WebDriverValue> buildWebDriverValue(
+      v8::Local<v8::Context> context, int max_depth) const override {
+    // https://w3c.github.io/webdriver-bidi/#data-types-protocolValue-RemoteValue-serialization
+    return protocol::Runtime::WebDriverValue::create()
+        .setType(protocol::Runtime::WebDriverValue::TypeEnum::Function)
+        .build();
   }
 
  private:
@@ -893,7 +978,8 @@ void getPrivatePropertiesForPreview(
     int* nameLimit, bool* overflow,
     protocol::Array<PropertyPreview>* privateProperties) {
   std::vector<PrivatePropertyMirror> mirrors =
-      ValueMirror::getPrivateProperties(context, object);
+      ValueMirror::getPrivateProperties(context, object,
+                                        /* accessPropertiesOnly */ false);
   for (auto& mirror : mirrors) {
     std::unique_ptr<PropertyPreview> propertyPreview;
     if (mirror.value) {
@@ -991,6 +1077,36 @@ class ObjectMirror final : public ValueMirror {
                                                                      : kEnd))
                   .build();
     if (m_hasSubtype) (*result)->setSubtype(m_subtype);
+  }
+
+  std::unique_ptr<protocol::Runtime::WebDriverValue> buildWebDriverValue(
+      v8::Local<v8::Context> context, int max_depth) const override {
+    // https://w3c.github.io/webdriver-bidi/#data-types-protocolValue-RemoteValue-serialization
+
+    // Check if embedder implemented custom serialization.
+    std::unique_ptr<v8_inspector::WebDriverValue> embedder_serialized_result =
+        clientFor(context)->serializeToWebDriverValue(m_value, max_depth);
+
+    if (embedder_serialized_result) {
+      // Embedder-implemented serialization.
+      std::unique_ptr<protocol::Runtime::WebDriverValue> result =
+          protocol::Runtime::WebDriverValue::create()
+              .setType(toString16(embedder_serialized_result->type->string()))
+              .build();
+
+      v8::Local<v8::Value> v8_value;
+      if (embedder_serialized_result->value.ToLocal(&v8_value)) {
+        // Embedder-implemented serialization has value.
+        std::unique_ptr<protocol::Value> protocol_value;
+        Response response = toProtocolValue(context, v8_value, &protocol_value);
+        DCHECK(response.IsSuccess());
+        result->setValue(std::move(protocol_value));
+      }
+      return result;
+    }
+
+    // No embedder-implemented serialization. Serialize as V8 Object.
+    return V8WebDriverSerializer::serializeV8Value(m_value, context, max_depth);
   }
 
  private:
@@ -1429,7 +1545,8 @@ void ValueMirror::getInternalProperties(
 
 // static
 std::vector<PrivatePropertyMirror> ValueMirror::getPrivateProperties(
-    v8::Local<v8::Context> context, v8::Local<v8::Object> object) {
+    v8::Local<v8::Context> context, v8::Local<v8::Object> object,
+    bool accessorPropertiesOnly) {
   std::vector<PrivatePropertyMirror> mirrors;
   v8::Isolate* isolate = context->GetIsolate();
   v8::MicrotasksScope microtasksScope(isolate,
@@ -1462,6 +1579,8 @@ std::vector<PrivatePropertyMirror> ValueMirror::getPrivateProperties(
       if (!setter->IsNull()) {
         setterMirror = ValueMirror::create(context, setter);
       }
+    } else if (accessorPropertiesOnly) {
+      continue;
     } else {
       valueMirror = ValueMirror::create(context, value);
     }

@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/css/parser/css_tokenizer.h"
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
@@ -216,6 +217,60 @@ TEST(CSSSelectorParserTest, InvalidSimpleAfterPseudoElementInCompound) {
             kHTMLStandardMode, SecureContextMode::kInsecureContext),
         nullptr);
     EXPECT_FALSE(list.IsValid());
+  }
+}
+
+TEST(CSSSelectorParserTest, TransitionPseudoStyles) {
+  struct TestCase {
+    const char* selector;
+    bool valid;
+    const char* argument;
+    CSSSelector::PseudoType type;
+  };
+
+  TestCase test_cases[] = {
+      {"html::page-transition-container(*)", true, nullptr,
+       CSSSelector::kPseudoPageTransitionContainer},
+      {"html::page-transition-container(foo)", true, "foo",
+       CSSSelector::kPseudoPageTransitionContainer},
+      {"html::page-transition-image-wrapper(foo)", true, "foo",
+       CSSSelector::kPseudoPageTransitionImageWrapper},
+      {"html::page-transition-outgoing-image(foo)", true, "foo",
+       CSSSelector::kPseudoPageTransitionOutgoingImage},
+      {"html::page-transition-incoming-image(foo)", true, "foo",
+       CSSSelector::kPseudoPageTransitionIncomingImage},
+      {"::page-transition-container(foo)", true, "foo",
+       CSSSelector::kPseudoPageTransitionContainer},
+      {"div::page-transition-container(*)", true, nullptr,
+       CSSSelector::kPseudoPageTransitionContainer},
+      {"::page-transition-container(*)::before", false, nullptr,
+       CSSSelector::kPseudoUnknown},
+      {"::page-transition-container(*):hover", false, nullptr,
+       CSSSelector::kPseudoUnknown},
+  };
+
+  for (const auto& test_case : test_cases) {
+    SCOPED_TRACE(test_case.selector);
+    CSSTokenizer tokenizer(test_case.selector);
+    const auto tokens = tokenizer.TokenizeToEOF();
+    CSSParserTokenRange range(tokens);
+    CSSSelectorList list = CSSSelectorParser::ParseSelector(
+        range,
+        MakeGarbageCollected<CSSParserContext>(
+            kHTMLStandardMode, SecureContextMode::kInsecureContext),
+        nullptr);
+    EXPECT_EQ(list.IsValid(), test_case.valid);
+    if (!test_case.valid)
+      continue;
+
+    ASSERT_TRUE(list.HasOneSelector());
+
+    auto* selector = list.First();
+    while (selector->TagHistory())
+      selector = selector->TagHistory();
+
+    EXPECT_EQ(selector->GetPseudoType(), test_case.type);
+    EXPECT_EQ(selector->Argument(), test_case.argument);
   }
 }
 
@@ -857,5 +912,96 @@ TEST(CSSSelectorParserTest, ImplicitShadowCrossingCombinators) {
     EXPECT_FALSE(selector);
   }
 }
+
+static const SelectorTestCase invalid_pseudo_has_arguments_data[] = {
+    // clang-format off
+    // restrict use of nested :has()
+    {":has(:has(.a))", ":has()"},
+
+    // restrict use of pseudo element inside :has()
+    {":has(::-webkit-progress-bar)", ":has()"},
+    {":has(::-webkit-progress-value)", ":has()"},
+    {":has(::-webkit-slider-runnable-track)", ":has()"},
+    {":has(::-webkit-slider-thumb)", ":has()"},
+    {":has(::after)", ":has()"},
+    {":has(::backdrop)", ":has()"},
+    {":has(::before)", ":has()"},
+    {":has(::cue)", ":has()"},
+    {":has(::first-letter)", ":has()"},
+    {":has(::first-line)", ":has()"},
+    {":has(::grammar-error)", ":has()"},
+    {":has(::marker)", ":has()"},
+    {":has(::placeholder)", ":has()"},
+    {":has(::selection)", ":has()"},
+    {":has(::slotted(*))", ":has()"},
+    {":has(::part(foo))", ":has()"},
+    {":has(::spelling-error)", ":has()"},
+    {":has(:after)", ":has()"},
+    {":has(:before)", ":has()"},
+    {":has(:cue)", ":has()"},
+    {":has(:first-letter)", ":has()"},
+    {":has(:first-line)", ":has()"},
+    // clang-format on
+};
+
+INSTANTIATE_TEST_SUITE_P(InvalidPseudoHasArguments,
+                         SelectorParseTest,
+                         testing::ValuesIn(invalid_pseudo_has_arguments_data));
+
+static const SelectorTestCase has_forgiving_data[] = {
+    // clang-format off
+    {":has(.a, :has(.b), .c)", ":has(.a, .c)"},
+    {":has(.a, :has(.b))", ":has(.a)"},
+    {":has(:has(.a), .b)", ":has(.b)"},
+    {":has(:has(.a))", ":has()"},
+    {":has(,,  ,, )", ":has()"},
+    {":has(.a,,,,)", ":has(.a)"},
+    {":has(,,.a,,)", ":has(.a)"},
+    {":has(,,,,.a)", ":has(.a)"},
+    {":has(@x {,.b,}, .a)", ":has(.a)"},
+    {":has({,.b,} @x, .a)", ":has(.a)"},
+    {":has((@x), .a)", ":has(.a)"},
+    {":has((.b), .a)", ":has(.a)"},
+    // clang-format on
+};
+
+INSTANTIATE_TEST_SUITE_P(HasForgiving,
+                         SelectorParseTest,
+                         testing::ValuesIn(has_forgiving_data));
+
+static const SelectorTestCase has_nesting_data[] = {
+    // clang-format off
+    // :has() is not allowed in the pseudos accepting only compound selectors:
+    {"::slotted(:has(.a))", "::slotted(:has())"},
+    {":host(:has(.a))", ":host(:has())"},
+    {":host-context(:has(.a))", ":host-context(:has())"},
+    {"::cue(:has(.a))", "::cue(:has())"},
+    // :has() is not allowed after pseudo elements:
+    {"::part(foo):has(:hover)", "::part(foo):has()"},
+    {"::part(foo):has(:hover:focus)", "::part(foo):has()"},
+    {"::part(foo):has(:focus, :hover)", "::part(foo):has()"},
+    {"::part(foo):has(:focus)", "::part(foo):has()"},
+    {"::part(foo):has(:focus, :--bar)", "::part(foo):has()"},
+    {"::part(foo):has(.a)", "::part(foo):has()"},
+    {"::part(foo):has(.a:hover)", "::part(foo):has()"},
+    {"::part(foo):has(:hover.a)", "::part(foo):has()"},
+    {"::part(foo):has(:hover + .a)", "::part(foo):has()"},
+    {"::part(foo):has(.a + :hover)", "::part(foo):has()"},
+    {"::part(foo):has(:hover:enabled)", "::part(foo):has()"},
+    {"::part(foo):has(:enabled:hover)", "::part(foo):has()"},
+    {"::part(foo):has(:hover, :where(.a))", "::part(foo):has()"},
+    {"::part(foo):has(:hover, .a)", "::part(foo):has()"},
+    {"::part(foo):has(:--bar, .a)", "::part(foo):has()"},
+    {"::part(foo):has(:enabled)", "::part(foo):has()"},
+    {"::-webkit-scrollbar:has(:enabled)", "::-webkit-scrollbar:has()"},
+    {"::selection:has(:window-inactive)", "::selection:has()"},
+    {"::-webkit-input-placeholder:has(:hover)",
+     "::-webkit-input-placeholder:has()"},
+    // clang-format on
+};
+
+INSTANTIATE_TEST_SUITE_P(NestedHasSelectorValidity,
+                         SelectorParseTest,
+                         testing::ValuesIn(has_nesting_data));
 
 }  // namespace blink

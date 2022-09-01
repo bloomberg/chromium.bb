@@ -6,10 +6,32 @@ import * as Platform from '../../../../../front_end/core/platform/platform.js';
 import * as DataGrid from '../../../../../front_end/ui/components/data_grid/data_grid.js';
 import * as Coordinator from '../../../../../front_end/ui/components/render_coordinator/render_coordinator.js';
 import * as LitHtml from '../../../../../front_end/ui/lit-html/lit-html.js';
-import {assertElement, assertShadowRoot, dispatchClickEvent, dispatchFocusOutEvent, dispatchKeyDownEvent, getEventPromise, renderElementIntoDOM, stripLitHtmlCommentNodes} from '../../helpers/DOMHelpers.js';
+import {
+  assertElement,
+  assertShadowRoot,
+  dispatchClickEvent,
+  dispatchFocusOutEvent,
+  dispatchKeyDownEvent,
+  getEventPromise,
+  renderElementIntoDOM,
+  stripLitHtmlCommentNodes,
+} from '../../helpers/DOMHelpers.js';
 import {withMutations} from '../../helpers/MutationHelpers.js';
 
-import {assertCurrentFocusedCellIs, assertSelectedRowIs, emulateUserFocusingCellAt, emulateUserKeyboardNavigation, focusCurrentlyFocusableCell, getAllRows, getCellByIndexes, getFocusableCell, getHeaderCellForColumnId, getHeaderCells, getValuesOfAllBodyRows, getValuesOfBodyRowByAriaIndex} from './DataGridHelpers.js';
+import {
+  assertCurrentFocusedCellIs,
+  assertSelectedRowIs,
+  emulateUserFocusingCellAt,
+  emulateUserKeyboardNavigation,
+  focusCurrentlyFocusableCell,
+  getAllRows,
+  getCellByIndexes,
+  getFocusableCell,
+  getHeaderCellForColumnId,
+  getHeaderCells,
+  getValuesOfAllBodyRows,
+  getValuesOfBodyRowByAriaIndex,
+} from './DataGridHelpers.js';
 
 const {assert} = chai;
 
@@ -55,6 +77,7 @@ const columnsWithNoneSortable = createColumns().map(col => {
   col.sortable = false;
   return col;
 });
+const label: string = 'Test Data Grid Label';
 
 Object.freeze(columns);
 Object.freeze(columnsWithNoneSortable);
@@ -66,6 +89,7 @@ const renderDataGrid = (data: Partial<DataGrid.DataGrid.DataGridData>): DataGrid
     rows: data.rows || [],
     columns: data.columns || [],
     activeSort: data.activeSort || null,
+    label: data.label,
   };
   return component;
 };
@@ -243,6 +267,24 @@ describe('DataGrid', () => {
   });
 
   describe('aria-labels', () => {
+    it('it adds aria-label to the table if one is specified', async () => {
+      const component = renderDataGrid({columns, rows, label});
+      assertShadowRoot(component.shadowRoot);
+      await coordinator.done();
+      const table = component.shadowRoot.querySelector('table');
+      assertElement(table, HTMLTableElement);
+      assert.strictEqual(table.getAttribute('aria-label'), label);
+    });
+
+    it('it does not add an aria-label to the table if one is not specified', async () => {
+      const component = renderDataGrid({columns, rows});
+      assertShadowRoot(component.shadowRoot);
+      await coordinator.done();
+      const table = component.shadowRoot.querySelector('table');
+      assertElement(table, HTMLTableElement);
+      assert.strictEqual(table.getAttribute('aria-label'), null);
+    });
+
     it('adds rowcount and colcount to the table', async () => {
       const component = renderDataGrid({columns, rows});
       assertShadowRoot(component.shadowRoot);
@@ -965,6 +1007,18 @@ describe('DataGrid', () => {
         });
         assert.deepEqual(newFocusedCell, [0, 3]);
       });
+    });
+  });
+
+  describe('DataGrid.DataGridUtils.getCellTitleFromCellContent', () => {
+    it('returns full cell content as title when content is short', async () => {
+      const title = DataGrid.DataGridUtils.getCellTitleFromCellContent('some shortish cell value');
+      assert.deepEqual(title, 'some shortish cell value');
+    });
+
+    it('returns truncated cell content as title when content is long', async () => {
+      const title = DataGrid.DataGridUtils.getCellTitleFromCellContent('This cell contains text which is a bit longer');
+      assert.deepEqual(title, 'This cell contains t…');
     });
   });
 });

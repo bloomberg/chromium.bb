@@ -12,6 +12,7 @@ import androidx.browser.customtabs.CustomTabsSessionToken;
 import androidx.browser.customtabs.PostMessageBackend;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.browserservices.verification.OriginVerifier;
 import org.chromium.chrome.browser.browserservices.verification.OriginVerifier.OriginVerificationListener;
@@ -19,6 +20,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.embedder_support.util.Origin;
 import org.chromium.content_public.browser.GlobalRenderFrameHostId;
 import org.chromium.content_public.browser.LifecycleState;
+import org.chromium.content_public.browser.MessagePayload;
 import org.chromium.content_public.browser.MessagePort;
 import org.chromium.content_public.browser.MessagePort.MessageCallback;
 import org.chromium.content_public.browser.NavigationHandle;
@@ -48,8 +50,9 @@ public class PostMessageHandler implements OriginVerificationListener {
         mPostMessageBackend = postMessageBackend;
         mMessageCallback = new MessageCallback() {
             @Override
-            public void onMessage(String message, MessagePort[] sentPorts) {
-                mPostMessageBackend.onPostMessage(message, null);
+            public void onMessage(MessagePayload messagePayload, MessagePort[] sentPorts) {
+                mPostMessageBackend.onPostMessage(messagePayload.getAsString(), null);
+                RecordHistogram.recordBooleanHistogram("CustomTabs.PostMessage.OnMessage", true);
             }
         };
     }
@@ -85,7 +88,7 @@ public class PostMessageHandler implements OriginVerificationListener {
             }
 
             @Override
-            public void renderProcessGone(boolean wasOomProtected) {
+            public void renderProcessGone() {
                 disconnectChannel();
             }
 
@@ -104,8 +107,8 @@ public class PostMessageHandler implements OriginVerificationListener {
         mChannel = webContents.createMessageChannel();
         mChannel[0].setMessageCallback(mMessageCallback, null);
 
-        webContents.postMessageToMainFrame(
-                "", mPostMessageUri.toString(), "", new MessagePort[] {mChannel[1]});
+        webContents.postMessageToMainFrame(new MessagePayload(""), mPostMessageUri.toString(), "",
+                new MessagePort[] {mChannel[1]});
 
         mPostMessageBackend.onNotifyMessageChannelReady(null);
     }
@@ -148,9 +151,11 @@ public class PostMessageHandler implements OriginVerificationListener {
                 // It is still possible that the page has navigated while this task is in the queue.
                 // If that happens fail gracefully.
                 if (mChannel == null || mChannel[0].isClosed()) return;
-                mChannel[0].postMessage(message, null);
+                mChannel[0].postMessage(new MessagePayload(message), null);
             }
         });
+        RecordHistogram.recordBooleanHistogram(
+                "CustomTabs.PostMessage.PostMessageFromClientApp", true);
         return CustomTabsService.RESULT_SUCCESS;
     }
 

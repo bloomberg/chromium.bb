@@ -6,6 +6,7 @@
 
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/script/mock_script_element_base.h"
@@ -13,7 +14,7 @@
 #include "third_party/blink/renderer/core/script/script.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/platform/bindings/runtime_call_stats.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support_with_mock_scheduler.h"
 
@@ -99,7 +100,7 @@ class ScriptRunnerTest : public testing::Test {
  protected:
   void NotifyScriptReady(MockPendingScript* pending_script) {
     pending_script->SetIsReady(true);
-    script_runner_->NotifyScriptReady(pending_script);
+    script_runner_->PendingScriptFinished(pending_script);
   }
 
   void QueueScriptForExecution(MockPendingScript* pending_script) {

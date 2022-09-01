@@ -75,7 +75,6 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "third_party/blink/public/mojom/input/input_handler.mojom-blink.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -165,9 +164,8 @@ void RecordToolTypeForActionDown(const ui::MotionEventAndroid& event) {
 }
 
 void WakeUpGpu(GpuProcessHost* host) {
-  if (host && host->gpu_host()->wake_up_gpu_before_drawing()) {
+  if (host)
     host->gpu_service()->WakeUpGpu();
-  }
 }
 
 std::string CompressAndSaveBitmap(const std::string& dir,
@@ -344,13 +342,20 @@ void RenderWidgetHostViewAndroid::NotifyVirtualKeyboardOverlayRect(
     return;
   gfx::Rect keyboard_rect_with_scale;
   if (!keyboard_rect.IsEmpty()) {
-    float scale = IsUseZoomForDSFEnabled() ? 1 / view_.GetDipScale() : 1.f;
+    // This is necessary because the receiver of this rect in the renderer
+    // expects the rect to be in device-independnet pixels, but |keyboard_rect|
+    // is in device pixels. See
+    // LocalFrameMojoHandler::NotifyVirtualKeyboardOverlayRect.
+    // To trigger this code, follow the steps in
+    // .../external/wpt/virtual-keyboard/virtual-keyboard-css-env-manual.html
+    float scale = 1 / view_.GetDipScale();
     keyboard_rect_with_scale = ScaleToEnclosedRect(keyboard_rect, scale);
     // Intersect the keyboard rect with the `this` bounds which will be sent
     // to the renderer.
     keyboard_rect_with_scale.Intersect(GetViewBounds());
   }
-  frame_host->NotifyVirtualKeyboardOverlayRect(keyboard_rect_with_scale);
+  frame_host->GetPage().NotifyVirtualKeyboardOverlayRect(
+      keyboard_rect_with_scale);
 }
 
 bool RenderWidgetHostViewAndroid::ShouldVirtualKeyboardOverlayContent() {
@@ -364,22 +369,10 @@ bool RenderWidgetHostViewAndroid::SynchronizeVisualProperties(
     const absl::optional<viz::LocalSurfaceId>& child_local_surface_id) {
   if (!CanSynchronizeVisualProperties())
     return false;
-  if (child_local_surface_id) {
+  if (child_local_surface_id)
     local_surface_id_allocator_.UpdateFromChild(*child_local_surface_id);
-  } else {
+  else
     local_surface_id_allocator_.GenerateId();
-    // When a rotation begins while hidden, the Renderer will report the amount
-    // of time spent performing layout of the incremental surfaces. We cache the
-    // first viz::LocalSurfaceId sent, and then update |hidden_rotation_time_|
-    // for all subsequent cc::RenderFrameMetadata reported until the rotation
-    // completes.
-    if (!is_showing_ && in_rotation_ &&
-        !first_hidden_local_surface_id_.is_valid()) {
-      hidden_rotation_time_ = base::TimeDelta();
-      first_hidden_local_surface_id_ =
-          local_surface_id_allocator_.GetCurrentLocalSurfaceId();
-    }
-  }
 
   // If we still have an invalid viz::LocalSurfaceId, then we are hidden and
   // evicted. This will have been triggered by a child acknowledging a previous
@@ -444,25 +437,6 @@ void RenderWidgetHostViewAndroid::LostFocus() {
 
 void RenderWidgetHostViewAndroid::OnRenderFrameMetadataChangedBeforeActivation(
     const cc::RenderFrameMetadata& metadata) {
-  // If we began Surface Synchronization while hidden, the Renderer will report
-  // the time spent performing the incremental layouts. The record those here,
-  // to be included with the final time spend completing rotation in
-  // OnRenderFrameMetadataChangedAfterActivation.
-  if (first_hidden_local_surface_id_.is_valid() &&
-      metadata.local_surface_id->is_valid()) {
-    auto local_surface_id = metadata.local_surface_id.value();
-    // We stop recording layout times once the surface is expected as the final
-    // one for rotation. For that surface we are interested in the full time
-    // until activation. Which will include layout and rendering.
-    if (!rotation_metrics_.empty() &&
-        local_surface_id.IsSameOrNewerThan(rotation_metrics_.front().second)) {
-      first_hidden_local_surface_id_ = viz::LocalSurfaceId();
-    } else if (metadata.local_surface_id->IsSameOrNewerThan(
-                   first_hidden_local_surface_id_)) {
-      hidden_rotation_time_ += metadata.visual_properties_update_duration;
-    }
-  }
-
   bool is_transparent = metadata.has_transparent_background;
   SkColor root_background_color = metadata.root_background_color;
 
@@ -481,19 +455,16 @@ void RenderWidgetHostViewAndroid::OnRenderFrameMetadataChangedBeforeActivation(
   gfx::SizeF scrollable_viewport_size_dip = metadata.scrollable_viewport_size;
   gfx::PointF root_scroll_offset_dip =
       metadata.root_scroll_offset.value_or(gfx::PointF());
-  if (IsUseZoomForDSFEnabled()) {
-    float pix_to_dip = 1 / dip_scale;
-    root_layer_size_dip.Scale(pix_to_dip);
-    scrollable_viewport_size_dip.Scale(pix_to_dip);
-    root_scroll_offset_dip.Scale(pix_to_dip);
-  }
+  float pix_to_dip = 1 / dip_scale;
+  root_layer_size_dip.Scale(pix_to_dip);
+  scrollable_viewport_size_dip.Scale(pix_to_dip);
+  root_scroll_offset_dip.Scale(pix_to_dip);
 
-  float to_pix = IsUseZoomForDSFEnabled() ? 1.f : dip_scale;
   // Note that the height of browser control is not affected by page scale
   // factor. Thus, |top_content_offset| in CSS pixels is also in DIPs.
   float top_content_offset =
       metadata.top_controls_height * metadata.top_controls_shown_ratio;
-  float top_shown_pix = top_content_offset * to_pix;
+  float top_shown_pix = top_content_offset;
 
   if (ime_adapter_android_) {
     ime_adapter_android_->UpdateFrameInfo(metadata.selection.start, dip_scale,
@@ -509,9 +480,7 @@ void RenderWidgetHostViewAndroid::OnRenderFrameMetadataChangedBeforeActivation(
                                  scrollable_viewport_size_dip);
 
   // ViewAndroid::content_offset() must be in dip.
-  float top_content_offset_dip = IsUseZoomForDSFEnabled()
-                                     ? top_content_offset / dip_scale
-                                     : top_content_offset;
+  float top_content_offset_dip = top_content_offset / dip_scale;
   view_.UpdateFrameInfo({scrollable_viewport_size_dip, top_content_offset_dip});
   bool controls_changed = UpdateControls(
       view_.GetDipScale(), metadata.top_controls_height,
@@ -692,12 +661,7 @@ void RenderWidgetHostViewAndroid::OnRenderFrameMetadataChangedAfterActivation(
         // From these, until `activation_time`, we can determine the length of
         // time that the Renderer is visible, until the post rotation surface is
         // first displayed.
-        //
-        // For hidden rotations, the Renderer may be doing additional, partial,
-        // layouts. This is tracked in `hidden_rotation_time_`. This extra work
-        // will be removed once `is_surface_sync_throttling_` is the default.
-        auto duration =
-            activation_time - rotation_target.first + hidden_rotation_time_;
+        auto duration = activation_time - rotation_target.first;
         TRACE_EVENT_NESTABLE_ASYNC_END_WITH_TIMESTAMP1(
             "viz", "RenderWidgetHostViewAndroid::RotationEmbed",
             TRACE_ID_LOCAL(rotation_target.second.hash()), activation_time,
@@ -707,7 +671,6 @@ void RenderWidgetHostViewAndroid::OnRenderFrameMetadataChangedAfterActivation(
         // corresponding surface.
         UMA_HISTOGRAM_TIMES("Android.Rotation.BeginToRendererFrameActivation",
                             duration);
-        hidden_rotation_time_ = base::TimeDelta();
         rotation_metrics_.pop_front();
       } else {
         // The embedded surface may have updated the
@@ -745,8 +708,7 @@ void RenderWidgetHostViewAndroid::OnRootScrollOffsetChanged(
   if (!gesture_listener_manager_)
     return;
   gfx::PointF root_scroll_offset_dip = root_scroll_offset;
-  if (IsUseZoomForDSFEnabled())
-    root_scroll_offset_dip.Scale(1 / view_.GetDipScale());
+  root_scroll_offset_dip.Scale(1 / view_.GetDipScale());
   gesture_listener_manager_->OnRootScrollOffsetChanged(root_scroll_offset_dip);
 }
 
@@ -820,7 +782,7 @@ gfx::Size RenderWidgetHostViewAndroid::GetVisibleViewportSize() {
   int pinned_bottom_adjust_dps =
       std::max(0, (int)(view_.GetViewportInsetBottom() / view_.GetDipScale()));
   gfx::Rect requested_rect(GetRequestedRendererSize());
-  requested_rect.Inset(gfx::Insets(0, 0, pinned_bottom_adjust_dps, 0));
+  requested_rect.Inset(gfx::Insets::TLBR(0, 0, pinned_bottom_adjust_dps, 0));
   return requested_rect.size();
 }
 
@@ -1233,15 +1195,6 @@ uint32_t RenderWidgetHostViewAndroid::GetCaptureSequenceNumber() const {
   return latest_capture_sequence_number_;
 }
 
-void RenderWidgetHostViewAndroid::OnInterstitialPageAttached() {
-  if (view_.parent())
-    view_.parent()->MoveToFront(&view_);
-}
-
-void RenderWidgetHostViewAndroid::OnInterstitialPageGoingAway() {
-  ResetSynchronousCompositor();
-}
-
 bool RenderWidgetHostViewAndroid::CanSynchronizeVisualProperties() {
   // When a rotation begins, the new visual properties are not all notified to
   // RenderWidgetHostViewAndroid at the same time. The process begins when
@@ -1277,6 +1230,11 @@ void RenderWidgetHostViewAndroid::UpdateWebViewBackgroundColorIfNecessary() {
   if (!using_browser_compositor_ && host()->delegate()->IsFullscreen()) {
     SetContentBackgroundColor(SK_ColorBLACK);
   }
+}
+
+void RenderWidgetHostViewAndroid::ClearFallbackSurfaceForCommitPending() {
+  delegated_frame_host_->ClearFallbackSurfaceForCommitPending();
+  local_surface_id_allocator_.Invalidate();
 }
 
 void RenderWidgetHostViewAndroid::ResetFallbackToFirstNavigationSurface() {
@@ -1514,19 +1472,18 @@ bool RenderWidgetHostViewAndroid::UpdateControls(
     float bottom_controls_height,
     float bottom_controls_shown_ratio,
     float bottom_controls_min_height_offset) {
-  float to_pix = IsUseZoomForDSFEnabled() ? 1.f : dip_scale;
-  float top_controls_pix = top_controls_height * to_pix;
+  float top_controls_pix = top_controls_height;
   // |top_content_offset| is in physical pixels if --use-zoom-for-dsf is
   // enabled. Otherwise, it is in DIPs.
   // Note that the height of browser control is not affected by page scale
   // factor. Thus, |top_content_offset| in CSS pixels is also in DIPs.
   float top_content_offset = top_controls_height * top_controls_shown_ratio;
-  float top_shown_pix = top_content_offset * to_pix;
+  float top_shown_pix = top_content_offset;
   float top_translate = top_shown_pix - top_controls_pix;
   bool top_changed =
       !cc::MathUtil::IsFloatNearlyTheSame(top_shown_pix, prev_top_shown_pix_);
 
-  float top_min_height_offset_pix = top_controls_min_height_offset * to_pix;
+  float top_min_height_offset_pix = top_controls_min_height_offset;
   top_changed |= !cc::MathUtil::IsFloatNearlyTheSame(
       top_min_height_offset_pix, prev_top_controls_min_height_offset_pix_);
 
@@ -1541,14 +1498,13 @@ bool RenderWidgetHostViewAndroid::UpdateControls(
   prev_top_controls_translate_ = top_translate;
   prev_top_controls_min_height_offset_pix_ = top_min_height_offset_pix;
 
-  float bottom_controls_pix = bottom_controls_height * to_pix;
+  float bottom_controls_pix = bottom_controls_height;
   float bottom_shown_pix = bottom_controls_pix * bottom_controls_shown_ratio;
   bool bottom_changed = !cc::MathUtil::IsFloatNearlyTheSame(
       bottom_shown_pix, prev_bottom_shown_pix_);
   float bottom_translate = bottom_controls_pix - bottom_shown_pix;
 
-  float bottom_min_height_offset_pix =
-      bottom_controls_min_height_offset * to_pix;
+  float bottom_min_height_offset_pix = bottom_controls_min_height_offset;
   bottom_changed |= !cc::MathUtil::IsFloatNearlyTheSame(
       bottom_min_height_offset_pix,
       prev_bottom_controls_min_height_offset_pix_);
@@ -1882,8 +1838,7 @@ RenderWidgetHostViewAndroid::FilterInputEvent(
   if (!host())
     return blink::mojom::InputEventResultState::kNotConsumed;
 
-  if (input_event.GetType() == blink::WebInputEvent::Type::kGestureTapDown ||
-      input_event.GetType() == blink::WebInputEvent::Type::kTouchStart) {
+  if (input_event.GetType() == blink::WebInputEvent::Type::kTouchStart) {
     GpuProcessHost::CallOnIO(GPU_PROCESS_KIND_SANDBOXED,
                              false /* force_create */,
                              base::BindOnce(&WakeUpGpu));
@@ -2142,6 +2097,9 @@ void RenderWidgetHostViewAndroid::DidOverscroll(
   if (!view_.parent() || !is_showing_)
     return;
 
+  if (gesture_listener_manager_)
+    gesture_listener_manager_->DidOverscroll(params);
+
   if (overscroll_controller_)
     overscroll_controller_->OnOverscrolled(params);
 }
@@ -2363,6 +2321,7 @@ void RenderWidgetHostViewAndroid::OnAttachedToWindow() {
   if (!view_.parent())
     return;
 
+  UpdateScreenInfo();
   if (is_showing_)
     StartObservingRootWindow();
   DCHECK(view_.GetWindowAndroid());
@@ -2826,6 +2785,10 @@ void RenderWidgetHostViewAndroid::BeginRotationBatching() {
 
 void RenderWidgetHostViewAndroid::EndRotationBatching() {
   in_rotation_ = false;
+  // Always clear when ending batching. As WebView can trigger multiple
+  // OnPhysicalBackingSizeChanged which would re-trigger rotation if we were
+  // still tracking `fullscreen_rotation_`. crbug.com/1302964
+  fullscreen_rotation_ = false;
   DCHECK(!rotation_metrics_.empty());
   const auto delta = rotation_metrics_.back().first - base::TimeTicks();
   TRACE_EVENT_NESTABLE_ASYNC_END1(

@@ -23,7 +23,6 @@
 #include <blpwtk2_requestcontextmanager.h>
 
 #include <base/bind.h>
-#include <base/task/post_task.h>
 #include <base/threading/thread_task_runner_handle.h>
 #include <content/public/browser/browser_task_traits.h>
 #include <content/public/browser/network_service_instance.h>

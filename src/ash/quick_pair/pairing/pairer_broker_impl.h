@@ -43,6 +43,8 @@ class PairerBrokerImpl final : public PairerBroker {
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
   void PairDevice(scoped_refptr<Device> device) override;
+  bool IsPairing() override;
+  void StopPairing() override;
 
  private:
   void PairFastPairDevice(scoped_refptr<Device> device);
@@ -59,6 +61,7 @@ class PairerBrokerImpl final : public PairerBroker {
 
   base::flat_map<std::string, std::unique_ptr<FastPairPairer>>
       fast_pair_pairers_;
+  base::flat_map<std::string, int> pair_failure_counts_;
   scoped_refptr<device::BluetoothAdapter> adapter_;
   std::unique_ptr<FastPairUnpairHandler> fast_pair_unpair_handler_;
   base::ObserverList<Observer> observers_;

@@ -9,6 +9,7 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/path_service.h"
+#include "base/test/scoped_feature_list.h"
 #import "components/autofill/ios/browser/form_suggestion.h"
 #import "components/autofill/ios/browser/form_suggestion_provider.h"
 #import "components/autofill/ios/form_util/form_activity_observer_bridge.h"
@@ -18,6 +19,7 @@
 #import "ios/chrome/browser/autofill/form_suggestion_view.h"
 #import "ios/chrome/browser/ui/autofill/form_input_accessory/form_input_accessory_consumer.h"
 #import "ios/chrome/browser/ui/autofill/form_input_accessory/form_input_accessory_mediator.h"
+#import "ios/chrome/browser/ui/bubble/bubble_features.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #import "ios/web/public/test/fakes/fake_navigation_context.h"
@@ -47,6 +49,7 @@ using autofill::FieldRendererId;
 @property(nonatomic, assign) BOOL selected;
 @property(nonatomic, assign) BOOL askedIfSuggestionsAvailable;
 @property(nonatomic, assign) BOOL askedForSuggestions;
+@property(nonatomic, assign) SuggestionProviderType type;
 
 // Creates a test provider with default suggesstions.
 + (instancetype)providerWithSuggestions;
@@ -87,8 +90,10 @@ using autofill::FieldRendererId;
 
 - (instancetype)initWithSuggestions:(NSArray*)suggestions {
   self = [super init];
-  if (self)
+  if (self) {
     _suggestions = [suggestions copy];
+    _type = SuggestionProviderTypeUnknown;
+  }
   return self;
 }
 
@@ -143,10 +148,6 @@ using autofill::FieldRendererId;
   completion();
 }
 
-- (SuggestionProviderType)type {
-  return SuggestionProviderTypeUnknown;
-}
-
 @end
 
 namespace {
@@ -199,9 +200,12 @@ class FormSuggestionControllerTest : public PlatformTest {
 
     fake_web_state_.SetView(mock_web_state_view);
 
+    mock_handler_ =
+        OCMProtocolMock(@protocol(FormInputAccessoryMediatorHandler));
+
     accessory_mediator_ =
         [[FormInputAccessoryMediator alloc] initWithConsumer:mock_consumer
-                                                     handler:nil
+                                                     handler:mock_handler_
                                                 webStateList:NULL
                                          personalDataManager:NULL
                                                passwordStore:nullptr
@@ -224,6 +228,11 @@ class FormSuggestionControllerTest : public PlatformTest {
   // Accessory view controller.
   FormInputAccessoryMediator* accessory_mediator_;
 
+  // The scoped feature list to enable/disable features. This needs to be placed
+  // before task_environment_, as per
+  // https://source.chromium.org/chromium/chromium/src/+/main:base/test/scoped_feature_list.h;l=37-41;drc=fe05104cfedb627fa99f218d7d1af6862871566c.
+  base::test::ScopedFeatureList scoped_feature_list_;
+
   // The associated test Web Threads.
   web::WebTaskEnvironment task_environment_;
 
@@ -232,6 +241,9 @@ class FormSuggestionControllerTest : public PlatformTest {
 
   // The fake form tracker to simulate form events.
   autofill::TestFormActivityTabHelper test_form_activity_tab_helper_;
+
+  // Mock FormInputAccessoryMediatorHandler for verifying interactions.
+  id mock_handler_;
 };
 
 // Tests that pages whose URLs don't have a web scheme aren't processed.
@@ -448,6 +460,90 @@ TEST_F(FormSuggestionControllerTest, SelectingSuggestionShouldNotifyDelegate) {
   EXPECT_NSEQ(@"field_id", [provider fieldIdentifier]);
   EXPECT_NSEQ(@"frame_id", [provider frameID]);
   EXPECT_NSEQ(suggestions[0], [provider suggestion]);
+}
+
+// Tests that the password suggestion IPH is not shown, but the event logged,
+// when the feature is not enabled,
+TEST_F(FormSuggestionControllerTest, PasswordSuggestionNoFeatureNoIPH) {
+  // Disable the feature flag for password suggestion IPH.
+  scoped_feature_list_.InitAndDisableFeature(kBubbleRichIPH);
+
+  NSArray* suggestions = @[
+    [FormSuggestion suggestionWithValue:@"foo"
+                     displayDescription:nil
+                                   icon:@""
+                             identifier:0
+                         requiresReauth:NO],
+  ];
+  TestSuggestionProvider* provider =
+      [[TestSuggestionProvider alloc] initWithSuggestions:suggestions];
+  provider.type = SuggestionProviderTypePassword;
+  SetUpController(@[ provider ]);
+  GURL url("http://foo.com");
+  fake_web_state_.SetCurrentURL(url);
+  auto main_frame = web::FakeWebFrame::CreateMainWebFrame(url);
+  autofill::FormActivityParams params;
+
+  [[mock_handler_ reject] showPasswordSuggestionIPHIfNeeded];
+  OCMExpect([mock_handler_ notifyPasswordSuggestionsShown]);
+  test_form_activity_tab_helper_.FormActivityRegistered(main_frame.get(),
+                                                        params);
+  [mock_handler_ verify];
+}
+
+// Tests that the password suggestion IPH is enabled when suggesting a password.
+TEST_F(FormSuggestionControllerTest, PasswordSuggestionIPH) {
+  // Enable the feature flag for password suggestion IPH.
+  scoped_feature_list_.InitAndEnableFeature(kBubbleRichIPH);
+
+  NSArray* suggestions = @[
+    [FormSuggestion suggestionWithValue:@"foo"
+                     displayDescription:nil
+                                   icon:@""
+                             identifier:0
+                         requiresReauth:NO],
+  ];
+  TestSuggestionProvider* provider =
+      [[TestSuggestionProvider alloc] initWithSuggestions:suggestions];
+  provider.type = SuggestionProviderTypePassword;
+  SetUpController(@[ provider ]);
+  GURL url("http://foo.com");
+  fake_web_state_.SetCurrentURL(url);
+  auto main_frame = web::FakeWebFrame::CreateMainWebFrame(url);
+  autofill::FormActivityParams params;
+
+  OCMExpect([mock_handler_ showPasswordSuggestionIPHIfNeeded]);
+  [[mock_handler_ reject] notifyPasswordSuggestionsShown];
+  test_form_activity_tab_helper_.FormActivityRegistered(main_frame.get(),
+                                                        params);
+  [mock_handler_ verify];
+}
+
+// Tests that the password suggestion iph is disabled when not suggesting a
+// password.
+TEST_F(FormSuggestionControllerTest, NonPasswordSuggestionNoIPH) {
+  // Enable the feature flag for password suggestion iph.
+  scoped_feature_list_.InitAndEnableFeature(kBubbleRichIPH);
+
+  NSArray* suggestions = @[
+    [FormSuggestion suggestionWithValue:@"foo"
+                     displayDescription:nil
+                                   icon:@""
+                             identifier:1
+                         requiresReauth:NO],
+  ];
+  TestSuggestionProvider* provider =
+      [[TestSuggestionProvider alloc] initWithSuggestions:suggestions];
+  SetUpController(@[ provider ]);
+  GURL url("http://foo.com");
+  fake_web_state_.SetCurrentURL(url);
+  auto main_frame = web::FakeWebFrame::CreateMainWebFrame(url);
+  autofill::FormActivityParams params;
+
+  [[mock_handler_ reject] showPasswordSuggestionIPHIfNeeded];
+  [[mock_handler_ reject] notifyPasswordSuggestionsShown];
+  test_form_activity_tab_helper_.FormActivityRegistered(main_frame.get(),
+                                                        params);
 }
 
 }  // namespace

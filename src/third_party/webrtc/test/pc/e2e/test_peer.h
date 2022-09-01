@@ -15,10 +15,17 @@
 #include <vector>
 
 #include "absl/memory/memory.h"
-#include "absl/types/variant.h"
+#include "absl/strings/string_view.h"
+#include "api/function_view.h"
+#include "api/scoped_refptr.h"
+#include "api/sequence_checker.h"
+#include "api/set_remote_description_observer_interface.h"
 #include "api/test/frame_generator_interface.h"
 #include "api/test/peerconnection_quality_test_fixture.h"
 #include "pc/peer_connection_wrapper.h"
+#include "rtc_base/logging.h"
+#include "rtc_base/ref_counted_object.h"
+#include "rtc_base/synchronization/mutex.h"
 #include "test/pc/e2e/peer_configurer.h"
 #include "test/pc/e2e/peer_connection_quality_test_params.h"
 
@@ -28,7 +35,16 @@ namespace webrtc_pc_e2e {
 // Describes a single participant in the call.
 class TestPeer final {
  public:
-  Params* params() const { return params_.get(); }
+  const Params& params() const { return params_; }
+
+  ConfigurableParams configurable_params() const;
+  void AddVideoConfig(PeerConnectionE2EQualityTestFixture::VideoConfig config);
+  // Removes video config with specified name. Crashes if the config with
+  // specified name isn't found.
+  void RemoveVideoConfig(absl::string_view stream_label);
+  void SetVideoSubscription(
+      PeerConnectionE2EQualityTestFixture::VideoSubscription subscription);
+
   PeerConfigurerImpl::VideoSource ReleaseVideoSource(size_t i) {
     RTC_CHECK(wrapper_) << "TestPeer is already closed";
     return std::move(video_sources_[i]);
@@ -47,9 +63,16 @@ class TestPeer final {
     return wrapper_->observer();
   }
 
+  // Tell underlying `PeerConnection` to create an Offer.
+  // `observer` will be invoked on the signaling thread when offer is created.
+  void CreateOffer(
+      rtc::scoped_refptr<CreateSessionDescriptionObserver> observer) {
+    RTC_CHECK(wrapper_) << "TestPeer is already closed";
+    pc()->CreateOffer(observer.get(), params_.rtc_offer_answer_options);
+  }
   std::unique_ptr<SessionDescriptionInterface> CreateOffer() {
     RTC_CHECK(wrapper_) << "TestPeer is already closed";
-    return wrapper_->CreateOffer();
+    return wrapper_->CreateOffer(params_.rtc_offer_answer_options);
   }
 
   std::unique_ptr<SessionDescriptionInterface> CreateAnswer() {
@@ -63,11 +86,9 @@ class TestPeer final {
     return wrapper_->SetLocalDescription(std::move(desc), error_out);
   }
 
+  // `error_out` will be set only if returned value is false.
   bool SetRemoteDescription(std::unique_ptr<SessionDescriptionInterface> desc,
-                            std::string* error_out = nullptr) {
-    RTC_CHECK(wrapper_) << "TestPeer is already closed";
-    return wrapper_->SetRemoteDescription(std::move(desc), error_out);
-  }
+                            std::string* error_out = nullptr);
 
   rtc::scoped_refptr<RtpTransceiverInterface> AddTransceiver(
       cricket::MediaType media_type,
@@ -129,16 +150,21 @@ class TestPeer final {
   TestPeer(rtc::scoped_refptr<PeerConnectionFactoryInterface> pc_factory,
            rtc::scoped_refptr<PeerConnectionInterface> pc,
            std::unique_ptr<MockPeerConnectionObserver> observer,
-           std::unique_ptr<Params> params,
+           Params params,
+           ConfigurableParams configurable_params,
            std::vector<PeerConfigurerImpl::VideoSource> video_sources,
            rtc::scoped_refptr<AudioProcessing> audio_processing,
            std::unique_ptr<rtc::Thread> worker_thread);
 
  private:
+  const Params params_;
+
+  mutable Mutex mutex_;
+  ConfigurableParams configurable_params_ RTC_GUARDED_BY(mutex_);
+
   // Keeps ownership of worker thread. It has to be destroyed after `wrapper_`.
   std::unique_ptr<rtc::Thread> worker_thread_;
   std::unique_ptr<PeerConnectionWrapper> wrapper_;
-  std::unique_ptr<Params> params_;
   std::vector<PeerConfigurerImpl::VideoSource> video_sources_;
   rtc::scoped_refptr<AudioProcessing> audio_processing_;
 

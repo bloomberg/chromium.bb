@@ -22,7 +22,6 @@
 #include "build/build_config.h"
 #include "cc/paint/paint_canvas.h"
 #include "content/public/common/isolated_world_ids.h"
-#include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_view_visitor.h"
 #include "content/renderer/render_thread_impl.h"
@@ -73,6 +72,7 @@
 #include "third_party/blink/public/web/web_script_source.h"
 #include "third_party/blink/public/web/web_security_policy.h"
 #include "third_party/blink/public/web/web_serialized_script_value.h"
+#include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/public/web/web_testing_support.h"
 #include "third_party/blink/public/web/web_view.h"
 #include "third_party/blink/public/web/web_view_observer.h"
@@ -86,7 +86,7 @@
 #include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/gfx/test/icc_profiles.h"
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_FUCHSIA)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA)
 #include "third_party/blink/public/platform/web_font_render_style.h"
 #endif
 
@@ -414,6 +414,7 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void ZoomPageOut();
   void SetPageZoomFactor(double factor);
   std::string TooltipText();
+  void DisableEndDocumentTransition();
 
   int WebHistoryItemCount();
   int WindowCount();
@@ -843,7 +844,11 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       // webHistoryItemCount is used by tests in web_tests\http\tests\history
       .SetProperty("webHistoryItemCount",
                    &TestRunnerBindings::WebHistoryItemCount)
-      .SetMethod("windowCount", &TestRunnerBindings::WindowCount);
+      .SetMethod("windowCount", &TestRunnerBindings::WindowCount)
+
+      // document-transition functionality to avoid ending the animation.
+      .SetMethod("disableEndDocumentTransition",
+                 &TestRunnerBindings::DisableEndDocumentTransition);
 }
 
 BoundV8Callback TestRunnerBindings::WrapV8Callback(
@@ -982,6 +987,12 @@ int TestRunnerBindings::WindowCount() {
   return runner_->InProcessWindowCount();
 }
 
+void TestRunnerBindings::DisableEndDocumentTransition() {
+  if (invalid_)
+    return;
+  frame_->GetLocalRootFrameWidgetTestHelper()->DisableEndDocumentTransition();
+}
+
 void TestRunnerBindings::SetTabKeyCyclesThroughElements(
     bool tab_key_cycles_through_elements) {
   if (invalid_)
@@ -1014,7 +1025,7 @@ void TestRunnerBindings::TriggerTestInspectorIssue(gin::Arguments* args) {
   if (invalid_)
     return;
   GetWebFrame()->AddInspectorIssue(
-      blink::mojom::InspectorIssueCode::kSameSiteCookieIssue);
+      blink::mojom::InspectorIssueCode::kCookieIssue);
 }
 
 bool TestRunnerBindings::IsCommandEnabled(const std::string& command) {
@@ -1713,12 +1724,7 @@ void TestRunnerBindings::SetBackingScaleFactor(
   v8::Isolate* isolate = blink::MainThreadIsolate();
   v8::HandleScope handle_scope(isolate);
 
-  WrapV8Callback(std::move(v8_callback))
-      .Run({
-          // TODO(oshima): remove this callback argument when all platforms are
-          // migrated to use-zoom-for-dsf by default.
-          v8::Boolean::New(isolate, IsUseZoomForDSFEnabled()),
-      });
+  WrapV8Closure(std::move(v8_callback)).Run();
 }
 
 void TestRunnerBindings::SetColorProfile(const std::string& name,
@@ -2274,13 +2280,13 @@ void TestRunner::WorkQueue::ProcessWorkItem(mojom::WorkItemPtr work_item) {
 bool TestRunner::WorkQueue::ProcessWorkItemInternal(
     mojom::WorkItemPtr work_item) {
   switch (work_item->which()) {
-    case mojom::WorkItem::Tag::BACK_FORWARD: {
+    case mojom::WorkItem::Tag::kBackForward: {
       mojom::WorkItemBackForwardPtr& item_back_forward =
           work_item->get_back_forward();
       controller_->GoToOffset(item_back_forward->distance);
       return true;  // TODO(danakj): Did it really start a navigation?
     }
-    case mojom::WorkItem::Tag::LOADING_SCRIPT: {
+    case mojom::WorkItem::Tag::kLoadingScript: {
       mojom::WorkItemLoadingScriptPtr& item_loading_script =
           work_item->get_loading_script();
       WebFrameTestProxy* main_frame =
@@ -2290,7 +2296,7 @@ bool TestRunner::WorkQueue::ProcessWorkItemInternal(
           blink::WebString::FromUTF8(item_loading_script->script)));
       return true;  // TODO(danakj): Did it really start a navigation?
     }
-    case mojom::WorkItem::Tag::NON_LOADING_SCRIPT: {
+    case mojom::WorkItem::Tag::kNonLoadingScript: {
       mojom::WorkItemNonLoadingScriptPtr& item_non_loading_script =
           work_item->get_non_loading_script();
       WebFrameTestProxy* main_frame =
@@ -2300,12 +2306,12 @@ bool TestRunner::WorkQueue::ProcessWorkItemInternal(
           blink::WebString::FromUTF8(item_non_loading_script->script)));
       return false;
     }
-    case mojom::WorkItem::Tag::LOAD: {
+    case mojom::WorkItem::Tag::kLoad: {
       mojom::WorkItemLoadPtr& item_load = work_item->get_load();
       controller_->LoadURLForFrame(GURL(item_load->url), item_load->target);
       return true;  // TODO(danakj): Did it really start a navigation?
     }
-    case mojom::WorkItem::Tag::RELOAD:
+    case mojom::WorkItem::Tag::kReload:
       controller_->Reload();
       return true;
   }
@@ -2365,7 +2371,7 @@ void TestRunner::Reset() {
   blink::WebTestingSupport::ResetRuntimeFeatures();
   blink::WebCache::Clear();
   blink::WebSecurityPolicy::ClearOriginAccessList();
-#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_FUCHSIA)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA)
   blink::WebFontRenderStyle::SetSubpixelPositioning(false);
 #endif
   blink::ResetDomainRelaxationForTest();
@@ -2968,7 +2974,7 @@ void TestRunner::AddOriginAccessAllowListEntry(
 }
 
 void TestRunner::SetTextSubpixelPositioning(bool value) {
-#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_FUCHSIA)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA)
   // Since FontConfig doesn't provide a variable to control subpixel
   // positioning, we'll fall back to setting it globally for all fonts.
   blink::WebFontRenderStyle::SetSubpixelPositioning(value);
@@ -3358,7 +3364,7 @@ void TestRunner::FinishTest() {
       spec = spec.substr(path_start);
 
     std::string mime_type =
-        web_frame->GetDocumentLoader()->GetResponse().MimeType().Utf8();
+        web_frame->GetDocumentLoader()->GetWebResponse().MimeType().Utf8();
 
     // In a text/plain document, and in a dumpAsText/ subdirectory, we generate
     // text results no matter what the test may previously have requested.

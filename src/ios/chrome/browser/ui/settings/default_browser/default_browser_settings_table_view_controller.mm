@@ -4,8 +4,10 @@
 
 #import "ios/chrome/browser/ui/settings/default_browser/default_browser_settings_table_view_controller.h"
 
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#import "ios/chrome/browser/ui/settings/settings_table_view_controller_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_detail_icon_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_image_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_link_header_footer_item.h"
@@ -51,6 +53,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [super viewDidLoad];
   self.title = l10n_util::GetNSString(IDS_IOS_SETTINGS_SET_DEFAULT_BROWSER);
   self.shouldHideDoneButton = YES;
+  self.tableView.accessibilityIdentifier = kDefaultBrowserSettingsTableViewId;
 
   [self loadModel];
 }
@@ -126,6 +129,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   if (itemType == ItemTypeOpenSettingsButton) {
     base::RecordAction(base::UserMetricsAction("Settings.DefaultBrowser"));
+    base::UmaHistogramEnumeration("Settings.DefaultBrowserFromSource",
+                                  self.source);
     [[UIApplication sharedApplication]
                   openURL:[NSURL
                               URLWithString:UIApplicationOpenSettingsURLString]

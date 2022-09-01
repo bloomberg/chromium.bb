@@ -20,21 +20,20 @@ import './more_settings.js';
 import './other_options_settings.js';
 import './pages_per_sheet_settings.js';
 import './pages_settings.js';
-// <if expr="chromeos or lacros">
+// <if expr="chromeos_ash or chromeos_lacros">
 import './pin_settings.js';
 // </if>
-import './print_preview_vars_css.js';
+import './print_preview_vars.css.js';
 import './scaling_settings.js';
 import '../strings.m.js';
-// <if expr="not chromeos and not lacros">
+// <if expr="not chromeos_ash and not chromeos_lacros">
 import './link_container.js';
 
 // </if>
 
 import {CrContainerShadowMixin} from 'chrome://resources/cr_elements/cr_container_shadow_mixin.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {WebUIListenerMixin} from 'chrome://resources/js/web_ui_listener_mixin.js';
-import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {DarkModeMixin} from '../dark_mode_mixin.js';
 import {Destination} from '../data/destination.js';
@@ -43,6 +42,7 @@ import {MetricsContext, PrintSettingsUiBucket} from '../metrics.js';
 
 import {DestinationState, PrintPreviewDestinationSettingsElement} from './destination_settings.js';
 import {SettingsMixin} from './settings_mixin.js';
+import {getTemplate} from './sidebar.html.js';
 
 /**
  * Number of settings sections to show when "More settings" is collapsed.
@@ -64,13 +64,11 @@ export class PrintPreviewSidebarElement extends PrintPreviewSidebarElementBase {
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
     return {
-      cloudPrintErrorMessage: String,
-
       controlsManaged: Boolean,
 
       destination: {
@@ -138,7 +136,6 @@ export class PrintPreviewSidebarElement extends PrintPreviewSidebarElementBase {
     };
   }
 
-  cloudPrintErrorMessage: string;
   controlsManaged: boolean;
   destination: Destination|null;
   destinationState: DestinationState;
@@ -238,7 +235,7 @@ export class PrintPreviewSidebarElement extends PrintPreviewSidebarElementBase {
     }
   }
 
-  // <if expr="not chromeos and not lacros">
+  // <if expr="not chromeos_ash and not chromeos_lacros">
   /** @return Whether the system dialog link is available. */
   systemDialogLinkAvailable(): boolean {
     const linkContainer =

@@ -21,19 +21,21 @@ js_library("bluetooth_device_list_item") {
   deps = [
     ":bluetooth_page_browser_proxy",
     "//services/device/public/mojom:mojom_js_library_for_compile",
-    "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu",
     "//ui/webui/resources/js:i18n_behavior.m",
     "//ui/webui/resources/js/cr/ui:focus_row_behavior.m",
   ]
-  externs_list = [ "$externs_path/bluetooth.js" ]
+  externs_list = [
+    "$externs_path/bluetooth.js",
+    "//ui/webui/resources/cr_elements/cr_action_menu/cr_action_menu_externs.js",
+  ]
 }
 
 js_library("bluetooth_page") {
   deps = [
     ":bluetooth_subpage",
-    "..:deep_linking_behavior.m",
-    "..:metrics_recorder.m",
-    "..:os_route.m",
+    "..:deep_linking_behavior",
+    "..:metrics_recorder",
+    "..:os_route",
     "..:prefs_behavior",
     "..:route_observer_behavior",
     "../..:router",
@@ -49,9 +51,9 @@ js_library("bluetooth_page") {
 
 js_library("bluetooth_subpage") {
   deps = [
-    "..:deep_linking_behavior.m",
-    "..:metrics_recorder.m",
-    "..:os_route.m",
+    "..:deep_linking_behavior",
+    "..:metrics_recorder",
+    "..:os_route",
     "..:route_observer_behavior",
     "../..:router",
     "//services/device/public/mojom:mojom_js_library_for_compile",

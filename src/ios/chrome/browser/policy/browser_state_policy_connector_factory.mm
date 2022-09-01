@@ -6,7 +6,6 @@
 
 #include "base/check.h"
 #include "ios/chrome/browser/policy/browser_state_policy_connector.h"
-#include "ios/chrome/browser/policy/policy_features.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -14,9 +13,8 @@
 
 std::unique_ptr<BrowserStatePolicyConnector> BuildBrowserStatePolicyConnector(
     policy::SchemaRegistry* schema_registry,
-    BrowserPolicyConnectorIOS* browser_policy_connector) {
-  DCHECK(IsEnterprisePolicyEnabled());
-
+    BrowserPolicyConnectorIOS* browser_policy_connector,
+    policy::ConfigurationPolicyProvider* user_policy_provider) {
   auto connector = std::make_unique<BrowserStatePolicyConnector>();
 
   // Since extensions are not supported on iOS, the |schema_registry| here has
@@ -24,6 +22,7 @@ std::unique_ptr<BrowserStatePolicyConnector> BuildBrowserStatePolicyConnector(
   // |browser_policy_connector|, despite being a separate instance. The two
   // levels of registry (owned by ApplicationContext vs owned by BrowserState)
   // are maintained to keep a parallel structure with Desktop.
-  connector->Init(schema_registry, browser_policy_connector);
+  connector->Init(schema_registry, browser_policy_connector,
+                  user_policy_provider);
   return connector;
 }

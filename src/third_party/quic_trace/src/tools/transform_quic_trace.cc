@@ -21,8 +21,9 @@
 
 #include "absl/flags/flag.h"
 #include "absl/flags/parse.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/util/json_util.h"
-#include "lib/quic_trace.pb.h"
+#include "quic_trace/quic_trace.pb.h"
 
 ABSL_FLAG(bool, whitespace, true, "Add whitespace to the JSON output");
 ABSL_FLAG(std::string,
@@ -45,7 +46,7 @@ using google::protobuf::util::JsonOptions;
 using google::protobuf::util::JsonStringToMessage;
 using google::protobuf::util::MessageToJsonString;
 
-bool IsValidFormatString(const std::string& format) {
+bool IsValidFormatString(absl::string_view format) {
   return format == "protobuf" || format == "json";
 }
 

@@ -46,6 +46,12 @@
 #include "common/tools_common.h"
 #include "common/video_reader.h"
 
+enum {
+  YUV1D,  // 1D tile output for conformance test.
+  YUV,    // Tile output in YUV format.
+  NV12,   // Tile output in NV12 format.
+} UENUM1BYTE(OUTPUT_FORMAT);
+
 static const char *exec_name;
 
 void usage_exit(void) {
@@ -57,8 +63,8 @@ void usage_exit(void) {
 }
 
 // Output frame size
-const int output_frame_width = 512;
-const int output_frame_height = 512;
+static const int output_frame_width = 512;
+static const int output_frame_height = 512;
 
 static void aom_img_copy_tile(const aom_image_t *src, const aom_image_t *dst,
                               int dst_row_offset, int dst_col_offset) {
@@ -90,11 +96,11 @@ static void aom_img_copy_tile(const aom_image_t *src, const aom_image_t *dst,
   }
 }
 
-void decode_tile(aom_codec_ctx_t *codec, const unsigned char *frame,
-                 size_t frame_size, int tr, int tc, int ref_idx,
-                 aom_image_t *reference_images, aom_image_t *output,
-                 int *tile_idx, unsigned int *output_bit_depth,
-                 aom_image_t **img_ptr, int output_format) {
+static void decode_tile(aom_codec_ctx_t *codec, const unsigned char *frame,
+                        size_t frame_size, int tr, int tc, int ref_idx,
+                        aom_image_t *reference_images, aom_image_t *output,
+                        int *tile_idx, unsigned int *output_bit_depth,
+                        aom_image_t **img_ptr, int output_format) {
   AOM_CODEC_CONTROL_TYPECHECKED(codec, AV1_SET_TILE_MODE, 1);
   AOM_CODEC_CONTROL_TYPECHECKED(codec, AV1D_EXT_TILE_DEBUG, 1);
   AOM_CODEC_CONTROL_TYPECHECKED(codec, AV1_SET_DECODE_TILE_ROW, tr);
@@ -264,12 +270,14 @@ int main(int argc, char **argv) {
   unsigned char **frames =
       (unsigned char **)malloc(num_frames * sizeof(unsigned char *));
   size_t *frame_sizes = (size_t *)malloc(num_frames * sizeof(size_t));
+  if (!(frames && frame_sizes)) die("Failed to allocate frame data.");
   // Seek to the first camera image.
   fseeko(infile, camera_frame_pos, SEEK_SET);
   for (int f = 0; f < num_frames; ++f) {
     aom_video_reader_read_frame(reader);
     frame = aom_video_reader_get_frame(reader, &frame_size);
     frames[f] = (unsigned char *)malloc(frame_size * sizeof(unsigned char));
+    if (!frames[f]) die("Failed to allocate frame data.");
     memcpy(frames[f], frame, frame_size);
     frame_sizes[f] = frame_size;
   }
@@ -300,8 +308,11 @@ int main(int argc, char **argv) {
         // Write out the tile list.
         if (tile_list_cnt) {
           out = &output;
-          if (output_bit_depth != 0)
-            aom_shift_img(output_bit_depth, &out, &output_shifted);
+          if (output_bit_depth != 0) {
+            if (!aom_shift_img(output_bit_depth, &out, &output_shifted)) {
+              die("Error allocating image");
+            }
+          }
           img_write_to_file(out, outfile, output_format);
           tile_list_writes++;
         }
@@ -332,8 +343,11 @@ int main(int argc, char **argv) {
                 &output, &tile_idx, &output_bit_depth, &img, output_format);
     if (output_format == YUV1D) {
       out = img;
-      if (output_bit_depth != 0)
-        aom_shift_img(output_bit_depth, &out, &output_shifted);
+      if (output_bit_depth != 0) {
+        if (!aom_shift_img(output_bit_depth, &out, &output_shifted)) {
+          die("Error allocating image");
+        }
+      }
       aom_img_write(out, outfile);
     }
   }
@@ -342,8 +356,11 @@ int main(int argc, char **argv) {
     // Write out the last tile list.
     if (tile_list_writes < tile_list_cnt) {
       out = &output;
-      if (output_bit_depth != 0)
-        aom_shift_img(output_bit_depth, &out, &output_shifted);
+      if (output_bit_depth != 0) {
+        if (!aom_shift_img(output_bit_depth, &out, &output_shifted)) {
+          die("Error allocating image");
+        }
+      }
       img_write_to_file(out, outfile, output_format);
     }
   }

@@ -390,11 +390,7 @@ void SenderSession::HandleErrorMessage(ReceiverMessage message,
   OSP_DCHECK(!message.valid);
   if (absl::holds_alternative<ReceiverError>(message.body)) {
     const ReceiverError& error = absl::get<ReceiverError>(message.body);
-    std::string error_text =
-        StringPrintf("%s. Error code: %d, description: %s", text.c_str(),
-                     error.code, error.description.c_str());
-    config_.client->OnError(
-        this, Error(Error::Code::kParameterInvalid, std::move(error_text)));
+    config_.client->OnError(this, error.ToError());
   } else {
     config_.client->OnError(this, Error(Error::Code::kJsonParseError, text));
   }
