@@ -28,6 +28,8 @@
 // load time data.
 extern const char kManagementLogUploadEnabled[];
 extern const char kManagementReportActivityTimes[];
+extern const char kManagementReportDeviceAudioStatus[];
+extern const char kManagementReportDevicePeripherals[];
 extern const char kManagementReportNetworkData[];
 extern const char kManagementReportHardwareData[];
 extern const char kManagementReportUsers[];
@@ -36,6 +38,7 @@ extern const char kManagementReportAppInfoAndActivity[];
 extern const char kManagementReportPrintJobs[];
 extern const char kManagementReportDlpEvents[];
 extern const char kManagementReportLoginLogout[];
+extern const char kManagementReportCRDSessions[];
 extern const char kManagementPrinting[];
 extern const char kManagementCrostini[];
 extern const char kManagementCrostiniContainerConfiguration[];
@@ -67,6 +70,8 @@ extern const char kManagementOnFileDownloadedEvent[];
 extern const char kManagementOnFileDownloadedVisibleData[];
 extern const char kManagementOnBulkDataEntryEvent[];
 extern const char kManagementOnBulkDataEntryVisibleData[];
+extern const char kManagementOnPrintEvent[];
+extern const char kManagementOnPrintVisibleData[];
 extern const char kManagementOnPageVisitedEvent[];
 extern const char kManagementOnPageVisitedVisibleData[];
 
@@ -133,11 +138,11 @@ class ManagementUIHandler : public content::WebUIMessageHandler,
   static void InitializeInternal(content::WebUI* web_ui,
                                  content::WebUIDataSource* source,
                                  Profile* profile);
-  void AddReportingInfo(base::Value* report_sources);
+  void AddReportingInfo(base::Value::List* report_sources);
 
   base::Value GetContextualManagedData(Profile* profile);
   base::Value GetThreatProtectionInfo(Profile* profile);
-  base::Value GetManagedWebsitesInfo(Profile* profile) const;
+  base::Value::List GetManagedWebsitesInfo(Profile* profile) const;
   virtual policy::PolicyService* GetPolicyService();
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -146,7 +151,7 @@ class ManagementUIHandler : public content::WebUIMessageHandler,
   virtual const policy::DeviceCloudPolicyManagerAsh*
   GetDeviceCloudPolicyManager() const;
   virtual const policy::DlpRulesManager* GetDlpRulesManager() const;
-  void AddDeviceReportingInfo(base::Value* report_sources,
+  void AddDeviceReportingInfo(base::Value::List* report_sources,
                               const policy::StatusCollector* collector,
                               const policy::SystemLogUploader* uploader,
                               Profile* profile) const;
@@ -155,15 +160,15 @@ class ManagementUIHandler : public content::WebUIMessageHandler,
   // Adds device return instructions for a managed user as an update is required
   // as per device policy but the device cannot be updated due to End of Life
   // (Auto Update Expiration).
-  void AddUpdateRequiredEolInfo(base::Value* response) const;
+  void AddUpdateRequiredEolInfo(base::Value::Dict* response) const;
 
   // Adds a boolean which indicates if there's a proxy on the device enforced by
   // the admin. If true, a warning will be added to the transparency panel to
   // inform the user that the admin may be able to see their network traffic.
-  void AddProxyServerPrivacyDisclosure(base::Value* response) const;
+  void AddProxyServerPrivacyDisclosure(base::Value::Dict* response) const;
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
  private:
-  void GetManagementStatus(Profile* profile, base::Value* status) const;
+  void GetManagementStatus(Profile* profile, base::Value::Dict* status) const;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   void HandleGetDeviceReportingInfo(const base::ListValue* args);

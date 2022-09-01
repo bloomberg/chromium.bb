@@ -5,10 +5,10 @@
 #ifndef ASH_COMPONENTS_TETHER_NOTIFICATION_PRESENTER_H_
 #define ASH_COMPONENTS_TETHER_NOTIFICATION_PRESENTER_H_
 
-#include "chromeos/components/multidevice/remote_device_ref.h"
+#include "ash/components/multidevice/remote_device_ref.h"
 #include "chromeos/network/network_state.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace tether {
 
@@ -65,6 +65,13 @@ class NotificationPresenter {
 
 }  // namespace tether
 
+}  // namespace ash
+
+// TODO(https://crbug.com/1164001): remove when the migration is finished.
+namespace chromeos {
+namespace tether {
+using ::ash::tether::NotificationPresenter;
+}  // namespace tether
 }  // namespace chromeos
 
 #endif  // ASH_COMPONENTS_TETHER_NOTIFICATION_PRESENTER_H_

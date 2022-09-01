@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/android/webid/account_selection_view_android.h"
 
 #include <memory>
-#include <string>
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
@@ -19,6 +18,7 @@
 #include "ui/android/color_utils_android.h"
 #include "ui/android/view_android.h"
 #include "ui/android/window_android.h"
+#include "ui/gfx/android/java_bitmap.h"
 #include "url/android/gurl_android.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -34,7 +34,7 @@ namespace {
 ScopedJavaLocalRef<jobject> ConvertToJavaAccount(JNIEnv* env,
                                                  const Account& account) {
   return Java_Account_Constructor(
-      env, ConvertUTF8ToJavaString(env, account.sub),
+      env, ConvertUTF8ToJavaString(env, account.id),
       ConvertUTF8ToJavaString(env, account.email),
       ConvertUTF8ToJavaString(env, account.name),
       ConvertUTF8ToJavaString(env, account.given_name),
@@ -45,9 +45,13 @@ ScopedJavaLocalRef<jobject> ConvertToJavaAccount(JNIEnv* env,
 ScopedJavaLocalRef<jobject> ConvertToJavaIdentityProviderMetadata(
     JNIEnv* env,
     const content::IdentityProviderMetadata& metadata) {
+  ScopedJavaLocalRef<jstring> java_brand_icon_url =
+      base::android::ConvertUTF8ToJavaString(env,
+                                             metadata.brand_icon_url.spec());
   return Java_IdentityProviderMetadata_Constructor(
       env, ui::OptionalSkColorToJavaColor(metadata.brand_text_color),
-      ui::OptionalSkColorToJavaColor(metadata.brand_background_color));
+      ui::OptionalSkColorToJavaColor(metadata.brand_background_color),
+      java_brand_icon_url);
 }
 
 ScopedJavaLocalRef<jobject> ConvertToJavaClientIdMetadata(
@@ -82,7 +86,7 @@ Account ConvertFieldsToAccount(
     bool is_sign_in) {
   std::vector<std::string> string_fields;
   AppendJavaStringArrayToStringVector(env, string_fields_obj, &string_fields);
-  auto sub = string_fields[0];
+  auto account_id = string_fields[0];
   auto email = string_fields[1];
   auto name = string_fields[2];
   auto given_name = string_fields[3];
@@ -91,7 +95,7 @@ Account ConvertFieldsToAccount(
       is_sign_in ? Account::LoginState::kSignIn : Account::LoginState::kSignUp;
 
   GURL picture_url = *url::GURLAndroid::ToNativeGURL(env, picture_url_obj);
-  return Account(sub, email, name, given_name, picture_url, login_state);
+  return Account(account_id, email, name, given_name, picture_url, login_state);
 }
 
 }  // namespace
@@ -109,8 +113,8 @@ AccountSelectionViewAndroid::~AccountSelectionViewAndroid() {
 }
 
 void AccountSelectionViewAndroid::Show(
-    const GURL& rp_url,
-    const GURL& idp_url,
+    const std::string& rp_for_display,
+    const std::string& idp_for_display,
     base::span<const Account> accounts,
     const content::IdentityProviderMetadata& idp_metadata,
     const content::ClientIdData& client_data,
@@ -119,7 +123,7 @@ void AccountSelectionViewAndroid::Show(
     // It's possible that the constructor cannot access the bottom sheet clank
     // component. That case may be temporary but we can't let users in a
     // waiting state so report that AccountSelectionView is dismissed instead.
-    delegate_->OnDismiss();
+    delegate_->OnDismiss(/* should_embargo=*/false);
     return;
   }
 
@@ -133,8 +137,8 @@ void AccountSelectionViewAndroid::Show(
   ScopedJavaLocalRef<jobject> client_id_metadata_obj =
       ConvertToJavaClientIdMetadata(env, client_data);
   Java_AccountSelectionBridge_showAccounts(
-      env, java_object_internal_, url::GURLAndroid::FromNativeGURL(env, rp_url),
-      url::GURLAndroid::FromNativeGURL(env, idp_url), accounts_obj,
+      env, java_object_internal_, ConvertUTF8ToJavaString(env, rp_for_display),
+      ConvertUTF8ToJavaString(env, idp_for_display), accounts_obj,
       idp_metadata_obj, client_id_metadata_obj,
       sign_in_mode == Account::SignInMode::kAuto);
 }
@@ -148,13 +152,13 @@ void AccountSelectionViewAndroid::OnAccountSelected(
       env, account_string_fields, account_picture_url, is_sign_in));
 }
 
-void AccountSelectionViewAndroid::OnDismiss(JNIEnv* env) {
-  delegate_->OnDismiss();
+void AccountSelectionViewAndroid::OnDismiss(JNIEnv* env, bool should_embargo) {
+  delegate_->OnDismiss(should_embargo);
 }
 
 void AccountSelectionViewAndroid::OnAutoSignInCancelled(JNIEnv* env) {
   // TODO(yigu): Alternatively we could fall back to manual sign in flow.
-  delegate_->OnDismiss();
+  delegate_->OnDismiss(/*should_embargo=*/false);
 }
 
 bool AccountSelectionViewAndroid::RecreateJavaObject() {
@@ -176,4 +180,16 @@ bool AccountSelectionViewAndroid::RecreateJavaObject() {
 std::unique_ptr<AccountSelectionView> AccountSelectionView::Create(
     AccountSelectionView::Delegate* delegate) {
   return std::make_unique<AccountSelectionViewAndroid>(delegate);
+}
+
+// static
+int AccountSelectionView::GetBrandIconMinimumSize() {
+  return Java_AccountSelectionBridge_getBrandIconMinimumSize(
+      base::android::AttachCurrentThread());
+}
+
+// static
+int AccountSelectionView::GetBrandIconIdealSize() {
+  return Java_AccountSelectionBridge_getBrandIconIdealSize(
+      base::android::AttachCurrentThread());
 }

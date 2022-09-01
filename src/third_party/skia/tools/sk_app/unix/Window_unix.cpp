@@ -2,20 +2,13 @@
 * Copyright 2016 Google Inc.
 *
 * Use of this source code is governed by a BSD-style license that can be
-* f 49
-* Prev
-* Up
-*
-*
 * found in the LICENSE file.
 */
-
-//#include <tchar.h>
 
 #include "tools/sk_app/unix/WindowContextFactory_unix.h"
 
 #include "src/utils/SkUTF.h"
-#include "tools/sk_app/GLWindowContext.h"
+#include "tools/sk_app/WindowContext.h"
 #include "tools/sk_app/unix/Window_unix.h"
 #include "tools/skui/ModifierKey.h"
 #include "tools/timer/Timer.h"
@@ -61,6 +54,7 @@ bool Window_unix::initWindow(Display* display) {
     constexpr int initialWidth = 1280;
     constexpr int initialHeight = 960;
 
+#ifdef SK_GL
     // Attempt to create a window that supports GL
 
     // We prefer the more recent glXChooseFBConfig but fall back to glXChooseVisual. They have
@@ -137,7 +131,9 @@ bool Window_unix::initWindow(Display* display) {
                                 fVisualInfo->visual,
                                 CWEventMask | CWColormap,
                                 &swa);
-    } else {
+    }
+#endif
+    if (!fWindow) {
         // Create a simple window instead.  We will not be able to show GL
         fWindow = XCreateSimpleWindow(display,
                                       DefaultRootWindow(display),

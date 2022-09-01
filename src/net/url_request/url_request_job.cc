@@ -84,13 +84,7 @@ class URLRequestJob::URLRequestJobSourceStream : public SourceStream {
   const raw_ptr<URLRequestJob> job_;
 };
 
-URLRequestJob::URLRequestJob(URLRequest* request)
-    : request_(request),
-      done_(false),
-      prefilter_bytes_read_(0),
-      postfilter_bytes_read_(0),
-      has_handled_response_(false),
-      expected_content_size_(-1) {}
+URLRequestJob::URLRequestJob(URLRequest* request) : request_(request) {}
 
 URLRequestJob::~URLRequestJob() {
 }
@@ -271,8 +265,8 @@ IPEndPoint URLRequestJob::GetResponseRemoteEndpoint() const {
 void URLRequestJob::NotifyURLRequestDestroyed() {
 }
 
-void URLRequestJob::GetConnectionAttempts(ConnectionAttempts* out) const {
-  out->clear();
+ConnectionAttempts URLRequestJob::GetConnectionAttempts() const {
+  return {};
 }
 
 void URLRequestJob::CloseConnectionOnDestruction() {}
@@ -319,8 +313,7 @@ GURL URLRequestJob::ComputeReferrerForPolicy(
   if (stripped_referrer.spec().size() > 4096)
     should_strip_to_origin = true;
 
-  bool same_origin = url::Origin::Create(original_referrer)
-                         .IsSameOriginWith(url::Origin::Create(destination));
+  bool same_origin = url::IsSameOriginWith(original_referrer, destination);
 
   if (same_origin_out_for_metrics)
     *same_origin_out_for_metrics = same_origin;
@@ -404,13 +397,6 @@ void URLRequestJob::NotifySSLCertificateError(int net_error,
                                               const SSLInfo& ssl_info,
                                               bool fatal) {
   request_->NotifySSLCertificateError(net_error, ssl_info, fatal);
-}
-
-void URLRequestJob::AnnotateAndMoveUserBlockedCookies(
-    CookieAccessResultList& maybe_included_cookies,
-    CookieAccessResultList& excluded_cookies) const {
-  request_->AnnotateAndMoveUserBlockedCookies(maybe_included_cookies,
-                                              excluded_cookies);
 }
 
 bool URLRequestJob::CanSetCookie(const net::CanonicalCookie& cookie,

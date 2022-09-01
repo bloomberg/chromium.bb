@@ -10,10 +10,9 @@
 #include "chromeos/language/language_packs/language_pack_manager.h"
 #include "chromeos/language/public/mojom/language_packs.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 
-namespace chromeos {
-namespace language_packs {
+namespace chromeos::language_packs {
 
 class LanguagePacksImpl : public chromeos::language::mojom::LanguagePacks {
  public:
@@ -38,10 +37,9 @@ class LanguagePacksImpl : public chromeos::language::mojom::LanguagePacks {
                    InstallPackCallback callback) override;
 
  private:
-  mojo::Receiver<chromeos::language::mojom::LanguagePacks> receiver_{this};
+  mojo::ReceiverSet<chromeos::language::mojom::LanguagePacks> receivers_;
 };
 
-}  // namespace language_packs
-}  // namespace chromeos
+}  // namespace chromeos::language_packs
 
 #endif  // CHROMEOS_LANGUAGE_LANGUAGE_PACKS_LANGUAGE_PACKS_IMPL_H_

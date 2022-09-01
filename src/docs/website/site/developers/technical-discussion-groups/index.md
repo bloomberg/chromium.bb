@@ -78,6 +78,8 @@ title: Technical Discussion Groups
     *   List for discussing the use of
                 [Polymer](https://www.polymer-project.org/) in Chromium WebUI
                 and Apps.
+*   [cxx](https://groups.google.com/a/chromium.org/g/cxx)
+    *   For proposing use of new C++11 language and library features.
 *   [device-dev](https://groups.google.com/a/chromium.org/forum/#!forum/device-dev)
     *   [Device Team](/teams/device-team) communication related to APIs
                 such as Gamepad, NFC, Sensors, Serial, HID, USB, etc.

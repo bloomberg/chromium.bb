@@ -59,7 +59,7 @@ std::u16string ExpectedTaskTitle(const std::string& title) {
 int GetChildProcessID(Browser* browser) {
   return browser->tab_strip_model()
       ->GetActiveWebContents()
-      ->GetMainFrame()
+      ->GetPrimaryMainFrame()
       ->GetProcess()
       ->GetID();
 }
@@ -145,7 +145,7 @@ class WorkerTaskProviderBrowserTest : public InProcessBrowserTest,
   void SetUpCommandLine(base::CommandLine* command_line) override {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     command_line->AppendSwitch(
-        chromeos::switches::kIgnoreUserProfileMappingForTests);
+        ash::switches::kIgnoreUserProfileMappingForTests);
 #endif
   }
 

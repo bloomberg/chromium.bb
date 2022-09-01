@@ -26,7 +26,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/widget/widget.h"
 #include "url/gurl.h"
-#include "url/origin.h"
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/public/cpp/system/toast_catalog.h"
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace policy {
 
@@ -53,7 +56,7 @@ std::unique_ptr<content::WebContents> CreateTestWebContents(
 
 ui::DataTransferEndpoint CreateEndpoint(ui::EndpointType type) {
   if (type == ui::EndpointType::kUrl)
-    return ui::DataTransferEndpoint(url::Origin::Create(GURL(kExampleUrl)));
+    return ui::DataTransferEndpoint((GURL(kExampleUrl)));
   else
     return ui::DataTransferEndpoint(type);
 }
@@ -72,8 +75,10 @@ class MockDlpClipboardNotifier : public DlpClipboardNotifier {
                     base::RepeatingCallback<void(views::Widget*)> proceed_cb,
                     base::RepeatingCallback<void(views::Widget*)> cancel_cb));
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  MOCK_CONST_METHOD2(ShowToast,
-                     void(const std::string& id, const std::u16string& text));
+  MOCK_CONST_METHOD3(ShowToast,
+                     void(const std::string& id,
+                          ash::ToastCatalogName catalog_name,
+                          const std::u16string& text));
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   MOCK_METHOD2(CloseWidget,
                void(views::Widget* widget, views::Widget::ClosedReason reason));
@@ -98,7 +103,7 @@ class ClipboardBubbleTestWithParam
 
 TEST_P(ClipboardBubbleTestWithParam, BlockBubble) {
   ::testing::StrictMock<MockDlpClipboardNotifier> notifier;
-  ui::DataTransferEndpoint data_src(url::Origin::Create(GURL(kExampleUrl)));
+  ui::DataTransferEndpoint data_src((GURL(kExampleUrl)));
   absl::optional<ui::DataTransferEndpoint> data_dst;
   auto param = GetParam();
   if (param.has_value())
@@ -111,8 +116,7 @@ TEST_P(ClipboardBubbleTestWithParam, BlockBubble) {
 
 TEST_P(ClipboardBubbleTestWithParam, WarnBubble) {
   ::testing::StrictMock<MockDlpClipboardNotifier> notifier;
-  url::Origin origin = url::Origin::Create(GURL(kExampleUrl));
-  ui::DataTransferEndpoint data_src(origin);
+  ui::DataTransferEndpoint data_src((GURL(kExampleUrl)));
   absl::optional<ui::DataTransferEndpoint> data_dst;
   auto param = GetParam();
   if (param.has_value())
@@ -195,9 +199,9 @@ class DlpClipboardNotifierTest : public testing::Test {
 
 TEST_F(DlpClipboardNotifierTest, BlinkWarn) {
   ::testing::StrictMock<MockDlpClipboardNotifier> notifier;
-  url::Origin origin = url::Origin::Create(GURL(kExampleUrl));
-  ui::DataTransferEndpoint data_src(origin);
-  ui::DataTransferEndpoint data_dst(origin);
+  GURL url = GURL(kExampleUrl);
+  ui::DataTransferEndpoint data_src(url);
+  ui::DataTransferEndpoint data_dst(url);
 
   EXPECT_CALL(notifier, CloseWidget(testing::_,
                                     views::Widget::ClosedReason::kUnspecified));
@@ -221,12 +225,9 @@ TEST_F(DlpClipboardNotifierTest, BlinkWarn) {
 
 TEST_F(DlpClipboardNotifierTest, BlinkProceedSavedHistory) {
   ::testing::StrictMock<MockDlpClipboardNotifier> notifier;
-  const ui::DataTransferEndpoint url_dst1(
-      url::Origin::Create(GURL(kExampleUrl)));
-  const ui::DataTransferEndpoint url_dst2(
-      url::Origin::Create(GURL(kExample2Url)));
-  const ui::DataTransferEndpoint url_dst3(
-      url::Origin::Create(GURL(kExample3Url)));
+  const ui::DataTransferEndpoint url_dst1((GURL(kExampleUrl)));
+  const ui::DataTransferEndpoint url_dst2((GURL(kExample2Url)));
+  const ui::DataTransferEndpoint url_dst3((GURL(kExample3Url)));
 
   ::testing::StrictMock<base::MockOnceCallback<void(bool)>> callback;
 
@@ -262,8 +263,7 @@ TEST_F(DlpClipboardNotifierTest, BlinkProceedSavedHistory) {
 
 TEST_F(DlpClipboardNotifierTest, ProceedSavedHistory) {
   ::testing::StrictMock<MockDlpClipboardNotifier> notifier;
-  const ui::DataTransferEndpoint url_dst(
-      url::Origin::Create(GURL(kExampleUrl)));
+  const ui::DataTransferEndpoint url_dst((GURL(kExampleUrl)));
   const ui::DataTransferEndpoint default_dst(ui::EndpointType::kDefault);
 
   EXPECT_CALL(notifier,
@@ -309,8 +309,7 @@ TEST_F(DlpClipboardNotifierTest, ProceedSavedHistoryVMs) {
 
 TEST_F(DlpClipboardNotifierTest, CancelSavedHistory) {
   ::testing::StrictMock<MockDlpClipboardNotifier> notifier;
-  const ui::DataTransferEndpoint url_dst(
-      url::Origin::Create(GURL(kExampleUrl)));
+  const ui::DataTransferEndpoint url_dst((GURL(kExampleUrl)));
   const ui::DataTransferEndpoint default_dst(ui::EndpointType::kDefault);
 
   EXPECT_CALL(notifier,
@@ -368,31 +367,36 @@ class ToastTestWithParam : public ::testing::TestWithParam<ToastTest> {
 
 TEST_P(ToastTestWithParam, BlockToast) {
   ::testing::StrictMock<MockDlpClipboardNotifier> notifier;
-  url::Origin origin = url::Origin::Create(GURL(kExampleUrl));
-  ui::DataTransferEndpoint data_src(origin);
+  GURL url = GURL(kExampleUrl);
+  ui::DataTransferEndpoint data_src(url);
   ui::DataTransferEndpoint data_dst(GetParam().dst_type);
 
   std::u16string expected_toast_str = l10n_util::GetStringFUTF16(
       IDS_POLICY_DLP_CLIPBOARD_BLOCKED_ON_COPY_VM,
-      base::UTF8ToUTF16(origin.host()),
+      base::UTF8ToUTF16(url.host()),
       l10n_util::GetStringUTF16(GetParam().expected_dst_name_id));
 
-  EXPECT_CALL(notifier, ShowToast(testing::_, expected_toast_str));
+  EXPECT_CALL(
+      notifier,
+      ShowToast(testing::_, ash::ToastCatalogName::kClipboardBlockedAction,
+                expected_toast_str));
 
   notifier.NotifyBlockedAction(&data_src, &data_dst);
 }
 
 TEST_P(ToastTestWithParam, WarnToast) {
   ::testing::StrictMock<MockDlpClipboardNotifier> notifier;
-  url::Origin origin = url::Origin::Create(GURL(kExampleUrl));
-  ui::DataTransferEndpoint data_src(origin);
+  GURL url = GURL(kExampleUrl);
+  ui::DataTransferEndpoint data_src(url);
   ui::DataTransferEndpoint data_dst(GetParam().dst_type);
 
   std::u16string expected_toast_str = l10n_util::GetStringFUTF16(
       IDS_POLICY_DLP_CLIPBOARD_WARN_ON_COPY_VM,
       l10n_util::GetStringUTF16(GetParam().expected_dst_name_id));
 
-  EXPECT_CALL(notifier, ShowToast(testing::_, expected_toast_str));
+  EXPECT_CALL(notifier, ShowToast(testing::_,
+                                  ash::ToastCatalogName::kClipboardWarnOnPaste,
+                                  expected_toast_str));
 
   EXPECT_CALL(notifier, CloseWidget(testing::_,
                                     views::Widget::ClosedReason::kUnspecified));

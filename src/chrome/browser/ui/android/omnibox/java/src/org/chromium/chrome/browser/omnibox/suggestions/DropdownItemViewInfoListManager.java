@@ -4,14 +4,16 @@
 
 package org.chromium.chrome.browser.omnibox.suggestions;
 
+import android.content.Context;
 import android.util.SparseArray;
 import android.util.SparseBooleanArray;
 import android.view.View;
 
 import androidx.annotation.NonNull;
 
-import org.chromium.chrome.browser.omnibox.styles.OmniboxTheme;
+import org.chromium.chrome.browser.ui.theme.BrandedColorScheme;
 import org.chromium.components.omnibox.AutocompleteResult;
+import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -22,16 +24,18 @@ import java.util.List;
 
 /** Manages the list of DropdownItemViewInfo elements. */
 class DropdownItemViewInfoListManager {
+    private final Context mContext;
     private final ModelList mManagedModel;
     private final SparseBooleanArray mGroupsCollapsedState;
     private int mLayoutDirection;
-    private @OmniboxTheme int mOmniboxTheme;
+    private @BrandedColorScheme int mBrandedColorScheme;
     private List<DropdownItemViewInfo> mSourceViewInfoList;
 
-    DropdownItemViewInfoListManager(@NonNull ModelList managedModel) {
+    DropdownItemViewInfoListManager(@NonNull ModelList managedModel, @NonNull Context context) {
         assert managedModel != null : "Must specify a non-null model.";
+        mContext = context;
         mLayoutDirection = View.LAYOUT_DIRECTION_INHERIT;
-        mOmniboxTheme = OmniboxTheme.LIGHT_THEME;
+        mBrandedColorScheme = BrandedColorScheme.LIGHT_BRANDED_THEME;
         mSourceViewInfoList = Collections.emptyList();
         mGroupsCollapsedState = new SparseBooleanArray();
         mManagedModel = managedModel;
@@ -58,15 +62,15 @@ class DropdownItemViewInfoListManager {
 
     /**
      * Specifies the visual theme to be used by the suggestions.
-     * @param omniboxTheme Specifies which {@link OmniboxTheme} should be used.
+     * @param brandedColorScheme Specifies which {@link BrandedColorScheme} should be used.
      */
-    void setOmniboxTheme(@OmniboxTheme int omniboxTheme) {
-        if (mOmniboxTheme == omniboxTheme) return;
+    void setBrandedColorScheme(@BrandedColorScheme int brandedColorScheme) {
+        if (mBrandedColorScheme == brandedColorScheme) return;
 
-        mOmniboxTheme = omniboxTheme;
+        mBrandedColorScheme = brandedColorScheme;
         for (int i = 0; i < mSourceViewInfoList.size(); i++) {
             PropertyModel model = mSourceViewInfoList.get(i).model;
-            model.set(SuggestionCommonProperties.OMNIBOX_THEME, omniboxTheme);
+            model.set(SuggestionCommonProperties.COLOR_SCHEME, brandedColorScheme);
         }
     }
 
@@ -125,11 +129,15 @@ class DropdownItemViewInfoListManager {
 
         // Build a new list of suggestions. Honor the default collapsed state.
         final List<ListItem> suggestionsList = new ArrayList<>();
+        int deviceType = DeviceFormFactor.isNonMultiDisplayContextOnTablet(mContext)
+                ? SuggestionCommonProperties.FormFactor.TABLET
+                : SuggestionCommonProperties.FormFactor.PHONE;
         for (int i = 0; i < mSourceViewInfoList.size(); i++) {
             final DropdownItemViewInfo item = mSourceViewInfoList.get(i);
             final PropertyModel model = item.model;
             model.set(SuggestionCommonProperties.LAYOUT_DIRECTION, mLayoutDirection);
-            model.set(SuggestionCommonProperties.OMNIBOX_THEME, mOmniboxTheme);
+            model.set(SuggestionCommonProperties.COLOR_SCHEME, mBrandedColorScheme);
+            model.set(SuggestionCommonProperties.DEVICE_FORM_FACTOR, deviceType);
 
             final boolean groupIsDefaultCollapsed = getGroupCollapsedState(item.groupId);
             if (!groupIsDefaultCollapsed || isGroupHeaderWithId(item, item.groupId)) {

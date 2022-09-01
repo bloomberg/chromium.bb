@@ -36,8 +36,8 @@ void CFX_WideTextBuf::AppendChar(wchar_t ch) {
   new_span[0] = ch;
 }
 
-void CFX_WideTextBuf::Delete(int start_index, int count) {
-  CFX_BinaryBuf::Delete(start_index * sizeof(wchar_t), count * sizeof(wchar_t));
+void CFX_WideTextBuf::Delete(size_t start_index, size_t count) {
+  DeleteBuf(start_index * sizeof(wchar_t), count * sizeof(wchar_t));
 }
 
 CFX_WideTextBuf& CFX_WideTextBuf::operator<<(ByteStringView ascii) {
@@ -54,25 +54,6 @@ CFX_WideTextBuf& CFX_WideTextBuf::operator<<(WideStringView str) {
 
 CFX_WideTextBuf& CFX_WideTextBuf::operator<<(const WideString& str) {
   AppendBlock(str.c_str(), str.GetLength() * sizeof(wchar_t));
-  return *this;
-}
-
-CFX_WideTextBuf& CFX_WideTextBuf::operator<<(int i) {
-  char buf[32];
-  FXSYS_itoa(i, buf, 10);
-  size_t len = strlen(buf);
-  pdfium::span<wchar_t> new_span = ExpandWideBuf(len);
-  for (size_t j = 0; j < len; j++)
-    new_span[j] = buf[j];
-  return *this;
-}
-
-CFX_WideTextBuf& CFX_WideTextBuf::operator<<(double f) {
-  char buf[32];
-  size_t len = FloatToString((float)f, buf);
-  pdfium::span<wchar_t> new_span = ExpandWideBuf(len);
-  for (size_t i = 0; i < len; i++)
-    new_span[i] = buf[i];
   return *this;
 }
 

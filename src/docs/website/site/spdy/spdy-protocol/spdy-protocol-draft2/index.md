@@ -407,7 +407,7 @@ used in a frames which are part of this stream.</td>
 <td> NV entries: (16 bits) The number of name/value pairs that follow. </td>
 
 <td>The <a
-href="http://sites.google.com/a/chromium.org/dev/spdy-protocol/spdy-protocol-draft2#TOC-Name-Value-header-block-format">Name/Value
+href="http://www.chromium.org/spdy-protocol/spdy-protocol-draft2#TOC-Name-Value-header-block-format">Name/Value
 block</a> is described below.</td>
 
 <td>If an endpoint receives multiple SYN_REPLY frames for the same active stream

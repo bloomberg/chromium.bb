@@ -122,8 +122,12 @@ Although the test tries not to time out while a debugger is attached, if you use
 --renderer-startup-dialog to attach a debugger to the renderer process, the test
 can time out in the meantime.
 
-Browser tests do not show pixel output by default. Use
---enable-pixel-output-in-tests to change this.
+Browser tests do not show pixel output by default, i.e. only a blank white
+window is shown. Use --enable-pixel-output-in-tests to change this. If you
+prefer to hide the window completely, follow [these
+instructions](https://chromium.googlesource.com/chromium/src/+/main/docs/linux/debugging.md#to-replicate-window-manager-setup-on-the-bots)
+to setup a virtual display using Xvfb and openbox and then set DISPLAY
+environment variable to redirect pixel output.
 
 In case you are debugging JavaScript browser tests (e.g. tests defined in
 [cr_settings_browsertest.js](https://source.chromium.org/chromium/chromium/src/+/HEAD:chrome/test/data/webui/settings/cr_settings_browsertest.js)),

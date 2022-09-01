@@ -14,7 +14,7 @@
 #include "third_party/blink/renderer/core/testing/module_test_base.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support_with_mock_scheduler.h"
 #include "v8/include/v8.h"
 
@@ -153,7 +153,7 @@ TEST_F(ModuleRecordResolverImplTest, RegisterResolveSuccess) {
   EXPECT_FALSE(scope.GetExceptionState().HadException());
   EXPECT_EQ(resolved, target_module_script->V8Module());
   EXPECT_EQ(1, modulator_->GetFetchedModuleScriptCalled());
-  EXPECT_EQ(modulator_->FetchedUrl(), target_module_script->BaseURL())
+  EXPECT_EQ(modulator_->FetchedUrl(), target_module_script->BaseUrl())
       << "Unexpectedly fetched URL: " << modulator_->FetchedUrl().GetString();
 }
 

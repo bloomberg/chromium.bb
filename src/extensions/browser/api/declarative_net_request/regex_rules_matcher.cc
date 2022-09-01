@@ -53,9 +53,13 @@ bool DoesRuleMetadataMatchRequest(const flat_rule::UrlRule& rule,
     return false;
   }
 
-  // Compares included and excluded domains.
-  return url_pattern_index::DoesOriginMatchDomainList(
-      params.first_party_origin, rule, false /* disable_generic_rules */);
+  // Compares included and excluded request domains.
+  if (!url_pattern_index::DoesURLMatchRequestDomainList(*params.url, rule))
+    return false;
+
+  // Compares included and excluded initiator domains.
+  return url_pattern_index::DoesOriginMatchInitiatorDomainList(
+      params.first_party_origin, rule);
 }
 
 bool IsBeforeRequestAction(flat::ActionType action_type) {
@@ -227,16 +231,20 @@ void RegexRulesMatcher::InitializeMatcher() {
                        });
                      }));
 
-  // Convert |strings_to_match| to StringPatterns. This is necessary to use
-  // url_matcher::SubstringSetMatcher.
-  std::vector<url_matcher::StringPattern> patterns;
+  // Convert |strings_to_match| to MatcherStringPatterns. This is necessary to
+  // use url_matcher::SubstringSetMatcher.
+  std::vector<base::MatcherStringPattern> patterns;
   patterns.reserve(strings_to_match.size());
 
   for (size_t i = 0; i < strings_to_match.size(); ++i)
     patterns.emplace_back(std::move(strings_to_match[i]), i);
 
-  substring_matcher_ =
-      std::make_unique<url_matcher::SubstringSetMatcher>(patterns);
+  substring_matcher_ = std::make_unique<base::SubstringSetMatcher>();
+
+  // This is only used for regex rules, which are limited to 1000,
+  // so hitting the 8MB limit should be all but impossible.
+  bool success = substring_matcher_->Build(patterns);
+  CHECK(success);
 }
 
 bool RegexRulesMatcher::IsEmpty() const {
@@ -264,7 +272,7 @@ const std::vector<RegexRuleInfo>& RegexRulesMatcher::GetPotentialMatches(
   // To pre-filter the set of regexes to match against |params|, we first need
   // to compute the set of candidate strings tracked by |substring_matcher_|
   // within |params.lower_cased_url_spec|.
-  std::set<int> candidate_ids_set;
+  std::set<base::MatcherStringPattern::ID> candidate_ids_set;
   DCHECK(substring_matcher_);
   substring_matcher_->Match(*params.lower_cased_url_spec, &candidate_ids_set);
   std::vector<int> candidate_ids_list(candidate_ids_set.begin(),

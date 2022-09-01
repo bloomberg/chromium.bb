@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/feature_list.h"
 #include "base/location.h"
@@ -54,18 +55,7 @@ struct MockDiskEntry::CallbackInfo {
 };
 
 MockDiskEntry::MockDiskEntry(const std::string& key)
-    : key_(key),
-      in_memory_data_(0),
-      max_file_size_(std::numeric_limits<int>::max()),
-      doomed_(false),
-      sparse_(false),
-      fail_requests_(0),
-      fail_sparse_requests_(false),
-      busy_(false),
-      delayed_(false),
-      cancel_(false),
-      defer_op_(DEFER_NONE),
-      resume_return_code_(0) {
+    : key_(key), max_file_size_(std::numeric_limits<int>::max()) {
   test_mode_ = GetTestModeForEntry(key);
 }
 
@@ -392,19 +382,7 @@ bool MockDiskEntry::ignore_callbacks_ = false;
 //-----------------------------------------------------------------------------
 
 MockDiskCache::MockDiskCache()
-    : Backend(DISK_CACHE),
-      open_count_(0),
-      create_count_(0),
-      doomed_count_(0),
-      max_file_size_(std::numeric_limits<int>::max()),
-      fail_requests_(false),
-      soft_failures_(0),
-      soft_failures_one_instance_(0),
-      double_create_check_(true),
-      fail_sparse_requests_(false),
-      support_in_memory_entry_data_(true),
-      force_fail_callback_later_(false),
-      defer_op_(MockDiskEntry::DEFER_NONE) {}
+    : Backend(DISK_CACHE), max_file_size_(std::numeric_limits<int>::max()) {}
 
 MockDiskCache::~MockDiskCache() {
   ReleaseAll();
@@ -681,21 +659,13 @@ int MockBackendFactory::CreateBackend(
 
 //-----------------------------------------------------------------------------
 
-MockHttpCache::MockHttpCache() : MockHttpCache(false) {}
+MockHttpCache::MockHttpCache()
+    : MockHttpCache(std::make_unique<MockBackendFactory>()) {}
 
 MockHttpCache::MockHttpCache(
     std::unique_ptr<HttpCache::BackendFactory> disk_cache_factory)
-    : MockHttpCache(std::move(disk_cache_factory), false) {}
-
-MockHttpCache::MockHttpCache(bool is_main_cache)
-    : MockHttpCache(std::make_unique<MockBackendFactory>(), is_main_cache) {}
-
-MockHttpCache::MockHttpCache(
-    std::unique_ptr<HttpCache::BackendFactory> disk_cache_factory,
-    bool is_main_cache)
     : http_cache_(std::make_unique<MockNetworkLayer>(),
-                  std::move(disk_cache_factory),
-                  is_main_cache) {}
+                  std::move(disk_cache_factory)) {}
 
 disk_cache::Backend* MockHttpCache::backend() {
   TestCompletionCallback cb;
@@ -851,8 +821,7 @@ int MockBackendNoCbFactory::CreateBackend(
 
 //-----------------------------------------------------------------------------
 
-MockBlockingBackendFactory::MockBlockingBackendFactory()
-    : backend_(nullptr), block_(true), fail_(false) {}
+MockBlockingBackendFactory::MockBlockingBackendFactory() = default;
 
 MockBlockingBackendFactory::~MockBlockingBackendFactory() = default;
 

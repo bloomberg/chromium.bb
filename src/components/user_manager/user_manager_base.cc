@@ -22,6 +22,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/values.h"
+#include "components/crash/core/common/crash_key.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -69,7 +70,7 @@ const int kLogoutToLoginDelayMaxSec = 1800;
 
 // This reads integer value from kUserType Local State preference and
 // interprets it as UserType. It is used in initial users load.
-UserType GetStoredUserType(const base::DictionaryValue* prefs_user_types,
+UserType GetStoredUserType(const base::Value* prefs_user_types,
                            const AccountId& account_id) {
   const base::Value* stored_user_type = prefs_user_types->FindKey(
       account_id.HasAccountIdKey() ? account_id.GetAccountIdKey()
@@ -84,6 +85,30 @@ UserType GetStoredUserType(const base::DictionaryValue* prefs_user_types,
     return USER_TYPE_REGULAR;
   }
   return static_cast<UserType>(int_user_type);
+}
+
+std::string UserTypeToString(UserType user_type) {
+  switch (user_type) {
+    case USER_TYPE_REGULAR:
+      return "regular";
+    case USER_TYPE_CHILD:
+      return "child";
+    case USER_TYPE_GUEST:
+      return "guest";
+    case USER_TYPE_PUBLIC_ACCOUNT:
+      return "managed-guest-session";
+    case USER_TYPE_KIOSK_APP:
+      return "chrome-app-kiosk";
+    case USER_TYPE_ARC_KIOSK_APP:
+      return "arc-kiosk";
+    case USER_TYPE_WEB_KIOSK_APP:
+      return "web-kiosk";
+    case USER_TYPE_ACTIVE_DIRECTORY:
+      return "active-directory";
+    case NUM_USER_TYPES:
+      NOTREACHED();
+      return "";
+  }
 }
 
 }  // namespace
@@ -235,6 +260,9 @@ void UserManagerBase::UserLoggedIn(const AccountId& account_id,
   UMA_HISTOGRAM_ENUMERATION(
       "UserManager.LoginUserType", active_user_->GetType(), NUM_USER_TYPES);
 
+  static crash_reporter::CrashKeyString<32> session_type("session-type");
+  session_type.Set(UserTypeToString(active_user_->GetType()));
+
   GetLocalState()->SetString(
       kLastLoggedInGaiaUser,
       active_user_->HasGaiaAccount() ? account_id.GetUserEmail() : "");
@@ -330,7 +358,10 @@ void UserManagerBase::RemoveNonOwnerUserInternal(const AccountId& account_id,
   NotifyUserToBeRemoved(account_id);
   AsyncRemoveCryptohome(account_id);
   RemoveUserFromList(account_id);
-  NotifyUserRemoved(account_id, reason);
+  // |account_id| cannot be used after the |RemoveUserFromList| call, use
+  // |account_id_copy| instead if needed.
+
+  NotifyUserRemoved(account_id_copy, reason);
 
   if (delegate)
     delegate->OnUserRemoved(account_id_copy);
@@ -406,9 +437,8 @@ void UserManagerBase::SaveUserOAuthStatus(
   {
     DictionaryPrefUpdate oauth_status_update(GetLocalState(),
                                              kUserOAuthTokenStatus);
-    oauth_status_update->SetKey(
-        account_id.GetUserEmail(),
-        base::Value(static_cast<int>(oauth_token_status)));
+    oauth_status_update->SetIntKey(account_id.GetUserEmail(),
+                                   static_cast<int>(oauth_token_status));
   }
   GetLocalState()->CommitPendingWrite();
 }
@@ -429,8 +459,8 @@ void UserManagerBase::SaveForceOnlineSignin(const AccountId& account_id,
   {
     DictionaryPrefUpdate force_online_update(GetLocalState(),
                                              kUserForceOnlineSignin);
-    force_online_update->SetKey(account_id.GetUserEmail(),
-                                base::Value(force_online_signin));
+    force_online_update->SetBoolKey(account_id.GetUserEmail(),
+                                    force_online_signin);
   }
   GetLocalState()->CommitPendingWrite();
 }
@@ -447,8 +477,8 @@ void UserManagerBase::SaveUserDisplayName(const AccountId& account_id,
     if (!IsUserNonCryptohomeDataEphemeral(account_id)) {
       DictionaryPrefUpdate display_name_update(GetLocalState(),
                                                kUserDisplayName);
-      display_name_update->SetKey(account_id.GetUserEmail(),
-                                  base::Value(display_name));
+      display_name_update->SetStringKey(account_id.GetUserEmail(),
+                                        display_name);
     }
   }
 }
@@ -477,8 +507,13 @@ void UserManagerBase::SaveUserDisplayEmail(const AccountId& account_id,
     return;
 
   DictionaryPrefUpdate display_email_update(GetLocalState(), kUserDisplayEmail);
-  display_email_update->SetKey(account_id.GetUserEmail(),
-                               base::Value(display_email));
+  display_email_update->SetStringKey(account_id.GetUserEmail(), display_email);
+}
+
+UserType UserManagerBase::GetUserType(const AccountId& account_id) {
+  const base::Value* prefs_user_types =
+      GetLocalState()->GetDictionary(kUserType);
+  return GetStoredUserType(prefs_user_types, account_id);
 }
 
 void UserManagerBase::SaveUserType(const User* user) {
@@ -491,8 +526,8 @@ void UserManagerBase::SaveUserType(const User* user) {
     return;
 
   DictionaryPrefUpdate user_type_update(GetLocalState(), kUserType);
-  user_type_update->SetKey(user->GetAccountId().GetAccountIdKey(),
-                           base::Value(static_cast<int>(user->GetType())));
+  user_type_update->SetIntKey(user->GetAccountId().GetAccountIdKey(),
+                              static_cast<int>(user->GetType()));
   GetLocalState()->CommitPendingWrite();
 }
 
@@ -508,23 +543,22 @@ void UserManagerBase::UpdateUserAccountData(
     user->set_given_name(given_name);
     if (!IsUserNonCryptohomeDataEphemeral(account_id)) {
       DictionaryPrefUpdate given_name_update(GetLocalState(), kUserGivenName);
-      given_name_update->SetKey(account_id.GetUserEmail(),
-                                base::Value(given_name));
+      given_name_update->SetStringKey(account_id.GetUserEmail(), given_name);
     }
   }
 
   UpdateUserAccountLocale(account_id, account_data.locale());
 }
 
-void UserManagerBase::ParseUserList(const base::ListValue& users_list,
-                                    const std::set<AccountId>& existing_users,
-                                    std::vector<AccountId>* users_vector,
-                                    std::set<AccountId>* users_set) {
+void UserManagerBase::ParseUserList(
+    const base::Value::ConstListView& users_list,
+    const std::set<AccountId>& existing_users,
+    std::vector<AccountId>* users_vector,
+    std::set<AccountId>* users_set) {
   users_vector->clear();
   users_set->clear();
-  base::Value::ConstListView users_list_view = users_list.GetList();
-  for (size_t i = 0; i < users_list_view.size(); ++i) {
-    const std::string* email = users_list_view[i].GetIfString();
+  for (size_t i = 0; i < users_list.size(); ++i) {
+    const std::string* email = users_list[i].GetIfString();
     if (!email || email->empty()) {
       LOG(ERROR) << "Corrupt entry in user list at index " << i << ".";
       continue;
@@ -712,6 +746,15 @@ void UserManagerBase::NotifyUserImageChanged(const User& user) {
     observer.OnUserImageChanged(user);
 }
 
+void UserManagerBase::NotifyUserImageIsEnterpriseManagedChanged(
+    const User& user,
+    bool is_enterprise_managed) {
+  DCHECK(!task_runner_ || task_runner_->RunsTasksInCurrentSequence());
+  for (auto& observer : observer_list_) {
+    observer.OnUserImageIsEnterpriseManagedChanged(user, is_enterprise_managed);
+  }
+}
+
 void UserManagerBase::NotifyUserProfileImageUpdateFailed(const User& user) {
   DCHECK(!task_runner_ || task_runner_->RunsTasksInCurrentSequence());
   for (auto& observer : observer_list_)
@@ -805,17 +848,16 @@ void UserManagerBase::EnsureUsersLoaded() {
   user_loading_stage_ = STAGE_LOADING;
 
   PrefService* local_state = GetLocalState();
-  const base::ListValue* prefs_regular_users =
+  const base::Value* prefs_regular_users =
       local_state->GetList(kRegularUsersPref);
 
-  const base::DictionaryValue* prefs_display_names =
+  const base::Value* prefs_display_names =
       local_state->GetDictionary(kUserDisplayName);
-  const base::DictionaryValue* prefs_given_names =
+  const base::Value* prefs_given_names =
       local_state->GetDictionary(kUserGivenName);
-  const base::DictionaryValue* prefs_display_emails =
+  const base::Value* prefs_display_emails =
       local_state->GetDictionary(kUserDisplayEmail);
-  const base::DictionaryValue* prefs_user_types =
-      local_state->GetDictionary(kUserType);
+  const base::Value* prefs_user_types = local_state->GetDictionary(kUserType);
 
   // Load public sessions first.
   std::set<AccountId> device_local_accounts_set;
@@ -824,8 +866,8 @@ void UserManagerBase::EnsureUsersLoaded() {
   // Load regular users and supervised users.
   std::vector<AccountId> regular_users;
   std::set<AccountId> regular_users_set;
-  ParseUserList(*prefs_regular_users, device_local_accounts_set, &regular_users,
-                &regular_users_set);
+  ParseUserList(prefs_regular_users->GetListDeprecated(),
+                device_local_accounts_set, &regular_users, &regular_users_set);
   for (std::vector<AccountId>::const_iterator it = regular_users.begin();
        it != regular_users.end(); ++it) {
     if (IsDeprecatedSupervisedAccountId(*it)) {
@@ -840,7 +882,8 @@ void UserManagerBase::EnsureUsersLoaded() {
         User::CreateRegularUser(*it, GetStoredUserType(prefs_user_types, *it));
     user->set_oauth_token_status(LoadUserOAuthStatus(*it));
     user->set_force_online_signin(LoadForceOnlineSignin(*it));
-    user->set_using_saml(known_user::IsUsingSAML(*it));
+    KnownUser known_user(GetLocalState());
+    user->set_using_saml(known_user.IsUsingSAML(*it));
     users_.push_back(user);
   }
 
@@ -884,9 +927,8 @@ const User* UserManagerBase::FindUserInList(const AccountId& account_id) const {
 }
 
 bool UserManagerBase::UserExistsInList(const AccountId& account_id) const {
-  const base::ListValue* user_list =
-      GetLocalState()->GetList(kRegularUsersPref);
-  for (const base::Value& i : user_list->GetList()) {
+  const base::Value* user_list = GetLocalState()->GetList(kRegularUsersPref);
+  for (const base::Value& i : user_list->GetListDeprecated()) {
     const std::string* email = i.GetIfString();
     if (email && (account_id.GetUserEmail() == *email))
       return true;
@@ -911,7 +953,7 @@ void UserManagerBase::GuestUserLoggedIn() {
 void UserManagerBase::AddUserRecord(User* user) {
   // Add the user to the front of the user list.
   ListPrefUpdate prefs_users_update(GetLocalState(), kRegularUsersPref);
-  prefs_users_update->Insert(prefs_users_update->GetList().begin(),
+  prefs_users_update->Insert(prefs_users_update->GetListDeprecated().begin(),
                              base::Value(user->GetAccountId().GetUserEmail()));
   users_.insert(users_.begin(), user);
 }
@@ -921,9 +963,14 @@ void UserManagerBase::RegularUserLoggedIn(const AccountId& account_id,
   // Remove the user from the user list.
   active_user_ =
       RemoveRegularOrSupervisedUserFromList(account_id, false /* notify */);
+  KnownUser known_user(GetLocalState());
 
-  if (active_user_ && active_user_->GetType() != user_type)
+  if (active_user_ && active_user_->GetType() != user_type) {
     active_user_->UpdateType(user_type);
+    // Clear information about profile policy requirements to enforce setting it
+    // again for the new account type.
+    known_user.ClearProfileRequiresPolicy(account_id);
+  }
 
   // If the user was not found on the user list, create a new user.
   SetIsCurrentUserNew(!active_user_);
@@ -939,8 +986,7 @@ void UserManagerBase::RegularUserLoggedIn(const AccountId& account_id,
   }
 
   AddUserRecord(active_user_);
-  KnownUser(GetLocalState())
-      .SetIsEphemeralUser(active_user_->GetAccountId(), false);
+  known_user.SetIsEphemeralUser(active_user_->GetAccountId(), false);
 
   // Make sure that new data is persisted to Local State.
   GetLocalState()->CommitPendingWrite();
@@ -975,7 +1021,7 @@ User::OAuthTokenStatus UserManagerBase::LoadUserOAuthStatus(
     const AccountId& account_id) const {
   DCHECK(!task_runner_ || task_runner_->RunsTasksInCurrentSequence());
 
-  const base::DictionaryValue* prefs_oauth_status =
+  const base::Value* prefs_oauth_status =
       GetLocalState()->GetDictionary(kUserOAuthTokenStatus);
   if (!prefs_oauth_status)
     return User::OAUTH_TOKEN_STATUS_UNKNOWN;
@@ -991,7 +1037,7 @@ User::OAuthTokenStatus UserManagerBase::LoadUserOAuthStatus(
 bool UserManagerBase::LoadForceOnlineSignin(const AccountId& account_id) const {
   DCHECK(!task_runner_ || task_runner_->RunsTasksInCurrentSequence());
 
-  const base::DictionaryValue* prefs_force_online =
+  const base::Value* prefs_force_online =
       GetLocalState()->GetDictionary(kUserForceOnlineSignin);
   if (prefs_force_online) {
     return prefs_force_online->FindBoolKey(account_id.GetUserEmail())

@@ -210,8 +210,8 @@ NGLayoutCacheStatus CalculateSizeBasedLayoutCacheStatusWithGeometry(
   if (is_initial_block_size_indefinite) {
     LayoutUnit intrinsic_block_size = layout_result.IntrinsicBlockSize();
 
-    // Grid/flex can have their children calculate their size based on their
-    // parent's final block-size. E.g.
+    // Grid/flex/fieldset can have their children calculate their size based on
+    // their parent's final block-size. E.g.
     // <div style="display: flex;">
     //   <div style="display: flex;"> <!-- or "display: grid;" -->
     //     <!-- Child will stretch to the parent's block-size -->
@@ -239,7 +239,7 @@ NGLayoutCacheStatus CalculateSizeBasedLayoutCacheStatusWithGeometry(
     if (old_space.IsFixedBlockSize() ||
         (old_space.IsBlockAutoBehaviorStretch() &&
          style.LogicalHeight().IsAuto())) {
-      if (node.IsFlexibleBox() || node.IsGrid())
+      if (node.IsFlexibleBox() || node.IsGrid() || node.IsFieldsetContainer())
         intrinsic_block_size = kIndefiniteSize;
     }
 
@@ -282,11 +282,7 @@ NGLayoutCacheStatus CalculateSizeBasedLayoutCacheStatusWithGeometry(
     if (node.IsFieldsetContainer())
       return NGLayoutCacheStatus::kNeedsLayout;
 
-    // Textfields are block-flow, but we can't apply simplified layout due to
-    // -internal-align-self-block.
-    // TODO(tkent): We could store a bit on the |NGLayoutResult| which
-    // indicates if we have a child with "-internal-align-self-block:center".
-    if (node.IsTextField())
+    if (layout_result.DisableSimplifiedLayout())
       return NGLayoutCacheStatus::kNeedsLayout;
 
     // If we are the document or body element in quirks mode, changing our size
@@ -415,6 +411,7 @@ NGLayoutCacheStatus CalculateSizeBasedLayoutCacheStatusWithGeometry(
 
 bool IntrinsicSizeWillChange(
     const NGBlockNode& node,
+    const NGBlockBreakToken* break_token,
     const NGLayoutResult& cached_layout_result,
     const NGConstraintSpace& new_space,
     absl::optional<NGFragmentGeometry>* fragment_geometry) {
@@ -422,8 +419,10 @@ bool IntrinsicSizeWillChange(
   if (new_space.IsInlineAutoBehaviorStretch() && !NeedMinMaxSize(style))
     return false;
 
-  if (!*fragment_geometry)
-    *fragment_geometry = CalculateInitialFragmentGeometry(new_space, node);
+  if (!*fragment_geometry) {
+    *fragment_geometry =
+        CalculateInitialFragmentGeometry(new_space, node, break_token);
+  }
 
   LayoutUnit inline_size = NGFragment(style.GetWritingDirection(),
                                       cached_layout_result.PhysicalFragment())
@@ -439,6 +438,7 @@ bool IntrinsicSizeWillChange(
 
 NGLayoutCacheStatus CalculateSizeBasedLayoutCacheStatus(
     const NGBlockNode& node,
+    const NGBlockBreakToken* break_token,
     const NGLayoutResult& cached_layout_result,
     const NGConstraintSpace& new_space,
     absl::optional<NGFragmentGeometry>* fragment_geometry) {
@@ -455,8 +455,8 @@ NGLayoutCacheStatus CalculateSizeBasedLayoutCacheStatus(
     // It is possible that our intrinsic size has changed, check for that here.
     // TODO(cbiesinger): Investigate why this check doesn't apply to
     // |MaySkipLegacyLayout|.
-    if (IntrinsicSizeWillChange(node, cached_layout_result, new_space,
-                                fragment_geometry))
+    if (IntrinsicSizeWillChange(node, break_token, cached_layout_result,
+                                new_space, fragment_geometry))
       return NGLayoutCacheStatus::kNeedsLayout;
 
     // We don't have to check our style if we know the constraint space sizes
@@ -470,8 +470,10 @@ NGLayoutCacheStatus CalculateSizeBasedLayoutCacheStatus(
       return NGLayoutCacheStatus::kHit;
   }
 
-  if (!*fragment_geometry)
-    *fragment_geometry = CalculateInitialFragmentGeometry(new_space, node);
+  if (!*fragment_geometry) {
+    *fragment_geometry =
+        CalculateInitialFragmentGeometry(new_space, node, break_token);
+  }
 
   return CalculateSizeBasedLayoutCacheStatusWithGeometry(
       node, **fragment_geometry, cached_layout_result, new_space, old_space);

@@ -19,6 +19,8 @@
 #include "src/heap/cppgc/platform.h"
 #include "src/heap/cppgc/prefinalizer-handler.h"
 #include "src/heap/cppgc/stats-collector.h"
+#include "src/heap/cppgc/unmarker.h"
+#include "src/heap/cppgc/write-barrier.h"
 
 namespace cppgc {
 namespace internal {
@@ -64,11 +66,12 @@ HeapBase::HeapBase(
 #endif  // LEAK_SANITIZER
 #if defined(CPPGC_CAGED_HEAP)
       caged_heap_(*this, *page_allocator()),
-      page_backend_(std::make_unique<PageBackend>(caged_heap_.allocator(),
-                                                  *oom_handler_.get())),
+      page_backend_(std::make_unique<PageBackend>(
+          caged_heap_.normal_page_allocator(),
+          caged_heap_.large_page_allocator(), *oom_handler_.get())),
 #else   // !CPPGC_CAGED_HEAP
-      page_backend_(std::make_unique<PageBackend>(*page_allocator(),
-                                                  *oom_handler_.get())),
+      page_backend_(std::make_unique<PageBackend>(
+          *page_allocator(), *page_allocator(), *oom_handler_.get())),
 #endif  // !CPPGC_CAGED_HEAP
       stats_collector_(std::make_unique<StatsCollector>(platform_.get())),
       stack_(std::make_unique<heap::base::Stack>(
@@ -82,9 +85,13 @@ HeapBase::HeapBase(
       weak_persistent_region_(*oom_handler_.get()),
       strong_cross_thread_persistent_region_(*oom_handler_.get()),
       weak_cross_thread_persistent_region_(*oom_handler_.get()),
+#if defined(CPPGC_YOUNG_GENERATION)
+      remembered_set_(*this),
+#endif  // defined(CPPGC_YOUNG_GENERATION)
       stack_support_(stack_support),
       marking_support_(marking_support),
-      sweeping_support_(sweeping_support) {
+      sweeping_support_(sweeping_support),
+      generation_support_(GenerationSupport::kSingleGeneration) {
   stats_collector_->RegisterObserver(
       &allocation_observer_for_PROCESS_HEAP_STATISTICS_);
 }
@@ -116,7 +123,17 @@ size_t HeapBase::ExecutePreFinalizers() {
 }
 
 #if defined(CPPGC_YOUNG_GENERATION)
+void HeapBase::EnableGenerationalGC() {
+  DCHECK(in_atomic_pause());
+  // Notify the global flag that the write barrier must always be enabled.
+  YoungGenerationEnabler::Enable();
+  // Enable young generation for the current heap.
+  caged_heap().EnableGenerationalGC();
+  generation_support_ = GenerationSupport::kYoungAndOldGenerations;
+}
+
 void HeapBase::ResetRememberedSet() {
+  DCHECK(in_atomic_pause());
   class AllLABsAreEmpty final : protected HeapVisitor<AllLABsAreEmpty> {
     friend class HeapVisitor<AllLABsAreEmpty>;
 
@@ -127,7 +144,8 @@ void HeapBase::ResetRememberedSet() {
 
    protected:
     bool VisitNormalPageSpace(NormalPageSpace& space) {
-      some_lab_is_set_ |= space.linear_allocation_buffer().size();
+      some_lab_is_set_ |=
+          static_cast<bool>(space.linear_allocation_buffer().size());
       return true;
     }
 
@@ -135,9 +153,17 @@ void HeapBase::ResetRememberedSet() {
     bool some_lab_is_set_ = false;
   };
   DCHECK(AllLABsAreEmpty(raw_heap()).value());
-  caged_heap().local_data().age_table.Reset(&caged_heap().allocator());
-  remembered_slots().clear();
+
+  if (!generational_gc_supported()) {
+    DCHECK(remembered_set_.IsEmpty());
+    return;
+  }
+
+  caged_heap().local_data().age_table.Reset(page_allocator());
+  remembered_set_.Reset();
+  return;
 }
+
 #endif  // defined(CPPGC_YOUNG_GENERATION)
 
 void HeapBase::Terminate() {
@@ -146,9 +172,21 @@ void HeapBase::Terminate() {
 
   sweeper().FinishIfRunning();
 
+#if defined(CPPGC_YOUNG_GENERATION)
+  if (generational_gc_supported()) {
+    DCHECK(caged_heap().local_data().is_young_generation_enabled);
+    DCHECK_EQ(GenerationSupport::kYoungAndOldGenerations, generation_support_);
+
+    caged_heap().local_data().is_young_generation_enabled = false;
+    generation_support_ = GenerationSupport::kSingleGeneration;
+    YoungGenerationEnabler::Disable();
+  }
+#endif  // defined(CPPGC_YOUNG_GENERATION)
+
   constexpr size_t kMaxTerminationGCs = 20;
   size_t gc_count = 0;
   bool more_termination_gcs_needed = false;
+
   do {
     CHECK_LT(gc_count++, kMaxTerminationGCs);
 
@@ -161,15 +199,29 @@ void HeapBase::Terminate() {
       weak_cross_thread_persistent_region_.ClearAllUsedNodes();
     }
 
+#if defined(CPPGC_YOUNG_GENERATION)
+    if (generational_gc_supported()) {
+      // Unmark the heap so that the sweeper destructs all objects.
+      // TODO(chromium:1029379): Merge two heap iterations (unmarking +
+      // sweeping) into forced finalization.
+      SequentialUnmarker unmarker(raw_heap());
+    }
+#endif  // defined(CPPGC_YOUNG_GENERATION)
+
+    in_atomic_pause_ = true;
     stats_collector()->NotifyMarkingStarted(
         GarbageCollector::Config::CollectionType::kMajor,
         GarbageCollector::Config::IsForcedGC::kForced);
     object_allocator().ResetLinearAllocationBuffers();
     stats_collector()->NotifyMarkingCompleted(0);
     ExecutePreFinalizers();
+    // TODO(chromium:1029379): Prefinalizers may black-allocate objects (under a
+    // compile-time option). Run sweeping with forced finalization here.
     sweeper().Start(
         {Sweeper::SweepingConfig::SweepingType::kAtomic,
          Sweeper::SweepingConfig::CompactableSpaceHandling::kSweep});
+    in_atomic_pause_ = false;
+
     sweeper().NotifyDoneIfNeeded();
     more_termination_gcs_needed =
         strong_persistent_region_.NodesInUse() ||

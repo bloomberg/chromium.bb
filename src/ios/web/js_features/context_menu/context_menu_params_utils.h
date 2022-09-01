@@ -13,9 +13,8 @@ class Value;
 
 namespace web {
 
-// Returns true if the |params| contain enough information to present a context
-// menu. (A valid url for either link_url or src_url must exist in the params.)
-bool CanShowContextMenuForParams(const ContextMenuParams& params);
+// Maximum allowed size for a screenshot. (CGSize.width * CGSize.height)
+inline constexpr double kContextMenuMaxScreenshotSize = 1e7;
 
 // Creates a ContextMenuParams from a base::Value dictionary representing an
 // HTML element. The fields "href", "src", "title", "referrerPolicy" and

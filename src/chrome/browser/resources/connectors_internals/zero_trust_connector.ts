@@ -5,6 +5,7 @@
 import {CustomElement} from 'chrome://resources/js/custom_element.js';
 
 import {KeyInfo, KeyManagerInitializedValue, KeyTrustLevel, KeyType, PageHandler, PageHandlerInterface, ZeroTrustState} from './connectors_internals.mojom-webui.js';
+import {getTemplate} from './zero_trust_connector.html.js';
 
 const TrustLevelStringMap = {
   [KeyTrustLevel.UNSPECIFIED]: 'Unspecified',
@@ -23,8 +24,8 @@ export class ZeroTrustConnectorElement extends CustomElement {
     return 'zero-trust-connector';
   }
 
-  static get template() {
-    return `{__html_template__}`;
+  static override get template() {
+    return getTemplate();
   }
 
   public set enabledString(str: string) {
@@ -66,12 +67,12 @@ export class ZeroTrustConnectorElement extends CustomElement {
     }
   }
 
-  private _signalsString: string = '';
+  private signalsString_: string = '';
   public set signalsString(str: string) {
     const signalsEl = (this.$('#signals') as HTMLElement);
     if (signalsEl) {
       signalsEl.innerText = str;
-      this._signalsString = str;
+      this.signalsString_ = str;
     } else {
       console.error('Could not find #signals element.');
     }
@@ -82,7 +83,7 @@ export class ZeroTrustConnectorElement extends CustomElement {
   }
 
   public get signalsString(): string {
-    return this._signalsString;
+    return this.signalsString_;
   }
 
   private readonly pageHandler: PageHandlerInterface;
@@ -112,15 +113,14 @@ export class ZeroTrustConnectorElement extends CustomElement {
 
     this.keyInfo = state.keyInfo;
 
-    // Pretty print the dictionary as a JSON string.
-    this.signalsString = JSON.stringify(state.signalsDictionary, null, 2);
+    this.signalsString = state.signalsJson;
   }
 
   private async fetchZeroTrustValues(): Promise<ZeroTrustState|undefined> {
     return this.pageHandler.getZeroTrustState().then(
         (response: {state: ZeroTrustState}) => response && response.state,
         (e: object) => {
-          console.log(`fetchZeroTrustValues failed: ${JSON.stringify(e)}`);
+          console.warn(`fetchZeroTrustValues failed: ${JSON.stringify(e)}`);
           return undefined;
         });
   }

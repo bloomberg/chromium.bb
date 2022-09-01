@@ -7,12 +7,12 @@
 #include "core/fpdfapi/font/cpdf_font.h"
 
 #include <algorithm>
-#include <limits>
 #include <memory>
 #include <utility>
 #include <vector>
 
 #include "build/build_config.h"
+#include "constants/font_encodings.h"
 #include "core/fpdfapi/font/cpdf_cidfont.h"
 #include "core/fpdfapi/font/cpdf_fontencoding.h"
 #include "core/fpdfapi/font/cpdf_fontglobals.h"
@@ -30,10 +30,10 @@
 #include "core/fxcrt/fx_safe_types.h"
 #include "core/fxcrt/stl_util.h"
 #include "core/fxge/cfx_fontmapper.h"
+#include "core/fxge/freetype/fx_freetype.h"
 #include "core/fxge/fx_font.h"
-#include "core/fxge/fx_freetype.h"
 #include "third_party/base/check.h"
-#include "third_party/base/cxx17_backports.h"
+#include "third_party/base/numerics/safe_conversions.h"
 
 namespace {
 
@@ -114,7 +114,7 @@ size_t CPDF_Font::CountChar(ByteStringView pString) const {
   return pString.GetLength();
 }
 
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
 int CPDF_Font::GlyphFromCharCodeExt(uint32_t charcode) {
   return GlyphFromCharCode(charcode, nullptr);
 }
@@ -293,7 +293,8 @@ RetainPtr<CPDF_Font> CPDF_Font::GetStockFont(CPDF_Document* pDoc,
   pDict->SetNewFor<CPDF_Name>("Type", "Font");
   pDict->SetNewFor<CPDF_Name>("Subtype", "Type1");
   pDict->SetNewFor<CPDF_Name>("BaseFont", fontname);
-  pDict->SetNewFor<CPDF_Name>("Encoding", "WinAnsiEncoding");
+  pDict->SetNewFor<CPDF_Name>("Encoding",
+                              pdfium::font_encodings::kWinAnsiEncoding);
   pFont = CPDF_Font::Create(nullptr, pDict.Get(), nullptr);
   pFontGlobals->Set(pDoc, font_id.value(), pFont);
   return pFont;
@@ -307,7 +308,7 @@ RetainPtr<CPDF_Font> CPDF_Font::Create(CPDF_Document* pDoc,
   RetainPtr<CPDF_Font> pFont;
   if (type == "TrueType") {
     ByteString tag = pFontDict->GetStringFor("BaseFont").First(4);
-    for (size_t i = 0; i < pdfium::size(kChineseFontNames); ++i) {
+    for (size_t i = 0; i < std::size(kChineseFontNames); ++i) {
       if (tag == ByteString(kChineseFontNames[i], kChineseFontNameSize)) {
         const CPDF_Dictionary* pFontDesc =
             pFontDict->GetDictFor("FontDescriptor");
@@ -349,7 +350,7 @@ bool CPDF_Font::IsStandardFont() const {
 
 // static
 const char* CPDF_Font::GetAdobeCharName(
-    int iBaseEncoding,
+    FontEncoding base_encoding,
     const std::vector<ByteString>& charnames,
     uint32_t charcode) {
   if (charcode >= 256)
@@ -359,8 +360,8 @@ const char* CPDF_Font::GetAdobeCharName(
     return charnames[charcode].c_str();
 
   const char* name = nullptr;
-  if (iBaseEncoding)
-    name = PDF_CharNameFromPredefinedCharSet(iBaseEncoding, charcode);
+  if (base_encoding != FontEncoding::kBuiltin)
+    name = CharNameFromPredefinedCharSet(base_encoding, charcode);
   if (!name)
     return nullptr;
 
@@ -402,26 +403,23 @@ CFX_Font* CPDF_Font::GetFontFallback(int position) {
 }
 
 // static
-int CPDF_Font::TT2PDF(int m, FXFT_FaceRec* face) {
+int CPDF_Font::TT2PDF(FT_Pos m, FXFT_FaceRec* face) {
   int upm = FXFT_Get_Face_UnitsPerEM(face);
   if (upm == 0)
-    return m;
+    return pdfium::base::saturated_cast<int>(m);
 
-  return static_cast<int>(
-      pdfium::clamp((m * 1000.0 + upm / 2) / upm,
-                    static_cast<double>(std::numeric_limits<int>::min()),
-                    static_cast<double>(std::numeric_limits<int>::max())));
+  const double dm = (m * 1000.0 + upm / 2) / upm;
+  return pdfium::base::saturated_cast<int>(dm);
 }
 
 // static
-bool CPDF_Font::FT_UseTTCharmap(FXFT_FaceRec* face,
-                                int platform_id,
-                                int encoding_id) {
-  auto** pCharMap = FXFT_Get_Face_Charmaps(face);
-  for (int i = 0; i < FXFT_Get_Face_CharmapCount(face); i++) {
-    if (FXFT_Get_Charmap_PlatformID(pCharMap[i]) == platform_id &&
-        FXFT_Get_Charmap_EncodingID(pCharMap[i]) == encoding_id) {
-      FT_Set_Charmap(face, pCharMap[i]);
+bool CPDF_Font::UseTTCharmap(FXFT_FaceRec* face,
+                             int platform_id,
+                             int encoding_id) {
+  for (int i = 0; i < face->num_charmaps; i++) {
+    if (FXFT_Get_Charmap_PlatformID(face->charmaps[i]) == platform_id &&
+        FXFT_Get_Charmap_EncodingID(face->charmaps[i]) == encoding_id) {
+      FT_Set_Charmap(face, face->charmaps[i]);
       return true;
     }
   }

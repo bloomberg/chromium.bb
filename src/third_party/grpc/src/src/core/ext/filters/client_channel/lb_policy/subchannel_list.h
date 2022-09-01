@@ -21,25 +21,27 @@
 
 #include <grpc/support/port_platform.h>
 
+#include <inttypes.h>
 #include <string.h>
+
+#include <memory>
+#include <string>
+#include <utility>
 
 #include "absl/container/inlined_vector.h"
 
-#include <grpc/support/alloc.h>
+#include <grpc/impl/codegen/connectivity_state.h>
+#include <grpc/impl/codegen/grpc_types.h>
+#include <grpc/support/log.h>
 
-#include "src/core/ext/filters/client_channel/lb_policy_registry.h"
-#include "src/core/ext/filters/client_channel/server_address.h"
-// TODO(roth): Should not need the include of subchannel.h here, since
-// that implementation should be hidden from the LB policy API.
-#include "src/core/ext/filters/client_channel/subchannel.h"
+#include "src/core/ext/filters/client_channel/lb_policy.h"
 #include "src/core/ext/filters/client_channel/subchannel_interface.h"
-#include "src/core/lib/address_utils/sockaddr_utils.h"
-#include "src/core/lib/channel/channel_args.h"
-#include "src/core/lib/debug/trace.h"
+#include "src/core/lib/gprpp/debug_location.h"
+#include "src/core/lib/gprpp/manual_constructor.h"
 #include "src/core/lib/gprpp/orphanable.h"
-#include "src/core/lib/gprpp/ref_counted.h"
 #include "src/core/lib/gprpp/ref_counted_ptr.h"
-#include "src/core/lib/iomgr/closure.h"
+#include "src/core/lib/iomgr/iomgr_fwd.h"
+#include "src/core/lib/resolver/server_address.h"
 #include "src/core/lib/transport/connectivity_state.h"
 
 // Code for maintaining a list of subchannels within an LB policy.
@@ -175,20 +177,25 @@ class SubchannelData {
 template <typename SubchannelListType, typename SubchannelDataType>
 class SubchannelList : public InternallyRefCounted<SubchannelListType> {
  public:
-  typedef absl::InlinedVector<SubchannelDataType, 10> SubchannelVector;
+  // We use ManualConstructor here to support SubchannelDataType classes
+  // that are not copyable.
+  typedef absl::InlinedVector<ManualConstructor<SubchannelDataType>, 10>
+      SubchannelVector;
 
   // The number of subchannels in the list.
   size_t num_subchannels() const { return subchannels_.size(); }
 
   // The data for the subchannel at a particular index.
-  SubchannelDataType* subchannel(size_t index) { return &subchannels_[index]; }
+  SubchannelDataType* subchannel(size_t index) {
+    return subchannels_[index].get();
+  }
 
   // Returns true if the subchannel list is shutting down.
   bool shutting_down() const { return shutting_down_; }
 
   // Accessors.
   LoadBalancingPolicy* policy() const { return policy_; }
-  TraceFlag* tracer() const { return tracer_; }
+  const char* tracer() const { return tracer_; }
 
   // Resets connection backoff of all subchannels.
   // TODO(roth): We will probably need to rethink this as part of moving
@@ -201,7 +208,7 @@ class SubchannelList : public InternallyRefCounted<SubchannelListType> {
   }
 
  protected:
-  SubchannelList(LoadBalancingPolicy* policy, TraceFlag* tracer,
+  SubchannelList(LoadBalancingPolicy* policy, const char* tracer,
                  ServerAddressList addresses,
                  LoadBalancingPolicy::ChannelControlHelper* helper,
                  const grpc_channel_args& args);
@@ -217,7 +224,7 @@ class SubchannelList : public InternallyRefCounted<SubchannelListType> {
   // Backpointer to owning policy.
   LoadBalancingPolicy* policy_;
 
-  TraceFlag* tracer_;
+  const char* tracer_;
 
   // The list of subchannels.
   SubchannelVector subchannels_;
@@ -239,12 +246,12 @@ class SubchannelList : public InternallyRefCounted<SubchannelListType> {
 template <typename SubchannelListType, typename SubchannelDataType>
 void SubchannelData<SubchannelListType, SubchannelDataType>::Watcher::
     OnConnectivityStateChange(grpc_connectivity_state new_state) {
-  if (GRPC_TRACE_FLAG_ENABLED(*subchannel_list_->tracer())) {
+  if (GPR_UNLIKELY(subchannel_list_->tracer() != nullptr)) {
     gpr_log(GPR_INFO,
             "[%s %p] subchannel list %p index %" PRIuPTR " of %" PRIuPTR
             " (subchannel %p): connectivity changed: state=%s, "
             "shutting_down=%d, pending_watcher=%p",
-            subchannel_list_->tracer()->name(), subchannel_list_->policy(),
+            subchannel_list_->tracer(), subchannel_list_->policy(),
             subchannel_list_.get(), subchannel_data_->Index(),
             subchannel_list_->num_subchannels(),
             subchannel_data_->subchannel_.get(),
@@ -283,11 +290,11 @@ template <typename SubchannelListType, typename SubchannelDataType>
 void SubchannelData<SubchannelListType, SubchannelDataType>::
     UnrefSubchannelLocked(const char* reason) {
   if (subchannel_ != nullptr) {
-    if (GRPC_TRACE_FLAG_ENABLED(*subchannel_list_->tracer())) {
+    if (GPR_UNLIKELY(subchannel_list_->tracer() != nullptr)) {
       gpr_log(GPR_INFO,
               "[%s %p] subchannel list %p index %" PRIuPTR " of %" PRIuPTR
               " (subchannel %p): unreffing subchannel (%s)",
-              subchannel_list_->tracer()->name(), subchannel_list_->policy(),
+              subchannel_list_->tracer(), subchannel_list_->policy(),
               subchannel_list_, Index(), subchannel_list_->num_subchannels(),
               subchannel_.get(), reason);
     }
@@ -306,11 +313,11 @@ void SubchannelData<SubchannelListType,
 template <typename SubchannelListType, typename SubchannelDataType>
 void SubchannelData<SubchannelListType,
                     SubchannelDataType>::StartConnectivityWatchLocked() {
-  if (GRPC_TRACE_FLAG_ENABLED(*subchannel_list_->tracer())) {
+  if (GPR_UNLIKELY(subchannel_list_->tracer() != nullptr)) {
     gpr_log(GPR_INFO,
             "[%s %p] subchannel list %p index %" PRIuPTR " of %" PRIuPTR
             " (subchannel %p): starting watch (from %s)",
-            subchannel_list_->tracer()->name(), subchannel_list_->policy(),
+            subchannel_list_->tracer(), subchannel_list_->policy(),
             subchannel_list_, Index(), subchannel_list_->num_subchannels(),
             subchannel_.get(), ConnectivityStateName(connectivity_state_));
   }
@@ -326,11 +333,11 @@ void SubchannelData<SubchannelListType,
 template <typename SubchannelListType, typename SubchannelDataType>
 void SubchannelData<SubchannelListType, SubchannelDataType>::
     CancelConnectivityWatchLocked(const char* reason) {
-  if (GRPC_TRACE_FLAG_ENABLED(*subchannel_list_->tracer())) {
+  if (GPR_UNLIKELY(subchannel_list_->tracer() != nullptr)) {
     gpr_log(GPR_INFO,
             "[%s %p] subchannel list %p index %" PRIuPTR " of %" PRIuPTR
             " (subchannel %p): canceling connectivity watch (%s)",
-            subchannel_list_->tracer()->name(), subchannel_list_->policy(),
+            subchannel_list_->tracer(), subchannel_list_->policy(),
             subchannel_list_, Index(), subchannel_list_->num_subchannels(),
             subchannel_.get(), reason);
   }
@@ -352,17 +359,17 @@ void SubchannelData<SubchannelListType, SubchannelDataType>::ShutdownLocked() {
 
 template <typename SubchannelListType, typename SubchannelDataType>
 SubchannelList<SubchannelListType, SubchannelDataType>::SubchannelList(
-    LoadBalancingPolicy* policy, TraceFlag* tracer, ServerAddressList addresses,
+    LoadBalancingPolicy* policy, const char* tracer,
+    ServerAddressList addresses,
     LoadBalancingPolicy::ChannelControlHelper* helper,
     const grpc_channel_args& args)
-    : InternallyRefCounted<SubchannelListType>(
-          GRPC_TRACE_FLAG_ENABLED(*tracer) ? "SubchannelList" : nullptr),
+    : InternallyRefCounted<SubchannelListType>(tracer),
       policy_(policy),
       tracer_(tracer) {
-  if (GRPC_TRACE_FLAG_ENABLED(*tracer_)) {
+  if (GPR_UNLIKELY(tracer_ != nullptr)) {
     gpr_log(GPR_INFO,
             "[%s %p] Creating subchannel list %p for %" PRIuPTR " subchannels",
-            tracer_->name(), policy, this, addresses.size());
+            tracer_, policy, this, addresses.size());
   }
   subchannels_.reserve(addresses.size());
   // Create a subchannel for each address.
@@ -371,43 +378,45 @@ SubchannelList<SubchannelListType, SubchannelDataType>::SubchannelList(
         helper->CreateSubchannel(address, args);
     if (subchannel == nullptr) {
       // Subchannel could not be created.
-      if (GRPC_TRACE_FLAG_ENABLED(*tracer_)) {
+      if (GPR_UNLIKELY(tracer_ != nullptr)) {
         gpr_log(GPR_INFO,
-                "[%s %p] could not create subchannel for address %s, "
-                "ignoring",
-                tracer_->name(), policy_, address.ToString().c_str());
+                "[%s %p] could not create subchannel for address %s, ignoring",
+                tracer_, policy_, address.ToString().c_str());
       }
       continue;
     }
-    if (GRPC_TRACE_FLAG_ENABLED(*tracer_)) {
+    if (GPR_UNLIKELY(tracer_ != nullptr)) {
       gpr_log(GPR_INFO,
               "[%s %p] subchannel list %p index %" PRIuPTR
               ": Created subchannel %p for address %s",
-              tracer_->name(), policy_, this, subchannels_.size(),
-              subchannel.get(), address.ToString().c_str());
+              tracer_, policy_, this, subchannels_.size(), subchannel.get(),
+              address.ToString().c_str());
     }
-    subchannels_.emplace_back(this, std::move(address), std::move(subchannel));
+    subchannels_.emplace_back();
+    subchannels_.back().Init(this, std::move(address), std::move(subchannel));
   }
 }
 
 template <typename SubchannelListType, typename SubchannelDataType>
 SubchannelList<SubchannelListType, SubchannelDataType>::~SubchannelList() {
-  if (GRPC_TRACE_FLAG_ENABLED(*tracer_)) {
-    gpr_log(GPR_INFO, "[%s %p] Destroying subchannel_list %p", tracer_->name(),
-            policy_, this);
+  if (GPR_UNLIKELY(tracer_ != nullptr)) {
+    gpr_log(GPR_INFO, "[%s %p] Destroying subchannel_list %p", tracer_, policy_,
+            this);
+  }
+  for (auto& sd : subchannels_) {
+    sd.Destroy();
   }
 }
 
 template <typename SubchannelListType, typename SubchannelDataType>
 void SubchannelList<SubchannelListType, SubchannelDataType>::ShutdownLocked() {
-  if (GRPC_TRACE_FLAG_ENABLED(*tracer_)) {
-    gpr_log(GPR_INFO, "[%s %p] Shutting down subchannel_list %p",
-            tracer_->name(), policy_, this);
+  if (GPR_UNLIKELY(tracer_ != nullptr)) {
+    gpr_log(GPR_INFO, "[%s %p] Shutting down subchannel_list %p", tracer_,
+            policy_, this);
   }
   GPR_ASSERT(!shutting_down_);
   shutting_down_ = true;
-  for (size_t i = 0; i < subchannels_.size(); i++) {
-    SubchannelDataType* sd = &subchannels_[i];
+  for (auto& sd : subchannels_) {
     sd->ShutdownLocked();
   }
 }
@@ -415,8 +424,7 @@ void SubchannelList<SubchannelListType, SubchannelDataType>::ShutdownLocked() {
 template <typename SubchannelListType, typename SubchannelDataType>
 void SubchannelList<SubchannelListType,
                     SubchannelDataType>::ResetBackoffLocked() {
-  for (size_t i = 0; i < subchannels_.size(); i++) {
-    SubchannelDataType* sd = &subchannels_[i];
+  for (auto& sd : subchannels_) {
     sd->ResetBackoffLocked();
   }
 }

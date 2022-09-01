@@ -5,6 +5,7 @@
 from __future__ import print_function
 from __future__ import absolute_import
 import logging
+import posixpath
 import shutil
 import time
 import six.moves._thread  # pylint: disable=import-error
@@ -82,7 +83,9 @@ class LacrosBrowserBackend(chrome_browser_backend.ChromeBrowserBackend):
     return devtools_port, browser_target
 
   def _FindUIDevtoolsPort(self):
-    devtools_file_path = '/usr/local/lacros-chrome/user_data/UIDevToolsActivePort'
+    devtools_file_path = posixpath.join(
+        '/', 'usr', 'local', 'lacros-chrome', 'user_data',
+        'UIDevToolsActivePort')
     # GetFileContents may raise IOError or OSError, the caller will retry.
     lines = self._cri.GetFileContents(devtools_file_path).splitlines()
     if not lines:
@@ -106,8 +109,8 @@ class LacrosBrowserBackend(chrome_browser_backend.ChromeBrowserBackend):
         startup_args[i] = new_arg
 
   def _LaunchLacrosChromeHelper(self, startup_args):
-    self._cri.RunCmdOnDevice(['cp', '../usr/local/lacros-chrome/chrome',
-                              '../usr/local/lacros-chrome/lacros-chrome'])
+    self._cri.RunCmdOnDevice(['cp', '/usr/local/lacros-chrome/chrome',
+                              '/usr/local/lacros-chrome/lacros-chrome'])
 
     # Some args need escaping, etc.
     self._ReformatArg(startup_args, 'enable-features')
@@ -125,7 +128,7 @@ class LacrosBrowserBackend(chrome_browser_backend.ChromeBrowserBackend):
            'python',
            '/usr/local/bin/mojo_connection_lacros_launcher.py',
            '-s', '/tmp/lacros.sock',
-           './../usr/local/lacros-chrome/lacros-chrome',
+           '/usr/local/lacros-chrome/lacros-chrome',
            '--ozone-platform=wayland',
            '--user-data-dir=/usr/local/lacros-chrome/user_data',
            '--enable-gpu-rasterization',
@@ -195,6 +198,11 @@ class LacrosBrowserBackend(chrome_browser_backend.ChromeBrowserBackend):
   def SymbolizeMinidump(self, minidump_path):
     return self._cros_browser_backend.SymbolizeMinidump(minidump_path)
 
+  def _GetBrowserExecutablePath(self):
+    # pylint: disable=protected-access
+    return self._cros_browser_backend._GetBrowserExecutablePath()
+    # pylint: enable=protected-access
+
   def CollectDebugData(self, log_level):
     """Collects various information that may be useful for debugging.
 
@@ -219,11 +227,17 @@ class LacrosBrowserBackend(chrome_browser_backend.ChromeBrowserBackend):
   def supports_overview_mode(self): # pylint: disable=invalid-name
     return True
 
+  @property
+  def devtools_window_manager_backend(self):
+    # pylint: disable=protected-access
+    return self._cros_browser_backend._devtools_client.window_manager_backend
+    # pylint: enable=protected-access
+
   def EnterOverviewMode(self, timeout):
-    self._cros_browser_backend._devtools_client.window_manager_backend.EnterOverviewMode(timeout)
+    self.devtools_window_manager_backend.EnterOverviewMode(timeout)
 
   def ExitOverviewMode(self, timeout):
-    self._cros_browser_backend._devtools_client.window_manager_backend.ExitOverviewMode(timeout)
+    self.devtools_window_manager_backend.ExitOverviewMode(timeout)
 
   @property
   @decorators.Cache

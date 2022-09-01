@@ -160,10 +160,10 @@ class MockPeerConnectionTracker : public PeerConnectionTracker {
   // TODO(jiayl): add coverage for the following methods
   MOCK_METHOD2(TrackCreateOffer,
                void(RTCPeerConnectionHandler* pc_handler,
-                    const MediaConstraints& constraints));
+                    RTCOfferOptionsPlatform* options));
   MOCK_METHOD2(TrackCreateAnswer,
                void(RTCPeerConnectionHandler* pc_handler,
-                    const MediaConstraints& constraints));
+                    RTCAnswerOptionsPlatform* options));
   MOCK_METHOD4(TrackSetSessionDescription,
                void(RTCPeerConnectionHandler* pc_handler,
                     const String& sdp,
@@ -343,13 +343,10 @@ class RTCPeerConnectionHandlerTest : public SimTest {
         mock_client_.get(), mock_dependency_factory_.Get());
   }
 
-  // Creates a WebKit local MediaStream.
+  // Creates a local MediaStream.
   MediaStreamDescriptor* CreateLocalMediaStream(const String& stream_label) {
     String video_track_label("video-label");
     String audio_track_label("audio-label");
-    auto* audio_source = MakeGarbageCollected<MediaStreamSource>(
-        audio_track_label, MediaStreamSource::kTypeAudio,
-        String::FromUTF8("audio_track"), false /* remote */);
     auto processed_audio_source = std::make_unique<ProcessedLocalAudioSource>(
         *LocalFrameRoot().GetFrame(),
         MediaStreamDevice(blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE,
@@ -362,14 +359,24 @@ class RTCPeerConnectionHandlerTest : public SimTest {
         blink::scheduler::GetSingleThreadTaskRunnerForTesting());
     auto* processed_audio_source_ptr = processed_audio_source.get();
     processed_audio_source->SetAllowInvalidRenderFrameIdForTesting(true);
-    audio_source->SetPlatformSource(std::move(processed_audio_source));
+    auto* audio_source = MakeGarbageCollected<MediaStreamSource>(
+        audio_track_label, MediaStreamSource::kTypeAudio,
+        String::FromUTF8("audio_track"), false /* remote */,
+        std::move(processed_audio_source));
 
-    auto* video_source = MakeGarbageCollected<MediaStreamSource>(
-        video_track_label, MediaStreamSource::kTypeVideo,
-        String::FromUTF8("video_track"), false /* remote */);
     auto native_video_source = std::make_unique<MockMediaStreamVideoSource>();
     auto* native_video_source_ptr = native_video_source.get();
-    video_source->SetPlatformSource(std::move(native_video_source));
+
+    // Dropping the MediaStreamSource reference here is ok, as
+    // native_video_source will have a weak pointer to it as Owner(), which is
+    // picked up by the MediaStreamComponent created with CreateVideoTrack()
+    // below.
+    // TODO(https://crbug.com/1302689): Fix this crazy lifecycle jumping back
+    // and forth between GCed and non-GCed objects...
+    MakeGarbageCollected<MediaStreamSource>(
+        video_track_label, MediaStreamSource::kTypeVideo,
+        String::FromUTF8("video_track"), false /* remote */,
+        std::move(native_video_source));
 
     HeapVector<Member<MediaStreamComponent>> audio_components(
         static_cast<size_t>(1));
@@ -416,7 +423,7 @@ class RTCPeerConnectionHandlerTest : public SimTest {
       InvokeAddTrack(
           stream, MockWebRtcAudioTrack::Create(audio_track_label.Utf8()).get());
     }
-    mock_peer_connection_->AddRemoteStream(stream);
+    mock_peer_connection_->AddRemoteStream(stream.get());
     return stream;
   }
 
@@ -663,25 +670,23 @@ TEST_F(RTCPeerConnectionHandlerTest, NoCallbacksToClientAfterStop) {
 }
 
 TEST_F(RTCPeerConnectionHandlerTest, CreateOffer) {
-  MediaConstraints options;
   EXPECT_CALL(*mock_tracker_.Get(), TrackCreateOffer(pc_handler_.get(), _));
 
   // TODO(perkj): Can blink::RTCSessionDescriptionRequest be changed so
   // the |request| requestSucceeded can be tested? Currently the |request|
   // object can not be initialized from a unit test.
   EXPECT_FALSE(mock_peer_connection_->created_session_description());
-  pc_handler_->CreateOffer(nullptr /*RTCSessionDescriptionRequest*/, options);
+  pc_handler_->CreateOffer(nullptr /*RTCSessionDescriptionRequest*/, nullptr);
   EXPECT_TRUE(mock_peer_connection_->created_session_description());
 }
 
 TEST_F(RTCPeerConnectionHandlerTest, CreateAnswer) {
-  MediaConstraints options;
   EXPECT_CALL(*mock_tracker_.Get(), TrackCreateAnswer(pc_handler_.get(), _));
   // TODO(perkj): Can blink::RTCSessionDescriptionRequest be changed so
   // the |request| requestSucceeded can be tested? Currently the |request|
   // object can not be initialized from a unit test.
   EXPECT_FALSE(mock_peer_connection_->created_session_description());
-  pc_handler_->CreateAnswer(nullptr /*RTCSessionDescriptionRequest*/, options);
+  pc_handler_->CreateAnswer(nullptr /*RTCSessionDescriptionRequest*/, nullptr);
   EXPECT_TRUE(mock_peer_connection_->created_session_description());
 }
 
@@ -957,7 +962,7 @@ TEST_F(RTCPeerConnectionHandlerTest, GetRTCStats) {
   report->AddStats(
       std::unique_ptr<const webrtc::RTCStats>(stats_defined_members.release()));
 
-  pc_handler_->native_peer_connection()->SetGetStatsReport(report);
+  pc_handler_->native_peer_connection()->SetGetStatsReport(report.get());
   std::unique_ptr<RTCStatsReportPlatform> result;
   pc_handler_->GetStats(
       base::BindOnce(OnStatsDelivered, &result,
@@ -1326,7 +1331,7 @@ TEST_F(RTCPeerConnectionHandlerTest, ThermalResourceDefaultValue) {
   EXPECT_TRUE(mock_peer_connection_->adaptation_resources().IsEmpty());
   pc_handler_->OnThermalStateChange(
       mojom::blink::DeviceThermalState::kCritical);
-#if defined(OS_MAC) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_CHROMEOS)
   bool expect_disabled = false;
 #else
   bool expect_disabled = true;

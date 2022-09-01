@@ -8,6 +8,7 @@
 
 #include "base/bits.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/notreached.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/memory_allocator_dump.h"
 #include "base/trace_event/memory_usage_estimator.h"
@@ -122,7 +123,7 @@ void TraceEventMemoryOverhead::AddValue(const Value& value) {
 
     case Value::Type::LIST:
       Add(kBaseValue, sizeof(Value));
-      for (const auto& v : value.GetList())
+      for (const auto& v : value.GetListDeprecated())
         AddValue(v);
       break;
 

@@ -423,9 +423,9 @@ UBiDiLevel NGInlineCursorPosition::BidiLevel() const {
   }
 
   if (IsAtomicInline()) {
-    DCHECK(GetLayoutObject()->ContainingNGBlockFlow());
+    DCHECK(GetLayoutObject()->FragmentItemsContainer());
     const LayoutBlockFlow& block_flow =
-        *GetLayoutObject()->ContainingNGBlockFlow();
+        *GetLayoutObject()->FragmentItemsContainer();
     const auto& items =
         block_flow.GetNGInlineNodeData()->ItemsData(UsesFirstLineStyle()).items;
     const LayoutObject* const layout_object = GetLayoutObject();
@@ -965,6 +965,20 @@ void NGInlineCursor::MoveTo(const NGInlineCursor& cursor) {
   *this = cursor;
 }
 
+void NGInlineCursor::MoveToParent() {
+  wtf_size_t count = 0;
+  if (UNLIKELY(!Current()))
+    return;
+  for (;;) {
+    MoveToPrevious();
+    if (!Current())
+      return;
+    ++count;
+    if (Current()->DescendantsCount() > count)
+      return;
+  }
+}
+
 void NGInlineCursor::MoveToContainingLine() {
   DCHECK(!Current().IsLineBox());
   if (current_.item_) {
@@ -1027,6 +1041,8 @@ void NGInlineCursor::MoveToFirstLogicalLeaf() {
 
 void NGInlineCursor::MoveToFirstNonPseudoLeaf() {
   for (NGInlineCursor cursor = *this; cursor; cursor.MoveToNext()) {
+    if (cursor.Current().IsLineBox())
+      continue;
     if (cursor.Current()->IsBlockInInline()) {
       if (cursor.Current()->BlockInInline().NonPseudoNode()) {
         *this = cursor;
@@ -1104,9 +1120,11 @@ void NGInlineCursor::MoveToLastNonPseudoLeaf() {
   NGInlineCursor last_leaf;
   bool in_hidden_for_paint = false;
   for (NGInlineCursor cursor = *this; cursor; cursor.MoveToNext()) {
+    if (cursor.Current().IsLineBox())
+      continue;
     if (cursor.Current()->IsBlockInInline()) {
       if (cursor.Current()->BlockInInline().NonPseudoNode())
-        *this = cursor;
+        last_leaf = cursor;
       continue;
     }
     if (!cursor.Current().GetLayoutObject()->NonPseudoNode())
@@ -1639,8 +1657,7 @@ void NGInlineCursor::DecrementFragmentIndex() {
   // Note: |LayoutBox::GetPhysicalFragment(wtf_size_t)| is O(1).
   const auto& root_box_fragment =
       *root_block_flow_->GetPhysicalFragment(fragment_index_ - 1);
-  if (const auto* break_token =
-          To<NGBlockBreakToken>(root_box_fragment.BreakToken()))
+  if (const NGBlockBreakToken* break_token = root_box_fragment.BreakToken())
     previously_consumed_block_size_ = break_token->ConsumedBlockSize();
 }
 
@@ -1649,8 +1666,7 @@ void NGInlineCursor::IncrementFragmentIndex() {
   fragment_index_++;
   if (!root_box_fragment_)
     return;
-  if (const auto* break_token =
-          To<NGBlockBreakToken>(root_box_fragment_->BreakToken()))
+  if (const NGBlockBreakToken* break_token = root_box_fragment_->BreakToken())
     previously_consumed_block_size_ = break_token->ConsumedBlockSize();
 }
 

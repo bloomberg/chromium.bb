@@ -9,7 +9,7 @@ title: Using R to reduce Page Cycler Regressions
 ---
 
 See also
-<https://sites.google.com/a/chromium.org/dev/developers/testing/page-cyclers/analyzing-page-cycler-results>.
+<https://www.chromium.org/developers/testing/page-cyclers/analyzing-page-cycler-results>.
 
 IMPORTANT: When you see a page cycler regression, make sure to upload a saved
 copy of the before/after stdio data off the bot. We regularly delete that data

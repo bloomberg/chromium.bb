@@ -30,23 +30,23 @@ void StartupPagesHandler::RegisterMessages() {
   if (Profile::FromWebUI(web_ui())->IsOffTheRecord())
     return;
 
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "addStartupPage",
       base::BindRepeating(&StartupPagesHandler::HandleAddStartupPage,
                           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "editStartupPage",
       base::BindRepeating(&StartupPagesHandler::HandleEditStartupPage,
                           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "onStartupPrefsPageLoad",
       base::BindRepeating(&StartupPagesHandler::HandleOnStartupPrefsPageLoad,
                           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "removeStartupPage",
       base::BindRepeating(&StartupPagesHandler::HandleRemoveStartupPage,
                           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "setStartupPagesToCurrentPages",
       base::BindRepeating(
           &StartupPagesHandler::HandleSetStartupPagesToCurrentPages,
@@ -76,20 +76,20 @@ void StartupPagesHandler::OnJavascriptDisallowed() {
 }
 
 void StartupPagesHandler::OnModelChanged() {
-  base::ListValue startup_pages;
+  base::Value::List startup_pages;
   int page_count = startup_custom_pages_table_model_.RowCount();
   std::vector<GURL> urls = startup_custom_pages_table_model_.GetURLs();
   for (int i = 0; i < page_count; ++i) {
-    std::unique_ptr<base::DictionaryValue> entry(new base::DictionaryValue());
-    entry->SetString("title", startup_custom_pages_table_model_.GetText(i, 0));
-    entry->SetString("url", urls[i].spec());
-    entry->SetString("tooltip",
-                     startup_custom_pages_table_model_.GetTooltip(i));
-    entry->SetInteger("modelIndex", i);
+    base::Value::Dict entry;
+    entry.Set("title", startup_custom_pages_table_model_.GetText(i, 0));
+    entry.Set("url", urls[i].spec());
+    entry.Set("tooltip", startup_custom_pages_table_model_.GetTooltip(i));
+    entry.Set("modelIndex", i);
     startup_pages.Append(std::move(entry));
   }
 
-  FireWebUIListener("update-startup-pages", startup_pages);
+  FireWebUIListener("update-startup-pages",
+                    base::Value(std::move(startup_pages)));
 }
 
 void StartupPagesHandler::OnItemsChanged(int start, int length) {
@@ -104,12 +104,16 @@ void StartupPagesHandler::OnItemsRemoved(int start, int length) {
   OnModelChanged();
 }
 
-void StartupPagesHandler::HandleAddStartupPage(const base::ListValue* args) {
-  const auto& list = args->GetList();
-  CHECK_EQ(2U, list.size());
+void StartupPagesHandler::HandleAddStartupPage(const base::Value::List& args) {
+  CHECK_EQ(2U, args.size());
+  const base::Value& callback_id = args[0];
 
-  const base::Value& callback_id = list[0];
-  std::string url_string = list[1].GetString();
+  if (!args[1].is_string()) {
+    NOTREACHED();
+    return;
+  }
+
+  std::string url_string = args[1].GetString();
 
   GURL url;
   if (!settings_utils::FixupAndValidateStartupPage(url_string, &url)) {
@@ -117,21 +121,16 @@ void StartupPagesHandler::HandleAddStartupPage(const base::ListValue* args) {
     return;
   }
 
-  int row_count = startup_custom_pages_table_model_.RowCount();
-  int index = row_count;
-  if (list[1].is_int() && list[1].GetInt() <= row_count)
-    index = list[1].GetInt();
-
-  startup_custom_pages_table_model_.Add(index, url);
+  startup_custom_pages_table_model_.Add(
+      startup_custom_pages_table_model_.RowCount(), url);
   SaveStartupPagesPref();
   ResolveJavascriptCallback(callback_id, base::Value(true));
 }
 
-void StartupPagesHandler::HandleEditStartupPage(const base::ListValue* args) {
-  const auto& list = args->GetList();
-  CHECK_EQ(list.size(), 3U);
-  const base::Value& callback_id = list[0];
-  int index = list[1].GetInt();
+void StartupPagesHandler::HandleEditStartupPage(const base::Value::List& args) {
+  CHECK_EQ(args.size(), 3U);
+  const base::Value& callback_id = args[0];
+  int index = args[1].GetInt();
 
   if (index < 0 || index >= startup_custom_pages_table_model_.RowCount()) {
     RejectJavascriptCallback(callback_id, base::Value());
@@ -139,7 +138,7 @@ void StartupPagesHandler::HandleEditStartupPage(const base::ListValue* args) {
     return;
   }
 
-  std::string url_string = list[2].GetString();
+  std::string url_string = args[2].GetString();
 
   GURL fixed_url;
   if (settings_utils::FixupAndValidateStartupPage(url_string, &fixed_url)) {
@@ -154,18 +153,18 @@ void StartupPagesHandler::HandleEditStartupPage(const base::ListValue* args) {
 }
 
 void StartupPagesHandler::HandleOnStartupPrefsPageLoad(
-    const base::ListValue* args) {
+    const base::Value::List& args) {
   AllowJavascript();
 }
 
-void StartupPagesHandler::HandleRemoveStartupPage(const base::ListValue* args) {
-  const auto& list = args->GetList();
-  DCHECK_GE(list.size(), 1u);
-  if (!list[0].is_int()) {
+void StartupPagesHandler::HandleRemoveStartupPage(
+    const base::Value::List& args) {
+  CHECK_EQ(args.size(), 1u);
+  if (!args[0].is_int()) {
     NOTREACHED();
     return;
   }
-  int selected_index = list[0].GetInt();
+  int selected_index = args[0].GetInt();
 
   if (selected_index < 0 ||
       selected_index >= startup_custom_pages_table_model_.RowCount()) {
@@ -178,7 +177,7 @@ void StartupPagesHandler::HandleRemoveStartupPage(const base::ListValue* args) {
 }
 
 void StartupPagesHandler::HandleSetStartupPagesToCurrentPages(
-    const base::ListValue* args) {
+    const base::Value::List& args) {
   startup_custom_pages_table_model_.SetToCurrentlyOpenPages(
       web_ui()->GetWebContents());
   SaveStartupPagesPref();

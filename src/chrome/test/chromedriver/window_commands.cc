@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <list>
 #include <map>
 #include <memory>
@@ -15,6 +16,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/adapters.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -71,10 +73,9 @@ enum class PointerActionType { NOT_INITIALIZED, PRESS, MOVE, RELEASE, IDLE };
 
 Status GetMouseButton(const base::DictionaryValue& params,
                       MouseButton* button) {
-  int button_num;
-  if (!params.GetInteger("button", &button_num)) {
-    button_num = 0;  // Default to left mouse button.
-  } else if (button_num < 0 || button_num > 2) {
+  // Default to left mouse button.
+  int button_num = params.GetDict().FindInt("button").value_or(0);
+  if (button_num < 0 || button_num > 2) {
     return Status(kInvalidArgument,
                   base::StringPrintf("invalid button: %d", button_num));
   }
@@ -246,18 +247,18 @@ struct Cookie {
 std::unique_ptr<base::DictionaryValue> CreateDictionaryFrom(
     const Cookie& cookie) {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetString("name", cookie.name);
-  dict->SetString("value", cookie.value);
+  dict->GetDict().Set("name", cookie.name);
+  dict->GetDict().Set("value", cookie.value);
   if (!cookie.domain.empty())
-    dict->SetString("domain", cookie.domain);
+    dict->GetDict().Set("domain", cookie.domain);
   if (!cookie.path.empty())
-    dict->SetString("path", cookie.path);
+    dict->GetDict().Set("path", cookie.path);
   if (!cookie.session)
     SetSafeInt(dict.get(), "expiry", cookie.expiry);
-  dict->SetBoolean("httpOnly", cookie.http_only);
-  dict->SetBoolean("secure", cookie.secure);
+  dict->GetDict().Set("httpOnly", cookie.http_only);
+  dict->GetDict().Set("secure", cookie.secure);
   if (!cookie.samesite.empty())
-    dict->SetString("sameSite", cookie.samesite);
+    dict->GetDict().Set("sameSite", cookie.samesite);
   return dict;
 }
 
@@ -269,39 +270,35 @@ Status GetVisibleCookies(Session* for_session,
       GetUrl(web_view, for_session->GetCurrentFrameId(), &current_page_url);
   if (status.IsError())
     return status;
-  std::unique_ptr<base::ListValue> internal_cookies;
+  base::Value internal_cookies;
   status = web_view->GetCookies(&internal_cookies, current_page_url);
   if (status.IsError())
     return status;
   std::list<Cookie> cookies_tmp;
-  for (const base::Value& cookie_value : internal_cookies->GetList()) {
+  for (const base::Value& cookie_value : internal_cookies.GetListDeprecated()) {
     if (!cookie_value.is_dict())
       return Status(kUnknownError, "DevTools returns a non-dictionary cookie");
 
-    const base::DictionaryValue& cookie_dict =
-        base::Value::AsDictionaryValue(cookie_value);
+    const base::Value::Dict& cookie_dict = cookie_value.GetDict();
 
-    std::string name;
-    cookie_dict.GetString("name", &name);
-    std::string value;
-    cookie_dict.GetString("value", &value);
-    std::string domain;
-    cookie_dict.GetString("domain", &domain);
-    std::string path;
-    cookie_dict.GetString("path", &path);
+    const std::string* name = cookie_dict.FindString("name");
+    const std::string* value = cookie_dict.FindString("value");
+    const std::string* domain = cookie_dict.FindString("domain");
+    const std::string* path = cookie_dict.FindString("path");
     std::string samesite;
-    GetOptionalString(&cookie_dict, "sameSite", &samesite);
+    GetOptionalString(&base::Value::AsDictionaryValue(cookie_value), "sameSite",
+                      &samesite);
     int64_t expiry =
-        static_cast<int64_t>(cookie_dict.FindDoubleKey("expires").value_or(0));
+        static_cast<int64_t>(cookie_dict.FindDouble("expires").value_or(0));
     // Truncate & convert the value to an integer as required by W3C spec.
     if (expiry >= (1ll << 53) || expiry <= -(1ll << 53))
       expiry = 0;
-    bool http_only = cookie_dict.FindBoolKey("httpOnly").value_or(false);
-    bool session = cookie_dict.FindBoolKey("session").value_or(false);
-    bool secure = cookie_dict.FindBoolKey("secure").value_or(false);
+    bool http_only = cookie_dict.FindBool("httpOnly").value_or(false);
+    bool session = cookie_dict.FindBool("session").value_or(false);
+    bool secure = cookie_dict.FindBool("secure").value_or(false);
 
-    cookies_tmp.push_back(Cookie(name, value, domain, path, samesite, expiry,
-                                 http_only, secure, session));
+    cookies_tmp.push_back(Cookie(*name, *value, *domain, *path, samesite,
+                                 expiry, http_only, secure, session));
   }
   cookies->swap(cookies_tmp);
   return Status(kOk);
@@ -335,11 +332,10 @@ Status ScrollCoordinateInToView(
     return status;
   base::DictionaryValue* view_attrib;
   value->GetAsDictionary(&view_attrib);
-  int view_x, view_y, view_width, view_height;
-  view_attrib->GetInteger("view_x", &view_x);
-  view_attrib->GetInteger("view_y", &view_y);
-  view_attrib->GetInteger("view_width", &view_width);
-  view_attrib->GetInteger("view_height", &view_height);
+  int view_x = view_attrib->GetDict().FindInt("view_x").value_or(0);
+  int view_y = view_attrib->GetDict().FindInt("view_y").value_or(0);
+  int view_width = view_attrib->GetDict().FindInt("view_width").value_or(0);
+  int view_height = view_attrib->GetDict().FindInt("view_height").value_or(0);
   *offset_x = x - view_x;
   *offset_y = y - view_y;
   if (*offset_x < 0 || *offset_x >= view_width || *offset_y < 0 ||
@@ -351,15 +347,16 @@ Status ScrollCoordinateInToView(
 Status ExecuteTouchEvent(
     Session* session, WebView* web_view, TouchEventType type,
     const base::DictionaryValue& params) {
-  int x, y;
-  if (!params.GetInteger("x", &x))
+  absl::optional<int> x = params.GetDict().FindInt("x");
+  absl::optional<int> y = params.GetDict().FindInt("y");
+  if (!x)
     return Status(kInvalidArgument, "'x' must be an integer");
-  if (!params.GetInteger("y", &y))
+  if (!y)
     return Status(kInvalidArgument, "'y' must be an integer");
-  int relative_x = x;
-  int relative_y = y;
-  Status status = ScrollCoordinateInToView(
-      session, web_view, x, y, &relative_x, &relative_y);
+  int relative_x = *x;
+  int relative_y = *y;
+  Status status = ScrollCoordinateInToView(session, web_view, *x, *y,
+                                           &relative_x, &relative_y);
   if (!status.IsOk())
     return status;
   std::vector<TouchEvent> events;
@@ -372,6 +369,8 @@ Status WindowViewportSize(Session* session,
                           WebView* web_view,
                           int* innerWidth,
                           int* innerHeight) {
+  DCHECK(innerWidth);
+  DCHECK(innerHeight);
   std::unique_ptr<base::Value> value;
   base::ListValue args;
   Status status =
@@ -386,8 +385,15 @@ Status WindowViewportSize(Session* session,
     return status;
   base::DictionaryValue* view_attrib;
   value->GetAsDictionary(&view_attrib);
-  view_attrib->GetInteger("view_width", innerWidth);
-  view_attrib->GetInteger("view_height", innerHeight);
+  absl::optional<int> maybe_inner_width =
+      view_attrib->GetDict().FindInt("view_width");
+  if (maybe_inner_width)
+    *innerWidth = *maybe_inner_width;
+
+  absl::optional<int> maybe_inner_height =
+      view_attrib->GetDict().FindInt("view_height");
+  if (maybe_inner_height)
+    *innerHeight = *maybe_inner_height;
   return Status(kOk);
 }
 
@@ -399,7 +405,7 @@ Status ProcessPauseAction(const base::DictionaryValue* action_item,
       duration < 0)
     return Status(kInvalidArgument, "'duration' must be a non-negative int");
   if (has_value)
-    action->SetInteger("duration", duration);
+    action->GetDict().Set("duration", duration);
   return Status(kOk);
 }
 
@@ -446,7 +452,7 @@ int GetMouseClickCount(int last_click_count,
   if (last_button_id != button_id)
     return 1;
 
-#if !defined(OS_MAC) && !defined(OS_WIN)
+#if !BUILDFLAG(IS_MAC) && !BUILDFLAG(IS_WIN)
   // On Mac and Windows, we keep increasing the click count, but on the other
   // platforms, we reset the count to 1 when it is greater than 3.
   if (last_click_count >= 3)
@@ -604,7 +610,7 @@ Status ParsePageRanges(const base::DictionaryValue& params,
   }
 
   std::vector<std::string> ranges;
-  for (const base::Value& page_range : page_range_list->GetList()) {
+  for (const base::Value& page_range : page_range_list->GetListDeprecated()) {
     if (page_range.is_int()) {
       if (page_range.GetInt() < 0) {
         return Status(kInvalidArgument,
@@ -635,9 +641,10 @@ absl::optional<T> ParseIfInDictionary(
     base::StringPiece key,
     T default_value,
     absl::optional<T> (base::Value::*getterIfType)() const) {
-  if (!dict->HasKey(key))
+  const auto* val = dict->GetDict().Find(key);
+  if (!val)
     return absl::make_optional(default_value);
-  return (dict->FindKey(key)->*getterIfType)();
+  return (val->*getterIfType)();
 }
 
 absl::optional<double> ParseDoubleIfInDictionary(
@@ -828,7 +835,7 @@ Status ExecuteNewWindow(Session* session,
                         Timeout* timeout) {
   std::string type;
   // "type" can either be None or a string.
-  auto* type_param = params.FindKey("type");
+  auto* type_param = params.GetDict().Find("type");
   if (!(!type_param || type_param->is_none() ||
         params.GetString("type", &type)))
     return Status(kInvalidArgument, "missing or invalid 'type'");
@@ -846,8 +853,8 @@ Status ExecuteNewWindow(Session* session,
     return status;
 
   auto results = std::make_unique<base::DictionaryValue>();
-  results->SetString("handle", WebViewIdToWindowHandle(handle));
-  results->SetString(
+  results->GetDict().Set("handle", WebViewIdToWindowHandle(handle));
+  results->GetDict().Set(
       "type", (window_type == Chrome::WindowType::kWindow) ? "window" : "tab");
   *value = std::move(results);
   return Status(kOk);
@@ -858,7 +865,7 @@ Status ExecuteSwitchToFrame(Session* session,
                             const base::DictionaryValue& params,
                             std::unique_ptr<base::Value>* value,
                             Timeout* timeout) {
-  const base::Value* id = params.FindKey("id");
+  const base::Value* id = params.GetDict().Find("id");
   if (id == nullptr)
     return Status(kInvalidArgument, "missing 'id'");
 
@@ -880,7 +887,7 @@ Status ExecuteSwitchToFrame(Session* session,
     if (status.IsError())
       return status;
     script = "function(elem) { return elem; }";
-    args.Append(id_dict->CreateDeepCopy());
+    args.Append(id_dict->Clone());
   } else {
     script =
         "function(xpath) {"
@@ -897,7 +904,7 @@ Status ExecuteSwitchToFrame(Session* session,
           "[@name=\"%s\" or @id=\"%s\"]", id_string.c_str(), id_string.c_str());
     } else if (id->is_int()) {
       int id_int = id->GetInt();
-      const int max_range = 65535; // 2^16 - 1
+      const int max_range = 65535;  // 2^16 - 1
       if (id_int < 0 || id_int > max_range)
         return Status(kInvalidArgument, "'id' out of range");
       else
@@ -928,7 +935,7 @@ Status ExecuteSwitchToFrame(Session* session,
       "  frame.setAttribute('cd_frame_id_', id);"
       "}";
   base::ListValue new_args;
-  new_args.Append(element->CreateDeepCopy());
+  new_args.Append(element->Clone());
   new_args.Append(chrome_driver_id);
   result.reset(NULL);
   status = web_view->CallFunction(
@@ -1077,17 +1084,18 @@ Status ExecuteMouseMoveTo(Session* session,
                           Timeout* timeout) {
   std::string element_id;
   bool has_element = params.GetString("element", &element_id);
-  int x_offset = 0;
-  int y_offset = 0;
-  bool has_offset = params.GetInteger("xoffset", &x_offset) &&
-      params.GetInteger("yoffset", &y_offset);
+  absl::optional<int> x_offset = params.GetDict().FindInt("xoffset");
+  absl::optional<int> y_offset = params.GetDict().FindInt("yoffset");
+  bool has_offset = x_offset.has_value() && y_offset.has_value();
   if (!has_element && !has_offset)
     return Status(kInvalidArgument,
                   "at least an element or offset should be set");
 
   WebPoint location;
   if (has_element) {
-    WebPoint offset(x_offset, y_offset);
+    WebPoint offset;
+    if (has_offset)
+      offset.Offset(*x_offset, *y_offset);
     Status status = ScrollElementIntoView(session, web_view, element_id,
         has_offset ? &offset : nullptr, &location);
     if (status.IsError())
@@ -1095,7 +1103,7 @@ Status ExecuteMouseMoveTo(Session* session,
   } else {
     location = session->mouse_position;
     if (has_offset)
-      location.Offset(x_offset, y_offset);
+      location.Offset(*x_offset, *y_offset);
   }
 
   std::vector<MouseEvent> events;
@@ -1234,14 +1242,14 @@ Status ExecuteTouchScroll(Session* session,
     if (status.IsError())
       return status;
   }
-  int xoffset;
-  if (!params.GetInteger("xoffset", &xoffset))
+  absl::optional<int> xoffset = params.GetDict().FindInt("xoffset");
+  if (!xoffset)
     return Status(kInvalidArgument, "'xoffset' must be an integer");
-  int yoffset;
-  if (!params.GetInteger("yoffset", &yoffset))
+  absl::optional<int> yoffset = params.GetDict().FindInt("yoffset");
+  if (!yoffset)
     return Status(kInvalidArgument, "'yoffset' must be an integer");
-  return web_view->SynthesizeScrollGesture(
-      location.x, location.y, xoffset, yoffset);
+  return web_view->SynthesizeScrollGesture(location.x, location.y, *xoffset,
+                                           *yoffset);
 }
 
 Status ProcessInputActionSequence(
@@ -1279,7 +1287,7 @@ Status ProcessInputActionSequence(
 
   bool found = false;
   for (const base::Value& source_value :
-       session->active_input_sources.GetList()) {
+       session->active_input_sources.GetListDeprecated()) {
     DCHECK(source_value.is_dict());
     const base::DictionaryValue& source =
         base::Value::AsDictionaryValue(source_value);
@@ -1304,41 +1312,40 @@ Status ProcessInputActionSequence(
   }
 
   // if we found no matching active input source
-  std::unique_ptr<base::DictionaryValue> tmp_source(new base::DictionaryValue);
   if (!found) {
+    base::Value::Dict tmp_source;
     // create input source
-    tmp_source->SetString("id", id);
-    tmp_source->SetString("type", type);
+    tmp_source.Set("id", id);
+    tmp_source.Set("type", type);
     if (type == "pointer") {
-      tmp_source->SetString("pointerType", pointer_type);
+      tmp_source.Set("pointerType", pointer_type);
     }
 
-    session->active_input_sources.Append(std::move(tmp_source));
+    session->active_input_sources.Append(base::Value(std::move(tmp_source)));
 
-    base::DictionaryValue tmp_state;
-    tmp_state.SetString("id", id);
+    base::Value* tmp_state = session->input_state_table.SetPath(
+        id, base::Value(base::Value::Type::DICTIONARY));
+    tmp_state->GetDict().Set("id", id);
     if (type == "key") {
       // Initialize a key input state object
       // (https://w3c.github.io/webdriver/#dfn-key-input-state).
-      tmp_state.SetDictionary("pressed",
-                              std::make_unique<base::DictionaryValue>());
+      tmp_state->GetDict().Set("pressed",
+                               base::Value(base::Value::Type::DICTIONARY));
       // For convenience, we use one integer property to encode four Boolean
       // properties (alt, shift, ctrl, meta) from the spec, using values from
       // enum KeyModifierMask.
-      tmp_state.SetInteger("modifiers", 0);
+      tmp_state->GetDict().Set("modifiers", 0);
     } else if (type == "pointer") {
       int x = 0;
       int y = 0;
 
       // "pressed" is stored as a bitmask of pointer buttons.
-      tmp_state.SetInteger("pressed", 0);
-      tmp_state.SetString("subtype", pointer_type);
+      tmp_state->GetDict().Set("pressed", 0);
+      tmp_state->GetDict().Set("subtype", pointer_type);
 
-      tmp_state.SetInteger("x", x);
-      tmp_state.SetInteger("y", y);
+      tmp_state->GetDict().Set("x", x);
+      tmp_state->GetDict().Set("y", y);
     }
-    session->input_state_table.SetDictionary(
-        id, std::make_unique<base::DictionaryValue>(std::move(tmp_state)));
   }
 
   const base::ListValue* actions;
@@ -1346,8 +1353,9 @@ Status ProcessInputActionSequence(
     return Status(kInvalidArgument, "'actions' must be an array");
 
   std::unique_ptr<base::ListValue> actions_result(new base::ListValue);
-  for (const base::Value& action_item_value : actions->GetList()) {
+  for (const base::Value& action_item_value : actions->GetListDeprecated()) {
     std::unique_ptr<base::DictionaryValue> action(new base::DictionaryValue());
+    base::Value::Dict& action_dict = action->GetDict();
 
     if (!action_item_value.is_dict()) {
       return Status(
@@ -1358,8 +1366,8 @@ Status ProcessInputActionSequence(
     const base::DictionaryValue* action_item =
         &base::Value::AsDictionaryValue(action_item_value);
 
-    action->SetString("id", id);
-    action->SetString("type", type);
+    action_dict.Set("id", id);
+    action_dict.Set("type", type);
 
     if (type == "none") {
       // process none action
@@ -1368,7 +1376,7 @@ Status ProcessInputActionSequence(
         return Status(kInvalidArgument,
                       "type of action must be the  string 'pause'");
 
-      action->SetString("subtype", subtype);
+      action_dict.Set("subtype", subtype);
 
       Status status = ProcessPauseAction(action_item, action.get());
       if (status.IsError())
@@ -1382,7 +1390,7 @@ Status ProcessInputActionSequence(
             kInvalidArgument,
             "type of action must be the string 'keyUp', 'keyDown' or 'pause'");
 
-      action->SetString("subtype", subtype);
+      action_dict.Set("subtype", subtype);
       if (subtype == "pause") {
         Status status = ProcessPauseAction(action_item, action.get());
         if (status.IsError())
@@ -1393,7 +1401,7 @@ Status ProcessInputActionSequence(
         if (valid) {
           // check if key is a single unicode code point
           int32_t char_index = 0;
-          uint32_t code_point;
+          base_icu::UChar32 code_point;
           valid =
               base::ReadUnicodeCharacter(key.c_str(), key.size(), &char_index,
                                          &code_point) &&
@@ -1402,7 +1410,7 @@ Status ProcessInputActionSequence(
         if (!valid)
           return Status(kInvalidArgument,
                         "'value' must be a single Unicode code point");
-        action->SetString("value", key);
+        action_dict.Set("value", key);
       }
     } else if (type == "pointer" || type == "wheel") {
       std::string subtype;
@@ -1425,14 +1433,13 @@ Status ProcessInputActionSequence(
         }
       }
 
-      action->SetString("subtype", subtype);
-      action->SetString("pointerType", pointer_type);
+      action_dict.Set("subtype", subtype);
+      action_dict.Set("pointerType", pointer_type);
 
       if (subtype == "pointerDown" || subtype == "pointerUp") {
         if (pointer_type == "mouse" || pointer_type == "pen") {
-          int button;
-          if (!action_item->GetInteger("button", &button) || button < 0 ||
-              button > 4) {
+          int button = action_item->GetDict().FindInt("button").value_or(-1);
+          if (button < 0 || button > 4) {
             return Status(
                 kInvalidArgument,
                 "'button' must be a non-negative int and between 0 and 4");
@@ -1441,20 +1448,20 @@ Status ProcessInputActionSequence(
           Status status = IntToStringButton(button, button_str);
           if (status.IsError())
             return status;
-          action->SetString("button", button_str);
+          action_dict.Set("button", button_str);
         }
       } else if (subtype == "pointerMove" || subtype == "scroll") {
-        int x;
-        if (!action_item->GetInteger("x", &x))
+        absl::optional<int> x = action_item->GetDict().FindInt("x");
+        if (!x.has_value())
           return Status(kInvalidArgument, "'x' must be an int");
-        int y;
-        if (!action_item->GetInteger("y", &y))
+        absl::optional<int> y = action_item->GetDict().FindInt("y");
+        if (!y.has_value())
           return Status(kInvalidArgument, "'y' must be an int");
-        action->SetInteger("x", x);
-        action->SetInteger("y", y);
+        action_dict.Set("x", *x);
+        action_dict.Set("y", *y);
 
         std::string origin;
-        if (action_item->FindKey("origin")) {
+        if (action_item->GetDict().Find("origin")) {
           if (!action_item->GetString("origin", &origin)) {
             const base::DictionaryValue* origin_dict;
             if (!action_item->GetDictionary("origin", &origin_dict))
@@ -1463,19 +1470,19 @@ Status ProcessInputActionSequence(
             std::string element_id;
             if (!origin_dict->GetString(GetElementKey(), &element_id))
               return Status(kInvalidArgument, "'element' is missing");
-            std::unique_ptr<base::DictionaryValue> origin_result =
-                std::make_unique<base::DictionaryValue>();
-            origin_result->SetString(GetElementKey(), element_id);
-            action->SetDictionary("origin", std::move(origin_result));
+            base::Value* origin_result = action_dict.Set(
+                "origin", base::Value(base::Value::Type::DICTIONARY));
+            origin_result->GetDict().SetByDottedPath(GetElementKey(),
+                                                     element_id);
           } else {
             if (origin != "viewport" && origin != "pointer")
               return Status(kInvalidArgument,
                             "if 'origin' is a string, it must be either "
                             "'viewport' or 'pointer'");
-            action->SetString("origin", origin);
+            action_dict.Set("origin", origin);
           }
         } else {
-          action->SetString("origin", "viewport");
+          action_dict.Set("origin", "viewport");
         }
 
         Status status = ProcessPauseAction(action_item, action.get());
@@ -1483,14 +1490,16 @@ Status ProcessInputActionSequence(
           return status;
 
         if (subtype == "scroll") {
-          int delta_x;
-          if (!action_item->GetInteger("deltaX", &delta_x))
+          absl::optional<int> delta_x =
+              action_item->GetDict().FindInt("deltaX");
+          if (!delta_x)
             return Status(kInvalidArgument, "'delta x' must be an int");
-          int delta_y;
-          if (!action_item->GetInteger("deltaY", &delta_y))
+          absl::optional<int> delta_y =
+              action_item->GetDict().FindInt("deltaY");
+          if (!delta_y)
             return Status(kInvalidArgument, "'delta y' must be an int");
-          action->SetInteger("deltaX", delta_x);
-          action->SetInteger("deltaY", delta_y);
+          action_dict.Set("deltaX", *delta_x);
+          action_dict.Set("deltaY", *delta_y);
         }
       } else if (subtype == "pause") {
         Status status = ProcessPauseAction(action_item, action.get());
@@ -1506,13 +1515,13 @@ Status ProcessInputActionSequence(
       if (!maybe_double_value.has_value() || maybe_double_value.value() < 0)
         return Status(kInvalidArgument,
                       "'width' must be a non-negative number");
-      action->SetDoubleKey("width", maybe_double_value.value());
+      action_dict.Set("width", maybe_double_value.value());
 
       maybe_double_value = ParseDoubleIfInDictionary(action_item, "height", 1);
       if (!maybe_double_value.has_value() || maybe_double_value.value() < 0)
         return Status(kInvalidArgument,
                       "'height' must be a non-negative number");
-      action->SetDoubleKey("height", maybe_double_value.value());
+      action_dict.Set("height", maybe_double_value.value());
 
       maybe_double_value =
           ParseDoubleIfInDictionary(action_item, "pressure", 0.5);
@@ -1521,7 +1530,7 @@ Status ProcessInputActionSequence(
         return Status(
             kInvalidArgument,
             "'pressure' must be a non-negative number in the range of [0,1]");
-      action->SetDoubleKey("pressure", maybe_double_value.value());
+      action_dict.Set("pressure", maybe_double_value.value());
 
       maybe_double_value =
           ParseDoubleIfInDictionary(action_item, "tangentialPressure", 0);
@@ -1530,28 +1539,28 @@ Status ProcessInputActionSequence(
         return Status(
             kInvalidArgument,
             "'tangentialPressure' must be a number in the range of [-1,1]");
-      action->SetDoubleKey("tangentialPressure", maybe_double_value.value());
+      action_dict.Set("tangentialPressure", maybe_double_value.value());
 
       maybe_int_value = ParseIntIfInDictionary(action_item, "tiltX", 0);
       if (!maybe_int_value.has_value() || maybe_int_value.value() < -90 ||
           maybe_int_value.value() > 90)
         return Status(kInvalidArgument,
                       "'tiltX' must be an integer in the range of [-90,90]");
-      action->SetInteger("tiltX", maybe_int_value.value());
+      action_dict.Set("tiltX", maybe_int_value.value());
 
       maybe_int_value = ParseIntIfInDictionary(action_item, "tiltY", 0);
       if (!maybe_int_value.has_value() || maybe_int_value.value() < -90 ||
           maybe_int_value.value() > 90)
         return Status(kInvalidArgument,
                       "'tiltY' must be an integer in the range of [-90,90]");
-      action->SetInteger("tiltY", maybe_int_value.value());
+      action_dict.Set("tiltY", maybe_int_value.value());
 
       maybe_int_value = ParseIntIfInDictionary(action_item, "twist", 0);
       if (!maybe_int_value.has_value() || maybe_int_value.value() < 0 ||
           maybe_int_value.value() > 359)
         return Status(kInvalidArgument,
                       "'twist' must be an integer in the range of [0,359]");
-      action->SetInteger("twist", maybe_int_value.value());
+      action_dict.Set("twist", maybe_int_value.value());
     }
     action_list->push_back(std::move(action));
   }
@@ -1571,7 +1580,8 @@ Status ExecutePerformActions(Session* session,
 
   // the processed actions
   std::vector<std::vector<std::unique_ptr<base::DictionaryValue>>> actions_list;
-  for (const base::Value& action_sequence : actions_input->GetList()) {
+  for (const base::Value& action_sequence :
+       actions_input->GetListDeprecated()) {
     // process input action sequence
     if (!action_sequence.is_dict())
       return Status(kInvalidArgument, "each argument must be a dictionary");
@@ -1654,16 +1664,22 @@ Status ExecutePerformActions(Session* session,
                 session, web_view, &viewport_width, &viewport_height);
             if (status.IsError())
               return status;
+            absl::optional<int> maybe_init_x =
+                input_state->GetDict().FindInt("x");
+            if (maybe_init_x)
+              init_x = *maybe_init_x;
 
-            input_state->GetInteger("x", &init_x);
-            input_state->GetInteger("y", &init_y);
+            absl::optional<int> maybe_init_y =
+                input_state->GetDict().FindInt("y");
+            if (maybe_init_y)
+              init_y = *maybe_init_y;
             action_locations.insert(
                 std::make_pair(id, gfx::Point(init_x, init_y)));
 
             std::string pointer_type;
             action->GetString("pointerType", &pointer_type);
             if (pointer_type == "mouse" || pointer_type == "pen") {
-              buttons[id] = input_state->FindKey("pressed")->GetInt();
+              buttons[id] = input_state->GetDict().Find("pressed")->GetInt();
               last_pressed_buttons[id] = buttons[id];
             } else if (pointer_type == "touch") {
               has_touch_start[id] = false;
@@ -1714,10 +1730,10 @@ Status ExecutePerformActions(Session* session,
           } else if (type == "pointer" || type == "wheel") {
             std::string element_id;
             if (action_type == "pointerMove" || action_type == "scroll") {
-              double x = action->FindDoubleKey("x").value_or(0);
-              double y = action->FindDoubleKey("y").value_or(0);
+              double x = action->GetDict().FindDouble("x").value_or(0);
+              double y = action->GetDict().FindDouble("y").value_or(0);
               const base::DictionaryValue* origin_dict;
-              if (action->FindKey("origin")) {
+              if (action->GetDict().Find("origin")) {
                 if (action->GetDictionary("origin", &origin_dict)) {
                   origin_dict->GetString(GetElementKey(), &element_id);
                   if (!element_id.empty()) {
@@ -1748,9 +1764,8 @@ Status ExecutePerformActions(Session* session,
               tick_duration = std::max(tick_duration, duration);
 
               if (action_type == "scroll") {
-                int delta_x = 0, delta_y = 0;
-                action->GetInteger("deltaX", &delta_x);
-                action->GetInteger("deltaY", &delta_y);
+                int delta_x = action->GetDict().FindInt("deltaX").value_or(0);
+                int delta_y = action->GetDict().FindInt("deltaY").value_or(0);
                 std::vector<MouseEvent> dispatch_wheel_events;
                 MouseEvent event(StringToMouseEventType(action_type),
                                  StringToMouseButton(button_type[id]),
@@ -1772,14 +1787,15 @@ Status ExecutePerformActions(Session* session,
               }
             }
 
-            double width = action->FindDoubleKey("width").value_or(1);
-            double height = action->FindDoubleKey("height").value_or(1);
-            double pressure = action->FindDoubleKey("pressure").value_or(0.5);
+            double width = action->GetDict().FindDouble("width").value_or(1);
+            double height = action->GetDict().FindDouble("height").value_or(1);
+            double pressure =
+                action->GetDict().FindDouble("pressure").value_or(0.5);
             double tangential_pressure =
-                action->FindDoubleKey("tangentialPressure").value_or(0);
-            int tilt_x = action->FindIntKey("tiltX").value_or(0);
-            int tilt_y = action->FindIntKey("tiltY").value_or(0);
-            int twist = action->FindIntKey("twist").value_or(0);
+                action->GetDict().FindDouble("tangentialPressure").value_or(0);
+            int tilt_x = action->GetDict().FindInt("tiltX").value_or(0);
+            int tilt_y = action->GetDict().FindInt("tiltY").value_or(0);
+            int twist = action->GetDict().FindInt("twist").value_or(0);
 
             std::string pointer_type;
             action->GetString("pointerType", &pointer_type);
@@ -1825,21 +1841,27 @@ Status ExecutePerformActions(Session* session,
                   session->mouse_click_timestamp = timestamp;
                   session->input_cancel_list.emplace_back(
                       action_input_states[j], &event, nullptr, nullptr);
-                  action_input_states[j]->SetInteger(
-                      "pressed",
-                      action_input_states[j]->FindKey("pressed")->GetInt() |
-                          (1 << event.button));
+                  action_input_states[j]->GetDict().Set(
+                      "pressed", action_input_states[j]
+                                         ->GetDict()
+                                         .Find("pressed")
+                                         ->GetInt() |
+                                     (1 << event.button));
                 } else if (event.type == kReleasedMouseEventType) {
                   pressure = 0;
                   event.click_count = session->click_count;
                   buttons[id] &= ~StringToModifierMouseButton(button_type[id]);
-                  action_input_states[j]->SetInteger(
-                      "pressed",
-                      action_input_states[j]->FindKey("pressed")->GetInt() &
-                          ~(1 << event.button));
+                  action_input_states[j]->GetDict().Set(
+                      "pressed", action_input_states[j]
+                                         ->GetDict()
+                                         .Find("pressed")
+                                         ->GetInt() &
+                                     ~(1 << event.button));
                 } else if (event.type == kMovedMouseEventType) {
-                  if (action_input_states[j]->FindKey("pressed")->GetInt() ==
-                      0) {
+                  if (action_input_states[j]
+                          ->GetDict()
+                          .Find("pressed")
+                          ->GetInt() == 0) {
                     pressure = 0;
                   }
                 }
@@ -1867,9 +1889,9 @@ Status ExecutePerformActions(Session* session,
               if (event.type == kTouchStart) {
                 session->input_cancel_list.emplace_back(
                     action_input_states[j], nullptr, &event, nullptr);
-                action_input_states[j]->SetInteger("pressed", 1);
+                action_input_states[j]->GetDict().Set("pressed", 1);
               } else if (event.type == kTouchEnd) {
-                action_input_states[j]->SetInteger("pressed", 0);
+                action_input_states[j]->GetDict().Set("pressed", 0);
               }
               if (has_touch_start[id]) {
                 if (event.type == kPause)
@@ -1886,8 +1908,10 @@ Status ExecutePerformActions(Session* session,
               if (action_type == "pointerUp")
                 has_touch_start[id] = false;
             }
-            action_input_states[j]->SetInteger("x", action_locations[id].x());
-            action_input_states[j]->SetInteger("y", action_locations[id].y());
+            action_input_states[j]->GetDict().Set("x",
+                                                  action_locations[id].x());
+            action_input_states[j]->GetDict().Set("y",
+                                                  action_locations[id].y());
           }
         }
       }
@@ -1906,29 +1930,29 @@ Status ExecuteReleaseActions(Session* session,
                              const base::DictionaryValue& params,
                              std::unique_ptr<base::Value>* value,
                              Timeout* timeout) {
-  for (auto it = session->input_cancel_list.rbegin();
-       it != session->input_cancel_list.rend(); ++it) {
-    if (it->key_event) {
+  for (const InputCancelListEntry& entry :
+       base::Reversed(session->input_cancel_list)) {
+    if (entry.key_event) {
       base::DictionaryValue* pressed;
-      it->input_state->GetDictionary("pressed", &pressed);
-      if (!pressed->FindKey(it->key_event->key))
+      entry.input_state->GetDictionary("pressed", &pressed);
+      if (!pressed->GetDict().Find(entry.key_event->key))
         continue;
-      web_view->DispatchKeyEvents({*it->key_event}, false);
-      pressed->RemoveKey(it->key_event->key);
-    } else if (it->mouse_event) {
-      int pressed = it->input_state->FindKey("pressed")->GetInt();
-      int button_mask = 1 << it->mouse_event->button;
+      web_view->DispatchKeyEvents({*entry.key_event}, false);
+      pressed->RemoveKey(entry.key_event->key);
+    } else if (entry.mouse_event) {
+      int pressed = entry.input_state->GetDict().Find("pressed")->GetInt();
+      int button_mask = 1 << entry.mouse_event->button;
       if ((pressed & button_mask) == 0)
         continue;
-      web_view->DispatchMouseEvents({*it->mouse_event},
+      web_view->DispatchMouseEvents({*entry.mouse_event},
                                     session->GetCurrentFrameId(), false);
-      it->input_state->SetInteger("pressed", pressed & ~button_mask);
-    } else if (it->touch_event) {
-      int pressed = it->input_state->FindKey("pressed")->GetInt();
+      entry.input_state->GetDict().Set("pressed", pressed & ~button_mask);
+    } else if (entry.touch_event) {
+      int pressed = entry.input_state->GetDict().Find("pressed")->GetInt();
       if (pressed == 0)
         continue;
-      web_view->DispatchTouchEvents({*it->touch_event}, false);
-      it->input_state->SetInteger("pressed", 0);
+      web_view->DispatchTouchEvents({*entry.touch_event}, false);
+      entry.input_state->GetDict().Set("pressed", 0);
     }
   }
 
@@ -1972,13 +1996,12 @@ Status ExecuteSendCommandFromWebSocket(Session* session,
   if (!params.GetDictionary("params", &cmdParams)) {
     return Status(kInvalidArgument, "params not passed");
   }
-  int client_cmd_id;
-  if (!params.GetInteger("id", &client_cmd_id) ||
-      !CommandId::IsClientCommandId(client_cmd_id)) {
+  absl::optional<int> client_cmd_id = params.GetDict().FindInt("id");
+  if (!client_cmd_id || !CommandId::IsClientCommandId(*client_cmd_id)) {
     return Status(kInvalidArgument, "command id must be negative");
   }
 
-  return web_view->SendCommandFromWebSocket(cmd, *cmdParams, client_cmd_id);
+  return web_view->SendCommandFromWebSocket(cmd, *cmdParams, *client_cmd_id);
 }
 
 Status ExecuteSendCommandAndGetResult(Session* session,
@@ -2177,15 +2200,15 @@ Status ExecuteFullPageScreenshot(Session* session,
   bool hasOverrideMetrics = meom->HasOverrideMetrics();
 
   base::DictionaryValue deviceMetrics;
-  deviceMetrics.SetInteger("width", w);
-  deviceMetrics.SetInteger("height", h);
+  deviceMetrics.GetDict().Set("width", w);
+  deviceMetrics.GetDict().Set("height", h);
   if (hasOverrideMetrics) {
     const auto* dm = meom->GetDeviceMetrics();
-    deviceMetrics.SetInteger("deviceScaleFactor", dm->device_scale_factor);
-    deviceMetrics.SetBoolean("mobile", dm->mobile);
+    deviceMetrics.GetDict().Set("deviceScaleFactor", dm->device_scale_factor);
+    deviceMetrics.GetDict().Set("mobile", dm->mobile);
   } else {
-    deviceMetrics.SetInteger("deviceScaleFactor", 1);
-    deviceMetrics.SetBoolean("mobile", false);
+    deviceMetrics.GetDict().Set("deviceScaleFactor", 1);
+    deviceMetrics.GetDict().Set("mobile", false);
   }
   std::unique_ptr<base::Value> ignore;
   status = web_view->SendCommandAndGetResult(
@@ -2269,18 +2292,19 @@ Status ExecutePrint(Session* session,
     return status;
 
   base::DictionaryValue printParams;
-  printParams.SetBoolean(kLandscape, orientation == kLandscape);
-  printParams.SetDoubleKey("scale", scale);
-  printParams.SetBoolean("printBackground", background);
-  printParams.SetDoubleKey("paperWidth", page.width);
-  printParams.SetDoubleKey("paperHeight", page.height);
-  printParams.SetDoubleKey("marginTop", margin.top);
-  printParams.SetDoubleKey("marginBottom", margin.bottom);
-  printParams.SetDoubleKey("marginLeft", margin.left);
-  printParams.SetDoubleKey("marginRight", margin.right);
-  printParams.SetBoolean("preferCSSPageSize", !shrinkToFit);
-  printParams.SetString("pageRanges", pageRanges);
-  printParams.SetString("transferMode", "ReturnAsBase64");
+  base::Value::Dict& print_params_dict = printParams.GetDict();
+  print_params_dict.Set(kLandscape, orientation == kLandscape);
+  print_params_dict.Set("scale", scale);
+  print_params_dict.Set("printBackground", background);
+  print_params_dict.Set("paperWidth", page.width);
+  print_params_dict.Set("paperHeight", page.height);
+  print_params_dict.Set("marginTop", margin.top);
+  print_params_dict.Set("marginBottom", margin.bottom);
+  print_params_dict.Set("marginLeft", margin.left);
+  print_params_dict.Set("marginRight", margin.right);
+  print_params_dict.Set("preferCSSPageSize", !shrinkToFit);
+  print_params_dict.Set("pageRanges", pageRanges);
+  print_params_dict.Set("transferMode", "ReturnAsBase64");
 
   std::string pdf;
   status = web_view->PrintToPDF(printParams, &pdf);
@@ -2300,10 +2324,11 @@ Status ExecuteGetCookies(Session* session,
   Status status = GetVisibleCookies(session, web_view, &cookies);
   if (status.IsError())
     return status;
-  std::unique_ptr<base::ListValue> cookie_list(new base::ListValue());
+  auto cookie_list = std::make_unique<base::Value>(base::Value::Type::LIST);
   for (std::list<Cookie>::const_iterator it = cookies.begin();
        it != cookies.end(); ++it) {
-    cookie_list->Append(CreateDictionaryFrom(*it));
+    cookie_list->GetList().Append(
+        base::Value::FromUniquePtrValue(CreateDictionaryFrom(*it)));
   }
   *value = std::move(cookie_list);
   return Status(kOk);
@@ -2480,12 +2505,14 @@ Status ExecuteSetLocation(Session* session,
   if (!params.GetDictionary("location", &location))
     return Status(kInvalidArgument, "missing or invalid 'location'");
 
-  absl::optional<double> maybe_latitude = location->FindDoubleKey("latitude");
+  absl::optional<double> maybe_latitude =
+      location->GetDict().FindDouble("latitude");
   if (!maybe_latitude.has_value())
     return Status(kInvalidArgument, "missing or invalid 'location.latitude'");
   geoposition.latitude = maybe_latitude.value();
 
-  absl::optional<double> maybe_longitude = location->FindDoubleKey("longitude");
+  absl::optional<double> maybe_longitude =
+      location->GetDict().FindDouble("longitude");
   if (!maybe_longitude.has_value())
     return Status(kInvalidArgument, "missing or invalid 'location.longitude'");
   geoposition.longitude = maybe_longitude.value();
@@ -2512,7 +2539,7 @@ Status ExecuteSetNetworkConditions(Session* session,
                                    std::unique_ptr<base::Value>* value,
                                    Timeout* timeout) {
   std::string network_name;
-  const base::DictionaryValue* conditions = NULL;
+  const base::DictionaryValue* conditions = nullptr;
   std::unique_ptr<NetworkConditions> network_conditions(
       new NetworkConditions());
   if (params.GetString("network_name", &network_name)) {
@@ -2522,7 +2549,8 @@ Status ExecuteSetNetworkConditions(Session* session,
       return status;
   } else if (params.GetDictionary("network_conditions", &conditions)) {
     // |latency| is required.
-    absl::optional<double> maybe_latency = conditions->FindDoubleKey("latency");
+    absl::optional<double> maybe_latency =
+        conditions->GetDict().FindDouble("latency");
     if (!maybe_latency.has_value())
       return Status(kInvalidArgument,
                     "invalid 'network_conditions' is missing 'latency'");
@@ -2530,19 +2558,19 @@ Status ExecuteSetNetworkConditions(Session* session,
 
     // Either |throughput| or the pair |download_throughput| and
     // |upload_throughput| is required.
-    if (conditions->HasKey("throughput")) {
+    if (conditions->GetDict().Find("throughput")) {
       absl::optional<double> maybe_throughput =
-          conditions->FindDoubleKey("throughput");
+          conditions->GetDict().FindDouble("throughput");
       if (!maybe_throughput.has_value())
         return Status(kInvalidArgument, "invalid 'throughput'");
       network_conditions->upload_throughput = maybe_throughput.value();
       network_conditions->download_throughput = maybe_throughput.value();
-    } else if (conditions->HasKey("download_throughput") &&
-               conditions->HasKey("upload_throughput")) {
+    } else if (conditions->GetDict().Find("download_throughput") &&
+               conditions->GetDict().Find("upload_throughput")) {
       absl::optional<double> maybe_download_throughput =
-          conditions->FindDoubleKey("download_throughput");
+          conditions->GetDict().FindDouble("download_throughput");
       absl::optional<double> maybe_upload_throughput =
-          conditions->FindDoubleKey("upload_throughput");
+          conditions->GetDict().FindDouble("upload_throughput");
 
       if (!maybe_download_throughput.has_value() ||
           !maybe_upload_throughput.has_value())
@@ -2558,7 +2586,7 @@ Status ExecuteSetNetworkConditions(Session* session,
     }
 
     // |offline| is optional.
-    if (const base::Value* offline = conditions->FindKey("offline")) {
+    if (const base::Value* offline = conditions->GetDict().Find("offline")) {
       if (!offline->is_bool())
         return Status(kInvalidArgument, "invalid 'offline'");
       network_conditions->offline = offline->GetBool();
@@ -2618,12 +2646,12 @@ Status ExecuteGetWindowRect(Session* session,
   if (status.IsError())
     return status;
 
-  base::DictionaryValue rect;
-  rect.SetInteger("x", windowRect.x);
-  rect.SetInteger("y", windowRect.y);
-  rect.SetInteger("width", windowRect.width);
-  rect.SetInteger("height", windowRect.height);
-  value->reset(rect.DeepCopy());
+  base::Value::Dict rect;
+  rect.Set("x", windowRect.x);
+  rect.Set("y", windowRect.y);
+  rect.Set("width", windowRect.width);
+  rect.Set("height", windowRect.height);
+  value->reset(new base::Value(std::move(rect)));
   return Status(kOk);
 }
 
@@ -2632,15 +2660,15 @@ Status ExecuteSetWindowRect(Session* session,
                             const base::DictionaryValue& params,
                             std::unique_ptr<base::Value>* value,
                             Timeout* timeout) {
-  const double max_range = 2147483647; // 2^31 - 1
-  const double min_range = -2147483648; // -2^31
+  const double max_range = 2147483647;   // 2^31 - 1
+  const double min_range = -2147483648;  // -2^31
   const base::Value* temp;
   double width = 0;
   double height = 0;
   double x = 0;
   double y = 0;
 
-  temp = params.FindKey("x");
+  temp = params.GetDict().Find("x");
   bool has_x = temp && !temp->is_none();
   if (has_x) {
     if (!temp->is_double() && !temp->is_int())
@@ -2650,7 +2678,7 @@ Status ExecuteSetWindowRect(Session* session,
       return Status(kInvalidArgument, "'x' out of range");
   }
 
-  temp = params.FindKey("y");
+  temp = params.GetDict().Find("y");
   bool has_y = temp && !temp->is_none();
   if (has_y) {
     if (!temp->is_double() && !temp->is_int())
@@ -2660,7 +2688,7 @@ Status ExecuteSetWindowRect(Session* session,
       return Status(kInvalidArgument, "'y' out of range");
   }
 
-  temp = params.FindKey("width");
+  temp = params.GetDict().Find("width");
   bool has_width = temp && !temp->is_none();
   if (has_width) {
     if (!temp->is_double() && !temp->is_int())
@@ -2670,7 +2698,7 @@ Status ExecuteSetWindowRect(Session* session,
       return Status(kInvalidArgument, "'width' out of range");
   }
 
-  temp = params.FindKey("height");
+  temp = params.GetDict().Find("height");
   bool has_height = temp && !temp->is_none();
   if (has_height) {
     if (!temp->is_double() && !temp->is_int())
@@ -2684,12 +2712,12 @@ Status ExecuteSetWindowRect(Session* session,
   base::DictionaryValue rect_params;
   // only set position if both x and y are given
   if (has_x && has_y) {
-    rect_params.SetInteger("x", static_cast<int>(x));
-    rect_params.SetInteger("y", static_cast<int>(y));
+    rect_params.GetDict().Set("x", static_cast<int>(x));
+    rect_params.GetDict().Set("y", static_cast<int>(y));
   }  // only set size if both height and width are given
   if (has_width && has_height) {
-    rect_params.SetInteger("width", static_cast<int>(width));
-    rect_params.SetInteger("height", static_cast<int>(height));
+    rect_params.GetDict().Set("width", static_cast<int>(width));
+    rect_params.GetDict().Set("height", static_cast<int>(height));
   }
   Status status = session->chrome->SetWindowRect(session->window, rect_params);
   if (status.IsError())

@@ -10,7 +10,7 @@ import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classe
 import '../settings_shared_css.js';
 
 import {WebUIListenerMixin, WebUIListenerMixinInterface} from 'chrome://resources/js/web_ui_listener_mixin.js';
-import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {loadTimeData} from '../i18n_setup.js';
 import {MetricsBrowserProxyImpl, PrivacyElementInteractions} from '../metrics_browser_proxy.js';
@@ -19,6 +19,7 @@ import {Route, RouteObserverMixin, RouteObserverMixinInterface, Router} from '..
 
 import {CookieDataForDisplay, CookieDetails, getCookieData} from './cookie_info.js';
 import {LocalDataBrowserProxy, LocalDataBrowserProxyImpl} from './local_data_browser_proxy.js';
+import {getTemplate} from './site_data_details_subpage.html.js';
 
 
 const categoryLabels: {[key: string]: string} = {
@@ -40,16 +41,17 @@ const categoryLabels: {[key: string]: string} = {
 const SiteDataDetailsSubpageElementBase =
     RouteObserverMixin(WebUIListenerMixin(PolymerElement)) as {
       new (): PolymerElement & WebUIListenerMixinInterface &
-      RouteObserverMixinInterface
+          RouteObserverMixinInterface,
     };
 
-class SiteDataDetailsSubpageElement extends SiteDataDetailsSubpageElementBase {
+export class SiteDataDetailsSubpageElement extends
+    SiteDataDetailsSubpageElementBase {
   static get is() {
     return 'site-data-details-subpage';
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
@@ -75,7 +77,7 @@ class SiteDataDetailsSubpageElement extends SiteDataDetailsSubpageElementBase {
   private browserProxy_: LocalDataBrowserProxy =
       LocalDataBrowserProxyImpl.getInstance();
 
-  ready() {
+  override ready() {
     super.ready();
 
     this.addWebUIListener(
@@ -85,7 +87,7 @@ class SiteDataDetailsSubpageElement extends SiteDataDetailsSubpageElementBase {
   /**
    * RouteObserverMixin
    */
-  currentRouteChanged(route: Route) {
+  override currentRouteChanged(route: Route) {
     if (route !== routes.SITE_SETTINGS_DATA_DETAILS) {
       return;
     }

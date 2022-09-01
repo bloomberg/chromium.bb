@@ -50,8 +50,6 @@ source_set("dns") {
     "dns_server_iterator.h",
     "dns_session.cc",
     "dns_session.h",
-    "dns_socket_allocator.cc",
-    "dns_socket_allocator.h",
     "dns_transaction.cc",
     "dns_udp_tracker.cc",
     "dns_udp_tracker.h",
@@ -81,6 +79,8 @@ source_set("dns") {
     "serial_worker.h",
     "system_dns_config_change_notifier.cc",
     "system_dns_config_change_notifier.h",
+    "test_dns_config_service.cc",
+    "test_dns_config_service.h",
   ]
 
   if (is_win) {
@@ -196,8 +196,7 @@ source_set("host_resolver") {
 
     # Tests and test support.
     "//chrome/browser:test_support",
-    "//chrome/test:browser_tests",
-    "//chrome/test:unit_tests",
+    "//chrome/test/*",
     "//components/grpc_support/test:unit_tests",
     "//content/shell:content_shell_lib",
     "//content/test:*",
@@ -392,7 +391,6 @@ source_set("tests") {
     "dns_query_unittest.cc",
     "dns_response_result_extractor_unittest.cc",
     "dns_response_unittest.cc",
-    "dns_socket_allocator_unittest.cc",
     "dns_transaction_unittest.cc",
     "dns_udp_tracker_unittest.cc",
     "dns_util_unittest.cc",
@@ -451,18 +449,14 @@ source_set("test_support") {
   visibility = [ "//net:test_support" ]
   testonly = true
   sources = [
-    "address_info_test_util.cc",
     "dns_test_util.cc",
     "host_resolver_results_test_util.cc",
     "mock_host_resolver.cc",
-    "test_dns_config_service.cc",
   ]
   public = [
-    "address_info_test_util.h",
     "dns_test_util.h",
     "host_resolver_results_test_util.h",
     "mock_host_resolver.h",
-    "test_dns_config_service.h",
   ]
 
   if (enable_mdns) {

@@ -7,6 +7,7 @@
 #include <gtest/gtest.h>
 
 #include "base/feature_list.h"
+#include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/shared_highlighting/core/common/shared_highlighting_features.h"
@@ -20,7 +21,10 @@
 #include "third_party/blink/renderer/core/css/font_face_set_document.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/editing/markers/document_marker_controller.h"
+#include "third_party/blink/renderer/core/editing/selection_template.h"
 #include "third_party/blink/renderer/core/editing/visible_units.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/location.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
@@ -36,9 +40,6 @@ class TextFragmentHandlerTest : public SimTest {
   void SetUp() override {
     SimTest::SetUp();
     WebView().MainFrameViewWidget()->Resize(gfx::Size(800, 600));
-
-    feature_list_.InitWithFeatures({shared_highlighting::kSharedHighlightingV2},
-                                   {});
   }
 
   void BeginEmptyFrame() {
@@ -66,20 +67,31 @@ class TextFragmentHandlerTest : public SimTest {
         SetSelectionOptions());
   }
 
+  void SetLocationHash(Document& document, String hash) {
+    ScriptState* script_state = ToScriptStateForMainWorld(document.GetFrame());
+    ScriptState::Scope entered_context_scope(script_state);
+    document.GetFrame()->DomWindow()->location()->setHash(
+        script_state->GetIsolate(), hash, ASSERT_NO_EXCEPTION);
+  }
+
   String SelectThenRequestSelector(const Position& start, const Position& end) {
     SetSelection(start, end);
-    GetTextFragmentHandler().StartPreemptiveGenerationIfNeeded();
+    TextFragmentHandler::OpenedContextMenuOverSelection(
+        GetDocument().GetFrame());
     return RequestSelector();
   }
 
   String RequestSelector() {
     bool callback_called = false;
     String selector;
-    auto lambda = [](bool& callback_called, String& selector,
-                     const String& generated_selector) {
-      selector = generated_selector;
-      callback_called = true;
-    };
+    auto lambda =
+        [](bool& callback_called, String& selector,
+           const String& generated_selector,
+           shared_highlighting::LinkGenerationError error,
+           shared_highlighting::LinkGenerationReadyStatus ready_status) {
+          selector = generated_selector;
+          callback_called = true;
+        };
     auto callback =
         WTF::Bind(lambda, std::ref(callback_called), std::ref(selector));
     GetTextFragmentHandler().RequestSelector(std::move(callback));
@@ -140,72 +152,9 @@ class TextFragmentHandlerTest : public SimTest {
         ->addForBinding(script_state, ahem, exception_state);
   }
 
-  void VerifyPreemptiveGenerationMetricsDetailed(
-      bool success,
-      bool requested_after_ready,
-      absl::optional<shared_highlighting::LinkGenerationError> error,
-      bool has_async_tasks) {
-    base::StringPiece recorded_histograme;
-    base::StringPiece not_recorded_histogram;
-    if (requested_after_ready) {
-      recorded_histograme =
-          "SharedHighlights.LinkGenerated.RequestedAfterReady";
-      not_recorded_histogram =
-          "SharedHighlights.LinkGenerated.RequestedBeforeReady";
-    } else {
-      recorded_histograme =
-          "SharedHighlights.LinkGenerated.RequestedBeforeReady";
-      not_recorded_histogram =
-          "SharedHighlights.LinkGenerated.RequestedAfterReady";
-    }
-
-    histogram_tester_.ExpectTotalCount(recorded_histograme, 1);
-    histogram_tester_.ExpectTotalCount(not_recorded_histogram, 0);
-    histogram_tester_.ExpectBucketCount(recorded_histograme, success, 1);
-
-    histogram_tester_.ExpectTotalCount(
-        "SharedHighlights.LinkGenerated.Error.Requested", !success);
-    if (!success && error.has_value()) {
-      histogram_tester_.ExpectBucketCount(
-          "SharedHighlights.LinkGenerated.Error.Requested", error.value(), 1);
-    }
-
-    if (has_async_tasks) {
-      EXPECT_LT(0u, histogram_tester_
-                        .GetAllSamples("SharedHighlights.AsyncTask.Iterations")
-                        .size());
-      EXPECT_LT(0u,
-                histogram_tester_
-                    .GetAllSamples("SharedHighlights.AsyncTask.SearchDuration")
-                    .size());
-    }
-  }
-
-  void VerifyPreemptiveGenerationMetrics(bool success) {
-    EXPECT_EQ(1u,
-              histogram_tester_
-                      .GetAllSamples(
-                          "SharedHighlights.LinkGenerated.RequestedAfterReady")
-                      .size() +
-                  histogram_tester_
-                      .GetAllSamples(
-                          "SharedHighlights.LinkGenerated.RequestedBeforeReady")
-                      .size());
-
-    histogram_tester_.ExpectTotalCount(
-        "SharedHighlights.LinkGenerated.Error.Requested", !success);
-
-    // Check async task metrics.
-    EXPECT_LT(0u, histogram_tester_
-                      .GetAllSamples("SharedHighlights.AsyncTask.Iterations")
-                      .size());
-    EXPECT_LT(0u,
-              histogram_tester_
-                  .GetAllSamples("SharedHighlights.AsyncTask.SearchDuration")
-                  .size());
-  }
-
   TextFragmentHandler& GetTextFragmentHandler() {
+    if (!GetDocument().GetFrame()->GetTextFragmentHandler())
+      GetDocument().GetFrame()->CreateTextFragmentHandler();
     return *GetDocument().GetFrame()->GetTextFragmentHandler();
   }
 
@@ -642,7 +591,7 @@ TEST_F(TextFragmentHandlerTest, CheckPreemptiveGeneration) {
   ASSERT_EQ("First", PlainText(EphemeralRange(selected_start, selected_end)));
 
   SetSelection(selected_start, selected_end);
-  GetTextFragmentHandler().StartPreemptiveGenerationIfNeeded();
+  TextFragmentHandler::OpenedContextMenuOverSelection(GetDocument().GetFrame());
 
   base::RunLoop().RunUntilIdle();
 
@@ -665,7 +614,7 @@ TEST_F(TextFragmentHandlerTest, CheckNoPreemptiveGenerationBlocklist) {
   ASSERT_EQ("First", PlainText(EphemeralRange(selected_start, selected_end)));
 
   SetSelection(selected_start, selected_end);
-  GetTextFragmentHandler().StartPreemptiveGenerationIfNeeded();
+  TextFragmentHandler::OpenedContextMenuOverSelection(GetDocument().GetFrame());
 
   base::RunLoop().RunUntilIdle();
 
@@ -691,7 +640,7 @@ TEST_F(TextFragmentHandlerTest, CheckNoPreemptiveGenerationEditable) {
             PlainText(EphemeralRange(selected_start, selected_end)));
 
   SetSelection(selected_start, selected_end);
-  GetTextFragmentHandler().StartPreemptiveGenerationIfNeeded();
+  TextFragmentHandler::OpenedContextMenuOverSelection(GetDocument().GetFrame());
 
   base::RunLoop().RunUntilIdle();
 
@@ -716,17 +665,14 @@ TEST_F(TextFragmentHandlerTest, SecondGenerationCrash) {
   ASSERT_EQ("First paragraph", PlainText(EphemeralRange(start, end)));
   SetSelection(start, end);
 
-  auto callback = WTF::Bind(
-      [](const TextFragmentSelector& selector,
-         absl::optional<shared_highlighting::LinkGenerationError> error) {});
-  GetDocument()
-      .GetFrame()
-      ->GetTextFragmentHandler()
-      ->GetTextFragmentSelectorGenerator()
+  auto callback =
+      WTF::Bind([](const TextFragmentSelector& selector,
+                   shared_highlighting::LinkGenerationError error) {});
+  MakeGarbageCollected<TextFragmentSelectorGenerator>(GetDocument().GetFrame())
       ->SetCallbackForTesting(std::move(callback));
 
   // This shouldn't crash.
-  GetTextFragmentHandler().StartPreemptiveGenerationIfNeeded();
+  TextFragmentHandler::OpenedContextMenuOverSelection(GetDocument().GetFrame());
   base::RunLoop().RunUntilIdle();
 }
 
@@ -751,7 +697,6 @@ TEST_F(TextFragmentHandlerTest, CheckMetrics_Success) {
 
   String selector = SelectThenRequestSelector(selected_start, selected_end);
   EXPECT_EQ(selector, "First%20paragraph%20text%20that%20is");
-  VerifyPreemptiveGenerationMetrics(true);
 }
 
 // Verifies metrics for preemptive generation are correctly recorded when the
@@ -774,7 +719,6 @@ TEST_F(TextFragmentHandlerTest, CheckMetrics_Failure) {
             PlainText(EphemeralRange(selected_start, selected_end)));
   String selector = SelectThenRequestSelector(selected_start, selected_end);
   EXPECT_EQ(selector, "");
-  VerifyPreemptiveGenerationMetrics(false);
 }
 
 TEST_F(TextFragmentHandlerTest,
@@ -815,10 +759,9 @@ TEST_F(TextFragmentHandlerTest,
       To<LocalFrame>(To<HTMLFrameOwnerElement>(iframe)->ContentFrame());
 
   EXPECT_EQ(1u, child_frame->GetDocument()->Markers().Markers().size());
-  EXPECT_FALSE(HasTextFragmentHandler(child_frame));
+  EXPECT_TRUE(HasTextFragmentHandler(child_frame));
 
-  child_frame->CreateTextFragmentHandler();
-  GetTextFragmentHandler().StartPreemptiveGenerationIfNeeded();
+  TextFragmentHandler::OpenedContextMenuOverSelection(GetDocument().GetFrame());
 
   mojo::Remote<mojom::blink::TextFragmentReceiver> remote;
   child_frame->BindTextFragmentReceiver(remote.BindNewPipeAndPassReceiver());
@@ -833,15 +776,58 @@ TEST_F(TextFragmentHandlerTest,
   EXPECT_FALSE(child_frame->GetDocument()->View()->GetFragmentAnchor());
 }
 
+TEST_F(TextFragmentHandlerTest, NonMatchingTextDirectiveCreatesHandler) {
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <p>This is a test page</p>
+  )HTML");
+  Compositor().BeginFrame();
+
+  ASSERT_FALSE(HasTextFragmentHandler(GetDocument().GetFrame()));
+
+  // Navigate to a text directive that doesn't exist on the page.
+  SetLocationHash(GetDocument(), ":~:text=non%20existent%20text");
+
+  Compositor().BeginFrame();
+  BeginEmptyFrame();
+  RunAsyncMatchingTasks();
+
+  ASSERT_EQ(0u, GetDocument().Markers().Markers().size());
+
+  // Even though the directive didn't find a match, a handler is created by the
+  // attempt.
+  EXPECT_TRUE(HasTextFragmentHandler(GetDocument().GetFrame()));
+}
+
+TEST_F(TextFragmentHandlerTest, MatchingTextDirectiveCreatesHandler) {
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <p>This is a test page</p>
+  )HTML");
+  Compositor().BeginFrame();
+
+  ASSERT_FALSE(HasTextFragmentHandler(GetDocument().GetFrame()));
+
+  // Navigate to a text directive that highlights "test page".
+  SetLocationHash(GetDocument(), ":~:text=test%20page");
+
+  Compositor().BeginFrame();
+  Compositor().BeginFrame();
+  RunAsyncMatchingTasks();
+
+  ASSERT_EQ(1u, GetDocument().Markers().Markers().size());
+
+  EXPECT_TRUE(HasTextFragmentHandler(GetDocument().GetFrame()));
+}
+
 TEST_F(TextFragmentHandlerTest,
        ShouldCreateTextFragmentHandlerAndRemoveHighlight) {
-  SimRequest request(
-      "https://example.com/"
-      "test.html#:~:text=test%20page&text=more%20text",
-      "text/html");
-  LoadURL(
-      "https://example.com/"
-      "test.html#:~:text=test%20page&text=more%20text");
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
   request.Complete(R"HTML(
     <!DOCTYPE html>
     <style>
@@ -860,28 +846,34 @@ TEST_F(TextFragmentHandlerTest,
     <p id="first">This is a test page</p>
     <p id="second">With some more text</p>
   )HTML");
-  RunAsyncMatchingTasks();
+  Compositor().BeginFrame();
+
+  ASSERT_EQ(0u, GetDocument().Markers().Markers().size());
+  ASSERT_FALSE(HasTextFragmentHandler(GetDocument().GetFrame()));
+
+  // Binding a receiver should create a handler.
+  mojo::Remote<mojom::blink::TextFragmentReceiver> remote;
+  GetDocument().GetFrame()->BindTextFragmentReceiver(
+      remote.BindNewPipeAndPassReceiver());
+  EXPECT_TRUE(remote.is_bound());
+  EXPECT_TRUE(HasTextFragmentHandler(GetDocument().GetFrame()));
+
+  // Set the fragment to two text directives.
+  SetLocationHash(GetDocument(), ":~:text=test%20page&text=more%20text");
 
   // Render two frames to handle the async step added by the beforematch event.
   Compositor().BeginFrame();
   Compositor().BeginFrame();
+  RunAsyncMatchingTasks();
 
-  EXPECT_EQ(2u, GetDocument().Markers().Markers().size());
-  EXPECT_TRUE(HasTextFragmentHandler(GetDocument().GetFrame()));
+  ASSERT_EQ(2u, GetDocument().Markers().Markers().size());
 
-  mojo::Remote<mojom::blink::TextFragmentReceiver> remote;
-  EXPECT_FALSE(remote.is_bound());
-  GetDocument().GetFrame()->BindTextFragmentReceiver(
-      remote.BindNewPipeAndPassReceiver());
-
-  EXPECT_TRUE(HasTextFragmentHandler(GetDocument().GetFrame()));
-  EXPECT_TRUE(remote.is_bound());
+  // Ensure RemoveFragments called via Mojo removes the document markers.
   remote.get()->RemoveFragments();
-
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0u, GetDocument().Markers().Markers().size());
 
-  // Ensure the fragment is uninstalled
+  // Ensure the fragment was uninstalled.
   EXPECT_FALSE(GetDocument().View()->GetFragmentAnchor());
 }
 
@@ -905,10 +897,10 @@ TEST_F(TextFragmentHandlerTest,
   SetSelection(selected_start, selected_end);
 
   mojo::Remote<mojom::blink::TextFragmentReceiver> remote;
-  EXPECT_TRUE(HasTextFragmentHandler(GetDocument().GetFrame()));
+  EXPECT_FALSE(HasTextFragmentHandler(GetDocument().GetFrame()));
   EXPECT_FALSE(remote.is_bound());
 
-  GetTextFragmentHandler().StartPreemptiveGenerationIfNeeded();
+  TextFragmentHandler::OpenedContextMenuOverSelection(GetDocument().GetFrame());
   GetDocument().GetFrame()->BindTextFragmentReceiver(
       remote.BindNewPipeAndPassReceiver());
 
@@ -917,11 +909,14 @@ TEST_F(TextFragmentHandlerTest,
 
   bool callback_called = false;
   String selector;
-  auto lambda = [](bool& callback_called, String& selector,
-                   const String& generated_selector) {
-    selector = generated_selector;
-    callback_called = true;
-  };
+  auto lambda =
+      [](bool& callback_called, String& selector,
+         const String& generated_selector,
+         shared_highlighting::LinkGenerationError error,
+         shared_highlighting::LinkGenerationReadyStatus ready_status) {
+        selector = generated_selector;
+        callback_called = true;
+      };
   auto callback =
       WTF::Bind(lambda, std::ref(callback_called), std::ref(selector));
   remote->RequestSelector(std::move(callback));
@@ -929,170 +924,10 @@ TEST_F(TextFragmentHandlerTest,
   EXPECT_TRUE(callback_called);
 
   EXPECT_EQ(selector, "First%20paragraph%20text%20that%20is");
-  VerifyPreemptiveGenerationMetrics(true);
 }
 
-// Verifies that removing a text fragments from an iframe updates the URL
-TEST_F(TextFragmentHandlerTest, ShouldUpdateUrlAndRemoveHighlightForIframes) {
-  SimRequest main_request("https://example.com/test.html#:~:text=test",
-                          "text/html");
-  SimRequest child_request("https://example.com/child.html", "text/html");
-  LoadURL(
-      "https://example.com/"
-      "test.html#:~:text=test");
-  main_request.Complete(R"HTML(
-    <!DOCTYPE html>
-    <iframe id="iframe" src="child.html"></iframe>
-  )HTML");
-
-  child_request.Complete(R"HTML(
-    <!DOCTYPE html>
-    <style>
-      p {
-        margin-top: 1000px;
-      }
-    </style>
-    <p>
-      test
-    </p>
-    <script>
-      window.location.hash = ':~:text=test';
-    </script>
-  )HTML");
-  RunAsyncMatchingTasks();
-
-  // Render two frames to handle the async step added by the beforematch event.
-  Compositor().BeginFrame();
-  BeginEmptyFrame();
-
-  Element* iframe = GetDocument().getElementById("iframe");
-  auto* child_frame =
-      To<LocalFrame>(To<HTMLFrameOwnerElement>(iframe)->ContentFrame());
-
-  EXPECT_EQ(1u, child_frame->GetDocument()->Markers().Markers().size());
-  EXPECT_FALSE(HasTextFragmentHandler(child_frame));
-  EXPECT_EQ("https://example.com/test.html#:~:text=test",
-            GetDocument()
-                .GetFrame()
-                ->Loader()
-                .GetDocumentLoader()
-                ->GetHistoryItem()
-                ->Url());
-  EXPECT_EQ("https://example.com/child.html#:~:text=test",
-            child_frame->Loader().GetDocumentLoader()->GetHistoryItem()->Url());
-
-  mojo::Remote<mojom::blink::TextFragmentReceiver> remote;
-
-  child_frame->BindTextFragmentReceiver(remote.BindNewPipeAndPassReceiver());
-  ASSERT_TRUE(remote.is_bound());
-  remote.get()->RemoveFragments();
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_EQ("https://example.com/child.html",
-            child_frame->Loader().GetDocumentLoader()->GetHistoryItem()->Url());
-
-  // Remove the selectors from the main frame and update url
-  remote.reset();
-  ASSERT_TRUE(!remote.is_bound());
-  GetDocument().GetFrame()->BindTextFragmentReceiver(
-      remote.BindNewPipeAndPassReceiver());
-  ASSERT_TRUE(remote.is_bound());
-  remote.get()->RemoveFragments();
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_EQ(0u, child_frame->GetDocument()->Markers().Markers().size());
-  EXPECT_FALSE(child_frame->GetDocument()->View()->GetFragmentAnchor());
-  EXPECT_EQ("https://example.com/test.html", GetDocument()
-                                                 .GetFrame()
-                                                 ->Loader()
-                                                 .GetDocumentLoader()
-                                                 ->GetHistoryItem()
-                                                 ->Url());
-}
-
-// When the main frame and an iFrame have different selectors, it verifies that
-// removing a text fragments from the iframe updates the URL.
-TEST_F(TextFragmentHandlerTest,
-       ShouldUpdateMainFrameUrlWhenMainFrameAndIframeHaveDifferentSelectors) {
-  SimRequest main_request("https://example.com/test.html#:~:text=test",
-                          "text/html");
-  SimRequest child_request("https://example.com/child.html", "text/html");
-  LoadURL(
-      "https://example.com/"
-      "test.html#:~:text=test");
-  main_request.Complete(R"HTML(
-    <!DOCTYPE html>
-    <iframe id="iframe" src="child.html"></iframe>
-  )HTML");
-
-  child_request.Complete(R"HTML(
-    <!DOCTYPE html>
-    <style>
-      p {
-        margin-top: 1000px;
-      }
-    </style>
-    <p>
-      iframe
-    </p>
-    <script>
-      window.location.hash = ':~:text=iframe';
-    </script>
-  )HTML");
-  RunAsyncMatchingTasks();
-
-  // Render two frames to handle the async step added by the beforematch event.
-  Compositor().BeginFrame();
-  BeginEmptyFrame();
-
-  Element* iframe = GetDocument().getElementById("iframe");
-  auto* child_frame =
-      To<LocalFrame>(To<HTMLFrameOwnerElement>(iframe)->ContentFrame());
-
-  EXPECT_EQ(1u, child_frame->GetDocument()->Markers().Markers().size());
-  EXPECT_FALSE(HasTextFragmentHandler(child_frame));
-  EXPECT_EQ("https://example.com/test.html#:~:text=test",
-            GetDocument()
-                .GetFrame()
-                ->Loader()
-                .GetDocumentLoader()
-                ->GetHistoryItem()
-                ->Url());
-  EXPECT_EQ("https://example.com/child.html#:~:text=iframe",
-            child_frame->Loader().GetDocumentLoader()->GetHistoryItem()->Url());
-
-  mojo::Remote<mojom::blink::TextFragmentReceiver> remote;
-
-  // Remove the selectors from the iframe
-  child_frame->BindTextFragmentReceiver(remote.BindNewPipeAndPassReceiver());
-  ASSERT_TRUE(remote.is_bound());
-  remote.get()->RemoveFragments();
-  base::RunLoop().RunUntilIdle();
-
-  // Remove the selectors from the main frame
-  remote.reset();
-  ASSERT_TRUE(!remote.is_bound());
-  GetDocument().GetFrame()->BindTextFragmentReceiver(
-      remote.BindNewPipeAndPassReceiver());
-  ASSERT_TRUE(remote.is_bound());
-  remote.get()->RemoveFragments();
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_EQ(0u, child_frame->GetDocument()->Markers().Markers().size());
-  EXPECT_FALSE(child_frame->GetDocument()->View()->GetFragmentAnchor());
-  EXPECT_EQ("https://example.com/child.html",
-            child_frame->Loader().GetDocumentLoader()->GetHistoryItem()->Url());
-  EXPECT_EQ("https://example.com/test.html", GetDocument()
-                                                 .GetFrame()
-                                                 ->Loader()
-                                                 .GetDocumentLoader()
-                                                 ->GetHistoryItem()
-                                                 ->Url());
-}
-
-// When the main frame and an iFrame both have highlighted text, it verifies
-// that removing a text fragments from the main frame and the iframe, updates
-// there respective URL and remove the highlights.
+// Verify that removing a shared highlight removes document markers and the
+// text directive from the URL, for both main frame and subframe.
 TEST_F(TextFragmentHandlerTest,
        ShouldRemoveFromMainFrameAndIframeWhenBothHaveHighlights) {
   SimRequest main_request("https://example.com/test.html#:~:text=test",
@@ -1130,48 +965,43 @@ TEST_F(TextFragmentHandlerTest,
   Element* iframe = GetDocument().getElementById("iframe");
   auto* child_frame =
       To<LocalFrame>(To<HTMLFrameOwnerElement>(iframe)->ContentFrame());
+  auto* main_frame = GetDocument().GetFrame();
 
-  EXPECT_EQ(1u, child_frame->GetDocument()->Markers().Markers().size());
-  EXPECT_FALSE(HasTextFragmentHandler(child_frame));
-  EXPECT_EQ("https://example.com/test.html#:~:text=test",
-            GetDocument()
-                .GetFrame()
-                ->Loader()
-                .GetDocumentLoader()
-                ->GetHistoryItem()
-                ->Url());
-  EXPECT_EQ("https://example.com/child.html#:~:text=iframe",
-            child_frame->Loader().GetDocumentLoader()->GetHistoryItem()->Url());
-  EXPECT_EQ(1u, GetDocument().Markers().Markers().size());
-
-  mojo::Remote<mojom::blink::TextFragmentReceiver> remote;
-
-  // Remove the selectors from the iframe
-  child_frame->BindTextFragmentReceiver(remote.BindNewPipeAndPassReceiver());
-  ASSERT_TRUE(remote.is_bound());
-  remote.get()->RemoveFragments();
-  base::RunLoop().RunUntilIdle();
-
-  // Remove the selectors from the main frame
-  remote.reset();
-  ASSERT_TRUE(!remote.is_bound());
-  GetDocument().GetFrame()->BindTextFragmentReceiver(
-      remote.BindNewPipeAndPassReceiver());
-  ASSERT_TRUE(remote.is_bound());
-  remote.get()->RemoveFragments();
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_EQ(0u, child_frame->GetDocument()->Markers().Markers().size());
-  EXPECT_EQ("https://example.com/child.html",
+  ASSERT_EQ(1u, child_frame->GetDocument()->Markers().Markers().size());
+  ASSERT_EQ("https://example.com/child.html#:~:text=iframe",
             child_frame->Loader().GetDocumentLoader()->GetHistoryItem()->Url());
 
-  EXPECT_EQ(0u, GetDocument().Markers().Markers().size());
-  EXPECT_EQ("https://example.com/test.html", GetDocument()
-                                                 .GetFrame()
-                                                 ->Loader()
-                                                 .GetDocumentLoader()
-                                                 ->GetHistoryItem()
-                                                 ->Url());
+  ASSERT_EQ(1u, GetDocument().Markers().Markers().size());
+  ASSERT_EQ("https://example.com/test.html#:~:text=test",
+            main_frame->Loader().GetDocumentLoader()->GetHistoryItem()->Url());
+
+  // Remove shared highlights from the iframe.
+  {
+    mojo::Remote<mojom::blink::TextFragmentReceiver> remote;
+    child_frame->BindTextFragmentReceiver(remote.BindNewPipeAndPassReceiver());
+    remote->RemoveFragments();
+    remote.FlushForTesting();
+
+    EXPECT_EQ(0u, child_frame->GetDocument()->Markers().Markers().size());
+    EXPECT_FALSE(child_frame->GetDocument()->View()->GetFragmentAnchor());
+    EXPECT_EQ(
+        "https://example.com/child.html",
+        child_frame->Loader().GetDocumentLoader()->GetHistoryItem()->Url());
+  }
+
+  // Remove shared highlights from the main frame.
+  {
+    mojo::Remote<mojom::blink::TextFragmentReceiver> remote;
+    main_frame->BindTextFragmentReceiver(remote.BindNewPipeAndPassReceiver());
+    remote->RemoveFragments();
+    remote.FlushForTesting();
+
+    EXPECT_EQ(0u, GetDocument().Markers().Markers().size());
+    EXPECT_FALSE(GetDocument().View()->GetFragmentAnchor());
+    EXPECT_EQ(
+        "https://example.com/test.html",
+        main_frame->Loader().GetDocumentLoader()->GetHistoryItem()->Url());
+  }
 }
 
 // crbug.com/1266937 Even if |TextFragmentSelectorGenerator| gets reset between
@@ -1193,17 +1023,40 @@ TEST_F(TextFragmentHandlerTest, IfGeneratorResetShouldRecordCorrectError) {
   ASSERT_EQ(" ", PlainText(EphemeralRange(selected_start, selected_end)));
 
   SetSelection(selected_start, selected_end);
-  GetTextFragmentHandler().StartPreemptiveGenerationIfNeeded();
+  TextFragmentHandler::OpenedContextMenuOverSelection(GetDocument().GetFrame());
 
   // Reset |TextFragmentSelectorGenerator|.
   GetTextFragmentHandler().DidDetachDocumentOrFrame();
 
   EXPECT_EQ(RequestSelector(), "");
 
-  absl::optional<shared_highlighting::LinkGenerationError> expected_error =
+  shared_highlighting::LinkGenerationError expected_error =
       shared_highlighting::LinkGenerationError::kEmptySelection;
   EXPECT_EQ(expected_error, GetTextFragmentHandler().error_);
-  VerifyPreemptiveGenerationMetricsDetailed(false, true, expected_error, false);
 }
 
+// crbug.com/1301794 If generation didn't start requesting selector shouldn't
+// crash.
+TEST_F(TextFragmentHandlerTest, NotGenerated) {
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <div>Test page</div>
+    <p id='first'>First paragraph text that is longer than 20 chars</p>
+    <p id='second'>Second paragraph text</p>
+  )HTML");
+
+  Node* first_paragraph = GetDocument().getElementById("first")->firstChild();
+  const auto& selected_start = Position(first_paragraph, 5);
+  const auto& selected_end = Position(first_paragraph, 6);
+  ASSERT_EQ(" ", PlainText(EphemeralRange(selected_start, selected_end)));
+
+  SetSelection(selected_start, selected_end);
+  EXPECT_EQ(RequestSelector(), "");
+
+  shared_highlighting::LinkGenerationError expected_error =
+      shared_highlighting::LinkGenerationError::kNotGenerated;
+  EXPECT_EQ(expected_error, GetTextFragmentHandler().error_);
+}
 }  // namespace blink

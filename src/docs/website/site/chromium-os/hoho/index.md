@@ -28,9 +28,7 @@ It provides the following features:
 *   video output with resolutions of up to 4K @ 60 Hz (depending on
             system and monitor capabilities)
 
-### [<img alt="image"
-src="/chromium-os/hoho/HoHo%20Block%20Diagram%20%281%29.png" height=316
-width=400>](/chromium-os/hoho/HoHo%20Block%20Diagram%20%281%29.png)
+![image](/chromium-os/hoho/HoHo%20Block%20Diagram%20%281%29.png)
 
 For schematics, [click
 here](https://docs.google.com/a/chromium.org/viewer?a=v&pid=sites&srcid=Y2hyb21pdW0ub3JnfGRldnxneDoyZWUwYmU2NWNiMWMwZTY2)

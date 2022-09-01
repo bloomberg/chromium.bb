@@ -10,8 +10,8 @@
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
-#include "media/base/decode_status.h"
 #include "media/base/decoder_buffer.h"
+#include "media/base/decoder_status.h"
 #include "media/base/media_switches.h"
 #include "media/base/media_util.h"
 #include "media/base/test_data_util.h"
@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
+#include "base/time/time.h"
 #include "third_party/blink/renderer/modules/webcodecs/video_decoder_broker.h"
 using ::testing::_;
 using ::testing::Invoke;
@@ -87,7 +88,9 @@ class FakeMojoMediaClient : public media::MojoMediaClient {
       media::MediaLog* media_log,
       media::mojom::CommandBufferIdPtr command_buffer_id,
       media::RequestOverlayInfoCB request_overlay_info_cb,
-      const gfx::ColorSpace& target_color_space) override {
+      const gfx::ColorSpace& target_color_space,
+      mojo::PendingRemote<media::stable::mojom::StableVideoDecoder>
+          oop_video_decoder) override {
     return std::make_unique<FakeGpuVideoDecoder>();
   }
 };
@@ -112,16 +115,21 @@ class FakeInterfaceFactory : public media::mojom::InterfaceFactory {
   // MojoVideoDecoderService allows us to reuse buffer conversion code. The
   // FakeMojoMediaClient will create a FakeGpuVideoDecoder.
   void CreateVideoDecoder(
-      mojo::PendingReceiver<media::mojom::VideoDecoder> receiver) override {
+      mojo::PendingReceiver<media::mojom::VideoDecoder> receiver,
+      mojo::PendingRemote<media::stable::mojom::StableVideoDecoder>
+          dst_video_decoder) override {
     video_decoder_receivers_.Add(
-        std::make_unique<media::MojoVideoDecoderService>(&mojo_media_client_,
-                                                         &cdm_service_context_),
+        std::make_unique<media::MojoVideoDecoderService>(
+            &mojo_media_client_, &cdm_service_context_,
+            mojo::PendingRemote<media::stable::mojom::StableVideoDecoder>()),
         std::move(receiver));
   }
 
   // Stub out other mojom::InterfaceFactory interfaces.
   void CreateAudioDecoder(
       mojo::PendingReceiver<media::mojom::AudioDecoder> receiver) override {}
+  void CreateAudioEncoder(
+      mojo::PendingReceiver<media::mojom::AudioEncoder> receiver) override {}
   void CreateDefaultRenderer(
       const std::string& audio_device_id,
       mojo::PendingReceiver<media::mojom::Renderer> receiver) override {}
@@ -130,7 +138,7 @@ class FakeInterfaceFactory : public media::mojom::InterfaceFactory {
       const base::UnguessableToken& overlay_plane_id,
       mojo::PendingReceiver<media::mojom::Renderer> receiver) override {}
 #endif
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   void CreateMediaPlayerRenderer(
       mojo::PendingRemote<media::mojom::MediaPlayerRendererClientExtension>
           client_extension_remote,
@@ -142,20 +150,22 @@ class FakeInterfaceFactory : public media::mojom::InterfaceFactory {
       mojo::PendingRemote<media::mojom::FlingingRendererClientExtension>
           client_extension,
       mojo::PendingReceiver<media::mojom::Renderer> receiver) override {}
-#endif  // defined(OS_ANDROID
+#endif  // BUILDFLAG(IS_ANDROID)
   void CreateCdm(const media::CdmConfig& cdm_config,
                  CreateCdmCallback callback) override {
     std::move(callback).Run(mojo::NullRemote(), nullptr, "CDM not supported");
   }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   void CreateMediaFoundationRenderer(
       mojo::PendingRemote<media::mojom::MediaLog> media_log_remote,
       mojo::PendingReceiver<media::mojom::Renderer> receiver,
       mojo::PendingReceiver<media::mojom::MediaFoundationRendererExtension>
-          renderer_extension_receiver) override {}
-#endif  // defined(OS_WIN)
-
+          renderer_extension_receiver,
+      mojo::PendingRemote<
+          ::media::mojom::MediaFoundationRendererClientExtension>
+          client_extension_remote) override {}
+#endif  // BUILDFLAG(IS_WIN)
  private:
   media::MojoCdmServiceContext cdm_service_context_;
   FakeMojoMediaClient mojo_media_client_;
@@ -190,12 +200,13 @@ class VideoDecoderBrokerTest : public testing::Test {
         base::RepeatingCallback<void(mojo::ScopedMessagePipeHandle)>());
   }
 
-  void OnInitWithClosure(base::RepeatingClosure done_cb, media::Status status) {
+  void OnInitWithClosure(base::RepeatingClosure done_cb,
+                         media::DecoderStatus status) {
     OnInit(status);
     done_cb.Run();
   }
   void OnDecodeDoneWithClosure(base::RepeatingClosure done_cb,
-                               media::Status status) {
+                               media::DecoderStatus status) {
     OnDecodeDone(std::move(status));
     done_cb.Run();
   }
@@ -205,8 +216,8 @@ class VideoDecoderBrokerTest : public testing::Test {
     done_cb.Run();
   }
 
-  MOCK_METHOD1(OnInit, void(media::Status status));
-  MOCK_METHOD1(OnDecodeDone, void(media::Status));
+  MOCK_METHOD1(OnInit, void(media::DecoderStatus status));
+  MOCK_METHOD1(OnDecodeDone, void(media::DecoderStatus));
   MOCK_METHOD0(OnResetDone, void());
 
   void OnOutput(scoped_refptr<media::VideoFrame> frame) {
@@ -258,10 +269,12 @@ class VideoDecoderBrokerTest : public testing::Test {
                          bool expect_success = true) {
     base::RunLoop run_loop;
     if (expect_success) {
-      EXPECT_CALL(*this, OnInit(media::SameStatusCode(media::OkStatus())));
+      EXPECT_CALL(*this, OnInit(media::SameStatusCode(media::DecoderStatus(
+                             media::DecoderStatus::Codes::kOk))));
     } else {
-      EXPECT_CALL(*this, OnInit(media::SameStatusCode(media::Status(
-                             media::StatusCode::kDecoderUnsupportedConfig))));
+      EXPECT_CALL(*this,
+                  OnInit(media::SameStatusCode(media::DecoderStatus(
+                      media::DecoderStatus::Codes::kUnsupportedConfig))));
     }
     decoder_broker_->Initialize(
         config, false /*low_delay*/, nullptr /* cdm_context */,
@@ -274,9 +287,9 @@ class VideoDecoderBrokerTest : public testing::Test {
     testing::Mock::VerifyAndClearExpectations(this);
   }
 
-  void DecodeBuffer(
-      scoped_refptr<media::DecoderBuffer> buffer,
-      media::StatusCode expected_status = media::StatusCode::kOk) {
+  void DecodeBuffer(scoped_refptr<media::DecoderBuffer> buffer,
+                    media::DecoderStatus::Codes expected_status =
+                        media::DecoderStatus::Codes::kOk) {
     base::RunLoop run_loop;
     EXPECT_CALL(*this, OnDecodeDone(HasStatusCode(expected_status)));
     decoder_broker_->Decode(
@@ -332,9 +345,9 @@ TEST_F(VideoDecoderBrokerTest, Decode_Uninitialized) {
   // No call to Initialize. Other APIs should fail gracefully.
 
   DecodeBuffer(media::ReadTestDataFile("vp8-I-frame-320x120"),
-               media::DecodeStatus::DECODE_ERROR);
+               media::DecoderStatus::Codes::kNotInitialized);
   DecodeBuffer(media::DecoderBuffer::CreateEOSBuffer(),
-               media::DecodeStatus::DECODE_ERROR);
+               media::DecoderStatus::Codes::kNotInitialized);
   ASSERT_EQ(0U, output_frames_.size());
 
   ResetDecoder();

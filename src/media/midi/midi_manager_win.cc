@@ -16,19 +16,19 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <tuple>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
-#include "base/cxx17_backports.h"
-#include "base/ignore_result.h"
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/task/single_thread_task_runner.h"
+#include "base/time/time.h"
 #include "base/win/windows_version.h"
 #include "media/midi/message_util.h"
 #include "media/midi/midi_manager_winrt.h"
@@ -538,7 +538,7 @@ class MidiManagerWin::OutPort final : public Port {
         midiOutUnprepareHeader(out_handle_, hdr.get(), sizeof(*hdr));
       } else {
         // MIDIHDR will be released on MOM_DONE.
-        ignore_result(hdr.release());
+        std::ignore = hdr.release();
       }
     }
   }
@@ -656,7 +656,7 @@ MidiManagerWin::PortManager::HandleMidiInCallback(HMIDIIN hmi,
         static_cast<uint8_t>((param1 >> 16) & 0xff);
     const uint8_t kData[] = {status_byte, first_data_byte, second_data_byte};
     const size_t len = GetMessageLength(status_byte);
-    DCHECK_LE(len, base::size(kData));
+    DCHECK_LE(len, std::size(kData));
     std::vector<uint8_t> data;
     data.assign(kData, kData + len);
     manager->PostReplyTask(base::BindOnce(
