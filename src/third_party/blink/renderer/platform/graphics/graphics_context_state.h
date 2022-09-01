@@ -85,7 +85,7 @@ class PLATFORM_EXPORT GraphicsContextState final {
   void SetFillColor(const Color&);
 
   // BB LCD bgcolor.
-  Color BbLcdBackgroundColor() const { return fill_flags_.getBbLcdBackgroundColor(); }
+  Color BbLcdBackgroundColor() const { return fill_flags_.getBbLcdBackgroundColor().toSkColor(); }
   void SetBbLcdBackgroundColor(const Color& color);
 
   // Shadow. (This will need tweaking if we use draw loopers for other things.)

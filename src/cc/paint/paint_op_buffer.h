@@ -882,7 +882,7 @@ class CC_PAINT_EXPORT DrawTextBlobOp final : public PaintOpWithFlags {
   bool IsValid() const { return flags.IsValid(); }
   bool HasDrawTextOps() const { return true; }
   bool HasNonOpaqueBbLcdText() const {
-    return SK_AlphaOPAQUE != SkColorGetA(flags.getBbLcdBackgroundColor());
+    return SK_AlphaOPAQUE != SkColorGetA(flags.getBbLcdBackgroundColor().toSkColor());
   }
   static bool AreEqual(const PaintOp* left, const PaintOp* right);
   HAS_SERIALIZATION_FUNCTIONS();

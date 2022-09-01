@@ -54,8 +54,11 @@ class CC_PAINT_EXPORT PaintFlags {
   ALWAYS_INLINE void setAlpha(uint8_t a) {
     color_ = SkColor4f::FromColor(SkColorSetA(color_.toSkColor(), a));
   }
-  ALWAYS_INLINE SkColor getBbLcdBackgroundColor() const { return bb_lcd_background_color_; }
-  ALWAYS_INLINE void setBbLcdBackgroundColor(SkColor color) { bb_lcd_background_color_ = color; }
+  ALWAYS_INLINE SkColor4f getBbLcdBackgroundColor() const { return bb_lcd_background_color_; }
+  ALWAYS_INLINE void setBbLcdBackgroundColor(SkColor color) {
+    bb_lcd_background_color_ = SkColor4f::FromColor(color);
+  }
+  ALWAYS_INLINE void setBbLcdBackgroundColor(SkColor4f color) { bb_lcd_background_color_ = color; }
   ALWAYS_INLINE void setBlendMode(SkBlendMode mode) {
     blend_mode_ = static_cast<uint32_t>(mode);
   }
