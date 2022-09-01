@@ -62,21 +62,8 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     @Override
     public void dispatchAuthenticatedIntent(Intent intent) {
         // This method should never be invoked in WebLayer as this class always returns false for
-        // isIntentToInstantApp().
+        // handlesInstantAppLaunchingInternally().
         assert false;
-    }
-
-    @Override
-    public void didStartActivity(Intent intent) {}
-
-    @Override
-    public @StartActivityIfNeededResult int maybeHandleStartActivityIfNeeded(
-            Intent intent, boolean proxy) {
-        assert !proxy
-            : "|proxy| should be true only for instant apps, which WebLayer doesn't handle";
-
-        // Defer to ExternalNavigationHandler's default logic.
-        return StartActivityIfNeededResult.DID_NOT_HANDLE;
     }
 
     @Override
@@ -194,11 +181,6 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     }
 
     @Override
-    public boolean isIntentToInstantApp(Intent intent) {
-        return false;
-    }
-
-    @Override
     public boolean isIntentToAutofillAssistant(Intent intent) {
         return false;
     }
@@ -223,6 +205,16 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
 
     @Override
     public boolean maybeSetTargetPackage(Intent intent) {
+        return false;
+    }
+
+    @Override
+    public boolean shouldEmbedderInitiatedNavigationsStayInBrowser() {
+        // WebLayer already has APIs that allow the embedder to specify that a navigation shouldn't
+        // result in an external intent (Navigation#disableIntentProcessing() and
+        // NavigateParams#disableIntentProcessing()), and historically embedder-initiated
+        // navigations have been allowed to leave the browser on the initial navigation, so we need
+        // to maintain that behavior.
         return false;
     }
 }

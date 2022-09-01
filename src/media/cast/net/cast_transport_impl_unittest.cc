@@ -11,12 +11,14 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/values.h"
 #include "media/base/fake_single_thread_task_runner.h"
+#include "media/cast/common/encoded_frame.h"
 #include "media/cast/net/cast_transport_config.h"
 #include "media/cast/net/rtcp/rtcp_defines.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -163,17 +165,17 @@ void CastTransportImplTest::InitWithoutLogging() {
 }
 
 void CastTransportImplTest::InitWithOptions() {
-  std::unique_ptr<base::DictionaryValue> options(new base::DictionaryValue);
-  options->SetBoolean("disable_wifi_scan", true);
-  options->SetBoolean("media_streaming_mode", true);
-  options->SetInteger("pacer_target_burst_size", 20);
-  options->SetInteger("pacer_max_burst_size", 100);
+  base::Value::Dict options;
+  options.Set("disable_wifi_scan", true);
+  options.Set("media_streaming_mode", true);
+  options.Set("pacer_target_burst_size", 20);
+  options.Set("pacer_max_burst_size", 100);
   transport_ = new FakePacketSender();
   transport_sender_ = std::make_unique<CastTransportImpl>(
       &testing_clock_, base::TimeDelta(),
       std::make_unique<TransportClient>(nullptr),
       base::WrapUnique(transport_.get()), task_runner_);
-  transport_sender_->SetOptions(*options);
+  transport_sender_->SetOptions(options);
   task_runner_->RunTasks();
 }
 

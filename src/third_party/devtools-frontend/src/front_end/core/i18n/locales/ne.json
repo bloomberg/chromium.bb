@@ -401,6 +401,21 @@
   "core/sdk/DebuggerModel.ts | withBlock": {
     "message": "With ब्लक"
   },
+  "core/sdk/EventBreakpointsModel.ts | auctionWorklet": {
+    "message": "विज्ञापनको लिलामीसम्बन्धी वर्कलेट"
+  },
+  "core/sdk/EventBreakpointsModel.ts | beforeBidderWorkletBiddingStart": {
+    "message": "Bidder Bidding Phase Start"
+  },
+  "core/sdk/EventBreakpointsModel.ts | beforeBidderWorkletReportingStart": {
+    "message": "Bidder Reporting Phase Start"
+  },
+  "core/sdk/EventBreakpointsModel.ts | beforeSellerWorkletReportingStart": {
+    "message": "Seller Reporting Phase Start"
+  },
+  "core/sdk/EventBreakpointsModel.ts | beforeSellerWorkletScoringStart": {
+    "message": "Seller Scoring Phase Start"
+  },
   "core/sdk/NetworkManager.ts | crossoriginReadBlockingCorb": {
     "message": "क्रस-ओरिजिन रिड ब्लकिङ (CORB) ले {PH1} MIME प्रकारको {PH2} क्रस-ओरिजिन रिस्पन्स ब्लक गर्‍यो। थप विवरणका लागि https://www.chromestatus.com/feature/5629709824032768 हेर्नुहोस्।"
   },
@@ -644,9 +659,6 @@
   "core/sdk/sdk-meta.ts | disableWebpFormat": {
     "message": "WebP फर्म्याट असक्षम पार्नुहोस्"
   },
-  "core/sdk/sdk-meta.ts | disabledDarkMode": {
-    "message": "अफ गर्नुहोस्"
-  },
   "core/sdk/sdk-meta.ts | doNotCaptureAsyncStackTraces": {
     "message": "एसिंक्रोनस स्ट्याक ट्रेसहरू क्याप्चर नगर्नुहोस्"
   },
@@ -679,6 +691,9 @@
   },
   "core/sdk/sdk-meta.ts | doNotShowGridTrackSizes": {
     "message": "ग्रिड ट्र्याकका आकार नदेखाइयोस्"
+  },
+  "core/sdk/sdk-meta.ts | doNotShowRulersOnHover": {
+    "message": "होभर गर्दा रुलरहरू नदेखाइऊन्"
   },
   "core/sdk/sdk-meta.ts | emulateAFocusedPage": {
     "message": "फोकस गरिएको पेज अनुकरण गर्नुहोस्"
@@ -743,9 +758,6 @@
   "core/sdk/sdk-meta.ts | enableWebpFormat": {
     "message": "WebP फर्म्याट सक्षम पार्नुहोस्"
   },
-  "core/sdk/sdk-meta.ts | enabledDarkMode": {
-    "message": "अन गर्नुहोस्"
-  },
   "core/sdk/sdk-meta.ts | extendGridLines": {
     "message": "ग्रिड लाइन विस्तार गर्नुहोस्"
   },
@@ -754,9 +766,6 @@
   },
   "core/sdk/sdk-meta.ts | hideFramesPerSecondFpsMeter": {
     "message": "फ्रेम प्रति सेकेन्ड (FPS) मिटर नदेखिने पारियोस्"
-  },
-  "core/sdk/sdk-meta.ts | hideHittestBorders": {
-    "message": "हिट टेस्ट बोर्डरहरू लुकाइऊन्"
   },
   "core/sdk/sdk-meta.ts | hideLayerBorders": {
     "message": "लेयरको किनारा लुकाइयोस्"
@@ -812,9 +821,6 @@
   "core/sdk/sdk-meta.ts | showGridTrackSizes": {
     "message": "ग्रिड ट्र्याकका आकार देखाइयोस्"
   },
-  "core/sdk/sdk-meta.ts | showHittestBorders": {
-    "message": "हिट टेस्ट बोर्डरहरू देखाइऊन्"
-  },
   "core/sdk/sdk-meta.ts | showLayerBorders": {
     "message": "लेयरका किनाराहरू देखाइऊन्"
   },
@@ -833,8 +839,8 @@
   "core/sdk/sdk-meta.ts | showPaintFlashingRectangles": {
     "message": "पेन्ट फ्ल्यासिङ आयतहरू देखाइऊन्"
   },
-  "core/sdk/sdk-meta.ts | showRulers": {
-    "message": "रुलरहरू देखाइऊन्"
+  "core/sdk/sdk-meta.ts | showRulersOnHover": {
+    "message": "होभर गर्दा रुलरहरू देखाइऊन्"
   },
   "core/sdk/sdk-meta.ts | showScrollPerformanceBottlenecks": {
     "message": "स्क्रोल पर्फर्मेन्स बोटलनेक देखाइयोस्"
@@ -875,14 +881,20 @@
   "entrypoints/inspector_main/RenderingOptions.ts | emulateAFocusedPage": {
     "message": "फोकस गरिएको पेज अनुकरण गर्नुहोस्"
   },
+  "entrypoints/inspector_main/RenderingOptions.ts | emulateAutoDarkMode": {
+    "message": "अँध्यारो मोड स्वतः अन गरियोस्"
+  },
   "entrypoints/inspector_main/RenderingOptions.ts | emulatesAFocusedPage": {
     "message": "फोकस गरिएको पेज अनुकरण गर्छ।"
   },
   "entrypoints/inspector_main/RenderingOptions.ts | emulatesAutoDarkMode": {
-    "message": "जाँच गरिएको पेजमा स्वचालित अँध्यारो मोड अन गर्छ।"
+    "message": "यसले अँध्यारो मोड स्वतः अन गर्छ र prefers-color-scheme को मान dark सेट गर्छ।"
   },
   "entrypoints/inspector_main/RenderingOptions.ts | forcesCssColorgamutMediaFeature": {
     "message": "CSS color-gamut मिडिया सुविधाका लागि बाध्य पार्छ"
+  },
+  "entrypoints/inspector_main/RenderingOptions.ts | forcesCssForcedColors": {
+    "message": "CSS forced-colors मिडिया सुविधाका लागि बाध्य पार्छ"
   },
   "entrypoints/inspector_main/RenderingOptions.ts | forcesCssPreferscolorschemeMedia": {
     "message": "CSS prefers-color-scheme मिडिया सुविधाका लागि बाध्य पार्छ"
@@ -920,9 +932,6 @@
   "entrypoints/inspector_main/RenderingOptions.ts | highlightsFramesRedDetectedToBe": {
     "message": "विज्ञापनका रूपमा पत्ता लागेका फ्रेम (रातो) हाइलाइट गर्छ।"
   },
-  "entrypoints/inspector_main/RenderingOptions.ts | hittestBorders": {
-    "message": "हिट-टेस्ट बोर्डर"
-  },
   "entrypoints/inspector_main/RenderingOptions.ts | layerBorders": {
     "message": "लेयरको किनारा"
   },
@@ -943,9 +952,6 @@
   },
   "entrypoints/inspector_main/RenderingOptions.ts | showsAnOverlayWithCoreWebVitals": {
     "message": "वेबसाइटको कार्यसम्पादनका बारेमा जानकारी दिने ओभरले देखाउँछ।"
-  },
-  "entrypoints/inspector_main/RenderingOptions.ts | showsBordersAroundHittestRegions": {
-    "message": "यसले हिट टेस्ट क्षेत्र वरपरका किनाराहरू देखाउँछ।"
   },
   "entrypoints/inspector_main/RenderingOptions.ts | showsLayerBordersOrangeoliveAnd": {
     "message": "लेयरको किनारा (सुन्तला, ओलिभ) र टाइल (सायन) देखाउँछ।"
@@ -998,10 +1004,13 @@
   "entrypoints/inspector_main/inspector_main-meta.ts | showRendering": {
     "message": "रेन्डरिङ नामक संयन्त्र देखाइयोस्"
   },
+  "entrypoints/inspector_main/inspector_main-meta.ts | toggleCssPrefersColorSchemeMedia": {
+    "message": "Toggle forces CSS prefers-color-scheme color"
+  },
   "entrypoints/inspector_main/inspector_main-meta.ts | visionDeficiency": {
     "message": "भिजनको कमी"
   },
-  "entrypoints/js_app/JsMain.ts | main": {
+  "entrypoints/js_app/js_app.ts | main": {
     "message": "मुख्य"
   },
   "entrypoints/main/MainImpl.ts | customizeAndControlDevtools": {
@@ -1036,9 +1045,6 @@
   },
   "entrypoints/main/MainImpl.ts | showConsoleDrawer": {
     "message": "कन्सोल ड्रअर देखाइयोस्"
-  },
-  "entrypoints/main/MainImpl.ts | theSystempreferredColorSchemeHas": {
-    "message": "प्रणालीले रुचाएको रङको योजना परिवर्तन गरिएको छ। तपाईं यो परिवर्तन DevTools मा लागू गर्न चाहनुहुन्छ भने रिलोड गर्नुहोस्।"
   },
   "entrypoints/main/MainImpl.ts | undockIntoSeparateWindow": {
     "message": "छुट्टै विन्डोमा अनडक गर्नुहोस्"
@@ -1190,41 +1196,41 @@
   "entrypoints/main/main-meta.ts | zoomOut": {
     "message": "जुम आउट"
   },
-  "entrypoints/node_app/node_app-meta.ts | node": {
-    "message": "नोड"
-  },
-  "entrypoints/node_app/node_app-meta.ts | showNode": {
-    "message": "नोड"
-  },
-  "entrypoints/node_main/NodeConnectionsPanel.ts | addConnection": {
+  "entrypoints/node_app/NodeConnectionsPanel.ts | addConnection": {
     "message": "कनेक्सन थप्नुहोस्"
   },
-  "entrypoints/node_main/NodeConnectionsPanel.ts | networkAddressEgLocalhost": {
+  "entrypoints/node_app/NodeConnectionsPanel.ts | networkAddressEgLocalhost": {
     "message": "नेटवर्कको ठेगाना (जस्तै, localhost:9229)"
   },
-  "entrypoints/node_main/NodeConnectionsPanel.ts | noConnectionsSpecified": {
+  "entrypoints/node_app/NodeConnectionsPanel.ts | noConnectionsSpecified": {
     "message": "कुनै पनि कनेक्सन तोकिएको छैन"
   },
-  "entrypoints/node_main/NodeConnectionsPanel.ts | nodejsDebuggingGuide": {
+  "entrypoints/node_app/NodeConnectionsPanel.ts | nodejsDebuggingGuide": {
     "message": "Node.js डिबग गर्नेसम्बन्धी गाइड"
   },
-  "entrypoints/node_main/NodeConnectionsPanel.ts | specifyNetworkEndpointAnd": {
+  "entrypoints/node_app/NodeConnectionsPanel.ts | specifyNetworkEndpointAnd": {
     "message": "तपाईंले नेटवर्क एन्डपोइन्ट तोक्नुभयो भने DevTools स्वतः त्यसमा कनेक्ट हुने छ। यसबारे थप जान्न {PH1} पढ्नुहोस्।"
   },
-  "entrypoints/node_main/NodeMain.ts | main": {
+  "entrypoints/node_app/NodeMain.ts | main": {
     "message": "मुख्य"
   },
-  "entrypoints/node_main/NodeMain.ts | nodejsS": {
+  "entrypoints/node_app/NodeMain.ts | nodejsS": {
     "message": "Node.js: {PH1}"
   },
-  "entrypoints/node_main/node_main-meta.ts | connection": {
+  "entrypoints/node_app/node_app.ts | connection": {
     "message": "कनेक्सन"
   },
-  "entrypoints/node_main/node_main-meta.ts | node": {
+  "entrypoints/node_app/node_app.ts | networkTitle": {
     "message": "नोड"
   },
-  "entrypoints/node_main/node_main-meta.ts | showConnection": {
+  "entrypoints/node_app/node_app.ts | node": {
+    "message": "नोड"
+  },
+  "entrypoints/node_app/node_app.ts | showConnection": {
     "message": "कनेक्सन देखाइयोस्"
+  },
+  "entrypoints/node_app/node_app.ts | showNode": {
+    "message": "नोड"
   },
   "entrypoints/worker_app/WorkerMain.ts | main": {
     "message": "मुख्य"
@@ -1304,6 +1310,9 @@
   "models/har/Writer.ts | writingFile": {
     "message": "फाइल राइट गरिँदै छ…"
   },
+  "models/issues_manager/ClientHintIssue.ts | clientHintsInfrastructure": {
+    "message": "Client Hints Infrastructure"
+  },
   "models/issues_manager/ContentSecurityPolicyIssue.ts | contentSecurityPolicyEval": {
     "message": "सामग्रीको सुरक्षासम्बन्धी नीति - इभल"
   },
@@ -1319,17 +1328,182 @@
   "models/issues_manager/ContentSecurityPolicyIssue.ts | trustedTypesPolicyViolation": {
     "message": "Trusted Types - नीतिको उल्लङ्घन"
   },
+  "models/issues_manager/CookieIssue.ts | aSecure": {
+    "message": "सुरक्षित"
+  },
+  "models/issues_manager/CookieIssue.ts | anInsecure": {
+    "message": "असुरक्षित"
+  },
+  "models/issues_manager/CookieIssue.ts | firstPartySetsExplained": {
+    "message": "First-Party Sets र SameParty विशेषता"
+  },
+  "models/issues_manager/CookieIssue.ts | howSchemefulSamesiteWorks": {
+    "message": "स्किमफुल सेम-साइटले काम गर्ने तरिका"
+  },
+  "models/issues_manager/CookieIssue.ts | samesiteCookiesExplained": {
+    "message": "SameSite कुकीहरूबारे जानकारी"
+  },
   "models/issues_manager/CorsIssue.ts | CORS": {
     "message": "क्रस ओरिजिन रिसोर्स सेयरिङ (CORS)"
   },
-  "models/issues_manager/CorsIssue.ts | corsForPrivateNetworksRfc": {
-    "message": "निजी नेटवर्कका CORS (RFC1918)"
+  "models/issues_manager/CorsIssue.ts | corsPrivateNetworkAccess": {
+    "message": "निजी नेटवर्क प्रयोग गर्ने अनुमति"
   },
   "models/issues_manager/CrossOriginEmbedderPolicyIssue.ts | coopAndCoep": {
     "message": "COOP र COEP"
   },
   "models/issues_manager/CrossOriginEmbedderPolicyIssue.ts | samesiteAndSameorigin": {
     "message": "Same-Site र Same-Origin"
+  },
+  "models/issues_manager/DeprecationIssue.ts | authorizationCoveredByWildcard": {
+    "message": "Authorization will not be covered by the wildcard symbol (*) in CORS Access-Control-Allow-Headers handling."
+  },
+  "models/issues_manager/DeprecationIssue.ts | canRequestURLHTTPContainingNewline": {
+    "message": "Resource requests whose URLs contained both removed whitespace \\(n|r|t) characters and less-than characters (<) are blocked. Please remove newlines and encode less-than characters from places like element attribute values in order to load these resources."
+  },
+  "models/issues_manager/DeprecationIssue.ts | chromeLoadTimesConnectionInfo": {
+    "message": "chrome.loadTimes() is deprecated, instead use standardized API: Navigation Timing 2."
+  },
+  "models/issues_manager/DeprecationIssue.ts | chromeLoadTimesFirstPaintAfterLoadTime": {
+    "message": "chrome.loadTimes() is deprecated, instead use standardized API: Paint Timing."
+  },
+  "models/issues_manager/DeprecationIssue.ts | chromeLoadTimesWasAlternateProtocolAvailable": {
+    "message": "chrome.loadTimes() is deprecated, instead use standardized API: nextHopProtocol in Navigation Timing 2."
+  },
+  "models/issues_manager/DeprecationIssue.ts | cookieWithTruncatingChar": {
+    "message": "Cookies containing a \\(0|r|n) character will be rejected instead of truncated."
+  },
+  "models/issues_manager/DeprecationIssue.ts | crossOriginAccessBasedOnDocumentDomain": {
+    "message": "Relaxing the same-origin policy by setting document.domain is deprecated, and will be disabled by default. This deprecation warning is for a cross-origin access that was enabled by setting document.domain."
+  },
+  "models/issues_manager/DeprecationIssue.ts | crossOriginWindowApi": {
+    "message": "Triggering {PH1} from cross origin iframes has been deprecated and will be removed in the future."
+  },
+  "models/issues_manager/DeprecationIssue.ts | cssSelectorInternalMediaControlsOverlayCastButton": {
+    "message": "The disableRemotePlayback attribute should be used in order to disable the default Cast integration instead of using -internal-media-controls-overlay-cast-button selector."
+  },
+  "models/issues_manager/DeprecationIssue.ts | customCursorIntersectsViewport": {
+    "message": "Custom cursors with size greater than 32x32 DIP intersecting native UI is deprecated and will be removed."
+  },
+  "models/issues_manager/DeprecationIssue.ts | deprecatedWithReplacement": {
+    "message": "{PH1} is deprecated. Please use {PH2} instead."
+  },
+  "models/issues_manager/DeprecationIssue.ts | deprecationExample": {
+    "message": "यो चल्तीबाट हटाइएको सुविधासम्बन्धी समस्याको अनुवाद गरिएको म्यासेजको उदाहरण हो।"
+  },
+  "models/issues_manager/DeprecationIssue.ts | documentDomainSettingWithoutOriginAgentClusterHeader": {
+    "message": "Relaxing the same-origin policy by setting document.domain is deprecated, and will be disabled by default. To continue using this feature, please opt-out of origin-keyed agent clusters by sending an Origin-Agent-Cluster: ?0 header along with the HTTP response for the document and frames. See https://developer.chrome.com/blog/immutable-document-domain/ for more details."
+  },
+  "models/issues_manager/DeprecationIssue.ts | eventPath": {
+    "message": "Event.path is deprecated and will be removed. Please use Event.composedPath() instead."
+  },
+  "models/issues_manager/DeprecationIssue.ts | feature": {
+    "message": "थप विवरणका लागि सुविधाको स्थितिसम्बन्धी पेज हेर्नुहोस्।"
+  },
+  "models/issues_manager/DeprecationIssue.ts | geolocationInsecureOrigin": {
+    "message": "getCurrentPosition() and watchPosition() no longer work on insecure origins. To use this feature, you should consider switching your application to a secure origin, such as HTTPS. See https://goo.gle/chrome-insecure-origins for more details."
+  },
+  "models/issues_manager/DeprecationIssue.ts | geolocationInsecureOriginDeprecatedNotRemoved": {
+    "message": "getCurrentPosition() and watchPosition() are deprecated on insecure origins. To use this feature, you should consider switching your application to a secure origin, such as HTTPS. See https://goo.gle/chrome-insecure-origins for more details."
+  },
+  "models/issues_manager/DeprecationIssue.ts | getUserMediaInsecureOrigin": {
+    "message": "getUserMedia() no longer works on insecure origins. To use this feature, you should consider switching your application to a secure origin, such as HTTPS. See https://goo.gle/chrome-insecure-origins for more details."
+  },
+  "models/issues_manager/DeprecationIssue.ts | hostCandidateAttributeGetter": {
+    "message": "RTCPeerConnectionIceErrorEvent.hostCandidate is deprecated. Please use RTCPeerConnectionIceErrorEvent.address or RTCPeerConnectionIceErrorEvent.port instead."
+  },
+  "models/issues_manager/DeprecationIssue.ts | insecurePrivateNetworkSubresourceRequest": {
+    "message": "The website requested a subresource from a network that it could only access because of its users' privileged network position. These requests expose non-public devices and servers to the internet, increasing the risk of a cross-site request forgery (CSRF) attack, and/or information leakage. To mitigate these risks, Chrome deprecates requests to non-public subresources when initiated from non-secure contexts, and will start blocking them."
+  },
+  "models/issues_manager/DeprecationIssue.ts | legacyConstraintGoogIPv6": {
+    "message": "IPv6 is enabled-by-default and the ability to disable it using googIPv6 will soon be removed. Please stop using this legacy constraint."
+  },
+  "models/issues_manager/DeprecationIssue.ts | localCSSFileExtensionRejected": {
+    "message": "CSS cannot be loaded from file: URLs unless they end in a .css file extension."
+  },
+  "models/issues_manager/DeprecationIssue.ts | mediaElementAudioSourceNode": {
+    "message": "Creating a MediaElementAudioSourceNode on an OfflineAudioContext is deprecated and will be removed."
+  },
+  "models/issues_manager/DeprecationIssue.ts | mediaSourceAbortRemove": {
+    "message": "Using SourceBuffer.abort() to abort remove()'s asynchronous range removal is deprecated due to specification change. Support will be removed in the future. You should instead await updateend. abort() is intended to only abort an asynchronous media append or reset parser state."
+  },
+  "models/issues_manager/DeprecationIssue.ts | mediaSourceDurationTruncatingBuffered": {
+    "message": "Setting MediaSource.duration below the highest presentation timestamp of any buffered coded frames is deprecated due to specification change. Support for implicit removal of truncated buffered media will be removed in the future. You should instead perform explicit remove(newDuration, oldDuration) on all sourceBuffers, where newDuration < oldDuration."
+  },
+  "models/issues_manager/DeprecationIssue.ts | milestone": {
+    "message": "माइलस्टोन {milestone} पुगेपछि यो परिवर्तन लागू हुने छ।"
+  },
+  "models/issues_manager/DeprecationIssue.ts | noSysexWebMIDIWithoutPermission": {
+    "message": "Web MIDI will ask a permission to use even if the sysex is not specified in the MIDIOptions."
+  },
+  "models/issues_manager/DeprecationIssue.ts | notificationInsecureOrigin": {
+    "message": "The Notification API may no longer be used from insecure origins. You should consider switching your application to a secure origin, such as HTTPS. See https://goo.gle/chrome-insecure-origins for more details."
+  },
+  "models/issues_manager/DeprecationIssue.ts | notificationPermissionRequestedIframe": {
+    "message": "Permission for the Notification API may no longer be requested from a cross-origin iframe. You should consider requesting permission from a top-level frame or opening a new window instead."
+  },
+  "models/issues_manager/DeprecationIssue.ts | obsoleteWebRtcCipherSuite": {
+    "message": "Your partner is negotiating an obsolete (D)TLS version. Please check with your partner to have this fixed."
+  },
+  "models/issues_manager/DeprecationIssue.ts | paymentRequestBasicCard": {
+    "message": "The basic-card payment method is deprecated and will be removed."
+  },
+  "models/issues_manager/DeprecationIssue.ts | paymentRequestShowWithoutGesture": {
+    "message": "Calling PaymentRequest.show() without user activation is deprecated and will be removed."
+  },
+  "models/issues_manager/DeprecationIssue.ts | pictureSourceSrc": {
+    "message": "<source src> with a <picture> parent is invalid and therefore ignored. Please use <source srcset> instead."
+  },
+  "models/issues_manager/DeprecationIssue.ts | prefixedStorageInfo": {
+    "message": "window.webkitStorageInfo is deprecated. Please use navigator.webkitTemporaryStorage or navigator.webkitPersistentStorage instead."
+  },
+  "models/issues_manager/DeprecationIssue.ts | requestedSubresourceWithEmbeddedCredentials": {
+    "message": "Subresource requests whose URLs contain embedded credentials (e.g. https://user:pass@host/) are blocked."
+  },
+  "models/issues_manager/DeprecationIssue.ts | rtcConstraintEnableDtlsSrtpFalse": {
+    "message": "The constraint DtlsSrtpKeyAgreement is removed. You have specified a false value for this constraint, which is interpreted as an attempt to use the removed SDES key negotiation method. This functionality is removed; use a service that supports DTLS key negotiation instead."
+  },
+  "models/issues_manager/DeprecationIssue.ts | rtcConstraintEnableDtlsSrtpTrue": {
+    "message": "The constraint DtlsSrtpKeyAgreement is removed. You have specified a true value for this constraint, which had no effect, but you can remove this constraint for tidiness."
+  },
+  "models/issues_manager/DeprecationIssue.ts | rtcPeerConnectionComplexPlanBSdpUsingDefaultSdpSemantics": {
+    "message": "Complex Plan B SDP detected. This dialect of the Session Description Protocol is no longer supported. Please use Unified Plan SDP instead."
+  },
+  "models/issues_manager/DeprecationIssue.ts | rtcPeerConnectionSdpSemanticsPlanB": {
+    "message": "Plan B SDP semantics, which is used when constructing an RTCPeerConnection with {sdpSemantics:'plan-b'}, is a legacy non-standard version of the Session Description Protocol that has been permanently deleted from the Web Platform. It is still available when building with IS_FUCHSIA, but we intend to delete it as soon as possible. Stop depending on it. See https://crbug.com/1302249 for status."
+  },
+  "models/issues_manager/DeprecationIssue.ts | rtcpMuxPolicyNegotiate": {
+    "message": "The rtcpMuxPolicy option is deprecated and will be removed."
+  },
+  "models/issues_manager/DeprecationIssue.ts | rtpDataChannel": {
+    "message": "RTP data channels are no longer supported. The RtpDataChannels constraint is currently ignored, and may cause an error at a later date."
+  },
+  "models/issues_manager/DeprecationIssue.ts | sharedArrayBufferConstructedWithoutIsolation": {
+    "message": "SharedArrayBuffer will require cross-origin isolation. See https://developer.chrome.com/blog/enabling-shared-array-buffer/ for more details."
+  },
+  "models/issues_manager/DeprecationIssue.ts | textToSpeech_DisallowedByAutoplay": {
+    "message": "speechSynthesis.speak() without user activation is deprecated and will be removed."
+  },
+  "models/issues_manager/DeprecationIssue.ts | title": {
+    "message": "चल्तीबाट हटाइएको सुविधा प्रयोग गरिएको छ"
+  },
+  "models/issues_manager/DeprecationIssue.ts | v8SharedArrayBufferConstructedInExtensionWithoutIsolation": {
+    "message": "Extensions should opt into cross-origin isolation to continue using SharedArrayBuffer. See https://developer.chrome.com/docs/extensions/mv3/cross-origin-isolation/."
+  },
+  "models/issues_manager/DeprecationIssue.ts | vendorSpecificApi": {
+    "message": "{PH1} is vendor-specific. Please use the standard {PH2} instead."
+  },
+  "models/issues_manager/DeprecationIssue.ts | xhrJSONEncodingDetection": {
+    "message": "UTF-16 is not supported by response json in XMLHttpRequest"
+  },
+  "models/issues_manager/DeprecationIssue.ts | xmlHttpRequestSynchronousInNonWorkerOutsideBeforeUnload": {
+    "message": "Synchronous XMLHttpRequest on the main thread is deprecated because of its detrimental effects to the end user’s experience. For more help, check https://xhr.spec.whatwg.org/."
+  },
+  "models/issues_manager/DeprecationIssue.ts | xrSupportsSession": {
+    "message": "supportsSession() is deprecated. Please use isSessionSupported() and check the resolved boolean value instead."
+  },
+  "models/issues_manager/FederatedAuthRequestIssue.ts | fedCm": {
+    "message": "Federated Credential Management API"
   },
   "models/issues_manager/GenericIssue.ts | crossOriginPortalPostMessage": {
     "message": "पोर्टलहरू - उही मूल भएका सञ्चार च्यानलहरू"
@@ -1367,29 +1541,11 @@
   "models/issues_manager/QuirksModeIssue.ts | documentCompatibilityMode": {
     "message": "डकुमेन्ट कम्प्याटिबिलिटी मोड"
   },
-  "models/issues_manager/SameSiteCookieIssue.ts | aSecure": {
-    "message": "सुरक्षित"
-  },
-  "models/issues_manager/SameSiteCookieIssue.ts | anInsecure": {
-    "message": "असुरक्षित"
-  },
-  "models/issues_manager/SameSiteCookieIssue.ts | firstPartySetsExplained": {
-    "message": "First-Party Sets र SameParty विशेषता"
-  },
-  "models/issues_manager/SameSiteCookieIssue.ts | howSchemefulSamesiteWorks": {
-    "message": "स्किमफुल सेम-साइटले काम गर्ने तरिका"
-  },
-  "models/issues_manager/SameSiteCookieIssue.ts | samesiteCookiesExplained": {
-    "message": "SameSite कुकीहरूबारे जानकारी"
-  },
   "models/issues_manager/SharedArrayBufferIssue.ts | enablingSharedArrayBuffer": {
     "message": "SharedArrayBuffer सक्षम पारिँदै छ"
   },
   "models/issues_manager/TrustedWebActivityIssue.ts | changesToQualityCriteriaForPwas": {
     "message": "वेबमा गरिएका विश्वसनीय गतिविधि प्रयोग गरी PWA को गुणस्तरको मापदण्डमा गरिएका परिवर्तन"
-  },
-  "models/issues_manager/WasmCrossOriginModuleSharingIssue.ts | linkTitle": {
-    "message": "एउटै ओरिजिनसँग Wasm मोड्युल सेयर गर्न प्रतिबन्ध लगाउने कार्य"
   },
   "models/logs/NetworkLog.ts | anonymous": {
     "message": "<अज्ञात>"
@@ -1414,9 +1570,6 @@
   },
   "models/logs/logs-meta.ts | reset": {
     "message": "रिसेट गर्नुहोस्"
-  },
-  "models/persistence/Automapping.ts | theAttemptToBindSInTheWorkspace": {
-    "message": "यो URL को ढाँचा नमिलेकाले \"{PH1}\" लाई कार्यस्थानमा आबद्ध गर्ने प्रयास पूरा हुन सकेन।"
   },
   "models/persistence/EditFileSystemView.ts | add": {
     "message": "थप्नुहोस्"
@@ -1559,8 +1712,17 @@
   "panels/accessibility/AXBreadcrumbsPane.ts | accessibilityTree": {
     "message": "सर्वसुलभतासम्बन्धी ट्री"
   },
+  "panels/accessibility/AXBreadcrumbsPane.ts | fullTreeExperimentDescription": {
+    "message": "एक्सेसिबिलिटी ट्री सारेर DOM ट्रीको सिरानको दायाँ कुनामा लगिएको छ।"
+  },
+  "panels/accessibility/AXBreadcrumbsPane.ts | fullTreeExperimentName": {
+    "message": "एक्सिसिबिलिटी ट्री पूरै पेजमा देखाइयोस्"
+  },
   "panels/accessibility/AXBreadcrumbsPane.ts | ignored": {
     "message": "बेवास्ता गरिएको"
+  },
+  "panels/accessibility/AXBreadcrumbsPane.ts | reloadRequired": {
+    "message": "रिलोड गरेपछि मात्र परिवर्तनहरू लागू हुन्छन्।"
   },
   "panels/accessibility/AXBreadcrumbsPane.ts | scrollIntoView": {
     "message": "नदेखिएसम्म स्क्रोल गर्नुहोस्"
@@ -2051,6 +2213,12 @@
   "panels/application/AppManifestView.ts | couldNotDownloadARequiredIcon": {
     "message": "म्यानिफेेस्टबाट डाउनलोड गर्नै पर्ने एउटा आइकन डाउनलोड गर्न सकिएन"
   },
+  "panels/application/AppManifestView.ts | darkBackgroundColor": {
+    "message": "अध्याँरो ब्याकग्राउन्ड कलर"
+  },
+  "panels/application/AppManifestView.ts | darkThemeColor": {
+    "message": "अँध्यारो थिमको रङ"
+  },
   "panels/application/AppManifestView.ts | description": {
     "message": "विवरण"
   },
@@ -2232,7 +2400,7 @@
     "message": "थिम कलर"
   },
   "panels/application/ApplicationPanelCacheSection.ts | backForwardCache": {
-    "message": "ब्याक-फर्वार्ड क्यास"
+    "message": "ब्याक/फर्वार्ड क्यास"
   },
   "panels/application/ApplicationPanelCacheSection.ts | cacheStorage": {
     "message": "क्यास भण्डारण"
@@ -2314,384 +2482,6 @@
   },
   "panels/application/ApplicationPanelSidebar.ts | worker": {
     "message": "वर्कर"
-  },
-  "panels/application/BackForwardCacheStrings.ts | HTTPMethodNotGET": {
-    "message": "GET अनुरोधमार्फत लोड गरिएका पेजहरू मात्र ब्याक/फर्वार्ड क्यासमा राख्न मिल्छ।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | HTTPStatusNotOK": {
-    "message": "वस्तुस्थिति कोड 2XX भएका पेजहरू मात्र क्यास गर्न मिल्छ।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | JavaScriptExecution": {
-    "message": "Chrome ले यो पेज क्यासमा भएका बेला JavaScript कार्यान्वयन गर्ने प्रयास भएको कुरा पत्ता लगायो।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | appBanner": {
-    "message": "AppBanner सम्बन्धी अनुरोध गरेका पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | backForwardCacheDisabled": {
-    "message": "Chrome को फ्ल्यागमा ब्याक/फर्वार्ड क्यास अफ गरिएको छ। यो डिभाइसमा ब्याक/फर्वार्ड क्यास अन गर्न chrome://flags/#back-forward-cache मा जानुहोस्।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | backForwardCacheDisabledByCommandLine": {
-    "message": "कमान्ड लाइनअनुसार ब्याक/फर्वार्ड क्यास अफ गरिएको छ।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | backForwardCacheDisabledByLowMemory": {
-    "message": "पर्याप्त मेमोरी नभएका कारण ब्याक/फर्वार्ड क्यास अफ गरिएको छ।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | backForwardCacheDisabledForDelegate": {
-    "message": "यो डेलिगेटका हकमा ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | backForwardCacheDisabledForPrerender": {
-    "message": "प्रिरेन्डररका लागि ब्याक/फर्वार्ड क्यास अफ गरिएको छ।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | broadcastChannel": {
-    "message": "यो पेजमा दर्ता गरिएका लिस्नर भएका BroadcastChannel इन्स्टन्स भएकाले यो पेज क्यास गर्न सकिँदैन।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | cacheControlNoStore": {
-    "message": "cache-control:no-store हेडर भएका पेजहरू ब्याक/फर्वार्ड क्यासमा राख्न मिल्दैन।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | cacheFlushed": {
-    "message": "यो क्यास जानाजान मेटाइएको थियो।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | cacheLimit": {
-    "message": "कुनै अर्को पेज क्यास गर्नका निम्ति यो पेज क्यासबाट हटाइएको थियो।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | containsPlugins": {
-    "message": "प्लगइन भएका पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentFileChooser": {
-    "message": "FileChooser API प्रयोग गर्ने पेजहरूका हकमा ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentFileSystemAccess": {
-    "message": "File System Access API प्रयोग गर्ने पेजहरूका हकमा ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentMediaDevicesDispatcherHost": {
-    "message": "मिडिया डिभाइस डिस्प्याचर प्रयोग गर्ने पेजहरूका हकमा ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentMediaPlay": {
-    "message": "तपाईं यो पेजबाट निस्कँदा मिडिया प्लेयर चलिरहेको थियो।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentMediaSession": {
-    "message": "MediaSession API प्रयोग गर्ने तथा प्लेब्याकको स्थिति सेट गर्ने पेजहरूका हकमा ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentMediaSessionService": {
-    "message": "MediaSession API प्रयोग गर्ने तथा कारबाहीका ह्यान्ड्लरहरू सेट गर्ने पेजहरूका हकमा ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentSecurityHandler": {
-    "message": "SecurityHandler प्रयोग गर्ने पेजहरूका हकमा ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentSerial": {
-    "message": "Serial API प्रयोग गर्ने पेजहरूका हकमा ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentWebAuthenticationAPI": {
-    "message": "WebAuthetication API प्रयोग गर्ने पेजहरूका हकमा ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentWebBluetooth": {
-    "message": "WebBluetooth API प्रयोग गर्ने पेजहरूका हकमा ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentWebUSB": {
-    "message": "WebUSB API प्रयोग गर्ने पेजहरूका हकमा ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | dedicatedWorkerOrWorklet": {
-    "message": "समर्पित वर्कर वा वर्कलेट प्रयोग गर्ने पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | documentLoaded": {
-    "message": "तपाईं यो डकुमेन्ट पूर्ण रूपमा लोड नहुँदै यसबाट बाहिरिनुभयो।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderAppBannerManager": {
-    "message": "EmbedderAppBannerManager"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderChromePasswordManagerClientBindCredentialManager": {
-    "message": "EmbedderChromePasswordManagerClientBindCredentialManager"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderDomDistillerSelfDeletingRequestDelegate": {
-    "message": "EmbedderDomDistillerSelfDeletingRequestDelegate"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderDomDistillerViewerSource": {
-    "message": "EmbedderDomDistillerViewerSource"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderExtensionMessaging": {
-    "message": "EmbedderExtensionMessaging"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderExtensionMessagingForOpenPort": {
-    "message": "EmbedderExtensionMessagingForOpenPort"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderExtensionSentMessageToCachedFrame": {
-    "message": "EmbedderExtensionSentMessageToCachedFrame"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderExtensions": {
-    "message": "EmbedderExtensions"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderModalDialog": {
-    "message": "EmbedderModalDialog"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderOfflinePage": {
-    "message": "EmbedderOfflinePage"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderOomInterventionTabHelper": {
-    "message": "EmbedderOomInterventionTabHelper"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderPermissionRequestManager": {
-    "message": "EmbedderPermissionRequestManager"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderPopupBlockerTabHelper": {
-    "message": "EmbedderPopupBlockerTabHelper"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderSafeBrowsingThreatDetails": {
-    "message": "EmbedderSafeBrowsingThreatDetails"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderSafeBrowsingTriggeredPopupBlocker": {
-    "message": "EmbedderSafeBrowsingTriggeredPopupBlocker"
-  },
-  "panels/application/BackForwardCacheStrings.ts | enteredBackForwardCacheBeforeServiceWorkerHostAdded": {
-    "message": "यो पेज ब्याक/फर्वार्ड क्यासमा भएका बेला कुनै सर्भिस वर्कर एक्टिभेट गरिएको थियो।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | foregroundCacheLimit": {
-    "message": "कुनै अर्को पेज क्यास गर्नका निम्ति यो पेज क्यासबाट हटाइएको थियो।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | grantedMediaStreamAccess": {
-    "message": "मिडिया स्ट्रिम गर्न सकिने पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | haveInnerContents": {
-    "message": "पोर्टलहरू प्रयोग गर्ने पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | idleManager": {
-    "message": "IdleManager प्रयोग गर्ने पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | indexedDBConnection": {
-    "message": "IndexedDB कनेक्सन खोलिएका पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | ineligibleAPI": {
-    "message": "अनुचित API हरू प्रयोग गरिएका थिए।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | injectedJavascript": {
-    "message": "एक्स्टेन्सनहरूमार्फत JavaScript समावेश गरिएका पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | injectedStyleSheet": {
-    "message": "एक्स्टेन्सनहरूमार्फत StyleSheet समावेश गरिएका पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | internalError": {
-    "message": "आन्तरिक त्रुटि।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | keyboardLock": {
-    "message": "किबोर्ड लक प्रयोग गर्ने पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | loading": {
-    "message": "तपाईं यो पेज पूर्ण रूपमा लोड नहुँदै यसबाट बाहिरिनुभयो।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | mainResourceHasCacheControlNoCache": {
-    "message": "मुख्य स्रोतमा cache-control:no-cache भएका पेजहरू ब्याक/फर्वार्ड क्यासमा राख्न मिल्दैन।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | mainResourceHasCacheControlNoStore": {
-    "message": "मुख्य स्रोतमा cache-control:no-store भएका पेजहरू ब्याक/फर्वार्ड क्यासमा राख्न मिल्दैन।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | navigationCancelledWhileRestoring": {
-    "message": "ब्याक/फर्वार्ड क्यासबाट यो पेज रिस्टोर गरिनुअघि नै नेभिगेसन प्रक्रिया रद्द गरिएको थियो।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | networkExceedsBufferLimit": {
-    "message": "कुनै सक्रिय नेटवर्क कनेक्सनमा अत्यन्तै धेरै डेटा प्राप्त भएकाले यो पेज क्यासबाट हटाइएको थियो। क्यास गरिएको पेजमा कति डेटा प्राप्त गर्न सकिन्छ भन्ने सम्बन्धमा Chrome ले सीमा तोकेको हुन्छ।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | networkRequestDatapipeDrainedAsBytesConsumer": {
-    "message": "fetch() वा XHR सम्बन्धी विचाराधीन अनुरोध भएका पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | networkRequestRedirected": {
-    "message": "नेटवर्कसम्बन्धी कुनै तात्कालिक अनुरोध पूरा गर्नका निम्ति रिडिरेक्ट गर्नु पर्ने भएकाले यो पेज ब्याक/फर्वार्ड क्यासबाट हटाइएको थियो।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | networkRequestTimeout": {
-    "message": "कुनै नेटवर्क कनेक्सन धेरै लामो समयसम्म खुला रहेका कारण यो पेज क्यासबाट हटाइएको थियो। क्यास गरिएको पेजमा कति समयसम्म डेटा प्राप्त गर्न सकिन्छ भन्ने सम्बन्धमा Chrome ले सीमा तोकेको हुन्छ।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | noResponseHead": {
-    "message": "वैध रिस्पन्स हेडर नभएका पेजहरू ब्याक/फर्वार्ड क्यासमा राख्न मिल्दैन।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | notMainFrame": {
-    "message": "मुख्य फ्रेम नभई अन्य कुनै फ्रेममा नेभिगेसन गरिएको थियो।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | optInUnloadHeaderNotPresent": {
-    "message": "यो पेजमा ब्याक/फर्वार्ड क्याससम्बन्धी अप्ट-इन हेडर नभएको अनलोड ह्यान्ड्लर छ।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | outstandingIndexedDBTransaction": {
-    "message": "इन्डेक्स गरिएका DB ट्रान्ज्याक्सनहरू भइरहेको पेजका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | outstandingNetworkRequestDirectSocket": {
-    "message": "नेटवर्कसम्बन्धी विचाराधीन अनुरोध भएका पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | outstandingNetworkRequestFetch": {
-    "message": "फेच नेटवर्कसम्बन्धी विचाराधीन अनुरोध भएका पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | outstandingNetworkRequestOthers": {
-    "message": "नेटवर्कसम्बन्धी विचाराधीन अनुरोध भएका पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | outstandingNetworkRequestXHR": {
-    "message": "XHR नेटवर्कसम्बन्धी विचाराधीन अनुरोध भएका पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | paymentManager": {
-    "message": "PaymentManager प्रयोग गर्ने पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | pictureInPicture": {
-    "message": "Picture-in-Picture सुविधा प्रयोग गर्ने पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | portal": {
-    "message": "पोर्टलहरू प्रयोग गर्ने पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | printing": {
-    "message": "प्रिन्टिङ UI देखाउने पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | relatedActiveContentsExist": {
-    "message": "यो पेज window.open() प्रयोग गरी खोलिएको थियो र अर्को ट्याबमा त्यसको सन्दर्भ छ वा यो पेजले कुनै विन्डो खोलेको छ।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | rendererProcessCrashed": {
-    "message": "ब्याक/फर्वार्ड क्यासमा भएको यो पेजको रेन्डरर प्रक्रिया क्र्यास भएको थियो।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | rendererProcessKilled": {
-    "message": "ब्याक/फर्वार्ड क्यासमा भएको यो पेजको रेन्डरर प्रक्रिया रोकिएको थियो।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedAudioCapturePermission": {
-    "message": "अडियो रेकर्ड गर्ने अनुमति मागेका पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedBackForwardCacheBlockedSensors": {
-    "message": "सेन्सर प्रयोग गर्ने अनुमति मागेका पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedBackgroundWorkPermission": {
-    "message": "ब्याकग्राउन्डमा सिंक गर्ने वा फेचसम्बन्धी अनुमतिहरू मागेका पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedMIDIPermission": {
-    "message": "MIDI सम्बन्धी अनुमति मागेका पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedNotificationsPermission": {
-    "message": "सूचना पठाउने अनुमति मागेका पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedStorageAccessGrant": {
-    "message": "भण्डारण प्रयोग गर्ने अनुमति मागेका पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedVideoCapturePermission": {
-    "message": "भिडियो खिच्ने अनुमति मागेका पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | schemeNotHTTPOrHTTPS": {
-    "message": "URL स्किमका रूपमा HTTP / HTTPS भएका पेजहरू मात्र क्यास गर्न मिल्छ।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | serviceWorkerClaim": {
-    "message": "सर्भिस वर्करले यो पेज ब्याक/फर्वार्ड क्यासमा भएका बेला यो पेज दाबी गरेका थिए।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | serviceWorkerPostMessage": {
-    "message": "कुनै सर्भिस वर्करले ब्याक/फर्वार्ड क्यासमा भएको यो पेजमा MessageEvent पठाउने प्रयास गरेको थियो।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | serviceWorkerUnregistration": {
-    "message": "पेज ब्याक/फर्वार्ड क्यासमै भएका बेला ServiceWorker को दर्ता रद्द गरिएको थियो।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | serviceWorkerVersionActivation": {
-    "message": "कुनै सर्भिस वर्कर एक्टिभेट भएका कारण यो पेज क्यासबाट हटाइएको थियो।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | sessionRestored": {
-    "message": "Chrome रिस्टार्ट भयो र ब्याक/फर्वार्ड क्यासमा भएका सबै डेटा मेटियो।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | sharedWorker": {
-    "message": "SharedWorker प्रयोग गर्ने पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | speechRecognizer": {
-    "message": "SpeechRecognizer प्रयोग गर्ने पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | speechSynthesis": {
-    "message": "SpeechSynthesis प्रयोग गर्ने पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | subframeIsNavigating": {
-    "message": "यो पेजमा कुनै iframe ले नेभिगेसन प्रक्रिया सुरु गरेको थियो तर सो प्रक्रिया पूरा भएन।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | subresourceHasCacheControlNoCache": {
-    "message": "सहायक स्रोतमा cache-control:no-cache भएका पेजहरू ब्याक/फर्वार्ड क्यासमा राख्न मिल्दैन।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | subresourceHasCacheControlNoStore": {
-    "message": "सहायक स्रोतमा cache-control:no-store भएका पेजहरू ब्याक/फर्वार्ड क्यासमा राख्न मिल्दैन।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | timeout": {
-    "message": "ब्याक/फर्वार्ड क्यासमा यो पेज अधिकतम समयसम्म राखिएको हुनाले यो पेजको म्याद सकिएको थियो।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | timeoutPuttingInCache": {
-    "message": "यो पेज ब्याक/फर्वार्ड क्यासमा राख्ने क्रममा यो पेजको टाइम आउट भयो (सम्भवतः pagehide ह्यान्ड्लरहरू धेरै लामो समयसम्म चलेका कारण)।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | unloadHandlerExistsInMainFrame": {
-    "message": "यो पेजको मुख्य फ्रेममा अनलोड ह्यान्ड्लर छ।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | unloadHandlerExistsInSubFrame": {
-    "message": "यो पेजको कुनै सहायक फ्रेममा अनलोड ह्यान्ड्लर छ।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | userAgentOverrideDiffers": {
-    "message": "ब्राउजरले प्रयोगकर्ताको एजेन्टको ओभरराइड हेडर परिवर्तन गरेको छ।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | wasGrantedMediaAccess": {
-    "message": "भिडियो वा अडियो रेकर्ड गर्ने अनुमति दिइएका पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | webDatabase": {
-    "message": "WebDatabase प्रयोग गर्ने पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | webHID": {
-    "message": "WebHID प्रयोग गर्ने पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | webLocks": {
-    "message": "WebLocks प्रयोग गर्ने पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | webNfc": {
-    "message": "WebNfc प्रयोग गर्ने पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | webOTPService": {
-    "message": "WebOTPService प्रयोग गर्ने पेजहरूका हकमा ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | webRTC": {
-    "message": "WebRTC भएका पेजहरू ब्याक/फर्वार्ड क्यासमा राख्न मिल्दैन।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | webShare": {
-    "message": "WebShare प्रयोग गर्ने पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | webSocket": {
-    "message": "WebSocket भएका पेजहरू ब्याक/फर्वार्ड क्यासमा राख्न मिल्दैन।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | webTransport": {
-    "message": "WebTransport भएका पेजहरू ब्याक/फर्वार्ड क्यासमा राख्न मिल्दैन।"
-  },
-  "panels/application/BackForwardCacheStrings.ts | webXR": {
-    "message": "WebXR प्रयोग गर्ने पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
-  },
-  "panels/application/BackForwardCacheView.ts | backForwardCacheTitle": {
-    "message": "ब्याक-फर्वार्ड क्यास"
-  },
-  "panels/application/BackForwardCacheView.ts | bfcacheStatus": {
-    "message": "ब्याक-फर्वार्ड क्यासको स्थिति"
-  },
-  "panels/application/BackForwardCacheView.ts | circumstantial": {
-    "message": "कारबाही गर्न नसकिने"
-  },
-  "panels/application/BackForwardCacheView.ts | circumstantialExplanation": {
-    "message": "यी कुराहरूमाथि कारबाही गर्न सकिँदैन, अर्थात् यो पेजको प्रत्यक्ष नियन्त्रणबाहिर रहेको कुनै कुराले गर्दा यो पेज क्यास गर्न सकिएन।"
-  },
-  "panels/application/BackForwardCacheView.ts | mainFrame": {
-    "message": "मुख्य फ्रेम"
-  },
-  "panels/application/BackForwardCacheView.ts | normalNavigation": {
-    "message": "सामान्य नेभिगेसन (ब्याक-फर्वार्ड क्यासबाट रिस्टोर नगरिएको)"
-  },
-  "panels/application/BackForwardCacheView.ts | pageSupportNeeded": {
-    "message": "कारबाही गर्न सकिने"
-  },
-  "panels/application/BackForwardCacheView.ts | pageSupportNeededExplanation": {
-    "message": "यी कुराहरूमाथि कारबाही गर्न सकिन्छ, अर्थात् यो पेजका हकमा ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिलोस् भन्नाका खातिर यी कुराहरू मेटाउन सकिन्छ।"
-  },
-  "panels/application/BackForwardCacheView.ts | restoredFromBFCache": {
-    "message": "ब्याक-फर्वार्ड क्यासबाट रिस्टोर गरिएको"
-  },
-  "panels/application/BackForwardCacheView.ts | runTest": {
-    "message": "परीक्षण गर्नुहोस्"
-  },
-  "panels/application/BackForwardCacheView.ts | supportPending": {
-    "message": "ग्राहक सेवा दिन बाँकी छ"
-  },
-  "panels/application/BackForwardCacheView.ts | supportPendingExplanation": {
-    "message": "यी कारणहरूले गर्दा हाल यो पेजका हकमा Chrome को ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन, तर Chrome को भावी संस्करणमा भने यो पेजका हकमा ब्याक/फर्वार्ड क्यास प्रयोग गर्ने कुरामा यी कारणहरू बाधक बन्ने छैनन्।"
-  },
-  "panels/application/BackForwardCacheView.ts | unavailable": {
-    "message": "उपलब्ध छैन"
-  },
-  "panels/application/BackForwardCacheView.ts | unknown": {
-    "message": "अज्ञात"
-  },
-  "panels/application/BackForwardCacheView.ts | url": {
-    "message": "URL"
   },
   "panels/application/BackgroundServiceView.ts | backgroundFetch": {
     "message": "ब्याकग्राउन्ड फेच"
@@ -2912,6 +2702,15 @@
   "panels/application/IndexedDBViews.ts | version": {
     "message": "संस्करण"
   },
+  "panels/application/InterestGroupStorageView.ts | clickToDisplayBody": {
+    "message": "तपाईं जुन समान विषयसँग सरोकार राख्ने समूहको हालको स्थिति देखाउन चाहनुहुन्छ सोही समूहको कुनै पनि कार्यक्रममा क्लिक गर्नुहोस्"
+  },
+  "panels/application/InterestGroupStorageView.ts | noDataAvailable": {
+    "message": "चयन गरिएको समान विषयसँग सरोकार राख्ने समूहसम्बन्धी कुनै पनि विवरण उपलब्ध छैन। ब्राउज गरेका व्यक्तिले यो समूह छाड्नुभएको हुन सक्छ।"
+  },
+  "panels/application/InterestGroupTreeElement.ts | interestGroups": {
+    "message": "समान विषयसँग सरोकार राख्ने समूहहरू"
+  },
   "panels/application/OpenedWindowDetailsView.ts | accessToOpener": {
     "message": "ओपनरमाथिको पहुँच"
   },
@@ -3045,7 +2844,7 @@
     "message": "नेटवर्कसम्बन्धी अनुरोधहरू"
   },
   "panels/application/ServiceWorkersView.ts | onPageReloadForceTheService": {
-    "message": "पेज रिलोड हुँदा service worker लाई बलपूर्वक अपडेट गर्नुहोस् र यसलाई सक्रिय गर्नुहोस्"
+    "message": "पेज रिलोड हुँदा service worker लाई बलपूर्वक अपडेट गर्नुहोस् र यसलाई अन गर्नुहोस्"
   },
   "panels/application/ServiceWorkersView.ts | periodicSync": {
     "message": "आवधिक रूपमा सिंक गर्नुहोस्"
@@ -3251,6 +3050,411 @@
   "panels/application/application-meta.ts | stopRecordingEvents": {
     "message": "क्रियाकलापहरू रेकर्ड गर्न छाड्नुहोस्"
   },
+  "panels/application/components/BackForwardCacheStrings.ts | HTTPMethodNotGET": {
+    "message": "GET अनुरोधमार्फत लोड गरिएका पेजहरू मात्र ब्याक/फर्वार्ड क्यासमा राख्न मिल्छ।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | HTTPStatusNotOK": {
+    "message": "वस्तुस्थिति कोड 2XX भएका पेजहरू मात्र क्यास गर्न मिल्छ।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | JavaScriptExecution": {
+    "message": "Chrome ले यो पेज क्यासमा भएका बेला JavaScript कार्यान्वयन गर्ने प्रयास भएको कुरा पत्ता लगायो।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | appBanner": {
+    "message": "AppBanner सम्बन्धी अनुरोध गरेका पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | backForwardCacheDisabled": {
+    "message": "Chrome को फ्ल्यागमा ब्याक/फर्वार्ड क्यास अफ गरिएको छ। यो डिभाइसमा ब्याक/फर्वार्ड क्यास अन गर्न chrome://flags/#back-forward-cache मा जानुहोस्।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | backForwardCacheDisabledByCommandLine": {
+    "message": "कमान्ड लाइनअनुसार ब्याक/फर्वार्ड क्यास अफ गरिएको छ।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | backForwardCacheDisabledByLowMemory": {
+    "message": "पर्याप्त मेमोरी नभएका कारण ब्याक/फर्वार्ड क्यास अफ गरिएको छ।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | backForwardCacheDisabledForDelegate": {
+    "message": "यो डेलिगेटका हकमा ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | backForwardCacheDisabledForPrerender": {
+    "message": "प्रिरेन्डररका लागि ब्याक/फर्वार्ड क्यास अफ गरिएको छ।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | broadcastChannel": {
+    "message": "यो पेजमा दर्ता गरिएका लिस्नर भएका BroadcastChannel इन्स्टन्स भएकाले यो पेज क्यास गर्न सकिँदैन।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | cacheControlNoStore": {
+    "message": "cache-control:no-store हेडर भएका पेजहरू ब्याक/फर्वार्ड क्यासमा राख्न मिल्दैन।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | cacheFlushed": {
+    "message": "यो क्यास जानाजान मेटाइएको थियो।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | cacheLimit": {
+    "message": "कुनै अर्को पेज क्यास गर्नका निम्ति यो पेज क्यासबाट हटाइएको थियो।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | containsPlugins": {
+    "message": "प्लगइन भएका पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentFileChooser": {
+    "message": "FileChooser API प्रयोग गर्ने पेजहरूका हकमा ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentFileSystemAccess": {
+    "message": "File System Access API प्रयोग गर्ने पेजहरूका हकमा ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentMediaDevicesDispatcherHost": {
+    "message": "मिडिया डिभाइस डिस्प्याचर प्रयोग गर्ने पेजहरूका हकमा ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentMediaPlay": {
+    "message": "तपाईं यो पेजबाट निस्कँदा मिडिया प्लेयर चलिरहेको थियो।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentMediaSession": {
+    "message": "MediaSession API प्रयोग गर्ने तथा प्लेब्याकको स्थिति सेट गर्ने पेजहरूका हकमा ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentMediaSessionService": {
+    "message": "MediaSession API प्रयोग गर्ने तथा कारबाहीका ह्यान्ड्लरहरू सेट गर्ने पेजहरूका हकमा ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentScreenReader": {
+    "message": "स्क्रिन रिडरका कारण ब्याक/फर्वार्ड क्यास अफ गरिएको छ।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentSecurityHandler": {
+    "message": "SecurityHandler प्रयोग गर्ने पेजहरूका हकमा ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentSerial": {
+    "message": "Serial API प्रयोग गर्ने पेजहरूका हकमा ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentWebAuthenticationAPI": {
+    "message": "WebAuthetication API प्रयोग गर्ने पेजहरूका हकमा ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentWebBluetooth": {
+    "message": "WebBluetooth API प्रयोग गर्ने पेजहरूका हकमा ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentWebUSB": {
+    "message": "WebUSB API प्रयोग गर्ने पेजहरूका हकमा ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | dedicatedWorkerOrWorklet": {
+    "message": "समर्पित वर्कर वा वर्कलेट प्रयोग गर्ने पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | documentLoaded": {
+    "message": "तपाईं यो डकुमेन्ट पूर्ण रूपमा लोड नहुँदै यसबाट बाहिरिनुभयो।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderAppBannerManager": {
+    "message": "तपाईं यो पेजबाट निस्कँदा एप ब्यानर देखाइएको थियो।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderChromePasswordManagerClientBindCredentialManager": {
+    "message": "तपाईं यो पेजबाट निस्कँदा Chrome पासवर्ड म्यानेजर देखाइएको थियो।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderDomDistillerSelfDeletingRequestDelegate": {
+    "message": "तपाईं यो पेजबाट निस्कँदा DOM डिस्टिलेसनको प्रक्रिया पूरा भइसकेको थिएन।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderDomDistillerViewerSource": {
+    "message": "तपाईं यो पेजबाट निस्कँदा DOM Distiller Viewer देखाइएको थियो।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderExtensionMessaging": {
+    "message": "एक्स्टेन्सनहरूले म्यासेजिङ API प्रयोग गरिरहेकाले ब्याक/फर्वार्ड क्यास अफ गरिएको छ।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderExtensionMessagingForOpenPort": {
+    "message": "लामो समयदेखि कनेक्ट भएका एक्स्टेन्सनहरू ब्याक/फर्वार्ड क्यासमा सेभ गर्नुअघि कनेक्सन बन्द गर्नु पर्ने हुन्छ।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderExtensionSentMessageToCachedFrame": {
+    "message": "लामो समयदेखि कनेक्ट भएका एक्स्टेन्सनहरूले ब्याक/फर्वार्ड क्यासमा भएका फ्रेमहरूमा म्यासेज पठाउने प्रयास गरे।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderExtensions": {
+    "message": "एक्स्टेन्सनहरूका कारण ब्याक/फर्वार्ड क्यास अफ गरिएको छ।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderModalDialog": {
+    "message": "तपाईं यो पेजबाट निस्कँदा फाराम पुनः पेस गर्ने डायलग वा http पासवर्ड हाल्ने डायलग जस्ता मोडल डायलग देखाइएको थियो।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderOfflinePage": {
+    "message": "तपाईं यो पेजबाट निस्कँदा अफलाइन पेज देखाइएको थियो।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderOomInterventionTabHelper": {
+    "message": "तपाईं यो पेजबाट निस्कँदा मेमोरी सकिएका खण्डमा देखाइने इन्टरभेन्सन बार देखाइएको थियो।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderPermissionRequestManager": {
+    "message": "तपाईं यो पेजबाट निस्कँदा अनुमति मागिएको थियो।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderPopupBlockerTabHelper": {
+    "message": "तपाईं यो पेजबाट निस्कँदा पपअप ब्लकर देखाइएको थियो।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderSafeBrowsingThreatDetails": {
+    "message": "तपाईं यो पेजबाट निस्कँदा Safe Browsing सम्बन्धी विवरणहरू देखाइएको थियो।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderSafeBrowsingTriggeredPopupBlocker": {
+    "message": "Safe Browsing ले यो पेज दुर्व्यवहारपूर्ण भएको ठहर गरेको छ र पपअप ब्लक गरेको छ।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | enteredBackForwardCacheBeforeServiceWorkerHostAdded": {
+    "message": "यो पेज ब्याक/फर्वार्ड क्यासमा भएका बेला कुनै सर्भिस वर्कर एक्टिभेट गरिएको थियो।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | errorDocument": {
+    "message": "डकुमेन्टमा त्रुटि भएका कारण ब्याक/फर्वार्ड क्यास अफ गरिएको छ।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | fencedFramesEmbedder": {
+    "message": "FencedFrames प्रयोग गरिएका पेजहरू bfcache मा भण्डारण गर्न सकिँदैन।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | foregroundCacheLimit": {
+    "message": "कुनै अर्को पेज क्यास गर्नका निम्ति यो पेज क्यासबाट हटाइएको थियो।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | grantedMediaStreamAccess": {
+    "message": "मिडिया स्ट्रिम गर्न सकिने पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | haveInnerContents": {
+    "message": "पोर्टलहरू प्रयोग गर्ने पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | idleManager": {
+    "message": "IdleManager प्रयोग गर्ने पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | indexedDBConnection": {
+    "message": "IndexedDB कनेक्सन खोलिएका पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | ineligibleAPI": {
+    "message": "अनुचित API हरू प्रयोग गरिएका थिए।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | injectedJavascript": {
+    "message": "एक्स्टेन्सनहरूमार्फत JavaScript समावेश गरिएका पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | injectedStyleSheet": {
+    "message": "एक्स्टेन्सनहरूमार्फत StyleSheet समावेश गरिएका पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | internalError": {
+    "message": "आन्तरिक त्रुटि।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | keyboardLock": {
+    "message": "किबोर्ड लक प्रयोग गर्ने पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | loading": {
+    "message": "तपाईं यो पेज पूर्ण रूपमा लोड नहुँदै यसबाट बाहिरिनुभयो।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | mainResourceHasCacheControlNoCache": {
+    "message": "मुख्य स्रोतमा cache-control:no-cache भएका पेजहरू ब्याक/फर्वार्ड क्यासमा राख्न मिल्दैन।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | mainResourceHasCacheControlNoStore": {
+    "message": "मुख्य स्रोतमा cache-control:no-store भएका पेजहरू ब्याक/फर्वार्ड क्यासमा राख्न मिल्दैन।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | navigationCancelledWhileRestoring": {
+    "message": "ब्याक/फर्वार्ड क्यासबाट यो पेज रिस्टोर गरिनुअघि नै नेभिगेसन प्रक्रिया रद्द गरिएको थियो।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | networkExceedsBufferLimit": {
+    "message": "कुनै सक्रिय नेटवर्क कनेक्सनमा अत्यन्तै धेरै डेटा प्राप्त भएकाले यो पेज क्यासबाट हटाइएको थियो। क्यास गरिएको पेजमा कति डेटा प्राप्त गर्न सकिन्छ भन्ने सम्बन्धमा Chrome ले सीमा तोकेको हुन्छ।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | networkRequestDatapipeDrainedAsBytesConsumer": {
+    "message": "fetch() वा XHR सम्बन्धी विचाराधीन अनुरोध भएका पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | networkRequestRedirected": {
+    "message": "नेटवर्कसम्बन्धी कुनै तात्कालिक अनुरोध पूरा गर्नका निम्ति रिडिरेक्ट गर्नु पर्ने भएकाले यो पेज ब्याक/फर्वार्ड क्यासबाट हटाइएको थियो।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | networkRequestTimeout": {
+    "message": "कुनै नेटवर्क कनेक्सन धेरै लामो समयसम्म खुला रहेका कारण यो पेज क्यासबाट हटाइएको थियो। क्यास गरिएको पेजमा कति समयसम्म डेटा प्राप्त गर्न सकिन्छ भन्ने सम्बन्धमा Chrome ले सीमा तोकेको हुन्छ।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | noResponseHead": {
+    "message": "वैध रिस्पन्स हेडर नभएका पेजहरू ब्याक/फर्वार्ड क्यासमा राख्न मिल्दैन।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | notMainFrame": {
+    "message": "मुख्य फ्रेम नभई अन्य कुनै फ्रेममा नेभिगेसन गरिएको थियो।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | outstandingIndexedDBTransaction": {
+    "message": "इन्डेक्स गरिएका DB ट्रान्ज्याक्सनहरू भइरहेको पेजका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | outstandingNetworkRequestDirectSocket": {
+    "message": "नेटवर्कसम्बन्धी विचाराधीन अनुरोध भएका पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | outstandingNetworkRequestFetch": {
+    "message": "फेच नेटवर्कसम्बन्धी विचाराधीन अनुरोध भएका पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | outstandingNetworkRequestOthers": {
+    "message": "नेटवर्कसम्बन्धी विचाराधीन अनुरोध भएका पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | outstandingNetworkRequestXHR": {
+    "message": "XHR नेटवर्कसम्बन्धी विचाराधीन अनुरोध भएका पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | paymentManager": {
+    "message": "PaymentManager प्रयोग गर्ने पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | pictureInPicture": {
+    "message": "Picture-in-Picture सुविधा प्रयोग गर्ने पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | portal": {
+    "message": "पोर्टलहरू प्रयोग गर्ने पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | printing": {
+    "message": "प्रिन्टिङ UI देखाउने पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | relatedActiveContentsExist": {
+    "message": "यो पेज 'window.open()' प्रयोग गरी खोलिएको थियो र अर्को ट्याबमा त्यसको सन्दर्भ छ वा यो पेजले कुनै विन्डो खोलेको छ।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | rendererProcessCrashed": {
+    "message": "ब्याक/फर्वार्ड क्यासमा भएको यो पेजको रेन्डरर प्रक्रिया क्र्यास भएको थियो।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | rendererProcessKilled": {
+    "message": "ब्याक/फर्वार्ड क्यासमा भएको यो पेजको रेन्डरर प्रक्रिया रोकिएको थियो।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedAudioCapturePermission": {
+    "message": "अडियो रेकर्ड गर्ने अनुमति मागेका पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedBackForwardCacheBlockedSensors": {
+    "message": "सेन्सर प्रयोग गर्ने अनुमति मागेका पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedBackgroundWorkPermission": {
+    "message": "ब्याकग्राउन्डमा सिंक गर्ने वा फेचसम्बन्धी अनुमतिहरू मागेका पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedMIDIPermission": {
+    "message": "MIDI सम्बन्धी अनुमति मागेका पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedNotificationsPermission": {
+    "message": "सूचना पठाउने अनुमति मागेका पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedStorageAccessGrant": {
+    "message": "भण्डारण प्रयोग गर्ने अनुमति मागेका पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedVideoCapturePermission": {
+    "message": "भिडियो खिच्ने अनुमति मागेका पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | schemeNotHTTPOrHTTPS": {
+    "message": "URL स्किमका रूपमा HTTP / HTTPS भएका पेजहरू मात्र क्यास गर्न मिल्छ।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | serviceWorkerClaim": {
+    "message": "सर्भिस वर्करले यो पेज ब्याक/फर्वार्ड क्यासमा भएका बेला यो पेज दाबी गरेका थिए।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | serviceWorkerPostMessage": {
+    "message": "कुनै सर्भिस वर्करले ब्याक/फर्वार्ड क्यासमा भएको यो पेजमा MessageEvent पठाउने प्रयास गरेको थियो।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | serviceWorkerUnregistration": {
+    "message": "पेज ब्याक/फर्वार्ड क्यासमै भएका बेला ServiceWorker को दर्ता रद्द गरिएको थियो।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | serviceWorkerVersionActivation": {
+    "message": "कुनै सर्भिस वर्कर एक्टिभेट भएका कारण यो पेज क्यासबाट हटाइएको थियो।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | sessionRestored": {
+    "message": "Chrome रिस्टार्ट भयो र ब्याक/फर्वार्ड क्यासमा भएका सबै डेटा मेटियो।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | sharedWorker": {
+    "message": "SharedWorker प्रयोग गर्ने पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | speechRecognizer": {
+    "message": "SpeechRecognizer प्रयोग गर्ने पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | speechSynthesis": {
+    "message": "SpeechSynthesis प्रयोग गर्ने पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | subframeIsNavigating": {
+    "message": "यो पेजमा कुनै iframe ले नेभिगेसन प्रक्रिया सुरु गरेको थियो तर सो प्रक्रिया पूरा भएन।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | subresourceHasCacheControlNoCache": {
+    "message": "सहायक स्रोतमा cache-control:no-cache भएका पेजहरू ब्याक/फर्वार्ड क्यासमा राख्न मिल्दैन।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | subresourceHasCacheControlNoStore": {
+    "message": "सहायक स्रोतमा cache-control:no-store भएका पेजहरू ब्याक/फर्वार्ड क्यासमा राख्न मिल्दैन।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | timeout": {
+    "message": "ब्याक/फर्वार्ड क्यासमा यो पेज अधिकतम समयसम्म राखिएको हुनाले यो पेजको म्याद सकिएको थियो।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | timeoutPuttingInCache": {
+    "message": "यो पेज ब्याक/फर्वार्ड क्यासमा राख्ने क्रममा यो पेजको टाइम आउट भयो (सम्भवतः pagehide ह्यान्ड्लरहरू धेरै लामो समयसम्म चलेका कारण)।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | unloadHandlerExistsInMainFrame": {
+    "message": "यो पेजको मुख्य फ्रेममा अनलोड ह्यान्ड्लर छ।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | unloadHandlerExistsInSubFrame": {
+    "message": "यो पेजको कुनै सहायक फ्रेममा अनलोड ह्यान्ड्लर छ।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | userAgentOverrideDiffers": {
+    "message": "ब्राउजरले प्रयोगकर्ताको एजेन्टको ओभरराइड हेडर परिवर्तन गरेको छ।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | wasGrantedMediaAccess": {
+    "message": "भिडियो वा अडियो रेकर्ड गर्ने अनुमति दिइएका पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webDatabase": {
+    "message": "WebDatabase प्रयोग गर्ने पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webHID": {
+    "message": "WebHID प्रयोग गर्ने पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webLocks": {
+    "message": "WebLocks प्रयोग गर्ने पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webNfc": {
+    "message": "WebNfc प्रयोग गर्ने पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webOTPService": {
+    "message": "WebOTPService प्रयोग गर्ने पेजहरूका हकमा ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webRTC": {
+    "message": "WebRTC भएका पेजहरू ब्याक/फर्वार्ड क्यासमा राख्न मिल्दैन।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webShare": {
+    "message": "WebShare प्रयोग गर्ने पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webSocket": {
+    "message": "WebSocket भएका पेजहरू ब्याक/फर्वार्ड क्यासमा राख्न मिल्दैन।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webTransport": {
+    "message": "WebTransport भएका पेजहरू ब्याक/फर्वार्ड क्यासमा राख्न मिल्दैन।"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webXR": {
+    "message": "WebXR प्रयोग गर्ने पेजहरूका हकमा हाल ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन।"
+  },
+  "panels/application/components/BackForwardCacheView.ts | backForwardCacheTitle": {
+    "message": "ब्याक/फर्वार्ड क्यास"
+  },
+  "panels/application/components/BackForwardCacheView.ts | blankURLTitle": {
+    "message": "खाली URL [{PH1}]"
+  },
+  "panels/application/components/BackForwardCacheView.ts | blockingExtensionId": {
+    "message": "एक्स्टेन्सन ID: "
+  },
+  "panels/application/components/BackForwardCacheView.ts | circumstantial": {
+    "message": "कारबाही गर्न नसकिने"
+  },
+  "panels/application/components/BackForwardCacheView.ts | circumstantialExplanation": {
+    "message": "यी कुराहरूमाथि कारबाही गर्न सकिँदैन, अर्थात् यो पेजको प्रत्यक्ष नियन्त्रणबाहिर रहेको कुनै कुराले गर्दा यो पेज क्यास गर्न सकिएन।"
+  },
+  "panels/application/components/BackForwardCacheView.ts | framesPerIssue": {
+    "message": "{n,plural, =1{# फ्रेम}other{# वटा फ्रेम}}"
+  },
+  "panels/application/components/BackForwardCacheView.ts | framesTitle": {
+    "message": "फ्रेमहरू"
+  },
+  "panels/application/components/BackForwardCacheView.ts | issuesInMultipleFrames": {
+    "message": "{n,plural, =1{{m} वटा फ्रेममा # समस्या भेट्टियो।}other{{m} वटा फ्रेममा # वटा समस्या भेट्टिए।}}"
+  },
+  "panels/application/components/BackForwardCacheView.ts | issuesInSingleFrame": {
+    "message": "{n,plural, =1{एउटा फ्रेममा # समस्या भेट्टियो।}other{एउटा फ्रेममा # वटा समस्या भेट्टिए।}}"
+  },
+  "panels/application/components/BackForwardCacheView.ts | learnMore": {
+    "message": "थप जान्नुहोस्: ब्याक/फर्वार्ड क्याससम्बन्धी मापदण्ड"
+  },
+  "panels/application/components/BackForwardCacheView.ts | mainFrame": {
+    "message": "मुख्य फ्रेम"
+  },
+  "panels/application/components/BackForwardCacheView.ts | normalNavigation": {
+    "message": "ब्याक/फर्वार्ड क्यास प्रयोग गरी पेज रिस्टोर गरिएन: तपाईं ब्याक/फर्वार्ड क्यास ट्रिगर गर्न चाहनुहुन्छ भने Chrome मा उपलब्ध \"पछाडि/अगाडि जानुहोस्\" बटन प्रयोग गर्नुहोस् वा तपाईं पछिल्लो र अघिल्लो पेजमा स्वतः जान चाहनुहुन्छ भने तल दिइएको \"परीक्षण गर्नुहोस्\" बटन प्रयोग गर्नुहोस्।"
+  },
+  "panels/application/components/BackForwardCacheView.ts | pageSupportNeeded": {
+    "message": "कारबाही गर्न सकिने"
+  },
+  "panels/application/components/BackForwardCacheView.ts | pageSupportNeededExplanation": {
+    "message": "यी कुराहरूमाथि कारबाही गर्न सकिन्छ, अर्थात् यो पेजका हकमा ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिलोस् भन्नाका लागि यी कुराहरू मेटाउन सकिन्छ।"
+  },
+  "panels/application/components/BackForwardCacheView.ts | restoredFromBFCache": {
+    "message": "ब्याक/फर्वार्ड क्यास प्रयोग गरी पेज रिस्टोर गरियो।"
+  },
+  "panels/application/components/BackForwardCacheView.ts | runTest": {
+    "message": "ब्याक/फर्वार्ड क्यास परीक्षण गर्नुहोस्"
+  },
+  "panels/application/components/BackForwardCacheView.ts | runningTest": {
+    "message": "परीक्षण गरिँदै छ"
+  },
+  "panels/application/components/BackForwardCacheView.ts | supportPending": {
+    "message": "ग्राहक सेवा दिन बाँकी छ"
+  },
+  "panels/application/components/BackForwardCacheView.ts | supportPendingExplanation": {
+    "message": "यी कारणहरूले गर्दा हाल यो पेजका हकमा Chrome को ब्याक/फर्वार्ड क्यास प्रयोग गर्न मिल्दैन, तर Chrome को भावी संस्करणमा भने यो पेजका हकमा ब्याक/फर्वार्ड क्यास प्रयोग गर्ने कुरामा यी कारणहरू बाधक बन्ने छैनन्।"
+  },
+  "panels/application/components/BackForwardCacheView.ts | unavailable": {
+    "message": "उपलब्ध छैन"
+  },
+  "panels/application/components/BackForwardCacheView.ts | unknown": {
+    "message": "स्थिति थाहा छैन"
+  },
+  "panels/application/components/BackForwardCacheView.ts | url": {
+    "message": "URL:"
+  },
   "panels/application/components/EndpointsGrid.ts | noEndpointsToDisplay": {
     "message": "कुनै पनि इन्डपोइन्ट छैन"
   },
@@ -3297,22 +3501,16 @@
     "message": "स्रोत प्यानलमा देखाउन क्लिक गर्नुहोस्"
   },
   "panels/application/components/FrameDetailsView.ts | createdByAdScriptExplanation": {
-    "message": "यो फ्रेम सिर्जना गरिएका बेला (async) स्ट्याकमा विज्ञापनसम्बन्धी स्क्रिप्ट थियो। यो फ्रेम सिर्जना गरिँदा जुन स्ट्याक ट्रेस विद्यमान थियो तपाईंले सो स्ट्याक ट्रेस जाँच्नुभयो भने तपाईं थप जानकारी प्राप्त गर्न सक्नुहुन्छ।"
+    "message": "यो फ्रेम बनाइएका बेला (async) stack मा विज्ञापनसम्बन्धी स्क्रिप्ट थियो। यो फ्रेम बनाइएका बेला जुन stack trace विद्यमान थियो तपाईंले सो स्ट्याक ट्रेस जाँच्नुभयो भने तपाईं थप जानकारी प्राप्त गर्न सक्नुहुन्छ।"
   },
   "panels/application/components/FrameDetailsView.ts | creationStackTrace": {
-    "message": "फ्रेम सिर्जनाको स्ट्याक ट्रेस"
+    "message": "फ्रेम बनाउने कार्यको Stack Trace"
   },
   "panels/application/components/FrameDetailsView.ts | creationStackTraceExplanation": {
-    "message": "यो फ्रेम प्रोग्रामेटिक तरिकाले सिर्जना गरिएको थियो। स्ट्याक ट्रेसले यो फ्रेम कहाँ सिर्जना गरिएको थियो भन्ने देखाउँछ।"
-  },
-  "panels/application/components/FrameDetailsView.ts | crossoriginEmbedderPolicy": {
-    "message": "क्रस ओरिजिन इम्बेडरसम्बन्धी नीति"
+    "message": "यो फ्रेम प्रोग्रामेटिक तरिकाले बनाइएको थियो। stack trace ले यो फ्रेम कहाँ बनाइएको थियो भन्ने कुरा देखाउँछ।"
   },
   "panels/application/components/FrameDetailsView.ts | crossoriginIsolated": {
     "message": "अलग गरिएका क्रस-ओरिजिन"
-  },
-  "panels/application/components/FrameDetailsView.ts | crossoriginOpenerPolicy": {
-    "message": "क्रस ओरिजिन ओपनरसम्बन्धी नीति"
   },
   "panels/application/components/FrameDetailsView.ts | document": {
     "message": "डकुमेन्ट"
@@ -3324,7 +3522,7 @@
     "message": "थप जान्नुहोस्"
   },
   "panels/application/components/FrameDetailsView.ts | localhostIsAlwaysASecureContext": {
-    "message": "लोकलहोस्ट सधैँ सुरक्षित हुन्छ"
+    "message": "Localhost सधैँ सुरक्षित हुन्छ"
   },
   "panels/application/components/FrameDetailsView.ts | matchedBlockingRuleExplanation": {
     "message": "यो फ्रेमको हालको (वा पहिलेको) मुख्य डकुमेन्ट विज्ञापनसम्बन्धी स्रोत भएकाले यो फ्रेमलाई विज्ञापनसम्बन्धी फ्रेम मानिन्छ।"
@@ -3338,14 +3536,14 @@
   "panels/application/components/FrameDetailsView.ts | origin": {
     "message": "स्रोत"
   },
-  "panels/application/components/FrameDetailsView.ts | originTrials": {
-    "message": "ओरिजिन ट्रायलहरू"
-  },
   "panels/application/components/FrameDetailsView.ts | ownerElement": {
     "message": "ओनर एलिमेन्ट"
   },
   "panels/application/components/FrameDetailsView.ts | parentIsAdExplanation": {
     "message": "यो फ्रेमको प्यारेन्ट फ्रेम विज्ञापनसम्बन्धी फ्रेम भएकाले यो फ्रेमलाई विज्ञापनसम्बन्धी फ्रेम मानिन्छ।"
+  },
+  "panels/application/components/FrameDetailsView.ts | refresh": {
+    "message": "रिफ्रेस गर्नुहोस्"
   },
   "panels/application/components/FrameDetailsView.ts | reportingTo": {
     "message": "यसलाई रिपोर्ट गर्छ"
@@ -3366,10 +3564,10 @@
     "message": "सुरक्षा तथा पृथकीकरण"
   },
   "panels/application/components/FrameDetailsView.ts | sharedarraybufferConstructorIs": {
-    "message": "SharedArrayBuffer कन्सट्रक्टर उपलब्ध छ र SAB हरूलाई postMessage मार्फत ट्रान्सफर गर्न सकिन्छ"
+    "message": "SharedArrayBuffer कन्सट्रक्टर उपलब्ध छ र SABs लाई postMessage मार्फत ट्रान्सफर गर्न सकिन्छ"
   },
   "panels/application/components/FrameDetailsView.ts | sharedarraybufferConstructorIsAvailable": {
-    "message": "SharedArrayBuffer कन्स्ट्रक्टर उपलब्ध छ तर SAB हरूलाई postMessage मार्फत ट्रान्सफर गर्न मिल्दैन"
+    "message": "SharedArrayBuffer कन्स्ट्रक्टर उपलब्ध छ तर SABs लाई postMessage मार्फत ट्रान्सफर गर्न मिल्दैन"
   },
   "panels/application/components/FrameDetailsView.ts | theFramesSchemeIsInsecure": {
     "message": "यो फ्रेमको स्किम असुरक्षित छ"
@@ -3400,6 +3598,24 @@
   },
   "panels/application/components/FrameDetailsView.ts | yes": {
     "message": "अँ"
+  },
+  "panels/application/components/InterestGroupAccessGrid.ts | allInterestGroupStorageEvents": {
+    "message": "समान विषयसँग सरोकार राख्ने समूहका भण्डारण गरिएका सबै कार्यक्रमहरू।"
+  },
+  "panels/application/components/InterestGroupAccessGrid.ts | eventTime": {
+    "message": "कार्यक्रमको समयावधि"
+  },
+  "panels/application/components/InterestGroupAccessGrid.ts | eventType": {
+    "message": "अनुमतिको प्रकार"
+  },
+  "panels/application/components/InterestGroupAccessGrid.ts | groupName": {
+    "message": "नाम"
+  },
+  "panels/application/components/InterestGroupAccessGrid.ts | groupOwner": {
+    "message": "मालिक"
+  },
+  "panels/application/components/InterestGroupAccessGrid.ts | noEvents": {
+    "message": "समान विषयसँग सरोकार राख्ने समूहको कुनै पनि कार्यक्रम रेकर्ड गरिएको छैन।"
   },
   "panels/application/components/OriginTrialTreeView.ts | expiryTime": {
     "message": "म्याद सकिने समय"
@@ -3440,6 +3656,9 @@
   "panels/application/components/PermissionsPolicySection.ts | clickToShowIframe": {
     "message": "एलिमेन्ट प्यानलमा यो सुविधा प्रयोग गर्न नदिने सबैभन्दा माथिल्लो स्थानमा रहेको iframe देखिने पार्न क्लिक गर्नुहोस्।"
   },
+  "panels/application/components/PermissionsPolicySection.ts | disabledByFencedFrame": {
+    "message": "fencedframe भित्र असक्षम पारिएको"
+  },
   "panels/application/components/PermissionsPolicySection.ts | disabledByHeader": {
     "message": "\"Permissions-Policy\" नामक हेडरले असक्षम पारेको"
   },
@@ -3455,8 +3674,17 @@
   "panels/application/components/PermissionsPolicySection.ts | showDetails": {
     "message": "विवरणहरू देखाइऊन्"
   },
+  "panels/application/components/ReportsGrid.ts | destination": {
+    "message": "गन्तव्य"
+  },
+  "panels/application/components/ReportsGrid.ts | generatedAt": {
+    "message": "निम्न मितिमा सिर्जना गरिएको"
+  },
   "panels/application/components/ReportsGrid.ts | noReportsToDisplay": {
     "message": "कुनै पनि रिपोर्ट छैन"
+  },
+  "panels/application/components/ReportsGrid.ts | status": {
+    "message": "स्थिति"
   },
   "panels/application/components/StackTrace.ts | cannotRenderStackTrace": {
     "message": "स्ट्याक ट्रेस रेन्डर गर्न सकिएन"
@@ -3620,6 +3848,12 @@
   "panels/changes/ChangesView.ts | binaryData": {
     "message": "बाइनरी डेटा"
   },
+  "panels/changes/ChangesView.ts | copy": {
+    "message": "कपी गर्नुहोस्"
+  },
+  "panels/changes/ChangesView.ts | copyAllChangesFromCurrentFile": {
+    "message": "हालको फाइलमा गरिएका सबै परिवर्तनहरू कपी गर्नुहोस्"
+  },
   "panels/changes/ChangesView.ts | noChanges": {
     "message": "कुनै पनि कुरा परिवर्तन गरिएको छैन"
   },
@@ -3698,11 +3932,20 @@
   "panels/console/ConsoleView.ts | allLevels": {
     "message": "सबै स्तरहरू"
   },
+  "panels/console/ConsoleView.ts | autocompleteFromHistory": {
+    "message": "इतिहासबाट स्वतः भरियोस्"
+  },
   "panels/console/ConsoleView.ts | consoleCleared": {
     "message": "कन्सोलमा भएका सबै डेटा हटाइयो"
   },
   "panels/console/ConsoleView.ts | consoleSettings": {
     "message": "कन्सोलसम्बन्धी सेटिङ"
+  },
+  "panels/console/ConsoleView.ts | consoleSidebarHidden": {
+    "message": "कन्सोल साइडबार लुकाइएको छ"
+  },
+  "panels/console/ConsoleView.ts | consoleSidebarShown": {
+    "message": "कन्सोल साइडबार देखाइएको छ"
   },
   "panels/console/ConsoleView.ts | copyVisibleStyledSelection": {
     "message": "देखिने खाले स्टाइल भएको चयन गरिएको वस्तु कपी गर्नुहोस्"
@@ -3773,6 +4016,9 @@
   "panels/console/ConsoleView.ts | logLevels": {
     "message": "लगका स्तरहरू"
   },
+  "panels/console/ConsoleView.ts | logXMLHttpRequests": {
+    "message": "लग XMLHttpRequests"
+  },
   "panels/console/ConsoleView.ts | onlyShowMessagesFromTheCurrentContext": {
     "message": "हालको सन्दर्भका म्यासेज मात्र देखाइयोस् (top, iframe, worker, एक्स्टेन्सन)"
   },
@@ -3805,6 +4051,9 @@
   },
   "panels/console/ConsoleView.ts | showCorsErrorsInConsole": {
     "message": "कन्सोलमा CORS सम्बन्धी त्रुटि देखाइयोस्"
+  },
+  "panels/console/ConsoleView.ts | treatEvaluationAsUserActivation": {
+    "message": "इभ्यालुएसनलाई युजर एक्टिभेसनका रूपमा लिइयोस्"
   },
   "panels/console/ConsoleView.ts | verbose": {
     "message": "बोलेर दिनु पर्ने जानकारीको मात्रा"
@@ -4229,20 +4478,11 @@
   "panels/css_overview/CSSOverviewUnusedDeclarations.ts | widthAppliedToAnInlineElement": {
     "message": "Width इनलाइन एलिमेन्टमा लागू गरियो"
   },
-  "panels/css_overview/components/CSSOverviewStartView.ts | activelyWorkingAndLookingForS": {
-    "message": "हाम्रो टोली यो सुविधा सुधार्न सक्रिय रूपमा काम गरिरहेको छ। हामी तपाईंको {PH1} पाउने आशा गर्दछौँ!"
-  },
   "panels/css_overview/components/CSSOverviewStartView.ts | captureOverview": {
     "message": "संक्षिप्त जानकारी खिच्नुहोस्"
   },
   "panels/css_overview/components/CSSOverviewStartView.ts | capturePageCSSOverview": {
     "message": "आफ्नो पेजको CSS को संक्षिप्त जानकारी समावेश गर्नुहोस्"
-  },
-  "panels/css_overview/components/CSSOverviewStartView.ts | feedbackInline": {
-    "message": "प्रतिक्रिया"
-  },
-  "panels/css_overview/components/CSSOverviewStartView.ts | feedbackStandalone": {
-    "message": "प्रतिक्रिया"
   },
   "panels/css_overview/components/CSSOverviewStartView.ts | identifyCSSImprovements": {
     "message": "CSS मा गर्न सकिने सुधारहरू पहिचान गर्नुहोस्"
@@ -4253,14 +4493,8 @@
   "panels/css_overview/components/CSSOverviewStartView.ts | locateAffectedElements": {
     "message": "एलिमेन्ट प्यानलमा प्रभावित एलिमेन्टहरू भेट्टाउनुहोस्"
   },
-  "panels/css_overview/components/CSSOverviewStartView.ts | previewFeature": {
-    "message": "परीक्षणको चरणमा रहेको सुविधा"
-  },
   "panels/css_overview/components/CSSOverviewStartView.ts | quickStartWithCSSOverview": {
     "message": "द्रुत सुरुवात: CSS सम्बन्धी संक्षिप्त जानकारी देखाउने नयाँ प्यानल चलाउन थाल्नुहोस्"
-  },
-  "panels/css_overview/components/CSSOverviewStartView.ts | videoAndDocumentation": {
-    "message": "भिडियो र कागजात"
   },
   "panels/css_overview/css_overview-meta.ts | cssOverview": {
     "message": "CSS सम्बन्धी संक्षिप्त जानकारी"
@@ -4375,6 +4609,12 @@
   },
   "panels/elements/ElementsPanel.ts | computed": {
     "message": "कम्प्युटेड"
+  },
+  "panels/elements/ElementsPanel.ts | computedStylesHidden": {
+    "message": "कम्प्युटेड स्टाइल साइडबार लुकाइएको छ"
+  },
+  "panels/elements/ElementsPanel.ts | computedStylesShown": {
+    "message": "कम्प्युटेड स्टाइल साइडबार देखाइएको छ"
   },
   "panels/elements/ElementsPanel.ts | domTreeExplorer": {
     "message": "DOM ट्री एक्स्प्लोरर"
@@ -4571,6 +4811,12 @@
   "panels/elements/EventListenersWidget.ts | showListenersOnTheAncestors": {
     "message": "एन्सेस्टरहरूमा लिसनरहरू देखाइऊन्"
   },
+  "panels/elements/LayersWidget.ts | cssLayersTitle": {
+    "message": "CSS लेयरहरू"
+  },
+  "panels/elements/LayersWidget.ts | toggleCSSLayers": {
+    "message": "CSS लेयर भ्यू टगल गर्नुहोस्"
+  },
   "panels/elements/MarkerDecorator.ts | domBreakpoint": {
     "message": "DOM ब्रेकपोइन्ट"
   },
@@ -4591,6 +4837,63 @@
   },
   "panels/elements/PlatformFontsWidget.ts | renderedFonts": {
     "message": "रेन्डर गरिएका फन्टहरू"
+  },
+  "panels/elements/PropertiesWidget.ts | filter": {
+    "message": "फिल्टर गर्नुहोस्"
+  },
+  "panels/elements/PropertiesWidget.ts | filterProperties": {
+    "message": "फिल्टरका प्रोपर्टीहरू"
+  },
+  "panels/elements/PropertiesWidget.ts | noMatchingProperty": {
+    "message": "मिल्दोजुल्दो कुनै पनि प्रोपर्टी भेटिएन"
+  },
+  "panels/elements/PropertiesWidget.ts | showAll": {
+    "message": "सबै देखाइयोस्"
+  },
+  "panels/elements/PropertiesWidget.ts | showAllTooltip": {
+    "message": "तपाईंले चिन्ह हटाउनुभयो भने मान शून्य नभएका र पहिले नै तय गरिएका प्रोपर्टीहरू मात्र देखाइने छन्"
+  },
+  "panels/elements/StylePropertiesSection.ts | constructedStylesheet": {
+    "message": "स्टायलसिट बनाइयो"
+  },
+  "panels/elements/StylePropertiesSection.ts | copyAllCSSChanges": {
+    "message": "CSS मा गरिएका सबै परिवर्तनहरू कपी गर्नुहोस्"
+  },
+  "panels/elements/StylePropertiesSection.ts | copyAllDeclarations": {
+    "message": "सबै घोषणाहरू कपी गर्नुहोस्"
+  },
+  "panels/elements/StylePropertiesSection.ts | copyRule": {
+    "message": "नियम कपी गर्नुहोस्"
+  },
+  "panels/elements/StylePropertiesSection.ts | copySelector": {
+    "message": "selector कपी गर्नुहोस्"
+  },
+  "panels/elements/StylePropertiesSection.ts | cssSelector": {
+    "message": "CSS सेलेक्टर"
+  },
+  "panels/elements/StylePropertiesSection.ts | injectedStylesheet": {
+    "message": "इन्जेक्ट गरिएको स्टायलसिट"
+  },
+  "panels/elements/StylePropertiesSection.ts | insertStyleRuleBelow": {
+    "message": "शैलीसम्बन्धी नियम तल हाल्नुहोस्"
+  },
+  "panels/elements/StylePropertiesSection.ts | sattributesStyle": {
+    "message": "{PH1}[विशेषताको शैली]"
+  },
+  "panels/elements/StylePropertiesSection.ts | showAllPropertiesSMore": {
+    "message": "सबै प्रोपर्टीहरू देखाइऊन् (थप {PH1})"
+  },
+  "panels/elements/StylePropertiesSection.ts | styleAttribute": {
+    "message": "style विशेषता"
+  },
+  "panels/elements/StylePropertiesSection.ts | userAgentStylesheet": {
+    "message": "युजर एजेन्ट स्टायलसिट"
+  },
+  "panels/elements/StylePropertiesSection.ts | viaInspector": {
+    "message": "इन्स्पेक्टरमार्फत"
+  },
+  "panels/elements/StylePropertyTreeElement.ts | copyAllCSSChanges": {
+    "message": "CSS मा गरिएका सबै परिवर्तनहरू कपी गर्नुहोस्"
   },
   "panels/elements/StylePropertyTreeElement.ts | copyAllCssDeclarationsAsJs": {
     "message": "सबै घोषणाहरू JS का रूपमा कपी गर्नुहोस्"
@@ -4637,26 +4940,23 @@
   "panels/elements/StylePropertyTreeElement.ts | viewComputedValue": {
     "message": "हिसाब गरेर निकालेको मान"
   },
-  "panels/elements/StylesSidebarPane.ts | constructedStylesheet": {
-    "message": "स्टायलसिट बनाइयो"
+  "panels/elements/StylesSidebarPane.ts | automaticDarkMode": {
+    "message": "स्वचालित अँध्यारो मोड"
   },
-  "panels/elements/StylesSidebarPane.ts | copyAllDeclarations": {
-    "message": "सबै घोषणाहरू कपी गर्नुहोस्"
+  "panels/elements/StylesSidebarPane.ts | clickToRevealLayer": {
+    "message": "लेयर ट्रिमा लेयर देखाउन क्लिक गर्नुहोस्"
   },
-  "panels/elements/StylesSidebarPane.ts | copyRule": {
-    "message": "नियम कपी गर्नुहोस्"
+  "panels/elements/StylesSidebarPane.ts | copiedToClipboard": {
+    "message": "क्लिपबोर्डमा कपी गरियो"
   },
-  "panels/elements/StylesSidebarPane.ts | copySelector": {
-    "message": "selector कपी गर्नुहोस्"
+  "panels/elements/StylesSidebarPane.ts | copyAllCSSChanges": {
+    "message": "CSS सम्बन्धी जानकारीमा गरिएका सबै परिवर्तनहरू कपी गर्नुहोस्"
   },
   "panels/elements/StylesSidebarPane.ts | cssPropertyName": {
-    "message": "CSS प्रोपर्टीको नाम"
+    "message": "CSS प्रोपर्टीको नाम: {PH1}"
   },
   "panels/elements/StylesSidebarPane.ts | cssPropertyValue": {
-    "message": "CSS प्रोपर्टीको मान"
-  },
-  "panels/elements/StylesSidebarPane.ts | cssSelector": {
-    "message": "CSS सेलेक्टर"
+    "message": "CSS प्रोपर्टीको मान: {PH1}"
   },
   "panels/elements/StylesSidebarPane.ts | filter": {
     "message": "फिल्टर गर्नुहोस्"
@@ -4670,20 +4970,20 @@
   "panels/elements/StylesSidebarPane.ts | incrementdecrementWithMousewheelOne": {
     "message": "माउसह्विल वा अप/डाउन की प्रयोग गरी बढाउनुहोस्/घटाउनुहोस्। {PH1}: R ±१, Shift: G ±१, Alt: B ±१"
   },
+  "panels/elements/StylesSidebarPane.ts | inheritedFromSPseudoOf": {
+    "message": "स्रोत ::{PH1} गरिएको छद्म एलिमेन्ट "
+  },
   "panels/elements/StylesSidebarPane.ts | inheritedFroms": {
     "message": "यसबाट लिइएको "
-  },
-  "panels/elements/StylesSidebarPane.ts | injectedStylesheet": {
-    "message": "इन्जेक्ट गरिएको स्टायलसिट"
-  },
-  "panels/elements/StylesSidebarPane.ts | insertStyleRuleBelow": {
-    "message": "शैलीसम्बन्धी नियम तल हाल्नुहोस्"
   },
   "panels/elements/StylesSidebarPane.ts | invalidPropertyValue": {
     "message": "प्रोपर्टीको मान वैध छैन"
   },
   "panels/elements/StylesSidebarPane.ts | invalidString": {
     "message": "{PH1}, प्रोपर्टीको नाम: {PH2}, प्रोपर्टीको मान: {PH3}"
+  },
+  "panels/elements/StylesSidebarPane.ts | layer": {
+    "message": "लेयर"
   },
   "panels/elements/StylesSidebarPane.ts | newStyleRule": {
     "message": "शैलीसम्बन्धी नयाँ नियम"
@@ -4694,23 +4994,11 @@
   "panels/elements/StylesSidebarPane.ts | pseudoSElement": {
     "message": "छद्म ::{PH1} एलिमेन्ट"
   },
-  "panels/elements/StylesSidebarPane.ts | sattributesStyle": {
-    "message": "{PH1}[विशेषताको शैली]"
-  },
-  "panels/elements/StylesSidebarPane.ts | showAllPropertiesSMore": {
-    "message": "सबै प्रोपर्टीहरू देखाइऊन् (थप {PH1})"
-  },
-  "panels/elements/StylesSidebarPane.ts | styleAttribute": {
-    "message": "style विशेषता"
+  "panels/elements/StylesSidebarPane.ts | toggleRenderingEmulations": {
+    "message": "सामान्य रेन्डरिङ एम्युलेसनहरू टगल गर्नुहोस्"
   },
   "panels/elements/StylesSidebarPane.ts | unknownPropertyName": {
     "message": "प्रोपर्टीको नाम अज्ञात छ"
-  },
-  "panels/elements/StylesSidebarPane.ts | userAgentStylesheet": {
-    "message": "युजर एजेन्ट स्टायलसिट"
-  },
-  "panels/elements/StylesSidebarPane.ts | viaInspector": {
-    "message": "इन्स्पेक्टरमार्फत"
   },
   "panels/elements/components/AccessibilityTreeNode.ts | ignored": {
     "message": "बेवास्ता गरिएको"
@@ -4980,7 +5268,7 @@
     "message": "मिडिया क्वेरी लुकाइयोस्"
   },
   "panels/emulation/emulation-meta.ts | hideRulers": {
-    "message": "रुलरहरू लुकाइऊन्"
+    "message": "डिभाइस मोड टुलबारमा रुलरहरू लुकाइऊन्"
   },
   "panels/emulation/emulation-meta.ts | showDeviceFrame": {
     "message": "डिभाइस फ्रेम देखाइयोस्"
@@ -4989,7 +5277,7 @@
     "message": "मिडिया क्वेरीहरू देखाइऊन्"
   },
   "panels/emulation/emulation-meta.ts | showRulers": {
-    "message": "रुलरहरू देखाइऊन्"
+    "message": "डिभाइस मोड टुलबारमा रुलरहरू देखाइऊन्"
   },
   "panels/emulation/emulation-meta.ts | toggleDeviceToolbar": {
     "message": "डिभाइस टुलबार टगल गर्नुहोस्"
@@ -5014,36 +5302,6 @@
   },
   "panels/event_listeners/EventListenersView.ts | toggleWhetherEventListenerIs": {
     "message": "इभेन्ट लिसनर निष्क्रिय पार्न वा ब्लक गर्न टगल गर्नुहोस्"
-  },
-  "panels/help/ReleaseNoteView.ts | close": {
-    "message": "बन्द गर्नुहोस्"
-  },
-  "panels/help/ReleaseNoteView.ts | learnMore": {
-    "message": "थप जान्नुहोस्"
-  },
-  "panels/help/help-meta.ts | bug": {
-    "message": "त्रुटि"
-  },
-  "panels/help/help-meta.ts | doNotShowWhatsNewAfterEachUpdate": {
-    "message": "अपडेट गरेपछि प्रत्येक पटक नयाँ सुविधाहरूको जानकारी नदेखाइयोस्"
-  },
-  "panels/help/help-meta.ts | releaseNotes": {
-    "message": "विमोचन टिप्पणी"
-  },
-  "panels/help/help-meta.ts | reportADevtoolsIssue": {
-    "message": "DevTools सम्बन्धी कुनै समस्या रिपोर्ट गर्नुहोस्"
-  },
-  "panels/help/help-meta.ts | reportTranslationIssue": {
-    "message": "अनुवादसम्बन्धी समस्याका बारेमा रिपोर्ट गर्नुहोस्"
-  },
-  "panels/help/help-meta.ts | showWhatsNew": {
-    "message": "'नयाँ के छ' नामक टुल देखाउनुहोस्"
-  },
-  "panels/help/help-meta.ts | showWhatsNewAfterEachUpdate": {
-    "message": "हरेक पटक अपडेट गरेपछि उक्त अपडेटमा समावेश गरिएका नयाँ कुराहरू देखाइऊन्"
-  },
-  "panels/help/help-meta.ts | whatsNew": {
-    "message": "नयाँ के छ"
   },
   "panels/input/InputTimeline.ts | clearAll": {
     "message": "सबै हटाउनुहोस्"
@@ -5255,14 +5513,8 @@
   "panels/issues/AttributionReportingIssueDetailsView.ts | frame": {
     "message": "फ्रेम"
   },
-  "panels/issues/AttributionReportingIssueDetailsView.ts | invalidEventSourceTriggerData": {
-    "message": "अवैध event-source-trigger-data"
-  },
-  "panels/issues/AttributionReportingIssueDetailsView.ts | invalidSourceEventId": {
-    "message": "अवैध attributionsourceeventid"
-  },
-  "panels/issues/AttributionReportingIssueDetailsView.ts | invalidTriggerData": {
-    "message": "अवैध trigger-data"
+  "panels/issues/AttributionReportingIssueDetailsView.ts | invalidHeaderValue": {
+    "message": "Invalid Header Value"
   },
   "panels/issues/AttributionReportingIssueDetailsView.ts | nViolations": {
     "message": "{n,plural, =1{# उल्लङ्घन}other{# वटा उल्लङ्घन}}"
@@ -5275,6 +5527,9 @@
   },
   "panels/issues/CSPViolationsView.ts | filter": {
     "message": "फिल्टर गर्नुहोस्"
+  },
+  "panels/issues/ComboBoxOfCheckBoxes.ts | genericMenuLabel": {
+    "message": "मेनु"
   },
   "panels/issues/CorsIssueDetailsView.ts | allowCredentialsValueFromHeader": {
     "message": "Access-Control-Allow-Credentials हेडरको मान"
@@ -5290,6 +5545,9 @@
   },
   "panels/issues/CorsIssueDetailsView.ts | disallowedRequestMethod": {
     "message": "अस्वीकर गरिएको अनुरोधको विधि"
+  },
+  "panels/issues/CorsIssueDetailsView.ts | failedRequest": {
+    "message": "अनुरोध पठाउन सकिएन"
   },
   "panels/issues/CorsIssueDetailsView.ts | header": {
     "message": "हेडर"
@@ -5366,8 +5624,14 @@
   "panels/issues/HiddenIssuesRow.ts | unhideAll": {
     "message": "सबै देखाउनुहोस्"
   },
-  "panels/issues/IssueKindView.ts | hideAllCurrent": {
-    "message": "हालका सबै {PH1} लुकाउनुहोस्"
+  "panels/issues/IssueKindView.ts | hideAllCurrentBreakingChanges": {
+    "message": "हालका परिवर्तन रोक्ने सबै समस्याहरू लुकाइऊन्"
+  },
+  "panels/issues/IssueKindView.ts | hideAllCurrentImprovements": {
+    "message": "हाल गरिएका सबै सुधारहरू लुकाइऊन्"
+  },
+  "panels/issues/IssueKindView.ts | hideAllCurrentPageErrors": {
+    "message": "हाल यो पेजमा भएका सबै त्रुटिहरू लुकाइऊन्"
   },
   "panels/issues/IssueView.ts | affectedResources": {
     "message": "प्रभावित रिसोर्सहरू"
@@ -5461,27 +5725,6 @@
   },
   "panels/issues/IssuesPane.ts | trustedWebActivity": {
     "message": "वेबमा गरिएका विश्वसनीय गतिविधि"
-  },
-  "panels/issues/WasmCrossOriginModuleSharingAffectedResourcesView.ts | blocked": {
-    "message": "ब्लक गरियो"
-  },
-  "panels/issues/WasmCrossOriginModuleSharingAffectedResourcesView.ts | nModuleTransfers": {
-    "message": "{n,plural, =1{# मोड्युल}other{# वटा मोड्युल}}"
-  },
-  "panels/issues/WasmCrossOriginModuleSharingAffectedResourcesView.ts | sourceOrigin": {
-    "message": "स्रोतको ओरिजिन"
-  },
-  "panels/issues/WasmCrossOriginModuleSharingAffectedResourcesView.ts | status": {
-    "message": "स्थिति"
-  },
-  "panels/issues/WasmCrossOriginModuleSharingAffectedResourcesView.ts | targetOrigin": {
-    "message": "लक्ष्यको ओरिजिन"
-  },
-  "panels/issues/WasmCrossOriginModuleSharingAffectedResourcesView.ts | warned": {
-    "message": "चेतावनी"
-  },
-  "panels/issues/WasmCrossOriginModuleSharingAffectedResourcesView.ts | wasmModuleUrl": {
-    "message": "Wasm मोड्युलको URL"
   },
   "panels/issues/components/HideIssuesMenu.ts | tooltipTitle": {
     "message": "समस्याहरू लुकाउनुहोस्"
@@ -5723,6 +5966,15 @@
   "panels/lighthouse/LighthouseController.ts | isThisPageUsableByPeopleWith": {
     "message": "अपाङ्गता भएका मान्छेहरू यो पेज प्रयोग गर्न सक्छन् वा सक्दैनन् भन्ने कुरा"
   },
+  "panels/lighthouse/LighthouseController.ts | javaScriptDisabled": {
+    "message": "JavaScript is disabled. You need to enable JavaScript to audit this page. Open the Command Menu and run the Enable JavaScript command to enable JavaScript."
+  },
+  "panels/lighthouse/LighthouseController.ts | legacyNavigation": {
+    "message": "लिगेसी नेभिगेसन"
+  },
+  "panels/lighthouse/LighthouseController.ts | lighthouseMode": {
+    "message": "Lighthouse मोड"
+  },
   "panels/lighthouse/LighthouseController.ts | localStorage": {
     "message": "स्थानीय भण्डारण"
   },
@@ -5731,6 +5983,12 @@
   },
   "panels/lighthouse/LighthouseController.ts | multipleTabsAreBeingControlledBy": {
     "message": "एउटै service worker ले एकभन्दा बढी ट्याब नियन्त्रण गरिरहेको छ। यो पेज अडिट गर्न सोही ओरिजिनमा भएका अन्य ट्याबहरू बन्द गर्नुहोस्।"
+  },
+  "panels/lighthouse/LighthouseController.ts | navigation": {
+    "message": "Navigation (Default)"
+  },
+  "panels/lighthouse/LighthouseController.ts | navigationTooltip": {
+    "message": "Navigation mode analyzes a page load, exactly like the original Lighthouse reports."
   },
   "panels/lighthouse/LighthouseController.ts | performance": {
     "message": "कार्यसम्पादन"
@@ -5744,6 +6002,9 @@
   "panels/lighthouse/LighthouseController.ts | resetStorageLocalstorage": {
     "message": "अडिट गर्नुभन्दा पहिले भण्डारण (cache, service workers, आदि) रिसेट गर्नुहोस्। (कार्यसम्पादन तथा PWA परीक्षणका लागि राम्रो)"
   },
+  "panels/lighthouse/LighthouseController.ts | runLighthouseInMode": {
+    "message": "नेभिगेसन, टाइमस्प्यान वा स्न्यापसट मोडमा Lighthouse चलाउनुहोस्"
+  },
   "panels/lighthouse/LighthouseController.ts | seo": {
     "message": "SEO"
   },
@@ -5753,11 +6014,26 @@
   "panels/lighthouse/LighthouseController.ts | simulatedThrottling": {
     "message": "सिमुलेटेड थ्रोटलिङ"
   },
+  "panels/lighthouse/LighthouseController.ts | snapshot": {
+    "message": "स्न्यापसट"
+  },
+  "panels/lighthouse/LighthouseController.ts | snapshotTooltip": {
+    "message": "Snapshot mode analyzes the page in a particular state, typically after user interactions."
+  },
   "panels/lighthouse/LighthouseController.ts | thereMayBeStoredDataAffectingLoadingPlural": {
-    "message": "भण्डारण गरिएको डेटाले निम्न स्थानहरूको लोड हुने क्षमतामा प्रभाव पारिरहेको हुन सक्छ: {PH1}। ती डेटाको कारणले तपाईंको स्कोरमा असर नपरोस् भन्नाका खातिर यो पेज इन्कोग्निटो विन्डोमा खोलेर जाँच गर्नुहोस्।"
+    "message": "भण्डारण गरिएको डेटाले निम्न स्थानहरूको लोड हुने क्षमतामा प्रभाव पारिरहेको हुन सक्छ: {PH1}। ती डेटाको कारणले तपाईंको स्कोरमा असर नपरोस् भन्नाका लागि यो पेज इन्कोग्निटो विन्डोमा खोलेर जाँच गर्नुहोस्।"
   },
   "panels/lighthouse/LighthouseController.ts | thereMayBeStoredDataAffectingSingular": {
-    "message": "भण्डारण गरिएको डेटाले निम्न स्थानको लोड हुने क्षमतामा प्रभाव पारिरहेको हुन सक्छ: {PH1}। ती डेटाको कारणले तपाईंको स्कोरमा असर नपरोस् भन्नाका खातिर यो पेज इन्कोग्निटो विन्डोमा खोलेर जाँच गर्नुहोस्।"
+    "message": "भण्डारण गरिएको डेटाले निम्न स्थानको लोड हुने क्षमतामा प्रभाव पारिरहेको हुन सक्छ: {PH1}। ती डेटाको कारणले तपाईंको स्कोरमा असर नपरोस् भन्नाका लागि यो पेज इन्कोग्निटो विन्डोमा खोलेर जाँच गर्नुहोस्।"
+  },
+  "panels/lighthouse/LighthouseController.ts | timespan": {
+    "message": "टाइमस्प्यान"
+  },
+  "panels/lighthouse/LighthouseController.ts | timespanTooltip": {
+    "message": "Timespan mode analyzes an arbitrary period of time, typically containing user interactions."
+  },
+  "panels/lighthouse/LighthouseController.ts | useLegacyNavigation": {
+    "message": "नेभिगेसन मोड अन हुँदा क्लासिक Lighthouse प्रयोग गरी यो पेजको विश्लेषण गर्नुहोस्।"
   },
   "panels/lighthouse/LighthouseController.ts | webSql": {
     "message": "वेब SQL"
@@ -5799,7 +6075,7 @@
     "message": "रिपोर्टहरू"
   },
   "panels/lighthouse/LighthouseStartView.ts | categories": {
-    "message": "कोटीहरू"
+    "message": "Categories"
   },
   "panels/lighthouse/LighthouseStartView.ts | communityPluginsBeta": {
     "message": "कम्युनिटी प्लगइनहरू (बिटा)"
@@ -5815,6 +6091,27 @@
   },
   "panels/lighthouse/LighthouseStartView.ts | learnMore": {
     "message": "थप जान्नुहोस्"
+  },
+  "panels/lighthouse/LighthouseStartViewFR.ts | analyzeNavigation": {
+    "message": "Analyze page load"
+  },
+  "panels/lighthouse/LighthouseStartViewFR.ts | analyzeSnapshot": {
+    "message": "Analyze page state"
+  },
+  "panels/lighthouse/LighthouseStartViewFR.ts | categories": {
+    "message": "Categories"
+  },
+  "panels/lighthouse/LighthouseStartViewFR.ts | generateLighthouseReport": {
+    "message": "Generate a Lighthouse report"
+  },
+  "panels/lighthouse/LighthouseStartViewFR.ts | mode": {
+    "message": "मोड"
+  },
+  "panels/lighthouse/LighthouseStartViewFR.ts | plugins": {
+    "message": "Plugins"
+  },
+  "panels/lighthouse/LighthouseStartViewFR.ts | startTimespan": {
+    "message": "टाइमस्प्यान सुरु गर्नुहोस्"
   },
   "panels/lighthouse/LighthouseStatusView.ts | OfGlobalMobileUsersInWereOnGOrG": {
     "message": "सन् २०१६ मा मोबाइल यन्त्र प्रयोग गर्ने विश्वभरिका मान्छेहरूमध्ये ७५% मान्छेले 2G वा 3G नेटवर्क प्रयोग गरेका थिए [स्रोत: GSMA Mobile]"
@@ -5902,6 +6199,18 @@
   },
   "panels/lighthouse/LighthouseStatusView.ts | walmartSawAIncreaseInRevenueFor": {
     "message": "Walmart को वेबसाइटको पेज १०० मिलिसेकेन्ड छिटो लोड हुँदा Walmart को आम्दानी १% वृद्धि भएको पाइएको छ [स्रोत: WPO Stats]"
+  },
+  "panels/lighthouse/LighthouseTimespanView.ts | cancel": {
+    "message": "रद्द गर्नुहोस्"
+  },
+  "panels/lighthouse/LighthouseTimespanView.ts | endTimespan": {
+    "message": "टाइमस्प्यान अन्त्य गर्नुहोस्"
+  },
+  "panels/lighthouse/LighthouseTimespanView.ts | timespanStarted": {
+    "message": "टाइमस्प्यान सुरु भयो, यो पेज हेर्नुहोस् वा यसमा कुनै कार्य गर्नुहोस्"
+  },
+  "panels/lighthouse/LighthouseTimespanView.ts | timespanStarting": {
+    "message": "टाइमस्प्यान सुरु हुँदै छ…"
   },
   "panels/lighthouse/lighthouse-meta.ts | showLighthouse": {
     "message": "Lighthouse देखाइयोस्"
@@ -6308,6 +6617,9 @@
   "panels/network/NetworkConfigView.ts | caching": {
     "message": "क्यास गरिँदै छ"
   },
+  "panels/network/NetworkConfigView.ts | clientHintsStatusText": {
+    "message": "युजर एजेन्ट अपडेट गरियो।"
+  },
   "panels/network/NetworkConfigView.ts | custom": {
     "message": "आफू अनुकूल..."
   },
@@ -6319,6 +6631,9 @@
   },
   "panels/network/NetworkConfigView.ts | enterACustomUserAgent": {
     "message": "आफ्नो रोजाइअनुसारको युजर एजेन्ट हाल्नुहोस्"
+  },
+  "panels/network/NetworkConfigView.ts | networkConditionsPanelShown": {
+    "message": "नेटवर्कको स्थितिका बारेमा जानकारी दिने प्यानल देखाइएको छ"
   },
   "panels/network/NetworkConfigView.ts | networkThrottling": {
     "message": "नेटवर्क थ्रोटलिङ"
@@ -6935,6 +7250,9 @@
   "panels/network/RequestHeadersView.ts | general": {
     "message": "सामान्य"
   },
+  "panels/network/RequestHeadersView.ts | headerOverrides": {
+    "message": "हेडरका ओभरराइडहरू"
+  },
   "panels/network/RequestHeadersView.ts | learnMore": {
     "message": "थप जान्नुहोस्"
   },
@@ -7188,7 +7506,7 @@
     "message": "अज्ञात"
   },
   "panels/network/RequestTimingView.ts | waitingTtfb": {
-    "message": "प्रतीक्षा गरिँदै छ (TTFB)"
+    "message": "Waiting for server response"
   },
   "panels/network/RequestTimingView.ts | waterfall": {
     "message": "वाटरफल"
@@ -8304,10 +8622,10 @@
     "message": "पूरा विवरणहरू लुकाइयोस्"
   },
   "panels/security/SecurityPanel.ts | ifYouBelieveThisIsShownIn": {
-    "message": "तपाईंलाई यो त्रुटिवश देखाइएको हो जस्तो लाग्छ भने कृपया https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals मा जानुहोस्।"
+    "message": "If you believe this is shown in error please visit https://g.co/chrome/lookalike-warnings."
   },
   "panels/security/SecurityPanel.ts | ifYouBelieveThisIsShownInErrorSafety": {
-    "message": "तपाईंलाई यो त्रुटिवश देखाइएको हो जस्तो लाग्छ भने कृपया https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals मा जानुहोस्।"
+    "message": "If you believe this is shown in error please visit https://g.co/chrome/lookalike-warnings."
   },
   "panels/security/SecurityPanel.ts | info": {
     "message": "जानकारी"
@@ -8742,7 +9060,7 @@
     "message": "स्थानिक भाषाहरू"
   },
   "panels/sensors/sensors-meta.ts | locations": {
-    "message": "स्थानसम्बन्धी सेटिङ"
+    "message": "लोकेसन सेटिङ"
   },
   "panels/sensors/sensors-meta.ts | noIdleEmulation": {
     "message": "प्रयोगमा नरहेको कुनै पनि इम्युलेसन छैन"
@@ -9153,7 +9471,7 @@
     "message": "कभरेज: जानकारी उपलब्ध छैन"
   },
   "panels/sources/CoveragePlugin.ts | coverageS": {
-    "message": "कभरेज: {PH1} %"
+    "message": "कभरेज: {PH1}"
   },
   "panels/sources/CoveragePlugin.ts | showDetails": {
     "message": "विवरणहरू देखाउनुहोस्"
@@ -9413,6 +9731,15 @@
   "panels/sources/OutlineQuickOpen.ts | openAJavascriptOrCssFileToSee": {
     "message": "सिम्बोलहरू हेर्न JavaScript वा CSS फाइल खोल्नुहोस्"
   },
+  "panels/sources/ProfilePlugin.ts | kb": {
+    "message": "के.बि."
+  },
+  "panels/sources/ProfilePlugin.ts | mb": {
+    "message": "एम.बि."
+  },
+  "panels/sources/ProfilePlugin.ts | ms": {
+    "message": "मिलिसेकेन्ड"
+  },
   "panels/sources/ScopeChainSidebarPane.ts | closure": {
     "message": "क्लोजर"
   },
@@ -9515,6 +9842,12 @@
   "panels/sources/SourcesPanel.ts | copyStringContents": {
     "message": "स्ट्रिङमा भएका सामग्री कपी गर्नुहोस्"
   },
+  "panels/sources/SourcesPanel.ts | debuggerHidden": {
+    "message": "डिबगर साइडबार लुकाइएको छ"
+  },
+  "panels/sources/SourcesPanel.ts | debuggerShown": {
+    "message": "डिबगर साइडबार देखाइएको छ"
+  },
   "panels/sources/SourcesPanel.ts | dontPauseOnExceptions": {
     "message": "अपवादहरू आउँदा पज नगरियोस्"
   },
@@ -9532,6 +9865,12 @@
   },
   "panels/sources/SourcesPanel.ts | moreOptions": {
     "message": "थप विकल्पहरू"
+  },
+  "panels/sources/SourcesPanel.ts | navigatorHidden": {
+    "message": "नेभिगेटर साइडबार लुकाइएको छ"
+  },
+  "panels/sources/SourcesPanel.ts | navigatorShown": {
+    "message": "नेभिगेटर साइडबार देखाइएको छ"
   },
   "panels/sources/SourcesPanel.ts | openInSourcesPanel": {
     "message": "सोर्स प्यानलमा खोल्नुहोस्"
@@ -9610,6 +9949,24 @@
   },
   "panels/sources/WatchExpressionsSidebarPane.ts | refreshWatchExpressions": {
     "message": "वाच एक्स्प्रेसन रिफ्रेस गर्नुहोस्"
+  },
+  "panels/sources/components/HeadersView.ts | addHeader": {
+    "message": "एउटा हेडर हाल्नुहोस्"
+  },
+  "panels/sources/components/HeadersView.ts | addHeaderOverride": {
+    "message": "हेडर ओभरराइड हाल्नुहोस्"
+  },
+  "panels/sources/components/HeadersView.ts | errorWhenParsing": {
+    "message": "''{PH1}'' पार्स गर्ने क्रममा त्रुटि भयो।"
+  },
+  "panels/sources/components/HeadersView.ts | parsingErrorExplainer": {
+    "message": "\"{PH1}\" मा पक्कै पनि सिन्ट्याक्ससम्बन्धी त्रुटि भएका कारण फाइल पार्स गर्न नसकिएको हुन सक्छ। यो त्रुटि सच्याउन यो फाइल कुनै बाह्य एडिटरमा खोली हेर्नुहोस् वा यो फाइल मेटाउनुहोस् र ओभरराइड फेरि बनाउनुहोस्।"
+  },
+  "panels/sources/components/HeadersView.ts | removeBlock": {
+    "message": "यो 'ApplyTo'-खण्ड हटाउनुहोस्"
+  },
+  "panels/sources/components/HeadersView.ts | removeHeader": {
+    "message": "यो हेडर हटाउनुहोस्"
   },
   "panels/sources/sources-meta.ts | activateBreakpoints": {
     "message": "ब्रेकपोइन्टहरू सक्रिय पार्नुहोस्"
@@ -9866,6 +10223,12 @@
   "panels/sources/sources-meta.ts | toggleBreakpointInputWindow": {
     "message": "ब्रेकपोइन्ट इनपुट विन्डो टगल गर्नुहोस्"
   },
+  "panels/sources/sources-meta.ts | toggleDebuggerSidebar": {
+    "message": "Toggle debugger sidebar"
+  },
+  "panels/sources/sources-meta.ts | toggleNavigatorSidebar": {
+    "message": "Toggle navigator sidebar"
+  },
   "panels/sources/sources-meta.ts | trailing": {
     "message": "अन्त्यमा आउने ह्वाइटस्पेस वर्णहरू"
   },
@@ -9947,9 +10310,6 @@
   "panels/timeline/TimelineEventOverview.ts | cpu": {
     "message": "CPU"
   },
-  "panels/timeline/TimelineEventOverview.ts | fps": {
-    "message": "FPS"
-  },
   "panels/timeline/TimelineEventOverview.ts | heap": {
     "message": "हिप"
   },
@@ -9986,9 +10346,6 @@
   "panels/timeline/TimelineFlameChartDataProvider.ts | idleFrame": {
     "message": "प्रयोगमा नरहेको फ्रेम"
   },
-  "panels/timeline/TimelineFlameChartDataProvider.ts | input": {
-    "message": "इनपुट"
-  },
   "panels/timeline/TimelineFlameChartDataProvider.ts | interactions": {
     "message": "अन्तर्क्रियाहरू"
   },
@@ -10007,14 +10364,14 @@
   "panels/timeline/TimelineFlameChartDataProvider.ts | onIgnoreList": {
     "message": "वेवास्ता गरिनु पर्ने कुराहरूको सूचीमा"
   },
+  "panels/timeline/TimelineFlameChartDataProvider.ts | partiallyPresentedFrame": {
+    "message": "आंशिक रूपमा देखाइएको फ्रेम"
+  },
   "panels/timeline/TimelineFlameChartDataProvider.ts | raster": {
     "message": "रास्टर"
   },
   "panels/timeline/TimelineFlameChartDataProvider.ts | rasterizerThreadS": {
     "message": "रेस्टराइजर थ्रेड {PH1}"
-  },
-  "panels/timeline/TimelineFlameChartDataProvider.ts | sFfps": {
-    "message": "{PH1} ~ {PH2} fps"
   },
   "panels/timeline/TimelineFlameChartDataProvider.ts | sSelfS": {
     "message": "{PH1} (सेल्फ {PH2})"
@@ -10249,6 +10606,12 @@
   },
   "panels/timeline/TimelineTreeView.ts | heaviestStack": {
     "message": "सबैभन्दा बढी समय लाग्ने स्ट्याक"
+  },
+  "panels/timeline/TimelineTreeView.ts | heaviestStackHidden": {
+    "message": "सबैभन्दा बढी समय लाग्ने स्ट्याक साइडबार लुकाइएको छ"
+  },
+  "panels/timeline/TimelineTreeView.ts | heaviestStackShown": {
+    "message": "सबैभन्दा बढी समय लाग्ने स्ट्याक साइडबार देखाइएको छ"
   },
   "panels/timeline/TimelineTreeView.ts | hideHeaviestStack": {
     "message": "सबैभन्दा ठुलो स्ट्याक लुकाइयोस्"
@@ -10541,9 +10904,6 @@
   "panels/timeline/TimelineUIUtils.ts | forcedReflow": {
     "message": "फोर्स्ड रिफ्लो"
   },
-  "panels/timeline/TimelineUIUtils.ts | fps": {
-    "message": "FPS"
-  },
   "panels/timeline/TimelineUIUtils.ts | frame": {
     "message": "फ्रेम"
   },
@@ -10777,6 +11137,9 @@
   },
   "panels/timeline/TimelineUIUtils.ts | pinchUpdate": {
     "message": "'अपडेट गर्नुहोस्' मा पिन्च गर्नुहोस्"
+  },
+  "panels/timeline/TimelineUIUtils.ts | prePaint": {
+    "message": "प्रि-पेन्ट"
   },
   "panels/timeline/TimelineUIUtils.ts | preview": {
     "message": "प्रिभ्यु"
@@ -11306,6 +11669,9 @@
   "panels/webauthn/WebauthnPane.ts | signCount": {
     "message": "हस्ताक्षरको सङ्ख्या"
   },
+  "panels/webauthn/WebauthnPane.ts | supportsLargeBlob": {
+    "message": "Supports large blob"
+  },
   "panels/webauthn/WebauthnPane.ts | supportsResidentKeys": {
     "message": "यसमा रेसिडेन्ट कीहरूले काम गर्छ"
   },
@@ -11429,6 +11795,24 @@
   "ui/components/linear_memory_inspector/linear_memory_inspector-meta.ts | showMemoryInspector": {
     "message": "मेमोरी इन्सपेक्टर देखाइयोस्"
   },
+  "ui/components/panel_feedback/FeedbackButton.ts | feedback": {
+    "message": "प्रतिक्रिया"
+  },
+  "ui/components/panel_feedback/PanelFeedback.ts | previewFeature": {
+    "message": "परीक्षणको चरणमा रहेको सुविधा"
+  },
+  "ui/components/panel_feedback/PanelFeedback.ts | previewText": {
+    "message": "हाम्रो टोली यो सुविधा सुधार्न सक्रिय रूपमा काम गरिरहेको छ। हामी तपाईंको प्रतिक्रिया प्राप्त गर्न चाहन्छौँ।"
+  },
+  "ui/components/panel_feedback/PanelFeedback.ts | previewTextFeedbackLink": {
+    "message": "हामीलाई प्रतिक्रिया पठाउनुहोस्।"
+  },
+  "ui/components/panel_feedback/PanelFeedback.ts | videoAndDocumentation": {
+    "message": "भिडियो र कागजात"
+  },
+  "ui/components/panel_feedback/PreviewToggle.ts | previewTextFeedbackLink": {
+    "message": "हामीलाई प्रतिक्रिया पठाउनुहोस्।"
+  },
   "ui/components/request_link_icon/RequestLinkIcon.ts | clickToShowRequestInTheNetwork": {
     "message": "नेटवर्क प्यानल खोल्न र URL सम्बन्धी अनुरोध देखाउन क्लिक गर्नुहोस्: {url}"
   },
@@ -11472,7 +11856,7 @@
     "message": "सबै"
   },
   "ui/legacy/FilterBar.ts | clearFilter": {
-    "message": "लागू गरिएको फिल्टर हटाउनुहोस्"
+    "message": "Clear input"
   },
   "ui/legacy/FilterBar.ts | egSmalldUrlacomb": {
     "message": "जस्तै, /small[d]+/ url:a.com/b"
@@ -11500,6 +11884,12 @@
   },
   "ui/legacy/InspectorView.ts | drawer": {
     "message": "टुल ड्रअर"
+  },
+  "ui/legacy/InspectorView.ts | drawerHidden": {
+    "message": "ड्रअर लुकाइएको छ"
+  },
+  "ui/legacy/InspectorView.ts | drawerShown": {
+    "message": "ड्रअर देखाइएको छ"
   },
   "ui/legacy/InspectorView.ts | mainToolbar": {
     "message": "मुख्य टुलबार"
@@ -11539,6 +11929,9 @@
   },
   "ui/legacy/ListWidget.ts | saveString": {
     "message": "सेभ गर्नुहोस्"
+  },
+  "ui/legacy/RemoteDebuggingTerminatedScreen.ts | debuggingConnectionWasClosed": {
+    "message": "डिबग गर्न प्रयोग गरिएको कनेक्सन बन्द गरिएको छ। कारण: "
   },
   "ui/legacy/RemoteDebuggingTerminatedScreen.ts | reconnectDevtools": {
     "message": "DevTools रिकनेक्ट गर्नुहोस्"
@@ -11632,6 +12025,9 @@
   },
   "ui/legacy/TargetCrashedScreen.ts | oncePageIsReloadedDevtoolsWill": {
     "message": "पेज रिलोड भएपछि DevTools स्वतः कनेक्ट हुने छ।"
+  },
+  "ui/legacy/Toolbar.ts | clearInput": {
+    "message": "Clear input"
   },
   "ui/legacy/Toolbar.ts | notPressed": {
     "message": "थिचिएको छैन"
@@ -11773,6 +12169,9 @@
   },
   "ui/legacy/components/cookie_table/CookiesTable.ts | name": {
     "message": "नाम"
+  },
+  "ui/legacy/components/cookie_table/CookiesTable.ts | opaquePartitionKey": {
+    "message": "(अपारदर्शी)"
   },
   "ui/legacy/components/cookie_table/CookiesTable.ts | session": {
     "message": "सत्र"
@@ -11942,15 +12341,6 @@
   "ui/legacy/components/object_ui/CustomPreviewComponent.ts | showAsJavascriptObject": {
     "message": "JavaScript को वस्तुका रूपमा देखाइयोस्"
   },
-  "ui/legacy/components/object_ui/JavaScriptAutocomplete.ts | keys": {
-    "message": "कीहरू"
-  },
-  "ui/legacy/components/object_ui/JavaScriptAutocomplete.ts | keywords": {
-    "message": "किवर्डहरू"
-  },
-  "ui/legacy/components/object_ui/JavaScriptAutocomplete.ts | lexicalScopeVariables": {
-    "message": "लेक्जिकल स्कोप भेरिएबल"
-  },
   "ui/legacy/components/object_ui/ObjectPropertiesSection.ts | collapseChildren": {
     "message": "चाइल्ड समूहहरू कोल्याप्स गर्नुहोस्"
   },
@@ -12038,15 +12428,6 @@
   "ui/legacy/components/perf_ui/FlameChart.ts | sSelected": {
     "message": "{PH1} चयन गरियो"
   },
-  "ui/legacy/components/perf_ui/LineLevelProfile.ts | kb": {
-    "message": "के.बि."
-  },
-  "ui/legacy/components/perf_ui/LineLevelProfile.ts | mb": {
-    "message": "एम.बि."
-  },
-  "ui/legacy/components/perf_ui/LineLevelProfile.ts | ms": {
-    "message": "मिलिसेकेन्ड"
-  },
   "ui/legacy/components/perf_ui/NetworkPriorities.ts | high": {
     "message": "उच्च"
   },
@@ -12119,8 +12500,8 @@
   "ui/legacy/components/quick_open/QuickInput.ts | pressEnterToConfirmOrEscapeTo": {
     "message": "{PH1} (पुष्टि गर्न 'Enter' थिच्नुहोस् वा रद्द गर्न 'Escape' थिच्नुहोस्।)"
   },
-  "ui/legacy/components/quick_open/QuickOpen.ts | useTabToSwitchCommandsTypeToSeeAvailableCommands": {
-    "message": "कमान्ड बदल्न ट्याब की प्रयोग गर्नुहोस्। उपलब्ध कमान्डहरू हेर्न '?' टाइप गर्नुहोस्"
+  "ui/legacy/components/quick_open/QuickOpen.ts | typeToSeeAvailableCommands": {
+    "message": "उपलब्ध कमान्डहरू हेर्न '?' टाइप गर्नुहोस्"
   },
   "ui/legacy/components/quick_open/quick_open-meta.ts | openFile": {
     "message": "फाइल खोल्नुहोस्"
@@ -12223,9 +12604,6 @@
   },
   "ui/legacy/components/source_frame/source_frame-meta.ts | tabCharacter": {
     "message": "ट्याब वर्ण"
-  },
-  "ui/legacy/components/text_editor/CodeMirrorTextEditor.ts | codeEditor": {
-    "message": "कोड एडिटर"
   },
   "ui/legacy/components/utils/ImagePreview.ts | currentSource": {
     "message": "हालको सोर्स:"

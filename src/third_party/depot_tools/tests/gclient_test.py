@@ -236,6 +236,7 @@ class GclientTest(trial_dir.TestCase):
         should_recurse=False,
         relative=False,
         condition=None,
+        protocol='https',
         print_outbuf=True)
     self.assertEqual('proto://host/path@revision', d.url)
 
@@ -258,6 +259,7 @@ class GclientTest(trial_dir.TestCase):
             should_recurse=True,
             relative=False,
             condition=None,
+            protocol='https',
             print_outbuf=True),
         gclient.Dependency(
             parent=obj,
@@ -272,6 +274,7 @@ class GclientTest(trial_dir.TestCase):
             should_recurse=False,
             relative=False,
             condition=None,
+            protocol='https',
             print_outbuf=True),
       ],
       [])
@@ -290,6 +293,7 @@ class GclientTest(trial_dir.TestCase):
             should_recurse=False,
             relative=False,
             condition=None,
+            protocol='https',
             print_outbuf=True),
       ],
       [])
@@ -840,6 +844,43 @@ class GclientTest(trial_dir.TestCase):
         ],
         self._get_processed())
 
+  def testRecursedepsCustomdepsOverride(self):
+    """Verifies gclient overrides deps within recursedeps using custom deps"""
+
+    write(
+        '.gclient',
+        'solutions = [\n'
+        '  { "name": "foo",\n'
+        '    "url": "svn://example.com/foo",\n'
+        '    "custom_deps": {\n'
+        '      "foo/bar": "svn://example.com/override",\n'
+        '    },\n'
+        '  },]\n')
+    write(
+        os.path.join('foo', 'DEPS'),
+        'use_relative_paths = True\n'
+        'deps = {\n'
+        '  "bar": "/bar",\n'
+        '}\n'
+        'recursedeps = ["bar"]')
+    write(
+        os.path.join('foo', 'bar', 'DEPS'),
+        'deps = {\n'
+        '  "baz": "/baz",\n'
+        '}')
+
+    options, _ = gclient.OptionParser().parse_args([])
+    obj = gclient.GClient.LoadCurrentConfig(options)
+    obj.RunOnDeps('None', [])
+    self.assertEqual(
+        [
+          ('foo', 'svn://example.com/foo'),
+          (os.path.join('foo', 'bar'), 'svn://example.com/override'),
+          (os.path.join('foo', 'foo', 'bar'), 'svn://example.com/override'),
+          (os.path.join('foo', 'baz'), 'svn://example.com/baz'),
+        ],
+        self._get_processed())
+
   def testRelativeRecursion(self):
     """Verifies that nested use_relative_paths is always respected."""
     write(
@@ -1271,6 +1312,7 @@ class GclientTest(trial_dir.TestCase):
             should_recurse=True,
             relative=False,
             condition=None,
+            protocol='https',
             print_outbuf=True),
       ],
       [])

@@ -18,30 +18,25 @@ import '../controls/settings_toggle_button.js';
 import '../prefs/prefs.js';
 import './address_edit_dialog.js';
 import './address_remove_confirmation_dialog.js';
-import './passwords_shared_css.js';
+import './passwords_shared.css.js';
 import '../i18n_setup.js';
 
 import {I18nMixin} from '//resources/js/i18n_mixin.js';
 import {CrActionMenuElement} from 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
 import {CrButtonElement} from 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
-import {assert} from 'chrome://resources/js/assert.m.js';
+import {assert} from 'chrome://resources/js/assert_ts.js';
 import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
-import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {DomRepeatEvent, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {SettingsToggleButtonElement} from '../controls/settings_toggle_button.js';
 
 import {AutofillManagerImpl, AutofillManagerProxy, PersonalDataChangedListener} from './autofill_manager_proxy.js';
+import {getTemplate} from './autofill_section.html.js';
 
 declare global {
   interface HTMLElementEventMap {
     'save-address': CustomEvent<chrome.autofillPrivate.AddressEntry>;
   }
-}
-
-interface RepeaterEvent extends CustomEvent {
-  model: {
-    item: chrome.autofillPrivate.AddressEntry,
-  };
 }
 
 export interface SettingsAutofillSectionElement {
@@ -64,7 +59,7 @@ export class SettingsAutofillSectionElement extends
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
@@ -100,12 +95,12 @@ export class SettingsAutofillSectionElement extends
     this.activeDialogAnchor_ = null;
   }
 
-  ready() {
+  override ready() {
     super.ready();
     this.addEventListener('save-address', this.saveAddress_);
   }
 
-  connectedCallback() {
+  override connectedCallback() {
     super.connectedCallback();
 
     // Create listener functions.
@@ -133,7 +128,7 @@ export class SettingsAutofillSectionElement extends
     chrome.metricsPrivate.recordUserAction('AutofillAddressesViewed');
   }
 
-  disconnectedCallback() {
+  override disconnectedCallback() {
     super.disconnectedCallback();
 
     this.autofillManager_.removePersonalDataManagerListener(
@@ -144,7 +139,8 @@ export class SettingsAutofillSectionElement extends
   /**
    * Open the address action menu.
    */
-  private onAddressMenuTap_(e: RepeaterEvent) {
+  private onAddressMenuTap_(
+      e: DomRepeatEvent<chrome.autofillPrivate.AddressEntry>) {
     const item = e.model.item;
 
     // Copy item so dialog won't update model on cancel.
@@ -167,7 +163,8 @@ export class SettingsAutofillSectionElement extends
 
   private onAddressDialogClose_() {
     this.showAddressDialog_ = false;
-    focusWithoutInk(assert(this.activeDialogAnchor_!));
+    assert(this.activeDialogAnchor_);
+    focusWithoutInk(this.activeDialogAnchor_);
     this.activeDialogAnchor_ = null;
   }
 
@@ -188,7 +185,8 @@ export class SettingsAutofillSectionElement extends
       this.autofillManager_.removeAddress(this.activeAddress!.guid as string);
     }
     this.showAddressRemoveConfirmationDialog_ = false;
-    focusWithoutInk(assert(this.activeDialogAnchor_!));
+    assert(this.activeDialogAnchor_);
+    focusWithoutInk(this.activeDialogAnchor_);
     this.activeDialogAnchor_ = null;
   }
 

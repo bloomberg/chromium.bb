@@ -7,9 +7,9 @@
 
 #include <string>
 
+#include "base/process/kill.h"
 #include "chrome/browser/ui/tabs/tab_enums.h"
 #include "chrome/browser/ui/tabs/tab_network_state.h"
-#include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/browser/ui/thumbnails/thumbnail_image.h"
 #include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"
@@ -43,6 +43,9 @@ struct TabRendererData {
   GURL visible_url;
   // This corresponds to WebContents::GetLastCommittedUrl().
   GURL last_committed_url;
+  // False if the omnibox doesn't display the URL (i.e. when a lookalike URL
+  // interstitial is being displayed).
+  bool should_display_url = true;
   base::TerminationStatus crashed_status =
       base::TERMINATION_STATUS_STILL_RUNNING;
   bool incognito = false;

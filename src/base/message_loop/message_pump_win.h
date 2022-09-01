@@ -8,7 +8,6 @@
 #include <windows.h>
 
 #include <atomic>
-#include <list>
 #include <memory>
 
 #include "base/base_export.h"
@@ -139,10 +138,8 @@ class BASE_EXPORT MessagePumpForUI : public MessagePumpWin {
 
   // MessagePump methods:
   void ScheduleWork() override;
-  void ScheduleDelayedWork(const TimeTicks& delayed_work_time) override;
-
-  // Make the MessagePumpForUI respond to WM_QUIT messages.
-  void EnableWmQuit();
+  void ScheduleDelayedWork(
+      const Delegate::NextWorkInfo& next_work_info) override;
 
   // An observer interface to give the scheduler an opportunity to log
   // information about MSGs before and after they are dispatched.
@@ -181,10 +178,6 @@ class BASE_EXPORT MessagePumpForUI : public MessagePumpWin {
 
  protected:
   base::win::MessageWindow message_window_;
-
-  // Whether MessagePumpForUI responds to WM_QUIT messages or not.
-  // TODO(thestig): Remove when the Cloud Print Service goes away.
-  bool enable_wm_quit_ = false;
 
   // Non-nullopt if there's currently a native timer installed. If so, it
   // indicates when the timer is set to fire and can be used to avoid setting
@@ -275,7 +268,8 @@ class BASE_EXPORT MessagePumpForIO : public MessagePumpWin {
 
   // MessagePump methods:
   void ScheduleWork() override;
-  void ScheduleDelayedWork(const TimeTicks& delayed_work_time) override;
+  void ScheduleDelayedWork(
+      const Delegate::NextWorkInfo& next_work_info) override;
 
   // Register the handler to be used when asynchronous IO for the given file
   // completes. The registration persists as long as |file_handle| is valid, so

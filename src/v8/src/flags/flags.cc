@@ -93,16 +93,17 @@ struct Flag {
     if (change_flag) *reinterpret_cast<bool*>(valptr_) = value;
   }
 
-  MaybeBoolFlag maybe_bool_variable() const {
+  base::Optional<bool> maybe_bool_variable() const {
     DCHECK(type_ == TYPE_MAYBE_BOOL);
-    return *reinterpret_cast<MaybeBoolFlag*>(valptr_);
+    return *reinterpret_cast<base::Optional<bool>*>(valptr_);
   }
 
-  void set_maybe_bool_variable(MaybeBoolFlag value, SetBy set_by) {
+  void set_maybe_bool_variable(base::Optional<bool> value, SetBy set_by) {
     DCHECK(type_ == TYPE_MAYBE_BOOL);
-    bool change_flag = *reinterpret_cast<MaybeBoolFlag*>(valptr_) != value;
+    bool change_flag =
+        *reinterpret_cast<base::Optional<bool>*>(valptr_) != value;
     change_flag = CheckFlagChange(set_by, change_flag);
-    if (change_flag) *reinterpret_cast<MaybeBoolFlag*>(valptr_) = value;
+    if (change_flag) *reinterpret_cast<base::Optional<bool>*>(valptr_) = value;
   }
 
   int int_variable() const {
@@ -277,6 +278,8 @@ struct Flag {
           break;
         case SetBy::kCommandLine:
           if (new_set_by == SetBy::kImplication && check_command_line_flags) {
+            // Exit instead of abort for certain testing situations.
+            if (FLAG_exit_on_contradictory_flags) base::OS::ExitProcess(0);
             if (is_bool_flag) {
               FATAL(
                   "Flag --%s: value implied by --%s conflicts with explicit "
@@ -290,6 +293,8 @@ struct Flag {
             }
           } else if (new_set_by == SetBy::kCommandLine &&
                      check_command_line_flags) {
+            // Exit instead of abort for certain testing situations.
+            if (FLAG_exit_on_contradictory_flags) base::OS::ExitProcess(0);
             if (is_bool_flag) {
               FATAL(
                   "Command-line provided flag --%s specified as both true and "
@@ -320,7 +325,7 @@ struct Flag {
       case TYPE_BOOL:
         return bool_variable() == bool_default();
       case TYPE_MAYBE_BOOL:
-        return maybe_bool_variable().has_value == false;
+        return maybe_bool_variable().has_value() == false;
       case TYPE_INT:
         return int_variable() == int_default();
       case TYPE_UINT:
@@ -349,8 +354,7 @@ struct Flag {
         set_bool_variable(bool_default(), SetBy::kDefault);
         break;
       case TYPE_MAYBE_BOOL:
-        set_maybe_bool_variable(MaybeBoolFlag::Create(false, false),
-                                SetBy::kDefault);
+        set_maybe_bool_variable(base::nullopt, SetBy::kDefault);
         break;
       case TYPE_INT:
         set_int_variable(int_default(), SetBy::kDefault);
@@ -444,20 +448,19 @@ std::ostream& operator<<(std::ostream& os, const FlagName& flag_name) {
 }
 
 // Helper for printing flag values.
-struct FlagValue {
-  explicit FlagValue(const Flag& flag) : flag(flag) {}
+struct PrintFlagValue {
   const Flag& flag;
 };
 
-std::ostream& operator<<(std::ostream& os, const FlagValue& flag_value) {
+std::ostream& operator<<(std::ostream& os, PrintFlagValue flag_value) {
   const Flag& flag = flag_value.flag;
   switch (flag.type()) {
     case Flag::TYPE_BOOL:
       os << (flag.bool_variable() ? "true" : "false");
       break;
     case Flag::TYPE_MAYBE_BOOL:
-      os << (flag.maybe_bool_variable().has_value
-                 ? (flag.maybe_bool_variable().value ? "true" : "false")
+      os << (flag.maybe_bool_variable().has_value()
+                 ? (flag.maybe_bool_variable().value() ? "true" : "false")
                  : "unset");
       break;
     case Flag::TYPE_INT:
@@ -488,14 +491,15 @@ std::ostream& operator<<(std::ostream& os, const Flag& flag) {
   if (flag.type() == Flag::TYPE_BOOL) {
     os << (flag.bool_variable() ? "--" : "--no") << FlagName(flag);
   } else {
-    os << "--" << FlagName(flag) << "=" << FlagValue(flag);
+    os << "--" << FlagName(flag) << "=" << PrintFlagValue{flag};
   }
   return os;
 }
 
 namespace {
 
-static std::atomic<uint32_t> flag_hash(0);
+static std::atomic<uint32_t> flag_hash{0};
+static std::atomic<bool> flags_frozen{false};
 
 void ComputeFlagListHash() {
   std::ostringstream modified_args_as_string;
@@ -586,6 +590,7 @@ bool TryParseUnsigned(Flag* flag, const char* arg, const char* value,
 // static
 int FlagList::SetFlagsFromCommandLine(int* argc, char** argv, bool remove_flags,
                                       HelpOptions help_options) {
+  CHECK(!IsFrozen());
   int return_code = 0;
   // parse arguments
   for (int i = 1; i < *argc;) {
@@ -637,8 +642,7 @@ int FlagList::SetFlagsFromCommandLine(int* argc, char** argv, bool remove_flags,
           flag->set_bool_variable(!negated, Flag::SetBy::kCommandLine);
           break;
         case Flag::TYPE_MAYBE_BOOL:
-          flag->set_maybe_bool_variable(MaybeBoolFlag::Create(true, !negated),
-                                        Flag::SetBy::kCommandLine);
+          flag->set_maybe_bool_variable(!negated, Flag::SetBy::kCommandLine);
           break;
         case Flag::TYPE_INT:
           flag->set_int_variable(static_cast<int>(strtol(value, &endp, 10)),
@@ -781,7 +785,19 @@ int FlagList::SetFlagsFromString(const char* str, size_t len) {
 }
 
 // static
+void FlagList::FreezeFlags() {
+  flags_frozen.store(true, std::memory_order_relaxed);
+}
+
+// static
+bool FlagList::IsFrozen() {
+  return flags_frozen.load(std::memory_order_relaxed);
+}
+
+// static
 void FlagList::ResetAllFlags() {
+  // Reset is allowed even if flags are frozen. They stay frozen though, because
+  // they are not expected to ever be used again.
   flag_hash = 0;
   for (size_t i = 0; i < num_flags; ++i) {
     flags[i].Reset();
@@ -839,13 +855,18 @@ bool TriggerImplication(bool premise, const char* premise_name,
 
 // static
 void FlagList::EnforceFlagImplications() {
+  CHECK(!IsFrozen());
   flag_hash = 0;
   bool changed;
+  int iteration = 0;
   do {
     changed = false;
 #define FLAG_MODE_DEFINE_IMPLICATIONS
 #include "src/flags/flag-definitions.h"  // NOLINT(build/include)
 #undef FLAG_MODE_DEFINE_IMPLICATIONS
+    // Make sure flag definitions are not touring complete. A.k.a  avoid endless
+    // loops in case of buggy configurations.
+    CHECK_LT(iteration++, 1000);
   } while (changed);
 }
 

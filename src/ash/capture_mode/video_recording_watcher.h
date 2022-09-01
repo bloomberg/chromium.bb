@@ -78,6 +78,15 @@ class ASH_EXPORT VideoRecordingWatcher
   // Clean up prior to deletion.
   void ShutDown();
 
+  // Returns the current parent window for
+  // `CaptureModeCameraController::camera_preview_widget_` when recording is in
+  // progress.
+  aura::Window* GetCameraPreviewParentWindow() const;
+
+  // Returns the confine bounds for the camera preview when recording is in
+  // progress.
+  gfx::Rect GetCameraPreviewConfineBounds() const;
+
   // aura::WindowObserver:
   void OnWindowParentChanged(aura::Window* window,
                              aura::Window* parent) override;
@@ -113,6 +122,7 @@ class ASH_EXPORT VideoRecordingWatcher
   void OnDimmedWindowParentChanged(aura::Window* dimmed_window) override;
 
   // ui::EventHandler:
+  void OnKeyEvent(ui::KeyEvent* event) override;
   void OnMouseEvent(ui::MouseEvent* event) override;
 
   // TabletModeObserver:
@@ -121,6 +131,11 @@ class ASH_EXPORT VideoRecordingWatcher
 
   // CursorWindowController::Observer:
   void OnCursorCompositingStateChanged(bool enabled) override;
+
+  // Returns the `partial_region_bounds_` clamped to the bounds of the
+  // `current_root_`. It should only be called if `recording_source_` is
+  // `kRegion`.
+  gfx::Rect GetEffectivePartialRegionBounds() const;
 
   bool IsWindowDimmedForTesting(aura::Window* window) const;
 

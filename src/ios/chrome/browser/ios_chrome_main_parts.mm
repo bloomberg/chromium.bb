@@ -15,7 +15,6 @@
 #include "base/metrics/user_metrics.h"
 #include "base/path_service.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/time/default_tick_clock.h"
@@ -36,9 +35,12 @@
 #include "components/open_from_clipboard/clipboard_recent_content.h"
 #include "components/prefs/json_pref_store.h"
 #include "components/prefs/pref_service.h"
+#import "components/signin/public/identity_manager/tribool.h"
 #include "components/translate/core/browser/translate_download_manager.h"
+#include "components/translate/core/browser/translate_metrics_logger_impl.h"
 #include "components/variations/field_trial_config/field_trial_util.h"
 #include "components/variations/service/variations_service.h"
+#include "components/variations/synthetic_trial_registry.h"
 #include "components/variations/synthetic_trials_active_group_id_provider.h"
 #include "components/variations/variations_crash_keys.h"
 #include "components/variations/variations_ids_provider.h"
@@ -57,10 +59,12 @@
 #include "ios/chrome/browser/open_from_clipboard/create_clipboard_recent_content.h"
 #include "ios/chrome/browser/policy/browser_policy_connector_ios.h"
 #include "ios/chrome/browser/pref_names.h"
-#include "ios/chrome/browser/safe_browsing/safe_browsing_service.h"
+#import "ios/chrome/browser/safe_browsing/safe_browsing_metrics_collector_factory.h"
 #import "ios/chrome/browser/signin/signin_util.h"
+#include "ios/chrome/browser/translate/chrome_ios_translate_client.h"
 #include "ios/chrome/browser/translate/translate_service_ios.h"
 #include "ios/chrome/common/channel_info.h"
+#include "ios/components/security_interstitials/safe_browsing/safe_browsing_service.h"
 #include "ios/web/public/thread/web_task_traits.h"
 #include "ios/web/public/thread/web_thread.h"
 #include "net/base/network_change_notifier.h"
@@ -79,6 +83,10 @@
 #if BUILDFLAG(USE_ALLOCATOR_SHIM)
 #include "base/allocator/allocator_interception_mac.h"
 #include "base/allocator/allocator_shim.h"
+#endif
+
+#if DCHECK_IS_ON()
+#include "ui/display/screen_base.h"
 #endif
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -121,7 +129,15 @@ IOSChromeMainParts::IOSChromeMainParts(
   net::URLRequest::SetDefaultCookiePolicyToBlock();
 }
 
-IOSChromeMainParts::~IOSChromeMainParts() {}
+IOSChromeMainParts::~IOSChromeMainParts() {
+#if DCHECK_IS_ON()
+  // The screen object is never deleted on IOS. Make sure that all display
+  // observers are removed at the end.
+  display::ScreenBase* screen =
+      static_cast<display::ScreenBase*>(display::Screen::GetScreen());
+  DCHECK(!screen->HasDisplayObservers());
+#endif
+}
 
 void IOSChromeMainParts::PreEarlyInitialization() {
 #if BUILDFLAG(USE_ALLOCATOR_SHIM)
@@ -184,7 +200,17 @@ void IOSChromeMainParts::PreCreateThreads() {
 
   // Compute device restore flag before IO is disallowed on UI thread, so the
   // value is available from cache synchronously.
-  IsFirstSessionAfterDeviceRestore();
+  static crash_reporter::CrashKeyString<8> device_restore_key("device-restore");
+  switch (IsFirstSessionAfterDeviceRestore()) {
+    case signin::Tribool::kTrue:
+      device_restore_key.Set("yes");
+      break;
+    case signin::Tribool::kFalse:
+      break;
+    case signin::Tribool::kUnknown:
+      device_restore_key.Set("unknown");
+      break;
+  }
 
   // Convert freeform experimental settings into switches before initializing
   // local state, in case any of the settings affect policy.
@@ -288,7 +314,8 @@ void IOSChromeMainParts::PreMainMessageLoopRun() {
   // immediately after starting metrics recording.
   IOSChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
       "CrashpadIOS",
-      crash_reporter::IsCrashpadRunning() ? "Enabled" : "Disabled");
+      crash_reporter::IsCrashpadRunning() ? "Enabled" : "Disabled",
+      variations::SyntheticTrialAnnotationMode::kCurrentLog);
 
   // Because the CleanExitBeacon flag takes 2 restarts to take effect, register
   // a synthetic field trial when the user defaults beacon is set. Called
@@ -296,7 +323,8 @@ void IOSChromeMainParts::PreMainMessageLoopRun() {
   IOSChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
       "UseUserDefaultsForExitedCleanlyBeacon",
       metrics::CleanExitBeacon::ShouldUseUserDefaultsBeacon() ? "Enabled"
-                                                              : "Disabled");
+                                                              : "Disabled",
+      variations::SyntheticTrialAnnotationMode::kCurrentLog);
 
 #if BUILDFLAG(ENABLE_RLZ)
   // Init the RLZ library. This just schedules a task on the file thread to be
@@ -321,6 +349,9 @@ void IOSChromeMainParts::PreMainMessageLoopRun() {
           language::prefs::kAcceptLanguages));
   language::LanguageUsageMetrics::RecordApplicationLanguage(
       application_context_->GetApplicationLocale());
+  translate::TranslateMetricsLoggerImpl::LogApplicationStartMetrics(
+      ChromeIOSTranslateClient::CreateTranslatePrefs(
+          last_used_browser_state->GetPrefs()));
 
   // Request new variations seed information from server.
   variations::VariationsService* variations_service =
@@ -344,8 +375,12 @@ void IOSChromeMainParts::PreMainMessageLoopRun() {
       application_context_->GetSafeBrowsingService();
   base::FilePath user_data_path;
   CHECK(base::PathService::Get(ios::DIR_USER_DATA, &user_data_path));
+  safe_browsing::SafeBrowsingMetricsCollector* safe_browsing_metrics_collector =
+      SafeBrowsingMetricsCollectorFactory::GetForBrowserState(
+          last_used_browser_state);
   safe_browsing_service->Initialize(last_used_browser_state->GetPrefs(),
-                                    user_data_path);
+                                    user_data_path,
+                                    safe_browsing_metrics_collector);
 
   // Set monitoring for some experimental flags.
   MonitorExperimentalSettingsChanges();
@@ -365,8 +400,7 @@ void IOSChromeMainParts::PostDestroyThreads() {
 
 // This will be called after the command-line has been mutated by about:flags
 void IOSChromeMainParts::SetUpFieldTrials() {
-  base::SetRecordActionTaskRunner(
-      base::CreateSingleThreadTaskRunner({web::WebThread::UI}));
+  base::SetRecordActionTaskRunner(web::GetUIThreadTaskRunner({}));
 
   // FeatureList requires VariationsIdsProvider to be created.
   variations::VariationsIdsProvider::Create(
@@ -392,9 +426,9 @@ void IOSChromeMainParts::SetUpFieldTrials() {
 
 void IOSChromeMainParts::SetupMetrics() {
   metrics::MetricsService* metrics = application_context_->GetMetricsService();
-  metrics->synthetic_trial_registry()->AddSyntheticTrialObserver(
+  metrics->GetSyntheticTrialRegistry()->AddSyntheticTrialObserver(
       variations::VariationsIdsProvider::GetInstance());
-  metrics->synthetic_trial_registry()->AddSyntheticTrialObserver(
+  metrics->GetSyntheticTrialRegistry()->AddSyntheticTrialObserver(
       variations::SyntheticTrialsActiveGroupIdProvider::GetInstance());
   // Now that field trials have been created, initializes metrics recording.
   metrics->InitializeMetricsRecordingState();

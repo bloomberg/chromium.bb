@@ -8,20 +8,10 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/feature_list.h"
-#include "base/json/json_writer.h"
-#include "base/metrics/field_trial_params.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/values.h"
 #include "components/omnibox/browser/base_search_provider.h"
-#include "components/omnibox/browser/omnibox_field_trial.h"
-#include "components/omnibox/common/omnibox_features.h"
 #include "components/search_engines/template_url_service.h"
-#include "components/sync/base/time.h"
 #include "components/variations/net/variations_http_headers.h"
-#include "net/base/escape.h"
 #include "net/base/load_flags.h"
-#include "net/http/http_response_headers.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -33,7 +23,7 @@ void AddVariationHeaders(network::ResourceRequest* request) {
   // Add Chrome experiment state to the request headers.
   //
   // Note: It's OK to pass InIncognito::kNo since we are expected to be in
-  // non-incognito state here (i.e. remote sugestions are not served in
+  // non-incognito state here (i.e. remote suggestions are not served in
   // incognito mode).
   variations::AppendVariationsHeaderUnknownSignedIn(
       request->url, variations::InIncognito::kNo, request);
@@ -47,7 +37,7 @@ RemoteSuggestionsService::RemoteSuggestionsService(
   DCHECK(url_loader_factory);
 }
 
-RemoteSuggestionsService::~RemoteSuggestionsService() {}
+RemoteSuggestionsService::~RemoteSuggestionsService() = default;
 
 // static
 GURL RemoteSuggestionsService::EndpointUrl(
@@ -117,6 +107,9 @@ void RemoteSuggestionsService::CreateSuggestionsRequest(
   auto request = std::make_unique<network::ResourceRequest>();
   request->url = suggest_url;
   request->load_flags = net::LOAD_DO_NOT_SAVE_COOKIES;
+  if (search_terms_args.bypass_cache) {
+    request->load_flags |= net::LOAD_BYPASS_CACHE;
+  }
   // Try to attach cookies for signed in user.
   request->site_for_cookies = net::SiteForCookies::FromUrl(suggest_url);
   AddVariationHeaders(request.get());

@@ -63,6 +63,7 @@ class ContentRendererClientImpl final : public content::ContentRendererClient,
     void PrepareErrorPage(content::RenderFrame* render_frame,
                           const blink::WebURLError& error,
                           const std::string& http_method,
+                          content::mojom::AlternativeErrorPageOverrideInfoPtr alternative_error_page_info,
                           std::string* error_html) override;
     // Returns the information to display when a navigation error occurs.
     // If |error_html| is not null then it may be set to a HTML page

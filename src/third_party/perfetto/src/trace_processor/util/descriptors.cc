@@ -106,21 +106,20 @@ util::Status DescriptorPool::AddNestedProtoDescriptors(
   auto full_name =
       parent_name + "." + base::StringView(decoder.name()).ToStdString();
 
-  auto prev_idx = FindDescriptorIdx(full_name);
-  if (prev_idx.has_value() && !merge_existing_messages) {
-    const auto& existing_descriptor = descriptors_[*prev_idx];
+  auto idx = FindDescriptorIdx(full_name);
+  if (idx.has_value() && !merge_existing_messages) {
+    const auto& existing_descriptor = descriptors_[*idx];
     return util::ErrStatus("%s: %s was already defined in file %s",
                            file_name.c_str(), full_name.c_str(),
                            existing_descriptor.file_name().c_str());
   }
-  if (!prev_idx.has_value()) {
-    prev_idx = static_cast<unsigned int>(descriptors_.size());
+  if (!idx.has_value()) {
     ProtoDescriptor proto_descriptor(file_name, package_name, full_name,
                                      ProtoDescriptor::Type::kMessage,
                                      parent_idx);
-    descriptors_.emplace_back(std::move(proto_descriptor));
+    idx = AddProtoDescriptor(std::move(proto_descriptor));
   }
-  ProtoDescriptor& proto_descriptor = descriptors_[*prev_idx];
+  ProtoDescriptor& proto_descriptor = descriptors_[*idx];
   if (proto_descriptor.type() != ProtoDescriptor::Type::kMessage) {
     return util::ErrStatus("%s was enum, redefined as message",
                            full_name.c_str());
@@ -149,7 +148,6 @@ util::Status DescriptorPool::AddNestedProtoDescriptors(
     }
   }
 
-  auto idx = static_cast<uint32_t>(descriptors_.size()) - 1;
   for (auto it = decoder.enum_type(); it; ++it) {
     RETURN_IF_ERROR(AddEnumProtoDescriptors(file_name, package_name, idx, *it,
                                             merge_existing_messages));
@@ -186,11 +184,10 @@ util::Status DescriptorPool::AddEnumProtoDescriptors(
                            existing_descriptor.file_name().c_str());
   }
   if (!prev_idx.has_value()) {
-    prev_idx = static_cast<unsigned int>(descriptors_.size());
     ProtoDescriptor proto_descriptor(file_name, package_name, full_name,
                                      ProtoDescriptor::Type::kEnum,
                                      base::nullopt);
-    descriptors_.emplace_back(std::move(proto_descriptor));
+    prev_idx = AddProtoDescriptor(std::move(proto_descriptor));
   }
   ProtoDescriptor& proto_descriptor = descriptors_[*prev_idx];
   if (proto_descriptor.type() != ProtoDescriptor::Type::kEnum) {
@@ -276,13 +273,11 @@ util::Status DescriptorPool::AddFromFileDescriptorSet(
 
 base::Optional<uint32_t> DescriptorPool::FindDescriptorIdx(
     const std::string& full_name) const {
-  auto it = std::find_if(descriptors_.begin(), descriptors_.end(),
-                         [full_name](const ProtoDescriptor& desc) {
-                           return desc.full_name() == full_name;
-                         });
-  auto idx = static_cast<uint32_t>(std::distance(descriptors_.begin(), it));
-  return idx < descriptors_.size() ? base::Optional<uint32_t>(idx)
-                                   : base::nullopt;
+  auto it = full_name_to_descriptor_index_.find(full_name);
+  if (it == full_name_to_descriptor_index_.end()) {
+    return base::nullopt;
+  }
+  return it->second;
 }
 
 std::vector<uint8_t> DescriptorPool::SerializeAsDescriptorSet() {
@@ -309,6 +304,13 @@ std::vector<uint8_t> DescriptorPool::SerializeAsDescriptorSet() {
     }
   }
   return descs.SerializeAsArray();
+}
+
+uint32_t DescriptorPool::AddProtoDescriptor(ProtoDescriptor descriptor) {
+  uint32_t idx = static_cast<uint32_t>(descriptors_.size());
+  full_name_to_descriptor_index_[descriptor.full_name()] = idx;
+  descriptors_.emplace_back(std::move(descriptor));
+  return idx;
 }
 
 ProtoDescriptor::ProtoDescriptor(std::string file_name,

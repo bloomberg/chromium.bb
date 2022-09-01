@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/platform/scheduler/public/dummy_schedulers.h"
 
+#include "base/threading/thread_task_runner_handle.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/public/agent_group_scheduler.h"
@@ -16,8 +17,10 @@
 #include "third_party/blink/renderer/platform/wtf/wtf.h"
 
 namespace blink {
-namespace scheduler {
 
+class VirtualTimeController;
+
+namespace scheduler {
 namespace {
 
 class DummyFrameScheduler : public FrameScheduler {
@@ -129,14 +132,6 @@ class DummyPageScheduler : public PageScheduler {
   void SetPageBackForwardCached(bool) override {}
   bool IsMainFrameLocal() const override { return true; }
   void SetIsMainFrameLocal(bool) override {}
-  void OnLocalMainFrameNetworkAlmostIdle() override {}
-  base::TimeTicks EnableVirtualTime() override { return base::TimeTicks(); }
-  void DisableVirtualTimeForTesting() override {}
-  bool VirtualTimeAllowedToAdvance() const override { return true; }
-  void SetInitialVirtualTime(base::Time) override {}
-  void SetVirtualTimePolicy(VirtualTimePolicy) override {}
-  void GrantVirtualTimeBudget(base::TimeDelta, base::OnceClosure) override {}
-  void SetMaxVirtualTimeTaskStarvationCount(int) override {}
   void AudioStateChanged(bool is_audio_playing) override {}
   bool IsAudioPlaying() const override { return false; }
   bool IsExemptFromBudgetBasedThrottling() const override { return false; }
@@ -145,14 +140,10 @@ class DummyPageScheduler : public PageScheduler {
   }
   bool IsInBackForwardCache() const override { return false; }
   bool RequestBeginMainFrameNotExpected(bool) override { return false; }
-  WebScopedVirtualTimePauser CreateWebScopedVirtualTimePauser(
-      const String& name,
-      WebScopedVirtualTimePauser::VirtualTaskDuration) override {
-    return WebScopedVirtualTimePauser();
-  }
   WebAgentGroupScheduler& GetAgentGroupScheduler() override {
     return *agent_group_scheduler_;
   }
+  VirtualTimeController* GetVirtualTimeController() override { return nullptr; }
 
  private:
   std::unique_ptr<WebAgentGroupScheduler> agent_group_scheduler_;

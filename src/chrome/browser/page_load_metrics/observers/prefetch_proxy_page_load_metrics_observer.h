@@ -59,10 +59,12 @@ class PrefetchProxyPageLoadMetricsObserver
   ObservePolicy OnStart(content::NavigationHandle* navigation_handle,
                         const GURL& currently_committed_url,
                         bool started_in_foreground) override;
+  ObservePolicy OnFencedFramesStart(
+      content::NavigationHandle* navigation_handle,
+      const GURL& currently_committed_url) override;
   ObservePolicy OnRedirect(
       content::NavigationHandle* navigation_handle) override;
-  ObservePolicy OnCommit(content::NavigationHandle* navigation_handle,
-                         ukm::SourceId source_id) override;
+  ObservePolicy OnCommit(content::NavigationHandle* navigation_handle) override;
   void OnDidInternalNavigationAbort(
       content::NavigationHandle* navigation_handle) override;
   ObservePolicy FlushMetricsOnAppEnterBackground(
@@ -80,9 +82,6 @@ class PrefetchProxyPageLoadMetricsObserver
   // The time that the navigation started. Used to timebox the history service
   // query on commit.
   base::Time navigation_start_;
-
-  size_t loaded_css_js_from_cache_before_fcp_ = 0;
-  size_t loaded_css_js_from_network_before_fcp_ = 0;
 
   // The minimum number of days since the last visit, as reported by
   // HistoryService, to any origin in the redirect chain. Set to -1 if there is

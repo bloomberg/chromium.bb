@@ -30,6 +30,9 @@ RENDERING_BENCHMARK_UMA = [
     'Graphics.Smoothness.PercentDroppedFrames.AllAnimations',
     'Graphics.Smoothness.PercentDroppedFrames.AllInteractions',
     'Graphics.Smoothness.PercentDroppedFrames.AllSequences',
+    'Graphics.Smoothness.PercentDroppedFrames2.AllAnimations',
+    'Graphics.Smoothness.PercentDroppedFrames2.AllInteractions',
+    'Graphics.Smoothness.PercentDroppedFrames2.AllSequences',
     'Memory.GPU.PeakMemoryUsage2.Scroll',
     'Memory.GPU.PeakMemoryUsage2.PageLoad',
 ]
@@ -70,7 +73,13 @@ class _RenderingBenchmark(perf_benchmark.PerfBenchmark):
   def SetExtraBrowserOptions(self, options):
     options.AppendExtraBrowserArgs('--enable-gpu-benchmarking')
     options.AppendExtraBrowserArgs('--touch-events=enabled')
-    if self.allow_software_compositing:
+    # TODO(jonross): Catapult's record_wpr.py calls SetExtraBrowserOptions
+    # before calling ProcessCommandLineArgs. This will crash attempting to
+    # record new rendering benchmarks. We do not want to support software
+    # compositing for recording, so for now we will just check for the existence
+    # the flag. We will review updating Catapult at a later point.
+    if (hasattr(self, 'allow_software_compositing')
+        and self.allow_software_compositing) or self.NeedsSoftwareCompositing():
       logging.warning('Allowing software compositing. Some of the reported '
                       'metrics will have unreliable values.')
     else:
@@ -120,6 +129,27 @@ class RenderingDesktop(_RenderingBenchmark):
           '--use-gpu-high-thread-priority-for-perf-tests')
 
 
+@benchmark.Info(emails=[
+    'behdadb@chromium.org', 'jonross@chromium.org', 'sadrul@chromium.org'
+],
+                documentation_url='https://bit.ly/rendering-benchmarks',
+                component='Internals>GPU>Metrics')
+class RenderingDesktopNoTracing(RenderingDesktop):
+  @classmethod
+  def Name(cls):
+    return 'rendering.desktop.notracing'
+
+  def CreateStorySet(self, options):
+    return page_sets.RenderingStorySet(platform=self.PLATFORM_NAME,
+                                       disable_tracing=True)
+
+  def CreateCoreTimelineBasedMeasurementOptions(self):
+    options = timeline_based_measurement.Options()
+    options.config.enable_chrome_trace = False
+    options.config.enable_platform_display_trace = False
+    return options
+
+
 @benchmark.Info(emails=['behdadb@chromium.org', 'jonross@chromium.org',
                         'sadrul@chromium.org'],
                 documentation_url='https://bit.ly/rendering-benchmarks',
@@ -158,4 +188,25 @@ class RenderingMobile(_RenderingBenchmark):
     options = super(
         RenderingMobile, self).CreateCoreTimelineBasedMeasurementOptions()
     options.config.enable_platform_display_trace = True
+    return options
+
+
+@benchmark.Info(emails=[
+    'behdadb@chromium.org', 'jonross@chromium.org', 'sadrul@chromium.org'
+],
+                documentation_url='https://bit.ly/rendering-benchmarks',
+                component='Internals>GPU>Metrics')
+class RenderingMobileNoTracing(RenderingMobile):
+  @classmethod
+  def Name(cls):
+    return 'rendering.mobile.notracing'
+
+  def CreateStorySet(self, options):
+    return page_sets.RenderingStorySet(platform=self.PLATFORM_NAME,
+                                       disable_tracing=True)
+
+  def CreateCoreTimelineBasedMeasurementOptions(self):
+    options = timeline_based_measurement.Options()
+    options.config.enable_chrome_trace = False
+    options.config.enable_platform_display_trace = False
     return options

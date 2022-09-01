@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_context.h"
@@ -63,7 +64,7 @@ class CONTENT_EXPORT BackgroundSyncScheduler
   void RunDelayedTaskAndPruneInfoMap(blink::mojom::BackgroundSyncType sync_type,
                                      StoragePartitionImpl* storage_partition,
                                      base::OnceClosure delayed_task);
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   void ScheduleOrCancelBrowserWakeupForSyncType(
       blink::mojom::BackgroundSyncType sync_type,
       StoragePartitionImpl* storage_partition);

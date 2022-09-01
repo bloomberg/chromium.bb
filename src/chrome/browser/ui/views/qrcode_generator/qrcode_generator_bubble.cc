@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/browser/ui/qrcode_generator/qrcode_generator_bubble_controller.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
@@ -35,6 +36,7 @@
 #include "ui/events/event.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/image/image_skia_operations.h"
+#include "ui/gfx/image/image_skia_rep.h"
 #include "ui/gfx/image/image_skia_source.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/resources/grit/ui_resources.h"
@@ -54,12 +56,11 @@
 
 namespace {
 
-// Rendered QR Code size, pixels.
-constexpr int kQRImageSizePx = 240;
 constexpr int kPaddingTooltipDownloadButtonPx = 10;
 
 // Calculates the height of the QR Code with padding.
 constexpr gfx::Size GetQRCodeImageSize() {
+  constexpr int kQRImageSizePx = 240;
   return gfx::Size(kQRImageSizePx, kQRImageSizePx);
 }
 
@@ -67,19 +68,10 @@ constexpr bool IsSquare(gfx::Size size) {
   return size.width() == size.height();
 }
 
-// Renders a solid square of color {r, g, b} at 100% alpha.
-gfx::ImageSkia GetPlaceholderImageSkia(const SkColor color) {
-  SkBitmap bitmap;
-  bitmap.allocN32Pixels(kQRImageSizePx, kQRImageSizePx);
-  bitmap.eraseARGB(0xFF, 0xFF, 0xFF, 0xFF);
-  bitmap.eraseColor(color);
-  return gfx::ImageSkia::CreateFromBitmap(bitmap, 1.0f);
-}
-
-gfx::ImageSkia CreateBackgroundImageSkia(const gfx::Size& size) {
+gfx::ImageSkia CreateBackgroundImageSkia(const gfx::Size& size, SkColor color) {
   SkBitmap bitmap;
   bitmap.allocN32Pixels(size.width(), size.height());
-  bitmap.eraseColor(SK_ColorWHITE);
+  bitmap.eraseColor(color);
   return gfx::ImageSkia::CreateFromBitmap(bitmap, 1.0f);
 }
 
@@ -109,7 +101,6 @@ QRCodeGeneratorBubble::QRCodeGeneratorBubble(
 QRCodeGeneratorBubble::~QRCodeGeneratorBubble() = default;
 
 void QRCodeGeneratorBubble::Show() {
-  chrome::RecordDialogCreation(chrome::DialogIdentifier::QR_CODE_GENERATOR);
   textfield_url_->SetText(base::ASCIIToUTF16(url_.possibly_invalid_spec()));
   textfield_url_->SelectAll(false);
   UpdateQRContent();
@@ -120,6 +111,19 @@ void QRCodeGeneratorBubble::Hide() {
   if (on_closing_)
     std::move(on_closing_).Run();
   CloseBubble();
+}
+
+void QRCodeGeneratorBubble::OnThemeChanged() {
+  LocationBarBubbleDelegateView::OnThemeChanged();
+
+  const int border_radius = views::LayoutProvider::Get()->GetCornerRadiusMetric(
+      views::Emphasis::kHigh);
+  const auto* color_provider = GetColorProvider();
+  qr_code_image_->SetBorder(views::CreateRoundedRectBorder(
+      /*thickness=*/2, border_radius,
+      color_provider->GetColor(kColorQrCodeBorder)));
+  qr_code_image_->SetBackground(views::CreateRoundedRectBackground(
+      color_provider->GetColor(kColorQrCodeBackground), border_radius, 2));
 }
 
 void QRCodeGeneratorBubble::UpdateQRContent() {
@@ -153,9 +157,9 @@ void QRCodeGeneratorBubble::OnCodeGeneratorResponse(
   ShrinkAndHideDisplay(center_error_label_);
   bottom_error_label_->SetVisible(false);
   download_button_->SetEnabled(true);
-  UpdateQRImage(
-      AddQRCodeQuietZone(gfx::ImageSkia::CreateFrom1xBitmap(response->bitmap),
-                         response->data_size));
+  UpdateQRImage(AddQRCodeQuietZone(
+      gfx::ImageSkia::CreateFrom1xBitmap(response->bitmap), response->data_size,
+      GetColorProvider()->GetColor(kColorQrCodeBackground)));
 }
 
 void QRCodeGeneratorBubble::UpdateQRImage(gfx::ImageSkia qr_image) {
@@ -168,7 +172,8 @@ void QRCodeGeneratorBubble::UpdateQRImage(gfx::ImageSkia qr_image) {
 }
 
 void QRCodeGeneratorBubble::DisplayPlaceholderImage() {
-  UpdateQRImage(GetPlaceholderImageSkia(gfx::kGoogleGrey100));
+  UpdateQRImage(
+      CreateBackgroundImageSkia(GetQRCodeImageSize(), SK_ColorTRANSPARENT));
 }
 
 void QRCodeGeneratorBubble::DisplayError(mojom::QRCodeGeneratorError error) {
@@ -217,17 +222,13 @@ void QRCodeGeneratorBubble::Init() {
   // QR Code image, with padding and border.
   using Alignment = views::ImageView::Alignment;
   auto qr_code_image = std::make_unique<views::ImageView>();
-  const int border_radius = views::LayoutProvider::Get()->GetCornerRadiusMetric(
-      views::Emphasis::kHigh);
-  qr_code_image->SetBorder(views::CreateRoundedRectBorder(
-      /*thickness=*/2, border_radius, gfx::kGoogleGrey200));
   qr_code_image->SetHorizontalAlignment(Alignment::kCenter);
   qr_code_image->SetVerticalAlignment(Alignment::kCenter);
   qr_code_image->SetImageSize(GetQRCodeImageSize());
+  const int border_radius = views::LayoutProvider::Get()->GetCornerRadiusMetric(
+      views::Emphasis::kHigh);
   qr_code_image->SetPreferredSize(GetQRCodeImageSize() +
                                   gfx::Size(border_radius, border_radius));
-  qr_code_image->SetBackground(
-      views::CreateRoundedRectBackground(SK_ColorWHITE, border_radius));
   qr_code_image->SetProperty(views::kCrossAxisAlignmentKey,
                              views::LayoutAlignment::kCenter);
 
@@ -252,9 +253,9 @@ void QRCodeGeneratorBubble::Init() {
   textfield_url->set_controller(this);
   textfield_url->SetProperty(
       views::kMarginsKey,
-      gfx::Insets(ChromeLayoutProvider::Get()->GetDistanceMetric(
-                      DISTANCE_UNRELATED_CONTROL_VERTICAL_LARGE),
-                  0, 0, 0));
+      gfx::Insets::TLBR(ChromeLayoutProvider::Get()->GetDistanceMetric(
+                            DISTANCE_UNRELATED_CONTROL_VERTICAL_LARGE),
+                        0, 0, 0));
   int textfield_min_width = ChromeLayoutProvider::Get()->GetDistanceMetric(
                                 views::DISTANCE_BUBBLE_PREFERRED_WIDTH) -
                             insets.left() - insets.right();
@@ -280,11 +281,12 @@ void QRCodeGeneratorBubble::Init() {
   // Padding - larger between controls and action buttons.
   bottom_error_container->SetProperty(
       views::kMarginsKey,
-      gfx::Insets(0, 0,
-                  ChromeLayoutProvider::Get()->GetDistanceMetric(
-                      views::DISTANCE_DIALOG_CONTENT_MARGIN_BOTTOM_CONTROL) -
-                      bottom_error_label_->GetPreferredSize().height(),
-                  0));
+      gfx::Insets::TLBR(
+          0, 0,
+          ChromeLayoutProvider::Get()->GetDistanceMetric(
+              views::DISTANCE_DIALOG_CONTENT_MARGIN_BOTTOM_CONTROL) -
+              bottom_error_label_->GetPreferredSize().height(),
+          0));
 
   auto* button_container =
       AddChildView(std::make_unique<views::BoxLayoutView>());
@@ -300,7 +302,7 @@ void QRCodeGeneratorBubble::Init() {
       views::BubbleBorder::Arrow::BOTTOM_RIGHT);
   tooltip_icon->SetProperty(
       views::kMarginsKey,
-      gfx::Insets(0, 0, 0, kPaddingTooltipDownloadButtonPx));
+      gfx::Insets::TLBR(0, 0, 0, kPaddingTooltipDownloadButtonPx));
   tooltip_icon_ = button_container->AddChildView(std::move(tooltip_icon));
 
   auto* flex = button_container->AddChildView(std::make_unique<views::View>());
@@ -376,7 +378,8 @@ const std::u16string QRCodeGeneratorBubble::GetQRCodeFilenameForURL(
 // static
 gfx::ImageSkia QRCodeGeneratorBubble::AddQRCodeQuietZone(
     const gfx::ImageSkia& image,
-    const gfx::Size& qr_size) {
+    const gfx::Size& qr_size,
+    SkColor background_color) {
   const gfx::Size image_size(image.width(), image.height());
 
   DCHECK(IsSquare(image_size));
@@ -391,7 +394,7 @@ gfx::ImageSkia QRCodeGeneratorBubble::AddQRCodeQuietZone(
                              kQuietZoneSizeTiles * tile_size * 2);
 
   auto final_image = gfx::ImageSkiaOperations::CreateSuperimposedImage(
-      CreateBackgroundImageSkia(background_size), image);
+      CreateBackgroundImageSkia(background_size, background_color), image);
   DCHECK(IsSquare(gfx::Size(final_image.width(), final_image.height())));
   return final_image;
 }

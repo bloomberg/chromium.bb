@@ -40,6 +40,8 @@ target(link_target_type, "renderer") {
     "accessibility/ax_image_annotator.h",
     "accessibility/ax_image_stopwords.cc",
     "accessibility/ax_image_stopwords.h",
+    "accessibility/ax_tree_distiller.cc",
+    "accessibility/ax_tree_distiller.h",
     "accessibility/ax_tree_snapshotter_impl.cc",
     "accessibility/ax_tree_snapshotter_impl.h",
     "accessibility/blink_ax_action_target.cc",
@@ -60,6 +62,8 @@ target(link_target_type, "renderer") {
     "content_security_policy_util.h",
     "discardable_memory_utils.cc",
     "discardable_memory_utils.h",
+    "document_state.cc",
+    "document_state.h",
     "dom_automation_controller.cc",
     "dom_automation_controller.h",
     "effective_connection_type_helper.cc",
@@ -72,8 +76,6 @@ target(link_target_type, "renderer") {
     "gpu_benchmarking_extension.h",
     "in_process_renderer_thread.cc",
     "in_process_renderer_thread.h",
-    "internal_document_state_data.cc",
-    "internal_document_state_data.h",
     "media/audio_decoder.cc",
     "media/audio_decoder.h",
     "media/batching_media_log.cc",
@@ -128,12 +130,8 @@ target(link_target_type, "renderer") {
     "service_worker/controller_service_worker_connector.h",
     "service_worker/embedded_worker_instance_client_impl.cc",
     "service_worker/embedded_worker_instance_client_impl.h",
-    "service_worker/navigation_preload_request.cc",
-    "service_worker/navigation_preload_request.h",
     "service_worker/service_worker_context_client.cc",
     "service_worker/service_worker_context_client.h",
-    "service_worker/service_worker_fetch_context_impl.cc",
-    "service_worker/service_worker_fetch_context_impl.h",
     "service_worker/service_worker_network_provider_for_frame.cc",
     "service_worker/service_worker_network_provider_for_frame.h",
     "service_worker/service_worker_provider_context.cc",
@@ -241,15 +239,19 @@ target(link_target_type, "renderer") {
     "//base:i18n",
     "//build:chromecast_buildflags",
     "//build:chromeos_buildflags",
-    "//build:os_buildflags",
     "//cc",
     "//cc/animation",
     "//cc/mojo_embedder",
     "//cc/mojom",
     "//cc/paint",
+    "//components/cast_streaming/public",
+    "//components/cast_streaming/renderer:resource_provider",
+    "//components/cast_streaming/renderer:wrapping_renderer_factory_selector",
     "//components/discardable_memory/client",
     "//components/metrics",
     "//components/metrics:single_sample_metrics",
+    "//components/services/screen_ai/buildflags",
+    "//components/services/screen_ai/public/mojom",
     "//components/url_formatter",
     "//components/variations:variations_mojom",
     "//components/variations/net",
@@ -262,9 +264,9 @@ target(link_target_type, "renderer") {
     "//content/common:buildflags",
     "//content/gpu:gpu_sources",
     "//content/public/child:child_sources",
+    "//content/services/auction_worklet:auction_worklet",
     "//content/services/shared_storage_worklet",
     "//crypto",
-    "//crypto:platform",
     "//device/base/synchronization",
     "//device/gamepad/public/cpp:shared_with_blink",
     "//device/gamepad/public/mojom",
@@ -311,7 +313,7 @@ target(link_target_type, "renderer") {
     "//third_party/blink/public:buildflags",
     "//third_party/blink/public/common",
     "//third_party/blink/public/platform/media",
-    "//third_party/blink/public/strings:strings_grit",
+    "//third_party/blink/public/strings:accessibility_strings",
     "//third_party/boringssl",
     "//third_party/icu",
     "//third_party/libyuv",
@@ -357,6 +359,7 @@ target(link_target_type, "renderer") {
 
     deps += [
       "//media/fuchsia/cdm/client",
+      "//media/fuchsia/video",
       "//third_party/fuchsia-sdk/sdk/pkg/sys_cpp",
     ]
   }
@@ -383,14 +386,6 @@ target(link_target_type, "renderer") {
         "//media/remoting:remoting_renderer",
       ]
     }
-  }
-
-  if (enable_cast_streaming_renderer) {
-    deps += [
-      "//components/cast_streaming/public",
-      "//components/cast_streaming/renderer:playback_command_forwarding_renderer_factory",
-      "//components/cast_streaming/renderer:renderer_controller_proxy",
-    ]
   }
 
   if (enable_plugins) {
@@ -544,6 +539,10 @@ target(link_target_type, "renderer") {
       "media/win/dcomp_texture_host.h",
       "media/win/dcomp_texture_wrapper_impl.cc",
       "media/win/dcomp_texture_wrapper_impl.h",
+      "media/win/overlay_state_observer_impl.cc",
+      "media/win/overlay_state_observer_impl.h",
+      "media/win/overlay_state_service_provider.cc",
+      "media/win/overlay_state_service_provider.h",
     ]
   }
 
@@ -551,14 +550,13 @@ target(link_target_type, "renderer") {
     deps += [ "//sandbox:sandbox_buildflags" ]
   }
 
+  if (is_chromeos) {
+    deps += [ "//chromeos/system:system" ]
+  }
   if (is_chromeos_ash) {
-    deps += [
-      "//chromeos:chromeos_export",
-      "//chromeos/system:system",
-    ]
-
+    deps += [ "//chromeos:chromeos_export" ]
     if (target_cpu == "x64") {
-      deps += [ "//chromeos/memory/userspace_swap" ]
+      deps += [ "//chromeos/ash/components/memory/userspace_swap" ]
     }
   }
 

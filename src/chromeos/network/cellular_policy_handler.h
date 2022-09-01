@@ -9,8 +9,12 @@
 #include "base/containers/queue.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observation.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
+#include "chromeos/network/cellular_esim_profile_handler.h"
+#include "chromeos/network/network_state_handler.h"
+#include "chromeos/network/network_state_handler_observer.h"
 #include "net/base/backoff_entry.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -22,6 +26,8 @@ namespace chromeos {
 
 class CellularESimInstaller;
 class NetworkProfileHandler;
+class NetworkStateHandler;
+class ManagedCellularPrefHandler;
 class ManagedNetworkConfigurationHandler;
 enum class HermesResponseStatus;
 
@@ -30,16 +36,23 @@ enum class HermesResponseStatus;
 // When installing policy eSIM profiles, the activation code is constructed from
 // the SM-DP+ address in the policy configuration. Install requests are queued
 // and installation is performed one by one. Install attempts are retried for
-// fixed number of tries.
-class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularPolicyHandler {
+// fixed number of tries and the request queue doesn't get blocked by the
+// requests that are waiting for retry attempt.
+class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularPolicyHandler
+    : public HermesManagerClient::Observer,
+      public CellularESimProfileHandler::Observer,
+      public NetworkStateHandlerObserver {
  public:
   CellularPolicyHandler();
   CellularPolicyHandler(const CellularPolicyHandler&) = delete;
   CellularPolicyHandler& operator=(const CellularPolicyHandler&) = delete;
-  ~CellularPolicyHandler();
+  ~CellularPolicyHandler() override;
 
-  void Init(CellularESimInstaller* cellular_esim_installer,
+  void Init(CellularESimProfileHandler* cellular_esim_profile_handler,
+            CellularESimInstaller* cellular_esim_installer,
             NetworkProfileHandler* network_profile_handler,
+            NetworkStateHandler* network_state_handler,
+            ManagedCellularPrefHandler* managed_cellular_pref_handler,
             ManagedNetworkConfigurationHandler*
                 managed_network_configuration_handler);
 
@@ -50,7 +63,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularPolicyHandler {
   // request will wait until the previous one is completed. Each installation
   // will be retried for a fixed number of tries.
   void InstallESim(const std::string& smdp_address,
-                   const base::DictionaryValue& onc_config);
+                   const base::Value& onc_config);
 
  private:
   friend class CellularPolicyHandlerTest;
@@ -61,39 +74,72 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularPolicyHandler {
   // |onc_config| is the ONC configuration of the cellular policy.
   struct InstallPolicyESimRequest {
     InstallPolicyESimRequest(const std::string& smdp_address,
-                             const base::DictionaryValue& onc_config);
+                             const base::Value& onc_config);
     InstallPolicyESimRequest(const InstallPolicyESimRequest&) = delete;
     InstallPolicyESimRequest& operator=(const InstallPolicyESimRequest&) =
         delete;
     ~InstallPolicyESimRequest();
 
     const std::string smdp_address;
-    std::unique_ptr<base::DictionaryValue> onc_config;
+    base::Value onc_config;
+    net::BackoffEntry retry_backoff;
   };
 
+  // HermesManagerClient::Observer:
+  void OnAvailableEuiccListChanged() override;
+
+  // CellularESimProfileHandler::Observer:
+  void OnESimProfileListUpdated() override;
+
+  // NetworkStateHandlerObserver:
+  void DeviceListChanged() override;
+  void OnShuttingDown() override;
+
+  void ResumeInstallIfNeeded();
   void ProcessRequests();
   void AttemptInstallESim();
+  void SetupESim(const dbus::ObjectPath& euicc_path);
+  base::Value GetNewShillProperties();
   const std::string& GetCurrentSmdpAddress() const;
   std::string GetCurrentPolicyGuid() const;
+  void OnRefreshProfileList(
+      const dbus::ObjectPath& euicc_path,
+      std::unique_ptr<CellularInhibitor::InhibitLock> inhibit_lock);
+  void OnConfigureESimService(absl::optional<dbus::ObjectPath> service_path);
   void OnESimProfileInstallAttemptComplete(
       HermesResponseStatus hermes_status,
       absl::optional<dbus::ObjectPath> profile_path,
       absl::optional<std::string> service_path);
-  void PopRequestAndProcessNext();
-  void InvalidateCurrentRequest();
+  void ScheduleRetry(std::unique_ptr<InstallPolicyESimRequest> request);
+  void PushRequestAndProcess(std::unique_ptr<InstallPolicyESimRequest> request);
+  void PopRequest();
+  absl::optional<dbus::ObjectPath> FindExistingMatchingESimProfile();
+  void OnWaitTimeout();
+  bool HasNonCellularInternetConnectivity();
 
+  CellularESimProfileHandler* cellular_esim_profile_handler_ = nullptr;
   CellularESimInstaller* cellular_esim_installer_ = nullptr;
   NetworkProfileHandler* network_profile_handler_ = nullptr;
+  NetworkStateHandler* network_state_handler_ = nullptr;
+  base::ScopedObservation<chromeos::NetworkStateHandler,
+                          chromeos::NetworkStateHandlerObserver>
+      network_state_handler_observer_{this};
+  ManagedCellularPrefHandler* managed_cellular_pref_handler_ = nullptr;
   ManagedNetworkConfigurationHandler* managed_network_configuration_handler_ =
       nullptr;
 
   bool is_installing_ = false;
+  bool need_refresh_profile_list_ = true;
   base::circular_deque<std::unique_ptr<InstallPolicyESimRequest>>
       remaining_install_requests_;
-  base::OneShotTimer retry_timer_;
 
-  // Provides us the backoff timers for AttemptInstallESim().
-  net::BackoffEntry retry_backoff_;
+  base::OneShotTimer wait_timer_;
+
+  base::ScopedObservation<HermesManagerClient, HermesManagerClient::Observer>
+      hermes_observation_{this};
+  base::ScopedObservation<CellularESimProfileHandler,
+                          CellularESimProfileHandler::Observer>
+      cellular_esim_profile_handler_observation_{this};
 
   base::WeakPtrFactory<CellularPolicyHandler> weak_ptr_factory_{this};
 };

@@ -94,6 +94,14 @@ class TryserverApi(recipe_api.RecipeApi):
     """
     return self._gerrit_change_owner
 
+  @property
+  def gerrit_change_review_url(self):
+    """Returns the review URL for the active patchset."""
+    # Gerrit redirects to insert the project into the URL.
+    gerrit_change = self._gerrit_change
+    return 'https://%s/c/%s/%s' % (
+          gerrit_change.host, gerrit_change.change, gerrit_change.patchset)
+
   def _ensure_gerrit_change_info(self):
     """Initializes extra info about gerrit_change, fetched from Gerrit server.
 
@@ -209,6 +217,19 @@ class TryserverApi(recipe_api.RecipeApi):
             self.m.properties.get('patch_repo_url') and
             self.m.properties.get('patch_ref'))
 
+  def require_is_tryserver(self):
+    if self.m.tryserver.is_tryserver:
+      return
+
+    status = self.m.step.EXCEPTION
+    step_text = 'This recipe requires a gerrit CL for the source under test'
+    if self.m.led.launched_by_led:
+      status = self.m.step.FAILURE
+      step_text += (
+          "\n run 'led edit-cr-cl <source CL URL>' to attach a CL to test"
+      )
+    self.m.step.empty('not a tryjob', status=status, step_text=step_text)
+
   def get_files_affected_by_patch(self, patch_root,
                                   report_files_via_property=None,
                                   **kwargs):
@@ -220,7 +241,7 @@ class TryserverApi(recipe_api.RecipeApi):
       * report_files_via_property: name of the output property to report the
         list of the files. If None (default), do not report.
 
-    Returned paths will be relative to to patch_root.
+    Returned paths will be relative to to api.path['root'].
     """
     cwd = self.m.context.cwd or self.m.path['start_dir'].join(patch_root)
     with self.m.context(cwd=cwd):
@@ -232,7 +253,7 @@ class TryserverApi(recipe_api.RecipeApi):
             self.m.raw_io.test_api.stream_output('foo.cc'),
           **kwargs)
     paths = [self.m.path.join(patch_root, p.decode('utf-8')) for p in
-             step_result.stdout.split()]
+             step_result.stdout.splitlines()]
     paths.sort()
     if self.m.platform.is_win:
       # Looks like "analyze" wants POSIX slashes even on Windows (since git

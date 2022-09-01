@@ -100,9 +100,7 @@ OPENSSL_STATIC_ASSERT(EC_MAX_WORDS <= BN_SMALL_MAX_WORDS,
 // An EC_SCALAR is an integer fully reduced modulo the order. Only the first
 // |order->width| words are used. An |EC_SCALAR| is specific to an |EC_GROUP|
 // and must not be mixed between groups.
-typedef union {
-  // bytes is the representation of the scalar in little-endian order.
-  uint8_t bytes[EC_MAX_BYTES];
+typedef struct {
   BN_ULONG words[EC_MAX_WORDS];
 } EC_SCALAR;
 
@@ -192,9 +190,7 @@ void ec_scalar_select(const EC_GROUP *group, EC_SCALAR *out, BN_ULONG mask,
 // are used. An |EC_FELEM| is specific to an |EC_GROUP| and must not be mixed
 // between groups. Additionally, the representation (whether or not elements are
 // represented in Montgomery-form) may vary between |EC_METHOD|s.
-typedef union {
-  // bytes is the representation of the field element in little-endian order.
-  uint8_t bytes[EC_MAX_BYTES];
+typedef struct {
   BN_ULONG words[EC_MAX_WORDS];
 } EC_FELEM;
 
@@ -300,6 +296,13 @@ int ec_jacobian_to_affine_batch(const EC_GROUP *group, EC_AFFINE *out,
 // undefined.
 int ec_point_set_affine_coordinates(const EC_GROUP *group, EC_AFFINE *out,
                                     const EC_FELEM *x, const EC_FELEM *y);
+
+// ec_point_mul_no_self_test does the same as |EC_POINT_mul|, but doesn't try to
+// run the self-test first. This is for use in the self tests themselves, to
+// prevent an infinite loop.
+int ec_point_mul_no_self_test(const EC_GROUP *group, EC_POINT *r,
+                              const BIGNUM *g_scalar, const EC_POINT *p,
+                              const BIGNUM *p_scalar, BN_CTX *ctx);
 
 // ec_point_mul_scalar sets |r| to |p| * |scalar|. Both inputs are considered
 // secret.

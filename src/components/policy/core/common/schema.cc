@@ -99,7 +99,7 @@ const SchemaKeyToValueType kSchemaTypesToValueTypes[] = {
     {schema::kString, base::Value::Type::STRING},
 };
 const SchemaKeyToValueType* kSchemaTypesToValueTypesEnd =
-    kSchemaTypesToValueTypes + base::size(kSchemaTypesToValueTypes);
+    kSchemaTypesToValueTypes + std::size(kSchemaTypesToValueTypes);
 
 // Allowed attributes and types for type 'array'. These are ordered
 // alphabetically to perform binary search.
@@ -112,7 +112,7 @@ const SchemaKeyToValueType kAttributesAndTypesForArray[] = {
     {schema::kType, base::Value::Type::STRING},
 };
 const SchemaKeyToValueType* kAttributesAndTypesForArrayEnd =
-    kAttributesAndTypesForArray + base::size(kAttributesAndTypesForArray);
+    kAttributesAndTypesForArray + std::size(kAttributesAndTypesForArray);
 
 // Allowed attributes and types for type 'boolean'. These are ordered
 // alphabetically to perform binary search.
@@ -124,7 +124,7 @@ const SchemaKeyToValueType kAttributesAndTypesForBoolean[] = {
     {schema::kType, base::Value::Type::STRING},
 };
 const SchemaKeyToValueType* kAttributesAndTypesForBooleanEnd =
-    kAttributesAndTypesForBoolean + base::size(kAttributesAndTypesForBoolean);
+    kAttributesAndTypesForBoolean + std::size(kAttributesAndTypesForBoolean);
 
 // Allowed attributes and types for type 'integer'. These are ordered
 // alphabetically to perform binary search.
@@ -139,7 +139,7 @@ const SchemaKeyToValueType kAttributesAndTypesForInteger[] = {
     {schema::kType, base::Value::Type::STRING},
 };
 const SchemaKeyToValueType* kAttributesAndTypesForIntegerEnd =
-    kAttributesAndTypesForInteger + base::size(kAttributesAndTypesForInteger);
+    kAttributesAndTypesForInteger + std::size(kAttributesAndTypesForInteger);
 
 // Allowed attributes and types for type 'number'. These are ordered
 // alphabetically to perform binary search.
@@ -151,7 +151,7 @@ const SchemaKeyToValueType kAttributesAndTypesForNumber[] = {
     {schema::kType, base::Value::Type::STRING},
 };
 const SchemaKeyToValueType* kAttributesAndTypesForNumberEnd =
-    kAttributesAndTypesForNumber + base::size(kAttributesAndTypesForNumber);
+    kAttributesAndTypesForNumber + std::size(kAttributesAndTypesForNumber);
 
 // Allowed attributes and types for type 'object'. These are ordered
 // alphabetically to perform binary search.
@@ -167,7 +167,7 @@ const SchemaKeyToValueType kAttributesAndTypesForObject[] = {
     {schema::kType, base::Value::Type::STRING},
 };
 const SchemaKeyToValueType* kAttributesAndTypesForObjectEnd =
-    kAttributesAndTypesForObject + base::size(kAttributesAndTypesForObject);
+    kAttributesAndTypesForObject + std::size(kAttributesAndTypesForObject);
 
 // Allowed attributes and types for $ref. These are ordered alphabetically to
 // perform binary search.
@@ -177,7 +177,7 @@ const SchemaKeyToValueType kAttributesAndTypesForRef[] = {
     {schema::kTitle, base::Value::Type::STRING},
 };
 const SchemaKeyToValueType* kAttributesAndTypesForRefEnd =
-    kAttributesAndTypesForRef + base::size(kAttributesAndTypesForRef);
+    kAttributesAndTypesForRef + std::size(kAttributesAndTypesForRef);
 
 // Allowed attributes and types for type 'string'. These are ordered
 // alphabetically to perform binary search.
@@ -191,7 +191,7 @@ const SchemaKeyToValueType kAttributesAndTypesForString[] = {
     {schema::kType, base::Value::Type::STRING},
 };
 const SchemaKeyToValueType* kAttributesAndTypesForStringEnd =
-    kAttributesAndTypesForString + base::size(kAttributesAndTypesForString);
+    kAttributesAndTypesForString + std::size(kAttributesAndTypesForString);
 
 // Helper for std::lower_bound.
 bool CompareToString(const SchemaKeyToValueType& entry,
@@ -229,6 +229,10 @@ bool StrategyAllowUnknown(SchemaOnErrorStrategy strategy) {
 
 bool StrategyAllowInvalidListEntry(SchemaOnErrorStrategy strategy) {
   return strategy == SCHEMA_ALLOW_UNKNOWN_AND_INVALID_LIST_ENTRY;
+}
+
+bool StrategyAllowUnknownWithoutWarning(SchemaOnErrorStrategy strategy) {
+  return strategy == SCHEMA_ALLOW_UNKNOWN_WITHOUT_WARNING;
 }
 
 void SchemaErrorFound(std::string* out_error_path,
@@ -330,14 +334,14 @@ bool ValidateEnum(const base::Value* enum_list,
                   const std::string& type,
                   std::string* error) {
   if (enum_list->type() != base::Value::Type::LIST ||
-      enum_list->GetList().empty()) {
+      enum_list->GetListDeprecated().empty()) {
     *error = "Attribute 'enum' must be a non-empty list.";
     return false;
   }
   base::Value::Type expected_item_type = base::Value::Type::NONE;
   MapSchemaKeyToValueType(type, kSchemaTypesToValueTypes,
                           kSchemaTypesToValueTypesEnd, &expected_item_type);
-  for (const base::Value& item : enum_list->GetList()) {
+  for (const base::Value& item : enum_list->GetListDeprecated()) {
     if (item.type() != expected_item_type) {
       *error = base::StringPrintf(
           "Attribute 'enum' for type '%s' contains items with invalid types",
@@ -455,7 +459,7 @@ bool IsValidSchema(const base::Value& dict, int options, std::string* error) {
 
     const base::Value* required = dict.FindKey(schema::kRequired);
     if (required) {
-      for (const base::Value& item : required->GetList()) {
+      for (const base::Value& item : required->GetListDeprecated()) {
         if (!item.is_string()) {
           *error = "Attribute 'required' may only contain strings.";
           return false;
@@ -764,13 +768,14 @@ void Schema::InternalStorage::DetermineStorageSizes(const base::Value& schema,
 
     const base::Value* required_properties = schema.FindKey(schema::kRequired);
     if (required_properties) {
-      sizes->strings += required_properties->GetList().size();
-      sizes->required_properties += required_properties->GetList().size();
+      sizes->strings += required_properties->GetListDeprecated().size();
+      sizes->required_properties +=
+          required_properties->GetListDeprecated().size();
     }
   } else if (schema.FindKey(schema::kEnum)) {
     const base::Value* possible_values = schema.FindListKey(schema::kEnum);
     if (possible_values) {
-      size_t num_possible_values = possible_values->GetList().size();
+      size_t num_possible_values = possible_values->GetListDeprecated().size();
       if (type == base::Value::Type::INTEGER) {
         sizes->int_enums += num_possible_values;
       } else if (type == base::Value::Type::STRING) {
@@ -952,7 +957,7 @@ bool Schema::InternalStorage::ParseDictionary(
   properties_nodes_[extra].required_begin = required_properties_.size();
   const base::Value* required_properties = schema.FindKey(schema::kRequired);
   if (required_properties) {
-    for (const base::Value& val : required_properties->GetList()) {
+    for (const base::Value& val : required_properties->GetListDeprecated()) {
       strings_.push_back(val.GetString());
       required_properties_.push_back(strings_.back().c_str());
     }
@@ -991,7 +996,7 @@ bool Schema::InternalStorage::ParseEnum(const base::Value& schema,
     *error = "Enum attribute must be a list value";
     return false;
   }
-  if (possible_values->GetList().empty()) {
+  if (possible_values->GetListDeprecated().empty()) {
     *error = "Enum attribute must be non-empty";
     return false;
   }
@@ -999,7 +1004,7 @@ bool Schema::InternalStorage::ParseEnum(const base::Value& schema,
   int offset_end;
   if (type == base::Value::Type::INTEGER) {
     offset_begin = static_cast<int>(int_enums_.size());
-    for (const auto& possible_value : possible_values->GetList()) {
+    for (const auto& possible_value : possible_values->GetListDeprecated()) {
       if (!possible_value.is_int()) {
         *error = "Invalid enumeration member type";
         return false;
@@ -1009,7 +1014,7 @@ bool Schema::InternalStorage::ParseEnum(const base::Value& schema,
     offset_end = static_cast<int>(int_enums_.size());
   } else if (type == base::Value::Type::STRING) {
     offset_begin = static_cast<int>(string_enums_.size());
-    for (const auto& possible_value : possible_values->GetList()) {
+    for (const auto& possible_value : possible_values->GetListDeprecated()) {
       if (!possible_value.is_string()) {
         *error = "Invalid enumeration member type";
         return false;
@@ -1218,8 +1223,10 @@ bool Schema::Validate(const base::Value& value,
       SchemaList schema_list = GetMatchingProperties(dict_item.first);
       if (schema_list.empty()) {
         // Unknown property was detected.
-        SchemaErrorFound(out_error_path, out_error,
-                         "Unknown property: " + dict_item.first);
+        if (!StrategyAllowUnknownWithoutWarning(strategy)) {
+          SchemaErrorFound(out_error_path, out_error,
+                           "Unknown property: " + dict_item.first);
+        }
         if (!StrategyAllowUnknown(strategy))
           return false;
       } else {
@@ -1251,8 +1258,8 @@ bool Schema::Validate(const base::Value& value,
       return false;
     }
   } else if (value.is_list()) {
-    for (size_t index = 0; index < value.GetList().size(); ++index) {
-      const base::Value& list_item = value.GetList()[index];
+    for (size_t index = 0; index < value.GetListDeprecated().size(); ++index) {
+      const base::Value& list_item = value.GetListDeprecated()[index];
       std::string new_error;
       const bool validation_result =
           GetItems().Validate(list_item, strategy, out_error_path, &new_error);
@@ -1310,11 +1317,15 @@ bool Schema::Normalize(base::Value* value,
       SchemaList schema_list = GetMatchingProperties(dict_item.first);
       if (schema_list.empty()) {
         // Unknown property was detected.
-        SchemaErrorFound(out_error_path, out_error,
-                         "Unknown property: " + dict_item.first);
+        if (!StrategyAllowUnknownWithoutWarning(strategy)) {
+          SchemaErrorFound(out_error_path, out_error,
+                           "Unknown property: " + dict_item.first);
+        }
         if (!StrategyAllowUnknown(strategy))
           return false;
-        drop_list.push_back(dict_item.first);
+        if (!StrategyAllowUnknownWithoutWarning(strategy)) {
+          drop_list.push_back(dict_item.first);
+        }
       } else {
         for (const auto& subschema : schema_list) {
           std::string new_error;
@@ -1351,7 +1362,7 @@ bool Schema::Normalize(base::Value* value,
       value->RemoveKey(drop_key);
     return true;
   } else if (value->is_list()) {
-    base::Value::ListStorage list = std::move(*value).TakeList();
+    base::Value::ListStorage list = std::move(*value).TakeListDeprecated();
     // Instead of removing invalid list items afterwards, we push valid items
     // forward in the list by overriding invalid items. The next free position
     // is indicated by |write_index|, which gets increased for every valid item.
@@ -1434,7 +1445,8 @@ absl::optional<base::Value> Schema::ParseToDictAndValidate(
     std::string* error) {
   base::JSONReader::ValueWithError value_with_error =
       base::JSONReader::ReadAndReturnValueWithError(
-          schema, base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS);
+          schema, base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS |
+                      base::JSONParserOptions::JSON_PARSE_CHROMIUM_EXTENSIONS);
   *error = value_with_error.error_message;
 
   if (!value_with_error.value)
@@ -1611,7 +1623,7 @@ void Schema::MaskSensitiveValuesRecursive(base::Value* value) const {
         schema_item.MaskSensitiveValuesRecursive(&sub_value);
     }
   } else if (value->is_list()) {
-    for (auto& list_elem : value->GetList())
+    for (auto& list_elem : value->GetListDeprecated())
       GetItems().MaskSensitiveValuesRecursive(&list_elem);
   }
 }

@@ -1,4 +1,4 @@
-static const AVCodec * const codec_list[] = {
+static const FFCodec * const codec_list[] = {
     &ff_h263_decoder,
     &ff_h264_decoder,
     &ff_mpeg4_decoder,

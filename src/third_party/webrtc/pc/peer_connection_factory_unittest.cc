@@ -10,16 +10,10 @@
 
 #include "pc/peer_connection_factory.h"
 
-#include <stddef.h>
-
-#include <memory>
-#include <string>
 #include <utility>
 #include <vector>
 
 #include "api/audio/audio_mixer.h"
-#include "api/audio_codecs/audio_decoder_factory.h"
-#include "api/audio_codecs/audio_encoder_factory.h"
 #include "api/audio_codecs/builtin_audio_decoder_factory.h"
 #include "api/audio_codecs/builtin_audio_encoder_factory.h"
 #include "api/create_peerconnection_factory.h"
@@ -28,17 +22,18 @@
 #include "api/media_stream_interface.h"
 #include "api/video_codecs/builtin_video_decoder_factory.h"
 #include "api/video_codecs/builtin_video_encoder_factory.h"
-#include "api/video_codecs/video_decoder_factory.h"
-#include "api/video_codecs/video_encoder_factory.h"
 #include "media/base/fake_frame_source.h"
 #include "modules/audio_device/include/audio_device.h"
 #include "modules/audio_processing/include/audio_processing.h"
 #include "p2p/base/fake_port_allocator.h"
 #include "p2p/base/port.h"
+#include "p2p/base/port_allocator.h"
 #include "p2p/base/port_interface.h"
 #include "pc/test/fake_audio_capture_module.h"
 #include "pc/test/fake_video_track_source.h"
+#include "rtc_base/rtc_certificate_generator.h"
 #include "rtc_base/socket_address.h"
+#include "rtc_base/time_utils.h"
 #include "test/gtest.h"
 
 #ifdef WEBRTC_ANDROID
@@ -159,6 +154,7 @@ class PeerConnectionFactoryTest : public ::testing::Test {
     EXPECT_GT(codec.clock_rate, 0);
   }
 
+  rtc::AutoThread main_thread_;
   rtc::scoped_refptr<PeerConnectionFactoryInterface> factory_;
   NullPeerConnectionObserver observer_;
   std::unique_ptr<cricket::FakePortAllocator> port_allocator_;
@@ -190,13 +186,16 @@ TEST(PeerConnectionFactoryTestInternal, DISABLED_CreatePCUsingInternalModules) {
 
   NullPeerConnectionObserver observer;
   webrtc::PeerConnectionInterface::RTCConfiguration config;
+  config.sdp_semantics = webrtc::SdpSemantics::kUnifiedPlan;
 
   std::unique_ptr<FakeRTCCertificateGenerator> cert_generator(
       new FakeRTCCertificateGenerator());
-  rtc::scoped_refptr<PeerConnectionInterface> pc(factory->CreatePeerConnection(
-      config, nullptr, std::move(cert_generator), &observer));
+  webrtc::PeerConnectionDependencies pc_dependencies(&observer);
+  pc_dependencies.cert_generator = std::move(cert_generator);
+  auto result =
+      factory->CreatePeerConnectionOrError(config, std::move(pc_dependencies));
 
-  EXPECT_TRUE(pc.get() != nullptr);
+  EXPECT_TRUE(result.ok());
 }
 
 TEST_F(PeerConnectionFactoryTest, CheckRtpSenderAudioCapabilities) {
@@ -269,6 +268,7 @@ TEST_F(PeerConnectionFactoryTest, CheckRtpReceiverDataCapabilities) {
 // configuration. Also verifies the URL's parsed correctly as expected.
 TEST_F(PeerConnectionFactoryTest, CreatePCUsingIceServers) {
   PeerConnectionInterface::RTCConfiguration config;
+  config.sdp_semantics = webrtc::SdpSemantics::kUnifiedPlan;
   webrtc::PeerConnectionInterface::IceServer ice_server;
   ice_server.uri = kStunIceServer;
   config.servers.push_back(ice_server);
@@ -280,12 +280,13 @@ TEST_F(PeerConnectionFactoryTest, CreatePCUsingIceServers) {
   ice_server.username = kTurnUsername;
   ice_server.password = kTurnPassword;
   config.servers.push_back(ice_server);
-  std::unique_ptr<FakeRTCCertificateGenerator> cert_generator(
-      new FakeRTCCertificateGenerator());
-  rtc::scoped_refptr<PeerConnectionInterface> pc(
-      factory_->CreatePeerConnection(config, std::move(port_allocator_),
-                                     std::move(cert_generator), &observer_));
-  ASSERT_TRUE(pc.get() != NULL);
+  webrtc::PeerConnectionDependencies pc_dependencies(&observer_);
+  pc_dependencies.cert_generator =
+      std::make_unique<FakeRTCCertificateGenerator>();
+  pc_dependencies.allocator = std::move(port_allocator_);
+  auto result =
+      factory_->CreatePeerConnectionOrError(config, std::move(pc_dependencies));
+  ASSERT_TRUE(result.ok());
   cricket::ServerAddresses stun_servers;
   rtc::SocketAddress stun1("stun.l.google.com", 19302);
   stun_servers.insert(stun1);
@@ -304,6 +305,7 @@ TEST_F(PeerConnectionFactoryTest, CreatePCUsingIceServers) {
 // configuration. Also verifies the list of URL's parsed correctly as expected.
 TEST_F(PeerConnectionFactoryTest, CreatePCUsingIceServersUrls) {
   PeerConnectionInterface::RTCConfiguration config;
+  config.sdp_semantics = webrtc::SdpSemantics::kUnifiedPlan;
   webrtc::PeerConnectionInterface::IceServer ice_server;
   ice_server.urls.push_back(kStunIceServer);
   ice_server.urls.push_back(kTurnIceServer);
@@ -311,12 +313,13 @@ TEST_F(PeerConnectionFactoryTest, CreatePCUsingIceServersUrls) {
   ice_server.username = kTurnUsername;
   ice_server.password = kTurnPassword;
   config.servers.push_back(ice_server);
-  std::unique_ptr<FakeRTCCertificateGenerator> cert_generator(
-      new FakeRTCCertificateGenerator());
-  rtc::scoped_refptr<PeerConnectionInterface> pc(
-      factory_->CreatePeerConnection(config, std::move(port_allocator_),
-                                     std::move(cert_generator), &observer_));
-  ASSERT_TRUE(pc.get() != NULL);
+  webrtc::PeerConnectionDependencies pc_dependencies(&observer_);
+  pc_dependencies.cert_generator =
+      std::make_unique<FakeRTCCertificateGenerator>();
+  pc_dependencies.allocator = std::move(port_allocator_);
+  auto result =
+      factory_->CreatePeerConnectionOrError(config, std::move(pc_dependencies));
+  ASSERT_TRUE(result.ok());
   cricket::ServerAddresses stun_servers;
   rtc::SocketAddress stun1("stun.l.google.com", 19302);
   stun_servers.insert(stun1);
@@ -333,6 +336,7 @@ TEST_F(PeerConnectionFactoryTest, CreatePCUsingIceServersUrls) {
 
 TEST_F(PeerConnectionFactoryTest, CreatePCUsingNoUsernameInUri) {
   PeerConnectionInterface::RTCConfiguration config;
+  config.sdp_semantics = webrtc::SdpSemantics::kUnifiedPlan;
   webrtc::PeerConnectionInterface::IceServer ice_server;
   ice_server.uri = kStunIceServer;
   config.servers.push_back(ice_server);
@@ -340,12 +344,13 @@ TEST_F(PeerConnectionFactoryTest, CreatePCUsingNoUsernameInUri) {
   ice_server.username = kTurnUsername;
   ice_server.password = kTurnPassword;
   config.servers.push_back(ice_server);
-  std::unique_ptr<FakeRTCCertificateGenerator> cert_generator(
-      new FakeRTCCertificateGenerator());
-  rtc::scoped_refptr<PeerConnectionInterface> pc(
-      factory_->CreatePeerConnection(config, std::move(port_allocator_),
-                                     std::move(cert_generator), &observer_));
-  ASSERT_TRUE(pc.get() != NULL);
+  webrtc::PeerConnectionDependencies pc_dependencies(&observer_);
+  pc_dependencies.cert_generator =
+      std::make_unique<FakeRTCCertificateGenerator>();
+  pc_dependencies.allocator = std::move(port_allocator_);
+  auto result =
+      factory_->CreatePeerConnectionOrError(config, std::move(pc_dependencies));
+  ASSERT_TRUE(result.ok());
   std::vector<cricket::RelayServerConfig> turn_servers;
   cricket::RelayServerConfig turn("test.com", 1234, kTurnUsername,
                                   kTurnPassword, cricket::PROTO_UDP);
@@ -357,17 +362,19 @@ TEST_F(PeerConnectionFactoryTest, CreatePCUsingNoUsernameInUri) {
 // has transport parameter in it.
 TEST_F(PeerConnectionFactoryTest, CreatePCUsingTurnUrlWithTransportParam) {
   PeerConnectionInterface::RTCConfiguration config;
+  config.sdp_semantics = webrtc::SdpSemantics::kUnifiedPlan;
   webrtc::PeerConnectionInterface::IceServer ice_server;
   ice_server.uri = kTurnIceServerWithTransport;
   ice_server.username = kTurnUsername;
   ice_server.password = kTurnPassword;
   config.servers.push_back(ice_server);
-  std::unique_ptr<FakeRTCCertificateGenerator> cert_generator(
-      new FakeRTCCertificateGenerator());
-  rtc::scoped_refptr<PeerConnectionInterface> pc(
-      factory_->CreatePeerConnection(config, std::move(port_allocator_),
-                                     std::move(cert_generator), &observer_));
-  ASSERT_TRUE(pc.get() != NULL);
+  webrtc::PeerConnectionDependencies pc_dependencies(&observer_);
+  pc_dependencies.cert_generator =
+      std::make_unique<FakeRTCCertificateGenerator>();
+  pc_dependencies.allocator = std::move(port_allocator_);
+  auto result =
+      factory_->CreatePeerConnectionOrError(config, std::move(pc_dependencies));
+  ASSERT_TRUE(result.ok());
   std::vector<cricket::RelayServerConfig> turn_servers;
   cricket::RelayServerConfig turn("hello.com", kDefaultStunPort, kTurnUsername,
                                   kTurnPassword, cricket::PROTO_TCP);
@@ -377,6 +384,7 @@ TEST_F(PeerConnectionFactoryTest, CreatePCUsingTurnUrlWithTransportParam) {
 
 TEST_F(PeerConnectionFactoryTest, CreatePCUsingSecureTurnUrl) {
   PeerConnectionInterface::RTCConfiguration config;
+  config.sdp_semantics = webrtc::SdpSemantics::kUnifiedPlan;
   webrtc::PeerConnectionInterface::IceServer ice_server;
   ice_server.uri = kSecureTurnIceServer;
   ice_server.username = kTurnUsername;
@@ -390,12 +398,13 @@ TEST_F(PeerConnectionFactoryTest, CreatePCUsingSecureTurnUrl) {
   ice_server.username = kTurnUsername;
   ice_server.password = kTurnPassword;
   config.servers.push_back(ice_server);
-  std::unique_ptr<FakeRTCCertificateGenerator> cert_generator(
-      new FakeRTCCertificateGenerator());
-  rtc::scoped_refptr<PeerConnectionInterface> pc(
-      factory_->CreatePeerConnection(config, std::move(port_allocator_),
-                                     std::move(cert_generator), &observer_));
-  ASSERT_TRUE(pc.get() != NULL);
+  webrtc::PeerConnectionDependencies pc_dependencies(&observer_);
+  pc_dependencies.cert_generator =
+      std::make_unique<FakeRTCCertificateGenerator>();
+  pc_dependencies.allocator = std::move(port_allocator_);
+  auto result =
+      factory_->CreatePeerConnectionOrError(config, std::move(pc_dependencies));
+  ASSERT_TRUE(result.ok());
   std::vector<cricket::RelayServerConfig> turn_servers;
   cricket::RelayServerConfig turn1("hello.com", kDefaultStunTlsPort,
                                    kTurnUsername, kTurnPassword,
@@ -414,6 +423,7 @@ TEST_F(PeerConnectionFactoryTest, CreatePCUsingSecureTurnUrl) {
 
 TEST_F(PeerConnectionFactoryTest, CreatePCUsingIPLiteralAddress) {
   PeerConnectionInterface::RTCConfiguration config;
+  config.sdp_semantics = webrtc::SdpSemantics::kUnifiedPlan;
   webrtc::PeerConnectionInterface::IceServer ice_server;
   ice_server.uri = kStunIceServerWithIPv4Address;
   config.servers.push_back(ice_server);
@@ -427,12 +437,13 @@ TEST_F(PeerConnectionFactoryTest, CreatePCUsingIPLiteralAddress) {
   ice_server.username = kTurnUsername;
   ice_server.password = kTurnPassword;
   config.servers.push_back(ice_server);
-  std::unique_ptr<FakeRTCCertificateGenerator> cert_generator(
-      new FakeRTCCertificateGenerator());
-  rtc::scoped_refptr<PeerConnectionInterface> pc(
-      factory_->CreatePeerConnection(config, std::move(port_allocator_),
-                                     std::move(cert_generator), &observer_));
-  ASSERT_TRUE(pc.get() != NULL);
+  webrtc::PeerConnectionDependencies pc_dependencies(&observer_);
+  pc_dependencies.cert_generator =
+      std::make_unique<FakeRTCCertificateGenerator>();
+  pc_dependencies.allocator = std::move(port_allocator_);
+  auto result =
+      factory_->CreatePeerConnectionOrError(config, std::move(pc_dependencies));
+  ASSERT_TRUE(result.ok());
   cricket::ServerAddresses stun_servers;
   rtc::SocketAddress stun1("1.2.3.4", 1234);
   stun_servers.insert(stun1);
@@ -462,9 +473,9 @@ TEST_F(PeerConnectionFactoryTest, LocalRendering) {
 
   ASSERT_TRUE(source.get() != NULL);
   rtc::scoped_refptr<VideoTrackInterface> track(
-      factory_->CreateVideoTrack("testlabel", source));
+      factory_->CreateVideoTrack("testlabel", source.get()));
   ASSERT_TRUE(track.get() != NULL);
-  FakeVideoTrackRenderer local_renderer(track);
+  FakeVideoTrackRenderer local_renderer(track.get());
 
   EXPECT_EQ(0, local_renderer.num_rendered_frames());
   source->InjectFrame(frame_source.GetFrame());

@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/ignore_result.h"
 #include "base/memory/ref_counted.h"
 #include "base/test/bind.h"
 
@@ -94,7 +93,7 @@ void WontCompile() {
   method_to_const_cb.Run();
 }
 
-#elif defined(NCTEST_METHOD_BIND_NEEDS_REFCOUNTED_OBJECT)  // [r"fatal error: static_assert failed due to requirement '!std::is_pointer<base::NoRef *>::value || IsRefCountedType<base::NoRef, void>::value' \"Receivers may not be raw pointers. If using a raw pointer here is safe and has no lifetime concerns, use base::Unretained() and document why it's safe.\""]
+#elif defined(NCTEST_METHOD_BIND_NEEDS_REFCOUNTED_OBJECT)  // [r"fatal error: static_assert failed due to requirement '!IsPointerV<base::NoRef \*> \|\| IsRefCountedType<base::NoRef, void>::value' \"Receivers may not be raw pointers. If using a raw pointer here is safe and has no lifetime concerns, use base::Unretained\(\) and document why it's safe.\""]
 
 
 // Method bound to non-refcounted object.
@@ -107,7 +106,7 @@ void WontCompile() {
   no_ref_cb.Run();
 }
 
-#elif defined(NCTEST_CONST_METHOD_NEEDS_REFCOUNTED_OBJECT)  // [r"fatal error: static_assert failed due to requirement '!std::is_pointer<base::NoRef *>::value || IsRefCountedType<base::NoRef, void>::value' \"Receivers may not be raw pointers. If using a raw pointer here is safe and has no lifetime concerns, use base::Unretained() and document why it's safe.\""]
+#elif defined(NCTEST_CONST_METHOD_BIND_NEEDS_REFCOUNTED_OBJECT)  // [r"fatal error: static_assert failed due to requirement '!IsPointerV<base::NoRef \*> \|\| IsRefCountedType<base::NoRef, void>::value' \"Receivers may not be raw pointers. If using a raw pointer here is safe and has no lifetime concerns, use base::Unretained\(\) and document why it's safe.\""]
 
 // Const Method bound to non-refcounted object.
 //
@@ -116,6 +115,33 @@ void WontCompile() {
   NoRef no_ref;
   RepeatingCallback<void()> no_ref_const_cb =
       BindRepeating(&NoRef::VoidConstMethod0, &no_ref);
+  no_ref_const_cb.Run();
+}
+
+#elif defined(NCTEST_METHOD_BIND_RAW_PTR_RECEIVER_NEEDS_REFCOUNTED_OBJECT)  // [r"fatal error: static_assert failed due to requirement '!IsPointerV<base::raw_ptr<base::NoRef, [^>]+>> \|\| IsRefCountedType<base::NoRef, void>::value' \"Receivers may not be raw pointers. If using a raw pointer here is safe and has no lifetime concerns, use base::Unretained\(\) and document why it's safe.\""]
+
+
+// Method bound to non-refcounted object.
+//
+// We require refcounts unless you have Unretained().
+void WontCompile() {
+  NoRef no_ref;
+  raw_ptr<NoRef> rawptr(&no_ref);
+  RepeatingCallback<void()> no_ref_cb =
+      BindRepeating(&NoRef::VoidMethod0, rawptr);
+  no_ref_cb.Run();
+}
+
+#elif defined(NCTEST_CONST_METHOD_BIND_RAW_PTR_RECEIVER_NEEDS_REFCOUNTED_OBJECT)  // [r"fatal error: static_assert failed due to requirement '!IsPointerV<base::raw_ptr<base::NoRef, [^>]+>> \|\| IsRefCountedType<base::NoRef, void>::value' \"Receivers may not be raw pointers. If using a raw pointer here is safe and has no lifetime concerns, use base::Unretained\(\) and document why it's safe.\""]
+
+// Const Method bound to non-refcounted object.
+//
+// We require refcounts unless you have Unretained().
+void WontCompile() {
+  NoRef no_ref;
+  raw_ptr<NoRef> rawptr(&no_ref);
+  RepeatingCallback<void()> no_ref_const_cb =
+      BindRepeating(&NoRef::VoidConstMethod0, rawptr);
   no_ref_const_cb.Run();
 }
 
@@ -196,7 +222,7 @@ void WontCompile() {
   auto cb = BindOnce(&TakesIntRef, base::OwnedRef(f));
 }
 
-#elif defined(NCTEST_NO_IMPLICIT_ARRAY_PTR_CONVERSION)  // [r"fatal error: static_assert failed due to requirement '!std::is_array<base::HasRef\[10\]>::value' \"First bound argument to a method cannot be an array.\""]
+#elif defined(NCTEST_NO_IMPLICIT_ARRAY_PTR_CONVERSION)  // [r"fatal error: static_assert failed due to requirement '!std::is_array_v<base::HasRef\[10\]>' \"First bound argument to a method cannot be an array.\""]
 
 // A method should not be bindable with an array of objects.
 //
@@ -249,7 +275,7 @@ void WontCompile() {
       BindRepeating(&VoidPolymorphic1<const HasRef*>, for_raw_ptr);
 }
 
-#elif defined(NCTEST_WEAKPTR_BIND_MUST_RETURN_VOID)  // [r"fatal error: static_assert failed due to requirement 'std::is_void<int>::value' \"weak_ptrs can only bind to methods without return values\""]
+#elif defined(NCTEST_WEAKPTR_BIND_MUST_RETURN_VOID)  // [r"fatal error: static_assert failed due to requirement 'std::is_void_v<int>' \"weak_ptrs can only bind to methods without return values\""]
 
 // WeakPtrs cannot be bound to methods with return types.
 void WontCompile() {

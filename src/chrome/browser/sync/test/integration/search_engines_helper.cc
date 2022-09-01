@@ -78,13 +78,14 @@ bool ServicesMatch(int profile_a, int profile_b, std::ostream* os) {
     return false;
   }
 
-  for (auto it = a_turls.begin(); it != a_turls.end(); ++it) {
-    if (b_turls.find(it->first) == b_turls.end()) {
-      *os << "TURL GUID from a not found in b's TURLs: " << it->first;
+  for (const auto& [guid, a_turl] : a_turls) {
+    if (b_turls.find(guid) == b_turls.end()) {
+      *os << "TURL GUID from a not found in b's TURLs: " << guid;
       return false;
     }
-    if (!TURLsMatch(*b_turls[it->first], *it->second))
+    if (!TURLsMatch(*b_turls[guid], *a_turl)) {
       return false;
+    }
   }
 
   const TemplateURL* default_a = service_a->GetDefaultSearchProvider();
@@ -127,18 +128,18 @@ bool ServiceMatchesVerifier(int profile_index) {
     return false;
   }
 
-  for (size_t i = 0; i < verifier_turls.size(); ++i) {
-    const TemplateURL& verifier_turl = *verifier_turls.at(i);
+  for (TemplateURL* verifier_turl : verifier_turls) {
     const TemplateURL* other_turl =
-        other->GetTemplateURLForKeyword(verifier_turl.keyword());
+        other->GetTemplateURLForKeyword(verifier_turl->keyword());
 
     if (!other_turl) {
       DVLOG(1) << "The other service did not contain a TURL with keyword: "
-               << verifier_turl.keyword();
+               << verifier_turl->keyword();
       return false;
     }
-    if (!TURLsMatch(verifier_turl, *other_turl))
+    if (!TURLsMatch(*verifier_turl, *other_turl)) {
       return false;
+    }
   }
 
   return true;
@@ -194,8 +195,9 @@ void AddSearchEngine(int profile_index, const std::string& keyword) {
   Profile* profile = test()->GetProfile(profile_index);
   TemplateURLBuilder builder(keyword);
   TemplateURLServiceFactory::GetForProfile(profile)->Add(builder.Build());
-  if (test()->UseVerifier())
+  if (test()->UseVerifier()) {
     GetVerifierService()->Add(builder.Build());
+  }
 }
 
 void EditSearchEngine(int profile_index,

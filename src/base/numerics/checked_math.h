@@ -38,7 +38,7 @@ class CheckedNumeric {
   template <typename Src>
   constexpr CheckedNumeric(Src value)  // NOLINT(runtime/explicit)
       : state_(value) {
-    static_assert(std::is_arithmetic<Src>::value, "Argument must be numeric.");
+    static_assert(UnderlyingType<Src>::is_numeric, "Argument must be numeric.");
   }
 
   // This is not an explicit constructor because we want a seamless conversion
@@ -139,7 +139,7 @@ class CheckedNumeric {
 
   constexpr CheckedNumeric operator-() const {
     // Use an optimized code path for a known run-time variable.
-    if (!MustTreatAsConstexpr(state_.value()) && std::is_signed<T>::value &&
+    if (!IsConstantEvaluated() && std::is_signed<T>::value &&
         std::is_floating_point<T>::value) {
       return FastRuntimeNegate();
     }
@@ -270,6 +270,9 @@ class CheckedNumeric {
   };
 };
 
+template <typename T>
+CheckedNumeric(T t) -> CheckedNumeric<T>;
+
 // Convenience functions to avoid the ugly template disambiguator syntax.
 template <typename Dst, typename Src>
 constexpr bool IsValidForType(const CheckedNumeric<Src> value) {
@@ -289,8 +292,8 @@ constexpr StrictNumeric<Dst> ValueOrDefaultForType(
   return value.template ValueOrDefault<Dst>(default_value);
 }
 
-// Convience wrapper to return a new CheckedNumeric from the provided arithmetic
-// or CheckedNumericType.
+// Convenience wrapper to return a new CheckedNumeric from the provided
+// arithmetic or CheckedNumericType.
 template <typename T>
 constexpr CheckedNumeric<typename UnderlyingType<T>::type> MakeCheckedNum(
     const T value) {
@@ -352,23 +355,23 @@ L* operator-(L* lhs, const StrictNumeric<R> rhs) {
 
 }  // namespace internal
 
+using internal::CheckAdd;
+using internal::CheckAnd;
+using internal::CheckDiv;
 using internal::CheckedNumeric;
-using internal::IsValidForType;
-using internal::ValueOrDieForType;
-using internal::ValueOrDefaultForType;
-using internal::MakeCheckedNum;
+using internal::CheckLsh;
 using internal::CheckMax;
 using internal::CheckMin;
-using internal::CheckAdd;
-using internal::CheckSub;
-using internal::CheckMul;
-using internal::CheckDiv;
 using internal::CheckMod;
-using internal::CheckLsh;
-using internal::CheckRsh;
-using internal::CheckAnd;
+using internal::CheckMul;
 using internal::CheckOr;
+using internal::CheckRsh;
+using internal::CheckSub;
 using internal::CheckXor;
+using internal::IsValidForType;
+using internal::MakeCheckedNum;
+using internal::ValueOrDefaultForType;
+using internal::ValueOrDieForType;
 
 }  // namespace base
 

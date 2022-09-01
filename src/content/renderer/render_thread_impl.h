@@ -60,8 +60,6 @@
 #include "third_party/blink/public/web/web_memory_statistics.h"
 #include "ui/gfx/native_widget_types.h"
 
-class SkBitmap;
-
 namespace blink {
 class WebResourceRequestSenderDelegate;
 class WebVideoCaptureImplManager;
@@ -70,6 +68,7 @@ class WebVideoCaptureImplManager;
 namespace base {
 class SingleThreadTaskRunner;
 class Thread;
+class WaitableEvent;
 }
 
 namespace cc {
@@ -81,7 +80,6 @@ class GpuChannelHost;
 }
 
 namespace media {
-class DecoderFactory;
 class GpuVideoAcceleratorFactories;
 }
 
@@ -99,18 +97,19 @@ namespace content {
 class AgentSchedulingGroup;
 class CategorizedWorkerPool;
 class GpuVideoAcceleratorFactoriesImpl;
-class MediaInterfaceFactory;
 class RenderFrameImpl;
 class RenderThreadObserver;
 class RendererBlinkPlatformImpl;
 class VariationsRenderThreadObserver;
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 class StreamTextureFactory;
 #endif
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 class DCOMPTextureFactory;
+class OverlayStateServiceProvider;
+class OverlayStateServiceProviderImpl;
 #endif
 
 // The RenderThreadImpl class represents the main thread, where RenderView
@@ -183,16 +182,15 @@ class CONTENT_EXPORT RenderThreadImpl
   blink::WebResourceRequestSenderDelegate* GetResourceRequestSenderDelegate() {
     return resource_request_sender_delegate_;
   }
-  void RegisterExtension(std::unique_ptr<v8::Extension> extension) override;
   int PostTaskToAllWebWorkers(base::RepeatingClosure closure) override;
   base::WaitableEvent* GetShutdownEvent() override;
   int32_t GetClientId() override;
   void SetRendererProcessType(
       blink::scheduler::WebRendererProcessType type) override;
   blink::WebString GetUserAgent() override;
+  blink::WebString GetFullUserAgent() override;
   blink::WebString GetReducedUserAgent() override;
   const blink::UserAgentMetadata& GetUserAgentMetadata() override;
-  bool IsUseZoomForDSF() override;
   void WriteIntoTrace(
       perfetto::TracedProto<perfetto::protos::pbzero::RenderProcessHost> proto)
       override;
@@ -231,6 +229,11 @@ class CONTENT_EXPORT RenderThreadImpl
   // time this routine returns.
   scoped_refptr<gpu::GpuChannelHost> EstablishGpuChannelSync();
 
+  // Same as above, but asynchronous.
+  using EstablishGpuChannelCallback =
+      base::OnceCallback<void(scoped_refptr<gpu::GpuChannelHost>)>;
+  void EstablishGpuChannel(EstablishGpuChannelCallback callback);
+
   gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager();
 
   blink::AssociatedInterfaceRegistry* GetAssociatedInterfaceRegistry();
@@ -260,13 +263,17 @@ class CONTENT_EXPORT RenderThreadImpl
     return url_loader_throttle_provider_.get();
   }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   scoped_refptr<StreamTextureFactory> GetStreamTexureFactory();
   bool EnableStreamTextureCopy();
 #endif
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   scoped_refptr<DCOMPTextureFactory> GetDCOMPTextureFactory();
+  // The OverlayStateService is only available where Media Foundation for
+  // clear is supported, otherwise GetOverlayStateServiceProvider will return
+  // nullptr.
+  OverlayStateServiceProvider* GetOverlayStateServiceProvider();
 #endif
 
   blink::WebVideoCaptureImplManager* video_capture_impl_manager() const {
@@ -278,8 +285,6 @@ class CONTENT_EXPORT RenderThreadImpl
   // Get the GPU channel. Returns NULL if the channel is not established or
   // has been lost.
   gpu::GpuChannelHost* GetGpuChannel();
-
-  base::PlatformThreadId GetIOPlatformThreadId() const;
 
   // Returns a SingleThreadTaskRunner instance corresponding to the message loop
   // of the thread on which media operations should be run. Must be called
@@ -300,10 +305,9 @@ class CONTENT_EXPORT RenderThreadImpl
   // Returns a worker context provider that will be bound on the compositor
   // thread.
   scoped_refptr<viz::RasterContextProvider>
-  SharedCompositorWorkerContextProvider(bool try_gpu_rasterization);
+  SharedCompositorWorkerContextProvider();
 
   media::GpuVideoAcceleratorFactories* GetGpuFactories();
-  media::DecoderFactory* GetMediaDecoderFactory();
 
   scoped_refptr<viz::ContextProviderCommandBuffer>
   SharedMainThreadContextProvider();
@@ -370,20 +374,6 @@ class CONTENT_EXPORT RenderThreadImpl
 
   mojom::RendererHost* GetRendererHost();
 
-  struct RendererMemoryMetrics {
-    size_t partition_alloc_kb;
-    size_t blink_gc_kb;
-    size_t malloc_mb;
-    size_t discardable_kb;
-    size_t v8_main_thread_isolate_mb;
-    size_t total_allocated_mb;
-    size_t non_discardable_total_allocated_mb;
-    size_t total_allocated_per_render_view_mb;
-  };
-  bool GetRendererMemoryMetrics(RendererMemoryMetrics* memory_metrics) const;
-
-  void RecordMetricsForBackgroundedRendererPurge();
-
   // Sets the current pipeline rendering color space.
   void SetRenderingColorSpace(const gfx::ColorSpace& color_space);
 
@@ -391,18 +381,6 @@ class CONTENT_EXPORT RenderThreadImpl
 
   scoped_refptr<base::SingleThreadTaskRunner>
   CreateVideoFrameCompositorTaskRunner();
-
-  // In the case of kOnDemand, we wont be using the task_runner created in
-  // CreateVideoFrameCompositorTaskRunner.
-  // TODO(https://crbug/901513): Remove once kOnDemand is removed.
-  void SetVideoFrameCompositorTaskRunner(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-    video_frame_compositor_task_runner_ = task_runner;
-  }
-
-  void CreateSharedStorageWorkletService(
-      mojo::PendingReceiver<
-          shared_storage_worklet::mojom::SharedStorageWorkletService> receiver);
 
   // The time the run loop started for this thread.
   base::TimeTicks run_loop_start_time() const { return run_loop_start_time_; }
@@ -430,9 +408,6 @@ class CONTENT_EXPORT RenderThreadImpl
   void InitializeCompositorThread();
   void InitializeWebKit(mojo::BinderMap* binders);
 
-  void OnTransferBitmap(const SkBitmap& bitmap, int resource_id);
-  void OnGetAccessibilityTree();
-
   // mojom::Renderer:
   void CreateAgentSchedulingGroup(
       mojo::PendingReceiver<IPC::mojom::ChannelBootstrap> bootstrap,
@@ -451,10 +426,12 @@ class CONTENT_EXPORT RenderThreadImpl
                                base::TimeDelta transport_rtt,
                                double bandwidth_kbps) override;
   void SetWebKitSharedTimersSuspended(bool suspend) override;
-  void SetUserAgent(const std::string& user_agent) override;
-  void SetReducedUserAgent(const std::string& user_agent) override;
-  void SetUserAgentMetadata(const blink::UserAgentMetadata& metadata) override;
-  void SetCorsExemptHeaderList(const std::vector<std::string>& list) override;
+  void InitializeRenderer(
+      const std::string& user_agent,
+      const std::string& full_user_agent,
+      const std::string& reduced_user_agent,
+      const blink::UserAgentMetadata& user_agent_metadata,
+      const std::vector<std::string>& cors_exempt_header_list) override;
   void UpdateScrollbarTheme(
       mojom::UpdateScrollbarThemeParamsPtr params) override;
   void OnSystemColorsChanged(int32_t aqua_color_variant,
@@ -485,12 +462,6 @@ class CONTENT_EXPORT RenderThreadImpl
   void OnRendererBackgrounded();
   void OnRendererForegrounded();
 
-  void RecordMemoryUsageAfterBackgrounded(const char* suffix,
-                                          int foregrounded_count);
-  void OnRecordMetricsForBackgroundedRendererPurgeTimerExpired(
-      const char* suffix,
-      int foregrounded_count_when_purged);
-
   void ReleaseFreeMemory();
 
   void OnSyncMemoryPressure(
@@ -520,6 +491,7 @@ class CONTENT_EXPORT RenderThreadImpl
   absl::optional<mojom::RenderProcessVisibleState> visible_state_;
 
   blink::WebString user_agent_;
+  blink::WebString full_user_agent_;
   blink::WebString reduced_user_agent_;
   blink::UserAgentMetadata user_agent_metadata_;
 
@@ -533,10 +505,6 @@ class CONTENT_EXPORT RenderThreadImpl
   // http://crbug.com/580386 is fixed.
   // NOTE(dcastagna): At worst this accumulates a few bytes per context lost.
   std::vector<std::unique_ptr<GpuVideoAcceleratorFactoriesImpl>> gpu_factories_;
-
-  // Utility classes to allow WebRTC to create video decoders.
-  std::unique_ptr<MediaInterfaceFactory> media_interface_factory_;
-  std::unique_ptr<media::DecoderFactory> media_decoder_factory_;
 
   // Thread for running multimedia operations (e.g., video decoding).
   std::unique_ptr<base::Thread> media_thread_;
@@ -552,12 +520,14 @@ class CONTENT_EXPORT RenderThreadImpl
   // Pool of workers used for raster operations (e.g., tile rasterization).
   scoped_refptr<CategorizedWorkerPool> categorized_worker_pool_;
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   scoped_refptr<StreamTextureFactory> stream_texture_factory_;
 #endif
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   scoped_refptr<DCOMPTextureFactory> dcomp_texture_factory_;
+  std::unique_ptr<OverlayStateServiceProviderImpl>
+      overlay_state_service_provider_;
 #endif
 
   scoped_refptr<viz::ContextProviderCommandBuffer> shared_main_thread_contexts_;
@@ -578,13 +548,9 @@ class CONTENT_EXPORT RenderThreadImpl
   std::unique_ptr<VariationsRenderThreadObserver> variations_observer_;
 
   // Compositor settings.
-  int gpu_rasterization_msaa_sample_count_;
   bool is_lcd_text_enabled_;
-  bool is_zero_copy_enabled_;
-  bool is_gpu_memory_buffer_compositor_resources_enabled_;
   bool is_partial_raster_enabled_;
   bool is_elastic_overscroll_enabled_;
-  bool is_zoom_for_dsf_enabled_;
   bool is_threaded_animation_enabled_;
   bool is_scroll_animator_enabled_;
 
@@ -606,7 +572,6 @@ class CONTENT_EXPORT RenderThreadImpl
   std::set<std::unique_ptr<AgentSchedulingGroup>, base::UniquePtrComparator>
       agent_scheduling_groups_;
 
-  RendererMemoryMetrics purge_and_suspend_memory_metrics_;
   int process_foregrounded_count_;
 
   int32_t client_id_;

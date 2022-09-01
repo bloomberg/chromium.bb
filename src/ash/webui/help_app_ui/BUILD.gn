@@ -50,6 +50,7 @@ static_library("help_app_ui") {
     "//chromeos/components/local_search_service/public/cpp",
     "//chromeos/components/local_search_service/public/mojom",
     "//chromeos/components/local_search_service/public/mojom:mojom_js",
+    "//chromeos/constants",
     "//chromeos/strings",
     "//chromeos/system",
     "//components/keyed_service/content:content",
@@ -58,7 +59,6 @@ static_library("help_app_ui") {
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/platform",
     "//ui/resources:webui_generated_resources_grd_grit",
-    "//ui/resources:webui_resources_grd_grit",
     "//ui/webui",
   ]
 }
@@ -105,6 +105,7 @@ js2gtest("browser_tests_js") {
   deps = [
     ":browser_test_support",
     "//ash/constants",
+    "//chromeos/constants",
   ]
 }
 

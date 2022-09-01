@@ -12,7 +12,6 @@
 #include "base/hash/sha1.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "chromeos/cryptohome/system_salt_getter.h"
 #include "components/component_updater/component_updater_paths.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -56,18 +55,11 @@ const user_manager::User* GetActiveUser() {
 
 // Converts username to a hashed string.
 std::string HashUsername(const std::string& username) {
-  chromeos::SystemSaltGetter* salt_getter = chromeos::SystemSaltGetter::Get();
-  DCHECK(salt_getter);
-
-  // System salt must be defined at this point.
-  const chromeos::SystemSaltGetter::RawSalt* salt = salt_getter->GetRawSalt();
-  DCHECK(salt);
-
   unsigned char binmd[base::kSHA1Length];
   std::string lowercase(username);
   std::transform(lowercase.begin(), lowercase.end(), lowercase.begin(),
                  ::tolower);
-  std::vector<uint8_t> data = *salt;
+  std::vector<uint8_t> data;
   std::copy(lowercase.begin(), lowercase.end(), std::back_inserter(data));
   base::SHA1HashBytes(data.data(), data.size(), binmd);
   std::string result = base::HexEncode(binmd, sizeof(binmd));
@@ -137,13 +129,13 @@ bool MetadataTable::DeleteComponentForCurrentUser(
 
 bool MetadataTable::HasComponentForAnyUser(
     const std::string& component_name) const {
-  return std::any_of(
-      installed_items_.GetList().begin(), installed_items_.GetList().end(),
-      [&component_name](const base::Value& item) {
-        const std::string& name =
-            GetRequiredStringFromDict(item, kMetadataContentItemComponentKey);
-        return name == component_name;
-      });
+  return std::any_of(installed_items_.GetListDeprecated().begin(),
+                     installed_items_.GetListDeprecated().end(),
+                     [&component_name](const base::Value& item) {
+                       const std::string& name = GetRequiredStringFromDict(
+                           item, kMetadataContentItemComponentKey);
+                       return name == component_name;
+                     });
 }
 
 MetadataTable::MetadataTable()
@@ -189,7 +181,7 @@ void MetadataTable::AddItem(const std::string& hashed_user_id,
 bool MetadataTable::DeleteItem(const std::string& hashed_user_id,
                                const std::string& component_name) {
   return installed_items_.EraseListIter(
-      installed_items_.GetList().begin() +
+      installed_items_.GetListDeprecated().begin() +
       GetInstalledItemIndex(hashed_user_id, component_name));
 }
 
@@ -197,14 +189,14 @@ bool MetadataTable::HasComponentForUser(
     const std::string& hashed_user_id,
     const std::string& component_name) const {
   return GetInstalledItemIndex(hashed_user_id, component_name) !=
-         installed_items_.GetList().size();
+         installed_items_.GetListDeprecated().size();
 }
 
 size_t MetadataTable::GetInstalledItemIndex(
     const std::string& hashed_user_id,
     const std::string& component_name) const {
-  for (size_t i = 0; i < installed_items_.GetList().size(); ++i) {
-    const auto& dict = installed_items_.GetList()[i];
+  for (size_t i = 0; i < installed_items_.GetListDeprecated().size(); ++i) {
+    const auto& dict = installed_items_.GetListDeprecated()[i];
     const std::string& user_id =
         GetRequiredStringFromDict(dict, kMetadataContentItemHashedUserIdKey);
     if (user_id != hashed_user_id)
@@ -215,7 +207,7 @@ size_t MetadataTable::GetInstalledItemIndex(
       continue;
     return i;
   }
-  return installed_items_.GetList().size();
+  return installed_items_.GetListDeprecated().size();
 }
 
 }  // namespace component_updater

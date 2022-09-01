@@ -12,7 +12,6 @@
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/timer/elapsed_timer.h"
 #include "base/trace_event/common/trace_event_common.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/metrics/ukm_smoothness_data.h"
@@ -70,8 +69,6 @@ using page_load_metrics::PageVisitFinalStatus;
 namespace {
 
 const char kOfflinePreviewsMimeType[] = "multipart/related";
-extern const base::Feature kLayoutShiftNormalizationRecordUKM{
-    "LayoutShiftNormalizationRecordUKM", base::FEATURE_ENABLED_BY_DEFAULT};
 
 bool IsSupportedProtocol(page_load_metrics::NetworkProtocol protocol) {
   switch (protocol) {
@@ -98,6 +95,29 @@ bool IsDefaultSearchEngine(content::BrowserContext* browser_context,
     return false;
 
   return template_service->IsSearchResultsPageFromDefaultSearchProvider(url);
+}
+
+bool IsValidSearchURL(content::BrowserContext* browser_context,
+                      const GURL& url) {
+  if (!browser_context)
+    return false;
+
+  auto* template_service = TemplateURLServiceFactory::GetForProfile(
+      Profile::FromBrowserContext(browser_context));
+  if (!template_service)
+    return false;
+
+  const TemplateURL* template_url =
+      template_service->GetTemplateURLForHost(url.host());
+  const SearchTermsData& search_terms_data =
+      template_service->search_terms_data();
+
+  std::u16string search_terms;
+  // Is eligible if it is a valid template URL and contains search terms.
+  return template_url &&
+         template_url->ExtractSearchTermsFromURL(url, search_terms_data,
+                                                 &search_terms) &&
+         !search_terms.empty();
 }
 
 bool IsUserHomePage(content::BrowserContext* browser_context, const GURL& url) {
@@ -139,6 +159,22 @@ int SiteInstanceRenderProcessAssignmentToInt(
   return 0;
 }
 
+// These are the high bounds of each bucket, in enum order. The index into this
+// array is cast to an enum value when recording UKM. These should correspond to
+// the upper bounds of the BitsPerPixelExponential enum in
+// tools/metrics/enums.xml.
+static const double kLCPEntropyBucketThresholds[] = {
+    0.0,  0.00001, 0.0001, 0.001, 0.01, 0.02, 0.03, 0.04,  0.05,   0.06,   0.07,
+    0.08, 0.09,    0.1,    0.2,   0.3,  0.4,  0.5,  0.6,   0.7,    0.8,    0.9,
+    1.0,  2.0,     3.0,    4.0,   5.0,  6.0,  7.0,  8.0,   9.0,    10.0,   20.0,
+    30.0, 40.0,    50.0,   60.0,  70.0, 80.0, 90.0, 100.0, 1000.0, 10000.0};
+
+int64_t CalculateLCPEntropyBucket(double bpp) {
+  return std::lower_bound(std::begin(kLCPEntropyBucketThresholds),
+                          std::end(kLCPEntropyBucketThresholds), bpp) -
+         std::begin(kLCPEntropyBucketThresholds);
+}
+
 }  // namespace
 
 // static
@@ -178,6 +214,9 @@ UkmPageLoadMetricsObserver::ObservePolicy UkmPageLoadMetricsObserver::OnStart(
   start_url_is_home_page_ =
       IsUserHomePage(browser_context_, navigation_handle->GetURL());
 
+  was_scoped_search_like_navigation_ =
+      IsValidSearchURL(browser_context_, navigation_handle->GetURL());
+
   if (started_in_foreground) {
     last_time_shown_ = navigation_handle->NavigationStart();
   }
@@ -202,11 +241,20 @@ UkmPageLoadMetricsObserver::ObservePolicy UkmPageLoadMetricsObserver::OnStart(
   downstream_kbps_estimate_ =
       network_quality_tracker_->GetDownstreamThroughputKbps();
   page_transition_ = navigation_handle->GetPageTransition();
+  navigation_start_time_ = base::Time::Now();
   UpdateMainFrameRequestHadCookie(
       navigation_handle->GetWebContents()->GetBrowserContext(),
       navigation_handle->GetURL());
 
   return CONTINUE_OBSERVING;
+}
+
+// TODO(https://crbug.com/1317494): Audit and use appropriate policy.
+page_load_metrics::PageLoadMetricsObserver::ObservePolicy
+UkmPageLoadMetricsObserver::OnFencedFramesStart(
+    content::NavigationHandle* navigation_handle,
+    const GURL& currently_committed_url) {
+  return STOP_OBSERVING;
 }
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
@@ -254,8 +302,7 @@ UkmPageLoadMetricsObserver::ShouldObserveMimeType(
 }
 
 UkmPageLoadMetricsObserver::ObservePolicy UkmPageLoadMetricsObserver::OnCommit(
-    content::NavigationHandle* navigation_handle,
-    ukm::SourceId source_id) {
+    content::NavigationHandle* navigation_handle) {
   content::WebContents* web_contents = navigation_handle->GetWebContents();
   if (web_contents->GetContentsMimeType() == kOfflinePreviewsMimeType) {
     if (!IsOfflinePreview(web_contents))
@@ -273,6 +320,7 @@ UkmPageLoadMetricsObserver::ObservePolicy UkmPageLoadMetricsObserver::OnCommit(
   prerender::NoStatePrefetchManager* const no_state_prefetch_manager =
       prerender::NoStatePrefetchManagerFactory::GetForBrowserContext(
           web_contents->GetBrowserContext());
+  ukm::SourceId source_id = GetDelegate().GetPageUkmSourceId();
   if (no_state_prefetch_manager) {
     prerender::RecordNoStatePrefetchMetrics(navigation_handle, source_id,
                                             no_state_prefetch_manager);
@@ -284,7 +332,7 @@ UkmPageLoadMetricsObserver::ObservePolicy UkmPageLoadMetricsObserver::OnCommit(
                                        .GetLastCommittedEntry()
                                        ->GetMainFrameDocumentSequenceNumber();
 
-  render_process_assignment_ = web_contents->GetMainFrame()
+  render_process_assignment_ = web_contents->GetPrimaryMainFrame()
                                    ->GetSiteInstance()
                                    ->GetLastProcessAssignmentOutcome();
 
@@ -309,6 +357,7 @@ UkmPageLoadMetricsObserver::FlushMetricsOnAppEnterBackground(
     RecordTimingMetrics(timing);
   ReportLayoutStability();
   RecordSmoothnessMetrics();
+  RecordResponsivenessMetrics();
   // Assume that page ends on this method, as the app could be evicted right
   // after.
   RecordPageEndMetrics(&timing, current_time,
@@ -399,6 +448,7 @@ void UkmPageLoadMetricsObserver::OnComplete(
     RecordTimingMetrics(timing);
   ReportLayoutStability();
   RecordSmoothnessMetrics();
+  RecordResponsivenessMetrics();
   RecordPageEndMetrics(&timing, current_time,
                        /* app_entered_background */ false);
   RecordMobileFriendlinessMetrics();
@@ -607,7 +657,15 @@ void UkmPageLoadMetricsObserver::RecordTimingMetrics(
     builder.SetPaintTiming_NavigationToLargestContentfulPaint2(
         all_frames_largest_contentful_paint.Time().value().InMilliseconds());
     builder.SetPaintTiming_LargestContentfulPaintType(
-        all_frames_largest_contentful_paint.Type());
+        LargestContentfulPaintTypeToUKMFlags(
+            all_frames_largest_contentful_paint.Type()));
+    if (all_frames_largest_contentful_paint.TextOrImage() ==
+        page_load_metrics::ContentfulPaintTimingInfo::
+            LargestContentTextOrImage::kImage) {
+      builder.SetPaintTiming_LargestContentfulPaintBPP(
+          CalculateLCPEntropyBucket(
+              all_frames_largest_contentful_paint.ImageBPP()));
+    }
   }
   const page_load_metrics::ContentfulPaintTimingInfo&
       cross_site_sub_frame_largest_contentful_paint =
@@ -654,68 +712,6 @@ void UkmPageLoadMetricsObserver::RecordTimingMetrics(
         longest_input_timestamp.InMilliseconds());
   }
 
-  const page_load_metrics::NormalizedResponsivenessMetrics&
-      normalized_responsiveness_metrics =
-          GetDelegate().GetNormalizedResponsivenessMetrics();
-  auto& max_event_durations =
-      normalized_responsiveness_metrics.normalized_max_event_durations;
-  auto& total_event_durations =
-      normalized_responsiveness_metrics.normalized_total_event_durations;
-  if (normalized_responsiveness_metrics.num_user_interactions) {
-    builder.SetInteractiveTiming_WorstUserInteractionLatency_MaxEventDuration(
-        max_event_durations.worst_latency.InMilliseconds());
-    builder.SetInteractiveTiming_WorstUserInteractionLatency_TotalEventDuration(
-        total_event_durations.worst_latency.InMilliseconds());
-    if (base::FeatureList::IsEnabled(
-            blink::features::kSendAllUserInteractionLatencies)) {
-      // When the flag is disabled, we don't know the type of user interactions
-      // and can't calculate the worst over budget.
-      builder
-          .SetInteractiveTiming_WorstUserInteractionLatencyOverBudget_MaxEventDuration(
-              max_event_durations.worst_latency_over_budget.InMilliseconds());
-      builder
-          .SetInteractiveTiming_WorstUserInteractionLatencyOverBudget_TotalEventDuration(
-              total_event_durations.worst_latency_over_budget.InMilliseconds());
-      builder
-          .SetInteractiveTiming_SumOfUserInteractionLatencyOverBudget_MaxEventDuration(
-              max_event_durations.sum_of_latency_over_budget.InMilliseconds());
-      builder
-          .SetInteractiveTiming_SumOfUserInteractionLatencyOverBudget_TotalEventDuration(
-              total_event_durations.sum_of_latency_over_budget
-                  .InMilliseconds());
-      builder
-          .SetInteractiveTiming_AverageUserInteractionLatencyOverBudget_MaxEventDuration(
-              max_event_durations.sum_of_latency_over_budget.InMilliseconds() /
-              normalized_responsiveness_metrics.num_user_interactions);
-      builder
-          .SetInteractiveTiming_AverageUserInteractionLatencyOverBudget_TotalEventDuration(
-              total_event_durations.sum_of_latency_over_budget
-                  .InMilliseconds() /
-              normalized_responsiveness_metrics.num_user_interactions);
-      builder
-          .SetInteractiveTiming_SlowUserInteractionLatencyOverBudget_HighPercentile_MaxEventDuration(
-              max_event_durations.high_percentile_latency_over_budget
-                  .InMilliseconds());
-      builder
-          .SetInteractiveTiming_SlowUserInteractionLatencyOverBudget_HighPercentile_TotalEventDuration(
-              total_event_durations.high_percentile_latency_over_budget
-                  .InMilliseconds());
-      builder
-          .SetInteractiveTiming_SlowUserInteractionLatencyOverBudget_HighPercentile2_MaxEventDuration(
-              page_load_metrics::ResponsivenessMetricsNormalization::
-                  ApproximateHighPercentile(
-                      normalized_responsiveness_metrics.num_user_interactions,
-                      max_event_durations.worst_ten_latencies_over_budget)
-                      .InMilliseconds());
-      builder
-          .SetInteractiveTiming_SlowUserInteractionLatencyOverBudget_HighPercentile2_TotalEventDuration(
-              page_load_metrics::ResponsivenessMetricsNormalization::
-                  ApproximateHighPercentile(
-                      normalized_responsiveness_metrics.num_user_interactions,
-                      total_event_durations.worst_ten_latencies_over_budget)
-                      .InMilliseconds());
-    }
-  }
   if (timing.interactive_timing->first_scroll_delay &&
       WasStartedInForegroundOptionalEventInForeground(
           timing.interactive_timing->first_scroll_timestamp, GetDelegate())) {
@@ -862,6 +858,11 @@ void UkmPageLoadMetricsObserver::RecordPageLoadMetrics(
   if (GetDelegate().DidCommit()) {
     builder.SetNavigationEntryOffset(navigation_entry_offset_);
     builder.SetMainDocumentSequenceNumber(main_document_sequence_number_);
+    RecordPageLoadTimestampMetrics(builder);
+  }
+
+  if (GetDelegate().DidCommit()) {
+    builder.SetIsScopedSearchLikeNavigation(was_scoped_search_like_navigation_);
   }
 
   builder.Record(ukm::UkmRecorder::Get());
@@ -994,38 +995,45 @@ void UkmPageLoadMetricsObserver::ReportLayoutStability() {
       GetDelegate().GetNormalizedCLSData(
           page_load_metrics::PageLoadMetricsObserverDelegate::BfcacheStrategy::
               ACCUMULATE);
-  if (base::FeatureList::IsEnabled(kLayoutShiftNormalizationRecordUKM) &&
-      !normalized_cls_data.data_tainted) {
+  if (!normalized_cls_data.data_tainted) {
+    const float max_cls =
+        normalized_cls_data.session_windows_gap1000ms_max5000ms_max_cls;
     builder
         .SetLayoutInstability_MaxCumulativeShiftScore_SessionWindow_Gap1000ms_Max5000ms(
-            page_load_metrics::LayoutShiftUkmValue(
-                normalized_cls_data
-                    .session_windows_gap1000ms_max5000ms_max_cls));
+            page_load_metrics::LayoutShiftUkmValue(max_cls));
     base::UmaHistogramCounts100(
         "PageLoad.LayoutInstability.MaxCumulativeShiftScore.SessionWindow."
         "Gap1000ms.Max5000ms",
-        page_load_metrics::LayoutShiftUmaValue(
-            normalized_cls_data.session_windows_gap1000ms_max5000ms_max_cls));
+        page_load_metrics::LayoutShiftUmaValue(max_cls));
     base::UmaHistogramCustomCounts(
         "PageLoad.LayoutInstability.MaxCumulativeShiftScore.SessionWindow."
         "Gap1000ms.Max5000ms2",
+        page_load_metrics::LayoutShiftUmaValue10000(max_cls), 1, 24000, 50);
+    // The pseudo metric of PageLoad.LayoutInstability.MaxCumulativeShiftScore.
+    // SessionWindow.Gap1000ms.Max5000ms2.
+    // Only used to assess field trial data quality.
+    base::UmaHistogramCustomCounts(
+        "UMA.Pseudo.PageLoad.LayoutInstability.MaxCumulativeShiftScore."
+        "SessionWindow.Gap1000ms.Max5000ms2",
         page_load_metrics::LayoutShiftUmaValue10000(
-            normalized_cls_data.session_windows_gap1000ms_max5000ms_max_cls),
+            metrics::GetPseudoMetricsSample(max_cls)),
         1, 24000, 50);
   }
   builder.Record(ukm::UkmRecorder::Get());
 
   // TODO(crbug.com/1064483): We should move UMA recording to components/
 
-  const float page_shift_score = page_load_metrics::LayoutShiftUmaValue(
-      GetDelegate().GetPageRenderData().layout_shift_score);
-  UMA_HISTOGRAM_COUNTS_100("PageLoad.LayoutInstability.CumulativeShiftScore",
-                           page_shift_score);
+  const float layout_shift_score =
+      GetDelegate().GetPageRenderData().layout_shift_score;
+  base::UmaHistogramCounts100(
+      "PageLoad.LayoutInstability.CumulativeShiftScore",
+      page_load_metrics::LayoutShiftUmaValue(layout_shift_score));
   // The pseudo metric of PageLoad.LayoutInstability.CumulativeShiftScore. Only
   // used to assess field trial data quality.
-  UMA_HISTOGRAM_COUNTS_100(
+  base::UmaHistogramCounts100(
       "UMA.Pseudo.PageLoad.LayoutInstability.CumulativeShiftScore",
-      metrics::GetPseudoMetricsSample(page_shift_score));
+      page_load_metrics::LayoutShiftUmaValue(
+          metrics::GetPseudoMetricsSample(layout_shift_score)));
 
   TRACE_EVENT_INSTANT1("loading", "CumulativeShiftScore::AllFrames::UMA",
                        TRACE_EVENT_SCOPE_THREAD, "data",
@@ -1035,7 +1043,7 @@ void UkmPageLoadMetricsObserver::ReportLayoutStability() {
                                .GetPageRenderData()
                                .layout_shift_score_before_input_or_scroll));
 
-  UMA_HISTOGRAM_COUNTS_100(
+  base::UmaHistogramCounts100(
       "PageLoad.LayoutInstability.CumulativeShiftScore.MainFrame",
       page_load_metrics::LayoutShiftUmaValue(
           GetDelegate().GetMainFrameRenderData().layout_shift_score));
@@ -1053,15 +1061,27 @@ void UkmPageLoadMetricsObserver::ReportLayoutInstabilityAfterFirstForeground() {
       GetDelegate().GetNormalizedCLSData(
           page_load_metrics::PageLoadMetricsObserverDelegate::BfcacheStrategy::
               ACCUMULATE);
-  if (base::FeatureList::IsEnabled(kLayoutShiftNormalizationRecordUKM) &&
-      !normalized_cls_data.data_tainted) {
+  if (!normalized_cls_data.data_tainted) {
     builder
         .SetExperimental_LayoutInstability_MaxCumulativeShiftScoreAtFirstOnHidden_SessionWindow_Gap1000ms_Max5000ms(
             page_load_metrics::LayoutShiftUkmValue(
                 normalized_cls_data
                     .session_windows_gap1000ms_max5000ms_max_cls));
+
+    base::UmaHistogramCounts100(
+        "PageLoad.Experimental.LayoutInstability."
+        "MaxCumulativeShiftScoreAtFirstOnHidden.SessionWindow."
+        "Gap1000ms.Max5000ms",
+        page_load_metrics::LayoutShiftUmaValue(
+            normalized_cls_data.session_windows_gap1000ms_max5000ms_max_cls));
   }
   builder.Record(ukm::UkmRecorder::Get());
+
+  base::UmaHistogramCounts100(
+      "PageLoad.Experimental.LayoutInstability."
+      "CumulativeShiftScoreAtFirstOnHidden",
+      page_load_metrics::LayoutShiftUmaValue(
+          GetDelegate().GetPageRenderData().layout_shift_score));
 }
 
 void UkmPageLoadMetricsObserver::RecordAbortMetrics(
@@ -1074,7 +1094,8 @@ void UkmPageLoadMetricsObserver::RecordAbortMetrics(
   if (currently_in_foreground_ && !last_time_shown_.is_null()) {
     total_foreground_duration_ += page_end_time - last_time_shown_;
   }
-  UMA_HISTOGRAM_ENUMERATION("PageLoad.PageVisitFinalStatus", page_visit_status);
+  UMA_HISTOGRAM_ENUMERATION("PageLoad.Experimental.PageVisitFinalStatus",
+                            page_visit_status);
   PAGE_LOAD_LONG_HISTOGRAM("PageLoad.Experimental.TotalForegroundDuration",
                            total_foreground_duration_);
 
@@ -1113,6 +1134,16 @@ void UkmPageLoadMetricsObserver::RecordMemoriesMetrics(
       context_annotations.duration_since_last_visit.InSeconds());
 }
 
+void UkmPageLoadMetricsObserver::RecordPageLoadTimestampMetrics(
+    ukm::builders::PageLoad& builder) {
+  DCHECK(!navigation_start_time_.is_null());
+
+  base::Time::Exploded exploded;
+  navigation_start_time_.LocalExplode(&exploded);
+  builder.SetDayOfWeek(exploded.day_of_week);
+  builder.SetHourOfDay(exploded.hour);
+}
+
 void UkmPageLoadMetricsObserver::RecordInputTimingMetrics() {
   ukm::builders::PageLoad(GetDelegate().GetPageUkmSourceId())
       .SetInteractiveTiming_NumInputEvents(
@@ -1133,15 +1164,8 @@ void UkmPageLoadMetricsObserver::RecordSmoothnessMetrics() {
     return;
   }
 
-  base::ElapsedTimer timer;
   cc::UkmSmoothnessData smoothness_data;
   bool success = smoothness->Read(smoothness_data);
-
-  UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
-      "Graphics.Smoothness.Diagnostic.ReadSharedMemoryDuration",
-      timer.Elapsed(), base::Microseconds(1), base::Milliseconds(5), 100);
-  UMA_HISTOGRAM_BOOLEAN(
-      "Graphics.Smoothness.Diagnostic.ReadSharedMemoryUKMSuccess", success);
 
   if (!success)
     return;
@@ -1251,6 +1275,11 @@ void UkmPageLoadMetricsObserver::RecordPageEndMetrics(
   RecordMemoriesMetrics(builder, page_end_reason);
 
   builder.Record(ukm::UkmRecorder::Get());
+
+  // Also log UserInitiated in UserPerceivedPageVisit.
+  ukm::builders::UserPerceivedPageVisit(GetDelegate().GetPageUkmSourceId())
+      .SetUserInitiated(is_user_initiated_navigation)
+      .Record(ukm::UkmRecorder::Get());
 }
 
 absl::optional<int64_t>
@@ -1288,6 +1317,44 @@ UkmPageLoadMetricsObserver::GetThirdPartyCookieBlockingEnabled() const {
 
   return !cookie_settings->IsThirdPartyAccessAllowed(GetDelegate().GetUrl(),
                                                      nullptr /* source */);
+}
+
+void UkmPageLoadMetricsObserver::RecordResponsivenessMetrics() {
+  ukm::builders::PageLoad builder(GetDelegate().GetPageUkmSourceId());
+  const page_load_metrics::NormalizedResponsivenessMetrics&
+      normalized_responsiveness_metrics =
+          GetDelegate().GetNormalizedResponsivenessMetrics();
+  auto& max_event_durations =
+      normalized_responsiveness_metrics.normalized_max_event_durations;
+  if (normalized_responsiveness_metrics.num_user_interactions) {
+    builder.SetInteractiveTiming_WorstUserInteractionLatency_MaxEventDuration(
+        max_event_durations.worst_latency.InMilliseconds());
+    builder
+        .SetInteractiveTiming_SumOfUserInteractionLatencyOverBudget_MaxEventDuration(
+            max_event_durations.sum_of_latency_over_budget.InMilliseconds());
+    builder
+        .SetInteractiveTiming_AverageUserInteractionLatencyOverBudget_MaxEventDuration(
+            max_event_durations.sum_of_latency_over_budget.InMilliseconds() /
+            normalized_responsiveness_metrics.num_user_interactions);
+    builder
+        .SetInteractiveTiming_SlowUserInteractionLatencyOverBudget_HighPercentile2_MaxEventDuration(
+            page_load_metrics::ResponsivenessMetricsNormalization::
+                ApproximateHighPercentile(
+                    normalized_responsiveness_metrics.num_user_interactions,
+                    max_event_durations.worst_ten_latencies_over_budget)
+                    .InMilliseconds());
+    builder
+        .SetInteractiveTiming_UserInteractionLatency_HighPercentile2_MaxEventDuration(
+            page_load_metrics::ResponsivenessMetricsNormalization::
+                ApproximateHighPercentile(
+                    normalized_responsiveness_metrics.num_user_interactions,
+                    max_event_durations.worst_ten_latencies)
+                    .InMilliseconds());
+    builder.SetInteractiveTiming_NumInteractions(
+        ukm::GetExponentialBucketMinForCounts1000(
+            normalized_responsiveness_metrics.num_user_interactions));
+  }
+  builder.Record(ukm::UkmRecorder::Get());
 }
 
 void UkmPageLoadMetricsObserver::OnTimingUpdate(

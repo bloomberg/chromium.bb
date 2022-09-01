@@ -17,14 +17,11 @@ extern const base::Feature kWebPageDefaultZoomFromDynamicType;
 // Used to enable a different method of zooming web pages.
 extern const base::Feature kWebPageAlternativeTextZoom;
 
+// Reneables text zoom on iPad.
+extern const base::Feature kWebPageTextZoomIPad;
+
 // Feature flag for to use native session restoration.
 extern const base::Feature kRestoreSessionFromCache;
-
-// When enabled, the major version number returned by Chrome will be forced to
-// 100.  This feature is only applicable for M96-M99 and will be removed after
-// M99.  The purpose of this feature is to allow users to test and proactively
-// fix any issues as Chrome approaches a 3-digit major version number.
-extern const base::Feature kForceMajorVersion100InUserAgent;
 
 }  // namespace web
 

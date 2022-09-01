@@ -17,10 +17,10 @@
 #include "ash/screen_util.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
+#include "ash/utility/haptics_util.h"
 #include "ash/wm/default_window_resizer.h"
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/drag_window_resizer.h"
-#include "ash/wm/haptics_util.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/pip/pip_window_resizer.h"
 #include "ash/wm/tablet_mode/tablet_mode_browser_window_drag_delegate.h"
@@ -318,7 +318,8 @@ std::unique_ptr<WindowResizer> CreateWindowResizerForTabletMode(
       static_cast<AppType>(window->GetProperty(aura::client::kAppType));
   // App windows can be dragged from the client area (see
   // ToplevelWindowEventHandler).
-  if (app_type != AppType::BROWSER && window_component == HTCLIENT) {
+  if (app_type != AppType::BROWSER && app_type != AppType::LACROS &&
+      window_component == HTCLIENT) {
     DCHECK_EQ(source, ::wm::WINDOW_MOVE_SOURCE_TOUCH);
     window_state->CreateDragDetails(point_in_parent, HTCLIENT,
                                     ::wm::WINDOW_MOVE_SOURCE_TOUCH);
@@ -367,9 +368,9 @@ int GetDraggingThreshold(const DragDetails& details) {
 #if DCHECK_IS_ON()
   // Other state types either create a different window resizer, or none at all.
   std::vector<WindowStateType> draggable_states = {
-      WindowStateType::kDefault, WindowStateType::kNormal,
+      WindowStateType::kDefault,        WindowStateType::kNormal,
       WindowStateType::kPrimarySnapped, WindowStateType::kSecondarySnapped,
-      WindowStateType::kMaximized};
+      WindowStateType::kMaximized,      WindowStateType::kFloated};
   DCHECK(base::Contains(draggable_states, state));
 #endif
 
@@ -524,10 +525,11 @@ std::unique_ptr<WindowResizer> CreateWindowResizer(
     aura::Window* window,
     const gfx::PointF& point_in_parent,
     int window_component,
-    ::wm::WindowMoveSource source) {
+    wm::WindowMoveSource source) {
   DCHECK(window);
 
   WindowState* window_state = WindowState::Get(window);
+  DCHECK(window_state);
 
   // A resizer already exists; don't create a new one.
   if (window_state->drag_details())
@@ -708,14 +710,31 @@ void WorkspaceWindowResizer::Drag(const gfx::PointF& location_in_parent,
     if (!did_move_or_resize_) {
       if (!details().restore_bounds_in_parent.IsEmpty()) {
         window_state()->ClearRestoreBounds();
-        if (window_state()->IsMaximized() &&
-            details().window_component == HTCAPTION) {
-          // Update the maximized window so that it looks like it has been
-          // restored (i.e. update the caption buttons and height of the browser
-          // frame).
-          window_state()->window()->SetProperty(kFrameRestoreLookKey, true);
-          CrossFadeAnimation(window_state()->window(), bounds,
-                             /*maximize=*/false);
+        if (details().window_component == HTCAPTION) {
+          if (window_state()->IsMaximized()) {
+            // Update the maximized window so that it looks like it has been
+            // restored (i.e. update the caption buttons and height of the
+            // browser frame).
+
+            // TODO(http://crbug.com/1200599): Speculative, remove if not fixed.
+            // Change window property kFrameRestoreLookKey or window bounds may
+            // cause the window being destroyed during the drag and return early
+            // if that's the case.
+            base::WeakPtr<WorkspaceWindowResizer> resizer(
+                weak_ptr_factory_.GetWeakPtr());
+            window_state()->window()->SetProperty(kFrameRestoreLookKey, true);
+            if (!resizer)
+              return;
+            CrossFadeAnimation(window_state()->window(), bounds,
+                               /*maximize=*/false);
+            if (!resizer)
+              return;
+
+            base::RecordAction(
+                base::UserMetricsAction("WindowDrag_Unmaximize"));
+          } else if (window_state()->IsSnapped()) {
+            base::RecordAction(base::UserMetricsAction("WindowDrag_Unsnap"));
+          }
         }
       }
       RestackWindows();
@@ -861,10 +880,14 @@ void WorkspaceWindowResizer::CompleteDrag() {
     switch (snap_type_) {
       case SnapType::kPrimary:
         type = WM_EVENT_SNAP_PRIMARY;
+        window_state()->set_snap_action_source(
+            WindowSnapActionSource::kDragWindowToEdgeToSnap);
         base::RecordAction(base::UserMetricsAction("WindowDrag_MaximizeLeft"));
         break;
       case SnapType::kSecondary:
         type = WM_EVENT_SNAP_SECONDARY;
+        window_state()->set_snap_action_source(
+            WindowSnapActionSource::kDragWindowToEdgeToSnap);
         base::RecordAction(base::UserMetricsAction("WindowDrag_MaximizeRight"));
         break;
       case SnapType::kMaximize:
@@ -880,6 +903,8 @@ void WorkspaceWindowResizer::CompleteDrag() {
               window, screen_util::GetMaximizedWindowBoundsInParent(window),
               /*maximize=*/true);
         }
+
+        window_state()->TrackDragToMaximizeBehavior();
         break;
       default:
         NOTREACHED();
@@ -1094,7 +1119,18 @@ WorkspaceWindowResizer::WorkspaceWindowResizer(
   if (!parent_local_bounds.Intersects(restore_bounds_for_gesture_))
     restore_bounds_for_gesture_.AdjustToFit(parent_local_bounds);
 
-  window_state->OnDragStarted(details().window_component);
+  std::unique_ptr<ash::PresentationTimeRecorder> recorder =
+      window_state->OnDragStarted(details().window_component);
+  if (recorder) {
+    SetPresentationTimeRecorder(std::move(recorder));
+  } else {
+    // Default to use compositor based recorder.
+    SetPresentationTimeRecorder(
+        PresentationTimeRecorder::CreateCompositorRecorder(
+            GetTarget(), "Ash.InteractiveWindowResize.TimeToPresent",
+            "Ash.InteractiveWindowResize.TimeToPresent.MaxLatency"));
+  }
+
   StartDragForAttachedWindows();
 
   if (window_util::IsDraggingTabs(window_state->window())) {
@@ -1319,6 +1355,9 @@ bool WorkspaceWindowResizer::UpdateMagnetismWindow(
       continue;
 
     WindowState* other_state = WindowState::Get(*i);
+    if (!other_state)
+      continue;
+
     if (other_state->window() == GetTarget() ||
         !other_state->window()->IsVisible() ||
         !other_state->IsNormalOrSnapped() || !other_state->CanResize()) {
@@ -1592,7 +1631,7 @@ WorkspaceWindowResizer::SnapType WorkspaceWindowResizer::GetSnapType(
   switch (snap_type) {
     case SnapType::kPrimary:
     case SnapType::kSecondary:
-      if (!window_state()->CanSnap())
+      if (!window_state()->CanSnapOnDisplay(display))
         snap_type = SnapType::kNone;
       break;
     case SnapType::kMaximize:
@@ -1647,6 +1686,9 @@ void WorkspaceWindowResizer::SetWindowStateTypeFromGesture(
     case WindowStateType::kPrimarySnapped:
       if (window_state->CanSnap()) {
         window_state->SetRestoreBoundsInParent(restore_bounds_for_gesture_);
+        window_state->set_snap_action_source(
+            WindowSnapActionSource::kDragWindowToEdgeToSnap);
+
         const WMEvent event(WM_EVENT_SNAP_PRIMARY);
         window_state->OnWMEvent(&event);
       }
@@ -1654,6 +1696,9 @@ void WorkspaceWindowResizer::SetWindowStateTypeFromGesture(
     case WindowStateType::kSecondarySnapped:
       if (window_state->CanSnap()) {
         window_state->SetRestoreBoundsInParent(restore_bounds_for_gesture_);
+        window_state->set_snap_action_source(
+            WindowSnapActionSource::kDragWindowToEdgeToSnap);
+
         const WMEvent event(WM_EVENT_SNAP_SECONDARY);
         window_state->OnWMEvent(&event);
       }

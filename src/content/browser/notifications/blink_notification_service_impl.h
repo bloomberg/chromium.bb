@@ -13,6 +13,7 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/weak_document_ptr.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -41,8 +42,10 @@ class CONTENT_EXPORT BlinkNotificationServiceImpl
       PlatformNotificationContextImpl* notification_context,
       BrowserContext* browser_context,
       scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
+      RenderProcessHost* render_process_host,
       const url::Origin& origin,
       const GURL& document_url,
+      const WeakDocumentPtr& weak_document_ptr,
       mojo::PendingReceiver<blink::mojom::NotificationService> receiver);
 
   BlinkNotificationServiceImpl(const BlinkNotificationServiceImpl&) = delete;
@@ -105,11 +108,16 @@ class CONTENT_EXPORT BlinkNotificationServiceImpl
 
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
 
+  int render_process_host_id_;
+
   // The origin that this notification service is communicating with.
   url::Origin origin_;
   // The document url that this notification service is communicating with.
   // This is empty when used for a worker.
-  GURL document_url_;
+  const GURL document_url_;
+  // The weak document pointer that this notification service is communicating
+  // with. This is valid only for a document.
+  const WeakDocumentPtr weak_document_ptr_;
 
   mojo::Receiver<blink::mojom::NotificationService> receiver_;
 
