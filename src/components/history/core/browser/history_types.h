@@ -15,12 +15,14 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/flat_map.h"
 #include "base/containers/stack_container.h"
 #include "base/time/time.h"
 #include "components/favicon_base/favicon_types.h"
 #include "components/history/core/browser/history_context.h"
 #include "components/history/core/browser/url_row.h"
 #include "components/query_parser/query_parser.h"
+#include "components/query_parser/snippet.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
@@ -69,6 +71,7 @@ class VisitRow {
            bool arg_incremented_omnibox_typed_score,
            VisitID arg_opener_visit);
   ~VisitRow();
+  VisitRow(const VisitRow&);
 
   // Compares two visits based on dates, for sorting.
   bool operator<(const VisitRow& other) const {
@@ -114,6 +117,12 @@ class VisitRow {
   // whereas `referring_visit` is only populated if the Referrer is from the
   // same tab.
   VisitID opener_visit = 0;
+
+  // These are set only for synced visits originating from a different machine.
+  // `originator_cache_guid` is the originator machine's unique client ID. It's
+  // called a "cache" just to match Chrome Sync's terminology.
+  std::string originator_cache_guid;
+  VisitID originator_visit_id = 0;
 
   // We allow the implicit copy constructor and operator=.
 };
@@ -234,8 +243,10 @@ struct QueryOptions {
   QueryOptions& operator=(QueryOptions&&) noexcept;
   ~QueryOptions();
 
-  // The time range to search for matches in. The beginning is inclusive and
-  // the ending is exclusive. Either one (or both) may be null.
+  // The time range to search for matches in. When `visit_order` is
+  // `RECENT_FIRST`, the beginning is inclusive and the ending is exclusive.
+  // When `VisitOrder` is `OLDEST_FIRST`, vice versa. Either one (or both) may
+  // be null.
   //
   // This will match only the one recent visit of a URL. For text search
   // queries, if the URL was visited in the given time period, but has also
@@ -281,6 +292,15 @@ struct QueryOptions {
   // When this is true, the matching_algorithm field is ignored.
   bool host_only = false;
 
+  enum VisitOrder {
+    RECENT_FIRST,
+    OLDEST_FIRST,
+  };
+
+  // Whether to prioritize most recent or oldest visits when `max_count` is
+  // reached. Will affect visit order as well.
+  VisitOrder visit_order = RECENT_FIRST;
+
   // Helpers to get the effective parameters values, since a value of 0 means
   // "unspecified".
   int EffectiveMaxCount() const;
@@ -321,10 +341,12 @@ struct VisibleVisitCountToHostResult {
 
 // MostVisitedURL --------------------------------------------------------------
 
-// Holds the per-URL information of the most visited query.
+// Holds the information for a Most Visited page.
 struct MostVisitedURL {
   MostVisitedURL();
-  MostVisitedURL(const GURL& url, const std::u16string& title);
+  MostVisitedURL(const GURL& url,
+                 const std::u16string& title,
+                 double score = 0.0);
   MostVisitedURL(const MostVisitedURL& other);
   MostVisitedURL(MostVisitedURL&& other) noexcept;
   ~MostVisitedURL();
@@ -335,8 +357,9 @@ struct MostVisitedURL {
     return url == other.url;
   }
 
-  GURL url;
-  std::u16string title;
+  GURL url;              // The URL of the page.
+  std::u16string title;  // The title of the page.
+  double score{0.0};     // The frecency score of the page.
 };
 
 // FilteredURL -----------------------------------------------------------------
@@ -758,7 +781,9 @@ struct AnnotatedVisit {
                  VisitID opener_visit_of_redirect_chain_start,
                  VisitSource visit);
   AnnotatedVisit(const AnnotatedVisit&);
+  AnnotatedVisit(AnnotatedVisit&&);
   AnnotatedVisit& operator=(const AnnotatedVisit&);
+  AnnotatedVisit& operator=(AnnotatedVisit&&);
   ~AnnotatedVisit();
 
   URLRow url_row;
@@ -805,6 +830,9 @@ struct ClusterVisit {
   ClusterVisit();
   ~ClusterVisit();
   ClusterVisit(const ClusterVisit&);
+  ClusterVisit(ClusterVisit&&);
+  ClusterVisit& operator=(const ClusterVisit&);
+  ClusterVisit& operator=(ClusterVisit&&);
 
   AnnotatedVisit annotated_visit;
 
@@ -812,21 +840,84 @@ struct ClusterVisit {
   // visit is to the containing cluster.
   float score = 0.0;
 
-  // A list of `VisitID`s considered duplicates of this cluster visit. The best
-  // visit among all the duplicates will list the worse duplicate visit IDs in
-  // its vector. The worse duplicates will have an empty vector here.
-  std::vector<VisitID> duplicate_visit_ids;
+  // Flagged as true if this cluster visit matches the user's search query.
+  // This value depends on the user's search query, and is not meant to be ever
+  // persisted. It's a UI-state-specific flag that's convenient to buffer here.
+  bool matches_search_query = false;
+
+  // A list of visits that have been de-duplicated into this visit. The parent
+  // visit is considered the best visit among all the duplicates, and the worse
+  // visits are now contained here.
+  std::vector<ClusterVisit> duplicate_visits;
+
+  // The site engagement score of the URL associated with this visit. This
+  // should not be used by the UI.
+  float engagement_score = 0.0;
+
+  // The visit URL stripped down for aggressive deduping. This GURL may not be
+  // navigable or even valid. The stripping on `url_for_deduping` must be
+  // strictly more aggressive than on `url_for_display`. This ensures that the
+  // UI never shows two visits that look completely identical.
+  //
+  // The stripping is so aggressive that the URL should not be used alone for
+  // deduping. See `SimilarVisitDeDeduperClusterFinalizer` for an example usage
+  // that combines this with the page title as a deduping key.
+  GURL url_for_deduping;
 
   // The normalized URL for the visit (i.e. a SRP URL normalized based on the
   // user's default search provider).
   GURL normalized_url;
 
-  // Whether this visit contained a user-input search or query.
-  bool is_search_visit = false;
+  // The URL used for display. Computed in the cross-platform code to provide
+  // a consistent experience between WebUI and Mobile.
+  std::u16string url_for_display;
 
-  // The site engagement score of the URL associated with this visit. This
-  // should not be used by the UI.
-  float engagement_score = 0.0;
+  // Which positions matched the search query in various fields.
+  query_parser::Snippet::MatchPositions title_match_positions;
+  query_parser::Snippet::MatchPositions url_for_display_match_positions;
+
+  // If true, the visit should be "below the fold" and not initially shown in
+  // any UI. It is still included in the cluster so that it can be queried over,
+  // as well as deleted when the whole cluster is deleted.
+  bool hidden = false;
+};
+
+// Additional data for a cluster keyword.
+struct ClusterKeywordData {
+  // Types are ordered according to preferences.
+  enum ClusterKeywordType {
+    kUnknown = 0,
+    kEntityCategory = 1,
+    kEntityAlias = 2,
+    kEntity = 3,
+    kSearchTerms = 4
+  };
+
+  ClusterKeywordData();
+  explicit ClusterKeywordData(
+      const std::vector<std::string>& entity_collections);
+  ClusterKeywordData(ClusterKeywordType type,
+                     float score,
+                     const std::vector<std::string>& entity_collections);
+  ClusterKeywordData(const ClusterKeywordData&);
+  ClusterKeywordData(ClusterKeywordData&&);
+  ClusterKeywordData& operator=(const ClusterKeywordData&);
+  ClusterKeywordData& operator=(ClusterKeywordData&&);
+  ~ClusterKeywordData();
+  bool operator==(const ClusterKeywordData& data) const;
+
+  // Updates cluster keyword type if a new type is preferred over the existing
+  // type.
+  void MaybeUpdateKeywordType(ClusterKeywordType other_type);
+
+  ClusterKeywordType type;
+
+  // A floating point score describing how important this
+  // keyword is to the containing cluster.
+  float score;
+
+  // Entity collections associated with the keyword this is attached to.
+  std::vector<std::string> entity_collections;
 };
 
 // A cluster of `ClusterVisit`s with associated metadata (i.e. `keywords` and
@@ -835,18 +926,46 @@ struct Cluster {
   Cluster();
   Cluster(int64_t cluster_id,
           const std::vector<ClusterVisit>& visits,
-          const std::vector<std::u16string>& keywords,
-          bool should_show_on_prominent_ui_surfaces = true);
+          const base::flat_map<std::u16string, ClusterKeywordData>&
+              keyword_to_data_map,
+          bool should_show_on_prominent_ui_surfaces = true,
+          absl::optional<std::u16string> label = absl::nullopt);
   Cluster(const Cluster&);
+  Cluster(Cluster&&);
   Cluster& operator=(const Cluster&);
+  Cluster& operator=(Cluster&&);
   ~Cluster();
+
+  std::vector<std::u16string> GetKeywords() const;
 
   int64_t cluster_id = 0;
   std::vector<ClusterVisit> visits;
-  // TODO(manukh): retrieve and persist `keywords`.
-  std::vector<std::u16string> keywords;
+  // TODO(manukh): retrieve and persist `keyword_to_data_map`,
+  // `should_show_on_prominent_ui_surfaces, and `label`.
+
+  // A map of keywords to additional data.
+  base::flat_map<std::u16string, ClusterKeywordData> keyword_to_data_map;
+
   // Whether the cluster should be shown prominently on UI surfaces.
   bool should_show_on_prominent_ui_surfaces = true;
+
+  // A suitable label for the cluster. Will be nullopt if no suitable label
+  // could be determined.
+  absl::optional<std::u16string> label;
+
+  // The positions within the label that match the search query, if it exists.
+  query_parser::Snippet::MatchPositions label_match_positions;
+
+  // The vector of related searches for the whole cluster. This is derived from
+  // the related searches of the constituent visits, and computed in
+  // cross-platform code so we have a consistent set across platforms.
+  std::vector<std::string> related_searches;
+
+  // A floating point score that's positive if the cluster matches the user's
+  // search query, and zero otherwise. This score changes depending on the
+  // entered search query, so this should never be persisted. It's a
+  // UI-state-specific score that's convenient to buffer here.
+  float search_match_score = 0.0;
 };
 
 // A minimal representation of `Cluster` used when retrieving them from

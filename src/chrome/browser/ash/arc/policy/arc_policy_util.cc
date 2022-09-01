@@ -39,7 +39,7 @@ bool IsAccountManaged(const Profile* profile) {
 
 bool IsArcDisabledForEnterprise() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      chromeos::switches::kEnterpriseDisableArc);
+      ash::switches::kEnterpriseDisableArc);
 }
 
 std::set<std::string> GetRequestedPackagesFromArcPolicy(
@@ -55,7 +55,7 @@ std::set<std::string> GetRequestedPackagesFromArcPolicy(
     return {};
 
   std::set<std::string> requested_packages;
-  for (const auto& package : packages->GetList()) {
+  for (const auto& package : packages->GetListDeprecated()) {
     if (!package.is_dict())
       continue;
     const base::Value* const install_type =

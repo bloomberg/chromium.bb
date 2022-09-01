@@ -8,18 +8,23 @@
 #include <dawn/webgpu.h>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/test/test_simple_task_runner.h"
 #include "build/build_config.h"
 #include "components/viz/test/test_gpu_service_holder.h"
 #include "gpu/command_buffer/client/webgpu_cmd_helper.h"
 #include "gpu/command_buffer/client/webgpu_implementation.h"
+#include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/command_buffer/service/webgpu_decoder.h"
 #include "gpu/config/gpu_test_config.h"
+#include "gpu/ipc/host/gpu_memory_buffer_support.h"
 #include "gpu/ipc/in_process_command_buffer.h"
 #include "gpu/ipc/webgpu_in_process_context.h"
+#include "gpu/webgpu/callback.h"
+#include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #include "gpu/command_buffer/tests/gl_manager.h"
 #include "ui/gl/gl_context.h"
 #endif
@@ -53,8 +58,8 @@ bool WebGPUTest::WebGPUSupported() const {
 
 bool WebGPUTest::WebGPUSharedImageSupported() const {
   // Currently WebGPUSharedImage is only implemented on Mac, Linux and Windows
-#if (defined(OS_MAC) || defined(OS_LINUX) || defined(OS_CHROMEOS) || \
-     defined(OS_WIN)) &&                                             \
+#if (BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || \
+     BUILDFLAG(IS_WIN)) &&                                                 \
     BUILDFLAG(USE_DAWN)
   return true;
 #else
@@ -66,22 +71,12 @@ void WebGPUTest::SetUp() {
   if (!WebGPUSupported()) {
     return;
   }
-
-  gpu::GpuPreferences gpu_preferences;
-  gpu_preferences.enable_webgpu = true;
-#if (defined(OS_LINUX) || defined(OS_CHROMEOS)) && BUILDFLAG(USE_DAWN)
-  gpu_preferences.use_vulkan = gpu::VulkanImplementationName::kNative;
-  gpu_preferences.gr_context_type = gpu::GrContextType::kVulkan;
-#elif defined(OS_WIN)
-  // D3D shared images are only supported with passthrough command decoder.
-  gpu_preferences.use_passthrough_cmd_decoder = true;
-#endif
-  gpu_service_holder_ =
-      std::make_unique<viz::TestGpuServiceHolder>(gpu_preferences);
 }
 
 void WebGPUTest::TearDown() {
-  context_.reset();
+  adapter_ = nullptr;
+  instance_ = nullptr;
+  context_ = nullptr;
 }
 
 void WebGPUTest::Initialize(const Options& options) {
@@ -89,47 +84,70 @@ void WebGPUTest::Initialize(const Options& options) {
     return;
   }
 
+  gpu::GpuPreferences gpu_preferences;
+  gpu_preferences.enable_webgpu = true;
+  gpu_preferences.use_passthrough_cmd_decoder =
+      gles2::UsePassthroughCommandDecoder(
+          base::CommandLine::ForCurrentProcess());
+#if (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)) && BUILDFLAG(USE_DAWN)
+  gpu_preferences.use_vulkan = gpu::VulkanImplementationName::kNative;
+  gpu_preferences.gr_context_type = gpu::GrContextType::kVulkan;
+#endif
+  gpu_preferences.enable_unsafe_webgpu = options.enable_unsafe_webgpu;
+  gpu_preferences.texture_target_exception_list =
+      gpu::CreateBufferUsageAndFormatExceptionList();
+
+  gpu_service_holder_ =
+      std::make_unique<viz::TestGpuServiceHolder>(gpu_preferences);
+
   ContextCreationAttribs attributes;
   attributes.bind_generates_resource = false;
   attributes.enable_gles2_interface = false;
   attributes.context_type = CONTEXT_TYPE_WEBGPU;
 
-  static constexpr GpuMemoryBufferManager* memory_buffer_manager = nullptr;
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   ImageFactory* image_factory = &image_factory_;
 #else
   static constexpr ImageFactory* image_factory = nullptr;
 #endif
-  static constexpr GpuChannelManagerDelegate* channel_manager = nullptr;
   context_ = std::make_unique<WebGPUInProcessContext>();
   ContextResult result =
       context_->Initialize(gpu_service_holder_->task_executor(), attributes,
-                           options.shared_memory_limits, memory_buffer_manager,
-                           image_factory, channel_manager);
+                           options.shared_memory_limits, image_factory);
   ASSERT_EQ(result, ContextResult::kSuccess);
 
   cmd_helper_ = std::make_unique<webgpu::WebGPUCmdHelper>(
       context_->GetCommandBufferForTest());
 
-  bool done = false;
-  webgpu()->RequestAdapterAsync(
-      webgpu::PowerPreference::kDefault, false,
-      base::BindOnce(
-          [](WebGPUTest* test, bool* done, int32_t adapter_id,
-             const WGPUDeviceProperties& properties, const char*) {
-            EXPECT_GE(adapter_id, 0);
-            test->adapter_id_ = static_cast<uint32_t>(adapter_id);
-            test->device_properties_ = properties;
-            *done = true;
-          },
-          this, &done));
+  DawnProcTable procs = webgpu()->GetAPIChannel()->GetProcs();
+  dawnProcSetProcs(&procs);
+  instance_ = wgpu::Instance(webgpu()->GetAPIChannel()->GetWGPUInstance());
 
+  wgpu::RequestAdapterOptions ra_options = {};
+  ra_options.forceFallbackAdapter = options.force_fallback_adapter;
+
+  bool done = false;
+  auto* callback = webgpu::BindWGPUOnceCallback(
+      [](WebGPUTest* test, bool force_fallback_adapter, bool* done,
+         WGPURequestAdapterStatus status, WGPUAdapter adapter,
+         const char* message) {
+        if (!force_fallback_adapter) {
+          // If we don't force a particular adapter, we should always find
+          // one.
+          EXPECT_EQ(status, WGPURequestAdapterStatus_Success);
+          EXPECT_NE(adapter, nullptr);
+        }
+        test->adapter_ = wgpu::Adapter::Acquire(adapter);
+        *done = true;
+      },
+      this, options.force_fallback_adapter, &done);
+
+  instance_.RequestAdapter(&ra_options, callback->UnboundCallback(),
+                           callback->AsUserdata());
+  webgpu()->FlushCommands();
   while (!done) {
     RunPendingTasks();
   }
-
-  DawnProcTable procs = webgpu()->GetAPIChannel()->GetProcs();
-  dawnProcSetProcs(&procs);
 }
 
 webgpu::WebGPUImplementation* WebGPUTest::webgpu() const {
@@ -180,24 +198,29 @@ void WebGPUTest::WaitForCompletion(wgpu::Device device) {
 }
 
 wgpu::Device WebGPUTest::GetNewDevice() {
-  WGPUDevice device = nullptr;
-
+  wgpu::Device device;
   bool done = false;
-  webgpu()->RequestDeviceAsync(
-      adapter_id_, device_properties_,
-      base::BindOnce(
-          [](WGPUDevice* result, bool* done, WGPUDevice device,
-             const WGPUSupportedLimits*, const char*) {
-            *result = device;
-            *done = true;
-          },
-          &device, &done));
+
+  auto* callback = webgpu::BindWGPUOnceCallback(
+      [](wgpu::Device* device_out, bool* done, WGPURequestDeviceStatus status,
+         WGPUDevice device, const char* message) {
+        *device_out = wgpu::Device::Acquire(device);
+        *done = true;
+      },
+      &device, &done);
+
+  DCHECK(adapter_);
+  wgpu::DeviceDescriptor device_desc = {};
+
+  adapter_.RequestDevice(&device_desc, callback->UnboundCallback(),
+                         callback->AsUserdata());
+  webgpu()->FlushCommands();
   while (!done) {
     RunPendingTasks();
   }
 
   EXPECT_NE(device, nullptr);
-  return wgpu::Device::Acquire(device);
+  return device;
 }
 
 TEST_F(WebGPUTest, FlushNoCommands) {
@@ -262,15 +285,16 @@ TEST_F(WebGPUTest, RequestAdapterAfterContextLost) {
   webgpu()->OnGpuControlLostContext();
 
   bool called = false;
-  webgpu()->RequestAdapterAsync(
-      webgpu::PowerPreference::kDefault, false,
-      base::BindOnce(
-          [](bool* called, int32_t adapter_id, const WGPUDeviceProperties&,
-             const char*) {
-            EXPECT_EQ(adapter_id, -1);
-            *called = true;
-          },
-          &called));
+  wgpu::RequestAdapterOptions ra_options = {};
+  instance_.RequestAdapter(
+      &ra_options,
+      [](WGPURequestAdapterStatus status, WGPUAdapter adapter,
+         const char* message, void* userdata) {
+        EXPECT_EQ(adapter, nullptr);
+        *static_cast<bool*>(userdata) = true;
+      },
+      &called);
+  webgpu()->FlushCommands();
   RunPendingTasks();
   EXPECT_TRUE(called);
 }
@@ -286,14 +310,18 @@ TEST_F(WebGPUTest, RequestDeviceAfterContextLost) {
   webgpu()->OnGpuControlLostContext();
 
   bool called = false;
-  webgpu()->RequestDeviceAsync(GetAdapterId(), GetDeviceProperties(),
-                               base::BindOnce(
-                                   [](bool* called, WGPUDevice device,
-                                      const WGPUSupportedLimits*, const char*) {
-                                     EXPECT_EQ(device, nullptr);
-                                     *called = true;
-                                   },
-                                   &called));
+
+  DCHECK(adapter_);
+  wgpu::DeviceDescriptor device_desc = {};
+  adapter_.RequestDevice(
+      &device_desc,
+      [](WGPURequestDeviceStatus status, WGPUDevice device, const char* message,
+         void* userdata) {
+        EXPECT_EQ(device, nullptr);
+        *static_cast<bool*>(userdata) = true;
+      },
+      &called);
+  webgpu()->FlushCommands();
   RunPendingTasks();
   EXPECT_TRUE(called);
 }
@@ -304,7 +332,7 @@ TEST_F(WebGPUTest, RequestDeviceWitUnsupportedFeature) {
     return;
   }
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   // Crashing on Mac M1. Currently missing stack trace. crbug.com/1271926
   // This must be checked before WebGPUTest::Initialize otherwise context
   // switched is locked and we cannot temporarily have this GLContext.
@@ -322,20 +350,27 @@ TEST_F(WebGPUTest, RequestDeviceWitUnsupportedFeature) {
 
   // Create device with unsupported features, expect to fail to create and
   // return nullptr
-  WGPUDeviceProperties unsupported_device_properties = {};
-  unsupported_device_properties.invalidFeature = true;
-  WGPUDevice device = nullptr;
+  wgpu::FeatureName invalid_feature = static_cast<wgpu::FeatureName>(-2);
+
+  wgpu::Device device;
   bool done = false;
 
-  webgpu()->RequestDeviceAsync(
-      GetAdapterId(), unsupported_device_properties,
-      base::BindOnce(
-          [](WGPUDevice* result, bool* done, WGPUDevice device,
-             const WGPUSupportedLimits*, const char*) {
-            *result = device;
-            *done = true;
-          },
-          &device, &done));
+  auto* callback = webgpu::BindWGPUOnceCallback(
+      [](wgpu::Device* device_out, bool* done, WGPURequestDeviceStatus status,
+         WGPUDevice device, const char* message) {
+        *device_out = wgpu::Device::Acquire(device);
+        *done = true;
+      },
+      &device, &done);
+
+  DCHECK(adapter_);
+  wgpu::DeviceDescriptor device_desc = {};
+  device_desc.requiredFeaturesCount = 1;
+  device_desc.requiredFeatures = &invalid_feature;
+
+  adapter_.RequestDevice(&device_desc, callback->UnboundCallback(),
+                         callback->AsUserdata());
+  webgpu()->FlushCommands();
 
   while (!done) {
     RunPendingTasks();
@@ -357,15 +392,14 @@ TEST_F(WebGPUTest, SPIRVIsDisallowed) {
                                        void* userdata) {
     // We match on this string to make sure the shader module creation fails
     // because SPIR-V is disallowed and not because codeSize=0.
-    EXPECT_NE(std::string(message).find("SPIR-V is disallowed"),
-              std::string::npos);
+    EXPECT_THAT(message, testing::HasSubstr("SPIR-V is disallowed"));
     EXPECT_EQ(type, WGPUErrorType_Validation);
     *static_cast<bool*>(userdata) = true;
   };
 
-  // The initialization code doesn't set GpuPreferences::enable_webgpu_spirv so
-  // it stays at the default value of "false".
-  Initialize(WebGPUTest::Options());
+  auto options = WebGPUTest::Options();
+  options.enable_unsafe_webgpu = false;
+  Initialize(options);
   wgpu::Device device = GetNewDevice();
 
   // Make a invalid ShaderModuleDescriptor because it contains SPIR-V.
@@ -384,6 +418,41 @@ TEST_F(WebGPUTest, SPIRVIsDisallowed) {
 
   WaitForCompletion(device);
   EXPECT_TRUE(got_error);
+}
+
+TEST_F(WebGPUTest, ExplicitFallbackAdapterIsDisallowed) {
+  if (!WebGPUSupported()) {
+    LOG(ERROR) << "Test skipped because WebGPU isn't supported";
+    return;
+  }
+
+  auto options = WebGPUTest::Options();
+  options.force_fallback_adapter = true;
+  options.enable_unsafe_webgpu = false;
+  // Initialize attempts to create an adapter.
+  Initialize(options);
+
+  // No fallback adapter should be available.
+  EXPECT_EQ(adapter_, nullptr);
+}
+
+TEST_F(WebGPUTest, ImplicitFallbackAdapterIsDisallowed) {
+  if (!WebGPUSupported()) {
+    LOG(ERROR) << "Test skipped because WebGPU isn't supported";
+    return;
+  }
+
+  auto options = WebGPUTest::Options();
+  options.enable_unsafe_webgpu = false;
+  // Initialize attempts to create an adapter.
+  Initialize(options);
+
+  if (adapter_) {
+    wgpu::AdapterProperties properties;
+    adapter_.GetProperties(&properties);
+    // If we got an Adapter, it must not be a CPU adapter.
+    EXPECT_NE(properties.adapterType, wgpu::AdapterType::CPU);
+  }
 }
 
 }  // namespace gpu

@@ -212,6 +212,12 @@ Status KernelAndDeviceFunc::InstantiateFunc(const bool log_device_placement,
   options.allow_small_function_optimizations =
       allow_small_function_optimizations_;
 
+  options.allow_control_flow_sync_execution =
+      allow_control_flow_sync_execution_;
+
+  options.shape_inference_on_tfe_dialect_import =
+      shape_inference_on_tfe_dialect_import_;
+
   // In Eager mode we always inline all functions into the top-level
   // function body graph, to get a single executable graph, that could be
   // optimized across function boundaries (e.g. prune unused inputs and
@@ -225,6 +231,10 @@ Status KernelAndDeviceFunc::InstantiateFunc(const bool log_device_placement,
   options.config_proto.set_log_device_placement(log_device_placement);
 
   options.int_args_and_retvals_on_device = int_args_and_retvals_on_device_;
+
+  if (xla_compile_device_type_.has_value()) {
+    options.xla_compile_device_type = xla_compile_device_type_.value();
+  }
 
   TF_RETURN_IF_ERROR(
       pflr_->Instantiate(ndef.op(), AttrSlice(ndef), options, &handle_));
@@ -389,6 +399,7 @@ KernelAndDeviceFunc::PrepareForRun(
   opts->step_container = step_container;
   opts->collective_executor =
       collective_executor_ ? collective_executor_->get() : nullptr;
+  opts->stack_trace = stack_trace;
 
   opts->stats_collector = nullptr;
   opts->runner = get_runner();

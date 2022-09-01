@@ -15,7 +15,7 @@
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "printing/buildflags/buildflags.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include <utility>
 
 #include "base/callback.h"
@@ -34,7 +34,7 @@ class PrintManager : public content::WebContentsObserver,
       mojo::PendingAssociatedReceiver<mojom::PrintManagerHost> receiver,
       content::RenderFrameHost* rfh);
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // TODO(timvolodine): consider introducing PrintManagerAndroid (crbug/500960)
   using PdfWritingDoneCallback =
       base::RepeatingCallback<void(int /* page count */)>;
@@ -48,7 +48,10 @@ class PrintManager : public content::WebContentsObserver,
                         DidPrintDocumentCallback callback) override;
   void DidShowPrintDialog() override;
   void ShowInvalidPrinterSettingsError() override;
-  void PrintingFailed(int32_t cookie) override;
+  void PrintingFailed(int32_t cookie,
+                      mojom::PrintFailureReason reason) override;
+
+  void ClearPrintRenderFramesForTesting();
 
  protected:
   explicit PrintManager(content::WebContents* contents);
@@ -77,7 +80,7 @@ class PrintManager : public content::WebContentsObserver,
   int cookie() const { return cookie_; }
   void set_cookie(int cookie) { cookie_ = cookie; }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   PdfWritingDoneCallback pdf_writing_done_callback() const {
     return pdf_writing_done_callback_;
   }
@@ -94,7 +97,7 @@ class PrintManager : public content::WebContentsObserver,
   content::RenderFrameHostReceiverSet<printing::mojom::PrintManagerHost>
       print_manager_host_receivers_;
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // Callback to execute when done writing pdf.
   PdfWritingDoneCallback pdf_writing_done_callback_;
 #endif

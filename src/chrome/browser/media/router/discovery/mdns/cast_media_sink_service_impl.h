@@ -8,7 +8,6 @@
 #include <memory>
 #include <set>
 
-#include "base/containers/small_map.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
@@ -32,14 +31,15 @@ namespace media_router {
 
 // Discovers and manages Cast MediaSinks using CastSocketService. This class
 // also observes DialMediaSinkServiceImpl for sinks to connect to (also known
-// as dual discovery).
-// This class may be created on any thread. All methods, unless otherwise noted,
-// must be invoked on the SequencedTaskRunner given by |task_runner_|.
+// as dual discovery). It is indirectly owned by a singleton that is never
+// freed. It may be created on any thread. All methods, unless otherwise
+// noted, must be invoked on the SequencedTaskRunner given by |task_runner_|.
 class CastMediaSinkServiceImpl : public MediaSinkServiceBase,
                                  public cast_channel::CastSocket::Observer,
                                  public DiscoveryNetworkMonitor::Observer,
                                  public MediaSinkServiceBase::Observer {
  public:
+  using ChannelOpenedCallback = base::OnceCallback<void(bool)>;
   using SinkSource = CastDeviceCountMetrics::SinkSource;
 
   // The max number of cast channel open failure for a DIAL-discovered sink
@@ -101,6 +101,34 @@ class CastMediaSinkServiceImpl : public MediaSinkServiceBase,
 
   void BindLogger(mojo::PendingRemote<mojom::Logger> pending_remote);
 
+  // Opens cast channel. This method will not open a channel if there is already
+  // a pending request for |ip_endpoint|, or if a channel for |ip_endpoint|
+  // already exists.
+  // |cast_sink|: Cast sink created from mDNS service description or DIAL sink.
+  // |backoff_entry|: backoff entry passed to |OnChannelOpened| callback.
+  // |callback|: Callback that keeps track of the channel opening status.
+  // |open_params|: Holds parameters necessary to open a Cast channel
+  // (CastSocket) to a Cast device.
+  virtual void OpenChannel(const MediaSinkInternal& cast_sink,
+                           std::unique_ptr<net::BackoffEntry> backoff_entry,
+                           SinkSource sink_source,
+                           ChannelOpenedCallback callback,
+                           cast_channel::CastSocketOpenParams open_params);
+
+  // Check to see if the given cast sink exists the sinks_.
+  virtual bool HasSink(const MediaSink::Id& sink_id);
+
+  // Closes the Cast Channel to the sink, and removes the sink from the sink
+  // service.
+  virtual void DisconnectAndRemoveSink(const MediaSinkInternal& sink);
+
+  // Returns cast socket open parameters.
+  // Connect / liveness timeout value are dynamically calculated
+  // based on results of previous connection attempts.
+  // |sink|: Sink to open cast channel to.
+  cast_channel::CastSocketOpenParams CreateCastSocketOpenParams(
+      const MediaSinkInternal& sink);
+
  private:
   friend class CastMediaSinkServiceImplTest;
   FRIEND_TEST_ALL_PREFIXES(CastMediaSinkServiceImplTest,
@@ -160,6 +188,11 @@ class CastMediaSinkServiceImpl : public MediaSinkServiceBase,
                            TestFailureOnChannelErrorRetry);
   FRIEND_TEST_ALL_PREFIXES(CastMediaSinkServiceImplTest,
                            OpenChannelNewIPSameSink);
+  FRIEND_TEST_ALL_PREFIXES(CastMediaSinkServiceImplTest, TestHasSink);
+  FRIEND_TEST_ALL_PREFIXES(CastMediaSinkServiceImplTest,
+                           TestDisconnectAndRemoveSink);
+  FRIEND_TEST_ALL_PREFIXES(CastMediaSinkServiceImplTest,
+                           TestAccessCodeSinkNotAddedToNetworkCache);
 
   // Holds parameters controlling Cast channel retry strategy.
   struct RetryParams {
@@ -217,62 +250,67 @@ class CastMediaSinkServiceImpl : public MediaSinkServiceBase,
   // DiscoveryNetworkMonitor::Observer implementation
   void OnNetworksChanged(const std::string& network_id) override;
 
-  // Returns cast socket open parameters. Parameters are read from Finch.
-  // Connect / liveness timeout value are dynamically calculated
-  // based on results of previous connection attempts.
-  // |sink|: Sink to open cast channel to.
-  cast_channel::CastSocketOpenParams CreateCastSocketOpenParams(
-      const MediaSinkInternal& sink);
-
-  // Opens cast channel. This method will not open a channel if there is already
-  // a pending request for |ip_endpoint|, or if a channel for |ip_endpoint|
-  // already exists.
-  // |cast_sink|: Cast sink created from mDNS service description or DIAL sink.
-  // |backoff_entry|: backoff entry passed to |OnChannelOpened| callback.
-  void OpenChannel(const MediaSinkInternal& cast_sink,
-                   std::unique_ptr<net::BackoffEntry> backoff_entry,
-                   SinkSource sink_source);
-
   // Invoked when opening cast channel on IO thread completes.
-  // |cast_sink|: Cast sink created from mDNS service description or DIAL sink.
+  // |cast_sink|: Cast sink created from mDNS service description, DIAL sink, or
+  // access code sink.
   // |backoff_entry|: backoff entry passed to |OnChannelErrorMayRetry| callback
   // if open channel fails.
   // |start_time|: time at which corresponding |OpenChannel| was called.
   // |socket|: raw pointer of newly created cast channel. Does not take
   // ownership of |socket|.
+  // |callback|: Callback passed from OpenChannel that keeps track of the
+  // channel opening status.
+  // |open_params|: Holds parameters necessary to open a Cast channel
+  // (CastSocket) to a Cast device.
   void OnChannelOpened(const MediaSinkInternal& cast_sink,
                        std::unique_ptr<net::BackoffEntry> backoff_entry,
                        SinkSource sink_source,
                        base::Time start_time,
+                       ChannelOpenedCallback callback,
+                       cast_channel::CastSocketOpenParams open_params,
                        cast_channel::CastSocket* socket);
 
   // Invoked by |OnChannelOpened| if opening cast channel failed. It will retry
   // opening channel in a delay specified by |backoff_entry| if current failure
   // count is less than max retry attempts. Or invoke |OnChannelError| if retry
   // is not allowed.
-  // |cast_sink|: Cast sink created from mDNS service description or DIAL sink.
+  // |cast_sink|: Cast sink created from mDNS service description, DIAL sink, or
+  // access code sink.
   // |backoff_entry|: backoff entry holds failure count and calculates back-off
   // for next retry.
   // |error_state|: error encountered when opending cast channel.
+  // |callback|: Callback passed from OpenChannel that keeps track of the
+  // channel opening status.
+  // |open_params|: Holds parameters necessary to open a Cast channel
+  // (CastSocket) to a Cast device.
   void OnChannelErrorMayRetry(MediaSinkInternal cast_sink,
                               std::unique_ptr<net::BackoffEntry> backoff_entry,
                               cast_channel::ChannelError error_state,
-                              SinkSource sink_source);
+                              SinkSource sink_source,
+                              ChannelOpenedCallback callback,
+                              cast_channel::CastSocketOpenParams open_params);
 
   // Invoked when opening cast channel succeeds.
-  // |cast_sink|: Cast sink created from mDNS service description or DIAL sink.
+  // |cast_sink|: Cast sink created from mDNS service description, DIAL sink, or
+  // access code sink.
   // |socket|: raw pointer of newly created cast channel. Does not take
   // ownership of |socket|.
+  // |callback|: Callback passed from OpenChannel that keeps track of the
+  // channel opening status.
   void OnChannelOpenSucceeded(MediaSinkInternal cast_sink,
                               cast_channel::CastSocket* socket,
-                              SinkSource sink_source);
+                              SinkSource sink_source,
+                              ChannelOpenedCallback callback);
 
   // Invoked when opening cast channel fails after all retry
   // attempts.
   // |ip_endpoint|: ip endpoint of cast channel failing to connect to.
   // |sink|: The sink for which channel open failed.
+  // |callback|: Callback passed from OpenChannel that keeps track of the
+  // channel opening status.
   void OnChannelOpenFailed(const net::IPEndPoint& ip_endpoint,
-                           const MediaSinkInternal& sink);
+                           const MediaSinkInternal& sink,
+                           ChannelOpenedCallback callback);
 
   // Returns whether the given DIAL-discovered |sink| is probably a non-Cast
   // device. This is heuristically determined by two things: |sink| has been

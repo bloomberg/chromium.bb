@@ -125,6 +125,8 @@ void av1_write_obu_tg_tile_headers(struct AV1_COMP *const cpi,
                                    MACROBLOCKD *const xd,
                                    PackBSParams *const pack_bs_params,
                                    const int tile_idx);
+
+int av1_neg_interleave(int x, int ref, int max);
 #ifdef __cplusplus
 }  // extern "C"
 #endif

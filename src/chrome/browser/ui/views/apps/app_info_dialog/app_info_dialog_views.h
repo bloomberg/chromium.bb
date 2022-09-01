@@ -30,9 +30,13 @@ class ScrollView;
 // |extension| in the member variables in this class and all AppInfoPanel
 // classes.
 class AppInfoDialog : public views::View,
-                      public extensions::ExtensionRegistryObserver {
+                      public extensions::ExtensionRegistryObserver,
+                      public base::SupportsWeakPtr<AppInfoDialog> {
  public:
   METADATA_HEADER(AppInfoDialog);
+
+  static base::WeakPtr<AppInfoDialog>& GetLastDialogForTesting();
+
   AppInfoDialog(Profile* profile, const extensions::Extension* app);
   AppInfoDialog(const AppInfoDialog&) = delete;
   AppInfoDialog& operator=(const AppInfoDialog&) = delete;
@@ -49,7 +53,13 @@ class AppInfoDialog : public views::View,
   void StartObservingExtensionRegistry();
   void StopObservingExtensionRegistry();
 
+  // views::View:
+  void OnThemeChanged() override;
+
   // Overridden from extensions::ExtensionRegistryObserver:
+  void OnExtensionUnloaded(content::BrowserContext* browser_context,
+                           const extensions::Extension* extension,
+                           extensions::UnloadedExtensionReason reason) override;
   void OnExtensionUninstalled(content::BrowserContext* browser_context,
                               const extensions::Extension* extension,
                               extensions::UninstallReason reason) override;

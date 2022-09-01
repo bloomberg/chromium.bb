@@ -401,6 +401,21 @@
   "core/sdk/DebuggerModel.ts | withBlock": {
     "message": "Блок With"
   },
+  "core/sdk/EventBreakpointsModel.ts | auctionWorklet": {
+    "message": "Аукцион объявлений Worklet"
+  },
+  "core/sdk/EventBreakpointsModel.ts | beforeBidderWorkletBiddingStart": {
+    "message": "Начало фазы \"Назначение ставок участником аукциона\""
+  },
+  "core/sdk/EventBreakpointsModel.ts | beforeBidderWorkletReportingStart": {
+    "message": "Начало фазы \"Отчет участника аукциона\""
+  },
+  "core/sdk/EventBreakpointsModel.ts | beforeSellerWorkletReportingStart": {
+    "message": "Начало фазы \"Отчет продавца\""
+  },
+  "core/sdk/EventBreakpointsModel.ts | beforeSellerWorkletScoringStart": {
+    "message": "Начало фазы \"Подсчет продавца\""
+  },
   "core/sdk/NetworkManager.ts | crossoriginReadBlockingCorb": {
     "message": "Блокировка чтения из разных источников (CORB) заблокировала ответ из разных источников {PH1} с MIME-типом \"{PH2}\". Подробнее: https://www.chromestatus.com/feature/5629709824032768."
   },
@@ -644,9 +659,6 @@
   "core/sdk/sdk-meta.ts | disableWebpFormat": {
     "message": "Отключить формат WebP"
   },
-  "core/sdk/sdk-meta.ts | disabledDarkMode": {
-    "message": "Отключить"
-  },
   "core/sdk/sdk-meta.ts | doNotCaptureAsyncStackTraces": {
     "message": "Не записывать асинхронную трассировку стека"
   },
@@ -679,6 +691,9 @@
   },
   "core/sdk/sdk-meta.ts | doNotShowGridTrackSizes": {
     "message": "Не показывать размеры дорожек сетки"
+  },
+  "core/sdk/sdk-meta.ts | doNotShowRulersOnHover": {
+    "message": "Не показывать линейки при наведении указателя мыши"
   },
   "core/sdk/sdk-meta.ts | emulateAFocusedPage": {
     "message": "Эмулировать страницу в фокусе"
@@ -743,9 +758,6 @@
   "core/sdk/sdk-meta.ts | enableWebpFormat": {
     "message": "Включить формат WebP"
   },
-  "core/sdk/sdk-meta.ts | enabledDarkMode": {
-    "message": "Включить"
-  },
   "core/sdk/sdk-meta.ts | extendGridLines": {
     "message": "Продлить линии сетки"
   },
@@ -754,9 +766,6 @@
   },
   "core/sdk/sdk-meta.ts | hideFramesPerSecondFpsMeter": {
     "message": "Скрыть счетчик кадров в секунду (кадр/с)"
-  },
-  "core/sdk/sdk-meta.ts | hideHittestBorders": {
-    "message": "Скрыть границы проверки нажатия"
   },
   "core/sdk/sdk-meta.ts | hideLayerBorders": {
     "message": "Скрыть границы слоя"
@@ -812,9 +821,6 @@
   "core/sdk/sdk-meta.ts | showGridTrackSizes": {
     "message": "Показать размеры дорожек сетки"
   },
-  "core/sdk/sdk-meta.ts | showHittestBorders": {
-    "message": "Показать границы проверки нажатия"
-  },
   "core/sdk/sdk-meta.ts | showLayerBorders": {
     "message": "Показать границы слоя"
   },
@@ -833,8 +839,8 @@
   "core/sdk/sdk-meta.ts | showPaintFlashingRectangles": {
     "message": "Показывать прямоугольники индикатора замены отображения"
   },
-  "core/sdk/sdk-meta.ts | showRulers": {
-    "message": "Показать линейки"
+  "core/sdk/sdk-meta.ts | showRulersOnHover": {
+    "message": "Показывать линейки при наведении указателя мыши"
   },
   "core/sdk/sdk-meta.ts | showScrollPerformanceBottlenecks": {
     "message": "Показать узкие места производительности прокрутки"
@@ -875,14 +881,20 @@
   "entrypoints/inspector_main/RenderingOptions.ts | emulateAFocusedPage": {
     "message": "Эмулировать страницу в фокусе"
   },
+  "entrypoints/inspector_main/RenderingOptions.ts | emulateAutoDarkMode": {
+    "message": "Автоматически включать тёмную тему"
+  },
   "entrypoints/inspector_main/RenderingOptions.ts | emulatesAFocusedPage": {
     "message": "Эмулирует страницу в фокусе."
   },
   "entrypoints/inspector_main/RenderingOptions.ts | emulatesAutoDarkMode": {
-    "message": "Включает автоматическую тёмную тему для проверенной страницы."
+    "message": "Автоматически включает тёмную тему и меняет prefers-color-scheme на dark."
   },
   "entrypoints/inspector_main/RenderingOptions.ts | forcesCssColorgamutMediaFeature": {
     "message": "Запускает медиафункцию CSS color-gamut."
+  },
+  "entrypoints/inspector_main/RenderingOptions.ts | forcesCssForcedColors": {
+    "message": "Запускает медиафункцию CSS с принудительными цветами"
   },
   "entrypoints/inspector_main/RenderingOptions.ts | forcesCssPreferscolorschemeMedia": {
     "message": "Запускает медиафункцию CSS prefers-color-scheme."
@@ -920,9 +932,6 @@
   "entrypoints/inspector_main/RenderingOptions.ts | highlightsFramesRedDetectedToBe": {
     "message": "Обнаруженные фреймы объявлений выделяются красным."
   },
-  "entrypoints/inspector_main/RenderingOptions.ts | hittestBorders": {
-    "message": "Границы проверки нажатия"
-  },
   "entrypoints/inspector_main/RenderingOptions.ts | layerBorders": {
     "message": "Границы слоя"
   },
@@ -943,9 +952,6 @@
   },
   "entrypoints/inspector_main/RenderingOptions.ts | showsAnOverlayWithCoreWebVitals": {
     "message": "Открывает оверлей с основными интернет-показателями."
-  },
-  "entrypoints/inspector_main/RenderingOptions.ts | showsBordersAroundHittestRegions": {
-    "message": "Показывает границы области проверки нажатия."
   },
   "entrypoints/inspector_main/RenderingOptions.ts | showsLayerBordersOrangeoliveAnd": {
     "message": "Границы слоя выделяются оранжевым или оливковым, а его плитки – сине-зеленым."
@@ -998,10 +1004,13 @@
   "entrypoints/inspector_main/inspector_main-meta.ts | showRendering": {
     "message": "Показать \"Отрисовка\""
   },
+  "entrypoints/inspector_main/inspector_main-meta.ts | toggleCssPrefersColorSchemeMedia": {
+    "message": "Toggle forces CSS prefers-color-scheme color"
+  },
   "entrypoints/inspector_main/inspector_main-meta.ts | visionDeficiency": {
     "message": "дефекты зрения"
   },
-  "entrypoints/js_app/JsMain.ts | main": {
+  "entrypoints/js_app/js_app.ts | main": {
     "message": "Основная"
   },
   "entrypoints/main/MainImpl.ts | customizeAndControlDevtools": {
@@ -1036,9 +1045,6 @@
   },
   "entrypoints/main/MainImpl.ts | showConsoleDrawer": {
     "message": "Показать выдвигающуюся панель консоли"
-  },
-  "entrypoints/main/MainImpl.ts | theSystempreferredColorSchemeHas": {
-    "message": "Установленная в системе цветовая схема изменилась. Чтобы применить ее, перезагрузите инструменты разработчика."
   },
   "entrypoints/main/MainImpl.ts | undockIntoSeparateWindow": {
     "message": "Перенести в отдельное окно"
@@ -1190,41 +1196,41 @@
   "entrypoints/main/main-meta.ts | zoomOut": {
     "message": "Уменьшить масштаб"
   },
-  "entrypoints/node_app/node_app-meta.ts | node": {
-    "message": "Узел"
-  },
-  "entrypoints/node_app/node_app-meta.ts | showNode": {
-    "message": "Узел"
-  },
-  "entrypoints/node_main/NodeConnectionsPanel.ts | addConnection": {
+  "entrypoints/node_app/NodeConnectionsPanel.ts | addConnection": {
     "message": "Добавить подключение"
   },
-  "entrypoints/node_main/NodeConnectionsPanel.ts | networkAddressEgLocalhost": {
+  "entrypoints/node_app/NodeConnectionsPanel.ts | networkAddressEgLocalhost": {
     "message": "Сетевой адрес (например, localhost:9229)"
   },
-  "entrypoints/node_main/NodeConnectionsPanel.ts | noConnectionsSpecified": {
+  "entrypoints/node_app/NodeConnectionsPanel.ts | noConnectionsSpecified": {
     "message": "Связи не указаны"
   },
-  "entrypoints/node_main/NodeConnectionsPanel.ts | nodejsDebuggingGuide": {
+  "entrypoints/node_app/NodeConnectionsPanel.ts | nodejsDebuggingGuide": {
     "message": "Руководство по отладке Node.js"
   },
-  "entrypoints/node_main/NodeConnectionsPanel.ts | specifyNetworkEndpointAnd": {
+  "entrypoints/node_app/NodeConnectionsPanel.ts | specifyNetworkEndpointAnd": {
     "message": "Укажите конечную точку сети, и инструменты разработчика подключатся к ней автоматически. Чтобы узнать больше, прочитайте это: {PH1}."
   },
-  "entrypoints/node_main/NodeMain.ts | main": {
+  "entrypoints/node_app/NodeMain.ts | main": {
     "message": "Основная"
   },
-  "entrypoints/node_main/NodeMain.ts | nodejsS": {
+  "entrypoints/node_app/NodeMain.ts | nodejsS": {
     "message": "Node.js: {PH1}"
   },
-  "entrypoints/node_main/node_main-meta.ts | connection": {
+  "entrypoints/node_app/node_app.ts | connection": {
     "message": "Подключение"
   },
-  "entrypoints/node_main/node_main-meta.ts | node": {
+  "entrypoints/node_app/node_app.ts | networkTitle": {
+    "message": "Узел"
+  },
+  "entrypoints/node_app/node_app.ts | node": {
     "message": "узел"
   },
-  "entrypoints/node_main/node_main-meta.ts | showConnection": {
+  "entrypoints/node_app/node_app.ts | showConnection": {
     "message": "Показать \"Соединение\""
+  },
+  "entrypoints/node_app/node_app.ts | showNode": {
+    "message": "Узел"
   },
   "entrypoints/worker_app/WorkerMain.ts | main": {
     "message": "Основная"
@@ -1304,6 +1310,9 @@
   "models/har/Writer.ts | writingFile": {
     "message": "Запись в файл…"
   },
+  "models/issues_manager/ClientHintIssue.ts | clientHintsInfrastructure": {
+    "message": "Инфраструктура клиентских подсказок"
+  },
   "models/issues_manager/ContentSecurityPolicyIssue.ts | contentSecurityPolicyEval": {
     "message": "Content Security Policy – оценка"
   },
@@ -1319,17 +1328,182 @@
   "models/issues_manager/ContentSecurityPolicyIssue.ts | trustedTypesPolicyViolation": {
     "message": "Trusted Types – нарушение правил"
   },
+  "models/issues_manager/CookieIssue.ts | aSecure": {
+    "message": "безопасно"
+  },
+  "models/issues_manager/CookieIssue.ts | anInsecure": {
+    "message": "небезопасно"
+  },
+  "models/issues_manager/CookieIssue.ts | firstPartySetsExplained": {
+    "message": "First-Party Sets и атрибут SameParty"
+  },
+  "models/issues_manager/CookieIssue.ts | howSchemefulSamesiteWorks": {
+    "message": "Как работает функция переопределения сайтов"
+  },
+  "models/issues_manager/CookieIssue.ts | samesiteCookiesExplained": {
+    "message": "О файлах cookie SameSite"
+  },
   "models/issues_manager/CorsIssue.ts | CORS": {
     "message": "Совместное использование ресурсов между разными источниками (CORS)"
   },
-  "models/issues_manager/CorsIssue.ts | corsForPrivateNetworksRfc": {
-    "message": "CORS для частных сетей (RFC1918)"
+  "models/issues_manager/CorsIssue.ts | corsPrivateNetworkAccess": {
+    "message": "Private Network Access"
   },
   "models/issues_manager/CrossOriginEmbedderPolicyIssue.ts | coopAndCoep": {
     "message": "COOP и COEP"
   },
   "models/issues_manager/CrossOriginEmbedderPolicyIssue.ts | samesiteAndSameorigin": {
     "message": "SameSite и SameOrigin"
+  },
+  "models/issues_manager/DeprecationIssue.ts | authorizationCoveredByWildcard": {
+    "message": "Authorization will not be covered by the wildcard symbol (*) in CORS Access-Control-Allow-Headers handling."
+  },
+  "models/issues_manager/DeprecationIssue.ts | canRequestURLHTTPContainingNewline": {
+    "message": "Resource requests whose URLs contained both removed whitespace \\(n|r|t) characters and less-than characters (<) are blocked. Please remove newlines and encode less-than characters from places like element attribute values in order to load these resources."
+  },
+  "models/issues_manager/DeprecationIssue.ts | chromeLoadTimesConnectionInfo": {
+    "message": "chrome.loadTimes() is deprecated, instead use standardized API: Navigation Timing 2."
+  },
+  "models/issues_manager/DeprecationIssue.ts | chromeLoadTimesFirstPaintAfterLoadTime": {
+    "message": "chrome.loadTimes() is deprecated, instead use standardized API: Paint Timing."
+  },
+  "models/issues_manager/DeprecationIssue.ts | chromeLoadTimesWasAlternateProtocolAvailable": {
+    "message": "chrome.loadTimes() is deprecated, instead use standardized API: nextHopProtocol in Navigation Timing 2."
+  },
+  "models/issues_manager/DeprecationIssue.ts | cookieWithTruncatingChar": {
+    "message": "Cookies containing a \\(0|r|n) character will be rejected instead of truncated."
+  },
+  "models/issues_manager/DeprecationIssue.ts | crossOriginAccessBasedOnDocumentDomain": {
+    "message": "Relaxing the same-origin policy by setting document.domain is deprecated, and will be disabled by default. This deprecation warning is for a cross-origin access that was enabled by setting document.domain."
+  },
+  "models/issues_manager/DeprecationIssue.ts | crossOriginWindowApi": {
+    "message": "Triggering {PH1} from cross origin iframes has been deprecated and will be removed in the future."
+  },
+  "models/issues_manager/DeprecationIssue.ts | cssSelectorInternalMediaControlsOverlayCastButton": {
+    "message": "The disableRemotePlayback attribute should be used in order to disable the default Cast integration instead of using -internal-media-controls-overlay-cast-button selector."
+  },
+  "models/issues_manager/DeprecationIssue.ts | customCursorIntersectsViewport": {
+    "message": "Custom cursors with size greater than 32x32 DIP intersecting native UI is deprecated and will be removed."
+  },
+  "models/issues_manager/DeprecationIssue.ts | deprecatedWithReplacement": {
+    "message": "{PH1} is deprecated. Please use {PH2} instead."
+  },
+  "models/issues_manager/DeprecationIssue.ts | deprecationExample": {
+    "message": "Это пример переведенного сообщения о проблеме, связанной с прекращением поддержки."
+  },
+  "models/issues_manager/DeprecationIssue.ts | documentDomainSettingWithoutOriginAgentClusterHeader": {
+    "message": "Relaxing the same-origin policy by setting document.domain is deprecated, and will be disabled by default. To continue using this feature, please opt-out of origin-keyed agent clusters by sending an Origin-Agent-Cluster: ?0 header along with the HTTP response for the document and frames. See https://developer.chrome.com/blog/immutable-document-domain/ for more details."
+  },
+  "models/issues_manager/DeprecationIssue.ts | eventPath": {
+    "message": "Event.path is deprecated and will be removed. Please use Event.composedPath() instead."
+  },
+  "models/issues_manager/DeprecationIssue.ts | feature": {
+    "message": "Дополнительную информацию можно найти на странице состояния функции."
+  },
+  "models/issues_manager/DeprecationIssue.ts | geolocationInsecureOrigin": {
+    "message": "getCurrentPosition() and watchPosition() no longer work on insecure origins. To use this feature, you should consider switching your application to a secure origin, such as HTTPS. See https://goo.gle/chrome-insecure-origins for more details."
+  },
+  "models/issues_manager/DeprecationIssue.ts | geolocationInsecureOriginDeprecatedNotRemoved": {
+    "message": "getCurrentPosition() and watchPosition() are deprecated on insecure origins. To use this feature, you should consider switching your application to a secure origin, such as HTTPS. See https://goo.gle/chrome-insecure-origins for more details."
+  },
+  "models/issues_manager/DeprecationIssue.ts | getUserMediaInsecureOrigin": {
+    "message": "getUserMedia() no longer works on insecure origins. To use this feature, you should consider switching your application to a secure origin, such as HTTPS. See https://goo.gle/chrome-insecure-origins for more details."
+  },
+  "models/issues_manager/DeprecationIssue.ts | hostCandidateAttributeGetter": {
+    "message": "RTCPeerConnectionIceErrorEvent.hostCandidate is deprecated. Please use RTCPeerConnectionIceErrorEvent.address or RTCPeerConnectionIceErrorEvent.port instead."
+  },
+  "models/issues_manager/DeprecationIssue.ts | insecurePrivateNetworkSubresourceRequest": {
+    "message": "The website requested a subresource from a network that it could only access because of its users' privileged network position. These requests expose non-public devices and servers to the internet, increasing the risk of a cross-site request forgery (CSRF) attack, and/or information leakage. To mitigate these risks, Chrome deprecates requests to non-public subresources when initiated from non-secure contexts, and will start blocking them."
+  },
+  "models/issues_manager/DeprecationIssue.ts | legacyConstraintGoogIPv6": {
+    "message": "IPv6 is enabled-by-default and the ability to disable it using googIPv6 will soon be removed. Please stop using this legacy constraint."
+  },
+  "models/issues_manager/DeprecationIssue.ts | localCSSFileExtensionRejected": {
+    "message": "CSS cannot be loaded from file: URLs unless they end in a .css file extension."
+  },
+  "models/issues_manager/DeprecationIssue.ts | mediaElementAudioSourceNode": {
+    "message": "Creating a MediaElementAudioSourceNode on an OfflineAudioContext is deprecated and will be removed."
+  },
+  "models/issues_manager/DeprecationIssue.ts | mediaSourceAbortRemove": {
+    "message": "Using SourceBuffer.abort() to abort remove()'s asynchronous range removal is deprecated due to specification change. Support will be removed in the future. You should instead await updateend. abort() is intended to only abort an asynchronous media append or reset parser state."
+  },
+  "models/issues_manager/DeprecationIssue.ts | mediaSourceDurationTruncatingBuffered": {
+    "message": "Setting MediaSource.duration below the highest presentation timestamp of any buffered coded frames is deprecated due to specification change. Support for implicit removal of truncated buffered media will be removed in the future. You should instead perform explicit remove(newDuration, oldDuration) on all sourceBuffers, where newDuration < oldDuration."
+  },
+  "models/issues_manager/DeprecationIssue.ts | milestone": {
+    "message": "Это изменение вступит в силу в версии {milestone}."
+  },
+  "models/issues_manager/DeprecationIssue.ts | noSysexWebMIDIWithoutPermission": {
+    "message": "Web MIDI will ask a permission to use even if the sysex is not specified in the MIDIOptions."
+  },
+  "models/issues_manager/DeprecationIssue.ts | notificationInsecureOrigin": {
+    "message": "The Notification API may no longer be used from insecure origins. You should consider switching your application to a secure origin, such as HTTPS. See https://goo.gle/chrome-insecure-origins for more details."
+  },
+  "models/issues_manager/DeprecationIssue.ts | notificationPermissionRequestedIframe": {
+    "message": "Permission for the Notification API may no longer be requested from a cross-origin iframe. You should consider requesting permission from a top-level frame or opening a new window instead."
+  },
+  "models/issues_manager/DeprecationIssue.ts | obsoleteWebRtcCipherSuite": {
+    "message": "Your partner is negotiating an obsolete (D)TLS version. Please check with your partner to have this fixed."
+  },
+  "models/issues_manager/DeprecationIssue.ts | paymentRequestBasicCard": {
+    "message": "The basic-card payment method is deprecated and will be removed."
+  },
+  "models/issues_manager/DeprecationIssue.ts | paymentRequestShowWithoutGesture": {
+    "message": "Calling PaymentRequest.show() without user activation is deprecated and will be removed."
+  },
+  "models/issues_manager/DeprecationIssue.ts | pictureSourceSrc": {
+    "message": "<source src> with a <picture> parent is invalid and therefore ignored. Please use <source srcset> instead."
+  },
+  "models/issues_manager/DeprecationIssue.ts | prefixedStorageInfo": {
+    "message": "window.webkitStorageInfo is deprecated. Please use navigator.webkitTemporaryStorage or navigator.webkitPersistentStorage instead."
+  },
+  "models/issues_manager/DeprecationIssue.ts | requestedSubresourceWithEmbeddedCredentials": {
+    "message": "Subresource requests whose URLs contain embedded credentials (e.g. https://user:pass@host/) are blocked."
+  },
+  "models/issues_manager/DeprecationIssue.ts | rtcConstraintEnableDtlsSrtpFalse": {
+    "message": "The constraint DtlsSrtpKeyAgreement is removed. You have specified a false value for this constraint, which is interpreted as an attempt to use the removed SDES key negotiation method. This functionality is removed; use a service that supports DTLS key negotiation instead."
+  },
+  "models/issues_manager/DeprecationIssue.ts | rtcConstraintEnableDtlsSrtpTrue": {
+    "message": "The constraint DtlsSrtpKeyAgreement is removed. You have specified a true value for this constraint, which had no effect, but you can remove this constraint for tidiness."
+  },
+  "models/issues_manager/DeprecationIssue.ts | rtcPeerConnectionComplexPlanBSdpUsingDefaultSdpSemantics": {
+    "message": "Complex Plan B SDP detected. This dialect of the Session Description Protocol is no longer supported. Please use Unified Plan SDP instead."
+  },
+  "models/issues_manager/DeprecationIssue.ts | rtcPeerConnectionSdpSemanticsPlanB": {
+    "message": "Plan B SDP semantics, which is used when constructing an RTCPeerConnection with {sdpSemantics:'plan-b'}, is a legacy non-standard version of the Session Description Protocol that has been permanently deleted from the Web Platform. It is still available when building with IS_FUCHSIA, but we intend to delete it as soon as possible. Stop depending on it. See https://crbug.com/1302249 for status."
+  },
+  "models/issues_manager/DeprecationIssue.ts | rtcpMuxPolicyNegotiate": {
+    "message": "The rtcpMuxPolicy option is deprecated and will be removed."
+  },
+  "models/issues_manager/DeprecationIssue.ts | rtpDataChannel": {
+    "message": "RTP data channels are no longer supported. The RtpDataChannels constraint is currently ignored, and may cause an error at a later date."
+  },
+  "models/issues_manager/DeprecationIssue.ts | sharedArrayBufferConstructedWithoutIsolation": {
+    "message": "SharedArrayBuffer will require cross-origin isolation. See https://developer.chrome.com/blog/enabling-shared-array-buffer/ for more details."
+  },
+  "models/issues_manager/DeprecationIssue.ts | textToSpeech_DisallowedByAutoplay": {
+    "message": "speechSynthesis.speak() without user activation is deprecated and will be removed."
+  },
+  "models/issues_manager/DeprecationIssue.ts | title": {
+    "message": "Используется устаревшая функция"
+  },
+  "models/issues_manager/DeprecationIssue.ts | v8SharedArrayBufferConstructedInExtensionWithoutIsolation": {
+    "message": "Extensions should opt into cross-origin isolation to continue using SharedArrayBuffer. See https://developer.chrome.com/docs/extensions/mv3/cross-origin-isolation/."
+  },
+  "models/issues_manager/DeprecationIssue.ts | vendorSpecificApi": {
+    "message": "{PH1} is vendor-specific. Please use the standard {PH2} instead."
+  },
+  "models/issues_manager/DeprecationIssue.ts | xhrJSONEncodingDetection": {
+    "message": "UTF-16 is not supported by response json in XMLHttpRequest"
+  },
+  "models/issues_manager/DeprecationIssue.ts | xmlHttpRequestSynchronousInNonWorkerOutsideBeforeUnload": {
+    "message": "Synchronous XMLHttpRequest on the main thread is deprecated because of its detrimental effects to the end user’s experience. For more help, check https://xhr.spec.whatwg.org/."
+  },
+  "models/issues_manager/DeprecationIssue.ts | xrSupportsSession": {
+    "message": "supportsSession() is deprecated. Please use isSessionSupported() and check the resolved boolean value instead."
+  },
+  "models/issues_manager/FederatedAuthRequestIssue.ts | fedCm": {
+    "message": "Federated Credential Management API"
   },
   "models/issues_manager/GenericIssue.ts | crossOriginPortalPostMessage": {
     "message": "Порталы – каналы связи с одним источником"
@@ -1367,29 +1541,11 @@
   "models/issues_manager/QuirksModeIssue.ts | documentCompatibilityMode": {
     "message": "Режим совместимости с документом"
   },
-  "models/issues_manager/SameSiteCookieIssue.ts | aSecure": {
-    "message": "безопасно"
-  },
-  "models/issues_manager/SameSiteCookieIssue.ts | anInsecure": {
-    "message": "небезопасно"
-  },
-  "models/issues_manager/SameSiteCookieIssue.ts | firstPartySetsExplained": {
-    "message": "First-Party Sets и атрибут SameParty"
-  },
-  "models/issues_manager/SameSiteCookieIssue.ts | howSchemefulSamesiteWorks": {
-    "message": "Как работает функция переопределения сайтов"
-  },
-  "models/issues_manager/SameSiteCookieIssue.ts | samesiteCookiesExplained": {
-    "message": "О файлах cookie SameSite"
-  },
   "models/issues_manager/SharedArrayBufferIssue.ts | enablingSharedArrayBuffer": {
     "message": "Включение объекта SharedArrayBuffer"
   },
   "models/issues_manager/TrustedWebActivityIssue.ts | changesToQualityCriteriaForPwas": {
     "message": "Изменения критериев качества для приложений PWA, использующих безопасные действия в интернете"
-  },
-  "models/issues_manager/WasmCrossOriginModuleSharingIssue.ts | linkTitle": {
-    "message": "Совместное использование модулей Wasm только одним источником"
   },
   "models/logs/NetworkLog.ts | anonymous": {
     "message": "<анонимный>"
@@ -1414,9 +1570,6 @@
   },
   "models/logs/logs-meta.ts | reset": {
     "message": "сбросить"
-  },
-  "models/persistence/Automapping.ts | theAttemptToBindSInTheWorkspace": {
-    "message": "Не удалось привязать \"{PH1}\" в рабочей области из-за неверного формата URI."
   },
   "models/persistence/EditFileSystemView.ts | add": {
     "message": "Добавить"
@@ -1557,10 +1710,19 @@
     "message": "Атрибутов ARIA нет"
   },
   "panels/accessibility/AXBreadcrumbsPane.ts | accessibilityTree": {
-    "message": "Дерево специальных возможностей"
+    "message": "Дерево доступности"
+  },
+  "panels/accessibility/AXBreadcrumbsPane.ts | fullTreeExperimentDescription": {
+    "message": "Дерево доступности перемещено в правый верхний угол дерева DOM."
+  },
+  "panels/accessibility/AXBreadcrumbsPane.ts | fullTreeExperimentName": {
+    "message": "Дерево доступности на всю страницу"
   },
   "panels/accessibility/AXBreadcrumbsPane.ts | ignored": {
     "message": "Игнорируется"
+  },
+  "panels/accessibility/AXBreadcrumbsPane.ts | reloadRequired": {
+    "message": "Чтобы изменение вступило в силу, требуется перезагрузка."
   },
   "panels/accessibility/AXBreadcrumbsPane.ts | scrollIntoView": {
     "message": "Прокрутить в видимую область"
@@ -2051,6 +2213,12 @@
   "panels/application/AppManifestView.ts | couldNotDownloadARequiredIcon": {
     "message": "Не удалось скачать нужный значок из файла манифеста."
   },
+  "panels/application/AppManifestView.ts | darkBackgroundColor": {
+    "message": "Темный цвет фона"
+  },
+  "panels/application/AppManifestView.ts | darkThemeColor": {
+    "message": "Цвет тёмной темы"
+  },
   "panels/application/AppManifestView.ts | description": {
     "message": "Описание"
   },
@@ -2315,384 +2483,6 @@
   "panels/application/ApplicationPanelSidebar.ts | worker": {
     "message": "обработчик"
   },
-  "panels/application/BackForwardCacheStrings.ts | HTTPMethodNotGET": {
-    "message": "В возвратный кеш можно добавить только страницы, загруженные с помощью GET-запроса."
-  },
-  "panels/application/BackForwardCacheStrings.ts | HTTPStatusNotOK": {
-    "message": "Можно кешировать только страницы с кодом статуса 2XX."
-  },
-  "panels/application/BackForwardCacheStrings.ts | JavaScriptExecution": {
-    "message": "Chrome обнаружил попытку выполнить код JavaScript в кеше."
-  },
-  "panels/application/BackForwardCacheStrings.ts | appBanner": {
-    "message": "Страницы, которые запросили AppBanner, в настоящее время нельзя добавить в возвратный кеш."
-  },
-  "panels/application/BackForwardCacheStrings.ts | backForwardCacheDisabled": {
-    "message": "Возвратный кеш отключен в разделе экспериментальных параметров Chrome. Введите chrome://flags/#back-forward-cache в адресной строке, чтобы включить кеш на этом устройстве."
-  },
-  "panels/application/BackForwardCacheStrings.ts | backForwardCacheDisabledByCommandLine": {
-    "message": "Возвратный кеш отключен с помощью командной строки."
-  },
-  "panels/application/BackForwardCacheStrings.ts | backForwardCacheDisabledByLowMemory": {
-    "message": "Возвратный кеш отключен, так как недостаточно памяти."
-  },
-  "panels/application/BackForwardCacheStrings.ts | backForwardCacheDisabledForDelegate": {
-    "message": "Возвратный кеш не поддерживается представителем."
-  },
-  "panels/application/BackForwardCacheStrings.ts | backForwardCacheDisabledForPrerender": {
-    "message": "Возвратный кеш отключен для системы предварительного отображения."
-  },
-  "panels/application/BackForwardCacheStrings.ts | broadcastChannel": {
-    "message": "Страницу нельзя кешировать, так как у нее есть экземпляр BroadcastChannel с зарегистрированными прослушивателями."
-  },
-  "panels/application/BackForwardCacheStrings.ts | cacheControlNoStore": {
-    "message": "Страницы с заголовком cache-control:no-store нельзя добавить в возвратный кеш."
-  },
-  "panels/application/BackForwardCacheStrings.ts | cacheFlushed": {
-    "message": "Кэш был намеренно очищен."
-  },
-  "panels/application/BackForwardCacheStrings.ts | cacheLimit": {
-    "message": "Страница удалена из кеша, чтобы освободить место для другой страницы."
-  },
-  "panels/application/BackForwardCacheStrings.ts | containsPlugins": {
-    "message": "Страницы с плагинами в настоящее время нельзя добавить в возвратный кеш."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentFileChooser": {
-    "message": "Страницы, которые используют FileChooser API, нельзя добавить в возвратный кеш."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentFileSystemAccess": {
-    "message": "Страницы, которые используют File System Access API, в настоящее время нельзя добавить в возвратный кеш."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentMediaDevicesDispatcherHost": {
-    "message": "Страницы, которые используют диспетчер медиаустройств, нельзя добавить в возвратный кеш."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentMediaPlay": {
-    "message": "Медиапроигрыватель воспроизводил контент во время перехода на другую страницу."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentMediaSession": {
-    "message": "Страницы, которые используют MediaSession API и установили состояние воспроизведения, нельзя добавить в возвратный кеш."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentMediaSessionService": {
-    "message": "Страницы, которые используют MediaSession API и для которых настроены обработчики действий, нельзя добавить в возвратный кеш."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentSecurityHandler": {
-    "message": "Страницы, которые используют SecurityHandler, нельзя добавить в возвратный кеш."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentSerial": {
-    "message": "Страницы, которые используют Serial API, нельзя добавить в возвратный кеш."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentWebAuthenticationAPI": {
-    "message": "Страницы, которые используют WebAuthetication API, нельзя добавить в возвратный кеш."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentWebBluetooth": {
-    "message": "Страницы, которые используют WebBluetooth API, нельзя добавить в возвратный кеш."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentWebUSB": {
-    "message": "Страницы, которые используют WebUSB API, нельзя добавить в возвратный кеш."
-  },
-  "panels/application/BackForwardCacheStrings.ts | dedicatedWorkerOrWorklet": {
-    "message": "Страницы, которые используют Dedicated Worker или Worklet, в настоящее время нельзя добавить в возвратный кеш."
-  },
-  "panels/application/BackForwardCacheStrings.ts | documentLoaded": {
-    "message": "Переход со страницы выполнен до завершения загрузки документа."
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderAppBannerManager": {
-    "message": "EmbedderAppBannerManager"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderChromePasswordManagerClientBindCredentialManager": {
-    "message": "EmbedderChromePasswordManagerClientBindCredentialManager"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderDomDistillerSelfDeletingRequestDelegate": {
-    "message": "EmbedderDomDistillerSelfDeletingRequestDelegate"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderDomDistillerViewerSource": {
-    "message": "EmbedderDomDistillerViewerSource"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderExtensionMessaging": {
-    "message": "EmbedderExtensionMessaging"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderExtensionMessagingForOpenPort": {
-    "message": "EmbedderExtensionMessagingForOpenPort"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderExtensionSentMessageToCachedFrame": {
-    "message": "EmbedderExtensionSentMessageToCachedFrame"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderExtensions": {
-    "message": "EmbedderExtensions"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderModalDialog": {
-    "message": "EmbedderModalDialog"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderOfflinePage": {
-    "message": "EmbedderOfflinePage"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderOomInterventionTabHelper": {
-    "message": "EmbedderOomInterventionTabHelper"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderPermissionRequestManager": {
-    "message": "EmbedderPermissionRequestManager"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderPopupBlockerTabHelper": {
-    "message": "EmbedderPopupBlockerTabHelper"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderSafeBrowsingThreatDetails": {
-    "message": "EmbedderSafeBrowsingThreatDetails"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderSafeBrowsingTriggeredPopupBlocker": {
-    "message": "EmbedderSafeBrowsingTriggeredPopupBlocker"
-  },
-  "panels/application/BackForwardCacheStrings.ts | enteredBackForwardCacheBeforeServiceWorkerHostAdded": {
-    "message": "Скрипт Service Worker был активирован, когда страница находилась в возвратном кеше."
-  },
-  "panels/application/BackForwardCacheStrings.ts | foregroundCacheLimit": {
-    "message": "Страница удалена из кеша, чтобы освободить место для другой страницы."
-  },
-  "panels/application/BackForwardCacheStrings.ts | grantedMediaStreamAccess": {
-    "message": "Страницы, которые предоставили доступ к трансляции мультимедиа, в настоящее время нельзя добавить в возвратный кеш."
-  },
-  "panels/application/BackForwardCacheStrings.ts | haveInnerContents": {
-    "message": "Страницы, которые используют порталы, в настоящее время нельзя добавить в возвратный кеш."
-  },
-  "panels/application/BackForwardCacheStrings.ts | idleManager": {
-    "message": "Страницы, которые используют IdleManager, в настоящее время нельзя добавить в возвратный кеш."
-  },
-  "panels/application/BackForwardCacheStrings.ts | indexedDBConnection": {
-    "message": "Страницы с открытым подключением IndexedDB в настоящее время нельзя добавить в возвратный кеш."
-  },
-  "panels/application/BackForwardCacheStrings.ts | ineligibleAPI": {
-    "message": "Использовались недопустимые API."
-  },
-  "panels/application/BackForwardCacheStrings.ts | injectedJavascript": {
-    "message": "Страницы, в которые с помощью расширений внедрен код JavaScript, в настоящее время нельзя добавить в возвратный кеш."
-  },
-  "panels/application/BackForwardCacheStrings.ts | injectedStyleSheet": {
-    "message": "Страницы, в которые с помощью расширений внедрена таблица стилей, в настоящее время нельзя добавить в возвратный кеш."
-  },
-  "panels/application/BackForwardCacheStrings.ts | internalError": {
-    "message": "Внутренняя ошибка."
-  },
-  "panels/application/BackForwardCacheStrings.ts | keyboardLock": {
-    "message": "Страницы, которые используют блокировку клавиатуры, в настоящее время нельзя добавить в возвратный кеш."
-  },
-  "panels/application/BackForwardCacheStrings.ts | loading": {
-    "message": "Переход со страницы выполнен до завершения ее загрузки."
-  },
-  "panels/application/BackForwardCacheStrings.ts | mainResourceHasCacheControlNoCache": {
-    "message": "Страницы, в основном ресурсе которых есть заголовок cache-control:no-cache, нельзя добавить в возвратный кеш."
-  },
-  "panels/application/BackForwardCacheStrings.ts | mainResourceHasCacheControlNoStore": {
-    "message": "Страницы, в основном ресурсе которых есть заголовок cache-control:no-store, нельзя добавить в возвратный кеш."
-  },
-  "panels/application/BackForwardCacheStrings.ts | navigationCancelledWhileRestoring": {
-    "message": "Страницу не удалось восстановить из возвратного кеша до отмены перехода."
-  },
-  "panels/application/BackForwardCacheStrings.ts | networkExceedsBufferLimit": {
-    "message": "Страница удалена из кеша, так как через активное сетевое подключение было получено слишком много данных. Chrome ограничивает объем данных, передаваемых на кешируемую страницу."
-  },
-  "panels/application/BackForwardCacheStrings.ts | networkRequestDatapipeDrainedAsBytesConsumer": {
-    "message": "Страницы, которые используют событие inflight fetch() или интерфейс XHR, в настоящее время нельзя добавить в возвратный кеш."
-  },
-  "panels/application/BackForwardCacheStrings.ts | networkRequestRedirected": {
-    "message": "Страница удалена из возвратного кеша, так как активный сетевой запрос был выполнен с переадресацией."
-  },
-  "panels/application/BackForwardCacheStrings.ts | networkRequestTimeout": {
-    "message": "Страница удалена из кеша, так как подключение к сети было открыто слишком долго. Chrome ограничивает время получения данных кешируемой страницей."
-  },
-  "panels/application/BackForwardCacheStrings.ts | noResponseHead": {
-    "message": "Страницы без действительного заголовка ответа нельзя добавить в возвратный кеш."
-  },
-  "panels/application/BackForwardCacheStrings.ts | notMainFrame": {
-    "message": "Переход выполнен в фрейме, отличном от основного."
-  },
-  "panels/application/BackForwardCacheStrings.ts | optInUnloadHeaderNotPresent": {
-    "message": "У страницы есть обработчик выгрузки без заголовка для включения возвратного кеша."
-  },
-  "panels/application/BackForwardCacheStrings.ts | outstandingIndexedDBTransaction": {
-    "message": "Страницу, на которой выполняются транзакции индексированной базы данных, в настоящее время нельзя добавить в возвратный кеш."
-  },
-  "panels/application/BackForwardCacheStrings.ts | outstandingNetworkRequestDirectSocket": {
-    "message": "Страницы с активным сетевым запросом в настоящее время нельзя добавить в возвратный кеш."
-  },
-  "panels/application/BackForwardCacheStrings.ts | outstandingNetworkRequestFetch": {
-    "message": "Страницы с активным сетевым запросом на извлечение в настоящее время нельзя добавить в возвратный кеш."
-  },
-  "panels/application/BackForwardCacheStrings.ts | outstandingNetworkRequestOthers": {
-    "message": "Страницы с активным сетевым запросом в настоящее время нельзя добавить в возвратный кеш."
-  },
-  "panels/application/BackForwardCacheStrings.ts | outstandingNetworkRequestXHR": {
-    "message": "Страницы с активным сетевым запросом XHR в настоящее время нельзя добавить в возвратный кеш."
-  },
-  "panels/application/BackForwardCacheStrings.ts | paymentManager": {
-    "message": "Страницы, которые используют PaymentManager, в настоящее время нельзя добавить в возвратный кеш."
-  },
-  "panels/application/BackForwardCacheStrings.ts | pictureInPicture": {
-    "message": "Страницы, которые используют картинку в картинке, в настоящее время нельзя добавить в возвратный кеш."
-  },
-  "panels/application/BackForwardCacheStrings.ts | portal": {
-    "message": "Страницы, которые используют порталы, в настоящее время нельзя добавить в возвратный кеш."
-  },
-  "panels/application/BackForwardCacheStrings.ts | printing": {
-    "message": "Страницы, где показан интерфейс печати, в настоящее время нельзя добавить в возвратный кеш."
-  },
-  "panels/application/BackForwardCacheStrings.ts | relatedActiveContentsExist": {
-    "message": "Страница открыта с помощью window.open(), и на нее ссылается другая вкладка, или страница открыта в другом окне."
-  },
-  "panels/application/BackForwardCacheStrings.ts | rendererProcessCrashed": {
-    "message": "Процесс отрисовки страницы завершился ошибкой в возвратном кеше."
-  },
-  "panels/application/BackForwardCacheStrings.ts | rendererProcessKilled": {
-    "message": "Процесс отрисовки для страницы в возвратном кеше остановлен."
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedAudioCapturePermission": {
-    "message": "Страницы, которые запросили разрешения на запись аудио, в настоящее время нельзя добавить в возвратный кеш."
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedBackForwardCacheBlockedSensors": {
-    "message": "Страницы, запросившие разрешения на доступ к датчикам, в настоящее время нельзя добавить в возвратный кеш."
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedBackgroundWorkPermission": {
-    "message": "Страницы, которые запросили разрешения на фоновую синхронизацию или извлечение, в настоящее время нельзя добавить в возвратный кеш."
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedMIDIPermission": {
-    "message": "Страницы, запросившие разрешения на доступ к MIDI-устройствам, в настоящее время нельзя добавить в возвратный кеш."
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedNotificationsPermission": {
-    "message": "Страницы, запросившие разрешения на доступ к уведомлениям, в настоящее время нельзя добавить в возвратный кеш."
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedStorageAccessGrant": {
-    "message": "Страницы, запросившие доступ к хранилищу, в настоящее время нельзя добавить в возвратный кеш."
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedVideoCapturePermission": {
-    "message": "Страницы, которые запросили разрешения на запись видео, в настоящее время нельзя добавить в возвратный кеш."
-  },
-  "panels/application/BackForwardCacheStrings.ts | schemeNotHTTPOrHTTPS": {
-    "message": "Можно кешировать только страницы со схемой URL HTTP или HTTPS."
-  },
-  "panels/application/BackForwardCacheStrings.ts | serviceWorkerClaim": {
-    "message": "Страница была запрошена скриптом Service Worker, когда находилась в возвратном кеше."
-  },
-  "panels/application/BackForwardCacheStrings.ts | serviceWorkerPostMessage": {
-    "message": "Скрипт Service Worker пытался отправить свойство MessageEvent на страницу в возвратном кеше."
-  },
-  "panels/application/BackForwardCacheStrings.ts | serviceWorkerUnregistration": {
-    "message": "Регистрация Service Worker была отменена, когда страница находилась в возвратном кеше."
-  },
-  "panels/application/BackForwardCacheStrings.ts | serviceWorkerVersionActivation": {
-    "message": "Страница удалена из возвратного кеша из-за активации Service Worker."
-  },
-  "panels/application/BackForwardCacheStrings.ts | sessionRestored": {
-    "message": "Браузер Chrome перезапущен. Все записи возвратного кеша удалены."
-  },
-  "panels/application/BackForwardCacheStrings.ts | sharedWorker": {
-    "message": "Страницы, которые используют SharedWorker, в настоящее время нельзя добавить в возвратный кеш."
-  },
-  "panels/application/BackForwardCacheStrings.ts | speechRecognizer": {
-    "message": "Страницы, которые используют SpeechRecognizer, в настоящее время нельзя добавить в возвратный кеш."
-  },
-  "panels/application/BackForwardCacheStrings.ts | speechSynthesis": {
-    "message": "Страницы, которые используют SpeechSynthesis, в настоящее время нельзя добавить в возвратный кеш."
-  },
-  "panels/application/BackForwardCacheStrings.ts | subframeIsNavigating": {
-    "message": "Окно iframe на странице запустило переход, который не завершился."
-  },
-  "panels/application/BackForwardCacheStrings.ts | subresourceHasCacheControlNoCache": {
-    "message": "Страницы, в подресурсе которых есть заголовок cache-control:no-cache, нельзя добавить в возвратный кеш."
-  },
-  "panels/application/BackForwardCacheStrings.ts | subresourceHasCacheControlNoStore": {
-    "message": "Страницы, в подресурсе которых есть заголовок cache-control:no-store, нельзя добавить в возвратный кеш."
-  },
-  "panels/application/BackForwardCacheStrings.ts | timeout": {
-    "message": "Время нахождения страницы в возвратном кеше истекло, так как превысило максимально допустимое."
-  },
-  "panels/application/BackForwardCacheStrings.ts | timeoutPuttingInCache": {
-    "message": "Время добавления страницы в возвратный кеш истекло (возможно, обработчики событий pagehide выполняются слишком долго)."
-  },
-  "panels/application/BackForwardCacheStrings.ts | unloadHandlerExistsInMainFrame": {
-    "message": "В основном фрейме страницы есть обработчик выгрузки."
-  },
-  "panels/application/BackForwardCacheStrings.ts | unloadHandlerExistsInSubFrame": {
-    "message": "В субфрейме страницы есть обработчик выгрузки."
-  },
-  "panels/application/BackForwardCacheStrings.ts | userAgentOverrideDiffers": {
-    "message": "Браузер изменил заголовок переопределения агента пользователя."
-  },
-  "panels/application/BackForwardCacheStrings.ts | wasGrantedMediaAccess": {
-    "message": "Страницы, которые предоставили право на запись видео или аудио, в настоящее время нельзя добавить в возвратный кеш."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webDatabase": {
-    "message": "Страницы, которые используют WebDatabase, в настоящее время нельзя добавить в возвратный кеш."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webHID": {
-    "message": "Страницы, которые используют WebHID, в настоящее время нельзя добавить в возвратный кеш."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webLocks": {
-    "message": "Страницы, которые используют WebLocks, в настоящее время нельзя добавить в возвратный кеш."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webNfc": {
-    "message": "Страницы, которые используют WebNFC, в настоящее время нельзя добавить в возвратный кеш."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webOTPService": {
-    "message": "Страницы, которые используют WebOTPService, в настоящее время нельзя добавить в возвратный кеш."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webRTC": {
-    "message": "Страницы, которые используют WebRTC, нельзя добавить в возвратный кеш."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webShare": {
-    "message": "Страницы, которые используют WebShare, в настоящее время нельзя добавить в возвратный кеш."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webSocket": {
-    "message": "Страницы, которые используют интерфейс WebSocket, нельзя добавить в возвратный кеш."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webTransport": {
-    "message": "Страницы, которые используют WebTransport, нельзя добавить в возвратный кеш."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webXR": {
-    "message": "Страницы, которые используют WebXR, в настоящее время нельзя добавить в возвратный кеш."
-  },
-  "panels/application/BackForwardCacheView.ts | backForwardCacheTitle": {
-    "message": "Возвратный кеш"
-  },
-  "panels/application/BackForwardCacheView.ts | bfcacheStatus": {
-    "message": "Статус возвратного кеша"
-  },
-  "panels/application/BackForwardCacheView.ts | circumstantial": {
-    "message": "Не нужно принимать меры"
-  },
-  "panels/application/BackForwardCacheView.ts | circumstantialExplanation": {
-    "message": "Причины, которые мешают кешированию, неустранимы, то есть они вне сферы прямого контроля страницы."
-  },
-  "panels/application/BackForwardCacheView.ts | mainFrame": {
-    "message": "Основной фрейм"
-  },
-  "panels/application/BackForwardCacheView.ts | normalNavigation": {
-    "message": "Стандартная навигация (без восстановления из возвратного кеша)"
-  },
-  "panels/application/BackForwardCacheView.ts | pageSupportNeeded": {
-    "message": "Нужно принимать меры"
-  },
-  "panels/application/BackForwardCacheView.ts | pageSupportNeededExplanation": {
-    "message": "Вы можете устранить эти причины, чтобы добавить страницу в возвратный кеш."
-  },
-  "panels/application/BackForwardCacheView.ts | restoredFromBFCache": {
-    "message": "Восстановлено из возвратного кеша"
-  },
-  "panels/application/BackForwardCacheView.ts | runTest": {
-    "message": "Проверить"
-  },
-  "panels/application/BackForwardCacheView.ts | supportPending": {
-    "message": "Планируется поддержка в будущих версиях"
-  },
-  "panels/application/BackForwardCacheView.ts | supportPendingExplanation": {
-    "message": "Это временные причины, то есть в будущих версиях Chrome они не будут препятствовать добавлению в возвратный кеш."
-  },
-  "panels/application/BackForwardCacheView.ts | unavailable": {
-    "message": "недоступно"
-  },
-  "panels/application/BackForwardCacheView.ts | unknown": {
-    "message": "неизвестно"
-  },
-  "panels/application/BackForwardCacheView.ts | url": {
-    "message": "URL"
-  },
   "panels/application/BackgroundServiceView.ts | backgroundFetch": {
     "message": "Фоновое извлечение"
   },
@@ -2911,6 +2701,15 @@
   },
   "panels/application/IndexedDBViews.ts | version": {
     "message": "Версия"
+  },
+  "panels/application/InterestGroupStorageView.ts | clickToDisplayBody": {
+    "message": "Нажмите на событие группы по интересам, чтобы показать текущее состояние группы"
+  },
+  "panels/application/InterestGroupStorageView.ts | noDataAvailable": {
+    "message": "Для выбранной группы по интересам нет доступных сведений. Возможно, браузер не состоит в этой группе."
+  },
+  "panels/application/InterestGroupTreeElement.ts | interestGroups": {
+    "message": "Группы по интересам"
   },
   "panels/application/OpenedWindowDetailsView.ts | accessToOpener": {
     "message": "Доступ к открывающей странице"
@@ -3251,6 +3050,411 @@
   "panels/application/application-meta.ts | stopRecordingEvents": {
     "message": "Остановить запись событий"
   },
+  "panels/application/components/BackForwardCacheStrings.ts | HTTPMethodNotGET": {
+    "message": "В возвратный кеш можно добавить только страницы, загруженные с помощью GET-запроса."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | HTTPStatusNotOK": {
+    "message": "Можно кешировать только страницы с кодом статуса 2XX."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | JavaScriptExecution": {
+    "message": "Chrome обнаружил попытку выполнить код JavaScript в кеше."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | appBanner": {
+    "message": "Страницы, которые запросили AppBanner, в настоящее время нельзя добавить в возвратный кеш."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | backForwardCacheDisabled": {
+    "message": "Возвратный кеш отключен в разделе экспериментальных параметров Chrome. Введите chrome://flags/#back-forward-cache в адресной строке, чтобы включить кеш на этом устройстве."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | backForwardCacheDisabledByCommandLine": {
+    "message": "Возвратный кеш отключен с помощью командной строки."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | backForwardCacheDisabledByLowMemory": {
+    "message": "Возвратный кеш отключен, так как недостаточно памяти."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | backForwardCacheDisabledForDelegate": {
+    "message": "Возвратный кеш не поддерживается представителем."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | backForwardCacheDisabledForPrerender": {
+    "message": "Возвратный кеш отключен для системы предварительного отображения."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | broadcastChannel": {
+    "message": "Страницу нельзя кешировать, так как у нее есть экземпляр BroadcastChannel с зарегистрированными прослушивателями."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | cacheControlNoStore": {
+    "message": "Страницы с заголовком cache-control:no-store нельзя добавить в возвратный кеш."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | cacheFlushed": {
+    "message": "Кэш был намеренно очищен."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | cacheLimit": {
+    "message": "Страница удалена из кеша, чтобы освободить место для другой страницы."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | containsPlugins": {
+    "message": "Страницы с плагинами в настоящее время нельзя добавить в возвратный кеш."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentFileChooser": {
+    "message": "Страницы, которые используют FileChooser API, нельзя добавить в возвратный кеш."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentFileSystemAccess": {
+    "message": "Страницы, которые используют File System Access API, в настоящее время нельзя добавить в возвратный кеш."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentMediaDevicesDispatcherHost": {
+    "message": "Страницы, которые используют диспетчер медиаустройств, нельзя добавить в возвратный кеш."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentMediaPlay": {
+    "message": "Медиапроигрыватель воспроизводил контент во время перехода на другую страницу."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentMediaSession": {
+    "message": "Страницы, которые используют MediaSession API и установили состояние воспроизведения, нельзя добавить в возвратный кеш."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentMediaSessionService": {
+    "message": "Страницы, которые используют MediaSession API и для которых настроены обработчики действий, нельзя добавить в возвратный кеш."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentScreenReader": {
+    "message": "Возвратный кеш отключен, так как работает программа чтения с экрана."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentSecurityHandler": {
+    "message": "Страницы, которые используют SecurityHandler, нельзя добавить в возвратный кеш."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentSerial": {
+    "message": "Страницы, которые используют Serial API, нельзя добавить в возвратный кеш."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentWebAuthenticationAPI": {
+    "message": "Страницы, которые используют WebAuthetication API, нельзя добавить в возвратный кеш."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentWebBluetooth": {
+    "message": "Страницы, которые используют WebBluetooth API, нельзя добавить в возвратный кеш."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentWebUSB": {
+    "message": "Страницы, которые используют WebUSB API, нельзя добавить в возвратный кеш."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | dedicatedWorkerOrWorklet": {
+    "message": "Страницы, которые используют Dedicated Worker или Worklet, в настоящее время нельзя добавить в возвратный кеш."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | documentLoaded": {
+    "message": "Переход со страницы выполнен до завершения загрузки документа."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderAppBannerManager": {
+    "message": "При переходе на другую страницу был показан баннер приложения."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderChromePasswordManagerClientBindCredentialManager": {
+    "message": "При переходе на другую страницу работал Диспетчер паролей Chrome."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderDomDistillerSelfDeletingRequestDelegate": {
+    "message": "При переходе на другую страницу выполнялся процесс DOM Distiller."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderDomDistillerViewerSource": {
+    "message": "При переходе на другую страницу работало средство просмотра DOM Distiller."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderExtensionMessaging": {
+    "message": "Возвратный кеш отключен, так как расширения используют API для обмена сообщениями."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderExtensionMessagingForOpenPort": {
+    "message": "Расширения должны закрывать долговременные подключения перед записью возвратного кеша."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderExtensionSentMessageToCachedFrame": {
+    "message": "Расширения с долговременными подключениями попытались отправлять сообщения в фреймы в возвратном кеше."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderExtensions": {
+    "message": "Возвратный кеш отключен из-за работы расширений."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderModalDialog": {
+    "message": "При переходе на другую страницу было показано модальное диалоговое окно (например, связанное с повторной отправкой формы или паролем в протоколе HTTP)."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderOfflinePage": {
+    "message": "При переходе на другую страницу была показана ее офлайн-версия."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderOomInterventionTabHelper": {
+    "message": "При переходе на другую страницу была показана строка с сообщением о нехватке памяти."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderPermissionRequestManager": {
+    "message": "При переходе на другую страницу обнаружены запросы разрешений."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderPopupBlockerTabHelper": {
+    "message": "При переходе на другую страницу работал блокировщик всплывающих окон."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderSafeBrowsingThreatDetails": {
+    "message": "При переходе на другую страницу были показаны данные Безопасного просмотра."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderSafeBrowsingTriggeredPopupBlocker": {
+    "message": "Сервис \"Безопасный просмотр\" заблокировал всплывающее окно, так как страница содержит недопустимый контент."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | enteredBackForwardCacheBeforeServiceWorkerHostAdded": {
+    "message": "Скрипт Service Worker был активирован, когда страница находилась в возвратном кеше."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | errorDocument": {
+    "message": "Возвратный кеш отключен из-за ошибки документа."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | fencedFramesEmbedder": {
+    "message": "Страницы, на которых используется элемент FencedFrames, нельзя сохранить в возвратный кеш."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | foregroundCacheLimit": {
+    "message": "Страница удалена из кеша, чтобы освободить место для другой страницы."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | grantedMediaStreamAccess": {
+    "message": "Страницы, которые предоставили доступ к трансляции мультимедиа, в настоящее время нельзя добавить в возвратный кеш."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | haveInnerContents": {
+    "message": "Страницы, которые используют порталы, в настоящее время нельзя добавить в возвратный кеш."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | idleManager": {
+    "message": "Страницы, которые используют IdleManager, в настоящее время нельзя добавить в возвратный кеш."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | indexedDBConnection": {
+    "message": "Страницы с открытым подключением IndexedDB в настоящее время нельзя добавить в возвратный кеш."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | ineligibleAPI": {
+    "message": "Использовались недопустимые API."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | injectedJavascript": {
+    "message": "Страницы, в которые с помощью расширений внедрен код JavaScript, в настоящее время нельзя добавить в возвратный кеш."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | injectedStyleSheet": {
+    "message": "Страницы, в которые с помощью расширений внедрена таблица стилей, в настоящее время нельзя добавить в возвратный кеш."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | internalError": {
+    "message": "Внутренняя ошибка."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | keyboardLock": {
+    "message": "Страницы, которые используют блокировку клавиатуры, в настоящее время нельзя добавить в возвратный кеш."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | loading": {
+    "message": "Переход со страницы выполнен до завершения ее загрузки."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | mainResourceHasCacheControlNoCache": {
+    "message": "Страницы, в основном ресурсе которых есть заголовок cache-control:no-cache, нельзя добавить в возвратный кеш."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | mainResourceHasCacheControlNoStore": {
+    "message": "Страницы, в основном ресурсе которых есть заголовок cache-control:no-store, нельзя добавить в возвратный кеш."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | navigationCancelledWhileRestoring": {
+    "message": "Страницу не удалось восстановить из возвратного кеша до отмены перехода."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | networkExceedsBufferLimit": {
+    "message": "Страница удалена из кеша, так как через активное сетевое подключение было получено слишком много данных. Chrome ограничивает объем данных, передаваемых на кешируемую страницу."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | networkRequestDatapipeDrainedAsBytesConsumer": {
+    "message": "Страницы, которые используют событие inflight fetch() или интерфейс XHR, в настоящее время нельзя добавить в возвратный кеш."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | networkRequestRedirected": {
+    "message": "Страница удалена из возвратного кеша, так как активный сетевой запрос был выполнен с переадресацией."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | networkRequestTimeout": {
+    "message": "Страница удалена из кеша, так как подключение к сети было открыто слишком долго. Chrome ограничивает время получения данных кешируемой страницей."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | noResponseHead": {
+    "message": "Страницы без действительного заголовка ответа нельзя добавить в возвратный кеш."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | notMainFrame": {
+    "message": "Переход выполнен в фрейме, отличном от основного."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | outstandingIndexedDBTransaction": {
+    "message": "Страницу, на которой выполняются транзакции индексированной базы данных, в настоящее время нельзя добавить в возвратный кеш."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | outstandingNetworkRequestDirectSocket": {
+    "message": "Страницы с активным сетевым запросом в настоящее время нельзя добавить в возвратный кеш."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | outstandingNetworkRequestFetch": {
+    "message": "Страницы с активным сетевым запросом на извлечение в настоящее время нельзя добавить в возвратный кеш."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | outstandingNetworkRequestOthers": {
+    "message": "Страницы с активным сетевым запросом в настоящее время нельзя добавить в возвратный кеш."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | outstandingNetworkRequestXHR": {
+    "message": "Страницы с активным сетевым запросом XHR в настоящее время нельзя добавить в возвратный кеш."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | paymentManager": {
+    "message": "Страницы, которые используют PaymentManager, в настоящее время нельзя добавить в возвратный кеш."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | pictureInPicture": {
+    "message": "Страницы, которые используют картинку в картинке, в настоящее время нельзя добавить в возвратный кеш."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | portal": {
+    "message": "Страницы, которые используют порталы, в настоящее время нельзя добавить в возвратный кеш."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | printing": {
+    "message": "Страницы, где показан интерфейс печати, в настоящее время нельзя добавить в возвратный кеш."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | relatedActiveContentsExist": {
+    "message": "Страница открыта с помощью window.open(), и на нее ссылается другая вкладка, или страница открыта в другом окне."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | rendererProcessCrashed": {
+    "message": "Процесс отрисовки страницы завершился ошибкой в возвратном кеше."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | rendererProcessKilled": {
+    "message": "Процесс отрисовки для страницы в возвратном кеше остановлен."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedAudioCapturePermission": {
+    "message": "Страницы, которые запросили разрешения на запись аудио, в настоящее время нельзя добавить в возвратный кеш."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedBackForwardCacheBlockedSensors": {
+    "message": "Страницы, запросившие разрешения на доступ к датчикам, в настоящее время нельзя добавить в возвратный кеш."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedBackgroundWorkPermission": {
+    "message": "Страницы, которые запросили разрешения на фоновую синхронизацию или извлечение, в настоящее время нельзя добавить в возвратный кеш."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedMIDIPermission": {
+    "message": "Страницы, запросившие разрешения на доступ к MIDI-устройствам, в настоящее время нельзя добавить в возвратный кеш."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedNotificationsPermission": {
+    "message": "Страницы, запросившие разрешения на доступ к уведомлениям, в настоящее время нельзя добавить в возвратный кеш."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedStorageAccessGrant": {
+    "message": "Страницы, запросившие доступ к хранилищу, в настоящее время нельзя добавить в возвратный кеш."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedVideoCapturePermission": {
+    "message": "Страницы, которые запросили разрешения на запись видео, в настоящее время нельзя добавить в возвратный кеш."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | schemeNotHTTPOrHTTPS": {
+    "message": "Можно кешировать только страницы со схемой URL HTTP или HTTPS."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | serviceWorkerClaim": {
+    "message": "Страница была запрошена скриптом Service Worker, когда находилась в возвратном кеше."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | serviceWorkerPostMessage": {
+    "message": "Скрипт Service Worker пытался отправить свойство MessageEvent на страницу в возвратном кеше."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | serviceWorkerUnregistration": {
+    "message": "Регистрация Service Worker была отменена, когда страница находилась в возвратном кеше."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | serviceWorkerVersionActivation": {
+    "message": "Страница удалена из возвратного кеша из-за активации Service Worker."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | sessionRestored": {
+    "message": "Браузер Chrome перезапущен. Все записи возвратного кеша удалены."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | sharedWorker": {
+    "message": "Страницы, которые используют SharedWorker, в настоящее время нельзя добавить в возвратный кеш."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | speechRecognizer": {
+    "message": "Страницы, которые используют SpeechRecognizer, в настоящее время нельзя добавить в возвратный кеш."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | speechSynthesis": {
+    "message": "Страницы, которые используют SpeechSynthesis, в настоящее время нельзя добавить в возвратный кеш."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | subframeIsNavigating": {
+    "message": "Окно iframe на странице запустило переход, который не завершился."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | subresourceHasCacheControlNoCache": {
+    "message": "Страницы, в подресурсе которых есть заголовок cache-control:no-cache, нельзя добавить в возвратный кеш."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | subresourceHasCacheControlNoStore": {
+    "message": "Страницы, в подресурсе которых есть заголовок cache-control:no-store, нельзя добавить в возвратный кеш."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | timeout": {
+    "message": "Время нахождения страницы в возвратном кеше истекло, так как превысило максимально допустимое."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | timeoutPuttingInCache": {
+    "message": "Время добавления страницы в возвратный кеш истекло (возможно, обработчики событий pagehide выполняются слишком долго)."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | unloadHandlerExistsInMainFrame": {
+    "message": "В основном фрейме страницы есть обработчик выгрузки."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | unloadHandlerExistsInSubFrame": {
+    "message": "В субфрейме страницы есть обработчик выгрузки."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | userAgentOverrideDiffers": {
+    "message": "Браузер изменил заголовок переопределения агента пользователя."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | wasGrantedMediaAccess": {
+    "message": "Страницы, которые предоставили право на запись видео или аудио, в настоящее время нельзя добавить в возвратный кеш."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webDatabase": {
+    "message": "Страницы, которые используют WebDatabase, в настоящее время нельзя добавить в возвратный кеш."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webHID": {
+    "message": "Страницы, которые используют WebHID, в настоящее время нельзя добавить в возвратный кеш."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webLocks": {
+    "message": "Страницы, которые используют WebLocks, в настоящее время нельзя добавить в возвратный кеш."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webNfc": {
+    "message": "Страницы, которые используют WebNFC, в настоящее время нельзя добавить в возвратный кеш."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webOTPService": {
+    "message": "Страницы, которые используют WebOTPService, в настоящее время нельзя добавить в возвратный кеш."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webRTC": {
+    "message": "Страницы, которые используют WebRTC, нельзя добавить в возвратный кеш."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webShare": {
+    "message": "Страницы, которые используют WebShare, в настоящее время нельзя добавить в возвратный кеш."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webSocket": {
+    "message": "Страницы, которые используют интерфейс WebSocket, нельзя добавить в возвратный кеш."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webTransport": {
+    "message": "Страницы, которые используют WebTransport, нельзя добавить в возвратный кеш."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webXR": {
+    "message": "Страницы, которые используют WebXR, в настоящее время нельзя добавить в возвратный кеш."
+  },
+  "panels/application/components/BackForwardCacheView.ts | backForwardCacheTitle": {
+    "message": "Возвратный кеш"
+  },
+  "panels/application/components/BackForwardCacheView.ts | blankURLTitle": {
+    "message": "Без URL [{PH1}]"
+  },
+  "panels/application/components/BackForwardCacheView.ts | blockingExtensionId": {
+    "message": "Идентификатор расширения: "
+  },
+  "panels/application/components/BackForwardCacheView.ts | circumstantial": {
+    "message": "Не нужно принимать меры"
+  },
+  "panels/application/components/BackForwardCacheView.ts | circumstantialExplanation": {
+    "message": "Причины, которые мешают кешированию, неустранимы, то есть они вне сферы прямого контроля страницы."
+  },
+  "panels/application/components/BackForwardCacheView.ts | framesPerIssue": {
+    "message": "{n,plural, =1{# фрейм}one{# фрейм}few{# фрейма}many{# фреймов}other{# фрейма}}"
+  },
+  "panels/application/components/BackForwardCacheView.ts | framesTitle": {
+    "message": "Фреймы"
+  },
+  "panels/application/components/BackForwardCacheView.ts | issuesInMultipleFrames": {
+    "message": "{n,plural, =1{В нескольких фреймах ({m}) найдена # проблема.}one{В нескольких фреймах ({m}) найдена # проблема.}few{В нескольких фреймах ({m}) найдено # проблемы.}many{В нескольких фреймах ({m}) найдено # проблем.}other{В нескольких фреймах ({m}) найдено # проблемы.}}"
+  },
+  "panels/application/components/BackForwardCacheView.ts | issuesInSingleFrame": {
+    "message": "{n,plural, =1{В одном фрейме найдена # проблема.}one{В одном фрейме найдена # проблема.}few{В одном фрейме найдено # проблемы.}many{В одном фрейме найдено # проблем.}other{В одном фрейме найдено # проблемы.}}"
+  },
+  "panels/application/components/BackForwardCacheView.ts | learnMore": {
+    "message": "Подробнее о возможности использовать возвратный кеш…"
+  },
+  "panels/application/components/BackForwardCacheView.ts | mainFrame": {
+    "message": "Основной фрейм"
+  },
+  "panels/application/components/BackForwardCacheView.ts | normalNavigation": {
+    "message": "Возвратный кеш не использовался. Вы можете запустить его с помощью кнопок \"Назад\" и \"Вперед\" в Chrome или нажать ниже кнопку проверки для автоматической навигации."
+  },
+  "panels/application/components/BackForwardCacheView.ts | pageSupportNeeded": {
+    "message": "Нужно принимать меры"
+  },
+  "panels/application/components/BackForwardCacheView.ts | pageSupportNeededExplanation": {
+    "message": "Вы можете устранить эти причины, чтобы добавить страницу в возвратный кеш."
+  },
+  "panels/application/components/BackForwardCacheView.ts | restoredFromBFCache": {
+    "message": "Передано из возвратного кеша"
+  },
+  "panels/application/components/BackForwardCacheView.ts | runTest": {
+    "message": "Проверить возвратный кеш"
+  },
+  "panels/application/components/BackForwardCacheView.ts | runningTest": {
+    "message": "Выполняется проверка"
+  },
+  "panels/application/components/BackForwardCacheView.ts | supportPending": {
+    "message": "Планируется поддержка в будущих версиях"
+  },
+  "panels/application/components/BackForwardCacheView.ts | supportPendingExplanation": {
+    "message": "Это временные причины, поэтому в будущих версиях Chrome они не будут препятствовать добавлению страниц в возвратный кеш."
+  },
+  "panels/application/components/BackForwardCacheView.ts | unavailable": {
+    "message": "недоступно"
+  },
+  "panels/application/components/BackForwardCacheView.ts | unknown": {
+    "message": "Статус неизвестен"
+  },
+  "panels/application/components/BackForwardCacheView.ts | url": {
+    "message": "URL:"
+  },
   "panels/application/components/EndpointsGrid.ts | noEndpointsToDisplay": {
     "message": "Нет конечных точек."
   },
@@ -3297,22 +3501,16 @@
     "message": "Нажмите, чтобы открыть панель \"Источники\""
   },
   "panels/application/components/FrameDetailsView.ts | createdByAdScriptExplanation": {
-    "message": "При создании этого фрейма в стеке (асинхронном) находился скрипт объявления. Чтобы узнать больше, изучите трассировку стека при создании фрейма."
+    "message": "При создании этого фрейма в (async) stack находился скрипт объявления. Чтобы узнать больше, изучите stack trace при создании фрейма."
   },
   "panels/application/components/FrameDetailsView.ts | creationStackTrace": {
-    "message": "Трассировка стека при создании фрейма"
+    "message": "Stack Trace при создании фрейма"
   },
   "panels/application/components/FrameDetailsView.ts | creationStackTraceExplanation": {
-    "message": "Трассировка стека позволяет отследить момент создания фрейма с помощью программных средств"
-  },
-  "panels/application/components/FrameDetailsView.ts | crossoriginEmbedderPolicy": {
-    "message": "Правила междоменного встраивания"
+    "message": "Фрейм создан с помощью программных средств. stack trace показывает, где это произошло."
   },
   "panels/application/components/FrameDetailsView.ts | crossoriginIsolated": {
     "message": "Изолирован от разных источников"
-  },
-  "panels/application/components/FrameDetailsView.ts | crossoriginOpenerPolicy": {
-    "message": "Правила междоменного открытия"
   },
   "panels/application/components/FrameDetailsView.ts | document": {
     "message": "Документ"
@@ -3324,7 +3522,7 @@
     "message": "Подробнее…"
   },
   "panels/application/components/FrameDetailsView.ts | localhostIsAlwaysASecureContext": {
-    "message": "Сервер localhost всегда безопасен."
+    "message": "Сервер Localhost всегда безопасен."
   },
   "panels/application/components/FrameDetailsView.ts | matchedBlockingRuleExplanation": {
     "message": "Считается, что это фрейм объявлений, так как его текущий (или предыдущий) основной документ – ресурс объявлений."
@@ -3338,14 +3536,14 @@
   "panels/application/components/FrameDetailsView.ts | origin": {
     "message": "Источник"
   },
-  "panels/application/components/FrameDetailsView.ts | originTrials": {
-    "message": "Пробные версии для источника"
-  },
   "panels/application/components/FrameDetailsView.ts | ownerElement": {
     "message": "Элемент owner"
   },
   "panels/application/components/FrameDetailsView.ts | parentIsAdExplanation": {
     "message": "Считается, что это фрейм объявлений, так как его родительский фрейм относится к такому типу."
+  },
+  "panels/application/components/FrameDetailsView.ts | refresh": {
+    "message": "Обновить"
   },
   "panels/application/components/FrameDetailsView.ts | reportingTo": {
     "message": "отправляет отчеты"
@@ -3366,10 +3564,10 @@
     "message": "Безопасность и изоляция"
   },
   "panels/application/components/FrameDetailsView.ts | sharedarraybufferConstructorIs": {
-    "message": "Конструктор SharedArrayBuffer доступен, и объекты SAB могут быть переданы через postMessage"
+    "message": "Конструктор SharedArrayBuffer доступен, и объекты SABs могут быть переданы через postMessage"
   },
   "panels/application/components/FrameDetailsView.ts | sharedarraybufferConstructorIsAvailable": {
-    "message": "Конструктор SharedArrayBuffer доступен, но объекты SAB нельзя передать через postMessage"
+    "message": "Конструктор SharedArrayBuffer доступен, но объекты SABs нельзя передать через postMessage"
   },
   "panels/application/components/FrameDetailsView.ts | theFramesSchemeIsInsecure": {
     "message": "Схема фрейма небезопасна"
@@ -3378,7 +3576,7 @@
     "message": "Есть доступ к performance.measureUserAgentSpecificMemory() API"
   },
   "panels/application/components/FrameDetailsView.ts | thePerformancemeasureuseragentspecificmemory": {
-    "message": "Нет доступа к performance.measureUserAgentSpecificMemory() API"
+    "message": "Нет доступа к API performance.measureUserAgentSpecificMemory()"
   },
   "panels/application/components/FrameDetailsView.ts | thisAdditionalDebugging": {
     "message": "Это дополнительная информация (сведения об отладке) показаны, потому что запущен эксперимент Protocol Monitor."
@@ -3400,6 +3598,24 @@
   },
   "panels/application/components/FrameDetailsView.ts | yes": {
     "message": "Да"
+  },
+  "panels/application/components/InterestGroupAccessGrid.ts | allInterestGroupStorageEvents": {
+    "message": "Все события хранения данных для группы по интересам"
+  },
+  "panels/application/components/InterestGroupAccessGrid.ts | eventTime": {
+    "message": "Время события"
+  },
+  "panels/application/components/InterestGroupAccessGrid.ts | eventType": {
+    "message": "Тип доступа"
+  },
+  "panels/application/components/InterestGroupAccessGrid.ts | groupName": {
+    "message": "Название"
+  },
+  "panels/application/components/InterestGroupAccessGrid.ts | groupOwner": {
+    "message": "Владелец"
+  },
+  "panels/application/components/InterestGroupAccessGrid.ts | noEvents": {
+    "message": "Нет записанных событий для групп по интересам."
   },
   "panels/application/components/OriginTrialTreeView.ts | expiryTime": {
     "message": "Срок действия"
@@ -3440,6 +3656,9 @@
   "panels/application/components/PermissionsPolicySection.ts | clickToShowIframe": {
     "message": "Нажмите, чтобы показать на панели \"Элементы\" самое верхнее окно iframe, где запрещена эта функция"
   },
+  "panels/application/components/PermissionsPolicySection.ts | disabledByFencedFrame": {
+    "message": "отключена внутри fencedframe"
+  },
   "panels/application/components/PermissionsPolicySection.ts | disabledByHeader": {
     "message": "отключена в заголовке Permissions-Policy"
   },
@@ -3455,8 +3674,17 @@
   "panels/application/components/PermissionsPolicySection.ts | showDetails": {
     "message": "Показать сведения"
   },
+  "panels/application/components/ReportsGrid.ts | destination": {
+    "message": "Целевая конечная точка"
+  },
+  "panels/application/components/ReportsGrid.ts | generatedAt": {
+    "message": "Время создания"
+  },
   "panels/application/components/ReportsGrid.ts | noReportsToDisplay": {
     "message": "Нет отчетов."
+  },
+  "panels/application/components/ReportsGrid.ts | status": {
+    "message": "Статус"
   },
   "panels/application/components/StackTrace.ts | cannotRenderStackTrace": {
     "message": "Не удается показать трассировку стека."
@@ -3620,6 +3848,12 @@
   "panels/changes/ChangesView.ts | binaryData": {
     "message": "Двоичные данные"
   },
+  "panels/changes/ChangesView.ts | copy": {
+    "message": "Копировать"
+  },
+  "panels/changes/ChangesView.ts | copyAllChangesFromCurrentFile": {
+    "message": "Копировать все изменения из текущего файла"
+  },
   "panels/changes/ChangesView.ts | noChanges": {
     "message": "Изменений нет"
   },
@@ -3698,11 +3932,20 @@
   "panels/console/ConsoleView.ts | allLevels": {
     "message": "Все уровни"
   },
+  "panels/console/ConsoleView.ts | autocompleteFromHistory": {
+    "message": "Автозаполнение из истории"
+  },
   "panels/console/ConsoleView.ts | consoleCleared": {
     "message": "Консоль очищена"
   },
   "panels/console/ConsoleView.ts | consoleSettings": {
     "message": "Настройки консоли"
+  },
+  "panels/console/ConsoleView.ts | consoleSidebarHidden": {
+    "message": "Боковая панель консоли скрыта"
+  },
+  "panels/console/ConsoleView.ts | consoleSidebarShown": {
+    "message": "Боковая панель консоли показана"
   },
   "panels/console/ConsoleView.ts | copyVisibleStyledSelection": {
     "message": "Копировать видимое выделение со стилем"
@@ -3773,6 +4016,9 @@
   "panels/console/ConsoleView.ts | logLevels": {
     "message": "Уровни"
   },
+  "panels/console/ConsoleView.ts | logXMLHttpRequests": {
+    "message": "Регистрировать запросы XMLHttpRequests"
+  },
   "panels/console/ConsoleView.ts | onlyShowMessagesFromTheCurrentContext": {
     "message": "Показывать только сообщения из текущего контекста (top, iframe, worker, расширение)"
   },
@@ -3805,6 +4051,9 @@
   },
   "panels/console/ConsoleView.ts | showCorsErrorsInConsole": {
     "message": "Показывать ошибки CORS в консоли"
+  },
+  "panels/console/ConsoleView.ts | treatEvaluationAsUserActivation": {
+    "message": "Рассматривать вычисление как активацию пользователя"
   },
   "panels/console/ConsoleView.ts | verbose": {
     "message": "Детализация"
@@ -3942,7 +4191,7 @@
     "message": "Скрыть временные метки"
   },
   "panels/console/console-meta.ts | logXmlhttprequests": {
-    "message": "Журнал запросов XMLHttpRequests"
+    "message": "Регистрировать запросы XMLHttpRequests"
   },
   "panels/console/console-meta.ts | onlyShowMessagesFromTheCurrent": {
     "message": "Показывать только сообщения из текущего контекста (top, iframe, worker, расширение)"
@@ -3966,7 +4215,7 @@
     "message": "Показать временные метки"
   },
   "panels/console/console-meta.ts | treatEvaluationAsUserActivation": {
-    "message": "Рассматривать вычисление как действия пользователя"
+    "message": "Рассматривать вычисление как активацию пользователя"
   },
   "panels/console_counters/WarningErrorCounter.ts | openConsoleToViewS": {
     "message": "Открыть консоль, чтобы посмотреть {PH1}"
@@ -4229,20 +4478,11 @@
   "panels/css_overview/CSSOverviewUnusedDeclarations.ts | widthAppliedToAnInlineElement": {
     "message": "Атрибут Width применен к встроенному элементу"
   },
-  "panels/css_overview/components/CSSOverviewStartView.ts | activelyWorkingAndLookingForS": {
-    "message": "{PH1}: наши специалисты активно работают над этой функцией и хотят узнать ваше мнение!"
-  },
   "panels/css_overview/components/CSSOverviewStartView.ts | captureOverview": {
     "message": "Обзор съемки"
   },
   "panels/css_overview/components/CSSOverviewStartView.ts | capturePageCSSOverview": {
     "message": "Получение общих сведений о таблицах CSS страницы."
-  },
-  "panels/css_overview/components/CSSOverviewStartView.ts | feedbackInline": {
-    "message": "отзыв"
-  },
-  "panels/css_overview/components/CSSOverviewStartView.ts | feedbackStandalone": {
-    "message": "Отзыв"
   },
   "panels/css_overview/components/CSSOverviewStartView.ts | identifyCSSImprovements": {
     "message": "Определение возможностей для улучшения CSS"
@@ -4253,14 +4493,8 @@
   "panels/css_overview/components/CSSOverviewStartView.ts | locateAffectedElements": {
     "message": "Поиск затрагиваемых объектов на панели элементов."
   },
-  "panels/css_overview/components/CSSOverviewStartView.ts | previewFeature": {
-    "message": "Функция просмотра"
-  },
   "panels/css_overview/components/CSSOverviewStartView.ts | quickStartWithCSSOverview": {
     "message": "Краткое руководство: начните работу с новой панелью \"Обзор CSS\""
-  },
-  "panels/css_overview/components/CSSOverviewStartView.ts | videoAndDocumentation": {
-    "message": "Видео и документация"
   },
   "panels/css_overview/css_overview-meta.ts | cssOverview": {
     "message": "Обзор CSS"
@@ -4376,6 +4610,12 @@
   "panels/elements/ElementsPanel.ts | computed": {
     "message": "Вычисленные"
   },
+  "panels/elements/ElementsPanel.ts | computedStylesHidden": {
+    "message": "Боковая панель вычисленных стилей скрыта"
+  },
+  "panels/elements/ElementsPanel.ts | computedStylesShown": {
+    "message": "Боковая панель вычисленных стилей показана"
+  },
   "panels/elements/ElementsPanel.ts | domTreeExplorer": {
     "message": "Обозреватель дерева DOM"
   },
@@ -4410,7 +4650,7 @@
     "message": "Стили"
   },
   "panels/elements/ElementsPanel.ts | switchToAccessibilityTreeView": {
-    "message": "Переключиться на дерево специальных возможностей"
+    "message": "Переключиться на дерево доступности"
   },
   "panels/elements/ElementsPanel.ts | switchToDomTreeView": {
     "message": "Переключиться на дерево DOM"
@@ -4571,6 +4811,12 @@
   "panels/elements/EventListenersWidget.ts | showListenersOnTheAncestors": {
     "message": "Показать прослушиватели предков"
   },
+  "panels/elements/LayersWidget.ts | cssLayersTitle": {
+    "message": "Слои CSS"
+  },
+  "panels/elements/LayersWidget.ts | toggleCSSLayers": {
+    "message": "Показать/скрыть слои CSS"
+  },
   "panels/elements/MarkerDecorator.ts | domBreakpoint": {
     "message": "Точка останова DOM"
   },
@@ -4591,6 +4837,63 @@
   },
   "panels/elements/PlatformFontsWidget.ts | renderedFonts": {
     "message": "Отображаемые шрифты"
+  },
+  "panels/elements/PropertiesWidget.ts | filter": {
+    "message": "Фильтр"
+  },
+  "panels/elements/PropertiesWidget.ts | filterProperties": {
+    "message": "Фильтр свойств"
+  },
+  "panels/elements/PropertiesWidget.ts | noMatchingProperty": {
+    "message": "Совпадающие свойства не найдены."
+  },
+  "panels/elements/PropertiesWidget.ts | showAll": {
+    "message": "Показать все"
+  },
+  "panels/elements/PropertiesWidget.ts | showAllTooltip": {
+    "message": "Если этот флажок снят, свойства с пустыми или неопределенными значениями показаны не будут"
+  },
+  "panels/elements/StylePropertiesSection.ts | constructedStylesheet": {
+    "message": "сконструированная таблица стилей"
+  },
+  "panels/elements/StylePropertiesSection.ts | copyAllCSSChanges": {
+    "message": "Копировать все изменения кода CSS"
+  },
+  "panels/elements/StylePropertiesSection.ts | copyAllDeclarations": {
+    "message": "Копировать все объявления"
+  },
+  "panels/elements/StylePropertiesSection.ts | copyRule": {
+    "message": "Копировать правило"
+  },
+  "panels/elements/StylePropertiesSection.ts | copySelector": {
+    "message": "Копировать selector"
+  },
+  "panels/elements/StylePropertiesSection.ts | cssSelector": {
+    "message": "Селектор CSS"
+  },
+  "panels/elements/StylePropertiesSection.ts | injectedStylesheet": {
+    "message": "внедренная таблица стилей"
+  },
+  "panels/elements/StylePropertiesSection.ts | insertStyleRuleBelow": {
+    "message": "Вставить правило стиля ниже"
+  },
+  "panels/elements/StylePropertiesSection.ts | sattributesStyle": {
+    "message": "{PH1}[Стиль атрибутов]"
+  },
+  "panels/elements/StylePropertiesSection.ts | showAllPropertiesSMore": {
+    "message": "Показать все свойства (ещё {PH1})"
+  },
+  "panels/elements/StylePropertiesSection.ts | styleAttribute": {
+    "message": "Атрибут style"
+  },
+  "panels/elements/StylePropertiesSection.ts | userAgentStylesheet": {
+    "message": "таблица стилей агента пользователя"
+  },
+  "panels/elements/StylePropertiesSection.ts | viaInspector": {
+    "message": "через инспектор"
+  },
+  "panels/elements/StylePropertyTreeElement.ts | copyAllCSSChanges": {
+    "message": "Копировать все изменения кода CSS"
   },
   "panels/elements/StylePropertyTreeElement.ts | copyAllCssDeclarationsAsJs": {
     "message": "Копировать все объявления как JS"
@@ -4637,26 +4940,23 @@
   "panels/elements/StylePropertyTreeElement.ts | viewComputedValue": {
     "message": "Показать вычисленное значение"
   },
-  "panels/elements/StylesSidebarPane.ts | constructedStylesheet": {
-    "message": "сконструированная таблица стилей"
+  "panels/elements/StylesSidebarPane.ts | automaticDarkMode": {
+    "message": "Автоматическая тёмная тема"
   },
-  "panels/elements/StylesSidebarPane.ts | copyAllDeclarations": {
-    "message": "Копировать все объявления"
+  "panels/elements/StylesSidebarPane.ts | clickToRevealLayer": {
+    "message": "Показать слой в дереве слоев"
   },
-  "panels/elements/StylesSidebarPane.ts | copyRule": {
-    "message": "Копировать правило"
+  "panels/elements/StylesSidebarPane.ts | copiedToClipboard": {
+    "message": "Скопировано в буфер обмена"
   },
-  "panels/elements/StylesSidebarPane.ts | copySelector": {
-    "message": "Копировать selector"
+  "panels/elements/StylesSidebarPane.ts | copyAllCSSChanges": {
+    "message": "Копировать все изменения кода CSS"
   },
   "panels/elements/StylesSidebarPane.ts | cssPropertyName": {
-    "message": "Название свойства CSS"
+    "message": "Название свойства CSS: {PH1}"
   },
   "panels/elements/StylesSidebarPane.ts | cssPropertyValue": {
-    "message": "Значение свойства CSS"
-  },
-  "panels/elements/StylesSidebarPane.ts | cssSelector": {
-    "message": "Селектор CSS"
+    "message": "Значение свойства CSS: {PH1}"
   },
   "panels/elements/StylesSidebarPane.ts | filter": {
     "message": "Фильтр"
@@ -4670,20 +4970,20 @@
   "panels/elements/StylesSidebarPane.ts | incrementdecrementWithMousewheelOne": {
     "message": "Увеличение и уменьшение с помощью колеса мыши или клавиш \"Вверх\" и \"Вниз\". {PH1} – R ± 1, Shift – G ± 1, Alt – B ± 1."
   },
+  "panels/elements/StylesSidebarPane.ts | inheritedFromSPseudoOf": {
+    "message": "Унаследовано от псевдоэлемента ::{PH1} "
+  },
   "panels/elements/StylesSidebarPane.ts | inheritedFroms": {
     "message": "Унаследовано от "
-  },
-  "panels/elements/StylesSidebarPane.ts | injectedStylesheet": {
-    "message": "внедренная таблица стилей"
-  },
-  "panels/elements/StylesSidebarPane.ts | insertStyleRuleBelow": {
-    "message": "Вставить правило стиля ниже"
   },
   "panels/elements/StylesSidebarPane.ts | invalidPropertyValue": {
     "message": "Недопустимое значение свойства"
   },
   "panels/elements/StylesSidebarPane.ts | invalidString": {
     "message": "{PH1} (имя свойства: {PH2}, значение свойства: {PH3})"
+  },
+  "panels/elements/StylesSidebarPane.ts | layer": {
+    "message": "Слой"
   },
   "panels/elements/StylesSidebarPane.ts | newStyleRule": {
     "message": "Новое правило стиля"
@@ -4694,23 +4994,11 @@
   "panels/elements/StylesSidebarPane.ts | pseudoSElement": {
     "message": "Псевдоэлемент ::{PH1}"
   },
-  "panels/elements/StylesSidebarPane.ts | sattributesStyle": {
-    "message": "{PH1}[Стиль атрибутов]"
-  },
-  "panels/elements/StylesSidebarPane.ts | showAllPropertiesSMore": {
-    "message": "Показать все свойства (ещё {PH1})"
-  },
-  "panels/elements/StylesSidebarPane.ts | styleAttribute": {
-    "message": "Атрибут style"
+  "panels/elements/StylesSidebarPane.ts | toggleRenderingEmulations": {
+    "message": "Включить или отключить распространенные эмуляции отрисовки"
   },
   "panels/elements/StylesSidebarPane.ts | unknownPropertyName": {
     "message": "Неизвестное имя свойства"
-  },
-  "panels/elements/StylesSidebarPane.ts | userAgentStylesheet": {
-    "message": "таблица стилей агента пользователя"
-  },
-  "panels/elements/StylesSidebarPane.ts | viaInspector": {
-    "message": "через инспектор"
   },
   "panels/elements/components/AccessibilityTreeNode.ts | ignored": {
     "message": "Игнорируется"
@@ -4980,7 +5268,7 @@
     "message": "Скрыть запросы медиа"
   },
   "panels/emulation/emulation-meta.ts | hideRulers": {
-    "message": "Скрыть линейки"
+    "message": "Скрыть линейки на панели инструментов \"Режим устройства\""
   },
   "panels/emulation/emulation-meta.ts | showDeviceFrame": {
     "message": "Показать рамку устройства"
@@ -4989,7 +5277,7 @@
     "message": "Показать запросы медиа"
   },
   "panels/emulation/emulation-meta.ts | showRulers": {
-    "message": "Показать линейки"
+    "message": "Показать линейки на панели инструментов \"Режим устройства\""
   },
   "panels/emulation/emulation-meta.ts | toggleDeviceToolbar": {
     "message": "Показать или скрыть панель инструментов устройства"
@@ -5014,36 +5302,6 @@
   },
   "panels/event_listeners/EventListenersView.ts | toggleWhetherEventListenerIs": {
     "message": "Показать или скрыть, является ли прослушиватель событий пассивным или блокирующим"
-  },
-  "panels/help/ReleaseNoteView.ts | close": {
-    "message": "Закрыть"
-  },
-  "panels/help/ReleaseNoteView.ts | learnMore": {
-    "message": "Подробнее…"
-  },
-  "panels/help/help-meta.ts | bug": {
-    "message": "ошибка"
-  },
-  "panels/help/help-meta.ts | doNotShowWhatsNewAfterEachUpdate": {
-    "message": "Не показывать, что появилось в последнем обновлении"
-  },
-  "panels/help/help-meta.ts | releaseNotes": {
-    "message": "Примечания к выпуску"
-  },
-  "panels/help/help-meta.ts | reportADevtoolsIssue": {
-    "message": "Сообщить о проблеме в инструментах разработчика"
-  },
-  "panels/help/help-meta.ts | reportTranslationIssue": {
-    "message": "Сообщить об ошибке перевода"
-  },
-  "panels/help/help-meta.ts | showWhatsNew": {
-    "message": "Показать инструмент \"Что нового\""
-  },
-  "panels/help/help-meta.ts | showWhatsNewAfterEachUpdate": {
-    "message": "Показывать, что появилось в последнем обновлении"
-  },
-  "panels/help/help-meta.ts | whatsNew": {
-    "message": "Что нового"
   },
   "panels/input/InputTimeline.ts | clearAll": {
     "message": "Очистить все"
@@ -5255,14 +5513,8 @@
   "panels/issues/AttributionReportingIssueDetailsView.ts | frame": {
     "message": "Фрейм"
   },
-  "panels/issues/AttributionReportingIssueDetailsView.ts | invalidEventSourceTriggerData": {
-    "message": "Недействительное значение (event-source-trigger-data)"
-  },
-  "panels/issues/AttributionReportingIssueDetailsView.ts | invalidSourceEventId": {
-    "message": "Недействительное значение (attributionsourceeventid)"
-  },
-  "panels/issues/AttributionReportingIssueDetailsView.ts | invalidTriggerData": {
-    "message": "Недействительное значение (trigger-data)"
+  "panels/issues/AttributionReportingIssueDetailsView.ts | invalidHeaderValue": {
+    "message": "Invalid Header Value"
   },
   "panels/issues/AttributionReportingIssueDetailsView.ts | nViolations": {
     "message": "{n,plural, =1{# нарушение}one{# нарушение}few{# нарушения}many{# нарушений}other{# нарушения}}"
@@ -5275,6 +5527,9 @@
   },
   "panels/issues/CSPViolationsView.ts | filter": {
     "message": "Фильтр"
+  },
+  "panels/issues/ComboBoxOfCheckBoxes.ts | genericMenuLabel": {
+    "message": "Меню"
   },
   "panels/issues/CorsIssueDetailsView.ts | allowCredentialsValueFromHeader": {
     "message": "Значение заголовка Access-Control-Allow-Credentials"
@@ -5290,6 +5545,9 @@
   },
   "panels/issues/CorsIssueDetailsView.ts | disallowedRequestMethod": {
     "message": "Запрещенный метод запроса"
+  },
+  "panels/issues/CorsIssueDetailsView.ts | failedRequest": {
+    "message": "Не удалось выполнить запрос."
   },
   "panels/issues/CorsIssueDetailsView.ts | header": {
     "message": "Заголовок"
@@ -5366,8 +5624,14 @@
   "panels/issues/HiddenIssuesRow.ts | unhideAll": {
     "message": "Показать все"
   },
-  "panels/issues/IssueKindView.ts | hideAllCurrent": {
-    "message": "Скрыты все текущие {PH1}"
+  "panels/issues/IssueKindView.ts | hideAllCurrentBreakingChanges": {
+    "message": "Скрыть все текущие критические изменения"
+  },
+  "panels/issues/IssueKindView.ts | hideAllCurrentImprovements": {
+    "message": "Скрыть все текущие улучшения"
+  },
+  "panels/issues/IssueKindView.ts | hideAllCurrentPageErrors": {
+    "message": "Скрыть все текущие ошибки страницы"
   },
   "panels/issues/IssueView.ts | affectedResources": {
     "message": "Измененные ресурсы"
@@ -5461,27 +5725,6 @@
   },
   "panels/issues/IssuesPane.ts | trustedWebActivity": {
     "message": "Безопасные действия в интернете"
-  },
-  "panels/issues/WasmCrossOriginModuleSharingAffectedResourcesView.ts | blocked": {
-    "message": "заблокировано"
-  },
-  "panels/issues/WasmCrossOriginModuleSharingAffectedResourcesView.ts | nModuleTransfers": {
-    "message": "{n,plural, =1{# модуль}one{# модуль}few{# модуля}many{# модулей}other{# модуля}}"
-  },
-  "panels/issues/WasmCrossOriginModuleSharingAffectedResourcesView.ts | sourceOrigin": {
-    "message": "Исходный источник"
-  },
-  "panels/issues/WasmCrossOriginModuleSharingAffectedResourcesView.ts | status": {
-    "message": "Статус"
-  },
-  "panels/issues/WasmCrossOriginModuleSharingAffectedResourcesView.ts | targetOrigin": {
-    "message": "Целевой источник"
-  },
-  "panels/issues/WasmCrossOriginModuleSharingAffectedResourcesView.ts | warned": {
-    "message": "предупреждение"
-  },
-  "panels/issues/WasmCrossOriginModuleSharingAffectedResourcesView.ts | wasmModuleUrl": {
-    "message": "URL модуля Wasm"
   },
   "panels/issues/components/HideIssuesMenu.ts | tooltipTitle": {
     "message": "Скрыть проблемы"
@@ -5723,6 +5966,15 @@
   "panels/lighthouse/LighthouseController.ts | isThisPageUsableByPeopleWith": {
     "message": "Может ли эта страница использоваться людьми с ограниченными возможностями?"
   },
+  "panels/lighthouse/LighthouseController.ts | javaScriptDisabled": {
+    "message": "JavaScript is disabled. You need to enable JavaScript to audit this page. Open the Command Menu and run the Enable JavaScript command to enable JavaScript."
+  },
+  "panels/lighthouse/LighthouseController.ts | legacyNavigation": {
+    "message": "Устаревший режим навигации"
+  },
+  "panels/lighthouse/LighthouseController.ts | lighthouseMode": {
+    "message": "Режим Lighthouse"
+  },
   "panels/lighthouse/LighthouseController.ts | localStorage": {
     "message": "Локальное хранилище"
   },
@@ -5731,6 +5983,12 @@
   },
   "panels/lighthouse/LighthouseController.ts | multipleTabsAreBeingControlledBy": {
     "message": "service worker контролирует несколько вкладок. Закройте другие вкладки того же источника для проведения аудита."
+  },
+  "panels/lighthouse/LighthouseController.ts | navigation": {
+    "message": "Navigation (Default)"
+  },
+  "panels/lighthouse/LighthouseController.ts | navigationTooltip": {
+    "message": "Navigation mode analyzes a page load, exactly like the original Lighthouse reports."
   },
   "panels/lighthouse/LighthouseController.ts | performance": {
     "message": "Производительность"
@@ -5744,6 +6002,9 @@
   "panels/lighthouse/LighthouseController.ts | resetStorageLocalstorage": {
     "message": "Очистить хранилище (cache, service workers и др.) перед аудитом. Это помогает при тестировании PWA и производительности."
   },
+  "panels/lighthouse/LighthouseController.ts | runLighthouseInMode": {
+    "message": "Запустить Lighthouse в режиме анализа навигации, состояния страницы или временного диапазона"
+  },
   "panels/lighthouse/LighthouseController.ts | seo": {
     "message": "Поисковая оптимизация"
   },
@@ -5753,11 +6014,26 @@
   "panels/lighthouse/LighthouseController.ts | simulatedThrottling": {
     "message": "Симуляция ограничения"
   },
+  "panels/lighthouse/LighthouseController.ts | snapshot": {
+    "message": "Сводка"
+  },
+  "panels/lighthouse/LighthouseController.ts | snapshotTooltip": {
+    "message": "Snapshot mode analyzes the page in a particular state, typically after user interactions."
+  },
   "panels/lighthouse/LighthouseController.ts | thereMayBeStoredDataAffectingLoadingPlural": {
     "message": "На скорость загрузки могут влиять данные из этих хранилищ: {PH1}. Попробуйте открыть страницу в режиме инкогнито."
   },
   "panels/lighthouse/LighthouseController.ts | thereMayBeStoredDataAffectingSingular": {
     "message": "На скорость загрузки могут влиять данные из этого хранилища: {PH1}. Попробуйте открыть страницу в режиме инкогнито."
+  },
+  "panels/lighthouse/LighthouseController.ts | timespan": {
+    "message": "Анализ временного диапазона"
+  },
+  "panels/lighthouse/LighthouseController.ts | timespanTooltip": {
+    "message": "Timespan mode analyzes an arbitrary period of time, typically containing user interactions."
+  },
+  "panels/lighthouse/LighthouseController.ts | useLegacyNavigation": {
+    "message": "Анализ страницы с помощью классической версии Lighthouse в режиме навигации."
   },
   "panels/lighthouse/LighthouseController.ts | webSql": {
     "message": "Web SQL"
@@ -5799,7 +6075,7 @@
     "message": "Отчеты"
   },
   "panels/lighthouse/LighthouseStartView.ts | categories": {
-    "message": "Категории"
+    "message": "Categories"
   },
   "panels/lighthouse/LighthouseStartView.ts | communityPluginsBeta": {
     "message": "Плагины сообщества (бета)"
@@ -5815,6 +6091,27 @@
   },
   "panels/lighthouse/LighthouseStartView.ts | learnMore": {
     "message": "Подробнее…"
+  },
+  "panels/lighthouse/LighthouseStartViewFR.ts | analyzeNavigation": {
+    "message": "Analyze page load"
+  },
+  "panels/lighthouse/LighthouseStartViewFR.ts | analyzeSnapshot": {
+    "message": "Analyze page state"
+  },
+  "panels/lighthouse/LighthouseStartViewFR.ts | categories": {
+    "message": "Categories"
+  },
+  "panels/lighthouse/LighthouseStartViewFR.ts | generateLighthouseReport": {
+    "message": "Generate a Lighthouse report"
+  },
+  "panels/lighthouse/LighthouseStartViewFR.ts | mode": {
+    "message": "Режим"
+  },
+  "panels/lighthouse/LighthouseStartViewFR.ts | plugins": {
+    "message": "Plugins"
+  },
+  "panels/lighthouse/LighthouseStartViewFR.ts | startTimespan": {
+    "message": "Запустить анализ временного диапазона"
   },
   "panels/lighthouse/LighthouseStatusView.ts | OfGlobalMobileUsersInWereOnGOrG": {
     "message": "75 % всех обладателей мобильных устройств пользовались сетями 2G и 3G в 2016 году (источник: GSMA Mobile)."
@@ -5902,6 +6199,18 @@
   },
   "panels/lighthouse/LighthouseStatusView.ts | walmartSawAIncreaseInRevenueFor": {
     "message": "При повышении скорости загрузки страниц на каждые 100 мс доход Walmart увеличивался на 1 % [источник: WPO Stats]."
+  },
+  "panels/lighthouse/LighthouseTimespanView.ts | cancel": {
+    "message": "Отмена"
+  },
+  "panels/lighthouse/LighthouseTimespanView.ts | endTimespan": {
+    "message": "Остановить анализ временного диапазона"
+  },
+  "panels/lighthouse/LighthouseTimespanView.ts | timespanStarted": {
+    "message": "Анализ временного диапазона запущен, начните взаимодействовать со страницей"
+  },
+  "panels/lighthouse/LighthouseTimespanView.ts | timespanStarting": {
+    "message": "Запуск анализа временного диапазона…"
   },
   "panels/lighthouse/lighthouse-meta.ts | showLighthouse": {
     "message": "Показать Lighthouse"
@@ -6308,6 +6617,9 @@
   "panels/network/NetworkConfigView.ts | caching": {
     "message": "Кеширование"
   },
+  "panels/network/NetworkConfigView.ts | clientHintsStatusText": {
+    "message": "Агент пользователя обновлен"
+  },
   "panels/network/NetworkConfigView.ts | custom": {
     "message": "Настроить…"
   },
@@ -6319,6 +6631,9 @@
   },
   "panels/network/NetworkConfigView.ts | enterACustomUserAgent": {
     "message": "Укажите другого агента пользователя"
+  },
+  "panels/network/NetworkConfigView.ts | networkConditionsPanelShown": {
+    "message": "Показаны данные о состоянии сети"
   },
   "panels/network/NetworkConfigView.ts | networkThrottling": {
     "message": "Ограничение пропускной способности сети"
@@ -6935,6 +7250,9 @@
   "panels/network/RequestHeadersView.ts | general": {
     "message": "Общие"
   },
+  "panels/network/RequestHeadersView.ts | headerOverrides": {
+    "message": "Переопределения заголовков"
+  },
   "panels/network/RequestHeadersView.ts | learnMore": {
     "message": "Подробнее…"
   },
@@ -6969,7 +7287,7 @@
     "message": "Метод запроса"
   },
   "panels/network/RequestHeadersView.ts | requestUrl": {
-    "message": "Запросить URL"
+    "message": "URL запроса"
   },
   "panels/network/RequestHeadersView.ts | responseHeaders": {
     "message": "Заголовки ответов"
@@ -7188,7 +7506,7 @@
     "message": "Неизвестно"
   },
   "panels/network/RequestTimingView.ts | waitingTtfb": {
-    "message": "Ожидание (время до получения первого байта)"
+    "message": "Waiting for server response"
   },
   "panels/network/RequestTimingView.ts | waterfall": {
     "message": "Каскад загрузки"
@@ -7296,7 +7614,7 @@
     "message": "Подробнее"
   },
   "panels/network/SignedExchangeInfoView.ts | requestUrl": {
-    "message": "Запросить URL"
+    "message": "URL запроса"
   },
   "panels/network/SignedExchangeInfoView.ts | responseCode": {
     "message": "Код ответа"
@@ -8304,10 +8622,10 @@
     "message": "Скрыть подробности"
   },
   "panels/security/SecurityPanel.ts | ifYouBelieveThisIsShownIn": {
-    "message": "Если вы думаете, что это сообщение показано по ошибке, заполните форму на странице https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals."
+    "message": "If you believe this is shown in error please visit https://g.co/chrome/lookalike-warnings."
   },
   "panels/security/SecurityPanel.ts | ifYouBelieveThisIsShownInErrorSafety": {
-    "message": "Если вы думаете, что это сообщение показано по ошибке, заполните форму на странице https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals."
+    "message": "If you believe this is shown in error please visit https://g.co/chrome/lookalike-warnings."
   },
   "panels/security/SecurityPanel.ts | info": {
     "message": "Информация"
@@ -9153,7 +9471,7 @@
     "message": "Покрытие: н/д"
   },
   "panels/sources/CoveragePlugin.ts | coverageS": {
-    "message": "Покрытие: {PH1} %"
+    "message": "Покрытие: {PH1}"
   },
   "panels/sources/CoveragePlugin.ts | showDetails": {
     "message": "Показать сведения"
@@ -9413,6 +9731,15 @@
   "panels/sources/OutlineQuickOpen.ts | openAJavascriptOrCssFileToSee": {
     "message": "Чтобы увидеть символы, откройте файл JavaScript или CSS"
   },
+  "panels/sources/ProfilePlugin.ts | kb": {
+    "message": "КБ"
+  },
+  "panels/sources/ProfilePlugin.ts | mb": {
+    "message": "МБ"
+  },
+  "panels/sources/ProfilePlugin.ts | ms": {
+    "message": "мс"
+  },
   "panels/sources/ScopeChainSidebarPane.ts | closure": {
     "message": "Замыкание"
   },
@@ -9515,6 +9842,12 @@
   "panels/sources/SourcesPanel.ts | copyStringContents": {
     "message": "Копировать содержимое строки"
   },
+  "panels/sources/SourcesPanel.ts | debuggerHidden": {
+    "message": "Боковая панель отладчика скрыта"
+  },
+  "panels/sources/SourcesPanel.ts | debuggerShown": {
+    "message": "Боковая панель отладчика показана"
+  },
   "panels/sources/SourcesPanel.ts | dontPauseOnExceptions": {
     "message": "Не останавливаться при исключениях"
   },
@@ -9532,6 +9865,12 @@
   },
   "panels/sources/SourcesPanel.ts | moreOptions": {
     "message": "Больше вариантов"
+  },
+  "panels/sources/SourcesPanel.ts | navigatorHidden": {
+    "message": "Боковая панель навигатора скрыта"
+  },
+  "panels/sources/SourcesPanel.ts | navigatorShown": {
+    "message": "Боковая панель навигатора показана"
   },
   "panels/sources/SourcesPanel.ts | openInSourcesPanel": {
     "message": "Открыть на панели \"Источники\""
@@ -9610,6 +9949,24 @@
   },
   "panels/sources/WatchExpressionsSidebarPane.ts | refreshWatchExpressions": {
     "message": "Обновить выражения контрольного значения"
+  },
+  "panels/sources/components/HeadersView.ts | addHeader": {
+    "message": "Добавить заголовок"
+  },
+  "panels/sources/components/HeadersView.ts | addHeaderOverride": {
+    "message": "Добавить переопределение заголовка"
+  },
+  "panels/sources/components/HeadersView.ts | errorWhenParsing": {
+    "message": "Ошибка синтаксического анализа элемента ''{PH1}''."
+  },
+  "panels/sources/components/HeadersView.ts | parsingErrorExplainer": {
+    "message": "Скорее всего, это связано с синтаксической ошибкой в элементе ''{PH1}''. Исправьте ошибку в этом файле, открыв его во внешнем редакторе, или удалите его и создайте переопределение заново."
+  },
+  "panels/sources/components/HeadersView.ts | removeBlock": {
+    "message": "Удалить этот раздел: ApplyTo"
+  },
+  "panels/sources/components/HeadersView.ts | removeHeader": {
+    "message": "Удалить заголовок"
   },
   "panels/sources/sources-meta.ts | activateBreakpoints": {
     "message": "Активировать точки останова"
@@ -9866,6 +10223,12 @@
   "panels/sources/sources-meta.ts | toggleBreakpointInputWindow": {
     "message": "Показать или скрыть окно ввода точки останова"
   },
+  "panels/sources/sources-meta.ts | toggleDebuggerSidebar": {
+    "message": "Toggle debugger sidebar"
+  },
+  "panels/sources/sources-meta.ts | toggleNavigatorSidebar": {
+    "message": "Toggle navigator sidebar"
+  },
   "panels/sources/sources-meta.ts | trailing": {
     "message": "Завершающие символы"
   },
@@ -9947,9 +10310,6 @@
   "panels/timeline/TimelineEventOverview.ts | cpu": {
     "message": "Процессор"
   },
-  "panels/timeline/TimelineEventOverview.ts | fps": {
-    "message": "кадр/с"
-  },
   "panels/timeline/TimelineEventOverview.ts | heap": {
     "message": "КУЧА"
   },
@@ -9986,9 +10346,6 @@
   "panels/timeline/TimelineFlameChartDataProvider.ts | idleFrame": {
     "message": "Бездействующий фрейм"
   },
-  "panels/timeline/TimelineFlameChartDataProvider.ts | input": {
-    "message": "Ввод"
-  },
   "panels/timeline/TimelineFlameChartDataProvider.ts | interactions": {
     "message": "Взаимодействия"
   },
@@ -10007,14 +10364,14 @@
   "panels/timeline/TimelineFlameChartDataProvider.ts | onIgnoreList": {
     "message": "В списке игнорируемых"
   },
+  "panels/timeline/TimelineFlameChartDataProvider.ts | partiallyPresentedFrame": {
+    "message": "Частичный показ фрейма"
+  },
   "panels/timeline/TimelineFlameChartDataProvider.ts | raster": {
     "message": "Растр"
   },
   "panels/timeline/TimelineFlameChartDataProvider.ts | rasterizerThreadS": {
     "message": "Поток растеризатора {PH1}"
-  },
-  "panels/timeline/TimelineFlameChartDataProvider.ts | sFfps": {
-    "message": "{PH1} ~ {PH2} кадр/с"
   },
   "panels/timeline/TimelineFlameChartDataProvider.ts | sSelfS": {
     "message": "{PH1} (одно действие: {PH2})"
@@ -10249,6 +10606,12 @@
   },
   "panels/timeline/TimelineTreeView.ts | heaviestStack": {
     "message": "Самый тяжелый стек"
+  },
+  "panels/timeline/TimelineTreeView.ts | heaviestStackHidden": {
+    "message": "Боковая панель самого тяжелого стека скрыта"
+  },
+  "panels/timeline/TimelineTreeView.ts | heaviestStackShown": {
+    "message": "Боковая панель самого тяжелого стека показана"
   },
   "panels/timeline/TimelineTreeView.ts | hideHeaviestStack": {
     "message": "Скрыть самый тяжелый стек"
@@ -10541,9 +10904,6 @@
   "panels/timeline/TimelineUIUtils.ts | forcedReflow": {
     "message": "Принудительная компоновка"
   },
-  "panels/timeline/TimelineUIUtils.ts | fps": {
-    "message": "кадр/с"
-  },
   "panels/timeline/TimelineUIUtils.ts | frame": {
     "message": "Фрейм"
   },
@@ -10777,6 +11137,9 @@
   },
   "panels/timeline/TimelineUIUtils.ts | pinchUpdate": {
     "message": "Обновление сжатия"
+  },
+  "panels/timeline/TimelineUIUtils.ts | prePaint": {
+    "message": "Предварительная отрисовка"
   },
   "panels/timeline/TimelineUIUtils.ts | preview": {
     "message": "Предварительный просмотр"
@@ -11306,6 +11669,9 @@
   "panels/webauthn/WebauthnPane.ts | signCount": {
     "message": "Счетчик подписей"
   },
+  "panels/webauthn/WebauthnPane.ts | supportsLargeBlob": {
+    "message": "Supports large blob"
+  },
   "panels/webauthn/WebauthnPane.ts | supportsResidentKeys": {
     "message": "Поддерживает ключи устройства"
   },
@@ -11429,6 +11795,24 @@
   "ui/components/linear_memory_inspector/linear_memory_inspector-meta.ts | showMemoryInspector": {
     "message": "Показать инспектор памяти"
   },
+  "ui/components/panel_feedback/FeedbackButton.ts | feedback": {
+    "message": "Отзыв"
+  },
+  "ui/components/panel_feedback/PanelFeedback.ts | previewFeature": {
+    "message": "Функция просмотра"
+  },
+  "ui/components/panel_feedback/PanelFeedback.ts | previewText": {
+    "message": "Наши специалисты активно работают над этой функцией и хотят узнать ваше мнение."
+  },
+  "ui/components/panel_feedback/PanelFeedback.ts | previewTextFeedbackLink": {
+    "message": "Отправить отзыв"
+  },
+  "ui/components/panel_feedback/PanelFeedback.ts | videoAndDocumentation": {
+    "message": "Видео и документация"
+  },
+  "ui/components/panel_feedback/PreviewToggle.ts | previewTextFeedbackLink": {
+    "message": "Отправить отзыв"
+  },
   "ui/components/request_link_icon/RequestLinkIcon.ts | clickToShowRequestInTheNetwork": {
     "message": "Нажмите, чтобы открыть панель \"Сеть\" и показать запрос для следующего URL: {url}"
   },
@@ -11472,7 +11856,7 @@
     "message": "Все"
   },
   "ui/legacy/FilterBar.ts | clearFilter": {
-    "message": "Очистить"
+    "message": "Clear input"
   },
   "ui/legacy/FilterBar.ts | egSmalldUrlacomb": {
     "message": "Например: /small[d]+/ url:a.com/b"
@@ -11500,6 +11884,12 @@
   },
   "ui/legacy/InspectorView.ts | drawer": {
     "message": "Выдвигающаяся панель инструмента"
+  },
+  "ui/legacy/InspectorView.ts | drawerHidden": {
+    "message": "Выдвигающаяся панель скрыта"
+  },
+  "ui/legacy/InspectorView.ts | drawerShown": {
+    "message": "Выдвигающаяся панель показана"
   },
   "ui/legacy/InspectorView.ts | mainToolbar": {
     "message": "Основная панель инструментов"
@@ -11539,6 +11929,9 @@
   },
   "ui/legacy/ListWidget.ts | saveString": {
     "message": "Сохранить"
+  },
+  "ui/legacy/RemoteDebuggingTerminatedScreen.ts | debuggingConnectionWasClosed": {
+    "message": "Подключение, используемое для отладки, закрыто. Причина: "
   },
   "ui/legacy/RemoteDebuggingTerminatedScreen.ts | reconnectDevtools": {
     "message": "Повторно подключить DevTools"
@@ -11632,6 +12025,9 @@
   },
   "ui/legacy/TargetCrashedScreen.ts | oncePageIsReloadedDevtoolsWill": {
     "message": "После перезагрузки страницы инструменты разработчика подключатся автоматически."
+  },
+  "ui/legacy/Toolbar.ts | clearInput": {
+    "message": "Clear input"
   },
   "ui/legacy/Toolbar.ts | notPressed": {
     "message": "не нажато"
@@ -11773,6 +12169,9 @@
   },
   "ui/legacy/components/cookie_table/CookiesTable.ts | name": {
     "message": "Название"
+  },
+  "ui/legacy/components/cookie_table/CookiesTable.ts | opaquePartitionKey": {
+    "message": "(непрозрачный)"
   },
   "ui/legacy/components/cookie_table/CookiesTable.ts | session": {
     "message": "Сеанс"
@@ -11942,15 +12341,6 @@
   "ui/legacy/components/object_ui/CustomPreviewComponent.ts | showAsJavascriptObject": {
     "message": "Показать как объект JavaScript"
   },
-  "ui/legacy/components/object_ui/JavaScriptAutocomplete.ts | keys": {
-    "message": "Ключи"
-  },
-  "ui/legacy/components/object_ui/JavaScriptAutocomplete.ts | keywords": {
-    "message": "ключевые слова"
-  },
-  "ui/legacy/components/object_ui/JavaScriptAutocomplete.ts | lexicalScopeVariables": {
-    "message": "Переменные лексической области действия"
-  },
   "ui/legacy/components/object_ui/ObjectPropertiesSection.ts | collapseChildren": {
     "message": "Свернуть дочерние элементы"
   },
@@ -12038,15 +12428,6 @@
   "ui/legacy/components/perf_ui/FlameChart.ts | sSelected": {
     "message": "Выбрано: {PH1}"
   },
-  "ui/legacy/components/perf_ui/LineLevelProfile.ts | kb": {
-    "message": "КБ"
-  },
-  "ui/legacy/components/perf_ui/LineLevelProfile.ts | mb": {
-    "message": "МБ"
-  },
-  "ui/legacy/components/perf_ui/LineLevelProfile.ts | ms": {
-    "message": "мс"
-  },
   "ui/legacy/components/perf_ui/NetworkPriorities.ts | high": {
     "message": "Высокий"
   },
@@ -12119,8 +12500,8 @@
   "ui/legacy/components/quick_open/QuickInput.ts | pressEnterToConfirmOrEscapeTo": {
     "message": "{PH1} (Нажмите \"Ввод\" для подтверждения или Escape для отмены.)"
   },
-  "ui/legacy/components/quick_open/QuickOpen.ts | useTabToSwitchCommandsTypeToSeeAvailableCommands": {
-    "message": "Чтобы переключать команды, используйте клавишу Tab. Чтобы увидеть доступные команды, введите знак вопроса (?)."
+  "ui/legacy/components/quick_open/QuickOpen.ts | typeToSeeAvailableCommands": {
+    "message": "Чтобы увидеть доступные команды, введите знак вопроса (?)."
   },
   "ui/legacy/components/quick_open/quick_open-meta.ts | openFile": {
     "message": "Открыть файл"
@@ -12223,9 +12604,6 @@
   },
   "ui/legacy/components/source_frame/source_frame-meta.ts | tabCharacter": {
     "message": "Символ табуляции"
-  },
-  "ui/legacy/components/text_editor/CodeMirrorTextEditor.ts | codeEditor": {
-    "message": "Редактор кода"
   },
   "ui/legacy/components/utils/ImagePreview.ts | currentSource": {
     "message": "Текущий источник:"

@@ -20,8 +20,8 @@
 #ifndef AVFILTER_COLORSPACE_H
 #define AVFILTER_COLORSPACE_H
 
-#include "libavutil/common.h"
 #include "libavutil/frame.h"
+#include "libavutil/pixfmt.h"
 
 #define REFERENCE_WHITE 100.0f
 
@@ -37,6 +37,11 @@ struct WhitepointCoefficients {
     double xw, yw;
 };
 
+struct ColorPrimaries {
+    struct WhitepointCoefficients wp;
+    struct PrimaryCoefficients prim;
+};
+
 void ff_matrix_invert_3x3(const double in[3][3], double out[3][3]);
 void ff_matrix_mul_3x3(double dst[3][3],
                const double src1[3][3], const double src2[3][3]);
@@ -44,6 +49,10 @@ void ff_fill_rgb2xyz_table(const struct PrimaryCoefficients *coeffs,
                            const struct WhitepointCoefficients *wp,
                            double rgb2xyz[3][3]);
 
+/* Returns AVCOL_PRI_UNSPECIFIED if no clear match can be identified */
+enum AVColorPrimaries ff_detect_color_primaries(const struct ColorPrimaries *prm);
+
+const struct ColorPrimaries *ff_get_color_primaries(enum AVColorPrimaries prm);
 const struct LumaCoefficients *ff_get_luma_coefficients(enum AVColorSpace csp);
 void ff_fill_rgb2yuv_table(const struct LumaCoefficients *coeffs,
                            double rgb2yuv[3][3]);

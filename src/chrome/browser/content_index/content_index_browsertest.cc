@@ -148,7 +148,10 @@ class ContentIndexTest : public InProcessBrowserTest,
  private:
   void RunScript(const std::string& script, std::string* result) {
     ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-        browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame(),
+        browser()
+            ->tab_strip_model()
+            ->GetActiveWebContents()
+            ->GetPrimaryMainFrame(),
         "WrapFunction(async () => " + script + ")", result));
     ASSERT_TRUE(
         base::StartsWith(*result, "ok - ", base::CompareCase::SENSITIVE))
@@ -255,7 +258,7 @@ IN_PROC_BROWSER_TEST_F(ContentIndexTest, LaunchUrl) {
 
   EXPECT_EQ(browser()->tab_strip_model()->count(), 1);
   GURL current_url =
-      browser()->tab_strip_model()->GetActiveWebContents()->GetURL();
+      browser()->tab_strip_model()->GetActiveWebContents()->GetVisibleURL();
   EXPECT_TRUE(base::EndsWith(current_url.spec(),
                              "/content_index/content_index.html",
                              base::CompareCase::SENSITIVE));
@@ -272,7 +275,8 @@ IN_PROC_BROWSER_TEST_F(ContentIndexTest, LaunchUrl) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(browser()->tab_strip_model()->count(), 2);
-  current_url = browser()->tab_strip_model()->GetActiveWebContents()->GetURL();
+  current_url =
+      browser()->tab_strip_model()->GetActiveWebContents()->GetVisibleURL();
   EXPECT_TRUE(base::EndsWith(current_url.spec(),
                              "/content_index/content_index.html?launch",
                              base::CompareCase::SENSITIVE));

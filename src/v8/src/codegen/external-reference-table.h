@@ -5,8 +5,6 @@
 #ifndef V8_CODEGEN_EXTERNAL_REFERENCE_TABLE_H_
 #define V8_CODEGEN_EXTERNAL_REFERENCE_TABLE_H_
 
-#include <vector>
-
 #include "src/builtins/accessors.h"
 #include "src/builtins/builtins.h"
 #include "src/codegen/external-reference.h"
@@ -101,7 +99,7 @@ class ExternalReferenceTable {
   Address GetStatsCounterAddress(StatsCounter* counter);
   void AddNativeCodeStatsCounters(Isolate* isolate, int* index);
 
-  STATIC_ASSERT(sizeof(Address) == kEntrySize);
+  static_assert(sizeof(Address) == kEntrySize);
   Address ref_addr_[kSize];
   static const char* const ref_name_[kSize];
 
@@ -116,7 +114,7 @@ class ExternalReferenceTable {
   uint32_t dummy_stats_counter_ = 0;
 };
 
-STATIC_ASSERT(ExternalReferenceTable::kSizeInBytes ==
+static_assert(ExternalReferenceTable::kSizeInBytes ==
               sizeof(ExternalReferenceTable));
 
 }  // namespace internal

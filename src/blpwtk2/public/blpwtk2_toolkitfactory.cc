@@ -46,6 +46,7 @@
 
 namespace blpwtk2 {
 static bool g_created = false;
+static ToolkitCreateParams::LogMessageHandler g_logMessageHandler;
 
 static void setMaxSocketsPerProxy(int count)
 {
@@ -84,6 +85,37 @@ static void setMaxSocketsPerProxy(int count)
 						// ---------------------
 						// struct ToolkitFactory
 						// ---------------------
+
+static bool wtk2LogMessageHandlerFunction(int severity,
+                                          const char* file,
+                                          int line,
+                                          size_t message_start,
+                                          const std::string& str)
+{
+    if (g_logMessageHandler) {
+      ToolkitCreateParams::LogMessageSeverity ourSeverity;
+      switch (severity) {
+        case logging::LOG_INFO:
+          ourSeverity = ToolkitCreateParams::kSeverityInfo;
+          break;
+        case logging::LOG_WARNING:
+          ourSeverity = ToolkitCreateParams::kSeverityWarning;
+          break;
+        case logging::LOG_ERROR:
+          ourSeverity = ToolkitCreateParams::kSeverityError;
+          break;
+        case logging::LOG_FATAL:
+          ourSeverity = ToolkitCreateParams::kSeverityFatal;
+          break;
+        default:
+          ourSeverity = ToolkitCreateParams::kSeverityVerbose;
+          break;
+      }
+      g_logMessageHandler(ourSeverity, file, line, str.c_str() + message_start);
+      return true;
+    }
+    return false;
+}
 
 // static
 Toolkit* ToolkitFactory::create(const ToolkitCreateParams& params)
@@ -139,6 +171,10 @@ Toolkit* ToolkitFactory::create(const ToolkitCreateParams& params)
         std::unique_ptr<base::Environment> env(base::Environment::Create());
         env->SetVar(subProcessModuleEnvVar, subProcessModule);
 	}
+
+
+    logging::SetWtk2LogMessageHandler(wtk2LogMessageHandlerFunction);
+    g_logMessageHandler = params.logMessageHandler();
 
     base::win::SetWinProcExceptionFilter(params.winProcExceptionFilter());
 

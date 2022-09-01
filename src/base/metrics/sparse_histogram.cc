@@ -14,6 +14,7 @@
 #include "base/metrics/persistent_sample_map.h"
 #include "base/metrics/sample_map.h"
 #include "base/metrics/statistics_recorder.h"
+#include "base/notreached.h"
 #include "base/pickle.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
@@ -100,7 +101,7 @@ HistogramType SparseHistogram::GetHistogramType() const {
 bool SparseHistogram::HasConstructionArguments(
     Sample expected_minimum,
     Sample expected_maximum,
-    uint32_t expected_bucket_count) const {
+    size_t expected_bucket_count) const {
   // SparseHistogram never has min/max/bucket_count limit.
   return false;
 }

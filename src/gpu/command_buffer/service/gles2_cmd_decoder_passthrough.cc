@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/cxx17_backports.h"
 #include "base/memory/raw_ptr.h"
 #include "base/strings/string_split.h"
 #include "build/build_config.h"
@@ -30,9 +29,9 @@
 #include "ui/gl/gpu_switching_manager.h"
 #include "ui/gl/progress_reporter.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "gpu/command_buffer/service/shared_image_backing_factory_d3d.h"
-#endif  // OS_WIN
+#endif  // BUILDFLAG(IS_WIN)
 
 namespace gpu {
 namespace gles2 {
@@ -400,37 +399,39 @@ void PassthroughResources::Destroy(gl::GLApi* api,
 PassthroughResources::SharedImageData::SharedImageData() = default;
 PassthroughResources::SharedImageData::SharedImageData(
     std::unique_ptr<SharedImageRepresentationGLTexturePassthrough>
-        representation)
-    : representation_(std::move(representation)) {}
+        representation,
+    gl::GLApi* api)
+    : representation_(std::move(representation)) {
+  DCHECK(representation_);
+
+  // Note, that ideally we could defer clear till BeginAccess, but there is no
+  // enforcement that will require clients to call Begin/End access.
+  EnsureClear(api);
+}
 PassthroughResources::SharedImageData::SharedImageData(
     SharedImageData&& other) = default;
 PassthroughResources::SharedImageData::~SharedImageData() = default;
 
-PassthroughResources::SharedImageData& PassthroughResources::SharedImageData::
-operator=(SharedImageData&& other) {
+PassthroughResources::SharedImageData&
+PassthroughResources::SharedImageData::operator=(SharedImageData&& other) {
   scoped_access_ = std::move(other.scoped_access_);
   representation_ = std::move(other.representation_);
   return *this;
 }
 
-bool PassthroughResources::SharedImageData::BeginAccess(GLenum mode,
-                                                        gl::GLApi* api) {
-  DCHECK(!is_being_accessed());
-  // When importing a texture for use in passthrough cmd decoder, always allow
-  // uncleared access. We ensure the texture is cleared below.
-  scoped_access_ = representation_->BeginScopedAccess(
-      mode, SharedImageRepresentation::AllowUnclearedAccess::kYes);
-  if (!scoped_access_) {
-    return false;
-  }
-  // ANGLE does not handle clear tracking in an interoperable way. Clear
-  // any uncleared SharedImage before using it with ANGLE.
-  //
-  // NOTE: This will not introduce extra clears in common cases. The default GL
-  // SharedImage, which is exclusively used with ANGLE, always returns true
-  // from IsCleared, allowing ANGLE to manage clearing internally. This path is
-  // only run for interop shared image backings.
+void PassthroughResources::SharedImageData::EnsureClear(gl::GLApi* api) {
+  // To avoid unnessary overhead we don't enable robust initialization on shared
+  // gl context where all shared images are created, so we clear image here if
+  // necessary.
   if (!representation_->IsCleared()) {
+    // Allow uncleared access as we're going to clear the image.
+    auto scoped_access = representation_->BeginScopedAccess(
+        GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM,
+        SharedImageRepresentation::AllowUnclearedAccess::kYes);
+
+    if (!scoped_access)
+      return;
+
     auto texture = representation_->GetTexturePassthrough();
 
     // Back up all state we are about to change.
@@ -464,7 +465,17 @@ bool PassthroughResources::SharedImageData::BeginAccess(GLenum mode,
     // Mark the shared image as cleared.
     representation_->SetCleared();
   }
-  return true;
+}
+
+bool PassthroughResources::SharedImageData::BeginAccess(GLenum mode,
+                                                        gl::GLApi* api) {
+  DCHECK(!is_being_accessed());
+  // The image should have been cleared already when we created the texture if
+  // necessary.
+  scoped_access_ = representation_->BeginScopedAccess(
+      mode, SharedImageRepresentation::AllowUnclearedAccess::kNo);
+
+  return !!scoped_access_;
 }
 
 GLES2DecoderPassthroughImpl::PendingQuery::PendingQuery() = default;
@@ -768,7 +779,6 @@ GLES2DecoderPassthroughImpl::GLES2DecoderPassthroughImpl(
       offscreen_single_buffer_(false),
       offscreen_target_buffer_preserved_(false),
       create_color_buffer_count_for_test_(0),
-      max_2d_texture_size_(0),
       bound_draw_framebuffer_(0),
       bound_read_framebuffer_(0),
       gpu_decoder_category_(TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(
@@ -835,7 +845,7 @@ GLES2Decoder::Error GLES2DecoderPassthroughImpl::DoCommandsImpl(
 
     const unsigned int arg_count = size - 1;
     unsigned int command_index = command - kFirstGLES2Command;
-    if (command_index < base::size(command_info)) {
+    if (command_index < std::size(command_info)) {
       const CommandInfo& info = command_info[command_index];
       unsigned int info_arg_count = static_cast<unsigned int>(info.arg_count);
       if ((info.arg_flags == cmd::kFixed && arg_count == info_arg_count) ||
@@ -884,7 +894,7 @@ GLES2Decoder::Error GLES2DecoderPassthroughImpl::DoCommandsImpl(
   if (entries_processed)
     *entries_processed = process_pos;
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   // Aggressively call glFlush on macOS. This is the only fix that has been
   // found so far to avoid crashes on Intel drivers. The workaround
   // isn't needed for WebGL contexts, though.
@@ -952,12 +962,12 @@ gpu::ContextResult GLES2DecoderPassthroughImpl::Initialize(
 
     static constexpr const char* kRequiredFunctionalityExtensions[] = {
       "GL_ANGLE_framebuffer_blit",
-#if defined(OS_FUCHSIA)
+#if BUILDFLAG(IS_FUCHSIA)
       "GL_ANGLE_memory_object_fuchsia",
 #endif
       "GL_ANGLE_memory_size",
       "GL_ANGLE_native_id",
-#if defined(OS_FUCHSIA)
+#if BUILDFLAG(IS_FUCHSIA)
       "GL_ANGLE_semaphore_fuchsia",
 #endif
       "GL_ANGLE_texture_storage_external",
@@ -975,14 +985,14 @@ gpu::ContextResult GLES2DecoderPassthroughImpl::Initialize(
       "GL_OES_EGL_image",
       "GL_OES_EGL_image_external",
       "GL_OES_EGL_image_external_essl3",
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
       "GL_ANGLE_texture_rectangle",
 #endif
       "GL_ANGLE_vulkan_image",
     };
     RequestExtensions(api(), requestable_extensions,
                       kRequiredFunctionalityExtensions,
-                      base::size(kRequiredFunctionalityExtensions));
+                      std::size(kRequiredFunctionalityExtensions));
 
     if (request_optional_extensions_) {
       static constexpr const char* kOptionalFunctionalityExtensions[] = {
@@ -1027,7 +1037,7 @@ gpu::ContextResult GLES2DecoderPassthroughImpl::Initialize(
       };
       RequestExtensions(api(), requestable_extensions,
                         kOptionalFunctionalityExtensions,
-                        base::size(kOptionalFunctionalityExtensions));
+                        std::size(kOptionalFunctionalityExtensions));
     }
 
     context->ReinitializeDynamicBindings();
@@ -1073,9 +1083,12 @@ gpu::ContextResult GLES2DecoderPassthroughImpl::Initialize(
                        IsWebGLContextType(attrib_helper.context_type),
                    "missing GL_ANGLE_webgl_compatibility");
   FAIL_INIT_IF_NOT(feature_info_->feature_flags().angle_request_extension,
-                   "missing  GL_ANGLE_request_extension");
+                   "missing GL_ANGLE_request_extension");
   FAIL_INIT_IF_NOT(feature_info_->feature_flags().khr_debug,
                    "missing GL_KHR_debug");
+  FAIL_INIT_IF_NOT(!attrib_helper.fail_if_major_perf_caveat ||
+                       !feature_info_->feature_flags().is_swiftshader_for_webgl,
+                   "fail_if_major_perf_caveat + swiftshader");
   FAIL_INIT_IF_NOT(!attrib_helper.enable_oop_rasterization,
                    "oop rasterization not supported");
   FAIL_INIT_IF_NOT(!IsES31ForTestingContextType(attrib_helper.context_type) ||
@@ -1133,10 +1146,11 @@ gpu::ContextResult GLES2DecoderPassthroughImpl::Initialize(
   lose_context_when_out_of_memory_ =
       attrib_helper.lose_context_when_out_of_memory;
 
-  api()->glGetIntegervFn(GL_MAX_TEXTURE_SIZE, &max_2d_texture_size_);
+  GLint max_2d_texture_size = 0;
+  api()->glGetIntegervFn(GL_MAX_TEXTURE_SIZE, &max_2d_texture_size);
   api()->glGetIntegervFn(GL_MAX_RENDERBUFFER_SIZE, &max_renderbuffer_size_);
   max_offscreen_framebuffer_size_ =
-      std::min(max_2d_texture_size_, max_renderbuffer_size_);
+      std::min(max_2d_texture_size, max_renderbuffer_size_);
 
   if (offscreen_) {
     offscreen_single_buffer_ = attrib_helper.single_buffer;
@@ -1233,7 +1247,7 @@ gpu::ContextResult GLES2DecoderPassthroughImpl::Initialize(
   api()->glGetIntegervFn(GL_SCISSOR_BOX, scissor_);
   ApplySurfaceDrawOffset();
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   // On mac we need the ANGLE_texture_rectangle extension to support IOSurface
   // backbuffers, but we don't want it exposed to WebGL user shaders. This
   // disables support for it in the shader compiler. We then enable it
@@ -1622,7 +1636,7 @@ gpu::Capabilities GLES2DecoderPassthroughImpl::GetCapabilities() {
   caps.discard_framebuffer =
       feature_info_->feature_flags().ext_discard_framebuffer;
   caps.sync_query = feature_info_->feature_flags().chromium_sync_query;
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   // This is unconditionally true on mac, no need to test for it at runtime.
   caps.iosurface = true;
 #endif
@@ -1648,6 +1662,11 @@ gpu::Capabilities GLES2DecoderPassthroughImpl::GetCapabilities() {
   caps.image_ab30 = feature_info_->feature_flags().chromium_image_ab30;
   caps.image_ycbcr_p010 =
       feature_info_->feature_flags().chromium_image_ycbcr_p010;
+  if (feature_info_->workarounds().client_max_texture_size) {
+    caps.max_texture_size =
+        std::min(caps.max_texture_size,
+                 feature_info_->workarounds().client_max_texture_size);
+  }
   caps.max_copy_texture_chromium_size =
       feature_info_->workarounds().max_copy_texture_chromium_size;
   caps.render_buffer_format_bgra8888 =
@@ -1674,10 +1693,14 @@ gpu::Capabilities GLES2DecoderPassthroughImpl::GetCapabilities() {
   caps.commit_overlay_planes = surface_->SupportsCommitOverlayPlanes();
   caps.protected_video_swap_chain = surface_->SupportsProtectedVideo();
   caps.gpu_vsync = surface_->SupportsGpuVSync();
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
+  caps.shared_image_d3d =
+      SharedImageBackingFactoryD3D::IsD3DSharedImageSupported(
+          group_->gpu_preferences());
   caps.shared_image_swap_chain =
+      caps.shared_image_d3d &&
       SharedImageBackingFactoryD3D::IsSwapChainSupported();
-#endif  // OS_WIN
+#endif  // BUILDFLAG(IS_WIN)
   caps.texture_npot = feature_info_->feature_flags().npot_ok;
   caps.texture_storage_image =
       feature_info_->feature_flags().chromium_texture_storage_image;
@@ -1691,6 +1714,8 @@ gpu::Capabilities GLES2DecoderPassthroughImpl::GetCapabilities() {
   caps.disable_legacy_mailbox =
       group_->shared_image_manager() &&
       group_->shared_image_manager()->display_context_on_another_thread();
+  caps.angle_rgbx_internal_format =
+      feature_info_->feature_flags().angle_rgbx_internal_format;
 
   return caps;
 }
@@ -2019,8 +2044,12 @@ void GLES2DecoderPassthroughImpl::BindOnePendingImage(
   // It's possible that this texture was processed by some other decoder
   // while it was also bound here, or that it has been destroyed.  In
   // either case, do nothing.
-  if (!texture || !texture->is_bind_pending())
+  if (!texture || !texture->is_bind_pending()) {
+    UMA_HISTOGRAM_BOOLEAN(
+        "GPU.GLES2DecoderPassthroughImplLazyBindingCheck.WasBindNecessary",
+        false);
     return;
+  }
 
   // TODO(liberato): make this work for non-0 levels.
   gl::GLImage* image = texture->GetLevelImage(target, 0);
@@ -2032,11 +2061,19 @@ void GLES2DecoderPassthroughImpl::BindOnePendingImage(
   // Similarly, we might not even get here if an image was bound to a
   // texture that requries bind/copy, but that texture was already bound
   // to a sampler in this decoder.
-  if (!image)
+  if (!image) {
+    UMA_HISTOGRAM_BOOLEAN(
+        "GPU.GLES2DecoderPassthroughImplLazyBindingCheck.WasBindNecessary",
+        false);
     return;
+  }
 
   // Because the binding is deferred, this texture may not be currently bound
   // any more. Bind it again.
+
+  UMA_HISTOGRAM_BOOLEAN(
+      "GPU.GLES2DecoderPassthroughImplLazyBindingCheck.WasBindNecessary", true);
+
   GLenum texture_type = TextureTargetToTextureType(target);
   api()->glBindTextureFn(texture_type, texture->service_id());
 
@@ -2222,6 +2259,16 @@ error::Error GLES2DecoderPassthroughImpl::PatchGetNumericResults(GLenum pname,
       std::copy(std::begin(scissor_), std::end(scissor_), params);
       break;
 
+    case GL_MAX_TEXTURE_SIZE:
+    case GL_MAX_CUBE_MAP_TEXTURE_SIZE:
+    case GL_MAX_3D_TEXTURE_SIZE:
+      if (feature_info_->workarounds().client_max_texture_size) {
+        *params = std::min(
+            *params, static_cast<T>(
+                         feature_info_->workarounds().client_max_texture_size));
+      }
+      break;
+
     default:
       break;
   }
@@ -2383,6 +2430,16 @@ bool GLES2DecoderPassthroughImpl::FlushErrors() {
     error = glGetError();
   }
   return had_error;
+}
+
+bool GLES2DecoderPassthroughImpl::IsIgnoredCap(GLenum cap) const {
+  switch (cap) {
+    case GL_DEBUG_OUTPUT:
+      return true;
+
+    default:
+      return false;
+  }
 }
 
 bool GLES2DecoderPassthroughImpl::CheckResetStatus() {
@@ -2943,52 +3000,6 @@ error::Error GLES2DecoderPassthroughImpl::HandleSetActiveURLCHROMIUM(
   return error::kNoError;
 }
 
-error::Error GLES2DecoderPassthroughImpl::BindTexImage2DCHROMIUMImpl(
-    GLenum target,
-    GLenum internalformat,
-    GLint imageId) {
-  TextureTarget target_enum = GLenumToTextureTarget(target);
-  if (target_enum == TextureTarget::kCubeMap ||
-      target_enum == TextureTarget::kUnkown) {
-    InsertError(GL_INVALID_ENUM, "Invalid target");
-    return error::kNoError;
-  }
-
-  gl::GLImage* image = group_->image_manager()->LookupImage(imageId);
-  if (image == nullptr) {
-    InsertError(GL_INVALID_OPERATION, "No image found with the given ID");
-    return error::kNoError;
-  }
-
-  const BoundTexture& bound_texture =
-      bound_textures_[static_cast<size_t>(target_enum)][active_texture_unit_];
-  if (bound_texture.texture == nullptr) {
-    InsertError(GL_INVALID_OPERATION, "No texture bound");
-    return error::kNoError;
-  }
-
-  if (image->ShouldBindOrCopy() == gl::GLImage::BIND) {
-    if (internalformat)
-      image->BindTexImageWithInternalformat(target, internalformat);
-    else
-      image->BindTexImage(target);
-  } else {
-    image->CopyTexImage(target);
-  }
-
-  // Target is already validated
-  UpdateTextureSizeFromTarget(target);
-
-  DCHECK(bound_texture.texture != nullptr);
-  bound_texture.texture->SetLevelImage(target, 0, image);
-
-  // If there was any GLImage bound to |target| on this texture unit, then
-  // forget it.
-  RemovePendingBindingTexture(target, active_texture_unit_);
-
-  return error::kNoError;
-}
-
 void GLES2DecoderPassthroughImpl::VerifyServiceTextureObjectsExist() {
   resources_->texture_object_map.ForEach(
       [this](GLuint client_id, scoped_refptr<TexturePassthrough> texture) {
@@ -3028,8 +3039,7 @@ error::Error GLES2DecoderPassthroughImpl::CheckSwapBuffersResult(
     gfx::SwapResult result,
     const char* function_name) {
   if (result == gfx::SwapResult::SWAP_FAILED) {
-    // If SwapBuffers/SwapBuffersWithBounds/PostSubBuffer failed, we may not
-    // have a current context any more.
+    // If SwapBuffers failed, we may not have a current context any more.
     LOG(ERROR) << "Context lost because " << function_name << " failed.";
     if (!context_->IsCurrent(surface_.get()) || !CheckResetStatus()) {
       MarkContextLost(error::kUnknown);
@@ -3095,11 +3105,12 @@ bool GLES2DecoderPassthroughImpl::CheckErrorCallbackState() {
   return had_error_;
 }
 
-#define GLES2_CMD_OP(name)                                               \
-  {                                                                      \
-      &GLES2DecoderPassthroughImpl::Handle##name, cmds::name::kArgFlags, \
-      cmds::name::cmd_flags,                                             \
-      sizeof(cmds::name) / sizeof(CommandBufferEntry) - 1,               \
+#define GLES2_CMD_OP(name)                                 \
+  {                                                        \
+      &GLES2DecoderPassthroughImpl::Handle##name,          \
+      cmds::name::kArgFlags,                               \
+      cmds::name::cmd_flags,                               \
+      sizeof(cmds::name) / sizeof(CommandBufferEntry) - 1, \
   }, /* NOLINT */
 
 constexpr GLES2DecoderPassthroughImpl::CommandInfo

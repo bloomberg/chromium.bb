@@ -15,7 +15,6 @@
 import * as m from 'mithril';
 
 import {Actions} from '../common/actions';
-import {EngineConfig} from '../common/state';
 import * as version from '../gen/perfetto_version';
 
 import {globals} from './globals';
@@ -28,13 +27,14 @@ type Mode = typeof SEARCH|typeof COMMAND;
 
 const PLACEHOLDER = {
   [SEARCH]: 'Search',
-  [COMMAND]: 'e.g. select * from sched left join thread using(utid) limit 10'
+  [COMMAND]: 'e.g. select * from sched left join thread using(utid) limit 10',
 };
 
 export const DISMISSED_PANNING_HINT_KEY = 'dismissedPanningHint';
 
 let mode: Mode = SEARCH;
 let displayStepThrough = false;
+let queryCount = 0;
 
 function onKeyDown(e: Event) {
   const event = (e as KeyboardEvent);
@@ -60,6 +60,12 @@ function onKeyDown(e: Event) {
   if (mode === SEARCH && key === 'Enter') {
     txt.blur();
   }
+
+  if (mode === COMMAND && key === 'Enter') {
+    const queryId =
+        (event.metaKey || event.ctrlKey) ? `command_${queryCount++}` : 'command';
+    globals.dispatch(Actions.executeQuery({queryId, query: txt.value}));
+  }
 }
 
 function onKeyUp(e: Event) {
@@ -75,10 +81,6 @@ function onKeyUp(e: Event) {
     txt.blur();
     globals.rafScheduler.scheduleFullRedraw();
     return;
-  }
-  if (mode === COMMAND && key === 'Enter') {
-    globals.dispatch(Actions.executeQuery(
-        {engineId: '0', queryId: 'command', query: txt.value}));
   }
 }
 
@@ -136,7 +138,7 @@ class Omnibox implements m.ClassComponent {
                     disabled: globals.state.searchIndex <= 0,
                     onclick: () => {
                       executeSearch(true /* reverse direction */);
-                    }
+                    },
                   },
                   m('i.material-icons.left', 'keyboard_arrow_left')),
                 m('button',
@@ -145,7 +147,7 @@ class Omnibox implements m.ClassComponent {
                         globals.currentSearchResults.totalResults - 1,
                     onclick: () => {
                       executeSearch();
-                    }
+                    },
                   },
                   m('i.material-icons.right', 'keyboard_arrow_right')),
                 ) :
@@ -176,9 +178,9 @@ class Progress implements m.ClassComponent {
 
   loadingAnimation() {
     if (this.progressBar === undefined) return;
-    const engine: EngineConfig = globals.state.engines['0'];
-    if ((engine !== undefined && !engine.ready) ||
-        globals.numQueuedQueries > 0 || taskTracker.hasPendingTasks()) {
+    const engine = globals.getCurrentEngine();
+    if ((engine && !engine.ready) || globals.numQueuedQueries > 0 ||
+        taskTracker.hasPendingTasks()) {
       this.progressBar.classList.add('progress-anim');
     } else {
       this.progressBar.classList.remove('progress-anim');
@@ -197,7 +199,7 @@ class NewVersionNotification implements m.ClassComponent {
             onclick: () => {
               globals.frontendLocalState.newVersionAvailable = false;
               globals.rafScheduler.scheduleFullRedraw();
-            }
+            },
           },
           'Dismiss'),
     );
@@ -222,7 +224,7 @@ class HelpPanningNotification implements m.ClassComponent {
               globals.frontendLocalState.showPanningHint = false;
               localStorage.setItem(DISMISSED_PANNING_HINT_KEY, 'true');
               globals.rafScheduler.scheduleFullRedraw();
-            }
+            },
           },
           'Dismiss'),
     );

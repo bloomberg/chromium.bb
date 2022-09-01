@@ -14,10 +14,10 @@ title: Test Cases
 1.  Please make sure that you are on the dev channel. We have recently
             refreshed the dev channel, so you will have to sign up for the dev
             channel once again. Instructions for joining the dev channel are
-            here: <http://dev.chromium.org/getting-involved/dev-channel/>.
+            here: <http://www.chromium.org/getting-involved/dev-channel/>.
 2.  Make sure you are running the latest version. You can find
             information about Google Chrome versions here:
-            <http://dev.chromium.org/getting-involved/dev-channel/release-notes>.
+            <http://www.chromium.org/getting-involved/dev-channel/release-notes>.
 3.  IMPORTANT: Before you begin testing, please [set up a new
             profile](/developers/creating-and-using-profiles). We strongly
             suggest that you use a separate profile folder for testing purposes
@@ -33,7 +33,7 @@ title: Test Cases
 5.  Please try and associate a failing test case with a bug. It could be
             an existing bug or a new issue. Please refer to bug reporting
             guidelines here:
-            <http://dev.chromium.org/for-testers/bug-reporting-guidelines>. Use
+            <http://www.chromium.org/for-testers/bug-reporting-guidelines>. Use
             the 'Other' response field in the test cases to include the bug
             numbers.
 6.  Please do not use this form to send us feature requests or
@@ -97,7 +97,7 @@ title: Test Cases
 #### Test case: Find in Page (matches inside html pages, edit boxes, unicode text)
 
 *   Pre-conditions/setup: None.
-*   Navigate to a simple page such as <http://dev.chromium.org/>. Hit
+*   Navigate to a simple page such as <http://www.chromium.org/>. Hit
             'Ctrl + F' Search for the word 'chromium'.
 *   Next, go to a website that has a text edit boxes (e.g. compose a
             message in GMail). Type the following text in that box: 'the quick

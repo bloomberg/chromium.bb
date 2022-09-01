@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/forced_extensions/force_installed_tracker.h"
 
 #include "base/bind.h"
+#include "base/observer_list.h"
 #include "base/values.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/extensions/extension_management_constants.h"
@@ -54,7 +55,7 @@ void ForceInstalledTracker::UpdateCounters(ExtensionStatus status, int delta) {
   switch (status) {
     case ExtensionStatus::kPending:
       load_pending_count_ += delta;
-      FALLTHROUGH;
+      [[fallthrough]];
     case ExtensionStatus::kLoaded:
       ready_pending_count_ += delta;
       break;
@@ -118,7 +119,7 @@ bool ForceInstalledTracker::ProceedIfForcedExtensionsPrefReady() {
   DCHECK(status_ == kWaitingForPolicyService ||
          status_ == kWaitingForInstallForcelistPref);
 
-  const base::DictionaryValue* value =
+  const base::Value* value =
       pref_service_->GetDictionary(pref_names::kInstallForceList);
   if (!forced_extensions_pref_ready_ && value && !value->DictEmpty()) {
     forced_extensions_pref_ready_ = true;
@@ -142,7 +143,7 @@ void ForceInstalledTracker::OnForcedExtensionsPrefReady() {
   registry_observation_.Observe(registry_.get());
   collector_observation_.Observe(InstallStageTracker::Get(profile_));
 
-  const base::DictionaryValue* value =
+  const base::Value* value =
       pref_service_->GetDictionary(pref_names::kInstallForceList);
   if (value) {
     // Add each extension to |extensions_|.
@@ -206,6 +207,9 @@ void ForceInstalledTracker::OnExtensionInstallationFailed(
       item->second.status == ExtensionStatus::kReady)
     return;
   ChangeExtensionStatus(extension_id, ExtensionStatus::kFailed);
+  bool is_from_store = item->second.is_from_store;
+  for (auto& obs : observers_)
+    obs.OnForceInstalledExtensionFailed(extension_id, reason, is_from_store);
   MaybeNotifyObservers();
 }
 

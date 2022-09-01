@@ -12,6 +12,7 @@
 #include "components/network_session_configurator/common/network_switches.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -41,7 +42,6 @@ class ChromeWebPlatformSecurityMetricsBrowserTest
         {
             // Enabled:
             network::features::kCrossOriginOpenerPolicy,
-            network::features::kCrossOriginEmbedderPolicyCredentialless,
             // SharedArrayBuffer is needed for these tests.
             features::kSharedArrayBuffer,
         },
@@ -126,8 +126,14 @@ class ChromeWebPlatformSecurityMetricsBrowserTest
  private:
   void SetUpOnMainThread() final {
     host_resolver()->AddRule("*", "127.0.0.1");
+
     https_server_.AddDefaultHandlers(GetChromeTestDataDir());
     http_server_.AddDefaultHandlers(GetChromeTestDataDir());
+
+    // Add content/test/data for cross_site_iframe_factory.html
+    https_server_.ServeFilesFromSourceDirectory("content/test/data");
+    http_server_.ServeFilesFromSourceDirectory("content/test/data");
+
     https_server_.SetSSLConfig(net::EmbeddedTestServer::CERT_OK);
     ASSERT_TRUE(https_server_.Start());
     ASSERT_TRUE(http_server_.Start());
@@ -135,6 +141,8 @@ class ChromeWebPlatformSecurityMetricsBrowserTest
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) final {
+    // For anonymous iframe:
+    command_line->AppendSwitch(switches::kEnableBlinkTestFeatures);
     command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
   }
 
@@ -144,20 +152,6 @@ class ChromeWebPlatformSecurityMetricsBrowserTest
   base::HistogramTester histogram_;
   WebFeature monitored_feature_;
   base::test::ScopedFeatureList features_;
-};
-
-// An extension to the ChromeWebPlatformSecurityMetricsBrowserTest that
-// enables cross-origin sharing of WebAssembly modules.
-class ChromeWebPlatformSecurityMetricsWithModuleSharingEnabledBrowserTest
-    : public ChromeWebPlatformSecurityMetricsBrowserTest {
- public:
-  ChromeWebPlatformSecurityMetricsWithModuleSharingEnabledBrowserTest() {
-    sharing_feature_.InitWithFeatures(
-        {features::kCrossOriginWebAssemblyModuleSharingEnabled}, {});
-  }
-
- private:
-  base::test::ScopedFeatureList sharing_feature_;
 };
 
 // Check the kCrossOriginOpenerPolicyReporting feature usage. No header => 0
@@ -458,7 +452,8 @@ IN_PROC_BROWSER_TEST_F(ChromeWebPlatformSecurityMetricsBrowserTest,
   EXPECT_TRUE(content::NavigateToURL(web_contents(), main_url));
   LoadIFrame(sub_url);
 
-  content::RenderFrameHost* main_document = web_contents()->GetMainFrame();
+  content::RenderFrameHost* main_document =
+      web_contents()->GetPrimaryMainFrame();
   content::RenderFrameHost* sub_document = ChildFrameAt(main_document, 0);
 
   EXPECT_EQ(true, content::ExecJs(main_document, R"(
@@ -501,7 +496,8 @@ IN_PROC_BROWSER_TEST_F(ChromeWebPlatformSecurityMetricsBrowserTest,
   EXPECT_TRUE(content::NavigateToURL(web_contents(), main_url));
   LoadIFrame(sub_url);
 
-  content::RenderFrameHost* main_document = web_contents()->GetMainFrame();
+  content::RenderFrameHost* main_document =
+      web_contents()->GetPrimaryMainFrame();
   content::RenderFrameHost* sub_document = ChildFrameAt(main_document, 0);
 
   EXPECT_EQ(true, content::ExecJs(main_document, R"(
@@ -539,7 +535,8 @@ IN_PROC_BROWSER_TEST_F(ChromeWebPlatformSecurityMetricsBrowserTest,
   EXPECT_TRUE(content::NavigateToURL(web_contents(), main_url));
   LoadIFrame(sub_url);
 
-  content::RenderFrameHost* main_document = web_contents()->GetMainFrame();
+  content::RenderFrameHost* main_document =
+      web_contents()->GetPrimaryMainFrame();
   content::RenderFrameHost* sub_document = ChildFrameAt(main_document, 0);
 
   EXPECT_EQ(true, content::ExecJs(main_document, R"(
@@ -578,7 +575,8 @@ IN_PROC_BROWSER_TEST_F(ChromeWebPlatformSecurityMetricsBrowserTest,
   EXPECT_TRUE(content::NavigateToURL(web_contents(), main_url));
   LoadIFrame(sub_url);
 
-  content::RenderFrameHost* main_document = web_contents()->GetMainFrame();
+  content::RenderFrameHost* main_document =
+      web_contents()->GetPrimaryMainFrame();
   content::RenderFrameHost* sub_document = ChildFrameAt(main_document, 0);
 
   EXPECT_EQ(true, content::ExecJs(main_document, R"(
@@ -619,7 +617,8 @@ IN_PROC_BROWSER_TEST_F(ChromeWebPlatformSecurityMetricsBrowserTest,
   EXPECT_TRUE(content::NavigateToURL(web_contents(), main_url));
   LoadIFrame(sub_url);
 
-  content::RenderFrameHost* main_document = web_contents()->GetMainFrame();
+  content::RenderFrameHost* main_document =
+      web_contents()->GetPrimaryMainFrame();
   content::RenderFrameHost* sub_document = ChildFrameAt(main_document, 0);
 
   EXPECT_EQ(true, content::ExecJs(main_document, R"(
@@ -662,7 +661,8 @@ IN_PROC_BROWSER_TEST_F(ChromeWebPlatformSecurityMetricsBrowserTest,
   EXPECT_TRUE(content::NavigateToURL(web_contents(), url));
   LoadIFrame(url);
 
-  content::RenderFrameHost* main_document = web_contents()->GetMainFrame();
+  content::RenderFrameHost* main_document =
+      web_contents()->GetPrimaryMainFrame();
   content::RenderFrameHost* sub_document = ChildFrameAt(main_document, 0);
 
   EXPECT_EQ(true, content::ExecJs(main_document, R"(
@@ -700,7 +700,8 @@ IN_PROC_BROWSER_TEST_F(ChromeWebPlatformSecurityMetricsBrowserTest,
   EXPECT_TRUE(content::NavigateToURL(web_contents(), main_url));
   LoadIFrame(sub_url);
 
-  content::RenderFrameHost* main_document = web_contents()->GetMainFrame();
+  content::RenderFrameHost* main_document =
+      web_contents()->GetPrimaryMainFrame();
   content::RenderFrameHost* sub_document = ChildFrameAt(main_document, 0);
 
   EXPECT_EQ(true, content::ExecJs(main_document, R"(
@@ -731,8 +732,9 @@ IN_PROC_BROWSER_TEST_F(ChromeWebPlatformSecurityMetricsBrowserTest,
   CheckCounter(WebFeature::kV8SharedArrayBufferConstructedWithoutIsolation, 0);
   CheckCounter(WebFeature::kV8SharedArrayBufferConstructed, 0);
 
-  CheckCounter(WebFeature::kWasmModuleSharing, 0);
-  CheckCounter(WebFeature::kCrossOriginWasmModuleSharing, 0);
+  // TODO(ahaas): Check the histogram for:
+  // - kWasmModuleSharing
+  // - kCrossOriginWasmModuleSharing
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeWebPlatformSecurityMetricsBrowserTest,
@@ -743,7 +745,8 @@ IN_PROC_BROWSER_TEST_F(ChromeWebPlatformSecurityMetricsBrowserTest,
   EXPECT_TRUE(content::NavigateToURL(web_contents(), main_url));
   LoadIFrame(sub_url);
 
-  content::RenderFrameHost* main_document = web_contents()->GetMainFrame();
+  content::RenderFrameHost* main_document =
+      web_contents()->GetPrimaryMainFrame();
   content::RenderFrameHost* sub_document = ChildFrameAt(main_document, 0);
 
   EXPECT_EQ(true, content::ExecJs(main_document, R"(
@@ -773,49 +776,6 @@ IN_PROC_BROWSER_TEST_F(ChromeWebPlatformSecurityMetricsBrowserTest,
 
   CheckCounter(WebFeature::kV8SharedArrayBufferConstructedWithoutIsolation, 0);
   CheckCounter(WebFeature::kV8SharedArrayBufferConstructed, 0);
-
-  CheckCounter(WebFeature::kWasmModuleSharing, 0);
-  CheckCounter(WebFeature::kCrossOriginWasmModuleSharing, 0);
-}
-
-IN_PROC_BROWSER_TEST_F(
-    ChromeWebPlatformSecurityMetricsWithModuleSharingEnabledBrowserTest,
-    WasmModuleSharingSameSite) {
-  GURL main_url = https_server().GetURL("a.a.com", "/empty.html");
-  GURL sub_url = https_server().GetURL("b.a.com", "/empty.html");
-
-  EXPECT_TRUE(content::NavigateToURL(web_contents(), main_url));
-  LoadIFrame(sub_url);
-
-  content::RenderFrameHost* main_document = web_contents()->GetMainFrame();
-  content::RenderFrameHost* sub_document = ChildFrameAt(main_document, 0);
-
-  EXPECT_EQ(true, content::ExecJs(main_document, R"(
-    received_module = undefined;
-    addEventListener("message", event => {
-      received_module = event.data;
-    });
-  )"));
-
-  EXPECT_EQ(true, content::ExecJs(sub_document, R"(
-    let module = new WebAssembly.Module(new Uint8Array([
-      0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00]));
-    parent.postMessage(module, "*");
-  )"));
-
-  EXPECT_EQ(true, content::EvalJs(main_document, R"(
-    new Promise(async resolve => {
-      while (!received_module)
-        await new Promise(r => setTimeout(r, 10));
-      resolve(true);
-    });
-  )"));
-
-  CheckCounter(WebFeature::kV8SharedArrayBufferConstructedWithoutIsolation, 0);
-  CheckCounter(WebFeature::kV8SharedArrayBufferConstructed, 0);
-
-  CheckCounter(WebFeature::kWasmModuleSharing, 1);
-  CheckCounter(WebFeature::kCrossOriginWasmModuleSharing, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeWebPlatformSecurityMetricsBrowserTest,
@@ -826,7 +786,8 @@ IN_PROC_BROWSER_TEST_F(ChromeWebPlatformSecurityMetricsBrowserTest,
   EXPECT_TRUE(content::NavigateToURL(web_contents(), main_url));
   LoadIFrame(sub_url);
 
-  content::RenderFrameHost* main_document = web_contents()->GetMainFrame();
+  content::RenderFrameHost* main_document =
+      web_contents()->GetPrimaryMainFrame();
   content::RenderFrameHost* sub_document = ChildFrameAt(main_document, 0);
 
   EXPECT_EQ(true, content::ExecJs(main_document, R"(
@@ -853,8 +814,9 @@ IN_PROC_BROWSER_TEST_F(ChromeWebPlatformSecurityMetricsBrowserTest,
   CheckCounter(WebFeature::kV8SharedArrayBufferConstructedWithoutIsolation, 0);
   CheckCounter(WebFeature::kV8SharedArrayBufferConstructed, 0);
 
-  CheckCounter(WebFeature::kWasmModuleSharing, 1);
-  CheckCounter(WebFeature::kCrossOriginWasmModuleSharing, 0);
+  // TODO(ahaas): Check the histogram for:
+  // - kWasmModuleSharing
+  // - kCrossOriginWasmModuleSharing
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeWebPlatformSecurityMetricsBrowserTest,
@@ -865,7 +827,8 @@ IN_PROC_BROWSER_TEST_F(ChromeWebPlatformSecurityMetricsBrowserTest,
   EXPECT_TRUE(content::NavigateToURL(web_contents(), main_url));
   LoadIFrame(sub_url);
 
-  content::RenderFrameHost* main_document = web_contents()->GetMainFrame();
+  content::RenderFrameHost* main_document =
+      web_contents()->GetPrimaryMainFrame();
   content::RenderFrameHost* sub_document = ChildFrameAt(main_document, 0);
 
   EXPECT_EQ(true, content::ExecJs(main_document, R"(
@@ -897,51 +860,6 @@ IN_PROC_BROWSER_TEST_F(ChromeWebPlatformSecurityMetricsBrowserTest,
 
   CheckCounter(WebFeature::kV8SharedArrayBufferConstructedWithoutIsolation, 0);
   CheckCounter(WebFeature::kV8SharedArrayBufferConstructed, 0);
-
-  CheckCounter(WebFeature::kWasmModuleSharing, 0);
-  CheckCounter(WebFeature::kCrossOriginWasmModuleSharing, 0);
-}
-
-IN_PROC_BROWSER_TEST_F(
-    ChromeWebPlatformSecurityMetricsWithModuleSharingEnabledBrowserTest,
-    WasmModuleSharingSameSiteBeforeSetDocumentDomain) {
-  GURL main_url = https_server().GetURL("sub.a.com", "/empty.html");
-  GURL sub_url = https_server().GetURL("a.com", "/empty.html");
-
-  EXPECT_TRUE(content::NavigateToURL(web_contents(), main_url));
-  LoadIFrame(sub_url);
-
-  content::RenderFrameHost* main_document = web_contents()->GetMainFrame();
-  content::RenderFrameHost* sub_document = ChildFrameAt(main_document, 0);
-
-  EXPECT_EQ(true, content::ExecJs(main_document, R"(
-    document.domain = "a.com";
-    received_module = undefined;
-    addEventListener("message", event => {
-      received_module = event.data;
-    });
-  )"));
-
-  EXPECT_EQ(true, content::ExecJs(sub_document, R"(
-    document.domain = "a.com";
-    let module = new WebAssembly.Module(new Uint8Array([
-      0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00]));
-    parent.postMessage(module, "*");
-  )"));
-
-  EXPECT_EQ(true, content::EvalJs(main_document, R"(
-    new Promise(async resolve => {
-      while (!received_module)
-        await new Promise(r => setTimeout(r, 10));
-      resolve(true);
-    });
-  )"));
-
-  CheckCounter(WebFeature::kV8SharedArrayBufferConstructedWithoutIsolation, 0);
-  CheckCounter(WebFeature::kV8SharedArrayBufferConstructed, 0);
-
-  CheckCounter(WebFeature::kWasmModuleSharing, 1);
-  CheckCounter(WebFeature::kCrossOriginWasmModuleSharing, 0);
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeWebPlatformSecurityMetricsBrowserTest,
@@ -952,7 +870,8 @@ IN_PROC_BROWSER_TEST_F(ChromeWebPlatformSecurityMetricsBrowserTest,
   EXPECT_TRUE(content::NavigateToURL(web_contents(), main_url));
   LoadIFrame(sub_url);
 
-  content::RenderFrameHost* main_document = web_contents()->GetMainFrame();
+  content::RenderFrameHost* main_document =
+      web_contents()->GetPrimaryMainFrame();
   content::RenderFrameHost* sub_document = ChildFrameAt(main_document, 0);
 
   EXPECT_EQ(true, content::ExecJs(main_document, R"(
@@ -981,8 +900,9 @@ IN_PROC_BROWSER_TEST_F(ChromeWebPlatformSecurityMetricsBrowserTest,
   CheckCounter(WebFeature::kV8SharedArrayBufferConstructedWithoutIsolation, 0);
   CheckCounter(WebFeature::kV8SharedArrayBufferConstructed, 0);
 
-  CheckCounter(WebFeature::kWasmModuleSharing, 1);
-  CheckCounter(WebFeature::kCrossOriginWasmModuleSharing, 0);
+  // TODO(ahaas): Check the histogram for:
+  // - kWasmModuleSharing
+  // - kCrossOriginWasmModuleSharing
 }
 
 // Check that two pages with same-origin documents do not get reported when the
@@ -1315,20 +1235,8 @@ IN_PROC_BROWSER_TEST_F(ChromeWebPlatformSecurityMetricsBrowserTest,
   CheckCounterMainFrame(WebFeature::kCrossOriginEmbedderPolicyRequireCorp, 0);
 }
 
-class ChromeWebPlatformSecurityMetricsBrowserTestWithSharedWorker
-    : public ChromeWebPlatformSecurityMetricsBrowserTest {
- public:
-  ChromeWebPlatformSecurityMetricsBrowserTestWithSharedWorker() {
-    feature_.InitWithFeatures({blink::features::kCOEPForSharedWorker}, {});
-  }
-
- private:
-  base::test::ScopedFeatureList feature_;
-};
-
-IN_PROC_BROWSER_TEST_F(
-    ChromeWebPlatformSecurityMetricsBrowserTestWithSharedWorker,
-    CoepNoneSharedWorker) {
+IN_PROC_BROWSER_TEST_F(ChromeWebPlatformSecurityMetricsBrowserTest,
+                       CoepNoneSharedWorker) {
   GURL main_page_url = https_server().GetURL("a.test", "/empty.html");
   GURL worker_url =
       https_server().GetURL("a.test",
@@ -1343,9 +1251,8 @@ IN_PROC_BROWSER_TEST_F(
   CheckCounter(WebFeature::kCoepRequireCorpSharedWorker, 0);
 }
 
-IN_PROC_BROWSER_TEST_F(
-    ChromeWebPlatformSecurityMetricsBrowserTestWithSharedWorker,
-    CoepCredentiallessSharedWorker) {
+IN_PROC_BROWSER_TEST_F(ChromeWebPlatformSecurityMetricsBrowserTest,
+                       CoepCredentiallessSharedWorker) {
   GURL main_page_url = https_server().GetURL("a.test", "/empty.html");
   GURL worker_url =
       https_server().GetURL("a.test",
@@ -1360,9 +1267,8 @@ IN_PROC_BROWSER_TEST_F(
   CheckCounter(WebFeature::kCoepRequireCorpSharedWorker, 0);
 }
 
-IN_PROC_BROWSER_TEST_F(
-    ChromeWebPlatformSecurityMetricsBrowserTestWithSharedWorker,
-    CoepRequireCorpSharedWorker) {
+IN_PROC_BROWSER_TEST_F(ChromeWebPlatformSecurityMetricsBrowserTest,
+                       CoepRequireCorpSharedWorker) {
   GURL main_page_url = https_server().GetURL("a.test", "/empty.html");
   GURL worker_url =
       https_server().GetURL("a.test",
@@ -1375,6 +1281,565 @@ IN_PROC_BROWSER_TEST_F(
   CheckCounter(WebFeature::kCoepNoneSharedWorker, 0);
   CheckCounter(WebFeature::kCoepCredentiallessSharedWorker, 0);
   CheckCounter(WebFeature::kCoepRequireCorpSharedWorker, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(ChromeWebPlatformSecurityMetricsBrowserTest,
+                       WindowProxyAccess) {
+  GURL url =
+      https_server().GetURL("a.com", "/cross_site_iframe_factory.html?a(a,b)");
+  ASSERT_TRUE(content::NavigateToURL(web_contents(), url));
+  content::RenderFrameHost* same_origin_subframe =
+      ChildFrameAt(web_contents()->GetPrimaryMainFrame(), 0);
+  content::RenderFrameHost* cross_origin_subframe =
+      ChildFrameAt(web_contents()->GetPrimaryMainFrame(), 1);
+
+  struct TestCase {
+    const char* name;
+    const char* property;
+    WebFeature property_access;
+    WebFeature property_access_from_other_page;
+  } cases[] = {
+      {
+          "blur",
+          "window.top.blur()",
+          WebFeature::kWindowProxyCrossOriginAccessBlur,
+          WebFeature::kWindowProxyCrossOriginAccessFromOtherPageBlur,
+      },
+      {
+          "closed",
+          "window.top.closed",
+          WebFeature::kWindowProxyCrossOriginAccessClosed,
+          WebFeature::kWindowProxyCrossOriginAccessFromOtherPageClosed,
+      },
+      {
+          "focus",
+          "window.top.focus()",
+          WebFeature::kWindowProxyCrossOriginAccessFocus,
+          WebFeature::kWindowProxyCrossOriginAccessFromOtherPageFocus,
+      },
+      {
+          "frames",
+          "window.top.frames",
+          WebFeature::kWindowProxyCrossOriginAccessFrames,
+          WebFeature::kWindowProxyCrossOriginAccessFromOtherPageFrames,
+      },
+      {
+          "length",
+          "window.top.length",
+          WebFeature::kWindowProxyCrossOriginAccessLength,
+          WebFeature::kWindowProxyCrossOriginAccessFromOtherPageLength,
+      },
+      {
+          "location get",
+          "window.top.location",
+          WebFeature::kWindowProxyCrossOriginAccessLocation,
+          WebFeature::kWindowProxyCrossOriginAccessFromOtherPageLocation,
+      },
+      {
+          "opener get",
+          "window.top.opener",
+          WebFeature::kWindowProxyCrossOriginAccessOpener,
+          WebFeature::kWindowProxyCrossOriginAccessFromOtherPageOpener,
+      },
+      {
+          "parent",
+          "window.top.parent",
+          WebFeature::kWindowProxyCrossOriginAccessParent,
+          WebFeature::kWindowProxyCrossOriginAccessFromOtherPageParent,
+      },
+      {
+          "postMessage",
+          "window.top.postMessage('','*')",
+          WebFeature::kWindowProxyCrossOriginAccessPostMessage,
+          WebFeature::kWindowProxyCrossOriginAccessFromOtherPagePostMessage,
+      },
+      {
+          "self",
+          "window.top.self",
+          WebFeature::kWindowProxyCrossOriginAccessSelf,
+          WebFeature::kWindowProxyCrossOriginAccessFromOtherPageSelf,
+      },
+      {
+          "top",
+          "window.top.top",
+          WebFeature::kWindowProxyCrossOriginAccessTop,
+          WebFeature::kWindowProxyCrossOriginAccessFromOtherPageTop,
+      },
+      {
+          "window",
+          "window.top.window",
+          WebFeature::kWindowProxyCrossOriginAccessWindow,
+          WebFeature::kWindowProxyCrossOriginAccessFromOtherPageWindow,
+      }};
+
+  for (auto test : cases) {
+    SCOPED_TRACE(test.name);
+    // Check that a same-origin access does not register use counters.
+    EXPECT_TRUE(content::ExecJs(same_origin_subframe, test.property));
+    CheckCounter(test.property_access, 0);
+    CheckCounter(test.property_access_from_other_page, 0);
+
+    // Check that a cross-origin access register use counters.
+    EXPECT_TRUE(content::ExecJs(cross_origin_subframe, test.property));
+    CheckCounter(test.property_access, 1);
+    CheckCounter(test.property_access_from_other_page, 0);
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(ChromeWebPlatformSecurityMetricsBrowserTest,
+                       WindowProxyAccessCloseSameOrigin) {
+  GURL url =
+      https_server().GetURL("a.com", "/cross_site_iframe_factory.html?a(a)");
+  ASSERT_TRUE(content::NavigateToURL(web_contents(), url));
+
+  // Check that a same-origin access does not register use counters.
+  content::RenderFrameHost* same_origin_subframe =
+      ChildFrameAt(web_contents()->GetPrimaryMainFrame(), 0);
+  EXPECT_TRUE(content::ExecJs(same_origin_subframe, "window.top.close()"));
+  CheckCounter(WebFeature::kWindowProxyCrossOriginAccessClose, 0);
+  CheckCounter(WebFeature::kWindowProxyCrossOriginAccessFromOtherPageClose, 0);
+}
+
+IN_PROC_BROWSER_TEST_F(ChromeWebPlatformSecurityMetricsBrowserTest,
+                       WindowProxyAccessCloseCrossOrigin) {
+  GURL url =
+      https_server().GetURL("a.com", "/cross_site_iframe_factory.html?a(b)");
+  ASSERT_TRUE(content::NavigateToURL(web_contents(), url));
+
+  // Check that a cross-origin access register use counters.
+  content::RenderFrameHost* cross_origin_subframe =
+      ChildFrameAt(web_contents()->GetPrimaryMainFrame(), 0);
+  EXPECT_TRUE(content::ExecJs(cross_origin_subframe, "window.top.close()"));
+  CheckCounter(WebFeature::kWindowProxyCrossOriginAccessClose, 1);
+  CheckCounter(WebFeature::kWindowProxyCrossOriginAccessFromOtherPageClose, 0);
+}
+
+IN_PROC_BROWSER_TEST_F(ChromeWebPlatformSecurityMetricsBrowserTest,
+                       WindowProxyAccessIndexedGetter) {
+  GURL url =
+      https_server().GetURL("a.com", "/cross_site_iframe_factory.html?a(a,b)");
+  ASSERT_TRUE(content::NavigateToURL(web_contents(), url));
+
+  // Check that a same-origin access does not register use counters.
+  content::RenderFrameHost* same_origin_subframe =
+      ChildFrameAt(web_contents()->GetPrimaryMainFrame(), 0);
+  EXPECT_TRUE(content::ExecJs(same_origin_subframe, "window.top[0]"));
+  CheckCounter(WebFeature::kWindowProxyCrossOriginAccessIndexedGetter, 0);
+  CheckCounter(
+      WebFeature::kWindowProxyCrossOriginAccessFromOtherPageIndexedGetter, 0);
+
+  // Check that a cross-origin access register use counters.
+  content::RenderFrameHost* cross_origin_subframe =
+      ChildFrameAt(web_contents()->GetPrimaryMainFrame(), 1);
+  EXPECT_TRUE(content::ExecJs(cross_origin_subframe, "window.top[0]"));
+  CheckCounter(WebFeature::kWindowProxyCrossOriginAccessIndexedGetter, 1);
+  CheckCounter(
+      WebFeature::kWindowProxyCrossOriginAccessFromOtherPageIndexedGetter, 0);
+
+  // A failed access should not register the use counter.
+  EXPECT_FALSE(content::ExecJs(cross_origin_subframe, "window.top[2]"));
+  CheckCounter(WebFeature::kWindowProxyCrossOriginAccessIndexedGetter, 1);
+  CheckCounter(
+      WebFeature::kWindowProxyCrossOriginAccessFromOtherPageIndexedGetter, 0);
+}
+
+IN_PROC_BROWSER_TEST_F(ChromeWebPlatformSecurityMetricsBrowserTest,
+                       WindowProxyAccessLocationSetSameOrigin) {
+  GURL url =
+      https_server().GetURL("a.com", "/cross_site_iframe_factory.html?a(a,b)");
+  ASSERT_TRUE(content::NavigateToURL(web_contents(), url));
+
+  // Check that a same-origin access does not register use counters.
+  content::RenderFrameHost* same_origin_subframe =
+      ChildFrameAt(web_contents()->GetPrimaryMainFrame(), 0);
+  EXPECT_TRUE(
+      content::ExecJs(same_origin_subframe,
+                      content::JsReplace("window.top.location = $1", url)));
+  CheckCounter(WebFeature::kWindowProxyCrossOriginAccessLocation, 0);
+  CheckCounter(WebFeature::kWindowProxyCrossOriginAccessFromOtherPageLocation,
+               0);
+}
+
+IN_PROC_BROWSER_TEST_F(ChromeWebPlatformSecurityMetricsBrowserTest,
+                       WindowProxyAccessLocationSetCrossOrigin) {
+  GURL url =
+      https_server().GetURL("a.com", "/cross_site_iframe_factory.html?a(a,b)");
+  GURL fragment_url = https_server().GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(a,b)#foo");
+  ASSERT_TRUE(content::NavigateToURL(web_contents(), url));
+
+  // Check that a cross-origin access register use counters.
+  content::RenderFrameHost* cross_origin_subframe =
+      ChildFrameAt(web_contents()->GetPrimaryMainFrame(), 1);
+  EXPECT_TRUE(content::ExecJs(
+      cross_origin_subframe,
+      content::JsReplace("window.top.location = $1", fragment_url)));
+
+  CheckCounter(WebFeature::kWindowProxyCrossOriginAccessLocation, 1);
+  CheckCounter(WebFeature::kWindowProxyCrossOriginAccessFromOtherPageLocation,
+               0);
+}
+
+IN_PROC_BROWSER_TEST_F(ChromeWebPlatformSecurityMetricsBrowserTest,
+                       WindowProxyAccessNamedGetter) {
+  GURL url = https_server().GetURL("a.test", "/iframe_about_blank.html");
+  ASSERT_TRUE(content::NavigateToURL(web_contents(), url));
+  GURL cross_origin_url = https_server().GetURL("b.test", "/empty.html");
+  LoadIFrame(cross_origin_url);
+
+  // Check that a same-origin access does not register use counters.
+  content::RenderFrameHost* same_origin_subframe =
+      ChildFrameAt(web_contents()->GetPrimaryMainFrame(), 0);
+  EXPECT_TRUE(content::ExecJs(same_origin_subframe,
+                              "window.top['about_blank_iframe']"));
+  CheckCounter(WebFeature::kWindowProxyCrossOriginAccessNamedGetter, 0);
+  CheckCounter(
+      WebFeature::kWindowProxyCrossOriginAccessFromOtherPageNamedGetter, 0);
+
+  // Check that a cross-origin access register use counters.
+  content::RenderFrameHost* cross_origin_subframe =
+      ChildFrameAt(web_contents()->GetPrimaryMainFrame(), 1);
+  EXPECT_TRUE(content::ExecJs(cross_origin_subframe,
+                              "window.top['about_blank_iframe']"));
+  CheckCounter(WebFeature::kWindowProxyCrossOriginAccessNamedGetter, 1);
+  CheckCounter(
+      WebFeature::kWindowProxyCrossOriginAccessFromOtherPageNamedGetter, 0);
+
+  // A failed access should not register the use counter.
+  EXPECT_FALSE(
+      content::ExecJs(cross_origin_subframe, "window.top['wrongName']"));
+  CheckCounter(WebFeature::kWindowProxyCrossOriginAccessNamedGetter, 1);
+  CheckCounter(
+      WebFeature::kWindowProxyCrossOriginAccessFromOtherPageNamedGetter, 0);
+}
+
+IN_PROC_BROWSER_TEST_F(ChromeWebPlatformSecurityMetricsBrowserTest,
+                       WindowProxyAccessOpenerSet) {
+  GURL url =
+      https_server().GetURL("a.com", "/cross_site_iframe_factory.html?a(a,b)");
+  ASSERT_TRUE(content::NavigateToURL(web_contents(), url));
+
+  // Check that a same-origin access does not register use counters.
+  content::RenderFrameHost* same_origin_subframe =
+      ChildFrameAt(web_contents()->GetPrimaryMainFrame(), 0);
+  EXPECT_TRUE(content::ExecJs(same_origin_subframe, "window.top.opener = ''"));
+  CheckCounter(WebFeature::kWindowProxyCrossOriginAccessOpener, 0);
+  CheckCounter(WebFeature::kWindowProxyCrossOriginAccessFromOtherPageOpener, 0);
+
+  // Check that a cross-origin access doesn't register use counters because it
+  // is blocked by the same-origin policy.
+  content::RenderFrameHost* cross_origin_subframe =
+      ChildFrameAt(web_contents()->GetPrimaryMainFrame(), 1);
+  EXPECT_FALSE(
+      content::ExecJs(cross_origin_subframe, "window.top.opener = ''"));
+  CheckCounter(WebFeature::kWindowProxyCrossOriginAccessOpener, 0);
+  CheckCounter(WebFeature::kWindowProxyCrossOriginAccessFromOtherPageOpener, 0);
+}
+
+IN_PROC_BROWSER_TEST_F(ChromeWebPlatformSecurityMetricsBrowserTest,
+                       WindowProxyAccessFromOtherPage) {
+  GURL url = https_server().GetURL("a.com", "/empty.html");
+  ASSERT_TRUE(content::NavigateToURL(web_contents(), url));
+
+  content::WebContents* same_origin_popup = OpenPopup(url);
+
+  GURL cross_origin_url = https_server().GetURL("b.test", "/empty.html");
+  content::WebContents* cross_origin_popup = OpenPopup(cross_origin_url);
+
+  struct TestCase {
+    const char* name;
+    const char* property;
+    WebFeature property_access;
+    WebFeature property_access_from_other_page;
+  } cases[] = {
+      {
+          "blur",
+          "window.opener.blur()",
+          WebFeature::kWindowProxyCrossOriginAccessBlur,
+          WebFeature::kWindowProxyCrossOriginAccessFromOtherPageBlur,
+      },
+      {
+          "closed",
+          "window.opener.closed",
+          WebFeature::kWindowProxyCrossOriginAccessClosed,
+          WebFeature::kWindowProxyCrossOriginAccessFromOtherPageClosed,
+      },
+      {
+          "focus",
+          "window.opener.focus()",
+          WebFeature::kWindowProxyCrossOriginAccessFocus,
+          WebFeature::kWindowProxyCrossOriginAccessFromOtherPageFocus,
+      },
+      {
+          "frames",
+          "window.opener.frames",
+          WebFeature::kWindowProxyCrossOriginAccessFrames,
+          WebFeature::kWindowProxyCrossOriginAccessFromOtherPageFrames,
+      },
+      {
+          "length",
+          "window.opener.length",
+          WebFeature::kWindowProxyCrossOriginAccessLength,
+          WebFeature::kWindowProxyCrossOriginAccessFromOtherPageLength,
+      },
+      {
+          "location get",
+          "window.opener.location",
+          WebFeature::kWindowProxyCrossOriginAccessLocation,
+          WebFeature::kWindowProxyCrossOriginAccessFromOtherPageLocation,
+      },
+      {
+          "opener get",
+          "window.opener.opener",
+          WebFeature::kWindowProxyCrossOriginAccessOpener,
+          WebFeature::kWindowProxyCrossOriginAccessFromOtherPageOpener,
+      },
+      {
+          "parent",
+          "window.opener.parent",
+          WebFeature::kWindowProxyCrossOriginAccessParent,
+          WebFeature::kWindowProxyCrossOriginAccessFromOtherPageParent,
+      },
+      {
+          "postMessage",
+          "window.opener.postMessage('','*')",
+          WebFeature::kWindowProxyCrossOriginAccessPostMessage,
+          WebFeature::kWindowProxyCrossOriginAccessFromOtherPagePostMessage,
+      },
+      {
+          "self",
+          "window.opener.self",
+          WebFeature::kWindowProxyCrossOriginAccessSelf,
+          WebFeature::kWindowProxyCrossOriginAccessFromOtherPageSelf,
+      },
+      {
+          "top",
+          "window.opener.top",
+          WebFeature::kWindowProxyCrossOriginAccessTop,
+          WebFeature::kWindowProxyCrossOriginAccessFromOtherPageTop,
+      }};
+
+  for (auto test : cases) {
+    SCOPED_TRACE(test.name);
+    // Check that a same-origin access does not register use counters.
+    EXPECT_TRUE(content::ExecJs(same_origin_popup, test.property));
+    CheckCounter(test.property_access, 0);
+    CheckCounter(test.property_access_from_other_page, 0);
+
+    // Check that a cross-origin access register use counters.
+    EXPECT_TRUE(content::ExecJs(cross_origin_popup, test.property));
+    CheckCounter(test.property_access, 1);
+    CheckCounter(test.property_access_from_other_page, 1);
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(ChromeWebPlatformSecurityMetricsBrowserTest,
+                       WindowProxyAccessFromOtherPageCloseSameOrigin) {
+  GURL url = https_server().GetURL("a.test", "/empty.html");
+  ASSERT_TRUE(content::NavigateToURL(web_contents(), url));
+
+  // Check that a same-origin access does not register use counters.
+  content::WebContents* same_origin_popup = OpenPopup(url);
+  EXPECT_TRUE(content::ExecJs(same_origin_popup, "window.opener.close()"));
+  CheckCounter(WebFeature::kWindowProxyCrossOriginAccessClose, 0);
+  CheckCounter(WebFeature::kWindowProxyCrossOriginAccessFromOtherPageClose, 0);
+}
+
+IN_PROC_BROWSER_TEST_F(ChromeWebPlatformSecurityMetricsBrowserTest,
+                       WindowProxyAccessFromOtherPageCloseCrossOrigin) {
+  GURL url = https_server().GetURL("a.test", "/empty.html");
+  ASSERT_TRUE(content::NavigateToURL(web_contents(), url));
+
+  // Check that a cross-origin access register use counters.
+  GURL cross_origin_url = https_server().GetURL("b.test", "/empty.html");
+  content::WebContents* cross_origin_popup = OpenPopup(cross_origin_url);
+  EXPECT_TRUE(content::ExecJs(cross_origin_popup, "window.opener.close()"));
+  CheckCounter(WebFeature::kWindowProxyCrossOriginAccessClose, 1);
+  CheckCounter(WebFeature::kWindowProxyCrossOriginAccessFromOtherPageClose, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(ChromeWebPlatformSecurityMetricsBrowserTest,
+                       WindowProxyAccessFromOtherPageIndexedGetter) {
+  GURL url = https_server().GetURL("a.test", "/iframe.html");
+  ASSERT_TRUE(content::NavigateToURL(web_contents(), url));
+
+  // Check that a same-origin access does not register use counters.
+  content::WebContents* same_origin_popup = OpenPopup(url);
+  EXPECT_TRUE(content::ExecJs(same_origin_popup, "window.opener[0]"));
+  CheckCounter(WebFeature::kWindowProxyCrossOriginAccessIndexedGetter, 0);
+  CheckCounter(
+      WebFeature::kWindowProxyCrossOriginAccessFromOtherPageIndexedGetter, 0);
+
+  // Check that a cross-origin access register use counters.
+  GURL cross_origin_url = https_server().GetURL("b.test", "/empty.html");
+  content::WebContents* cross_origin_popup = OpenPopup(cross_origin_url);
+  EXPECT_TRUE(content::ExecJs(cross_origin_popup, "window.opener[0]"));
+  CheckCounter(WebFeature::kWindowProxyCrossOriginAccessIndexedGetter, 1);
+  CheckCounter(
+      WebFeature::kWindowProxyCrossOriginAccessFromOtherPageIndexedGetter, 1);
+
+  // A failed access should not register the use counter.
+  EXPECT_FALSE(content::ExecJs(cross_origin_popup, "window.opener[1]"));
+  CheckCounter(WebFeature::kWindowProxyCrossOriginAccessIndexedGetter, 1);
+  CheckCounter(
+      WebFeature::kWindowProxyCrossOriginAccessFromOtherPageIndexedGetter, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(ChromeWebPlatformSecurityMetricsBrowserTest,
+                       WindowProxyAccessFromOtherPageLocationSetSameOrigin) {
+  GURL url = https_server().GetURL("a.test", "/empty.html");
+  ASSERT_TRUE(content::NavigateToURL(web_contents(), url));
+
+  // Check that a same-origin access does not register use counters.
+  content::WebContents* same_origin_popup = OpenPopup(url);
+  EXPECT_TRUE(
+      content::ExecJs(same_origin_popup,
+                      content::JsReplace("window.opener.location = $1", url)));
+  CheckCounter(WebFeature::kWindowProxyCrossOriginAccessLocation, 0);
+  CheckCounter(WebFeature::kWindowProxyCrossOriginAccessFromOtherPageLocation,
+               0);
+}
+
+IN_PROC_BROWSER_TEST_F(ChromeWebPlatformSecurityMetricsBrowserTest,
+                       WindowProxyAccessFromOtherPageLocationSetCrossOrigin) {
+  GURL url = https_server().GetURL("a.test", "/empty.html");
+  ASSERT_TRUE(content::NavigateToURL(web_contents(), url));
+
+  // Check that a cross-origin access register use counters.
+  GURL cross_origin_url = https_server().GetURL("b.test", "/empty.html");
+  content::WebContents* cross_origin_popup = OpenPopup(cross_origin_url);
+  EXPECT_TRUE(
+      content::ExecJs(cross_origin_popup,
+                      content::JsReplace("window.opener.location = $1", url)));
+  CheckCounter(WebFeature::kWindowProxyCrossOriginAccessLocation, 1);
+  CheckCounter(WebFeature::kWindowProxyCrossOriginAccessFromOtherPageLocation,
+               1);
+}
+
+IN_PROC_BROWSER_TEST_F(ChromeWebPlatformSecurityMetricsBrowserTest,
+                       WindowProxyAccessFromOtherPageNamedGetter) {
+  GURL url = https_server().GetURL("a.test", "/iframe_about_blank.html");
+  GURL cross_origin_url = https_server().GetURL("b.test", "/empty.html");
+  ASSERT_TRUE(content::NavigateToURL(web_contents(), url));
+
+  // Check that a same-origin access does not register use counters.
+  content::WebContents* same_origin_popup = OpenPopup(url);
+  EXPECT_TRUE(content::ExecJs(same_origin_popup,
+                              "window.opener['about_blank_iframe']"));
+  CheckCounter(WebFeature::kWindowProxyCrossOriginAccessNamedGetter, 0);
+  CheckCounter(
+      WebFeature::kWindowProxyCrossOriginAccessFromOtherPageNamedGetter, 0);
+
+  // Check that a cross-origin access register use counters.
+  content::WebContents* cross_origin_popup = OpenPopup(cross_origin_url);
+  EXPECT_TRUE(content::ExecJs(cross_origin_popup,
+                              "window.opener['about_blank_iframe']"));
+  CheckCounter(WebFeature::kWindowProxyCrossOriginAccessNamedGetter, 1);
+  CheckCounter(
+      WebFeature::kWindowProxyCrossOriginAccessFromOtherPageNamedGetter, 1);
+
+  // A failed access should not register the use counter.
+  EXPECT_FALSE(
+      content::ExecJs(cross_origin_popup, "window.opener['wrongName']"));
+  CheckCounter(WebFeature::kWindowProxyCrossOriginAccessNamedGetter, 1);
+  CheckCounter(
+      WebFeature::kWindowProxyCrossOriginAccessFromOtherPageNamedGetter, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(ChromeWebPlatformSecurityMetricsBrowserTest,
+                       WindowProxyAccessFromOtherPageOpenerSet) {
+  GURL url = https_server().GetURL("a.test", "/empty.html");
+  ASSERT_TRUE(content::NavigateToURL(web_contents(), url));
+
+  // Check that a same-origin access does not register use counters.
+  content::WebContents* same_origin_popup = OpenPopup(url);
+  EXPECT_TRUE(content::ExecJs(same_origin_popup, "window.opener.opener = ''"));
+  CheckCounter(WebFeature::kWindowProxyCrossOriginAccessOpener, 0);
+  CheckCounter(WebFeature::kWindowProxyCrossOriginAccessFromOtherPageOpener, 0);
+
+  // Check that a cross-origin access doesn't register use counters because it
+  // is blocked by the same-origin policy.
+  GURL cross_origin_url = https_server().GetURL("b.test", "/empty.html");
+  content::WebContents* cross_origin_popup = OpenPopup(cross_origin_url);
+  EXPECT_FALSE(
+      content::ExecJs(cross_origin_popup, "window.opener.opener = ''"));
+  CheckCounter(WebFeature::kWindowProxyCrossOriginAccessOpener, 0);
+  CheckCounter(WebFeature::kWindowProxyCrossOriginAccessFromOtherPageOpener, 0);
+}
+
+IN_PROC_BROWSER_TEST_F(ChromeWebPlatformSecurityMetricsBrowserTest,
+                       WindowProxyAccessFromOtherPageWindow) {
+  GURL url = https_server().GetURL("a.test", "/empty.html");
+  ASSERT_TRUE(content::NavigateToURL(web_contents(), url));
+
+  // Check that a same-origin access does not register use counters.
+  content::WebContents* same_origin_popup = OpenPopup(url);
+  EXPECT_TRUE(content::ExecJs(same_origin_popup, "window.opener.window"));
+  CheckCounter(WebFeature::kWindowProxyCrossOriginAccessWindow, 0);
+  CheckCounter(WebFeature::kWindowProxyCrossOriginAccessFromOtherPageWindow, 0);
+
+  // Check that a cross-origin access register use counters.
+  GURL cross_origin_url = https_server().GetURL("b.test", "/empty.html");
+  content::WebContents* cross_origin_popup = OpenPopup(cross_origin_url);
+  EXPECT_TRUE(content::ExecJs(cross_origin_popup, "window.opener.window"));
+  CheckCounter(WebFeature::kWindowProxyCrossOriginAccessWindow, 1);
+  CheckCounter(WebFeature::kWindowProxyCrossOriginAccessFromOtherPageWindow, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(ChromeWebPlatformSecurityMetricsBrowserTest,
+                       AnonymousIframeInitialEmptyDocumentControl) {
+  GURL url = https_server().GetURL("a.test", "/empty.html");
+  EXPECT_TRUE(content::NavigateToURL(web_contents(), url));
+  EXPECT_TRUE(content::ExecJs(web_contents(), R"(
+    const iframe = document.createElement("iframe");
+    iframe.anonymous = false;
+    document.body.appendChild(iframe);
+  )"));
+  CheckCounter(WebFeature::kAnonymousIframe, 0);
+}
+
+IN_PROC_BROWSER_TEST_F(ChromeWebPlatformSecurityMetricsBrowserTest,
+                       AnonymousIframeInitialEmptyDocument) {
+  GURL url = https_server().GetURL("a.test", "/empty.html");
+  EXPECT_TRUE(content::NavigateToURL(web_contents(), url));
+  EXPECT_TRUE(content::ExecJs(web_contents(), R"(
+    const iframe = document.createElement("iframe");
+    iframe.anonymous = true;
+    document.body.appendChild(iframe);
+  )"));
+  CheckCounter(WebFeature::kAnonymousIframe, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(ChromeWebPlatformSecurityMetricsBrowserTest,
+                       AnonymousIframeNavigationControl) {
+  GURL url = https_server().GetURL("a.test", "/empty.html");
+  EXPECT_TRUE(content::NavigateToURL(web_contents(), url));
+  EXPECT_TRUE(content::ExecJs(web_contents(), R"(
+    new Promise(resolve => {
+      let iframe = document.createElement("iframe");
+      iframe.src = location.href;
+      iframe.anonymous = false;
+      iframe.onload = resolve;
+      document.body.appendChild(iframe);
+    });
+  )"));
+  CheckCounter(WebFeature::kAnonymousIframe, 0);
+}
+
+IN_PROC_BROWSER_TEST_F(ChromeWebPlatformSecurityMetricsBrowserTest,
+                       AnonymousIframeNavigation) {
+  GURL url = https_server().GetURL("a.test", "/empty.html");
+  EXPECT_TRUE(content::NavigateToURL(web_contents(), url));
+  EXPECT_TRUE(content::ExecJs(web_contents(), R"(
+    new Promise(resolve => {
+      let iframe = document.createElement("iframe");
+      iframe.src = location.href;
+      iframe.anonymous = true;
+      iframe.onload = resolve;
+      document.body.appendChild(iframe);
+    });
+  )"));
+  CheckCounter(WebFeature::kAnonymousIframe, 1);
 }
 
 // TODO(arthursonzogni): Add basic test(s) for the WebFeatures:

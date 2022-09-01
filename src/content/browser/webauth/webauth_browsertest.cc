@@ -56,7 +56,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/webauthn/authenticator.mojom.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include <windows.h>
 
 #include "device/fido/win/fake_webauthn_api.h"
@@ -70,15 +70,18 @@ using blink::mojom::Authenticator;
 using blink::mojom::AuthenticatorStatus;
 using blink::mojom::GetAssertionAuthenticatorResponsePtr;
 using blink::mojom::MakeCredentialAuthenticatorResponsePtr;
+using blink::mojom::WebAuthnDOMExceptionDetailsPtr;
 
 using TestCreateCallbackReceiver =
-    ::device::test::StatusAndValueCallbackReceiver<
+    device::test::StatusAndValuesCallbackReceiver<
         AuthenticatorStatus,
-        MakeCredentialAuthenticatorResponsePtr>;
+        MakeCredentialAuthenticatorResponsePtr,
+        WebAuthnDOMExceptionDetailsPtr>;
 
-using TestGetCallbackReceiver = ::device::test::StatusAndValueCallbackReceiver<
+using TestGetCallbackReceiver = device::test::StatusAndValuesCallbackReceiver<
     AuthenticatorStatus,
-    GetAssertionAuthenticatorResponsePtr>;
+    GetAssertionAuthenticatorResponsePtr,
+    WebAuthnDOMExceptionDetailsPtr>;
 
 constexpr char kOkMessage[] = "webauth: OK";
 
@@ -93,12 +96,12 @@ constexpr char kNotAllowedErrorMessage[] =
     "allowed. See: "
     "https://www.w3.org/TR/webauthn-2/#sctn-privacy-considerations-client.";
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 constexpr char kInvalidStateErrorMessage[] =
     "webauth: InvalidStateError: The user attempted to register an "
     "authenticator that contains one of the credentials already registered "
     "with the relying party.";
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
 constexpr char kResidentCredentialsErrorMessage[] =
     "webauth: NotSupportedError: Resident credentials or empty "
@@ -560,20 +563,12 @@ class WebAuthLocalClientBrowserTest : public WebAuthBrowserTestBase {
     parameters.push_back(param);
 
     std::vector<uint8_t> kTestChallenge{0, 0, 0};
-    auto mojo_options = blink::mojom::PublicKeyCredentialCreationOptions::New(
-        rp, user, kTestChallenge, parameters, base::Seconds(30),
-        std::vector<device::PublicKeyCredentialDescriptor>(),
-        device::AuthenticatorSelectionCriteria(),
-        device::AttestationConveyancePreference::kNone,
-        /*cable_registration_data=*/nullptr,
-        /*hmac_create_secret=*/false, /*prf_enable=*/false,
-        blink::mojom::ProtectionPolicy::UNSPECIFIED,
-        /*enforce_protection_policy=*/false, /*appid_exclude=*/absl::nullopt,
-        /*cred_props=*/false, device::LargeBlobSupport::kNotRequested,
-        /*is_payment_credential_creation=*/false, /*cred_blob=*/absl::nullopt,
-        /*google_legacy_app_id_support=*/false,
-        /*min_pin_length_requested=*/false);
-
+    auto mojo_options = blink::mojom::PublicKeyCredentialCreationOptions::New();
+    mojo_options->relying_party = rp;
+    mojo_options->user = user;
+    mojo_options->challenge = kTestChallenge;
+    mojo_options->public_key_parameters = parameters;
+    mojo_options->timeout = base::Seconds(30);
     return mojo_options;
   }
 
@@ -590,13 +585,13 @@ class WebAuthLocalClientBrowserTest : public WebAuthBrowserTestBase {
     credentials.push_back(descriptor);
 
     std::vector<uint8_t> kTestChallenge{0, 0, 0};
-    auto mojo_options = blink::mojom::PublicKeyCredentialRequestOptions::New(
-        /*is_conditional=*/false, kTestChallenge, base::Seconds(30), "acme.com",
-        std::move(credentials), device::UserVerificationRequirement::kPreferred,
-        absl::nullopt, std::vector<device::CableDiscoveryData>(), /*prf=*/false,
-        /*prf_inputs=*/std::vector<blink::mojom::PRFValuesPtr>(),
-        /*large_blob_read=*/false, /*large_blob_write=*/absl::nullopt,
-        /*get_cred_blob=*/false);
+    auto mojo_options = blink::mojom::PublicKeyCredentialRequestOptions::New();
+    mojo_options->challenge = kTestChallenge;
+    mojo_options->timeout = base::Seconds(30);
+    mojo_options->relying_party_id = "acme.com";
+    mojo_options->allow_credentials = std::move(credentials);
+    mojo_options->user_verification =
+        device::UserVerificationRequirement::kPreferred;
     return mojo_options;
   }
 
@@ -638,7 +633,6 @@ IN_PROC_BROWSER_TEST_F(WebAuthLocalClientBrowserTest,
   EXPECT_TRUE(
       NavigateToURL(shell(), GetHttpsURL("www.acme.com", "/title2.html")));
   WaitForConnectionError();
-  create_callback_receiver.WaitForCallback();
 
   // The next active document should be able to successfully call
   // navigator.credentials.create({publicKey: ...}) again.
@@ -668,7 +662,6 @@ IN_PROC_BROWSER_TEST_F(WebAuthLocalClientBrowserTest,
   EXPECT_TRUE(
       NavigateToURL(shell(), GetHttpsURL("www.acme.com", "/title2.html")));
   WaitForConnectionError();
-  get_callback_receiver.WaitForCallback();
 
   // The next active document should be able to successfully call
   // navigator.credentials.get({publicKey: ...}) again.
@@ -1207,9 +1200,10 @@ absl::optional<std::string> ExecuteScriptAndExtractPrefixedString(
     }
 
     std::string str;
-    if (result->GetAsString(&str) && str.find(result_prefix) == 0) {
+    if (result->is_string())
+      str = result->GetString();
+    if (str.find(result_prefix) == 0)
       return str;
-    }
   }
 }
 
@@ -1423,7 +1417,7 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
                    EXECUTE_SCRIPT_USE_MANUAL_REPLY));
 }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest, WinMakeCredential) {
   EXPECT_TRUE(
       NavigateToURL(shell(), GetHttpsURL("www.acme.com", "/title1.html")));

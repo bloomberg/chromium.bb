@@ -33,7 +33,9 @@
 
 #include <memory>
 
+#include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
+#include "base/unguessable_token.h"
 #include "net/base/ip_endpoint.h"
 #include "net/cert/ct_policy_status.h"
 #include "net/http/http_response_info.h"
@@ -49,7 +51,7 @@ enum class FetchResponseSource;
 enum class FetchResponseType : int32_t;
 enum class IPAddressSpace : int32_t;
 class LoadTimingInfo;
-}
+}  // namespace mojom
 }  // namespace network
 
 namespace net {
@@ -140,7 +142,6 @@ class WebURLResponse {
   BLINK_PLATFORM_EXPORT void VisitHttpHeaderFields(WebHTTPHeaderVisitor*) const;
 
   BLINK_PLATFORM_EXPORT void SetHasMajorCertificateErrors(bool);
-  BLINK_PLATFORM_EXPORT void SetCTPolicyCompliance(net::ct::CTPolicyCompliance);
   BLINK_PLATFORM_EXPORT void SetIsLegacyTLSVersion(bool);
   BLINK_PLATFORM_EXPORT void SetHasRangeRequested(bool);
   BLINK_PLATFORM_EXPORT void SetTimingAllowPassed(bool);
@@ -217,6 +218,11 @@ class WebURLResponse {
   BLINK_PLATFORM_EXPORT network::mojom::IPAddressSpace AddressSpace() const;
   BLINK_PLATFORM_EXPORT void SetAddressSpace(network::mojom::IPAddressSpace);
 
+  BLINK_PLATFORM_EXPORT network::mojom::IPAddressSpace ClientAddressSpace()
+      const;
+  BLINK_PLATFORM_EXPORT void SetClientAddressSpace(
+      network::mojom::IPAddressSpace);
+
   // ALPN negotiated protocol of the socket which fetched this resource.
   BLINK_PLATFORM_EXPORT bool WasAlpnNegotiated() const;
   BLINK_PLATFORM_EXPORT void SetWasAlpnNegotiated(bool);
@@ -277,6 +283,10 @@ class WebURLResponse {
   BLINK_PLATFORM_EXPORT bool RequestIncludeCredentials() const;
 
   BLINK_PLATFORM_EXPORT void SetWasFetchedViaCache(bool);
+  BLINK_PLATFORM_EXPORT void SetArrivalTimeAtRenderer(base::TimeTicks arrival);
+
+  BLINK_PLATFORM_EXPORT void SetHasPartitionedCookie(
+      bool has_partitioned_cookie);
 
 #if INSIDE_BLINK
  protected:
@@ -292,7 +302,7 @@ class WebURLResponse {
   const std::unique_ptr<ResourceResponse> owned_resource_response_;
 
   // Should never be null.
-  ResourceResponse* const resource_response_;
+  const raw_ptr<ResourceResponse> resource_response_;
 };
 
 }  // namespace blink

@@ -190,7 +190,11 @@ void PaintTiming::NotifyPaint(bool is_first_paint,
   if (image_painted)
     MarkFirstImagePaint();
   fmp_detector_->NotifyPaint();
-  GetFrame()->View()->GetMobileFriendlinessChecker()->NotifyPaint();
+  if (auto* local_frame = DynamicTo<LocalFrame>(GetFrame()->Top())) {
+    if (auto* mf_checker = local_frame->View()->GetMobileFriendlinessChecker())
+      mf_checker->NotifyPaint();
+  }
+
   if (is_first_paint)
     GetFrame()->OnFirstPaint(text_painted, image_painted);
 }
@@ -255,6 +259,8 @@ void PaintTiming::SetFirstContentfulPaint(base::TimeTicks stamp) {
 
   if (frame->GetFrameScheduler())
     frame->GetFrameScheduler()->OnFirstContentfulPaintInMainFrame();
+
+  NotifyPaintTimingChanged();
 }
 
 void PaintTiming::RegisterNotifyPresentationTime(PaintEvent event) {
@@ -347,7 +353,7 @@ void PaintTiming::SetFirstContentfulPaintPresentation(base::TimeTicks stamp) {
         first_contentful_paint_presentation_);
   }
   auto* coordinator = GetSupplementable()->GetResourceCoordinator();
-  if (coordinator && GetFrame() && GetFrame()->IsMainFrame()) {
+  if (coordinator && GetFrame() && GetFrame()->IsOutermostMainFrame()) {
     PerformanceTiming* timing = performance->timing();
     base::TimeDelta fcp = stamp - timing->NavigationStartAsMonotonicTime();
     coordinator->OnFirstContentfulPaint(fcp);
@@ -406,7 +412,7 @@ void PaintTiming::OnRestoredFromBackForwardCache() {
       RequestAnimationFrameTimesAfterBackForwardCacheRestore{});
 
   LocalFrame* frame = GetFrame();
-  if (!frame->IsMainFrame()) {
+  if (!frame->IsOutermostMainFrame()) {
     return;
   }
 
@@ -425,6 +431,17 @@ void PaintTiming::OnRestoredFromBackForwardCache() {
           MakeGarbageCollected<
               RecodingTimeAfterBackForwardCacheRestoreFrameCallback>(this,
                                                                      index));
+}
+
+bool PaintTiming::IsLCPMouseoverDispatchedRecently() {
+  static constexpr base::TimeDelta kRecencyDelta = base::Milliseconds(500);
+  return (
+      !lcp_mouse_over_dispatch_time_.is_null() &&
+      ((clock_->NowTicks() - lcp_mouse_over_dispatch_time_) < kRecencyDelta));
+}
+
+void PaintTiming::SetLCPMouseoverDispatched() {
+  lcp_mouse_over_dispatch_time_ = clock_->NowTicks();
 }
 
 }  // namespace blink

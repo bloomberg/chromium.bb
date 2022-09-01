@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <dom-module id="dns-view">
   <template>
     <div id=dns-view-tab-content class=content-box>
@@ -6,12 +7,25 @@
       </ul>
 
       <div>
-        <h4>Async DNS Configuration</h4>
+        <h4>
+          Async DNS Configuration
+          <small>
+            [<a href="https://chromium.googlesource.com/chromium/src/+/main/net/dns/README.md#dns"
+                target="blank">//net/dns/README.md#dns</a>]
+          </small>
+        </h4>
         <ul>
-          <li>Internal DNS client enabled:
-            <span id=dns-view-internal-dns-enabled></span>
-            <span id=dns-view-internal-dns-invalid-config class=warning-text style="display: none;">
-              (No valid configuration found)</span>
+          <li>
+            Internal DNS client enabled for insecure queries (Do53):
+            <span id=dns-view-internal-dns-enabled-for-insecure></span>
+          </li>
+          <li>
+            Internal DNS client enabled for secure queries (DoH):
+            <span id=dns-view-internal-dns-enabled-for-secure></span>
+          </li>
+          <li>
+            Disabled DoH providers:
+            <ul id=dns-view-internal-disabled-doh-providers></ul>
           </li>
         </ul>
         <table class="styled-table">
@@ -50,6 +64,7 @@
     </div>
   </template>
   <script>
+    'use strict';
     Polymer({
       is: 'dns-view',
     });

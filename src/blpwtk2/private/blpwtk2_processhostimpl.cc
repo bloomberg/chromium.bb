@@ -36,12 +36,11 @@
 
 #include <content/browser/renderer_host/render_process_host_impl.h>
 #include <mojo/core/embedder/embedder.h>
-#include <mojo/public/cpp/bindings/interface_request.h>
+#include <mojo/public/cpp/bindings/pending_receiver.h>
 #include <mojo/public/cpp/bindings/self_owned_receiver.h>
 #include "mojo/public/cpp/system//invitation.h"
 
 #include <base/command_line.h>
-#include <base/task/post_task.h>
 #include <base/task/task_traits.h>
 #include <content/public/browser/browser_task_traits.h>
 #include <content/public/browser/browser_thread.h>
@@ -154,10 +153,6 @@ ProcessHostImpl::Impl::~Impl() {
 // ACCESSORS
 extern inline base::ProcessId ProcessHostImpl::Impl::processId() const {
   return d_processId;
-}
-
-inline base::ProcessHandle ProcessHostImpl::Impl::processHandle() const {
-  return d_process->Handle();
 }
 
 inline const BrowserContextImpl& ProcessHostImpl::Impl::context() const {
@@ -289,8 +284,7 @@ std::string ProcessHostImpl::createHostChannel(
   // Import the renderer command line switches from the render process host.
   base::CommandLine commandLine(base::CommandLine::NO_PROGRAM);
   const scoped_refptr<ProcessHostImpl::Impl>& impl = processHost.d_impl;
-  impl->renderProcessHost().AdjustCommandLineForRenderer(
-      &commandLine, impl->processHandle());
+  impl->renderProcessHost().AdjustCommandLineForRenderer(&commandLine);
   channelInfo.loadSwitchesFromCommandLine(commandLine);
 
   // Stash the host state in the global map
@@ -311,8 +305,7 @@ void ProcessHostImpl::create(
 void ProcessHostImpl::registerMojoInterfaces(
     service_manager::BinderRegistry* registry) {
   const scoped_refptr<base::SingleThreadTaskRunner>& runner =
-      base::CreateSingleThreadTaskRunner(
-          {content::BrowserThread::UI});
+      content::GetUIThreadTaskRunner({});
 
   registry->AddInterface(base::BindRepeating(&ProcessHostImpl::create, runner), runner);
 }
@@ -381,8 +374,7 @@ void ProcessHostImpl::createHostChannel(unsigned int pid,
                                         const std::string& profileDir,
                                         createHostChannelCallback callback) {
   const scoped_refptr<base::SingleThreadTaskRunner>& runner =
-      base::CreateSingleThreadTaskRunner(
-          {content::BrowserThread::UI});
+      content::GetUIThreadTaskRunner({});
 
   std::move(callback).Run(createHostChannel(static_cast<base::ProcessId>(pid),
                                             isolated, profileDir, runner));
@@ -430,7 +422,7 @@ void ProcessHostImpl::bindProcess(unsigned int pid,
   s_boundedHosts[pid] = this;
 }
 
-void ProcessHostImpl::createWebView(mojom::WebViewHostRequest hostRequest,
+void ProcessHostImpl::createWebView(mojo::PendingReceiver<mojom::WebViewHost> hostReceiver,
                                     mojom::WebViewCreateParamsPtr params,
                                     createWebViewCallback callback) {
   int hostId;
@@ -450,25 +442,21 @@ void ProcessHostImpl::createWebView(mojom::WebViewHostRequest hostRequest,
       browserContext = &d_impl->context();
     }
 
-    auto taskRunner = base::CreateSingleThreadTaskRunner(
-        content::BrowserThread::UI);
+    auto taskRunner = content::GetUIThreadTaskRunner({});
 
-    mojom::WebViewClientPtr clientPtr;
-    std::move(callback).Run(mojo::MakeRequest(&clientPtr, taskRunner), 0);
+    mojo::Remote<mojom::WebViewClient> clientPtr;
+    std::move(callback).Run(clientPtr.BindNewPipeAndPassReceiver(taskRunner), 0);
 
     // Create an instance of WebViewHost and bind its lifetime to hostRequest.
     // We are passing a Mojo interface pointer to the renderer's toolkit as
     // well as a new instance of WebViewImpl to the WebViewHost.
-    mojo::PendingReceiver<mojom::WebViewHost> hostReceiver =
-        std::move(hostRequest);
-    
     mojo::MakeSelfOwnedReceiver(
         std::make_unique<WebViewHostImpl>(std::move(clientPtr), *params,
                                           browserContext, hostId, d_impl),
         std::move(hostReceiver));
   } else {
-    mojom::WebViewClientPtr clientPtr;
-    std::move(callback).Run(mojo::MakeRequest(&clientPtr), ESRCH);
+    mojo::Remote<mojom::WebViewClient> clientPtr;
+    std::move(callback).Run(clientPtr.BindNewPipeAndPassReceiver(), ESRCH);
   }
 }
 

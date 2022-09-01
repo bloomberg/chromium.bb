@@ -6,12 +6,34 @@ import("//build/toolchain/rbe.gni")
 import("../../scripts/build/ninja/vars.gni")
 
 declare_args() {
-  # Set to true to enable remote compilation of TypeScript using RBE.
-  # This flag is temporarily until DevTools RBE support has stabilized.
-  # At that point, this flag will be folded together with "use_rbe".
-  # TODO(crbug.com/1139220): Remove the flag once we are confident.
+  # Deprecated flag, use devtools_use_remoteexec.
   devtools_use_rbe = false
+
+  # Set to true to enable remote compilation of TypeScript using reclient.
+  # This flag is temporarily until DevTools reclient support has stabilized.
+  # At that point, this flag will be folded together with "use_remoteexec".
+  # TODO(crbug.com/1139220): Remove the flag once we are confident.
+  devtools_use_remoteexec = false
+
+  devtools_skip_typecheck = build_with_chromium && !is_official_build
 }
+
+# Set devtools_use_remoteexec if devtools_use_rbe is set.  Remove this once devtools_use_rbe is no
+# longer used to configure builds.
+if (!devtools_use_remoteexec && devtools_use_rbe) {
+  devtools_use_remoteexec = true
+}
+
+# Set devtools_use_rbe if devtools_use_remoteexec is set.  This is to ensure compatibility with
+# https://source.chromium.org/chromium/chromium/src/+/main:third_party/devtools-frontend/src/scripts/build/ninja/devtools_entrypoint.gni;l=125;drc=cfcea4217a0640af11fff1e16dcf5797e65b72e2
+# as changes cannot be made in third_party and out of third_party simultaneously.
+# Remove this once devtools_use_rbe is no longer used to configure builds.
+if (!devtools_use_rbe && devtools_use_remoteexec) {
+  devtools_use_rbe = true
+}
+
+assert(!devtools_skip_typecheck || !is_official_build,
+       "Official build should not skip typecheck")
 
 # Defines a target that compiles .ts files using TypeScript.
 # A temporary tsconfig.json is generated which uses the
@@ -58,8 +80,6 @@ template("ts_library") {
       devtools_location_prepend + "front_end/global_typings/global_defs.d.ts",
       devtools_location_prepend +
           "front_end/global_typings/request_idle_callback.d.ts",
-      devtools_location_prepend +
-          "front_end/global_typings/intl_display_names.d.ts",
       devtools_location_prepend + "node_modules/@types/filesystem/index.d.ts",
     ]
 
@@ -145,16 +165,26 @@ template("ts_library") {
       args += [ "--is_web_worker" ]
     }
 
-    if (defined(use_rbe) && use_rbe && defined(devtools_use_rbe) &&
-        devtools_use_rbe) {
+    if (defined(use_remoteexec) && use_remoteexec &&
+        defined(devtools_use_remoteexec) && devtools_use_remoteexec) {
       # Allow ts_library template invocations to override user provided flags.
-      if (!defined(invoker.use_rbe) || invoker.use_rbe) {
+      if (!defined(invoker.use_remoteexec) || invoker.use_remoteexec) {
         args += [
-          "--use-rbe",
+          "--use-remoteexec",
           "--rewrapper-binary=${rbe_bin_dir}/rewrapper",
           "--rewrapper-cfg=${rbe_cc_cfg_file}",
           "--rewrapper-exec-root=${rbe_exec_root}",
         ]
+      }
+    }
+
+    if (devtools_skip_typecheck) {
+      args += [ "--use-esbuild" ]
+      _esbuild = devtools_location_prepend + "third_party/esbuild/esbuild"
+      if (host_os == "win") {
+        inputs += [ _esbuild + ".exe" ]
+      } else {
+        inputs += [ _esbuild ]
       }
     }
 
@@ -189,7 +219,9 @@ template("ts_library") {
                  "Incorrect extension on '$src' with extension '$_extension'")
         }
 
-        output_files += [ "$target_gen_dir/$_fileName.d.ts" ]
+        if (!devtools_skip_typecheck) {
+          output_files += [ "$target_gen_dir/$_fileName.d.ts" ]
+        }
       }
     }
 

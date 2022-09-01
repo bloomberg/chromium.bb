@@ -15,30 +15,20 @@
 #include "components/autofill/core/browser/payments/credit_card_access_manager.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 
 namespace autofill {
 
-namespace {
-
-ServerFieldTypeSet GetFieldTypeSet(
-    const base::flat_map<FieldGlobalId, ServerFieldType>& field_type_map) {
-  ServerFieldTypeSet set;
-  for (const auto& p : field_type_map)
-    set.insert(p.second);
-  return set;
-}
-
-}  // namespace
-
 CreditCardFormEventLogger::CreditCardFormEventLogger(
-    bool is_in_main_frame,
+    bool is_in_any_main_frame,
     AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger,
     PersonalDataManager* personal_data_manager,
     AutofillClient* client)
     : FormEventLoggerBase("CreditCard",
-                          is_in_main_frame,
+                          is_in_any_main_frame,
                           form_interactions_ukm_logger,
                           client ? client->GetLogManager() : nullptr),
+      current_authentication_flow_(UnmaskAuthFlowType::kNone),
       personal_data_manager_(personal_data_manager),
       client_(client) {}
 
@@ -112,58 +102,26 @@ void CreditCardFormEventLogger::OnDidFillSuggestion(
     const CreditCard& credit_card,
     const FormStructure& form,
     const AutofillField& field,
-    const base::flat_map<FieldGlobalId, ServerFieldType>&
-        field_types_to_be_filled_before_security_policy,
-    const base::flat_map<FieldGlobalId, ServerFieldType>&
-        field_types_filled_after_security_policy,
+    const base::flat_set<FieldGlobalId>& newly_filled_fields,
+    const base::flat_set<FieldGlobalId>& safe_fields,
     AutofillSyncSigninState sync_state) {
   CreditCard::RecordType record_type = credit_card.record_type();
   sync_state_ = sync_state;
+  ukm::builders::Autofill_CreditCardFill builder =
+      form_interactions_ukm_logger_->CreateCreditCardFillBuilder();
+  builder.SetFormSignature(HashFormSignature(form.form_signature()));
 
   form_interactions_ukm_logger_->LogDidFillSuggestion(
       record_type,
       /*is_for_credit_card=*/true, form, field);
 
-  AutofillMetrics::LogCreditCardNumberFills(
-      GetFieldTypeSet(field_types_to_be_filled_before_security_policy),
-      AutofillMetrics::MeasurementTime::kFillTimeBeforeSecurityPolicy);
-  AutofillMetrics::LogCreditCardNumberFills(
-      GetFieldTypeSet(field_types_filled_after_security_policy),
-      AutofillMetrics::MeasurementTime::kFillTimeAfterSecurityPolicy);
-
-  AutofillMetrics::LogCreditCardSeamlessFills(
-      GetFieldTypeSet(field_types_to_be_filled_before_security_policy),
-      AutofillMetrics::MeasurementTime::kFillTimeBeforeSecurityPolicy);
-  absl::optional<AutofillMetrics::CreditCardSeamlessFillMetric>
-      credit_card_seamlessness = AutofillMetrics::LogCreditCardSeamlessFills(
-          GetFieldTypeSet(field_types_filled_after_security_policy),
-          AutofillMetrics::MeasurementTime::kFillTimeAfterSecurityPolicy);
-
-  if (credit_card_seamlessness) {
-    FormEvent e = NUM_FORM_EVENTS;
-    switch (*credit_card_seamlessness) {
-      using M = AutofillMetrics::CreditCardSeamlessFillMetric;
-      case M::kFullFill:
-        e = FORM_EVENT_CREDIT_CARD_SEAMLESSNESS_FULL_FILL;
-        break;
-      case M::kOptionalNameMissing:
-        e = FORM_EVENT_CREDIT_CARD_SEAMLESSNESS_OPTIONAL_NAME_MISSING;
-        break;
-      case M::kFullFillButExpDateMissing:
-        e = FORM_EVENT_CREDIT_CARD_SEAMLESSNESS_FULL_FILL_BUT_EXPDATE_MISSING;
-        break;
-      case M::kOptionalNameAndCvcMissing:
-        e = FORM_EVENT_CREDIT_CARD_SEAMLESSNESS_OPTIONAL_NAME_AND_CVC_MISSING;
-        break;
-      case M::kOptionalCvcMissing:
-        e = FORM_EVENT_CREDIT_CARD_SEAMLESSNESS_OPTIONAL_CVC_MISSING;
-        break;
-      case M::kPartialFill:
-        e = FORM_EVENT_CREDIT_CARD_SEAMLESSNESS_PARTIAL_FILL;
-        break;
-    }
-    Log(e, form);
-  }
+  AutofillMetrics::LogCreditCardSeamlessnessAtFillTime(
+      {.event_logger = *this,
+       .form = form,
+       .field = field,
+       .newly_filled_fields = newly_filled_fields,
+       .safe_fields = safe_fields,
+       .builder = builder});
 
   switch (record_type) {
     case CreditCard::LOCAL_CARD:
@@ -192,6 +150,12 @@ void CreditCardFormEventLogger::OnDidFillSuggestion(
         record_type == CreditCard::VIRTUAL_CARD;
     switch (record_type) {
       case CreditCard::LOCAL_CARD:
+        // Check if the local card is a duplicate of an existing server card
+        // and log an additional metric if so.
+        if (IsLocalDuplicateOfServerCard(credit_card)) {
+          Log(FORM_EVENT_LOCAL_SUGGESTION_FILLED_FOR_AN_EXISTING_SERVER_CARD_ONCE,
+              form);
+        }
         Log(FORM_EVENT_LOCAL_SUGGESTION_FILLED_ONCE, form);
         break;
       case CreditCard::MASKED_SERVER_CARD:
@@ -208,6 +172,8 @@ void CreditCardFormEventLogger::OnDidFillSuggestion(
 
   base::RecordAction(
       base::UserMetricsAction("Autofill_FilledCreditCardSuggestion"));
+
+  form_interactions_ukm_logger_->Record(std::move(builder));
 }
 
 void CreditCardFormEventLogger::LogCardUnmaskAuthenticationPromptShown(
@@ -267,11 +233,8 @@ void CreditCardFormEventLogger::LogFormSubmitted(const FormStructure& form) {
     // Log BetterAuth.FlowEvents.
     RecordCardUnmaskFlowEvent(current_authentication_flow_,
                               UnmaskAuthFlowEvent::kFormSubmitted);
-    if (base::FeatureList::IsEnabled(
-            features::kAutofillEnableVirtualCardsRiskBasedAuthentication)) {
-      AutofillMetrics::LogServerCardUnmaskFormSubmission(
-          AutofillClient::PaymentsRpcCardType::kVirtualCard);
-    }
+    AutofillMetrics::LogServerCardUnmaskFormSubmission(
+        AutofillClient::PaymentsRpcCardType::kVirtualCard);
   } else if (logged_suggestion_filled_was_server_data_) {
     Log(FORM_EVENT_SERVER_SUGGESTION_SUBMITTED_ONCE, form);
   } else {
@@ -327,6 +290,17 @@ void CreditCardFormEventLogger::OnLog(const std::string& name,
   }
 }
 
+bool CreditCardFormEventLogger::IsLocalDuplicateOfServerCard(
+    const CreditCard& credit_card) {
+  // Get the list of all the server credit cards for the user and see if any
+  // card in the list matches/isDuplicateOf the local card.
+  return base::ranges::any_of(
+      personal_data_manager_->GetServerCreditCards(),
+      [&credit_card](CreditCard* card_from_list) {
+        return credit_card.IsLocalDuplicateOfServerCard(*card_from_list);
+      });
+}
+
 FormEvent CreditCardFormEventLogger::GetCardNumberStatusFormEvent(
     const CreditCard& credit_card) {
   const std::u16string number = credit_card.number();
@@ -372,9 +346,8 @@ void CreditCardFormEventLogger::RecordCardUnmaskFlowEvent(
       flow_type_suffix = ".OtpFallbackFromFido";
       break;
     case UnmaskAuthFlowType::kNone:
-      NOTREACHED();
-      flow_type_suffix = "";
-      break;
+      // TODO(crbug.com/1300959): Fix Autofill.BetterAuth logging.
+      return;
   }
   std::string card_type_suffix =
       latest_selected_card_was_virtual_card_ ? ".VirtualCard" : ".ServerCard";
@@ -389,8 +362,9 @@ void CreditCardFormEventLogger::RecordCardUnmaskFlowEvent(
 bool CreditCardFormEventLogger::DoesCardHaveOffer(
     const CreditCard& credit_card) {
   for (auto& suggestion : suggestions_) {
-    if (suggestion.backend_id == credit_card.guid())
+    if (suggestion.GetPayload<std::string>() == credit_card.guid()) {
       return !suggestion.offer_label.empty();
+    }
   }
   return false;
 }

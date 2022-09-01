@@ -64,7 +64,7 @@ CPDF_Image::~CPDF_Image() = default;
 void CPDF_Image::FinishInitialization(CPDF_Dictionary* pStreamDict) {
   m_pOC.Reset(pStreamDict->GetDictFor("OC"));
   m_bIsMask = !pStreamDict->KeyExist("ColorSpace") ||
-              pStreamDict->GetIntegerFor("ImageMask");
+              pStreamDict->GetBooleanFor("ImageMask", /*bDefault=*/false);
   m_bInterpolate = !!pStreamDict->GetIntegerFor("Interpolate");
   m_Height = pStreamDict->GetIntegerFor("Height");
   m_Width = pStreamDict->GetIntegerFor("Width");
@@ -330,8 +330,9 @@ void CPDF_Image::ResetCache(CPDF_Page* pPage) {
 }
 
 RetainPtr<CFX_DIBBase> CPDF_Image::LoadDIBBase() const {
-  auto source = pdfium::MakeRetain<CPDF_DIB>();
-  if (!source->Load(m_pDocument.Get(), m_pStream.Get()))
+  auto source =
+      pdfium::MakeRetain<CPDF_DIB>(m_pDocument.Get(), m_pStream.Get());
+  if (!source->Load())
     return nullptr;
 
   if (!source->IsJBigImage())
@@ -356,10 +357,10 @@ bool CPDF_Image::StartLoadDIBBase(const CPDF_Dictionary* pFormResource,
                                   bool bStdCS,
                                   CPDF_ColorSpace::Family GroupFamily,
                                   bool bLoadMask) {
-  auto source = pdfium::MakeRetain<CPDF_DIB>();
+  auto source =
+      pdfium::MakeRetain<CPDF_DIB>(m_pDocument.Get(), m_pStream.Get());
   CPDF_DIB::LoadState ret = source->StartLoadDIBBase(
-      m_pDocument.Get(), m_pStream.Get(), true, pFormResource, pPageResource,
-      bStdCS, GroupFamily, bLoadMask);
+      true, pFormResource, pPageResource, bStdCS, GroupFamily, bLoadMask);
   if (ret == CPDF_DIB::LoadState::kFail) {
     m_pDIBBase.Reset();
     return false;

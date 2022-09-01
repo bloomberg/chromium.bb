@@ -21,6 +21,9 @@
     border: 1px solid rgba(0,0,0,0.1);
     border-bottom: none;
     cursor: row-resize;
+    // Disable user selection since this handle is draggable to resize the
+    // bottom panels.
+    user-select: none;
     height: 28px;
     min-height: 28px;
     display: grid;
@@ -98,7 +101,6 @@
   font-family: 'Roboto Condensed', sans-serif;
   font-weight: 300;
   color: #3c4b5d;
-  user-select: text;
 
   .material-icons {
     @include transition(0.3s);
@@ -242,12 +244,25 @@
     word-wrap: break-word;
     padding: 0 10px;
     tr:hover {
-      background-color: hsl(214, 22%, 90%);
+      td, th {
+        background-color: hsl(214, 22%, 90%);
+
+        &.no-highlight {
+          background-color: white;
+        }
+      }
     }
     th {
       text-align: left;
       width: 30%;
       font-weight: normal;
+      vertical-align: top;
+    }
+    td.value {
+      white-space: pre-wrap;
+    }
+    td.padding {
+      min-width: 10px;
     }
     .array-index {
       text-align: right;
@@ -270,6 +285,10 @@
     margin-top: 12px;
     margin-left: 10px;
   }
+}
+
+.details-table-multicolumn {
+  display: flex;
 }
 
 .flow-link:hover {

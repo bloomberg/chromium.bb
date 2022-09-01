@@ -87,7 +87,7 @@ ArcPlayStoreSearchProvider::ArcPlayStoreSearchProvider(
 
 ArcPlayStoreSearchProvider::~ArcPlayStoreSearchProvider() = default;
 
-ash::AppListSearchResultType ArcPlayStoreSearchProvider::ResultType() {
+ash::AppListSearchResultType ArcPlayStoreSearchProvider::ResultType() const {
   return ash::AppListSearchResultType::kPlayStoreApp;
 }
 
@@ -103,9 +103,9 @@ void ArcPlayStoreSearchProvider::Start(const std::u16string& query) {
                 GetRecentAndSuggestedAppsFromPlayStore)
           : nullptr;
 
-  if (app_instance == nullptr || query.empty()) {
+  DCHECK(!query.empty());
+  if (app_instance == nullptr)
     return;
-  }
 
   app_instance->GetRecentAndSuggestedAppsFromPlayStore(
       base::UTF16ToUTF8(query), max_results_,
@@ -120,6 +120,7 @@ void ArcPlayStoreSearchProvider::OnResults(
     arc::ArcPlayStoreSearchRequestState state,
     std::vector<arc::mojom::AppDiscoveryResultPtr> results) {
   if (state != arc::ArcPlayStoreSearchRequestState::SUCCESS) {
+    ClearResults();
     DCHECK(
         state ==
             arc::ArcPlayStoreSearchRequestState::PHONESKY_RESULT_INVALID_DATA ||

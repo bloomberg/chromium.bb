@@ -71,14 +71,6 @@ const int kMinArfVectors[] = {
   0, 4, 8, 12, 15
 };
 
-int is_extension_y4m(const char *filename) {
-  const char *dot = strrchr(filename, '.');
-  if (!dot || dot == filename)
-    return 0;
-  else
-    return !strcmp(dot, ".y4m");
-}
-
 class ArfFreqTestLarge
     : public ::libaom_test::CodecTestWith3Params<TestVideoParam,
                                                  TestEncodeParam, int>,
@@ -198,6 +190,7 @@ TEST_P(ArfFreqTestLarge, MinArfFreqTest) {
         test_video_param_.framerate_num, test_video_param_.framerate_den, 0,
         kFrames));
   }
+  ASSERT_NE(video, nullptr);
 
   ASSERT_NO_FATAL_FAILURE(RunLoop(video.get()));
   const int min_run = GetMinVisibleRun();

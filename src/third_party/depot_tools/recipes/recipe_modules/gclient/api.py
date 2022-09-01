@@ -100,11 +100,11 @@ class GclientApi(recipe_api.RecipeApi):
           self.m.buildbucket.build.builder.builder,
           self.m.buildbucket.build.id)
     with self.m.context(env=env, env_suffixes=env_suffixes):
-      return self.m.python(prefix + name,
-                           self.repo_resource('gclient.py'),
-                           cmd,
-                           infra_step=infra_step,
-                           **kwargs)
+      cmd = ['vpython3', '-u', self.repo_resource('gclient.py')] + cmd
+      return self.m.step(prefix + name,
+                         cmd,
+                         infra_step=infra_step,
+                         **kwargs)
 
   @property
   def use_mirror(self):

@@ -2,13 +2,10 @@ CONSOLE MESSAGE: debug
 {
   "layers": [
     {
-      "name": "Scrolling Contents Layer",
+      "name": "Scrolling background of LayoutView #document",
       "bounds": [1200, 900],
       "contentsOpaque": true,
-      "backgroundColor": "#FFFFFF",
-      "invalidations": [
-        [75, 75, 113, 113]
-      ]
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutNGBlockFlow (positioned) DIV id='container'",
@@ -20,6 +17,16 @@ CONSOLE MESSAGE: debug
         [75, 75, 113, 113]
       ],
       "transform": 1
+    },
+    {
+      "name": "LayoutNGBlockFlow (positioned) DIV class='fixed'",
+      "position": [75, 75],
+      "bounds": [113, 113],
+      "contentsOpaque": true,
+      "backgroundColor": "#008000",
+      "invalidations": [
+        [0, 0, 113, 113]
+      ]
     }
   ],
   "transforms": [

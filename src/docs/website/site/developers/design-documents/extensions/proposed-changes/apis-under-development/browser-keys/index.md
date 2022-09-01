@@ -64,7 +64,7 @@ Chromoting is the primary client, but HTerm has a similar need.
 
 Also, the basic idea (get more key events sent to page) has been proposed
 before:
-<https://sites.google.com/a/chromium.org/dev/developers/design-documents/reserved-keys-api>
+<https://www.chromium.org/developers/design-documents/reserved-keys-api>
 
 Other groups interested in this functionality have commented on
 <http://crbug.com/84332>.

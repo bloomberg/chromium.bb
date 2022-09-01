@@ -183,7 +183,7 @@ FormData GetFormDataAndExpectation(const FormParsingTestCase& test_case,
       field.name = std::u16string(field_description.name);
     }
     field.name_attribute = field.name;
-#if defined(OS_IOS)
+#if BUILDFLAG(IS_IOS)
     field.unique_id = StampUniqueSuffix(u"unique_id");
 #endif
     field.form_control_type = field_description.form_control_type;
@@ -215,7 +215,7 @@ FormData GetFormDataAndExpectation(const FormParsingTestCase& test_case,
     if (field_description.prediction.type != autofill::MAX_VALID_FIELD_TYPE) {
       predictions->fields.push_back(field_description.prediction);
       predictions->fields.back().renderer_id = renderer_id;
-#if defined(OS_IOS)
+#if BUILDFLAG(IS_IOS)
       predictions->fields.back().unique_id = field.unique_id;
 #endif
     }
@@ -267,7 +267,7 @@ void CheckField(const std::vector<FormFieldData>& fields,
 
 // On iOS |unique_id| is used for identifying DOM elements, so the parser should
 // return it. See crbug.com/896594
-#if defined(OS_IOS)
+#if BUILDFLAG(IS_IOS)
   EXPECT_EQ(element_name, field_it->unique_id);
 #else
   EXPECT_EQ(element_name, field_it->name);
@@ -454,9 +454,6 @@ TEST(FormParserTest, SkipNotTextFields) {
 }
 
 TEST(FormParserTest, OnlyPasswordFields) {
-  const bool kTreatNewPasswordHeuristicsAsReliable =
-      base::FeatureList::IsEnabled(
-          features::kTreatNewPasswordHeuristicsAsReliable);
   CheckTestData({
       {
           .description_for_logging = "1 password field",
@@ -480,7 +477,7 @@ TEST(FormParserTest, OnlyPasswordFields) {
                    .value = u"pw",
                    .form_control_type = "password"},
               },
-          .is_new_password_reliable = kTreatNewPasswordHeuristicsAsReliable,
+          .is_new_password_reliable = false,
       },
       {
           .description_for_logging =
@@ -494,7 +491,7 @@ TEST(FormParserTest, OnlyPasswordFields) {
                    .value = u"pw2",
                    .form_control_type = "password"},
               },
-          .is_new_password_reliable = kTreatNewPasswordHeuristicsAsReliable,
+          .is_new_password_reliable = false,
       },
       {
           .description_for_logging =
@@ -511,7 +508,7 @@ TEST(FormParserTest, OnlyPasswordFields) {
                    .value = u"pw2",
                    .form_control_type = "password"},
               },
-          .is_new_password_reliable = kTreatNewPasswordHeuristicsAsReliable,
+          .is_new_password_reliable = false,
       },
       {
           .description_for_logging = "3 password fields with different values",

@@ -38,12 +38,12 @@ protocol_request::Request MakeProtocolRequest(
     const std::string& session_id,
     const std::string& prod_id,
     const std::string& browser_version,
-    const std::string& lang,
     const std::string& channel,
     const std::string& os_long_name,
     const std::string& download_preference,
+    absl::optional<bool> domain_joined,
     const base::flat_map<std::string, std::string>& additional_attributes,
-    const std::map<std::string, std::string>* updater_state_attributes,
+    const base::flat_map<std::string, std::string>& updater_state_attributes,
     std::vector<protocol_request::App> apps);
 
 protocol_request::App MakeProtocolApp(
@@ -51,6 +51,7 @@ protocol_request::App MakeProtocolApp(
     const base::Version& version,
     const std::string& ap,
     const std::string& brand_code,
+    const std::string& lang,
     const std::string& install_source,
     const std::string& install_location,
     const std::string& fingerprint,
@@ -61,6 +62,7 @@ protocol_request::App MakeProtocolApp(
     const std::string& release_channel,
     const std::vector<int>& disabled_reasons,
     absl::optional<protocol_request::UpdateCheck> update_check,
+    const std::vector<protocol_request::Data>& data,
     absl::optional<protocol_request::Ping> ping,
     absl::optional<std::vector<base::Value>> events);
 

@@ -13,7 +13,7 @@
 #include "src/objects/code-inl.h"
 #include "src/regexp/regexp-stack.h"
 #include "src/regexp/s390/regexp-macro-assembler-s390.h"
-#include "src/snapshot/embedded/embedded-data.h"
+#include "src/snapshot/embedded/embedded-data-inl.h"
 
 namespace v8 {
 namespace internal {
@@ -708,13 +708,13 @@ Handle<HeapObject> RegExpMacroAssemblerS390::GetCode(Handle<String> source) {
   FrameScope scope(masm_.get(), StackFrame::MANUAL);
 
   // Ensure register assigments are consistent with callee save mask
-  DCHECK(r6.bit() & kRegExpCalleeSaved);
-  DCHECK(code_pointer().bit() & kRegExpCalleeSaved);
-  DCHECK(current_input_offset().bit() & kRegExpCalleeSaved);
-  DCHECK(current_character().bit() & kRegExpCalleeSaved);
-  DCHECK(backtrack_stackpointer().bit() & kRegExpCalleeSaved);
-  DCHECK(end_of_input_address().bit() & kRegExpCalleeSaved);
-  DCHECK(frame_pointer().bit() & kRegExpCalleeSaved);
+  DCHECK(kRegExpCalleeSaved.has(r6));
+  DCHECK(kRegExpCalleeSaved.has(code_pointer()));
+  DCHECK(kRegExpCalleeSaved.has(current_input_offset()));
+  DCHECK(kRegExpCalleeSaved.has(current_character()));
+  DCHECK(kRegExpCalleeSaved.has(backtrack_stackpointer()));
+  DCHECK(kRegExpCalleeSaved.has(end_of_input_address()));
+  DCHECK(kRegExpCalleeSaved.has(frame_pointer()));
 
   // zLinux ABI
   //    Incoming parameters:
@@ -746,21 +746,21 @@ Handle<HeapObject> RegExpMacroAssemblerS390::GetCode(Handle<String> source) {
   // from generated code.
   __ mov(frame_pointer(), sp);
   __ lay(sp, MemOperand(sp, -10 * kSystemPointerSize));
-  STATIC_ASSERT(kSuccessfulCaptures == kInputString - kSystemPointerSize);
+  static_assert(kSuccessfulCaptures == kInputString - kSystemPointerSize);
   __ mov(r1, Operand::Zero());  // success counter
-  STATIC_ASSERT(kStringStartMinusOne ==
+  static_assert(kStringStartMinusOne ==
                 kSuccessfulCaptures - kSystemPointerSize);
   __ mov(r0, r1);  // offset of location
   __ StoreMultipleP(r0, r9, MemOperand(sp, 0));
-  STATIC_ASSERT(kBacktrackCount == kStringStartMinusOne - kSystemPointerSize);
+  static_assert(kBacktrackCount == kStringStartMinusOne - kSystemPointerSize);
   __ Push(r1);  // The backtrack counter.
-  STATIC_ASSERT(kRegExpStackBasePointer ==
+  static_assert(kRegExpStackBasePointer ==
                 kBacktrackCount - kSystemPointerSize);
   __ push(r1);  // The regexp stack base ptr.
 
   // Initialize backtrack stack pointer. It must not be clobbered from here on.
   // Note the backtrack_stackpointer is callee-saved.
-  STATIC_ASSERT(backtrack_stackpointer() == r13);
+  static_assert(backtrack_stackpointer() == r13);
   LoadRegExpStackPointerFromMemory(backtrack_stackpointer());
 
   // Store the regexp base pointer - we'll later restore it / write it to

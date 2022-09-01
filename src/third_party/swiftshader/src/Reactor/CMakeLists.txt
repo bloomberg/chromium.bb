@@ -22,13 +22,9 @@ set(REACTOR_SRC_FILES
     Assert.hpp
     Debug.cpp
     Debug.hpp
-    EmulatedIntrinsics.cpp
-    EmulatedIntrinsics.hpp
     ExecutableMemory.cpp
     ExecutableMemory.hpp
     Nucleus.hpp
-    OptimalIntrinsics.cpp
-    OptimalIntrinsics.hpp
     Pragma.cpp
     Pragma.hpp
     PragmaInternals.hpp
@@ -38,6 +34,7 @@ set(REACTOR_SRC_FILES
     ReactorDebugInfo.cpp
     ReactorDebugInfo.hpp
     Routine.hpp
+    Swizzle.hpp
 )
 
 set(SUBZERO_SRC_FILES
@@ -70,12 +67,6 @@ if(REACTOR_EMIT_DEBUG_INFO)
 
     list(APPEND REACTOR_PRIVATE_LINK_LIBRARIES Boost::boost)
 endif(REACTOR_EMIT_DEBUG_INFO)
-
-# Enable instrumentation of Reactor routines for MemorySanitizer builds (LLVM backend).
-# TODO(b/155148722): Remove when unconditionally instrumenting for all build systems.
-if(REACTOR_ENABLE_MEMORY_SANITIZER_INSTRUMENTATION)
-    list(APPEND REACTOR_PUBLIC_COMPILE_DEFINITIONS "REACTOR_ENABLE_MEMORY_SANITIZER_INSTRUMENTATION")
-endif()
 
 list(APPEND REACTOR_PRIVATE_COMPILE_DEFINITIONS "REACTOR_ANONYMOUS_MMAP_NAME=swiftshader_jit")
 
@@ -147,5 +138,42 @@ target_compile_options(ReactorLLVM
 target_link_libraries(ReactorLLVM
     PRIVATE
         llvm
+        ${REACTOR_PRIVATE_LINK_LIBRARIES}
+)
+
+# ReactorLLVMSubmodule library
+
+add_library(ReactorLLVMSubmodule STATIC EXCLUDE_FROM_ALL
+    ${REACTOR_SRC_FILES}
+    ${LLVM_SRC_FILES}
+)
+
+set_target_properties(ReactorLLVMSubmodule PROPERTIES
+    POSITION_INDEPENDENT_CODE 1
+    FOLDER "Reactor"
+)
+
+target_include_directories(ReactorLLVMSubmodule
+    PUBLIC
+        .
+        "${THIRD_PARTY_DIR}/llvm-project/llvm/include"
+        "${CMAKE_BINARY_DIR}/third_party/llvm-project/llvm/include"
+)
+
+target_compile_definitions(ReactorLLVMSubmodule
+    PUBLIC
+        ${REACTOR_PUBLIC_COMPILE_DEFINITIONS}
+    PRIVATE
+        ${REACTOR_PRIVATE_COMPILE_DEFINITIONS}
+)
+
+target_compile_options(ReactorLLVMSubmodule
+    PRIVATE
+        ${ROOT_PROJECT_COMPILE_OPTIONS}
+)
+
+target_link_libraries(ReactorLLVMSubmodule
+    PRIVATE
+        ${llvm_libs}
         ${REACTOR_PRIVATE_LINK_LIBRARIES}
 )

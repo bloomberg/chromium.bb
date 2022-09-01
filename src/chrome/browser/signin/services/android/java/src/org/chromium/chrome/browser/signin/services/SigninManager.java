@@ -87,16 +87,14 @@ public interface SigninManager {
     IdentityManager getIdentityManager();
 
     /**
-     * Notifies the SigninManager that the First Run check has completed.
-     *
-     * The user will be allowed to sign-in once this is signaled.
+     * Returns true if sign in can be started now.
      */
-    void onFirstRunCheckDone();
+    boolean isSigninAllowed();
 
     /**
-     * Returns true if signin can be started now.
+     * Returns true if sync opt in can be started now.
      */
-    boolean isSignInAllowed();
+    boolean isSyncOptInAllowed();
 
     /**
      * Returns true if signin is disabled by policy.
@@ -157,12 +155,30 @@ public interface SigninManager {
             @SigninAccessPoint int accessPoint, Account account, @Nullable SignInCallback callback);
 
     /**
-     * Schedules the runnable to be invoked after currently ongoing a sign-in or sign-out operation
+     * Schedules the runnable to be invoked after all sign-in, sign-out, or sync data wipe operation
      * is finished. If there's no operation is progress, posts the callback to the UI thread right
      * away.
      */
     @MainThread
     void runAfterOperationInProgress(Runnable runnable);
+
+    /**
+     * Revokes sync consent (which disables the sync feature). This method should only be called
+     * for child accounts.
+     *
+     * @param signoutSource describes the event driving disabling sync (e.g.
+     *         {@link SignoutReason.USER_CLICKED_TURN_OFF_SYNC_SETTINGS}).
+     * @param signOutCallback Callback to notify about progress.
+     * @param forceWipeUserData Whether user selected to wipe all device data.
+     */
+    void revokeSyncConsent(@SignoutReason int signoutSource, SignOutCallback signOutCallback,
+            boolean forceWipeUserData);
+
+    /**
+     * Returns true if sign out can be started now.
+     * TODO(https://crbug.com/1334918): Add onSignOutAllowedChanged() in SignInStateObserver
+     */
+    boolean isSignOutAllowed();
 
     /**
      * Invokes signOut with no callback.
@@ -205,4 +221,14 @@ public interface SigninManager {
      * @param primaryAccountId {@link CoreAccountId} of the primary account.
      */
     void reloadAllAccountsFromSystem(CoreAccountId primaryAccountId);
+
+    /**
+     * Wipes the user's bookmarks and sync data.
+     *
+     * Callers should make this call within a runAfterOperationInProgress() call in order to ensure
+     * serialization of wipe operations.
+     *
+     * @param wipeDataCallback A callback which will be called once the data is wiped.
+     */
+    void wipeSyncUserData(Runnable wipeDataCallback);
 }

@@ -19,7 +19,13 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 class PrefService;
+namespace feedstore {
+class Metadata;
+}
+
 namespace feed {
+// If cached user setting info is older than this, it will not be reported.
+constexpr base::TimeDelta kUserSettingsMaxAge = base::Days(14);
 
 // Reports UMA metrics for feed.
 // Note this is inherited only for testing.
@@ -36,6 +42,8 @@ class MetricsReporter {
     // subscribed.
     virtual void SubscribedWebFeedCount(
         base::OnceCallback<void(int)> callback) = 0;
+    virtual void RegisterFeedUserSettingsFieldTrial(
+        base::StringPiece group) = 0;
   };
 
   explicit MetricsReporter(PrefService* profile_prefs);
@@ -45,6 +53,12 @@ class MetricsReporter {
 
   // Two-step initialization, required for circular dependency.
   void Initialize(Delegate* delegate);
+
+  void OnMetadataInitialized(bool isEnabledByEnterprisePolicy,
+                             bool isFeedVisible,
+                             bool isSignedIn,
+                             bool isEnabled,
+                             const feedstore::Metadata& metadata);
 
   // User interactions. See |FeedApi| for definitions.
 
@@ -120,15 +134,14 @@ class MetricsReporter {
                                           WebFeedRefreshStatus status,
                                           int subscribed_web_feed_count);
 
-  // Notice events.
-  void OnNoticeCreated(const StreamType& stream_type, const std::string& key);
-  void OnNoticeViewed(const StreamType& stream_type, const std::string& key);
-  void OnNoticeOpenAction(const StreamType& stream_type,
-                          const std::string& key);
-  void OnNoticeDismissed(const StreamType& stream_type, const std::string& key);
-  void OnNoticeAcknowledged(const StreamType& stream_type,
-                            const std::string& key,
-                            NoticeAcknowledgementPath acknowledgement_path);
+  // Info card events.
+  void OnInfoCardTrackViewStarted(const StreamType& stream_type,
+                                  int info_card_type);
+  void OnInfoCardViewed(const StreamType& stream_type, int info_card_type);
+  void OnInfoCardClicked(const StreamType& stream_type, int info_card_type);
+  void OnInfoCardDismissedExplicitly(const StreamType& stream_type,
+                                     int info_card_type);
+  void OnInfoCardStateReset(const StreamType& stream_type, int info_card_type);
 
  private:
   // State replicated for reporting per-stream-type metrics.

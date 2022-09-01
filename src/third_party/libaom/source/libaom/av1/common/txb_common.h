@@ -84,7 +84,8 @@ static INLINE int get_base_ctx_from_count_mag(int row, int col, int count,
   int ctx_idx = -1;
 
   if (row == 0 && col == 0) {
-    if (sig_mag >= 2) return ctx_idx = 0;
+    if (sig_mag >= 2) return 0;
+
     if (sig_mag == 1) {
       if (count >= 2)
         ctx_idx = 1;
@@ -98,7 +99,7 @@ static INLINE int get_base_ctx_from_count_mag(int row, int col, int count,
     assert(ctx_idx <= 6);
     return ctx_idx;
   } else if (row == 0) {
-    if (sig_mag >= 2) return ctx_idx = 6;
+    if (sig_mag >= 2) return 6;
     if (sig_mag == 1) {
       if (count >= 2)
         ctx_idx = 7;
@@ -111,7 +112,7 @@ static INLINE int get_base_ctx_from_count_mag(int row, int col, int count,
     assert(ctx_idx <= 11);
     return ctx_idx;
   } else if (col == 0) {
-    if (sig_mag >= 2) return ctx_idx = 12;
+    if (sig_mag >= 2) return 12;
     if (sig_mag == 1) {
       if (count >= 2)
         ctx_idx = 13;
@@ -126,7 +127,7 @@ static INLINE int get_base_ctx_from_count_mag(int row, int col, int count,
     // TODO(angiebird): turn this on once the optimization is finalized
     // assert(ctx_idx < 28);
   } else {
-    if (sig_mag >= 2) return ctx_idx = 18;
+    if (sig_mag >= 2) return 18;
     if (sig_mag == 1) {
       if (count >= 2)
         ctx_idx = 19;

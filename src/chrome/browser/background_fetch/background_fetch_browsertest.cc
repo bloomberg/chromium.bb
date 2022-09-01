@@ -360,7 +360,7 @@ class BackgroundFetchBrowserTest : public InProcessBrowserTest {
     return content::ExecuteScriptAndExtractString(
         active_browser_->tab_strip_model()
             ->GetActiveWebContents()
-            ->GetMainFrame(),
+            ->GetPrimaryMainFrame(),
         script, result);
   }
 
@@ -521,7 +521,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest, DownloadService_Acceptance) {
 }
 
 // Flaky on linux: crbug.com/1182296
-#if defined(OS_LINUX)
+#if BUILDFLAG(IS_LINUX)
 #define MAYBE_RecordBackgroundFetchUkmEvent \
   DISABLED_RecordBackgroundFetchUkmEvent
 #else
@@ -563,7 +563,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
       -1);
 }
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 // Flaky on Mac: https://crbug.com/1259680
 #define MAYBE_OfflineItemCollection_SingleFileMetadata \
   DISABLED_OfflineItemCollection_SingleFileMetadata
@@ -626,7 +626,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
   // Get visuals associated with the newly added offline item.
   std::unique_ptr<OfflineItemVisuals> out_visuals;
   GetVisualsForOfflineItemSync(offline_item.id, &out_visuals);
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   EXPECT_FALSE(out_visuals->icon.IsEmpty());
   EXPECT_EQ(out_visuals->icon.Size().width(), 100);
   EXPECT_EQ(out_visuals->icon.Size().height(), 100);
@@ -704,9 +704,10 @@ IN_PROC_BROWSER_TEST_F(
             offline_items_collection::OfflineItemState::CANCELLED);
 }
 
+// TODO(crbug.com/1329696): Fix flaky timeouts and re-enable.
 IN_PROC_BROWSER_TEST_F(
     BackgroundFetchBrowserTest,
-    OfflineItemCollection_VerifyResourceDownloadedWhenCorrectDownloadTotalSpecified) {
+    DISABLED_OfflineItemCollection_VerifyResourceDownloadedWhenCorrectDownloadTotalSpecified) {
   // Starts a Background Fetch for a single to-be-downloaded file and waits for
   // the fetch to be registered with the offline items collection.
 
@@ -738,7 +739,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
 }
 
 // Flaky on Windows 7 (https://crbug.com/1039250)
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #define MAYBE_FetchesRunToCompletionAndUpdateTitle_Fetched \
   DISABLED_FetchesRunToCompletionAndUpdateTitle_Fetched
 #else
@@ -759,7 +760,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
 }
 
 // Flaky on Windows 7 (https://crbug.com/1039250)
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #define MAYBE_FetchesRunToCompletionAndUpdateTitle_Failed \
   DISABLED_FetchesRunToCompletionAndUpdateTitle_Failed
 #else
@@ -861,7 +862,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
 }
 
 // Flaky on Windows 7 (https://crbug.com/1039250)
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #define MAYBE_FetchFromServiceWorker DISABLED_FetchFromServiceWorker
 #else
 #define MAYBE_FetchFromServiceWorker FetchFromServiceWorker
@@ -1000,9 +1001,11 @@ IN_PROC_BROWSER_TEST_F(BackgroundFetchFencedFrameBrowserTest,
   // Load a fenced frame.
   GURL fenced_frame_url(https_server()->GetURL("/fenced_frames/title1.html"));
   content::RenderFrameHost* fenced_frame =
-      fenced_frame_test_helper().CreateFencedFrame(
-          browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame(),
-          fenced_frame_url);
+      fenced_frame_test_helper().CreateFencedFrame(browser()
+                                                       ->tab_strip_model()
+                                                       ->GetActiveWebContents()
+                                                       ->GetPrimaryMainFrame(),
+                                                   fenced_frame_url);
 
   GURL fenced_frame_test_url(
       https_server()->GetURL("/fenced_frames/background_fetch.html"));
@@ -1042,9 +1045,11 @@ IN_PROC_BROWSER_TEST_F(BackgroundFetchFencedFrameBrowserTest,
   GURL fenced_frame_url(
       cross_origin_server.GetURL("/fenced_frames/title1.html"));
   content::RenderFrameHost* fenced_frame =
-      fenced_frame_test_helper().CreateFencedFrame(
-          browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame(),
-          fenced_frame_url);
+      fenced_frame_test_helper().CreateFencedFrame(browser()
+                                                       ->tab_strip_model()
+                                                       ->GetActiveWebContents()
+                                                       ->GetPrimaryMainFrame(),
+                                                   fenced_frame_url);
 
   GURL fenced_frame_test_url(
       cross_origin_server.GetURL("/fenced_frames/background_fetch.html"));

@@ -5,10 +5,12 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAGMENT_DIRECTIVE_TEXT_FRAGMENT_SELECTOR_GENERATOR_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAGMENT_DIRECTIVE_TEXT_FRAGMENT_SELECTOR_GENERATOR_H_
 
+#include "base/time/time.h"
 #include "components/shared_highlighting/core/common/shared_highlighting_metrics.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "third_party/blink/public/mojom/link_to_text/link_to_text.mojom-blink.h"
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/editing/forward.h"
+#include "third_party/blink/renderer/core/fragment_directive/same_block_word_iterator.h"
 #include "third_party/blink/renderer/core/fragment_directive/text_fragment_finder.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_receiver.h"
 
@@ -32,9 +34,9 @@ class TextFragmentSelector;
 class CORE_EXPORT TextFragmentSelectorGenerator final
     : public GarbageCollected<TextFragmentSelectorGenerator>,
       public TextFragmentFinder::Client {
-  using GenerateCallback = base::OnceCallback<void(
-      const TextFragmentSelector&,
-      absl::optional<shared_highlighting::LinkGenerationError>)>;
+  using GenerateCallback =
+      base::OnceCallback<void(const TextFragmentSelector&,
+                              shared_highlighting::LinkGenerationError)>;
 
  public:
   explicit TextFragmentSelectorGenerator(LocalFrame* main_frame);
@@ -51,13 +53,6 @@ class CORE_EXPORT TextFragmentSelectorGenerator final
   // tasks.
   void Reset();
 
-  // Wrappers for tests.
-  String GetPreviousTextBlockForTesting(const Position& position) {
-    return GetPreviousTextBlock(position);
-  }
-  String GetNextTextBlockForTesting(const Position& position) {
-    return GetNextTextBlock(position);
-  }
   void SetCallbackForTesting(GenerateCallback callback) {
     pending_generate_selector_callback_ = std::move(callback);
   }
@@ -71,6 +66,43 @@ class CORE_EXPORT TextFragmentSelectorGenerator final
   LocalFrame* GetFrame() { return frame_; }
 
  private:
+  friend class TextFragmentSelectorGeneratorTest;
+
+  FRIEND_TEST_ALL_PREFIXES(TextFragmentSelectorGeneratorTest,
+                           GetPreviousTextEndPosition_PrevNode);
+  FRIEND_TEST_ALL_PREFIXES(TextFragmentSelectorGeneratorTest,
+                           GetPreviousTextEndPosition_PrevTextNode);
+  FRIEND_TEST_ALL_PREFIXES(TextFragmentSelectorGeneratorTest,
+                           GetPreviousTextEndPosition_ParentNode);
+  FRIEND_TEST_ALL_PREFIXES(TextFragmentSelectorGeneratorTest,
+                           GetPreviousTextEndPosition_SpacesBeforeSelection);
+  FRIEND_TEST_ALL_PREFIXES(TextFragmentSelectorGeneratorTest,
+                           GetPreviousTextEndPosition_InvisibleBeforeSelection);
+  FRIEND_TEST_ALL_PREFIXES(TextFragmentSelectorGeneratorTest,
+                           GetPreviousTextEndPosition_NoPrevious);
+  FRIEND_TEST_ALL_PREFIXES(TextFragmentSelectorGeneratorTest,
+                           GetNextTextStartPosition_NextNode);
+  FRIEND_TEST_ALL_PREFIXES(TextFragmentSelectorGeneratorTest,
+                           GetNextTextStartPosition_NextNode_WithComment);
+  FRIEND_TEST_ALL_PREFIXES(TextFragmentSelectorGeneratorTest,
+                           GetNextTextStartPosition_NextTextNode);
+  FRIEND_TEST_ALL_PREFIXES(TextFragmentSelectorGeneratorTest,
+                           GetNextTextStartPosition_ParentNode);
+  FRIEND_TEST_ALL_PREFIXES(TextFragmentSelectorGeneratorTest,
+                           GetNextTextStartPosition_SpacesAfterSelection);
+  FRIEND_TEST_ALL_PREFIXES(TextFragmentSelectorGeneratorTest,
+                           GetNextTextStartPosition_InvisibleAfterSelection);
+  FRIEND_TEST_ALL_PREFIXES(TextFragmentSelectorGeneratorTest,
+                           RangeSelector_RangeMultipleNonBlockNodes);
+  FRIEND_TEST_ALL_PREFIXES(TextFragmentSelectorGeneratorTest,
+                           GetNextTextStartPosition_NoNextNode);
+  FRIEND_TEST_ALL_PREFIXES(TextFragmentSelectorGeneratorTest,
+                           ExactTextSelector_Long);
+
+  FRIEND_TEST_ALL_PREFIXES(
+      TextFragmentSelectorGeneratorTest,
+      GetPreviousTextEndPosition_ShouldSkipNodesWithNoLayoutObject);
+
   // Used for determining the next step of selector generation.
   enum GenerationStep { kExact, kRange, kContext };
 
@@ -97,9 +129,7 @@ class CORE_EXPORT TextFragmentSelectorGenerator final
   };
 
   // TextFragmentFinder::Client interface
-  void DidFindMatch(const RangeInFlatTree& match,
-                    const TextFragmentAnchorMetrics::Match match_metrics,
-                    bool is_unique) override;
+  void DidFindMatch(const RangeInFlatTree& match, bool is_unique) override;
   void NoMatchFound() override;
 
   // Adjust the selection start/end to a valid position. That includes skipping
@@ -115,13 +145,13 @@ class CORE_EXPORT TextFragmentSelectorGenerator final
   void ResolveSelectorState();
   void RunTextFinder();
 
-  // Returns max text preceding given position that doesn't cross block
-  // boundaries.
-  String GetPreviousTextBlock(const Position& position);
+  // Returns first position for the text following given position.
+  PositionInFlatTree GetNextTextStartPosition(
+      const PositionInFlatTree& position);
 
-  // Returns max text following given position that doesn't cross block
-  // boundaries.
-  String GetNextTextBlock(const Position& position);
+  // Returns last position for the text preceding given position.
+  PositionInFlatTree GetPreviousTextEndPosition(
+      const PositionInFlatTree& position);
 
   void GenerateExactSelector();
   void ExtendRangeSelector();
@@ -135,6 +165,11 @@ class CORE_EXPORT TextFragmentSelectorGenerator final
   // Called to notify clients of the result of |Generate|.
   void NotifyClientSelectorReady(const TextFragmentSelector& selector);
 
+  // Called by tests to change default parameters. A negative value will reset
+  // the override.
+  static void OverrideExactTextMaxCharsForTesting(int value);
+  unsigned GetExactTextMaxChars();
+
   Member<LocalFrame> frame_;
 
   // This is the Range for which we're generating a selector.
@@ -147,22 +182,23 @@ class CORE_EXPORT TextFragmentSelectorGenerator final
   GenerationStep step_ = kExact;
   SelectorState state_ = kNeedsNewCandidate;
 
-  absl::optional<shared_highlighting::LinkGenerationError> error_;
+  shared_highlighting::LinkGenerationError error_;
 
-  // Fields used for keeping track of context.
-
-  // Strings available for gradually forming prefix and suffix.
-  String max_available_prefix_;
-  String max_available_suffix_;
-
-  String max_available_range_start_;
-  String max_available_range_end_;
+  // Iterators for gradually forming prefix, suffix and range
+  Member<ForwardSameBlockWordIterator> suffix_iterator_;
+  Member<BackwardSameBlockWordIterator> prefix_iterator_;
+  Member<ForwardSameBlockWordIterator> range_start_iterator_;
+  Member<BackwardSameBlockWordIterator> range_end_iterator_;
 
   // Indicates a number of words used from |max_available_prefix_| and
   // |max_available_suffix_| for the current |selector_|.
   int num_context_words_ = 0;
 
   int num_range_words_ = 0;
+
+  // Indicates the Max Context Words allowed for the
+  // SharedHighlightsMaxContextWords experiment
+  int max_context_words_ = 10;
 
   int iteration_ = 0;
   base::TimeTicks generation_start_time_;

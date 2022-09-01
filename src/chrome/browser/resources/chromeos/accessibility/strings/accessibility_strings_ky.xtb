@@ -479,7 +479,7 @@
 <translation id="4161104397932142764">{COUNT,plural, =1{секунд}other{секунд}}</translation>
 <translation id="4161663686871496107">ChromeVox айтылуучу жооп пикири даяр</translation>
 <translation id="4176463684765177261">Өчүк</translation>
-<translation id="4187322598335821254">Кийинки же мурунку сапка өтүү үчүн, өйдө же ылдый сүрүңүз</translation>
+<translation id="4187322598335821254">Кийинки же мурунку сапка өтүү үчүн өйдө же ылдый сүрүңүз</translation>
 <translation id="4188530942454211480">Мурунку сүйлөм</translation>
 <translation id="4191918948604314587">Баскыч</translation>
 <translation id="419265409837491189">Мурунку тилкеге өтүү</translation>
@@ -536,6 +536,7 @@
 <translation id="4601367666219428522"><ph name="TABLENAME" /> тбл <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">Кийинки баскычтын басылышын этибарга албоо</translation>
 <translation id="4623097797855662355">Чыгуу маалыматы</translation>
+<translation id="4624970070706497034">TalkBack Chromebook түзмөктөрүндө жекелештирүүнү колдоого албай калган. Аны пайдалана бересиз, бирок TalkBack функциясынын демейки ыкчам баскычтарын колдонуңуз. Жеткиликтүү ыкчам баскычтарды көрүү үчүн Search+A, андан кийин K баскычын басыңыз. TalkBack функциясын дагы эле колдонгуңуз келсе, буйрукту кайрадан басыңыз.</translation>
 <translation id="463135993322337640">Жаңы функциялар жөнүндө билүү үчүн ChromeVox o, n баскычтарын басыңыз</translation>
 <translation id="4649220074413114917">Учурдагы кепти токтотуу үчүн экранды эки манжаңыз менен таптап коюңуз. ChromeVox белгилүү бир нерсени окубасын десеңиз ушул жаңсоону колдонуңуз. Улантуу үчүн экранды экит манжаңыз менен басыңыз.</translation>
 <translation id="4660783501463101648">Classic өчүрүлдү. ChromeVox Classic версиясына которуштурган баскычтоптогу баскыч өчүрүлдү.</translation>
@@ -618,7 +619,6 @@
 <translation id="5170206230005240598">Брайл коштомо жазуулары иштетилди</translation>
 <translation id="5183440668879371625">Брайлдын мурунку сабы</translation>
 <translation id="5189244881767082992">Сап</translation>
-<translation id="5234747236692380506"><ph name="TEXT" /> деп териңиз</translation>
 <translation id="5263034204789987535">Мала сары</translation>
 <translation id="5263344797180442561">h2</translation>
 <translation id="528468243742722775">Бүтүрүү</translation>
@@ -666,6 +666,7 @@
 <translation id="5522423213731659107">Кыска курс бүттү!</translation>
 <translation id="5534303576632885660">hdr</translation>
 <translation id="5539820223028224601">Ач күрөң</translation>
+<translation id="554893713779400387">Үн менен жазууну күйгүзүү же өчүрүү</translation>
 <translation id="5549179427201066174">Үн менен билдирүүнү (добуштар) иштетүү же өчүрүү</translation>
 <translation id="556042886152191864">Баскыч</translation>
 <translation id="5561345396546889625">Кийинки тизме</translation>
@@ -684,6 +685,8 @@
 <translation id="5623842676595125836">Таржымал</translation>
 <translation id="5628125749885014029">h4</translation>
 <translation id="5632083598315326067">Графикалык символ</translation>
+<translation id="5648939288050772726">Куттуктайбыз! ChromeVox'ту колдонуу үчүн эң керектүү нерселерди үйрөнүп алдыңыз. ChromeVox буйрук менюсун каалаган убакта Search+Чекит баскычтарын басып, ачсаңыз болот. ChromeVox жана ChromeOS жөнүндө мындан да көбүрөөк маалымат алуу үчүн төмөнкү макалаларды караңыз.
+    Эгер колдонууну үйрөнүп бүткөн болсоңуз, ChromeVox аркылуу "Жабуу" баскычына өтүп, аны чыкылдатыңыз.</translation>
 <translation id="5653397561111110475">Chromebook'тун сенсордук экранынын атайын мүмкүнчүлүктөр функциясын пайдалануу</translation>
 <translation id="5655682562155942719">Секирүү буйруктары</translation>
 <translation id="56637627897541303">Текст аймагы</translation>
@@ -793,6 +796,7 @@
 <translation id="641759969622533235">{COUNT,plural, =1{кош чекит}other{# кош чекит}}</translation>
 <translation id="6444046323172968959">Кабарлаган диалог терезеси</translation>
 <translation id="6452403590345320472">Мазмуну</translation>
+<translation id="6457542714329819968">тер</translation>
 <translation id="6468049171101508116">Кийинки баскыч</translation>
 <translation id="646954774886932461">Индекс</translation>
 <translation id="6475604559827479857">Сөздү бөлүп көрсөтүү түсү:</translation>
@@ -965,8 +969,6 @@
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7713139339518499741">Кадимки үн</translation>
 <translation id="7714340021005120797">Кийинки айкалыштырылган кутуча жок</translation>
-<translation id="772146615414628379">Куттуктайбыз! ChromeVox'ту колдонуу үчүн эң керектүү нерселерди үйрөнүп алдыңыз. ChromeVox буйрук менюсун каалаган убакта Search+Чекит баскычтарын басып, ачсаңыз болот. ChromeVox жана Chrome OS жөнүндө мындан да көбүрөөк маалымат алуу үчүн төмөнкү макалаларды караңыз.
-    Эгер колдонууну үйрөнүп бүткөн болсоңуз, ChromeVox аркылуу "Жабуу" баскычына өтүп, аны чыкылдатыңыз.</translation>
 <translation id="7724603315864178912">Кесүү</translation>
 <translation id="7731785449856576010">Кийинки медиа виджети жок</translation>
 <translation id="7735498529470878067">Аудиокөмөк экрандагы нерсе тууралуу ыкчам маалымат алууга жардам берет.</translation>
@@ -1168,6 +1170,7 @@
 <translation id="9223032053830369045">Күңүрт кызыл</translation>
 <translation id="923331726185079994">ChromeVox жаңырды</translation>
 <translation id="93384979447910801">Деңиздей күңүрт жашыл</translation>
+<translation id="937605981140327129">Учурда TalkBack орнотулбай турат. Play Store'дон Android AccessibilitySuite колдонмосун жүктөп алып, кайталаңыз.</translation>
 <translation id="948171205378458592">Кептин ылдамдыгын жайлатуу</translation>
 <translation id="957570623732056069">Сабакты карап чыгуу үчүн экранды бир манжаңыз менен солго же оңго сүрүңүз</translation>
 <translation id="958854023026327378">Бир манжаңыз менен экранды ылдый сүрүңүз</translation>

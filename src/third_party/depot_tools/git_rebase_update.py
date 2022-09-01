@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -205,6 +205,7 @@ def rebase_branch(branch, parent, start_hash):
           Your working copy is in mid-rebase. Either:
            * completely resolve like a normal git-rebase; OR
            * abort the rebase and mark this branch as dormant:
+                 git rebase --abort && \\
                  git config branch.%s.dormant true
 
           And then run `git rebase-update` again to resume.

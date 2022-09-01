@@ -45,15 +45,15 @@ def _get_bin_files(version):
   """Return a list of files to copy to the bin/<config> directory."""
 
   files = [
-    'blpwtk2.pak',
     'blpwtk2_shell.exe',
     'content_shell.exe',
     'content_shell.pak',
     'd3dcompiler_47.dll',
     'd8.exe',
-    'icudtl.dat',
-    'v8_context_snapshot.bin',
     'vk_swiftshader_icd.json',
+    f'blpwtk2.{version}.pak',
+    f'icudtl.{version}.dat',
+    f'v8_context_snapshot.{version}.bin',
   ]
 
   modules = [

@@ -83,7 +83,7 @@ class Thread {
           Affinity&& affinity,
           Allocator* allocator = Allocator::Default);
 
-      // get() returns the thread Affinity for the for the given thread by id.
+      // get() returns the thread Affinity for the given thread by id.
       MARL_EXPORT virtual Affinity get(uint32_t threadId,
                                        Allocator* allocator) const = 0;
     };
@@ -98,6 +98,9 @@ class Thread {
     MARL_EXPORT static Affinity all(Allocator* allocator = Allocator::Default);
 
     MARL_EXPORT Affinity(std::initializer_list<Core>, Allocator* allocator);
+
+    MARL_EXPORT Affinity(const containers::vector<Core, 32>&,
+                         Allocator* allocator);
 
     // count() returns the number of enabled cores in the affinity.
     MARL_EXPORT size_t count() const;

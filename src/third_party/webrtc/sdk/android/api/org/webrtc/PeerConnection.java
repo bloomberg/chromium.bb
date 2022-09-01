@@ -118,6 +118,9 @@ public class PeerConnection {
     /** Triggered when a new ICE candidate has been found. */
     @CalledByNative("Observer") void onIceCandidate(IceCandidate candidate);
 
+    /** Triggered when gathering of an ICE candidate failed. */
+    default @CalledByNative("Observer") void onIceCandidateError(IceCandidateErrorEvent event) {}
+
     /** Triggered when some ICE candidates have been removed. */
     @CalledByNative("Observer") void onIceCandidatesRemoved(IceCandidate[] candidates);
 
@@ -429,29 +432,29 @@ public class PeerConnection {
   /**
    * Java version of webrtc::SdpSemantics.
    *
-   * Configure the SDP semantics used by this PeerConnection. Note that the
-   * WebRTC 1.0 specification requires UNIFIED_PLAN semantics. The
-   * RtpTransceiver API is only available with UNIFIED_PLAN semantics.
+   * Configure the SDP semantics used by this PeerConnection. By default, this
+   * is UNIFIED_PLAN which is compliant to the WebRTC 1.0 specification. It is
+   * possible to overrwite this to the deprecated PLAN_B SDP format, but note
+   * that PLAN_B will be deleted at some future date, see
+   * https://crbug.com/webrtc/13528.
    *
-   * <p>PLAN_B will cause PeerConnection to create offers and answers with at
-   * most one audio and one video m= section with multiple RtpSenders and
-   * RtpReceivers specified as multiple a=ssrc lines within the section. This
-   * will also cause PeerConnection to ignore all but the first m= section of
-   * the same media type.
-   *
-   * <p>UNIFIED_PLAN will cause PeerConnection to create offers and answers with
+   * UNIFIED_PLAN will cause PeerConnection to create offers and answers with
    * multiple m= sections where each m= section maps to one RtpSender and one
    * RtpReceiver (an RtpTransceiver), either both audio or both video. This
    * will also cause PeerConnection to ignore all but the first a=ssrc lines
    * that form a Plan B stream.
    *
-   * <p>For users who wish to send multiple audio/video streams and need to stay
-   * interoperable with legacy WebRTC implementations, specify PLAN_B.
-   *
-   * <p>For users who wish to send multiple audio/video streams and/or wish to
-   * use the new RtpTransceiver API, specify UNIFIED_PLAN.
+   * PLAN_B will cause PeerConnection to create offers and answers with at most
+   * one audio and one video m= section with multiple RtpSenders and
+   * RtpReceivers specified as multiple a=ssrc lines within the section. This
+   * will also cause PeerConnection to ignore all but the first m= section of
+   * the same media type.
    */
-  public enum SdpSemantics { PLAN_B, UNIFIED_PLAN }
+  public enum SdpSemantics {
+    // TODO(https://crbug.com/webrtc/13528): Remove support for PLAN_B.
+    @Deprecated PLAN_B,
+    UNIFIED_PLAN
+  }
 
   /** Java version of PeerConnectionInterface.RTCConfiguration */
   // TODO(qingsi): Resolve the naming inconsistency of fields with/without units.
@@ -608,7 +611,7 @@ public class PeerConnection {
       screencastMinBitrate = null;
       combinedAudioVideoBwe = null;
       networkPreference = AdapterType.UNKNOWN;
-      sdpSemantics = SdpSemantics.PLAN_B;
+      sdpSemantics = SdpSemantics.UNIFIED_PLAN;
       activeResetSrtpParams = false;
       cryptoOptions = null;
       turnLoggingId = null;

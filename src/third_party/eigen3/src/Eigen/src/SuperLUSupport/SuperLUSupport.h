@@ -297,14 +297,14 @@ SluMatrix asSluMatrix(MatrixType& mat)
 
 /** View a Super LU matrix as an Eigen expression */
 template<typename Scalar, int Flags, typename Index>
-MappedSparseMatrix<Scalar,Flags,Index> map_superlu(SluMatrix& sluMat)
+Map<SparseMatrix<Scalar,Flags,Index> > map_superlu(SluMatrix& sluMat)
 {
   eigen_assert(((Flags&RowMajor)==RowMajor && sluMat.Stype == SLU_NR)
          || ((Flags&ColMajor)==ColMajor && sluMat.Stype == SLU_NC));
 
   Index outerSize = (Flags&RowMajor)==RowMajor ? sluMat.ncol : sluMat.nrow;
 
-  return MappedSparseMatrix<Scalar,Flags,Index>(
+  return Map<SparseMatrix<Scalar,Flags,Index> >(
     sluMat.nrow, sluMat.ncol, sluMat.storage.outerInd[outerSize],
     sluMat.storage.outerInd, sluMat.storage.innerInd, reinterpret_cast<Scalar*>(sluMat.storage.values) );
 }

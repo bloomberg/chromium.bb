@@ -55,13 +55,17 @@ class ControllableHttpResponse {
   void Send(net::HttpStatusCode http_status,
             const std::string& content_type = std::string("text/html"),
             const std::string& content = std::string(),
-            const std::vector<std::string>& cookies = {});
+            const std::vector<std::string>& cookies = {},
+            const std::vector<std::string>& extra_headers = {});
 
   // 3) Notify there are no more data to be sent and close the socket.
   void Done();
 
   // Returns the HttpRequest after a call to WaitForRequest.
   const HttpRequest* http_request() const { return http_request_.get(); }
+
+  // Returns whether or not the request has been received yet.
+  bool has_received_request();
 
  private:
   class Interceptor;

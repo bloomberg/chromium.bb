@@ -390,8 +390,9 @@ class SplitCacheRegistrableDomainContentBrowserTest
     : public SplitCacheContentBrowserTest {
  public:
   SplitCacheRegistrableDomainContentBrowserTest() {
-    feature_list_.InitAndEnableFeature(
-        net::features::kSplitCacheByNetworkIsolationKey);
+    feature_list_.InitWithFeatures(
+        {net::features::kSplitCacheByNetworkIsolationKey},
+        {net::features::kForceIsolationInfoFrameOriginToTopLevelFrame});
   }
 
  private:
@@ -406,13 +407,16 @@ class SplitCacheContentBrowserTestEnabled
     std::vector<base::Feature> enabled_features;
     enabled_features.push_back(net::features::kSplitCacheByNetworkIsolationKey);
 
+    std::vector<base::Feature> disabled_features;
+    disabled_features.push_back(
+        net::features::kForceIsolationInfoFrameOriginToTopLevelFrame);
+
     // When the test parameter is true, we test the split cache with
     // PlzDedicatedWorker enabled.
     if (GetParam())
       enabled_features.push_back(blink::features::kPlzDedicatedWorker);
 
-    feature_list_.InitWithFeatures(enabled_features,
-                                   {} /* disabled_features */);
+    feature_list_.InitWithFeatures(enabled_features, disabled_features);
   }
 
  private:
@@ -804,7 +808,7 @@ class SplitCacheComputeHttpCacheSize {
 // resources accessed after the resource is loaded from the blink cache is the
 // same as before that.
 // TODO(crbug.com/1166650): Test is flaky on Win.
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #define MAYBE_NotifyExternalCacheHitCheckSubframeBit \
   DISABLED_NotifyExternalCacheHitCheckSubframeBit
 #else
@@ -831,7 +835,7 @@ IN_PROC_BROWSER_TEST_F(SplitCacheRegistrableDomainContentBrowserTest,
   int64_t size1 = http_cache_size->ComputeHttpCacheSize(context, base::Time(),
                                                         base::Time::Max());
   EXPECT_GT(size1, 0);
-  ASSERT_EQ(2U, observer.resource_load_infos().size());
+  ASSERT_EQ(2U, observer.resource_load_entries().size());
   EXPECT_TRUE(observer.memory_cached_loaded_urls().empty());
   observer.Reset();
 
@@ -844,7 +848,7 @@ IN_PROC_BROWSER_TEST_F(SplitCacheRegistrableDomainContentBrowserTest,
   // Loading again should serve the request out of the in-memory cache.
   EXPECT_TRUE(NavigateToURL(shell(), page_url));
 
-  ASSERT_EQ(1U, observer.resource_load_infos().size());
+  ASSERT_EQ(1U, observer.resource_load_entries().size());
   ASSERT_EQ(1U, observer.memory_cached_loaded_urls().size());
 
   // Loading from the in-memory cache also changes the last accessed time of

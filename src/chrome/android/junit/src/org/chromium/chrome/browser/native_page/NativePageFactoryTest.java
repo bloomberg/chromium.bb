@@ -94,7 +94,7 @@ public class NativePageFactoryTest {
     private static class MockNativePageBuilder extends NativePageFactory.NativePageBuilder {
         private MockNativePageBuilder() {
             super(null, null, null, null, null, null, null, null, null, null,
-                    new DummyJankTracker(), null);
+                    new DummyJankTracker(), null, null);
         }
 
         @Override
@@ -113,7 +113,7 @@ public class NativePageFactoryTest {
         }
 
         @Override
-        public NativePage buildHistoryPage(Tab tab) {
+        public NativePage buildHistoryPage(Tab tab, String url) {
             return new MockNativePage(NativePageType.HISTORY);
         }
     }
@@ -121,7 +121,7 @@ public class NativePageFactoryTest {
     @Before
     public void setUp() {
         mNativePageFactory = new NativePageFactory(null, null, null, null, null, null, null, null,
-                null, null, null, new DummyJankTracker(), null);
+                null, null, null, new DummyJankTracker(), null, null);
         mNativePageFactory.setNativePageBuilderForTesting(new MockNativePageBuilder());
     }
 

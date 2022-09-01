@@ -37,6 +37,10 @@ enum {
 };  // anonymous enum
 
 enum {
+  // Documentation variables.
+  kBitdepth8 = 8,
+  kBitdepth10 = 10,
+  kBitdepth12 = 12,
   kInvalidMvValue = -32768,
   kCdfMaxProbability = 32768,
   kBlockWidthCount = 5,
@@ -59,6 +63,13 @@ enum {
   kRestorationTypeSymbolCount = 3,
   kSgrProjParamsBits = 4,
   kSgrProjPrecisionBits = 7,
+  // Precision of a division table (mtable)
+  kSgrProjScaleBits = 20,
+  kSgrProjReciprocalBits = 12,
+  // Core self-guided restoration precision bits.
+  kSgrProjSgrBits = 8,
+  // Precision bits of generated values higher than source before projection.
+  kSgrProjRestoreBits = 4,
   // Padding on left and right side of a restoration block.
   // 3 is enough, but padding to 4 is more efficient, and makes the temporary
   // source buffer 8-pixel aligned.
@@ -177,6 +188,15 @@ enum {
   // On Linux, the cache line size can be looked up with the command:
   //   getconf LEVEL1_DCACHE_LINESIZE
   kCacheLineSize = 64,
+  // InterRound0, Section 7.11.3.2.
+  kInterRoundBitsHorizontal = 3,  // 8 & 10-bit.
+  kInterRoundBitsHorizontal12bpp = 5,
+  kInterRoundBitsCompoundVertical = 7,  // 8, 10 & 12-bit compound prediction.
+  kInterRoundBitsVertical = 11,         // 8 & 10-bit, single prediction.
+  kInterRoundBitsVertical12bpp = 9,
+  // Offset applied to 10bpp and 12bpp predictors to allow storing them in
+  // uint16_t. Removed before blending.
+  kCompoundOffset = (1 << 14) + (1 << 13),
 };  // anonymous enum
 
 enum FrameType : uint8_t {

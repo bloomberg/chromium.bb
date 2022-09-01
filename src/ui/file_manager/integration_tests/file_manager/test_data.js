@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {ENTRIES} from '../test_util.js';
+import {ENTRIES, TestEntryInfo} from '../test_util.js';
 
 /**
  * Extension ID of the Files app.
@@ -10,6 +10,19 @@ import {ENTRIES} from '../test_util.js';
  * @const
  */
 export const FILE_MANAGER_EXTENSIONS_ID = 'hhaomjibdihmijegdhdafkllkbggdgoj';
+
+/**
+ * App ID of Files app SWA.
+ * @type {string}
+ * @const
+ */
+export const FILE_MANAGER_SWA_APP_ID = 'fkiggjmkendpmbegkagpmagjepfkpmeb';
+
+/**
+ * Base URL of Files app SWA.
+ * @const {string}
+ */
+export const FILE_SWA_BASE_URL = 'chrome://file-manager/';
 
 /**
  * Basic entry set for the local volume.
@@ -89,6 +102,17 @@ export const BASIC_CROSTINI_ENTRY_SET = [
   ENTRIES.hello,
   ENTRIES.world,
   ENTRIES.desktop,
+];
+
+/**
+ * Basic entry set for the local volume with a ZIP archive.
+ * @type {!Array<!TestEntryInfo>}
+ * @const
+ */
+export const BASIC_ZIP_ENTRY_SET = [
+  ENTRIES.hello,
+  ENTRIES.world,
+  ENTRIES.zipArchive,
 ];
 
 /**
@@ -236,3 +260,15 @@ export const BASIC_ANDROID_ENTRY_SET_WITH_HIDDEN =
       ENTRIES.world,
       ENTRIES.directoryA,
     ]);
+
+/**
+ * Entry set for modified times.
+ *
+ * @type {!Array<TestEntryInfo>}
+ * @const
+ */
+export const MODIFIED_ENTRY_SET = [
+  ENTRIES.hello,
+  ENTRIES.photos,
+  ENTRIES.invalidLastModifiedDate,
+];

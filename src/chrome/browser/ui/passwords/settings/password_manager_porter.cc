@@ -31,14 +31,14 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #endif
 
 namespace {
 
 // The following are not used on Android due to the |SelectFileDialog| being
 // unused.
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 const base::FilePath::CharType kFileExtension[] = FILE_PATH_LITERAL("csv");
 
 // Returns the file extensions corresponding to supported formats.
@@ -55,7 +55,7 @@ base::FilePath GetDefaultFilepathForPasswordFile(
     const base::FilePath::StringType& default_extension) {
   base::FilePath default_path;
   base::PathService::Get(chrome::DIR_USER_DOCUMENTS, &default_path);
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   std::wstring file_name = base::UTF8ToWide(
       l10n_util::GetStringUTF8(IDS_PASSWORD_MANAGER_DEFAULT_EXPORT_FILENAME));
 #else
@@ -100,12 +100,12 @@ void PasswordImportConsumer::ConsumePassword(
   scoped_refptr<password_manager::PasswordStoreInterface> store(
       PasswordStoreFactory::GetForProfile(profile_,
                                           ServiceAccessType::EXPLICIT_ACCESS));
+  if (!store)
+    return;
   for (const auto& pwd : seq) {
-    if (store)
-      store->AddLogin(pwd.ParseValid());
+    store->AddLogin(pwd.ToPasswordForm());
   }
-  // TODO(crbug.com/1025510): Should the length of |seq| be reported if
-  // |store| is null?
+
   UMA_HISTOGRAM_COUNTS_1M("PasswordManager.ImportedPasswordsPerUserInCSV",
                           std::distance(seq.begin(), seq.end()));
 }
@@ -113,10 +113,9 @@ void PasswordImportConsumer::ConsumePassword(
 }  // namespace
 
 PasswordManagerPorter::PasswordManagerPorter(
-    password_manager::CredentialProviderInterface*
-        credential_provider_interface,
+    password_manager::SavedPasswordsPresenter* presenter,
     ProgressCallback on_export_progress_callback)
-    : credential_provider_interface_(credential_provider_interface),
+    : presenter_(presenter),
       on_export_progress_callback_(on_export_progress_callback) {}
 
 PasswordManagerPorter::~PasswordManagerPorter() = default;
@@ -132,11 +131,10 @@ bool PasswordManagerPorter::Store() {
   }
 
   // Set a new exporter for this request.
-  exporter_ =
-      exporter_for_testing_
-          ? std::move(exporter_for_testing_)
-          : std::make_unique<password_manager::PasswordManagerExporter>(
-                credential_provider_interface_, on_export_progress_callback_);
+  exporter_ = exporter_for_testing_
+                  ? std::move(exporter_for_testing_)
+                  : std::make_unique<password_manager::PasswordManagerExporter>(
+                        presenter_, on_export_progress_callback_);
 
   // Start serialising while the user selects a file.
   exporter_->PreparePasswordsForExport();
@@ -180,7 +178,11 @@ void PasswordManagerPorter::PresentFileSelector(
     Type type) {
 // This method should never be called on Android (as there is no file selector),
 // and the relevant IDS constants are not present for Android.
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
+  // Early return if the select file dialog is already active.
+  if (select_file_dialog_)
+    return;
+
   DCHECK(web_contents);
   profile_ = Profile::FromBrowserContext(web_contents->GetBrowserContext());
 
@@ -231,19 +233,22 @@ void PasswordManagerPorter::FileSelected(const base::FilePath& path,
       ExportPasswordsToPath(path);
       break;
   }
+
+  select_file_dialog_.reset();
 }
 
 void PasswordManagerPorter::FileSelectionCanceled(void* params) {
   if (reinterpret_cast<uintptr_t>(params) == PASSWORD_EXPORT) {
     exporter_->Cancel();
   }
+
+  select_file_dialog_.reset();
 }
 
 void PasswordManagerPorter::ImportPasswordsFromPath(
     const base::FilePath& path) {
   // Set up a |PasswordImportConsumer| to process each password entry.
-  std::unique_ptr<PasswordImportConsumer> form_consumer(
-      new PasswordImportConsumer(profile_));
+  auto form_consumer = std::make_unique<PasswordImportConsumer>(profile_);
   password_manager::PasswordImporter::Import(
       path, base::BindOnce(&PasswordImportConsumer::ConsumePassword,
                            std::move(form_consumer)));

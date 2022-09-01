@@ -25,6 +25,7 @@
 #include "third_party/blink/public/web/web_view.h"
 #include "url/gurl.h"
 #include "v8/include/v8-context.h"
+#include "v8/include/v8-function.h"
 #include "v8/include/v8-local-handle.h"
 #include "v8/include/v8-object.h"
 
@@ -57,14 +58,35 @@ bool ShouldRespondToRequest(blink::WebLocalFrame** frame_ptr,
   return true;
 }
 
+// Get or create a `child_name` object in the `parent` object.
+v8::Local<v8::Object> GetOrCreateChildObject(v8::Local<v8::Object> parent,
+                                             const std::string& child_name,
+                                             v8::Isolate* isolate,
+                                             v8::Local<v8::Context> context) {
+  v8::Local<v8::Object> child;
+  v8::Local<v8::Value> child_value;
+  if (!parent->Get(context, gin::StringToV8(isolate, child_name))
+           .ToLocal(&child_value) ||
+      !child_value->IsObject()) {
+    child = v8::Object::New(isolate);
+    parent->Set(context, gin::StringToSymbol(isolate, child_name), child)
+        .Check();
+  } else {
+    child = v8::Local<v8::Object>::Cast(child_value);
+  }
+  return child;
+}
+
 }  // namespace
 
-// Exposes two methods:
+// Exposes three methods:
 //  - chrome.send: Used to send messages to the browser. Requires the message
 //      name as the first argument and can have an optional second argument that
 //      should be an array.
 //  - chrome.getVariableValue: Returns value for the input variable name if such
 //      a value was set by the browser. Else will return an empty string.
+//  - chrome.timeTicks.nowInMicroseconds: Returns base::TimeTicks::Now() in
+//      microseconds. Used for performance measuring.
 void WebUIExtension::Install(blink::WebLocalFrame* frame) {
   v8::Isolate* isolate = blink::MainThreadIsolate();
   v8::HandleScope handle_scope(isolate);
@@ -89,6 +111,16 @@ void WebUIExtension::Install(blink::WebLocalFrame* frame) {
                 ->GetFunction(context)
                 .ToLocalChecked())
       .Check();
+
+  v8::Local<v8::Object> timeTicks =
+      GetOrCreateChildObject(chrome, "timeTicks", isolate, context);
+  timeTicks
+      ->Set(context, gin::StringToSymbol(isolate, "nowInMicroseconds"),
+            gin::CreateFunctionTemplate(
+                isolate, base::BindRepeating(&base::TimeTicks::Now))
+                ->GetFunction(context)
+                .ToLocalChecked())
+      .Check();
 }
 
 // static
@@ -106,19 +138,20 @@ void WebUIExtension::Send(gin::Arguments* args) {
 
   // If they've provided an optional message parameter, convert that into a
   // Value to send to the browser process.
-  std::unique_ptr<base::ListValue> content;
-  if (args->PeekNext().IsEmpty() || args->PeekNext()->IsUndefined()) {
-    content = std::make_unique<base::ListValue>();
-  } else {
+  base::Value::List content;
+  if (!args->PeekNext().IsEmpty() && !args->PeekNext()->IsUndefined()) {
     v8::Local<v8::Object> obj;
     if (!args->GetNext(&obj)) {
       args->ThrowError();
       return;
     }
 
-    content = base::ListValue::From(V8ValueConverter::Create()->FromV8Value(
-        obj, frame->MainWorldScriptContext()));
-    DCHECK(content);
+    std::unique_ptr<base::Value> value =
+        V8ValueConverter::Create()->FromV8Value(
+            obj, frame->MainWorldScriptContext());
+    DCHECK(value->is_list());
+    content = std::move(value->GetList());
+
     // The conversion of |obj| could have triggered arbitrary JavaScript code,
     // so check that the frame is still valid to avoid dereferencing a stale
     // pointer.

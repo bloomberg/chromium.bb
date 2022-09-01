@@ -19,14 +19,21 @@
 
 namespace password_manager {
 
+class MockPasswordBackendSyncDelegate
+    : public PasswordStoreBackend::SyncDelegate {
+ public:
+  MockPasswordBackendSyncDelegate();
+  ~MockPasswordBackendSyncDelegate() override;
+
+  MOCK_METHOD(bool, IsSyncingPasswordsEnabled, (), (override));
+
+  MOCK_METHOD(absl::optional<std::string>, GetSyncingAccount, (), (override));
+};
+
 class MockPasswordStoreBackend : public PasswordStoreBackend {
  public:
   MockPasswordStoreBackend();
   ~MockPasswordStoreBackend() override;
-
-  base::WeakPtr<PasswordStoreBackend> GetWeakPtr() override {
-    return weak_ptr_factory_.GetWeakPtr();
-  }
 
   MOCK_METHOD(void,
               InitBackend,
@@ -45,22 +52,27 @@ class MockPasswordStoreBackend : public PasswordStoreBackend {
               (LoginsOrErrorReply callback),
               (override));
   MOCK_METHOD(void,
+              GetAllLoginsForAccountAsync,
+              (absl::optional<std::string> account,
+               LoginsOrErrorReply callback),
+              (override));
+  MOCK_METHOD(void,
               FillMatchingLoginsAsync,
-              (LoginsReply callback,
+              (LoginsOrErrorReply callback,
                bool include_psl,
                const std::vector<PasswordFormDigest>& forms),
               (override));
   MOCK_METHOD(void,
               AddLoginAsync,
-              (const PasswordForm& form, PasswordStoreChangeListReply callback),
+              (const PasswordForm& form, PasswordChangesOrErrorReply callback),
               (override));
   MOCK_METHOD(void,
               UpdateLoginAsync,
-              (const PasswordForm& form, PasswordStoreChangeListReply callback),
+              (const PasswordForm& form, PasswordChangesOrErrorReply callback),
               (override));
   MOCK_METHOD(void,
               RemoveLoginAsync,
-              (const PasswordForm& form, PasswordStoreChangeListReply callback),
+              (const PasswordForm& form, PasswordChangesOrErrorReply callback),
               (override));
   MOCK_METHOD(void,
               RemoveLoginsByURLAndTimeAsync,
@@ -68,13 +80,13 @@ class MockPasswordStoreBackend : public PasswordStoreBackend {
                base::Time delete_begin,
                base::Time delete_end,
                base::OnceCallback<void(bool)> sync_completion,
-               PasswordStoreChangeListReply callback),
+               PasswordChangesOrErrorReply callback),
               (override));
   MOCK_METHOD(void,
               RemoveLoginsCreatedBetweenAsync,
               (base::Time delete_begin,
                base::Time delete_end,
-               PasswordStoreChangeListReply callback),
+               PasswordChangesOrErrorReply callback),
               (override));
   MOCK_METHOD(void,
               DisableAutoSignInForOriginsAsync,
@@ -87,9 +99,11 @@ class MockPasswordStoreBackend : public PasswordStoreBackend {
               CreateSyncControllerDelegate,
               (),
               (override));
-
- private:
-  base::WeakPtrFactory<MockPasswordStoreBackend> weak_ptr_factory_{this};
+  MOCK_METHOD(void, ClearAllLocalPasswords, (), (override));
+  MOCK_METHOD(void,
+              OnSyncServiceInitialized,
+              (syncer::SyncService*),
+              (override));
 };
 
 }  // namespace password_manager

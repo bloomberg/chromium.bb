@@ -41,7 +41,7 @@ public class FeatureList {
         }
 
         /**
-         * Add an override for a field trial parameter.
+         * Add an override for a feature flag.
          */
         public void addFeatureFlagOverride(String featureName, boolean testValue) {
             mFeatureFlags.put(featureName, testValue);
@@ -164,7 +164,10 @@ public class FeatureList {
                 return override;
             }
             if (!sTestCanUseDefaults) {
-                throw new IllegalArgumentException("No test value configured for " + featureName);
+                throw new IllegalArgumentException("No test value configured for " + featureName
+                        + " and native is not available to provide a default value. Use"
+                        + " @EnableFeatures or @DisableFeatures to provide test values for the"
+                        + " flag.");
             }
         }
         return null;

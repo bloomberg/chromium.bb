@@ -12,6 +12,7 @@
 #include "services/network/test/test_network_connection_tracker.h"
 
 class AccountTrackerService;
+class SigninClient;
 
 namespace crosapi {
 class AccountManagerMojoService;
@@ -28,6 +29,7 @@ class TestProfileOAuth2TokenServiceDelegateChromeOS
       public ProfileOAuth2TokenServiceObserver {
  public:
   TestProfileOAuth2TokenServiceDelegateChromeOS(
+      SigninClient* client,
       AccountTrackerService* account_tracker_service,
       crosapi::AccountManagerMojoService* account_manager_mojo_service,
       bool is_regular_profile);
@@ -48,7 +50,8 @@ class TestProfileOAuth2TokenServiceDelegateChromeOS
   GoogleServiceAuthError GetAuthError(
       const CoreAccountId& account_id) const override;
   std::vector<CoreAccountId> GetAccounts() const override;
-  void LoadCredentials(const CoreAccountId& primary_account_id) override;
+  void LoadCredentials(const CoreAccountId& primary_account_id,
+                       bool is_syncing) override;
   void UpdateCredentials(const CoreAccountId& account_id,
                          const std::string& refresh_token) override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory()

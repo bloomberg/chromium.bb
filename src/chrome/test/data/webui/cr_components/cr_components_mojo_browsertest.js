@@ -7,6 +7,7 @@
 // Polymer BrowserTest fixture.
 GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 
+GEN('#include "build/build_config.h"');
 GEN('#include "content/public/test/browser_test.h"');
 
 /* eslint-disable no-var */
@@ -15,7 +16,7 @@ GEN('#include "content/public/test/browser_test.h"');
 var CrComponentsMojoBrowserTest = class extends PolymerTest {
   /** @override */
   get browsePreload() {
-    throw 'this is abstract and should be overriden by subclasses';
+    throw new Error('this is abstract and should be overriden by subclasses');
   }
 };
 
@@ -23,7 +24,7 @@ var CrComponentsCustomizeThemesTest =
     class extends CrComponentsMojoBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://new-tab-page/test_loader.html?module=cr_components/customize_themes_test.js';
+    return 'chrome://new-tab-page/test_loader.html?module=cr_components/customize_themes_test.js&host=webui-test';
   }
 };
 
@@ -31,10 +32,22 @@ TEST_F('CrComponentsCustomizeThemesTest', 'All', function() {
   mocha.run();
 });
 
+var CrComponentsHistoryClustersTest =
+    class extends CrComponentsMojoBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://history/test_loader.html?module=cr_components/history_clusters_test.js&host=webui-test';
+  }
+};
+
+TEST_F('CrComponentsHistoryClustersTest', 'All', function() {
+  mocha.run();
+});
+
 var CrComponentsMostVisitedTest = class extends CrComponentsMojoBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://new-tab-page/test_loader.html?module=cr_components/most_visited_test.js';
+    return 'chrome://new-tab-page/test_loader.html?module=cr_components/most_visited_test.js&host=webui-test';
   }
 };
 
@@ -43,7 +56,7 @@ TEST_F('CrComponentsMostVisitedTest', 'General', function() {
 });
 
 // crbug.com/1226996
-GEN('#if defined(OS_LINUX) && !defined(NDEBUG)');
+GEN('#if BUILDFLAG(IS_LINUX) && !defined(NDEBUG)');
 GEN('#define MAYBE_Modification DISABLED_Modification');
 GEN('#else');
 GEN('#define MAYBE_Modification Modification');

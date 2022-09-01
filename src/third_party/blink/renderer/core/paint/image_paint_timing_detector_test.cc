@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/test/trace_event_analyzer.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
@@ -264,15 +265,16 @@ class ImagePaintTimingDetectorTest : public testing::Test,
     GetPaintTimingDetector().NotifyInputEvent(WebInputEvent::Type::kKeyUp);
   }
 
+  LocalFrame* GetChildFrame() {
+    return To<LocalFrame>(GetFrame()->Tree().FirstChild());
+  }
+
   scoped_refptr<base::TestMockTimeTaskRunner> test_task_runner_;
   frame_test_helpers::WebViewHelper web_view_helper_;
 
  private:
   LocalFrame* GetFrame() {
     return web_view_helper_.GetWebView()->MainFrameImpl()->GetFrame();
-  }
-  LocalFrame* GetChildFrame() {
-    return To<LocalFrame>(GetFrame()->Tree().FirstChild());
   }
   ImageResourceContent* CreateImageForTest(int width, int height) {
     sk_sp<SkColorSpace> src_rgb_color_space = SkColorSpace::MakeSRGB();
@@ -365,30 +367,31 @@ TEST_P(ImagePaintTimingDetectorTest, LargestImagePaint_TraceEvent_Candidate) {
   EXPECT_EQ(1u, events.size());
   EXPECT_EQ("loading", events[0]->category);
 
-  EXPECT_TRUE(events[0]->HasArg("frame"));
+  EXPECT_TRUE(events[0]->HasStringArg("frame"));
 
-  EXPECT_TRUE(events[0]->HasArg("data"));
-  base::Value arg;
-  EXPECT_TRUE(events[0]->GetArgAsValue("data", &arg));
-  base::DictionaryValue* arg_dict;
-  EXPECT_TRUE(arg.GetAsDictionary(&arg_dict));
-  EXPECT_GT(arg_dict->FindIntKey("DOMNodeId").value_or(-1), 0);
-  EXPECT_GT(arg_dict->FindIntKey("size").value_or(-1), 0);
-  EXPECT_EQ(arg_dict->FindIntKey("candidateIndex").value_or(-1), 2);
-  absl::optional<bool> isMainFrame = arg_dict->FindBoolKey("isMainFrame");
+  ASSERT_TRUE(events[0]->HasDictArg("data"));
+  base::Value::Dict arg_dict = events[0]->GetKnownArgAsDict("data");
+  EXPECT_GT(arg_dict.FindInt("DOMNodeId").value_or(-1), 0);
+  EXPECT_GT(arg_dict.FindInt("size").value_or(-1), 0);
+  EXPECT_EQ(arg_dict.FindInt("candidateIndex").value_or(-1), 2);
+  absl::optional<bool> isMainFrame = arg_dict.FindBool("isMainFrame");
   EXPECT_TRUE(isMainFrame.has_value());
   EXPECT_EQ(true, isMainFrame.value());
-  absl::optional<bool> isOOPIF = arg_dict->FindBoolKey("isOOPIF");
-  EXPECT_TRUE(isOOPIF.has_value());
-  EXPECT_EQ(false, isOOPIF.value());
-  EXPECT_EQ(arg_dict->FindIntKey("frame_x").value_or(-1), 8);
-  EXPECT_EQ(arg_dict->FindIntKey("frame_y").value_or(-1), 8);
-  EXPECT_EQ(arg_dict->FindIntKey("frame_width").value_or(-1), 5);
-  EXPECT_EQ(arg_dict->FindIntKey("frame_height").value_or(-1), 5);
-  EXPECT_EQ(arg_dict->FindIntKey("root_x").value_or(-1), 8);
-  EXPECT_EQ(arg_dict->FindIntKey("root_y").value_or(-1), 8);
-  EXPECT_EQ(arg_dict->FindIntKey("root_width").value_or(-1), 5);
-  EXPECT_EQ(arg_dict->FindIntKey("root_height").value_or(-1), 5);
+  absl::optional<bool> is_outermost_main_frame =
+      arg_dict.FindBool("isOutermostMainFrame");
+  EXPECT_TRUE(is_outermost_main_frame.has_value());
+  EXPECT_EQ(true, is_outermost_main_frame.value());
+  absl::optional<bool> is_embedded_frame = arg_dict.FindBool("isEmbeddedFrame");
+  EXPECT_TRUE(is_embedded_frame.has_value());
+  EXPECT_EQ(false, is_embedded_frame.value());
+  EXPECT_EQ(arg_dict.FindInt("frame_x").value_or(-1), 8);
+  EXPECT_EQ(arg_dict.FindInt("frame_y").value_or(-1), 8);
+  EXPECT_EQ(arg_dict.FindInt("frame_width").value_or(-1), 5);
+  EXPECT_EQ(arg_dict.FindInt("frame_height").value_or(-1), 5);
+  EXPECT_EQ(arg_dict.FindInt("root_x").value_or(-1), 8);
+  EXPECT_EQ(arg_dict.FindInt("root_y").value_or(-1), 8);
+  EXPECT_EQ(arg_dict.FindInt("root_width").value_or(-1), 5);
+  EXPECT_EQ(arg_dict.FindInt("root_height").value_or(-1), 5);
 }
 
 TEST_P(ImagePaintTimingDetectorTest,
@@ -417,30 +420,31 @@ TEST_P(ImagePaintTimingDetectorTest,
   EXPECT_EQ(1u, events.size());
   EXPECT_EQ("loading", events[0]->category);
 
-  EXPECT_TRUE(events[0]->HasArg("frame"));
+  EXPECT_TRUE(events[0]->HasStringArg("frame"));
 
-  EXPECT_TRUE(events[0]->HasArg("data"));
-  base::Value arg;
-  EXPECT_TRUE(events[0]->GetArgAsValue("data", &arg));
-  base::DictionaryValue* arg_dict;
-  EXPECT_TRUE(arg.GetAsDictionary(&arg_dict));
-  EXPECT_GT(arg_dict->FindIntKey("DOMNodeId").value_or(-1), 0);
-  EXPECT_GT(arg_dict->FindIntKey("size").value_or(-1), 0);
-  EXPECT_EQ(arg_dict->FindIntKey("candidateIndex").value_or(-1), 2);
-  absl::optional<bool> isMainFrame = arg_dict->FindBoolKey("isMainFrame");
+  ASSERT_TRUE(events[0]->HasDictArg("data"));
+  base::Value::Dict arg_dict = events[0]->GetKnownArgAsDict("data");
+  EXPECT_GT(arg_dict.FindInt("DOMNodeId").value_or(-1), 0);
+  EXPECT_GT(arg_dict.FindInt("size").value_or(-1), 0);
+  EXPECT_EQ(arg_dict.FindInt("candidateIndex").value_or(-1), 2);
+  absl::optional<bool> isMainFrame = arg_dict.FindBool("isMainFrame");
   EXPECT_TRUE(isMainFrame.has_value());
   EXPECT_EQ(false, isMainFrame.value());
-  absl::optional<bool> isOOPIF = arg_dict->FindBoolKey("isOOPIF");
-  EXPECT_TRUE(isOOPIF.has_value());
-  EXPECT_EQ(false, isOOPIF.value());
-  EXPECT_EQ(arg_dict->FindIntKey("frame_x").value_or(-1), 10);
-  EXPECT_EQ(arg_dict->FindIntKey("frame_y").value_or(-1), 10);
-  EXPECT_EQ(arg_dict->FindIntKey("frame_width").value_or(-1), 200);
-  EXPECT_EQ(arg_dict->FindIntKey("frame_height").value_or(-1), 200);
-  EXPECT_GT(arg_dict->FindIntKey("root_x").value_or(-1), 40);
-  EXPECT_GT(arg_dict->FindIntKey("root_y").value_or(-1), 60);
-  EXPECT_EQ(arg_dict->FindIntKey("root_width").value_or(-1), 200);
-  EXPECT_EQ(arg_dict->FindIntKey("root_height").value_or(-1), 200);
+  absl::optional<bool> is_outermost_main_frame =
+      arg_dict.FindBool("isOutermostMainFrame");
+  EXPECT_TRUE(is_outermost_main_frame.has_value());
+  EXPECT_EQ(false, is_outermost_main_frame.value());
+  absl::optional<bool> is_embedded_frame = arg_dict.FindBool("isEmbeddedFrame");
+  EXPECT_TRUE(is_embedded_frame.has_value());
+  EXPECT_EQ(false, is_embedded_frame.value());
+  EXPECT_EQ(arg_dict.FindInt("frame_x").value_or(-1), 10);
+  EXPECT_EQ(arg_dict.FindInt("frame_y").value_or(-1), 10);
+  EXPECT_EQ(arg_dict.FindInt("frame_width").value_or(-1), 200);
+  EXPECT_EQ(arg_dict.FindInt("frame_height").value_or(-1), 200);
+  EXPECT_GT(arg_dict.FindInt("root_x").value_or(-1), 40);
+  EXPECT_GT(arg_dict.FindInt("root_y").value_or(-1), 60);
+  EXPECT_EQ(arg_dict.FindInt("root_width").value_or(-1), 200);
+  EXPECT_EQ(arg_dict.FindInt("root_height").value_or(-1), 200);
 }
 
 TEST_P(ImagePaintTimingDetectorTest, LargestImagePaint_TraceEvent_NoCandidate) {
@@ -464,15 +468,13 @@ TEST_P(ImagePaintTimingDetectorTest, LargestImagePaint_TraceEvent_NoCandidate) {
   EXPECT_EQ(1u, events.size());
 
   EXPECT_EQ("loading", events[0]->category);
-  EXPECT_TRUE(events[0]->HasArg("frame"));
-  EXPECT_TRUE(events[0]->HasArg("data"));
-  base::Value arg;
-  EXPECT_TRUE(events[0]->GetArgAsValue("data", &arg));
-  base::DictionaryValue* arg_dict;
-  EXPECT_TRUE(arg.GetAsDictionary(&arg_dict));
-  EXPECT_EQ(arg_dict->FindIntKey("candidateIndex").value_or(-1), 1);
-  EXPECT_THAT(arg_dict->FindBoolKey("isMainFrame"), Optional(true));
-  EXPECT_THAT(arg_dict->FindBoolKey("isOOPIF"), Optional(false));
+  EXPECT_TRUE(events[0]->HasStringArg("frame"));
+  ASSERT_TRUE(events[0]->HasDictArg("data"));
+  base::Value::Dict arg_dict = events[0]->GetKnownArgAsDict("data");
+  EXPECT_EQ(arg_dict.FindInt("candidateIndex").value_or(-1), 1);
+  EXPECT_THAT(arg_dict.FindBool("isMainFrame"), Optional(true));
+  EXPECT_THAT(arg_dict.FindBool("isOutermostMainFrame"), Optional(true));
+  EXPECT_THAT(arg_dict.FindBool("isEmbeddedFrame"), Optional(false));
 }
 
 TEST_P(ImagePaintTimingDetectorTest, UpdatePerformanceTiming) {
@@ -1257,6 +1259,42 @@ TEST_P(ImagePaintTimingDetectorTest, LargestImagePaint_FullViewportImage) {
   auto* entry = entries[0];
   test_ukm_recorder.ExpectEntryMetric(
       entry, UkmPaintTiming::kLCPDebugging_HasViewportImageName, true);
+}
+
+TEST_P(ImagePaintTimingDetectorTest, LargestImagePaint_Detached_Frame) {
+  using trace_analyzer::Query;
+  GetDocument().SetBaseURLOverride(KURL("http://test.com"));
+  SetBodyInnerHTML(R"HTML(
+      <style>iframe { display: block; position: relative; margin-left: 30px; margin-top: 50px; width: 250px; height: 250px;} </style>
+      <iframe> </iframe>
+    )HTML");
+  SetChildBodyInnerHTML(R"HTML(
+      <style>body { margin: 10px;} #target { width: 200px; height: 200px; }
+      </style>
+      <img id="target"></img>
+    )HTML");
+  SetChildFrameImageAndPaint("target", 5, 5);
+  UpdateAllLifecyclePhasesAndInvokeCallbackIfAny();
+  LocalFrame* child_frame = GetChildFrame();
+  PaintTimingDetector* child_detector =
+      &child_frame->View()->GetPaintTimingDetector();
+  GetDocument().body()->setInnerHTML("", ASSERT_NO_EXCEPTION);
+  EXPECT_TRUE(child_frame->IsDetached());
+
+  // Start tracing, we only want to capture it during the ReportPaintTime.
+  trace_analyzer::Start("loading");
+  child_detector->callback_manager_->ReportPaintTime(
+      std::make_unique<PaintTimingCallbackManager::CallbackQueue>(),
+      test_task_runner_->NowTicks());
+
+  auto analyzer = trace_analyzer::Stop();
+  trace_analyzer::TraceEventVector events;
+  Query q = Query::EventNameIs("LargestImagePaint::Candidate");
+  analyzer->FindEvents(q, &events);
+  EXPECT_EQ(0u, events.size());
+  q = Query::EventNameIs("LargestImagePaint::NoCandidate");
+  analyzer->FindEvents(q, &events);
+  EXPECT_EQ(0u, events.size());
 }
 
 }  // namespace blink

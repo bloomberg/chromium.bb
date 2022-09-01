@@ -8,6 +8,7 @@
 
 #include "components/breadcrumbs/core/breadcrumb_manager.h"
 #import "ios/chrome/browser/crash_report/crash_report_helper.h"
+#include "ios/chrome/browser/metrics/ios_chrome_metrics_service_accessor.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -16,8 +17,11 @@
 const char kBreadcrumbOrientation[] = "Orientation";
 
 ApplicationBreadcrumbsLogger::ApplicationBreadcrumbsLogger(
-    breadcrumbs::BreadcrumbManager* breadcrumb_manager)
-    : breadcrumbs::ApplicationBreadcrumbsLogger(breadcrumb_manager) {
+    const base::FilePath& storage_dir)
+    : breadcrumbs::ApplicationBreadcrumbsLogger(
+          storage_dir,
+          base::BindRepeating(&IOSChromeMetricsServiceAccessor::
+                                  IsMetricsAndCrashReportingEnabled)) {
   orientation_observer_ = [NSNotificationCenter.defaultCenter
       addObserverForName:UIDeviceOrientationDidChangeNotification
                   object:nil
