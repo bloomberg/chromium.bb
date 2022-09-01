@@ -31,20 +31,18 @@
 #include <grpc/support/time.h>
 
 #include "src/core/lib/channel/channel_args.h"
-#include "src/core/lib/compression/compression_args.h"
 #include "src/core/lib/surface/call.h"
 #include "src/core/lib/surface/call_test_only.h"
-#include "src/core/lib/transport/static_metadata.h"
+#include "test/core/compression/args_utils.h"
 #include "test/core/end2end/cq_verifier.h"
 #include "test/core/end2end/end2end_tests.h"
 
 static void* tag(intptr_t t) { return reinterpret_cast<void*>(t); }
 
-static grpc_end2end_test_fixture begin_test(grpc_end2end_test_config config,
-                                            const char* test_name,
-                                            grpc_channel_args* client_args,
-                                            grpc_channel_args* server_args,
-                                            bool decompress_in_core) {
+static grpc_end2end_test_fixture begin_test(
+    grpc_end2end_test_config config, const char* test_name,
+    const grpc_channel_args* client_args, const grpc_channel_args* server_args,
+    bool decompress_in_core) {
   grpc_end2end_test_fixture f;
   gpr_log(GPR_INFO, "Running test: %s%s/%s", test_name,
           decompress_in_core ? "" : "_with_decompression_disabled",
@@ -72,11 +70,12 @@ static void drain_cq(grpc_completion_queue* cq) {
 
 static void shutdown_server(grpc_end2end_test_fixture* f) {
   if (!f->server) return;
-  grpc_server_shutdown_and_notify(f->server, f->shutdown_cq, tag(1000));
-  GPR_ASSERT(grpc_completion_queue_pluck(f->shutdown_cq, tag(1000),
-                                         grpc_timeout_seconds_to_deadline(5),
-                                         nullptr)
-                 .type == GRPC_OP_COMPLETE);
+  grpc_server_shutdown_and_notify(f->server, f->cq, tag(1000));
+  grpc_event ev;
+  do {
+    ev = grpc_completion_queue_next(f->cq, grpc_timeout_seconds_to_deadline(5),
+                                    nullptr);
+  } while (ev.type != GRPC_OP_COMPLETE || ev.tag != tag(1000));
   grpc_server_destroy(f->server);
   f->server = nullptr;
 }
@@ -94,7 +93,6 @@ static void end_test(grpc_end2end_test_fixture* f) {
   grpc_completion_queue_shutdown(f->cq);
   drain_cq(f->cq);
   grpc_completion_queue_destroy(f->cq);
-  grpc_completion_queue_destroy(f->shutdown_cq);
 }
 
 static void request_for_disabled_algorithm(
@@ -108,8 +106,8 @@ static void request_for_disabled_algorithm(
   grpc_call* s;
   grpc_slice request_payload_slice;
   grpc_byte_buffer* request_payload;
-  grpc_channel_args* client_args;
-  grpc_channel_args* server_args;
+  const grpc_channel_args* client_args;
+  const grpc_channel_args* server_args;
   grpc_end2end_test_fixture f;
   grpc_op ops[6];
   grpc_op* op;
@@ -140,8 +138,8 @@ static void request_for_disabled_algorithm(
     grpc_arg disable_decompression_in_core_arg =
         grpc_channel_arg_integer_create(
             const_cast<char*>(GRPC_ARG_ENABLE_PER_MESSAGE_DECOMPRESSION), 0);
-    grpc_channel_args* old_client_args = client_args;
-    grpc_channel_args* old_server_args = server_args;
+    const grpc_channel_args* old_client_args = client_args;
+    const grpc_channel_args* old_server_args = server_args;
     client_args = grpc_channel_args_copy_and_add(
         client_args, &disable_decompression_in_core_arg, 1);
     server_args = grpc_channel_args_copy_and_add(
@@ -288,8 +286,8 @@ static void request_with_payload_template_inner(
   grpc_call* s;
   grpc_slice request_payload_slice;
   grpc_byte_buffer* request_payload = nullptr;
-  grpc_channel_args* client_args;
-  grpc_channel_args* server_args;
+  const grpc_channel_args* client_args;
+  const grpc_channel_args* server_args;
   grpc_end2end_test_fixture f;
   grpc_op ops[6];
   grpc_op* op;
@@ -326,8 +324,8 @@ static void request_with_payload_template_inner(
     grpc_arg disable_decompression_in_core_arg =
         grpc_channel_arg_integer_create(
             const_cast<char*>(GRPC_ARG_ENABLE_PER_MESSAGE_DECOMPRESSION), 0);
-    grpc_channel_args* old_client_args = client_args;
-    grpc_channel_args* old_server_args = server_args;
+    const grpc_channel_args* old_client_args = client_args;
+    const grpc_channel_args* old_server_args = server_args;
     client_args = grpc_channel_args_copy_and_add(
         client_args, &disable_decompression_in_core_arg, 1);
     server_args = grpc_channel_args_copy_and_add(
@@ -643,12 +641,14 @@ static void test_invoke_request_with_compressed_payload_md_override(
   grpc_metadata gzip_compression_override;
   grpc_metadata identity_compression_override;
 
-  gzip_compression_override.key = GRPC_MDSTR_GRPC_INTERNAL_ENCODING_REQUEST;
+  gzip_compression_override.key =
+      grpc_slice_from_static_string("grpc-internal-encoding-request");
   gzip_compression_override.value = grpc_slice_from_static_string("gzip");
   memset(&gzip_compression_override.internal_data, 0,
          sizeof(gzip_compression_override.internal_data));
 
-  identity_compression_override.key = GRPC_MDSTR_GRPC_INTERNAL_ENCODING_REQUEST;
+  identity_compression_override.key =
+      grpc_slice_from_static_string("grpc-internal-encoding-request");
   identity_compression_override.value =
       grpc_slice_from_static_string("identity");
   memset(&identity_compression_override.internal_data, 0,

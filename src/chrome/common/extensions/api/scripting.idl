@@ -31,6 +31,11 @@ namespace scripting {
     // of specific frames to inject into.
     long[]? frameIds;
 
+    // The <a href="https://developer.chrome.com/extensions/webNavigation#document_ids">IDs</a>
+    // of specific documentIds to inject into. This must not be set if
+    // <code>frameIds</code> is set.
+    [nodoc] DOMString[]? documentIds;
+
     // Whether the script should inject into all frames within the tab. Defaults
     // to false.
     // This must not be true if <code>frameIds</code> is specified.
@@ -69,6 +74,12 @@ namespace scripting {
     // The JavaScript "world" to run the script in. Defaults to
     // <code>ISOLATED</code>.
     ExecutionWorld? world;
+
+    // Whether the injection should be triggered in the target as soon as
+    // possible. Note that this is not a guarantee that injection will occur
+    // prior to page load, as the page may have already loaded by the time the
+    // script reaches the target.
+    boolean? injectImmediately;
   };
 
   dictionary CSSInjection {
@@ -96,6 +107,9 @@ namespace scripting {
 
     // The frame associated with the injection.
     long frameId;
+
+    // The document associated with the injection.
+    [nodoc] DOMString documentId;
   };
 
   // Describes a content script to be injected into a web page registered
@@ -136,6 +150,9 @@ namespace scripting {
     // Specifies if this content script will persist into future sessions. The
     // default is true.
     boolean? persistAcrossSessions;
+    // The JavaScript "world" to run the script in. Defaults to
+    // <code>ISOLATED</code>.
+    ExecutionWorld? world;
   };
 
   // An object used to filter content scripts for
@@ -158,6 +175,15 @@ namespace scripting {
   callback UnregisterContentScriptsCallback = void();
 
   callback UpdateContentScriptsCallback = void();
+
+  interface Properties {
+    // An object available for content scripts running in isolated worlds to use
+    // and modify as a JS object. One instance exists per frame and is shared
+    // between all content scripts for a given extension. This object is
+    // initialized when the frame is created, before document_start.
+    // TODO(crbug.com/1054624): Enable this once implementation is complete.
+    [nodoc, nocompile] static long globalParams();
+  };
 
   interface Functions {
     // Injects a script into a target context. The script will be run at

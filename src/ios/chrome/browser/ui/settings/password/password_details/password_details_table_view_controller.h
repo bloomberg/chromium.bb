@@ -29,7 +29,7 @@ typedef NS_ENUM(NSInteger, CredentialType) {
                                        PasswordDetailsConsumer>
 
 // The designated initializer.
-// |syncingUserEmail| stores the user email if the user is authenticated amd
+// `syncingUserEmail` stores the user email if the user is authenticated amd
 // syncing passwords.
 - (instancetype)initWithCredentialType:(CredentialType)credentialType
                       syncingUserEmail:(NSString*)syncingUserEmail
@@ -48,6 +48,9 @@ typedef NS_ENUM(NSInteger, CredentialType) {
     delegate;
 
 // Dispatcher for this ViewController.
+// TODO(crbug.com/1323778): This class needs to have an explicit
+// id<SnacbarCommands> handler property instead of using BrowserCommands. There
+// will also be an explicit (separate) ApplicationCommands handler.
 @property(nonatomic, weak) id<ApplicationCommands, BrowserCommands>
     commandsHandler;
 

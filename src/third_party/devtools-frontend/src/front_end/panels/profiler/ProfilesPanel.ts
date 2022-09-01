@@ -29,6 +29,7 @@
 
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
+import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 // eslint-disable-next-line rulesdir/es_modules_import
 import objectValueStyles from '../../ui/legacy/components/object_ui/objectValue.css.js';
@@ -227,7 +228,7 @@ export class ProfilesPanel extends UI.Panel.PanelWithSidebar implements DataDisp
 
     const error = await profileType.loadFromFile(file);
     if (error && 'message' in error) {
-      UI.UIUtils.MessageDialog.show(i18nString(UIStrings.profileLoadingFailedS, {PH1: error.message}));
+      void UI.UIUtils.MessageDialog.show(i18nString(UIStrings.profileLoadingFailedS, {PH1: error.message}));
     }
   }
 
@@ -235,7 +236,7 @@ export class ProfilesPanel extends UI.Panel.PanelWithSidebar implements DataDisp
     if (!this.toggleRecordAction.enabled()) {
       return true;
     }
-    const toggleButton = this.element.ownerDocument.deepActiveElement();
+    const toggleButton = Platform.DOMUtilities.deepActiveElement(this.element.ownerDocument);
     const type = this.selectedProfileType;
     if (!type) {
       return true;
@@ -357,7 +358,7 @@ export class ProfilesPanel extends UI.Panel.PanelWithSidebar implements DataDisp
       contextMenu.defaultSection().appendItem(
           i18nString(UIStrings.load), this.fileSelectorElement.click.bind(this.fileSelectorElement));
     }
-    contextMenu.show();
+    void contextMenu.show();
   }
 
   showLoadFromFileDialog(): void {
@@ -419,7 +420,7 @@ export class ProfilesPanel extends UI.Panel.PanelWithSidebar implements DataDisp
 
     this.profileViewToolbar.removeToolbarItems();
 
-    (view as unknown as UI.View.View).toolbarItems().then(items => {
+    void (view as unknown as UI.View.View).toolbarItems().then(items => {
       items.map(item => this.profileViewToolbar.appendToolbarItem(item));
     });
 

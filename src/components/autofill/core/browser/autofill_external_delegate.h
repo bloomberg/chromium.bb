@@ -47,10 +47,11 @@ class AutofillExternalDelegate : public AutofillPopupDelegate {
   void OnPopupHidden() override;
   void OnPopupSuppressed() override;
   void DidSelectSuggestion(const std::u16string& value,
-                           int frontend_id) override;
+                           int frontend_id,
+                           const std::string& backend_id) override;
   void DidAcceptSuggestion(const std::u16string& value,
                            int frontend_id,
-                           const std::string& backend_id,
+                           const Suggestion::Payload& payload,
                            int position) override;
   bool GetDeletionConfirmationText(const std::u16string& value,
                                    int frontend_id,

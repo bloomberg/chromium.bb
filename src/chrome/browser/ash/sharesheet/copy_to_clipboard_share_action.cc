@@ -6,11 +6,11 @@
 
 #include <string>
 
-#include "ash/public/cpp/toast_data.h"
-#include "ash/public/cpp/toast_manager.h"
+#include "ash/public/cpp/system/toast_catalog.h"
+#include "ash/public/cpp/system/toast_data.h"
+#include "ash/public/cpp/system/toast_manager.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "base/containers/flat_set.h"
-#include "base/strings/string_split.h"
 #include "chrome/browser/apps/app_service/file_utils.h"
 #include "chrome/browser/ash/file_manager/filesystem_api_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -19,6 +19,7 @@
 #include "chrome/browser/sharesheet/sharesheet_types.h"
 #include "chrome/browser/ui/ash/sharesheet/sharesheet_util.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/components/sharesheet/constants.h"
 #include "components/services/app_service/public/cpp/intent_util.h"
 #include "storage/browser/file_system/file_system_url.h"
 #include "ui/base/clipboard/file_info.h"
@@ -28,31 +29,11 @@
 
 namespace {
 const char kToastId[] = "copy_to_clipboard_share_action";
-const int kToastDurationMs = 2500;
-const char kMimeTypeSeparator[] = "/";
 
-::sharesheet::SharesheetMetrics::MimeType ConvertMimeTypeForMetrics(
-    std::string mime_type) {
-  std::vector<std::string> type =
-      base::SplitString(mime_type, kMimeTypeSeparator, base::TRIM_WHITESPACE,
-                        base::SPLIT_WANT_NONEMPTY);
-  if (type.size() == 0) {
-    return ::sharesheet::SharesheetMetrics::MimeType::kUnknown;
-  }
-
-  if (type[0] == "text") {
-    return ::sharesheet::SharesheetMetrics::MimeType::kTextFile;
-  } else if (type[0] == "image") {
-    return ::sharesheet::SharesheetMetrics::MimeType::kImageFile;
-  } else if (type[0] == "video") {
-    return ::sharesheet::SharesheetMetrics::MimeType::kVideoFile;
-  } else if (type[0] == "audio") {
-    return ::sharesheet::SharesheetMetrics::MimeType::kAudioFile;
-  } else if (mime_type == "application/pdf") {
-    return ::sharesheet::SharesheetMetrics::MimeType::kPdfFile;
-  } else {
-    return ::sharesheet::SharesheetMetrics::MimeType::kUnknown;
-  }
+void RecordFormFactorMetric() {
+  auto form_factor = ::sharesheet::SharesheetMetrics::GetFormFactorForMetrics();
+  ::sharesheet::SharesheetMetrics::RecordCopyToClipboardShareActionFormFactor(
+      form_factor);
 }
 
 void RecordMimeTypes(
@@ -90,7 +71,6 @@ void CopyToClipboardShareAction::LaunchAction(
     views::View* root_view,
     apps::mojom::IntentPtr intent) {
   ui::ScopedClipboardWriter clipboard_writer(ui::ClipboardBuffer::kCopyPaste);
-  base::flat_set<SharesheetMetrics::MimeType> mime_types_to_record;
 
   if (intent->share_text.has_value()) {
     apps_util::SharedText extracted_text =
@@ -98,7 +78,6 @@ void CopyToClipboardShareAction::LaunchAction(
 
     if (!extracted_text.text.empty()) {
       clipboard_writer.WriteText(base::UTF8ToUTF16(extracted_text.text));
-      mime_types_to_record.insert(SharesheetMetrics::MimeType::kText);
     }
 
     if (!extracted_text.url.is_empty()) {
@@ -108,7 +87,6 @@ void CopyToClipboardShareAction::LaunchAction(
         anchor_text = intent->share_title.value();
       }
       clipboard_writer.WriteText(base::UTF8ToUTF16(extracted_text.url.spec()));
-      mime_types_to_record.insert(SharesheetMetrics::MimeType::kUrl);
     }
   }
 
@@ -123,26 +101,23 @@ void CopyToClipboardShareAction::LaunchAction(
       if (!file_manager::util::IsNonNativeFileSystemType(file_url.type())) {
         file_infos.emplace_back(
             ui::FileInfo(file_url.path(), base::FilePath()));
-        if (file->mime_type.has_value())
-          mime_types_to_record.insert(
-              ConvertMimeTypeForMetrics(file->mime_type.value()));
       }
     }
     clipboard_writer.WriteFilenames(ui::FileInfosToURIList(file_infos));
   }
 
-  RecordMimeTypes(mime_types_to_record);
+  RecordFormFactorMetric();
+  RecordMimeTypes(
+      ::sharesheet::SharesheetMetrics::GetMimeTypesFromIntentForMetrics(
+          intent));
 
   if (controller) {
     controller->CloseBubble(::sharesheet::SharesheetResult::kSuccess);
   }
 
-  ToastData toast(kToastId,
+  ToastData toast(kToastId, ToastCatalogName::kCopyToClipboardShareAction,
                   l10n_util::GetStringUTF16(
-                      IDS_SHARESHEET_COPY_TO_CLIPBOARD_SUCCESS_TOAST_LABEL),
-                  kToastDurationMs,
-                  /*dismiss_text=*/absl::nullopt,
-                  /*visible_on_lock_screen=*/false);
+                      IDS_SHARESHEET_COPY_TO_CLIPBOARD_SUCCESS_TOAST_LABEL));
   ShowToast(toast);
 }
 

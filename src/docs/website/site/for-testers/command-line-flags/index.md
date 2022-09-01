@@ -8,4 +8,4 @@ title: How to specify command line flags
 
 This page has been merged into the more complete:
 
-<https://sites.google.com/a/chromium.org/dev/developers/how-tos/run-chromium-with-flags>
+<https://www.chromium.org/developers/how-tos/run-chromium-with-flags>

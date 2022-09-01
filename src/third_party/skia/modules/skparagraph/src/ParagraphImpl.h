@@ -102,14 +102,14 @@ public:
                   SkTArray<Block, true> blocks,
                   SkTArray<Placeholder, true> placeholders,
                   sk_sp<FontCollection> fonts,
-                  std::unique_ptr<SkUnicode> unicode);
+                  std::shared_ptr<SkUnicode> unicode);
 
     ParagraphImpl(const std::u16string& utf16text,
                   ParagraphStyle style,
                   SkTArray<Block, true> blocks,
                   SkTArray<Placeholder, true> placeholders,
                   sk_sp<FontCollection> fonts,
-                  std::unique_ptr<SkUnicode> unicode);
+                  std::shared_ptr<SkUnicode> unicode);
     ~ParagraphImpl() override;
 
     void layout(SkScalar width) override;
@@ -193,13 +193,10 @@ public:
     void resolveStrut();
 
     bool computeCodeUnitProperties();
-
+    void applySpacingAndBuildClusterTable();
     void buildClusterTable();
-    void spaceGlyphs();
     bool shapeTextIntoEndlessLine();
     void breakShapedTextIntoLines(SkScalar maxWidth);
-    void paintLinesIntoPicture(SkScalar x, SkScalar y);
-    void paintLines(SkCanvas* canvas, SkScalar x, SkScalar y);
 
     void updateTextAlign(TextAlign textAlign) override;
     void updateText(size_t from, SkString text) override;
@@ -217,7 +214,6 @@ public:
     void resetShifts() {
         for (auto& run : fRuns) {
             run.resetJustificationShifts();
-            run.resetShifts();
         }
     }
 
@@ -252,7 +248,7 @@ private:
     SkTArray<Run, false> fRuns;         // kShaped
     SkTArray<Cluster, true> fClusters;  // kClusterized (cached: text, word spacing, letter spacing, resolved fonts)
     SkTArray<CodeUnitFlags> fCodeUnitProperties;
-    SkTArray<size_t> fClustersIndexFromCodeUnit;
+    SkTArray<size_t, true> fClustersIndexFromCodeUnit;
     std::vector<size_t> fWords;
     std::vector<SkUnicode::BidiRegion> fBidiRegions;
     // These two arrays are used in measuring methods (getRectsForRange, getGlyphPositionAtCoordinate)
@@ -273,7 +269,10 @@ private:
     SkScalar fOldHeight;
     SkScalar fMaxWidthWithTrailingSpaces;
 
-    std::unique_ptr<SkUnicode> fUnicode;
+    std::shared_ptr<SkUnicode> fUnicode;
+    bool fHasLineBreaks;
+    bool fHasWhitespacesInside;
+    TextIndex fTrailingSpaces;
 };
 }  // namespace textlayout
 }  // namespace skia

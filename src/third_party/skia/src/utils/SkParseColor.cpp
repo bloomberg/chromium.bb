@@ -5,8 +5,14 @@
  * found in the LICENSE file.
  */
 
-
 #include "include/utils/SkParse.h"
+
+#include "include/core/SkColor.h"
+#include "include/core/SkTypes.h"
+
+#include <string.h>
+#include <algorithm>
+#include <iterator>
 
 static constexpr const char* gColorNames[] = {
     "aliceblue",

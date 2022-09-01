@@ -27,7 +27,7 @@
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/modules/websockets/websocket_channel.h"
 #include "third_party/blink/renderer/modules/websockets/websocket_channel_client.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -1301,9 +1301,9 @@ TEST_F(WebSocketChannelImplTest, FailFromClient) {
   auto websocket = Connect(4 * 1024, &writable, &readable, &client);
   ASSERT_TRUE(websocket);
 
-  Channel()->Fail("fail message from WebSocket",
-                  mojom::ConsoleMessageLevel::kError,
-                  std::make_unique<SourceLocation>(String(), 0, 0, nullptr));
+  Channel()->Fail(
+      "fail message from WebSocket", mojom::ConsoleMessageLevel::kError,
+      std::make_unique<SourceLocation>(String(), String(), 0, 0, nullptr));
 }
 
 class WebSocketChannelImplHandshakeThrottleTest
@@ -1395,9 +1395,9 @@ TEST_F(WebSocketChannelImplHandshakeThrottleTest, FailDuringThrottle) {
   }
 
   Channel()->Connect(url(), "");
-  Channel()->Fail("close during handshake",
-                  mojom::ConsoleMessageLevel::kWarning,
-                  std::make_unique<SourceLocation>(String(), 0, 0, nullptr));
+  Channel()->Fail(
+      "close during handshake", mojom::ConsoleMessageLevel::kWarning,
+      std::make_unique<SourceLocation>(String(), String(), 0, 0, nullptr));
   checkpoint.Call(1);
 }
 
@@ -1421,9 +1421,9 @@ TEST_F(WebSocketChannelImplHandshakeThrottleTest,
   auto websocket = Connect(4 * 1024, &writable, &readable, &client);
   ASSERT_TRUE(websocket);
 
-  Channel()->Fail("close during handshake",
-                  mojom::ConsoleMessageLevel::kWarning,
-                  std::make_unique<SourceLocation>(String(), 0, 0, nullptr));
+  Channel()->Fail(
+      "close during handshake", mojom::ConsoleMessageLevel::kWarning,
+      std::make_unique<SourceLocation>(String(), String(), 0, 0, nullptr));
   checkpoint.Call(1);
 }
 

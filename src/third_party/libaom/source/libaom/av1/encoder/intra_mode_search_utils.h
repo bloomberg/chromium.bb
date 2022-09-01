@@ -32,6 +32,11 @@ extern "C" {
 #endif
 
 /*!\cond */
+// Macro for computing the speed-preset dependent threshold which is used for
+// deciding whether to enable/disable variance calculations in
+// intra_rd_variance_factor().
+#define INTRA_RD_VAR_THRESH(X) (1.0 - (0.25 * (X)))
+
 #define BINS 32
 static const float av1_intra_hog_model_bias[DIRECTIONAL_MODES] = {
   0.450578f,  0.695518f,  -0.717944f, -0.639894f,
@@ -448,6 +453,38 @@ static AOM_INLINE void prune_intra_mode_with_hog(
 }
 #undef BINS
 
+int av1_calc_normalized_variance(aom_variance_fn_t vf, const uint8_t *const buf,
+                                 const int stride, const int is_hbd);
+
+// Returns whether caching of source variance for 4x4 sub-blocks is allowed.
+static AOM_INLINE bool is_src_var_for_4x4_sub_blocks_caching_enabled(
+    const AV1_COMP *const cpi) {
+  const SPEED_FEATURES *const sf = &cpi->sf;
+  if (cpi->oxcf.mode != ALLINTRA) return false;
+
+  if (sf->part_sf.partition_search_type == SEARCH_PARTITION) return true;
+
+  if (INTRA_RD_VAR_THRESH(cpi->oxcf.speed) <= 0 ||
+      (sf->rt_sf.use_nonrd_pick_mode && !sf->rt_sf.hybrid_intra_pickmode))
+    return false;
+
+  return true;
+}
+
+// Initialize the members of Block4x4VarInfo structure to -1 at the start
+// of every superblock.
+static AOM_INLINE void init_src_var_info_of_4x4_sub_blocks(
+    const AV1_COMP *const cpi, Block4x4VarInfo *src_var_info_of_4x4_sub_blocks,
+    const BLOCK_SIZE sb_size) {
+  if (!is_src_var_for_4x4_sub_blocks_caching_enabled(cpi)) return;
+
+  const int mi_count_in_sb = mi_size_wide[sb_size] * mi_size_high[sb_size];
+  for (int i = 0; i < mi_count_in_sb; i++) {
+    src_var_info_of_4x4_sub_blocks[i].var = -1;
+    src_var_info_of_4x4_sub_blocks[i].log_var = -1.0;
+  }
+}
+
 // Returns the cost needed to send a uniformly distributed r.v.
 static AOM_INLINE int write_uniform_cost(int n, int v) {
   const int l = get_unsigned_bits(n);
@@ -467,7 +504,8 @@ static AOM_INLINE int write_uniform_cost(int n, int v) {
 static AOM_INLINE int intra_mode_info_cost_y(const AV1_COMP *cpi,
                                              const MACROBLOCK *x,
                                              const MB_MODE_INFO *mbmi,
-                                             BLOCK_SIZE bsize, int mode_cost) {
+                                             BLOCK_SIZE bsize, int mode_cost,
+                                             int discount_color_cost) {
   int total_rate = mode_cost;
   const ModeCosts *mode_costs = &x->mode_costs;
   const int use_palette = mbmi->palette_mode_info.palette_size[0] > 0;
@@ -499,8 +537,10 @@ static AOM_INLINE int intra_mode_info_cost_y(const AV1_COMP *cpi,
       palette_mode_cost +=
           av1_palette_color_cost_y(&mbmi->palette_mode_info, color_cache,
                                    n_cache, cpi->common.seq_params->bit_depth);
-      palette_mode_cost +=
-          av1_cost_color_map(x, 0, bsize, mbmi->tx_size, PALETTE_MAP);
+      if (!discount_color_cost)
+        palette_mode_cost +=
+            av1_cost_color_map(x, 0, bsize, mbmi->tx_size, PALETTE_MAP);
+
       total_rate += palette_mode_cost;
     }
   }

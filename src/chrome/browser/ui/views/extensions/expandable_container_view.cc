@@ -15,7 +15,6 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/layout/grid_layout.h"
 
 // ExpandableContainerView::DetailsView ----------------------------------------
 ExpandableContainerView::DetailsView::~DetailsView() = default;
@@ -27,7 +26,7 @@ ExpandableContainerView::DetailsView::DetailsView(
       views::DISTANCE_RELATED_CONTROL_VERTICAL);
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical,
-      gfx::Insets(0, 0, bottom_padding, 0),
+      gfx::Insets::TLBR(0, 0, bottom_padding, 0),
       ChromeLayoutProvider::Get()->GetDistanceMetric(
           DISTANCE_RELATED_CONTROL_VERTICAL_SMALL)));
 

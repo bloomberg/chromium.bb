@@ -36,7 +36,7 @@ First build the mini_installer_tests target. The simplest way to run the test
 suite (from an elevated cmd prompt) is to first cd into your build output
 directory and then run the tests like so:
 
-vpython ..\\..\\chrome\\test\\mini_installer\\run_mini_installer_tests.py
+vpython3 ..\\..\\chrome\\test\\mini_installer\\run_mini_installer_tests.py
 \[test_name\]
 
 Specify individual test names as, for example:

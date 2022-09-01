@@ -7,11 +7,15 @@
 #include <memory>
 #include <utility>
 
+#include "ash/ambient/resources/ambient_animation_static_resources.h"
+#include "ash/ambient/ui/ambient_animation_view.h"
 #include "ash/ambient/ui/ambient_view_delegate.h"
 #include "ash/ambient/ui/ambient_view_ids.h"
 #include "ash/ambient/ui/photo_view.h"
 #include "ash/ambient/util/ambient_util.h"
+#include "ash/public/cpp/ambient/ambient_metrics.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "base/check.h"
 #include "ui/aura/window.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/views/accessibility/accessibility_paint_checks.h"
@@ -22,27 +26,38 @@
 
 namespace ash {
 
-AmbientContainerView::AmbientContainerView(AmbientViewDelegate* delegate)
-    : delegate_(delegate) {
+AmbientContainerView::AmbientContainerView(
+    AmbientViewDelegateImpl* delegate,
+    std::unique_ptr<AmbientAnimationStaticResources>
+        animation_static_resources) {
+  DCHECK(delegate);
   // TODO(crbug.com/1218186): Remove this, this is in place temporarily to be
   // able to submit accessibility checks, but this focusable View needs to
   // add a name so that the screen reader knows what to announce.
   SetProperty(views::kSkipAccessibilityPaintChecks, true);
   SetID(AmbientViewID::kAmbientContainerView);
-  Init();
-}
-
-AmbientContainerView::~AmbientContainerView() = default;
-
-void AmbientContainerView::Init() {
   // TODO(b/139954108): Choose a better dark mode theme color.
   SetBackground(views::CreateSolidBackground(SK_ColorBLACK));
   // Updates focus behavior to receive key press events.
   SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
   SetLayoutManager(std::make_unique<views::FillLayout>());
-
-  photo_view_ = AddChildView(std::make_unique<PhotoView>(delegate_));
+  View* main_rendering_view = nullptr;
+  AmbientAnimationTheme theme =
+      animation_static_resources
+          ? animation_static_resources->GetAmbientAnimationTheme()
+          : AmbientAnimationTheme::kSlideshow;
+  if (animation_static_resources) {
+    main_rendering_view = AddChildView(std::make_unique<AmbientAnimationView>(
+        delegate, std::move(animation_static_resources)));
+  } else {
+    main_rendering_view = AddChildView(std::make_unique<PhotoView>(delegate));
+  }
+  orientation_metrics_recorder_ =
+      std::make_unique<ambient::AmbientOrientationMetricsRecorder>(
+          main_rendering_view, theme);
 }
+
+AmbientContainerView::~AmbientContainerView() = default;
 
 BEGIN_METADATA(AmbientContainerView, views::View)
 END_METADATA

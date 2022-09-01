@@ -10,10 +10,10 @@
   await TestRunner.showPanel('lighthouse');
 
   const containerElement = LighthouseTestRunner.getContainerElement();
-  const checkboxes = containerElement.querySelectorAll('.checkbox');
+  const ensureDisabledNames = ['Performance', 'Accessibility', 'Best practices', 'SEO'];
+  const checkboxes = Array.from(containerElement.querySelectorAll('.checkbox'));
   for (const checkbox of checkboxes) {
-    if (checkbox.textElement.textContent === 'Progressive Web App' ||
-        checkbox.textElement.textContent === 'Clear storage') {
+    if (!ensureDisabledNames.includes(checkbox.textElement.textContent)) {
       continue;
     }
 

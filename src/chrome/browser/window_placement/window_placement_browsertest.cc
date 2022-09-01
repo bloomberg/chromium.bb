@@ -84,12 +84,9 @@ class WindowPlacementTest : public InProcessBrowserTest {
 
 // TODO(crbug.com/1183791): Disabled on non-ChromeOS because of races with
 // SetScreenInstance and observers not being notified.
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
-#define MAYBE_OnScreensChangeEvent DISABLED_OnScreensChangeEvent
-#else
-#define MAYBE_OnScreensChangeEvent OnScreensChangeEvent
-#endif
-IN_PROC_BROWSER_TEST_F(WindowPlacementTest, MAYBE_OnScreensChangeEvent) {
+// TODO(crbug.com/1297812): Completely disabled as this test is also flaky on
+// the CrOS bot.
+IN_PROC_BROWSER_TEST_F(WindowPlacementTest, DISABLED_OnScreensChangeEvent) {
   // Updates the display configuration to add a secondary display.
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   display::test::DisplayManagerTestApi(ash::Shell::Get()->display_manager())
@@ -104,8 +101,10 @@ IN_PROC_BROWSER_TEST_F(WindowPlacementTest, MAYBE_OnScreensChangeEvent) {
 
   SetupTwoIframes();
   auto* tab = browser()->tab_strip_model()->GetActiveWebContents();
-  content::RenderFrameHost* local_child = ChildFrameAt(tab->GetMainFrame(), 0);
-  content::RenderFrameHost* remote_child = ChildFrameAt(tab->GetMainFrame(), 1);
+  content::RenderFrameHost* local_child =
+      ChildFrameAt(tab->GetPrimaryMainFrame(), 0);
+  content::RenderFrameHost* remote_child =
+      ChildFrameAt(tab->GetPrimaryMainFrame(), 1);
 
   auto initial_result = std::vector<base::Value>();
   initial_result.emplace_back(801);
@@ -251,8 +250,10 @@ IN_PROC_BROWSER_TEST_F(WindowPlacementTest, MAYBE_OnCurrentScreenChangeEvent) {
 
   SetupTwoIframes();
   auto* tab = browser()->tab_strip_model()->GetActiveWebContents();
-  content::RenderFrameHost* local_child = ChildFrameAt(tab->GetMainFrame(), 0);
-  content::RenderFrameHost* remote_child = ChildFrameAt(tab->GetMainFrame(), 1);
+  content::RenderFrameHost* local_child =
+      ChildFrameAt(tab->GetPrimaryMainFrame(), 0);
+  content::RenderFrameHost* remote_child =
+      ChildFrameAt(tab->GetPrimaryMainFrame(), 1);
 
   auto* initial_script = R"(
       var screenDetails;
@@ -361,8 +362,10 @@ IN_PROC_BROWSER_TEST_F(WindowPlacementTest, MAYBE_ScreenDetailedOnChange) {
 
   SetupTwoIframes();
   auto* tab = browser()->tab_strip_model()->GetActiveWebContents();
-  content::RenderFrameHost* local_child = ChildFrameAt(tab->GetMainFrame(), 0);
-  content::RenderFrameHost* remote_child = ChildFrameAt(tab->GetMainFrame(), 1);
+  content::RenderFrameHost* local_child =
+      ChildFrameAt(tab->GetPrimaryMainFrame(), 0);
+  content::RenderFrameHost* remote_child =
+      ChildFrameAt(tab->GetPrimaryMainFrame(), 1);
 
   auto* initial_script = R"(
       var screenDetails;

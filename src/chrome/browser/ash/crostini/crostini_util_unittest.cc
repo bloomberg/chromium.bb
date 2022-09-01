@@ -5,7 +5,10 @@
 #include "chrome/browser/ash/crostini/crostini_util.h"
 
 #include "base/bind.h"
+#include "base/json/json_reader.h"
 #include "base/run_loop.h"
+#include "chrome/browser/ash/crostini/crostini_manager.h"
+#include "chrome/browser/ash/crostini/crostini_pref_names.h"
 #include "chrome/browser/ash/crostini/crostini_test_helper.h"
 #include "chrome/browser/browser_process_platform_part_base.h"
 #include "chrome/browser/component_updater/fake_cros_component_manager.h"
@@ -13,12 +16,12 @@
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chromeos/dbus/cicerone/cicerone_client.h"
-#include "chromeos/dbus/concierge/concierge_client.h"
-#include "chromeos/dbus/concierge/fake_concierge_client.h"
+#include "chromeos/ash/components/dbus/cicerone/cicerone_client.h"
+#include "chromeos/ash/components/dbus/concierge/concierge_client.h"
+#include "chromeos/ash/components/dbus/concierge/fake_concierge_client.h"
+#include "chromeos/ash/components/dbus/seneschal/seneschal_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/dlcservice/dlcservice_client.h"
-#include "chromeos/dbus/seneschal/seneschal_client.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -45,17 +48,17 @@ class CrostiniUtilTest : public testing::Test {
             TestingBrowserProcess::GetGlobal())),
         browser_part_(g_browser_process->platform_part()) {
     chromeos::DBusThreadManager::Initialize();
-    chromeos::CiceroneClient::InitializeFake();
-    chromeos::ConciergeClient::InitializeFake();
-    chromeos::SeneschalClient::InitializeFake();
+    ash::CiceroneClient::InitializeFake();
+    ash::ConciergeClient::InitializeFake();
+    ash::SeneschalClient::InitializeFake();
 
-    fake_concierge_client_ = chromeos::FakeConciergeClient::Get();
+    fake_concierge_client_ = ash::FakeConciergeClient::Get();
   }
 
   ~CrostiniUtilTest() override {
-    chromeos::SeneschalClient::Shutdown();
-    chromeos::ConciergeClient::Shutdown();
-    chromeos::CiceroneClient::Shutdown();
+    ash::SeneschalClient::Shutdown();
+    ash::ConciergeClient::Shutdown();
+    ash::CiceroneClient::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
   }
 
@@ -94,7 +97,7 @@ class CrostiniUtilTest : public testing::Test {
   }
 
  protected:
-  chromeos::FakeConciergeClient* fake_concierge_client_;
+  ash::FakeConciergeClient* fake_concierge_client_;
 
   std::unique_ptr<base::RunLoop> run_loop_;
   std::unique_ptr<TestingProfile> profile_;
@@ -118,6 +121,18 @@ TEST_F(CrostiniUtilTest, ContainerIdEquality) {
   ASSERT_FALSE(container2 == container3);
 }
 
+TEST_F(CrostiniUtilTest, ContainerIdFromDictValue) {
+  base::Value dict(base::Value::Type::DICT);
+  dict.SetStringKey(prefs::kVmKey, "foo");
+  dict.SetStringKey(prefs::kContainerKey, "bar");
+  EXPECT_TRUE(ContainerId(dict) == ContainerId("foo", "bar"));
+}
+
+TEST_F(CrostiniUtilTest, ContainerIdFromNonDictValue) {
+  base::Value non_dict("not a dict value");
+  EXPECT_TRUE(ContainerId(non_dict) == ContainerId("", ""));
+}
+
 TEST_F(CrostiniUtilTest, LaunchCallbackRunsOnRestartError) {
   // Set Restart to fail.
   fake_concierge_client_->set_start_vm_response({});
@@ -133,4 +148,99 @@ TEST_F(CrostiniUtilTest, LaunchCallbackRunsOnRestartError) {
   run_loop_->Run();
 }
 
+TEST_F(CrostiniUtilTest, DuplicateContainerNamesInPrefsAreRemoved) {
+  ContainerId container1("test1", "test1");
+  base::Value::Dict dictionary1 = container1.ToDictValue();
+  dictionary1.Set(prefs::kContainerOsPrettyNameKey, "Test OS Name 1");
+  dictionary1.Set(prefs::kContainerOsVersionKey, 1);
+
+  ContainerId container2("test1", "test2");
+  base::Value::Dict dictionary2 = container2.ToDictValue();
+  dictionary2.Set(prefs::kContainerOsPrettyNameKey, "Test OS Name 2");
+  dictionary2.Set(prefs::kContainerOsVersionKey, 2);
+
+  ContainerId container3("test2", "test1");
+  base::Value::Dict dictionary3 = container3.ToDictValue();
+  dictionary3.Set(prefs::kContainerOsPrettyNameKey, "Test OS Name 3");
+  dictionary3.Set(prefs::kContainerOsVersionKey, 3);
+
+  base::Value::List containers;
+  containers.Append(dictionary1.Clone());
+  containers.Append(dictionary2.Clone());
+  containers.Append(dictionary1.Clone());
+  containers.Append(dictionary2.Clone());
+  containers.Append(dictionary3.Clone());
+
+  PrefService* prefs = profile_->GetPrefs();
+  prefs->SetList(prefs::kCrostiniContainers, std::move(containers));
+
+  RemoveDuplicateContainerEntries(prefs);
+
+  const base::Value::List& result =
+      prefs->Get(prefs::kCrostiniContainers)->GetList();
+
+  ASSERT_EQ(result.size(), 3);
+  EXPECT_EQ(result[0].GetDict(), dictionary1);
+  EXPECT_EQ(result[1].GetDict(), dictionary2);
+  EXPECT_EQ(result[2].GetDict(), dictionary3);
+}
+
+TEST_F(CrostiniUtilTest, ShouldStopVm) {
+  CrostiniManager* manager = CrostiniManager::GetForProfile(profile_.get());
+  ContainerId containera("apple", "banana");
+  ContainerId containerb("potato", "strawberry");
+  base::Value::List containers;
+  containers.Append(containera.ToDictValue().Clone());
+  containers.Append(containerb.ToDictValue().Clone());
+
+  manager->AddRunningVmForTesting("apple");
+  manager->AddRunningVmForTesting("potato");
+  manager->AddRunningContainerForTesting(
+      "apple", ContainerInfo("banana", "bo", "home", "1.2.3.4"));
+  manager->AddRunningContainerForTesting(
+      "potato", ContainerInfo("strawberry", "bo", "home", "1.2.3.4"));
+
+  ASSERT_TRUE(manager->IsVmRunning("apple"));
+  ASSERT_TRUE(manager->IsVmRunning("potato"));
+
+  profile_->GetPrefs()->SetList(prefs::kCrostiniContainers,
+                                std::move(containers));
+
+  EXPECT_TRUE(ShouldStopVm(profile_.get(), containera));
+}
+
+TEST_F(CrostiniUtilTest, ShouldNotStopVm) {
+  CrostiniManager* manager = CrostiniManager::GetForProfile(profile_.get());
+  ContainerId containera("apple", "banana");
+  ContainerId containerb("apple", "strawberry");
+  base::Value::List containers;
+  containers.Append(containera.ToDictValue().Clone());
+  containers.Append(containerb.ToDictValue().Clone());
+
+  manager->AddRunningVmForTesting("apple");
+  manager->AddRunningContainerForTesting(
+      "apple", ContainerInfo("banana", "bo", "home", "1.2.3.4"));
+  manager->AddRunningContainerForTesting(
+      "apple", ContainerInfo("strawberry", "bo", "home", "1.2.3.4"));
+
+  ASSERT_TRUE(manager->IsVmRunning("apple"));
+
+  profile_->GetPrefs()->SetList(prefs::kCrostiniContainers,
+                                std::move(containers));
+
+  EXPECT_FALSE(ShouldStopVm(profile_.get(), containera));
+}
+
+TEST_F(CrostiniUtilTest, GetContainers) {
+  auto pref = base::JSONReader::Read(R"([
+    {"vm_name": "vm1", "container_name": "c1"},
+    {"vm_name": "vm2", "container_name": "c2"},
+    {"vm_name": "vm3"}
+  ])");
+  ASSERT_TRUE(pref.has_value());
+  profile_->GetPrefs()->Set(prefs::kCrostiniContainers, std::move(*pref));
+  std::vector<ContainerId> expected = {ContainerId("vm1", "c1"),
+                                       ContainerId("vm2", "c2")};
+  EXPECT_EQ(GetContainers(profile_.get()), expected);
+}
 }  // namespace crostini

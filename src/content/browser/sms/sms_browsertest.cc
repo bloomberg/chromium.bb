@@ -5,6 +5,7 @@
 #include <memory>
 #include <string>
 
+#include "base/command_line.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "components/ukm/test_ukm_recorder.h"
@@ -21,6 +22,7 @@
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/content_mock_cert_verifier.h"
+#include "content/public/test/fenced_frame_test_util.h"
 #include "content/public/test/prerender_test_util.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test_utils_internal.h"
@@ -750,36 +752,6 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, SmsFetcherUAF) {
   navigate.Run();
 }
 
-IN_PROC_BROWSER_TEST_F(SmsBrowserTest, ReportWebOTPInUseCounter) {
-  GURL url = GetTestUrl(nullptr, "simple_page.html");
-  EXPECT_TRUE(NavigateToURL(shell(), url));
-
-  shell()->web_contents()->SetDelegate(&delegate_);
-
-  ExpectSmsPrompt();
-  auto provider = std::make_unique<MockSmsProvider>();
-  MockSmsProvider* mock_provider_ptr = provider.get();
-  BrowserMainLoop::GetInstance()->SetSmsProviderForTesting(std::move(provider));
-
-  EXPECT_CALL(*mock_provider_ptr, Retrieve(_, _)).WillOnce(Invoke([&]() {
-    mock_provider_ptr->NotifyReceive(OriginList{url::Origin::Create(url)},
-                                     "hello", UserConsent::kNotObtained);
-    ConfirmPrompt();
-  }));
-  base::HistogramTester histogram_tester;
-  std::string script = R"(
-    (async () => {
-      let cred = await navigator.credentials.get({otp: {transport: ["sms"]}});
-      return cred.code;
-    }) ();
-  )";
-  EXPECT_EQ("hello", EvalJs(shell(), script));
-
-  content::FetchHistogramsFromChildProcesses();
-  histogram_tester.ExpectBucketCount("Blink.UseCounter.Features",
-                                     blink::mojom::WebFeature::kWebOTP, 1);
-}
-
 IN_PROC_BROWSER_TEST_F(SmsBrowserTest, UpdateRenderFrameHostWithWebOTPUsage) {
   base::HistogramTester histogram_tester;
   GURL url = GetTestUrl(nullptr, "simple_page.html");
@@ -1285,7 +1257,9 @@ class MockSmsPrerenderingWebContentsDelegate : public WebContentsDelegate {
                     const std::string&,
                     base::OnceCallback<void()> on_confirm,
                     base::OnceCallback<void()> on_cancel));
-  bool IsPrerender2Supported() override { return true; }
+  bool IsPrerender2Supported(WebContents& web_contents) override {
+    return true;
+  }
 };
 
 class SmsPrerenderingBrowserTest : public SmsBrowserTest {
@@ -1353,6 +1327,54 @@ IN_PROC_BROWSER_TEST_F(SmsPrerenderingBrowserTest,
   // Activate the prerendered page.
   prerender_helper()->NavigatePrimaryPage(prerender_url);
   run_loop.Run();
+}
+
+class SmsFencedFrameBrowserTest : public SmsBrowserTest {
+ public:
+  SmsFencedFrameBrowserTest() = default;
+  ~SmsFencedFrameBrowserTest() override = default;
+
+  void SetUpOnMainThread() override {
+    ASSERT_TRUE(embedded_test_server()->Start());
+    SmsBrowserTest::SetUpOnMainThread();
+  }
+
+  WebContents* web_contents() { return shell()->web_contents(); }
+
+  content::test::FencedFrameTestHelper& fenced_frame_test_helper() {
+    return fenced_frame_helper_;
+  }
+
+ private:
+  content::test::FencedFrameTestHelper fenced_frame_helper_;
+};
+
+// Tests that FencedFrame doesn't record any Sms metrics.
+IN_PROC_BROWSER_TEST_F(SmsFencedFrameBrowserTest,
+                       DoNotRecordSmsMetricsOnFencedFrame) {
+  GURL initial_url(https_server_.GetURL("/simple_page.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), initial_url));
+
+  auto provider = std::make_unique<MockSmsProvider>();
+  MockSmsProvider* mock_provider_ptr = provider.get();
+  BrowserMainLoop::GetInstance()->SetSmsProviderForTesting(std::move(provider));
+  shell()->web_contents()->SetDelegate(&delegate_);
+
+  // Retrieve method should not be called by a fenced frame.
+  EXPECT_CALL(*mock_provider_ptr, Retrieve(_, _)).Times(0);
+
+  // Create a fenced frame and load a webotp page.
+  GURL fenced_frame_url(
+      https_server_.GetURL("a.test", "/fenced_frames/page_with_webotp.html"));
+  RenderFrameHost* fenced_frame_host =
+      fenced_frame_test_helper().CreateFencedFrame(
+          web_contents()->GetMainFrame(), fenced_frame_url);
+  ASSERT_TRUE(fenced_frame_host);
+
+  // Check that a WebOTPService object is not created and do not record any
+  // metrics on the fenced frame.
+  EXPECT_FALSE(fenced_frame_host->DocumentUsedWebOTP());
+  ExpectNoOutcomeUKM();
 }
 
 }  // namespace content

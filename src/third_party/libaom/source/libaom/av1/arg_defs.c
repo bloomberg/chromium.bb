@@ -50,6 +50,12 @@ static const struct arg_enum_list tuning_enum[] = {
   { NULL, 0 }
 };
 
+static const struct arg_enum_list dist_metric_enum[] = {
+  { "psnr", AOM_DIST_METRIC_PSNR },
+  { "qm-psnr", AOM_DIST_METRIC_QM_PSNR },
+  { NULL, 0 }
+};
+
 #if CONFIG_AV1_ENCODER
 static const struct arg_enum_list timing_info_enum[] = {
   { "unspecified", AOM_TIMING_UNSPECIFIED },
@@ -140,6 +146,7 @@ const av1_codec_arg_definitions_t g_av1_codec_arg_defs = {
   .debugmode =
       ARG_DEF("D", "debug", 0, "Debug mode (makes output deterministic)"),
   .outputfile = ARG_DEF("o", "output", 1, "Output filename"),
+  .use_nv12 = ARG_DEF(NULL, "nv12", 0, "Input file is NV12"),
   .use_yv12 = ARG_DEF(NULL, "yv12", 0, "Input file is YV12"),
   .use_i420 = ARG_DEF(NULL, "i420", 0, "Input file is I420 (default)"),
   .use_i422 = ARG_DEF(NULL, "i422", 0, "Input file is I422"),
@@ -284,17 +291,25 @@ const av1_codec_arg_definitions_t g_av1_codec_arg_defs = {
       ARG_DEF(NULL, "arnr-strength", 1, "AltRef filter strength (0..6)"),
   .tune_metric = ARG_DEF_ENUM(NULL, "tune", 1, "Distortion metric tuned with",
                               tuning_enum),
+  .dist_metric = ARG_DEF_ENUM(
+      NULL, "dist-metric", 1,
+      "Distortion metric to use for in-block optimization", dist_metric_enum),
   .cq_level =
       ARG_DEF(NULL, "cq-level", 1, "Constant/Constrained Quality level"),
   .max_intra_rate_pct =
       ARG_DEF(NULL, "max-intra-rate", 1, "Max I-frame bitrate (pct)"),
 #if CONFIG_AV1_ENCODER
-  .cpu_used_av1 =
-      ARG_DEF(NULL, "cpu-used", 1,
-              "Speed setting (0..6 in good mode, 6..9 in realtime mode)"),
+  .cpu_used_av1 = ARG_DEF(NULL, "cpu-used", 1,
+                          "Speed setting (0..6 in good mode, 5..10 in realtime "
+                          "mode, 0..9 in all intra mode)"),
   .rowmtarg =
       ARG_DEF(NULL, "row-mt", 1,
               "Enable row based multi-threading (0: off, 1: on (default))"),
+#if CONFIG_FRAME_PARALLEL_ENCODE
+  .fpmtarg = ARG_DEF(
+      NULL, "fp-mt", 1,
+      "Enable frame parallel multi-threading (0: off (default), 1: on)"),
+#endif
   .tile_cols =
       ARG_DEF(NULL, "tile-columns", 1, "Number of tile columns to use, log2"),
   .tile_rows =
@@ -658,5 +673,9 @@ const av1_codec_arg_definitions_t g_av1_codec_arg_defs = {
       ARG_DEF(NULL, "two-pass-height", 1, "The height of two-pass-input."),
   .second_pass_log =
       ARG_DEF("spf", "second-pass-log", 1, "Log file from second pass."),
+  .strict_level_conformance =
+      ARG_DEF(NULL, "strict-level-conformance", 1,
+              "When set to 1, exit the encoder when it fails to encode "
+              "to a given target level"),
 #endif  // CONFIG_AV1_ENCODER
 };

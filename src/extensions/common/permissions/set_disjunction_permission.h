@@ -16,7 +16,6 @@
 #include "base/ranges/algorithm.h"
 #include "base/stl_util.h"
 #include "base/values.h"
-#include "extensions/common/extension_messages.h"
 #include "extensions/common/permissions/api_permission.h"
 
 namespace extensions {
@@ -38,11 +37,8 @@ class SetDisjunctionPermission : public APIPermission {
 
   // APIPermission overrides
   bool Check(const APIPermission::CheckParam* param) const override {
-    for (typename std::set<PermissionDataType>::const_iterator i =
-             data_set_.begin();
-         i != data_set_.end();
-         ++i) {
-      if (i->Check(param))
+    for (const auto& item : data_set_) {
+      if (item.Check(param))
         return true;
     }
     return false;
@@ -105,21 +101,19 @@ class SetDisjunctionPermission : public APIPermission {
       std::string* error,
       std::vector<std::string>* unhandled_permissions) override {
     data_set_.clear();
-    const base::ListValue* list = NULL;
 
     if (!value) {
       // treat null as an empty list.
       return true;
     }
 
-    if (!value->GetAsList(&list)) {
+    if (!value->is_list()) {
       if (error)
         *error = "Cannot parse the permission list. It's not a list.";
       return false;
     }
 
-    for (size_t i = 0; i < list->GetList().size(); ++i) {
-      const base::Value& item_value = list->GetList()[i];
+    for (const base::Value& item_value : value->GetList()) {
       PermissionDataType data;
       if (data.FromValue(&item_value)) {
         data_set_.insert(data);
@@ -141,13 +135,11 @@ class SetDisjunctionPermission : public APIPermission {
   }
 
   std::unique_ptr<base::Value> ToValue() const override {
-    base::ListValue* list = new base::ListValue();
-    typename std::set<PermissionDataType>::const_iterator i;
-    for (i = data_set_.begin(); i != data_set_.end(); ++i) {
-      std::unique_ptr<base::Value> item_value(i->ToValue());
-      list->Append(std::move(item_value));
+    base::Value::List list;
+    for (const auto& item : data_set_) {
+      list.Append(base::Value::FromUniquePtrValue(item.ToValue()));
     }
-    return std::unique_ptr<base::Value>(list);
+    return std::make_unique<base::Value>(std::move(list));
   }
 
  protected:

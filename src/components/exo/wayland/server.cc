@@ -13,6 +13,7 @@
 #include <input-timestamps-unstable-v1-server-protocol.h>
 #include <keyboard-configuration-unstable-v1-server-protocol.h>
 #include <keyboard-extension-unstable-v1-server-protocol.h>
+#include <keyboard-shortcuts-inhibit-unstable-v1-server-protocol.h>
 #include <linux-explicit-synchronization-unstable-v1-server-protocol.h>
 #include <notification-shell-unstable-v1-server-protocol.h>
 #include <overlay-prioritizer-server-protocol.h>
@@ -38,6 +39,7 @@
 #include <xdg-shell-server-protocol.h>
 #include <xdg-shell-unstable-v6-server-protocol.h>
 
+#include <linux-dmabuf-unstable-v1-server-protocol.h>
 #include <memory>
 #include <string>
 #include <utility>
@@ -51,6 +53,7 @@
 #include "build/chromeos_buildflags.h"
 #include "components/exo/buildflags.h"
 #include "components/exo/capabilities.h"
+#include "components/exo/common_utils.h"
 #include "components/exo/display.h"
 #include "components/exo/wayland/overlay_prioritizer.h"
 #include "components/exo/wayland/serial_tracker.h"
@@ -71,14 +74,17 @@
 #include "components/exo/wayland/zcr_secure_output.h"
 #include "components/exo/wayland/zcr_stylus.h"
 #include "components/exo/wayland/zcr_vsync_feedback.h"
+#include "components/exo/wayland/zwp_linux_dmabuf.h"
 #include "components/exo/wayland/zwp_linux_explicit_synchronization.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/ozone/public/ozone_platform.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include <idle-inhibit-unstable-v1-server-protocol.h>
 #include "ash/constants/ash_features.h"
 #include "base/system/sys_info.h"
+#include "components/exo/wayland/weston_test.h"
 #include "components/exo/wayland/wl_shell.h"
 #include "components/exo/wayland/xdg_shell.h"
 #include "components/exo/wayland/zcr_cursor_shapes.h"
@@ -93,6 +99,7 @@
 #include "components/exo/wayland/zcr_touchpad_haptics.h"
 #include "components/exo/wayland/zwp_idle_inhibit_manager.h"
 #include "components/exo/wayland/zwp_input_timestamps_manager.h"
+#include "components/exo/wayland/zwp_keyboard_shortcuts_inhibit_manager.h"
 #include "components/exo/wayland/zwp_pointer_constraints.h"
 #include "components/exo/wayland/zwp_pointer_gestures.h"
 #include "components/exo/wayland/zwp_relative_pointer_manager.h"
@@ -101,22 +108,11 @@
 #include "components/exo/wayland/zxdg_output_manager.h"
 #include "components/exo/wayland/zxdg_shell.h"
 
-#if BUILDFLAG(ENABLE_WESTON_TEST)
-#include <weston-test-server-protocol.h>
-#include "components/exo/wayland/weston_test.h"
-#endif
-
 #if BUILDFLAG(ENABLE_COLOR_MANAGER)
 #include <chrome-color-management-server-protocol.h>
 #include "components/exo/wayland/zcr_color_manager.h"
 #endif
 
-#endif
-
-#if defined(USE_OZONE)
-#include <linux-dmabuf-unstable-v1-server-protocol.h>
-#include "components/exo/wayland/zwp_linux_dmabuf.h"
-#include "ui/ozone/public/ozone_platform.h"
 #endif
 
 #if defined(USE_FULLSCREEN_SHELL)
@@ -146,18 +142,6 @@ const char kWaylandSocketGroup[] = "wayland";
 // Directory name where all custom wayland sockets will live.
 constexpr base::FilePath::CharType kCustomServerDir[] =
     FILE_PATH_LITERAL("wayland");
-
-bool IsDrmAtomicAvailable() {
-#if defined(USE_OZONE)
-  auto& host_properties =
-      ui::OzonePlatform::GetInstance()->GetPlatformRuntimeProperties();
-  return host_properties.supports_overlays;
-#else
-  LOG(WARNING) << "Ozone disabled, cannot determine whether DrmAtomic is "
-                  "present. Assuming it is not";
-  return false;
-#endif
-}
 
 void wayland_log(const char* fmt, va_list argp) {
   LOG(WARNING) << "libwayland: " << base::StringPrintV(fmt, argp);
@@ -291,10 +275,8 @@ void Server::Initialize() {
   wl_global_create(wl_display_.get(), &wl_compositor_interface,
                    kWlCompositorVersion, this, bind_compositor);
   wl_global_create(wl_display_.get(), &wl_shm_interface, 1, display_, bind_shm);
-#if defined(USE_OZONE)
   wl_global_create(wl_display_.get(), &zwp_linux_dmabuf_v1_interface,
                    kZwpLinuxDmabufVersion, display_, bind_linux_dmabuf);
-#endif
   wl_global_create(wl_display_.get(), &wl_subcompositor_interface, 1, display_,
                    bind_subcompositor);
   for (const auto& display : display::Screen::GetScreen()->GetAllDisplays())
@@ -343,7 +325,7 @@ void Server::Initialize() {
                    bind_shell);
   wl_global_create(wl_display_.get(), &zcr_cursor_shapes_v1_interface, 1,
                    display_, bind_cursor_shapes);
-  wl_global_create(wl_display_.get(), &zcr_gaming_input_v2_interface, 2,
+  wl_global_create(wl_display_.get(), &zcr_gaming_input_v2_interface, 3,
                    display_, bind_gaming_input);
   wl_global_create(wl_display_.get(), &zcr_keyboard_configuration_v1_interface,
                    zcr_keyboard_configuration_v1_interface.version, display_,
@@ -375,8 +357,8 @@ void Server::Initialize() {
                    &zwp_relative_pointer_manager_v1_interface, 1, display_,
                    bind_relative_pointer_manager);
 #if BUILDFLAG(ENABLE_COLOR_MANAGER)
-  wl_global_create(wl_display_.get(), &zcr_color_manager_v1_interface, 1,
-                   display_, bind_zcr_color_manager);
+  wl_global_create(wl_display_.get(), &zcr_color_manager_v1_interface, 1, this,
+                   bind_zcr_color_manager);
 #endif
   wl_global_create(wl_display_.get(), &zxdg_decoration_manager_v1_interface, 1,
                    display_, bind_zxdg_decoration_manager);
@@ -384,22 +366,19 @@ void Server::Initialize() {
                    display_, bind_extended_drag);
   wl_global_create(wl_display_.get(), &zxdg_output_manager_v1_interface, 3,
                    display_, bind_zxdg_output_manager);
-  if (ash::features::IsIdleInhibitEnabled()) {
-    wl_global_create(wl_display_.get(), &zwp_idle_inhibit_manager_v1_interface,
-                     1, display_, bind_zwp_idle_inhibit_manager);
-  }
+  wl_global_create(wl_display_.get(), &zwp_idle_inhibit_manager_v1_interface, 1,
+                   display_, bind_zwp_idle_inhibit_manager);
 
-#if BUILDFLAG(ENABLE_WESTON_TEST)
-  weston_test_data_ = std::make_unique<WestonTestState>();
-  wl_global_create(wl_display_.get(), &weston_test_interface,
-                   kWestonTestVersion, weston_test_data_.get(),
-                   bind_weston_test);
-#endif
+  weston_test_holder_ = std::make_unique<WestonTest>(this);
 
   zcr_keyboard_extension_data_ =
       std::make_unique<WaylandKeyboardExtension>(serial_tracker_.get());
   wl_global_create(wl_display_.get(), &zcr_keyboard_extension_v1_interface, 2,
                    zcr_keyboard_extension_data_.get(), bind_keyboard_extension);
+
+  wl_global_create(wl_display_.get(),
+                   &zwp_keyboard_shortcuts_inhibit_manager_v1_interface, 1,
+                   display_, bind_keyboard_shortcuts_inhibit_manager);
 
   zwp_text_manager_data_ = std::make_unique<WaylandTextInputManager>(
       display_->seat()->xkb_tracker(), serial_tracker_.get());
@@ -408,7 +387,7 @@ void Server::Initialize() {
 
   zcr_text_input_extension_data_ =
       std::make_unique<WaylandTextInputExtension>();
-  wl_global_create(wl_display_.get(), &zcr_text_input_extension_v1_interface, 1,
+  wl_global_create(wl_display_.get(), &zcr_text_input_extension_v1_interface, 2,
                    zcr_text_input_extension_data_.get(),
                    bind_text_input_extension);
 

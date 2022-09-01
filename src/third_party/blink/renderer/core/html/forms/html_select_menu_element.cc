@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/dom/synchronous_mutation_observer.h"
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/html/forms/form_controller.h"
 #include "third_party/blink/renderer/core/html/forms/form_data.h"
@@ -18,9 +19,11 @@
 #include "third_party/blink/renderer/core/html/forms/html_option_element.h"
 #include "third_party/blink/renderer/core/html/forms/select_menu_part_traversal.h"
 #include "third_party/blink/renderer/core/html/html_div_element.h"
-#include "third_party/blink/renderer/core/html/html_popup_element.h"
 #include "third_party/blink/renderer/core/html/html_slot_element.h"
+#include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/page/chrome_client.h"
+#include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/keyboard_codes.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
@@ -40,7 +43,6 @@ class HTMLSelectMenuElement::SelectMutationCallback
                         const QualifiedName& name,
                         const AtomicString& old_value,
                         const AtomicString& new_value) final;
-  void DidMoveTreeToNewDocument(const Node& root) final;
 
   void Trace(Visitor* visitor) const override;
 
@@ -76,18 +78,26 @@ void HTMLSelectMenuElement::SelectMutationCallback::DidChangeChildren(
     return;
 
   if (change.type == ChildrenChangeType::kElementInserted) {
-    if (auto* element = DynamicTo<Element>(change.sibling_changed)) {
-      const AtomicString& part =
-          element->getAttribute(html_names::kBehaviorAttr);
-      PartInserted(part, element);
-      SlotChanged(element->SlotName());
+    auto* root_node = change.sibling_changed;
+    for (auto* node = root_node; node != nullptr;
+         node = SelectMenuPartTraversal::Next(*node, root_node)) {
+      if (auto* element = DynamicTo<Element>(node)) {
+        const AtomicString& part =
+            element->getAttribute(html_names::kBehaviorAttr);
+        PartInserted(part, element);
+        SlotChanged(element->SlotName());
+      }
     }
   } else if (change.type == ChildrenChangeType::kElementRemoved) {
-    if (auto* element = DynamicTo<Element>(change.sibling_changed)) {
-      const AtomicString& part =
-          element->getAttribute(html_names::kBehaviorAttr);
-      PartRemoved(part, element);
-      SlotChanged(element->SlotName());
+    auto* root_node = change.sibling_changed;
+    for (auto* node = root_node; node != nullptr;
+         node = SelectMenuPartTraversal::Next(*node, root_node)) {
+      if (auto* element = DynamicTo<Element>(node)) {
+        const AtomicString& part =
+            element->getAttribute(html_names::kBehaviorAttr);
+        PartRemoved(part, element);
+        SlotChanged(element->SlotName());
+      }
     }
   } else if (change.type == ChildrenChangeType::kAllChildrenRemoved) {
     select_->EnsureButtonPartIsValid();
@@ -121,13 +131,13 @@ void HTMLSelectMenuElement::SelectMutationCallback::AttributeChanged(
       SlotChanged(old_value);
       SlotChanged(new_value);
     }
+  } else if (name == html_names::kPopupAttr) {
+    // We unconditionally update the listbox part here, because this popup
+    // attribute change could either be on the existing listbox part, or on
+    // an earlier child of the <selectmenu> which makes FirstValidListboxPart()
+    // return a different element.
+    select_->UpdateListboxPart();
   }
-}
-
-void HTMLSelectMenuElement::SelectMutationCallback::DidMoveTreeToNewDocument(
-    const Node& root) {
-  if (root == select_)
-    SetDocument(&select_->GetDocument());
 }
 
 template <typename StringType>
@@ -174,7 +184,8 @@ void HTMLSelectMenuElement::SelectMutationCallback::SlotChanged(
 HTMLSelectMenuElement::HTMLSelectMenuElement(Document& document)
     : HTMLFormControlElementWithState(html_names::kSelectmenuTag, document) {
   DCHECK(RuntimeEnabledFeatures::HTMLSelectMenuElementEnabled());
-  DCHECK(RuntimeEnabledFeatures::HTMLPopupElementEnabled());
+  DCHECK(RuntimeEnabledFeatures::RuntimeEnabledFeatures::
+             HTMLPopupAttributeEnabled());
   UseCounter::Count(document, WebFeature::kSelectMenuElement);
 
   EnsureUserAgentShadowRoot();
@@ -215,27 +226,13 @@ void HTMLSelectMenuElement::DidAddUserAgentShadowRoot(ShadowRoot& root) {
 
   Document& document = GetDocument();
 
-  // TODO(crbug.com/1121840) Where to put the styles for the default elements in
-  // the shadow tree? For now, just set the style attributes with raw inline
-  // strings, but we should be able to do something better than this. Probably
-  // the solution is to have them in the UA styles (html.css).
-
   button_slot_ = MakeGarbageCollected<HTMLSlotElement>(document);
   button_slot_->setAttribute(html_names::kNameAttr, kButtonPartName);
 
   button_part_ = MakeGarbageCollected<HTMLButtonElement>(document);
   button_part_->setAttribute(html_names::kPartAttr, kButtonPartName);
   button_part_->setAttribute(html_names::kBehaviorAttr, kButtonPartName);
-  button_part_->setAttribute(html_names::kStyleAttr,
-                             R"CSS(
-      display: inline-flex;
-      align-items: center;
-      background-color: #ffffff;
-      padding: 0 0 0 3px;
-      border: 1px solid #767676;
-      border-radius: 2px;
-      cursor: default;
-  )CSS");
+  button_part_->SetShadowPseudoId(AtomicString("-internal-selectmenu-button"));
   button_part_listener_ =
       MakeGarbageCollected<HTMLSelectMenuElement::ButtonPartEventListener>(
           this);
@@ -251,42 +248,19 @@ void HTMLSelectMenuElement::DidAddUserAgentShadowRoot(ShadowRoot& root) {
                                      kSelectedValuePartName);
 
   auto* button_icon = MakeGarbageCollected<HTMLDivElement>(document);
-  button_icon->setAttribute(html_names::kStyleAttr,
-                            R"CSS(
-    background-image: url(
-      'data:image/svg+xml,\
-      <svg width="20" height="14" viewBox="0 0 20 16" fill="none" xmlns="http://www.w3.org/2000/svg">\
-        <path d="M4 6 L10 12 L 16 6" stroke="WindowText" stroke-width="3" stroke-linejoin="round"/>\
-      </svg>');
-    background-origin: content-box;
-    background-repeat: no-repeat;
-    background-size: contain;
-    height: 1.0em;
-    margin-inline-start: 4px;
-    opacity: 1;
-    outline: none;
-    padding-bottom: 2px;
-    padding-inline-start: 3px;
-    padding-inline-end: 3px;
-    padding-top: 2px;
-    width: 1.2em;
-    )CSS");
+  button_icon->SetShadowPseudoId(
+      AtomicString("-internal-selectmenu-button-icon"));
 
   listbox_slot_ = MakeGarbageCollected<HTMLSlotElement>(document);
   listbox_slot_->setAttribute(html_names::kNameAttr, kListboxPartName);
 
-  SetListboxPart(MakeGarbageCollected<HTMLPopupElement>(document));
-  listbox_part_->setAttribute(html_names::kPartAttr, kListboxPartName);
-  listbox_part_->setAttribute(html_names::kBehaviorAttr, kListboxPartName);
-  listbox_part_->setAttribute(html_names::kStyleAttr,
-                              R"CSS(
-        border: 1px solid rgba(0, 0, 0, 0.15);
-        border-radius: 4px;
-        box-shadow: 0px 12.8px 28.8px rgba(0, 0, 0, 0.13), 0px 0px 9.2px rgba(0, 0, 0, 0.11);
-        box-sizing: border-box;
-        overflow: auto;
-        padding: 4px;
-  )CSS");
+  Element* new_popup;
+  new_popup = MakeGarbageCollected<HTMLDivElement>(document);
+  new_popup->setAttribute(html_names::kPopupAttr, kPopupTypeValueAuto);
+  new_popup->setAttribute(html_names::kPartAttr, kListboxPartName);
+  new_popup->setAttribute(html_names::kBehaviorAttr, kListboxPartName);
+  new_popup->SetShadowPseudoId(AtomicString("-internal-selectmenu-listbox"));
+  SetListboxPart(new_popup);
 
   auto* options_slot = MakeGarbageCollected<HTMLSlotElement>(document);
 
@@ -306,11 +280,41 @@ void HTMLSelectMenuElement::DidAddUserAgentShadowRoot(ShadowRoot& root) {
           this);
 }
 
+void HTMLSelectMenuElement::DidMoveToNewDocument(Document& old_document) {
+  HTMLFormControlElementWithState::DidMoveToNewDocument(old_document);
+  select_mutation_callback_->SetDocument(&GetDocument());
+
+  // Since we're observing the lifecycle updates, ensure that we listen to the
+  // right document's view.
+  if (queued_check_for_missing_parts_) {
+    if (old_document.View())
+      old_document.View()->UnregisterFromLifecycleNotifications(this);
+
+    if (GetDocument().View())
+      GetDocument().View()->RegisterForLifecycleNotifications(this);
+    else
+      queued_check_for_missing_parts_ = false;
+  }
+}
+
 String HTMLSelectMenuElement::value() const {
-  if (HTMLOptionElement* option = SelectedOption()) {
+  if (HTMLOptionElement* option = selectedOption()) {
     return option->value();
   }
   return "";
+}
+
+void HTMLSelectMenuElement::setValueForBinding(const String& value) {
+  if (GetAutofillState() != WebAutofillState::kAutofilled) {
+    setValue(value);
+  } else {
+    String old_value = this->value();
+    setValue(value);
+    if (Page* page = GetDocument().GetPage()) {
+      page->GetChromeClient().JavaScriptChangedAutofilledValue(*this,
+                                                               old_value);
+    }
+  }
 }
 
 void HTMLSelectMenuElement::setValue(const String& value, bool send_events) {
@@ -330,31 +334,39 @@ bool HTMLSelectMenuElement::open() const {
   // a replacement listbox part. Instead of null checks like this,
   // we should consider refusing to render the control at all if
   // either of the key parts (button or listbox) are missing.
-  return listbox_part_ != nullptr && listbox_part_->open();
+  if (!listbox_part_)
+    return false;
+  return listbox_part_->HasValidPopupAttribute() && listbox_part_->popupOpen();
 }
 
 void HTMLSelectMenuElement::OpenListbox() {
   if (listbox_part_ && !open()) {
     listbox_part_->SetNeedsRepositioningForSelectMenu(true);
-    listbox_part_->show();
-    if (SelectedOption()) {
-      SelectedOption()->focus();
+    listbox_part_->showPopup(ASSERT_NO_EXCEPTION);
+    if (selectedOption()) {
+      selectedOption()->Focus();
     }
+    selected_option_when_listbox_opened_ = selectedOption();
   }
 }
 
 void HTMLSelectMenuElement::CloseListbox() {
   if (listbox_part_ && open()) {
-    if (button_part_) {
-      button_part_->focus();
+    if (listbox_part_->HasValidPopupAttribute()) {
+      // We will handle focus directly.
+      listbox_part_->hidePopupInternal(HidePopupFocusBehavior::kNone);
     }
-    listbox_part_->hide();
+    if (button_part_) {
+      button_part_->Focus();
+    }
+    if (selectedOption() != selected_option_when_listbox_opened_)
+      DispatchChangeEvent();
   }
 }
 
-void HTMLSelectMenuElement::SetListboxPart(HTMLPopupElement* new_listbox_part) {
+bool HTMLSelectMenuElement::SetListboxPart(Element* new_listbox_part) {
   if (listbox_part_ == new_listbox_part)
-    return;
+    return false;
 
   if (listbox_part_) {
     listbox_part_->SetOwnerSelectMenuElement(nullptr);
@@ -364,15 +376,11 @@ void HTMLSelectMenuElement::SetListboxPart(HTMLPopupElement* new_listbox_part) {
   if (new_listbox_part) {
     new_listbox_part->SetOwnerSelectMenuElement(this);
   } else {
-    GetDocument().AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
-        mojom::blink::ConsoleMessageSource::kRendering,
-        mojom::blink::ConsoleMessageLevel::kWarning,
-        "<selectmenu>'s default listbox was removed by an element labeled "
-        "slot=\"listbox\", and a new one was not provided. This <selectmenu> "
-        "will not be fully functional."));
+    QueueCheckForMissingParts();
   }
 
   listbox_part_ = new_listbox_part;
+  return true;
 }
 
 bool HTMLSelectMenuElement::IsValidButtonPart(const Node* node,
@@ -406,14 +414,15 @@ bool HTMLSelectMenuElement::IsValidListboxPart(const Node* node,
     return false;
   }
 
-  if (!IsA<HTMLPopupElement>(element)) {
+  if (!element->HasValidPopupAttribute()) {
     if (show_warning) {
       GetDocument().AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
           mojom::blink::ConsoleMessageSource::kRendering,
           mojom::blink::ConsoleMessageLevel::kWarning,
-          "Found non-<popup> element labeled as listbox under <selectmenu>, "
-          "but only a <popup> can be used for the <selectmenu>'s listbox "
-          "part. This <selectmenu> will not be fully functional."));
+          "Found non-popup element labeled as listbox under "
+          "<selectmenu>, which is not allowed. The <selectmenu>'s "
+          "listbox element must have a valid value set for the 'popup' "
+          "attribute. This <selectmenu> will not be fully functional."));
     }
     return false;
   }
@@ -485,12 +494,7 @@ void HTMLSelectMenuElement::SetButtonPart(Element* new_button_part) {
                                       button_part_listener_,
                                       /*use_capture=*/false);
   } else {
-    GetDocument().AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
-        mojom::blink::ConsoleMessageSource::kRendering,
-        mojom::blink::ConsoleMessageLevel::kWarning,
-        "<selectmenu>'s default button was removed by an element labeled "
-        "slot=\"button\", and a new one was not provided. This <selectmenu> "
-        "will not be fully functional."));
+    QueueCheckForMissingParts();
   }
 
   button_part_ = new_button_part;
@@ -580,7 +584,6 @@ void HTMLSelectMenuElement::ListboxPartInserted(Element* new_listbox_part) {
   if (!IsValidListboxPart(new_listbox_part, /*show_warning=*/true)) {
     return;
   }
-
   UpdateListboxPart();
 }
 
@@ -588,18 +591,12 @@ void HTMLSelectMenuElement::ListboxPartRemoved(Element* listbox_part) {
   if (listbox_part_ != listbox_part) {
     return;
   }
-
   UpdateListboxPart();
 }
 
 void HTMLSelectMenuElement::UpdateListboxPart() {
-  auto* new_listbox_part = DynamicTo<HTMLPopupElement>(FirstValidListboxPart());
-  if (listbox_part_ == new_listbox_part) {
+  if (!SetListboxPart(FirstValidListboxPart()))
     return;
-  }
-
-  SetListboxPart(new_listbox_part);
-
   ResetOptionParts();
 }
 
@@ -621,6 +618,13 @@ void HTMLSelectMenuElement::EnsureListboxPartIsValid() {
   }
 }
 
+void HTMLSelectMenuElement::QueueCheckForMissingParts() {
+  if (!queued_check_for_missing_parts_ && GetDocument().View()) {
+    queued_check_for_missing_parts_ = true;
+    GetDocument().View()->RegisterForLifecycleNotifications(this);
+  }
+}
+
 void HTMLSelectMenuElement::ResetOptionParts() {
   // Remove part status from all current option parts
   while (!option_parts_.IsEmpty()) {
@@ -634,6 +638,25 @@ void HTMLSelectMenuElement::ResetOptionParts() {
       OptionPartInserted(DynamicTo<HTMLOptionElement>(node));
     }
   }
+}
+
+void HTMLSelectMenuElement::DispatchInputAndChangeEventsIfNeeded() {
+  DispatchInputEvent();
+  if (!open()) {
+    // Only fire change if the listbox is already closed, because if it's open
+    // we'll  fire change later when the listbox closes.
+    DispatchChangeEvent();
+  }
+}
+
+void HTMLSelectMenuElement::DispatchInputEvent() {
+  Event* input_event = Event::CreateBubble(event_type_names::kInput);
+  input_event->SetComposed(true);
+  DispatchScopedEvent(*input_event);
+}
+
+void HTMLSelectMenuElement::DispatchChangeEvent() {
+  DispatchScopedEvent(*Event::CreateBubble(event_type_names::kChange));
 }
 
 void HTMLSelectMenuElement::OptionPartInserted(
@@ -675,12 +698,7 @@ void HTMLSelectMenuElement::OptionPartRemoved(HTMLOptionElement* option_part) {
   option_parts_.erase(option_part);
 
   if (selected_option_ == option_part) {
-    // TODO(crbug.com/1121840) We should match the behavior from
-    // https://html.spec.whatwg.org/C/#ask-for-a-reset
-    // If the currently selected option was removed change the
-    // selection to the first option part, if there is one.
-    auto* first_option_part = FirstOptionPart();
-    SetSelectedOption(first_option_part);
+    ResetToDefaultSelection();
   }
   SetNeedsValidityCheck();
 }
@@ -705,17 +723,41 @@ void HTMLSelectMenuElement::OptionSelectionStateChanged(
   DCHECK(option_parts_.Contains(option));
   if (option_is_selected) {
     SetSelectedOption(option);
-  } else if (SelectedOption() == option) {
-    // TODO(crbug.com/1121840) We should match the behavior from
-    // https://html.spec.whatwg.org/C/#ask-for-a-reset
-    // If the currently selected option was removed change the
-    // selection to the first option part, if there is one.
-    auto* first_option_part = FirstOptionPart();
-    SetSelectedOption(first_option_part);
+  } else if (selectedOption() == option) {
+    ResetToDefaultSelection();
   }
 }
 
-HTMLOptionElement* HTMLSelectMenuElement::SelectedOption() const {
+void HTMLSelectMenuElement::DidFinishLifecycleUpdate(
+    const LocalFrameView& local_frame_view) {
+  Document* document = local_frame_view.GetFrame().GetDocument();
+  if (document->Lifecycle().GetState() <
+      DocumentLifecycle::kAfterPerformLayout) {
+    return;
+  }
+
+  DCHECK(queued_check_for_missing_parts_);
+  queued_check_for_missing_parts_ = false;
+  document->View()->UnregisterFromLifecycleNotifications(this);
+
+  if (!button_part_) {
+    GetDocument().AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+        mojom::blink::ConsoleMessageSource::kRendering,
+        mojom::blink::ConsoleMessageLevel::kWarning,
+        "A <selectmenu>'s default button was removed and a new one was not "
+        "provided. This <selectmenu> will not be fully functional."));
+  }
+
+  if (!listbox_part_) {
+    GetDocument().AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+        mojom::blink::ConsoleMessageSource::kRendering,
+        mojom::blink::ConsoleMessageLevel::kWarning,
+        "A <selectmenu>'s default listbox was removed and a new one was not "
+        "provided. This <selectmenu> will not be fully functional."));
+  }
+}
+
+HTMLOptionElement* HTMLSelectMenuElement::selectedOption() const {
   DCHECK(!selected_option_ ||
          IsValidOptionPart(selected_option_, /*show_warning=*/false));
   return selected_option_;
@@ -757,24 +799,30 @@ void HTMLSelectMenuElement::OptionElementValueChanged(
 }
 
 void HTMLSelectMenuElement::SelectNextOption() {
-  for (Node* node = SelectMenuPartTraversal::Next(*SelectedOption(), this);
+  for (Node* node = SelectMenuPartTraversal::Next(*selectedOption(), this);
        node; node = SelectMenuPartTraversal::Next(*node, this)) {
     if (IsValidOptionPart(node, /*show_warning=*/false)) {
       auto* element = DynamicTo<HTMLOptionElement>(node);
+      if (element->IsDisabledFormControl())
+        continue;
       SetSelectedOption(element);
-      element->focus();
+      element->Focus();
+      DispatchInputAndChangeEventsIfNeeded();
       return;
     }
   }
 }
 
 void HTMLSelectMenuElement::SelectPreviousOption() {
-  for (Node* node = SelectMenuPartTraversal::Previous(*SelectedOption(), this);
+  for (Node* node = SelectMenuPartTraversal::Previous(*selectedOption(), this);
        node; node = SelectMenuPartTraversal::Previous(*node, this)) {
     if (IsValidOptionPart(node, /*show_warning=*/false)) {
       auto* element = DynamicTo<HTMLOptionElement>(node);
+      if (element->IsDisabledFormControl())
+        continue;
       SetSelectedOption(element);
-      element->focus();
+      element->Focus();
+      DispatchInputAndChangeEventsIfNeeded();
       return;
     }
   }
@@ -797,7 +845,8 @@ void HTMLSelectMenuElement::ButtonPartEventListener::Invoke(ExecutionContext*,
     return;
 
   if (event->type() == event_type_names::kClick &&
-      !select_menu_element_->open()) {
+      !select_menu_element_->open() &&
+      !select_menu_element_->IsDisabledFormControl()) {
     select_menu_element_->OpenListbox();
   } else if (event->type() == event_type_names::kKeydown) {
     bool handled = false;
@@ -807,7 +856,8 @@ void HTMLSelectMenuElement::ButtonPartEventListener::Invoke(ExecutionContext*,
     switch (keyboard_event->keyCode()) {
       case VKEY_RETURN:
       case VKEY_SPACE:
-        if (!select_menu_element_->open()) {
+        if (!select_menu_element_->open() &&
+            !select_menu_element_->IsDisabledFormControl()) {
           select_menu_element_->OpenListbox();
         }
         handled = true;
@@ -830,7 +880,10 @@ void HTMLSelectMenuElement::OptionPartEventListener::Invoke(ExecutionContext*,
         DynamicTo<HTMLOptionElement>(event->currentTarget()->ToNode());
     DCHECK(target_element);
     DCHECK(select_menu_element_->option_parts_.Contains(target_element));
-    select_menu_element_->SetSelectedOption(target_element);
+    if (target_element != select_menu_element_->selectedOption()) {
+      select_menu_element_->SetSelectedOption(target_element);
+      select_menu_element_->DispatchInputEvent();
+    }
     select_menu_element_->CloseListbox();
   } else if (event->type() == event_type_names::kKeydown) {
     bool handled = false;
@@ -843,7 +896,10 @@ void HTMLSelectMenuElement::OptionPartEventListener::Invoke(ExecutionContext*,
             DynamicTo<HTMLOptionElement>(event->currentTarget()->ToNode());
         DCHECK(target_element);
         DCHECK(select_menu_element_->option_parts_.Contains(target_element));
-        select_menu_element_->SetSelectedOption(target_element);
+        if (target_element != select_menu_element_->selectedOption()) {
+          select_menu_element_->SetSelectedOption(target_element);
+          select_menu_element_->DispatchInputEvent();
+        }
         select_menu_element_->CloseListbox();
         handled = true;
         break;
@@ -903,11 +959,15 @@ bool HTMLSelectMenuElement::IsOptionalFormControl() const {
   return !IsRequiredFormControl();
 }
 
+bool HTMLSelectMenuElement::IsLabelable() const {
+  return true;
+}
+
 bool HTMLSelectMenuElement::ValueMissing() const {
   if (!IsRequired())
     return false;
 
-  if (auto* selected_option = SelectedOption()) {
+  if (auto* selected_option = selectedOption()) {
     // If a non-placeholder label option is selected, it's not value-missing.
     // https://html.spec.whatwg.org/multipage/form-elements.html#placeholder-label-option
     return selected_option == FirstOptionPart() &&
@@ -915,6 +975,47 @@ bool HTMLSelectMenuElement::ValueMissing() const {
   }
 
   return true;
+}
+
+// https://html.spec.whatwg.org/C/#ask-for-a-reset
+void HTMLSelectMenuElement::ResetImpl() {
+  for (auto& option : option_parts_) {
+    option->SetSelectedState(
+        option->FastHasAttribute(html_names::kSelectedAttr));
+    option->SetDirty(false);
+  }
+  ResetToDefaultSelection();
+  SetNeedsValidityCheck();
+}
+
+void HTMLSelectMenuElement::ResetToDefaultSelection() {
+  HTMLOptionElement* first_enabled_option = nullptr;
+  HTMLOptionElement* last_selected_option = nullptr;
+
+  for (Node* node = SelectMenuPartTraversal::FirstChild(*this); node;
+       node = SelectMenuPartTraversal::Next(*node, this)) {
+    if (IsValidOptionPart(node, /*show_warning=*/false)) {
+      auto* option = DynamicTo<HTMLOptionElement>(node);
+      if (option->Selected()) {
+        if (last_selected_option) {
+          last_selected_option->SetSelectedState(false);
+        }
+        last_selected_option = option;
+      }
+      if (!first_enabled_option && !option->IsDisabledFormControl()) {
+        first_enabled_option = option;
+      }
+    }
+  }
+
+  // If no option is selected, set the selection to the first non-disabled
+  // option if it exists, or null otherwise. If two or more options are
+  // selected, set the selection to the last selected option.
+  if (last_selected_option) {
+    SetSelectedOption(last_selected_option);
+  } else {
+    SetSelectedOption(first_enabled_option);
+  }
 }
 
 String HTMLSelectMenuElement::validationMessage() const {
@@ -939,6 +1040,7 @@ void HTMLSelectMenuElement::Trace(Visitor* visitor) const {
   visitor->Trace(button_slot_);
   visitor->Trace(listbox_slot_);
   visitor->Trace(selected_option_);
+  visitor->Trace(selected_option_when_listbox_opened_);
   HTMLFormControlElementWithState::Trace(visitor);
 }
 

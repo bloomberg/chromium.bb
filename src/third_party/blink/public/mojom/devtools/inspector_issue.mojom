@@ -13,7 +13,7 @@ import "mojo/public/mojom/base/unguessable_token.mojom";
 // A code that uniquely identifies an issue. This type should be descriptive
 // enough for the front-end to provide a clear description of the issue.
 enum InspectorIssueCode {
-  kSameSiteCookieIssue,
+  kCookieIssue,
   kMixedContentIssue,
   kBlockedByResponseIssue,
   kContentSecurityPolicyIssue,
@@ -21,6 +21,7 @@ enum InspectorIssueCode {
   kTrustedWebActivityIssue,
   kHeavyAdIssue,
   kLowTextContrastIssue,
+  kFederatedAuthRequestIssue,
   kGenericIssue,
 };
 
@@ -106,18 +107,18 @@ struct ContentSecurityPolicyIssueDetails {
   int32 violating_node_id = 0;
 };
 
-enum SameSiteCookieOperation {
+enum CookieOperation {
   kSetCookie, kReadCookie
 };
 
-enum SameSiteCookieExclusionReason {
+enum CookieExclusionReason {
   kExcludeSameSiteUnspecifiedTreatedAsLax,
   kExcludeSameSiteNoneInsecure,
   kExcludeSameSiteLax,
   kExcludeSameSiteStrict,
 };
 
-enum SameSiteCookieWarningReason {
+enum CookieWarningReason {
   kWarnSameSiteUnspecifiedCrossSiteContext,
   kWarnSameSiteNoneInsecure,
   kWarnSameSiteUnspecifiedLaxAllowUnsafe,
@@ -126,14 +127,15 @@ enum SameSiteCookieWarningReason {
   kWarnSameSiteStrictCrossDowngradeLax,
   kWarnSameSiteLaxCrossDowngradeStrict,
   kWarnSameSiteLaxCrossDowngradeLax,
+  kWarnAttributeValueExceedsMaxSize,
 };
 
-// Specific information about |kSameSiteCookieIssue| type issues.
-struct SameSiteCookieIssueDetails {
+// Specific information about |kCookieIssue| type issues.
+struct CookieIssueDetails {
   AffectedCookie cookie;
-  array<SameSiteCookieExclusionReason> exclusion_reason;
-  array<SameSiteCookieWarningReason> warning_reason;
-  SameSiteCookieOperation operation;
+  array<CookieExclusionReason> exclusion_reason;
+  array<CookieWarningReason> warning_reason;
+  CookieOperation operation;
   url.mojom.Url? site_for_cookies;
   url.mojom.Url? cookie_url;
   AffectedRequest? request;
@@ -175,6 +177,42 @@ struct LowTextContrastIssue {
   string font_weight;
 };
 
+// Represents the fetch result from a federated authentication request. Should
+// be updated alongside FederatedAuthRequestIssueReason in
+// third_party/blink/public/devtools_protocol/browser_protocol.pdl, which
+// includes all cases except for kSuccess.
+enum FederatedAuthRequestResult {
+  kSuccess,
+  kApprovalDeclined,
+  kErrorDisabledInSettings,
+  kErrorTooManyRequests,
+  kErrorFetchingManifestListHttpNotFound,
+  kErrorFetchingManifestListNoResponse,
+  kErrorFetchingManifestListInvalidResponse,
+  kErrorManifestNotInManifestList,
+  kErrorManifestListTooBig,
+  kErrorFetchingManifestHttpNotFound,
+  kErrorFetchingManifestNoResponse,
+  kErrorFetchingManifestInvalidResponse,
+  kErrorFetchingClientMetadataHttpNotFound,
+  kErrorFetchingClientMetadataNoResponse,
+  kErrorFetchingClientMetadataInvalidResponse,
+  kErrorClientMetadataMissingPrivacyPolicyUrl,
+  kErrorFetchingAccountsHttpNotFound,
+  kErrorFetchingAccountsNoResponse,
+  kErrorFetchingAccountsInvalidResponse,
+  kErrorFetchingIdTokenHttpNotFound,
+  kErrorFetchingIdTokenNoResponse,
+  kErrorFetchingIdTokenInvalidResponse,
+  kErrorFetchingIdTokenInvalidRequest,
+  kErrorCanceled,
+  kError,
+};
+
+struct FederatedAuthRequestIssueDetails {
+  FederatedAuthRequestResult status;
+};
+
 enum GenericIssueErrorType {
   kCrossOriginPortalPostMessageError,
 };
@@ -187,7 +225,7 @@ struct GenericIssueDetails {
 // A collection of optional fields that may store additional data depending
 // on the issue code.
 struct InspectorIssueDetails {
-  SameSiteCookieIssueDetails? samesite_cookie_issue_details;
+  CookieIssueDetails? cookie_issue_details;
   MixedContentIssueDetails? mixed_content_issue_details;
   BlockedByResponseIssueDetails? blocked_by_response_issue_details;
   ContentSecurityPolicyIssueDetails? csp_issue_details;
@@ -195,6 +233,7 @@ struct InspectorIssueDetails {
   TrustedWebActivityIssueDetails? twa_issue_details;
   HeavyAdIssueDetails? heavy_ad_issue_details;
   LowTextContrastIssue? low_text_contrast_details;
+  FederatedAuthRequestIssueDetails? federated_auth_request_details;
   GenericIssueDetails? generic_issue_details;
   mojo_base.mojom.UnguessableToken? issue_id;
 };

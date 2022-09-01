@@ -5,13 +5,17 @@
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 
 #include <algorithm>
+#include <set>
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_role_properties.h"
@@ -21,8 +25,10 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/color/color_id.h"
 #include "ui/color/color_provider.h"
+#include "ui/color/color_provider_manager.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_element.h"
+#include "ui/compositor/layer_animator.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/rect.h"
@@ -36,11 +42,11 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "ui/base/win/shell.h"
 #endif
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #include "ui/views/widget/widget_utils_mac.h"
 #else
 #include "ui/aura/window.h"
@@ -87,7 +93,7 @@ class BubbleWidget : public Widget {
     return anchor ? anchor->GetThemeProvider() : Widget::GetThemeProvider();
   }
 
-  ui::ColorProviderManager::InitializerSupplier* GetCustomTheme()
+  ui::ColorProviderManager::ThemeInitializerSupplier* GetCustomTheme()
       const override {
     const Widget* const anchor = GetAnchorWidget();
     return anchor ? anchor->GetCustomTheme() : Widget::GetCustomTheme();
@@ -133,7 +139,7 @@ class BubbleDialogFrameView : public BubbleFrameView {
 };
 
 bool CustomShadowsSupported() {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   return ui::win::IsAeroGlassEnabled();
 #else
   return true;
@@ -160,6 +166,10 @@ Widget* CreateBubbleWidget(BubbleDialogDelegate* bubble) {
     bubble_params.shadow_type = Widget::InitParams::ShadowType::kNone;
   else
     bubble_params.shadow_type = Widget::InitParams::ShadowType::kDrop;
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  bubble_params.background_elevation =
+      ui::ColorProviderManager::ElevationMode::kHigh;
+#endif
   gfx::NativeView parent = nullptr;
   if (bubble->has_parent()) {
     if (bubble->parent_window()) {
@@ -175,7 +185,7 @@ Widget* CreateBubbleWidget(BubbleDialogDelegate* bubble) {
   bubble->OnBeforeBubbleWidgetInit(&bubble_params, bubble_widget);
   DCHECK(bubble_params.parent || !bubble->has_parent());
   bubble_widget->Init(std::move(bubble_params));
-#if !defined(OS_MAC)
+#if !BUILDFLAG(IS_MAC)
   // On Mac, having a parent window creates a permanent stacking order, so
   // there's no need to do this. Also, calling StackAbove() on Mac shows the
   // bubble implicitly, for which the bubble is currently not ready.
@@ -253,7 +263,7 @@ class BubbleDialogDelegate::AnchorViewObserver : public ViewObserver {
 
 // This class is responsible for observing events on a BubbleDialogDelegate's
 // anchor widget and notifying the BubbleDialogDelegate of them.
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 class BubbleDialogDelegate::AnchorWidgetObserver : public WidgetObserver {
 #else
 class BubbleDialogDelegate::AnchorWidgetObserver : public WidgetObserver,
@@ -264,7 +274,7 @@ class BubbleDialogDelegate::AnchorWidgetObserver : public WidgetObserver,
   AnchorWidgetObserver(BubbleDialogDelegate* owner, Widget* widget)
       : owner_(owner) {
     widget_observation_.Observe(widget);
-#if !defined(OS_MAC)
+#if !BUILDFLAG(IS_MAC)
     window_observation_.Observe(widget->GetNativeWindow());
 #endif
   }
@@ -272,7 +282,7 @@ class BubbleDialogDelegate::AnchorWidgetObserver : public WidgetObserver,
 
   // WidgetObserver:
   void OnWidgetDestroying(Widget* widget) override {
-#if !defined(OS_MAC)
+#if !BUILDFLAG(IS_MAC)
     DCHECK(window_observation_.IsObservingSource(widget->GetNativeWindow()));
     window_observation_.Reset();
 #endif
@@ -290,7 +300,7 @@ class BubbleDialogDelegate::AnchorWidgetObserver : public WidgetObserver,
     owner_->OnAnchorBoundsChanged();
   }
 
-#if !defined(OS_MAC)
+#if !BUILDFLAG(IS_MAC)
   // aura::WindowObserver:
   void OnWindowTransformed(aura::Window* window,
                            ui::PropertyChangeReason reason) override {
@@ -310,7 +320,7 @@ class BubbleDialogDelegate::AnchorWidgetObserver : public WidgetObserver,
   raw_ptr<BubbleDialogDelegate> owner_;
   base::ScopedObservation<views::Widget, views::WidgetObserver>
       widget_observation_{this};
-#if !defined(OS_MAC)
+#if !BUILDFLAG(IS_MAC)
   base::ScopedObservation<aura::Window, aura::WindowObserver>
       window_observation_{this};
 #endif
@@ -376,10 +386,49 @@ class BubbleDialogDelegate::ThemeObserver : public ViewObserver {
   base::ScopedObservation<View, ViewObserver> observation_{this};
 };
 
+class BubbleDialogDelegateView::CloseOnDeactivatePin::Pins {
+ public:
+  Pins() = default;
+  ~Pins() = default;
+
+  bool is_pinned() const { return !pins_.empty(); }
+
+  base::WeakPtr<Pins> GetWeakPtr() { return weak_ptr_factory_.GetWeakPtr(); }
+
+  void AddPin(CloseOnDeactivatePin* pin) {
+    const auto result = pins_.insert(pin);
+    DCHECK(result.second);
+  }
+
+  void RemovePin(CloseOnDeactivatePin* pin) {
+    const auto result = pins_.erase(pin);
+    DCHECK(result);
+  }
+
+ protected:
+  std::set<CloseOnDeactivatePin*> pins_;
+  base::WeakPtrFactory<Pins> weak_ptr_factory_{this};
+};
+
+BubbleDialogDelegate::CloseOnDeactivatePin::CloseOnDeactivatePin(
+    base::WeakPtr<Pins> pins)
+    : pins_(pins) {
+  pins_->AddPin(this);
+}
+
+BubbleDialogDelegate::CloseOnDeactivatePin::~CloseOnDeactivatePin() {
+  Pins* const pins = pins_.get();
+  if (pins)
+    pins->RemovePin(this);
+}
+
 BubbleDialogDelegate::BubbleDialogDelegate(View* anchor_view,
                                            BubbleBorder::Arrow arrow,
                                            BubbleBorder::Shadow shadow)
-    : arrow_(arrow), shadow_(shadow) {
+    : arrow_(arrow),
+      shadow_(shadow),
+      close_on_deactivate_pins_(
+          std::make_unique<CloseOnDeactivatePin::Pins>()) {
   SetOwnedByWidget(true);
   SetAnchorView(anchor_view);
   SetArrow(arrow);
@@ -483,7 +532,8 @@ BubbleDialogDelegate::CreateNonClientFrameView(Widget* widget) {
   frame->SetFootnoteView(DisownFootnoteView());
 
   std::unique_ptr<BubbleBorder> border =
-      std::make_unique<BubbleBorder>(arrow(), GetShadow(), color());
+      std::make_unique<BubbleBorder>(arrow(), GetShadow());
+  border->SetColor(color());
   if (CustomShadowsSupported() && GetParams().round_corners)
     border->SetCornerRadius(GetCornerRadius());
 
@@ -539,7 +589,7 @@ void BubbleDialogDelegate::OnAnchorWidgetDestroying() {
 }
 
 void BubbleDialogDelegate::OnBubbleWidgetActivationChanged(bool active) {
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   // Install |mac_bubble_closer_| the first time the widget becomes active.
   if (active && !mac_bubble_closer_) {
     mac_bubble_closer_ = std::make_unique<ui::BubbleCloser>(
@@ -569,6 +619,16 @@ View* BubbleDialogDelegate::GetAnchorView() const {
   if (!anchor_view_observer_)
     return nullptr;
   return anchor_view_observer_->anchor_view();
+}
+
+bool BubbleDialogDelegate::ShouldCloseOnDeactivate() const {
+  return close_on_deactivate_ && !close_on_deactivate_pins_->is_pinned();
+}
+
+std::unique_ptr<BubbleDialogDelegate::CloseOnDeactivatePin>
+BubbleDialogDelegate::PreventCloseOnDeactivate() {
+  return base::WrapUnique(
+      new CloseOnDeactivatePin(close_on_deactivate_pins_->GetWeakPtr()));
 }
 
 void BubbleDialogDelegate::SetHighlightedButton(Button* highlighted_button) {
@@ -611,7 +671,7 @@ gfx::Rect BubbleDialogDelegate::GetAnchorRect() const {
 
   anchor_rect_ = GetAnchorView()->GetAnchorBoundsInScreen();
 
-#if !defined(OS_MAC)
+#if !BUILDFLAG(IS_MAC)
   // GetAnchorBoundsInScreen returns values that take anchor widget's
   // translation into account, so undo that here. Without this, features which
   // apply transforms on windows such as ChromeOS overview mode will see bubbles
@@ -626,6 +686,11 @@ gfx::Rect BubbleDialogDelegate::GetAnchorRect() const {
 #endif
 
   return anchor_rect_.value();
+}
+
+SkColor BubbleDialogDelegate::GetBackgroundColor() {
+  UpdateColorsFromTheme();
+  return color();
 }
 
 ui::LayerType BubbleDialogDelegate::GetLayerType() const {
@@ -801,7 +866,7 @@ void BubbleDialogDelegate::SetAnchorRect(const gfx::Rect& rect) {
 
 void BubbleDialogDelegate::SizeToContents() {
   gfx::Rect bubble_bounds = GetBubbleBounds();
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   // GetBubbleBounds() doesn't take the Mac NativeWindow's style mask into
   // account, so we need to adjust the size.
   gfx::Size actual_size =
@@ -825,10 +890,12 @@ void BubbleDialogDelegate::UpdateColorsFromTheme() {
 
   // When there's an opaque layer, the bubble border background won't show
   // through, so explicitly paint a background color.
-  contents_view->SetBackground(
-      contents_view->layer() && contents_view->layer()->fills_bounds_opaquely()
-          ? CreateSolidBackground(color())
-          : nullptr);
+  const bool contents_layer_opaque =
+      contents_view->layer() && contents_view->layer()->fills_bounds_opaquely();
+  contents_view->SetBackground(contents_layer_opaque ||
+                                       force_create_contents_background_
+                                   ? CreateSolidBackground(color())
+                                   : nullptr);
 }
 
 void BubbleDialogDelegate::OnBubbleWidgetVisibilityChanged(bool visible) {
@@ -845,7 +912,7 @@ void BubbleDialogDelegate::OnBubbleWidgetVisibilityChanged(bool visible) {
 }
 
 void BubbleDialogDelegate::OnDeactivate() {
-  if (close_on_deactivate_ && GetWidget())
+  if (ShouldCloseOnDeactivate() && GetWidget())
     GetWidget()->CloseWithReason(views::Widget::ClosedReason::kLostFocus);
 }
 

@@ -14,6 +14,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "components/policy/core/common/policy_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
@@ -22,6 +23,9 @@
 #include "google_apis/gaia/gaia_urls.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/main/browser.h"
+#include "ios/chrome/browser/policy/cloud/user_policy_signin_service.h"
+#include "ios/chrome/browser/policy/cloud/user_policy_signin_service_factory.h"
+#include "ios/chrome/browser/policy/cloud/user_policy_switch.h"
 #include "ios/chrome/browser/signin/authentication_service.h"
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/constants.h"
@@ -40,6 +44,7 @@
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
 #import "ios/web/public/web_state.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -58,12 +63,12 @@ const int64_t kAuthenticationFlowTimeoutSeconds = 10;
                                           SettingsNavigationControllerDelegate>
 
 // Starts the watchdog timer with a timeout of
-// |kAuthenticationFlowTimeoutSeconds| for the fetching managed status
-// operation. It will notify |_delegate| of the failure unless
-// |stopWatchdogTimer| is called before it times out.
+// `kAuthenticationFlowTimeoutSeconds` for the fetching managed status
+// operation. It will notify `_delegate` of the failure unless
+// `stopWatchdogTimer` is called before it times out.
 - (void)startWatchdogTimerForManagedStatus;
 
-// Stops the watchdog timer, and doesn't call the |timeoutDelegateSelector|.
+// Stops the watchdog timer, and doesn't call the `timeoutDelegateSelector`.
 // Returns whether the watchdog was actually running.
 - (BOOL)stopWatchdogTimer;
 
@@ -173,9 +178,10 @@ const int64_t kAuthenticationFlowTimeoutSeconds = 10;
 
 - (void)signInIdentity:(ChromeIdentity*)identity
       withHostedDomain:(NSString*)hostedDomain
-        toBrowserState:(ChromeBrowserState*)browserState {
+        toBrowserState:(ChromeBrowserState*)browserState
+            completion:(signin_ui::CompletionCallback)completion {
   AuthenticationServiceFactory::GetForBrowserState(browserState)
-      ->SignIn(identity);
+      ->SignIn(identity, completion);
 }
 
 - (void)signOutBrowserState:(ChromeBrowserState*)browserState {
@@ -278,15 +284,12 @@ const int64_t kAuthenticationFlowTimeoutSeconds = 10;
                                browser:browser];
     return;
   }
-  BOOL isCurrentUserSyncing =
-      identityManager->HasPrimaryAccount(signin::ConsentLevel::kSync);
   _navigationController = [SettingsNavigationController
       importDataControllerForBrowser:browser
                             delegate:self
                   importDataDelegate:self
                            fromEmail:lastSyncingEmail
-                             toEmail:[identity userEmail]
-                           isSyncing:isCurrentUserSyncing];
+                             toEmail:[identity userEmail]];
   [_delegate presentViewController:_navigationController
                           animated:YES
                         completion:nil];
@@ -385,10 +388,25 @@ const int64_t kAuthenticationFlowTimeoutSeconds = 10;
 
   __weak AuthenticationFlowPerformer* weakSelf = self;
   __weak AlertCoordinator* weakAlert = _alertCoordinator;
+
   ProceduralBlock acceptBlock = ^{
     AuthenticationFlowPerformer* strongSelf = weakSelf;
     if (!strongSelf)
       return;
+
+    // TODO(crbug.com/1326767): Nullify the browser object in the
+    // AlertCoordinator when the coordinator is stopped to avoid using the
+    // browser object at that moment, in which case the browser object may have
+    // been deleted before the callback block is called. This is to avoid
+    // potential bad memory accesses.
+    Browser* browser = weakAlert.browser;
+    if (browser) {
+      PrefService* prefService = browser->GetBrowserState()->GetPrefs();
+      // TODO(crbug.com/1325115): Remove this line once we determined that the
+      // notification isn't needed anymore.
+      [strongSelf updateUserPolicyNotificationStatusIfNeeded:prefService];
+    }
+
     [strongSelf alertControllerDidDisappear:weakAlert];
     [[strongSelf delegate] didAcceptManagedConfirmation];
   };
@@ -438,13 +456,68 @@ const int64_t kAuthenticationFlowTimeoutSeconds = 10;
 
 - (void)alertControllerDidDisappear:(AlertCoordinator*)alertCoordinator {
   if (_alertCoordinator != alertCoordinator) {
-    // Do not reset the |_alertCoordinator| if it has changed. This typically
+    // Do not reset the `_alertCoordinator` if it has changed. This typically
     // happens when the user taps on any of the actions on "Clear Data Before
     // Syncing?" dialog, as the sign-in confirmation dialog is created before
     // the "Clear Data Before Syncing?" dialog is dismissed.
     return;
   }
   _alertCoordinator = nil;
+}
+
+- (void)registerUserPolicy:(ChromeBrowserState*)browserState
+               forIdentity:(ChromeIdentity*)identity {
+  // Should only fetch user policies when the feature is enabled.
+  DCHECK(policy::IsUserPolicyEnabled());
+
+  std::string userEmail = base::SysNSStringToUTF8([identity userEmail]);
+  CoreAccountId accountID =
+      IdentityManagerFactory::GetForBrowserState(browserState)
+          ->PickAccountIdForAccount(base::SysNSStringToUTF8([identity gaiaID]),
+                                    userEmail);
+
+  policy::UserPolicySigninService* userPolicyService =
+      policy::UserPolicySigninServiceFactory::GetForBrowserState(browserState);
+
+  __weak __typeof(self) weakSelf = self;
+  userPolicyService->RegisterForPolicyWithAccountId(
+      userEmail, accountID,
+      base::BindOnce(^(const std::string& dmToken,
+                       const std::string& clientID) {
+        [weakSelf.delegate
+            didRegisterForUserPolicyWithDMToken:base::SysUTF8ToNSString(dmToken)
+                                       clientID:base::SysUTF8ToNSString(
+                                                    clientID)];
+      }));
+}
+
+- (void)fetchUserPolicy:(ChromeBrowserState*)browserState
+            withDmToken:(NSString*)dmToken
+               clientID:(NSString*)clientID
+               identity:(ChromeIdentity*)identity {
+  // Should only fetch user policies when the feature is enabled.
+  DCHECK(policy::IsUserPolicyEnabled());
+
+  // Need a `dmToken` and a `clientID` to fetch user policies.
+  DCHECK([dmToken length] > 0);
+  DCHECK([clientID length] > 0);
+
+  policy::UserPolicySigninService* policy_service =
+      policy::UserPolicySigninServiceFactory::GetForBrowserState(browserState);
+  const std::string userEmail = base::SysNSStringToUTF8([identity userEmail]);
+
+  AccountId accountID = AccountId::FromUserEmailGaiaId(
+      gaia::CanonicalizeEmail(userEmail),
+      base::SysNSStringToUTF8([identity gaiaID]));
+
+  __weak __typeof(self) weakSelf = self;
+  policy_service->FetchPolicyForSignedInUser(
+      accountID, base::SysNSStringToUTF8(dmToken),
+      base::SysNSStringToUTF8(clientID),
+      browserState->GetSharedURLLoaderFactory(),
+      base::BindOnce(^(bool success) {
+        [weakSelf.delegate didFetchUserPolicyWithSuccess:success];
+      }));
 }
 
 #pragma mark - ImportDataControllerDelegate
@@ -500,6 +573,19 @@ const int64_t kAuthenticationFlowTimeoutSeconds = 10;
     handlerForSettings {
   NOTREACHED();
   return nil;
+}
+
+#pragma mark - Internal
+
+- (void)updateUserPolicyNotificationStatusIfNeeded:(PrefService*)prefService {
+  if (!policy::IsUserPolicyEnabled()) {
+    // Don't set the notification pref if the User Policy feature isn't
+    // enabled.
+    return;
+  }
+
+  prefService->SetBoolean(policy::policy_prefs::kUserPolicyNotificationWasShown,
+                          true);
 }
 
 @end

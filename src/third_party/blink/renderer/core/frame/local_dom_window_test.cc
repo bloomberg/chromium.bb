@@ -36,6 +36,7 @@
 #include "third_party/blink/public/common/loader/referrer_utils.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-blink-forward.h"
 #include "third_party/blink/renderer/bindings/core/v8/isolated_world_csp.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/execution_context/agent.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -43,7 +44,6 @@
 #include "third_party/blink/renderer/core/inspector/console_message_storage.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/event_loop.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
@@ -231,13 +231,18 @@ TEST_F(LocalDOMWindowTest, EnforceSandboxFlags) {
   }
 }
 
-TEST_F(LocalDOMWindowTest, ReducedUserAgent) {
+TEST_F(LocalDOMWindowTest, UserAgent) {
   EXPECT_EQ(GetFrame().DomWindow()->UserAgent(),
             GetFrame().Loader().UserAgent());
   {
     ScopedUserAgentReductionForTest s1(true);
     EXPECT_EQ(GetFrame().DomWindow()->UserAgent(),
               GetFrame().Loader().ReducedUserAgent());
+  }
+  {
+    ScopedSendFullUserAgentAfterReductionForTest s1(true);
+    EXPECT_EQ(GetFrame().DomWindow()->UserAgent(),
+              GetFrame().Loader().FullUserAgent());
   }
 }
 

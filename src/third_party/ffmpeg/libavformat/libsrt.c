@@ -320,7 +320,9 @@ static int libsrt_set_options_pre(URLContext *h, int fd)
     int latency = s->latency / 1000;
     int rcvlatency = s->rcvlatency / 1000;
     int peerlatency = s->peerlatency / 1000;
+#if SRT_VERSION_VALUE >= 0x010302
     int snddropdelay = s->snddropdelay > 0 ? s->snddropdelay / 1000 : s->snddropdelay;
+#endif
     int connect_timeout = s->connect_timeout;
 
     if ((s->mode == SRT_MODE_RENDEZVOUS && libsrt_setsockopt(h, fd, SRTO_RENDEZVOUS, "SRTO_RENDEZVOUS", &yes, sizeof(yes)) < 0) ||
@@ -427,7 +429,11 @@ static int libsrt_setup(URLContext *h, const char *uri, int flags)
 
  restart:
 
+#if SRT_VERSION_VALUE >= 0x010401
+    fd = srt_create_socket();
+#else
     fd = srt_socket(cur_ai->ai_family, cur_ai->ai_socktype, 0);
+#endif
     if (fd < 0) {
         ret = libsrt_neterrno(h);
         goto fail;
@@ -523,7 +529,7 @@ static int libsrt_open(URLContext *h, const char *uri, int flags)
 {
     SRTContext *s = h->priv_data;
     const char * p;
-    char buf[256];
+    char buf[1024];
     int ret = 0;
 
     if (srt_startup() < 0) {

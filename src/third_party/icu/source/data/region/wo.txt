@@ -41,7 +41,9 @@ wo{
         BZ{"Belis"}
         CA{"Kanadaa"}
         CC{"Duni Koko (Kilin)"}
+        CD{"Kongo (R K D)"}
         CF{"Repiblik Sàntar Afrik"}
+        CG{"Réewum Kongo"}
         CH{"Siwis"}
         CI{"Kodiwaar"}
         CK{"Duni Kuuk"}
@@ -248,9 +250,5 @@ wo{
         ZM{"Sàmbi"}
         ZW{"Simbabwe"}
         ZZ{"Gox buñ xamul"}
-    }
-    Countries%variant{
-        CD{"Kongo (R K D)"}
-        CG{"Réewum Kongo"}
     }
 }

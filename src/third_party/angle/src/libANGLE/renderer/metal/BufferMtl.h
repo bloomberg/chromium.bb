@@ -12,6 +12,7 @@
 
 #import <Metal/Metal.h>
 
+#include <optional>
 #include <utility>
 
 #include "libANGLE/Buffer.h"
@@ -189,8 +190,8 @@ class BufferMtl : public BufferImpl, public BufferHolderMtl
     angle::Result commitShadowCopy(const gl::Context *context, size_t size);
 
     void markConversionBuffersDirty();
-
     void clearConversionBuffers();
+
     bool clientShadowCopyDataNeedSync(ContextMtl *contextMtl);
     void ensureShadowCopySyncedFromGPU(ContextMtl *contextMtl);
     uint8_t *syncAndObtainShadowCopy(ContextMtl *contextMtl);
@@ -213,7 +214,15 @@ class BufferMtl : public BufferImpl, public BufferHolderMtl
 
     std::vector<UniformConversionBufferMtl> mUniformConversionBuffers;
 
-    bool mRestartIndicesDirty;
+    struct RestartRangeCache
+    {
+        RestartRangeCache(std::vector<IndexRange> &&ranges_, gl::DrawElementsType indexType_)
+            : ranges(ranges_), indexType(indexType_)
+        {}
+        const std::vector<IndexRange> ranges;
+        const gl::DrawElementsType indexType;
+    };
+    std::optional<RestartRangeCache> mRestartRangeCache;
     std::vector<IndexRange> mRestartIndices;
 };
 

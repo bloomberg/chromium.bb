@@ -57,6 +57,7 @@ class MockPipelineClient : public Pipeline::Client {
   ~MockPipelineClient();
 
   MOCK_METHOD1(OnError, void(PipelineStatus));
+  MOCK_METHOD1(OnFallback, void(PipelineStatus));
   MOCK_METHOD0(OnEnded, void());
   MOCK_METHOD1(OnMetadata, void(const PipelineMetadata&));
   MOCK_METHOD2(OnBufferingStateChange,
@@ -108,6 +109,7 @@ class MockPipeline : public Pipeline {
                void(const std::vector<MediaTrack::Id>&, base::OnceClosure));
   MOCK_METHOD2(OnSelectedVideoTrackChanged,
                void(absl::optional<MediaTrack::Id>, base::OnceClosure));
+  MOCK_METHOD0(OnExternalVideoFrameRequest, void());
 
   // TODO(sandersd): This should automatically return true between Start() and
   // Stop(). (Or better, remove it from the interface entirely.)
@@ -122,7 +124,7 @@ class MockPipeline : public Pipeline {
   MOCK_METHOD1(SetVolume, void(float));
   MOCK_METHOD1(SetLatencyHint, void(absl::optional<base::TimeDelta>));
   MOCK_METHOD1(SetPreservesPitch, void(bool));
-  MOCK_METHOD1(SetAutoplayInitiated, void(bool));
+  MOCK_METHOD1(SetWasPlayedWithUserActivation, void(bool));
 
   // TODO(sandersd): These should probably have setters too.
   MOCK_CONST_METHOD0(GetMediaTime, base::TimeDelta());
@@ -202,8 +204,8 @@ class MockDemuxerStream : public DemuxerStream {
 
   // DemuxerStream implementation.
   Type type() const override;
-  Liveness liveness() const override;
-  void Read(ReadCB read_cb) { OnRead(read_cb); }
+  StreamLiveness liveness() const override;
+  void Read(ReadCB read_cb) override { OnRead(read_cb); }
   MOCK_METHOD1(OnRead, void(ReadCB& read_cb));
   AudioDecoderConfig audio_decoder_config() override;
   VideoDecoderConfig video_decoder_config() override;
@@ -212,11 +214,11 @@ class MockDemuxerStream : public DemuxerStream {
 
   void set_audio_decoder_config(const AudioDecoderConfig& config);
   void set_video_decoder_config(const VideoDecoderConfig& config);
-  void set_liveness(Liveness liveness);
+  void set_liveness(StreamLiveness liveness);
 
  private:
   Type type_;
-  Liveness liveness_;
+  StreamLiveness liveness_ = StreamLiveness::kUnknown;
   AudioDecoderConfig audio_decoder_config_;
   VideoDecoderConfig video_decoder_config_;
 };
@@ -294,17 +296,17 @@ class MockAudioEncoder : public AudioEncoder {
               Initialize,
               (const AudioEncoder::Options& options,
                AudioEncoder::OutputCB output_cb,
-               AudioEncoder::StatusCB done_cb),
+               AudioEncoder::EncoderStatusCB done_cb),
               (override));
 
   MOCK_METHOD(void,
               Encode,
               (std::unique_ptr<AudioBus> audio_bus,
                base::TimeTicks capture_time,
-               AudioEncoder::StatusCB done_cb),
+               AudioEncoder::EncoderStatusCB done_cb),
               (override));
 
-  MOCK_METHOD(void, Flush, (AudioEncoder::StatusCB done_cb), (override));
+  MOCK_METHOD(void, Flush, (AudioEncoder::EncoderStatusCB done_cb), (override));
 
   // A function for mocking destructor calls
   MOCK_METHOD(void, OnDestruct, ());
@@ -325,24 +327,24 @@ class MockVideoEncoder : public VideoEncoder {
               (VideoCodecProfile profile,
                const VideoEncoder::Options& options,
                VideoEncoder::OutputCB output_cb,
-               VideoEncoder::StatusCB done_cb),
+               VideoEncoder::EncoderStatusCB done_cb),
               (override));
 
   MOCK_METHOD(void,
               Encode,
               (scoped_refptr<VideoFrame> frame,
                bool key_frame,
-               VideoEncoder::StatusCB done_cb),
+               VideoEncoder::EncoderStatusCB done_cb),
               (override));
 
   MOCK_METHOD(void,
               ChangeOptions,
               (const VideoEncoder::Options& options,
                VideoEncoder::OutputCB output_cb,
-               VideoEncoder::StatusCB done_cb),
+               VideoEncoder::EncoderStatusCB done_cb),
               (override));
 
-  MOCK_METHOD(void, Flush, (VideoEncoder::StatusCB done_cb), (override));
+  MOCK_METHOD(void, Flush, (VideoEncoder::EncoderStatusCB done_cb), (override));
 
   // A function for mocking destructor calls
   MOCK_METHOD(void, Dtor, ());
@@ -403,6 +405,7 @@ class MockRendererClient : public RendererClient {
 
   // RendererClient implementation.
   MOCK_METHOD1(OnError, void(PipelineStatus));
+  MOCK_METHOD1(OnFallback, void(PipelineStatus));
   MOCK_METHOD0(OnEnded, void());
   MOCK_METHOD1(OnStatisticsUpdate, void(const PipelineStatistics&));
   MOCK_METHOD2(OnBufferingStateChange,
@@ -477,7 +480,7 @@ class MockAudioRenderer : public AudioRenderer {
   MOCK_METHOD1(SetLatencyHint,
                void(absl::optional<base::TimeDelta> latency_hint));
   MOCK_METHOD1(SetPreservesPitch, void(bool));
-  MOCK_METHOD1(SetAutoplayInitiated, void(bool));
+  MOCK_METHOD1(SetWasPlayedWithUserActivation, void(bool));
 };
 
 class MockRenderer : public Renderer {
@@ -501,7 +504,7 @@ class MockRenderer : public Renderer {
                     PipelineStatusCallback& init_cb));
   MOCK_METHOD1(SetLatencyHint, void(absl::optional<base::TimeDelta>));
   MOCK_METHOD1(SetPreservesPitch, void(bool));
-  MOCK_METHOD1(SetAutoplayInitiated, void(bool));
+  MOCK_METHOD1(SetWasPlayedWithUserActivation, void(bool));
   void Flush(base::OnceClosure flush_cb) override { OnFlush(flush_cb); }
   MOCK_METHOD1(OnFlush, void(base::OnceClosure& flush_cb));
   MOCK_METHOD1(StartPlayingFrom, void(base::TimeDelta timestamp));
@@ -656,10 +659,10 @@ class MockCdmContext : public CdmContext {
                std::unique_ptr<CallbackRegistration>(EventCB event_cb));
   MOCK_METHOD0(GetDecryptor, Decryptor*());
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   MOCK_METHOD0(RequiresMediaFoundationRenderer, bool());
-  MOCK_METHOD1(GetMediaFoundationCdmProxy,
-               bool(GetMediaFoundationCdmProxyCB get_mf_cdm_proxy_cb));
+  MOCK_METHOD0(GetMediaFoundationCdmProxy,
+               scoped_refptr<MediaFoundationCdmProxy>());
 #endif
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   MOCK_METHOD0(GetChromeOsCdmContext, chromeos::ChromeOsCdmContext*());
@@ -857,10 +860,7 @@ class MockMediaClient : public media::MediaClient {
   ~MockMediaClient() override;
 
   // MediaClient implementation.
-  MOCK_METHOD1(AddSupportedKeySystems,
-               void(std::vector<std::unique_ptr<media::KeySystemProperties>>*
-                        key_systems));
-  MOCK_METHOD0(IsKeySystemsUpdateNeeded, bool());
+  MOCK_METHOD1(GetSupportedKeySystems, void(GetSupportedKeySystemsCB cb));
   MOCK_METHOD1(IsSupportedAudioType, bool(const media::AudioType& type));
   MOCK_METHOD1(IsSupportedVideoType, bool(const media::VideoType& type));
   MOCK_METHOD1(IsSupportedBitstreamAudioCodec, bool(media::AudioCodec codec));

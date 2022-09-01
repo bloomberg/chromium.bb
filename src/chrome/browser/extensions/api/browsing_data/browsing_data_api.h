@@ -14,6 +14,7 @@
 
 #include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
+#include "base/time/time.h"
 #include "components/browsing_data/core/browsing_data_utils.h"
 #include "components/signin/core/browser/account_reconcilor.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
@@ -75,8 +76,8 @@ class BrowsingDataSettingsFunction : public ExtensionFunction {
   // indicating whether the data type is both selected and permitted to be
   // removed; and a value in the |permitted_dict| with the |data_type| as a
   // key, indicating only whether the data type is permitted to be removed.
-  void SetDetails(base::DictionaryValue* selected_dict,
-                  base::DictionaryValue* permitted_dict,
+  void SetDetails(base::Value* selected_dict,
+                  base::Value* permitted_dict,
                   const char* data_type,
                   bool is_selected);
 

@@ -63,12 +63,18 @@ NavigationThrottle::ThrottleCheckResult
 PrerenderSubframeNavigationThrottle::WillProcessResponse() {
   auto* navigation_request = NavigationRequest::From(navigation_handle());
   FrameTreeNode* frame_tree_node = navigation_request->frame_tree_node();
+  absl::optional<PrerenderHost::FinalStatus> cancel_reason;
 
   if (!frame_tree_node->frame_tree()->is_prerendering())
     return NavigationThrottle::PROCEED;
 
-  // Disallow downloads during prerendering and cancel the prerender.
+  // TODO(crbug.com/1318739): Delay until activation instead of cancellation.
   if (navigation_handle()->IsDownload()) {
+    // Disallow downloads during prerendering and cancel the prerender.
+    cancel_reason = PrerenderHost::FinalStatus::kDownload;
+  }
+
+  if (cancel_reason.has_value()) {
     PrerenderHostRegistry* prerender_host_registry =
         frame_tree_node->current_frame_host()
             ->delegate()
@@ -76,7 +82,7 @@ PrerenderSubframeNavigationThrottle::WillProcessResponse() {
 
     prerender_host_registry->CancelHost(
         frame_tree_node->frame_tree()->root()->frame_tree_node_id(),
-        PrerenderHost::FinalStatus::kDownload);
+        cancel_reason.value());
     return CANCEL;
   }
 
@@ -188,8 +194,7 @@ PrerenderSubframeNavigationThrottle::WillStartOrRedirectRequest() {
   // through the NavigationThrottle, so it's not a problem here
   RenderFrameHostImpl* rfhi = frame_tree_node->frame_tree()->GetMainFrame();
   const url::Origin& main_origin = rfhi->GetLastCommittedOrigin();
-  if (!main_origin.IsSameOriginWith(
-          url::Origin::Create(navigation_handle()->GetURL()))) {
+  if (!main_origin.IsSameOriginWith(navigation_handle()->GetURL())) {
     DeferCrossOriginSubframeNavigation(*frame_tree_node);
     return NavigationThrottle::DEFER;
   }

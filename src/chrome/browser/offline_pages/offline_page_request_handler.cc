@@ -15,7 +15,6 @@
 #include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
 #include "base/task/task_runner_util.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -603,11 +602,11 @@ void OfflinePageRequestHandler::OnTrustedOfflinePageFound() {
   if (IsProcessingFileUrlIntent()) {
     bool valid = net::FileURLToFilePath(offline_header_.intent_url, &file_path);
     DCHECK(valid);
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   } else if (IsProcessingContentUrlIntent()) {
     file_path = base::FilePath(offline_header_.intent_url.spec());
     DCHECK(file_path.IsContentUri());
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
   } else {
     file_path = GetCurrentOfflinePage().file_path;
   }

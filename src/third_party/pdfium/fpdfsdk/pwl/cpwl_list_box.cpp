@@ -15,10 +15,11 @@
 #include "fpdfsdk/pwl/cpwl_scroll_bar.h"
 #include "fpdfsdk/pwl/ipwl_fillernotify.h"
 #include "public/fpdf_fwlevent.h"
+#include "third_party/base/numerics/safe_conversions.h"
 
 CPWL_ListBox::CPWL_ListBox(
     const CreateParams& cp,
-    std::unique_ptr<IPWL_SystemHandler::PerWindowData> pAttachedData)
+    std::unique_ptr<IPWL_FillerNotify::PerWindowData> pAttachedData)
     : CPWL_Wnd(cp, std::move(pAttachedData)),
       m_pListCtrl(std::make_unique<CPWL_ListCtrl>()) {}
 
@@ -61,7 +62,7 @@ void CPWL_ListBox::DrawThisAppearance(CFX_RenderDevice* pDevice,
                                                             : rcClient);
     }
 
-    IPWL_SystemHandler* pSysHandler = GetSystemHandler();
+    IPWL_FillerNotify* pSysHandler = GetFillerNotify();
     if (m_pListCtrl->IsItemSelected(i)) {
       if (pSysHandler->IsSelectionImplemented()) {
         m_pListCtrl->GetItemEdit(i)->DrawEdit(
@@ -203,18 +204,15 @@ bool CPWL_ListBox::RePosChildWnd() {
 
 bool CPWL_ListBox::OnNotifySelectionChanged(bool bKeyDown,
                                             Mask<FWL_EVENTFLAG> nFlag) {
-  if (!m_pFillerNotify)
-    return false;
-
   ObservedPtr<CPWL_Wnd> thisObserved(this);
 
   WideString swChange = GetText();
   WideString strChangeEx;
   int nSelStart = 0;
-  int nSelEnd = swChange.GetLength();
+  int nSelEnd = pdfium::base::checked_cast<int>(swChange.GetLength());
   bool bRC;
   bool bExit;
-  std::tie(bRC, bExit) = m_pFillerNotify->OnBeforeKeyStroke(
+  std::tie(bRC, bExit) = GetFillerNotify()->OnBeforeKeyStroke(
       GetAttachedData(), swChange, strChangeEx, nSelStart, nSelEnd, bKeyDown,
       nFlag);
 

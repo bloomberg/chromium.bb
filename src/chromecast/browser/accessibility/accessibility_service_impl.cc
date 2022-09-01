@@ -13,15 +13,15 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/notreached.h"
-#include "base/task/post_task.h"
 #include "base/task/sequenced_task_runner.h"
+#include "build/build_config.h"
 #include "chromecast/ui/display_settings_manager.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include <jni.h>
 #include "base/android/jni_android.h"
 #include "chromecast/browser/jni_headers/CastAccessibilityHelper_jni.h"
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
 #include "chromecast/base/chromecast_switches.h"
@@ -74,7 +74,7 @@ void AccessibilityServiceImpl::SetColorInversion(bool enable) {
 bool AccessibilityServiceImpl::IsScreenReaderEnabled() {
 #if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
   return (chromevox_extension_ != nullptr);
-#elif defined(OS_ANDROID)
+#elif BUILDFLAG(IS_ANDROID)
   JNIEnv* env = base::android::AttachCurrentThread();
   return Java_CastAccessibilityHelper_isScreenReaderEnabled(env);
 #else
@@ -108,7 +108,7 @@ void AccessibilityServiceImpl::NotifyAccessibilitySettingChanged(
     if (!render_frame_host)
       continue;
 
-    if (!render_frame_host->IsRenderFrameCreated())
+    if (!render_frame_host->IsRenderFrameLive())
       continue;
 
     service_manager::InterfaceProvider* interface_provider =
@@ -233,8 +233,8 @@ void AccessibilityServiceImpl::LoadChromeVoxExtension(
   chromevox_extension_ = extension_system->LoadExtension(
       kChromeVoxManifestFile, base::FilePath(ext_dir));
 
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(&AccessibilityServiceImpl::AnnounceChromeVox,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&AccessibilityServiceImpl::AnnounceChromeVox,
                                 base::Unretained(this)));
 }
 #endif  // BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)

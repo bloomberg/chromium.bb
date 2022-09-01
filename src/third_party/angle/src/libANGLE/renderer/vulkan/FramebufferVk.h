@@ -15,6 +15,7 @@
 #include "libANGLE/renderer/RenderTargetCache.h"
 #include "libANGLE/renderer/vulkan/BufferVk.h"
 #include "libANGLE/renderer/vulkan/ResourceVk.h"
+#include "libANGLE/renderer/vulkan/SurfaceVk.h"
 #include "libANGLE/renderer/vulkan/UtilsVk.h"
 #include "libANGLE/renderer/vulkan/vk_cache_utils.h"
 #include "libANGLE/renderer/vulkan/vk_helpers.h"
@@ -39,6 +40,8 @@ class FramebufferCache final : angle::NonCopyable
              vk::FramebufferHelper **framebufferOut);
     void insert(const vk::FramebufferDesc &desc, vk::FramebufferHelper &&framebufferHelper);
     void clear(ContextVk *contextVk);
+
+    size_t getSize() const { return mPayload.size(); }
 
   private:
     angle::HashMap<vk::FramebufferDesc, vk::FramebufferHelper> mPayload;
@@ -138,16 +141,21 @@ class FramebufferVk : public FramebufferImpl
 
     angle::Result startNewRenderPass(ContextVk *contextVk,
                                      const gl::Rectangle &scissoredRenderArea,
-                                     vk::CommandBuffer **commandBufferOut,
+                                     vk::RenderPassCommandBuffer **commandBufferOut,
                                      bool *renderPassDescChangedOut);
 
     GLint getSamples() const;
 
     const vk::RenderPassDesc &getRenderPassDesc() const { return mRenderPassDesc; }
 
+    void updateColorResolveAttachment(
+        uint32_t colorIndexGL,
+        vk::ImageOrBufferViewSubresourceSerial resolveImageViewSerial);
+
     angle::Result getFramebuffer(ContextVk *contextVk,
                                  vk::Framebuffer **framebufferOut,
-                                 const vk::ImageView *resolveImageViewIn);
+                                 const vk::ImageView *resolveImageViewIn,
+                                 const SwapchainResolveMode swapchainResolveMode);
 
     bool hasDeferredClears() const { return !mDeferredClears.empty(); }
     angle::Result flushDeferredClears(ContextVk *contextVk);
@@ -157,9 +165,14 @@ class FramebufferVk : public FramebufferImpl
     }
     bool isReadOnlyDepthFeedbackLoopMode() const { return mReadOnlyDepthFeedbackLoopMode; }
     void updateRenderPassReadOnlyDepthMode(ContextVk *contextVk,
-                                           vk::CommandBufferHelper *renderPass);
+                                           vk::RenderPassCommandBufferHelper *renderPass);
 
     void onSwitchProgramFramebufferFetch(ContextVk *contextVk, bool programUsesFramebufferFetch);
+    bool hasFramebufferFetch() const { return mCurrentFramebufferDesc.hasFramebufferFetch(); }
+
+    void removeColorResolveAttachment(uint32_t colorIndexGL);
+
+    size_t getCacheSize() const { return mFramebufferCache.getSize(); }
 
   private:
     FramebufferVk(RendererVk *renderer,
@@ -210,9 +223,8 @@ class FramebufferVk : public FramebufferImpl
                                 const VkClearColorValue &clearColorValue,
                                 const VkClearDepthStencilValue &clearDepthStencilValue);
     void redeferClears(ContextVk *contextVk);
-    angle::Result clearWithCommand(ContextVk *contextVk,
-                                   vk::CommandBufferHelper *renderpassCommands,
-                                   const gl::Rectangle &scissoredRenderArea);
+    void clearWithCommand(ContextVk *contextVk, const gl::Rectangle &scissoredRenderArea);
+    void clearWithLoadOp(ContextVk *contextVk);
     void updateActiveColorMasks(size_t colorIndex, bool r, bool g, bool b, bool a);
     void updateRenderPassDesc(ContextVk *contextVk);
     angle::Result updateColorAttachment(const gl::Context *context, uint32_t colorIndex);
@@ -234,11 +246,6 @@ class FramebufferVk : public FramebufferImpl
     VkClearValue getCorrectedColorClearValue(size_t colorIndexGL,
                                              const VkClearColorValue &clearColor) const;
 
-    void updateColorResolveAttachment(
-        uint32_t colorIndexGL,
-        vk::ImageOrBufferViewSubresourceSerial resolveImageViewSerial);
-    void removeColorResolveAttachment(uint32_t colorIndexGL);
-
     void updateLayerCount();
 
     WindowSurfaceVk *mBackbuffer;
@@ -251,7 +258,6 @@ class FramebufferVk : public FramebufferImpl
     // channel is masked out, we check against the Framebuffer Attachments (RenderTargets) to see
     // if the masked out channel is present in any of the attachments.
     gl::BlendStateExt::ColorMaskStorage::Type mActiveColorComponentMasksForClear;
-    vk::DynamicBuffer mReadPixelBuffer;
 
     // When we draw to the framebuffer, and the real format has an alpha channel but the format of
     // the framebuffer does not, we need to mask out the alpha channel. This DrawBufferMask will

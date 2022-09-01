@@ -26,7 +26,7 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector_traits.h"
@@ -50,7 +50,7 @@ class CORE_EXPORT DocumentMarker : public GarbageCollected<DocumentMarker> {
     kMarkerTypeIndexesCount
   };
 
-  enum MarkerType {
+  enum MarkerType : unsigned {
     kSpelling = 1 << kSpellingMarkerIndex,
     kGrammar = 1 << kGrammarMarkerIndex,
     kTextMatch = 1 << kTextMatchMarkerIndex,
@@ -68,10 +68,10 @@ class CORE_EXPORT DocumentMarker : public GarbageCollected<DocumentMarker> {
         : remaining_types_(marker_types) {}
     MarkerTypesIterator(const MarkerTypesIterator& other) = default;
 
-    bool operator==(const MarkerTypesIterator& other) {
+    bool operator==(const MarkerTypesIterator& other) const {
       return remaining_types_ == other.remaining_types_;
     }
-    bool operator!=(const MarkerTypesIterator& other) {
+    bool operator!=(const MarkerTypesIterator& other) const {
       return !operator==(other);
     }
 
@@ -115,6 +115,11 @@ class CORE_EXPORT DocumentMarker : public GarbageCollected<DocumentMarker> {
       return MarkerTypes(All().mask_ & ~types.mask_);
     }
 
+    static MarkerTypes HighlightPseudos() {
+      return MarkerTypes(kTextFragment | kSpelling | kGrammar |
+                         kCustomHighlight);
+    }
+
     static MarkerTypes ActiveSuggestion() {
       return MarkerTypes(kActiveSuggestion);
     }
@@ -141,6 +146,10 @@ class CORE_EXPORT DocumentMarker : public GarbageCollected<DocumentMarker> {
 
     MarkerTypes Add(const MarkerTypes& types) const {
       return MarkerTypes(mask_ | types.mask_);
+    }
+
+    MarkerTypes Subtract(const MarkerTypes& types) const {
+      return MarkerTypes(mask_ & ~types.mask_);
     }
 
     MarkerTypesIterator begin() const { return MarkerTypesIterator(mask_); }
