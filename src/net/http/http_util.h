@@ -29,6 +29,8 @@
 
 namespace net {
 
+class HttpResponseHeaders;
+
 class NET_EXPORT HttpUtil {
  public:
   // Returns the absolute URL, to be used for the http request. This url is
@@ -147,8 +149,8 @@ class NET_EXPORT HttpUtil {
   // unescaped actually is a valid quoted string. Returns false for an empty
   // string, a string without quotes, a string with mismatched quotes, and
   // a string with unescaped embeded quotes.
-  static bool StrictUnquote(base::StringPiece str,
-                            std::string* out) WARN_UNUSED_RESULT;
+  [[nodiscard]] static bool StrictUnquote(base::StringPiece str,
+                                          std::string* out);
 
   // The reverse of Unquote() -- escapes and surrounds with "
   static std::string Quote(base::StringPiece str);
@@ -259,6 +261,12 @@ class NET_EXPORT HttpUtil {
   // 3.5 of RFC 2616.
   static bool ParseContentEncoding(const std::string& content_encoding,
                                    std::set<std::string>* used_encodings);
+
+  // Return true if `headers` contain multiple `field_name` fields with
+  // different values.
+  static bool HeadersContainMultipleCopiesOfField(
+      const HttpResponseHeaders& headers,
+      const std::string& field_name);
 
   // Used to iterate over the name/value pairs of HTTP headers.  To iterate
   // over the values in a multi-value header, use ValuesIterator.
@@ -442,7 +450,7 @@ class NET_EXPORT HttpUtil {
 
    private:
     HttpUtil::ValuesIterator props_;
-    bool valid_;
+    bool valid_ = true;
 
     std::string::const_iterator name_begin_;
     std::string::const_iterator name_end_;
@@ -455,7 +463,7 @@ class NET_EXPORT HttpUtil {
     // into the original's unquoted_value_ member.
     std::string unquoted_value_;
 
-    bool value_is_quoted_;
+    bool value_is_quoted_ = false;
 
     // True if values are required for each name/value pair; false if a
     // name is permitted to appear without a corresponding value.

@@ -48,6 +48,8 @@ class CONTENT_EXPORT PageImpl : public Page {
   base::WeakPtr<Page> GetWeakPtr() override;
   bool IsPageScaleFactorOne() override;
 
+  base::WeakPtr<PageImpl> GetWeakPtrImpl();
+
   void UpdateManifestUrl(const GURL& manifest_url);
 
   RenderFrameHostImpl& GetMainDocument() const;
@@ -59,11 +61,11 @@ class CONTENT_EXPORT PageImpl : public Page {
     is_on_load_completed_in_main_document_ = completed;
   }
 
-  bool is_document_available_in_main_document() const {
-    return is_document_available_in_main_document_;
+  bool is_main_document_element_available() const {
+    return is_main_document_element_available_;
   }
-  void set_is_document_available_in_main_document(bool completed) {
-    is_document_available_in_main_document_ = completed;
+  void set_is_main_document_element_available(bool completed) {
+    is_main_document_element_available_ = completed;
   }
 
   bool uses_temporary_zoom_level() const { return uses_temporary_zoom_level_; }
@@ -153,13 +155,14 @@ class CONTENT_EXPORT PageImpl : public Page {
                                   cc::BrowserControlsState current,
                                   bool animate);
 
+  float GetPageScaleFactor() const;
+
   void set_load_progress(double load_progress) {
     load_progress_ = load_progress;
   }
   double load_progress() const { return load_progress_; }
 
-  void set_page_scale_factor(float scale) { page_scale_factor_ = scale; }
-  float page_scale_factor() const { return page_scale_factor_; }
+  void NotifyVirtualKeyboardOverlayRect(const gfx::Rect& keyboard_rect);
 
   void set_virtual_keyboard_overlays_content(bool vk_overlays_content) {
     virtual_keyboard_overlays_content_ = vk_overlays_content;
@@ -167,6 +170,12 @@ class CONTENT_EXPORT PageImpl : public Page {
   bool virtual_keyboard_overlays_content() const {
     return virtual_keyboard_overlays_content_;
   }
+
+  const std::string& GetEncoding() { return canonical_encoding_; }
+  void UpdateEncoding(const std::string& encoding_name);
+
+  // Returns the keyboard layout mapping.
+  base::flat_map<std::string, std::string> GetKeyboardLayoutMap();
 
  private:
   void DidActivateAllRenderViewsForPrerendering();
@@ -180,9 +189,9 @@ class CONTENT_EXPORT PageImpl : public Page {
   // run for the main document.
   bool is_on_load_completed_in_main_document_ = false;
 
-  // True if we've received a notification that the window.document was created
-  // for the main document.
-  bool is_document_available_in_main_document_ = false;
+  // True if we've received a notification that the window.document element
+  // became available for the main document.
+  bool is_main_document_element_available_ = false;
 
   // True if plugin zoom level is set for the main document.
   bool uses_temporary_zoom_level_ = false;
@@ -261,17 +270,16 @@ class CONTENT_EXPORT PageImpl : public Page {
   // RenderFrameHostManager::CommitPending and remove this.
   absl::optional<base::TimeTicks> activation_start_time_for_prerendering_;
 
-  // The most recent page scale factor sent by the main frame's renderer.
-  // Note that the renderer uses a different mechanism to persist its page
-  // scale factor when performing session history navigations (see
-  // blink::PageState).
-  float page_scale_factor_ = 1.f;
-
   // If true, then the Virtual keyboard rectangle that occludes the content is
   // sent to the VirtualKeyboard API where it fires overlaygeometrychange JS
   // event notifying the web authors that Virtual keyboard has occluded the
   // content.
   bool virtual_keyboard_overlays_content_ = false;
+
+  // The last reported character encoding, not canonicalized.
+  std::string last_reported_encoding_;
+  // The canonicalized character encoding.
+  std::string canonical_encoding_;
 
   base::WeakPtrFactory<PageImpl> weak_factory_{this};
 };

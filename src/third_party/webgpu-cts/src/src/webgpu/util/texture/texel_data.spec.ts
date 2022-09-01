@@ -53,14 +53,14 @@ function doTest(
   const { ReadbackTypedArray, shaderType } = getComponentReadbackTraits(getSingleDataType(format));
 
   const shader = `
-  [[group(0), binding(0)]] var tex : texture_2d<${shaderType}>;
+  @group(0) @binding(0) var tex : texture_2d<${shaderType}>;
 
-  [[block]] struct Output {
-    ${rep.componentOrder.map(C => `result${C} : ${shaderType};`).join('\n')}
+  struct Output {
+    ${rep.componentOrder.map(C => `result${C} : ${shaderType},`).join('\n')}
   };
-  [[group(0), binding(1)]] var<storage, read_write> output : Output;
+  @group(0) @binding(1) var<storage, read_write> output : Output;
 
-  [[stage(compute), workgroup_size(1)]]
+  @compute @workgroup_size(1)
   fn main() {
       var texel : vec4<${shaderType}> = textureLoad(tex, vec2<i32>(0, 0), 0);
       ${rep.componentOrder.map(C => `output.result${C} = texel.${C.toLowerCase()};`).join('\n')}
@@ -68,6 +68,7 @@ function doTest(
   }`;
 
   const pipeline = t.device.createComputePipeline({
+    layout: 'auto',
     compute: {
       module: t.device.createShaderModule({
         code: shader,
@@ -101,8 +102,8 @@ function doTest(
   const pass = encoder.beginComputePass();
   pass.setPipeline(pipeline);
   pass.setBindGroup(0, bindGroup);
-  pass.dispatch(1);
-  pass.endPass();
+  pass.dispatchWorkgroups(1);
+  pass.end();
   t.device.queue.submit([encoder.finish()]);
 
   t.expectGPUBufferValuesEqual(
@@ -266,6 +267,10 @@ g.test('sint_texel_data_in_shader')
   .fn(doTest);
 
 g.test('float_texel_data_in_shader')
+  .desc(
+    `
+TODO: Test NaN, Infinity, -Infinity [1]`
+  )
   .params(u =>
     u
       .combine('format', kEncodableTextureFormats)
@@ -282,7 +287,7 @@ g.test('float_texel_data_in_shader')
           // Test extrema
           makeParam(format, () => 0),
 
-          // TODO: Test NaN, Infinity, -Infinity
+          // [1]: Test NaN, Infinity, -Infinity
 
           // Test some values
           makeParam(format, () => 0.1199951171875),
@@ -302,6 +307,10 @@ g.test('float_texel_data_in_shader')
   .fn(doTest);
 
 g.test('ufloat_texel_data_in_shader')
+  .desc(
+    `
+TODO: Test NaN, Infinity [1]`
+  )
   .params(u =>
     u
       .combine('format', kEncodableTextureFormats)
@@ -318,7 +327,7 @@ g.test('ufloat_texel_data_in_shader')
           // Test extrema
           makeParam(format, () => 0),
 
-          // TODO: Test NaN, Infinity
+          // [2]: Test NaN, Infinity
 
           // Test some values
           makeParam(format, () => 0.119140625),

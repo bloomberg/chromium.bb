@@ -272,21 +272,29 @@ class ConvolveTest : public ::testing::TestWithParam<ConvolveParam> {
     input_ = reinterpret_cast<uint8_t *>(
                  aom_memalign(kDataAlignment, kInputBufferSize + 1)) +
              1;
+    ASSERT_NE(input_, nullptr);
     ref8_ = reinterpret_cast<uint8_t *>(
         aom_memalign(kDataAlignment, kOutputStride * kMaxDimension));
+    ASSERT_NE(ref8_, nullptr);
     output_ = reinterpret_cast<uint8_t *>(
         aom_memalign(kDataAlignment, kOutputBufferSize));
+    ASSERT_NE(output_, nullptr);
     output_ref_ = reinterpret_cast<uint8_t *>(
         aom_memalign(kDataAlignment, kOutputBufferSize));
+    ASSERT_NE(output_ref_, nullptr);
     input16_ = reinterpret_cast<uint16_t *>(aom_memalign(
                    kDataAlignment, (kInputBufferSize + 1) * sizeof(uint16_t))) +
                1;
+    ASSERT_NE(input16_, nullptr);
     ref16_ = reinterpret_cast<uint16_t *>(aom_memalign(
         kDataAlignment, kOutputStride * kMaxDimension * sizeof(uint16_t)));
+    ASSERT_NE(ref16_, nullptr);
     output16_ = reinterpret_cast<uint16_t *>(
         aom_memalign(kDataAlignment, (kOutputBufferSize) * sizeof(uint16_t)));
+    ASSERT_NE(output16_, nullptr);
     output16_ref_ = reinterpret_cast<uint16_t *>(
         aom_memalign(kDataAlignment, (kOutputBufferSize) * sizeof(uint16_t)));
+    ASSERT_NE(output16_ref_, nullptr);
   }
 
   virtual void TearDown() {}

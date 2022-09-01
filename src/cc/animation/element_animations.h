@@ -61,11 +61,7 @@ class CC_ANIMATION_EXPORT ElementAnimations
 
   void ClearAffectedElementTypes(const PropertyToElementIdMap& element_id_map);
 
-  // Called when |element_id| is available to animate in |list_type|.
-  void ElementIdRegistered(ElementId element_id, ElementListType list_type);
-
-  // Called when |element_id| is no longer avialable to animate in |list_type|.
-  void ElementIdUnregistered(ElementId element_id, ElementListType list_type);
+  void RemoveKeyframeEffects();
 
   void AddKeyframeEffect(KeyframeEffect* keyframe_effect);
   void RemoveKeyframeEffect(KeyframeEffect* keyframe_effect);
@@ -84,7 +80,8 @@ class CC_ANIMATION_EXPORT ElementAnimations
   // Returns true if there are any KeyframeModels at all to process.
   bool HasAnyKeyframeModel() const;
 
-  bool HasAnyAnimationTargetingProperty(TargetProperty::Type property) const;
+  bool HasAnyAnimationTargetingProperty(TargetProperty::Type property,
+                                        ElementId element_id) const;
 
   // Returns true if there is an animation that is either currently animating
   // the given property or scheduled to animate this property in the future, and
@@ -97,29 +94,12 @@ class CC_ANIMATION_EXPORT ElementAnimations
   bool IsCurrentlyAnimatingProperty(TargetProperty::Type target_property,
                                     ElementListType list_type) const;
 
-  bool has_element_in_active_list() const {
-    return has_element_in_active_list_;
-  }
-  bool has_element_in_pending_list() const {
-    return has_element_in_pending_list_;
-  }
-  bool has_element_in_any_list() const {
-    return has_element_in_active_list_ || has_element_in_pending_list_;
-  }
-
-  void set_has_element_in_active_list(bool has_element_in_active_list) {
-    has_element_in_active_list_ = has_element_in_active_list;
-  }
-  void set_has_element_in_pending_list(bool has_element_in_pending_list) {
-    has_element_in_pending_list_ = has_element_in_pending_list;
-  }
-
   bool AnimationsPreserveAxisAlignment() const;
 
   // Returns the maximum scale along any dimension at any destination in active
   // scale animations, or kInvalidScale if there is no active transform
   // animation or the scale cannot be computed.
-  float MaximumScale(ElementListType list_type) const;
+  float MaximumScale(ElementId element_id, ElementListType list_type) const;
 
   bool ScrollOffsetAnimationWasInterrupted() const;
 
@@ -156,7 +136,7 @@ class CC_ANIMATION_EXPORT ElementAnimations
                               int target_property_id,
                               gfx::KeyframeModel* keyframe_model) override;
 
-  gfx::PointF ScrollOffsetForAnimation() const;
+  absl::optional<gfx::PointF> ScrollOffsetForAnimation() const;
 
   // Returns a map of target property to the ElementId for that property, for
   // KeyframeEffects associated with this ElementAnimations.
@@ -208,6 +188,10 @@ class CC_ANIMATION_EXPORT ElementAnimations
 
   static gfx::TargetProperties GetPropertiesMaskForAnimationState();
 
+  void UpdateMaximumScale(ElementId element_id,
+                          ElementListType list_type,
+                          float* cached_scale);
+
   void UpdateKeyframeEffectsTickingState() const;
   void RemoveKeyframeEffectsFromTicking() const;
 
@@ -220,15 +204,14 @@ class CC_ANIMATION_EXPORT ElementAnimations
   raw_ptr<AnimationHost> animation_host_;
   ElementId element_id_;
 
-  bool has_element_in_active_list_;
-  bool has_element_in_pending_list_;
-
   mutable bool needs_push_properties_;
 
   PropertyAnimationState active_state_;
   PropertyAnimationState pending_state_;
-  float active_maximum_scale_;
-  float pending_maximum_scale_;
+  float transform_property_active_maximum_scale_;
+  float transform_property_pending_maximum_scale_;
+  float scale_property_active_maximum_scale_;
+  float scale_property_pending_maximum_scale_;
 };
 
 }  // namespace cc

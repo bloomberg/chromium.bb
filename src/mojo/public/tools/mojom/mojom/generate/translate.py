@@ -12,17 +12,10 @@ already been parsed and converted to ASTs before.
 import itertools
 import os
 import re
-import sys
 
 from mojom.generate import generator
 from mojom.generate import module as mojom
 from mojom.parse import ast
-
-
-def _IsStrOrUnicode(x):
-  if sys.version_info[0] < 3:
-    return isinstance(x, (unicode, str))
-  return isinstance(x, str)
 
 
 def _DuplicateName(values):
@@ -113,8 +106,6 @@ def _MapKind(kind):
     lbracket = kind.rfind('[')
     typename = kind[0:lbracket]
     return 'a' + kind[lbracket + 1:-1] + ':' + _MapKind(typename)
-  if kind.endswith('&'):
-    return 'r:' + _MapKind(kind[0:-1])
   if kind.startswith('asso<'):
     assert kind.endswith('>')
     return 'asso:' + _MapKind(kind[5:-1])
@@ -135,13 +126,36 @@ def _MapKind(kind):
   return 'x:' + kind
 
 
-def _AttributeListToDict(attribute_list):
+def _MapValueToEnum(module, value):
+  # True/False/None
+  if value is None:
+    return value
+  if not isinstance(value, str):
+    return value
+  # Otherwise try to find it.
+  try:
+    trial = _LookupValue(module, None, None, ('IDENTIFIER', value))
+    if isinstance(trial, mojom.ConstantValue):
+      return trial.constant
+    if isinstance(trial, mojom.EnumValue):
+      return trial
+  except ValueError:
+    pass
+  # Return the string if it did not resolve to a constant or enum.
+  return value
+
+
+def _AttributeListToDict(module, attribute_list):
   if attribute_list is None:
     return None
   assert isinstance(attribute_list, ast.AttributeList)
-  # TODO(vtl): Check for duplicate keys here.
-  return dict(
-      [(attribute.key, attribute.value) for attribute in attribute_list])
+  attributes = dict()
+  for attribute in attribute_list:
+    if attribute.key in attributes:
+      raise Exception("Duplicate key (%s) in attribute list" % attribute.key)
+    else:
+      attributes[attribute.key] = _MapValueToEnum(module, attribute.value)
+  return attributes
 
 
 builtin_values = frozenset([
@@ -345,7 +359,7 @@ def _Struct(module, parsed_struct):
             struct.fields_data.append,
         })
 
-  struct.attributes = _AttributeListToDict(parsed_struct.attribute_list)
+  struct.attributes = _AttributeListToDict(module, parsed_struct.attribute_list)
 
   # Enforce that a [Native] attribute is set to make native-only struct
   # declarations more explicit.
@@ -377,7 +391,7 @@ def _Union(module, parsed_union):
   union.fields_data = []
   _ProcessElements(parsed_union.mojom_name, parsed_union.body,
                    {ast.UnionField: union.fields_data.append})
-  union.attributes = _AttributeListToDict(parsed_union.attribute_list)
+  union.attributes = _AttributeListToDict(module, parsed_union.attribute_list)
   return union
 
 
@@ -398,7 +412,7 @@ def _StructField(module, parsed_field, struct):
   field.ordinal = parsed_field.ordinal.value if parsed_field.ordinal else None
   field.default = _LookupValue(module, struct, field.kind,
                                parsed_field.default_value)
-  field.attributes = _AttributeListToDict(parsed_field.attribute_list)
+  field.attributes = _AttributeListToDict(module, parsed_field.attribute_list)
   return field
 
 
@@ -423,7 +437,12 @@ def _UnionField(module, parsed_field, union):
                      (module.mojom_namespace, union.mojom_name))
   field.ordinal = parsed_field.ordinal.value if parsed_field.ordinal else None
   field.default = None
-  field.attributes = _AttributeListToDict(parsed_field.attribute_list)
+  field.attributes = _AttributeListToDict(module, parsed_field.attribute_list)
+  if field.is_default and not mojom.IsNullableKind(field.kind) and \
+     not mojom.IsIntegralKind(field.kind):
+    raise Exception(
+        '[Default] field for union %s must be nullable or integral type.' %
+        union.mojom_name)
   return field
 
 
@@ -444,7 +463,8 @@ def _Parameter(module, parsed_param, interface):
   parameter.ordinal = (parsed_param.ordinal.value
                        if parsed_param.ordinal else None)
   parameter.default = None  # TODO(tibell): We never have these. Remove field?
-  parameter.attributes = _AttributeListToDict(parsed_param.attribute_list)
+  parameter.attributes = _AttributeListToDict(module,
+                                              parsed_param.attribute_list)
   return parameter
 
 
@@ -469,7 +489,7 @@ def _Method(module, parsed_method, interface):
     method.response_parameters = list(
         map(lambda parameter: _Parameter(module, parameter, interface),
             parsed_method.response_parameter_list))
-  method.attributes = _AttributeListToDict(parsed_method.attribute_list)
+  method.attributes = _AttributeListToDict(module, parsed_method.attribute_list)
 
   # Enforce that only methods with response can have a [Sync] attribute.
   if method.sync and method.response_parameters is None:
@@ -497,7 +517,8 @@ def _Interface(module, parsed_iface):
   interface.mojom_name = parsed_iface.mojom_name
   interface.spec = 'x:' + module.GetNamespacePrefix() + interface.mojom_name
   module.kinds[interface.spec] = interface
-  interface.attributes = _AttributeListToDict(parsed_iface.attribute_list)
+  interface.attributes = _AttributeListToDict(module,
+                                              parsed_iface.attribute_list)
   interface.enums = []
   interface.constants = []
   interface.methods_data = []
@@ -527,7 +548,7 @@ def _EnumField(module, enum, parsed_field):
   field = mojom.EnumField()
   field.mojom_name = parsed_field.mojom_name
   field.value = _LookupValue(module, enum, None, parsed_field.value)
-  field.attributes = _AttributeListToDict(parsed_field.attribute_list)
+  field.attributes = _AttributeListToDict(module, parsed_field.attribute_list)
   value = mojom.EnumValue(module, enum, field)
   module.values[value.GetSpec()] = value
   return field
@@ -549,7 +570,7 @@ def _ResolveNumericEnumValues(enum):
       prev_value += 1
 
     # Integral value (e.g: BEGIN = -0x1).
-    elif _IsStrOrUnicode(field.value):
+    elif isinstance(field.value, str):
       prev_value = int(field.value, 0)
 
     # Reference to a previous enum value (e.g: INIT = BEGIN).
@@ -593,7 +614,7 @@ def _Enum(module, parsed_enum, parent_kind):
     mojom_name = parent_kind.mojom_name + '.' + mojom_name
   enum.spec = 'x:%s.%s' % (module.mojom_namespace, mojom_name)
   enum.parent_kind = parent_kind
-  enum.attributes = _AttributeListToDict(parsed_enum.attribute_list)
+  enum.attributes = _AttributeListToDict(module, parsed_enum.attribute_list)
 
   if not enum.native_only:
     enum.fields = list(
@@ -830,8 +851,17 @@ def _Module(tree, path, imports):
     union.fields = list(
         map(lambda field: _UnionField(module, field, union), union.fields_data))
     _AssignDefaultOrdinals(union.fields)
+    for field in union.fields:
+      if field.is_default:
+        if union.default_field is not None:
+          raise Exception('Multiple [Default] fields in union %s.' %
+                          union.mojom_name)
+        union.default_field = field
     del union.fields_data
     all_defined_kinds[union.spec] = union
+    if union.extensible and union.default_field is None:
+      raise Exception('Extensible union %s must specify a [Default] field' %
+                      union.mojom_name)
 
   for interface in module.interfaces:
     interface.methods = list(

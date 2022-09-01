@@ -53,7 +53,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
   struct COMPONENTS_DOWNLOAD_EXPORT RequestInfo {
     RequestInfo(const std::vector<GURL>& url_chain,
                 const GURL& referrer_url,
-                const GURL& site_url,
+                const std::string& serialized_embedder_download_data,
                 const GURL& tab_url,
                 const GURL& tab_referrer_url,
                 const absl::optional<url::Origin>& request_initiator,
@@ -78,8 +78,11 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
     // The URL of the page that initiated the download.
     GURL referrer_url;
 
-    // Site URL for the site instance that initiated this download.
-    GURL site_url;
+    // The serialized embedder download data for the site instance that
+    // initiated this download. The embedder can use this field to add
+    // additional information about the download, such as the
+    // StoragePartitionConfig that pertains to it.
+    std::string serialized_embedder_download_data;
 
     // The URL of the tab that initiated the download.
     GURL tab_url;
@@ -191,7 +194,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
       const base::FilePath& target_path,
       const std::vector<GURL>& url_chain,
       const GURL& referrer_url,
-      const GURL& site_url,
+      const std::string& serialized_embedder_download_data,
       const GURL& tab_url,
       const GURL& tab_referrer_url,
       const absl::optional<url::Origin>& request_initiator,
@@ -246,7 +249,6 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
   void UpdateObservers() override;
   void ValidateDangerousDownload() override;
   void ValidateMixedContentDownload() override;
-  void AcceptIncognitoWarning() override;
   void StealDangerousDownload(bool need_removal,
                               AcquireFileCallback callback) override;
   void Pause() override;
@@ -272,7 +274,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
   const std::vector<GURL>& GetUrlChain() const override;
   const GURL& GetOriginalUrl() const override;
   const GURL& GetReferrerUrl() const override;
-  const GURL& GetSiteUrl() const override;
+  const std::string& GetSerializedEmbedderDownloadData() const override;
   const GURL& GetTabUrl() const override;
   const GURL& GetTabReferrerUrl() const override;
   const absl::optional<url::Origin>& GetRequestInitiator() const override;
@@ -303,7 +305,6 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
   const DownloadItemRerouteInfo& GetRerouteInfo() const override;
   bool IsDangerous() const override;
   bool IsMixedContent() const override;
-  bool ShouldShowIncognitoWarning() const override;
   DownloadDangerType GetDangerType() const override;
   MixedContentStatus GetMixedContentStatus() const override;
   bool TimeRemaining(base::TimeDelta* remaining) const override;
@@ -325,6 +326,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
   bool GetOpened() const override;
   base::Time GetLastAccessTime() const override;
   bool IsTransient() const override;
+  bool RequireSafetyChecks() const override;
   bool IsParallelDownload() const override;
   DownloadCreationType GetDownloadCreationType() const override;
   const absl::optional<DownloadSchedule>& GetDownloadSchedule() const override;
@@ -592,12 +594,16 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
   // be used (see TargetDisposition). |danger_type| is the danger level of
   // |target_path| as determined by the caller. |intermediate_path| is the path
   // to use to store the download until OnDownloadCompleting() is called.
+  // If |display_name| is empty, the download should keep its current display
+  // name. Otherwise, the new display name should be used.
   virtual void OnDownloadTargetDetermined(
       const base::FilePath& target_path,
       TargetDisposition disposition,
       DownloadDangerType danger_type,
       MixedContentStatus mixed_content_status,
       const base::FilePath& intermediate_path,
+      const base::FilePath& display_name,
+      const std::string& mime_type,
       absl::optional<DownloadSchedule> download_schedule,
       DownloadInterruptReason interrupt_reason);
 
@@ -786,9 +792,6 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
   // The current state of this download.
   DownloadInternalState state_ = INITIAL_INTERNAL;
 
-  // A flag for indicating whether user has accepted incognito warning or not
-  bool incognito_warning_accepted_ = false;
-
   // Current danger type for the download.
   DownloadDangerType danger_type_ = DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS;
 
@@ -831,6 +834,9 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
 
   // Whether the download item should be transient and not shown in the UI.
   bool transient_ = false;
+
+  // Whether the download requires safe browsing check.
+  bool require_safety_checks_ = true;
 
   // Did the delegate delay calling Complete on this download?
   bool delegate_delayed_complete_ = false;

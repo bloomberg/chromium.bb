@@ -6,8 +6,9 @@
 #define ASH_WEBUI_SHIMLESS_RMA_MOJOM_SHIMLESS_RMA_MOJOM_TRAITS_H_
 
 #include "ash/webui/shimless_rma/mojom/shimless_rma.mojom.h"
-#include "chromeos/dbus/rmad/rmad.pb.h"
+#include "chromeos/ash/components/dbus/rmad/rmad.pb.h"
 #include "chromeos/dbus/update_engine/update_engine.pb.h"
+#include "chromeos/dbus/update_engine/update_engine_client.h"
 #include "mojo/public/cpp/bindings/enum_traits.h"
 
 namespace mojo {
@@ -62,6 +63,16 @@ struct EnumTraits<ash::shimless_rma::mojom::OsUpdateOperation,
 };
 
 template <>
+struct EnumTraits<ash::shimless_rma::mojom::UpdateErrorCode,
+                  update_engine::ErrorCode> {
+  static ash::shimless_rma::mojom::UpdateErrorCode ToMojom(
+      update_engine::ErrorCode error_code);
+
+  static bool FromMojom(ash::shimless_rma::mojom::UpdateErrorCode input,
+                        update_engine::ErrorCode* out);
+};
+
+template <>
 struct EnumTraits<ash::shimless_rma::mojom::WriteProtectDisableCompleteAction,
                   rmad::WriteProtectDisableCompleteState::Action> {
   static ash::shimless_rma::mojom::WriteProtectDisableCompleteAction ToMojom(
@@ -83,6 +94,16 @@ struct EnumTraits<ash::shimless_rma::mojom::ProvisioningStatus,
 };
 
 template <>
+struct EnumTraits<ash::shimless_rma::mojom::ProvisioningError,
+                  rmad::ProvisionStatus::Error> {
+  static ash::shimless_rma::mojom::ProvisioningError ToMojom(
+      rmad::ProvisionStatus::Error error);
+
+  static bool FromMojom(ash::shimless_rma::mojom::ProvisioningError input,
+                        rmad::ProvisionStatus::Error* out);
+};
+
+template <>
 class StructTraits<ash::shimless_rma::mojom::ComponentDataView,
                    rmad::ComponentsRepairState_ComponentRepairStatus> {
  public:
@@ -95,6 +116,9 @@ class StructTraits<ash::shimless_rma::mojom::ComponentDataView,
       const rmad::ComponentsRepairState_ComponentRepairStatus& component) {
     return component.repair_status();
   }
+
+  static const std::string& identifier(
+      const rmad::ComponentsRepairState_ComponentRepairStatus& component);
 
   static bool Read(ash::shimless_rma::mojom::ComponentDataView data,
                    rmad::ComponentsRepairState_ComponentRepairStatus* out);
@@ -144,6 +168,16 @@ struct EnumTraits<ash::shimless_rma::mojom::FinalizationStatus,
 };
 
 template <>
+struct EnumTraits<ash::shimless_rma::mojom::FinalizationError,
+                  rmad::FinalizeStatus::Error> {
+  static ash::shimless_rma::mojom::FinalizationError ToMojom(
+      rmad::FinalizeStatus::Error error);
+
+  static bool FromMojom(ash::shimless_rma::mojom::FinalizationError input,
+                        rmad::FinalizeStatus::Error* out);
+};
+
+template <>
 class StructTraits<ash::shimless_rma::mojom::CalibrationComponentStatusDataView,
                    rmad::CalibrationComponentStatus> {
  public:
@@ -174,6 +208,16 @@ struct EnumTraits<ash::shimless_rma::mojom::UpdateRoFirmwareStatus,
 
   static bool FromMojom(ash::shimless_rma::mojom::UpdateRoFirmwareStatus input,
                         rmad::UpdateRoFirmwareStatus* out);
+};
+
+template <>
+struct EnumTraits<ash::shimless_rma::mojom::ShutdownMethod,
+                  rmad::RepairCompleteState::ShutdownMethod> {
+  static ash::shimless_rma::mojom::ShutdownMethod ToMojom(
+      rmad::RepairCompleteState::ShutdownMethod shutdown_method);
+
+  static bool FromMojom(ash::shimless_rma::mojom::ShutdownMethod input,
+                        rmad::RepairCompleteState::ShutdownMethod* out);
 };
 
 }  // namespace mojo

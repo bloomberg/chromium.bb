@@ -6,7 +6,7 @@
       "sub_dir" : "glslang",
       "build_dir" : "glslang/build",
       "install_dir" : "glslang/build/install",
-      "commit": "c9706bdda0ac22b9856f1aa8261e5b9e15cd20c5",
+      "commit": "adbf0d3106b26daa237b10b9bf72b1af7c31092d",
       "cmake_options" : [
         "-DUSE_CCACHE=ON"
       ],
@@ -18,7 +18,7 @@
       "sub_dir": "Vulkan-Headers",
       "build_dir": "Vulkan-Headers/build",
       "install_dir": "Vulkan-Headers/build/install",
-      "commit": "v1.2.201"
+      "commit": "v1.3.216"
     },
     {
       "name": "SPIRV-Headers",
@@ -26,7 +26,7 @@
       "sub_dir": "SPIRV-Headers",
       "build_dir": "SPIRV-Headers/build",
       "install_dir": "SPIRV-Headers/build/install",
-      "commit": "814e728b30ddd0f4509233099a3ad96fd4318c07"
+      "commit": "5a121866927a16ab9d49bed4788b532c7fcea766"
     },
     {
       "name": "SPIRV-Tools",
@@ -37,7 +37,7 @@
       "cmake_options": [
         "-DSPIRV-Headers_SOURCE_DIR={repo_dir}/../SPIRV-Headers"
       ],
-      "commit": "21e3f681e2004590c7865bc8c0195a4ab8e66c88"
+      "commit": "b930e734ea198b7aabbbf04ee1562cf6f57962f0"
     },
     {
       "name": "robin-hood-hashing",
@@ -48,7 +48,7 @@
       "cmake_options": [
         "-DRH_STANDALONE_PROJECT=OFF"
       ],
-      "commit": "3.11.3"
+      "commit": "3.11.5"
     },
     {
         "name": "googletest",
@@ -61,7 +61,7 @@
               "-Dgtest_force_shared_crt=ON",
               "-DBUILD_SHARED_LIBS=OFF"
         ],
-        "commit": "release-1.8.1",
+        "commit": "main",
         "optional": ["tests"]
     }
   ],

@@ -9,17 +9,48 @@
 
 import 'chrome://resources/polymer/v3_0/iron-location/iron-location.js';
 import 'chrome://resources/polymer/v3_0/iron-location/iron-query-params.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {WallpaperCollection} from './personalization_app.mojom-webui.js';
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {GooglePhotosAlbum, TopicSource, WallpaperCollection} from './personalization_app.mojom-webui.js';
+import {logPersonalizationPathUMA} from './personalization_metrics_logger.js';
+import {getTemplate} from './personalization_router_element.html.js';
 
 export enum Paths {
-  CollectionImages = '/wallpaper/collection',
-  Collections = '/wallpaper',
-  GooglePhotosCollection = '/wallpaper/google-photos',
-  LocalCollection = '/wallpaper/local',
-  Root = '/',
+  AMBIENT = '/ambient',
+  AMBIENT_ALBUMS = '/ambient/albums',
+  COLLECTION_IMAGES = '/wallpaper/collection',
+  COLLECTIONS = '/wallpaper',
+  GOOGLE_PHOTOS_COLLECTION = '/wallpaper/google-photos',
+  LOCAL_COLLECTION = '/wallpaper/local',
+  ROOT = '/',
+  USER = '/user',
+}
+
+export function isPersonalizationHubEnabled(): boolean {
+  return loadTimeData.getBoolean('isPersonalizationHubEnabled');
+}
+
+export function isAmbientModeAllowed(): boolean {
+  return loadTimeData.getBoolean('isAmbientModeAllowed');
+}
+
+export function isPathValid(path: string|null): boolean {
+  return !!path && Object.values(Paths).includes(path as Paths);
+}
+
+export function isAmbientPath(path: string|null): boolean {
+  return !!path && path.startsWith(Paths.AMBIENT);
+}
+
+export function isAmbientPathAllowed(path: string|null): boolean {
+  return isAmbientPath(path) && isAmbientModeAllowed();
+}
+
+export function isAmbientPathNotAllowed(path: string|null): boolean {
+  return isAmbientPath(path) && !isAmbientModeAllowed();
 }
 
 export class PersonalizationRouter extends PolymerElement {
@@ -28,13 +59,14 @@ export class PersonalizationRouter extends PolymerElement {
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
     return {
       path_: {
         type: String,
+        observer: 'onPathChanged_',
       },
 
       query_: {
@@ -48,20 +80,33 @@ export class PersonalizationRouter extends PolymerElement {
   }
   private path_: string;
   private query_: string;
-  private queryParams_: {id?: string; googlePhotosAlbumId?: string;};
+  private queryParams_:
+      {id?: string, googlePhotosAlbumId?: string, topicSource?: string};
 
-  static instance() {
-    return document.querySelector(PersonalizationRouter.is);
+  static instance(): PersonalizationRouter {
+    return document.querySelector(PersonalizationRouter.is) as
+        PersonalizationRouter;
+  }
+
+  static reloadAtRoot() {
+    window.location.replace(Paths.ROOT);
   }
 
   /**
    * Reload the application at the collections page.
    */
   static reloadAtWallpaper() {
-    window.location.replace(Paths.Collections);
+    window.location.replace(Paths.COLLECTIONS);
   }
 
-  connectedCallback() {
+  /**
+   * Reload the application at the ambient subpage.
+   */
+  static reloadAtAmbient() {
+    window.location.replace(Paths.AMBIENT);
+  }
+
+  override connectedCallback() {
     super.connectedCallback();
     // Force the user onto the wallpaper subpage if personalization hub feature
     // is not enabled, and the user is not already on a wallpaper page.
@@ -72,7 +117,7 @@ export class PersonalizationRouter extends PolymerElement {
   }
 
   get collectionId() {
-    if (this.path_ !== Paths.CollectionImages) {
+    if (this.path_ !== Paths.COLLECTION_IMAGES) {
       return null;
     }
     return this.queryParams_.id;
@@ -84,64 +129,90 @@ export class PersonalizationRouter extends PolymerElement {
    */
   selectCollection(collection: WallpaperCollection) {
     document.title = collection.name;
-    this.setProperties(
-        {path_: Paths.CollectionImages, queryParams_: {id: collection.id}});
+    this.goToRoute(Paths.COLLECTION_IMAGES, {id: collection.id});
   }
 
-  /**
-   * Navigate to a specific album in the Google Photos collection page.
-   */
-  selectGooglePhotosAlbum(album: WallpaperCollection) {
-    this.setProperties({
-      path_: Paths.GooglePhotosCollection,
-      queryParams_: {googlePhotosAlbumId: album.id}
-    });
+  /** Navigate to a specific album in the Google Photos collection page. */
+  selectGooglePhotosAlbum(album: GooglePhotosAlbum) {
+    this.goToRoute(
+        Paths.GOOGLE_PHOTOS_COLLECTION, {googlePhotosAlbumId: album.id});
   }
 
-  /**
-   * Navigate to the Google Photos collection page.
-   */
-  selectGooglePhotosCollection() {
-    this.setProperties({path_: Paths.GooglePhotosCollection, query_: ''});
+  /** Navigate to albums subpage of specific topic source. */
+  selectAmbientAlbums(topicSource: TopicSource) {
+    this.goToRoute(Paths.AMBIENT_ALBUMS, {topicSource: topicSource.toString()});
   }
 
-  /**
-   * Navigate to the local collection page.
-   */
-  selectLocalCollection() {
-    this.setProperties({path_: Paths.LocalCollection, query_: ''});
-  }
-
-  private shouldShowCollections_(path: string): boolean {
-    return path === Paths.Collections;
-  }
-
-  private shouldShowCollectionImages_(path: string): boolean {
-    return path === Paths.CollectionImages;
-  }
-
-  private shouldShowGooglePhotosCollection_(path: string): boolean {
-    return path === Paths.GooglePhotosCollection;
-  }
-
-  private shouldShowLocalCollection_(path: string): boolean {
-    return path === Paths.LocalCollection;
-  }
-
-  /**
-   * Whether Google Photos integration is enabled.
-   */
-  private isGooglePhotosIntegrationEnabled_(): boolean {
-    return loadTimeData.getBoolean('isGooglePhotosIntegrationEnabled');
+  goToRoute(path: Paths, queryParams: Object = {}) {
+    this.setProperties({path_: path, queryParams_: queryParams});
   }
 
   private shouldShowRootPage_(path: string|null): boolean {
-    return loadTimeData.getBoolean('isPersonalizationHubEnabled') &&
-        path === Paths.Root;
+    if (!isPersonalizationHubEnabled()) {
+      return false;
+    }
+
+    // If the ambient mode is not allowed, will not show Ambient/AmbientAlbums
+    // subpages.
+    return (path === Paths.ROOT) || (isAmbientPathNotAllowed(path));
+  }
+
+  private shouldShowAmbientSubpage_(path: string|null): boolean {
+    return isPersonalizationHubEnabled() && isAmbientPathAllowed(path);
+  }
+
+  private shouldShowUserSubpage_(path: string|null): boolean {
+    return isPersonalizationHubEnabled() && path === Paths.USER;
   }
 
   private shouldShowWallpaperSubpage_(path: string|null): boolean {
-    return !!path?.startsWith(Paths.Collections);
+    return !!path && path.startsWith(Paths.COLLECTIONS);
+  }
+
+  private shouldShowBreadcrumb_(path: string|null): boolean {
+    return path !== Paths.ROOT;
+  }
+
+  /**
+   * When entering a wrong path or navigating to Ambient/AmbientAlbums
+   * subpages, but the ambient mode is not allowed, reset path to root.
+   */
+  private onPathChanged_(path: string|null) {
+    if (!isPathValid(path) || isAmbientPathNotAllowed(path)) {
+      // Reset the path to root.
+      this.setProperties({path_: Paths.ROOT, queryParams_: {}});
+    }
+
+    if (isPathValid(path)) {
+      logPersonalizationPathUMA(path as Paths);
+    }
+    // Update the page title when the path changes.
+    // TODO(b/228967523): Wallpaper related pages have been handled in their
+    // specific Polymer elements so they are skipped here. See if we can move
+    // them here.
+    switch (path) {
+      case Paths.ROOT:
+        document.title = loadTimeData.getString('personalizationTitle');
+        break;
+      case Paths.AMBIENT:
+        document.title = loadTimeData.getString('screensaverLabel');
+        break;
+      case Paths.AMBIENT_ALBUMS: {
+        assert(!!this.queryParams_.topicSource);
+        if (this.queryParams_.topicSource ===
+            TopicSource.kGooglePhotos.toString()) {
+          document.title =
+              loadTimeData.getString('ambientModeTopicSourceGooglePhotos');
+        } else {
+          document.title =
+              loadTimeData.getString('ambientModeTopicSourceArtGallery');
+        }
+        break;
+      }
+      case Paths.USER:
+        document.title = loadTimeData.getString('avatarLabel');
+        break;
+    }
   }
 }
 

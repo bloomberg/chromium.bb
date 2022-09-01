@@ -174,6 +174,12 @@ HEADER = headers.header(
                     alt = "Chromium Fuzz console",
                 ),
                 headers.link(
+                    text = "fuchsia",
+                    branch_selector = branches.FUCHSIA_LTS_MILESTONE,
+                    url = "/p/{}/g/chromium.fuchsia".format(settings.project),
+                    alt = "Chromium Fuchsia console",
+                ),
+                headers.link(
                     text = "fyi",
                     branch_selector = branches.STANDARD_MILESTONE,
                     url = "/p/{}/g/chromium.fyi".format(settings.project),
@@ -184,6 +190,11 @@ HEADER = headers.header(
                     branch_selector = branches.STANDARD_MILESTONE,
                     url = "/p/{}/g/chromium.gpu".format(settings.project),
                     alt = "Chromium GPU console",
+                ),
+                headers.link(
+                    text = "packager",
+                    url = "/p/{}/g/chromium.packager".format(settings.project),
+                    alt = "Chromium Packager console",
                 ),
                 headers.link(
                     text = "perf",
@@ -206,6 +217,11 @@ HEADER = headers.header(
                     alt = "Chromium SWANGLE console",
                 ),
                 headers.link(
+                    text = "updater",
+                    url = "/p/{}/g/chromium.updater".format(settings.project),
+                    alt = "Chromium Updater console",
+                ),
+                headers.link(
                     text = "webrtc",
                     url = "/p/{}/g/chromium.webrtc".format(settings.project),
                     alt = "Chromium WebRTC console",
@@ -225,7 +241,7 @@ HEADER = headers.header(
                     text = milestone,
                     url = "/p/{}/g/main/console".format(details.project),
                 )
-                for milestone, details in sorted(ACTIVE_MILESTONES.items())
+                for milestone, details in ACTIVE_MILESTONES.items()
             ] + [
                 headers.link(
                     text = "trunk",
@@ -265,6 +281,12 @@ HEADER = headers.header(
                     branch_selector = branches.CROS_LTS_MILESTONE,
                     url = "/p/{}/g/tryserver.chromium.chromiumos/builders".format(settings.project),
                     alt = "ChromiumOS",
+                ),
+                headers.link(
+                    text = "fuchsia",
+                    branch_selector = branches.FUCHSIA_LTS_MILESTONE,
+                    url = "/p/{}/g/tryserver.chromium.fuchsia/builders".format(settings.project),
+                    alt = "Fuchsia",
                 ),
                 headers.link(
                     text = "linux",
@@ -321,6 +343,7 @@ HEADER = headers.header(
                 "chromium/chromium.mac",
                 "chromium/chromium.linux",
                 "chromium/chromium.chromiumos",
+                "chromium/chromium.fuchsia",
                 "chrome/chrome",
                 "chromium/chromium.memory",
                 "chromium/chromium.gpu",
@@ -330,6 +353,7 @@ HEADER = headers.header(
             console_ids = [
                 "chromium/chromium.android",
                 "chrome/chrome.perf",
+                "chromium/chromium.fuchsia.fyi",
                 "chromium/chromium.gpu.fyi",
                 "chromium/chromium.angle",
                 "chromium/chromium.swangle",

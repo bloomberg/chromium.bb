@@ -5,12 +5,16 @@
 #include "gpu/command_buffer/service/shared_image_backing_factory_ozone.h"
 
 #include <dawn/dawn_proc_table.h>
-#include <dawn_native/DawnNative.h>
+#include <dawn/native/DawnNative.h>
 
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
+#include "build/build_config.h"
+#include "build/chromecast_buildflags.h"
+#include "build/chromeos_buildflags.h"
 #include "components/viz/common/gpu/vulkan_context_provider.h"
 #include "components/viz/common/resources/resource_format_utils.h"
+#include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/service/shared_image_backing_ozone.h"
 #include "gpu/command_buffer/service/shared_memory_region_wrapper.h"
@@ -18,6 +22,7 @@
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/native_pixmap.h"
 #include "ui/gl/buildflags.h"
+#include "ui/gl/gl_surface_egl.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
 
@@ -42,7 +47,7 @@ SharedImageBackingFactoryOzone::SharedImageBackingFactoryOzone(
     : shared_context_state_(shared_context_state) {
 #if BUILDFLAG(USE_DAWN)
   dawn_procs_ = base::MakeRefCounted<base::RefCountedData<DawnProcTable>>(
-      dawn_native::GetProcs());
+      dawn::native::GetProcs());
 #endif  // BUILDFLAG(USE_DAWN)
 }
 
@@ -81,7 +86,7 @@ SharedImageBackingFactoryOzone::CreateSharedImageInternal(
   }
   return std::make_unique<SharedImageBackingOzone>(
       mailbox, format, gfx::BufferPlane::DEFAULT, size, color_space,
-      surface_origin, alpha_type, usage, shared_context_state_,
+      surface_origin, alpha_type, usage, shared_context_state_.get(),
       std::move(pixmap), dawn_procs_);
 }
 
@@ -152,9 +157,13 @@ SharedImageBackingFactoryOzone::CreateSharedImage(
       return nullptr;
     }
 
+    const gfx::Size plane_size = gpu::GetPlaneSize(plane, size);
+    const viz::ResourceFormat plane_format =
+        viz::GetResourceFormat(GetPlaneBufferFormat(plane, buffer_format));
     backing = std::make_unique<SharedImageBackingOzone>(
-        mailbox, format, plane, size, color_space, surface_origin, alpha_type,
-        usage, shared_context_state_, std::move(pixmap), dawn_procs_);
+        mailbox, plane_format, plane, plane_size, color_space, surface_origin,
+        alpha_type, usage, shared_context_state_.get(), std::move(pixmap),
+        dawn_procs_);
     backing->SetCleared();
   } else if (handle.type == gfx::SHARED_MEMORY_BUFFER) {
     SharedMemoryRegionWrapper shm_wrapper;
@@ -185,16 +194,50 @@ bool SharedImageBackingFactoryOzone::IsSupported(
     GrContextType gr_context_type,
     bool* allow_legacy_mailbox,
     bool is_pixel_used) {
-  if (gmb_type != gfx::EMPTY_BUFFER && gmb_type != gfx::NATIVE_PIXMAP &&
-      gmb_type != gfx::SHARED_MEMORY_BUFFER) {
-    return false;
-  }
   // TODO(crbug.com/969114): Not all shared image factory implementations
   // support concurrent read/write usage.
   if (usage & SHARED_IMAGE_USAGE_CONCURRENT_READ_WRITE) {
     return false;
   }
 
+  if (gmb_type != gfx::EMPTY_BUFFER && gmb_type != gfx::NATIVE_PIXMAP &&
+      gmb_type != gfx::SHARED_MEMORY_BUFFER) {
+    return false;
+  }
+
+#if BUILDFLAG(IS_FUCHSIA)
+  DCHECK_EQ(gr_context_type, GrContextType::kVulkan);
+
+  // For now just use SharedImageBackingOzone for primary plane buffers.
+  // TODO(crbug.com/1310026): When Vulkan/GL interop is supported on Fuchsia
+  // SharedImageBackingOzone should be used for all scanout buffers.
+  constexpr uint32_t kPrimaryPlaneUsageFlags = SHARED_IMAGE_USAGE_DISPLAY |
+                                               SHARED_IMAGE_USAGE_SCANOUT |
+                                               SHARED_IMAGE_USAGE_RASTER;
+  if (usage != kPrimaryPlaneUsageFlags ||
+      !CanImportGpuMemoryBufferToVulkan(gmb_type)) {
+    return false;
+  }
+#elif BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CHROMEOS_ASH) && \
+    !BUILDFLAG(IS_CHROMEOS_LACROS) && !BUILDFLAG(IS_CHROMECAST)
+  bool used_by_skia = (usage & SHARED_IMAGE_USAGE_RASTER) ||
+                      (usage & SHARED_IMAGE_USAGE_DISPLAY);
+  bool used_by_vulkan =
+      used_by_skia && gr_context_type == GrContextType::kVulkan;
+  bool used_by_webgpu = usage & SHARED_IMAGE_USAGE_WEBGPU;
+  bool used_by_gl = (usage & SHARED_IMAGE_USAGE_GLES2) ||
+                    (used_by_skia && gr_context_type == GrContextType::kGL);
+  if (used_by_vulkan && !CanImportGpuMemoryBufferToVulkan(gfx::NATIVE_PIXMAP)) {
+    return false;
+  }
+  if (used_by_webgpu && !CanImportNativePixmapToWebGPU()) {
+    return false;
+  }
+  if (used_by_gl &&
+      !gl::GLSurfaceEGL::GetGLDisplayEGL()->HasEGLExtension("EGL_KHR_image")) {
+    return false;
+  }
+#else
   // TODO(hitawala): Until SharedImageBackingOzone supports all use cases prefer
   // using SharedImageBackingGLImage instead
   bool needs_interop_factory = (gr_context_type == GrContextType::kVulkan &&
@@ -204,9 +247,30 @@ bool SharedImageBackingFactoryOzone::IsSupported(
   if (!needs_interop_factory) {
     return false;
   }
+#endif
 
   *allow_legacy_mailbox = false;
   return true;
+}
+
+bool SharedImageBackingFactoryOzone::CanImportGpuMemoryBufferToVulkan(
+    gfx::GpuMemoryBufferType memory_buffer_type) {
+  if (!shared_context_state_->vk_context_provider()) {
+    return false;
+  }
+  auto* vk_device =
+      shared_context_state_->vk_context_provider()->GetDeviceQueue();
+  return shared_context_state_->vk_context_provider()
+      ->GetVulkanImplementation()
+      ->CanImportGpuMemoryBuffer(vk_device, memory_buffer_type);
+}
+
+bool SharedImageBackingFactoryOzone::CanImportNativePixmapToWebGPU() {
+  // Assume that if skia/vulkan vkDevice supports the Vulkan extensions
+  // (external_memory_dma_buf, image_drm_format_modifier), then Dawn/WebGPU also
+  // support the extensions until there is capability to check the extensions
+  // from Dawn vkDevice when they are exposed.
+  return CanImportGpuMemoryBufferToVulkan(gfx::NATIVE_PIXMAP);
 }
 
 }  // namespace gpu

@@ -141,6 +141,8 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   AXObject* InPageLinkTarget() const override;
   AccessibilityOrientation Orientation() const override;
 
+  AXObject* GetChildFigcaption() const override;
+
   // Used to compute kRadioGroupIds, which is only used on Mac.
   // TODO(accessibility) Consider computing on browser side and removing here.
   AXObjectVector RadioButtonsInGroup() const override;
@@ -217,8 +219,8 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
 
   // Location
   void GetRelativeBounds(AXObject** out_container,
-                         FloatRect& out_bounds_in_container,
-                         skia::Matrix44& out_container_transform,
+                         gfx::RectF& out_bounds_in_container,
+                         gfx::Transform& out_container_transform,
                          bool* clips_children = nullptr) const override;
 
   void AddChildren() override;
@@ -298,7 +300,7 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
                                bool* found_text_alternative) const;
   bool IsDescendantOfElementType(HashSet<QualifiedName>& tag_names) const;
   String PlaceholderFromNativeAttribute() const;
-  String GetValueContributionToName() const;
+  String GetValueContributionToName(AXObjectSet& visited) const;
   bool UseNameFromSelectedOption() const;
   virtual bool IsTabItemSelected() const;
 

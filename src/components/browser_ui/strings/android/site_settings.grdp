@@ -39,6 +39,9 @@
   <message name="IDS_WEBSITE_SETTINGS_DEVICE_LOCATION" desc="Title for Location settings, which control which websites can access your location." meaning="Geolocation">
     Location
   </message>
+  <message name="IDS_WEBSITE_SETTINGS_FEDERATED_IDENTITY" desc="Title for Third-Party Sign In settings, which control whether websites can access browser third-party sign in API.">
+    Third-party sign-in
+  </message>
   <message name="IDS_WEBSITE_SETTINGS_USE_MIC" desc="The category filter 'Mic' for site settings.">
     Microphone
   </message>
@@ -364,6 +367,14 @@
     Off
   </message>
 
+  <!-- Federated Identity -->
+  <message name="IDS_WEBSITE_SETTINGS_CATEGORY_FEDERATED_IDENTITY_ALLOWED" desc="The description for the option to allow sites to use the browser Third-Party Sign In API.">
+    Sites can show sign-in prompts from identity services.
+  </message>
+  <message name="IDS_WEBSITE_SETTINGS_CATEGORY_FEDERATED_IDENTITY_BLOCKED" desc="The description for the option to block sites from using the browser Third-Party Sign In API.">
+    Block sign-in prompts from identity services.
+  </message>
+
   <!-- Idle Detection -->
   <message name="IDS_WEBSITE_SETTINGS_CATEGORY_IDLE_DETECTION_ASK" desc="The description for the option to allow sites to ask for permission to access your activity state">
     Ask when a site wants to know when you're actively using this device
@@ -429,10 +440,10 @@
   <!-- NFC -->
 
   <message name="IDS_WEBSITE_SETTINGS_CATEGORY_NFC_ASK" desc="Summary text explaining that sites need to ask for permission before using NFC and that it is the recommended setting.">
-    Ask before allowing sites to send and receive info when you tap NFC devices (recommended)
+    Ask before allowing sites to see and change information on NFC devices (recommended)
   </message>
   <message name="IDS_WEBSITE_SETTINGS_CATEGORY_NFC_BLOCKED" desc="Summary text explaining that sites are blocked from using NFC.">
-    Block sites from sending and receiving info when you tap NFC devices
+    Block sites from seeing and changing information on NFC devices
   </message>
   <message name="IDS_ANDROID_NFC_OFF_GLOBALLY" desc="The message to show when NFC has been turned off globally in Android. Contains a link to the settings menu to enable NFC.">
     NFC is off for this device. Turn it on in <ph name="BEGIN_LINK">&lt;link&gt;</ph>Android Settings<ph name="END_LINK">&lt;/link&gt;</ph>.

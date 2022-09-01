@@ -77,7 +77,7 @@ class NET_EXPORT ReportingService {
       const std::string& user_agent,
       const std::string& group,
       const std::string& type,
-      std::unique_ptr<const base::Value> body,
+      base::Value::Dict body,
       int depth) = 0;
 
   // Processes a Report-To header. |origin| is the Origin of the URL that the
@@ -112,7 +112,8 @@ class NET_EXPORT ReportingService {
   // ReportingBrowsingDataRemover for more details.
   virtual void RemoveBrowsingData(
       uint64_t data_type_mask,
-      const base::RepeatingCallback<bool(const GURL&)>& origin_filter) = 0;
+      const base::RepeatingCallback<bool(const url::Origin&)>&
+          origin_filter) = 0;
 
   // Like RemoveBrowsingData except removes data for all origins without a
   // filter.

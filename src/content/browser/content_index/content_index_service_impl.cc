@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/task/post_task.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/content_index/content_index_database.h"
 #include "content/browser/storage_partition_impl.h"
@@ -134,8 +133,7 @@ void ContentIndexServiceImpl::Add(
     }
   }
 
-  if (!launch_url.is_valid() || !origin_.IsSameOriginWith(url::Origin::Create(
-                                    launch_url.DeprecatedGetOriginAsURL()))) {
+  if (!launch_url.is_valid() || !origin_.IsSameOriginWith(launch_url)) {
     mojo::ReportBadMessage("Invalid launch URL");
     std::move(callback).Run(blink::mojom::ContentIndexError::INVALID_PARAMETER);
     return;

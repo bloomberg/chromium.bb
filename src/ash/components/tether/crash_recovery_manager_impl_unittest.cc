@@ -7,19 +7,19 @@
 #include <memory>
 #include <sstream>
 
+#include "ash/components/multidevice/remote_device_test_util.h"
 #include "ash/components/tether/device_id_tether_network_guid_map.h"
 #include "ash/components/tether/fake_active_host.h"
 #include "ash/components/tether/fake_host_scan_cache.h"
 #include "ash/components/tether/host_scan_cache_entry.h"
 #include "base/bind.h"
 #include "base/test/task_environment.h"
-#include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_state_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace tether {
 
@@ -185,4 +185,4 @@ TEST_F(CrashRecoveryManagerImplTest, ActiveHostConnected_RestoreSuccessful) {
 
 }  // namespace tether
 
-}  // namespace chromeos
+}  // namespace ash

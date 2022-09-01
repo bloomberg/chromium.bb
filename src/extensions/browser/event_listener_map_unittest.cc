@@ -78,14 +78,14 @@ class EventListenerMapTest : public ExtensionsTest {
 
   std::unique_ptr<DictionaryValue> CreateHostSuffixFilter(
       const std::string& suffix) {
-    auto filter_dict = std::make_unique<DictionaryValue>();
-    filter_dict->Set("hostSuffix", std::make_unique<Value>(suffix));
+    base::Value::Dict filter_dict;
+    filter_dict.Set("hostSuffix", suffix);
 
-    auto filter_list = std::make_unique<ListValue>();
-    filter_list->Append(std::move(filter_dict));
+    base::Value::List filter_list;
+    filter_list.Append(std::move(filter_dict));
 
     auto filter = std::make_unique<DictionaryValue>();
-    filter->Set("url", std::move(filter_list));
+    filter->GetDict().Set("url", base::Value(std::move(filter_list)));
     return filter;
   }
 
@@ -356,7 +356,7 @@ TEST_F(EventListenerMapTest, HostSuffixFilterEquality) {
       CreateHostSuffixFilter("google.com"));
   std::unique_ptr<DictionaryValue> filter2(
       CreateHostSuffixFilter("google.com"));
-  ASSERT_TRUE(filter1->Equals(filter2.get()));
+  ASSERT_EQ(*filter1, *filter2);
 }
 
 TEST_F(EventListenerMapTest, RemoveListenersForExtension) {
@@ -517,7 +517,8 @@ TEST_P(EventListenerMapWithContextTest, AddLazyListenersFromPreferences) {
   };
   auto filter_list = std::make_unique<ListValue>();
   for (const TestCase& test_case : kTestCases)
-    filter_list->Append(CreateHostSuffixFilter(test_case.filter_host_suffix));
+    filter_list->Append(base::Value::FromUniquePtrValue(
+        CreateHostSuffixFilter(test_case.filter_host_suffix)));
 
   DictionaryValue filtered_listeners;
   filtered_listeners.Set(kEvent1Name, std::move(filter_list));

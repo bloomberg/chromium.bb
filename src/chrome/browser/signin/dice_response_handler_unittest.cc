@@ -117,7 +117,8 @@ class DiceResponseHandlerTest : public testing::Test,
     EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
     AboutSigninInternals::RegisterPrefs(pref_service_.registry());
     auto account_reconcilor_delegate =
-        std::make_unique<signin::DiceAccountReconcilorDelegate>();
+        std::make_unique<signin::DiceAccountReconcilorDelegate>(
+            identity_manager());
     account_reconcilor_ = std::make_unique<AccountReconcilor>(
         identity_test_env_.identity_manager(), &signin_client_,
         std::move(account_reconcilor_delegate));
@@ -594,6 +595,36 @@ TEST_F(DiceResponseHandlerTest, Timeout) {
       base::Seconds(kDiceTokenFetchTimeoutSeconds + 1));
   EXPECT_EQ(
       0u, dice_response_handler_->GetPendingDiceTokenFetchersCountForTesting());
+  // Check that the token has not been inserted in the token service.
+  EXPECT_FALSE(identity_manager()->HasAccountWithRefreshToken(account_id));
+  // Check that the reconcilor was blocked and unblocked exactly once.
+  EXPECT_EQ(1, reconcilor_blocked_count_);
+  EXPECT_EQ(1, reconcilor_unblocked_count_);
+}
+
+// Checks that there is no crash if the DiceResponseHandler is deleted before
+// the timeout expires. Tests the scenario from https://crbug.com/1290214
+TEST_F(DiceResponseHandlerTest, DeleteBeforeTimeout) {
+  DiceResponseParams dice_params = MakeDiceParams(DiceAction::SIGNIN);
+  const auto& account_info = dice_params.signin_info->account_info;
+  CoreAccountId account_id = identity_manager()->PickAccountIdForAccount(
+      account_info.gaia_id, account_info.email);
+  ASSERT_FALSE(identity_manager()->HasAccountWithRefreshToken(account_id));
+  dice_response_handler_->ProcessDiceHeader(
+      dice_params, std::make_unique<TestProcessDiceHeaderDelegate>(this));
+  // Check that a GaiaAuthFetcher has been created.
+  GaiaAuthConsumer* consumer = signin_client_.GetAndClearConsumer();
+  ASSERT_THAT(consumer, testing::NotNull());
+  EXPECT_EQ(
+      1u, dice_response_handler_->GetPendingDiceTokenFetchersCountForTesting());
+
+  // Delete the handler.
+  dice_response_handler_.reset();
+
+  // Force a timeout, this should not crash.
+  task_environment_.FastForwardBy(
+      base::Seconds(kDiceTokenFetchTimeoutSeconds + 1));
+
   // Check that the token has not been inserted in the token service.
   EXPECT_FALSE(identity_manager()->HasAccountWithRefreshToken(account_id));
   // Check that the reconcilor was blocked and unblocked exactly once.

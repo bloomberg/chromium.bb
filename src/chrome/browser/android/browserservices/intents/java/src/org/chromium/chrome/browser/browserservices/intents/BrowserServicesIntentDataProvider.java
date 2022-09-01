@@ -57,6 +57,25 @@ public abstract class BrowserServicesIntentDataProvider {
         int V2_NOTIFICATION_OR_SNACKBAR = 1;
     }
 
+    @IntDef({CLOSE_BUTTON_POSITION_DEFAULT, CLOSE_BUTTON_POSITION_START, CLOSE_BUTTON_POSITION_END})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface CloseButtonPosition {}
+
+    /** Same as {@link #CLOSE_BUTTON_POSITION_START}. */
+    public static final int CLOSE_BUTTON_POSITION_DEFAULT = 0;
+
+    /** Positions the close button at the start of the toolbar. */
+    public static final int CLOSE_BUTTON_POSITION_START = 1;
+
+    /** Positions the close button at the end of the toolbar. */
+    public static final int CLOSE_BUTTON_POSITION_END = 2;
+
+    /**
+     * Maximum value for the CLOSE_BUTTON_POSITION_* configuration options. For validation purposes
+     * only.
+     */
+    public static final int CLOSE_BUTTON_POSITION_MAX = 2;
+
     /**
      * @return The type of the Activity;
      */
@@ -130,8 +149,7 @@ public abstract class BrowserServicesIntentDataProvider {
     }
 
     /**
-     * @return The URL that should be used from this intent. If it is a WebLite url, it may be
-     *         overridden if the Data Reduction Proxy is using Lo-Fi previews.
+     * @return The URL that should be used from this intent.
      * Must be called only after native has loaded.
      */
     @Nullable
@@ -300,15 +318,6 @@ public abstract class BrowserServicesIntentDataProvider {
     }
 
     /**
-     * @return Whether the Activity should attempt to load a dynamic module.
-     *
-     * Will return false if native is not initialized.
-     */
-    public boolean isDynamicModuleEnabled() {
-        return false;
-    }
-
-    /**
      * Returns {@link TrustedWebActivityDisplayMode} supplied in the intent.
      */
     @Nullable
@@ -451,10 +460,39 @@ public abstract class BrowserServicesIntentDataProvider {
     }
 
     /**
+     * @return Whether the intent is for partial-height custom tabs.
+     */
+    public boolean isPartialHeightCustomTab() {
+        return false;
+    }
+
+    /**
      * @return The value in pixels  of the initial height of the Activity. It will return 0 if there
      *         is no value set.
      */
     public @Px int getInitialActivityHeight() {
+        return 0;
+    }
+
+    /**
+     * Returns the {@link CloseButtonPosition}.
+     */
+    public @CloseButtonPosition int getCloseButtonPosition() {
+        return CLOSE_BUTTON_POSITION_DEFAULT;
+    }
+
+    /**
+     * If {@code true} the App Menu will not be shown. If {@code false} it will be left to the
+     * Activity to decide.
+     */
+    public boolean shouldSuppressAppMenu() {
+        return false;
+    }
+
+    /**
+     * Returns the partial custom tab toolbar corner radius.
+     */
+    public @Px int getPartialTabToolbarCornerRadius() {
         return 0;
     }
 }

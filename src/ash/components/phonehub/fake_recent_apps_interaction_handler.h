@@ -9,6 +9,8 @@
 
 #include "ash/components/phonehub/notification.h"
 #include "ash/components/phonehub/recent_apps_interaction_handler.h"
+#include "ash/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
+#include "base/time/time.h"
 
 namespace ash {
 namespace phonehub {
@@ -21,6 +23,9 @@ class FakeRecentAppsInteractionHandler : public RecentAppsInteractionHandler {
   FakeRecentAppsInteractionHandler* operator=(
       const FakeRecentAppsInteractionHandler&) = delete;
   ~FakeRecentAppsInteractionHandler() override;
+
+  void OnFeatureStateChanged(
+      multidevice_setup::mojom::FeatureState feature_state);
 
   size_t HandledRecentAppsCount(const std::string& package_name) const {
     return package_name_to_click_count_.at(package_name);
@@ -38,9 +43,14 @@ class FakeRecentAppsInteractionHandler : public RecentAppsInteractionHandler {
       const Notification::AppMetadata& app_metadata,
       base::Time last_accessed_timestamp) override;
   std::vector<Notification::AppMetadata> FetchRecentAppMetadataList() override;
+  void SetStreamableApps(const proto::StreamableApps& streamable_apps) override;
 
  private:
+  void ComputeAndUpdateUiState();
+
   size_t recent_app_click_observer_count_ = 0;
+  multidevice_setup::mojom::FeatureState feature_state_ =
+      multidevice_setup::mojom::FeatureState::kDisabledByUser;
 
   std::vector<std::pair<Notification::AppMetadata, base::Time>>
       recent_apps_metadata_;

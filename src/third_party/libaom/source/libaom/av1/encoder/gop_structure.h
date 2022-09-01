@@ -65,15 +65,6 @@ void av1_gop_bit_allocation(const AV1_COMP *cpi, RATE_CONTROL *const rc,
                             GF_GROUP *gf_group, int is_key_frame, int use_arf,
                             int64_t gf_group_bits);
 
-/*!\cond */
-int av1_calc_arf_boost(const TWO_PASS *twopass,
-                       const TWO_PASS_FRAME *twopass_frame,
-                       const PRIMARY_RATE_CONTROL *p_rc, FRAME_INFO *frame_info,
-                       int offset, int f_frames, int b_frames,
-                       int *num_fpstats_used, int *num_fpstats_required,
-                       int project_gfu_boost);
-/*!\endcond */
-
 /*!\brief Check whether a frame in the GOP is a forward key frame
  *
  *\ingroup rate_control

@@ -14,6 +14,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
@@ -69,7 +70,7 @@ public class PreviewTabTest {
                     ((TabbedRootUiCoordinator) mActivityTestRule.getActivity()
                                     .getRootUiCoordinatorForTesting());
             mEphemeralTabCoordinator =
-                    tabbedRootUiCoordinator.getEphemeralTabCoordinatorForTesting();
+                    tabbedRootUiCoordinator.getEphemeralTabCoordinatorSupplier().get();
         });
         mSheetTestSupport = new BottomSheetTestSupport(mActivityTestRule.getActivity()
                                                                .getRootUiCoordinatorForTesting()
@@ -97,6 +98,7 @@ public class PreviewTabTest {
     @Test
     @MediumTest
     @Feature({"PreviewTab"})
+    @DisabledTest(message = "crbug.com/1182234")
     public void testOpenAndClose() throws Throwable {
         Assert.assertFalse("Test should have started without any Preview Tab",
                 mEphemeralTabCoordinator.isOpened());
@@ -158,7 +160,8 @@ public class PreviewTabTest {
     @Feature({"PreviewTab"})
     public void testSuppressContextualSearch() throws Throwable {
         ChromeActivity activity = mActivityTestRule.getActivity();
-        ContextualSearchManager csManager = activity.getContextualSearchManager();
+        ContextualSearchManager csManager =
+                (ContextualSearchManager) activity.getContextualSearchManagerSupplier().get();
         Assert.assertFalse("Contextual Search should be active", csManager.isSuppressed());
 
         TestThreadUtils.runOnUiThreadBlocking(

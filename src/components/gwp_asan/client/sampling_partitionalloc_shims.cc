@@ -26,11 +26,14 @@ SamplingState<PARTITIONALLOC> sampling_state;
 // for every access.
 GuardedPageAllocator* gpa = nullptr;
 
-bool AllocationHook(void** out, int flags, size_t size, const char* type_name) {
+bool AllocationHook(void** out,
+                    unsigned int flags,
+                    size_t size,
+                    const char* type_name) {
   if (UNLIKELY(sampling_state.Sample())) {
     // Ignore allocation requests with unknown flags.
-    constexpr int kKnownFlags =
-        base::PartitionAllocReturnNull | base::PartitionAllocZeroFill;
+    constexpr int kKnownFlags = partition_alloc::AllocFlags::kReturnNull |
+                                partition_alloc::AllocFlags::kZeroFill;
     if (flags & ~kKnownFlags)
       return false;
 

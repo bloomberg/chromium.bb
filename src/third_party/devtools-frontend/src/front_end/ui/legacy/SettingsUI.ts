@@ -110,6 +110,7 @@ const createSettingSelect = function(
         select.selectedIndex = i;
       }
     }
+    select.disabled = setting.disabled();
   }
 
   function selectChanged(): void {
@@ -142,11 +143,11 @@ export const bindCheckbox = function(inputElement: Element, setting: Common.Sett
 
 export const createCustomSetting = function(name: string, element: Element): Element {
   const p = document.createElement('p');
-  const fieldsetElement = p.createChild('fieldset');
-  const label = fieldsetElement.createChild('label');
+  p.classList.add('settings-select');
+  const label = p.createChild('label');
   label.textContent = name;
   ARIAUtils.bindLabelToControl(label, element);
-  fieldsetElement.appendChild(element);
+  p.appendChild(element);
   return p;
 };
 

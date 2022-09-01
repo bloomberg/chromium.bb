@@ -15,16 +15,16 @@
 
 namespace content {
 
-class PictureInPictureWindowControllerImpl;
+class VideoPictureInPictureWindowControllerImpl;
 
-// Receives Picture-in-Picture messages from a given RenderFrame. There is one
-// PictureInPictureServiceImpl per RenderFrameHost. The service pipes the
-// `StartSession()` call to the PictureInPictureWindowControllerImpl which owns
-// the created session. The same object will get notified when the service is
-// killed given that the PictureInPictureWindowControllerImpl is
-// WebContents-bound instead of RenderFrameHost.
-// PictureInPictureServiceImpl owns itself. It self-destruct as needed, see the
-// DocumentService's documentation for more information.
+// Receives Picture-in-Picture messages from a given RenderFrame for video
+// Picture-in-Picture mode. There is one PictureInPictureServiceImpl per
+// RenderFrameHost. The service pipes the `StartSession()` call to the
+// VideoPictureInPictureWindowControllerImpl which owns the created session. The
+// same object will get notified when the service is killed given that the
+// VideoPictureInPictureWindowControllerImpl is WebContents-bound instead of
+// RenderFrameHost.  PictureInPictureServiceImpl owns itself. It self-destructs
+// as needed, see the DocumentService's documentation for more information.
 class CONTENT_EXPORT PictureInPictureServiceImpl final
     : public content::DocumentService<blink::mojom::PictureInPictureService> {
  public:
@@ -48,6 +48,7 @@ class CONTENT_EXPORT PictureInPictureServiceImpl final
       const gfx::Size& natural_size,
       bool show_play_pause_button,
       mojo::PendingRemote<blink::mojom::PictureInPictureSessionObserver>,
+      const gfx::Rect& source_bounds,
       StartSessionCallback) final;
 
  private:
@@ -58,7 +59,7 @@ class CONTENT_EXPORT PictureInPictureServiceImpl final
       mojo::PendingReceiver<blink::mojom::PictureInPictureService>);
   ~PictureInPictureServiceImpl() override;
 
-  PictureInPictureWindowControllerImpl& GetController();
+  VideoPictureInPictureWindowControllerImpl& GetController();
 };
 
 }  // namespace content

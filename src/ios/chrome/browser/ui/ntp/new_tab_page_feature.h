@@ -11,6 +11,9 @@
 // the feed context menu.
 extern const base::Feature kEnableDiscoverFeedPreview;
 
+// Feature flag to show ghost cards when refreshing the discover feed.
+extern const base::Feature kDiscoverFeedGhostCardsEnabled;
+
 // Feature flag to enable shorter cache so that more ghost cards appear.
 extern const base::Feature kEnableDiscoverFeedShorterCache;
 
@@ -23,6 +26,9 @@ extern const base::Feature kEnableDiscoverFeedDiscoFeedEndpoint;
 // Feature flag to enable static resource serving for the Discover feed.
 extern const base::Feature kEnableDiscoverFeedStaticResourceServing;
 
+// Feature flag to enable the sync promo on top of the discover feed.
+extern const base::Feature kEnableDiscoverFeedTopSyncPromo;
+
 // A parameter to indicate whether Reconstructed Templates is enabled for static
 // resource serving.
 extern const char kDiscoverFeedSRSReconstructedTemplatesEnabled[];
@@ -31,16 +37,22 @@ extern const char kDiscoverFeedSRSReconstructedTemplatesEnabled[];
 // resource serving.
 extern const char kDiscoverFeedSRSPreloadTemplatesEnabled[];
 
-// Feature flag to enable the Following feed in the NTP.
-// Use IsWebChannelsEnabled() instead of this constant directly.
-// TODO(crbug.com/1264872): move it to web_channels feature directory when there
-// has one since this feature will be used outside of NTP.
-extern const base::Feature kEnableWebChannels;
+// A parameter to indicate the style used for the discover feed top promo.
+extern const char kDiscoverFeedTopSyncPromoStyleParam[];
+
+// A parameter value used for displaying the full with title promo style.
+extern const char kDiscoverFeedTopSyncPromoStyleFullWithTitle[];
+
+// A parameter value used for displaying the compact promo style.
+extern const char kDiscoverFeedTopSyncPromoStyleCompact[];
 
 // Feature flag to fix the NTP view hierarchy if it is broken before applying
 // constraints.
 // TODO(crbug.com/1262536): Remove this when it is fixed.
 extern const base::Feature kNTPViewHierarchyRepair;
+
+// Feature flag to remove the Feed from the NTP.
+extern const base::Feature kEnableFeedAblation;
 
 // Whether the Discover feed content preview is shown in the context menu.
 bool IsDiscoverFeedPreviewEnabled();
@@ -51,10 +63,17 @@ bool IsDiscoverFeedAppFlowsEnabled();
 // Whether the Discover feed shorter cache is enabled.
 bool IsDiscoverFeedShorterCacheEnabled();
 
-// Whether the Following Feed is enabled on NTP.
-bool IsWebChannelsEnabled();
-
 // Whether the NTP view hierarchy repair is enabled.
 bool IsNTPViewHierarchyRepairEnabled();
+
+// Whether the Discover feed top sync promotion is enabled.
+bool IsDiscoverFeedTopSyncPromoEnabled();
+
+// Whether the Discover feed ablation experiment is enabled.
+bool IsFeedAblationEnabled();
+
+// Whether the ghost cards should be shown when refreshing Discover feed
+// content.
+bool IsDiscoverFeedGhostCardsEnabled();
 
 #endif  // IOS_CHROME_BROWSER_UI_NTP_NEW_TAB_PAGE_FEATURE_H_
