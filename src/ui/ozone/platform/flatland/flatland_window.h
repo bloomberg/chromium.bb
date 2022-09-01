@@ -56,8 +56,10 @@ class COMPONENT_EXPORT(OZONE) FlatlandWindow : public PlatformWindow,
   bool virtual_keyboard_enabled() const { return is_virtual_keyboard_enabled_; }
 
   // PlatformWindow implementation.
-  gfx::Rect GetBounds() const override;
-  void SetBounds(const gfx::Rect& bounds) override;
+  gfx::Rect GetBoundsInPixels() const override;
+  void SetBoundsInPixels(const gfx::Rect& bounds) override;
+  gfx::Rect GetBoundsInDIP() const override;
+  void SetBoundsInDIP(const gfx::Rect& bounds) override;
   void SetTitle(const std::u16string& title) override;
   void Show(bool inactive) override;
   void Hide() override;
@@ -79,8 +81,8 @@ class COMPONENT_EXPORT(OZONE) FlatlandWindow : public PlatformWindow,
   void SetCursor(scoped_refptr<PlatformCursor> cursor) override;
   void MoveCursorTo(const gfx::Point& location) override;
   void ConfineCursorToBounds(const gfx::Rect& bounds) override;
-  void SetRestoredBoundsInPixels(const gfx::Rect& bounds) override;
-  gfx::Rect GetRestoredBoundsInPixels() const override;
+  void SetRestoredBoundsInDIP(const gfx::Rect& bounds) override;
+  gfx::Rect GetRestoredBoundsInDIP() const override;
   void SetWindowIcons(const gfx::ImageSkia& window_icon,
                       const gfx::ImageSkia& app_icon) override;
   void SizeConstraintsChanged() override;
@@ -104,6 +106,8 @@ class COMPONENT_EXPORT(OZONE) FlatlandWindow : public PlatformWindow,
 
   void UpdateSize();
 
+  void OnViewControllerDisconnected(zx_status_t status);
+
   FlatlandWindowManager* const manager_;
   PlatformWindowDelegate* const window_delegate_;
   gfx::AcceleratedWidget const window_id_;
@@ -116,6 +120,9 @@ class COMPONENT_EXPORT(OZONE) FlatlandWindow : public PlatformWindow,
   // across the system. ViewRef consumers can access the handle by
   // calling CloneViewRef().
   fuchsia::ui::views::ViewRef view_ref_;
+
+  // Used to coordinate window closure requests with the shell.
+  fuchsia::element::ViewControllerPtr view_controller_;
 
   // Flatland session used for all drawing operations in this View and safely
   // queueing Present() operations.
@@ -132,11 +139,11 @@ class COMPONENT_EXPORT(OZONE) FlatlandWindow : public PlatformWindow,
   fuchsia::ui::views::ViewRefFocusedPtr view_ref_focused_;
 
   // The scale between logical pixels and physical pixels, set based on the
-  // fuchsia::ui::gfx::Metrics event. It's used to calculate dimensions of the
-  // view in physical pixels in UpdateSize(). This value doesn't affect the
+  // fuchsia::ui::composition::LayoutInfo. It's used to calculate dimensions of
+  // the view in physical pixels in UpdateSize(). This value doesn't affect the
   // device_scale_factor reported by FlatlandScreen for the corresponding
   // display (currently always 1.0, see crbug.com/1215330).
-  float device_pixel_ratio_ = 0.f;
+  float device_pixel_ratio_ = 1.f;
 
   // Current view size in DIPs.
   gfx::SizeF size_dips_;
@@ -160,6 +167,10 @@ class COMPONENT_EXPORT(OZONE) FlatlandWindow : public PlatformWindow,
 
   // True if |view_| is currently attached to a scene.
   bool is_view_attached_ = false;
+
+  // True if SetCapture() was called. Currently does not reflect capture state
+  // in Scenic.
+  bool has_capture_ = false;
 };
 
 }  // namespace ui

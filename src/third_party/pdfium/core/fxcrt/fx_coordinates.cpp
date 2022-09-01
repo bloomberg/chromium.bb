@@ -8,13 +8,14 @@
 
 #include <math.h>
 
+#include <algorithm>
+#include <iterator>
 #include <utility>
 
 #include "build/build_config.h"
 #include "core/fxcrt/fx_extension.h"
 #include "core/fxcrt/fx_safe_types.h"
 #include "core/fxcrt/fx_system.h"
-#include "third_party/base/cxx17_backports.h"
 
 #ifndef NDEBUG
 #include <ostream>
@@ -40,7 +41,7 @@ void MatchFloatRange(float f1, float f2, int* i1, int* i2) {
   }
 }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 static_assert(sizeof(FX_RECT) == sizeof(RECT), "FX_RECT vs. RECT mismatch");
 static_assert(offsetof(FX_RECT, left) == offsetof(RECT, left),
               "FX_RECT vs. RECT mismatch");
@@ -325,6 +326,45 @@ FX_RECT CFX_FloatRect::ToRoundedFxRect() const {
                  FXSYS_roundf(bottom));
 }
 
+void CFX_RectF::Union(float x, float y) {
+  float r = right();
+  float b = bottom();
+
+  left = std::min(left, x);
+  top = std::min(top, y);
+  r = std::max(r, x);
+  b = std::max(b, y);
+
+  width = r - left;
+  height = b - top;
+}
+
+void CFX_RectF::Union(const CFX_RectF& rt) {
+  float r = right();
+  float b = bottom();
+
+  left = std::min(left, rt.left);
+  top = std::min(top, rt.top);
+  r = std::max(r, rt.right());
+  b = std::max(b, rt.bottom());
+
+  width = r - left;
+  height = b - top;
+}
+
+void CFX_RectF::Intersect(const CFX_RectF& rt) {
+  float r = right();
+  float b = bottom();
+
+  left = std::max(left, rt.left);
+  top = std::max(top, rt.top);
+  r = std::min(r, rt.right());
+  b = std::min(b, rt.bottom());
+
+  width = r - left;
+  height = b - top;
+}
+
 FX_RECT CFX_RectF::GetOuterRect() const {
   return FX_RECT(static_cast<int32_t>(floor(left)),
                  static_cast<int32_t>(floor(top)),
@@ -461,7 +501,7 @@ CFX_FloatRect CFX_Matrix::TransformRect(const CFX_FloatRect& rect) const {
   float new_left = points[0].x;
   float new_top = points[0].y;
   float new_bottom = points[0].y;
-  for (size_t i = 1; i < pdfium::size(points); i++) {
+  for (size_t i = 1; i < std::size(points); i++) {
     new_right = std::max(new_right, points[i].x);
     new_left = std::min(new_left, points[i].x);
     new_top = std::max(new_top, points[i].y);

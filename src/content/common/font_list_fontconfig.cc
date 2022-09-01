@@ -2,17 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/font_list.h"
+#include <fontconfig/fontconfig.h>
 
 #include <memory>
 #include <set>
 #include <string>
 #include <utility>
 
-#include <fontconfig/fontconfig.h>
-
-#include "base/cxx17_backports.h"
 #include "base/values.h"
+#include "content/common/font_list.h"
 
 namespace content {
 
@@ -39,7 +37,7 @@ std::unique_ptr<base::ListValue> GetFontList_SlowBlocking() {
   // See https://www.freetype.org/freetype2/docs/reference/ft2-font_formats.html
   // for the list of possible formats.
   const char* allowed_formats[] = { "TrueType", "CFF" };
-  for (size_t i = 0; i < base::size(allowed_formats); ++i) {
+  for (size_t i = 0; i < std::size(allowed_formats); ++i) {
     auto format_pattern = CreateFormatPattern(allowed_formats[i]);
     std::unique_ptr<FcFontSet, decltype(&FcFontSetDestroy)> fontset(
         FcFontList(nullptr, format_pattern.get(), object_set.get()),
@@ -62,11 +60,11 @@ std::unique_ptr<base::ListValue> GetFontList_SlowBlocking() {
   sorted_families.insert("Serif");
 
   for (const auto& family : sorted_families) {
-    std::unique_ptr<base::ListValue> font_item(new base::ListValue());
-    font_item->Append(family);
-    font_item->Append(family);  // localized name.
+    base::Value::List font_item;
+    font_item.Append(family);
+    font_item.Append(family);  // localized name.
     // TODO(yusukes): Support localized family names.
-    font_list->Append(std::move(font_item));
+    font_list->GetList().Append(std::move(font_item));
   }
 
   return font_list;

@@ -53,6 +53,7 @@ import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.optimization_guide.OptimizationGuideBridge;
 import org.chromium.chrome.browser.optimization_guide.OptimizationGuideBridge.OptimizationGuideCallback;
 import org.chromium.chrome.browser.optimization_guide.OptimizationGuideBridgeJni;
+import org.chromium.chrome.browser.price_tracking.PriceTrackingFeatures;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.MockTab;
 import org.chromium.chrome.browser.tab.Tab;
@@ -63,6 +64,7 @@ import org.chromium.chrome.browser.tab.state.PersistedTabDataConfiguration;
 import org.chromium.chrome.browser.tab.state.ShoppingPersistedTabData;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.components.browser_ui.widget.chips.ChipView;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectionDelegate;
 import org.chromium.components.commerce.PriceTracking.BuyableProduct;
 import org.chromium.components.commerce.PriceTracking.PriceTrackingData;
@@ -78,9 +80,8 @@ import org.chromium.content_public.browser.BrowserContextHandle;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
-import org.chromium.ui.test.util.DummyUiActivityTestCase;
+import org.chromium.ui.test.util.BlankUiTestActivityTestCase;
 import org.chromium.ui.widget.ButtonCompat;
-import org.chromium.ui.widget.ChipView;
 import org.chromium.ui.widget.ChromeImageView;
 import org.chromium.url.GURL;
 
@@ -96,7 +97,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
         "enable-features=" + ChromeFeatureList.COMMERCE_PRICE_TRACKING + "<Study",
         "force-fieldtrials=Study/Group"})
-public class TabListViewHolderTest extends DummyUiActivityTestCase {
+public class TabListViewHolderTest extends BlankUiTestActivityTestCase {
     @Rule
     public JniMocker mMocker = new JniMocker();
 
@@ -296,7 +297,7 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
         doNothing().when(mCurrencyFormatterJniMock).setMaxFractionalDigits(anyLong(), anyInt());
         doReturn(1L).when(mOptimizationGuideBridgeJniMock).init();
         mMocker.mock(OptimizationGuideBridgeJni.TEST_HOOKS, mOptimizationGuideBridgeJniMock);
-        PriceTrackingUtilities.setIsSignedInAndSyncEnabledForTesting(true);
+        PriceTrackingFeatures.setIsSignedInAndSyncEnabledForTesting(true);
     }
 
     private void testGridSelected(ViewGroup holder, PropertyModel model) {
@@ -861,29 +862,39 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
 
     @Test
     @MediumTest
-    @UiThreadTest
     public void testPriceDropEndToEnd() {
-        ShoppingPersistedTabData.enablePriceTrackingWithOptimizationGuideForTesting();
-        ShoppingPersistedTabData.onDeferredStartup();
-        PersistedTabDataConfiguration.setUseTestConfig(true);
-        setPriceTrackingEnabledForTesting(true);
-        mockCurrencyFormatter();
-        mockUrlUtilities();
-        mockOptimizationGuideResponse(OptimizationGuideDecision.TRUE, ANY_PRICE_TRACKING_DATA);
-        MockTab tab = (MockTab) MockTab.createAndInitialize(1, false);
-        tab.setGurlOverrideForTesting(TEST_GURL);
-        tab.setIsInitialized(true);
-        CriticalPersistedTabData.from(tab).setTimestampMillis(System.currentTimeMillis());
-        TabListMediator.ShoppingPersistedTabDataFetcher fetcher =
-                new TabListMediator.ShoppingPersistedTabDataFetcher(tab, null);
-        mGridModel.set(TabProperties.SHOPPING_PERSISTED_TAB_DATA_FETCHER, fetcher);
-        testGridSelected(mTabGridView, mGridModel);
-        PriceCardView priceCardView = mTabGridView.findViewById(R.id.price_info_box_outer);
-        TextView currentPrice = mTabGridView.findViewById(R.id.current_price);
-        TextView previousPrice = mTabGridView.findViewById(R.id.previous_price);
-        Assert.assertEquals(EXPECTED_PRICE, currentPrice.getText());
-        Assert.assertEquals(EXPECTED_PREVIOUS_PRICE, previousPrice.getText());
-        Assert.assertEquals(EXPECTED_CONTENT_DESCRIPTION, priceCardView.getContentDescription());
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            ShoppingPersistedTabData.onDeferredStartup();
+            ShoppingPersistedTabData.enablePriceTrackingWithOptimizationGuideForTesting();
+            PersistedTabDataConfiguration.setUseTestConfig(true);
+            setPriceTrackingEnabledForTesting(true);
+            mockCurrencyFormatter();
+            mockUrlUtilities();
+            mockOptimizationGuideResponse(OptimizationGuideDecision.TRUE, ANY_PRICE_TRACKING_DATA);
+            MockTab tab = (MockTab) MockTab.createAndInitialize(1, false);
+            tab.setGurlOverrideForTesting(TEST_GURL);
+            tab.setIsInitialized(true);
+            CriticalPersistedTabData.from(tab).setTimestampMillis(System.currentTimeMillis());
+            TabListMediator.ShoppingPersistedTabDataFetcher fetcher =
+                    new TabListMediator.ShoppingPersistedTabDataFetcher(tab, null);
+            mGridModel.set(TabProperties.SHOPPING_PERSISTED_TAB_DATA_FETCHER, fetcher);
+            testGridSelected(mTabGridView, mGridModel);
+        });
+        CriteriaHelper.pollUiThread(
+                ()
+                        -> EXPECTED_PRICE.equals(
+                                ((TextView) mTabGridView.findViewById(R.id.current_price))
+                                        .getText()));
+        CriteriaHelper.pollUiThread(
+                ()
+                        -> EXPECTED_PREVIOUS_PRICE.equals(
+                                ((TextView) mTabGridView.findViewById(R.id.previous_price))
+                                        .getText()));
+        CriteriaHelper.pollUiThread(()
+                                            -> EXPECTED_CONTENT_DESCRIPTION.equals(
+                                                    ((PriceCardView) mTabGridView.findViewById(
+                                                             R.id.price_info_box_outer))
+                                                            .getContentDescription()));
     }
 
     private void mockCurrencyFormatter() {
@@ -944,7 +955,7 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
         testValues.addFeatureFlagOverride(ChromeFeatureList.CONTINUOUS_SEARCH, true);
         testValues.addFeatureFlagOverride(ChromeFeatureList.COMMERCE_PRICE_TRACKING, true);
         testValues.addFieldTrialParamOverride(ChromeFeatureList.COMMERCE_PRICE_TRACKING,
-                PriceTrackingUtilities.PRICE_TRACKING_PARAM, String.valueOf(value));
+                PriceTrackingFeatures.PRICE_TRACKING_PARAM, String.valueOf(value));
         FeatureList.setTestValues(testValues);
     }
 }

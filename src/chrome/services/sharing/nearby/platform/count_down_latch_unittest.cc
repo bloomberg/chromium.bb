@@ -11,7 +11,6 @@
 #include "base/containers/flat_map.h"
 #include "base/run_loop.h"
 #include "base/synchronization/lock.h"
-#include "base/task/post_task.h"
 #include "base/task/task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/test/bind.h"
@@ -144,7 +143,7 @@ TEST_F(CountDownLatchTest, InitializeCount2_BlocksUnlessCountIsZero) {
 }
 
 // TODO(crbug.com/1185706): Hangs on ChromeOS MSAN.
-#if defined(OS_CHROMEOS) && defined(MEMORY_SANITIZER)
+#if BUILDFLAG(IS_CHROMEOS) && defined(MEMORY_SANITIZER)
 #define MAYBE_InitializeCount2_UnblocksAllBlockedThreadsWhenCountIsZero \
   DISABLED_InitializeCount2_UnblocksAllBlockedThreadsWhenCountIsZero
 #else

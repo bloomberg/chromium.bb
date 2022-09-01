@@ -9,7 +9,7 @@
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
-#include "base/metrics/histogram_functions.h"
+#include "base/observer_list.h"
 #include "base/system/sys_info.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/trace_event/common/trace_event_common.h"
@@ -36,7 +36,7 @@ bool DeviceHasEnoughMemoryForPrerender() {
   // Use the same default threshold as the back/forward cache. See comments in
   // DeviceHasEnoughMemoryForBackForwardCache().
   static constexpr int kDefaultMemoryThresholdMb =
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
       1700;
 #else
       0;
@@ -91,9 +91,9 @@ int PrerenderHostRegistry::CreateAndStartHost(
 
     // Don't prerender when the trigger is in the background.
     if (web_contents.GetVisibility() == Visibility::HIDDEN) {
-      base::UmaHistogramEnumeration(
-          "Prerender.Experimental.PrerenderHostFinalStatus",
-          PrerenderHost::FinalStatus::kTriggerBackgrounded);
+      RecordPrerenderHostFinalStatus(
+          PrerenderHost::FinalStatus::kTriggerBackgrounded, attributes,
+          ukm::kInvalidSourceId);
       return RenderFrameHost::kNoFrameTreeNodeId;
     }
 
@@ -101,9 +101,8 @@ int PrerenderHostRegistry::CreateAndStartHost(
     // TODO(https://crbug.com/1176120): Fallback to NoStatePrefetch
     // since the memory requirements are different.
     if (!DeviceHasEnoughMemoryForPrerender()) {
-      base::UmaHistogramEnumeration(
-          "Prerender.Experimental.PrerenderHostFinalStatus",
-          PrerenderHost::FinalStatus::kLowEndDevice);
+      RecordPrerenderHostFinalStatus(PrerenderHost::FinalStatus::kLowEndDevice,
+                                     attributes, ukm::kInvalidSourceId);
       return RenderFrameHost::kNoFrameTreeNodeId;
     }
 
@@ -113,10 +112,10 @@ int PrerenderHostRegistry::CreateAndStartHost(
     // skip the same-origin check.
     if (!attributes.IsBrowserInitiated() &&
         !attributes.initiator_origin.value().IsSameOriginWith(
-            url::Origin::Create(attributes.prerendering_url))) {
-      base::UmaHistogramEnumeration(
-          "Prerender.Experimental.PrerenderHostFinalStatus",
-          PrerenderHost::FinalStatus::kCrossOriginNavigation);
+            attributes.prerendering_url)) {
+      RecordPrerenderHostFinalStatus(
+          PrerenderHost::FinalStatus::kCrossOriginNavigation, attributes,
+          ukm::kInvalidSourceId);
       return RenderFrameHost::kNoFrameTreeNodeId;
     }
 
@@ -128,11 +127,10 @@ int PrerenderHostRegistry::CreateAndStartHost(
 
     // TODO(crbug.com/1197133): Cancel the started prerender and start a new
     // one if the score of the new candidate is higher than the started one's.
-    if (prerender_host_by_frame_tree_node_id_.size() ==
-        kMaxNumOfRunningPrerenders) {
-      base::UmaHistogramEnumeration(
-          "Prerender.Experimental.PrerenderHostFinalStatus",
-          PrerenderHost::FinalStatus::kMaxNumOfRunningPrerendersExceeded);
+    if (!IsAllowedToStartPrerenderingForTrigger(attributes.trigger_type)) {
+      RecordPrerenderHostFinalStatus(
+          PrerenderHost::FinalStatus::kMaxNumOfRunningPrerendersExceeded,
+          attributes, ukm::kInvalidSourceId);
       return RenderFrameHost::kNoFrameTreeNodeId;
     }
 
@@ -162,7 +160,7 @@ int PrerenderHostRegistry::CreateAndStartHost(
   return frame_tree_node_id;
 }
 
-void PrerenderHostRegistry::CancelHost(
+bool PrerenderHostRegistry::CancelHost(
     int frame_tree_node_id,
     PrerenderHost::FinalStatus final_status) {
   TRACE_EVENT1("navigation", "PrerenderHostRegistry::CancelHost",
@@ -179,7 +177,7 @@ void PrerenderHostRegistry::CancelHost(
   // record the cancellation reason.
   auto iter = prerender_host_by_frame_tree_node_id_.find(frame_tree_node_id);
   if (iter == prerender_host_by_frame_tree_node_id_.end())
-    return;
+    return false;
 
   // Remove the prerender host from the host map so that it's not used for
   // activation during asynchronous deletion.
@@ -188,6 +186,7 @@ void PrerenderHostRegistry::CancelHost(
 
   // Asynchronously delete the prerender host.
   ScheduleToDeleteAbandonedHost(std::move(prerender_host), final_status);
+  return true;
 }
 
 void PrerenderHostRegistry::CancelAllHosts(
@@ -408,9 +407,10 @@ int PrerenderHostRegistry::FindHostToActivateInternal(
 
   // Find an available host for the navigation URL.
   PrerenderHost* host = nullptr;
-  for (const auto& iter : prerender_host_by_frame_tree_node_id_) {
-    if (iter.second->GetInitialUrl() == navigation_request.GetURL()) {
-      host = iter.second.get();
+  for (const auto& [_, it_prerender_host] :
+       prerender_host_by_frame_tree_node_id_) {
+    if (it_prerender_host->IsUrlMatch(navigation_request.GetURL())) {
+      host = it_prerender_host.get();
       break;
     }
   }
@@ -467,6 +467,34 @@ const std::string& PrerenderHostRegistry::GetPrerenderEmbedderHistogramSuffix(
   DCHECK(prerender_host);
 
   return prerender_host->embedder_histogram_suffix();
+}
+
+bool PrerenderHostRegistry::IsAllowedToStartPrerenderingForTrigger(
+    PrerenderTriggerType trigger_type) {
+  // Currently the number prerenders is limited to two per WebContentsImpl.
+  const size_t kMaxNumOfRunningPrerenders = 2;
+
+  if (prerender_host_by_frame_tree_node_id_.size() ==
+      kMaxNumOfRunningPrerenders)
+    return false;
+
+  int trigger_type_count = 0;
+  DCHECK_LT(prerender_host_by_frame_tree_node_id_.size(),
+            kMaxNumOfRunningPrerenders);
+  for (const auto& host_by_id : prerender_host_by_frame_tree_node_id_) {
+    if (host_by_id.second->trigger_type() == trigger_type)
+      ++trigger_type_count;
+  }
+
+  switch (trigger_type) {
+    case PrerenderTriggerType::kSpeculationRule:
+      // Speculation Rules trigger is allowed to start only one prerender.
+      return trigger_type_count < 1;
+    case PrerenderTriggerType::kEmbedder:
+      // Embedder triggers are allowed to start at most 2 concurrent
+      // prerenders.
+      return trigger_type_count < 2;
+  }
 }
 
 }  // namespace content

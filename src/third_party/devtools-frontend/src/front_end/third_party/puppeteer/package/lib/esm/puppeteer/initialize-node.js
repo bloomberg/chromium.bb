@@ -13,13 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import pkgDir from 'pkg-dir';
-
 import { PuppeteerNode } from './node/Puppeteer.js';
 import { PUPPETEER_REVISIONS } from './revisions.js';
-
+import { sync } from 'pkg-dir';
+import { rootDirname } from './constants.js';
 export const initializePuppeteerNode = (packageName) => {
-    const puppeteerRootDirectory = pkgDir.sync(__dirname);
+    const puppeteerRootDirectory = sync(rootDirname);
     let preferredRevision = PUPPETEER_REVISIONS.chromium;
     const isPuppeteerCore = packageName === 'puppeteer-core';
     // puppeteer-core ignores environment variables

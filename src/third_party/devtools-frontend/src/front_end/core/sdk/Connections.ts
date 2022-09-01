@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import * as Common from '../common/common.js';
+import type * as Platform from '../platform/platform.js';
 import * as Host from '../host/host.js';
 import * as ProtocolClient from '../protocol_client/protocol_client.js';
 import * as Root from '../root/root.js';
@@ -82,7 +83,7 @@ export class WebSocketConnection implements ProtocolClient.InspectorBackend.Conn
   #onWebSocketDisconnect: (() => void)|null;
   #connected: boolean;
   #messages: string[];
-  constructor(url: string, onWebSocketDisconnect: () => void) {
+  constructor(url: Platform.DevToolsPath.UrlString, onWebSocketDisconnect: () => void) {
     this.#socket = new WebSocket(url);
     this.#socket.onerror = this.onError.bind(this);
     this.#socket.onopen = this.onOpen.bind(this);
@@ -189,7 +190,7 @@ export class StubConnection implements ProtocolClient.InspectorBackend.Connectio
   }
 
   sendRawMessage(message: string): void {
-    setTimeout(this.respondWithError.bind(this, message), 0);
+    window.setTimeout(this.respondWithError.bind(this, message), 0);
   }
 
   private respondWithError(message: string): void {
@@ -213,7 +214,12 @@ export class StubConnection implements ProtocolClient.InspectorBackend.Connectio
   }
 }
 
-export class ParallelConnection implements ProtocolClient.InspectorBackend.Connection {
+export interface ParallelConnectionInterface extends ProtocolClient.InspectorBackend.Connection {
+  getSessionId: () => string;
+  getOnDisconnect: () => ((arg0: string) => void) | null;
+}
+
+export class ParallelConnection implements ParallelConnectionInterface {
   readonly #connection: ProtocolClient.InspectorBackend.Connection;
   #sessionId: string;
   onMessage: ((arg0: Object) => void)|null;
@@ -270,10 +276,10 @@ export async function initMainConnection(
         if (target) {
           const router = target.router();
           if (router) {
-            router.connection().disconnect();
+            void router.connection().disconnect();
           }
         }
-        createMainTarget();
+        void createMainTarget();
       });
 }
 
@@ -281,7 +287,7 @@ function createMainConnection(websocketConnectionLost: () => void): ProtocolClie
   const wsParam = Root.Runtime.Runtime.queryParam('ws');
   const wssParam = Root.Runtime.Runtime.queryParam('wss');
   if (wsParam || wssParam) {
-    const ws = wsParam ? `ws://${wsParam}` : `wss://${wssParam}`;
+    const ws = (wsParam ? `ws://${wsParam}` : `wss://${wssParam}`) as Platform.DevToolsPath.UrlString;
     return new WebSocketConnection(ws, websocketConnectionLost);
   }
   if (Host.InspectorFrontendHost.InspectorFrontendHostInstance.isHostedMode()) {

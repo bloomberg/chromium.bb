@@ -5,7 +5,7 @@
 //
 // MulithreadingTest.cpp : Tests of multithreaded rendering
 
-#include "platform/FeaturesVk.h"
+#include "platform/FeaturesVk_autogen.h"
 #include "test_utils/ANGLETest.h"
 #include "test_utils/MultiThreadSteps.h"
 #include "test_utils/gl_raii.h"
@@ -727,7 +727,7 @@ void MultithreadingTestES3::mainThreadDraw(bool useDraw)
 TEST_P(MultithreadingTestES3, MultithreadFenceDraw)
 {
     // http://anglebug.com/5418
-    ANGLE_SKIP_TEST_IF(IsLinux() && IsVulkan() && (IsIntel() || IsSwiftshaderDevice()));
+    ANGLE_SKIP_TEST_IF(IsLinux() && IsVulkan() && (IsIntel() || isSwiftshader()));
 
     // Have the secondary thread use glDrawArrays()
     mainThreadDraw(true);

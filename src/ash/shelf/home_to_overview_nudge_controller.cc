@@ -4,10 +4,10 @@
 
 #include "ash/shelf/home_to_overview_nudge_controller.h"
 
+#include "ash/controls/contextual_nudge.h"
+#include "ash/controls/contextual_tooltip.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/session_controller_impl.h"
-#include "ash/shelf/contextual_nudge.h"
-#include "ash/shelf/contextual_tooltip.h"
 #include "ash/shelf/hotseat_widget.h"
 #include "ash/shelf/scrollable_shelf_view.h"
 #include "ash/shelf/shelf.h"
@@ -116,27 +116,6 @@ class ObserverToCloseWidget : public ui::ImplicitAnimationObserver {
  private:
   views::Widget* const widget_;
 };
-
-void RecordNudgeMetrics(
-    HomeToOverviewNudgeController::HideTransition transition) {
-  switch (transition) {
-    case (HomeToOverviewNudgeController::HideTransition::kUserTap):
-      MaybeLogNudgeDismissedMetrics(
-          contextual_tooltip::TooltipType::kHomeToOverview,
-          contextual_tooltip::DismissNudgeReason::kTap);
-      break;
-    case (HomeToOverviewNudgeController::HideTransition::kNudgeTimeout):
-      MaybeLogNudgeDismissedMetrics(
-          contextual_tooltip::TooltipType::kHomeToOverview,
-          contextual_tooltip::DismissNudgeReason::kTimeout);
-      break;
-    case (HomeToOverviewNudgeController::HideTransition::kShelfStateChange):
-      MaybeLogNudgeDismissedMetrics(
-          contextual_tooltip::TooltipType::kHomeToOverview,
-          contextual_tooltip::DismissNudgeReason::kOther);
-      break;
-  }
-}
 
 }  // namespace
 
@@ -323,8 +302,6 @@ void HomeToOverviewNudgeController::ShowNudge() {
 void HomeToOverviewNudgeController::HideNudge(HideTransition transition) {
   if (!nudge_)
     return;
-
-  RecordNudgeMetrics(transition);
 
   auto animate_hide_transform = [](HideTransition transition,
                                    ui::Layer* layer) {

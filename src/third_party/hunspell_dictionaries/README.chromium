@@ -42,7 +42,7 @@ This folder contains the following:
 README_<language>_<region>.txt files
 
 The .bdic files are binary files, generated from the corresponding .dic and .aff
-files, using convert_dict (chrome\tools\convert_dict). These binary files are
+files, using convert_dict (//chrome/tools/convert_dict/). These binary files are
 used by the spellchecker. The .dic_delta files are used to add words which are
 not there in the .dic files. Irrespective of the encoding of the corresponding
 .dic file, the .dic_delta files are encoded as UTF-8.
@@ -53,6 +53,13 @@ file versions, it is a good idea to rebuild them using convert_dict from the
 .dic, .aff and .dic_delta files in this folder. convert_dict takes care of
 duplicate entries present both in .dic and .dic_delta files.
 
+```
+$ autoninja -C out/Default convert_dict
+$ cd third_party/hunspell_dictionaries
+$ ../../out/Default/convert_dict en_US
+$ mv en_US.bdic en-US-<major>-<minor>.bdic
+```
+
 The README_<language>_<region>.txt files contain information about the
 individual dictionaries, including copyright information.
 
@@ -61,7 +68,13 @@ necessary. Use the same version for all the dictionaries that you add at the
 same time. Increment the major version number (5) if you're updating either dic
 or aff files. Increment the minor version number (0) if you're updating only
 dic_delta files. If you add or update dictionaries, make sure to update the
-constants in chrome\common\spellcheck_common.cc.
+constants in //components/spellcheck/common/spellcheck_common.cc. You can test
+those changes via the components_unittests.
+
+```
+$ autoninja -C out/Default components_unittests
+$ ./out/Default/components_unittests --gtest_filter='SpellCheckTest*'
+```
 
 Note: the encodings for these files are usually only UTF-8 for English
 dictionaries. Otherwise, they could be anything. This will lead to
@@ -233,3 +246,9 @@ dictionaries are located at: https://github.com/msmiljan/srdict_chromium
 
 On Jan 8, 2020, we updated the en and fa dictionaries to the latest upstream
 versions. Because dic files changed, we incremented the major version to 9-0.
+
+On Mar 1, 2022, we updated the en dictionaries to the latest upstream versions.
+Because dic files changed, we incremented the major version to 10-0.
+
+On Mar 2, 2022, we added the Ukrainian spelling of "Kyiv", the capital city of
+Ukraine, to en dictionaries.

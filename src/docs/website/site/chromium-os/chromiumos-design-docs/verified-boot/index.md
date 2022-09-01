@@ -69,12 +69,14 @@ SMRAM, and so on. In addition, the attacker can now access any data in the
 currently-logged-in user's account such as locally stored media and website
 cookies. The attacker may collect passwords when typed by the user into the
 Chromium-based browser or the screenlocker.
+
 An opportunistic *local* attacker will have a completely different level of
 access. Access will be achieved using a USB boot drive, or other out-of-band
 bootable material supported by the firmware. Once the system is running the
 attacker's operating system, she will be able to modify the root file system and
 encrypted user-data blobs. She won't have any visibility into the encrypted
 information but may copy it or modify it.
+
 While Chromium OS does as much as possible to guard against such remote and
 local breaches, no software system is impervious to successful attacks.
 Therefore, it is important that the attacker cannot continue to "own" a machine
@@ -83,6 +85,7 @@ accessible regions of the system internals are verified to be in a known good
 state. If they aren't, then the firmware recovery process will be initiated (or
 the user can request permission to proceed, which would make sense in the case
 of a development install, for example).
+
 The important factor to consider with the attackers considered above is that if
 an attacker gains access via the Chromium browser, they can presumably modify
 the Chromium browser's startup (or bookmarks or server-side settings) to
@@ -100,6 +103,7 @@ read-write portion of the firmware. An RSA signature of this hash will then be
 verified using a permanently stored public key (of,
 [ideally](http://csrc.nist.gov/publications/nistpubs/800-57/sp800-57-Part1-revised2_Mar08-2007.pdf),
 2048 bits or more).
+
 The read-write firmware is then responsible for computing hashes of any other
 non-volatile memory and the kernel that will be executed. It will contain its
 own *subkey* and a list of cryptographic hashes for the data to be verified:
@@ -108,6 +112,7 @@ signed by the subkey so that they may be updated without requiring the
 write-protected key to be used for every update. (Note, the kernel+initrd signed
 hashes may be stored with the kernel+initrd on disk to avoid needing a firmware
 update when they change.)
+
 Once we're in the kernel, we've successfully performed a verified boot.
 
 ## Extending verification from the kernel on upward
@@ -116,16 +121,19 @@ In general, once we're running, integrity measurements become less useful. We
 can ensure that the Chromium browser that we execute has not been tampered with,
 but we can't guarantee that the same attack that compromised it the first time
 won't compromise it a second time without updating.
+
 To ensure that an update is possible, the executables, modules, and
 configuration files that allow the system to receive updates must be authentic
 and untampered with. Getting to that point requires network access and a running
 autoupdater. Given that Chromium OS keeps a very minimal root file system, it's
 easier to just verify everything on it.
+
 While that sounds great in theory, in practice it is hard to guarantee an intact
 file system without paying the cost for upfront checks. If the read-write
 firmware were to verify the entire root partition before proceeding to boot, it
 would add at least 5 seconds to the boot-time on current netbooks. This delay is
 untenable.
+
 Instead of performing full file system verification in advance, it can be done
 on demand from a verified kernel. A transparent block device will be layered
 between the run-time system and all running processes. It will be configured
@@ -135,6 +143,7 @@ transparent block device layer will be checked against a cryptographic hash
 which is stored in a central collection of hashes for the verifiable block
 device. This may be in a standalone partition or trailing the filesystem on the
 verifiable block device.
+
 Initially, blocks will be 4KB in size. For a root file system of roughly ~75MB,
 there will be roughly 19,200 SHA-1 hashes. On current x86 and ARM based systems,
 computing the SHA-1 hash of 4KB takes between 0.2ms and 0.5ms. There will be
@@ -148,8 +157,7 @@ repeated as needed to build a tree. The final, single hash will be hard coded
 into the kernel or supplied through a device interface from a trusted initial
 RAM disk.
 
-[<img alt="image"
-src="/chromium-os/chromiumos-design-docs/verified-boot/diag2png">](http://sites.google.com/a/chromium.org/dev/chromium-os/chromiumos-design-docs/verified-boot/diag2.png?attredirects=0)
+![](/chromium-os/chromiumos-design-docs/verified-boot/diag2.png)
 
 Note that SHA-1 is considered to be [unsafe after 2010 by
 NIST](http://csrc.nist.gov/groups/ST/toolkit/secure_hashing.html) for general
@@ -210,8 +218,11 @@ the root partition using the dm device. A simple utility tool will be written
 that will directly hash a given block device and emit a compatible binary blob
 that contains the collection of hashes. It will take the format:
 
+```
 hashblock_1 . . . hashblock_n
 hashbundle_1. . . hashbundle_m
+```
+
 This data will live either in its own partition or be appended to the verified
 partition (aligned on a block boundary). Its location, the hash algorithm used,
 and the hash of bundle hashes should be passed in as arguments to the device

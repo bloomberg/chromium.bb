@@ -4,10 +4,13 @@
 
 #include "src/profiler/heap-profiler.h"
 
+#include "include/v8-profiler.h"
 #include "src/api/api-inl.h"
+#include "src/base/optional.h"
 #include "src/debug/debug.h"
 #include "src/heap/combined-heap.h"
 #include "src/heap/heap-inl.h"
+#include "src/heap/heap.h"
 #include "src/objects/js-array-buffer-inl.h"
 #include "src/profiler/allocation-tracker.h"
 #include "src/profiler/heap-snapshot-generator-inl.h"
@@ -79,14 +82,17 @@ v8::EmbedderGraph::Node::Detachedness HeapProfiler::GetDetachedness(
 }
 
 HeapSnapshot* HeapProfiler::TakeSnapshot(
-    v8::ActivityControl* control,
-    v8::HeapProfiler::ObjectNameResolver* resolver,
-    bool treat_global_objects_as_roots, bool capture_numeric_value) {
+    const v8::HeapProfiler::HeapSnapshotOptions options) {
   is_taking_snapshot_ = true;
-  HeapSnapshot* result = new HeapSnapshot(this, treat_global_objects_as_roots,
-                                          capture_numeric_value);
+  HeapSnapshot* result =
+      new HeapSnapshot(this, options.snapshot_mode, options.numerics_mode);
   {
-    HeapSnapshotGenerator generator(result, control, resolver, heap());
+    base::Optional<CppClassNamesAsHeapObjectNameScope> use_cpp_class_name;
+    if (result->expose_internals() && heap()->cpp_heap())
+      use_cpp_class_name.emplace(heap()->cpp_heap());
+
+    HeapSnapshotGenerator generator(
+        result, options.control, options.global_object_name_resolver, heap());
     if (!generator.GenerateSnapshot()) {
       delete result;
       result = nullptr;
@@ -264,9 +270,12 @@ void HeapProfiler::QueryObjects(Handle<Context> context,
   heap()->CollectAllAvailableGarbage(GarbageCollectionReason::kHeapProfiler);
   CombinedHeapObjectIterator heap_iterator(
       heap(), HeapObjectIterator::kFilterUnreachable);
+  PtrComprCageBase cage_base(isolate());
   for (HeapObject heap_obj = heap_iterator.Next(); !heap_obj.is_null();
        heap_obj = heap_iterator.Next()) {
-    if (!heap_obj.IsJSObject() || heap_obj.IsExternal(isolate())) continue;
+    if (!heap_obj.IsJSObject(cage_base) ||
+        heap_obj.IsJSExternalObject(cage_base))
+      continue;
     v8::Local<v8::Object> v8_obj(
         Utils::ToLocal(handle(JSObject::cast(heap_obj), isolate())));
     if (!predicate->Filter(v8_obj)) continue;

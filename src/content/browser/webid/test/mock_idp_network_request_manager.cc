@@ -4,12 +4,15 @@
 
 #include "content/browser/webid/test/mock_idp_network_request_manager.h"
 
+#include "services/network/public/mojom/client_security_state.mojom.h"
+
 namespace content {
 
-MockIdpNetworkRequestManager::MockIdpNetworkRequestManager(
-    const GURL& provider,
-    const url::Origin& relying_party)
-    : IdpNetworkRequestManager(provider, relying_party, nullptr) {}
+MockIdpNetworkRequestManager::MockIdpNetworkRequestManager()
+    : IdpNetworkRequestManager(GURL(),
+                               url::Origin(),
+                               nullptr,
+                               network::mojom::ClientSecurityState::New()) {}
 
 MockIdpNetworkRequestManager::~MockIdpNetworkRequestManager() = default;
 

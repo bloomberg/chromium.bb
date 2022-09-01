@@ -4,7 +4,6 @@
 
 #include "chromeos/system/name_value_pairs_parser.h"
 
-#include "base/cxx17_backports.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -95,6 +94,22 @@ name4="value4"
   EXPECT_EQ("value3", map["name3"]);
 }
 
+TEST(NameValuePairsParser, TestParseErrorInVpdDumpFormat) {
+  constexpr NameValuePairsFormat format = NameValuePairsFormat::kVpdDump;
+  NameValuePairsParser::NameValueMap map;
+  NameValuePairsParser parser(&map);
+
+  // Names must be quoted in VPD dump format. Unquoted names are ignored.
+  const std::string contents1 = R"(
+"name1"="value1"
+# RW_VPD execute error.
+)";
+  EXPECT_FALSE(parser.ParseNameValuePairs(contents1, format,
+                                          /*debug_source=*/"unit test"));
+  EXPECT_EQ(1U, map.size());
+  EXPECT_EQ("value1", map["name1"]);
+}
+
 TEST(NameValuePairsParser, TestParseNameValuePairsInMachineInfoFormat) {
   constexpr NameValuePairsFormat format = NameValuePairsFormat::kMachineInfo;
   NameValuePairsParser::NameValueMap map;
@@ -141,7 +156,7 @@ TEST(NameValuePairsParser, TestParseNameValuePairsFromCrossystemTool) {
 
   NameValuePairsParser::NameValueMap map;
   NameValuePairsParser parser(&map);
-  parser.ParseNameValuePairsFromTool(base::size(command), command,
+  parser.ParseNameValuePairsFromTool(std::size(command), command,
                                      NameValuePairsFormat::kCrossystem);
   EXPECT_EQ(7u, map.size());
   EXPECT_EQ("x86", map["arch"]);

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright (c) 2018 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -54,7 +54,8 @@ def get_notice_footer():
 def get_change_notice(version):
   if version == 0:
     return [] # No changes for version 0
-  elif version == 1:
+
+  if version == 1:
     return [
       'We want to collect the Git version.',
       'We want to collect information about the HTTP',
@@ -64,7 +65,8 @@ def get_change_notice(version):
       'We only collect known strings to make sure we',
       'don\'t record PII.',
     ]
-  elif version == 2:
+
+  if version == 2:
     return [
       'We will start collecting metrics from bots.',
       'There are no changes for developers.',

@@ -32,6 +32,7 @@
 #include "services/network/public/mojom/source_location.mojom-forward.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
+#include "third_party/blink/public/mojom/navigation/navigation_api_history_entry_arrays.mojom-forward.h"
 #include "third_party/blink/public/mojom/navigation/navigation_params.mojom-forward.h"
 
 namespace blink {
@@ -43,7 +44,6 @@ class FrameTree;
 class FrameTreeNode;
 class NavigationRequest;
 class RenderFrameHostImpl;
-class SiteInfo;
 class SiteInstance;
 struct LoadCommittedDetails;
 
@@ -189,7 +189,7 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // navigations as initiated by the renderer.
   void GoToOffsetFromRenderer(int offset);
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // The difference between (Can)GoToOffsetWithSkipping and
   // (Can)GoToOffset/(Can)GoToOffsetInSandboxedFrame is that this respects the
   // history manipulation intervention and will exclude skippable entries.
@@ -217,16 +217,18 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
       const std::string& extra_headers,
       network::mojom::SourceLocationPtr source_location,
       scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
-      const absl::optional<blink::Impression>& impression);
+      const absl::optional<blink::Impression>& impression,
+      base::TimeTicks navigation_start_time,
+      absl::optional<bool> is_fenced_frame_opaque_url = absl::nullopt);
 
-  // Navigates to the history entry associated with the given app history |key|.
-  // Searches |entries_| for a FrameNavigationEntry associated with |node|
-  // that has |key| as its app history key. Searches back from the current
-  // index, then forward, so if there are multiple entries with the same key,
-  // the nearest to current should be selected. Stops searching in the current
-  // direction if it finds a NavigationEntry without a FrameNavigationEntry for
-  // |node|, or if the FrameNavigationEntry doesn't match origin or site
-  // instance.
+  // Navigates to the history entry associated with the given navigation API
+  // |key|. Searches |entries_| for a FrameNavigationEntry associated with
+  // |node| that has |key| as its navigation API key. Searches back from the
+  // current index, then forward, so if there are multiple entries with the same
+  // key, the nearest to current should be selected. Stops searching in the
+  // current direction if it finds a NavigationEntry without a
+  // FrameNavigationEntry for |node|, or if the FrameNavigationEntry doesn't
+  // match origin or site instance.
   //
   // If no matching entry is found, the navigation is dropped. The renderer
   // should only send the navigation to the browser if it believes the entry is
@@ -234,16 +236,24 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // |entries_|, or due to a race condition) or compromised.
   // If a matching entry is found, navigate to that entry and proceed like any
   // other history navigation.
-  void NavigateToAppHistoryKey(FrameTreeNode* node, const std::string& key);
+  //
+  // |sandboxed_source_frame_tree_node_id| is set to something besides
+  // FrameTreeNode::kFrameTreeNodeInvalidId when the source frame is not allowed
+  // to navigate frames outside its subtree, because of sandboxing. It then is
+  // used by the appropriate checks which will drop the navigation if it would
+  // result in a navigation outside its subtree.
+  void NavigateToNavigationApiKey(FrameTreeNode* node,
+                                  int sandboxed_source_frame_tree_node_id,
+                                  const std::string& key);
 
   // Whether this is the initial navigation in an unmodified new tab.  In this
   // case, we know there is no content displayed in the page.
   bool IsUnmodifiedBlankTab();
 
   // The session storage namespace that all child RenderViews associated with
-  // |site_info| should use.
+  // |partition_config| should use.
   SessionStorageNamespace* GetSessionStorageNamespace(
-      const SiteInfo& site_info);
+      const StoragePartitionConfig& partition_config);
 
   // Returns the index of the specified entry, or -1 if entry is not contained
   // in this NavigationController.
@@ -318,7 +328,7 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // so that we know to load URLs that were pending as "lazy" loads.
   void SetActive(bool is_active);
 
-  // Sets the SessionStorageNamespace for the given |partition_id|. This is
+  // Sets the SessionStorageNamespace for the given |partition_config|. This is
   // used during initialization of a new NavigationController to allow
   // pre-population of the SessionStorageNamespace objects. Session restore,
   // prerendering, and the implementation of window.open() are the primary users
@@ -327,7 +337,7 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // Calling this function when a SessionStorageNamespace has already been
   // associated with a |partition_id| will CHECK() fail.
   void SetSessionStorageNamespace(
-      const StoragePartitionId& partition_id,
+      const StoragePartitionConfig& partition_config,
       SessionStorageNamespace* session_storage_namespace);
 
   // Random data ---------------------------------------------------------------
@@ -355,7 +365,7 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
 
 // Returns true if the string corresponds to a valid data URL, false
 // otherwise.
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   static bool ValidateDataURLAsString(
       const scoped_refptr<const base::RefCountedString>& data_url_as_string);
 #endif
@@ -379,6 +389,8 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
 
   // Like NavigationController::CreateNavigationEntry, but takes an extra
   // argument, |source_site_instance|.
+  // `rewrite_virtual_urls` is true when it needs to rewrite virtual urls
+  // (e.g., for outermost frames).
   static std::unique_ptr<NavigationEntryImpl> CreateNavigationEntry(
       const GURL& url,
       Referrer referrer,
@@ -388,14 +400,40 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
       bool is_renderer_initiated,
       const std::string& extra_headers,
       BrowserContext* browser_context,
-      scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory);
+      scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
+      bool rewrite_virtual_urls);
 
-  // Called just before sending the commit to the renderer. Walks the
-  // session history entries for the committing FrameTreeNode, forward and
-  // backward from the pending entry. All contiguous and same-origin
-  // FrameNavigationEntries are serialized and added to |request|'s commit
-  // params.
-  void PopulateAppHistoryEntryVectors(NavigationRequest* request);
+  // Called just before sending the commit to the renderer, or when restoring
+  // from back/forward cache. Walks the session history entries for the relevant
+  // FrameTreeNode, forward and backward from the pending entry. All contiguous
+  // and same-origin FrameNavigationEntries are serialized and returned.
+  // |request| may be nullptr when getting entries for an iframe that is being
+  // restored for back/forward cache (in that case, the iframe itself is not
+  // navigated, so there is no NavigationRequest).
+  blink::mojom::NavigationApiHistoryEntryArraysPtr
+  GetNavigationApiHistoryEntryVectors(FrameTreeNode* node,
+                                      NavigationRequest* request);
+
+  // The window.navigation API exposes the urls of some non-current same-origin
+  // FrameNavigationEntries to the renderer. This helper checks whether the
+  // given ReferrerPolicy makes an attempt to hide a page's URL (e.g., in
+  // referrer headers) and thus whether the URL should be hidden from navigation
+  // API history entries as well.
+  static bool ShouldProtectUrlInNavigationApi(
+      network::mojom::ReferrerPolicy referrer_policy);
+
+  // Returns whether the last NavigationEntry encountered a post-commit error.
+  bool has_post_commit_error_entry() const {
+    return entry_replaced_by_post_commit_error_ != nullptr;
+  }
+
+  // Whether the current call stack includes NavigateToPendingEntry, to avoid
+  // re-entrant calls to NavigateToPendingEntry.
+  // TODO(https://crbug.com/1327907): Don't expose this once we figure out the
+  // root cause for the navigation re-entrancy case in the linked bug.
+  bool in_navigate_to_pending_entry() const {
+    return in_navigate_to_pending_entry_;
+  }
 
  private:
   friend class RestoreHelper;
@@ -537,7 +575,9 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
       network::mojom::SourceLocationPtr source_location,
       ReloadType reload_type,
       NavigationEntryImpl* entry,
-      FrameNavigationEntry* frame_entry);
+      FrameNavigationEntry* frame_entry,
+      base::TimeTicks navigation_start_time,
+      absl::optional<bool> is_fenced_frame_opaque_url = absl::nullopt);
 
   // Creates and returns a NavigationRequest for a navigation to |entry|. Will
   // return nullptr if the parameters are invalid and the navigation cannot
@@ -710,38 +750,25 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // GetLastCommittedEntryIndex() and length is GetEntryCount().
   void BroadcastHistoryOffsetAndLength();
 
-  // Helper functions used to determine if it is safe to change the internal
-  // representation of StoragePartitionId.
-  //
-  // Called when a new StoragePartitionId is added to
-  // `session_storage_namespace_map_` and adds an entry to
-  // `partition_config_to_id_map_`.
-  void OnStoragePartitionIdAdded(const StoragePartitionId& partition_id);
-  // Called to log a crash dump when unique string representations result in
-  // the same StoragePartitionConfig, or an ID used to lookup a namespace
-  // contains a different config than the one used when the namespace was
-  // added to the map. Both situations imply that there is not a 1:1 mapping
-  // between representations.
-  void LogStoragePartitionIdCrashKeys(
-      const StoragePartitionId& original_partition_id,
-      const StoragePartitionId& new_partition_id);
-
-  // Used by PopulateAppHistoryEntryVectors to initialize a single vector.
+  // Used by PopulateNavigationApiHistoryEntryVectors to initialize a single
+  // vector.
   enum class Direction { kForward, kBack };
-  std::vector<blink::mojom::AppHistoryEntryPtr>
-  PopulateSingleAppHistoryEntryVector(Direction direction,
-                                      int entry_index,
-                                      const url::Origin& pending_origin,
-                                      FrameTreeNode* node,
-                                      SiteInstance* site_instance,
-                                      int64_t previous_item_sequence_number);
-  // Helper for NavigateToAppHistoryKey(). Ensures that we only navigate to
+  std::vector<blink::mojom::NavigationApiHistoryEntryPtr>
+  PopulateSingleNavigationApiHistoryEntryVector(
+      Direction direction,
+      int entry_index,
+      const url::Origin& pending_origin,
+      FrameTreeNode* node,
+      SiteInstance* site_instance,
+      int64_t pending_item_sequence_number,
+      int64_t pending_document_sequence_number);
+  // Helper for NavigateToNavigationApiKey(). Ensures that we only navigate to
   // |target_entry| if it matches |current_entry|'s origin and site instance, as
-  // well as having |app_history_key| as its key.
-  HistoryNavigationAction ShouldNavigateToEntryForAppHistoryKey(
+  // well as having |navigation_api_key| as its key.
+  HistoryNavigationAction ShouldNavigateToEntryForNavigationApiKey(
       FrameNavigationEntry* current_entry,
       FrameNavigationEntry* target_entry,
-      const std::string& app_history_key);
+      const std::string& navigation_api_key);
 
   // Whether to maintain a session history with just one entry.
   //
@@ -830,15 +857,6 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // NavigationController, only entries in the same StoragePartition may
   // share session storage state with one another.
   SessionStorageNamespaceMap session_storage_namespace_map_;
-
-  // Temporary map that is being used to verify that there is a 1:1
-  // relationship between the string representation used as the key in
-  // `session_storage_namespace_map_` and the StoragePartitionConfig
-  // representation that we plan to migrate the map key to.
-  // TODO(acolwell): Remove this map once we have enough data to determine if
-  // it is safe to change representations or not.
-  std::map<StoragePartitionConfig, StoragePartitionId>
-      partition_config_to_id_map_;
 
   // The maximum number of entries that a navigation controller can store.
   static size_t max_entry_count_for_testing_;

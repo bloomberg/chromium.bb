@@ -13,7 +13,6 @@
 #include <set>
 
 #include "base/containers/stack.h"
-#include "base/cxx17_backports.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
@@ -305,8 +304,8 @@ bool DatabaseCheckHelper::ScanDirectory() {
       if (!path_.AppendRelativePath(absolute_file_path, &relative_file_path))
         return false;
 
-      if (std::find(kExcludes, kExcludes + base::size(kExcludes),
-                    relative_file_path) != kExcludes + base::size(kExcludes))
+      if (std::find(kExcludes, kExcludes + std::size(kExcludes),
+                    relative_file_path) != kExcludes + std::size(kExcludes))
         continue;
 
       if (find_info.IsDirectory()) {
@@ -746,7 +745,7 @@ bool SandboxDirectoryDatabase::Init(RecoveryOption recovery_option) {
                                 SandboxDirectoryRepairResult::DB_REPAIR_FAILED,
                                 SandboxDirectoryRepairResult::DB_REPAIR_MAX);
       LOG(WARNING) << "Failed to repair SandboxDirectoryDatabase.";
-      FALLTHROUGH;
+      [[fallthrough]];
     case DELETE_ON_CORRUPTION:
       LOG(WARNING) << "Clearing SandboxDirectoryDatabase.";
       if (!leveldb_chrome::DeleteDB(filesystem_data_directory_, options).ok())
@@ -918,7 +917,6 @@ bool SandboxDirectoryDatabase::RemoveFileInfoHelper(
     if (!ListChildren(file_id, &children))
       return false;
     if (children.size()) {
-      LOG(ERROR) << "Can't remove a directory with children.";
       return false;
     }
   }

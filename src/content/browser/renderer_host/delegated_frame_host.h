@@ -12,6 +12,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/time/time.h"
 #include "components/viz/client/frame_evictor.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
@@ -96,6 +97,7 @@ class CONTENT_EXPORT DelegatedFrameHost
   // ui::CompositorObserver implementation.
   void OnCompositingShuttingDown(ui::Compositor* compositor) override;
 
+  void ClearFallbackSurfaceForCommitPending();
   void ResetFallbackToFirstNavigationSurface();
 
   // viz::HostFrameSinkClient implementation.
@@ -124,6 +126,9 @@ class CONTENT_EXPORT DelegatedFrameHost
   void RequestPresentationTimeForNextFrame(
       blink::mojom::RecordContentToVisibleTimeRequestPtr visible_time_request);
   void CancelPresentationTimeRequest();
+
+  // Cancel a presentation time request using the kUnhandled result code.
+  void UnhandledPresentationTimeRequest();
 
   void EmbedSurface(const viz::LocalSurfaceId& local_surface_id,
                     const gfx::Size& dip_size,

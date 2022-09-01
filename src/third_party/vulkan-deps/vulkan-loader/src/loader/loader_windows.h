@@ -1,8 +1,8 @@
 /*
  *
- * Copyright (c) 2014-2021 The Khronos Group Inc.
- * Copyright (c) 2014-2021 Valve Corporation
- * Copyright (c) 2014-2021 LunarG, Inc.
+ * Copyright (c) 2014-2022 The Khronos Group Inc.
+ * Copyright (c) 2014-2022 Valve Corporation
+ * Copyright (c) 2014-2022 LunarG, Inc.
  * Copyright (C) 2015 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -70,8 +70,8 @@ bool windows_get_device_registry_entry(const struct loader_instance *inst, char 
 //
 // *reg_data contains a string list of filenames as pointer.
 // When done using the returned string list, the caller should free the pointer.
-VkResult windows_get_device_registry_files(const struct loader_instance *inst, char **reg_data, PDWORD reg_data_size,
-                                           LPCSTR value_name);
+VkResult windows_get_device_registry_files(const struct loader_instance *inst, uint32_t log_target_flag, char **reg_data,
+                                           PDWORD reg_data_size, LPCSTR value_name);
 
 // Find the list of registry files (names within a key) in key "location".
 //
@@ -99,8 +99,14 @@ VkResult windows_read_data_files_in_registry(const struct loader_instance *inst,
                                              struct loader_data_files *out_files);
 
 // This function allocates an array in sorted_devices which must be freed by the caller if not null
-VkResult windows_read_sorted_physical_devices(struct loader_instance *inst, struct LoaderSortedPhysicalDevice **sorted_devices,
-                                              uint32_t *sorted_count);
+VkResult windows_read_sorted_physical_devices(struct loader_instance *inst, uint32_t *sorted_devices_count,
+                                              struct loader_phys_dev_per_icd **sorted_devices);
+
+// This function sorts an array in physical device groups based on the sorted physical device information
+VkResult windows_sort_physical_device_groups(struct loader_instance *inst, const uint32_t group_count,
+                                             struct loader_physical_device_group_term *sorted_group_term,
+                                             const uint32_t sorted_device_count,
+                                             struct loader_phys_dev_per_icd *sorted_phys_dev_array);
 
 // Creates a DXGI factory
 // Returns VkLoaderFeatureFlags containing VK_LOADER_FEATURE_PHYSICAL_DEVICE_SORTING if successful, otherwise 0

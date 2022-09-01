@@ -271,9 +271,9 @@ static INLINE void cfl_predict_lbd_avx2(const int16_t *pred_buf_q3,
   } while ((row += CFL_BUF_LINE_I256) < row_end);
 }
 
-CFL_PREDICT_X(avx2, 32, 8, lbd);
-CFL_PREDICT_X(avx2, 32, 16, lbd);
-CFL_PREDICT_X(avx2, 32, 32, lbd);
+CFL_PREDICT_X(avx2, 32, 8, lbd)
+CFL_PREDICT_X(avx2, 32, 16, lbd)
+CFL_PREDICT_X(avx2, 32, 32, lbd)
 
 cfl_predict_lbd_fn cfl_get_predict_lbd_fn_avx2(TX_SIZE tx_size) {
   static const cfl_predict_lbd_fn pred[TX_SIZES_ALL] = {

@@ -17,6 +17,9 @@ android_library("java") {
   ]
   deps = [
     "//base:base_java",
+    "//base:jni_java",
+    "//build/android:build_java",
+    "//components/browser_ui/accessibility/android:constants_java",
     "//components/browser_ui/share/android:constants_java",
     "//third_party/androidx:androidx_annotation_annotation_java",
   ]
@@ -29,6 +32,7 @@ java_cpp_strings("java_pref_names_srcjar") {
   sources = [
     "//chrome/common/pref_names.cc",
     "//components/autofill/core/common/autofill_prefs.cc",
+    "//components/commerce/core/pref_names.cc",
     "//components/dom_distiller/core/pref_names.cc",
     "//components/embedder_support/pref_names.cc",
     "//components/feed/core/common/pref_names.cc",
@@ -61,7 +65,6 @@ java_library("preferences_junit_tests") {
   ]
   deps = [
     ":java",
-    "//base:base_java",
     "//base:base_java_test_support",
     "//base:base_junit_test_support",
     "//base/test:test_support_java",

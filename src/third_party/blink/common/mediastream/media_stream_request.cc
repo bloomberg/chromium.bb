@@ -6,6 +6,7 @@
 
 #include "base/check.h"
 #include "build/build_config.h"
+#include "third_party/blink/public/mojom/mediastream/media_stream.mojom.h"
 
 namespace blink {
 
@@ -109,7 +110,7 @@ MediaStreamDevice::MediaStreamDevice(const MediaStreamDevice& other)
       input(other.input),
       session_id_(other.session_id_) {
   DCHECK(!session_id_.has_value() || !session_id_->is_empty());
-  if (other.display_media_info.has_value())
+  if (other.display_media_info)
     display_media_info = other.display_media_info->Clone();
 }
 
@@ -129,7 +130,7 @@ MediaStreamDevice& MediaStreamDevice::operator=(
   input = other.input;
   session_id_ = other.session_id_;
   DCHECK(!session_id_.has_value() || !session_id_->is_empty());
-  if (other.display_media_info.has_value())
+  if (other.display_media_info)
     display_media_info = other.display_media_info->Clone();
   return *this;
 }
@@ -141,6 +142,38 @@ bool MediaStreamDevice::IsSameDevice(
          input.sample_rate() == other_device.input.sample_rate() &&
          input.channel_layout() == other_device.input.channel_layout() &&
          session_id_ == other_device.session_id_;
+}
+
+BLINK_COMMON_EXPORT MediaStreamDevices
+ToMediaStreamDevicesList(const mojom::StreamDevices& stream_devices) {
+  blink::MediaStreamDevices devices;
+  if (stream_devices.audio_device.has_value()) {
+    devices.push_back(stream_devices.audio_device.value());
+  }
+  if (stream_devices.video_device.has_value()) {
+    devices.push_back(stream_devices.video_device.value());
+  }
+  return devices;
+}
+
+blink::MediaStreamDevices ToMediaStreamDevicesList(
+    const blink::mojom::StreamDevicesSet& stream_devices_set) {
+  blink::MediaStreamDevices devices;
+  for (const blink::mojom::StreamDevicesPtr& devices_to_insert :
+       stream_devices_set.stream_devices) {
+    if (devices_to_insert->audio_device.has_value()) {
+      devices.push_back(devices_to_insert->audio_device.value());
+    }
+    if (devices_to_insert->video_device.has_value()) {
+      devices.push_back(devices_to_insert->video_device.value());
+    }
+  }
+  return devices;
+}
+
+size_t CountDevices(const blink::mojom::StreamDevices& devices) {
+  return (devices.audio_device.has_value() ? 1u : 0u) +
+         (devices.video_device.has_value() ? 1u : 0u);
 }
 
 }  // namespace blink

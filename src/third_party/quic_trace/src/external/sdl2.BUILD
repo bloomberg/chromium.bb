@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-licenses(["notice"])  # zlib, portions BSD, MIT, PostgreSQL
+licenses(["notice"])
 
 # Common include paths
 sdl_includes = [

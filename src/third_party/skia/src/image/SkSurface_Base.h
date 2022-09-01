@@ -21,6 +21,7 @@ public:
     ~SkSurface_Base() override;
 
     virtual GrRecordingContext* onGetRecordingContext();
+    virtual skgpu::graphite::Recorder* onGetRecorder();
 
 #if SK_SUPPORT_GPU
     virtual GrBackendTexture onGetBackendTexture(BackendHandleAccess);
@@ -30,6 +31,8 @@ public:
                                          ContentChangeMode,
                                          TextureReleaseProc,
                                          ReleaseContext);
+
+    virtual void onResolveMSAA() {}
 
     /**
      * Issue any pending surface IO to the current backend 3D API and resolve any surface MSAA.
@@ -133,6 +136,10 @@ public:
     virtual bool onDraw(sk_sp<const SkDeferredDisplayList>, SkIPoint offset) {
         return false;
     }
+
+    // TODO: Remove this (make it pure virtual) after updating Android (which has a class derived
+    // from SkSurface_Base).
+    virtual sk_sp<const SkCapabilities> onCapabilities();
 
     inline SkCanvas* getCachedCanvas();
     inline sk_sp<SkImage> refCachedImage();

@@ -6,12 +6,12 @@
 
 #include <memory>
 
+#include "ash/components/multidevice/logging/logging.h"
 #include "base/bind.h"
 #include "base/guid.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
-#include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/network/device_state.h"
 #include "chromeos/network/network_connect.h"
 #include "chromeos/network/network_handler.h"
@@ -21,7 +21,7 @@
 #include "chromeos/network/shill_property_util.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace tether {
 
@@ -106,9 +106,7 @@ void WifiHotspotConnector::ConnectToWifiHotspot(
   }
 }
 
-void WifiHotspotConnector::OnEnableWifiError(
-    const std::string& error_name,
-    std::unique_ptr<base::DictionaryValue> error_data) {
+void WifiHotspotConnector::OnEnableWifiError(const std::string& error_name) {
   is_waiting_for_wifi_to_enable_ = false;
   PA_LOG(ERROR) << "Failed to enable Wi-Fi: " << error_name;
 }
@@ -301,4 +299,4 @@ void WifiHotspotConnector::SetTestDoubles(
 
 }  // namespace tether
 
-}  // namespace chromeos
+}  // namespace ash

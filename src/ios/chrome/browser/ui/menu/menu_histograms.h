@@ -22,7 +22,10 @@ enum class MenuScenario {
   kTabGridEntry = 10,
   kTabGridAddTo = 11,
   kTabGridEdit = 12,
-  kMaxValue = kTabGridEdit,
+  kToolbarMenu = 13,
+  kTabGridSearchResult = 14,
+  kThumbStrip = 15,
+  kMaxValue = kThumbStrip,
 };
 
 // Records a menu shown histogram metric for the |scenario|.

@@ -39,6 +39,17 @@ TabRestorePageLoadMetricsObserver::OnStart(
   return IsTabRestore(navigation_handle) ? CONTINUE_OBSERVING : STOP_OBSERVING;
 }
 
+page_load_metrics::PageLoadMetricsObserver::ObservePolicy
+TabRestorePageLoadMetricsObserver::OnFencedFramesStart(
+    content::NavigationHandle* navigation_handle,
+    const GURL& currently_committed_url) {
+  // This class is interested only in the primary page's performance to
+  // report at OnComplete or FlushMetricsOnAppEnterBackground. Events for
+  // OnResourceDataUseObserved are forwarded at PageLoadTracker and observer
+  // doesn't need to forward it.
+  return STOP_OBSERVING;
+}
+
 void TabRestorePageLoadMetricsObserver::OnResourceDataUseObserved(
     content::RenderFrameHost* rfh,
     const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&

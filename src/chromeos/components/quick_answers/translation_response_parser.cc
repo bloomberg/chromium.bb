@@ -11,7 +11,6 @@
 #include "chromeos/components/quick_answers/search_result_parsers/result_parser.h"
 #include "chromeos/components/quick_answers/utils/quick_answers_utils.h"
 
-namespace ash {
 namespace quick_answers {
 
 TranslationResponseParser::TranslationResponseParser(
@@ -50,10 +49,11 @@ void TranslationResponseParser::OnJsonParsed(
     return;
   }
 
-  DCHECK(translations->GetList().size() == 1);
+  DCHECK(translations->GetListDeprecated().size() == 1);
 
   const std::string* translated_text_ptr =
-      translations->GetList().front().FindStringPath("translatedText");
+      translations->GetListDeprecated().front().FindStringPath(
+          "translatedText");
   if (!translated_text_ptr) {
     LOG(ERROR) << "Can't find a translated text.";
     std::move(complete_callback_).Run(nullptr);
@@ -71,4 +71,3 @@ void TranslationResponseParser::OnJsonParsed(
 }
 
 }  // namespace quick_answers
-}  // namespace ash
