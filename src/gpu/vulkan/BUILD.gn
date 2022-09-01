@@ -9,6 +9,10 @@ import("//build/config/ui.gni")
 import("//testing/test.gni")
 import("features.gni")
 
+if (ozone_platform_wayland) {
+  import("//third_party/wayland/features.gni")
+}
+
 # Generate a buildflag header for compile-time checking of Vulkan support.
 buildflag_header("buildflags") {
   header = "buildflags.h"
@@ -21,6 +25,9 @@ if (enable_vulkan) {
     defines = [ "VK_NO_PROTOTYPES" ]
     if (use_vulkan_xcb) {
       defines += [ "USE_VULKAN_XCB" ]
+    }
+    if (ozone_platform_wayland && !use_system_libwayland) {
+      configs = [ "//third_party/wayland:wayland_config" ]
     }
   }
 
@@ -102,6 +109,10 @@ if (enable_vulkan) {
 
     defines = [ "IS_VULKAN_IMPL" ]
 
+    if (ozone_platform == "x11") {
+      defines += [ "OZONE_PLATFORM_IS_X11" ]
+    }
+
     deps = [
       ":buildflags",
       "//base",
@@ -153,6 +164,10 @@ if (enable_vulkan) {
       if (is_debug || dcheck_always_on) {
         data_deps += [ "//third_party/fuchsia-sdk/sdk/pkg/vulkan_layers:VkLayer_khronos_validation" ]
       }
+    }
+
+    if (is_apple) {
+      sources += [ "vulkan_image_mac.cc" ]
     }
   }
 

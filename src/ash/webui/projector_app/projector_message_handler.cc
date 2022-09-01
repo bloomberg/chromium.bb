@@ -10,6 +10,7 @@
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/projector/projector_controller.h"
+#include "ash/public/cpp/projector/projector_new_screencast_precondition.h"
 #include "ash/webui/projector_app/projector_app_client.h"
 #include "base/bind.h"
 #include "base/check.h"
@@ -18,6 +19,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/access_token_info.h"
 #include "content/public/browser/web_ui.h"
+#include "third_party/re2/src/re2/re2.h"
 #include "url/gurl.h"
 
 namespace ash {
@@ -46,10 +48,9 @@ constexpr char kRejectedRequestArgsKey[] = "requestArgs";
 constexpr char kNoneStr[] = "NONE";
 constexpr char kOtherStr[] = "OTHER";
 constexpr char kTokenFetchFailureStr[] = "TOKEN_FETCH_FAILURE";
-
-// Projector NewScreencastPreconditionState keys.
-constexpr char kNewScreencastPreconditionState[] = "state";
-constexpr char kNewScreencastPreconditionReasons[] = "reasons";
+// Disallow special chars that potentially allow redirecting writes to
+// arbitrary file system locations.
+constexpr char kInvalidStorageDirNameRegex[] = "\\.\\.|/|\\\\";
 
 // Struct used to describe args to set user's preference.
 struct SetUserPrefArgs {
@@ -75,8 +76,7 @@ std::string ProjectorErrorToString(ProjectorError mode) {
   }
 }
 
-base::Value ScreencastListToValue(
-    const std::set<PendingScreencast>& screencasts) {
+base::Value ScreencastListToValue(const PendingScreencastSet& screencasts) {
   std::vector<base::Value> value;
   value.reserve(screencasts.size());
   for (const auto& item : screencasts)
@@ -88,7 +88,8 @@ base::Value ScreencastListToValue(
 bool IsUserPrefSupported(const std::string& pref) {
   return pref == ash::prefs::kProjectorCreationFlowEnabled ||
          pref == ash::prefs::kProjectorGalleryOnboardingShowCount ||
-         pref == ash::prefs::kProjectorViewerOnboardingShowCount;
+         pref == ash::prefs::kProjectorViewerOnboardingShowCount ||
+         pref == ash::prefs::kProjectorExcludeTranscriptDialogShown;
 }
 
 bool IsValidOnboardingPref(const SetUserPrefArgs& args) {
@@ -102,8 +103,14 @@ bool IsValidCreationFlowPref(const SetUserPrefArgs& args) {
          args.pref_name == ash::prefs::kProjectorCreationFlowEnabled;
 }
 
+bool IsValidExcludeTranscriptDialogShownPref(const SetUserPrefArgs& args) {
+  return args.value.is_bool() &&
+         args.pref_name == ash::prefs::kProjectorExcludeTranscriptDialogShown;
+}
+
 bool IsValidPrefValueArg(const SetUserPrefArgs& args) {
-  return IsValidCreationFlowPref(args) || IsValidOnboardingPref(args);
+  return IsValidCreationFlowPref(args) || IsValidOnboardingPref(args) ||
+         IsValidExcludeTranscriptDialogShownPref(args);
 }
 
 // Returns true if the request, `args`, contains a valid user preference string.
@@ -112,7 +119,7 @@ bool GetUserPrefName(const base::Value& args, std::string* out) {
   if (!args.is_list())
     return false;
 
-  const auto& args_list = args.GetList();
+  const auto& args_list = args.GetListDeprecated();
 
   if (args_list.size() != 1 || !args_list[0].is_string())
     return false;
@@ -128,7 +135,7 @@ bool GetSetUserPrefArgs(const base::Value& args, SetUserPrefArgs* out) {
   if (!args.is_list())
     return false;
 
-  const auto& args_list = args.GetList();
+  const auto& args_list = args.GetListDeprecated();
 
   if (args_list.size() != 2 || !args_list[0].is_string()) {
     return false;
@@ -145,25 +152,6 @@ base::Value CreateRejectMessageForArgs(const base::Value& value) {
                            base::Value(kRejectedRequestMessage));
   rejected_response.SetKey(kRejectedRequestArgsKey, value.Clone());
   return rejected_response;
-}
-
-base::Value GetNewScreencastPreconditionValue(bool can_start) {
-  // TODO(b/204233075): Provide Hidden state if device doesn't support on-device
-  // speech recognition.
-  auto state = can_start ? NewScreencastPreconditionState::kEnabled
-                         : NewScreencastPreconditionState::kDisabled;
-  base::Value response(base::Value::Type::DICTIONARY);
-  response.SetIntKey(kNewScreencastPreconditionState, static_cast<int>(state));
-
-  base::Value reasons(base::Value::Type::LIST);
-
-  if (!can_start) {
-    // TODO(b/204233075): Provide more fine grained than kOthers.
-    reasons.Append(static_cast<int>(NewScreencastPreconditionReason::kOthers));
-  }
-
-  response.SetKey(kNewScreencastPreconditionReasons, std::move(reasons));
-  return response;
 }
 
 }  // namespace
@@ -230,10 +218,14 @@ void ProjectorMessageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "setUserPref", base::BindRepeating(&ProjectorMessageHandler::SetUserPref,
                                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "openFeedbackDialog",
+      base::BindRepeating(&ProjectorMessageHandler::OpenFeedbackDialog,
+                          base::Unretained(this)));
 }
 
 void ProjectorMessageHandler::OnScreencastsPendingStatusChanged(
-    const std::set<PendingScreencast>& pending_screencast) {
+    const PendingScreencastSet& pending_screencast) {
   AllowJavascript();
   FireWebUIListener("onScreencastsStateChange",
                     ScreencastListToValue(pending_screencast));
@@ -256,13 +248,13 @@ void ProjectorMessageHandler::OnSodaInstalled() {
 }
 
 void ProjectorMessageHandler::OnNewScreencastPreconditionChanged(
-    bool can_start) {
+    const NewScreencastPrecondition& precondition) {
   AllowJavascript();
   FireWebUIListener("onNewScreencastPreconditionChanged",
-                    GetNewScreencastPreconditionValue(can_start));
+                    precondition.ToValue());
 }
 
-void ProjectorMessageHandler::GetAccounts(base::Value::ConstListView args) {
+void ProjectorMessageHandler::GetAccounts(const base::Value::List& args) {
   AllowJavascript();
 
   // Check that there is only one argument which is the callback id.
@@ -290,19 +282,20 @@ void ProjectorMessageHandler::GetAccounts(base::Value::ConstListView args) {
 }
 
 void ProjectorMessageHandler::GetNewScreencastPrecondition(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   AllowJavascript();
 
   // Check that there is only one argument which is the callback id.
   DCHECK_EQ(args.size(), 1u);
 
-  ResolveJavascriptCallback(
-      args[0], GetNewScreencastPreconditionValue(
-                   ProjectorController::Get()->CanStartNewSession()));
+  ResolveJavascriptCallback(args[0],
+                            base::Value(ProjectorController::Get()
+                                            ->GetNewScreencastPrecondition()
+                                            .ToValue()));
 }
 
 void ProjectorMessageHandler::StartProjectorSession(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   AllowJavascript();
 
   // There are two arguments. The first is the callback and the second is a list
@@ -315,32 +308,40 @@ void ProjectorMessageHandler::StartProjectorSession(
   // The first entry is the drive directory to save the screen cast to.
   // TODO(b/177959166): Pass the directory to ProjectorController when starting
   // a new session.
-  DCHECK_EQ(func_args.GetList().size(), 1u);
-
-  // TODO(b/195113693): Start the projector session with the selected account
-  // and folder.
-  auto* controller = ProjectorController::Get();
-  if (!controller->CanStartNewSession()) {
+  DCHECK_EQ(func_args.GetListDeprecated().size(), 1u);
+  auto storage_dir_name = func_args.GetListDeprecated()[0].GetString();
+  if (RE2::PartialMatch(storage_dir_name, kInvalidStorageDirNameRegex)) {
     ResolveJavascriptCallback(args[0], base::Value(false));
     return;
   }
 
-  controller->StartProjectorSession(func_args.GetList()[0].GetString());
+  // TODO(b/195113693): Start the projector session with the selected account
+  // and folder.
+  auto* controller = ProjectorController::Get();
+
+  if (controller->GetNewScreencastPrecondition().state !=
+      NewScreencastPreconditionState::kEnabled) {
+    ResolveJavascriptCallback(args[0], base::Value(false));
+    return;
+  }
+
+  controller->StartProjectorSession(storage_dir_name);
   ResolveJavascriptCallback(args[0], base::Value(true));
 }
 
 void ProjectorMessageHandler::GetOAuthTokenForAccount(
-    const base::Value::ConstListView args) {
+    const base::Value::List& args) {
   // Two arguments. The first is callback id, and the second is the list
   // containing the account for which to fetch the oauth token.
   DCHECK_EQ(args.size(), 2u);
 
   const auto& requested_account = args[1];
   DCHECK(requested_account.is_list());
-  DCHECK_EQ(requested_account.GetList().size(), 1u);
+  DCHECK_EQ(requested_account.GetListDeprecated().size(), 1u);
 
   auto& oauth_token_fetch_callback = args[0].GetString();
-  const std::string& email = requested_account.GetList()[0].GetString();
+  const std::string& email =
+      requested_account.GetListDeprecated()[0].GetString();
 
   oauth_token_fetcher_.GetAccessTokenFor(
       email,
@@ -348,13 +349,13 @@ void ProjectorMessageHandler::GetOAuthTokenForAccount(
                      GetWeakPtr(), oauth_token_fetch_callback));
 }
 
-void ProjectorMessageHandler::SendXhr(const base::Value::ConstListView args) {
+void ProjectorMessageHandler::SendXhr(const base::Value::List& args) {
   // Two arguments. The first is callback id, and the second is the list
   // containing function arguments for making the request.
   DCHECK_EQ(args.size(), 2u);
   const auto& callback_id = args[0].GetString();
 
-  const auto& func_args = args[1].GetList();
+  const auto& func_args = args[1].GetListDeprecated();
   // Four function arguments:
   // 1. The request URL.
   // 2. The request method, for example: GET
@@ -377,7 +378,7 @@ void ProjectorMessageHandler::SendXhr(const base::Value::ConstListView args) {
 }
 
 void ProjectorMessageHandler::ShouldDownloadSoda(
-    const base::Value::ConstListView args) {
+    const base::Value::List& args) {
   AllowJavascript();
 
   // The device should be eligible to download SODA and SODA should not have
@@ -386,20 +387,18 @@ void ProjectorMessageHandler::ShouldDownloadSoda(
       args[0], base::Value(ProjectorAppClient::Get()->ShouldDownloadSoda()));
 }
 
-void ProjectorMessageHandler::InstallSoda(
-    const base::Value::ConstListView args) {
+void ProjectorMessageHandler::InstallSoda(const base::Value::List& args) {
   AllowJavascript();
   ProjectorAppClient::Get()->InstallSoda();
   ResolveJavascriptCallback(args[0], base::Value(true));
 }
 
-void ProjectorMessageHandler::OnError(const base::Value::ConstListView args) {
+void ProjectorMessageHandler::OnError(const base::Value::List& args) {
   // TODO(b/195113693): Get the SWA dialog associated with this WebUI and close
   // it.
 }
 
-void ProjectorMessageHandler::GetUserPref(
-    const base::Value::ConstListView args) {
+void ProjectorMessageHandler::GetUserPref(const base::Value::List& args) {
   AllowJavascript();
 
   std::string user_pref;
@@ -411,8 +410,7 @@ void ProjectorMessageHandler::GetUserPref(
   ResolveJavascriptCallback(args[0], *(pref_service_->Get(user_pref)));
 }
 
-void ProjectorMessageHandler::SetUserPref(
-    const base::Value::ConstListView args) {
+void ProjectorMessageHandler::SetUserPref(const base::Value::List& args) {
   AllowJavascript();
   SetUserPrefArgs parsed_args;
   if (!GetSetUserPrefArgs(args[1], &parsed_args)) {
@@ -421,6 +419,13 @@ void ProjectorMessageHandler::SetUserPref(
   }
 
   pref_service_->Set(parsed_args.pref_name, parsed_args.value);
+  ResolveJavascriptCallback(args[0], base::Value());
+}
+
+void ProjectorMessageHandler::OpenFeedbackDialog(
+    const base::Value::List& args) {
+  AllowJavascript();
+  ProjectorAppClient::Get()->OpenFeedbackDialog();
   ResolveJavascriptCallback(args[0], base::Value());
 }
 
@@ -462,12 +467,12 @@ void ProjectorMessageHandler::OnXhrRequestCompleted(
 }
 
 void ProjectorMessageHandler::GetPendingScreencasts(
-    const base::Value::ConstListView args) {
+    const base::Value::List& args) {
   AllowJavascript();
   // Check that there is only one argument which is the callback id.
   DCHECK_EQ(args.size(), 1u);
 
-  const std::set<PendingScreencast>& pending_screencasts =
+  const PendingScreencastSet& pending_screencasts =
       ProjectorAppClient::Get()->GetPendingScreencasts();
   ResolveJavascriptCallback(args[0],
                             ScreencastListToValue(pending_screencasts));

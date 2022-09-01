@@ -15,7 +15,7 @@
 #include "include/gpu/GrDirectContext.h"
 #include "src/core/SkDeferredDisplayListPriv.h"
 #include "src/core/SkTaskGroup.h"
-#include "src/gpu/GrDirectContextPriv.h"
+#include "src/gpu/ganesh/GrDirectContextPriv.h"
 #include "src/image/SkImage_Gpu.h"
 #include "tools/DDLPromiseImageHelper.h"
 
@@ -194,7 +194,7 @@ void DDLTileHelper::TileData::CreateBackendTexture(GrDirectContext* direct, Tile
 
     const SkSurfaceCharacterization& c = tile->fPlaybackChar;
     GrBackendTexture beTex = direct->createBackendTexture(c.width(), c.height(), c.colorType(),
-                                                          GrMipMapped(c.isMipMapped()),
+                                                          GrMipmapped(c.isMipMapped()),
                                                           GrRenderable::kYes);
     tile->fCallbackContext->setBackendTexture(beTex);
 }

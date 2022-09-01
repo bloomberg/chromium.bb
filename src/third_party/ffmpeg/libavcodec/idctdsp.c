@@ -17,6 +17,7 @@
  */
 
 #include "config.h"
+#include "config_components.h"
 #include "libavutil/attributes.h"
 #include "libavutil/common.h"
 #include "avcodec.h"
@@ -26,7 +27,7 @@
 #include "simple_idct.h"
 #include "xvididct.h"
 
-av_cold void ff_init_scantable(uint8_t *permutation, ScanTable *st,
+av_cold void ff_init_scantable(const uint8_t *permutation, ScanTable *st,
                                const uint8_t *src_scantable)
 {
     int i, end;
@@ -287,7 +288,6 @@ av_cold void ff_idctdsp_init(IDCTDSPContext *c, AVCodecContext *avctx)
                 c->perm_type = FF_IDCT_PERM_NONE;
 #endif /* CONFIG_FAANIDCT */
             } else { // accurate/default
-                /* Be sure FF_IDCT_NONE will select this one, since it uses FF_IDCT_PERM_NONE */
                 c->idct_put  = ff_simple_idct_put_int16_8bit;
                 c->idct_add  = ff_simple_idct_add_int16_8bit;
                 c->idct      = ff_simple_idct_int16_8bit;
@@ -315,6 +315,8 @@ av_cold void ff_idctdsp_init(IDCTDSPContext *c, AVCodecContext *avctx)
         ff_idctdsp_init_x86(c, avctx, high_bit_depth);
     if (ARCH_MIPS)
         ff_idctdsp_init_mips(c, avctx, high_bit_depth);
+    if (ARCH_LOONGARCH)
+        ff_idctdsp_init_loongarch(c, avctx, high_bit_depth);
 
     ff_init_scantable_permutation(c->idct_permutation,
                                   c->perm_type);

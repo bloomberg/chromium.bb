@@ -7,7 +7,7 @@
 
 #include "third_party/blink/renderer/core/workers/worklet.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 
 namespace blink {
 
@@ -33,7 +33,7 @@ class MODULES_EXPORT AudioWorklet final : public Worklet {
                        MessagePortChannel,
                        scoped_refptr<SerializedScriptValue> node_options);
 
-  // Invoked by AudioWorkletMessagingProxy. Notifies |context_| when
+  // Invoked by AudioWorkletMessagingProxy. Notifies `context_` when
   // AudioWorkletGlobalScope finishes the first script evaluation and is ready
   // for the worklet operation. Can be used for other post-evaluation tasks
   // in AudioWorklet or BaseAudioContext.
@@ -41,7 +41,7 @@ class MODULES_EXPORT AudioWorklet final : public Worklet {
 
   BaseAudioContext* GetBaseAudioContext() const;
 
-  // Returns |nullptr| if there is no active WorkletGlobalScope().
+  // Returns `nullptr` if there is no active `WorkletGlobalScope()`.
   AudioWorkletMessagingProxy* GetMessagingProxy();
 
   const Vector<CrossThreadAudioParamInfo> GetParamInfoListForProcessor(
@@ -49,7 +49,7 @@ class MODULES_EXPORT AudioWorklet final : public Worklet {
 
   bool IsProcessorRegistered(const String& name);
 
-  // Returns |true| when a AudioWorkletMessagingProxy and a WorkletBackingThread
+  // Returns `true` when a AudioWorkletMessagingProxy and a WorkletBackingThread
   // are ready.
   bool IsReady();
 

@@ -135,6 +135,28 @@ void KHRONOS_APIENTRY DebugMessageCallback(GLenum source,
         callbackChain(source, type, id, severity, length, message, gCallbackChainUserParam);
     }
 }
+
+void GetPerfCounterValue(const CounterNameToIndexMap &counterIndexMap,
+                         std::vector<angle::PerfMonitorTriplet> &triplets,
+                         const char *name,
+                         GLuint64 *counterOut)
+{
+    auto iter = counterIndexMap.find(name);
+    ASSERT(iter != counterIndexMap.end());
+    GLuint counterIndex = iter->second;
+
+    for (const angle::PerfMonitorTriplet &triplet : triplets)
+    {
+        ASSERT(triplet.group == 0);
+        if (triplet.counter == counterIndex)
+        {
+            *counterOut = triplet.value;
+            return;
+        }
+    }
+
+    UNREACHABLE();
+}
 }  // namespace
 
 GLuint CompileShader(GLenum type, const char *source)
@@ -372,6 +394,98 @@ void EnableDebugCallback(GLDEBUGPROC callbackChain, const void *userParam)
     glDebugMessageCallbackKHR(DebugMessageCallback, reinterpret_cast<const void *>(callbackChain));
 }
 
+CounterNameToIndexMap BuildCounterNameToIndexMap()
+{
+    GLint numCounters = 0;
+    glGetPerfMonitorCountersAMD(0, &numCounters, nullptr, 0, nullptr);
+    if (glGetError() != GL_NO_ERROR)
+    {
+        return {};
+    }
+
+    std::vector<GLuint> counterIndexes(numCounters, 0);
+    glGetPerfMonitorCountersAMD(0, nullptr, nullptr, numCounters, counterIndexes.data());
+    if (glGetError() != GL_NO_ERROR)
+    {
+        return {};
+    }
+
+    CounterNameToIndexMap indexMap;
+
+    for (GLuint counterIndex : counterIndexes)
+    {
+        static constexpr size_t kBufSize = 1000;
+        char buffer[kBufSize]            = {};
+        glGetPerfMonitorCounterStringAMD(0, counterIndex, kBufSize, nullptr, buffer);
+        if (glGetError() != GL_NO_ERROR)
+        {
+            return {};
+        }
+
+        indexMap[buffer] = counterIndex;
+    }
+
+    return indexMap;
+}
+
+std::vector<angle::PerfMonitorTriplet> GetPerfMonitorTriplets()
+{
+    GLuint resultSize = 0;
+    glGetPerfMonitorCounterDataAMD(0, GL_PERFMON_RESULT_SIZE_AMD, sizeof(GLuint), &resultSize,
+                                   nullptr);
+    if (glGetError() != GL_NO_ERROR || resultSize == 0)
+    {
+        return {};
+    }
+
+    std::vector<angle::PerfMonitorTriplet> perfResults(resultSize /
+                                                       sizeof(angle::PerfMonitorTriplet));
+    glGetPerfMonitorCounterDataAMD(
+        0, GL_PERFMON_RESULT_AMD, static_cast<GLsizei>(perfResults.size() * sizeof(perfResults[0])),
+        &perfResults.data()->group, nullptr);
+
+    if (glGetError() != GL_NO_ERROR)
+    {
+        return {};
+    }
+
+    return perfResults;
+}
+
+angle::VulkanPerfCounters GetPerfCounters(const CounterNameToIndexMap &indexMap)
+{
+    std::vector<angle::PerfMonitorTriplet> perfResults = GetPerfMonitorTriplets();
+
+    angle::VulkanPerfCounters counters;
+
+#define ANGLE_UNPACK_PERF_COUNTER(COUNTER) \
+    GetPerfCounterValue(indexMap, perfResults, #COUNTER, &counters.COUNTER);
+
+    ANGLE_VK_PERF_COUNTERS_X(ANGLE_UNPACK_PERF_COUNTER)
+
+#undef ANGLE_UNPACK_PERF_COUNTER
+
+    return counters;
+}
+
+CounterNameToValueMap BuildCounterNameToValueMap()
+{
+    CounterNameToIndexMap indexMap                     = BuildCounterNameToIndexMap();
+    std::vector<angle::PerfMonitorTriplet> perfResults = GetPerfMonitorTriplets();
+
+    CounterNameToValueMap valueMap;
+
+    for (const auto &iter : indexMap)
+    {
+        const std::string &name = iter.first;
+        GLuint index            = iter.second;
+
+        valueMap[name] = perfResults[index].value;
+    }
+
+    return valueMap;
+}
+
 namespace angle
 {
 
@@ -441,7 +555,7 @@ varying vec2 v_texCoord;
 
 void main()
 {
-    gl_Position = vec4(a_position.xy, 0.0, 1.0);
+    gl_Position = a_position;
     v_texCoord = a_position.xy * 0.5 + vec2(0.5);
 })";
 }

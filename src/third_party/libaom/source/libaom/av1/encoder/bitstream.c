@@ -2163,12 +2163,10 @@ static AOM_INLINE void wb_write_uniform(struct aom_write_bit_buffer *wb, int n,
 
 static AOM_INLINE void write_tile_info_max_tile(
     const AV1_COMMON *const cm, struct aom_write_bit_buffer *wb) {
-  int width_mi =
-      ALIGN_POWER_OF_TWO(cm->mi_params.mi_cols, cm->seq_params->mib_size_log2);
-  int height_mi =
-      ALIGN_POWER_OF_TWO(cm->mi_params.mi_rows, cm->seq_params->mib_size_log2);
-  int width_sb = width_mi >> cm->seq_params->mib_size_log2;
-  int height_sb = height_mi >> cm->seq_params->mib_size_log2;
+  int width_sb =
+      CEIL_POWER_OF_TWO(cm->mi_params.mi_cols, cm->seq_params->mib_size_log2);
+  int height_sb =
+      CEIL_POWER_OF_TWO(cm->mi_params.mi_rows, cm->seq_params->mib_size_log2);
   int size_sb, i;
   const CommonTileParams *const tiles = &cm->tiles;
 
@@ -3778,10 +3776,8 @@ void av1_accumulate_pack_bs_thread_data(AV1_COMP *const cpi,
   int do_max_mv_magnitude_update = 1;
   cpi->rc.coefficient_size += td->coefficient_size;
 
-#if CONFIG_FRAME_PARALLEL_ENCODE
   // Disable max_mv_magnitude update for parallel frames based on update flag.
   if (!cpi->do_frame_data_update) do_max_mv_magnitude_update = 0;
-#endif
 
   if (cpi->sf.mv_sf.auto_mv_step_size && do_max_mv_magnitude_update)
     cpi->mv_search_params.max_mv_magnitude =
@@ -3940,8 +3936,8 @@ static void write_tile_obu_size(AV1_COMP *const cpi, uint8_t *const dst,
 // number of required number of workers based on setup time overhead and job
 // dispatch time overhead for given tiles and available workers.
 int calc_pack_bs_mt_workers(const TileDataEnc *tile_data, int num_tiles,
-                            int avail_workers) {
-  if (AOMMIN(avail_workers, num_tiles) <= 1) return 1;
+                            int avail_workers, bool pack_bs_mt_enabled) {
+  if (!pack_bs_mt_enabled) return 1;
 
   uint64_t frame_abs_sum_level = 0;
 
@@ -3981,7 +3977,8 @@ static INLINE uint32_t pack_tiles_in_tg_obus(
   const int num_tiles = tile_rows * tile_cols;
 
   const int num_workers = calc_pack_bs_mt_workers(
-      cpi->tile_data, num_tiles, cpi->mt_info.num_mod_workers[MOD_PACK_BS]);
+      cpi->tile_data, num_tiles, cpi->mt_info.num_mod_workers[MOD_PACK_BS],
+      cpi->mt_info.pack_bs_mt_enabled);
 
   if (num_workers > 1) {
     av1_write_tile_obu_mt(cpi, dst, &total_size, saved_wb, obu_extension_header,
@@ -4009,7 +4006,16 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
   *largest_tile_id = 0;
 
   // Select the coding strategy (temporal or spatial)
-  if (cm->seg.enabled) av1_choose_segmap_coding_method(cm, &cpi->td.mb.e_mbd);
+  if (cm->seg.enabled && cm->seg.update_map) {
+    if (cm->features.primary_ref_frame == PRIMARY_REF_NONE) {
+      cm->seg.temporal_update = 0;
+    } else {
+      cm->seg.temporal_update = 1;
+      if (cpi->td.rd_counts.seg_tmp_pred_cost[0] <
+          cpi->td.rd_counts.seg_tmp_pred_cost[1])
+        cm->seg.temporal_update = 0;
+    }
+  }
 
   if (tiles->large_scale)
     return pack_large_scale_tiles_in_tg_obus(cpi, dst, saved_wb,
@@ -4097,9 +4103,11 @@ int av1_pack_bitstream(AV1_COMP *const cpi, uint8_t *dst, size_t *size,
 
   // The TD is now written outside the frame encode loop
 
-  // write sequence header obu at each key frame, preceded by 4-byte size
-  if (cm->current_frame.frame_type == KEY_FRAME &&
-      cpi->ppi->gf_group.refbuf_state[cpi->gf_frame_index] == REFBUF_RESET) {
+  // write sequence header obu at each key frame or intra_only frame,
+  // preceded by 4-byte size
+  if (cm->current_frame.frame_type == INTRA_ONLY_FRAME ||
+      (cm->current_frame.frame_type == KEY_FRAME &&
+       cpi->ppi->gf_group.refbuf_state[cpi->gf_frame_index] == REFBUF_RESET)) {
     obu_header_size = av1_write_obu_header(
         level_params, &cpi->frame_header_count, OBU_SEQUENCE_HEADER, 0, data);
 
@@ -4147,7 +4155,9 @@ int av1_pack_bitstream(AV1_COMP *const cpi, uint8_t *dst, size_t *size,
   } else {
     // Since length_field is determined adaptively after frame header
     // encoding, saved_wb must be adjusted accordingly.
-    saved_wb.bit_buffer += length_field;
+    if (saved_wb.bit_buffer != NULL) {
+      saved_wb.bit_buffer += length_field;
+    }
 
     //  Each tile group obu will be preceded by 4-byte size of the tile group
     //  obu

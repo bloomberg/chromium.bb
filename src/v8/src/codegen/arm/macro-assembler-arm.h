@@ -97,7 +97,7 @@ class V8_EXPORT_PRIVATE TurboAssembler : public TurboAssemblerBase {
   // Push two registers.  Pushes leftmost register first (to highest address).
   void Push(Register src1, Register src2, Condition cond = al) {
     if (src1.code() > src2.code()) {
-      stm(db_w, sp, src1.bit() | src2.bit(), cond);
+      stm(db_w, sp, {src1, src2}, cond);
     } else {
       str(src1, MemOperand(sp, 4, NegPreIndex), cond);
       str(src2, MemOperand(sp, 4, NegPreIndex), cond);
@@ -108,9 +108,9 @@ class V8_EXPORT_PRIVATE TurboAssembler : public TurboAssemblerBase {
   void Push(Register src1, Register src2, Register src3, Condition cond = al) {
     if (src1.code() > src2.code()) {
       if (src2.code() > src3.code()) {
-        stm(db_w, sp, src1.bit() | src2.bit() | src3.bit(), cond);
+        stm(db_w, sp, {src1, src2, src3}, cond);
       } else {
-        stm(db_w, sp, src1.bit() | src2.bit(), cond);
+        stm(db_w, sp, {src1, src2}, cond);
         str(src3, MemOperand(sp, 4, NegPreIndex), cond);
       }
     } else {
@@ -125,14 +125,13 @@ class V8_EXPORT_PRIVATE TurboAssembler : public TurboAssemblerBase {
     if (src1.code() > src2.code()) {
       if (src2.code() > src3.code()) {
         if (src3.code() > src4.code()) {
-          stm(db_w, sp, src1.bit() | src2.bit() | src3.bit() | src4.bit(),
-              cond);
+          stm(db_w, sp, {src1, src2, src3, src4}, cond);
         } else {
-          stm(db_w, sp, src1.bit() | src2.bit() | src3.bit(), cond);
+          stm(db_w, sp, {src1, src2, src3}, cond);
           str(src4, MemOperand(sp, 4, NegPreIndex), cond);
         }
       } else {
-        stm(db_w, sp, src1.bit() | src2.bit(), cond);
+        stm(db_w, sp, {src1, src2}, cond);
         Push(src3, src4, cond);
       }
     } else {
@@ -148,20 +147,17 @@ class V8_EXPORT_PRIVATE TurboAssembler : public TurboAssemblerBase {
       if (src2.code() > src3.code()) {
         if (src3.code() > src4.code()) {
           if (src4.code() > src5.code()) {
-            stm(db_w, sp,
-                src1.bit() | src2.bit() | src3.bit() | src4.bit() | src5.bit(),
-                cond);
+            stm(db_w, sp, {src1, src2, src3, src4, src5}, cond);
           } else {
-            stm(db_w, sp, src1.bit() | src2.bit() | src3.bit() | src4.bit(),
-                cond);
+            stm(db_w, sp, {src1, src2, src3, src4}, cond);
             str(src5, MemOperand(sp, 4, NegPreIndex), cond);
           }
         } else {
-          stm(db_w, sp, src1.bit() | src2.bit() | src3.bit(), cond);
+          stm(db_w, sp, {src1, src2, src3}, cond);
           Push(src4, src5, cond);
         }
       } else {
-        stm(db_w, sp, src1.bit() | src2.bit(), cond);
+        stm(db_w, sp, {src1, src2}, cond);
         Push(src3, src4, src5, cond);
       }
     } else {
@@ -182,7 +178,7 @@ class V8_EXPORT_PRIVATE TurboAssembler : public TurboAssemblerBase {
   void Pop(Register src1, Register src2, Condition cond = al) {
     DCHECK(src1 != src2);
     if (src1.code() > src2.code()) {
-      ldm(ia_w, sp, src1.bit() | src2.bit(), cond);
+      ldm(ia_w, sp, {src1, src2}, cond);
     } else {
       ldr(src2, MemOperand(sp, 4, PostIndex), cond);
       ldr(src1, MemOperand(sp, 4, PostIndex), cond);
@@ -194,10 +190,10 @@ class V8_EXPORT_PRIVATE TurboAssembler : public TurboAssemblerBase {
     DCHECK(!AreAliased(src1, src2, src3));
     if (src1.code() > src2.code()) {
       if (src2.code() > src3.code()) {
-        ldm(ia_w, sp, src1.bit() | src2.bit() | src3.bit(), cond);
+        ldm(ia_w, sp, {src1, src2, src3}, cond);
       } else {
         ldr(src3, MemOperand(sp, 4, PostIndex), cond);
-        ldm(ia_w, sp, src1.bit() | src2.bit(), cond);
+        ldm(ia_w, sp, {src1, src2}, cond);
       }
     } else {
       Pop(src2, src3, cond);
@@ -212,15 +208,14 @@ class V8_EXPORT_PRIVATE TurboAssembler : public TurboAssemblerBase {
     if (src1.code() > src2.code()) {
       if (src2.code() > src3.code()) {
         if (src3.code() > src4.code()) {
-          ldm(ia_w, sp, src1.bit() | src2.bit() | src3.bit() | src4.bit(),
-              cond);
+          ldm(ia_w, sp, {src1, src2, src3, src4}, cond);
         } else {
           ldr(src4, MemOperand(sp, 4, PostIndex), cond);
-          ldm(ia_w, sp, src1.bit() | src2.bit() | src3.bit(), cond);
+          ldm(ia_w, sp, {src1, src2, src3}, cond);
         }
       } else {
         Pop(src3, src4, cond);
-        ldm(ia_w, sp, src1.bit() | src2.bit(), cond);
+        ldm(ia_w, sp, {src1, src2}, cond);
       }
     } else {
       Pop(src2, src3, src4, cond);
@@ -337,7 +332,6 @@ class V8_EXPORT_PRIVATE TurboAssembler : public TurboAssemblerBase {
   void Drop(Register count, Condition cond = al);
 
   void Ret(Condition cond = al);
-  void Ret(int drop, Condition cond = al);
 
   // Compare single values and move the result to the normal condition flags.
   void VFPCompareAndSetFlags(const SwVfpRegister src1, const SwVfpRegister src2,
@@ -378,12 +372,10 @@ class V8_EXPORT_PRIVATE TurboAssembler : public TurboAssemblerBase {
                                SaveFPRegsMode fp_mode);
 
   void CallRecordWriteStubSaveRegisters(
-      Register object, Operand offset,
-      RememberedSetAction remembered_set_action, SaveFPRegsMode fp_mode,
+      Register object, Operand offset, SaveFPRegsMode fp_mode,
       StubCallMode mode = StubCallMode::kCallBuiltinPointer);
   void CallRecordWriteStub(
-      Register object, Register slot_address,
-      RememberedSetAction remembered_set_action, SaveFPRegsMode fp_mode,
+      Register object, Register slot_address, SaveFPRegsMode fp_mode,
       StubCallMode mode = StubCallMode::kCallBuiltinPointer);
 
   // For a given |object| and |offset|:
@@ -646,19 +638,15 @@ class V8_EXPORT_PRIVATE MacroAssembler : public TurboAssembler {
   // stored.
   // The offset is the offset from the start of the object, not the offset from
   // the tagged HeapObject pointer.  For use with FieldMemOperand(reg, off).
-  void RecordWriteField(
-      Register object, int offset, Register value, LinkRegisterStatus lr_status,
-      SaveFPRegsMode save_fp,
-      RememberedSetAction remembered_set_action = RememberedSetAction::kEmit,
-      SmiCheck smi_check = SmiCheck::kInline);
+  void RecordWriteField(Register object, int offset, Register value,
+                        LinkRegisterStatus lr_status, SaveFPRegsMode save_fp,
+                        SmiCheck smi_check = SmiCheck::kInline);
 
   // For a given |object| notify the garbage collector that the slot at |offset|
   // has been written. |value| is the object being stored.
-  void RecordWrite(
-      Register object, Operand offset, Register value,
-      LinkRegisterStatus lr_status, SaveFPRegsMode save_fp,
-      RememberedSetAction remembered_set_action = RememberedSetAction::kEmit,
-      SmiCheck smi_check = SmiCheck::kInline);
+  void RecordWrite(Register object, Operand offset, Register value,
+                   LinkRegisterStatus lr_status, SaveFPRegsMode save_fp,
+                   SmiCheck smi_check = SmiCheck::kInline);
 
   // Enter exit frame.
   // stack_space - extra stack space, used for alignment before call to C.
@@ -877,6 +865,9 @@ class V8_EXPORT_PRIVATE MacroAssembler : public TurboAssembler {
     DecodeField<Field>(reg, reg);
   }
 
+  void TestCodeTIsMarkedForDeoptimization(Register codet, Register scratch);
+  Operand ClearedValue() const;
+
  private:
   // Helper functions for generating invokes.
   void InvokePrologue(Register expected_parameter_count,
@@ -884,6 +875,17 @@ class V8_EXPORT_PRIVATE MacroAssembler : public TurboAssembler {
                       InvokeType type);
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(MacroAssembler);
+};
+
+struct MoveCycleState {
+  // List of scratch registers reserved for pending moves in a move cycle, and
+  // which should therefore not be used as a temporary location by
+  // {MoveToTempLocation}. The GP scratch register is implicitly reserved.
+  VfpRegList scratch_v_reglist = 0;
+  // Available scratch registers during the move cycle resolution scope.
+  base::Optional<UseScratchRegisterScope> temps;
+  // Code of the scratch register picked by {MoveToTempLocation}.
+  int scratch_reg_code = -1;
 };
 
 #define ACCESS_MASM(masm) masm->

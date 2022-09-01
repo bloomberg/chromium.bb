@@ -101,6 +101,7 @@ class MessageService : public BrowserContextKeyedAPI,
                         const PortId& source_port_id,
                         int tab_id,
                         int frame_id,
+                        const std::string& document_id,
                         const std::string& extension_id,
                         const std::string& channel_name);
 
@@ -120,6 +121,12 @@ class MessageService : public BrowserContextKeyedAPI,
                  int process_id,
                  const PortContext& port_context,
                  bool force_close);
+
+  // Notifies the port that one of the receivers of a message indicated that
+  // they plan to respond to the message later.
+  void NotifyResponsePending(const PortId& port_id,
+                             int process_id,
+                             const PortContext& port_context);
 
   // Returns the number of open channels for test.
   size_t GetChannelCountForTest() { return channels_.size(); }

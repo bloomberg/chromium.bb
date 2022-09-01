@@ -7,7 +7,6 @@
 //===----------------------------------------------------------------------===//
 
 // UNSUPPORTED: c++03, c++11, c++14, c++17
-// UNSUPPORTED: libcpp-no-concepts
 
 // template<class F, class... Args>
 // concept relation;
@@ -18,11 +17,11 @@
 template<class F, class T, class U>
 requires std::predicate<F, T, T> && std::predicate<F, T, U> &&
          std::predicate<F, U, T> && std::predicate<F, U, U>
-[[nodiscard]] constexpr bool check_subsumption() { return false; }
+constexpr bool check_subsumption() { return false; }
 
 template<class F, class T, class U>
 requires std::relation<F, T, U> && true
-[[nodiscard]] constexpr bool check_subsumption() { return true; }
+constexpr bool check_subsumption() { return true; }
 // clang-format on
 
 static_assert(check_subsumption<int (*)(int, double), int, double>());

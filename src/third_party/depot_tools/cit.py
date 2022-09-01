@@ -83,8 +83,8 @@ def is_exe(filename):
   """Given a full filepath, return true if the file is an executable."""
   if sys.platform.startswith('win'):
     return filename.endswith('.exe')
-  else:
-    return os.path.isfile(filename) and os.access(filename, os.X_OK)
+
+  return os.path.isfile(filename) and os.access(filename, os.X_OK)
 
 
 def get_available_tools():

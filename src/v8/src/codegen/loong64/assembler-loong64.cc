@@ -167,7 +167,8 @@ void Assembler::AllocateAndInstallRequestedHeapObjects(Isolate* isolate) {
 Assembler::Assembler(const AssemblerOptions& options,
                      std::unique_ptr<AssemblerBuffer> buffer)
     : AssemblerBase(options, std::move(buffer)),
-      scratch_register_list_(t7.bit() | t6.bit()) {
+      scratch_register_list_({t7, t6}),
+      scratch_fpregister_list_({f31}) {
   reloc_info_writer.Reposition(buffer_start_ + buffer_->size(), pc_);
 
   last_trampoline_pool_end_ = 0;
@@ -220,7 +221,7 @@ void Assembler::GetCode(Isolate* isolate, CodeDesc* desc,
   const int safepoint_table_offset =
       (safepoint_table_builder == kNoSafepointTable)
           ? handler_table_offset2
-          : safepoint_table_builder->GetCodeOffset();
+          : safepoint_table_builder->safepoint_table_offset();
   const int reloc_info_offset =
       static_cast<int>(reloc_info_writer.pos() - buffer_->start());
   CodeDesc::Initialize(desc, this, safepoint_table_offset,
@@ -2353,22 +2354,32 @@ void Assembler::set_target_value_at(Address pc, uint64_t target,
 
 UseScratchRegisterScope::UseScratchRegisterScope(Assembler* assembler)
     : available_(assembler->GetScratchRegisterList()),
-      old_available_(*available_) {}
+      availablefp_(assembler->GetScratchFPRegisterList()),
+      old_available_(*available_),
+      old_availablefp_(*availablefp_) {}
 
 UseScratchRegisterScope::~UseScratchRegisterScope() {
   *available_ = old_available_;
+  *availablefp_ = old_availablefp_;
 }
 
 Register UseScratchRegisterScope::Acquire() {
   DCHECK_NOT_NULL(available_);
-  DCHECK_NE(*available_, 0);
-  int index = static_cast<int>(base::bits::CountTrailingZeros32(*available_));
-  *available_ &= ~(1UL << index);
-
-  return Register::from_code(index);
+  return available_->PopFirst();
 }
 
-bool UseScratchRegisterScope::hasAvailable() const { return *available_ != 0; }
+DoubleRegister UseScratchRegisterScope::AcquireFp() {
+  DCHECK_NOT_NULL(availablefp_);
+  return availablefp_->PopFirst();
+}
+
+bool UseScratchRegisterScope::hasAvailable() const {
+  return !available_->is_empty();
+}
+
+bool UseScratchRegisterScope::hasAvailableFp() const {
+  return !availablefp_->is_empty();
+}
 
 }  // namespace internal
 }  // namespace v8

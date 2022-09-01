@@ -139,13 +139,13 @@ EIGEN_STRONG_INLINE Packet4f vec4f_unpackhi(const Packet4f& a, const Packet4f& b
 #define vec4f_duplane(a, p) \
   vdupq_lane_f32(vget_low_f32(a), p)
 
-#define _EIGEN_DECLARE_CONST_Packet4f(NAME,X) \
+#define EIGEN_DECLARE_CONST_Packet4f(NAME,X) \
   const Packet4f p4f_##NAME = pset1<Packet4f>(X)
 
-#define _EIGEN_DECLARE_CONST_Packet4f_FROM_INT(NAME,X) \
+#define EIGEN_DECLARE_CONST_Packet4f_FROM_INT(NAME,X) \
   const Packet4f p4f_##NAME = vreinterpretq_f32_u32(pset1<int32_t>(X))
 
-#define _EIGEN_DECLARE_CONST_Packet4i(NAME,X) \
+#define EIGEN_DECLARE_CONST_Packet4i(NAME,X) \
   const Packet4i p4i_##NAME = pset1<Packet4i>(X)
 
 #if EIGEN_ARCH_ARM64
@@ -450,15 +450,6 @@ struct packet_traits<uint64_t> : default_packet_traits
   };
 };
 
-#if EIGEN_GNUC_AT_MOST(4, 4) && !EIGEN_COMP_LLVM
-// workaround gcc 4.2, 4.3 and 4.4 compilation issue
-EIGEN_STRONG_INLINE float32x4_t vld1q_f32(const float* x) { return ::vld1q_f32((const float32_t*)x); }
-EIGEN_STRONG_INLINE float32x2_t vld1_f32(const float* x) { return ::vld1_f32 ((const float32_t*)x); }
-EIGEN_STRONG_INLINE float32x2_t vld1_dup_f32(const float* x) { return ::vld1_dup_f32 ((const float32_t*)x); }
-EIGEN_STRONG_INLINE void vst1q_f32(float* to, float32x4_t from) { ::vst1q_f32((float32_t*)to,from); }
-EIGEN_STRONG_INLINE void vst1_f32 (float* to, float32x2_t from) { ::vst1_f32 ((float32_t*)to,from); }
-#endif
-
 template<> struct unpacket_traits<Packet2f>
 {
   typedef float type;
@@ -716,9 +707,9 @@ template<> EIGEN_STRONG_INLINE Packet4ui pset1<Packet4ui>(const uint32_t& from) 
 template<> EIGEN_STRONG_INLINE Packet2l pset1<Packet2l>(const int64_t& from) { return vdupq_n_s64(from); }
 template<> EIGEN_STRONG_INLINE Packet2ul pset1<Packet2ul>(const uint64_t& from) { return vdupq_n_u64(from); }
 
-template<> EIGEN_STRONG_INLINE Packet2f pset1frombits<Packet2f>(unsigned int from)
+template<> EIGEN_STRONG_INLINE Packet2f pset1frombits<Packet2f>(uint32_t from)
 { return vreinterpret_f32_u32(vdup_n_u32(from)); }
-template<> EIGEN_STRONG_INLINE Packet4f pset1frombits<Packet4f>(unsigned int from)
+template<> EIGEN_STRONG_INLINE Packet4f pset1frombits<Packet4f>(uint32_t from)
 { return vreinterpretq_f32_u32(vdupq_n_u32(from)); }
 
 template<> EIGEN_STRONG_INLINE Packet2f plset<Packet2f>(const float& a)
@@ -3349,23 +3340,13 @@ template<> EIGEN_STRONG_INLINE Packet4ui psqrt(const Packet4ui& a) {
 }
 
 template<> EIGEN_STRONG_INLINE Packet4f prsqrt(const Packet4f& a) {
-  // Compute approximate reciprocal sqrt.
-  Packet4f x = vrsqrteq_f32(a);
   // Do Newton iterations for 1/sqrt(x).
-  x = vmulq_f32(vrsqrtsq_f32(vmulq_f32(a, x), x), x);
-  x = vmulq_f32(vrsqrtsq_f32(vmulq_f32(a, x), x), x);
-  const Packet4f infinity = pset1<Packet4f>(NumTraits<float>::infinity());
-  return pselect(pcmp_eq(a, pzero(a)), infinity, x);
+  return generic_rsqrt_newton_step<Packet4f, /*Steps=*/2>::run(a, vrsqrteq_f32(a));
 }
 
 template<> EIGEN_STRONG_INLINE Packet2f prsqrt(const Packet2f& a) {
   // Compute approximate reciprocal sqrt.
-  Packet2f x = vrsqrte_f32(a);
-  // Do Newton iterations for 1/sqrt(x).
-  x = vmul_f32(vrsqrts_f32(vmul_f32(a, x), x), x);
-  x = vmul_f32(vrsqrts_f32(vmul_f32(a, x), x), x);
-  const Packet2f infinity = pset1<Packet2f>(NumTraits<float>::infinity());
-  return pselect(pcmp_eq(a, pzero(a)), infinity, x);
+  return generic_rsqrt_newton_step<Packet2f, /*Steps=*/2>::run(a, vrsqrte_f32(a));
 }
 
 // Unfortunately vsqrt_f32 is only available for A64.
@@ -3374,14 +3355,10 @@ template<> EIGEN_STRONG_INLINE Packet4f psqrt(const Packet4f& _x){return vsqrtq_
 template<> EIGEN_STRONG_INLINE Packet2f psqrt(const Packet2f& _x){return vsqrt_f32(_x); }
 #else
 template<> EIGEN_STRONG_INLINE Packet4f psqrt(const Packet4f& a) {
-  const Packet4f infinity = pset1<Packet4f>(NumTraits<float>::infinity());
-  const Packet4f is_zero_or_inf = por(pcmp_eq(a, pzero(a)), pcmp_eq(a, infinity));
-  return pselect(is_zero_or_inf, a, pmul(a, prsqrt(a)));
+  return generic_sqrt_newton_step<Packet4f>::run(a, prsqrt(a));
 }
 template<> EIGEN_STRONG_INLINE Packet2f psqrt(const Packet2f& a) {
-  const Packet2f infinity = pset1<Packet2f>(NumTraits<float>::infinity());
-  const Packet2f is_zero_or_inf = por(pcmp_eq(a, pzero(a)), pcmp_eq(a, infinity));
-  return pselect(is_zero_or_inf, a, pmul(a, prsqrt(a)));
+  return generic_sqrt_newton_step<Packet2f>::run(a, prsqrt(a));
 }
 #endif
 
@@ -3975,14 +3952,8 @@ template<> EIGEN_STRONG_INLINE Packet2d pset1frombits<Packet2d>(uint64_t from)
 { return vreinterpretq_f64_u64(vdupq_n_u64(from)); }
 
 template<> EIGEN_STRONG_INLINE Packet2d prsqrt(const Packet2d& a) {
-  // Compute approximate reciprocal sqrt.
-  Packet2d x = vrsqrteq_f64(a);
   // Do Newton iterations for 1/sqrt(x).
-  x = vmulq_f64(vrsqrtsq_f64(vmulq_f64(a, x), x), x);
-  x = vmulq_f64(vrsqrtsq_f64(vmulq_f64(a, x), x), x);
-  x = vmulq_f64(vrsqrtsq_f64(vmulq_f64(a, x), x), x);
-  const Packet2d infinity = pset1<Packet2d>(NumTraits<double>::infinity());
-  return pselect(pcmp_eq(a, pzero(a)), infinity, x);
+  return generic_rsqrt_newton_step<Packet2d, /*Steps=*/3>::run(a, vrsqrteq_f64(a));
 }
 
 template<> EIGEN_STRONG_INLINE Packet2d psqrt(const Packet2d& _x){ return vsqrtq_f64(_x); }
@@ -4028,6 +3999,7 @@ struct packet_traits<Eigen::half> : default_packet_traits {
     HasCos = 0,
     HasLog = 0,
     HasExp = 0,
+    HasTanh = packet_traits<float>::HasTanh,  // tanh<half> calls tanh<float>
     HasSqrt = 1,
     HasRsqrt = 1,
     HasErf = EIGEN_FAST_MATH,

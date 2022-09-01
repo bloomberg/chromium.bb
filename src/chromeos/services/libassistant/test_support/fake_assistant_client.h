@@ -33,6 +33,8 @@ class FakeAssistantClient : public AssistantClient {
   void SetChromeOSApiDelegate(
       assistant_client::ChromeOSApiDelegate* delegate) override;
   bool StartGrpcServices() override;
+  void StartGrpcHttpConnectionClient(
+      assistant_client::HttpConnectionFactory*) override;
   void AddExperimentIds(const std::vector<std::string>& exp_ids) override;
   void AddSpeakerIdEnrollmentEventObserver(
       GrpcServicesObserver<OnSpeakerIdEnrollmentEventRequest>* observer)
@@ -56,6 +58,9 @@ class FakeAssistantClient : public AssistantClient {
   void SetExternalPlaybackState(const MediaStatus& status_proto) override;
   void AddDeviceStateEventObserver(
       GrpcServicesObserver<OnDeviceStateEventRequest>* observer) override;
+  void AddMediaActionFallbackEventObserver(
+      GrpcServicesObserver<OnMediaActionFallbackEventRequest>* observer)
+      override;
   void SendVoicelessInteraction(
       const ::assistant::api::Interaction& interaction,
       const std::string& description,
@@ -67,6 +72,8 @@ class FakeAssistantClient : public AssistantClient {
       const std::vector<std::string>& context_protos) override;
   void StartVoiceInteraction() override;
   void StopAssistantInteraction(bool cancel_conversation) override;
+  void AddConversationStateEventObserver(
+      GrpcServicesObserver<OnConversationStateEventRequest>* observer) override;
   void SetInternalOptions(const std::string& locale,
                           bool spoken_feedback_enabled) override;
   void SetAuthenticationInfo(const AuthTokens& tokens) override;

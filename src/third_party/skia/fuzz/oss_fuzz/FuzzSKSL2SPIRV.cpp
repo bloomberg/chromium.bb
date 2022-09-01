@@ -5,7 +5,7 @@
  * found in the LICENSE file.
  */
 
-#include "src/gpu/GrShaderCaps.h"
+#include "src/gpu/ganesh/GrShaderCaps.h"
 #include "src/sksl/SkSLCompiler.h"
 
 #include "fuzz/Fuzz.h"
@@ -13,7 +13,6 @@
 bool FuzzSKSL2SPIRV(sk_sp<SkData> bytes) {
     std::unique_ptr<SkSL::ShaderCaps> caps = SkSL::ShaderCapsFactory::Default();
     SkSL::Compiler compiler(caps.get());
-    SkSL::String output;
     SkSL::Program::Settings settings;
 
     // This tells the compiler where the rt-flip uniform will live should it be required. For
@@ -25,9 +24,10 @@ bool FuzzSKSL2SPIRV(sk_sp<SkData> bytes) {
 
     std::unique_ptr<SkSL::Program> program = compiler.convertProgram(
                                                     SkSL::ProgramKind::kFragment,
-                                                    SkSL::String((const char*) bytes->data(),
-                                                                 bytes->size()),
+                                                    std::string((const char*) bytes->data(),
+                                                                bytes->size()),
                                                     settings);
+    std::string output;
     if (!program || !compiler.toSPIRV(*program, &output)) {
         return false;
     }

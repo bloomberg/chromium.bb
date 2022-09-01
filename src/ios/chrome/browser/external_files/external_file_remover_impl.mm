@@ -10,7 +10,6 @@
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -60,12 +59,18 @@ NSSet* ComputeReferencedExternalFiles(Browser* browser) {
       [referenced_files addObject:base::SysUTF8ToNSString(
                                       last_committed_url.ExtractFileName())];
     }
-    web::NavigationItem* pending_item =
-        web_state->GetNavigationManager()->GetPendingItem();
-    if (pending_item && UrlIsExternalFileReference(pending_item->GetURL())) {
-      [referenced_files
-          addObject:base::SysUTF8ToNSString(
-                        pending_item->GetURL().ExtractFileName())];
+
+    // An "unrealized" WebState has no pending load. Checking for realization
+    // before accessing the NavigationManager prevents accidental realization
+    // of the WebState.
+    if (web_state->IsRealized()) {
+      web::NavigationItem* pending_item =
+          web_state->GetNavigationManager()->GetPendingItem();
+      if (pending_item && UrlIsExternalFileReference(pending_item->GetURL())) {
+        [referenced_files
+            addObject:base::SysUTF8ToNSString(
+                          pending_item->GetURL().ExtractFileName())];
+      }
     }
   }
   // Do the same for the recently closed tabs.

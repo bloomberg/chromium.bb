@@ -18,6 +18,7 @@ class CodeDataContainer;
 
 #define ROOT_ID_LIST(V)                                 \
   V(kStringTable, "(Internalized strings)")             \
+  V(kStringForwardingTable, "(Forwarded strings)")      \
   V(kExternalStringsTable, "(External strings)")        \
   V(kReadOnlyRootList, "(Read-only roots)")             \
   V(kStrongRootList, "(Strong roots)")                  \
@@ -42,6 +43,7 @@ class CodeDataContainer;
   V(kWrapperTracing, "(Wrapper tracing)")               \
   V(kWriteBarrier, "(Write barrier)")                   \
   V(kRetainMaps, "(Retain maps)")                       \
+  V(kClientHeap, "(Client heap)")                       \
   V(kUnknown, "(Unknown)")
 
 class VisitorSynchronization : public AllStatic {
@@ -180,6 +182,10 @@ class ObjectVisitor {
 
   // Visits the object's map pointer, decoding as necessary
   virtual void VisitMapPointer(HeapObject host) { UNREACHABLE(); }
+
+  // Visits an external pointer. This is currently only guaranteed to be called
+  // when the sandbox is enabled.
+  virtual void VisitExternalPointer(HeapObject host, ExternalPointer_t ptr) {}
 };
 
 // Helper version of ObjectVisitor that also takes care of caching base values

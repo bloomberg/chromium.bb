@@ -67,7 +67,7 @@ struct traits<Diagonal<SparseMatrix<Scalar_, Options_, StorageIndex_>, DiagIndex
 {
   typedef SparseMatrix<Scalar_, Options_, StorageIndex_> MatrixType;
   typedef typename ref_selector<MatrixType>::type MatrixTypeNested;
-  typedef typename remove_reference<MatrixTypeNested>::type _MatrixTypeNested;
+  typedef std::remove_reference_t<MatrixTypeNested> MatrixTypeNested_;
 
   typedef Scalar_ Scalar;
   typedef Dense StorageKind;
@@ -110,7 +110,7 @@ class SparseMatrix
     using Base::operator+=;
     using Base::operator-=;
 
-    typedef MappedSparseMatrix<Scalar,Flags> Map;
+    typedef Eigen::Map<SparseMatrix<Scalar,Flags,StorageIndex>> Map;
     typedef Diagonal<SparseMatrix> DiagonalReturnType;
     typedef Diagonal<const SparseMatrix> ConstDiagonalReturnType;
     typedef typename Base::InnerIterator InnerIterator;
@@ -126,7 +126,7 @@ class SparseMatrix
     typedef typename Base::IndexVector IndexVector;
     typedef typename Base::ScalarVector ScalarVector;
   protected:
-    typedef SparseMatrix<Scalar,(Flags&~RowMajorBit)|(IsRowMajor?RowMajorBit:0)> TransposedSparseMatrix;
+    typedef SparseMatrix<Scalar,(Flags&~RowMajorBit)|(IsRowMajor?RowMajorBit:0),StorageIndex> TransposedSparseMatrix;
 
     Index m_outerSize;
     Index m_innerSize;
@@ -288,10 +288,7 @@ class SparseMatrix
     #else
     template<class SizesType>
     inline void reserve(const SizesType& reserveSizes, const typename SizesType::value_type& enableif =
-    #if (!EIGEN_COMP_MSVC) || (EIGEN_COMP_MSVC>=1500) // MSVC 2005 fails to compile with this typename
-        typename
-    #endif
-        SizesType::value_type())
+        typename SizesType::value_type())
     {
       EIGEN_UNUSED_VARIABLE(enableif);
       reserveInnerVectors(reserveSizes);
@@ -1182,8 +1179,8 @@ EIGEN_DONT_INLINE SparseMatrix<Scalar,Options_,StorageIndex_>& SparseMatrix<Scal
     //  2 - do the actual copy/eval
     // Since each coeff of the rhs has to be evaluated twice, let's evaluate it if needed
     typedef typename internal::nested_eval<OtherDerived,2,typename internal::plain_matrix_type<OtherDerived>::type >::type OtherCopy;
-    typedef typename internal::remove_all<OtherCopy>::type _OtherCopy;
-    typedef internal::evaluator<_OtherCopy> OtherCopyEval;
+    typedef internal::remove_all_t<OtherCopy> OtherCopy_;
+    typedef internal::evaluator<OtherCopy_> OtherCopyEval;
     OtherCopy otherCopy(other.derived());
     OtherCopyEval otherCopyEval(otherCopy);
 

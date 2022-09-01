@@ -105,6 +105,8 @@ const char* GetDigest8bpp(int id) {
       "4d412349a25a832c1fb3fb29e3f0e2b3", "2c6dd2a9a4ede9fa00adb567ba646f30",
       "b2a0ce68db3cadd207299f73112bed74",
   };
+  assert(id >= 0);
+  assert(id < sizeof(kDigest) / sizeof(kDigest[0]));
   return is_compound ? kCompoundDigest[id] : kDigest[id];
 }
 
@@ -129,9 +131,38 @@ const char* GetDigest10bpp(int id) {
       "f3be504bbb609ce4cc71c5539252638a", "fcde83b54e14e9de23460644f244b047",
       "42eb66e752e9ef289b47053b5c73fdd6",
   };
+  assert(id >= 0);
+  assert(id < sizeof(kDigest) / sizeof(kDigest[0]));
   return is_compound ? kCompoundDigest[id] : kDigest[id];
 }
-#endif
+#endif  // LIBGAV1_MAX_BITDEPTH >= 10
+
+#if LIBGAV1_MAX_BITDEPTH == 12
+template <bool is_compound>
+const char* GetDigest12bpp(int id) {
+  static const char* const kDigest[] = {
+      "cd5d5e2102b8917ad70778f523d24bdf", "374a5f1b53a3fdf2eefa741eb71e6889",
+      "311636841770ec2427084891df96bee5", "c40c537917b1f0d1d84c99dfcecd8219",
+      "a1d9bb920e6c3d20c0cf84adc18e1f15", "13b5659acdb39b717526cb358c6f4026",
+      "f81ea4f6fd1f4ebed1262e3fae37b5bb", "c1452fefcd9b9562fe3a0b7f9302809c",
+      "8fed8a3159dc7b6b59a39ab2be6bee13", "b46458bc0e5cf1cee92aac4f0f608749",
+      "2e6a1039ab111add89f5b44b13565f40", "9c666691860bdc89b03f601b40126196",
+      "418a47157d992b94c302ca2e2f6ee07e",
+  };
+  static const char* const kCompoundDigest[] = {
+      "8e6986ae143260e0b8b4887f15a141a1", "0a7f0db8316b8c3569f08834dd0c6f50",
+      "90705b2e7dbe083e8a1f70f29d6f257e", "e428a75bea77d769d21f3f7a1d2b0b38",
+      "a570b13d790c085c4ab50d71dd085d56", "e5d043c6cd6ff6dbab6e38a8877e93bd",
+      "12ea96991e46e3e9aa78ab812ffa0525", "84293a94a53f1cf814fa25e793c3fe27",
+      "b98a7502c84ac8437266f702dcc0a92e", "d8db5d52e9b0a5be0ad2d517d5bd16e9",
+      "f3be504bbb609ce4cc71c5539252638a", "fcde83b54e14e9de23460644f244b047",
+      "42eb66e752e9ef289b47053b5c73fdd6",
+  };
+  assert(id >= 0);
+  assert(id < sizeof(kDigest) / sizeof(kDigest[0]));
+  return is_compound ? kCompoundDigest[id] : kDigest[id];
+}
+#endif  // LIBGAV1_MAX_BITDEPTH == 12
 
 int RandomWarpedParam(int seed_offset, int bits) {
   libvpx_test::ACMRandom rnd(seed_offset +
@@ -228,6 +259,7 @@ struct WarpTestParam {
 template <bool is_compound, int bitdepth, typename Pixel>
 class WarpTest : public testing::TestWithParam<WarpTestParam> {
  public:
+  static_assert(bitdepth >= kBitdepth8 && bitdepth <= LIBGAV1_MAX_BITDEPTH, "");
   WarpTest() = default;
   ~WarpTest() override = default;
 
@@ -389,14 +421,23 @@ void WarpTest<is_compound, bitdepth, Pixel>::Test(bool use_fixed_values,
       id = 2 + 3 * static_cast<int>(FloorLog2(param_.height) - 3);
     }
 
-    const char* expected_digest;
-    if (bitdepth == 8) {
-      expected_digest = GetDigest8bpp<is_compound>(id);
-    } else {
+    const char* expected_digest = nullptr;
+    switch (bitdepth) {
+      case 8:
+        expected_digest = GetDigest8bpp<is_compound>(id);
+        break;
 #if LIBGAV1_MAX_BITDEPTH >= 10
-      expected_digest = GetDigest10bpp<is_compound>(id);
+      case 10:
+        expected_digest = GetDigest10bpp<is_compound>(id);
+        break;
+#endif
+#if LIBGAV1_MAX_BITDEPTH == 12
+      case 12:
+        expected_digest = GetDigest12bpp<is_compound>(id);
+        break;
 #endif
     }
+    ASSERT_NE(expected_digest, nullptr);
     test_utils::CheckMd5Digest(
         "Warp", absl::StrFormat("%dx%d", param_.width, param_.height).c_str(),
         expected_digest, dest_, sizeof(dest_), elapsed_time);
@@ -643,7 +684,22 @@ INSTANTIATE_TEST_SUITE_P(C, WarpTest10bpp, testing::ValuesIn(warp_test_param));
 INSTANTIATE_TEST_SUITE_P(NEON, WarpTest10bpp,
                          testing::ValuesIn(warp_test_param));
 #endif
-#endif
+#endif  // LIBGAV1_MAX_BITDEPTH >= 10
+
+#if LIBGAV1_MAX_BITDEPTH == 12
+using WarpTest12bpp = WarpTest</*is_compound=*/false, 12, uint16_t>;
+// TODO(jzern): Coverage could be added for kInterRoundBitsCompoundVertical via
+// WarpCompoundTest.
+// using WarpCompoundTest12bpp = WarpTest</*is_compound=*/true, 12, uint16_t>;
+
+TEST_P(WarpTest12bpp, FixedValues) { TestFixedValues(); }
+
+TEST_P(WarpTest12bpp, RandomValues) { TestRandomValues(); }
+
+TEST_P(WarpTest12bpp, DISABLED_Speed) { TestSpeed(); }
+
+INSTANTIATE_TEST_SUITE_P(C, WarpTest12bpp, testing::ValuesIn(warp_test_param));
+#endif  // LIBGAV1_MAX_BITDEPTH == 12
 
 std::ostream& operator<<(std::ostream& os, const WarpTestParam& warp_param) {
   return os << "BlockSize" << warp_param.width << "x" << warp_param.height;

@@ -6,6 +6,7 @@ import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Root from '../../core/root/root.js';
+import type * as Platform from '../../core/platform/platform.js';
 import * as EmulationModel from '../../models/emulation/emulation.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as MobileThrottling from '../mobile_throttling/mobile_throttling.js';
@@ -389,7 +390,7 @@ export class DeviceModeToolbar {
 
   private experimentalClicked(): void {
     Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab(
-        'chrome://flags/#enable-experimental-web-platform-features');
+        'chrome://flags/#enable-experimental-web-platform-features' as Platform.DevToolsPath.UrlString);
   }
 
   private fillOptionsToolbar(toolbar: UI.Toolbar.Toolbar): void {
@@ -663,7 +664,7 @@ export class DeviceModeToolbar {
     });
     addOrientation(EmulationModel.EmulatedDevices.Vertical, i18nString(UIStrings.portrait));
     addOrientation(EmulationModel.EmulatedDevices.Horizontal, i18nString(UIStrings.landscape));
-    contextMenu.show();
+    void contextMenu.show();
 
     function addOrientation(orientation: string, title: string): void {
       if (!device) {

@@ -23,8 +23,8 @@
 #include "api/video/video_frame_buffer.h"
 #include "api/video/video_rotation.h"
 #include "system_wrappers/include/metrics.h"
-#include "test/field_trial.h"
 #include "test/gtest.h"
+#include "test/scoped_key_value_config.h"
 
 namespace webrtc {
 namespace {
@@ -39,18 +39,21 @@ const int kHeight = 720;
 // TODO(sakal): ReceiveStatisticsProxy is lacking unittesting.
 class ReceiveStatisticsProxyTest : public ::testing::Test {
  public:
-  ReceiveStatisticsProxyTest() : fake_clock_(1234), config_(GetTestConfig()) {}
+  explicit ReceiveStatisticsProxyTest(std::string field_trials = "")
+      : field_trials_(field_trials),
+        fake_clock_(1234),
+        config_(GetTestConfig()) {}
   virtual ~ReceiveStatisticsProxyTest() {}
 
  protected:
   virtual void SetUp() {
     metrics::Reset();
-    statistics_proxy_.reset(
-        new ReceiveStatisticsProxy(config_.rtp.remote_ssrc, &fake_clock_));
+    statistics_proxy_.reset(new ReceiveStatisticsProxy(
+        config_.rtp.remote_ssrc, &fake_clock_, &field_trials_));
   }
 
-  VideoReceiveStream::Config GetTestConfig() {
-    VideoReceiveStream::Config config(nullptr);
+  VideoReceiveStreamInterface::Config GetTestConfig() {
+    VideoReceiveStreamInterface::Config config(nullptr);
     config.rtp.local_ssrc = kLocalSsrc;
     config.rtp.remote_ssrc = kRemoteSsrc;
     return config;
@@ -76,8 +79,9 @@ class ReceiveStatisticsProxyTest : public ::testing::Test {
     return frame;
   }
 
+  test::ScopedKeyValueConfig field_trials_;
   SimulatedClock fake_clock_;
-  const VideoReceiveStream::Config config_;
+  const VideoReceiveStreamInterface::Config config_;
   std::unique_ptr<ReceiveStatisticsProxy> statistics_proxy_;
 };
 
@@ -309,7 +313,7 @@ TEST_F(ReceiveStatisticsProxyTest, ReportInterframeDelayInWindow) {
 TEST_F(ReceiveStatisticsProxyTest, ReportsFreezeMetrics) {
   const int64_t kFreezeDurationMs = 1000;
 
-  VideoReceiveStream::Stats stats = statistics_proxy_->GetStats();
+  VideoReceiveStreamInterface::Stats stats = statistics_proxy_->GetStats();
   EXPECT_EQ(0u, stats.freeze_count);
   EXPECT_FALSE(stats.total_freezes_duration_ms);
 
@@ -330,7 +334,7 @@ TEST_F(ReceiveStatisticsProxyTest, ReportsFreezeMetrics) {
 }
 
 TEST_F(ReceiveStatisticsProxyTest, ReportsPauseMetrics) {
-  VideoReceiveStream::Stats stats = statistics_proxy_->GetStats();
+  VideoReceiveStreamInterface::Stats stats = statistics_proxy_->GetStats();
   ASSERT_EQ(0u, stats.pause_count);
   ASSERT_EQ(0u, stats.total_pauses_duration_ms);
 
@@ -348,7 +352,7 @@ TEST_F(ReceiveStatisticsProxyTest, ReportsPauseMetrics) {
 }
 
 TEST_F(ReceiveStatisticsProxyTest, PauseBeforeFirstAndAfterLastFrameIgnored) {
-  VideoReceiveStream::Stats stats = statistics_proxy_->GetStats();
+  VideoReceiveStreamInterface::Stats stats = statistics_proxy_->GetStats();
   ASSERT_EQ(0u, stats.pause_count);
   ASSERT_EQ(0u, stats.total_pauses_duration_ms);
 
@@ -371,7 +375,7 @@ TEST_F(ReceiveStatisticsProxyTest, PauseBeforeFirstAndAfterLastFrameIgnored) {
 }
 
 TEST_F(ReceiveStatisticsProxyTest, ReportsFramesDuration) {
-  VideoReceiveStream::Stats stats = statistics_proxy_->GetStats();
+  VideoReceiveStreamInterface::Stats stats = statistics_proxy_->GetStats();
   ASSERT_EQ(0u, stats.total_frames_duration_ms);
 
   webrtc::VideoFrame frame = CreateFrame(kWidth, kHeight);
@@ -391,7 +395,7 @@ TEST_F(ReceiveStatisticsProxyTest, ReportsFramesDuration) {
 }
 
 TEST_F(ReceiveStatisticsProxyTest, ReportsSumSquaredFrameDurations) {
-  VideoReceiveStream::Stats stats = statistics_proxy_->GetStats();
+  VideoReceiveStreamInterface::Stats stats = statistics_proxy_->GetStats();
   ASSERT_EQ(0u, stats.sum_squared_frame_durations);
 
   webrtc::VideoFrame frame = CreateFrame(kWidth, kHeight);
@@ -456,7 +460,7 @@ TEST_F(ReceiveStatisticsProxyTest, GetStatsReportsOnCompleteFrame) {
   const int kFrameSizeBytes = 1000;
   statistics_proxy_->OnCompleteFrame(true, kFrameSizeBytes,
                                      VideoContentType::UNSPECIFIED);
-  VideoReceiveStream::Stats stats = statistics_proxy_->GetStats();
+  VideoReceiveStreamInterface::Stats stats = statistics_proxy_->GetStats();
   EXPECT_EQ(1, stats.network_frame_rate);
   EXPECT_EQ(1, stats.frame_counts.key_frames);
   EXPECT_EQ(0, stats.frame_counts.delta_frames);
@@ -468,7 +472,7 @@ TEST_F(ReceiveStatisticsProxyTest, GetStatsReportsOnDroppedFrame) {
     statistics_proxy_->OnDroppedFrames(i);
     dropped_frames += i;
   }
-  VideoReceiveStream::Stats stats = statistics_proxy_->GetStats();
+  VideoReceiveStreamInterface::Stats stats = statistics_proxy_->GetStats();
   EXPECT_EQ(dropped_frames, stats.frames_dropped);
 }
 
@@ -484,7 +488,7 @@ TEST_F(ReceiveStatisticsProxyTest, GetStatsReportsDecodeTimingStats) {
   statistics_proxy_->OnFrameBufferTimingsUpdated(
       kMaxDecodeMs, kCurrentDelayMs, kTargetDelayMs, kJitterBufferMs,
       kMinPlayoutDelayMs, kRenderDelayMs);
-  VideoReceiveStream::Stats stats = statistics_proxy_->GetStats();
+  VideoReceiveStreamInterface::Stats stats = statistics_proxy_->GetStats();
   EXPECT_EQ(kMaxDecodeMs, stats.max_decode_ms);
   EXPECT_EQ(kCurrentDelayMs, stats.current_delay_ms);
   EXPECT_EQ(kTargetDelayMs, stats.target_delay_ms);
@@ -502,7 +506,7 @@ TEST_F(ReceiveStatisticsProxyTest, GetStatsReportsRtcpPacketTypeCounts) {
   counter.pli_packets = kPliPackets;
   counter.nack_packets = kNackPackets;
   statistics_proxy_->RtcpPacketTypesCounterUpdated(kRemoteSsrc, counter);
-  VideoReceiveStream::Stats stats = statistics_proxy_->GetStats();
+  VideoReceiveStreamInterface::Stats stats = statistics_proxy_->GetStats();
   EXPECT_EQ(kFirPackets, stats.rtcp_packet_type_counts.fir_packets);
   EXPECT_EQ(kPliPackets, stats.rtcp_packet_type_counts.pli_packets);
   EXPECT_EQ(kNackPackets, stats.rtcp_packet_type_counts.nack_packets);
@@ -527,7 +531,7 @@ TEST_F(ReceiveStatisticsProxyTest, GetStatsReportsFrameCounts) {
     statistics_proxy_->OnCompleteFrame(false, 0, VideoContentType::UNSPECIFIED);
   }
 
-  VideoReceiveStream::Stats stats = statistics_proxy_->GetStats();
+  VideoReceiveStreamInterface::Stats stats = statistics_proxy_->GetStats();
   EXPECT_EQ(kKeyFrames, stats.frame_counts.key_frames);
   EXPECT_EQ(kDeltaFrames, stats.frame_counts.delta_frames);
 }
@@ -1146,7 +1150,7 @@ INSTANTIATE_TEST_SUITE_P(_,
                                            kFreezeDetectionCond2NotFreeze));
 
 TEST_P(ReceiveStatisticsProxyTestWithFreezeDuration, FreezeDetection) {
-  VideoReceiveStream::Stats stats = statistics_proxy_->GetStats();
+  VideoReceiveStreamInterface::Stats stats = statistics_proxy_->GetStats();
   EXPECT_EQ(0u, stats.freeze_count);
   webrtc::VideoFrame frame = CreateFrame(kWidth, kHeight);
 
@@ -1692,25 +1696,16 @@ TEST_P(ReceiveStatisticsProxyTestWithContent,
   }
 }
 
-class DecodeTimeHistogramsKillswitch {
- public:
-  explicit DecodeTimeHistogramsKillswitch(bool disable_histograms)
-      : field_trial_(disable_histograms
-                         ? "WebRTC-DecodeTimeHistogramsKillSwitch/Enabled/"
-                         : "") {}
-
- private:
-  webrtc::test::ScopedFieldTrials field_trial_;
-};
-
 class ReceiveStatisticsProxyTestWithDecodeTimeHistograms
-    : public DecodeTimeHistogramsKillswitch,
-      public ::testing::WithParamInterface<
+    : public ::testing::WithParamInterface<
           std::tuple<bool, int, int, int, VideoCodecType, std::string>>,
       public ReceiveStatisticsProxyTest {
  public:
   ReceiveStatisticsProxyTestWithDecodeTimeHistograms()
-      : DecodeTimeHistogramsKillswitch(std::get<0>(GetParam())) {}
+      : ReceiveStatisticsProxyTest(
+            std::get<0>(GetParam())
+                ? "WebRTC-DecodeTimeHistogramsKillSwitch/Enabled/"
+                : "") {}
 
  protected:
   const std::string kUmaPrefix = "WebRTC.Video.DecodeTimePerFrameInMs.";

@@ -191,10 +191,10 @@ template<typename ArrayType> void array_special_functions()
 
   // Check the zeta function against scipy.special.zeta
   {
-    ArrayType x(10), q(10), res(10), ref(10);
-    x << 1.5,   4, 10.5, 10000.5,    3,      1,    0.9,  2,  3,  4;
-    q <<   2, 1.5,    3,  1.0001, -2.5, 1.2345, 1.2345, -1, -2, -3;
-    ref << 1.61237534869, 0.234848505667, 1.03086757337e-5, 0.367879440865, 0.054102025820864097, plusinf, nan, plusinf, nan, plusinf;
+    ArrayType x(11), q(11), res(11), ref(11);
+    x << 1.5,   4, 10.5, 10000.5,    3,      1,    0.9,  2,  3,  4, 2000;
+    q <<   2, 1.5,    3,  1.0001, -2.5, 1.2345, 1.2345, -1, -2, -3, 2000;
+    ref << 1.61237534869, 0.234848505667, 1.03086757337e-5, 0.367879440865, 0.054102025820864097, plusinf, nan, plusinf, nan, plusinf, 0;
     CALL_SUBTEST( verify_component_wise(ref, ref); );
     CALL_SUBTEST( res = x.zeta(q); verify_component_wise(res, ref); );
     CALL_SUBTEST( res = zeta(x,q); verify_component_wise(res, ref); );

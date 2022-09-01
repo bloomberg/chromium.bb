@@ -72,6 +72,9 @@ install:
 	install -m 0644 \
 	  "$(BUILD_DIR)/remoting/com.google.chrome.remote_assistance-firefox.json" \
 	  "$(FIREFOX_NATIVE_MESSAGING_DIR)/com.google.chrome.remote_assistance.json"
+	install -m 0644 \
+	  "$(BUILD_DIR)/remoting/com.google.chrome.remote_webauthn.json" \
+	  "$(CHROME_NATIVE_MESSAGING_DIR)/com.google.chrome.remote_webauthn.json"
 
 	install "$(CORE_LIBNAME)" "$(INSTALL_DIR)/libremoting_core.so"
 	eu-strip -f "$(CORE_DEBUGFILE)" "$(INSTALL_DIR)/libremoting_core.so"
@@ -117,9 +120,16 @@ install:
 	    "$(INSTALL_DIR)/remoting_locales/$$locale"; \
 	done
 
+ifdef REMOTING_USE_WAYLAND
+	install -m 0644 \
+	  "$(SRC_DIR)/remoting/host/installer/linux/chrome-remote-desktop-wayland@.service" \
+	  "$(SYSTEMD_UNIT_DIR)/chrome-remote-desktop@.service"
+else
 	install -m 0644 \
 	  "$(SRC_DIR)/remoting/host/installer/linux/chrome-remote-desktop@.service" \
 	  "$(SYSTEMD_UNIT_DIR)/chrome-remote-desktop@.service"
+endif
+
 	# Mask the SysV-style init script under systemd so both don't end up enabled.
 	ln -s /dev/null "$(SYSTEMD_UNIT_DIR)/chrome-remote-desktop.service"
 

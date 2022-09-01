@@ -207,7 +207,7 @@ private:
 ComplexMovableStuff::ComplexMovableStuff(ComplexMovableStuff&& other) = default;
 
 For more information on move semantics, please refer to
-<https://sites.google.com/a/chromium.org/dev/rvalue-references>
+<https://www.chromium.org/rvalue-references>
 
 ## Virtual Method Out-of-lining
 

@@ -13,9 +13,10 @@
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/browser/ui/views/content_setting_bubble_contents.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/location_bar/omnibox_chip_theme.h"
+#include "chrome/browser/ui/views/location_bar/permission_chip.h"
 #include "chrome/browser/ui/views/location_bar/permission_request_chip.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
-#include "chrome/browser/ui/views/user_education/feature_promo_controller_views.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -80,7 +81,10 @@ class PermissionChipInteractiveTest : public InProcessBrowserTest {
   }
 
   content::RenderFrameHost* GetActiveMainFrame() {
-    return browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame();
+    return browser()
+        ->tab_strip_model()
+        ->GetActiveWebContents()
+        ->GetPrimaryMainFrame();
   }
 
   void RequestPermission(permissions::RequestType type) {
@@ -114,7 +118,7 @@ class PermissionChipInteractiveTest : public InProcessBrowserTest {
 
     EXPECT_FALSE(chip->should_expand_for_testing());
     EXPECT_FALSE(chip->get_chip_button_for_testing()->is_animating());
-    EXPECT_EQ(OmniboxChipButton::Theme::kLowVisibility,
+    EXPECT_EQ(OmniboxChipTheme::kLowVisibility,
               chip->get_chip_button_for_testing()->get_theme_for_testing());
   }
 
@@ -128,7 +132,7 @@ class PermissionChipInteractiveTest : public InProcessBrowserTest {
 
     EXPECT_TRUE(chip->should_expand_for_testing());
     EXPECT_TRUE(chip->get_chip_button_for_testing()->is_animating());
-    EXPECT_EQ(OmniboxChipButton::Theme::kLowVisibility,
+    EXPECT_EQ(OmniboxChipTheme::kLowVisibility,
               chip->get_chip_button_for_testing()->get_theme_for_testing());
   }
 
@@ -142,7 +146,7 @@ class PermissionChipInteractiveTest : public InProcessBrowserTest {
     EXPECT_TRUE(chip->get_chip_button_for_testing()->is_animating());
     // TODO(crbug.com/1232460): Verify that OmniboxChipButton::is_animating is
     // true. Right now the value is flaky.
-    EXPECT_EQ(OmniboxChipButton::Theme::kNormalVisibility,
+    EXPECT_EQ(OmniboxChipTheme::kNormalVisibility,
               chip->get_chip_button_for_testing()->get_theme_for_testing());
   }
 
@@ -451,8 +455,9 @@ IN_PROC_BROWSER_TEST_F(QuietChipAutoPopupBubbleInteractiveTest,
                        QuietChipNonAbusiveUmaTest) {
   base::HistogramTester histograms;
 
-  for (QuietUiReason reason : {QuietUiReason::kEnabledInPrefs,
-                               QuietUiReason::kPredictedVeryUnlikelyGrant}) {
+  for (QuietUiReason reason :
+       {QuietUiReason::kEnabledInPrefs,
+        QuietUiReason::kServicePredictedVeryUnlikelyGrant}) {
     SetCannedUiDecision(reason, absl::nullopt);
 
     RequestPermission(permissions::RequestType::kNotifications);
@@ -483,8 +488,9 @@ IN_PROC_BROWSER_TEST_F(QuietChipAutoPopupBubbleInteractiveTest,
                        QuietChipNonAbusiveClickManageUmaTest) {
   base::HistogramTester histograms;
 
-  for (QuietUiReason reason : {QuietUiReason::kEnabledInPrefs,
-                               QuietUiReason::kPredictedVeryUnlikelyGrant}) {
+  for (QuietUiReason reason :
+       {QuietUiReason::kEnabledInPrefs,
+        QuietUiReason::kServicePredictedVeryUnlikelyGrant}) {
     SetCannedUiDecision(reason, absl::nullopt);
 
     RequestPermission(permissions::RequestType::kNotifications);
@@ -520,7 +526,7 @@ IN_PROC_BROWSER_TEST_F(QuietChipAutoPopupBubbleInteractiveTest,
 }
 
 IN_PROC_BROWSER_TEST_F(QuietChipAutoPopupBubbleInteractiveTest,
-                       QuietChipAbusiveUmaTest) {
+                       PermissionIgnoredQuietChipAbusiveUmaTest) {
   base::HistogramTester histograms;
 
   for (QuietUiReason reason : {QuietUiReason::kTriggeredByCrowdDeny,
@@ -551,6 +557,122 @@ IN_PROC_BROWSER_TEST_F(QuietChipAutoPopupBubbleInteractiveTest,
   histograms.ExpectBucketCount(
       "Permissions.Prompt.Notifications.LocationBarLeftQuietAbusiveChip."
       "Ignored.DidClickLearnMore",
+      static_cast<int>(false), 3);
+}
+
+IN_PROC_BROWSER_TEST_F(QuietChipAutoPopupBubbleInteractiveTest,
+                       PermissionGrantedQuietChipAbusiveUmaTest) {
+  base::HistogramTester histograms;
+
+  for (QuietUiReason reason : {QuietUiReason::kTriggeredByCrowdDeny,
+                               QuietUiReason::kTriggeredDueToAbusiveRequests,
+                               QuietUiReason::kTriggeredDueToAbusiveContent}) {
+    SetCannedUiDecision(reason, absl::nullopt);
+
+    RequestPermission(permissions::RequestType::kNotifications);
+
+    ASSERT_EQ(
+        test_api_->manager()->current_request_prompt_disposition_for_testing(),
+        permissions::PermissionPromptDisposition::
+            LOCATION_BAR_LEFT_QUIET_ABUSIVE_CHIP);
+
+    ClickOnChip(GetChip());
+
+    test_api_->manager()->Accept();
+    base::RunLoop().RunUntilIdle();
+  }
+
+  metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+  histograms.ExpectBucketCount(
+      "Permissions.Prompt.Notifications.LocationBarLeftQuietAbusiveChip."
+      "Accepted.DidClickLearnMore",
+      static_cast<int>(false), 3);
+}
+
+IN_PROC_BROWSER_TEST_F(QuietChipAutoPopupBubbleInteractiveTest,
+                       PermissionGrantedOnceQuietChipAbusiveUmaTest) {
+  base::HistogramTester histograms;
+
+  for (QuietUiReason reason : {QuietUiReason::kTriggeredByCrowdDeny,
+                               QuietUiReason::kTriggeredDueToAbusiveRequests,
+                               QuietUiReason::kTriggeredDueToAbusiveContent}) {
+    SetCannedUiDecision(reason, absl::nullopt);
+
+    RequestPermission(permissions::RequestType::kNotifications);
+
+    ASSERT_EQ(
+        test_api_->manager()->current_request_prompt_disposition_for_testing(),
+        permissions::PermissionPromptDisposition::
+            LOCATION_BAR_LEFT_QUIET_ABUSIVE_CHIP);
+
+    ClickOnChip(GetChip());
+
+    test_api_->manager()->AcceptThisTime();
+    base::RunLoop().RunUntilIdle();
+  }
+
+  metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+  histograms.ExpectBucketCount(
+      "Permissions.Prompt.Notifications.LocationBarLeftQuietAbusiveChip."
+      "AcceptedOnce.DidClickLearnMore",
+      static_cast<int>(false), 3);
+}
+
+IN_PROC_BROWSER_TEST_F(QuietChipAutoPopupBubbleInteractiveTest,
+                       PermissionDeniedOnceQuietChipAbusiveUmaTest) {
+  base::HistogramTester histograms;
+
+  for (QuietUiReason reason : {QuietUiReason::kTriggeredByCrowdDeny,
+                               QuietUiReason::kTriggeredDueToAbusiveRequests,
+                               QuietUiReason::kTriggeredDueToAbusiveContent}) {
+    SetCannedUiDecision(reason, absl::nullopt);
+
+    RequestPermission(permissions::RequestType::kNotifications);
+
+    ASSERT_EQ(
+        test_api_->manager()->current_request_prompt_disposition_for_testing(),
+        permissions::PermissionPromptDisposition::
+            LOCATION_BAR_LEFT_QUIET_ABUSIVE_CHIP);
+
+    ClickOnChip(GetChip());
+
+    test_api_->manager()->Deny();
+    base::RunLoop().RunUntilIdle();
+  }
+
+  metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+  histograms.ExpectBucketCount(
+      "Permissions.Prompt.Notifications.LocationBarLeftQuietAbusiveChip."
+      "Denied.DidClickLearnMore",
+      static_cast<int>(false), 3);
+}
+
+IN_PROC_BROWSER_TEST_F(QuietChipAutoPopupBubbleInteractiveTest,
+                       PermissionDismissedOnceQuietChipAbusiveUmaTest) {
+  base::HistogramTester histograms;
+
+  for (QuietUiReason reason : {QuietUiReason::kTriggeredByCrowdDeny,
+                               QuietUiReason::kTriggeredDueToAbusiveRequests,
+                               QuietUiReason::kTriggeredDueToAbusiveContent}) {
+    SetCannedUiDecision(reason, absl::nullopt);
+
+    RequestPermission(permissions::RequestType::kNotifications);
+
+    ASSERT_EQ(
+        test_api_->manager()->current_request_prompt_disposition_for_testing(),
+        permissions::PermissionPromptDisposition::
+            LOCATION_BAR_LEFT_QUIET_ABUSIVE_CHIP);
+
+    ClickOnChip(GetChip());
+
+    test_api_->manager()->Dismiss();
+    base::RunLoop().RunUntilIdle();
+  }
+
+  metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+  histograms.ExpectBucketCount(
+      "Permissions.Prompt.Notifications.LocationBarLeftQuietAbusiveChip."
+      "Dismissed.DidClickLearnMore",
       static_cast<int>(false), 3);
 }
 
@@ -644,10 +766,11 @@ IN_PROC_BROWSER_TEST_F(QuietChipAutoPopupBubbleInteractiveTest,
 class QuietUIPromoInteractiveTest : public PermissionChipInteractiveTest {
  public:
   QuietUIPromoInteractiveTest() {
-    scoped_feature_list_.InitAndEnableFeatureWithParameters(
-        features::kQuietNotificationPrompts,
-        {{QuietNotificationPermissionUiConfig::kEnableAdaptiveActivation,
-          "true"}});
+    scoped_feature_list_.InitWithFeaturesAndParameters(
+        {{features::kQuietNotificationPrompts,
+          {{QuietNotificationPermissionUiConfig::kEnableAdaptiveActivation,
+            "true"}}}},
+        {{permissions::features::kPermissionQuietChip}});
   }
 
  private:
@@ -680,7 +803,7 @@ IN_PROC_BROWSER_TEST_F(QuietUIPromoInteractiveTest, QuietUIPromo) {
   EXPECT_FALSE(quiet_ui_icon.GetVisible());
   // `ContentSettingImageView::AnimationEnded()` was not triggered and IPH is
   // not shown.
-  EXPECT_FALSE(quiet_ui_icon.get_critical_promo_id_for_testing().has_value());
+  EXPECT_FALSE(quiet_ui_icon.critical_promo_bubble_for_testing());
 
   GURL notification("http://www.notification1.com/");
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), notification));
@@ -704,23 +827,18 @@ IN_PROC_BROWSER_TEST_F(QuietUIPromoInteractiveTest, QuietUIPromo) {
   EXPECT_FALSE(quiet_ui_icon.is_animating_label());
 
   // The IPH is showing.
-  ASSERT_TRUE(quiet_ui_icon.get_critical_promo_id_for_testing().has_value());
-  FeaturePromoControllerViews* iph_controller =
-      BrowserView::GetBrowserViewForBrowser(browser())
-          ->feature_promo_controller();
+  ASSERT_TRUE(quiet_ui_icon.critical_promo_bubble_for_testing());
+
   // The critical promo that is currently showing is the one created by a quiet
   // permission prompt.
-  EXPECT_TRUE(iph_controller->CriticalPromoIsShowing(
-      quiet_ui_icon.get_critical_promo_id_for_testing().value()));
-
-  iph_controller->CloseBubbleForCriticalPromo(
-      quiet_ui_icon.get_critical_promo_id_for_testing().value());
+  EXPECT_TRUE(quiet_ui_icon.critical_promo_bubble_for_testing()->is_open());
+  quiet_ui_icon.critical_promo_bubble_for_testing()->Close();
 
   test_api_->manager()->Deny();
   base::RunLoop().RunUntilIdle();
 
   // After quiet permission prompt was resolved, the critical promo is reset.
-  EXPECT_FALSE(quiet_ui_icon.get_critical_promo_id_for_testing().has_value());
+  EXPECT_FALSE(quiet_ui_icon.critical_promo_bubble_for_testing());
 
   EXPECT_FALSE(quiet_ui_icon.GetVisible());
 
@@ -744,12 +862,9 @@ IN_PROC_BROWSER_TEST_F(QuietUIPromoInteractiveTest, QuietUIPromo) {
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(quiet_ui_icon.is_animating_label());
 
-  // The IPH id is not empty because `ContentSettingImageView::AnimationEnded()`
+  // The IPH did not show when `ContentSettingImageView::AnimationEnded()`
   // was triggered.
-  EXPECT_TRUE(quiet_ui_icon.get_critical_promo_id_for_testing().has_value());
-  // The critical promo is not shown.
-  EXPECT_FALSE(iph_controller->CriticalPromoIsShowing(
-      quiet_ui_icon.get_critical_promo_id_for_testing().value()));
+  EXPECT_FALSE(quiet_ui_icon.critical_promo_bubble_for_testing());
 
   test_api_->manager()->Deny();
   base::RunLoop().RunUntilIdle();
@@ -837,7 +952,7 @@ IN_PROC_BROWSER_TEST_F(QuietChipPermissionPromptBubbleViewInteractiveTest,
   ContentSettingImageView& quiet_ui_icon = GetContentSettingImageView(
       ContentSettingImageModel::ImageType::NOTIFICATIONS_QUIET_PROMPT);
   EXPECT_FALSE(quiet_ui_icon.GetVisible());
-  EXPECT_FALSE(GetChip());
+  EXPECT_FALSE(GetChip()->IsActive());
 
   RequestPermission(permissions::RequestType::kGeolocation);
 
@@ -866,7 +981,7 @@ IN_PROC_BROWSER_TEST_F(QuietChipPermissionPromptBubbleViewInteractiveTest,
     ContentSettingImageView& quiet_ui_icon = GetContentSettingImageView(
         ContentSettingImageModel::ImageType::NOTIFICATIONS_QUIET_PROMPT);
     EXPECT_FALSE(quiet_ui_icon.GetVisible());
-    EXPECT_FALSE(GetChip());
+    EXPECT_FALSE(GetChip()->IsActive());
 
     RequestPermission(permissions::RequestType::kGeolocation);
 
@@ -888,14 +1003,15 @@ IN_PROC_BROWSER_TEST_F(QuietChipPermissionPromptBubbleViewInteractiveTest,
 
 IN_PROC_BROWSER_TEST_F(QuietChipPermissionPromptBubbleViewInteractiveTest,
                        AnimatedQuietChipIsShownForNonAbusiveRequests) {
-  for (QuietUiReason reason : {QuietUiReason::kEnabledInPrefs,
-                               QuietUiReason::kPredictedVeryUnlikelyGrant}) {
+  for (QuietUiReason reason :
+       {QuietUiReason::kEnabledInPrefs,
+        QuietUiReason::kServicePredictedVeryUnlikelyGrant}) {
     SetCannedUiDecision(reason, absl::nullopt);
 
     ContentSettingImageView& quiet_ui_icon = GetContentSettingImageView(
         ContentSettingImageModel::ImageType::NOTIFICATIONS_QUIET_PROMPT);
     EXPECT_FALSE(quiet_ui_icon.GetVisible());
-    EXPECT_FALSE(GetChip());
+    EXPECT_FALSE(GetChip()->IsActive());
 
     RequestPermission(permissions::RequestType::kGeolocation);
 
@@ -983,7 +1099,7 @@ IN_PROC_BROWSER_TEST_F(QuietChipPermissionPromptBubbleViewInteractiveTest,
 
 IN_PROC_BROWSER_TEST_F(QuietChipPermissionPromptBubbleViewInteractiveTest,
                        DispositionPredictedVeryUnlikelyGrantTest) {
-  SetCannedUiDecision(QuietUiReason::kPredictedVeryUnlikelyGrant,
+  SetCannedUiDecision(QuietUiReason::kServicePredictedVeryUnlikelyGrant,
                       absl::nullopt);
 
   RequestPermission(permissions::RequestType::kGeolocation);

@@ -69,6 +69,10 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, DirectoryContentsTest) {
   RunTestURL("foreground/js/directory_contents_unittest.m_gen.html");
 }
 
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, DirectoryModelTest) {
+  RunTestURL("foreground/js/directory_model_unittest.m_gen.html");
+}
+
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, DirectoryTreeTest) {
   RunTestURL("foreground/js/ui/directory_tree_unittest.m_gen.html");
 }
@@ -122,10 +126,6 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FilesDisplayPanel) {
   RunTestURL("foreground/elements/files_xf_elements_unittest.m_gen.html");
 }
 
-IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FilesMessage) {
-  RunTestURL("foreground/elements/files_message_unittest.m_gen.html");
-}
-
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FilesPasswordDialog) {
   RunTestURL("foreground/elements/files_password_dialog_unittest.m_gen.html");
 }
@@ -170,6 +170,10 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FileTypeFiltersController) {
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FileType) {
   RunTestURL("common/js/file_type_unittest.m_gen.html");
+}
+
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FilteredVolumeManagerTest) {
+  RunTestURL("common/js/filtered_volume_manager_unittest.m_gen.html");
 }
 
 IN_PROC_BROWSER_TEST_F(CanvasFileManagerJsTest, ImageOrientation) {

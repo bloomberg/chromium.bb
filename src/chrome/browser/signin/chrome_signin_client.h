@@ -22,7 +22,7 @@
 #include "services/network/public/cpp/network_connection_tracker.h"
 #endif
 
-#if !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
 class ForceSigninVerifier;
 #endif
 class Profile;
@@ -64,7 +64,6 @@ class ChromeSigninClient
   std::unique_ptr<GaiaAuthFetcher> CreateGaiaAuthFetcher(
       GaiaAuthConsumer* consumer,
       gaia::GaiaSource source) override;
-  bool IsNonEnterpriseUser(const std::string& username) override;
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
   // network::NetworkConnectionTracker::NetworkConnectionObserver
@@ -74,6 +73,9 @@ class ChromeSigninClient
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   absl::optional<account_manager::Account> GetInitialPrimaryAccount() override;
+  absl::optional<bool> IsInitialPrimaryAccountChild() const override;
+  void RemoveAccount(const account_manager::AccountKey& account_key) override;
+  void RemoveAllAccounts() override;
 #endif
 
   // Used in tests to override the URLLoaderFactory returned by
@@ -102,7 +104,7 @@ class ChromeSigninClient
 #endif
 
   bool should_display_user_manager_ = true;
-#if !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
   std::unique_ptr<ForceSigninVerifier> force_signin_verifier_;
 #endif
 
