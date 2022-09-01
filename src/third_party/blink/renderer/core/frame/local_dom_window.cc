@@ -217,7 +217,9 @@ LocalDOMWindow::LocalDOMWindow(WindowAgent* agent)
           MakeGarbageCollected<TextSuggestionController>(*this)),
       isolated_world_csp_map_(
           MakeGarbageCollected<
-              HeapHashMap<int, Member<ContentSecurityPolicy>>>()) {}
+              HeapHashMap<int, Member<ContentSecurityPolicy>>>()),
+      post_message_counter_(PostMessagePartition::kSameProcess),
+      isAnonymouslyFramed_(true) {}
 
 void LocalDOMWindow::BindContentSecurityPolicy() {
   DCHECK(!GetContentSecurityPolicy()->IsBound());
