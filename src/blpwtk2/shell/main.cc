@@ -842,15 +842,6 @@ void logMessageHandler(blpwtk2::ToolkitCreateParams::LogMessageSeverity severity
 
 
 // patch section: log message handler
-void logMessageHandler(blpwtk2::ToolkitCreateParams::LogMessageSeverity severity,
-                       const char* file,
-                       int line,
-                       const char* message)
-{
-    std::cout << "[" << ::GetCurrentProcessId() << ":" << GetCurrentThreadId()
-              << "][" << file << ":" << line << "]: " << message << std::endl;
-}
-
 void consoleLogMessageHandler(blpwtk2::ToolkitCreateParams::LogMessageSeverity severity,
                               const blpwtk2::StringRef& file,
                               unsigned line,

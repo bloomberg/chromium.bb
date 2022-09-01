@@ -88,6 +88,7 @@ static void setMaxSocketsPerProxy(int count)
 						// ---------------------
 						// struct ToolkitFactory
 						// ---------------------
+
 static bool wtk2LogMessageHandlerFunction(int severity,
                                           const char* file,
                                           int line,
@@ -110,37 +111,6 @@ static void wtk2ConsoleLogMessageHandlerFunction(int severity,
     if(auto logger = g_logger.lock()) {
         logger->writeConsole(severity, file, line, column, message, stack_trace);
     }
-}
-
-static bool wtk2LogMessageHandlerFunction(int severity,
-                                          const char* file,
-                                          int line,
-                                          size_t message_start,
-                                          const std::string& str)
-{
-    if (g_logMessageHandler) {
-      ToolkitCreateParams::LogMessageSeverity ourSeverity;
-      switch (severity) {
-        case logging::LOG_INFO:
-          ourSeverity = ToolkitCreateParams::kSeverityInfo;
-          break;
-        case logging::LOG_WARNING:
-          ourSeverity = ToolkitCreateParams::kSeverityWarning;
-          break;
-        case logging::LOG_ERROR:
-          ourSeverity = ToolkitCreateParams::kSeverityError;
-          break;
-        case logging::LOG_FATAL:
-          ourSeverity = ToolkitCreateParams::kSeverityFatal;
-          break;
-        default:
-          ourSeverity = ToolkitCreateParams::kSeverityVerbose;
-          break;
-      }
-      g_logMessageHandler(ourSeverity, file, line, str.c_str() + message_start);
-      return true;
-    }
-    return false;
 }
 
 // static
