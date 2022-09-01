@@ -63,7 +63,7 @@ bool IsIntensiveWakeUpThrottlingEnabled() {
 // that admins get consistent behaviour that clients can't override. Otherwise
 // use the base::FeatureParams.
 
-base::TimeDelta GetIntensiveWakeUpThrottlingGracePeriod() {
+base::TimeDelta GetIntensiveWakeUpThrottlingGracePeriod(bool loading) {
   // Controls the time that elapses after a page is backgrounded before the
   // throttling policy takes effect.
   static const base::FeatureParam<int>
@@ -76,18 +76,18 @@ base::TimeDelta GetIntensiveWakeUpThrottlingGracePeriod() {
   if (GetIntensiveWakeUpThrottlingPolicyOverride() ==
       PolicyOverride::kNoOverride) {
     seconds = kIntensiveWakeUpThrottling_GracePeriodSeconds.Get();
+    if (!loading && base::FeatureList::IsEnabled(
+                        kQuickIntensiveWakeUpThrottlingAfterLoading))
+      seconds = kIntensiveWakeUpThrottling_GracePeriodSeconds_Loaded;
   }
   return base::Seconds(seconds);
 }
 
-const base::Feature kThrottleForegroundTimers{
-    "ThrottleForegroundTimers", base::FEATURE_DISABLED_BY_DEFAULT};
-
 base::TimeDelta GetForegroundTimersThrottledWakeUpInterval() {
-  constexpr int kForegroundTimersThrottling_WakeUpIntervalMillis_Default = 100;
+  constexpr int kForegroundTimersThrottling_WakeUpIntervalMillis_Default = 32;
   static const base::FeatureParam<int>
       kForegroundTimersThrottledWakeUpIntervalMills{
-          &kThrottleForegroundTimers,
+          &features::kThrottleForegroundTimers,
           "ForegroundTimersThrottledWakeUpIntervalMills",
           kForegroundTimersThrottling_WakeUpIntervalMillis_Default};
   return base::Milliseconds(

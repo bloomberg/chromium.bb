@@ -1044,7 +1044,7 @@ TEST_FACTOR(3, 1, 3, 0)
 #endif
 
 TEST_SCALETO(Scale, 1, 1)
-//TEST_SCALETO(Scale, 256, 144) /* 128x72 * 2 */
+// TEST_SCALETO(Scale, 256, 144) /* 128x72 * 2 */
 TEST_SCALETO(Scale, 320, 240)
 TEST_SCALETO(Scale, 569, 480)
 TEST_SCALETO(Scale, 640, 360)
@@ -1221,10 +1221,6 @@ extern "C" void ScaleRowUp2_16_NEON(const uint16_t* src_ptr,
                                     ptrdiff_t src_stride,
                                     uint16_t* dst,
                                     int dst_width);
-extern "C" void ScaleRowUp2_16_MMI(const uint16_t* src_ptr,
-                                   ptrdiff_t src_stride,
-                                   uint16_t* dst,
-                                   int dst_width);
 extern "C" void ScaleRowUp2_16_C(const uint16_t* src_ptr,
                                  ptrdiff_t src_stride,
                                  uint16_t* dst,
@@ -1248,13 +1244,6 @@ TEST_F(LibYUVScaleTest, TestScaleRowUp2_16) {
     int has_neon = TestCpuFlag(kCpuHasNEON);
     if (has_neon) {
       ScaleRowUp2_16_NEON(&orig_pixels[0], 640, &dst_pixels_opt[0], 1280);
-    } else {
-      ScaleRowUp2_16_C(&orig_pixels[0], 640, &dst_pixels_opt[0], 1280);
-    }
-#elif !defined(LIBYUV_DISABLE_MMI) && defined(_MIPS_ARCH_LOONGSON3A)
-    int has_mmi = TestCpuFlag(kCpuHasMMI);
-    if (has_mmi) {
-      ScaleRowUp2_16_MMI(&orig_pixels[0], 640, &dst_pixels_opt[0], 1280);
     } else {
       ScaleRowUp2_16_C(&orig_pixels[0], 640, &dst_pixels_opt[0], 1280);
     }
@@ -1418,8 +1407,8 @@ TEST_F(LibYUVScaleTest, PlaneTest3x) {
   }
   align_buffer_page_end(dest_pixels, kDstStride);
 
-  int iterations160 =
-      (benchmark_width_ * benchmark_height_ + (160 - 1)) / 160 * benchmark_iterations_;
+  int iterations160 = (benchmark_width_ * benchmark_height_ + (160 - 1)) / 160 *
+                      benchmark_iterations_;
   for (int i = 0; i < iterations160; ++i) {
     ScalePlane(orig_pixels, kSrcStride, 480, 3, dest_pixels, kDstStride, 160, 1,
                kFilterBilinear);
@@ -1446,8 +1435,8 @@ TEST_F(LibYUVScaleTest, PlaneTest4x) {
   }
   align_buffer_page_end(dest_pixels, kDstStride);
 
-  int iterations160 =
-      (benchmark_width_ * benchmark_height_ + (160 - 1)) / 160 * benchmark_iterations_;
+  int iterations160 = (benchmark_width_ * benchmark_height_ + (160 - 1)) / 160 *
+                      benchmark_iterations_;
   for (int i = 0; i < iterations160; ++i) {
     ScalePlane(orig_pixels, kSrcStride, 640, 4, dest_pixels, kDstStride, 160, 1,
                kFilterBilinear);
@@ -1556,4 +1545,57 @@ TEST_F(LibYUVScaleTest, PlaneTestRotate_Box) {
   free_aligned_buffer_page_end(orig_pixels);
 }
 
+TEST_F(LibYUVScaleTest, PlaneTest1_Box) {
+  align_buffer_page_end(orig_pixels, 3);
+  align_buffer_page_end(dst_pixels, 3);
+
+  // Pad the 1x1 byte image with invalid values before and after in case libyuv
+  // reads outside the memory boundaries.
+  orig_pixels[0] = 0;
+  orig_pixels[1] = 1;  // scale this pixel
+  orig_pixels[2] = 2;
+  dst_pixels[0] = 3;
+  dst_pixels[1] = 3;
+  dst_pixels[2] = 3;
+
+  libyuv::ScalePlane(orig_pixels + 1, /* src_stride= */ 1, /* src_width= */ 1,
+                     /* src_height= */ 1, dst_pixels, /* dst_stride= */ 1,
+                     /* dst_width= */ 1, /* dst_height= */ 2,
+                     libyuv::kFilterBox);
+
+  EXPECT_EQ(dst_pixels[0], 1);
+  EXPECT_EQ(dst_pixels[1], 1);
+  EXPECT_EQ(dst_pixels[2], 3);
+
+  free_aligned_buffer_page_end(dst_pixels);
+  free_aligned_buffer_page_end(orig_pixels);
+}
+
+TEST_F(LibYUVScaleTest, PlaneTest1_16_Box) {
+  align_buffer_page_end(orig_pixels_alloc, 3 * 2);
+  align_buffer_page_end(dst_pixels_alloc, 3 * 2);
+  uint16_t* orig_pixels = (uint16_t*)orig_pixels_alloc;
+  uint16_t* dst_pixels = (uint16_t*)dst_pixels_alloc;
+
+  // Pad the 1x1 byte image with invalid values before and after in case libyuv
+  // reads outside the memory boundaries.
+  orig_pixels[0] = 0;
+  orig_pixels[1] = 1;  // scale this pixel
+  orig_pixels[2] = 2;
+  dst_pixels[0] = 3;
+  dst_pixels[1] = 3;
+  dst_pixels[2] = 3;
+
+  libyuv::ScalePlane_16(
+      orig_pixels + 1, /* src_stride= */ 1, /* src_width= */ 1,
+      /* src_height= */ 1, dst_pixels, /* dst_stride= */ 1,
+      /* dst_width= */ 1, /* dst_height= */ 2, libyuv::kFilterNone);
+
+  EXPECT_EQ(dst_pixels[0], 1);
+  EXPECT_EQ(dst_pixels[1], 1);
+  EXPECT_EQ(dst_pixels[2], 3);
+
+  free_aligned_buffer_page_end(dst_pixels_alloc);
+  free_aligned_buffer_page_end(orig_pixels_alloc);
+}
 }  // namespace libyuv

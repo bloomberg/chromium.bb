@@ -5,6 +5,8 @@
 #include "chrome/browser/download/download_file_picker.h"
 
 #include "base/bind.h"
+#include "base/threading/thread_task_runner_handle.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
@@ -13,6 +15,12 @@
 #include "content/public/browser/download_item_utils.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/web_contents.h"
+
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_window.h"
+#include "ui/aura/window.h"
+#endif
 
 using download::DownloadItem;
 using content::DownloadManager;
@@ -61,6 +69,21 @@ DownloadFilePicker::DownloadFilePicker(DownloadItem* item,
   gfx::NativeWindow owning_window =
       web_contents ? platform_util::GetTopLevel(web_contents->GetNativeView())
                    : gfx::kNullNativeWindow;
+
+  // If select_file_dialog_ issued by extension API,
+  // (e.g. chrome.downloads.download), the |owning_window| host
+  // could be null, then it will cause the select file dialog is not modal
+  // dialog in Linux. See SelectFileImpl() in select_file_dialog_linux_gtk.cc.
+  // Here we make owning_window host to browser current active window
+  // if it is null. https://crbug.com/1301898
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
+  if (!owning_window || !owning_window->GetHost()) {
+    owning_window = BrowserList::GetInstance()
+                        ->GetLastActive()
+                        ->window()
+                        ->GetNativeWindow();
+  }
+#endif
 
   select_file_dialog_->SelectFile(
       ui::SelectFileDialog::SELECT_SAVEAS_FILE, std::u16string(),

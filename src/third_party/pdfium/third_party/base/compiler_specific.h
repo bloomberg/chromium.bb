@@ -70,17 +70,6 @@
 #define ALIGNAS(byte_alignment) __attribute__((aligned(byte_alignment)))
 #endif
 
-// Annotate a function indicating the caller must examine the return value.
-// Use like:
-//   int foo() WARN_UNUSED_RESULT;
-// To explicitly ignore a result, see |ignore_result()| in base/macros.h.
-#undef WARN_UNUSED_RESULT
-#if defined(COMPILER_GCC) || defined(__clang__)
-#define WARN_UNUSED_RESULT __attribute__((warn_unused_result))
-#else
-#define WARN_UNUSED_RESULT
-#endif
-
 // Tell the compiler a function is using a printf-style format string.
 // |format_param| is the one-based index of the format string parameter;
 // |dots_param| is the one-based index of the "..." parameter.
@@ -111,7 +100,7 @@
 #endif
 
 // MemorySanitizer annotations.
-#if defined(MEMORY_SANITIZER) && !defined(OS_NACL)
+#if defined(MEMORY_SANITIZER) && !BUILDFLAG(IS_NACL)
 #include <sanitizer/msan_interface.h>
 
 // Mark a memory region fully initialized.
@@ -141,11 +130,11 @@
 
 // Macro useful for writing cross-platform function pointers.
 #if !defined(CDECL)
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #define CDECL __cdecl
-#else  // defined(OS_WIN)
+#else  // BUILDFLAG(IS_WIN)
 #define CDECL
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 #endif  // !defined(CDECL)
 
 // Macro for hinting that an expression is likely to be false.
@@ -171,13 +160,6 @@
 #define HAS_FEATURE(FEATURE) __has_feature(FEATURE)
 #else
 #define HAS_FEATURE(FEATURE) 0
-#endif
-
-// Macro for telling -Wimplicit-fallthrough that a fallthrough is intentional.
-#if defined(__clang__)
-#define FALLTHROUGH [[clang::fallthrough]]
-#else
-#define FALLTHROUGH
 #endif
 
 #endif  // THIRD_PARTY_BASE_COMPILER_SPECIFIC_H_

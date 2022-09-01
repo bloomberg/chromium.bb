@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 
+#include "ash/components/tpm/install_attributes.h"
 #include "base/bind.h"
 #include "base/guid.h"
 #include "base/logging.h"
@@ -18,7 +19,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/net/system_network_context_manager.h"
-#include "chromeos/tpm/install_attributes.h"
 #include "components/account_id/account_id.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/policy/core/common/cloud/dm_auth.h"
@@ -27,10 +27,11 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "url/gurl.h"
 
-namespace em = enterprise_management;
-
 namespace policy {
+
 namespace {
+
+namespace em = ::enterprise_management;
 
 // List of consumer-only domains from the server side logic. See
 // `KNOWN_INVALID_DOMAINS` from GetAgencySignupStateProducerModule.java.
@@ -79,7 +80,7 @@ const char* const kKnownConsumerDomains[] = {"123mail.org",
                                              "blader.com",
                                              "boardermail.com",
                                              "brazilmail.com",
-                                             "brew-master.com",
+                                             "brew-master.com",  // nocheck
                                              "brew-meister.com",
                                              "bsdmail.com",
                                              "californiamail.com",
@@ -524,7 +525,7 @@ void AccountStatusCheckFetcher::Fetch(FetchCallback callback) {
       std::make_unique<DMServerJobConfiguration>(
           service_,
           DeviceManagementService::JobConfiguration::TYPE_CHECK_USER_ACCOUNT,
-          random_device_id_, /*critical=*/false, policy::DMAuth::NoAuth(),
+          random_device_id_, /*critical=*/false, DMAuth::NoAuth(),
           /*oauth_token=*/absl::nullopt, url_loader_factory_,
           base::BindOnce(
               &AccountStatusCheckFetcher::OnAccountStatusCheckReceived,
@@ -549,7 +550,7 @@ void AccountStatusCheckFetcher::OnAccountStatusCheckReceived(
   std::string user_id;
   bool fetch_succeeded = false;
   switch (dm_status) {
-    case policy::DM_STATUS_SUCCESS: {
+    case DM_STATUS_SUCCESS: {
       if (!response.has_check_user_account_response()) {
         LOG(WARNING) << "Invalid Account check response.";
         break;

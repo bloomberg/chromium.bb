@@ -6,7 +6,9 @@
 
 #include <memory>
 
+#include "ash/constants/notifier_catalogs.h"
 #include "ash/public/cpp/new_window_delegate.h"
+#include "ash/public/cpp/notification_utils.h"
 #include "base/bind.h"
 #include "base/callback_forward.h"
 #include "base/containers/flat_map.h"
@@ -25,12 +27,19 @@
 #include "chrome/browser/ash/borealis/borealis_util.h"
 #include "chrome/browser/ash/borealis/borealis_window_manager.h"
 #include "chrome/browser/ash/guest_os/guest_os_stability_monitor.h"
+#include "chrome/browser/notifications/notification_display_service.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/exo/shell_surface_util.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
 namespace borealis {
 
 namespace {
+
+constexpr char kFeedbackNotificationId[] =
+    "borealis-post-game-feedback-notification";
+constexpr char kNotifierBorealis[] = "ash.borealis";
 
 // Similar to a delayed callback, but can be cancelled by deleting.
 class ScopedDelayedCallback {
@@ -56,20 +65,25 @@ class ScopedDelayedCallback {
 class BorealisLifetimeObserver
     : public BorealisWindowManager::AppWindowLifetimeObserver {
  public:
-  explicit BorealisLifetimeObserver(Profile* profile)
-      : profile_(profile), observation_(this), weak_factory_(this) {
+  explicit BorealisLifetimeObserver(BorealisContext* context)
+      : context_(context), observation_(this), weak_factory_(this) {
     observation_.Observe(
-        &BorealisService::GetForProfile(profile_)->WindowManager());
+        &BorealisService::GetForProfile(context_->profile())->WindowManager());
   }
 
   // BorealisWindowManager::AppWindowLifetimeObserver overrides.
   void OnSessionStarted() override {
-    BorealisService::GetForProfile(profile_)
+    if (!context_->launch_options().auto_shutdown)
+      return;
+    BorealisService::GetForProfile(context_->profile())
         ->ShutdownMonitor()
         .CancelDelayedShutdown();
   }
+
   void OnSessionFinished() override {
-    BorealisService::GetForProfile(profile_)
+    if (!context_->launch_options().auto_shutdown)
+      return;
+    BorealisService::GetForProfile(context_->profile())
         ->ShutdownMonitor()
         .ShutdownWithDelay();
   }
@@ -81,9 +95,10 @@ class BorealisLifetimeObserver
   void OnAppFinished(const std::string& app_id,
                      aura::Window* last_window) override {
     // Launch post-game survey.
-    // TODO(b/188745351): Remove this once it's no longer wanted.
+    if (!context_->launch_options().feedback_forms)
+      return;
     FeedbackFormUrl(
-        profile_, app_id, base::UTF16ToUTF8(last_window->GetTitle()),
+        context_->profile(), app_id, base::UTF16ToUTF8(last_window->GetTitle()),
         base::BindOnce(&BorealisLifetimeObserver::OnFeedbackUrlGenerated,
                        weak_factory_.GetWeakPtr(), app_id));
   }
@@ -107,11 +122,58 @@ class BorealisLifetimeObserver
 
   void OnDelayComplete(GURL gurl, std::string app_id) {
     app_delayers_.erase(app_id);
-    ash::NewWindowDelegate::GetInstance()->OpenUrl(
-        gurl, /*from_user_interaction=*/true);
+    CreateFeedbackNotification(gurl);
   }
 
-  Profile* const profile_;
+  // Creates a notification, that when clicked, will close itself and redirect
+  // the user to a feedback form. If there is an existing notification, this
+  // will replace it.
+  void CreateFeedbackNotification(GURL gurl) {
+    // Delegate for handling click events on the notification.
+    auto on_click_handler =
+        base::MakeRefCounted<message_center::HandleNotificationClickDelegate>(
+            base::BindRepeating(
+                [](GURL gurl, Profile* profile) {
+                  ash::NewWindowDelegate::GetPrimary()->OpenUrl(
+                      gurl,
+                      ash::NewWindowDelegate::OpenUrlFrom::kUserInteraction);
+
+                  NotificationDisplayService::GetForProfile(profile)->Close(
+                      NotificationHandler::Type::TRANSIENT,
+                      kFeedbackNotificationId);
+                },
+                gurl, context_->profile()));
+
+    // Close the current notification (if any).
+    NotificationDisplayService::GetForProfile(context_->profile())
+        ->Close(NotificationHandler::Type::TRANSIENT, kFeedbackNotificationId);
+
+    // Create the new notification.
+    message_center::Notification notification(
+        /*type=*/message_center::NOTIFICATION_TYPE_SIMPLE,
+        /*id=*/kFeedbackNotificationId,
+        /*title=*/
+        l10n_util::GetStringUTF16(IDS_BOREALIS_FEEDBACK_NOTIFICATION_TITLE),
+        /*message=*/
+        l10n_util::GetStringUTF16(IDS_BOREALIS_FEEDBACK_NOTIFICATION_MESSAGE),
+        /*icon=*/ui::ImageModel(),
+        /*display_source=*/
+        l10n_util::GetStringUTF16(IDS_BOREALIS_FEEDBACK_NOTIFICATION_SOURCE),
+        /*origin_url=*/GURL(),
+        /*notifier_id=*/
+        message_center::NotifierId(
+            message_center::NotifierType::SYSTEM_COMPONENT, kNotifierBorealis,
+            ash::NotificationCatalogName::kBorealisContext),
+        /*optional_fields=*/message_center::RichNotificationData(),
+        /*delegate*/ on_click_handler);
+
+    // Display the new notification.
+    NotificationDisplayService::GetForProfile(context_->profile())
+        ->Display(NotificationHandler::Type::TRANSIENT, notification,
+                  /*metadata=*/nullptr);
+  }
+
+  BorealisContext* const context_;
   base::ScopedObservation<BorealisWindowManager,
                           BorealisWindowManager::AppWindowLifetimeObserver>
       observation_;
@@ -139,13 +201,13 @@ class SelfActivationPermissionGranter
 
   void OnWindowStarted(const std::string& app_id,
                        aura::Window* window) override {
-    if (app_id == kBorealisMainAppId)
+    if (app_id == kClientAppId)
       exo::GrantPermissionToActivateIndefinitely(window);
   }
 
   void OnWindowFinished(const std::string& app_id,
                         aura::Window* window) override {
-    if (app_id == kBorealisMainAppId)
+    if (app_id == kClientAppId)
       exo::RevokePermissionToActivate(window);
   }
 
@@ -174,7 +236,7 @@ void BorealisContext::NotifyUnexpectedVmShutdown() {
 
 BorealisContext::BorealisContext(Profile* profile)
     : profile_(profile),
-      lifetime_observer_(std::make_unique<BorealisLifetimeObserver>(profile)),
+      lifetime_observer_(std::make_unique<BorealisLifetimeObserver>(this)),
       guest_os_stability_monitor_(
           std::make_unique<guest_os::GuestOsStabilityMonitor>(
               kBorealisStabilityHistogram)),

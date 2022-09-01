@@ -10,10 +10,6 @@
 #include "base/metrics/field_trial.h"
 #include "base/threading/thread_checker.h"
 
-namespace base {
-class FilePath;
-}
-
 namespace metrics {
 class MetricsService;
 class MetricsServiceClient;
@@ -66,9 +62,6 @@ class MetricsServicesManager {
   // Called when loading state changed.
   void LoadingStateChanged(bool is_loading);
 
-  // Should be called when a plugin loading error occurs.
-  void OnPluginLoadingError(const base::FilePath& plugin_path);
-
   // Update the managed services when permissions for uploading metrics change.
   void UpdateUploadPermissions(bool may_upload);
 
@@ -77,6 +70,9 @@ class MetricsServicesManager {
 
   // Gets the current state of metrics consent.
   bool IsMetricsConsentGiven() const;
+
+  // Returns true iff UKM is allowed for all profiles.
+  bool IsUkmAllowedForAllProfiles();
 
   // Returns the default entropy provider.
   std::unique_ptr<const base::FieldTrial::EntropyProvider>

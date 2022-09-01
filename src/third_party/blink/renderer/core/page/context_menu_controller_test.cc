@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/page/context_menu_controller.h"
 
+#include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
@@ -21,6 +22,7 @@
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/editing/markers/document_marker_controller.h"
+#include "third_party/blink/renderer/core/editing/selection_template.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 #include "third_party/blink/renderer/core/frame/web_frame_widget_impl.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
@@ -29,6 +31,7 @@
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/input/context_menu_allowed_scope.h"
 #include "third_party/blink/renderer/core/page/context_menu_controller.h"
+#include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_component.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_descriptor.h"
@@ -54,10 +57,6 @@ class MockWebMediaPlayerForContextMenu : public EmptyWebMediaPlayer {
   MOCK_CONST_METHOD0(Duration, double());
   MOCK_CONST_METHOD0(HasAudio, bool());
   MOCK_CONST_METHOD0(HasVideo, bool());
-
-  SurfaceLayerMode GetVideoSurfaceLayerMode() const override {
-    return SurfaceLayerMode::kAlways;
-  }
 };
 
 class TestWebFrameClientImpl : public frame_test_helpers::TestWebFrameClient {
@@ -414,7 +413,7 @@ TEST_P(ContextMenuControllerTest, MediaStreamVideoLoaded) {
   MediaStreamComponentVector dummy_components;
   auto* media_stream_descriptor = MakeGarbageCollected<MediaStreamDescriptor>(
       dummy_components, dummy_components);
-  video->SetSrcObject(media_stream_descriptor);
+  video->SetSrcObjectVariant(media_stream_descriptor);
   GetDocument()->body()->AppendChild(video);
   test::RunPendingTasks();
   SetReadyState(video.Get(), HTMLMediaElement::kHaveMetadata);
@@ -520,6 +519,46 @@ TEST_P(ContextMenuControllerTest, InfiniteDurationVideoLoaded) {
               !!(context_menu_data.media_flags & expected_media_flag.first))
         << "Flag 0x" << std::hex << expected_media_flag.first;
   }
+}
+
+TEST_P(ContextMenuControllerTest, HitTestVideoChildElements) {
+  // Test that hit tests on parts of a video element result in hits on the video
+  // element itself as opposed to its child elements.
+
+  ContextMenuAllowedScope context_menu_allowed_scope;
+  HitTestResult hit_test_result;
+  const char video_url[] = "https://example.com/foo.webm";
+
+  // Setup video element.
+  Persistent<HTMLVideoElement> video =
+      MakeGarbageCollected<HTMLVideoElement>(*GetDocument());
+  video->SetSrc(video_url);
+  video->setAttribute(
+      html_names::kStyleAttr,
+      "position: absolute; left: 0; top: 0; width: 200px; height: 200px");
+  GetDocument()->body()->AppendChild(video);
+  test::RunPendingTasks();
+  SetReadyState(video.Get(), HTMLMediaElement::kHaveMetadata);
+  test::RunPendingTasks();
+
+  auto check_location = [&](PhysicalOffset location) {
+    EXPECT_TRUE(ShowContextMenu(location, kMenuSourceMouse));
+
+    ContextMenuData context_menu_data =
+        GetWebFrameClient().GetContextMenuData();
+    EXPECT_EQ(mojom::blink::ContextMenuDataMediaType::kVideo,
+              context_menu_data.media_type);
+    EXPECT_EQ(video_url, context_menu_data.src_url.spec());
+  };
+
+  // Center of video.
+  check_location(PhysicalOffset(100, 100));
+
+  // Play button.
+  check_location(PhysicalOffset(10, 195));
+
+  // Timeline bar.
+  check_location(PhysicalOffset(100, 195));
 }
 
 TEST_P(ContextMenuControllerTest, EditingActionsEnabledInSVGDocument) {
@@ -644,7 +683,7 @@ TEST_P(ContextMenuControllerTest, ShowNonLocatedContextMenuEvent) {
   EXPECT_EQ(context_menu_data.selected_text, "Sample Input Text");
 }
 
-#if !defined(OS_MAC)
+#if !BUILDFLAG(IS_MAC)
 // Mac has no way to open a context menu based on a keyboard event.
 TEST_P(ContextMenuControllerTest,
        ValidateNonLocatedContextMenuOnLargeImageElement) {
@@ -655,7 +694,7 @@ TEST_P(ContextMenuControllerTest,
   Document* document = GetDocument();
   Element* image_element = document->getElementById("sample_image");
   // Set focus on the image element.
-  image_element->focus();
+  image_element->Focus();
   document->UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   // Simulate Shift + F10 key event.

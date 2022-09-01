@@ -92,7 +92,7 @@ class FakeArcClientAdapter : public ArcClientAdapter {
                    const std::string& serial_number) override {}
 
   void SetDemoModeDelegate(DemoModeDelegate* delegate) override {}
-  void TrimVmMemory(TrimVmMemoryCallback callback) override {
+  void TrimVmMemory(TrimVmMemoryCallback callback, int page_limit) override {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), true, std::string()));
   }
@@ -697,7 +697,7 @@ TEST_F(ArcSessionImplTest, ArcStopInstanceSystemShutdown) {
 }
 
 struct PackagesCacheModeState {
-  // Possible values for chromeos::switches::kArcPackagesCacheMode
+  // Possible values for ash::switches::kArcPackagesCacheMode
   const char* chrome_switch;
   bool full_container;
   UpgradeParams::PackageCacheMode expected_packages_cache_mode;
@@ -724,7 +724,7 @@ TEST_P(ArcSessionImplPackagesCacheModeTest, PackagesCacheModes) {
   const PackagesCacheModeState& state = GetParam();
   if (state.chrome_switch) {
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-    command_line->AppendSwitchASCII(chromeos::switches::kArcPackagesCacheMode,
+    command_line->AppendSwitchASCII(ash::switches::kArcPackagesCacheMode,
                                     state.chrome_switch);
   }
 
@@ -750,7 +750,7 @@ TEST_P(ArcSessionImplGmsCoreCacheTest, GmsCoreCaches) {
 
   if (GetParam()) {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        chromeos::switches::kArcDisableGmsCoreCache);
+        ash::switches::kArcDisableGmsCoreCache);
   }
 
   arc_session->StartMiniInstance();
@@ -893,12 +893,32 @@ TEST_F(ArcSessionImplTest, UreadaheadByDefault) {
 TEST_F(ArcSessionImplTest, DisableUreadahead) {
   base::CommandLine* const command_line =
       base::CommandLine::ForCurrentProcess();
-  command_line->AppendSwitch(chromeos::switches::kArcDisableUreadahead);
+  command_line->AppendSwitch(ash::switches::kArcDisableUreadahead);
   auto arc_session = CreateArcSession();
   arc_session->StartMiniInstance();
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(
       GetClient(arc_session.get())->last_start_params().disable_ureadahead);
+}
+
+// Test that validates TTS caching is not enabled by default.
+TEST_F(ArcSessionImplTest, TTSCachingByDefault) {
+  auto arc_session = CreateArcSession();
+  arc_session->StartMiniInstance();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(
+      GetClient(arc_session.get())->last_start_params().enable_tts_caching);
+}
+
+// Test that validates TTS caching is enabled.
+TEST_F(ArcSessionImplTest, TTSCachingEnabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatureState(arc::kEnableTTSCaching, true /* use */);
+  auto arc_session = CreateArcSession();
+  arc_session->StartMiniInstance();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(
+      GetClient(arc_session.get())->last_start_params().enable_tts_caching);
 }
 
 // Test "<<" operator for ArcSessionImpl::State type.

@@ -36,9 +36,6 @@ using syncer::LoopbackServerEntity;
 using syncer::ModelType;
 using syncer::ModelTypeSet;
 
-const char switches::kDisableFakeServerFailureOutput[] =
-    "disable-fake-server-failure-output";
-
 namespace fake_server {
 
 FakeServer::FakeServer()
@@ -124,7 +121,7 @@ uint64_t ComputeEntitiesHash(const std::vector<sync_pb::SyncEntity>& entities) {
   // receiving the same data. We sum up the hashes which has the nice side
   // effect of being independent of the order.
   uint64_t hash = 0;
-  for (const auto& entity : entities) {
+  for (const sync_pb::SyncEntity& entity : entities) {
     hash += base::PersistentHash(entity.id_string());
     hash += entity.version();
   }
@@ -184,7 +181,7 @@ void PopulateFullUpdateTypeResults(
     // previous data.
     int64_t version =
         (base::Time::Now() - base::Time::UnixEpoch()).InMilliseconds();
-    for (const auto& entity : entities) {
+    for (const sync_pb::SyncEntity& entity : entities) {
       sync_pb::SyncEntity* response_entity = gu_response->add_entries();
       *response_entity = entity;
       response_entity->set_version(version);
@@ -272,20 +269,17 @@ net::HttpStatusCode FakeServer::HandleParsedCommand(
       commit_error_type_ != sync_pb::SyncEnums::SUCCESS &&
       ShouldSendTriggeredError()) {
     response->set_error_code(commit_error_type_);
-    response->set_store_birthday(loopback_server_->GetStoreBirthday());
     return net::HTTP_OK;
   }
 
   if (error_type_ != sync_pb::SyncEnums::SUCCESS &&
       ShouldSendTriggeredError()) {
     response->set_error_code(error_type_);
-    response->set_store_birthday(loopback_server_->GetStoreBirthday());
     return net::HTTP_OK;
   }
 
   if (triggered_actionable_error_.get() && ShouldSendTriggeredError()) {
     *response->mutable_error() = *triggered_actionable_error_;
-    response->set_store_birthday(loopback_server_->GetStoreBirthday());
     return net::HTTP_OK;
   }
 
@@ -518,8 +512,15 @@ bool FakeServer::ModifyBookmarkEntity(
 
 void FakeServer::ClearServerData() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  base::ScopedAllowBlockingForTesting allow_blocking;
-  loopback_server_->ClearServerData();
+
+  {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    loopback_server_->ClearServerData();
+  }
+
+  // Notify observers so invalidations are mimic-ed.
+  OnCommit(/*committer_invalidator_client_id=*/std::string(),
+           /*committed_model_types=*/{syncer::NIGORI});
 }
 
 void FakeServer::SetHttpError(net::HttpStatusCode http_status_code) {
@@ -623,7 +624,7 @@ void FakeServer::RemoveObserver(Observer* observer) {
 
 void FakeServer::OnCommit(const std::string& committer_invalidator_client_id,
                           syncer::ModelTypeSet committed_model_types) {
-  for (auto& observer : observers_)
+  for (Observer& observer : observers_)
     observer.OnCommit(committer_invalidator_client_id, committed_model_types);
 }
 

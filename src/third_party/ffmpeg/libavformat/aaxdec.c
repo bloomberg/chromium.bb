@@ -22,6 +22,7 @@
 #include "libavutil/intreadwrite.h"
 #include "avformat.h"
 #include "avio_internal.h"
+#include "demux.h"
 #include "internal.h"
 
 typedef struct AAXColumn {
@@ -279,9 +280,9 @@ static int aax_read_header(AVFormatContext *s)
         ret = ff_get_extradata(s, par, pb, extradata_size);
         if (ret < 0)
             return ret;
-        par->channels    = AV_RB8 (par->extradata + 7);
+        par->ch_layout.nb_channels = AV_RB8 (par->extradata + 7);
         par->sample_rate = AV_RB32(par->extradata + 8);
-        if (!par->channels || !par->sample_rate)
+        if (!par->ch_layout.nb_channels || !par->sample_rate)
             return AVERROR_INVALIDDATA;
 
         avpriv_set_pts_info(st, 64, 32, par->sample_rate);
@@ -299,7 +300,7 @@ static int aax_read_packet(AVFormatContext *s, AVPacket *pkt)
     AAXContext *a = s->priv_data;
     AVCodecParameters *par = s->streams[0]->codecpar;
     AVIOContext *pb = s->pb;
-    const int size = 18 * par->channels;
+    const int size = 18 * par->ch_layout.nb_channels;
     int ret, extradata_size = 0;
     uint8_t *extradata = NULL;
     int skip = 0;

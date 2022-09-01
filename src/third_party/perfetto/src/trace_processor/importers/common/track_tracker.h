@@ -17,6 +17,7 @@
 #ifndef SRC_TRACE_PROCESSOR_IMPORTERS_COMMON_TRACK_TRACKER_H_
 #define SRC_TRACE_PROCESSOR_IMPORTERS_COMMON_TRACK_TRACKER_H_
 
+#include "src/trace_processor/importers/common/args_tracker.h"
 #include "src/trace_processor/storage/trace_storage.h"
 #include "src/trace_processor/types/trace_processor_context.h"
 
@@ -26,6 +27,8 @@ namespace trace_processor {
 // Tracks and stores tracks based on track types, ids and scopes.
 class TrackTracker {
  public:
+  using SetArgsCallback = std::function<void(ArgsTracker::BoundInserter&)>;
+
   explicit TrackTracker(TraceProcessorContext*);
 
   // Interns a thread track into the storage.
@@ -52,15 +55,6 @@ class TrackTracker {
                                        bool source_id_is_process_scoped,
                                        StringId source_scope);
 
-  // Creates and inserts a global async track into the storage.
-  TrackId CreateGlobalAsyncTrack(StringId name);
-
-  // Creates and inserts a Android async track into the storage.
-  TrackId CreateAndroidAsyncTrack(StringId name, UniquePid upid);
-
-  // Creates and inserts a FrameTimeline async track into the storage.
-  TrackId CreateFrameTimelineAsyncTrack(StringId name, UniquePid upid);
-
   // Interns a track for legacy Chrome process-scoped instant events into the
   // storage.
   TrackId InternLegacyChromeProcessInstantTrack(UniquePid upid);
@@ -74,6 +68,7 @@ class TrackTracker {
 
   // Interns a global counter track into the storage.
   TrackId InternGlobalCounterTrack(StringId name,
+                                   SetArgsCallback = {},
                                    StringId unit = kNullStringId,
                                    StringId description = kNullStringId);
 
@@ -104,12 +99,23 @@ class TrackTracker {
                                 StringId description = StringId::Null(),
                                 StringId unit = StringId::Null());
 
-  // Creaates a counter track for values within perf samples.
+  // Creates a counter track for values within perf samples.
   // The tracks themselves are managed by PerfSampleTracker.
   TrackId CreatePerfCounterTrack(StringId name,
                                  uint32_t perf_session_id,
                                  uint32_t cpu,
                                  bool is_timebase);
+
+  // NOTE:
+  // The below method should only be called by AsyncTrackSetTracker
+
+  // Creates and inserts a global async track into the storage.
+  TrackId CreateGlobalAsyncTrack(StringId name, StringId source);
+
+  // Creates and inserts a Android async track into the storage.
+  TrackId CreateProcessAsyncTrack(StringId name,
+                                  UniquePid upid,
+                                  StringId source);
 
  private:
   struct GpuTrackTuple {
@@ -163,7 +169,6 @@ class TrackTracker {
 
   const StringId fuchsia_source_ = kNullStringId;
   const StringId chrome_source_ = kNullStringId;
-  const StringId android_source_ = kNullStringId;
 
   TraceProcessorContext* const context_;
 };

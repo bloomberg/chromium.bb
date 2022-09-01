@@ -8,17 +8,22 @@
 #include "third_party/blink/renderer/core/css/css_math_expression_node.h"
 #include "third_party/blink/renderer/core/css/css_math_function_value.h"
 #include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
+#include "third_party/blink/renderer/core/css/css_test_helpers.h"
 #include "third_party/blink/renderer/core/css/css_to_length_conversion_data.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
-#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
 namespace {
 
-class CSSPrimitiveValueTest : public PageTestBase,
-                              private ScopedCSSCalcInfinityAndNaNForTest {
+class CSSPrimitiveValueTest : public PageTestBase {
  public:
-  CSSPrimitiveValueTest() : ScopedCSSCalcInfinityAndNaNForTest(true) {}
+  bool HasContainerRelativeUnits(const char* text) {
+    return To<CSSPrimitiveValue>(
+               css_test_helpers::ParseValue(GetDocument(), "<length>", text))
+        ->HasContainerRelativeUnits();
+  }
+
+  CSSPrimitiveValueTest() = default;
 };
 
 using UnitType = CSSPrimitiveValue::UnitType;
@@ -33,19 +38,25 @@ CSSNumericLiteralValue* Create(UnitValue v) {
 }
 
 CSSPrimitiveValue* CreateAddition(UnitValue a, UnitValue b) {
-  return CSSMathFunctionValue::Create(CSSMathExpressionBinaryOperation::Create(
-      CSSMathExpressionNumericLiteral::Create(Create(a)),
-      CSSMathExpressionNumericLiteral::Create(Create(b)),
-      CSSMathOperator::kAdd));
+  return CSSMathFunctionValue::Create(
+      CSSMathExpressionOperation::CreateArithmeticOperation(
+          CSSMathExpressionNumericLiteral::Create(Create(a)),
+          CSSMathExpressionNumericLiteral::Create(Create(b)),
+          CSSMathOperator::kAdd));
 }
 
 CSSPrimitiveValue* CreateNonNegativeSubtraction(UnitValue a, UnitValue b) {
   return CSSMathFunctionValue::Create(
-      CSSMathExpressionBinaryOperation::Create(
+      CSSMathExpressionOperation::CreateArithmeticOperation(
           CSSMathExpressionNumericLiteral::Create(Create(a)),
           CSSMathExpressionNumericLiteral::Create(Create(b)),
           CSSMathOperator::kSubtract),
       CSSPrimitiveValue::ValueRange::kNonNegative);
+}
+
+UnitType ToCanonicalUnit(CSSPrimitiveValue::UnitType unit) {
+  return CSSPrimitiveValue::CanonicalUnitTypeForCategory(
+      CSSPrimitiveValue::UnitTypeToUnitCategory(unit));
 }
 
 TEST_F(CSSPrimitiveValueTest, IsTime) {
@@ -201,5 +212,35 @@ TEST_F(CSSPrimitiveValueTest, GetDoubleValueClampNegativeInfinity) {
       Create({-std::numeric_limits<double>::infinity(), UnitType::kPixels});
   EXPECT_EQ(std::numeric_limits<double>::lowest(), value->GetDoubleValue());
 }
+
+TEST_F(CSSPrimitiveValueTest, TestCanonicalizingNumberUnitCategory) {
+  UnitType canonicalized_from_num = ToCanonicalUnit(UnitType::kNumber);
+  EXPECT_EQ(canonicalized_from_num, UnitType::kNumber);
+
+  UnitType canonicalized_from_int = ToCanonicalUnit(UnitType::kInteger);
+  EXPECT_EQ(canonicalized_from_int, UnitType::kNumber);
+}
+
+TEST_F(CSSPrimitiveValueTest, HasContainerRelativeUnits) {
+  ScopedCSSContainerQueriesForTest scoped_feature(true);
+
+  EXPECT_TRUE(HasContainerRelativeUnits("1cqw"));
+  EXPECT_TRUE(HasContainerRelativeUnits("1cqh"));
+  EXPECT_TRUE(HasContainerRelativeUnits("1cqi"));
+  EXPECT_TRUE(HasContainerRelativeUnits("1cqb"));
+  EXPECT_TRUE(HasContainerRelativeUnits("1cqmin"));
+  EXPECT_TRUE(HasContainerRelativeUnits("1cqmax"));
+  EXPECT_TRUE(HasContainerRelativeUnits("calc(1px + 1cqw)"));
+  EXPECT_TRUE(HasContainerRelativeUnits("min(1px, 1cqw)"));
+
+  EXPECT_FALSE(HasContainerRelativeUnits("1px"));
+  EXPECT_FALSE(HasContainerRelativeUnits("1em"));
+  EXPECT_FALSE(HasContainerRelativeUnits("1vh"));
+  EXPECT_FALSE(HasContainerRelativeUnits("1svh"));
+  EXPECT_FALSE(HasContainerRelativeUnits("calc(1px + 1px)"));
+  EXPECT_FALSE(HasContainerRelativeUnits("calc(1px + 1em)"));
+  EXPECT_FALSE(HasContainerRelativeUnits("calc(1px + 1svh)"));
+}
+
 }  // namespace
 }  // namespace blink

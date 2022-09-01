@@ -249,7 +249,7 @@ class WasmModuleObjectBuilderStreaming final {
   WasmModuleObjectBuilderStreaming& operator=(
       WasmModuleObjectBuilderStreaming&&);
 #endif
-  Isolate* isolate_ = nullptr;
+  Isolate* v8_isolate_ = nullptr;
 
 #if V8_CC_MSVC
   /**

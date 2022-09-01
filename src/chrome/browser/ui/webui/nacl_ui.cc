@@ -21,7 +21,6 @@
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -44,7 +43,7 @@
 #include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "base/win/windows_version.h"
 #endif
 
@@ -61,10 +60,7 @@ content::WebUIDataSource* CreateNaClUIHTMLSource() {
       content::WebUIDataSource::Create(chrome::kChromeUINaClHost);
   source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::ScriptSrc,
-      "script-src chrome://resources 'self' 'unsafe-eval';");
-  source->OverrideContentSecurityPolicy(
-      network::mojom::CSPDirectiveName::TrustedTypes,
-      "trusted-types jstemplate;");
+      "script-src chrome://resources 'self';");
   source->UseStringsJs();
   source->AddResourcePath("about_nacl.css", IDR_ABOUT_NACL_CSS);
   source->AddResourcePath("about_nacl.js", IDR_ABOUT_NACL_JS);
@@ -164,10 +160,10 @@ void NaClDomHandler::OnJavascriptDisallowed() {
 void AddPair(base::ListValue* list,
              const std::u16string& key,
              const std::u16string& value) {
-  std::unique_ptr<base::DictionaryValue> results(new base::DictionaryValue());
-  results->SetString("key", key);
-  results->SetString("value", value);
-  list->Append(std::move(results));
+  base::Value::Dict results;
+  results.Set("key", key);
+  results.Set("value", value);
+  list->GetList().Append(std::move(results));
 }
 
 // Generate an empty data-pair which acts as a line break.
@@ -196,7 +192,7 @@ void NaClDomHandler::AddOperatingSystemInfo(base::ListValue* list) {
   // TODO(jvoung): refactor this to share the extra windows labeling
   // with about:flash, or something.
   std::string os_label = version_info::GetOSType();
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   base::win::OSInfo* os = base::win::OSInfo::GetInstance();
   switch (os->version()) {
     case base::win::Version::XP:
@@ -296,8 +292,8 @@ void NaClDomHandler::AddNaClInfo(base::ListValue* list) {
 
 void NaClDomHandler::HandleRequestNaClInfo(const base::ListValue* args) {
   CHECK(callback_id_.empty());
-  CHECK_EQ(1U, args->GetList().size());
-  callback_id_ = args->GetList()[0].GetString();
+  CHECK_EQ(1U, args->GetListDeprecated().size());
+  callback_id_ = args->GetListDeprecated()[0].GetString();
 
   if (!has_plugin_info_) {
     PluginService::GetInstance()->GetPlugins(base::BindOnce(
@@ -353,8 +349,10 @@ void CheckVersion(const base::FilePath& pnacl_path, std::string* version) {
 
   // Now try to get the field. This may leave version empty if the
   // the "get" fails (no key, or wrong type).
-  static_cast<base::DictionaryValue*>(root.get())->GetStringASCII(
-      "pnacl-version", version);
+  if (const std::string* ptr = root->FindStringKey("pnacl-version")) {
+    if (base::IsStringASCII(*ptr))
+      *version = *ptr;
+  }
 }
 
 bool CheckPathAndVersion(std::string* version) {

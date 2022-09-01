@@ -20,11 +20,13 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/trace_event/memory_usage_estimator.h"
 #include "components/sync/base/client_tag_hash.h"
 #include "components/sync/base/data_type_histogram.h"
+#include "components/sync/base/features.h"
 #include "components/sync/base/hash_util.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/time.h"
@@ -35,7 +37,6 @@
 #include "components/sync/engine/commit_contribution_impl.h"
 #include "components/sync/engine/cycle/entity_change_metric_recording.h"
 #include "components/sync/engine/model_type_processor.h"
-#include "components/sync/engine/sync_engine_switches.h"
 #include "components/sync/protocol/data_type_progress_marker.pb.h"
 #include "components/sync/protocol/entity_specifics.pb.h"
 #include "components/sync/protocol/proto_memory_estimations.h"
@@ -51,6 +52,12 @@ const char kUndecryptablePendingUpdatesDroppedHistogramName[] =
     "Sync.ModelTypeUndecryptablePendingUpdatesDropped";
 const char kBlockedByUndecryptableUpdateHistogramName[] =
     "Sync.ModelTypeBlockedDueToUndecryptableUpdate";
+const char kPasswordNotesStateHistogramName[] =
+    "Sync.PasswordNotesStateInUpdate";
+
+void LogPasswordNotesState(PasswordNotesStateForUMA state) {
+  base::UmaHistogramEnumeration(kPasswordNotesStateHistogramName, state);
+}
 
 // A proxy which can be called from any sequence and delegates the work to the
 // commit queue injected on construction.
@@ -78,7 +85,7 @@ void AdaptClientTagForFullUpdateData(ModelType model_type,
   // entities. This code manually asks the bridge to create the client tags for
   // each entity, so that we can use ClientTagBasedModelTypeProcessor for
   // AUTOFILL_WALLET_DATA or AUTOFILL_WALLET_OFFER.
-  if (data->parent_id == "0") {
+  if (data->legacy_parent_id == "0") {
     // Ignore the permanent root node as that one should have no client tag
     // hash.
     return;
@@ -165,6 +172,36 @@ bool DecryptPasswordSpecifics(const Cryptographer& cryptographer,
     DLOG(ERROR) << "Failed to decrypt a decryptable password";
     return false;
   }
+  // The `notes` field in the PasswordSpecificsData is the authoritative value.
+  // When set, it disregards whatever `encrypted_notes_backup` contains.
+  if (out->password().client_only_encrypted_data().has_notes()) {
+    LogPasswordNotesState(PasswordNotesStateForUMA::kSetInSpecificsData);
+    return true;
+  }
+  if (!in.password().has_encrypted_notes_backup()) {
+    LogPasswordNotesState(PasswordNotesStateForUMA::kUnset);
+    return true;
+  }
+  if (!base::FeatureList::IsEnabled(
+          syncer::kReadWritePasswordNotesBackupField)) {
+    return true;
+  }
+  // It is guaranteed that if `encrypted()` is decryptable, then
+  // `encrypted_notes_backup()` must be decryptable too. Failure to decrypt
+  // `encrypted_notes_backup()` indicates a data corruption.
+  if (!cryptographer.Decrypt(in.password().encrypted_notes_backup(),
+                             out->mutable_password()
+                                 ->mutable_client_only_encrypted_data()
+                                 ->mutable_notes())) {
+    LogPasswordNotesState(
+        PasswordNotesStateForUMA::kSetOnlyInBackupButCorrupted);
+    return false;
+  }
+  LogPasswordNotesState(PasswordNotesStateForUMA::kSetOnlyInBackup);
+  // TODO(crbug.com/1326554): Properly handle the case when both blobs are
+  // decryptable but with different keys. Ideally the password should be
+  // re-uploaded potentially by setting needs_reupload boolean in
+  // UpdateResponseData or EntityData.
   return true;
 }
 
@@ -184,8 +221,7 @@ ModelTypeWorker::ModelTypeWorker(ModelType type,
       model_type_state_(initial_state),
       encryption_enabled_(encryption_enabled),
       passphrase_type_(passphrase_type),
-      min_get_updates_to_ignore_key_(
-          switches::kMinGuResponsesToIgnoreKey.Get()) {
+      min_get_updates_to_ignore_key_(kMinGuResponsesToIgnoreKey.Get()) {
   DCHECK(cryptographer_);
   DCHECK(!AlwaysEncryptedUserTypes().Has(type_) || encryption_enabled_);
 
@@ -196,10 +232,6 @@ ModelTypeWorker::ModelTypeWorker(ModelType type,
 }
 
 ModelTypeWorker::~ModelTypeWorker() {
-  base::UmaHistogramCounts1000(
-      std::string("Sync.UndecryptedEntitiesOnDataTypeDisabled.") +
-          ModelTypeToHistogramSuffix(type_),
-      entries_pending_decryption_.size());
   if (model_type_processor_) {
     // This will always be the case in production today.
     model_type_processor_->DisconnectSync();
@@ -402,9 +434,6 @@ ModelTypeWorker::DecryptionStatus ModelTypeWorker::PopulateUpdateResponseData(
   // If so, still try to decrypt with the available keys regardless.
   if (specifics.password().has_encrypted()) {
     // Passwords use their own legacy encryption scheme.
-    // TODO(crbug.com/516866): If we switch away from the password legacy
-    // encryption, this method and DecryptStoredEntities() )should be already
-    // ready for that change. Add unit test for this future-proofness.
     if (!cryptographer.CanDecrypt(specifics.password().encrypted())) {
       return DECRYPTION_PENDING;
     }
@@ -434,7 +463,7 @@ ModelTypeWorker::DecryptionStatus ModelTypeWorker::PopulateUpdateResponseData(
   data.creation_time = ProtoTimeToTime(update_entity.ctime());
   data.modification_time = ProtoTimeToTime(update_entity.mtime());
   data.name = update_entity.name();
-  data.parent_id = update_entity.parent_id_string();
+  data.legacy_parent_id = update_entity.parent_id_string();
   data.server_defined_unique_tag = update_entity.server_defined_unique_tag();
 
   // Populate |originator_cache_guid| and |originator_client_item_id|. This is
@@ -450,6 +479,10 @@ ModelTypeWorker::DecryptionStatus ModelTypeWorker::PopulateUpdateResponseData(
     AdaptTitleForBookmark(update_entity, &data.specifics,
                           specifics_were_encrypted);
     AdaptGuidForBookmark(update_entity, &data.specifics);
+    // Note that the parent GUID in specifics cannot be adapted/populated here,
+    // because the logic requires access to tracked entities. Hence, it is
+    // done by BookmarkModelTypeProcessor, with logic implemented in
+    // components/sync_bookmarks/parent_guid_preprocessing.cc.
   } else if (model_type == AUTOFILL_WALLET_DATA ||
              model_type == AUTOFILL_WALLET_OFFER) {
     AdaptClientTagForFullUpdateData(model_type, &data);
@@ -469,12 +502,16 @@ void ModelTypeWorker::ApplyUpdates(StatusController* status) {
   if (!entries_pending_decryption_.empty() &&
       (!encryption_enabled_ || cryptographer_->CanEncrypt())) {
     DCHECK(BlockForEncryption());
-    for (auto& key_and_info : unknown_encryption_keys_by_name_) {
-      key_and_info.second.get_updates_while_should_have_been_known++;
+    for (auto& [key, info] : unknown_encryption_keys_by_name_) {
+      info.get_updates_while_should_have_been_known++;
       // If the key is now missing for too long, drop pending updates encrypted
       // with it. This eventually unblocks a worker having undecryptable data.
-      MaybeDropPendingUpdatesEncryptedWith(key_and_info.first);
+      MaybeDropPendingUpdatesEncryptedWith(key);
     }
+  }
+
+  if (HasNonDeletionUpdates()) {
+    status->add_updated_type(type_);
   }
 
   // Download cycle is done, pass all updates to the processor.
@@ -497,7 +534,7 @@ void ModelTypeWorker::SendPendingUpdatesToProcessorIfReady() {
          !model_type_state_.encryption_key_name().empty());
   DCHECK(entries_pending_decryption_.empty());
 
-  DVLOG(1) << ModelTypeToString(type_) << ": "
+  DVLOG(1) << ModelTypeToDebugString(type_) << ": "
            << base::StringPrintf("Delivering %" PRIuS " applicable updates.",
                                  pending_updates_.size());
 
@@ -655,7 +692,7 @@ bool ModelTypeWorker::UpdateTypeEncryptionKeyName() {
     if (model_type_state_.encryption_key_name().empty()) {
       return false;
     }
-    DLOG(WARNING) << ModelTypeToString(type_)
+    DLOG(WARNING) << ModelTypeToDebugString(type_)
                   << " : Had encryption disabled but non-empty encryption key "
                   << model_type_state_.encryption_key_name()
                   << ". Setting key to empty.";
@@ -671,7 +708,7 @@ bool ModelTypeWorker::UpdateTypeEncryptionKeyName() {
 
   std::string default_key_name = cryptographer_->GetDefaultEncryptionKeyName();
   DCHECK(!default_key_name.empty());
-  DVLOG(1) << ModelTypeToString(type_) << ": Updating encryption key "
+  DVLOG(1) << ModelTypeToDebugString(type_) << ": Updating encryption key "
            << model_type_state_.encryption_key_name() << " -> "
            << default_key_name;
   model_type_state_.set_encryption_key_name(default_key_name);
@@ -734,9 +771,9 @@ void ModelTypeWorker::DeduplicatePendingUpdatesBasedOnServerId() {
     }
     // Try to insert. If we already saw an item with the same server id,
     // this will fail but give us its iterator.
-    auto it_and_success =
+    auto [it, success] =
         id_to_index.emplace(candidate.entity.id, pending_updates_.size());
-    if (it_and_success.second) {
+    if (success) {
       // New server id, append at the end. Note that we already inserted
       // the correct index (|pending_updates_.size()|) above.
       pending_updates_.push_back(std::move(candidate));
@@ -745,7 +782,7 @@ void ModelTypeWorker::DeduplicatePendingUpdatesBasedOnServerId() {
 
     // Duplicate! Overwrite the existing update if |candidate| has a more recent
     // version.
-    const size_t existing_index = it_and_success.first->second;
+    const size_t existing_index = it->second;
     UpdateResponseData& existing_update = pending_updates_[existing_index];
     if (candidate.response_version >= existing_update.response_version) {
       existing_update = std::move(candidate);
@@ -767,9 +804,9 @@ void ModelTypeWorker::DeduplicatePendingUpdatesBasedOnClientTagHash() {
     }
     // Try to insert. If we already saw an item with the same client tag hash,
     // this will fail but give us its iterator.
-    auto it_and_success = tag_to_index.emplace(candidate.entity.client_tag_hash,
-                                               pending_updates_.size());
-    if (it_and_success.second) {
+    auto [it, success] = tag_to_index.emplace(candidate.entity.client_tag_hash,
+                                              pending_updates_.size());
+    if (success) {
       // New client tag hash, append at the end. Note that we already inserted
       // the correct index (|pending_updates_.size()|) above.
       pending_updates_.push_back(std::move(candidate));
@@ -778,7 +815,7 @@ void ModelTypeWorker::DeduplicatePendingUpdatesBasedOnClientTagHash() {
 
     // Duplicate! Overwrite the existing update if |candidate| has a more recent
     // version.
-    const size_t existing_index = it_and_success.first->second;
+    const size_t existing_index = it->second;
     UpdateResponseData& existing_update = pending_updates_[existing_index];
     if (candidate.response_version >= existing_update.response_version) {
       existing_update = std::move(candidate);
@@ -803,10 +840,10 @@ void ModelTypeWorker::DeduplicatePendingUpdatesBasedOnOriginatorClientItemId() {
     }
     // Try to insert. If we already saw an item with the same originator item
     // ID, this will fail but give us its iterator.
-    auto it_and_success = id_to_index.emplace(
+    auto [it, success] = id_to_index.emplace(
         base::ToLowerASCII(candidate.entity.originator_client_item_id),
         pending_updates_.size());
-    if (it_and_success.second) {
+    if (success) {
       // New item ID, append at the end. Note that we already inserted the
       // correct index (|pending_updates_.size()|) above.
       pending_updates_.push_back(std::move(candidate));
@@ -815,7 +852,7 @@ void ModelTypeWorker::DeduplicatePendingUpdatesBasedOnOriginatorClientItemId() {
 
     // Duplicate! Overwrite the existing update if |candidate| has a more recent
     // version.
-    const size_t existing_index = it_and_success.first->second;
+    const size_t existing_index = it->second;
     UpdateResponseData& existing_update = pending_updates_[existing_index];
     if (candidate.response_version >= existing_update.response_version) {
       existing_update = std::move(candidate);
@@ -833,8 +870,7 @@ bool ModelTypeWorker::ShouldIgnoreUpdatesEncryptedWith(
       min_get_updates_to_ignore_key_) {
     return false;
   }
-  return base::FeatureList::IsEnabled(
-      switches::kIgnoreSyncEncryptionKeysLongMissing);
+  return base::FeatureList::IsEnabled(kIgnoreSyncEncryptionKeysLongMissing);
 }
 
 void ModelTypeWorker::MaybeDropPendingUpdatesEncryptedWith(
@@ -864,8 +900,8 @@ void ModelTypeWorker::MaybeDropPendingUpdatesEncryptedWith(
 std::vector<ModelTypeWorker::UnknownEncryptionKeyInfo>
 ModelTypeWorker::RemoveKeysNoLongerUnknown() {
   std::set<std::string> keys_blocking_updates;
-  for (const auto& id_and_update : entries_pending_decryption_) {
-    const std::string key_name = GetEncryptionKeyName(id_and_update.second);
+  for (const auto& [id, update] : entries_pending_decryption_) {
+    const std::string key_name = GetEncryptionKeyName(update);
     DCHECK(!key_name.empty());
     keys_blocking_updates.insert(key_name);
   }
@@ -881,6 +917,15 @@ ModelTypeWorker::RemoveKeysNoLongerUnknown() {
       });
 
   return removed_keys;
+}
+
+bool ModelTypeWorker::HasNonDeletionUpdates() const {
+  for (const UpdateResponseData& update : pending_updates_) {
+    if (!update.entity.is_deleted()) {
+      return true;
+    }
+  }
+  return false;
 }
 
 GetLocalChangesRequest::GetLocalChangesRequest(

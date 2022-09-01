@@ -11,10 +11,13 @@
 #include "base/containers/contains.h"
 #include "base/containers/flat_map.h"
 #include "base/guid.h"
+#include "base/i18n/time_formatting.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chromeos/ash/components/network/onc/onc_translation_tables.h"
+#include "chromeos/ash/components/network/proxy/ui_proxy_config_service.h"
 #include "chromeos/components/sync_wifi/network_eligibility_checker.h"
 #include "chromeos/dbus/hermes/hermes_euicc_client.h"
 #include "chromeos/dbus/hermes/hermes_manager_client.h"
@@ -34,9 +37,7 @@
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_type_pattern.h"
 #include "chromeos/network/network_util.h"
-#include "chromeos/network/onc/onc_translation_tables.h"
 #include "chromeos/network/prohibited_technologies_handler.h"
-#include "chromeos/network/proxy/ui_proxy_config_service.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_util.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom-shared.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config_mojom_traits.h"
@@ -62,8 +63,14 @@ const char kErrorInvalidONCConfiguration[] = "Error.InvalidONCConfiguration";
 const char kErrorNetworkUnavailable[] = "Error.NetworkUnavailable";
 const char kErrorNotReady[] = "Error.NotReady";
 
+// IKEv2 string from Shill SupportedVPNType property.
+const char kIKEv2VPNType[] = "ikev2";
+
 // WireGuard string from Shill SupportedVPNType property.
 const char kWireGuardVPNType[] = "wireguard";
+
+// Default traffic counter reset day.
+const int kDefaultResetDay = 1;
 
 std::string ShillToOnc(const std::string& shill_string,
                        const onc::StringTranslationEntry table[]) {
@@ -118,6 +125,26 @@ NetworkTypePattern MojoTypeToPattern(mojom::NetworkType type) {
   }
   NOTREACHED();
   return NetworkTypePattern::Default();
+}
+
+mojom::IPConfigType OncIPConfigTypeToMojo(const std::string& ip_config_type) {
+  if (ip_config_type == ::onc::ipconfig::kIPv4)
+    return mojom::IPConfigType::kIPv4;
+  if (ip_config_type == ::onc::ipconfig::kIPv6)
+    return mojom::IPConfigType::kIPv6;
+  NOTREACHED() << "Unsupported ONC IPConfig type: " << ip_config_type;
+  return mojom::IPConfigType::kIPv4;
+}
+
+std::string MojoIPConfigTypeToOnc(mojom::IPConfigType type) {
+  switch (type) {
+    case mojom::IPConfigType::kIPv4:
+      return ::onc::ipconfig::kIPv4;
+    case mojom::IPConfigType::kIPv6:
+      return ::onc::ipconfig::kIPv6;
+  }
+  NOTREACHED() << "Unexpeted mojo IPConfig type: " << type;
+  return ::onc::ipconfig::kIPv4;
 }
 
 std::string MojoNetworkTypeToOnc(mojom::NetworkType type) {
@@ -181,6 +208,8 @@ std::string MojoSecurityTypeToOnc(mojom::SecurityType security_type) {
 }
 
 mojom::VpnType OncVpnTypeToMojo(const std::string& onc_vpn_type) {
+  if (onc_vpn_type == ::onc::vpn::kIPsec)
+    return mojom::VpnType::kIKEv2;
   if (onc_vpn_type == ::onc::vpn::kTypeL2TP_IPsec)
     return mojom::VpnType::kL2TPIPsec;
   if (onc_vpn_type == ::onc::vpn::kOpenVPN)
@@ -197,6 +226,8 @@ mojom::VpnType OncVpnTypeToMojo(const std::string& onc_vpn_type) {
 
 std::string MojoVpnTypeToOnc(mojom::VpnType mojo_vpn_type) {
   switch (mojo_vpn_type) {
+    case mojom::VpnType::kIKEv2:
+      return ::onc::vpn::kIPsec;
     case mojom::VpnType::kL2TPIPsec:
       return ::onc::vpn::kTypeL2TP_IPsec;
     case mojom::VpnType::kOpenVPN:
@@ -367,9 +398,11 @@ mojom::NetworkStatePropertiesPtr NetworkStateToMojo(
 
       const DeviceState* cellular_device =
           network_state_handler->GetDeviceState(network->device_path());
-      cellular->sim_locked = cellular_device &&
-                             IsSimPrimary(network->iccid(), cellular_device) &&
-                             cellular_device->IsSimLocked();
+      bool sim_is_primary =
+          cellular_device && IsSimPrimary(network->iccid(), cellular_device);
+      cellular->sim_lock_enabled =
+          sim_is_primary && cellular_device->sim_lock_enabled();
+      cellular->sim_locked = sim_is_primary && cellular_device->IsSimLocked();
       result->type_state =
           mojom::NetworkTypeStateProperties::NewCellular(std::move(cellular));
       break;
@@ -488,6 +521,8 @@ mojom::InhibitReason GetInhibitReason(
       return mojom::InhibitReason::kRefreshingProfileList;
     case CellularInhibitor::InhibitReason::kResettingEuiccMemory:
       return mojom::InhibitReason::kResettingEuiccMemory;
+    case CellularInhibitor::InhibitReason::kDisablingProfile:
+      return mojom::InhibitReason::kDisablingProfile;
   }
 }
 
@@ -581,18 +616,9 @@ int32_t GetInt32(const base::Value* dict, const char* key) {
   const base::Value* v = dict->FindKey(key);
   if (v && !v->is_int()) {
     NET_LOG(ERROR) << "Expected int, found: " << *v;
-    return false;
+    return 0;
   }
-  return v ? v->GetInt() : false;
-}
-
-double GetDouble(const base::Value* dict, const char* key) {
-  const base::Value* v = dict->FindKey(key);
-  if (v && !v->is_double()) {
-    NET_LOG(ERROR) << "Expected double, found: " << *v;
-    return false;
-  }
-  return v ? v->GetDouble() : false;
+  return v ? v->GetInt() : 0;
 }
 
 std::vector<int32_t> GetInt32List(const base::Value* dict, const char* key) {
@@ -603,7 +629,7 @@ std::vector<int32_t> GetInt32List(const base::Value* dict, const char* key) {
     return result;
   }
   if (v) {
-    for (const base::Value& e : v->GetList())
+    for (const base::Value& e : v->GetListDeprecated())
       result.push_back(e.GetInt());
   }
   return result;
@@ -628,7 +654,7 @@ absl::optional<std::vector<std::string>> GetStringList(const base::Value* dict,
     return absl::nullopt;
   }
   std::vector<std::string> result;
-  for (const base::Value& e : v->GetList())
+  for (const base::Value& e : v->GetListDeprecated())
     result.push_back(e.GetString());
   return result;
 }
@@ -812,7 +838,7 @@ mojom::ManagedStringListPtr GetManagedStringList(const base::Value* dict,
   if (v->is_list()) {
     auto result = mojom::ManagedStringList::New();
     std::vector<std::string> active;
-    for (const base::Value& e : v->GetList())
+    for (const base::Value& e : v->GetListDeprecated())
       active.push_back(e.GetString());
     result->active_value = std::move(active);
     return result;
@@ -824,12 +850,12 @@ mojom::ManagedStringListPtr GetManagedStringList(const base::Value* dict,
       return nullptr;
     }
     auto result = mojom::ManagedStringList::New();
-    for (const base::Value& e : managed_dict.active_value.GetList())
+    for (const base::Value& e : managed_dict.active_value.GetListDeprecated())
       result->active_value.push_back(e.GetString());
     result->policy_source = managed_dict.policy_source;
     if (!managed_dict.policy_value.is_none()) {
       result->policy_value = std::vector<std::string>();
-      for (const base::Value& e : managed_dict.policy_value.GetList())
+      for (const base::Value& e : managed_dict.policy_value.GetListDeprecated())
         result->policy_value->push_back(e.GetString());
     }
     return result;
@@ -921,7 +947,7 @@ mojom::ManagedSubjectAltNameMatchListPtr GetManagedSubjectAltNameMatchList(
 
   if (value->is_list()) {
     std::vector<mojom::SubjectAltNamePtr> active;
-    for (const base::Value& value : value->GetList())
+    for (const base::Value& value : value->GetListDeprecated())
       active.push_back(GetSubjectAltName(&value));
     result->active_value = std::move(active);
     return result;
@@ -932,12 +958,12 @@ mojom::ManagedSubjectAltNameMatchListPtr GetManagedSubjectAltNameMatchList(
       NET_LOG(ERROR) << "No active or effective value for WireGuardPeerList";
       return result;
     }
-    for (const base::Value& e : managed_dict.active_value.GetList())
+    for (const base::Value& e : managed_dict.active_value.GetListDeprecated())
       result->active_value.push_back(GetSubjectAltName(&e));
     result->policy_source = managed_dict.policy_source;
     if (!managed_dict.policy_value.is_none()) {
       result->policy_value = std::vector<mojom::SubjectAltNamePtr>();
-      for (const base::Value& e : managed_dict.policy_value.GetList())
+      for (const base::Value& e : managed_dict.policy_value.GetListDeprecated())
         result->policy_value.push_back(GetSubjectAltName(&e));
     }
     return result;
@@ -958,10 +984,13 @@ mojom::IPConfigPropertiesPtr GetIPConfig(const base::Value* dict) {
   ip_config->search_domains =
       GetStringList(dict, ::onc::ipconfig::kSearchDomains);
   ip_config->routing_prefix = GetInt32(dict, ::onc::ipconfig::kRoutingPrefix);
-  ip_config->type = GetString(dict, ::onc::ipconfig::kType);
-  // Shill may omit the IP Config type for VPNs. The type should be IPv4.
-  if (!ip_config->type || ip_config->type->empty())
-    ip_config->type = ::onc::ipconfig::kIPv4;
+  auto type = GetString(dict, ::onc::ipconfig::kType);
+  if (!type || type->empty()) {
+    // Shill may omit the IP Config type for VPNs. The type should be IPv4.
+    ip_config->type = mojom::IPConfigType::kIPv4;
+  } else {
+    ip_config->type = OncIPConfigTypeToMojo(*type);
+  }
   ip_config->web_proxy_auto_discovery_url =
       GetString(dict, ::onc::ipconfig::kWebProxyAutoDiscoveryUrl);
   return ip_config;
@@ -976,7 +1005,14 @@ mojom::ManagedIPConfigPropertiesPtr GetManagedIPConfig(
       GetManagedStringList(dict, ::onc::ipconfig::kNameServers);
   ip_config->routing_prefix =
       GetManagedInt32(dict, ::onc::ipconfig::kRoutingPrefix);
-  ip_config->type = GetManagedString(dict, ::onc::ipconfig::kType);
+  // The IPConfig type is not actually mutable, so we convert from an optional
+  // managed string to a required unmanaged type enum.
+  mojom::ManagedStringPtr managed_type =
+      GetManagedString(dict, ::onc::ipconfig::kType);
+  mojom::IPConfigType type =
+      managed_type ? OncIPConfigTypeToMojo(managed_type->active_value)
+                   : mojom::IPConfigType::kIPv4;
+  ip_config->type = type;
   ip_config->web_proxy_auto_discovery_url =
       GetManagedString(dict, ::onc::ipconfig::kWebProxyAutoDiscoveryUrl);
   return ip_config;
@@ -1077,7 +1113,7 @@ mojom::ManagedApnListPtr GetManagedApnList(const base::Value* value) {
   if (value->is_list()) {
     auto result = mojom::ManagedApnList::New();
     std::vector<mojom::ApnPropertiesPtr> active;
-    for (const base::Value& value : value->GetList())
+    for (const base::Value& value : value->GetListDeprecated())
       active.push_back(GetApnProperties(&value));
     result->active_value = std::move(active);
     return result;
@@ -1088,12 +1124,12 @@ mojom::ManagedApnListPtr GetManagedApnList(const base::Value* value) {
       return nullptr;
     }
     auto result = mojom::ManagedApnList::New();
-    for (const base::Value& e : managed_dict.active_value.GetList())
+    for (const base::Value& e : managed_dict.active_value.GetListDeprecated())
       result->active_value.push_back(GetApnProperties(&e));
     result->policy_source = managed_dict.policy_source;
     if (!managed_dict.policy_value.is_none()) {
       result->policy_value = std::vector<mojom::ApnPropertiesPtr>();
-      for (const base::Value& e : managed_dict.policy_value.GetList())
+      for (const base::Value& e : managed_dict.policy_value.GetListDeprecated())
         result->policy_value->push_back(GetApnProperties(&e));
     }
     return result;
@@ -1113,7 +1149,7 @@ std::vector<mojom::FoundNetworkPropertiesPtr> GetFoundNetworksList(
     NET_LOG(ERROR) << "Expected list, found: " << *v;
     return result;
   }
-  for (const base::Value& e : v->GetList()) {
+  for (const base::Value& e : v->GetListDeprecated()) {
     auto found_network = mojom::FoundNetworkProperties::New();
     found_network->status =
         GetRequiredString(&e, ::onc::cellular_found_network::kStatus);
@@ -1267,6 +1303,10 @@ mojom::ManagedIPSecPropertiesPtr GetManagedIPSecProperties(
       GetManagedStringList(ipsec_dict, ::onc::ipsec::kServerCAPEMs);
   ipsec->server_ca_refs =
       GetManagedStringList(ipsec_dict, ::onc::ipsec::kServerCARefs);
+  ipsec->local_identity =
+      GetManagedString(ipsec_dict, ::onc::ipsec::kLocalIdentity);
+  ipsec->remote_identity =
+      GetManagedString(ipsec_dict, ::onc::ipsec::kRemoteIdentity);
   return ipsec;
 }
 
@@ -1398,7 +1438,7 @@ mojom::ManagedWireGuardPeerListPtr GetManagedWireGuardPeerList(
     return result;
   if (value->is_list()) {
     std::vector<mojom::WireGuardPeerPropertiesPtr> active;
-    for (const base::Value& value : value->GetList())
+    for (const base::Value& value : value->GetListDeprecated())
       active.push_back(GetWireGuardPeerProperties(&value));
     result->active_value = std::move(active);
     return result;
@@ -1409,12 +1449,12 @@ mojom::ManagedWireGuardPeerListPtr GetManagedWireGuardPeerList(
       NET_LOG(ERROR) << "No active or effective value for WireGuardPeerList";
       return result;
     }
-    for (const base::Value& e : managed_dict.active_value.GetList())
+    for (const base::Value& e : managed_dict.active_value.GetListDeprecated())
       result->active_value.push_back(GetWireGuardPeerProperties(&e));
     result->policy_source = managed_dict.policy_source;
     if (!managed_dict.policy_value.is_none()) {
       result->policy_value = std::vector<mojom::WireGuardPeerPropertiesPtr>();
-      for (const base::Value& e : managed_dict.policy_value.GetList())
+      for (const base::Value& e : managed_dict.policy_value.GetListDeprecated())
         result->policy_value->push_back(GetWireGuardPeerProperties(&e));
     }
     return result;
@@ -1488,7 +1528,8 @@ mojom::ManagedPropertiesPtr ManagedPropertiesToMojo(
       properties->FindKey(::onc::network_config::kIPConfigs);
   if (ip_configs_list) {
     std::vector<mojom::IPConfigPropertiesPtr> ip_configs;
-    for (const base::Value& ip_config_value : ip_configs_list->GetList())
+    for (const base::Value& ip_config_value :
+         ip_configs_list->GetListDeprecated())
       ip_configs.push_back(GetIPConfig(&ip_config_value));
     result->ip_configs = std::move(ip_configs);
   }
@@ -1497,11 +1538,6 @@ mojom::ManagedPropertiesPtr ManagedPropertiesToMojo(
       GetDictionary(properties, ::onc::network_config::kSavedIPConfig);
   if (saved_ip_config)
     result->saved_ip_config = GetIPConfig(saved_ip_config);
-
-  double traffic_counter_reset_time =
-      GetDouble(properties, ::onc::network_config::kTrafficCounterResetTime);
-  result->traffic_counter_reset_time = base::Time::FromDeltaSinceWindowsEpoch(
-      base::Milliseconds(traffic_counter_reset_time));
 
   // Managed properties
   result->ip_address_config_type = GetRequiredManagedString(
@@ -1659,6 +1695,9 @@ mojom::ManagedPropertiesPtr ManagedPropertiesToMojo(
       vpn->host = GetManagedString(vpn_dict, ::onc::vpn::kHost);
 
       switch (vpn->type) {
+        case mojom::VpnType::kIKEv2:
+          vpn->ip_sec = GetManagedIPSecProperties(vpn_dict, ::onc::vpn::kIPsec);
+          break;
         case mojom::VpnType::kL2TPIPsec:
           vpn->ip_sec = GetManagedIPSecProperties(vpn_dict, ::onc::vpn::kIPsec);
           vpn->l2tp = GetManagedL2TPProperties(vpn_dict, ::onc::vpn::kL2TP);
@@ -1747,6 +1786,42 @@ mojom::ManagedPropertiesPtr ManagedPropertiesToMojo(
       NOTREACHED() << "NetworkStateProperties can not be of type: " << type;
       break;
   }
+
+  // Traffic Counter Properties
+  auto traffic_counter_properties = mojom::TrafficCounterProperties::New();
+  const base::Value* last_reset_time =
+      properties->FindKey(::onc::network_config::kTrafficCounterResetTime);
+  if (last_reset_time && last_reset_time->is_double()) {
+    traffic_counter_properties->last_reset_time =
+        base::Time::FromDeltaSinceWindowsEpoch(
+            base::Milliseconds(last_reset_time->GetDouble()));
+    traffic_counter_properties->friendly_date =
+        base::UTF16ToUTF8(base::TimeFormatFriendlyDate(
+            traffic_counter_properties->last_reset_time.value()));
+  } else {
+    traffic_counter_properties->last_reset_time = absl::nullopt;
+    traffic_counter_properties->friendly_date = absl::nullopt;
+  }
+
+  const base::Value* auto_reset =
+      NetworkHandler::IsInitialized()
+          ? NetworkHandler::Get()
+                ->network_metadata_store()
+                ->GetEnableTrafficCountersAutoReset(result->guid)
+          : nullptr;
+  traffic_counter_properties->auto_reset =
+      auto_reset && auto_reset->is_bool() ? auto_reset->GetBool() : false;
+  const base::Value* user_specified_reset_day =
+      NetworkHandler::IsInitialized()
+          ? NetworkHandler::Get()
+                ->network_metadata_store()
+                ->GetDayOfTrafficCountersAutoReset(result->guid)
+          : nullptr;
+  traffic_counter_properties->user_specified_reset_day =
+      user_specified_reset_day && user_specified_reset_day->is_int()
+          ? user_specified_reset_day->GetInt()
+          : kDefaultResetDay;
+  result->traffic_counter_properties = std::move(traffic_counter_properties);
 
   return result;
 }
@@ -1867,6 +1942,14 @@ std::unique_ptr<base::DictionaryValue> GetOncFromConfigProperties(
                     &ip_sec_dict);
       SetStringList(::onc::ipsec::kServerCARefs, ip_sec.server_ca_refs,
                     &ip_sec_dict);
+      SetString(::onc::ipsec::kLocalIdentity, ip_sec.local_identity,
+                &ip_sec_dict);
+      SetString(::onc::ipsec::kRemoteIdentity, ip_sec.remote_identity,
+                &ip_sec_dict);
+      if (ip_sec.eap) {
+        ip_sec_dict.SetKey(::onc::ipsec::kEAP,
+                           GetEAPProperties(*ip_sec.eap.get()));
+      }
       type_dict.SetKey(::onc::vpn::kIPsec, std::move(ip_sec_dict));
     }
     if (vpn.l2tp) {
@@ -2020,7 +2103,8 @@ std::unique_ptr<base::DictionaryValue> GetOncFromConfigProperties(
                   &ip_config_dict);
     ip_config_dict.SetIntKey(::onc::ipconfig::kRoutingPrefix,
                              ip_config.routing_prefix);
-    SetString(::onc::ipconfig::kType, ip_config.type, &ip_config_dict);
+    ip_config_dict.SetStringKey(::onc::ipconfig::kType,
+                                MojoIPConfigTypeToOnc(ip_config.type));
     SetString(::onc::ipconfig::kWebProxyAutoDiscoveryUrl,
               ip_config.web_proxy_auto_discovery_url, &ip_config_dict);
     onc->SetKey(::onc::network_config::kStaticIPConfig,
@@ -2119,7 +2203,7 @@ CrosNetworkConfig::CrosNetworkConfig(
 }
 
 CrosNetworkConfig::~CrosNetworkConfig() {
-  if (network_state_handler_->HasObserver(this))
+  if (network_state_handler_ && network_state_handler_->HasObserver(this))
     network_state_handler_->RemoveObserver(this, FROM_HERE);
   if (network_certificate_handler_ &&
       network_certificate_handler_->HasObserver(this)) {
@@ -2127,6 +2211,10 @@ CrosNetworkConfig::~CrosNetworkConfig() {
   }
   if (cellular_inhibitor_ && cellular_inhibitor_->HasObserver(this))
     cellular_inhibitor_->RemoveObserver(this);
+  if (network_configuration_handler_ &&
+      network_configuration_handler_->HasObserver(this)) {
+    network_configuration_handler_->RemoveObserver(this);
+  }
 }
 
 void CrosNetworkConfig::BindReceiver(
@@ -2145,6 +2233,10 @@ void CrosNetworkConfig::AddObserver(
   }
   if (cellular_inhibitor_ && !cellular_inhibitor_->HasObserver(this))
     cellular_inhibitor_->AddObserver(this);
+  if (network_configuration_handler_ &&
+      !network_configuration_handler_->HasObserver(this)) {
+    network_configuration_handler_->AddObserver(this);
+  }
   observers_.Add(std::move(observer));
 }
 
@@ -2450,11 +2542,9 @@ void CrosNetworkConfig::SetPropertiesConfigureSuccess(
   set_properties_callbacks_.erase(iter);
 }
 
-void CrosNetworkConfig::SetPropertiesFailure(
-    const std::string& guid,
-    int callback_id,
-    const std::string& error_name,
-    std::unique_ptr<base::DictionaryValue> error_data) {
+void CrosNetworkConfig::SetPropertiesFailure(const std::string& guid,
+                                             int callback_id,
+                                             const std::string& error_name) {
   auto iter = set_properties_callbacks_.find(callback_id);
   DCHECK(iter != set_properties_callbacks_.end());
   NET_LOG(ERROR) << "Failed to set network properties: " << guid
@@ -2511,10 +2601,8 @@ void CrosNetworkConfig::ConfigureNetworkSuccess(int callback_id,
   configure_network_callbacks_.erase(iter);
 }
 
-void CrosNetworkConfig::ConfigureNetworkFailure(
-    int callback_id,
-    const std::string& error_name,
-    std::unique_ptr<base::DictionaryValue> error_data) {
+void CrosNetworkConfig::ConfigureNetworkFailure(int callback_id,
+                                                const std::string& error_name) {
   auto iter = configure_network_callbacks_.find(callback_id);
   DCHECK(iter != configure_network_callbacks_.end());
   DCHECK(iter->second);
@@ -2580,11 +2668,9 @@ void CrosNetworkConfig::ForgetNetworkSuccess(int callback_id) {
   forget_network_callbacks_.erase(iter);
 }
 
-void CrosNetworkConfig::ForgetNetworkFailure(
-    const std::string& guid,
-    int callback_id,
-    const std::string& error_name,
-    std::unique_ptr<base::DictionaryValue> error_data) {
+void CrosNetworkConfig::ForgetNetworkFailure(const std::string& guid,
+                                             int callback_id,
+                                             const std::string& error_name) {
   auto iter = forget_network_callbacks_.find(callback_id);
   DCHECK(iter != forget_network_callbacks_.end());
   NET_LOG(ERROR) << "Failed to forget network: " << guid
@@ -2699,8 +2785,7 @@ void CrosNetworkConfig::SetCellularSimStateSuccess(int callback_id) {
 
 void CrosNetworkConfig::SetCellularSimStateFailure(
     int callback_id,
-    const std::string& error_name,
-    std::unique_ptr<base::DictionaryValue> error_data) {
+    const std::string& error_name) {
   auto iter = set_cellular_sim_state_callbacks_.find(callback_id);
   DCHECK(iter != set_cellular_sim_state_callbacks_.end());
   std::move(iter->second).Run(false);
@@ -2743,8 +2828,7 @@ void CrosNetworkConfig::SelectCellularMobileNetworkSuccess(int callback_id) {
 
 void CrosNetworkConfig::SelectCellularMobileNetworkFailure(
     int callback_id,
-    const std::string& error_name,
-    std::unique_ptr<base::DictionaryValue> error_data) {
+    const std::string& error_name) {
   auto iter = select_cellular_mobile_network_callbacks_.find(callback_id);
   DCHECK(iter != select_cellular_mobile_network_callbacks_.end());
   std::move(iter->second).Run(false);
@@ -2811,7 +2895,7 @@ std::vector<mojom::ApnPropertiesPtr> CrosNetworkConfig::GetCustomAPNList(
     return mojo_custom_apns;
   }
   DCHECK(custom_apn_list->is_list());
-  for (const auto& apn : custom_apn_list->GetList()) {
+  for (const auto& apn : custom_apn_list->GetListDeprecated()) {
     DCHECK(apn.is_dict());
     mojom::ApnPropertiesPtr mojo_apn = mojom::ApnProperties::New();
     mojo_apn->access_point_name =
@@ -2836,29 +2920,41 @@ void CrosNetworkConfig::RequestNetworkScan(mojom::NetworkType type) {
 
 void CrosNetworkConfig::GetGlobalPolicy(GetGlobalPolicyCallback callback) {
   auto result = mojom::GlobalPolicy::New();
+
+  // Network configuration handler can be nullptr in tests.
+  if (!network_configuration_handler_) {
+    std::move(callback).Run(std::move(result));
+    return;
+  }
+
   // Global network configuration policy values come from the device policy.
-  const base::DictionaryValue* global_policy_dict =
+  const base::Value* global_policy_dict =
       network_configuration_handler_->GetGlobalConfigFromPolicy(
           /*userhash=*/std::string());
-  if (global_policy_dict) {
-    result->allow_only_policy_cellular_networks = GetBoolean(
-        global_policy_dict,
-        ::onc::global_network_config::kAllowOnlyPolicyCellularNetworks);
-    result->allow_only_policy_networks_to_autoconnect = GetBoolean(
-        global_policy_dict,
-        ::onc::global_network_config::kAllowOnlyPolicyNetworksToAutoconnect);
-    result->allow_only_policy_wifi_networks_to_connect =
-        GetBoolean(global_policy_dict,
-                   ::onc::global_network_config::kAllowOnlyPolicyWiFiToConnect);
-    result
-        ->allow_only_policy_wifi_networks_to_connect_if_available = GetBoolean(
-        global_policy_dict,
-        ::onc::global_network_config::kAllowOnlyPolicyWiFiToConnectIfAvailable);
-    absl::optional<std::vector<std::string>> blocked_hex_ssids = GetStringList(
-        global_policy_dict, ::onc::global_network_config::kBlockedHexSSIDs);
-    if (blocked_hex_ssids)
-      result->blocked_hex_ssids = std::move(*blocked_hex_ssids);
+  if (!global_policy_dict) {
+    std::move(callback).Run(std::move(result));
+    return;
   }
+
+  result->allow_cellular_sim_lock = GetBoolean(
+      global_policy_dict, ::onc::global_network_config::kAllowCellularSimLock);
+  result->allow_only_policy_cellular_networks = GetBoolean(
+      global_policy_dict,
+      ::onc::global_network_config::kAllowOnlyPolicyCellularNetworks);
+  result->allow_only_policy_networks_to_autoconnect = GetBoolean(
+      global_policy_dict,
+      ::onc::global_network_config::kAllowOnlyPolicyNetworksToAutoconnect);
+  result->allow_only_policy_wifi_networks_to_connect =
+      GetBoolean(global_policy_dict,
+                 ::onc::global_network_config::kAllowOnlyPolicyWiFiToConnect);
+  result->allow_only_policy_wifi_networks_to_connect_if_available = GetBoolean(
+      global_policy_dict,
+      ::onc::global_network_config::kAllowOnlyPolicyWiFiToConnectIfAvailable);
+  absl::optional<std::vector<std::string>> blocked_hex_ssids = GetStringList(
+      global_policy_dict, ::onc::global_network_config::kBlockedHexSSIDs);
+  if (blocked_hex_ssids)
+    result->blocked_hex_ssids = std::move(*blocked_hex_ssids);
+
   std::move(callback).Run(std::move(result));
 }
 
@@ -2891,10 +2987,8 @@ void CrosNetworkConfig::StartConnectSuccess(int callback_id) {
   start_connect_callbacks_.erase(iter);
 }
 
-void CrosNetworkConfig::StartConnectFailure(
-    int callback_id,
-    const std::string& error_name,
-    std::unique_ptr<base::DictionaryValue> error_data) {
+void CrosNetworkConfig::StartConnectFailure(int callback_id,
+                                            const std::string& error_name) {
   auto iter = start_connect_callbacks_.find(callback_id);
   DCHECK(iter != start_connect_callbacks_.end());
   mojom::StartConnectResult result;
@@ -2951,10 +3045,8 @@ void CrosNetworkConfig::StartDisconnectSuccess(int callback_id) {
   start_disconnect_callbacks_.erase(iter);
 }
 
-void CrosNetworkConfig::StartDisconnectFailure(
-    int callback_id,
-    const std::string& error_name,
-    std::unique_ptr<base::DictionaryValue> error_data) {
+void CrosNetworkConfig::StartDisconnectFailure(int callback_id,
+                                               const std::string& error_name) {
   auto iter = start_disconnect_callbacks_.find(callback_id);
   DCHECK(iter != start_disconnect_callbacks_.end());
   std::move(iter->second).Run(false);
@@ -3096,6 +3188,12 @@ void CrosNetworkConfig::OnGetSupportedVpnTypes(
         base::SplitString(*value->GetIfString(), ",", base::TRIM_WHITESPACE,
                           base::SPLIT_WANT_NONEMPTY);
   }
+  if (!base::FeatureList::IsEnabled(ash::features::kEnableIkev2Vpn)) {
+    auto iter = std::find(result.begin(), result.end(), kIKEv2VPNType);
+    if (iter != result.end()) {
+      result.erase(iter);
+    }
+  }
   if (!base::FeatureList::IsEnabled(ash::features::kEnableWireGuard)) {
     auto iter = std::find(result.begin(), result.end(), kWireGuardVPNType);
     if (iter != result.end()) {
@@ -3125,12 +3223,12 @@ void CrosNetworkConfig::PopulateTrafficCounters(
     RequestTrafficCountersCallback callback,
     absl::optional<base::Value> traffic_counters) {
   if (!traffic_counters || !traffic_counters->is_list() ||
-      !traffic_counters->GetList().size()) {
+      !traffic_counters->GetListDeprecated().size()) {
     std::move(callback).Run({});
     return;
   }
   std::vector<mojom::TrafficCounterPtr> counters;
-  for (const base::Value& tc : traffic_counters->GetList()) {
+  for (const base::Value& tc : traffic_counters->GetListDeprecated()) {
     DCHECK(tc.is_dict());
     const base::Value* source =
         tc.FindKeyOfType("source", base::Value::Type::STRING);
@@ -3180,6 +3278,39 @@ void CrosNetworkConfig::ResetTrafficCounters(const std::string& guid) {
     return;
   }
   network_state_handler_->ResetTrafficCounters(service_path);
+}
+
+void CrosNetworkConfig::SetTrafficCountersAutoReset(
+    const std::string& guid,
+    bool auto_reset,
+    mojom::UInt32ValuePtr day,
+    SetTrafficCountersAutoResetCallback callback) {
+  if (day && !auto_reset) {
+    NET_LOG(ERROR) << "Failed to set auto reset day for " << guid
+                   << ": auto reset must be enabled.";
+    std::move(callback).Run(false);
+    return;
+  }
+  if (!day && auto_reset) {
+    NET_LOG(ERROR) << "Failed to enable auto reset for " << guid << ": a valid "
+                   << "day between 1 and 31 (inclusive) must be provided.";
+    std::move(callback).Run(false);
+    return;
+  }
+  if (day && (day->value < 1 || day->value > 31)) {
+    NET_LOG(ERROR) << "Failed to set auto reset day " << day->value << " for "
+                   << guid << ": day must be between 1 and 31 (inclusive)";
+    std::move(callback).Run(false);
+    return;
+  }
+  NetworkHandler::Get()
+      ->network_metadata_store()
+      ->SetEnableTrafficCountersAutoReset(guid, auto_reset);
+  NetworkHandler::Get()
+      ->network_metadata_store()
+      ->SetDayOfTrafficCountersAutoReset(
+          guid, day ? absl::optional<int>(day->value) : absl::nullopt);
+  std::move(callback).Run(true);
 }
 
 // static
@@ -3261,6 +3392,19 @@ void CrosNetworkConfig::OnCertificatesChanged() {
 
 void CrosNetworkConfig::OnInhibitStateChanged() {
   DeviceListChanged();
+}
+
+void CrosNetworkConfig::PoliciesApplied(const std::string& userhash) {
+  for (auto& observer : observers_)
+    observer->OnPoliciesApplied(userhash);
+}
+
+void CrosNetworkConfig::OnManagedNetworkConfigurationHandlerShuttingDown() {
+  if (network_configuration_handler_ &&
+      network_configuration_handler_->HasObserver(this)) {
+    network_configuration_handler_->RemoveObserver(this);
+  }
+  network_configuration_handler_ = nullptr;
 }
 
 const std::string& CrosNetworkConfig::GetServicePathFromGuid(

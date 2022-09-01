@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "media/gpu/macros.h"
 
@@ -94,6 +93,10 @@ void ImageProcessorBackend::Reset() {
   DVLOGF(3);
   DCHECK_CALLED_ON_VALID_SEQUENCE(backend_sequence_checker_);
   // Do nothing as the default action.
+}
+
+bool ImageProcessorBackend::needs_linear_output_buffers() const {
+  return false;
 }
 
 }  // namespace media

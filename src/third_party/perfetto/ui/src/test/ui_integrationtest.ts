@@ -22,10 +22,10 @@ import {
   compareScreenshots,
   failIfTraceProcessorHttpdIsActive,
   getTestTracePath,
-  waitForPerfettoIdle
+  waitForPerfettoIdle,
 } from './perfetto_ui_test_helper';
 
-declare var global: {__BROWSER__: puppeteer.Browser;};
+declare let global: {__BROWSER__: puppeteer.Browser;};
 const browser = assertExists(global.__BROWSER__);
 const expectedScreenshotPath = path.join('test', 'data', 'ui-screenshots');
 
@@ -104,7 +104,7 @@ describe('android_trace_30s', () => {
   //    await page.keyboard.type('\n');
   //  }
   //  await waitForPerfettoIdle(page);
-  //});
+  // });
 });
 
 describe('chrome_rendering_desktop', () => {
@@ -172,7 +172,7 @@ describe('routing', () => {
     test('access_subpage_then_go_back', async () => {
       await waitForPerfettoIdle(page);
       await page.goto(
-          'http://localhost:10000/?testing=1/#!/metrics?trace_id=76c25a80-25dd-1eb7-2246-d7b3c7a10f91');
+          'http://localhost:10000/?testing=1/#!/metrics?local_cache_key=76c25a80-25dd-1eb7-2246-d7b3c7a10f91');
       await page.goBack();
       await waitForPerfettoIdle(page);
     });
@@ -193,7 +193,7 @@ describe('routing', () => {
 
     test('open_trace ', async () => {
       await page.goto(
-          'http://localhost:10000/?testing=1#!/viewer?trace_id=76c25a80-25dd-1eb7-2246-d7b3c7a10f91');
+          'http://localhost:10000/?testing=1#!/viewer?local_cache_key=76c25a80-25dd-1eb7-2246-d7b3c7a10f91');
       await waitForPerfettoIdle(page);
     });
 
@@ -204,7 +204,7 @@ describe('routing', () => {
 
     test('open_second_trace', async () => {
       await page.goto(
-          'http://localhost:10000/?testing=1#!/viewer?trace_id=00000000-0000-0000-e13c-bd7db4ff646f');
+          'http://localhost:10000/?testing=1#!/viewer?local_cache_key=00000000-0000-0000-e13c-bd7db4ff646f');
       await waitForPerfettoIdle(page);
 
       // click on the 'Continue' button in the interstitial
@@ -222,7 +222,7 @@ describe('routing', () => {
 
     test('open_invalid_trace', async () => {
       await page.goto(
-          'http://localhost:10000/?testing=1#!/viewer?trace_id=invalid');
+          'http://localhost:10000/?testing=1#!/viewer?local_cache_key=invalid');
       await waitForPerfettoIdle(page);
     });
   });
@@ -262,7 +262,7 @@ describe('routing', () => {
     const page = await getPage();
     await page.goto('http://localhost:10000/?testing=1');
     await page.goto(
-        'http://localhost:10000/?testing=1#!/viewer?trace_id=76c25a80-25dd-1eb7-2246-d7b3c7a10f91');
+        'http://localhost:10000/?testing=1#!/viewer?local_cache_key=76c25a80-25dd-1eb7-2246-d7b3c7a10f91');
     await waitForPerfettoIdle(page);
     await page.goBack();
     await waitForPerfettoIdle(page);
@@ -272,7 +272,43 @@ describe('routing', () => {
     const page = await getPage();
     await page.goto('about:blank');
     await page.goto(
-        'http://localhost:10000/?testing=1#!/viewer?trace_id=invalid');
+        'http://localhost:10000/?testing=1#!/viewer?local_cache_key=invalid');
+    await waitForPerfettoIdle(page);
+  });
+});
+
+// Regression test for b/235335853.
+describe('modal_dialog', () => {
+  let page: puppeteer.Page;
+
+  beforeAll(async () => {
+    page = await getPage();
+    await page.goto('http://localhost:10000/?testing=1');
+    await waitForPerfettoIdle(page);
+  });
+
+  test('show_dialog_1', async () => {
+    await page.click('#keyboard_shortcuts');
+    await waitForPerfettoIdle(page);
+  });
+
+  test('dismiss_1', async () => {
+    await page.keyboard.press('Escape');
+    await waitForPerfettoIdle(page);
+  });
+
+  test('switch_page_no_dialog', async () => {
+    await page.click('#record_new_trace');
+    await waitForPerfettoIdle(page);
+  });
+
+  test('show_dialog_2', async () => {
+    await page.click('#keyboard_shortcuts');
+    await waitForPerfettoIdle(page);
+  });
+
+  test('dismiss_2', async () => {
+    await page.keyboard.press('Escape');
     await waitForPerfettoIdle(page);
   });
 });

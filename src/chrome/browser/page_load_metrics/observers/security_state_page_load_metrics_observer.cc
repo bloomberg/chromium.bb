@@ -102,13 +102,22 @@ SecurityStatePageLoadMetricsObserver::OnStart(
 }
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
-SecurityStatePageLoadMetricsObserver::OnCommit(
+SecurityStatePageLoadMetricsObserver::OnFencedFramesStart(
     content::NavigationHandle* navigation_handle,
-    ukm::SourceId source_id) {
+    const GURL& currently_committed_url) {
+  // All data aggregation are done in SiteEngagementService and
+  // SecurityStateTabHelper, and this class just monitors the timings to record
+  // the aggregated data. As the outermost page's OnCommit and OnComplete are
+  // the timing this class is interested in, it just stops observing
+  // FencedFrames.
+  return STOP_OBSERVING;
+}
+
+page_load_metrics::PageLoadMetricsObserver::ObservePolicy
+SecurityStatePageLoadMetricsObserver::OnCommit(
+    content::NavigationHandle* navigation_handle) {
   // Only navigations committed to the main frame are monitored.
   DCHECK(navigation_handle->IsInMainFrame());
-
-  source_id_ = source_id;
 
   content::WebContents* web_contents = navigation_handle->GetWebContents();
   DCHECK(web_contents);
@@ -124,7 +133,6 @@ SecurityStatePageLoadMetricsObserver::OnCommit(
   base::UmaHistogramEnumeration(kSecurityLevelOnCommit, initial_security_level_,
                                 security_state::SECURITY_LEVEL_COUNT);
 
-  source_id_ = source_id;
   return CONTINUE_OBSERVING;
 }
 
@@ -146,7 +154,7 @@ void SecurityStatePageLoadMetricsObserver::OnComplete(
         ukm::GetLinearBucketMin(final_engagement_score, 10);
 
     ukm::UkmRecorder* ukm_recorder = ukm::UkmRecorder::Get();
-    ukm::builders::Security_SiteEngagement(source_id_)
+    ukm::builders::Security_SiteEngagement(GetDelegate().GetPageUkmSourceId())
         .SetInitialSecurityLevel(initial_security_level_)
         .SetFinalSecurityLevel(current_security_level_)
         .SetSafetyTipStatus(static_cast<int64_t>(safety_tip_status))

@@ -19,8 +19,10 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/services/app_service/public/cpp/app_capability_access_cache.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
+#include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/icon_cache.h"
 #include "components/services/app_service/public/cpp/icon_coalescer.h"
+#include "components/services/app_service/public/cpp/preferred_app.h"
 #include "components/services/app_service/public/cpp/preferred_apps_list.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
@@ -37,7 +39,7 @@
 class Profile;
 
 namespace web_app {
-class WebAppsPublisherHost;
+class LacrosWebAppsController;
 }  // namespace web_app
 
 namespace apps {
@@ -82,7 +84,7 @@ class AppServiceProxyLacros : public KeyedService,
 
   apps::BrowserAppLauncher* BrowserAppLauncher();
 
-  apps::PreferredAppsListHandle& PreferredApps();
+  apps::PreferredAppsListHandle& PreferredAppsList();
 
   apps::BrowserAppInstanceTracker* BrowserAppInstanceTracker();
 
@@ -243,7 +245,10 @@ class AppServiceProxyLacros : public KeyedService,
   void SetWindowMode(const std::string& app_id,
                      apps::mojom::WindowMode window_mode);
 
-  web_app::WebAppsPublisherHost* WebAppsPublisherHostForTesting();
+  web_app::LacrosWebAppsController* LacrosWebAppsControllerForTesting();
+
+  void SetCrosapiAppServiceProxyForTesting(
+      crosapi::mojom::AppServiceProxy* proxy);
 
  protected:
   // An adapter, presenting an IconLoader interface based on the underlying
@@ -326,13 +331,11 @@ class AppServiceProxyLacros : public KeyedService,
   void Shutdown() override;
 
   // crosapi::mojom::AppServiceSubscriber overrides.
-  void OnApps(std::vector<apps::mojom::AppPtr> deltas,
-              apps::mojom::AppType app_type,
+  void OnApps(std::vector<AppPtr> deltas,
+              AppType app_type,
               bool should_notify_initialized) override;
-  void OnPreferredAppsChanged(
-      apps::mojom::PreferredAppChangesPtr changes) override;
-  void InitializePreferredApps(
-      PreferredAppsList::PreferredApps preferred_apps) override;
+  void OnPreferredAppsChanged(PreferredAppChangesPtr changes) override;
+  void InitializePreferredApps(PreferredApps preferred_apps) override;
 
   apps::AppRegistryCache app_registry_cache_;
   apps::AppCapabilityAccessCache app_capability_access_cache_;
@@ -346,7 +349,7 @@ class AppServiceProxyLacros : public KeyedService,
   IconCoalescer icon_coalescer_;
   IconCache outer_icon_loader_;
 
-  apps::PreferredAppsList preferred_apps_;
+  apps::PreferredAppsList preferred_apps_list_;
 
   Profile* profile_;
 
@@ -364,8 +367,9 @@ class AppServiceProxyLacros : public KeyedService,
   bool is_using_testing_profile_ = false;
   base::OnceClosure dialog_created_callback_;
 
-  std::unique_ptr<web_app::WebAppsPublisherHost> web_apps_publisher_host_;
+  std::unique_ptr<web_app::LacrosWebAppsController> lacros_web_apps_controller_;
   mojo::Receiver<crosapi::mojom::AppServiceSubscriber> crosapi_receiver_{this};
+  crosapi::mojom::AppServiceProxy* remote_crosapi_app_service_proxy_ = nullptr;
   int crosapi_app_service_proxy_version_ = 0;
 
   base::WeakPtrFactory<AppServiceProxyLacros> weak_ptr_factory_{this};

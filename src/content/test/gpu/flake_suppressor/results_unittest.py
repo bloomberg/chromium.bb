@@ -3,14 +3,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import sys
+# pylint: disable=protected-access
+
 import unittest
-# This script is not Python 2-compatible, but some presubmit scripts end up
-# trying to parse this to find tests.
-# TODO(crbug.com/1198237): Remove this once all the GPU tests, and by
-# extension the presubmit scripts, are Python 3-compatible.
-if sys.version_info[0] == 3:
-  import unittest.mock as mock
+import unittest.mock as mock
 
 from flake_suppressor import data_types
 from flake_suppressor import results
@@ -31,7 +27,7 @@ crbug.com/1111 [ win nvidia ] conformance/textures/misc/video-rotation.html [ Fa
 
 
 class BaseResultsUnittest(unittest.TestCase):
-  def setUp(self):
+  def setUp(self) -> None:
     self._local_patcher = mock.patch('flake_suppressor.results.expectations.'
                                      'GetExpectationFilesFromLocalCheckout')
     self._local_mock = self._local_patcher.start()
@@ -40,7 +36,7 @@ class BaseResultsUnittest(unittest.TestCase):
 
 
 class AggregateResultsUnittest(BaseResultsUnittest):
-  def testBasic(self):
+  def testBasic(self) -> None:
     """Basic functionality test."""
     query_results = [
         {
@@ -106,7 +102,7 @@ class AggregateResultsUnittest(BaseResultsUnittest):
     }
     self.assertEqual(results.AggregateResults(query_results), expected_output)
 
-  def testWithFiltering(self):
+  def testWithFiltering(self) -> None:
     """Tests that results are properly filtered out."""
     self._local_mock.return_value = {
         'webgl_conformance_expectations.txt': GPU_EXPECTATION_FILE_CONTENTS,
@@ -175,7 +171,7 @@ class AggregateResultsUnittest(BaseResultsUnittest):
 
 
 class ConvertJsonResultsToResultObjectsUnittest(BaseResultsUnittest):
-  def testBasic(self):
+  def testBasic(self) -> None:
     """Basic functionality test."""
     r = [
         {
@@ -211,7 +207,7 @@ class ConvertJsonResultsToResultObjectsUnittest(BaseResultsUnittest):
     self.assertEqual(results._ConvertJsonResultsToResultObjects(r),
                      expected_results)
 
-  def testDuplicateResults(self):
+  def testDuplicateResults(self) -> None:
     """Tests that duplicate results are not merged."""
     r = [
         {
@@ -244,7 +240,7 @@ class ConvertJsonResultsToResultObjectsUnittest(BaseResultsUnittest):
 
 
 class FilterOutSuppressedResultsUnittest(BaseResultsUnittest):
-  def testNoSuppressedResults(self):
+  def testNoSuppressedResults(self) -> None:
     """Tests functionality when no expectations apply to the given results."""
     self._local_mock.return_value = {
         'foo_expectations.txt': GENERIC_EXPECTATION_FILE_CONTENTS,
@@ -260,7 +256,7 @@ class FilterOutSuppressedResultsUnittest(BaseResultsUnittest):
     ]
     self.assertEqual(results._FilterOutSuppressedResults(r), r)
 
-  def testSuppressedResults(self):
+  def testSuppressedResults(self) -> None:
     """Tests functionality when expectations apply to the given results."""
     self._local_mock.return_value = {
         'foo_expectations.txt': GENERIC_EXPECTATION_FILE_CONTENTS,

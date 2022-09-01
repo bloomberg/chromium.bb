@@ -50,81 +50,81 @@ struct WasmModule;
 
 // Convenience macro listing all wasm runtime stubs. Note that the first few
 // elements of the list coincide with {compiler::TrapId}, order matters.
-#define WASM_RUNTIME_STUB_LIST(V, VTRAP)  \
-  FOREACH_WASM_TRAPREASON(VTRAP)          \
-  V(WasmCompileLazy)                      \
-  V(WasmTriggerTierUp)                    \
-  V(WasmDebugBreak)                       \
-  V(WasmInt32ToHeapNumber)                \
-  V(WasmTaggedNonSmiToInt32)              \
-  V(WasmFloat32ToNumber)                  \
-  V(WasmFloat64ToNumber)                  \
-  V(WasmTaggedToFloat64)                  \
-  V(WasmAllocateJSArray)                  \
-  V(WasmAtomicNotify)                     \
-  V(WasmI32AtomicWait32)                  \
-  V(WasmI32AtomicWait64)                  \
-  V(WasmI64AtomicWait32)                  \
-  V(WasmI64AtomicWait64)                  \
-  V(WasmGetOwnProperty)                   \
-  V(WasmRefFunc)                          \
-  V(WasmMemoryGrow)                       \
-  V(WasmTableInit)                        \
-  V(WasmTableCopy)                        \
-  V(WasmTableFill)                        \
-  V(WasmTableGrow)                        \
-  V(WasmTableGet)                         \
-  V(WasmTableSet)                         \
-  V(WasmStackGuard)                       \
-  V(WasmStackOverflow)                    \
-  V(WasmAllocateFixedArray)               \
-  V(WasmThrow)                            \
-  V(WasmRethrow)                          \
-  V(WasmRethrowExplicitContext)           \
-  V(WasmTraceEnter)                       \
-  V(WasmTraceExit)                        \
-  V(WasmTraceMemory)                      \
-  V(BigIntToI32Pair)                      \
-  V(BigIntToI64)                          \
-  V(CallRefIC)                            \
-  V(DoubleToI)                            \
-  V(I32PairToBigInt)                      \
-  V(I64ToBigInt)                          \
-  V(RecordWriteEmitRememberedSetSaveFP)   \
-  V(RecordWriteOmitRememberedSetSaveFP)   \
-  V(RecordWriteEmitRememberedSetIgnoreFP) \
-  V(RecordWriteOmitRememberedSetIgnoreFP) \
-  V(ToNumber)                             \
-  IF_TSAN(V, TSANRelaxedStore8IgnoreFP)   \
-  IF_TSAN(V, TSANRelaxedStore8SaveFP)     \
-  IF_TSAN(V, TSANRelaxedStore16IgnoreFP)  \
-  IF_TSAN(V, TSANRelaxedStore16SaveFP)    \
-  IF_TSAN(V, TSANRelaxedStore32IgnoreFP)  \
-  IF_TSAN(V, TSANRelaxedStore32SaveFP)    \
-  IF_TSAN(V, TSANRelaxedStore64IgnoreFP)  \
-  IF_TSAN(V, TSANRelaxedStore64SaveFP)    \
-  IF_TSAN(V, TSANSeqCstStore8IgnoreFP)    \
-  IF_TSAN(V, TSANSeqCstStore8SaveFP)      \
-  IF_TSAN(V, TSANSeqCstStore16IgnoreFP)   \
-  IF_TSAN(V, TSANSeqCstStore16SaveFP)     \
-  IF_TSAN(V, TSANSeqCstStore32IgnoreFP)   \
-  IF_TSAN(V, TSANSeqCstStore32SaveFP)     \
-  IF_TSAN(V, TSANSeqCstStore64IgnoreFP)   \
-  IF_TSAN(V, TSANSeqCstStore64SaveFP)     \
-  IF_TSAN(V, TSANRelaxedLoad32IgnoreFP)   \
-  IF_TSAN(V, TSANRelaxedLoad32SaveFP)     \
-  IF_TSAN(V, TSANRelaxedLoad64IgnoreFP)   \
-  IF_TSAN(V, TSANRelaxedLoad64SaveFP)     \
-  V(WasmAllocateArray_Uninitialized)      \
-  V(WasmAllocateArray_InitNull)           \
-  V(WasmAllocateArray_InitZero)           \
-  V(WasmArrayCopy)                        \
-  V(WasmArrayCopyWithChecks)              \
-  V(WasmAllocateRtt)                      \
-  V(WasmAllocateFreshRtt)                 \
-  V(WasmAllocateStructWithRtt)            \
-  V(WasmSubtypeCheck)                     \
-  V(WasmOnStackReplace)
+#define WASM_RUNTIME_STUB_LIST(V, VTRAP) \
+  FOREACH_WASM_TRAPREASON(VTRAP)         \
+  V(WasmCompileLazy)                     \
+  V(WasmTriggerTierUp)                   \
+  V(WasmDebugBreak)                      \
+  V(WasmInt32ToHeapNumber)               \
+  V(WasmTaggedNonSmiToInt32)             \
+  V(WasmFloat32ToNumber)                 \
+  V(WasmFloat64ToNumber)                 \
+  V(WasmTaggedToFloat64)                 \
+  V(WasmAllocateJSArray)                 \
+  V(WasmAtomicNotify)                    \
+  V(WasmI32AtomicWait32)                 \
+  V(WasmI32AtomicWait64)                 \
+  V(WasmI64AtomicWait32)                 \
+  V(WasmI64AtomicWait64)                 \
+  V(WasmGetOwnProperty)                  \
+  V(WasmRefFunc)                         \
+  V(WasmMemoryGrow)                      \
+  V(WasmTableInit)                       \
+  V(WasmTableCopy)                       \
+  V(WasmTableFill)                       \
+  V(WasmTableGrow)                       \
+  V(WasmTableGet)                        \
+  V(WasmTableSet)                        \
+  V(WasmTableGetFuncRef)                 \
+  V(WasmTableSetFuncRef)                 \
+  V(WasmStackGuard)                      \
+  V(WasmStackOverflow)                   \
+  V(WasmAllocateFixedArray)              \
+  V(WasmThrow)                           \
+  V(WasmRethrow)                         \
+  V(WasmRethrowExplicitContext)          \
+  V(WasmTraceEnter)                      \
+  V(WasmTraceExit)                       \
+  V(WasmTraceMemory)                     \
+  V(BigIntToI32Pair)                     \
+  V(BigIntToI64)                         \
+  V(CallRefIC)                           \
+  V(DoubleToI)                           \
+  V(I32PairToBigInt)                     \
+  V(I64ToBigInt)                         \
+  V(RecordWriteSaveFP)                   \
+  V(RecordWriteIgnoreFP)                 \
+  V(ToNumber)                            \
+  IF_TSAN(V, TSANRelaxedStore8IgnoreFP)  \
+  IF_TSAN(V, TSANRelaxedStore8SaveFP)    \
+  IF_TSAN(V, TSANRelaxedStore16IgnoreFP) \
+  IF_TSAN(V, TSANRelaxedStore16SaveFP)   \
+  IF_TSAN(V, TSANRelaxedStore32IgnoreFP) \
+  IF_TSAN(V, TSANRelaxedStore32SaveFP)   \
+  IF_TSAN(V, TSANRelaxedStore64IgnoreFP) \
+  IF_TSAN(V, TSANRelaxedStore64SaveFP)   \
+  IF_TSAN(V, TSANSeqCstStore8IgnoreFP)   \
+  IF_TSAN(V, TSANSeqCstStore8SaveFP)     \
+  IF_TSAN(V, TSANSeqCstStore16IgnoreFP)  \
+  IF_TSAN(V, TSANSeqCstStore16SaveFP)    \
+  IF_TSAN(V, TSANSeqCstStore32IgnoreFP)  \
+  IF_TSAN(V, TSANSeqCstStore32SaveFP)    \
+  IF_TSAN(V, TSANSeqCstStore64IgnoreFP)  \
+  IF_TSAN(V, TSANSeqCstStore64SaveFP)    \
+  IF_TSAN(V, TSANRelaxedLoad32IgnoreFP)  \
+  IF_TSAN(V, TSANRelaxedLoad32SaveFP)    \
+  IF_TSAN(V, TSANRelaxedLoad64IgnoreFP)  \
+  IF_TSAN(V, TSANRelaxedLoad64SaveFP)    \
+  V(WasmAllocateArray_Uninitialized)     \
+  V(WasmArrayCopy)                       \
+  V(WasmArrayCopyWithChecks)             \
+  V(WasmArrayInitFromData)               \
+  V(WasmAllocateStructWithRtt)           \
+  V(WasmSubtypeCheck)                    \
+  V(WasmOnStackReplace)                  \
+  V(WasmSuspend)                         \
+  V(WasmStringNewWtf8)                   \
+  V(WasmStringNewWtf16)
 
 // Sorted, disjoint and non-overlapping memory regions. A region is of the
 // form [start, end). So there's no [start, end), [end, other_end),
@@ -140,12 +140,12 @@ class V8_EXPORT_PRIVATE DisjointAllocationPool final {
   // obtained from a previous Allocate. Returns the merged region.
   base::AddressRegion Merge(base::AddressRegion);
 
-  // Allocate a contiguous region of size {size}. Return an empty pool on
+  // Allocate a contiguous region of size {size}. Return an empty region on
   // failure.
   base::AddressRegion Allocate(size_t size);
 
   // Allocate a contiguous region of size {size} within {region}. Return an
-  // empty pool on failure.
+  // empty region on failure.
   base::AddressRegion AllocateInRegion(size_t size, base::AddressRegion);
 
   bool IsEmpty() const { return regions_.empty(); }
@@ -171,23 +171,12 @@ class V8_EXPORT_PRIVATE WasmCode final {
         kRuntimeStubCount
   };
 
-  static constexpr RuntimeStubId GetRecordWriteStub(
-      RememberedSetAction remembered_set_action, SaveFPRegsMode fp_mode) {
-    switch (remembered_set_action) {
-      case RememberedSetAction::kEmit:
-        switch (fp_mode) {
-          case SaveFPRegsMode::kIgnore:
-            return RuntimeStubId::kRecordWriteEmitRememberedSetIgnoreFP;
-          case SaveFPRegsMode::kSave:
-            return RuntimeStubId::kRecordWriteEmitRememberedSetSaveFP;
-        }
-      case RememberedSetAction::kOmit:
-        switch (fp_mode) {
-          case SaveFPRegsMode::kIgnore:
-            return RuntimeStubId::kRecordWriteOmitRememberedSetIgnoreFP;
-          case SaveFPRegsMode::kSave:
-            return RuntimeStubId::kRecordWriteOmitRememberedSetSaveFP;
-        }
+  static constexpr RuntimeStubId GetRecordWriteStub(SaveFPRegsMode fp_mode) {
+    switch (fp_mode) {
+      case SaveFPRegsMode::kIgnore:
+        return RuntimeStubId::kRecordWriteIgnoreFP;
+      case SaveFPRegsMode::kSave:
+        return RuntimeStubId::kRecordWriteSaveFP;
     }
   }
 
@@ -292,7 +281,11 @@ class V8_EXPORT_PRIVATE WasmCode final {
   uint32_t raw_tagged_parameter_slots_for_serialization() const {
     return tagged_parameter_slots_;
   }
+
   bool is_liftoff() const { return tier() == ExecutionTier::kLiftoff; }
+
+  bool is_turbofan() const { return tier() == ExecutionTier::kTurbofan; }
+
   bool contains(Address pc) const {
     return reinterpret_cast<Address>(instructions_) <= pc &&
            pc < reinterpret_cast<Address>(instructions_ + instructions_size_);
@@ -491,7 +484,9 @@ class V8_EXPORT_PRIVATE WasmCode final {
 // often for rather small functions.
 // Increase the limit if needed, but first check if the size increase is
 // justified.
-STATIC_ASSERT(sizeof(WasmCode) <= 88);
+#ifndef V8_GC_MOLE
+static_assert(sizeof(WasmCode) <= 88);
+#endif
 
 WasmCode::Kind GetCodeKind(const WasmCompilationResult& result);
 
@@ -781,8 +776,7 @@ class V8_EXPORT_PRIVATE NativeModule final {
 
   void UpdateCPUDuration(size_t cpu_duration, ExecutionTier tier);
   void AddLiftoffBailout() {
-    liftoff_bailout_count_.fetch_add(1,
-                                     std::memory_order::memory_order_relaxed);
+    liftoff_bailout_count_.fetch_add(1, std::memory_order_relaxed);
   }
 
   WasmCode* Lookup(Address) const;
@@ -798,7 +792,7 @@ class V8_EXPORT_PRIVATE NativeModule final {
   WasmCode::RuntimeStubId GetRuntimeStubId(Address runtime_stub_target) const;
 
   // Sample the current code size of this modules to the given counters.
-  enum CodeSamplingTime : int8_t { kAfterBaseline, kAfterTopTier, kSampling };
+  enum CodeSamplingTime : int8_t { kAfterBaseline, kSampling };
   void SampleCodeSize(Counters*, CodeSamplingTime) const;
 
   V8_WARN_UNUSED_RESULT std::unique_ptr<WasmCode> AddCompiledCode(
@@ -1027,13 +1021,15 @@ class V8_EXPORT_PRIVATE WasmCodeManager final {
   static size_t EstimateLiftoffCodeSize(int body_size);
   // Estimate the needed code space from a completely decoded module.
   static size_t EstimateNativeModuleCodeSize(const WasmModule* module,
-                                             bool include_liftoff);
+                                             bool include_liftoff,
+                                             DynamicTiering dynamic_tiering);
   // Estimate the needed code space from the number of functions and total code
   // section length.
   static size_t EstimateNativeModuleCodeSize(int num_functions,
                                              int num_imported_functions,
                                              int code_section_length,
-                                             bool include_liftoff);
+                                             bool include_liftoff,
+                                             DynamicTiering dynamic_tiering);
   // Estimate the size of meta data needed for the NativeModule, excluding
   // generated code. This data still be stored on the C++ heap.
   static size_t EstimateNativeModuleMetaDataSize(const WasmModule* module);
@@ -1058,13 +1054,15 @@ class V8_EXPORT_PRIVATE WasmCodeManager final {
   // Can only be called if {HasMemoryProtectionKeySupport()} is {true}.
   bool MemoryProtectionKeyWritable() const;
 
-  // This allocates a memory protection key (if none was allocated before),
-  // independent of the --wasm-memory-protection-keys flag.
-  void InitializeMemoryProtectionKeyForTesting();
-
   // Initialize the current thread's permissions for the memory protection key,
   // if we have support.
   void InitializeMemoryProtectionKeyPermissionsIfSupported() const;
+
+  // Allocate new memory for assembler buffers, potentially protected by PKU.
+  base::AddressRegion AllocateAssemblerBufferSpace(int size);
+
+  // Free previously allocated space for assembler buffers.
+  void FreeAssemblerBufferSpace(base::AddressRegion region);
 
  private:
   friend class WasmCodeAllocator;

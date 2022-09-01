@@ -24,9 +24,12 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_member.h"
+#include "components/privacy_sandbox/privacy_sandbox_settings.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/remote_set.h"
 #include "net/net_buildflags.h"
 #include "services/cert_verifier/public/mojom/cert_verifier_service_factory.mojom-forward.h"
+#include "services/network/public/mojom/first_party_sets_access_delegate.mojom-forward.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 
 class PrefRegistrySimple;
@@ -56,7 +59,8 @@ class PrefRegistrySyncable;
 class ProfileNetworkContextService
     : public KeyedService,
       public content_settings::Observer,
-      public content_settings::CookieSettings::Observer {
+      public content_settings::CookieSettings::Observer,
+      public privacy_sandbox::PrivacySandboxSettings::Observer {
  public:
   explicit ProfileNetworkContextService(Profile* profile);
 
@@ -76,7 +80,7 @@ class ProfileNetworkContextService
       cert_verifier::mojom::CertVerifierCreationParams*
           cert_verifier_creation_params);
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
   void UpdateAdditionalCertificates();
 #endif
 
@@ -158,6 +162,12 @@ class ProfileNetworkContextService
   base::FilePath GetPartitionPath(
       const base::FilePath& relative_partition_path);
 
+  // Populates |network_context_params| with initial additional server and
+  // authority certificates for |relative_partition_path|.
+  void PopulateInitialAdditionalCerts(
+      const base::FilePath& relative_partition_path,
+      network::mojom::NetworkContextParams* network_context_params);
+
   // content_settings::Observer:
   void OnContentSettingChanged(const ContentSettingsPattern& primary_pattern,
                                const ContentSettingsPattern& secondary_pattern,
@@ -166,6 +176,9 @@ class ProfileNetworkContextService
   // content_settings::CookieSettings::Observer:
   void OnThirdPartyCookieBlockingChanged(
       bool block_third_party_cookies) override;
+
+  // PrivacySandboxSettings::Observer:
+  void OnTrustTokenBlockingChanged(bool block_trust_tokens) override;
 
   const raw_ptr<Profile> profile_;
 
@@ -180,6 +193,9 @@ class ProfileNetworkContextService
   base::ScopedObservation<content_settings::CookieSettings,
                           content_settings::CookieSettings::Observer>
       cookie_settings_observation_{this};
+  base::ScopedObservation<privacy_sandbox::PrivacySandboxSettings,
+                          privacy_sandbox::PrivacySandboxSettings::Observer>
+      privacy_sandbox_settings_observer_{this};
 
   // Used to post schedule CT policy updates
   base::OneShotTimer ct_policy_update_timer_;
@@ -190,6 +206,10 @@ class ProfileNetworkContextService
   std::unique_ptr<TrialComparisonCertVerifierController>
       trial_comparison_cert_verifier_controller_;
 #endif
+
+  // TODO(crbug.com/1325050): Let FirstPartySetsHandlerImpl own it.
+  mojo::RemoteSet<network::mojom::FirstPartySetsAccessDelegate>
+      fps_access_delegate_remote_set_;
 
   // Used for testing.
   base::RepeatingCallback<std::unique_ptr<net::ClientCertStore>()>

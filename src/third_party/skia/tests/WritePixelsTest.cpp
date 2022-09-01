@@ -13,9 +13,9 @@
 #include "include/private/SkColorData.h"
 #include "include/private/SkImageInfoPriv.h"
 #include "src/core/SkMathPriv.h"
-#include "src/gpu/GrDirectContextPriv.h"
-#include "src/gpu/GrGpu.h"
-#include "src/gpu/GrProxyProvider.h"
+#include "src/gpu/ganesh/GrDirectContextPriv.h"
+#include "src/gpu/ganesh/GrGpu.h"
+#include "src/gpu/ganesh/GrProxyProvider.h"
 #include "tests/Test.h"
 #include "tools/gpu/BackendSurfaceFactory.h"
 
@@ -535,7 +535,7 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(WritePixelsPendingIO, reporter, ctxInfo) {
 
         sk_sp<GrTextureProxy> temp = proxyProvider->createProxy(
                 format, kDims, GrRenderable::kNo, 1, GrMipmapped::kNo, SkBackingFit::kApprox,
-                SkBudgeted::kYes, GrProtected::kNo);
+                SkBudgeted::kYes, GrProtected::kNo, /*label=*/"WritePixelsTest");
         temp->instantiate(context->priv().resourceProvider());
     }
 

@@ -68,7 +68,7 @@ class DevToolsFrontendHostDelegateImpl final
     // ======== WebContentsObserver overrides ============
 
     void RenderFrameCreated(content::RenderFrameHost* renderFrameHost) override;
-    void DocumentAvailableInMainFrame(content::RenderFrameHost *) override;
+    void PrimaryMainDocumentElementAvailable() override;
     void WebContentsDestroyed() override;
 
 

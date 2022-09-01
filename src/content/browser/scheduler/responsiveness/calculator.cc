@@ -72,7 +72,7 @@ Calculator::Jank::Jank(base::TimeTicks start_time, base::TimeTicks end_time)
 Calculator::Calculator()
     : last_calculation_time_(base::TimeTicks::Now()),
       most_recent_activity_time_(last_calculation_time_)
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
       ,
       application_status_listener_(
           base::android::ApplicationStatusListener::New(
@@ -136,9 +136,8 @@ void Calculator::TaskOrEventFinishedOnIOThread(
 
 void Calculator::OnFirstIdle() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(startup_stage_ == StartupStage::kMessageLoopJustStarted ||
-         startup_stage_ == StartupStage::kFirstIntervalDoneWithoutFirstIdle);
-  startup_stage_ = StartupStage::kPastFirstIdle;
+  DCHECK(!past_first_idle_);
+  past_first_idle_ = true;
 }
 
 void Calculator::EmitResponsiveness(JankType jank_type,
@@ -153,11 +152,13 @@ void Calculator::EmitResponsiveness(JankType jank_type,
       UMA_HISTOGRAM_COUNTS_1000(
           "Browser.Responsiveness.JankyIntervalsPerThirtySeconds",
           janky_slices);
-      if (startup_stage_ == StartupStage::kMessageLoopJustStarted) {
+      // Only kFirstInterval and kPeriodic are reported with a suffix, stages
+      // in between are only part of the unsuffixed histogram.
+      if (startup_stage_ == StartupStage::kFirstInterval) {
         UMA_HISTOGRAM_COUNTS_1000(
             "Browser.Responsiveness.JankyIntervalsPerThirtySeconds.Initial",
             janky_slices);
-      } else if (startup_stage_ == StartupStage::kRecordingPastFirstIdle) {
+      } else if (startup_stage_ == StartupStage::kPeriodic) {
         UMA_HISTOGRAM_COUNTS_1000(
             "Browser.Responsiveness.JankyIntervalsPerThirtySeconds.Periodic",
             janky_slices);
@@ -165,14 +166,21 @@ void Calculator::EmitResponsiveness(JankType jank_type,
       break;
     }
     case JankType::kQueueAndExecution: {
-      // TODO(gab): Remove JankyIntervalsPerThirtySeconds2 once
-      // JankyIntervalsPerThirtySeconds3 has fully replaced it.
+      // Queuing jank doesn't count before OnFirstIdle().
+      if (startup_stage_ == StartupStage::kFirstInterval ||
+          startup_stage_ == StartupStage::kFirstIntervalDoneWithoutFirstIdle) {
+        break;
+      }
       UMA_HISTOGRAM_CUSTOM_COUNTS(
-          "Browser.Responsiveness.JankyIntervalsPerThirtySeconds2",
+          "Browser.Responsiveness.JankyIntervalsPerThirtySeconds3",
           janky_slices, 1, kMaxJankySlices, 50);
-      if (startup_stage == StartupStage::kRecordingPastFirstIdle) {
+      if (startup_stage_ == StartupStage::kFirstIntervalAfterFirstIdle) {
         UMA_HISTOGRAM_CUSTOM_COUNTS(
-            "Browser.Responsiveness.JankyIntervalsPerThirtySeconds3",
+            "Browser.Responsiveness.JankyIntervalsPerThirtySeconds3.Initial",
+            janky_slices, 1, kMaxJankySlices, 50);
+      } else if (startup_stage_ == StartupStage::kPeriodic) {
+        UMA_HISTOGRAM_CUSTOM_COUNTS(
+            "Browser.Responsiveness.JankyIntervalsPerThirtySeconds3.Periodic",
             janky_slices, 1, kMaxJankySlices, 50);
       }
       break;
@@ -261,7 +269,7 @@ void Calculator::CalculateResponsivenessIfNecessary(
   // the UI thread. If there's been a significant amount of time since the last
   // calculation, then it's likely because Chrome was suspended.
   bool is_suspended = current_time - last_activity_time > kSuspendInterval;
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   is_suspended |= !is_application_visible_;
 #endif
   if (is_suspended) {
@@ -312,10 +320,15 @@ void Calculator::CalculateResponsivenessIfNecessary(
       std::move(queue_and_execution_janks_from_multiple_threads),
       last_calculation_time_, new_calculation_time);
 
-  if (startup_stage_ == StartupStage::kMessageLoopJustStarted)
+  if (startup_stage_ == StartupStage::kFirstInterval)
     startup_stage_ = StartupStage::kFirstIntervalDoneWithoutFirstIdle;
-  else if (startup_stage_ == StartupStage::kPastFirstIdle)
-    startup_stage_ = StartupStage::kRecordingPastFirstIdle;
+
+  if (startup_stage_ == StartupStage::kFirstIntervalDoneWithoutFirstIdle &&
+      past_first_idle_) {
+    startup_stage_ = StartupStage::kFirstIntervalAfterFirstIdle;
+  } else if (startup_stage_ == StartupStage::kFirstIntervalAfterFirstIdle) {
+    startup_stage_ = StartupStage::kPeriodic;
+  }
 
   last_calculation_time_ = new_calculation_time;
 }
@@ -357,7 +370,8 @@ void Calculator::CalculateResponsiveness(
     TRACE_EVENT_CATEGORY_GROUP_ENABLED(kLatencyEventCategory,
                                        &latency_category_enabled);
     if (latency_category_enabled &&
-        startup_stage_ == StartupStage::kRecordingPastFirstIdle) {
+        (startup_stage_ == StartupStage::kFirstIntervalAfterFirstIdle ||
+         startup_stage_ == StartupStage::kPeriodic)) {
       EmitResponsivenessTraceEvents(jank_type, start_time,
                                     current_interval_end_time, janky_slices);
     }
@@ -376,7 +390,7 @@ Calculator::JankList& Calculator::GetQueueAndExecutionJanksOnUIThread() {
   return queue_and_execution_janks_on_ui_thread_;
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 void Calculator::OnApplicationStateChanged(
     base::android::ApplicationState state) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);

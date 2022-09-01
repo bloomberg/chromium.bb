@@ -8,7 +8,8 @@
 #ifndef SKSL_MANGLER
 #define SKSL_MANGLER
 
-#include "include/private/SkSLString.h"
+#include <string>
+#include <string_view>
 
 namespace SkSL {
 
@@ -19,7 +20,7 @@ public:
     /**
      * Mangles baseName to create a name that is unique within symbolTable.
      */
-    String uniqueName(skstd::string_view baseName, SymbolTable* symbolTable);
+    std::string uniqueName(std::string_view baseName, SymbolTable* symbolTable);
 
     void reset() {
         fCounter = 0;
