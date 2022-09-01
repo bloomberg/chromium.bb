@@ -4,7 +4,7 @@
 
 #include "ash/webui/diagnostics_ui/backend/system_routine_controller.h"
 
-#include "ash/webui/diagnostics_ui/backend/routine_log.h"
+#include "ash/system/diagnostics/routine_log.h"
 #include "base/containers/contains.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -16,8 +16,7 @@
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
-#include "chromeos/dbus/cros_healthd/fake_cros_healthd_client.h"
-#include "chromeos/dbus/cros_healthd/fake_cros_healthd_service.h"
+#include "chromeos/services/cros_healthd/public/cpp/fake_cros_healthd.h"
 #include "chromeos/services/cros_healthd/public/mojom/cros_healthd.mojom.h"
 #include "chromeos/services/cros_healthd/public/mojom/cros_healthd_diagnostics.mojom.h"
 #include "mojo/public/cpp/system/platform_handle.h"
@@ -37,7 +36,7 @@ constexpr char kResultDetailsKey[] = "resultDetails";
 
 void SetCrosHealthdRunRoutineResponse(
     healthd::RunRoutineResponsePtr& response) {
-  cros_healthd::FakeCrosHealthdClient::Get()->SetRunRoutineResponseForTesting(
+  cros_healthd::FakeCrosHealthd::Get()->SetRunRoutineResponseForTesting(
       response);
 }
 
@@ -48,8 +47,8 @@ void SetRunRoutineResponse(int32_t id,
 }
 
 void SetCrosHealthdRoutineUpdateResponse(healthd::RoutineUpdatePtr& response) {
-  cros_healthd::FakeCrosHealthdClient::Get()
-      ->SetGetRoutineUpdateResponseForTesting(response);
+  cros_healthd::FakeCrosHealthd::Get()->SetGetRoutineUpdateResponseForTesting(
+      response);
 }
 
 void SetNonInteractiveRoutineUpdateResponse(
@@ -126,7 +125,7 @@ std::string ConstructPowerRoutineResultJson(double charge_percent,
 
 void SetAvailableRoutines(
     const std::vector<healthd::DiagnosticRoutineEnum>& routines) {
-  cros_healthd::FakeCrosHealthdClient::Get()->SetAvailableRoutinesForTesting(
+  cros_healthd::FakeCrosHealthd::Get()->SetAvailableRoutinesForTesting(
       routines);
 }
 
@@ -160,7 +159,7 @@ struct FakeRoutineRunner : public mojom::RoutineRunner {
 class SystemRoutineControllerTest : public testing::Test {
  public:
   SystemRoutineControllerTest() {
-    chromeos::CrosHealthdClient::InitializeFake();
+    cros_healthd::FakeCrosHealthd::Initialize();
     system_routine_controller_ = std::make_unique<SystemRoutineController>();
 
     wake_lock_provider_ = std::make_unique<device::TestWakeLockProvider>();
@@ -174,7 +173,7 @@ class SystemRoutineControllerTest : public testing::Test {
 
   ~SystemRoutineControllerTest() override {
     system_routine_controller_.reset();
-    chromeos::CrosHealthdClient::Shutdown();
+    cros_healthd::FakeCrosHealthd::Shutdown();
     base::RunLoop().RunUntilIdle();
   }
 
@@ -619,9 +618,9 @@ TEST_F(SystemRoutineControllerTest, CancelRoutine) {
   base::RunLoop().RunUntilIdle();
 
   // Verify that CrosHealthd is called with the correct parameters.
-  absl::optional<cros_healthd::FakeCrosHealthdService::RoutineUpdateParams>
+  absl::optional<cros_healthd::FakeCrosHealthd::RoutineUpdateParams>
       update_params =
-          cros_healthd::FakeCrosHealthdClient::Get()->GetRoutineUpdateParams();
+          cros_healthd::FakeCrosHealthd::Get()->GetRoutineUpdateParams();
 
   ASSERT_TRUE(update_params.has_value());
   EXPECT_EQ(expected_id, update_params->id);
@@ -654,9 +653,9 @@ TEST_F(SystemRoutineControllerTest, CancelRoutineDtor) {
   base::RunLoop().RunUntilIdle();
 
   // Verify that CrosHealthd is called with the correct parameters.
-  absl::optional<cros_healthd::FakeCrosHealthdService::RoutineUpdateParams>
+  absl::optional<cros_healthd::FakeCrosHealthd::RoutineUpdateParams>
       update_params =
-          cros_healthd::FakeCrosHealthdClient::Get()->GetRoutineUpdateParams();
+          cros_healthd::FakeCrosHealthd::Get()->GetRoutineUpdateParams();
 
   ASSERT_TRUE(update_params.has_value());
   EXPECT_EQ(expected_id, update_params->id);
@@ -735,8 +734,8 @@ TEST_F(SystemRoutineControllerTest, RoutineLog) {
   EXPECT_TRUE(routine_runner.result.is_null());
 
   // Verify that the Running status appears in the log.
-  std::vector<std::string> log_lines =
-      GetLogLines(log.GetContentsForCategory("system"));
+  std::vector<std::string> log_lines = GetLogLines(
+      log.GetContentsForCategory(RoutineLog::RoutineCategory::kSystem));
   EXPECT_EQ(1u, log_lines.size());
 
   std::vector<std::string> log_line_contents = GetLogLineContents(log_lines[0]);
@@ -756,7 +755,8 @@ TEST_F(SystemRoutineControllerTest, RoutineLog) {
                       mojom::StandardRoutineResult::kTestPassed);
 
   // Verify that the Passed status appears in the log.
-  log_lines = GetLogLines(log.GetContentsForCategory("system"));
+  log_lines = GetLogLines(
+      log.GetContentsForCategory(RoutineLog::RoutineCategory::kSystem));
   EXPECT_EQ(2u, log_lines.size());
 
   log_line_contents = GetLogLineContents(log_lines[1]);
@@ -780,7 +780,8 @@ TEST_F(SystemRoutineControllerTest, RoutineLog) {
   routine_runner_2.reset();
   task_environment_.RunUntilIdle();
 
-  log_lines = GetLogLines(log.GetContentsForCategory("system"));
+  log_lines = GetLogLines(
+      log.GetContentsForCategory(RoutineLog::RoutineCategory::kSystem));
   EXPECT_EQ(4u, log_lines.size());
 
   log_line_contents = GetLogLineContents(log_lines[3]);

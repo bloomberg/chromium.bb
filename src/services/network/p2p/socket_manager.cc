@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/memory/raw_ptr.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/address_list.h"
@@ -123,8 +122,7 @@ class P2PSocketManager::DnsRequest {
  private:
   void OnDone(int result) {
     net::IPAddressList list;
-    const absl::optional<net::AddressList>& addresses =
-        request_->GetAddressResults();
+    const net::AddressList* addresses = request_->GetAddressResults();
     if (result != net::OK || !addresses) {
       LOG(ERROR) << "Failed to resolve address for " << host_name_
                  << ", errorcode: " << result;
@@ -191,12 +189,28 @@ void P2PSocketManager::OnNetworkChanged(
   // network configuration changes. All other notifications can be ignored.
   if (type != net::NetworkChangeNotifier::CONNECTION_NONE)
     return;
+  if (notifications_paused_) {
+    pending_network_change_notification_ = true;
+    return;
+  }
 
   // Notify the renderer about changes to list of network interfaces.
   network_list_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&P2PSocketManager::DoGetNetworkList,
                                 weak_factory_.GetWeakPtr(),
                                 base::ThreadTaskRunnerHandle::Get()));
+}
+
+void P2PSocketManager::PauseNetworkChangeNotifications() {
+  notifications_paused_ = true;
+}
+
+void P2PSocketManager::ResumeNetworkChangeNotifications() {
+  notifications_paused_ = false;
+  if (pending_network_change_notification_) {
+    pending_network_change_notification_ = false;
+    OnNetworkChanged(net::NetworkChangeNotifier::CONNECTION_NONE);
+  }
 }
 
 void P2PSocketManager::AddAcceptedConnection(

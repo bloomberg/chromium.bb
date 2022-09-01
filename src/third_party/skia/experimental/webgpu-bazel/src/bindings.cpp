@@ -4,6 +4,20 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+
+#include "include/core/SkCanvas.h"
+#include "include/core/SkColor.h"
+#include "include/core/SkColorSpace.h"
+#include "include/core/SkColorType.h"
+#include "include/core/SkPaint.h"
+#include "include/core/SkRect.h"
+#include "include/core/SkSurface.h"
+#include "include/core/SkTypes.h"
+#include "include/effects/SkGradientShader.h"
+#include "include/effects/SkRuntimeEffect.h"
+#include "include/gpu/GrBackendSurface.h"
+#include "include/gpu/GrDirectContext.h"
+
 #include <emscripten/bind.h>
 #include <emscripten/emscripten.h>
 #include <emscripten/html5.h>
@@ -21,40 +35,10 @@
 // This defines the C++ equivalents to the JS WebGPU API.
 #include <webgpu/webgpu_cpp.h>
 
-using namespace emscripten;
-
-wgpu::ShaderModule createShaderModule(wgpu::Device device, const char* source) {
-    // https://github.com/emscripten-core/emscripten/blob/da842597941f425e92df0b902d3af53f1bcc2713/system/include/webgpu/webgpu_cpp.h#L1415
-    wgpu::ShaderModuleWGSLDescriptor wDesc;
-    wDesc.source = source;
-    wgpu::ShaderModuleDescriptor desc = {.nextInChain = &wDesc};
-    return device.CreateShaderModule(&desc);
-}
-
-wgpu::RenderPipeline createRenderPipeline(wgpu::Device device, wgpu::ShaderModule vertexShader,
-                                          wgpu::ShaderModule fragmentShader) {
-    wgpu::ColorTargetState colorTargetState{};
-    colorTargetState.format = wgpu::TextureFormat::BGRA8Unorm;
-
-    wgpu::FragmentState fragmentState{};
-    fragmentState.module = fragmentShader;
-    fragmentState.entryPoint = "main"; // assumes main() is defined in fragment shader code
-    fragmentState.targetCount = 1;
-    fragmentState.targets = &colorTargetState;
-
-    wgpu::PipelineLayoutDescriptor pl{};
-
-    // Inspired by https://github.com/kainino0x/webgpu-cross-platform-demo/blob/4061dd13096580eb5525619714145087b0d5acf6/main.cpp#L129
-    wgpu::RenderPipelineDescriptor pipelineDescriptor{};
-    pipelineDescriptor.layout = device.CreatePipelineLayout(&pl);
-    pipelineDescriptor.vertex.module = vertexShader;
-    pipelineDescriptor.vertex.entryPoint = "main";  // assumes main() is defined in vertex code
-    pipelineDescriptor.fragment = &fragmentState;
-    pipelineDescriptor.primitive.topology = wgpu::PrimitiveTopology::TriangleList;
-    return device.CreateRenderPipeline(&pipelineDescriptor);
-}
-
-wgpu::SwapChain getSwapChainForCanvas(wgpu::Device device, std::string canvasSelector, int width, int height) {
+static wgpu::SwapChain getSwapChainForCanvas(wgpu::Device device,
+                                             std::string canvasSelector,
+                                             int width,
+                                             int height) {
     wgpu::SurfaceDescriptorFromCanvasHTMLSelector surfaceSelector;
     surfaceSelector.selector = canvasSelector.c_str();
 
@@ -72,63 +56,148 @@ wgpu::SwapChain getSwapChainForCanvas(wgpu::Device device, std::string canvasSel
     return device.CreateSwapChain(surface, &swap_chain_desc);
 }
 
-void drawPipeline(wgpu::Device device, wgpu::TextureView view, wgpu::RenderPipeline pipeline,
-                  wgpu::Color clearColor) {
-    wgpu::RenderPassColorAttachment attachment{};
-    attachment.view = view;
-    attachment.loadOp = wgpu::LoadOp::Clear;
-    attachment.storeOp = wgpu::StoreOp::Store;
-    attachment.clearColor = clearColor;
+enum class DemoKind {
+    SOLID_COLOR,
+    GRADIENT,
+    RUNTIME_EFFECT,
+};
 
-    wgpu::RenderPassDescriptor renderpass{};
-    renderpass.colorAttachmentCount = 1;
-    renderpass.colorAttachments = &attachment;
-    wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
-    wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderpass);
-    pass.SetPipeline(pipeline);
-    pass.Draw(3, // vertexCount
-              1, // instanceCount
-              0, // firstIndex
-              0  // firstInstance
-    );
-    pass.EndPass();
-    wgpu::CommandBuffer commands = encoder.Finish();
-    device.GetQueue().Submit(1, &commands);
-}
+struct DemoUniforms {
+    float width;
+    float height;
+    float time;
+};
 
-class WebGPUSurface {
+class Demo final {
 public:
-    WebGPUSurface(std::string canvasSelector, int width, int height) {
-        fDevice = wgpu::Device::Acquire(emscripten_webgpu_get_device());
-        fCanvasSwap = getSwapChainForCanvas(fDevice, canvasSelector, width, height);
+    bool init(std::string canvasSelector, int width, int height) {
+        GrContextOptions ctxOpts;
+
+        wgpu::Device device = wgpu::Device::Acquire(emscripten_webgpu_get_device());
+        sk_sp<GrDirectContext> context = GrDirectContext::MakeDawn(device, ctxOpts);
+        if (!context) {
+            SkDebugf("Could not create GrDirectContext\n");
+            return false;
+        }
+
+        const char* sksl =
+                "uniform float2 iResolution;"
+                "uniform float iTime;"
+                "vec2 d;"
+                "float b(float a) {"
+                "  return step(max(d.x, d.y), a);"
+                "}"
+                "half4 main(float2 C) {"
+                "  vec4 O = vec4(0);"
+                "  C.y = iResolution.y - C.y;"
+                "  for (float i = 0; i < 3; ++i) {"
+                "    vec2 U = C.yx / iResolution.yx;"
+                "    U.y -= .5;"
+                "    U.x = U.x * .4 + U.y * U.y;"
+                "    U.y += U.x * sin(-iTime * 9. + i * 2. + U.x * 25.) * .2;"
+                "    U.x -= asin(sin(U.y * 34.))/20.;"
+                "    d = abs(U);"
+                "    O += .3 * vec4(.8 * b(.3) + b(.2), b(.2), b(.1), -1.);"
+                "  }"
+                "  return O.xyz1;"
+                "}";
+
+        auto [effect, err] = SkRuntimeEffect::MakeForShader(SkString(sksl));
+        if (!effect) {
+            SkDebugf("Failed to compile SkSL: %s\n", err.c_str());
+            return false;
+        }
+
+        fWidth = width;
+        fHeight = height;
+        fCanvasSwapChain = getSwapChainForCanvas(device, canvasSelector, width, height);
+        fContext = context;
+        fEffect = effect;
+
+        return true;
     }
 
-    wgpu::ShaderModule makeShader(std::string source) {
-        return createShaderModule(fDevice, source.c_str());
+    void setKind(DemoKind kind) { fDemoKind = kind; }
+
+    void draw(int timestamp) {
+        GrDawnRenderTargetInfo rtInfo;
+        rtInfo.fTextureView = fCanvasSwapChain.GetCurrentTextureView();
+        rtInfo.fFormat = wgpu::TextureFormat::BGRA8Unorm;
+        rtInfo.fLevelCount = 1;
+        GrBackendRenderTarget backendRenderTarget(fWidth, fHeight, 1, 8, rtInfo);
+        SkSurfaceProps surfaceProps(0, kRGB_H_SkPixelGeometry);
+
+        sk_sp<SkSurface> surface = SkSurface::MakeFromBackendRenderTarget(fContext.get(),
+                                                                          backendRenderTarget,
+                                                                          kTopLeft_GrSurfaceOrigin,
+                                                                          kN32_SkColorType,
+                                                                          nullptr,
+                                                                          &surfaceProps);
+
+        SkPaint paint;
+        if (fDemoKind == DemoKind::SOLID_COLOR) {
+            drawSolidColor(&paint);
+        } else if (fDemoKind == DemoKind::GRADIENT) {
+            drawGradient(&paint);
+        } else if (fDemoKind == DemoKind::RUNTIME_EFFECT) {
+            drawRuntimeEffect(&paint, timestamp);
+        }
+
+        // Schedule the recorded commands and wait until the GPU has executed them.
+        surface->getCanvas()->drawPaint(paint);
+        surface->flushAndSubmit(true);
+        fFrameCount++;
     }
 
-    wgpu::RenderPipeline makeRenderPipeline(wgpu::ShaderModule vertexShader,
-                                            wgpu::ShaderModule fragmentShader) {
-        return createRenderPipeline(fDevice, vertexShader, fragmentShader);
+    void drawSolidColor(SkPaint* paint) {
+        bool flipColor = fFrameCount % 2 == 0;
+        paint->setColor(flipColor ? SK_ColorCYAN : SK_ColorMAGENTA);
     }
 
-    void drawPipeline(wgpu::RenderPipeline pipeline, float r, float g, float b, float a) {
-        // We cannot cache the TextureView because it will be destroyed after use.
-        ::drawPipeline(fDevice, fCanvasSwap.GetCurrentTextureView(), pipeline, {r, g, b, a});
+    void drawGradient(SkPaint* paint) {
+        bool flipColor = fFrameCount % 2 == 0;
+        SkColor colors1[2] = {SK_ColorMAGENTA, SK_ColorCYAN};
+        SkColor colors2[2] = {SK_ColorCYAN, SK_ColorMAGENTA};
+
+        float x = (float)fWidth / 2.f;
+        float y = (float)fHeight / 2.f;
+        paint->setShader(SkGradientShader::MakeRadial(SkPoint::Make(x, y),
+                                                      std::min(x, y),
+                                                      flipColor ? colors1 : colors2,
+                                                      nullptr,
+                                                      2,
+                                                      SkTileMode::kClamp));
+    }
+
+    void drawRuntimeEffect(SkPaint* paint, int timestamp) {
+        DemoUniforms uniforms;
+        uniforms.width = fWidth;
+        uniforms.height = fHeight;
+        uniforms.time = static_cast<float>(timestamp) / 1000.f;
+
+        sk_sp<SkData> uniformData = SkData::MakeWithCopy(&uniforms, sizeof(uniforms));
+        sk_sp<SkShader> shader = fEffect->makeShader(std::move(uniformData), /*children=*/{});
+        paint->setShader(shader);
     }
 
 private:
-    wgpu::Device fDevice;
-    wgpu::SwapChain fCanvasSwap;
+    int fFrameCount = 0;
+    int fWidth;
+    int fHeight;
+    wgpu::SwapChain fCanvasSwapChain;
+    sk_sp<GrDirectContext> fContext;
+    sk_sp<SkRuntimeEffect> fEffect;
+    DemoKind fDemoKind = DemoKind::SOLID_COLOR;
 };
 
 EMSCRIPTEN_BINDINGS(Skia) {
-    class_<WebGPUSurface>("WebGPUSurface")
-        .constructor<std::string, int, int>()
-        .function("MakeShader", &WebGPUSurface::makeShader)
-        .function("MakeRenderPipeline", &WebGPUSurface::makeRenderPipeline)
-        .function("drawPipeline", &WebGPUSurface::drawPipeline);
-
-    class_<wgpu::ShaderModule>("ShaderModule");
-    class_<wgpu::RenderPipeline>("RenderPipeline");
+    emscripten::enum_<DemoKind>("DemoKind")
+            .value("SOLID_COLOR", DemoKind::SOLID_COLOR)
+            .value("GRADIENT", DemoKind::GRADIENT)
+            .value("RUNTIME_EFFECT", DemoKind::RUNTIME_EFFECT);
+    emscripten::class_<Demo>("Demo")
+            .constructor()
+            .function("init", &Demo::init)
+            .function("setKind", &Demo::setKind)
+            .function("draw", &Demo::draw);
 }

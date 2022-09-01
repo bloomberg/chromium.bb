@@ -30,6 +30,7 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_FONT_RENDER_STYLE_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_FONT_RENDER_STYLE_H_
 
+#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/skia/include/core/SkFontStyle.h"
 #include "third_party/skia/include/core/SkFontTypes.h"
@@ -73,7 +74,7 @@ struct WebFontRenderStyle {
   // kNoPreference in |other|.
   void OverrideWith(const WebFontRenderStyle& other);
 
-  void ApplyToSkFont(SkFont*, float device_scale_factor) const;
+  void ApplyToSkFont(SkFont*, bool should_use_subpixel_positioning) const;
 
   // Each of the use* members below can take one of three values:
   //   0: off

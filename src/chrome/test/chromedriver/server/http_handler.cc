@@ -11,7 +11,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/cxx17_backports.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"  // For CHECK macros.
@@ -45,7 +44,7 @@
 #include "services/network/transitional_url_loader_factory_owner.h"
 #include "url/url_util.h"
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #include "base/mac/scoped_nsautorelease_pool.h"
 #endif
 
@@ -155,7 +154,7 @@ HttpHandler::HttpHandler(
       io_task_runner_(io_task_runner),
       url_base_(url_base),
       received_shutdown_(false) {
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   base::mac::ScopedNSAutoreleasePool autorelease_pool;
 #endif
   context_getter_ = new URLRequestContextGetter(io_task_runner_);
@@ -1000,7 +999,7 @@ HttpHandler::HttpHandler(
                         base::BindRepeating(&ExecuteSendCommandFromWebSocket))),
   };
   command_map_ =
-      std::make_unique<CommandMap>(commands, commands + base::size(commands));
+      std::make_unique<CommandMap>(commands, commands + std::size(commands));
 }
 
 HttpHandler::~HttpHandler() {}
@@ -1329,11 +1328,11 @@ HttpHandler::PrepareStandardResponse(
 
   base::DictionaryValue body_params;
   if (status.IsError()){
-    std::unique_ptr<base::DictionaryValue> inner_params(
-        new base::DictionaryValue());
-    inner_params->SetString("error", StatusCodeToString(status.code()));
-    inner_params->SetString("message", status.message());
-    inner_params->SetString("stacktrace", status.stack_trace());
+    base::Value* inner_params =
+        body_params.SetKey("value", base::Value(base::Value::Type::DICTIONARY));
+    inner_params->SetStringKey("error", StatusCodeToString(status.code()));
+    inner_params->SetStringKey("message", status.message());
+    inner_params->SetStringKey("stacktrace", status.stack_trace());
     // According to
     // https://www.w3.org/TR/2018/REC-webdriver1-20180605/#dfn-annotated-unexpected-alert-open-error
     // error UnexpectedAlertOpen should contain 'data.text' with alert text
@@ -1342,18 +1341,18 @@ HttpHandler::PrepareStandardResponse(
       auto first = message.find("{");
       auto last = message.find_last_of("}");
       if (first == std::string::npos || last == std::string::npos) {
-        inner_params->SetString("data.text", "");
+        inner_params->SetStringPath("data.text", "");
       } else {
         std::string alertText = message.substr(first, last - first);
         auto colon = alertText.find(":");
         if (colon != std::string::npos && alertText.size() > (colon + 2))
           alertText = alertText.substr(colon + 2);
-        inner_params->SetString("data.text", alertText);
+        inner_params->SetStringPath("data.text", alertText);
       }
     }
-    body_params.SetDictionary("value", std::move(inner_params));
   } else {
-    body_params.Set("value", std::move(value));
+    body_params.SetKey("value",
+                       base::Value::FromUniquePtrValue(std::move(value)));
   }
 
   std::string body;

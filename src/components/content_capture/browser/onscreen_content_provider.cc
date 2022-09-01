@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/notreached.h"
 #include "components/content_capture/browser/content_capture_consumer.h"
 #include "components/content_capture/browser/content_capture_receiver.h"
@@ -18,40 +19,38 @@
 #include "third_party/blink/public/mojom/favicon/favicon_url.mojom.h"
 
 namespace content_capture {
-namespace {
 
-const void* const kUserDataKey = &kUserDataKey;
-
-}  // namespace
+WEB_CONTENTS_USER_DATA_KEY_IMPL(OnscreenContentProvider);
 
 OnscreenContentProvider::OnscreenContentProvider(
     content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents) {
+    : content::WebContentsObserver(web_contents),
+      content::WebContentsUserData<OnscreenContentProvider>(*web_contents) {
   web_contents->ForEachRenderFrameHost(base::BindRepeating(
       [](OnscreenContentProvider* provider,
          content::RenderFrameHost* render_frame_host) {
+        // Don't cross into inner WebContents since we wouldn't be notified of
+        // its changes.
+        if (content::WebContents::FromRenderFrameHost(render_frame_host) !=
+            provider->web_contents()) {
+          return content::RenderFrameHost::FrameIterationAction::kSkipChildren;
+        }
         if (render_frame_host->IsRenderFrameLive()) {
           provider->RenderFrameCreated(render_frame_host);
         }
+        return content::RenderFrameHost::FrameIterationAction::kContinue;
       },
       this));
-
-  web_contents->SetUserData(kUserDataKey, base::WrapUnique(this));
 }
 
 OnscreenContentProvider::~OnscreenContentProvider() = default;
 
 // static
-OnscreenContentProvider* OnscreenContentProvider::FromWebContents(
-    content::WebContents* contents) {
-  return static_cast<OnscreenContentProvider*>(
-      contents->GetUserData(kUserDataKey));
-}
-
 OnscreenContentProvider* OnscreenContentProvider::Create(
     content::WebContents* web_contents) {
   DCHECK(!FromWebContents(web_contents));
-  return new OnscreenContentProvider(web_contents);
+  CreateForWebContents(web_contents);
+  return FromWebContents(web_contents);
 }
 
 // static
@@ -95,7 +94,7 @@ void OnscreenContentProvider::RemoveConsumer(ContentCaptureConsumer& consumer) {
 
 ContentCaptureReceiver* OnscreenContentProvider::ContentCaptureReceiverForFrame(
     content::RenderFrameHost* render_frame_host) const {
-  auto mapping = frame_map_.find(render_frame_host);
+  auto mapping = frame_map_.find(render_frame_host->GetGlobalId());
   return mapping == frame_map_.end() ? nullptr : mapping->second.get();
 }
 
@@ -107,7 +106,7 @@ void OnscreenContentProvider::RenderFrameCreated(
   if (ContentCaptureReceiverForFrame(render_frame_host))
     return;
   frame_map_.insert(std::make_pair(
-      render_frame_host,
+      render_frame_host->GetGlobalId(),
       std::make_unique<ContentCaptureReceiver>(render_frame_host)));
 }
 
@@ -117,7 +116,7 @@ void OnscreenContentProvider::RenderFrameDeleted(
           ContentCaptureReceiverForFrame(render_frame_host)) {
     content_capture_receiver->RemoveSession();
   }
-  frame_map_.erase(render_frame_host);
+  frame_map_.erase(render_frame_host->GetGlobalId());
 }
 
 void OnscreenContentProvider::ReadyToCommitNavigation(
@@ -145,8 +144,8 @@ void OnscreenContentProvider::ReadyToCommitNavigation(
 
 void OnscreenContentProvider::TitleWasSet(content::NavigationEntry* entry) {
   // Set the title to the mainframe.
-  if (auto* receiver =
-          ContentCaptureReceiverForFrame(web_contents()->GetMainFrame())) {
+  if (auto* receiver = ContentCaptureReceiverForFrame(
+          web_contents()->GetPrimaryMainFrame())) {
     // To match what the user sees, intentionally get the title from WebContents
     // instead of NavigationEntry, though they might be same.
     receiver->SetTitle(web_contents()->GetTitle());
@@ -256,7 +255,8 @@ void OnscreenContentProvider::BuildContentCaptureSession(
   if (!ancestor_only)
     session->push_back(content_capture_receiver->GetContentCaptureFrame());
 
-  content::RenderFrameHost* rfh = content_capture_receiver->rfh()->GetParent();
+  content::RenderFrameHost* rfh =
+      content_capture_receiver->rfh()->GetParentOrOuterDocument();
   while (rfh) {
     ContentCaptureReceiver* receiver = ContentCaptureReceiverForFrame(rfh);
     // TODO(michaelbai): Only creates ContentCaptureReceiver here, clean up the
@@ -267,7 +267,7 @@ void OnscreenContentProvider::BuildContentCaptureSession(
       DCHECK(receiver);
     }
     session->push_back(receiver->GetContentCaptureFrame());
-    rfh = receiver->rfh()->GetParent();
+    rfh = receiver->rfh()->GetParentOrOuterDocument();
   }
 }
 
@@ -276,21 +276,22 @@ bool OnscreenContentProvider::BuildContentCaptureSessionLastSeen(
     ContentCaptureSession* session) {
   session->push_back(
       content_capture_receiver->GetContentCaptureFrameLastSeen());
-  content::RenderFrameHost* rfh = content_capture_receiver->rfh()->GetParent();
+  content::RenderFrameHost* rfh =
+      content_capture_receiver->rfh()->GetParentOrOuterDocument();
   while (rfh) {
     ContentCaptureReceiver* receiver = ContentCaptureReceiverForFrame(rfh);
     if (!receiver)
       return false;
     session->push_back(receiver->GetContentCaptureFrameLastSeen());
-    rfh = receiver->rfh()->GetParent();
+    rfh = receiver->rfh()->GetParentOrOuterDocument();
   }
   return true;
 }
 
 bool OnscreenContentProvider::BuildContentCaptureSessionForMainFrame(
     ContentCaptureSession* session) {
-  if (auto* receiver =
-          ContentCaptureReceiverForFrame(web_contents()->GetMainFrame())) {
+  if (auto* receiver = ContentCaptureReceiverForFrame(
+          web_contents()->GetPrimaryMainFrame())) {
     session->push_back(receiver->GetContentCaptureFrame());
     return true;
   }

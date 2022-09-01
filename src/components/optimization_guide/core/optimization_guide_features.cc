@@ -12,6 +12,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/system/sys_info.h"
 #include "build/build_config.h"
 #include "components/optimization_guide/core/insertion_ordered_set.h"
 #include "components/optimization_guide/core/optimization_guide_constants.h"
@@ -25,16 +26,59 @@
 namespace optimization_guide {
 namespace features {
 
+namespace {
+
+constexpr auto enabled_by_default_desktop_only =
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
+    base::FEATURE_DISABLED_BY_DEFAULT;
+#else
+    base::FEATURE_ENABLED_BY_DEFAULT;
+#endif
+
+// Returns whether |locale| is a supported locale for |feature|.
+//
+// This matches |locale| with the "supported_locales" feature param value in
+// |feature|, which is expected to be a comma-separated list of locales. A
+// feature param containing "en,es-ES,zh-TW" restricts the feature to English
+// language users from any locale and Spanish language users from the Spain
+// es-ES locale. A feature param containing "" is unrestricted by locale and any
+// user may load it.
+bool IsSupportedLocaleForFeature(const std::string locale,
+                                 const base::Feature& feature) {
+  if (!base::FeatureList::IsEnabled(feature)) {
+    return false;
+  }
+
+  std::string value =
+      base::GetFieldTrialParamValueByFeature(feature, "supported_locales");
+  if (value.empty()) {
+    // The default list of supported locales for optimization guide features.
+    value = "de,en,es,fr,it,nl,pt,tr";
+  } else if (value == "*") {
+    // Still provide a way to enable all locales remotely via the '*' character.
+    return true;
+  }
+
+  std::vector<std::string> supported_locales = base::SplitString(
+      value, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  // An empty allowlist admits any locale.
+  if (supported_locales.empty()) {
+    return true;
+  }
+
+  // Otherwise, the locale or the
+  // primary language subtag must match an element of the allowlist.
+  std::string locale_language = l10n_util::GetLanguage(locale);
+  return base::Contains(supported_locales, locale) ||
+         base::Contains(supported_locales, locale_language);
+}
+
+}  // namespace
+
 // Enables the syncing of the Optimization Hints component, which provides
 // hints for what optimizations can be applied on a page load.
-const base::Feature kOptimizationHints {
-  "OptimizationHints",
-#if defined(OS_IOS)
-      base::FEATURE_DISABLED_BY_DEFAULT
-#else   // !defined(OS_IOS)
-      base::FEATURE_ENABLED_BY_DEFAULT
-#endif  // defined(OS_IOS)
-};
+const base::Feature kOptimizationHints{"OptimizationHints",
+                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Feature flag that contains a feature param that specifies the field trials
 // that are allowed to be sent up to the Optimization Guide Server.
@@ -45,14 +89,9 @@ const base::Feature kOptimizationHintsFieldTrials{
 const base::Feature kRemoteOptimizationGuideFetching{
     "OptimizationHintsFetching", base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kRemoteOptimizationGuideFetchingAnonymousDataConsent {
-  "OptimizationHintsFetchingAnonymousDataConsent",
-#if defined(OS_ANDROID)
-      base::FEATURE_ENABLED_BY_DEFAULT
-#else   // !defined(OS_ANDROID)
-      base::FEATURE_DISABLED_BY_DEFAULT
-#endif  // defined(OS_ANDROID)
-};
+const base::Feature kRemoteOptimizationGuideFetchingAnonymousDataConsent{
+    "OptimizationHintsFetchingAnonymousDataConsent",
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables performance info in the context menu and fetching from a remote
 // Optimization Guide Service.
@@ -76,7 +115,27 @@ const base::Feature kOptimizationGuideModelDownloading {
 
 // Enables page content to be annotated.
 const base::Feature kPageContentAnnotations{"PageContentAnnotations",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
+                                            enabled_by_default_desktop_only};
+
+// Enables fetching page metadata from the remote Optimization Guide service.
+const base::Feature kRemotePageMetadata{"RemotePageMetadata",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables the page entities model to be annotated on every page load.
+const base::Feature kPageEntitiesPageContentAnnotations{
+    "PageEntitiesPageContentAnnotations", enabled_by_default_desktop_only};
+// Enables the page visibility model to be annotated on every page load.
+const base::Feature kPageVisibilityPageContentAnnotations{
+    "PageVisibilityPageContentAnnotations", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// This feature flag does not allow for the entities model to load the name and
+// prefix filters.
+const base::Feature kPageEntitiesModelBypassFilters{
+    "PageEntitiesModelBypassFilters", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// This feature flag enables resetting the entities model on shutdown.
+const base::Feature kPageEntitiesModelResetOnShutdown{
+    "PageEntitiesModelResetOnShutdown", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables push notification of hints.
 const base::Feature kPushNotifications{"OptimizationGuidePushNotifications",
@@ -95,6 +154,30 @@ const base::Feature kPageTopicsBatchAnnotations{
     "PageTopicsBatchAnnotations", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kPageVisibilityBatchAnnotations{
     "PageVisibilityBatchAnnotations", base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kUseLocalPageEntitiesMetadataProvider{
+    "UseLocalPageEntitiesMetadataProvider", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kPageContentAnnotationsValidation{
+    "PageContentAnnotationsValidation", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kPreventLongRunningPredictionModels{
+    "PreventLongRunningPredictionModels", base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature
+    kOptimizationGuideUseContinueOnShutdownForPageContentAnnotations{
+        "OptimizationGuideUseContinueOnShutdownForPageContentAnnotations",
+        base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kOverrideNumThreadsForModelExecution{
+    "OverrideNumThreadsForModelExecution", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kOptGuideEnableXNNPACKDelegateWithTFLite{
+    "OptGuideEnableXNNPACKDelegateWithTFLite",
+    base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kOptimizationHintsComponent{
+    "OptimizationHintsComponent", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // The default value here is a bit of a guess.
 // TODO(crbug/1163244): This should be tuned once metrics are available.
@@ -184,6 +267,10 @@ GURL GetOptimizationGuideServiceGetModelsURL() {
   return get_models_url;
 }
 
+bool IsOptimizationTargetPredictionEnabled() {
+  return base::FeatureList::IsEnabled(kOptimizationTargetPrediction);
+}
+
 bool IsOptimizationHintsEnabled() {
   return base::FeatureList::IsEnabled(kOptimizationHints);
 }
@@ -264,14 +351,15 @@ base::TimeDelta StoredHostModelFeaturesFreshnessDuration() {
       "max_store_duration_for_host_model_features_in_days", 7));
 }
 
-base::TimeDelta StoredModelsInactiveDuration() {
+base::TimeDelta StoredModelsValidDuration() {
   // TODO(crbug.com/1234054) This field should not be changed without VERY
-  // careful consideration. Any model that is on device and expires will be
-  // removed and triggered to refetch so any feature relying on the model could
-  // have a period of time without a valid model.
+  // careful consideration. This is the default duration for models that do not
+  // specify retention, so changing this can cause models to be removed and
+  // refetch would only apply to newer models. Any feature relying on the model
+  // would have a period of time without a valid model, and would need to push a
+  // new version.
   return base::Days(GetFieldTrialParamByFeatureAsInt(
-      kOptimizationTargetPrediction, "inactive_duration_for_models_in_days",
-      30));
+      kOptimizationTargetPrediction, "valid_duration_for_models_in_days", 30));
 }
 
 base::TimeDelta URLKeyedHintValidCacheDuration() {
@@ -334,9 +422,30 @@ base::TimeDelta PredictionModelFetchRetryDelay() {
       kOptimizationTargetPrediction, "fetch_retry_minutes", 2));
 }
 
+base::TimeDelta PredictionModelFetchStartupDelay() {
+  return base::Milliseconds(GetFieldTrialParamByFeatureAsInt(
+      kOptimizationTargetPrediction, "fetch_startup_delay_ms", 10000));
+}
+
 base::TimeDelta PredictionModelFetchInterval() {
   return base::Hours(GetFieldTrialParamByFeatureAsInt(
       kOptimizationTargetPrediction, "fetch_interval_hours", 24));
+}
+
+bool IsModelExecutionWatchdogEnabled() {
+  return base::FeatureList::IsEnabled(kPreventLongRunningPredictionModels);
+}
+
+base::TimeDelta ModelExecutionWatchdogDefaultTimeout() {
+  return base::Milliseconds(GetFieldTrialParamByFeatureAsInt(
+      kPreventLongRunningPredictionModels, "model_execution_timeout_ms",
+#if defined(_DEBUG)
+      // Debug builds take a much longer time to run.
+      60 * 1000
+#else
+      2000
+#endif
+      ));
 }
 
 base::flat_set<uint32_t> FieldTrialNameHashesAllowedForFetch() {
@@ -362,21 +471,17 @@ bool IsModelDownloadingEnabled() {
 bool IsUnrestrictedModelDownloadingEnabled() {
   return base::GetFieldTrialParamByFeatureAsBool(
       kOptimizationGuideModelDownloading, "unrestricted_model_downloading",
-      false);
+      true);
 }
 
 bool IsPageContentAnnotationEnabled() {
   return base::FeatureList::IsEnabled(kPageContentAnnotations);
 }
 
-uint64_t MaxSizeForPageContentTextDump() {
-  return static_cast<uint64_t>(base::GetFieldTrialParamByFeatureAsInt(
-      kPageContentAnnotations, "max_size_for_text_dump_in_bytes", 1024));
-}
-
-bool ShouldAnnotateTitleInsteadOfPageContent() {
+bool ShouldPersistSearchMetadataForNonGoogleSearches() {
   return base::GetFieldTrialParamByFeatureAsBool(
-      kPageContentAnnotations, "annotate_title_instead_of_page_content", false);
+      kPageContentAnnotations,
+      "persist_search_metadata_for_non_google_searches", true);
 }
 
 bool ShouldWriteContentAnnotationsToHistoryService() {
@@ -390,86 +495,32 @@ size_t MaxContentAnnotationRequestsCached() {
 }
 
 const base::FeatureParam<bool> kContentAnnotationsExtractRelatedSearchesParam{
-    &kPageContentAnnotations, "extract_related_searches", false};
+    &kPageContentAnnotations, "extract_related_searches", true};
 
 bool ShouldExtractRelatedSearches() {
   return kContentAnnotationsExtractRelatedSearchesParam.Get();
 }
 
-std::vector<optimization_guide::proto::OptimizationTarget>
-GetPageContentModelsToExecute(const std::string& locale) {
-  if (!IsPageContentAnnotationEnabled())
-    return {};
+bool ShouldExecutePageEntitiesModelOnPageContent(const std::string& locale) {
+  return base::FeatureList::IsEnabled(kPageEntitiesPageContentAnnotations) &&
+         IsSupportedLocaleForFeature(locale,
+                                     kPageEntitiesPageContentAnnotations);
+}
 
-  // Use an updated parameter name that supports locale filtering. That way,
-  // older clients that don't know how to interpret locale filtering ignore the
-  // new parameter name and keep looking for the old one.
-  std::string value = base::GetFieldTrialParamValueByFeature(
-      kPageContentAnnotations, "models_to_execute_v2");
-  if (value.empty()) {
-    // If the updated parameter is empty, try getting the older parameter name
-    // that doesn't support locale-specific models. That way, older parameter
-    // configurations still work. We don't do a union because that's confusing.
-    value = base::GetFieldTrialParamValueByFeature(kPageContentAnnotations,
-                                                   "models_to_execute");
-  }
-  if (value.empty()) {
-    // If neither the newer or older parameter is set, run the page topics model
-    // by default.
-    return {optimization_guide::proto::OPTIMIZATION_TARGET_PAGE_TOPICS};
-  }
-
-  // The parameter value delimits models by commas, and per-model locale
-  // restrictions by colon. For example:
-  //   FOO_MODEL:en:es-ES,BAR_MODEL,BAZ_MODEL:zh-TW
-  //  - FOO_MODEL is restricted to English language users from any locale, and
-  //    Spanish language users from the Spain es-ES locale.
-  //  - BAR_MODEL is unrestricted by locale, and any user may load it.
-  //  - BAZ_MODEL is restricted to zh-TW only, so zh-CN users won't load it.
-  //
-  // First split by comma to handle one model at a time.
-  std::vector<std::string> model_target_strings = base::SplitString(
-      value, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-
-  std::string locale_language = l10n_util::GetLanguage(locale);
-
-  optimization_guide::InsertionOrderedSet<
-      optimization_guide::proto::OptimizationTarget>
-      model_targets;
-  for (const auto& model_target_string : model_target_strings) {
-    // Split by colon to extract the model name and allowlist, early continuing
-    // for invalid values.
-    std::vector<std::string> model_name_and_allowed_locales =
-        base::SplitString(model_target_string, ":", base::TRIM_WHITESPACE,
-                          base::SPLIT_WANT_NONEMPTY);
-    if (model_name_and_allowed_locales.empty())
-      continue;
-    std::string model_name = model_name_and_allowed_locales[0];
-    std::vector<std::string> allowlist;
-    for (size_t i = 1; i < model_name_and_allowed_locales.size(); ++i) {
-      allowlist.push_back(model_name_and_allowed_locales[i]);
-    }
-
-    optimization_guide::proto::OptimizationTarget model_target;
-    if (!optimization_guide::proto::OptimizationTarget_Parse(model_name,
-                                                             &model_target)) {
-      continue;
-    }
-
-    // An empty allowlist admits any locale. Otherwise, the locale or the
-    // primary language subtag must match an element of the allowlist.
-    if (allowlist.empty() || base::Contains(allowlist, locale) ||
-        base::Contains(allowlist, locale_language)) {
-      model_targets.insert(model_target);
-    }
-  }
-
-  return model_targets.vector();
+bool ShouldExecutePageVisibilityModelOnPageContent(const std::string& locale) {
+  return base::FeatureList::IsEnabled(kPageVisibilityPageContentAnnotations) &&
+         IsSupportedLocaleForFeature(locale,
+                                     kPageVisibilityPageContentAnnotations);
 }
 
 bool RemotePageEntitiesEnabled() {
-  return GetFieldTrialParamByFeatureAsBool(kPageContentAnnotations,
-                                           "fetch_remote_page_entities", false);
+  return GetFieldTrialParamByFeatureAsBool(kRemotePageMetadata,
+                                           "persist_page_entities", false);
+}
+
+bool RemotePageMetadataEnabled() {
+  return GetFieldTrialParamByFeatureAsBool(kRemotePageMetadata,
+                                           "persist_page_metadata", false);
 }
 
 base::TimeDelta GetOnloadDelayForHintsFetching() {
@@ -501,7 +552,7 @@ bool ShouldMetadataValidationFetchHostKeyed() {
 bool ShouldDeferStartupActiveTabsHintsFetch() {
   return GetFieldTrialParamByFeatureAsBool(
       kOptimizationHints, "defer_startup_active_tabs_hints_fetch",
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
       true
 #else
       false
@@ -515,6 +566,92 @@ bool PageTopicsBatchAnnotationsEnabled() {
 
 bool PageVisibilityBatchAnnotationsEnabled() {
   return base::FeatureList::IsEnabled(kPageVisibilityBatchAnnotations);
+}
+
+bool UseLocalPageEntitiesMetadataProvider() {
+  return base::FeatureList::IsEnabled(kUseLocalPageEntitiesMetadataProvider);
+}
+
+size_t AnnotateVisitBatchSize() {
+  return std::max(
+      1, GetFieldTrialParamByFeatureAsInt(kPageContentAnnotations,
+                                          "annotate_visit_batch_size", 1));
+}
+
+bool PageContentAnnotationValidationEnabledForType(AnnotationType type) {
+  if (base::FeatureList::IsEnabled(kPageContentAnnotationsValidation)) {
+    if (GetFieldTrialParamByFeatureAsBool(kPageContentAnnotationsValidation,
+                                          AnnotationTypeToString(type),
+                                          false)) {
+      return true;
+    }
+  }
+
+  base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
+  switch (type) {
+    case AnnotationType::kPageTopics:
+      return cmd->HasSwitch(
+          switches::kPageContentAnnotationsValidationPageTopics);
+    case AnnotationType::kPageEntities:
+      return cmd->HasSwitch(
+          switches::kPageContentAnnotationsValidationPageEntities);
+    case AnnotationType::kContentVisibility:
+      return cmd->HasSwitch(
+          switches::kPageContentAnnotationsValidationContentVisibility);
+    default:
+      NOTREACHED();
+      break;
+  }
+
+  return false;
+}
+
+base::TimeDelta PageContentAnnotationValidationStartupDelay() {
+  return switches::PageContentAnnotationsValidationStartupDelay().value_or(
+      base::Seconds(std::max(
+          1, GetFieldTrialParamByFeatureAsInt(kPageContentAnnotationsValidation,
+                                              "startup_delay", 30))));
+}
+
+size_t PageContentAnnotationsValidationBatchSize() {
+  return switches::PageContentAnnotationsValidationBatchSize().value_or(
+      std::max(1, GetFieldTrialParamByFeatureAsInt(
+                      kPageContentAnnotationsValidation, "batch_size", 25)));
+}
+
+size_t MaxVisitAnnotationCacheSize() {
+  int batch_size = GetFieldTrialParamByFeatureAsInt(
+      kPageContentAnnotations, "max_visit_annotation_cache_size", 50);
+  return std::max(1, batch_size);
+}
+
+absl::optional<int> OverrideNumThreadsForOptTarget(
+    proto::OptimizationTarget opt_target) {
+  if (!base::FeatureList::IsEnabled(kOverrideNumThreadsForModelExecution)) {
+    return absl::nullopt;
+  }
+
+  // 0 is an invalid value to pass to TFLite, so make that nullopt. -1 is valid,
+  // but not anything less than that.
+  int num_threads = GetFieldTrialParamByFeatureAsInt(
+      kOverrideNumThreadsForModelExecution,
+      proto::OptimizationTarget_Name(opt_target), 0);
+  if (num_threads == 0 || num_threads < -1) {
+    return absl::nullopt;
+  }
+
+  // Cap to the number of CPUs on the device.
+  return std::min(num_threads, base::SysInfo::NumberOfProcessors());
+}
+
+bool TFLiteXNNPACKDelegateEnabled() {
+  return base::FeatureList::IsEnabled(kOptGuideEnableXNNPACKDelegateWithTFLite);
+}
+
+bool ShouldCheckFailedComponentVersionPref() {
+  return GetFieldTrialParamByFeatureAsBool(
+      kOptimizationHintsComponent, "check_failed_component_version_pref",
+      false);
 }
 
 }  // namespace features

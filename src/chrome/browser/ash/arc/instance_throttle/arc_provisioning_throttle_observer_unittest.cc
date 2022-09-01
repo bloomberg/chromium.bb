@@ -18,7 +18,7 @@
 #include "chrome/browser/ash/arc/test/test_arc_session_manager.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chromeos/dbus/concierge/concierge_client.h"
+#include "chromeos/ash/components/dbus/concierge/concierge_client.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -29,7 +29,7 @@ class ArcProvisioningThrottleObserverTest : public testing::Test {
  public:
   ArcProvisioningThrottleObserverTest()
       : scoped_user_manager_(std::make_unique<ash::FakeChromeUserManager>()) {
-    chromeos::ConciergeClient::InitializeFake(/*fake_cicerone_client=*/nullptr);
+    ash::ConciergeClient::InitializeFake(/*fake_cicerone_client=*/nullptr);
     SetArcAvailableCommandLineForTesting(
         base::CommandLine::ForCurrentProcess());
 

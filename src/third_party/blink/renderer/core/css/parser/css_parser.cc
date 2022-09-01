@@ -20,6 +20,7 @@
 #include "third_party/blink/renderer/core/css/style_color.h"
 #include "third_party/blink/renderer/core/css/style_rule.h"
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
+#include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
@@ -110,9 +111,7 @@ MutableCSSPropertyValueSet::SetResult CSSParser::ParseValue(
     const ExecutionContext* execution_context) {
   DCHECK(ThreadState::Current()->IsAllocationAllowed());
   if (string.IsEmpty()) {
-    bool did_parse = false;
-    bool did_change = false;
-    return MutableCSSPropertyValueSet::SetResult{did_parse, did_change};
+    return MutableCSSPropertyValueSet::kParseError;
   }
 
   CSSPropertyID resolved_property = ResolveCSSPropertyID(unresolved_property);
@@ -120,10 +119,8 @@ MutableCSSPropertyValueSet::SetResult CSSParser::ParseValue(
   CSSValue* value = CSSParserFastPaths::MaybeParseValue(resolved_property,
                                                         string, parser_mode);
   if (value) {
-    bool did_parse = true;
-    bool did_change = declaration->SetProperty(CSSPropertyValue(
+    return declaration->SetProperty(CSSPropertyValue(
         CSSPropertyName(resolved_property), *value, important));
-    return MutableCSSPropertyValueSet::SetResult{did_parse, did_change};
   }
   CSSParserContext* context;
   if (style_sheet) {
@@ -155,9 +152,7 @@ MutableCSSPropertyValueSet::SetResult CSSParser::ParseValueForCustomProperty(
   DCHECK(ThreadState::Current()->IsAllocationAllowed());
   DCHECK(CSSVariableParser::IsValidVariableName(property_name));
   if (value.IsEmpty()) {
-    bool did_parse = false;
-    bool did_change = false;
-    return MutableCSSPropertyValueSet::SetResult{did_parse, did_change};
+    return MutableCSSPropertyValueSet::kParseError;
   }
   CSSParserMode parser_mode = declaration->CssParserMode();
   CSSParserContext* context;
@@ -288,7 +283,7 @@ bool CSSParser::ParseSystemColor(Color& color,
                                  const String& color_string,
                                  mojom::blink::ColorScheme color_scheme) {
   CSSValueID id = CssValueKeywordID(color_string);
-  if (!StyleColor::IsSystemColor(id))
+  if (!StyleColor::IsSystemColorIncludingDeprecated(id))
     return false;
 
   color = LayoutTheme::GetTheme().SystemColor(id, color_scheme);

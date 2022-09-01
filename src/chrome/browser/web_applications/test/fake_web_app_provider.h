@@ -8,12 +8,18 @@
 #include <memory>
 
 #include "base/callback.h"
+#include "base/callback_forward.h"
+#include "base/callback_list.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
-#include "chrome/browser/web_applications/web_app_registrar.h"
-#include "chrome/browser/web_applications/web_app_sync_bridge.h"
-#include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/sync/test/model/mock_model_type_change_processor.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
+class KeyedService;
 class Profile;
+
+namespace ash {
+class SystemWebAppManager;
+}
 
 namespace content {
 class BrowserContext;
@@ -21,14 +27,19 @@ class BrowserContext;
 
 namespace web_app {
 
+class AbstractWebAppDatabaseFactory;
 class WebAppRegistrar;
 class OsIntegrationManager;
 class WebAppInstallFinalizer;
 class ExternallyManagedAppManager;
-class SystemWebAppManager;
 class WebAppInstallManager;
 class WebAppPolicyManager;
 class WebAppIconManager;
+class WebAppTranslationManager;
+class WebAppRegistrarMutable;
+class WebAppSyncBridge;
+class WebAppUiManager;
+class WebAppCommandManager;
 
 class FakeWebAppProvider : public WebAppProvider {
  public:
@@ -54,8 +65,15 @@ class FakeWebAppProvider : public WebAppProvider {
   // if it's a part of TestingProfile (see BuildDefault() method above).
   void SetRunSubsystemStartupTasks(bool run_subsystem_startup_tasks);
 
+  // NB: If you replace the Registrar, you also have to replace the SyncBridge
+  // accordingly.
   void SetRegistrar(std::unique_ptr<WebAppRegistrar> registrar);
+  void SetDatabaseFactory(
+      std::unique_ptr<AbstractWebAppDatabaseFactory> database_factory);
   void SetSyncBridge(std::unique_ptr<WebAppSyncBridge> sync_bridge);
+  void SetIconManager(std::unique_ptr<WebAppIconManager> icon_manager);
+  void SetTranslationManager(
+      std::unique_ptr<WebAppTranslationManager> translation_manager);
   void SetOsIntegrationManager(
       std::unique_ptr<OsIntegrationManager> os_integration_manager);
   void SetInstallManager(std::unique_ptr<WebAppInstallManager> install_manager);
@@ -66,10 +84,10 @@ class FakeWebAppProvider : public WebAppProvider {
           externally_managed_app_manager);
   void SetWebAppUiManager(std::unique_ptr<WebAppUiManager> ui_manager);
   void SetSystemWebAppManager(
-      std::unique_ptr<SystemWebAppManager> system_web_app_manager);
+      std::unique_ptr<ash::SystemWebAppManager> system_web_app_manager);
   void SetWebAppPolicyManager(
       std::unique_ptr<WebAppPolicyManager> web_app_policy_manager);
-  void SkipAwaitingExtensionSystem();
+  void SetCommandManager(std::unique_ptr<WebAppCommandManager> command_manager);
 
   // These getters can be called at any time: no
   // WebAppProvider::CheckIsConnected() check performed. See
@@ -78,6 +96,17 @@ class FakeWebAppProvider : public WebAppProvider {
   // A mutable view must be accessible only in tests.
   WebAppRegistrarMutable& GetRegistrarMutable() const;
   WebAppIconManager& GetIconManager() const;
+  WebAppCommandManager& GetCommandManager() const;
+  AbstractWebAppDatabaseFactory& GetDatabaseFactory() const;
+
+  // Starts this WebAppProvider and its subsystems. It does not wait for systems
+  // to be ready.
+  void StartWithSubsystems();
+
+  // Create and set default fake subsystems.
+  void SetDefaultFakeSubsystems();
+
+  syncer::MockModelTypeChangeProcessor& processor() { return mock_processor_; }
 
  private:
   void CheckNotStarted() const;
@@ -89,6 +118,7 @@ class FakeWebAppProvider : public WebAppProvider {
   // WebAppProvider::StartImpl() and fire startup tasks like a real
   // WebAppProvider.
   bool run_subsystem_startup_tasks_ = true;
+  testing::NiceMock<syncer::MockModelTypeChangeProcessor> mock_processor_;
 };
 
 // Used in BrowserTests to ensure that the WebAppProvider that is create on

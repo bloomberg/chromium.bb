@@ -35,7 +35,7 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_response.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_timing_info.h"
@@ -66,6 +66,9 @@ class RawResourceTest : public testing::Test {
    public:
     ~NoopResponseBodyLoaderClient() override {}
     void DidReceiveData(base::span<const char>) override {}
+    void DidReceiveDecodedData(
+        const String& data,
+        std::unique_ptr<ParkableStringImpl::SecureDigest> digest) override {}
     void DidFinishLoadingBody() override {}
     void DidFailLoadingBody() override {}
     void DidCancelLoadingBody() override {}

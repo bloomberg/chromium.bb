@@ -25,7 +25,6 @@
 #include "net/base/url_util.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
-#include "services/network/test/test_network_connection_tracker.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -43,8 +42,7 @@ class HintsFetcherTest : public testing::Test,
         shared_url_loader_factory_(
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
                 &test_url_loader_factory_)) {
-    base::test::ScopedFeatureList scoped_list;
-    scoped_list.InitWithFeaturesAndParameters(
+    scoped_list_.InitWithFeaturesAndParameters(
         {{features::kRemoteOptimizationGuideFetching, {}},
          {features::kOptimizationHints,
           {{"persist_hints_to_disk",
@@ -56,8 +54,7 @@ class HintsFetcherTest : public testing::Test,
 
     hints_fetcher_ = std::make_unique<HintsFetcher>(
         shared_url_loader_factory_, GURL(optimization_guide_service_url),
-        pref_service_.get(),
-        network::TestNetworkConnectionTracker::GetInstance());
+        pref_service_.get(), /*optimization_guide_logger=*/nullptr);
     hints_fetcher_->SetTimeClockForTesting(task_environment_.GetMockClock());
   }
 
@@ -72,19 +69,7 @@ class HintsFetcherTest : public testing::Test,
       hints_fetched_ = true;
   }
 
-  bool hints_fetched() { return hints_fetched_; }
-
-  void SetConnectionOffline() {
-    network_tracker_ = network::TestNetworkConnectionTracker::GetInstance();
-    network_tracker_->SetConnectionType(
-        network::mojom::ConnectionType::CONNECTION_NONE);
-  }
-
-  void SetConnectionOnline() {
-    network_tracker_ = network::TestNetworkConnectionTracker::GetInstance();
-    network_tracker_->SetConnectionType(
-        network::mojom::ConnectionType::CONNECTION_4G);
-  }
+  bool hints_fetched() const { return hints_fetched_; }
 
   // Updates the pref so that hints for each of the host in |hosts| are set to
   // expire at |host_invalid_time|.
@@ -170,6 +155,7 @@ class HintsFetcherTest : public testing::Test,
   variations::ScopedVariationsIdsProvider scoped_variations_ids_provider_{
       variations::VariationsIdsProvider::Mode::kUseSignedInState};
   bool hints_fetched_ = false;
+  base::test::ScopedFeatureList scoped_list_;
   base::test::TaskEnvironment task_environment_;
 
   std::unique_ptr<HintsFetcher> hints_fetcher_;
@@ -177,7 +163,6 @@ class HintsFetcherTest : public testing::Test,
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
   network::TestURLLoaderFactory test_url_loader_factory_;
-  raw_ptr<network::TestNetworkConnectionTracker> network_tracker_;
 
   std::string last_request_body_;
 };
@@ -256,6 +241,8 @@ TEST_P(HintsFetcherTest, FetchInProgress) {
 // Tests that the hints are refreshed again for hosts for whom hints were
 // fetched recently.
 TEST_P(HintsFetcherTest, FetchInProgress_HostsHintsRefreshed) {
+  if (!ShouldPersistHintsToDisk())
+    return;
   base::SimpleTestClock test_clock;
   SetTimeClockForTesting(&test_clock);
 
@@ -353,35 +340,6 @@ TEST_P(HintsFetcherTest, FetchReturnBadResponse) {
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.HintsFetcher.RequestStatus.BatchUpdateActiveTabs",
       HintsFetcherRequestStatus::kResponseError, 1);
-}
-
-TEST_P(HintsFetcherTest, FetchAttemptWhenNetworkOffline) {
-  base::HistogramTester histogram_tester;
-
-  SetConnectionOffline();
-  std::string response_content;
-  EXPECT_FALSE(FetchHints({"foo.com"}, {} /* urls */));
-  EXPECT_FALSE(hints_fetched());
-
-  // Make sure histograms are recorded correctly on bad response.
-  histogram_tester.ExpectTotalCount(
-      "OptimizationGuide.HintsFetcher.GetHintsRequest.FetchLatency", 0);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.HintsFetcher.RequestStatus.BatchUpdateActiveTabs",
-      HintsFetcherRequestStatus::kNetworkOffline, 1);
-
-  SetConnectionOnline();
-  EXPECT_TRUE(FetchHints({"foo.com"}, {} /* urls */));
-  VerifyHasPendingFetchRequests();
-  EXPECT_TRUE(SimulateResponse(response_content, net::HTTP_OK));
-  EXPECT_TRUE(hints_fetched());
-
-  histogram_tester.ExpectTotalCount(
-      "OptimizationGuide.HintsFetcher.GetHintsRequest.FetchLatency", 1);
-  histogram_tester.ExpectTotalCount(
-      "OptimizationGuide.HintsFetcher.GetHintsRequest.FetchLatency."
-      "BatchUpdateActiveTabs",
-      1);
 }
 
 TEST_P(HintsFetcherTest, HintsFetchSuccessfulHostsRecorded) {
@@ -539,6 +497,9 @@ TEST_P(HintsFetcherTest, HintsFetcherHostNotCovered) {
       pref_service(), prefs::kHintsFetcherHostsSuccessfullyFetched);
   EXPECT_EQ(2u, hosts_fetched->DictSize());
 
+  if (!ShouldPersistHintsToDisk())
+    return;
+
   EXPECT_TRUE(WasHostCoveredByFetch(hosts[0]));
   EXPECT_TRUE(WasHostCoveredByFetch(hosts[1]));
   EXPECT_FALSE(WasHostCoveredByFetch("newhost.com"));
@@ -606,6 +567,8 @@ TEST_P(HintsFetcherTest, HintsFetcherSuccessfullyFetchedHostsFull) {
 }
 
 TEST_P(HintsFetcherTest, MaxHostsForOptimizationGuideServiceHintsFetch) {
+  base::HistogramTester histogram_tester;
+
   std::string response_content;
   std::vector<std::string> all_hosts;
 
@@ -640,6 +603,12 @@ TEST_P(HintsFetcherTest, MaxHostsForOptimizationGuideServiceHintsFetch) {
     EXPECT_TRUE(
         WasHostCoveredByFetch("host" + base::NumberToString(i) + ".com"));
   }
+
+  // extra1.com and extra2.com should have been considered "dropped".
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.DroppedHosts."
+      "BatchUpdateActiveTabs",
+      2, 1);
 }
 
 TEST_P(HintsFetcherTest, MaxUrlsForOptimizationGuideServiceHintsFetch) {
@@ -677,6 +646,12 @@ TEST_P(HintsFetcherTest, MaxUrlsForOptimizationGuideServiceHintsFetch) {
     EXPECT_EQ(last_request.urls(i).url(),
               "https://url" + base::NumberToString(i) + ".com/");
   }
+
+  // notfetched.com and notfetched-2.com should have been considered "dropped".
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.DroppedUrls."
+      "BatchUpdateActiveTabs",
+      2, 1);
 }
 
 TEST_P(HintsFetcherTest, OnlyURLsToFetch) {
@@ -697,6 +672,11 @@ TEST_P(HintsFetcherTest, OnlyURLsToFetch) {
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.HintsFetcher.RequestStatus.BatchUpdateActiveTabs",
       static_cast<int>(HintsFetcherRequestStatus::kSuccess), 1);
+  // Nothing was dropped so this shouldn't be recorded.
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.DroppedHosts", 0);
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.DroppedUrls", 0);
 }
 
 TEST_P(HintsFetcherTest, NoHostsOrURLsToFetch) {

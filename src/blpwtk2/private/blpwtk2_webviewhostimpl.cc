@@ -38,7 +38,7 @@ namespace blpwtk2 {
                         // ---------------------
 
 WebViewHostImpl::WebViewHostImpl(
-        mojom::WebViewClientPtr&&                    clientPtr,
+        mojo::Remote<mojom::WebViewClient>           clientPtr,
         const mojom::WebViewCreateParams&            params,
         BrowserContextImpl                          *browserContext,
         unsigned int                                 hostAffinity,
@@ -56,6 +56,10 @@ WebViewHostImpl::WebViewHostImpl(
         params.javascriptCanAccessClipboard;
     properties.rerouteMouseWheelToAnyRelatedWindow =
         params.rerouteMouseWheelToAnyRelatedWindow;
+    properties.width =
+        params.width;
+    properties.height =
+        params.height;
 
     d_impl = new WebViewImpl(this,              // delegate
                              0,                 // parent window

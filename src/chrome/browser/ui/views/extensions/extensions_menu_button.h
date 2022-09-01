@@ -28,14 +28,12 @@ class ExtensionsMenuButton : public HoverButton,
  public:
   METADATA_HEADER(ExtensionsMenuButton);
   ExtensionsMenuButton(Browser* browser,
-                       ToolbarActionViewController* controller,
-                       bool allow_pinning);
+                       ToolbarActionViewController* controller);
   ExtensionsMenuButton(const ExtensionsMenuButton&) = delete;
   ExtensionsMenuButton& operator=(const ExtensionsMenuButton&) = delete;
   ~ExtensionsMenuButton() override;
 
   // HoverButton:
-  bool CanShowIconInToolbar() const override;
   void AddedToWidget() override;
   void OnThemeChanged() override;
 
@@ -58,8 +56,11 @@ class ExtensionsMenuButton : public HoverButton,
 
   // Responsible for executing the extension's actions.
   const raw_ptr<ToolbarActionViewController> controller_;
-
-  bool allow_pinning_;
 };
+
+BEGIN_VIEW_BUILDER(/* no export */, ExtensionsMenuButton, HoverButton)
+END_VIEW_BUILDER
+
+DEFINE_VIEW_BUILDER(/* no export */, ExtensionsMenuButton)
 
 #endif  // CHROME_BROWSER_UI_VIEWS_EXTENSIONS_EXTENSIONS_MENU_BUTTON_H_

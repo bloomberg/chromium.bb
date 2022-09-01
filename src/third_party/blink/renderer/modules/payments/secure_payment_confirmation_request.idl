@@ -19,5 +19,13 @@ dictionary SecurePaymentConfirmationRequest {
 
     required PaymentCredentialInstrument instrument;
     unsigned long timeout;
-    required USVString payeeOrigin;
+    DOMString payeeName;
+    USVString payeeOrigin;
+
+    // The relying party, which must be the relying party of a given credential
+    // ID for it to match.
+    required USVString rpId;
+
+    // Whether or not to show an opt-out flow in the SPC UX.
+    [RuntimeEnabled=SecurePaymentConfirmationOptOut, MeasureAs=SecurePaymentConfirmationOptOut] boolean showOptOut;
 };

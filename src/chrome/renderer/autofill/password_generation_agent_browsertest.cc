@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
 #include "base/strings/string_piece.h"
@@ -95,6 +96,7 @@ constexpr char kAccountCreationNoForm[] =
     "<INPUT type = 'button' id = 'dummy'/> "
     "<INPUT type = 'submit' value = 'LOGIN' />";
 
+#if !BUILDFLAG(IS_ANDROID)
 constexpr char kAccountCreationNoIds[] =
     "<FORM action = 'http://www.random.com/pa/th?q=1&p=3#first'> "
     "  <INPUT type = 'text'/> "
@@ -104,6 +106,7 @@ constexpr char kAccountCreationNoIds[] =
     "  <INPUT type = 'button' id = 'dummy'/> "
     "  <INPUT type = 'submit' value = 'LOGIN'/>"
     "</FORM>";
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 constexpr char kDisabledElementAccountCreationFormHTML[] =
     "<FORM name = 'blah' action = 'http://www.random.com/'> "
@@ -280,13 +283,18 @@ void PasswordGenerationAgentTest::FocusField(const char* element_id) {
   ExecuteJavaScriptForTests(
       base::StringPrintf("document.getElementById('%s').focus();", element_id)
           .c_str());
+#if BUILDFLAG(IS_ANDROID)
+  // TODO(crbug.com/1293802): On Android, the JS above doesn't trigger the
+  // method below.
+  GetMainFrame()->AutofillClient()->DidCompleteFocusChangeInFrame();
+#endif  // !BUILDFLAG(IS_ANDROID)
 }
 
 void PasswordGenerationAgentTest::ExpectAutomaticGenerationAvailable(
     const char* element_id,
     AutomaticGenerationStatus status) {
   SCOPED_TRACE(testing::Message()
-               << "element_id = " << element_id << "available = " << status);
+               << "element_id = " << element_id << " available = " << status);
   if (status == kNotReported) {
     EXPECT_CALL(fake_pw_client_, AutomaticGenerationAvailable(_)).Times(0);
   } else {
@@ -518,6 +526,8 @@ TEST_F(PasswordGenerationAgentTest, EditingTest) {
   EXPECT_CALL(fake_pw_client_, PresaveGeneratedPassword(_, Eq(password)));
 
   password_generation_->GeneratedPasswordAccepted(password);
+  base::RunLoop().RunUntilIdle();
+  testing::Mock::VerifyAndClearExpectations(&fake_pw_client_);
 
   // Passwords start out the same.
   EXPECT_EQ(password, first_password_element.Value().Utf16());
@@ -542,6 +552,14 @@ TEST_F(PasswordGenerationAgentTest, EditingTest) {
   EXPECT_THAT(FindFieldById(*fake_driver_.form_data_maybe_submitted(),
                             "second_password"),
               testing::Field(&FormFieldData::value, edited_password));
+#if BUILDFLAG(IS_ANDROID)
+  // TODO(crbug.com/1293802): On Android, |SimulateUserInputChangeForElement|
+  // doesn't trigger focusing events and |ShowPasswordEditingPopup| expectation
+  // is unfulfilled. So, trigger it explicitly.
+  FocusField("first_password");
+#endif
+  base::RunLoop().RunUntilIdle();
+  testing::Mock::VerifyAndClearExpectations(&fake_pw_client_);
 
   // Verify that password mirroring works correctly even when the password
   // is deleted.
@@ -672,13 +690,12 @@ TEST_F(PasswordGenerationAgentTest, MaximumCharsForGenerationOffer) {
 
   // Change focus. Bubble should be hidden.
   EXPECT_CALL(fake_pw_client_, GenerationElementLostFocus());
-  ExecuteJavaScriptForTests("document.getElementById('username').focus();");
+  FocusField("username");
   fake_pw_client_.Flush();
 
   // Focusing the password field will bring up the generation UI again.
   EXPECT_CALL(fake_pw_client_, AutomaticGenerationAvailable(_));
-  ExecuteJavaScriptForTests(
-      "document.getElementById('first_password').focus();");
+  FocusField("first_password");
   fake_pw_client_.Flush();
   testing::Mock::VerifyAndClearExpectations(&fake_pw_client_);
 
@@ -812,22 +829,30 @@ TEST_F(PasswordGenerationAgentTest, ChangePasswordFormDetectionTest) {
   ExpectGenerationElementLostFocus("confirmpassword");
 }
 
-TEST_F(PasswordGenerationAgentTest, ManualGenerationInFormTest) {
+// These tests are for the right-click menu and it is not applicable to Android.
+#if !BUILDFLAG(IS_ANDROID)
+TEST_F(PasswordGenerationAgentTest, DesktopContextMenuGenerationInFormTest) {
   LoadHTMLWithUserGesture(kSigninFormHTML);
+  WebElement element = GetElementById("password");
+  WebInputElement first_password_element = element.To<WebInputElement>();
+  EXPECT_TRUE(first_password_element.Value().IsNull());
   SimulateElementRightClick("password");
   SelectGenerationFallbackAndExpect(true);
+  EXPECT_TRUE(first_password_element.Value().IsNull());
+
   // Re-focusing a password field for which manual generation was requested
   // should not re-trigger generation.
   ExpectAutomaticGenerationAvailable("password", kNotReported);
 }
 
-TEST_F(PasswordGenerationAgentTest, ManualGenerationNoFormTest) {
+TEST_F(PasswordGenerationAgentTest, DesktopContextMenuGenerationNoFormTest) {
   LoadHTMLWithUserGesture(kAccountCreationNoForm);
   SimulateElementRightClick("first_password");
   SelectGenerationFallbackAndExpect(true);
 }
 
-TEST_F(PasswordGenerationAgentTest, ManualGenerationDoesntSuppressAutomatic) {
+TEST_F(PasswordGenerationAgentTest,
+       DesktopContextMenuGenerationDoesntSuppressAutomatic) {
   LoadHTMLWithUserGesture(kAccountCreationFormHTML);
   SetFoundFormEligibleForGeneration(
       password_generation_, GetMainFrame()->GetDocument(),
@@ -844,7 +869,7 @@ TEST_F(PasswordGenerationAgentTest, ManualGenerationDoesntSuppressAutomatic) {
   ExpectAutomaticGenerationAvailable("first_password", kAvailable);
 }
 
-TEST_F(PasswordGenerationAgentTest, ManualGenerationNoIds) {
+TEST_F(PasswordGenerationAgentTest, DesktopContextMenuGenerationNoIds) {
   LoadHTMLWithUserGesture(kAccountCreationNoIds);
   WebDocument document = GetMainFrame()->GetDocument();
 
@@ -876,6 +901,15 @@ TEST_F(PasswordGenerationAgentTest, ManualGenerationNoIds) {
   EXPECT_TRUE(second_password_element.IsAutofilled());
 }
 
+TEST_F(PasswordGenerationAgentTest,
+       DesktopContextMenuGeneration_NoFocusedElement) {
+  // Checks the fallback doesn't cause a crash just in case no password element
+  // had focus so far.
+  LoadHTMLWithUserGesture(kAccountCreationFormHTML);
+  SelectGenerationFallbackAndExpect(false);
+}
+#endif  // !BUILDFLAG(IS_ANDROID)
+
 TEST_F(PasswordGenerationAgentTest, PresavingGeneratedPassword) {
   const struct {
     const char* form;
@@ -886,9 +920,7 @@ TEST_F(PasswordGenerationAgentTest, PresavingGeneratedPassword) {
   for (auto& test_case : kTestCases) {
     SCOPED_TRACE(testing::Message("form: ") << test_case.form);
     LoadHTMLWithUserGesture(test_case.form);
-    // To be able to work with input elements outside <form>'s, use manual
-    // generation.
-    SimulateElementRightClick(test_case.generation_element);
+    FocusField(test_case.generation_element);
     SelectGenerationFallbackAndExpect(true);
 
     std::u16string password = u"random_password";
@@ -928,7 +960,7 @@ TEST_F(PasswordGenerationAgentTest, PresavingGeneratedPassword) {
 
 TEST_F(PasswordGenerationAgentTest, FallbackForSaving) {
   LoadHTMLWithUserGesture(kAccountCreationFormHTML);
-  SimulateElementRightClick("first_password");
+  FocusField("first_password");
   SelectGenerationFallbackAndExpect(true);
   EXPECT_EQ(0, fake_driver_.called_inform_about_user_input_count());
   std::u16string password = u"random_password";
@@ -1010,17 +1042,6 @@ TEST_F(PasswordGenerationAgentTest, JavascriptClearedTheField) {
       "document.getElementById('first_password').value = '';");
   FocusField(kGenerationElementId);
   base::RunLoop().RunUntilIdle();
-}
-
-TEST_F(PasswordGenerationAgentTest, GenerationFallbackTest) {
-  LoadHTMLWithUserGesture(kAccountCreationFormHTML);
-  WebDocument document = GetMainFrame()->GetDocument();
-  WebElement element = GetElementById("first_password");
-  WebInputElement first_password_element = element.To<WebInputElement>();
-  EXPECT_TRUE(first_password_element.Value().IsNull());
-  SimulateElementRightClick("first_password");
-  SelectGenerationFallbackAndExpect(true);
-  EXPECT_TRUE(first_password_element.Value().IsNull());
 }
 
 TEST_F(PasswordGenerationAgentTest, GenerationFallback_NoFocusedElement) {
@@ -1166,9 +1187,8 @@ TEST_F(PasswordGenerationAgentTest, GenerationAvailableByRendererIds) {
   std::vector<WebInputElement> password_elements;
   for (const char* id : kPasswordElementsIds) {
     WebElement element = GetElementById(id);
-    WebInputElement* input = ToWebInputElement(&element);
-    ASSERT_TRUE(input);
-    password_elements.push_back(*input);
+    WebInputElement input = element.To<WebInputElement>();
+    password_elements.push_back(input);
   }
 
   // Simulate that the browser informs about eligible for generation form.

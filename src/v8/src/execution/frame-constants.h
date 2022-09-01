@@ -62,7 +62,7 @@ class CommonFrameConstants : public AllStatic {
   static constexpr int kFixedSlotCountAboveFp =
       kFixedFrameSizeAboveFp / kSystemPointerSize;
   static constexpr int kCPSlotSize =
-      FLAG_enable_embedded_constant_pool ? kSystemPointerSize : 0;
+      FLAG_enable_embedded_constant_pool.value() ? kSystemPointerSize : 0;
   static constexpr int kCPSlotCount = kCPSlotSize / kSystemPointerSize;
   static constexpr int kConstantPoolOffset =
       kCPSlotSize ? -1 * kSystemPointerSize : 0;
@@ -204,20 +204,18 @@ class BuiltinFrameConstants : public TypedFrameConstants {
   DEFINE_TYPED_FRAME_SIZES(2);
 };
 
+// Fixed frame slots shared by the js-to-wasm wrapper, the
+// ReturnPromiseOnSuspend wrapper and the WasmResume wrapper.
 class BuiltinWasmWrapperConstants : public TypedFrameConstants {
  public:
   // This slot contains the number of slots at the top of the frame that need to
   // be scanned by the GC.
   static constexpr int kGCScanSlotCountOffset =
       TYPED_FRAME_PUSHED_VALUE_OFFSET(0);
-};
-
-class ReturnPromiseOnSuspendFrameConstants
-    : public BuiltinWasmWrapperConstants {
- public:
-  static constexpr int kParamCountOffset = TYPED_FRAME_PUSHED_VALUE_OFFSET(1);
-  static constexpr int kSpillAreaSize =
-      -(kParamCountOffset - TypedFrameConstants::kFixedFrameSizeFromFp);
+  // The number of parameters passed to this function.
+  static constexpr int kInParamCountOffset = TYPED_FRAME_PUSHED_VALUE_OFFSET(1);
+  // The number of parameters according to the signature.
+  static constexpr int kParamCountOffset = TYPED_FRAME_PUSHED_VALUE_OFFSET(2);
 };
 
 class ConstructFrameConstants : public TypedFrameConstants {

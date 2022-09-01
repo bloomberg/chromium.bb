@@ -11,8 +11,8 @@
 #include "base/memory/weak_ptr.h"
 #include "build/buildflag.h"
 #include "media/base/decoder_factory.h"
+#include "media/base/decoder_status.h"
 #include "media/base/media_util.h"
-#include "media/base/status_codes.h"
 #include "media/base/video_decoder_config.h"
 #include "media/mojo/buildflags.h"
 #include "media/mojo/clients/mojo_decoder_factory.h"
@@ -31,6 +31,8 @@
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/scheduler/public/worker_pool.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_copier_base.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_copier_mojo.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "ui/gfx/color_space.h"
@@ -46,8 +48,8 @@ struct CrossThreadCopier<media::VideoDecoderConfig>
 };
 
 template <>
-struct CrossThreadCopier<media::Status>
-    : public CrossThreadCopierPassThrough<media::Status> {
+struct CrossThreadCopier<media::DecoderStatus>
+    : public CrossThreadCopierPassThrough<media::DecoderStatus> {
   STATIC_ONLY(CrossThreadCopier);
 };
 
@@ -68,10 +70,10 @@ namespace blink {
 class MediaVideoTaskWrapper {
  public:
   using CrossThreadOnceInitCB =
-      WTF::CrossThreadOnceFunction<void(media::Status status,
+      WTF::CrossThreadOnceFunction<void(media::DecoderStatus status,
                                         absl::optional<DecoderDetails>)>;
   using CrossThreadOnceDecodeCB =
-      WTF::CrossThreadOnceFunction<void(const media::Status&)>;
+      WTF::CrossThreadOnceFunction<void(const media::DecoderStatus&)>;
   using CrossThreadOnceResetCB = WTF::CrossThreadOnceClosure;
 
   MediaVideoTaskWrapper(
@@ -148,7 +150,7 @@ class MediaVideoTaskWrapper {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
     if (!decoder_) {
-      OnDecodeDone(cb_id, media::DecodeStatus::DECODE_ERROR);
+      OnDecodeDone(cb_id, media::DecoderStatus::Codes::kNotInitialized);
       return;
     }
 
@@ -254,14 +256,16 @@ class MediaVideoTaskWrapper {
 
     decoder_ = std::move(decoder);
 
-    media::Status status(media::StatusCode::kDecoderUnsupportedConfig);
-    absl::optional<DecoderDetails> decoder_details;
+    media::DecoderStatus status = media::DecoderStatus::Codes::kOk;
+    absl::optional<DecoderDetails> decoder_details = absl::nullopt;
+
     if (decoder_) {
-      status = media::OkStatus();
       decoder_details = DecoderDetails({decoder_->GetDecoderType(),
                                         decoder_->IsPlatformDecoder(),
                                         decoder_->NeedsBitstreamConversion(),
                                         decoder_->GetMaxDecodeRequests()});
+    } else {
+      status = media::DecoderStatus::Codes::kUnsupportedConfig;
     }
 
     // Fire |init_cb|.
@@ -282,7 +286,7 @@ class MediaVideoTaskWrapper {
                                  decoder_->CanReadWithoutStalling()));
   }
 
-  void OnDecodeDone(int cb_id, media::Status status) {
+  void OnDecodeDone(int cb_id, media::DecoderStatus status) {
     DVLOG(2) << __func__;
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -407,7 +411,7 @@ int VideoDecoderBroker::CreateCallbackId() {
   return last_callback_id_;
 }
 
-void VideoDecoderBroker::OnInitialize(media::Status status,
+void VideoDecoderBroker::OnInitialize(media::DecoderStatus status,
                                       absl::optional<DecoderDetails> details) {
   DVLOG(2) << __func__;
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -431,7 +435,7 @@ void VideoDecoderBroker::Decode(scoped_refptr<media::DecoderBuffer> buffer,
                                buffer, callback_id));
 }
 
-void VideoDecoderBroker::OnDecodeDone(int cb_id, media::Status status) {
+void VideoDecoderBroker::OnDecodeDone(int cb_id, media::DecoderStatus status) {
   DVLOG(2) << __func__;
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(pending_decode_cb_map_.Contains(cb_id));

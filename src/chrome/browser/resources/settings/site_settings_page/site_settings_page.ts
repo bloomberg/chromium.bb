@@ -15,9 +15,9 @@ import 'chrome://resources/polymer/v3_0/iron-collapse/iron-collapse.js';
 import '../settings_shared_css.js';
 import './recent_site_permissions.js';
 
-import {assert} from 'chrome://resources/js/assert.m.js';
+import {assert} from 'chrome://resources/js/assert_ts.js';
 import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
-import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {loadTimeData} from '../i18n_setup.js';
 import {routes} from '../route.js';
@@ -25,6 +25,7 @@ import {Router} from '../router.js';
 import {ContentSettingsTypes} from '../site_settings/constants.js';
 
 import {CategoryListItem} from './site_settings_list.js';
+import {getTemplate} from './site_settings_page.html.js';
 
 const Id = ContentSettingsTypes;
 
@@ -183,6 +184,16 @@ function getCategoryItemMap(): Map<ContentSettingsTypes, CategoryListItem> {
       disabledLabel: 'siteSettingsInsecureContentBlock',
     },
     {
+      route: routes.SITE_SETTINGS_FEDERATED_IDENTITY_API,
+      id: Id.FEDERATED_IDENTITY_API,
+      label: 'siteSettingsFederatedIdentityApi',
+      icon: 'settings:federated-identity-api',
+      enabledLabel: 'siteSettingsFederatedIdentityApiAllowed',
+      disabledLabel: 'siteSettingsFederatedIdentityApiBlocked',
+      shouldShow: () =>
+          loadTimeData.getBoolean('enableFederatedIdentityApiContentSetting'),
+    },
+    {
       route: routes.SITE_SETTINGS_FILE_SYSTEM_WRITE,
       id: Id.FILE_SYSTEM_WRITE,
       label: 'siteSettingsFileSystemWrite',
@@ -191,10 +202,10 @@ function getCategoryItemMap(): Map<ContentSettingsTypes, CategoryListItem> {
       disabledLabel: 'siteSettingsFileSystemWriteBlocked',
     },
     {
-      route: routes.SITE_SETTINGS_FONT_ACCESS,
-      id: Id.FONT_ACCESS,
+      route: routes.SITE_SETTINGS_LOCAL_FONTS,
+      id: Id.LOCAL_FONTS,
       label: 'fonts',
-      icon: 'settings:font-access',
+      icon: 'settings:local-fonts',
       enabledLabel: 'siteSettingsFontsAllowed',
       disabledLabel: 'siteSettingsFontsBlocked',
     },
@@ -295,7 +306,7 @@ function getCategoryItemMap(): Map<ContentSettingsTypes, CategoryListItem> {
       label: 'siteSettingsWindowPlacement',
       icon: 'settings:window-placement',
       enabledLabel: 'siteSettingsWindowPlacementAsk',
-      disabledLabel: 'siteSettingsWindowPlacementBlock',
+      disabledLabel: 'siteSettingsWindowPlacementBlocked',
     },
     {
       route: routes.SITE_SETTINGS_ZOOM_LEVELS,
@@ -328,7 +339,7 @@ export class SettingsSiteSettingsPageElement extends PolymerElement {
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
@@ -369,7 +380,7 @@ export class SettingsSiteSettingsPageElement extends PolymerElement {
               Id.VR,
               Id.IDLE_DETECTION,
               Id.WINDOW_PLACEMENT,
-              Id.FONT_ACCESS,
+              Id.LOCAL_FONTS,
             ]),
             contentBasic: buildItemListFromIds([
               Id.COOKIES,
@@ -384,6 +395,7 @@ export class SettingsSiteSettingsPageElement extends PolymerElement {
               Id.PDF_DOCUMENTS,
               Id.PROTECTED_CONTENT,
               Id.MIXEDSCRIPT,
+              Id.FEDERATED_IDENTITY_API,
             ]),
           };
         }
@@ -419,7 +431,9 @@ export class SettingsSiteSettingsPageElement extends PolymerElement {
     // only fire once.
     assert(!oldConfig);
     this.focusConfig.set(routes.SITE_SETTINGS_ALL.path, () => {
-      focusWithoutInk(assert(this.shadowRoot!.querySelector('#allSites')!));
+      const allSites = this.shadowRoot!.querySelector('#allSites');
+      assert(!!allSites);
+      focusWithoutInk(allSites);
     });
   }
 

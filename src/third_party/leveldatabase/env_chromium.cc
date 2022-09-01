@@ -5,12 +5,12 @@
 #include "third_party/leveldatabase/env_chromium.h"
 
 #include <atomic>
+#include <iterator>
 #include <limits>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/check_op.h"
-#include "base/cxx17_backports.h"
 #include "base/files/file_error_or.h"
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
@@ -26,6 +26,7 @@
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
+#include "base/time/time.h"
 #include "base/time/time_override.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/memory_dump_provider.h"
@@ -624,7 +625,7 @@ int GetCorruptionCode(const leveldb::Status& status) {
   const int kOtherError = 0;
   int error = kOtherError;
   const std::string& str_error = status.ToString();
-  const size_t kNumPatterns = base::size(patterns);
+  const size_t kNumPatterns = std::size(patterns);
   for (size_t i = 0; i < kNumPatterns; ++i) {
     if (str_error.find(patterns[i]) != std::string::npos) {
       error = i + 1;
@@ -637,7 +638,7 @@ int GetCorruptionCode(const leveldb::Status& status) {
 int GetNumCorruptionCodes() {
   // + 1 for the "other" error that is returned when a corruption message
   // doesn't match any of the patterns.
-  return base::size(patterns) + 1;
+  return std::size(patterns) + 1;
 }
 
 std::string GetCorruptionMessage(const leveldb::Status& status) {

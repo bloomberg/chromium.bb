@@ -12,7 +12,9 @@
 #include "base/sequence_checker.h"
 #include "media/audio/audio_input_ipc.h"
 #include "media/audio/audio_source_parameters.h"
+#include "media/base/audio_processor_controls.h"
 #include "media/mojo/mojom/audio_input_stream.mojom-blink.h"
+#include "media/mojo/mojom/audio_processing.mojom-blink.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -27,6 +29,7 @@ namespace blink {
 // thread.
 class MODULES_EXPORT MojoAudioInputIPC
     : public media::AudioInputIPC,
+      public media::AudioProcessorControls,
       public mojom::blink::RendererAudioInputStreamFactoryClient,
       public media::mojom::blink::AudioInputStreamClient {
  public:
@@ -37,6 +40,8 @@ class MODULES_EXPORT MojoAudioInputIPC
       const media::AudioSourceParameters& source_params,
       mojo::PendingRemote<mojom::blink::RendererAudioInputStreamFactoryClient>
           client,
+      mojo::PendingReceiver<media::mojom::blink::AudioProcessorControls>
+          controls_receiver,
       const media::AudioParameters& params,
       bool automatic_gain_control,
       uint32_t total_segments)>;
@@ -63,7 +68,12 @@ class MODULES_EXPORT MojoAudioInputIPC
   void RecordStream() override;
   void SetVolume(double volume) override;
   void SetOutputDeviceForAec(const std::string& output_device_id) override;
+  media::AudioProcessorControls* GetProcessorControls() override;
   void CloseStream() override;
+
+  // AudioProcessorControls implementation
+  void GetStats(GetStatsCB callback) override;
+  void SetPreferredNumCaptureChannels(int32_t num_preferred_channels) override;
 
  private:
   void StreamCreated(
@@ -86,6 +96,8 @@ class MODULES_EXPORT MojoAudioInputIPC
   StreamAssociatorCB stream_associator_;
 
   mojo::Remote<media::mojom::blink::AudioInputStream> stream_;
+  mojo::Remote<media::mojom::blink::AudioProcessorControls> processor_controls_;
+
   // Initialized on StreamCreated.
   absl::optional<base::UnguessableToken> stream_id_;
   mojo::Receiver<AudioInputStreamClient> stream_client_receiver_{this};

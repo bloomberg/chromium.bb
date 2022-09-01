@@ -16,6 +16,10 @@
 #include "net/http/http_auth_handler.h"
 #include "net/http/http_auth_handler_factory.h"
 
+namespace url {
+class SchemeHostPort;
+}
+
 namespace net {
 
 // Code for handling http digest authentication.
@@ -76,7 +80,7 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerDigest : public HttpAuthHandler {
                           HttpAuth::Target target,
                           const SSLInfo& ssl_info,
                           const NetworkIsolationKey& network_isolation_key,
-                          const GURL& origin,
+                          const url::SchemeHostPort& scheme_host_port,
                           CreateReason reason,
                           int digest_nonce_count,
                           const NetLogWithSource& net_log,
@@ -170,9 +174,9 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerDigest : public HttpAuthHandler {
   std::string nonce_;
   std::string domain_;
   std::string opaque_;
-  bool stale_;
-  DigestAlgorithm algorithm_;
-  QualityOfProtection qop_;
+  bool stale_ = false;
+  DigestAlgorithm algorithm_ = ALGORITHM_UNSPECIFIED;
+  QualityOfProtection qop_ = QOP_UNSPECIFIED;
 
   // The realm as initially encoded over-the-wire. This is used in the
   // challenge text, rather than |realm_| which has been converted to

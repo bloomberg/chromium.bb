@@ -16,6 +16,11 @@ enum Sandbox {
   // if possible.
   kService,
 
+  // |kServiceWithJit| hosts computation only services that make use of
+  // dynamic code (e.g. v8 or wasm) but do not need access to OS resources.
+  // Prefer |kService| if possible.
+  kServiceWithJit,
+
   // Hosts generic utilities with limited access to system services.
   // On some platforms, may be slightly less locked down than |kService|.
   // For instance, it allows dynamic code and wider access to APIs on Windows.
@@ -53,6 +58,10 @@ enum Sandbox {
 
   // Like kUtility but allows loading of speech recognition libraries.
   kSpeechRecognition,
+
+  // Like kUtility but allows loading of screen AI library.
+  [EnableIf=enable_screen_ai_service]
+  kScreenAI,
 
   // The PPAPI plugin process.
   [EnableIf=enable_plugins]
@@ -105,7 +114,7 @@ enum Sandbox {
   // TODO(b/195769334): we're using the GPU process sandbox policy for now as a
   // transition step. However, we should create a policy that's tighter just for
   // hardware video decoding.
-  [EnableIf=is_chromeos_ash]
+  [EnableIf=is_linux_or_chromeos_ash]
   kHardwareVideoDecoding,
 
   // Hosts Input Method Editors.

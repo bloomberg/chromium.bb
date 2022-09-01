@@ -5,10 +5,11 @@
 #ifndef MEDIA_FORMATS_HLS_PARSE_STATUS_H_
 #define MEDIA_FORMATS_HLS_PARSE_STATUS_H_
 
+#include "base/strings/string_piece.h"
+#include "media/base/media_export.h"
 #include "media/base/status.h"
 
-namespace media {
-namespace hls {
+namespace media::hls {
 
 enum class ParseStatusCode : StatusCodeType {
   kReachedEOF,
@@ -17,8 +18,34 @@ enum class ParseStatusCode : StatusCodeType {
   kFailedToParseDecimalInteger,
   kFailedToParseDecimalFloatingPoint,
   kFailedToParseSignedDecimalFloatingPoint,
+  kFailedToParseDecimalResolution,
+  kFailedToParseQuotedString,
+  kFailedToParseByteRange,
+  kInvalidPlaylistVersion,
+  kUnknownPlaylistType,
+  kMalformedAttributeList,
+  kAttributeListHasDuplicateNames,
+  kMalformedVariableName,
+  kInvalidUri,
   kPlaylistMissingM3uTag,
+  kMediaPlaylistMissingTargetDuration,
   kMediaSegmentMissingInfTag,
+  kMediaSegmentExceedsTargetDuration,
+  kPlaylistHasDuplicateTags,
+  kPlaylistHasUnsupportedVersion,
+  kMediaPlaylistHasMultivariantPlaylistTag,
+  kMultivariantPlaylistHasMediaPlaylistTag,
+  kVariableUndefined,
+  kVariableDefinedMultipleTimes,
+  kImportedVariableInParentlessPlaylist,
+  kImportedVariableUndefined,
+  kXStreamInfTagNotFollowedByUri,
+  kVariantMissingStreamInfTag,
+  kMediaSegmentBeforeMediaSequenceTag,
+  kMediaSegmentBeforeDiscontinuitySequenceTag,
+  kDiscontinuityTagBeforeDiscontinuitySequenceTag,
+  kByteRangeRequiresOffset,
+  kByteRangeInvalid,
 };
 
 struct ParseStatusTraits {
@@ -28,7 +55,8 @@ struct ParseStatusTraits {
 
 using ParseStatus = TypedStatus<ParseStatusTraits>;
 
-}  // namespace hls
-}  // namespace media
+MEDIA_EXPORT base::StringPiece ParseStatusCodeToString(ParseStatusCode code);
+
+}  // namespace media::hls
 
 #endif  // MEDIA_FORMATS_HLS_PARSE_STATUS_H_

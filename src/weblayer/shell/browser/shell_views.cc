@@ -2,16 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/raw_ptr.h"
-#include "weblayer/shell/browser/shell.h"
-
 #include <stddef.h>
 
 #include <memory>
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/cxx17_backports.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -37,14 +34,15 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "weblayer/public/tab.h"
+#include "weblayer/shell/browser/shell.h"
 
-#if defined(USE_AURA) && !defined(OS_CHROMEOS)
+#if defined(USE_AURA) && !BUILDFLAG(IS_CHROMEOS)
 #include "ui/display/screen.h"
 #include "ui/views/widget/desktop_aura/desktop_screen.h"
 #include "ui/wm/core/wm_state.h"
 #endif
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include <fcntl.h>
 #include <io.h>
 #endif
@@ -141,13 +139,13 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
 
     views::Builder<views::WidgetDelegateView>(this)
         .SetBackground(
-            CreateThemedSolidBackground(this, ui::kColorWindowBackground))
+            views::CreateThemedSolidBackground(ui::kColorWindowBackground))
         .AddChildren(
             views::Builder<views::FlexLayoutView>()
                 .CopyAddressTo(&toolbar_view_)
                 .SetOrientation(views::LayoutOrientation::kHorizontal)
                 // Top/Left/Right padding = 2, Bottom padding = 5
-                .SetProperty(views::kMarginsKey, gfx::Insets(2, 2, 5, 2))
+                .SetProperty(views::kMarginsKey, gfx::Insets::TLBR(2, 2, 5, 2))
                 .AddChildren(
                     views::Builder<views::MdTextButton>()
                         .CopyAddressTo(&back_button_)
@@ -200,13 +198,13 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
                                 views::MaximumFlexSizeRule::kUnbounded))
                         // Left padding  = 2, Right padding = 2
                         .SetProperty(views::kMarginsKey,
-                                     gfx::Insets(0, 2, 0, 2))),
+                                     gfx::Insets::TLBR(0, 2, 0, 2))),
             views::Builder<views::View>()
                 .CopyAddressTo(&contents_view_)
                 .SetUseDefaultFillLayout(true)
-                .SetProperty(views::kMarginsKey, gfx::Insets(0, 2, 0, 2)),
-            views::Builder<views::View>().SetProperty(views::kMarginsKey,
-                                                      gfx::Insets(0, 0, 5, 0)))
+                .SetProperty(views::kMarginsKey, gfx::Insets::TLBR(0, 2, 0, 2)),
+            views::Builder<views::View>().SetProperty(
+                views::kMarginsKey, gfx::Insets::TLBR(0, 0, 5, 0)))
         .BuildChildren();
     box_layout->SetFlexForView(contents_view_, 1);
   }
@@ -216,7 +214,7 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
     DCHECK(GetWidget());
     static const ui::KeyboardCode keys[] = {ui::VKEY_F5, ui::VKEY_BROWSER_BACK,
                                             ui::VKEY_BROWSER_FORWARD};
-    for (size_t i = 0; i < base::size(keys); ++i) {
+    for (size_t i = 0; i < std::size(keys); ++i) {
       GetFocusManager()->RegisterAccelerator(
           ui::Accelerator(keys[i], ui::EF_NONE),
           ui::AcceleratorManager::kNormalPriority, this);
@@ -295,7 +293,7 @@ END_METADATA
 
 }  // namespace
 
-#if defined(USE_AURA) && !defined(OS_CHROMEOS)
+#if defined(USE_AURA) && !BUILDFLAG(IS_CHROMEOS)
 // static
 wm::WMState* Shell::wm_state_ = nullptr;
 display::Screen* Shell::screen_ = nullptr;
@@ -305,11 +303,11 @@ views::ViewsDelegate* Shell::views_delegate_ = nullptr;
 
 // static
 void Shell::PlatformInitialize(const gfx::Size& default_window_size) {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   _setmode(_fileno(stdout), _O_BINARY);
   _setmode(_fileno(stderr), _O_BINARY);
 #endif
-#if defined(USE_AURA) && !defined(OS_CHROMEOS)
+#if defined(USE_AURA) && !BUILDFLAG(IS_CHROMEOS)
   wm_state_ = new wm::WMState;
   CHECK(!display::Screen::GetScreen());
   screen_ = views::CreateDesktopScreen().release();

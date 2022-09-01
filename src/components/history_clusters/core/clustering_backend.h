@@ -10,6 +10,8 @@
 
 namespace history_clusters {
 
+enum class ClusteringRequestSource { kKeywordCacheGeneration, kJourneysPage };
+
 // An abstract interface for a swappable clustering backend.
 class ClusteringBackend {
  public:
@@ -22,9 +24,9 @@ class ClusteringBackend {
   // `callback`. `visits` can be passed in arbitrary order, and the resulting
   // clusters can be in arbitrary order too. Caller is responsible for sorting
   // the output however they want it.
-  virtual void GetClusters(
-      ClustersCallback callback,
-      const std::vector<history::AnnotatedVisit>& visits) = 0;
+  virtual void GetClusters(ClusteringRequestSource clustering_request_source,
+                           ClustersCallback callback,
+                           std::vector<history::AnnotatedVisit> visits) = 0;
 };
 
 }  // namespace history_clusters

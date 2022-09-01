@@ -53,10 +53,11 @@ struct Renderer11DeviceCaps
     bool supportsConstantBufferOffsets;           // Support for Constant buffer offset
     bool supportsVpRtIndexWriteFromVertexShader;  // VP/RT can be selected in the Vertex Shader
                                                   // stage.
-    bool supportsMultisampledDepthStencilSRVs;  // D3D feature level 10.0 no longer allows creation
-                                                // of textures with both the bind SRV and DSV flags
-                                                // when multisampled.  Textures will need to be
-                                                // resolved before reading. crbug.com/656989
+    bool supportsMultisampledDepthStencilSRVs;   // D3D feature level 10.0 no longer allows creation
+                                                 // of textures with both the bind SRV and DSV flags
+                                                 // when multisampled.  Textures will need to be
+                                                 // resolved before reading. crbug.com/656989
+    bool supportsTypedUAVLoadAdditionalFormats;  //
     bool allowES3OnFL10_0;
     UINT B5G6R5support;     // Bitfield of D3D11_FORMAT_SUPPORT values for DXGI_FORMAT_B5G6R5_UNORM
     UINT B5G6R5maxSamples;  // Maximum number of samples supported by DXGI_FORMAT_B5G6R5_UNORM
@@ -207,7 +208,7 @@ class Renderer11 : public RendererD3D
                                       gl::ShaderType type,
                                       const std::vector<D3DVarying> &streamOutVaryings,
                                       bool separatedOutputBuffers,
-                                      const angle::CompilerWorkaroundsD3D &workarounds,
+                                      const CompilerWorkaroundsD3D &workarounds,
                                       ShaderExecutableD3D **outExectuable) override;
     angle::Result ensureHLSLCompilerInitialized(d3d::Context *context) override;
 
@@ -276,6 +277,10 @@ class Renderer11 : public RendererD3D
                                                       int samples,
                                                       bool fixedSampleLocations,
                                                       const std::string &label) override;
+
+    TextureStorage *createTextureStorageBuffer(const gl::OffsetBindingPointer<gl::Buffer> &buffer,
+                                               GLenum internalFormat,
+                                               const std::string &label) override;
     TextureStorage *createTextureStorage2DMultisampleArray(GLenum internalformat,
                                                            GLsizei width,
                                                            GLsizei height,
@@ -294,6 +299,7 @@ class Renderer11 : public RendererD3D
 
     // D3D11-renderer specific methods
     ID3D11Device *getDevice() { return mDevice; }
+    ID3D11Device1 *getDevice1() { return mDevice1; }
     void *getD3DDevice() override;
     ID3D11DeviceContext *getDeviceContext() { return mDeviceContext; }
     ID3D11DeviceContext1 *getDeviceContext1IfSupported() { return mDeviceContext1; }
@@ -360,6 +366,8 @@ class Renderer11 : public RendererD3D
     angle::Result blitRenderbufferRect(const gl::Context *context,
                                        const gl::Rectangle &readRect,
                                        const gl::Rectangle &drawRect,
+                                       UINT readLayer,
+                                       UINT drawLayer,
                                        RenderTargetD3D *readRenderTarget,
                                        RenderTargetD3D *drawRenderTarget,
                                        GLenum filter,
@@ -490,7 +498,7 @@ class Renderer11 : public RendererD3D
 
     std::string getRendererDescription() const override;
     std::string getVendorString() const override;
-    std::string getVersionString() const override;
+    std::string getVersionString(bool includeFullVersion) const override;
 
   private:
     void generateCaps(gl::Caps *outCaps,
@@ -499,6 +507,8 @@ class Renderer11 : public RendererD3D
                       gl::Limitations *outLimitations) const override;
 
     void initializeFeatures(angle::FeaturesD3D *features) const override;
+
+    void initializeFrontendFeatures(angle::FrontendFeatures *features) const override;
 
     angle::Result drawLineLoop(const gl::Context *context,
                                GLuint count,
@@ -547,6 +557,7 @@ class Renderer11 : public RendererD3D
 
     // Make sure that the raw buffer is the latest buffer.
     angle::Result markRawBufferUsage(const gl::Context *context);
+    angle::Result markTypedBufferUsage(const gl::Context *context);
     angle::Result markTransformFeedbackUsage(const gl::Context *context);
     angle::Result drawWithGeometryShaderAndTransformFeedback(Context11 *context11,
                                                              gl::PrimitiveMode mode,
@@ -593,6 +604,7 @@ class Renderer11 : public RendererD3D
     angle::ComPtr<ID3D12CommandQueue> mCommandQueue;
 
     ID3D11Device *mDevice;
+    ID3D11Device1 *mDevice1;
     Renderer11DeviceCaps mRenderer11DeviceCaps;
     ID3D11DeviceContext *mDeviceContext;
     ID3D11DeviceContext1 *mDeviceContext1;

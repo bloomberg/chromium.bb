@@ -137,11 +137,22 @@ def get_config(is_component_mode, is_debug_mode, cpu, defines):
     'proprietary_codecs': True,
     'ffmpeg_branding': 'Chrome',
 
+    # This COM check hook seems to cause some problems on some developer
+    # workstations.
+    'com_init_check_hook_disabled': True,
+
+    # Disable dcheck by default.
+    # TODO: fix all the DCHECK failures to remove this.
+    'dcheck_always_on': False,
+
     # Disable field-trial testing feature.
     'disable_fieldtrial_testing_config': True,
 
     # Disable multicast DNS support.
     'enable_mdns': False,
+
+    # Disable print content analysis
+    'enable_print_content_analysis': False,
 
     # Apply the content shell version.
     'content_shell_version': chromium_version,

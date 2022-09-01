@@ -8,8 +8,10 @@
 #ifndef SKSL_OUTPUTSTREAM
 #define SKSL_OUTPUTSTREAM
 
-#include "include/private/SkSLDefines.h"
-#include "include/private/SkSLString.h"
+#include "include/core/SkTypes.h"
+
+#include <stdarg.h>
+#include <string>
 
 namespace SkSL {
 
@@ -37,11 +39,11 @@ public:
 
     virtual void write(const void* s, size_t size) = 0;
 
-    void writeString(const String& s);
+    void writeString(const std::string& s);
 
     void printf(const char format[], ...) SK_PRINTF_LIKE(2, 3);
 
-    void appendVAList(const char format[], va_list args);
+    void appendVAList(const char format[], va_list args) SK_PRINTF_LIKE(2, 0);
 
     virtual ~OutputStream() {}
 

@@ -11,7 +11,6 @@
 
 #include "base/base_export.h"
 #include "base/memory/raw_ptr.h"
-#include "base/memory/ref_counted.h"
 #include "base/task/common/checked_lock.h"
 #include "base/task/single_thread_task_runner_thread_mode.h"
 #include "base/task/thread_pool/environment_config.h"
@@ -60,11 +59,15 @@ class BASE_EXPORT PooledSingleThreadTaskRunnerManager final {
   ~PooledSingleThreadTaskRunnerManager();
 
   // Starts threads for existing SingleThreadTaskRunners and allows threads to
-  // be started when SingleThreadTaskRunners are created in the future. If
-  // specified, |worker_thread_observer| will be notified when a worker
-  // enters and exits its main function. It must not be destroyed before
-  // JoinForTesting() has returned (must never be destroyed in production).
-  void Start(WorkerThreadObserver* worker_thread_observer = nullptr);
+  // be started when SingleThreadTaskRunners are created in the future.
+  // `io_thread_task_runner` is used to setup FileDescriptorWatcher on worker
+  // threads. `io_thread_task_runner` must refer to a Thread with
+  // MessgaePumpType::IO. If specified, |worker_thread_observer| will be
+  // notified when a worker enters and exits its main function. It must not be
+  // destroyed before JoinForTesting() has returned (must never be destroyed in
+  // production).
+  void Start(scoped_refptr<SingleThreadTaskRunner> io_thread_task_runner,
+             WorkerThreadObserver* worker_thread_observer = nullptr);
 
   // Wakes up workers as appropriate for the new CanRunPolicy policy. Must be
   // called after an update to CanRunPolicy in TaskTracker.
@@ -78,7 +81,7 @@ class BASE_EXPORT PooledSingleThreadTaskRunnerManager final {
       const TaskTraits& traits,
       SingleThreadTaskRunnerThreadMode thread_mode);
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // Creates a SingleThreadTaskRunner which runs tasks with |traits| on a COM
   // STA thread named "ThreadPoolSingleThreadCOMSTA[Shared]" +
   // kEnvironmentParams[GetEnvironmentIndexForTraits(traits)].name_suffix +
@@ -86,7 +89,7 @@ class BASE_EXPORT PooledSingleThreadTaskRunnerManager final {
   scoped_refptr<SingleThreadTaskRunner> CreateCOMSTATaskRunner(
       const TaskTraits& traits,
       SingleThreadTaskRunnerThreadMode thread_mode);
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
   void JoinForTesting();
 
@@ -129,6 +132,8 @@ class BASE_EXPORT PooledSingleThreadTaskRunnerManager final {
   const TrackedRef<TaskTracker> task_tracker_;
   const raw_ptr<DelayedTaskManager> delayed_task_manager_;
 
+  scoped_refptr<SingleThreadTaskRunner> io_thread_task_runner_;
+
   // Optional observer notified when a worker enters and exits its main
   // function. Set in Start() and never modified afterwards.
   raw_ptr<WorkerThreadObserver> worker_thread_observer_ = nullptr;
@@ -145,10 +150,10 @@ class BASE_EXPORT PooledSingleThreadTaskRunnerManager final {
   WorkerThread* shared_worker_threads_[ENVIRONMENT_COUNT]
                                       [CONTINUE_ON_SHUTDOWN_COUNT] GUARDED_BY(
                                           lock_) = {};
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   WorkerThread* shared_com_worker_threads_
       [ENVIRONMENT_COUNT][CONTINUE_ON_SHUTDOWN_COUNT] GUARDED_BY(lock_) = {};
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
   // Set to true when Start() is called.
   bool started_ GUARDED_BY(lock_) = false;

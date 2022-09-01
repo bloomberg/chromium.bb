@@ -31,6 +31,7 @@
 #include "build/build_config.h"
 #include "third_party/blink/public/common/permissions_policy/document_policy_features.h"
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink.h"
 #include "third_party/blink/public/mojom/permissions_policy/permissions_policy_feature.mojom-blink.h"
 #include "third_party/blink/public/mojom/permissions_policy/policy_disposition.mojom-blink.h"
 #include "third_party/blink/public/mojom/permissions_policy/policy_value.mojom-blink.h"
@@ -47,6 +48,7 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/inspector/inspector_audits_issue.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
@@ -110,16 +112,19 @@ ExecutionContext* ExecutionContext::ForCurrentRealm(
 // static
 ExecutionContext* ExecutionContext::ForRelevantRealm(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
-  return ToExecutionContext(info.Holder()->CreationContext());
+  v8::Local<v8::Context> context;
+  if (!info.Holder()->GetCreationContext().ToLocal(&context))
+    return nullptr;
+  return ToExecutionContext(context);
 }
 
 // static
 ExecutionContext* ExecutionContext::ForRelevantRealm(
     const v8::PropertyCallbackInfo<v8::Value>& info) {
-  auto ctx = info.Holder()->CreationContext();
-  if (ctx.IsEmpty())
+  v8::Local<v8::Context> context;
+  if (!info.Holder()->GetCreationContext().ToLocal(&context))
     return nullptr;
-  return ToExecutionContext(ctx);
+  return ToExecutionContext(context);
 }
 
 // static
@@ -228,7 +233,7 @@ bool ExecutionContext::SharedArrayBufferTransferAllowed() const {
   if (SecurityPolicy::IsSharedArrayBufferAlwaysAllowedForOrigin(origin))
     return true;
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   return false;
 #else
   // On desktop, enable transfer for the reverse Origin Trial, or if the
@@ -525,15 +530,6 @@ void ExecutionContext::SetReferrerPolicy(
   policy_container_->UpdateReferrerPolicy(referrer_policy);
 }
 
-network::mojom::IPAddressSpace ExecutionContext::AddressSpace() const {
-  return policy_container_->GetIPAddressSpace();
-}
-
-void ExecutionContext::SetAddressSpace(
-    network::mojom::blink::IPAddressSpace ip_address_space) {
-  GetPolicyContainer()->SetIPAddressSpace(ip_address_space);
-}
-
 void ExecutionContext::SetPolicyContainer(
     std::unique_ptr<PolicyContainer> container) {
   policy_container_ = std::move(container);
@@ -666,22 +662,6 @@ bool ExecutionContext::IsFeatureEnabled(
 bool ExecutionContext::RequireTrustedTypes() const {
   return require_safe_types_ &&
          RuntimeEnabledFeatures::TrustedDOMTypesEnabled(this);
-}
-
-String ExecutionContext::addressSpaceForBindings() const {
-  switch (AddressSpace()) {
-    case network::mojom::IPAddressSpace::kPublic:
-    case network::mojom::IPAddressSpace::kUnknown:
-      return "public";
-
-    case network::mojom::IPAddressSpace::kPrivate:
-      return "private";
-
-    case network::mojom::IPAddressSpace::kLocal:
-      return "local";
-  }
-  NOTREACHED();
-  return "public";
 }
 
 }  // namespace blink

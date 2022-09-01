@@ -25,7 +25,8 @@ class PermissionUiSelector {
     kTriggeredByCrowdDeny,
     kTriggeredDueToAbusiveRequests,
     kTriggeredDueToAbusiveContent,
-    kPredictedVeryUnlikelyGrant,
+    kServicePredictedVeryUnlikelyGrant,
+    kOnDevicePredictedVeryUnlikelyGrant,
   };
 
   enum class WarningReason {
@@ -88,6 +89,10 @@ class PermissionUiSelector {
   // makes use of the Web Permission Predictions Service to make decisions.
   virtual absl::optional<PermissionUmaUtil::PredictionGrantLikelihood>
   PredictedGrantLikelihoodForUKM();
+
+  // Will return if the selector's decision was heldback. Currently only the
+  // Web Prediction Service selector supports holdbacks.
+  virtual absl::optional<bool> WasSelectorDecisionHeldback();
 };
 
 }  // namespace permissions

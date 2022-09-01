@@ -48,7 +48,8 @@ void FamilyLinkNoticeScreen::OnViewDestroyed(FamilyLinkNoticeView* view) {
 }
 
 bool FamilyLinkNoticeScreen::MaybeSkip(WizardContext* context) {
-  if (context->sign_in_as_child &&
+  if (!context->skip_post_login_screens_for_tests &&
+      context->sign_in_as_child &&
       !ProfileManager::GetActiveUserProfile()->IsChild()) {
     return false;
   }
@@ -74,11 +75,12 @@ void FamilyLinkNoticeScreen::ShowImpl() {
 
 void FamilyLinkNoticeScreen::HideImpl() {}
 
-void FamilyLinkNoticeScreen::OnUserAction(const std::string& action_id) {
+void FamilyLinkNoticeScreen::OnUserActionDeprecated(
+    const std::string& action_id) {
   if (action_id == kUserActionContinue) {
     exit_callback_.Run(Result::DONE);
   } else {
-    BaseScreen::OnUserAction(action_id);
+    BaseScreen::OnUserActionDeprecated(action_id);
   }
 }
 

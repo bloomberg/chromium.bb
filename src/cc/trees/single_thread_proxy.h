@@ -70,17 +70,12 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   void SetPaintWorkletLayerPainter(
       std::unique_ptr<PaintWorkletLayerPainter> painter) override;
   bool MainFrameWillHappenForTesting() override;
-  void SetSourceURL(ukm::SourceId source_id, const GURL& url) override {
-    // Single-threaded mode is only for browser compositing and for renderers in
-    // layout tests. This will still get called in the latter case, but we don't
-    // need to record UKM in that case.
-  }
+  void RequestBeginMainFrameNotExpected(bool new_state) override;
+  void SetSourceURL(ukm::SourceId source_id, const GURL& url) override;
   void SetUkmSmoothnessDestination(
-      base::WritableSharedMemoryMapping ukm_smoothness_data) override {}
+      base::WritableSharedMemoryMapping ukm_smoothness_data) override;
   void SetRenderFrameObserver(
       std::unique_ptr<RenderFrameMetadataObserver> observer) override;
-  void SetEnableFrameRateThrottling(
-      bool enable_frame_rate_throttling) override {}
   uint32_t GetAverageThroughput() const override;
 
   void UpdateBrowserControlsState(BrowserControlsState constraints,
@@ -99,6 +94,7 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   DrawResult ScheduledActionDrawIfPossible() override;
   DrawResult ScheduledActionDrawForced() override;
   void ScheduledActionCommit() override;
+  void ScheduledActionPostCommit() override;
   void ScheduledActionActivateSyncTree() override;
   void ScheduledActionBeginLayerTreeFrameSinkCreation() override;
   void ScheduledActionPrepareTiles() override;
@@ -116,17 +112,18 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   void DidReceiveCompositorFrameAckOnImplThread() override;
   void OnCanDrawStateChanged(bool can_draw) override;
   void NotifyReadyToActivate() override;
+  bool IsReadyToActivate() override;
   void NotifyReadyToDraw() override;
   void SetNeedsRedrawOnImplThread() override;
   void SetNeedsOneBeginImplFrameOnImplThread() override;
   void SetNeedsPrepareTilesOnImplThread() override;
   void SetNeedsCommitOnImplThread() override;
   void SetVideoNeedsBeginFrames(bool needs_begin_frames) override;
+  void SetDeferBeginMainFrameFromImpl(bool defer_begin_main_frame) override {}
   bool IsInsideDraw() override;
-  bool IsBeginMainFrameExpected() override;
-  void RenewTreePriority() override {}
+  void RenewTreePriority() override;
   void PostDelayedAnimationTaskOnImplThread(base::OnceClosure task,
-                                            base::TimeDelta delay) override {}
+                                            base::TimeDelta delay) override;
   void DidActivateSyncTree() override;
   void WillPrepareTiles() override;
   void DidPrepareTiles() override;
@@ -134,7 +131,6 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   void OnDrawForLayerTreeFrameSink(bool resourceless_software_draw,
                                    bool skip_draw) override;
   void NeedsImplSideInvalidation(bool needs_first_draw_on_activation) override;
-  void RequestBeginMainFrameNotExpected(bool new_state) override;
   void NotifyImageDecodeRequestFinished() override;
   void DidPresentCompositorFrameOnImplThread(
       uint32_t frame_token,
@@ -151,16 +147,14 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
       const base::flat_set<viz::FrameSinkId>& ids) override;
   void ClearHistory() override;
   size_t CommitDurationSampleCountForTesting() const override;
+  void ReportEventLatency(
+      std::vector<EventLatencyTracker::LatencyData> latencies) override;
 
   void RequestNewLayerTreeFrameSink();
 
   void DidObserveFirstScrollDelay(
       base::TimeDelta first_scroll_delay,
-      base::TimeTicks first_scroll_timestamp) override {
-    // Single-threaded mode is only for browser compositing and for renderers in
-    // layout tests. This will still get called in the latter case, but we don't
-    // need to record UKM in that case.
-  }
+      base::TimeTicks first_scroll_timestamp) override;
 
   // Called by the legacy path where RenderWidget does the scheduling.
   // Rasterization of tiles is only performed when |raster| is true.
@@ -178,6 +172,7 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   void DoBeginMainFrame(const viz::BeginFrameArgs& begin_frame_args);
   void DoPainting(const viz::BeginFrameArgs& commit_args);
   void DoCommit(const viz::BeginFrameArgs& commit_args);
+  void DoPostCommit();
   DrawResult DoComposite(LayerTreeHostImpl::FrameData* frame);
   void DoSwap();
   void DidCommitAndDrawFrame();
@@ -251,7 +246,10 @@ class DebugScopedSetImplThread {
   explicit DebugScopedSetImplThread(TaskRunnerProvider* task_runner_provider)
       : task_runner_provider_(task_runner_provider) {
     previous_value_ = task_runner_provider_->impl_thread_is_overridden_;
-    task_runner_provider_->SetCurrentThreadIsImplThread(true);
+    // Some test code will used this in both single- and multi-threaded mode;
+    // we should just ignore it in multi-threaded mode.
+    if (!task_runner_provider_->HasImplThread())
+      task_runner_provider_->SetCurrentThreadIsImplThread(true);
   }
 #else
   explicit DebugScopedSetImplThread(TaskRunnerProvider* task_runner_provider) {}
@@ -261,7 +259,8 @@ class DebugScopedSetImplThread {
 
   ~DebugScopedSetImplThread() {
 #if DCHECK_IS_ON()
-    task_runner_provider_->SetCurrentThreadIsImplThread(previous_value_);
+    if (!task_runner_provider_->HasImplThread())
+      task_runner_provider_->SetCurrentThreadIsImplThread(previous_value_);
 #endif
   }
 
@@ -283,7 +282,8 @@ class DebugScopedSetMainThread {
   explicit DebugScopedSetMainThread(TaskRunnerProvider* task_runner_provider)
       : task_runner_provider_(task_runner_provider) {
     previous_value_ = task_runner_provider_->impl_thread_is_overridden_;
-    task_runner_provider_->SetCurrentThreadIsImplThread(false);
+    if (!task_runner_provider_->HasImplThread())
+      task_runner_provider_->SetCurrentThreadIsImplThread(false);
   }
 #else
   explicit DebugScopedSetMainThread(TaskRunnerProvider* task_runner_provider) {}
@@ -293,7 +293,8 @@ class DebugScopedSetMainThread {
 
   ~DebugScopedSetMainThread() {
 #if DCHECK_IS_ON()
-    task_runner_provider_->SetCurrentThreadIsImplThread(previous_value_);
+    if (!task_runner_provider_->HasImplThread())
+      task_runner_provider_->SetCurrentThreadIsImplThread(previous_value_);
 #endif
   }
 

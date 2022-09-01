@@ -48,6 +48,7 @@ struct ValidateASTOptions
     // Implemented:
     //
     //  - Function parameters having one of EvqParam* qualifiers.
+    //  - No const qualifier on opaque function parameters.
     //  - gl_ClipDistance, gl_CullDistance and gl_LastFragData are correctly qualified even when
     //    redeclared in the shader.
     //
@@ -73,6 +74,8 @@ struct ValidateASTOptions
     // Implemented:
     //
     //  - Binary node that indexes T[] should have type T
+    //  - Binary nodes with EOpIndexDirect* should have a constant as the right node
+    //  - Switch nodes should have an integer type in the selector
     //
     // TODO:
     //
@@ -80,9 +83,16 @@ struct ValidateASTOptions
     //  - Unary and binary operators have the correct type based on operands
     //  - Swizzle result has same type as the operand except for vector size
     //  - Ternary operator has the same type as the operands
+    //  - Case expressions have the same type as the switch selector
     bool validateExpressionTypes = true;
     // If SeparateDeclarations has been run, check for the absence of multi declarations as well.
     bool validateMultiDeclarations = false;
+    // If PruneNoOps has been run, check that no statements are ever added after branches in the
+    // same block.  Those statements would be dead code.
+    bool validateNoStatementsAfterBranch = false;
+    // Check that swizzle is not applied to swizzle.  Swizzles of swizzles are folded in
+    // TIntermSwizzle::fold.
+    bool validateNoSwizzleOfSwizzle = true;
 
     // Once set, disallows any further transformations on the tree.  Used before AST post-processing
     // which requires that the tree remains unmodified.

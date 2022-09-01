@@ -60,8 +60,8 @@ class AXMenuListOption final : public AXNodeObject {
   bool OnNativeSetSelectedAction(bool) override;
 
   void GetRelativeBounds(AXObject** out_container,
-                         FloatRect& out_bounds_in_container,
-                         skia::Matrix44& out_container_transform,
+                         gfx::RectF& out_bounds_in_container,
+                         gfx::Transform& out_container_transform,
                          bool* clips_children = nullptr) const override;
   String TextAlternative(bool recursive,
                          const AXObject* aria_label_or_description_root,

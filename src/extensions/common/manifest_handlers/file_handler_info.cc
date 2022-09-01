@@ -116,28 +116,28 @@ bool LoadFileHandler(const std::string& handler_id,
   }
 
   if (mime_types) {
-    base::Value::ConstListView list_storage = mime_types->GetList();
-    for (size_t i = 0; i < list_storage.size(); ++i) {
-      if (!list_storage[i].is_string()) {
+    const base::Value::List& list = mime_types->GetList();
+    for (size_t i = 0; i < list.size(); ++i) {
+      if (!list[i].is_string()) {
         *error = ErrorUtils::FormatErrorMessageUTF16(
             errors::kInvalidFileHandlerTypeElement, handler_id,
             base::NumberToString(i));
         return false;
       }
-      handler.types.insert(list_storage[i].GetString());
+      handler.types.insert(list[i].GetString());
     }
   }
 
   if (file_extensions) {
-    base::Value::ConstListView list_storage = file_extensions->GetList();
-    for (size_t i = 0; i < list_storage.size(); ++i) {
-      if (!list_storage[i].is_string()) {
+    const base::Value::List& list = file_extensions->GetList();
+    for (size_t i = 0; i < list.size(); ++i) {
+      if (!list[i].is_string()) {
         *error = ErrorUtils::FormatErrorMessageUTF16(
             errors::kInvalidFileHandlerExtensionElement, handler_id,
             base::NumberToString(i));
         return false;
       }
-      handler.extensions.insert(list_storage[i].GetString());
+      handler.extensions.insert(list[i].GetString());
     }
   }
 

@@ -8,8 +8,10 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "components/optimization_guide/proto/common_types.pb.h"
 #include "components/page_info/core/about_this_site_validation.h"
+#include "components/page_info/core/features.h"
 #include "components/page_info/core/proto/about_this_site_metadata.pb.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -40,6 +42,8 @@ proto::AboutThisSiteMetadata CreateValidMetadata() {
   description->set_name("Example");
   description->mutable_source()->set_url("https://example.com");
   description->mutable_source()->set_label("Example source");
+  metadata.mutable_site_info()->mutable_more_about()->set_url(
+      "https://google.com/ats/example.com");
   return metadata;
 }
 
@@ -104,8 +108,20 @@ TEST_F(AboutThisSiteServiceTest, ValidResponse) {
   auto info = service()->GetAboutThisSiteInfo(
       GURL("https://foo.com"), ukm::UkmRecorder::GetNewSourceID());
   EXPECT_TRUE(info.has_value());
+  EXPECT_EQ(info->more_about().url(),
+            "https://google.com/ats/example.com?ctx=chrome");
   t.ExpectUniqueSample("Security.PageInfo.AboutThisSiteStatus",
                        AboutThisSiteStatus::kValid, 1);
+}
+
+// Tests the language specific feature check.
+TEST_F(AboutThisSiteServiceTest, FeatureCheck) {
+  EXPECT_TRUE(page_info::IsAboutThisSiteFeatureEnabled("en-US"));
+  EXPECT_TRUE(page_info::IsAboutThisSiteFeatureEnabled("en-GB"));
+  EXPECT_TRUE(page_info::IsAboutThisSiteFeatureEnabled("en"));
+
+  EXPECT_FALSE(page_info::IsAboutThisSiteFeatureEnabled("de-DE"));
+  EXPECT_FALSE(page_info::IsAboutThisSiteFeatureEnabled("de"));
 }
 
 // Tests that incorrect proto messages are discarded.
@@ -145,6 +161,26 @@ TEST_F(AboutThisSiteServiceTest, Unknown) {
   EXPECT_FALSE(info.has_value());
   t.ExpectUniqueSample("Security.PageInfo.AboutThisSiteStatus",
                        AboutThisSiteStatus::kUnknown, 1);
+}
+
+// Tests that banner dismisses are handled.
+TEST_F(AboutThisSiteServiceTest, Banner) {
+  const GURL kExampleFoo("https://example.com/foo");
+  const GURL kExampleBar("https://example.com/foo");
+
+  EXPECT_TRUE(service()->CanShowBanner(kExampleFoo));
+  EXPECT_TRUE(service()->CanShowBanner(kExampleBar));
+
+  // Showing or opening a banner URL does not change whether we can show more
+  // banners.
+  service()->OnBannerURLOpened(kExampleFoo, ukm::SourceId());
+  EXPECT_TRUE(service()->CanShowBanner(kExampleFoo));
+  EXPECT_TRUE(service()->CanShowBanner(kExampleBar));
+
+  // Explicitly dismissing a banner prevents more from being shown.
+  service()->OnBannerDismissed(kExampleFoo, ukm::SourceId());
+  EXPECT_FALSE(service()->CanShowBanner(kExampleFoo));
+  EXPECT_FALSE(service()->CanShowBanner(kExampleBar));
 }
 
 }  // namespace page_info

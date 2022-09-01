@@ -33,6 +33,8 @@ namespace blpwtk2 {
 
 NativeViewWidget::NativeViewWidget(gfx::NativeView contents,
                                    NativeViewWidgetDelegate* delegate,
+                                   int width,
+                                   int height,
                                    bool rerouteMouseWheelToAnyRelatedWindow)
 : d_delegate(delegate)
 , d_nativeViewHost(new views::NativeViewHost())
@@ -40,9 +42,15 @@ NativeViewWidget::NativeViewWidget(gfx::NativeView contents,
 {
     SetLayoutManager<views::FillLayout>(std::make_unique<views::FillLayout>());
     AddChildView(d_nativeViewHost);
+    if (width <= 0) {
+        width = 10;
+    }
+    if (height <= 0) {
+        height = 10;
+    }
 
     views::Widget::InitParams params;
-    params.bounds = gfx::Rect(0, 0, 10, 10);
+    params.bounds = gfx::Rect(0, 0, width, height);
     params.delegate = this;
     params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
     params.opacity = views::Widget::InitParams::WindowOpacity::kOpaque;
@@ -91,10 +99,11 @@ int NativeViewWidget::setParent(blpwtk2::NativeView parent)
     DCHECK(d_impl);
     HWND hwnd = views::HWNDForWidget(d_impl);
     int status = 0;
+    bool stackBack = (parent != NULL) && (::GetWindow(parent, GW_CHILD) != NULL);
     if (!::SetParent(hwnd, parent)) {
         status = ::GetLastError();
     }
-    else {
+    else if (stackBack) {
         // Make sure this hwnd is at the bottom.
         // 'x-bloomberg-jswidget' might already embed a window that is a sibling of this hwnd.
         // Therefore this hwnd should be set at the bottom.

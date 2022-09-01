@@ -47,9 +47,12 @@ rtc_library("lib") {
     "../../../../api:array_view",
     "../../../../common_audio",
     "../../../../rtc_base:checks",
-    "../../../../rtc_base:rtc_base_approved",
+    "../../../../rtc_base:logging",
+    "../../../../rtc_base:safe_conversions",
+    "../../../../rtc_base:stringutils",
     "../../../../test:fileutils",
   ]
+  absl_deps = [ "//third_party/abseil-cpp/absl/strings" ]
   visibility = [ ":*" ]  # Only targets in this file can depend on this.
 }
 
@@ -66,7 +69,7 @@ rtc_library("unittest") {
     ":lib",
     "../../../../api:array_view",
     "../../../../common_audio",
-    "../../../../rtc_base:rtc_base_approved",
+    "../../../../rtc_base:logging",
     "../../../../test:fileutils",
     "../../../../test:test_support",
     "//testing/gtest",

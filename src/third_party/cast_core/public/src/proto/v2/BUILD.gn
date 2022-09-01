@@ -13,8 +13,9 @@
 # limitations under the License.
 
 import("//third_party/cast_core/public/src/proto/proto.gni")
-cast_core_grpc_library("core_application_service") {
+cast_core_grpc_library("core_application_service_proto") {
     sources = ["core_application_service.proto"]
+    generate_castcore_stubs = true
     deps = [
         "//third_party/cast_core/public/src/proto/bindings:api_bindings_proto",
         "//third_party/cast_core/public/src/proto/bindings:cast_channel_proto",
@@ -24,46 +25,58 @@ cast_core_grpc_library("core_application_service") {
         "//third_party/cast_core/public/src/proto/v2:url_rewrite_proto",
         "//third_party/cast_core/public/src/proto/web:message_channel_proto",
     ]
+    proto_in_dir = "//third_party/cast_core/public/src"
 }
 
-cast_core_grpc_library("core_message_port_application_service") {
+cast_core_grpc_library("core_message_port_application_service_proto") {
     sources = ["core_message_port_application_service.proto"]
+    generate_castcore_stubs = true
     deps = [
         "//third_party/cast_core/public/src/proto/bindings:api_bindings_proto",
         "//third_party/cast_core/public/src/proto/web:message_channel_proto",
     ]
+    proto_in_dir = "//third_party/cast_core/public/src"
 }
 
-cast_core_grpc_library("core_v2_application_service") {
+cast_core_grpc_library("core_v2_application_service_proto") {
     sources = ["core_v2_application_service.proto"]
+    generate_castcore_stubs = true
     deps = [
         "//third_party/cast_core/public/src/proto/bindings:cast_channel_proto",
     ]
+    proto_in_dir = "//third_party/cast_core/public/src"
 }
 
-cast_core_grpc_library("runtime_application_service") {
+cast_core_grpc_library("runtime_application_service_proto") {
     sources = ["runtime_application_service.proto"]
+    generate_castcore_stubs = true
     deps = [
         "//third_party/cast_core/public/src/proto/bindings:cast_channel_proto",
         "//third_party/cast_core/public/src/proto/v2:url_rewrite_proto",
         "//third_party/cast_core/public/src/proto/web:message_channel_proto",
     ]
+    proto_in_dir = "//third_party/cast_core/public/src"
 }
 
-cast_core_grpc_library("runtime_message_port_application_service") {
+cast_core_grpc_library("runtime_message_port_application_service_proto") {
     sources = ["runtime_message_port_application_service.proto"]
+    generate_castcore_stubs = true
     deps = [
         "//third_party/cast_core/public/src/proto/web:message_channel_proto",
     ]
+    proto_in_dir = "//third_party/cast_core/public/src"
 }
 
-cast_core_grpc_library("runtime_v2_application_service") {
+cast_core_grpc_library("runtime_v2_application_service_proto") {
     sources = ["runtime_v2_application_service.proto"]
+    generate_castcore_stubs = true
     deps = [
         "//third_party/cast_core/public/src/proto/bindings:cast_channel_proto",
     ]
+    proto_in_dir = "//third_party/cast_core/public/src"
 }
 
-cast_core_proto_library("url_rewrite") {
+cast_core_proto_library("url_rewrite_proto") {
     sources = ["url_rewrite.proto"]
+    proto_in_dir = "//third_party/cast_core/public/src"
 }

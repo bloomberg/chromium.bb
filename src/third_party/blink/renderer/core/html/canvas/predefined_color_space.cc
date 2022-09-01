@@ -4,28 +4,66 @@
 
 #include "third_party/blink/renderer/core/html/canvas/predefined_color_space.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/v8_predefined_color_space.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
-bool ColorSpaceNameIsValid(const String& color_space_name,
-                           ExceptionState& exception_state) {
-  bool color_space_name_valid = true;
-  if (color_space_name == "rec2020") {
-    color_space_name_valid =
-        RuntimeEnabledFeatures::CanvasColorManagementV2Enabled();
-  } else if (color_space_name == "rec2100-hlg" ||
-             color_space_name == "rec2100-pq" ||
-             color_space_name == "srgb-linear") {
-    color_space_name_valid = RuntimeEnabledFeatures::CanvasHDREnabled();
+bool ValidateAndConvertColorSpace(const V8PredefinedColorSpace& v8_color_space,
+                                  PredefinedColorSpace& color_space,
+                                  ExceptionState& exception_state) {
+  bool needs_v2 = false;
+  bool needs_hdr = false;
+  switch (v8_color_space.AsEnum()) {
+    case V8PredefinedColorSpace::Enum::kSRGB:
+      color_space = PredefinedColorSpace::kSRGB;
+      break;
+    case V8PredefinedColorSpace::Enum::kRec2020:
+      color_space = PredefinedColorSpace::kRec2020;
+      needs_v2 = true;
+      break;
+    case V8PredefinedColorSpace::Enum::kDisplayP3:
+      color_space = PredefinedColorSpace::kP3;
+      break;
+    case V8PredefinedColorSpace::Enum::kRec2100Hlg:
+      color_space = PredefinedColorSpace::kRec2100HLG;
+      needs_hdr = true;
+      break;
+    case V8PredefinedColorSpace::Enum::kRec2100Pq:
+      color_space = PredefinedColorSpace::kRec2100PQ;
+      needs_hdr = true;
+      break;
+    case V8PredefinedColorSpace::Enum::kSRGBLinear:
+      color_space = PredefinedColorSpace::kSRGBLinear;
+      needs_hdr = true;
+      break;
   }
-  if (color_space_name_valid)
-    return true;
+  if ((needs_v2 && !RuntimeEnabledFeatures::CanvasColorManagementV2Enabled()) ||
+      (needs_hdr && !RuntimeEnabledFeatures::CanvasHDREnabled())) {
+    exception_state.ThrowTypeError(
+        "The provided value '" + v8_color_space.AsString() +
+        "' is not a valid enum value of the type PredefinedColorSpace.");
+    return false;
+  }
+  return true;
+}
 
-  exception_state.ThrowTypeError(
-      "The provided value '" + color_space_name +
-      "' is not a valid enum value of the type PredefinedColorSpace.");
-  return false;
-}  // namespace blink
+V8PredefinedColorSpace PredefinedColorSpaceToV8(
+    PredefinedColorSpace color_space) {
+  switch (color_space) {
+    case PredefinedColorSpace::kSRGB:
+      return V8PredefinedColorSpace(V8PredefinedColorSpace::Enum::kSRGB);
+    case PredefinedColorSpace::kRec2020:
+      return V8PredefinedColorSpace(V8PredefinedColorSpace::Enum::kRec2020);
+    case PredefinedColorSpace::kP3:
+      return V8PredefinedColorSpace(V8PredefinedColorSpace::Enum::kDisplayP3);
+    case PredefinedColorSpace::kRec2100HLG:
+      return V8PredefinedColorSpace(V8PredefinedColorSpace::Enum::kRec2100Hlg);
+    case PredefinedColorSpace::kRec2100PQ:
+      return V8PredefinedColorSpace(V8PredefinedColorSpace::Enum::kRec2100Pq);
+    case PredefinedColorSpace::kSRGBLinear:
+      return V8PredefinedColorSpace(V8PredefinedColorSpace::Enum::kSRGBLinear);
+  }
+}
 
 }  // namespace blink

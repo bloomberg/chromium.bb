@@ -32,7 +32,9 @@
 #include <assert.h>
 
 #include <algorithm>
+#include <map>
 #include <string>
+#include <utility>
 
 #include "common/scoped_ptr.h"
 #include "common/stdio_wrapper.h"
@@ -199,6 +201,28 @@ ProcessResult MinidumpProcessor::Process(
   // Reset frame_symbolizer_ at the beginning of stackwalk for each minidump.
   frame_symbolizer_->Reset();
 
+
+  MinidumpThreadNameList* thread_names = dump->GetThreadNameList();
+  std::map<uint32_t, string> thread_id_to_name;
+  if (thread_names) {
+    const unsigned int thread_name_count = thread_names->thread_name_count();
+    for (unsigned int thread_name_index = 0;
+         thread_name_index < thread_name_count;
+         ++thread_name_index) {
+      MinidumpThreadName* thread_name = thread_names->GetThreadNameAtIndex(thread_name_index);
+      if (!thread_name) {
+        BPLOG(ERROR) << "Could not get thread name for thread at index " << thread_name_index;
+        return PROCESS_ERROR_GETTING_THREAD_NAME;
+      }
+      uint32_t thread_id;
+      if (!thread_name->GetThreadID(&thread_id)) {
+        BPLOG(ERROR) << "Could not get thread ID for thread at index " << thread_name_index;
+        return PROCESS_ERROR_GETTING_THREAD_NAME;
+      }
+      thread_id_to_name.insert(std::make_pair(thread_id, thread_name->GetThreadName()));
+    }
+  }
+
   for (unsigned int thread_index = 0;
        thread_index < thread_count;
        ++thread_index) {
@@ -220,6 +244,14 @@ ProcessResult MinidumpProcessor::Process(
     }
 
     thread_string += " id " + HexString(thread_id);
+    auto thread_name_iter = thread_id_to_name.find(thread_id);
+    string thread_name;
+    if (thread_name_iter != thread_id_to_name.end()) {
+      thread_name = thread_name_iter->second;
+    }
+    if (!thread_name.empty()) {
+      thread_string += " name [" + thread_name + "]";
+    }
     BPLOG(INFO) << "Looking at thread " << thread_string;
 
     // If this thread is the thread that produced the minidump, don't process
@@ -311,6 +343,7 @@ ProcessResult MinidumpProcessor::Process(
     stack->set_tid(thread_id);
     process_state->threads_.push_back(stack.release());
     process_state->thread_memory_regions_.push_back(thread_memory);
+    process_state->thread_names_.push_back(thread_name);
   }
 
   if (interrupted) {

@@ -4,18 +4,19 @@
 
 #include "components/viz/test/test_gpu_service_holder.h"
 
+#include <tuple>
 #include <utility>
 
 #include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
-#include "base/ignore_result.h"
 #include "base/no_destructor.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "components/viz/service/gl/gpu_service_impl.h"
 #include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/config/gpu_feature_info.h"
@@ -25,6 +26,7 @@
 #include "gpu/config/gpu_util.h"
 #include "gpu/ipc/service/gpu_watchdog_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gl/gl_bindings.h"
 #include "ui/gl/init/gl_factory.h"
 
 #if BUILDFLAG(ENABLE_VULKAN)
@@ -41,7 +43,7 @@ namespace viz {
 
 namespace {
 
-#if defined(USE_OZONE) && !defined(OS_FUCHSIA)
+#if defined(USE_OZONE) && !BUILDFLAG(IS_FUCHSIA)
 namespace {
 constexpr int kGpuProcessHostId = 1;
 }  // namespace
@@ -54,6 +56,7 @@ base::Lock& GetLock() {
 
 // We expect GetLock() to be acquired before accessing these variables.
 TestGpuServiceHolder* g_holder = nullptr;
+bool g_disallow_feature_list_overrides = true;
 bool g_should_register_listener = true;
 bool g_registered_listener = false;
 
@@ -148,9 +151,33 @@ void TestGpuServiceHolder::DoNotResetOnTestExit() {
   g_should_register_listener = false;
 }
 
+TestGpuServiceHolder::ScopedAllowRacyFeatureListOverrides::
+    ScopedAllowRacyFeatureListOverrides() {
+  base::AutoLock locked(GetLock());
+
+  // This must be called before GetInstance() is ever called.
+  DCHECK(!g_holder);
+  DCHECK(g_disallow_feature_list_overrides);
+  g_disallow_feature_list_overrides = false;
+}
+
+TestGpuServiceHolder::ScopedAllowRacyFeatureListOverrides::
+    ~ScopedAllowRacyFeatureListOverrides() {
+  base::AutoLock locked(GetLock());
+
+  DCHECK(!g_disallow_feature_list_overrides);
+  g_disallow_feature_list_overrides = true;
+}
+
 TestGpuServiceHolder::TestGpuServiceHolder(
     const gpu::GpuPreferences& gpu_preferences)
     : gpu_thread_("GPUMainThread"), io_thread_("GPUIOThread") {
+  if (g_disallow_feature_list_overrides) {
+    disallow_feature_overrides_.emplace(
+        "FeatureList overrides must happen before the GPU service thread has "
+        "been started.");
+  }
+
   base::Thread::Options gpu_thread_options;
 #if defined(USE_OZONE)
     gpu_thread_options.message_pump_type = ui::OzonePlatform::GetInstance()
@@ -168,7 +195,7 @@ TestGpuServiceHolder::TestGpuServiceHolder(
                      base::Unretained(this), gpu_preferences, &completion));
   completion.Wait();
 
-#if defined(USE_OZONE) && !defined(OS_FUCHSIA)
+#if defined(USE_OZONE) && !BUILDFLAG(IS_FUCHSIA)
   if (auto* gpu_platform_support_host =
           ui::OzonePlatform::GetInstance()->GetGpuPlatformSupportHost()) {
     auto interface_binder = base::BindRepeating(
@@ -180,7 +207,7 @@ TestGpuServiceHolder::TestGpuServiceHolder(
 }
 
 TestGpuServiceHolder::~TestGpuServiceHolder() {
-#if defined(USE_OZONE) && !defined(OS_FUCHSIA)
+#if defined(USE_OZONE) && !BUILDFLAG(IS_FUCHSIA)
   if (auto* gpu_platform_support_host =
           ui::OzonePlatform::GetInstance()->GetGpuPlatformSupportHost()) {
     gpu_platform_support_host->OnChannelDestroyed(kGpuProcessHostId);
@@ -214,7 +241,7 @@ void TestGpuServiceHolder::InitializeOnGpuThread(
     base::WaitableEvent* completion) {
   DCHECK(gpu_thread_.task_runner()->BelongsToCurrentThread());
 
-#if defined(USE_OZONE) && !defined(OS_FUCHSIA)
+#if defined(USE_OZONE) && !BUILDFLAG(IS_FUCHSIA)
   ui::OzonePlatform::GetInstance()->AddInterfaces(&binders_);
 #endif
 
@@ -242,8 +269,20 @@ void TestGpuServiceHolder::InitializeOnGpuThread(
       /*needs_more_info=*/nullptr);
   gpu_feature_info.status_values[gpu::GPU_FEATURE_TYPE_GPU_RASTERIZATION] =
       gpu::kGpuFeatureStatusEnabled;
-  gpu_feature_info.status_values[gpu::GPU_FEATURE_TYPE_OOP_RASTERIZATION] =
-      gpu::kGpuFeatureStatusEnabled;
+
+  // On MacOS, the default texture target for native GpuMemoryBuffers is
+  // GL_TEXTURE_RECTANGLE_ARB. This is due to CGL's requirements for creating
+  // a GL surface. However, when ANGLE is used on top of SwiftShader or Metal,
+  // it's necessary to use GL_TEXTURE_2D instead.
+  // TODO(crbug.com/1056312): The proper behavior is to check the config
+  // parameter set by the EGL_ANGLE_iosurface_client_buffer extension
+#if BUILDFLAG(IS_MAC)
+  if (gl::GetGLImplementation() == gl::kGLImplementationEGLANGLE &&
+      (gl::GetANGLEImplementation() == gl::ANGLEImplementation::kSwiftShader ||
+       gl::GetANGLEImplementation() == gl::ANGLEImplementation::kMetal)) {
+    gpu::SetMacOSSpecificTextureTarget(GL_TEXTURE_2D);
+  }
+#endif  // BUILDFLAG(IS_MAC)
 
   // TODO(rivr): Investigate why creating a GPUInfo and GpuFeatureInfo from
   // the command line causes the test SkiaOutputSurfaceImplTest.SubmitPaint to
@@ -264,7 +303,7 @@ void TestGpuServiceHolder::InitializeOnGpuThread(
   // Use a disconnected mojo remote for GpuHost, we don't need to receive any
   // messages.
   mojo::PendingRemote<mojom::GpuHost> gpu_host_proxy;
-  ignore_result(gpu_host_proxy.InitWithNewPipeAndPassReceiver());
+  std::ignore = gpu_host_proxy.InitWithNewPipeAndPassReceiver();
   gpu_service_->InitializeWithHost(
       std::move(gpu_host_proxy), gpu::GpuProcessActivityFlags(),
       gl::init::CreateOffscreenGLSurface(gfx::Size()),
@@ -298,7 +337,7 @@ void TestGpuServiceHolder::DeleteOnGpuThread() {
   gpu_service_.reset();
 }
 
-#if defined(USE_OZONE) && !defined(OS_FUCHSIA)
+#if defined(USE_OZONE) && !BUILDFLAG(IS_FUCHSIA)
 void TestGpuServiceHolder::BindInterface(
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
@@ -319,6 +358,6 @@ void TestGpuServiceHolder::BindInterfaceOnGpuThread(
   CHECK(binders_.TryBind(&receiver))
       << "Unable to find mojo interface " << interface_name;
 }
-#endif  // defined(USE_OZONE) && !defined(OS_FUCHSIA)
+#endif  // defined(USE_OZONE) && !BUILDFLAG(IS_FUCHSIA)
 
 }  // namespace viz

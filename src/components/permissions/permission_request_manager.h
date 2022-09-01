@@ -126,8 +126,7 @@ class PermissionRequestManager
       content::NavigationHandle* navigation_handle) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
-  void DocumentOnLoadCompletedInMainFrame(
-      content::RenderFrameHost* render_frame_host) override;
+  void DocumentOnLoadCompletedInPrimaryMainFrame() override;
   void DOMContentLoaded(content::RenderFrameHost* render_frame_host) override;
   void WebContentsDestroyed() override;
   void OnVisibilityChanged(content::Visibility visibility) override;
@@ -149,8 +148,11 @@ class PermissionRequestManager
   void SetDismissOnTabClose() override;
   void SetBubbleShown() override;
   void SetDecisionTime() override;
+  void SetManageClicked() override;
+  void SetLearnMoreClicked() override;
+  base::WeakPtr<PermissionPrompt::Delegate> GetWeakPtr() override;
 
-  void set_managed_clicked() { did_click_managed_ = true; }
+  void set_manage_clicked() { did_click_manage_ = true; }
   void set_learn_more_clicked() { did_click_learn_more_ = true; }
 
   void set_web_contents_supports_permission_requests(
@@ -201,6 +203,10 @@ class PermissionRequestManager
 
   void set_time_to_decision_for_test(base::TimeDelta time_to_decision) {
     time_to_decision_for_test_ = time_to_decision;
+  }
+
+  void set_enabled_app_level_notification_permission_for_testing(bool enabled) {
+    enabled_app_level_notification_permission_for_testing_ = enabled;
   }
 
  private:
@@ -379,6 +385,10 @@ class PermissionRequestManager
   absl::optional<PermissionUmaUtil::PredictionGrantLikelihood>
       prediction_grant_likelihood_;
 
+  // Status of the decision made by the Web Permission Prediction Service, if
+  // it was held back or not.
+  absl::optional<bool> was_decision_held_back_;
+
   // True when the prompt is being temporary destroyed to be recreated for the
   // correct browser or when the tab is hidden. In those cases, callbacks from
   // the bubble itself should be ignored.
@@ -399,11 +409,13 @@ class PermissionRequestManager
   // at all.
   base::Time current_request_decision_time_;
 
-  bool did_click_managed_ = false;
+  bool did_click_manage_ = false;
 
   bool did_click_learn_more_ = false;
 
   absl::optional<base::TimeDelta> time_to_decision_for_test_;
+
+  absl::optional<bool> enabled_app_level_notification_permission_for_testing_;
 
   base::WeakPtrFactory<PermissionRequestManager> weak_factory_{this};
   WEB_CONTENTS_USER_DATA_KEY_DECL();

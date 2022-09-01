@@ -363,6 +363,7 @@ FramebufferState::FramebufferState(rx::Serial serial)
       mDefaultSamples(0),
       mDefaultFixedSampleLocations(GL_FALSE),
       mDefaultLayers(0),
+      mFlipY(GL_FALSE),
       mWebGLDepthStencilConsistent(true),
       mDefaultFramebufferReadAttachmentInitialized(false),
       mSrgbWriteControlMode(SrgbWriteControlMode::Default)
@@ -385,6 +386,7 @@ FramebufferState::FramebufferState(const Caps &caps, FramebufferID id, rx::Seria
       mDefaultSamples(0),
       mDefaultFixedSampleLocations(GL_FALSE),
       mDefaultLayers(0),
+      mFlipY(GL_FALSE),
       mWebGLDepthStencilConsistent(true),
       mDefaultFramebufferReadAttachmentInitialized(false),
       mSrgbWriteControlMode(SrgbWriteControlMode::Default)
@@ -1563,6 +1565,11 @@ bool Framebuffer::partialClearNeedsInit(const Context *context,
         return false;
     }
 
+    if (depth && context->getFrontendFeatures().forceDepthAttachmentInitOnClear.enabled)
+    {
+        return true;
+    }
+
     // Scissors can affect clearing.
     // TODO(jmadill): Check for complete scissor overlap.
     if (glState.isScissorTestEnabled())
@@ -2227,6 +2234,11 @@ GLint Framebuffer::getDefaultLayers() const
     return mState.getDefaultLayers();
 }
 
+bool Framebuffer::getFlipY() const
+{
+    return mState.getFlipY();
+}
+
 void Framebuffer::setDefaultWidth(const Context *context, GLint defaultWidth)
 {
     mState.mDefaultWidth = defaultWidth;
@@ -2260,6 +2272,13 @@ void Framebuffer::setDefaultLayers(GLint defaultLayers)
 {
     mState.mDefaultLayers = defaultLayers;
     mDirtyBits.set(DIRTY_BIT_DEFAULT_LAYERS);
+}
+
+void Framebuffer::setFlipY(bool flipY)
+{
+    mState.mFlipY = flipY;
+    mDirtyBits.set(DIRTY_BIT_FLIP_Y);
+    invalidateCompletenessCache();
 }
 
 GLsizei Framebuffer::getNumViews() const

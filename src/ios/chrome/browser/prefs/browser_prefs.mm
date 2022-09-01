@@ -4,6 +4,7 @@
 
 #include "ios/chrome/browser/prefs/browser_prefs.h"
 
+#include "base/time/time.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/browsing_data/core/pref_names.h"
 #include "components/component_updater/component_updater_service.h"
@@ -36,6 +37,7 @@
 #include "components/payments/core/payment_prefs.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/browser/url_blocklist_manager.h"
+#import "components/policy/core/common/policy_pref_names.h"
 #include "components/policy/core/common/policy_statistics_collector.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
@@ -72,8 +74,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_mediator.h"
 #include "ios/chrome/browser/ui/first_run/fre_field_trial.h"
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_scene_agent.h"
-#import "ios/chrome/browser/ui/reading_list/reading_list_constants.h"
-#import "ios/chrome/browser/ui/reading_list/reading_list_features.h"
+#import "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/voice/voice_search_prefs_registration.h"
 #import "ios/chrome/browser/web/font_size/font_size_tab_helper.h"
 #import "ios/web/common/features.h"
@@ -133,7 +134,26 @@ const char kTrialGroupPrefName[] = "location_permissions.trial_group";
 // Deprecated 10/2021
 const char kSigninBottomSheetShownCount[] =
     "ios.signin.bottom_sheet_shown_count";
-}
+
+// Deprecated 03/2022
+const char kShowReadingListInBookmarkBar[] = "bookmark_bar.show_reading_list";
+
+// Deprecated 03/2022
+const char kPrefReadingListMessagesNeverShow[] =
+    "reading_list_message_never_show";
+
+// Deprecated 04/2022
+const char kFRETrialGroupPrefName[] = "fre_refactoring.trial_group";
+const char kOptimizationGuideRemoteFetchingEnabled[] =
+    "optimization_guide.fetching_enabled";
+
+// Deprecated 05/2022.
+const char kTrialGroupV3PrefName[] = "fre_refactoringV3.trial_group";
+
+// Deprecated 05/2022.
+extern const char kAccountIdMigrationState[] = "account_id_migration_state";
+
+}  // namespace
 
 void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   BrowserStateInfoCache::RegisterPrefs(registry);
@@ -186,10 +206,15 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
                              base::Time());
   registry->RegisterTimePref(
       enterprise_reporting::kLastUploadSucceededTimestamp, base::Time());
+  registry->RegisterTimeDeltaPref(
+      enterprise_reporting::kCloudReportingUploadFrequency, base::Hours(24));
 
   registry->RegisterIntegerPref(kOmniboxGeolocationAuthorizationState, 0);
   registry->RegisterStringPref(kOmniboxGeolocationLastAuthorizationAlertVersion,
                                "");
+
+  registry->RegisterDictionaryPref(prefs::kOverflowMenuDestinationUsageHistory,
+                                   PrefRegistry::LOSSY_PREF);
 
   // Preferences related to Enterprise policies.
   registry->RegisterListPref(prefs::kRestrictAccountsToPatterns);
@@ -199,6 +224,10 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(kTrialGroupPrefName, 0);
 
   registry->RegisterIntegerPref(kSigninBottomSheetShownCount, 0);
+
+  registry->RegisterIntegerPref(kFRETrialGroupPrefName, 0);
+
+  registry->RegisterIntegerPref(kTrialGroupV3PrefName, 0);
 }
 
 void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
@@ -274,6 +303,11 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   // Defaults to 3, which is the id of bookmarkModel_->mobile_node()
   registry->RegisterInt64Pref(prefs::kNtpShownBookmarksFolder, 3);
 
+  // The Following feed sort type comes from
+  // ios/chrome/browser/discover_feed/feed_constants.h Defaults to 1, which is
+  // grouped by publisher.
+  registry->RegisterIntegerPref(prefs::kNTPFollowingFeedSortType, 1);
+
   // Register prefs used by Clear Browsing Data UI.
   browsing_data::prefs::RegisterBrowserUserPrefs(registry);
 
@@ -281,6 +315,8 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterStringPref(kLastPromptedGoogleURL, std::string());
   registry->RegisterStringPref(kGoogleServicesUsername, std::string());
   registry->RegisterStringPref(kGoogleServicesUserAccountId, std::string());
+  registry->RegisterStringPref(prefs::kNewTabPageLocationOverride,
+                               std::string());
 
   registry->RegisterBooleanPref(kGCMChannelStatus, true);
   registry->RegisterIntegerPref(kGCMChannelPollIntervalSeconds, 0);
@@ -299,12 +335,29 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(kWasOnboardingFeatureCheckedBefore, false);
   registry->RegisterDictionaryPref(kDomainsWithCookiePref);
 
-  if (IsReadingListMessagesEnabled()) {
-    registry->RegisterBooleanPref(kPrefReadingListMessagesNeverShow, false);
-  }
+  registry->RegisterBooleanPref(prefs::kAllowChromeDataInBackups, true);
 
   // Preference related to the browser sign-in policy that is being deprecated.
   registry->RegisterBooleanPref(kSigninAllowedByPolicy, true);
+
+  registry->RegisterBooleanPref(kShowReadingListInBookmarkBar, true);
+
+  registry->RegisterBooleanPref(kOptimizationGuideRemoteFetchingEnabled, true);
+
+  registry->RegisterBooleanPref(prefs::kHttpsOnlyModeEnabled, false);
+
+  // Register pref storing whether the Incognito interstitial for third-party
+  // intents is enabled.
+  if (base::FeatureList::IsEnabled(kIOS3PIntentsInIncognito)) {
+    registry->RegisterBooleanPref(prefs::kIncognitoInterstitialEnabled, false);
+  }
+
+  // Register pref used to determine whether the User Policy notification was
+  // already shown.
+  registry->RegisterBooleanPref(
+      policy::policy_prefs::kUserPolicyNotificationWasShown, false);
+
+  registry->RegisterIntegerPref(kAccountIdMigrationState, 0);
 }
 
 // This method should be periodically pruned of year+ old migrations.
@@ -334,6 +387,12 @@ void MigrateObsoleteLocalStatePrefs(PrefService* prefs) {
 
   // Added 10/2021
   prefs->ClearPref(kSigninBottomSheetShownCount);
+
+  // Added 04/2022
+  prefs->ClearPref(kFRETrialGroupPrefName);
+
+  // Added 05/2022
+  prefs->ClearPref(kTrialGroupV3PrefName);
 }
 
 // This method should be periodically pruned of year+ old migrations.
@@ -368,9 +427,23 @@ void MigrateObsoleteBrowserStatePrefs(PrefService* prefs) {
   // Added 12/2020.
   prefs->ClearPref(kDomainsWithCookiePref);
 
-  // Added 2/2021.
-  syncer::ClearObsoletePassphrasePromptPrefs(prefs);
-
   // Added 8/2021.
   prefs->ClearPref(kSigninAllowedByPolicy);
+
+  // Added 03/2022
+  prefs->ClearPref(kShowReadingListInBookmarkBar);
+
+  // Added 3/2022.
+  if (prefs->FindPreference(kPrefReadingListMessagesNeverShow)) {
+    prefs->ClearPref(kPrefReadingListMessagesNeverShow);
+  }
+
+  // Added 4/2022.
+  prefs->ClearPref(kOptimizationGuideRemoteFetchingEnabled);
+
+  // Added 05/2022
+  prefs->ClearPref(kAccountIdMigrationState);
+
+  // Added 06/2022.
+  syncer::MigrateSyncRequestedPrefPostMice(prefs);
 }

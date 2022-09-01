@@ -8,6 +8,8 @@
  * Media Patent License 1.0 was not distributed with this source code in the
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
+#include <memory>
+#include <new>
 #include <tuple>
 
 #include "config/av1_rtcd.h"
@@ -61,8 +63,10 @@ void AV1CornerMatchTest::RunCheckOutput(int run_times) {
   int i, j;
   aom_usec_timer ref_timer, test_timer;
 
-  uint8_t *input1 = new uint8_t[w * h];
-  uint8_t *input2 = new uint8_t[w * h];
+  std::unique_ptr<uint8_t[]> input1(new (std::nothrow) uint8_t[w * h]);
+  std::unique_ptr<uint8_t[]> input2(new (std::nothrow) uint8_t[w * h]);
+  ASSERT_NE(input1, nullptr);
+  ASSERT_NE(input2, nullptr);
 
   // Test the two extreme cases:
   // i) Random data, should have correlation close to 0
@@ -89,14 +93,16 @@ void AV1CornerMatchTest::RunCheckOutput(int run_times) {
     int x2 = MATCH_SZ_BY2 + rnd_.PseudoUniform(w - 2 * MATCH_SZ_BY2);
     int y2 = MATCH_SZ_BY2 + rnd_.PseudoUniform(h - 2 * MATCH_SZ_BY2);
 
-    double res_c =
-        av1_compute_cross_correlation_c(input1, w, x1, y1, input2, w, x2, y2);
-    double res_simd = target_func(input1, w, x1, y1, input2, w, x2, y2);
+    double res_c = av1_compute_cross_correlation_c(input1.get(), w, x1, y1,
+                                                   input2.get(), w, x2, y2);
+    double res_simd =
+        target_func(input1.get(), w, x1, y1, input2.get(), w, x2, y2);
 
     if (run_times > 1) {
       aom_usec_timer_start(&ref_timer);
       for (j = 0; j < run_times; j++) {
-        av1_compute_cross_correlation_c(input1, w, x1, y1, input2, w, x2, y2);
+        av1_compute_cross_correlation_c(input1.get(), w, x1, y1, input2.get(),
+                                        w, x2, y2);
       }
       aom_usec_timer_mark(&ref_timer);
       const int elapsed_time_c =
@@ -104,7 +110,7 @@ void AV1CornerMatchTest::RunCheckOutput(int run_times) {
 
       aom_usec_timer_start(&test_timer);
       for (j = 0; j < run_times; j++) {
-        target_func(input1, w, x1, y1, input2, w, x2, y2);
+        target_func(input1.get(), w, x1, y1, input2.get(), w, x2, y2);
       }
       aom_usec_timer_mark(&test_timer);
       const int elapsed_time_simd =
@@ -119,8 +125,6 @@ void AV1CornerMatchTest::RunCheckOutput(int run_times) {
       ASSERT_EQ(res_simd, res_c);
     }
   }
-  delete[] input1;
-  delete[] input2;
 }
 
 TEST_P(AV1CornerMatchTest, CheckOutput) { RunCheckOutput(1); }

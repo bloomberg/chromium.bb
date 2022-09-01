@@ -15,8 +15,8 @@
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
 #include "media/cast/cast_config.h"
-#include "media/cast/sender/sender_encoded_frame.h"
-#include "media/cast/sender/vpx_encoder.h"
+#include "media/cast/common/sender_encoded_frame.h"
+#include "media/cast/encoding/vpx_encoder.h"
 #include "media/cast/test/receiver/video_decoder.h"
 #include "media/cast/test/utility/default_config.h"
 #include "media/cast/test/utility/standalone_cast_environment.h"
@@ -144,7 +144,6 @@ class VideoDecoderTest : public ::testing::TestWithParam<Codec> {
     EXPECT_EQ(expected_video_frame->coded_size().height(),
               video_frame->coded_size().height());
     EXPECT_LT(40.0, I420PSNR(*expected_video_frame, *video_frame));
-    // TODO(miu): Once we start using VideoFrame::timestamp_, check that here.
 
     // Signal the main test thread that more video was decoded.
     base::AutoLock auto_lock(lock_);

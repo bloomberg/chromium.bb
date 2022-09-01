@@ -123,7 +123,7 @@ class ProcessHostImpl final : public mojom::ProcessHost
     void bindProcess(unsigned int pid, bool launchDevToolsServer) override;
 
     void createWebView(
-            mojom::WebViewHostRequest     hostRequest,
+            mojo::PendingReceiver<mojom::WebViewHost> hostReceiver,
             mojom::WebViewCreateParamsPtr params,
             createWebViewCallback  callback) override;
     void registerNativeViewForStreaming(
@@ -210,7 +210,6 @@ class ProcessHostImpl::Impl final : public base::RefCounted<Impl>
 
     // ACCESSORS
     base::ProcessId processId() const;
-    base::ProcessHandle processHandle() const;
 
     const BrowserContextImpl& context() const;
     const content::RenderProcessHost& renderProcessHost() const;
