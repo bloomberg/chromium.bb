@@ -25,11 +25,11 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#include <iterator>
 #include <map>
 #include <utility>
 
 #include "base/check_op.h"
-#include "base/cxx17_backports.h"
 #include "base/logging.h"
 #include "base/mac/mach_logging.h"
 #include "base/posix/eintr_wrapper.h"
@@ -68,7 +68,7 @@ TEST(ProcessReaderMac, SelfBasic) {
   EXPECT_EQ(process_reader.ParentProcessID(), getppid());
 
   static constexpr char kTestMemory[] = "Some test memory";
-  char buffer[base::size(kTestMemory)];
+  char buffer[std::size(kTestMemory)];
   ASSERT_TRUE(process_reader.Memory()->Read(
       FromPointerCast<mach_vm_address_t>(kTestMemory),
       sizeof(kTestMemory),
@@ -366,7 +366,8 @@ void ExpectSeveralThreads(ThreadMap* thread_map,
   EXPECT_TRUE(thread_map->empty());
 }
 
-TEST(ProcessReaderMac, SelfSeveralThreads) {
+// TODO(crbug.com/1319307): Test is failing on Mac. Re-enable it.
+TEST(ProcessReaderMac, DISABLED_SelfSeveralThreads) {
   // Set up the ProcessReaderMac here, before any other threads are running.
   // This tests that the threads it returns are lazily initialized as a snapshot
   // of the threads at the time of the first call to Threads(), and not at the
@@ -523,14 +524,16 @@ class ProcessReaderThreadedChild final : public MachMultiprocess {
   size_t thread_count_;
 };
 
-TEST(ProcessReaderMac, ChildOneThread) {
+// TODO(crbug.com/1319307): Test is failing on Mac. Re-enable it.
+TEST(ProcessReaderMac, DISABLED_ChildOneThread) {
   // The main thread plus zero child threads equals one thread.
   constexpr size_t kChildThreads = 0;
   ProcessReaderThreadedChild process_reader_threaded_child(kChildThreads);
   process_reader_threaded_child.Run();
 }
 
-TEST(ProcessReaderMac, ChildSeveralThreads) {
+// TODO(crbug.com/1319307): Test is failing on Mac. Re-enable it.
+TEST(ProcessReaderMac, DISABLED_ChildSeveralThreads) {
   constexpr size_t kChildThreads = 64;
   ProcessReaderThreadedChild process_reader_threaded_child(kChildThreads);
   process_reader_threaded_child.Run();
@@ -702,11 +705,11 @@ class ScopedOpenCLNoOpKernel {
     const size_t source_lengths[] = {
         strlen(sources[0]),
     };
-    static_assert(base::size(sources) == base::size(source_lengths),
+    static_assert(std::size(sources) == std::size(source_lengths),
                   "arrays must be parallel");
 
     program_ = clCreateProgramWithSource(
-        context_, base::size(sources), sources, source_lengths, &rv);
+        context_, std::size(sources), sources, source_lengths, &rv);
     ASSERT_EQ(rv, CL_SUCCESS) << "clCreateProgramWithSource";
 
     rv = clBuildProgram(

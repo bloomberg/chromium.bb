@@ -6,9 +6,9 @@
 
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/task/post_task.h"
 #include "base/tracing/tracing_tls.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/system/data_pipe_drainer.h"
@@ -35,7 +35,7 @@ namespace {
 // TODO(crbug.com/83907): Find a good compromise between performance and
 // data granularity (mainly relevant to running with small buffer sizes
 // when we use background tracing) on Android.
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 constexpr size_t kDefaultSMBPageSizeBytes = 4 * 1024;
 #else
 constexpr size_t kDefaultSMBPageSizeBytes = 32 * 1024;
@@ -247,7 +247,7 @@ class ProducerEndpoint : public perfetto::ProducerEndpoint,
   struct EndpointBindings {
     mojo::PendingReceiver<mojom::ProducerClient> client_receiver;
     mojo::PendingRemote<mojom::ProducerHost> host_remote;
-    std::unique_ptr<MojoSharedMemory> shared_memory;
+    std::unique_ptr<ChromeBaseSharedMemory> shared_memory;
   };
 
   static void OnConnected(
@@ -266,9 +266,9 @@ class ProducerEndpoint : public perfetto::ProducerEndpoint,
     if (!shmem_page_size_bytes)
       shmem_page_size_bytes = kDefaultSMBPageSizeBytes;
     bindings->shared_memory =
-        std::make_unique<MojoSharedMemory>(shmem_size_bytes);
+        std::make_unique<ChromeBaseSharedMemory>(shmem_size_bytes);
 
-    if (!bindings->shared_memory->shared_buffer().is_valid()) {
+    if (!bindings->shared_memory->region().IsValid()) {
       // There's no way to do tracing after an SMB allocation failure, so let's
       // disconnect Perfetto.
       // TODO(skyostil): Record failure in UMA.
@@ -287,7 +287,7 @@ class ProducerEndpoint : public perfetto::ProducerEndpoint,
         ->ConnectToProducerHost(
             std::move(client),
             bindings->host_remote.InitWithNewPipeAndPassReceiver(),
-            bindings->shared_memory->Clone(), shmem_page_size_bytes);
+            bindings->shared_memory->CloneRegion(), shmem_page_size_bytes);
 
     // Bind the interfaces on Perfetto's sequence so we can avoid extra thread
     // hops.
@@ -342,7 +342,7 @@ class ProducerEndpoint : public perfetto::ProducerEndpoint,
   size_t shared_buffer_page_size_kb_ = 0;
 
   // Accessed on arbitrary threads after setup.
-  std::unique_ptr<MojoSharedMemory> shared_memory_;
+  std::unique_ptr<ChromeBaseSharedMemory> shared_memory_;
   std::unique_ptr<perfetto::SharedMemoryArbiter> shared_memory_arbiter_;
 
   base::WeakPtrFactory<ProducerEndpoint> weak_factory_{this};
@@ -376,7 +376,7 @@ class ConsumerEndpoint : public perfetto::ConsumerEndpoint,
                      perfetto::base::ScopedFile file) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     trace_config_ = trace_config;
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
     // TODO(crbug.com/1158482): Add support on Windows.
     DCHECK(!file)
         << "Tracing directly to a file isn't supported on Windows yet";

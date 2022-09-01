@@ -314,7 +314,7 @@ IN_PROC_BROWSER_TEST_P(SpeechRecognitionPrivateRecognizerTest,
 // an error.
 IN_PROC_BROWSER_TEST_P(SpeechRecognitionPrivateRecognizerTest, Error) {
   HandleStartAndWait(absl::optional<std::string>(), absl::optional<bool>());
-  SendFakeSpeechRecognitionErrorAndWait();
+  SendErrorAndWait();
   ASSERT_TRUE(delegate_handled_stop());
   ASSERT_FALSE(ran_on_stop_once_callback());
   ASSERT_EQ(SPEECH_RECOGNIZER_OFF, recognizer()->current_state());
@@ -332,7 +332,7 @@ IN_PROC_BROWSER_TEST_P(SpeechRecognitionPrivateRecognizerTest, OnSpeechResult) {
   ASSERT_EQ(u"", last_transcript());
   ASSERT_FALSE(last_is_final());
 
-  SendFinalFakeSpeechResultAndWait("Final result");
+  SendFinalResultAndWait("Final result");
   ASSERT_EQ(u"Final result", last_transcript());
   ASSERT_TRUE(last_is_final());
 
@@ -344,9 +344,38 @@ IN_PROC_BROWSER_TEST_P(SpeechRecognitionPrivateRecognizerTest, OnSpeechResult) {
   ASSERT_EQ(u"Interim result", last_transcript());
   ASSERT_FALSE(last_is_final());
 
-  SendFinalFakeSpeechResultAndWait("Final result");
+  SendFinalResultAndWait("Final result");
   ASSERT_EQ(u"Final result", last_transcript());
   ASSERT_TRUE(last_is_final());
+}
+
+// Verifies that the speech recognizer can handle transitions between states.
+// Some of the below states are intentionally erroneous to ensure the recognizer
+// can handle unexpected input.
+IN_PROC_BROWSER_TEST_P(SpeechRecognitionPrivateRecognizerTest, SetState) {
+  FakeSpeechRecognitionStateChanged(SPEECH_RECOGNIZER_READY);
+  FakeSpeechRecognitionStateChanged(SPEECH_RECOGNIZER_RECOGNIZING);
+  FakeSpeechRecognitionStateChanged(SPEECH_RECOGNIZER_ERROR);
+  // Erroneously change the state to 'recognizing'. The recognizer should
+  // intelligently handle this case.
+  FakeSpeechRecognitionStateChanged(SPEECH_RECOGNIZER_RECOGNIZING);
+  ASSERT_EQ(SPEECH_RECOGNIZER_OFF, recognizer()->current_state());
+}
+
+IN_PROC_BROWSER_TEST_P(SpeechRecognitionPrivateRecognizerTest,
+                       StopWhenNeverStarted) {
+  absl::optional<std::string> locale;
+  absl::optional<bool> interim_results;
+  // Attempt to start speech recognition. Don't wait for `on_start_callback` to
+  // be run.
+  HandleStart(locale, interim_results);
+  ASSERT_FALSE(ran_on_start_callback());
+  // Immediately turn speech recognition off.
+  HandleStopAndWait();
+  // Ensure there are no dangling callbacks e.g. that both `on_start_callback`
+  // and `on_stop_callback` should be run.
+  ASSERT_TRUE(ran_on_start_callback());
+  ASSERT_TRUE(ran_on_stop_once_callback());
 }
 
 }  // namespace extensions

@@ -41,12 +41,6 @@ _kind_to_cpp_proto_type = {
 }
 
 
-def _IsStrOrUnicode(x):
-  if sys.version_info[0] < 3:
-    return isinstance(x, (unicode, str))
-  return isinstance(x, str)
-
-
 class _NameFormatter(CppNameFormatter):
   """A formatter for the names of kinds or values."""
 
@@ -134,7 +128,7 @@ class Generator(CppGenerator):
         AddKind(kind.key_kind)
         AddKind(kind.value_kind)
       elif (mojom.IsStructKind(kind) or mojom.IsUnionKind(kind)
-            or mojom.IsEnumKind(kind) or mojom.IsInterfaceKind(kind)):
+            or mojom.IsEnumKind(kind)):
         name = self._GetFullMojomNameForKind(kind)
         if name in seen_types:
           return
@@ -451,7 +445,7 @@ class Generator(CppGenerator):
       if field.name == 'MAX':
         continue
       if field.value:
-        if _IsStrOrUnicode(field.value):
+        if isinstance(field.value, str):
           if field.value in values:
             return True
           values.add(field.value)

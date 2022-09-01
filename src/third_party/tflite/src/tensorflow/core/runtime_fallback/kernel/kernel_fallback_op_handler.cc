@@ -21,9 +21,9 @@ limitations under the License.
 #include "tensorflow/core/runtime_fallback/kernel/kernel_fallback_compat_request_state.h"
 #include "tensorflow/core/runtime_fallback/kernel/kernel_fallback_execute_compat.h"
 #include "tensorflow/core/runtime_fallback/kernel/kernel_fallback_tensor.h"
-#include "tensorflow/core/runtime_fallback/kernel/op_kernel_runner.h"
 #include "tensorflow/core/runtime_fallback/runtime/kernel_utils.h"
 #include "tensorflow/core/runtime_fallback/util/attr_util.h"
+#include "tensorflow/core/tfrt/fallback/op_kernel_runner.h"
 #include "tensorflow/core/tfrt/utils/error_util.h"
 #include "tfrt/core_runtime/dispatch_utils.h"  // from @tf_runtime
 #include "tfrt/core_runtime/op_invocation.h"  // from @tf_runtime
@@ -63,6 +63,7 @@ class KernelFallbackOpHandler : public tfrt::OpHandler {
 
 namespace {
 
+using ::tensorflow::tfrt_stub::OpKernelRunner;
 using tfrt::AsyncValue;
 using tfrt::AsyncValueRef;
 using tfrt::Chain;
@@ -76,7 +77,6 @@ using tfrt::OpInvocation;
 using tfrt::OpMetadataFn;
 using tfrt::raw_ostream;
 using tfrt::RCReference;
-using tfrt::SmallVector;
 using tfrt::string_view;
 using tfrt::TensorMetadata;
 
@@ -291,7 +291,7 @@ Expected<CoreRuntimeOp> KernelFallbackOpHandler::MakeOp(string_view op_name) {
               if (auto error =
                       tfd::FillAttrValueMap(attrs, host, attr_value_map))
                 return tensorflow::errors::InvalidArgument(tfrt::StrCat(error));
-              return Status::OK();
+              return OkStatus();
             },
             fallback_op_entry.fallback_request_state->device_manager(),
             fallback_op_entry.fallback_request_state

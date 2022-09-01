@@ -38,10 +38,11 @@ viz_component("resource_format_utils") {
 
   deps = [
     "//base",
+    "//build:chromeos_buildflags",
     "//cc/base:base",
     "//gpu/vulkan:buildflags",
     "//skia",
-    "//third_party/dawn/src/dawn:dawncpp_headers",
+    "//third_party/dawn/include/dawn:cpp_headers",
     "//ui/gfx:buffer_types",
     "//ui/gfx/geometry:geometry",
   ]
@@ -133,14 +134,14 @@ if (skia_use_dawn) {
 
     public_deps = [
       "//skia",
-      "//third_party/dawn/src/dawn:dawn_headers",
+      "//third_party/dawn/include/dawn:headers",
     ]
 
     deps = [
       "//base",
-      "//third_party/dawn/src/dawn:dawn_proc",
-      "//third_party/dawn/src/dawn:dawncpp",
-      "//third_party/dawn/src/dawn_native",
+      "//third_party/dawn/src/dawn:cpp",
+      "//third_party/dawn/src/dawn:proc",
+      "//third_party/dawn/src/dawn/native",
     ]
   }
 }
@@ -179,12 +180,6 @@ viz_component("common") {
     "frame_sinks/delay_based_time_source.h",
     "frame_timing_details.h",
     "frame_timing_details_map.h",
-    "gl_i420_converter.cc",
-    "gl_i420_converter.h",
-    "gl_nv12_converter.cc",
-    "gl_nv12_converter.h",
-    "gl_scaler.cc",
-    "gl_scaler.h",
     "gpu/context_cache_controller.cc",
     "gpu/context_cache_controller.h",
     "gpu/context_lost_observer.h",
@@ -339,6 +334,10 @@ viz_component("common") {
     sources += [
       "display/use_layered_window.cc",
       "display/use_layered_window.h",
+      "overlay_state/win/overlay_state_aggregator.cc",
+      "overlay_state/win/overlay_state_aggregator.h",
+      "overlay_state/win/overlay_state_service.cc",
+      "overlay_state/win/overlay_state_service.h",
     ]
 
     deps += [ "//ui/base" ]
@@ -394,18 +393,6 @@ viz_source_set("unit_tests") {
     "yuv_readback_unittest.cc",
   ]
 
-  if (enable_gl_renderer_tests) {
-    sources += [
-      "gl_i420_converter_pixeltest.cc",
-      "gl_i420_converter_unittest.cc",
-      "gl_nv12_converter_pixeltest.cc",
-      "gl_scaler_overscan_pixeltest.cc",
-      "gl_scaler_pixeltest.cc",
-      "gl_scaler_shader_pixeltest.cc",
-      "gl_scaler_unittest.cc",
-    ]
-  }
-
   if (enable_vulkan) {
     sources += [ "gpu/vulkan_in_process_context_provider_unittest.cc" ]
   }
@@ -427,6 +414,14 @@ viz_source_set("unit_tests") {
     "//ui/gfx/geometry",
     "//ui/latency",
   ]
+
+  if (is_win) {
+    sources += [ "overlay_state/win/overlay_state_service_unittest.cc" ]
+    deps += [
+      "//components/viz/test:test_suite",
+      "//media/mojo/mojom",
+    ]
+  }
 }
 
 viz_source_set("perf_tests") {
@@ -445,7 +440,11 @@ viz_source_set("perf_tests") {
 
 if (is_android) {
   android_library("common_java") {
-    deps = [ "//base:base_java" ]
+    deps = [
+      "//base:base_java",
+      "//base:jni_java",
+      "//build/android:build_java",
+    ]
     sources = [
       "java/src/org/chromium/components/viz/common/VizSwitches.java",
       "java/src/org/chromium/components/viz/common/display/DeJellyUtils.java",

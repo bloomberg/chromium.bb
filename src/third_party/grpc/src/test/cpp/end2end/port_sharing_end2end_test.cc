@@ -71,8 +71,7 @@ class TestScenario {
   const std::string credentials_type;
 };
 
-static std::ostream& operator<<(std::ostream& out,
-                                const TestScenario& scenario) {
+std::ostream& operator<<(std::ostream& out, const TestScenario& scenario) {
   return out << "TestScenario{server_has_port="
              << (scenario.server_has_port ? "true" : "false")
              << ", queue_pending_data="
@@ -295,7 +294,7 @@ class PortSharingEnd2endTest : public ::testing::TestWithParam<TestScenario> {
   int first_picked_port_;
 };
 
-static void SendRpc(EchoTestService::Stub* stub, int num_rpcs) {
+void SendRpc(EchoTestService::Stub* stub, int num_rpcs) {
   EchoRequest request;
   EchoResponse response;
   request.set_message("Hello hello hello hello");
@@ -369,7 +368,7 @@ INSTANTIATE_TEST_SUITE_P(PortSharingEnd2end, PortSharingEnd2endTest,
 #endif  // GRPC_POSIX_SOCKET_TCP_SERVER
 
 int main(int argc, char** argv) {
-  grpc::testing::TestEnvironment env(argc, argv);
+  grpc::testing::TestEnvironment env(&argc, argv);
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

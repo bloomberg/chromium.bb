@@ -4,7 +4,6 @@
 
 #include <stddef.h>
 
-#include "base/cxx17_backports.h"
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
 #include "base/path_service.h"
@@ -13,11 +12,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/extensions/command.h"
 #include "chrome/common/extensions/extension_test_util.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/crx_file/id_util.h"
+#include "extensions/common/command.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/extension_resource.h"
@@ -187,13 +186,13 @@ TEST(ExtensionTest, RTLNameInLTRLocale) {
   run_rtl_test(L"google\x202e.com", L"google\x202e.com\x202c");
 
   run_rtl_test(L"كبير Google التطبيق",
-#if !defined(OS_WIN)
+#if !BUILDFLAG(IS_WIN)
                L"\x200e\x202bكبير Google التطبيق\x202c\x200e");
 #else
                // On Windows for an LTR locale, no changes to the string are
                // made.
                L"كبير Google التطبيق");
-#endif  // !OS_WIN
+#endif  // !BUILDFLAG(IS_WIN)
 }
 
 TEST(ExtensionTest, GetResourceURLAndPath) {
@@ -274,9 +273,9 @@ TEST(ExtensionTest, GetResource) {
   scoped_refptr<Extension> extension = LoadManifestStrict("empty_manifest",
       "empty.json");
   EXPECT_TRUE(extension.get());
-  for (size_t i = 0; i < base::size(valid_path_test_cases); ++i)
+  for (size_t i = 0; i < std::size(valid_path_test_cases); ++i)
     EXPECT_TRUE(!extension->GetResource(valid_path_test_cases[i]).empty());
-  for (size_t i = 0; i < base::size(invalid_path_test_cases); ++i)
+  for (size_t i = 0; i < std::size(invalid_path_test_cases); ++i)
     EXPECT_TRUE(extension->GetResource(invalid_path_test_cases[i]).empty());
 }
 

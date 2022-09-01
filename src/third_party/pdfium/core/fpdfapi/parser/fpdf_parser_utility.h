@@ -47,6 +47,9 @@ absl::optional<FX_FILESIZE> GetHeaderOffset(
 
 int32_t GetDirectInteger(const CPDF_Dictionary* pDict, const ByteString& key);
 
+CPDF_Array* GetOrCreateArray(CPDF_Dictionary* dict, const ByteString& key);
+CPDF_Dictionary* GetOrCreateDict(CPDF_Dictionary* dict, const ByteString& key);
+
 ByteString PDF_NameDecode(ByteStringView orig);
 ByteString PDF_NameEncode(const ByteString& orig);
 
@@ -66,6 +69,9 @@ bool ValidateDictAllResourcesOfType(const CPDF_Dictionary* dict,
 
 // Shorthand for ValidateDictAllResourcesOfType(dict, "Font").
 bool ValidateFontResourceDict(const CPDF_Dictionary* dict);
+
+// Like ValidateDictType(), but /Type can also not exist.
+bool ValidateDictOptionalType(const CPDF_Dictionary* dict, ByteStringView type);
 
 std::ostream& operator<<(std::ostream& buf, const CPDF_Object* pObj);
 

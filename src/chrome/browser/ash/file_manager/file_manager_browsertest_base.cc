@@ -25,6 +25,8 @@
 #include "ash/components/smbfs/smbfs_mounter.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
+#include "ash/public/cpp/style/color_provider.h"
+#include "ash/public/cpp/style/scoped_light_mode_as_default.h"
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/webui/file_manager/url_constants.h"
 #include "base/bind.h"
@@ -36,18 +38,23 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_value_converter.h"
 #include "base/json/json_writer.h"
+#include "base/json/values_util.h"
+#include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
 #include "base/scoped_observation.h"
+#include "base/strings/escape.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
+#include "base/value_iterators.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
@@ -66,8 +73,13 @@
 #include "chrome/browser/ash/file_manager/mount_test_util.h"
 #include "chrome/browser/ash/file_manager/path_util.h"
 #include "chrome/browser/ash/file_manager/volume_manager.h"
+#include "chrome/browser/ash/guest_os/public/guest_os_mount_provider.h"
+#include "chrome/browser/ash/guest_os/public/guest_os_service.h"
+#include "chrome/browser/ash/guest_os/public/types.h"
 #include "chrome/browser/ash/smb_client/smb_service.h"
 #include "chrome/browser/ash/smb_client/smb_service_factory.h"
+#include "chrome/browser/ash/system_web_apps/system_web_app_manager.h"
+#include "chrome/browser/ash/system_web_apps/types/system_web_app_type.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/extensions/file_manager/event_router.h"
 #include "chrome/browser/chromeos/extensions/file_manager/event_router_factory.h"
@@ -84,8 +96,6 @@
 #include "chrome/browser/ui/views/extensions/extension_dialog.h"
 #include "chrome/browser/ui/views/select_file_dialog_extension.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
-#include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
-#include "chrome/browser/web_applications/system_web_apps/system_web_app_types.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_features.h"
@@ -93,7 +103,7 @@
 #include "chrome/common/extensions/api/file_manager_private.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/test_switches.h"
-#include "chromeos/dbus/concierge/concierge_service.pb.h"
+#include "chromeos/ash/components/dbus/concierge/concierge_service.pb.h"
 #include "chromeos/dbus/constants/dbus_switches.h"
 #include "chromeos/dbus/cros_disks/fake_cros_disks_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -121,7 +131,6 @@
 #include "google_apis/common/test_util.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "media/base/media_switches.h"
-#include "net/base/escape.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "storage/browser/file_system/external_mount_points.h"
 #include "storage/browser/file_system/file_system_context.h"
@@ -229,6 +238,7 @@ struct AddEntriesMessage {
     MEDIA_VIEW_AUDIO,
     MEDIA_VIEW_IMAGES,
     MEDIA_VIEW_VIDEOS,
+    MEDIA_VIEW_DOCUMENTS,
     SMBFS_VOLUME,
   };
 
@@ -285,6 +295,8 @@ struct AddEntriesMessage {
       *volume = MEDIA_VIEW_IMAGES;
     else if (value == "media_view_videos")
       *volume = MEDIA_VIEW_VIDEOS;
+    else if (value == "media_view_documents")
+      *volume = MEDIA_VIEW_DOCUMENTS;
     else if (value == "smbfs")
       *volume = SMBFS_VOLUME;
     else
@@ -394,6 +406,7 @@ struct AddEntriesMessage {
     EntryCapabilities capabilities;   // Entry permissions.
     EntryFolderFeature folder_feature;  // Entry folder feature.
     bool pinned = false;                // Whether the file should be pinned.
+    std::string alternate_url;          // Entry's alternate URL on Drive.
 
     TestEntryInfo& SetSharedOption(SharedOption option) {
       shared_option = option;
@@ -442,6 +455,11 @@ struct AddEntriesMessage {
       return *this;
     }
 
+    TestEntryInfo& SetAlternateUrl(const std::string& new_alternate_url) {
+      alternate_url = new_alternate_url;
+      return *this;
+    }
+
     // Registers the member information to the given converter.
     static void RegisterJSONConverter(
         base::JSONValueConverter<TestEntryInfo>* converter) {
@@ -469,6 +487,8 @@ struct AddEntriesMessage {
       converter->RegisterNestedField("folderFeature",
                                      &TestEntryInfo::folder_feature);
       converter->RegisterBoolField("pinned", &TestEntryInfo::pinned);
+      converter->RegisterStringField("alternateUrl",
+                                     &TestEntryInfo::alternate_url);
     }
 
     // Maps |value| to an EntryType. Returns true on success.
@@ -506,7 +526,7 @@ struct AddEntriesMessage {
 
     // Maps |value| to base::Time. Returns true on success.
     static bool MapStringToTime(base::StringPiece value, base::Time* time) {
-      return base::Time::FromString(std::string(value).c_str(), time);
+      return base::Time::FromString(value.data(), time);
     }
   };
 };
@@ -708,6 +728,41 @@ struct GetHistogramCountMessage {
   int value = 0;
 };
 
+struct GetTotalHistogramSum {
+  static bool ConvertJSONValue(const base::DictionaryValue& value,
+                               GetTotalHistogramSum* message) {
+    base::JSONValueConverter<GetTotalHistogramSum> converter;
+    return converter.Convert(value, message);
+  }
+
+  static void RegisterJSONConverter(
+      base::JSONValueConverter<GetTotalHistogramSum>* converter) {
+    converter->RegisterStringField("histogramName",
+                                   &GetTotalHistogramSum::histogram_name);
+  }
+
+  std::string histogram_name;
+};
+
+struct ExpectHistogramTotalCountMessage {
+  static bool ConvertJSONValue(const base::DictionaryValue& value,
+                               ExpectHistogramTotalCountMessage* message) {
+    base::JSONValueConverter<ExpectHistogramTotalCountMessage> converter;
+    return converter.Convert(value, message);
+  }
+
+  static void RegisterJSONConverter(
+      base::JSONValueConverter<ExpectHistogramTotalCountMessage>* converter) {
+    converter->RegisterStringField(
+        "histogramName", &ExpectHistogramTotalCountMessage::histogram_name);
+    converter->RegisterIntField("count",
+                                &ExpectHistogramTotalCountMessage::count);
+  }
+
+  std::string histogram_name;
+  int count = 0;
+};
+
 struct GetUserActionCountMessage {
   static bool ConvertJSONValue(const base::DictionaryValue& value,
                                GetUserActionCountMessage* message) {
@@ -786,6 +841,7 @@ std::ostream& operator<<(std::ostream& out,
   PRINT_IF_NOT_DEFAULT(photos_documents_provider)
   PRINT_IF_NOT_DEFAULT(single_partition_format)
   PRINT_IF_NOT_DEFAULT(tablet_mode)
+  PRINT_IF_NOT_DEFAULT(enable_guest_os_files)
 
 #undef PRINT_IF_NOT_DEFAULT
 
@@ -802,7 +858,7 @@ class FileManagerBrowserTestBase::MockFileTasksObserver
   MOCK_METHOD2(OnFilesOpenedImpl,
                void(const std::string& path, OpenType open_type));
 
-  void OnFilesOpened(const std::vector<FileOpenEvent>& opens) {
+  void OnFilesOpened(const std::vector<FileOpenEvent>& opens) override {
     ASSERT_TRUE(!opens.empty());
     for (auto& open : opens) {
       OnFilesOpenedImpl(open.path.value(), open.open_type);
@@ -1218,7 +1274,7 @@ class DriveFsTestVolume : public TestVolume {
         {entry.folder_feature.is_machine_root,
          entry.folder_feature.is_arbitrary_sync_folder,
          entry.folder_feature.is_external_media},
-        "");
+        "", entry.alternate_url);
 
     ASSERT_TRUE(UpdateModifiedTime(entry));
   }
@@ -1387,6 +1443,14 @@ class DocumentsProviderTestVolume : public TestVolume {
 
     if (entry.type != AddEntriesMessage::FILE)
       return;
+
+    // arc::FakeFileSystemInstance has a dedicated method AddRecentDocument(),
+    // to make the newly added file entry work with Recents view, we need to
+    // manually call that method to add the new entry to recent file list.
+    base::Time cutoff_time = base::Time::Now() - base::Days(30);
+    if (entry.last_modified_time > cutoff_time) {
+      file_system_instance_->AddRecentDocument(root_document_id_, document);
+    }
 
     std::string canonical_url = base::StrCat(
         {"content://", authority_, "/document/", EncodeURI(entry.name_text)});
@@ -1629,6 +1693,54 @@ class SmbfsTestVolume : public LocalTestVolume {
   mojo::Remote<smbfs::mojom::SmbFsDelegate> delegate_;
 };
 
+class MockGuestOsMountProvider : public guest_os::GuestOsMountProvider {
+ public:
+  MockGuestOsMountProvider(Profile* profile, std::string name)
+      : profile_(profile), name_(name) {}
+
+  MockGuestOsMountProvider(const MockGuestOsMountProvider&) = delete;
+  MockGuestOsMountProvider& operator=(const MockGuestOsMountProvider&) = delete;
+
+  std::string DisplayName() override { return name_; }
+  Profile* profile() override { return profile_; }
+  crostini::ContainerId ContainerId() override {
+    return crostini::ContainerId::GetDefault();
+  }
+
+  guest_os::VmType vm_type() override {
+    return guest_os::VmType::ApplicationList_VmType_TERMINA;
+  }
+
+  int cid_;
+  int cid() override { return cid_; }
+
+ private:
+  Profile* profile_;
+  std::string name_;
+};
+
+// GuestOsTestVolume: local test volume for the "Guest OS" directories.
+class GuestOsTestVolume : public LocalTestVolume {
+ public:
+  explicit GuestOsTestVolume(Profile* profile,
+                             MockGuestOsMountProvider* provider)
+      : LocalTestVolume(util::GetGuestOsMountPointName(
+            profile,
+            crostini::ContainerId::GetDefault())),
+        provider_(provider) {}
+
+  GuestOsTestVolume(const GuestOsTestVolume&) = delete;
+  GuestOsTestVolume& operator=(const GuestOsTestVolume&) = delete;
+
+  ~GuestOsTestVolume() override = default;
+
+  bool Mount(Profile* profile) override { return CreateRootDirectory(profile); }
+
+  const base::FilePath& mount_path() const { return root_path(); }
+
+  MockGuestOsMountProvider* provider_;
+};
+
 FileManagerBrowserTestBase::FileManagerBrowserTestBase() = default;
 
 FileManagerBrowserTestBase::~FileManagerBrowserTestBase() = default;
@@ -1723,9 +1835,9 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
   }
 
   if (options.guest_mode == IN_GUEST_MODE) {
-    command_line->AppendSwitch(chromeos::switches::kGuestSession);
-    command_line->AppendSwitchNative(chromeos::switches::kLoginUser, "$guest");
-    command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "user");
+    command_line->AppendSwitch(ash::switches::kGuestSession);
+    command_line->AppendSwitchNative(ash::switches::kLoginUser, "$guest");
+    command_line->AppendSwitchASCII(ash::switches::kLoginProfile, "user");
     command_line->AppendSwitch(switches::kIncognito);
     set_chromeos_user_ = false;
   }
@@ -1743,10 +1855,6 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
 
   // Make sure to run the ARC storage UI toast tests.
   enabled_features.push_back(arc::kUsbStorageUIFeature);
-
-  // FileManager tests exist for the deprecated audio player app, which will be
-  // removed, along with the kMediaAppHandlesAudio flag at ~M100.
-  disabled_features.push_back(ash::features::kMediaAppHandlesAudio);
 
   if (options.files_swa) {
     enabled_features.push_back(chromeos::features::kFilesSWA);
@@ -1766,6 +1874,12 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
         chromeos::features::kDriveFsBidirectionalNativeMessaging);
   }
 
+  if (options.extract_archive) {
+    enabled_features.push_back(chromeos::features::kFilesExtractArchive);
+  } else {
+    disabled_features.push_back(chromeos::features::kFilesExtractArchive);
+  }
+
   if (options.single_partition_format) {
     enabled_features.push_back(chromeos::features::kFilesSinglePartitionFormat);
   }
@@ -1776,16 +1890,40 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
     disabled_features.push_back(chromeos::features::kFilesTrash);
   }
 
-  if (options.enable_banners_framework) {
-    enabled_features.push_back(chromeos::features::kFilesBannerFramework);
+  if (options.enable_dlp_files_restriction) {
+    enabled_features.push_back(features::kDataLeakPreventionFilesRestriction);
   } else {
-    disabled_features.push_back(chromeos::features::kFilesBannerFramework);
+    disabled_features.push_back(features::kDataLeakPreventionFilesRestriction);
+  }
+
+  if (options.enable_web_drive_office) {
+    enabled_features.push_back(chromeos::features::kFilesWebDriveOffice);
+  } else {
+    disabled_features.push_back(chromeos::features::kFilesWebDriveOffice);
   }
 
   if (command_line->HasSwitch(switches::kDevtoolsCodeCoverage) &&
       options.guest_mode != IN_INCOGNITO) {
     devtools_code_coverage_dir_ =
         command_line->GetSwitchValuePath(switches::kDevtoolsCodeCoverage);
+  }
+
+  if (options.enable_guest_os_files) {
+    enabled_features.push_back(chromeos::features::kGuestOsFiles);
+  } else {
+    disabled_features.push_back(chromeos::features::kGuestOsFiles);
+  }
+
+  if (options.enable_filters_in_recents) {
+    enabled_features.push_back(chromeos::features::kFiltersInRecents);
+  } else {
+    disabled_features.push_back(chromeos::features::kFiltersInRecents);
+  }
+
+  if (options.enable_filters_in_recents_v2) {
+    enabled_features.push_back(chromeos::features::kFiltersInRecentsV2);
+  } else {
+    disabled_features.push_back(chromeos::features::kFiltersInRecentsV2);
   }
 
   // This is destroyed in |TearDown()|. We cannot initialize this in the
@@ -1879,6 +2017,11 @@ void FileManagerBrowserTestBase::SetUpOnMainThread() {
         ->AddCustomMountPointCallback(
             base::BindRepeating(&FileManagerBrowserTestBase::MaybeMountCrostini,
                                 base::Unretained(this)));
+    static_cast<chromeos::FakeCrosDisksClient*>(
+        dbus_thread_manager->GetCrosDisksClient())
+        ->AddCustomMountPointCallback(
+            base::BindRepeating(&FileManagerBrowserTestBase::MaybeMountGuestOs,
+                                base::Unretained(this)));
 
     if (arc::IsArcAvailable()) {
       // When ARC is available, create and register a fake FileSystemInstance
@@ -1954,10 +2097,8 @@ void FileManagerBrowserTestBase::SetUpOnMainThread() {
 
   // Enable System Web Apps if needed.
   if (options.media_swa || options.files_swa) {
-    auto& system_web_app_manager =
-        web_app::WebAppProvider::GetForTest(profile())
-            ->system_web_app_manager();
-    system_web_app_manager.InstallSystemAppsForTesting();
+    ash::SystemWebAppManager::GetForTest(profile())
+        ->InstallSystemAppsForTesting();
   }
 
   // For tablet mode tests, enable the Ash virtual keyboard.
@@ -2044,16 +2185,16 @@ void FileManagerBrowserTestBase::RunTestMessageLoop() {
     // but note a reply is required: use std::string().
     const auto json = base::JSONReader::ReadDeprecated(message.message);
     const base::DictionaryValue* dictionary = nullptr;
-    std::string command;
+    const std::string* command = nullptr;
     if (!json || !json->GetAsDictionary(&dictionary) ||
-        !dictionary->GetString("name", &command)) {
+        !(command = dictionary->FindStringKey("name"))) {
       message.function->Reply(std::string());
       continue;
     }
 
     // Process the command, reply with the result.
     std::string result;
-    OnCommand(command, *dictionary, &result);
+    OnCommand(*command, *dictionary, &result);
     if (!HasFatalFailure()) {
       message.function->Reply(result);
       continue;
@@ -2091,11 +2232,11 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
   }
 
   if (name == "showItemInFolder") {
-    std::string relative_path;
-    ASSERT_TRUE(value.GetString("localPath", &relative_path));
+    const std::string* relative_path = value.FindStringKey("localPath");
+    ASSERT_TRUE(relative_path);
     base::FilePath full_path =
         file_manager::util::GetMyFilesFolderForProfile(profile());
-    full_path = full_path.AppendASCII(relative_path);
+    full_path = full_path.AppendASCII(*relative_path);
 
     platform_util::ShowItemInFolder(profile(), full_path);
     return;
@@ -2116,21 +2257,20 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
   }
 
   if (name == "launchFileManagerSwa") {
-    std::string launchDir;
-    std::string type;
+    const std::string* launch_dir = value.FindStringKey("launchDir");
     base::DictionaryValue arg_value;
-    if (value.GetString("launchDir", &launchDir)) {
-      arg_value.SetString("currentDirectoryURL", launchDir);
-    }
-    if (value.GetString("type", &type)) {
-      arg_value.SetString("type", type);
-    }
+    if (launch_dir)
+      arg_value.SetStringKey("currentDirectoryURL", *launch_dir);
+
+    const std::string* type = value.FindStringKey("type");
+    if (type)
+      arg_value.SetStringKey("type", *type);
     std::string search;
-    if (arg_value.HasKey("currentDirectoryURL") || arg_value.HasKey("type")) {
+    if (arg_value.FindKey("currentDirectoryURL") || arg_value.FindKey("type")) {
       std::string json_args;
       base::JSONWriter::Write(arg_value, &json_args);
       search = base::StrCat(
-          {"?", net::EscapeUrlEncodedData(json_args, /*use_plus=*/false)});
+          {"?", base::EscapeUrlEncodedData(json_args, /*use_plus=*/false)});
     }
 
     std::string baseURL = ash::file_manager::kChromeUIFileManagerURL;
@@ -2142,7 +2282,7 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     WebContentCapturingObserver observer(fileAppURL);
     observer.StartWatchingNewWebContents();
     web_app::LaunchSystemWebAppAsync(
-        profile(), web_app::SystemAppType::FILE_MANAGER, params);
+        profile(), ash::SystemWebAppType::FILE_MANAGER, params);
     observer.Wait();
     ASSERT_TRUE(observer.last_navigation_succeeded());
     LoadSwaTestUtils(observer.web_contents());
@@ -2170,6 +2310,32 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     }
   }
 
+  if (name == "getLastActiveTabURL") {
+    BrowserList* browser_list = BrowserList::GetInstance();
+    Browser* browser = browser_list->GetLastActive();
+    if (!browser) {
+      return;
+    }
+    content::WebContents* active_web_contents =
+        browser->tab_strip_model()->GetActiveWebContents();
+    *output = active_web_contents->GetVisibleURL().spec();
+    return;
+  }
+
+  if (name == "expectWindowURL") {
+    const std::string* expected_url = value.FindStringKey("expectedUrl");
+    EXPECT_TRUE(expected_url);
+    for (auto* web_contents : GetAllWebContents()) {
+      const std::string& url = web_contents->GetVisibleURL().spec();
+      if (url == *expected_url) {
+        *output = "true";
+        return;
+      }
+    }
+    *output = "false";
+    return;
+  }
+
   if (name == "callSwaTestMessageListener") {
     // Handles equivallent of remoteCall.callRemoteTestUtil for Files.app. By
     // default Files SWA does not allow extenrnal callers to connect to it and
@@ -2177,17 +2343,16 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     // this, which would potentially create a security vulnerability, we
     // short-circuit sending messages by directly invoking dedicated function in
     // Files SWA.
-    std::string data;
-    std::string app_id;
-    ASSERT_TRUE(value.GetString("data", &data));
-    value.GetString("appId", &app_id);
+    const std::string* data = value.FindStringKey("data");
+    ASSERT_TRUE(data);
+    const std::string* app_id = value.FindStringKey("appId");
 
     content::WebContents* web_contents;
-    if (!app_id.empty()) {
-      CHECK(base::Contains(swa_web_contents_, app_id))
-          << "Couldn't find the SWA WebContents for appId: " << app_id
-          << " command data: " << data;
-      web_contents = swa_web_contents_[app_id];
+    if (app_id && !app_id->empty()) {
+      CHECK(base::Contains(swa_web_contents_, *app_id))
+          << "Couldn't find the SWA WebContents for appId: " << *app_id
+          << " command data: " << *data;
+      web_contents = swa_web_contents_[*app_id];
     } else {
       // Commands for the background page might send to a WebContents which is
       // in swa_web_contents_.
@@ -2197,11 +2362,11 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
         web_contents = std::prev(swa_web_contents_.end())->second;
       }
       CHECK(web_contents) << "Couldn't find the SWA WebContents without appId"
-                          << " command data: " << data;
+                          << " command data: " << *data;
     }
     CHECK(ExecuteScriptAndExtractString(
-        web_contents, base::StrCat({"test.swaTestMessageListener(", data, ")"}),
-        output));
+        web_contents,
+        base::StrCat({"test.swaTestMessageListener(", *data, ")"}), output));
     return;
   }
 
@@ -2243,21 +2408,23 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
   if (name == "executeScriptInChromeUntrusted") {
     for (auto* web_contents : GetAllWebContents()) {
       bool found = false;
-      web_contents->GetMainFrame()->ForEachRenderFrameHost(base::BindRepeating(
-          [](const base::DictionaryValue& value, bool& found,
-             std::string* output, content::RenderFrameHost* frame) {
-            const url::Origin origin = frame->GetLastCommittedOrigin();
-            if (origin.GetURL() ==
-                ash::file_manager::kChromeUIFileManagerUntrustedURL) {
-              std::string script;
-              EXPECT_TRUE(value.GetString("data", &script));
-              CHECK(ExecuteScriptAndExtractString(frame, script, output));
-              found = true;
-              return content::RenderFrameHost::FrameIterationAction::kStop;
-            }
-            return content::RenderFrameHost::FrameIterationAction::kContinue;
-          },
-          std::ref(value), std::ref(found), output));
+      web_contents->GetPrimaryMainFrame()->ForEachRenderFrameHost(
+          base::BindRepeating(
+              [](const base::DictionaryValue& value, bool& found,
+                 std::string* output, content::RenderFrameHost* frame) {
+                const url::Origin origin = frame->GetLastCommittedOrigin();
+                if (origin.GetURL() ==
+                    ash::file_manager::kChromeUIFileManagerUntrustedURL) {
+                  const std::string* script = value.FindStringKey("data");
+                  EXPECT_TRUE(script);
+                  CHECK(ExecuteScriptAndExtractString(frame, *script, output));
+                  found = true;
+                  return content::RenderFrameHost::FrameIterationAction::kStop;
+                }
+                return content::RenderFrameHost::FrameIterationAction::
+                    kContinue;
+              },
+              std::ref(value), std::ref(found), output));
       if (found)
         return;
     }
@@ -2292,21 +2459,20 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
         util::GetDownloadsMountPointName(profile()) + "/Downloads";
 
     base::DictionaryValue dictionary;
-    dictionary.SetString("downloads", "/" + downloads_root);
+    dictionary.SetStringKey("downloads", "/" + downloads_root);
 
     if (!profile()->IsGuestSession()) {
       auto* drive_integration_service =
           drive::DriveIntegrationServiceFactory::GetForProfile(profile());
       if (drive_integration_service->IsMounted()) {
         const auto drive_mount_name =
-            base::FilePath(drive_integration_service->GetMountPointPath())
-                .BaseName();
-        dictionary.SetString(
+            drive_integration_service->GetMountPointPath().BaseName();
+        dictionary.SetStringKey(
             "drive", base::StrCat({"/", drive_mount_name.value(), "/root"}));
       }
       if (android_files_volume_) {
-        dictionary.SetString("android_files",
-                             "/" + util::GetAndroidFilesMountPointName());
+        dictionary.SetStringKey("android_files",
+                                "/" + util::GetAndroidFilesMountPointName());
       }
     }
     base::JSONWriter::Write(dictionary, output);
@@ -2328,8 +2494,8 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
       origin.resize(origin.length() - 1);
 
     base::DictionaryValue dictionary;
-    dictionary.SetString("url", url.spec());
-    dictionary.SetString("origin", origin);
+    dictionary.SetStringKey("url", url.spec());
+    dictionary.SetStringKey("origin", origin);
 
     base::JSONWriter::Write(dictionary, output);
     return;
@@ -2406,6 +2572,13 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
             media_view_videos_->CreateEntry(*message.entries[i]);
           } else {
             LOG(FATAL) << "Add entry: but no MediaView Videos volume.";
+          }
+          break;
+        case AddEntriesMessage::MEDIA_VIEW_DOCUMENTS:
+          if (media_view_documents_) {
+            media_view_documents_->CreateEntry(*message.entries[i]);
+          } else {
+            LOG(FATAL) << "Add entry: but no MediaView Documents volume.";
           }
           break;
         case AddEntriesMessage::SMBFS_VOLUME:
@@ -2550,10 +2723,14 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     media_view_audio_ = std::make_unique<MediaViewTestVolume>(
         arc_file_system_instance_.get(),
         "com.android.providers.media.documents", arc::kAudioRootDocumentId);
+    media_view_documents_ = std::make_unique<MediaViewTestVolume>(
+        arc_file_system_instance_.get(),
+        "com.android.providers.media.documents", arc::kDocumentsRootDocumentId);
 
     ASSERT_TRUE(media_view_images_->Mount(profile()));
     ASSERT_TRUE(media_view_videos_->Mount(profile()));
     ASSERT_TRUE(media_view_audio_->Mount(profile()));
+    ASSERT_TRUE(media_view_documents_->Mount(profile()));
     return;
   }
 
@@ -2628,29 +2805,29 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
   }
 
   if (name == "clickNotificationButton") {
-    std::string extension_id;
-    std::string notification_id;
-    ASSERT_TRUE(value.GetString("extensionId", &extension_id));
-    ASSERT_TRUE(value.GetString("notificationId", &notification_id));
+    const std::string* extension_id = value.FindStringKey("extensionId");
+    ASSERT_TRUE(extension_id);
+    const std::string* notification_id = value.FindStringKey("notificationId");
+    ASSERT_TRUE(notification_id);
 
-    const std::string delegate_id = extension_id + "-" + notification_id;
+    const std::string delegate_id = *extension_id + "-" + *notification_id;
     absl::optional<message_center::Notification> notification =
         display_service_->GetNotification(delegate_id);
     EXPECT_TRUE(notification);
 
-    int index;
-    ASSERT_TRUE(value.GetInteger("index", &index));
+    absl::optional<int> index = value.FindIntKey("index");
+    ASSERT_TRUE(index);
     display_service_->SimulateClick(NotificationHandler::Type::EXTENSION,
-                                    delegate_id, index, absl::nullopt);
+                                    delegate_id, *index, absl::nullopt);
     return;
   }
 
   if (name == "launchProviderExtension") {
-    std::string manifest;
-    ASSERT_TRUE(value.GetString("manifest", &manifest));
+    const std::string* manifest = value.FindStringKey("manifest");
+    ASSERT_TRUE(manifest);
     LaunchExtension(base::FilePath(FILE_PATH_LITERAL(
                         "ui/file_manager/integration_tests/testing_provider")),
-                    manifest.c_str());
+                    (*manifest).c_str());
     return;
   }
 
@@ -2674,31 +2851,31 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
   }
 
   if (name == "simulateClick") {
-    int click_x;
-    int click_y;
-    std::string app_id;
-    ASSERT_TRUE(value.GetInteger("clickX", &click_x));
-    ASSERT_TRUE(value.GetInteger("clickY", &click_y));
-    ASSERT_TRUE(value.GetString("appId", &app_id));
+    absl::optional<int> click_x = value.FindIntKey("clickX");
+    absl::optional<int> click_y = value.FindIntKey("clickY");
+    ASSERT_TRUE(click_x);
+    ASSERT_TRUE(click_y);
+    const std::string* app_id = value.FindStringKey("appId");
+    ASSERT_TRUE(app_id);
 
     const Options& options = GetOptions();
     content::WebContents* web_contents;
     if (options.files_swa) {
-      CHECK(base::Contains(swa_web_contents_, app_id))
-          << "Couldn't find the SWA WebContents for appId: " << app_id;
-      web_contents = swa_web_contents_[app_id];
+      CHECK(base::Contains(swa_web_contents_, *app_id))
+          << "Couldn't find the SWA WebContents for appId: " << *app_id;
+      web_contents = swa_web_contents_[*app_id];
     } else {
       web_contents = GetLastOpenWindowWebContents();
     }
     SimulateMouseClickAt(web_contents, 0 /* modifiers */,
                          blink::WebMouseEvent::Button::kLeft,
-                         gfx::Point(click_x, click_y));
+                         gfx::Point(*click_x, *click_y));
     return;
   }
 
   if (name == "getAppWindowId") {
-    std::string window_url;
-    ASSERT_TRUE(value.GetString("windowUrl", &window_url));
+    const std::string* window_url = value.FindStringKey("windowUrl");
+    ASSERT_TRUE(window_url);
 
     const auto& app_windows =
         extensions::AppWindowRegistry::Get(profile())->app_windows();
@@ -2708,7 +2885,7 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
       if (!window->web_contents())
         continue;
 
-      if (window->web_contents()->GetLastCommittedURL() == window_url) {
+      if (window->web_contents()->GetLastCommittedURL() == *window_url) {
         *output = base::NumberToString(window->session_id().id());
         break;
       }
@@ -2717,15 +2894,15 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
   }
 
   if (name == "hasSwaStarted") {
-    std::string swa_app_id;
-    ASSERT_TRUE(value.GetString("swaAppId", &swa_app_id));
+    const std::string* swa_app_id = value.FindStringKey("swaAppId");
+    ASSERT_TRUE(swa_app_id);
 
     *output = "false";
 
     auto* proxy = apps::AppServiceProxyFactory::GetForProfile(profile());
     proxy->InstanceRegistry().ForEachInstance(
-        [&swa_app_id, &output](const apps::InstanceUpdate& update) {
-          if (update.AppId() == swa_app_id &&
+        [swa_app_id, &output](const apps::InstanceUpdate& update) {
+          if (update.AppId() == *swa_app_id &&
               update.State() & apps::InstanceState::kStarted) {
             *output = "true";
           }
@@ -2743,15 +2920,15 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
   }
 
   if (name == "countAppWindows") {
-    std::string app_id;
-    ASSERT_TRUE(value.GetString("appId", &app_id));
+    const std::string* app_id = value.FindStringKey("appId");
+    ASSERT_TRUE(app_id);
 
     const auto& app_windows =
         extensions::AppWindowRegistry::Get(profile())->app_windows();
     ASSERT_FALSE(app_windows.empty());
     int window_count = 0;
     for (auto* window : app_windows) {
-      if (window->extension_id() == app_id)
+      if (window->extension_id() == *app_id)
         window_count++;
     }
     *output = base::NumberToString(window_count);
@@ -2759,12 +2936,12 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
   }
 
   if (name == "runJsInAppWindow") {
-    std::string window_id_str;
-    ASSERT_TRUE(value.GetString("windowId", &window_id_str));
+    const std::string* window_id_str = value.FindStringKey("windowId");
+    ASSERT_TRUE(window_id_str);
     int window_id = 0;
-    ASSERT_TRUE(base::StringToInt(window_id_str, &window_id));
-    std::string script;
-    ASSERT_TRUE(value.GetString("script", &script));
+    ASSERT_TRUE(base::StringToInt(*window_id_str, &window_id));
+    const std::string* script = value.FindStringKey("script");
+    ASSERT_TRUE(script);
 
     const auto& app_windows =
         extensions::AppWindowRegistry::Get(profile())->app_windows();
@@ -2778,9 +2955,9 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
       if (!window->web_contents())
         break;
 
-      CHECK(window->web_contents()->GetMainFrame());
-      window->web_contents()->GetMainFrame()->ExecuteJavaScriptForTests(
-          base::UTF8ToUTF16(script), base::NullCallback());
+      CHECK(window->web_contents()->GetPrimaryMainFrame());
+      window->web_contents()->GetPrimaryMainFrame()->ExecuteJavaScriptForTests(
+          base::UTF8ToUTF16(*script), base::NullCallback());
 
       break;
     }
@@ -2823,12 +3000,28 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     return;
   }
 
+  if (name == "isFiltersInRecentsEnabled") {
+    *output = options.enable_filters_in_recents ? "true" : "false";
+    return;
+  }
+
+  if (name == "isFiltersInRecentsEnabledV2") {
+    *output = options.enable_filters_in_recents_v2 ? "true" : "false";
+    return;
+  }
+
+  if (name == "isDarkModeEnabled") {
+    ash::ScopedLightModeAsDefault scoped_light_mode_as_default;
+    *output = ash::ColorProvider::Get()->IsDarkModeEnabled() ? "true" : "false";
+    return;
+  }
+
   if (name == "switchLanguage") {
-    std::string language;
-    ASSERT_TRUE(value.GetString("language", &language));
+    const std::string* language = value.FindStringKey("language");
+    ASSERT_TRUE(language);
     base::RunLoop run_loop;
     ash::locale_util::SwitchLanguage(
-        language, true, false,
+        *language, true, false,
         base::BindRepeating(
             [](base::RunLoop* run_loop,
                const ash::locale_util::LanguageSwitchResult&) {
@@ -2871,6 +3064,27 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     base::JSONWriter::Write(base::Value(histograms_.GetBucketCount(
                                 message.histogram_name, message.value)),
                             output);
+
+    return;
+  }
+
+  if (name == "getHistogramSum") {
+    GetTotalHistogramSum message;
+    ASSERT_TRUE(GetTotalHistogramSum::ConvertJSONValue(value, &message));
+    // GetTotalSum returns an int64_t which does not conform to JSON, convert to
+    // a string to ensure it can be JSON encoded.
+    base::JSONWriter::Write(
+        base::Value(base::NumberToString(
+            histograms_.GetTotalSum(message.histogram_name))),
+        output);
+    return;
+  }
+
+  if (name == "expectHistogramTotalCount") {
+    ExpectHistogramTotalCountMessage message;
+    ASSERT_TRUE(
+        ExpectHistogramTotalCountMessage::ConvertJSONValue(value, &message));
+    histograms_.ExpectTotalCount(message.histogram_name, message.count);
 
     return;
   }
@@ -2924,7 +3138,50 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     return;
   }
 
+  if (HandleGuestOsCommands(name, value, output)) {
+    return;
+  }
+
   FAIL() << "Unknown test message: " << name;
+}
+
+bool FileManagerBrowserTestBase::HandleGuestOsCommands(
+    const std::string& name,
+    const base::DictionaryValue& value,
+    std::string* output) {
+  if (name == "registerMountableGuest") {
+    auto* displayName = value.GetDict().FindString("displayName");
+    auto* canMount = value.GetDict().Find("canMount");
+    CHECK(displayName != nullptr);
+    auto* registry = guest_os::GuestOsService::GetForProfile(profile())
+                         ->MountProviderRegistry();
+    auto id = registry->Register(
+        std::make_unique<MockGuestOsMountProvider>(profile(), *displayName));
+    MockGuestOsMountProvider* ptr =
+        reinterpret_cast<MockGuestOsMountProvider*>(registry->Get(id));
+    ptr->cid_ = id;
+    if (canMount && canMount->GetBool()) {
+      // If we ask for the volume to be mountable we add it to the map, and it's
+      // mountable. If not then it's an unknown volume and the mount request
+      // fails.
+      guest_os_volumes_[base::StringPrintf("sftp://%d:0", id)] =
+          std::make_unique<GuestOsTestVolume>(profile(), ptr);
+    }
+
+    base::JSONWriter::Write(base::Value(id), output);
+    return true;
+  }
+  if (name == "unregisterMountableGuest") {
+    int id;
+    auto* str = value.GetDict().FindString("guestId");
+    CHECK(str != nullptr);
+    CHECK(base::StringToInt(*str, &id));
+    auto* registry = guest_os::GuestOsService::GetForProfile(profile())
+                         ->MountProviderRegistry();
+    registry->Unregister(id);
+    return true;
+  }
+  return false;
 }
 
 drive::DriveIntegrationService*
@@ -2960,6 +3217,21 @@ base::FilePath FileManagerBrowserTestBase::MaybeMountCrostini(
   }
   CHECK(crostini_volume_->Mount(profile()));
   return crostini_volume_->mount_path();
+}
+
+base::FilePath FileManagerBrowserTestBase::MaybeMountGuestOs(
+    const std::string& source_path,
+    const std::vector<std::string>& mount_options) {
+  GURL source_url(source_path);
+  DCHECK(source_url.is_valid());
+  if (source_url.scheme() != "sftp") {
+    return {};
+  }
+  if (!guest_os_volumes_.contains(source_path)) {
+    return {};
+  }
+  guest_os_volumes_[source_path]->Mount(profile());
+  return guest_os_volumes_[source_path]->mount_path();
 }
 
 void FileManagerBrowserTestBase::EnableVirtualKeyboard() {
@@ -3006,7 +3278,7 @@ FileManagerBrowserTestBase::GetAllWebContents() {
         content::WebContents::FromRenderViewHost(rvh);
     if (!web_contents)
       continue;
-    if (web_contents->GetMainFrame()->GetRenderViewHost() != rvh)
+    if (web_contents->GetPrimaryMainFrame()->GetRenderViewHost() != rvh)
       continue;
     // Because a WebContents can only have one current RVH at a time, there will
     // be no duplicate WebContents here.

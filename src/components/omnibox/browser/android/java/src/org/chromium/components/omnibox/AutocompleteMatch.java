@@ -14,6 +14,8 @@ import androidx.core.util.ObjectsCompat;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.omnibox.MatchClassificationStyle;
+import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
+import org.chromium.components.omnibox.action.OmniboxPedal;
 import org.chromium.components.query_tiles.QueryTile;
 import org.chromium.url.GURL;
 
@@ -33,7 +35,7 @@ public class AutocompleteMatch {
     /**
      * Specifies an individual tile for TILE_NAVSUGGEST suggestions.
      */
-    public static class NavsuggestTile {
+    public static class SuggestTile {
         /**
          * Title of the website the tile points to.
          */
@@ -42,10 +44,15 @@ public class AutocompleteMatch {
          * URL of the website the tile points to.
          */
         public final GURL url;
+        /**
+         * Whether the tile is a Search tile.
+         */
+        public final boolean isSearch;
 
-        public NavsuggestTile(String title, GURL url) {
+        public SuggestTile(String title, GURL url, boolean isSearch) {
             this.title = title;
             this.url = url;
+            this.isSearch = isSearch;
         }
     }
 
@@ -100,8 +107,9 @@ public class AutocompleteMatch {
     private final List<QueryTile> mQueryTiles;
     private byte[] mClipboardImageData;
     private boolean mHasTabMatch;
-    private final @Nullable List<NavsuggestTile> mNavsuggestTiles;
+    private final @Nullable List<SuggestTile> mSuggestTiles;
     private long mNativeMatch;
+    private final @Nullable OmniboxPedal mOmniboxPedal;
 
     public AutocompleteMatch(int nativeType, Set<Integer> subtypes, boolean isSearchType,
             int relevance, int transition, String displayText,
@@ -110,7 +118,7 @@ public class AutocompleteMatch {
             String fillIntoEdit, GURL url, GURL imageUrl, String imageDominantColor,
             boolean isDeletable, String postContentType, byte[] postData, int groupId,
             List<QueryTile> queryTiles, byte[] clipboardImageData, boolean hasTabMatch,
-            List<NavsuggestTile> navsuggestTiles) {
+            List<SuggestTile> suggestTiles, OmniboxPedal omniboxPedal) {
         if (subtypes == null) {
             subtypes = Collections.emptySet();
         }
@@ -137,7 +145,8 @@ public class AutocompleteMatch {
         mQueryTiles = queryTiles;
         mClipboardImageData = clipboardImageData;
         mHasTabMatch = hasTabMatch;
-        mNavsuggestTiles = navsuggestTiles;
+        mSuggestTiles = suggestTiles;
+        mOmniboxPedal = omniboxPedal;
     }
 
     @CalledByNative
@@ -148,8 +157,8 @@ public class AutocompleteMatch {
             int[] descriptionClassificationStyles, SuggestionAnswer answer, String fillIntoEdit,
             GURL url, GURL imageUrl, String imageDominantColor, boolean isDeletable,
             String postContentType, byte[] postData, int groupId, List<QueryTile> tiles,
-            byte[] clipboardImageData, boolean hasTabMatch, String[] navsuggestTitles,
-            GURL[] navsuggestUrls) {
+            byte[] clipboardImageData, boolean hasTabMatch, String[] suggestTileTitles,
+            GURL[] suggestTileUrls, int[] suggestTileTypes, OmniboxPedal omniboxPedal) {
         assert contentClassificationOffsets.length == contentClassificationStyles.length;
         List<MatchClassification> contentClassifications = new ArrayList<>();
         for (int i = 0; i < contentClassificationOffsets.length; i++) {
@@ -157,10 +166,12 @@ public class AutocompleteMatch {
                     contentClassificationOffsets[i], contentClassificationStyles[i]));
         }
 
-        assert navsuggestTitles.length == navsuggestUrls.length;
-        List<NavsuggestTile> navsuggestTiles = new ArrayList<>();
-        for (int i = 0; i < navsuggestTitles.length; i++) {
-            navsuggestTiles.add(new NavsuggestTile(navsuggestTitles[i], navsuggestUrls[i]));
+        assert suggestTileUrls.length == suggestTileTitles.length;
+        assert suggestTileTypes.length == suggestTileTitles.length;
+        List<SuggestTile> suggestTiles = new ArrayList<>();
+        for (int i = 0; i < suggestTileTitles.length; i++) {
+            suggestTiles.add(new SuggestTile(
+                    suggestTileTitles[i], suggestTileUrls[i], suggestTileTypes[i] != 0));
         }
 
         Set<Integer> subtypes = new ArraySet(nativeSubtypes.length);
@@ -172,7 +183,7 @@ public class AutocompleteMatch {
                 relevance, transition, contents, contentClassifications, description,
                 new ArrayList<>(), answer, fillIntoEdit, url, imageUrl, imageDominantColor,
                 isDeletable, postContentType, postData, groupId, tiles, clipboardImageData,
-                hasTabMatch, navsuggestTiles);
+                hasTabMatch, suggestTiles, omniboxPedal);
         match.updateNativeObjectRef(nativeObject);
         match.setDescription(
                 description, descriptionClassificationOffsets, descriptionClassificationStyles);
@@ -241,7 +252,7 @@ public class AutocompleteMatch {
         mHasTabMatch = hasTabMatch;
     }
 
-    public int getType() {
+    public @OmniboxSuggestionType int getType() {
         return mType;
     }
 
@@ -317,6 +328,11 @@ public class AutocompleteMatch {
         return mHasTabMatch;
     }
 
+    @Nullable
+    public OmniboxPedal getOmniboxPedal() {
+        return mOmniboxPedal;
+    }
+
     /**
      * @return The image data for the image clipbaord suggestion. This data has already been
      *         validated in C++ and is safe to use in the browser process.
@@ -385,8 +401,8 @@ public class AutocompleteMatch {
     /**
      * @return List of tiles for TILE_NAVSUGGEST suggestion.
      */
-    public @Nullable List<NavsuggestTile> getNavsuggestTiles() {
-        return mNavsuggestTiles;
+    public @Nullable List<SuggestTile> getSuggestTiles() {
+        return mSuggestTiles;
     }
 
     /**

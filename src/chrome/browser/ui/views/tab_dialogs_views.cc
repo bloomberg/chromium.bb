@@ -8,15 +8,15 @@
 #include <utility>
 
 #include "build/build_config.h"
-#include "build/chromeos_buildflags.h"
+#include "chrome/browser/ui/sync/profile_signin_confirmation_helper.h"
 #include "chrome/browser/ui/views/collected_cookies_views.h"
 #include "chrome/browser/ui/views/hung_renderer_view.h"
 #include "chrome/browser/ui/views/passwords/password_bubble_view_base.h"
-#include "chrome/browser/ui/sync/profile_signin_confirmation_helper.h"
 #include "content/public/browser/web_contents.h"
 
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/ui/views/sync/profile_signin_confirmation_dialog_views.h"
+#if defined(TOOLKIT_VIEWS) && !BUILDFLAG(IS_CHROMEOS)
+#include "chrome/browser/ui/views/web_apps/deprecated_apps_dialog_view.h"
+#include "chrome/browser/ui/views/web_apps/force_installed_deprecated_apps_dialog_view.h"
 #endif
 
 // static
@@ -59,19 +59,6 @@ bool TabDialogsViews::IsShowingHungRendererDialog() {
   return HungRendererDialogView::IsShowingForWebContents(web_contents_);
 }
 
-void TabDialogsViews::ShowProfileSigninConfirmation(
-    Browser* browser,
-    const std::string& username,
-    bool prompt_for_new_profile,
-    std::unique_ptr<ui::ProfileSigninConfirmationDelegate> delegate) {
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
-  ProfileSigninConfirmationDialogViews::Show(
-      browser, username, std::move(delegate), prompt_for_new_profile);
-#else
-  NOTREACHED();
-#endif
-}
-
 void TabDialogsViews::ShowManagePasswordsBubble(bool user_action) {
   if (PasswordBubbleViewBase::manage_password_bubble()) {
     // The bubble is currently shown for some other tab. We should close it now
@@ -90,4 +77,26 @@ void TabDialogsViews::HideManagePasswordsBubble() {
     return;
   if (bubble->GetWebContents() == web_contents_)
     PasswordBubbleViewBase::CloseCurrentBubble();
+}
+
+void TabDialogsViews::ShowDeprecatedAppsDialog(
+    const extensions::ExtensionId& optional_launched_extension_id,
+    const std::set<extensions::ExtensionId>& deprecated_app_ids,
+    content::WebContents* web_contents,
+    base::OnceClosure launch_anyways) {
+#if defined(TOOLKIT_VIEWS) && !BUILDFLAG(IS_CHROMEOS)
+  DeprecatedAppsDialogView::CreateAndShowDialog(
+      optional_launched_extension_id, deprecated_app_ids, web_contents,
+      std::move(launch_anyways));
+#endif
+}
+
+void TabDialogsViews::ShowForceInstalledDeprecatedAppsDialog(
+    const extensions::ExtensionId& app_id,
+    content::WebContents* web_contents,
+    base::OnceClosure launch_anyways) {
+#if defined(TOOLKIT_VIEWS) && !BUILDFLAG(IS_CHROMEOS)
+  ForceInstalledDeprecatedAppsDialogView::CreateAndShowDialog(
+      app_id, web_contents, std::move(launch_anyways));
+#endif
 }

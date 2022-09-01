@@ -4,13 +4,17 @@
 
 #include "ash/system/dark_mode/dark_mode_feature_pod_controller.h"
 
+#include "ash/public/cpp/system_tray_client.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
+#include "ash/style/dark_mode_controller.h"
+#include "ash/system/model/system_tray_model.h"
+#include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/unified/feature_pod_button.h"
-#include "ash/system/unified/unified_system_tray_controller.h"
+#include "base/metrics/histogram_functions.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace ash {
@@ -33,7 +37,6 @@ FeaturePodButton* DarkModeFeaturePodController::CreateButton() {
   button_->SetLabel(l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_DARK_THEME));
   button_->SetLabelTooltip(l10n_util::GetStringUTF16(
       IDS_ASH_STATUS_TRAY_DARK_THEME_SETTINGS_TOOLTIP));
-  button_->ShowDetailedViewArrow();
   // TODO(minch): Add the logic for login screen.
   // Disable dark mode feature pod in OOBE since only light mode should be
   // allowed there.
@@ -47,11 +50,21 @@ FeaturePodButton* DarkModeFeaturePodController::CreateButton() {
 }
 
 void DarkModeFeaturePodController::OnIconPressed() {
-  AshColorProvider::Get()->ToggleColorMode();
+  // Toggling Dark theme feature pod button inside quick settings should cancel
+  // auto scheduling. This ensures that on and off states of the pod button
+  // match the non-scheduled states of Dark and Light buttons in
+  // personalization hub respectively.
+  ash::Shell::Get()->dark_mode_controller()->SetAutoScheduleEnabled(
+      /*enabled=*/false);
+  auto* color_provider = AshColorProvider::Get();
+  color_provider->ToggleColorMode();
+  base::UmaHistogramBoolean("Ash.DarkTheme.SystemTray.IsDarkModeEnabled",
+                            color_provider->IsDarkModeEnabled());
 }
 
 void DarkModeFeaturePodController::OnLabelPressed() {
-  tray_controller_->ShowDarkModeDetailedView();
+  if (ash::features::IsPersonalizationHubEnabled())
+    Shell::Get()->system_tray_model()->client()->ShowDarkModeSettings();
 }
 
 SystemTrayItemUmaType DarkModeFeaturePodController::GetUmaType() const {
@@ -64,9 +77,16 @@ void DarkModeFeaturePodController::OnColorModeChanged(bool dark_mode_enabled) {
 
 void DarkModeFeaturePodController::UpdateButton(bool dark_mode_enabled) {
   button_->SetToggled(dark_mode_enabled);
-  button_->SetSubLabel(l10n_util::GetStringUTF16(
-      dark_mode_enabled ? IDS_ASH_STATUS_TRAY_DARK_THEME_ON_STATE
-                        : IDS_ASH_STATUS_TRAY_DARK_THEME_OFF_STATE));
+  if (ash::Shell::Get()->dark_mode_controller()->GetAutoScheduleEnabled()) {
+    button_->SetSubLabel(l10n_util::GetStringUTF16(
+        dark_mode_enabled
+            ? IDS_ASH_STATUS_TRAY_DARK_THEME_ON_STATE_AUTO_SCHEDULED
+            : IDS_ASH_STATUS_TRAY_DARK_THEME_OFF_STATE_AUTO_SCHEDULED));
+  } else {
+    button_->SetSubLabel(l10n_util::GetStringUTF16(
+        dark_mode_enabled ? IDS_ASH_STATUS_TRAY_DARK_THEME_ON_STATE
+                          : IDS_ASH_STATUS_TRAY_DARK_THEME_OFF_STATE));
+  }
 
   std::u16string tooltip_state = l10n_util::GetStringUTF16(
       dark_mode_enabled

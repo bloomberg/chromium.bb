@@ -20,10 +20,10 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
+#include "base/strings/escape.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/supports_user_data.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -36,7 +36,6 @@
 #include "components/favicon_base/favicon_types.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_thread.h"
-#include "net/base/escape.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/favicon_size.h"
 
@@ -185,7 +184,7 @@ class Writer : public base::RefCountedThreadSafe<Writer> {
     DCHECK(roots);
 
     base::Value* root_folder_value =
-        roots->FindDictKey(BookmarkCodec::kRootFolderNameKey);
+        roots->FindDictKey(BookmarkCodec::kBookmarkBarFolderNameKey);
     base::Value* other_folder_value =
         roots->FindDictKey(BookmarkCodec::kOtherBookmarkFolderNameKey);
     base::Value* mobile_folder_value =
@@ -289,7 +288,7 @@ class Writer : public base::RefCountedThreadSafe<Writer> {
         break;
 
       case CONTENT:
-        utf8_string = net::EscapeForHTML(text);
+        utf8_string = base::EscapeForHTML(text);
         break;
 
       default:
@@ -399,7 +398,7 @@ class Writer : public base::RefCountedThreadSafe<Writer> {
     }
 
     // Write the children.
-    for (const base::Value& child_value : child_values->GetList()) {
+    for (const base::Value& child_value : child_values->GetListDeprecated()) {
       if (!child_value.is_dict()) {
         NOTREACHED();
         return false;

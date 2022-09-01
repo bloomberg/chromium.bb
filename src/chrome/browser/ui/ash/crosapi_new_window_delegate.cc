@@ -13,6 +13,20 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 
+namespace {
+
+crosapi::mojom::OpenUrlFrom ToMojom(ash::NewWindowDelegate::OpenUrlFrom from) {
+  switch (from) {
+    case ash::NewWindowDelegate::OpenUrlFrom::kUnspecified:
+    case ash::NewWindowDelegate::OpenUrlFrom::kUserInteraction:
+      return crosapi::mojom::OpenUrlFrom::kUnspecified;
+    case ash::NewWindowDelegate::OpenUrlFrom::kArc:
+      return crosapi::mojom::OpenUrlFrom::kArc;
+  }
+}
+
+}  // namespace
+
 CrosapiNewWindowDelegate::WindowObserver::WindowObserver(
     CrosapiNewWindowDelegate* owner,
     NewWindowForDetachingTabCallback closure)
@@ -81,12 +95,14 @@ CrosapiNewWindowDelegate::CrosapiNewWindowDelegate(
 CrosapiNewWindowDelegate::~CrosapiNewWindowDelegate() = default;
 
 void CrosapiNewWindowDelegate::NewTab() {
-  crosapi::BrowserManager::Get()->NewTab();
+  crosapi::BrowserManager::Get()->NewTab(
+      /*should_trigger_session_restore=*/false);
 }
 
 void CrosapiNewWindowDelegate::NewWindow(bool incognito,
                                          bool should_trigger_session_restore) {
-  crosapi::BrowserManager::Get()->NewWindow(incognito);
+  crosapi::BrowserManager::Get()->NewWindow(incognito,
+                                            should_trigger_session_restore);
 }
 
 void CrosapiNewWindowDelegate::NewWindowForDetachingTab(
@@ -121,9 +137,8 @@ void CrosapiNewWindowDelegate::NewWindowForDetachingTab(
                                       std::move(closure));
 }
 
-void CrosapiNewWindowDelegate::OpenUrl(const GURL& url,
-                                       bool from_user_interaction) {
-  crosapi::BrowserManager::Get()->OpenUrl(url);
+void CrosapiNewWindowDelegate::OpenUrl(const GURL& url, OpenUrlFrom from) {
+  crosapi::BrowserManager::Get()->OpenUrl(url, ToMojom(from));
 }
 
 void CrosapiNewWindowDelegate::OpenCalculator() {
@@ -166,6 +181,10 @@ void CrosapiNewWindowDelegate::OpenFeedbackPage(
     FeedbackSource source,
     const std::string& description_template) {
   delegate_->OpenFeedbackPage(source, description_template);
+}
+
+void CrosapiNewWindowDelegate::OpenPersonalizationHub() {
+  delegate_->OpenPersonalizationHub();
 }
 
 void CrosapiNewWindowDelegate::DestroyWindowObserver() {

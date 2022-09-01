@@ -33,6 +33,7 @@
 
 #include <base/compiler_specific.h>
 #include <ipc/ipc_sender.h>
+#include <mojo/public/cpp/bindings/remote.h>
 #include <ui/gfx/geometry/rect.h>
 
 #include <cstdint>
@@ -72,7 +73,7 @@ class WebViewHostImpl final : private WebViewImplClient
     };
 
     // DATA
-    mojom::WebViewClientPtr d_clientPtr;
+    mojo::Remote<mojom::WebViewClient> d_clientPtr;
     base::OnceCallback<void(int32_t)> d_loadUrlCallback;
     WebViewImpl *d_impl;
     DragState d_dragState;
@@ -158,7 +159,7 @@ class WebViewHostImpl final : private WebViewImplClient
 
   public:
     WebViewHostImpl(
-            mojom::WebViewClientPtr&&                    clientPtr,
+            mojo::Remote<mojom::WebViewClient>           clientPtr,
             const mojom::WebViewCreateParams&            params,
             BrowserContextImpl                          *browserContext,
             unsigned int                                 hostAffinity,

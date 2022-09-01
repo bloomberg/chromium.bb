@@ -37,6 +37,11 @@ std::wstring GetUniqueShortcutFilenameForProfile(
     const std::u16string& profile_name,
     const std::set<base::FilePath>& excludes);
 
+// Looks through the various Windows directories that could have pinned
+// shortcuts and returns a vector of shortcuts with profile `profile_path`.
+const std::vector<base::FilePath> GetPinnedShortCutsForProfile(
+    const base::FilePath& profile_path);
+
 // This class checks that shortcut filename matches certain profile.
 class ShortcutFilenameMatcher {
  public:
@@ -81,7 +86,9 @@ class ProfileShortcutManagerWin : public ProfileShortcutManager,
     UPDATE_NON_PROFILE_SHORTCUTS,
   };
 
-  static void DisableUnpinningForUnitTests();
+  // Unit tests can't launch other processes.
+  static void DisableUnpinningForTests();
+  static void DisableOutOfProcessShortcutOpsForTests();
 
   explicit ProfileShortcutManagerWin(ProfileManager* manager);
   ProfileShortcutManagerWin(const ProfileShortcutManagerWin&) = delete;
@@ -90,8 +97,6 @@ class ProfileShortcutManagerWin : public ProfileShortcutManager,
   ~ProfileShortcutManagerWin() override;
 
   // ProfileShortcutManager implementation:
-  void CreateIncognitoProfileShortcut(
-      const base::FilePath& profile_path) override;
   void CreateOrUpdateProfileIcon(const base::FilePath& profile_path) override;
   void CreateProfileShortcut(const base::FilePath& profile_path) override;
   void RemoveProfileShortcuts(const base::FilePath& profile_path) override;

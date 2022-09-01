@@ -41,10 +41,12 @@ class CPDF_SimpleFont : public CPDF_Font {
   bool LoadCommon();
   void LoadSubstFont();
   void LoadCharMetrics(int charcode);
+  void LoadCharWidths(const CPDF_Dictionary* font_desc);
+  void LoadDifferences(const CPDF_Dictionary* encoding);
   void LoadPDFEncoding(bool bEmbedded, bool bTrueType);
 
-  CPDF_FontEncoding m_Encoding{PDFFONT_ENCODING_BUILTIN};
-  int m_BaseEncoding = PDFFONT_ENCODING_BUILTIN;
+  CPDF_FontEncoding m_Encoding{FontEncoding::kBuiltin};
+  FontEncoding m_BaseEncoding = FontEncoding::kBuiltin;
   bool m_bUseFontWidth = false;
   std::vector<ByteString> m_CharNames;
   uint16_t m_GlyphIndex[kInternalTableSize];

@@ -12,7 +12,6 @@
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/values.h"
@@ -46,7 +45,7 @@ absl::optional<ArcFeatures> ParseFeaturesJson(base::StringPiece input_json) {
     LOG(ERROR) << "No feature list in JSON.";
     return absl::nullopt;
   }
-  for (auto& feature_item : feature_list->GetList()) {
+  for (auto& feature_item : feature_list->GetListDeprecated()) {
     const base::Value* feature_name =
         feature_item.FindKeyOfType("name", base::Value::Type::STRING);
     const base::Value* feature_version =
@@ -71,7 +70,7 @@ absl::optional<ArcFeatures> ParseFeaturesJson(base::StringPiece input_json) {
     LOG(ERROR) << "No unavailable feature list in JSON.";
     return absl::nullopt;
   }
-  for (auto& feature_item : unavailable_feature_list->GetList()) {
+  for (auto& feature_item : unavailable_feature_list->GetListDeprecated()) {
     if (!feature_item.is_string()) {
       LOG(ERROR) << "Item in the unavailable feature list is not a string.";
       return absl::nullopt;

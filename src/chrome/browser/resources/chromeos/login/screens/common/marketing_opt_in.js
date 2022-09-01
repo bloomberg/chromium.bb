@@ -13,10 +13,32 @@
  * @constructor
  * @extends {PolymerElement}
  * @implements {LoginScreenBehaviorInterface}
+ * @implements {MultiStepBehaviorInterface}
  */
 const MarketingScreenElementBase = Polymer.mixinBehaviors(
-  [OobeI18nBehavior, OobeDialogHostBehavior, LoginScreenBehavior],
-  Polymer.Element);
+    [OobeI18nBehavior, LoginScreenBehavior, MultiStepBehavior],
+    Polymer.Element);
+
+/**
+ * Enum to represent each page in the marketing opt in screen.
+ * @enum {string}
+ */
+const MarketingOptInStep = {
+  OVERVIEW: 'overview',
+  ACCESSIBILITY: 'accessibility',
+};
+
+/**
+ * URL of the animation in the light mode.
+ * @type {string}
+ */
+const ANIMATION_LIGHT_URL = 'animations/all_set_light.json';
+
+/**
+ * URL of the animation in the dark mode.
+ * @type {string}
+ */
+const ANIMATION_DARK_URL = 'animations/all_set_dark.json';
 
 /**
  * @typedef {{
@@ -27,55 +49,70 @@ const MarketingScreenElementBase = Polymer.mixinBehaviors(
  */
 MarketingScreenElementBase.$;
 
+/**
+ * @polymer
+ */
 class MarketingOptIn extends MarketingScreenElementBase {
-
-  static get is() { return 'marketing-opt-in-element'; }
+  static get is() {
+    return 'marketing-opt-in-element';
+  }
 
   /* #html_template_placeholder */
 
   static get properties() {
     return {
-      isAccessibilitySettingsShown_: {
-        type: Boolean,
-      },
-
       /**
        * Whether the accessibility button is shown. This button is only shown
        * if the gesture EDU screen was shown before the marketing screen.
        */
       isA11ySettingsButtonVisible_: {
         type: Boolean,
+        value: false,
       },
 
       /**
        * Whether the marketing opt in toggles should be shown, which will be the
-       * case only if marketing opt in feature is enabled AND if the current user
-       * is a non-managed user.
-       * When this is false, the screen will only contain UI related to the
-       * tablet mode gestural navigation settings.
+       * case only if marketing opt in feature is enabled AND if the current
+       * user is a non-managed user. When this is false, the screen will only
+       * contain UI related to the tablet mode gestural navigation settings.
        */
       marketingOptInVisible_: {
         type: Boolean,
+        value: false,
       },
 
       /**
-       * Whether a verbose footer will be shown to the user containing some legal
-       * information such as the Google address. Currently shown for Canada only.
+       * Whether a verbose footer will be shown to the user containing some
+       * legal information such as the Google address. Currently shown for
+       * Canada only.
        */
       hasLegalFooter_: {
         type: Boolean,
+        value: false,
+      },
+
+      /**
+       * Whether the marketing opt-in page is being rendered in dark mode.
+       * @private {boolean}
+       */
+      isDarkModeActive_: {
+        type: Boolean,
+        value: false,
       },
     };
   }
 
-  constructor() {
-    super();
-    this.isAccessibilitySettingsShown_ = false;
-    this.marketingOptInVisible_ = false;
-    this.hasLegalFooter_ = false;
-    this.isA11ySettingsButtonVisible_ = false;
+  get UI_STEPS() {
+    return MarketingOptInStep;
   }
 
+  defaultUIStep() {
+    return MarketingOptInStep.OVERVIEW;
+  }
+
+  getOobeUIInitialState() {
+    return OOBE_UI_STATE.MARKETING_OPT_IN;
+  }
 
   /** Overridden from LoginScreenBehavior. */
   // clang-format off
@@ -89,7 +126,7 @@ class MarketingOptIn extends MarketingScreenElementBase {
   /** @override */
   ready() {
     super.ready();
-    this.initializeLoginScreen('MarketingOptInScreen', {resetAllowed: true});
+    this.initializeLoginScreen('MarketingOptInScreen');
   }
 
   /** Shortcut method to control animation */
@@ -104,7 +141,6 @@ class MarketingOptIn extends MarketingScreenElementBase {
         'optInDefaultState' in data && data.optInDefaultState;
     this.hasLegalFooter_ =
         'legalFooterVisibility' in data && data.legalFooterVisibility;
-    this.isAccessibilitySettingsShown_ = false;
     this.setAnimationPlay_(true);
     this.$.marketingOptInOverviewDialog.show();
   }
@@ -145,8 +181,13 @@ class MarketingOptIn extends MarketingScreenElementBase {
    * @private
    */
   onToggleAccessibilityPage_() {
-    this.isAccessibilitySettingsShown_ = !this.isAccessibilitySettingsShown_;
-    this.setAnimationPlay_(!this.isAccessibilitySettingsShown_);
+    if (this.uiStep == MarketingOptInStep.OVERVIEW) {
+      this.setUIStep(MarketingOptInStep.ACCESSIBILITY);
+      this.setAnimationPlay_(false);
+    } else {
+      this.setUIStep(MarketingOptInStep.OVERVIEW);
+      this.setAnimationPlay_(true);
+    }
   }
 
   /**
@@ -158,6 +199,14 @@ class MarketingOptIn extends MarketingScreenElementBase {
     chrome.send('login.MarketingOptInScreen.setA11yNavigationButtonsEnabled', [
       this.$.a11yNavButtonToggle.checked
     ]);
+  }
+
+  /**
+   * Returns the url of the animation asset.
+   * @private
+   */
+  getAnimationUrl_() {
+    return this.isDarkModeActive_ ? ANIMATION_DARK_URL : ANIMATION_LIGHT_URL;
   }
 }
 

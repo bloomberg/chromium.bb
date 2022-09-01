@@ -181,7 +181,7 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="2203046366315513658">Reduser verdien</translation>
 <translation id="2216790501338699346">Nettadresse for link: <ph name="LINK_URL" /></translation>
 <translation id="2220205454259065436">Flytt bakover ett tegn</translation>
-<translation id="2220529011494928058">Rapportér et problem</translation>
+<translation id="2220529011494928058">Rapporter et problem</translation>
 <translation id="2243633977138166243">Trykk på venstre- eller høyrepilen for å navigere; trykk på Enter for å aktivere</translation>
 <translation id="224426591676115802">Tale er ikke tilgjengelig for dette språket: <ph name="LANGUAGE" /></translation>
 <translation id="2247700577781885251">Avslutter læremodus</translation>
@@ -493,7 +493,7 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="4225355998815256469">Skjemakontroller</translation>
 <translation id="4230834257931120629">Lys skifergrå</translation>
 <translation id="4231102694147661229">Slå på utvikleralternativene</translation>
-<translation id="423428485095722850">Trykk på Søk + mellomrom for å slå av/på</translation>
+<translation id="423428485095722850">Trykk på Søk + mellomrom for å slå av eller på</translation>
 <translation id="4243624244759495699"><ph name="LOCALE" />, klasse <ph name="GRADE" /></translation>
 <translation id="4246217262268234757">Blågrå</translation>
 <translation id="4253168017788158739">Merknad</translation>
@@ -536,6 +536,7 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="4601367666219428522">tbl <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">Ignorerer neste tastetrykk</translation>
 <translation id="4623097797855662355">Kolofon</translation>
+<translation id="4624970070706497034">TalkBack er ikke lenger tilpasset for Chromebook. Du kan fremdeles bruke TalkBack, men da med standard hurtigtaster. Trykk på søketasten + A og deretter K for å se tilgjengelige hurtigtaster. Hvis du fremdeles vil bruke TalkBack, trykker du på kommandoen på nytt.</translation>
 <translation id="463135993322337640">Trykk på ChromeVox O, N for å finne ut hva som er nytt</translation>
 <translation id="4649220074413114917">Du kan trykke på skjermen med to fingre for å stoppe eventuell høytlesning som pågår. Dette er nyttig hvis det er noe du vil at ChromeVox ikke skal lese. For å fortsette, trykk på skjermen med to fingre.</translation>
 <translation id="4660783501463101648">Classic er fjernet. Tasten for å bytte tilbake til ChromeVox Classic er fjernet.</translation>
@@ -618,7 +619,6 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="5170206230005240598">Punktskrift-teksting er slått på</translation>
 <translation id="5183440668879371625">Punktskrift – forrige linje</translation>
 <translation id="5189244881767082992">Linje</translation>
-<translation id="5234747236692380506">skriv <ph name="TEXT" /></translation>
 <translation id="5263034204789987535">Lys maisgul</translation>
 <translation id="5263344797180442561">h2</translation>
 <translation id="528468243742722775">Avslutt</translation>
@@ -666,6 +666,7 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="5522423213731659107">Hurtigorienteringen er fullført!</translation>
 <translation id="5534303576632885660">hdr</translation>
 <translation id="5539820223028224601">Gainsboro</translation>
+<translation id="554893713779400387">Slå av/på diktering</translation>
 <translation id="5549179427201066174">Slå tilbakemelding via lydsignaler av eller på</translation>
 <translation id="556042886152191864">Knapp</translation>
 <translation id="5561345396546889625">Neste liste</translation>
@@ -684,6 +685,8 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="5623842676595125836">Logg</translation>
 <translation id="5628125749885014029">h4</translation>
 <translation id="5632083598315326067">Grafikksymbol</translation>
+<translation id="5648939288050772726">Gratulerer! Du har lært det grunnleggende som trengs for å bruke ChromeVox. Husk at du kan åpne kommandomenyen i ChromeVox når som helst ved å trykke på søketasten + punktum. For å finne ut enda mer om ChromeVox og ChromeOS, les artiklene nedenfor.
+    Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til Lukk-knappen og klikke på den.</translation>
 <translation id="5653397561111110475">Bruk tilgjengelighetsfunksjonene for berøringsskjermen på Chromebook</translation>
 <translation id="5655682562155942719">Gå til-kommandoer</translation>
 <translation id="56637627897541303">Tekstområde</translation>
@@ -793,6 +796,7 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="641759969622533235">{COUNT,plural, =1{kolon}other{# kolontegn}}</translation>
 <translation id="6444046323172968959">Varseldialog</translation>
 <translation id="6452403590345320472">Innhold</translation>
+<translation id="6457542714329819968">type</translation>
 <translation id="6468049171101508116">Neste-knappen</translation>
 <translation id="646954774886932461">Stikkordregister</translation>
 <translation id="6475604559827479857">Farge for fremheving av ord:</translation>
@@ -965,8 +969,6 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7713139339518499741">Naturlig stemme</translation>
 <translation id="7714340021005120797">Det finnes ingen flere kombinasjonsfelt</translation>
-<translation id="772146615414628379">Gratulerer! Du har lært det grunnleggende som trengs for å bruke ChromeVox. Husk at du kan åpne kommandomenyen i ChromeVox når som helst ved å trykke på Søk+punktum. For å finne ut enda mer om ChromeVox og Chrome OS, les artiklene nedenfor.
-    Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til Lukk-knappen og klikke på den.</translation>
 <translation id="7724603315864178912">Klipp ut</translation>
 <translation id="7731785449856576010">Det finnes ingen flere mediemoduler</translation>
 <translation id="7735498529470878067">Med berøringsutforskning kan du raskt få inntrykk av hva som er på skjermen.</translation>
@@ -1168,6 +1170,7 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="9223032053830369045">Mørk rød</translation>
 <translation id="923331726185079994">ChromeVox er oppdatert</translation>
 <translation id="93384979447910801">Mørk sjøgrønn</translation>
+<translation id="937605981140327129">TalkBack er ikke installert for øyeblikket. Installer Android AccessibilitySuite gjennom Play-butikken, og prøv på nytt.</translation>
 <translation id="948171205378458592">Reduser talehastigheten</translation>
 <translation id="957570623732056069">Sveip til venstre eller høyre med én finger for å navigere i denne leksjonen</translation>
 <translation id="958854023026327378">Sveip én finger ned</translation>

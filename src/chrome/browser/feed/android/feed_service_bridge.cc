@@ -14,8 +14,8 @@
 #include "base/notreached.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/feed/android/feed_service_factory.h"
 #include "chrome/browser/feed/android/jni_headers/FeedServiceBridge_jni.h"
+#include "chrome/browser/feed/feed_service_factory.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -73,16 +73,6 @@ static void JNI_FeedServiceBridge_ReportOpenVisitComplete(JNIEnv* env,
   api->ReportOpenVisitComplete(base::Milliseconds(visitTimeMs));
 }
 
-static base::android::ScopedJavaLocalRef<jstring>
-JNI_FeedServiceBridge_GetClientInstanceId(JNIEnv* env) {
-  std::string instance_id;
-  FeedApi* api = GetFeedApi();
-  if (api) {
-    instance_id = api->GetClientInstanceId();
-  }
-  return base::android::ConvertUTF8ToJavaString(env, instance_id);
-}
-
 static int JNI_FeedServiceBridge_GetVideoPreviewsTypePreference(JNIEnv* env) {
   PrefService* pref_service = ProfileManager::GetLastUsedProfile()->GetPrefs();
   return pref_service->GetInteger(feed::prefs::kVideoPreviewsType);
@@ -117,11 +107,12 @@ static jlong JNI_FeedServiceBridge_AddUnreadContentObserver(
 }
 
 static void JNI_FeedServiceBridge_ReportOtherUserAction(JNIEnv* env,
+                                                        jint stream_kind,
                                                         jint action) {
   FeedApi* api = GetFeedApi();
   if (!api)
     return;
-  api->ReportOtherUserAction(StreamType(),
+  api->ReportOtherUserAction(StreamType(static_cast<StreamKind>(stream_kind)),
                              static_cast<FeedUserActionType>(action));
 }
 

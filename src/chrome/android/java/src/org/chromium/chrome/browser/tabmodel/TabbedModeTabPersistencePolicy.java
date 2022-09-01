@@ -391,13 +391,18 @@ public class TabbedModeTabPersistencePolicy implements TabPersistencePolicy {
 
     @Override
     public void notifyStateLoaded(int tabCountAtStartup) {
-        RecordHistogram.recordCountHistogram("Tabs.CountAtStartup", tabCountAtStartup);
+        RecordHistogram.recordCount1MHistogram("Tabs.CountAtStartup", tabCountAtStartup);
     }
 
     @Override
     public void destroy() {
         mTabContentManager = null;
         mDestroyed = true;
+    }
+
+    @Override
+    public boolean allowSkipLoadingTab() {
+        return true;
     }
 
     private class CleanUpTabStateDataTask extends AsyncTask<Void> {

@@ -536,6 +536,7 @@
 <translation id="4601367666219428522">tbl <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">Ignoring next key press</translation>
 <translation id="4623097797855662355">Colophon</translation>
+<translation id="4624970070706497034">TalkBack no longer provides customisation for Chromebooks. You can still use it, but use TalkBack default keyboard shortcuts. Press Search+A then K to see available shortcuts. If you still want to use TalkBack, press the command again.</translation>
 <translation id="463135993322337640">Press ChromeVox o, n to find out what's new</translation>
 <translation id="4649220074413114917">Tapping the screen with two fingers can be used to stop any current speech. This is useful if you don’t want ChromeVox to read something. To continue, tap the screen with two fingers.</translation>
 <translation id="4660783501463101648">Classic removed. The keyboard toggle to switch back into ChromeVox Classic has been removed.</translation>
@@ -618,7 +619,6 @@
 <translation id="5170206230005240598">Braille captions enabled</translation>
 <translation id="5183440668879371625">Braille previous Line</translation>
 <translation id="5189244881767082992">Line</translation>
-<translation id="5234747236692380506">type <ph name="TEXT" /></translation>
 <translation id="5263034204789987535">Cornsilk</translation>
 <translation id="5263344797180442561">h2</translation>
 <translation id="528468243742722775">End</translation>
@@ -666,6 +666,7 @@
 <translation id="5522423213731659107">Quick orientation complete!</translation>
 <translation id="5534303576632885660">hdr</translation>
 <translation id="5539820223028224601">Gainsboro</translation>
+<translation id="554893713779400387">Toggle dictation</translation>
 <translation id="5549179427201066174">Turn sound feedback (earcons) on or off</translation>
 <translation id="556042886152191864">Button</translation>
 <translation id="5561345396546889625">Next list</translation>
@@ -684,6 +685,8 @@
 <translation id="5623842676595125836">Log</translation>
 <translation id="5628125749885014029">h4</translation>
 <translation id="5632083598315326067">Graphics symbol</translation>
+<translation id="5648939288050772726">Congratulations! You’ve learned the essentials to use ChromeVox successfully. Remember that you can open the ChromeVox command menu at any time by pressing Search &amp; Full Stop To learn even more about ChromeVox and Chrome OS, visit the following articles.
+    If you've finished the tutorial, use ChromeVox to navigate to the Close button and click it.</translation>
 <translation id="5653397561111110475">Use Chromebook touch screen accessibility features</translation>
 <translation id="5655682562155942719">Jump Commands</translation>
 <translation id="56637627897541303">Text area</translation>
@@ -793,6 +796,7 @@
 <translation id="641759969622533235">{COUNT,plural, =1{colon}other{# colons}}</translation>
 <translation id="6444046323172968959">Alert dialogue</translation>
 <translation id="6452403590345320472">Table of contents</translation>
+<translation id="6457542714329819968">type</translation>
 <translation id="6468049171101508116">Next button</translation>
 <translation id="646954774886932461">Index</translation>
 <translation id="6475604559827479857">Colour for word highlights:</translation>
@@ -965,8 +969,6 @@
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7713139339518499741">Natural voice</translation>
 <translation id="7714340021005120797">No next combo box</translation>
-<translation id="772146615414628379">Congratulations! You’ve learned the essentials to use ChromeVox successfully. Remember that you can open the ChromeVox command menu at any time by pressing Search &amp; Full Stop To learn even more about ChromeVox and Chrome OS, visit the following articles.
-    If you've finished the tutorial, use ChromeVox to navigate to the Close button and click it.</translation>
 <translation id="7724603315864178912">Cut</translation>
 <translation id="7731785449856576010">No next media widget</translation>
 <translation id="7735498529470878067">Exploring by touch can help you quickly get a sense of what's on the screen.</translation>
@@ -1168,6 +1170,7 @@
 <translation id="9223032053830369045">Dark Red</translation>
 <translation id="923331726185079994">ChromeVox Updated</translation>
 <translation id="93384979447910801">Dark Sea Green</translation>
+<translation id="937605981140327129">TalkBack is currently not installed. Please install Android Accessibility Suite through Play Store and try again.</translation>
 <translation id="948171205378458592">Decrease rate of speech</translation>
 <translation id="957570623732056069">Swipe left or right with one finger to navigate this lesson</translation>
 <translation id="958854023026327378">Swipe one finger down</translation>

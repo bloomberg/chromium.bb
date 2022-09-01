@@ -19,6 +19,11 @@
 #include "src/shaders/SkColorShader.h"
 #include "src/shaders/SkComposeShader.h"
 
+#ifdef SK_ENABLE_SKSL
+#include "src/core/SkKeyHelpers.h"
+#include "src/core/SkPaintParamsKey.h"
+#endif
+
 namespace {
 
 struct LocalMatrixStageRec final : public SkStageRec {
@@ -72,7 +77,7 @@ SkShader_Blend::SkShader_Blend(sk_sp<SkBlender> blender, sk_sp<SkShader> dst, sk
         , fSrc(std::move(src))
         , fBlender(std::move(blender))
         , fMode((SkBlendMode)kCustom_SkBlendMode) {
-    if (skstd::optional<SkBlendMode> bm = as_BB(fBlender)->asBlendMode(); bm.has_value()) {
+    if (std::optional<SkBlendMode> bm = as_BB(fBlender)->asBlendMode(); bm.has_value()) {
         fMode = *bm;
         fBlender.reset();
     }
@@ -168,8 +173,8 @@ skvm::Color SkShader_Blend::onProgram(skvm::Builder* p,
 #if SK_SUPPORT_GPU
 
 #include "include/gpu/GrRecordingContext.h"
-#include "src/gpu/GrFragmentProcessor.h"
-#include "src/gpu/effects/GrBlendFragmentProcessor.h"
+#include "src/gpu/ganesh/GrFragmentProcessor.h"
+#include "src/gpu/ganesh/effects/GrBlendFragmentProcessor.h"
 
 std::unique_ptr<GrFragmentProcessor> SkShader_Blend::asFragmentProcessor(
         const GrFPArgs& orig_args) const {
@@ -185,5 +190,22 @@ std::unique_ptr<GrFragmentProcessor> SkShader_Blend::asFragmentProcessor(
     } else {
         return GrBlendFragmentProcessor::Make(std::move(fpB), std::move(fpA), fMode);
     }
+}
+#endif
+
+#ifdef SK_ENABLE_SKSL
+void SkShader_Blend::addToKey(const SkKeyContext& keyContext,
+                              SkPaintParamsKeyBuilder* builder,
+                              SkPipelineDataGatherer* gatherer) const {
+    // TODO: add blender support
+    SkASSERT(!fBlender);
+
+    BlendShaderBlock::BeginBlock(keyContext, builder, gatherer, { fMode });
+
+    as_SB(fDst)->addToKey(keyContext, builder, gatherer);
+
+    as_SB(fSrc)->addToKey(keyContext, builder, gatherer);
+
+    builder->endBlock();
 }
 #endif

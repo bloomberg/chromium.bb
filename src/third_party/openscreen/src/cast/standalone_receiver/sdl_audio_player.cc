@@ -143,7 +143,6 @@ ErrorOr<Clock::time_point> SDLAudioPlayer::RenderNextFrame(
         break;
       default:
         OSP_NOTREACHED();
-        break;
     }
     pending_audio_ = absl::Span<const uint8_t>(interleaved_audio_buffer_);
   } else {

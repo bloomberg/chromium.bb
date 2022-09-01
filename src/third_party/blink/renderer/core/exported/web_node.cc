@@ -38,6 +38,7 @@
 #include "third_party/blink/public/web/web_element_collection.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/events/event_dispatcher.h"
@@ -47,6 +48,7 @@
 #include "third_party/blink/renderer/core/dom/tag_collection.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/editing/serializers/serialization.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/exported/web_plugin_container_impl.h"
 #include "third_party/blink/renderer/core/html/html_collection.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
@@ -147,7 +149,7 @@ bool WebNode::IsCommentNode() const {
 }
 
 bool WebNode::IsFocusable() const {
-  auto* element = DynamicTo<Element>(private_.Get());
+  auto* element = ::blink::DynamicTo<Element>(private_.Get());
   if (!element)
     return false;
   if (!private_->GetDocument().HaveRenderBlockingResourcesLoaded())
@@ -170,7 +172,8 @@ v8::Local<v8::Value> WebNode::ToV8Value(v8::Local<v8::Object> creation_context,
                                         v8::Isolate* isolate) {
   // We no longer use |creation_context| because it's often misused and points
   // to a context faked by user script.
-  DCHECK(creation_context->CreationContext() == isolate->GetCurrentContext());
+  DCHECK(creation_context->GetCreationContextChecked() ==
+         isolate->GetCurrentContext());
   if (!private_.Get())
     return v8::Local<v8::Value>();
   return ToV8(private_.Get(), isolate->GetCurrentContext()->Global(), isolate);
@@ -256,6 +259,10 @@ WebNode& WebNode::operator=(Node* node) {
 
 WebNode::operator Node*() const {
   return private_.Get();
+}
+
+int WebNode::GetDevToolsNodeIdForTest() const {
+  return DOMNodeIds::IdForNode(private_.Get());
 }
 
 }  // namespace blink

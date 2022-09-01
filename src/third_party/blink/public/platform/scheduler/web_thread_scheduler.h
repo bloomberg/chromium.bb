@@ -65,19 +65,11 @@ class BLINK_PLATFORM_EXPORT WebThreadScheduler {
   static std::unique_ptr<WebThreadScheduler> CreateMainThreadScheduler(
       std::unique_ptr<base::MessagePump> message_pump = nullptr);
 
-  // Returns compositor thread scheduler for the compositor thread
-  // of the current process.
-  static WebThreadScheduler* CompositorThreadScheduler();
-
   // Returns main thread scheduler for the main thread of the current process.
   static WebThreadScheduler* MainThreadScheduler();
 
   // Returns the default task runner.
   virtual scoped_refptr<base::SingleThreadTaskRunner> DefaultTaskRunner();
-
-  // Returns a task runner for input-blocking tasks on the compositor thread.
-  // (For input tasks on the main thread, use WebWidgetScheduler instead.)
-  virtual scoped_refptr<base::SingleThreadTaskRunner> InputTaskRunner();
 
   // Returns the compositor task runner.
   virtual scoped_refptr<base::SingleThreadTaskRunner> CompositorTaskRunner();
@@ -172,10 +164,6 @@ class BLINK_PLATFORM_EXPORT WebThreadScheduler {
   // a fling). Called by the compositor (impl) thread.
   virtual void DidAnimateForInputOnCompositorThread();
 
-  // Tells the scheduler that the compositor thread queued up a BeginMainFrame
-  // task to run on the main thread.
-  virtual void DidScheduleBeginMainFrame();
-
   // Tells the scheduler that the main thread processed a BeginMainFrame task
   // from its queue. Note that DidRunBeginMainFrame will be called
   // unconditionally, even if BeginMainFrame early-returns without committing
@@ -194,11 +182,7 @@ class BLINK_PLATFORM_EXPORT WebThreadScheduler {
   // constructed. Must be called on the main thread.
   virtual void SetRendererBackgrounded(bool backgrounded);
 
-  // Tells the scheduler when a begin main frame is requested due to input
-  // handling.
-  virtual void OnMainFrameRequestedForInput();
-
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // Android WebView has very strange WebView.pauseTimers/resumeTimers API.
   // It's very old and very inconsistent. The API promises that this
   // "pauses all layout, parsing, and JavaScript timers for all WebViews".
@@ -209,7 +193,7 @@ class BLINK_PLATFORM_EXPORT WebThreadScheduler {
   // DO NOT USE FOR ANYTHING EXCEPT ANDROID WEBVIEW API IMPLEMENTATION.
   virtual void PauseTimersForAndroidWebView();
   virtual void ResumeTimersForAndroidWebView();
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 
   // RAII handle for pausing the renderer. Renderer is paused while
   // at least one pause handle exists.
@@ -227,8 +211,7 @@ class BLINK_PLATFORM_EXPORT WebThreadScheduler {
   //
   // Renderer will be resumed when the handle is destroyed.
   // Handle should be destroyed before the renderer.
-  virtual std::unique_ptr<RendererPauseHandle> PauseRenderer()
-      WARN_UNUSED_RESULT;
+  [[nodiscard]] virtual std::unique_ptr<RendererPauseHandle> PauseRenderer();
 
   // Returns true if the scheduler has reason to believe that high priority work
   // may soon arrive on the main thread, e.g., if gesture events were observed

@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/raw_ptr.h"
 #include "components/reporting/storage/storage_queue.h"
 
 #include <cstdint>
@@ -13,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/waitable_event.h"
@@ -64,6 +64,7 @@ class TestUploadClient : public UploaderInterface {
       : last_record_digest_map_(last_record_digest_map) {}
 
   void ProcessRecord(EncryptedRecord encrypted_record,
+                     ScopedReservation scoped_reservation,
                      base::OnceCallback<void(bool)> processed_cb) override {
     WrappedRecord wrapped_record;
     ASSERT_TRUE(wrapped_record.ParseFromString(
@@ -136,10 +137,10 @@ class StorageQueueStressTest : public ::testing::TestWithParam<size_t> {
   void TearDown() override {
     ResetTestStorageQueue();
     // Make sure all memory is deallocated.
-    ASSERT_THAT(GetMemoryResource()->GetUsed(), Eq(0u));
+    ASSERT_THAT(options_.memory_resource()->GetUsed(), Eq(0u));
     // Make sure all disk is not reserved (files remain, but Storage is not
     // responsible for them anymore).
-    ASSERT_THAT(GetDiskResource()->GetUsed(), Eq(0u));
+    ASSERT_THAT(options_.disk_space_resource()->GetUsed(), Eq(0u));
   }
 
   void CreateTestStorageQueueOrDie(const QueueOptions& options) {
@@ -231,7 +232,7 @@ TEST_P(StorageQueueStressTest,
     test::TestCallbackWaiter write_waiter;
     base::RepeatingCallback<void(Status)> cb = base::BindRepeating(
         [](test::TestCallbackWaiter* waiter, Status status) {
-          EXPECT_OK(status);
+          EXPECT_OK(status) << status;
           waiter->Signal();
         },
         &write_waiter);

@@ -4,9 +4,35 @@
 
 import {assert} from 'chai';
 import type {puppeteer} from '../../shared/helper.js';
-import {$$, assertNotNullOrUndefined, click, getBrowserAndPages, goToResource, step, waitFor, waitForElementsWithTextContent, waitForElementWithTextContent, waitForFunction, waitForNoElementsWithTextContent} from '../../shared/helper.js';
+import {
+  $$,
+  assertNotNullOrUndefined,
+  click,
+  getBrowserAndPages,
+  goToResource,
+  step,
+  waitFor,
+  waitForElementsWithTextContent,
+  waitForElementWithTextContent,
+  waitForFunction,
+  waitForNoElementsWithTextContent,
+} from '../../shared/helper.js';
 import {describe, it} from '../../shared/mocha-extensions.js';
-import {changeAllocationSampleViewViaDropdown, changeViewViaDropdown, findSearchResult, getDataGridRows, navigateToMemoryTab, setSearchFilter, takeAllocationProfile, takeAllocationTimelineProfile, takeHeapSnapshot, waitForNonEmptyHeapSnapshotData, waitForRetainerChain, waitForSearchResultNumber, waitUntilRetainerChainSatisfies} from '../helpers/memory-helpers.js';
+import {
+  changeAllocationSampleViewViaDropdown,
+  changeViewViaDropdown,
+  findSearchResult,
+  getDataGridRows,
+  navigateToMemoryTab,
+  setSearchFilter,
+  takeAllocationProfile,
+  takeAllocationTimelineProfile,
+  takeHeapSnapshot,
+  waitForNonEmptyHeapSnapshotData,
+  waitForRetainerChain,
+  waitForSearchResultNumber,
+  waitUntilRetainerChainSatisfies,
+} from '../helpers/memory-helpers.js';
 
 describe('The Memory Panel', async function() {
   // These tests render large chunks of data into DevTools and filter/search
@@ -168,6 +194,10 @@ describe('The Memory Panel', async function() {
     await waitForNonEmptyHeapSnapshotData();
     await setSearchFilter('leaking');
     await waitForSearchResultNumber(4);
+    await findSearchResult(async p => {
+      const el = await p.$(':scope > td > div > .object-value-string');
+      return el !== null && await el.evaluate(el => el.textContent === '"leaking"');
+    });
 
     await waitForFunction(async () => {
       // Wait for all the rows of the data-grid to load.
@@ -260,8 +290,8 @@ describe('The Memory Panel', async function() {
     const {frontend} = getBrowserAndPages();
     await goToResource('memory/allocations.html');
     await navigateToMemoryTab();
-    takeAllocationProfile(frontend);
-    changeAllocationSampleViewViaDropdown('Chart');
+    void takeAllocationProfile(frontend);
+    void changeAllocationSampleViewViaDropdown('Chart');
     await waitFor('canvas.flame-chart-canvas');
   });
 
@@ -269,7 +299,7 @@ describe('The Memory Panel', async function() {
     const {frontend} = getBrowserAndPages();
     await goToResource('memory/allocations.html');
     await navigateToMemoryTab();
-    takeAllocationTimelineProfile(frontend, {recordStacks: true});
+    void takeAllocationTimelineProfile(frontend, {recordStacks: true});
     await changeViewViaDropdown('Allocation');
 
     const header = await waitForElementWithTextContent('Live Count');
@@ -283,7 +313,7 @@ describe('The Memory Panel', async function() {
     const {frontend} = getBrowserAndPages();
     await goToResource('memory/allocations.html');
     await navigateToMemoryTab();
-    takeAllocationTimelineProfile(frontend, {recordStacks: false});
+    void takeAllocationTimelineProfile(frontend, {recordStacks: false});
     const dropdown = await waitFor('select[aria-label="Perspective"]');
     await waitForNoElementsWithTextContent('Allocation', dropdown);
   });

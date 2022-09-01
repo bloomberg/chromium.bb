@@ -14,7 +14,6 @@
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/ash/login/demo_mode/demo_mode_detector.h"
 #include "chrome/browser/ash/login/screens/base_screen.h"
 // TODO(https://crbug.com/1164001): move to forward declaration.
 #include "chrome/browser/ash/login/wizard_context.h"
@@ -35,8 +34,7 @@ namespace ash {
 class HIDDetectionScreen : public BaseScreen,
                            public device::BluetoothAdapter::Observer,
                            public device::BluetoothDevice::PairingDelegate,
-                           public device::mojom::InputDeviceManagerClient,
-                           public DemoModeDetector::Observer {
+                           public device::mojom::InputDeviceManagerClient {
  public:
   using TView = HIDDetectionView;
   using InputDeviceInfoPtr = device::mojom::InputDeviceInfoPtr;
@@ -87,7 +85,7 @@ class HIDDetectionScreen : public BaseScreen,
   bool MaybeSkip(WizardContext* context) override;
   void ShowImpl() override;
   void HideImpl() override;
-  void OnUserAction(const std::string& action_id) override;
+  void OnUserActionDeprecated(const std::string& action_id) override;
 
   // device::BluetoothDevice::PairingDelegate:
   void RequestPinCode(device::BluetoothDevice* device) override;
@@ -219,8 +217,6 @@ class HIDDetectionScreen : public BaseScreen,
 
   const ScreenExitCallback exit_callback_;
   absl::optional<Result> exit_result_for_testing_;
-
-  std::unique_ptr<DemoModeDetector> demo_mode_detector_;
 
   // Default bluetooth adapter, used for all operations.
   scoped_refptr<device::BluetoothAdapter> adapter_;

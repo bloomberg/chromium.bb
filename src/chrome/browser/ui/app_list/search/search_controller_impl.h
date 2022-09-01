@@ -14,6 +14,7 @@
 
 #include "base/callback.h"
 #include "base/observer_list.h"
+#include "base/time/time.h"
 #include "chrome/browser/ui/app_list/search/mixer.h"
 #include "chrome/browser/ui/app_list/search/ranking/launch_data.h"
 #include "chrome/browser/ui/app_list/search/search_controller.h"
@@ -53,7 +54,9 @@ class SearchControllerImpl : public SearchController {
 
   // SearchController:
   void InitializeRankers() override;
-  void Start(const std::u16string& query) override;
+  void StartSearch(const std::u16string& query) override;
+  void StartZeroState(base::OnceClosure on_done,
+                      base::TimeDelta timeout) override;
   void ViewClosing() override;
   void OpenResult(ChromeSearchResult* result, int event_flags) override;
   void InvokeResultAction(ChromeSearchResult* result,
@@ -61,13 +64,12 @@ class SearchControllerImpl : public SearchController {
   size_t AddGroup(size_t max_results) override;
   void AddProvider(size_t group_id,
                    std::unique_ptr<SearchProvider> provider) override;
-  void SetResults(ash::AppListSearchResultType provider_type,
-                  Results results) override;
+  void SetResults(const SearchProvider* provider, Results results) override;
+  void Publish() override;
   ChromeSearchResult* FindSearchResult(const std::string& result_id) override;
   ChromeSearchResult* GetResultByTitleForTest(
       const std::string& title) override;
   void Train(LaunchData&& launch_data) override;
-  void AppListShown() override;
   int GetLastQueryLength() const override;
   void OnSearchResultsImpressionMade(
       const std::u16string& trimmed_query,
@@ -79,6 +81,7 @@ class SearchControllerImpl : public SearchController {
   base::Time session_start() override;
   void set_results_changed_callback_for_test(
       ResultsChangedCallback callback) override;
+  void disable_ranking_for_test() override;
 
   void NotifyResultsAdded(const std::vector<ChromeSearchResult*>& results);
 
@@ -99,7 +102,7 @@ class SearchControllerImpl : public SearchController {
   // The query associated with the most recent search.
   std::u16string last_query_;
 
-  // The time when Start was most recently called.
+  // The time when StartSearch was most recently called.
   base::Time session_start_;
 
   // The ID of the most recently launched app. This is used for app list launch

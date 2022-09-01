@@ -267,7 +267,7 @@ Autotest](/system/errors/NodeNotFound)
 ### How do I bundle a bunch of tests into a suite that can be scheduled and run as a group?
 
 See
-<https://sites.google.com/a/chromium.org/dev/chromium-os/testing2/dynamic-suites/dynamic-test-suites>
+<https://www.chromium.org/chromium-os/testing2/dynamic-suites/dynamic-test-suites>
 
 ### How do I write a test that requires some human interaction?
 

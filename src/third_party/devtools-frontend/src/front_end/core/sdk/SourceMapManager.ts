@@ -8,6 +8,7 @@ import * as Platform from '../platform/platform.js';
 
 import type {FrameAssociated} from './FrameAssociated.js';
 import type {Target} from './Target.js';
+import {Type} from './Target.js';
 import {Events as TargetManagerEvents, TargetManager} from './TargetManager.js';
 import type {SourceMap} from './SourceMap.js';
 import {TextSourceMap} from './SourceMap.js';
@@ -25,8 +26,8 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class SourceMapManager<T extends FrameAssociated> extends Common.ObjectWrapper.ObjectWrapper<EventTypes<T>> {
   readonly #target: Target;
   #isEnabled: boolean;
-  readonly #relativeSourceURL: Map<T, string>;
-  readonly #relativeSourceMapURL: Map<T, string>;
+  readonly #relativeSourceURL: Map<T, Platform.DevToolsPath.UrlString>;
+  readonly #relativeSourceMapURL: Map<T, Platform.DevToolsPath.UrlString>;
   #resolvedSourceMapId: Map<T, string>;
   readonly #sourceMapById: Map<string, SourceMap>;
   #sourceMapIdToLoadingClients: Platform.MapUtilities.Multimap<string, T>;
@@ -66,6 +67,14 @@ export class SourceMapManager<T extends FrameAssociated> extends Common.ObjectWr
     }
   }
 
+  private getBaseUrl(): Platform.DevToolsPath.UrlString {
+    let target: Target|null = this.#target;
+    while (target && target.type() !== Type.Frame) {
+      target = target.parentTarget();
+    }
+    return target?.inspectedURL() ?? Platform.DevToolsPath.EmptyUrlString;
+  }
+
   private inspectedURLChanged(event: Common.EventTarget.EventTargetEvent<Target>): void {
     if (event.data !== this.#target) {
       return;
@@ -97,6 +106,44 @@ export class SourceMapManager<T extends FrameAssociated> extends Common.ObjectWr
     return this.#sourceMapById.get(sourceMapId) || null;
   }
 
+  // This method actively awaits the source map, if still loading.
+  sourceMapForClientPromise(client: T): Promise<SourceMap|null> {
+    const sourceMapId = this.#resolvedSourceMapId.get(client);
+    if (!sourceMapId) {
+      // The source map has detached or none exists for this client.
+      return Promise.resolve(null);
+    }
+
+    const sourceMap = this.sourceMapForClient(client);
+    if (sourceMap) {
+      return Promise.resolve(sourceMap);
+    }
+
+    if (!this.#sourceMapIdToLoadingClients.has(sourceMapId)) {
+      // The source map failed to attach.
+      return Promise.resolve(null);
+    }
+
+    return new Promise(resolve => {
+      const sourceMapAddedDescriptor = this.addEventListener(Events.SourceMapAttached, event => {
+        if (event.data.client !== client) {
+          return;
+        }
+        this.removeEventListener(Events.SourceMapAttached, sourceMapAddedDescriptor.listener);
+        this.removeEventListener(Events.SourceMapFailedToAttach, sourceMapFailedDescriptor.listener);
+        resolve(event.data.sourceMap);
+      });
+      const sourceMapFailedDescriptor = this.addEventListener(Events.SourceMapFailedToAttach, event => {
+        if (event.data.client !== client) {
+          return;
+        }
+        this.removeEventListener(Events.SourceMapAttached, sourceMapAddedDescriptor.listener);
+        this.removeEventListener(Events.SourceMapFailedToAttach, sourceMapFailedDescriptor.listener);
+        resolve(null);
+      });
+    });
+  }
+
   clientsForSourceMap(sourceMap: SourceMap): T[] {
     const sourceMapId = this.getSourceMapId(sourceMap.compiledURL(), sourceMap.url());
     if (this.#sourceMapIdToClients.has(sourceMapId)) {
@@ -105,18 +152,20 @@ export class SourceMapManager<T extends FrameAssociated> extends Common.ObjectWr
     return [...this.#sourceMapIdToLoadingClients.get(sourceMapId)];
   }
 
-  private getSourceMapId(sourceURL: string, sourceMapURL: string): string {
+  private getSourceMapId(sourceURL: Platform.DevToolsPath.UrlString, sourceMapURL: Platform.DevToolsPath.UrlString):
+      string {
     return `${sourceURL}:${sourceMapURL}`;
   }
 
-  private resolveRelativeURLs(sourceURL: string, sourceMapURL: string): {
-    sourceURL: string,
-    sourceMapURL: string,
+  private resolveRelativeURLs(
+      sourceURL: Platform.DevToolsPath.UrlString, sourceMapURL: Platform.DevToolsPath.UrlString): {
+    sourceURL: Platform.DevToolsPath.UrlString,
+    sourceMapURL: Platform.DevToolsPath.UrlString,
     sourceMapId: string,
   }|null {
     // |#sourceURL| can be a random string, but is generally an absolute path.
     // Complete it to inspected page url for relative links.
-    const resolvedSourceURL = Common.ParsedURL.ParsedURL.completeURL(this.#target.inspectedURL(), sourceURL);
+    const resolvedSourceURL = Common.ParsedURL.ParsedURL.completeURL(this.getBaseUrl(), sourceURL);
     if (!resolvedSourceURL) {
       return null;
     }
@@ -131,7 +180,9 @@ export class SourceMapManager<T extends FrameAssociated> extends Common.ObjectWr
     };
   }
 
-  attachSourceMap(client: T, relativeSourceURL: string|undefined, relativeSourceMapURL: string|undefined): void {
+  attachSourceMap(
+      client: T, relativeSourceURL: Platform.DevToolsPath.UrlString|undefined,
+      relativeSourceMapURL: Platform.DevToolsPath.UrlString|undefined): void {
     // TODO(chromium:1011811): Strengthen the type to obsolte the undefined check once core/sdk/ is fully typescriptified.
     if (relativeSourceURL === undefined || !relativeSourceMapURL) {
       return;
@@ -158,7 +209,7 @@ export class SourceMapManager<T extends FrameAssociated> extends Common.ObjectWr
       return;
     }
     if (!this.#sourceMapIdToLoadingClients.has(sourceMapId)) {
-      TextSourceMap.load(sourceMapURL, sourceURL, client.createPageResourceLoadInitiator())
+      void TextSourceMap.load(sourceMapURL, sourceURL, client.createPageResourceLoadInitiator())
           .catch(error => {
             Common.Console.Console.instance().warn(
                 i18nString(UIStrings.devtoolsFailedToLoadSourcemapS, {PH1: error.message}));

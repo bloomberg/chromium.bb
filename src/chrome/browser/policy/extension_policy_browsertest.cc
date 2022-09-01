@@ -33,17 +33,18 @@
 #include "chrome/browser/extensions/shared_module_service.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
+#include "chrome/browser/policy/extension_policy_test_base.h"
 #include "chrome/browser/policy/policy_test_utils.h"
 #include "chrome/browser/policy/profile_policy_connector_builder.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/web_applications/externally_installed_web_app_prefs.h"
-#include "chrome/browser/web_applications/os_integration_manager.h"
+#include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
 #include "chrome/browser/web_applications/test/web_app_test_observers.h"
+#include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_install_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
-#include "chrome/browser/web_applications/web_application_info.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/extension_test_util.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -80,7 +81,7 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "third_party/blink/public/common/switches.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "base/win/win_util.h"
 #endif
 
@@ -198,14 +199,18 @@ void PerformClick(content::WebContents* contents, int x, int y) {
   click_event.button = blink::WebMouseEvent::Button::kLeft;
   click_event.click_count = 1;
   click_event.SetPositionInWidget(x, y);
-  contents->GetMainFrame()->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(
-      click_event);
+  contents->GetPrimaryMainFrame()
+      ->GetRenderViewHost()
+      ->GetWidget()
+      ->ForwardMouseEvent(click_event);
   click_event.SetType(blink::WebInputEvent::Type::kMouseUp);
-  contents->GetMainFrame()->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(
-      click_event);
+  contents->GetPrimaryMainFrame()
+      ->GetRenderViewHost()
+      ->GetWidget()
+      ->ForwardMouseEvent(click_event);
 }
 
-class ExtensionPolicyTest : public PolicyTest {
+class ExtensionPolicyTest : public ExtensionPolicyTestBase {
  public:
   ExtensionPolicyTest() = default;
 
@@ -219,22 +224,19 @@ class ExtensionPolicyTest : public PolicyTest {
         std::make_unique<extensions::ScopedIgnoreContentVerifierForTest>();
     test_extension_cache_ = std::make_unique<extensions::ExtensionCacheFake>();
     // Base class SetUp() should be invoked at the end as it runs the test body.
-    PolicyTest::SetUp();
+    ExtensionPolicyTestBase::SetUp();
   }
 
   void SetUpOnMainThread() override {
-    PolicyTest::SetUpOnMainThread();
+    ExtensionPolicyTestBase::SetUpOnMainThread();
     if (extension_service()->updater()) {
       extension_service()->updater()->SetExtensionCacheForTesting(
           test_extension_cache_.get());
     }
-
-    os_hooks_suppress_ =
-        web_app::OsIntegrationManager::ScopedSuppressOsHooksForTesting();
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    PolicyTest::SetUpCommandLine(command_line);
+    ExtensionPolicyTestBase::SetUpCommandLine(command_line);
     // Some bots are flaky due to slower loading interacting with
     // deferred commits.
     command_line->AppendSwitch(blink::switches::kAllowPreCommitInput);
@@ -306,12 +308,12 @@ class ExtensionPolicyTest : public PolicyTest {
                                const GURL& update_url) {
     // Setting the forcelist extension should install extension with ExtensionId
     // equal to id.
-    base::ListValue forcelist;
+    base::Value::List forcelist;
     forcelist.Append(base::StringPrintf(update_url.is_empty() ? "%s" : "%s;%s",
                                         id.c_str(), update_url.spec().c_str()));
     policies->Set(key::kExtensionInstallForcelist, POLICY_LEVEL_MANDATORY,
-                  POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, std::move(forcelist),
-                  nullptr);
+                  POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+                  base::Value(std::move(forcelist)), nullptr);
   }
 
   const extensions::Extension* InstallForceListExtension(
@@ -341,7 +343,7 @@ class ExtensionPolicyTest : public PolicyTest {
       skip_scheduled_extension_checks_;
 
  private:
-  web_app::ScopedOsHooksSuppress os_hooks_suppress_;
+  web_app::OsIntegrationManager::ScopedSuppressForTesting os_hooks_suppress_;
 };
 
 }  // namespace
@@ -411,9 +413,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest, ExtensionInstallRemovedPolicy) {
 
   // Should uninstall good_v1.crx.
   base::DictionaryValue dict_value;
-  dict_value.SetString(std::string(kGoodCrxId) + "." +
-                           extensions::schema_constants::kInstallationMode,
-                       extensions::schema_constants::kRemoved);
+  dict_value.SetStringPath(std::string(kGoodCrxId) + "." +
+                               extensions::schema_constants::kInstallationMode,
+                           extensions::schema_constants::kRemoved);
   PolicyMap policies;
   policies.Set(key::kExtensionSettings, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, dict_value.Clone(),
@@ -435,7 +437,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest, ExtensionWildcardRemovedPolicy) {
 
   // Should uninstall good_v1.crx.
   base::DictionaryValue dict_value;
-  dict_value.SetString(
+  dict_value.SetStringPath(
       std::string("*") + "." + extensions::schema_constants::kInstallationMode,
       extensions::schema_constants::kRemoved);
   PolicyMap policies;
@@ -449,16 +451,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest, ExtensionWildcardRemovedPolicy) {
   EXPECT_FALSE(registry->GetInstalledExtension(kGoodCrxId));
 }
 
-// Flaky on windows; http://crbug.com/307994.
-#if defined(OS_WIN)
-#define MAYBE_ExtensionInstallBlocklistWildcard \
-  DISABLED_ExtensionInstallBlocklistWildcard
-#else
-#define MAYBE_ExtensionInstallBlocklistWildcard \
-  ExtensionInstallBlocklistWildcard
-#endif
-IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest,
-                       MAYBE_ExtensionInstallBlocklistWildcard) {
+IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest, ExtensionInstallBlocklistWildcard) {
   // Verify that a wildcard blocklist takes effect.
   EXPECT_TRUE(InstallExtension(kSimpleWithIconCrxName));
   extensions::ExtensionService* service = extension_service();
@@ -1162,7 +1155,7 @@ class ExtensionPinningTest : public extensions::ExtensionBrowserTest {
   // the |id|.
   void SetExtensionSettingsPolicy(const std::string& update_url_suffix,
                                   const std::string& id) {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
     // Unless enterprise managed, policy handler only allows extensions from the
     // Chrome Webstore to be force installed. Mark enterprise managed for
     // windows.
@@ -1531,9 +1524,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest,
 
   // Step 4: Check that we are going to reinstall the extension and wait for
   // extension reinstall.
-  EXPECT_TRUE(
-      service->pending_extension_manager()->IsReinstallForCorruptionExpected(
-          kGoodCrxId));
+  EXPECT_TRUE(service->corrupted_extension_reinstaller()
+                  ->IsReinstallForCorruptionExpected(kGoodCrxId));
   registry_observer.WaitForExtensionWillBeInstalled();
 
   // Extension was reloaded, old extension object is invalid.
@@ -1552,7 +1544,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest,
 // Verifies that corrupted non-webstore policy-based extension is automatically
 // repaired (reinstalled) even if hashes file is damaged too.
 // crbug.com/1131634: flaky on win
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #define MAYBE_CorruptedNonWebstoreExtensionWithDamagedHashesRepaired \
   DISABLED_CorruptedNonWebstoreExtensionWithDamagedHashesRepaired
 #else
@@ -1615,9 +1607,8 @@ IN_PROC_BROWSER_TEST_F(
 
   // Step 4: Check that we are going to reinstall the extension and wait for
   // extension reinstall.
-  EXPECT_TRUE(
-      service->pending_extension_manager()->IsReinstallForCorruptionExpected(
-          kGoodCrxId));
+  EXPECT_TRUE(service->corrupted_extension_reinstaller()
+                  ->IsReinstallForCorruptionExpected(kGoodCrxId));
   observer.WaitForExtensionWillBeInstalled();
 
   // Extension was reloaded, old extension object is invalid.
@@ -1691,12 +1682,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest,
 
   // Step 4: Check that we are not going to reinstall the extension, but we have
   // detected a corruption.
-  EXPECT_FALSE(
-      service->pending_extension_manager()->IsReinstallForCorruptionExpected(
-          kGoodCrxId));
+  EXPECT_FALSE(service->corrupted_extension_reinstaller()
+                   ->IsReinstallForCorruptionExpected(kGoodCrxId));
   histogram_tester.ExpectUniqueSample(
       "Extensions.CorruptPolicyExtensionDetected3",
-      extensions::PendingExtensionManager::PolicyReinstallReason::
+      extensions::CorruptedExtensionReinstaller::PolicyReinstallReason::
           NO_UNSIGNED_HASHES_FOR_NON_WEBSTORE_SKIP,
       1);
 }
@@ -1858,7 +1848,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest,
       embedded_test_server()->GetURL("/extensions/good_v1_update_manifest.xml");
 
 // Mark as enterprise managed.
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   base::win::ScopedDomainStateForTesting scoped_domain(true);
 #endif
 
@@ -1869,10 +1859,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest,
 
   // Setting the forcelist extension should install "good_v1.crx".
   base::DictionaryValue dict_value;
-  dict_value.SetString(std::string(kGoodCrxId) + "." +
-                           extensions::schema_constants::kInstallationMode,
-                       extensions::schema_constants::kNormalInstalled);
-  dict_value.SetString(
+  dict_value.SetStringPath(std::string(kGoodCrxId) + "." +
+                               extensions::schema_constants::kInstallationMode,
+                           extensions::schema_constants::kNormalInstalled);
+  dict_value.SetStringPath(
       std::string(kGoodCrxId) + "." + extensions::schema_constants::kUpdateUrl,
       url.spec());
   PolicyMap policies;
@@ -1930,13 +1920,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest, ExtensionAllowedTypes) {
 // Checks that a click on an extension CRX download triggers the extension
 // installation prompt without further user interaction when the source is
 // allowlisted by policy.
-// Flaky on windows; http://crbug.com/295729 .
-#if defined(OS_WIN)
-#define MAYBE_ExtensionInstallSources DISABLED_ExtensionInstallSources
-#else
-#define MAYBE_ExtensionInstallSources ExtensionInstallSources
-#endif
-IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest, MAYBE_ExtensionInstallSources) {
+IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest, ExtensionInstallSources) {
   extensions::ScopedTestDialogAutoConfirm auto_confirm(
       extensions::ScopedTestDialogAutoConfirm::ACCEPT);
   extensions::ScopedInstallVerifierBypassForTest install_verifier_bypass;
@@ -2142,7 +2126,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest,
   ExtensionRequestInterceptor interceptor;
 
 // Mark as enterprise managed.
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   base::win::ScopedDomainStateForTesting scoped_domain(true);
 #endif
   extensions::ExtensionRegistry* registry = extension_registry();
@@ -2361,11 +2345,20 @@ IN_PROC_BROWSER_TEST_F(WebAppInstallForceListPolicyWithAppFallbackNameSAATest,
 }
 
 class WebAppInstallForceListPolicyPlaceholderWithAppFallbackNameTest
-    : public WebAppInstallForceListPolicyTest {
+    : public WebAppInstallForceListPolicyTest,
+      public testing::WithParamInterface<bool> {
  public:
   WebAppInstallForceListPolicyPlaceholderWithAppFallbackNameTest() {
     test_page_ = "/close-socket";
     fallback_app_name_ = "fallback app name";
+    bool enable_migration = GetParam();
+    if (enable_migration) {
+      scoped_feature_list_.InitWithFeatures(
+          {features::kUseWebAppDBInsteadOfExternalPrefs}, {});
+    } else {
+      scoped_feature_list_.InitWithFeatures(
+          {}, {features::kUseWebAppDBInsteadOfExternalPrefs});
+    }
   }
 
   ~WebAppInstallForceListPolicyPlaceholderWithAppFallbackNameTest() override =
@@ -2376,29 +2369,34 @@ class WebAppInstallForceListPolicyPlaceholderWithAppFallbackNameTest
   WebAppInstallForceListPolicyPlaceholderWithAppFallbackNameTest& operator=(
       const WebAppInstallForceListPolicyPlaceholderWithAppFallbackNameTest&) =
       delete;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     WebAppInstallForceListPolicyPlaceholderWithAppFallbackNameTest,
     StartUpInstallationPlaceholderFallbackName) {
   const web_app::WebAppRegistrar& registrar =
       web_app::WebAppProvider::GetForTest(browser()->profile())->registrar();
-  web_app::WebAppTestInstallObserver install_observer(browser()->profile());
+  web_app::WebAppTestInstallWithOsHooksObserver install_observer(
+      browser()->profile());
   absl::optional<web_app::AppId> app_id =
       registrar.FindAppWithUrlInScope(policy_app_url_);
   if (!app_id)
     app_id = install_observer.BeginListeningAndWait();
   EXPECT_EQ(policy_app_url_, registrar.GetAppStartUrl(*app_id));
   EXPECT_EQ(fallback_app_name_, registrar.GetAppShortName(*app_id));
-
-  std::unique_ptr<web_app::ExternallyInstalledWebAppPrefs>
-      externally_installed_app_prefs =
-          std::make_unique<web_app::ExternallyInstalledWebAppPrefs>(
-              browser()->profile()->GetPrefs());
-  ASSERT_TRUE(
-      externally_installed_app_prefs->LookupPlaceholderAppId(policy_app_url_)
-          .has_value());
+  ASSERT_TRUE(registrar
+                  .LookupPlaceholderAppId(policy_app_url_,
+                                          web_app::WebAppManagement::kPolicy)
+                  .has_value());
 }
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    WebAppInstallForceListPolicyPlaceholderWithAppFallbackNameTest,
+    ::testing::Bool());
 
 // Fixture for tests that have two profiles with a different policy for each.
 class ExtensionPolicyTest2Contexts : public PolicyTest {
@@ -2412,7 +2410,7 @@ class ExtensionPolicyTest2Contexts : public PolicyTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     command_line->AppendSwitch(
-        chromeos::switches::kIgnoreUserProfileMappingForTests);
+        ash::switches::kIgnoreUserProfileMappingForTests);
 #endif
     PolicyTest::SetUpCommandLine(command_line);
   }

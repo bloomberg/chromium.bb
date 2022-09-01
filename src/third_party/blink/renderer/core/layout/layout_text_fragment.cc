@@ -80,6 +80,11 @@ LayoutTextFragment* LayoutTextFragment::CreateAnonymous(PseudoElement& pseudo,
   return CreateAnonymous(pseudo, text, 0, text ? text->length() : 0, legacy);
 }
 
+void LayoutTextFragment::Trace(Visitor* visitor) const {
+  visitor->Trace(first_letter_pseudo_element_);
+  LayoutText::Trace(visitor);
+}
+
 void LayoutTextFragment::WillBeDestroyed() {
   NOT_DESTROYED();
   if (is_remaining_text_layout_object_ && first_letter_pseudo_element_)
@@ -194,11 +199,16 @@ LayoutText* LayoutTextFragment::GetFirstLetterPart() const {
   NOT_DESTROYED();
   if (!is_remaining_text_layout_object_)
     return nullptr;
-  // Node: We assume first letter pseudo element has only one child and it
-  // is LayoutTextFragment.
   LayoutObject* const first_letter_container =
       GetFirstLetterPseudoElement()->GetLayoutObject();
-  LayoutObject* const child = first_letter_container->SlowFirstChild();
+  LayoutObject* child = first_letter_container->SlowFirstChild();
+  if (!child->IsText()) {
+    DCHECK(!IsInLayoutNGInlineFormattingContext());
+    // In legacy layout there may also be a list item marker here. The next
+    // sibling better be the LayoutTextFragment of the ::first-letter, then.
+    child = child->NextSibling();
+    DCHECK(child);
+  }
   CHECK(child->IsText());
   DCHECK_EQ(child, first_letter_container->SlowLastChild());
   return To<LayoutTextFragment>(child);

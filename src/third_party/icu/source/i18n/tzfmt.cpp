@@ -145,10 +145,10 @@ static const int32_t ALL_GENERIC_NAME_TYPES = UTZGNM_LOCATION | UTZGNM_LONG | UT
 
 // Time Zone ID/Short ID trie
 static TextTrieMap *gZoneIdTrie = NULL;
-static icu::UInitOnce gZoneIdTrieInitOnce = U_INITONCE_INITIALIZER;
+static icu::UInitOnce gZoneIdTrieInitOnce {};
 
 static TextTrieMap *gShortZoneIdTrie = NULL;
-static icu::UInitOnce gShortZoneIdTrieInitOnce = U_INITONCE_INITIALIZER;
+static icu::UInitOnce gShortZoneIdTrieInitOnce {};
 
 static UMutex gLock;
 
@@ -2459,7 +2459,7 @@ TimeZoneFormat::parseOffsetPattern(const UnicodeString& pattern, OffsetFields re
                 if (itemType != GMTOffsetField::TEXT) {
                     if (GMTOffsetField::isValid(itemType, itemLength)) {
                         GMTOffsetField* fld = GMTOffsetField::createTimeField(itemType, static_cast<uint8_t>(itemLength), status);
-                        result->addElementX(fld, status);
+                        result->adoptElement(fld, status);
                         if (U_FAILURE(status)) {
                             break;
                         }
@@ -2485,7 +2485,7 @@ TimeZoneFormat::parseOffsetPattern(const UnicodeString& pattern, OffsetFields re
                         if (itemType == GMTOffsetField::TEXT) {
                             if (text.length() > 0) {
                                 GMTOffsetField* textfld = GMTOffsetField::createText(text, status);
-                                result->addElementX(textfld, status);
+                                result->adoptElement(textfld, status);
                                 if (U_FAILURE(status)) {
                                     break;
                                 }
@@ -2494,7 +2494,7 @@ TimeZoneFormat::parseOffsetPattern(const UnicodeString& pattern, OffsetFields re
                         } else {
                             if (GMTOffsetField::isValid(itemType, itemLength)) {
                                 GMTOffsetField* fld = GMTOffsetField::createTimeField(itemType, static_cast<uint8_t>(itemLength), status);
-                                result->addElementX(fld, status);
+                                result->adoptElement(fld, status);
                                 if (U_FAILURE(status)) {
                                     break;
                                 }
@@ -2512,7 +2512,7 @@ TimeZoneFormat::parseOffsetPattern(const UnicodeString& pattern, OffsetFields re
                     if (itemType != GMTOffsetField::TEXT) {
                         if (GMTOffsetField::isValid(itemType, itemLength)) {
                             GMTOffsetField* fld = GMTOffsetField::createTimeField(itemType, static_cast<uint8_t>(itemLength), status);
-                            result->addElementX(fld, status);
+                            result->adoptElement(fld, status);
                             if (U_FAILURE(status)) {
                                 break;
                             }
@@ -2532,12 +2532,12 @@ TimeZoneFormat::parseOffsetPattern(const UnicodeString& pattern, OffsetFields re
         if (itemType == GMTOffsetField::TEXT) {
             if (text.length() > 0) {
                 GMTOffsetField* tfld = GMTOffsetField::createText(text, status);
-                result->addElementX(tfld, status);
+                result->adoptElement(tfld, status);
             }
         } else {
             if (GMTOffsetField::isValid(itemType, itemLength)) {
                 GMTOffsetField* fld = GMTOffsetField::createTimeField(itemType, static_cast<uint8_t>(itemLength), status);
-                result->addElementX(fld, status);
+                result->adoptElement(fld, status);
             } else {
                 status = U_ILLEGAL_ARGUMENT_ERROR;
             }

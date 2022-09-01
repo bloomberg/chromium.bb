@@ -70,13 +70,6 @@ struct FormFieldData {
   using RoleAttribute = mojom::FormFieldData_RoleAttribute;
   using LabelSource = mojom::FormFieldData_LabelSource;
 
-  // TODO(crbug/1211834): This comparator is deprecated.
-  // Less-than relation for STL containers. Compares only members needed to
-  // uniquely identify a field.
-  struct IdentityComparator {
-    bool operator()(const FormFieldData& a, const FormFieldData& b) const;
-  };
-
   // Returns true if all members of fields |a| and |b| are identical.
   static bool DeepEqual(const FormFieldData& a, const FormFieldData& b);
 
@@ -124,8 +117,9 @@ struct FormFieldData {
 
   bool IsPasswordInputElement() const;
 
-  // Returns true if the field is visible to the user.
-  bool IsVisible() const {
+  // Returns true if the field is focusable to the user.
+  // This is an approximation of visibility with false positives.
+  bool IsFocusable() const {
     return is_focusable && role != RoleAttribute::kPresentation;
   }
 
@@ -135,7 +129,7 @@ struct FormFieldData {
   bool HadFocus() const;
   bool WasAutofilled() const;
 
-#if defined(OS_IOS)
+#if BUILDFLAG(IS_IOS)
   // The identifier which uniquely addresses this field in the DOM. This is an
   // ephemeral value which is not guaranteed to be stable across page loads. It
   // serves to allow a given field to be found during the current navigation.
@@ -149,7 +143,6 @@ struct FormFieldData {
 #define EXPECT_EQ_UNIQUE_ID(expected, actual)
 #endif
 
-  // NOTE: update IdentityComparator                 when adding new a member.
   // NOTE: update SameFieldAs()            if needed when adding new a member.
   // NOTE: update SimilarFieldAs()         if needed when adding new a member.
   // NOTE: update DynamicallySameFieldAs() if needed when adding new a member.
@@ -214,6 +207,7 @@ struct FormFieldData {
   bool is_autofilled = false;
   CheckStatus check_status = CheckStatus::kNotCheckable;
   bool is_focusable = true;
+  bool is_visible = true;
   bool should_autocomplete = true;
   RoleAttribute role = RoleAttribute::kOther;
   base::i18n::TextDirection text_direction = base::i18n::UNKNOWN_DIRECTION;
@@ -246,6 +240,11 @@ struct FormFieldData {
   // are handled very differently in Autofill.
   std::vector<std::u16string> datalist_values;
   std::vector<std::u16string> datalist_labels;
+
+  // When sent from browser to renderer, this bit indicates whether a field
+  // should be filled even though it is already considered autofilled OR
+  // user modified.
+  bool force_override = false;
 };
 
 // Serialize and deserialize FormFieldData. These are used when FormData objects
@@ -260,6 +259,7 @@ std::ostream& operator<<(std::ostream& os, const FormFieldData& field);
 
 // Prefer to use this macro in place of |EXPECT_EQ()| for comparing
 // |FormFieldData|s in test code.
+// TODO(crbug.com/1208354): Replace this with FormData::DeepEqual().
 #define EXPECT_FORM_FIELD_DATA_EQUALS(expected, actual)                        \
   do {                                                                         \
     EXPECT_EQ_UNIQUE_ID(expected, actual);                                     \

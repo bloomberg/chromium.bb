@@ -9,7 +9,6 @@
 #include "base/android/build_info.h"
 #include "base/bind.h"
 #include "base/files/file_util.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/renderer/chrome_object_extensions_utils.h"
@@ -133,13 +132,13 @@ std::unique_ptr<base::Value> SandboxStatusExtension::ReadSandboxStatus() {
   base::ReadFileToString(path, &proc_status);
 
   auto status = std::make_unique<base::DictionaryValue>();
-  status->SetInteger("uid", getuid());
-  status->SetInteger("pid", getpid());
-  status->SetString("secontext", secontext);
-  status->SetInteger("seccompStatus",
-                     static_cast<int>(content::GetSeccompSandboxStatus()));
-  status->SetString("procStatus", proc_status);
-  status->SetString(
+  status->SetIntKey("uid", getuid());
+  status->SetIntKey("pid", getpid());
+  status->SetStringKey("secontext", secontext);
+  status->SetIntKey("seccompStatus",
+                    static_cast<int>(content::GetSeccompSandboxStatus()));
+  status->SetStringKey("procStatus", proc_status);
+  status->SetStringKey(
       "androidBuildId",
       base::android::BuildInfo::GetInstance()->android_build_id());
 

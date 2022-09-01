@@ -100,15 +100,19 @@ class MEDIA_GPU_EXPORT VP9Decoder : public AcceleratedVideoDecoder {
     // Return true when successful, false otherwise.
     virtual bool OutputPicture(scoped_refptr<VP9Picture> pic) = 0;
 
-    // Return true if the accelerator requires the client to provide frame
-    // context in order to decode. If so, the Vp9FrameHeader provided by the
-    // client must contain a valid compressed header and frame context data.
-    virtual bool IsFrameContextRequired() const = 0;
+    // Return true if the accelerator requires us to provide the compressed
+    // header fully parsed.
+    virtual bool NeedsCompressedHeaderParsed() const = 0;
 
     // Set |frame_ctx| to the state after decoding |pic|, returning true on
     // success, false otherwise.
     virtual bool GetFrameContext(scoped_refptr<VP9Picture> pic,
                                  Vp9FrameContext* frame_ctx) = 0;
+
+    // VP9Parser can update the context probabilities or can query the driver
+    // to get the updated numbers. By default drivers don't support it, and in
+    // particular it's true for legacy (unstable) V4L2 API versions.
+    virtual bool SupportsContextProbabilityReadback() const;
   };
 
   explicit VP9Decoder(
@@ -123,9 +127,9 @@ class MEDIA_GPU_EXPORT VP9Decoder : public AcceleratedVideoDecoder {
 
   // AcceleratedVideoDecoder implementation.
   void SetStream(int32_t id, const DecoderBuffer& decoder_buffer) override;
-  bool Flush() override WARN_UNUSED_RESULT;
+  [[nodiscard]] bool Flush() override;
   void Reset() override;
-  DecodeResult Decode() override WARN_UNUSED_RESULT;
+  [[nodiscard]] DecodeResult Decode() override;
   gfx::Size GetPicSize() const override;
   gfx::Rect GetVisibleRect() const override;
   VideoCodecProfile GetProfile() const override;

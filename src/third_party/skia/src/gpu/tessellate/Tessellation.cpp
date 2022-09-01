@@ -16,9 +16,12 @@
 #include "src/gpu/tessellate/MiddleOutPolygonTriangulator.h"
 #include "src/gpu/tessellate/WangsFormula.h"
 
-namespace skgpu {
+namespace skgpu::tess {
 
 namespace {
+
+using float2 = skvx::float2;
+using float4 = skvx::float4;
 
 // This value only protects us against getting stuck in infinite recursion due to fp32 precision
 // issues. Mathematically, every curve should reduce to manageable visible sections in O(log N)
@@ -61,8 +64,8 @@ public:
             if (!fCullTest.areVisible3(p)) {
                 fPath.lineTo(p[2]);
             } else {
-                float n4 = wangs_formula::quadratic_pow4(fTessellationPrecision, p, fVectorXform);
-                if (n4 > pow4(kMaxTessellationSegmentsPerCurve) && numChops < kMaxChopsPerCurve) {
+                float n4 = wangs_formula::quadratic_p4(fTessellationPrecision, p, fVectorXform);
+                if (n4 > kMaxSegmentsPerCurve_p4 && numChops < kMaxChopsPerCurve) {
                     SkPoint chops[5];
                     SkChopQuadAtHalf(p, chops);
                     fPointStack.pop_back_n(3);
@@ -90,8 +93,8 @@ public:
             if (!fCullTest.areVisible3(p)) {
                 fPath.lineTo(p[2]);
             } else {
-                float n2 = wangs_formula::conic_pow2(fTessellationPrecision, p, w, fVectorXform);
-                if (n2 > pow2(kMaxTessellationSegmentsPerCurve) && numChops < kMaxChopsPerCurve) {
+                float n2 = wangs_formula::conic_p2(fTessellationPrecision, p, w, fVectorXform);
+                if (n2 > kMaxSegmentsPerCurve_p2 && numChops < kMaxChopsPerCurve) {
                     SkConic chops[2];
                     if (!SkConic(p,w).chopAt(.5, chops)) {
                         SkPoint line[2] = {p[0], p[2]};
@@ -125,8 +128,8 @@ public:
             if (!fCullTest.areVisible4(p)) {
                 fPath.lineTo(p[3]);
             } else {
-                float n4 = wangs_formula::cubic_pow4(fTessellationPrecision, p, fVectorXform);
-                if (n4 > pow4(kMaxTessellationSegmentsPerCurve) && numChops < kMaxChopsPerCurve) {
+                float n4 = wangs_formula::cubic_p4(fTessellationPrecision, p, fVectorXform);
+                if (n4 > kMaxSegmentsPerCurve_p4 && numChops < kMaxChopsPerCurve) {
                     SkPoint chops[7];
                     SkChopCubicAtHalf(p, chops);
                     fPointStack.pop_back_n(4);
@@ -165,7 +168,7 @@ SkPath PreChopPathCurves(float tessellationPrecision,
     SkASSERT(wangs_formula::worst_case_cubic(
                      tessellationPrecision,
                      viewport.width(),
-                     viewport.height()) <= kMaxTessellationSegmentsPerCurve);
+                     viewport.height()) <= kMaxSegmentsPerCurve);
     PathChopper chopper(tessellationPrecision, matrix, viewport);
     for (auto [verb, p, w] : SkPathPriv::Iterate(path)) {
         switch (verb) {
@@ -327,4 +330,5 @@ int FindCubicConvex180Chops(const SkPoint pts[], float T[2], bool* areCusps) {
     }
     return 0;
 }
-}  // namespace skgpu
+
+}  // namespace skgpu::tess

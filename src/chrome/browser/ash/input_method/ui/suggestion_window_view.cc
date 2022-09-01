@@ -66,10 +66,10 @@ void SetHighlighted(views::View& view, bool highlighted) {
 }  // namespace
 
 // static
-SuggestionWindowView* SuggestionWindowView::Create(
-    gfx::NativeView parent,
-    AssistiveDelegate* delegate) {
-  auto* const view = new SuggestionWindowView(parent, delegate);
+SuggestionWindowView* SuggestionWindowView::Create(gfx::NativeView parent,
+                                                   AssistiveDelegate* delegate,
+                                                   Orientation orientation) {
+  auto* const view = new SuggestionWindowView(parent, delegate, orientation);
   views::Widget* const widget =
       views::BubbleDialogDelegateView::CreateBubble(view);
   wm::SetWindowVisibilityAnimationTransition(widget->GetNativeView(),
@@ -133,26 +133,41 @@ void SuggestionWindowView::SetButtonHighlighted(
   }
 }
 
+gfx::Rect SuggestionWindowView::GetBubbleBounds() {
+  // The bubble bounds must be shifted to align with the anchor.
+  // If there is more than one suggestion, use the anchor origin of the first
+  // (topmost) suggestion. This allows the alignment to work correctly for both
+  // vertical and horizontal orientations.
+  const views::View::Views& candidates = candidate_area_->children();
+  const gfx::Point anchor_origin =
+      !candidates.empty()
+          ? static_cast<SuggestionView*>(candidates[0])->GetAnchorOrigin()
+          : gfx::Point(0, 0);
+  return BubbleDialogDelegateView::GetBubbleBounds() -
+         anchor_origin.OffsetFromOrigin();
+}
+
 void SuggestionWindowView::OnThemeChanged() {
   BubbleDialogDelegateView::OnThemeChanged();
 
+  const auto* const color_provider = GetColorProvider();
   learn_more_button_->SetBorder(views::CreatePaddedBorder(
       views::CreateSolidSidedBorder(
-          1, 0, 0, 0,
-          GetColorProvider()->GetColor(ui::kColorBubbleFooterBorder)),
+          gfx::Insets::TLBR(1, 0, 0, 0),
+          color_provider->GetColor(ui::kColorBubbleFooterBorder)),
       views::LayoutProvider::Get()->GetInsetsMetric(
           views::INSETS_VECTOR_IMAGE_BUTTON)));
 
-  // TODO(crbug/1099044): Update and use cros colors.
-  constexpr SkColor kSecondaryIconColor = gfx::kGoogleGrey500;
-  learn_more_button_->SetImage(
+  // TODO(crbug.com/1099044): Update and use cros colors.
+  learn_more_button_->SetImageModel(
       views::Button::ButtonState::STATE_NORMAL,
-      gfx::CreateVectorIcon(vector_icons::kHelpOutlineIcon,
-                            kSecondaryIconColor));
+      ui::ImageModel::FromVectorIcon(vector_icons::kHelpOutlineIcon,
+                                     ui::kColorIconSecondary));
 }
 
 SuggestionWindowView::SuggestionWindowView(gfx::NativeView parent,
-                                           AssistiveDelegate* delegate)
+                                           AssistiveDelegate* delegate,
+                                           Orientation orientation)
     : delegate_(delegate) {
   DCHECK(parent);
 
@@ -161,18 +176,34 @@ SuggestionWindowView::SuggestionWindowView(gfx::NativeView parent,
   set_parent_window(parent);
   set_margins(gfx::Insets());
 
-  SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kVertical));
+  views::BoxLayout::Orientation layout_orientation;
+  switch (orientation) {
+    case Orientation::kVertical: {
+      layout_orientation = views::BoxLayout::Orientation::kVertical;
+      break;
+    }
+    case Orientation::kHorizontal: {
+      layout_orientation = views::BoxLayout::Orientation::kHorizontal;
+      break;
+    }
+    default: {
+      // Unimplemented orientation.
+      NOTREACHED();
+      break;
+    }
+  }
+
+  SetLayoutManager(std::make_unique<views::BoxLayout>(layout_orientation));
 
   candidate_area_ = AddChildView(std::make_unique<views::View>());
-  candidate_area_->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kVertical));
+  candidate_area_->SetLayoutManager(
+      std::make_unique<views::BoxLayout>(layout_orientation));
 
   setting_link_ = AddChildView(std::make_unique<views::Link>(
       l10n_util::GetStringUTF16(IDS_SUGGESTION_LEARN_MORE)));
   setting_link_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   // TODO(crbug/1102215): Implement proper UI layout using Insets constant.
-  constexpr gfx::Insets insets(0, kPadding, kPadding, kPadding);
+  constexpr auto insets = gfx::Insets::TLBR(0, kPadding, kPadding, kPadding);
   setting_link_->SetBorder(views::CreateEmptyBorder(insets));
   constexpr int kSettingLinkFontSize = 11;
   setting_link_->SetFontList(gfx::FontList({kFontStyle}, gfx::Font::ITALIC,

@@ -70,8 +70,6 @@ ExtensionInstallBlockedByParentDialogView::
   set_fixed_width(views::LayoutProvider::Get()->GetDistanceMetric(
       views::DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH));
 
-  SetIcon(gfx::CreateVectorIcon(chromeos::kNotificationSupervisedUserIcon,
-                                SK_ColorDKGRAY));
   SetShowIcon(true);
   ConfigureTitle();
   CreateContents();
@@ -81,6 +79,12 @@ ExtensionInstallBlockedByParentDialogView::
     ~ExtensionInstallBlockedByParentDialogView() {
   if (done_callback_)
     std::move(done_callback_).Run();
+}
+
+void ExtensionInstallBlockedByParentDialogView::OnThemeChanged() {
+  views::DialogDelegateView::OnThemeChanged();
+  SetIcon(gfx::CreateVectorIcon(chromeos::kNotificationSupervisedUserIcon,
+                                GetColorProvider()->GetColor(ui::kColorIcon)));
 }
 
 void ExtensionInstallBlockedByParentDialogView::ConfigureTitle() {
@@ -121,15 +125,13 @@ void ExtensionInstallBlockedByParentDialogView::CreateContents() {
       break;
   }
 
-  icon_ = gfx::CreateVectorIcon(chromeos::kNotificationSupervisedUserIcon,
-                                SK_ColorDKGRAY);
-
   const ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   const gfx::Insets content_insets = provider->GetDialogInsetsForContentType(
       views::DialogContentType::kText, views::DialogContentType::kText);
 
-  set_margins(gfx::Insets(content_insets.top(), content_insets.left(),
-                          content_insets.bottom(), content_insets.right()));
+  set_margins(gfx::Insets::TLBR(content_insets.top(), content_insets.left(),
+                                content_insets.bottom(),
+                                content_insets.right()));
 
   auto* message_body_label = AddChildView(std::make_unique<views::Label>(
       body_string, views::style::CONTEXT_DIALOG_BODY_TEXT));
