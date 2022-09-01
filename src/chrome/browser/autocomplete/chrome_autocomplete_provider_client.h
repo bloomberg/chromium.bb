@@ -10,10 +10,11 @@
 #include <vector>
 
 #include "base/memory/raw_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/android/autocomplete/tab_matcher_android.h"
 #else
 #include "chrome/browser/autocomplete/tab_matcher_desktop.h"
@@ -51,7 +52,6 @@ class ChromeAutocompleteProviderClient : public AutocompleteProviderClient {
   history_clusters::HistoryClustersService* GetHistoryClustersService()
       override;
   scoped_refptr<history::TopSites> GetTopSites() override;
-  ntp_tiles::MostVisitedSites* GetNtpMostVisitedSites() override;
   bookmarks::BookmarkModel* GetBookmarkModel() override;
   history::URLDatabase* GetInMemoryDatabase() override;
   InMemoryURLIndex* GetInMemoryURLIndex() override;
@@ -98,8 +98,7 @@ class ChromeAutocompleteProviderClient : public AutocompleteProviderClient {
   const TabMatcher& GetTabMatcher() const override;
   bool IsIncognitoModeAvailable() const override;
   bool IsSharingHubAvailable() const override;
-  void OnAutocompleteControllerResultReady(
-      AutocompleteController* controller) override;
+  base::WeakPtr<AutocompleteProviderClient> GetWeakPtr() override;
 
   // OmniboxAction::Client:
   void OpenSharingHub() override;
@@ -123,26 +122,20 @@ class ChromeAutocompleteProviderClient : public AutocompleteProviderClient {
   std::unique_ptr<OmniboxPedalProvider> pedal_provider_;
   std::unique_ptr<unified_consent::UrlKeyedDataCollectionConsentHelper>
       url_consent_helper_;
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   TabMatcherAndroid tab_matcher_;
 #else
   TabMatcherDesktop tab_matcher_;
 #endif
-
-  // The |most_visited_sites_| is created upon request. It is created at
-  // most once by requesting in MostVisitedSitesProvider when the page
-  // classification of the input is
-  // metrics::OmniboxEventProto::START_SURFACE_HOMEPAGE or
-  // metrics::OmniboxEventProto::START_SURFACE_NEW_TAB. It remains empty for any
-  // ChromeAutocompleteProviderClient which doesn't have a
-  // MostVisitedSitesProvider.
-  std::unique_ptr<ntp_tiles::MostVisitedSites> most_visited_sites_;
 
   // Injectable storage partitiion, used for testing.
   raw_ptr<content::StoragePartition> storage_partition_;
 
   std::unique_ptr<OmniboxTriggeredFeatureService>
       omnibox_triggered_feature_service_;
+
+  base::WeakPtrFactory<ChromeAutocompleteProviderClient> weak_ptr_factory_{
+      this};
 };
 
 #endif  // CHROME_BROWSER_AUTOCOMPLETE_CHROME_AUTOCOMPLETE_PROVIDER_CLIENT_H_

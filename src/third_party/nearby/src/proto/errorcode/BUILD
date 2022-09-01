@@ -14,8 +14,6 @@
 
 # Proto for Nearby products
 
-load("//net/proto2/contrib/portable/cc:portable_proto_build_defs.bzl", "portable_proto_library")
-
 licenses(["notice"])
 
 package(default_visibility = ["//visibility:public"])
@@ -23,11 +21,6 @@ package(default_visibility = ["//visibility:public"])
 proto_library(
     name = "error_code_enums_proto",
     srcs = ["error_code_enums.proto"],
-    cc_api_version = 2,
-    compatible_with = ["//buildenv/target:non_prod"],
-    deps = [
-        "//logs/proto/logs_annotations",
-    ],
 )
 
 java_lite_proto_library(
@@ -35,27 +28,12 @@ java_lite_proto_library(
     deps = [":error_code_enums_proto"],
 )
 
-portable_proto_library(
-    name = "error_code_enums_portable_proto",
-    compatible_with = [
-        "//buildenv/target:non_prod",
-    ],
-    config = ":error_code_enums_proto_config",
-    copts = [
-        "-DGOOGLE_PROTOBUF_NO_RTTI=1",
-    ],
-    proto_deps = [
-        ":error_code_enums_proto",
-    ],
-    visibility = [
-        "//third_party/nearby_connections:__subpackages__",
-    ],
+cc_proto_library(
+    name = "error_code_enums_cc_proto",
+    deps = [":error_code_enums_proto"],
 )
 
 filegroup(
     name = "error_code_enums_proto_config",
     srcs = ["error_code_enums_proto_config.asciipb"],
-    compatible_with = [
-        "//buildenv/target:non_prod",
-    ],
 )

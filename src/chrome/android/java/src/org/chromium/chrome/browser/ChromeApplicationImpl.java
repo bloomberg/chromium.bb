@@ -13,9 +13,10 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.library_loader.LibraryLoader;
+import org.chromium.chrome.browser.app.notifications.ContextualNotificationPermissionRequesterImpl;
 import org.chromium.chrome.browser.background_task_scheduler.ChromeBackgroundTaskFactory;
 import org.chromium.chrome.browser.base.SplitCompatApplication;
-import org.chromium.chrome.browser.crash.PureJavaExceptionReporter;
+import org.chromium.chrome.browser.crash.ChromePureJavaExceptionReporter;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.dependency_injection.ChromeAppComponent;
 import org.chromium.chrome.browser.dependency_injection.ChromeAppModule;
@@ -57,7 +58,11 @@ public class ChromeApplicationImpl extends SplitCompatApplication.Impl {
         if (SplitCompatApplication.isBrowserProcess()) {
             FontPreloader.getInstance().load(getApplication());
 
-            if (CachedFeatureFlags.isEnabled(ChromeFeatureList.EARLY_LIBRARY_LOAD)) {
+            // Only load the native library early for bundle builds since some tests use the
+            // "--disable-native-initialization" switch, and the CommandLine is not initialized at
+            // this point to check.
+            if (CachedFeatureFlags.isEnabled(ChromeFeatureList.EARLY_LIBRARY_LOAD)
+                    && ProductConfig.IS_BUNDLE) {
                 // Kick off library loading in a separate thread so it's ready when we need it.
                 new Thread(() -> LibraryLoader.getInstance().ensureMainDexInitialized()).start();
             }
@@ -70,11 +75,12 @@ public class ChromeApplicationImpl extends SplitCompatApplication.Impl {
 
             if (VersionConstants.CHANNEL == Channel.CANARY) {
                 GURL.setReportDebugThrowableCallback(
-                        PureJavaExceptionReporter::reportJavaException);
+                        ChromePureJavaExceptionReporter::reportJavaException);
             }
 
             // Set Chrome factory for mapping BackgroundTask classes to TaskIds.
             ChromeBackgroundTaskFactory.setAsDefault();
+            ContextualNotificationPermissionRequesterImpl.initialize();
             PartitionResolverSupplier.setInstance(new ProfileResolver());
 
             AppHooks.get().getChimeDelegate().initialize();

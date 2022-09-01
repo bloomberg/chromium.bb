@@ -69,12 +69,14 @@ bool ConvertValue(const std::string& arg,
 }
 
 bool ConvertTimeToMs(const std::string& arg, uint64_t* out) {
-  return ConvertValue(
-      arg,
-      {
-          {"ms", 1}, {"s", 1000}, {"m", 1000 * 60}, {"h", 1000 * 60 * 60},
-      },
-      out);
+  return ConvertValue(arg,
+                      {
+                          {"ms", 1},
+                          {"s", 1000},
+                          {"m", 1000 * 60},
+                          {"h", 1000 * 60 * 60},
+                      },
+                      out);
 }
 
 bool ConvertSizeToKb(const std::string& arg, uint64_t* out) {
@@ -147,6 +149,7 @@ bool CreateConfigFromOptions(const ConfigOptions& options,
     ftrace_cfg.add_atrace_categories(cat);
   for (const auto& app : atrace_apps)
     ftrace_cfg.add_atrace_apps(app);
+  ftrace_cfg.set_symbolize_ksyms(true);
   ds_config->set_ftrace_config_raw(ftrace_cfg.SerializeAsString());
 
   auto* ps_config = config->add_data_sources()->mutable_config();

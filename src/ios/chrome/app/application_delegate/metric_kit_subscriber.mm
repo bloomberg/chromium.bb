@@ -14,6 +14,7 @@
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/version.h"
+#include "components/crash/core/app/crashpad.h"
 #import "components/crash/core/common/reporter_running_ios.h"
 #include "components/version_info/version_info.h"
 #include "ios/chrome/browser/crash_report/features.h"
@@ -142,9 +143,6 @@ void WriteDiagnosticPayloads(NSArray<MXDiagnosticPayload*>* payloads)
 
 void SendDiagnostic(MXDiagnostic* diagnostic, const std::string& type)
     API_AVAILABLE(ios(14.0)) {
-  if (!crash_reporter::IsBreakpadRunning()) {
-    return;
-  }
   base::FilePath cache_dir_path;
   if (!base::PathService::Get(base::DIR_CACHE, &cache_dir_path)) {
     return;
@@ -158,16 +156,28 @@ void SendDiagnostic(MXDiagnostic* diagnostic, const std::string& type)
   if (!payload) {
     return;
   }
-  std::string stringpayload(reinterpret_cast<const char*>(payload.bytes),
-                            payload.length);
 
-  CreateSyntheticCrashReportForMetrickit(
-      cache_dir_path.Append(FILE_PATH_LITERAL("Breakpad")),
-      base::SysNSStringToUTF8(info_dict[@"BreakpadProductDisplay"]),
-      base::SysNSStringToUTF8([NSString
-          stringWithFormat:@"%@_MetricKit", info_dict[@"BreakpadProduct"]]),
-      base::SysNSStringToUTF8(diagnostic.metaData.applicationBuildVersion),
-      base::SysNSStringToUTF8(info_dict[@"BreakpadURL"]), type, stringpayload);
+  if (crash_reporter::IsBreakpadRunning()) {
+    std::string stringpayload(reinterpret_cast<const char*>(payload.bytes),
+                              payload.length);
+    CreateSyntheticCrashReportForMetrickit(
+        cache_dir_path.Append(FILE_PATH_LITERAL("Breakpad")),
+        base::SysNSStringToUTF8(info_dict[@"BreakpadProductDisplay"]),
+        base::SysNSStringToUTF8([NSString
+            stringWithFormat:@"%@_MetricKit", info_dict[@"BreakpadProduct"]]),
+        base::SysNSStringToUTF8(diagnostic.metaData.applicationBuildVersion),
+        base::SysNSStringToUTF8(info_dict[@"BreakpadURL"]), type,
+        stringpayload);
+  } else {
+    base::span<const uint8_t> spanpayload(
+        reinterpret_cast<const uint8_t*>(payload.bytes), payload.length);
+    crash_reporter::ProcessExternalDump(
+        "MetricKit", spanpayload,
+        {{"ver",
+          base::SysNSStringToUTF8(diagnostic.metaData.applicationBuildVersion)},
+         {"metrickit", "true"},
+         {"metrickit_type", type}});
+  }
 }
 
 void SendDiagnosticPayloads(NSArray<MXDiagnosticPayload*>* payloads)
@@ -255,7 +265,7 @@ void ProcessDiagnosticPayloads(NSArray<MXDiagnosticPayload*>* payloads,
     // (10ms) they are reported using a representative value of the bucket.
     // DCHECK on the size of the bucket to detect if the resolution decrease.
 
-    // Time based MXHistogram report their values using |UnitDuration| which has
+    // Time based MXHistogram report their values using `UnitDuration` which has
     // seconds as base unit. Hence, start and end are given in seconds.
     double start =
         [bucket.bucketStart
@@ -324,7 +334,7 @@ void ProcessDiagnosticPayloads(NSArray<MXDiagnosticPayload*>* payloads,
 }
 
 - (void)processPayload:(MXMetricPayload*)payload {
-  // TODO(crbug.com/1140474): See related bug for why |bundleVersion| comes from
+  // TODO(crbug.com/1140474): See related bug for why `bundleVersion` comes from
   // mainBundle instead of from version_info::GetVersionNumber(). Remove once
   // iOS 14.2 reaches mass adoption.
   NSString* bundleVersion =

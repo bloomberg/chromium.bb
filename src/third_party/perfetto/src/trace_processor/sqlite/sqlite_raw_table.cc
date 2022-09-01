@@ -182,9 +182,9 @@ ArgsSerializer::ArgsSerializer(
   // Go through each field id and find the entry in the args table for that
   for (uint32_t i = 1; i <= max; ++i) {
     for (auto it = row_map_.IterateRows(); it; it.Next()) {
-      base::StringView key = args.key().GetString(it.row());
+      base::StringView key = args.key().GetString(it.index());
       if (key == descriptor->fields[i].name) {
-        (*field_id_to_arg_index)[i] = it.index();
+        (*field_id_to_arg_index)[i] = it.row();
         break;
       }
     }
@@ -406,8 +406,8 @@ void ArgsSerializer::SerializeArgs() {
     WriteArgForField(IEX::kIrqFieldNumber, DVW());
     writer_->AppendString(" ret=");
     WriteValueForField(IEX::kRetFieldNumber, [this](const Variadic& value) {
-      PERFETTO_DCHECK(value.type == Variadic::Type::kUint);
-      writer_->AppendString(value.uint_value ? "handled" : "unhandled");
+      PERFETTO_DCHECK(value.type == Variadic::Type::kInt);
+      writer_->AppendString(value.int_value ? "handled" : "unhandled");
     });
     return;
   } else if (event_name_ == "softirq_entry") {
@@ -468,7 +468,7 @@ void ArgsSerializer::SerializeArgs() {
     return;
   }
   for (auto it = row_map_.IterateRows(); it; it.Next()) {
-    WriteArgAtRow(it.row(), DVW());
+    WriteArgAtRow(it.index(), DVW());
   }
 }
 
@@ -619,7 +619,7 @@ void SystraceSerializer::SerializePrefix(uint32_t raw_row,
   if (opt_upid.has_value()) {
     tgid = storage_->process_table().pid()[*opt_upid];
   }
-  auto name = storage_->GetString(storage_->thread_table().name()[utid]);
+  auto name = storage_->thread_table().name().GetString(utid);
 
   FtraceTime ftrace_time(ts);
   if (tid == 0) {

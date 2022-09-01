@@ -27,7 +27,7 @@ FakeServerHttpPostProviderFactory::FakeServerHttpPostProviderFactory(
 FakeServerHttpPostProviderFactory::~FakeServerHttpPostProviderFactory() =
     default;
 
-scoped_refptr<syncer::HttpPostProviderInterface>
+scoped_refptr<syncer::HttpPostProvider>
 FakeServerHttpPostProviderFactory::Create() {
   return new FakeServerHttpPostProvider(fake_server_, fake_server_task_runner_);
 }
@@ -65,6 +65,8 @@ void FakeServerHttpPostProvider::SetPostPayload(const char* content_type,
   request_content_type_.assign(content_type);
   request_content_.assign(content, content_length);
 }
+
+void FakeServerHttpPostProvider::SetAllowBatching(bool allow_batching) {}
 
 bool FakeServerHttpPostProvider::MakeSynchronousPost(int* net_error_code,
                                                      int* http_status_code) {

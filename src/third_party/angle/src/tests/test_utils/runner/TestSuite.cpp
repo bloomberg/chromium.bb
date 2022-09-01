@@ -64,16 +64,13 @@ constexpr char kUBSanOptionsEnvVar[] = "UBSAN_OPTIONS";
 // Ideally we could use a separate timeout for the slow first test.
 // Allow sanitized tests to run more slowly.
 #if defined(NDEBUG) && !defined(ANGLE_WITH_SANITIZER)
-constexpr int kDefaultTestTimeout = 60;
-#else
-constexpr int kDefaultTestTimeout  = 120;
-#endif
-constexpr int kSlowTestTimeoutScale = 3;
-#if defined(NDEBUG)
+constexpr int kDefaultTestTimeout  = 60;
 constexpr int kDefaultBatchTimeout = 300;
 #else
+constexpr int kDefaultTestTimeout  = 120;
 constexpr int kDefaultBatchTimeout = 600;
 #endif
+constexpr int kSlowTestTimeoutScale  = 3;
 constexpr int kDefaultBatchSize      = 256;
 constexpr double kIdleMessageTimeout = 15.0;
 constexpr int kDefaultMaxProcesses   = 16;
@@ -344,12 +341,15 @@ void WriteResultsFile(bool interrupted,
 
         js::Value times;
         times.SetArray();
-        times.PushBack(result.elapsedTimeSeconds, allocator);
+        for (double elapsedTimeSeconds : result.elapsedTimeSeconds)
+        {
+            times.PushBack(elapsedTimeSeconds, allocator);
+        }
 
         jsResult.AddMember("times", times, allocator);
 
         char testName[500];
-        id.sprintfName(testName);
+        id.snprintfName(testName, sizeof(testName));
         js::Value jsName;
         jsName.SetString(testName, allocator);
 
@@ -397,24 +397,6 @@ void WriteHistogramJson(const HistogramWriter &histogramWriter,
     }
 }
 
-void WriteOutputFiles(bool interrupted,
-                      const TestResults &testResults,
-                      const std::string &resultsFile,
-                      const HistogramWriter &histogramWriter,
-                      const std::string &histogramJsonOutputFile,
-                      const char *testSuiteName)
-{
-    if (!resultsFile.empty())
-    {
-        WriteResultsFile(interrupted, testResults, resultsFile, testSuiteName);
-    }
-
-    if (!histogramJsonOutputFile.empty())
-    {
-        WriteHistogramJson(histogramWriter, histogramJsonOutputFile, testSuiteName);
-    }
-}
-
 void UpdateCurrentTestResult(const testing::TestResult &resultIn, TestResults *resultsOut)
 {
     TestResult &resultOut = resultsOut->results[resultsOut->currentTest];
@@ -433,61 +415,13 @@ void UpdateCurrentTestResult(const testing::TestResult &resultIn, TestResults *r
         resultOut.type = TestResultType::Pass;
     }
 
-    resultOut.elapsedTimeSeconds = resultsOut->currentTestTimer.getElapsedWallClockTime();
+    resultOut.elapsedTimeSeconds.back() = resultsOut->currentTestTimer.getElapsedWallClockTime();
 }
 
 TestIdentifier GetTestIdentifier(const testing::TestInfo &testInfo)
 {
     return {testInfo.test_suite_name(), testInfo.name()};
 }
-
-class TestEventListener : public testing::EmptyTestEventListener
-{
-  public:
-    // Note: TestResults is owned by the TestSuite. It should outlive TestEventListener.
-    TestEventListener(const std::string &resultsFile,
-                      const std::string &histogramJsonFile,
-                      const char *testSuiteName,
-                      TestResults *testResults,
-                      HistogramWriter *histogramWriter)
-        : mResultsFile(resultsFile),
-          mHistogramJsonFile(histogramJsonFile),
-          mTestSuiteName(testSuiteName),
-          mTestResults(testResults),
-          mHistogramWriter(histogramWriter)
-    {}
-
-    void OnTestStart(const testing::TestInfo &testInfo) override
-    {
-        std::lock_guard<std::mutex> guard(mTestResults->currentTestMutex);
-        mTestResults->currentTest = GetTestIdentifier(testInfo);
-        mTestResults->currentTestTimer.start();
-    }
-
-    void OnTestEnd(const testing::TestInfo &testInfo) override
-    {
-        std::lock_guard<std::mutex> guard(mTestResults->currentTestMutex);
-        mTestResults->currentTestTimer.stop();
-        const testing::TestResult &resultIn = *testInfo.result();
-        UpdateCurrentTestResult(resultIn, mTestResults);
-        mTestResults->currentTest = TestIdentifier();
-    }
-
-    void OnTestProgramEnd(const testing::UnitTest &testProgramInfo) override
-    {
-        std::lock_guard<std::mutex> guard(mTestResults->currentTestMutex);
-        mTestResults->allDone = true;
-        WriteOutputFiles(false, *mTestResults, mResultsFile, *mHistogramWriter, mHistogramJsonFile,
-                         mTestSuiteName);
-    }
-
-  private:
-    std::string mResultsFile;
-    std::string mHistogramJsonFile;
-    const char *mTestSuiteName;
-    TestResults *mTestResults;
-    HistogramWriter *mHistogramWriter;
-};
 
 bool IsTestDisabled(const testing::TestInfo &testInfo)
 {
@@ -614,7 +548,7 @@ bool GetTestArtifactsFromJSON(const js::Value::ConstObject &obj,
         return false;
     }
 
-    const js::Value::ConstObject &artifacts = jsArtifacts.GetObject();
+    const js::Value::ConstObject &artifacts = jsArtifacts.GetObj();
     for (const auto &artifactMember : artifacts)
     {
         const js::Value &artifact = artifactMember.value;
@@ -703,7 +637,7 @@ bool GetSingleTestResultFromJSON(const js::Value &name,
         }
     }
 
-    double elapsedTimeSeconds = 0.0;
+    std::vector<double> elapsedTimeSeconds;
     if (obj.HasMember("times"))
     {
         const js::Value &times = obj["times"];
@@ -713,12 +647,19 @@ bool GetSingleTestResultFromJSON(const js::Value &name,
         }
 
         const js::Value::ConstArray &timesArray = times.GetArray();
-        if (timesArray.Size() != 1 || !timesArray[0].IsDouble())
+        if (timesArray.Size() < 1)
         {
             return false;
         }
+        for (const js::Value &time : timesArray)
+        {
+            if (!time.IsDouble())
+            {
+                return false;
+            }
 
-        elapsedTimeSeconds = timesArray[0].GetDouble();
+            elapsedTimeSeconds.push_back(time.GetDouble());
+        }
     }
 
     TestResult &result        = resultsOut->results[id];
@@ -736,7 +677,7 @@ bool GetTestResultsFromJSON(const js::Document &document, TestResults *resultsOu
         return false;
     }
 
-    const js::Value::ConstObject &tests = document["tests"].GetObject();
+    const js::Value::ConstObject &tests = document["tests"].GetObj();
     for (const auto &testMember : tests)
     {
         // Get test identifier.
@@ -755,7 +696,7 @@ bool GetTestResultsFromJSON(const js::Document &document, TestResults *resultsOu
             return false;
         }
 
-        const js::Value::ConstObject &obj = value.GetObject();
+        const js::Value::ConstObject &obj = value.GetObj();
 
         if (BeginsWith(name.GetString(), kArtifactsFakeTestName))
         {
@@ -805,8 +746,17 @@ bool MergeTestResults(TestResults *input, TestResults *output, int flakyRetries)
             }
             else
             {
+                outputResult.type = inputResult.type;
+            }
+            if (runCount == 1)
+            {
                 outputResult.elapsedTimeSeconds = inputResult.elapsedTimeSeconds;
-                outputResult.type               = inputResult.type;
+            }
+            else
+            {
+                outputResult.elapsedTimeSeconds.insert(outputResult.elapsedTimeSeconds.end(),
+                                                       inputResult.elapsedTimeSeconds.begin(),
+                                                       inputResult.elapsedTimeSeconds.end());
             }
         }
     }
@@ -964,6 +914,17 @@ void GTestListTests(const std::map<TestIdentifier, TestResult> &resultsMap)
         }
     }
 }
+
+// On Android, batching is done on the host, i.e. externally.
+// TestSuite executes on the device and should just passthrough all args to GTest.
+bool UsesExternalBatching()
+{
+#if defined(ANGLE_PLATFORM_ANDROID)
+    return true;
+#else
+    return false;
+#endif
+}
 }  // namespace
 
 // static
@@ -981,9 +942,9 @@ TestIdentifier::~TestIdentifier() = default;
 
 TestIdentifier &TestIdentifier::operator=(const TestIdentifier &other) = default;
 
-void TestIdentifier::sprintfName(char *outBuffer) const
+void TestIdentifier::snprintfName(char *outBuffer, size_t maxLen) const
 {
-    sprintf(outBuffer, "%s.%s", testSuiteName.c_str(), testName.c_str());
+    snprintf(outBuffer, maxLen, "%s.%s", testSuiteName.c_str(), testName.c_str());
 }
 
 // static
@@ -1023,6 +984,39 @@ ProcessInfo::ProcessInfo(ProcessInfo &&other)
 {
     *this = std::move(other);
 }
+
+class TestSuite::TestEventListener : public testing::EmptyTestEventListener
+{
+  public:
+    // Note: TestResults is owned by the TestSuite. It should outlive TestEventListener.
+    TestEventListener(TestSuite *testSuite) : mTestSuite(testSuite) {}
+
+    void OnTestStart(const testing::TestInfo &testInfo) override
+    {
+        std::lock_guard<std::mutex> guard(mTestSuite->mTestResults.currentTestMutex);
+        mTestSuite->mTestResults.currentTest = GetTestIdentifier(testInfo);
+        mTestSuite->mTestResults.currentTestTimer.start();
+    }
+
+    void OnTestEnd(const testing::TestInfo &testInfo) override
+    {
+        std::lock_guard<std::mutex> guard(mTestSuite->mTestResults.currentTestMutex);
+        mTestSuite->mTestResults.currentTestTimer.stop();
+        const testing::TestResult &resultIn = *testInfo.result();
+        UpdateCurrentTestResult(resultIn, &mTestSuite->mTestResults);
+        mTestSuite->mTestResults.currentTest = TestIdentifier();
+    }
+
+    void OnTestProgramEnd(const testing::UnitTest &testProgramInfo) override
+    {
+        std::lock_guard<std::mutex> guard(mTestSuite->mTestResults.currentTestMutex);
+        mTestSuite->mTestResults.allDone = true;
+        mTestSuite->writeOutputFiles(false);
+    }
+
+  private:
+    TestSuite *mTestSuite;
+};
 
 TestSuite::TestSuite(int *argc, char **argv)
     : mShardCount(-1),
@@ -1093,6 +1087,12 @@ TestSuite::TestSuite(int *argc, char **argv)
             mChildProcessArgs.push_back(argv[argIndex]);
         }
         ++argIndex;
+    }
+
+    if (UsesExternalBatching() && mBotMode)
+    {
+        printf("Bot mode is mutually exclusive with external batching.\n");
+        exit(EXIT_FAILURE);
     }
 
     mTestResults.currentTestTimeout = mTestTimeout;
@@ -1242,38 +1242,26 @@ TestSuite::TestSuite(int *argc, char **argv)
         // If there's only one shard, we can use the testSet as defined above.
         if (mShardCount > 1)
         {
-            testSet = GetShardTests(testSet, mShardIndex, mShardCount, &mTestFileLines,
-                                    alsoRunDisabledTests);
-
-            if (!mBotMode)
+            if (!mBotMode && !UsesExternalBatching())
             {
-                mFilterString = GetTestFilter(testSet);
-
-                if (filterArgIndex.valid())
-                {
-                    argv[filterArgIndex.value()] = const_cast<char *>(mFilterString.c_str());
-                }
-                else
-                {
-                    // Note that we only add a filter string if we previously deleted a shard
-                    // index/count argument. So we will have space for the new filter string in
-                    // argv.
-                    AddArg(argc, argv, mFilterString.c_str());
-                }
-
-                // Force-re-initialize GoogleTest flags to load the shard filter.
-                testing::internal::ParseGoogleTestFlagsOnly(argc, argv);
+                printf("Sharding is only supported in bot mode or external batching.\n");
+                exit(EXIT_FAILURE);
+            }
+            // With external batching, we must use exactly the testSet as defined externally.
+            // But when listing tests, we do need to apply sharding ourselves,
+            // since we use our own implementation for listing tests and not GTest directly.
+            if (!UsesExternalBatching() || mGTestListTests || mListTests)
+            {
+                testSet = GetShardTests(testSet, mShardIndex, mShardCount, &mTestFileLines,
+                                        alsoRunDisabledTests);
             }
         }
     }
 
+    if (!testSet.empty())
     {
         std::stringstream fakeTestName;
-        fakeTestName << kArtifactsFakeTestName;
-        if (mShardIndex != -1)
-        {
-            fakeTestName << "-Shard" << std::setfill('0') << std::setw(2) << mShardIndex;
-        }
+        fakeTestName << kArtifactsFakeTestName << '-' << testSet[0].testName;
         mTestResults.testArtifactsFakeTestName = fakeTestName.str();
     }
 
@@ -1318,9 +1306,7 @@ TestSuite::TestSuite(int *argc, char **argv)
     if (!mBotMode)
     {
         testing::TestEventListeners &listeners = testing::UnitTest::GetInstance()->listeners();
-        listeners.Append(new TestEventListener(mResultsFile, mHistogramJsonFile,
-                                               mTestSuiteName.c_str(), &mTestResults,
-                                               &mHistogramWriter));
+        listeners.Append(new TestEventListener(this));
 
         for (const TestIdentifier &id : testSet)
         {
@@ -1367,6 +1353,7 @@ bool TestSuite::parseSingleArg(const char *argument)
             ParseStringArg("--isolated_script_test_perf_output=", argument, &mHistogramJsonFile) ||
             ParseStringArg(kRenderTestOutputDir, argument, &mTestArtifactDirectory) ||
             ParseStringArg(kIsolatedOutDir, argument, &mTestArtifactDirectory) ||
+            ParseFlag("--test-launcher-bot-mode", argument, &mBotMode) ||
             ParseFlag("--bot-mode", argument, &mBotMode) ||
             ParseFlag("--debug-test-groups", argument, &mDebugTestGroups) ||
             ParseFlag(kGTestListTests, argument, &mGTestListTests) ||
@@ -1380,9 +1367,9 @@ void TestSuite::onCrashOrTimeout(TestResultType crashOrTimeout)
     std::lock_guard<std::mutex> guard(mTestResults.currentTestMutex);
     if (mTestResults.currentTest.valid())
     {
-        TestResult &result        = mTestResults.results[mTestResults.currentTest];
-        result.type               = crashOrTimeout;
-        result.elapsedTimeSeconds = mTestResults.currentTestTimer.getElapsedWallClockTime();
+        TestResult &result               = mTestResults.results[mTestResults.currentTest];
+        result.type                      = crashOrTimeout;
+        result.elapsedTimeSeconds.back() = mTestResults.currentTestTimer.getElapsedWallClockTime();
     }
 
     if (mResultsFile.empty())
@@ -1391,8 +1378,7 @@ void TestSuite::onCrashOrTimeout(TestResultType crashOrTimeout)
         return;
     }
 
-    WriteOutputFiles(true, mTestResults, mResultsFile, mHistogramWriter, mHistogramJsonFile,
-                     mTestSuiteName.c_str());
+    writeOutputFiles(true);
 }
 
 bool TestSuite::launchChildTestProcess(uint32_t batchId,
@@ -1610,7 +1596,7 @@ bool TestSuite::finishProcess(ProcessInfo *processInfo)
         }
         else if (result.type == TestResultType::Pass)
         {
-            printf(" (%0.1lf ms)\n", result.elapsedTimeSeconds * 1000.0);
+            printf(" (%0.1lf ms)\n", result.elapsedTimeSeconds.back() * 1000.0);
         }
         else if (result.type == TestResultType::Skip)
         {
@@ -1618,7 +1604,7 @@ bool TestSuite::finishProcess(ProcessInfo *processInfo)
         }
         else if (result.type == TestResultType::Timeout)
         {
-            printf(" (TIMEOUT in %0.1lf s)\n", result.elapsedTimeSeconds);
+            printf(" (TIMEOUT in %0.1lf s)\n", result.elapsedTimeSeconds.back());
             mFailureCount++;
         }
         else
@@ -1786,7 +1772,8 @@ int TestSuite::run()
                     SplitString(batchStdout, "\r\n", WhitespaceHandling::TRIM_WHITESPACE,
                                 SplitResult::SPLIT_WANT_NONEMPTY);
                 constexpr size_t kKeepLines = 10;
-                printf("Last %d lines of batch stdout:\n", static_cast<int>(kKeepLines));
+                printf("Batch timeout! Last %d lines of batch stdout:\n",
+                       static_cast<int>(kKeepLines));
                 for (size_t lineNo = lines.size() - std::min(lines.size(), kKeepLines);
                      lineNo < lines.size(); ++lineNo)
                 {
@@ -1845,8 +1832,7 @@ int TestSuite::run()
     }
     else
     {
-        WriteOutputFiles(false, mTestResults, mResultsFile, mHistogramWriter, mHistogramJsonFile,
-                         mTestSuiteName.c_str());
+        writeOutputFiles(false);
     }
 
     totalRunTime.stop();
@@ -2050,6 +2036,19 @@ int32_t TestSuite::getTestExpectationWithConfigAndUpdateTimeout(const GPUTestCon
 int TestSuite::getSlowTestTimeout() const
 {
     return mTestTimeout * kSlowTestTimeoutScale;
+}
+
+void TestSuite::writeOutputFiles(bool interrupted)
+{
+    if (!mResultsFile.empty())
+    {
+        WriteResultsFile(interrupted, mTestResults, mResultsFile, mTestSuiteName.c_str());
+    }
+
+    if (!mHistogramJsonFile.empty())
+    {
+        WriteHistogramJson(mHistogramWriter, mHistogramJsonFile, mTestSuiteName.c_str());
+    }
 }
 
 const char *TestResultTypeToString(TestResultType type)

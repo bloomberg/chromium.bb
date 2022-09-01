@@ -32,6 +32,7 @@
 #include "tcuTexture.hpp"
 #include "util/OSPixmap.h"
 #include "util/OSWindow.h"
+#include "util/angle_features_autogen.h"
 
 // clang-format off
 #if (DE_OS == DE_OS_WIN32)
@@ -47,6 +48,11 @@
 
 #if defined(ANGLE_USE_X11)
 #    include <X11/Xlib.h>
+#endif
+
+#if defined(ANGLE_USE_WAYLAND)
+#    include <wayland-client.h>
+#    include <wayland-egl-backend.h>
 #endif
 
 namespace tcu
@@ -83,7 +89,8 @@ constexpr eglu::NativeWindow::Capability kWindowCapabilities =
         eglu::NativeWindow::CAPABILITY_GET_SCREEN_SIZE |
         eglu::NativeWindow::CAPABILITY_READ_SCREEN_PIXELS |
         eglu::NativeWindow::CAPABILITY_SET_SURFACE_SIZE |
-        eglu::NativeWindow::CAPABILITY_CHANGE_VISIBILITY);
+        eglu::NativeWindow::CAPABILITY_CHANGE_VISIBILITY |
+        eglu::NativeWindow::CAPABILITY_CREATE_SURFACE_PLATFORM_EXTENSION);
 
 class ANGLENativeDisplay : public eglu::NativeDisplay
 {
@@ -169,6 +176,7 @@ class NativeWindow : public eglu::NativeWindow
     ~NativeWindow() override;
 
     eglw::EGLNativeWindowType getLegacyNative() override;
+    void *getPlatformExtension() override;
     IVec2 getSurfaceSize() const override;
     IVec2 getScreenSize() const override { return getSurfaceSize(); }
     void processEvents() override;
@@ -302,6 +310,7 @@ NativeWindow::NativeWindow(ANGLENativeDisplay *nativeDisplay,
         std::swap(osWindowWidth, osWindowHeight);
     }
 
+    mWindow->setNativeDisplay(nativeDisplay->getDeviceContext());
     bool initialized = mWindow->initialize("dEQP ANGLE Tests", osWindowWidth, osWindowHeight);
     TCU_CHECK(initialized);
 
@@ -335,6 +344,11 @@ NativeWindow::~NativeWindow()
 eglw::EGLNativeWindowType NativeWindow::getLegacyNative()
 {
     return reinterpret_cast<eglw::EGLNativeWindowType>(mWindow->getNativeWindow());
+}
+
+void *NativeWindow::getPlatformExtension()
+{
+    return mWindow->getPlatformExtension();
 }
 
 IVec2 NativeWindow::getSurfaceSize() const
@@ -411,11 +425,20 @@ ANGLENativeDisplayFactory::ANGLENativeDisplayFactory(
       mNativeDisplay(bitCast<eglw::EGLNativeDisplayType>(EGL_DEFAULT_DISPLAY)),
       mPlatformAttributes(std::move(platformAttributes))
 {
-#if (DE_OS == DE_OS_UNIX) && defined(ANGLE_USE_X11)
+#if (DE_OS == DE_OS_UNIX)
+#    if defined(ANGLE_USE_X11)
     // Make sure to only open the X display once so that it can be used by the EGL display as well
     // as pixmaps
     mNativeDisplay = bitCast<eglw::EGLNativeDisplayType>(XOpenDisplay(nullptr));
-#endif  // (DE_OS == DE_OS_UNIX)
+#    endif  // ANGLE_USE_X11
+
+#    if defined(ANGLE_USE_WAYLAND)
+    if (mNativeDisplay == 0)
+    {
+        mNativeDisplay = bitCast<eglw::EGLNativeDisplayType>(wl_display_connect(nullptr));
+    }
+#    endif  // ANGLE_USE_WAYLAND
+#endif      // (DE_OS == DE_OS_UNIX)
 
     // If pre-rotating, let NativeWindowFactory know.
     uint32_t preRotation = 0;
@@ -434,15 +457,18 @@ ANGLENativeDisplayFactory::ANGLENativeDisplayFactory(
 
         for (; *enabledFeatures; ++enabledFeatures)
         {
-            if (strcmp(enabledFeatures[0], "emulatedPrerotation90") == 0)
+            if (strcmp(enabledFeatures[0],
+                       angle::GetFeatureName(angle::Feature::EmulatedPrerotation90)) == 0)
             {
                 preRotation = 90;
             }
-            else if (strcmp(enabledFeatures[0], "emulatedPrerotation180") == 0)
+            else if (strcmp(enabledFeatures[0],
+                            angle::GetFeatureName(angle::Feature::EmulatedPrerotation180)) == 0)
             {
                 preRotation = 180;
             }
-            else if (strcmp(enabledFeatures[0], "emulatedPrerotation270") == 0)
+            else if (strcmp(enabledFeatures[0],
+                            angle::GetFeatureName(angle::Feature::EmulatedPrerotation270)) == 0)
             {
                 preRotation = 270;
             }

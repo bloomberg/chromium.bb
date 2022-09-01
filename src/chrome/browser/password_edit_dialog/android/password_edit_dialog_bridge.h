@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_PASSWORD_EDIT_DIALOG_ANDROID_PASSWORD_EDIT_DIALOG_BRIDGE_H_
 #define CHROME_BROWSER_PASSWORD_EDIT_DIALOG_ANDROID_PASSWORD_EDIT_DIALOG_BRIDGE_H_
 
+#include <jni.h>
 #include <memory>
 
 #include "base/android/jni_android.h"
@@ -23,8 +24,8 @@ class WebContents;
 // displays the dialog on the screen.
 //
 // OnDialogAccepted callback is called when the user accepts saving the
-// presented password (by tapping Update button). The callback parameter denotes
-// the index of selected username in the list of usernames. The dialog will be
+// presented password (by tapping Update button). The callback parameters denote
+// the username and the password that are going to be saved. The dialog will be
 // dismissed after this callback, feature code shouldn't call Dismiss from
 // callback implementation to dismiss the dialog.
 //
@@ -49,7 +50,8 @@ class WebContents;
 // tests. PasswordEditDialogBridge contains the implementation.
 class PasswordEditDialog {
  public:
-  using DialogAcceptedCallback = base::OnceCallback<void(int)>;
+  using DialogAcceptedCallback =
+      base::OnceCallback<void(const std::u16string&, const std::u16string&)>;
   using DialogDismissedCallback = base::OnceCallback<void(bool)>;
 
   virtual ~PasswordEditDialog();
@@ -96,8 +98,11 @@ class PasswordEditDialogBridge : public PasswordEditDialog {
   void Dismiss() override;
 
   // Called from Java to indicate that the user tapped the positive button with
-  // |selected_username| being selected from usernames list.
-  void OnDialogAccepted(JNIEnv* env, jint selected_username_index);
+  // |username| and
+  // |password| which are going to be saved.
+  void OnDialogAccepted(JNIEnv* env,
+                        const base::android::JavaParamRef<jstring>& username,
+                        const base::android::JavaParamRef<jstring>& password);
 
   // Called from Java when the modal dialog is dismissed.
   void OnDialogDismissed(JNIEnv* env, jboolean dialogAccepted);

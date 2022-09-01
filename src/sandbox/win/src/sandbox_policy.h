@@ -17,9 +17,11 @@
 namespace sandbox {
 
 class AppContainer;
-class PolicyInfo;
 
-class TargetPolicy {
+// We need [[clang::lto_visibility_public]] because instances of this class are
+// passed across module boundaries. This means different modules must have
+// compatible definitions of the class even when LTO is enabled.
+class [[clang::lto_visibility_public]] TargetPolicy {
  public:
   // Windows subsystems that can have specific rules.
   // Note: The process subsystem(SUBSYS_PROCESS) does not evaluate the request
@@ -40,8 +42,6 @@ class TargetPolicy {
                            // the file system supports.
     FILES_ALLOW_READONLY,  // Allows open or create with read access only.
     FILES_ALLOW_QUERY,     // Allows access to query the attributes of a file.
-    FILES_ALLOW_DIR_ANY,   // Allows open or create with directory semantics
-                           // only.
     NAMEDPIPES_ALLOW_ANY,  // Allows creation of a named pipe.
     FAKE_USER_GDI_INIT,    // Fakes user32 and gdi32 initialization. This can
                            // be used to allow the DLLs to load and initialize
@@ -50,15 +50,7 @@ class TargetPolicy {
     SOCKET_ALLOW_BROKER    // Allows brokering of sockets.
   };
 
-  // Increments the reference count of this object. The reference count must
-  // be incremented if this interface is given to another component.
-  virtual void AddRef() = 0;
-
-  // Decrements the reference count of this object. When the reference count
-  // is zero the object is automatically destroyed.
-  // Indicates that the caller is done with this interface. After calling
-  // release no other method should be called.
-  virtual void Release() = 0;
+  virtual ~TargetPolicy() {}
 
   // Sets the security level for the target process' two tokens.
   // This setting is permanent and cannot be changed once the target process is
@@ -120,7 +112,7 @@ class TargetPolicy {
   // length in:
   //   http://msdn2.microsoft.com/en-us/library/ms684152.aspx
   //
-  // Note: the recommended level is JOB_RESTRICTED or JOB_LOCKDOWN.
+  // Note: the recommended level is JobLevel::kLockdown.
   virtual ResultCode SetJobLevel(JobLevel job_level,
                                  uint32_t ui_exceptions) = 0;
 
@@ -257,18 +249,12 @@ class TargetPolicy {
   // lifetime of the policy object.
   virtual void SetEffectiveToken(HANDLE token) = 0;
 
-  // Returns a snapshot of the policy configuration.
-  virtual std::unique_ptr<PolicyInfo> GetPolicyInfo() = 0;
-
   // Allows the launch of the the target process to proceed even if no job can
   // be created.
   virtual void SetAllowNoSandboxJob() = 0;
 
   // Returns true if target process launch should proceed if job creation fails.
   virtual bool GetAllowNoSandboxJob() = 0;
-
- protected:
-  ~TargetPolicy() {}
 };
 
 }  // namespace sandbox

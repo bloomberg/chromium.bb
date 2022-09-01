@@ -12,6 +12,7 @@
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
+#include "chrome/browser/profiles/keep_alive/profile_keep_alive_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -100,6 +101,8 @@ void DiceWebSigninInterceptionBubbleView::RecordInterceptionResult(
   std::string histogram_base_name = "Signin.InterceptResult";
   switch (bubble_parameters.interception_type) {
     case DiceWebSigninInterceptor::SigninInterceptionType::kEnterprise:
+    case DiceWebSigninInterceptor::SigninInterceptionType::
+        kEnterpriseAcceptManagement:
     case DiceWebSigninInterceptor::SigninInterceptionType::kEnterpriseForced:
       histogram_base_name.append(".Enterprise");
       break;
@@ -148,6 +151,9 @@ DiceWebSigninInterceptionBubbleView::DiceWebSigninInterceptionBubbleView(
     base::OnceCallback<void(SigninInterceptionResult)> callback)
     : views::BubbleDialogDelegateView(anchor_view,
                                       views::BubbleBorder::TOP_RIGHT),
+      profile_keep_alive_(
+          profile,
+          ProfileKeepAliveOrigin::kDiceWebSigninInterceptionBubble),
       profile_(profile),
       bubble_parameters_(bubble_parameters),
       callback_(std::move(callback)) {

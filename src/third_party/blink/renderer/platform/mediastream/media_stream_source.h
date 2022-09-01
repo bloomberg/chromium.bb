@@ -35,6 +35,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/synchronization/lock.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_source.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_track.h"
@@ -55,6 +56,8 @@ namespace blink {
 
 class WebAudioDestinationConsumer;
 
+// GarbageCollected wrapper of a WebPlatformMediaStreamSource, which acts as a
+// source backing one or more MediaStreamTracks.
 class PLATFORM_EXPORT MediaStreamSource final
     : public GarbageCollected<MediaStreamSource> {
   USING_PRE_FINALIZER(MediaStreamSource, Dispose);
@@ -64,7 +67,7 @@ class PLATFORM_EXPORT MediaStreamSource final
    public:
     virtual ~Observer() = default;
     virtual void SourceChangedState() = 0;
-    virtual void SourceChangedCaptureHandle(media::mojom::CaptureHandlePtr) = 0;
+    virtual void SourceChangedCaptureHandle() = 0;
   };
 
   enum StreamType { kTypeAudio, kTypeVideo };
@@ -77,12 +80,24 @@ class PLATFORM_EXPORT MediaStreamSource final
 
   enum class EchoCancellationMode { kDisabled, kBrowser, kAec3, kSystem };
 
-  MediaStreamSource(const String& id,
-                    StreamType,
-                    const String& name,
-                    bool remote,
-                    ReadyState = kReadyStateLive,
-                    bool requires_consumer = false);
+  MediaStreamSource(
+      const String& id,
+      StreamType type,
+      const String& name,
+      bool remote,
+      std::unique_ptr<WebPlatformMediaStreamSource> platform_source,
+      ReadyState state = kReadyStateLive,
+      bool requires_consumer = false);
+
+  // TODO(crbug.com/1302689): Remove once all callers have been migrated.
+  [[deprecated(
+      "Provide a WebPlatformMediaStreamSource during "
+      "construction")]] MediaStreamSource(const String& id,
+                                          StreamType type,
+                                          const String& name,
+                                          bool remote,
+                                          ReadyState state = kReadyStateLive,
+                                          bool requires_consumer = false);
 
   const String& Id() const { return id_; }
   StreamType GetType() const { return type_; }
@@ -100,8 +115,6 @@ class PLATFORM_EXPORT MediaStreamSource final
   WebPlatformMediaStreamSource* GetPlatformSource() const {
     return platform_source_.get();
   }
-  void SetPlatformSource(
-      std::unique_ptr<WebPlatformMediaStreamSource> platform_source);
 
   void SetAudioProcessingProperties(EchoCancellationMode echo_cancellation_mode,
                                     bool auto_gain_control,
@@ -143,8 +156,8 @@ class PLATFORM_EXPORT MediaStreamSource final
   // The WebAudioDestinationConsumer is not owned, and has to be disposed of
   // separately after calling removeAudioConsumer.
   bool RequiresAudioConsumer() const { return requires_consumer_; }
-  void AddAudioConsumer(WebAudioDestinationConsumer*);
-  bool RemoveAudioConsumer(WebAudioDestinationConsumer*);
+  void SetAudioConsumer(WebAudioDestinationConsumer*);
+  bool RemoveAudioConsumer();
 
   void OnDeviceCaptureHandleChange(const MediaStreamDevice& device);
 
@@ -178,9 +191,9 @@ class PLATFORM_EXPORT MediaStreamSource final
   ReadyState ready_state_;
   bool requires_consumer_;
   HeapHashSet<WeakMember<Observer>> observers_;
-  Mutex audio_consumers_lock_;
-  HashMap<WebAudioDestinationConsumer*, std::unique_ptr<ConsumerWrapper>>
-      audio_consumers_ GUARDED_BY(audio_consumers_lock_);
+  base::Lock audio_consumer_lock_;
+  std::unique_ptr<ConsumerWrapper> audio_consumer_
+      GUARDED_BY(audio_consumer_lock_);
   std::unique_ptr<WebPlatformMediaStreamSource> platform_source_;
   MediaConstraints constraints_;
   Capabilities capabilities_;

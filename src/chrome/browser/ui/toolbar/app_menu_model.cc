@@ -30,7 +30,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search/search.h"
-#include "chrome/browser/sharing_hub/sharing_hub_features.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -41,7 +40,6 @@
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/browser/ui/managed_ui.h"
-#include "chrome/browser/ui/sharing_hub/sharing_hub_sub_menu_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/app_menu_icon_controller.h"
 #include "chrome/browser/ui/toolbar/bookmark_sub_menu_model.h"
@@ -49,6 +47,7 @@
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
 #include "chrome/browser/upgrade_detector/upgrade_detector.h"
+#include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
@@ -62,7 +61,6 @@
 #include "components/dom_distiller/content/browser/uma_helper.h"
 #include "components/dom_distiller/core/dom_distiller_features.h"
 #include "components/dom_distiller/core/url_utils.h"
-#include "components/media_router/browser/media_router_metrics.h"
 #include "components/prefs/pref_service.h"
 #include "components/profile_metrics/browser_profile_type.h"
 #include "components/signin/public/base/signin_metrics.h"
@@ -94,13 +92,13 @@
 #include "base/feature_list.h"
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
 #include "chrome/browser/policy/system_features_disable_list_policy_handler.h"
 #include "chromeos/ui/base/tablet_state.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #endif
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "base/win/shortcut.h"
 #include "base/win/windows_version.h"
 #include "content/public/browser/gpu_data_manager.h"
@@ -110,6 +108,7 @@ using base::UserMetricsAction;
 using content::WebContents;
 
 DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(AppMenuModel, kHistoryMenuItem);
+DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(AppMenuModel, kDownloadsMenuItem);
 
 namespace {
 
@@ -125,6 +124,13 @@ std::u16string GetUpgradeDialogMenuItemName() {
     return l10n_util::GetStringUTF16(IDS_RELAUNCH_TO_UPDATE);
   }
 }
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+// Returns the menu item name for Lacros data migration.
+std::u16string GetLacrosDataMigrationMenuItemName() {
+  return l10n_util::GetStringUTF16(IDS_LACROS_DATA_MIGRATION_RELAUNCH);
+}
+#endif
 
 // Returns the appropriate menu label for the IDC_INSTALL_PWA command if
 // available.
@@ -235,16 +241,12 @@ ToolsMenuModel::~ToolsMenuModel() = default;
 // - Developer tools.
 // - Option to enable profiling.
 void ToolsMenuModel::Build(Browser* browser) {
-  if (!base::FeatureList::IsEnabled(sharing_hub::kSharingHubDesktopAppMenu) ||
-      browser->profile()->IsIncognitoProfile() ||
-      browser->profile()->IsGuestSession()) {
-    AddItemWithStringId(IDC_SAVE_PAGE, IDS_SAVE_PAGE);
-  }
+  AddItemWithStringId(IDC_SAVE_PAGE, IDS_SAVE_PAGE);
 
   AddItemWithStringId(IDC_CREATE_SHORTCUT, IDS_ADD_TO_OS_LAUNCH_SURFACE);
   AddItemWithStringId(IDC_NAME_WINDOW, IDS_NAME_WINDOW);
   if (commander::IsEnabled())
-    AddItemWithStringId(IDC_TOGGLE_COMMANDER, IDS_TOGGLE_COMMANDER);
+    AddItemWithStringId(IDC_TOGGLE_QUICK_COMMANDS, IDS_TOGGLE_QUICK_COMMANDS);
 
   AddSeparator(ui::NORMAL_SEPARATOR);
   AddItemWithStringId(IDC_CLEAR_BROWSING_DATA, IDS_CLEAR_BROWSING_DATA);
@@ -298,7 +300,7 @@ void AppMenuModel::Init() {
   Observe(tab_strip_model->GetActiveWebContents());
   UpdateZoomControls();
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
   PrefService* const local_state = g_browser_process->local_state();
   if (local_state) {
     local_state_pref_change_registrar_.Init(local_state);
@@ -308,7 +310,7 @@ void AppMenuModel::Init() {
                             base::Unretained(this)));
     UpdateSettingsItemState();
   }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS)
 }
 
 bool AppMenuModel::DoesCommandIdDismissMenu(int command_id) const {
@@ -317,10 +319,12 @@ bool AppMenuModel::DoesCommandIdDismissMenu(int command_id) const {
 
 bool AppMenuModel::IsItemForCommandIdDynamic(int command_id) const {
   return command_id == IDC_ZOOM_PERCENT_DISPLAY ||
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
          command_id == IDC_FULLSCREEN ||
-#elif defined(OS_WIN)
+#elif BUILDFLAG(IS_WIN)
          command_id == IDC_PIN_TO_START_SCREEN ||
+#elif BUILDFLAG(IS_CHROMEOS_ASH)
+         command_id == IDC_LACROS_DATA_MIGRATION ||
 #endif
          command_id == IDC_INSTALL_PWA || command_id == IDC_UPGRADE_DIALOG;
 }
@@ -329,7 +333,7 @@ std::u16string AppMenuModel::GetLabelForCommandId(int command_id) const {
   switch (command_id) {
     case IDC_ZOOM_PERCENT_DISPLAY:
       return zoom_label_;
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
     case IDC_FULLSCREEN: {
       int string_id = IDS_ENTER_FULLSCREEN_MAC;  // Default to Enter.
       // Note: On startup, |window()| may be NULL.
@@ -337,12 +341,15 @@ std::u16string AppMenuModel::GetLabelForCommandId(int command_id) const {
         string_id = IDS_EXIT_FULLSCREEN_MAC;
       return l10n_util::GetStringUTF16(string_id);
     }
-#elif defined(OS_WIN)
+#elif BUILDFLAG(IS_WIN)
     case IDC_PIN_TO_START_SCREEN: {
       int string_id = IDS_PIN_TO_START_SCREEN;
       // TODO(scottmg): Remove http://crbug.com/558054.
       return l10n_util::GetStringUTF16(string_id);
     }
+#elif BUILDFLAG(IS_CHROMEOS_ASH)
+    case IDC_LACROS_DATA_MIGRATION:
+      return GetLacrosDataMigrationMenuItemName();
 #endif
     case IDC_INSTALL_PWA:
       return GetInstallPWAAppMenuItemName(browser_).value();
@@ -356,8 +363,16 @@ std::u16string AppMenuModel::GetLabelForCommandId(int command_id) const {
 }
 
 ui::ImageModel AppMenuModel::GetIconForCommandId(int command_id) const {
+  bool upgrade_icon_requested = false;
   if (command_id == IDC_UPGRADE_DIALOG) {
     DCHECK(browser_defaults::kShowUpgradeMenuItem);
+    upgrade_icon_requested = true;
+  }
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  if (command_id == IDC_LACROS_DATA_MIGRATION)
+    upgrade_icon_requested = true;
+#endif
+  if (upgrade_icon_requested) {
     DCHECK(app_menu_icon_controller_);
     return ui::ImageModel::FromVectorIcon(
         kBrowserToolsUpdateIcon,
@@ -386,6 +401,11 @@ void AppMenuModel::LogMenuMetrics(int command_id) {
     case IDC_UPGRADE_DIALOG:
       LogMenuAction(MENU_ACTION_UPGRADE_DIALOG);
       break;
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    case IDC_LACROS_DATA_MIGRATION:
+      LogMenuAction(MENU_ACTION_LACROS_DATA_MIGRATION);
+      break;
+#endif
     case IDC_NEW_TAB:
       if (!uma_action_recorded_)
         UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.NewTab", delta);
@@ -493,10 +513,6 @@ void AppMenuModel::LogMenuMetrics(int command_id) {
       if (!uma_action_recorded_)
         UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.Cast", delta);
       LogMenuAction(MENU_ACTION_CAST);
-      // TODO(takumif): Look into moving this metrics logging to a single
-      // location, like MediaRouterDialogController::ShowMediaRouterDialog().
-      media_router::MediaRouterMetrics::RecordMediaRouterDialogOrigin(
-          media_router::MediaRouterDialogOpenOrigin::APP_MENU);
       break;
 
     // Edit menu.
@@ -736,7 +752,12 @@ bool AppMenuModel::IsCommandIdEnabled(int command_id) const {
   if (error)
     return true;
 
-  return chrome::IsCommandEnabled(browser_, command_id);
+  switch (command_id) {
+    case IDC_NEW_INCOGNITO_WINDOW:
+      return IncognitoModePrefs::IsIncognitoAllowed(browser_->profile());
+    default:
+      return chrome::IsCommandEnabled(browser_, command_id);
+  }
 }
 
 bool AppMenuModel::IsCommandIdVisible(int command_id) const {
@@ -749,6 +770,14 @@ bool AppMenuModel::IsCommandIdVisible(int command_id) const {
       return app_menu_icon_controller_->GetTypeAndSeverity().type ==
              AppMenuIconController::IconType::UPGRADE_NOTIFICATION;
     }
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    case IDC_LACROS_DATA_MIGRATION: {
+      if (!app_menu_icon_controller_)
+        return false;
+      return app_menu_icon_controller_->GetTypeAndSeverity().type ==
+             AppMenuIconController::IconType::UPGRADE_NOTIFICATION;
+    }
+#endif
     default:
       return true;
   }
@@ -797,17 +826,31 @@ void AppMenuModel::Build() {
   // Build (and, by extension, Init) should only be called once.
   DCHECK_EQ(0, GetItemCount());
 
-  if (IsCommandIdVisible(IDC_UPGRADE_DIALOG))
+  bool need_separator = false;
+  if (IsCommandIdVisible(IDC_UPGRADE_DIALOG)) {
     AddItem(IDC_UPGRADE_DIALOG, GetUpgradeDialogMenuItemName());
-  if (AddGlobalErrorMenuItems() || IsCommandIdVisible(IDC_UPGRADE_DIALOG))
+    need_separator = true;
+  }
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  if (IsCommandIdVisible(IDC_LACROS_DATA_MIGRATION)) {
+    AddItem(IDC_LACROS_DATA_MIGRATION, GetLacrosDataMigrationMenuItemName());
+    need_separator = true;
+  }
+#endif
+
+  if (AddGlobalErrorMenuItems() || need_separator)
     AddSeparator(ui::NORMAL_SEPARATOR);
 
   AddItemWithStringId(IDC_NEW_TAB, browser_->profile()->IsIncognitoProfile()
                                        ? IDS_NEW_INCOGNITO_TAB
                                        : IDS_NEW_TAB);
   AddItemWithStringId(IDC_NEW_WINDOW, IDS_NEW_WINDOW);
-  if (ShouldShowNewIncognitoWindowMenuItem())
+
+  // This menu item is not visible in Guest Mode. If incognito mode is not
+  // available, it will be shown in disabled state. (crbug.com/1100791)
+  if (!browser_->profile()->IsGuestSession())
     AddItemWithStringId(IDC_NEW_INCOGNITO_WINDOW, IDS_NEW_INCOGNITO_WINDOW);
+
   AddSeparator(ui::NORMAL_SEPARATOR);
 
   if (!browser_->profile()->IsOffTheRecord()) {
@@ -819,6 +862,8 @@ void AppMenuModel::Build() {
                            kHistoryMenuItem);
   }
   AddItemWithStringId(IDC_SHOW_DOWNLOADS, IDS_SHOW_DOWNLOADS);
+  SetElementIdentifierAt(GetIndexOfCommandId(IDC_SHOW_DOWNLOADS),
+                         kDownloadsMenuItem);
   if (!browser_->profile()->IsGuestSession()) {
     bookmark_sub_menu_model_ =
         std::make_unique<BookmarkSubMenuModel>(this, browser_);
@@ -830,23 +875,10 @@ void AppMenuModel::Build() {
   CreateZoomMenu();
   AddSeparator(ui::UPPER_SEPARATOR);
 
-  if (!(browser_->profile()->IsIncognitoProfile() ||
-        browser_->profile()->IsGuestSession()) &&
-      sharing_hub::SharingHubAppMenuEnabled(browser()->profile())) {
-    sub_menus_.push_back(
-        std::make_unique<sharing_hub::SharingHubSubMenuModel>(browser_));
-    AddSubMenuWithStringId(IDC_SHARING_HUB_MENU, IDS_SHARING_HUB_TITLE,
-                           sub_menus_.back().get());
-  }
-
   AddItemWithStringId(IDC_PRINT, IDS_PRINT);
 
-  if (!sharing_hub::SharingHubAppMenuEnabled(browser()->profile()) ||
-      browser_->profile()->IsIncognitoProfile() ||
-      browser_->profile()->IsGuestSession()) {
-    if (media_router::MediaRouterEnabled(browser()->profile()))
-      AddItemWithStringId(IDC_ROUTE_MEDIA, IDS_MEDIA_ROUTER_MENU_ITEM_TITLE);
-  }
+  if (media_router::MediaRouterEnabled(browser()->profile()))
+    AddItemWithStringId(IDC_ROUTE_MEDIA, IDS_MEDIA_ROUTER_MENU_ITEM_TITLE);
 
   AddItemWithStringId(IDC_FIND, IDS_FIND);
 
@@ -859,7 +891,7 @@ void AppMenuModel::Build() {
         web_app::WebAppProvider::GetForLocalAppsUnchecked(browser_->profile());
     // Only applies to apps that open in an app window.
     if (provider->registrar().GetAppUserDisplayMode(*app_id) !=
-        web_app::DisplayMode::kBrowser) {
+        web_app::UserDisplayMode::kBrowser) {
       const std::u16string short_name =
           base::UTF8ToUTF16(provider->registrar().GetAppShortName(*app_id));
       const std::u16string truncated_name = gfx::TruncateString(
@@ -891,7 +923,7 @@ void AppMenuModel::Build() {
     }
   }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
   // Always show this option if we're in tablet mode on Chrome OS.
   if (chromeos::TabletState::Get() &&
       chromeos::TabletState::Get()->InTabletMode()) {
@@ -977,14 +1009,6 @@ void AppMenuModel::UpdateZoomControls() {
   zoom_label_ = base::FormatPercent(zoom_percent);
 }
 
-bool AppMenuModel::ShouldShowNewIncognitoWindowMenuItem() {
-  if (browser_->profile()->IsGuestSession())
-    return false;
-
-  return IncognitoModePrefs::GetAvailability(browser_->profile()->GetPrefs()) !=
-         IncognitoModePrefs::Availability::kDisabled;
-}
-
 bool AppMenuModel::AddGlobalErrorMenuItems() {
   // TODO(sail): Currently we only build the app menu once per browser
   // window. This means that if a new error is added after the menu is built
@@ -1000,10 +1024,6 @@ bool AppMenuModel::AddGlobalErrorMenuItems() {
       SetIcon(GetIndexOfCommandId(error->MenuItemCommandID()),
               error->MenuItemIcon());
       menu_items_added = true;
-      if (IDC_SHOW_SIGNIN_ERROR == error->MenuItemCommandID()) {
-        signin_metrics::RecordSigninImpressionUserActionForAccessPoint(
-            signin_metrics::AccessPoint::ACCESS_POINT_MENU);
-      }
     }
   }
   return menu_items_added;
@@ -1014,7 +1034,7 @@ void AppMenuModel::OnZoomLevelChanged(
   UpdateZoomControls();
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
 void AppMenuModel::UpdateSettingsItemState() {
   bool is_disabled =
       policy::SystemFeaturesDisableListPolicyHandler::IsSystemFeatureDisabled(
@@ -1040,4 +1060,4 @@ void AppMenuModel::UpdateSettingsItemState() {
     SetEnabledAt(index, !is_disabled);
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS)

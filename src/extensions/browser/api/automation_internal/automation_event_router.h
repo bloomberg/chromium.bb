@@ -10,6 +10,7 @@
 
 #include "base/memory/raw_ptr.h"
 #include "base/memory/singleton.h"
+#include "base/observer_list.h"
 #include "base/scoped_multi_source_observation.h"
 #include "content/public/browser/ax_event_notification_details.h"
 #include "content/public/browser/render_process_host.h"
@@ -62,6 +63,9 @@ class AutomationEventRouter : public content::RenderProcessHostObserver,
       const ExtensionId& extension_id,
       int listener_process_id,
       content::WebContents* web_contents);
+
+  // Undoes the Register call above. May result in disabling of automation.
+  void UnregisterListenerWithDesktopPermission(int lsitener_process_id);
 
   // The following two methods should only be called by Lacros.
   void NotifyAllAutomationExtensionsGone();

@@ -24,31 +24,33 @@ import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import './add_languages_dialog.js';
 import './languages.js';
 import '../controls/settings_toggle_button.js';
-import '../icons.js';
+import '../icons.html.js';
+// <if expr="not chromeos_ash">
+import '../relaunch_confirmation_dialog.js';
+// </if>
 import '../settings_shared_css.js';
-import '../settings_vars_css.js';
+import '../settings_vars.css.js';
 
 import {CrActionMenuElement} from '//resources/cr_elements/cr_action_menu/cr_action_menu.js';
 import {CrCheckboxElement} from 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.m.js';
 import {CrLazyRenderElement} from 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.m.js';
-import {assert} from 'chrome://resources/js/assert.m.js';
+import {assert} from 'chrome://resources/js/assert_ts.js';
 import {isWindows} from 'chrome://resources/js/cr.m.js';
 import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
 import {I18nMixin} from 'chrome://resources/js/i18n_mixin.js';
-import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-
+import {DomRepeatEvent, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 // <if expr="is_win">
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
 // </if>
 
 import {SettingsToggleButtonElement} from '../controls/settings_toggle_button.js';
 import {loadTimeData} from '../i18n_setup.js';
-// <if expr="is_win">
-import {LifetimeBrowserProxyImpl} from '../lifetime_browser_proxy.js';
-// </if>
 import {PrefsMixin} from '../prefs/prefs_mixin.js';
+import {RelaunchMixin, RestartType} from '../relaunch_mixin.js';
 
 import {LanguageSettingsActionType, LanguageSettingsMetricsProxy, LanguageSettingsMetricsProxyImpl, LanguageSettingsPageImpressionType} from './languages_settings_metrics_proxy.js';
+import {getTemplate} from './languages_subpage.html.js';
 import {LanguageHelper, LanguagesModel, LanguageState} from './languages_types.js';
 
 /**
@@ -57,22 +59,16 @@ import {LanguageHelper, LanguagesModel, LanguageState} from './languages_types.j
  */
 export const kMenuCloseDelay: number = 100;
 
-interface RepeaterEvent<T> extends Event {
-  model: {
-    item: T,
-  };
-}
-
 type FocusConfig = Map<string, (string|(() => void))>;
 
 export interface SettingsLanguagesSubpageElement {
   $: {
     menu: CrLazyRenderElement<CrActionMenuElement>,
-  }
+  };
 }
 
 const SettingsLanguagesSubpageElementBase =
-    I18nMixin(PrefsMixin(PolymerElement));
+    RelaunchMixin(I18nMixin(PrefsMixin(PolymerElement)));
 
 export class SettingsLanguagesSubpageElement extends
     SettingsLanguagesSubpageElementBase {
@@ -127,7 +123,7 @@ export class SettingsLanguagesSubpageElement extends
         type: Boolean,
         value: function() {
           let enabled = false;
-          // <if expr="not lacros">
+          // <if expr="not chromeos_lacros">
           enabled =
               loadTimeData.getBoolean('enableDesktopDetailedLanguageSettings');
           // </if>
@@ -172,7 +168,10 @@ export class SettingsLanguagesSubpageElement extends
   private onAddLanguagesDialogClose_() {
     this.showAddLanguagesDialog_ = false;
     this.addLanguagesDialogLanguages_ = null;
-    focusWithoutInk(assert(this.shadowRoot!.querySelector('#addLanguages')!));
+    const toFocus =
+        this.shadowRoot!.querySelector<HTMLElement>('#addLanguages');
+    assert(toFocus);
+    focusWithoutInk(toFocus);
   }
 
   private onLanguagesAdded_(e: CustomEvent<Array<string>>) {
@@ -200,8 +199,9 @@ export class SettingsLanguagesSubpageElement extends
   private onAlwaysTranslateDialogClose_() {
     this.showAddAlwaysTranslateDialog_ = false;
     this.addLanguagesDialogLanguages_ = null;
-    focusWithoutInk(
-        assert(this.shadowRoot!.querySelector('#addAlwaysTranslate')!));
+    const toFocus = this.shadowRoot!.querySelector('#addAlwaysTranslate');
+    assert(toFocus);
+    focusWithoutInk(toFocus);
   }
 
   /**
@@ -219,7 +219,7 @@ export class SettingsLanguagesSubpageElement extends
    * Removes a language from the always translate languages list.
    */
   private onRemoveAlwaysTranslateLanguageClick_(
-      e: RepeaterEvent<chrome.languageSettingsPrivate.Language>) {
+      e: DomRepeatEvent<chrome.languageSettingsPrivate.Language>) {
     const languageCode = e.model.item.code;
     this.languageHelper.setLanguageAlwaysTranslateState(languageCode, false);
   }
@@ -250,8 +250,9 @@ export class SettingsLanguagesSubpageElement extends
   private onNeverTranslateDialogClose_() {
     this.showAddNeverTranslateDialog_ = false;
     this.addLanguagesDialogLanguages_ = null;
-    focusWithoutInk(
-        assert(this.shadowRoot!.querySelector('#addNeverTranslate')!));
+    const toFocus = this.shadowRoot!.querySelector('#addNeverTranslate');
+    assert(toFocus);
+    focusWithoutInk(toFocus);
   }
 
   private onNeverTranslateLanguagesAdded_(e: CustomEvent<Array<string>>) {
@@ -265,7 +266,7 @@ export class SettingsLanguagesSubpageElement extends
    * Removes a language from the never translate languages list.
    */
   private onRemoveNeverTranslateLanguageClick_(
-      e: RepeaterEvent<chrome.languageSettingsPrivate.Language>) {
+      e: DomRepeatEvent<chrome.languageSettingsPrivate.Language>) {
     const languageCode = e.model.item.code;
     this.languageHelper.enableTranslateLanguage(languageCode);
   }
@@ -294,7 +295,7 @@ export class SettingsLanguagesSubpageElement extends
       return false;
     }
 
-    const compareLanguage = assert(this.languages.enabled[n]);
+    const compareLanguage = this.languages.enabled[n]!;
     return this.detailLanguage_.language === compareLanguage.language;
   }
 
@@ -414,6 +415,8 @@ export class SettingsLanguagesSubpageElement extends
         this.detailLanguage_!.language.code);
     this.languageHelper.moveLanguageToFront(
         this.detailLanguage_!.language.code);
+    LanguageSettingsMetricsProxyImpl.getInstance().recordSettingsMetric(
+        LanguageSettingsActionType.CHANGE_CHROME_LANGUAGE);
 
     this.closeMenuSoon_();
   }
@@ -437,7 +440,7 @@ export class SettingsLanguagesSubpageElement extends
    * Handler for the restart button.
    */
   private onRestartTap_() {
-    LifetimeBrowserProxyImpl.getInstance().restart();
+    this.performRestart(RestartType.RESTART);
   }
   // </if>
 
@@ -572,7 +575,7 @@ export class SettingsLanguagesSubpageElement extends
     return '';
   }
 
-  private onDotsTap_(e: RepeaterEvent<LanguageState>) {
+  private onDotsTap_(e: DomRepeatEvent<LanguageState>) {
     // Set a copy of the LanguageState object since it is not data-bound to
     // the languages model directly.
     this.detailLanguage_ = Object.assign({}, e.model.item);
@@ -620,7 +623,13 @@ export class SettingsLanguagesSubpageElement extends
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'settings-languages-subpage': SettingsLanguagesSubpageElement;
   }
 }
 

@@ -9,6 +9,7 @@ import android.app.Activity;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import org.chromium.base.Log;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
 import org.chromium.chrome.browser.bookmarks.BookmarkModel;
@@ -28,7 +29,10 @@ import java.util.List;
 
 /** Utility functions for reading list feature. */
 public final class ReadingListUtils {
+    private static final String TAG = "ReadingListUtils";
+
     private static Boolean sReadingListSupportedForTesting;
+    private static Boolean sSkipShowSaveFlowForTesting;
 
     /** Returns whether the URL can be added as reading list article. */
     public static boolean isReadingListSupported(GURL url) {
@@ -41,9 +45,8 @@ public final class ReadingListUtils {
     }
 
     /** Removes from the reading list the entry for the current tab. */
-    public static void deleteFromReadingList(
+    public static void deleteFromReadingList(final BookmarkModel bookmarkModel,
             SnackbarManager snackbarManager, Activity activity, Tab currentTab) {
-        final BookmarkModel bookmarkModel = new BookmarkModel();
         // This undo controller will dismiss itself when any action is taken.
         BookmarkUndoController.createOneshotBookmarkUndoController(
                 activity, bookmarkModel, snackbarManager);
@@ -70,14 +73,14 @@ public final class ReadingListUtils {
      *
      * @param activity The current Activity.
      * @param bottomsheetController The BottomsheetController, used to show the save flow.
-     * @param bookmarkModel The BookmarkModel which is used for bookmark operations.
+     * @param bookmarkBridge The BookmarkBridge which is used for bookmark operations.
      * @param bookmarkId The existing BookmarkId.
      * @param bookmarkType The intended bookmark type.
      * @return Whether the given bookmark item has been type-swapped and the save flow shown.
      */
     public static boolean maybeTypeSwapAndShowSaveFlow(@NonNull Activity activity,
             @NonNull BottomSheetController bottomsheetController,
-            @NonNull BookmarkModel bookmarkModel, @NonNull BookmarkId bookmarkId,
+            @NonNull BookmarkBridge bookmarkBridge, @NonNull BookmarkId bookmarkId,
             @BookmarkType int bookmarkType) {
         if (!ReadingListFeatures.shouldAllowBookmarkTypeSwapping() || bookmarkId == null
                 || bookmarkId.getType() != BookmarkType.NORMAL
@@ -89,23 +92,35 @@ public final class ReadingListUtils {
         // remove the regular bookmark first so the save flow is shown.
         List<BookmarkId> bookmarkIds = new ArrayList<>();
         bookmarkIds.add(bookmarkId);
-        ReadingListUtils.typeSwapBookmarksIfNecessary(
-                bookmarkModel, bookmarkIds, bookmarkModel.getReadingListFolder());
+        List<BookmarkId> typeSwappedBookmarks = new ArrayList<>();
+        typeSwapBookmarksIfNecessary(bookmarkBridge, bookmarkIds, typeSwappedBookmarks,
+                bookmarkBridge.getReadingListFolder());
+
+        assert typeSwappedBookmarks.size() == 1;
+        if (typeSwappedBookmarks.size() != 1) return false;
+
+        BookmarkId newBookmark = typeSwappedBookmarks.get(0);
+        if (Boolean.TRUE.equals(sSkipShowSaveFlowForTesting)) return true;
         BookmarkUtils.showSaveFlow(activity, bottomsheetController,
-                /*fromExplicitTrackUi=*/false, bookmarkIds.get(0), /*wasBookmarkMoved=*/true);
+                /*fromExplicitTrackUi=*/false, newBookmark,
+                /*wasBookmarkMoved=*/true);
         return true;
     }
 
     /**
-     * Performs type swapping on the given bookmarks if necessary.
+     * Performs type swapping on the given bookmarks if necessary. The input list will be modified,
+     * removing bookmarks that have been type swapped and thus don't need to be moved.
      *
      * @param bookmarkBridge The BookmarkBridge to perform add/delete operations.
      * @param bookmarksToMove The List of bookmarks to potentially type swap.
+     * @param typeSwappedBookmarks The list of bookmarks which have been type-swapped and thus don't
+     *         need to be moved.
      * @param newParentId The new parentId to use, the {@link BookmarkType} of this is used to
      *         determine if type-swapping is necessary.
      */
     public static void typeSwapBookmarksIfNecessary(BookmarkBridge bookmarkBridge,
-            List<BookmarkId> bookmarksToMove, BookmarkId newParentId) {
+            List<BookmarkId> bookmarksToMove, List<BookmarkId> typeSwappedBookmarks,
+            BookmarkId newParentId) {
         if (!ReadingListFeatures.shouldAllowBookmarkTypeSwapping()) return;
 
         List<BookmarkId> outputList = new ArrayList<>();
@@ -127,10 +142,12 @@ public final class ReadingListUtils {
                         existingBookmark.getTitle(), existingBookmark.getUrl());
             }
 
-            if (newBookmark != null) {
-                bookmarkBridge.deleteBookmark(bookmarkId);
-                outputList.add(newBookmark);
+            if (newBookmark == null) {
+                Log.e(TAG, "Null bookmark after typeswapping.");
+                continue;
             }
+            bookmarkBridge.deleteBookmark(bookmarkId);
+            typeSwappedBookmarks.add(newBookmark);
         }
 
         bookmarksToMove.addAll(outputList);
@@ -139,5 +156,21 @@ public final class ReadingListUtils {
     /** For cases where GURLs are faked for testing (e.g. test pages). */
     public static void setReadingListSupportedForTesting(Boolean supported) {
         sReadingListSupportedForTesting = supported;
+    }
+
+    /**
+     * Opens the Reading list folder in the bookmark manager.
+     *
+     * @param isIncognito Whether the bookmark manager should open in incognito mode.
+     */
+    public static void showReadingList(boolean isIncognito) {
+        if (!ReadingListFeatures.isReadingListEnabled()) return;
+        BookmarkUtils.showBookmarkManager(
+                null, new BookmarkId(0, BookmarkType.READING_LIST), /*isIncognito=*/isIncognito);
+    }
+
+    /** For cases where we don't want to mock the entire bookmarks save flow infra. */
+    public static void setSkipShowSaveFlowForTesting(Boolean skipShowSaveFlowForTesting) {
+        sSkipShowSaveFlowForTesting = skipShowSaveFlowForTesting;
     }
 }

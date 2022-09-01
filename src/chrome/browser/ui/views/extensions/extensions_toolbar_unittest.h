@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/views/frame/test_with_browser_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "content/public/test/web_contents_tester.h"
+#include "extensions/browser/permissions_manager.h"
 #include "extensions/common/extension.h"
 
 namespace extensions {
@@ -39,7 +40,7 @@ class ExtensionsToolbarUnitTest : public TestWithBrowserView {
     return browser_view()->toolbar()->extensions_container();
   }
 
-  // Adds the specified `extension` with no host permissions.
+  // Adds the specified `extension`.
   scoped_refptr<const extensions::Extension> InstallExtension(
       const std::string& name);
 
@@ -47,6 +48,18 @@ class ExtensionsToolbarUnitTest : public TestWithBrowserView {
   scoped_refptr<const extensions::Extension>
   InstallExtensionWithHostPermissions(
       const std::string& name,
+      const std::vector<std::string>& host_permissions);
+
+  // Adds the specified `extension` with the given `permissions`.
+  scoped_refptr<const extensions::Extension> InstallExtensionWithPermissions(
+      const std::string& name,
+      const std::vector<std::string>& permissions);
+
+  // Adds the specified `extension` with the given `host_permissions` and
+  // `permissions`.
+  scoped_refptr<const extensions::Extension> InstallExtension(
+      const std::string& name,
+      const std::vector<std::string>& permissions,
       const std::vector<std::string>& host_permissions);
 
   // Reloads the extension of the given `extension_id`.
@@ -61,8 +74,23 @@ class ExtensionsToolbarUnitTest : public TestWithBrowserView {
   // Disables the extension of the given `extension_id`.
   void DisableExtension(const extensions::ExtensionId& extension_id);
 
+  // Withhold all host permissions of the given `extension`.
+  void WithholdHostPermissions(const extensions::Extension* extension);
+
   // Triggers the press and release event of the given `button`.
   void ClickButton(views::Button* button) const;
+
+  // Returns the user's site setting for `url`.
+  extensions::PermissionsManager::UserSiteSetting GetUserSiteSetting(
+      const GURL& url);
+
+  // Returns a list of the views of the currently pinned extensions, in order
+  // from left to right.
+  std::vector<ToolbarActionView*> GetPinnedExtensionViews();
+
+  // Returns a list of the names of the currently pinned extensions, in order
+  // from left to right.
+  std::vector<std::string> GetPinnedExtensionNames();
 
   // Waits for the extensions container to animate (on pin, unpin, pop-out,
   // etc.)

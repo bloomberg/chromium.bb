@@ -51,7 +51,7 @@ namespace blink {
 
 namespace {
 
-static const size_t kRenderQuantumFrames = 128;
+constexpr size_t kRenderQuantumFrames = 128;
 
 }  // namespace
 
@@ -86,7 +86,7 @@ class AudioWorkletGlobalScopeTest : public PageTestBase, public ModuleTestBase {
             window->GetReferrerPolicy(), window->GetSecurityOrigin(),
             window->IsSecureContext(), window->GetHttpsState(),
             nullptr /* worker_clients */, nullptr /* content_settings_client */,
-            window->AddressSpace(), OriginTrialContext::GetTokens(window).get(),
+            OriginTrialContext::GetInheritedTrialFeatures(window).get(),
             base::UnguessableToken::Create(), nullptr /* worker_settings */,
             mojom::blink::V8CacheOptions::kDefault,
             MakeGarbageCollected<WorkletModuleResponsesMap>(),
@@ -162,7 +162,7 @@ class AudioWorkletGlobalScopeTest : public PageTestBase, public ModuleTestBase {
     ScriptEvaluationResult result =
         JSModuleScript::CreateForTest(Modulator::From(script_state), module,
                                       js_url)
-            ->RunScriptAndReturnValue();
+            ->RunScriptOnScriptStateAndReturnValue(script_state);
     if (expect_success) {
       EXPECT_FALSE(GetResult(script_state, result).IsEmpty());
     } else {
@@ -330,7 +330,7 @@ class AudioWorkletGlobalScopeTest : public PageTestBase, public ModuleTestBase {
     input_buses.push_back(input_bus.get());
     output_buses.push_back(output_bus.get());
 
-    // Fill |input_channel| with 1 and zero out |output_bus|.
+    // Fill `input_channel` with 1 and zero out `output_bus`.
     std::fill(input_channel->MutableData(),
               input_channel->MutableData() + input_channel->length(), 1);
     output_bus->Zero();

@@ -34,6 +34,7 @@ public class ContextualSearchFieldTrial {
     static final String RELATED_SEARCHES_NEEDS_CONTENT_PARAM_NAME = "needs_content";
     // A comma-separated list of lower-case ISO 639 language codes.
     static final String RELATED_SEARCHES_LANGUAGE_ALLOWLIST_PARAM_NAME = "language_allowlist";
+    static final String RELATED_SEARCHES_LANGUAGE_DEFAULT_ALLOWLIST = "en";
     private static final String RELATED_SEARCHES_CONFIG_STAMP_PARAM_NAME = "stamp";
 
     static final String RELATED_SEARCHES_SHOW_DEFAULT_QUERY_CHIP_PARAM_NAME = "default_query_chip";
@@ -43,13 +44,9 @@ public class ContextualSearchFieldTrial {
     static final String CONTEXTUAL_SEARCH_PROMO_CARD_MAX_SHOWN_PARAM_NAME = "promo_card_max_shown";
     private static final int PROMO_DEFAULT_LIMIT = 3;
 
-    // Deprecated.
-    private static final int MANDATORY_PROMO_DEFAULT_LIMIT = 10;
-
     // Cached values to avoid repeated and redundant JNI operations.
     private static Boolean sEnabled;
     private static Boolean[] sSwitches = new Boolean[ContextualSearchSwitch.NUM_ENTRIES];
-    private static Integer[] sSettings = new Integer[ContextualSearchSetting.NUM_ENTRIES];
 
     // SWITCHES
     // TODO(donnd): remove all supporting code once short-lived data collection is done.
@@ -72,7 +69,6 @@ public class ContextualSearchFieldTrial {
             ContextualSearchSwitch.IS_PAGE_CONTENT_NOTIFICATION_DISABLED,
             ContextualSearchSwitch.IS_UKM_RANKER_LOGGING_DISABLED,
             ContextualSearchSwitch.IS_CONTEXTUAL_SEARCH_ML_TAP_SUPPRESSION_ENABLED,
-            ContextualSearchSwitch.IS_CONTEXTUAL_SEARCH_SECOND_TAP_ML_OVERRIDE_ENABLED,
             ContextualSearchSwitch.IS_CONTEXTUAL_SEARCH_TAP_DISABLE_OVERRIDE_ENABLED,
             ContextualSearchSwitch.IS_SEND_BASE_PAGE_URL_DISABLED})
     @Retention(RetentionPolicy.SOURCE)
@@ -96,62 +92,103 @@ public class ContextualSearchFieldTrial {
         // TODO(donnd): Convert to test-only after launch and we have confidence it's robust.
         int IS_ONLINE_DETECTION_DISABLED = 1;
 
+        /** @deprecated */
         int IS_SEARCH_TERM_RESOLUTION_DISABLED = 2;
+        /** @deprecated */
         int IS_MANDATORY_PROMO_ENABLED = 3;
 
         /**
+         * @deprecated
          * Whether English-target translation should be enabled (default is disabled for 'en').
          * Enables usage of English as the target language even when it's the primary UI language.
          */
         int IS_ENGLISH_TARGET_TRANSLATION_ENABLED = 4;
-        /** Whether collecting data on Bar overlap is enabled. */
+        /**
+         * @deprecated
+         * Whether collecting data on Bar overlap is enabled.
+         */
         int IS_BAR_OVERLAP_COLLECTION_ENABLED = 5;
         /**
+         * @deprecated
          * Whether triggering is suppressed by a selection nearly overlapping the normal
          * Bar peeking location.
          */
         int IS_BAR_OVERLAP_SUPPRESSION_ENABLED = 6;
-        /** Whether triggering is suppressed by a tap that's near the edge of a word. */
+        /**
+         * @deprecated
+         * Whether triggering is suppressed by a tap that's near the edge of a word.
+         */
         int IS_WORD_EDGE_SUPPRESSION_ENABLED = 7;
-        /** Whether triggering is suppressed by a tap that's in a short word. */
+        /**
+         * @deprecated
+         * Whether triggering is suppressed by a tap that's in a short word.
+         * */
         int IS_SHORT_WORD_SUPPRESSION_ENABLED = 8;
-        /** Whether triggering is suppressed by a tap that's not in a long word. */
+        /**
+         * @deprecated
+         * Whether triggering is suppressed by a tap that's not in a long word.
+         */
         int IS_NOT_LONG_WORD_SUPPRESSION_ENABLED = 9;
-        /** Whether triggering is suppressed for a tap that's not on an entity. */
+        /**
+         * @deprecated
+         * Whether triggering is suppressed for a tap that's not on an entity.
+         */
         int IS_NOT_AN_ENTITY_SUPPRESSION_ENABLED = 10;
-        /** Whether triggering is suppressed due to lack of engagement with the feature. */
+        /**
+         * @deprecated
+         * Whether triggering is suppressed due to lack of engagement with the feature.
+         */
         int IS_ENGAGEMENT_SUPPRESSION_ENABLED = 11;
-        /** Whether triggering is suppressed for a tap that has a short element run-length. */
+        /**
+         * @deprecated
+         * Whether triggering is suppressed for a tap that has a short element run-length.
+         */
         int IS_SHORT_TEXT_RUN_SUPPRESSION_ENABLED = 12;
-        /** Whether triggering is suppressed for a tap on small-looking text. */
+        /**
+         * @deprecated
+         * Whether triggering is suppressed for a tap on small-looking text.
+         */
         int IS_SMALL_TEXT_SUPPRESSION_ENABLED = 13;
         /**
+         * @deprecated
          * Whether to disable auto-promotion of clicks in the AMP carousel into a
          * separate Tab.
          */
         int IS_AMP_AS_SEPARATE_TAB_DISABLED = 14;
-        /** Whether sending the "home country" to Google is disabled. */
+        /**
+         * @deprecated
+         * Whether sending the "home country" to Google is disabled.
+         */
         int IS_SEND_HOME_COUNTRY_DISABLED = 15;
         /**
+         * @deprecated
          * Whether sending the page content notifications to observers (e.g. icing for
          * conversational search) is disabled.
          */
         int IS_PAGE_CONTENT_NOTIFICATION_DISABLED = 16;
-        /** Whether logging for Machine Learning is disabled. */
-        int IS_UKM_RANKER_LOGGING_DISABLED = 17;
-        /** Whether or not ML-based Tap suppression is enabled. */
-        int IS_CONTEXTUAL_SEARCH_ML_TAP_SUPPRESSION_ENABLED = 18;
-        /** Whether or not to override an ML-based Tap suppression on a second tap. */
-        int IS_CONTEXTUAL_SEARCH_SECOND_TAP_ML_OVERRIDE_ENABLED = 19;
         /**
+         * @deprecated
+         * Whether logging for Machine Learning is disabled.
+         */
+        int IS_UKM_RANKER_LOGGING_DISABLED = 17;
+        /**
+         * @deprecated
+         * Whether or not ML-based Tap suppression is enabled.
+         */
+        int IS_CONTEXTUAL_SEARCH_ML_TAP_SUPPRESSION_ENABLED = 18;
+        /**
+         * @deprecated
          * Whether or not to override tap-disable for users that have never opened the
          * panel.
          */
-        int IS_CONTEXTUAL_SEARCH_TAP_DISABLE_OVERRIDE_ENABLED = 20;
-        /** Whether sending the URL of the page viewed by the user is disabled. */
-        int IS_SEND_BASE_PAGE_URL_DISABLED = 21;
+        int IS_CONTEXTUAL_SEARCH_TAP_DISABLE_OVERRIDE_ENABLED = 19;
+        /**
+         * @deprecated
+         * Whether sending the URL of the page viewed by the user is disabled.
+         */
+        int IS_SEND_BASE_PAGE_URL_DISABLED = 20;
 
-        int NUM_ENTRIES = 22;
+        int NUM_ENTRIES = 21;
     }
 
     @VisibleForTesting
@@ -180,69 +217,12 @@ public class ContextualSearchFieldTrial {
             "disable_page_content_notification", // IS_PAGE_CONTENT_NOTIFICATION_DISABLED
             "disable_ukm_ranker_logging", // IS_UKM_RANKER_LOGGING_DISABLED
             ChromeFeatureList.CONTEXTUAL_SEARCH_ML_TAP_SUPPRESSION, // (related to Chrome Feature)
-            ChromeFeatureList.CONTEXTUAL_SEARCH_SECOND_TAP, // (related to Chrome Feature)
             ChromeFeatureList.CONTEXTUAL_SEARCH_TAP_DISABLE_OVERRIDE, // (related to Chrome Feature)
             "disable_send_url" // IS_SEND_BASE_PAGE_URL_DISABLED
     };
 
-    @IntDef({ContextualSearchSetting.MANDATORY_PROMO_LIMIT,
-            ContextualSearchSetting.SCREEN_TOP_SUPPRESSION_DPS,
-            ContextualSearchSetting.MINIMUM_SELECTION_LENGTH,
-            ContextualSearchSetting.WAIT_AFTER_TAP_DELAY_MS,
-            ContextualSearchSetting.TAP_DURATION_THRESHOLD_MS,
-            ContextualSearchSetting.RECENT_SCROLL_DURATION_MS})
-    @Retention(RetentionPolicy.SOURCE)
-    /**
-     * These are integer Setting values that are backed by a Variation Param.
-     * Values are used for indexing ContextualSearchSwitchStrings - should start from 0 and can't
-     * have gaps.
-     */
-    @interface ContextualSearchSetting {
-        /** The number of times the Promo should be seen before it becomes mandatory. */
-        int MANDATORY_PROMO_LIMIT = 0;
-        /**
-         * A Y value limit that will suppress a Tap near the top of the screen.
-         * (any Y value less than the limit will suppress the Tap trigger).
-         */
-        int SCREEN_TOP_SUPPRESSION_DPS = 1;
-        /** The minimum valid selection length. */
-        int MINIMUM_SELECTION_LENGTH = 2;
-        /**
-         * An amount to delay after a Tap gesture is recognized, in case some user gesture
-         * immediately follows that would prevent the UI from showing.
-         * The classic example is a scroll, which might be a signal that the previous tap was
-         * accidental.
-         */
-        int WAIT_AFTER_TAP_DELAY_MS = 3;
-        /**
-         * A threshold for the duration of a tap gesture for categorization as brief or
-         * lengthy (the maximum amount of time in milliseconds for a tap gesture that's still
-         * considered a very brief duration tap).
-         */
-        int TAP_DURATION_THRESHOLD_MS = 4;
-        /**
-         * The duration to use for suppressing Taps after a recent scroll, or {@code 0} if no
-         * suppression is configured (the period of time after a scroll when tap triggering is
-         * suppressed).
-         */
-        int RECENT_SCROLL_DURATION_MS = 5;
-
-        int NUM_ENTRIES = 6;
-    }
-
-    // Indexed by ContextualSearchSetting
-    private static final String[] ContextualSearchSettingNames = {
-            "mandatory_promo_limit", // MANDATORY_PROMO_LIMIT
-            "screen_top_suppression_dps", // SCREEN_TOP_SUPPRESSION_DPS
-            "minimum_selection_length", // MINIMUM_SELECTION_LENGTH
-            "wait_after_tap_delay_ms", // WAIT_AFTER_TAP_DELAY_MS
-            "tap_duration_threshold_ms", // TAP_DURATION_THRESHOLD_MS
-            "recent_scroll_duration_ms" // RECENT_SCROLL_DURATION_MS
-    };
-
     private ContextualSearchFieldTrial() {
         assert ContextualSearchSwitchNames.length == ContextualSearchSwitch.NUM_ENTRIES;
-        assert ContextualSearchSettingNames.length == ContextualSearchSetting.NUM_ENTRIES;
     }
 
     /**
@@ -259,7 +239,6 @@ public class ContextualSearchFieldTrial {
         if (sSwitches[value] == null) {
             switch (value) {
                 case ContextualSearchSwitch.IS_CONTEXTUAL_SEARCH_ML_TAP_SUPPRESSION_ENABLED:
-                case ContextualSearchSwitch.IS_CONTEXTUAL_SEARCH_SECOND_TAP_ML_OVERRIDE_ENABLED:
                 case ContextualSearchSwitch.IS_CONTEXTUAL_SEARCH_TAP_DISABLE_OVERRIDE_ENABLED:
                     sSwitches[value] =
                             ChromeFeatureList.isEnabled(ContextualSearchSwitchNames[value]);
@@ -270,16 +249,6 @@ public class ContextualSearchFieldTrial {
             }
         }
         return sSwitches[value].booleanValue();
-    }
-
-    static int getValue(@ContextualSearchSetting int value) {
-        if (sSettings[value] == null) {
-            sSettings[value] = getIntParamValueOrDefault(ContextualSearchSettingNames[value],
-                    value == ContextualSearchSetting.MANDATORY_PROMO_LIMIT
-                            ? MANDATORY_PROMO_DEFAULT_LIMIT
-                            : 0);
-        }
-        return sSettings[value].intValue();
     }
 
     /**
@@ -383,30 +352,5 @@ public class ContextualSearchFieldTrial {
         }
         return TextUtils.equals(ENABLED_VALUE,
                 VariationsAssociatedData.getVariationParamValue(FIELD_TRIAL_NAME, paramName));
-    }
-
-    /**
-     * Returns an integer value for a Finch parameter, or the default value if no parameter
-     * exists in the current configuration.  Also checks for a command-line switch with the same
-     * name.
-     * @param paramName The name of the Finch parameter (or command-line switch) to get a value
-     *                  for.
-     * @param defaultValue The default value to return when there's no param or switch.
-     * @return An integer value -- either the param or the default.
-     */
-    private static int getIntParamValueOrDefault(String paramName, int defaultValue) {
-        String value = CommandLine.getInstance().getSwitchValue(paramName);
-        if (TextUtils.isEmpty(value)) {
-            value = VariationsAssociatedData.getVariationParamValue(FIELD_TRIAL_NAME, paramName);
-        }
-        if (!TextUtils.isEmpty(value)) {
-            try {
-                return Integer.parseInt(value);
-            } catch (NumberFormatException e) {
-                return defaultValue;
-            }
-        }
-
-        return defaultValue;
     }
 }

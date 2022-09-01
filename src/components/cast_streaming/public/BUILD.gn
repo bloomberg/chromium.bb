@@ -5,11 +5,16 @@
 import("//testing/test.gni")
 
 source_set("public") {
-  deps = [ "//url" ]
+  deps = [
+    "//components/cast_streaming:buildflags",
+    "//url",
+  ]
 
   sources = [
     "cast_streaming_url.cc",
     "cast_streaming_url.h",
+    "features.cc",
+    "features.h",
   ]
 }
 
@@ -46,10 +51,7 @@ source_set("remoting_utils") {
   public_configs =
       [ "//third_party/openscreen/src/build:openscreen_include_dirs" ]
 
-  deps = [
-    "//components/openscreen_platform:openscreen_platform",
-    "//components/openscreen_platform:openscreen_platform_network_service",
-  ]
+  deps = [ "//components/openscreen_platform:openscreen_platform" ]
 
   public_deps = [
     "//base",
@@ -66,6 +68,7 @@ source_set("unit_tests") {
     ":public",
     ":remoting_utils",
     "//base/test:test_support",
+    "//components/openscreen_platform:openscreen_platform_network_service",
     "//media:test_support",
     "//media/mojo:test_support",
     "//testing/gmock",

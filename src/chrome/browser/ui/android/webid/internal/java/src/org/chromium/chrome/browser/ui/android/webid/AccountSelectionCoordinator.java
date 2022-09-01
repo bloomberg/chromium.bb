@@ -21,13 +21,13 @@ import org.chromium.chrome.browser.ui.android.webid.data.IdentityProviderMetadat
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.util.ConversionUtils;
 import org.chromium.components.browser_ui.util.GlobalDiscardableReferencePool;
-import org.chromium.components.favicon.LargeIconBridge;
 import org.chromium.components.image_fetcher.ImageFetcher;
 import org.chromium.components.image_fetcher.ImageFetcherConfig;
 import org.chromium.components.image_fetcher.ImageFetcherFactory;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
+import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 import org.chromium.ui.modelutil.SimpleRecyclerViewAdapter;
-import org.chromium.url.GURL;
 
 import java.util.List;
 
@@ -50,9 +50,12 @@ public class AccountSelectionCoordinator implements AccountSelectionComponent {
         mBottomSheetController = sheetController;
         mContext = context;
 
+        PropertyModel model =
+                new PropertyModel.Builder(AccountSelectionProperties.ItemProperties.ALL_KEYS)
+                        .build();
         // Construct view and its related adaptor to be displayed in the bottom sheet.
         ModelList sheetItems = new ModelList();
-        View contentView = setupContentView(context, sheetItems);
+        View contentView = setupContentView(context, model, sheetItems);
         mSheetItemListView = contentView.findViewById(R.id.sheet_item_list);
 
         // Setup the bottom sheet content view.
@@ -68,18 +71,19 @@ public class AccountSelectionCoordinator implements AccountSelectionComponent {
                 GlobalDiscardableReferencePool.getReferencePool(), MAX_IMAGE_CACHE_SIZE);
 
         @Px
-        int avatar_size =
-                context.getResources().getDimensionPixelSize(R.dimen.list_item_start_icon_width);
-        @Px
-        int idp_icon_size = Math.round(avatar_size * 0.4f);
-        mMediator = new AccountSelectionMediator(delegate, sheetItems, mBottomSheetController,
-                mBottomSheetContent, imageFetcher, avatar_size, new LargeIconBridge(profile),
-                idp_icon_size);
+        int avatarSize = context.getResources().getDimensionPixelSize(
+                R.dimen.account_selection_account_avatar_size);
+        mMediator = new AccountSelectionMediator(delegate, model, sheetItems,
+                mBottomSheetController, mBottomSheetContent, imageFetcher, avatarSize);
     }
 
-    static View setupContentView(Context context, ModelList sheetItems) {
+    static View setupContentView(Context context, PropertyModel model, ModelList sheetItems) {
         View contentView = (LinearLayout) LayoutInflater.from(context).inflate(
                 R.layout.account_selection_sheet, null);
+
+        PropertyModelChangeProcessor.create(
+                model, contentView, AccountSelectionViewBinder::bindContentView);
+
         RecyclerView sheetItemListView = contentView.findViewById(R.id.sheet_item_list);
         sheetItemListView.setLayoutManager(new LinearLayoutManager(
                 sheetItemListView.getContext(), LinearLayoutManager.VERTICAL, false));
@@ -87,29 +91,12 @@ public class AccountSelectionCoordinator implements AccountSelectionComponent {
 
         // Setup the recycler view to be updated as we update the sheet items.
         SimpleRecyclerViewAdapter adapter = new SimpleRecyclerViewAdapter(sheetItems);
-        adapter.registerType(AccountSelectionProperties.ItemType.HEADER,
-                AccountSelectionCoordinator::buildHeaderView,
-                AccountSelectionViewBinder::bindHeaderView);
-        adapter.registerType(AccountSelectionProperties.ItemType.ACCOUNT,
+        adapter.registerType(AccountSelectionProperties.ITEM_TYPE_ACCOUNT,
                 AccountSelectionCoordinator::buildAccountView,
                 AccountSelectionViewBinder::bindAccountView);
-        adapter.registerType(AccountSelectionProperties.ItemType.CONTINUE_BUTTON,
-                AccountSelectionCoordinator::buildContinueButtonView,
-                AccountSelectionViewBinder::bindContinueButtonView);
-        adapter.registerType(AccountSelectionProperties.ItemType.AUTO_SIGN_IN_CANCEL_BUTTON,
-                AccountSelectionCoordinator::buildAutoSignInCancelButtonView,
-                AccountSelectionViewBinder::bindAutoSignInCancelButtonView);
-        adapter.registerType(AccountSelectionProperties.ItemType.DATA_SHARING_CONSENT,
-                AccountSelectionCoordinator::buildDataSharingConsentView,
-                AccountSelectionViewBinder::bindDataSharingConsentView);
         sheetItemListView.setAdapter(adapter);
 
         return contentView;
-    }
-
-    static View buildHeaderView(ViewGroup parent) {
-        return LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.account_selection_header_item, parent, false);
     }
 
     static View buildAccountView(ViewGroup parent) {
@@ -133,10 +120,11 @@ public class AccountSelectionCoordinator implements AccountSelectionComponent {
     }
 
     @Override
-    public void showAccounts(GURL rpUrl, GURL idpUrl, List<Account> accounts,
+    public void showAccounts(String rpEtldPlusOne, String idpEtldPlusOne, List<Account> accounts,
             IdentityProviderMetadata idpMetadata, ClientIdMetadata clientMetadata,
             boolean isAutoSignIn) {
-        mMediator.showAccounts(rpUrl, idpUrl, accounts, idpMetadata, clientMetadata, isAutoSignIn);
+        mMediator.showAccounts(
+                rpEtldPlusOne, idpEtldPlusOne, accounts, idpMetadata, clientMetadata, isAutoSignIn);
     }
 
     @Override

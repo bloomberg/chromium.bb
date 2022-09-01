@@ -68,4 +68,4 @@ February 9, 2009
 *   Erik is making progress on loading extensions once they've been
             installed.
 *   Matt is working on the new extension process model:
-            <http://dev.chromium.org/developers/design-documents/extensions/process-model>
+            <http://www.chromium.org/developers/design-documents/extensions/process-model>

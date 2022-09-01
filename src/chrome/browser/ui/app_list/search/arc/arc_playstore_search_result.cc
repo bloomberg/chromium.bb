@@ -19,6 +19,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/arc/arc_playstore_app_context_menu.h"
+#include "chrome/browser/ui/app_list/search/common/icon_constants.h"
 #include "chrome/browser/ui/app_list/search/search_tags_util.h"
 #include "components/crx_file/id_util.h"
 #include "ui/base/models/image_model.h"
@@ -118,7 +119,9 @@ ArcPlayStoreSearchResult::ArcPlayStoreSearchResult(
   SetCategory(Category::kPlayStore);
   SetDisplayType(ash::SearchResultDisplayType::kTile);
   // TODO: The badge icon should be updated to pass through a vector icon and
-  // color id rather than hardcoding the colors here.
+  // color id rather than hardcoding the colors here.  This will require
+  // tweaking sizes/paddings so we can set use_badge_icon_background to true and
+  // remove the superimposition onto a circle here.
   SetBadgeIcon(ui::ImageModel::FromImageSkia(CreateBadgeIcon(
       is_instant_app() ? ash::kBadgeInstantIcon : ash::kBadgePlayIcon,
       ash::SharedAppListConfig::instance().search_tile_badge_icon_dimension(),
@@ -162,7 +165,7 @@ AppContextMenu* ArcPlayStoreSearchResult::GetAppContextMenu() {
 }
 
 void ArcPlayStoreSearchResult::OnIconDecoded(const gfx::ImageSkia& icon) {
-  SetIcon(IconInfo(icon));
+  SetIcon(IconInfo(icon, GetAppIconDimension()));
 }
 
 }  // namespace app_list

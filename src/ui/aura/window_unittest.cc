@@ -629,7 +629,7 @@ TEST_F(WindowTest, MoveCursorToWithTransformRootWindow) {
   transform.Scale(2.0, 5.0);
   host()->SetRootTransform(transform);
   host()->MoveCursorToLocationInDIP(gfx::Point(10, 10));
-#if !defined(OS_WIN)
+#if !BUILDFLAG(IS_WIN)
   // TODO(yoshiki): fix this to build on Windows. See crbug.com/133413.OD
   EXPECT_EQ("50,120", QueryLatestMousePositionRequestInHost(host()).ToString());
 #endif
@@ -709,7 +709,7 @@ TEST_F(WindowTest, MoveCursorToWithComplexTransform) {
 
   w1111->MoveCursorTo(gfx::Point(10, 10));
 
-#if !defined(OS_WIN)
+#if !BUILDFLAG(IS_WIN)
   // TODO(yoshiki): fix this to build on Windows. See crbug.com/133413.
   EXPECT_EQ("169,80", QueryLatestMousePositionRequestInHost(host()).ToString());
 #endif
@@ -3644,6 +3644,72 @@ TEST_F(WindowTest, CleanupGestureStateDeleteOtherWindows) {
   EXPECT_EQ(1u, window.children().size());
   EXPECT_FALSE(child1);
   child2.reset();
+}
+
+class TestTouchWindowDelegate : public TestWindowDelegate {
+ public:
+  explicit TestTouchWindowDelegate() = default;
+  TestTouchWindowDelegate(const TestTouchWindowDelegate&) = delete;
+  TestTouchWindowDelegate& operator=(const TestTouchWindowDelegate&) = delete;
+  ~TestTouchWindowDelegate() override = default;
+
+  void OnTouchEvent(ui::TouchEvent* event) override {
+    if (event->type() == ui::ET_TOUCH_CANCELLED) {
+      if (on_touch_cancel_callback_) {
+        std::move(on_touch_cancel_callback_)
+            .Run(static_cast<Window*>(event->target()));
+      }
+    }
+  }
+
+  void SetOnTouchCancelCallback(base::OnceCallback<void(Window*)> callback) {
+    on_touch_cancel_callback_ = std::move(callback);
+  }
+
+ private:
+  base::OnceCallback<void(Window*)> on_touch_cancel_callback_;
+};
+
+// Test for use-after-free in crbug.com/1297643.
+TEST_F(WindowTest, DeleteWindowWhenCancellingTouch) {
+  TestTouchWindowDelegate window_delegate;
+  auto window = std::make_unique<Window>(&window_delegate);
+  window->Init(ui::LAYER_NOT_DRAWN);
+  root_window()->AddChild(window.get());
+  window->SetBounds(gfx::Rect(0, 0, 200, 200));
+  window->Show();
+
+  window_delegate.SetOnTouchCancelCallback(
+      base::BindLambdaForTesting([&window](Window* target) {
+        if (target == window.get()) {
+          window.reset();
+        }
+      }));
+
+  ui::test::EventGenerator event_generator(root_window(), window.get());
+  event_generator.PressTouch();
+  event_generator.MoveTouchBy(10, 10);
+
+  auto* gesture_recognizer = Env::GetInstance()->gesture_recognizer();
+  EXPECT_TRUE(gesture_recognizer->DoesConsumerHaveActiveTouch(window.get()));
+
+  // Hide window which should cancel touch.
+  window->Hide();
+  // Window should've been deleted.
+  EXPECT_FALSE(window);
+
+  // Create two new windows to transfer between.
+  Window window1(nullptr);
+  window1.Init(ui::LAYER_NOT_DRAWN);
+  root_window()->AddChild(&window1);
+
+  Window window2(nullptr);
+  window2.Init(ui::LAYER_NOT_DRAWN);
+  root_window()->AddChild(&window2);
+
+  // This should not cause use-after-free.
+  gesture_recognizer->TransferEventsTo(
+      &window1, &window2, ui::TransferTouchesBehavior::kDontCancel);
 }
 
 class WindowActualScreenBoundsTest

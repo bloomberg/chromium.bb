@@ -26,7 +26,7 @@
 #include "components/ukm/ukm_recorder_impl.h"
 #include "components/version_info/version_info.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "base/android/build_info.h"
 #include "base/android/bundle_utils.h"
 #include "base/task/thread_pool/environment_config.h"
@@ -38,8 +38,8 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/ash/sync/sync_consent_optional_field_trial.h"
-#include "chromeos/services/multidevice_setup/public/cpp/first_run_field_trial.h"
+#include "ash/services/multidevice_setup/public/cpp/first_run_field_trial.h"
+#include "chrome/browser/ash/login/consolidated_consent_field_trial.h"
 #endif
 
 namespace {
@@ -47,10 +47,10 @@ namespace {
 // Create a field trial to control metrics/crash sampling for Stable on
 // Windows/Android if no variations seed was applied.
 void CreateFallbackSamplingTrialIfNeeded(base::FeatureList* feature_list) {
-#if defined(OS_WIN) || defined(OS_ANDROID)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID)
   ChromeMetricsServicesManagerClient::CreateFallbackSamplingTrial(
       chrome::GetChannel(), feature_list);
-#endif  // defined(OS_WIN) || defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID)
 }
 
 // Create a field trial to control UKM sampling for Stable if no variations
@@ -58,6 +58,31 @@ void CreateFallbackSamplingTrialIfNeeded(base::FeatureList* feature_list) {
 void CreateFallbackUkmSamplingTrialIfNeeded(base::FeatureList* feature_list) {
   ukm::UkmRecorderImpl::CreateFallbackSamplingTrial(
       chrome::GetChannel() == version_info::Channel::STABLE, feature_list);
+}
+
+void MaybeCreateDCheckIsFatalFieldTrial(base::FeatureList* feature_list) {
+#if defined(DCHECK_IS_CONFIGURABLE)
+  // If DCHECK_IS_CONFIGURABLE then configure the DCheckIsFatal dynamic trial
+  // (see crbug.com/596231). This must be instantiated before the FeatureList
+  // is set, since FeatureList::SetInstance() will configure LOGGING_DCHECK
+  // based on the Feature's state, in DCHECK_IS_CONFIGURABLE builds.
+  // Always enable the trial at 50/50 per-session.
+  base::FieldTrial* const trial = base::FieldTrialList::FactoryGetFieldTrial(
+      "DCheckIsFatal", 100, "Default",
+      base::FieldTrial::RandomizationType::SESSION_RANDOMIZED,
+      /* default_group_number */ nullptr);
+  const int enabled_group = trial->AppendGroup("Enabled_20220517", 50);
+  trial->AppendGroup("Disabled_20220517", 50);
+
+  LOG(WARNING) << "DCheckIsFatal group: " << trial->group_name();
+
+  feature_list->RegisterFieldTrialOverride(
+      base::kDCheckIsFatalFeature.name,
+      ((trial->group() == enabled_group)
+           ? base::FeatureList::OVERRIDE_ENABLE_FEATURE
+           : base::FeatureList::OVERRIDE_DISABLE_FEATURE),
+      trial);
+#endif  // defined(DCHECK_IS_CONFIGURABLE)
 }
 
 }  // namespace
@@ -74,7 +99,7 @@ void ChromeBrowserFieldTrials::SetUpFieldTrials() {
   // Field trials that are shared by all platforms.
   InstantiateDynamicTrials();
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   chrome::SetupMobileFieldTrials();
 #endif
 }
@@ -83,6 +108,10 @@ void ChromeBrowserFieldTrials::SetUpFeatureControllingFieldTrials(
     bool has_seed,
     const base::FieldTrial::EntropyProvider* low_entropy_provider,
     base::FeatureList* feature_list) {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  ash::consolidated_consent_field_trial::Create(feature_list, local_state_);
+#endif
+
   // Only create the fallback trials if there isn't already a variations seed
   // being applied. This should occur during first run when first-run variations
   // isn't supported. It's assumed that, if there is a seed, then it either
@@ -92,18 +121,15 @@ void ChromeBrowserFieldTrials::SetUpFeatureControllingFieldTrials(
     CreateFallbackSamplingTrialIfNeeded(feature_list);
     CreateFallbackUkmSamplingTrialIfNeeded(feature_list);
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    chromeos::multidevice_setup::CreateFirstRunFieldTrial(feature_list);
+    ash::multidevice_setup::CreateFirstRunFieldTrial(feature_list);
 #endif
   }
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  // This trial is fully client controlled and must be configured whether or
-  // not a seed is available.
-  sync_consent_optional_field_trial::Create(feature_list, local_state_);
-#endif
+
+  MaybeCreateDCheckIsFatalFieldTrial(feature_list);
 }
 
 void ChromeBrowserFieldTrials::RegisterSyntheticTrials() {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   static constexpr char kReachedCodeProfilerTrial[] =
       "ReachedCodeProfilerSynthetic2";
   std::string reached_code_profiler_group =
@@ -111,31 +137,6 @@ void ChromeBrowserFieldTrials::RegisterSyntheticTrials() {
   if (!reached_code_profiler_group.empty()) {
     ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
         kReachedCodeProfilerTrial, reached_code_profiler_group);
-  }
-
-  {
-    // EarlyLibraryLoadSynthetic field trial.
-    const char* group_name;
-    bool java_feature_enabled = chrome::android::IsJavaDrivenFeatureEnabled(
-        features::kEarlyLibraryLoad);
-    bool feature_enabled =
-        base::FeatureList::IsEnabled(features::kEarlyLibraryLoad);
-    // Use the default group if cc and java feature values don't agree (can
-    // happen on first startup after feature is enabled by Finch), or the
-    // feature is not overridden by Finch.
-    if (feature_enabled != java_feature_enabled ||
-        !base::FeatureList::GetInstance()->IsFeatureOverridden(
-            features::kEarlyLibraryLoad.name)) {
-      group_name = "Default";
-    } else if (java_feature_enabled) {
-      group_name = "Enabled";
-    } else {
-      group_name = "Disabled";
-    }
-    static constexpr char kEarlyLibraryLoadTrial[] =
-        "EarlyLibraryLoadSynthetic";
-    ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
-        kEarlyLibraryLoadTrial, group_name);
   }
 
   {
@@ -186,8 +187,23 @@ void ChromeBrowserFieldTrials::RegisterSyntheticTrials() {
         fre_mobile_identity_consistency_field_trial::GetFREFieldTrialGroup();
     ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
         kFREMobileIdentityConsistencyTrial, group);
+
+    if (fre_mobile_identity_consistency_field_trial::IsFREFieldTrialEnabled()) {
+      // MobileIdentityConsistencyFREVariationsSynthetic field trial.
+      // This trial experiments with different title and subtitle variation in
+      // the FRE UI. This is a follow up experiment to
+      // MobileIdentityConsistencyFRESynthetic and thus is only used for the
+      // enabled population of MobileIdentityConsistencyFRESynthetic.
+      static constexpr char kFREMobileIdentityConsistencyVariationsTrial[] =
+          "FREMobileIdentityConsistencyVariationsSynthetic";
+      const std::string variation_group =
+          fre_mobile_identity_consistency_field_trial::
+              GetFREVariationsFieldTrialGroup();
+      ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
+          kFREMobileIdentityConsistencyVariationsTrial, variation_group);
+    }
   }
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 }
 
 void ChromeBrowserFieldTrials::InstantiateDynamicTrials() {

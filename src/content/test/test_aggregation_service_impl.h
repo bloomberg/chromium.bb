@@ -18,10 +18,6 @@ namespace base {
 class Clock;
 }  // namespace base
 
-namespace url {
-class Origin;
-}  // namespace url
-
 namespace content {
 
 class AggregatableReportSender;
@@ -48,18 +44,18 @@ class TestAggregationServiceImpl : public AggregationServiceStorageContext,
 
   // TestAggregationService:
   void SetDisablePayloadEncryption(bool should_disable) override;
-  void SetPublicKeys(const url::Origin& origin,
-                     const std::string& json_string,
+  void SetPublicKeys(const GURL& url,
+                     const base::FilePath& json_file,
                      base::OnceCallback<void(bool)> callback) override;
   void AssembleReport(
       AssembleRequest request,
-      base::OnceCallback<void(base::Value::DictStorage)> callback) override;
+      base::OnceCallback<void(base::Value::Dict)> callback) override;
   void SendReport(const GURL& url,
                   const base::Value& contents,
                   base::OnceCallback<void(bool)> callback) override;
 
   void GetPublicKeys(
-      const url::Origin& origin,
+      const GURL& url,
       base::OnceCallback<void(std::vector<PublicKey>)> callback) const;
 
  private:
