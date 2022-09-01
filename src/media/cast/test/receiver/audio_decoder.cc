@@ -16,6 +16,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/sys_byteorder.h"
 #include "build/build_config.h"
+#include "media/cast/common/encoded_frame.h"
 #include "third_party/opus/src/include/opus.h"
 
 namespace media {
@@ -152,7 +153,6 @@ class AudioDecoder::OpusImpl final : public AudioDecoder::ImplBase {
     // Copy interleaved samples from |buffer_| into a new AudioBus (where
     // samples are stored in planar format, for each channel).
     audio_bus = AudioBus::Create(num_channels_, num_samples_decoded);
-    // TODO(miu): This should be moved into AudioBus::FromInterleaved().
     for (int ch = 0; ch < num_channels_; ++ch) {
       const float* src = buffer_.get() + ch;
       const float* const src_end = src + num_samples_decoded * num_channels_;

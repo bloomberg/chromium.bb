@@ -335,6 +335,10 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
 #if BUILDFLAG(ENABLE_PLATFORM_AC3_EAC3_AUDIO)
           audio_format != FOURCC_AC3 && audio_format != FOURCC_EAC3 &&
 #endif
+#if BUILDFLAG(USE_PROPRIETARY_CODECS) && BUILDFLAG(ENABLE_PLATFORM_DTS_AUDIO)
+          audio_format != FOURCC_DTSC && audio_format != FOURCC_DTSX &&
+#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS) &&
+        // BUILDFLAG(ENABLE_PLATFORM_DTS_AUDIO)
 #if BUILDFLAG(ENABLE_PLATFORM_MPEG_H_AUDIO)
           audio_format != FOURCC_MHM1 && audio_format != FOURCC_MHA1 &&
 #endif
@@ -396,6 +400,14 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
             audio_type = kEAC3;
         }
 #endif
+#if BUILDFLAG(ENABLE_PLATFORM_DTS_AUDIO)
+        if (audio_type == kForbidden) {
+          if (audio_format == FOURCC_DTSC)
+            audio_type = kDTS;
+          if (audio_format == FOURCC_DTSX)
+            audio_type = kDTSX;
+        }
+#endif
         DVLOG(1) << "audio_type 0x" << std::hex << static_cast<int>(audio_type);
         if (audio_object_types_.find(audio_type) == audio_object_types_.end()) {
           MEDIA_LOG(ERROR, media_log_)
@@ -417,9 +429,9 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
           // Android. This is for backward compatibility until we have a better
           // solution. See crbug.com/1245123 for details.
           aac_extra_data = aac.codec_specific_data();
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
           extra_data = aac.codec_specific_data();
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 #if BUILDFLAG(ENABLE_PLATFORM_AC3_EAC3_AUDIO)
         } else if (audio_type == kAC3) {
           codec = AudioCodec::kAC3;
@@ -427,6 +439,18 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
           sample_per_second = entry.samplerate;
         } else if (audio_type == kEAC3) {
           codec = AudioCodec::kEAC3;
+          channel_layout = GuessChannelLayout(entry.channelcount);
+          sample_per_second = entry.samplerate;
+#endif
+#if BUILDFLAG(ENABLE_PLATFORM_DTS_AUDIO)
+        } else if (audio_type == kDTS) {
+          codec = AudioCodec::kDTS;
+          channel_layout = GuessChannelLayout(entry.channelcount);
+          sample_per_second = entry.samplerate;
+        } else if (audio_type == kDTSX) {
+          // HDMI versions pre HDMI 2.0 can only transmit 8 raw PCM channels.
+          // In the case of a 5_1_4 stream we downmix to 5_1.
+          codec = AudioCodec::kDTSXP2;
           channel_layout = GuessChannelLayout(entry.channelcount);
           sample_per_second = entry.samplerate;
 #endif
@@ -615,7 +639,7 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
                                    << "limit";
       return false;
     }
-    params.liveness = DemuxerStream::LIVENESS_RECORDED;
+    params.liveness = StreamLiveness::kRecorded;
   } else if (moov_->header.duration > 0 &&
              ((moov_->header.version == 0 &&
                moov_->header.duration !=
@@ -635,7 +659,7 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
                                    << "limit";
       return false;
     }
-    params.liveness = DemuxerStream::LIVENESS_RECORDED;
+    params.liveness = StreamLiveness::kRecorded;
   } else {
     // In ISO/IEC 14496-12:2005(E), 8.30.2: ".. If an MP4 file is created in
     // real-time, such as used in live streaming, it is not likely that the
@@ -647,10 +671,10 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
 
     // TODO(wolenetz): Investigate gating liveness detection on timeline_offset
     // when it's populated. See http://crbug.com/312699
-    params.liveness = DemuxerStream::LIVENESS_LIVE;
+    params.liveness = StreamLiveness::kLive;
   }
 
-  DVLOG(1) << "liveness: " << params.liveness;
+  DVLOG(1) << "liveness: " << GetStreamLivenessName(params.liveness);
 
   if (init_cb_) {
     params.detected_audio_track_count = detected_audio_track_count;
@@ -920,7 +944,7 @@ ParseResult MP4StreamParser::EnqueueSample(BufferQueueMap* buffers) {
     return ParseResult::kError;
   }
 
-  if (runs_->dts() != kNoDecodeTimestamp()) {
+  if (runs_->dts() != kNoDecodeTimestamp) {
     stream_buf->SetDecodeTimestamp(runs_->dts());
   } else {
     MEDIA_LOG(ERROR, media_log_) << "Frame DTS exceeds representable limit";

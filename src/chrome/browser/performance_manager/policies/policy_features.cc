@@ -17,11 +17,11 @@
 namespace performance_manager {
 namespace features {
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 // Empty the working set of processes in which all frames are frozen.
 const base::Feature kEmptyWorkingSet{"EmptyWorkingSet",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -72,7 +72,19 @@ const base::FeatureParam<bool> kTrimArcVmOnCriticalPressure = {
 
 const base::FeatureParam<bool> kTrimArcVmOnFirstMemoryPressureAfterArcVmBoot = {
     &kTrimArcVmOnMemoryPressure, "TrimArcVmOnFirstMemoryPressureAfterArcVmBoot",
-    false};
+    true};
+
+const base::FeatureParam<bool>
+    kOnlyDropCachesOnFirstMemoryPressureAfterArcVmBoot = {
+        &kTrimArcVmOnMemoryPressure,
+        "OnlyDropCachesOnFirstMemoryPressureAfterArcVmBoot", true};
+
+const base::FeatureParam<int> kTrimArcVmMaxPagesPerIteration = {
+    &kTrimArcVmOnMemoryPressure, "MaxPageLimit", arc::ArcSession::kNoPageLimit};
+
+const base::FeatureParam<int> kTrimArcVmPagesPerMinute = {
+    &kTrimArcVmOnMemoryPressure, "PagesPerMinute",
+    arc::ArcSession::kNoPageLimit};
 
 // Specifies the minimum amount of time a parent frame node must be invisible
 // before considering the process node for working set trim.
@@ -119,25 +131,15 @@ TrimOnMemoryPressureParams TrimOnMemoryPressureParams::GetParams() {
   params.trim_arcvm_on_critical_pressure = kTrimArcVmOnCriticalPressure.Get();
   params.trim_arcvm_on_first_memory_pressure_after_arcvm_boot =
       kTrimArcVmOnFirstMemoryPressureAfterArcVmBoot.Get();
+  params.only_drop_caches_on_first_memory_pressure_after_arcvm_boot =
+      kOnlyDropCachesOnFirstMemoryPressureAfterArcVmBoot.Get();
+
+  params.trim_arcvm_max_pages_per_iteration =
+      kTrimArcVmMaxPagesPerIteration.Get();
+  params.trim_arcvm_pages_per_minute = kTrimArcVmPagesPerMinute.Get();
 
   return params;
 }
-
-#if BUILDFLAG(USE_TCMALLOC)
-// This flag will allow the browser process to adjust the tcmalloc tunables to
-// balance performance and memory utilization.
-const base::Feature kDynamicTcmallocTuning{"DynamicTcmallocTuning",
-                                           base::FEATURE_ENABLED_BY_DEFAULT};
-
-// The time between attempting to update tcmalloc tunables.
-const base::FeatureParam<int> kDynamicTuningTimeSec = {
-    &kDynamicTcmallocTuning, "DynamicTcmallocTuneTimeSec", 120};
-
-// The time a frame must be invisible before being additionally scaled. -1 will
-// disable invisible scaling.
-const base::FeatureParam<int> kDynamicTuningScaleInvisibleTimeSec = {
-    &kDynamicTcmallocTuning, "DynamicTcmallocScaleInvisibleTimeSec", -1};
-#endif  // BUILDFLAG(USE_TCMALLOC)
 
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 

@@ -108,8 +108,9 @@ class WebViewAutofillClientIOS : public AutofillClient {
                    PopupType popup_type) override;
   void HideAutofillPopup(PopupHidingReason reason) override;
   bool IsAutocompleteEnabled() override;
+  bool IsPasswordManagerEnabled() override;
   void PropagateAutofillPredictions(
-      content::RenderFrameHost* rfh,
+      AutofillDriver* driver,
       const std::vector<FormStructure*>& forms) override;
   void DidFillOrPreviewField(const std::u16string& autofilled_value,
                              const std::u16string& profile_full_name) override;
@@ -117,6 +118,7 @@ class WebViewAutofillClientIOS : public AutofillClient {
   bool ShouldShowSigninPromo() override;
   bool AreServerCardsSupported() const override;
   void ExecuteCommand(int id) override;
+  void OpenPromoCodeOfferDetailsURL(const GURL& url) override;
 
   // RiskDataLoader:
   void LoadRiskData(

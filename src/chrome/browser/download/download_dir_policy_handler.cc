@@ -39,7 +39,7 @@ bool DownloadDirPolicyHandler::CheckPolicySettings(
   if (!CheckAndGetValue(policies, errors, &value))
     return false;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
   // Download directory can only be set as a user policy. If it is set through
   // platform policy for a chromeos=1 build, ignore it.
   if (value &&
@@ -56,12 +56,13 @@ void DownloadDirPolicyHandler::ApplyPolicySettingsWithParameters(
     const policy::PolicyMap& policies,
     const policy::PolicyHandlerParameters& parameters,
     PrefValueMap* prefs) {
-  const base::Value* value = policies.GetValue(policy_name());
-  if (!value || !value->is_string())
+  const base::Value* value =
+      policies.GetValue(policy_name(), base::Value::Type::STRING);
+  if (!value)
     return;
   std::string str_value = value->GetString();
   base::FilePath::StringType string_value =
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
       base::UTF8ToWide(str_value);
 #else
       str_value;
@@ -77,7 +78,7 @@ void DownloadDirPolicyHandler::ApplyPolicySettingsWithParameters(
     expanded_value = policy::path_parser::ExpandPathVariables(
         DownloadPrefs::GetDefaultDownloadDirectory().value());
   }
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   prefs->SetValue(prefs::kDownloadDefaultDirectory,
                   base::Value(base::WideToUTF8(expanded_value)));
 #else

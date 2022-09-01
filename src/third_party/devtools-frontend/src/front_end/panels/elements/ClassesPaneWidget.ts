@@ -234,7 +234,7 @@ export class ClassesPaneWidget extends UI.Widget.Widget {
     const newClasses = [...activeClasses.values()].sort();
 
     this.pendingNodeClasses.set(node, newClasses.join(' '));
-    this.updateNodeThrottler.schedule(this.flushPendingClasses.bind(this));
+    void this.updateNodeThrottler.schedule(this.flushPendingClasses.bind(this));
   }
 
   private async flushPendingClasses(): Promise<void> {
@@ -313,7 +313,7 @@ export class ClassNamePrompt extends UI.TextPrompt.TextPrompt {
       if (stylesheet.frameId !== this.selectedFrameId) {
         continue;
       }
-      const cssPromise = cssModel.classNamesPromise(stylesheet.id).then(classes => {
+      const cssPromise = cssModel.getClassNames(stylesheet.id).then(classes => {
         for (const className of classes) {
           completions.add(className);
         }

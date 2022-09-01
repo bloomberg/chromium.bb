@@ -72,6 +72,10 @@ var CanvasKit = {
   // Defined by emscripten.
   createContext: function() {},
 
+  // Added by debugger when it extends canvaskit
+  MinVersion: function() {},
+  SkpFilePlayer: function() {},
+
   // private API (i.e. things declared in the bindings that we use
   // in the pre-js file)
   _MakeGrContext: function() {},
@@ -154,6 +158,7 @@ var CanvasKit = {
     addText: function() {},
     build: function() {},
     pop: function() {},
+    reset: function() {},
 
     prototype: {
       pushStyle: function() {},
@@ -249,6 +254,7 @@ var CanvasKit = {
       drawText: function() {},
       drawTextBlob: function() {},
       drawVertices: function() {},
+      getDeviceClipBounds: function() {},
       getLocalToDevice: function() {},
       getTotalMatrix: function() {},
       readPixels: function() {},
@@ -291,6 +297,7 @@ var CanvasKit = {
     _drawSimpleText: function() {},
     _drawTextBlob: function() {},
     _drawVertices: function() {},
+    _getDeviceClipBounds: function() {},
     _getLocalToDevice: function() {},
     _getTotalMatrix: function() {},
     _readPixels: function() {},
@@ -501,9 +508,14 @@ var CanvasKit = {
     MakeCorner: function() {},
     MakeDash: function() {},
     MakeDiscrete: function() {},
+    MakePath1D: function() {},
+    MakeLine2D: function() {},
+    MakePath2D: function() {},
 
     // Private C++ API
     _MakeDash: function() {},
+    _MakeLine2D: function() {},
+    _MakePath2D: function() {},
   },
 
   ParticleEffect: {
@@ -627,6 +639,10 @@ var CanvasKit = {
 
   Picture: {
     serialize: function() {},
+    prototype: {
+      makeShader: function() {},
+    },
+    _makeShader: function() {},
   },
 
   PictureRecorder: {
@@ -674,6 +690,7 @@ var CanvasKit = {
       /** @return {CanvasKit.Image} */
       makeImageSnapshot: function() {},
       makeSurface: function() {},
+      updateTextureFromSource: function() {},
     },
 
     // private API
@@ -683,6 +700,7 @@ var CanvasKit = {
     _makeImageSnapshot: function() {},
     _makeSurface: function() {},
     _makeRasterDirect: function() {},
+    _resetContext: function() {},
     delete: function() {},
   },
 
@@ -743,6 +761,11 @@ var CanvasKit = {
   },
 
   TextStyle: function() {},
+
+  SkpDebugPlayer: {
+    // public API (from C++ bindings)
+    loadSkp: function() {},
+  },
 
   // Constants and Enums
   gpu: {},

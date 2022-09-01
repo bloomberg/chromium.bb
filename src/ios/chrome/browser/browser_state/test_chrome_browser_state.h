@@ -23,6 +23,10 @@ class PrefServiceSyncable;
 class TestingPrefServiceSyncable;
 }
 
+namespace policy {
+class UserCloudPolicyManager;
+}
+
 // This class is the implementation of ChromeBrowserState used for testing.
 class TestChromeBrowserState final : public ChromeBrowserState {
  public:
@@ -60,26 +64,28 @@ class TestChromeBrowserState final : public ChromeBrowserState {
       ProtocolHandlerMap* protocol_handlers) override;
   scoped_refptr<network::SharedURLLoaderFactory> GetSharedURLLoaderFactory()
       override;
+  policy::UserCloudPolicyManager* GetUserCloudPolicyManager() override;
 
   // This method is defined as empty following the paradigm of
   // TestingProfile::DestroyOffTheRecordProfile().
   void DestroyOffTheRecordChromeBrowserState() override {}
 
+  // Creates an off-the-record TestChromeBrowserState for
+  // the current object, installing `testing_factories`
+  // first.
+  //
+  // This is an error to call this method if the current
+  // TestChromeBrowserState already has a off-the-record
+  // object, or is itself off-the-record.
+  //
+  // This method will be called without factories if the
+  // method `GetOffTheRecordBrowserState()` is called on
+  // this object.
+  TestChromeBrowserState* CreateOffTheRecordBrowserStateWithTestingFactories(
+      TestingFactories testing_factories = {});
+
   // Creates a WebDataService. If not invoked, the web data service is null.
   void CreateWebDataService();
-
-  // Creates the BookmkarBarModel. If not invoked the bookmark bar model is
-  // NULL. If |delete_file| is true, the bookmarks file is deleted first, then
-  // the model is created. As TestChromeBrowserState deletes the directory
-  // containing the files used by HistoryService, the boolean only matters if
-  // you're recreating the BookmarkModel.
-  //
-  // NOTE: this does not block until the bookmarks are loaded.
-  void CreateBookmarkModel(bool delete_file);
-
-  // !!!!!!!! WARNING: THIS IS GENERALLY NOT SAFE TO CALL! !!!!!!!!
-  // Creates the history service.
-  bool CreateHistoryService() WARN_UNUSED_RESULT;
 
   // Returns the preferences as a TestingPrefServiceSyncable if possible or
   // null. Returns null for off-the-record TestChromeBrowserState and also
@@ -122,6 +128,11 @@ class TestChromeBrowserState final : public ChromeBrowserState {
     void SetPolicyConnector(
         std::unique_ptr<BrowserStatePolicyConnector> policy_connector);
 
+    // Sets a UserCloudPolicyManager for test.
+    void SetUserCloudPolicyManager(
+        std::unique_ptr<policy::UserCloudPolicyManager>
+            user_cloud_policy_manager);
+
     // Creates the TestChromeBrowserState using previously-set settings.
     std::unique_ptr<TestChromeBrowserState> Build();
 
@@ -133,6 +144,7 @@ class TestChromeBrowserState final : public ChromeBrowserState {
     base::FilePath state_path_;
     std::unique_ptr<sync_preferences::PrefServiceSyncable> pref_service_;
 
+    std::unique_ptr<policy::UserCloudPolicyManager> user_cloud_policy_manager_;
     std::unique_ptr<BrowserStatePolicyConnector> policy_connector_;
 
     TestingFactories testing_factories_;
@@ -146,14 +158,16 @@ class TestChromeBrowserState final : public ChromeBrowserState {
       std::unique_ptr<sync_preferences::PrefServiceSyncable> prefs,
       TestingFactories testing_factories,
       RefcountedTestingFactories refcounted_testing_factories,
-      std::unique_ptr<BrowserStatePolicyConnector> policy_connector);
+      std::unique_ptr<BrowserStatePolicyConnector> policy_connector,
+      std::unique_ptr<policy::UserCloudPolicyManager>
+          user_cloud_policy_manager);
 
  private:
   friend class Builder;
 
   // Used to create the incognito TestChromeBrowserState.
-  explicit TestChromeBrowserState(
-      TestChromeBrowserState* original_browser_state);
+  TestChromeBrowserState(TestChromeBrowserState* original_browser_state,
+                         TestingFactories testing_factories);
 
   // Initialization of the TestChromeBrowserState. This is a separate method
   // as it needs to be called after the bi-directional link between original
@@ -168,6 +182,7 @@ class TestChromeBrowserState final : public ChromeBrowserState {
   std::unique_ptr<sync_preferences::PrefServiceSyncable> prefs_;
   sync_preferences::TestingPrefServiceSyncable* testing_prefs_;
 
+  std::unique_ptr<policy::UserCloudPolicyManager> user_cloud_policy_manager_;
   std::unique_ptr<BrowserStatePolicyConnector> policy_connector_;
 
   // A SharedURLLoaderFactory for test.

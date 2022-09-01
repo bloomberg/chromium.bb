@@ -10,7 +10,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/vector_icons/vector_icons.h"
-#include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
+#include "chrome/browser/ui/passwords/ui_utils.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/grit/theme_resources.h"
@@ -70,6 +70,7 @@ CredentialsItemView::CredentialsItemView(
     const std::u16string& lower_text,
     const password_manager::PasswordForm* form,
     network::mojom::URLLoaderFactory* loader_factory,
+    const url::Origin& initiator,
     int upper_text_style,
     int lower_text_style)
     : Button(std::move(callback)) {
@@ -96,7 +97,7 @@ CredentialsItemView::CredentialsItemView(
     // Fetch the actual avatar.
     AccountAvatarFetcher* fetcher = new AccountAvatarFetcher(
         form->icon_url, weak_ptr_factory_.GetWeakPtr());
-    fetcher->Start(loader_factory);
+    fetcher->Start(loader_factory, initiator);
   }
   AddChildView(std::move(image_view));
 

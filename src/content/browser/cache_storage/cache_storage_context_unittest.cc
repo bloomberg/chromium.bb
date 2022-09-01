@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/files/scoped_temp_dir.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
@@ -17,6 +18,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "storage/browser/test/mock_quota_manager.h"
 #include "storage/browser/test/mock_quota_manager_proxy.h"
+#include "storage/browser/test/mock_special_storage_policy.h"
 #include "storage/browser/test/quota_manager_proxy_sync.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
@@ -29,6 +31,11 @@ const char kGoogleStorageKey[] = "https://google.com";
 
 class CacheStorageContextTest : public testing::Test {
  public:
+  CacheStorageContextTest()
+      : special_storage_policy_(
+            base::MakeRefCounted<storage::MockSpecialStoragePolicy>()) {}
+  ~CacheStorageContextTest() override = default;
+
   void SetUp() override {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
     quota_manager_ = base::MakeRefCounted<storage::MockQuotaManager>(
@@ -62,6 +69,8 @@ class CacheStorageContextTest : public testing::Test {
   storage::QuotaManagerProxy* quota_manager_proxy() {
     return quota_manager_proxy_.get();
   }
+
+  scoped_refptr<storage::MockSpecialStoragePolicy> special_storage_policy_;
 
   base::ScopedTempDir data_dir_;
 
@@ -122,6 +131,77 @@ TEST_F(CacheStorageContextTest, DefaultBucketCreatedOnAddReceiver) {
   EXPECT_EQ(result->storage_key,
             blink::StorageKey::CreateFromStringForTesting(kGoogleStorageKey));
   EXPECT_GT(result->id.value(), 0);
+}
+
+TEST_F(CacheStorageContextTest, GetDefaultBucketError) {
+  // Disable database so it will return errors when getting the default bucket.
+  quota_manager_->SetDisableDatabase(true);
+
+  mojo::Remote<blink::mojom::CacheStorage> example_remote;
+  AddReceiver(
+      example_remote.BindNewPipeAndPassReceiver(),
+      blink::StorageKey::CreateFromStringForTesting(kExampleStorageKey));
+
+  storage::QuotaManagerProxySync quota_manager_proxy_sync(
+      quota_manager_proxy());
+
+  // CacheStorage::Has
+  base::RunLoop loop_1;
+  example_remote->Has(
+      u"cache_name", /*trace_id=*/0,
+      base::BindLambdaForTesting([&](blink::mojom::CacheStorageError error) {
+        EXPECT_EQ(error, blink::mojom::CacheStorageError::kErrorStorage);
+        loop_1.Quit();
+      }));
+  loop_1.Run();
+
+  // CacheStorage::Delete
+  base::RunLoop loop_2;
+  example_remote->Delete(
+      u"cache_name", /*trace_id=*/0,
+      base::BindLambdaForTesting([&](blink::mojom::CacheStorageError error) {
+        EXPECT_EQ(error, blink::mojom::CacheStorageError::kErrorStorage);
+        loop_2.Quit();
+      }));
+  loop_2.Run();
+
+  // CacheStorage::Keys
+  base::RunLoop loop_3;
+  example_remote->Keys(
+      /*trace_id=*/0,
+      base::BindLambdaForTesting([&](const std::vector<std::u16string>& keys) {
+        EXPECT_EQ(keys, std::vector<std::u16string>());
+        loop_3.Quit();
+      }));
+  loop_3.Run();
+
+  // CacheStorage::Match
+  auto options = blink::mojom::MultiCacheQueryOptions::New();
+  options->query_options = blink::mojom::CacheQueryOptions::New();
+  options->cache_name = u"cache_name";
+
+  base::RunLoop loop_4;
+  example_remote->Match(
+      blink::mojom::FetchAPIRequest::New(), std::move(options),
+      /*in_related_fetch_event=*/false, /*in_range_fetch_event=*/false,
+      /*trace_id=*/0,
+      base::BindLambdaForTesting([&](blink::mojom::MatchResultPtr result) {
+        EXPECT_EQ(result->get_status(),
+                  blink::mojom::CacheStorageError::kErrorStorage);
+        loop_4.Quit();
+      }));
+  loop_4.Run();
+
+  // CacheStorage::Open
+  base::RunLoop loop_5;
+  example_remote->Open(
+      u"cache_name", /*trace_id=*/0,
+      base::BindLambdaForTesting([&](blink::mojom::OpenResultPtr result) {
+        EXPECT_EQ(result->get_status(),
+                  blink::mojom::CacheStorageError::kErrorStorage);
+        loop_5.Quit();
+      }));
+  loop_5.Run();
 }
 
 }  // namespace content

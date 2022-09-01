@@ -76,7 +76,7 @@ class AppViewTest : public extensions::PlatformAppBrowserTest {
       return;
     }
 
-    ExtensionTestMessageListener done_listener("TEST_PASSED", false);
+    ExtensionTestMessageListener done_listener("TEST_PASSED");
     done_listener.set_failure_message("TEST_FAILED");
     if (!content::ExecuteScript(
             embedder_web_contents,
@@ -119,8 +119,8 @@ IN_PROC_BROWSER_TEST_F(AppViewTest, TestAppViewWithUndefinedDataShouldSucceed) {
 
 // Tests that <appview> correctly processes parameters passed on connect.
 // Flaky on Windows, Linux and Mac. See https://crbug.com/875908
-#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS) || \
-    defined(OS_MAC)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || \
+    BUILDFLAG(IS_MAC)
 #define MAYBE_TestAppViewRefusedDataShouldFail \
   DISABLED_TestAppViewRefusedDataShouldFail
 #else
@@ -183,7 +183,7 @@ IN_PROC_BROWSER_TEST_F(AppViewTest, KillGuestWithInvalidInstanceID) {
       extensions::AppWindowRegistry::Get(browser()->profile())
           ->GetCurrentAppWindowForApp(bad_app->id())
           ->web_contents()
-          ->GetMainFrame()
+          ->GetPrimaryMainFrame()
           ->GetProcess();
 
   // Monitor |bad_app|'s RenderProcessHost for its exiting.
@@ -227,7 +227,7 @@ IN_PROC_BROWSER_TEST_F(AppViewTest,
       base::StringPrintf("onAppCommand('%s', '%s');", "EMBED",
                          guest_app->id().c_str())));
   ExtensionTestMessageListener on_embed_requested_listener(
-      "AppViewTest.EmbedRequested", false);
+      "AppViewTest.EmbedRequested");
   EXPECT_TRUE(on_embed_requested_listener.WaitUntilSatisfied());
   // While the host is waiting for the guest to accept/deny embedding, the bad
   // app sends a request to the host.
@@ -240,9 +240,9 @@ IN_PROC_BROWSER_TEST_F(AppViewTest,
       content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
   std::unique_ptr<base::DictionaryValue> fake_embed_request_param(
       new base::DictionaryValue);
-  fake_embed_request_param->SetInteger(appview::kGuestInstanceID,
-                                       guest_instance_id);
-  fake_embed_request_param->SetString(appview::kEmbedderID, host_app->id());
+  fake_embed_request_param->SetIntKey(appview::kGuestInstanceID,
+                                      guest_instance_id);
+  fake_embed_request_param->SetStringKey(appview::kEmbedderID, host_app->id());
   extensions::AppRuntimeEventRouter::DispatchOnEmbedRequestedEvent(
       browser()->profile(), std::move(fake_embed_request_param), bad_app);
   bad_app_obs.Wait();

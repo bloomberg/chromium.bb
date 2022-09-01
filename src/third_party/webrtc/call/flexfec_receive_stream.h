@@ -25,16 +25,9 @@
 namespace webrtc {
 
 class FlexfecReceiveStream : public RtpPacketSinkInterface,
-                             public ReceiveStream {
+                             public ReceiveStreamInterface {
  public:
   ~FlexfecReceiveStream() override = default;
-
-  struct Stats {
-    std::string ToString(int64_t time_ms) const;
-
-    // TODO(brandtr): Add appropriate stats here.
-    int flexfec_bitrate_bps;
-  };
 
   struct Config {
     explicit Config(Transport* rtcp_send_transport);
@@ -50,7 +43,7 @@ class FlexfecReceiveStream : public RtpPacketSinkInterface,
     // Payload type for FlexFEC.
     int payload_type = -1;
 
-    RtpConfig rtp;
+    ReceiveStreamRtpConfig rtp;
 
     // Vector containing a single element, corresponding to the SSRC of the
     // media stream being protected by this FlexFEC stream. The vector MUST have
@@ -66,8 +59,6 @@ class FlexfecReceiveStream : public RtpPacketSinkInterface,
     // Transport for outgoing RTCP packets.
     Transport* rtcp_send_transport = nullptr;
   };
-
-  virtual Stats GetStats() const = 0;
 };
 
 }  // namespace webrtc

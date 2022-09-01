@@ -10,7 +10,6 @@
 
 #include "base/containers/id_map.h"
 #include "base/gtest_prod_util.h"
-#include "base/observer_list.h"
 #include "base/process/process.h"
 #include "base/strings/string_piece.h"
 #include "base/task/single_thread_task_runner.h"
@@ -111,7 +110,7 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
       network::mojom::WebSandboxFlags sandbox_flags,
       const blink::SessionStorageNamespaceId& session_storage_namespace_id,
       bool& consumed_user_gesture,
-      const absl::optional<blink::WebImpression>& impression) override;
+      const absl::optional<blink::Impression>& impression) override;
 
   // RenderView implementation -------------------------------------------------
 
@@ -182,7 +181,7 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // The `AgentSchedulingGroup` this view is associated with.
   AgentSchedulingGroup& agent_scheduling_group_;
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // Android Specific ----------------------------------------------------------
 
   // Whether this was a renderer-created or browser-created RenderView.

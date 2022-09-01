@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_SPEECH_CHROME_SPEECH_RECOGNITION_SERVICE_H_
 #define CHROME_BROWSER_SPEECH_CHROME_SPEECH_RECOGNITION_SERVICE_H_
 
+#include "base/files/file_path.h"
 #include "base/memory/raw_ptr.h"
 #include "chrome/browser/speech/speech_recognition_service.h"
-#include "components/keyed_service/core/keyed_service.h"
 #include "media/mojo/mojom/speech_recognition_service.mojom.h"
-#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
 class PrefService;
@@ -23,9 +23,7 @@ namespace speech {
 // Provides a mojo endpoint in the browser that allows the renderer process to
 // launch and initialize the sandboxed speech recognition service
 // process.
-class ChromeSpeechRecognitionService
-    : public SpeechRecognitionService,
-      public media::mojom::SpeechRecognitionServiceClient {
+class ChromeSpeechRecognitionService : public SpeechRecognitionService {
  public:
   explicit ChromeSpeechRecognitionService(content::BrowserContext* context);
   ChromeSpeechRecognitionService(const ChromeSpeechRecognitionService&) =
@@ -34,16 +32,13 @@ class ChromeSpeechRecognitionService
       delete;
   ~ChromeSpeechRecognitionService() override;
 
-  void Create(mojo::PendingReceiver<media::mojom::SpeechRecognitionContext>
-                  receiver) override;
-
-  // media::mojom::SpeechRecognitionServiceClient
-  void OnNetworkServiceDisconnect() override;
-
- protected:
-  // A flag indicating whether to use the Speech On-Device API (SODA) for speech
-  // recognition.
-  const bool enable_soda_;
+  // SpeechRecognitionService:
+  void BindSpeechRecognitionContext(
+      mojo::PendingReceiver<media::mojom::SpeechRecognitionContext> receiver)
+      override;
+  void BindAudioSourceSpeechRecognitionContext(
+      mojo::PendingReceiver<media::mojom::AudioSourceSpeechRecognitionContext>
+          receiver) override;
 
  private:
   // Launches the speech recognition service in a sandboxed utility process.
@@ -59,9 +54,6 @@ class ChromeSpeechRecognitionService
   // new speech recognition service process if this remote is already bound.
   mojo::Remote<media::mojom::SpeechRecognitionService>
       speech_recognition_service_;
-
-  mojo::Receiver<media::mojom::SpeechRecognitionServiceClient>
-      speech_recognition_service_client_{this};
 };
 
 }  // namespace speech

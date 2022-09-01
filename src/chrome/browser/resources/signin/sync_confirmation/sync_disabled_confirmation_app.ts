@@ -3,13 +3,14 @@
 // found in the LICENSE file.
 
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
-import './signin_shared_css.js';
+import './signin_shared.css.js';
 import './strings.m.js';
 
 import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
-import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {SyncConfirmationBrowserProxy, SyncConfirmationBrowserProxyImpl} from './sync_confirmation_browser_proxy.js';
+import {getTemplate} from './sync_disabled_confirmation_app.html.js';
 
 interface SyncDisabledConfirmationAppElement {
   $: {
@@ -23,13 +24,13 @@ class SyncDisabledConfirmationAppElement extends PolymerElement {
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   private syncConfirmationBrowserProxy_: SyncConfirmationBrowserProxy =
       SyncConfirmationBrowserProxyImpl.getInstance();
 
-  connectedCallback() {
+  override connectedCallback() {
     super.connectedCallback();
 
     document.addEventListener(
@@ -72,7 +73,7 @@ class SyncDisabledConfirmationAppElement extends PolymerElement {
     // If the currently focused element isn't something that performs an action
     // on "enter" being pressed and the user hits "enter", perform the default
     // action of the dialog, which is "OK, Got It".
-    if (e.key == 'Enter' &&
+    if (e.key === 'Enter' &&
         !/^(A|PAPER-(BUTTON|CHECKBOX))$/.test(
             document.activeElement!.tagName)) {
       this.$.confirmButton.click();

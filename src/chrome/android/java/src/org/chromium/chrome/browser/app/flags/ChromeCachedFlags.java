@@ -9,6 +9,7 @@ import android.text.TextUtils;
 import org.chromium.build.BuildConfig;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
+import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.feed.FeedPlaceholderLayout;
 import org.chromium.chrome.browser.firstrun.FirstRunUtils;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
@@ -18,8 +19,9 @@ import org.chromium.chrome.browser.notifications.chime.ChimeFeatures;
 import org.chromium.chrome.browser.optimization_guide.OptimizationGuidePushNotificationManager;
 import org.chromium.chrome.browser.page_annotations.PageAnnotationsServiceConfig;
 import org.chromium.chrome.browser.paint_preview.StartupPaintPreviewHelper;
+import org.chromium.chrome.browser.paint_preview.services.PaintPreviewTabService;
 import org.chromium.chrome.browser.tasks.ConditionalTabStripUtils;
-import org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil;
+import org.chromium.chrome.browser.tasks.ReturnToChromeUtil;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.theme.ThemeUtils;
 import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
@@ -67,9 +69,9 @@ public class ChromeCachedFlags {
         // Workaround for crbug.com/1223545: Do not use Arrays.asList().
         List<String> featuresToCache = new ArrayList<String>() {
             {
+                add(ChromeFeatureList.ANONYMOUS_UPDATE_CHECKS);
                 add(ChromeFeatureList.APP_MENU_MOBILE_SITE_OPTION);
-                add(ChromeFeatureList.APP_TO_WEB_ATTRIBUTION);
-                add(ChromeFeatureList.BOOKMARK_BOTTOM_SHEET);
+                add(ChromeFeatureList.BACK_GESTURE_REFACTOR);
                 add(ChromeFeatureList.CCT_INCOGNITO);
                 add(ChromeFeatureList.CCT_INCOGNITO_AVAILABLE_TO_THIRD_PARTY);
                 add(ChromeFeatureList.CCT_REMOVE_REMOTE_VIEW_IDS);
@@ -77,26 +79,26 @@ public class ChromeCachedFlags {
                 add(ChromeFeatureList.CCT_RESIZABLE_ALLOW_RESIZE_BY_USER_GESTURE);
                 add(ChromeFeatureList.CCT_RESIZABLE_FOR_FIRST_PARTIES);
                 add(ChromeFeatureList.CCT_RESIZABLE_FOR_THIRD_PARTIES);
+                add(ChromeFeatureList.CCT_TOOLBAR_CUSTOMIZATIONS);
                 add(ChromeFeatureList.CLOSE_TAB_SUGGESTIONS);
+                add(ChromeFeatureList.CREATE_SAFEBROWSING_ON_STARTUP);
                 add(ChromeFeatureList.CRITICAL_PERSISTED_TAB_DATA);
                 add(ChromeFeatureList.COMMAND_LINE_ON_NON_ROOTED);
                 add(ChromeFeatureList.CONDITIONAL_TAB_STRIP_ANDROID);
                 add(ChromeFeatureList.DOWNLOADS_AUTO_RESUMPTION_NATIVE);
                 add(ChromeFeatureList.DYNAMIC_COLOR_ANDROID);
+                add(ChromeFeatureList.DYNAMIC_COLOR_BUTTONS_ANDROID);
                 add(ChromeFeatureList.EARLY_LIBRARY_LOAD);
                 add(ChromeFeatureList.ELASTIC_OVERSCROLL);
                 add(ChromeFeatureList.ELIDE_PRIORITIZATION_OF_PRE_NATIVE_BOOTSTRAP_TASKS);
-                add(ChromeFeatureList.ELIDE_TAB_PRELOAD_AT_STARTUP);
                 add(ChromeFeatureList.FEED_LOADING_PLACEHOLDER);
-                add(ChromeFeatureList
-                                .GIVE_JAVA_UI_THREAD_DEFAULT_TASK_TRAITS_USER_BLOCKING_PRIORITY);
                 add(ChromeFeatureList.GRID_TAB_SWITCHER_FOR_TABLETS);
                 add(ChromeFeatureList.IMMERSIVE_UI_MODE);
                 add(ChromeFeatureList.INSTANT_START);
                 add(ChromeFeatureList.INSTANCE_SWITCHER);
                 add(ChromeFeatureList.INTEREST_FEED_V2);
                 add(ChromeFeatureList.NEW_WINDOW_APP_MENU);
-                add(ChromeFeatureList.OFFLINE_MEASUREMENTS_BACKGROUND_TASK);
+                add(ChromeFeatureList.OMNIBOX_ANDROID_AUXILIARY_SEARCH);
                 add(ChromeFeatureList.OPTIMIZATION_GUIDE_PUSH_NOTIFICATIONS);
                 add(ChromeFeatureList.PAINT_PREVIEW_DEMO);
                 add(ChromeFeatureList.PAINT_PREVIEW_SHOW_ON_STARTUP);
@@ -109,8 +111,9 @@ public class ChromeCachedFlags {
                 add(ChromeFeatureList.TAB_GROUPS_FOR_TABLETS);
                 add(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID);
                 add(ChromeFeatureList.TAB_TO_GTS_ANIMATION);
-                add(ChromeFeatureList.THEME_REFACTOR_ANDROID);
+                add(ChromeFeatureList.TAB_STRIP_IMPROVEMENTS);
                 add(ChromeFeatureList.TOOLBAR_USE_HARDWARE_BITMAP_DRAW);
+                add(ChromeFeatureList.TRUSTED_WEB_ACTIVITY_NOTIFICATION_PERMISSION_DELEGATION);
                 add(ChromeFeatureList.USE_CHIME_ANDROID_SDK);
                 add(ChromeFeatureList.WEB_APK_TRAMPOLINE_ON_INITIAL_INTENT);
             }
@@ -129,10 +132,15 @@ public class ChromeCachedFlags {
                         add(FeedPlaceholderLayout.ENABLE_INSTANT_START_ANIMATION);
                         add(OptimizationGuidePushNotificationManager.MAX_CACHE_SIZE);
                         add(PageAnnotationsServiceConfig.PAGE_ANNOTATIONS_BASE_URL);
-                        add(ReturnToChromeExperimentsUtil.TAB_SWITCHER_ON_RETURN_MS);
+                        add(ReturnToChromeUtil.TAB_SWITCHER_ON_RETURN_MS);
+                        add(CustomTabIntentDataProvider.THIRD_PARTIES_DEFAULT_POLICY);
+                        add(CustomTabIntentDataProvider.DENYLIST_ENTRIES);
+                        add(CustomTabIntentDataProvider.ALLOWLIST_ENTRIES);
                         add(StartSurfaceConfiguration.CHECK_SYNC_BEFORE_SHOW_START_AT_STARTUP);
                         add(StartSurfaceConfiguration.FINALE_ANIMATION_ENABLED);
+                        add(StartSurfaceConfiguration.HIDE_START_WHEN_LAST_VISITED_TAB_IS_SRP);
                         add(StartSurfaceConfiguration.HOME_BUTTON_ON_GRID_TAB_SWITCHER);
+                        add(StartSurfaceConfiguration.IS_DOODLE_SUPPORTED);
                         add(StartSurfaceConfiguration.NEW_SURFACE_FROM_HOME_BUTTON);
                         add(StartSurfaceConfiguration.NUM_DAYS_KEEP_SHOW_START_AT_STARTUP);
                         add(StartSurfaceConfiguration.NUM_DAYS_USER_CLICK_BELOW_THRESHOLD);
@@ -155,9 +163,11 @@ public class ChromeCachedFlags {
                         add(StartSurfaceConfiguration.USER_CLICK_THRESHOLD);
                         add(StartSurfaceConfiguration.WARM_UP_RENDERER);
                         add(StartupPaintPreviewHelper.ACCESSIBILITY_SUPPORT_PARAM);
+                        add(PaintPreviewTabService.ALLOW_SRP);
                         add(TabContentManager.ALLOW_TO_REFETCH_TAB_THUMBNAIL_VARIATION);
                         add(TabUiFeatureUtilities.ENABLE_LAUNCH_BUG_FIX);
                         add(TabUiFeatureUtilities.ENABLE_LAUNCH_POLISH);
+                        add(TabUiFeatureUtilities.DELAY_GTS_CREATION);
                         add(TabUiFeatureUtilities.ENABLE_SEARCH_CHIP);
                         add(TabUiFeatureUtilities.ENABLE_SEARCH_CHIP_ADAPTIVE);
                         add(TabUiFeatureUtilities.ENABLE_TAB_GROUP_AUTO_CREATION);
@@ -168,6 +178,8 @@ public class ChromeCachedFlags {
                         add(TabUiFeatureUtilities.SKIP_SLOW_ZOOMING);
                         add(TabUiFeatureUtilities.TAB_GRID_LAYOUT_ANDROID_NEW_TAB_TILE);
                         add(TabUiFeatureUtilities.THUMBNAIL_ASPECT_RATIO);
+                        add(TabUiFeatureUtilities.GRID_TAB_SWITCHER_FOR_TABLETS_POLISH);
+                        add(TabUiFeatureUtilities.TAB_STRIP_TAB_WIDTH);
                         add(ThemeUtils.ENABLE_FULL_DYNAMIC_COLORS);
                     }
                 };
@@ -207,11 +219,7 @@ public class ChromeCachedFlags {
 
         // TODO(crbug.com/995355): Move other related flags from cacheNativeFlags() to here.
         List<String> featuresToCache = new ArrayList<String>() {
-            {
-                add(ChromeFeatureList.EXPERIMENTS_FOR_AGSA);
-                add(ChromeFeatureList.SERVICE_MANAGER_FOR_DOWNLOAD);
-                add(ChromeFeatureList.SERVICE_MANAGER_FOR_BACKGROUND_PREFETCH);
-            }
+            { add(ChromeFeatureList.EXPERIMENTS_FOR_AGSA); }
         };
         CachedFeatureFlags.cacheNativeFlags(featuresToCache);
 

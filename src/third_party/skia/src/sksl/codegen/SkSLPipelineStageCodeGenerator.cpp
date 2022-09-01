@@ -7,38 +7,57 @@
 
 #include "src/sksl/codegen/SkSLPipelineStageCodeGenerator.h"
 
+#if defined(SKSL_STANDALONE) || SK_SUPPORT_GPU || defined(SK_GRAPHITE_ENABLED)
+
+#include "include/core/SkSpan.h"
+#include "include/core/SkTypes.h"
+#include "include/private/SkSLDefines.h"
+#include "include/private/SkSLLayout.h"
+#include "include/private/SkSLModifiers.h"
 #include "include/private/SkSLProgramElement.h"
+#include "include/private/SkSLProgramKind.h"
 #include "include/private/SkSLStatement.h"
+#include "include/private/SkSLString.h"
+#include "include/private/SkTArray.h"
+#include "include/private/SkTHash.h"
+#include "include/sksl/SkSLOperator.h"
+#include "src/sksl/SkSLBuiltinTypes.h"
 #include "src/sksl/SkSLCompiler.h"
-#include "src/sksl/SkSLOperators.h"
+#include "src/sksl/SkSLProgramSettings.h"
 #include "src/sksl/SkSLStringStream.h"
 #include "src/sksl/ir/SkSLBinaryExpression.h"
+#include "src/sksl/ir/SkSLBlock.h"
 #include "src/sksl/ir/SkSLChildCall.h"
 #include "src/sksl/ir/SkSLConstructor.h"
-#include "src/sksl/ir/SkSLConstructorArrayCast.h"
 #include "src/sksl/ir/SkSLDoStatement.h"
+#include "src/sksl/ir/SkSLExpression.h"
 #include "src/sksl/ir/SkSLExpressionStatement.h"
 #include "src/sksl/ir/SkSLFieldAccess.h"
 #include "src/sksl/ir/SkSLForStatement.h"
 #include "src/sksl/ir/SkSLFunctionCall.h"
 #include "src/sksl/ir/SkSLFunctionDeclaration.h"
 #include "src/sksl/ir/SkSLFunctionDefinition.h"
-#include "src/sksl/ir/SkSLFunctionPrototype.h"
 #include "src/sksl/ir/SkSLIfStatement.h"
 #include "src/sksl/ir/SkSLIndexExpression.h"
 #include "src/sksl/ir/SkSLPostfixExpression.h"
 #include "src/sksl/ir/SkSLPrefixExpression.h"
+#include "src/sksl/ir/SkSLProgram.h"
 #include "src/sksl/ir/SkSLReturnStatement.h"
 #include "src/sksl/ir/SkSLStructDefinition.h"
+#include "src/sksl/ir/SkSLSwitchCase.h"
 #include "src/sksl/ir/SkSLSwitchStatement.h"
 #include "src/sksl/ir/SkSLSwizzle.h"
 #include "src/sksl/ir/SkSLTernaryExpression.h"
+#include "src/sksl/ir/SkSLType.h"
 #include "src/sksl/ir/SkSLVarDeclarations.h"
+#include "src/sksl/ir/SkSLVariable.h"
 #include "src/sksl/ir/SkSLVariableReference.h"
 
-#include <unordered_map>
-
-#if defined(SKSL_STANDALONE) || SK_SUPPORT_GPU
+#include <memory>
+#include <string_view>
+#include <type_traits>
+#include <utility>
+#include <vector>
 
 namespace SkSL {
 namespace PipelineStage {
@@ -61,21 +80,21 @@ public:
 private:
     using Precedence = Operator::Precedence;
 
-    void write(skstd::string_view s);
-    void writeLine(skstd::string_view s = skstd::string_view());
+    void write(std::string_view s);
+    void writeLine(std::string_view s = std::string_view());
 
-    String typeName(const Type& type);
+    std::string typeName(const Type& type);
     void writeType(const Type& type);
 
-    String functionName(const FunctionDeclaration& decl);
+    std::string functionName(const FunctionDeclaration& decl);
     void writeFunction(const FunctionDefinition& f);
     void writeFunctionDeclaration(const FunctionDeclaration& decl);
 
-    String modifierString(const Modifiers& modifiers);
-    String functionDeclaration(const FunctionDeclaration& decl);
+    std::string modifierString(const Modifiers& modifiers);
+    std::string functionDeclaration(const FunctionDeclaration& decl);
 
     // Handles arrays correctly, eg: `float x[2]`
-    String typedVariable(const Type& type, skstd::string_view name);
+    std::string typedVariable(const Type& type, std::string_view name);
 
     void writeVarDeclaration(const VarDeclaration& var);
     void writeGlobalVarDeclaration(const GlobalVarDeclaration& g);
@@ -126,20 +145,20 @@ private:
     const char*    fDestColor;
     Callbacks*     fCallbacks;
 
-    std::unordered_map<const Variable*, String>            fVariableNames;
-    std::unordered_map<const FunctionDeclaration*, String> fFunctionNames;
-    std::unordered_map<const Type*, String>                fStructNames;
+    SkTHashMap<const Variable*, std::string>            fVariableNames;
+    SkTHashMap<const FunctionDeclaration*, std::string> fFunctionNames;
+    SkTHashMap<const Type*, std::string>                fStructNames;
 
     StringStream* fBuffer = nullptr;
     bool          fCastReturnsToHalf = false;
 };
 
 
-void PipelineStageCodeGenerator::write(skstd::string_view s) {
+void PipelineStageCodeGenerator::write(std::string_view s) {
     fBuffer->write(s.data(), s.length());
 }
 
-void PipelineStageCodeGenerator::writeLine(skstd::string_view s) {
+void PipelineStageCodeGenerator::writeLine(std::string_view s) {
     fBuffer->write(s.data(), s.length());
     fBuffer->writeText("\n");
 }
@@ -167,7 +186,7 @@ void PipelineStageCodeGenerator::writeChildCall(const ChildCall& c) {
 
     // Shaders require a coordinate argument. Color filters require a color argument.
     // Blenders require two color arguments.
-    String sampleOutput;
+    std::string sampleOutput;
     {
         AutoOutputBuffer exprBuffer(this);
         this->writeExpression(*arguments[0], Precedence::kSequence);
@@ -175,23 +194,23 @@ void PipelineStageCodeGenerator::writeChildCall(const ChildCall& c) {
         switch (c.child().type().typeKind()) {
             case Type::TypeKind::kShader: {
                 SkASSERT(arguments.size() == 1);
-                SkASSERT(arguments[0]->type() == *fProgram.fContext->fTypes.fFloat2);
+                SkASSERT(arguments[0]->type().matches(*fProgram.fContext->fTypes.fFloat2));
                 sampleOutput = fCallbacks->sampleShader(index, exprBuffer.fBuffer.str());
                 break;
             }
             case Type::TypeKind::kColorFilter: {
                 SkASSERT(arguments.size() == 1);
-                SkASSERT(arguments[0]->type() == *fProgram.fContext->fTypes.fHalf4 ||
-                         arguments[0]->type() == *fProgram.fContext->fTypes.fFloat4);
+                SkASSERT(arguments[0]->type().matches(*fProgram.fContext->fTypes.fHalf4) ||
+                         arguments[0]->type().matches(*fProgram.fContext->fTypes.fFloat4));
                 sampleOutput = fCallbacks->sampleColorFilter(index, exprBuffer.fBuffer.str());
                 break;
             }
             case Type::TypeKind::kBlender: {
                 SkASSERT(arguments.size() == 2);
-                SkASSERT(arguments[0]->type() == *fProgram.fContext->fTypes.fHalf4 ||
-                         arguments[0]->type() == *fProgram.fContext->fTypes.fFloat4);
-                SkASSERT(arguments[1]->type() == *fProgram.fContext->fTypes.fHalf4 ||
-                         arguments[1]->type() == *fProgram.fContext->fTypes.fFloat4);
+                SkASSERT(arguments[0]->type().matches(*fProgram.fContext->fTypes.fHalf4) ||
+                         arguments[0]->type().matches(*fProgram.fContext->fTypes.fFloat4));
+                SkASSERT(arguments[1]->type().matches(*fProgram.fContext->fTypes.fHalf4) ||
+                         arguments[1]->type().matches(*fProgram.fContext->fTypes.fFloat4));
 
                 AutoOutputBuffer exprBuffer2(this);
                 this->writeExpression(*arguments[1], Precedence::kSequence);
@@ -212,6 +231,30 @@ void PipelineStageCodeGenerator::writeChildCall(const ChildCall& c) {
 
 void PipelineStageCodeGenerator::writeFunctionCall(const FunctionCall& c) {
     const FunctionDeclaration& function = c.function();
+
+    if (function.intrinsicKind() == IntrinsicKind::k_toLinearSrgb_IntrinsicKind ||
+        function.intrinsicKind() == IntrinsicKind::k_fromLinearSrgb_IntrinsicKind) {
+        SkASSERT(c.arguments().size() == 1);
+        std::string colorArg;
+        {
+            AutoOutputBuffer exprBuffer(this);
+            this->writeExpression(*c.arguments()[0], Precedence::kSequence);
+            colorArg = exprBuffer.fBuffer.str();
+        }
+
+        switch (function.intrinsicKind()) {
+            case IntrinsicKind::k_toLinearSrgb_IntrinsicKind:
+                this->write(fCallbacks->toLinearSrgb(std::move(colorArg)));
+                break;
+            case IntrinsicKind::k_fromLinearSrgb_IntrinsicKind:
+                this->write(fCallbacks->fromLinearSrgb(std::move(colorArg)));
+                break;
+            default:
+                SkUNREACHABLE;
+        }
+
+        return;
+    }
 
     if (function.isBuiltin()) {
         this->write(function.name());
@@ -244,12 +287,8 @@ void PipelineStageCodeGenerator::writeVariableReference(const VariableReference&
         return;
     }
 
-    auto it = fVariableNames.find(var);
-    if (it != fVariableNames.end()) {
-        this->write(it->second);
-    } else {
-        this->write(var->name());
-    }
+    std::string* name = fVariableNames.find(var);
+    this->write(name ? *name : var->name());
 }
 
 void PipelineStageCodeGenerator::writeIfStatement(const IfStatement& stmt) {
@@ -287,12 +326,12 @@ void PipelineStageCodeGenerator::writeSwitchStatement(const SwitchStatement& s) 
     this->writeLine(") {");
     for (const std::unique_ptr<Statement>& stmt : s.cases()) {
         const SwitchCase& c = stmt->as<SwitchCase>();
-        if (c.value()) {
-            this->write("case ");
-            this->writeExpression(*c.value(), Precedence::kTopLevel);
-            this->writeLine(":");
-        } else {
+        if (c.isDefault()) {
             this->writeLine("default:");
+        } else {
+            this->write("case ");
+            this->write(std::to_string(c.value()));
+            this->writeLine(":");
         }
         if (!c.statement()->isEmpty()) {
             this->writeStatement(*c.statement());
@@ -303,18 +342,18 @@ void PipelineStageCodeGenerator::writeSwitchStatement(const SwitchStatement& s) 
     this->write("}");
 }
 
-String PipelineStageCodeGenerator::functionName(const FunctionDeclaration& decl) {
+std::string PipelineStageCodeGenerator::functionName(const FunctionDeclaration& decl) {
     if (decl.isMain()) {
-        return String(decl.name());
+        return std::string(fCallbacks->getMainName());
     }
 
-    auto it = fFunctionNames.find(&decl);
-    if (it != fFunctionNames.end()) {
-        return it->second;
+    std::string* name = fFunctionNames.find(&decl);
+    if (name) {
+        return *name;
     }
 
-    String mangledName = fCallbacks->getMangledName(String(decl.name()).c_str());
-    fFunctionNames.insert({&decl, mangledName});
+    std::string mangledName = fCallbacks->getMangledName(std::string(decl.name()).c_str());
+    fFunctionNames.set(&decl, mangledName);
     return mangledName;
 }
 
@@ -327,7 +366,9 @@ void PipelineStageCodeGenerator::writeFunction(const FunctionDefinition& f) {
     // if the return type is float4 - injecting it unconditionally reduces the risk of an
     // obscure bug.
     const FunctionDeclaration& decl = f.declaration();
-    if (decl.isMain()) {
+    if (decl.isMain() &&
+        fProgram.fConfig->fKind != SkSL::ProgramKind::kMeshVertex &&
+        fProgram.fConfig->fKind != SkSL::ProgramKind::kMeshFragment) {
         fCastReturnsToHalf = true;
     }
 
@@ -345,10 +386,10 @@ void PipelineStageCodeGenerator::writeFunction(const FunctionDefinition& f) {
                                decl.isMain());
 }
 
-String PipelineStageCodeGenerator::functionDeclaration(const FunctionDeclaration& decl) {
+std::string PipelineStageCodeGenerator::functionDeclaration(const FunctionDeclaration& decl) {
     // This is similar to decl.description(), but substitutes a mangled name, and handles modifiers
     // on the function (e.g. `inline`) and its parameters (e.g. `inout`).
-    String declString =
+    std::string declString =
             String::printf("%s%s%s %s(",
                            (decl.modifiers().fFlags & Modifiers::kInline_Flag) ? "inline " : "",
                            (decl.modifiers().fFlags & Modifiers::kNoInline_Flag) ? "noinline " : "",
@@ -378,13 +419,13 @@ void PipelineStageCodeGenerator::writeGlobalVarDeclaration(const GlobalVarDeclar
     if (var.isBuiltin() || var.type().isOpaque()) {
         // Don't re-declare these. (eg, sk_FragCoord, or fragmentProcessor children)
     } else if (var.modifiers().fFlags & Modifiers::kUniform_Flag) {
-        String uniformName = fCallbacks->declareUniform(&decl);
-        fVariableNames.insert({&var, std::move(uniformName)});
+        std::string uniformName = fCallbacks->declareUniform(&decl);
+        fVariableNames.set(&var, std::move(uniformName));
     } else {
-        String mangledName = fCallbacks->getMangledName(String(var.name()).c_str());
-        String declaration = this->modifierString(var.modifiers()) +
+        std::string mangledName = fCallbacks->getMangledName(std::string(var.name()).c_str());
+        std::string declaration = this->modifierString(var.modifiers()) +
                              this->typedVariable(var.type(),
-                                                 skstd::string_view(mangledName.c_str()));
+                                                 std::string_view(mangledName.c_str()));
         if (decl.value()) {
             AutoOutputBuffer outputToBuffer(this);
             this->writeExpression(*decl.value(), Precedence::kTopLevel);
@@ -393,19 +434,19 @@ void PipelineStageCodeGenerator::writeGlobalVarDeclaration(const GlobalVarDeclar
         }
         declaration += ";\n";
         fCallbacks->declareGlobal(declaration.c_str());
-        fVariableNames.insert({&var, std::move(mangledName)});
+        fVariableNames.set(&var, std::move(mangledName));
     }
 }
 
 void PipelineStageCodeGenerator::writeStructDefinition(const StructDefinition& s) {
     const Type& type = s.type();
-    String mangledName = fCallbacks->getMangledName(String(type.name()).c_str());
-    String definition = "struct " + mangledName + " {\n";
+    std::string mangledName = fCallbacks->getMangledName(type.displayName().c_str());
+    std::string definition = "struct " + mangledName + " {\n";
     for (const auto& f : type.fields()) {
         definition += this->typedVariable(*f.fType, f.fName) + ";\n";
     }
     definition += "};\n";
-    fStructNames.insert({&type, std::move(mangledName)});
+    fStructNames.set(&type, std::move(mangledName));
     fCallbacks->defineStruct(definition.c_str());
 }
 
@@ -440,18 +481,19 @@ void PipelineStageCodeGenerator::writeProgramElementSecondPass(const ProgramElem
     }
 }
 
-String PipelineStageCodeGenerator::typeName(const Type& type) {
+std::string PipelineStageCodeGenerator::typeName(const Type& raw) {
+    const Type& type = raw.resolve();
     if (type.isArray()) {
         // This is necessary so that name mangling on arrays-of-structs works properly.
-        String arrayName = this->typeName(type.componentType());
+        std::string arrayName = this->typeName(type.componentType());
         arrayName.push_back('[');
-        arrayName += to_string(type.columns());
+        arrayName += std::to_string(type.columns());
         arrayName.push_back(']');
         return arrayName;
     }
 
-    auto it = fStructNames.find(&type);
-    return it != fStructNames.end() ? it->second : String(type.name());
+    std::string* name = fStructNames.find(&type);
+    return name ? *name : std::string(type.name());
 }
 
 void PipelineStageCodeGenerator::writeType(const Type& type) {
@@ -561,9 +603,7 @@ void PipelineStageCodeGenerator::writeBinaryExpression(const BinaryExpression& b
         this->write("(");
     }
     this->writeExpression(left, precedence);
-    this->write(" ");
     this->write(op.operatorName());
-    this->write(" ");
     this->writeExpression(right, precedence);
     if (precedence >= parentPrecedence) {
         this->write(")");
@@ -590,7 +630,7 @@ void PipelineStageCodeGenerator::writePrefixExpression(const PrefixExpression& p
     if (Precedence::kPrefix >= parentPrecedence) {
         this->write("(");
     }
-    this->write(p.getOperator().operatorName());
+    this->write(p.getOperator().tightOperatorName());
     this->writeExpression(*p.operand(), Precedence::kPrefix);
     if (Precedence::kPrefix >= parentPrecedence) {
         this->write(")");
@@ -603,14 +643,14 @@ void PipelineStageCodeGenerator::writePostfixExpression(const PostfixExpression&
         this->write("(");
     }
     this->writeExpression(*p.operand(), Precedence::kPostfix);
-    this->write(p.getOperator().operatorName());
+    this->write(p.getOperator().tightOperatorName());
     if (Precedence::kPostfix >= parentPrecedence) {
         this->write(")");
     }
 }
 
-String PipelineStageCodeGenerator::modifierString(const Modifiers& modifiers) {
-    String result;
+std::string PipelineStageCodeGenerator::modifierString(const Modifiers& modifiers) {
+    std::string result;
     if (modifiers.fFlags & Modifiers::kConst_Flag) {
         result.append("const ");
     }
@@ -626,12 +666,12 @@ String PipelineStageCodeGenerator::modifierString(const Modifiers& modifiers) {
     return result;
 }
 
-String PipelineStageCodeGenerator::typedVariable(const Type& type, skstd::string_view name) {
+std::string PipelineStageCodeGenerator::typedVariable(const Type& type, std::string_view name) {
     const Type& baseType = type.isArray() ? type.componentType() : type;
 
-    String decl = this->typeName(baseType) + " " + name;
+    std::string decl = this->typeName(baseType) + " " + std::string(name);
     if (type.isArray()) {
-        decl += "[" + to_string(type.columns()) + "]";
+        decl += "[" + std::to_string(type.columns()) + "]";
     }
     return decl;
 }
@@ -682,7 +722,6 @@ void PipelineStageCodeGenerator::writeStatement(const Statement& s) {
         case Statement::Kind::kDiscard:
             SkDEBUGFAIL("Unsupported control flow");
             break;
-        case Statement::Kind::kInlineMarker:
         case Statement::Kind::kNop:
             this->write(";");
             break;

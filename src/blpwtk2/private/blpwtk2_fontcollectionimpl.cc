@@ -260,7 +260,7 @@ HRESULT FontFileStream::RuntimeClassInitialize(const std::wstring& font_file)
 
     // Put some debug information on stack.
     WCHAR font_name[MAX_PATH];
-    path.value().copy(font_name, base::size(font_name));
+    path.value().copy(font_name, sizeof(font_name) / sizeof(WCHAR));
     base::debug::Alias(font_name);
 
     if (d_memory->Initialize(path)) {
@@ -669,4 +669,3 @@ HRESULT FontCollectionImpl::GetPrivateFontCollection(
 
 
 }
-

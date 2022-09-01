@@ -22,14 +22,10 @@ case "$OS" in
   Linux)
     MACHINE=$(uname -m)
     case "$MACHINE" in
-      i?86|x86_64)
-        LONG_BIT=$(getconf LONG_BIT)
-        # We know we are on x86 but we need to use getconf to determine
-        # bittage of the userspace install (e.g. when running 32-bit userspace
-        # on x86_64 kernel)
-        exec "${THIS_DIR}/ninja-linux${LONG_BIT}" "$@";;
+      x86_64)
+        exec "${THIS_DIR}/ninja-linux64" "$@";;
       *)
-        echo Unknown architecture \($MACHINE\) -- unable to run ninja.
+        echo Unsupported architecture \($MACHINE\) -- unable to run ninja.
         print_help
         exit 1;;
     esac

@@ -34,6 +34,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import * as Protocol from '../../generated/protocol.js';
 import * as SupportedCSSProperties from '../../generated/SupportedCSSProperties.js';
 import * as Common from '../common/common.js';
 import * as Platform from '../platform/platform.js';
@@ -309,6 +310,13 @@ export class CSSMetadata {
       text = text.replace(/\|/g, '');
     }
     return {text, startColumn, endColumn};
+  }
+
+  isHighlightPseudoType(pseudoType: Protocol.DOM.PseudoType): boolean {
+    return (
+        pseudoType === Protocol.DOM.PseudoType.Highlight || pseudoType === Protocol.DOM.PseudoType.Selection ||
+        pseudoType === Protocol.DOM.PseudoType.TargetText || pseudoType === Protocol.DOM.PseudoType.GrammarError ||
+        pseudoType === Protocol.DOM.PseudoType.SpellingError);
   }
 }
 

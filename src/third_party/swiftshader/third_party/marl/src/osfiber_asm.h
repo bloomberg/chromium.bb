@@ -34,6 +34,10 @@
 #include "osfiber_asm_ppc64.h"
 #elif defined(__mips__) && _MIPS_SIM == _ABI64
 #include "osfiber_asm_mips64.h"
+#elif defined(__riscv) && __riscv_xlen == 64
+#include "osfiber_asm_rv64.h"
+#elif defined(__loongarch__) && _LOONGARCH_SIM == _ABILP64
+#include "osfiber_asm_loongarch64.h"
 #else
 #error "Unsupported target"
 #endif

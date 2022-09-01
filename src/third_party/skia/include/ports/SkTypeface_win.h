@@ -58,8 +58,8 @@ SK_API sk_sp<SkFontMgr> SkFontMgr_New_GDI();
 SK_API void SkFontMgr_SetFontCollectionToUse(IDWriteFontCollection* fontCollection);
 SK_API HRESULT SkFontMgr_GetFontCollectionToUse(IDWriteFontCollection** fontCollection,
                                                 IDWriteFactory* factory);
-SK_API sk_sp<SkFontMgr> SkFontMgr_New_DirectWrite(IDWriteFactory* factory = NULL,
-                                                  IDWriteFontCollection* collection = NULL);
+SK_API sk_sp<SkFontMgr> SkFontMgr_New_DirectWrite(IDWriteFactory* factory = nullptr,
+                                                  IDWriteFontCollection* collection = nullptr);
 SK_API sk_sp<SkFontMgr> SkFontMgr_New_DirectWrite(IDWriteFactory* factory,
                                                   IDWriteFontCollection* collection,
                                                   IDWriteFontFallback* fallback);

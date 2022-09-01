@@ -6,17 +6,20 @@
 
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
+#include "components/ukm/test_ukm_recorder.h"
 #include "content/browser/prerender/prerender_attributes.h"
 #include "content/browser/prerender/prerender_host_registry.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/public/test/mock_web_contents_observer.h"
 #include "content/public/test/navigation_simulator.h"
+#include "content/public/test/prerender_test_util.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/test/mock_commit_deferring_condition.h"
 #include "content/test/navigation_simulator_impl.h"
 #include "content/test/test_render_frame_host.h"
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_web_contents.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
@@ -26,36 +29,6 @@ namespace content {
 namespace {
 
 using ::testing::_;
-
-// TODO(nhiroki): Merge this into TestNavigationObserver for code
-// simplification.
-class ActivationObserver : public PrerenderHost::Observer {
- public:
-  // PrerenderHost::Observer implementations.
-  void OnActivated() override { was_activated_ = true; }
-  void OnHostDestroyed() override {
-    was_host_destroyed_ = true;
-    if (quit_closure_) {
-      base::SequencedTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, std::move(quit_closure_));
-    }
-  }
-
-  void WaitUntilHostDestroyed() {
-    if (was_host_destroyed_)
-      return;
-    base::RunLoop run_loop;
-    quit_closure_ = run_loop.QuitClosure();
-    run_loop.Run();
-  }
-
-  bool was_activated() const { return was_activated_; }
-
- private:
-  base::OnceClosure quit_closure_;
-  bool was_activated_ = false;
-  bool was_host_destroyed_ = false;
-};
 
 // Finish a prerendering navigation that was already started with
 // CreateAndStartHost().
@@ -83,31 +56,6 @@ std::unique_ptr<NavigationSimulatorImpl> CreateActivation(
   return navigation;
 }
 
-void ActivatePrerenderedPage(const GURL& prerendering_url,
-                             WebContentsImpl& web_contents) {
-  // Make sure the page for `prerendering_url` has been prerendered.
-  PrerenderHostRegistry* registry = web_contents.GetPrerenderHostRegistry();
-  PrerenderHost* prerender_host =
-      registry->FindHostByUrlForTesting(prerendering_url);
-  EXPECT_TRUE(prerender_host);
-  int prerender_host_id = prerender_host->frame_tree_node_id();
-
-  ActivationObserver activation_observer;
-  prerender_host->AddObserver(&activation_observer);
-
-  // Activate the prerendered page.
-  std::unique_ptr<NavigationSimulatorImpl> navigation =
-      CreateActivation(prerendering_url, web_contents);
-  navigation->Commit();
-  activation_observer.WaitUntilHostDestroyed();
-
-  EXPECT_EQ(web_contents.GetMainFrame()->GetLastCommittedURL(),
-            prerendering_url);
-
-  EXPECT_TRUE(activation_observer.was_activated());
-  EXPECT_EQ(registry->FindReservedHostById(prerender_host_id), nullptr);
-}
-
 PrerenderAttributes GeneratePrerenderAttributes(const GURL& url,
                                                 RenderFrameHostImpl* rfh) {
   return PrerenderAttributes(
@@ -115,14 +63,31 @@ PrerenderAttributes GeneratePrerenderAttributes(const GURL& url,
       /*embedder_histogram_suffix=*/"", Referrer(),
       rfh->GetLastCommittedOrigin(), rfh->GetLastCommittedURL(),
       rfh->GetProcess()->GetID(), rfh->GetFrameToken(),
-      rfh->GetPageUkmSourceId(), ui::PAGE_TRANSITION_LINK);
+      rfh->GetFrameTreeNodeId(), rfh->GetPageUkmSourceId(),
+      ui::PAGE_TRANSITION_LINK,
+      /*url_match_predicate=*/absl::nullopt);
+}
+
+PrerenderAttributes GeneratePrerenderAttributesWithPredicate(
+    const GURL& url,
+    RenderFrameHostImpl* rfh,
+    base::RepeatingCallback<bool(const GURL&)> url_match_predicate) {
+  return PrerenderAttributes(
+      url, PrerenderTriggerType::kSpeculationRule,
+      /*embedder_histogram_suffix=*/"", Referrer(),
+      rfh->GetLastCommittedOrigin(), rfh->GetLastCommittedURL(),
+      rfh->GetProcess()->GetID(), rfh->GetFrameToken(),
+      rfh->GetFrameTreeNodeId(), rfh->GetPageUkmSourceId(),
+      ui::PAGE_TRANSITION_LINK, std::move(url_match_predicate));
 }
 
 class TestWebContentsDelegate : public WebContentsDelegate {
  public:
   TestWebContentsDelegate() = default;
   ~TestWebContentsDelegate() override = default;
-  bool IsPrerender2Supported() override { return true; }
+  bool IsPrerender2Supported(WebContents& web_contents) override {
+    return true;
+  }
 };
 
 class PrerenderHostTest : public RenderViewHostImplTestHarness {
@@ -148,8 +113,27 @@ class PrerenderHostTest : public RenderViewHostImplTestHarness {
   }
 
   void ExpectFinalStatus(PrerenderHost::FinalStatus status) {
+    // Check FinalStatus in UMA.
     histogram_tester_.ExpectUniqueSample(
-        "Prerender.Experimental.PrerenderHostFinalStatus", status, 1);
+        "Prerender.Experimental.PrerenderHostFinalStatus.SpeculationRule",
+        status, 1);
+
+    // Check all entries in UKM to make sure that the recorded FinalStatus is
+    // equal to `status`. At least one entry should exist.
+    bool final_status_entry_found = false;
+    const auto entries = ukm_recorder_.GetEntriesByName(
+        ukm::builders::PrerenderPageLoad::kEntryName);
+    for (const auto* entry : entries) {
+      if (ukm_recorder_.EntryHasMetric(
+              entry, ukm::builders::PrerenderPageLoad::kFinalStatusName)) {
+        final_status_entry_found = true;
+        ukm_recorder_.ExpectEntryMetric(
+            entry, ukm::builders::PrerenderPageLoad::kFinalStatusName,
+            static_cast<int>(status));
+      }
+    }
+
+    EXPECT_TRUE(final_status_entry_found);
   }
 
   std::unique_ptr<TestWebContents> CreateWebContents(const GURL& url) {
@@ -168,6 +152,7 @@ class PrerenderHostTest : public RenderViewHostImplTestHarness {
   std::unique_ptr<TestBrowserContext> browser_context_;
   std::unique_ptr<TestWebContentsDelegate> web_contents_delegate_;
   base::HistogramTester histogram_tester_;
+  ukm::TestAutoSetUkmRecorder ukm_recorder_;
 };
 
 TEST_F(PrerenderHostTest, Activate) {
@@ -185,7 +170,7 @@ TEST_F(PrerenderHostTest, Activate) {
 
   // Perform a navigation in the primary frame tree which activates the
   // prerendered page.
-  ActivatePrerenderedPage(kPrerenderingUrl, *web_contents);
+  web_contents->ActivatePrerenderedPage(kPrerenderingUrl);
   ExpectFinalStatus(PrerenderHost::FinalStatus::kActivated);
 }
 
@@ -214,59 +199,58 @@ TEST_F(PrerenderHostTest, MainFrameNavigationForReservedHost) {
   const GURL kPrerenderingUrl("https://example.com/next");
   RenderFrameHostImpl* prerender_rfh =
       web_contents->AddPrerenderAndCommitNavigation(kPrerenderingUrl);
-  const int prerender_ftn_id = prerender_rfh->GetFrameTreeNodeId();
-  PrerenderHost* prerender_host =
-      registry->FindNonReservedHostById(prerender_ftn_id);
   FrameTreeNode* ftn = prerender_rfh->frame_tree_node();
   EXPECT_FALSE(ftn->HasNavigation());
 
-  ActivationObserver activation_observer;
-  prerender_host->AddObserver(&activation_observer);
+  test::PrerenderHostObserver prerender_host_observer(*web_contents,
+                                                      kPrerenderingUrl);
 
   // Now navigate the primary page to the prerendered URL so that we activate
   // the prerender. Use a CommitDeferringCondition to pause activation
   // before it completes.
   std::unique_ptr<NavigationSimulatorImpl> navigation;
-  MockCommitDeferringConditionWrapper condition(/*is_ready_to_commit=*/false);
-  {
-    MockCommitDeferringConditionInstaller installer(condition.PassToDelegate());
 
+  {
+    MockCommitDeferringConditionInstaller installer(
+        kPrerenderingUrl,
+        /*is_ready_to_commit=*/false);
     // Start trying to activate the prerendered page.
     navigation = CreateActivation(kPrerenderingUrl, *web_contents);
     navigation->Start();
 
     // Wait for the condition to pause the activation.
-    condition.WaitUntilInvoked();
+    installer.WaitUntilInstalled();
+    installer.condition().WaitUntilInvoked();
+
+    // The request should be deferred by the condition.
+    NavigationRequest* navigation_request =
+        static_cast<NavigationRequest*>(navigation->GetNavigationHandle());
+    EXPECT_TRUE(
+        navigation_request->IsCommitDeferringConditionDeferredForTesting());
+
+    // The primary page should still be the original page.
+    EXPECT_EQ(web_contents->GetLastCommittedURL(), kOriginUrl);
+
+    const GURL kBadUrl("https://example2.test/");
+    TestNavigationManager tno(web_contents.get(), kBadUrl);
+
+    // Start a cross-origin navigation in the prerendered page. It should be
+    // cancelled.
+    auto navigation_2 = NavigationSimulatorImpl::CreateRendererInitiated(
+        kBadUrl, prerender_rfh);
+    navigation_2->Start();
+    EXPECT_EQ(NavigationThrottle::CANCEL,
+              navigation_2->GetLastThrottleCheckResult());
+    tno.WaitForNavigationFinished();
+    EXPECT_FALSE(tno.was_committed());
+
+    // The cross-origin navigation cancels the activation.
+    installer.condition().CallResumeClosure();
+    prerender_host_observer.WaitForDestroyed();
+    EXPECT_FALSE(prerender_host_observer.was_activated());
+    EXPECT_EQ(registry->FindHostByUrlForTesting(kPrerenderingUrl), nullptr);
+    ExpectFinalStatus(PrerenderHost::FinalStatus::kMainFrameNavigation);
   }
-
-  // The request should be deferred by the condition.
-  NavigationRequest* navigation_request =
-      static_cast<NavigationRequest*>(navigation->GetNavigationHandle());
-  EXPECT_TRUE(
-      navigation_request->IsCommitDeferringConditionDeferredForTesting());
-
-  // The primary page should still be the original page.
-  EXPECT_EQ(web_contents->GetLastCommittedURL(), kOriginUrl);
-
-  const GURL kBadUrl("https://example2.test/");
-  TestNavigationManager tno(web_contents.get(), kBadUrl);
-
-  // Start a cross-origin navigation in the prerendered page. It should be
-  // cancelled.
-  auto navigation_2 =
-      NavigationSimulatorImpl::CreateRendererInitiated(kBadUrl, prerender_rfh);
-  navigation_2->Start();
-  EXPECT_EQ(NavigationThrottle::CANCEL,
-            navigation_2->GetLastThrottleCheckResult());
-  tno.WaitForNavigationFinished();
-  EXPECT_FALSE(tno.was_committed());
-
-  // The cross-origin navigation cancels the activation.
-  condition.CallResumeClosure();
-  activation_observer.WaitUntilHostDestroyed();
-  EXPECT_FALSE(activation_observer.was_activated());
-  EXPECT_EQ(registry->FindHostByUrlForTesting(kPrerenderingUrl), nullptr);
-  ExpectFinalStatus(PrerenderHost::FinalStatus::kMainFrameNavigation);
 
   // The activation falls back to regular navigation.
   navigation->Commit();
@@ -311,7 +295,7 @@ TEST_F(PrerenderHostTest, ActivationAfterPageStateUpdate) {
   // Perform a navigation in the primary frame tree which activates the
   // prerendered page. The main expectation is that this navigation commits
   // successfully and doesn't hit any DCHECKs.
-  ActivatePrerenderedPage(kPrerenderingUrl, *web_contents);
+  web_contents->ActivatePrerenderedPage(kPrerenderingUrl);
   ExpectFinalStatus(PrerenderHost::FinalStatus::kActivated);
 
   // Ensure that the the page_state was preserved.
@@ -383,7 +367,7 @@ TEST_F(PrerenderHostTest, LoadProgressChangedInvokedOnActivation) {
 
   // Perform a navigation in the primary frame tree which activates the
   // prerendered page.
-  ActivatePrerenderedPage(kPrerenderingUrl, *web_contents);
+  web_contents->ActivatePrerenderedPage(kPrerenderingUrl);
   ExpectFinalStatus(PrerenderHost::FinalStatus::kActivated);
 }
 
@@ -422,12 +406,12 @@ TEST_F(PrerenderHostTest, DontCancelPrerenderWhenTriggerGetsVisible) {
 
   // Changing the visibility state to VISIBLE will not affect prerendering.
   web_contents->WasShown();
-  ActivatePrerenderedPage(kPrerenderingUrl, *web_contents);
+  web_contents->ActivatePrerenderedPage(kPrerenderingUrl);
   ExpectFinalStatus(PrerenderHost::FinalStatus::kActivated);
 }
 
 // Skip this test on Android as it doesn't support the OCCLUDED state.
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 TEST_F(PrerenderHostTest, DontCancelPrerenderWhenTriggerGetsOcculded) {
   std::unique_ptr<TestWebContents> web_contents =
       CreateWebContents(GURL("https://example.com/"));
@@ -444,10 +428,34 @@ TEST_F(PrerenderHostTest, DontCancelPrerenderWhenTriggerGetsOcculded) {
 
   // Changing the visibility state to OCCLUDED will not affect prerendering.
   web_contents->WasOccluded();
-  ActivatePrerenderedPage(kPrerenderingUrl, *web_contents);
+  web_contents->ActivatePrerenderedPage(kPrerenderingUrl);
   ExpectFinalStatus(PrerenderHost::FinalStatus::kActivated);
 }
 #endif
+
+TEST_F(PrerenderHostTest, UrlMatchPredicate) {
+  std::unique_ptr<TestWebContents> web_contents =
+      CreateWebContents(GURL("https://example.com/"));
+  const GURL kPrerenderingUrl = GURL("https://example.com/empty.html");
+  RenderFrameHostImpl* initiator_rfh = web_contents->GetMainFrame();
+  PrerenderHostRegistry* registry = web_contents->GetPrerenderHostRegistry();
+  base::RepeatingCallback callback =
+      base::BindRepeating([](const GURL&) { return true; });
+  const int prerender_frame_tree_node_id = registry->CreateAndStartHost(
+      GeneratePrerenderAttributesWithPredicate(kPrerenderingUrl, initiator_rfh,
+                                               callback),
+      *web_contents);
+  PrerenderHost* prerender_host =
+      registry->FindNonReservedHostById(prerender_frame_tree_node_id);
+  ASSERT_NE(prerender_host, nullptr);
+  const GURL kActivatedUrl = GURL("https://example.com/empty.html?activate");
+  ASSERT_NE(kActivatedUrl, kPrerenderingUrl);
+  EXPECT_TRUE(prerender_host->IsUrlMatch(kActivatedUrl));
+  // Even if the predicate always returns true, a cross-origin url shouldn't be
+  // able to activate a prerendered page.
+  EXPECT_FALSE(
+      prerender_host->IsUrlMatch(GURL("https://example2.com/empty.html")));
+}
 
 }  // namespace
 }  // namespace content

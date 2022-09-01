@@ -16,6 +16,7 @@ import './MetricsSidebarPane.js';
 import './PlatformFontsWidget.js';
 import './PropertiesWidget.js';
 import './NodeStackTraceWidget.js';
+import './StylePropertiesSection.js';
 import './StylePropertyHighlighter.js';
 import './StylesSidebarPane.js';
 import './StylePropertyTreeElement.js';
@@ -39,6 +40,7 @@ import * as ElementsTreeElementHighlighter from './ElementsTreeElementHighlighte
 import * as ElementsTreeOutline from './ElementsTreeOutline.js';
 import * as EventListenersWidget from './EventListenersWidget.js';
 import * as InspectElementModeController from './InspectElementModeController.js';
+import * as LayersWidget from './LayersWidget.js';
 import * as LayoutSidebarPane from './LayoutSidebarPane.js';
 import * as MarkerDecorator from './MarkerDecorator.js';
 import * as MetricsSidebarPane from './MetricsSidebarPane.js';
@@ -46,6 +48,7 @@ import * as NodeStackTraceWidget from './NodeStackTraceWidget.js';
 import * as PlatformFontsWidget from './PlatformFontsWidget.js';
 import * as PropertiesWidget from './PropertiesWidget.js';
 import * as StyleEditorWidget from './StyleEditorWidget.js';
+import * as StylePropertiesSection from './StylePropertiesSection.js';
 import * as StylePropertyHighlighter from './StylePropertyHighlighter.js';
 import * as StylePropertyTreeElement from './StylePropertyTreeElement.js';
 import * as StylePropertyUtils from './StylePropertyUtils.js';
@@ -66,6 +69,7 @@ export {
   ElementsTreeOutline,
   EventListenersWidget,
   InspectElementModeController,
+  LayersWidget,
   LayoutSidebarPane,
   MarkerDecorator,
   MetricsSidebarPane,
@@ -73,6 +77,7 @@ export {
   PlatformFontsWidget,
   PropertiesWidget,
   StyleEditorWidget,
+  StylePropertiesSection,
   StylePropertyHighlighter,
   StylePropertyTreeElement,
   StylePropertyUtils,

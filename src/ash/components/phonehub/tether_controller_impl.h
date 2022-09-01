@@ -7,8 +7,8 @@
 
 #include "ash/components/phonehub/phone_model.h"
 #include "ash/components/phonehub/tether_controller.h"
+#include "ash/services/multidevice_setup/public/cpp/multidevice_setup_client.h"
 #include "base/memory/weak_ptr.h"
-#include "chromeos/services/multidevice_setup/public/cpp/multidevice_setup_client.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
@@ -139,6 +139,7 @@ class TetherControllerImpl
   void OnDeviceStateListChanged() override;
   void OnVpnProvidersChanged() override {}
   void OnNetworkCertificatesChanged() override {}
+  void OnPoliciesApplied(const std::string& userhash) override {}
 
   void AttemptTurningOnTethering();
   void OnSetFeatureEnabled(bool success);

@@ -42,7 +42,9 @@ smn{
         BZ{"Belize"}
         CA{"Kanada"}
         CC{"Kookossuolluuh (Keelingsuolluuh)"}
+        CD{"Kongo demokraattisâš täsiväldi"}
         CF{"Koskâ-Afrika täsiväldi"}
+        CG{"Kongo täsiväldi"}
         CH{"Sveitsi"}
         CI{"Côte d’Ivoire"}
         CK{"Cooksuolluuh"}
@@ -257,9 +259,5 @@ smn{
     Countries%short{
         GB{"OK"}
         US{"USA"}
-    }
-    Countries%variant{
-        CD{"Kongo demokraattisâš täsiväldi"}
-        CG{"Kongo täsiväldi"}
     }
 }

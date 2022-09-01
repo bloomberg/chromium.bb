@@ -8,12 +8,12 @@
 #include <atomic>
 #include <chrono>
 
-#include "cast/common/certificate/cast_trust_store.h"
 #include "cast/common/certificate/testing/test_helpers.h"
 #include "cast/common/channel/connection_namespace_handler.h"
 #include "cast/common/channel/message_util.h"
 #include "cast/common/channel/virtual_connection_router.h"
 #include "cast/common/public/cast_socket.h"
+#include "cast/common/public/trust_store.h"
 #include "cast/receiver/channel/device_auth_namespace_handler.h"
 #include "cast/receiver/channel/static_credentials.h"
 #include "cast/receiver/public/receiver_socket_factory.h"
@@ -48,7 +48,7 @@ class SenderSocketsClient : public SenderSocketFactory::Client,
  public:
   explicit SenderSocketsClient(VirtualConnectionRouter* router)  // NOLINT
       : router_(router) {}
-  virtual ~SenderSocketsClient() = default;
+  ~SenderSocketsClient() override = default;
 
   CastSocket* socket() const { return socket_; }
 
@@ -139,23 +139,22 @@ class CastSocketE2ETest : public ::testing::Test {
     PlatformClientPosix::Create(std::chrono::milliseconds(10));
     task_runner_ = PlatformClientPosix::GetInstance()->GetTaskRunner();
 
+    credentials_ =
+        std::move(GenerateCredentialsForTesting("Device ID").value());
+
     sender_router_ = MakeSerialDelete<VirtualConnectionRouter>(task_runner_);
     sender_client_ =
         std::make_unique<StrictMock<SenderSocketsClient>>(sender_router_.get());
     sender_factory_ = MakeSerialDelete<SenderSocketFactory>(
-        task_runner_, sender_client_.get(), task_runner_);
+        task_runner_, sender_client_.get(), task_runner_,
+        TrustStore::CreateInstanceForTest(credentials_.root_cert_der),
+        CastCRLTrustStore::Create());
     sender_tls_factory_ = SerialDeletePtr<TlsConnectionFactory>(
         task_runner_,
         TlsConnectionFactory::CreateFactory(sender_factory_.get(), task_runner_)
             .release());
     sender_factory_->set_factory(sender_tls_factory_.get());
 
-    ErrorOr<GeneratedCredentials> creds =
-        GenerateCredentialsForTesting("Device ID");
-    ASSERT_TRUE(creds.is_value());
-    credentials_ = std::move(creds.value());
-
-    CastTrustStore::CreateInstanceForTest(credentials_.root_cert_der);
     auth_handler_ = MakeSerialDelete<DeviceAuthNamespaceHandler>(
         task_runner_, credentials_.provider.get());
     receiver_router_ = MakeSerialDelete<VirtualConnectionRouter>(task_runner_);
@@ -181,7 +180,6 @@ class CastSocketE2ETest : public ::testing::Test {
     auth_handler_.reset();
     sender_tls_factory_.reset();
     sender_factory_.reset();
-    CastTrustStore::ResetInstance();
     PlatformClientPosix::ShutDown();
   }
 

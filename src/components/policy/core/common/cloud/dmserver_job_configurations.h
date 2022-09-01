@@ -14,6 +14,7 @@
 #include "components/policy/core/common/cloud/dm_auth.h"
 #include "components/policy/policy_export.h"
 #include "components/policy/proto/cloud_policy.pb.h"
+#include "components/policy/proto/device_management_backend.pb.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
@@ -65,9 +66,10 @@ class POLICY_EXPORT DMServerJobConfiguration : public JobConfigurationBase {
   }
 
  protected:
-  DeviceManagementStatus MapNetErrorAndResponseCodeToDMStatus(
+  DeviceManagementStatus MapNetErrorAndResponseToDMStatus(
       int net_error,
-      int response_code);
+      int response_code,
+      const std::string& response_body);
 
  private:
   // JobConfiguration interface.
@@ -104,6 +106,8 @@ class POLICY_EXPORT RegistrationJobConfiguration
   RegistrationJobConfiguration(const RegistrationJobConfiguration&) = delete;
   RegistrationJobConfiguration& operator=(const RegistrationJobConfiguration&) =
       delete;
+
+  void SetTimeoutDuration(base::TimeDelta timeout);
 
  private:
   // JobConfiguration interface.

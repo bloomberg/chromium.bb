@@ -312,6 +312,9 @@ void __attribute__((constructor(1024))) RunAccurateMalloc() {
 
   // Wait around so we can verify it did't crash.
   for (;;) {
+    // Call sleep, otherwise an empty busy loop is undefined behavior:
+    // http://en.cppreference.com/w/cpp/language/memory_model#Progress_guarantee
+    sleep(1);
   }
 }
 
@@ -351,6 +354,9 @@ void __attribute__((noreturn)) RunAccurateMallocWithVforkCommon() {
 
   // Wait around so we can verify it did't crash.
   for (;;) {
+    // Call sleep, otherwise an empty busy loop is undefined behavior:
+    // http://en.cppreference.com/w/cpp/language/memory_model#Progress_guarantee
+    sleep(1);
   }
 }
 
@@ -387,6 +393,9 @@ void __attribute__((constructor(1024))) RunAccurateSample() {
 
   // Wait around so we can verify it did't crash.
   for (;;) {
+    // Call sleep, otherwise an empty busy loop is undefined behavior:
+    // http://en.cppreference.com/w/cpp/language/memory_model#Progress_guarantee
+    sleep(1);
   }
 }
 
@@ -493,6 +502,9 @@ void __attribute__((constructor(1024))) RunCustomLifetime() {
 
   // Wait around so we can verify it didn't crash.
   for (;;) {
+    // Call sleep, otherwise an empty busy loop is undefined behavior:
+    // http://en.cppreference.com/w/cpp/language/memory_model#Progress_guarantee
+    sleep(1);
   }
 }
 
@@ -1762,21 +1774,23 @@ TEST_P(HeapprofdEndToEnd, NativeProfilingActiveAtProcessExit) {
 #error "Need to start daemons for Linux test."
 #endif
 
-INSTANTIATE_TEST_CASE_P(Run,
-                        HeapprofdEndToEnd,
-                        Values(std::make_tuple(TestMode::kStatic,
-                                               AllocatorMode::kCustom)),
-                        TestSuffix);
+INSTANTIATE_TEST_SUITE_P(Run,
+                         HeapprofdEndToEnd,
+                         Values(std::make_tuple(TestMode::kStatic,
+                                                AllocatorMode::kCustom)),
+                         TestSuffix);
 #elif !PERFETTO_BUILDFLAG(PERFETTO_START_DAEMONS)
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     Run,
     HeapprofdEndToEnd,
     Values(std::make_tuple(TestMode::kCentral, AllocatorMode::kMalloc),
            std::make_tuple(TestMode::kCentral, AllocatorMode::kCustom)),
     TestSuffix);
 #endif
+#else  // defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER) ||
+       // defined(MEMORY_SANITIZER) || defined(LEAK_SANITIZER)
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(HeapprofdEndToEnd);
 #endif
-
 
 }  // namespace
 }  // namespace profiling

@@ -15,6 +15,7 @@
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/web_script_execution_callback.h"
 #include "third_party/blink/renderer/bindings/core/v8/sanitize_script_errors.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_evaluation_result.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
@@ -49,7 +50,7 @@ class PromiseAggregator : public GarbageCollected<PromiseAggregator> {
 
  private:
   // A helper class that handles a result from a single promise value.
-  class OnSettled : public NewScriptFunction::Callable {
+  class OnSettled : public ScriptFunction::Callable {
    public:
     OnSettled(PromiseAggregator* aggregator,
               wtf_size_t index,
@@ -61,11 +62,11 @@ class PromiseAggregator : public GarbageCollected<PromiseAggregator> {
     OnSettled& operator=(const OnSettled&) = delete;
     ~OnSettled() override = default;
 
-    static NewScriptFunction* New(ScriptState* script_state,
-                                  PromiseAggregator* aggregator,
-                                  wtf_size_t index,
-                                  bool was_fulfilled) {
-      return MakeGarbageCollected<NewScriptFunction>(
+    static ScriptFunction* New(ScriptState* script_state,
+                               PromiseAggregator* aggregator,
+                               wtf_size_t index,
+                               bool was_fulfilled) {
+      return MakeGarbageCollected<ScriptFunction>(
           script_state,
           MakeGarbageCollected<OnSettled>(aggregator, index, was_fulfilled));
     }
@@ -87,7 +88,7 @@ class PromiseAggregator : public GarbageCollected<PromiseAggregator> {
 
     void Trace(Visitor* visitor) const override {
       visitor->Trace(aggregator_);
-      NewScriptFunction::Callable::Trace(visitor);
+      ScriptFunction::Callable::Trace(visitor);
     }
 
    private:
@@ -174,11 +175,11 @@ Vector<v8::Local<v8::Value>> WebScriptExecutor::Execute(
     // a foreign world.
     ClassicScript* classic_script = ClassicScript::CreateUnspecifiedScript(
         source, SanitizeScriptErrors::kDoNotSanitize);
-    v8::Local<v8::Value> script_value =
+    ScriptEvaluationResult result =
         world_id_ ? classic_script->RunScriptInIsolatedWorldAndReturnValue(
                         window, world_id_)
                   : classic_script->RunScriptAndReturnValue(window);
-    results.push_back(script_value);
+    results.push_back(result.GetSuccessValueOrEmpty());
   }
 
   return results;

@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_LOCAL_FRAME_UKM_AGGREGATOR_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_LOCAL_FRAME_UKM_AGGREGATOR_H_
 
+#include "base/time/time.h"
 #include "cc/metrics/frame_sequence_tracker_collection.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
@@ -122,7 +123,6 @@ class CORE_EXPORT LocalFrameUkmAggregator
   // below. For every metric name added here, add an entry in the array in
   // metrics_data() below.
   enum MetricId {
-    kCompositingAssignments,
     kCompositingCommit,
     kCompositingInputs,
     kImplCompositorCommit,
@@ -150,6 +150,8 @@ class CORE_EXPORT LocalFrameUkmAggregator
     kScrollDocumentUpdate,
     kServiceDocumentUpdate,
     kUserDrivenDocumentUpdate,
+    kParseStyleSheet,
+    kAccessibility,
     kCount,
     kMainFrame
   };
@@ -173,7 +175,6 @@ class CORE_EXPORT LocalFrameUkmAggregator
   // Add an entry in this array every time a new metric is added.
   static base::span<const MetricInitializationData> metrics_data() {
     static const MetricInitializationData data[] = {
-        {"CompositingAssignments", true},
         {"CompositingCommit", true},
         {"CompositingInputs", true},
         {"ImplCompositorCommit", true},
@@ -200,8 +201,10 @@ class CORE_EXPORT LocalFrameUkmAggregator
         {"JavascriptDocumentUpdate", true},
         {"ScrollDocumentUpdate", true},
         {"ServiceDocumentUpdate", true},
-        {"UserDrivenDocumentUpdate", true}};
-    static_assert(base::size(data) == kCount, "Metrics data mismatch");
+        {"UserDrivenDocumentUpdate", true},
+        {"ParseStyleSheet", true},
+        {"Accessibility", true}};
+    static_assert(std::size(data) == kCount, "Metrics data mismatch");
     return data;
   }
 

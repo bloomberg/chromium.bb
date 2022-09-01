@@ -1006,8 +1006,7 @@ framework_${update_version_app_old}_${update_version_app}.dirpatch"
     exit 5
   fi
 
-  local new_versioned_dir
-  new_versioned_dir="${installed_versions_dir}/${update_version_app}"
+  local new_versioned_dir="${installed_versions_dir}/${update_version_app}"
   note "new_versioned_dir = ${new_versioned_dir}"
 
   # If there's an entry at ${new_versioned_dir} but it's not a directory
@@ -1219,9 +1218,6 @@ framework_${update_version_app_old}_${update_version_app}.dirpatch"
     exit 9
   fi
   note "new_version_app = ${new_version_app}"
-
-  local new_versioned_dir="${installed_versions_dir}/${new_version_app}"
-  note "new_versioned_dir = ${new_versioned_dir}"
 
   local new_ks_plist="${installed_app_plist}"
   note "new_ks_plist = ${new_ks_plist}"

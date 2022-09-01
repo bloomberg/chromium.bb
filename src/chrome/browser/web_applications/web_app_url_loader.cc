@@ -36,7 +36,7 @@ bool EqualsWithComparison(const GURL& a,
       return false;
     case UrlComparison::kSameOrigin:
       replace.ClearPath();
-      FALLTHROUGH;
+      [[fallthrough]];
     case UrlComparison::kIgnoreQueryParamsAndRef:
       replace.ClearQuery();
       replace.ClearRef();
@@ -80,7 +80,7 @@ class LoaderTask : public content::WebContentsObserver {
   void DidFinishLoad(content::RenderFrameHost* render_frame_host,
                      const GURL& validated_url) override {
     // Ignore subframe loads.
-    if (web_contents()->GetMainFrame() != render_frame_host) {
+    if (web_contents()->GetPrimaryMainFrame() != render_frame_host) {
       return;
     }
 
@@ -111,7 +111,7 @@ class LoaderTask : public content::WebContentsObserver {
                    const GURL& validated_url,
                    int error_code) override {
     // Ignore subframe loads.
-    if (web_contents()->GetMainFrame() != render_frame_host) {
+    if (web_contents()->GetPrimaryMainFrame() != render_frame_host) {
       return;
     }
 
