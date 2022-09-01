@@ -17,7 +17,8 @@
 #include <windows.h>
 #include <string.h>
 
-#include "base/cxx17_backports.h"
+#include <iterator>
+
 #include "gtest/gtest.h"
 #include "test/win/win_multiprocess.h"
 #include "util/misc/from_pointer_cast.h"
@@ -44,7 +45,7 @@ TEST(ProcessReaderWin, SelfBasic) {
   EXPECT_EQ(process_reader.GetProcessInfo().ProcessID(), GetCurrentProcessId());
 
   static constexpr char kTestMemory[] = "Some test memory";
-  char buffer[base::size(kTestMemory)];
+  char buffer[std::size(kTestMemory)];
   ASSERT_TRUE(process_reader.Memory()->Read(
       reinterpret_cast<uintptr_t>(kTestMemory), sizeof(kTestMemory), &buffer));
   EXPECT_STREQ(kTestMemory, buffer);
@@ -110,7 +111,8 @@ TEST(ProcessReaderWin, SelfOneThread) {
   ASSERT_GE(threads.size(), 1u);
 
   EXPECT_EQ(threads[0].id, GetCurrentThreadId());
-  EXPECT_NE(ProgramCounterFromCONTEXT(&threads[0].context.native), nullptr);
+  EXPECT_NE(ProgramCounterFromCONTEXT(threads[0].context.context<CONTEXT>()),
+            nullptr);
   EXPECT_EQ(threads[0].suspend_count, 0u);
 }
 
@@ -193,7 +195,7 @@ class ProcessReaderChildThreadSuspendCount final : public WinMultiprocess {
     // the pipe.
     CheckedReadFileAtEOF(ReadPipeHandle());
 
-    for (size_t i = 0; i < base::size(threads); ++i)
+    for (size_t i = 0; i < std::size(threads); ++i)
       done.Signal();
     for (auto& thread : threads)
       thread.Join();

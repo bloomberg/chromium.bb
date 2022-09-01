@@ -37,14 +37,13 @@ template<typename Derived> class TriangularBase : public EigenBase<Derived>
       MaxRowsAtCompileTime = internal::traits<Derived>::MaxRowsAtCompileTime,
       MaxColsAtCompileTime = internal::traits<Derived>::MaxColsAtCompileTime,
 
-      SizeAtCompileTime = (internal::size_at_compile_time<internal::traits<Derived>::RowsAtCompileTime,
-                                                   internal::traits<Derived>::ColsAtCompileTime>::ret),
+      SizeAtCompileTime = (internal::size_of_xpr_at_compile_time<Derived>::ret),
       /**< This is equal to the number of coefficients, i.e. the number of
           * rows times the number of columns, or to \a Dynamic if this is not
           * known at compile-time. \sa RowsAtCompileTime, ColsAtCompileTime */
 
-      MaxSizeAtCompileTime = (internal::size_at_compile_time<internal::traits<Derived>::MaxRowsAtCompileTime,
-                                                   internal::traits<Derived>::MaxColsAtCompileTime>::ret)
+      MaxSizeAtCompileTime = internal::size_at_compile_time(internal::traits<Derived>::MaxRowsAtCompileTime,
+                                                            internal::traits<Derived>::MaxColsAtCompileTime)
 
     };
     typedef typename internal::traits<Derived>::Scalar Scalar;
@@ -155,8 +154,8 @@ template<typename Derived> class TriangularBase : public EigenBase<Derived>
   *
   * \brief Expression of a triangular part in a matrix
   *
-  * \param MatrixType the type of the object in which we are taking the triangular part
-  * \param Mode the kind of triangular matrix expression to construct. Can be #Upper,
+  * \tparam MatrixType the type of the object in which we are taking the triangular part
+  * \tparam Mode the kind of triangular matrix expression to construct. Can be #Upper,
   *             #Lower, #UnitUpper, #UnitLower, #StrictlyUpper, or #StrictlyLower.
   *             This is in fact a bit field; it must have either #Upper or #Lower,
   *             and additionally it may have #UnitDiag or #ZeroDiag or neither.
@@ -172,8 +171,8 @@ template<typename MatrixType, unsigned int Mode_>
 struct traits<TriangularView<MatrixType, Mode_> > : traits<MatrixType>
 {
   typedef typename ref_selector<MatrixType>::non_const_type MatrixTypeNested;
-  typedef typename remove_reference<MatrixTypeNested>::type MatrixTypeNestedNonRef;
-  typedef typename remove_all<MatrixTypeNested>::type MatrixTypeNestedCleaned;
+  typedef std::remove_reference_t<MatrixTypeNested> MatrixTypeNestedNonRef;
+  typedef remove_all_t<MatrixTypeNested> MatrixTypeNestedCleaned;
   typedef typename MatrixType::PlainObject FullMatrixType;
   typedef MatrixType ExpressionType;
   enum {
@@ -199,8 +198,8 @@ template<typename MatrixType_, unsigned int Mode_> class TriangularView
     typedef typename internal::traits<TriangularView>::MatrixTypeNested MatrixTypeNested;
     typedef typename internal::traits<TriangularView>::MatrixTypeNestedNonRef MatrixTypeNestedNonRef;
 
-    typedef typename internal::remove_all<typename MatrixType::ConjugateReturnType>::type MatrixConjugateReturnType;
-    typedef TriangularView<typename internal::add_const<MatrixType>::type, Mode_> ConstTriangularView;
+    typedef internal::remove_all_t<typename MatrixType::ConjugateReturnType> MatrixConjugateReturnType;
+    typedef TriangularView<std::add_const_t<MatrixType>, Mode_> ConstTriangularView;
 
   public:
 
@@ -249,10 +248,10 @@ template<typename MatrixType_, unsigned int Mode_> class TriangularView
      */
     template<bool Cond>
     EIGEN_DEVICE_FUNC
-    inline typename internal::conditional<Cond,ConjugateReturnType,ConstTriangularView>::type
+    inline std::conditional_t<Cond,ConjugateReturnType,ConstTriangularView>
     conjugateIf() const
     {
-      typedef typename internal::conditional<Cond,ConjugateReturnType,ConstTriangularView>::type ReturnType;
+      typedef std::conditional_t<Cond,ConjugateReturnType,ConstTriangularView> ReturnType;
       return ReturnType(m_matrix.template conjugateIf<Cond>());
     }
 
@@ -264,10 +263,10 @@ template<typename MatrixType_, unsigned int Mode_> class TriangularView
 
     typedef TriangularView<typename MatrixType::TransposeReturnType,TransposeMode> TransposeReturnType;
      /** \sa MatrixBase::transpose() */
+    template<class Dummy=int>
     EIGEN_DEVICE_FUNC
-    inline TransposeReturnType transpose()
+    inline TransposeReturnType transpose(std::enable_if_t<Eigen::internal::is_lvalue<MatrixType>::value, Dummy*> = nullptr)
     {
-      EIGEN_STATIC_ASSERT_LVALUE(MatrixType)
       typename MatrixType::TransposeReturnType tmp(m_matrix);
       return TransposeReturnType(tmp);
     }
@@ -731,10 +730,10 @@ struct evaluator_traits<TriangularView<MatrixType,Mode> >
 
 template<typename MatrixType, unsigned int Mode>
 struct unary_evaluator<TriangularView<MatrixType,Mode>, IndexBased>
- : evaluator<typename internal::remove_all<MatrixType>::type>
+ : evaluator<internal::remove_all_t<MatrixType>>
 {
   typedef TriangularView<MatrixType,Mode> XprType;
-  typedef evaluator<typename internal::remove_all<MatrixType>::type> Base;
+  typedef evaluator<internal::remove_all_t<MatrixType>> Base;
   EIGEN_DEVICE_FUNC
   unary_evaluator(const XprType &xpr) : Base(xpr.nestedExpression()) {}
 };

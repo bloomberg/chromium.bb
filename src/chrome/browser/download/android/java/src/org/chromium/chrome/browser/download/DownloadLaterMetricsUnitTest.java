@@ -13,14 +13,14 @@ import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.metrics.test.ShadowRecordHistogram;
+import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.download.DownloadLaterMetrics.DownloadLaterUiEvent;
 import org.chromium.chrome.browser.download.dialogs.DownloadLaterDialogChoice;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 /**
  * Unit test for {@link DownloadLaterMetrics}.
  */
-@RunWith(LocalRobolectricTestRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE, shadows = {ShadowRecordHistogram.class})
 public class DownloadLaterMetricsUnitTest {
     private static final String UI_EVENT_METRIC_NAME = "Download.Later.UI.Events";
@@ -46,36 +46,19 @@ public class DownloadLaterMetricsUnitTest {
 
     @Test
     public void testRecordDownloadLaterDialogChoice() {
-        DownloadLaterMetrics.recordDownloadLaterDialogChoice(
-                DownloadLaterDialogChoice.ON_WIFI, true, -1);
+        DownloadLaterMetrics.recordDownloadLaterDialogChoice(DownloadLaterDialogChoice.ON_WIFI, -1);
         assertEquals(1,
                 ShadowRecordHistogram.getHistogramValueCountForTesting(
                         "Download.Later.UI.DialogChoice.Main", DownloadLaterDialogChoice.ON_WIFI));
         assertEquals(1,
                 ShadowRecordHistogram.getHistogramValueCountForTesting(
-                        "Download.Later.UI.DialogChoice.Main.DataSaverOn",
-                        DownloadLaterDialogChoice.ON_WIFI));
-        assertEquals(0,
-                ShadowRecordHistogram.getHistogramValueCountForTesting(
-                        "Download.Later.UI.DialogChoice.Main.DataSaverOff",
-                        DownloadLaterDialogChoice.ON_WIFI));
-        assertEquals(1,
-                ShadowRecordHistogram.getHistogramValueCountForTesting(
                         UI_EVENT_METRIC_NAME, DownloadLaterUiEvent.DOWNLOAD_LATER_DIALOG_COMPLETE));
 
         DownloadLaterMetrics.recordDownloadLaterDialogChoice(
-                DownloadLaterDialogChoice.DOWNLOAD_LATER, false, 1024);
+                DownloadLaterDialogChoice.DOWNLOAD_LATER, 1024);
         assertEquals(1,
                 ShadowRecordHistogram.getHistogramValueCountForTesting(
                         "Download.Later.UI.DialogChoice.Main",
-                        DownloadLaterDialogChoice.DOWNLOAD_LATER));
-        assertEquals(0,
-                ShadowRecordHistogram.getHistogramValueCountForTesting(
-                        "Download.Later.UI.DialogChoice.Main.DataSaverOn",
-                        DownloadLaterDialogChoice.DOWNLOAD_LATER));
-        assertEquals(1,
-                ShadowRecordHistogram.getHistogramValueCountForTesting(
-                        "Download.Later.UI.DialogChoice.Main.DataSaverOff",
                         DownloadLaterDialogChoice.DOWNLOAD_LATER));
         assertEquals(1,
                 ShadowRecordHistogram.getHistogramValueCountForTesting(

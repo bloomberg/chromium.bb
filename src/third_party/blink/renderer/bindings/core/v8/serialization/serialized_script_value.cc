@@ -56,7 +56,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_buffer.h"
@@ -624,7 +624,12 @@ SerializedScriptValue::TransferArrayBufferContents(
       DOMArrayBuffer* array_buffer =
           static_cast<DOMArrayBuffer*>(array_buffer_base);
 
-      if (!array_buffer->Transfer(isolate, contents.at(index))) {
+      if (!array_buffer->IsDetachable(isolate)) {
+        exception_state.ThrowTypeError(
+            "ArrayBuffer at index " + String::Number(index) +
+            " is not detachable and could not be transferred.");
+        return ArrayBufferContentsArray();
+      } else if (!array_buffer->Transfer(isolate, contents.at(index))) {
         exception_state.ThrowDOMException(DOMExceptionCode::kDataCloneError,
                                           "ArrayBuffer at index " +
                                               String::Number(index) +
@@ -664,10 +669,7 @@ static_assert(kSerializedScriptValueVersion ==
               "Update WebSerializedScriptValueVersion.h.");
 
 bool SerializedScriptValue::IsOriginCheckRequired() const {
-  return file_system_access_tokens_.size() > 0 ||
-         (!RuntimeEnabledFeatures::
-              CrossOriginWebAssemblyModuleSharingAllowedEnabled() &&
-          wasm_modules_.size() > 0);
+  return file_system_access_tokens_.size() > 0 || wasm_modules_.size() > 0;
 }
 
 }  // namespace blink

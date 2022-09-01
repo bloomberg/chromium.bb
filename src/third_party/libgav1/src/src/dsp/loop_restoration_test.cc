@@ -55,6 +55,7 @@ template <int bitdepth, typename Pixel>
 class SelfGuidedFilterTest : public testing::TestWithParam<int>,
                              public test_utils::MaxAlignedAllocable {
  public:
+  static_assert(bitdepth >= kBitdepth8 && bitdepth <= LIBGAV1_MAX_BITDEPTH, "");
   SelfGuidedFilterTest() = default;
   SelfGuidedFilterTest(const SelfGuidedFilterTest&) = delete;
   SelfGuidedFilterTest& operator=(const SelfGuidedFilterTest&) = delete;
@@ -159,26 +160,34 @@ void SelfGuidedFilterTest<bitdepth, Pixel>::SetInputData(
 template <int bitdepth, typename Pixel>
 void SelfGuidedFilterTest<bitdepth, Pixel>::TestFixedValues(int test_index,
                                                             Pixel value) {
-  static const char* const kDigest[][2][kNumRadiusTypes] = {
+  static const char* const kDigest[][3][kNumRadiusTypes] = {
       {{"7b78783ff4f03625a50c2ebfd574adca", "4faa0810639016f11a9f761ce28c38b0",
         "a03314fc210bee68c7adbb44d2bbdac7"},
        {"fce031d1339cfef5016e76a643538a71", "d439e1060de3f07b5b29c9b0b7c08e54",
-        "a6583fe9359877f4a259c81d900fc4fb"}},
+        "a6583fe9359877f4a259c81d900fc4fb"},
+       {"8f9b6944c8965f34d444a667da3b0ebe", "84fa62c491c67c3a435fd5140e7a4f82",
+        "d04b62d97228789e5c6928d40d5d900e"}},
       {{"948ea16a90c4cefef87ce5b0ee105fc6", "76740629877b721432b84dbbdb4e352a",
         "27100f37b3e42a5f2a051e1566edb6f8"},
        {"dd320de3bc82f4ba69738b2190ea9f85", "bf82f271e30a1aca91e53b086e133fb3",
-        "69c274ac59c99999e1bfbf2fc4586ebd"}},
+        "69c274ac59c99999e1bfbf2fc4586ebd"},
+       {"86ff2318bf8a584b8d5edd710681d621", "f6e1c104a764d6766cc278d5b216855a",
+        "6d928703526ab114efba865ff5b11886"}},
       {{"9fbf1b246011250f38532a543cc6dd74", "d5c1e0142390ebb51b075c49f8ee9ff4",
         "92f31086ba2f9e1508983b22d93a4e5c"},
        {"2198321e6b95e7199738e60f5ddc6966", "34f74626027ffca010c824ddf0942b13",
-        "43dd7df2c2a601262c68cd8af1c61b82"}},
+        "43dd7df2c2a601262c68cd8af1c61b82"},
+       {"1ab6138c3a82ac8ccd840f0553fdfb58", "be3bf92633f7165d3ad9c327d2dd53fe",
+        "41115efff3adeb541e04db23faa22f23"}},
       {{"42364ff8dbdbd6706fa3b8855a4258be", "a7843fdfd4d3c0d80ba812b353b4d6b4",
         "f8a6a025827f29f857bed3e28ba3ea33"},
        {"b83c1f8d7712e37f9b21b033822e37ed", "589daf2e3e6f8715873920515cfc1b42",
-        "20dcbe8e317a4373bebf11d56adc5f02"}}};
+        "20dcbe8e317a4373bebf11d56adc5f02"},
+       {"7971a60337fcdb662c92db051bd0bb41", "75f89f346c2a37bf0c6695c0482531e6",
+        "1595eeacd62cdce4d2fb094534c22c1e"}}};
   if (target_self_guided_filter_func_ == nullptr) return;
   ASSERT_LT(value, 1 << bitdepth);
-  constexpr int bd_index = (bitdepth == 8) ? 0 : 1;
+  constexpr int bd_index = (bitdepth - 8) / 2;
   libvpx_test::ACMRandom rnd(libvpx_test::ACMRandom::DeterministicSeed());
   const Pixel* const src = src_ + kOffset;
   Pixel* const dst = dst_ + kOffset;
@@ -207,29 +216,39 @@ void SelfGuidedFilterTest<bitdepth, Pixel>::TestFixedValues(int test_index,
 
 template <int bitdepth, typename Pixel>
 void SelfGuidedFilterTest<bitdepth, Pixel>::TestRandomValues(bool speed) {
-  static const char* const kDigest[][2][kNumRadiusTypes] = {
+  static const char* const kDigest[][3][kNumRadiusTypes] = {
       {{"9f8358ed820943fa0abe3a8ebb5887db", "fb5d48870165522341843bcbfa8674fb",
         "ca67159cd29475ac5d52ca4a0df3ea10"},
        {"a78641886ea0cf8757057d1d91e01434", "1b95172a5f2f9c514c78afa4cf8e5678",
-        "a8ba988283d9e1ad1f0dcdbf6bbdaade"}},
+        "a8ba988283d9e1ad1f0dcdbf6bbdaade"},
+       {"d95e98d031f9ba290e5183777d1e4905", "f806853cfadb50e6dbd4898412b92934",
+        "741fbfdb79cda695afedda3d51dbb27f"}},
       {{"f219b445e5c80ffb5dd0359cc2cb4dd4", "699b2c9ddca1cbb0d4fc24cbcbe951e9",
         "a4005899fa8d3c3c4669910f93ff1290"},
        {"10a75cab3c78b891c8c6d92d55f685d1", "d46f158f57c628136f6f298ee8ca6e0e",
-        "07203ad761775d5d317f2b7884afd9fe"}},
+        "07203ad761775d5d317f2b7884afd9fe"},
+       {"76b9ef906090fa81af64cce3bba0a54a", "8eecc59acdef8953aa9a96648c0ccd2c",
+        "6e45a0ef60e0475f470dc93552047f07"}},
       {{"000d4e382be4003b514c9135893d0a37", "8fb082dca975be363bfc9c2d317ae084",
         "475bcb6a58f87da7723f6227bc2aca0e"},
        {"4d589683f69ccc5b416149dcc5c835d5", "986b6832df1f6020d50be61ae121e42f",
-        "7cb5c5dbdb3d1c54cfa00def450842dc"}},
+        "7cb5c5dbdb3d1c54cfa00def450842dc"},
+       {"0e3dc23150d18c9d366d15e174727311", "8495122917770d822f1842ceff987b03",
+        "4aeb9db902072cefd6af0aff8aaabd24"}},
       {{"fd43bfe34d63614554dd29fb24b12173", "5c1ba74ba3062c769d5c3c86a85ac9b9",
         "f1eda6d15b37172199d9949c2315832f"},
        {"a11be3117fb77e8fe113581b06f98bd1", "df94d12b774ad5cf744c871e707c36c8",
-        "b23dc0b54c3500248d53377030428a61"}},
+        "b23dc0b54c3500248d53377030428a61"},
+       {"9c331f2b9410354685fe904f6c022dfa", "b540b0045b7723fbe962fd675db4b077",
+        "3cecd1158126c9c9cc2873ecc8c1a135"}},
       {{"f3079b3b21d8dc6fce7bb1fd104be359", "c6fcbc686cfb97ab3a64f445d73aad36",
         "23966cba3e0e7803eeb951905861e0dd"},
        {"7210391a6fe26e5ca5ea205bc38aa035", "4c3e6eccad3ea152d320ecd1077169de",
-        "dcee48f94126a2132963e86e93dd4903"}}};
+        "dcee48f94126a2132963e86e93dd4903"},
+       {"beb3dd8a2dbc5f83ef171b0ffcead3ab", "c373bd9c46bdb89a3d1e41759c315025",
+        "cd407b212ab46fd4a451d5dc93a0ce4a"}}};
   if (target_self_guided_filter_func_ == nullptr) return;
-  constexpr int bd_index = (bitdepth == 8) ? 0 : 1;
+  constexpr int bd_index = (bitdepth - 8) / 2;
   const int num_inputs = speed ? 1 : 5;
 #if LIBGAV1_ENABLE_NEON
   const int num_tests = speed ? 4000 : 1;
@@ -324,10 +343,28 @@ INSTANTIATE_TEST_SUITE_P(NEON, SelfGuidedFilterTest10bpp,
 
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
 
+#if LIBGAV1_MAX_BITDEPTH == 12
+using SelfGuidedFilterTest12bpp = SelfGuidedFilterTest<12, uint16_t>;
+
+TEST_P(SelfGuidedFilterTest12bpp, Correctness) {
+  TestFixedValues(0, 0);
+  TestFixedValues(1, 1);
+  TestFixedValues(2, 2048);
+  TestFixedValues(3, 4095);
+  TestRandomValues(false);
+}
+
+TEST_P(SelfGuidedFilterTest12bpp, DISABLED_Speed) { TestRandomValues(true); }
+
+INSTANTIATE_TEST_SUITE_P(C, SelfGuidedFilterTest12bpp,
+                         testing::ValuesIn(kUnitWidths));
+#endif  // LIBGAV1_MAX_BITDEPTH == 12
+
 template <int bitdepth, typename Pixel>
 class WienerFilterTest : public testing::TestWithParam<int>,
                          public test_utils::MaxAlignedAllocable {
  public:
+  static_assert(bitdepth >= kBitdepth8 && bitdepth <= LIBGAV1_MAX_BITDEPTH, "");
   WienerFilterTest() = default;
   WienerFilterTest(const WienerFilterTest&) = delete;
   WienerFilterTest& operator=(const WienerFilterTest&) = delete;
@@ -433,14 +470,17 @@ void WienerFilterTest<bitdepth, Pixel>::SetInputData(
 template <int bitdepth, typename Pixel>
 void WienerFilterTest<bitdepth, Pixel>::TestFixedValues(int digest_id,
                                                         Pixel value) {
-  static const char* const kDigest[2][4] = {
+  static const char* const kDigest[3][4] = {
       {"74fc90760a14b13340cb718f200ba350", "5bacaca0128cd36f4805330b3787771d",
        "1109e17545cc4fbd5810b8b77e19fc36", "e7f914ec9d065aba92338016e17a526c"},
       {"c8cc38790ceb0bea1eb989686755e1e5", "70f573b7e8875262c638a68d2f317916",
-       "193b19065899c835cb513149eb36d135", "f1dff65e3e53558b303ef0a2e3f3ba98"}};
+       "193b19065899c835cb513149eb36d135", "f1dff65e3e53558b303ef0a2e3f3ba98"},
+      {"c8cc38790ceb0bea1eb989686755e1e5", "70f573b7e8875262c638a68d2f317916",
+       "961eeb92bd9d85eb47e3961ee93d279a", "039a279232bc90eebc0ec2fe3e18a7e1"},
+  };
   if (target_wiener_filter_func_ == nullptr) return;
   ASSERT_LT(value, 1 << bitdepth);
-  constexpr int bd_index = (bitdepth == 8) ? 0 : 1;
+  constexpr int bd_index = (bitdepth - 8) / 2;
   const Pixel* const src = src_ + kOffset;
   Pixel* const dst = dst_ + kOffset;
   for (const auto vertical_order : kWienerOrders) {
@@ -470,7 +510,7 @@ void WienerFilterTest<bitdepth, Pixel>::TestFixedValues(int digest_id,
 
 template <int bitdepth, typename Pixel>
 void WienerFilterTest<bitdepth, Pixel>::TestRandomValues(bool speed) {
-  static const char* const kDigest[2][kNumWienerOrders][kNumWienerOrders] = {
+  static const char* const kDigest[3][kNumWienerOrders][kNumWienerOrders] = {
       {{"40d0cf56d2ffb4f581e68b0fc97f547f", "5c04745209b684ba98004ebb0f64e70b",
         "545ed7d3f7e7ca3b86b4ada31f7aaee7", "0d6b2967f1bd1d99b720e563fe0cf03f"},
        {"44b37076f0cf27f6eb506aca50c1d3e4", "e927d64dc9249e05a65e10ee75baa7d9",
@@ -488,9 +528,19 @@ void WienerFilterTest<bitdepth, Pixel>::TestRandomValues(bool speed) {
         "d77430783e173ebd1b30e5d9336c8b69", "e159a3620747458dff7ed3d20da1a4b7"},
        {"5346fa07d195c257548a332753b057a3", "c77674bc0a638abc4d38d58e494fc7cf",
         "7cbc1562a9dd08e1973b3b9ac1afc765",
-        "3c91bf1a34672cd40bf261c5820d3ec3"}}};
+        "3c91bf1a34672cd40bf261c5820d3ec3"}},
+      {{"501b57370c781372b514accd03d161af", "a4569b5eff7f7e8b696934d192619be5",
+        "24eb2aa43118a8822f7a6a7384ab9ea7", "edd7ac227733b5a4496bfdbdf4eb34d7"},
+       {"77624cf73299a1bd928eae3eb8945dbe", "b3f311cacbf45fa892761462d31b2598",
+        "977c063d93a4b95cb365363763faa4da", "02313c9d360a1e0180ed05d3e4444c3d"},
+       {"f499655ecdcbe0ac48553f1eee758589", "a009c83c03e47cbd05c1243e28579bd9",
+        "d5f0b4fd761ff51efce949e6c5ec4833", "e3a9a57aacd2e6cfe0f792a885b3e0e3"},
+       {"b4cf906e9bb02ffca15c1e9575962ca2", "d0ca9f933978c0c31175ba1b28a44ae8",
+        "81ac1475530ffbd1c8d3ce7da87ffe6b",
+        "b96412949c2e31b29388222ac8914fa2"}},
+  };
   if (target_wiener_filter_func_ == nullptr) return;
-  constexpr int bd_index = (bitdepth == 8) ? 0 : 1;
+  constexpr int bd_index = (bitdepth - 8) / 2;
 #if LIBGAV1_ENABLE_NEON
   const int num_tests = speed ? 5000 : 1;
 #else
@@ -630,8 +680,26 @@ INSTANTIATE_TEST_SUITE_P(SSE41, WienerFilterTest10bpp,
 INSTANTIATE_TEST_SUITE_P(NEON, WienerFilterTest10bpp,
                          testing::ValuesIn(kUnitWidths));
 #endif
-
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
+
+#if LIBGAV1_MAX_BITDEPTH == 12
+using WienerFilterTest12bpp = WienerFilterTest<12, uint16_t>;
+
+TEST_P(WienerFilterTest12bpp, Correctness) {
+  TestFixedValues(0, 0);
+  TestFixedValues(1, 1);
+  TestFixedValues(2, 2048);
+  TestFixedValues(3, 4095);
+  TestRandomValues(false);
+}
+
+TEST_P(WienerFilterTest12bpp, DISABLED_Speed) { TestRandomValues(true); }
+
+TEST_P(WienerFilterTest12bpp, TestCompare2C) { TestCompare2C(); }
+
+INSTANTIATE_TEST_SUITE_P(C, WienerFilterTest12bpp,
+                         testing::ValuesIn(kUnitWidths));
+#endif  // LIBGAV1_MAX_BITDEPTH == 12
 
 }  // namespace
 }  // namespace dsp

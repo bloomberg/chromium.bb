@@ -24,7 +24,6 @@
 #include "content/browser/isolated_origin_util.h"
 #include "content/browser/isolation_context.h"
 #include "content/browser/origin_agent_cluster_isolation_state.h"
-#include "content/browser/site_instance_impl.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "storage/common/file_system/file_system_types.h"
@@ -51,6 +50,8 @@ class BrowserContext;
 class IsolationContext;
 class ProcessLock;
 class ResourceContext;
+class SiteInstance;
+struct UrlInfo;
 
 class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
     : public ChildProcessSecurityPolicy {
@@ -403,6 +404,12 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
                                  const storage::FileSystemURL& filesystem_url);
   bool CanDeleteFileSystemFile(int child_id,
                                const storage::FileSystemURL& filesystem_url);
+  bool CanMoveFileSystemFile(int child_id,
+                             const storage::FileSystemURL& src_url,
+                             const storage::FileSystemURL& dest_url);
+  bool CanCopyFileSystemFile(int child_id,
+                             const storage::FileSystemURL& src_url,
+                             const storage::FileSystemURL& dest_url);
 
   // Returns true if the specified child_id has been granted ReadRawCookies.
   bool CanReadRawCookies(int child_id);
@@ -419,9 +426,11 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   // directly. |isolation_context| provides the context, such as
   // BrowsingInstance, from which this process locked was created. This
   // information is used when making isolation decisions for this process, such
-  // as determining which isolated origins pertain to it.
+  // as determining which isolated origins pertain to it. |is_process_used|
+  // indicates whether any content has been loaded in the process already.
   void LockProcess(const IsolationContext& isolation_context,
                    int child_id,
+                   bool is_process_used,
                    const ProcessLock& process_lock);
 
   // Testing helper method that generates a lock_url from |url| and then
@@ -776,9 +785,10 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
       const SecurityState* security_state);
 
   // Helper for public CanAccessDataForOrigin overloads.
-  bool CanAccessDataForOrigin(int child_id,
-                              const GURL& url,
-                              bool url_is_precursor_of_opaque_origin);
+  bool CanAccessDataForMaybeOpaqueOrigin(
+      int child_id,
+      const GURL& url,
+      bool url_is_precursor_of_opaque_origin);
 
   // Utility function to simplify lookups for OriginAgentClusterOptInEntry
   // values by origin.

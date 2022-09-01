@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2015-2021 The Khronos Group Inc.
- * Copyright (c) 2015-2021 Valve Corporation
- * Copyright (c) 2015-2021 LunarG, Inc.
- * Copyright (c) 2015-2021 Google, Inc.
+ * Copyright (c) 2015-2022 The Khronos Group Inc.
+ * Copyright (c) 2015-2022 Valve Corporation
+ * Copyright (c) 2015-2022 LunarG, Inc.
+ * Copyright (c) 2015-2022 Google, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -545,18 +545,30 @@ void VkRenderFramework::InitFramework(void * /*unused compatibility parameter*/,
         driver_printed = true;
     }
 
-    for (const auto &ext : m_requested_extensions) {
-        AddRequiredDeviceExtensions(ext);
+    for (const auto &ext : m_required_extensions) {
+        AddRequestedDeviceExtensions(ext);
+    }
+    for (const auto &ext : m_optional_extensions) {
+        AddRequestedDeviceExtensions(ext);
     }
 }
 
-bool VkRenderFramework::AddRequiredExtensions(const char *ext_name) {
-    m_requested_extensions.push_back(ext_name);
-    return AddRequiredInstanceExtensions(ext_name);
+void VkRenderFramework::AddRequiredExtensions(const char *ext_name) {
+    m_required_extensions.push_back(ext_name);
+    AddRequestedInstanceExtensions(ext_name);
 }
 
-bool VkRenderFramework::AreRequestedExtensionsEnabled() const {
-    for (const auto &ext : m_requested_extensions) {
+void VkRenderFramework::AddOptionalExtensions(const char *ext_name) {
+    m_optional_extensions.push_back(ext_name);
+    AddRequestedInstanceExtensions(ext_name);
+}
+
+bool VkRenderFramework::IsExtensionsEnabled(const char *ext_name) const {
+    return (CanEnableDeviceExtension(ext_name) || CanEnableInstanceExtension(ext_name));
+}
+
+bool VkRenderFramework::AreRequiredExtensionsEnabled() const {
+    for (const auto &ext : m_required_extensions) {
         // `ext` may refer to an instance or device extension
         if (!CanEnableDeviceExtension(ext) && !CanEnableInstanceExtension(ext)) {
             return false;
@@ -565,7 +577,23 @@ bool VkRenderFramework::AreRequestedExtensionsEnabled() const {
     return true;
 }
 
-bool VkRenderFramework::AddRequiredInstanceExtensions(const char *ext_name) {
+std::string VkRenderFramework::RequiredExtensionsNotSupported() const {
+    std::stringstream ss;
+    bool first = true;
+    for (const auto &ext : m_required_extensions) {
+        if (!CanEnableDeviceExtension(ext) && !CanEnableInstanceExtension(ext)) {
+            if (first) {
+                first = false;
+            } else {
+                ss << ", ";
+            }
+            ss << ext;
+        }
+    }
+    return ss.str();
+}
+
+bool VkRenderFramework::AddRequestedInstanceExtensions(const char *ext_name) {
     if (CanEnableInstanceExtension(ext_name)) {
         return true;
     }
@@ -585,7 +613,7 @@ bool VkRenderFramework::AddRequiredInstanceExtensions(const char *ext_name) {
     if (is_instance_ext) {
         const auto &info = InstanceExtensions::get_info(ext_name);
         for (const auto &req : info.requirements) {
-            if (!AddRequiredInstanceExtensions(req.name)) {
+            if (!AddRequestedInstanceExtensions(req.name)) {
                 return false;
             }
         }
@@ -593,7 +621,7 @@ bool VkRenderFramework::AddRequiredInstanceExtensions(const char *ext_name) {
     } else {
         const auto &info = DeviceExtensions::get_info(ext_name);
         for (const auto &req : info.requirements) {
-            if (!AddRequiredInstanceExtensions(req.name)) {
+            if (!AddRequestedInstanceExtensions(req.name)) {
                 return false;
             }
         }
@@ -607,7 +635,7 @@ bool VkRenderFramework::CanEnableInstanceExtension(const std::string &inst_ext_n
                        [&inst_ext_name](const char *ext) { return inst_ext_name == ext; });
 }
 
-bool VkRenderFramework::AddRequiredDeviceExtensions(const char *dev_ext_name) {
+bool VkRenderFramework::AddRequestedDeviceExtensions(const char *dev_ext_name) {
     // Check if the extension has already been added
     if (CanEnableDeviceExtension(dev_ext_name)) {
         return true;
@@ -627,7 +655,7 @@ bool VkRenderFramework::AddRequiredDeviceExtensions(const char *dev_ext_name) {
 
     const auto &info = DeviceExtensions::get_info(dev_ext_name);
     for (const auto &req : info.requirements) {
-        if (!AddRequiredDeviceExtensions(req.name)) {
+        if (!AddRequestedDeviceExtensions(req.name)) {
             return false;
         }
     }
@@ -685,16 +713,30 @@ void VkRenderFramework::GetPhysicalDeviceFeatures(VkPhysicalDeviceFeatures *feat
     }
 }
 
+// static
+bool VkRenderFramework::IgnoreDisableChecks() {
+    static const bool skip_disable_checks = GetEnvironment("VK_LAYER_TESTS_IGNORE_DISABLE_CHECKS") != "";
+    return skip_disable_checks;
+}
+
 bool VkRenderFramework::IsPlatform(PlatformType platform) {
-    return (!vk_gpu_table.find(platform)->second.compare(physDevProps().deviceName));
+    if (VkRenderFramework::IgnoreDisableChecks()) {
+        return false;
+    } else {
+        return (!vk_gpu_table.find(platform)->second.compare(physDevProps().deviceName));
+    }
 }
 
 bool VkRenderFramework::IsDriver(VkDriverId driver_id) {
-    // Assumes api version 1.2+
-    auto driver_properties = LvlInitStruct<VkPhysicalDeviceDriverProperties>();
-    auto physical_device_properties2 = LvlInitStruct<VkPhysicalDeviceProperties2>(&driver_properties);
-    vk::GetPhysicalDeviceProperties2(gpu_, &physical_device_properties2);
-    return(driver_properties.driverID == driver_id);
+    if (VkRenderFramework::IgnoreDisableChecks()) {
+        return false;
+    } else {
+        // Assumes api version 1.2+
+        auto driver_properties = LvlInitStruct<VkPhysicalDeviceDriverProperties>();
+        auto physical_device_properties2 = LvlInitStruct<VkPhysicalDeviceProperties2>(&driver_properties);
+        vk::GetPhysicalDeviceProperties2(gpu_, &physical_device_properties2);
+        return (driver_properties.driverID == driver_id);
+    }
 }
 
 void VkRenderFramework::GetPhysicalDeviceProperties(VkPhysicalDeviceProperties *props) { *props = physDevProps_; }
@@ -788,8 +830,7 @@ bool VkRenderFramework::InitSurface(float width, float height, VkSurfaceKHR &sur
     HWND window = CreateWindowEx(0, class_name, 0, 0, 0, 0, (int)m_width, (int)m_height, NULL, NULL, window_instance, NULL);
     ShowWindow(window, SW_HIDE);
 
-    VkWin32SurfaceCreateInfoKHR surface_create_info = {};
-    surface_create_info.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
+    VkWin32SurfaceCreateInfoKHR surface_create_info = LvlInitStruct<VkWin32SurfaceCreateInfoKHR>();
     surface_create_info.hinstance = window_instance;
     surface_create_info.hwnd = window;
     VkResult err = vk::CreateWin32SurfaceKHR(instance(), &surface_create_info, nullptr, &surface);
@@ -797,8 +838,7 @@ bool VkRenderFramework::InitSurface(float width, float height, VkSurfaceKHR &sur
 #endif
 
 #if defined(VK_USE_PLATFORM_ANDROID_KHR) && defined(VALIDATION_APK)
-    VkAndroidSurfaceCreateInfoKHR surface_create_info = {};
-    surface_create_info.sType = VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR;
+    VkAndroidSurfaceCreateInfoKHR surface_create_info = LvlInitStruct<VkAndroidSurfaceCreateInfoKHR>();
     surface_create_info.window = VkTestFramework::window;
     VkResult err = vk::CreateAndroidSurfaceKHR(instance(), &surface_create_info, nullptr, &m_surface);
     if (err != VK_SUCCESS) return false;
@@ -811,8 +851,7 @@ bool VkRenderFramework::InitSurface(float width, float height, VkSurfaceKHR &sur
         int s = DefaultScreen(m_surface_dpy);
         m_surface_window = XCreateSimpleWindow(m_surface_dpy, RootWindow(m_surface_dpy, s), 0, 0, (int)m_width, (int)m_height, 1,
                                                BlackPixel(m_surface_dpy, s), WhitePixel(m_surface_dpy, s));
-        VkXlibSurfaceCreateInfoKHR surface_create_info = {};
-        surface_create_info.sType = VK_STRUCTURE_TYPE_XLIB_SURFACE_CREATE_INFO_KHR;
+        VkXlibSurfaceCreateInfoKHR surface_create_info = LvlInitStruct<VkXlibSurfaceCreateInfoKHR>();
         surface_create_info.dpy = m_surface_dpy;
         surface_create_info.window = m_surface_window;
         VkResult err = vk::CreateXlibSurfaceKHR(instance(), &surface_create_info, nullptr, &m_surface);
@@ -826,8 +865,7 @@ bool VkRenderFramework::InitSurface(float width, float height, VkSurfaceKHR &sur
         m_surface_xcb_conn = xcb_connect(NULL, NULL);
         if (m_surface_xcb_conn) {
             xcb_window_t window = xcb_generate_id(m_surface_xcb_conn);
-            VkXcbSurfaceCreateInfoKHR surface_create_info = {};
-            surface_create_info.sType = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR;
+            VkXcbSurfaceCreateInfoKHR surface_create_info = LvlInitStruct<VkXcbSurfaceCreateInfoKHR>();
             surface_create_info.connection = m_surface_xcb_conn;
             surface_create_info.window = window;
             VkResult err = vk::CreateXcbSurfaceKHR(instance(), &surface_create_info, nullptr, &m_surface);
@@ -901,9 +939,7 @@ bool VkRenderFramework::InitSwapchain(VkSurfaceKHR &surface, VkImageUsageFlags i
     }
     InitSwapchainInfo();
 
-    VkSwapchainCreateInfoKHR swapchain_create_info = {};
-    swapchain_create_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-    swapchain_create_info.pNext = 0;
+    VkSwapchainCreateInfoKHR swapchain_create_info = LvlInitStruct<VkSwapchainCreateInfoKHR>();
     swapchain_create_info.surface = surface;
     swapchain_create_info.minImageCount = m_surface_capabilities.minImageCount;
     swapchain_create_info.imageFormat = m_surface_formats[0].format;
@@ -1065,7 +1101,7 @@ void VkRenderFramework::InitRenderTarget(uint32_t targets, VkImageView *dsBindin
     subpass.pPreserveAttachments = NULL;
 
     VkRenderPassCreateInfo &rp_info = m_renderPass_info;
-    rp_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+    rp_info = LvlInitStruct<VkRenderPassCreateInfo>();
     rp_info.attachmentCount = attachments.size();
     rp_info.pAttachments = attachments.data();
     rp_info.subpassCount = m_renderPass_subpasses.size();
@@ -1115,8 +1151,7 @@ void VkRenderFramework::InitRenderTarget(uint32_t targets, VkImageView *dsBindin
     // Create Framebuffer and RenderPass with color attachments and any
     // depth/stencil attachment
     VkFramebufferCreateInfo &fb_info = m_framebuffer_info;
-    fb_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-    fb_info.pNext = NULL;
+    fb_info = LvlInitStruct<VkFramebufferCreateInfo>();
     fb_info.renderPass = m_renderPass;
     fb_info.attachmentCount = bindings.size();
     fb_info.pAttachments = bindings.data();
@@ -1219,9 +1254,7 @@ VkQueueObj *VkDeviceObj::GetDefaultComputeQueue() {
 VkDescriptorSetLayoutObj::VkDescriptorSetLayoutObj(const VkDeviceObj *device,
                                                    const vector<VkDescriptorSetLayoutBinding> &descriptor_set_bindings,
                                                    VkDescriptorSetLayoutCreateFlags flags, void *pNext) {
-    VkDescriptorSetLayoutCreateInfo dsl_ci = {};
-    dsl_ci.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-    dsl_ci.pNext = pNext;
+    VkDescriptorSetLayoutCreateInfo dsl_ci = LvlInitStruct<VkDescriptorSetLayoutCreateInfo>(pNext);
     dsl_ci.flags = flags;
     dsl_ci.bindingCount = static_cast<uint32_t>(descriptor_set_bindings.size());
     dsl_ci.pBindings = descriptor_set_bindings.data();
@@ -1312,8 +1345,7 @@ void VkDescriptorSetObj::CreateVKDescriptorSet(VkCommandBufferObj *commandBuffer
             poolSize.type = it->first;
             sizes.push_back(poolSize);
         }
-        VkDescriptorPoolCreateInfo pool = {};
-        pool.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+        VkDescriptorPoolCreateInfo pool = LvlInitStruct<VkDescriptorPoolCreateInfo>();
         pool.poolSizeCount = sizes.size();
         pool.maxSets = 1;
         pool.pPoolSizes = sizes.data();
@@ -1321,8 +1353,7 @@ void VkDescriptorSetObj::CreateVKDescriptorSet(VkCommandBufferObj *commandBuffer
     }
 
     // create VkDescriptorSetLayout
-    VkDescriptorSetLayoutCreateInfo layout = {};
-    layout.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    VkDescriptorSetLayoutCreateInfo layout = LvlInitStruct<VkDescriptorSetLayoutCreateInfo>();
     layout.bindingCount = m_layout_bindings.size();
     layout.pBindings = m_layout_bindings.data();
 
@@ -1331,8 +1362,7 @@ void VkDescriptorSetObj::CreateVKDescriptorSet(VkCommandBufferObj *commandBuffer
     layouts.push_back(&m_layout);
 
     // create VkPipelineLayout
-    VkPipelineLayoutCreateInfo pipeline_layout = {};
-    pipeline_layout.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+    VkPipelineLayoutCreateInfo pipeline_layout = LvlInitStruct<VkPipelineLayoutCreateInfo>();
     pipeline_layout.setLayoutCount = layouts.size();
     pipeline_layout.pSetLayouts = NULL;
 
@@ -1364,7 +1394,7 @@ VkRenderpassObj::VkRenderpassObj(VkDeviceObj *dev, const VkFormat format) {
     subpass.pColorAttachments = &attach;
     subpass.colorAttachmentCount = 1;
 
-    VkRenderPassCreateInfo rpci = {};
+    VkRenderPassCreateInfo rpci = LvlInitStruct<VkRenderPassCreateInfo>();
     rpci.subpassCount = 1;
     rpci.pSubpasses = &subpass;
     rpci.attachmentCount = 1;
@@ -1376,7 +1406,6 @@ VkRenderpassObj::VkRenderpassObj(VkDeviceObj *dev, const VkFormat format) {
     attach_desc.finalLayout = VK_IMAGE_LAYOUT_GENERAL;
 
     rpci.pAttachments = &attach_desc;
-    rpci.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
 
     init(*dev, rpci);
 }
@@ -1392,7 +1421,7 @@ VkRenderpassObj::VkRenderpassObj(VkDeviceObj *dev, VkFormat format, bool depthSt
         VkSubpassDescription subpass = {};
         subpass.pDepthStencilAttachment = &attach;
 
-        VkRenderPassCreateInfo rpci = {};
+        VkRenderPassCreateInfo rpci = LvlInitStruct<VkRenderPassCreateInfo>();
         rpci.subpassCount = 1;
         rpci.pSubpasses = &subpass;
         rpci.attachmentCount = 1;
@@ -1404,7 +1433,6 @@ VkRenderpassObj::VkRenderpassObj(VkDeviceObj *dev, VkFormat format, bool depthSt
         attach_desc.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
         rpci.pAttachments = &attach_desc;
-        rpci.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
 
         init(*dev, rpci);
     }
@@ -1536,51 +1564,57 @@ void VkImageObj::SetLayout(VkImageAspectFlags aspect, VkImageLayout image_layout
     cmd_buf.QueueCommandBuffer();
 }
 
-bool VkImageObj::IsCompatible(const VkImageUsageFlags usages, const VkFormatFeatureFlags features) {
-    VkFormatFeatureFlags all_feature_flags =
-        VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT | VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT | VK_FORMAT_FEATURE_STORAGE_IMAGE_ATOMIC_BIT |
-        VK_FORMAT_FEATURE_UNIFORM_TEXEL_BUFFER_BIT | VK_FORMAT_FEATURE_STORAGE_TEXEL_BUFFER_BIT |
-        VK_FORMAT_FEATURE_STORAGE_TEXEL_BUFFER_ATOMIC_BIT | VK_FORMAT_FEATURE_VERTEX_BUFFER_BIT |
-        VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT | VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BLEND_BIT |
-        VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_FORMAT_FEATURE_BLIT_SRC_BIT | VK_FORMAT_FEATURE_BLIT_DST_BIT |
-        VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT;
+bool VkImageObj::IsCompatible(const VkImageUsageFlags usages, const VkFormatFeatureFlags2 features) {
+    VkFormatFeatureFlags2 all_feature_flags =
+        VK_FORMAT_FEATURE_2_SAMPLED_IMAGE_BIT | VK_FORMAT_FEATURE_2_STORAGE_IMAGE_BIT |
+        VK_FORMAT_FEATURE_2_STORAGE_IMAGE_ATOMIC_BIT | VK_FORMAT_FEATURE_2_UNIFORM_TEXEL_BUFFER_BIT |
+        VK_FORMAT_FEATURE_2_STORAGE_TEXEL_BUFFER_BIT | VK_FORMAT_FEATURE_2_STORAGE_TEXEL_BUFFER_ATOMIC_BIT |
+        VK_FORMAT_FEATURE_2_VERTEX_BUFFER_BIT | VK_FORMAT_FEATURE_2_COLOR_ATTACHMENT_BIT |
+        VK_FORMAT_FEATURE_2_COLOR_ATTACHMENT_BLEND_BIT | VK_FORMAT_FEATURE_2_DEPTH_STENCIL_ATTACHMENT_BIT |
+        VK_FORMAT_FEATURE_2_BLIT_SRC_BIT | VK_FORMAT_FEATURE_2_BLIT_DST_BIT | VK_FORMAT_FEATURE_2_SAMPLED_IMAGE_FILTER_LINEAR_BIT;
     if (m_device->IsEnabledExtension(VK_IMG_FILTER_CUBIC_EXTENSION_NAME)) {
-        all_feature_flags |= VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_CUBIC_BIT_IMG;
+        all_feature_flags |= VK_FORMAT_FEATURE_2_SAMPLED_IMAGE_FILTER_CUBIC_BIT_EXT;
     }
 
     if (m_device->IsEnabledExtension(VK_KHR_MAINTENANCE_1_EXTENSION_NAME)) {
-        all_feature_flags |= VK_FORMAT_FEATURE_TRANSFER_SRC_BIT_KHR | VK_FORMAT_FEATURE_TRANSFER_DST_BIT_KHR;
+        all_feature_flags |= VK_FORMAT_FEATURE_2_TRANSFER_SRC_BIT_KHR | VK_FORMAT_FEATURE_2_TRANSFER_DST_BIT_KHR;
     }
 
     if (m_device->IsEnabledExtension(VK_EXT_SAMPLER_FILTER_MINMAX_EXTENSION_NAME)) {
-        all_feature_flags |= VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_MINMAX_BIT_EXT;
+        all_feature_flags |= VK_FORMAT_FEATURE_2_SAMPLED_IMAGE_FILTER_MINMAX_BIT;
     }
 
     if (m_device->IsEnabledExtension(VK_KHR_SAMPLER_YCBCR_CONVERSION_EXTENSION_NAME)) {
-        all_feature_flags |= VK_FORMAT_FEATURE_MIDPOINT_CHROMA_SAMPLES_BIT_KHR |
-                             VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_LINEAR_FILTER_BIT_KHR |
-                             VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_SEPARATE_RECONSTRUCTION_FILTER_BIT_KHR |
-                             VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT_BIT_KHR |
-                             VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT_FORCEABLE_BIT_KHR |
-                             VK_FORMAT_FEATURE_DISJOINT_BIT_KHR | VK_FORMAT_FEATURE_COSITED_CHROMA_SAMPLES_BIT_KHR;
+        all_feature_flags |= VK_FORMAT_FEATURE_2_MIDPOINT_CHROMA_SAMPLES_BIT_KHR |
+                             VK_FORMAT_FEATURE_2_SAMPLED_IMAGE_YCBCR_CONVERSION_LINEAR_FILTER_BIT_KHR |
+                             VK_FORMAT_FEATURE_2_SAMPLED_IMAGE_YCBCR_CONVERSION_SEPARATE_RECONSTRUCTION_FILTER_BIT_KHR |
+                             VK_FORMAT_FEATURE_2_SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT_BIT_KHR |
+                             VK_FORMAT_FEATURE_2_SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT_FORCEABLE_BIT_KHR |
+                             VK_FORMAT_FEATURE_2_DISJOINT_BIT_KHR | VK_FORMAT_FEATURE_2_COSITED_CHROMA_SAMPLES_BIT_KHR;
+    }
+
+    if (m_device->IsEnabledExtension(VK_KHR_FORMAT_FEATURE_FLAGS_2_EXTENSION_NAME)) {
+        all_feature_flags |= VK_FORMAT_FEATURE_2_STORAGE_READ_WITHOUT_FORMAT_BIT_KHR |
+                             VK_FORMAT_FEATURE_2_STORAGE_WRITE_WITHOUT_FORMAT_BIT_KHR |
+                             VK_FORMAT_FEATURE_2_SAMPLED_IMAGE_DEPTH_COMPARISON_BIT_KHR;
     }
 
     if ((features & all_feature_flags) == 0) return false;  // whole format unsupported
 
-    if ((usages & VK_IMAGE_USAGE_SAMPLED_BIT) && !(features & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT)) return false;
-    if ((usages & VK_IMAGE_USAGE_STORAGE_BIT) && !(features & VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT)) return false;
-    if ((usages & VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT) && !(features & VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT)) return false;
-    if ((usages & VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) && !(features & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT))
+    if ((usages & VK_IMAGE_USAGE_SAMPLED_BIT) && !(features & VK_FORMAT_FEATURE_2_SAMPLED_IMAGE_BIT)) return false;
+    if ((usages & VK_IMAGE_USAGE_STORAGE_BIT) && !(features & VK_FORMAT_FEATURE_2_STORAGE_IMAGE_BIT)) return false;
+    if ((usages & VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT) && !(features & VK_FORMAT_FEATURE_2_COLOR_ATTACHMENT_BIT)) return false;
+    if ((usages & VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) && !(features & VK_FORMAT_FEATURE_2_DEPTH_STENCIL_ATTACHMENT_BIT))
         return false;
 
     if (m_device->IsEnabledExtension(VK_KHR_MAINTENANCE_1_EXTENSION_NAME)) {
         // WORKAROUND: for DevSim not reporting extended enums, and possibly some drivers too
         const auto all_nontransfer_feature_flags =
-            all_feature_flags ^ (VK_FORMAT_FEATURE_TRANSFER_SRC_BIT_KHR | VK_FORMAT_FEATURE_TRANSFER_DST_BIT_KHR);
+            all_feature_flags ^ (VK_FORMAT_FEATURE_2_TRANSFER_SRC_BIT_KHR | VK_FORMAT_FEATURE_2_TRANSFER_DST_BIT_KHR);
         const bool transfer_probably_supported_anyway = (features & all_nontransfer_feature_flags) > 0;
         if (!transfer_probably_supported_anyway) {
-            if ((usages & VK_IMAGE_USAGE_TRANSFER_SRC_BIT) && !(features & VK_FORMAT_FEATURE_TRANSFER_SRC_BIT_KHR)) return false;
-            if ((usages & VK_IMAGE_USAGE_TRANSFER_DST_BIT) && !(features & VK_FORMAT_FEATURE_TRANSFER_DST_BIT_KHR)) return false;
+            if ((usages & VK_IMAGE_USAGE_TRANSFER_SRC_BIT) && !(features & VK_FORMAT_FEATURE_2_TRANSFER_SRC_BIT_KHR)) return false;
+            if ((usages & VK_IMAGE_USAGE_TRANSFER_DST_BIT) && !(features & VK_FORMAT_FEATURE_2_TRANSFER_DST_BIT_KHR)) return false;
         }
     }
 
@@ -1615,30 +1649,44 @@ void VkImageObj::InitNoLayout(uint32_t const width, uint32_t const height, uint3
 }
 
 void VkImageObj::InitNoLayout(const VkImageCreateInfo &create_info, VkMemoryPropertyFlags const reqs, bool memory) {
-    VkFormatProperties image_fmt;
+    VkFormatFeatureFlags2 linear_tiling_features;
+    VkFormatFeatureFlags2 optimal_tiling_features;
     // Touch up create info for tiling compatiblity...
     auto usage = create_info.usage;
     VkImageTiling requested_tiling = create_info.tiling;
     VkImageTiling tiling = VK_IMAGE_TILING_OPTIMAL;
 
-    vk::GetPhysicalDeviceFormatProperties(m_device->phy().handle(), create_info.format, &image_fmt);
+    if (m_device->IsEnabledExtension(VK_KHR_FORMAT_FEATURE_FLAGS_2_EXTENSION_NAME)) {
+        auto fmt_props_3 = LvlInitStruct<VkFormatProperties3KHR>();
+        auto fmt_props_2 = LvlInitStruct<VkFormatProperties2>(&fmt_props_3);
+        vk::GetPhysicalDeviceFormatProperties2(m_device->phy().handle(), create_info.format, &fmt_props_2);
+        linear_tiling_features = fmt_props_3.linearTilingFeatures;
+        optimal_tiling_features = fmt_props_3.optimalTilingFeatures;
+    } else {
+        VkFormatProperties format_properties;
+        vk::GetPhysicalDeviceFormatProperties(m_device->phy().handle(), create_info.format, &format_properties);
+        linear_tiling_features = format_properties.linearTilingFeatures;
+        optimal_tiling_features = format_properties.optimalTilingFeatures;
+    }
 
-    if (requested_tiling == VK_IMAGE_TILING_LINEAR) {
-        if (IsCompatible(usage, image_fmt.linearTilingFeatures)) {
+    if ((create_info.flags & VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT) != 0) {
+        tiling = requested_tiling;
+    } else if (requested_tiling == VK_IMAGE_TILING_LINEAR) {
+        if (IsCompatible(usage, linear_tiling_features)) {
             tiling = VK_IMAGE_TILING_LINEAR;
-        } else if (IsCompatible(usage, image_fmt.optimalTilingFeatures)) {
+        } else if (IsCompatible(usage, optimal_tiling_features)) {
             tiling = VK_IMAGE_TILING_OPTIMAL;
         } else {
             FAIL() << "VkImageObj::init() error: unsupported tiling configuration. Usage: " << std::hex << std::showbase << usage
-                   << ", supported linear features: " << image_fmt.linearTilingFeatures;
+                   << ", supported linear features: " << linear_tiling_features;
         }
-    } else if (IsCompatible(usage, image_fmt.optimalTilingFeatures)) {
+    } else if (IsCompatible(usage, optimal_tiling_features)) {
         tiling = VK_IMAGE_TILING_OPTIMAL;
-    } else if (IsCompatible(usage, image_fmt.linearTilingFeatures)) {
+    } else if (IsCompatible(usage, linear_tiling_features)) {
         tiling = VK_IMAGE_TILING_LINEAR;
     } else {
         FAIL() << "VkImageObj::init() error: unsupported tiling configuration. Usage: " << std::hex << std::showbase << usage
-               << ", supported optimal features: " << image_fmt.optimalTilingFeatures;
+               << ", supported optimal features: " << optimal_tiling_features;
     }
 
     VkImageCreateInfo imageCreateInfo = create_info;
@@ -1689,20 +1737,34 @@ void VkImageObj::Init(const VkImageCreateInfo &create_info, VkMemoryPropertyFlag
 }
 
 void VkImageObj::init(const VkImageCreateInfo *create_info) {
-    VkFormatProperties image_fmt;
-    vk::GetPhysicalDeviceFormatProperties(m_device->phy().handle(), create_info->format, &image_fmt);
+    VkFormatFeatureFlags2 linear_tiling_features;
+    VkFormatFeatureFlags2 optimal_tiling_features;
 
+    if (m_device->IsEnabledExtension(VK_KHR_FORMAT_FEATURE_FLAGS_2_EXTENSION_NAME)) {
+        auto fmt_props_3 = LvlInitStruct<VkFormatProperties3KHR>();
+        auto fmt_props_2 = LvlInitStruct<VkFormatProperties2>(&fmt_props_3);
+        vk::GetPhysicalDeviceFormatProperties2(m_device->phy().handle(), create_info->format, &fmt_props_2);
+        linear_tiling_features = fmt_props_3.linearTilingFeatures;
+        optimal_tiling_features = fmt_props_3.optimalTilingFeatures;
+    } else {
+        VkFormatProperties format_properties;
+        vk::GetPhysicalDeviceFormatProperties(m_device->phy().handle(), create_info->format, &format_properties);
+        linear_tiling_features = format_properties.linearTilingFeatures;
+        optimal_tiling_features = format_properties.optimalTilingFeatures;
+    }
+
+    const bool mutable_format = (create_info->flags & VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT) != 0;
     switch (create_info->tiling) {
         case VK_IMAGE_TILING_OPTIMAL:
-            if (!IsCompatible(create_info->usage, image_fmt.optimalTilingFeatures)) {
+            if (!mutable_format && !IsCompatible(create_info->usage, optimal_tiling_features)) {
                 FAIL() << "VkImageObj::init() error: unsupported tiling configuration. Usage: " << std::hex << std::showbase
-                       << create_info->usage << ", supported optimal features: " << image_fmt.optimalTilingFeatures;
+                       << create_info->usage << ", supported optimal features: " << optimal_tiling_features;
             }
             break;
         case VK_IMAGE_TILING_LINEAR:
-            if (!IsCompatible(create_info->usage, image_fmt.linearTilingFeatures)) {
+            if (!mutable_format && !IsCompatible(create_info->usage, linear_tiling_features)) {
                 FAIL() << "VkImageObj::init() error: unsupported tiling configuration. Usage: " << std::hex << std::showbase
-                       << create_info->usage << ", supported linear features: " << image_fmt.linearTilingFeatures;
+                       << create_info->usage << ", supported linear features: " << linear_tiling_features;
             }
             break;
         default:
@@ -1725,20 +1787,6 @@ void VkImageObj::init(const VkImageCreateInfo *create_info) {
         image_aspect = VK_IMAGE_ASPECT_COLOR_BIT;
     }
     SetLayout(image_aspect, VK_IMAGE_LAYOUT_GENERAL);
-}
-
-bool VkImageObj::IsCompatibleCheck(const VkImageCreateInfo &create_info) {
-    VkFormatProperties image_fmt;
-    vk::GetPhysicalDeviceFormatProperties(m_device->phy().handle(), create_info.format, &image_fmt);
-
-    switch (create_info.tiling) {
-        case VK_IMAGE_TILING_OPTIMAL:
-            return IsCompatible(create_info.usage, image_fmt.optimalTilingFeatures);
-        case VK_IMAGE_TILING_LINEAR:
-            return IsCompatible(create_info.usage, image_fmt.linearTilingFeatures);
-        default:
-            return true;
-    }
 }
 
 VkResult VkImageObj::CopyImage(VkImageObj &src_image) {
@@ -1869,9 +1917,7 @@ VkTextureObj::VkTextureObj(VkDeviceObj *device, uint32_t *colors) : VkImageObj(d
 
     if (colors == NULL) colors = tex_colors;
 
-    VkImageViewCreateInfo view = {};
-    view.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-    view.pNext = NULL;
+    VkImageViewCreateInfo view = LvlInitStruct<VkImageViewCreateInfo>();
     view.image = VK_NULL_HANDLE;
     view.viewType = VK_IMAGE_VIEW_TYPE_2D;
     view.format = tex_format;
@@ -1908,9 +1954,7 @@ VkTextureObj::VkTextureObj(VkDeviceObj *device, uint32_t *colors) : VkImageObj(d
 VkSamplerObj::VkSamplerObj(VkDeviceObj *device) {
     m_device = device;
 
-    VkSamplerCreateInfo samplerCreateInfo;
-    memset(&samplerCreateInfo, 0, sizeof(samplerCreateInfo));
-    samplerCreateInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+    VkSamplerCreateInfo samplerCreateInfo = LvlInitStruct<VkSamplerCreateInfo>();
     samplerCreateInfo.magFilter = VK_FILTER_NEAREST;
     samplerCreateInfo.minFilter = VK_FILTER_NEAREST;
     samplerCreateInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
@@ -1974,29 +2018,28 @@ VkConstantBufferObj::VkConstantBufferObj(VkDeviceObj *device, VkDeviceSize alloc
 
 VkPipelineShaderStageCreateInfo const &VkShaderObj::GetStageCreateInfo() const { return m_stage_info; }
 
-VkShaderObj::VkShaderObj(VkDeviceObj &device, VkShaderStageFlagBits stage, char const *name, const VkSpecializationInfo *specInfo)
-    : m_device(device) {
-    m_stage_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-    m_stage_info.pNext = nullptr;
+VkShaderObj::VkShaderObj(VkRenderFramework *framework, const std::string source, VkShaderStageFlagBits stage,
+                         const spv_target_env env, SpvSourceType source_type, const VkSpecializationInfo *spec_info,
+                         char const *name, bool debug)
+    : m_framework(*framework), m_device(*(framework->DeviceObj())) {
+    m_stage_info = LvlInitStruct<VkPipelineShaderStageCreateInfo>();
     m_stage_info.flags = 0;
     m_stage_info.stage = stage;
     m_stage_info.module = VK_NULL_HANDLE;
     m_stage_info.pName = name;
-    m_stage_info.pSpecializationInfo = specInfo;
+    m_stage_info.pSpecializationInfo = spec_info;
+    if (source_type == SPV_SOURCE_GLSL) {
+        InitFromGLSL(source.c_str(), debug, env);
+    } else if (source_type == SPV_SOURCE_ASM) {
+        InitFromASM(source, env);
+    }
 }
 
-VkShaderObj::VkShaderObj(VkDeviceObj *device, const char *shader_code, VkShaderStageFlagBits stage, VkRenderFramework *framework,
-                         char const *name, bool debug, const VkSpecializationInfo *specInfo, const spv_target_env env)
-    : VkShaderObj(*device, stage, name, specInfo) {
-    InitFromGLSL(*framework, shader_code, debug, env);
-}
-
-bool VkShaderObj::InitFromGLSL(VkRenderFramework &framework, const char *shader_code, bool debug, const spv_target_env env) {
+bool VkShaderObj::InitFromGLSL(const char *shader_code, bool debug, const spv_target_env env) {
     std::vector<uint32_t> spv;
-    framework.GLSLtoSPV(&m_device.props.limits, m_stage_info.stage, shader_code, spv, debug, env);
+    m_framework.GLSLtoSPV(&m_device.props.limits, m_stage_info.stage, shader_code, spv, debug, env);
 
-    VkShaderModuleCreateInfo moduleCreateInfo = {};
-    moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+    VkShaderModuleCreateInfo moduleCreateInfo = LvlInitStruct<VkShaderModuleCreateInfo>();
     moduleCreateInfo.codeSize = spv.size() * sizeof(uint32_t);
     moduleCreateInfo.pCode = spv.data();
 
@@ -2008,32 +2051,28 @@ bool VkShaderObj::InitFromGLSL(VkRenderFramework &framework, const char *shader_
 // Because shaders are currently validated at pipeline creation time, there are test cases that might fail shader module creation
 // due to supplying an invalid/unknown SPIR-V capability/operation. This is called after VkShaderObj creation when tests are found
 // to crash on a CI device
-VkResult VkShaderObj::InitFromGLSLTry(VkRenderFramework &framework, const char *shader_code, bool debug, const spv_target_env env) {
+VkResult VkShaderObj::InitFromGLSLTry(const char *shader_code, bool debug, const spv_target_env env,
+                                      const VkDeviceObj *custom_device) {
     std::vector<uint32_t> spv;
-    framework.GLSLtoSPV(&m_device.props.limits, m_stage_info.stage, shader_code, spv, debug, env);
+    // 99% of tests just use the framework's VkDevice, but this allows for tests to use custom device object
+    // Can't set at contructor time since all reference members need to be initialized then.
+    VkPhysicalDeviceLimits limits = (custom_device) ? custom_device->props.limits : m_device.props.limits;
+    m_framework.GLSLtoSPV(&limits, m_stage_info.stage, shader_code, spv, debug, env);
 
-    VkShaderModuleCreateInfo moduleCreateInfo = {};
-    moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+    VkShaderModuleCreateInfo moduleCreateInfo = LvlInitStruct<VkShaderModuleCreateInfo>();
     moduleCreateInfo.codeSize = spv.size() * sizeof(uint32_t);
     moduleCreateInfo.pCode = spv.data();
 
-    const auto result = init_try(m_device, moduleCreateInfo);
+    const auto result = init_try(((custom_device) ? *custom_device : m_device), moduleCreateInfo);
     m_stage_info.module = handle();
     return result;
 }
 
-VkShaderObj::VkShaderObj(VkDeviceObj *device, const string spv_source, VkShaderStageFlagBits stage, VkRenderFramework *framework,
-                         char const *name, const VkSpecializationInfo *specInfo, const spv_target_env env)
-    : VkShaderObj(*device, stage, name, specInfo) {
-    InitFromASM(*framework, spv_source, env);
-}
-
-bool VkShaderObj::InitFromASM(VkRenderFramework &framework, const std::string &spv_source, const spv_target_env env) {
+bool VkShaderObj::InitFromASM(const std::string &spv_source, const spv_target_env env) {
     vector<uint32_t> spv;
-    framework.ASMtoSPV(env, 0, spv_source.data(), spv);
+    m_framework.ASMtoSPV(env, 0, spv_source.data(), spv);
 
-    VkShaderModuleCreateInfo moduleCreateInfo = {};
-    moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+    VkShaderModuleCreateInfo moduleCreateInfo = LvlInitStruct<VkShaderModuleCreateInfo>();
     moduleCreateInfo.codeSize = spv.size() * sizeof(uint32_t);
     moduleCreateInfo.pCode = spv.data();
 
@@ -2042,12 +2081,11 @@ bool VkShaderObj::InitFromASM(VkRenderFramework &framework, const std::string &s
     return VK_NULL_HANDLE != handle();
 }
 
-VkResult VkShaderObj::InitFromASMTry(VkRenderFramework &framework, const std::string &spv_source, const spv_target_env spv_env) {
+VkResult VkShaderObj::InitFromASMTry(const std::string &spv_source, const spv_target_env spv_env) {
     vector<uint32_t> spv;
-    framework.ASMtoSPV(spv_env, 0, spv_source.data(), spv);
+    m_framework.ASMtoSPV(spv_env, 0, spv_source.data(), spv);
 
-    VkShaderModuleCreateInfo moduleCreateInfo = {};
-    moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+    VkShaderModuleCreateInfo moduleCreateInfo = LvlInitStruct<VkShaderModuleCreateInfo>();
     moduleCreateInfo.codeSize = spv.size() * sizeof(uint32_t);
     moduleCreateInfo.pCode = spv.data();
 
@@ -2057,32 +2095,34 @@ VkResult VkShaderObj::InitFromASMTry(VkRenderFramework &framework, const std::st
 }
 
 // static
-std::unique_ptr<VkShaderObj> VkShaderObj::CreateFromGLSL(VkDeviceObj &dev, VkRenderFramework &framework,
-                                                         VkShaderStageFlagBits stage, const std::string &code,
-                                                         const char *entry_point, const VkSpecializationInfo *spec_info,
-                                                         const spv_target_env spv_env, bool debug) {
-    auto shader = layer_data::make_unique<VkShaderObj>(dev, stage, entry_point, spec_info);
-    if (VK_SUCCESS == shader->InitFromGLSLTry(framework, code.c_str(), debug, spv_env)) {
+std::unique_ptr<VkShaderObj> VkShaderObj::CreateFromGLSL(VkRenderFramework &framework, VkShaderStageFlagBits stage,
+                                                         const std::string &code, const char *entry_point,
+                                                         const VkSpecializationInfo *spec_info, const spv_target_env spv_env,
+                                                         bool debug) {
+    auto shader =
+        layer_data::make_unique<VkShaderObj>(&framework, "", stage, spv_env, SPV_SOURCE_GLSL_TRY, spec_info, entry_point, debug);
+    if (VK_SUCCESS == shader->InitFromGLSLTry(code.c_str(), debug, spv_env)) {
         return shader;
     }
     return {};
 }
 
 // static
-std::unique_ptr<VkShaderObj> VkShaderObj::CreateFromASM(VkDeviceObj &dev, VkRenderFramework &framework, VkShaderStageFlagBits stage,
+std::unique_ptr<VkShaderObj> VkShaderObj::CreateFromASM(VkRenderFramework &framework, VkShaderStageFlagBits stage,
                                                         const std::string &code, const char *entry_point,
                                                         const VkSpecializationInfo *spec_info, const spv_target_env spv_env) {
-    auto shader = layer_data::make_unique<VkShaderObj>(dev, stage, entry_point, spec_info);
-    if (VK_SUCCESS == shader->InitFromASMTry(framework, code.c_str(), spv_env)) {
+    auto shader = layer_data::make_unique<VkShaderObj>(&framework, "", stage, spv_env, SPV_SOURCE_ASM_TRY, spec_info, entry_point);
+    if (VK_SUCCESS == shader->InitFromASMTry(code.c_str(), spv_env)) {
         return shader;
     }
     return {};
 }
 
 VkPipelineLayoutObj::VkPipelineLayoutObj(VkDeviceObj *device, const vector<const VkDescriptorSetLayoutObj *> &descriptor_layouts,
-                                         const vector<VkPushConstantRange> &push_constant_ranges) {
-    VkPipelineLayoutCreateInfo pl_ci = {};
-    pl_ci.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+                                         const vector<VkPushConstantRange> &push_constant_ranges,
+                                         VkPipelineLayoutCreateFlags flags) {
+    VkPipelineLayoutCreateInfo pl_ci = LvlInitStruct<VkPipelineLayoutCreateInfo>();
+    pl_ci.flags = flags;
     pl_ci.pushConstantRangeCount = static_cast<uint32_t>(push_constant_ranges.size());
     pl_ci.pPushConstantRanges = push_constant_ranges.data();
 
@@ -2096,32 +2136,28 @@ void VkPipelineLayoutObj::Reset() { *this = VkPipelineLayoutObj(); }
 VkPipelineObj::VkPipelineObj(VkDeviceObj *device) {
     m_device = device;
 
-    m_vi_state.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-    m_vi_state.pNext = nullptr;
+    m_vi_state = LvlInitStruct<VkPipelineVertexInputStateCreateInfo>();
     m_vi_state.flags = 0;
     m_vi_state.vertexBindingDescriptionCount = 0;
     m_vi_state.pVertexBindingDescriptions = nullptr;
     m_vi_state.vertexAttributeDescriptionCount = 0;
     m_vi_state.pVertexAttributeDescriptions = nullptr;
 
-    m_ia_state.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-    m_ia_state.pNext = nullptr;
+    m_ia_state = LvlInitStruct<VkPipelineInputAssemblyStateCreateInfo>();
     m_ia_state.flags = 0;
     m_ia_state.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
     m_ia_state.primitiveRestartEnable = VK_FALSE;
 
     m_te_state = nullptr;
 
-    m_vp_state.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-    m_vp_state.pNext = VK_NULL_HANDLE;
+    m_vp_state = LvlInitStruct<VkPipelineViewportStateCreateInfo>();
     m_vp_state.flags = 0;
     m_vp_state.viewportCount = 1;
     m_vp_state.scissorCount = 1;
     m_vp_state.pViewports = nullptr;
     m_vp_state.pScissors = nullptr;
 
-    m_rs_state.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
-    m_rs_state.pNext = &m_line_state;
+    m_rs_state = LvlInitStruct<VkPipelineRasterizationStateCreateInfo>(&m_line_state);
     m_rs_state.flags = 0;
     m_rs_state.depthClampEnable = VK_FALSE;
     m_rs_state.rasterizerDiscardEnable = VK_FALSE;
@@ -2134,15 +2170,13 @@ VkPipelineObj::VkPipelineObj(VkDeviceObj *device) {
     m_rs_state.depthBiasSlopeFactor = 0.0f;
     m_rs_state.lineWidth = 1.0f;
 
-    m_line_state.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_LINE_STATE_CREATE_INFO_EXT;
-    m_line_state.pNext = nullptr;
+    m_line_state = LvlInitStruct<VkPipelineRasterizationLineStateCreateInfoEXT>();
     m_line_state.lineRasterizationMode = VK_LINE_RASTERIZATION_MODE_DEFAULT_EXT;
     m_line_state.stippledLineEnable = VK_FALSE;
     m_line_state.lineStippleFactor = 0;
     m_line_state.lineStipplePattern = 0;
 
-    m_ms_state.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-    m_ms_state.pNext = nullptr;
+    m_ms_state = LvlInitStruct<VkPipelineMultisampleStateCreateInfo>();
     m_ms_state.flags = 0;
     m_ms_state.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
     m_ms_state.sampleShadingEnable = VK_FALSE;
@@ -2154,7 +2188,7 @@ VkPipelineObj::VkPipelineObj(VkDeviceObj *device) {
     m_ds_state = nullptr;
 
     memset(&m_cb_state, 0, sizeof(m_cb_state));
-    m_cb_state.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+    m_cb_state = LvlInitStruct<VkPipelineColorBlendStateCreateInfo>();
     m_cb_state.blendConstants[0] = 1.0f;
     m_cb_state.blendConstants[1] = 1.0f;
     m_cb_state.blendConstants[2] = 1.0f;
@@ -2229,10 +2263,7 @@ void VkPipelineObj::InitGraphicsPipelineCreateInfo(VkGraphicsPipelineCreateInfo 
     gp_ci->stageCount = m_shaderStages.size();
     gp_ci->pStages = m_shaderStages.size() ? m_shaderStages.data() : nullptr;
 
-    m_vi_state.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
     gp_ci->pVertexInputState = &m_vi_state;
-
-    m_ia_state.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
     gp_ci->pInputAssemblyState = &m_ia_state;
 
     gp_ci->sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
@@ -2258,7 +2289,7 @@ void VkPipelineObj::InitGraphicsPipelineCreateInfo(VkGraphicsPipelineCreateInfo 
 
     memset(&m_pd_state, 0, sizeof(m_pd_state));
     if (m_dynamic_state_enables.size() > 0) {
-        m_pd_state.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+        m_pd_state = LvlInitStruct<VkPipelineDynamicStateCreateInfo>();
         m_pd_state.dynamicStateCount = m_dynamic_state_enables.size();
         m_pd_state.pDynamicStates = m_dynamic_state_enables.data();
         gp_ci->pDynamicState = &m_pd_state;
@@ -2503,7 +2534,7 @@ VkFormat VkDepthStencilObj::Format() const { return this->m_depth_stencil_fmt; }
 
 void VkDepthStencilObj::Init(VkDeviceObj *device, int32_t width, int32_t height, VkFormat format, VkImageUsageFlags usage,
                              VkImageAspectFlags aspect) {
-    VkImageViewCreateInfo view_info = {};
+    VkImageViewCreateInfo view_info = LvlInitStruct<VkImageViewCreateInfo>();
 
     m_device = device;
     m_initialized = true;
@@ -2522,8 +2553,6 @@ void VkDepthStencilObj::Init(VkDeviceObj *device, int32_t width, int32_t height,
     }
     SetLayout(aspect, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 
-    view_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-    view_info.pNext = NULL;
     view_info.image = VK_NULL_HANDLE;
     view_info.subresourceRange.aspectMask = aspect;
     view_info.subresourceRange.baseMipLevel = 0;

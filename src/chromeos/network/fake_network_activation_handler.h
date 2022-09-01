@@ -39,8 +39,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) FakeNetworkActivationHandler
     const std::string& service_path() const { return service_path_; }
 
     void InvokeSuccessCallback();
-    void InvokeErrorCallback(const std::string& error_name,
-                             std::unique_ptr<base::DictionaryValue> error_data);
+    void InvokeErrorCallback(const std::string& error_name);
 
    private:
     std::string service_path_;
@@ -63,5 +62,10 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) FakeNetworkActivationHandler
 };
 
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove after the migration is finished.
+namespace ash {
+using ::chromeos::FakeNetworkActivationHandler;
+}
 
 #endif  // CHROMEOS_NETWORK_FAKE_NETWORK_ACTIVATION_HANDLER_H_

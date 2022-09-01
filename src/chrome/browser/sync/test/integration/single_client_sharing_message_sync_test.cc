@@ -5,7 +5,9 @@
 #include <vector>
 
 #include "base/memory/raw_ptr.h"
+#include "base/ranges/algorithm.h"
 #include "base/test/mock_callback.h"
+#include "base/time/time.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/sharing/features.h"
 #include "chrome/browser/sharing/sharing_message_bridge.h"
@@ -20,7 +22,6 @@
 namespace {
 
 using sync_pb::SharingMessageSpecifics;
-using testing::_;
 
 constexpr char kEmptyOAuth2Token[] = "";
 
@@ -112,12 +113,10 @@ class SharingMessageEqualityChecker : public SingleClientStatusChangeChecker {
     }
 
     for (const SharingMessageSpecifics& specifics : expected_specifics_) {
-      auto iter =
-          std::find_if(entities.begin(), entities.end(),
-                       [&specifics](const sync_pb::SyncEntity& entity) {
-                         return specifics.payload() ==
-                                entity.specifics().sharing_message().payload();
-                       });
+      auto iter = base::ranges::find(
+          entities, specifics.payload(), [](const sync_pb::SyncEntity& entity) {
+            return entity.specifics().sharing_message().payload();
+          });
       if (iter == entities.end()) {
         *os << "Server doesn't have expected sharing message with payload: "
             << specifics.payload();

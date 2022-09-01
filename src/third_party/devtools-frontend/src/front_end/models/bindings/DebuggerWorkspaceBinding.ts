@@ -26,6 +26,7 @@ export class DebuggerWorkspaceBinding implements SDK.TargetManager.SDKModelObser
   readonly #debuggerModelToData: Map<SDK.DebuggerModel.DebuggerModel, ModelData>;
   readonly #liveLocationPromises: Set<Promise<void|Location|StackTraceTopFrameLocation|null>>;
   pluginManager: DebuggerLanguagePluginManager|null;
+  #targetManager: SDK.TargetManager.TargetManager;
   private constructor(targetManager: SDK.TargetManager.TargetManager, workspace: Workspace.Workspace.WorkspaceImpl) {
     this.workspace = workspace;
 
@@ -37,12 +38,24 @@ export class DebuggerWorkspaceBinding implements SDK.TargetManager.SDKModelObser
     targetManager.addModelListener(
         SDK.DebuggerModel.DebuggerModel, SDK.DebuggerModel.Events.DebuggerResumed, this.debuggerResumed, this);
     targetManager.observeModels(SDK.DebuggerModel.DebuggerModel, this);
+    this.#targetManager = targetManager;
 
     this.#liveLocationPromises = new Set();
 
     this.pluginManager = Root.Runtime.experiments.isEnabled('wasmDWARFDebugging') ?
         new DebuggerLanguagePluginManager(targetManager, workspace, this) :
         null;
+  }
+
+  initPluginManagerForTest(): DebuggerLanguagePluginManager|null {
+    if (Root.Runtime.experiments.isEnabled('wasmDWARFDebugging')) {
+      if (!this.pluginManager) {
+        this.pluginManager = new DebuggerLanguagePluginManager(this.#targetManager, this.workspace, this);
+      }
+    } else {
+      this.pluginManager = null;
+    }
+    return this.pluginManager;
   }
 
   static instance(opts: {
@@ -69,6 +82,13 @@ export class DebuggerWorkspaceBinding implements SDK.TargetManager.SDKModelObser
 
   addSourceMapping(sourceMapping: DebuggerSourceMapping): void {
     this.#sourceMappings.push(sourceMapping);
+  }
+
+  removeSourceMapping(sourceMapping: DebuggerSourceMapping): void {
+    const index = this.#sourceMappings.indexOf(sourceMapping);
+    if (index !== -1) {
+      this.#sourceMappings.splice(index, 1);
+    }
   }
 
   private async computeAutoStepRanges(mode: SDK.DebuggerModel.StepMode, callFrame: SDK.DebuggerModel.CallFrame):
@@ -120,6 +140,12 @@ export class DebuggerWorkspaceBinding implements SDK.TargetManager.SDKModelObser
     if (!compilerMapping) {
       return [];
     }
+    if (mode === SDK.DebuggerModel.StepMode.StepOut) {
+      // We should actually return the source range for the entire function
+      // to skip over. Since we don't have that, we return an empty range
+      // instead, to signal that we should perform a regular step-out.
+      return [];
+    }
     ranges = compilerMapping.getLocationRangesForSameSourceLocation(rawLocation);
     ranges = ranges.filter(range => contained(rawLocation, range));
     return ranges;
@@ -148,7 +174,7 @@ export class DebuggerWorkspaceBinding implements SDK.TargetManager.SDKModelObser
   }
 
   private recordLiveLocationChange(promise: Promise<void|Location|StackTraceTopFrameLocation|null>): void {
-    promise.then(() => {
+    void promise.then(() => {
       this.#liveLocationPromises.delete(promise);
     });
     this.#liveLocationPromises.add(promise);
@@ -222,7 +248,7 @@ export class DebuggerWorkspaceBinding implements SDK.TargetManager.SDKModelObser
   }
 
   uiSourceCodeForSourceMapSourceURL(
-      debuggerModel: SDK.DebuggerModel.DebuggerModel, url: string,
+      debuggerModel: SDK.DebuggerModel.DebuggerModel, url: Platform.DevToolsPath.UrlString,
       isContentScript: boolean): Workspace.UISourceCode.UISourceCode|null {
     const modelData = this.#debuggerModelToData.get(debuggerModel);
     if (!modelData) {
@@ -421,7 +447,7 @@ class ModelData {
     uiLocation = uiLocation || this.resourceMapping.rawLocationToUILocation(rawLocation);
     uiLocation = uiLocation || ResourceMapping.instance().jsLocationToUILocation(rawLocation);
     uiLocation = uiLocation || this.#defaultMapping.rawLocationToUILocation(rawLocation);
-    return /** @type {!Workspace.UISourceCode.UILocation} */ uiLocation as Workspace.UISourceCode.UILocation;
+    return uiLocation;
   }
 
   uiLocationToRawLocations(
@@ -535,7 +561,7 @@ class StackTraceTopFrameLocation extends LiveLocationWithPool {
     }
     this.#updateScheduled = true;
     queueMicrotask(() => {
-      this.updateLocation();
+      void this.updateLocation();
     });
   }
 
@@ -552,7 +578,7 @@ class StackTraceTopFrameLocation extends LiveLocationWithPool {
         break;
       }
     }
-    this.update();
+    void this.update();
   }
 }
 
@@ -561,9 +587,6 @@ export interface RawLocationRange {
   end: SDK.DebuggerModel.Location;
 }
 
-/**
- * @interface
- */
 export interface DebuggerSourceMapping {
   rawLocationToUILocation(rawLocation: SDK.DebuggerModel.Location): Workspace.UISourceCode.UILocation|null;
 

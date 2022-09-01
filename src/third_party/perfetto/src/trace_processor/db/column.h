@@ -30,20 +30,6 @@
 namespace perfetto {
 namespace trace_processor {
 
-// Id type which can be used as a base for strongly typed ids.
-// TypedColumn has support for storing descendents of BaseId seamlessly
-// in a Column.
-struct BaseId {
-  BaseId() = default;
-  explicit constexpr BaseId(uint32_t v) : value(v) {}
-
-  bool operator==(const BaseId& o) const { return o.value == value; }
-  bool operator!=(const BaseId& o) const { return !(*this == o); }
-  bool operator<(const BaseId& o) const { return value < o.value; }
-
-  uint32_t value;
-};
-
 // Represents the possible filter operations on a column.
 enum class FilterOp {
   kEq,
@@ -69,9 +55,46 @@ struct Order {
   bool desc;
 };
 
-// Represents a column which is to be joined on.
-struct JoinKey {
-  uint32_t col_idx;
+// The enum type of the column.
+// Public only to stop GCC complaining about templates being defined in a
+// non-namespace scope (see ColumnTypeHelper below).
+enum class ColumnType {
+  // Standard primitive types.
+  kInt32,
+  kUint32,
+  kInt64,
+  kDouble,
+  kString,
+
+  // Types generated on the fly.
+  kId,
+
+  // Types which don't have any data backing them.
+  kDummy,
+};
+
+// Helper class for converting a type to a ColumnType.
+template <typename T>
+struct ColumnTypeHelper;
+template <>
+struct ColumnTypeHelper<int32_t> {
+  static constexpr ColumnType ToColumnType() { return ColumnType::kInt32; }
+};
+template <>
+struct ColumnTypeHelper<uint32_t> {
+  static constexpr ColumnType ToColumnType() { return ColumnType::kUint32; }
+};
+template <>
+struct ColumnTypeHelper<int64_t> {
+  static constexpr ColumnType ToColumnType() { return ColumnType::kInt64; }
+};
+template <>
+struct ColumnTypeHelper<double> {
+  static constexpr ColumnType ToColumnType() { return ColumnType::kDouble; }
+};
+template <>
+struct ColumnTypeHelper<StringPool::Id> {
+  static constexpr ColumnType ToColumnType() { return ColumnType::kString; }
 };
 
 class Table;
@@ -110,6 +133,33 @@ class Column {
     // This flag is only meaningful for nullable columns has no effect for
     // non-null columns.
     kDense = 1 << 3,
+
+    // Indicates that the sorted numeric data in the column is laid out such
+    // that at row i, we will always have col[i] <= i and the first element, j
+    // of each group happens at the index j.
+    //
+    // This is a common pattern in trace processor and columns with this
+    // property are suffixed with "set_id" hence the name of this flag.
+    //
+    // To make this clear, here are some valid and invalid uses of this flag.
+    //
+    // Valid:
+    // []
+    // [0]
+    // [0, 1, 2]
+    // [0, 0, 2]
+    // [0, 0, 0, 3, 3, 5, 6, 6, 7]
+    //
+    // Invalid:
+    // [1]
+    // [0, 0, 1]
+    // [0, 0, 2, 5]
+    // [0, 0, 2, 1]
+    //
+    // If this flag is set, kSorted and kNonNull should be set. Moreover, this
+    // flag can only be set when the type is ColumnType::kUint32; other types
+    // are not supported.
+    kSetId = 1 << 4,
   };
 
   // Iterator over a column which conforms to std iterator interface
@@ -162,6 +212,10 @@ class Column {
   // Flags specified for an id column.
   static constexpr uint32_t kIdFlags = Flag::kSorted | Flag::kNonNull;
 
+  // Flags which should *not* be inherited implicitly when a column is
+  // assocaited to another table.
+  static constexpr uint32_t kNoCrossTableInheritFlags = Column::Flag::kSetId;
+
   template <typename T>
   Column(const char* name,
          NullableVector<T>* storage,
@@ -170,36 +224,29 @@ class Column {
          uint32_t col_idx_in_table,
          uint32_t row_map_idx)
       : Column(name,
-               ToColumnType<T>(),
+               ColumnTypeHelper<T>::ToColumnType(),
                flags,
                table,
                col_idx_in_table,
                row_map_idx,
-               storage,
-               nullptr) {}
+               storage) {}
 
-  // Create a Column has the same name and is backed by the same data as
-  // |column| but is associated to a different table.
+  // Create a Column backed by the same data as |column| but is associated to a
+  // different table and, optionally, having a different name.
   Column(const Column& column,
          Table* table,
          uint32_t col_idx_in_table,
-         uint32_t row_map_idx);
+         uint32_t row_map_idx,
+         const char* name = nullptr);
 
   // Columns are movable but not copyable.
   Column(Column&&) noexcept = default;
   Column& operator=(Column&&) = default;
 
-  template <typename T>
-  static Column WithOwnedStorage(const char* name,
-                                 std::unique_ptr<NullableVector<T>> storage,
-                                 /* Flag */ uint32_t flags,
-                                 Table* table,
-                                 uint32_t col_idx_in_table,
-                                 uint32_t row_map_idx) {
-    NullableVector<T>* ptr = storage.get();
-    return Column(name, ToColumnType<T>(), flags, table, col_idx_in_table,
-                  row_map_idx, ptr, std::move(storage));
-  }
+  // Creates a Column which does not have any data backing it.
+  static Column DummyColumn(const char* name,
+                            Table* table,
+                            uint32_t col_idx_in_table);
 
   // Creates a Column which returns the index as the value of the row.
   static Column IdColumn(Table* table,
@@ -229,43 +276,12 @@ class Column {
       case ColumnType::kId: {
         if (value.type != SqlValue::Type::kLong)
           return base::nullopt;
-        return row_map().IndexOf(static_cast<uint32_t>(value.long_value));
+        return row_map().RowOf(static_cast<uint32_t>(value.long_value));
       }
+      case ColumnType::kDummy:
+        PERFETTO_FATAL("IndexOf not allowed on dummy column");
     }
     PERFETTO_FATAL("For GCC");
-  }
-
-  // Sets the value of the column at the given |row|.
-  void Set(uint32_t row, SqlValue value) {
-    PERFETTO_CHECK(value.type == type());
-    switch (type_) {
-      case ColumnType::kInt32: {
-        mutable_nullable_vector<int32_t>()->Set(
-            row, static_cast<int32_t>(value.long_value));
-        break;
-      }
-      case ColumnType::kUint32: {
-        mutable_nullable_vector<uint32_t>()->Set(
-            row, static_cast<uint32_t>(value.long_value));
-        break;
-      }
-      case ColumnType::kInt64: {
-        mutable_nullable_vector<int64_t>()->Set(
-            row, static_cast<int64_t>(value.long_value));
-        break;
-      }
-      case ColumnType::kDouble: {
-        mutable_nullable_vector<double>()->Set(row, value.double_value);
-        break;
-      }
-      case ColumnType::kString: {
-        PERFETTO_FATAL(
-            "Setting a generic value on a string column is not implemented");
-      }
-      case ColumnType::kId: {
-        PERFETTO_FATAL("Cannot set value on a id column");
-      }
-    }
   }
 
   // Sorts |idx| in ascending or descending order (determined by |desc|) based
@@ -280,10 +296,18 @@ class Column {
       // single row with the id (if it exists).
       auto opt_idx = IndexOf(value);
       if (opt_idx) {
-        rm->Intersect(RowMap::SingleRow(*opt_idx));
+        rm->IntersectExact(*opt_idx);
       } else {
-        rm->Intersect(RowMap());
+        rm->Clear();
       }
+      return;
+    }
+
+    if (IsSetId() && op == FilterOp::kEq && value.type == SqlValue::kLong) {
+      // If the column is sorted and the value has the same type as the column,
+      // we should be able to just do a binary search to find the range of rows
+      // instead of a full table scan.
+      FilterIntoSetIdEq(value.AsLong(), rm);
       return;
     }
 
@@ -327,18 +351,6 @@ class Column {
     return *std::max_element(b, e, &compare::SqlValueComparator);
   }
 
-  // Returns true if this column is considered an id column.
-  bool IsId() const { return type_ == ColumnType::kId; }
-
-  // Returns true if this column is a nullable column.
-  bool IsNullable() const { return (flags_ & Flag::kNonNull) == 0; }
-
-  // Returns true if this column is a sorted column.
-  bool IsSorted() const { return (flags_ & Flag::kSorted) != 0; }
-
-  // Returns true if this column is a dense column.
-  bool IsDense() const { return (flags_ & Flag::kDense) != 0; }
-
   // Returns the backing RowMap for this Column.
   // This function is defined out of line because of a circular dependency
   // between |Table| and |Column|.
@@ -353,8 +365,28 @@ class Column {
   // Test the type of this Column.
   template <typename T>
   bool IsColumnType() const {
-    return ToColumnType<T>() == type_;
+    return ColumnTypeHelper<T>::ToColumnType() == type_;
   }
+
+  // Returns true if this column is considered an id column.
+  bool IsId() const { return type_ == ColumnType::kId; }
+
+  // Returns true if this column is a nullable column.
+  bool IsNullable() const { return IsNullable(flags_); }
+
+  // Returns true if this column is a sorted column.
+  bool IsSorted() const { return IsSorted(flags_); }
+
+  // Returns true if this column is a set id column.
+  // Public for testing.
+  bool IsSetId() const { return IsSetId(flags_); }
+
+  // Returns true if this column is a dummy column.
+  // Public for testing.
+  bool IsDummy() const { return type_ == ColumnType::kDummy; }
+
+  // Returns the index of the RowMap in the containing table.
+  uint32_t row_map_index() const { return row_map_idx_; }
 
   // Returns the index of the current column in the containing table.
   uint32_t index_in_table() const { return col_idx_in_table_; }
@@ -389,21 +421,25 @@ class Column {
   Order ascending() const { return Order{col_idx_in_table_, false}; }
   Order descending() const { return Order{col_idx_in_table_, true}; }
 
-  // Returns the JoinKey for this Column.
-  JoinKey join_key() const { return JoinKey{col_idx_in_table_}; }
-
   // Returns an iterator to the first entry in this column.
   Iterator begin() const { return Iterator(this, 0); }
 
   // Returns an iterator pointing beyond the last entry in this column.
   Iterator end() const { return Iterator(this, row_map().size()); }
 
+  // Returns whether the given combination of flags when the column has the
+  // given type is valid.
+  template <typename T>
+  static constexpr bool IsFlagsAndTypeValid(uint32_t flags) {
+    return IsFlagsAndTypeValid(flags, ColumnTypeHelper<T>::ToColumnType());
+  }
+
  protected:
   // Returns the backing sparse vector cast to contain data of type T.
   // Should only be called when |type_| == ToColumnType<T>().
   template <typename T>
   NullableVector<T>* mutable_nullable_vector() {
-    PERFETTO_DCHECK(ToColumnType<T>() == type_);
+    PERFETTO_DCHECK(ColumnTypeHelper<T>::ToColumnType() == type_);
     return static_cast<NullableVector<T>*>(nullable_vector_);
   }
 
@@ -411,32 +447,27 @@ class Column {
   // Should only be called when |type_| == ToColumnType<T>().
   template <typename T>
   const NullableVector<T>& nullable_vector() const {
-    PERFETTO_DCHECK(ToColumnType<T>() == type_);
+    PERFETTO_DCHECK(ColumnTypeHelper<T>::ToColumnType() == type_);
     return *static_cast<const NullableVector<T>*>(nullable_vector_);
   }
 
   // Returns the type of this Column in terms of SqlValue::Type.
   template <typename T>
   static SqlValue::Type ToSqlValueType() {
-    return ToSqlValueType(ToColumnType<T>());
+    return ToSqlValueType(ColumnTypeHelper<T>::ToColumnType());
   }
+
+  // Returns true if this column is a dense column.
+  bool IsDense() const { return IsDense(flags_); }
+
+  // Returns true if this column is a hidden column.
+  bool IsHidden() const { return (flags_ & Flag::kHidden) != 0; }
 
   const StringPool& string_pool() const { return *string_pool_; }
 
  private:
-  enum class ColumnType {
-    // Standard primitive types.
-    kInt32,
-    kUint32,
-    kInt64,
-    kDouble,
-    kString,
-
-    // Types generated on the fly.
-    kId,
-  };
-
   friend class Table;
+  friend class View;
 
   // Base constructor for this class which all other constructors call into.
   Column(const char* name,
@@ -445,13 +476,12 @@ class Column {
          Table* table,
          uint32_t col_idx_in_table,
          uint32_t row_map_idx,
-         NullableVectorBase* nullable_vector,
-         std::shared_ptr<NullableVectorBase> owned_nullable_vector);
+         NullableVectorBase* nullable_vector);
 
   Column(const Column&) = delete;
   Column& operator=(const Column&) = delete;
 
-  // Gets the value of the Column at the given |row|.
+  // Gets the value of the Column at the given |idx|.
   SqlValue GetAtIdx(uint32_t idx) const {
     switch (type_) {
       case ColumnType::kInt32: {
@@ -476,6 +506,8 @@ class Column {
       }
       case ColumnType::kId:
         return SqlValue::Long(idx);
+      case ColumnType::kDummy:
+        PERFETTO_FATAL("GetAtIdx not allowed on dummy column");
     }
     PERFETTO_FATAL("For GCC");
   }
@@ -494,31 +526,31 @@ class Column {
             b, std::lower_bound(b, e, value, &compare::SqlValueComparator));
         uint32_t end = std::distance(
             b, std::upper_bound(b, e, value, &compare::SqlValueComparator));
-        rm->Intersect(RowMap(beg, end));
+        rm->Intersect(beg, end);
         return true;
       }
       case FilterOp::kLe: {
         uint32_t end = std::distance(
             b, std::upper_bound(b, e, value, &compare::SqlValueComparator));
-        rm->Intersect(RowMap(0, end));
+        rm->Intersect(0, end);
         return true;
       }
       case FilterOp::kLt: {
         uint32_t end = std::distance(
             b, std::lower_bound(b, e, value, &compare::SqlValueComparator));
-        rm->Intersect(RowMap(0, end));
+        rm->Intersect(0, end);
         return true;
       }
       case FilterOp::kGe: {
         uint32_t beg = std::distance(
             b, std::lower_bound(b, e, value, &compare::SqlValueComparator));
-        rm->Intersect(RowMap(beg, row_map().size()));
+        rm->Intersect(beg, row_map().size());
         return true;
       }
       case FilterOp::kGt: {
         uint32_t beg = std::distance(
             b, std::upper_bound(b, e, value, &compare::SqlValueComparator));
-        rm->Intersect(RowMap(beg, row_map().size()));
+        rm->Intersect(beg, row_map().size());
         return true;
       }
       case FilterOp::kNe:
@@ -527,6 +559,40 @@ class Column {
         break;
     }
     return false;
+  }
+
+  void FilterIntoSetIdEq(int64_t value, RowMap* rm) const {
+    PERFETTO_DCHECK(!IsNullable());
+
+    uint32_t filter_set_id = static_cast<uint32_t>(value);
+    const auto& nv = nullable_vector<uint32_t>();
+    const RowMap& col_rm = row_map();
+
+    // If the set id is beyond the end of the column, there's no chance that
+    // it exists.
+    if (PERFETTO_UNLIKELY(filter_set_id >= col_rm.size())) {
+      *rm = RowMap();
+      return;
+    }
+
+    uint32_t set_id = nv.GetNonNull(col_rm.Get(filter_set_id));
+
+    // If the set at that index does not equal the set id we're looking for, the
+    // set id doesn't exist either.
+    if (PERFETTO_UNLIKELY(set_id != filter_set_id)) {
+      PERFETTO_DCHECK(set_id < filter_set_id);
+      *rm = RowMap();
+      return;
+    }
+
+    // Otherwise, find the end of the set and return the intersection for this.
+    for (uint32_t i = set_id + 1; i < col_rm.size(); ++i) {
+      if (nv.GetNonNull(col_rm.Get(i)) != filter_set_id) {
+        rm->Intersect(set_id, i);
+        return;
+      }
+    }
+    rm->Intersect(set_id, col_rm.size());
   }
 
   // Slow path filter method which will perform a full table scan.
@@ -558,21 +624,35 @@ class Column {
   template <bool desc, typename T, bool is_nullable>
   void StableSortNumeric(std::vector<uint32_t>* out) const;
 
-  template <typename T>
-  static ColumnType ToColumnType() {
-    if (std::is_same<T, uint32_t>::value) {
-      return ColumnType::kUint32;
-    } else if (std::is_same<T, int64_t>::value) {
-      return ColumnType::kInt64;
-    } else if (std::is_same<T, int32_t>::value) {
-      return ColumnType::kInt32;
-    } else if (std::is_same<T, StringPool::Id>::value) {
-      return ColumnType::kString;
-    } else if (std::is_same<T, double>::value) {
-      return ColumnType::kDouble;
-    } else {
-      PERFETTO_FATAL("Unsupported type of column");
-    }
+  static constexpr bool IsDense(uint32_t flags) {
+    return (flags & Flag::kDense) != 0;
+  }
+  static constexpr bool IsNullable(uint32_t flags) {
+    return (flags & Flag::kNonNull) == 0;
+  }
+  static constexpr bool IsSetId(uint32_t flags) {
+    return (flags & Flag::kSetId) != 0;
+  }
+  static constexpr bool IsSorted(uint32_t flags) {
+    return (flags & Flag::kSorted) != 0;
+  }
+
+  static constexpr bool IsFlagsAndTypeValid(uint32_t flags, ColumnType type) {
+    return (!IsDense(flags) || IsFlagsForDenseValid(flags)) &&
+           (!IsSetId(flags) || IsFlagsAndTypeForSetIdValid(flags, type));
+  }
+
+  static constexpr bool IsFlagsForDenseValid(uint32_t flags) {
+    // The dense flag should only be set when the column is nullable.
+    return IsNullable(flags);
+  }
+
+  static constexpr bool IsFlagsAndTypeForSetIdValid(uint32_t flags,
+                                                    ColumnType type) {
+    // The sorted flag should always be set for set id columns.
+    // The non-null flag should always be set for set id columns.
+    // The column type should always be kUint32.
+    return IsSorted(flags) && !IsNullable(flags) && type == ColumnType::kUint32;
   }
 
   static SqlValue::Type ToSqlValueType(ColumnType type) {
@@ -586,6 +666,8 @@ class Column {
         return SqlValue::Type::kDouble;
       case ColumnType::kString:
         return SqlValue::Type::kString;
+      case ColumnType::kDummy:
+        PERFETTO_FATAL("ToSqlValueType not allowed on dummy column");
     }
     PERFETTO_FATAL("For GCC");
   }
@@ -596,11 +678,6 @@ class Column {
     PERFETTO_DCHECK(type_ == ColumnType::kString);
     return string_pool_->Get(nullable_vector<StringPool::Id>().GetNonNull(idx));
   }
-
-  // Only filled for columns which own the data inside them. Generally this is
-  // only true for columns which are dynamically generated at runtime.
-  // Keep this before |nullable_vector_|.
-  std::shared_ptr<NullableVectorBase> owned_nullable_vector_;
 
   // type_ is used to cast nullable_vector_ to the correct type.
   ColumnType type_ = ColumnType::kInt64;

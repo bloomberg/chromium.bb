@@ -20,13 +20,13 @@
 #include <queue>
 
 #include "absl/flags/flag.h"
+#include "api/audio/echo_detector_creator.h"
 #include "common_audio/include/audio_util.h"
 #include "common_audio/resampler/include/push_resampler.h"
 #include "common_audio/resampler/push_sinc_resampler.h"
 #include "common_audio/signal_processing/include/signal_processing_library.h"
 #include "modules/audio_processing/aec_dump/aec_dump_factory.h"
 #include "modules/audio_processing/audio_processing_impl.h"
-#include "modules/audio_processing/common.h"
 #include "modules/audio_processing/include/mock_audio_processing.h"
 #include "modules/audio_processing/test/audio_processing_builder_for_testing.h"
 #include "modules/audio_processing/test/protobuf_utils.h"
@@ -92,21 +92,6 @@ void ConvertToFloat(const int16_t* int_data, ChannelBuffer<float>* cb) {
 
 void ConvertToFloat(const Int16FrameData& frame, ChannelBuffer<float>* cb) {
   ConvertToFloat(frame.data.data(), cb);
-}
-
-// Number of channels including the keyboard channel.
-size_t TotalChannelsFromLayout(AudioProcessing::ChannelLayout layout) {
-  switch (layout) {
-    case AudioProcessing::kMono:
-      return 1;
-    case AudioProcessing::kMonoAndKeyboard:
-    case AudioProcessing::kStereo:
-      return 2;
-    case AudioProcessing::kStereoAndKeyboard:
-      return 3;
-  }
-  RTC_DCHECK_NOTREACHED();
-  return 0;
 }
 
 void MixStereoToMono(const float* stereo,
@@ -205,7 +190,6 @@ void EnableAllAPComponents(AudioProcessing* ap) {
   apm_config.noise_suppression.enabled = true;
 
   apm_config.high_pass_filter.enabled = true;
-  apm_config.voice_detection.enabled = true;
   apm_config.pipeline.maximum_internal_processing_rate = 48000;
   ap->ApplyConfig(apm_config);
 }
@@ -415,8 +399,8 @@ class ApmTest : public ::testing::Test {
   rtc::scoped_refptr<AudioProcessing> apm_;
   Int16FrameData frame_;
   Int16FrameData revframe_;
-  std::unique_ptr<ChannelBuffer<float> > float_cb_;
-  std::unique_ptr<ChannelBuffer<float> > revfloat_cb_;
+  std::unique_ptr<ChannelBuffer<float>> float_cb_;
+  std::unique_ptr<ChannelBuffer<float>> revfloat_cb_;
   int output_sample_rate_hz_;
   size_t num_output_channels_;
   FILE* far_file_;
@@ -1241,7 +1225,6 @@ TEST_F(ApmTest, AllProcessingDisabledByDefault) {
   EXPECT_FALSE(config.high_pass_filter.enabled);
   EXPECT_FALSE(config.gain_controller1.enabled);
   EXPECT_FALSE(config.noise_suppression.enabled);
-  EXPECT_FALSE(config.voice_detection.enabled);
 }
 
 TEST_F(ApmTest, NoProcessingWhenAllComponentsDisabled) {
@@ -1380,48 +1363,6 @@ TEST_F(ApmTest, SplittingFilter) {
                 StreamConfig(frame_.sample_rate_hz, frame_.num_channels),
                 frame_.data.data()));
   EXPECT_TRUE(FrameDataAreEqual(frame_, frame_copy));
-  apm_->ApplyConfig(apm_config);
-
-  // 3. Only GetStatistics-reporting VAD is enabled...
-  SetFrameTo(&frame_, 1000);
-  frame_copy.CopyFrom(frame_);
-  apm_config.voice_detection.enabled = true;
-  apm_->ApplyConfig(apm_config);
-  EXPECT_EQ(apm_->kNoError,
-            apm_->ProcessStream(
-                frame_.data.data(),
-                StreamConfig(frame_.sample_rate_hz, frame_.num_channels),
-                StreamConfig(frame_.sample_rate_hz, frame_.num_channels),
-                frame_.data.data()));
-  EXPECT_EQ(apm_->kNoError,
-            apm_->ProcessStream(
-                frame_.data.data(),
-                StreamConfig(frame_.sample_rate_hz, frame_.num_channels),
-                StreamConfig(frame_.sample_rate_hz, frame_.num_channels),
-                frame_.data.data()));
-  EXPECT_TRUE(FrameDataAreEqual(frame_, frame_copy));
-  apm_config.voice_detection.enabled = false;
-  apm_->ApplyConfig(apm_config);
-
-  // 4. The VAD is enabled...
-  SetFrameTo(&frame_, 1000);
-  frame_copy.CopyFrom(frame_);
-  apm_config.voice_detection.enabled = true;
-  apm_->ApplyConfig(apm_config);
-  EXPECT_EQ(apm_->kNoError,
-            apm_->ProcessStream(
-                frame_.data.data(),
-                StreamConfig(frame_.sample_rate_hz, frame_.num_channels),
-                StreamConfig(frame_.sample_rate_hz, frame_.num_channels),
-                frame_.data.data()));
-  EXPECT_EQ(apm_->kNoError,
-            apm_->ProcessStream(
-                frame_.data.data(),
-                StreamConfig(frame_.sample_rate_hz, frame_.num_channels),
-                StreamConfig(frame_.sample_rate_hz, frame_.num_channels),
-                frame_.data.data()));
-  EXPECT_TRUE(FrameDataAreEqual(frame_, frame_copy));
-  apm_config.voice_detection.enabled = false;
   apm_->ApplyConfig(apm_config);
 
   // Check the test is valid. We should have distortion from the filter
@@ -1659,7 +1600,7 @@ TEST_F(ApmTest, DebugDumpFromFileHandle) {
 
   const std::string filename =
       test::TempFilename(test::OutputPath(), "debug_aec");
-  FileWrapper f = FileWrapper::OpenWriteOnly(filename.c_str());
+  FileWrapper f = FileWrapper::OpenWriteOnly(filename);
   ASSERT_TRUE(f.is_open());
 
 #ifdef WEBRTC_AUDIOPROC_DEBUG_DUMP
@@ -1736,7 +1677,9 @@ TEST_F(ApmTest, Process) {
     if (test->num_input_channels() != test->num_output_channels())
       continue;
 
-    apm_ = AudioProcessingBuilderForTesting().Create();
+    apm_ = AudioProcessingBuilderForTesting()
+               .SetEchoDetector(CreateEchoDetector())
+               .Create();
     AudioProcessing::Config apm_config = apm_->GetConfig();
     apm_config.gain_controller1.analog_gain_controller.enabled = false;
     apm_->ApplyConfig(apm_config);
@@ -1749,7 +1692,6 @@ TEST_F(ApmTest, Process) {
          static_cast<size_t>(test->num_reverse_channels()), true);
 
     int frame_count = 0;
-    int has_voice_count = 0;
     int analog_level = 127;
     int analog_level_average = 0;
     int max_output_average = 0;
@@ -1785,8 +1727,6 @@ TEST_F(ApmTest, Process) {
       analog_level = apm_->recommended_stream_analog_level();
       analog_level_average += analog_level;
       AudioProcessingStats stats = apm_->GetStatistics();
-      EXPECT_TRUE(stats.voice_detected);
-      has_voice_count += *stats.voice_detected ? 1 : 0;
 
       size_t frame_size = frame_.samples_per_channel * frame_.num_channels;
       size_t write_count =
@@ -1842,33 +1782,23 @@ TEST_F(ApmTest, Process) {
 
     if (!absl::GetFlag(FLAGS_write_apm_ref_data)) {
       const int kIntNear = 1;
-      // When running the test on a N7 we get a {2, 6} difference of
-      // `has_voice_count` and `max_output_average` is up to 18 higher.
-      // All numbers being consistently higher on N7 compare to ref_data.
+      // All numbers being consistently higher on N7 compare to the reference
+      // data.
       // TODO(bjornv): If we start getting more of these offsets on Android we
       // should consider a different approach. Either using one slack for all,
       // or generate a separate android reference.
 #if defined(WEBRTC_ANDROID) || defined(WEBRTC_IOS)
-      const int kHasVoiceCountOffset = 3;
-      const int kHasVoiceCountNear = 8;
       const int kMaxOutputAverageOffset = 9;
       const int kMaxOutputAverageNear = 26;
 #else
-      const int kHasVoiceCountOffset = 0;
-      const int kHasVoiceCountNear = kIntNear;
       const int kMaxOutputAverageOffset = 0;
       const int kMaxOutputAverageNear = kIntNear;
 #endif
-      EXPECT_NEAR(test->has_voice_count(),
-                  has_voice_count - kHasVoiceCountOffset, kHasVoiceCountNear);
-
       EXPECT_NEAR(test->analog_level_average(), analog_level_average, kIntNear);
       EXPECT_NEAR(test->max_output_average(),
                   max_output_average - kMaxOutputAverageOffset,
                   kMaxOutputAverageNear);
     } else {
-      test->set_has_voice_count(has_voice_count);
-
       test->set_analog_level_average(analog_level_average);
       test->set_max_output_average(max_output_average);
     }
@@ -1879,44 +1809,6 @@ TEST_F(ApmTest, Process) {
 
   if (absl::GetFlag(FLAGS_write_apm_ref_data)) {
     OpenFileAndWriteMessage(ref_filename_, ref_data);
-  }
-}
-
-TEST_F(ApmTest, NoErrorsWithKeyboardChannel) {
-  struct ChannelFormat {
-    AudioProcessing::ChannelLayout in_layout;
-    AudioProcessing::ChannelLayout out_layout;
-  };
-  ChannelFormat cf[] = {
-      {AudioProcessing::kMonoAndKeyboard, AudioProcessing::kMono},
-      {AudioProcessing::kStereoAndKeyboard, AudioProcessing::kMono},
-      {AudioProcessing::kStereoAndKeyboard, AudioProcessing::kStereo},
-  };
-
-  rtc::scoped_refptr<AudioProcessing> ap =
-      AudioProcessingBuilderForTesting().Create();
-  // Enable one component just to ensure some processing takes place.
-  AudioProcessing::Config config;
-  config.noise_suppression.enabled = true;
-  ap->ApplyConfig(config);
-  for (size_t i = 0; i < arraysize(cf); ++i) {
-    const int in_rate = 44100;
-    const int out_rate = 48000;
-    ChannelBuffer<float> in_cb(SamplesFromRate(in_rate),
-                               TotalChannelsFromLayout(cf[i].in_layout));
-    ChannelBuffer<float> out_cb(SamplesFromRate(out_rate),
-                                ChannelsFromLayout(cf[i].out_layout));
-    bool has_keyboard = cf[i].in_layout == AudioProcessing::kMonoAndKeyboard ||
-                        cf[i].in_layout == AudioProcessing::kStereoAndKeyboard;
-    StreamConfig in_sc(in_rate, ChannelsFromLayout(cf[i].in_layout),
-                       has_keyboard);
-    StreamConfig out_sc(out_rate, ChannelsFromLayout(cf[i].out_layout));
-
-    // Run over a few chunks.
-    for (int j = 0; j < 10; ++j) {
-      EXPECT_NOERR(ap->ProcessStream(in_cb.channels(), in_sc, out_sc,
-                                     out_cb.channels()));
-    }
   }
 }
 
@@ -2440,7 +2332,6 @@ void RunApmRateAndChannelTest(
                                              std::vector<float*>* frame_data) {
                 cfg->set_sample_rate_hz(sample_rate_hz);
                 cfg->set_num_channels(num_channels);
-                cfg->set_has_keyboard(false);
 
                 size_t max_frame_size = ceil(sample_rate_hz / 100.f);
                 channels_data->resize(num_channels * max_frame_size);
@@ -2649,9 +2540,75 @@ TEST(ApmConfiguration, EchoControlInjection) {
                      audio.data.data());
 }
 
-rtc::scoped_refptr<AudioProcessing> CreateApm(bool mobile_aec) {
+TEST(ApmConfiguration, EchoDetectorInjection) {
+  using ::testing::_;
+  rtc::scoped_refptr<test::MockEchoDetector> mock_echo_detector =
+      rtc::make_ref_counted<::testing::StrictMock<test::MockEchoDetector>>();
+  EXPECT_CALL(*mock_echo_detector,
+              Initialize(/*capture_sample_rate_hz=*/16000, _,
+                         /*render_sample_rate_hz=*/16000, _))
+      .Times(1);
   rtc::scoped_refptr<AudioProcessing> apm =
-      AudioProcessingBuilderForTesting().Create();
+      AudioProcessingBuilderForTesting()
+          .SetEchoDetector(mock_echo_detector)
+          .Create();
+
+  // The echo detector is included in processing when enabled.
+  EXPECT_CALL(*mock_echo_detector, AnalyzeRenderAudio(_))
+      .WillOnce([](rtc::ArrayView<const float> render_audio) {
+        EXPECT_EQ(render_audio.size(), 160u);
+      });
+  EXPECT_CALL(*mock_echo_detector, AnalyzeCaptureAudio(_))
+      .WillOnce([](rtc::ArrayView<const float> capture_audio) {
+        EXPECT_EQ(capture_audio.size(), 160u);
+      });
+  EXPECT_CALL(*mock_echo_detector, GetMetrics()).Times(1);
+
+  Int16FrameData frame;
+  frame.num_channels = 1;
+  SetFrameSampleRate(&frame, 16000);
+
+  apm->ProcessReverseStream(frame.data.data(), StreamConfig(16000, 1),
+                            StreamConfig(16000, 1), frame.data.data());
+  apm->ProcessStream(frame.data.data(), StreamConfig(16000, 1),
+                     StreamConfig(16000, 1), frame.data.data());
+
+  // When processing rates change, the echo detector is also reinitialized to
+  // match those.
+  EXPECT_CALL(*mock_echo_detector,
+              Initialize(/*capture_sample_rate_hz=*/48000, _,
+                         /*render_sample_rate_hz=*/16000, _))
+      .Times(1);
+  EXPECT_CALL(*mock_echo_detector,
+              Initialize(/*capture_sample_rate_hz=*/48000, _,
+                         /*render_sample_rate_hz=*/48000, _))
+      .Times(1);
+  EXPECT_CALL(*mock_echo_detector, AnalyzeRenderAudio(_))
+      .WillOnce([](rtc::ArrayView<const float> render_audio) {
+        EXPECT_EQ(render_audio.size(), 480u);
+      });
+  EXPECT_CALL(*mock_echo_detector, AnalyzeCaptureAudio(_))
+      .Times(2)
+      .WillRepeatedly([](rtc::ArrayView<const float> capture_audio) {
+        EXPECT_EQ(capture_audio.size(), 480u);
+      });
+  EXPECT_CALL(*mock_echo_detector, GetMetrics()).Times(2);
+
+  SetFrameSampleRate(&frame, 48000);
+  apm->ProcessStream(frame.data.data(), StreamConfig(48000, 1),
+                     StreamConfig(48000, 1), frame.data.data());
+  apm->ProcessReverseStream(frame.data.data(), StreamConfig(48000, 1),
+                            StreamConfig(48000, 1), frame.data.data());
+  apm->ProcessStream(frame.data.data(), StreamConfig(48000, 1),
+                     StreamConfig(48000, 1), frame.data.data());
+}
+
+rtc::scoped_refptr<AudioProcessing> CreateApm(bool mobile_aec) {
+  // Enable residual echo detection, for stats.
+  rtc::scoped_refptr<AudioProcessing> apm =
+      AudioProcessingBuilderForTesting()
+          .SetEchoDetector(CreateEchoDetector())
+          .Create();
   if (!apm) {
     return apm;
   }
@@ -2663,16 +2620,14 @@ rtc::scoped_refptr<AudioProcessing> CreateApm(bool mobile_aec) {
     return nullptr;
   }
 
-  // Disable all components except for an AEC and the residual echo detector.
+  // Disable all components except for an AEC.
   AudioProcessing::Config apm_config;
-  apm_config.residual_echo_detector.enabled = true;
   apm_config.high_pass_filter.enabled = false;
   apm_config.gain_controller1.enabled = false;
   apm_config.gain_controller2.enabled = false;
   apm_config.echo_canceller.enabled = true;
   apm_config.echo_canceller.mobile_mode = mobile_aec;
   apm_config.noise_suppression.enabled = false;
-  apm_config.voice_detection.enabled = false;
   apm->ApplyConfig(apm_config);
   return apm;
 }
@@ -2722,15 +2677,15 @@ TEST(MAYBE_ApmStatistics, AECEnabledTest) {
   // Test statistics interface.
   AudioProcessingStats stats = apm->GetStatistics();
   // We expect all statistics to be set and have a sensible value.
-  ASSERT_TRUE(stats.residual_echo_likelihood);
+  ASSERT_TRUE(stats.residual_echo_likelihood.has_value());
   EXPECT_GE(*stats.residual_echo_likelihood, 0.0);
   EXPECT_LE(*stats.residual_echo_likelihood, 1.0);
-  ASSERT_TRUE(stats.residual_echo_likelihood_recent_max);
+  ASSERT_TRUE(stats.residual_echo_likelihood_recent_max.has_value());
   EXPECT_GE(*stats.residual_echo_likelihood_recent_max, 0.0);
   EXPECT_LE(*stats.residual_echo_likelihood_recent_max, 1.0);
-  ASSERT_TRUE(stats.echo_return_loss);
+  ASSERT_TRUE(stats.echo_return_loss.has_value());
   EXPECT_NE(*stats.echo_return_loss, -100.0);
-  ASSERT_TRUE(stats.echo_return_loss_enhancement);
+  ASSERT_TRUE(stats.echo_return_loss_enhancement.has_value());
   EXPECT_NE(*stats.echo_return_loss_enhancement, -100.0);
 }
 
@@ -2771,24 +2726,19 @@ TEST(MAYBE_ApmStatistics, AECMEnabledTest) {
   AudioProcessingStats stats = apm->GetStatistics();
   // We expect only the residual echo detector statistics to be set and have a
   // sensible value.
-  EXPECT_TRUE(stats.residual_echo_likelihood);
-  if (stats.residual_echo_likelihood) {
-    EXPECT_GE(*stats.residual_echo_likelihood, 0.0);
-    EXPECT_LE(*stats.residual_echo_likelihood, 1.0);
-  }
-  EXPECT_TRUE(stats.residual_echo_likelihood_recent_max);
-  if (stats.residual_echo_likelihood_recent_max) {
-    EXPECT_GE(*stats.residual_echo_likelihood_recent_max, 0.0);
-    EXPECT_LE(*stats.residual_echo_likelihood_recent_max, 1.0);
-  }
-  EXPECT_FALSE(stats.echo_return_loss);
-  EXPECT_FALSE(stats.echo_return_loss_enhancement);
+  ASSERT_TRUE(stats.residual_echo_likelihood.has_value());
+  EXPECT_GE(*stats.residual_echo_likelihood, 0.0);
+  EXPECT_LE(*stats.residual_echo_likelihood, 1.0);
+  ASSERT_TRUE(stats.residual_echo_likelihood_recent_max.has_value());
+  EXPECT_GE(*stats.residual_echo_likelihood_recent_max, 0.0);
+  EXPECT_LE(*stats.residual_echo_likelihood_recent_max, 1.0);
+  EXPECT_FALSE(stats.echo_return_loss.has_value());
+  EXPECT_FALSE(stats.echo_return_loss_enhancement.has_value());
 }
 
-TEST(ApmStatistics, ReportHasVoice) {
+TEST(ApmStatistics, DoNotReportVoiceDetectedStat) {
   ProcessingConfig processing_config = {
       {{32000, 1}, {32000, 1}, {32000, 1}, {32000, 1}}};
-  AudioProcessing::Config config;
 
   // Set up an audioframe.
   Int16FrameData frame;
@@ -2805,37 +2755,53 @@ TEST(ApmStatistics, ReportHasVoice) {
       AudioProcessingBuilderForTesting().Create();
   apm->Initialize(processing_config);
 
-  // If not enabled, no metric should be reported.
+  // No metric should be reported.
   EXPECT_EQ(
       apm->ProcessStream(frame.data.data(),
                          StreamConfig(frame.sample_rate_hz, frame.num_channels),
                          StreamConfig(frame.sample_rate_hz, frame.num_channels),
                          frame.data.data()),
       0);
-  EXPECT_FALSE(apm->GetStatistics().voice_detected);
+  EXPECT_FALSE(apm->GetStatistics().voice_detected.has_value());
+}
 
-  // If enabled, metrics should be reported.
-  config.voice_detection.enabled = true;
-  apm->ApplyConfig(config);
-  EXPECT_EQ(
+TEST(ApmStatistics, GetStatisticsReportsNoEchoDetectorStatsWhenDisabled) {
+  rtc::scoped_refptr<AudioProcessing> apm =
+      AudioProcessingBuilderForTesting().Create();
+  Int16FrameData frame;
+  frame.num_channels = 1;
+  SetFrameSampleRate(&frame, AudioProcessing::NativeRate::kSampleRate32kHz);
+  ASSERT_EQ(
       apm->ProcessStream(frame.data.data(),
                          StreamConfig(frame.sample_rate_hz, frame.num_channels),
                          StreamConfig(frame.sample_rate_hz, frame.num_channels),
                          frame.data.data()),
       0);
-  auto stats = apm->GetStatistics();
-  EXPECT_TRUE(stats.voice_detected);
+  // Echo detector is disabled by default, no stats reported.
+  AudioProcessingStats stats = apm->GetStatistics();
+  EXPECT_FALSE(stats.residual_echo_likelihood.has_value());
+  EXPECT_FALSE(stats.residual_echo_likelihood_recent_max.has_value());
+}
 
-  // If re-disabled, the value is again not reported.
-  config.voice_detection.enabled = false;
-  apm->ApplyConfig(config);
-  EXPECT_EQ(
+TEST(ApmStatistics, GetStatisticsReportsEchoDetectorStatsWhenEnabled) {
+  // Create APM with an echo detector injected.
+  rtc::scoped_refptr<AudioProcessing> apm =
+      AudioProcessingBuilderForTesting()
+          .SetEchoDetector(CreateEchoDetector())
+          .Create();
+  Int16FrameData frame;
+  frame.num_channels = 1;
+  SetFrameSampleRate(&frame, AudioProcessing::NativeRate::kSampleRate32kHz);
+  // Echo detector enabled: Report stats.
+  ASSERT_EQ(
       apm->ProcessStream(frame.data.data(),
                          StreamConfig(frame.sample_rate_hz, frame.num_channels),
                          StreamConfig(frame.sample_rate_hz, frame.num_channels),
                          frame.data.data()),
       0);
-  EXPECT_FALSE(apm->GetStatistics().voice_detected);
+  AudioProcessingStats stats = apm->GetStatistics();
+  EXPECT_TRUE(stats.residual_echo_likelihood.has_value());
+  EXPECT_TRUE(stats.residual_echo_likelihood_recent_max.has_value());
 }
 
 TEST(ApmConfiguration, HandlingOfRateAndChannelCombinations) {

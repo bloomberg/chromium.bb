@@ -11,7 +11,6 @@
 #import "base/ios/block_types.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "ios/web/public/browser_state.h"
 #include "ios/web/public/security/certificate_policy_cache.h"
@@ -20,7 +19,7 @@
 #import "ios/web/security/wk_web_view_security_util.h"
 #include "net/cert/cert_verify_proc_ios.h"
 #include "net/cert/x509_util.h"
-#include "net/cert/x509_util_ios.h"
+#include "net/cert/x509_util_apple.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -141,10 +140,11 @@ using web::WebThread;
     DCHECK(cert);
   }
   DCHECK(cert->intermediate_buffers().empty());
-  base::PostTask(FROM_HERE, {WebThread::IO}, base::BindOnce(^{
-                   self->_certPolicyCache->AllowCertForHost(
-                       cert.get(), base::SysNSStringToUTF8(host), status);
-                 }));
+  web::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(^{
+        self->_certPolicyCache->AllowCertForHost(
+            cert.get(), base::SysNSStringToUTF8(host), status);
+      }));
 }
 
 #pragma mark - Private
@@ -180,8 +180,8 @@ using web::WebThread;
                          completionHandler:(web::PolicyDecisionHandler)handler {
   DCHECK_CURRENTLY_ON(WebThread::UI);
   DCHECK(handler);
-  TaskTraits traits{WebThread::IO, TaskShutdownBehavior::BLOCK_SHUTDOWN};
-  base::PostTask(FROM_HERE, traits, base::BindOnce(^{
+  web::GetIOThreadTaskRunner({})
+      ->PostTask(FROM_HERE, base::BindOnce(^{
                    // |loadPolicyForRejectedTrustResult:certStatus:serverTrust
                    // :host:| can only be called on IO thread.
                    net::CertStatus certStatus =

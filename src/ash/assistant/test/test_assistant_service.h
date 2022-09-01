@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
 #include "chromeos/services/assistant/public/cpp/assistant_service.h"
@@ -89,7 +90,6 @@ class TestAssistantService : public chromeos::assistant::Assistant {
   // Assistant overrides:
   void StartEditReminderInteraction(const std::string& client_id) override;
   void StartScreenContextInteraction(
-      ax::mojom::AssistantStructurePtr assistant_structure,
       const std::vector<uint8_t>& assistant_screenshot) override;
   void StartTextInteraction(const std::string& query,
                             chromeos::assistant::AssistantQuerySource source,
@@ -126,6 +126,9 @@ class TestAssistantService : public chromeos::assistant::Assistant {
       chromeos::assistant::AssistantQuerySource source =
           chromeos::assistant::AssistantQuerySource::kUnspecified,
       const std::string& query = std::string());
+  void InteractionStarted(chromeos::assistant::AssistantInteractionType type,
+                          chromeos::assistant::AssistantQuerySource source,
+                          const std::string& query);
   void SendInteractionResponse();
 
   std::unique_ptr<LibassistantContractChecker> libassistant_contract_checker_;
@@ -137,6 +140,8 @@ class TestAssistantService : public chromeos::assistant::Assistant {
   base::ObserverList<chromeos::assistant::AssistantInteractionSubscriber>
       interaction_subscribers_;
   bool running_active_interaction_ = false;
+
+  base::WeakPtrFactory<TestAssistantService> weak_factory_{this};
 };
 
 }  // namespace ash

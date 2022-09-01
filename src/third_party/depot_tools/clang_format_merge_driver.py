@@ -28,7 +28,9 @@ def main():
           sys.argv[0])
     sys.exit(1)
 
+  # pylint: disable=unbalanced-tuple-unpacking
   base, current, others, file_name_in_tree = sys.argv[1:5]
+  # pylint: enable=unbalanced-tuple-unpacking
 
   if file_name_in_tree == '%P':
     print(file=sys.stderr)

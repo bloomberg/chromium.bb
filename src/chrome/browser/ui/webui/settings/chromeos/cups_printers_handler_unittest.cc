@@ -10,14 +10,15 @@
 #include "base/callback_helpers.h"
 #include "base/files/file_path.h"
 #include "base/json/json_string_value_serializer.h"
+#include "base/test/values_test_util.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/printing/printing_stubs.h"
+#include "chrome/browser/ash/printing/printing_stubs.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_core_service_factory.h"
 #include "chrome/browser/download/download_core_service_impl.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chromeos/dbus/concierge/concierge_client.h"
+#include "chromeos/ash/components/dbus/concierge/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
 #include "content/public/test/browser_task_environment.h"
@@ -30,21 +31,6 @@ namespace chromeos {
 namespace settings {
 
 class CupsPrintersHandlerTest;
-
-namespace {
-
-// Converts JSON string to base::ListValue object.
-// On failure, returns NULL and fills |*error| string.
-std::unique_ptr<base::ListValue> GetJSONAsListValue(const std::string& json,
-                                                    std::string* error) {
-  auto ret = base::ListValue::From(
-      JSONStringValueDeserializer(json).Deserialize(nullptr, error));
-  if (!ret)
-    *error = "Value is not a list.";
-  return ret;
-}
-
-}  // namespace
 
 // Callback used for testing CupsAddAutoConfiguredPrinter().
 void AddedPrinter(int32_t status) {
@@ -211,7 +197,7 @@ class CupsPrintersHandlerTest : public testing::Test {
 
 TEST_F(CupsPrintersHandlerTest, RemoveCorrectPrinter) {
   DBusThreadManager::Initialize();
-  chromeos::ConciergeClient::InitializeFake(
+  ConciergeClient::InitializeFake(
       /*fake_cicerone_client=*/nullptr);
 
   DebugDaemonClient* client = DBusThreadManager::Get()->GetDebugDaemonClient();
@@ -222,11 +208,10 @@ TEST_F(CupsPrintersHandlerTest, RemoveCorrectPrinter) {
     ["testprinter1", "Test Printer 1"]
   )";
   std::string error;
-  std::unique_ptr<base::ListValue> remove_printers(
-      GetJSONAsListValue(remove_list, &error));
-  ASSERT_TRUE(remove_printers) << "Error deserializing list: " << error;
+  base::Value remove_printers = base::test::ParseJson(remove_list);
+  ASSERT_TRUE(remove_printers.is_list());
 
-  web_ui_.HandleReceivedMessage("removeCupsPrinter", remove_printers.get());
+  web_ui_.HandleReceivedMessage("removeCupsPrinter", remove_printers.GetList());
 
   // We expect this printer removal to fail since the printer should have
   // already been removed by the previous call to 'removeCupsPrinter'.
@@ -240,7 +225,7 @@ TEST_F(CupsPrintersHandlerTest, RemoveCorrectPrinter) {
   EXPECT_FALSE(expected);
 
   profile_.reset();
-  chromeos::ConciergeClient::Shutdown();
+  ConciergeClient::Shutdown();
   DBusThreadManager::Shutdown();
 }
 
@@ -256,10 +241,9 @@ TEST_F(CupsPrintersHandlerTest, VerifyOnlyPpdFilesAllowed) {
   ui::SelectFileDialog::SetFactory(
       new TestSelectFileDialogFactory(&expected_file_type_info));
 
-  base::Value args(base::Value::Type::LIST);
+  base::Value::List args;
   args.Append("handleFunctionName");
-  web_ui_.HandleReceivedMessage("selectPPDFile",
-                                &base::Value::AsListValue(args));
+  web_ui_.HandleReceivedMessage("selectPPDFile", args);
 }
 
 }  // namespace settings.

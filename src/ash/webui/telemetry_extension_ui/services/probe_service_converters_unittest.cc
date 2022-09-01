@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "ash/webui/telemetry_extension_ui/mojom/probe_service.mojom.h"
-#include "ash/webui/telemetry_extension_ui/services/convert_ptr.h"
 #include "chromeos/services/cros_healthd/public/mojom/cros_healthd_probe.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -24,14 +23,24 @@ namespace mojom = ::chromeos::cros_healthd::mojom;
 
 namespace converters {
 
+namespace cros_healthd = ::ash::cros_healthd;
+
 // Note: in some tests we intentionally use New() with no arguments for
 // cros_healthd::mojom types, because there can be some fields that we don't
 // test yet.
 // Also, we intentionally use New() with arguments for health::mojom types to
 // let the compiler detect untested data members.
 
-TEST(ProbeServiceConvertors, ConvertCategoryVector) {
+// Tests that |ConvertProbePtr| function returns nullptr if input is nullptr.
+// ConvertProbePtr is a template, so we can test this function with any valid
+// type.
+TEST(ProbeServiceConverters, ConvertProbePtrTakesNullPtr) {
+  EXPECT_TRUE(ConvertProbePtr(cros_healthd::mojom::ProbeErrorPtr()).is_null());
+}
+
+TEST(ProbeServiceConverters, ConvertCategoryVector) {
   const std::vector<health::mojom::ProbeCategoryEnum> kInput{
+      health::mojom::ProbeCategoryEnum::kUnknown,
       health::mojom::ProbeCategoryEnum::kBattery,
       health::mojom::ProbeCategoryEnum::kNonRemovableBlockDevices,
       health::mojom::ProbeCategoryEnum::kCachedVpdData,
@@ -41,10 +50,12 @@ TEST(ProbeServiceConvertors, ConvertCategoryVector) {
       health::mojom::ProbeCategoryEnum::kBacklight,
       health::mojom::ProbeCategoryEnum::kFan,
       health::mojom::ProbeCategoryEnum::kStatefulPartition,
-      health::mojom::ProbeCategoryEnum::kBluetooth};
+      health::mojom::ProbeCategoryEnum::kBluetooth,
+      health::mojom::ProbeCategoryEnum::kSystem};
   EXPECT_THAT(
       ConvertCategoryVector(kInput),
       ElementsAre(
+          cros_healthd::mojom::ProbeCategoryEnum::kUnknown,
           cros_healthd::mojom::ProbeCategoryEnum::kBattery,
           cros_healthd::mojom::ProbeCategoryEnum::kNonRemovableBlockDevices,
           cros_healthd::mojom::ProbeCategoryEnum::kSystem,
@@ -54,10 +65,14 @@ TEST(ProbeServiceConvertors, ConvertCategoryVector) {
           cros_healthd::mojom::ProbeCategoryEnum::kBacklight,
           cros_healthd::mojom::ProbeCategoryEnum::kFan,
           cros_healthd::mojom::ProbeCategoryEnum::kStatefulPartition,
-          cros_healthd::mojom::ProbeCategoryEnum::kBluetooth));
+          cros_healthd::mojom::ProbeCategoryEnum::kBluetooth,
+          cros_healthd::mojom::ProbeCategoryEnum::kSystem2));
 }
 
-TEST(ProbeServiceConvertors, ErrorType) {
+TEST(ProbeServiceConverters, ErrorType) {
+  EXPECT_EQ(Convert(cros_healthd::mojom::ErrorType::kUnknown),
+            health::mojom::ErrorType::kUnknown);
+
   EXPECT_EQ(Convert(cros_healthd::mojom::ErrorType::kFileReadError),
             health::mojom::ErrorType::kFileReadError);
 
@@ -71,41 +86,41 @@ TEST(ProbeServiceConvertors, ErrorType) {
             health::mojom::ErrorType::kServiceUnavailable);
 }
 
-TEST(ProbeServiceConvertors, ProbeErrorPtr) {
+TEST(ProbeServiceConverters, ProbeErrorPtr) {
   constexpr char kMsg[] = "file not found";
-  EXPECT_EQ(ConvertPtr(cros_healthd::mojom::ProbeError::New(
+  EXPECT_EQ(ConvertProbePtr(cros_healthd::mojom::ProbeError::New(
                 cros_healthd::mojom::ErrorType::kFileReadError, kMsg)),
             health::mojom::ProbeError::New(
                 health::mojom::ErrorType::kFileReadError, kMsg));
 }
 
-TEST(ProbeServiceConvertors, BoolValue) {
+TEST(ProbeServiceConverters, BoolValue) {
   EXPECT_EQ(Convert(false), health::mojom::BoolValue::New(false));
   EXPECT_EQ(Convert(true), health::mojom::BoolValue::New(true));
 }
 
-TEST(ProbeServiceConvertors, DoubleValue) {
+TEST(ProbeServiceConverters, DoubleValue) {
   constexpr double kValue = 100500111111.500100;
   EXPECT_EQ(Convert(kValue), health::mojom::DoubleValue::New(kValue));
 }
 
-TEST(ProbeServiceConvertors, Int64Value) {
+TEST(ProbeServiceConverters, Int64Value) {
   constexpr int64_t kValue = -(1LL << 62) + 1000;
   EXPECT_EQ(Convert(kValue), health::mojom::Int64Value::New(kValue));
 }
 
-TEST(ProbeServiceConvertors, UInt64Value) {
+TEST(ProbeServiceConverters, UInt64Value) {
   constexpr uint64_t kValue = (1ULL << 63) + 1000000000;
   EXPECT_EQ(Convert(kValue), health::mojom::UInt64Value::New(kValue));
 }
 
-TEST(ProbeServiceConvertors, UInt64ValuePtr) {
+TEST(ProbeServiceConverters, UInt64ValuePtr) {
   constexpr uint64_t kValue = (1ULL << 63) + 3000000000;
-  EXPECT_EQ(ConvertPtr(cros_healthd::mojom::NullableUint64::New(kValue)),
+  EXPECT_EQ(ConvertProbePtr(cros_healthd::mojom::NullableUint64::New(kValue)),
             health::mojom::UInt64Value::New(kValue));
 }
 
-TEST(ProbeServiceConvertors, BatteryInfoPtr) {
+TEST(ProbeServiceConverters, BatteryInfoPtr) {
   constexpr int64_t kCycleCount = (1LL << 62) + 45;
   constexpr double kVoltageNow = 1000000000000.2;
   constexpr char kVendor[] = "Google";
@@ -140,7 +155,7 @@ TEST(ProbeServiceConvertors, BatteryInfoPtr) {
   }
 
   EXPECT_EQ(
-      ConvertPtr(std::move(input)),
+      ConvertProbePtr(std::move(input)),
       health::mojom::BatteryInfo::New(
           health::mojom::Int64Value::New(kCycleCount),
           health::mojom::DoubleValue::New(kVoltageNow), kVendor, kSerialNumber,
@@ -152,21 +167,21 @@ TEST(ProbeServiceConvertors, BatteryInfoPtr) {
           kManufactureDate, health::mojom::UInt64Value::New(kTemperature)));
 }
 
-TEST(ProbeServiceConvertors, BatteryResultPtrInfo) {
-  const auto output =
-      ConvertPtr(cros_healthd::mojom::BatteryResult::NewBatteryInfo(nullptr));
+TEST(ProbeServiceConverters, BatteryResultPtrInfo) {
+  const auto output = ConvertProbePtr(
+      cros_healthd::mojom::BatteryResult::NewBatteryInfo(nullptr));
   ASSERT_TRUE(output);
   EXPECT_TRUE(output->is_battery_info());
 }
 
-TEST(ProbeServiceConvertors, BatteryResultPtrError) {
+TEST(ProbeServiceConverters, BatteryResultPtrError) {
   const auto output =
-      ConvertPtr(cros_healthd::mojom::BatteryResult::NewError(nullptr));
+      ConvertProbePtr(cros_healthd::mojom::BatteryResult::NewError(nullptr));
   ASSERT_TRUE(output);
   EXPECT_TRUE(output->is_error());
 }
 
-TEST(ProbeServiceConvertors, NonRemovableBlockDeviceInfoPtr) {
+TEST(ProbeServiceConverters, NonRemovableBlockDeviceInfoPtr) {
   constexpr char kPath[] = "/dev/device1";
   constexpr uint64_t kSize = (1ULL << 63) + 111;
   constexpr char kType[] = "NVMe";
@@ -200,7 +215,7 @@ TEST(ProbeServiceConvertors, NonRemovableBlockDeviceInfoPtr) {
   }
 
   EXPECT_EQ(
-      ConvertPtr(std::move(input)),
+      ConvertProbePtr(std::move(input)),
       health::mojom::NonRemovableBlockDeviceInfo::New(
           kPath, health::mojom::UInt64Value::New(kSize), kType,
           health::mojom::UInt32Value::New(kManufacturerId), kName,
@@ -213,7 +228,7 @@ TEST(ProbeServiceConvertors, NonRemovableBlockDeviceInfoPtr) {
           health::mojom::UInt64Value::New(kDiscardTimeSecondsSinceLastBoot)));
 }
 
-TEST(ProbeServiceConvertors, NonRemovableBlockDeviceResultPtrInfo) {
+TEST(ProbeServiceConverters, NonRemovableBlockDeviceResultPtrInfo) {
   constexpr char kPath1[] = "Path1";
   constexpr char kPath2[] = "Path2";
 
@@ -229,7 +244,7 @@ TEST(ProbeServiceConvertors, NonRemovableBlockDeviceResultPtrInfo) {
     infos.push_back(std::move(info2));
   }
 
-  const auto output = ConvertPtr(
+  const auto output = ConvertProbePtr(
       cros_healthd::mojom::NonRemovableBlockDeviceResult::NewBlockDeviceInfo(
           std::move(infos)));
   ASSERT_TRUE(output);
@@ -239,14 +254,16 @@ TEST(ProbeServiceConvertors, NonRemovableBlockDeviceResultPtrInfo) {
   EXPECT_EQ(output->get_block_device_info()[1]->path, kPath2);
 }
 
-TEST(ProbeServiceConvertors, NonRemovableBlockDeviceResultPtrError) {
-  const health::mojom::NonRemovableBlockDeviceResultPtr output = ConvertPtr(
-      cros_healthd::mojom::NonRemovableBlockDeviceResult::NewError(nullptr));
+TEST(ProbeServiceConverters, NonRemovableBlockDeviceResultPtrError) {
+  const health::mojom::NonRemovableBlockDeviceResultPtr output =
+      ConvertProbePtr(
+          cros_healthd::mojom::NonRemovableBlockDeviceResult::NewError(
+              nullptr));
   ASSERT_TRUE(output);
   EXPECT_TRUE(output->is_error());
 }
 
-TEST(ProbeServiceConvertors, CachedVpdInfoPtr) {
+TEST(ProbeServiceConverters, CachedVpdInfoPtr) {
   constexpr char kFirstPowerDate[] = "2021-43";
   constexpr char kSkuNumber[] = "sku-1";
   constexpr char kSerialNumber[] = "5CD9132880";
@@ -258,26 +275,26 @@ TEST(ProbeServiceConvertors, CachedVpdInfoPtr) {
   input->product_serial_number = kSerialNumber;
   input->product_model_name = kModelName;
 
-  EXPECT_EQ(ConvertPtr(std::move(input)),
+  EXPECT_EQ(ConvertProbePtr(std::move(input)),
             health::mojom::CachedVpdInfo::New(kFirstPowerDate, kSkuNumber,
                                               kSerialNumber, kModelName));
 }
 
-TEST(ProbeServiceConvertors, CachedVpdResultPtrInfo) {
-  const auto output =
-      ConvertPtr(cros_healthd::mojom::SystemResult::NewSystemInfo(nullptr));
+TEST(ProbeServiceConverters, CachedVpdResultPtrInfo) {
+  const auto output = ConvertProbePtr(
+      cros_healthd::mojom::SystemResult::NewSystemInfo(nullptr));
   ASSERT_TRUE(output);
   EXPECT_TRUE(output->is_vpd_info());
 }
 
-TEST(ProbeServiceConvertors, CachedVpdResultPtrError) {
+TEST(ProbeServiceConverters, CachedVpdResultPtrError) {
   const auto output =
-      ConvertPtr(cros_healthd::mojom::SystemResult::NewError(nullptr));
+      ConvertProbePtr(cros_healthd::mojom::SystemResult::NewError(nullptr));
   ASSERT_TRUE(output);
   EXPECT_TRUE(output->is_error());
 }
 
-TEST(ProbeServiceConvertors, CpuCStateInfoPtr) {
+TEST(ProbeServiceConverters, CpuCStateInfoPtr) {
   constexpr char kName[] = "C0";
   constexpr uint64_t kTimeInStateSinceLastBootUs = 123456;
 
@@ -288,18 +305,18 @@ TEST(ProbeServiceConvertors, CpuCStateInfoPtr) {
   }
 
   EXPECT_EQ(
-      ConvertPtr(std::move(input)),
+      ConvertProbePtr(std::move(input)),
       health::mojom::CpuCStateInfo::New(
           kName, health::mojom::UInt64Value::New(kTimeInStateSinceLastBootUs)));
 }
 
-TEST(ProbeServiceConvertors, LogicalCpuInfoPtr) {
+TEST(ProbeServiceConverters, LogicalCpuInfoPtr) {
   constexpr uint32_t kMaxClockSpeedKhz = (1 << 31) + 10000;
   constexpr uint32_t kScalingMaxFrequencyKhz = (1 << 30) + 20000;
   constexpr uint32_t kScalingCurrentFrequencyKhz = (1 << 29) + 30000;
 
-  // Idle time cannot be tested with ConvertPtr, because it requires USER_HZ
-  // system constant to convert idle_time_user_hz to milliseconds.
+  // Idle time cannot be tested with ConvertPtr, because it requires
+  // USER_HZ system constant to convert idle_time_user_hz to milliseconds.
   constexpr uint32_t kIdleTime = 0;
 
   constexpr char kCpuCStateName[] = "C1";
@@ -322,7 +339,7 @@ TEST(ProbeServiceConvertors, LogicalCpuInfoPtr) {
   expected_c_states.push_back(health::mojom::CpuCStateInfo::New(
       kCpuCStateName, health::mojom::UInt64Value::New(kCpuCStateTime)));
 
-  EXPECT_EQ(ConvertPtr(std::move(input)),
+  EXPECT_EQ(ConvertProbePtr(std::move(input)),
             health::mojom::LogicalCpuInfo::New(
                 health::mojom::UInt32Value::New(kMaxClockSpeedKhz),
                 health::mojom::UInt32Value::New(kScalingMaxFrequencyKhz),
@@ -331,7 +348,7 @@ TEST(ProbeServiceConvertors, LogicalCpuInfoPtr) {
                 std::move(expected_c_states)));
 }
 
-TEST(ProbeServiceConvertors, LogicalCpuInfoPtrNonZeroIdleTime) {
+TEST(ProbeServiceConverters, LogicalCpuInfoPtrNonZeroIdleTime) {
   constexpr uint64_t kUserHz = 100;
   constexpr uint32_t kIdleTimeUserHz = 4291234295;
   constexpr uint64_t kIdleTimeMs = 42912342950;
@@ -344,15 +361,15 @@ TEST(ProbeServiceConvertors, LogicalCpuInfoPtrNonZeroIdleTime) {
   EXPECT_EQ(output->idle_time_ms, health::mojom::UInt64Value::New(kIdleTimeMs));
 }
 
-TEST(ProbeServiceConvertors, PhysicalCpuInfoPtr) {
+TEST(ProbeServiceConverters, PhysicalCpuInfoPtr) {
   constexpr char kModelName[] = "i9";
 
   constexpr uint32_t kMaxClockSpeedKhz = (1 << 31) + 11111;
   constexpr uint32_t kScalingMaxFrequencyKhz = (1 << 30) + 22222;
   constexpr uint32_t kScalingCurrentFrequencyKhz = (1 << 29) + 33333;
 
-  // Idle time cannot be tested with ConvertPtr, because it requires USER_HZ
-  // system constant to convert idle_time_user_hz to milliseconds.
+  // Idle time cannot be tested with ConvertPtr, because it requires
+  // USER_HZ system constant to convert idle_time_user_hz to milliseconds.
   constexpr uint32_t kIdleTime = 0;
 
   auto input = cros_healthd::mojom::PhysicalCpuInfo::New();
@@ -375,12 +392,12 @@ TEST(ProbeServiceConvertors, PhysicalCpuInfoPtr) {
       health::mojom::UInt64Value::New(kIdleTime),
       std::vector<health::mojom::CpuCStateInfoPtr>{}));
 
-  EXPECT_EQ(ConvertPtr(std::move(input)),
+  EXPECT_EQ(ConvertProbePtr(std::move(input)),
             health::mojom::PhysicalCpuInfo::New(kModelName,
                                                 std::move(expected_infos)));
 }
 
-TEST(ProbeServiceConvertors, CpuArchitectureEnum) {
+TEST(ProbeServiceConverters, CpuArchitectureEnum) {
   EXPECT_EQ(Convert(cros_healthd::mojom::CpuArchitectureEnum::kUnknown),
             health::mojom::CpuArchitectureEnum::kUnknown);
   EXPECT_EQ(Convert(cros_healthd::mojom::CpuArchitectureEnum::kX86_64),
@@ -391,7 +408,7 @@ TEST(ProbeServiceConvertors, CpuArchitectureEnum) {
             health::mojom::CpuArchitectureEnum::kArmv7l);
 }
 
-TEST(ProbeServiceConvertors, CpuInfoPtr) {
+TEST(ProbeServiceConverters, CpuInfoPtr) {
   constexpr uint32_t kNumTotalThreads = (1 << 31) + 111;
   constexpr char kModelName[] = "i9";
 
@@ -409,28 +426,28 @@ TEST(ProbeServiceConvertors, CpuInfoPtr) {
   expected_infos.push_back(health::mojom::PhysicalCpuInfo::New(
       kModelName, std::vector<health::mojom::LogicalCpuInfoPtr>{}));
 
-  EXPECT_EQ(ConvertPtr(std::move(input)),
+  EXPECT_EQ(ConvertProbePtr(std::move(input)),
             health::mojom::CpuInfo::New(
                 health::mojom::UInt32Value::New(kNumTotalThreads),
                 health::mojom::CpuArchitectureEnum::kArmv7l,
                 std::move(expected_infos)));
 }
 
-TEST(ProbeServiceConvertors, CpuResultPtrInfo) {
+TEST(ProbeServiceConverters, CpuResultPtrInfo) {
   const auto output =
-      ConvertPtr(cros_healthd::mojom::CpuResult::NewCpuInfo(nullptr));
+      ConvertProbePtr(cros_healthd::mojom::CpuResult::NewCpuInfo(nullptr));
   ASSERT_TRUE(output);
   EXPECT_TRUE(output->is_cpu_info());
 }
 
-TEST(ProbeServiceConvertors, CpuResultPtrError) {
+TEST(ProbeServiceConverters, CpuResultPtrError) {
   const auto output =
-      ConvertPtr(cros_healthd::mojom::CpuResult::NewError(nullptr));
+      ConvertProbePtr(cros_healthd::mojom::CpuResult::NewError(nullptr));
   ASSERT_TRUE(output);
   EXPECT_TRUE(output->is_error());
 }
 
-TEST(ProbeServiceConvertors, TimezoneInfoPtr) {
+TEST(ProbeServiceConverters, TimezoneInfoPtr) {
   constexpr char kPosix[] = "TZ=CST6CDT,M3.2.0/2:00:00,M11.1.0/2:00:00";
   constexpr char kRegion[] = "Europe/Berlin";
 
@@ -438,25 +455,25 @@ TEST(ProbeServiceConvertors, TimezoneInfoPtr) {
   input->posix = kPosix;
   input->region = kRegion;
 
-  EXPECT_EQ(ConvertPtr(std::move(input)),
+  EXPECT_EQ(ConvertProbePtr(std::move(input)),
             health::mojom::TimezoneInfo::New(kPosix, kRegion));
 }
 
-TEST(ProbeServiceConvertors, TimezoneResultPtrInfo) {
-  const auto output =
-      ConvertPtr(cros_healthd::mojom::TimezoneResult::NewTimezoneInfo(nullptr));
+TEST(ProbeServiceConverters, TimezoneResultPtrInfo) {
+  const auto output = ConvertProbePtr(
+      cros_healthd::mojom::TimezoneResult::NewTimezoneInfo(nullptr));
   ASSERT_TRUE(output);
   EXPECT_TRUE(output->is_timezone_info());
 }
 
-TEST(ProbeServiceConvertors, TimezoneResultPtrError) {
+TEST(ProbeServiceConverters, TimezoneResultPtrError) {
   const auto output =
-      ConvertPtr(cros_healthd::mojom::TimezoneResult::NewError(nullptr));
+      ConvertProbePtr(cros_healthd::mojom::TimezoneResult::NewError(nullptr));
   ASSERT_TRUE(output);
   EXPECT_TRUE(output->is_error());
 }
 
-TEST(ProbeServiceConvertors, MemoryInfoPtr) {
+TEST(ProbeServiceConverters, MemoryInfoPtr) {
   constexpr uint32_t kTotalMemoryKib = (1 << 31) + 100;
   constexpr uint32_t kFreeMemoryKib = (1 << 30) + 200;
   constexpr uint32_t kAvailableMemoryKib = (1 << 29) + 300;
@@ -468,7 +485,7 @@ TEST(ProbeServiceConvertors, MemoryInfoPtr) {
   input->available_memory_kib = kAvailableMemoryKib;
   input->page_faults_since_last_boot = kPageFaultsSinceLastBoot;
 
-  EXPECT_EQ(ConvertPtr(std::move(input)),
+  EXPECT_EQ(ConvertProbePtr(std::move(input)),
             health::mojom::MemoryInfo::New(
                 health::mojom::UInt32Value::New(kTotalMemoryKib),
                 health::mojom::UInt32Value::New(kFreeMemoryKib),
@@ -476,21 +493,21 @@ TEST(ProbeServiceConvertors, MemoryInfoPtr) {
                 health::mojom::UInt64Value::New(kPageFaultsSinceLastBoot)));
 }
 
-TEST(ProbeServiceConvertors, MemoryResultPtrInfo) {
-  const health::mojom::MemoryResultPtr output =
-      ConvertPtr(cros_healthd::mojom::MemoryResult::NewMemoryInfo(nullptr));
+TEST(ProbeServiceConverters, MemoryResultPtrInfo) {
+  const health::mojom::MemoryResultPtr output = ConvertProbePtr(
+      cros_healthd::mojom::MemoryResult::NewMemoryInfo(nullptr));
   ASSERT_TRUE(output);
   EXPECT_TRUE(output->is_memory_info());
 }
 
-TEST(ProbeServiceConvertors, MemoryResultPtrError) {
+TEST(ProbeServiceConverters, MemoryResultPtrError) {
   const health::mojom::MemoryResultPtr output =
-      ConvertPtr(cros_healthd::mojom::MemoryResult::NewError(nullptr));
+      ConvertProbePtr(cros_healthd::mojom::MemoryResult::NewError(nullptr));
   ASSERT_TRUE(output);
   EXPECT_TRUE(output->is_error());
 }
 
-TEST(ProbeServiceConvertors, BacklightInfoPtr) {
+TEST(ProbeServiceConverters, BacklightInfoPtr) {
   constexpr char kPath[] = "/sys/backlight";
   constexpr uint32_t kMaxBrightness = (1 << 31) + 31;
   constexpr uint32_t kBrightness = (1 << 30) + 30;
@@ -500,13 +517,13 @@ TEST(ProbeServiceConvertors, BacklightInfoPtr) {
   input->max_brightness = kMaxBrightness;
   input->brightness = kBrightness;
 
-  EXPECT_EQ(ConvertPtr(std::move(input)),
+  EXPECT_EQ(ConvertProbePtr(std::move(input)),
             health::mojom::BacklightInfo::New(
                 kPath, health::mojom::UInt32Value::New(kMaxBrightness),
                 health::mojom::UInt32Value::New(kBrightness)));
 }
 
-TEST(ProbeServiceConvertors, BacklightResultPtrInfo) {
+TEST(ProbeServiceConverters, BacklightResultPtrInfo) {
   constexpr char kPath[] = "/sys/backlight";
 
   cros_healthd::mojom::BacklightResultPtr input;
@@ -521,7 +538,7 @@ TEST(ProbeServiceConvertors, BacklightResultPtrInfo) {
         std::move(backlight_infos));
   }
 
-  const auto output = ConvertPtr(std::move(input));
+  const auto output = ConvertProbePtr(std::move(input));
   ASSERT_TRUE(output);
   ASSERT_TRUE(output->is_backlight_info());
 
@@ -531,25 +548,25 @@ TEST(ProbeServiceConvertors, BacklightResultPtrInfo) {
   EXPECT_EQ(backlight_info_output[0]->path, kPath);
 }
 
-TEST(ProbeServiceConvertors, BacklightResultPtrError) {
+TEST(ProbeServiceConverters, BacklightResultPtrError) {
   const auto output =
-      ConvertPtr(cros_healthd::mojom::BacklightResult::NewError(nullptr));
+      ConvertProbePtr(cros_healthd::mojom::BacklightResult::NewError(nullptr));
   ASSERT_TRUE(output);
   EXPECT_TRUE(output->is_error());
 }
 
-TEST(ProbeServiceConvertors, FanInfoPtr) {
+TEST(ProbeServiceConverters, FanInfoPtr) {
   constexpr uint32_t kSpeedRpm = (1 << 31) + 777;
 
   auto input = cros_healthd::mojom::FanInfo::New();
   input->speed_rpm = kSpeedRpm;
 
-  const auto output = ConvertPtr(std::move(input));
+  const auto output = ConvertProbePtr(std::move(input));
   ASSERT_TRUE(output);
   EXPECT_EQ(output->speed_rpm, health::mojom::UInt32Value::New(kSpeedRpm));
 }
 
-TEST(ProbeServiceConvertors, FanResultPtrInfo) {
+TEST(ProbeServiceConverters, FanResultPtrInfo) {
   constexpr uint32_t kSpeedRpm = (1 << 31) + 10;
 
   cros_healthd::mojom::FanResultPtr input;
@@ -567,18 +584,18 @@ TEST(ProbeServiceConvertors, FanResultPtrInfo) {
   expected_fans.push_back(
       health::mojom::FanInfo::New(health::mojom::UInt32Value::New(kSpeedRpm)));
 
-  EXPECT_EQ(ConvertPtr(std::move(input)),
+  EXPECT_EQ(ConvertProbePtr(std::move(input)),
             health::mojom::FanResult::NewFanInfo(std::move(expected_fans)));
 }
 
-TEST(ProbeServiceConvertors, FanResultPtrError) {
+TEST(ProbeServiceConverters, FanResultPtrError) {
   const auto output =
-      ConvertPtr(cros_healthd::mojom::FanResult::NewError(nullptr));
+      ConvertProbePtr(cros_healthd::mojom::FanResult::NewError(nullptr));
   ASSERT_TRUE(output);
   EXPECT_TRUE(output->is_error());
 }
 
-TEST(ProbeServiceConvertors, StatefulPartitionInfoPtr) {
+TEST(ProbeServiceConverters, StatefulPartitionInfoPtr) {
   constexpr uint64_t k100MiB = 100 * 1024 * 1024;
   constexpr uint64_t kTotalSpace = 9000000 * k100MiB + 17;
   constexpr uint64_t kRoundedAvailableSpace = 800000 * k100MiB;
@@ -588,27 +605,27 @@ TEST(ProbeServiceConvertors, StatefulPartitionInfoPtr) {
   input->available_space = kAvailableSpace;
   input->total_space = kTotalSpace;
 
-  EXPECT_EQ(ConvertPtr(std::move(input)),
+  EXPECT_EQ(ConvertProbePtr(std::move(input)),
             health::mojom::StatefulPartitionInfo::New(
                 health::mojom::UInt64Value::New(kRoundedAvailableSpace),
                 health::mojom::UInt64Value::New(kTotalSpace)));
 }
 
-TEST(ProbeServiceConvertors, StatefulPartitionResultPtrInfo) {
-  const auto output = ConvertPtr(
+TEST(ProbeServiceConverters, StatefulPartitionResultPtrInfo) {
+  const auto output = ConvertProbePtr(
       cros_healthd::mojom::StatefulPartitionResult::NewPartitionInfo(nullptr));
   ASSERT_TRUE(output);
   EXPECT_TRUE(output->is_partition_info());
 }
 
-TEST(ProbeServiceConvertors, StatefulPartitionResultPtrError) {
-  const auto output = ConvertPtr(
+TEST(ProbeServiceConverters, StatefulPartitionResultPtrError) {
+  const auto output = ConvertProbePtr(
       cros_healthd::mojom::StatefulPartitionResult::NewError(nullptr));
   ASSERT_TRUE(output);
   EXPECT_TRUE(output->is_error());
 }
 
-TEST(ProbeServiceConvertors, BluetoothAdapterInfoPtr) {
+TEST(ProbeServiceConverters, BluetoothAdapterInfoPtr) {
   constexpr char kName[] = "hci0";
   constexpr char kAddress[] = "ab:cd:ef:12:34:56";
   constexpr bool kPowered = true;
@@ -622,13 +639,13 @@ TEST(ProbeServiceConvertors, BluetoothAdapterInfoPtr) {
     input->num_connected_devices = kNumConnectedDevices;
   }
 
-  EXPECT_EQ(ConvertPtr(std::move(input)),
+  EXPECT_EQ(ConvertProbePtr(std::move(input)),
             health::mojom::BluetoothAdapterInfo::New(
                 kName, kAddress, health::mojom::BoolValue::New(kPowered),
                 health::mojom::UInt32Value::New(kNumConnectedDevices)));
 }
 
-TEST(ProbeServiceConvertors, BluetoothResultPtrInfo) {
+TEST(ProbeServiceConverters, BluetoothResultPtrInfo) {
   constexpr char kName[] = "hci0";
 
   cros_healthd::mojom::BluetoothResultPtr input;
@@ -643,7 +660,7 @@ TEST(ProbeServiceConvertors, BluetoothResultPtrInfo) {
         std::move(infos));
   }
 
-  const auto output = ConvertPtr(std::move(input));
+  const auto output = ConvertProbePtr(std::move(input));
   ASSERT_TRUE(output);
   ASSERT_TRUE(output->is_bluetooth_adapter_info());
 
@@ -654,46 +671,126 @@ TEST(ProbeServiceConvertors, BluetoothResultPtrInfo) {
   EXPECT_EQ(bluetooth_adapter_info_output[0]->name, kName);
 }
 
-TEST(ProbeServiceConvertors, BluetoothResultPtrError) {
+TEST(ProbeServiceConverters, BluetoothResultPtrError) {
   const auto output =
-      ConvertPtr(cros_healthd::mojom::BluetoothResult::NewError(nullptr));
+      ConvertProbePtr(cros_healthd::mojom::BluetoothResult::NewError(nullptr));
   ASSERT_TRUE(output);
   EXPECT_TRUE(output->is_error());
 }
 
-TEST(ProbeServiceConvertors, TelemetryInfoPtrWithNotNullFields) {
+TEST(ProbeServiceConverters, OsInfoPtr) {
+  constexpr char kOemName[] = "OEM-NAME";
+
+  auto input = cros_healthd::mojom::OsInfo::New();
+  input->oem_name = kOemName;
+
+  const auto output = ConvertProbePtr(std::move(input));
+  ASSERT_TRUE(output);
+  EXPECT_EQ(output->oem_name, kOemName);
+}
+
+TEST(ProbeServiceConverters, SystemResultPtr) {
+  constexpr char kOemName[] = "OEM-NAME";
+
+  cros_healthd::mojom::SystemResultV2Ptr input;
+  {
+    auto os_info = cros_healthd::mojom::OsInfo::New();
+    os_info->oem_name = kOemName;
+
+    auto system_info_v2 = cros_healthd::mojom::SystemInfoV2::New();
+    system_info_v2->os_info = std::move(os_info);
+
+    input = cros_healthd::mojom::SystemResultV2::NewSystemInfoV2(
+        std::move(system_info_v2));
+  }
+
+  const auto output = ConvertProbePtr(std::move(input));
+  ASSERT_TRUE(output);
+  ASSERT_TRUE(output->is_system_info());
+
+  const auto& system_info_output = output->get_system_info();
+  ASSERT_TRUE(system_info_output->os_info);
+  EXPECT_EQ(system_info_output->os_info->oem_name, kOemName);
+}
+
+TEST(ProbeServiceConverters, SystemResultPtrError) {
+  const auto output =
+      ConvertProbePtr(cros_healthd::mojom::SystemResultV2::NewError(nullptr));
+  ASSERT_TRUE(output);
+  EXPECT_TRUE(output->is_error());
+}
+
+TEST(ProbeServiceConverters, TelemetryInfoPtrWithNotNullFields) {
   auto input = cros_healthd::mojom::TelemetryInfo::New();
   {
-    input->battery_result = cros_healthd::mojom::BatteryResult::New();
+    input->battery_result = cros_healthd::mojom::BatteryResult::NewBatteryInfo(
+        cros_healthd::mojom::BatteryInfo::New());
     input->block_device_result =
-        cros_healthd::mojom::NonRemovableBlockDeviceResult::New();
-    input->system_result = cros_healthd::mojom::SystemResult::New();
-    input->cpu_result = cros_healthd::mojom::CpuResult::New();
-    input->timezone_result = cros_healthd::mojom::TimezoneResult::New();
-    input->memory_result = cros_healthd::mojom::MemoryResult::New();
-    input->backlight_result = cros_healthd::mojom::BacklightResult::New();
-    input->fan_result = cros_healthd::mojom::FanResult::New();
+        cros_healthd::mojom::NonRemovableBlockDeviceResult::NewBlockDeviceInfo(
+            {});
+    input->system_result = cros_healthd::mojom::SystemResult::NewSystemInfo(
+        cros_healthd::mojom::SystemInfo::New());
+    input->cpu_result = cros_healthd::mojom::CpuResult::NewCpuInfo(
+        cros_healthd::mojom::CpuInfo::New());
+    input->timezone_result =
+        cros_healthd::mojom::TimezoneResult::NewTimezoneInfo(
+            cros_healthd::mojom::TimezoneInfo::New());
+    input->memory_result = cros_healthd::mojom::MemoryResult::NewMemoryInfo(
+        cros_healthd::mojom::MemoryInfo::New());
+    input->backlight_result =
+        cros_healthd::mojom::BacklightResult::NewBacklightInfo({});
+    input->fan_result = cros_healthd::mojom::FanResult::NewFanInfo({});
     input->stateful_partition_result =
-        cros_healthd::mojom::StatefulPartitionResult::New();
-    input->bluetooth_result = cros_healthd::mojom::BluetoothResult::New();
+        cros_healthd::mojom::StatefulPartitionResult::NewPartitionInfo(
+            cros_healthd::mojom::StatefulPartitionInfo::New());
+    input->bluetooth_result =
+        cros_healthd::mojom::BluetoothResult::NewBluetoothAdapterInfo({});
+    input->system_result_v2 =
+        cros_healthd::mojom::SystemResultV2::NewSystemInfoV2(
+            cros_healthd::mojom::SystemInfoV2::New());
   }
 
   EXPECT_EQ(
-      ConvertPtr(std::move(input)),
+      ConvertProbePtr(std::move(input)),
       health::mojom::TelemetryInfo::New(
-          health::mojom::BatteryResult::New(),
-          health::mojom::NonRemovableBlockDeviceResult::New(),
-          health::mojom::CachedVpdResult::New(),
-          health::mojom::CpuResult::New(), health::mojom::TimezoneResult::New(),
-          health::mojom::MemoryResult::New(),
-          health::mojom::BacklightResult::New(),
-          health::mojom::FanResult::New(),
-          health::mojom::StatefulPartitionResult::New(),
-          health::mojom::BluetoothResult::New()));
+          health::mojom::BatteryResult::NewBatteryInfo(
+              health::mojom::BatteryInfo::New(
+                  health::mojom::Int64Value::New(0),
+                  health::mojom::DoubleValue::New(0.), "", "",
+                  health::mojom::DoubleValue::New(0.),
+                  health::mojom::DoubleValue::New(0.),
+                  health::mojom::DoubleValue::New(0.), "",
+                  health::mojom::DoubleValue::New(0.),
+                  health::mojom::DoubleValue::New(0.), "", "", absl::nullopt,
+                  nullptr)),
+          health::mojom::NonRemovableBlockDeviceResult::NewBlockDeviceInfo({}),
+          health::mojom::CachedVpdResult::NewVpdInfo(
+              health::mojom::CachedVpdInfo::New()),
+          health::mojom::CpuResult::NewCpuInfo(health::mojom::CpuInfo::New(
+              health::mojom::UInt32Value::New(0),
+              health::mojom::CpuArchitectureEnum::kUnknown,
+              std::vector<health::mojom::PhysicalCpuInfoPtr>())),
+          health::mojom::TimezoneResult::NewTimezoneInfo(
+              health::mojom::TimezoneInfo::New("", "")),
+          health::mojom::MemoryResult::NewMemoryInfo(
+              health::mojom::MemoryInfo::New(
+                  health::mojom::UInt32Value::New(0),
+                  health::mojom::UInt32Value::New(0),
+                  health::mojom::UInt32Value::New(0),
+                  health::mojom::UInt64Value::New(0))),
+          health::mojom::BacklightResult::NewBacklightInfo({}),
+          health::mojom::FanResult::NewFanInfo({}),
+          health::mojom::StatefulPartitionResult::NewPartitionInfo(
+              health::mojom::StatefulPartitionInfo::New(
+                  health::mojom::UInt64Value::New(0),
+                  health::mojom::UInt64Value::New(0))),
+          health::mojom::BluetoothResult::NewBluetoothAdapterInfo({}),
+          health::mojom::SystemResult::NewSystemInfo(
+              health::mojom::SystemInfo::New())));
 }
 
-TEST(ProbeServiceConvertors, TelemetryInfoPtrWithNullFields) {
-  EXPECT_EQ(ConvertPtr(cros_healthd::mojom::TelemetryInfo::New()),
+TEST(ProbeServiceConverters, TelemetryInfoPtrWithNullFields) {
+  EXPECT_EQ(ConvertProbePtr(cros_healthd::mojom::TelemetryInfo::New()),
             health::mojom::TelemetryInfo::New(
                 health::mojom::BatteryResultPtr(nullptr),
                 health::mojom::NonRemovableBlockDeviceResultPtr(nullptr),
@@ -704,7 +801,8 @@ TEST(ProbeServiceConvertors, TelemetryInfoPtrWithNullFields) {
                 health::mojom::BacklightResultPtr(nullptr),
                 health::mojom::FanResultPtr(nullptr),
                 health::mojom::StatefulPartitionResultPtr(nullptr),
-                health::mojom::BluetoothResultPtr(nullptr)));
+                health::mojom::BluetoothResultPtr(nullptr),
+                health::mojom::SystemResultPtr(nullptr)));
 }
 
 }  // namespace converters

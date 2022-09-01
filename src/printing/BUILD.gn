@@ -201,7 +201,8 @@ component("printing") {
     ]
   }
 
-  if (is_linux) {
+  # TODO(crbug.com/1272828): Determine need for Fuchsia-specific implementation.
+  if (is_linux || is_fuchsia) {
     sources += [
       "printing_context_linux.cc",
       "printing_context_linux.h",
@@ -279,6 +280,7 @@ static_library("test_support") {
   deps = [
     "//base",
     "//build:chromeos_buildflags",
+    "//printing/backend",
     "//skia",
     "//ui/gfx",
   ]
@@ -287,7 +289,7 @@ static_library("test_support") {
     sources += [ "image_android.cc" ]
   }
 
-  if (is_linux || is_chromeos) {
+  if (is_linux || is_chromeos || is_fuchsia) {
     sources += [ "image_linux.cc" ]
   }
   if (is_mac) {
@@ -414,6 +416,8 @@ if (is_android) {
   android_library("printing_java") {
     deps = [
       "//base:base_java",
+      "//base:jni_java",
+      "//build/android:build_java",
       "//third_party/androidx:androidx_annotation_annotation_java",
       "//ui/android:ui_java",
     ]

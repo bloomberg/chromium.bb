@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_ANDROID_WEBID_ACCOUNT_SELECTION_VIEW_ANDROID_H_
 #define CHROME_BROWSER_UI_ANDROID_WEBID_ACCOUNT_SELECTION_VIEW_ANDROID_H_
 
+#include <string>
+
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
 #include "chrome/browser/ui/webid/account_selection_view.h"
@@ -18,8 +20,8 @@ class AccountSelectionViewAndroid : public AccountSelectionView {
   ~AccountSelectionViewAndroid() override;
 
   // AccountSelectionView:
-  void Show(const GURL& rp_url,
-            const GURL& idp_url,
+  void Show(const std::string& rp_for_display,
+            const std::string& idp_for_display,
             base::span<const Account> accounts,
             const content::IdentityProviderMetadata& idp_metadata,
             const content::ClientIdData& client_data,
@@ -30,7 +32,7 @@ class AccountSelectionViewAndroid : public AccountSelectionView {
       const base::android::JavaParamRef<jobjectArray>& account_string_fields,
       const base::android::JavaParamRef<jobject>& account_picture_url,
       bool is_sign_in);
-  void OnDismiss(JNIEnv* env);
+  void OnDismiss(JNIEnv* env, bool should_embargo);
   void OnAutoSignInCancelled(JNIEnv* env);
 
  private:

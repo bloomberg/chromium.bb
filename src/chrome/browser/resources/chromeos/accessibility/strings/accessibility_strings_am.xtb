@@ -52,7 +52,7 @@
 <translation id="1251750620252348585">ቀጣይ የደረጃ 6 ርዕስ</translation>
 <translation id="1268366246392928616">ምንም ቀዳሚ የሒሳብ ሐረግ የለም</translation>
 <translation id="1273314450961659276">የጽሑፍ ወደ ንግግር ቅንብሮች</translation>
-<translation id="1275718070701477396">ተመርጧል</translation>
+<translation id="1275718070701477396">የተመረጡ</translation>
 <translation id="1284576163386164372">በአራት ጣት መታ አድርገው ምናሌዎችን በመክፈት ሁልጊዜ አጋዥ ሥልጠናዎችን መመልከት ይችላሉ። ከዚያ አጋዥ ሥልጠናውን ከ«ChromeVox» ክፍሉ ስር ያግብሩት።</translation>
 <translation id="1291286136605998134">የማቀያየሪያ አዝራር</translation>
 <translation id="1299774449519412690">ፈካ ያለ የሰማይ ሰማያዊ</translation>
@@ -536,6 +536,7 @@
 <translation id="4601367666219428522">ሠንጠረዥ <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">ቀጣይ ቁልፍ መጫንን ችላ ብሎ በመተው ላይ</translation>
 <translation id="4623097797855662355">ኮሎፎን</translation>
+<translation id="4624970070706497034">TalkBack ከአሁን በኋላ ለChromebooks ማበጀትን አያቀርብም። አሁንም እርስዎ ሊጠቀሙበት ይችላሉ፣ ነገር ግን የTalkBack ነባሪ የቁልፍ ሰሌዳ አቋራጭን ይጠቀሙ። ተገኚ አቋራጮችን ለማየት Search+A፣ ከዚያ K ይጫኑ። አሁንም TalkBackን መጠቀም ከፈለጉ ትዕዛዙን በድጋሚ ይጫኑ።</translation>
 <translation id="463135993322337640">ምን አዲስ ነገር እንዳለ ለማወቅ ChromeVox o፣ n ይጫኑ</translation>
 <translation id="4649220074413114917">ማንኛውንም የአሁን ንግግር ለማቆም ማያ ገጹን በሁለት ጣቶች መታ ማድረግን መጠቀም ይቻላል። ChromeVox የሆነ ነገር እንዲያነብብ ካልፈለጉ ይህ ጠቃሚ ነው። ለመቀጠል ማያ ገጹን በሁለት ጣቶች መታ ያድርጉት።</translation>
 <translation id="4660783501463101648">የታወቀ ገጽታ ተወግዷል። ተመልሶ ወደ የታወቀው የChromeVox ገጽታ የሚወስደው የቁልፍ ሰሌዳ መቀያየሪያው ተወግዷል።</translation>
@@ -618,7 +619,6 @@
 <translation id="5170206230005240598">የብሬይል መግለጫዎች ነቅተዋል</translation>
 <translation id="5183440668879371625">ቀዳሚ መስመር</translation>
 <translation id="5189244881767082992">መስመር</translation>
-<translation id="5234747236692380506"><ph name="TEXT" /> ተይብ</translation>
 <translation id="5263034204789987535">የበቆሎ ቆዳ</translation>
 <translation id="5263344797180442561">h2</translation>
 <translation id="528468243742722775">ጨርስ</translation>
@@ -666,6 +666,7 @@
 <translation id="5522423213731659107">ፈጣን አቀማመጠ ገጽ ተጠናቅቋል</translation>
 <translation id="5534303576632885660">hdr</translation>
 <translation id="5539820223028224601">Gainsboro</translation>
+<translation id="554893713779400387">የቃል ጽሑፍን ቀያይር</translation>
 <translation id="5549179427201066174">የድምጽ ግብረመልስ (ኢርኮኖች) ያብሩ ወይም ያጥፉ</translation>
 <translation id="556042886152191864">አዘራር</translation>
 <translation id="5561345396546889625">ቀጣይ ዝርዝር</translation>
@@ -684,6 +685,8 @@
 <translation id="5623842676595125836">ምዝግብ ማስታወሻ</translation>
 <translation id="5628125749885014029">h4</translation>
 <translation id="5632083598315326067">ሥዕላዊ ምልክት</translation>
+<translation id="5648939288050772726">እንኳን ደስ አለዎት! በተስካ ሁኔታ ChromeVox ለመጠቀም የሚያስፈልጉትን መሠረታዊ ነገሮች ተምረዋል። ፍለጋ+ነጥብ ላይ በመጫን በማንኛውም ጊዜ የChromeVox ትዕዛዝ ምናሌን መክፈት እንደሚችሉ ያስታውሱ። እንዲያውም ስለChromeVox እና ChromeOS የበለጠ ለመረዳት የሚከተሉትን ጽሑፎች ይጎብኙ።
+    የአጋዥ ስልጠናውን ከጨረሱ ChromeVoxን ተጠቅመው ወደ ዝጋ አዝራር ይሂዱና ጠቅ ያድርጉት።</translation>
 <translation id="5653397561111110475">የChromebook ማያ ንካ የተደራሽነት ባህሪዎችን ይጠቀሙ</translation>
 <translation id="5655682562155942719">የዝላይ ትዕዛዞች</translation>
 <translation id="56637627897541303">የጽሑፍ ቦታ</translation>
@@ -793,6 +796,7 @@
 <translation id="641759969622533235">{COUNT,plural, =1{ሁለት ነጥብ}one{# ሁለት ነጥቦች}other{# ሁለት ነጥቦች}}</translation>
 <translation id="6444046323172968959">የማንቂያ መገናኛ</translation>
 <translation id="6452403590345320472">ማውጫ</translation>
+<translation id="6457542714329819968">ዓይነት</translation>
 <translation id="6468049171101508116">ቀጣይ አዝራር</translation>
 <translation id="646954774886932461">መረጃ ጠቋሚ</translation>
 <translation id="6475604559827479857">የቃል ድምቀቶች ቀለም፦</translation>
@@ -965,8 +969,6 @@
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7713139339518499741">የተፈጥሮ ድምፅ</translation>
 <translation id="7714340021005120797">ምንም ቀጣይ ጥምድ ሳጥን የለም</translation>
-<translation id="772146615414628379">እንኳን ደስ አለዎት! በተስካ ሁኔታ ChromeVox ለመጠቀም የሚያስፈልጉትን መሠረታዊ ነገሮች ተምረዋል። ፍለጋ+ነጥብ ላይ በመጫን በማንኛውም ጊዜ የChromeVox ትዕዛዝ ምናሌን መክፈት እንደሚችሉ ያስታውሱ። እንዲያውም ስለChromeVox እና Chrome OS የበለጠ ለመረዳት የሚከተሉትን ጽሑፎች ይጎብኙ።
-    የአጋዥ ስልጠናውን ከጨረሱ ChromeVoxን ተጠቅመው ወደ ዝጋ አዝራር ይሂዱና ጠቅ ያድርጉት።</translation>
 <translation id="7724603315864178912">ቁረጥ</translation>
 <translation id="7731785449856576010">ምንም ቀጣይ የሚዲያ ንዑስ ፕሮግራም የለም</translation>
 <translation id="7735498529470878067">በመንካት ያስሱ በማያ ገጹ ላይ ስላለው ነገር በፍጥነት እንዲገነዘቡ ያግዘዎታል።</translation>
@@ -1168,6 +1170,7 @@
 <translation id="9223032053830369045">ደማቅ ቀይ</translation>
 <translation id="923331726185079994">ChromeVox ተዘምኗል</translation>
 <translation id="93384979447910801">ጠቆር ያለ ባሕርማ አረንጓዴ</translation>
+<translation id="937605981140327129">TalkBack በአሁኑ ጊዜ አልተጫነም። እባክዎ Android AccessibilitySuiteን በPlay መደብር በኩል ይጫኑ እና እንደገና ይሞክሩ።</translation>
 <translation id="948171205378458592">የንግግር ፍጥነት ይቀንሱ</translation>
 <translation id="957570623732056069">ይህንን ትምህርት ለማሰስ በአንድ ጣት ወደ ግራ ወይም ወደ ቀኝ ያንሸራትቱ</translation>
 <translation id="958854023026327378">አንድ ጣት ወደ ታች ያንሸራትቱ</translation>

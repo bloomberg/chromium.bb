@@ -41,14 +41,12 @@ def RunSteps(api):
     expected_target_ref = api.properties.get(
         'expected_target_ref', 'refs/heads/main')
     assert api.tryserver.gerrit_change_target_ref == expected_target_ref
+    assert (api.tryserver.gerrit_change_review_url ==
+            'https://chromium-review.googlesource.com/c/91827/1')
 
   if api.tryserver.is_gerrit_issue:
     api.tryserver.get_footers()
     api.tryserver.get_footer('testfooter')
-  api.tryserver.get_files_affected_by_patch(
-      api.properties.get('test_patch_root'),
-      report_files_via_property='affected_files',
-  )
 
   if api.tryserver.is_tryserver:
     api.tryserver.set_subproject_tag('v8')

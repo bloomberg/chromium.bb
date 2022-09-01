@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/mac/foundation_util.h"
-#include "base/test/scoped_feature_list.h"
+#include "base/strings/utf_string_conversions.h"
 #include "components/browsing_data/core/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/search_engines/template_url_data_util.h"
@@ -20,6 +20,7 @@
 #include "ios/chrome/browser/browsing_data/browsing_data_features.h"
 #include "ios/chrome/browser/browsing_data/cache_counter.h"
 #include "ios/chrome/browser/browsing_data/fake_browsing_data_remover.h"
+#import "ios/chrome/browser/net/crurl.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/prefs/browser_prefs.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
@@ -105,6 +106,7 @@ class ClearBrowsingDataManagerTest : public PlatformTest {
                        browsingDataRemover:remover_.get()
         browsingDataCounterWrapperProducer:
             [[FakeBrowsingDataCounterWrapperProducer alloc] init]];
+    [manager_ prepare];
 
     test_sync_service_ = static_cast<syncer::TestSyncService*>(
         SyncServiceFactory::GetForBrowserState(browser_state_.get()));
@@ -113,12 +115,14 @@ class ClearBrowsingDataManagerTest : public PlatformTest {
                           browser_state_->GetPrefs());
   }
 
+  ~ClearBrowsingDataManagerTest() override { [manager_ disconnect]; }
+
   ChromeIdentity* fake_identity() {
     return account_manager_service_->GetDefaultIdentity();
   }
 
   // Adds a prepopulated search engine to TemplateURLService.
-  // |prepopulate_id| should be big enough (>1000) to avoid collision with real
+  // `prepopulate_id` should be big enough (>1000) to avoid collision with real
   // prepopulated search engines. The collision happens when
   // TemplateURLService::SetUserSelectedDefaultSearchProvider is called, in the
   // callback of PrefService the DefaultSearchManager will update the searchable
@@ -174,9 +178,6 @@ class ClearBrowsingDataManagerTest : public PlatformTest {
 
 // Tests model is set up with all appropriate items and sections.
 TEST_F(ClearBrowsingDataManagerTest, TestModel) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(kSearchHistoryLinkIOS);
-
   [manager_ loadModel:model_];
 
   EXPECT_EQ(3, [model_ numberOfSections]);
@@ -188,28 +189,22 @@ TEST_F(ClearBrowsingDataManagerTest, TestModel) {
 // Tests model is set up with correct number of items and sections if signed in
 // but sync is off.
 TEST_F(ClearBrowsingDataManagerTest, TestModelSignedInSyncOff) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(kSearchHistoryLinkIOS);
-
   // Ensure that sync is not running.
   test_sync_service_->SetDisableReasons(
       syncer::SyncService::DISABLE_REASON_USER_CHOICE);
 
   AuthenticationServiceFactory::GetForBrowserState(browser_state_.get())
-      ->SignIn(fake_identity());
+      ->SignIn(fake_identity(), nil);
 
   [manager_ loadModel:model_];
 
-  EXPECT_EQ(3, [model_ numberOfSections]);
+  EXPECT_EQ(4, [model_ numberOfSections]);
   EXPECT_EQ(1, [model_ numberOfItemsInSection:0]);
   EXPECT_EQ(5, [model_ numberOfItemsInSection:1]);
   EXPECT_EQ(0, [model_ numberOfItemsInSection:2]);
 }
 
 TEST_F(ClearBrowsingDataManagerTest, TestCacheCounterFormattingForAllTime) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(kSearchHistoryLinkIOS);
-
   ASSERT_EQ("en", GetApplicationContext()->GetApplicationLocale());
   PrefService* prefs = browser_state_->GetPrefs();
   prefs->SetInteger(browsing_data::prefs::kDeleteTimePeriod,
@@ -241,9 +236,6 @@ TEST_F(ClearBrowsingDataManagerTest, TestCacheCounterFormattingForAllTime) {
 
 TEST_F(ClearBrowsingDataManagerTest,
        TestCacheCounterFormattingForLessThanAllTime) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(kSearchHistoryLinkIOS);
-
   ASSERT_EQ("en", GetApplicationContext()->GetApplicationLocale());
 
   PrefService* prefs = browser_state_->GetPrefs();
@@ -275,9 +267,6 @@ TEST_F(ClearBrowsingDataManagerTest,
 }
 
 TEST_F(ClearBrowsingDataManagerTest, TestOnPreferenceChanged) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(kSearchHistoryLinkIOS);
-
   [manager_ loadModel:model_];
   NSArray* timeRangeItems =
       [model_ itemsInSectionWithIdentifier:SectionIdentifierTimeRange];
@@ -299,11 +288,8 @@ TEST_F(ClearBrowsingDataManagerTest, TestOnPreferenceChanged) {
 }
 
 TEST_F(ClearBrowsingDataManagerTest, TestGoogleDSETextSignedIn) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kSearchHistoryLinkIOS);
-
   AuthenticationServiceFactory::GetForBrowserState(browser_state_.get())
-      ->SignIn(fake_identity());
+      ->SignIn(fake_identity(), nil);
 
   [manager_ loadModel:model_];
 
@@ -317,13 +303,10 @@ TEST_F(ClearBrowsingDataManagerTest, TestGoogleDSETextSignedIn) {
       base::mac::ObjCCastStrict<TableViewLinkHeaderFooterItem>(googleAccount);
   ASSERT_TRUE(([accountFooterTextItem.text rangeOfString:@"Google"].location !=
                NSNotFound));
-  ASSERT_EQ(2u, accountFooterTextItem.urls.size());
+  ASSERT_EQ(2u, [accountFooterTextItem.urls count]);
 }
 
 TEST_F(ClearBrowsingDataManagerTest, TestGoogleDSETextSignedOut) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kSearchHistoryLinkIOS);
-
   AuthenticationServiceFactory::GetForBrowserState(browser_state_.get())
       ->SignOut(signin_metrics::ABORT_SIGNIN,
                 /*force_clear_browsing_data=*/false, nil);
@@ -335,11 +318,8 @@ TEST_F(ClearBrowsingDataManagerTest, TestGoogleDSETextSignedOut) {
 }
 
 TEST_F(ClearBrowsingDataManagerTest, TestPrepopulatedTextSignedIn) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kSearchHistoryLinkIOS);
-
   AuthenticationServiceFactory::GetForBrowserState(browser_state_.get())
-      ->SignIn(fake_identity());
+      ->SignIn(fake_identity(), nil);
 
   // Set DSE to one from "prepoulated list".
   const std::string kEngineP1Name = "prepopulated-1";
@@ -366,13 +346,10 @@ TEST_F(ClearBrowsingDataManagerTest, TestPrepopulatedTextSignedIn) {
                                       encoding:[NSString
                                                    defaultCStringEncoding]]]
            .location != NSNotFound));
-  ASSERT_EQ(1u, accountFooterTextItem.urls.size());
+  ASSERT_EQ(1u, [accountFooterTextItem.urls count]);
 }
 
 TEST_F(ClearBrowsingDataManagerTest, TestPrepopulatedTextSignedOut) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kSearchHistoryLinkIOS);
-
   AuthenticationServiceFactory::GetForBrowserState(browser_state_.get())
       ->SignOut(signin_metrics::ABORT_SIGNIN,
                 /*force_clear_browsing_data=*/false, nil);
@@ -403,15 +380,12 @@ TEST_F(ClearBrowsingDataManagerTest, TestPrepopulatedTextSignedOut) {
                                       encoding:[NSString
                                                    defaultCStringEncoding]]]
            .location != NSNotFound));
-  ASSERT_EQ(0u, accountFooterTextItem.urls.size());
+  ASSERT_EQ(0u, [accountFooterTextItem.urls count]);
 }
 
 TEST_F(ClearBrowsingDataManagerTest, TestCustomTextSignedIn) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kSearchHistoryLinkIOS);
-
   AuthenticationServiceFactory::GetForBrowserState(browser_state_.get())
-      ->SignIn(fake_identity());
+      ->SignIn(fake_identity(), nil);
 
   // Set DSE to a be fully custom.
   const std::string kEngineC1Name = "custom-1";
@@ -440,13 +414,10 @@ TEST_F(ClearBrowsingDataManagerTest, TestCustomTextSignedIn) {
                                       encoding:[NSString
                                                    defaultCStringEncoding]]]
            .location != NSNotFound));
-  ASSERT_EQ(1u, accountFooterTextItem.urls.size());
+  ASSERT_EQ(1u, [accountFooterTextItem.urls count]);
 }
 
 TEST_F(ClearBrowsingDataManagerTest, TestCustomeTextSignedOut) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kSearchHistoryLinkIOS);
-
   AuthenticationServiceFactory::GetForBrowserState(browser_state_.get())
       ->SignOut(signin_metrics::ABORT_SIGNIN,
                 /*force_clear_browsing_data=*/false, nil);
@@ -478,7 +449,7 @@ TEST_F(ClearBrowsingDataManagerTest, TestCustomeTextSignedOut) {
                                       encoding:[NSString
                                                    defaultCStringEncoding]]]
            .location != NSNotFound));
-  ASSERT_EQ(0u, accountFooterTextItem.urls.size());
+  ASSERT_EQ(0u, [accountFooterTextItem.urls count]);
 }
 
 }  // namespace

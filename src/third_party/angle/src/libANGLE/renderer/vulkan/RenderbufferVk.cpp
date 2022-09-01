@@ -83,21 +83,29 @@ angle::Result RenderbufferVk::setStorageImpl(const gl::Context *context,
     const bool isDepthStencilFormat    = textureFormat.hasDepthOrStencilBits();
     ASSERT(textureFormat.redBits > 0 || isDepthStencilFormat);
 
-    // TODO(syoussefi): Currently not supported for depth/stencil images if
-    // VK_KHR_depth_stencil_resolve is not supported.  Chromium only uses this for depth/stencil
-    // buffers and doesn't attempt to read from it.  http://anglebug.com/5065
-    const bool isRenderToTexture =
-        mode == gl::MultisamplingMode::MultisampledRenderToTexture &&
-        (!isDepthStencilFormat || renderer->getFeatures().supportsDepthStencilResolve.enabled);
+    const bool isRenderToTexture = mode == gl::MultisamplingMode::MultisampledRenderToTexture;
     const bool hasRenderToTextureEXT =
         renderer->getFeatures().supportsMultisampledRenderToSingleSampled.enabled;
 
-    const VkImageUsageFlags usage =
-        VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT |
-        VK_IMAGE_USAGE_SAMPLED_BIT |
-        (isDepthStencilFormat ? VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT
-                              : VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT) |
-        (isRenderToTexture && !hasRenderToTextureEXT ? VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT : 0);
+    // Transfer and sampled usage are used for various utilities such as readback or blit.
+    VkImageUsageFlags usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT |
+                              VK_IMAGE_USAGE_SAMPLED_BIT;
+
+    // Renderbuffer's normal usage is as framebuffer attachment.
+    usage |= isDepthStencilFormat ? VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT
+                                  : VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+
+    // When used to emulate multisampled render to texture, it can be read as input attachment.
+    if (isRenderToTexture && !hasRenderToTextureEXT)
+    {
+        usage |= VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
+    }
+
+    // For framebuffer fetch and advanced blend emulation, color will be read as input attachment.
+    if (!isDepthStencilFormat)
+    {
+        usage |= VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
+    }
 
     const uint32_t imageSamples = isRenderToTexture ? 1 : samples;
 
@@ -179,8 +187,10 @@ angle::Result RenderbufferVk::setStorageEGLImageTarget(const gl::Context *contex
     uint32_t rendererQueueFamilyIndex = contextVk->getRenderer()->getQueueFamilyIndex();
     if (mImage->isQueueChangeNeccesary(rendererQueueFamilyIndex))
     {
-        vk::CommandBuffer *commandBuffer;
-        ANGLE_TRY(contextVk->getOutsideRenderPassCommandBuffer({}, &commandBuffer));
+        vk::OutsideRenderPassCommandBuffer *commandBuffer;
+        vk::CommandBufferAccess access;
+        access.onExternalAcquireRelease(mImage);
+        ANGLE_TRY(contextVk->getOutsideRenderPassCommandBuffer(access, &commandBuffer));
         mImage->changeLayoutAndQueue(contextVk, aspect, vk::ImageLayout::ColorAttachment,
                                      rendererQueueFamilyIndex, commandBuffer);
     }
@@ -254,6 +264,7 @@ angle::Result RenderbufferVk::getAttachmentRenderTarget(const gl::Context *conte
 }
 
 angle::Result RenderbufferVk::initializeContents(const gl::Context *context,
+                                                 GLenum binding,
                                                  const gl::ImageIndex &imageIndex)
 {
     // Note: stageSubresourceRobustClear only uses the intended format to count channels.
@@ -279,11 +290,21 @@ void RenderbufferVk::releaseAndDeleteImage(ContextVk *contextVk)
 void RenderbufferVk::releaseImage(ContextVk *contextVk)
 {
     RendererVk *renderer = contextVk->getRenderer();
+    if (mImage == nullptr)
+    {
+        ASSERT(mImageViews.isImageViewGarbageEmpty() &&
+               mMultisampledImageViews.isImageViewGarbageEmpty());
+    }
+    else
+    {
+        mImage->collectViewGarbage(renderer, &mImageViews);
+        mImage->collectViewGarbage(renderer, &mMultisampledImageViews);
+    }
 
     if (mImage && mOwnsImage)
     {
         mImage->releaseImageFromShareContexts(renderer, contextVk);
-        mImage->releaseStagingBuffer(renderer);
+        mImage->releaseStagedUpdates(renderer);
     }
     else
     {
@@ -291,13 +312,10 @@ void RenderbufferVk::releaseImage(ContextVk *contextVk)
         mImageObserverBinding.bind(nullptr);
     }
 
-    mImageViews.release(renderer);
-
     if (mMultisampledImage.valid())
     {
         mMultisampledImage.releaseImageFromShareContexts(renderer, contextVk);
     }
-    mMultisampledImageViews.release(renderer);
 }
 
 const gl::InternalFormat &RenderbufferVk::getImplementationSizedFormat() const

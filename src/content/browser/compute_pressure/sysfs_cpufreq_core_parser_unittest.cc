@@ -38,8 +38,8 @@ class SysfsCpufreqCoreParserTest : public testing::Test {
     parser_ = std::make_unique<SysfsCpufreqCoreParser>(fake_core_path_);
   }
 
-  bool WriteFakeFile(base::StringPiece file_name,
-                     base::StringPiece contents) WARN_UNUSED_RESULT {
+  [[nodiscard]] bool WriteFakeFile(base::StringPiece file_name,
+                                   base::StringPiece contents) {
     base::FilePath file_path = fake_core_path_.AppendASCII(file_name);
     return base::WriteFile(file_path, contents);
   }
@@ -199,15 +199,8 @@ TEST_P(SysfsCpufreqCoreParserRoutingTest, Read) {
 
 TEST_P(SysfsCpufreqCoreParserRoutingTest, Read_InvalidFirmwareFile) {
   std::vector<const char*> invalid_numbers = {
-      "-1",
-      "-100",
-      "-",
-      "a",
-      "1a",
-      "1234a",
-      u8"\U0001f41b",
-      u8"1\U0001f41b",
-      u8"\U0001f41b1",
+      "-1",    "-100",       "-",           "a",           "1a",
+      "1234a", "\U0001f41b", "1\U0001f41b", "\U0001f41b1",
   };
 
   for (const char* invalid_number : invalid_numbers) {
@@ -230,15 +223,8 @@ TEST_P(SysfsCpufreqCoreParserRoutingTest, Read_InvalidFirmwareFile) {
 
 TEST_P(SysfsCpufreqCoreParserRoutingTest, Read_InvalidGovernorFile) {
   std::vector<const char*> invalid_numbers = {
-      "-1",
-      "-100",
-      "-",
-      "a",
-      "1a",
-      "1234a",
-      u8"\U0001f41b",
-      u8"1\U0001f41b",
-      u8"\U0001f41b1",
+      "-1",    "-100",       "-",           "a",           "1a",
+      "1234a", "\U0001f41b", "1\U0001f41b", "\U0001f41b1",
   };
 
   for (const char* invalid_number : invalid_numbers) {

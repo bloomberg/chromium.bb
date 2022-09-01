@@ -5,6 +5,7 @@
 import("//build/config/host_byteorder.gni")
 import("//third_party/icu/config.gni")
 import("//third_party/icu/sources.gni")
+import("//blpwtk2/blpwtk2.gni")
 
 if (is_android) {
   import("//build/config/android/rules.gni")
@@ -96,7 +97,7 @@ config("icu_code") {
         # https://crbug.com/1274247
         # <ctgmath> is deprecated in C++17, but ICU still uses it, so we should
         # silence the warning for now.
-        "_SILENCE_CXX17_C_HEADER_DEPRECATION_WARNING"
+        "_SILENCE_CXX17_C_HEADER_DEPRECATION_WARNING",
       ]
     }
   } else if (is_linux || is_chromeos || is_android || icu_is_in_fuchsia) {
@@ -115,6 +116,10 @@ config("icu_code") {
 
       # putil.cpp contains unused variables when building for iOS simulators.
       "-Wno-unused-variable",
+
+      # ICU has decided not to fix this warning as doing so would break its
+      # stable API.
+      "-Wno-ambiguous-reversed-operator",
     ]
   }
   if (is_clang || is_linux || is_chromeos || is_android || icu_is_in_fuchsia) {
@@ -134,10 +139,22 @@ config("icu_code") {
       "-Wno-implicit-int-float-conversion",
       "-Wno-conversion",
 
+      # Needed for C++20
+      "-Wno-ambiguous-reversed-operator",
+      "-Wno-rewrite-not-bool",
+      "-Wno-deprecated-anon-enum-enum-conversion",
+      "-Wno-deprecated-array-compare",
+      "-Wno-deprecated-pragma",
+
       # Used for conditional changes to the compilation process that
       # are only needed for the Fuchsia toolchain.
       "-DICU_IS_IN_FUCHSIA",
     ]
+  }
+  if (current_cpu == "wasm") {
+    # Tell ICU that we are a 32 bit platform, otherwise,
+    # double-conversion-utils.h doesn't know how to operate.
+    defines += [ "__i386__" ]
   }
 }
 
@@ -221,7 +238,7 @@ template("generate_icu_component") {
 
       # Make icu into a standalone static library. Currently This is only useful
       # on Chrome OS.
-      if (invoker.check_thin_archive && icu_disable_thin_archive) {
+      if (icu_disable_thin_archive) {
         configs -= [ "//build/config/compiler:thin_archive" ]
         complete_static_lib = true
       }
@@ -230,10 +247,6 @@ template("generate_icu_component") {
 }
 
 template("generate_icui18n") {
-  if (!icu_is_in_fuchsia) {
-    check_thin_archive = true
-  }
-
   generate_icu_component(target_name) {
     assert(defined(invoker.icuuc_deps), "Need the 'icuuc_deps' parameter.")
     icuuc_deps = invoker.icuuc_deps
@@ -272,10 +285,6 @@ generate_icui18n("icui18n_hidden_visibility") {
 }
 
 template("generate_icuuc") {
-  if (!icu_is_in_fuchsia) {
-    check_thin_archive = false
-  }
-
   generate_icu_component(target_name) {
     fuchsia_output_name_postfix = ""
     if (defined(invoker.fuchsia_output_name_postfix)) {
@@ -295,7 +304,11 @@ template("generate_icuuc") {
     defines = [ "U_COMMON_IMPLEMENTATION" ]
     deps = [ ":icudata" ]
 
-    if (icu_use_data_file) {
+    if (is_chromeos) {
+      deps += [ ":icudata_hash" ]
+    }
+
+    if (icu_use_data_file && icu_use_stub_data) {
       sources += [ "source/stubdata/stubdata.cpp" ]
     }
 
@@ -344,23 +357,19 @@ if (is_android && enable_java_templates) {
       disable_compression = true
     }
   }
-
-  android_assets("icu_extra_assets") {
-    if (icu_use_data_file) {
-      sources = [ "$root_out_dir/icudtl_extra.dat" ]
-      deps = [ ":extra_icudata" ]
-      disable_compression = true
-    }
-  }
 }
 
 if (is_android) {
-  # Use android_small for now to keep the size till we decide to switch to the new one.
-  data_dir = "android_small"
+  data_dir = "android"
 } else if (is_ios) {
   data_dir = "ios"
 } else if (is_chromeos) {
   data_dir = "chromeos"
+} else if (current_cpu == "wasm") {
+  data_dir = "flutter"
+} else if (icu_is_in_fuchsia && icu_fuchsia_override_data_dir != "") {
+  # See //config.gni for details.
+  data_dir = icu_fuchsia_override_data_dir
 } else {
   data_dir = "common"
 }
@@ -382,30 +391,55 @@ if (icu_use_data_file) {
   } else {
     copy("icudata") {
       sources = [ "$data_dir/$data_bundle" ]
-      outputs = [ "$root_out_dir/$data_bundle" ]
-      data = [ "$root_out_dir/$data_bundle" ]
+
+      if (bb_version == "") {
+        outputs = [ "$root_out_dir/$data_bundle" ]
+        data = [ "$root_out_dir/$data_bundle" ]
+
+      } else {
+        bb_data_bundle = "${data_bundle_prefix}.$bb_version.dat"
+        outputs = [ "$root_out_dir/$bb_data_bundle" ]
+        data = [ "$root_out_dir/$bb_data_bundle" ]
+      }
     }
   }
 
-  copy("extra_icudata") {
-    sources = [ "//third_party/icu/android_small/icudtl_extra.dat" ]
-    outputs = [ "$root_out_dir/icudtl_extra.dat" ]
+  if (is_chromeos) {
+    copy("icudata_hash") {
+      sources = [ "//third_party/icu/chromeos/icudtl.dat.hash" ]
+      outputs = [ "$root_out_dir/icudtl.dat.hash" ]
+    }
   }
 } else {
-  data_assembly = "$target_gen_dir/${data_bundle_prefix}_dat.S"
+  if (current_cpu == "wasm") {
+    data_assembly = "$target_gen_dir/${data_bundle_prefix}_dat.cpp"
+  } else {
+    data_assembly = "$target_gen_dir/${data_bundle_prefix}_dat.S"
+  }
   inline_data_assembly = "$target_gen_dir/${data_bundle_prefix}_dat.cc"
   action("make_data_assembly") {
-    script = "scripts/make_data_assembly.py"
-    inputs = [ "$data_dir/$data_bundle" ]
-    outputs = [ data_assembly ]
-    args = [
-      rebase_path(inputs[0], root_build_dir),
-      rebase_path(data_assembly, root_build_dir),
-    ]
-    if (is_mac || is_ios) {
-      args += [ "--mac" ]
-    } else if (is_win) {
-      args += [ "--win" ]
+    if (current_cpu == "wasm") {
+      # See scripts/make_data_cpp.py for details on building ICU for wasm.
+      script = "scripts/make_data_cpp.py"
+      inputs = [ "$data_dir/$data_bundle" ]
+      outputs = [ data_assembly ]
+      args = [
+        rebase_path(inputs[0], root_build_dir),
+        rebase_path(data_assembly, root_build_dir),
+      ]
+    } else {
+      script = "scripts/make_data_assembly.py"
+      inputs = [ "$data_dir/$data_bundle" ]
+      outputs = [ data_assembly ]
+      args = [
+        rebase_path(inputs[0], root_build_dir),
+        rebase_path(data_assembly, root_build_dir),
+      ]
+      if (is_mac || is_ios) {
+        args += [ "--mac" ]
+      } else if (is_win) {
+        args += [ "--win" ]
+      }
     }
   }
 

@@ -12,6 +12,8 @@
 namespace base {
 namespace internal {
 
+void PartitionAllocSetCallNewHandlerOnMallocFailure(bool value);
+
 class BASE_EXPORT PartitionAllocMalloc {
  public:
   static ThreadSafePartitionRoot* Allocator();
@@ -59,7 +61,7 @@ BASE_EXPORT void* PartitionRealloc(const base::allocator::AllocatorDispatch*,
                                    void* context);
 
 BASE_EXPORT void PartitionFree(const base::allocator::AllocatorDispatch*,
-                               void* address,
+                               void* object,
                                void* context);
 
 BASE_EXPORT size_t

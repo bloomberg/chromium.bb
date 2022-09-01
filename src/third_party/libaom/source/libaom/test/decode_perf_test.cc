@@ -135,7 +135,7 @@ class AV1NewEncodeDecodePerfTest
     const std::string data_path(env ? env : ".");
     const std::string path_to_source = data_path + "/" + kNewEncodeOutputFile;
     outfile_ = fopen(path_to_source.c_str(), "wb");
-    ASSERT_TRUE(outfile_ != NULL);
+    ASSERT_NE(outfile_, nullptr);
   }
 
   virtual void EndPassHook() {

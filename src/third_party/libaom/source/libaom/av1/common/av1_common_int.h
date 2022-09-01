@@ -134,10 +134,8 @@ typedef struct RefCntBuffer {
   // distance when a very old frame is used as a reference.
   unsigned int display_order_hint;
   unsigned int ref_display_order_hint[INTER_REFS_PER_FRAME];
-#if CONFIG_FRAME_PARALLEL_ENCODE
   // Frame's level within the hierarchical structure.
   unsigned int pyramid_level;
-#endif  // CONFIG_FRAME_PARALLEL_ENCODE
   MV_REF *mvs;
   uint8_t *seg_map;
   struct segmentation seg;
@@ -344,10 +342,8 @@ typedef struct {
 
   unsigned int order_hint;
   unsigned int display_order_hint;
-#if CONFIG_FRAME_PARALLEL_ENCODE
   // Frame's level within the hierarchical structure.
   unsigned int pyramid_level;
-#endif  // CONFIG_FRAME_PARALLEL_ENCODE
   unsigned int frame_number;
   SkipModeInfo skip_mode_info;
   int refresh_frame_flags;  // Which ref frames are overwritten by this frame
@@ -598,12 +594,11 @@ struct CommonModeInfoParams {
    *                                      parameters
    * \param           width               frame width
    * \param           height              frame height
-   * \param           mode                encoding mode
    * \param           min_partition_size  minimum partition size allowed while
    *                                      encoding
    */
   void (*set_mb_mi)(struct CommonModeInfoParams *mi_params, int width,
-                    int height, int mode, BLOCK_SIZE min_partition_size);
+                    int height, BLOCK_SIZE min_partition_size);
   /**@}*/
 };
 

@@ -13,14 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Protocol } from 'devtools-protocol';
-
+import { JSHandle, ElementHandle } from './JSHandle.js';
 import { CDPSession } from './Connection.js';
 import { DOMWorld } from './DOMWorld.js';
-import { EvaluateHandleFn, SerializableOrJSHandle } from './EvalTypes.js';
 import { Frame } from './FrameManager.js';
-import { ElementHandle , JSHandle} from './JSHandle.js';
-
+import { Protocol } from 'devtools-protocol';
+import { EvaluateHandleFn, SerializableOrJSHandle } from './EvalTypes.js';
 /**
  * @public
  */
@@ -116,7 +114,7 @@ export declare class ExecutionContext {
      *
      * @returns A promise that resolves to the return value of the given function.
      */
-    evaluate<ReturnType extends any>(pageFunction: Function | string, ...args: unknown[]): Promise<ReturnType>;
+    evaluate<ReturnType>(pageFunction: Function | string, ...args: unknown[]): Promise<ReturnType>;
     /**
      * @remarks
      * The only difference between `executionContext.evaluate` and

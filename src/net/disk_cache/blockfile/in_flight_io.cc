@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_restrictions.h"
@@ -14,8 +15,7 @@
 namespace disk_cache {
 
 BackgroundIO::BackgroundIO(InFlightIO* controller)
-    : result_(-1),
-      io_completed_(base::WaitableEvent::ResetPolicy::MANUAL,
+    : io_completed_(base::WaitableEvent::ResetPolicy::MANUAL,
                     base::WaitableEvent::InitialState::NOT_SIGNALED),
       controller_(controller) {}
 
@@ -37,8 +37,7 @@ BackgroundIO::~BackgroundIO() = default;
 // ---------------------------------------------------------------------------
 
 InFlightIO::InFlightIO()
-    : callback_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      running_(false) {}
+    : callback_task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
 
 InFlightIO::~InFlightIO() = default;
 

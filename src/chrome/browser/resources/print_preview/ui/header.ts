@@ -4,17 +4,18 @@
 
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
-import './icons.js';
-import './print_preview_vars_css.js';
+import './icons.html.js';
+import './print_preview_vars.css.js';
 import '../strings.m.js';
 
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {PluralStringProxyImpl} from 'chrome://resources/js/plural_string_proxy.js';
-import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {Destination, GooglePromotedDestinationId} from '../data/destination.js';
-import {getPrinterTypeForDestination, PrinterType} from '../data/destination_match.js';
+import {Destination, PrinterType} from '../data/destination.js';
 import {Error, State} from '../data/state.js';
+
+import {getTemplate} from './header.html.js';
 import {SettingsMixin} from './settings_mixin.js';
 
 
@@ -26,13 +27,11 @@ export class PrintPreviewHeaderElement extends PrintPreviewHeaderElementBase {
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
     return {
-      cloudPrintErrorMessage: String,
-
       destination: Object,
 
       error: Number,
@@ -53,7 +52,6 @@ export class PrintPreviewHeaderElement extends PrintPreviewHeaderElementBase {
     ];
   }
 
-  cloudPrintErrorMessage: string;
   destination: Destination;
   error: Error;
   state: State;
@@ -61,18 +59,16 @@ export class PrintPreviewHeaderElement extends PrintPreviewHeaderElementBase {
   sheetCount: number;
   private summary_: string|null;
 
-  private isPdfOrDrive_(): boolean {
+  private isPdf_(): boolean {
     return this.destination &&
-        (getPrinterTypeForDestination(this.destination) ===
-             PrinterType.PDF_PRINTER ||
-         this.destination.id === GooglePromotedDestinationId.DOCS);
+        this.destination.type === PrinterType.PDF_PRINTER;
   }
 
   private updateSummary_() {
     switch (this.state) {
       case (State.PRINTING):
-        this.summary_ = loadTimeData.getString(
-            this.isPdfOrDrive_() ? 'saving' : 'printing');
+        this.summary_ =
+            loadTimeData.getString(this.isPdf_() ? 'saving' : 'printing');
         break;
       case (State.READY):
         this.updateSheetsSummary_();
@@ -93,8 +89,6 @@ export class PrintPreviewHeaderElement extends PrintPreviewHeaderElementBase {
     switch (this.error) {
       case Error.PRINT_FAILED:
         return loadTimeData.getString('couldNotPrint');
-      case Error.CLOUD_PRINT_ERROR:
-        return this.cloudPrintErrorMessage;
       default:
         return '';
     }
@@ -106,7 +100,7 @@ export class PrintPreviewHeaderElement extends PrintPreviewHeaderElementBase {
       return;
     }
 
-    const pageOrSheet = this.isPdfOrDrive_() ? 'Page' : 'Sheet';
+    const pageOrSheet = this.isPdf_() ? 'Page' : 'Sheet';
     PluralStringProxyImpl.getInstance()
         .getPluralString(
             `printPreview${pageOrSheet}SummaryLabel`, this.sheetCount)

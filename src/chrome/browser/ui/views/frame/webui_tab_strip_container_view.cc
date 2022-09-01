@@ -18,8 +18,8 @@
 #include "base/notreached.h"
 #include "base/scoped_observation.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
@@ -36,7 +36,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
-#include "chrome/browser/ui/views/chrome_view_class_properties.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
@@ -44,8 +43,6 @@
 #include "chrome/browser/ui/views/tabs/tab_group_editor_bubble_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
 #include "chrome/browser/ui/views/toolbar/webui_tab_counter_button.h"
-#include "chrome/browser/ui/views/user_education/feature_promo_colors.h"
-#include "chrome/browser/ui/views/user_education/feature_promo_controller_views.h"
 #include "chrome/browser/ui/webui/tab_strip/tab_strip_ui.h"
 #include "chrome/browser/ui/webui/tab_strip/tab_strip_ui_layout.h"
 #include "chrome/browser/ui/webui/tab_strip/tab_strip_ui_metrics.h"
@@ -198,29 +195,6 @@ TabStripUI* GetTabStripUI(content::WebContents* web_contents) {
              : nullptr;
 }
 
-class WebUINewTabButton : public ToolbarButton {
- public:
-  METADATA_HEADER(WebUINewTabButton);
-  explicit WebUINewTabButton(PressedCallback pressed_callback)
-      : ToolbarButton(pressed_callback) {
-    SetTooltipText(l10n_util::GetStringUTF16(IDS_TOOLTIP_NEW_TAB));
-    const int button_height = GetLayoutConstant(TOOLBAR_BUTTON_HEIGHT);
-    SetPreferredSize(gfx::Size(button_height, button_height));
-    SetHorizontalAlignment(gfx::ALIGN_CENTER);
-  }
-
-  void OnThemeChanged() override {
-    ToolbarButton::OnThemeChanged();
-    const SkColor normal_color = GetThemeProvider()->GetColor(
-        ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
-    SetImage(views::Button::STATE_NORMAL,
-             gfx::CreateVectorIcon(kNewTabToolbarButtonIcon, normal_color));
-  }
-};
-
-BEGIN_METADATA(WebUINewTabButton, ToolbarButton)
-END_METADATA
-
 }  // namespace
 
 // When enabled, closes the container for taps in either the web content
@@ -244,9 +218,9 @@ class WebUITabStripContainerView::AutoCloser : public ui::EventHandler,
 
     view_observations_.AddObservation(content_area_.get());
     view_observations_.AddObservation(omnibox_.get());
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
     view_observations_.AddObservation(top_container_.get());
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
     content_area_->GetWidget()->GetNativeView()->AddPreTargetHandler(this);
     pretarget_handler_added_ = true;
@@ -492,7 +466,7 @@ WebUITabStripContainerView::WebUITabStripContainerView(
 }
 
 WebUITabStripContainerView::~WebUITabStripContainerView() {
-  content::WebContentsObserver::Observe(nullptr);
+  DeinitializeWebView();
   // The TabCounter button uses |this| as a listener. We need to make
   // sure we outlive it.
   delete new_tab_button_;
@@ -568,9 +542,17 @@ views::NativeViewHost* WebUITabStripContainerView::GetNativeViewHost() {
 
 std::unique_ptr<views::View> WebUITabStripContainerView::CreateNewTabButton() {
   DCHECK_EQ(nullptr, new_tab_button_);
-  auto new_tab_button = std::make_unique<WebUINewTabButton>(
+  auto new_tab_button = std::make_unique<ToolbarButton>(
       base::BindRepeating(&WebUITabStripContainerView::NewTabButtonPressed,
                           base::Unretained(this)));
+
+  new_tab_button->SetTooltipText(
+      l10n_util::GetStringUTF16(IDS_TOOLTIP_NEW_TAB));
+  const int button_height = GetLayoutConstant(TOOLBAR_BUTTON_HEIGHT);
+  new_tab_button->SetPreferredSize(gfx::Size(button_height, button_height));
+  new_tab_button->SetHorizontalAlignment(gfx::ALIGN_CENTER);
+  new_tab_button->SetVectorIcon(kNewTabToolbarButtonIcon);
+
   new_tab_button_ = new_tab_button.get();
   view_observations_.AddObservation(new_tab_button_.get());
   return new_tab_button;
@@ -611,9 +593,8 @@ WebUITabStripContainerView::GetAcceleratorProvider() const {
 
 void WebUITabStripContainerView::CloseContainer() {
   SetContainerTargetVisibility(false, WebUITabStripOpenCloseReason::kOther);
-  browser_view_->feature_promo_controller()
-      ->feature_engagement_tracker()
-      ->NotifyEvent(feature_engagement::events::kWebUITabStripClosed);
+  browser_view_->NotifyFeatureEngagementEvent(
+      feature_engagement::events::kWebUITabStripClosed);
 }
 
 bool WebUITabStripContainerView::CanStartDragToOpen(
@@ -663,13 +644,11 @@ void WebUITabStripContainerView::EndDragToOpen(
 
   if (opening) {
     RecordTabStripUIOpenHistogram(TabStripUIOpenAction::kToolbarDrag);
-    browser_view_->feature_promo_controller()
-        ->feature_engagement_tracker()
-        ->NotifyEvent(feature_engagement::events::kWebUITabStripOpened);
+    browser_view_->NotifyFeatureEngagementEvent(
+        feature_engagement::events::kWebUITabStripOpened);
   } else {
-    browser_view_->feature_promo_controller()
-        ->feature_engagement_tracker()
-        ->NotifyEvent(feature_engagement::events::kWebUITabStripClosed);
+    browser_view_->NotifyFeatureEngagementEvent(
+        feature_engagement::events::kWebUITabStripClosed);
   }
 
   animation_.Reset(open_proportion);
@@ -690,14 +669,12 @@ void WebUITabStripContainerView::TabCounterPressed(const ui::Event& event) {
   const bool new_visibility = !GetVisible();
   if (new_visibility) {
     RecordTabStripUIOpenHistogram(TabStripUIOpenAction::kTapOnTabCounter);
-    browser_view_->feature_promo_controller()
-        ->feature_engagement_tracker()
-        ->NotifyEvent(feature_engagement::events::kWebUITabStripOpened);
+    browser_view_->NotifyFeatureEngagementEvent(
+        feature_engagement::events::kWebUITabStripOpened);
   } else {
     RecordTabStripUICloseHistogram(TabStripUICloseAction::kTapOnTabCounter);
-    browser_view_->feature_promo_controller()
-        ->feature_engagement_tracker()
-        ->NotifyEvent(feature_engagement::events::kWebUITabStripClosed);
+    browser_view_->NotifyFeatureEngagementEvent(
+        feature_engagement::events::kWebUITabStripClosed);
   }
 
   SetContainerTargetVisibility(new_visibility,
@@ -717,9 +694,9 @@ void WebUITabStripContainerView::SetContainerTargetVisibility(
     if (web_view_->GetWebContents()->IsCrashed())
       InitializeWebView();
 
-    immersive_revealed_lock_.reset(
+    immersive_revealed_lock_ =
         browser_view_->immersive_mode_controller()->GetRevealedLock(
-            ImmersiveModeController::ANIMATE_REVEAL_YES));
+            ImmersiveModeController::ANIMATE_REVEAL_YES);
 
     SetVisible(true);
     PreferredSizeChanged();
@@ -740,11 +717,8 @@ void WebUITabStripContainerView::SetContainerTargetVisibility(
 
     time_at_open_ = base::TimeTicks::Now();
 
-    if (browser_view_->feature_promo_controller()->BubbleIsShowing(
-            feature_engagement::kIPHWebUITabStripFeature)) {
-      browser_view_->feature_promo_controller()->CloseBubble(
-          feature_engagement::kIPHWebUITabStripFeature);
-    }
+    browser_view_->CloseFeaturePromo(
+        feature_engagement::kIPHWebUITabStripFeature);
   } else {
     if (time_at_open_) {
       RecordTabStripUIOpenDurationHistogram(base::TimeTicks::Now() -
@@ -896,7 +870,7 @@ gfx::Size WebUITabStripContainerView::FlexRule(
 }
 
 void WebUITabStripContainerView::OnViewBoundsChanged(View* observed_view) {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   if (observed_view == top_container_) {
     if (old_top_container_width_ != top_container_->width()) {
       old_top_container_width_ = top_container_->width();
@@ -906,7 +880,7 @@ void WebUITabStripContainerView::OnViewBoundsChanged(View* observed_view) {
     }
     return;
   }
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
   if (observed_view == tab_contents_container_) {
     // TODO(pbos): PreferredSizeChanged seems to cause infinite recursion with
@@ -963,8 +937,20 @@ void WebUITabStripContainerView::InitializeWebView() {
   task_manager::WebContentsTags::CreateForTabContents(
       web_view_->web_contents());
 
-  if (TabStripUI* tab_strip_ui = GetTabStripUI(web_view_->GetWebContents()))
+  if (TabStripUI* tab_strip_ui = GetTabStripUI(web_view_->GetWebContents())) {
+    // References to the |browser_view_->browser()| and |this| are borrowed
+    // here, and will be released |DeinitializeWebView|.
     tab_strip_ui->Initialize(browser_view_->browser(), this);
+  }
 
   content::WebContentsObserver::Observe(web_view_->GetWebContents());
+}
+
+void WebUITabStripContainerView::DeinitializeWebView() {
+  content::WebContentsObserver::Observe(nullptr);
+
+  if (TabStripUI* tab_strip_ui = GetTabStripUI(web_view_->GetWebContents())) {
+    // See corresponding comments from InitializeWebView().
+    tab_strip_ui->Deinitialize();
+  }
 }

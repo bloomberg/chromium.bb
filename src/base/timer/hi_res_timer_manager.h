@@ -6,7 +6,6 @@
 #define BASE_TIMER_HI_RES_TIMER_MANAGER_H_
 
 #include "base/base_export.h"
-#include "base/memory/ref_counted.h"
 #include "base/power_monitor/power_observer.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
@@ -42,7 +41,7 @@ class BASE_EXPORT HighResolutionTimerManager
 
   bool hi_res_clock_available_;
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // Timer for polling the high resolution timer usage.
   base::RepeatingTimer timer_;
 #endif

@@ -3,10 +3,9 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/web_applications/web_app_proto_utils.h"
-
-#include "third_party/blink/public/mojom/manifest/manifest.mojom.h"
-
+#include "chrome/browser/web_applications/user_display_mode.h"
 #include "components/services/app_service/public/cpp/icon_info.h"
+#include "third_party/blink/public/mojom/manifest/manifest.mojom.h"
 
 namespace web_app {
 
@@ -44,7 +43,7 @@ sync_pb::WebAppIconInfo_Purpose IconInfoPurposeToSyncPurpose(
 
 absl::optional<std::vector<apps::IconInfo>> ParseAppIconInfos(
     const char* container_name_for_logging,
-    RepeatedIconInfosProto manifest_icons_proto) {
+    const RepeatedIconInfosProto& manifest_icons_proto) {
   std::vector<apps::IconInfo> manifest_icons;
   for (const sync_pb::WebAppIconInfo& icon_info_proto : manifest_icons_proto) {
     apps::IconInfo icon_info;
@@ -89,7 +88,8 @@ sync_pb::WebAppSpecifics WebAppToSyncProto(const WebApp& app) {
     sync_proto.set_manifest_id(app.manifest_id().value());
   sync_proto.set_start_url(app.start_url().spec());
   sync_proto.set_user_display_mode(
-      ToWebAppSpecificsUserDisplayMode(app.user_display_mode()));
+      ConvertUserDisplayModeToWebAppSpecificsUserDisplayMode(
+          app.user_display_mode().value_or(UserDisplayMode::kBrowser)));
   sync_proto.set_name(app.sync_fallback_data().name);
   if (app.sync_fallback_data().theme_color.has_value())
     sync_proto.set_theme_color(app.sync_fallback_data().theme_color.value());
@@ -159,7 +159,7 @@ absl::optional<WebApp::SyncFallbackData> ParseSyncFallbackDataStruct(
     case DisplayMode::kFullscreen:
     case DisplayMode::kWindowControlsOverlay:
       NOTREACHED();
-      FALLTHROUGH;
+      [[fallthrough]];
     case DisplayMode::kStandalone:
       return ::sync_pb::WebAppSpecifics::STANDALONE;
   }

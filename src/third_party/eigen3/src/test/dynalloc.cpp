@@ -20,9 +20,12 @@ typedef Matrix<float,8,1> Vector8f;
 
 void check_handmade_aligned_malloc()
 {
+  // Hand-make alignment needs at least sizeof(void*) to store the offset.
+  constexpr int alignment = (std::max<int>)(EIGEN_DEFAULT_ALIGN_BYTES, sizeof(void*));
+  
   for(int i = 1; i < 1000; i++)
   {
-    char *p = (char*)internal::handmade_aligned_malloc(i);
+    char *p = (char*)internal::handmade_aligned_malloc(i, alignment);
     VERIFY(internal::UIntPtr(p)%ALIGNMENT==0);
     // if the buffer is wrongly allocated this will give a bad write --> check with valgrind
     for(int j = 0; j < i; j++) p[j]=0;

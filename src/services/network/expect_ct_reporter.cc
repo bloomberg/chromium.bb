@@ -51,16 +51,16 @@ bool HasHeaderValues(net::URLRequest* request,
   return false;
 }
 
-base::ListValue GetPEMEncodedChainAsList(
+base::Value::List GetPEMEncodedChainAsList(
     const net::X509Certificate* cert_chain) {
   if (!cert_chain)
-    return base::ListValue();
+    return base::Value::List();
 
-  base::ListValue result;
+  base::Value::List result;
   std::vector<std::string> pem_encoded_chain;
   cert_chain->GetPEMEncodedChain(&pem_encoded_chain);
-  for (const std::string& cert : pem_encoded_chain)
-    result.Append(std::make_unique<base::Value>(cert));
+  for (std::string& cert : pem_encoded_chain)
+    result.Append(std::move(cert));
 
   return result;
 }
@@ -81,10 +81,10 @@ std::string SCTOriginToString(
 }
 
 bool AddSCT(const net::SignedCertificateTimestampAndStatus& sct,
-            base::ListValue* list) {
-  std::unique_ptr<base::DictionaryValue> list_item(new base::DictionaryValue());
+            base::Value::List* list) {
+  base::Value::Dict list_item;
   // Chrome implements RFC6962, not 6962-bis, so the reports contain v1 SCTs.
-  list_item->SetInteger("version", 1);
+  list_item.Set("version", 1);
   std::string status;
   switch (sct.status) {
     case net::ct::SCT_STATUS_LOG_UNKNOWN:
@@ -100,15 +100,15 @@ bool AddSCT(const net::SignedCertificateTimestampAndStatus& sct,
     case net::ct::SCT_STATUS_NONE:
       NOTREACHED();
   }
-  list_item->SetString("status", status);
-  list_item->SetString("source", SCTOriginToString(sct.sct->origin));
+  list_item.Set("status", status);
+  list_item.Set("source", SCTOriginToString(sct.sct->origin));
   std::string serialized_sct;
   if (!net::ct::EncodeSignedCertificateTimestamp(sct.sct, &serialized_sct))
     return false;
   std::string encoded_serialized_sct;
   base::Base64Encode(serialized_sct, &encoded_serialized_sct);
-  list_item->SetString("serialized_sct", encoded_serialized_sct);
-  list->Append(std::move(list_item));
+  list_item.Set("serialized_sct", encoded_serialized_sct);
+  list->Append(base::Value(std::move(list_item)));
   return true;
 }
 
@@ -166,25 +166,26 @@ void ExpectCTReporter::OnExpectCTFailed(
   if (!base::FeatureList::IsEnabled(features::kExpectCTReporting))
     return;
 
-  base::DictionaryValue outer_report;
-  base::DictionaryValue* report = outer_report.SetDictionary(
-      "expect-ct-report", std::make_unique<base::DictionaryValue>());
-  report->SetString("hostname", host_port_pair.host());
-  report->SetInteger("port", host_port_pair.port());
-  report->SetString("date-time", base::TimeToISO8601(base::Time::Now()));
-  report->SetString("effective-expiration-date",
-                    base::TimeToISO8601(expiration));
-  report->SetKey("served-certificate-chain",
-                 GetPEMEncodedChainAsList(served_certificate_chain));
-  report->SetKey("validated-certificate-chain",
-                 GetPEMEncodedChainAsList(validated_certificate_chain));
+  base::Value::Dict outer_report;
 
-  base::ListValue scts;
+  base::Value::Dict report;
+  report.Set("hostname", host_port_pair.host());
+  report.Set("port", host_port_pair.port());
+  report.Set("date-time", base::TimeToISO8601(base::Time::Now()));
+  report.Set("effective-expiration-date", base::TimeToISO8601(expiration));
+  report.Set("served-certificate-chain",
+             GetPEMEncodedChainAsList(served_certificate_chain));
+  report.Set("validated-certificate-chain",
+             GetPEMEncodedChainAsList(validated_certificate_chain));
+
+  base::Value::List scts;
   for (const auto& sct_and_status : signed_certificate_timestamps) {
     if (!AddSCT(sct_and_status, &scts))
       LOG(ERROR) << "Failed to add signed certificate timestamp to list";
   }
-  report->SetKey("scts", std::move(scts));
+  report.Set("scts", std::move(scts));
+
+  outer_report.Set("expect-ct-report", std::move(report));
 
   std::string serialized_report;
   if (!base::JSONWriter::Write(outer_report, &serialized_report)) {
@@ -207,9 +208,10 @@ void ExpectCTReporter::OnResponseStarted(net::URLRequest* request,
   // Check that the preflight succeeded: it must have an HTTP OK status code,
   // with the following headers:
   // - Access-Control-Allow-Origin: * or null
-  // - Access-Control-Allow-Methods: POST
-  // - Access-Control-Allow-Headers: Content-Type
-
+  // - Access-Control-Allow-Headers: * or Content-Type
+  // Note that * is allowed here as the credentials mode is never 'include'.
+  // Access-Control-Allow-Methods is not checked, as the preflight is always
+  // for a POST method, which is safelisted.
   if (response_code == -1 || response_code < 200 || response_code > 299) {
     OnReportFailure(preflight->report_uri, net_error, response_code);
     inflight_preflights_.erase(request);
@@ -218,9 +220,8 @@ void ExpectCTReporter::OnResponseStarted(net::URLRequest* request,
   }
 
   if (!HasHeaderValues(request, "Access-Control-Allow-Origin", {"*", "null"}) ||
-      !HasHeaderValues(request, "Access-Control-Allow-Methods", {"post"}) ||
       !HasHeaderValues(request, "Access-Control-Allow-Headers",
-                       {"content-type"})) {
+                       {"*", "content-type"})) {
     OnReportFailure(preflight->report_uri, net_error, response_code);
     inflight_preflights_.erase(request);
     // Do not use |preflight| after this point, since it has been erased above.

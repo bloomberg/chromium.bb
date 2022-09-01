@@ -150,7 +150,7 @@
 <translation id="1923956950274750765">Орташа күлгін</translation>
 <translation id="1928932365747995741">Алдыңғы өзгертілетін мəтін өрісі жоқ.</translation>
 <translation id="1964135212174907577">Келесі нысан</translation>
-<translation id="1966649499058910679">Айтылған әр сөзді бөлектеу</translation>
+<translation id="1966649499058910679">Айтылған әр сөзді ерекшелеу</translation>
 <translation id="1973886230221301399">ChromeVox</translation>
 <translation id="1988733631391393183">ChromeVox мәзірлерінде Брайль пәрмендерін көрсету</translation>
 <translation id="2007545860310005685">{COUNT,plural, =1{сол жақ тік жақша}other{# сол жақ тік жақша}}</translation>
@@ -536,6 +536,7 @@
 <translation id="4601367666219428522">кст <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">Келесі перненің басылуын елемеу</translation>
 <translation id="4623097797855662355">Баспа белгісі</translation>
+<translation id="4624970070706497034">TalkBack бұдан былай Chromebook құрылғыларына бейімделіп реттелмейді. Оны тек TalkBack әдепкі перне тіркесімдерімен пайдалана аласыз. "Search+A", содан соң "K" пернесін басып, қолжетімді тіркесімдерді көріңіз. Сонда да TalkBack-ті пайдаланғыңыз келсе, пәрменді қайта басыңыз.</translation>
 <translation id="463135993322337640">Жаңалықтарды көру үшін ChromeVox және Щ, Т пернелерін басыңыз</translation>
 <translation id="4649220074413114917">Экранды екі саусақпен түрту арқылы ағымдағы кез келген сөзді тоқтатуға болады. ChromeVox құралының бір нәрсені оқығанын қаламасаңыз, осы функцияны пайдаланыңыз. Жалғастыру үшін экранды екі саусақпен түртіңіз.</translation>
 <translation id="4660783501463101648">ChromeVox Classic нұсқасынан бас тарттық. Енді оған пернетақта арқылы ауысып қосылу мүмкін емес.</translation>
@@ -618,7 +619,6 @@
 <translation id="5170206230005240598">Брайль жазулары қосылған.</translation>
 <translation id="5183440668879371625">Брайль алдыңғы жолы</translation>
 <translation id="5189244881767082992">Сызық</translation>
-<translation id="5234747236692380506">"<ph name="TEXT" />" деп тер</translation>
 <translation id="5263034204789987535">Боз сары</translation>
 <translation id="5263344797180442561">h2</translation>
 <translation id="528468243742722775">Соңы</translation>
@@ -666,6 +666,7 @@
 <translation id="5522423213731659107">Қысқаша курс аяқталды!</translation>
 <translation id="5534303576632885660">hdr</translation>
 <translation id="5539820223028224601">Ақшыл сұр</translation>
+<translation id="554893713779400387">Дауыстап оқуды қосу/өшіру</translation>
 <translation id="5549179427201066174">Дыбыстық көмекті (дыбыстық сигналдар) қосу не өшіру.</translation>
 <translation id="556042886152191864">Түйме</translation>
 <translation id="5561345396546889625">Келесі тізім</translation>
@@ -684,6 +685,8 @@
 <translation id="5623842676595125836">Журнал</translation>
 <translation id="5628125749885014029">h4</translation>
 <translation id="5632083598315326067">Графикалық таңба</translation>
+<translation id="5648939288050772726">Құттықтаймыз! ChromeVox қызметін пайдалануға қатысты маңызды нәрселерді үйрендіңіз. "Іздеу" және нүкте пернелерін бір уақытта басу арқылы ChromeVox пәрмендер мәзірін кез келген уақытта аша аласыз. ChromeVox және ChromeOS туралы толығырақ ақпарат алу үшін мына мақалаларды оқыңыз.
+    Оқулықтағы ақпаратпен танысып шыққан соң, одан шығу үшін ChromeVox қызметінің көмегімен "Жабу" түймесін басыңыз.</translation>
 <translation id="5653397561111110475">Chromebook сенсорлық экранының арнайы мүмкіндіктерін пайдалану</translation>
 <translation id="5655682562155942719">Өту пәрмендері</translation>
 <translation id="56637627897541303">Мәтін аймағы</translation>
@@ -793,6 +796,7 @@
 <translation id="641759969622533235">{COUNT,plural, =1{қос нүкте}other{# қос нүкте}}</translation>
 <translation id="6444046323172968959">Ескерту диалогтік терезесі</translation>
 <translation id="6452403590345320472">Мазмұны</translation>
+<translation id="6457542714329819968">теру</translation>
 <translation id="6468049171101508116">"Келесі" түймесі</translation>
 <translation id="646954774886932461">Индекс</translation>
 <translation id="6475604559827479857">Сөзді ерекшелеп көрсететін түс:</translation>
@@ -964,8 +968,6 @@
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7713139339518499741">Табиғи дауыс</translation>
 <translation id="7714340021005120797">Келесі мәтінді-тізімді өріс жоқ.</translation>
-<translation id="772146615414628379">Құттықтаймыз! ChromeVox қызметін пайдалануға қатысты маңызды нәрселерді үйрендіңіз. "Іздеу" және нүкте пернелерін бір уақытта басу арқылы ChromeVox пәрмендер мәзірін кез келген уақытта аша аласыз. ChromeVox және Chrome OS туралы толық ақпарат алу үшін мына мақалаларды оқыңыз.
-    Оқулықтағы ақпаратпен танысып шыққан соң, одан шығу үшін ChromeVox қызметінің көмегімен "Жабу" түймесіне өтіп, оны басыңыз.</translation>
 <translation id="7724603315864178912">Қиып алу</translation>
 <translation id="7731785449856576010">Келесі медиа виджеті жоқ.</translation>
 <translation id="7735498529470878067">Түртілген элементтерді дыбыстау экранда не орналасқанын жылдам түсінуіңізге көмектеседі.</translation>
@@ -983,11 +985,11 @@
 <translation id="7842115774595115751">Навигацияның басқару элементтерін іске қосу</translation>
 <translation id="7846634333498149051">Пернетақта</translation>
 <translation id="7851816175263618915">Кейбір тыныс белгілері</translation>
-<translation id="7871691770940645922">Виртуалды Браиль дисплейі</translation>
+<translation id="7871691770940645922">Виртуалдық Браиль дисплейі</translation>
 <translation id="7882421473871500483">Қоңыр</translation>
 <translation id="78826985582142166">sldr</translation>
 <translation id="7913106023953875143">Келесі 2-деңгей тақырыбы жоқ.</translation>
-<translation id="7914870167134465181">Бөлектеу</translation>
+<translation id="7914870167134465181">Ерекшелеу</translation>
 <translation id="7927711904086083099">Таңдалмаған</translation>
 <translation id="7935627501098484003">Уақытты бақылау</translation>
 <translation id="7939428177581522200">таңдауға қосылды</translation>
@@ -1167,6 +1169,7 @@
 <translation id="9223032053830369045">Қою қызыл</translation>
 <translation id="923331726185079994">ChromeVox жаңартылды</translation>
 <translation id="93384979447910801">Қою көк жасыл</translation>
+<translation id="937605981140327129">Қазіргі уақытта TalkBack орнатылмаған. Play Store арқылы Android AccessibilitySuite орнатып, қайталап көріңіз.</translation>
 <translation id="948171205378458592">Сөйлеу жылдамдығын азайту</translation>
 <translation id="957570623732056069">Осы сабақты шолу үшін бір саусақпен солға не оңға сырғытыңыз.</translation>
 <translation id="958854023026327378">Бір саусағыңызбен төмен сырғытыңыз</translation>

@@ -18,6 +18,7 @@
 #include "media/base/media_log_properties.h"
 #include "media/base/moving_average.h"
 #include "media/base/pipeline_status.h"
+#include "media/base/sample_format.h"
 #include "media/base/video_decoder.h"
 #include "media/filters/audio_timestamp_validator.h"
 
@@ -54,7 +55,9 @@ class MEDIA_EXPORT DecoderStreamTraits<DemuxerStream::AUDIO> {
   static bool NeedsBitstreamConversion(DecoderType* decoder);
   static scoped_refptr<OutputType> CreateEOSOutput();
 
-  DecoderStreamTraits(MediaLog* media_log, ChannelLayout initial_hw_layout);
+  DecoderStreamTraits(MediaLog* media_log,
+                      ChannelLayout initial_hw_layout,
+                      SampleFormat initial_hw_sample_format);
 
   void ReportStatistics(const StatisticsCB& statistics_cb, int bytes_decoded);
   void SetIsPlatformDecoder(bool is_platform_decoder);
@@ -67,7 +70,9 @@ class MEDIA_EXPORT DecoderStreamTraits<DemuxerStream::AUDIO> {
                          InitCB init_cb,
                          const OutputCB& output_cb,
                          const WaitingCB& waiting_cb);
-  void OnDecoderInitialized(DecoderType* decoder, InitCB cb, Status status);
+  void OnDecoderInitialized(DecoderType* decoder,
+                            InitCB cb,
+                            DecoderStatus status);
   DecoderConfigType GetDecoderConfig(DemuxerStream* stream);
   void OnDecode(const DecoderBuffer& buffer);
   PostDecodeAction OnDecodeDone(OutputType* buffer);
@@ -85,6 +90,9 @@ class MEDIA_EXPORT DecoderStreamTraits<DemuxerStream::AUDIO> {
   // HW layout at the time pipeline was started. Will not reflect possible
   // device changes.
   ChannelLayout initial_hw_layout_;
+  // HW sample format at the time pipeline was started. Will not reflect
+  // possible device changes.
+  SampleFormat initial_hw_sample_format_;
   PipelineStatistics stats_;
   AudioDecoderConfig config_;
 
@@ -126,7 +134,9 @@ class MEDIA_EXPORT DecoderStreamTraits<DemuxerStream::VIDEO> {
                          InitCB init_cb,
                          const OutputCB& output_cb,
                          const WaitingCB& waiting_cb);
-  void OnDecoderInitialized(DecoderType* decoder, InitCB cb, Status status);
+  void OnDecoderInitialized(DecoderType* decoder,
+                            InitCB cb,
+                            DecoderStatus status);
   void OnDecode(const DecoderBuffer& buffer);
   PostDecodeAction OnDecodeDone(OutputType* buffer);
   void OnStreamReset(DemuxerStream* stream);

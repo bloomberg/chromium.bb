@@ -5,19 +5,23 @@
 #include "ash/webui/eche_app_ui/eche_app_manager.h"
 
 #include "ash/components/phonehub/phone_hub_manager.h"
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/network_config_service.h"
+#include "ash/services/secure_channel/public/cpp/client/connection_manager_impl.h"
 #include "ash/webui/eche_app_ui/apps_access_manager_impl.h"
+#include "ash/webui/eche_app_ui/eche_alert_generator.h"
+#include "ash/webui/eche_app_ui/eche_connection_scheduler_impl.h"
 #include "ash/webui/eche_app_ui/eche_connector_impl.h"
 #include "ash/webui/eche_app_ui/eche_message_receiver_impl.h"
-#include "ash/webui/eche_app_ui/eche_notification_generator.h"
 #include "ash/webui/eche_app_ui/eche_presence_manager.h"
 #include "ash/webui/eche_app_ui/eche_signaler.h"
+#include "ash/webui/eche_app_ui/eche_stream_status_change_handler.h"
+#include "ash/webui/eche_app_ui/eche_tray_stream_status_observer.h"
 #include "ash/webui/eche_app_ui/eche_uid_provider.h"
 #include "ash/webui/eche_app_ui/launch_app_helper.h"
 #include "ash/webui/eche_app_ui/system_info.h"
 #include "ash/webui/eche_app_ui/system_info_provider.h"
 #include "base/system/sys_info.h"
-#include "chromeos/services/secure_channel/public/cpp/client/connection_manager_impl.h"
 
 namespace ash {
 namespace {
@@ -26,6 +30,7 @@ const char kMetricNameResult[] = "Eche.Connection.Result";
 const char kMetricNameDuration[] = "Eche.Connection.Duration";
 const char kMetricNameLatency[] = "Eche.Connectivity.Latency";
 }  // namespace
+
 namespace eche_app {
 
 EcheAppManager::EcheAppManager(
@@ -59,14 +64,20 @@ EcheAppManager::EcheAppManager(
                                             launch_eche_app_function,
                                             close_eche_app_function,
                                             launch_notification_function)),
+      stream_status_change_handler_(
+          std::make_unique<EcheStreamStatusChangeHandler>()),
       eche_notification_click_handler_(
           std::make_unique<EcheNotificationClickHandler>(
               phone_hub_manager,
               feature_status_provider_.get(),
               launch_app_helper_.get())),
+      connection_scheduler_(std::make_unique<EcheConnectionSchedulerImpl>(
+          connection_manager_.get(),
+          feature_status_provider_.get())),
       eche_connector_(
           std::make_unique<EcheConnectorImpl>(feature_status_provider_.get(),
-                                              connection_manager_.get())),
+                                              connection_manager_.get(),
+                                              connection_scheduler_.get())),
       signaler_(std::make_unique<EcheSignaler>(eche_connector_.get(),
                                                connection_manager_.get())),
       message_receiver_(
@@ -83,14 +94,20 @@ EcheAppManager::EcheAppManager(
           std::make_unique<EcheRecentAppClickHandler>(
               phone_hub_manager,
               feature_status_provider_.get(),
-              launch_app_helper_.get())),
-      notification_generator_(std::make_unique<EcheNotificationGenerator>(
-          launch_app_helper_.get())),
+              launch_app_helper_.get(),
+              stream_status_change_handler_.get())),
+      alert_generator_(
+          std::make_unique<EcheAlertGenerator>(launch_app_helper_.get())),
       apps_access_manager_(std::make_unique<AppsAccessManagerImpl>(
           eche_connector_.get(),
           message_receiver_.get(),
           feature_status_provider_.get(),
-          pref_service)) {
+          pref_service,
+          multidevice_setup_client,
+          connection_manager_.get())),
+      eche_tray_stream_status_observer_(
+          std::make_unique<EcheTrayStreamStatusObserver>(
+              stream_status_change_handler_.get())) {
   ash::GetNetworkConfigService(
       remote_cros_network_config_.BindNewPipeAndPassReceiver());
   system_info_provider_ = std::make_unique<SystemInfoProvider>(
@@ -116,26 +133,42 @@ void EcheAppManager::BindUidGeneratorInterface(
 
 void EcheAppManager::BindNotificationGeneratorInterface(
     mojo::PendingReceiver<mojom::NotificationGenerator> receiver) {
-  notification_generator_->Bind(std::move(receiver));
+  alert_generator_->Bind(std::move(receiver));
+}
+
+void EcheAppManager::BindDisplayStreamHandlerInterface(
+    mojo::PendingReceiver<mojom::DisplayStreamHandler> receiver) {
+  stream_status_change_handler_->Bind(std::move(receiver));
 }
 
 AppsAccessManager* EcheAppManager::GetAppsAccessManager() {
   return apps_access_manager_.get();
 }
 
+void EcheAppManager::CloseStream() {
+  stream_status_change_handler_->CloseStream();
+}
+
+void EcheAppManager::StreamGoBack() {
+  stream_status_change_handler_->StreamGoBack();
+}
+
 // NOTE: These should be destroyed in the opposite order of how these objects
 // are initialized in the constructor.
 void EcheAppManager::Shutdown() {
   system_info_provider_.reset();
+  eche_tray_stream_status_observer_.reset();
   apps_access_manager_.reset();
-  notification_generator_.reset();
+  alert_generator_.reset();
   eche_recent_app_click_handler_.reset();
   uid_.reset();
   eche_presence_manager_.reset();
   message_receiver_.reset();
   signaler_.reset();
   eche_connector_.reset();
+  connection_scheduler_.reset();
   eche_notification_click_handler_.reset();
+  stream_status_change_handler_.reset();
   launch_app_helper_.reset();
   feature_status_provider_.reset();
   connection_manager_.reset();

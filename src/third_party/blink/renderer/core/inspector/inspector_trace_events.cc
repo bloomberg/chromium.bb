@@ -35,8 +35,8 @@
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
 #include "third_party/blink/renderer/core/xmlhttprequest/xml_http_request.h"
-#include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/instrumentation/instance_counters.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_priority.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_timing.h"
@@ -380,18 +380,24 @@ const char* PseudoTypeToString(CSSSelector::PseudoType pseudo_type) {
     DEFINE_STRING_MAPPING(PseudoIsHtml)
     DEFINE_STRING_MAPPING(PseudoListBox)
     DEFINE_STRING_MAPPING(PseudoMultiSelectFocus)
-    DEFINE_STRING_MAPPING(PseudoPopupOpen)
+    DEFINE_STRING_MAPPING(PseudoTopLayer)
     DEFINE_STRING_MAPPING(PseudoHostHasAppearance)
     DEFINE_STRING_MAPPING(PseudoVideoPersistent)
     DEFINE_STRING_MAPPING(PseudoVideoPersistentAncestor)
     DEFINE_STRING_MAPPING(PseudoXrOverlay)
     DEFINE_STRING_MAPPING(PseudoTargetText)
+    DEFINE_STRING_MAPPING(PseudoSelectorFragmentAnchor)
     DEFINE_STRING_MAPPING(PseudoModal)
     DEFINE_STRING_MAPPING(PseudoHighlight)
     DEFINE_STRING_MAPPING(PseudoSpellingError)
     DEFINE_STRING_MAPPING(PseudoGrammarError)
     DEFINE_STRING_MAPPING(PseudoHas)
-    DEFINE_STRING_MAPPING(PseudoRelativeLeftmost)
+    DEFINE_STRING_MAPPING(PseudoRelativeAnchor)
+    DEFINE_STRING_MAPPING(PseudoPageTransition)
+    DEFINE_STRING_MAPPING(PseudoPageTransitionContainer);
+    DEFINE_STRING_MAPPING(PseudoPageTransitionImageWrapper);
+    DEFINE_STRING_MAPPING(PseudoPageTransitionIncomingImage);
+    DEFINE_STRING_MAPPING(PseudoPageTransitionOutgoingImage);
 #undef DEFINE_STRING_MAPPING
   }
 
@@ -658,7 +664,7 @@ void inspector_layout_event::BeginData(perfetto::TracedValue context,
   SetCallStack(dict);
 }
 
-static void CreateQuad(perfetto::TracedValue context, const FloatQuad& quad) {
+static void CreateQuad(perfetto::TracedValue context, const gfx::QuadF& quad) {
   auto array = std::move(context).WriteArray();
   array.Append(quad.p1().x());
   array.Append(quad.p1().y());
@@ -689,7 +695,7 @@ static void CreateLayoutRoot(perfetto::TracedValue context,
   auto dict = std::move(context).WriteDictionary();
   SetGeneratingNodeInfo(dict, layout_root.object, "nodeId");
   dict.Add("depth", static_cast<int>(layout_root.depth));
-  Vector<FloatQuad> quads;
+  Vector<gfx::QuadF> quads;
   layout_root.object->AbsoluteQuads(quads);
   if (quads.size() > kMaxQuads)
     quads.Shrink(kMaxQuads);
@@ -753,6 +759,7 @@ const char kSvgChanged[] = "SVG changed";
 const char kScrollbarChanged[] = "Scrollbar changed";
 const char kDisplayLock[] = "Display lock";
 const char kCanvasFormattedTextRunChange[] = "CanvasFormattedText runs changed";
+const char kDevtools[] = "Inspected by devtools";
 }  // namespace layout_invalidation_reason
 
 void inspector_layout_invalidation_tracking_event::Data(
@@ -909,7 +916,7 @@ void inspector_receive_response_event::Data(perfetto::TracedValue context,
   dict.Add("requestId", request_id);
   dict.Add("frame", IdentifiersFactory::FrameId(frame));
   dict.Add("statusCode", response.HttpStatusCode());
-  dict.Add("mimeType", response.MimeType().GetString().IsolatedCopy());
+  dict.Add("mimeType", response.MimeType().GetString());
   dict.Add("encodedDataLength", response.EncodedDataLength());
   dict.Add("fromCache", response.WasCached());
   dict.Add("fromServiceWorker", response.WasFetchedViaServiceWorker());
@@ -1108,7 +1115,7 @@ void inspector_xhr_load_event::Data(perfetto::TracedValue trace_context,
 void inspector_paint_event::Data(perfetto::TracedValue context,
                                  Frame* frame,
                                  const LayoutObject* layout_object,
-                                 const FloatQuad& quad,
+                                 const gfx::QuadF& quad,
                                  int layer_id) {
   auto dict = std::move(context).WriteDictionary();
   dict.Add("frame", IdentifiersFactory::FrameId(frame));
@@ -1154,17 +1161,18 @@ void inspector_mark_load_event::Data(perfetto::TracedValue context,
   dict.Add("frame", IdentifiersFactory::FrameId(frame));
 }
 
+void inspector_pre_paint_event::Data(perfetto::TracedValue context,
+                                     LocalFrame* frame) {
+  auto dict = std::move(context).WriteDictionary();
+  FrameEventData(dict, frame);
+  dict.Add("frame", IdentifiersFactory::FrameId(frame));
+}
+
 void inspector_scroll_layer_event::Data(perfetto::TracedValue context,
                                         LayoutObject* layout_object) {
   auto dict = std::move(context).WriteDictionary();
   dict.Add("frame", IdentifiersFactory::FrameId(layout_object->GetFrame()));
   SetGeneratingNodeInfo(dict, layout_object, "nodeId");
-}
-
-void inspector_update_layer_tree_event::Data(perfetto::TracedValue context,
-                                             LocalFrame* frame) {
-  auto dict = std::move(context).WriteDictionary();
-  dict.Add("frame", IdentifiersFactory::FrameId(frame));
 }
 
 namespace {
@@ -1190,7 +1198,8 @@ void inspector_evaluate_script_event::Data(perfetto::TracedValue context,
 void inspector_parse_script_event::Data(perfetto::TracedValue context,
                                         uint64_t identifier,
                                         const String& url) {
-  String request_id = IdentifiersFactory::RequestId(nullptr, identifier);
+  String request_id = IdentifiersFactory::RequestId(
+      static_cast<ExecutionContext*>(nullptr), identifier);
   auto dict = std::move(context).WriteDictionary();
   dict.Add("requestId", request_id);
   dict.Add("url", url);
@@ -1199,7 +1208,8 @@ void inspector_parse_script_event::Data(perfetto::TracedValue context,
 void inspector_deserialize_script_event::Data(perfetto::TracedValue context,
                                               uint64_t identifier,
                                               const String& url) {
-  String request_id = IdentifiersFactory::RequestId(nullptr, identifier);
+  String request_id = IdentifiersFactory::RequestId(
+      static_cast<ExecutionContext*>(nullptr), identifier);
   auto dict = std::move(context).WriteDictionary();
   dict.Add("requestId", request_id);
   dict.Add("url", url);
@@ -1345,9 +1355,11 @@ void inspector_update_counters_event::Data(perfetto::TracedValue context) {
 }
 
 void inspector_invalidate_layout_event::Data(perfetto::TracedValue context,
-                                             LocalFrame* frame) {
+                                             LocalFrame* frame,
+                                             DOMNodeId nodeId) {
   auto dict = std::move(context).WriteDictionary();
   dict.Add("frame", IdentifiersFactory::FrameId(frame));
+  dict.Add("nodeId", nodeId);
   SetCallStack(dict);
 }
 

@@ -32,6 +32,7 @@
 #include "base/win/scoped_handle.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
+#include "chrome/browser/enterprise/connectors/device_trust/key_management/core/network/key_network_delegate.h"
 #include "chrome/browser/enterprise/connectors/device_trust/key_management/core/network/mock_key_network_delegate.h"
 #include "chrome/browser/enterprise/connectors/device_trust/key_management/core/persistence/key_persistence_delegate_factory.h"
 #include "chrome/browser/enterprise/connectors/device_trust/key_management/core/persistence/mock_key_persistence_delegate.h"
@@ -579,9 +580,7 @@ TEST(SetupUtilTest, StoreDMTokenToRegistrySuccess) {
   ASSERT_EQ(kExpectedSize, token.length());
   EXPECT_TRUE(installer::StoreDMToken(token));
 
-  base::win::RegKey key;
-  std::wstring name;
-  std::tie(key, name) = InstallUtil::GetCloudManagementDmTokenLocation(
+  auto [key, name] = InstallUtil::GetCloudManagementDmTokenLocation(
       InstallUtil::ReadOnly(true), InstallUtil::BrowserLocation(false));
   ASSERT_TRUE(key.Valid());
 
@@ -618,6 +617,128 @@ TEST(SetupUtilTest, StoreDMTokenToRegistryShouldFailWhenDMTokenTooLarge) {
   EXPECT_FALSE(installer::StoreDMToken(token_too_large));
 }
 
+TEST(SetupUtilTest, DeleteDMTokenFromRegistrySuccess) {
+  install_static::ScopedInstallDetails scoped_install_details(true);
+  registry_util::RegistryOverrideManager registry_override_manager;
+  registry_override_manager.OverrideRegistry(HKEY_LOCAL_MACHINE);
+
+  // Store the DMToken and confirm that it can be found in the registry.
+  static constexpr char kTokenData[] = "tokens are \0 binary data";
+  static constexpr DWORD kExpectedSize = sizeof(kTokenData) - 1;
+  std::string token(&kTokenData[0], kExpectedSize);
+  ASSERT_TRUE(installer::StoreDMToken(token));
+
+  auto [key, name] = InstallUtil::GetCloudManagementDmTokenLocation(
+      InstallUtil::ReadOnly(true), InstallUtil::BrowserLocation(false));
+  ASSERT_TRUE(key.Valid());
+  ASSERT_TRUE(key.HasValue(name.c_str()));
+  DWORD size = kExpectedSize;
+  std::vector<char> raw_value(size);
+  DWORD dtype;
+  ASSERT_EQ(ERROR_SUCCESS,
+            key.ReadValue(name.c_str(), raw_value.data(), &size, &dtype));
+
+  std::tie(key, name) = InstallUtil::GetCloudManagementDmTokenLocation(
+      InstallUtil::ReadOnly(true), InstallUtil::BrowserLocation(true));
+  ASSERT_TRUE(key.Valid());
+  ASSERT_TRUE(key.HasValue(name.c_str()));
+  ASSERT_EQ(ERROR_SUCCESS,
+            key.ReadValue(name.c_str(), raw_value.data(), &size, &dtype));
+
+  // Delete the DMToken from registry and confirm that the corresponding value
+  // can no longer be found. Since no other values were stored in the key, the
+  // key is also deleted.
+  ASSERT_TRUE(installer::DeleteDMToken());
+
+  std::tie(key, name) = InstallUtil::GetCloudManagementDmTokenLocation(
+      InstallUtil::ReadOnly(true), InstallUtil::BrowserLocation(false));
+  ASSERT_FALSE(key.Valid());
+
+  std::tie(key, name) = InstallUtil::GetCloudManagementDmTokenLocation(
+      InstallUtil::ReadOnly(true), InstallUtil::BrowserLocation(true));
+  ASSERT_FALSE(key.Valid());
+}
+
+TEST(SetupUtilTest, DeleteDMTokenFromRegistryWhenValueNotFound) {
+  install_static::ScopedInstallDetails scoped_install_details(true);
+  registry_util::RegistryOverrideManager registry_override_manager;
+  registry_override_manager.OverrideRegistry(HKEY_LOCAL_MACHINE);
+
+  // Store an unrelated value in the registry.
+  auto [key, name] = InstallUtil::GetCloudManagementDmTokenLocation(
+      InstallUtil::ReadOnly(false), InstallUtil::BrowserLocation(false));
+  ASSERT_TRUE(key.Valid());
+  auto result = key.WriteValue(L"unrelated_value", L"unrelated_data");
+  ASSERT_EQ(ERROR_SUCCESS, result);
+
+  std::tie(key, name) = InstallUtil::GetCloudManagementDmTokenLocation(
+      InstallUtil::ReadOnly(false), InstallUtil::BrowserLocation(true));
+  ASSERT_TRUE(key.Valid());
+  result = key.WriteValue(L"unrelated_value", L"unrelated_data");
+  ASSERT_EQ(ERROR_SUCCESS, result);
+
+  // Validate that the DMToken value is not found in the registry.
+  std::tie(key, name) = InstallUtil::GetCloudManagementDmTokenLocation(
+      InstallUtil::ReadOnly(true), InstallUtil::BrowserLocation(false));
+  ASSERT_TRUE(key.Valid());
+  ASSERT_FALSE(key.HasValue(name.c_str()));
+  DWORD size = 0;
+  std::vector<char> raw_value(size);
+  DWORD dtype;
+  ASSERT_EQ(ERROR_FILE_NOT_FOUND,
+            key.ReadValue(name.c_str(), raw_value.data(), &size, &dtype));
+
+  std::tie(key, name) = InstallUtil::GetCloudManagementDmTokenLocation(
+      InstallUtil::ReadOnly(true), InstallUtil::BrowserLocation(true));
+  ASSERT_TRUE(key.Valid());
+  ASSERT_FALSE(key.HasValue(name.c_str()));
+  ASSERT_EQ(ERROR_FILE_NOT_FOUND,
+            key.ReadValue(name.c_str(), raw_value.data(), &size, &dtype));
+
+  // DMToken deletion is treated as successful if the value is not found.
+  ASSERT_TRUE(installer::DeleteDMToken());
+
+  std::tie(key, name) = InstallUtil::GetCloudManagementDmTokenLocation(
+      InstallUtil::ReadOnly(true), InstallUtil::BrowserLocation(false));
+  ASSERT_TRUE(key.Valid());
+  ASSERT_FALSE(key.HasValue(name.c_str()));
+  ASSERT_EQ(ERROR_FILE_NOT_FOUND,
+            key.ReadValue(name.c_str(), raw_value.data(), &size, &dtype));
+
+  std::tie(key, name) = InstallUtil::GetCloudManagementDmTokenLocation(
+      InstallUtil::ReadOnly(true), InstallUtil::BrowserLocation(true));
+  ASSERT_TRUE(key.Valid());
+  ASSERT_FALSE(key.HasValue(name.c_str()));
+  ASSERT_EQ(ERROR_FILE_NOT_FOUND,
+            key.ReadValue(name.c_str(), raw_value.data(), &size, &dtype));
+}
+
+TEST(SetupUtilTest, DeleteDMTokenFromRegistryWhenKeyNotFound) {
+  install_static::ScopedInstallDetails scoped_install_details(true);
+  registry_util::RegistryOverrideManager registry_override_manager;
+  registry_override_manager.OverrideRegistry(HKEY_LOCAL_MACHINE);
+
+  // Validate that the key is not found in the registry.
+  auto [key, name] = InstallUtil::GetCloudManagementDmTokenLocation(
+      InstallUtil::ReadOnly(true), InstallUtil::BrowserLocation(false));
+  ASSERT_FALSE(key.Valid());
+
+  std::tie(key, name) = InstallUtil::GetCloudManagementDmTokenLocation(
+      InstallUtil::ReadOnly(true), InstallUtil::BrowserLocation(true));
+  ASSERT_FALSE(key.Valid());
+
+  // DMToken deletion is treated as successful if the key is not found.
+  ASSERT_TRUE(installer::DeleteDMToken());
+
+  std::tie(key, name) = InstallUtil::GetCloudManagementDmTokenLocation(
+      InstallUtil::ReadOnly(true), InstallUtil::BrowserLocation(false));
+  ASSERT_FALSE(key.Valid());
+
+  std::tie(key, name) = InstallUtil::GetCloudManagementDmTokenLocation(
+      InstallUtil::ReadOnly(true), InstallUtil::BrowserLocation(true));
+  ASSERT_FALSE(key.Valid());
+}
+
 TEST(SetupUtilTest, RotateDTKeySuccess) {
   base::test::TaskEnvironment task_environment;
   install_static::ScopedInstallDetails scoped_install_details(true);
@@ -635,20 +756,13 @@ TEST(SetupUtilTest, RotateDTKeySuccess) {
   GURL dmserver_url("dmserver.com");
   std::string nonce = "nonce";
 
-  // Create a fake success response.
-  enterprise_management::DeviceManagementResponse response;
-  response.mutable_browser_public_key_upload_response()->set_response_code(
-      enterprise_management::BrowserPublicKeyUploadResponse::SUCCESS);
-  std::string response_str;
-  response.SerializeToString(&response_str);
-
   // Trigger the key rotation with a real persistence delegate (empty) but with
   // a mocked network delegate.
   auto mock_network_delegate =
       std::make_unique<enterprise_connectors::test::MockKeyNetworkDelegate>();
   EXPECT_CALL(*mock_network_delegate,
               SendPublicKeyToDmServerSync(dmserver_url, token, testing::_))
-      .WillOnce(testing::Return(response_str));
+      .WillOnce(testing::Return(/*http_code=*/200));
 
   auto key_rotation_manager =
       enterprise_connectors::KeyRotationManager::CreateForTesting(
@@ -659,10 +773,7 @@ TEST(SetupUtilTest, RotateDTKeySuccess) {
   ASSERT_TRUE(installer::RotateDeviceTrustKey(std::move(key_rotation_manager),
                                               dmserver_url, token, nonce));
 
-  base::win::RegKey key;
-  std::wstring signingkey_name;
-  std::wstring tustlevel_name;
-  std::tie(key, signingkey_name, tustlevel_name) =
+  auto [key, signingkey_name, tustlevel_name] =
       InstallUtil::GetDeviceTrustSigningKeyLocation(
           InstallUtil::ReadOnly(true));
   ASSERT_TRUE(key.Valid());

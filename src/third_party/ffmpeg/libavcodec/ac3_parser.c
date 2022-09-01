@@ -21,9 +21,12 @@
  */
 
 #include "config.h"
+#include "config_components.h"
 
 #include "libavutil/channel_layout.h"
 #include "parser.h"
+#include "ac3defs.h"
+#include "ac3tab.h"
 #include "ac3_parser.h"
 #include "ac3_parser_internal.h"
 #include "aac_ac3_parser.h"
@@ -141,7 +144,7 @@ int ff_ac3_parse_header(GetBitContext *gbc, AC3HeaderInfo *hdr)
                         (hdr->num_blocks * 256);
         hdr->channels = ff_ac3_channels_tab[hdr->channel_mode] + hdr->lfe_on;
     }
-    hdr->channel_layout = avpriv_ac3_channel_layout_tab[hdr->channel_mode];
+    hdr->channel_layout = ff_ac3_channel_layout_tab[hdr->channel_mode];
     if (hdr->lfe_on)
         hdr->channel_layout |= AV_CH_LOW_FREQUENCY;
 

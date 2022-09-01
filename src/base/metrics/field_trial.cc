@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/metrics/field_trial_param_associator.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
 #include "base/process/memory.h"
 #include "base/process/process_handle.h"
 #include "base/process/process_info.h"
@@ -25,21 +26,22 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/unguessable_token.h"
+#include "build/build_config.h"
 
-#if !defined(OS_IOS)
+#if !BUILDFLAG(IS_IOS)
 #include "base/process/launch.h"
 #endif
 
 // On POSIX, the fd is shared using the mapping in GlobalDescriptors.
-#if defined(OS_POSIX) && !defined(OS_NACL)
+#if BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_NACL)
 #include "base/posix/global_descriptors.h"
 #endif
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include <windows.h>
 #endif
 
-#if defined(OS_FUCHSIA)
+#if BUILDFLAG(IS_FUCHSIA)
 #include <lib/zx/vmo.h>
 #include <zircon/process.h>
 
@@ -71,7 +73,7 @@ const char kAllocatorName[] = "FieldTrialAllocator";
 // processes and possibly causing crashes (see crbug.com/661617).
 const size_t kFieldTrialAllocationSize = 128 << 10;  // 128 KiB
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 constexpr MachPortsForRendezvous::key_type kFieldTrialRendezvousKey = 'fldt';
 #endif
 
@@ -165,7 +167,7 @@ bool ParseFieldTrialsString(const std::string& trials_string,
   return true;
 }
 
-#if !defined(OS_IOS)
+#if !BUILDFLAG(IS_IOS)
 void AddFeatureAndFieldTrialFlags(CommandLine* cmd_line) {
   std::string enabled_features;
   std::string disabled_features;
@@ -184,17 +186,17 @@ void AddFeatureAndFieldTrialFlags(CommandLine* cmd_line) {
                                 field_trial_states);
   }
 }
-#endif  // !defined(OS_IOS)
+#endif  // !BUILDFLAG(IS_IOS)
 
 void OnOutOfMemory(size_t size) {
-#if defined(OS_NACL)
+#if BUILDFLAG(IS_NACL)
   NOTREACHED();
 #else
   TerminateBecauseOutOfMemory(size);
 #endif
 }
 
-#if !defined(OS_NACL) && !defined(OS_IOS)
+#if !BUILDFLAG(IS_NACL) && !BUILDFLAG(IS_IOS)
 // Returns whether the operation succeeded.
 bool DeserializeGUIDFromStringPieces(StringPiece first,
                                      StringPiece second,
@@ -207,7 +209,7 @@ bool DeserializeGUIDFromStringPieces(StringPiece first,
   *guid = UnguessableToken::Deserialize(high, low);
   return true;
 }
-#endif  // !defined(OS_NACL) && !defined(OS_IOS)
+#endif  // !BUILDFLAG(IS_NACL) && !BUILDFLAG(IS_IOS)
 
 }  // namespace
 
@@ -255,7 +257,7 @@ PickleIterator FieldTrial::FieldTrialEntry::GetPickleIterator() const {
   const char* src =
       reinterpret_cast<const char*>(this) + sizeof(FieldTrialEntry);
 
-  Pickle pickle(src, pickle_size);
+  Pickle pickle(src, checked_cast<size_t>(pickle_size));
   return PickleIterator(pickle);
 }
 
@@ -764,20 +766,16 @@ void FieldTrialList::CreateTrialsFromCommandLine(const CommandLine& cmd_line,
                                                  int fd_key) {
   global_->create_trials_from_command_line_called_ = true;
 
-#if !defined(OS_NACL) && !defined(OS_IOS)
+#if !BUILDFLAG(IS_NACL) && !BUILDFLAG(IS_IOS)
   if (cmd_line.HasSwitch(switches::kFieldTrialHandle)) {
     std::string switch_value =
         cmd_line.GetSwitchValueASCII(switches::kFieldTrialHandle);
     bool result = CreateTrialsFromSwitchValue(switch_value, fd_key);
     UMA_HISTOGRAM_BOOLEAN("ChildProcess.FieldTrials.CreateFromShmemSuccess",
                           result);
-#if !defined(OS_WIN)
-    // TODO(https://crbug.com/1262370): This check is triggered in a utility
-    // process when running XR tests on Windows.
     DCHECK(result);
-#endif
   }
-#endif  // !defined(OS_NACL) && !defined(OS_IOS)
+#endif  // !BUILDFLAG(IS_NACL) && !BUILDFLAG(IS_IOS)
 
   if (cmd_line.HasSwitch(switches::kForceFieldTrials)) {
     bool result = FieldTrialList::CreateTrialsFromString(
@@ -803,12 +801,11 @@ void FieldTrialList::CreateFeaturesFromCommandLine(
       global_->field_trial_allocator_.get());
 }
 
-#if !defined(OS_IOS)
+#if !BUILDFLAG(IS_IOS)
 // static
 void FieldTrialList::PopulateLaunchOptionsWithFieldTrialState(
     CommandLine* command_line,
-    LaunchOptions* launch_options,
-    base::ProcessHandle child_process) {
+    LaunchOptions* launch_options) {
   DCHECK(command_line);
   DCHECK(launch_options);
 
@@ -822,12 +819,12 @@ void FieldTrialList::PopulateLaunchOptionsWithFieldTrialState(
     return;
   }
 
-#if !defined(OS_NACL)
+#if !BUILDFLAG(IS_NACL)
   global_->field_trial_allocator_->UpdateTrackingHistograms();
   std::string switch_value = SerializeSharedMemoryRegionMetadata(
-      global_->readonly_allocator_region_, launch_options, child_process);
+      global_->readonly_allocator_region_, launch_options);
   command_line->AppendSwitchASCII(switches::kFieldTrialHandle, switch_value);
-#endif  // !defined(OS_NACL)
+#endif  // !BUILDFLAG(IS_NACL)
 
   // Append --enable-features and --disable-features switches corresponding
   // to the features enabled on the command-line, so that child and browser
@@ -847,22 +844,22 @@ void FieldTrialList::PopulateLaunchOptionsWithFieldTrialState(
                                     disabled_features);
   }
 }
-#endif  // !defined(OS_IOS)
+#endif  // !BUILDFLAG(IS_IOS)
 
-#if defined(OS_POSIX) && !defined(OS_MAC) && !defined(OS_NACL)
+#if BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_APPLE) && !BUILDFLAG(IS_NACL)
 // static
 int FieldTrialList::GetFieldTrialDescriptor() {
   InstantiateFieldTrialAllocatorIfNeeded();
   if (!global_ || !global_->readonly_allocator_region_.IsValid())
     return -1;
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   return global_->readonly_allocator_region_.GetPlatformHandle();
 #else
   return global_->readonly_allocator_region_.GetPlatformHandle().fd;
 #endif
 }
-#endif  // defined(OS_POSIX) && !defined(OS_MAC) && !defined(OS_NACL)
+#endif  // BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_APPLE) && !BUILDFLAG(IS_NACL)
 
 // static
 ReadOnlySharedMemoryRegion
@@ -1005,7 +1002,8 @@ bool FieldTrialList::GetParamsFromSharedMemory(
 
   size_t allocated_size =
       global_->field_trial_allocator_->GetAllocSize(field_trial->ref_);
-  size_t actual_size = sizeof(FieldTrial::FieldTrialEntry) + entry->pickle_size;
+  uint64_t actual_size =
+      sizeof(FieldTrial::FieldTrialEntry) + entry->pickle_size;
   if (allocated_size < actual_size)
     return false;
 
@@ -1130,34 +1128,31 @@ void FieldTrialList::RestoreInstanceForTesting(FieldTrialList* instance) {
   global_ = instance;
 }
 
-#if !defined(OS_NACL) && !defined(OS_IOS)
+#if !BUILDFLAG(IS_NACL) && !BUILDFLAG(IS_IOS)
 
 // static
 std::string FieldTrialList::SerializeSharedMemoryRegionMetadata(
     const ReadOnlySharedMemoryRegion& shm,
-    LaunchOptions* launch_options,
-    base::ProcessHandle child_process) {
+    LaunchOptions* launch_options) {
   DCHECK(launch_options);
 
   std::stringstream ss;
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
+  // Elevated process might not need this, although it is harmless.
   launch_options->handles_to_inherit.push_back(shm.GetPlatformHandle());
 
   // Tell the child process the name of the inherited HANDLE.
   uintptr_t uintptr_handle =
       reinterpret_cast<uintptr_t>(shm.GetPlatformHandle());
-
-  if (child_process) {
-    HANDLE child_handle = 0;
-    BOOL rc = ::DuplicateHandle(GetCurrentProcess(), shm.GetPlatformHandle(),
-            child_process, &child_handle, 0, FALSE,
-            DUPLICATE_SAME_ACCESS);
-    PCHECK(rc != 0);
-    uintptr_handle = reinterpret_cast<uintptr_t>(child_handle);
-  }
-
   ss << uintptr_handle << ",";
-#elif defined(OS_MAC)
+  if (launch_options->elevated) {
+    // Tell the child that it must open its parent and grab the handle.
+    ss << "p,";
+  } else {
+    // Tell the child that it inherited the handle.
+    ss << "i,";
+  }
+#elif BUILDFLAG(IS_MAC)
   launch_options->mach_ports_for_rendezvous.emplace(
       kFieldTrialRendezvousKey,
       MachRendezvousPort(shm.GetPlatformHandle(), MACH_MSG_TYPE_COPY_SEND));
@@ -1165,7 +1160,9 @@ std::string FieldTrialList::SerializeSharedMemoryRegionMetadata(
   // The handle on Mac is looked up directly by the child, rather than being
   // transferred to the child over the command line.
   ss << kFieldTrialRendezvousKey << ",";
-#elif defined(OS_FUCHSIA)
+  // Tell the child that the handle is looked up.
+  ss << "r,";
+#elif BUILDFLAG(IS_FUCHSIA)
   zx::vmo transfer_vmo;
   zx_status_t status = shm.GetPlatformHandle()->duplicate(
       ZX_RIGHT_READ | ZX_RIGHT_MAP | ZX_RIGHT_TRANSFER | ZX_RIGHT_GET_PROPERTY |
@@ -1177,10 +1174,12 @@ std::string FieldTrialList::SerializeSharedMemoryRegionMetadata(
   uint32_t handle_id = LaunchOptions::AddHandleToTransfer(
       &launch_options->handles_to_transfer, transfer_vmo.release());
   ss << handle_id << ",";
-#elif defined(OS_POSIX)
+  // Tell the child that the handle is inherited.
+  ss << "i,";
+#elif BUILDFLAG(IS_POSIX)
   // This is actually unused in the child process, but allows non-Mac Posix
   // platforms to have the same format as the others.
-  ss << "0,";
+  ss << "0,i,";
 #else
 #error Unsupported OS
 #endif
@@ -1196,20 +1195,26 @@ ReadOnlySharedMemoryRegion
 FieldTrialList::DeserializeSharedMemoryRegionMetadata(
     const std::string& switch_value,
     int fd) {
+  // Format: "handle,[irp],guid-high,guid-low,size".
   std::vector<StringPiece> tokens =
       SplitStringPiece(switch_value, ",", KEEP_WHITESPACE, SPLIT_WANT_ALL);
 
-  if (tokens.size() != 4)
+  if (tokens.size() != 5)
     return ReadOnlySharedMemoryRegion();
 
   int field_trial_handle = 0;
   if (!StringToInt(tokens[0], &field_trial_handle))
     return ReadOnlySharedMemoryRegion();
-#if defined(OS_WIN)
+
+    // token[1] has a fixed value but is ignored on all platforms except
+    // Windows, where it can be 'i' or 'p' to indicate that the handle is
+    // inherited or must be obtained from the parent.
+#if BUILDFLAG(IS_WIN)
   HANDLE handle = reinterpret_cast<HANDLE>(field_trial_handle);
-  if (IsCurrentProcessElevated()) {
-    // LaunchElevatedProcess doesn't have a way to duplicate the handle,
-    // but this process can since by definition it's not sandboxed.
+  if (tokens[1] == "p") {
+    DCHECK(IsCurrentProcessElevated());
+    // LaunchProcess doesn't have a way to duplicate the handle, but this
+    // process can since by definition it's not sandboxed.
     ProcessId parent_pid = GetParentProcessId(GetCurrentProcess());
     HANDLE parent_handle = OpenProcess(PROCESS_ALL_ACCESS, FALSE, parent_pid);
     // TODO(https://crbug.com/916461): Duplicating the handle is known to fail
@@ -1218,9 +1223,11 @@ FieldTrialList::DeserializeSharedMemoryRegionMetadata(
     DuplicateHandle(parent_handle, handle, GetCurrentProcess(), &handle, 0,
                     FALSE, DUPLICATE_SAME_ACCESS);
     CloseHandle(parent_handle);
+  } else if (tokens[1] != "i") {
+    return ReadOnlySharedMemoryRegion();
   }
   win::ScopedHandle scoped_handle(handle);
-#elif defined(OS_MAC)
+#elif BUILDFLAG(IS_MAC)
   auto* rendezvous = MachPortRendezvousClient::GetInstance();
   if (!rendezvous)
     return ReadOnlySharedMemoryRegion();
@@ -1228,14 +1235,14 @@ FieldTrialList::DeserializeSharedMemoryRegionMetadata(
       rendezvous->TakeSendRight(field_trial_handle);
   if (!scoped_handle.is_valid())
     return ReadOnlySharedMemoryRegion();
-#elif defined(OS_FUCHSIA)
+#elif BUILDFLAG(IS_FUCHSIA)
   static bool startup_handle_taken = false;
   DCHECK(!startup_handle_taken) << "Shared memory region initialized twice";
   zx::vmo scoped_handle(zx_take_startup_handle(field_trial_handle));
   startup_handle_taken = true;
   if (!scoped_handle.is_valid())
     return ReadOnlySharedMemoryRegion();
-#elif defined(OS_POSIX)
+#elif BUILDFLAG(IS_POSIX)
   if (fd == -1)
     return ReadOnlySharedMemoryRegion();
   ScopedFD scoped_handle(fd);
@@ -1244,11 +1251,11 @@ FieldTrialList::DeserializeSharedMemoryRegionMetadata(
 #endif
 
   UnguessableToken guid;
-  if (!DeserializeGUIDFromStringPieces(tokens[1], tokens[2], &guid))
+  if (!DeserializeGUIDFromStringPieces(tokens[2], tokens[3], &guid))
     return ReadOnlySharedMemoryRegion();
 
   int size;
-  if (!StringToInt(tokens[3], &size))
+  if (!StringToInt(tokens[4], &size))
     return ReadOnlySharedMemoryRegion();
 
   auto platform_handle = subtle::PlatformSharedMemoryRegion::Take(
@@ -1263,11 +1270,11 @@ bool FieldTrialList::CreateTrialsFromSwitchValue(
     const std::string& switch_value,
     int fd_key) {
   int fd = -1;
-#if defined(OS_POSIX)
+#if BUILDFLAG(IS_POSIX)
   fd = GlobalDescriptors::GetInstance()->MaybeGet(fd_key);
   if (fd == -1)
     return false;
-#endif  // defined(OS_POSIX)
+#endif  // BUILDFLAG(IS_POSIX)
   ReadOnlySharedMemoryRegion shm =
       DeserializeSharedMemoryRegionMetadata(switch_value, fd);
   if (!shm.IsValid())
@@ -1275,7 +1282,7 @@ bool FieldTrialList::CreateTrialsFromSwitchValue(
   return FieldTrialList::CreateTrialsFromSharedMemoryRegion(shm);
 }
 
-#endif  // !defined(OS_NACL) && !defined(OS_IOS)
+#endif  // !BUILDFLAG(IS_NACL) && !BUILDFLAG(IS_IOS)
 
 // static
 bool FieldTrialList::CreateTrialsFromSharedMemoryRegion(
@@ -1349,7 +1356,7 @@ void FieldTrialList::InstantiateFieldTrialAllocatorIfNeeded() {
   FeatureList::GetInstance()->AddFeaturesToAllocator(
       global_->field_trial_allocator_.get());
 
-#if !defined(OS_NACL)
+#if !BUILDFLAG(IS_NACL)
   global_->readonly_allocator_region_ = std::move(shm.region);
 #endif
 }
