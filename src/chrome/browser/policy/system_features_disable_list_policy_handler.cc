@@ -27,6 +27,7 @@ const char kScanningFeature[] = "scanning";
 const char kWebStoreFeature[] = "web_store";
 const char kCanvasFeature[] = "canvas";
 const char kExploreFeature[] = "explore";
+const char kCroshFeature[] = "crosh";
 
 const char kBlockedDisableMode[] = "blocked";
 const char kHiddenDisableMode[] = "hidden";
@@ -61,14 +62,15 @@ bool SystemFeaturesDisableListPolicyHandler::IsSystemFeatureDisabled(
   if (!pref_service)  // Sometimes it's not available in tests.
     return false;
 
-  const base::ListValue* disabled_system_features_pref =
+  const base::Value* disabled_system_features_pref =
       pref_service->GetList(policy::policy_prefs::kSystemFeaturesDisableList);
   if (!disabled_system_features_pref)
     return false;
 
   const auto disabled_system_features =
-      disabled_system_features_pref->GetList();
-  return base::Contains(disabled_system_features, base::Value(feature));
+      disabled_system_features_pref->GetListDeprecated();
+  return base::Contains(disabled_system_features,
+                        base::Value(static_cast<int>(feature)));
 }
 
 void SystemFeaturesDisableListPolicyHandler::ApplyList(
@@ -80,20 +82,21 @@ void SystemFeaturesDisableListPolicyHandler::ApplyList(
   base::Value* old_list = nullptr;
   prefs->GetValue(policy_prefs::kSystemFeaturesDisableList, &old_list);
 
-  for (const auto& element : filtered_list.GetList()) {
+  for (const auto& element : filtered_list.GetListDeprecated()) {
     SystemFeature feature = ConvertToEnum(element.GetString());
-    enums_list.Append(feature);
+    enums_list.Append(static_cast<int>(feature));
 
-    if (!old_list ||
-        !base::Contains(old_list->GetList(), base::Value(feature))) {
+    if (!old_list || !base::Contains(old_list->GetListDeprecated(),
+                                     base::Value(static_cast<int>(feature)))) {
       base::UmaHistogramEnumeration(kSystemFeaturesDisableListHistogram,
                                     feature);
     }
   }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  bool os_settings_disabled = base::Contains(
-      enums_list.GetList(), base::Value(SystemFeature::kOsSettings));
+  bool os_settings_disabled =
+      base::Contains(enums_list.GetListDeprecated(),
+                     base::Value(static_cast<int>(SystemFeature::kOsSettings)));
   prefs->SetBoolean(ash::prefs::kOsSettingsEnabled, !os_settings_disabled);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   prefs->SetValue(policy_prefs::kSystemFeaturesDisableList,
@@ -116,9 +119,11 @@ SystemFeature SystemFeaturesDisableListPolicyHandler::ConvertToEnum(
     return SystemFeature::kCanvas;
   if (system_feature == kExploreFeature)
     return SystemFeature::kExplore;
+  if (system_feature == kCroshFeature)
+    return SystemFeature::kCrosh;
 
   LOG(ERROR) << "Unsupported system feature: " << system_feature;
-  return kUnknownSystemFeature;
+  return SystemFeature::kUnknownSystemFeature;
 }
 
 }  // namespace policy

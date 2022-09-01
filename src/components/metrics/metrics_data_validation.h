@@ -5,8 +5,8 @@
 #ifndef COMPONENTS_METRICS_METRICS_DATA_VALIDATION_H_
 #define COMPONENTS_METRICS_METRICS_DATA_VALIDATION_H_
 
-#include "base/base_export.h"
 #include "base/feature_list.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/time/time.h"
 
 // Features and functions in this file are necessary to set up artificial A / B
@@ -58,9 +58,9 @@ extern const base::FeatureParam<double> kLogNormalStdDev;
 //
 // Returns the sample value for a pseudo metric given the |sample| from the real
 // metric and the assigned field trial group. The input type is double because
-// we don't want to lose precision before applying transformation. The output
-// type is int because things logged to histograms are ints.
-int GetPseudoMetricsSample(double sample);
+// we don't want to lose precision before applying transformation.
+double GetPseudoMetricsSample(double sample);
+
 // Returns the TimeDelta for a pseudo metric given the |sample| from the real
 // metric and the assigned field trial group. The unit of the additive factor
 // (b) is milliseconds.

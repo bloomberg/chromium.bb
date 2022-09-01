@@ -14,15 +14,14 @@
  * limitations under the License.
  */
 /// <reference types="node" />
-import { CDPSession } from './Connection.js';
-import { EvaluateFn, EvaluateFnReturnType, EvaluateHandleFn, SerializableOrJSHandle, UnwrapPromiseLike , WrapElementHandle} from './EvalTypes.js';
-import { ExecutionContext } from './ExecutionContext.js';
-import { Frame , FrameManager} from './FrameManager.js';
-import { MouseButton } from './Input.js';
-import { ElementHandle , JSHandle} from './JSHandle.js';
 import { PuppeteerLifeCycleEvent } from './LifecycleWatcher.js';
+import { JSHandle, ElementHandle } from './JSHandle.js';
+import { ExecutionContext } from './ExecutionContext.js';
 import { TimeoutSettings } from './TimeoutSettings.js';
-
+import { MouseButton } from './Input.js';
+import { FrameManager, Frame } from './FrameManager.js';
+import { SerializableOrJSHandle, EvaluateHandleFn, WrapElementHandle, EvaluateFn, EvaluateFnReturnType, UnwrapPromiseLike } from './EvalTypes.js';
+import { CDPSession } from './Connection.js';
 /**
  * @public
  */
@@ -30,6 +29,7 @@ export interface WaitForSelectorOptions {
     visible?: boolean;
     hidden?: boolean;
     timeout?: number;
+    root?: ElementHandle;
 }
 /**
  * @internal
@@ -147,11 +147,13 @@ export declare class DOMWorld {
 export interface WaitTaskOptions {
     domWorld: DOMWorld;
     predicateBody: Function | string;
+    predicateAcceptsContextElement: boolean;
     title: string;
     polling: string | number;
     timeout: number;
     binding?: PageBinding;
     args: SerializableOrJSHandle[];
+    root?: ElementHandle;
 }
 /**
  * @internal
@@ -161,6 +163,7 @@ export declare class WaitTask {
     _polling: string | number;
     _timeout: number;
     _predicateBody: string;
+    _predicateAcceptsContextElement: boolean;
     _args: SerializableOrJSHandle[];
     _binding: PageBinding;
     _runCount: number;
@@ -169,6 +172,7 @@ export declare class WaitTask {
     _reject: (x: Error) => void;
     _timeoutTimer?: NodeJS.Timeout;
     _terminated: boolean;
+    _root: ElementHandle;
     constructor(options: WaitTaskOptions);
     terminate(error: Error): void;
     rerun(): Promise<void>;

@@ -11,6 +11,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.SystemClock;
 
+import androidx.annotation.CallSuper;
+
 import org.chromium.base.IntentUtils;
 import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordHistogram;
@@ -21,7 +23,10 @@ import org.chromium.chrome.browser.init.AsyncInitializationActivity;
 import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.policy.PolicyServiceFactory;
 import org.chromium.chrome.browser.profiles.ProfileManagerUtils;
+import org.chromium.chrome.browser.signin.services.FREMobileIdentityConsistencyFieldTrial;
 import org.chromium.components.policy.PolicyService;
+import org.chromium.components.signin.AccountManagerFacade;
+import org.chromium.components.signin.AccountManagerFacadeProvider;
 
 /** Base class for First Run Experience. */
 public abstract class FirstRunActivityBase extends AsyncInitializationActivity {
@@ -40,11 +45,8 @@ public abstract class FirstRunActivityBase extends AsyncInitializationActivity {
     // received by ChromeLauncherActivity.)
     public static final String EXTRA_CHROME_LAUNCH_INTENT_EXTRAS =
             "Extra.FreChromeLaunchIntentExtras";
-    static final String SHOW_DATA_REDUCTION_PAGE = "ShowDataReduction";
     static final String SHOW_SEARCH_ENGINE_PAGE = "ShowSearchEnginePage";
     static final String SHOW_SYNC_CONSENT_PAGE = "ShowSyncConsent";
-
-    static final String OPEN_ADVANCED_SYNC_SETTINGS = "OpenAdvancedSyncSettings";
 
     public static final boolean DEFAULT_METRICS_AND_CRASH_REPORTING = true;
 
@@ -56,6 +58,8 @@ public abstract class FirstRunActivityBase extends AsyncInitializationActivity {
 
     private final long mStartTime;
     private long mNativeInitializedTime;
+
+    private ChildAccountStatusSupplier mChildAccountStatusSupplier;
 
     public FirstRunActivityBase() {
         mFirstRunAppRestrictionInfo = FirstRunAppRestrictionInfo.takeMaybeInitialized();
@@ -77,8 +81,20 @@ public abstract class FirstRunActivityBase extends AsyncInitializationActivity {
         return true;
     }
 
-    // Activity:
+    @Override
+    @CallSuper
+    public void triggerLayoutInflation() {
+        AccountManagerFacade accountManagerFacade = AccountManagerFacadeProvider.getInstance();
+        if (FREMobileIdentityConsistencyFieldTrial.isEnabled()) {
+            mChildAccountStatusSupplier = new ChildAccountStatusSupplier(
+                    accountManagerFacade, mFirstRunAppRestrictionInfo);
+        } else {
+            mChildAccountStatusSupplier =
+                    new ChildAccountStatusSupplier(accountManagerFacade, null);
+        }
+    }
 
+    // Activity:
     @Override
     public void onPause() {
         super.onPause();
@@ -179,6 +195,13 @@ public abstract class FirstRunActivityBase extends AsyncInitializationActivity {
      */
     public OneshotSupplier<Boolean> getPolicyLoadListener() {
         return mPolicyLoadListener;
+    }
+
+    /**
+     * Returns the supplier that supplies child account status.
+     */
+    public OneshotSupplier<Boolean> getChildAccountStatusSupplier() {
+        return mChildAccountStatusSupplier;
     }
 
     /**

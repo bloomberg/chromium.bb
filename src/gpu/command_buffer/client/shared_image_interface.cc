@@ -4,6 +4,8 @@
 
 #include "gpu/command_buffer/client/shared_image_interface.h"
 
+#include "base/notreached.h"
+
 namespace gpu {
 
 uint32_t SharedImageInterface::UsageForMailbox(const Mailbox& mailbox) {
@@ -19,14 +21,6 @@ std::vector<Mailbox> SharedImageInterface::CreateSharedImageVideoPlanes(
     uint32_t usage) {
   NOTREACHED();
   return {};
-}
-
-Mailbox SharedImageInterface::CreateSharedImageWithAHB(
-    const Mailbox& mailbox,
-    uint32_t usage,
-    const SyncToken& sync_token) {
-  NOTREACHED();
-  return Mailbox();
 }
 
 Mailbox SharedImageInterface::CreateSharedImage(

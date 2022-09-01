@@ -7,10 +7,10 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/containers/adapters.h"
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/no_destructor.h"
 #include "base/process/process.h"
-#include "base/task/post_task.h"
 #include "base/tracing/tracing_tls.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -48,12 +48,12 @@ void ProducerClient::Connect(
     return;
   }
 
-  mojo::ScopedSharedBufferHandle shm;
+  base::UnsafeSharedMemoryRegion shm;
   {
     base::AutoLock lock(lock_);
-    shm = shared_memory_->Clone();
+    shm = shared_memory_->CloneRegion();
   }
-  CHECK(shm.is_valid());
+  CHECK(shm.IsValid());
 
   mojo::PendingRemote<mojom::ProducerClient> client;
   auto client_receiver = client.InitWithNewPipeAndPassReceiver();
@@ -400,12 +400,12 @@ bool ProducerClient::InitSharedMemoryIfNeeded() {
   // The shared memory buffer is always provided by the ProducerClient, but only
   // created upon the first tracing request.
   shared_memory_ =
-      std::make_unique<MojoSharedMemory>(GetPreferredSmbSizeBytes());
+      std::make_unique<ChromeBaseSharedMemory>(GetPreferredSmbSizeBytes());
 
-  // TODO(crbug/1057614): We see shared memory buffer creation fail on windows
+  // TODO(crbug/1057614): We see shared memory region creation fail on windows
   // in the field. Investigate why this can happen. Gather statistics on
   // failure rates.
-  bool valid = shared_memory_->shared_buffer().is_valid();
+  bool valid = shared_memory_->region().IsValid();
   base::UmaHistogramBoolean(kSharedBufferIsValidMetricName, valid);
 
   if (!valid) {
@@ -453,8 +453,8 @@ void ProducerClient::BindClientAndHostPipesOnSequence(
   // the MetadataSource first to ensure that it's also ready. Once the
   // Perfetto Observer interface is ready, we can remove this.
   const auto& data_sources = PerfettoTracedProcess::Get()->data_sources();
-  for (auto it = data_sources.crbegin(); it != data_sources.crend(); ++it) {
-    NewDataSourceAdded(*it);
+  for (const auto* data_source : base::Reversed(data_sources)) {
+    NewDataSourceAdded(data_source);
   }
 }
 

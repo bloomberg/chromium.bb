@@ -9,9 +9,12 @@ import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.withContentDescription;
+import static androidx.test.espresso.matcher.ViewMatchers.withEffectiveVisibility;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.not;
 import static org.mockito.ArgumentMatchers.argThat;
@@ -25,6 +28,7 @@ import static org.chromium.chrome.browser.autofill_assistant.ProtoTestUtil.toCss
 
 import android.os.Bundle;
 
+import androidx.test.espresso.matcher.ViewMatchers.Visibility;
 import androidx.test.filters.MediumTest;
 
 import org.junit.Assert;
@@ -40,8 +44,8 @@ import org.mockito.junit.MockitoRule;
 
 import org.chromium.base.Callback;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.CriteriaNotSatisfiedException;
 import org.chromium.base.test.util.DisabledTest;
-import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.autofill_assistant.proto.ActionProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ChipProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.DirectActionProto;
@@ -59,6 +63,12 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
+import org.chromium.components.autofill_assistant.AssistantDependencies;
+import org.chromium.components.autofill_assistant.AssistantFeatures;
+import org.chromium.components.autofill_assistant.AutofillAssistantModuleEntry;
+import org.chromium.components.autofill_assistant.AutofillAssistantModuleEntryProvider;
+import org.chromium.components.autofill_assistant.AutofillAssistantPreferencesUtil;
+import org.chromium.components.autofill_assistant.R;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.ArrayList;
@@ -96,12 +106,13 @@ public class DirectActionsIntegrationTest {
             mModuleEntry =
                     AutofillAssistantModuleEntryProvider.INSTANCE.getModuleEntryIfInstalled();
             assert mModuleEntry != null;
-            AssistantDependencies dependencies = AutofillAssistantFacade.createDependencies(
-                    mTestRule.getActivity(), mModuleEntry);
+            AssistantDependencies dependencies =
+                    new AssistantStaticDependenciesChrome().createDependencies(
+                            mTestRule.getActivity());
             mDirectActionHandler = AutofillAssistantFacade.createDirectActionHandler(
                     mTestRule.getActivity(), dependencies.getBottomSheetController(),
-                    dependencies.getBrowserControls(), dependencies.getRootView(),
-                    dependencies.getActivityTabProvider());
+                    mTestRule.getActivity().getBrowserControlsManager(), dependencies.getRootView(),
+                    mTestRule.getActivity().getActivityTabProvider());
         });
     }
 
@@ -176,7 +187,7 @@ public class DirectActionsIntegrationTest {
         waitUntilViewMatchesCondition(withText("I agree"), isDisplayed());
         onView(withText("I agree")).perform(click());
 
-        waitUntilViewMatchesCondition(withText("Sorry, something went wrong."), isDisplayed());
+        waitUntilViewMatchesCondition(withText("Something went wrong"), isDisplayed());
         verify(mDirectActionResultCallback)
                 .onResult(argThat(bundle -> !bundle.getBoolean("success")));
     }
@@ -308,5 +319,126 @@ public class DirectActionsIntegrationTest {
         onView(withText("InfoBox message from previous run")).check(doesNotExist());
         onView(withId(R.id.info_box_explanation)).check(matches(not(isDisplayed())));
         onView(withText("Status message from previous run")).check(doesNotExist());
+    }
+
+    /**
+     * Regression test for b/195417125.
+     */
+    @Test
+    @MediumTest
+    @EnableFeatures({ChromeFeatureList.DIRECT_ACTIONS, AssistantFeatures.AUTOFILL_ASSISTANT_NAME,
+            AssistantFeatures.AUTOFILL_ASSISTANT_DIRECT_ACTIONS_NAME})
+    public void
+    testLastTellMessageDisplayedAfterStop() {
+        ArrayList<ActionProto> list = new ArrayList<>();
+        list.add(ActionProto.newBuilder()
+                         .setPrompt(PromptProto.newBuilder().addChoices(
+                                 PromptProto.Choice.newBuilder().setChip(
+                                         ChipProto.newBuilder().setText("Prompt"))))
+                         .build());
+        list.add(ActionProto.newBuilder()
+                         .setTell(TellProto.newBuilder().setMessage("Last tell message"))
+                         .build());
+        list.add(ActionProto.newBuilder().setStop(StopProto.newBuilder()).build());
+
+        AutofillAssistantTestScript script = new AutofillAssistantTestScript(
+                SupportedScriptProto.newBuilder()
+                        .setPath("autofill_assistant_target_website.html")
+                        .setPresentation(PresentationProto.newBuilder().setDirectAction(
+                                DirectActionProto.newBuilder()
+                                        .addNames("some_direct_action")
+                                        .build()))
+                        .build(),
+                list);
+        AutofillAssistantTestService testService =
+                new AutofillAssistantTestService(Collections.singletonList(script));
+        testService.scheduleForInjection();
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mDirectActionHandler.reportAvailableDirectActions(mDirectActionReporter);
+            Assert.assertThat(mDirectActionReporter.getDirectActions(),
+                    containsInAnyOrder("fetch_website_actions"));
+            mDirectActionHandler.performDirectAction(
+                    "fetch_website_actions", new Bundle(), mDirectActionResultCallback);
+            verify(mDirectActionResultCallback)
+                    .onResult(argThat(bundle -> bundle.getBoolean("success")));
+
+            mDirectActionHandler.reportAvailableDirectActions(mDirectActionReporter);
+            Assert.assertThat(mDirectActionReporter.getDirectActions(),
+                    containsInAnyOrder("fetch_website_actions", "some_direct_action"));
+            mDirectActionHandler.performDirectAction(
+                    "some_direct_action", new Bundle(), mDirectActionResultCallback);
+        });
+        waitUntilViewMatchesCondition(withText("Prompt"), isDisplayed());
+        onView(withText("Prompt")).perform(click());
+        waitUntilViewMatchesCondition(withText("Last tell message"), isDisplayed());
+        // The last tell message should still be visible (and not disappear
+        // immediately) after the script stops.
+        try {
+            waitUntilViewMatchesCondition(withText("Last tell message"), not(isDisplayed()), 200);
+        } catch (AssertionError e) {
+            if (e.getCause() instanceof CriteriaNotSatisfiedException) {
+                // This is ok, the view is still there, the test succeeds.
+                return;
+            }
+            throw e;
+        }
+        throw new CriteriaNotSatisfiedException(
+                "Expected last tell message to be visible after stop");
+    }
+
+    /**
+     * Regression test for b/224759196.
+     */
+    @Test
+    @MediumTest
+    @EnableFeatures({ChromeFeatureList.DIRECT_ACTIONS, AssistantFeatures.AUTOFILL_ASSISTANT_NAME,
+            AssistantFeatures.AUTOFILL_ASSISTANT_DIRECT_ACTIONS_NAME})
+    public void
+    testCloseDirectAction() {
+        ArrayList<ActionProto> list = new ArrayList<>();
+        list.add(ActionProto.newBuilder()
+                         .setPrompt(PromptProto.newBuilder().addChoices(
+                                 PromptProto.Choice.newBuilder().setChip(
+                                         ChipProto.newBuilder().setText("Prompt"))))
+                         .build());
+        list.add(ActionProto.newBuilder()
+                         .setTell(TellProto.newBuilder().setMessage("Last tell message"))
+                         .build());
+        list.add(ActionProto.newBuilder().setStop(StopProto.newBuilder()).build());
+
+        AutofillAssistantTestScript script = new AutofillAssistantTestScript(
+                SupportedScriptProto.newBuilder()
+                        .setPath("autofill_assistant_target_website.html")
+                        .setPresentation(PresentationProto.newBuilder().setDirectAction(
+                                DirectActionProto.newBuilder()
+                                        .addNames("some_direct_action")
+                                        .build()))
+                        .build(),
+                list);
+        AutofillAssistantTestService testService =
+                new AutofillAssistantTestService(Collections.singletonList(script));
+        testService.scheduleForInjection();
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mDirectActionHandler.reportAvailableDirectActions(mDirectActionReporter);
+            Assert.assertThat(mDirectActionReporter.getDirectActions(),
+                    containsInAnyOrder("fetch_website_actions"));
+            mDirectActionHandler.performDirectAction(
+                    "fetch_website_actions", new Bundle(), mDirectActionResultCallback);
+            verify(mDirectActionResultCallback)
+                    .onResult(argThat(bundle -> bundle.getBoolean("success")));
+
+            mDirectActionHandler.reportAvailableDirectActions(mDirectActionReporter);
+            Assert.assertThat(mDirectActionReporter.getDirectActions(),
+                    containsInAnyOrder("fetch_website_actions", "some_direct_action"));
+            mDirectActionHandler.performDirectAction(
+                    "some_direct_action", new Bundle(), mDirectActionResultCallback);
+        });
+        waitUntilViewMatchesCondition(withText("Prompt"), isDisplayed());
+        onView(withText("Prompt")).perform(click());
+        waitUntilViewMatchesCondition(withText("Last tell message"), isDisplayed());
+        onView(allOf(withContentDescription("Close"), withEffectiveVisibility(Visibility.VISIBLE)))
+                .perform(click());
     }
 }

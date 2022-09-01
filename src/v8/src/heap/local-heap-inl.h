@@ -72,16 +72,10 @@ Address LocalHeap::AllocateRawOrFail(int object_size, AllocationType type,
                                      AllocationAlignment alignment) {
   DCHECK(!FLAG_enable_third_party_heap);
   AllocationResult result = AllocateRaw(object_size, type, origin, alignment);
-  if (!result.IsRetry()) return result.ToObject().address();
+  HeapObject object;
+  if (result.To(&object)) return object.address();
   return PerformCollectionAndAllocateAgain(object_size, type, origin,
                                            alignment);
-}
-
-void LocalHeap::CreateFillerObjectAt(Address addr, int size,
-                                     ClearRecordedSlots clear_slots_mode) {
-  DCHECK_EQ(clear_slots_mode, ClearRecordedSlots::kNo);
-  heap()->CreateFillerObjectAtBackground(
-      addr, size, ClearFreedMemoryMode::kDontClearFreedMemory);
 }
 
 }  // namespace internal

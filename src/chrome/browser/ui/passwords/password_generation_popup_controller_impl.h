@@ -23,9 +23,9 @@
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/native_widget_types.h"
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 #include "components/zoom/zoom_observer.h"
-#endif  // !defined(OS_ANDROID)
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 namespace content {
 struct NativeWebKeyboardEvent;
@@ -58,10 +58,10 @@ class PasswordGenerationPopupView;
 class PasswordGenerationPopupControllerImpl
     : public PasswordGenerationPopupController,
       public content::WebContentsObserver
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
     ,
       public zoom::ZoomObserver
-#endif  // !defined(OS_ANDROID)
+#endif  // !BUILDFLAG(IS_ANDROID)
 {
  public:
   // Create a controller or return |previous| if it is suitable. Will hide
@@ -108,14 +108,13 @@ class PasswordGenerationPopupControllerImpl
 
   // content::WebContentsObserver overrides
   void WebContentsDestroyed() override;
-  void DidFinishNavigation(
-      content::NavigationHandle* navigation_handle) override;
+  void PrimaryPageChanged(content::Page& page) override;
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   // ZoomObserver implementation.
   void OnZoomChanged(
       const zoom::ZoomController::ZoomChangedEventData& data) override;
-#endif  // !defined(OS_ANDROID)
+#endif  // !BUILDFLAG(IS_ANDROID)
 
  protected:
   PasswordGenerationPopupControllerImpl(
@@ -136,6 +135,10 @@ class PasswordGenerationPopupControllerImpl
   void ViewDestroyed() override;
   void SelectionCleared() override;
   void SetSelected() override;
+#if !BUILDFLAG(IS_ANDROID)
+  void OnGooglePasswordManagerLinkClicked() override;
+  std::u16string GetPrimaryAccountEmail() override;
+#endif  // !BUILDFLAG(IS_ANDROID)
   void PasswordAccepted() override;
   gfx::NativeView container_view() const override;
   content::WebContents* GetWebContents() const override;

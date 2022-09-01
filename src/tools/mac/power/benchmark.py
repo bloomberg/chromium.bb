@@ -22,7 +22,8 @@ def IterScenarios(
     **kwargs):
   for scenario_and_browser_name in scenario_names:
     scenario_name, _, browser_name = scenario_and_browser_name.partition(':')
-    browser_driver = browser_driver_factory(browser_name)
+    browser_name, _, variation = browser_name.partition(':')
+    browser_driver = browser_driver_factory(browser_name, variation)
     scenario_driver = scenarios.MakeScenarioDriver(scenario_name,
                                                    browser_driver, **kwargs)
     if scenario_driver is None:
@@ -33,20 +34,28 @@ def IterScenarios(
 
 def main():
   parser = argparse.ArgumentParser(description='Runs browser power benchmarks')
-  parser.add_argument("--output_dir", help="Output dir", action='store_true')
+  parser.add_argument("--output_dir", help="Output dir")
   parser.add_argument('--no-checks',
                       dest='no_checks',
                       action='store_true',
                       help="Invalid environment doesn't throw")
+  mode_group = parser.add_mutually_exclusive_group()
+  mode_group.add_argument(
+      '--tracing_mode',
+      dest='tracing_mode',
+      action='store_true',
+      help="Grab a trace instead of a profile or benchmark.")
 
   # Profile related arguments
-  parser.add_argument(
+  mode_group.add_argument(
       '--profile_mode',
       dest='profile_mode',
       action='store',
       choices=["wakeups", "cpu_time"],
       help="Profile the application in one of two modes: wakeups, cpu_time.")
-  parser.add_argument("--power_sampler", help="Path to power sampler binary")
+  parser.add_argument("--power_sampler",
+                      help="Path to power sampler binary",
+                      required=True)
   parser.add_argument(
       '--scenarios',
       dest='scenarios',
@@ -64,10 +73,6 @@ def main():
       dest='chrome_user_dir',
       action='store',
       help='The user data dir to pass to Chrome via --user-data-dir')
-  parser.add_argument('--chromium-path',
-                      dest='chromium_path',
-                      action='store',
-                      help='The path to Chromium.app')
 
   parser.add_argument('--verbose',
                       action='store_true',
@@ -96,15 +101,21 @@ def main():
     driver.WaitBatteryNotFull()
 
     # Measure or Profile all defined scenarios.
-    browser_factory = lambda browser_name: browsers.MakeBrowserDriver(
-        browser_name,
-        chrome_user_dir=args.chrome_user_dir,
-        chromium_path=args.chromium_path)
+    def BrowserFactory(browser_name, variation):
+      return browsers.MakeBrowserDriver(browser_name,
+                                        variation,
+                                        chrome_user_dir=args.chrome_user_dir,
+                                        output_dir=output_dir,
+                                        tracing_mode=args.tracing_mode)
+
     for scenario in IterScenarios(args.scenarios,
-                                  browser_factory,
+                                  BrowserFactory,
                                   meet_meeting_id=args.meet_meeting_id):
 
-      if args.profile_mode:
+      if args.tracing_mode:
+        logging.info(f'Tracing scenario {scenario.name} ...')
+        driver.Trace(scenario)
+      elif args.profile_mode:
         logging.info(f'Profiling scenario {scenario.name} ...')
         driver.Profile(scenario, profile_mode=args.profile_mode)
       else:

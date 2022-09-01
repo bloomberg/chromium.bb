@@ -249,6 +249,7 @@ static_library("libjpeg") {
   defines = [
     "WITH_SIMD",
     "NO_GETENV",
+    "NO_PUTENV",
   ]
 
   configs += [ ":libjpeg_config" ]
@@ -343,5 +344,9 @@ if (build_with_chromium) {
 
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [ "//build/config/compiler:no_chromium_code" ]
+
+    if (is_win) {
+      cflags = ["-U_CRT_SECURE_NO_DEPRECATE"]
+    }
   }
 }

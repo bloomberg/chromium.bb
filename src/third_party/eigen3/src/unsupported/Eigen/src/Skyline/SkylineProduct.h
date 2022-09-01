@@ -25,22 +25,22 @@ struct SkylineProductReturnType {
 template<typename LhsNested, typename RhsNested, int ProductMode>
 struct internal::traits<SkylineProduct<LhsNested, RhsNested, ProductMode> > {
     // clean the nested types:
-    typedef typename internal::remove_all<LhsNested>::type _LhsNested;
-    typedef typename internal::remove_all<RhsNested>::type _RhsNested;
-    typedef typename _LhsNested::Scalar Scalar;
+    typedef internal::remove_all_t<LhsNested> LhsNested_;
+    typedef internal::remove_all_t<RhsNested> RhsNested_;
+    typedef typename LhsNested_::Scalar Scalar;
 
     enum {
-        LhsCoeffReadCost = _LhsNested::CoeffReadCost,
-        RhsCoeffReadCost = _RhsNested::CoeffReadCost,
-        LhsFlags = _LhsNested::Flags,
-        RhsFlags = _RhsNested::Flags,
+        LhsCoeffReadCost = LhsNested_::CoeffReadCost,
+        RhsCoeffReadCost = RhsNested_::CoeffReadCost,
+        LhsFlags = LhsNested_::Flags,
+        RhsFlags = RhsNested_::Flags,
 
-        RowsAtCompileTime = _LhsNested::RowsAtCompileTime,
-        ColsAtCompileTime = _RhsNested::ColsAtCompileTime,
-        InnerSize = EIGEN_SIZE_MIN_PREFER_FIXED(_LhsNested::ColsAtCompileTime, _RhsNested::RowsAtCompileTime),
+        RowsAtCompileTime = LhsNested_::RowsAtCompileTime,
+        ColsAtCompileTime = RhsNested_::ColsAtCompileTime,
+        InnerSize = internal::min_size_prefer_fixed(LhsNested_::ColsAtCompileTime, RhsNested_::RowsAtCompileTime),
 
-        MaxRowsAtCompileTime = _LhsNested::MaxRowsAtCompileTime,
-        MaxColsAtCompileTime = _RhsNested::MaxColsAtCompileTime,
+        MaxRowsAtCompileTime = LhsNested_::MaxRowsAtCompileTime,
+        MaxColsAtCompileTime = RhsNested_::MaxColsAtCompileTime,
 
         EvalToRowMajor = (RhsFlags & LhsFlags & RowMajorBit),
         ResultIsSkyline = ProductMode == SkylineTimeSkylineProduct,
@@ -54,9 +54,9 @@ struct internal::traits<SkylineProduct<LhsNested, RhsNested, ProductMode> > {
         CoeffReadCost = HugeCost
     };
 
-    typedef typename internal::conditional<ResultIsSkyline,
+    typedef std::conditional_t<ResultIsSkyline,
             SkylineMatrixBase<SkylineProduct<LhsNested, RhsNested, ProductMode> >,
-            MatrixBase<SkylineProduct<LhsNested, RhsNested, ProductMode> > >::type Base;
+            MatrixBase<SkylineProduct<LhsNested, RhsNested, ProductMode> > > Base;
 };
 
 namespace internal {
@@ -69,8 +69,8 @@ public:
 
 private:
 
-    typedef typename traits<SkylineProduct>::_LhsNested _LhsNested;
-    typedef typename traits<SkylineProduct>::_RhsNested _RhsNested;
+    typedef typename traits<SkylineProduct>::LhsNested_ LhsNested_;
+    typedef typename traits<SkylineProduct>::RhsNested_ RhsNested_;
 
 public:
 
@@ -80,11 +80,11 @@ public:
         eigen_assert(lhs.cols() == rhs.rows());
 
         enum {
-            ProductIsValid = _LhsNested::ColsAtCompileTime == Dynamic
-            || _RhsNested::RowsAtCompileTime == Dynamic
-            || int(_LhsNested::ColsAtCompileTime) == int(_RhsNested::RowsAtCompileTime),
-            AreVectors = _LhsNested::IsVectorAtCompileTime && _RhsNested::IsVectorAtCompileTime,
-            SameSizes = EIGEN_PREDICATE_SAME_MATRIX_SIZE(_LhsNested, _RhsNested)
+            ProductIsValid = LhsNested_::ColsAtCompileTime == Dynamic
+            || RhsNested_::RowsAtCompileTime == Dynamic
+            || int(LhsNested_::ColsAtCompileTime) == int(RhsNested_::RowsAtCompileTime),
+            AreVectors = LhsNested_::IsVectorAtCompileTime && RhsNested_::IsVectorAtCompileTime,
+            SameSizes = EIGEN_PREDICATE_SAME_MATRIX_SIZE(LhsNested_, RhsNested_)
         };
         // note to the lost user:
         //    * for a dot product use: v1.dot(v2)
@@ -104,11 +104,11 @@ public:
         return m_rhs.cols();
     }
 
-    EIGEN_STRONG_INLINE const _LhsNested& lhs() const {
+    EIGEN_STRONG_INLINE const LhsNested_& lhs() const {
         return m_lhs;
     }
 
-    EIGEN_STRONG_INLINE const _RhsNested& rhs() const {
+    EIGEN_STRONG_INLINE const RhsNested_& rhs() const {
         return m_rhs;
     }
 
@@ -122,8 +122,8 @@ protected:
 
 template<typename Lhs, typename Rhs, typename Dest>
 EIGEN_DONT_INLINE void skyline_row_major_time_dense_product(const Lhs& lhs, const Rhs& rhs, Dest& dst) {
-    typedef typename remove_all<Lhs>::type Lhs_;
-    typedef typename remove_all<Rhs>::type Rhs_;
+    typedef remove_all_t<Lhs> Lhs_;
+    typedef remove_all_t<Rhs> Rhs_;
     typedef typename traits<Lhs>::Scalar Scalar;
 
     enum {
@@ -185,8 +185,8 @@ EIGEN_DONT_INLINE void skyline_row_major_time_dense_product(const Lhs& lhs, cons
 
 template<typename Lhs, typename Rhs, typename Dest>
 EIGEN_DONT_INLINE void skyline_col_major_time_dense_product(const Lhs& lhs, const Rhs& rhs, Dest& dst) {
-    typedef typename remove_all<Lhs>::type Lhs_;
-    typedef typename remove_all<Rhs>::type Rhs_;
+    typedef remove_all_t<Lhs> Lhs_;
+    typedef remove_all_t<Rhs> Rhs_;
     typedef typename traits<Lhs>::Scalar Scalar;
 
     enum {
@@ -253,7 +253,7 @@ template<typename Lhs, typename Rhs, typename ResultType,
 
 template<typename Lhs, typename Rhs, typename ResultType>
 struct skyline_product_selector<Lhs, Rhs, ResultType, RowMajor> {
-    typedef typename traits<typename remove_all<Lhs>::type>::Scalar Scalar;
+    typedef typename traits<remove_all_t<Lhs>>::Scalar Scalar;
 
     static void run(const Lhs& lhs, const Rhs& rhs, ResultType & res) {
         skyline_row_major_time_dense_product<Lhs, Rhs, ResultType > (lhs, rhs, res);
@@ -262,7 +262,7 @@ struct skyline_product_selector<Lhs, Rhs, ResultType, RowMajor> {
 
 template<typename Lhs, typename Rhs, typename ResultType>
 struct skyline_product_selector<Lhs, Rhs, ResultType, ColMajor> {
-    typedef typename traits<typename remove_all<Lhs>::type>::Scalar Scalar;
+    typedef typename traits<remove_all_t<Lhs>>::Scalar Scalar;
 
     static void run(const Lhs& lhs, const Rhs& rhs, ResultType & res) {
         skyline_col_major_time_dense_product<Lhs, Rhs, ResultType > (lhs, rhs, res);
@@ -274,9 +274,9 @@ struct skyline_product_selector<Lhs, Rhs, ResultType, ColMajor> {
 // template<typename Derived>
 // template<typename Lhs, typename Rhs >
 // Derived & MatrixBase<Derived>::lazyAssign(const SkylineProduct<Lhs, Rhs, SkylineTimeDenseProduct>& product) {
-//     typedef typename internal::remove_all<Lhs>::type Lhs_;
-//     internal::skyline_product_selector<typename internal::remove_all<Lhs>::type,
-//             typename internal::remove_all<Rhs>::type,
+//     typedef internal::remove_all_t<Lhs> Lhs_;
+//     internal::skyline_product_selector<internal::remove_all_t<Lhs>,
+//             internal::remove_all_t<Rhs>,
 //             Derived>::run(product.lhs(), product.rhs(), derived());
 // 
 //     return derived();

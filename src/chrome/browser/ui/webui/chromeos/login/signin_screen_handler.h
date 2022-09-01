@@ -14,6 +14,7 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 // TODO(https://crbug.com/1164001): move to forward declaration.
 #include "chrome/browser/ash/login/error_screens_histogram_helper.h"
 #include "chrome/browser/ash/login/screens/error_screen.h"
@@ -22,19 +23,17 @@
 #include "chrome/browser/ui/webui/chromeos/login/base_webui_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
-#include "chromeos/network/portal_detector/network_portal_detector.h"
+#include "chromeos/ash/components/network/portal_detector/network_portal_detector.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_ui.h"
 #include "net/base/net_errors.h"
-#include "ui/base/ime/ash/input_method_manager.h"
 #include "ui/events/event_handler.h"
-
-class AccountId;
 
 namespace ash {
 class LoginDisplayHostMojo;
+class UserContext;
 
 namespace mojom {
 enum class TrayActionState;
@@ -43,20 +42,7 @@ enum class TrayActionState;
 
 namespace chromeos {
 
-class CoreOobeView;
 class GaiaScreenHandler;
-class UserContext;
-
-// An interface for WebUILoginDisplay to call SigninScreenHandler.
-class LoginDisplayWebUIHandler {
- public:
-  virtual void ClearAndEnablePassword() = 0;
-  virtual void OnPreferencesChanged() = 0;
-  virtual void ShowAllowlistCheckFailedError() = 0;
-
- protected:
-  virtual ~LoginDisplayWebUIHandler() {}
-};
 
 // An interface for SigninScreenHandler to call WebUILoginDisplay.
 class SigninScreenHandlerDelegate {
@@ -70,47 +56,25 @@ class SigninScreenHandlerDelegate {
   // Returns true if sign in is in progress.
   virtual bool IsSigninInProgress() const = 0;
 
-  // --------------- Shared with login display methods.
-  // Notify the delegate when the sign-in UI is finished loading.
-  virtual void OnSigninScreenReady() = 0;
-
-  // Shows Enterprise Enrollment screen.
-  virtual void ShowEnterpriseEnrollmentScreen() = 0;
-
-  // Shows Reset screen.
-  virtual void ShowKioskAutolaunchScreen() = 0;
-
-  // Show wrong hwid screen.
-  virtual void ShowWrongHWIDScreen() = 0;
-
   // --------------- Rest of the methods.
-
-  // Let the delegate know about the handler it is supposed to be using.
-  virtual void SetWebUIHandler(LoginDisplayWebUIHandler* webui_handler) = 0;
-
-  // Whether the allow new user setting has changed.
-  virtual bool AllowNewUserChanged() const = 0;
 
   // Whether user sign in has completed.
   virtual bool IsUserSigninCompleted() const = 0;
 
  protected:
-  virtual ~SigninScreenHandlerDelegate() {}
+  virtual ~SigninScreenHandlerDelegate() = default;
 };
 
 // A class that handles the WebUI hooks in sign-in screen in OobeUI and
 // LoginDisplay.
 class SigninScreenHandler
     : public BaseWebUIHandler,
-      public LoginDisplayWebUIHandler,
       public content::NotificationObserver,
       public NetworkStateInformer::NetworkStateInformerObserver {
  public:
   SigninScreenHandler(
-      JSCallsContainer* js_calls_container,
       const scoped_refptr<NetworkStateInformer>& network_state_informer,
       ErrorScreen* error_screen,
-      CoreOobeView* core_oobe_view,
       GaiaScreenHandler* gaia_screen_handler);
 
   SigninScreenHandler(const SigninScreenHandler&) = delete;
@@ -118,10 +82,8 @@ class SigninScreenHandler
 
   ~SigninScreenHandler() override;
 
-  static std::string GetUserLastInputMethod(const std::string& username);
-
   // Shows the sign in screen.
-  void Show(bool oobe_ui);
+  void Show();
 
   // Sets delegate to be used by the handler. It is guaranteed that valid
   // delegate is set before Show() method will be called.
@@ -146,19 +108,6 @@ class SigninScreenHandler
   friend class ash::LoginDisplayHostMojo;
   friend class ReportDnsCacheClearedOnUIThread;
 
-  // TODO (crbug.com/1168114): check if it makes sense anymore, as we're always
-  // showing GAIA
-  enum UIState {
-    UI_STATE_UNKNOWN = 0,
-    UI_STATE_GAIA_SIGNIN,
-  };
-
-  void ShowImpl();
-
-  // Updates current UI of the signin screen according to `ui_state`
-  // argument.
-  void UpdateUIState(UIState ui_state);
-
   void UpdateStateInternal(NetworkError::ErrorReason reason, bool force_update);
   void SetupAndShowOfflineMessage(NetworkStateInformer::State state,
                                   NetworkError::ErrorReason reason);
@@ -169,15 +118,9 @@ class SigninScreenHandler
   // BaseScreenHandler implementation:
   void DeclareLocalizedValues(
       ::login::LocalizedValuesBuilder* builder) override;
-  void Initialize() override;
 
   // WebUIMessageHandler implementation:
   void RegisterMessages() override;
-
-  // LoginDisplayWebUIHandler implementation:
-  void ClearAndEnablePassword() override;
-  void OnPreferencesChanged() override;
-  void ShowAllowlistCheckFailedError() override;
 
   // content::NotificationObserver implementation:
   void Observe(int type,
@@ -185,31 +128,10 @@ class SigninScreenHandler
                const content::NotificationDetails& details) override;
 
   // WebUI message handlers.
-  void HandleAuthenticateUser(const AccountId& account_id,
-                              const std::string& password,
-                              bool authenticated_by_pin);
   void HandleLaunchIncognito();
-  void HandleLaunchSAMLPublicSession(const std::string& email);
   void HandleOfflineLogin();
-  void HandleToggleEnrollmentScreen();
-  void HandleToggleResetScreen();
-  void HandleToggleKioskAutolaunchScreen();
 
-  void HandleOpenInternetDetailDialog();
-  void HandleLoginVisible(const std::string& source);
-  void HandleLoginUIStateChanged(const std::string& source, bool active);
-  void HandleLoginScreenUpdate();
   void HandleShowLoadingTimeoutError();
-  void HandleNoPodFocused();
-  void HandleHardlockPod(const std::string& user_id);
-  void HandleLaunchKioskApp(const AccountId& app_account_id,
-                            bool diagnostic_mode);
-  void HandleLaunchArcKioskApp(const AccountId& app_account_id);
-
-  // Implements user sign-in.
-  void AuthenticateExistingUser(const AccountId& account_id,
-                                const std::string& password,
-                                bool authenticated_by_pin);
 
   // Returns true if current visible screen is the Gaia sign-in page.
   bool IsGaiaVisible();
@@ -229,27 +151,13 @@ class SigninScreenHandler
   // responding to network state notifications.
   void ReenableNetworkStateUpdatesAfterProxyAuth();
 
-  // Current UI state of the signin screen.
-  UIState ui_state_ = UI_STATE_UNKNOWN;
-
   // A delegate that glues this handler with backend LoginDisplay.
   SigninScreenHandlerDelegate* delegate_ = nullptr;
-
-  // Whether screen should be shown right after initialization.
-  bool show_on_init_ = false;
-
-  // Keeps whether screen should be shown for OOBE.
-  bool oobe_ui_ = false;
 
   // Network state informer used to keep signin screen up.
   scoped_refptr<NetworkStateInformer> network_state_informer_;
 
-  // Set to true once `LOGIN_WEBUI_VISIBLE` notification is observed.
-  bool webui_visible_ = false;
-  bool preferences_changed_delayed_ = false;
-
   ErrorScreen* error_screen_ = nullptr;
-  CoreOobeView* core_oobe_view_ = nullptr;
 
   NetworkStateInformer::State last_network_state_ =
       NetworkStateInformer::UNKNOWN;
@@ -282,17 +190,10 @@ class SigninScreenHandler
   // TODO(antrim@): remove this dependency.
   GaiaScreenHandler* gaia_screen_handler_ = nullptr;
 
-  // Input Method Engine state used at signin screen.
-  scoped_refptr<input_method::InputMethodManager::State> ime_state_;
-
   bool is_offline_timeout_for_test_set_ = false;
   base::TimeDelta offline_timeout_for_test_;
 
   std::unique_ptr<ErrorScreensHistogramHelper> histogram_helper_;
-
-  // TODO (crbug.com/1168114): Only needed for GetKeyboardRemappedPrefValue that
-  // should be migrated.
-  std::unique_ptr<AccountId> focused_pod_account_id_;
 
   base::WeakPtrFactory<SigninScreenHandler> weak_factory_{this};
 };
@@ -301,7 +202,6 @@ class SigninScreenHandler
 
 // TODO(https://crbug.com/1164001): remove when moved to ash.
 namespace ash {
-using ::chromeos::LoginDisplayWebUIHandler;
 using ::chromeos::SigninScreenHandler;
 using ::chromeos::SigninScreenHandlerDelegate;
 }  // namespace ash

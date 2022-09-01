@@ -15,6 +15,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/current_thread.h"
 #import "chrome/browser/mac/nsprocessinfo_additions.h"
+#include "content/public/browser/web_contents.h"
 #import "ui/base/cocoa/menu_controller.h"
 #include "ui/color/color_provider.h"
 #include "ui/views/widget/widget.h"
@@ -223,7 +224,7 @@ void RenderViewContextMenuMacCocoa::Show() {
                   NSHeight([parent_view_ bounds]) - params_position.y());
   position = [parent_view_ convertPoint:position toView:nil];
   NSTimeInterval eventTime = [currentEvent timestamp];
-  NSEvent* clickEvent = [NSEvent mouseEventWithType:NSRightMouseDown
+  NSEvent* clickEvent = [NSEvent mouseEventWithType:NSEventTypeRightMouseDown
                                            location:position
                                       modifierFlags:0
                                           timestamp:eventTime

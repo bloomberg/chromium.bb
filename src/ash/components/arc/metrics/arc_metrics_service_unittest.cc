@@ -14,6 +14,7 @@
 #include "ash/components/arc/metrics/arc_metrics_constants.h"
 #include "ash/components/arc/metrics/stability_metrics_manager.h"
 #include "ash/components/arc/session/arc_service_manager.h"
+#include "ash/components/arc/test/fake_process_instance.h"
 #include "ash/components/arc/test/test_browser_context.h"
 #include "ash/constants/app_types.h"
 #include "base/metrics/histogram_samples.h"
@@ -49,46 +50,6 @@ constexpr std::array<const char*, 11> kBootEvents{
 
 constexpr const char kBootProgressArcUpgraded[] = "boot_progress_arc_upgraded";
 
-constexpr char kAppTypeArcAppLauncher[] = "ArcAppLauncher";
-constexpr char kAppTypeArcOther[] = "ArcOther";
-constexpr char kAppTypeFirstParty[] = "FirstParty";
-constexpr char kAppTypeGmsCore[] = "GmsCore";
-constexpr char kAppTypePlayStore[] = "PlayStore";
-constexpr char kAppTypeSystemServer[] = "SystemServer";
-constexpr char kAppTypeSystem[] = "SystemApp";
-constexpr char kAppTypeOther[] = "Other";
-constexpr char kAppOverall[] = "Overall";
-
-constexpr std::array<const char*, 9> kAppTypes{
-    kAppTypeArcAppLauncher, kAppTypeArcOther,  kAppTypeFirstParty,
-    kAppTypeGmsCore,        kAppTypePlayStore, kAppTypeSystemServer,
-    kAppTypeSystem,         kAppTypeOther,     kAppOverall,
-};
-
-std::string CreateAnrKey(const std::string& app_type, mojom::AnrType type) {
-  std::stringstream output;
-  output << app_type << "/" << type;
-  return output.str();
-}
-
-mojom::AnrPtr GetAnr(mojom::AnrSource source, mojom::AnrType type) {
-  return mojom::Anr::New(type, source);
-}
-
-void VerifyAnr(const base::HistogramTester& tester,
-               const std::map<std::string, int>& expectation) {
-  std::map<std::string, int> current;
-  for (const char* app_type : kAppTypes) {
-    const std::vector<base::Bucket> buckets =
-        tester.GetAllSamples("Arc.Anr." + std::string(app_type));
-    for (const auto& bucket : buckets) {
-      current[CreateAnrKey(app_type, static_cast<mojom::AnrType>(bucket.min))] =
-          bucket.count;
-    }
-  }
-  EXPECT_EQ(expectation, current);
-}
-
 class ArcMetricsServiceTest : public testing::Test {
  public:
   ArcMetricsServiceTest(const ArcMetricsServiceTest&) = delete;
@@ -104,11 +65,16 @@ class ArcMetricsServiceTest : public testing::Test {
 
     arc_service_manager_ = std::make_unique<ArcServiceManager>();
     context_ = std::make_unique<TestBrowserContext>();
+    prefs::RegisterLocalStatePrefs(context_->pref_registry());
     prefs::RegisterProfilePrefs(context_->pref_registry());
     service_ =
         ArcMetricsService::GetForBrowserContextForTesting(context_.get());
+    service_->set_prefs(context_->prefs());
 
     CreateFakeWindows();
+
+    ArcServiceManager::Get()->arc_bridge_service()->process()->SetInstance(
+        &fake_process_instance_);
   }
 
   ~ArcMetricsServiceTest() override {
@@ -143,8 +109,14 @@ class ArcMetricsServiceTest : public testing::Test {
     return events;
   }
 
+  void FastForwardBy(base::TimeDelta delta) {
+    task_environment_.FastForwardBy(delta);
+  }
+
   aura::Window* fake_arc_window() { return fake_arc_window_.get(); }
   aura::Window* fake_non_arc_window() { return fake_non_arc_window_.get(); }
+
+  FakeProcessInstance& process_instance() { return fake_process_instance_; }
 
  private:
   void CreateFakeWindows() {
@@ -156,7 +128,8 @@ class ArcMetricsServiceTest : public testing::Test {
         /*id=*/1, nullptr));
   }
 
-  content::BrowserTaskEnvironment task_environment_;
+  content::BrowserTaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   TestingPrefServiceSimple local_state_;
   session_manager::SessionManager session_manager_;
 
@@ -166,6 +139,8 @@ class ArcMetricsServiceTest : public testing::Test {
 
   std::unique_ptr<aura::Window> fake_arc_window_;
   std::unique_ptr<aura::Window> fake_non_arc_window_;
+
+  FakeProcessInstance fake_process_instance_;
 };
 
 // Tests that ReportBootProgress() actually records UMA stats.
@@ -287,6 +262,36 @@ TEST_F(ArcMetricsServiceTest, ReportBootProgress_InvalidBootType) {
   }
 }
 
+TEST_F(ArcMetricsServiceTest, RecordLoadAveragePerProcessor) {
+  service()->OnArcStarted();
+  service()->ReportBootProgress({}, mojom::BootType::REGULAR_BOOT);
+  base::HistogramTester tester;
+  FastForwardBy(base::Minutes(15));
+  tester.ExpectTotalCount(
+      "Arc.LoadAverageX100PerProcessor1MinuteAfterArcStart.RegularBoot", 1);
+  tester.ExpectTotalCount(
+      "Arc.LoadAverageX100PerProcessor5MinutesAfterArcStart.RegularBoot", 1);
+  tester.ExpectTotalCount(
+      "Arc.LoadAverageX100PerProcessor15MinutesAfterArcStart.RegularBoot", 1);
+}
+
+// Tests that load average histograms are recorded even if ReportBootProgress()
+// is called after measuring the load average values.
+TEST_F(ArcMetricsServiceTest,
+       RecordLoadAveragePerProcessor_LateReportBootProgress) {
+  service()->OnArcStarted();
+  base::HistogramTester tester;
+  FastForwardBy(base::Minutes(2));
+  service()->ReportBootProgress({}, mojom::BootType::REGULAR_BOOT);
+  FastForwardBy(base::Minutes(15));
+  tester.ExpectTotalCount(
+      "Arc.LoadAverageX100PerProcessor1MinuteAfterArcStart.RegularBoot", 1);
+  tester.ExpectTotalCount(
+      "Arc.LoadAverageX100PerProcessor5MinutesAfterArcStart.RegularBoot", 1);
+  tester.ExpectTotalCount(
+      "Arc.LoadAverageX100PerProcessor15MinutesAfterArcStart.RegularBoot", 1);
+}
+
 TEST_F(ArcMetricsServiceTest, ReportNativeBridge) {
   // SetArcNativeBridgeType should be called once ArcMetricsService is
   // constructed.
@@ -387,71 +392,91 @@ TEST_F(ArcMetricsServiceTest, UserInteractionObserver) {
   service()->RemoveUserInteractionObserver(&observer);
 }
 
-TEST_F(ArcMetricsServiceTest, ArcAnr) {
+TEST_F(ArcMetricsServiceTest, AppLowMemoryKills) {
   base::HistogramTester tester;
-  std::map<std::string, int> expectation;
+  service()->RequestLowMemoryKillCountsForTesting();
+  process_instance().RunRequestLowMemoryKillCountsCallback(
+      mojom::LowMemoryKillCounts::New(1,    // oom.
+                                      2,    // lmkd_foreground.
+                                      3,    // lmkd_perceptible.
+                                      4,    // lmkd_cached.
+                                      5,    // pressure_foreground.
+                                      6,    // pressure_preceptible.
+                                      7));  // pressure_cached.
+  // The first callback doesn't log to histograms, since it's collecting the
+  // first baseline.
+  tester.ExpectTotalCount("Arc.App.LowMemoryKills.LinuxOOMCount10Minutes", 0);
+  tester.ExpectTotalCount(
+      "Arc.App.LowMemoryKills.LMKD.ForegroundCount10Minutes", 0);
+  tester.ExpectTotalCount(
+      "Arc.App.LowMemoryKills.LMKD.PerceptibleCount10Minutes", 0);
+  tester.ExpectTotalCount("Arc.App.LowMemoryKills.LMKD.CachedCount10Minutes",
+                          0);
+  tester.ExpectTotalCount(
+      "Arc.App.LowMemoryKills.Pressure.ForegroundCount10Minutes", 0);
+  tester.ExpectTotalCount(
+      "Arc.App.LowMemoryKills.Pressure.PerceptibleCount10Minutes", 0);
+  tester.ExpectTotalCount(
+      "Arc.App.LowMemoryKills.Pressure.CachedCount10Minutes", 0);
+  service()->RequestLowMemoryKillCountsForTesting();
+  process_instance().RunRequestLowMemoryKillCountsCallback(
+      mojom::LowMemoryKillCounts::New(17,    // oom.
+                                      16,    // lmkd_foreground.
+                                      15,    // lmkd_perceptible.
+                                      14,    // lmkd_cached.
+                                      13,    // pressure_foreground.
+                                      12,    // pressure_preceptible.
+                                      11));  // pressure_cached.
+  tester.ExpectUniqueSample("Arc.App.LowMemoryKills.LinuxOOMCount10Minutes",
+                            17 - 1, 1);
+  tester.ExpectUniqueSample(
+      "Arc.App.LowMemoryKills.LMKD.ForegroundCount10Minutes", 16 - 2, 1);
+  tester.ExpectUniqueSample(
+      "Arc.App.LowMemoryKills.LMKD.PerceptibleCount10Minutes", 15 - 3, 1);
+  tester.ExpectUniqueSample("Arc.App.LowMemoryKills.LMKD.CachedCount10Minutes",
+                            14 - 4, 1);
+  tester.ExpectUniqueSample(
+      "Arc.App.LowMemoryKills.Pressure.ForegroundCount10Minutes", 13 - 5, 1);
+  tester.ExpectUniqueSample(
+      "Arc.App.LowMemoryKills.Pressure.PerceptibleCount10Minutes", 12 - 6, 1);
+  tester.ExpectUniqueSample(
+      "Arc.App.LowMemoryKills.Pressure.CachedCount10Minutes", 11 - 7, 1);
+}
 
-  service()->ReportAnr(
-      GetAnr(mojom::AnrSource::OTHER, mojom::AnrType::UNKNOWN));
-  expectation[CreateAnrKey(kAppOverall, mojom::AnrType::UNKNOWN)] = 1;
-  expectation[CreateAnrKey(kAppTypeOther, mojom::AnrType::UNKNOWN)] = 1;
-  VerifyAnr(tester, expectation);
-
-  service()->ReportAnr(
-      GetAnr(mojom::AnrSource::SYSTEM_SERVER, mojom::AnrType::INPUT));
-  expectation[CreateAnrKey(kAppOverall, mojom::AnrType::INPUT)] = 1;
-  expectation[CreateAnrKey(kAppTypeSystemServer, mojom::AnrType::INPUT)] = 1;
-  VerifyAnr(tester, expectation);
-
-  service()->ReportAnr(GetAnr(mojom::AnrSource::SYSTEM_SERVER,
-                              mojom::AnrType::FOREGROUND_SERVICE));
-  expectation[CreateAnrKey(kAppOverall, mojom::AnrType::FOREGROUND_SERVICE)] =
-      1;
-  expectation[CreateAnrKey(kAppTypeSystemServer,
-                           mojom::AnrType::FOREGROUND_SERVICE)] = 1;
-  VerifyAnr(tester, expectation);
-
-  service()->ReportAnr(GetAnr(mojom::AnrSource::SYSTEM_SERVER,
-                              mojom::AnrType::BACKGROUND_SERVICE));
-  expectation[CreateAnrKey(kAppOverall, mojom::AnrType::BACKGROUND_SERVICE)] =
-      1;
-  expectation[CreateAnrKey(kAppTypeSystemServer,
-                           mojom::AnrType::BACKGROUND_SERVICE)] = 1;
-  VerifyAnr(tester, expectation);
-
-  service()->ReportAnr(
-      GetAnr(mojom::AnrSource::GMS_CORE, mojom::AnrType::BROADCAST));
-  expectation[CreateAnrKey(kAppOverall, mojom::AnrType::BROADCAST)] = 1;
-  expectation[CreateAnrKey(kAppTypeGmsCore, mojom::AnrType::BROADCAST)] = 1;
-  VerifyAnr(tester, expectation);
-
-  service()->ReportAnr(
-      GetAnr(mojom::AnrSource::PLAY_STORE, mojom::AnrType::CONTENT_PROVIDER));
-  expectation[CreateAnrKey(kAppOverall, mojom::AnrType::CONTENT_PROVIDER)] = 1;
-  expectation[CreateAnrKey(kAppTypePlayStore,
-                           mojom::AnrType::CONTENT_PROVIDER)] = 1;
-  VerifyAnr(tester, expectation);
-
-  service()->ReportAnr(
-      GetAnr(mojom::AnrSource::FIRST_PARTY, mojom::AnrType::APP_REQUESTED));
-  expectation[CreateAnrKey(kAppOverall, mojom::AnrType::APP_REQUESTED)] = 1;
-  expectation[CreateAnrKey(kAppTypeFirstParty, mojom::AnrType::APP_REQUESTED)] =
-      1;
-  VerifyAnr(tester, expectation);
-
-  service()->ReportAnr(
-      GetAnr(mojom::AnrSource::ARC_OTHER, mojom::AnrType::INPUT));
-  expectation[CreateAnrKey(kAppOverall, mojom::AnrType::INPUT)] = 2;
-  expectation[CreateAnrKey(kAppTypeArcOther, mojom::AnrType::INPUT)] = 1;
-  VerifyAnr(tester, expectation);
-
-  service()->ReportAnr(GetAnr(mojom::AnrSource::ARC_APP_LAUNCHER,
-                              mojom::AnrType::FOREGROUND_SERVICE));
-  expectation[CreateAnrKey(kAppOverall, mojom::AnrType::FOREGROUND_SERVICE)] =
-      2;
-  expectation[CreateAnrKey(kAppTypeArcAppLauncher,
-                           mojom::AnrType::FOREGROUND_SERVICE)] = 1;
-  VerifyAnr(tester, expectation);
+TEST_F(ArcMetricsServiceTest, AppLowMemoryKillsDecrease) {
+  base::HistogramTester tester;
+  service()->RequestLowMemoryKillCountsForTesting();
+  process_instance().RunRequestLowMemoryKillCountsCallback(
+      mojom::LowMemoryKillCounts::New(17,    // oom.
+                                      16,    // lmkd_foreground.
+                                      15,    // lmkd_perceptible.
+                                      14,    // lmkd_cached.
+                                      13,    // pressure_foreground.
+                                      12,    // pressure_preceptible.
+                                      11));  // pressure_cached.
+  service()->RequestLowMemoryKillCountsForTesting();
+  process_instance().RunRequestLowMemoryKillCountsCallback(
+      mojom::LowMemoryKillCounts::New(1,    // oom.
+                                      2,    // lmkd_foreground.
+                                      3,    // lmkd_perceptible.
+                                      4,    // lmkd_cached.
+                                      5,    // pressure_foreground.
+                                      6,    // pressure_preceptible.
+                                      7));  // pressure_cached.
+  // All counters decreased, so we should not log anything.
+  tester.ExpectTotalCount("Arc.App.LowMemoryKills.LinuxOOMCount10Minutes", 0);
+  tester.ExpectTotalCount(
+      "Arc.App.LowMemoryKills.LMKD.ForegroundCount10Minutes", 0);
+  tester.ExpectTotalCount(
+      "Arc.App.LowMemoryKills.LMKD.PerceptibleCount10Minutes", 0);
+  tester.ExpectTotalCount("Arc.App.LowMemoryKills.LMKD.CachedCount10Minutes",
+                          0);
+  tester.ExpectTotalCount(
+      "Arc.App.LowMemoryKills.Pressure.ForegroundCount10Minutes", 0);
+  tester.ExpectTotalCount(
+      "Arc.App.LowMemoryKills.Pressure.PerceptibleCount10Minutes", 0);
+  tester.ExpectTotalCount(
+      "Arc.App.LowMemoryKills.Pressure.CachedCount10Minutes", 0);
 }
 
 }  // namespace

@@ -77,6 +77,22 @@ std::string GetProfileName(VideoCodecProfile profile) {
       return "hevc main 10";
     case HEVCPROFILE_MAIN_STILL_PICTURE:
       return "hevc main still-picture";
+    case HEVCPROFILE_REXT:
+      return "hevc range extensions";
+    case HEVCPROFILE_HIGH_THROUGHPUT:
+      return "hevc high throughput";
+    case HEVCPROFILE_MULTIVIEW_MAIN:
+      return "hevc multiview main";
+    case HEVCPROFILE_SCALABLE_MAIN:
+      return "hevc scalable main";
+    case HEVCPROFILE_3D_MAIN:
+      return "hevc 3d main";
+    case HEVCPROFILE_SCREEN_EXTENDED:
+      return "hevc screen extended";
+    case HEVCPROFILE_SCALABLE_REXT:
+      return "hevc scalable range extensions";
+    case HEVCPROFILE_HIGH_THROUGHPUT_SCREEN_EXTENDED:
+      return "hevc high throughput screen extended";
     case VP8PROFILE_ANY:
       return "vp8";
     case VP9PROFILE_PROFILE0:
@@ -707,19 +723,69 @@ bool ParseHEVCCodecId(const std::string& codec_id,
     return false;
   }
 
-  if (profile) {
-    // TODO(servolk): Handle format range extension profiles as explained in
-    // HEVC standard (ISO/IEC ISO/IEC 23008-2) section A.3.5
-    if (general_profile_idc == 3 || (general_profile_compatibility_flags & 4)) {
-      *profile = HEVCPROFILE_MAIN_STILL_PICTURE;
-    }
-    if (general_profile_idc == 2 || (general_profile_compatibility_flags & 2)) {
-      *profile = HEVCPROFILE_MAIN10;
-    }
-    if (general_profile_idc == 1 || (general_profile_compatibility_flags & 1)) {
-      *profile = HEVCPROFILE_MAIN;
-    }
+  VideoCodecProfile out_profile = VIDEO_CODEC_PROFILE_UNKNOWN;
+  // Spec A.3.8
+  if (general_profile_idc == 11 ||
+      (general_profile_compatibility_flags & 2048)) {
+    out_profile = HEVCPROFILE_HIGH_THROUGHPUT_SCREEN_EXTENDED;
   }
+  // Spec H.11.1.2
+  if (general_profile_idc == 10 ||
+      (general_profile_compatibility_flags & 1024)) {
+    out_profile = HEVCPROFILE_SCALABLE_REXT;
+  }
+  // Spec A.3.7
+  if (general_profile_idc == 9 || (general_profile_compatibility_flags & 512)) {
+    out_profile = HEVCPROFILE_SCREEN_EXTENDED;
+  }
+  // Spec I.11.1.1
+  if (general_profile_idc == 8 || (general_profile_compatibility_flags & 256)) {
+    out_profile = HEVCPROFILE_3D_MAIN;
+  }
+  // Spec H.11.1.1
+  if (general_profile_idc == 7 || (general_profile_compatibility_flags & 128)) {
+    out_profile = HEVCPROFILE_SCALABLE_MAIN;
+  }
+  // Spec G.11.1.1
+  if (general_profile_idc == 6 || (general_profile_compatibility_flags & 64)) {
+    out_profile = HEVCPROFILE_MULTIVIEW_MAIN;
+  }
+  // Spec A.3.6
+  if (general_profile_idc == 5 || (general_profile_compatibility_flags & 32)) {
+    out_profile = HEVCPROFILE_HIGH_THROUGHPUT;
+  }
+  // Spec A.3.5
+  if (general_profile_idc == 4 || (general_profile_compatibility_flags & 16)) {
+    out_profile = HEVCPROFILE_REXT;
+  }
+  // Spec A.3.3
+  // NOTICE: Do not change the order of below sections
+  if (general_profile_idc == 2 || (general_profile_compatibility_flags & 4)) {
+    out_profile = HEVCPROFILE_MAIN10;
+  }
+  // Spec A.3.2
+  // When general_profile_compatibility_flag[1] is equal to 1,
+  // general_profile_compatibility_flag[2] should be equal to 1 as well.
+  if (general_profile_idc == 1 || (general_profile_compatibility_flags & 2)) {
+    out_profile = HEVCPROFILE_MAIN;
+  }
+  // Spec A.3.4
+  // When general_profile_compatibility_flag[3] is equal to 1,
+  // general_profile_compatibility_flag[1] and
+  // general_profile_compatibility_flag[2] should be equal to 1 as well.
+  if (general_profile_idc == 3 || (general_profile_compatibility_flags & 8)) {
+    out_profile = HEVCPROFILE_MAIN_STILL_PICTURE;
+  }
+
+  if (out_profile == VIDEO_CODEC_PROFILE_UNKNOWN) {
+    DVLOG(1) << "Warning: unrecognized HEVC/H.265 general_profile_idc: "
+             << general_profile_idc << ", general_profile_compatibility_flags: "
+             << general_profile_compatibility_flags;
+    return false;
+  }
+
+  if (profile)
+    *profile = out_profile;
 
   uint8_t general_tier_flag;
   if (elem[3].size() > 0 && (elem[3][0] == 'L' || elem[3][0] == 'H')) {
@@ -954,6 +1020,14 @@ VideoCodec VideoCodecProfileToVideoCodec(VideoCodecProfile profile) {
     case HEVCPROFILE_MAIN:
     case HEVCPROFILE_MAIN10:
     case HEVCPROFILE_MAIN_STILL_PICTURE:
+    case HEVCPROFILE_REXT:
+    case HEVCPROFILE_HIGH_THROUGHPUT:
+    case HEVCPROFILE_MULTIVIEW_MAIN:
+    case HEVCPROFILE_SCALABLE_MAIN:
+    case HEVCPROFILE_3D_MAIN:
+    case HEVCPROFILE_SCREEN_EXTENDED:
+    case HEVCPROFILE_SCALABLE_REXT:
+    case HEVCPROFILE_HIGH_THROUGHPUT_SCREEN_EXTENDED:
       return VideoCodec::kHEVC;
     case VP8PROFILE_ANY:
       return VideoCodec::kVP8;

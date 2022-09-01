@@ -2,16 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// clang-format off
-import { addSingletonGetter, addWebUIListener,WebUIListener} from 'chrome://resources/js/cr.m.js';
-// clang-format on
+import {addWebUIListener} from 'chrome://resources/js/cr.m.js';
 
-  /**
-   * Enumeration for device state about remaining space.
-   * These values must be kept in sync with
-   * StorageManagerHandler::StorageSpaceState in C++ code.
-   * @enum {number}
-   */
+/**
+ * Enumeration for device state about remaining space.
+ * These values must be kept in sync with
+ * StorageManagerHandler::StorageSpaceState in C++ code.
+ * @enum {number}
+ */
 export const StorageSpaceState = {
   NORMAL: 0,
   LOW: 1,
@@ -31,13 +29,13 @@ export function getDisplayApi() {
   return systemDisplayApi;
 }
 
-  /**
-   * @typedef {{
-   *   id: string,
-   *   is_dedicated_charger: boolean,
-   *   description: string
-   * }}
-   */
+/**
+ * @typedef {{
+ *   id: string,
+ *   is_dedicated_charger: boolean,
+ *   description: string
+ * }}
+ */
 export let PowerSource;
 
 /**
@@ -85,13 +83,14 @@ export const LidClosedBehavior = {
  *   lidClosedBehavior: LidClosedBehavior,
  *   lidClosedControlled: boolean,
  *   hasLid: boolean,
+ *   adaptiveCharging: boolean,
  * }}
  */
 export let PowerManagementSettings;
 
 /**
  * A note app's availability for running as note handler app from lock screen.
- * Mirrors `ash::NoteTakingLockScreenSupport`.
+ * Mirrors `ash::LockScreenAppSupport`.
  * @enum {number}
  */
 export const NoteAppLockScreenSupport = {
@@ -167,6 +166,12 @@ export class DevicePageBrowserProxy {
   setLidClosedBehavior(behavior) {}
 
   /**
+   * Sets adaptive charging on or off.
+   * @param {boolean} enabled whether to set adaptive charging to on or off.
+   */
+  setAdaptiveCharging(enabled) {}
+
+  /**
    * |callback| is run when there is new note-taking app information
    * available or after |requestNoteTakingApps| has been called.
    * @param {function(Array<NoteAppInfo>, boolean):void} callback
@@ -231,10 +236,23 @@ export class DevicePageBrowserProxy {
   openMyFiles() {}
 }
 
+/** @type {?DevicePageBrowserProxy} */
+let instance = null;
+
 /**
  * @implements {DevicePageBrowserProxy}
  */
 export class DevicePageBrowserProxyImpl {
+  /** @return {!DevicePageBrowserProxy} */
+  static getInstance() {
+    return instance || (instance = new DevicePageBrowserProxyImpl());
+  }
+
+  /** @param {!DevicePageBrowserProxy} obj */
+  static setInstance(obj) {
+    instance = obj;
+  }
+
   /** @override */
   initializePointers() {
     chrome.send('initializePointerSettings');
@@ -283,6 +301,11 @@ export class DevicePageBrowserProxyImpl {
   /** @override */
   setIdleBehavior(behavior, whenOnAc) {
     chrome.send('setIdleBehavior', [behavior, whenOnAc]);
+  }
+
+  /** @override */
+  setAdaptiveCharging(enabled) {
+    chrome.send('setAdaptiveCharging', [enabled]);
   }
 
   /** @override */
@@ -345,5 +368,3 @@ export class DevicePageBrowserProxyImpl {
     chrome.send('openMyFiles');
   }
 }
-
-addSingletonGetter(DevicePageBrowserProxyImpl);

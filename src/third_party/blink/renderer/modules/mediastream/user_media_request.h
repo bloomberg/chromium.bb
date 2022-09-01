@@ -32,10 +32,9 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_USER_MEDIA_REQUEST_H_
 
 #include "third_party/blink/public/common/privacy_budget/identifiable_surface.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_navigator_user_media_error_callback.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_navigator_user_media_success_callback.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_typedefs.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/mediastream/media_constraints.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
@@ -46,7 +45,8 @@ namespace blink {
 class LocalDOMWindow;
 class MediaErrorState;
 class MediaStreamConstraints;
-class MediaStreamDescriptor;
+class ScriptWrappable;
+class TransferredMediaStreamTrack;
 class UserMediaController;
 
 class MODULES_EXPORT UserMediaRequest final
@@ -76,7 +76,7 @@ class MODULES_EXPORT UserMediaRequest final
    public:
     virtual ~Callbacks() = default;
 
-    virtual void OnSuccess(MediaStream*) = 0;
+    virtual void OnSuccess(const MediaStreamVector&) = 0;
     virtual void OnError(ScriptWrappable* callback_this_value,
                          const V8MediaStreamError* error) = 0;
 
@@ -95,13 +95,6 @@ class MODULES_EXPORT UserMediaRequest final
                                   Callbacks*,
                                   MediaErrorState&,
                                   IdentifiableSurface surface);
-  static UserMediaRequest* Create(ExecutionContext*,
-                                  UserMediaController*,
-                                  const MediaStreamConstraints* options,
-                                  V8NavigatorUserMediaSuccessCallback*,
-                                  V8NavigatorUserMediaErrorCallback*,
-                                  MediaErrorState&,
-                                  IdentifiableSurface surface);
   static UserMediaRequest* CreateForTesting(const MediaConstraints& audio,
                                             const MediaConstraints& video);
 
@@ -111,7 +104,6 @@ class MODULES_EXPORT UserMediaRequest final
                    MediaConstraints audio,
                    MediaConstraints video,
                    bool should_prefer_current_tab,
-                   bool region_capture_capable,
                    Callbacks*,
                    IdentifiableSurface surface);
   ~UserMediaRequest() override;
@@ -120,8 +112,9 @@ class MODULES_EXPORT UserMediaRequest final
 
   void Start();
 
-  void Succeed(MediaStreamDescriptor*);
+  void Succeed(const MediaStreamDescriptorVector& streams);
   void OnMediaStreamInitialized(MediaStream* stream);
+  void OnMediaStreamsInitialized(MediaStreamVector streams);
   void FailConstraint(const String& constraint_name, const String& message);
   void Fail(Error name, const String& message);
 
@@ -142,8 +135,8 @@ class MODULES_EXPORT UserMediaRequest final
   // ExecutionContextLifecycleObserver
   void ContextDestroyed() override;
 
-  void set_request_id(int id) { request_id_ = id; }
-  int request_id() { return request_id_; }
+  void set_request_id(int32_t id) { request_id_ = id; }
+  int32_t request_id() { return request_id_; }
 
   void set_has_transient_user_activation(bool value) {
     has_transient_user_activation_ = value;
@@ -154,8 +147,19 @@ class MODULES_EXPORT UserMediaRequest final
 
   bool should_prefer_current_tab() const { return should_prefer_current_tab_; }
 
-  bool region_capture_capable() const { return region_capture_capable_; }
-
+  // Mark this request as an GetOpenDevice request for initializing a
+  // TransferredMediaStreamTrack from the deviced identified by session_id.
+  void SetTransferData(const base::UnguessableToken& session_id,
+                       TransferredMediaStreamTrack* track) {
+    transferred_track_session_id_ = session_id;
+    transferred_track_ = track;
+  }
+  absl::optional<base::UnguessableToken> GetSessionId() const {
+    return transferred_track_session_id_;
+  }
+  bool IsTransferredTrackRequest() const {
+    return !!transferred_track_session_id_;
+  }
   void Trace(Visitor*) const override;
 
  private:
@@ -163,16 +167,18 @@ class MODULES_EXPORT UserMediaRequest final
   MediaConstraints audio_;
   MediaConstraints video_;
   const bool should_prefer_current_tab_ = false;
-  const bool region_capture_capable_ = false;
   bool should_disable_hardware_noise_suppression_;
   bool has_transient_user_activation_ = false;
-  int request_id_ = -1;
+  int32_t request_id_ = -1;
 
   Member<UserMediaController> controller_;
 
   Member<Callbacks> callbacks_;
   IdentifiableSurface surface_;
   bool is_resolved_ = false;
+
+  absl::optional<base::UnguessableToken> transferred_track_session_id_;
+  Member<TransferredMediaStreamTrack> transferred_track_;
 };
 
 }  // namespace blink

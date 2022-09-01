@@ -23,19 +23,19 @@ import {
   OBJECTS_ALLOCATED_KEY,
   OBJECTS_ALLOCATED_NOT_FREED_KEY,
   PERF_SAMPLES_KEY,
-  SPACE_MEMORY_ALLOCATED_NOT_FREED_KEY
+  SPACE_MEMORY_ALLOCATED_NOT_FREED_KEY,
 } from '../common/flamegraph_util';
 import {NUM, STR} from '../common/query_result';
 import {CallsiteInfo, FlamegraphState} from '../common/state';
 import {toNs} from '../common/time';
 import {
   FlamegraphDetails,
-  globals as frontendGlobals
+  globals as frontendGlobals,
 } from '../frontend/globals';
 import {publishFlamegraphDetails} from '../frontend/publish';
 import {
   Config as PerfSampleConfig,
-  PERF_SAMPLES_PROFILE_TRACK_KIND
+  PERF_SAMPLES_PROFILE_TRACK_KIND,
 } from '../tracks/perf_samples_profile/common';
 
 import {AreaSelectionHandler} from './area_selection_handler';
@@ -101,7 +101,7 @@ export class FlamegraphController extends Controller<'main'> {
     if (hasAreaChanged) {
       const upids = [];
       if (!area) {
-        publishFlamegraphDetails(
+        this.checkCompletionAndPublishFlamegraph(
             {...frontendGlobals.flamegraphDetails, isInAreaSelection: false});
         return;
       }
@@ -114,7 +114,7 @@ export class FlamegraphController extends Controller<'main'> {
         upids.push((trackState.config as PerfSampleConfig).upid);
       }
       if (upids.length === 0) {
-        publishFlamegraphDetails(
+        this.checkCompletionAndPublishFlamegraph(
             {...frontendGlobals.flamegraphDetails, isInAreaSelection: false});
         return;
       }
@@ -123,7 +123,7 @@ export class FlamegraphController extends Controller<'main'> {
         startNs: toNs(area.startSec),
         endNs: toNs(area.endSec),
         type: 'perf',
-        viewingOption: PERF_SAMPLES_KEY
+        viewingOption: PERF_SAMPLES_KEY,
       }));
     }
     const selection = frontendGlobals.state.currentFlamegraphState;
@@ -228,7 +228,17 @@ export class FlamegraphController extends Controller<'main'> {
     this.flamegraphDetails.expandedCallsite = expandedCallsite;
     this.flamegraphDetails.viewingOption = viewingOption;
     this.flamegraphDetails.isInAreaSelection = hasAreaChanged;
-    publishFlamegraphDetails(this.flamegraphDetails);
+    this.checkCompletionAndPublishFlamegraph(this.flamegraphDetails);
+  }
+
+  private async checkCompletionAndPublishFlamegraph(flamegraphDetails:
+                                                        FlamegraphDetails) {
+    flamegraphDetails.graphIncomplete =
+        (await this.args.engine.query(`select value from stats
+       where severity = 'error' and name = 'heap_graph_non_finalized_graph'`))
+            .firstRow({value: NUM})
+            .value > 0;
+    publishFlamegraphDetails(flamegraphDetails);
   }
 
   async getFlamegraphData(
@@ -371,7 +381,7 @@ export class FlamegraphController extends Controller<'main'> {
         mapping,
         merged: false,
         highlighted,
-        location
+        location,
       });
     }
     return flamegraphData;

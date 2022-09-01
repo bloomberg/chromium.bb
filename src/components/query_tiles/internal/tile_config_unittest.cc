@@ -40,7 +40,7 @@ TEST(TileConfigTest, FinchConfigEnabled) {
   EXPECT_EQ(TileConfig::GetQueryTilesServerUrl("https://xyz.com", false),
             GURL("https://test.com/v1/querytiles"));
   EXPECT_TRUE(TileConfig::GetIsUnMeteredNetworkRequired());
-  EXPECT_EQ(TileConfig::GetExperimentTag(), "1234");
+  EXPECT_EQ(TileConfig::GetExperimentTag("us"), "1234");
   EXPECT_EQ(TileConfig::GetExpireDuration(), base::Seconds(100));
   EXPECT_EQ(TileConfig::GetScheduleIntervalInMs(), 123);
   EXPECT_EQ(TileConfig::GetMaxRandomWindowInMs(), 234);
@@ -57,7 +57,7 @@ TEST(TileConfigTest, FinchConfigDefaultParameter) {
   EXPECT_EQ(TileConfig::GetQueryTilesServerUrl("https://xyz.com", true),
             GURL("https://xyz.com/v1/querytiles"));
   EXPECT_FALSE(TileConfig::GetIsUnMeteredNetworkRequired());
-  EXPECT_TRUE(TileConfig::GetExperimentTag().empty());
+  EXPECT_TRUE(TileConfig::GetExperimentTag("us").empty());
   EXPECT_EQ(TileConfig::GetExpireDuration(), base::Days(2));
   EXPECT_EQ(TileConfig::GetScheduleIntervalInMs(),
             base::Hours(12).InMilliseconds());
@@ -84,6 +84,30 @@ TEST(TileConfigTest, GetImagePrefetchMode) {
                         ImagePrefetchMode::kTopLevel);
   TestImagePrefetchMode({{kImagePrefetchModeKey, "all"}},
                         ImagePrefetchMode::kAll);
+}
+
+// Test to verify the default params for enabled countries.
+TEST(TileConfigTest, ExperimentTagForEnabledCountries) {
+  base::test::ScopedFeatureList feature_list;
+  EXPECT_EQ(TileConfig::GetExperimentTag("in"),
+            "{maxLevels : 1, enableTrending : true, maxTrendingQueries : 8}");
+  EXPECT_EQ(TileConfig::GetExperimentTag("in"),
+            TileConfig::GetExperimentTag("ng"));
+  EXPECT_EQ(TileConfig::GetExperimentTag("jp"),
+            "{maxLevels : 1, rankTiles : true}");
+
+  // Finch params should override default values.
+  std::map<std::string, std::string> params = {
+      {kExperimentTagKey,
+       "{maxLevels : 1, enableTrending : true, rankTiles : true}"}};
+  feature_list.InitAndEnableFeatureWithParameters(features::kQueryTiles,
+                                                  params);
+  EXPECT_EQ(TileConfig::GetExperimentTag("in"),
+            "{maxLevels : 1, enableTrending : true, rankTiles : true}");
+  EXPECT_EQ(TileConfig::GetExperimentTag("in"),
+            TileConfig::GetExperimentTag("ng"));
+  EXPECT_EQ(TileConfig::GetExperimentTag("in"),
+            TileConfig::GetExperimentTag("JP"));
 }
 
 }  // namespace query_tiles

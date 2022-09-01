@@ -4,6 +4,7 @@
 
 #include "ui/accessibility/ax_node.h"
 
+#include <stdint.h>
 #include <memory>
 #include <utility>
 #include <vector>
@@ -12,6 +13,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/accessibility/ax_position.h"
 #include "ui/accessibility/ax_tree.h"
 #include "ui/accessibility/ax_tree_data.h"
 #include "ui/accessibility/ax_tree_id.h"
@@ -29,7 +31,7 @@ MATCHER_P(HasAXNodeID, ax_node_data, "") {
 
 }  // namespace
 
-using testing::ElementsAre;
+using ::testing::ElementsAre;
 
 TEST(AXNodeTest, TreeWalking) {
   // ++kRootWebArea
@@ -233,8 +235,8 @@ TEST(AXNodeTest, TreeWalking) {
   EXPECT_EQ(button_3_1.id, root_node->GetDeepestLastUnignoredChild()->id());
 
   {
-    std::vector<const AXNode*> siblings;
-    for (const AXNode* sibling = tree.GetFromId(paragraph_0.id); sibling;
+    std::vector<AXNode*> siblings;
+    for (AXNode* sibling = tree.GetFromId(paragraph_0.id); sibling;
          sibling = sibling->GetNextSibling()) {
       siblings.push_back(sibling);
     }
@@ -245,8 +247,8 @@ TEST(AXNodeTest, TreeWalking) {
   }
 
   {
-    std::vector<const AXNode*> siblings;
-    for (const AXNode* sibling = tree.GetFromId(paragraph_0.id); sibling;
+    std::vector<AXNode*> siblings;
+    for (AXNode* sibling = tree.GetFromId(paragraph_0.id); sibling;
          sibling = sibling->GetNextUnignoredSibling()) {
       siblings.push_back(sibling);
     }
@@ -258,8 +260,8 @@ TEST(AXNodeTest, TreeWalking) {
   }
 
   {
-    std::vector<const AXNode*> siblings;
-    for (const AXNode* sibling = tree.GetFromId(paragraph_3_ignored.id);
+    std::vector<AXNode*> siblings;
+    for (AXNode* sibling = tree.GetFromId(paragraph_3_ignored.id);
          sibling; sibling = sibling->GetPreviousSibling()) {
       siblings.push_back(sibling);
     }
@@ -270,8 +272,8 @@ TEST(AXNodeTest, TreeWalking) {
   }
 
   {
-    std::vector<const AXNode*> siblings;
-    for (const AXNode* sibling = tree.GetFromId(button_3_1.id); sibling;
+    std::vector<AXNode*> siblings;
+    for (AXNode* sibling = tree.GetFromId(button_3_1.id); sibling;
          sibling = sibling->GetPreviousUnignoredSibling()) {
       siblings.push_back(sibling);
     }
@@ -283,7 +285,7 @@ TEST(AXNodeTest, TreeWalking) {
   }
 
   {
-    std::vector<const AXNode::AllChildIterator> siblings;
+    std::vector<AXNode::AllChildIterator> siblings;
     for (auto iter = root_node->AllChildrenBegin();
          iter != root_node->AllChildrenEnd(); ++iter) {
       siblings.push_back(iter);
@@ -295,7 +297,7 @@ TEST(AXNodeTest, TreeWalking) {
   }
 
   {
-    std::vector<const AXNode::AllChildCrossingTreeBoundaryIterator> siblings;
+    std::vector< AXNode::AllChildCrossingTreeBoundaryIterator> siblings;
     for (auto iter = root_node->AllChildrenCrossingTreeBoundaryBegin();
          iter != root_node->AllChildrenCrossingTreeBoundaryEnd(); ++iter) {
       siblings.push_back(iter);
@@ -307,7 +309,7 @@ TEST(AXNodeTest, TreeWalking) {
   }
 
   {
-    std::vector<const AXNode::UnignoredChildIterator> siblings;
+    std::vector<AXNode::UnignoredChildIterator> siblings;
     for (auto iter = root_node->UnignoredChildrenBegin();
          iter != root_node->UnignoredChildrenEnd(); ++iter) {
       siblings.push_back(iter);
@@ -320,7 +322,7 @@ TEST(AXNodeTest, TreeWalking) {
   }
 
   {
-    std::vector<const AXNode::UnignoredChildCrossingTreeBoundaryIterator>
+    std::vector<AXNode::UnignoredChildCrossingTreeBoundaryIterator>
         siblings;
     for (auto iter = root_node->UnignoredChildrenCrossingTreeBoundaryBegin();
          iter != root_node->UnignoredChildrenCrossingTreeBoundaryEnd();
@@ -394,10 +396,14 @@ TEST(AXNodeTest, TreeWalkingCrossingTreeBoundary) {
 }
 
 TEST(AXNodeTest, GetValueForControlTextField) {
+  testing::ScopedAXEmbeddedObjectBehaviorSetter ax_embedded_object_behavior(
+      AXEmbeddedObjectBehavior::kSuppressCharacter);
+
   // kRootWebArea
   // ++kTextField (contenteditable)
   // ++++kGenericContainer
   // ++++++kStaticText "Line 1"
+  // ++++++kImage
   // ++++++kLineBreak '\n'
   // ++++++kStaticText "Line 2"
 
@@ -409,10 +415,12 @@ TEST(AXNodeTest, GetValueForControlTextField) {
   rich_text_field_text_container.id = 3;
   AXNodeData rich_text_field_line_1;
   rich_text_field_line_1.id = 4;
+  AXNodeData rich_text_field_image;
+  rich_text_field_image.id = 5;
   AXNodeData rich_text_field_line_break;
-  rich_text_field_line_break.id = 5;
+  rich_text_field_line_break.id = 6;
   AXNodeData rich_text_field_line_2;
-  rich_text_field_line_2.id = 6;
+  rich_text_field_line_2.id = 7;
 
   root.role = ax::mojom::Role::kRootWebArea;
   root.child_ids = {rich_text_field.id};
@@ -429,14 +437,19 @@ TEST(AXNodeTest, GetValueForControlTextField) {
   rich_text_field_text_container.AddState(ax::mojom::State::kIgnored);
   rich_text_field_text_container.AddState(ax::mojom::State::kEditable);
   rich_text_field_text_container.AddState(ax::mojom::State::kRichlyEditable);
-  rich_text_field_text_container.child_ids = {rich_text_field_line_1.id,
-                                              rich_text_field_line_break.id,
-                                              rich_text_field_line_2.id};
+  rich_text_field_text_container.child_ids = {
+      rich_text_field_line_1.id, rich_text_field_image.id,
+      rich_text_field_line_break.id, rich_text_field_line_2.id};
 
   rich_text_field_line_1.role = ax::mojom::Role::kStaticText;
   rich_text_field_line_1.AddState(ax::mojom::State::kEditable);
   rich_text_field_line_1.AddState(ax::mojom::State::kRichlyEditable);
   rich_text_field_line_1.SetName("Line 1");
+
+  rich_text_field_image.role = ax::mojom::Role::kImage;
+  rich_text_field_image.AddState(ax::mojom::State::kEditable);
+  rich_text_field_image.AddState(ax::mojom::State::kRichlyEditable);
+  rich_text_field_image.SetName(AXNode::kEmbeddedObjectCharacterUTF8);
 
   rich_text_field_line_break.role = ax::mojom::Role::kLineBreak;
   rich_text_field_line_break.AddState(ax::mojom::State::kEditable);
@@ -456,6 +469,7 @@ TEST(AXNodeTest, GetValueForControlTextField) {
                   rich_text_field,
                   rich_text_field_text_container,
                   rich_text_field_line_1,
+                  rich_text_field_image,
                   rich_text_field_line_break,
                   rich_text_field_line_2};
 
@@ -466,7 +480,9 @@ TEST(AXNodeTest, GetValueForControlTextField) {
     const AXNode* text_field_node =
         manager.GetTree()->GetFromId(rich_text_field.id);
     ASSERT_NE(nullptr, text_field_node);
-    EXPECT_EQ("Line 1\nLine 2", text_field_node->GetValueForControl());
+    // In the accessibility tree's text representation, there is an implicit
+    // line break before every embedded object, such as an image.
+    EXPECT_EQ("Line 1\n\nLine 2", text_field_node->GetValueForControl());
   }
 
   // Only rich text fields should have their value attribute automatically
@@ -492,7 +508,7 @@ TEST(AXNodeTest, GetValueForControlTextField) {
       ax::mojom::BoolAttribute::kNonAtomicTextFieldRoot, true);
 
   // A node's data should override any computed node data.
-  rich_text_field.SetValue("Other value");
+  rich_text_field.SetValue("Line 1\nLine 2");
   AXTreeUpdate update_3;
   update_3.nodes = {rich_text_field};
 
@@ -502,7 +518,7 @@ TEST(AXNodeTest, GetValueForControlTextField) {
     const AXNode* text_field_node =
         manager.GetTree()->GetFromId(rich_text_field.id);
     ASSERT_NE(nullptr, text_field_node);
-    EXPECT_EQ("Other value", text_field_node->GetValueForControl());
+    EXPECT_EQ("Line 1\nLine 2", text_field_node->GetValueForControl());
   }
 }
 
@@ -613,6 +629,87 @@ TEST(AXNodeTest, GetLowestPlatformAncestor) {
   const AXNode* inline_box_2_node = static_text_2_node->children()[0];
   ASSERT_EQ(inline_box_2.id, inline_box_2_node->id());
   EXPECT_EQ(text_field_node, inline_box_2_node->GetLowestPlatformAncestor());
+}
+
+TEST(AXNodeTest, IsGridCellReadOnlyOrDisabled) {
+  // ++kRootWebArea
+  // ++++kGrid
+  // ++++kRow
+  // ++++++kGridCell
+  // ++++++kGridCell
+  AXNodeData root;
+  AXNodeData grid;
+  AXNodeData row;
+  AXNodeData gridcell_1;
+  AXNodeData gridcell_2;
+  AXNodeData gridcell_3;
+
+  root.id = 1;
+  grid.id = 2;
+  row.id = 3;
+  gridcell_1.id = 4;
+  gridcell_2.id = 5;
+  gridcell_2.id = 6;
+
+  root.role = ax::mojom::Role::kRootWebArea;
+  root.child_ids = {grid.id};
+
+  grid.role = ax::mojom::Role::kGrid;
+  grid.child_ids = {row.id};
+
+  row.role = ax::mojom::Role::kRow;
+  row.child_ids = {gridcell_1.id, gridcell_2.id, gridcell_3.id};
+
+  gridcell_1.role = ax::mojom::Role::kCell;
+  gridcell_1.AddIntAttribute(
+      ax::mojom::IntAttribute::kRestriction,
+      static_cast<int32_t>(ax::mojom::Restriction::kNone));
+
+  gridcell_2.role = ax::mojom::Role::kCell;
+  gridcell_2.AddIntAttribute(
+      ax::mojom::IntAttribute::kRestriction,
+      static_cast<int32_t>(ax::mojom::Restriction::kReadOnly));
+
+  gridcell_3.role = ax::mojom::Role::kCell;
+  gridcell_3.AddIntAttribute(
+      ax::mojom::IntAttribute::kRestriction,
+      static_cast<int32_t>(ax::mojom::Restriction::kDisabled));
+
+  AXTreeUpdate initial_state;
+  initial_state.root_id = root.id;
+  initial_state.nodes = {root, grid, row, gridcell_1, gridcell_2, gridcell_3};
+  initial_state.has_tree_data = true;
+
+  AXTreeData tree_data;
+  tree_data.tree_id = AXTreeID::CreateNewAXTreeID();
+  tree_data.title = "Application";
+  initial_state.tree_data = tree_data;
+
+  AXTree tree;
+  ASSERT_TRUE(tree.Unserialize(initial_state)) << tree.error();
+
+  const AXNode* root_node = tree.root();
+  ASSERT_EQ(root.id, root_node->id());
+
+  const AXNode* grid_node = root_node->children()[0];
+  ASSERT_EQ(grid.id, grid_node->id());
+  EXPECT_FALSE(grid_node->IsReadOnlyOrDisabled());
+
+  const AXNode* row_node = grid_node->children()[0];
+  ASSERT_EQ(row.id, row_node->id());
+  EXPECT_TRUE(row_node->IsReadOnlyOrDisabled());
+
+  const AXNode* gridcell_1_node = row_node->children()[0];
+  ASSERT_EQ(gridcell_1.id, gridcell_1_node->id());
+  EXPECT_FALSE(gridcell_1_node->IsReadOnlyOrDisabled());
+
+  const AXNode* gridcell_2_node = row_node->children()[1];
+  ASSERT_EQ(gridcell_2.id, gridcell_2_node->id());
+  EXPECT_TRUE(gridcell_2_node->IsReadOnlyOrDisabled());
+
+  const AXNode* gridcell_3_node = row_node->children()[2];
+  ASSERT_EQ(gridcell_3.id, gridcell_3_node->id());
+  EXPECT_TRUE(gridcell_3_node->IsReadOnlyOrDisabled());
 }
 
 }  // namespace ui

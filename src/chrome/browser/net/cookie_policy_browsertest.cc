@@ -5,6 +5,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/path_service.h"
+#include "base/strings/escape.h"
 #include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -28,7 +29,6 @@
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
-#include "net/base/escape.h"
 #include "net/base/features.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -147,7 +147,7 @@ class CookiePolicyBrowserTest : public InProcessBrowserTest {
   content::RenderFrameHost* GetFrame() {
     content::WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
-    return ChildFrameAt(web_contents->GetMainFrame(), 0);
+    return ChildFrameAt(web_contents->GetPrimaryMainFrame(), 0);
   }
 
   content::RenderFrameHost* GetNestedFrame() {
@@ -951,7 +951,7 @@ IN_PROC_BROWSER_TEST_P(SamePartyIsFirstPartyCookiePolicyBrowserTest,
   NavigateFrameTo(
       kHostD, base::StrCat({
                   "/server-redirect?",
-                  net::EscapeQueryParamValue(
+                  base::EscapeQueryParamValue(
                       https_server_.GetURL(kHostA, "/echoheader?cookie").spec(),
                       /*use_plus=*/false),
               }));
@@ -975,15 +975,15 @@ IN_PROC_BROWSER_TEST_P(SamePartyIsFirstPartyCookiePolicyBrowserTest,
   NavigateFrameTo(
       kHostD, base::StrCat({
                   "/script_redirect.html?",
-                  net::EscapeQueryParamValue(
+                  base::EscapeQueryParamValue(
                       https_server_.GetURL(kHostA, "/echoheader?cookie").spec(),
                       /*use_plus=*/false),
               }));
   ExpectFrameContent(AllCookies());
 }
 
-INSTANTIATE_TEST_CASE_P(FlagAndSettings,
-                        SamePartyIsFirstPartyCookiePolicyBrowserTest,
-                        testing::Combine(testing::Bool(), testing::Bool()));
+INSTANTIATE_TEST_SUITE_P(FlagAndSettings,
+                         SamePartyIsFirstPartyCookiePolicyBrowserTest,
+                         testing::Combine(testing::Bool(), testing::Bool()));
 
 }  // namespace

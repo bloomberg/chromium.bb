@@ -38,13 +38,12 @@ class FakeDevToolsClient : public StubDevToolsClient {
   }
 
   // Overridden from DevToolsClient:
-  Status SendCommandAndGetResult(
-      const std::string& method,
-      const base::DictionaryValue& params,
-      std::unique_ptr<base::DictionaryValue>* result) override {
+  Status SendCommandAndGetResult(const std::string& method,
+                                 const base::DictionaryValue& params,
+                                 base::Value* result) override {
     if (status_.IsError())
       return status_;
-    result->reset(result_.DeepCopy());
+    *result = result_.Clone();
     return Status(kOk);
   }
 
@@ -58,7 +57,7 @@ void AssertEvalFails(const base::DictionaryValue& command_result) {
   FakeDevToolsClient client;
   client.set_result(command_result);
   Status status = internal::EvaluateScript(
-      &client, 0, std::string(), internal::ReturnByValue,
+      &client, "context", std::string(), internal::ReturnByValue,
       base::TimeDelta::Max(), false, &result);
   ASSERT_EQ(kUnknownError, status.code());
   ASSERT_FALSE(result);
@@ -71,7 +70,7 @@ TEST(EvaluateScript, CommandError) {
   FakeDevToolsClient client;
   client.set_status(Status(kUnknownError));
   Status status = internal::EvaluateScript(
-      &client, 0, std::string(), internal::ReturnByValue,
+      &client, "context", std::string(), internal::ReturnByValue,
       base::TimeDelta::Max(), false, &result);
   ASSERT_EQ(kUnknownError, status.code());
   ASSERT_FALSE(result);
@@ -84,34 +83,35 @@ TEST(EvaluateScript, MissingResult) {
 
 TEST(EvaluateScript, Throws) {
   base::DictionaryValue dict;
-  dict.SetString("exceptionDetails.exception.className", "SyntaxError");
-  dict.SetString("result.type", "object");
+  dict.GetDict().SetByDottedPath("exceptionDetails.exception.className",
+                                 "SyntaxError");
+  dict.GetDict().SetByDottedPath("result.type", "object");
   ASSERT_NO_FATAL_FAILURE(AssertEvalFails(dict));
 }
 
 TEST(EvaluateScript, Ok) {
   std::unique_ptr<base::DictionaryValue> result;
   base::DictionaryValue dict;
-  dict.SetInteger("result.key", 100);
+  dict.GetDict().SetByDottedPath("result.key", 100);
   FakeDevToolsClient client;
   client.set_result(dict);
-  ASSERT_TRUE(internal::EvaluateScript(&client, 0, std::string(),
+  ASSERT_TRUE(internal::EvaluateScript(&client, "context", std::string(),
                                        internal::ReturnByValue,
                                        base::TimeDelta::Max(), false, &result)
                   .IsOk());
   ASSERT_TRUE(result);
-  ASSERT_TRUE(result->HasKey("key"));
+  ASSERT_TRUE(result->GetDict().Find("key"));
 }
 
 TEST(EvaluateScriptAndGetValue, MissingType) {
   std::unique_ptr<base::Value> result;
   FakeDevToolsClient client;
   base::DictionaryValue dict;
-  dict.SetInteger("result.value", 1);
+  dict.GetDict().SetByDottedPath("result.value", 1);
   client.set_result(dict);
-  ASSERT_TRUE(internal::EvaluateScriptAndGetValue(&client, 0, std::string(),
-                                                  base::TimeDelta::Max(), false,
-                                                  &result)
+  ASSERT_TRUE(internal::EvaluateScriptAndGetValue(
+                  &client, "context", std::string(), base::TimeDelta::Max(),
+                  false, &result)
                   .IsError());
 }
 
@@ -119,10 +119,11 @@ TEST(EvaluateScriptAndGetValue, Undefined) {
   std::unique_ptr<base::Value> result;
   FakeDevToolsClient client;
   base::DictionaryValue dict;
-  dict.SetString("result.type", "undefined");
+  dict.GetDict().SetByDottedPath("result.type", "undefined");
   client.set_result(dict);
   Status status = internal::EvaluateScriptAndGetValue(
-      &client, 0, std::string(), base::TimeDelta::Max(), false, &result);
+      &client, "context", std::string(), base::TimeDelta::Max(), false,
+      &result);
   ASSERT_EQ(kOk, status.code());
   ASSERT_TRUE(result && result->is_none());
 }
@@ -131,11 +132,12 @@ TEST(EvaluateScriptAndGetValue, Ok) {
   std::unique_ptr<base::Value> result;
   FakeDevToolsClient client;
   base::DictionaryValue dict;
-  dict.SetString("result.type", "integer");
-  dict.SetInteger("result.value", 1);
+  dict.GetDict().SetByDottedPath("result.type", "integer");
+  dict.GetDict().SetByDottedPath("result.value", 1);
   client.set_result(dict);
   Status status = internal::EvaluateScriptAndGetValue(
-      &client, 0, std::string(), base::TimeDelta::Max(), false, &result);
+      &client, "context", std::string(), base::TimeDelta::Max(), false,
+      &result);
   ASSERT_EQ(kOk, status.code());
   ASSERT_TRUE(result && result->is_int());
   ASSERT_EQ(1, result->GetInt());
@@ -144,13 +146,13 @@ TEST(EvaluateScriptAndGetValue, Ok) {
 TEST(EvaluateScriptAndGetObject, NoObject) {
   FakeDevToolsClient client;
   base::DictionaryValue dict;
-  dict.SetString("result.type", "integer");
+  dict.GetDict().SetByDottedPath("result.type", "integer");
   client.set_result(dict);
   bool got_object;
   std::string object_id;
   ASSERT_TRUE(internal::EvaluateScriptAndGetObject(
-                  &client, 0, std::string(), base::TimeDelta::Max(), false,
-                  &got_object, &object_id)
+                  &client, "context", std::string(), base::TimeDelta::Max(),
+                  false, &got_object, &object_id)
                   .IsOk());
   ASSERT_FALSE(got_object);
   ASSERT_TRUE(object_id.empty());
@@ -159,13 +161,13 @@ TEST(EvaluateScriptAndGetObject, NoObject) {
 TEST(EvaluateScriptAndGetObject, Ok) {
   FakeDevToolsClient client;
   base::DictionaryValue dict;
-  dict.SetString("result.objectId", "id");
+  dict.GetDict().SetByDottedPath("result.objectId", "id");
   client.set_result(dict);
   bool got_object;
   std::string object_id;
   ASSERT_TRUE(internal::EvaluateScriptAndGetObject(
-                  &client, 0, std::string(), base::TimeDelta::Max(), false,
-                  &got_object, &object_id)
+                  &client, "context", std::string(), base::TimeDelta::Max(),
+                  false, &got_object, &object_id)
                   .IsOk());
   ASSERT_TRUE(got_object);
   ASSERT_STREQ("id", object_id.c_str());
@@ -180,8 +182,8 @@ TEST(ParseCallFunctionResult, NotDict) {
 TEST(ParseCallFunctionResult, Ok) {
   std::unique_ptr<base::Value> result;
   base::DictionaryValue dict;
-  dict.SetInteger("status", 0);
-  dict.SetInteger("value", 1);
+  dict.GetDict().Set("status", 0);
+  dict.GetDict().Set("value", 1);
   Status status = internal::ParseCallFunctionResult(dict, &result);
   ASSERT_EQ(kOk, status.code());
   ASSERT_TRUE(result && result->is_int());
@@ -191,8 +193,8 @@ TEST(ParseCallFunctionResult, Ok) {
 TEST(ParseCallFunctionResult, ScriptError) {
   std::unique_ptr<base::Value> result;
   base::DictionaryValue dict;
-  dict.SetInteger("status", 1);
-  dict.SetInteger("value", 1);
+  dict.GetDict().Set("status", 1);
+  dict.GetDict().Set("value", 1);
   Status status = internal::ParseCallFunctionResult(dict, &result);
   ASSERT_EQ(1, status.code());
   ASSERT_FALSE(result);
@@ -246,7 +248,7 @@ TEST(CreateChild, MultiLevel) {
       &CreateMockSyncWebSocket, SyncWebSocket::StatusCode::kOk);
   // CreateChild relies on client_ being a DevToolsClientImpl, so no mocking
   std::unique_ptr<DevToolsClientImpl> client_uptr =
-      std::make_unique<DevToolsClientImpl>(factory, "http://url", "id");
+      std::make_unique<DevToolsClientImpl>("id", "", "http://url", factory);
   DevToolsClientImpl* client_ptr = client_uptr.get();
   BrowserInfo browser_info;
   WebViewImpl level1(client_ptr->GetId(), true, nullptr, &browser_info,
@@ -267,7 +269,7 @@ TEST(CreateChild, IsNonBlocking_NoErrors) {
       &CreateMockSyncWebSocket, SyncWebSocket::StatusCode::kOk);
   // CreateChild relies on client_ being a DevToolsClientImpl, so no mocking
   std::unique_ptr<DevToolsClientImpl> client_uptr =
-      std::make_unique<DevToolsClientImpl>(factory, "http://url", "id");
+      std::make_unique<DevToolsClientImpl>("id", "", "http://url", factory);
   DevToolsClientImpl* client_ptr = client_uptr.get();
   BrowserInfo browser_info;
   WebViewImpl parent_view(client_ptr->GetId(), true, nullptr, &browser_info,
@@ -287,7 +289,7 @@ TEST(CreateChild, Load_NoErrors) {
       &CreateMockSyncWebSocket, SyncWebSocket::StatusCode::kOk);
   // CreateChild relies on client_ being a DevToolsClientImpl, so no mocking
   std::unique_ptr<DevToolsClientImpl> client_uptr =
-      std::make_unique<DevToolsClientImpl>(factory, "http://url", "id");
+      std::make_unique<DevToolsClientImpl>("id", "", "http://url", factory);
   DevToolsClientImpl* client_ptr = client_uptr.get();
   BrowserInfo browser_info;
   WebViewImpl parent_view(client_ptr->GetId(), true, nullptr, &browser_info,
@@ -305,7 +307,7 @@ TEST(CreateChild, WaitForPendingNavigations_NoErrors) {
       &CreateMockSyncWebSocket, SyncWebSocket::StatusCode::kTimeout);
   // CreateChild relies on client_ being a DevToolsClientImpl, so no mocking
   std::unique_ptr<DevToolsClientImpl> client_uptr =
-      std::make_unique<DevToolsClientImpl>(factory, "http://url", "id");
+      std::make_unique<DevToolsClientImpl>("id", "", "http://url", factory);
   DevToolsClientImpl* client_ptr = client_uptr.get();
   BrowserInfo browser_info;
   WebViewImpl parent_view(client_ptr->GetId(), true, nullptr, &browser_info,
@@ -325,7 +327,7 @@ TEST(CreateChild, IsPendingNavigation_NoErrors) {
       &CreateMockSyncWebSocket, SyncWebSocket::StatusCode::kOk);
   // CreateChild relies on client_ being a DevToolsClientImpl, so no mocking
   std::unique_ptr<DevToolsClientImpl> client_uptr =
-      std::make_unique<DevToolsClientImpl>(factory, "http://url", "id");
+      std::make_unique<DevToolsClientImpl>("id", "", "http://url", factory);
   DevToolsClientImpl* client_ptr = client_uptr.get();
   BrowserInfo browser_info;
   WebViewImpl parent_view(client_ptr->GetId(), true, nullptr, &browser_info,
@@ -349,7 +351,7 @@ TEST(ManageCookies, AddCookie_SameSiteTrue) {
                    std::move(client_uptr), nullptr, PageLoadStrategy::kEager);
   std::string samesite = "Strict";
   base::DictionaryValue dict;
-  dict.SetBoolean("success", true);
+  dict.GetDict().Set("success", true);
   client_ptr->set_result(dict);
   Status status = view.AddCookie("utest", "chrome://version", "value", "domain",
                                  "path", samesite, true, true, 123456789);

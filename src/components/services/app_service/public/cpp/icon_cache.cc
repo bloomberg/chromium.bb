@@ -12,7 +12,7 @@
 
 namespace apps {
 
-void RecordAppLaunchMetrics(IconLoadingMethod icon_loading_method) {
+void RecordIconLoadMethodMetrics(IconLoadingMethod icon_loading_method) {
   base::UmaHistogramEnumeration("Apps.IconLoadingMethod", icon_loading_method);
 }
 
@@ -85,7 +85,7 @@ std::unique_ptr<IconLoader::Releaser> IconCache::LoadIconFromIconKey(
 
   std::unique_ptr<IconLoader::Releaser> releaser(nullptr);
   if (cache_hit) {
-    RecordAppLaunchMetrics(IconLoadingMethod::kFromCache);
+    RecordIconLoadMethodMetrics(IconLoadingMethod::kFromCache);
     std::move(callback).Run(cache_hit->AsIconValue(icon_type));
   } else if (wrapped_loader_) {
     releaser = wrapped_loader_->LoadIconFromIconKey(
@@ -151,7 +151,7 @@ std::unique_ptr<IconLoader::Releaser> IconCache::LoadIconFromIconKey(
 
   std::unique_ptr<IconLoader::Releaser> releaser(nullptr);
   if (cache_hit) {
-    RecordAppLaunchMetrics(IconLoadingMethod::kFromCache);
+    RecordIconLoadMethodMetrics(IconLoadingMethod::kFromCache);
     std::move(callback).Run(cache_hit->AsIconValue(icon_type));
   } else if (wrapped_loader_) {
     releaser = wrapped_loader_->LoadIconFromIconKey(
@@ -190,8 +190,7 @@ void IconCache::SweepReleasedIcons() {
   }
 }
 
-void IconCache::RemoveIcon(apps::mojom::AppType app_type,
-                           const std::string& app_id) {
+void IconCache::RemoveIcon(AppType app_type, const std::string& app_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (gc_policy_ != GarbageCollectionPolicy::kExplicit) {
     return;
@@ -199,8 +198,7 @@ void IconCache::RemoveIcon(apps::mojom::AppType app_type,
 
   auto iter = map_.begin();
   while (iter != map_.end()) {
-    if (iter->first.app_type_ == ConvertMojomAppTypToAppType(app_type) &&
-        iter->first.app_id_ == app_id) {
+    if (iter->first.app_type_ == app_type && iter->first.app_id_ == app_id) {
       iter = map_.erase(iter);
     } else {
       ++iter;

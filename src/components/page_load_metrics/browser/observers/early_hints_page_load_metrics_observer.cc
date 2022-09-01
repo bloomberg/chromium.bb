@@ -30,9 +30,16 @@ EarlyHintsPageLoadMetricsObserver::~EarlyHintsPageLoadMetricsObserver() =
     default;
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
-EarlyHintsPageLoadMetricsObserver::OnCommit(
+EarlyHintsPageLoadMetricsObserver::OnFencedFramesStart(
     content::NavigationHandle* navigation_handle,
-    ukm::SourceId source_id) {
+    const GURL& currently_committed_url) {
+  // This class doesn't use subframe information. No need to forward.
+  return STOP_OBSERVING;
+}
+
+page_load_metrics::PageLoadMetricsObserver::ObservePolicy
+EarlyHintsPageLoadMetricsObserver::OnCommit(
+    content::NavigationHandle* navigation_handle) {
   // Continue observing when 103 Early Hints are received during the navigation
   // and these contain at least one resource hints (preload or preconnect).
   if (navigation_handle->WasResourceHintsReceived())

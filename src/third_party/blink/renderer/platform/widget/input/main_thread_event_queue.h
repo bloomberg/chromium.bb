@@ -10,6 +10,7 @@
 #include "base/feature_list.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/single_thread_task_runner.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "cc/input/touch_action.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -136,6 +137,10 @@ class PLATFORM_EXPORT MainThreadEventQueue
     return ack_state == mojom::blink::InputEventResultState::kNotConsumed ||
            ack_state ==
                mojom::blink::InputEventResultState::kSetNonBlockingDueToFling;
+  }
+
+  base::SingleThreadTaskRunner* main_task_runner_for_testing() const {
+    return main_task_runner_.get();
   }
 
  protected:

@@ -65,6 +65,7 @@ eb438c6540eb429f74404eedfa3228d409c57874 *desktop_640_360_30.yuv
 89e70ebd22c27d275fe14dc2f1a41841a6d8b9ab *kirland_640_480_30.yuv
 33c533192759e5bb4f07abfbac389dc259db4686 *macmarcomoving_640_480_30.yuv
 8bfaab121080821b8f03b23467911e59ec59b8fe *macmarcostationary_640_480_30.yuv
+9ec21aa2c4a8a9d46d5403ea20c93b0ff5ad74a1 *rand_noise_w1280h720.yuv
 70894878d916a599842d9ad0dcd24e10c13e5467 *niklas_640_480_30.yuv
 8784b6df2d8cc946195a90ac00540500d2e522e4 *tacomanarrows_640_480_30.yuv
 edd86a1f5e62fd9da9a9d46078247759c2638009 *tacomasmallcameramovement_640_480_30.yuv
@@ -558,3 +559,9 @@ c58ccf7ff04711acc559c06f0bfce3c5b14800c3 *av1-1-b8-23-film_grain-50.ivf.md5
 2f883c7e11c21a31f79bd9c809541be90b0c7c4a *av1-1-b10-23-film_grain-50.ivf
 83f2094fca597ad38b4fd623b807de1774c53ffb *av1-1-b10-23-film_grain-50.ivf.md5
 644e05c6bc0418a72b86427aa01e8b4ecea85e03 *desktop1.320_180.yuv
+ad18ca16f0a249fb3b7c38de0d9b327fed273f96 *hantro_collage_w352h288_nv12.yuv
+a17584012187cd886b64f8cb0f35bfd8d762f9dc *av1-1-b8-24-monochrome.ivf
+e71cd9a07f928c527c900daddd071ae60337426d *av1-1-b8-24-monochrome.ivf.md5
+03a8d002594ccc51932332002bb6f9837ef46d0f *av1-1-b10-24-monochrome.ivf
+e24aa6951afd7b2bb53eb1a73e25a19e7b189f82 *av1-1-b10-24-monochrome.ivf.md5
+df0c9481104aa8c81f9e3b61b6d147a331ad3e35 *firstpass_stats

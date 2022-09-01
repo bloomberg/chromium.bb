@@ -35,9 +35,9 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/error_utils.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "ui/gfx/win/direct_write.h"
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
 namespace extensions {
 
@@ -80,7 +80,7 @@ std::string GetFontNamePrefPath(fonts::GenericFamily generic_family_enum,
 }
 
 void MaybeUnlocalizeFontName(std::string* font_name) {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // Try to get the 'us-en' font name. If it is failing, use the first name
   // available.
   absl::optional<std::string> localized_font_name =
@@ -90,7 +90,7 @@ void MaybeUnlocalizeFontName(std::string* font_name) {
 
   if (localized_font_name)
     *font_name = std::move(localized_font_name.value());
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 }
 
 }  // namespace
@@ -159,10 +159,10 @@ void FontSettingsEventRouter::OnFontNamePrefChanged(
   }
   std::string font_name = pref->GetValue()->GetString();
   base::ListValue args;
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetString(kFontIdKey, font_name);
-  dict->SetString(kGenericFamilyKey, generic_family);
-  dict->SetString(kScriptKey, script);
+  base::Value::Dict dict;
+  dict.Set(kFontIdKey, font_name);
+  dict.Set(kGenericFamilyKey, generic_family);
+  dict.Set(kScriptKey, script);
   args.Append(std::move(dict));
 
   extensions::preference_helpers::DispatchEventToExtensions(
@@ -181,8 +181,8 @@ void FontSettingsEventRouter::OnFontPrefChanged(
   CHECK(pref);
 
   base::ListValue args;
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->Set(key, base::Value::ToUniquePtrValue(pref->GetValue()->Clone()));
+  base::Value::Dict dict;
+  dict.Set(key, pref->GetValue()->Clone());
   args.Append(std::move(dict));
 
   extensions::preference_helpers::DispatchEventToExtensions(
@@ -254,11 +254,10 @@ ExtensionFunction::ResponseAction FontSettingsGetFontFunction::Run() {
       extensions::preference_helpers::GetLevelOfControl(profile, extension_id(),
                                                         pref_path, kIncognito);
 
-  std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
-  result->SetString(kFontIdKey, font_name);
-  result->SetString(kLevelOfControlKey, level_of_control);
-  return RespondNow(
-      OneArgument(base::Value::FromUniquePtrValue(std::move(result))));
+  base::Value::Dict result;
+  result.Set(kFontIdKey, font_name);
+  result.Set(kLevelOfControlKey, level_of_control);
+  return RespondNow(OneArgument(base::Value(std::move(result))));
 }
 
 ExtensionFunction::ResponseAction FontSettingsSetFontFunction::Run() {
@@ -296,35 +295,30 @@ void FontSettingsGetFontListFunction::FontListHasLoaded(
 
 ExtensionFunction::ResponseValue
 FontSettingsGetFontListFunction::CopyFontsToResult(base::ListValue* fonts) {
-  std::unique_ptr<base::ListValue> result(new base::ListValue());
-  for (const auto& entry : fonts->GetList()) {
+  base::Value::List result;
+  for (const auto& entry : fonts->GetListDeprecated()) {
     if (!entry.is_list()) {
       NOTREACHED();
       return Error("");
     }
-    const base::Value::ConstListView font_list_value = entry.GetList();
+    const base::Value::ConstListView font_list_value =
+        entry.GetListDeprecated();
 
-    if (font_list_value.size() < 2 || !font_list_value[0].is_string()) {
+    if (font_list_value.size() < 2 || !font_list_value[0].is_string() ||
+        !font_list_value[1].is_string()) {
       NOTREACHED();
       return Error("");
     }
     const std::string& name = font_list_value[0].GetString();
-
-    if (!font_list_value[1].is_string()) {
-      NOTREACHED();
-      return Error("");
-    }
     const std::string& localized_name = font_list_value[1].GetString();
 
-    std::unique_ptr<base::DictionaryValue> font_name(
-        new base::DictionaryValue());
-    font_name->Set(kFontIdKey, std::make_unique<base::Value>(name));
-    font_name->Set(kDisplayNameKey,
-                   std::make_unique<base::Value>(localized_name));
-    result->Append(std::move(font_name));
+    base::Value::Dict font_name;
+    font_name.Set(kFontIdKey, name);
+    font_name.Set(kDisplayNameKey, localized_name);
+    result.Append(std::move(font_name));
   }
 
-  return OneArgument(base::Value::FromUniquePtrValue(std::move(result)));
+  return OneArgument(base::Value(std::move(result)));
 }
 
 ExtensionFunction::ResponseAction ClearFontPrefExtensionFunction::Run() {
@@ -351,12 +345,10 @@ ExtensionFunction::ResponseAction GetFontPrefExtensionFunction::Run() {
       extensions::preference_helpers::GetLevelOfControl(
           profile, extension_id(), GetPrefName(), kIncognito);
 
-  std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
-  result->Set(GetKey(),
-              base::Value::ToUniquePtrValue(pref->GetValue()->Clone()));
-  result->SetString(kLevelOfControlKey, level_of_control);
-  return RespondNow(
-      OneArgument(base::Value::FromUniquePtrValue(std::move(result))));
+  base::Value::Dict result;
+  result.Set(GetKey(), pref->GetValue()->Clone());
+  result.Set(kLevelOfControlKey, level_of_control);
+  return RespondNow(OneArgument(base::Value(std::move(result))));
 }
 
 ExtensionFunction::ResponseAction SetFontPrefExtensionFunction::Run() {

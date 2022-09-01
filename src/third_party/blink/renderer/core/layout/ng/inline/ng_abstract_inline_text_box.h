@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_INLINE_NG_ABSTRACT_INLINE_TEXT_BOX_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_INLINE_NG_ABSTRACT_INLINE_TEXT_BOX_H_
 
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/line/abstract_inline_text_box.h"
 
 namespace blink {
@@ -50,8 +51,9 @@ class CORE_EXPORT NGAbstractInlineTextBox final : public AbstractInlineTextBox {
   bool NeedsTrailingSpace() const final;
 
   const NGFragmentItem* fragment_item_;
-  // |root_box_fragment_| owns |fragment_item_|.
-  scoped_refptr<const NGPhysicalBoxFragment> root_box_fragment_;
+  // |root_box_fragment_| owns |fragment_item_|. Persistent is used here to keep
+  // |NGAbstractInlineTextBoxCache| off-heap.
+  Persistent<const NGPhysicalBoxFragment> root_box_fragment_;
 };
 
 }  // namespace blink

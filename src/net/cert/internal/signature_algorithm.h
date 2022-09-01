@@ -9,7 +9,6 @@
 
 #include <memory>
 
-#include "base/compiler_specific.h"
 #include "net/base/net_export.h"
 
 namespace net {
@@ -40,6 +39,15 @@ enum class SignatureAlgorithmId {
   Dsa,       // DSA
 };
 
+// Parses AlgorithmIdentifier as defined by RFC 5280 section 4.1.1.2:
+//
+//     AlgorithmIdentifier  ::=  SEQUENCE  {
+//          algorithm               OBJECT IDENTIFIER,
+//          parameters              ANY DEFINED BY algorithm OPTIONAL  }
+[[nodiscard]] NET_EXPORT bool ParseAlgorithmIdentifier(const der::Input& input,
+                                                       der::Input* algorithm,
+                                                       der::Input* parameters);
+
 // Parses a HashAlgorithm as defined by RFC 5912:
 //
 //     HashAlgorithm  ::=  AlgorithmIdentifier{DIGEST-ALGORITHM,
@@ -52,8 +60,8 @@ enum class SignatureAlgorithmId {
 //         { IDENTIFIER id-sha384 PARAMS TYPE NULL ARE preferredPresent } |
 //         { IDENTIFIER id-sha512 PARAMS TYPE NULL ARE preferredPresent }
 //     }
-WARN_UNUSED_RESULT bool ParseHashAlgorithm(const der::Input& input,
-                                           DigestAlgorithm* out);
+[[nodiscard]] bool ParseHashAlgorithm(const der::Input& input,
+                                      DigestAlgorithm* out);
 
 // Base class for describing algorithm parameters.
 class NET_EXPORT SignatureAlgorithmParameters {
@@ -86,6 +94,8 @@ class NET_EXPORT RsaPssParameters : public SignatureAlgorithmParameters {
 
 // SignatureAlgorithm describes a signature algorithm and its parameters. This
 // corresponds to "AlgorithmIdentifier" from RFC 5280.
+//
+// TODO(crbug.com/1321691): Replace this with a simple enum.
 class NET_EXPORT SignatureAlgorithm {
  public:
   SignatureAlgorithm(const SignatureAlgorithm&) = delete;

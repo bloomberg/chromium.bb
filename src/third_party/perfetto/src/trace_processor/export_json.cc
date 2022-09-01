@@ -709,7 +709,7 @@ class JsonExporter {
     const auto& thread_table = storage_->thread_table();
     for (UniqueTid utid = 0; utid < thread_table.row_count(); ++utid) {
       auto opt_name = thread_table.name()[utid];
-      if (!opt_name.is_null()) {
+      if (opt_name.has_value()) {
         const char* thread_name = GetNonNullString(storage_, opt_name);
         auto pid_and_tid = UtidToPidAndTid(utid);
         writer_.WriteMetadataEvent("thread_name", "name", thread_name,
@@ -723,7 +723,7 @@ class JsonExporter {
     const auto& process_table = storage_->process_table();
     for (UniquePid upid = 0; upid < process_table.row_count(); ++upid) {
       auto opt_name = process_table.name()[upid];
-      if (!opt_name.is_null()) {
+      if (opt_name.has_value()) {
         const char* process_name = GetNonNullString(storage_, opt_name);
         writer_.WriteMetadataEvent("process_name", "name", process_name,
                                    UpidToPid(upid), /*tid=*/0);
@@ -819,8 +819,8 @@ class JsonExporter {
 
       const auto& track_table = storage_->track_table();
 
-      uint32_t track_row = *track_table.id().IndexOf(track_id);
-      auto track_args_id = track_table.source_arg_set_id()[track_row];
+      auto track_row_ref = *track_table.FindById(track_id);
+      auto track_args_id = track_row_ref.source_arg_set_id();
       const Json::Value* track_args = nullptr;
       bool legacy_chrome_track = false;
       bool is_child_track = false;

@@ -46,7 +46,7 @@ _COMMON_DISASM_OPTIONS = ["-M", "intel-mnemonic", "-C", "-z"]
 _DISASM_HEADER_RE = re.compile(r"[a-f0-9]+\s+<.*:$")
 _DISASM_LINE_RE = re.compile(r"\s*([a-f0-9]+):\s*(\S.*)")
 
-# Keys must match constants in Logger::LogCodeInfo.
+# Keys must match constants in V8FileLogger::LogCodeInfo.
 _ARCH_MAP = {
   "ia32": "-m i386",
   "x64": "-m i386 -M x86-64",
@@ -81,7 +81,7 @@ def GetDisasmLines(filename, offset, size, arch, inplace, arch_flags=""):
                              stdout=subprocess.PIPE,
                              stderr=subprocess.STDOUT)
   out, err = process.communicate()
-  lines = out.split("\n")
+  lines = out.decode('utf-8').split("\n")
   header_line = 0
   for i, line in enumerate(lines):
     if _DISASM_HEADER_RE.match(line):

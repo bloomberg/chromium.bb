@@ -22,6 +22,7 @@
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/web_test_support.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_copier_mojo.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 #include "third_party/inspector_protocol/crdtp/cbor.h"
@@ -37,7 +38,7 @@ const char kSessionId[] = "sessionId";
 bool ShouldInterruptForMethod(const String& method) {
   return method != "Debugger.evaluateOnCallFrame" &&
          method != "Runtime.evaluate" && method != "Runtime.callFunctionOn" &&
-         method != "Runtime.runScript";
+         method != "Runtime.getProperties" && method != "Runtime.runScript";
 }
 
 std::vector<uint8_t> Get8BitStringFrom(v8_inspector::StringBuffer* msg) {
@@ -119,12 +120,14 @@ DevToolsSession::DevToolsSession(
     mojo::PendingReceiver<mojom::blink::DevToolsSession> io_receiver,
     mojom::blink::DevToolsSessionStatePtr reattach_session_state,
     bool client_expects_binary_responses,
+    bool client_is_trusted,
     const String& session_id,
     scoped_refptr<base::SequencedTaskRunner> mojo_task_runner)
     : agent_(agent),
       inspector_backend_dispatcher_(new protocol::UberDispatcher(this)),
       session_state_(std::move(reattach_session_state)),
       client_expects_binary_responses_(client_expects_binary_responses),
+      client_is_trusted_(client_is_trusted),
       v8_session_state_(kV8StateKey),
       v8_session_state_cbor_(&v8_session_state_, /*default_value=*/{}),
       session_id_(session_id) {
@@ -155,9 +158,11 @@ DevToolsSession::~DevToolsSession() {
 void DevToolsSession::ConnectToV8(v8_inspector::V8Inspector* inspector,
                                   int context_group_id) {
   const auto& cbor = v8_session_state_cbor_.Get();
-  v8_session_ =
-      inspector->connect(context_group_id, this,
-                         v8_inspector::StringView(cbor.data(), cbor.size()));
+  v8_session_ = inspector->connect(
+      context_group_id, this,
+      v8_inspector::StringView(cbor.data(), cbor.size()),
+      client_is_trusted_ ? v8_inspector::V8Inspector::kFullyTrusted
+                         : v8_inspector::V8Inspector::kUntrusted);
 }
 
 bool DevToolsSession::IsDetached() {
@@ -238,7 +243,7 @@ void DevToolsSession::DispatchProtocolCommandImpl(
 void DevToolsSession::DidStartProvisionalLoad(LocalFrame* frame) {
   if (v8_session_ && agent_->inspected_frames_->Root() == frame) {
     v8_session_->setSkipAllPauses(true);
-    v8_session_->resume();
+    v8_session_->resume(true /* terminate on resume */);
   }
 }
 

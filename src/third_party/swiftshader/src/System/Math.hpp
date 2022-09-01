@@ -370,9 +370,38 @@ inline int clampToSignedInt(unsigned int x)
 }
 
 // Convert floating value v to fixed point with p digits after the decimal point
-constexpr int toFixedPoint(float v, int p)
+inline constexpr int toFixedPoint(float v, int p)
 {
 	return static_cast<int>(v * (1 << p));
+}
+
+// Returns the next floating-point number which is not treated identical to the input.
+// Note that std::nextafter() does not skip representations flushed to zero.
+[[nodiscard]] inline float inc(float x)
+{
+	int x1 = bit_cast<int>(x);
+
+	while(bit_cast<float>(x1) == x)
+	{
+		// Since IEEE 754 uses ones' complement and integers are two's complement,
+		// we need to explicitly hop from negative zero to positive zero.
+		if(x1 == (int)0x80000000)  // -0.0f
+		{
+			// Note that while the comparison -0.0f == +0.0f returns true, this
+			// function returns the next value which can be treated differently.
+			return +0.0f;
+		}
+
+		// Negative ones' complement value are made less negative by subtracting 1
+		// in two's complement representation.
+		x1 += (x1 >= 0) ? 1 : -1;
+	}
+
+	float y = bit_cast<float>(x1);
+
+	// If we have a value which compares equal to 0.0, return 0.0. This ensures
+	// subnormal values get flushed to zero when denormals-are-zero is enabled.
+	return (y == 0.0f) ? +0.0f : y;
 }
 
 }  // namespace sw

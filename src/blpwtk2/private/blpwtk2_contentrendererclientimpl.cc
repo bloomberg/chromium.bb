@@ -94,6 +94,7 @@ void ContentRendererClientImpl::PrepareErrorPage(
     content::RenderFrame* render_frame,
     const blink::WebURLError& error,
     const std::string& http_method,
+    content::mojom::AlternativeErrorPageOverrideInfoPtr alternative_error_page_info,
     std::string* error_html)
 {
     GURL gurl = (GURL) error.url();

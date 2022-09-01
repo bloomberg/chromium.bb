@@ -6,11 +6,13 @@
 
 #include "base/base_paths.h"
 #include "base/callback_forward.h"
+#include "base/containers/span.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "net/cert/internal/cert_error_params.h"
 #include "net/cert/internal/cert_issuer_source_static.h"
@@ -29,12 +31,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/boringssl/src/include/openssl/pool.h"
 
-#if defined(OS_WIN)
-#include "base/ranges/algorithm.h"
+#if BUILDFLAG(IS_WIN)
 #include "base/win/wincrypt_shim.h"
 #include "crypto/scoped_capi_types.h"
 #include "net/cert/internal/trust_store_win.h"
-#endif  // OS_WIN
+#endif  // BUILDFLAG(IS_WIN)
 
 namespace net {
 
@@ -172,7 +173,7 @@ TEST(PathBuilderResultUserDataTest, ModifyUserDataInConstructor) {
   // crash or fail on ASAN bots).
   CertPathBuilder path_builder(
       a_by_b, &trust_store, &delegate, verify_time, KeyPurpose::ANY_EKU,
-      InitialExplicitPolicy::kFalse, {AnyPolicy()},
+      InitialExplicitPolicy::kFalse, {der::Input(kAnyPolicyOid)},
       InitialPolicyMappingInhibit::kFalse, InitialAnyPolicyInhibit::kFalse);
   CertPathBuilder::Result result = path_builder.Run();
   auto* data = static_cast<TrustStoreThatStoresUserData::Data*>(
@@ -207,7 +208,8 @@ class PathBuilderMultiRootTest : public ::testing::Test {
 
   const InitialExplicitPolicy initial_explicit_policy_ =
       InitialExplicitPolicy::kFalse;
-  const std::set<der::Input> user_initial_policy_set_ = {AnyPolicy()};
+  const std::set<der::Input> user_initial_policy_set_ = {
+      der::Input(kAnyPolicyOid)};
   const InitialPolicyMappingInhibit initial_policy_mapping_inhibit_ =
       InitialPolicyMappingInhibit::kFalse;
   const InitialAnyPolicyInhibit initial_any_policy_inhibit_ =
@@ -793,7 +795,97 @@ TEST_F(PathBuilderMultiRootTest, TestDeadline) {
       result.paths[0]->errors.ContainsError(cert_errors::kDeadlineExceeded));
 }
 
-#if defined(OS_WIN) && BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
+TEST_F(PathBuilderMultiRootTest, TestDepthLimit) {
+  // D(D) is the trust root.
+  TrustStoreInMemory trust_store;
+  trust_store.AddTrustAnchor(d_by_d_);
+
+  // Certs B(C) and C(D) are supplied.
+  CertIssuerSourceStatic sync_certs;
+  sync_certs.AddCert(b_by_c_);
+  sync_certs.AddCert(c_by_d_);
+
+  for (const bool insufficient_limit : {true, false}) {
+    CertPathBuilder path_builder(
+        a_by_b_, &trust_store, &delegate_, time_, KeyPurpose::ANY_EKU,
+        initial_explicit_policy_, user_initial_policy_set_,
+        initial_policy_mapping_inhibit_, initial_any_policy_inhibit_);
+    path_builder.AddCertIssuerSource(&sync_certs);
+
+    if (insufficient_limit) {
+      // A limit of depth equal to 2 is insufficient to build the path.
+      // Therefore, building is expected to fail.
+      path_builder.SetDepthLimit(2);
+    } else {
+      // The other tests in this file exercise the case that |SetDepthLimit|
+      // isn't called. Therefore, set a sufficient limit for the path to be
+      // found.
+      path_builder.SetDepthLimit(5);
+    }
+
+    auto result = path_builder.Run();
+
+    EXPECT_EQ(!insufficient_limit, result.HasValidPath());
+    EXPECT_EQ(insufficient_limit,
+              result.AnyPathContainsError(cert_errors::kDepthLimitExceeded));
+  }
+}
+
+TEST_F(PathBuilderMultiRootTest, TestDepthLimitMultiplePaths) {
+  // This case tests path building backracking due to reaching the path depth
+  // limit. Given the root and issuer certificates below, there can be two paths
+  // from between the leaf to a trusted root, one has length of 3 and the other
+  // has length of 4. These certificates are specifically chosen because path
+  // building will first explore the 4-certificate long path then the
+  // 3-certificate long path. So with a depth limit of 3, we can test the
+  // backtracking code path.
+
+  // E(E) and C(D) are the trust roots.
+  TrustStoreInMemory trust_store;
+  trust_store.AddTrustAnchor(e_by_e_);
+  trust_store.AddTrustAnchor(c_by_d_);
+
+  // Certs B(C). B(F) and F(E) are supplied.
+  CertIssuerSourceStatic sync_certs;
+  sync_certs.AddCert(b_by_c_);
+  sync_certs.AddCert(b_by_f_);
+  sync_certs.AddCert(f_by_e_);
+
+  CertPathBuilder path_builder(
+      a_by_b_, &trust_store, &delegate_, time_, KeyPurpose::ANY_EKU,
+      initial_explicit_policy_, user_initial_policy_set_,
+      initial_policy_mapping_inhibit_, initial_any_policy_inhibit_);
+  path_builder.AddCertIssuerSource(&sync_certs);
+
+  path_builder.SetDepthLimit(3);
+
+  auto result = path_builder.Run();
+
+  EXPECT_TRUE(result.HasValidPath());
+  EXPECT_TRUE(result.AnyPathContainsError(cert_errors::kDepthLimitExceeded));
+
+  ASSERT_EQ(result.paths.size(), 2u);
+
+  const CertPathBuilderResultPath* truncated_path = result.paths[0].get();
+  EXPECT_FALSE(truncated_path->IsValid());
+  EXPECT_TRUE(
+      truncated_path->errors.ContainsError(cert_errors::kDepthLimitExceeded));
+  ASSERT_EQ(truncated_path->certs.size(), 3u);
+  EXPECT_EQ(a_by_b_, truncated_path->certs[0]);
+  EXPECT_EQ(b_by_f_, truncated_path->certs[1]);
+  EXPECT_EQ(f_by_e_, truncated_path->certs[2]);
+
+  const CertPathBuilderResultPath* valid_path = result.paths[1].get();
+  EXPECT_TRUE(valid_path->IsValid());
+  EXPECT_FALSE(
+      valid_path->errors.ContainsError(cert_errors::kDepthLimitExceeded));
+  ASSERT_EQ(valid_path->certs.size(), 3u);
+  EXPECT_EQ(a_by_b_, valid_path->certs[0]);
+  EXPECT_EQ(b_by_c_, valid_path->certs[1]);
+  EXPECT_EQ(c_by_d_, valid_path->certs[2]);
+}
+
+#if BUILDFLAG(IS_WIN) && BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
 
 void AddToStoreWithEKURestriction(HCERTSTORE store,
                                   const scoped_refptr<ParsedCertificate>& cert,
@@ -814,9 +906,7 @@ void AddToStoreWithEKURestriction(HCERTSTORE store,
 
 bool AreCertsEq(const scoped_refptr<ParsedCertificate> cert_1,
                 const scoped_refptr<ParsedCertificate> cert_2) {
-  return cert_1 && cert_2 &&
-         base::ranges::equal(cert_1->der_cert().AsSpan(),
-                             cert_2->der_cert().AsSpan());
+  return cert_1 && cert_2 && cert_1->der_cert() == cert_2->der_cert();
 }
 
 // Test to ensure that path building stops when an intermediate cert is
@@ -892,7 +982,7 @@ TEST_F(PathBuilderMultiRootTest, TrustStoreWinNoPathEKURestrictions) {
   auto result = path_builder.Run();
   ASSERT_FALSE(result.HasValidPath());
 }
-#endif  // defined(OS_WIN) && BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
+#endif  // BUILDFLAG(IS_WIN) && BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
 
 class PathBuilderKeyRolloverTest : public ::testing::Test {
  public:
@@ -954,7 +1044,8 @@ class PathBuilderKeyRolloverTest : public ::testing::Test {
 
   const InitialExplicitPolicy initial_explicit_policy_ =
       InitialExplicitPolicy::kFalse;
-  const std::set<der::Input> user_initial_policy_set_ = {AnyPolicy()};
+  const std::set<der::Input> user_initial_policy_set_ = {
+      der::Input(kAnyPolicyOid)};
   const InitialPolicyMappingInhibit initial_policy_mapping_inhibit_ =
       InitialPolicyMappingInhibit::kFalse;
   const InitialAnyPolicyInhibit initial_any_policy_inhibit_ =
@@ -1761,7 +1852,8 @@ class PathBuilderSimpleChainTest : public ::testing::Test {
 
     const InitialExplicitPolicy initial_explicit_policy =
         InitialExplicitPolicy::kFalse;
-    const std::set<der::Input> user_initial_policy_set = {AnyPolicy()};
+    const std::set<der::Input> user_initial_policy_set = {
+        der::Input(kAnyPolicyOid)};
     const InitialPolicyMappingInhibit initial_policy_mapping_inhibit =
         InitialPolicyMappingInhibit::kFalse;
     const InitialAnyPolicyInhibit initial_any_policy_inhibit =
@@ -2025,7 +2117,7 @@ TEST(PathBuilderPrioritizationTest, DatePrioritization) {
 
     CertPathBuilder path_builder(
         target, &trust_store, &delegate, verify_time, KeyPurpose::ANY_EKU,
-        InitialExplicitPolicy::kFalse, {AnyPolicy()},
+        InitialExplicitPolicy::kFalse, {der::Input(kAnyPolicyOid)},
         InitialPolicyMappingInhibit::kFalse, InitialAnyPolicyInhibit::kFalse);
     path_builder.AddCertIssuerSource(&intermediates);
 
@@ -2123,7 +2215,7 @@ TEST(PathBuilderPrioritizationTest, KeyIdPrioritization) {
 
     CertPathBuilder path_builder(
         target, &trust_store, &delegate, verify_time, KeyPurpose::ANY_EKU,
-        InitialExplicitPolicy::kFalse, {AnyPolicy()},
+        InitialExplicitPolicy::kFalse, {der::Input(kAnyPolicyOid)},
         InitialPolicyMappingInhibit::kFalse, InitialAnyPolicyInhibit::kFalse);
     path_builder.AddCertIssuerSource(&intermediates);
 
@@ -2247,7 +2339,7 @@ TEST(PathBuilderPrioritizationTest, TrustAndKeyIdPrioritization) {
 
     CertPathBuilder path_builder(
         target, &trust_store, &delegate, verify_time, KeyPurpose::ANY_EKU,
-        InitialExplicitPolicy::kFalse, {AnyPolicy()},
+        InitialExplicitPolicy::kFalse, {der::Input(kAnyPolicyOid)},
         InitialPolicyMappingInhibit::kFalse, InitialAnyPolicyInhibit::kFalse);
     path_builder.SetExploreAllPaths(true);
 
@@ -2366,7 +2458,7 @@ TEST(PathBuilderPrioritizationTest, KeyIdNameAndSerialPrioritization) {
 
     CertPathBuilder path_builder(
         target, &trust_store, &delegate, verify_time, KeyPurpose::ANY_EKU,
-        InitialExplicitPolicy::kFalse, {AnyPolicy()},
+        InitialExplicitPolicy::kFalse, {der::Input(kAnyPolicyOid)},
         InitialPolicyMappingInhibit::kFalse, InitialAnyPolicyInhibit::kFalse);
     path_builder.AddCertIssuerSource(&intermediates);
 
@@ -2423,7 +2515,7 @@ TEST(PathBuilderPrioritizationTest, SelfIssuedPrioritization) {
   trust_store.AddTrustAnchor(root1_cross);
   CertPathBuilder path_builder(
       target, &trust_store, &delegate, verify_time, KeyPurpose::ANY_EKU,
-      InitialExplicitPolicy::kFalse, {AnyPolicy()},
+      InitialExplicitPolicy::kFalse, {der::Input(kAnyPolicyOid)},
       InitialPolicyMappingInhibit::kFalse, InitialAnyPolicyInhibit::kFalse);
   path_builder.SetExploreAllPaths(true);
 

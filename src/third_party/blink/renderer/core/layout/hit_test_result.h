@@ -29,15 +29,19 @@
 #include "third_party/blink/renderer/core/layout/geometry/physical_offset.h"
 #include "third_party/blink/renderer/core/layout/hit_test_location.h"
 #include "third_party/blink/renderer/core/layout/hit_test_request.h"
-#include "third_party/blink/renderer/platform/geometry/float_quad.h"
-#include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_linked_hash_set.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector_traits.h"
+#include "ui/gfx/geometry/quad_f.h"
+#include "ui/gfx/geometry/rect_f.h"
+
+namespace cc {
+class Region;
+}
 
 namespace blink {
 
@@ -47,10 +51,10 @@ class HTMLAreaElement;
 class HTMLMediaElement;
 class Image;
 class KURL;
+class MediaSourceHandle;
 class MediaStreamDescriptor;
 class NGPhysicalBoxFragment;
 class Node;
-class Region;
 class Scrollbar;
 struct PhysicalOffset;
 
@@ -123,7 +127,7 @@ class CORE_EXPORT HitTestResult {
     SetInnerNode(node);
   }
   void SetNodeAndPosition(Node*,
-                          scoped_refptr<const NGPhysicalBoxFragment>,
+                          const NGPhysicalBoxFragment*,
                           const PhysicalOffset&);
 
   // Override an inner node previously set. The new node needs to be monolithic
@@ -158,6 +162,7 @@ class CORE_EXPORT HitTestResult {
   KURL AbsoluteImageURL() const;
   KURL AbsoluteMediaURL() const;
   MediaStreamDescriptor* GetMediaStreamDescriptor() const;
+  MediaSourceHandle* GetMediaSourceHandle() const;
   KURL AbsoluteLinkURL() const;
   String TextContent() const;
   bool IsLiveLink() const;
@@ -181,12 +186,16 @@ class CORE_EXPORT HitTestResult {
       const PhysicalRect& = PhysicalRect());
   ListBasedHitTestBehavior AddNodeToListBasedTestResult(Node*,
                                                         const HitTestLocation&,
-                                                        const FloatQuad& quad);
+                                                        const gfx::QuadF& quad);
   ListBasedHitTestBehavior AddNodeToListBasedTestResult(Node*,
                                                         const HitTestLocation&,
-                                                        const Region&);
+                                                        const cc::Region&);
 
   void Append(const HitTestResult&);
+
+  bool HasListBasedResult() const {
+    return GetHitTestRequest().ListBased() && InnerNode();
+  }
 
   // If m_listBasedTestResult is 0 then set it to a new NodeSet. Return
   // *m_listBasedTestResult. Lazy allocation makes sense because the NodeSet is

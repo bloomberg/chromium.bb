@@ -15,6 +15,7 @@
 #include "ui/base/ime/input_method_delegate.h"
 #include "ui/base/ime/linux/fake_input_method_context.h"
 #include "ui/base/ime/linux/linux_input_method_context_factory.h"
+#include "ui/base/ime/virtual_keyboard_controller_stub.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/dom/dom_code.h"
@@ -59,8 +60,10 @@ class TestResult {
 class LinuxInputMethodContextForTesting : public LinuxInputMethodContext {
  public:
   explicit LinuxInputMethodContextForTesting(
-      LinuxInputMethodContextDelegate* delegate)
+      LinuxInputMethodContextDelegate* delegate,
+      bool is_simple)
       : delegate_(delegate),
+        is_simple_(is_simple),
         is_sync_mode_(false),
         eat_key_(false),
         focused_(false) {}
@@ -84,6 +87,15 @@ class LinuxInputMethodContextForTesting : public LinuxInputMethodContext {
   void AddCompositionStartAction() { actions_.push_back(u"S"); }
 
   void AddCompositionEndAction() { actions_.push_back(u"E"); }
+
+  VirtualKeyboardController* GetVirtualKeyboardController() override {
+    return &virtual_keyboard_controller_;
+  }
+
+  TextInputType input_type() const { return input_type_; }
+  TextInputMode input_mode() const { return input_mode_; }
+  uint32_t input_flags() const { return input_flags_; }
+  bool should_do_learning() const { return should_do_learning_; }
 
  protected:
   bool DispatchKeyEvent(const ui::KeyEvent& key_event) override {
@@ -132,9 +144,15 @@ class LinuxInputMethodContextForTesting : public LinuxInputMethodContext {
 
   void Reset() override {}
 
-  void Focus() override { focused_ = true; }
-
-  void Blur() override { focused_ = false; }
+  void UpdateFocus(bool has_client,
+                   TextInputType old_type,
+                   TextInputType new_type) override {
+    if (is_simple_) {
+      focused_ = has_client;
+    } else {
+      focused_ = new_type != TEXT_INPUT_TYPE_NONE;
+    }
+  }
 
   void SetCursorLocation(const gfx::Rect& rect) override {
     cursor_position_ = rect;
@@ -152,15 +170,29 @@ class LinuxInputMethodContextForTesting : public LinuxInputMethodContext {
     TestResult::GetInstance()->RecordAction(base::ASCIIToUTF16(re.str()));
   }
 
-  void SetContentType(TextInputType input_type, int input_flags) override {}
+  void SetContentType(TextInputType type,
+                      TextInputMode mode,
+                      uint32_t flags,
+                      bool should_do_learning) override {
+    input_type_ = type;
+    input_mode_ = mode;
+    input_flags_ = flags;
+    should_do_learning_ = should_do_learning;
+  }
 
  private:
   LinuxInputMethodContextDelegate* delegate_;
+  VirtualKeyboardControllerStub virtual_keyboard_controller_;
+  const bool is_simple_;
   std::vector<std::u16string> actions_;
   bool is_sync_mode_;
   bool eat_key_;
   bool focused_;
   gfx::Rect cursor_position_;
+  TextInputType input_type_;
+  TextInputMode input_mode_;
+  uint32_t input_flags_;
+  bool should_do_learning_;
 };
 
 class LinuxInputMethodContextFactoryForTesting
@@ -176,8 +208,8 @@ class LinuxInputMethodContextFactoryForTesting
   std::unique_ptr<LinuxInputMethodContext> CreateInputMethodContext(
       LinuxInputMethodContextDelegate* delegate,
       bool is_simple) const override {
-    return std::unique_ptr<ui::LinuxInputMethodContext>(
-        new LinuxInputMethodContextForTesting(delegate));
+    return std::make_unique<LinuxInputMethodContextForTesting>(delegate,
+                                                               is_simple);
   }
 };
 
@@ -486,8 +518,47 @@ TEST_F(InputMethodAuraLinuxTest, IBusPinyinTest) {
 
   test_result_->ExpectAction("keydown:229");
   test_result_->ExpectAction("compositionend");
-  test_result_->ExpectAction("keydown:229");
   test_result_->ExpectAction("textinput:A");
+  test_result_->Verify();
+}
+
+TEST_F(InputMethodAuraLinuxTest, JapaneseCommit) {
+  context_->SetSyncMode(false);
+  context_->SetEatKey(true);
+
+  std::unique_ptr<TextInputClientForTesting> client(
+      new TextInputClientForTesting(TEXT_INPUT_TYPE_TEXT));
+  input_method_auralinux_->SetFocusedTextInputClient(client.get());
+  input_method_auralinux_->OnTextInputTypeChanged(client.get());
+  KeyEvent key(ET_KEY_PRESSED, VKEY_A, 0);
+  key.set_character(L'a');
+  input_method_auralinux_->DispatchKeyEvent(&key);
+
+  // IBus issues a standalone set_composition action.
+  input_method_auralinux_->OnPreeditStart();
+  CompositionText comp;
+  comp.text = u"a";
+  input_method_auralinux_->OnPreeditChanged(comp);
+
+  test_result_->ExpectAction("keydown:229");
+  test_result_->ExpectAction("compositionstart");
+  test_result_->ExpectAction("compositionupdate:a");
+  test_result_->Verify();
+
+  // IBus issues a commit text with composition after muting the space key down.
+  // Typing return issues a commit, followed by preedit change (to make
+  // composition empty), then preedit end.
+  KeyEvent key_up(ET_KEY_PRESSED, VKEY_RETURN, 0);
+  input_method_auralinux_->DispatchKeyEvent(&key_up);
+
+  input_method_auralinux_->OnCommit(u"a");
+  comp.text = u"";
+  input_method_auralinux_->OnPreeditChanged(comp);
+  input_method_auralinux_->OnPreeditEnd();
+
+  test_result_->ExpectAction("keydown:229");
+  test_result_->ExpectAction("compositionend");
+  test_result_->ExpectAction("textinput:a");
   test_result_->Verify();
 }
 
@@ -929,6 +1000,30 @@ TEST_F(InputMethodAuraLinuxTest, SurroundingText_PartialText) {
   test_result_->ExpectAction("selectionrangestart:7");
   test_result_->ExpectAction("selectionrangeend:9");
   test_result_->Verify();
+}
+
+TEST_F(InputMethodAuraLinuxTest, GetVirtualKeyboardController) {
+  EXPECT_EQ(input_method_auralinux_->GetVirtualKeyboardController(),
+            context_->GetVirtualKeyboardController());
+}
+
+TEST_F(InputMethodAuraLinuxTest, SetContentTypeWithUpdateFocus) {
+  auto client1 =
+      std::make_unique<TextInputClientForTesting>(TEXT_INPUT_TYPE_TEXT);
+  auto client2 =
+      std::make_unique<TextInputClientForTesting>(TEXT_INPUT_TYPE_URL);
+
+  input_method_auralinux_->SetFocusedTextInputClient(client1.get());
+
+  EXPECT_EQ(TEXT_INPUT_TYPE_TEXT, context_->input_type());
+
+  input_method_auralinux_->SetFocusedTextInputClient(client2.get());
+
+  EXPECT_EQ(TEXT_INPUT_TYPE_URL, context_->input_type());
+
+  input_method_auralinux_->SetFocusedTextInputClient(client1.get());
+
+  EXPECT_EQ(TEXT_INPUT_TYPE_TEXT, context_->input_type());
 }
 
 }  // namespace

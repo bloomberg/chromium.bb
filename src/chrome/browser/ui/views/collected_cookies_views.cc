@@ -11,7 +11,6 @@
 #include "chrome/browser/browsing_data/cookies_tree_model.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/collected_cookies_infobar_delegate.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
@@ -53,6 +52,11 @@
 #include "ui/views/layout/table_layout.h"
 #include "ui/views/view_tracker.h"
 #include "ui/views/widget/widget.h"
+
+DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(CollectedCookiesViews,
+                                      kTabbedPaneElementId);
+DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(CollectedCookiesViews,
+                                      kBlockedCookiesTreeElementId);
 
 namespace {
 
@@ -179,6 +183,8 @@ class CookiesTreeViewDrawingProvider : public views::TreeViewDrawingProvider {
 
   SkColor GetTextColorForNode(views::TreeView* tree_view,
                               ui::TreeModelNode* node) override;
+  SkColor GetAuxiliaryTextColorForNode(views::TreeView* tree_view,
+                                       ui::TreeModelNode* node) override;
   std::u16string GetAuxiliaryTextForNode(views::TreeView* tree_view,
                                          ui::TreeModelNode* node) override;
   bool ShouldDrawIconForNode(views::TreeView* tree_view,
@@ -202,11 +208,26 @@ SkColor CookiesTreeViewDrawingProvider::GetTextColorForNode(
   return color;
 }
 
+SkColor CookiesTreeViewDrawingProvider::GetAuxiliaryTextColorForNode(
+    views::TreeView* tree_view,
+    ui::TreeModelNode* node) {
+  SkColor color = TreeViewDrawingProvider::GetTextColorForNode(tree_view, node);
+  return SkColorSetA(color, 0x80);
+}
+
 std::u16string CookiesTreeViewDrawingProvider::GetAuxiliaryTextForNode(
     views::TreeView* tree_view,
     ui::TreeModelNode* node) {
   if (annotations_.find(node) != annotations_.end())
     return annotations_[node];
+
+  CookieTreeNode* cookie_node = static_cast<CookieTreeNode*>(node);
+  if (cookie_node->GetDetailedInfo().node_type ==
+          CookieTreeNode::DetailedInfo::TYPE_COOKIE &&
+      cookie_node->GetDetailedInfo().cookie->IsPartitioned()) {
+    return l10n_util::GetStringUTF16(IDS_COLLECTED_COOKIES_PARTITIONED_COOKIE);
+  }
+
   return TreeViewDrawingProvider::GetAuxiliaryTextForNode(tree_view, node);
 }
 
@@ -224,8 +245,8 @@ class InfobarView : public views::View {
   METADATA_HEADER(InfobarView);
   InfobarView() {
     info_image_ = AddChildView(std::make_unique<views::ImageView>());
-    info_image_->SetImage(gfx::CreateVectorIcon(vector_icons::kInfoOutlineIcon,
-                                                16, gfx::kChromeIconGrey));
+    info_image_->SetImage(ui::ImageModel::FromVectorIcon(
+        vector_icons::kInfoOutlineIcon, ui::kColorIcon, 16));
     label_ = AddChildView(std::make_unique<views::Label>());
 
     const int vertical_distance =
@@ -368,13 +389,13 @@ CollectedCookiesViews::CollectedCookiesViews(content::WebContents* web_contents)
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   SetLayoutManager(std::make_unique<views::FlexLayout>())
       ->SetOrientation(views::LayoutOrientation::kVertical)
-      .SetInteriorMargin(
-          gfx::Insets(provider->GetDistanceMetric(
-                          views::DISTANCE_DIALOG_CONTENT_MARGIN_TOP_TEXT),
-                      0,
-                      provider->GetDistanceMetric(
-                          views::DISTANCE_DIALOG_CONTENT_MARGIN_BOTTOM_CONTROL),
-                      0));
+      .SetInteriorMargin(gfx::Insets::TLBR(
+          provider->GetDistanceMetric(
+              views::DISTANCE_DIALOG_CONTENT_MARGIN_TOP_TEXT),
+          0,
+          provider->GetDistanceMetric(
+              views::DISTANCE_DIALOG_CONTENT_MARGIN_BOTTOM_CONTROL),
+          0));
 
   SetAcceptCallback(base::BindOnce(&CollectedCookiesViews::OnDialogClosed,
                                    base::Unretained(this)));
@@ -393,6 +414,7 @@ CollectedCookiesViews::CollectedCookiesViews(content::WebContents* web_contents)
   tabbed_pane->AddTab(label_blocked, CreateBlockedPane());
   tabbed_pane->SelectTabAt(0);
   tabbed_pane->set_listener(this);
+  tabbed_pane->SetProperty(views::kElementIdentifierKey, kTabbedPaneElementId);
 
   cookie_info_view_ = AddChildView(std::make_unique<CookieInfoView>());
   // Fix the height of the cookie info view, which is scrollable. It needs to be
@@ -417,7 +439,6 @@ CollectedCookiesViews::CollectedCookiesViews(content::WebContents* web_contents)
   SetExtraView(CreateButtonsPane());
 
   constrained_window::ShowWebModalDialogViews(this, web_contents);
-  chrome::RecordDialogCreation(chrome::DialogIdentifier::COLLECTED_COOKIES);
 
   EnableControls();
   ShowCookieInfo();
@@ -451,10 +472,10 @@ std::unique_ptr<views::View> CollectedCookiesViews::CreateAllowedPane() {
   allowed_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
   // This captures a snapshot of the allowed cookies of the current page so we
-  // are fine using WebContents::GetMainFrame() here
+  // are fine using WebContents::GetPrimaryMainFrame() here
   content_settings::PageSpecificContentSettings* content_settings =
       content_settings::PageSpecificContentSettings::GetForFrame(
-          web_contents_->GetMainFrame());
+          web_contents_->GetPrimaryMainFrame());
   allowed_cookies_tree_model_ =
       CreateCookiesTreeModel(content_settings->allowed_local_shared_objects());
   std::unique_ptr<CookiesTreeViewDrawingProvider> allowed_drawing_provider =
@@ -498,7 +519,7 @@ std::unique_ptr<views::View> CollectedCookiesViews::CreateBlockedPane() {
 
   content_settings::PageSpecificContentSettings* content_settings =
       content_settings::PageSpecificContentSettings::GetForFrame(
-          web_contents_->GetMainFrame());
+          web_contents_->GetPrimaryMainFrame());
   blocked_cookies_tree_model_ =
       CreateCookiesTreeModel(content_settings->blocked_local_shared_objects());
   std::unique_ptr<CookiesTreeViewDrawingProvider> blocked_drawing_provider =
@@ -511,6 +532,8 @@ std::unique_ptr<views::View> CollectedCookiesViews::CreateBlockedPane() {
   blocked_cookies_tree->SetEditable(false);
   blocked_cookies_tree->set_auto_expand_children(true);
   blocked_cookies_tree->SetController(this);
+  blocked_cookies_tree->SetProperty(views::kElementIdentifierKey,
+                                    kBlockedCookiesTreeElementId);
   blocked_cookies_tree_ = blocked_cookies_tree.get();
   auto* scroll_view =
       pane->AddChildView(CreateScrollView(std::move(blocked_cookies_tree)));
