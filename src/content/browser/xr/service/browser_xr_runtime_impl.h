@@ -29,7 +29,7 @@ class XrInstallHelper;
 
 namespace content {
 // This class wraps a physical device's interfaces, and registers for events.
-// There is one BrowserXRRuntimeImpl per physical device runtime.  It manages
+// There is one BrowserXRRuntimeImpl per physical device runtime. It manages
 // browser-side handling of state, like which VRServiceImpl is listening for
 // device activation.
 class BrowserXRRuntimeImpl : public content::BrowserXRRuntime,
@@ -87,7 +87,7 @@ class BrowserXRRuntimeImpl : public content::BrowserXRRuntime,
 
   device::mojom::XRDeviceId GetId() const { return id_; }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   absl::optional<CHROME_LUID> GetLuid() const;
 #endif
 
@@ -121,6 +121,7 @@ class BrowserXRRuntimeImpl : public content::BrowserXRRuntime,
   mojo::Remote<device::mojom::XRRuntime> runtime_;
   mojo::Remote<device::mojom::XRSessionController>
       immersive_session_controller_;
+  bool immersive_session_has_camera_access_ = false;
 
   std::set<VRServiceImpl*> services_;
   device::mojom::VRDisplayInfoPtr display_info_;
@@ -132,6 +133,7 @@ class BrowserXRRuntimeImpl : public content::BrowserXRRuntime,
 
   base::ObserverList<Observer> observers_;
   std::unique_ptr<content::XrInstallHelper> install_helper_;
+  std::unique_ptr<content::BrowserXRRuntime::Observer> runtime_observer_;
   base::OnceCallback<void(bool)> install_finished_callback_;
 
   base::WeakPtrFactory<BrowserXRRuntimeImpl> weak_ptr_factory_{this};

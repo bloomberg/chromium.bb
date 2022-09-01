@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include "components/reporting/client/report_queue_provider.h"
+
 #include <memory>
+#include <string>
 
 #include "base/bind.h"
 #include "base/task/thread_pool.h"
@@ -34,7 +36,6 @@ class ReportQueueProviderTest : public ::testing::Test {
   base::test::TaskEnvironment task_environment_{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
 
-  base::test::ScopedFeatureList scoped_feature_list_;
   const Destination destination_ = Destination::UPLOAD_EVENTS;
   ReportQueueConfiguration::PolicyCheckCallback policy_checker_callback_ =
       base::BindRepeating([]() { return Status::StatusOK(); });
@@ -50,7 +51,7 @@ TEST_F(ReportQueueProviderTest, CreateAndGetQueue) {
   auto config_result = ReportQueueConfiguration::Create(
       EventType::kDevice, destination_, policy_checker_callback_);
   ASSERT_OK(config_result);
-  EXPECT_CALL(*provider.get(), OnInitCompleted()).Times(1);
+  EXPECT_CALL(*provider.get(), OnInitCompletedMock()).Times(1);
   provider->ExpectCreateNewQueueAndReturnNewMockQueue(1);
   // Use it to asynchronously create ReportingQueue and then asynchronously
   // send the message.
@@ -63,10 +64,9 @@ TEST_F(ReportQueueProviderTest, CreateAndGetQueue) {
             // Asynchronously create ReportingQueue.
             base::OnceCallback<void(StatusOr<std::unique_ptr<ReportQueue>>)>
                 queue_cb = base::BindOnce(
-                    [](base::StringPiece data,
-                       reporting::ReportQueue::EnqueueCallback done_cb,
-                       reporting::StatusOr<std::unique_ptr<
-                           reporting::ReportQueue>> report_queue_result) {
+                    [](std::string data, ReportQueue::EnqueueCallback done_cb,
+                       StatusOr<std::unique_ptr<ReportQueue>>
+                           report_queue_result) {
                       // Bail out if queue failed to create.
                       if (!report_queue_result.ok()) {
                         std::move(done_cb).Run(report_queue_result.status());
@@ -81,16 +81,53 @@ TEST_F(ReportQueueProviderTest, CreateAndGetQueue) {
                                 std::move(cb).Run(Status::StatusOK());
                               })));
                       report_queue_result.ValueOrDie()->Enqueue(
-                          data, FAST_BATCH, std::move(done_cb));
+                          std::move(data), FAST_BATCH, std::move(done_cb));
                     },
                     std::string(data), std::move(done_cb));
-            reporting::ReportQueueProvider::CreateQueue(std::move(config),
-                                                        std::move(queue_cb));
+            ReportQueueProvider::CreateQueue(std::move(config),
+                                             std::move(queue_cb));
           },
           kTestMessage, e.cb(), std::move(config_result.ValueOrDie())));
   const auto res = e.result();
   EXPECT_OK(res) << res;
   report_queue_provider_test_helper::SetForTesting(nullptr);
+}
+
+TEST_F(ReportQueueProviderTest,
+       CreateReportQueueWithEncryptedReportingPipelineDisabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(
+      ReportQueueProvider::kEncryptedReportingPipeline);
+
+  // Create configuration
+  auto config_result = ReportQueueConfiguration::Create(
+      EventType::kDevice, destination_, policy_checker_callback_);
+  ASSERT_OK(config_result);
+
+  test::TestEvent<ReportQueueProvider::CreateReportQueueResponse> event;
+  ReportQueueProvider::CreateQueue(std::move(config_result.ValueOrDie()),
+                                   event.cb());
+  const auto result = event.result();
+
+  ASSERT_FALSE(result.ok());
+  EXPECT_EQ(result.status().code(), error::FAILED_PRECONDITION);
+}
+
+TEST_F(ReportQueueProviderTest,
+       CreateSpeculativeReportQueueWithEncryptedReportingPipelineDisabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(
+      ReportQueueProvider::kEncryptedReportingPipeline);
+
+  // Create configuration
+  auto config_result = ReportQueueConfiguration::Create(
+      EventType::kDevice, destination_, policy_checker_callback_);
+  ASSERT_OK(config_result);
+
+  const auto result = ReportQueueProvider::CreateSpeculativeQueue(
+      std::move(config_result.ValueOrDie()));
+  ASSERT_FALSE(result.ok());
+  EXPECT_EQ(result.status().code(), error::FAILED_PRECONDITION);
 }
 
 }  // namespace

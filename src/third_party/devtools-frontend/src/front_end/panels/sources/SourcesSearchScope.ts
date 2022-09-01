@@ -126,22 +126,22 @@ export class SourcesSearchScope implements Search.SearchConfig.SearchScope {
     for (const project of this.projects()) {
       const weight = project.uiSourceCodes().length;
       const findMatchingFilesInProjectProgress = findMatchingFilesProgress.createSubProgress(weight);
-      const filesMathingFileQuery = this.projectFilesMatchingFileQuery(project, searchConfig);
+      const filesMatchingFileQuery = this.projectFilesMatchingFileQuery(project, searchConfig);
       const promise =
           project
-              .findFilesMatchingSearchRequest(searchConfig, filesMathingFileQuery, findMatchingFilesInProjectProgress)
+              .findFilesMatchingSearchRequest(searchConfig, filesMatchingFileQuery, findMatchingFilesInProjectProgress)
               .then(this.processMatchingFilesForProject.bind(
-                  this, this.searchId, project, searchConfig, filesMathingFileQuery));
+                  this, this.searchId, project, searchConfig, filesMatchingFileQuery));
       promises.push(promise);
     }
 
-    Promise.all(promises).then(this.processMatchingFiles.bind(
+    void Promise.all(promises).then(this.processMatchingFiles.bind(
         this, this.searchId, searchContentProgress, this.searchFinishedCallback.bind(this, true)));
   }
 
   private projectFilesMatchingFileQuery(
       project: Workspace.Workspace.Project, searchConfig: Workspace.Workspace.ProjectSearchConfig,
-      dirtyOnly?: boolean): string[] {
+      dirtyOnly?: boolean): Platform.DevToolsPath.UrlString[] {
     const result = [];
     const uiSourceCodes = project.uiSourceCodes();
     for (let i = 0; i < uiSourceCodes.length; ++i) {
@@ -156,7 +156,9 @@ export class SourcesSearchScope implements Search.SearchConfig.SearchScope {
       if (dirtyOnly && !uiSourceCode.isDirty()) {
         continue;
       }
-      if (searchConfig.filePathMatchesFileQuery(uiSourceCode.fullDisplayName())) {
+      if (searchConfig.filePathMatchesFileQuery(
+              uiSourceCode.fullDisplayName() as Platform.DevToolsPath.UrlString |
+              Platform.DevToolsPath.EncodedPathString)) {
         result.push(uiSourceCode.url());
       }
     }
@@ -166,7 +168,7 @@ export class SourcesSearchScope implements Search.SearchConfig.SearchScope {
 
   private processMatchingFilesForProject(
       searchId: number, project: Workspace.Workspace.Project, searchConfig: Workspace.Workspace.ProjectSearchConfig,
-      filesMathingFileQuery: string[], files: string[]): void {
+      filesMatchingFileQuery: string[], files: string[]): void {
     if (searchId !== this.searchId && this.searchFinishedCallback) {
       this.searchFinishedCallback(false);
       return;
@@ -174,13 +176,13 @@ export class SourcesSearchScope implements Search.SearchConfig.SearchScope {
 
     files.sort(Platform.StringUtilities.naturalOrderComparator);
     files = Platform.ArrayUtilities.intersectOrdered(
-        files, filesMathingFileQuery, Platform.StringUtilities.naturalOrderComparator);
+        files, filesMatchingFileQuery, Platform.StringUtilities.naturalOrderComparator);
     const dirtyFiles = this.projectFilesMatchingFileQuery(project, searchConfig, true);
     files = Platform.ArrayUtilities.mergeOrdered(files, dirtyFiles, Platform.StringUtilities.naturalOrderComparator);
 
     const uiSourceCodes = [];
     for (const file of files) {
-      const uiSourceCode = project.uiSourceCodeForURL(file);
+      const uiSourceCode = project.uiSourceCodeForURL(file as Platform.DevToolsPath.UrlString);
       if (!uiSourceCode) {
         continue;
       }
@@ -222,7 +224,7 @@ export class SourcesSearchScope implements Search.SearchConfig.SearchScope {
       if (uiSourceCode.isDirty()) {
         contentLoaded.call(this, uiSourceCode, uiSourceCode.workingCopy());
       } else {
-        uiSourceCode.requestContent().then(deferredContent => {
+        void uiSourceCode.requestContent().then(deferredContent => {
           contentLoaded.call(this, uiSourceCode, deferredContent.content || '');
         });
       }
@@ -240,7 +242,7 @@ export class SourcesSearchScope implements Search.SearchConfig.SearchScope {
 
       ++callbacksLeft;
       const uiSourceCode = files[fileIndex++];
-      setTimeout(searchInNextFile.bind(this, uiSourceCode), 0);
+      window.setTimeout(searchInNextFile.bind(this, uiSourceCode), 0);
     }
 
     function contentLoaded(

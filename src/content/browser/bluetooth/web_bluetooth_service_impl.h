@@ -84,10 +84,18 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
       RenderFrameHost* render_frame_host,
       mojo::PendingReceiver<blink::mojom::WebBluetoothService> receiver);
 
+  // Calling this methods prevents WebBluetoothServiceImpl from clearing up its
+  // WatchAdvertisement clients when the window either loses focus or becomes
+  // hidden or occluded. This method is meant to be called from browser tests to
+  // prevent flakiness.
+  static void IgnoreVisibilityRequirementsForTesting();
+
   WebBluetoothServiceImpl(const WebBluetoothServiceImpl&) = delete;
   WebBluetoothServiceImpl& operator=(const WebBluetoothServiceImpl&) = delete;
 
-  void CrashRendererAndClosePipe(bad_message::BadMessageReason reason);
+  // Prefer `DocumentService::ReportBadMessageAndDeleteThis()` in new code.
+  // Existing callers should be migrated as well.
+  void TerminateRendererAndDeleteThis(bad_message::BadMessageReason reason);
 
   // Checks the current requesting and embedding origins as well as the policy
   // or global Web Bluetooth block to determine if Web Bluetooth is allowed.
@@ -143,9 +151,14 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
                            NoShowBluetoothScanningPromptInPrerendering);
   FRIEND_TEST_ALL_PREFIXES(WebBluetoothServiceImplTest,
                            DeferredStartNotifySession);
+  FRIEND_TEST_ALL_PREFIXES(WebBluetoothServiceImplTest, DeviceDisconnected);
+  FRIEND_TEST_ALL_PREFIXES(WebBluetoothServiceImplTest,
+                           DeviceGattServicesDiscoveryTimeout);
 #if PAIR_BLUETOOTH_ON_DEMAND()
-  FRIEND_TEST_ALL_PREFIXES(WebBluetoothServiceImplBondingTest,
+  FRIEND_TEST_ALL_PREFIXES(WebBluetoothServiceImplTest,
                            ReadCharacteristicValueNotAuthorized);
+  FRIEND_TEST_ALL_PREFIXES(WebBluetoothServiceImplTest,
+                           IncompletePairingOnShutdown);
 #endif  // PAIR_BLUETOOTH_ON_DEMAND()
 
   friend class FrameConnectedBluetoothDevicesTest;
@@ -202,6 +215,8 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
   void RequestDevice(blink::mojom::WebBluetoothRequestDeviceOptionsPtr options,
                      RequestDeviceCallback callback) override;
   void GetDevices(GetDevicesCallback callback) override;
+  void ForgetDevice(const blink::WebBluetoothDeviceId& device_id,
+                    ForgetDeviceCallback callback) override;
   void RemoteServerConnect(
       const blink::WebBluetoothDeviceId& device_id,
       mojo::PendingAssociatedRemote<blink::mojom::WebBluetoothServerClient>

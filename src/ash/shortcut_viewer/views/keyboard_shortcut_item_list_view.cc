@@ -4,6 +4,8 @@
 
 #include "ash/shortcut_viewer/views/keyboard_shortcut_item_list_view.h"
 
+#include "ash/constants/ash_features.h"
+#include "ash/public/cpp/style/color_provider.h"
 #include "ash/shortcut_viewer/views/keyboard_shortcut_item_view.h"
 #include "ui/base/default_style.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -17,11 +19,16 @@ namespace keyboard_shortcut_viewer {
 
 namespace {
 
+// Light mode color:
+constexpr SkColor kSeparatorColorLight = SkColorSetARGB(0x0F, 0x00, 0x00, 0x00);
+
 // A horizontal line to separate the KeyboardShortcutItemView.
 class HorizontalSeparator : public views::View {
  public:
   explicit HorizontalSeparator(int preferred_width)
-      : preferred_width_(preferred_width) {}
+      : preferred_width_(preferred_width) {
+    color_provider_ = ash::ColorProvider::Get();
+  }
 
   HorizontalSeparator(const HorizontalSeparator&) = delete;
   HorizontalSeparator& operator=(const HorizontalSeparator&) = delete;
@@ -38,13 +45,24 @@ class HorizontalSeparator : public views::View {
 
   void OnPaint(gfx::Canvas* canvas) override {
     gfx::Rect contents_bounds(GetContentsBounds());
-    constexpr SkColor kSeparatorColor = SkColorSetARGB(0x0F, 0x00, 0x00, 0x00);
+    const SkColor kSeparatorColor =
+        ShouldUseDarkModeColors()
+            ? color_provider_->GetContentLayerColor(
+                  ash::ColorProvider::ContentLayerType::kSeparatorColor)
+            : kSeparatorColorLight;
     canvas->FillRect(contents_bounds, kSeparatorColor);
     View::OnPaint(canvas);
   }
 
+  bool ShouldUseDarkModeColors() {
+    DCHECK(color_provider_);
+    return ash::features::IsDarkLightModeEnabled() &&
+           color_provider_->IsDarkModeEnabled();
+  }
+
  private:
   const int preferred_width_;
+  ash::ColorProvider* color_provider_;
 };
 
 }  // namespace
@@ -58,8 +76,8 @@ KeyboardShortcutItemListView::KeyboardShortcutItemListView() {
       views::BoxLayout::Orientation::kVertical);
   layout->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kCenter);
   SetLayoutManager(std::move(layout));
-  SetBorder(
-      views::CreateEmptyBorder(gfx::Insets(0, kLeftPadding, 0, kRightPadding)));
+  SetBorder(views::CreateEmptyBorder(
+      gfx::Insets::TLBR(0, kLeftPadding, 0, kRightPadding)));
   GetViewAccessibility().OverrideRole(ax::mojom::Role::kList);
 }
 
@@ -72,7 +90,7 @@ void KeyboardShortcutItemListView::AddCategoryLabel(
   auto category_label = std::make_unique<views::Label>(text);
   category_label->SetHorizontalAlignment(gfx::ALIGN_TO_HEAD);
   category_label->SetBorder(views::CreateEmptyBorder(
-      gfx::Insets(kLabelTopPadding, 0, kLabelBottomPadding, 0)));
+      gfx::Insets::TLBR(kLabelTopPadding, 0, kLabelBottomPadding, 0)));
   category_label->SetEnabledColor(kLabelColor);
   constexpr int kLabelFontSizeDelta = 1;
   category_label->SetFontList(

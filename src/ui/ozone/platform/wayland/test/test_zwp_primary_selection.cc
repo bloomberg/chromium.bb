@@ -37,7 +37,7 @@ struct ZwpPrimarySelectionOffer final : public TestSelectionOffer::Delegate {
 
 struct ZwpPrimarySelectionDevice final : public TestSelectionDevice::Delegate {
   TestSelectionOffer* CreateAndSendOffer() override {
-    const struct zwp_primary_selection_offer_v1_interface kOfferImpl = {
+    static const struct zwp_primary_selection_offer_v1_interface kOfferImpl = {
         &TestSelectionOffer::Receive, &Destroy};
     wl_resource* device_resource = device->resource();
     const int version = wl_resource_get_version(device_resource);
@@ -78,6 +78,10 @@ struct ZwpPrimarySelectionSource : public TestSelectionSource::Delegate {
     wl_client_flush(wl_resource_get_client(source->resource()));
   }
 
+  void SendFinished() override {
+    NOTREACHED() << "The interface does not support this method.";
+  }
+
   void SendCancelled() override {
     zwp_primary_selection_source_v1_send_cancelled(source->resource());
   }
@@ -94,7 +98,7 @@ struct ZwpPrimarySelectionDeviceManager
   ~ZwpPrimarySelectionDeviceManager() override = default;
 
   TestSelectionDevice* CreateDevice(wl_client* client, uint32_t id) override {
-    const struct zwp_primary_selection_device_v1_interface
+    static const struct zwp_primary_selection_device_v1_interface
         kTestSelectionDeviceImpl = {&TestSelectionDevice::SetSelection,
                                     &Destroy};
     auto* delegate = new ZwpPrimarySelectionDevice;
@@ -106,7 +110,7 @@ struct ZwpPrimarySelectionDeviceManager
   }
 
   TestSelectionSource* CreateSource(wl_client* client, uint32_t id) override {
-    const struct zwp_primary_selection_source_v1_interface
+    static const struct zwp_primary_selection_source_v1_interface
         kTestSelectionSourceImpl = {&TestSelectionSource::Offer, &Destroy};
     auto* delegate = new ZwpPrimarySelectionSource;
     wl_resource* resource = CreateResourceWithImpl<TestSelectionSource>(
@@ -126,7 +130,7 @@ struct ZwpPrimarySelectionDeviceManager
 
 TestSelectionDeviceManager* CreateTestSelectionManagerZwp() {
   constexpr uint32_t kVersion = 1;
-  const struct zwp_primary_selection_device_manager_v1_interface
+  static const struct zwp_primary_selection_device_manager_v1_interface
       kTestSelectionManagerImpl = {&TestSelectionDeviceManager::CreateSource,
                                    &TestSelectionDeviceManager::GetDevice,
                                    &Destroy};

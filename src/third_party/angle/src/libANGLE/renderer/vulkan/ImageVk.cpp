@@ -22,7 +22,7 @@ namespace rx
 {
 
 ImageVk::ImageVk(const egl::ImageState &state, const gl::Context *context)
-    : ImageImpl(state), mImageLevel(0), mOwnsImage(false), mImage(nullptr), mContext(context)
+    : ImageImpl(state), mOwnsImage(false), mImage(nullptr), mContext(context)
 {}
 
 ImageVk::~ImageVk() {}
@@ -37,7 +37,7 @@ void ImageVk::onDestroy(const egl::Display *display)
         // TODO: We need to handle the case that EGLImage used in two context that aren't shared.
         // https://issuetracker.google.com/169868803
         mImage->releaseImage(renderer);
-        mImage->releaseStagingBuffer(renderer);
+        mImage->releaseStagedUpdates(renderer);
         SafeDelete(mImage);
     }
     else if (egl::IsExternalImageTarget(mState.target))
@@ -64,7 +64,8 @@ egl::Error ImageVk::initialize(const egl::Display *display)
         TextureVk *textureVk = GetImplAs<TextureVk>(GetAs<gl::Texture>(mState.source));
 
         // Make sure the texture uses renderable format
-        ANGLE_TRY(ResultToEGL(textureVk->ensureRenderable(contextVk)));
+        TextureUpdateResult updateResult = TextureUpdateResult::ImageUnaffected;
+        ANGLE_TRY(ResultToEGL(textureVk->ensureRenderable(contextVk, &updateResult)));
 
         // Make sure the texture has created its backing storage
         ANGLE_TRY(ResultToEGL(
@@ -75,14 +76,9 @@ egl::Error ImageVk::initialize(const egl::Display *display)
         // The staging buffer for a texture source should already be initialized
 
         mOwnsImage = false;
-
-        mImageTextureType = mState.imageIndex.getType();
-        mImageLevel       = gl::LevelIndex(mState.imageIndex.getLevelIndex());
-        mImageLayer       = mState.imageIndex.hasLayer() ? mState.imageIndex.getLayerIndex() : 0;
     }
     else
     {
-        RendererVk *renderer = nullptr;
         if (egl::IsRenderbufferTarget(mState.target))
         {
             RenderbufferVk *renderbufferVk =
@@ -90,7 +86,6 @@ egl::Error ImageVk::initialize(const egl::Display *display)
             mImage = renderbufferVk->getImage();
 
             ASSERT(mContext != nullptr);
-            renderer = vk::GetImpl(mContext)->getRenderer();
         }
         else if (egl::IsExternalImageTarget(mState.target))
         {
@@ -99,7 +94,6 @@ egl::Error ImageVk::initialize(const egl::Display *display)
             mImage = externalImageSibling->getImage();
 
             ASSERT(mContext == nullptr);
-            renderer = vk::GetImpl(display)->getRenderer();
         }
         else
         {
@@ -107,20 +101,7 @@ egl::Error ImageVk::initialize(const egl::Display *display)
             return egl::EglBadAccess();
         }
 
-        // start with some reasonable alignment that's safe for the case where intendedFormatID is
-        // FormatID::NONE
-        size_t alignment = vk::GetValidImageCopyBufferAlignment(mImage->getIntendedFormatID(),
-                                                                mImage->getActualFormatID());
-
-        // Make sure a staging buffer is ready to use to upload data
-        mImage->initStagingBuffer(renderer, alignment, vk::kStagingBufferFlags,
-                                  vk::kStagingBufferSize);
-
         mOwnsImage = false;
-
-        mImageTextureType = gl::TextureType::_2D;
-        mImageLevel       = gl::LevelIndex(0);
-        mImageLayer       = 0;
     }
 
     // mContext is no longer needed, make sure it's not used by accident.
@@ -169,6 +150,21 @@ egl::Error ImageVk::exportVkImage(void *vkImage, void *vkImageCreateInfo)
     auto *info = reinterpret_cast<VkImageCreateInfo *>(vkImageCreateInfo);
     *info      = mImage->getVkImageCreateInfo();
     return egl::NoError();
+}
+
+gl::TextureType ImageVk::getImageTextureType() const
+{
+    return mState.imageIndex.getType();
+}
+
+gl::LevelIndex ImageVk::getImageLevel() const
+{
+    return gl::LevelIndex(mState.imageIndex.getLevelIndex());
+}
+
+uint32_t ImageVk::getImageLayer() const
+{
+    return mState.imageIndex.hasLayer() ? mState.imageIndex.getLayerIndex() : 0;
 }
 
 }  // namespace rx

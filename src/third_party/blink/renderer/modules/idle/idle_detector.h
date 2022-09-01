@@ -58,9 +58,12 @@ class MODULES_EXPORT IdleDetector final
   void Trace(Visitor*) const override;
 
   void SetTaskRunnerForTesting(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      const base::TickClock* tick_clock);
 
  private:
+  class StartAbortAlgorithm;
+
   // mojom::blink::IdleMonitor implementation. Invoked on a state change, and
   // causes an event to be dispatched.
   void Update(mojom::blink::IdleStatePtr state,

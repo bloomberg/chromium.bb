@@ -11,6 +11,7 @@
 #include "base/feature_list.h"
 #include "base/lazy_instance.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/trace_event/typed_macros.h"
 #include "base/tracing/protos/chrome_track_event.pbzero.h"
@@ -436,14 +437,13 @@ void ScriptInjection::InjectOrRemoveCss(
       run_location_, injected_stylesheets, num_injected_stylesheets);
   blink::WebLocalFrame* web_frame = render_frame_->GetWebFrame();
 
-  blink::WebDocument::CSSOrigin blink_css_origin =
-      blink::WebDocument::kAuthorOrigin;
+  auto blink_css_origin = blink::WebCssOrigin::kAuthor;
   switch (injector_->GetCssOrigin()) {
     case mojom::CSSOrigin::kUser:
-      blink_css_origin = blink::WebDocument::kUserOrigin;
+      blink_css_origin = blink::WebCssOrigin::kUser;
       break;
     case mojom::CSSOrigin::kAuthor:
-      blink_css_origin = blink::WebDocument::kAuthorOrigin;
+      blink_css_origin = blink::WebCssOrigin::kAuthor;
       break;
   }
 

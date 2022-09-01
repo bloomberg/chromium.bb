@@ -1,73 +1,147 @@
 export const description = `
-- Test pipeline outputs with different color target formats.
+- Test pipeline outputs with different color attachment number, formats, component counts, etc.
 `;
 
 import { makeTestGroup } from '../../../../common/framework/test_group.js';
-import { unreachable } from '../../../../common/util/util.js';
+import { range } from '../../../../common/util/util.js';
 import { kRenderableColorTextureFormats, kTextureFormatInfo } from '../../../capability_info.js';
 import { GPUTest } from '../../../gpu_test.js';
+import { getFragmentShaderCodeWithOutput, getPlainTypeInfo } from '../../../util/shader.js';
 import { kTexelRepresentationInfo } from '../../../util/texture/texel_data.js';
+import { TexelView } from '../../../util/texture/texel_view.js';
+import { textureContentIsOKByT2B } from '../../../util/texture/texture_ok.js';
 
-class F extends GPUTest {
-  getFragmentShaderCode(
-    output: readonly number[],
-    sampleType: GPUTextureSampleType,
-    componentCount: number
-  ): string {
-    let fragColorType;
-    let suffix;
-    let fractionDigits = 0;
-    switch (sampleType) {
-      case 'sint':
-        fragColorType = 'i32';
-        suffix = '';
-        break;
-      case 'uint':
-        fragColorType = 'u32';
-        suffix = 'u';
-        break;
-      case 'float':
-        fragColorType = 'f32';
-        suffix = '';
-        fractionDigits = 4;
-        break;
-      default:
-        unreachable();
-    }
-
-    const v = output.map(n => n.toFixed(fractionDigits));
-
-    let outputType;
-    let result;
-    switch (componentCount) {
-      case 1:
-        outputType = fragColorType;
-        result = `${v[0]}${suffix}`;
-        break;
-      case 2:
-        outputType = `vec2<${fragColorType}>`;
-        result = `${outputType}(${v[0]}${suffix}, ${v[1]}${suffix})`;
-        break;
-      case 3:
-        outputType = `vec3<${fragColorType}>`;
-        result = `${outputType}(${v[0]}${suffix}, ${v[1]}${suffix}, ${v[2]}${suffix})`;
-        break;
-      case 4:
-        outputType = `vec4<${fragColorType}>`;
-        result = `${outputType}(${v[0]}${suffix}, ${v[1]}${suffix}, ${v[2]}${suffix}, ${v[3]}${suffix})`;
-        break;
-      default:
-        unreachable();
-    }
-
-    return `
-    [[stage(fragment)]] fn main() -> [[location(0)]] ${outputType} {
-        return ${result};
-    }`;
-  }
+const kVertexShader = `
+@vertex fn main(
+@builtin(vertex_index) VertexIndex : u32
+) -> @builtin(position) vec4<f32> {
+  var pos : array<vec2<f32>, 3> = array<vec2<f32>, 3>(
+      vec2<f32>(-1.0, -3.0),
+      vec2<f32>(3.0, 1.0),
+      vec2<f32>(-1.0, 1.0));
+  return vec4<f32>(pos[VertexIndex], 0.0, 1.0);
 }
+`;
 
-export const g = makeTestGroup(F);
+export const g = makeTestGroup(GPUTest);
+
+// Values to write into each attachment
+// We make values different for each attachment index and each channel
+// to make sure they didn't get mixed up
+const attachmentsIntWriteValues = [
+  { R: 1, G: 2, B: 3, A: 4 },
+  { R: 5, G: 6, B: 7, A: 8 },
+  { R: 9, G: 10, B: 11, A: 12 },
+  { R: 13, G: 14, B: 15, A: 16 },
+];
+const attachmentsFloatWriteValues = [
+  { R: 0.12, G: 0.34, B: 0.56, A: 0 },
+  { R: 0.78, G: 0.9, B: 0.19, A: 1 },
+  { R: 0.28, G: 0.37, B: 0.46, A: 0.3 },
+  { R: 0.55, G: 0.64, B: 0.73, A: 1 },
+];
+
+g.test('color,attachments')
+  .desc(`Test that pipeline with sparse color attachments write values correctly.`)
+  .params(u =>
+    u
+      .combine('format', kRenderableColorTextureFormats)
+      .beginSubcases()
+      .combine('attachmentCount', [2, 3, 4])
+      .expand('emptyAttachmentId', p => range(p.attachmentCount, i => i))
+  )
+  .beforeAllSubcases(t => {
+    const info = kTextureFormatInfo[t.params.format];
+    t.selectDeviceOrSkipTestCase(info.feature);
+  })
+  .fn(async t => {
+    const { format, attachmentCount, emptyAttachmentId } = t.params;
+    const componentCount = kTexelRepresentationInfo[format].componentOrder.length;
+    const info = kTextureFormatInfo[format];
+
+    const writeValues =
+      info.sampleType === 'sint' || info.sampleType === 'uint'
+        ? attachmentsIntWriteValues
+        : attachmentsFloatWriteValues;
+
+    const renderTargets = range(attachmentCount, () =>
+      t.device.createTexture({
+        format,
+        size: { width: 1, height: 1, depthOrArrayLayers: 1 },
+        usage: GPUTextureUsage.COPY_SRC | GPUTextureUsage.RENDER_ATTACHMENT,
+      })
+    );
+    const pipeline = t.device.createRenderPipeline({
+      layout: 'auto',
+      vertex: {
+        module: t.device.createShaderModule({
+          code: kVertexShader,
+        }),
+        entryPoint: 'main',
+      },
+      fragment: {
+        module: t.device.createShaderModule({
+          code: getFragmentShaderCodeWithOutput(
+            range(attachmentCount, i =>
+              i === emptyAttachmentId
+                ? null
+                : {
+                    values: [
+                      writeValues[i].R,
+                      writeValues[i].G,
+                      writeValues[i].B,
+                      writeValues[i].A,
+                    ],
+                    plainType: getPlainTypeInfo(info.sampleType),
+                    componentCount,
+                  }
+            )
+          ),
+        }),
+        entryPoint: 'main',
+        targets: range(attachmentCount, i => (i === emptyAttachmentId ? null : { format })),
+      },
+      primitive: { topology: 'triangle-list' },
+    });
+
+    const encoder = t.device.createCommandEncoder();
+    const pass = encoder.beginRenderPass({
+      colorAttachments: range(attachmentCount, i =>
+        i === emptyAttachmentId
+          ? null
+          : {
+              view: renderTargets[i].createView(),
+              storeOp: 'store',
+              clearValue: { r: 0.5, g: 0.5, b: 0.5, a: 0.5 },
+              loadOp: 'clear',
+            }
+      ),
+    });
+    pass.setPipeline(pipeline);
+    pass.draw(3);
+    pass.end();
+    t.device.queue.submit([encoder.finish()]);
+
+    const promises = range(attachmentCount, i => {
+      if (i === emptyAttachmentId) {
+        return undefined;
+      }
+      return textureContentIsOKByT2B(
+        t,
+        { texture: renderTargets[i] },
+        [1, 1, 1],
+        {
+          expTexelView: TexelView.fromTexelsAsColors(format, coords => writeValues[i]),
+        },
+        {
+          maxIntDiff: 0,
+          maxDiffULPsForNormFormat: 1,
+          maxDiffULPsForFloatFormat: 1,
+        }
+      );
+    });
+    t.eventualExpectOK(Promise.all(promises));
+  });
 
 g.test('color,component_count')
   .desc(
@@ -80,14 +154,17 @@ g.test('color,component_count')
       .combine('componentCount', [1, 2, 3, 4])
       .filter(x => x.componentCount >= kTexelRepresentationInfo[x.format].componentOrder.length)
   )
+  .beforeAllSubcases(t => {
+    const info = kTextureFormatInfo[t.params.format];
+    t.selectDeviceOrSkipTestCase(info.feature);
+  })
   .fn(async t => {
     const { format, componentCount } = t.params;
     const info = kTextureFormatInfo[format];
-    await t.selectDeviceOrSkipTestCase(info.feature);
 
     // expected RGBA values
     // extra channels are discarded
-    const result = [0, 1, 0, 1];
+    const values = [0, 1, 0, 1];
 
     const renderTarget = t.device.createTexture({
       format,
@@ -96,25 +173,22 @@ g.test('color,component_count')
     });
 
     const pipeline = t.device.createRenderPipeline({
+      layout: 'auto',
       vertex: {
         module: t.device.createShaderModule({
-          code: `
-            [[stage(vertex)]] fn main(
-              [[builtin(vertex_index)]] VertexIndex : u32
-              ) -> [[builtin(position)]] vec4<f32> {
-                var pos : array<vec2<f32>, 3> = array<vec2<f32>, 3>(
-                    vec2<f32>(-1.0, -3.0),
-                    vec2<f32>(3.0, 1.0),
-                    vec2<f32>(-1.0, 1.0));
-                return vec4<f32>(pos[VertexIndex], 0.0, 1.0);
-              }
-              `,
+          code: kVertexShader,
         }),
         entryPoint: 'main',
       },
       fragment: {
         module: t.device.createShaderModule({
-          code: t.getFragmentShaderCode(result, info.sampleType, componentCount),
+          code: getFragmentShaderCodeWithOutput([
+            {
+              values,
+              plainType: getPlainTypeInfo(info.sampleType),
+              componentCount,
+            },
+          ]),
         }),
         entryPoint: 'main',
         targets: [{ format }],
@@ -128,18 +202,19 @@ g.test('color,component_count')
         {
           view: renderTarget.createView(),
           storeOp: 'store',
-          loadValue: { r: 1.0, g: 0.0, b: 0.0, a: 1.0 },
+          clearValue: { r: 1.0, g: 0.0, b: 0.0, a: 1.0 },
+          loadOp: 'clear',
         },
       ],
     });
     pass.setPipeline(pipeline);
     pass.draw(3);
-    pass.endPass();
+    pass.end();
     t.device.queue.submit([encoder.finish()]);
 
     t.expectSingleColor(renderTarget, format, {
       size: [1, 1, 1],
-      exp: { R: result[0], G: result[1], B: result[2], A: result[3] },
+      exp: { R: values[0], G: values[1], B: values[2], A: values[3] },
     });
   });
 
@@ -285,6 +360,10 @@ The attachment has a load value of [1, 0, 0, 1]
       ] as const)
       .filter(x => x.output.length >= kTexelRepresentationInfo[x.format].componentOrder.length)
   )
+  .beforeAllSubcases(t => {
+    const info = kTextureFormatInfo[t.params.format];
+    t.selectDeviceOrSkipTestCase(info.feature);
+  })
   .fn(async t => {
     const {
       format,
@@ -297,7 +376,6 @@ The attachment has a load value of [1, 0, 0, 1]
     } = t.params;
     const componentCount = output.length;
     const info = kTextureFormatInfo[format];
-    await t.selectDeviceOrSkipTestCase(info.feature);
 
     const renderTarget = t.device.createTexture({
       format,
@@ -306,25 +384,22 @@ The attachment has a load value of [1, 0, 0, 1]
     });
 
     const pipeline = t.device.createRenderPipeline({
+      layout: 'auto',
       vertex: {
         module: t.device.createShaderModule({
-          code: `
-            [[stage(vertex)]] fn main(
-              [[builtin(vertex_index)]] VertexIndex : u32
-              ) -> [[builtin(position)]] vec4<f32> {
-                var pos : array<vec2<f32>, 3> = array<vec2<f32>, 3>(
-                    vec2<f32>(-1.0, -3.0),
-                    vec2<f32>(3.0, 1.0),
-                    vec2<f32>(-1.0, 1.0));
-                return vec4<f32>(pos[VertexIndex], 0.0, 1.0);
-              }
-              `,
+          code: kVertexShader,
         }),
         entryPoint: 'main',
       },
       fragment: {
         module: t.device.createShaderModule({
-          code: t.getFragmentShaderCode(output, info.sampleType, componentCount),
+          code: getFragmentShaderCodeWithOutput([
+            {
+              values: output,
+              plainType: getPlainTypeInfo(info.sampleType),
+              componentCount,
+            },
+          ]),
         }),
         entryPoint: 'main',
         targets: [
@@ -354,13 +429,14 @@ The attachment has a load value of [1, 0, 0, 1]
         {
           view: renderTarget.createView(),
           storeOp: 'store',
-          loadValue: { r: 1.0, g: 0.0, b: 0.0, a: 1.0 },
+          clearValue: { r: 1.0, g: 0.0, b: 0.0, a: 1.0 },
+          loadOp: 'clear',
         },
       ],
     });
     pass.setPipeline(pipeline);
     pass.draw(3);
-    pass.endPass();
+    pass.end();
     t.device.queue.submit([encoder.finish()]);
 
     t.expectSingleColor(renderTarget, format, {

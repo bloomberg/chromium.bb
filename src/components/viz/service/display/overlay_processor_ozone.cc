@@ -4,11 +4,15 @@
 
 #include "components/viz/service/display/overlay_processor_ozone.h"
 
+#include <algorithm>
 #include <memory>
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/timer/elapsed_timer.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "components/viz/common/features.h"
@@ -57,18 +61,14 @@ void ConvertToOzoneOverlaySurface(
   ozone_candidate->requires_overlay = overlay_candidate.requires_overlay;
   ozone_candidate->priority_hint = overlay_candidate.priority_hint;
   ozone_candidate->rounded_corners = overlay_candidate.rounded_corners;
+  // That can be a solid color quad.
+  if (!overlay_candidate.is_solid_color)
+    ozone_candidate->background_color = overlay_candidate.color;
 }
 
 uint32_t MailboxToUInt32(const gpu::Mailbox& mailbox) {
   return (mailbox.name[0] << 24) + (mailbox.name[1] << 16) +
          (mailbox.name[2] << 8) + mailbox.name[3];
-}
-
-void ReportSharedImageExists(bool exists) {
-  UMA_HISTOGRAM_BOOLEAN(
-      "Compositing.Display.OverlayProcessorOzone."
-      "SharedImageExists",
-      exists);
 }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -140,18 +140,11 @@ bool OverlayProcessorOzone::NeedsSurfaceDamageRectList() const {
   return true;
 }
 
-void OverlayProcessorOzone::CheckOverlaySupport(
+void OverlayProcessorOzone::CheckOverlaySupportImpl(
     const OverlayProcessorInterface::OutputSurfaceOverlayPlane* primary_plane,
     OverlayCandidateList* surfaces) {
-  // This number is depended on what type of strategies we have. Currently we
-  // only overlay one video.
-#if DCHECK_IS_ON()
-  // TODO(petermcneeley) : Reconsider this check in light of delegated
-  // compositing and multiple overlay work.
-  if (!features::IsDelegatedCompositingEnabled()) {
-    DCHECK_EQ(1U, surfaces->size());
-  }
-#endif
+  MaybeObserveHardwareCapabilities();
+
   auto full_size = surfaces->size();
   if (primary_plane)
     full_size += 1;
@@ -168,7 +161,7 @@ void OverlayProcessorOzone::CheckOverlaySupport(
       ConvertToOzoneOverlaySurface(*primary_plane, &(*ozone_surface_iterator));
       // TODO(crbug.com/1138568): Fuchsia claims support for presenting primary
       // plane as overlay, but does not provide a mailbox. Handle this case.
-#if !defined(OS_FUCHSIA)
+#if !BUILDFLAG(IS_FUCHSIA)
       if (shared_image_interface_) {
         bool result = SetNativePixmapForCandidate(&(*ozone_surface_iterator),
                                                   primary_plane->mailbox,
@@ -202,11 +195,10 @@ void OverlayProcessorOzone::CheckOverlaySupport(
       // to not display it at all).
       // TODO(b/181974042): plumb the color space all the way to the ozone DRM
       // backend when we get an API for per-plane color management.
-      DCHECK(primary_plane);
       if (!surface_iterator->requires_overlay &&
           !AllowColorSpaceCombination(
               /*source_color_space=*/surface_iterator->color_space,
-              /*destination_color_space=*/primary_plane->color_space)) {
+              /*destination_color_space=*/primary_plane_color_space_)) {
         *ozone_surface_iterator = ui::OverlaySurfaceCandidate();
         ozone_surface_iterator->plane_z_order = surface_iterator->plane_z_order;
         continue;
@@ -216,6 +208,19 @@ void OverlayProcessorOzone::CheckOverlaySupport(
         bool result = SetNativePixmapForCandidate(&(*ozone_surface_iterator),
                                                   surface_iterator->mailbox,
                                                   /*is_primary=*/false);
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+        if (!result && surface_iterator->requires_overlay) {
+          // For ChromeOS HW protected content, there's a race condition that
+          // can occur here where the mailbox for the native pixmap isn't
+          // registered yet so we will fail to promote to overlay due to this
+          // check. Allow us to proceed even w/out the native pixmap in that
+          // case as it will still succeed and would otherwise cause black
+          // flashing between frames while the race condition is completing.
+          result = true;
+          DLOG(WARNING) << "Allowing required overlay with missing pixmap";
+        }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
         // Skip the candidate if the corresponding NativePixmap is not found.
         if (!result) {
           *ozone_surface_iterator = ui::OverlaySurfaceCandidate();
@@ -247,9 +252,58 @@ void OverlayProcessorOzone::CheckOverlaySupport(
   }
 }
 
+void OverlayProcessorOzone::MaybeObserveHardwareCapabilities() {
+  if (tried_observing_hardware_capabilities_) {
+    return;
+  }
+  tried_observing_hardware_capabilities_ = true;
+
+  // HardwareCapabilities isn't necessary unless attempting multiple overlays.
+  if (max_overlays_config_ <= 1) {
+    return;
+  }
+  if (overlay_candidates_) {
+    overlay_candidates_->ObserveHardwareCapabilities(
+        base::BindRepeating(&OverlayProcessorOzone::ReceiveHardwareCapabilities,
+                            weak_ptr_factory_.GetWeakPtr()));
+  }
+}
+
+void OverlayProcessorOzone::ReceiveHardwareCapabilities(
+    ui::HardwareCapabilities hardware_capabilities) {
+  UMA_HISTOGRAM_BOOLEAN(
+      "Compositing.Display.OverlayProcessorOzone.HardwareCapabilitiesIsValid",
+      hardware_capabilities.is_valid);
+  if (hardware_capabilities.is_valid) {
+    // Subtract 1 because one of these overlay capable planes will be needed for
+    // the primary plane.
+    int max_overlays_supported =
+        hardware_capabilities.num_overlay_capable_planes - 1;
+    max_overlays_considered_ =
+        std::min(max_overlays_supported, max_overlays_config_);
+
+    UMA_HISTOGRAM_COUNTS_100(
+        "Compositing.Display.OverlayProcessorOzone.MaxPlanesSupported",
+        hardware_capabilities.num_overlay_capable_planes);
+  } else {
+    // Default to attempting 1 overlay if we get an invalid response.
+    max_overlays_considered_ = 1;
+  }
+
+  // Different hardware capabilities may mean a different result for a specific
+  // combination of overlays, so clear this cache.
+  ClearOverlayCombinationCache();
+}
+
 gfx::Rect OverlayProcessorOzone::GetOverlayDamageRectForOutputSurface(
     const OverlayCandidate& overlay) const {
   return ToEnclosedRect(overlay.display_rect);
+}
+
+void OverlayProcessorOzone::RegisterOverlayRequirement(bool requires_overlay) {
+  // This can be null in unit tests.
+  if (overlay_candidates_)
+    overlay_candidates_->RegisterOverlayRequirement(requires_overlay);
 }
 
 bool OverlayProcessorOzone::SetNativePixmapForCandidate(
@@ -257,11 +311,6 @@ bool OverlayProcessorOzone::SetNativePixmapForCandidate(
     const gpu::Mailbox& mailbox,
     bool is_primary) {
   DCHECK(shared_image_interface_);
-
-  UMA_HISTOGRAM_BOOLEAN(
-      "Compositing.Display.OverlayProcessorOzone."
-      "IsCandidateSharedImage",
-      mailbox.IsSharedImage());
 
   if (!mailbox.IsSharedImage())
     return false;
@@ -276,10 +325,8 @@ bool OverlayProcessorOzone::SetNativePixmapForCandidate(
     // candidate. We will try again next frame.
     DLOG(ERROR) << "Unable to find the NativePixmap corresponding to the "
                    "overlay candidate";
-    ReportSharedImageExists(false);
     return false;
   }
-  ReportSharedImageExists(true);
 
   if (is_primary && (candidate->buffer_size != native_pixmap->GetBufferSize() ||
                      candidate->format != native_pixmap->GetBufferFormat())) {

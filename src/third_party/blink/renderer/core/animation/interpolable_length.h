@@ -6,8 +6,11 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_INTERPOLABLE_LENGTH_H_
 
 #include <memory>
+
+#include "base/notreached.h"
 #include "third_party/blink/renderer/core/animation/interpolation_value.h"
 #include "third_party/blink/renderer/core/animation/pairwise_interpolation_value.h"
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/platform/geometry/length.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"

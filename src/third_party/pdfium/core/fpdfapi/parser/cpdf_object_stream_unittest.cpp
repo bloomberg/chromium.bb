@@ -4,6 +4,8 @@
 
 #include "core/fpdfapi/parser/cpdf_object_stream.h"
 
+#include <iterator>
+
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
 #include "core/fpdfapi/parser/cpdf_indirect_object_holder.h"
 #include "core/fpdfapi/parser/cpdf_name.h"
@@ -12,7 +14,6 @@
 #include "core/fpdfapi/parser/cpdf_string.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/base/cxx17_backports.h"
 
 using testing::ElementsAre;
 
@@ -28,7 +29,7 @@ static_assert(kNormalStreamContent[kNormalStreamContentOffset + 1] == '<',
 
 }  // namespace
 
-TEST(CPDF_ObjectStreamTest, StreamDictNormal) {
+TEST(ObjectStreamTest, StreamDictNormal) {
   auto dict = pdfium::MakeRetain<CPDF_Dictionary>();
   dict->SetNewFor<CPDF_Name>("Type", "ObjStm");
   dict->SetNewFor<CPDF_Number>("N", 3);
@@ -76,13 +77,13 @@ TEST(CPDF_ObjectStreamTest, StreamDictNormal) {
   EXPECT_FALSE(obj_stream->ParseObject(&holder, 12, 3));
 }
 
-TEST(CPDF_ObjectStreamTest, StreamNoDict) {
+TEST(ObjectStreamTest, StreamNoDict) {
   auto stream = pdfium::MakeRetain<CPDF_Stream>(
       ByteStringView(kNormalStreamContent).raw_span(), /*pDict=*/nullptr);
   EXPECT_FALSE(CPDF_ObjectStream::Create(stream.Get()));
 }
 
-TEST(CPDF_ObjectStreamTest, StreamDictNoType) {
+TEST(ObjectStreamTest, StreamDictNoType) {
   auto dict = pdfium::MakeRetain<CPDF_Dictionary>();
   dict->SetNewFor<CPDF_Number>("N", 3);
   dict->SetNewFor<CPDF_Number>("First", 5);
@@ -92,7 +93,7 @@ TEST(CPDF_ObjectStreamTest, StreamDictNoType) {
   EXPECT_FALSE(CPDF_ObjectStream::Create(stream.Get()));
 }
 
-TEST(CPDF_ObjectStreamTest, StreamDictWrongType) {
+TEST(ObjectStreamTest, StreamDictWrongType) {
   auto dict = pdfium::MakeRetain<CPDF_Dictionary>();
   dict->SetNewFor<CPDF_String>("Type", "ObjStm", /*bHex=*/false);
   dict->SetNewFor<CPDF_Number>("N", 3);
@@ -103,7 +104,7 @@ TEST(CPDF_ObjectStreamTest, StreamDictWrongType) {
   EXPECT_FALSE(CPDF_ObjectStream::Create(stream.Get()));
 }
 
-TEST(CPDF_ObjectStreamTest, StreamDictWrongTypeValue) {
+TEST(ObjectStreamTest, StreamDictWrongTypeValue) {
   auto dict = pdfium::MakeRetain<CPDF_Dictionary>();
   dict->SetNewFor<CPDF_Name>("Type", "ObjStmmmm");
   dict->SetNewFor<CPDF_Number>("N", 3);
@@ -114,7 +115,7 @@ TEST(CPDF_ObjectStreamTest, StreamDictWrongTypeValue) {
   EXPECT_FALSE(CPDF_ObjectStream::Create(stream.Get()));
 }
 
-TEST(CPDF_ObjectStreamTest, StreamDictNoCount) {
+TEST(ObjectStreamTest, StreamDictNoCount) {
   auto dict = pdfium::MakeRetain<CPDF_Dictionary>();
   dict->SetNewFor<CPDF_Name>("Type", "ObjStm");
   dict->SetNewFor<CPDF_Number>("First", 5);
@@ -124,7 +125,7 @@ TEST(CPDF_ObjectStreamTest, StreamDictNoCount) {
   EXPECT_FALSE(CPDF_ObjectStream::Create(stream.Get()));
 }
 
-TEST(CPDF_ObjectStreamTest, StreamDictFloatCount) {
+TEST(ObjectStreamTest, StreamDictFloatCount) {
   auto dict = pdfium::MakeRetain<CPDF_Dictionary>();
   dict->SetNewFor<CPDF_Name>("Type", "ObjStm");
   dict->SetNewFor<CPDF_Number>("N", 2.2f);
@@ -135,7 +136,7 @@ TEST(CPDF_ObjectStreamTest, StreamDictFloatCount) {
   EXPECT_FALSE(CPDF_ObjectStream::Create(stream.Get()));
 }
 
-TEST(CPDF_ObjectStreamTest, StreamDictNegativeCount) {
+TEST(ObjectStreamTest, StreamDictNegativeCount) {
   auto dict = pdfium::MakeRetain<CPDF_Dictionary>();
   dict->SetNewFor<CPDF_Name>("Type", "ObjStm");
   dict->SetNewFor<CPDF_Number>("N", -1);
@@ -146,7 +147,7 @@ TEST(CPDF_ObjectStreamTest, StreamDictNegativeCount) {
   EXPECT_FALSE(CPDF_ObjectStream::Create(stream.Get()));
 }
 
-TEST(CPDF_ObjectStreamTest, StreamDictCountTooBig) {
+TEST(ObjectStreamTest, StreamDictCountTooBig) {
   auto dict = pdfium::MakeRetain<CPDF_Dictionary>();
   dict->SetNewFor<CPDF_Name>("Type", "ObjStm");
   dict->SetNewFor<CPDF_Number>("N", 999999999);
@@ -157,7 +158,7 @@ TEST(CPDF_ObjectStreamTest, StreamDictCountTooBig) {
   EXPECT_FALSE(CPDF_ObjectStream::Create(stream.Get()));
 }
 
-TEST(CPDF_ObjectStreamTest, StreamDictNoOffset) {
+TEST(ObjectStreamTest, StreamDictNoOffset) {
   auto dict = pdfium::MakeRetain<CPDF_Dictionary>();
   dict->SetNewFor<CPDF_Name>("Type", "ObjStm");
   dict->SetNewFor<CPDF_Number>("N", 3);
@@ -167,7 +168,7 @@ TEST(CPDF_ObjectStreamTest, StreamDictNoOffset) {
   EXPECT_FALSE(CPDF_ObjectStream::Create(stream.Get()));
 }
 
-TEST(CPDF_ObjectStreamTest, StreamDictFloatOffset) {
+TEST(ObjectStreamTest, StreamDictFloatOffset) {
   auto dict = pdfium::MakeRetain<CPDF_Dictionary>();
   dict->SetNewFor<CPDF_Name>("Type", "ObjStm");
   dict->SetNewFor<CPDF_Number>("N", 3);
@@ -178,7 +179,7 @@ TEST(CPDF_ObjectStreamTest, StreamDictFloatOffset) {
   EXPECT_FALSE(CPDF_ObjectStream::Create(stream.Get()));
 }
 
-TEST(CPDF_ObjectStreamTest, StreamDictNegativeOffset) {
+TEST(ObjectStreamTest, StreamDictNegativeOffset) {
   auto dict = pdfium::MakeRetain<CPDF_Dictionary>();
   dict->SetNewFor<CPDF_Name>("Type", "ObjStm");
   dict->SetNewFor<CPDF_Number>("N", 3);
@@ -189,11 +190,11 @@ TEST(CPDF_ObjectStreamTest, StreamDictNegativeOffset) {
   EXPECT_FALSE(CPDF_ObjectStream::Create(stream.Get()));
 }
 
-TEST(CPDF_ObjectStreamTest, StreamDictOffsetTooBig) {
+TEST(ObjectStreamTest, StreamDictOffsetTooBig) {
   auto dict = pdfium::MakeRetain<CPDF_Dictionary>();
   dict->SetNewFor<CPDF_Name>("Type", "ObjStm");
   dict->SetNewFor<CPDF_Number>("N", 3);
-  constexpr int kTooBigOffset = pdfium::size(kNormalStreamContent);
+  constexpr int kTooBigOffset = std::size(kNormalStreamContent);
   dict->SetNewFor<CPDF_Number>("First", kTooBigOffset);
 
   auto stream = pdfium::MakeRetain<CPDF_Stream>(
@@ -212,7 +213,7 @@ TEST(CPDF_ObjectStreamTest, StreamDictOffsetTooBig) {
   EXPECT_FALSE(obj_stream->ParseObject(&holder, 12, 2));
 }
 
-TEST(CPDF_ObjectStreamTest, StreamDictTooFewCount) {
+TEST(ObjectStreamTest, StreamDictTooFewCount) {
   auto dict = pdfium::MakeRetain<CPDF_Dictionary>();
   dict->SetNewFor<CPDF_Name>("Type", "ObjStm");
   dict->SetNewFor<CPDF_Number>("N", 2);
@@ -243,7 +244,7 @@ TEST(CPDF_ObjectStreamTest, StreamDictTooFewCount) {
   EXPECT_FALSE(obj_stream->ParseObject(&holder, 12, 2));
 }
 
-TEST(CPDF_ObjectStreamTest, StreamDictTooManyObject) {
+TEST(ObjectStreamTest, StreamDictTooManyObject) {
   auto dict = pdfium::MakeRetain<CPDF_Dictionary>();
   dict->SetNewFor<CPDF_Name>("Type", "ObjStm");
   dict->SetNewFor<CPDF_Number>("N", 9);
@@ -269,7 +270,7 @@ TEST(CPDF_ObjectStreamTest, StreamDictTooManyObject) {
   EXPECT_FALSE(obj_stream->ParseObject(&holder, 2, 4));
 }
 
-TEST(CPDF_ObjectStreamTest, StreamDictGarbageObjNum) {
+TEST(ObjectStreamTest, StreamDictGarbageObjNum) {
   auto dict = pdfium::MakeRetain<CPDF_Dictionary>();
   dict->SetNewFor<CPDF_Name>("Type", "ObjStm");
   dict->SetNewFor<CPDF_Number>("N", 3);
@@ -286,7 +287,7 @@ TEST(CPDF_ObjectStreamTest, StreamDictGarbageObjNum) {
                           CPDF_ObjectStream::ObjectInfo(12, 21)));
 }
 
-TEST(CPDF_ObjectStreamTest, StreamDictGarbageObjectOffset) {
+TEST(ObjectStreamTest, StreamDictGarbageObjectOffset) {
   auto dict = pdfium::MakeRetain<CPDF_Dictionary>();
   dict->SetNewFor<CPDF_Name>("Type", "ObjStm");
   dict->SetNewFor<CPDF_Number>("N", 3);
@@ -318,7 +319,7 @@ TEST(CPDF_ObjectStreamTest, StreamDictGarbageObjectOffset) {
   EXPECT_TRUE(obj11->IsDictionary());
 }
 
-TEST(CPDF_ObjectStreamTest, StreamDictNegativeObjectOffset) {
+TEST(ObjectStreamTest, StreamDictNegativeObjectOffset) {
   auto dict = pdfium::MakeRetain<CPDF_Dictionary>();
   dict->SetNewFor<CPDF_Name>("Type", "ObjStm");
   dict->SetNewFor<CPDF_Number>("N", 3);
@@ -340,7 +341,7 @@ TEST(CPDF_ObjectStreamTest, StreamDictNegativeObjectOffset) {
   EXPECT_FALSE(obj_stream->ParseObject(&holder, 11, 1));
 }
 
-TEST(CPDF_ObjectStreamTest, StreamDictObjectOffsetTooBig) {
+TEST(ObjectStreamTest, StreamDictObjectOffsetTooBig) {
   auto dict = pdfium::MakeRetain<CPDF_Dictionary>();
   dict->SetNewFor<CPDF_Name>("Type", "ObjStm");
   dict->SetNewFor<CPDF_Number>("N", 3);
@@ -362,7 +363,7 @@ TEST(CPDF_ObjectStreamTest, StreamDictObjectOffsetTooBig) {
   EXPECT_FALSE(obj_stream->ParseObject(&holder, 11, 1));
 }
 
-TEST(CPDF_ObjectStreamTest, StreamDictDuplicateObjNum) {
+TEST(ObjectStreamTest, StreamDictDuplicateObjNum) {
   auto dict = pdfium::MakeRetain<CPDF_Dictionary>();
   dict->SetNewFor<CPDF_Name>("Type", "ObjStm");
   dict->SetNewFor<CPDF_Number>("N", 3);
@@ -402,7 +403,7 @@ TEST(CPDF_ObjectStreamTest, StreamDictDuplicateObjNum) {
   EXPECT_TRUE(obj12->IsNumber());
 }
 
-TEST(CPDF_ObjectStreamTest, StreamDictUnorderedObjectNumbers) {
+TEST(ObjectStreamTest, StreamDictUnorderedObjectNumbers) {
   // ISO 32000-1:2008 spec. section 7.5.7, note 6 says there is no restriction
   // on object number ordering.
   auto dict = pdfium::MakeRetain<CPDF_Dictionary>();
@@ -441,7 +442,7 @@ TEST(CPDF_ObjectStreamTest, StreamDictUnorderedObjectNumbers) {
   EXPECT_TRUE(obj12->IsArray());
 }
 
-TEST(CPDF_ObjectStreamTest, StreamDictUnorderedObjectOffsets) {
+TEST(ObjectStreamTest, StreamDictUnorderedObjectOffsets) {
   // ISO 32000-1:2008 spec. section 7.5.7, says offsets shall be in increasing
   // order.
   // TODO(thestig): Should CPDF_ObjectStream check for this and reject this

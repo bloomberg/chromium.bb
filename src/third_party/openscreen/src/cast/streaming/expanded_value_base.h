@@ -124,12 +124,24 @@ class ExpandedValueBase {
   }
 
   // Comparison operators.
-  constexpr bool operator==(Subclass rhs) const { return value_ == rhs.value_; }
-  constexpr bool operator!=(Subclass rhs) const { return value_ != rhs.value_; }
-  constexpr bool operator<(Subclass rhs) const { return value_ < rhs.value_; }
-  constexpr bool operator>(Subclass rhs) const { return value_ > rhs.value_; }
-  constexpr bool operator<=(Subclass rhs) const { return value_ <= rhs.value_; }
-  constexpr bool operator>=(Subclass rhs) const { return value_ >= rhs.value_; }
+  constexpr bool operator==(const ExpandedValueBase& rhs) const {
+    return value_ == rhs.value_;
+  }
+  constexpr bool operator!=(const ExpandedValueBase& rhs) const {
+    return value_ != rhs.value_;
+  }
+  constexpr bool operator<(const ExpandedValueBase& rhs) const {
+    return value_ < rhs.value_;
+  }
+  constexpr bool operator>(const ExpandedValueBase& rhs) const {
+    return value_ > rhs.value_;
+  }
+  constexpr bool operator<=(const ExpandedValueBase& rhs) const {
+    return value_ <= rhs.value_;
+  }
+  constexpr bool operator>=(const ExpandedValueBase& rhs) const {
+    return value_ >= rhs.value_;
+  }
 
   // (De)Serialize for transmission over IPC.  Do not use these to subvert the
   // valid set of operators allowed by this class or its Subclass.

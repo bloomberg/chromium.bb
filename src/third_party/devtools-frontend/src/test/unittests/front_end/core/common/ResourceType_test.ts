@@ -8,6 +8,8 @@ import * as Common from '../../../../../front_end/core/common/common.js';
 import {assertNotNullOrUndefined} from '../../../../../front_end/core/platform/platform.js';
 import type * as Platform from '../../../../../front_end/core/platform/platform.js';
 
+import {describeWithEnvironment} from '../../helpers/EnvironmentHelpers.js';
+
 const ResourceType = Common.ResourceType.ResourceType;
 const ResourceCategory = Common.ResourceType.ResourceCategory;
 const resourceTypes = Common.ResourceType.resourceTypes;
@@ -25,7 +27,7 @@ describe('ResourceCategory class', () => {
   });
 });
 
-describe('ResourceType class', () => {
+describeWithEnvironment('ResourceType class', () => {
   it('is able to be instantiated successfully', () => {
     const testResourceCategory = new ResourceCategory(categoryTestTitle, categoryTestShortTitle);
     const resourceType = new ResourceType('Type Test Name', typeTestTitle, testResourceCategory, true);
@@ -216,17 +218,18 @@ describe('ResourceType class', () => {
   });
 
   it('is able to return a mime from URL that contains a mapped extension', () => {
-    const result = ResourceType.mimeFromURL('http://www.example.com/test/path.html');
+    const result = ResourceType.mimeFromURL('http://www.example.com/test/path.html' as Platform.DevToolsPath.UrlString);
     assert.strictEqual(result, 'text/html', 'mime returned was not correct');
   });
 
   it('is able to return a mime from URL that contains an unmapped extension', () => {
-    const result = ResourceType.mimeFromURL('http://www.example.com/test/path.testExt');
+    const result =
+        ResourceType.mimeFromURL('http://www.example.com/test/path.testExt' as Platform.DevToolsPath.UrlString);
     assert.isUndefined(result, 'mime returned was not correct');
   });
 
   it('is able to return a mime from URL that contains a mapped name', () => {
-    const result = ResourceType.mimeFromURL('http://www.example.com/test/Cakefile');
+    const result = ResourceType.mimeFromURL('http://www.example.com/test/Cakefile' as Platform.DevToolsPath.UrlString);
     assert.strictEqual(result, 'text/x-coffeescript', 'mime returned was not correct');
   });
 

@@ -110,6 +110,10 @@
   [self.formSuggestionView updateSuggestions:suggestions];
 }
 
+- (void)animateSuggestionLabel {
+  [self.formSuggestionView animateSuggestionLabel];
+}
+
 #pragma mark - Setters
 
 - (void)setPasswordButtonHidden:(BOOL)passwordButtonHidden {
@@ -160,6 +164,7 @@
   if (!self.formSuggestionView) {
     self.formSuggestionView = [[FormSuggestionView alloc] init];
     self.formSuggestionView.formSuggestionViewDelegate = self;
+    self.formSuggestionView.layoutGuideCenter = self.layoutGuideCenter;
   }
 }
 

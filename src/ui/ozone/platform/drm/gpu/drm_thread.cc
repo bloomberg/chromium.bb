@@ -12,8 +12,10 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/message_loop/message_pump_type.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "base/timer/elapsed_timer.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/display/types/display_mode.h"
 #include "ui/display/types/display_snapshot.h"
@@ -24,6 +26,7 @@
 #include "ui/gfx/presentation_feedback.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/crtc_controller.h"
+#include "ui/ozone/platform/drm/gpu/drm_device.h"
 #include "ui/ozone/platform/drm/gpu/drm_device_generator.h"
 #include "ui/ozone/platform/drm/gpu/drm_device_manager.h"
 #include "ui/ozone/platform/drm/gpu/drm_dumb_buffer.h"
@@ -121,6 +124,13 @@ void DrmThread::Init() {
   std::move(complete_early_receiver_requests_).Run();
 }
 
+void DrmThread::CleanUp() {
+  TRACE_EVENT0("drm", "DrmThread::CleanUp");
+  display_manager_.reset();
+  screen_manager_.reset();
+  device_manager_.reset();
+}
+
 void DrmThread::CreateBuffer(gfx::AcceleratedWidget widget,
                              const gfx::Size& size,
                              const gfx::Size& framebuffer_size,
@@ -212,8 +222,8 @@ void DrmThread::CreateBufferFromHandle(
   *out_framebuffer = std::move(framebuffer);
 }
 
-void DrmThread::SetClearOverlayCacheCallback(base::RepeatingClosure callback) {
-  display_manager_->SetClearOverlayCacheCallback(std::move(callback));
+void DrmThread::SetDisplaysConfiguredCallback(base::RepeatingClosure callback) {
+  display_manager_->SetDisplaysConfiguredCallback(std::move(callback));
 }
 
 void DrmThread::SchedulePageFlip(
@@ -316,6 +326,7 @@ void DrmThread::CheckOverlayCapabilitiesSync(
     const OverlaySurfaceCandidateList& overlays,
     std::vector<OverlayStatus>* result) {
   TRACE_EVENT0("drm,hwoverlays", "DrmThread::CheckOverlayCapabilitiesSync");
+  base::ElapsedTimer timer;
 
   DrmWindow* window = screen_manager_->GetWindow(widget);
   if (!window) {
@@ -324,6 +335,46 @@ void DrmThread::CheckOverlayCapabilitiesSync(
     return;
   }
   *result = window->TestPageFlip(overlays);
+
+  base::TimeDelta time = timer.Elapsed();
+  static constexpr base::TimeDelta kMinTime = base::Microseconds(1);
+  static constexpr base::TimeDelta kMaxTime = base::Milliseconds(10);
+  static constexpr int kTimeBuckets = 50;
+  UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+      "Compositing.Display.DrmThread.CheckOverlayCapabilitiesSyncUs", time,
+      kMinTime, kMaxTime, kTimeBuckets);
+}
+
+void DrmThread::GetHardwareCapabilities(
+    gfx::AcceleratedWidget widget,
+    ui::HardwareCapabilitiesCallback receive_callback) {
+  TRACE_EVENT0("drm,hwoverlays", "DrmThread::GetHardwareCapabilities");
+  DCHECK(screen_manager_->GetWindow(widget));
+  DCHECK(device_manager_->GetDrmDevice(widget));
+  HardwareDisplayController* hdc =
+      screen_manager_->GetWindow(widget)->GetController();
+  HardwareDisplayPlaneManager* plane_manager =
+      device_manager_->GetDrmDevice(widget)->plane_manager();
+
+  if (!hdc || !plane_manager) {
+    ui::HardwareCapabilities hardware_capabilities{.is_valid = false};
+    std::move(receive_callback).Run(hardware_capabilities);
+    return;
+  }
+
+  const auto& crtc_controllers = hdc->crtc_controllers();
+  // We almost always expect only one CRTC. Multiple CRTCs for one widget was
+  // the old way mirror mode was supported.
+  if (crtc_controllers.size() == 1) {
+    std::move(receive_callback)
+        .Run(plane_manager->GetHardwareCapabilities(
+            crtc_controllers[0]->crtc()));
+  } else {
+    // If there are multiple CRTCs for this widget we shouldn't rely on overlays
+    // working.
+    ui::HardwareCapabilities hardware_capabilities{.is_valid = false};
+    std::move(receive_callback).Run(hardware_capabilities);
+  }
 }
 
 void DrmThread::GetDeviceCursor(
@@ -356,6 +407,16 @@ void DrmThread::RelinquishDisplayControl(
   TRACE_EVENT0("drm", "DrmThread::RelinquishDisplayControl");
   display_manager_->RelinquishDisplayControl();
   std::move(callback).Run(true);
+}
+
+void DrmThread::ShouldDisplayEventTriggerConfiguration(
+    const EventPropertyMap& event_props,
+    base::OnceCallback<void(bool)> callback) {
+  TRACE_EVENT0("drm", "DrmThread::ShouldDisplayEventTriggerConfiguration");
+  const bool should_trigger =
+      display_manager_->ShouldDisplayEventTriggerConfiguration(event_props);
+
+  std::move(callback).Run(should_trigger);
 }
 
 void DrmThread::AddGraphicsDevice(const base::FilePath& path, base::File file) {

@@ -76,6 +76,16 @@ export class MockVolumeManager {
   }
 
   /** @override */
+  getFuseBoxOnlyFilterEnabled() {
+    return false;
+  }
+
+  /** @override */
+  getMediaStoreFilesOnlyFilterEnabled() {
+    return false;
+  }
+
+  /** @override */
   dispose() {}
 
   /**
@@ -117,9 +127,14 @@ export class MockVolumeManager {
    */
   getLocationInfo(entry) {
     if (util.isFakeEntry(entry)) {
+      const isReadOnly =
+          entry.rootType === VolumeManagerCommon.RootType.RECENT ?
+          !util.isRecentsFilterV2Enabled() :
+          true;
       return new EntryLocationImpl(
           this.volumeInfoList.item(0),
-          /** @type {!FakeEntry} */ (entry).rootType, true, true);
+          /** @type {!FakeEntry} */ (entry).rootType, /* isRootType= */ true,
+          isReadOnly);
     }
 
     if (entry.filesystem.name === VolumeManagerCommon.VolumeType.DRIVE) {
@@ -193,6 +208,12 @@ export class MockVolumeManager {
       type, volumeId, label, devicePath, providerId, remoteMountPath) {
     const fileSystem = new MockFileSystem(volumeId, 'filesystem:' + volumeId);
 
+    let diskFileSystemType = VolumeManagerCommon.FileSystemType.UNKNOWN;
+    if (devicePath && devicePath.startsWith('fusebox')) {
+      diskFileSystemType =
+          /** @type VolumeManagerCommon.FileSystemType */ ('fusebox');
+    }
+
     // If there's no label set it to volumeId to make it shorter to write
     // tests.
     const volumeInfo = new VolumeInfoImpl(
@@ -209,15 +230,22 @@ export class MockVolumeManager {
         false,                                      // configurable
         false,                                      // watchable
         VolumeManagerCommon.Source.NETWORK,         // source
-        VolumeManagerCommon.FileSystemType.UNKNOWN,  // diskFileSystemType
-        {},                                          // iconSet
-        '',                                          // driveLabel
-        remoteMountPath);                            // remoteMountPath
+        diskFileSystemType,                         // diskFileSystemType
+        {},                                         // iconSet
+        '',                                         // driveLabel
+        remoteMountPath);                           // remoteMountPath
 
     return volumeInfo;
   }
 
+  /**
+   * @return {!Promise<!VolumeInfo>}
+   */
   async mountArchive(fileUrl, password) {
+    throw new Error('Not implemented');
+  }
+
+  async cancelMounting(fileUrl) {
     throw new Error('Not implemented');
   }
 
@@ -225,7 +253,7 @@ export class MockVolumeManager {
     throw new Error('Not implemented');
   }
 
-  configure(volumeInfo) {
+  async configure(volumeInfo) {
     throw new Error('Not implemented');
   }
 
@@ -237,6 +265,9 @@ export class MockVolumeManager {
     throw new Error('Not implemented');
   }
 
+  /**
+   * @return {boolean}
+   */
   dispatchEvent(event) {
     throw new Error('Not implemented');
   }

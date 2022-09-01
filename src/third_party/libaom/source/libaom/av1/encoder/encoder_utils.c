@@ -480,8 +480,9 @@ static void process_tpl_stats_frame(AV1_COMP *cpi) {
 
   if (tpl_frame->is_valid) {
     int tpl_stride = tpl_frame->stride;
-    int64_t intra_cost_base = 0;
-    int64_t mc_dep_cost_base = 0;
+    double intra_cost_base = 0;
+    double mc_dep_cost_base = 0;
+    double cbcmp_base = 1;
     const int step = 1 << tpl_data->tpl_stats_block_mis_log2;
     const int row_step = step;
     const int col_step_sr =
@@ -492,19 +493,21 @@ static void process_tpl_stats_frame(AV1_COMP *cpi) {
       for (int col = 0; col < mi_cols_sr; col += col_step_sr) {
         TplDepStats *this_stats = &tpl_stats[av1_tpl_ptr_pos(
             row, col, tpl_stride, tpl_data->tpl_stats_block_mis_log2)];
+        double cbcmp = (double)(this_stats->srcrf_dist);
         int64_t mc_dep_delta =
             RDCOST(tpl_frame->base_rdmult, this_stats->mc_dep_rate,
                    this_stats->mc_dep_dist);
-        intra_cost_base += (this_stats->recrf_dist << RDDIV_BITS);
-        mc_dep_cost_base +=
-            (this_stats->recrf_dist << RDDIV_BITS) + mc_dep_delta;
+        double dist_scaled = (double)(this_stats->recrf_dist << RDDIV_BITS);
+        intra_cost_base += log(dist_scaled) * cbcmp;
+        mc_dep_cost_base += log(dist_scaled + mc_dep_delta) * cbcmp;
+        cbcmp_base += cbcmp;
       }
     }
 
     if (mc_dep_cost_base == 0) {
       tpl_frame->is_valid = 0;
     } else {
-      cpi->rd.r0 = (double)intra_cost_base / mc_dep_cost_base;
+      cpi->rd.r0 = exp((intra_cost_base - mc_dep_cost_base) / cbcmp_base);
       if (is_frame_tpl_eligible(gf_group, cpi->gf_frame_index)) {
         if (cpi->ppi->lap_enabled) {
           double min_boost_factor = sqrt(cpi->ppi->p_rc.baseline_gf_interval);
@@ -539,7 +542,7 @@ void av1_set_size_dependent_vars(AV1_COMP *cpi, int *q, int *bottom_index,
 #if !CONFIG_REALTIME_ONLY
   GF_GROUP *gf_group = &cpi->ppi->gf_group;
   if (cpi->oxcf.algo_cfg.enable_tpl_model &&
-      is_frame_tpl_eligible(gf_group, cpi->gf_frame_index)) {
+      av1_tpl_stats_ready(&cpi->ppi->tpl_data, cpi->gf_frame_index)) {
     process_tpl_stats_frame(cpi);
     av1_tpl_rdmult_setup(cpi);
   }
@@ -552,7 +555,6 @@ void av1_set_size_dependent_vars(AV1_COMP *cpi, int *q, int *bottom_index,
 #if !CONFIG_REALTIME_ONLY
   if (cpi->oxcf.rc_cfg.mode == AOM_Q &&
       cpi->ppi->tpl_data.tpl_frame[cpi->gf_frame_index].is_valid &&
-      is_frame_tpl_eligible(gf_group, cpi->gf_frame_index) &&
       !is_lossless_requested(&cpi->oxcf.rc_cfg)) {
     const RateControlCfg *const rc_cfg = &cpi->oxcf.rc_cfg;
     const int tpl_q = av1_tpl_get_q_index(
@@ -656,8 +658,8 @@ void av1_update_film_grain_parameters(struct AV1_COMP *cpi,
       }
     }
   } else if (tune_cfg->film_grain_table_filename) {
-    cpi->film_grain_table = aom_malloc(sizeof(*cpi->film_grain_table));
-    memset(cpi->film_grain_table, 0, sizeof(aom_film_grain_table_t));
+    CHECK_MEM_ERROR(cm, cpi->film_grain_table,
+                    aom_calloc(1, sizeof(*cpi->film_grain_table)));
 
     aom_film_grain_table_read(cpi->film_grain_table,
                               tune_cfg->film_grain_table_filename, cm->error);
@@ -723,7 +725,7 @@ void av1_scale_references(AV1_COMP *cpi, const InterpFilter filter,
                   &new_fb->buf, cm->width, cm->height,
                   cm->seq_params->subsampling_x, cm->seq_params->subsampling_y,
                   cm->seq_params->use_highbitdepth, AOM_BORDER_IN_PIXELS,
-                  cm->features.byte_alignment, NULL, NULL, NULL, 0)) {
+                  cm->features.byte_alignment, NULL, NULL, NULL, 0, 0)) {
             if (force_scaling) {
               // Release the reference acquired in the get_free_fb() call above.
               --new_fb->ref_count;
@@ -764,27 +766,33 @@ void av1_scale_references(AV1_COMP *cpi, const InterpFilter filter,
 
 BLOCK_SIZE av1_select_sb_size(const AV1EncoderConfig *const oxcf, int width,
                               int height, int number_spatial_layers) {
-  if (oxcf->tool_cfg.superblock_size == AOM_SUPERBLOCK_SIZE_64X64)
+  if (oxcf->tool_cfg.superblock_size == AOM_SUPERBLOCK_SIZE_64X64) {
     return BLOCK_64X64;
-  if (oxcf->tool_cfg.superblock_size == AOM_SUPERBLOCK_SIZE_128X128)
+  }
+  if (oxcf->tool_cfg.superblock_size == AOM_SUPERBLOCK_SIZE_128X128) {
     return BLOCK_128X128;
-
+  }
+#if CONFIG_TFLITE
+  if (oxcf->q_cfg.deltaq_mode == DELTA_Q_USER_RATING_BASED) return BLOCK_64X64;
+#endif
   // Force 64x64 superblock size to increase resolution in perceptual
   // AQ mode.
   if (oxcf->mode == ALLINTRA &&
       (oxcf->q_cfg.deltaq_mode == DELTA_Q_PERCEPTUAL_AI ||
-       oxcf->q_cfg.deltaq_mode == DELTA_Q_USER_RATING_BASED))
+       oxcf->q_cfg.deltaq_mode == DELTA_Q_USER_RATING_BASED)) {
     return BLOCK_64X64;
-
+  }
   assert(oxcf->tool_cfg.superblock_size == AOM_SUPERBLOCK_SIZE_DYNAMIC);
 
   if (number_spatial_layers > 1 ||
       oxcf->resize_cfg.resize_mode != RESIZE_NONE) {
     // Use the configured size (top resolution) for spatial layers or
     // on resize.
-    return AOMMIN(oxcf->frm_dim_cfg.width, oxcf->frm_dim_cfg.height) > 480
+    return AOMMIN(oxcf->frm_dim_cfg.width, oxcf->frm_dim_cfg.height) > 720
                ? BLOCK_128X128
                : BLOCK_64X64;
+  } else if (oxcf->mode == REALTIME) {
+    return AOMMIN(width, height) > 720 ? BLOCK_128X128 : BLOCK_64X64;
   }
 
   // TODO(any): Possibly could improve this with a heuristic.

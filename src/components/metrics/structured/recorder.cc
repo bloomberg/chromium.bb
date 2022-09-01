@@ -8,8 +8,8 @@
 
 #include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/no_destructor.h"
 #include "base/task/current_thread.h"
-#include "base/task/post_task.h"
 #include "components/metrics/structured/event_base.h"
 #include "components/metrics/structured/histogram_util.h"
 #include "components/metrics/structured/structured_metrics_features.h"
@@ -92,6 +92,12 @@ absl::optional<int> Recorder::LastKeyRotation(uint64_t project_name_hash) {
 void Recorder::OnReportingStateChanged(bool enabled) {
   for (auto& observer : observers_) {
     observer.OnReportingStateChanged(enabled);
+  }
+}
+
+void Recorder::OnHardwareClassInitialized() {
+  for (auto& observer : observers_) {
+    observer.OnHardwareClassInitialized();
   }
 }
 

@@ -99,12 +99,12 @@ void TransceiverStateSurfacer::Initialize(
         // adapters on the signaling thread for initialization on the main
         // thread or wait for Onion Souping to simplify this.
         // https://crbug.com/787254
-        sender_track_ref =
-            track_adapter_map->GetLocalTrackAdapter(webrtc_sender->track());
+        sender_track_ref = track_adapter_map->GetLocalTrackAdapter(
+            webrtc_sender->track().get());
         CHECK(sender_track_ref);
       }
       sender_state = blink::RtpSenderState(
-          main_task_runner_, signaling_task_runner_, webrtc_sender.get(),
+          main_task_runner_, signaling_task_runner_, webrtc_sender,
           std::move(sender_track_ref), webrtc_sender->stream_ids());
     }
     // Create the receiver state.
@@ -130,10 +130,10 @@ void TransceiverStateSurfacer::Initialize(
         main_task_runner_, signaling_task_runner_, webrtc_transceiver.get(),
         std::move(sender_state), std::move(receiver_state),
         blink::ToAbslOptional(webrtc_transceiver->mid()),
-        webrtc_transceiver->stopped(), webrtc_transceiver->direction(),
+        webrtc_transceiver->direction(),
         blink::ToAbslOptional(webrtc_transceiver->current_direction()),
         blink::ToAbslOptional(webrtc_transceiver->fired_direction()),
-        GetHeaderExtensionsNegotiated(webrtc_transceiver));
+        GetHeaderExtensionsNegotiated(webrtc_transceiver.get()));
   }
   is_initialized_ = true;
 }
@@ -185,6 +185,10 @@ bool SurfaceSenderStateOnly::stopped() const {
   return false;
 }
 
+bool SurfaceSenderStateOnly::stopping() const {
+  return false;
+}
+
 webrtc::RtpTransceiverDirection SurfaceSenderStateOnly::direction() const {
   return webrtc::RtpTransceiverDirection::kSendOnly;
 }
@@ -201,6 +205,33 @@ SurfaceSenderStateOnly::current_direction() const {
 
 void SurfaceSenderStateOnly::Stop() {
   NOTIMPLEMENTED();
+}
+
+webrtc::RTCError SurfaceSenderStateOnly::SetCodecPreferences(
+    rtc::ArrayView<webrtc::RtpCodecCapability>) {
+  RTC_DCHECK_NOTREACHED() << "Not implemented";
+  return {};
+}
+
+std::vector<webrtc::RtpCodecCapability>
+SurfaceSenderStateOnly::codec_preferences() const {
+  return {};
+}
+
+std::vector<webrtc::RtpHeaderExtensionCapability>
+SurfaceSenderStateOnly::HeaderExtensionsToOffer() const {
+  return {};
+}
+
+webrtc::RTCError SurfaceSenderStateOnly::SetOfferedRtpHeaderExtensions(
+    rtc::ArrayView<const webrtc::RtpHeaderExtensionCapability>
+        header_extensions_to_offer) {
+  return webrtc::RTCError(webrtc::RTCErrorType::UNSUPPORTED_OPERATION);
+}
+
+std::vector<webrtc::RtpHeaderExtensionCapability>
+SurfaceSenderStateOnly::HeaderExtensionsNegotiated() const {
+  return {};
 }
 
 SurfaceReceiverStateOnly::SurfaceReceiverStateOnly(
@@ -233,6 +264,10 @@ bool SurfaceReceiverStateOnly::stopped() const {
   return false;
 }
 
+bool SurfaceReceiverStateOnly::stopping() const {
+  return false;
+}
+
 webrtc::RtpTransceiverDirection SurfaceReceiverStateOnly::direction() const {
   return webrtc::RtpTransceiverDirection::kRecvOnly;
 }
@@ -249,6 +284,33 @@ SurfaceReceiverStateOnly::current_direction() const {
 
 void SurfaceReceiverStateOnly::Stop() {
   NOTIMPLEMENTED();
+}
+
+webrtc::RTCError SurfaceReceiverStateOnly::SetCodecPreferences(
+    rtc::ArrayView<webrtc::RtpCodecCapability>) {
+  RTC_DCHECK_NOTREACHED() << "Not implemented";
+  return {};
+}
+
+std::vector<webrtc::RtpCodecCapability>
+SurfaceReceiverStateOnly::codec_preferences() const {
+  return {};
+}
+
+std::vector<webrtc::RtpHeaderExtensionCapability>
+SurfaceReceiverStateOnly::HeaderExtensionsToOffer() const {
+  return {};
+}
+
+webrtc::RTCError SurfaceReceiverStateOnly::SetOfferedRtpHeaderExtensions(
+    rtc::ArrayView<const webrtc::RtpHeaderExtensionCapability>
+        header_extensions_to_offer) {
+  return webrtc::RTCError(webrtc::RTCErrorType::UNSUPPORTED_OPERATION);
+}
+
+std::vector<webrtc::RtpHeaderExtensionCapability>
+SurfaceReceiverStateOnly::HeaderExtensionsNegotiated() const {
+  return {};
 }
 
 }  // namespace blink

@@ -11,7 +11,6 @@
 #include "base/containers/contains.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/test/task_environment.h"
@@ -192,7 +191,7 @@ TEST_F(FeedbackUploaderTest, QueueMultipleWithFailures) {
   EXPECT_EQ(uploader()->dispatched_reports().at(kReportFive), 1u);
 }
 
-#if defined(OS_MAC) && defined(ARCH_CPU_ARM64)
+#if BUILDFLAG(IS_MAC) && defined(ARCH_CPU_ARM64)
 // https://crbug.com/1222877
 #define MAYBE_SimulateOfflineReports DISABLED_SimulateOfflineReports
 #else

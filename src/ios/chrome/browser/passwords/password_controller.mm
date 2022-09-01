@@ -64,7 +64,7 @@
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/password_breach_commands.h"
 #import "ios/chrome/browser/ui/commands/password_protection_commands.h"
-#include "ios/chrome/browser/web/tab_id_tab_helper.h"
+#import "ios/chrome/browser/ui/commands/password_suggestion_commands.h"
 #include "ios/chrome/grit/ios_google_chrome_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/web/common/url_scheme_util.h"
@@ -112,7 +112,7 @@ enum class PasswordInfoBarType { SAVE, UPDATE };
 // Duration for notify user auto-sign in dialog being displayed.
 constexpr int kNotifyAutoSigninDuration = 3;  // seconds
 // Helper to check if password manager rebranding finch flag is enabled.
-BOOL isPasswordManagerBrandingUpdateEnabled() {
+BOOL IsPasswordManagerBrandingUpdateEnabled() {
   return base::FeatureList::IsEnabled(
       password_manager::features::kIOSEnablePasswordManagerBrandingUpdate);
 }
@@ -332,9 +332,8 @@ BOOL isPasswordManagerBrandingUpdateEnabled() {
                    iconURL:formSignedIn->icon_url
           URLLoaderFactory:_webState->GetBrowserState()
                                ->GetSharedURLLoaderFactory()];
-  TabIdTabHelper* tabIdHelper = TabIdTabHelper::FromWebState(_webState);
   if (![_delegate displaySignInNotification:self.notifyAutoSigninViewController
-                                  fromTabId:tabIdHelper->tab_id()]) {
+                                  fromTabId:_webState->GetStableIdentifier()]) {
     // The notification was not shown. Store the password form in
     // |_pendingAutoSigninPasswordForm| to show the notification later.
     _pendingAutoSigninPasswordForm = std::move(formSignedIn);
@@ -396,6 +395,12 @@ BOOL isPasswordManagerBrandingUpdateEnabled() {
   return HandlerForProtocol(self.dispatcher, PasswordProtectionCommands);
 }
 
+// The dispatcher used for PasswordSuggestionCommands.
+- (id<PasswordSuggestionCommands>)passwordSuggestionDispatcher {
+  DCHECK(self.dispatcher);
+  return HandlerForProtocol(self.dispatcher, PasswordSuggestionCommands);
+}
+
 - (InfoBarIOS*)findInfobarOfType:(InfobarType)infobarType manual:(BOOL)manual {
   infobars::InfoBarManager* infoBarManager =
       InfoBarManagerImpl::FromWebState(_webState);
@@ -444,7 +449,8 @@ BOOL isPasswordManagerBrandingUpdateEnabled() {
   if (self.browserState) {
     syncer::SyncService* syncService =
         SyncServiceFactory::GetForBrowserState(self.browserState);
-    isSyncUser = password_bubble_experiment::IsSmartLockUser(syncService);
+    isSyncUser =
+        password_bubble_experiment::HasChosenToSyncPasswords(syncService);
   }
   infobars::InfoBarManager* infoBarManager =
       InfoBarManagerImpl::FromWebState(_webState);
@@ -518,7 +524,7 @@ BOOL isPasswordManagerBrandingUpdateEnabled() {
   NSString* title;
   NSString* message;
 
-  if (isPasswordManagerBrandingUpdateEnabled()) {
+  if (IsPasswordManagerBrandingUpdateEnabled()) {
     title = [NSString
         stringWithFormat:@"%@\n%@\n ",
                          GetNSString(IDS_IOS_SUGGESTED_STRONG_PASSWORD),
@@ -561,74 +567,80 @@ BOOL isPasswordManagerBrandingUpdateEnabled() {
                    decisionHandler:(void (^)(BOOL accept))decisionHandler {
   self.generatedPotentialPassword = generatedPotentialPassword;
 
-  [[NSNotificationCenter defaultCenter]
-      addObserver:self
-         selector:@selector(updateGeneratePasswordStrings:)
-             name:UIContentSizeCategoryDidChangeNotification
-           object:nil];
-
-  // TODO(crbug.com/886583): add eg tests
-  self.actionSheetCoordinator = [[ActionSheetCoordinator alloc]
-      initWithBaseViewController:self.baseViewController
-                         browser:nullptr
-                           title:@""
-                         message:@""
-                            rect:self.baseViewController.view.frame
-                            view:self.baseViewController.view];
-  self.actionSheetCoordinator.popoverArrowDirection = 0;
-  self.actionSheetCoordinator.alertStyle =
-      (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET)
-          ? UIAlertControllerStyleAlert
-          : UIAlertControllerStyleActionSheet;
-
-  // Set attributed text.
-  [self updateGeneratePasswordStrings:self];
-
-  __weak PasswordController* weakSelf = self;
-
-  auto popupDismissed = ^{
-    [weakSelf generatePasswordPopupDismissed];
-  };
-
-  auto closeKeyboard = ^{
-    if (!weakSelf.webState) {
-      return;
-    }
-    FormInputAccessoryViewHandler* handler =
-        [[FormInputAccessoryViewHandler alloc] init];
-    NSString* mainFrameID =
-        SysUTF8ToNSString(web::GetMainWebFrameId(weakSelf.webState));
-    [handler setLastFocusFormActivityWebFrameID:mainFrameID];
-    [handler closeKeyboardWithoutButtonPress];
-  };
-
-  NSString* primaryActionString;
-  if (isPasswordManagerBrandingUpdateEnabled()) {
-    primaryActionString = GetNSString(IDS_IOS_USE_SUGGESTED_STRONG_PASSWORD);
+  if (IsPasswordManagerBrandingUpdateEnabled()) {
+    [self.passwordSuggestionDispatcher
+        showPasswordSuggestion:generatedPotentialPassword
+               decisionHandler:decisionHandler];
   } else {
-    primaryActionString = GetNSString(IDS_IOS_USE_SUGGESTED_PASSWORD);
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
+           selector:@selector(updateGeneratePasswordStrings:)
+               name:UIContentSizeCategoryDidChangeNotification
+             object:nil];
+
+    // TODO(crbug.com/886583): add eg tests
+    self.actionSheetCoordinator = [[ActionSheetCoordinator alloc]
+        initWithBaseViewController:self.baseViewController
+                           browser:nullptr
+                             title:@""
+                           message:@""
+                              rect:self.baseViewController.view.frame
+                              view:self.baseViewController.view];
+    self.actionSheetCoordinator.popoverArrowDirection = 0;
+    self.actionSheetCoordinator.alertStyle =
+        (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET)
+            ? UIAlertControllerStyleAlert
+            : UIAlertControllerStyleActionSheet;
+
+    // Set attributed text.
+    [self updateGeneratePasswordStrings:self];
+
+    __weak PasswordController* weakSelf = self;
+
+    auto popupDismissed = ^{
+      [weakSelf generatePasswordPopupDismissed];
+    };
+
+    auto closeKeyboard = ^{
+      if (!weakSelf.webState) {
+        return;
+      }
+      FormInputAccessoryViewHandler* handler =
+          [[FormInputAccessoryViewHandler alloc] init];
+      NSString* mainFrameID =
+          SysUTF8ToNSString(web::GetMainWebFrameId(weakSelf.webState));
+      [handler setLastFocusFormActivityWebFrameID:mainFrameID];
+      [handler closeKeyboardWithoutButtonPress];
+    };
+
+    NSString* primaryActionString;
+    if (IsPasswordManagerBrandingUpdateEnabled()) {
+      primaryActionString = GetNSString(IDS_IOS_USE_SUGGESTED_STRONG_PASSWORD);
+    } else {
+      primaryActionString = GetNSString(IDS_IOS_USE_SUGGESTED_PASSWORD);
+    }
+
+    [self.actionSheetCoordinator addItemWithTitle:primaryActionString
+                                           action:^{
+                                             decisionHandler(YES);
+                                             popupDismissed();
+                                             closeKeyboard();
+                                           }
+                                            style:UIAlertActionStyleDefault];
+
+    [self.actionSheetCoordinator addItemWithTitle:GetNSString(IDS_CANCEL)
+                                           action:^{
+                                             decisionHandler(NO);
+                                             popupDismissed();
+                                           }
+                                            style:UIAlertActionStyleCancel];
+
+    // Set 'suggest' as preferred action, as per UX.
+    self.actionSheetCoordinator.alertController.preferredAction =
+        self.actionSheetCoordinator.alertController.actions[0];
+
+    [self.actionSheetCoordinator start];
   }
-
-  [self.actionSheetCoordinator addItemWithTitle:primaryActionString
-                                         action:^{
-                                           decisionHandler(YES);
-                                           popupDismissed();
-                                           closeKeyboard();
-                                         }
-                                          style:UIAlertActionStyleDefault];
-
-  [self.actionSheetCoordinator addItemWithTitle:GetNSString(IDS_CANCEL)
-                                         action:^{
-                                           decisionHandler(NO);
-                                           popupDismissed();
-                                         }
-                                          style:UIAlertActionStyleCancel];
-
-  // Set 'suggest' as preferred action, as per UX.
-  self.actionSheetCoordinator.alertController.preferredAction =
-      self.actionSheetCoordinator.alertController.actions[0];
-
-  [self.actionSheetCoordinator start];
 }
 
 - (void)sharedPasswordController:(SharedPasswordController*)controller

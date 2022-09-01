@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "absl/algorithm/container.h"
+#include "absl/strings/match.h"
 #include "api/sequence_checker.h"
 #include "api/task_queue/default_task_queue_factory.h"
 #include "api/task_queue/task_queue_base.h"
@@ -39,12 +40,16 @@
 #include "modules/video_coding/codecs/interface/common_constants.h"
 #include "modules/video_coding/codecs/vp8/include/vp8.h"
 #include "modules/video_coding/codecs/vp9/include/vp9.h"
+#include "modules/video_coding/svc/create_scalability_structure.h"
+#include "modules/video_coding/svc/scalability_mode_util.h"
+#include "modules/video_coding/svc/scalable_video_controller.h"
 #include "rtc_base/checks.h"
 #include "rtc_base/event.h"
 #include "rtc_base/experiments/alr_experiment.h"
 #include "rtc_base/logging.h"
 #include "rtc_base/platform_thread.h"
 #include "rtc_base/rate_limiter.h"
+#include "rtc_base/strings/string_builder.h"
 #include "rtc_base/synchronization/mutex.h"
 #include "rtc_base/task_queue_for_test.h"
 #include "rtc_base/task_utils/to_queued_task.h"
@@ -55,7 +60,6 @@
 #include "test/configurable_frame_size_encoder.h"
 #include "test/fake_encoder.h"
 #include "test/fake_texture_frame.h"
-#include "test/field_trial.h"
 #include "test/frame_forwarder.h"
 #include "test/frame_generator_capturer.h"
 #include "test/frame_utils.h"
@@ -105,6 +109,12 @@ enum VideoFormat {
   kVP8,
 };
 
+struct Vp9TestParams {
+  std::string scalability_mode;
+  uint8_t num_spatial_layers;
+  uint8_t num_temporal_layers;
+  InterLayerPredMode inter_layer_pred;
+};
 }  // namespace
 
 class VideoSendStreamTest : public test::CallTest {
@@ -119,14 +129,15 @@ class VideoSendStreamTest : public test::CallTest {
                               uint8_t retransmit_payload_type);
   void TestPacketFragmentationSize(VideoFormat format, bool with_fec);
 
-  void TestVp9NonFlexMode(uint8_t num_temporal_layers,
-                          uint8_t num_spatial_layers);
+  void TestVp9NonFlexMode(const Vp9TestParams& params,
+                          bool use_scalability_mode_identifier);
 
   void TestRequestSourceRotateVideo(bool support_orientation_ext);
 
   void TestTemporalLayers(VideoEncoderFactory* encoder_factory,
                           const std::string& payload_name,
-                          const std::vector<int>& num_temporal_layers);
+                          const std::vector<int>& num_temporal_layers,
+                          const std::vector<ScalabilityMode>& scalability_mode);
 };
 
 TEST_F(VideoSendStreamTest, CanStartStartedStream) {
@@ -179,7 +190,7 @@ TEST_F(VideoSendStreamTest, SupportsCName) {
 
     void ModifyVideoConfigs(
         VideoSendStream::Config* send_config,
-        std::vector<VideoReceiveStream::Config>* receive_configs,
+        std::vector<VideoReceiveStreamInterface::Config>* receive_configs,
         VideoEncoderConfig* encoder_config) override {
       send_config->rtp.c_name = kCName;
     }
@@ -223,7 +234,7 @@ TEST_F(VideoSendStreamTest, SupportsAbsoluteSendTime) {
 
     void ModifyVideoConfigs(
         VideoSendStream::Config* send_config,
-        std::vector<VideoReceiveStream::Config>* receive_configs,
+        std::vector<VideoReceiveStreamInterface::Config>* receive_configs,
         VideoEncoderConfig* encoder_config) override {
       send_config->rtp.extensions.clear();
       send_config->rtp.extensions.push_back(
@@ -269,7 +280,7 @@ TEST_F(VideoSendStreamTest, SupportsTransmissionTimeOffset) {
 
     void ModifyVideoConfigs(
         VideoSendStream::Config* send_config,
-        std::vector<VideoReceiveStream::Config>* receive_configs,
+        std::vector<VideoReceiveStreamInterface::Config>* receive_configs,
         VideoEncoderConfig* encoder_config) override {
       send_config->encoder_settings.encoder_factory = &encoder_factory_;
       send_config->rtp.extensions.clear();
@@ -316,7 +327,7 @@ TEST_F(VideoSendStreamTest, SupportsTransportWideSequenceNumbers) {
 
     void ModifyVideoConfigs(
         VideoSendStream::Config* send_config,
-        std::vector<VideoReceiveStream::Config>* receive_configs,
+        std::vector<VideoReceiveStreamInterface::Config>* receive_configs,
         VideoEncoderConfig* encoder_config) override {
       send_config->encoder_settings.encoder_factory = &encoder_factory_;
     }
@@ -352,7 +363,7 @@ TEST_F(VideoSendStreamTest, SupportsVideoRotation) {
 
     void ModifyVideoConfigs(
         VideoSendStream::Config* send_config,
-        std::vector<VideoReceiveStream::Config>* receive_configs,
+        std::vector<VideoReceiveStreamInterface::Config>* receive_configs,
         VideoEncoderConfig* encoder_config) override {
       send_config->rtp.extensions.clear();
       send_config->rtp.extensions.push_back(RtpExtension(
@@ -401,7 +412,7 @@ TEST_F(VideoSendStreamTest, SupportsVideoContentType) {
 
     void ModifyVideoConfigs(
         VideoSendStream::Config* send_config,
-        std::vector<VideoReceiveStream::Config>* receive_configs,
+        std::vector<VideoReceiveStreamInterface::Config>* receive_configs,
         VideoEncoderConfig* encoder_config) override {
       send_config->rtp.extensions.clear();
       send_config->rtp.extensions.push_back(RtpExtension(
@@ -445,7 +456,7 @@ TEST_F(VideoSendStreamTest, SupportsVideoTimingFrames) {
 
     void ModifyVideoConfigs(
         VideoSendStream::Config* send_config,
-        std::vector<VideoReceiveStream::Config>* receive_configs,
+        std::vector<VideoReceiveStreamInterface::Config>* receive_configs,
         VideoEncoderConfig* encoder_config) override {
       send_config->rtp.extensions.clear();
       send_config->rtp.extensions.push_back(
@@ -596,7 +607,7 @@ class UlpfecObserver : public test::EndToEndTest {
 
   void ModifyVideoConfigs(
       VideoSendStream::Config* send_config,
-      std::vector<VideoReceiveStream::Config>* receive_configs,
+      std::vector<VideoReceiveStreamInterface::Config>* receive_configs,
       VideoEncoderConfig* encoder_config) override {
     if (use_nack_) {
       send_config->rtp.nack.rtp_history_ms =
@@ -659,9 +670,10 @@ TEST_F(VideoSendStreamTest, SupportsUlpfecWithoutExtensions) {
 class VideoSendStreamWithoutUlpfecTest : public test::CallTest {
  protected:
   VideoSendStreamWithoutUlpfecTest()
-      : field_trial_("WebRTC-DisableUlpFecExperiment/Enabled/") {}
+      : field_trial_(field_trials_, "WebRTC-DisableUlpFecExperiment/Enabled/") {
+  }
 
-  test::ScopedFieldTrials field_trial_;
+  test::ScopedKeyValueConfig field_trial_;
 };
 
 TEST_F(VideoSendStreamWithoutUlpfecTest, NoUlpfecIfDisabledThroughFieldTrial) {
@@ -809,7 +821,7 @@ class FlexfecObserver : public test::EndToEndTest {
 
   void ModifyVideoConfigs(
       VideoSendStream::Config* send_config,
-      std::vector<VideoReceiveStream::Config>* receive_configs,
+      std::vector<VideoReceiveStreamInterface::Config>* receive_configs,
       VideoEncoderConfig* encoder_config) override {
     if (use_nack_) {
       send_config->rtp.nack.rtp_history_ms =
@@ -947,12 +959,7 @@ void VideoSendStreamTest::TestNackRetransmission(
       ++send_count_;
 
       // NACK packets at arbitrary points.
-      if (send_count_ == 5 || send_count_ == 25) {
-        nacked_sequence_numbers_.insert(
-            nacked_sequence_numbers_.end(),
-            non_padding_sequence_numbers_.end() - kNackedPacketsAtOnceCount,
-            non_padding_sequence_numbers_.end());
-
+      if (send_count_ % 25 == 0) {
         RTCPSender::Configuration config;
         config.clock = Clock::GetRealTimeClock();
         config.outgoing_transport = transport_adapter_.get();
@@ -964,11 +971,19 @@ void VideoSendStreamTest::TestNackRetransmission(
         rtcp_sender.SetRemoteSSRC(kVideoSendSsrcs[0]);
 
         RTCPSender::FeedbackState feedback_state;
+        uint16_t nack_sequence_numbers[kNackedPacketsAtOnceCount];
+        int nack_count = 0;
+        for (uint16_t sequence_number :
+             sequence_numbers_pending_retransmission_) {
+          if (nack_count < kNackedPacketsAtOnceCount) {
+            nack_sequence_numbers[nack_count++] = sequence_number;
+          } else {
+            break;
+          }
+        }
 
-        EXPECT_EQ(0, rtcp_sender.SendRTCP(
-                         feedback_state, kRtcpNack,
-                         static_cast<int>(nacked_sequence_numbers_.size()),
-                         &nacked_sequence_numbers_.front()));
+        EXPECT_EQ(0, rtcp_sender.SendRTCP(feedback_state, kRtcpNack, nack_count,
+                                          nack_sequence_numbers));
       }
 
       uint16_t sequence_number = rtp_packet.SequenceNumber();
@@ -980,17 +995,25 @@ void VideoSendStreamTest::TestNackRetransmission(
         sequence_number = (rtx_header[0] << 8) + rtx_header[1];
       }
 
-      auto found = absl::c_find(nacked_sequence_numbers_, sequence_number);
-      if (found != nacked_sequence_numbers_.end()) {
-        nacked_sequence_numbers_.erase(found);
-
+      auto it = sequence_numbers_pending_retransmission_.find(sequence_number);
+      if (it == sequence_numbers_pending_retransmission_.end()) {
+        // Not currently pending retransmission. Add it to retransmission queue
+        // if media and limit not reached.
+        if (rtp_packet.Ssrc() == kVideoSendSsrcs[0] &&
+            rtp_packet.payload_size() > 0 &&
+            retransmit_count_ +
+                    sequence_numbers_pending_retransmission_.size() <
+                kRetransmitTarget) {
+          sequence_numbers_pending_retransmission_.insert(sequence_number);
+        }
+      } else {
+        // Packet is a retransmission, remove it from queue and check if done.
+        sequence_numbers_pending_retransmission_.erase(it);
         if (++retransmit_count_ == kRetransmitTarget) {
           EXPECT_EQ(retransmit_ssrc_, rtp_packet.Ssrc());
           EXPECT_EQ(retransmit_payload_type_, rtp_packet.PayloadType());
           observation_complete_.Set();
         }
-      } else {
-        non_padding_sequence_numbers_.push_back(sequence_number);
       }
 
       return SEND_PACKET;
@@ -998,7 +1021,7 @@ void VideoSendStreamTest::TestNackRetransmission(
 
     void ModifyVideoConfigs(
         VideoSendStream::Config* send_config,
-        std::vector<VideoReceiveStream::Config>* receive_configs,
+        std::vector<VideoReceiveStreamInterface::Config>* receive_configs,
         VideoEncoderConfig* encoder_config) override {
       transport_adapter_.reset(
           new internal::TransportAdapter(send_config->send_transport));
@@ -1018,8 +1041,7 @@ void VideoSendStreamTest::TestNackRetransmission(
     int retransmit_count_;
     const uint32_t retransmit_ssrc_;
     const uint8_t retransmit_payload_type_;
-    std::vector<uint16_t> nacked_sequence_numbers_;
-    std::vector<uint16_t> non_padding_sequence_numbers_;
+    std::set<uint16_t> sequence_numbers_pending_retransmission_;
   } test(retransmit_ssrc, retransmit_payload_type);
 
   RunBaseTest(&test);
@@ -1203,7 +1225,7 @@ void VideoSendStreamTest::TestPacketFragmentationSize(VideoFormat format,
 
     void ModifyVideoConfigs(
         VideoSendStream::Config* send_config,
-        std::vector<VideoReceiveStream::Config>* receive_configs,
+        std::vector<VideoReceiveStreamInterface::Config>* receive_configs,
         VideoEncoderConfig* encoder_config) override {
       transport_adapter_.reset(
           new internal::TransportAdapter(send_config->send_transport));
@@ -1336,7 +1358,7 @@ TEST_F(VideoSendStreamTest, NoPaddingWhenVideoIsMuted) {
 
     void ModifyVideoConfigs(
         VideoSendStream::Config* send_config,
-        std::vector<VideoReceiveStream::Config>* receive_configs,
+        std::vector<VideoReceiveStreamInterface::Config>* receive_configs,
         VideoEncoderConfig* encoder_config) override {
       // Make sure padding is sent if encoder is not producing media.
       encoder_config->min_transmit_bitrate_bps = 50000;
@@ -1415,7 +1437,7 @@ TEST_F(VideoSendStreamTest, PaddingIsPrimarilyRetransmissions) {
 
     void ModifyVideoConfigs(
         VideoSendStream::Config* send_config,
-        std::vector<VideoReceiveStream::Config>* receive_configs,
+        std::vector<VideoReceiveStreamInterface::Config>* receive_configs,
         VideoEncoderConfig* encoder_config) override {
       // Turn on RTX.
       send_config->rtp.rtx.payload_type = kFakeVideoSendPayloadType;
@@ -1504,9 +1526,9 @@ TEST_F(VideoSendStreamTest, MinTransmitBitrateRespectsRemb) {
       return DROP_PACKET;
     }
 
-    void OnVideoStreamsCreated(
-        VideoSendStream* send_stream,
-        const std::vector<VideoReceiveStream*>& receive_streams) override {
+    void OnVideoStreamsCreated(VideoSendStream* send_stream,
+                               const std::vector<VideoReceiveStreamInterface*>&
+                                   receive_streams) override {
       stream_ = send_stream;
       RtpRtcpInterface::Configuration config;
       config.clock = Clock::GetRealTimeClock();
@@ -1518,7 +1540,7 @@ TEST_F(VideoSendStreamTest, MinTransmitBitrateRespectsRemb) {
 
     void ModifyVideoConfigs(
         VideoSendStream::Config* send_config,
-        std::vector<VideoReceiveStream::Config>* receive_configs,
+        std::vector<VideoReceiveStreamInterface::Config>* receive_configs,
         VideoEncoderConfig* encoder_config) override {
       feedback_transport_.reset(
           new internal::TransportAdapter(send_config->send_transport));
@@ -1574,7 +1596,7 @@ TEST_F(VideoSendStreamTest, ChangingNetworkRoute) {
 
     void ModifyVideoConfigs(
         VideoSendStream::Config* send_config,
-        std::vector<VideoReceiveStream::Config>* receive_configs,
+        std::vector<VideoReceiveStreamInterface::Config>* receive_configs,
         VideoEncoderConfig* encoder_config) override {
       RTC_DCHECK_RUN_ON(&task_queue_thread_);
       send_config->rtp.extensions.clear();
@@ -1584,9 +1606,9 @@ TEST_F(VideoSendStreamTest, ChangingNetworkRoute) {
       (*receive_configs)[0].rtp.transport_cc = true;
     }
 
-    void ModifyAudioConfigs(
-        AudioSendStream::Config* send_config,
-        std::vector<AudioReceiveStream::Config>* receive_configs) override {
+    void ModifyAudioConfigs(AudioSendStream::Config* send_config,
+                            std::vector<AudioReceiveStreamInterface::Config>*
+                                receive_configs) override {
       RTC_DCHECK_RUN_ON(&task_queue_thread_);
       send_config->rtp.extensions.clear();
       send_config->rtp.extensions.push_back(RtpExtension(
@@ -1665,14 +1687,14 @@ TEST_F(VideoSendStreamTest, ChangingNetworkRoute) {
 
 // Test that if specified, relay cap is lifted on transition to direct
 // connection.
-TEST_F(VideoSendStreamTest, RelayToDirectRoute) {
+// TODO(https://bugs.webrtc.org/13353): Test disabled  due to flakiness.
+TEST_F(VideoSendStreamTest, DISABLED_RelayToDirectRoute) {
   static const int kStartBitrateBps = 300000;
   static const int kRelayBandwidthCapBps = 800000;
   static const int kMinPacketsToSend = 100;
-  webrtc::test::ScopedFieldTrials field_trials(
-      std::string(field_trial::GetFieldTrialString()) +
-      "WebRTC-Bwe-NetworkRouteConstraints/relay_cap:" +
-      std::to_string(kRelayBandwidthCapBps) + "bps/");
+  webrtc::test::ScopedKeyValueConfig field_trials(
+      field_trials_, "WebRTC-Bwe-NetworkRouteConstraints/relay_cap:" +
+                         std::to_string(kRelayBandwidthCapBps) + "bps/");
 
   class RelayToDirectRouteTest : public test::EndToEndTest {
    public:
@@ -1793,7 +1815,7 @@ TEST_F(VideoSendStreamTest, ChangingTransportOverhead) {
 
     void ModifyVideoConfigs(
         VideoSendStream::Config* send_config,
-        std::vector<VideoReceiveStream::Config>* receive_configs,
+        std::vector<VideoReceiveStreamInterface::Config>* receive_configs,
         VideoEncoderConfig* encoder_config) override {
       send_config->rtp.max_packet_size = kMaxRtpPacketSize;
     }
@@ -1865,7 +1887,7 @@ class MaxPaddingSetTest : public test::SendTest {
 
   void ModifyVideoConfigs(
       VideoSendStream::Config* send_config,
-      std::vector<VideoReceiveStream::Config>* receive_configs,
+      std::vector<VideoReceiveStreamInterface::Config>* receive_configs,
       VideoEncoderConfig* encoder_config) override {
     RTC_DCHECK_RUN_ON(&task_queue_thread_);
     RTC_DCHECK_EQ(1, encoder_config->number_of_streams);
@@ -2278,15 +2300,15 @@ TEST_F(VideoSendStreamTest, EncoderIsProperlyInitializedAndDestroyed) {
       EXPECT_TRUE(IsReadyForEncode());
     }
 
-    void OnVideoStreamsCreated(
-        VideoSendStream* send_stream,
-        const std::vector<VideoReceiveStream*>& receive_streams) override {
+    void OnVideoStreamsCreated(VideoSendStream* send_stream,
+                               const std::vector<VideoReceiveStreamInterface*>&
+                                   receive_streams) override {
       stream_ = send_stream;
     }
 
     void ModifyVideoConfigs(
         VideoSendStream::Config* send_config,
-        std::vector<VideoReceiveStream::Config>* receive_configs,
+        std::vector<VideoReceiveStreamInterface::Config>* receive_configs,
         VideoEncoderConfig* encoder_config) override {
       send_config->encoder_settings.encoder_factory = &encoder_factory_;
       encoder_config_ = encoder_config->Copy();
@@ -2346,7 +2368,7 @@ class VideoCodecConfigObserver : public test::SendTest,
  private:
   void ModifyVideoConfigs(
       VideoSendStream::Config* send_config,
-      std::vector<VideoReceiveStream::Config>* receive_configs,
+      std::vector<VideoReceiveStreamInterface::Config>* receive_configs,
       VideoEncoderConfig* encoder_config) override {
     send_config->encoder_settings.encoder_factory = &encoder_factory_;
     send_config->rtp.payload_name = CodecTypeToPayloadString(video_codec_type_);
@@ -2359,9 +2381,9 @@ class VideoCodecConfigObserver : public test::SendTest,
     encoder_config_ = encoder_config->Copy();
   }
 
-  void OnVideoStreamsCreated(
-      VideoSendStream* send_stream,
-      const std::vector<VideoReceiveStream*>& receive_streams) override {
+  void OnVideoStreamsCreated(VideoSendStream* send_stream,
+                             const std::vector<VideoReceiveStreamInterface*>&
+                                 receive_streams) override {
     stream_ = send_stream;
   }
 
@@ -2386,7 +2408,7 @@ class VideoCodecConfigObserver : public test::SendTest,
         << "VideoEncoder not initialized.";
 
     // Change encoder settings to actually trigger reconfiguration.
-    encoder_settings_.frameDroppingOn = !encoder_settings_.frameDroppingOn;
+    encoder_config_.frame_drop_enabled = !encoder_config_.frame_drop_enabled;
     encoder_config_.encoder_specific_settings = GetEncoderSpecificSettings();
     SendTask(RTC_FROM_HERE, task_queue_, [&]() {
       stream_->ReconfigureVideoEncoder(std::move(encoder_config_));
@@ -2414,9 +2436,7 @@ class VideoCodecConfigObserver : public test::SendTest,
 };
 
 template <>
-void VideoCodecConfigObserver<VideoCodecH264>::InitCodecSpecifics() {
-  encoder_settings_ = VideoEncoder::GetDefaultH264Settings();
-}
+void VideoCodecConfigObserver<VideoCodecH264>::InitCodecSpecifics() {}
 
 template <>
 void VideoCodecConfigObserver<VideoCodecH264>::VerifyCodecSpecifics(
@@ -2433,18 +2453,16 @@ void VideoCodecConfigObserver<VideoCodecH264>::VerifyCodecSpecifics(
 
   // Set expected temporal layers as they should have been set when
   // reconfiguring the encoder and not match the set config.
-  VideoCodecH264 encoder_settings = encoder_settings_;
+  VideoCodecH264 encoder_settings = VideoEncoder::GetDefaultH264Settings();
   encoder_settings.numberOfTemporalLayers =
       kVideoCodecConfigObserverNumberOfTemporalLayers;
-  EXPECT_EQ(
-      0, memcmp(&config.H264(), &encoder_settings, sizeof(encoder_settings_)));
+  EXPECT_EQ(config.H264(), encoder_settings);
 }
 
 template <>
 rtc::scoped_refptr<VideoEncoderConfig::EncoderSpecificSettings>
 VideoCodecConfigObserver<VideoCodecH264>::GetEncoderSpecificSettings() const {
-  return rtc::make_ref_counted<VideoEncoderConfig::H264EncoderSpecificSettings>(
-      encoder_settings_);
+  return nullptr;
 }
 
 template <>
@@ -2633,7 +2651,7 @@ TEST_F(VideoSendStreamTest, TranslatesTwoLayerScreencastToTargetBitrate) {
 
     void ModifyVideoConfigs(
         VideoSendStream::Config* send_config,
-        std::vector<VideoReceiveStream::Config>* receive_configs,
+        std::vector<VideoReceiveStreamInterface::Config>* receive_configs,
         VideoEncoderConfig* encoder_config) override {
       send_config->encoder_settings.encoder_factory = &encoder_factory_;
       EXPECT_EQ(1u, encoder_config->number_of_streams);
@@ -2666,8 +2684,8 @@ TEST_F(VideoSendStreamTest, ReconfigureBitratesSetsEncoderBitratesCorrectly) {
   // TODO(bugs.webrtc.org/12058): If these fields trial are on, we get lower
   // bitrates than expected by this test, due to encoder pushback and subtracted
   // overhead.
-  webrtc::test::ScopedFieldTrials field_trials(
-      std::string(field_trial::GetFieldTrialString()) +
+  webrtc::test::ScopedKeyValueConfig field_trials(
+      field_trials_,
       "WebRTC-VideoRateControl/bitrate_adjuster:false/"
       "WebRTC-SendSideBwe-WithOverhead/Disabled/");
 
@@ -2775,7 +2793,7 @@ TEST_F(VideoSendStreamTest, ReconfigureBitratesSetsEncoderBitratesCorrectly) {
 
     void ModifyVideoConfigs(
         VideoSendStream::Config* send_config,
-        std::vector<VideoReceiveStream::Config>* receive_configs,
+        std::vector<VideoReceiveStreamInterface::Config>* receive_configs,
         VideoEncoderConfig* encoder_config) override {
       send_config->encoder_settings.encoder_factory = &encoder_factory_;
       send_config->encoder_settings.bitrate_allocator_factory = this;
@@ -2792,9 +2810,9 @@ TEST_F(VideoSendStreamTest, ReconfigureBitratesSetsEncoderBitratesCorrectly) {
       call_ = sender_call;
     }
 
-    void OnVideoStreamsCreated(
-        VideoSendStream* send_stream,
-        const std::vector<VideoReceiveStream*>& receive_streams) override {
+    void OnVideoStreamsCreated(VideoSendStream* send_stream,
+                               const std::vector<VideoReceiveStreamInterface*>&
+                                   receive_streams) override {
       send_stream_ = send_stream;
     }
 
@@ -2913,7 +2931,7 @@ TEST_F(VideoSendStreamTest, ReportsSentResolution) {
     }
     void ModifyVideoConfigs(
         VideoSendStream::Config* send_config,
-        std::vector<VideoReceiveStream::Config>* receive_configs,
+        std::vector<VideoReceiveStreamInterface::Config>* receive_configs,
         VideoEncoderConfig* encoder_config) override {
       send_config->encoder_settings.encoder_factory = &encoder_factory_;
       EXPECT_EQ(kNumStreams, encoder_config->number_of_streams);
@@ -2940,9 +2958,9 @@ TEST_F(VideoSendStreamTest, ReportsSentResolution) {
       }
     }
 
-    void OnVideoStreamsCreated(
-        VideoSendStream* send_stream,
-        const std::vector<VideoReceiveStream*>& receive_streams) override {
+    void OnVideoStreamsCreated(VideoSendStream* send_stream,
+                               const std::vector<VideoReceiveStreamInterface*>&
+                                   receive_streams) override {
       send_stream_ = send_stream;
     }
 
@@ -2957,18 +2975,15 @@ TEST_F(VideoSendStreamTest, ReportsSentResolution) {
 #if defined(RTC_ENABLE_VP9)
 class Vp9HeaderObserver : public test::SendTest {
  public:
-  Vp9HeaderObserver()
+  explicit Vp9HeaderObserver(const Vp9TestParams& params)
       : SendTest(VideoSendStreamTest::kLongTimeoutMs),
         encoder_factory_([]() { return VP9Encoder::Create(); }),
-        vp9_settings_(VideoEncoder::GetDefaultVp9Settings()),
-        packets_sent_(0),
-        frames_sent_(0),
-        expected_width_(0),
-        expected_height_(0) {}
+        params_(params),
+        vp9_settings_(VideoEncoder::GetDefaultVp9Settings()) {}
 
   virtual void ModifyVideoConfigsHook(
       VideoSendStream::Config* send_config,
-      std::vector<VideoReceiveStream::Config>* receive_configs,
+      std::vector<VideoReceiveStreamInterface::Config>* receive_configs,
       VideoEncoderConfig* encoder_config) {}
 
   virtual void InspectHeader(const RTPVideoHeaderVP9& vp9) = 0;
@@ -2978,7 +2993,7 @@ class Vp9HeaderObserver : public test::SendTest {
 
   void ModifyVideoConfigs(
       VideoSendStream::Config* send_config,
-      std::vector<VideoReceiveStream::Config>* receive_configs,
+      std::vector<VideoReceiveStreamInterface::Config>* receive_configs,
       VideoEncoderConfig* encoder_config) override {
     send_config->encoder_settings.encoder_factory = &encoder_factory_;
     send_config->rtp.payload_name = "VP9";
@@ -2989,8 +3004,6 @@ class Vp9HeaderObserver : public test::SendTest {
             vp9_settings_);
     EXPECT_EQ(1u, encoder_config->number_of_streams);
     EXPECT_EQ(1u, encoder_config->simulcast_layers.size());
-    encoder_config->simulcast_layers[0].num_temporal_layers =
-        vp9_settings_.numberOfTemporalLayers;
     encoder_config_ = encoder_config->Copy();
   }
 
@@ -3088,20 +3101,20 @@ class Vp9HeaderObserver : public test::SendTest {
   void VerifyTemporalLayerStructure0(const RTPVideoHeaderVP9& vp9) const {
     EXPECT_EQ(kNoTl0PicIdx, vp9.tl0_pic_idx);
     EXPECT_EQ(kNoTemporalIdx, vp9.temporal_idx);  // no tid
+    // Technically true, but layer indices not available.
     EXPECT_FALSE(vp9.temporal_up_switch);
   }
 
   void VerifyTemporalLayerStructure1(const RTPVideoHeaderVP9& vp9) const {
     EXPECT_NE(kNoTl0PicIdx, vp9.tl0_pic_idx);
     EXPECT_EQ(0, vp9.temporal_idx);  // 0,0,0,...
-    EXPECT_FALSE(vp9.temporal_up_switch);
   }
 
   void VerifyTemporalLayerStructure2(const RTPVideoHeaderVP9& vp9) const {
     EXPECT_NE(kNoTl0PicIdx, vp9.tl0_pic_idx);
     EXPECT_GE(vp9.temporal_idx, 0);  // 0,1,0,1,... (tid reset on I-frames).
     EXPECT_LE(vp9.temporal_idx, 1);
-    EXPECT_EQ(vp9.temporal_idx > 0, vp9.temporal_up_switch);
+    EXPECT_TRUE(vp9.temporal_up_switch);
     if (IsNewPictureId(vp9)) {
       uint8_t expected_tid =
           (!vp9.inter_pic_predicted || last_vp9_.temporal_idx == 1) ? 0 : 1;
@@ -3115,18 +3128,16 @@ class Vp9HeaderObserver : public test::SendTest {
     EXPECT_LE(vp9.temporal_idx, 2);
     if (IsNewPictureId(vp9) && vp9.inter_pic_predicted) {
       EXPECT_NE(vp9.temporal_idx, last_vp9_.temporal_idx);
+      EXPECT_TRUE(vp9.temporal_up_switch);
       switch (vp9.temporal_idx) {
         case 0:
-          EXPECT_EQ(2, last_vp9_.temporal_idx);
-          EXPECT_FALSE(vp9.temporal_up_switch);
+          EXPECT_EQ(last_vp9_.temporal_idx, 2);
           break;
         case 1:
-          EXPECT_EQ(2, last_vp9_.temporal_idx);
-          EXPECT_TRUE(vp9.temporal_up_switch);
+          EXPECT_EQ(last_vp9_.temporal_idx, 2);
           break;
         case 2:
           EXPECT_LT(last_vp9_.temporal_idx, 2);
-          EXPECT_TRUE(vp9.temporal_up_switch);
           break;
       }
     }
@@ -3168,17 +3179,17 @@ class Vp9HeaderObserver : public test::SendTest {
     EXPECT_NE(kNoPictureId, vp9.picture_id);                   // I:1
     EXPECT_EQ(vp9_settings_.flexibleMode, vp9.flexible_mode);  // F
 
-    if (vp9_settings_.numberOfSpatialLayers > 1) {
-      EXPECT_LT(vp9.spatial_idx, vp9_settings_.numberOfSpatialLayers);
-    } else if (vp9_settings_.numberOfTemporalLayers > 1) {
+    if (params_.num_spatial_layers > 1) {
+      EXPECT_LT(vp9.spatial_idx, params_.num_spatial_layers);
+    } else if (params_.num_temporal_layers > 1) {
       EXPECT_EQ(vp9.spatial_idx, 0);
     } else {
       EXPECT_EQ(vp9.spatial_idx, kNoSpatialIdx);
     }
 
-    if (vp9_settings_.numberOfTemporalLayers > 1) {
-      EXPECT_LT(vp9.temporal_idx, vp9_settings_.numberOfTemporalLayers);
-    } else if (vp9_settings_.numberOfSpatialLayers > 1) {
+    if (params_.num_temporal_layers > 1) {
+      EXPECT_LT(vp9.temporal_idx, params_.num_temporal_layers);
+    } else if (params_.num_spatial_layers > 1) {
       EXPECT_EQ(vp9.temporal_idx, 0);
     } else {
       EXPECT_EQ(vp9.temporal_idx, kNoTemporalIdx);
@@ -3191,8 +3202,12 @@ class Vp9HeaderObserver : public test::SendTest {
       EXPECT_FALSE(vp9.inter_pic_predicted);  // P
 
     if (!vp9.inter_pic_predicted) {
-      EXPECT_TRUE(vp9.temporal_idx == 0 || vp9.temporal_idx == kNoTemporalIdx);
-      EXPECT_FALSE(vp9.temporal_up_switch);
+      if (vp9.temporal_idx == kNoTemporalIdx) {
+        EXPECT_FALSE(vp9.temporal_up_switch);
+      } else {
+        EXPECT_EQ(vp9.temporal_idx, 0);
+        EXPECT_TRUE(vp9.temporal_up_switch);
+      }
     }
   }
 
@@ -3213,16 +3228,24 @@ class Vp9HeaderObserver : public test::SendTest {
   //      +-+-+-+-+-+-+-+-+
   void VerifySsData(const RTPVideoHeaderVP9& vp9) const {
     EXPECT_TRUE(vp9.ss_data_available);             // V
-    EXPECT_EQ(vp9_settings_.numberOfSpatialLayers,  // N_S + 1
+    EXPECT_EQ(params_.num_spatial_layers,           // N_S + 1
               vp9.num_spatial_layers);
     EXPECT_TRUE(vp9.spatial_layer_resolution_present);  // Y:1
-    int expected_width = expected_width_;
-    int expected_height = expected_height_;
+
+    absl::optional<ScalableVideoController::StreamLayersConfig> info;
+    absl::optional<ScalabilityMode> scalability_mode =
+        ScalabilityModeFromString(params_.scalability_mode);
+    if (scalability_mode) {
+      info = ScalabilityStructureConfig(*scalability_mode);
+    }
+    double default_ratio = 1.0;
     for (int i = static_cast<int>(vp9.num_spatial_layers) - 1; i >= 0; --i) {
-      EXPECT_EQ(expected_width, vp9.width[i]);    // WIDTH
-      EXPECT_EQ(expected_height, vp9.height[i]);  // HEIGHT
-      expected_width /= 2;
-      expected_height /= 2;
+      double ratio = info ? (static_cast<double>(info->scaling_factor_num[i]) /
+                             info->scaling_factor_den[i])
+                          : default_ratio;
+      EXPECT_EQ(expected_width_ * ratio, vp9.width[i]);    // WIDTH
+      EXPECT_EQ(expected_height_ * ratio, vp9.height[i]);  // HEIGHT
+      default_ratio /= 2.0;
     }
   }
 
@@ -3260,57 +3283,95 @@ class Vp9HeaderObserver : public test::SendTest {
   }
 
   test::FunctionVideoEncoderFactory encoder_factory_;
+  const Vp9TestParams params_;
   VideoCodecVP9 vp9_settings_;
   webrtc::VideoEncoderConfig encoder_config_;
   bool last_packet_marker_ = false;
   uint16_t last_packet_sequence_number_ = 0;
   uint32_t last_packet_timestamp_ = 0;
   RTPVideoHeaderVP9 last_vp9_;
-  size_t packets_sent_;
+  size_t packets_sent_ = 0;
   Mutex mutex_;
-  size_t frames_sent_;
-  int expected_width_;
-  int expected_height_;
+  size_t frames_sent_ = 0;
+  int expected_width_ = 0;
+  int expected_height_ = 0;
 };
 
-TEST_F(VideoSendStreamTest, Vp9NonFlexMode_1Tl1SLayers) {
-  const uint8_t kNumTemporalLayers = 1;
-  const uint8_t kNumSpatialLayers = 1;
-  TestVp9NonFlexMode(kNumTemporalLayers, kNumSpatialLayers);
+class Vp9Test : public VideoSendStreamTest,
+                public ::testing::WithParamInterface<
+                    ::testing::tuple<Vp9TestParams, bool>> {
+ public:
+  Vp9Test()
+      : params_(::testing::get<0>(GetParam())),
+        use_scalability_mode_identifier_(::testing::get<1>(GetParam())) {}
+
+ protected:
+  const Vp9TestParams params_;
+  const bool use_scalability_mode_identifier_;
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    ScalabilityMode,
+    Vp9Test,
+    ::testing::Combine(
+        ::testing::ValuesIn<Vp9TestParams>(
+            {{"L1T1", 1, 1, InterLayerPredMode::kOn},
+             {"L1T2", 1, 2, InterLayerPredMode::kOn},
+             {"L1T3", 1, 3, InterLayerPredMode::kOn},
+             {"L2T1", 2, 1, InterLayerPredMode::kOn},
+             {"L2T1_KEY", 2, 1, InterLayerPredMode::kOnKeyPic},
+             {"L2T2", 2, 2, InterLayerPredMode::kOn},
+             {"L2T2_KEY", 2, 2, InterLayerPredMode::kOnKeyPic},
+             {"L2T3_KEY", 2, 3, InterLayerPredMode::kOnKeyPic},
+             {"L3T1", 3, 1, InterLayerPredMode::kOn},
+             {"L3T3", 3, 3, InterLayerPredMode::kOn},
+             {"L3T3_KEY", 3, 3, InterLayerPredMode::kOnKeyPic},
+             {"S2T1", 2, 1, InterLayerPredMode::kOff},
+             {"S3T3", 3, 3, InterLayerPredMode::kOff}}),
+        ::testing::Values(false, true)),  // use_scalability_mode_identifier
+    [](const ::testing::TestParamInfo<Vp9Test::ParamType>& info) {
+      rtc::StringBuilder sb;
+      sb << std::get<0>(info.param).scalability_mode << "_"
+         << (std::get<1>(info.param) ? "WithIdentifier" : "WithoutIdentifier");
+      return sb.str();
+    });
+
+INSTANTIATE_TEST_SUITE_P(
+    ScalabilityModeOff,
+    Vp9Test,
+    ::testing::Combine(
+        ::testing::ValuesIn<Vp9TestParams>(
+            {{"L2T3", 2, 3, InterLayerPredMode::kOn},
+             {"S2T3", 2, 3, InterLayerPredMode::kOff}}),
+        ::testing::Values(false)),  // use_scalability_mode_identifier
+    [](const ::testing::TestParamInfo<Vp9Test::ParamType>& info) {
+      rtc::StringBuilder sb;
+      sb << std::get<0>(info.param).scalability_mode << "_"
+         << (std::get<1>(info.param) ? "WithIdentifier" : "WithoutIdentifier");
+      return sb.str();
+    });
+
+INSTANTIATE_TEST_SUITE_P(
+    ScalabilityModeOn,
+    Vp9Test,
+    ::testing::Combine(
+        ::testing::ValuesIn<Vp9TestParams>({{"L2T1h", 2, 1,
+                                             InterLayerPredMode::kOn}}),
+        ::testing::Values(true)),  // use_scalability_mode_identifier
+    [](const ::testing::TestParamInfo<Vp9Test::ParamType>& info) {
+      rtc::StringBuilder sb;
+      sb << std::get<0>(info.param).scalability_mode << "_"
+         << (std::get<1>(info.param) ? "WithIdentifier" : "WithoutIdentifier");
+      return sb.str();
+    });
+
+TEST_P(Vp9Test, NonFlexMode) {
+  TestVp9NonFlexMode(params_, use_scalability_mode_identifier_);
 }
 
-TEST_F(VideoSendStreamTest, Vp9NonFlexMode_2Tl1SLayers) {
-  const uint8_t kNumTemporalLayers = 2;
-  const uint8_t kNumSpatialLayers = 1;
-  TestVp9NonFlexMode(kNumTemporalLayers, kNumSpatialLayers);
-}
-
-TEST_F(VideoSendStreamTest, Vp9NonFlexMode_3Tl1SLayers) {
-  const uint8_t kNumTemporalLayers = 3;
-  const uint8_t kNumSpatialLayers = 1;
-  TestVp9NonFlexMode(kNumTemporalLayers, kNumSpatialLayers);
-}
-
-TEST_F(VideoSendStreamTest, Vp9NonFlexMode_1Tl2SLayers) {
-  const uint8_t kNumTemporalLayers = 1;
-  const uint8_t kNumSpatialLayers = 2;
-  TestVp9NonFlexMode(kNumTemporalLayers, kNumSpatialLayers);
-}
-
-TEST_F(VideoSendStreamTest, Vp9NonFlexMode_2Tl2SLayers) {
-  const uint8_t kNumTemporalLayers = 2;
-  const uint8_t kNumSpatialLayers = 2;
-  TestVp9NonFlexMode(kNumTemporalLayers, kNumSpatialLayers);
-}
-
-TEST_F(VideoSendStreamTest, Vp9NonFlexMode_3Tl2SLayers) {
-  const uint8_t kNumTemporalLayers = 3;
-  const uint8_t kNumSpatialLayers = 2;
-  TestVp9NonFlexMode(kNumTemporalLayers, kNumSpatialLayers);
-}
-
-void VideoSendStreamTest::TestVp9NonFlexMode(uint8_t num_temporal_layers,
-                                             uint8_t num_spatial_layers) {
+void VideoSendStreamTest::TestVp9NonFlexMode(
+    const Vp9TestParams& params,
+    bool use_scalability_mode_identifier) {
   static const size_t kNumFramesToSend = 100;
   // Set to < kNumFramesToSend and coprime to length of temporal layer
   // structures to verify temporal id reset on key frame.
@@ -3321,18 +3382,20 @@ void VideoSendStreamTest::TestVp9NonFlexMode(uint8_t num_temporal_layers,
   static const float kGoodBitsPerPixel = 0.1f;
   class NonFlexibleMode : public Vp9HeaderObserver {
    public:
-    NonFlexibleMode(uint8_t num_temporal_layers, uint8_t num_spatial_layers)
-        : num_temporal_layers_(num_temporal_layers),
-          num_spatial_layers_(num_spatial_layers),
-          l_field_(num_temporal_layers > 1 || num_spatial_layers > 1) {}
+    NonFlexibleMode(const Vp9TestParams& params,
+                    bool use_scalability_mode_identifier)
+        : Vp9HeaderObserver(params),
+          use_scalability_mode_identifier_(use_scalability_mode_identifier),
+          l_field_(params.num_temporal_layers > 1 ||
+                   params.num_spatial_layers > 1) {}
 
     void ModifyVideoConfigsHook(
         VideoSendStream::Config* send_config,
-        std::vector<VideoReceiveStream::Config>* receive_configs,
+        std::vector<VideoReceiveStreamInterface::Config>* receive_configs,
         VideoEncoderConfig* encoder_config) override {
       encoder_config->codec_type = kVideoCodecVP9;
       int bitrate_bps = 0;
-      for (int sl_idx = 0; sl_idx < num_spatial_layers_; ++sl_idx) {
+      for (int sl_idx = 0; sl_idx < params_.num_spatial_layers; ++sl_idx) {
         const int width = kWidth << sl_idx;
         const int height = kHeight << sl_idx;
         const float bpp = kGoodBitsPerPixel / (1 << sl_idx);
@@ -3340,64 +3403,86 @@ void VideoSendStreamTest::TestVp9NonFlexMode(uint8_t num_temporal_layers,
       }
       encoder_config->max_bitrate_bps = bitrate_bps * 2;
 
+      encoder_config->frame_drop_enabled = false;
+
       vp9_settings_.flexibleMode = false;
-      vp9_settings_.frameDroppingOn = false;
       vp9_settings_.automaticResizeOn = false;
       vp9_settings_.keyFrameInterval = kKeyFrameInterval;
-      vp9_settings_.numberOfTemporalLayers = num_temporal_layers_;
-      vp9_settings_.numberOfSpatialLayers = num_spatial_layers_;
+      if (!use_scalability_mode_identifier_) {
+        vp9_settings_.numberOfTemporalLayers = params_.num_temporal_layers;
+        vp9_settings_.numberOfSpatialLayers = params_.num_spatial_layers;
+        vp9_settings_.interLayerPred = params_.inter_layer_pred;
+      } else {
+        absl::optional<ScalabilityMode> mode =
+            ScalabilityModeFromString(params_.scalability_mode);
+        encoder_config->simulcast_layers[0].scalability_mode = mode;
+        EXPECT_TRUE(mode.has_value());
+      }
     }
 
     void ModifyVideoCaptureStartResolution(int* width,
                                            int* height,
                                            int* frame_rate) override {
-      expected_width_ = kWidth << (num_spatial_layers_ - 1);
-      expected_height_ = kHeight << (num_spatial_layers_ - 1);
+      expected_width_ = kWidth << (params_.num_spatial_layers - 1);
+      expected_height_ = kHeight << (params_.num_spatial_layers - 1);
       *width = expected_width_;
       *height = expected_height_;
     }
 
     void InspectHeader(const RTPVideoHeaderVP9& vp9) override {
-      bool ss_data_expected =
-          !vp9.inter_pic_predicted && vp9.beginning_of_frame &&
-          (vp9.spatial_idx == 0 || vp9.spatial_idx == kNoSpatialIdx);
+      bool ss_data_expected = !vp9.inter_pic_predicted &&
+                              vp9.beginning_of_frame &&
+                              !vp9.inter_layer_predicted;
       EXPECT_EQ(ss_data_expected, vp9.ss_data_available);
-      if (num_spatial_layers_ > 1) {
-        EXPECT_EQ(vp9.spatial_idx > 0, vp9.inter_layer_predicted);
+
+      bool is_key_frame = frames_sent_ % kKeyFrameInterval == 0;
+      if (params_.num_spatial_layers > 1) {
+        switch (params_.inter_layer_pred) {
+          case InterLayerPredMode::kOff:
+            EXPECT_FALSE(vp9.inter_layer_predicted);
+            break;
+          case InterLayerPredMode::kOn:
+            EXPECT_EQ(vp9.spatial_idx > 0, vp9.inter_layer_predicted);
+            break;
+          case InterLayerPredMode::kOnKeyPic:
+            EXPECT_EQ(is_key_frame && vp9.spatial_idx > 0,
+                      vp9.inter_layer_predicted);
+            break;
+        }
       } else {
         EXPECT_FALSE(vp9.inter_layer_predicted);
       }
 
-      EXPECT_EQ(!vp9.inter_pic_predicted,
-                frames_sent_ % kKeyFrameInterval == 0);
+      EXPECT_EQ(is_key_frame, !vp9.inter_pic_predicted);
 
       if (IsNewPictureId(vp9)) {
-        if (num_temporal_layers_ == 1 && num_spatial_layers_ == 1) {
+        if (params_.num_temporal_layers == 1 &&
+            params_.num_spatial_layers == 1) {
           EXPECT_EQ(kNoSpatialIdx, vp9.spatial_idx);
         } else {
           EXPECT_EQ(0, vp9.spatial_idx);
         }
-        if (num_spatial_layers_ > 1)
-          EXPECT_EQ(num_spatial_layers_ - 1, last_vp9_.spatial_idx);
+        if (params_.num_spatial_layers > 1)
+          EXPECT_EQ(params_.num_spatial_layers - 1, last_vp9_.spatial_idx);
       }
 
-      VerifyFixedTemporalLayerStructure(vp9,
-                                        l_field_ ? num_temporal_layers_ : 0);
+      VerifyFixedTemporalLayerStructure(
+          vp9, l_field_ ? params_.num_temporal_layers : 0);
 
       if (frames_sent_ > kNumFramesToSend)
         observation_complete_.Set();
     }
-    const uint8_t num_temporal_layers_;
-    const uint8_t num_spatial_layers_;
+    const bool use_scalability_mode_identifier_;
     const bool l_field_;
 
    private:
     void ModifySenderBitrateConfig(
         BitrateConstraints* bitrate_config) override {
-      const int kMinBitrateBps = 300000;
-      bitrate_config->min_bitrate_bps = kMinBitrateBps;
+      const int kBitrateBps = 800000;
+      bitrate_config->min_bitrate_bps = kBitrateBps;
+      bitrate_config->start_bitrate_bps = kBitrateBps;
     }
-  } test(num_temporal_layers, num_spatial_layers);
+  } test(params, use_scalability_mode_identifier);
 
   RunBaseTest(&test);
 }
@@ -3407,16 +3492,20 @@ TEST_F(VideoSendStreamTest, Vp9NonFlexModeSmallResolution) {
   static const int kWidth = 4;
   static const int kHeight = 4;
   class NonFlexibleModeResolution : public Vp9HeaderObserver {
+   public:
+    explicit NonFlexibleModeResolution(const Vp9TestParams& params)
+        : Vp9HeaderObserver(params) {}
+
+   private:
     void ModifyVideoConfigsHook(
         VideoSendStream::Config* send_config,
-        std::vector<VideoReceiveStream::Config>* receive_configs,
+        std::vector<VideoReceiveStreamInterface::Config>* receive_configs,
         VideoEncoderConfig* encoder_config) override {
       encoder_config->codec_type = kVideoCodecVP9;
       vp9_settings_.flexibleMode = false;
-      vp9_settings_.numberOfTemporalLayers = 1;
-      vp9_settings_.numberOfSpatialLayers = 1;
-
-      EXPECT_EQ(1u, encoder_config->number_of_streams);
+      vp9_settings_.numberOfTemporalLayers = params_.num_temporal_layers;
+      vp9_settings_.numberOfSpatialLayers = params_.num_spatial_layers;
+      vp9_settings_.interLayerPred = params_.inter_layer_pred;
     }
 
     void InspectHeader(const RTPVideoHeaderVP9& vp9_header) override {
@@ -3432,7 +3521,10 @@ TEST_F(VideoSendStreamTest, Vp9NonFlexModeSmallResolution) {
       *width = kWidth;
       *height = kHeight;
     }
-  } test;
+  };
+
+  Vp9TestParams params{"L1T1", 1, 1, InterLayerPredMode::kOn};
+  NonFlexibleModeResolution test(params);
 
   RunBaseTest(&test);
 }
@@ -3448,15 +3540,21 @@ TEST_F(VideoSendStreamTest, Vp9NonFlexModeSmallResolution) {
 #endif
 TEST_F(VideoSendStreamTest, MAYBE_Vp9FlexModeRefCount) {
   class FlexibleMode : public Vp9HeaderObserver {
+   public:
+    explicit FlexibleMode(const Vp9TestParams& params)
+        : Vp9HeaderObserver(params) {}
+
+   private:
     void ModifyVideoConfigsHook(
         VideoSendStream::Config* send_config,
-        std::vector<VideoReceiveStream::Config>* receive_configs,
+        std::vector<VideoReceiveStreamInterface::Config>* receive_configs,
         VideoEncoderConfig* encoder_config) override {
       encoder_config->codec_type = kVideoCodecVP9;
       encoder_config->content_type = VideoEncoderConfig::ContentType::kScreen;
       vp9_settings_.flexibleMode = true;
-      vp9_settings_.numberOfTemporalLayers = 1;
-      vp9_settings_.numberOfSpatialLayers = 2;
+      vp9_settings_.numberOfTemporalLayers = params_.num_temporal_layers;
+      vp9_settings_.numberOfSpatialLayers = params_.num_spatial_layers;
+      vp9_settings_.interLayerPred = params_.inter_layer_pred;
     }
 
     void InspectHeader(const RTPVideoHeaderVP9& vp9_header) override {
@@ -3467,7 +3565,10 @@ TEST_F(VideoSendStreamTest, MAYBE_Vp9FlexModeRefCount) {
         observation_complete_.Set();
       }
     }
-  } test;
+  };
+
+  Vp9TestParams params{"L2T1", 2, 1, InterLayerPredMode::kOn};
+  FlexibleMode test(params);
 
   RunBaseTest(&test);
 }
@@ -3526,7 +3627,7 @@ TEST_F(VideoSendStreamTest, EncoderConfigMaxFramerateReportedToSource) {
 
     void ModifyVideoConfigs(
         VideoSendStream::Config* send_config,
-        std::vector<VideoReceiveStream::Config>* receive_configs,
+        std::vector<VideoReceiveStreamInterface::Config>* receive_configs,
         VideoEncoderConfig* encoder_config) override {
       encoder_config->simulcast_layers[0].max_framerate = kMaxFps;
     }
@@ -3574,7 +3675,7 @@ TEST_F(VideoSendStreamTest, RemoveOverheadFromBandwidth) {
 
     void ModifyVideoConfigs(
         VideoSendStream::Config* send_config,
-        std::vector<VideoReceiveStream::Config>* receive_configs,
+        std::vector<VideoReceiveStreamInterface::Config>* receive_configs,
         VideoEncoderConfig* encoder_config) override {
       send_config->rtp.max_packet_size = 1200;
       send_config->encoder_settings.encoder_factory = &encoder_factory_;
@@ -3634,7 +3735,7 @@ class PacingFactorObserver : public test::SendTest {
 
   void ModifyVideoConfigs(
       VideoSendStream::Config* send_config,
-      std::vector<VideoReceiveStream::Config>* receive_configs,
+      std::vector<VideoReceiveStreamInterface::Config>* receive_configs,
       VideoEncoderConfig* encoder_config) override {
     // Check if send-side bwe extension is already present, and remove it if
     // it is not desired.
@@ -3666,9 +3767,9 @@ class PacingFactorObserver : public test::SendTest {
     encoder_config->content_type = VideoEncoderConfig::ContentType::kScreen;
   }
 
-  void OnVideoStreamsCreated(
-      VideoSendStream* send_stream,
-      const std::vector<VideoReceiveStream*>& receive_streams) override {
+  void OnVideoStreamsCreated(VideoSendStream* send_stream,
+                             const std::vector<VideoReceiveStreamInterface*>&
+                                 receive_streams) override {
     auto internal_send_peer = test::VideoSendStreamPeer(send_stream);
     // Video streams created, check that pacing factor is correctly configured.
     EXPECT_EQ(expected_pacing_factor_,
@@ -3735,16 +3836,16 @@ class ContentSwitchTest : public test::SendTest {
     RTC_DCHECK(stream_resetter_);
   }
 
-  void OnVideoStreamsCreated(
-      VideoSendStream* send_stream,
-      const std::vector<VideoReceiveStream*>& receive_streams) override {
+  void OnVideoStreamsCreated(VideoSendStream* send_stream,
+                             const std::vector<VideoReceiveStreamInterface*>&
+                                 receive_streams) override {
     MutexLock lock(&mutex_);
     send_stream_ = send_stream;
   }
 
   void ModifyVideoConfigs(
       VideoSendStream::Config* send_config,
-      std::vector<VideoReceiveStream::Config>* receive_configs,
+      std::vector<VideoReceiveStreamInterface::Config>* receive_configs,
       VideoEncoderConfig* encoder_config) override {
     RTC_DCHECK_EQ(1, encoder_config->number_of_streams);
     encoder_config->min_transmit_bitrate_bps = 0;
@@ -3872,7 +3973,8 @@ TEST_F(VideoSendStreamTest, SwitchesToScreenshareAndBack) {
 void VideoSendStreamTest::TestTemporalLayers(
     VideoEncoderFactory* encoder_factory,
     const std::string& payload_name,
-    const std::vector<int>& num_temporal_layers) {
+    const std::vector<int>& num_temporal_layers,
+    const std::vector<ScalabilityMode>& scalability_mode) {
   static constexpr int kMaxBitrateBps = 1000000;
   static constexpr int kMinFramesToObservePerStream = 8;
 
@@ -3882,11 +3984,13 @@ void VideoSendStreamTest::TestTemporalLayers(
    public:
     TemporalLayerObserver(VideoEncoderFactory* encoder_factory,
                           const std::string& payload_name,
-                          const std::vector<int>& num_temporal_layers)
+                          const std::vector<int>& num_temporal_layers,
+                          const std::vector<ScalabilityMode>& scalability_mode)
         : EndToEndTest(kDefaultTimeoutMs),
           encoder_factory_(encoder_factory),
           payload_name_(payload_name),
           num_temporal_layers_(num_temporal_layers),
+          scalability_mode_(scalability_mode),
           depacketizer_(CreateVideoRtpDepacketizer(
               PayloadStringToCodecType(payload_name))) {}
 
@@ -3905,12 +4009,16 @@ void VideoSendStreamTest::TestTemporalLayers(
     }
 
     size_t GetNumVideoStreams() const override {
-      return num_temporal_layers_.size();
+      if (scalability_mode_.empty()) {
+        return num_temporal_layers_.size();
+      } else {
+        return scalability_mode_.size();
+      }
     }
 
     void ModifyVideoConfigs(
         VideoSendStream::Config* send_config,
-        std::vector<VideoReceiveStream::Config>* receive_configs,
+        std::vector<VideoReceiveStreamInterface::Config>* receive_configs,
         VideoEncoderConfig* encoder_config) override {
       send_config->encoder_settings.encoder_factory = encoder_factory_;
       send_config->rtp.payload_name = payload_name_;
@@ -3922,12 +4030,26 @@ void VideoSendStreamTest::TestTemporalLayers(
               payload_name_, /*max_qp=*/56, /*is_screenshare=*/false,
               /*conference_mode=*/false);
       encoder_config->max_bitrate_bps = kMaxBitrateBps;
+      if (absl::EqualsIgnoreCase(payload_name_, "VP9")) {
+        encoder_config->encoder_specific_settings = rtc::make_ref_counted<
+            VideoEncoderConfig::Vp9EncoderSpecificSettings>(
+            VideoEncoder::GetDefaultVp9Settings());
+      }
+      if (scalability_mode_.empty()) {
+        for (size_t i = 0; i < num_temporal_layers_.size(); ++i) {
+          VideoStream& stream = encoder_config->simulcast_layers[i];
+          stream.num_temporal_layers = num_temporal_layers_[i];
+          configured_num_temporal_layers_[send_config->rtp.ssrcs[i]] =
+              num_temporal_layers_[i];
+        }
+      } else {
+        for (size_t i = 0; i < scalability_mode_.size(); ++i) {
+          VideoStream& stream = encoder_config->simulcast_layers[i];
+          stream.scalability_mode = scalability_mode_[i];
 
-      for (size_t i = 0; i < num_temporal_layers_.size(); ++i) {
-        VideoStream& stream = encoder_config->simulcast_layers[i];
-        stream.num_temporal_layers = num_temporal_layers_[i];
-        configured_num_temporal_layers_[send_config->rtp.ssrcs[i]] =
-            num_temporal_layers_[i];
+          configured_num_temporal_layers_[send_config->rtp.ssrcs[i]] =
+              ScalabilityModeToNumTemporalLayers(scalability_mode_[i]);
+        }
       }
     }
 
@@ -3956,6 +4078,9 @@ void VideoSendStreamTest::TestTemporalLayers(
       if (const auto* vp8_header = absl::get_if<RTPVideoHeaderVP8>(
               &parsed_payload->video_header.video_type_header)) {
         parsed.temporal_idx = vp8_header->temporalIdx;
+      } else if (const auto* vp9_header = absl::get_if<RTPVideoHeaderVP9>(
+                     &parsed_payload->video_header.video_type_header)) {
+        parsed.temporal_idx = vp9_header->temporal_idx;
       } else {
         RTC_DCHECK_NOTREACHED();
       }
@@ -4014,13 +4139,14 @@ void VideoSendStreamTest::TestTemporalLayers(
     VideoEncoderFactory* const encoder_factory_;
     const std::string payload_name_;
     const std::vector<int> num_temporal_layers_;
+    const std::vector<ScalabilityMode> scalability_mode_;
     const std::unique_ptr<VideoRtpDepacketizer> depacketizer_;
     // Mapped by SSRC.
     std::map<uint32_t, int> configured_num_temporal_layers_;
     std::map<uint32_t, int> max_observed_tl_idxs_;
     std::map<uint32_t, int> num_observed_frames_;
     std::map<uint32_t, ParsedPacket> last_observed_packet_;
-  } test(encoder_factory, payload_name, num_temporal_layers);
+  } test(encoder_factory, payload_name, num_temporal_layers, scalability_mode);
 
   RunBaseTest(&test);
 }
@@ -4034,7 +4160,8 @@ TEST_F(VideoSendStreamTest, TestTemporalLayersVp8) {
       });
 
   TestTemporalLayers(&encoder_factory, "VP8",
-                     /*num_temporal_layers=*/{2});
+                     /*num_temporal_layers=*/{2},
+                     /*scalability_mode=*/{});
 }
 
 TEST_F(VideoSendStreamTest, TestTemporalLayersVp8Simulcast) {
@@ -4046,7 +4173,8 @@ TEST_F(VideoSendStreamTest, TestTemporalLayersVp8Simulcast) {
       });
 
   TestTemporalLayers(&encoder_factory, "VP8",
-                     /*num_temporal_layers=*/{2, 2});
+                     /*num_temporal_layers=*/{2, 2},
+                     /*scalability_mode=*/{});
 }
 
 TEST_F(VideoSendStreamTest, TestTemporalLayersVp8SimulcastWithDifferentNumTls) {
@@ -4058,7 +4186,8 @@ TEST_F(VideoSendStreamTest, TestTemporalLayersVp8SimulcastWithDifferentNumTls) {
       });
 
   TestTemporalLayers(&encoder_factory, "VP8",
-                     /*num_temporal_layers=*/{3, 1});
+                     /*num_temporal_layers=*/{3, 1},
+                     /*scalability_mode=*/{});
 }
 
 TEST_F(VideoSendStreamTest, TestTemporalLayersVp8SimulcastWithoutSimAdapter) {
@@ -4066,7 +4195,64 @@ TEST_F(VideoSendStreamTest, TestTemporalLayersVp8SimulcastWithoutSimAdapter) {
       []() { return VP8Encoder::Create(); });
 
   TestTemporalLayers(&encoder_factory, "VP8",
-                     /*num_temporal_layers=*/{2, 2});
+                     /*num_temporal_layers=*/{2, 2},
+                     /*scalability_mode=*/{});
+}
+
+TEST_F(VideoSendStreamTest, TestScalabilityModeVp8L1T2) {
+  InternalEncoderFactory internal_encoder_factory;
+  test::FunctionVideoEncoderFactory encoder_factory(
+      [&internal_encoder_factory]() {
+        return std::make_unique<SimulcastEncoderAdapter>(
+            &internal_encoder_factory, SdpVideoFormat("VP8"));
+      });
+
+  TestTemporalLayers(&encoder_factory, "VP8",
+                     /*num_temporal_layers=*/{}, {ScalabilityMode::kL1T2});
+}
+
+TEST_F(VideoSendStreamTest, TestScalabilityModeVp8Simulcast) {
+  InternalEncoderFactory internal_encoder_factory;
+  test::FunctionVideoEncoderFactory encoder_factory(
+      [&internal_encoder_factory]() {
+        return std::make_unique<SimulcastEncoderAdapter>(
+            &internal_encoder_factory, SdpVideoFormat("VP8"));
+      });
+
+  TestTemporalLayers(&encoder_factory, "VP8",
+                     /*num_temporal_layers=*/{},
+                     {ScalabilityMode::kL1T2, ScalabilityMode::kL1T2});
+}
+
+TEST_F(VideoSendStreamTest, TestScalabilityModeVp8SimulcastWithDifferentMode) {
+  InternalEncoderFactory internal_encoder_factory;
+  test::FunctionVideoEncoderFactory encoder_factory(
+      [&internal_encoder_factory]() {
+        return std::make_unique<SimulcastEncoderAdapter>(
+            &internal_encoder_factory, SdpVideoFormat("VP8"));
+      });
+
+  TestTemporalLayers(&encoder_factory, "VP8",
+                     /*num_temporal_layers=*/{},
+                     {ScalabilityMode::kL1T3, ScalabilityMode::kL1T1});
+}
+
+TEST_F(VideoSendStreamTest, TestScalabilityModeVp8SimulcastWithoutSimAdapter) {
+  test::FunctionVideoEncoderFactory encoder_factory(
+      []() { return VP8Encoder::Create(); });
+
+  TestTemporalLayers(&encoder_factory, "VP8",
+                     /*num_temporal_layers=*/{},
+                     {ScalabilityMode::kL1T2, ScalabilityMode::kL1T2});
+}
+
+TEST_F(VideoSendStreamTest, TestTemporalLayersVp9) {
+  test::FunctionVideoEncoderFactory encoder_factory(
+      []() { return VP9Encoder::Create(); });
+
+  TestTemporalLayers(&encoder_factory, "VP9",
+                     /*num_temporal_layers=*/{2},
+                     /*scalability_mode=*/{});
 }
 
 }  // namespace webrtc

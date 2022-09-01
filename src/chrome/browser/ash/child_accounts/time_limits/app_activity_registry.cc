@@ -24,7 +24,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
-#include "components/services/app_service/public/mojom/types.mojom.h"
+#include "components/services/app_service/public/cpp/app_types.h"
 
 namespace ash {
 namespace app_time {
@@ -396,7 +396,7 @@ void AppActivityRegistry::GenerateHiddenApps(
     enterprise_management::App* app_info = report->add_hidden_app();
     app_info->set_app_id(app_id.app_id());
     app_info->set_app_type(AppTypeForReporting(app_id.app_type()));
-    if (app_id.app_type() == apps::mojom::AppType::kArc) {
+    if (app_id.app_type() == apps::AppType::kArc) {
       app_info->add_additional_app_id(
           app_service_wrapper_->GetAppServiceId(app_id));
     }
@@ -446,7 +446,7 @@ AppActivityRegistry::GenerateAppActivityReport(
     app_info->set_app_id(app_id.app_id());
     app_info->set_app_type(AppTypeForReporting(app_id.app_type()));
     // AppService is is only different for ARC++ apps.
-    if (app_id.app_type() == apps::mojom::AppType::kArc) {
+    if (app_id.app_type() == apps::AppType::kArc) {
       app_info->add_additional_app_id(
           app_service_wrapper_->GetAppServiceId(app_id));
     }
@@ -628,11 +628,11 @@ void AppActivityRegistry::OnTimeLimitAllowlistChanged(
 void AppActivityRegistry::SaveAppActivity() {
   {
     ListPrefUpdate update(pref_service_, prefs::kPerAppTimeLimitsAppActivities);
-    base::ListValue* list_value = update.Get();
+    base::Value* list_value = update.Get();
 
     const base::Time now = base::Time::Now();
 
-    base::Value::ListView list_view = list_value->GetList();
+    base::Value::ListView list_view = list_value->GetListDeprecated();
     for (base::Value& entry : list_view) {
       absl::optional<AppId> app_id = policy::AppIdFromAppInfoDict(entry);
       DCHECK(app_id.has_value());
@@ -700,10 +700,11 @@ void AppActivityRegistry::OnResetTimeReached(base::Time timestamp) {
 void AppActivityRegistry::CleanRegistry(base::Time timestamp) {
   ListPrefUpdate update(pref_service_, prefs::kPerAppTimeLimitsAppActivities);
 
-  base::ListValue* list_value = update.Get();
+  base::Value* list_value = update.Get();
 
   // base::Value::ListStorage is an alias for std::vector<base::Value>.
-  base::Value::ListStorage list_storage = std::move(*list_value).TakeList();
+  base::Value::ListStorage list_storage =
+      std::move(*list_value).TakeListDeprecated();
 
   for (size_t index = 0; index < list_storage.size();) {
     base::Value& entry = list_storage[index];
@@ -727,7 +728,7 @@ void AppActivityRegistry::CleanRegistry(base::Time timestamp) {
     }
   }
 
-  *list_value = base::ListValue(std::move(list_storage));
+  *list_value = base::Value(std::move(list_storage));
 }
 
 void AppActivityRegistry::OnAppReinstalled(const AppId& app_id) {

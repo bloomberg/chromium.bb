@@ -30,8 +30,9 @@ namespace {
 constexpr size_t kMaxWorkersPerJob = 32;
 static_assert(
     kMaxWorkersPerJob <=
-        std::numeric_limits<base::invoke_result<
-            decltype (&JobDelegate::GetTaskId), JobDelegate>::type>::max(),
+        std::numeric_limits<
+            std::invoke_result<decltype(&JobDelegate::GetTaskId),
+                               JobDelegate>::type>::max(),
     "AcquireTaskId return type isn't big enough to fit kMaxWorkersPerJob");
 
 }  // namespace
@@ -53,6 +54,8 @@ JobTaskSource::State::Value JobTaskSource::State::DecrementWorkerCount() {
 JobTaskSource::State::Value JobTaskSource::State::IncrementWorkerCount() {
   uint32_t value_before_add =
       value_.fetch_add(kWorkerCountIncrement, std::memory_order_relaxed);
+  // The worker count must not overflow a uint8_t.
+  DCHECK((value_before_add >> kWorkerCountBitOffset) < ((1 << 8) - 1));
   return {value_before_add};
 }
 
@@ -295,7 +298,7 @@ uint8_t JobTaskSource::AcquireTaskId() {
   uint32_t assigned_task_ids =
       assigned_task_ids_.load(std::memory_order_relaxed);
   uint32_t new_assigned_task_ids = 0;
-  uint8_t task_id = 0;
+  int task_id = 0;
   // memory_order_acquire on success, matched with memory_order_release in
   // ReleaseTaskId() so that operations done by previous threads that had
   // the same task_id become visible to the current thread.
@@ -307,7 +310,7 @@ uint8_t JobTaskSource::AcquireTaskId() {
   } while (!assigned_task_ids_.compare_exchange_weak(
       assigned_task_ids, new_assigned_task_ids, std::memory_order_acquire,
       std::memory_order_relaxed));
-  return task_id;
+  return static_cast<uint8_t>(task_id);
 }
 
 void JobTaskSource::ReleaseTaskId(uint8_t task_id) {

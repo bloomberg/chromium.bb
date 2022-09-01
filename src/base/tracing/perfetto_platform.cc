@@ -11,9 +11,10 @@
 #include "base/tracing/perfetto_task_runner.h"
 #include "base/tracing_buildflags.h"
 #include "build/build_config.h"
+#include "third_party/perfetto/protos/perfetto/trace/track_event/process_descriptor.gen.h"
 #include "third_party/perfetto/protos/perfetto/trace/track_event/thread_descriptor.gen.h"
 
-#if !defined(OS_NACL)
+#if !BUILDFLAG(IS_NACL)
 #include "third_party/perfetto/include/perfetto/ext/base/thread_task_runner.h"
 #endif
 
@@ -59,7 +60,7 @@ std::unique_ptr<perfetto::base::TaskRunner> PerfettoPlatform::CreateTaskRunner(
     const CreateTaskRunnerArgs&) {
   switch (task_runner_type_) {
     case TaskRunnerType::kBuiltin:
-#if !defined(OS_NACL)
+#if !BUILDFLAG(IS_NACL)
       return std::make_unique<perfetto::base::ThreadTaskRunner>(
           perfetto::base::ThreadTaskRunner::CreateAndStart());
 #else
@@ -83,12 +84,12 @@ std::string PerfettoPlatform::GetCurrentProcessName() {
 
 void PerfettoPlatform::OnThreadNameChanged(const char* name) {
 #if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
-  // TODO(skyostil): Also capture names for threads which predate tracing being
-  // initialized.
+  int process_id = base::trace_event::TraceLog::GetInstance()->process_id();
   if (perfetto::Tracing::IsInitialized()) {
     auto track = perfetto::ThreadTrack::Current();
     auto desc = track.Serialize();
     desc.mutable_thread()->set_thread_name(name);
+    desc.mutable_thread()->set_pid(process_id);
     perfetto::TrackEvent::SetTrackDescriptor(track, std::move(desc));
   }
 #endif  // BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)

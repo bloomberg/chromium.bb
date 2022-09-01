@@ -20,7 +20,7 @@ template<typename MatrixType>
 struct traits<Transpose<MatrixType> > : public traits<MatrixType>
 {
   typedef typename ref_selector<MatrixType>::type MatrixTypeNested;
-  typedef typename remove_reference<MatrixTypeNested>::type MatrixTypeNestedPlain;
+  typedef std::remove_reference_t<MatrixTypeNested> MatrixTypeNestedPlain;
   enum {
     RowsAtCompileTime = MatrixType::ColsAtCompileTime,
     ColsAtCompileTime = MatrixType::RowsAtCompileTime,
@@ -60,7 +60,7 @@ template<typename MatrixType> class Transpose
 
     typedef typename TransposeImpl<MatrixType,typename internal::traits<MatrixType>::StorageKind>::Base Base;
     EIGEN_GENERIC_PUBLIC_INTERFACE(Transpose)
-    typedef typename internal::remove_all<MatrixType>::type NestedExpression;
+    typedef internal::remove_all_t<MatrixType> NestedExpression;
 
     EIGEN_DEVICE_FUNC
     explicit EIGEN_STRONG_INLINE Transpose(MatrixType& matrix) : m_matrix(matrix) {}
@@ -74,12 +74,12 @@ template<typename MatrixType> class Transpose
 
     /** \returns the nested expression */
     EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
-    const typename internal::remove_all<MatrixTypeNested>::type&
+    const internal::remove_all_t<MatrixTypeNested>&
     nestedExpression() const { return m_matrix; }
 
     /** \returns the nested expression */
     EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
-    typename internal::remove_reference<MatrixTypeNested>::type&
+    std::remove_reference_t<MatrixTypeNested>&
     nestedExpression() { return m_matrix; }
 
     /** \internal */
@@ -132,11 +132,11 @@ template<typename MatrixType> class TransposeImpl<MatrixType,Dense>
     EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
     Index outerStride() const { return derived().nestedExpression().outerStride(); }
 
-    typedef typename internal::conditional<
-                       internal::is_lvalue<MatrixType>::value,
-                       Scalar,
-                       const Scalar
-                     >::type ScalarWithConstIfNotLvalue;
+    typedef std::conditional_t<
+              internal::is_lvalue<MatrixType>::value,
+              Scalar,
+              const Scalar
+            > ScalarWithConstIfNotLvalue;
 
     EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
     ScalarWithConstIfNotLvalue* data() { return derived().nestedExpression().data(); }
@@ -180,7 +180,7 @@ template<typename MatrixType> class TransposeImpl<MatrixType,Dense>
   * \sa transposeInPlace(), adjoint() */
 template<typename Derived>
 EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
-Transpose<Derived>
+typename DenseBase<Derived>::TransposeReturnType
 DenseBase<Derived>::transpose()
 {
   return TransposeReturnType(derived());
@@ -193,7 +193,7 @@ DenseBase<Derived>::transpose()
   * \sa transposeInPlace(), adjoint() */
 template<typename Derived>
 EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
-typename DenseBase<Derived>::ConstTransposeReturnType
+const typename DenseBase<Derived>::ConstTransposeReturnType
 DenseBase<Derived>::transpose() const
 {
   return ConstTransposeReturnType(derived());

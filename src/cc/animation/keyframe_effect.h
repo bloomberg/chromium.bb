@@ -49,7 +49,7 @@ class CC_ANIMATION_EXPORT KeyframeEffect : public gfx::KeyframeEffect {
   KeyframeEffect& operator=(const KeyframeEffect&) = delete;
 
   // ElementAnimations object where this controller is listed.
-  scoped_refptr<ElementAnimations> element_animations() const {
+  scoped_refptr<const ElementAnimations> element_animations() const {
     return element_animations_;
   }
 
@@ -120,7 +120,7 @@ class CC_ANIMATION_EXPORT KeyframeEffect : public gfx::KeyframeEffect {
   // Returns the maximum scale along any dimension at any destination in active
   // scale animations, or kInvalidScale if there is no active transform
   // animation or the scale cannot be computed.
-  float MaximumScale(ElementListType) const;
+  float MaximumScale(ElementId, ElementListType) const;
 
   // Returns true if there is a keyframe_model that is either currently
   // animating the given property or scheduled to animate this property in the
@@ -169,8 +169,7 @@ class CC_ANIMATION_EXPORT KeyframeEffect : public gfx::KeyframeEffect {
   void MarkKeyframeModelsForDeletion(base::TimeTicks, AnimationEvents* events);
   void MarkFinishedKeyframeModels(base::TimeTicks monotonic_time);
 
-  bool HasElementInActiveList() const;
-  gfx::PointF ScrollOffsetForAnimation() const;
+  absl::optional<gfx::PointF> ScrollOffsetForAnimation() const;
   void GenerateEvent(AnimationEvents* events,
                      const KeyframeModel& keyframe_model,
                      AnimationEvent::Type type,

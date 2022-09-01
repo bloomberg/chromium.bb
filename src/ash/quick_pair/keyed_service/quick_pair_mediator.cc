@@ -7,6 +7,8 @@
 #include <cstdint>
 #include <memory>
 
+#include "ash/constants/ash_features.h"
+#include "ash/public/cpp/bluetooth_config_service.h"
 #include "ash/quick_pair/common/device.h"
 #include "ash/quick_pair/common/logging.h"
 #include "ash/quick_pair/fast_pair_handshake/fast_pair_handshake_lookup.h"
@@ -20,6 +22,8 @@
 #include "ash/quick_pair/message_stream/message_stream_lookup_impl.h"
 #include "ash/quick_pair/pairing/pairer_broker_impl.h"
 #include "ash/quick_pair/pairing/retroactive_pairing_detector_impl.h"
+#include "ash/quick_pair/repository/fast_pair/device_id_map.h"
+#include "ash/quick_pair/repository/fast_pair/device_image_store.h"
 #include "ash/quick_pair/repository/fast_pair/pending_write_store.h"
 #include "ash/quick_pair/repository/fast_pair/saved_device_registry.h"
 #include "ash/quick_pair/repository/fast_pair_repository_impl.h"
@@ -28,6 +32,7 @@
 #include "ash/quick_pair/ui/ui_broker_impl.h"
 #include "ash/services/quick_pair/quick_pair_process.h"
 #include "ash/services/quick_pair/quick_pair_process_manager_impl.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/services/bluetooth_config/fast_pair_delegate.h"
 #include "components/prefs/pref_registry_simple.h"
 
@@ -84,7 +89,8 @@ Mediator::Mediator(
       fast_pair_bluetooth_config_delegate_(
           std::make_unique<FastPairBluetoothConfigDelegate>()) {
   metrics_logger_ = std::make_unique<QuickPairMetricsLogger>(
-      scanner_broker_.get(), pairer_broker_.get(), ui_broker_.get());
+      scanner_broker_.get(), pairer_broker_.get(), ui_broker_.get(),
+      retroactive_pairing_detector_.get());
   battery_update_message_handler_ =
       std::make_unique<BatteryUpdateMessageHandler>(
           message_stream_lookup_.get());
@@ -94,9 +100,22 @@ Mediator::Mediator(
       retroactive_pairing_detector_.get());
   pairer_broker_observation_.Observe(pairer_broker_.get());
   ui_broker_observation_.Observe(ui_broker_.get());
+  config_delegate_observation_.Observe(
+      fast_pair_bluetooth_config_delegate_.get());
 
-  SetFastPairState(feature_status_tracker_->IsFastPairEnabled());
+  // If we already have a discovery session via the Settings pairing dialog,
+  // don't start Fast Pair scanning.
+  SetFastPairState(feature_status_tracker_->IsFastPairEnabled() &&
+                   !has_at_least_one_discovery_session_);
   quick_pair_process::SetProcessManager(process_manager_.get());
+
+  if (ash::features::IsBluetoothRevampEnabled()) {
+    // Asynchronously bind to CrosBluetoothConfig so that we don't attempt to
+    // bind to it before it has initialized.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&Mediator::BindToCrosBluetoothConfig,
+                                  weak_ptr_factory_.GetWeakPtr()));
+  }
 }
 
 Mediator::~Mediator() {
@@ -114,8 +133,15 @@ void Mediator::RegisterProfilePrefs(PrefRegistrySimple* registry) {
 
 // static
 void Mediator::RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
-  // TODO(dclasson): register future local state prefs here.
-  return;
+  DeviceIdMap::RegisterLocalStatePrefs(registry);
+  DeviceImageStore::RegisterLocalStatePrefs(registry);
+}
+
+void Mediator::BindToCrosBluetoothConfig() {
+  GetBluetoothConfigService(
+      remote_cros_bluetooth_config_.BindNewPipeAndPassReceiver());
+  remote_cros_bluetooth_config_->ObserveDiscoverySessionStatusChanges(
+      cros_discovery_session_observer_receiver_.BindNewPipeAndPassRemote());
 }
 
 chromeos::bluetooth_config::FastPairDelegate* Mediator::GetFastPairDelegate() {
@@ -123,17 +149,29 @@ chromeos::bluetooth_config::FastPairDelegate* Mediator::GetFastPairDelegate() {
 }
 
 void Mediator::OnFastPairEnabledChanged(bool is_enabled) {
-  SetFastPairState(is_enabled);
+  // If we already have a discovery session via the Settings pairing dialog,
+  // don't start Fast Pair scanning.
+  SetFastPairState(is_enabled && !has_at_least_one_discovery_session_);
+
+  // Dismiss all in-progress handshakes which will interfere with discovering
+  // devices later.
+  // TODO(b/229663296): We cancel pairing mid-pair to prevent a crash, but we
+  // shouldn't cancel pairing if pairer_broker_->IsPairing() is true.
+  if (!is_enabled) {
+    CancelPairing();
+  }
 }
 
 void Mediator::OnDeviceFound(scoped_refptr<Device> device) {
   QP_LOG(INFO) << __func__ << ": " << device;
+  // On discovery, download and decode device images.
   ui_broker_->ShowDiscovery(device);
+  fast_pair_repository_->FetchDeviceImages(device);
 }
 
 void Mediator::OnDeviceLost(scoped_refptr<Device> device) {
   QP_LOG(INFO) << __func__ << ": " << device;
-  ui_broker_->RemoveNotifications(device);
+  ui_broker_->RemoveNotifications();
   FastPairHandshakeLookup::GetInstance()->Erase(device);
 }
 
@@ -145,15 +183,28 @@ void Mediator::OnRetroactivePairFound(scoped_refptr<Device> device) {
 void Mediator::SetFastPairState(bool is_enabled) {
   QP_LOG(VERBOSE) << __func__ << ": " << is_enabled;
 
-  if (is_enabled)
+  if (is_enabled) {
     scanner_broker_->StartScanning(Protocol::kFastPairInitial);
-  else
-    scanner_broker_->StopScanning(Protocol::kFastPairInitial);
+    return;
+  }
+
+  scanner_broker_->StopScanning(Protocol::kFastPairInitial);
+
+  // Dismiss all UI notifications.
+  ui_broker_->RemoveNotifications();
+}
+
+void Mediator::CancelPairing() {
+  QP_LOG(INFO) << __func__ << ": Clearing handshakes and pairiers.";
+  FastPairHandshakeLookup::GetInstance()->Clear();
+  pairer_broker_->StopPairing();
 }
 
 void Mediator::OnDevicePaired(scoped_refptr<Device> device) {
   QP_LOG(INFO) << __func__ << ": Device=" << device;
-  ui_broker_->RemoveNotifications(std::move(device));
+  ui_broker_->RemoveNotifications();
+  scanner_broker_->OnDevicePaired(device);
+  fast_pair_repository_->PersistDeviceImages(device);
 }
 
 void Mediator::OnPairFailure(scoped_refptr<Device> device,
@@ -164,7 +215,13 @@ void Mediator::OnPairFailure(scoped_refptr<Device> device,
 
 void Mediator::OnAccountKeyWrite(scoped_refptr<Device> device,
                                  absl::optional<AccountKeyFailure> error) {
-  QP_LOG(INFO) << __func__ << ": Device=" << device;
+  if (!error.has_value()) {
+    QP_LOG(INFO) << __func__ << ": Device=" << device;
+    return;
+  }
+
+  QP_LOG(INFO) << __func__ << ": Device=" << device
+               << ",Error=" << error.value();
 }
 
 void Mediator::OnDiscoveryAction(scoped_refptr<Device> device,
@@ -188,6 +245,7 @@ void Mediator::OnDiscoveryAction(scoped_refptr<Device> device,
     } break;
     case DiscoveryAction::kDismissedByUser:
     case DiscoveryAction::kDismissed:
+    case DiscoveryAction::kLearnMore:
       break;
   }
 }
@@ -209,12 +267,65 @@ void Mediator::OnAssociateAccountAction(scoped_refptr<Device> device,
   switch (action) {
     case AssociateAccountAction::kAssoicateAccount:
       pairer_broker_->PairDevice(device);
+      ui_broker_->RemoveNotifications();
       break;
     case AssociateAccountAction::kLearnMore:
       break;
     case AssociateAccountAction::kDismissedByUser:
     case AssociateAccountAction::kDismissed:
       break;
+  }
+}
+
+void Mediator::OnAdapterStateControllerChanged(
+    chromeos::bluetooth_config::AdapterStateController*
+        adapter_state_controller) {
+  // Always reset the observation first to handle the case where the ptr
+  // became a nullptr (i.e. AdapterStateController was destroyed).
+  adapter_state_controller_observation_.Reset();
+  if (adapter_state_controller)
+    adapter_state_controller_observation_.Observe(adapter_state_controller);
+}
+
+void Mediator::OnAdapterStateChanged() {
+  chromeos::bluetooth_config::AdapterStateController* adapter_state_controller =
+      fast_pair_bluetooth_config_delegate_->adapter_state_controller();
+  DCHECK(adapter_state_controller);
+  chromeos::bluetooth_config::mojom::BluetoothSystemState adapter_state =
+      adapter_state_controller->GetAdapterState();
+
+  // The FeatureStatusTracker already observes when Bluetooth is enabled,
+  // disabled, or unavailable. We observe the Bluetooth Config to additionally
+  // disable Fast Pair when the adapter is disabling.
+  if (adapter_state ==
+      chromeos::bluetooth_config::mojom::BluetoothSystemState::kDisabling) {
+    QP_LOG(INFO) << __func__ << ": Adapter disabling, disabling Fast Pair.";
+    SetFastPairState(false);
+    // In addition to stopping scanning, we cancel pairing here to prevent a
+    // crash that occurs mid-pair when Bluetooth is disabling.
+    CancelPairing();
+  }
+}
+
+void Mediator::OnHasAtLeastOneDiscoverySessionChanged(
+    bool has_at_least_one_discovery_session) {
+  has_at_least_one_discovery_session_ = has_at_least_one_discovery_session;
+  QP_LOG(VERBOSE) << __func__
+                  << ": Discovery session status changed, we"
+                     " have at least one discovery session: "
+                  << has_at_least_one_discovery_session_;
+
+  // If we have a discovery session via the Settings pairing dialog, stop
+  // Fast Pair scanning. Else, start/stop scanning according to the feature
+  // status tracker.
+  SetFastPairState(!has_at_least_one_discovery_session_ &&
+                   feature_status_tracker_->IsFastPairEnabled());
+
+  // If we haven't begun pairing, dismiss all in-progress handshakes which
+  // will interfere with the discovery session. Note that V1 device Fast Pair
+  // via the Settings pairing dialog, so we also check for that case here.
+  if (has_at_least_one_discovery_session_ && !pairer_broker_->IsPairing()) {
+    CancelPairing();
   }
 }
 

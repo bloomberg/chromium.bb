@@ -7,7 +7,6 @@
 #include "core/fpdfapi/page/cpdf_textobject.h"
 
 #include <algorithm>
-#include <utility>
 
 #include "core/fpdfapi/font/cpdf_cidfont.h"
 #include "core/fpdfapi/font/cpdf_font.h"
@@ -27,11 +26,7 @@ CPDF_TextObject::CPDF_TextObject(int32_t content_stream)
 
 CPDF_TextObject::CPDF_TextObject() : CPDF_TextObject(kNoContentStream) {}
 
-CPDF_TextObject::~CPDF_TextObject() {
-  // Move m_CharCodes to a local variable so it will be captured in crash dumps,
-  // to help with investigating crbug.com/782215.
-  auto char_codes_copy = std::move(m_CharCodes);
-}
+CPDF_TextObject::~CPDF_TextObject() = default;
 
 size_t CPDF_TextObject::CountItems() const {
   return m_CharCodes.size();
@@ -152,7 +147,7 @@ std::unique_ptr<CPDF_TextObject> CPDF_TextObject::Clone() const {
 }
 
 CPDF_PageObject::Type CPDF_TextObject::GetType() const {
-  return TEXT;
+  return Type::kText;
 }
 
 void CPDF_TextObject::Transform(const CFX_Matrix& matrix) {
@@ -191,13 +186,15 @@ void CPDF_TextObject::SetTextMatrix(const CFX_Matrix& matrix) {
 void CPDF_TextObject::SetSegments(const ByteString* pStrs,
                                   const std::vector<float>& kernings,
                                   size_t nSegs) {
+  CHECK(nSegs);
   m_CharCodes.clear();
   m_CharPos.clear();
   RetainPtr<CPDF_Font> pFont = GetFont();
-  int nChars = 0;
+  size_t nChars = nSegs - 1;
   for (size_t i = 0; i < nSegs; ++i)
     nChars += pFont->CountChar(pStrs[i].AsStringView());
-  nChars += nSegs - 1;
+
+  CHECK(nChars);
   m_CharCodes.resize(nChars);
   m_CharPos.resize(nChars - 1);
   size_t index = 0;
