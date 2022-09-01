@@ -18,6 +18,7 @@
 #include "cc/trees/paint_holding_reason.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/widget/compositing/layer_tree_view_delegate.h"
+#include "ui/gfx/ca_layer_result.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace cc {
@@ -107,6 +108,8 @@ class PLATFORM_EXPORT LayerTreeView
       base::TimeTicks first_scroll_timestamp) override;
   void RunPaintBenchmark(int repeat_count,
                          cc::PaintBenchmarkResult& result) override;
+  void ReportEventLatency(
+      std::vector<cc::EventLatencyTracker::LatencyData> latencies) override;
 
   // cc::LayerTreeHostSingleThreadClient implementation.
   void DidSubmitCompositorFrame() override;
@@ -114,7 +117,6 @@ class PLATFORM_EXPORT LayerTreeView
   void ScheduleAnimationForWebTests() override;
 
   // cc::LayerTreeHostSchedulingClient implementation.
-  void DidScheduleBeginMainFrame() override;
   void DidRunBeginMainFrame() override;
 
   // Registers a callback that will be run on the first successful presentation
@@ -122,6 +124,12 @@ class PLATFORM_EXPORT LayerTreeView
   void AddPresentationCallback(
       uint32_t frame_token,
       base::OnceCallback<void(base::TimeTicks)> callback);
+
+#if BUILDFLAG(IS_MAC)
+  void AddCoreAnimationErrorCodeCallback(
+      uint32_t frame_token,
+      base::OnceCallback<void(gfx::CALayerResult)> callback);
+#endif
 
   cc::LayerTreeHost* layer_tree_host() { return layer_tree_host_.get(); }
   const cc::LayerTreeHost* layer_tree_host() const {
@@ -136,6 +144,13 @@ class PLATFORM_EXPORT LayerTreeView
       std::unique_ptr<cc::LayerTreeFrameSink> layer_tree_frame_sink,
       std::unique_ptr<cc::RenderFrameMetadataObserver>
           render_frame_metadata_observer);
+
+  template <typename Callback>
+  void AddCallback(
+      uint32_t frame_token,
+      Callback callback,
+      base::circular_deque<std::pair<uint32_t, std::vector<Callback>>>&
+          callbacks);
 
   scheduler::WebThreadScheduler* const web_main_thread_scheduler_;
   const std::unique_ptr<cc::AnimationHost> animation_host_;
@@ -156,6 +171,13 @@ class PLATFORM_EXPORT LayerTreeView
       std::pair<uint32_t,
                 std::vector<base::OnceCallback<void(base::TimeTicks)>>>>
       presentation_callbacks_;
+
+#if BUILDFLAG(IS_MAC)
+  base::circular_deque<std::pair<
+      uint32_t,
+      std::vector<base::OnceCallback<void(gfx::CALayerResult error_code)>>>>
+      core_animation_error_code_callbacks_;
+#endif
 
   base::WeakPtrFactory<LayerTreeView> weak_factory_{this};
 };

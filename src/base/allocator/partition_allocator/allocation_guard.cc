@@ -3,21 +3,20 @@
 // found in the LICENSE file.
 
 #include "base/allocator/partition_allocator/allocation_guard.h"
+#include "base/allocator/partition_allocator/partition_alloc_base/immediate_crash.h"
 #include "base/allocator/partition_allocator/partition_alloc_config.h"
-#include "base/immediate_crash.h"
 
 #if defined(PA_HAS_ALLOCATION_GUARD)
 
-namespace base {
-namespace internal {
+namespace partition_alloc {
 
 namespace {
 thread_local bool g_disallow_allocations;
-}
+}  // namespace
 
 ScopedDisallowAllocations::ScopedDisallowAllocations() {
   if (g_disallow_allocations)
-    IMMEDIATE_CRASH();
+    PA_IMMEDIATE_CRASH();
 
   g_disallow_allocations = true;
 }
@@ -37,7 +36,6 @@ ScopedAllowAllocations::~ScopedAllowAllocations() {
   g_disallow_allocations = saved_value_;
 }
 
-}  // namespace internal
-}  // namespace base
+}  // namespace partition_alloc
 
 #endif  // defined(PA_HAS_ALLOCATION_GUARD)

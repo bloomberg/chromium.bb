@@ -16,7 +16,7 @@
 #define THIRD_PARTY_QUIC_TRACE_TOOLS_TRACE_PROGRAM_H_
 
 #include "absl/time/time.h"
-#include "lib/quic_trace.pb.h"
+#include "quic_trace/quic_trace.pb.h"
 #include "tools/render/axis_renderer.h"
 #include "tools/render/processed_trace.h"
 #include "tools/render/program_state.h"

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "media/base/audio_parameters.h"
+
 #include <stddef.h>
 
-#include "base/cxx17_backports.h"
 #include "base/strings/string_number_conversions.h"
-#include "media/base/audio_parameters.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
@@ -66,10 +66,6 @@ TEST(AudioParameters, GetBytesPerBuffer) {
   EXPECT_EQ(800, AudioParameters(AudioParameters::AUDIO_PCM_LINEAR,
                                  CHANNEL_LAYOUT_STEREO, 1000, 200)
                      .GetBytesPerBuffer(kSampleFormatS16));
-  EXPECT_EQ(300,
-            AudioParameters(AudioParameters::AUDIO_PCM_LINEAR,
-                            CHANNEL_LAYOUT_STEREO_AND_KEYBOARD_MIC, 1000, 100)
-                .GetBytesPerBuffer(kSampleFormatU8));
 }
 
 TEST(AudioParameters, Compare) {
@@ -92,15 +88,6 @@ TEST(AudioParameters, Compare) {
       AudioParameters(AudioParameters::AUDIO_PCM_LINEAR, CHANNEL_LAYOUT_STEREO,
                       2000, 200),
 
-      AudioParameters(AudioParameters::AUDIO_PCM_LINEAR,
-                      CHANNEL_LAYOUT_STEREO_AND_KEYBOARD_MIC, 1000, 100),
-      AudioParameters(AudioParameters::AUDIO_PCM_LINEAR,
-                      CHANNEL_LAYOUT_STEREO_AND_KEYBOARD_MIC, 1000, 200),
-      AudioParameters(AudioParameters::AUDIO_PCM_LINEAR,
-                      CHANNEL_LAYOUT_STEREO_AND_KEYBOARD_MIC, 2000, 100),
-      AudioParameters(AudioParameters::AUDIO_PCM_LINEAR,
-                      CHANNEL_LAYOUT_STEREO_AND_KEYBOARD_MIC, 2000, 200),
-
       AudioParameters(AudioParameters::AUDIO_PCM_LOW_LATENCY,
                       CHANNEL_LAYOUT_MONO, 1000, 100),
       AudioParameters(AudioParameters::AUDIO_PCM_LOW_LATENCY,
@@ -118,19 +105,10 @@ TEST(AudioParameters, Compare) {
                       CHANNEL_LAYOUT_STEREO, 2000, 100),
       AudioParameters(AudioParameters::AUDIO_PCM_LOW_LATENCY,
                       CHANNEL_LAYOUT_STEREO, 2000, 200),
-
-      AudioParameters(AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                      CHANNEL_LAYOUT_STEREO_AND_KEYBOARD_MIC, 1000, 100),
-      AudioParameters(AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                      CHANNEL_LAYOUT_STEREO_AND_KEYBOARD_MIC, 1000, 200),
-      AudioParameters(AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                      CHANNEL_LAYOUT_STEREO_AND_KEYBOARD_MIC, 2000, 100),
-      AudioParameters(AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                      CHANNEL_LAYOUT_STEREO_AND_KEYBOARD_MIC, 2000, 200),
   };
 
-  for (size_t i = 0; i < base::size(values); ++i) {
-    for (size_t j = 0; j < base::size(values); ++j) {
+  for (size_t i = 0; i < std::size(values); ++i) {
+    for (size_t j = 0; j < std::size(values); ++j) {
       SCOPED_TRACE("i=" + base::NumberToString(i) +
                    " j=" + base::NumberToString(j));
       EXPECT_EQ(i < j, values[i] < values[j]);

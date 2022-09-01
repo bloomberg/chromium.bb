@@ -62,26 +62,17 @@ inline void DistanceWeightedBlend4xH_SSE4_1(
   const __m128i weights = _mm_set1_epi32(weight_0 | (weight_1 << 16));
 
   for (int y = 0; y < height; y += 4) {
-    // TODO(b/150326556): Use larger loads.
-    const __m128i src_00 = LoadLo8(pred_0);
-    const __m128i src_10 = LoadLo8(pred_1);
-    pred_0 += 4;
-    pred_1 += 4;
-    __m128i src_0 = LoadHi8(src_00, pred_0);
-    __m128i src_1 = LoadHi8(src_10, pred_1);
-    pred_0 += 4;
-    pred_1 += 4;
-    const __m128i res0 = ComputeWeightedAverage8(src_0, src_1, weights);
+    const __m128i src_00 = LoadAligned16(pred_0);
+    const __m128i src_10 = LoadAligned16(pred_1);
+    pred_0 += 8;
+    pred_1 += 8;
+    const __m128i res0 = ComputeWeightedAverage8(src_00, src_10, weights);
 
-    const __m128i src_01 = LoadLo8(pred_0);
-    const __m128i src_11 = LoadLo8(pred_1);
-    pred_0 += 4;
-    pred_1 += 4;
-    src_0 = LoadHi8(src_01, pred_0);
-    src_1 = LoadHi8(src_11, pred_1);
-    pred_0 += 4;
-    pred_1 += 4;
-    const __m128i res1 = ComputeWeightedAverage8(src_0, src_1, weights);
+    const __m128i src_01 = LoadAligned16(pred_0);
+    const __m128i src_11 = LoadAligned16(pred_1);
+    pred_0 += 8;
+    pred_1 += 8;
+    const __m128i res1 = ComputeWeightedAverage8(src_01, src_11, weights);
 
     const __m128i result_pixels = _mm_packus_epi16(res0, res1);
     Store4(dst, result_pixels);
@@ -273,27 +264,19 @@ inline void DistanceWeightedBlend4xH_SSE4_1(
 
   int y = height;
   do {
-    const __m128i src_00 = LoadLo8(pred_0);
-    const __m128i src_10 = LoadLo8(pred_1);
-    pred_0 += 4;
-    pred_1 += 4;
-    __m128i src_0 = LoadHi8(src_00, pred_0);
-    __m128i src_1 = LoadHi8(src_10, pred_1);
-    pred_0 += 4;
-    pred_1 += 4;
+    const __m128i src_00 = LoadAligned16(pred_0);
+    const __m128i src_10 = LoadAligned16(pred_1);
+    pred_0 += 8;
+    pred_1 += 8;
     const __m128i res0 =
-        ComputeWeightedAverage8(src_0, src_1, weight0, weight1);
+        ComputeWeightedAverage8(src_00, src_10, weight0, weight1);
 
-    const __m128i src_01 = LoadLo8(pred_0);
-    const __m128i src_11 = LoadLo8(pred_1);
-    pred_0 += 4;
-    pred_1 += 4;
-    src_0 = LoadHi8(src_01, pred_0);
-    src_1 = LoadHi8(src_11, pred_1);
-    pred_0 += 4;
-    pred_1 += 4;
+    const __m128i src_01 = LoadAligned16(pred_0);
+    const __m128i src_11 = LoadAligned16(pred_1);
+    pred_0 += 8;
+    pred_1 += 8;
     const __m128i res1 =
-        ComputeWeightedAverage8(src_0, src_1, weight0, weight1);
+        ComputeWeightedAverage8(src_01, src_11, weight0, weight1);
 
     StoreLo8(dst, res0);
     dst += dest_stride;

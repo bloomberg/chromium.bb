@@ -4,11 +4,14 @@
 
 #include "content/services/auction_worklet/trusted_signals.h"
 
+#include <memory>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/bind.h"
@@ -69,26 +72,29 @@ class TrustedSignalsTest : public testing::Test {
 
   // Sets the HTTP response and then fetches bidding signals and waits for
   // completion. Returns nullptr on failure.
-  std::unique_ptr<TrustedSignals::Result> FetchBiddingSignalsWithResponse(
+  scoped_refptr<TrustedSignals::Result> FetchBiddingSignalsWithResponse(
       const GURL& url,
       const std::string& response,
-      std::vector<std::string> trusted_bidding_signals_keys,
-      const std::string& hostname) {
+      std::set<std::string> trusted_bidding_signals_keys,
+      const std::string& hostname,
+      absl::optional<uint16_t> experiment_group_id) {
     AddJsonResponse(&url_loader_factory_, url, response);
-    return FetchBiddingSignals(trusted_bidding_signals_keys, hostname);
+    return FetchBiddingSignals(std::move(trusted_bidding_signals_keys),
+                               hostname, experiment_group_id);
   }
 
   // Fetches bidding signals and waits for completion. Returns nullptr on
   // failure.
-  std::unique_ptr<TrustedSignals::Result> FetchBiddingSignals(
-      std::vector<std::string> trusted_bidding_signals_keys,
-      const std::string& hostname) {
+  scoped_refptr<TrustedSignals::Result> FetchBiddingSignals(
+      std::set<std::string> trusted_bidding_signals_keys,
+      const std::string& hostname,
+      absl::optional<uint16_t> experiment_group_id) {
     CHECK(!load_signals_run_loop_);
 
     DCHECK(!load_signals_result_);
     auto bidding_signals = TrustedSignals::LoadBiddingSignals(
-        &url_loader_factory_, std::move(trusted_bidding_signals_keys),
-        std::move(hostname), base_url_, v8_helper_,
+        &url_loader_factory_, std::move(trusted_bidding_signals_keys), hostname,
+        base_url_, experiment_group_id, v8_helper_,
         base::BindOnce(&TrustedSignalsTest::LoadSignalsCallback,
                        base::Unretained(this)));
     WaitForLoadComplete();
@@ -97,29 +103,33 @@ class TrustedSignalsTest : public testing::Test {
 
   // Sets the HTTP response and then fetches scoring signals and waits for
   // completion. Returns nullptr on failure.
-  std::unique_ptr<TrustedSignals::Result> FetchScoringSignalsWithResponse(
+  scoped_refptr<TrustedSignals::Result> FetchScoringSignalsWithResponse(
       const GURL& url,
       const std::string& response,
-      std::vector<std::string> render_urls,
-      std::vector<std::string> ad_component_render_urls,
-      const std::string& hostname) {
+      std::set<std::string> render_urls,
+      std::set<std::string> ad_component_render_urls,
+      const std::string& hostname,
+      absl::optional<uint16_t> experiment_group_id) {
     AddJsonResponse(&url_loader_factory_, url, response);
-    return FetchScoringSignals(render_urls, ad_component_render_urls, hostname);
+    return FetchScoringSignals(std::move(render_urls),
+                               std::move(ad_component_render_urls), hostname,
+                               experiment_group_id);
   }
 
   // Fetches scoring signals and waits for completion. Returns nullptr on
   // failure.
-  std::unique_ptr<TrustedSignals::Result> FetchScoringSignals(
-      std::vector<std::string> render_urls,
-      std::vector<std::string> ad_component_render_urls,
-      const std::string& hostname) {
+  scoped_refptr<TrustedSignals::Result> FetchScoringSignals(
+      std::set<std::string> render_urls,
+      std::set<std::string> ad_component_render_urls,
+      const std::string& hostname,
+      absl::optional<uint16_t> experiment_group_id) {
     CHECK(!load_signals_run_loop_);
 
     DCHECK(!load_signals_result_);
     auto scoring_signals = TrustedSignals::LoadScoringSignals(
         &url_loader_factory_, std::move(render_urls),
-        std::move(ad_component_render_urls), std::move(hostname), base_url_,
-        v8_helper_,
+        std::move(ad_component_render_urls), hostname, base_url_,
+        experiment_group_id, v8_helper_,
         base::BindOnce(&TrustedSignalsTest::LoadSignalsCallback,
                        base::Unretained(this)));
     WaitForLoadComplete();
@@ -198,11 +208,11 @@ class TrustedSignalsTest : public testing::Test {
   }
 
  protected:
-  void LoadSignalsCallback(std::unique_ptr<TrustedSignals::Result> result,
+  void LoadSignalsCallback(scoped_refptr<TrustedSignals::Result> result,
                            absl::optional<std::string> error_msg) {
     load_signals_result_ = std::move(result);
     error_msg_ = std::move(error_msg);
-    EXPECT_EQ(load_signals_result_ == nullptr, error_msg_.has_value());
+    EXPECT_EQ(load_signals_result_.get() == nullptr, error_msg_.has_value());
     load_signals_run_loop_->Quit();
   }
 
@@ -215,7 +225,7 @@ class TrustedSignalsTest : public testing::Test {
   // creating the worklet, to cause a crash if the callback is invoked
   // synchronously.
   std::unique_ptr<base::RunLoop> load_signals_run_loop_;
-  std::unique_ptr<TrustedSignals::Result> load_signals_result_;
+  scoped_refptr<TrustedSignals::Result> load_signals_result_;
   absl::optional<std::string> error_msg_;
 
   network::TestURLLoaderFactory url_loader_factory_;
@@ -226,7 +236,8 @@ TEST_F(TrustedSignalsTest, BiddingSignalsNetworkError) {
   url_loader_factory_.AddResponse(
       "https://url.test/?hostname=publisher&keys=key1", kBaseBiddingJson,
       net::HTTP_NOT_FOUND);
-  EXPECT_FALSE(FetchBiddingSignals({"key1"}, kHostname));
+  EXPECT_FALSE(FetchBiddingSignals({"key1"}, kHostname,
+                                   /*experiment_group_id=*/absl::nullopt));
   ASSERT_TRUE(error_msg_.has_value());
   EXPECT_EQ(
       "Failed to load https://url.test/?hostname=publisher&keys=key1 "
@@ -241,7 +252,8 @@ TEST_F(TrustedSignalsTest, ScoringSignalsNetworkError) {
       kBaseScoringJson, net::HTTP_NOT_FOUND);
   EXPECT_FALSE(FetchScoringSignals(
       /*render_urls=*/{"https://foo.test/"},
-      /*ad_component_render_urls=*/{}, kHostname));
+      /*ad_component_render_urls=*/{}, kHostname,
+      /*experiment_group_id=*/absl::nullopt));
   ASSERT_TRUE(error_msg_.has_value());
   EXPECT_EQ(
       "Failed to load "
@@ -254,7 +266,7 @@ TEST_F(TrustedSignalsTest, ScoringSignalsNetworkError) {
 TEST_F(TrustedSignalsTest, BiddingSignalsResponseNotJson) {
   EXPECT_FALSE(FetchBiddingSignalsWithResponse(
       GURL("https://url.test/?hostname=publisher&keys=key1"), "Not Json",
-      {"key1"}, kHostname));
+      {"key1"}, kHostname, /*experiment_group_id=*/absl::nullopt));
   ASSERT_TRUE(error_msg_.has_value());
   EXPECT_EQ("https://url.test/ Unable to parse as a JSON object.",
             error_msg_.value());
@@ -266,7 +278,8 @@ TEST_F(TrustedSignalsTest, ScoringSignalsResponseNotJson) {
            "?hostname=publisher&renderUrls=https%3A%2F%2Ffoo.test%2F"),
       "Not Json",
       /*render_urls=*/{"https://foo.test/"},
-      /*ad_component_render_urls=*/{}, kHostname));
+      /*ad_component_render_urls=*/{}, kHostname,
+      /*experiment_group_id=*/absl::nullopt));
   ASSERT_TRUE(error_msg_.has_value());
   EXPECT_EQ("https://url.test/ Unable to parse as a JSON object.",
             error_msg_.value());
@@ -275,7 +288,7 @@ TEST_F(TrustedSignalsTest, ScoringSignalsResponseNotJson) {
 TEST_F(TrustedSignalsTest, BiddingSignalsResponseNotObject) {
   EXPECT_FALSE(FetchBiddingSignalsWithResponse(
       GURL("https://url.test/?hostname=publisher&keys=key1"), "42", {"key1"},
-      kHostname));
+      kHostname, /*experiment_group_id=*/absl::nullopt));
   ASSERT_TRUE(error_msg_.has_value());
   EXPECT_EQ("https://url.test/ Unable to parse as a JSON object.",
             error_msg_.value());
@@ -286,21 +299,23 @@ TEST_F(TrustedSignalsTest, ScoringSignalsResponseNotObject) {
       GURL("https://url.test/"
            "?hostname=publisher&renderUrls=https%3A%2F%2Ffoo.test%2F"),
       "42", /*render_urls=*/{"https://foo.test/"},
-      /*ad_component_render_urls=*/{}, kHostname));
+      /*ad_component_render_urls=*/{}, kHostname,
+      /*experiment_group_id=*/absl::nullopt));
   ASSERT_TRUE(error_msg_.has_value());
   EXPECT_EQ("https://url.test/ Unable to parse as a JSON object.",
             error_msg_.value());
 }
 
 TEST_F(TrustedSignalsTest, ScoringSignalsExpectedEntriesNotPresent) {
-  std::unique_ptr<TrustedSignals::Result> signals =
+  scoped_refptr<TrustedSignals::Result> signals =
       FetchScoringSignalsWithResponse(
           GURL("https://url.test/?hostname=publisher"
                "&renderUrls=https%3A%2F%2Ffoo.test%2F"
                "&adComponentRenderUrls=https%3A%2F%2Fbar.test%2F"),
           R"({"foo":4,"bar":5})",
           /*render_urls=*/{"https://foo.test/"},
-          /*ad_component_render_urls=*/{"https://bar.test/"}, kHostname);
+          /*ad_component_render_urls=*/{"https://bar.test/"}, kHostname,
+          /*experiment_group_id=*/absl::nullopt);
   ASSERT_TRUE(signals);
   EXPECT_EQ(R"({"renderUrl":{"https://foo.test/":null},)"
             R"("adComponentRenderUrls":{"https://bar.test/":null}})",
@@ -311,14 +326,15 @@ TEST_F(TrustedSignalsTest, ScoringSignalsExpectedEntriesNotPresent) {
 }
 
 TEST_F(TrustedSignalsTest, ScoringSignalsNestedEntriesNotObjects) {
-  std::unique_ptr<TrustedSignals::Result> signals =
+  scoped_refptr<TrustedSignals::Result> signals =
       FetchScoringSignalsWithResponse(
           GURL("https://url.test/?hostname=publisher"
                "&renderUrls=https%3A%2F%2Ffoo.test%2F"
                "&adComponentRenderUrls=https%3A%2F%2Fbar.test%2F"),
           R"({"renderUrls":4,"adComponentRenderUrls":5})",
           /*render_urls=*/{"https://foo.test/"},
-          /*ad_component_render_urls=*/{"https://bar.test/"}, kHostname);
+          /*ad_component_render_urls=*/{"https://bar.test/"}, kHostname,
+          /*experiment_group_id=*/absl::nullopt);
   ASSERT_TRUE(signals);
   EXPECT_EQ(R"({"renderUrl":{"https://foo.test/":null},)"
             R"("adComponentRenderUrls":{"https://bar.test/":null}})",
@@ -329,16 +345,17 @@ TEST_F(TrustedSignalsTest, ScoringSignalsNestedEntriesNotObjects) {
 }
 
 TEST_F(TrustedSignalsTest, BiddingSignalsKeyMissing) {
-  std::unique_ptr<TrustedSignals::Result> signals =
+  scoped_refptr<TrustedSignals::Result> signals =
       FetchBiddingSignalsWithResponse(
           GURL("https://url.test/?hostname=publisher&keys=key4"),
-          kBaseBiddingJson, {"key4"}, kHostname);
+          kBaseBiddingJson, {"key4"}, kHostname,
+          /*experiment_group_id=*/absl::nullopt);
   ASSERT_TRUE(signals);
   EXPECT_EQ(R"({"key4":null})", ExtractBiddingSignals(signals.get(), {"key4"}));
 }
 
 TEST_F(TrustedSignalsTest, ScoringSignalsKeysMissing) {
-  std::unique_ptr<TrustedSignals::Result> signals =
+  scoped_refptr<TrustedSignals::Result> signals =
       FetchScoringSignalsWithResponse(
           GURL("https://url.test/?hostname=publisher"
                "&renderUrls=https%3A%2F%2Ffoo.test%2F"
@@ -346,7 +363,8 @@ TEST_F(TrustedSignalsTest, ScoringSignalsKeysMissing) {
           R"({"renderUrls":{"these":"are not"},")"
           R"(adComponentRenderUrls":{"the values":"you're looking for"}})",
           /*render_urls=*/{"https://foo.test/"},
-          /*ad_component_render_urls=*/{"https://bar.test/"}, kHostname);
+          /*ad_component_render_urls=*/{"https://bar.test/"}, kHostname,
+          /*experiment_group_id=*/absl::nullopt);
   ASSERT_TRUE(signals);
   EXPECT_EQ(R"({"renderUrl":{"https://foo.test/":null},)"
             R"("adComponentRenderUrls":{"https://bar.test/":null}})",
@@ -357,22 +375,24 @@ TEST_F(TrustedSignalsTest, ScoringSignalsKeysMissing) {
 }
 
 TEST_F(TrustedSignalsTest, BiddingSignalsOneKey) {
-  std::unique_ptr<TrustedSignals::Result> signals =
+  scoped_refptr<TrustedSignals::Result> signals =
       FetchBiddingSignalsWithResponse(
           GURL("https://url.test/?hostname=publisher&keys=key1"),
-          kBaseBiddingJson, {"key1"}, kHostname);
+          kBaseBiddingJson, {"key1"}, kHostname,
+          /*experiment_group_id=*/absl::nullopt);
   ASSERT_TRUE(signals);
   EXPECT_EQ(R"({"key1":1})", ExtractBiddingSignals(signals.get(), {"key1"}));
 }
 
 TEST_F(TrustedSignalsTest, ScoringSignalsForOneRenderUrl) {
-  std::unique_ptr<TrustedSignals::Result> signals =
+  scoped_refptr<TrustedSignals::Result> signals =
       FetchScoringSignalsWithResponse(
           GURL("https://url.test/"
                "?hostname=publisher&renderUrls=https%3A%2F%2Ffoo.test%2F"),
           kBaseScoringJson,
           /*render_urls=*/{"https://foo.test/"},
-          /*ad_component_render_urls=*/{}, kHostname);
+          /*ad_component_render_urls=*/{}, kHostname,
+          /*experiment_group_id=*/absl::nullopt);
   ASSERT_TRUE(signals);
   EXPECT_EQ(R"({"renderUrl":{"https://foo.test/":1}})",
             ExtractScoringSignals(signals.get(),
@@ -382,10 +402,11 @@ TEST_F(TrustedSignalsTest, ScoringSignalsForOneRenderUrl) {
 }
 
 TEST_F(TrustedSignalsTest, BiddingSignalsMultipleKeys) {
-  std::unique_ptr<TrustedSignals::Result> signals =
+  scoped_refptr<TrustedSignals::Result> signals =
       FetchBiddingSignalsWithResponse(
           GURL("https://url.test/?hostname=publisher&keys=key1,key2,key3,key5"),
-          kBaseBiddingJson, {"key3", "key1", "key5", "key2"}, kHostname);
+          kBaseBiddingJson, {"key3", "key1", "key5", "key2"}, kHostname,
+          /*experiment_group_id=*/absl::nullopt);
   ASSERT_TRUE(signals);
   EXPECT_EQ(R"({"key1":1})", ExtractBiddingSignals(signals.get(), {"key1"}));
   EXPECT_EQ(R"({"key2":[2]})", ExtractBiddingSignals(signals.get(), {"key2"}));
@@ -399,7 +420,7 @@ TEST_F(TrustedSignalsTest, BiddingSignalsMultipleKeys) {
 
 TEST_F(TrustedSignalsTest, ScoringSignalsMultipleUrls) {
   // URLs are currently added in lexical order.
-  std::unique_ptr<TrustedSignals::Result> signals =
+  scoped_refptr<TrustedSignals::Result> signals =
       FetchScoringSignalsWithResponse(
           GURL("https://url.test/?hostname=publisher"
                "&renderUrls=https%3A%2F%2Fbar.test%2F,"
@@ -412,7 +433,7 @@ TEST_F(TrustedSignalsTest, ScoringSignalsMultipleUrls) {
           /*ad_component_render_urls=*/
           {"https://foosub.test/", "https://barsub.test/",
            "https://bazsub.test/"},
-          kHostname);
+          kHostname, /*experiment_group_id=*/absl::nullopt);
   ASSERT_TRUE(signals);
   EXPECT_FALSE(error_msg_.has_value());
   EXPECT_EQ(R"({"renderUrl":{"https://bar.test/":[2]},")"
@@ -426,22 +447,25 @@ TEST_F(TrustedSignalsTest, ScoringSignalsMultipleUrls) {
 }
 
 TEST_F(TrustedSignalsTest, BiddingSignalsDuplicateKeys) {
-  std::vector<std::string> bidder_signals{"key1", "key2", "key2", "key1",
-                                          "key2"};
-  std::unique_ptr<TrustedSignals::Result> signals =
+  std::vector<std::string> bidder_signals_vector{"key1", "key2", "key2", "key1",
+                                                 "key2"};
+  scoped_refptr<TrustedSignals::Result> signals =
       FetchBiddingSignalsWithResponse(
           GURL("https://url.test/?hostname=publisher&keys=key1,key2"),
-          kBaseBiddingJson, bidder_signals, kHostname);
+          kBaseBiddingJson,
+          std::set<std::string>{bidder_signals_vector.begin(),
+                                bidder_signals_vector.end()},
+          kHostname, /*experiment_group_id=*/absl::nullopt);
   ASSERT_TRUE(signals);
   EXPECT_EQ(R"({"key1":1,"key2":[2]})",
-            ExtractBiddingSignals(signals.get(), bidder_signals));
+            ExtractBiddingSignals(signals.get(), bidder_signals_vector));
 }
 
 TEST_F(TrustedSignalsTest, ScoringSignalsDuplicateKeys) {
-  std::vector<std::string> ad_component_render_urls{
+  std::vector<std::string> ad_component_render_urls_vector{
       "https://barsub.test/", "https://foosub.test/", "https://foosub.test/",
       "https://barsub.test/"};
-  std::unique_ptr<TrustedSignals::Result> signals =
+  scoped_refptr<TrustedSignals::Result> signals =
       FetchScoringSignalsWithResponse(
           GURL("https://url.test/?hostname=publisher"
                "&renderUrls=https%3A%2F%2Fbar.test%2F,https%3A%2F%2Ffoo.test%2F"
@@ -451,7 +475,9 @@ TEST_F(TrustedSignalsTest, ScoringSignalsDuplicateKeys) {
           /*render_urls=*/
           {"https://foo.test/", "https://foo.test/", "https://bar.test/",
            "https://bar.test/", "https://foo.test/"},
-          ad_component_render_urls, kHostname);
+          std::set<std::string>{ad_component_render_urls_vector.begin(),
+                                ad_component_render_urls_vector.end()},
+          kHostname, /*experiment_group_id=*/absl::nullopt);
   ASSERT_TRUE(signals);
   EXPECT_FALSE(error_msg_.has_value());
   EXPECT_EQ(R"({"renderUrl":{"https://bar.test/":[2]},")"
@@ -459,14 +485,14 @@ TEST_F(TrustedSignalsTest, ScoringSignalsDuplicateKeys) {
             R"("https://barsub.test/":[3],"https://foosub.test/":2}})",
             ExtractScoringSignals(signals.get(),
                                   /*render_url=*/GURL("https://bar.test/"),
-                                  ad_component_render_urls));
+                                  ad_component_render_urls_vector));
 }
 
 // Test when a single URL is used as both a `renderUrl` and
 // `adComponentRenderUrl`.
 TEST_F(TrustedSignalsTest, ScoringSignalsSharedUrl) {
   // URLs are currently added in lexical order.
-  std::unique_ptr<TrustedSignals::Result> signals =
+  scoped_refptr<TrustedSignals::Result> signals =
       FetchScoringSignalsWithResponse(
           GURL("https://url.test/?hostname=publisher"
                "&renderUrls=https%3A%2F%2Fshared.test%2F"
@@ -475,7 +501,8 @@ TEST_F(TrustedSignalsTest, ScoringSignalsSharedUrl) {
           /*render_urls=*/
           {"https://shared.test/"},
           /*ad_component_render_urls=*/
-          {"https://shared.test/"}, kHostname);
+          {"https://shared.test/"}, kHostname,
+          /*experiment_group_id=*/absl::nullopt);
   ASSERT_TRUE(signals);
   EXPECT_FALSE(error_msg_.has_value());
   EXPECT_EQ(
@@ -488,11 +515,12 @@ TEST_F(TrustedSignalsTest, ScoringSignalsSharedUrl) {
 }
 
 TEST_F(TrustedSignalsTest, BiddingSignalsEscapeQueryParams) {
-  std::unique_ptr<TrustedSignals::Result> signals =
+  scoped_refptr<TrustedSignals::Result> signals =
       FetchBiddingSignalsWithResponse(
           GURL("https://url.test/"
                "?hostname=pub+li%26sher&keys=key+6,key%2C8,key%3D7"),
-          kBaseBiddingJson, {"key 6", "key=7", "key,8"}, "pub li&sher");
+          kBaseBiddingJson, {"key 6", "key=7", "key,8"}, "pub li&sher",
+          /*experiment_group_id=*/absl::nullopt);
   ASSERT_TRUE(signals);
   EXPECT_EQ(R"({"key 6":6})", ExtractBiddingSignals(signals.get(), {"key 6"}));
   EXPECT_EQ(R"({"key=7":7})", ExtractBiddingSignals(signals.get(), {"key=7"}));
@@ -500,7 +528,7 @@ TEST_F(TrustedSignalsTest, BiddingSignalsEscapeQueryParams) {
 }
 
 TEST_F(TrustedSignalsTest, ScoringSignalsEscapeQueryParams) {
-  std::unique_ptr<TrustedSignals::Result> signals =
+  scoped_refptr<TrustedSignals::Result> signals =
       FetchScoringSignalsWithResponse(
           GURL("https://url.test/?hostname=pub+li%26sher"
                "&renderUrls=https%3A%2F%2Ffoo.test%2F%3F%26%3D"
@@ -517,7 +545,8 @@ TEST_F(TrustedSignalsTest, ScoringSignalsEscapeQueryParams) {
 )",
           /*render_urls=*/
           {"https://foo.test/?&="}, /*ad_component_render_urls=*/
-          {"https://bar.test/?&="}, "pub li&sher");
+          {"https://bar.test/?&="}, "pub li&sher",
+          /*experiment_group_id=*/absl::nullopt);
   ASSERT_TRUE(signals);
   EXPECT_EQ(R"({"renderUrl":{"https://foo.test/?&=":4},)"
             R"("adComponentRenderUrls":{"https://bar.test/?&=":5}})",
@@ -539,8 +568,9 @@ TEST_F(TrustedSignalsTest, BiddingSignalsDeleteBeforeCallback) {
   base::WaitableEvent* event_handle = WedgeV8Thread(v8_helper_.get());
 
   auto bidding_signals = TrustedSignals::LoadBiddingSignals(
-      &url_loader_factory_, {"key1"}, "publisher", base_url_, v8_helper_,
-      base::BindOnce([](std::unique_ptr<TrustedSignals::Result> result,
+      &url_loader_factory_, {"key1"}, "publisher", base_url_,
+      /*experiment_group_id=*/absl::nullopt, v8_helper_,
+      base::BindOnce([](scoped_refptr<TrustedSignals::Result> result,
                         absl::optional<std::string> error_msg) {
         ADD_FAILURE() << "Callback should not be invoked since loader deleted";
       }));
@@ -563,14 +593,79 @@ TEST_F(TrustedSignalsTest, ScoringSignalsDeleteBeforeCallback) {
   auto scoring_signals = TrustedSignals::LoadScoringSignals(
       &url_loader_factory_,
       /*render_urls=*/{"http://foo.test/"},
-      /*ad_component_render_urls=*/{}, "publisher", base_url_, v8_helper_,
-      base::BindOnce([](std::unique_ptr<TrustedSignals::Result> result,
+      /*ad_component_render_urls=*/{}, "publisher", base_url_,
+      /*experiment_group_id=*/absl::nullopt, v8_helper_,
+      base::BindOnce([](scoped_refptr<TrustedSignals::Result> result,
                         absl::optional<std::string> error_msg) {
         ADD_FAILURE() << "Callback should not be invoked since loader deleted";
       }));
   base::RunLoop().RunUntilIdle();
   scoring_signals.reset();
   event_handle->Signal();
+}
+
+TEST_F(TrustedSignalsTest, ScoringSignalsWithDataVersion) {
+  AddVersionedJsonResponse(
+      &url_loader_factory_,
+      GURL("https://url.test/"
+           "?hostname=publisher&renderUrls=https%3A%2F%2Ffoo.test%2F"),
+      kBaseScoringJson, 2u);
+  scoped_refptr<TrustedSignals::Result> signals =
+      FetchScoringSignals(/*render_urls=*/{"https://foo.test/"},
+                          /*ad_component_render_urls=*/{}, kHostname,
+                          /*experiment_group_id=*/absl::nullopt);
+  ASSERT_TRUE(signals);
+  EXPECT_EQ(R"({"renderUrl":{"https://foo.test/":1}})",
+            ExtractScoringSignals(signals.get(),
+                                  /*render_url=*/GURL("https://foo.test/"),
+                                  /*ad_component_render_urls=*/{}));
+  EXPECT_FALSE(error_msg_.has_value());
+  EXPECT_EQ(2u, signals->GetDataVersion());
+}
+
+TEST_F(TrustedSignalsTest, ScoringSignalsWithInvalidDataVersion) {
+  AddResponse(&url_loader_factory_,
+              GURL("https://url.test/"
+                   "?hostname=publisher&renderUrls=https%3A%2F%2Ffoo.test%2F"),
+              kJsonMimeType, absl::nullopt, kBaseScoringJson,
+              "X-Allow-FLEDGE: true\nData-Version: 2.0");
+  scoped_refptr<TrustedSignals::Result> signals =
+      FetchScoringSignals(/*render_urls=*/{"https://foo.test/"},
+                          /*ad_component_render_urls=*/{}, kHostname,
+                          /*experiment_group_id=*/absl::nullopt);
+  ASSERT_TRUE(error_msg_.has_value());
+  EXPECT_EQ(
+      "Rejecting load of https://url.test/ due to invalid Data-Version header: "
+      "2.0",
+      error_msg_.value());
+}
+
+TEST_F(TrustedSignalsTest, BiddingSignalsExperimentId) {
+  scoped_refptr<TrustedSignals::Result> signals =
+      FetchBiddingSignalsWithResponse(
+          GURL("https://url.test/"
+               "?hostname=publisher&keys=key1&experimentGroupId=1234"),
+          kBaseBiddingJson, {"key1"}, kHostname, /*experiment_group_id=*/1234u);
+  ASSERT_TRUE(signals);
+  EXPECT_EQ(R"({"key1":1})", ExtractBiddingSignals(signals.get(), {"key1"}));
+}
+
+TEST_F(TrustedSignalsTest, ScoringSignalsExperimentId) {
+  scoped_refptr<TrustedSignals::Result> signals =
+      FetchScoringSignalsWithResponse(
+          GURL("https://url.test/"
+               "?hostname=publisher&renderUrls=https%3A%2F%2Ffoo.test%2F&"
+               "experimentGroupId=2345"),
+          kBaseScoringJson,
+          /*render_urls=*/{"https://foo.test/"},
+          /*ad_component_render_urls=*/{}, kHostname,
+          /*experiment_group_id=*/2345u);
+  ASSERT_TRUE(signals);
+  EXPECT_EQ(R"({"renderUrl":{"https://foo.test/":1}})",
+            ExtractScoringSignals(signals.get(),
+                                  /*render_url=*/GURL("https://foo.test/"),
+                                  /*ad_component_render_urls=*/{}));
+  EXPECT_FALSE(error_msg_.has_value());
 }
 
 }  // namespace

@@ -10,9 +10,10 @@
 #include "chromeos/components/quick_answers/quick_answers_model.h"
 #include "chromeos/components/quick_answers/utils/quick_answers_metrics.h"
 #include "chromeos/components/quick_answers/utils/quick_answers_utils.h"
+#include "chromeos/components/quick_answers/utils/spell_checker.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
-namespace ash {
 namespace quick_answers {
 namespace {
 
@@ -38,7 +39,11 @@ void QuickAnswersClient::SetIntentGeneratorFactoryForTesting(
 QuickAnswersClient::QuickAnswersClient(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     QuickAnswersDelegate* delegate)
-    : url_loader_factory_(url_loader_factory), delegate_(delegate) {}
+    : url_loader_factory_(url_loader_factory), delegate_(delegate) {
+  if (chromeos::features::IsQuickAnswersAlwaysTriggerForSingleWord()) {
+    spell_checker_ = std::make_unique<SpellChecker>(url_loader_factory);
+  }
+}
 
 QuickAnswersClient::~QuickAnswersClient() = default;
 
@@ -85,6 +90,7 @@ std::unique_ptr<IntentGenerator> QuickAnswersClient::CreateIntentGenerator(
   if (g_testing_intent_generator_factory_callback)
     return g_testing_intent_generator_factory_callback->Run();
   return std::make_unique<IntentGenerator>(
+      spell_checker_ ? spell_checker_->GetWeakPtr() : nullptr,
       base::BindOnce(&QuickAnswersClient::IntentGeneratorCallback,
                      weak_factory_.GetWeakPtr(), request, skip_fetch));
 }
@@ -92,11 +98,6 @@ std::unique_ptr<IntentGenerator> QuickAnswersClient::CreateIntentGenerator(
 void QuickAnswersClient::OnNetworkError() {
   DCHECK(delegate_);
   delegate_->OnNetworkError();
-}
-
-void QuickAnswersClient::RequestAccessToken(AccessTokenCallback callback) {
-  DCHECK(delegate_);
-  delegate_->RequestAccessToken(std::move(callback));
 }
 
 void QuickAnswersClient::OnQuickAnswerReceived(
@@ -128,7 +129,7 @@ void QuickAnswersClient::IntentGeneratorCallback(
 
   delegate_->OnRequestPreprocessFinished(processed_request);
 
-  if (ash::QuickAnswersState::Get()->ShouldUseQuickAnswersTextAnnotator()) {
+  if (QuickAnswersState::Get()->ShouldUseQuickAnswersTextAnnotator()) {
     RecordIntentType(intent_info.intent_type);
     if (intent_info.intent_type == IntentType::kUnknown) {
       // Don't fetch answer if no intent is generated.
@@ -154,4 +155,3 @@ base::TimeDelta QuickAnswersClient::GetImpressionDuration() const {
 }
 
 }  // namespace quick_answers
-}  // namespace ash

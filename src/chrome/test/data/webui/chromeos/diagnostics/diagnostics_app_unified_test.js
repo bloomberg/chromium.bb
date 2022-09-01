@@ -10,7 +10,7 @@ import {cellularInfoTestSuite} from './cellular_info_test.js';
 import {connectivityCardTestSuite} from './connectivity_card_test.js';
 import {cpuCardTestSuite} from './cpu_card_test.js';
 import {dataPointTestSuite} from './data_point_test.js';
-import {appTestSuite} from './diagnostics_app_test.js';
+import {appTestSuite, appTestSuiteForInputHiding} from './diagnostics_app_test.js';
 import {diagnosticsNetworkIconTestSuite} from './diagnostics_network_icon_test.js';
 import {diagnosticsStickyBannerTestSuite} from './diagnostics_sticky_banner_test.js';
 import {diagnosticsUtilsTestSuite} from './diagnostics_utils_test.js';
@@ -22,6 +22,7 @@ import {frequencyChannelUtilsTestSuite} from './frequency_channel_utils_test.js'
 import {inputCardTestSuite} from './input_card_test.js';
 import {inputListTestSuite} from './input_list_test.js';
 import {ipConfigInfoDrawerTestSuite} from './ip_config_info_drawer_test.js';
+import {keyboardTesterTestSuite} from './keyboard_tester_test.js';
 import {memoryCardTestSuite} from './memory_card_test.js';
 import {fakeMojoProviderTestSuite} from './mojo_interface_provider_test.js';
 import {networkCardTestSuite} from './network_card_test.js';
@@ -55,6 +56,7 @@ function runSuite(suiteName, testFn, condition = 'default') {
 }
 
 runSuite('App', appTestSuite);
+runSuite('AppForInputHiding', appTestSuiteForInputHiding, 'input');
 runSuite('BatteryStatusCard', batteryStatusCardTestSuite);
 runSuite('CellularInfo', cellularInfoTestSuite, 'network');
 runSuite('ConnectivityCard', connectivityCardTestSuite, 'network');
@@ -72,6 +74,7 @@ runSuite('FrequencyChannelUtils', frequencyChannelUtilsTestSuite);
 runSuite('InputCard', inputCardTestSuite, 'input');
 runSuite('InputList', inputListTestSuite, 'input');
 runSuite('IpConfigInfoDrawer', ipConfigInfoDrawerTestSuite, 'network');
+runSuite('KeyboardTester', keyboardTesterTestSuite, 'input');
 runSuite('MemoryCard', memoryCardTestSuite);
 runSuite('NetworkCard', networkCardTestSuite, 'network');
 runSuite('NetworkInfo', networkInfoTestSuite, 'network');

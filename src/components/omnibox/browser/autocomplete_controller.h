@@ -24,11 +24,13 @@
 #include "components/omnibox/browser/autocomplete_provider_client.h"
 #include "components/omnibox/browser/autocomplete_provider_listener.h"
 #include "components/omnibox/browser/autocomplete_result.h"
+#include "components/omnibox/browser/bookmark_provider.h"
 #include "components/omnibox/browser/omnibox_log.h"
 
 class ClipboardProvider;
 class DocumentProvider;
 class HistoryURLProvider;
+class HistoryQuickProvider;
 class KeywordProvider;
 class SearchProvider;
 class TemplateURLService;
@@ -78,13 +80,11 @@ class AutocompleteController : public AutocompleteProviderListener,
                                  bool default_match_changed) {}
   };
 
-  // Converts the given match to a type (and possibly subtype) based on the AQS
-  // specification. For more details, see go/binary-clients-logging.
-  // Note: the `subtypes` parameter passed over to this function may be filled
-  // with subtypes reported by the suggest server. This call will update this
-  // set with Chrome-specific subtypes.
-  // TODO(https://crbug.com/1103056): relocate subtype updates to appropriate
-  //  sites that construct these matches.
+  // Given a match, returns the appropriate type and zero or more subtypes
+  // corresponding to the SuggestType and SuggestSubtype enums in suggest.proto.
+  // This is needed to update Chrome's native types/subtypes to those expected
+  // by the server. For more details, see go/chrome-suggest-logging.
+  // Note: `subtypes` may be prepopulated with server-reported subtypes.
   static void GetMatchTypeAndExtendSubtypes(const AutocompleteMatch& match,
                                             size_t* type,
                                             base::flat_set<int>* subtypes);
@@ -119,11 +119,13 @@ class AutocompleteController : public AutocompleteProviderListener,
   // result in changing the result set the observers is notified again. When the
   // controller is done the notification AUTOCOMPLETE_CONTROLLER_RESULT_READY is
   // sent.
-  void Start(const AutocompleteInput& input);
+  // Made virtual for mocking in tests.
+  virtual void Start(const AutocompleteInput& input);
 
   // Simply calls StartPrefetch() on all providers so those providers that
   // override it could perform a prefetch request and populate their caches.
-  void StartPrefetch(const AutocompleteInput& input);
+  // Made virtual for mocking in tests.
+  virtual void StartPrefetch(const AutocompleteInput& input);
 
   // Cancels the current query, ensuring there will be no future notifications
   // fired.  If new matches have come in since the most recent notification was
@@ -136,6 +138,15 @@ class AutocompleteController : public AutocompleteProviderListener,
   // notified of resulting changes immediately.  This should only be called when
   // no query is running.
   void DeleteMatch(const AutocompleteMatch& match);
+
+  // Asks the relevant provider to partially delete match, and ensures observers
+  // are notified of resulting changes immediately.  This should only be called
+  // when no query is running.
+  // Calling this method does not imply removal of the AutocompleteMatch.
+  // |element_index| parameter specifies which part of the match should be
+  // deleted. For cases where the entire AutocompleteMatch should be removed,
+  // please see |DeleteMatch| method.
+  void DeleteMatchElement(const AutocompleteMatch& match, size_t element_index);
 
   // Removes any entries that were copied from the last result. This is used by
   // the popup to ensure it's not showing an out-of-date query.
@@ -167,8 +178,12 @@ class AutocompleteController : public AutocompleteProviderListener,
   // Constructs and sets the final destination URL on the given match.
   void SetMatchDestinationURL(AutocompleteMatch* match) const;
 
-  // Prepend missing tail suggestion prefixes in results, if present.
-  void InlineTailPrefixes();
+  // Populates tail_suggest_common_prefix on the matches as well as prepends
+  // ellipses.
+  void SetTailSuggestContentPrefixes();
+
+  // Populates tail_suggest_common_prefix on the matches.
+  void SetTailSuggestCommonPrefixes();
 
   HistoryURLProvider* history_url_provider() const {
     return history_url_provider_;
@@ -200,6 +215,7 @@ class AutocompleteController : public AutocompleteProviderListener,
  private:
   friend class AutocompleteProviderTest;
   friend class OmniboxSuggestionButtonRowBrowserTest;
+  friend class ZeroSuggestPrefetchTabHelperBrowserTest;
   FRIEND_TEST_ALL_PREFIXES(AutocompleteProviderTest,
                            RedundantKeywordsIgnoredInResult);
   FRIEND_TEST_ALL_PREFIXES(AutocompleteProviderTest, UpdateAssistedQueryStats);
@@ -207,6 +223,8 @@ class AutocompleteController : public AutocompleteProviderListener,
                            SupportedProvider_NonPrefetch);
   FRIEND_TEST_ALL_PREFIXES(AutocompleteProviderPrefetchTest,
                            SupportedProvider_Prefetch);
+  FRIEND_TEST_ALL_PREFIXES(AutocompleteProviderPrefetchTest,
+                           SupportedProvider_OngoingNonPrefetch);
   FRIEND_TEST_ALL_PREFIXES(AutocompleteProviderPrefetchTest,
                            UnsupportedProvider_Prefetch);
   FRIEND_TEST_ALL_PREFIXES(OmniboxPopupContentsViewTest,
@@ -218,9 +236,9 @@ class AutocompleteController : public AutocompleteProviderListener,
   FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsTest, FriendlyAccessibleLabel);
   FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsTest, AccessiblePopup);
   FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsTest, MaintainCursorAfterFocusCycle);
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsUIATest, AccessibleOmnibox);
-#endif  // OS_WIN
+#endif
   FRIEND_TEST_ALL_PREFIXES(OmniboxEditModelPopupTest, SetSelectedLine);
   FRIEND_TEST_ALL_PREFIXES(OmniboxEditModelPopupTest,
                            SetSelectedLineWithNoDefaultMatches);
@@ -264,7 +282,8 @@ class AutocompleteController : public AutocompleteProviderListener,
   void UpdateHeaderInfoFromZeroSuggestProvider(AutocompleteResult* result);
 
   // For each group of contiguous matches from the same TemplateURL, show the
-  // provider name as a description on the first match in the group.
+  // provider name as a description on the first match in the group. Starter
+  // Pack matches show their URLs as descriptions instead of the provider name.
   void UpdateKeywordDescriptions(AutocompleteResult* result);
 
   // For each AutocompleteMatch in |result|, updates the assisted query stats
@@ -304,8 +323,17 @@ class AutocompleteController : public AutocompleteProviderListener,
   // The client passed to the providers.
   std::unique_ptr<AutocompleteProviderClient> provider_client_;
 
+  // Returns a list of which providers to run based on whether we're in keyword
+  // mode and which keyword we're searching.  Currently returns all providers
+  // except when we're in keyword mode for a starter pack search engine.
+  Providers GetProvidersToRun();
+
   // A list of all providers.
   Providers providers_;
+
+  raw_ptr<BookmarkProvider> bookmark_provider_;
+
+  raw_ptr<HistoryQuickProvider> history_quick_provider_;
 
   raw_ptr<DocumentProvider> document_provider_;
 

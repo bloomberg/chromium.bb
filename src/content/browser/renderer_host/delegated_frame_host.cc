@@ -13,6 +13,7 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/observer_list.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -123,13 +124,19 @@ void DelegatedFrameHost::CancelPresentationTimeRequest() {
   tab_switch_time_recorder_.TabWasHidden();
 }
 
+void DelegatedFrameHost::UnhandledPresentationTimeRequest() {
+  // Tab was hidden while widget keeps painting, eg. due to being captured.
+  tab_switch_time_recorder_.TabMeasurementWasInterrupted(
+      blink::ContentToVisibleTimeReporter::TabSwitchResult::kUnhandled);
+}
+
 bool DelegatedFrameHost::HasSavedFrame() const {
   return frame_evictor_->has_surface();
 }
 
 void DelegatedFrameHost::WasHidden(HiddenCause cause) {
   tab_switch_time_recorder_.TabWasHidden();
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // Ignore if the native window was occluded.
   // Windows needs the frame host to display tab previews.
   if (cause == HiddenCause::kOccluded)
@@ -288,7 +295,7 @@ void DelegatedFrameHost::EmbedSurface(
 
   if (!primary_surface_id ||
       primary_surface_id->local_surface_id() != local_surface_id_) {
-#if defined(OS_WIN) || defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
     // On Windows and Linux, we would like to produce new content as soon as
     // possible or the OS will create an additional black gutter. Until we can
     // block resize on surface synchronization on these platforms, we will not
@@ -326,6 +333,21 @@ void DelegatedFrameHost::OnFirstSurfaceActivation(
 void DelegatedFrameHost::OnFrameTokenChanged(uint32_t frame_token,
                                              base::TimeTicks activation_time) {
   client_->OnFrameTokenChanged(frame_token, activation_time);
+}
+
+// CommitPending without a target for TakeFallbackContentFrom. Since we cannot
+// guarantee that Navigation will complete, evict our surfaces which are from
+// a previous Navigation.
+void DelegatedFrameHost::ClearFallbackSurfaceForCommitPending() {
+  const viz::SurfaceId* fallback_surface_id =
+      client_->DelegatedFrameHostGetLayer()->GetOldestAcceptableFallback();
+
+  // CommitPending failed, and Navigation never completed. Evict our surfaces.
+  if (fallback_surface_id && fallback_surface_id->is_valid()) {
+    EvictDelegatedFrame();
+    client_->DelegatedFrameHostGetLayer()->SetOldestAcceptableFallback(
+        viz::SurfaceId());
+  }
 }
 
 void DelegatedFrameHost::ResetFallbackToFirstNavigationSurface() {
@@ -420,7 +442,10 @@ void DelegatedFrameHost::DidCopyStaleContent(
   if (stale_content_layer_->parent() != client_->DelegatedFrameHostGetLayer())
     client_->DelegatedFrameHostGetLayer()->Add(stale_content_layer_.get());
 
+// TODO(crbug.com/1281251): This DCHECK occasionally gets hit on Chrome OS.
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   DCHECK(!stale_content_layer_->has_external_content());
+#endif
   stale_content_layer_->SetVisible(true);
   stale_content_layer_->SetBounds(gfx::Rect(surface_dip_size_));
   stale_content_layer_->SetTransferableResource(

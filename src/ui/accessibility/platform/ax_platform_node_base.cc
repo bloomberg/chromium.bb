@@ -16,6 +16,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -37,16 +38,16 @@ base::LazyInstance<std::map<ax::mojom::Event, base::RepeatingClosure>>::
 // Check for descendant comment, using limited depth first search.
 bool FindDescendantRoleWithMaxDepth(const AXPlatformNodeBase* node,
                                     ax::mojom::Role descendant_role,
-                                    int max_depth,
-                                    int max_children_to_check) {
+                                    size_t max_depth,
+                                    size_t max_children_to_check) {
   if (node->GetRole() == descendant_role)
     return true;
   if (max_depth <= 1)
     return false;
 
-  int num_children_to_check =
+  size_t num_children_to_check =
       std::min(node->GetChildCount(), max_children_to_check);
-  for (int index = 0; index < num_children_to_check; index++) {
+  for (size_t index = 0; index < num_children_to_check; index++) {
     auto* child = static_cast<AXPlatformNodeBase*>(
         AXPlatformNode::FromNativeViewAccessible(node->ChildAtIndex(index)));
     if (child &&
@@ -68,7 +69,9 @@ using UniqueIdMap = std::unordered_map<int32_t, AXPlatformNode*>;
 base::LazyInstance<UniqueIdMap>::Leaky g_unique_id_map =
     LAZY_INSTANCE_INITIALIZER;
 
-#if !BUILDFLAG_INTERNAL_HAS_NATIVE_ACCESSIBILITY()
+// TODO(fxbug.dev/91030): Remove the !BUILDFLAG(IS_FUCHSIA) condition once
+// fuchsia has native accessibility.
+#if !BUILDFLAG_INTERNAL_HAS_NATIVE_ACCESSIBILITY() && !BUILDFLAG(IS_FUCHSIA)
 // static
 AXPlatformNode* AXPlatformNode::Create(AXPlatformNodeDelegate* delegate) {
   AXPlatformNodeBase* node = new AXPlatformNodeBase();
@@ -129,25 +132,73 @@ gfx::NativeViewAccessible AXPlatformNodeBase::GetParent() const {
   return nullptr;
 }
 
-int AXPlatformNodeBase::GetChildCount() const {
+AXPlatformNodeBase* AXPlatformNodeBase::GetPlatformParent() const {
+  if (delegate_)
+    return FromNativeViewAccessible(delegate_->GetParent());
+  return nullptr;
+}
+
+AXPlatformNodeBase* AXPlatformNodeBase::GetPlatformTextFieldAncestor() const {
+  if (delegate_)
+    return FromNativeViewAccessible(delegate_->GetTextFieldAncestor());
+  return nullptr;
+}
+
+size_t AXPlatformNodeBase::GetChildCount() const {
   if (delegate_)
     return delegate_->GetChildCount();
   return 0;
 }
 
-gfx::NativeViewAccessible AXPlatformNodeBase::ChildAtIndex(int index) const {
+gfx::NativeViewAccessible AXPlatformNodeBase::ChildAtIndex(size_t index) const {
   if (delegate_)
     return delegate_->ChildAtIndex(index);
   return nullptr;
 }
 
 std::string AXPlatformNodeBase::GetName() const {
-  if (delegate_)
-    return delegate_->GetName();
+  if (delegate_) {
+    std::string name = delegate_->GetName();
+
+    // Compute extra name based on the image annotation (generated alt text)
+    // results.
+    std::string extra_text;
+    ax::mojom::ImageAnnotationStatus status =
+        GetData().GetImageAnnotationStatus();
+    switch (status) {
+      case ax::mojom::ImageAnnotationStatus::kEligibleForAnnotation:
+      case ax::mojom::ImageAnnotationStatus::kAnnotationPending:
+      case ax::mojom::ImageAnnotationStatus::kAnnotationEmpty:
+      case ax::mojom::ImageAnnotationStatus::kAnnotationAdult:
+      case ax::mojom::ImageAnnotationStatus::kAnnotationProcessFailed:
+        extra_text = base::UTF16ToUTF8(
+            delegate_->GetLocalizedStringForImageAnnotationStatus(status));
+        break;
+
+      case ax::mojom::ImageAnnotationStatus::kAnnotationSucceeded:
+        extra_text =
+            GetStringAttribute(ax::mojom::StringAttribute::kImageAnnotation);
+        break;
+
+      case ax::mojom::ImageAnnotationStatus::kNone:
+      case ax::mojom::ImageAnnotationStatus::kWillNotAnnotateDueToScheme:
+      case ax::mojom::ImageAnnotationStatus::kIneligibleForAnnotation:
+      case ax::mojom::ImageAnnotationStatus::kSilentlyEligibleForAnnotation:
+        break;
+    }
+
+    if (!extra_text.empty()) {
+      if (!name.empty())
+        name += ". ";
+      name += extra_text;
+    }
+
+    return name;
+  }
   return std::string();
 }
 
-absl::optional<int> AXPlatformNodeBase::GetIndexInParent() {
+absl::optional<size_t> AXPlatformNodeBase::GetIndexInParent() {
   AXPlatformNodeBase* parent = FromNativeViewAccessible(GetParent());
   if (!parent)
     return absl::nullopt;
@@ -160,7 +211,7 @@ absl::optional<int> AXPlatformNodeBase::GetIndexInParent() {
     return absl::nullopt;
   }
 
-  int child_count = parent->GetChildCount();
+  size_t child_count = parent->GetChildCount();
   if (child_count == 0) {
     // |child_count| could be 0 if the parent is IsLeaf.
     DCHECK(parent->IsLeaf());
@@ -173,13 +224,13 @@ absl::optional<int> AXPlatformNodeBase::GetIndexInParent() {
   // returns -1). Also, delegates may not know the correct answer if this
   // node is the root of a tree that's embedded in another tree, in which
   // case the delegate should return -1 and we'll compute it.
-  int index = delegate_ ? delegate_->GetIndexInParent() : -1;
-  if (index >= 0 && index < child_count)
+  auto index = delegate_ ? delegate_->GetIndexInParent() : absl::nullopt;
+  if (index.has_value() && index.value() < child_count)
     return index;
 
   // Otherwise, search the parent's children.
   gfx::NativeViewAccessible current = GetNativeViewAccessible();
-  for (int i = 0; i < child_count; i++) {
+  for (size_t i = 0; i < child_count; i++) {
     if (parent->ChildAtIndex(i) == current)
       return i;
   }
@@ -282,6 +333,51 @@ absl::optional<int> AXPlatformNodeBase::CompareTo(AXPlatformNodeBase& other) {
   return absl::nullopt;
 }
 
+AXNodeID AXPlatformNodeBase::GetNodeId() const {
+  if (!delegate_)
+    return kInvalidAXNodeID;
+
+  return delegate_->GetData().id;
+}
+
+AXPlatformNodeBase* AXPlatformNodeBase::GetActiveDescendant() const {
+  if (!delegate_)
+    return nullptr;
+
+  AXNodeID active_descendant_id;
+  AXPlatformNodeBase* active_descendant = nullptr;
+  if (GetIntAttribute(ax::mojom::IntAttribute::kActivedescendantId,
+                      &active_descendant_id)) {
+    active_descendant = static_cast<AXPlatformNodeBase*>(
+        delegate_->GetFromNodeID(active_descendant_id));
+  }
+
+  if (GetRole() == ax::mojom::Role::kPopUpButton) {
+    AXPlatformNodeBase* child = GetFirstChild();
+    if (child && child->GetRole() == ax::mojom::Role::kMenuListPopup &&
+        !child->IsInvisibleOrIgnored()) {
+      // The active descendant is found on the menu list popup, i.e. on the
+      // actual list and not on the button that opens it.
+      // If there is no active descendant, focus should stay on the button so
+      // that Windows screen readers would enable their virtual cursor.
+      // Do not expose an activedescendant in a hidden/collapsed list, as
+      // screen readers expect the focus event to go to the button itself.
+      // Note that the AX hierarchy in this case is strange -- the active
+      // option is the only visible option, and is inside an invisible list.
+      if (child->GetIntAttribute(ax::mojom::IntAttribute::kActivedescendantId,
+                                 &active_descendant_id)) {
+        active_descendant = static_cast<AXPlatformNodeBase*>(
+            child->delegate_->GetFromNodeID(active_descendant_id));
+      }
+    }
+  }
+
+  if (active_descendant && !active_descendant->IsInvisibleOrIgnored())
+    return active_descendant;
+
+  return nullptr;
+}
+
 // AXPlatformNode overrides.
 
 void AXPlatformNodeBase::Destroy() {
@@ -307,7 +403,7 @@ void AXPlatformNodeBase::NotifyAccessibilityEvent(ax::mojom::Event event_type) {
   }
 }
 
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
 void AXPlatformNodeBase::AnnounceText(const std::u16string& text) {}
 #endif
 
@@ -641,6 +737,12 @@ bool AXPlatformNodeBase::GetStringListAttribute(
   return delegate_->GetStringListAttribute(attribute, value);
 }
 
+bool AXPlatformNodeBase::HasHtmlAttribute(const char* attribute) const {
+  if (!delegate_)
+    return false;
+  return delegate_->HasHtmlAttribute(attribute);
+}
+
 const base::StringPairs& AXPlatformNodeBase::GetHtmlAttributes() const {
   static const base::NoDestructor<base::StringPairs> empty_data;
   if (!delegate_)
@@ -698,6 +800,12 @@ ax::mojom::NameFrom AXPlatformNodeBase::GetNameFrom() const {
   return delegate_->GetNameFrom();
 }
 
+bool AXPlatformNodeBase::HasNameFromOtherElement() const {
+  ax::mojom::NameFrom nameFrom = GetNameFrom();
+  return nameFrom == ax::mojom::NameFrom::kCaption ||
+         nameFrom == ax::mojom::NameFrom::kRelatedElement;
+}
+
 // static
 AXPlatformNodeBase* AXPlatformNodeBase::FromNativeViewAccessible(
     gfx::NativeViewAccessible accessible) {
@@ -713,7 +821,11 @@ bool AXPlatformNodeBase::SetHypertextSelection(int start_offset,
 }
 
 bool AXPlatformNodeBase::IsPlatformDocument() const {
-  return ui::IsPlatformDocument(GetRole());
+  return delegate_ && delegate_->IsPlatformDocument();
+}
+
+bool AXPlatformNodeBase::IsPlatformDocumentWithContent() const {
+  return delegate_ && delegate_->IsPlatformDocumentWithContent();
 }
 
 bool AXPlatformNodeBase::IsStructuredAnnotation() const {
@@ -1121,7 +1233,7 @@ void AXPlatformNodeBase::ComputeAttributes(PlatformAttributeList* attributes) {
     switch (static_cast<ax::mojom::DescriptionFrom>(desc_from)) {
       case ax::mojom::DescriptionFrom::kAriaDescription:
         // Descriptions are exposed via each platform's usual description field.
-        // Also, only aria-description is exposed via tha "description" object
+        // Also, only aria-description is exposed via the "description" object
         // attribute, in order to match Firefox.
         AddAttributeToList(ax::mojom::StringAttribute::kDescription,
                            "description", attributes);
@@ -1131,7 +1243,7 @@ void AXPlatformNodeBase::ComputeAttributes(PlatformAttributeList* attributes) {
         from = "button-label";
         break;
       case ax::mojom::DescriptionFrom::kRelatedElement:
-        // Both @title an aria-describedby=tooltip get "tooltip".
+        // aria-describedby=tooltip is mapped to "tooltip".
         from = IsDescribedByTooltip() ? "tooltip" : "aria-describedby";
         break;
       case ax::mojom::DescriptionFrom::kRubyAnnotation:
@@ -1147,7 +1259,11 @@ void AXPlatformNodeBase::ComputeAttributes(PlatformAttributeList* attributes) {
         from = "table-caption";
         break;
       case ax::mojom::DescriptionFrom::kTitle:
-        // Both @title an aria-describedby=tooltip get "tooltip".
+      case ax::mojom::DescriptionFrom::kPopupElement:
+        // The following types of markup are mapped to "tooltip":
+        // * The title attribute.
+        // * A related popup=hint related via togglepopup/showpopup/hidepopup.
+        // * A tooltip related via aria-describedby (see kRelatedElement above).
         from = "tooltip";
         break;
       case ax::mojom::DescriptionFrom::kNone:
@@ -1284,16 +1400,24 @@ void AXPlatformNodeBase::ComputeAttributes(PlatformAttributeList* attributes) {
   if (IsCellOrTableHeader(GetRole()) || IsTableRow(GetRole())) {
     // Expose aria-colindex and aria-rowindex in a cell or row only if they are
     // different from the table's physical coordinates.
-    if (delegate_->GetTableCellAriaRowIndex() !=
-            delegate_->GetTableCellRowIndex() ||
-        delegate_->GetTableCellAriaColIndex() !=
-            delegate_->GetTableCellColIndex()) {
-      if (!IsTableRow(GetRole())) {
-        AddAttributeToList(ax::mojom::IntAttribute::kAriaCellColumnIndex,
-                           "colindex", attributes);
-      }
+    // Note: aria-col/rowindex is 1 based where as table's physical coordinates
+    // are 0 based, so we subtract aria-col/rowindex by 1 to compare with
+    // table's physical coordinates.
+    absl::optional<int> aria_rowindex = delegate_->GetTableCellAriaRowIndex();
+    absl::optional<int> physical_rowindex = delegate_->GetTableCellRowIndex();
+    absl::optional<int> aria_colindex = delegate_->GetTableCellAriaColIndex();
+    absl::optional<int> physical_colindex = delegate_->GetTableCellColIndex();
+
+    if (aria_rowindex && physical_rowindex &&
+        aria_rowindex.value() - 1 != physical_rowindex.value()) {
       AddAttributeToList(ax::mojom::IntAttribute::kAriaCellRowIndex, "rowindex",
                          attributes);
+    }
+
+    if (!IsTableRow(GetRole()) && aria_colindex && physical_colindex &&
+        aria_colindex.value() - 1 != physical_colindex.value()) {
+      AddAttributeToList(ax::mojom::IntAttribute::kAriaCellColumnIndex,
+                         "colindex", attributes);
     }
 
     // Experimental: expose aria-rowtext / aria-coltext. Not standardized
@@ -1694,12 +1818,13 @@ int AXPlatformNodeBase::GetHypertextOffsetFromEndpoint(
       return endpoint_offset;
     } else {
       DCHECK_GE(endpoint_offset, 0);
-      DCHECK_LE(endpoint_offset,
+      DCHECK_LE(static_cast<size_t>(endpoint_offset),
                 endpoint_object->GetDelegate()->GetChildCount());
 
       // Adjust the |endpoint_offset| because the selection endpoint is a tree
       // position, i.e. it represents a child index and not a text offset.
-      if (endpoint_offset >= endpoint_object->GetChildCount()) {
+      if (static_cast<size_t>(endpoint_offset) >=
+          endpoint_object->GetChildCount()) {
         return static_cast<int>(endpoint_object->GetHypertext().size());
       } else {
         auto* child = static_cast<AXPlatformNodeBase*>(FromNativeViewAccessible(
@@ -1711,7 +1836,7 @@ int AXPlatformNodeBase::GetHypertextOffsetFromEndpoint(
   }
 
   AXPlatformNodeBase* common_parent = this;
-  absl::optional<int> index_in_common_parent = GetIndexInParent();
+  absl::optional<size_t> index_in_common_parent = GetIndexInParent();
   while (common_parent && !endpoint_object->IsDescendantOf(common_parent)) {
     index_in_common_parent = common_parent->GetIndexInParent();
     common_parent = static_cast<AXPlatformNodeBase*>(
@@ -1747,7 +1872,7 @@ int AXPlatformNodeBase::GetHypertextOffsetFromEndpoint(
   //
   // We can safely assume that the endpoint is in another part of the tree or
   // at common parent, and that this object is a descendant of common parent.
-  absl::optional<int> endpoint_index_in_common_parent;
+  absl::optional<size_t> endpoint_index_in_common_parent;
   for (auto child_iter = common_parent->AXPlatformNodeChildrenBegin();
        child_iter != common_parent->AXPlatformNodeChildrenEnd(); ++child_iter) {
     if (endpoint_object->IsDescendantOf(child_iter.get())) {
@@ -1759,35 +1884,59 @@ int AXPlatformNodeBase::GetHypertextOffsetFromEndpoint(
   if (endpoint_index_in_common_parent < index_in_common_parent)
     return 0;
   if (endpoint_index_in_common_parent > index_in_common_parent)
-    return static_cast<int32_t>(GetHypertext().size());
+    return static_cast<int>(GetHypertext().size());
 
   NOTREACHED();
   return -1;
 }
 
+AXPlatformNodeBase::AXPosition AXPlatformNodeBase::HypertextOffsetToEndpoint(
+    int hypertext_offset) const {
+  DCHECK_GE(hypertext_offset, 0);
+  DCHECK_LT(hypertext_offset, static_cast<int>(GetHypertext().size()));
+
+  int32_t current_hypertext_offset = hypertext_offset;
+  for (auto child_iter = AXPlatformNodeChildrenBegin();
+       child_iter != AXPlatformNodeChildrenEnd() &&
+       current_hypertext_offset >= 0;
+       ++child_iter) {
+    int child_text_len = 1;
+    if (child_iter->IsText())
+      child_text_len = child_iter->GetHypertext().size();
+
+    if (current_hypertext_offset < child_text_len) {
+      int endpoint_offset = child_text_len - current_hypertext_offset;
+      if (child_iter->IsText()) {
+        return child_iter->GetDelegate()->CreateTextPositionAt(endpoint_offset);
+      }
+      return child_iter->GetDelegate()->CreatePositionAt(endpoint_offset);
+    }
+    current_hypertext_offset -= child_text_len;
+  }
+  return AXNodePosition::CreateNullPosition();
+}
+
 int AXPlatformNodeBase::GetSelectionAnchor(const AXTree::Selection* selection) {
   DCHECK(selection);
-  int32_t anchor_id = selection->anchor_object_id;
+  AXNodeID anchor_id = selection->anchor_object_id;
   AXPlatformNodeBase* anchor_object =
       static_cast<AXPlatformNodeBase*>(delegate_->GetFromNodeID(anchor_id));
-
   if (!anchor_object)
     return -1;
 
-  int anchor_offset = int{selection->anchor_offset};
-  return GetHypertextOffsetFromEndpoint(anchor_object, anchor_offset);
+  return GetHypertextOffsetFromEndpoint(anchor_object,
+                                        selection->anchor_offset);
 }
 
 int AXPlatformNodeBase::GetSelectionFocus(const AXTree::Selection* selection) {
   DCHECK(selection);
-  int32_t focus_id = selection->focus_object_id;
+  AXNodeID focus_id = selection->focus_object_id;
   AXPlatformNodeBase* focus_object =
       static_cast<AXPlatformNodeBase*>(GetDelegate()->GetFromNodeID(focus_id));
   if (!focus_object)
     return -1;
 
-  int focus_offset = int{selection->focus_offset};
-  return GetHypertextOffsetFromEndpoint(focus_object, focus_offset);
+  return GetHypertextOffsetFromEndpoint(focus_object, selection->focus_offset);
 }
 
 void AXPlatformNodeBase::GetSelectionOffsets(int* selection_start,
@@ -1862,7 +2011,7 @@ void AXPlatformNodeBase::GetSelectionOffsetsFromTree(
 
   int child_index = index_iter->second;
   DCHECK_GE(child_index, 0);
-  DCHECK_LT(child_index, GetChildCount());
+  DCHECK_LT(static_cast<size_t>(child_index), GetChildCount());
   AXPlatformNodeBase* hyperlink = static_cast<AXPlatformNodeBase*>(
       AXPlatformNode::FromNativeViewAccessible(ChildAtIndex(child_index)));
   if (!hyperlink)
@@ -2004,17 +2153,27 @@ int AXPlatformNodeBase::FindTextBoundary(
     ax::mojom::MoveDirection direction,
     ax::mojom::TextAffinity affinity) const {
   DCHECK_NE(boundary, ax::mojom::TextBoundary::kNone);
-  if (boundary != ax::mojom::TextBoundary::kSentenceStart) {
-    absl::optional<int> boundary_offset =
-        GetDelegate()->FindTextBoundary(boundary, offset, direction, affinity);
-    if (boundary_offset.has_value())
-      return *boundary_offset;
+  if (!delegate_)
+    return offset;  // Unable to compute text boundary.
+
+  const AXPosition position = delegate_->CreateTextPositionAt(offset, affinity);
+  // On Windows and Linux ATK, searching for a text boundary should always stop
+  // at the boundary of the current object.
+  AXMovementOptions options{AXBoundaryBehavior::kStopAtAnchorBoundary,
+                            AXBoundaryDetection::kDontCheckInitialPosition};
+  // On Windows and Linux ATK, it is standard text navigation behavior to stop
+  // if we are searching in the backwards direction and the current position is
+  // already at the required text boundary.
+  if (direction == ax::mojom::MoveDirection::kBackward) {
+    options.boundary_detection = AXBoundaryDetection::kCheckInitialPosition;
   }
 
-  std::vector<int32_t> unused_line_start_offsets;
-  return static_cast<int>(
-      FindAccessibleTextBoundary(GetHypertext(), unused_line_start_offsets,
-                                 boundary, offset, direction, affinity));
+  const AXPosition boundary_position =
+      position->CreatePositionAtTextBoundary(boundary, direction, options);
+  if (boundary_position->IsNullPosition())
+    return -1;
+  DCHECK_GE(boundary_position->text_offset(), 0);
+  return boundary_position->text_offset();
 }
 
 AXPlatformNodeBase* AXPlatformNodeBase::NearestLeafToPoint(
@@ -2124,14 +2283,11 @@ ui::TextAttributeList AXPlatformNodeBase::ComputeTextAttributes() const {
     unsigned int red = SkColorGetR(color);
     unsigned int green = SkColorGetG(color);
     unsigned int blue = SkColorGetB(color);
-    // Don't expose default value of black.
-    if (red || green || blue) {
-      std::string color_value = "rgb(" + base::NumberToString(red) + ',' +
-                                base::NumberToString(green) + ',' +
-                                base::NumberToString(blue) + ')';
-      SanitizeTextAttributeValue(color_value, &color_value);
-      attributes.push_back(std::make_pair("color", color_value));
-    }
+    std::string color_value = "rgb(" + base::NumberToString(red) + ',' +
+                              base::NumberToString(green) + ',' +
+                              base::NumberToString(blue) + ')';
+    SanitizeTextAttributeValue(color_value, &color_value);
+    attributes.push_back(std::make_pair("color", color_value));
   }
 
   // First try to get the inherited font family name from the delegate. If we
@@ -2321,7 +2477,7 @@ std::string AXPlatformNodeBase::ComputeDetailsRoles() const {
           details_roles_set.insert("comment");
           break;
         }
-        FALLTHROUGH;
+        [[fallthrough]];
       }
       default:
         // Use * to indicate some other role.
@@ -2340,8 +2496,8 @@ std::string AXPlatformNodeBase::ComputeDetailsRoles() const {
 // static
 bool AXPlatformNodeBase::DescendantHasComment(const AXPlatformNodeBase* node) {
   // These should still report comment if there are comments inside them.
-  constexpr int kMaxChildrenToCheck = 8;
-  constexpr int kMaxDepthToCheck = 4;
+  constexpr size_t kMaxChildrenToCheck = 8;
+  constexpr size_t kMaxDepthToCheck = 4;
   if (FindDescendantRoleWithMaxDepth(node, ax::mojom::Role::kComment,
                                      kMaxDepthToCheck, kMaxChildrenToCheck)) {
     return true;

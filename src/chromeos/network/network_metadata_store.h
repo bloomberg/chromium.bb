@@ -9,11 +9,13 @@
 
 #include "base/component_export.h"
 #include "base/observer_list.h"
+#include "base/scoped_observation.h"
 #include "base/values.h"
 #include "chromeos/login/login_state/login_state.h"
 #include "chromeos/network/network_configuration_observer.h"
 #include "chromeos/network/network_connection_observer.h"
 #include "chromeos/network/network_metadata_observer.h"
+#include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_state_handler_observer.h"
 
 class PrefService;
@@ -117,7 +119,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkMetadataStore
   // Sets the day of the month on which traffic counters are automatically
   // reset.
   void SetDayOfTrafficCountersAutoReset(const std::string& network_guid,
-                                        int day);
+                                        const absl::optional<int>& day);
 
   // Returns whether traffic counters should be automatically reset. Returns
   // nullptr if no pref exists for |network_guid|.
@@ -153,13 +155,15 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkMetadataStore
 
   // Sets the owner metadata when there is an active user, otherwise a no-op.
   void SetIsCreatedByUser(const std::string& network_guid);
-  void OnDisableHiddenError(const std::string& error_name,
-                            std::unique_ptr<base::DictionaryValue> error_data);
+  void OnDisableHiddenError(const std::string& error_name);
 
   base::ObserverList<NetworkMetadataObserver> observers_;
   NetworkConfigurationHandler* network_configuration_handler_;
   NetworkConnectionHandler* network_connection_handler_;
   NetworkStateHandler* network_state_handler_;
+  base::ScopedObservation<chromeos::NetworkStateHandler,
+                          chromeos::NetworkStateHandlerObserver>
+      network_state_handler_observer_{this};
   PrefService* profile_pref_service_;
   PrefService* device_pref_service_;
   bool is_enterprise_managed_;

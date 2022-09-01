@@ -135,6 +135,8 @@ std::pair<int, int> WebAppFrameToolbarView::LayoutInContainer(
     int trailing_x,
     int y,
     int available_height) {
+  DCHECK(!browser_view_->IsWindowControlsOverlayEnabled());
+
   SetVisible(available_height > 0);
 
   if (available_height == 0) {
@@ -161,17 +163,17 @@ std::pair<int, int> WebAppFrameToolbarView::LayoutInContainer(
 }
 
 void WebAppFrameToolbarView::LayoutForWindowControlsOverlay(
-    gfx::Rect available_rect) {
+    gfx::Rect available_space) {
   DCHECK(!left_container_);
   // The center_container_ might have been laid out by the frame view such that
   // it interferes with hit testing in the ToolbarButtonContainer. Ensure that
   // its bounds are cleared when laying out WCO.
   center_container_->SetBounds(0, 0, 0, 0);
 
-  const int width = std::min(available_rect.width(),
+  const int width = std::min(available_space.width(),
                              right_container_->GetPreferredSize().width());
-  const int x = available_rect.right() - width;
-  SetBounds(x, available_rect.y(), width, available_rect.height());
+  const int x = available_space.right() - width;
+  SetBounds(x, available_space.y(), width, available_space.height());
 }
 
 ExtensionsToolbarContainer*
@@ -249,6 +251,10 @@ ToolbarButton* WebAppFrameToolbarView::GetBackButton() {
 
 ReloadButton* WebAppFrameToolbarView::GetReloadButton() {
   return left_container_ ? left_container_->reload_button() : nullptr;
+}
+
+IntentChipButton* WebAppFrameToolbarView::GetIntentChipButton() {
+  return nullptr;
 }
 
 bool WebAppFrameToolbarView::DoesIntersectRect(const View* target,

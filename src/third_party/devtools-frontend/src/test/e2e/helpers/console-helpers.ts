@@ -4,8 +4,20 @@
 
 import type * as puppeteer from 'puppeteer';
 
-import {$, $$, assertNotNullOrUndefined, click, getBrowserAndPages, goToResource, pasteText, timeout, waitFor, waitForAria, waitForFunction} from '../../shared/helper.js';
-import {AsyncScope} from '../../shared/mocha-extensions.js';
+import {
+  $,
+  $$,
+  assertNotNullOrUndefined,
+  click,
+  getBrowserAndPages,
+  goToResource,
+  pasteText,
+  timeout,
+  waitFor,
+  waitForAria,
+  waitForFunction,
+} from '../../shared/helper.js';
+import {AsyncScope} from '../../shared/async-scope.js';
 
 export const CONSOLE_TAB_SELECTOR = '#tab-console';
 export const CONSOLE_MESSAGES_SELECTOR = '.console-group-messages';
@@ -16,12 +28,14 @@ export const LOG_LEVELS_VERBOSE_OPTION_SELECTOR = '[aria-label^="Verbose"]';
 export const CONSOLE_PROMPT_SELECTOR = '.console-prompt-editor-container';
 export const CONSOLE_VIEW_SELECTOR = '.console-view';
 export const CONSOLE_TOOLTIP_SELECTOR = '.cm-tooltip';
+export const CONSOLE_COMPLETION_HINT_SELECTOR = '.cm-completionHint';
 export const STACK_PREVIEW_CONTAINER = '.stack-preview-container';
 export const CONSOLE_MESSAGE_WRAPPER_SELECTOR = '.console-group-messages .console-message-wrapper';
 export const CONSOLE_SELECTOR = '.console-user-command-result';
 export const CONSOLE_SETTINGS_SELECTOR = '[aria-label^="Console settings"]';
 export const AUTOCOMPLETE_FROM_HISTORY_SELECTOR = '[aria-label^="Autocomplete from history"]';
 export const SHOW_CORS_ERRORS_SELECTOR = '[aria-label^="Show CORS errors in console"]';
+export const CONSOLE_CREATE_LIVE_EXPRESSION_SELECTOR = '[aria-label^="Create live expression"]';
 
 export async function deleteConsoleMessagesFilter(frontend: puppeteer.Page) {
   await waitFor('.console-main-toolbar');
@@ -68,17 +82,9 @@ export async function waitForLastConsoleMessageToHaveContent(expectedTextContent
   });
 }
 
-export async function waitForAutocompletionTooltipToHaveContent(expectedAutocompletion: string) {
-  await waitForFunction(async () => {
-    const preview = await waitFor('.console-eager-inner-preview > span');
-    return preview.evaluate(
-        (node, expectedAutocompletion) => node.innerHTML === expectedAutocompletion, expectedAutocompletion);
-  });
-}
-
 export async function getConsoleMessages(testName: string, withAnchor = false, callback?: () => Promise<void>) {
   // Ensure Console is loaded before the page is loaded to avoid a race condition.
-  await getCurrentConsoleMessages();
+  await navigateToConsoleTab();
 
   // Have the target load the page.
   await goToResource(`console/${testName}.html`);
@@ -101,9 +107,36 @@ export async function getCurrentConsoleMessages(withAnchor = false, callback?: (
 
   // Ensure all messages are populated.
   await asyncScope.exec(() => frontend.waitForFunction((CONSOLE_FIRST_MESSAGES_SELECTOR: string) => {
-    return Array.from(document.querySelectorAll(CONSOLE_FIRST_MESSAGES_SELECTOR))
-        .every(message => message.childNodes.length > 0);
-  }, {timeout: 0}, CONSOLE_FIRST_MESSAGES_SELECTOR));
+    const messages = document.querySelectorAll(CONSOLE_FIRST_MESSAGES_SELECTOR);
+    if (messages.length === 0) {
+      return false;
+    }
+    return Array.from(messages).every(message => message.childNodes.length > 0);
+  }, {timeout: 0, polling: 'mutation'}, CONSOLE_FIRST_MESSAGES_SELECTOR));
+
+  const selector = withAnchor ? CONSOLE_MESSAGE_TEXT_AND_ANCHOR_SELECTOR : CONSOLE_FIRST_MESSAGES_SELECTOR;
+
+  // FIXME(crbug/1112692): Refactor test to remove the timeout.
+  await timeout(100);
+
+  // Get the messages from the console.
+  return frontend.evaluate(selector => {
+    return Array.from(document.querySelectorAll(selector)).map(message => message.textContent);
+  }, selector);
+}
+
+export async function maybeGetCurrentConsoleMessages(withAnchor = false, callback?: () => Promise<void>) {
+  const {frontend} = getBrowserAndPages();
+  const asyncScope = new AsyncScope();
+
+  await navigateToConsoleTab();
+
+  // Get console messages that were logged.
+  await waitFor(CONSOLE_MESSAGES_SELECTOR, undefined, asyncScope);
+
+  if (callback) {
+    await callback();
+  }
 
   const selector = withAnchor ? CONSOLE_MESSAGE_TEXT_AND_ANCHOR_SELECTOR : CONSOLE_FIRST_MESSAGES_SELECTOR;
 

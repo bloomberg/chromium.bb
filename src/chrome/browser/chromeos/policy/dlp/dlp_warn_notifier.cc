@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chromeos/policy/dlp/dlp_warn_notifier.h"
 
+#include <memory>
+
+#include "base/containers/cxx20_erase.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_warn_dialog.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
@@ -11,8 +14,21 @@
 
 namespace policy {
 
+DlpWarnNotifier::DlpWarnNotifier() = default;
+
+DlpWarnNotifier::~DlpWarnNotifier() {
+  for (views::Widget* widget : widgets_) {
+    widget->RemoveObserver(this);
+    widget->CloseWithReason(views::Widget::ClosedReason::kUnspecified);
+  }
+}
+
+void DlpWarnNotifier::OnWidgetDestroying(views::Widget* widget) {
+  RemoveWidget(widget);
+}
+
 void DlpWarnNotifier::ShowDlpPrintWarningDialog(
-    OnDlpRestrictionCheckedCallback callback) const {
+    OnDlpRestrictionCheckedCallback callback) {
   ShowDlpWarningDialog(std::move(callback),
                        DlpWarnDialog::DlpWarnDialogOptions(
                            DlpWarnDialog::Restriction::kPrinting));
@@ -20,7 +36,7 @@ void DlpWarnNotifier::ShowDlpPrintWarningDialog(
 
 void DlpWarnNotifier::ShowDlpScreenCaptureWarningDialog(
     OnDlpRestrictionCheckedCallback callback,
-    const DlpConfidentialContents& confidential_contents) const {
+    const DlpConfidentialContents& confidential_contents) {
   ShowDlpWarningDialog(
       std::move(callback),
       DlpWarnDialog::DlpWarnDialogOptions(
@@ -29,34 +45,51 @@ void DlpWarnNotifier::ShowDlpScreenCaptureWarningDialog(
 
 void DlpWarnNotifier::ShowDlpVideoCaptureWarningDialog(
     OnDlpRestrictionCheckedCallback callback,
-    const DlpConfidentialContents& confidential_contents) const {
+    const DlpConfidentialContents& confidential_contents) {
   ShowDlpWarningDialog(
       std::move(callback),
       DlpWarnDialog::DlpWarnDialogOptions(
           DlpWarnDialog::Restriction::kVideoCapture, confidential_contents));
 }
 
-void DlpWarnNotifier::ShowDlpScreenShareWarningDialog(
+base::WeakPtr<views::Widget> DlpWarnNotifier::ShowDlpScreenShareWarningDialog(
     OnDlpRestrictionCheckedCallback callback,
     const DlpConfidentialContents& confidential_contents,
-    const std::u16string& application_title) const {
-  ShowDlpWarningDialog(std::move(callback),
-                       DlpWarnDialog::DlpWarnDialogOptions(
-                           DlpWarnDialog::Restriction::kScreenShare,
-                           confidential_contents, application_title));
+    const std::u16string& application_title) {
+  return ShowDlpWarningDialog(std::move(callback),
+                              DlpWarnDialog::DlpWarnDialogOptions(
+                                  DlpWarnDialog::Restriction::kScreenShare,
+                                  confidential_contents, application_title));
 }
 
-void DlpWarnNotifier::ShowDlpWarningDialog(
+int DlpWarnNotifier::ActiveWarningDialogsCountForTesting() const {
+  return widgets_.size();
+}
+
+base::WeakPtr<views::Widget> DlpWarnNotifier::ShowDlpWarningDialog(
     OnDlpRestrictionCheckedCallback callback,
-    DlpWarnDialog::DlpWarnDialogOptions options) const {
+    DlpWarnDialog::DlpWarnDialogOptions options) {
   views::Widget* widget = views::DialogDelegate::CreateDialogWidget(
-      new DlpWarnDialog(std::move(callback), options),
+      std::make_unique<DlpWarnDialog>(std::move(callback), options),
       /*context=*/nullptr, /*parent=*/nullptr);
   widget->Show();
   // We disable the dialog's hide animations after showing it so that it doesn't
   // end up showing in the screenshots, video recording, or screen share.
   widget->GetNativeWindow()->SetProperty(aura::client::kAnimationsDisabledKey,
                                          true);
+  // We set the dialog as the current capture window as it should be the target
+  // for all input events.
+  widget->GetNativeWindow()->SetCapture();
+  widget->AddObserver(this);
+  widgets_.push_back(widget);
+  return widget->GetWeakPtr();
+}
+
+void DlpWarnNotifier::RemoveWidget(views::Widget* widget) {
+  widget->RemoveObserver(this);
+  base::EraseIf(widgets_, [=](views::Widget* widget_ptr) -> bool {
+    return widget_ptr == widget;
+  });
 }
 
 }  // namespace policy

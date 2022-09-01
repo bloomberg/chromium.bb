@@ -32,6 +32,8 @@ TestWaylandServerThread::TestWaylandServerThread()
                    base::WaitableEvent::InitialState::NOT_SIGNALED),
       resume_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                     base::WaitableEvent::InitialState::NOT_SIGNALED),
+      compositor_v4_(4),
+      compositor_v3_(3),
       controller_(FROM_HERE) {}
 
 TestWaylandServerThread::~TestWaylandServerThread() {
@@ -60,8 +62,13 @@ bool TestWaylandServerThread::Start(const ServerConfig& config) {
 
   if (wl_display_init_shm(display_.get()) < 0)
     return false;
-  if (!compositor_.Initialize(display_.get()))
-    return false;
+  if (config.compositor_version == CompositorVersion::kV3) {
+    if (!compositor_v3_.Initialize(display_.get()))
+      return false;
+  } else {
+    if (!compositor_v4_.Initialize(display_.get()))
+      return false;
+  }
   if (!sub_compositor_.Initialize(display_.get()))
     return false;
   if (!viewporter_.Initialize(display_.get()))
@@ -86,17 +93,20 @@ bool TestWaylandServerThread::Start(const ServerConfig& config) {
     if (!xdg_shell_.Initialize(display_.get()))
       return false;
   }
+  if (!zcr_stylus_.Initialize(display_.get()))
+    return false;
   if (!zcr_text_input_extension_v1_.Initialize(display_.get()))
     return false;
   if (!zwp_text_input_manager_v1_.Initialize(display_.get()))
     return false;
-  if (!zwp_linux_explicit_synchronization_v1_.Initialize(display_.get()))
+  if (!SetupExplicitSynchronizationProtocol(
+          config.use_explicit_synchronization))
     return false;
   if (!zwp_linux_dmabuf_v1_.Initialize(display_.get()))
     return false;
   if (!overlay_prioritizer_.Initialize(display_.get()))
     return false;
-  if (!surface_augmenter_.Initialize(display_.get()))
+  if (!wp_pointer_gestures_.Initialize(display_.get()))
     return false;
 
   client_ = wl_client_create(display_.get(), server_fd.release());
@@ -134,6 +144,12 @@ MockWpPresentation* TestWaylandServerThread::EnsureWpPresentation() {
   return nullptr;
 }
 
+TestSurfaceAugmenter* TestWaylandServerThread::EnsureSurfaceAugmenter() {
+  if (surface_augmenter_.Initialize(display_.get()))
+    return &surface_augmenter_;
+  return nullptr;
+}
+
 // By default, just make sure primary screen has bounds set. Otherwise delegates
 // it, making it possible to emulate different scenarios, such as, multi-screen,
 // lazy configuration, arbitrary ordering of the outputs metadata sending, etc.
@@ -159,6 +175,18 @@ bool TestWaylandServerThread::SetupPrimarySelectionManager(
       break;
   }
   return primary_selection_device_manager_->Initialize(display_.get());
+}
+
+bool TestWaylandServerThread::SetupExplicitSynchronizationProtocol(
+    ShouldUseExplicitSynchronizationProtocol usage) {
+  switch (usage) {
+    case ShouldUseExplicitSynchronizationProtocol::kNone:
+      return true;
+    case ShouldUseExplicitSynchronizationProtocol::kUse:
+      return zwp_linux_explicit_synchronization_v1_.Initialize(display_.get());
+  }
+  NOTREACHED();
+  return false;
 }
 
 void TestWaylandServerThread::DoPause() {

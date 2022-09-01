@@ -82,14 +82,27 @@ ImageNativeIndexIterator ImageNativeIndex::getLayerIterator(GLint layerCount) co
 // Context implementation
 Context::Context(DisplayMtl *display) : mDisplay(display) {}
 
-id<MTLDevice> Context::getMetalDevice() const
-{
-    return mDisplay->getMetalDevice();
-}
-
 mtl::CommandQueue &Context::cmdQueue()
 {
     return mDisplay->cmdQueue();
+}
+
+std::string FormatMetalErrorMessage(GLenum errorCode)
+{
+    return "Metal backend encountered an error";
+}
+
+std::string FormatMetalErrorMessage(NSError *error)
+{
+    if (!error)
+    {
+        return "";
+    }
+
+    std::stringstream errorStream;
+    errorStream << "Metal backend encountered an error: \n"
+                << error.localizedDescription.UTF8String;
+    return errorStream.str();
 }
 
 }  // namespace mtl

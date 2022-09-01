@@ -19,9 +19,9 @@
 #include "net/quic/crypto/proof_verifier_chromium.h"
 #include "net/quic/quic_chromium_alarm_factory.h"
 #include "net/spdy/spdy_http_utils.h"
-#include "net/third_party/quiche/src/quic/core/http/web_transport_http3.h"
-#include "net/third_party/quiche/src/quic/core/quic_connection.h"
-#include "net/third_party/quiche/src/quic/core/quic_utils.h"
+#include "net/third_party/quiche/src/quiche/quic/core/http/web_transport_http3.h"
+#include "net/third_party/quiche/src/quiche/quic/core/quic_connection.h"
+#include "net/third_party/quiche/src/quiche/quic/core/quic_utils.h"
 #include "net/url_request/url_request_context.h"
 #include "url/scheme_host_port.h"
 
@@ -44,6 +44,25 @@ std::set<std::string> HostsFromOrigins(std::set<HostPortPair> origins) {
   return hosts;
 }
 
+// A version of WebTransportFingerprintProofVerifier that enforces
+// Chromium-specific policies.
+class ChromiumWebTransportFingerprintProofVerifier
+    : public quic::WebTransportFingerprintProofVerifier {
+ public:
+  using WebTransportFingerprintProofVerifier::
+      WebTransportFingerprintProofVerifier;
+
+ protected:
+  bool IsKeyTypeAllowedByPolicy(
+      const quic::CertificateView& certificate) override {
+    if (certificate.public_key_type() == quic::PublicKeyType::kRsa) {
+      return false;
+    }
+    return WebTransportFingerprintProofVerifier::IsKeyTypeAllowedByPolicy(
+        certificate);
+  }
+};
+
 std::unique_ptr<quic::ProofVerifier> CreateProofVerifier(
     const NetworkIsolationKey& isolation_key,
     URLRequestContext* context,
@@ -57,8 +76,9 @@ std::unique_ptr<quic::ProofVerifier> CreateProofVerifier(
         isolation_key);
   }
 
-  auto verifier = std::make_unique<quic::WebTransportFingerprintProofVerifier>(
-      context->quic_context()->clock(), kCustomCertificateMaxValidityDays);
+  auto verifier =
+      std::make_unique<ChromiumWebTransportFingerprintProofVerifier>(
+          context->quic_context()->clock(), kCustomCertificateMaxValidityDays);
   for (const quic::CertificateFingerprint& fingerprint :
        parameters.server_certificate_fingerprints) {
     bool success = verifier->AddFingerprint(fingerprint);
@@ -77,17 +97,17 @@ void RecordNetLogQuicSessionClientStateChanged(
     const absl::optional<WebTransportError>& error) {
   net_log.AddEvent(
       NetLogEventType::QUIC_SESSION_WEBTRANSPORT_CLIENT_STATE_CHANGED, [&] {
-        base::Value dict(base::Value::Type::DICTIONARY);
-        dict.SetStringKey("last_state", WebTransportStateString(last_state));
-        dict.SetStringKey("next_state", WebTransportStateString(next_state));
+        base::Value::Dict dict;
+        dict.Set("last_state", WebTransportStateString(last_state));
+        dict.Set("next_state", WebTransportStateString(next_state));
         if (error.has_value()) {
-          base::Value error_dict(base::Value::Type::DICTIONARY);
-          error_dict.SetIntKey("net_error", error->net_error);
-          error_dict.SetIntKey("quic_error", error->quic_error);
-          error_dict.SetStringKey("details", error->details);
-          dict.SetKey("error", std::move(error_dict));
+          base::Value::Dict error_dict;
+          error_dict.Set("net_error", error->net_error);
+          error_dict.Set("quic_error", error->quic_error);
+          error_dict.Set("details", error->details);
+          dict.Set("error", std::move(error_dict));
         }
-        return dict;
+        return base::Value(std::move(dict));
       });
 }
 
@@ -261,14 +281,13 @@ DedicatedWebTransportHttp3Client::DedicatedWebTransportHttp3Client(
       // requires implementing ProofHandler::OnProofVerifyDetailsAvailable.
       crypto_config_(CreateProofVerifier(isolation_key_, context, parameters),
                      /* session_cache */ nullptr) {
-  net_log_.BeginEvent(NetLogEventType::QUIC_SESSION_WEBTRANSPORT_CLIENT_ALIVE,
-                      [&] {
-                        base::Value dict(base::Value::Type::DICTIONARY);
-                        dict.SetStringKey("url", url.possibly_invalid_spec());
-                        dict.SetStringKey("network_isolation_key",
-                                          isolation_key.ToDebugString());
-                        return dict;
-                      });
+  net_log_.BeginEvent(
+      NetLogEventType::QUIC_SESSION_WEBTRANSPORT_CLIENT_ALIVE, [&] {
+        base::Value::Dict dict;
+        dict.Set("url", url.possibly_invalid_spec());
+        dict.Set("network_isolation_key", isolation_key.ToDebugString());
+        return base::Value(std::move(dict));
+      });
 }
 
 DedicatedWebTransportHttp3Client::~DedicatedWebTransportHttp3Client() {
@@ -680,7 +699,13 @@ void DedicatedWebTransportHttp3Client::OnSessionReady(
     const spdy::SpdyHeaderBlock& spdy_headers) {
   session_ready_ = true;
   http_response_info_ = std::make_unique<HttpResponseInfo>();
-  SpdyHeadersToHttpResponse(spdy_headers, http_response_info_.get());
+  const int rv =
+      SpdyHeadersToHttpResponse(spdy_headers, http_response_info_.get());
+  if (rv != OK) {
+    SetErrorIfNecessary(ERR_QUIC_PROTOCOL_ERROR);
+    TransitionToState(WebTransportState::FAILED);
+    return;
+  }
   // TODO(vasilvv): add support for this header in downstream tests and remove
   // this.
   http_response_info_->headers->RemoveHeader("sec-webtransport-http3-draft");

@@ -176,6 +176,28 @@ TEST(MatchedFilter, TestAvx2Optimizations) {
 
 #endif
 
+// Verifies that the (optimized) function MaxSquarePeakIndex() produces output
+// equal to the corresponding std-functions.
+TEST(MatchedFilter, MaxSquarePeakIndex) {
+  Random random_generator(42U);
+  constexpr int kMaxLength = 128;
+  constexpr int kNumIterationsPerLength = 256;
+  for (int length = 1; length < kMaxLength; ++length) {
+    std::vector<float> y(length);
+    for (int i = 0; i < kNumIterationsPerLength; ++i) {
+      RandomizeSampleVector(&random_generator, y);
+
+      size_t lag_from_function = MaxSquarePeakIndex(y);
+      size_t lag_from_std = std::distance(
+          y.begin(),
+          std::max_element(y.begin(), y.end(), [](float a, float b) -> bool {
+            return a * a < b * b;
+          }));
+      EXPECT_EQ(lag_from_function, lag_from_std);
+    }
+  }
+}
+
 // Verifies that the matched filter produces proper lag estimates for
 // artificially
 // delayed signals.
@@ -188,9 +210,7 @@ TEST(MatchedFilter, LagEstimation) {
   for (auto down_sampling_factor : kDownSamplingFactors) {
     const size_t sub_block_size = kBlockSize / down_sampling_factor;
 
-    std::vector<std::vector<std::vector<float>>> render(
-        kNumBands, std::vector<std::vector<float>>(
-                       kNumChannels, std::vector<float>(kBlockSize, 0.f)));
+    Block render(kNumBands, kNumChannels);
     std::vector<std::vector<float>> capture(
         1, std::vector<float>(kBlockSize, 0.f));
     ApmDataDumper data_dumper(0);
@@ -216,10 +236,12 @@ TEST(MatchedFilter, LagEstimation) {
       for (size_t k = 0; k < (600 + delay_samples / sub_block_size); ++k) {
         for (size_t band = 0; band < kNumBands; ++band) {
           for (size_t channel = 0; channel < kNumChannels; ++channel) {
-            RandomizeSampleVector(&random_generator, render[band][channel]);
+            RandomizeSampleVector(&random_generator,
+                                  render.View(band, channel));
           }
         }
-        signal_delay_buffer.Delay(render[0][0], capture[0]);
+        signal_delay_buffer.Delay(render.View(/*band=*/0, /*channel=*/0),
+                                  capture[0]);
         render_delay_buffer->Insert(render);
 
         if (k == 0) {
@@ -306,9 +328,7 @@ TEST(MatchedFilter, LagNotReliableForUncorrelatedRenderAndCapture) {
     config.delay.num_filters = kNumMatchedFilters;
     const size_t sub_block_size = kBlockSize / down_sampling_factor;
 
-    std::vector<std::vector<std::vector<float>>> render(
-        kNumBands, std::vector<std::vector<float>>(
-                       kNumChannels, std::vector<float>(kBlockSize, 0.f)));
+    Block render(kNumBands, kNumChannels);
     std::array<float, kBlockSize> capture_data;
     rtc::ArrayView<float> capture(capture_data.data(), sub_block_size);
     std::fill(capture.begin(), capture.end(), 0.f);
@@ -324,7 +344,8 @@ TEST(MatchedFilter, LagNotReliableForUncorrelatedRenderAndCapture) {
 
     // Analyze the correlation between render and capture.
     for (size_t k = 0; k < 100; ++k) {
-      RandomizeSampleVector(&random_generator, render[0][0]);
+      RandomizeSampleVector(&random_generator,
+                            render.View(/*band=*/0, /*channel=*/0));
       RandomizeSampleVector(&random_generator, capture);
       render_delay_buffer->Insert(render);
       filter.Update(render_delay_buffer->GetDownsampledRenderBuffer(), capture,

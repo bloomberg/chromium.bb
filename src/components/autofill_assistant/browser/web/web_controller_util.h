@@ -30,12 +30,18 @@ ClientStatus UnexpectedDevtoolsErrorStatus(
     const std::string& file,
     int line);
 
+// Map from devtools source url to js line offset. See js_flow_util for details
+// on devtools source urls.
+using JsLineOffsets = base::flat_map<std::string, int>;
+
 // Builds a ClientStatus appropriate for a JavaScript error.
 ClientStatus JavaScriptErrorStatus(
     const DevtoolsClient::ReplyStatus& reply_status,
     const std::string& file,
     int line,
-    const runtime::ExceptionDetails* exception);
+    const runtime::ExceptionDetails* exception,
+    const JsLineOffsets& js_line_offsets = {},
+    const int num_stack_entries_to_drop = 0);
 
 // Makes sure that the given EvaluateResult exists, is successful and contains a
 // result.
@@ -44,14 +50,19 @@ ClientStatus CheckJavaScriptResult(
     const DevtoolsClient::ReplyStatus& reply_status,
     T* result,
     const char* file,
-    int line) {
+    int line,
+    const JsLineOffsets& js_line_offsets = {},
+    int num_stack_entries_to_drop = 0) {
   if (!result)
-    return JavaScriptErrorStatus(reply_status, file, line, nullptr);
+    return JavaScriptErrorStatus(reply_status, file, line, nullptr,
+                                 js_line_offsets, num_stack_entries_to_drop);
   if (result->HasExceptionDetails())
     return JavaScriptErrorStatus(reply_status, file, line,
-                                 result->GetExceptionDetails());
+                                 result->GetExceptionDetails(), js_line_offsets,
+                                 num_stack_entries_to_drop);
   if (!result->GetResult())
-    return JavaScriptErrorStatus(reply_status, file, line, nullptr);
+    return JavaScriptErrorStatus(reply_status, file, line, nullptr,
+                                 js_line_offsets, num_stack_entries_to_drop);
   return OkClientStatus();
 }
 

@@ -36,6 +36,7 @@
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/video_capture/video_capture_impl.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_copier_media.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -101,11 +102,7 @@ base::OnceClosure WebVideoCaptureImplManager::UseDevice(
     devices_.emplace_back(DeviceEntry());
     it = devices_.end() - 1;
     it->session_id = id;
-    it->impl = CreateVideoCaptureImplForTesting(id);
-    if (!it->impl) {
-      it->impl = std::make_unique<VideoCaptureImpl>(
-          id, render_main_task_runner_, browser_interface_broker);
-    }
+    it->impl = CreateVideoCaptureImpl(id, browser_interface_broker);
   }
   ++it->client_count;
 
@@ -217,9 +214,11 @@ void WebVideoCaptureImplManager::GetDeviceFormatsInUse(
 }
 
 std::unique_ptr<VideoCaptureImpl>
-WebVideoCaptureImplManager::CreateVideoCaptureImplForTesting(
-    const media::VideoCaptureSessionId& session_id) const {
-  return nullptr;
+WebVideoCaptureImplManager::CreateVideoCaptureImpl(
+    const media::VideoCaptureSessionId& session_id,
+    BrowserInterfaceBrokerProxy* browser_interface_broker) const {
+  return std::make_unique<VideoCaptureImpl>(
+      session_id, render_main_task_runner_, browser_interface_broker);
 }
 
 void WebVideoCaptureImplManager::StopCapture(

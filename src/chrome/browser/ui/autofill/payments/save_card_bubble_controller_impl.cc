@@ -31,6 +31,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/metrics/autofill_metrics.h"
+#include "components/autofill/core/browser/metrics/payments/manage_cards_prompt_metrics.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_constants.h"
@@ -163,11 +164,29 @@ void SaveCardBubbleControllerImpl::ReshowBubble() {
 }
 
 std::u16string SaveCardBubbleControllerImpl::GetWindowTitle() const {
+  int save_card_ui_experiment_selected =
+      features::kAutofillSaveCardUiExperimentSelectorInNumber.Get();
+  // Check if the save card offer ui experiment is enabled.
+  bool save_card_ui_experiment_enabled =
+      (base::FeatureList::IsEnabled(features::kAutofillSaveCardUiExperiment) &&
+       save_card_ui_experiment_selected);
+
   switch (current_bubble_type_) {
     case BubbleType::LOCAL_SAVE:
       return l10n_util::GetStringUTF16(
           IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_LOCAL);
     case BubbleType::UPLOAD_SAVE:
+      if (save_card_ui_experiment_enabled) {
+        switch (save_card_ui_experiment_selected) {
+          case SaveCardUiExperiment::FASTER_AND_PROTECTED:
+            return l10n_util::GetStringUTF16(
+                IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_EXPERIMENT_FASTER_AND_PROTECTED);
+          case SaveCardUiExperiment::ENCRYPTED_AND_SECURE:
+            return l10n_util::GetStringUTF16(
+                IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_EXPERIMENT_ENCRYPTED_AND_SECURE);
+        }
+      }
+
       return features::ShouldShowImprovedUserConsentForCreditCardSave()
                  ? l10n_util::GetStringUTF16(
                        IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD_V4)
@@ -194,6 +213,23 @@ std::u16string SaveCardBubbleControllerImpl::GetExplanatoryMessage() const {
   if (options_.should_request_name_from_user) {
     return l10n_util::GetStringUTF16(
         IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_V3_WITH_NAME);
+  }
+
+  int save_card_ui_experiment_selected =
+      features::kAutofillSaveCardUiExperimentSelectorInNumber.Get();
+  // Check if the save card offer ui experiment is enabled.
+  bool save_card_ui_experiment_enabled =
+      (base::FeatureList::IsEnabled(features::kAutofillSaveCardUiExperiment) &&
+       save_card_ui_experiment_selected);
+  if (save_card_ui_experiment_enabled) {
+    switch (save_card_ui_experiment_selected) {
+      case SaveCardUiExperiment::FASTER_AND_PROTECTED:
+        return l10n_util::GetStringUTF16(
+            IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_EXPERIMENT_FASTER_AND_PROTECTED);
+      case SaveCardUiExperiment::ENCRYPTED_AND_SECURE:
+        return l10n_util::GetStringUTF16(
+            IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_EXPERIMENT_ENCRYPTED_AND_SECURE);
+    }
   }
 
   return l10n_util::GetStringUTF16(
@@ -300,8 +336,8 @@ void SaveCardBubbleControllerImpl::OnSaveButton(
           .Run(AutofillClient::SaveCardOfferUserDecision::kAccepted);
       break;
     case BubbleType::MANAGE_CARDS:
-      AutofillMetrics::LogManageCardsPromptMetric(
-          AutofillMetrics::MANAGE_CARDS_DONE, is_upload_save_);
+      LogManageCardsPromptMetric(ManageCardsPromptMetric::kManageCardsDone,
+                                 is_upload_save_);
       return;
     case BubbleType::UPLOAD_IN_PROGRESS:
     case BubbleType::FAILURE:
@@ -328,8 +364,8 @@ void SaveCardBubbleControllerImpl::OnLegalMessageLinkClicked(const GURL& url) {
 void SaveCardBubbleControllerImpl::OnManageCardsClicked() {
   DCHECK(current_bubble_type_ == BubbleType::MANAGE_CARDS);
 
-  AutofillMetrics::LogManageCardsPromptMetric(
-      AutofillMetrics::MANAGE_CARDS_MANAGE_CARDS, is_upload_save_);
+  LogManageCardsPromptMetric(ManageCardsPromptMetric::kManageCardsManageCards,
+                             is_upload_save_);
 
   ShowPaymentsSettingsPage();
 }
@@ -500,8 +536,8 @@ void SaveCardBubbleControllerImpl::DoShowBubble() {
           GetSecurityLevel(), GetSyncState());
       break;
     case BubbleType::MANAGE_CARDS:
-      AutofillMetrics::LogManageCardsPromptMetric(
-          AutofillMetrics::MANAGE_CARDS_SHOWN, is_upload_save_);
+      LogManageCardsPromptMetric(ManageCardsPromptMetric::kManageCardsShown,
+                                 is_upload_save_);
       break;
     case BubbleType::FAILURE:
       AutofillMetrics::LogCreditCardUploadFeedbackMetric(

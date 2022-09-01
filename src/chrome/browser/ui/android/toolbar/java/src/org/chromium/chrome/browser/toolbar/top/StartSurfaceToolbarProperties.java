@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.toolbar.top;
 
-import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.view.View;
 
@@ -25,6 +24,9 @@ class StartSurfaceToolbarProperties {
     public static final PropertyModel
             .WritableObjectPropertyKey<View.OnClickListener> NEW_TAB_CLICK_HANDLER =
             new PropertyModel.WritableObjectPropertyKey<View.OnClickListener>();
+    // Handles the enabled state of the New tab button "+" and the text "New tab".
+    public static final PropertyModel.WritableBooleanPropertyKey IS_NEW_TAB_ENABLED =
+            new PropertyModel.WritableBooleanPropertyKey();
     public static final PropertyModel
             .WritableObjectPropertyKey<View.OnClickListener> IDENTITY_DISC_CLICK_HANDLER =
             new PropertyModel.WritableObjectPropertyKey<View.OnClickListener>();
@@ -40,10 +42,6 @@ class StartSurfaceToolbarProperties {
             new PropertyModel.WritableObjectPropertyKey<>(true);
     public static final PropertyModel.WritableObjectPropertyKey<Boolean> SHOW_ANIMATION =
             new PropertyModel.WritableObjectPropertyKey<>(true);
-    public static final PropertyModel.WritableObjectPropertyKey<Bitmap> LOGO_IMAGE =
-            new PropertyModel.WritableObjectPropertyKey<>();
-    public static final PropertyModel.WritableObjectPropertyKey<String> LOGO_CONTENT_DESCRIPTION =
-            new PropertyModel.WritableObjectPropertyKey<>();
     public static final PropertyModel.WritableBooleanPropertyKey LOGO_IS_VISIBLE =
             new PropertyModel.WritableBooleanPropertyKey();
     public static final PropertyModel.WritableBooleanPropertyKey IS_INCOGNITO =
@@ -96,8 +94,8 @@ class StartSurfaceToolbarProperties {
             new PropertyModel.WritableObjectPropertyKey<View.OnClickListener>();
 
     public static final PropertyKey[] ALL_KEYS = new PropertyKey[] {NEW_TAB_CLICK_HANDLER,
-            IS_VISIBLE, SHOW_ANIMATION, LOGO_IS_VISIBLE, LOGO_IMAGE, LOGO_CONTENT_DESCRIPTION,
-            IS_INCOGNITO, INCOGNITO_STATE_PROVIDER, ACCESSIBILITY_ENABLED, MENU_IS_VISIBLE,
+            IS_NEW_TAB_ENABLED, IS_VISIBLE, SHOW_ANIMATION, LOGO_IS_VISIBLE, IS_INCOGNITO,
+            INCOGNITO_STATE_PROVIDER, ACCESSIBILITY_ENABLED, MENU_IS_VISIBLE,
             NEW_TAB_VIEW_IS_VISIBLE, NEW_TAB_VIEW_AT_START, NEW_TAB_VIEW_TEXT_IS_VISIBLE,
             BUTTONS_CLICKABLE, GRID_TAB_SWITCHER_ENABLED, IDENTITY_DISC_AT_START,
             INCOGNITO_SWITCHER_VISIBLE, IDENTITY_DISC_IS_VISIBLE, IDENTITY_DISC_CLICK_HANDLER,

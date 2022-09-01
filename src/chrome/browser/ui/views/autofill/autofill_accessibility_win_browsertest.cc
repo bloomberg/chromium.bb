@@ -82,7 +82,7 @@ class AutofillAccessibilityWinBrowserTest : public InProcessBrowserTest {
 };
 
 // The test is flaky on Windows. See https://crbug.com/1221273
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #define MAYBE_AutofillPopupControllerFor DISABLED_AutofillPopupControllerFor
 #else
 #define MAYBE_AutofillPopupControllerFor AutofillPopupControllerFor
@@ -94,7 +94,7 @@ IN_PROC_BROWSER_TEST_F(AutofillAccessibilityWinBrowserTest,
   ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(),
       embedded_test_server()->GetURL("/accessibility/input_datalist.html")));
-  waiter.WaitForNotification();
+  ASSERT_TRUE(waiter.WaitForNotification());
 
   base::win::ScopedVariant result_variant;
 

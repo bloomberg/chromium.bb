@@ -31,9 +31,7 @@ class SettingsRootTableViewControllerTest : public PlatformTest {
     if (!browser_) {
       TestChromeBrowserState::Builder test_cbs_builder;
       chrome_browser_state_ = test_cbs_builder.Build();
-      WebStateList* web_state_list = nullptr;
-      browser_ = std::make_unique<TestBrowser>(chrome_browser_state_.get(),
-                                               web_state_list);
+      browser_ = std::make_unique<TestBrowser>(chrome_browser_state_.get());
     }
     return [[SettingsNavigationController alloc]
         initWithRootViewController:nil
@@ -57,8 +55,8 @@ TEST_F(SettingsRootTableViewControllerTest, TestUpdateUIForEditState) {
 
   // Check that there the navigation controller's button if the table view isn't
   // edited and the controller has the default behavior for
-  // |shouldShowEditButton|. Also check that toolbar is hidden when
-  // |shouldHideToolbar| returns YES.
+  // `shouldShowEditButton`. Also check that toolbar is hidden when
+  // `shouldHideToolbar` returns YES.
   controller.tableView.editing = NO;
   OCMExpect([mockController shouldHideToolbar]).andReturn(YES);
   [controller updateUIForEditState];
@@ -70,8 +68,8 @@ TEST_F(SettingsRootTableViewControllerTest, TestUpdateUIForEditState) {
   EXPECT_TRUE(controller.navigationController.toolbarHidden);
 
   // Check that there the OK button if the table view is being edited and the
-  // controller has the default behavior for |shouldShowEditButton|. Also check
-  // that toolbar is not hidden when |shouldHideToolbar| returns NO.
+  // controller has the default behavior for `shouldShowEditButton`. Also check
+  // that toolbar is not hidden when `shouldHideToolbar` returns NO.
   controller.tableView.editing = YES;
   OCMExpect([mockController shouldHideToolbar]).andReturn(NO);
   [controller updateUIForEditState];
@@ -80,8 +78,8 @@ TEST_F(SettingsRootTableViewControllerTest, TestUpdateUIForEditState) {
   EXPECT_FALSE(controller.navigationController.toolbarHidden);
 
   // Check that there the OK button if the table view isn't edited and the
-  // controller returns YES for |shouldShowEditButton|. Also check that toolbar
-  // is not hidden when |shouldHideToolbar| returns NO.
+  // controller returns YES for `shouldShowEditButton`. Also check that toolbar
+  // is not hidden when `shouldHideToolbar` returns NO.
   controller.tableView.editing = NO;
   OCMStub([mockController shouldShowEditButton]).andReturn(YES);
   OCMExpect([mockController shouldHideToolbar]).andReturn(NO);

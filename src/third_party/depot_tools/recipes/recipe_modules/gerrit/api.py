@@ -323,8 +323,11 @@ class GerritApi(recipe_api.RecipeApi):
                    new_contents_by_file_path,
                    commit_msg,
                    params=frozenset(['status=NEW']),
+                   cc_list=frozenset([]),
                    submit=False,
-                   submit_later=False):
+                   submit_later=False,
+                   step_test_data_create_change=None,
+                   step_test_data_submit_change=None):
     """Update a set of files by creating and submitting a Gerrit CL.
 
     Args:
@@ -336,10 +339,15 @@ class GerritApi(recipe_api.RecipeApi):
       * commit_msg: Description to add to the CL.
       * params: A list of additional ChangeInput specifiers, with format
           'key=value'.
+      * cc_list: A list of addresses to notify.
       * submit: Should land this CL instantly.
       * submit_later: If this change has related CLs, we may want to commit
            them in a chain. So only set Bot-Commit+1, making it ready for
            submit together. Ignored if submit is True.
+      * step_test_data_create_change: Optional mock test data for the step
+           create gerrit change.
+      * step_test_data_submit_change: Optional mock test data for the step
+          submit gerrit change.
 
     Returns:
       A ChangeInfo dictionary as documented here:
@@ -364,7 +372,14 @@ class GerritApi(recipe_api.RecipeApi):
     ]
     for p in params:
       command.extend(['-p', p])
-    step_result = self('create change at (%s %s)' % (project, branch), command)
+    for cc in cc_list:
+      command.extend(['--cc', cc])
+    step_test_data = step_test_data_create_change or (
+        lambda: self.test_api.update_files_response_data())
+
+    step_result = self('create change at (%s %s)' % (project, branch),
+                       command,
+                       step_test_data=step_test_data)
     change = int(step_result.json.output.get('_number'))
     step_result.presentation.links['change %d' %
                                    change] = '%s/#/q/%d' % (host, change)
@@ -394,6 +409,21 @@ class GerritApi(recipe_api.RecipeApi):
         change,
     ])
 
+    # Make sure the new patchset is propagated to Gerrit backend.
+    with self.m.step.nest('verify the patchset exists on CL %d' % change):
+      retries = 0
+      max_retries = 2
+      while retries <= max_retries:
+        try:
+          if self.get_revision_info(host, change, 2):
+            break
+        except self.m.step.InfraFailure:
+          if retries == max_retries:  # pragma: no cover
+            raise
+          retries += 1
+          with self.m.step.nest('waiting before retry'):
+            self.m.time.sleep((2**retries) * 10)
+
     if submit or submit_later:
       self('set Bot-Commit+1 for change %d' % change, [
           'setbotcommit',
@@ -412,5 +442,9 @@ class GerritApi(recipe_api.RecipeApi):
           '--json_file',
           self.m.json.output(),
       ]
-      step_result = self('submit change %d' % change, submit_cmd)
+      step_test_data = step_test_data_submit_change or (
+          lambda: self.test_api.update_files_response_data(status='MERGED'))
+      step_result = self('submit change %d' % change,
+                         submit_cmd,
+                         step_test_data=step_test_data)
     return step_result.json.output

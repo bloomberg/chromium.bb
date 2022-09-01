@@ -7,10 +7,10 @@
  * 'settings-safety-passwords-child' is the settings page containing the
  * safety check child showing the password status.
  */
-import {assertNotReached} from 'chrome://resources/js/assert.m.js';
+import {assertNotReached} from 'chrome://resources/js/assert_ts.js';
 import {I18nMixin} from 'chrome://resources/js/i18n_mixin.js';
 import {WebUIListenerMixin} from 'chrome://resources/js/web_ui_listener_mixin.js';
-import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {PasswordCheckReferrer, PasswordManagerImpl} from '../autofill_page/password_manager_proxy.js';
 import {MetricsBrowserProxy, MetricsBrowserProxyImpl, SafetyCheckInteractions} from '../metrics_browser_proxy.js';
@@ -19,6 +19,7 @@ import {Router} from '../router.js';
 
 import {SafetyCheckCallbackConstants, SafetyCheckPasswordsStatus} from './safety_check_browser_proxy.js';
 import {SafetyCheckIconStatus} from './safety_check_child.js';
+import {getTemplate} from './safety_check_passwords_child.html.js';
 
 type PasswordsChangedEvent = {
   newState: SafetyCheckPasswordsStatus,
@@ -35,7 +36,7 @@ export class SettingsSafetyCheckPasswordsChildElement extends
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
@@ -75,7 +76,7 @@ export class SettingsSafetyCheckPasswordsChildElement extends
   private metricsBrowserProxy_: MetricsBrowserProxy =
       MetricsBrowserProxyImpl.getInstance();
 
-  connectedCallback() {
+  override connectedCallback() {
     super.connectedCallback();
 
     // Register for safety check status updates.
@@ -107,7 +108,6 @@ export class SettingsSafetyCheckPasswordsChildElement extends
         return SafetyCheckIconStatus.INFO;
       default:
         assertNotReached();
-        return SafetyCheckIconStatus.INFO;
     }
   }
 

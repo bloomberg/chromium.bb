@@ -8,15 +8,14 @@
 #include <string>
 
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/ash/login/enrollment/enterprise_enrollment_helper.h"
 #include "chrome/browser/ash/policy/enrollment/enrollment_config.h"
-#include "chrome/browser/policy/enrollment_status.h"
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace policy {
 class ActiveDirectoryJoinDelegate;
+class EnrollmentStatus;
 }
 
 namespace ash {
@@ -58,11 +57,6 @@ class EnrollmentHelperMixin : public InProcessBrowserTestMixin {
   void ExpectAttestationEnrollmentError(policy::EnrollmentStatus status);
   void ExpectAttestationEnrollmentErrorRepeated(
       policy::EnrollmentStatus status);
-
-  // Configures and sets expectations for successful offline demo flow.
-  void ExpectOfflineEnrollmentSuccess();
-  // Configures and sets expectations for offline demo flow resulting in error.
-  void ExpectOfflineEnrollmentError(policy::EnrollmentStatus status);
 
   // Sets up expectation of kTestAuthCode as enrollment credentials.
   void ExpectEnrollmentCredentials();

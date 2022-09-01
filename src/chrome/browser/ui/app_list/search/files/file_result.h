@@ -7,6 +7,7 @@
 
 #include <iosfwd>
 
+#include "ash/public/cpp/style/color_mode_observer.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
@@ -22,23 +23,19 @@ class ThumbnailLoader;
 
 namespace app_list {
 
-class FileResult : public ChromeSearchResult {
+// TODO(crbug.com/1258415): We should split this into four subclasses:
+// {drive,local} {zero-state,search}.
+class FileResult : public ChromeSearchResult, public ash::ColorModeObserver {
  public:
   enum class Type { kFile, kDirectory, kSharedDirectory };
 
-  // Constructor for zero state results.
   FileResult(const std::string& schema,
              const base::FilePath& filepath,
+             const absl::optional<std::u16string>& details,
              ResultType result_type,
              DisplayType display_type,
              float relevance,
-             Profile* profile);
-  // Constructor for search results.
-  FileResult(const std::string& schema,
-             const base::FilePath& filepath,
-             ResultType result_type,
              const std::u16string& query,
-             float relevance,
              Type type,
              Profile* profile);
   ~FileResult() override;
@@ -48,33 +45,47 @@ class FileResult : public ChromeSearchResult {
 
   // ChromeSearchResult overrides:
   void Open(int event_flags) override;
+  absl::optional<std::string> DriveId() const override;
 
   // Calculates file's match relevance score. Will return a default score if the
   // query is missing or the filename is empty.
   static double CalculateRelevance(
       const absl::optional<chromeos::string_matching::TokenizedString>& query,
-      const base::FilePath& filepath);
+      const base::FilePath& filepath,
+      const absl::optional<base::Time>& last_accessed);
 
   // Depending on the file type and display type, request a thumbnail for this
   // result. If the request is successful, the current icon will be replaced by
   // the thumbnail.
   void RequestThumbnail(ash::ThumbnailLoader* thumbnail_loader);
 
- private:
-  FileResult(const std::string& schema,
-             const base::FilePath& filepath,
-             ResultType result_type,
-             DisplayType display_type,
-             Type type,
-             Profile* profile);
+  // Asynchronously sets the details string for this result to a Drive-esque
+  // justification string, eg. "You opened yesterday".
+  void SetDetailsToJustificationString();
 
-  // Callback for the result of MaybeRequestThumbnail's call to the
-  // ThumbnailLoader.
+  void set_drive_id(const absl::optional<std::string>& drive_id) {
+    drive_id_ = drive_id;
+  }
+
+ private:
+  // ash::ColorModeObserver:
+  void OnColorModeChanged(bool dark_mode_enabled) override;
+
+  // Callback for the result of RequestThumbnail's call to the ThumbnailLoader.
   void OnThumbnailLoaded(const SkBitmap* bitmap, base::File::Error error);
+
+  // Callback for the result of SetDetailsToJustificationString to
+  // GetJustificationStringAsync.
+  void OnJustificationStringReturned(
+      absl::optional<std::u16string> justification);
+
+  void UpdateIcon();
 
   const base::FilePath filepath_;
   const Type type_;
   Profile* const profile_;
+
+  absl::optional<std::string> drive_id_;
 
   base::WeakPtrFactory<FileResult> weak_factory_{this};
 };

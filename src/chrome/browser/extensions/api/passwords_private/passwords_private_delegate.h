@@ -79,16 +79,16 @@ class PasswordsPrivateDelegate : public KeyedService {
   virtual bool AddPassword(const std::string& url,
                            const std::u16string& username,
                            const std::u16string& password,
+                           const std::u16string& note,
                            bool use_account_store,
                            content::WebContents* web_contents) = 0;
 
   // Changes the username and password corresponding to |ids|.
   // |ids|: The ids for the password entries being updated.
-  // |new_username|: The new username.
-  // |new_password|: The new password.
-  virtual bool ChangeSavedPassword(const std::vector<int>& ids,
-                                   const std::u16string& new_username,
-                                   const std::u16string& new_password) = 0;
+  // |params|: The struct which holds the new username, password and note.
+  virtual bool ChangeSavedPassword(
+      const std::vector<int>& ids,
+      const api::passwords_private::ChangeSavedPasswordParams& params) = 0;
 
   // Removes the saved password entries corresponding to the |ids| generated for
   // each entry of the password list. Any invalid id will be ignored.
@@ -181,6 +181,22 @@ class PasswordsPrivateDelegate : public KeyedService {
   // the remove succeeded.
   virtual bool RemoveInsecureCredential(
       const api::passwords_private::InsecureCredential& credential) = 0;
+
+  // Attempts to mute |credential| from the password store. Returns whether
+  // the mute succeeded.
+  virtual bool MuteInsecureCredential(
+      const api::passwords_private::InsecureCredential& credential) = 0;
+
+  // Attempts to unmute |credential| from the password store. Returns whether
+  // the unmute succeeded.
+  virtual bool UnmuteInsecureCredential(
+      const api::passwords_private::InsecureCredential& credential) = 0;
+
+  // Records that a change password flow was started for |credential| and
+  // whether |is_manual_flow| applies to the flow.
+  virtual void RecordChangePasswordFlowStarted(
+      const api::passwords_private::InsecureCredential& credential,
+      bool is_manual_flow) = 0;
 
   // Requests to start a check for insecure passwords. Invokes |callback|
   // once a check is running or the request was stopped via StopPasswordCheck().

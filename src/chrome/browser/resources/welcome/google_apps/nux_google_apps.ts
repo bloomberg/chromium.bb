@@ -8,8 +8,8 @@ import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import 'chrome://resources/js/cr.m.js';
 import 'chrome://resources/js/util.m.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
-import '../shared/animations_css.js';
-import '../shared/chooser_shared_css.js';
+import '../shared/animations.css.js';
+import '../shared/chooser_shared.css.js';
 import '../shared/step_indicator.js';
 import '../strings.m.js';
 
@@ -17,15 +17,16 @@ import {I18nMixin} from 'chrome://resources/js/i18n_mixin.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {isRTL} from 'chrome://resources/js/util.m.js';
 import {IronA11yAnnouncer} from 'chrome://resources/polymer/v3_0/iron-a11y-announcer/iron-a11y-announcer.js';
-import {afterNextRender, html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {afterNextRender, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {navigateToNextStep, NavigationMixin} from '../navigation_mixin.js';
 import {BookmarkBarManager, BookmarkProxy, BookmarkProxyImpl} from '../shared/bookmark_proxy.js';
 import {ModuleMetricsManager} from '../shared/module_metrics_proxy.js';
-import {stepIndicatorModel} from '../shared/nux_types.js';
+import {StepIndicatorModel} from '../shared/nux_types.js';
 
 import {GoogleAppProxy, GoogleAppProxyImpl} from './google_app_proxy.js';
 import {GoogleAppsMetricsProxyImpl} from './google_apps_metrics_proxy.js';
+import {getTemplate} from './nux_google_apps.html.js';
 
 type AppItem = {
   id: number,
@@ -38,7 +39,7 @@ type AppItem = {
 
 type AppItemModel = {
   item: AppItem,
-  set: (p1: string, p2: boolean) => void
+  set: (p1: string, p2: boolean) => void,
 };
 
 const KEYBOARD_FOCUSED = 'keyboard-focused';
@@ -46,7 +47,7 @@ const KEYBOARD_FOCUSED = 'keyboard-focused';
 export interface NuxGoogleAppsElement {
   $: {
     noThanksButton: HTMLElement,
-  }
+  };
 }
 
 const NuxGoogleAppsElementBase = I18nMixin(NavigationMixin(PolymerElement));
@@ -55,6 +56,10 @@ const NuxGoogleAppsElementBase = I18nMixin(NavigationMixin(PolymerElement));
 export class NuxGoogleAppsElement extends NuxGoogleAppsElementBase {
   static get is() {
     return 'nux-google-apps';
+  }
+
+  static get template() {
+    return getTemplate();
   }
 
   static get properties() {
@@ -83,7 +88,7 @@ export class NuxGoogleAppsElement extends NuxGoogleAppsElementBase {
   private wasBookmarkBarShownOnInit_: boolean = false;
   private appList_: AppItem[]|null = null;
   private hasAppsSelected_: boolean = true;
-  indicatorModel?: stepIndicatorModel;
+  indicatorModel?: StepIndicatorModel;
 
   constructor() {
     super();
@@ -95,18 +100,18 @@ export class NuxGoogleAppsElement extends NuxGoogleAppsElementBase {
     this.bookmarkBarManager_ = BookmarkBarManager.getInstance();
   }
 
-  connectedCallback() {
+  override connectedCallback() {
     super.connectedCallback();
     afterNextRender(this, () => IronA11yAnnouncer.requestAvailability());
   }
 
-  onRouteEnter() {
+  override onRouteEnter() {
     this.finalized_ = false;
     this.metricsManager_.recordPageInitialized();
     this.populateAllBookmarks_();
   }
 
-  onRouteExit() {
+  override onRouteExit() {
     if (this.finalized_) {
       return;
     }
@@ -114,7 +119,7 @@ export class NuxGoogleAppsElement extends NuxGoogleAppsElementBase {
     this.metricsManager_.recordBrowserBackOrForward();
   }
 
-  onRouteUnload() {
+  override onRouteUnload() {
     if (this.finalized_) {
       return;
     }
@@ -287,10 +292,6 @@ export class NuxGoogleAppsElement extends NuxGoogleAppsElementBase {
    */
   private getAriaPressed_(value: boolean): string {
     return value ? 'true' : 'false';
-  }
-
-  static get template() {
-    return html`{__html_template__}`;
   }
 }
 

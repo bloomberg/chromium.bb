@@ -18,14 +18,11 @@ limitations under the License.
 
 #include "tensorflow/core/framework/bounds_check.h"
 #include "tensorflow/core/framework/full_type_util.h"
-#include "tensorflow/core/framework/node_def.pb.h"
 #include "tensorflow/core/framework/op_def.pb.h"
 #include "tensorflow/core/framework/partial_tensor_shape.h"
 #include "tensorflow/core/framework/tensor_shape.pb.h"
 #include "tensorflow/core/lib/core/errors.h"
-#include "tensorflow/core/lib/strings/numbers.h"
-#include "tensorflow/core/lib/strings/scanner.h"
-#include "tensorflow/core/lib/strings/str_util.h"
+#include "tensorflow/core/util/overflow.h"
 
 namespace tensorflow {
 namespace shape_inference {
@@ -129,8 +126,7 @@ Status InferenceContext::set_output(StringPiece output_name,
     const int size = result->second.second - start;
     const int shapes_size = shapes.size();
     if (size != shapes_size) {
-      return errors::InvalidArgument("Must have exactly ", shapes.size(),
-                                     " shapes.");
+      return errors::InvalidArgument("Must provide exactly ", size, " shapes.");
     }
     for (int i = 0; i < shapes_size; ++i) {
       outputs_[i + start] = shapes[i];
@@ -171,12 +167,11 @@ void InferenceContext::PreInputInit(
     const OpDef& op_def, const std::vector<const Tensor*>& input_tensors,
     const std::vector<ShapeHandle>& input_tensors_as_shapes) {
   // TODO(mdan): This is also done at graph construction. Run only here instead?
-  const auto ret = full_type::SpecializeType(attrs_, op_def);
-  if (!ret.status().ok()) {
-    construction_status_ = ret.status();
+  Status s = full_type::SpecializeType(attrs_, op_def, ret_types_);
+  if (!s.ok()) {
+    construction_status_ = s;
     return;
   }
-  ret_types_ = ret.ValueOrDie();
 
   input_tensors_ = input_tensors;
   input_tensors_as_shapes_ = input_tensors_as_shapes;
@@ -797,7 +792,7 @@ Status InferenceContext::InternalMakeShapeFromTensor(
     // `tf.range`/`tf.ones`, etc. where the shape is not really materialized,
     // only used during the inference. Hence, just prevent doing a `reserve`
     // with a very large argument.
-    const int64_t max_dimensions = 1 << 20;
+    const int64_t max_dimensions = 1 << 25;
     if (num_dims >= max_dimensions) {
       return errors::Internal(
           "Cannot create a tensor with ", num_dims,
@@ -846,7 +841,7 @@ Status InferenceContext::InternalMakeShapeFromTensor(
     return errors::InvalidArgument(
         "Input tensor must be rank 1, but was rank ", t->shape().dims(), ".",
         ((t->shape().dims() == 0)
-             ? "If it is rank 0 rank 0 it must have statically known value -1 "
+             ? "If it is rank 0 it must have statically known value -1 "
                "(representing an unknown shape). "
              : " "),
         "Saw tensor shape ", t->shape().DebugString());
@@ -904,6 +899,19 @@ Status InferenceContext::MakeShapeFromTensorShape(const TensorShape& shape,
                                                   ShapeHandle* out) {
   return MakeShapeFromPartialTensorShape(PartialTensorShape(shape.dim_sizes()),
                                          out);
+}
+
+StatusOr<ShapeHandle> InferenceContext::MakeShapeFromShapeTensor(
+    const TensorShape& shape) {
+  ShapeHandle out;
+  TF_RETURN_IF_ERROR(MakeShapeFromTensorShape(shape, &out));
+  return out;
+}
+
+TensorShapeProto InferenceContext::ShapeHandleToProto(ShapeHandle handle) {
+  TensorShapeProto out;
+  ShapeHandleToProto(handle, &out);
+  return out;
 }
 
 Status InferenceContext::MakeShapeFromShapeProto(const TensorShapeProto& proto,
@@ -1099,7 +1107,7 @@ Status InferenceContext::Multiply(DimensionHandle first,
     *out = UnknownDim();
   } else {
     // Invariant: Both values are known and greater than 1.
-    const int64_t product = first_value * second_value;
+    const int64_t product = MultiplyWithoutOverflow(first_value, second_value);
     if (product < 0) {
       return errors::InvalidArgument(
           "Negative dimension size caused by overflow when multiplying ",
@@ -1224,9 +1232,7 @@ bool InferenceContext::MergeHandleShapesAndTypes(
   if (!refined) {
     return false;
   }
-  for (int i = 0, end = new_values.size(); i < end; ++i) {
-    (*to_update)[i] = new_values[i];
-  }
+  to_update->swap(new_values);
   return true;
 }
 

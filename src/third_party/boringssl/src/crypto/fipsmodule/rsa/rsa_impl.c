@@ -66,11 +66,12 @@
 #include <openssl/thread.h>
 #include <openssl/type_check.h>
 
-#include "internal.h"
-#include "../bn/internal.h"
 #include "../../internal.h"
+#include "../bn/internal.h"
 #include "../delocate.h"
 #include "../rand/fork_detect.h"
+#include "../service_indicator/internal.h"
+#include "internal.h"
 
 
 int rsa_check_public_key(const RSA *rsa) {
@@ -261,6 +262,8 @@ size_t rsa_default_size(const RSA *rsa) {
 
 int RSA_encrypt(RSA *rsa, size_t *out_len, uint8_t *out, size_t max_out,
                 const uint8_t *in, size_t in_len, int padding) {
+  boringssl_ensure_rsa_self_test();
+
   if (!rsa_check_public_key(rsa)) {
     return 0;
   }
@@ -528,6 +531,8 @@ err:
 
 int rsa_default_decrypt(RSA *rsa, size_t *out_len, uint8_t *out, size_t max_out,
                         const uint8_t *in, size_t in_len, int padding) {
+  boringssl_ensure_rsa_self_test();
+
   const unsigned rsa_size = RSA_size(rsa);
   uint8_t *buf = NULL;
   int ret = 0;
@@ -593,8 +598,9 @@ err:
 
 static int mod_exp(BIGNUM *r0, const BIGNUM *I, RSA *rsa, BN_CTX *ctx);
 
-int RSA_verify_raw(RSA *rsa, size_t *out_len, uint8_t *out, size_t max_out,
-                   const uint8_t *in, size_t in_len, int padding) {
+int rsa_verify_raw_no_self_test(RSA *rsa, size_t *out_len, uint8_t *out,
+                                size_t max_out, const uint8_t *in,
+                                size_t in_len, int padding) {
   if (!rsa_check_public_key(rsa)) {
     return 0;
   }
@@ -684,6 +690,14 @@ err:
     OPENSSL_free(buf);
   }
   return ret;
+}
+
+int RSA_verify_raw(RSA *rsa, size_t *out_len, uint8_t *out,
+                                size_t max_out, const uint8_t *in,
+                                size_t in_len, int padding) {
+  boringssl_ensure_rsa_self_test();
+  return rsa_verify_raw_no_self_test(rsa, out_len, out, max_out, in, in_len,
+                                     padding);
 }
 
 int rsa_default_private_transform(RSA *rsa, uint8_t *out, const uint8_t *in,
@@ -1324,6 +1338,8 @@ static void replace_bn_mont_ctx(BN_MONT_CTX **out, BN_MONT_CTX **in) {
 static int RSA_generate_key_ex_maybe_fips(RSA *rsa, int bits,
                                           const BIGNUM *e_value, BN_GENCB *cb,
                                           int check_fips) {
+  boringssl_ensure_rsa_self_test();
+
   RSA *tmp = NULL;
   uint32_t err;
   int ret = 0;
@@ -1404,6 +1420,10 @@ int RSA_generate_key_fips(RSA *rsa, int bits, BN_GENCB *cb) {
             BN_set_word(e, RSA_F4) &&
             RSA_generate_key_ex_maybe_fips(rsa, bits, e, cb, /*check_fips=*/1);
   BN_free(e);
+
+  if (ret) {
+    FIPS_service_indicator_update_state();
+  }
   return ret;
 }
 

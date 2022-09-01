@@ -8,6 +8,7 @@
 #include "base/task/sequence_manager/time_domain.h"
 #include "base/task/task_observer.h"
 #include "base/time/tick_clock.h"
+#include "base/time/time.h"
 #include "base/time/time_override.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 
@@ -66,13 +67,11 @@ class PLATFORM_EXPORT AutoAdvancingVirtualTimeDomain
 
   int task_starvation_count() const { return task_starvation_count_; }
 
+  base::TimeTicks InitialTicks() const { return initial_time_ticks_; }
   // TickClock implementation:
   base::TimeTicks NowTicks() const override;
 
   // TimeDomain implementation:
-  base::TimeTicks GetNextDelayedTaskTime(
-      base::sequence_manager::WakeUp delayed_wakeup,
-      base::sequence_manager::LazyNow* lazy_now) const override;
   bool MaybeFastForwardToWakeUp(
       absl::optional<base::sequence_manager::WakeUp> wakeup,
       bool quit_when_idle_requested) override;

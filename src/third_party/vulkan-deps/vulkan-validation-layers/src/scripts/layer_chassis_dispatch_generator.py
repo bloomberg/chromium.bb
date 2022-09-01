@@ -1,9 +1,9 @@
 #!/usr/bin/python3 -i
 #
-# Copyright (c) 2015-2021 The Khronos Group Inc.
-# Copyright (c) 2015-2021 Valve Corporation
-# Copyright (c) 2015-2021 LunarG, Inc.
-# Copyright (c) 2015-2021 Google Inc.
+# Copyright (c) 2015-2022 The Khronos Group Inc.
+# Copyright (c) 2015-2022 Valve Corporation
+# Copyright (c) 2015-2022 LunarG, Inc.
+# Copyright (c) 2015-2022 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -129,10 +129,10 @@ class LayerChassisDispatchOutputGenerator(OutputGenerator):
 // This file is ***GENERATED***.  Do Not Edit.
 // See layer_chassis_dispatch_generator.py for modifications.
 
-/* Copyright (c) 2015-2021 The Khronos Group Inc.
- * Copyright (c) 2015-2021 Valve Corporation
- * Copyright (c) 2015-2021 LunarG, Inc.
- * Copyright (c) 2015-2021 Google Inc.
+/* Copyright (c) 2015-2022 The Khronos Group Inc.
+ * Copyright (c) 2015-2022 Valve Corporation
+ * Copyright (c) 2015-2022 LunarG, Inc.
+ * Copyright (c) 2015-2022 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -190,10 +190,11 @@ VkResult DispatchCreateGraphicsPipelines(VkDevice device, VkPipelineCache pipeli
                 }
             }
 
-            auto dynamic_rendering = LvlFindInChain<VkPipelineRenderingCreateInfoKHR>(pCreateInfos[idx0].pNext);
+            auto dynamic_rendering = LvlFindInChain<VkPipelineRenderingCreateInfo>(pCreateInfos[idx0].pNext);
             if (dynamic_rendering) {
                 uses_color_attachment        = (dynamic_rendering->colorAttachmentCount > 0);
-                uses_depthstencil_attachment = (dynamic_rendering->depthAttachmentFormat != VK_FORMAT_UNDEFINED);
+                uses_depthstencil_attachment = (dynamic_rendering->depthAttachmentFormat != VK_FORMAT_UNDEFINED ||
+                                                dynamic_rendering->stencilAttachmentFormat != VK_FORMAT_UNDEFINED);
             }
 
             local_pCreateInfos[idx0].initialize(&pCreateInfos[idx0], uses_color_attachment, uses_depthstencil_attachment);
@@ -213,6 +214,14 @@ VkResult DispatchCreateGraphicsPipelines(VkDevice device, VkPipelineCache pipeli
             }
             if (pCreateInfos[idx0].renderPass) {
                 local_pCreateInfos[idx0].renderPass = layer_data->Unwrap(pCreateInfos[idx0].renderPass);
+            }
+
+            auto* link_info = LvlFindInChain<VkPipelineLibraryCreateInfoKHR>(local_pCreateInfos[idx0].pNext);
+            if (link_info) {
+                auto* unwrapped_libs = const_cast<VkPipeline*>(link_info->pLibraries);
+                for (uint32_t idx1 = 0; idx1 < link_info->libraryCount; ++idx1) {
+                    unwrapped_libs[idx1] = layer_data->Unwrap(link_info->pLibraries[idx1]);
+                }
             }
         }
     }
@@ -1065,6 +1074,23 @@ VkResult DispatchSetPrivateDataEXT(
     return result;
 }
 
+VkResult DispatchSetPrivateData(
+    VkDevice                                    device,
+    VkObjectType                                objectType,
+    uint64_t                                    objectHandle,
+    VkPrivateDataSlot                           privateDataSlot,
+    uint64_t                                    data)
+{
+    auto layer_data = GetLayerDataPtr(get_dispatch_key(device), layer_data_map);
+    if (!wrap_handles) return layer_data->device_dispatch_table.SetPrivateData(device, objectType, objectHandle, privateDataSlot, data);
+    privateDataSlot = layer_data->Unwrap(privateDataSlot);
+    if (NotDispatchableHandle(objectType)) {
+        objectHandle = layer_data->Unwrap(objectHandle);
+    }
+    VkResult result = layer_data->device_dispatch_table.SetPrivateData(device, objectType, objectHandle, privateDataSlot, data);
+    return result;
+}
+
 void DispatchGetPrivateDataEXT(
     VkDevice                                    device,
     VkObjectType                                objectType,
@@ -1079,6 +1105,22 @@ void DispatchGetPrivateDataEXT(
         objectHandle = layer_data->Unwrap(objectHandle);
     }
     layer_data->device_dispatch_table.GetPrivateDataEXT(device, objectType, objectHandle, privateDataSlot, pData);
+}
+
+void DispatchGetPrivateData(
+    VkDevice                                    device,
+    VkObjectType                                objectType,
+    uint64_t                                    objectHandle,
+    VkPrivateDataSlot                           privateDataSlot,
+    uint64_t*                                   pData)
+{
+    auto layer_data = GetLayerDataPtr(get_dispatch_key(device), layer_data_map);
+    if (!wrap_handles) return layer_data->device_dispatch_table.GetPrivateData(device, objectType, objectHandle, privateDataSlot, pData);
+    privateDataSlot = layer_data->Unwrap(privateDataSlot);
+    if (NotDispatchableHandle(objectType)) {
+        objectHandle = layer_data->Unwrap(objectHandle);
+    }
+    layer_data->device_dispatch_table.GetPrivateData(device, objectType, objectHandle, privateDataSlot, pData);
 }
 
 layer_data::unordered_map<VkCommandBuffer, VkCommandPool> secondary_cb_map{};
@@ -1172,6 +1214,157 @@ VkResult DispatchBeginCommandBuffer(VkCommandBuffer commandBuffer, const VkComma
     VkResult result = layer_data->device_dispatch_table.BeginCommandBuffer(commandBuffer, (const VkCommandBufferBeginInfo*)local_pBeginInfo);
     return result;
 }
+
+VkResult DispatchCreateRayTracingPipelinesKHR(
+    VkDevice                                    device,
+    VkDeferredOperationKHR                      deferredOperation,
+    VkPipelineCache                             pipelineCache,
+    uint32_t                                    createInfoCount,
+    const VkRayTracingPipelineCreateInfoKHR*    pCreateInfos,
+    const VkAllocationCallbacks*                pAllocator,
+    VkPipeline*                                 pPipelines)
+{
+    auto layer_data = GetLayerDataPtr(get_dispatch_key(device), layer_data_map);
+    safe_VkRayTracingPipelineCreateInfoKHR *local_pCreateInfos = (safe_VkRayTracingPipelineCreateInfoKHR *)(pCreateInfos);
+    if (wrap_handles) {
+        deferredOperation = layer_data->Unwrap(deferredOperation);
+        pipelineCache = layer_data->Unwrap(pipelineCache);
+        if (pCreateInfos) {
+            local_pCreateInfos = new safe_VkRayTracingPipelineCreateInfoKHR[createInfoCount];
+            for (uint32_t index0 = 0; index0 < createInfoCount; ++index0) {
+                local_pCreateInfos[index0].initialize(&pCreateInfos[index0]);
+                if (local_pCreateInfos[index0].pStages) {
+                    for (uint32_t index1 = 0; index1 < local_pCreateInfos[index0].stageCount; ++index1) {
+                        if (pCreateInfos[index0].pStages[index1].module) {
+                            local_pCreateInfos[index0].pStages[index1].module = layer_data->Unwrap(pCreateInfos[index0].pStages[index1].module);
+                        }
+                    }
+                }
+                if (local_pCreateInfos[index0].pLibraryInfo) {
+                    if (local_pCreateInfos[index0].pLibraryInfo->pLibraries) {
+                        for (uint32_t index2 = 0; index2 < local_pCreateInfos[index0].pLibraryInfo->libraryCount; ++index2) {
+                            local_pCreateInfos[index0].pLibraryInfo->pLibraries[index2] = layer_data->Unwrap(local_pCreateInfos[index0].pLibraryInfo->pLibraries[index2]);
+                        }
+                    }
+                }
+                if (pCreateInfos[index0].layout) {
+                    local_pCreateInfos[index0].layout = layer_data->Unwrap(pCreateInfos[index0].layout);
+                }
+                if (pCreateInfos[index0].basePipelineHandle) {
+                    local_pCreateInfos[index0].basePipelineHandle = layer_data->Unwrap(pCreateInfos[index0].basePipelineHandle);
+                }
+            }
+        }
+    }
+    VkResult result = layer_data->device_dispatch_table.CreateRayTracingPipelinesKHR(device, deferredOperation, pipelineCache, createInfoCount, (const VkRayTracingPipelineCreateInfoKHR*)local_pCreateInfos, pAllocator, pPipelines);
+    if (wrap_handles) {
+        for (uint32_t i = 0; i < createInfoCount; ++i) {
+            if (pCreateInfos[i].pNext != VK_NULL_HANDLE) {
+                CopyCreatePipelineFeedbackData(local_pCreateInfos[i].pNext, pCreateInfos[i].pNext);
+            }
+        }
+    }
+
+    if (deferredOperation != VK_NULL_HANDLE) {
+        std::vector<std::function<void()>> post_completion_fns;
+        auto completion_find = layer_data->deferred_operation_post_completion.pop(deferredOperation);
+        if(completion_find->first) {
+            post_completion_fns = std::move(completion_find->second);
+        }
+        if (wrap_handles) {
+            auto cleanup_fn = [local_pCreateInfos, deferredOperation, pPipelines, createInfoCount, layer_data](){
+                                  if (local_pCreateInfos) {
+                                      delete[] local_pCreateInfos;
+                                  }
+                                  std::vector<VkPipeline> pipes_wrapped;
+                                  for (uint32_t index0 = 0; index0 < createInfoCount; index0++) {
+                                      if (pPipelines[index0] != VK_NULL_HANDLE) {
+                                          pPipelines[index0] = layer_data->WrapNew(pPipelines[index0]);
+                                          pipes_wrapped.emplace_back(pPipelines[index0]);
+                                      }
+                                  }
+                                  layer_data->deferred_operation_pipelines.insert(deferredOperation, std::move(pipes_wrapped));
+                              };
+            post_completion_fns.emplace_back(cleanup_fn);
+        } else {
+            auto cleanup_fn = [deferredOperation, pPipelines, createInfoCount, layer_data](){
+                                  std::vector<VkPipeline> pipes;
+                                  for (uint32_t index0 = 0; index0 < createInfoCount; index0++) {
+                                      if (pPipelines[index0] != VK_NULL_HANDLE) {
+                                          pipes.emplace_back(pPipelines[index0]);
+                                      }
+                                  }
+                                  layer_data->deferred_operation_pipelines.insert(deferredOperation, std::move(pipes));
+                              };
+            post_completion_fns.emplace_back(cleanup_fn);
+        }
+        layer_data->deferred_operation_post_completion.insert(deferredOperation, std::move(post_completion_fns));
+    } else if (wrap_handles){
+        if (local_pCreateInfos) {
+            delete[] local_pCreateInfos;
+        }
+        for (uint32_t index0 = 0; index0 < createInfoCount; index0++) {
+            if (pPipelines[index0] != VK_NULL_HANDLE) {
+                pPipelines[index0] = layer_data->WrapNew(pPipelines[index0]);
+            }
+        }
+    }
+
+    return result;
+}
+
+VkResult DispatchDeferredOperationJoinKHR(
+    VkDevice                                    device,
+    VkDeferredOperationKHR                      operation)
+{
+    auto layer_data = GetLayerDataPtr(get_dispatch_key(device), layer_data_map);
+    if (wrap_handles) {
+        operation = layer_data->Unwrap(operation);
+    }
+    VkResult result = layer_data->device_dispatch_table.DeferredOperationJoinKHR(device, operation);
+
+    // If this thread completed the operation, free any retained memory.
+    if (result == VK_SUCCESS)
+    {
+        auto iter = layer_data->deferred_operation_post_completion.pop(operation);
+        if (iter != layer_data->deferred_operation_post_completion.end())
+        {
+            for(auto &cleanup_fn : iter->second) {
+                cleanup_fn();
+            }
+        }
+    }
+
+    return result;
+}
+
+
+VkResult DispatchGetDeferredOperationResultKHR(
+    VkDevice                                    device,
+    VkDeferredOperationKHR                      operation)
+{
+    auto layer_data = GetLayerDataPtr(get_dispatch_key(device), layer_data_map);
+    if (wrap_handles) {
+        operation = layer_data->Unwrap(operation);
+    }
+    VkResult result = layer_data->device_dispatch_table.GetDeferredOperationResultKHR(device, operation);
+
+    // Add created pipelines if successful
+    if (result == VK_SUCCESS)
+    {
+        auto iter_fn = layer_data->deferred_operation_post_check.pop(operation);
+        auto iter_pipes = layer_data->deferred_operation_pipelines.pop(operation);
+        if (iter_fn->first && iter_pipes->first)
+        {
+            for(auto &cleanup_fn : iter_fn->second)
+            {
+                cleanup_fn(iter_pipes->second);
+            }
+        }
+    }
+
+    return result;
+}
 """
     # Separate generated text for source and headers
     ALL_SECTIONS = ['source_file', 'header_file']
@@ -1229,6 +1422,11 @@ VkResult DispatchBeginCommandBuffer(VkCommandBuffer commandBuffer, const VkComma
             'vkGetPhysicalDeviceToolPropertiesEXT',
             'vkSetPrivateDataEXT',
             'vkGetPrivateDataEXT',
+            'vkCreateRayTracingPipelinesKHR',
+            'vkDeferredOperationJoinKHR',
+            'vkGetDeferredOperationResultKHR',
+            'vkSetPrivateData',
+            'vkGetPrivateData',
             # These are for special-casing the pInheritanceInfo issue (must be ignored for primary CBs)
             'vkAllocateCommandBuffers',
             'vkFreeCommandBuffers',
@@ -1619,11 +1817,24 @@ VkResult DispatchBeginCommandBuffer(VkCommandBuffer commandBuffer, const VkComma
 
     #
     # Clean up local declarations
-    def cleanUpLocalDeclarations(self, indent, prefix, name, len, index):
+    def cleanUpLocalDeclarations(self, indent, prefix, name, len, deferred_name, index):
         cleanup = ''
-        if len is not None:
-            cleanup = '%sif (local_%s%s) {\n' % (indent, prefix, name)
-            cleanup += '%s    delete[] local_%s%s;\n' % (indent, prefix, name)
+        if len is not None or deferred_name is not None:
+            delete_var = "local_%s%s" % (prefix, name)
+            if len is None:
+                delete_code = "delete %s" % (delete_var)
+            else:
+                delete_code = "delete[] %s" % (delete_var)
+            cleanup = '%sif (%s) {\n' % (indent, delete_var)
+            if deferred_name is not None:
+                cleanup += '%s    if (%s != VK_NULL_HANDLE) {\n' % (indent, deferred_name)
+                cleanup += '%s        std::vector<std::function<void()>> cleanup{[%s](){ %s; }};\n' % (indent, delete_var, delete_code)
+                cleanup += '%s        layer_data->deferred_operation_post_completion.insert(%s, cleanup);\n' % (indent, deferred_name)
+                cleanup += '%s    } else {\n' % (indent)
+                cleanup += '%s        %s;\n' % (indent, delete_code)
+                cleanup += "%s    }\n" % (indent)
+            else:
+                cleanup += '%s    %s;\n' % (indent, delete_code)
             cleanup += "%s}\n" % (indent)
         return cleanup
     #
@@ -1706,6 +1917,8 @@ VkResult DispatchBeginCommandBuffer(VkCommandBuffer commandBuffer, const VkComma
                         safe_type = member.type
                     # Struct Array
                     if member.len is not None:
+                        # Check if this function can be deferred.
+                        deferred_name = next((member.name for member in members if member.type == 'VkDeferredOperationKHR'), None)
                         # Update struct prefix
                         if first_level_param == True:
                             new_prefix = 'local_%s' % member.name
@@ -1737,13 +1950,16 @@ VkResult DispatchBeginCommandBuffer(VkCommandBuffer commandBuffer, const VkComma
                         indent = self.decIndent(indent)
                         pre_code += '%s    }\n' % indent
                         if first_level_param == True:
-                            post_code += self.cleanUpLocalDeclarations(indent, prefix, member.name, member.len, index)
+                            post_code += self.cleanUpLocalDeclarations(indent, prefix, member.name, member.len, deferred_name, index)
                     # Single Struct
                     elif member.ispointer:
+                        # Check if this function can be deferred.
+                        deferred_name = next((member.name for member in members if member.type == 'VkDeferredOperationKHR'), None)
                         # Update struct prefix
                         if first_level_param == True:
                             new_prefix = 'local_%s->' % member.name
-                            decls += '%s%s var_local_%s%s;\n' % (indent, safe_type, prefix, member.name)
+                            if deferred_name is None:
+                                decls += '%s%s var_local_%s%s;\n' % (indent, safe_type, prefix, member.name)
                             decls += '%s%s *local_%s%s = NULL;\n' % (indent, safe_type, prefix, member.name)
                         else:
                             new_prefix = '%s%s->' % (prefix, member.name)
@@ -1751,7 +1967,10 @@ VkResult DispatchBeginCommandBuffer(VkCommandBuffer commandBuffer, const VkComma
                         pre_code += '%s    if (%s%s) {\n' % (indent, prefix, member.name)
                         indent = self.incIndent(indent)
                         if first_level_param == True:
-                            pre_code += '%s    local_%s%s = &var_local_%s%s;\n' % (indent, prefix, member.name, prefix, member.name)
+                            if deferred_name is None:
+                                pre_code += '%s    local_%s%s = &var_local_%s%s;\n' % (indent, prefix, member.name, prefix, member.name)
+                            else:
+                                pre_code += '%s    local_%s = new %s;\n' % (indent, member.name, safe_type)
                             if 'safe_' in safe_type:
                                 pre_code += '%s    local_%s%s->initialize(%s);\n' % (indent, prefix, member.name, member.name)
                             else:
@@ -1766,7 +1985,7 @@ VkResult DispatchBeginCommandBuffer(VkCommandBuffer commandBuffer, const VkComma
                         indent = self.decIndent(indent)
                         pre_code += '%s    }\n' % indent
                         if first_level_param == True:
-                            post_code += self.cleanUpLocalDeclarations(indent, prefix, member.name, member.len, index)
+                            post_code += self.cleanUpLocalDeclarations(indent, prefix, member.name, member.len, deferred_name, index)
                     else:
                         # Update struct prefix
                         if first_level_param == True:

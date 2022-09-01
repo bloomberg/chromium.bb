@@ -8,6 +8,7 @@ import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as ComponentHelpers from '../helpers/helpers.js';
 import * as IconButton from '../icon_button/icon_button.js';
 
+import * as Input from '../input/input.js';
 import previewToggleStyles from './previewToggle.css.js';
 
 const {render, html, nothing} = LitHtml;
@@ -17,6 +18,7 @@ export interface PreviewToggleData {
   helperText: string|null;
   feedbackURL: string|null;
   experiment: Root.Runtime.ExperimentName;
+  learnMoreURL?: string;
   onChangeCallback?: (checked: boolean) => void;
 }
 
@@ -25,6 +27,14 @@ const UIStrings = {
   *@description Link text the user can click to provide feedback to the team.
   */
   previewTextFeedbackLink: 'Send us your feedback.',
+  /**
+  *@description Link text the user can click to provide feedback to the team.
+  */
+  shortFeedbackLink: 'Send feedback',
+  /**
+  *@description Link text the user can click to see documentation.
+  */
+  learnMoreLink: 'Learn More',
 };
 
 const str_ = i18n.i18n.registerUIStrings('ui/components/panel_feedback/PreviewToggle.ts', UIStrings);
@@ -37,42 +47,54 @@ export class PreviewToggle extends HTMLElement {
   #name = '';
   #helperText: string|null = null;
   #feedbackURL: string|null = null;
+  #learnMoreURL: string|undefined;
   #experiment: string = '';
   #onChangeCallback?: (checked: boolean) => void;
 
   connectedCallback(): void {
-    this.#shadow.adoptedStyleSheets = [previewToggleStyles];
+    this.#shadow.adoptedStyleSheets = [Input.checkboxStyles, previewToggleStyles];
   }
 
   set data(data: PreviewToggleData) {
     this.#name = data.name;
     this.#helperText = data.helperText;
     this.#feedbackURL = data.feedbackURL;
+    this.#learnMoreURL = data.learnMoreURL;
     this.#experiment = data.experiment;
     this.#onChangeCallback = data.onChangeCallback;
-    this.render();
+    this.#render();
   }
 
-  private render(): void {
+  #render(): void {
     const checked = Root.Runtime.experiments.isEnabled(this.#experiment);
     // Disabled until https://crbug.com/1079231 is fixed.
     // clang-format off
     render(
       html`
-      <div class="experiment-preview">
-        <input type="checkbox" ?checked=${checked} @change=${this.checkboxChanged} aria-label=${this.#name}/>
-        <${IconButton.Icon.Icon.litTagName} .data=${{
-          iconName: 'ic_preview_feature',
-          width: '16px',
-          height: '16px',
-          color: 'var(--color-text-secondary)',
-        } as IconButton.Icon.IconData}>
-        </${IconButton.Icon.Icon.litTagName}>${this.#name}
-      </div>
-      <div class="helper">
-        ${this.#helperText && this.#feedbackURL
-          ? html`<p>${this.#helperText} <x-link href=${this.#feedbackURL}>${i18nString(UIStrings.previewTextFeedbackLink)}</x-link></p>`
+      <div class="container">
+        <div class="checkbox-line">
+          <label class="experiment-preview">
+            <input type="checkbox" ?checked=${checked} @change=${this.#checkboxChanged} aria-label=${this.#name}/>
+            <${IconButton.Icon.Icon.litTagName} .data=${{
+              iconName: 'ic_preview_feature',
+              width: '16px',
+              height: '16px',
+              color: 'var(--color-text-secondary)',
+            } as IconButton.Icon.IconData}>
+            </${IconButton.Icon.Icon.litTagName}>${this.#name}
+          </label>
+          ${this.#feedbackURL && !this.#helperText
+            ? html`<div class="feedback"><x-link class="x-link" href=${this.#feedbackURL}>${i18nString(UIStrings.shortFeedbackLink)}</x-link></div>`
+            : nothing}
+        </div>
+        ${this.#learnMoreURL
+          ? html`<x-link class="x-link" href=${this.#learnMoreURL}>${i18nString(UIStrings.learnMoreLink)}</x-link>`
           : nothing}
+        <div class="helper">
+          ${this.#helperText && this.#feedbackURL
+            ? html`<p>${this.#helperText} <x-link class="x-link" href=${this.#feedbackURL}>${i18nString(UIStrings.previewTextFeedbackLink)}</x-link></p>`
+            : nothing}
+        </div>
       </div>`,
       this.#shadow,
       {
@@ -81,7 +103,7 @@ export class PreviewToggle extends HTMLElement {
     // clang-format on
   }
 
-  private checkboxChanged(event: Event): void {
+  #checkboxChanged(event: Event): void {
     const checked = (event.target as HTMLInputElement).checked;
     Root.Runtime.experiments.setEnabled(this.#experiment, checked);
     this.#onChangeCallback?.(checked);

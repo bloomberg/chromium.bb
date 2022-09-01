@@ -15,7 +15,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/usb/usb_blocklist.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
+#include "chrome/browser/usb/usb_chooser_controller.h"
 #include "chrome/browser/usb/usb_tab_helper.h"
+#include "chrome/browser/usb/web_usb_chooser.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/buildflags/buildflags.h"
 #include "media/mojo/mojom/remoting_common.mojom.h"
@@ -25,6 +27,7 @@
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "base/containers/fixed_flat_set.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 #endif
 
@@ -70,6 +73,15 @@ bool IsDevicePermissionAutoGranted(
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
   return false;
+}
+
+std::unique_ptr<content::UsbChooser> RunChooser(
+    content::RenderFrameHost& frame,
+    std::vector<device::mojom::UsbDeviceFilterPtr> filters,
+    WebUsbServiceImpl::GetPermissionCallback callback) {
+  auto controller = std::make_unique<UsbChooserController>(
+      &frame, std::move(filters), std::move(callback));
+  return WebUsbChooser::Create(&frame, std::move(controller));
 }
 
 }  // namespace
@@ -125,16 +137,14 @@ class WebUsbServiceImpl::UsbDeviceClient
 };
 
 WebUsbServiceImpl::WebUsbServiceImpl(
-    content::RenderFrameHost* render_frame_host,
-    base::WeakPtr<WebUsbChooser> usb_chooser)
-    : render_frame_host_(render_frame_host),
-      usb_chooser_(std::move(usb_chooser)) {
+    content::RenderFrameHost* render_frame_host)
+    : render_frame_host_(render_frame_host) {
   DCHECK(render_frame_host_);
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host_);
   // This class is destroyed on cross-origin navigations and so it is safe to
   // cache these values.
-  origin_ = web_contents->GetMainFrame()->GetLastCommittedOrigin();
+  origin_ = web_contents->GetPrimaryMainFrame()->GetLastCommittedOrigin();
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   chooser_context_ = UsbChooserContextFactory::GetForProfile(profile);
@@ -142,6 +152,8 @@ WebUsbServiceImpl::WebUsbServiceImpl(
 
   receivers_.set_disconnect_handler(base::BindRepeating(
       &WebUsbServiceImpl::OnConnectionError, base::Unretained(this)));
+
+  chooser_factory_ = base::BindRepeating(&RunChooser);
 }
 
 WebUsbServiceImpl::~WebUsbServiceImpl() = default;
@@ -161,6 +173,11 @@ void WebUsbServiceImpl::BindReceiver(
     permission_observation_.Observe(chooser_context_.get());
 }
 
+void WebUsbServiceImpl::SetChooserFactoryForTesting(
+    ChooserFactoryCallback chooser_factory) {
+  chooser_factory_ = std::move(chooser_factory);
+}
+
 bool WebUsbServiceImpl::HasDevicePermission(
     const device::mojom::UsbDeviceInfo& device_info) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -176,6 +193,31 @@ bool WebUsbServiceImpl::HasDevicePermission(
 }
 
 std::vector<uint8_t> WebUsbServiceImpl::GetProtectedInterfaceClasses() const {
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  // Don't enforce protected interface classes for Chrome Apps since the
+  // chrome.usb API has no such restriction.
+  if (origin_.scheme() == extensions::kExtensionScheme) {
+    auto* extension_registry = extensions::ExtensionRegistry::Get(
+        render_frame_host_->GetBrowserContext());
+    if (extension_registry) {
+      const extensions::Extension* extension =
+          extension_registry->enabled_extensions().GetByID(origin_.host());
+      if (extension && extension->is_platform_app()) {
+        return {};
+      }
+    }
+  }
+#endif
+
+  // Isolated Apps have unrestricted access to any USB interface class.
+  if (render_frame_host_->GetWebExposedIsolationLevel() >=
+      content::RenderFrameHost::WebExposedIsolationLevel::
+          kMaybeIsolatedApplication) {
+    // TODO(https://crbug.com/1236706): Should the list of interface classes the
+    // app expects to claim be encoded in the Web App Manifest?
+    return {};
+  }
+
   // Specified in https://wicg.github.io/webusb#protected-interface-classes
   std::vector<uint8_t> classes = {
       device::mojom::kUsbAudioClass,       device::mojom::kUsbHidClass,
@@ -184,7 +226,7 @@ std::vector<uint8_t> WebUsbServiceImpl::GetProtectedInterfaceClasses() const {
       device::mojom::kUsbWirelessClass,
   };
 
-#if BUILDFLAG(ENABLE_EXTENSIONS) && BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(ENABLE_EXTENSIONS) && BUILDFLAG(IS_CHROMEOS)
   // These extensions can claim the protected HID interface class (example: used
   // as badge readers)
   static constexpr auto kHidPrivilegedExtensionIds =
@@ -230,7 +272,7 @@ std::vector<uint8_t> WebUsbServiceImpl::GetProtectedInterfaceClasses() const {
       base::Contains(kHidPrivilegedExtensionIds, origin_.host())) {
     base::Erase(classes, device::mojom::kUsbHidClass);
   }
-#endif  // BUILDFLAG(ENABLE_EXTENSIONS) && BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS) && BUILDFLAG(IS_CHROMEOS)
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   if (origin_.scheme() == extensions::kExtensionScheme &&
@@ -290,12 +332,26 @@ void WebUsbServiceImpl::GetDevice(
 void WebUsbServiceImpl::GetPermission(
     std::vector<device::mojom::UsbDeviceFilterPtr> device_filters,
     GetPermissionCallback callback) {
-  if (!usb_chooser_) {
+  if (!chooser_context_ ||
+      !chooser_context_->CanRequestObjectPermission(origin_)) {
     std::move(callback).Run(nullptr);
     return;
   }
 
-  usb_chooser_->GetPermission(std::move(device_filters), std::move(callback));
+  usb_chooser_ = chooser_factory_.Run(
+      *render_frame_host_, std::move(device_filters), std::move(callback));
+}
+
+void WebUsbServiceImpl::ForgetDevice(const std::string& guid,
+                                     ForgetDeviceCallback callback) {
+  if (chooser_context_) {
+    auto* device_info = chooser_context_->GetDeviceInfo(guid);
+    if (device_info && HasDevicePermission(*device_info)) {
+      chooser_context_->RevokeDevicePermissionWebInitiated(origin_,
+                                                           *device_info);
+    }
+  }
+  std::move(callback).Run();
 }
 
 void WebUsbServiceImpl::SetClient(

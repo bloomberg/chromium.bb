@@ -4,6 +4,7 @@
 
 #include "sandbox/win/src/sandbox_policy_diagnostic.h"
 
+#include <Windows.h>
 #include <stddef.h>
 
 #include <cinttypes>
@@ -34,6 +35,7 @@ const char kAppContainerCapabilities[] = "appContainerCapabilities";
 const char kAppContainerInitialCapabilities[] =
     "appContainerInitialCapabilities";
 const char kAppContainerSid[] = "appContainerSid";
+const char kComponentFilters[] = "componentFilters";
 const char kDesiredIntegrityLevel[] = "desiredIntegrityLevel";
 const char kDesiredMitigations[] = "desiredMitigations";
 const char kDisconnectCsrss[] = "disconnectCsrss";
@@ -43,19 +45,11 @@ const char kLockdownLevel[] = "lockdownLevel";
 const char kLowboxSid[] = "lowboxSid";
 const char kPlatformMitigations[] = "platformMitigations";
 const char kPolicyRules[] = "policyRules";
-const char kProcessIds[] = "processIds";
+const char kProcessId[] = "processId";
 
 // Values in snapshots of Policies.
 const char kDisabled[] = "disabled";
 const char kEnabled[] = "enabled";
-
-base::Value ProcessIdList(std::vector<uint32_t> process_ids) {
-  base::Value results(base::Value::Type::LIST);
-  for (const auto pid : process_ids) {
-    results.Append(base::strict_cast<double>(pid));
-  }
-  return results;
-}
 
 std::string GetTokenLevelInEnglish(TokenLevel token) {
   switch (token) {
@@ -81,17 +75,15 @@ std::string GetTokenLevelInEnglish(TokenLevel token) {
 
 std::string GetJobLevelInEnglish(JobLevel job) {
   switch (job) {
-    case JOB_LOCKDOWN:
+    case JobLevel::kLockdown:
       return "Lockdown";
-    case JOB_RESTRICTED:
-      return "Restricted";
-    case JOB_LIMITED_USER:
+    case JobLevel::kLimitedUser:
       return "Limited User";
-    case JOB_INTERACTIVE:
+    case JobLevel::kInteractive:
       return "Interactive";
-    case JOB_UNPROTECTED:
+    case JobLevel::kUnprotected:
       return "Unprotected";
-    case JOB_NONE:
+    case JobLevel::kNone:
       return "None";
   }
 }
@@ -142,6 +134,12 @@ std::string GetPlatformMitigationsAsHex(MitigationFlags mitigations) {
     return base::StringPrintf("%016" PRIx64 "%016" PRIx64, platform_flags[0],
                               platform_flags[1]);
   return base::StringPrintf("%016" PRIx64, platform_flags[0]);
+}
+
+std::string GetComponentFilterAsHex(MitigationFlags mitigations) {
+  COMPONENT_FILTER filter;
+  sandbox::ConvertProcessMitigationsToComponentFilter(mitigations, &filter);
+  return base::StringPrintf("%08lx", filter.ComponentFlags);
 }
 
 std::string GetIpcTagAsString(IpcTag service) {
@@ -371,13 +369,7 @@ base::Value GetHandlesToClose(const HandleMap& handle_map) {
 PolicyDiagnostic::PolicyDiagnostic(PolicyBase* policy) {
   DCHECK(policy);
   // TODO(crbug/997273) Add more fields once webui plumbing is complete.
-  {
-    base::AutoLock lock(policy->lock_);
-    for (auto&& target_process : policy->targets_) {
-      process_ids_.push_back(
-          base::strict_cast<uint32_t>(target_process->ProcessId()));
-    }
-  }
+  process_id_ = base::strict_cast<uint32_t>(policy->target_->ProcessId());
   lockdown_level_ = policy->lockdown_level_;
   job_level_ = policy->job_level_;
 
@@ -432,7 +424,7 @@ const char* PolicyDiagnostic::JsonString() {
     return json_string_->c_str();
 
   base::Value value(base::Value::Type::DICTIONARY);
-  value.SetKey(kProcessIds, ProcessIdList(process_ids_));
+  value.SetKey(kProcessId, base::Value(base::strict_cast<double>(process_id_)));
   value.SetKey(kLockdownLevel,
                base::Value(GetTokenLevelInEnglish(lockdown_level_)));
   value.SetKey(kJobLevel, base::Value(GetJobLevelInEnglish(job_level_)));
@@ -443,6 +435,8 @@ const char* PolicyDiagnostic::JsonString() {
                base::Value(GetMitigationsAsHex(desired_mitigations_)));
   value.SetKey(kPlatformMitigations,
                base::Value(GetPlatformMitigationsAsHex(desired_mitigations_)));
+  value.SetKey(kComponentFilters,
+               base::Value(GetComponentFilterAsHex(desired_mitigations_)));
 
   if (app_container_sid_) {
     value.SetStringKey(

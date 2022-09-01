@@ -15,7 +15,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
-#include "chrome/browser/ash/certificate_provider/certificate_provider.h"
+#include "chrome/browser/certificate_provider/certificate_provider.h"
 #include "content/public/test/browser_task_environment.h"
 #include "crypto/nss_util.h"
 #include "crypto/nss_util_internal.h"
@@ -31,7 +31,7 @@
 #include "net/test/test_data_directory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace {
 
@@ -258,4 +258,4 @@ TEST_F(ClientCertStoreAshTest, CertRequestMatching) {
       cert_1->EqualsExcludingChain(selected_identities[0]->certificate()));
 }
 
-}  // namespace chromeos
+}  // namespace ash

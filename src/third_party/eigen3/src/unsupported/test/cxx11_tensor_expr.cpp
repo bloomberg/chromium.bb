@@ -130,7 +130,7 @@ static void test_3d()
   Tensor<float, 3, RowMajor> mat4(2,3,7);
   mat4 = mat2 * 3.14f;
   Tensor<float, 3> mat5(2,3,7);
-  mat5 = mat1.inverse().log();
+  mat5 = (mat1 + mat1.constant(1)).inverse().log();
   Tensor<float, 3, RowMajor> mat6(2,3,7);
   mat6 = mat2.pow(0.5f) * 3.14f;
   Tensor<float, 3> mat7(2,3,7);
@@ -150,7 +150,7 @@ static void test_3d()
       for (int k = 0; k < 7; ++k) {
         VERIFY_IS_APPROX(mat3(i,j,k), val + val);
         VERIFY_IS_APPROX(mat4(i,j,k), val * 3.14f);
-        VERIFY_IS_APPROX(mat5(i,j,k), logf(1.0f/val));
+        VERIFY_IS_APPROX(mat5(i,j,k), logf(1.0f/(val + 1)));
         VERIFY_IS_APPROX(mat6(i,j,k), sqrtf(val) * 3.14f);
         VERIFY_IS_APPROX(mat7(i,j,k), expf((std::max)(val, mat5(i,j,k) * 2.0f)));
         VERIFY_IS_APPROX(mat8(i,j,k), expf(-val) * 3.14f);

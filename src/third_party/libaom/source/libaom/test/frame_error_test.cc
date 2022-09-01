@@ -61,8 +61,8 @@ void AV1FrameErrorTest::RandomValues(frame_error_func test_impl, int width,
       static_cast<uint8_t *>(aom_memalign(16, max_blk_size * sizeof(*dst)));
   uint8_t *const ref =
       static_cast<uint8_t *>(aom_memalign(16, max_blk_size * sizeof(*ref)));
-  ASSERT_TRUE(dst != NULL);
-  ASSERT_TRUE(ref != NULL);
+  ASSERT_NE(dst, nullptr);
+  ASSERT_NE(ref, nullptr);
   for (int i = 0; i < max_blk_size; ++i) {
     dst[i] = rnd_.Rand8();
     ref[i] = rnd_.Rand8();
@@ -83,8 +83,8 @@ void AV1FrameErrorTest::ExtremeValues(frame_error_func test_impl, int width,
       static_cast<uint8_t *>(aom_memalign(16, max_blk_size * sizeof(*dst)));
   uint8_t *const ref =
       static_cast<uint8_t *>(aom_memalign(16, max_blk_size * sizeof(*ref)));
-  ASSERT_TRUE(dst != NULL);
-  ASSERT_TRUE(ref != NULL);
+  ASSERT_NE(dst, nullptr);
+  ASSERT_NE(ref, nullptr);
   for (int r = 0; r < 2; r++) {
     if (r == 0) {
       memset(dst, 0, max_blk_size);
@@ -111,8 +111,8 @@ void AV1FrameErrorTest::RunSpeedTest(frame_error_func test_impl, int width,
       static_cast<uint8_t *>(aom_memalign(16, max_blk_size * sizeof(*dst)));
   uint8_t *const ref =
       static_cast<uint8_t *>(aom_memalign(16, max_blk_size * sizeof(*ref)));
-  ASSERT_TRUE(dst != NULL);
-  ASSERT_TRUE(ref != NULL);
+  ASSERT_NE(dst, nullptr);
+  ASSERT_NE(ref, nullptr);
   for (int i = 0; i < max_blk_size; ++i) {
     dst[i] = ref[i] = rnd_.Rand8();
   }

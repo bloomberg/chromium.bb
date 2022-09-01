@@ -135,10 +135,7 @@ void HoldingSpaceKeyedService::BindReceiver(
 void HoldingSpaceKeyedService::AddPrintedPdf(
     const base::FilePath& printed_pdf_path,
     bool from_incognito_profile) {
-  if (!from_incognito_profile ||
-      features::IsHoldingSpaceIncognitoProfileIntegrationEnabled()) {
-    AddItemOfType(HoldingSpaceItem::Type::kPrintedPdf, printed_pdf_path);
-  }
+  AddItemOfType(HoldingSpaceItem::Type::kPrintedPdf, printed_pdf_path);
 }
 
 void HoldingSpaceKeyedService::AddPinnedFiles(
@@ -334,6 +331,10 @@ HoldingSpaceKeyedService::UpdateItem(const std::string& id) {
 
 void HoldingSpaceKeyedService::RemoveAll() {
   holding_space_model_.RemoveAll();
+}
+
+void HoldingSpaceKeyedService::RemoveItem(const std::string& id) {
+  holding_space_model_.RemoveItem(id);
 }
 
 void HoldingSpaceKeyedService::CancelItem(const HoldingSpaceItem* item) {

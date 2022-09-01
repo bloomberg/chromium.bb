@@ -16,12 +16,7 @@
 
 namespace net {
 
-HttpAuthHandler::HttpAuthHandler()
-    : auth_scheme_(HttpAuth::AUTH_SCHEME_MAX),
-      score_(-1),
-      target_(HttpAuth::AUTH_NONE),
-      properties_(-1) {
-}
+HttpAuthHandler::HttpAuthHandler() = default;
 
 HttpAuthHandler::~HttpAuthHandler() = default;
 
@@ -30,9 +25,9 @@ bool HttpAuthHandler::InitFromChallenge(
     HttpAuth::Target target,
     const SSLInfo& ssl_info,
     const NetworkIsolationKey& network_isolation_key,
-    const GURL& origin,
+    const url::SchemeHostPort& scheme_host_port,
     const NetLogWithSource& net_log) {
-  origin_ = origin;
+  scheme_host_port_ = scheme_host_port;
   target_ = target;
   score_ = -1;
   properties_ = -1;
@@ -41,8 +36,12 @@ bool HttpAuthHandler::InitFromChallenge(
   auth_challenge_ = challenge->challenge_text();
   net_log_.BeginEvent(NetLogEventType::AUTH_HANDLER_INIT);
   bool ok = Init(challenge, ssl_info, network_isolation_key);
-  net_log_.AddEntryWithBoolParams(NetLogEventType::AUTH_HANDLER_INIT,
-                                  NetLogEventPhase::END, "succeeded", ok);
+  net_log_.EndEvent(NetLogEventType::AUTH_HANDLER_INIT, [&]() {
+    base::Value::Dict params;
+    params.Set("succeeded", ok);
+    params.Set("allows_default_credentials", AllowsDefaultCredentials());
+    return base::Value(std::move(params));
+  });
 
   // Init() is expected to set the scheme, realm, score, and properties.  The
   // realm may be empty.

@@ -116,12 +116,12 @@ public mailing list. If you're interested in participating please talk to
 
 **Current schedule:**
 
-*   Tuesday 10:00 PDT (13:00 EDT, 18:00 BST, 19:00 CEST; Wednesday 02:00
+*   Every second Tuesday 10:00 PDT (13:00 EDT, 18:00 BST, 19:00 CEST; Wednesday 02:00
             JST, 03:00 AEST).
 
 Meeting notes are public and are sent to *rendering-core-dev*, they're also
 available in this document: [Meeting
-notes](https://docs.google.com/document/d/1J1E_cAAPVEuwTOEN7nCs8YcDAWclQboV4bfrMG8wBn4/edit?usp=sharing).
+notes](https://docs.google.com/document/d/1DNJRmvGzv-lDVtdg6_R4anh1Xhbd_i8zgZTm8MPoSPM/edit?usp=sharing).
 
 ### Slack
 
@@ -137,13 +137,9 @@ Many of the team members may also be found in the #chromium channel on freenode.
 
 **Adenilson Cavalcanti** adenilson.cavalcanti - ARM San Jose - Performance
 
-Aleks Totic atotic - Google Mountain View Layout, Paint
-
 Anders Hartvoll Ruud andruud - Google Oslo - Style, Houdini
 
 Chris Harrelson (lead) chrishtr - Google - San Francisco - All areas
-
-Christian Biesinger - cbiesinger - Google Madison - Layout
 
 David Baron - dbaron - Google Maryland (Remote) - Paint
 
@@ -183,6 +179,8 @@ Rune Lillesveen (lead) futhark - Google Oslo - Style
 
 Stefan Zager szager - Google San Francisco - Paint
 
+Steinar H. Gunderson sesse - Google Oslo - Style
+
 Stephen Chenney schenney - Google Atlanta - Paint
 
 Vladimir Levin vmpstr - Google Waterloo - Async
@@ -192,8 +190,6 @@ Xianzhu Wang wangxianzhu - Google Mountain View - Paint
 Xiaocheng Hu xiaochengh - Google Mountain View - Style
 
 Yoshifumi Inoue yosin - Google Tokyo - Layout
-
-Yu Han yuzhehan - Google San Francisco - DOM
 
 ## Contributing
 

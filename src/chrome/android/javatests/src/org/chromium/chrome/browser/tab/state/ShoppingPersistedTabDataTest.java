@@ -295,7 +295,6 @@ public class ShoppingPersistedTabDataTest {
                 mOptimizationGuideBridgeJniMock, 1);
     }
 
-    @UiThreadTest
     @SmallTest
     @Test
     @CommandLineFlags.
@@ -579,7 +578,8 @@ public class ShoppingPersistedTabDataTest {
         doReturn(true).when(navigationHandle).isInPrimaryMainFrame();
         doReturn(false).when(navigationHandle).isSameDocument();
         doReturn(false).when(navigationHandle).isValidSearchFormUrl();
-        Integer reloadFromAddressBar = PageTransition.FROM_ADDRESS_BAR | PageTransition.RELOAD;
+        doReturn(true).when(navigationHandle).hasCommitted();
+        int reloadFromAddressBar = PageTransition.FROM_ADDRESS_BAR | PageTransition.RELOAD;
         doReturn(reloadFromAddressBar).when(navigationHandle).pageTransition();
         ShoppingPersistedTabData shoppingPersistedTabData = new ShoppingPersistedTabData(tab);
         shoppingPersistedTabData.setPriceMicros(42_000_000L);
@@ -592,7 +592,6 @@ public class ShoppingPersistedTabDataTest {
         Assert.assertNull(shoppingPersistedTabData.getPriceDrop());
     }
 
-    @UiThreadTest
     @SmallTest
     @Test
     @CommandLineFlags.
@@ -616,7 +615,6 @@ public class ShoppingPersistedTabDataTest {
         ShoppingPersistedTabDataTestUtils.acquireSemaphore(semaphore);
     }
 
-    @UiThreadTest
     @SmallTest
     @Test
     @CommandLineFlags.
@@ -640,7 +638,6 @@ public class ShoppingPersistedTabDataTest {
         ShoppingPersistedTabDataTestUtils.acquireSemaphore(semaphore);
     }
 
-    @UiThreadTest
     @SmallTest
     @Test
     @CommandLineFlags.
@@ -663,7 +660,6 @@ public class ShoppingPersistedTabDataTest {
         ShoppingPersistedTabDataTestUtils.acquireSemaphore(semaphore);
     }
 
-    @UiThreadTest
     @SmallTest
     @Test
     public void testSPTDNullOptimizationGuideFalse() {
@@ -732,6 +728,7 @@ public class ShoppingPersistedTabDataTest {
         doReturn(true).when(mNavigationHandle).isInPrimaryMainFrame();
         GURL gurl = new GURL("https://www.google.com");
         doReturn(gurl).when(mNavigationHandle).getUrl();
+        doReturn(true).when(mNavigationHandle).hasCommitted();
         shoppingPersistedTabData.getUrlUpdatedObserverForTesting().onDidFinishNavigation(
                 tab, mNavigationHandle);
         ShoppingPersistedTabDataTestUtils.verifyOptimizationGuideCalledWithNavigationHandle(
@@ -847,30 +844,32 @@ public class ShoppingPersistedTabDataTest {
         Assert.assertTrue(shoppingPersistedTabData.needsUpdate());
     }
 
-    @UiThreadTest
     @SmallTest
     @Test
     public void testIncognitoTabDisabled() throws TimeoutException {
         TabImpl tab = mock(TabImpl.class);
         doReturn(true).when(tab).isIncognito();
         CallbackHelper callbackHelper = new CallbackHelper();
-        ShoppingPersistedTabData.from(tab, (res) -> {
-            Assert.assertNull(res);
-            callbackHelper.notifyCalled();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            ShoppingPersistedTabData.from(tab, (res) -> {
+                Assert.assertNull(res);
+                callbackHelper.notifyCalled();
+            });
         });
         callbackHelper.waitForCallback(0);
     }
 
-    @UiThreadTest
     @SmallTest
     @Test
     public void testCustomTabsDisabled() throws TimeoutException {
         TabImpl tab = mock(TabImpl.class);
         doReturn(true).when(tab).isCustomTab();
         CallbackHelper callbackHelper = new CallbackHelper();
-        ShoppingPersistedTabData.from(tab, (res) -> {
-            Assert.assertNull(res);
-            callbackHelper.notifyCalled();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            ShoppingPersistedTabData.from(tab, (res) -> {
+                Assert.assertNull(res);
+                callbackHelper.notifyCalled();
+            });
         });
         callbackHelper.waitForCallback(0);
     }
@@ -1126,6 +1125,36 @@ public class ShoppingPersistedTabDataTest {
         helper.waitForCallback(count);
     }
 
+    @SmallTest
+    @Test
+    public void testDestroyedTab() throws TimeoutException {
+        TabImpl tab = mock(TabImpl.class);
+        doReturn(true).when(tab).isDestroyed();
+        CallbackHelper helper = new CallbackHelper();
+        int count = helper.getCallCount();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            ShoppingPersistedTabData.from(tab, (res) -> {
+                Assert.assertNull(res);
+                helper.notifyCalled();
+            });
+        });
+        helper.waitForCallback(count);
+    }
+
+    @SmallTest
+    @Test
+    public void testNullTab() throws TimeoutException {
+        CallbackHelper helper = new CallbackHelper();
+        int count = helper.getCallCount();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            ShoppingPersistedTabData.from(null, (res) -> {
+                Assert.assertNull(res);
+                helper.notifyCalled();
+            });
+        });
+        helper.waitForCallback(count);
+    }
+
     static class DeserializeAndLogCheckerShoppingPersistedTabData extends ShoppingPersistedTabData {
         DeserializeAndLogCheckerShoppingPersistedTabData(Tab tab) {
             super(tab);
@@ -1137,7 +1166,7 @@ public class ShoppingPersistedTabDataTest {
         }
 
         @Override
-        protected void deserializeAndLog(@Nullable ByteBuffer bytes) {
+        public void deserializeAndLog(@Nullable ByteBuffer bytes) {
             ThreadUtils.assertOnBackgroundThread();
             super.deserializeAndLog(bytes);
         }
