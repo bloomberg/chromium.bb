@@ -5,6 +5,8 @@
 #include "gpu/ipc/gl_in_process_context.h"
 
 #include <GLES2/gl2.h>
+
+#include "build/build_config.h"
 #ifndef GL_GLEXT_PROTOTYPES
 #define GL_GLEXT_PROTOTYPES 1
 #endif
@@ -26,7 +28,7 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_image.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "ui/gl/android/surface_texture.h"
 #endif
 
@@ -54,37 +56,20 @@ SharedImageInterface* GLInProcessContext::GetSharedImageInterface() {
 
 ContextResult GLInProcessContext::Initialize(
     CommandBufferTaskExecutor* task_executor,
-    scoped_refptr<gl::GLSurface> surface,
-    bool is_offscreen,
-    SurfaceHandle window,
     const ContextCreationAttribs& attribs,
     const SharedMemoryLimits& mem_limits,
-    GpuMemoryBufferManager* gpu_memory_buffer_manager,
-    ImageFactory* image_factory,
-    GpuTaskSchedulerHelper* gpu_task_scheduler,
-    DisplayCompositorMemoryAndTaskControllerOnGpu* display_controller_on_gpu,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  // If a surface is provided, we are running in a webview and should not have
-  // a task runner. We must have a task runner in all other cases.
-  DCHECK_EQ(!!surface, !task_runner);
-  if (surface) {
-    DCHECK_EQ(surface->IsOffscreen(), is_offscreen);
-    DCHECK_EQ(kNullSurfaceHandle, window);
-  }
+    ImageFactory* image_factory) {
+  DCHECK(base::ThreadTaskRunnerHandle::Get());
   DCHECK_GE(attribs.offscreen_framebuffer_size.width(), 0);
   DCHECK_GE(attribs.offscreen_framebuffer_size.height(), 0);
 
   command_buffer_ = std::make_unique<InProcessCommandBuffer>(
       task_executor, GURL("chrome://gpu/GLInProcessContext::Initialize"));
 
-  auto result = command_buffer_->Initialize(
-      surface, is_offscreen, window, attribs, gpu_memory_buffer_manager,
-      image_factory,
-      /*gpu_channel_manager_delegate=*/nullptr, std::move(task_runner),
-      /*task_sequence=*/
-      gpu_task_scheduler ? gpu_task_scheduler->GetTaskSequence() : nullptr,
-      /*display_compositor_memory_and_task_controller_on_gpu=*/
-      display_controller_on_gpu, nullptr, nullptr);
+  auto result = command_buffer_->Initialize(attribs, image_factory,
+                                            base::ThreadTaskRunnerHandle::Get(),
+                                            /*gr_shader_cache=*/nullptr,
+                                            /*activity_flags=*/nullptr);
   if (result != ContextResult::kSuccess) {
     DLOG(ERROR) << "Failed to initialize InProcessCommmandBuffer";
     return result;
@@ -98,8 +83,6 @@ ContextResult GLInProcessContext::Initialize(
     LOG(ERROR) << "Failed to initialize GLES2CmdHelper";
     return result;
   }
-  if (gpu_task_scheduler)
-    gpu_task_scheduler->Initialize(gles2_helper_.get());
 
   // Create a transfer buffer.
   transfer_buffer_ = std::make_unique<TransferBuffer>(gles2_helper_.get());

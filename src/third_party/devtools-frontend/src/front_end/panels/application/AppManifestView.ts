@@ -102,6 +102,14 @@ const UIStrings = {
   */
   backgroundColor: 'Background color',
   /**
+  *@description Text in App Manifest View of the Application panel
+  */
+  darkThemeColor: 'Dark theme color',
+  /**
+  *@description Text in App Manifest View of the Application panel
+  */
+  darkBackgroundColor: 'Dark background color',
+  /**
   *@description Text for the orientation of something
   */
   orientation: 'Orientation',
@@ -403,6 +411,10 @@ export class AppManifestView extends UI.Widget.VBox implements SDK.TargetManager
   private readonly startURLField: HTMLElement;
   private readonly themeColorSwatch: InlineEditor.ColorSwatch.ColorSwatch;
   private readonly backgroundColorSwatch: InlineEditor.ColorSwatch.ColorSwatch;
+  private readonly darkThemeColorField: HTMLElement;
+  private readonly darkThemeColorSwatch: InlineEditor.ColorSwatch.ColorSwatch;
+  private readonly darkBackgroundColorField: HTMLElement;
+  private readonly darkBackgroundColorSwatch: InlineEditor.ColorSwatch.ColorSwatch;
   private orientationField: HTMLElement;
   private displayField: HTMLElement;
   private readonly newNoteUrlField: HTMLElement;
@@ -421,7 +433,7 @@ export class AppManifestView extends UI.Widget.VBox implements SDK.TargetManager
         .addChangeListener(this.updateManifest.bind(this, true));
 
     this.emptyView = new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.noManifestDetected));
-    this.emptyView.appendLink('https://web.dev/add-manifest/');
+    this.emptyView.appendLink('https://web.dev/add-manifest/' as Platform.DevToolsPath.UrlString);
 
     this.emptyView.show(this.contentElement);
     this.emptyView.hideWidget();
@@ -456,6 +468,14 @@ export class AppManifestView extends UI.Widget.VBox implements SDK.TargetManager
     this.backgroundColorSwatch = new InlineEditor.ColorSwatch.ColorSwatch();
     backgroundColorField.appendChild(this.backgroundColorSwatch);
 
+    this.darkThemeColorField = this.presentationSection.appendField(i18nString(UIStrings.darkThemeColor));
+    this.darkThemeColorSwatch = new InlineEditor.ColorSwatch.ColorSwatch();
+    this.darkThemeColorField.appendChild(this.darkThemeColorSwatch);
+
+    this.darkBackgroundColorField = this.presentationSection.appendField(i18nString(UIStrings.darkBackgroundColor));
+    this.darkBackgroundColorSwatch = new InlineEditor.ColorSwatch.ColorSwatch();
+    this.darkBackgroundColorField.appendChild(this.darkBackgroundColorSwatch);
+
     this.orientationField = this.presentationSection.appendField(i18nString(UIStrings.orientation));
     this.displayField = this.presentationSection.appendField(i18nString(UIStrings.display));
 
@@ -477,18 +497,18 @@ export class AppManifestView extends UI.Widget.VBox implements SDK.TargetManager
       return;
     }
 
-    this.updateManifest(true);
+    void this.updateManifest(true);
 
     this.registeredListeners = [
       this.resourceTreeModel.addEventListener(
           SDK.ResourceTreeModel.Events.DOMContentLoaded,
           () => {
-            this.updateManifest(true);
+            void this.updateManifest(true);
           }),
       this.serviceWorkerManager.addEventListener(
           SDK.ServiceWorkerManager.Events.RegistrationUpdated,
           () => {
-            this.updateManifest(false);
+            void this.updateManifest(false);
           }),
     ];
   }
@@ -516,12 +536,12 @@ export class AppManifestView extends UI.Widget.VBox implements SDK.TargetManager
       this.resourceTreeModel.getAppId(),
     ]);
 
-    this.throttler.schedule(
+    void this.throttler.schedule(
         () => this.renderManifest(url, data, errors, installabilityErrors, manifestIcons, appId), immediately);
   }
 
   private async renderManifest(
-      url: string, data: string|null, errors: Protocol.Page.AppManifestError[],
+      url: Platform.DevToolsPath.UrlString, data: string|null, errors: Protocol.Page.AppManifestError[],
       installabilityErrors: Protocol.Page.InstallabilityError[], manifestIcons: {
         primaryIcon: string|null,
       },
@@ -597,7 +617,13 @@ export class AppManifestView extends UI.Widget.VBox implements SDK.TargetManager
         const copyButton = new IconButton.IconButton.IconButton();
         copyButton.title = i18nString(UIStrings.copyToClipboard);
         copyButton.data = {
-          groups: [{iconName: 'copy_icon', iconHeight: '12px', iconWidth: '12px', text: ''}],
+          groups: [{
+            iconName: 'copy_icon',
+            iconHeight: '12px',
+            iconWidth: '12px',
+            text: '',
+            iconColor: 'var(--color-text-primary)',
+          }],
           clickHandler: (): void => {
             Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(recommendedId);
           },
@@ -614,11 +640,13 @@ export class AppManifestView extends UI.Widget.VBox implements SDK.TargetManager
 
     this.startURLField.removeChildren();
     if (startURL) {
-      const completeURL = (Common.ParsedURL.ParsedURL.completeURL(url, startURL) as string);
-      const link = Components.Linkifier.Linkifier.linkifyURL(
-          completeURL, ({text: startURL} as Components.Linkifier.LinkifyURLOptions));
-      link.tabIndex = 0;
-      this.startURLField.appendChild(link);
+      const completeURL = Common.ParsedURL.ParsedURL.completeURL(url, startURL);
+      if (completeURL) {
+        const link = Components.Linkifier.Linkifier.linkifyURL(
+            completeURL, ({text: startURL} as Components.Linkifier.LinkifyURLOptions));
+        link.tabIndex = 0;
+        this.startURLField.appendChild(link);
+      }
     }
 
     this.themeColorSwatch.classList.toggle('hidden', !stringProperty('theme_color'));
@@ -634,6 +662,28 @@ export class AppManifestView extends UI.Widget.VBox implements SDK.TargetManager
       this.backgroundColorSwatch.renderColor(backgroundColor, true);
     }
 
+    const userPreferences = parsedManifest['user_preferences'] || {};
+    const colorScheme = userPreferences['color_scheme'] || {};
+    const colorSchemeDark = colorScheme['dark'] || {};
+    const darkThemeColorString = colorSchemeDark['theme_color'];
+    const hasDarkThemeColor = typeof darkThemeColorString === 'string';
+    this.darkThemeColorField.parentElement?.classList.toggle('hidden', !hasDarkThemeColor);
+    if (hasDarkThemeColor) {
+      const darkThemeColor = Common.Color.Color.parse(darkThemeColorString);
+      if (darkThemeColor) {
+        this.darkThemeColorSwatch.renderColor(darkThemeColor, true);
+      }
+    }
+    const darkBackgroundColorString = colorSchemeDark['background_color'];
+    const hasDarkBackgroundColor = typeof darkBackgroundColorString === 'string';
+    this.darkBackgroundColorField.parentElement?.classList.toggle('hidden', !hasDarkBackgroundColor);
+    if (hasDarkBackgroundColor) {
+      const darkBackgroundColor = Common.Color.Color.parse(darkBackgroundColorString);
+      if (darkBackgroundColor) {
+        this.darkBackgroundColorSwatch.renderColor(darkBackgroundColor, true);
+      }
+    }
+
     this.orientationField.textContent = stringProperty('orientation');
     const displayType = stringProperty('display');
     this.displayField.textContent = displayType;
@@ -644,7 +694,7 @@ export class AppManifestView extends UI.Widget.VBox implements SDK.TargetManager
     this.newNoteUrlField.parentElement?.classList.toggle('hidden', !hasNewNoteUrl);
     this.newNoteUrlField.removeChildren();
     if (hasNewNoteUrl) {
-      const completeURL = (Common.ParsedURL.ParsedURL.completeURL(url, newNoteUrl) as string);
+      const completeURL = (Common.ParsedURL.ParsedURL.completeURL(url, newNoteUrl) as Platform.DevToolsPath.UrlString);
       const link = Components.Linkifier.Linkifier.linkifyURL(
           completeURL, ({text: newNoteUrl} as Components.Linkifier.LinkifyURLOptions));
       link.tabIndex = 0;
@@ -714,7 +764,7 @@ export class AppManifestView extends UI.Widget.VBox implements SDK.TargetManager
         shortcutSection.appendFlexedField('Description', shortcut.description);
       }
       const urlField = shortcutSection.appendFlexedField('URL');
-      const shortcutUrl = (Common.ParsedURL.ParsedURL.completeURL(url, shortcut.url) as string);
+      const shortcutUrl = Common.ParsedURL.ParsedURL.completeURL(url, shortcut.url) as Platform.DevToolsPath.UrlString;
       const link = Components.Linkifier.Linkifier.linkifyURL(
           shortcutUrl, ({text: shortcut.url} as Components.Linkifier.LinkifyURLOptions));
       link.tabIndex = 0;
@@ -876,7 +926,7 @@ export class AppManifestView extends UI.Widget.VBox implements SDK.TargetManager
     return errorMessages;
   }
 
-  private async loadImage(url: string): Promise<{
+  private async loadImage(url: Platform.DevToolsPath.UrlString): Promise<{
     image: HTMLImageElement,
     wrapper: Element,
   }|null> {
@@ -966,7 +1016,8 @@ export class AppManifestView extends UI.Widget.VBox implements SDK.TargetManager
   private async appendImageResourceToSection(
       // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      baseUrl: string, imageResource: any, section: UI.ReportView.Section, isScreenshot: boolean):
+      baseUrl: Platform.DevToolsPath.UrlString, imageResource: any, section: UI.ReportView.Section,
+      isScreenshot: boolean):
       Promise<{imageResourceErrors: Platform.UIString.LocalizedString[], squareSizedIconAvailable?: boolean}> {
     const imageResourceErrors: Platform.UIString.LocalizedString[] = [];
     const resourceName = isScreenshot ? i18nString(UIStrings.screenshot) : i18nString(UIStrings.icon);

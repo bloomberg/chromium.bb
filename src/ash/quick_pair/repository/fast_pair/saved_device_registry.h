@@ -34,10 +34,17 @@ class SavedDeviceRegistry {
   void SaveAccountKey(const std::string& mac_address,
                       const std::vector<uint8_t>& account_key);
 
+  // Deletes the |mac_address| -> account key record from prefs. Returns true
+  // on success, false on failure.
+  bool DeleteAccountKey(const std::string& mac_address);
+
   // Retrieves an account key from disk if available, otherwise returns an
   // empty vector.
   absl::optional<const std::vector<uint8_t>> GetAccountKey(
       const std::string& mac_address);
+
+  // Checks if the account key is in the registry.
+  bool IsAccountKeySavedToRegistry(const std::vector<uint8_t>& account_key);
 };
 
 }  // namespace quick_pair

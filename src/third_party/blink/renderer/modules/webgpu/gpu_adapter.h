@@ -27,8 +27,7 @@ class GPUAdapter final : public ScriptWrappable, public DawnObjectBase {
  public:
   GPUAdapter(GPU* gpu,
              const String& name,
-             uint32_t adapter_service_id,
-             const WGPUDeviceProperties& properties,
+             WGPUAdapter handle,
              scoped_refptr<DawnControlClientHolder> dawn_control_client);
 
   GPUAdapter(const GPUAdapter&) = delete;
@@ -40,12 +39,13 @@ class GPUAdapter final : public ScriptWrappable, public DawnObjectBase {
   GPU* gpu() const { return gpu_; }
   GPUSupportedFeatures* features() const;
   GPUSupportedLimits* limits() const { return limits_; }
-
-  // Software adapters are not currently supported.
-  bool isFallbackAdapter() const { return false; }
+  bool isFallbackAdapter() const;
 
   ScriptPromise requestDevice(ScriptState* script_state,
                               GPUDeviceDescriptor* descriptor);
+
+  ScriptPromise requestAdapterInfo(ScriptState* script_state,
+                                   const Vector<String>& unmask_hints);
 
   // Console warnings should generally be attributed to a GPUDevice, but in
   // cases where there is no device warnings can be surfaced here. It's expected
@@ -58,17 +58,21 @@ class GPUAdapter final : public ScriptWrappable, public DawnObjectBase {
   void OnRequestDeviceCallback(ScriptState* script_state,
                                ScriptPromiseResolver* resolver,
                                const GPUDeviceDescriptor* descriptor,
+                               WGPURequestDeviceStatus status,
                                WGPUDevice dawn_device,
-                               const WGPUSupportedLimits* limits,
                                const char* error_message);
-  void InitializeFeatureNameList();
 
   String name_;
-  uint32_t adapter_service_id_;
-  WGPUDeviceProperties adapter_properties_;
+  WGPUAdapter handle_;
   Member<GPU> gpu_;
-  Member<GPUSupportedFeatures> features_;
+  bool is_fallback_adapter_;
   Member<GPUSupportedLimits> limits_;
+  Member<GPUSupportedFeatures> features_;
+
+  String vendor_;
+  String architecture_;
+  String device_;
+  String description_;
 
   static constexpr int kMaxAllowedConsoleWarnings = 50;
   int allowed_console_warnings_remaining_ = kMaxAllowedConsoleWarnings;

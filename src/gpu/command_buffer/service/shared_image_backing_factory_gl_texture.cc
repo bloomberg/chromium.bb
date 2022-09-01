@@ -36,11 +36,11 @@ using InitializeGLTextureParams =
 SharedImageBackingFactoryGLTexture::SharedImageBackingFactoryGLTexture(
     const GpuPreferences& gpu_preferences,
     const GpuDriverBugWorkarounds& workarounds,
-    const GpuFeatureInfo& gpu_feature_info,
+    const gles2::FeatureInfo* feature_info,
     gl::ProgressReporter* progress_reporter)
     : SharedImageBackingFactoryGLCommon(gpu_preferences,
                                         workarounds,
-                                        gpu_feature_info,
+                                        feature_info,
                                         progress_reporter) {}
 
 SharedImageBackingFactoryGLTexture::~SharedImageBackingFactoryGLTexture() =
@@ -141,9 +141,21 @@ bool SharedImageBackingFactoryGLTexture::IsSupported(
        (usage & SHARED_IMAGE_USAGE_RASTER))) {
     return false;
   }
+
+  // Linux and ChromeOS support WebGPU/Compat on GL. All other platforms
+  // do not support WebGPU on GL.
+  if (usage & SHARED_IMAGE_USAGE_WEBGPU) {
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || defined(USE_OZONE)
+    if (use_webgpu_adapter_ != WebGPUAdapterName::kCompat) {
+      return false;
+    }
+#else
+    return false;
+#endif
+  }
+
   // Needs interop factory
-  if ((usage & SHARED_IMAGE_USAGE_WEBGPU) ||
-      (usage & SHARED_IMAGE_USAGE_VIDEO_DECODE) ||
+  if ((usage & SHARED_IMAGE_USAGE_VIDEO_DECODE) ||
       (usage & SHARED_IMAGE_USAGE_SCANOUT)) {
     return false;
   }

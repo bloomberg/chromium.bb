@@ -129,8 +129,10 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/callback_list.h"
 #include "base/location.h"
 #include "base/metrics/histogram_base.h"
+#include "base/metrics/histogram_flattener.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/histogram_samples.h"
@@ -166,12 +168,29 @@
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace metrics {
-
 namespace {
+
+// Used to mark histogram samples as reported so that they are not included in
+// the next log. A histogram's snapshot samples are simply discarded/ignored
+// when attempting to record them through this |HistogramFlattener|.
+class DiscardingFlattener : public base::HistogramFlattener {
+ public:
+  DiscardingFlattener() = default;
+
+  DiscardingFlattener(const DiscardingFlattener&) = delete;
+  DiscardingFlattener& operator=(const DiscardingFlattener&) = delete;
+
+  ~DiscardingFlattener() override = default;
+
+  void RecordDelta(const base::HistogramBase& histogram,
+                   const base::HistogramSamples& snapshot) override {
+    // No-op. We discard the samples.
+  }
+};
 
 // The delay, in seconds, after starting recording before doing expensive
 // initialization work.
-#if defined(OS_ANDROID) || defined(OS_IOS)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
 // On mobile devices, a significant portion of sessions last less than a minute.
 // Use a shorter timer on these platforms to avoid losing data.
 // TODO(dfalcantara): To avoid delaying startup, tighten up initialization so
@@ -183,6 +202,20 @@ const int kInitializationDelaySeconds = 30;
 
 // The browser last live timestamp is updated every 15 minutes.
 const int kUpdateAliveTimestampSeconds = 15 * 60;
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+enum UserLogStoreState {
+  kSetPostSendLogsState = 0,
+  kSetPreSendLogsState = 1,
+  kUnsetPostSendLogsState = 2,
+  kUnsetPreSendLogsState = 3,
+  kMaxValue = kUnsetPreSendLogsState,
+};
+
+void RecordUserLogStoreState(UserLogStoreState state) {
+  base::UmaHistogramEnumeration("UMA.CrosPerUser.UserLogStoreState", state);
+}
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 }  // namespace
 
@@ -209,9 +242,7 @@ MetricsService::MetricsService(MetricsStateManager* state_manager,
       test_mode_active_(false),
       state_(CONSTRUCTED),
       idle_since_last_transmission_(false),
-      session_id_(-1),
-      synthetic_trial_registry_(
-          client->IsExternalExperimentAllowlistEnabled()) {
+      session_id_(-1) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(state_manager_);
   DCHECK(client_);
@@ -234,7 +265,7 @@ void MetricsService::InitializeMetricsRecordingState() {
   // studies whose features are checked when providers add their information to
   // the log appear in the active field trials.
   RegisterMetricsProvider(std::make_unique<variations::FieldTrialsProvider>(
-      &synthetic_trial_registry_, base::StringPiece()));
+      client_->GetSyntheticTrialRegistry(), base::StringPiece()));
 
   reporting_service_.Initialize();
   InitializeMetricsState();
@@ -297,6 +328,10 @@ std::string MetricsService::GetClientId() const {
   return state_manager_->client_id();
 }
 
+void MetricsService::SetExternalClientId(const std::string& id) {
+  state_manager_->SetExternalClientId(id);
+}
+
 bool MetricsService::WasLastShutdownClean() const {
   return state_manager_->clean_exit_beacon()->exited_cleanly();
 }
@@ -334,6 +369,8 @@ void MetricsService::EnableRecording() {
   action_callback_ = base::BindRepeating(&MetricsService::OnUserAction,
                                          base::Unretained(this));
   base::AddActionCallback(action_callback_);
+
+  enablement_observers_.Notify(/*enabled=*/true);
 }
 
 void MetricsService::DisableRecording() {
@@ -348,6 +385,8 @@ void MetricsService::DisableRecording() {
   delegating_provider_.OnRecordingDisabled();
 
   PushPendingLogsToPersistentStorage();
+
+  enablement_observers_.Notify(/*enabled=*/false);
 }
 
 bool MetricsService::recording_active() const {
@@ -362,6 +401,10 @@ bool MetricsService::reporting_active() const {
 
 bool MetricsService::has_unsent_logs() const {
   return reporting_service_.metrics_log_store()->has_unsent_logs();
+}
+
+bool MetricsService::IsMetricsReportingEnabled() const {
+  return state_manager_->IsMetricsReportingEnabled();
 }
 
 void MetricsService::RecordDelta(const base::HistogramBase& histogram,
@@ -392,7 +435,7 @@ void MetricsService::RecordCompletedSessionEnd() {
   LogCleanShutdown(true);
 }
 
-#if defined(OS_ANDROID) || defined(OS_IOS)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
 void MetricsService::OnAppEnterBackground(bool keep_recording_in_background) {
   is_in_foreground_ = false;
   if (!keep_recording_in_background) {
@@ -433,18 +476,22 @@ void MetricsService::OnAppEnterForeground(bool force_open_new_log) {
     OpenNewLog();
   }
 }
-
-#else
-void MetricsService::LogNeedForCleanShutdown() {
-  state_manager_->LogHasSessionShutdownCleanly(false);
-}
-#endif  // defined(OS_ANDROID) || defined(OS_IOS)
+#endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
 
 void MetricsService::ClearSavedStabilityMetrics() {
   delegating_provider_.ClearSavedStabilityMetrics();
   // Stability metrics are stored in Local State prefs, so schedule a Local
   // State write to flush the updated prefs.
   local_state_->CommitPendingWrite();
+}
+
+void MetricsService::MarkCurrentHistogramsAsReported() {
+  DiscardingFlattener flattener;
+  base::HistogramSnapshotManager snapshot_manager(&flattener);
+  base::StatisticsRecorder::PrepareDeltas(
+      /*include_persistent=*/true, /*flags_to_set=*/base::Histogram::kNoFlags,
+      /*required_flags=*/base::Histogram::kUmaTargetedHistogramFlag,
+      &snapshot_manager);
 }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -459,6 +506,7 @@ void MetricsService::SetUserLogStore(
     PushPendingLogsToPersistentStorage();
     log_store()->SetAlternateOngoingLogStore(std::move(user_log_store));
     OpenNewLog();
+    RecordUserLogStoreState(kSetPostSendLogsState);
   } else {
     // Initial log has not yet been created and flushing now would result in
     // incomplete information in the current log.
@@ -468,9 +516,8 @@ void MetricsService::SetUserLogStore(
     //
     // TODO(crbug/1264627): Look for a way to "pause" pre-login logs and flush
     // when INIT_TASK is done.
-    // TODO(crbug/1264625): Add histogram before launch to monitor how
-    // frequently this happens.
     log_store()->SetAlternateOngoingLogStore(std::move(user_log_store));
+    RecordUserLogStoreState(kSetPreSendLogsState);
   }
 }
 
@@ -482,17 +529,16 @@ void MetricsService::UnsetUserLogStore() {
     PushPendingLogsToPersistentStorage();
     log_store()->UnsetAlternateOngoingLogStore();
     OpenNewLog();
+    RecordUserLogStoreState(kUnsetPostSendLogsState);
   } else {
     // Fast startup and logout case. A call to |RecordCurrentHistograms()| is
     // made to flush all histograms into the current log and the log is
     // discarded. This is to prevent histograms captured during the user session
     // from leaking into local state logs.
-    //
-    // TODO(crbug/1264625): Add histogram before launch to monitor how
-    // frequently this happens.
     RecordCurrentHistograms();
     log_manager_.DiscardCurrentLog();
     log_store()->UnsetAlternateOngoingLogStore();
+    RecordUserLogStoreState(kUnsetPreSendLogsState);
   }
 }
 
@@ -504,22 +550,34 @@ void MetricsService::InitPerUserMetrics() {
   client_->InitPerUserMetrics();
 }
 
+absl::optional<bool> MetricsService::GetCurrentUserMetricsConsent() const {
+  return client_->GetCurrentUserMetricsConsent();
+}
+
+absl::optional<std::string> MetricsService::GetCurrentUserId() const {
+  return client_->GetCurrentUserId();
+}
+
 void MetricsService::UpdateCurrentUserMetricsConsent(
     bool user_metrics_consent) {
   client_->UpdateCurrentUserMetricsConsent(user_metrics_consent);
 }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
+#if BUILDFLAG(IS_CHROMEOS)
 void MetricsService::ResetClientId() {
   // Pref must be cleared in order for ForceClientIdCreation to generate a new
   // client ID.
-  //
-  // TODO(crbug/1264625): Add histogram to monitor how frequently this is called
-  // before launching per-user collection.
   local_state_->ClearPref(prefs::kMetricsClientID);
   state_manager_->ForceClientIdCreation();
   client_->SetMetricsClientId(state_manager_->client_id());
 }
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS)
+
+variations::SyntheticTrialRegistry*
+MetricsService::GetSyntheticTrialRegistry() {
+  return client_->GetSyntheticTrialRegistry();
+}
 
 bool MetricsService::StageCurrentLogForTest() {
   CloseCurrentLog();
@@ -562,7 +620,7 @@ void MetricsService::InitializeMetricsState() {
   if (!was_last_shutdown_clean) {
     provider.LogCrash(
         state_manager_->clean_exit_beacon()->browser_last_live_timestamp());
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     if (!state_manager_->is_foreground_session()) {
       // Android can have background sessions in which the app may not come to
       // the foreground, so signal that Chrome should stop watching for crashes
@@ -580,7 +638,7 @@ void MetricsService::InitializeMetricsState() {
       // TODO(crbug/1245676): Ditto for WebView.
       state_manager_->clean_exit_beacon()->WriteBeaconValue(true);
     }
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
   }
 
   // HasPreviousSessionData is called first to ensure it is never bypassed.
@@ -903,8 +961,21 @@ bool MetricsService::ShouldResetClientIdsOnClonedInstall() {
 
 std::unique_ptr<MetricsLog> MetricsService::CreateLog(
     MetricsLog::LogType log_type) {
-  return std::make_unique<MetricsLog>(state_manager_->client_id(), session_id_,
-                                      log_type, client_);
+  auto new_metrics_log = std::make_unique<MetricsLog>(
+      state_manager_->client_id(), session_id_, log_type, client_);
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  absl::optional<std::string> user_id = GetCurrentUserId();
+  if (user_id.has_value())
+    new_metrics_log->SetUserId(user_id.value());
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+  return new_metrics_log;
+}
+
+base::CallbackListSubscription MetricsService::AddEnablementObserver(
+    const base::RepeatingCallback<void(bool)>& observer) {
+  return enablement_observers_.Add(observer);
 }
 
 void MetricsService::SetPersistentSystemProfile(

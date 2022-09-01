@@ -2,13 +2,57 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/** @type {string} */
-/* #export */ const FINGEPRINT_TICK_DARK_URL =
-    'chrome://theme/IDR_FINGERPRINT_COMPLETE_TICK_DARK';
+/**
+ * The dark-mode fingerprint icon displayed temporarily each time a user scans
+ * their fingerprint and persistently once the enrollment process is complete.
+ * @type {string}
+ */
+/* #export */ const FINGERPRINT_SCANNED_ICON_DARK =
+    'cr-fingerprint-icon:fingerprint-scanned-dark';
+
+/**
+ * The light-mode fingerprint icon displayed temporarily each time a user scans
+ * their fingerprint and persistently once the enrollment process is complete.
+ * @type {string}
+ */
+/* #export */ const FINGERPRINT_SCANNED_ICON_LIGHT =
+    'cr-fingerprint-icon:fingerprint-scanned-light';
 
 /** @type {string} */
-/* #export */ const FINGEPRINT_TICK_LIGHT_URL =
-    'chrome://theme/IDR_FINGERPRINT_COMPLETE_TICK';
+/* #export */ const FINGERPRINT_CHECK_DARK_URL =
+    'chrome://theme/IDR_FINGERPRINT_COMPLETE_CHECK_DARK';
+
+/** @type {string} */
+/* #export */ const FINGERPRINT_CHECK_LIGHT_URL =
+    'chrome://theme/IDR_FINGERPRINT_COMPLETE_CHECK_LIGHT';
+
+/**
+ * The dark-mode color of the progress circle background: Google Grey 700.
+ * @type {string}
+ */
+/* #export */ const PROGRESS_CIRCLE_BACKGROUND_COLOR_DARK =
+    'rgba(95, 99, 104, 1.0)';
+
+/**
+ * The light-mode color of the progress circle background: Google Grey 200.
+ * @type {string}
+ */
+/* #export */ const PROGRESS_CIRCLE_BACKGROUND_COLOR_LIGHT =
+    'rgba(232, 234, 237, 1.0)';
+
+/**
+ * The dark-mode color of the setup progress arc: Google Blue 400.
+ * @type {string}
+ */
+/* #export */ const PROGRESS_CIRCLE_FILL_COLOR_DARK =
+    'rgba(102, 157, 246, 1.0)';
+
+/**
+ * The light-mode color of the setup progress arc: Google Blue 500.
+ * @type {string}
+ */
+/* #export */ const PROGRESS_CIRCLE_FILL_COLOR_LIGHT =
+    'rgba(66, 133, 244, 1.0)';
 
 (function() {
 
@@ -29,24 +73,24 @@ const ANIMATE_DURATION_MS = 200;
  * The radius of the add fingerprint progress circle.
  * @type {number}
  */
-const DEFAULT_CANVAS_CIRCLE_RADIUS = 114;
+const DEFAULT_PROGRESS_CIRCLE_RADIUS = 114;
 
 /**
- * The default height of the icon located in the center of fingerprint progress
- * circle.
+ * The default height of the icon located in the center of the fingerprint
+ * progress circle.
  * @type {number}
  */
 const ICON_HEIGHT = 118;
 
 /**
- * The default width of the icon located in the center of fingerprint progress
- * circle.
+ * The default width of the icon located in the center of the fingerprint
+ * progress circle.
  * @type {number}
  */
 const ICON_WIDTH = 106;
 
 /**
- * The default size of the checkmark located in the left bottom corner of
+ * The default size of the check mark located in the bottom-right corner of the
  * fingerprint progress circle.
  * @type {number}
  */
@@ -59,34 +103,22 @@ const CHECK_MARK_SIZE = 53;
 const FINGERPRINT_SCAN_SUCCESS_MS = 500;
 
 /**
- * The thickness of the add fingerprint progress circle.
+ * The thickness of the fingerprint progress circle.
  * @type {number}
  */
-const CANVAS_CIRCLE_STROKE_WIDTH = 4;
-
-/**
- * The color of the canvas circle background.
- * @type {string}
- */
-const CANVAS_CIRCLE_BACKGROUND_COLOR = 'rgba(218, 220, 224, 1.0)';
-
-/**
- * The color of the arc/circle which indicates setup progress.
- * @type {string}
- */
-const CANVAS_CIRCLE_PROGRESS_COLOR = 'rgba(66, 133, 224, 1.0)';
+const PROGRESS_CIRCLE_STROKE_WIDTH = 4;
 
 Polymer({
   is: 'cr-fingerprint-progress-arc',
 
   properties: {
     /**
-     * Radius of the add fingerprint progress circle being displayed.
+     * Radius of the fingerprint progress circle being displayed.
      * @type {number}
      */
     circleRadius: {
       type: Number,
-      value: DEFAULT_CANVAS_CIRCLE_RADIUS,
+      value: DEFAULT_PROGRESS_CIRCLE_RADIUS,
     },
 
     /**
@@ -100,8 +132,8 @@ Polymer({
 
     /**
      * Scale factor based the configured radius (circleRadius) vs the default
-     * radius (DEFAULT_CANVAS_CIRCLE_RADIUS).
-     * This will affect the size of icons and checkmark.
+     * radius (DEFAULT_PROGRESS_CIRCLE_RADIUS).
+     * This will affect the size of icons and check mark.
      * @type {number}
      * @private
      */
@@ -116,26 +148,32 @@ Polymer({
      * @private
      */
     isComplete_: Boolean,
+
+    /**
+     * Whether the fingerprint progress page is being rendered in dark mode.
+     * @type {boolean}
+     * @private
+     */
+    isDarkModeActive_: {
+      type: Boolean,
+      value: false,
+      observer: 'onDarkModeChanged_',
+    },
   },
 
-  // Also put these values as member values so they can be overridden by tests
-  // and the tests do not need to be changed every time the UI is.
-
-  /** @type {number} */
-  canvasCircleStrokeWidth: CANVAS_CIRCLE_STROKE_WIDTH,
-
-  /** @type {string} */
-  canvasCircleBackgroundColor: CANVAS_CIRCLE_BACKGROUND_COLOR,
-
-  /** @type {string} */
-  canvasCircleProgressColor: CANVAS_CIRCLE_PROGRESS_COLOR,
-
   /**
-   * Animation ID for fingerprint scan progress bar.
+   * Animation ID for the fingerprint progress circle.
    * @type {number|undefined}
    * @private
    */
   progressAnimationIntervalId_: undefined,
+
+  /**
+   * Percentage of the enrollment process completed as of the last update.
+   * @type {number}
+   * @private
+   */
+  progressPercentDrawn_: 0,
 
   /**
    * Timer ID for fingerprint scan success update.
@@ -145,63 +183,42 @@ Polymer({
   updateTimerId_: undefined,
 
   /**
-   * Media query for dark mode.
-   * @type {MediaQueryList|undefined}
+   * Updates the current state to account for whether dark mode is enabled.
    * @private
    */
-  darkModeQuery_: undefined,
-
-  /**
-   * Dark mode change listener callback.
-   * @type {function(MediaQueryList)|undefined}
-   * @private
-   */
-  darkModeListener_: undefined,
+  onDarkModeChanged_() {
+    this.clearCanvas_();
+    this.drawProgressCircle_(this.progressPercentDrawn_);
+    this.updateAnimationAsset_();
+    this.updateIconAsset_();
+  },
 
   /** @override */
   attached() {
-    this.scale_ = this.circleRadius / DEFAULT_CANVAS_CIRCLE_RADIUS;
+    this.scale_ = this.circleRadius / DEFAULT_PROGRESS_CIRCLE_RADIUS;
+    this.updateIconAsset_();
     this.updateImages_();
+  },
 
-    this.darkModeListener_ = this.updateAnimationAsset_.bind(this);
-    this.darkModeQuery_ = window.matchMedia('(prefers-color-scheme: dark)');
-    this.darkModeQuery_.addListener(this.darkModeListener_);
+  /**
+   * Reset the element to initial state, when the enrollment just starts.
+   * @public
+   */
+  reset() {
+    this.cancelAnimations_();
+    this.clearCanvas_();
+    this.isComplete_ = false;
+    // Draw an empty background for the progress circle.
+    this.drawProgressCircle_(/** currentPercent = */ 0);
+    this.$.fingerprintScanned.hidden = true;
+
+    const scanningAnimation =
+        /** @type {CrLottieElement|HTMLElement} */ (this.$.scanningAnimation);
+    scanningAnimation.singleLoop = false;
+    scanningAnimation.classList.add('translucent');
     this.updateAnimationAsset_();
-  },
-
-  /** @override */
-  detached() {
-    this.darkModeQuery_.removeListener(
-        /** @type {function(MediaQueryList)} */ (this.darkModeListener_));
-    this.darkModeListener_ = undefined;
-  },
-
-  /**
-   * Draws an arc on the canvas element around the center with radius
-   * |circleRadius|.
-   * @param {number} startAngle The start angle of the arc we want to draw.
-   * @param {number} endAngle The end angle of the arc we want to draw.
-   * @param {string} color The color of the arc we want to draw. The string is
-   *     in the format rgba(r',g',b',a'). r', g', b' are values from [0-255]
-   *     and a' is a value from [0-1].
-   */
-  drawArc(startAngle, endAngle, color) {
-    const c = this.$.canvas;
-    const ctx = c.getContext('2d');
-
-    ctx.beginPath();
-    ctx.arc(c.width / 2, c.height / 2, this.circleRadius, startAngle, endAngle);
-    ctx.lineWidth = this.canvasCircleStrokeWidth;
-    ctx.strokeStyle = color;
-    ctx.stroke();
-  },
-
-  /**
-   * Draws a circle on the canvas element around the center with radius
-   * |circleRadius| and color |CANVAS_CIRCLE_BACKGROUND_COLOR|.
-   */
-  drawBackgroundCircle() {
-    this.drawArc(0, 2 * Math.PI, this.canvasCircleBackgroundColor);
+    this.resizeAndCenterIcon_(scanningAnimation);
+    scanningAnimation.hidden = false;
   },
 
   /**
@@ -213,6 +230,7 @@ Polymer({
    * @param {number} currPercentComplete The current progress indicates the end
    *                 angle of the arc we want to draw.
    * @param {boolean} isComplete Indicate whether enrollment is complete.
+   * @public
    */
   setProgress(prevPercentComplete, currPercentComplete, isComplete) {
     if (this.isComplete_) {
@@ -221,47 +239,34 @@ Polymer({
     this.isComplete_ = isComplete;
     this.cancelAnimations_();
 
-    const slice = 2 * Math.PI / 100;
-    const startAngle = prevPercentComplete * slice;
-    const endAngle = isComplete ?
-        2 * Math.PI :
-        Math.min(2 * Math.PI, currPercentComplete * slice);
-    let currentAngle = startAngle;
-    // The value to update the angle by each tick.
-    const step =
-        (endAngle - startAngle) / (ANIMATE_DURATION_MS / ANIMATE_TICKS_MS);
+    let nextPercentToDraw = prevPercentComplete;
+    const endPercent = isComplete ? 100 : Math.min(100, currPercentComplete);
+    // The value by which to update the progress percent each tick.
+    const step = (endPercent - prevPercentComplete) /
+        (ANIMATE_DURATION_MS / ANIMATE_TICKS_MS);
+
     // Function that is called every tick of the interval, draws the arc a bit
     // closer to the final destination each tick, until it reaches the final
     // destination.
     const doAnimate = () => {
-      if (currentAngle >= endAngle) {
+      if (nextPercentToDraw >= endPercent) {
         if (this.progressAnimationIntervalId_) {
           clearInterval(this.progressAnimationIntervalId_);
           this.progressAnimationIntervalId_ = undefined;
         }
-        currentAngle = endAngle;
+        nextPercentToDraw = endPercent;
       }
 
-      // Clears the canvas and draws the new progress circle.
       this.clearCanvas_();
-      // Drawing two arcs to form a circle gives a nicer look than drawing
-      // an arc on top of a circle. If |currentAngle| is 0, draw from
-      // |start| + |currentAngle| to 7 * Math.PI / 2 (start is 3 * Math.PI /
-      // 2) otherwise the regular draw from |start| to |currentAngle| will
-      // draw nothing which will cause a flicker for one frame.
-      this.drawArc(start, start + currentAngle, this.canvasCircleProgressColor);
-      this.drawArc(
-          start + currentAngle, currentAngle <= 0 ? 7 * Math.PI / 2 : start,
-          this.canvasCircleBackgroundColor);
-      currentAngle += step;
+      this.drawProgressCircle_(nextPercentToDraw);
+      if (!this.progressAnimationIntervalId_) {
+        this.fire('cr-fingerprint-progress-arc-drawn');
+      }
+      nextPercentToDraw += step;
     };
 
     this.progressAnimationIntervalId_ =
         setInterval(doAnimate, ANIMATE_TICKS_MS);
-    // Circles on html canvas have 0 radians on the positive x-axis and go in
-    // clockwise direction. We want to start at the top of the circle which is
-    // 3pi/2.
-    const start = 3 * Math.PI / 2;
 
     if (isComplete) {
       this.animateScanComplete_();
@@ -273,11 +278,70 @@ Polymer({
   /**
    * Controls the animation based on the value of |shouldPlay|.
    * @param {boolean} shouldPlay Will play the animation if true else pauses it.
+   * @public
    */
   setPlay(shouldPlay) {
     const scanningAnimation =
         /** @type {CrLottieElement|HTMLElement} */ (this.$.scanningAnimation);
     scanningAnimation.setPlay(shouldPlay);
+  },
+
+  /** @public */
+  isComplete() {
+    return this.isComplete_;
+  },
+
+  /**
+   * Draws an arc on the canvas element around the center with radius
+   * |circleRadius|.
+   * @param {number} startAngle The start angle of the arc we want to draw.
+   * @param {number} endAngle The end angle of the arc we want to draw.
+   * @param {string} color The color of the arc we want to draw. The string is
+   *     in the format rgba(r',g',b',a'). r', g', b' are values from [0-255]
+   *     and a' is a value from [0-1].
+   * @private
+   */
+  drawArc_(startAngle, endAngle, color) {
+    const c = this.$.canvas;
+    const ctx = c.getContext('2d');
+
+    ctx.beginPath();
+    ctx.arc(c.width / 2, c.height / 2, this.circleRadius, startAngle, endAngle);
+    ctx.lineWidth = PROGRESS_CIRCLE_STROKE_WIDTH;
+    ctx.strokeStyle = color;
+    ctx.stroke();
+  },
+
+  /**
+   * Draws a circle on the canvas element around the center with radius
+   * |circleRadius|. The first |currentPercent| of the circle, starting at the
+   * top, is drawn with |PROGRESS_CIRCLE_FILL_COLOR|; the remainder of the
+   * circle is drawn |PROGRESS_CIRCLE_BACKGROUND_COLOR|.
+   * @param {number} currentPercent A value from [0-100] indicating the
+   *     percentage of progress to display.
+   * @private
+   */
+  drawProgressCircle_(currentPercent) {
+    // Angles on HTML canvases start at 0 radians on the positive x-axis and
+    // increase in the clockwise direction. We want to start at the top of the
+    // circle, which is 3pi/2.
+    const start = 3 * Math.PI / 2;
+    const currentAngle = 2 * Math.PI * currentPercent / 100;
+
+    // Drawing two arcs to form a circle gives a nicer look than drawing an arc
+    // on top of a circle (i.e., compared to drawing a full background circle
+    // first). If |currentAngle| is 0, draw from 3pi/2 to 7pi/2 explicitly;
+    // otherwise, the regular draw from |start| + |currentAngle| to |start|
+    // will do nothing.
+    this.drawArc_(
+        start, start + currentAngle,
+        this.isDarkModeActive_ ? PROGRESS_CIRCLE_FILL_COLOR_DARK :
+                                 PROGRESS_CIRCLE_FILL_COLOR_LIGHT);
+    this.drawArc_(
+        start + currentAngle, currentAngle <= 0 ? 7 * Math.PI / 2 : start,
+        this.isDarkModeActive_ ? PROGRESS_CIRCLE_BACKGROUND_COLOR_DARK :
+                                 PROGRESS_CIRCLE_BACKGROUND_COLOR_LIGHT);
+    this.progressPercentDrawn_ = currentPercent;
   },
 
   /**
@@ -289,13 +353,26 @@ Polymer({
     const scanningAnimation =
         /** @type {CrLottieElement} */ (this.$.scanningAnimation);
     if (this.isComplete_) {
-      scanningAnimation.animationUrl = this.darkModeQuery_.matches ?
-          FINGEPRINT_TICK_DARK_URL :
-          FINGEPRINT_TICK_LIGHT_URL;
+      scanningAnimation.animationUrl = this.isDarkModeActive_ ?
+          FINGERPRINT_CHECK_DARK_URL :
+          FINGERPRINT_CHECK_LIGHT_URL;
       return;
     }
-    scanningAnimation.animationUrl =
-        'chrome://theme/IDR_FINGERPRINT_ICON_ANIMATION';
+    scanningAnimation.animationUrl = this.isDarkModeActive_ ?
+        'chrome://theme/IDR_FINGERPRINT_ICON_ANIMATION_DARK' :
+        'chrome://theme/IDR_FINGERPRINT_ICON_ANIMATION_LIGHT';
+  },
+
+  /**
+   * Updates the fingerprint-scanned icon based on whether dark mode is enabled.
+   * @private
+   */
+  updateIconAsset_() {
+    const fingerprintScanned =
+        /** @type {IronIconElement} */ (this.$.fingerprintScanned);
+    fingerprintScanned.icon = this.isDarkModeActive_ ?
+        FINGERPRINT_SCANNED_ICON_DARK :
+        FINGERPRINT_SCANNED_ICON_LIGHT;
   },
 
   /*
@@ -303,6 +380,7 @@ Polymer({
    * @private
    */
   cancelAnimations_() {
+    this.progressPercentDrawn_ = 0;
     if (this.progressAnimationIntervalId_) {
       clearInterval(this.progressAnimationIntervalId_);
       this.progressAnimationIntervalId_ = undefined;
@@ -321,11 +399,11 @@ Polymer({
     const scanningAnimation =
         /** @type {CrLottieElement|HTMLElement} */ (this.$.scanningAnimation);
     scanningAnimation.singleLoop = true;
+    scanningAnimation.autoplay = true;
     scanningAnimation.classList.remove('translucent');
     this.updateAnimationAsset_();
     this.resizeCheckMark_(scanningAnimation);
-
-    this.$.enrollmentDone.hidden = false;
+    this.$.fingerprintScanned.hidden = false;
   },
 
   /**
@@ -333,9 +411,11 @@ Polymer({
    * @private
    */
   animateScanProgress_() {
-    this.$.enrollmentDone.hidden = false;
+    this.$.fingerprintScanned.hidden = false;
+    this.$.scanningAnimation.hidden = true;
     this.updateTimerId_ = window.setTimeout(() => {
-      this.$.enrollmentDone.hidden = true;
+      this.$.scanningAnimation.hidden = false;
+      this.$.fingerprintScanned.hidden = true;
     }, FINGERPRINT_SCAN_SUCCESS_MS);
   },
 
@@ -350,25 +430,6 @@ Polymer({
   },
 
   /**
-   * Reset the element to initial state, when the enrollment just starts.
-   */
-  reset() {
-    this.cancelAnimations_();
-    this.clearCanvas_();
-    this.isComplete_ = false;
-    this.drawBackgroundCircle();
-    this.$.enrollmentDone.hidden = true;
-
-    const scanningAnimation =
-        /** @type {CrLottieElement|HTMLElement} */ (this.$.scanningAnimation);
-    scanningAnimation.singleLoop = false;
-    scanningAnimation.classList.add('translucent');
-    this.updateAnimationAsset_();
-    this.resizeAndCenterIcon_(scanningAnimation);
-    scanningAnimation.hidden = false;
-  },
-
-  /**
    * Update the size and position of the animation images.
    * @private
    */
@@ -376,7 +437,7 @@ Polymer({
     this.resizeAndCenterIcon_(
         /** @type {!HTMLElement} */ (this.$.scanningAnimation));
     this.resizeAndCenterIcon_(
-        /** @type {!HTMLElement} */ (this.$.enrollmentDone));
+        /** @type {!HTMLElement} */ (this.$.fingerprintScanned));
   },
 
   /**
@@ -398,28 +459,23 @@ Polymer({
   },
 
   /**
-   * Resize the checkmark based on the scale and place it in the left bottom
-   * corner of fingerprint progress circle.
+   * Resize the check mark based on the scale and place it in the bottom-right
+   * corner of the fingerprint progress circle.
    * @param {!HTMLElement} target
    * @private
    */
   resizeCheckMark_(target) {
-    // Resize checkmark based on the default size and scale.
+    // Resize check mark based on the default size and scale.
     target.style.width = CHECK_MARK_SIZE * this.scale_ + 'px';
     target.style.height = CHECK_MARK_SIZE * this.scale_ + 'px';
 
-    // Place it in the left bottom corner of fingerprint progress circle.
+    // Place it in the bottom-right corner of the fingerprint progress circle.
     const top = this.$.canvas.height / 2 + this.circleRadius -
         CHECK_MARK_SIZE * this.scale_;
     const left = this.$.canvas.width / 2 + this.circleRadius -
         CHECK_MARK_SIZE * this.scale_;
     target.style.left = left + 'px';
     target.style.top = top + 'px';
-  },
-
-  /** @public */
-  isComplete() {
-    return this.isComplete_;
   },
 });
 /* #ignore */ console.warn('crbug/1173575, non-JS module files deprecated.');

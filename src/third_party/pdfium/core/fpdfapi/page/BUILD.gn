@@ -51,6 +51,8 @@ source_set("page") {
     "cpdf_image.h",
     "cpdf_imageobject.cpp",
     "cpdf_imageobject.h",
+    "cpdf_indexedcs.cpp",
+    "cpdf_indexedcs.h",
     "cpdf_meshstream.cpp",
     "cpdf_meshstream.h",
     "cpdf_occontext.cpp",
@@ -115,6 +117,19 @@ source_set("page") {
     allow_circular_includes_from += [ "../../fxge" ]
   }
   visibility = [ "../../../*" ]
+}
+
+source_set("unit_test_support") {
+  testonly = true
+  sources = [
+    "test_with_page_module.cpp",
+    "test_with_page_module.h",
+  ]
+  configs += [ "../../../:pdfium_strict_config" ]
+  deps = [
+    "../page",
+    "//testing/gtest",
+  ]
 }
 
 pdfium_unittest_source_set("unittests") {

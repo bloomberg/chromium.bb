@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "media/base/decrypt_config.h"
 #include "media/base/eme_constants.h"
 #include "media/base/media_export.h"
@@ -27,10 +28,12 @@ namespace media {
 // |key_system| to every method. http://crbug.com/457438
 class MEDIA_EXPORT KeySystems {
  public:
+  // Returns the KeySystems singleton which may or may not be updated yet.
   static KeySystems* GetInstance();
 
-  // Refreshes the list of available key systems if it may be out of date.
-  virtual void UpdateIfNeeded() = 0;
+  // Updates the list of available key systems if it's not initialized or may be
+  // out of date. Calls the `done_cb` when done.
+  virtual void UpdateIfNeeded(base::OnceClosure done_cb) = 0;
 
   // Gets the base key system name, e.g. "org.chromium.foo".
   virtual std::string GetBaseKeySystemName(
@@ -79,7 +82,7 @@ class MEDIA_EXPORT KeySystems {
       const bool* hw_secure_requirement) const = 0;
 
   // Returns the support |key_system| provides for persistent-license sessions.
-  virtual EmeSessionTypeSupport GetPersistentLicenseSessionSupport(
+  virtual EmeConfigRule GetPersistentLicenseSessionSupport(
       const std::string& key_system) const = 0;
 
   // Returns the support |key_system| provides for persistent state.

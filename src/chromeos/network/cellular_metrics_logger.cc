@@ -8,7 +8,6 @@
 
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/task/post_task.h"
 #include "base/time/tick_clock.h"
 #include "chromeos/components/feature_usage/feature_usage_metrics.h"
 #include "chromeos/dbus/hermes/hermes_manager_client.h"
@@ -136,7 +135,6 @@ void CellularMetricsLogger::RecordSimPinOperationResult(
       return;
   }
 }
-
 
 // static
 void CellularMetricsLogger::LogCellularUserInitiatedConnectionSuccessHistogram(
@@ -366,7 +364,7 @@ void CellularMetricsLogger::Init(
     CellularESimProfileHandler* cellular_esim_profile_handler) {
   network_state_handler_ = network_state_handler;
   cellular_esim_profile_handler_ = cellular_esim_profile_handler;
-  network_state_handler_->AddObserver(this, FROM_HERE);
+  network_state_handler_observer_.Observe(network_state_handler_);
 
   if (network_connection_handler) {
     network_connection_handler_ = network_connection_handler;
@@ -679,13 +677,13 @@ void CellularMetricsLogger::CheckForESimProfileStatusMetric() {
   for (const auto& profile : esim_profiles) {
     switch (profile.state()) {
       case CellularESimProfile::State::kPending:
-        FALLTHROUGH;
+        [[fallthrough]];
       case CellularESimProfile::State::kInstalling:
         pending_profiles_exist = true;
         break;
 
       case CellularESimProfile::State::kInactive:
-        FALLTHROUGH;
+        [[fallthrough]];
       case CellularESimProfile::State::kActive:
         active_profiles_exist = true;
         break;
@@ -907,7 +905,7 @@ CellularMetricsLogger::GetConnectionInfoForCellularNetwork(
 }
 
 void CellularMetricsLogger::OnShuttingDown() {
-  network_state_handler_->RemoveObserver(this, FROM_HERE);
+  network_state_handler_observer_.Reset();
   network_state_handler_ = nullptr;
   esim_feature_usage_metrics_.reset();
 }

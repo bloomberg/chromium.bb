@@ -22,8 +22,11 @@ import org.mockito.junit.MockitoRule;
 
 import org.chromium.base.Promise;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.components.signin.base.AccountCapabilities;
 import org.chromium.components.signin.base.AccountInfo;
 import org.chromium.components.signin.base.CoreAccountId;
+
+import java.util.HashMap;
 
 /**
  * Unit tests for {@link AccountInfoServiceImpl}.
@@ -44,9 +47,9 @@ public class AccountInfoServiceImplTest {
     @Mock
     private AccountInfoService.Observer mObserverMock;
 
-    private final AccountInfo mAccountInfoWithAvatar =
-            new AccountInfo(new CoreAccountId("gaia-id-test"), ACCOUNT_EMAIL, "gaia-id-test",
-                    "full name", "given name", mock(Bitmap.class));
+    private final AccountInfo mAccountInfoWithAvatar = new AccountInfo(
+            new CoreAccountId("gaia-id-test"), ACCOUNT_EMAIL, "gaia-id-test", "full name",
+            "given name", mock(Bitmap.class), new AccountCapabilities(new HashMap<>()));
 
     private AccountInfoServiceImpl mService;
 

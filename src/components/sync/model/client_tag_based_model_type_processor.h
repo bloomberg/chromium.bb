@@ -36,15 +36,15 @@ class ModelTypeState;
 namespace syncer {
 
 class CommitQueue;
-class ProcessorEntity;
 
 // A sync component embedded on the model type's thread that tracks entity
 // metadata in the model store and coordinates communication between sync and
 // model type threads. All changes in flight (either incoming from the server
 // or local changes reported by the bridge) must specify a client tag.
 //
-// See //docs/sync/uss/client_tag_based_model_type_processor.md for a more
-// thorough description.
+// See
+// //docs/website/site/developers/design-documents/sync/client-tag-based-model-type-processor/index.md
+// for a more thorough description.
 class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
                                          public ModelTypeChangeProcessor,
                                          public ModelTypeControllerDelegate {
@@ -91,6 +91,8 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
   void ReportError(const ModelError& error) override;
   absl::optional<ModelError> GetError() const override;
   base::WeakPtr<ModelTypeControllerDelegate> GetControllerDelegate() override;
+  const sync_pb::EntitySpecifics& GetPossiblyTrimmedRemoteSpecifics(
+      const std::string& storage_key) const override;
 
   // ModelTypeProcessor implementation.
   void ConnectSync(std::unique_ptr<CommitQueue> worker) override;
@@ -201,13 +203,6 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
   // client tag hash mapping.
   ClientTagHash GetClientTagHash(const std::string& storage_key,
                                  const EntityData& data) const;
-
-  // Create an entity in the entity map for |storage_key| and return a pointer
-  // to it.
-  // Requires that no entity for |storage_key| already exists in the map.
-  // Never returns nullptr.
-  ProcessorEntity* CreateEntity(const std::string& storage_key,
-                                const EntityData& data);
 
   // Removes metadata for all entries unless they are unsynced.
   // This is used to limit the amount of data stored in sync, and this does not

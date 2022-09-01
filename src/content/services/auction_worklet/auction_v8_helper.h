@@ -10,7 +10,6 @@
 #include <string>
 #include <vector>
 
-#include "base/compiler_specific.h"
 #include "base/containers/span.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
@@ -22,18 +21,18 @@
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
-#include "content/services/auction_worklet/console.h"
 #include "gin/public/isolate_holder.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom.h"
 #include "url/gurl.h"
 #include "v8/include/v8-forward.h"
 #include "v8/include/v8-isolate.h"
-#include "v8/include/v8-locker.h"
 #include "v8/include/v8-persistent-handle.h"
 
 namespace v8 {
 class UnboundScript;
+class WasmModuleObject;
 }  // namespace v8
 
 namespace v8_inspector {
@@ -74,7 +73,6 @@ class AuctionV8Helper
     ~FullIsolateScope();
 
    private:
-    const v8::Locker locker_;
     const v8::Isolate::Scope isolate_scope_;
     const v8::HandleScope handle_scope_;
   };
@@ -131,6 +129,11 @@ class AuctionV8Helper
     return v8_runner_;
   }
 
+  // Note: `callback` will be called on `v8_runner()`. This method may be called
+  // on the creation thread if done before any non-initialization work on v8
+  // thread begins.
+  void SetDestroyedCallback(base::OnceClosure callback);
+
   v8::Isolate* isolate() {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return isolate_holder_->isolate();
@@ -144,8 +147,7 @@ class AuctionV8Helper
   }
 
   // Create a v8::Context. The one thing this does that v8::Context::New() does
-  // not is remove access the Date object. It also (for now) installs some
-  // rudimentary console emulation.
+  // not is remove access to the Date object.
   v8::Local<v8::Context> CreateContext(
       v8::Local<v8::ObjectTemplate> global_template =
           v8::Local<v8::ObjectTemplate>());
@@ -165,25 +167,24 @@ class AuctionV8Helper
   // the corresponding value type and append it to the passed in argument
   // vector. Useful for assembling arguments to a Javascript function. Return
   // false on failure.
-  bool AppendUtf8StringValue(base::StringPiece utf8_string,
-                             std::vector<v8::Local<v8::Value>>* args)
-      WARN_UNUSED_RESULT;
-  bool AppendJsonValue(v8::Local<v8::Context> context,
-                       base::StringPiece utf8_json,
-                       std::vector<v8::Local<v8::Value>>* args)
-      WARN_UNUSED_RESULT;
+  [[nodiscard]] bool AppendUtf8StringValue(
+      base::StringPiece utf8_string,
+      std::vector<v8::Local<v8::Value>>* args);
+  [[nodiscard]] bool AppendJsonValue(v8::Local<v8::Context> context,
+                                     base::StringPiece utf8_json,
+                                     std::vector<v8::Local<v8::Value>>* args);
 
   // Convenience wrapper that adds the specified value into the provided Object.
-  bool InsertValue(base::StringPiece key,
-                   v8::Local<v8::Value> value,
-                   v8::Local<v8::Object> object) WARN_UNUSED_RESULT;
+  [[nodiscard]] bool InsertValue(base::StringPiece key,
+                                 v8::Local<v8::Value> value,
+                                 v8::Local<v8::Object> object);
 
   // Convenience wrapper that creates an Object by parsing `utf8_json` as JSON
   // and then inserts it into the provided Object.
-  bool InsertJsonValue(v8::Local<v8::Context> context,
-                       base::StringPiece key,
-                       base::StringPiece utf8_json,
-                       v8::Local<v8::Object> object) WARN_UNUSED_RESULT;
+  [[nodiscard]] bool InsertJsonValue(v8::Local<v8::Context> context,
+                                     base::StringPiece key,
+                                     base::StringPiece utf8_json,
+                                     v8::Local<v8::Object> object);
 
   // Attempts to convert |value| to JSON and write it to |out|. Returns false on
   // failure.
@@ -200,6 +201,27 @@ class AuctionV8Helper
       const DebugId* debug_id,
       absl::optional<std::string>& error_out);
 
+  // Compiles the provided WASM module from bytecode. A context must be active
+  // for this method to be invoked, and the object would be created for it (but
+  // may be cloned efficiently for other contexts via CloneWasmModule). In case
+  // of an error sets `error_out`.
+  //
+  // Note that since the returned object is a JS Object, so to properly isolate
+  // different executions it should not be used directly but rather fresh copies
+  // should be made via CloneWasmModule.
+  v8::MaybeLocal<v8::WasmModuleObject> CompileWasm(
+      const std::string& payload,
+      const GURL& src_url,
+      const DebugId* debug_id,
+      absl::optional<std::string>& error_out);
+
+  // Creates a fresh object describing the same WASM module as `in`, which must
+  // not be empty. Can return an empty handle on an error.
+  //
+  // An execution context must be active, and the object will be created for it.
+  v8::MaybeLocal<v8::WasmModuleObject> CloneWasmModule(
+      v8::Local<v8::WasmModuleObject> in);
+
   // Binds a script and runs it in the passed in context, returning the result.
   // Note that the returned value could include references to objects or
   // functions contained within the context, so is likely not safe to use in
@@ -214,13 +236,18 @@ class AuctionV8Helper
   // Running this multiple times in the same context will re-load the entire
   // script file in the context, and then run the script again.
   //
-  // In case of an error or console output sets `error_out`.
-  v8::MaybeLocal<v8::Value> RunScript(v8::Local<v8::Context> context,
-                                      v8::Local<v8::UnboundScript> script,
-                                      const DebugId* debug_id,
-                                      base::StringPiece function_name,
-                                      base::span<v8::Local<v8::Value>> args,
-                                      std::vector<std::string>& error_out);
+  // If `script_timeout` has no value, kScriptTimeout will be used as the
+  // default timeout.
+  //
+  // In case of an error sets `error_out`.
+  v8::MaybeLocal<v8::Value> RunScript(
+      v8::Local<v8::Context> context,
+      v8::Local<v8::UnboundScript> script,
+      const DebugId* debug_id,
+      base::StringPiece function_name,
+      base::span<v8::Local<v8::Value>> args,
+      absl::optional<base::TimeDelta> script_timeout,
+      std::vector<std::string>& error_out);
 
   // If any debugging session targeting `debug_id` has set an active
   // DOM instrumentation breakpoint `name`, asks for v8 to do a debugger pause
@@ -231,22 +258,6 @@ class AuctionV8Helper
                                              const std::string& name);
 
   void set_script_timeout_for_testing(base::TimeDelta script_timeout);
-
-  // If non-nullptr, this returns a pointer to the of vector representing the
-  // debug output lines of the currently running script.  It's nullptr when
-  // nothing is running.
-  std::vector<std::string>* console_buffer() {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    return console_buffer_;
-  }
-
-  // Returns a string identifying the currently running script for purpose of
-  // attributing its debug output in a human-understandable way. Empty if
-  // nothing is running.
-  const std::string& console_script_name() {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    return console_script_name_;
-  }
 
   // Invokes the registered resume callback for given ID. Does nothing if it
   // was already invoked.
@@ -268,7 +279,7 @@ class AuctionV8Helper
   // value passed in for `mojo_sequence` the first time this method is called
   // will be used.
   void ConnectDevToolsAgent(
-      mojo::PendingReceiver<blink::mojom::DevToolsAgent> agent,
+      mojo::PendingAssociatedReceiver<blink::mojom::DevToolsAgent> agent,
       scoped_refptr<base::SequencedTaskRunner> mojo_sequence,
       const DebugId& debug_id);
 
@@ -298,20 +309,6 @@ class AuctionV8Helper
   friend class base::DeleteHelper<AuctionV8Helper>;
   class ScriptTimeoutHelper;
 
-  // Sets values of console_buffer() and console_script_name() to those
-  // passed-in to its constructor for duration of its existence, and clears
-  // them afterward.
-  class ScopedConsoleTarget {
-   public:
-    ScopedConsoleTarget(AuctionV8Helper* owner,
-                        const std::string& console_script_name,
-                        std::vector<std::string>* out);
-    ~ScopedConsoleTarget();
-
-   private:
-    raw_ptr<AuctionV8Helper> owner_;
-  };
-
   explicit AuctionV8Helper(
       scoped_refptr<base::SingleThreadTaskRunner> v8_runner);
   ~AuctionV8Helper();
@@ -336,17 +333,11 @@ class AuctionV8Helper
 
   std::unique_ptr<gin::IsolateHolder> isolate_holder_
       GUARDED_BY_CONTEXT(sequence_checker_);
-  Console console_ GUARDED_BY_CONTEXT(sequence_checker_){this};
   v8::Global<v8::Context> scratch_context_
       GUARDED_BY_CONTEXT(sequence_checker_);
   // Script timeout. Can be changed for testing.
   base::TimeDelta script_timeout_ GUARDED_BY_CONTEXT(sequence_checker_) =
       kScriptTimeout;
-
-  // See corresponding getters for description.
-  raw_ptr<std::vector<std::string>> console_buffer_
-      GUARDED_BY_CONTEXT(sequence_checker_) = nullptr;
-  std::string console_script_name_ GUARDED_BY_CONTEXT(sequence_checker_);
 
   raw_ptr<ScriptTimeoutHelper> timeout_helper_
       GUARDED_BY_CONTEXT(sequence_checker_) = nullptr;
@@ -366,6 +357,8 @@ class AuctionV8Helper
       GUARDED_BY_CONTEXT(sequence_checker_);
   std::unique_ptr<v8_inspector::V8Inspector> v8_inspector_
       GUARDED_BY_CONTEXT(sequence_checker_);
+
+  base::OnceClosure destroyed_callback_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 };

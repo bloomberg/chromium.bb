@@ -19,8 +19,8 @@
 #include "include/effects/SkRuntimeEffect.h"
 #include "include/utils/SkRandom.h"
 #include "src/core/SkRuntimeEffectPriv.h"
-#include "src/gpu/GrCaps.h"
-#include "src/gpu/GrRecordingContextPriv.h"
+#include "src/gpu/ganesh/GrCaps.h"
+#include "src/gpu/ganesh/GrRecordingContextPriv.h"
 #include "tools/Resources.h"
 #include "tools/ToolUtils.h"
 
@@ -95,8 +95,9 @@ static SkBitmap draw_shader(SkCanvas* canvas, sk_sp<SkShader> shader,
     'v1' : float2(1)
     'v2' : float2(2)
 */
-static SkString make_unary_sksl_1d(const char* fn) {
+static SkString make_unary_sksl_1d(const char* fn, bool requireES3) {
     return SkStringPrintf(
+            "#version %s\n"
             "uniform float xScale; uniform float xBias;"
             "uniform float yScale; uniform float yBias;"
             "half4 main(float2 p) {"
@@ -109,7 +110,7 @@ static SkString make_unary_sksl_1d(const char* fn) {
             "    float y = float(%s) * yScale + yBias;"
             "    return y.xxx1;"
             "}",
-            fn);
+            requireES3 ? "300" : "100", fn);
 }
 
 // Draws one row of boxes, then advances the canvas translation vertically
@@ -125,9 +126,7 @@ static void plot(SkCanvas* canvas,
 
     draw_label(canvas, label ? label : fn);
 
-    auto [effect, error] = SkRuntimeEffect::MakeForShader(
-            make_unary_sksl_1d(fn),
-            requireES3 ? SkRuntimeEffectPriv::ES3Options() : SkRuntimeEffect::Options{});
+    auto [effect, error] = SkRuntimeEffect::MakeForShader(make_unary_sksl_1d(fn, requireES3));
     if (!effect) {
         SkDebugf("Error: %s\n", error.c_str());
         return;
@@ -139,9 +138,8 @@ static void plot(SkCanvas* canvas,
     builder.uniform("yScale") = 1.0f  / (yMax - yMin);
     builder.uniform("yBias")  = -yMin / (yMax - yMin);
 
-    SkBitmap bitmap = draw_shader(canvas,
-                                  builder.makeShader(/*localMatrix=*/nullptr, /*isOpaque=*/false),
-                                  /*allowRasterFallback=*/!requireES3);
+    SkBitmap bitmap =
+            draw_shader(canvas, builder.makeShader(), /*allowRasterFallback=*/!requireES3);
     if (!bitmap.empty()) {
         // Plot.
         SkPaint plotPaint({ 0.0f, 0.5f, 0.0f, 1.0f });
@@ -207,8 +205,8 @@ DEF_SIMPLE_GPU_GM_CAN_FAIL(runtime_intrinsics_trig_es3,
                            ctx, canvas, errorMsg,
                            columns_to_width(3),
                            rows_to_height(2)) {
-    if (!ctx->priv().caps()->shaderCaps()->supportsSkSLES3()) {
-        *errorMsg = "SkSL ES3 is not supported.";
+    if (ctx->priv().caps()->shaderCaps()->supportedSkSLVerion() < SkSL::Version::k300) {
+        *errorMsg = "SkSL 300 is not supported.";
         return skiagm::DrawResult::kSkip;
     }
 
@@ -220,7 +218,7 @@ DEF_SIMPLE_GPU_GM_CAN_FAIL(runtime_intrinsics_trig_es3,
     plot_es3(canvas, "tanh(x)", -2.0f,  2.0f, -1.0f, 1.0f);
     next_row(canvas);
 
-    if (ctx->priv().caps()->shaderCaps()->inverseHyperbolicSupport()) {
+    if (ctx->priv().caps()->shaderCaps()->fInverseHyperbolicSupport) {
         plot_es3(canvas, "asinh(x)", -2.0f, 2.0f, -2.0f, 2.0f);
         plot_es3(canvas, "acosh(x)",  0.0f, 5.0f,  0.0f, 3.0f);
         plot_es3(canvas, "atanh(x)", -1.0f, 1.0f, -4.0f, 4.0f);
@@ -318,8 +316,8 @@ DEF_SIMPLE_GPU_GM_CAN_FAIL(runtime_intrinsics_common_es3,
                            ctx, canvas, errorMsg,
                            columns_to_width(6),
                            rows_to_height(5)) {
-    if (!ctx->priv().caps()->shaderCaps()->supportsSkSLES3()) {
-        *errorMsg = "SkSL ES3 is not supported.";
+    if (ctx->priv().caps()->shaderCaps()->supportedSkSLVerion() < SkSL::Version::k300) {
+        *errorMsg = "SkSL 300 is not supported.";
         return skiagm::DrawResult::kSkip;
     }
 
@@ -463,7 +461,7 @@ static void plot_matrix_comp_mult(SkCanvas* canvas,
     builder.uniform("m1") = mtx1;
     builder.uniform("m2") = mtx2;
 
-    draw_shader(canvas, builder.makeShader(/*localMatrix=*/nullptr, /*isOpaque=*/false));
+    draw_shader(canvas, builder.makeShader());
 
     canvas->restore();
     next_column(canvas);
@@ -501,7 +499,7 @@ static void plot_matrix_inverse(SkCanvas* canvas, std::array<float, N*N> mtx, co
     builder.uniform("bias")  = 0.5f;
     builder.uniform("m")     = mtx;
 
-    draw_shader(canvas, builder.makeShader(/*localMatrix=*/nullptr, /*isOpaque=*/false));
+    draw_shader(canvas, builder.makeShader());
 
     canvas->restore();
     next_column(canvas);
@@ -588,12 +586,7 @@ static void plot_bvec(SkCanvas* canvas, const char* fn, const char* label) {
     T uniformData[2] = { -2, -2 };
     sk_sp<SkData> uniforms = SkData::MakeWithCopy(uniformData, sizeof(uniformData));
 
-    draw_shader(canvas,
-                effect->makeShader(uniforms,
-                                   /*children=*/nullptr,
-                                   /*childCount=*/0,
-                                   /*localMatrix=*/nullptr,
-                                   /*isOpaque=*/false));
+    draw_shader(canvas, effect->makeShader(uniforms, /*children=*/{}));
 
     canvas->restore();
     next_column(canvas);

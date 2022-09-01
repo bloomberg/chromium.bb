@@ -5,6 +5,7 @@
 #include "chrome/browser/chrome_process_singleton.h"
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
@@ -82,7 +83,7 @@ TEST(ChromeProcessSingletonTest, Lock) {
   ASSERT_EQ(1, callback_count);
 }
 
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if BUILDFLAG(IS_WIN) && !defined(USE_AURA)
 namespace {
 
 void ModalNotificationHandler(bool* flag) {
@@ -131,4 +132,4 @@ TEST(ChromeProcessSingletonTest, LockWithModalDialog) {
   ASSERT_EQ(ProcessSingleton::PROCESS_NOTIFIED, result);
   ASSERT_EQ(3, callback_count);
 }
-#endif  // defined(OS_WIN) && !defined(USE_AURA)
+#endif  // BUILDFLAG(IS_WIN) && !defined(USE_AURA)

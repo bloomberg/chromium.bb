@@ -11,6 +11,8 @@
 #include "third_party/blink/renderer/core/workers/worker_reporting_proxy.h"
 #include "third_party/blink/renderer/core/workers/worklet_global_scope.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_copier_base.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_copier_std.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 
 namespace blink {
@@ -78,7 +80,8 @@ void WorkletModuleTreeClient::NotifyModuleTreeLoadFinished(
   }
 
   // Step 5: "Run a module script given script."
-  ScriptEvaluationResult result = module_script->RunScriptAndReturnValue();
+  ScriptEvaluationResult result =
+      module_script->RunScriptOnScriptStateAndReturnValue(script_state_);
 
   auto* global_scope =
       To<WorkletGlobalScope>(ExecutionContext::From(script_state_));

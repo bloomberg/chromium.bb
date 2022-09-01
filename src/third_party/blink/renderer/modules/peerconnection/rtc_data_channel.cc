@@ -46,6 +46,8 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/scheduling_policy.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_copier_base.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_copier_std.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
@@ -556,11 +558,11 @@ bool RTCDataChannel::HasPendingActivity() const {
   switch (state_) {
     case webrtc::DataChannelInterface::kConnecting:
       has_valid_listeners |= HasEventListeners(event_type_names::kOpen);
-      FALLTHROUGH;
+      [[fallthrough]];
     case webrtc::DataChannelInterface::kOpen:
       has_valid_listeners |= HasEventListeners(event_type_names::kMessage) ||
                              HasEventListeners(event_type_names::kClosing);
-      FALLTHROUGH;
+      [[fallthrough]];
     case webrtc::DataChannelInterface::kClosing:
       has_valid_listeners |= HasEventListeners(event_type_names::kError) ||
                              HasEventListeners(event_type_names::kClose);
@@ -743,7 +745,8 @@ void RTCDataChannel::CreateFeatureHandleForScheduler() {
   feature_handle_for_scheduler_ =
       window->GetFrame()->GetFrameScheduler()->RegisterFeature(
           SchedulingPolicy::Feature::kWebRTC,
-          SchedulingPolicy::DisableAggressiveThrottling());
+          {SchedulingPolicy::DisableAggressiveThrottling(),
+           SchedulingPolicy::DisableAlignWakeUps()});
 }
 
 }  // namespace blink

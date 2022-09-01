@@ -11,12 +11,12 @@
 #include "base/hash/sha1.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/escape.h"
 #include "base/strings/string_piece.h"
 #include "components/cast_channel/cast_socket.h"
 #include "components/cast_channel/enum_table.h"
 #include "components/media_router/common/discovery/media_sink_internal.h"
 #include "components/media_router/common/providers/cast/cast_media_source.h"
-#include "net/base/escape.h"
 
 namespace cast_util {
 
@@ -152,7 +152,7 @@ base::Value CreateReceiver(const MediaSinkInternal& sink,
   }
 
   receiver.SetKey("friendlyName",
-                  base::Value(net::EscapeForHTML(sink.sink().name())));
+                  base::Value(base::EscapeForHTML(sink.sink().name())));
   receiver.SetKey("capabilities",
                   CapabilitiesToListValue(sink.cast_data().capabilities));
   receiver.SetKey("volume", base::Value());
@@ -350,7 +350,7 @@ std::unique_ptr<CastSession> CastSession::From(
   // There should be only 1 app on |receiver_status|.
   const base::Value* app_list_value =
       receiver_status.FindKeyOfType("applications", base::Value::Type::LIST);
-  if (!app_list_value || app_list_value->GetList().size() != 1) {
+  if (!app_list_value || app_list_value->GetListDeprecated().size() != 1) {
     DVLOG(2) << "receiver_status does not contain exactly one app: "
              << receiver_status;
     return nullptr;
@@ -359,7 +359,7 @@ std::unique_ptr<CastSession> CastSession::From(
   auto session = std::make_unique<CastSession>();
 
   // Fill in mandatory Session fields.
-  const base::Value& app_value = app_list_value->GetList()[0];
+  const base::Value& app_value = app_list_value->GetListDeprecated()[0];
   if (!GetString(app_value, "sessionId", &session->session_id_) ||
       !GetString(app_value, "appId", &session->app_id_) ||
       !GetString(app_value, "transportId", &session->transport_id_) ||
@@ -403,14 +403,14 @@ std::unique_ptr<CastSession> CastSession::From(
 
   const base::Value* namespaces_value =
       app_value.FindKeyOfType("namespaces", base::Value::Type::LIST);
-  if (!namespaces_value || namespaces_value->GetList().empty()) {
+  if (!namespaces_value || namespaces_value->GetListDeprecated().empty()) {
     // A session without namespaces is invalid, except for a multizone leader.
     if (session->app_id() != kMultizoneLeaderAppId) {
       DVLOG(2) << "Message is missing namespaces.";
       return nullptr;
     }
   } else {
-    for (const auto& namespace_value : namespaces_value->GetList()) {
+    for (const auto& namespace_value : namespaces_value->GetListDeprecated()) {
       std::string message_namespace;
       if (!namespace_value.is_dict() ||
           !GetString(namespace_value, "name", &message_namespace)) {

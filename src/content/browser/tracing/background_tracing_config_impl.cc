@@ -31,7 +31,6 @@ const char kConfigModeReactive[] = "REACTIVE_TRACING_MODE";
 const char kConfigModeSystem[] = "SYSTEM_TRACING_MODE";
 
 const char kConfigScenarioName[] = "scenario_name";
-const char kConfigTraceBrowserProcessOnly[] = "trace_browser_process_only";
 const char kEnabledDataSourcesKey[] = "enabled_data_sources";
 
 const char kConfigCategoryKey[] = "category";
@@ -130,6 +129,10 @@ base::Value BackgroundTracingConfigImpl::ToDict() {
   return dict;
 }
 
+void BackgroundTracingConfigImpl::SetPackageNameFilteringEnabled(bool enabled) {
+  trace_config_.SetEventPackageNameFilterEnabled(enabled);
+}
+
 void BackgroundTracingConfigImpl::AddPreemptiveRule(const base::Value& dict) {
   AddRule(dict);
 }
@@ -167,14 +170,11 @@ TraceConfig BackgroundTracingConfigImpl::GetTraceConfig() const {
     chrome_config = GetConfigForCategoryPreset(category_preset(), record_mode);
   }
 
-  if (trace_browser_process_only_) {
-    TraceConfig::ProcessFilterConfig process_config({base::GetCurrentProcId()});
-    chrome_config.SetProcessFilterConfig(process_config);
-  }
-
   chrome_config.SetTraceBufferSizeInKb(GetMaximumTraceBufferSizeKb());
+  chrome_config.SetEventPackageNameFilterEnabled(
+      trace_config_.IsEventPackageNameFilterEnabled());
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // For legacy tracing backend, set low trace buffer size on Android in order
   // to upload small trace files.
   if (tracing_mode() == BackgroundTracingConfigImpl::PREEMPTIVE) {
@@ -186,7 +186,7 @@ TraceConfig BackgroundTracingConfigImpl::GetTraceConfig() const {
 }
 
 size_t BackgroundTracingConfigImpl::GetTraceUploadLimitKb() const {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   auto type = net::NetworkChangeNotifier::GetConnectionType();
   UMA_HISTOGRAM_ENUMERATION(
       "Tracing.Background.NetworkConnectionTypeWhenUploaded", type,
@@ -224,10 +224,6 @@ BackgroundTracingConfigImpl::FromDict(base::Value&& dict) {
       config->scenario_name_ = *scenario;
     }
     config->SetBufferSizeLimits(&dict);
-    if (auto trace_browser_process_only =
-            dict.FindBoolKey(kConfigTraceBrowserProcessOnly)) {
-      config->trace_browser_process_only_ = *trace_browser_process_only;
-    }
   }
 
   return config;
@@ -269,7 +265,7 @@ BackgroundTracingConfigImpl::PreemptiveFromDict(const base::Value& dict) {
   if (!configs_list)
     return nullptr;
 
-  for (const auto& config_dict : configs_list->GetList()) {
+  for (const auto& config_dict : configs_list->GetListDeprecated()) {
     if (!config_dict.is_dict())
       return nullptr;
 
@@ -319,7 +315,7 @@ BackgroundTracingConfigImpl::ReactiveFromDict(const base::Value& dict) {
   if (!configs_list)
     return nullptr;
 
-  for (const auto& config_dict : configs_list->GetList()) {
+  for (const auto& config_dict : configs_list->GetListDeprecated()) {
     if (!config_dict.is_dict())
       return nullptr;
 
@@ -356,7 +352,7 @@ BackgroundTracingConfigImpl::SystemFromDict(const base::Value& dict) {
   if (!configs_list)
     return nullptr;
 
-  for (const auto& config_dict : configs_list->GetList()) {
+  for (const auto& config_dict : configs_list->GetListDeprecated()) {
     if (!config_dict.is_dict())
       return nullptr;
 
@@ -432,7 +428,7 @@ int BackgroundTracingConfigImpl::GetMaximumTraceBufferSizeKb() const {
   if (ram_mb > 0 && ram_mb <= 1024) {
     return low_ram_buffer_size_kb_;
   }
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   auto type = net::NetworkChangeNotifier::GetConnectionType();
   UMA_HISTOGRAM_ENUMERATION(
       "Tracing.Background.NetworkConnectionTypeWhenStarted", type,

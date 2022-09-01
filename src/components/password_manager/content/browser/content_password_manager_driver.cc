@@ -160,11 +160,6 @@ void ContentPasswordManagerDriver::GeneratedPasswordAccepted(
       generation_element_id, password);
 }
 
-void ContentPasswordManagerDriver::TouchToFillClosed(
-    ShowVirtualKeyboard show_virtual_keyboard) {
-  GetPasswordAutofillAgent()->TouchToFillClosed(show_virtual_keyboard.value());
-}
-
 void ContentPasswordManagerDriver::FillSuggestion(
     const std::u16string& username,
     const std::u16string& password) {
@@ -176,6 +171,17 @@ void ContentPasswordManagerDriver::FillIntoFocusedField(
     const std::u16string& credential) {
   GetPasswordAutofillAgent()->FillIntoFocusedField(is_password, credential);
 }
+
+#if BUILDFLAG(IS_ANDROID)
+void ContentPasswordManagerDriver::TouchToFillClosed(
+    ShowVirtualKeyboard show_virtual_keyboard) {
+  GetPasswordAutofillAgent()->TouchToFillClosed(show_virtual_keyboard.value());
+}
+
+void ContentPasswordManagerDriver::TriggerFormSubmission() {
+  GetPasswordAutofillAgent()->TriggerFormSubmission();
+}
+#endif
 
 void ContentPasswordManagerDriver::PreviewSuggestion(
     const std::u16string& username,
@@ -363,6 +369,9 @@ void ContentPasswordManagerDriver::UserModifiedPasswordField() {
     return;
   if (client_->GetMetricsRecorder())
     client_->GetMetricsRecorder()->RecordUserModifiedPasswordField();
+  // A user has modified an input field, it wouldn't be a submission "after
+  // Touch To Fill".
+  client_->ResetSubmissionTrackingAfterTouchToFill();
 }
 
 void ContentPasswordManagerDriver::UserModifiedNonPasswordField(
@@ -374,6 +383,9 @@ void ContentPasswordManagerDriver::UserModifiedNonPasswordField(
     return;
   GetPasswordManager()->OnUserModifiedNonPasswordField(this, renderer_id,
                                                        field_name, value);
+  // A user has modified an input field, it wouldn't be a submission "after
+  // Touch To Fill".
+  client_->ResetSubmissionTrackingAfterTouchToFill();
 }
 
 void ContentPasswordManagerDriver::ShowPasswordSuggestions(
@@ -389,12 +401,15 @@ void ContentPasswordManagerDriver::ShowPasswordSuggestions(
       TransformToRootCoordinates(render_frame_host_, bounds));
 }
 
-void ContentPasswordManagerDriver::ShowTouchToFill() {
+#if BUILDFLAG(IS_ANDROID)
+void ContentPasswordManagerDriver::ShowTouchToFill(
+    autofill::mojom::SubmissionReadinessState submission_readiness) {
   if (!password_manager::bad_message::CheckFrameNotPrerendering(
           render_frame_host_))
     return;
-  client_->ShowTouchToFill(this);
+  client_->ShowTouchToFill(this, submission_readiness);
 }
+#endif
 
 void ContentPasswordManagerDriver::CheckSafeBrowsingReputation(
     const GURL& form_action,
@@ -402,11 +417,6 @@ void ContentPasswordManagerDriver::CheckSafeBrowsingReputation(
   if (!password_manager::bad_message::CheckFrameNotPrerendering(
           render_frame_host_))
     return;
-  // Despite the name, this method is only called on password fields.
-  // (See PasswordAutofillAgent::MaybeCheckSafeBrowsingReputation())
-  if (client_->GetMetricsRecorder()) {
-    client_->GetMetricsRecorder()->RecordUserFocusedPasswordField();
-  }
 #if defined(ON_FOCUS_PING_ENABLED)
   client_->CheckSafeBrowsingReputation(form_action, frame_url);
 #endif

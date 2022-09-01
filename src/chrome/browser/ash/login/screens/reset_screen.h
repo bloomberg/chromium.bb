@@ -9,6 +9,7 @@
 #include <set>
 #include <string>
 
+#include "ash/public/cpp/login_accelerators.h"
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -68,7 +69,8 @@ class ResetScreen : public BaseScreen, public UpdateEngineClient::Observer {
   // BaseScreen implementation:
   void ShowImpl() override;
   void HideImpl() override;
-  void OnUserAction(const std::string& action_id) override;
+  void OnUserActionDeprecated(const std::string& action_id) override;
+  bool HandleAccelerator(LoginAcceleratorAction action) final;
 
   // UpdateEngineClient::Observer implementation:
   void UpdateStatusChanged(const update_engine::StatusResult& status) override;

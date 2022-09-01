@@ -1,10 +1,12 @@
-#!/usr/bin/env python
+#!/usr/bin/env vpython3
 #
 # Copyright 2015 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 import logging
+# TODO(https://crbug.com/1262296): Update this after Python2 trybots retire.
+# pylint: disable=deprecated-module
 import optparse
 import os
 import sys
@@ -33,6 +35,8 @@ _DEFAULT_CHROME_CATEGORIES = '_DEFAULT_CHROME_CATEGORIES'
 
 
 def _CreateOptionParser():
+  # TODO(https://crbug.com/1262296): Update this after Python2 trybots retire.
+  # pylint: disable=deprecated-module
   parser = optparse.OptionParser(description='Record about://tracing profiles '
                                  'from Android browsers startup, combined with '
                                  'Android systrace. See http://dev.chromium.org'
@@ -109,7 +113,7 @@ def main():
 
   if options.atrace_categories in ['list', 'help']:
     atrace_agent.list_categories(atrace_agent.get_config(options))
-    print '\n'
+    print('\n')
     return 0
   result = profiler.CaptureProfile(options,
                                    options.trace_time,

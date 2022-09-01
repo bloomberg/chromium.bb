@@ -20,13 +20,12 @@ js_type_check("closure_compile_module") {
 js_library("os_search_page") {
   deps = [
     "//chrome/browser/resources/settings:router",
-    "//chrome/browser/resources/settings/chromeos:deep_linking_behavior.m",
-    "//chrome/browser/resources/settings/chromeos:os_route.m",
+    "//chrome/browser/resources/settings/chromeos:deep_linking_behavior",
+    "//chrome/browser/resources/settings/chromeos:os_route",
     "//chrome/browser/resources/settings/chromeos:route_observer_behavior",
     "//chrome/browser/resources/settings/chromeos/google_assistant_page:google_assistant_page",
     "//chrome/browser/resources/settings/chromeos/os_search_page:search_engines_browser_proxy",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/cr_elements/cr_link_row:cr_link_row",
     "//ui/webui/resources/cr_elements/policy:cr_policy_pref_indicator.m",
     "//ui/webui/resources/js:assert.m",
     "//ui/webui/resources/js:cr.m",
@@ -51,11 +50,10 @@ js_library("os_search_selection_dialog") {
 js_library("search_subpage") {
   deps = [
     "//chrome/browser/resources/settings:router",
-    "//chrome/browser/resources/settings/chromeos:deep_linking_behavior.m",
-    "//chrome/browser/resources/settings/chromeos:os_route.m",
+    "//chrome/browser/resources/settings/chromeos:deep_linking_behavior",
+    "//chrome/browser/resources/settings/chromeos:os_route",
     "//chrome/browser/resources/settings/chromeos:route_observer_behavior",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/cr_elements/cr_link_row:cr_link_row",
     "//ui/webui/resources/js:cr.m",
     "//ui/webui/resources/js:i18n_behavior.m",
     "//ui/webui/resources/js:load_time_data.m",
@@ -66,11 +64,10 @@ js_library("search_subpage") {
 js_library("search_engine") {
   deps = [
     "//chrome/browser/resources/settings:router",
-    "//chrome/browser/resources/settings/chromeos:deep_linking_behavior.m",
-    "//chrome/browser/resources/settings/chromeos:os_route.m",
+    "//chrome/browser/resources/settings/chromeos:deep_linking_behavior",
+    "//chrome/browser/resources/settings/chromeos:os_route",
     "//chrome/browser/resources/settings/chromeos:route_observer_behavior",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/cr_elements/cr_link_row:cr_link_row",
     "//ui/webui/resources/js:cr.m",
     "//ui/webui/resources/js:i18n_behavior.m",
     "//ui/webui/resources/js:load_time_data.m",

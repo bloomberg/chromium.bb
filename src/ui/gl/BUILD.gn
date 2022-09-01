@@ -73,6 +73,10 @@ component("gl") {
     "gl_context.h",
     "gl_context_stub.cc",
     "gl_context_stub.h",
+    "gl_display.cc",
+    "gl_display.h",
+    "gl_display_manager.cc",
+    "gl_display_manager.h",
     "gl_enums.cc",
     "gl_enums.h",
     "gl_enums_implementation_autogen.h",
@@ -192,7 +196,10 @@ component("gl") {
 
   data_deps = []
   if (enable_swiftshader) {
-    data_deps += [ "//third_party/swiftshader" ]
+    data_deps += [
+      "//third_party/swiftshader/src/Vulkan:icd_file",
+      "//third_party/swiftshader/src/Vulkan:swiftshader_libvulkan",
+    ]
   }
   if (use_egl) {
     sources += [
@@ -371,13 +378,17 @@ component("gl") {
       "/DELAYLOAD:dwmapi.dll",
       "/DELAYLOAD:dxgi.dll",
     ]
-    deps += [ "//media/base/win:media_foundation_util" ]
+    deps += [
+      "//media/base/win:media_foundation_util",
+      "//ui/gfx/mojom:dxgi_info",
+    ]
 
     assert(use_egl)
     data_deps += [
       "//third_party/angle:libEGL",
       "//third_party/angle:libGLESv2",
-      "//third_party/swiftshader",
+      "//third_party/swiftshader/src/Vulkan:icd_file",
+      "//third_party/swiftshader/src/Vulkan:swiftshader_libvulkan",
     ]
     if (angle_shared_libvulkan && !is_chromeos) {
       data_deps += [ "//third_party/vulkan-deps/vulkan-loader/src:libvulkan" ]
@@ -416,7 +427,10 @@ component("gl") {
         "//third_party/mesa_headers",
       ]
       if (enable_swiftshader) {
-        data_deps += [ "//third_party/swiftshader" ]
+        data_deps += [
+          "//third_party/swiftshader/src/Vulkan:icd_file",
+          "//third_party/swiftshader/src/Vulkan:swiftshader_libvulkan",
+        ]
       }
     }
   }
@@ -429,10 +443,6 @@ component("gl") {
     libs = [ "android" ]
 
     deps += [ ":gl_jni_headers" ]
-  }
-
-  if (is_chromecast) {
-    defines += [ "CHROMECAST_BUILD" ]
   }
 }
 
@@ -455,17 +465,6 @@ if (is_mac && use_egl) {
   }
 
   if (enable_swiftshader) {
-    copy("swiftshader_egl_library_copy") {
-      sources = [
-        "$root_out_dir/libswiftshader_libEGL.dylib",
-        "$root_out_dir/libswiftshader_libGLESv2.dylib",
-      ]
-      outputs = [ "$root_out_dir/egl_intermediates/{{source_file_part}}" ]
-      deps = [
-        "//third_party/swiftshader/src/OpenGL/libEGL:swiftshader_libEGL",
-        "//third_party/swiftshader/src/OpenGL/libGLESv2:swiftshader_libGLESv2",
-      ]
-    }
     copy("swiftshader_vk_library_copy") {
       sources = [
         "$root_out_dir/libvk_swiftshader.dylib",
@@ -590,6 +589,7 @@ test("gl_unittests") {
   if (use_egl) {
     sources += [
       "egl_api_unittest.cc",
+      "gl_display_manager_unittest.cc",
       "test/egl_initialization_displays_unittest.cc",
     ]
   }
@@ -641,7 +641,10 @@ test("gl_unittests") {
     "//ui/platform_window:platform_impls",
   ]
 
-  data_deps = [ "//third_party/mesa_headers" ]
+  data_deps = [
+    "//testing/buildbot/filters:gl_unittests_filters",
+    "//third_party/mesa_headers",
+  ]
 
   # TODO(https://crbug.com/789065): this must be moved to Ozone.
   if (ozone_platform_x11) {

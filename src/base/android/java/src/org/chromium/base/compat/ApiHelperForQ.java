@@ -5,7 +5,6 @@
 package org.chromium.base.compat;
 
 import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
 import android.app.Notification;
 import android.app.Service;
 import android.content.Context;
@@ -17,13 +16,15 @@ import android.net.TransportInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.FileUtils;
+import android.os.PowerManager;
 import android.provider.MediaStore;
 import android.telephony.CellInfo;
 import android.telephony.TelephonyManager;
 import android.view.MotionEvent;
 
+import androidx.annotation.RequiresApi;
+
 import org.chromium.base.Callback;
-import org.chromium.base.annotations.VerifiesOnQ;
 import org.chromium.base.task.AsyncTask;
 
 import java.io.IOException;
@@ -38,8 +39,7 @@ import java.util.concurrent.Executor;
  * separate class so that Android framework can successfully verify classes without
  * encountering the new APIs.
  */
-@VerifiesOnQ
-@TargetApi(Build.VERSION_CODES.Q)
+@RequiresApi(Build.VERSION_CODES.Q)
 public final class ApiHelperForQ {
     private ApiHelperForQ() {}
 
@@ -105,5 +105,10 @@ public final class ApiHelperForQ {
     /** See {@link NetworkCapabilities#getTransportInfo() } */
     public static TransportInfo getTransportInfo(NetworkCapabilities networkCapabilities) {
         return networkCapabilities.getTransportInfo();
+    }
+
+    /** See {@link PowerManager#getCurrentThermalStatus() }. */
+    public static int getCurrentThermalStatus(PowerManager powerManager) {
+        return powerManager.getCurrentThermalStatus();
     }
 }

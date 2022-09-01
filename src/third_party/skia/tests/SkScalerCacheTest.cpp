@@ -7,6 +7,8 @@
 
 #include "include/core/SkFont.h"
 #include "include/core/SkTypeface.h"
+#include "src/core/SkGlyphBuffer.h"
+#include "src/core/SkGlyphRun.h"
 #include "src/core/SkScalerCache.h"
 #include "src/core/SkStrikeSpec.h"
 #include "src/core/SkTaskGroup.h"
@@ -63,17 +65,17 @@ DEF_TEST(SkScalerCacheMultiThread, Reporter) {
 
             auto local = data.subspan(threadIndex * 2, data.size() - kThreadCount * 2);
             for (int i = 0; i < 100; i++) {
-                SkDrawableGlyphBuffer drawable;
-                SkSourceGlyphBuffer rejects;
+                SkDrawableGlyphBuffer accepted;
+                SkSourceGlyphBuffer rejected;
 
-                drawable.ensureSize(glyphCount);
-                rejects.setSource(local);
+                accepted.ensureSize(glyphCount);
+                rejected.setSource(local);
 
-                drawable.startBitmapDevice(rejects.source(), {0, 0}, SkMatrix::I(),
-                                           scalerCache.roundingSpec());
-                scalerCache.prepareForMaskDrawing(&drawable, &rejects);
-                rejects.flipRejectsToSource();
-                drawable.reset();
+                accepted.startDevicePositioning(
+                        rejected.source(), SkMatrix::I(), scalerCache.roundingSpec());
+                scalerCache.prepareForMaskDrawing(&accepted, &rejected);
+                rejected.flipRejectsToSource();
+                accepted.reset();
             }
         };
 

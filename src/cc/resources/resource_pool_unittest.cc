@@ -6,10 +6,14 @@
 
 #include <stddef.h>
 
+#include <limits>
+#include <vector>
+
 #include "base/memory/raw_ptr.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "components/viz/client/client_resource_provider.h"
 #include "components/viz/common/resources/resource_sizes.h"
 #include "components/viz/common/resources/returned_resource.h"
@@ -165,6 +169,7 @@ TEST_F(ResourcePoolTest, AccountingSingleResource) {
       viz::ResourceSizes::UncheckedSizeInBytes<size_t>(size, format);
   ResourcePool::InUsePoolResource resource =
       resource_pool_->AcquireResource(size, format, color_space);
+  SetBackingOnResource(resource);
 
   EXPECT_EQ(resource_bytes, resource_pool_->GetTotalMemoryUsageForTesting());
   EXPECT_EQ(resource_bytes, resource_pool_->memory_usage_bytes());
@@ -271,10 +276,11 @@ TEST_F(ResourcePoolTest, BusyResourcesNotFreed) {
 
   ResourcePool::InUsePoolResource resource =
       resource_pool_->AcquireResource(size, format, color_space);
+  SetBackingOnResource(resource);
+
   EXPECT_EQ(40000u, resource_pool_->GetTotalMemoryUsageForTesting());
   EXPECT_EQ(1u, resource_pool_->resource_count());
 
-  SetBackingOnResource(resource);
   EXPECT_TRUE(resource_pool_->PrepareForExport(resource));
 
   std::vector<viz::TransferableResource> transfers;
@@ -310,13 +316,13 @@ TEST_F(ResourcePoolTest, UnusedResourcesEventuallyFreed) {
 
   ResourcePool::InUsePoolResource resource =
       resource_pool_->AcquireResource(size, format, color_space);
+  SetBackingOnResource(resource);
   EXPECT_EQ(40000u, resource_pool_->GetTotalMemoryUsageForTesting());
   EXPECT_EQ(1u, resource_pool_->GetTotalResourceCountForTesting());
   EXPECT_EQ(1u, resource_pool_->resource_count());
   EXPECT_EQ(0u, resource_pool_->GetBusyResourceCountForTesting());
 
   // Export the resource to the display compositor.
-  SetBackingOnResource(resource);
   EXPECT_TRUE(resource_pool_->PrepareForExport(resource));
   std::vector<viz::TransferableResource> transfers;
   resource_provider_->PrepareSendToParent(
@@ -716,7 +722,9 @@ TEST_F(ResourcePoolTest, MetadataSentToDisplayCompositor) {
   EXPECT_EQ(transfer[0].mailbox_holder.sync_token, sync_token);
   EXPECT_EQ(transfer[0].mailbox_holder.texture_target, target);
   EXPECT_EQ(transfer[0].format, format);
-  EXPECT_TRUE(transfer[0].read_lock_fences_enabled);
+  EXPECT_EQ(
+      transfer[0].synchronization_type,
+      viz::TransferableResource::SynchronizationType::kGpuCommandsCompleted);
   EXPECT_TRUE(transfer[0].is_overlay_candidate);
 
   resource_pool_->ReleaseResource(std::move(resource));

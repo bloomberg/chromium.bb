@@ -123,7 +123,7 @@ typedef struct yv12_buffer_config {
 
 int aom_alloc_frame_buffer(YV12_BUFFER_CONFIG *ybf, int width, int height,
                            int ss_x, int ss_y, int use_highbitdepth, int border,
-                           int byte_alignment);
+                           int byte_alignment, int alloc_y_plane_only);
 
 // Updates the yv12 buffer config with the frame buffer. |byte_alignment| must
 // be a power of 2, from 32 to 1024. 0 sets legacy alignment. If cb is not
@@ -137,7 +137,7 @@ int aom_realloc_frame_buffer(YV12_BUFFER_CONFIG *ybf, int width, int height,
                              int border, int byte_alignment,
                              aom_codec_frame_buffer_t *fb,
                              aom_get_frame_buffer_cb_fn_t cb, void *cb_priv,
-                             int alloc_y_buffer_8bit);
+                             int alloc_y_buffer_8bit, int alloc_y_plane_only);
 
 int aom_free_frame_buffer(YV12_BUFFER_CONFIG *ybf);
 

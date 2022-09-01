@@ -302,9 +302,10 @@ int64_t Http2Connection::OnReadyToSend(absl::string_view serialized) {
   return serialized.size();
 }
 
-void Http2Connection::OnCloseStream(StreamId stream_id,
+bool Http2Connection::OnCloseStream(StreamId stream_id,
                                     http2::adapter::Http2ErrorCode error_code) {
   response_map_.erase(stream_id);
+  return true;
 }
 
 void Http2Connection::SendInternal() {
@@ -412,6 +413,11 @@ bool Http2Connection::OnBeginDataForStream(StreamId stream_id,
 
 bool Http2Connection::OnDataForStream(StreamId stream_id,
                                       absl::string_view data) {
+  return true;
+}
+
+bool Http2Connection::OnDataPaddingLength(StreamId stream_id,
+                                          size_t padding_length) {
   return true;
 }
 

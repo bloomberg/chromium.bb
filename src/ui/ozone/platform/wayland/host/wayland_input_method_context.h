@@ -11,6 +11,7 @@
 #include "base/strings/string_piece.h"
 #include "ui/base/ime/character_composer.h"
 #include "ui/base/ime/linux/linux_input_method_context.h"
+#include "ui/base/ime/virtual_keyboard_controller.h"
 #include "ui/gfx/range/range.h"
 #include "ui/ozone/platform/wayland/host/wayland_keyboard.h"
 #include "ui/ozone/platform/wayland/host/wayland_window_observer.h"
@@ -22,6 +23,7 @@ class WaylandConnection;
 class ZWPTextInputWrapper;
 
 class WaylandInputMethodContext : public LinuxInputMethodContext,
+                                  public VirtualKeyboardController,
                                   public WaylandWindowObserver,
                                   public ZWPTextInputWrapperClient {
  public:
@@ -46,10 +48,22 @@ class WaylandInputMethodContext : public LinuxInputMethodContext,
   void SetCursorLocation(const gfx::Rect& rect) override;
   void SetSurroundingText(const std::u16string& text,
                           const gfx::Range& selection_range) override;
-  void SetContentType(TextInputType input_type, int input_flags) override;
+  void SetContentType(TextInputType type,
+                      TextInputMode mode,
+                      uint32_t flags,
+                      bool should_do_learning) override;
+  void UpdateFocus(bool has_client,
+                   TextInputType old_type,
+                   TextInputType new_type) override;
   void Reset() override;
-  void Focus() override;
-  void Blur() override;
+  VirtualKeyboardController* GetVirtualKeyboardController() override;
+
+  // VirtualKeyboardController overrides:
+  bool DisplayVirtualKeyboard() override;
+  void DismissVirtualKeyboard() override;
+  void AddObserver(VirtualKeyboardControllerObserver* observer) override;
+  void RemoveObserver(VirtualKeyboardControllerObserver* observer) override;
+  bool IsKeyboardVisible() override;
 
   // WaylandWindowObserver overrides:
   void OnKeyboardFocusedWindowChanged() override;
@@ -64,8 +78,12 @@ class WaylandInputMethodContext : public LinuxInputMethodContext,
   void OnSetPreeditRegion(int32_t index,
                           uint32_t length,
                           const std::vector<SpanStyle>& spans) override;
+  void OnInputPanelState(uint32_t state) override;
+  void OnModifiersMap(std::vector<std::string> modifiers_map) override;
 
  private:
+  void Focus();
+  void Blur();
   void UpdatePreeditText(const std::u16string& preedit_text);
   void MaybeUpdateActivated();
 
@@ -98,6 +116,12 @@ class WaylandInputMethodContext : public LinuxInputMethodContext,
   std::string surrounding_text_;
   // The selection range in UTF-8 offsets in the |surrounding_text_|.
   gfx::Range selection_range_utf8_ = gfx::Range::InvalidRange();
+
+  // Caches VirtualKeyboard visibility.
+  bool virtual_keyboard_visible_ = false;
+
+  // Keeps modifiers_map sent from the wayland compositor.
+  std::vector<std::string> modifiers_map_;
 };
 
 }  // namespace ui

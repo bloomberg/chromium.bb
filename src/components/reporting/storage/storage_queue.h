@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/files/file.h"
 #include "base/files/file_enumerator.h"
@@ -146,12 +147,20 @@ class StorageQueue : public base::RefCountedDeleteOnSequence<StorageQueue> {
     // space) returns status.
     static StatusOr<scoped_refptr<SingleFile>> Create(
         const base::FilePath& filename,
-        int64_t size);
+        int64_t size,
+        scoped_refptr<ResourceInterface> memory_resource,
+        scoped_refptr<ResourceInterface> disk_space_resource);
+
+    // Returns the file sequence ID (the first sequence ID in the file) if the
+    // sequence ID can be extracted from the extension. Otherwise, returns an
+    // error status.
+    static StatusOr<int64_t> GetFileSequenceIdFromPath(
+        const base::FilePath& file_name);
 
     Status Open(bool read_only);  // No-op if already opened.
     void Close();                 // No-op if not opened.
 
-    Status Delete();
+    void DeleteWarnIfFailed();
 
     // Attempts to read |size| bytes from position |pos| and returns
     // reference to the data that were actually read (no more than |size|).
@@ -185,7 +194,10 @@ class StorageQueue : public base::RefCountedDeleteOnSequence<StorageQueue> {
     friend class base::RefCountedThreadSafe<SingleFile>;
 
     // Private constructor, called by factory method only.
-    SingleFile(const base::FilePath& filename, int64_t size);
+    SingleFile(const base::FilePath& filename,
+               int64_t size,
+               scoped_refptr<ResourceInterface> memory_resource,
+               scoped_refptr<ResourceInterface> disk_space_resource);
 
     // Flag (valid for opened file only): true if file was opened for reading
     // only, false otherwise.
@@ -195,6 +207,9 @@ class StorageQueue : public base::RefCountedDeleteOnSequence<StorageQueue> {
     uint64_t size_ = 0;  // tracked internally rather than by filesystem
 
     std::unique_ptr<base::File> handle_;  // Set only when opened/created.
+
+    scoped_refptr<ResourceInterface> memory_resource_;
+    scoped_refptr<ResourceInterface> disk_space_resource_;
 
     // When reading the file, this is the buffer and data positions.
     // If the data is read sequentially, buffered portions are reused
@@ -279,9 +294,9 @@ class StorageQueue : public base::RefCountedDeleteOnSequence<StorageQueue> {
   // Adds used metadata file to the set.
   Status RestoreMetadata(base::flat_set<base::FilePath>* used_files_set);
 
-  // Delete all files except those listed in the set.
+  // Delete all files except those listed in |used_file_set|.
   void DeleteUnusedFiles(
-      const base::flat_set<base::FilePath>& used_files_setused_files_set);
+      const base::flat_set<base::FilePath>& used_files_set) const;
 
   // Helper method for Write(): deletes meta files up to, but not including
   // |sequencing_id_to_keep|. Any errors are ignored.
