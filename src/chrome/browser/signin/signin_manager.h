@@ -5,22 +5,59 @@
 #ifndef CHROME_BROWSER_SIGNIN_SIGNIN_MANAGER_H_
 #define CHROME_BROWSER_SIGNIN_SIGNIN_MANAGER_H_
 
+#include <memory>
+
+#include "base/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observation.h"
+#include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_member.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "components/account_manager_core/account_manager_facade.h"
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+
+namespace base {
+class FilePath;
+}
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+namespace signin {
+class ConsistencyCookieManager;
+}
+
+class AccountProfileMapper;
+class SigninHelperLacros;
+class SigninClient;
+struct CoreAccountId;
+#endif
 
 class PrefService;
 
 class SigninManager : public KeyedService,
                       public signin::IdentityManager::Observer {
  public:
-  SigninManager(PrefService* prefs, signin::IdentityManager* identity_manger);
+  SigninManager(PrefService* prefs,
+                signin::IdentityManager* identity_manger,
+                SigninClient* client);
+  ~SigninManager() override;
+
   SigninManager(const SigninManager&) = delete;
   SigninManager& operator=(const SigninManager&) = delete;
 
-  ~SigninManager() override;
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  void StartLacrosSigninFlow(
+      const base::FilePath& profile_path,
+      AccountProfileMapper* account_profile_mapper,
+      signin::ConsistencyCookieManager* consistency_cookie_manager,
+      account_manager::AccountManagerFacade::AccountAdditionSource source,
+      base::OnceCallback<void(const CoreAccountId&)> on_completion_callback =
+          base::DoNothing());
+#endif
 
  private:
   // Updates the cached version of unconsented primary account and notifies the
@@ -37,17 +74,21 @@ class SigninManager : public KeyedService,
   // current UPA, the other cases are if tokens are not loaded but the current
   // UPA's refresh token has been rekoved or tokens are loaded but the current
   // UPA does not have a refresh token. If the UPA is invalid, it needs to be
-  // cleared, |absl::nullopt| is returned. If it is still valid, returns the
+  // cleared, an empty account is returned. If it is still valid, returns the
   // valid UPA.
-  absl::optional<CoreAccountInfo> ComputeUnconsentedPrimaryAccountInfo() const;
+  CoreAccountInfo ComputeUnconsentedPrimaryAccountInfo() const;
+
+  // Checks wheter |account| is a valid account that can be used as an
+  // unconsented primary account.
+  bool IsValidUnconsentedPrimaryAccount(const CoreAccountInfo& account) const;
+
+  // KeyedService implementation.
+  void Shutdown() override;
 
   // signin::IdentityManager::Observer implementation.
   void OnPrimaryAccountChanged(
       const signin::PrimaryAccountChangeEvent& event_details) override;
-  void OnRefreshTokenUpdatedForAccount(
-      const CoreAccountInfo& account_info) override;
-  void OnRefreshTokenRemovedForAccount(
-      const CoreAccountId& account_id) override;
+  void OnEndBatchOfRefreshTokenStateChanges() override;
   void OnRefreshTokensLoaded() override;
   void OnAccountsInCookieUpdated(
       const signin::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
@@ -59,11 +100,27 @@ class SigninManager : public KeyedService,
 
   void OnSigninAllowedPrefChanged();
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  void OnSigninHelperLacrosComplete(
+      base::OnceCallback<void(const CoreAccountId&)> on_completion_callback,
+      const CoreAccountId& account_id);
+#endif
+
   raw_ptr<PrefService> prefs_;
   raw_ptr<signin::IdentityManager> identity_manager_;
+  base::ScopedObservation<signin::IdentityManager,
+                          signin::IdentityManager::Observer>
+      identity_manager_observation_{this};
 
   // Helper object to listen for changes to the signin allowed preference.
   BooleanPrefMember signin_allowed_;
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  std::unique_ptr<SigninHelperLacros> signin_helper_lacros_;
+  // Whether this is the main profile for which the primary account is
+  // the account used to signin to the device aka initial primary account.
+  bool is_main_profile_ = false;
+#endif
 
   base::WeakPtrFactory<SigninManager> weak_ptr_factory_{this};
 };

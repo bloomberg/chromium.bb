@@ -16,7 +16,7 @@
 #include "net/quic/quic_stream_factory.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
-#include "net/third_party/quiche/src/quic/core/crypto/quic_crypto_client_config.h"
+#include "net/third_party/quiche/src/quiche/quic/core/crypto/quic_crypto_client_config.h"
 #include "url/scheme_host_port.h"
 
 using std::string;
@@ -41,13 +41,15 @@ bool QuicStreamFactoryPeer::HasActiveSession(
     const quic::QuicServerId& server_id,
     const NetworkIsolationKey& network_isolation_key) {
   return factory->HasActiveSession(QuicSessionKey(
-      server_id, SocketTag(), network_isolation_key, SecureDnsPolicy::kAllow));
+      server_id, SocketTag(), network_isolation_key, SecureDnsPolicy::kAllow,
+      /*require_dns_https_alpn=*/false));
 }
 
 bool QuicStreamFactoryPeer::HasActiveJob(QuicStreamFactory* factory,
                                          const quic::QuicServerId& server_id) {
   return factory->HasActiveJob(QuicSessionKey(
-      server_id, SocketTag(), NetworkIsolationKey(), SecureDnsPolicy::kAllow));
+      server_id, SocketTag(), NetworkIsolationKey(), SecureDnsPolicy::kAllow,
+      /*require_dns_https_alpn=*/false));
 }
 
 // static
@@ -56,7 +58,8 @@ QuicChromiumClientSession* QuicStreamFactoryPeer::GetPendingSession(
     const quic::QuicServerId& server_id,
     url::SchemeHostPort destination) {
   QuicSessionKey session_key(server_id, SocketTag(), NetworkIsolationKey(),
-                             SecureDnsPolicy::kAllow);
+                             SecureDnsPolicy::kAllow,
+                             /*require_dns_https_alpn=*/false);
   QuicStreamFactory::QuicSessionAliasKey key(std::move(destination),
                                              session_key);
   DCHECK(factory->HasActiveJob(session_key));
@@ -70,7 +73,8 @@ QuicChromiumClientSession* QuicStreamFactoryPeer::GetActiveSession(
     const quic::QuicServerId& server_id,
     const NetworkIsolationKey& network_isolation_key) {
   QuicSessionKey session_key(server_id, SocketTag(), network_isolation_key,
-                             SecureDnsPolicy::kAllow);
+                             SecureDnsPolicy::kAllow,
+                             /*require_dns_https_alpn=*/false);
   DCHECK(factory->HasActiveSession(session_key));
   return factory->active_sessions_[session_key];
 }
@@ -79,8 +83,9 @@ bool QuicStreamFactoryPeer::HasLiveSession(
     QuicStreamFactory* factory,
     url::SchemeHostPort destination,
     const quic::QuicServerId& server_id) {
-  QuicSessionKey session_key = QuicSessionKey(
-      server_id, SocketTag(), NetworkIsolationKey(), SecureDnsPolicy::kAllow);
+  QuicSessionKey session_key =
+      QuicSessionKey(server_id, SocketTag(), NetworkIsolationKey(),
+                     SecureDnsPolicy::kAllow, /*require_dns_https_alpn=*/false);
   QuicStreamFactory::QuicSessionAliasKey alias_key(std::move(destination),
                                                    session_key);
   for (auto it = factory->all_sessions_.begin();

@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/ash/ash_web_view_impl.h"
 
 #include "ash/public/cpp/window_properties.h"
+#include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "content/public/browser/focused_node_details.h"
@@ -12,12 +13,14 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "third_party/blink/public/common/renderer_preferences/renderer_preferences.h"
+#include "third_party/blink/public/mojom/mediastream/media_stream.mojom.h"
 #include "ui/aura/window.h"
 #include "ui/views/controls/webview/web_contents_set_background_color.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
+#include "ui/web_dialogs/web_dialog_web_contents_delegate.h"
 
 AshWebViewImpl::AshWebViewImpl(const InitParams& params) : params_(params) {
   Profile* profile = ProfileManager::GetActiveUserProfile();
@@ -66,6 +69,10 @@ bool AshWebViewImpl::GoBack() {
 void AshWebViewImpl::Navigate(const GURL& url) {
   content::NavigationController::LoadURLParams params(url);
   web_contents_->GetController().LoadURLWithParams(params);
+}
+
+views::View* AshWebViewImpl::GetInitiallyFocusedView() {
+  return web_view_;
 }
 
 void AshWebViewImpl::AddedToWidget() {
@@ -121,6 +128,31 @@ void AshWebViewImpl::NavigationStateChanged(
     content::InvalidateTypes changed_flags) {
   DCHECK_EQ(web_contents_.get(), web_contents);
   UpdateCanGoBack();
+}
+
+void AshWebViewImpl::RequestMediaAccessPermission(
+    content::WebContents* web_contents,
+    const content::MediaStreamRequest& request,
+    content::MediaResponseCallback callback) {
+  if (!params_.can_record_media) {
+    std::move(callback).Run(
+        blink::mojom::StreamDevicesSet(),
+        blink::mojom::MediaStreamRequestResult::NOT_SUPPORTED,
+        std::unique_ptr<content::MediaStreamUI>());
+    return;
+  }
+  MediaCaptureDevicesDispatcher::GetInstance()->ProcessMediaAccessRequest(
+      web_contents, request, std::move(callback), /*extension=*/nullptr);
+}
+
+bool AshWebViewImpl::CheckMediaAccessPermission(
+    content::RenderFrameHost* render_frame_host,
+    const GURL& security_origin,
+    blink::mojom::MediaStreamType type) {
+  if (!params_.can_record_media)
+    return false;
+  return MediaCaptureDevicesDispatcher::GetInstance()
+      ->CheckMediaAccessPermission(render_frame_host, security_origin, type);
 }
 
 void AshWebViewImpl::DidStopLoading() {

@@ -36,7 +36,7 @@
 #include "ui/views/window/window_resources.h"
 #include "ui/views/window/window_shape.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "ui/display/win/screen_win.h"
 #include "ui/gfx/system_fonts_win.h"
 #endif
@@ -265,7 +265,7 @@ int CustomFrameView::CaptionButtonY() const {
   // drawn flush with the screen edge, they still obey Fitts' Law.
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
-#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
   return FrameBorderThickness();
 #else
   return frame_->IsMaximized() ? FrameBorderThickness() : kFrameShadowThickness;
@@ -278,7 +278,7 @@ int CustomFrameView::TitlebarBottomThickness() const {
 }
 
 int CustomFrameView::IconSize() const {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // This metric scales up if either the titlebar height or the titlebar font
   // size are increased.
   return display::win::ScreenWin::GetSystemMetricsInDIP(SM_CYSMICON);
@@ -371,15 +371,17 @@ void CustomFrameView::PaintTitleBar(gfx::Canvas* canvas) {
 
   gfx::Rect rect = title_bounds_;
   rect.set_x(GetMirroredXForRect(title_bounds_));
-  canvas->DrawStringRect(delegate->GetWindowTitle(), GetWindowTitleFontList(),
-                         SK_ColorWHITE, rect);
+  canvas->DrawStringRect(
+      delegate->GetWindowTitle(), GetWindowTitleFontList(),
+      GetColorProvider()->GetColor(ui::kColorCustomFrameCaptionForeground),
+      rect);
 }
 
 void CustomFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
   gfx::Rect client_area_bounds = frame_->client_view()->bounds();
   // The shadows have a 1 pixel gap on the inside, so draw them 1 pixel inwards.
   gfx::Rect shadowed_area_bounds = client_area_bounds;
-  shadowed_area_bounds.Inset(gfx::Insets(1, 1, 1, 1));
+  shadowed_area_bounds.Inset(gfx::Insets(1));
   int shadowed_area_top = shadowed_area_bounds.y();
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
@@ -597,7 +599,7 @@ ImageButton* CustomFrameView::GetImageButton(views::FrameButton frame_button) {
 
 // static
 gfx::FontList CustomFrameView::GetWindowTitleFontList() {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   return gfx::FontList(gfx::win::GetSystemFont(gfx::win::SystemFont::kCaption));
 #else
   return gfx::FontList();

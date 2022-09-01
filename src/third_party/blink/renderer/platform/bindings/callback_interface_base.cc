@@ -7,6 +7,8 @@
 
 #include "third_party/blink/renderer/platform/bindings/binding_security_for_platform.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/scheduler/public/task_attribution_tracker.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 
 namespace blink {
 
@@ -25,11 +27,17 @@ CallbackInterfaceBase::CallbackInterfaceBase(
   // Set |callback_relevant_script_state_| iff the creation context and the
   // incumbent context are the same origin-domain. Otherwise, leave it as
   // nullptr.
-  v8::Local<v8::Context> creation_context = callback_object->CreationContext();
+  v8::MaybeLocal<v8::Context> creation_context =
+      callback_object->GetCreationContext();
   if (BindingSecurityForPlatform::ShouldAllowAccessToV8Context(
           incumbent_script_state_->GetContext(), creation_context,
           BindingSecurityForPlatform::ErrorReportOption::kDoNotReport)) {
-    callback_relevant_script_state_ = ScriptState::From(creation_context);
+    callback_relevant_script_state_ =
+        ScriptState::From(creation_context.ToLocalChecked());
+    if (auto* tracker =
+            ThreadScheduler::Current()->GetTaskAttributionTracker()) {
+      parent_task_id_ = tracker->RunningTaskId(callback_relevant_script_state_);
+    }
   } else {
     const String& message = "callback created in invalid context";
     V8ThrowException::ThrowAccessError(v8::Isolate::GetCurrent(), message);

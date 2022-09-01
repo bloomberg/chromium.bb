@@ -24,6 +24,10 @@ concurrent, but not necessarily
 parallel](https://stackoverflow.com/questions/1050222/what-is-the-difference-between-concurrency-and-parallelism#:~:text=Concurrency%20is%20when%20two%20or,e.g.%2C%20on%20a%20multicore%20processor.),
 system.
 
+A basic intro to the way Chromium does concurrency (especially Sequences) can be
+found
+[here](https://docs.google.com/presentation/d/1ujV8LjIUyPBmULzdT2aT9Izte8PDwbJi).
+
 This documentation assumes familiarity with computer science
 [threading concepts](https://en.wikipedia.org/wiki/Thread_(computing)).
 
@@ -45,7 +49,7 @@ This documentation assumes familiarity with computer science
  * **Thread pool**: A pool of physical threads with a shared task queue. In
    Chrome, this is `base::ThreadPoolInstance`. There's exactly one instance per
    Chrome process, it serves tasks posted through
-   [`base/task/post_task.h`](https://cs.chromium.org/chromium/src/base/task/post_task.h)
+   [`base/task/thread_pool.h`](https://cs.chromium.org/chromium/src/base/task/thread_pool.h)
    and as such you should rarely need to use the `base::ThreadPoolInstance` API
    directly (more on posting tasks later).
  * **Sequence** or **Virtual thread**: A chrome-managed thread of execution.
@@ -618,7 +622,7 @@ class A {
 };
 ```
 
-Note: `WeakPtr` is not thread-safe: `GetWeakPtr()`, `~WeakPtrFactory()`, and
+Note: `WeakPtr` is not thread-safe: `~WeakPtrFactory()` and
 `Store()` (bound to a `WeakPtr`) must all run on the same sequence.
 
 ### Using base::CancelableTaskTracker
@@ -698,7 +702,7 @@ Tasks](threading_and_tasks_testing.md).
 
 To test code that uses `base::ThreadTaskRunnerHandle`,
 `base::SequencedTaskRunnerHandle` or a function in
-[`base/task/post_task.h`](https://cs.chromium.org/chromium/src/base/task/post_task.h),
+[`base/task/thread_pool.h`](https://cs.chromium.org/chromium/src/base/task/thread_pool.h),
 instantiate a
 [`base::test::TaskEnvironment`](https://cs.chromium.org/chromium/src/base/test/task_environment.h)
 for the scope of the test. If you need BrowserThreads, use
@@ -732,6 +736,8 @@ TEST(MyTest, MyTest) {
 
   // This runs the (Thread|Sequenced)TaskRunnerHandle queue until it is empty.
   // Delayed tasks are not added to the queue until they are ripe for execution.
+  // Prefer explicit exit conditions to RunUntilIdle when possible:
+  // bit.ly/run-until-idle-with-care2.
   base::RunLoop().RunUntilIdle();
   // A and B have been executed. C is not ripe for execution yet.
 
@@ -759,8 +765,9 @@ TEST(MyTest, MyTest) {
       FROM_HERE, {}, base::BindOnce(&H), base::BindOnce(&I));
 
   // This runs the (Thread|Sequenced)TaskRunnerHandle queue until both the
-  // (Thread|Sequenced)TaskRunnerHandle queue and the TaskSchedule queue are
-  // empty:
+  // (Thread|Sequenced)TaskRunnerHandle queue and the ThreadPool queue are
+  // empty. Prefer explicit exit conditions to RunUntilIdle when possible:
+  // bit.ly/run-until-idle-with-care2.
   task_environment_.RunUntilIdle();
   // E, H, I have been executed.
 }
@@ -769,7 +776,7 @@ TEST(MyTest, MyTest) {
 ## Using ThreadPool in a New Process
 
 ThreadPoolInstance needs to be initialized in a process before the functions in
-[`base/task/post_task.h`](https://cs.chromium.org/chromium/src/base/task/post_task.h)
+[`base/task/thread_pool.h`](https://cs.chromium.org/chromium/src/base/task/thread_pool.h)
 can be used. Initialization of ThreadPoolInstance in the Chrome browser process
 and child processes (renderer, GPU, utility) has already been taken care of. To
 use ThreadPoolInstance in another process, initialize ThreadPoolInstance early
@@ -778,12 +785,12 @@ in the main function:
 ```cpp
 // This initializes and starts ThreadPoolInstance with default params.
 base::ThreadPoolInstance::CreateAndStartWithDefaultParams(“process_name”);
-// The base/task/post_task.h API can now be used with base::ThreadPool trait.
+// The base/task/thread_pool.h API can now be used with base::ThreadPool trait.
 // Tasks will be scheduled as they are posted.
 
 // This initializes ThreadPoolInstance.
 base::ThreadPoolInstance::Create(“process_name”);
-// The base/task/post_task.h API can now be used with base::ThreadPool trait. No
+// The base/task/thread_pool.h API can now be used with base::ThreadPool trait. No
 // threads will be created and no tasks will be scheduled until after Start() is
 // called.
 base::ThreadPoolInstance::Get()->Start(params);
@@ -810,7 +817,7 @@ See [this example](https://codereview.chromium.org/2885173002/) of a
 refactoring where a TaskRunner was passed through a lot of components only to be
 used in an eventual leaf. The leaf can and should now obtain its TaskRunner
 directly from
-[`base/task/post_task.h`](https://cs.chromium.org/chromium/src/base/task/post_task.h).
+[`base/task/thread_pool.h`](https://cs.chromium.org/chromium/src/base/task/thread_pool.h).
 
 As mentioned above, `base::test::TaskEnvironment` allows unit tests to
 control tasks posted from underlying TaskRunners. In rare cases where a test

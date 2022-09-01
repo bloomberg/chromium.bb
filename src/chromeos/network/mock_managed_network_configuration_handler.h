@@ -9,6 +9,7 @@
 
 #include "base/component_export.h"
 #include "base/values.h"
+#include "chromeos/network/client_cert_util.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -29,6 +30,8 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) MockManagedNetworkConfigurationHandler
   // ManagedNetworkConfigurationHandler overrides
   MOCK_METHOD1(AddObserver, void(NetworkPolicyObserver* observer));
   MOCK_METHOD1(RemoveObserver, void(NetworkPolicyObserver* observer));
+  MOCK_CONST_METHOD1(HasObserver, bool(NetworkPolicyObserver* observer));
+  MOCK_METHOD0(Shutdown, void());
   MOCK_METHOD3(GetProperties,
                void(const std::string& userhash,
                     const std::string& service_path,
@@ -39,12 +42,12 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) MockManagedNetworkConfigurationHandler
                     network_handler::PropertiesCallback callback));
   MOCK_METHOD4(SetProperties,
                void(const std::string& service_path,
-                    const base::DictionaryValue& user_settings,
+                    const base::Value& user_settings,
                     base::OnceClosure callback,
                     network_handler::ErrorCallback error_callback));
   MOCK_CONST_METHOD4(CreateConfiguration,
                      void(const std::string& userhash,
-                          const base::DictionaryValue& properties,
+                          const base::Value& properties,
                           network_handler::ServiceResultCallback callback,
                           network_handler::ErrorCallback error_callback));
   MOCK_CONST_METHOD2(ConfigurePolicyNetwork,
@@ -64,20 +67,26 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) MockManagedNetworkConfigurationHandler
                     const base::Value& network_configs_onc,
                     const base::Value& global_network_config));
   MOCK_CONST_METHOD0(IsAnyPolicyApplicationRunning, bool());
-  MOCK_CONST_METHOD3(
-      FindPolicyByGUID,
-      const base::DictionaryValue*(const std::string userhash,
-                                   const std::string& guid,
-                                   ::onc::ONCSource* onc_source));
-  MOCK_CONST_METHOD1(GetNetworkConfigsFromPolicy,
-                     const GuidToPolicyMap*(const std::string& userhash));
+  MOCK_METHOD2(SetProfileWideVariableExpansions,
+               void(const std::string& userhash,
+                    base::flat_map<std::string, std::string> expansions));
+  MOCK_METHOD3(SetResolvedClientCertificate,
+               bool(const std::string& userhash,
+                    const std::string& guid,
+                    client_cert::ResolvedCert resolved_cert));
+  MOCK_CONST_METHOD3(FindPolicyByGUID,
+                     const base::Value*(const std::string userhash,
+                                        const std::string& guid,
+                                        ::onc::ONCSource* onc_source));
+  MOCK_CONST_METHOD1(HasAnyPolicyNetwork, bool(const std::string& userhash));
   MOCK_CONST_METHOD1(GetGlobalConfigFromPolicy,
-                     const base::DictionaryValue*(const std::string& userhash));
-  MOCK_CONST_METHOD3(
-      FindPolicyByGuidAndProfile,
-      const base::DictionaryValue*(const std::string& guid,
-                                   const std::string& profile_path,
-                                   ::onc::ONCSource* onc_source));
+                     const base::Value*(const std::string& userhash));
+  MOCK_CONST_METHOD5(FindPolicyByGuidAndProfile,
+                     const base::Value*(const std::string& guid,
+                                        const std::string& profile_path,
+                                        PolicyType policy_type,
+                                        ::onc::ONCSource* out_onc_source,
+                                        std::string* out_userhash));
   MOCK_CONST_METHOD2(IsNetworkConfiguredByPolicy,
                      bool(const std::string& guid,
                           const std::string& profile_path));
@@ -87,6 +96,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) MockManagedNetworkConfigurationHandler
   MOCK_CONST_METHOD1(NotifyPolicyAppliedToNetwork,
                      void(const std::string& service_path));
   MOCK_METHOD1(OnCellularPoliciesApplied, void(const NetworkProfile& profile));
+  MOCK_CONST_METHOD0(AllowCellularSimLock, bool());
   MOCK_CONST_METHOD0(AllowOnlyPolicyCellularNetworks, bool());
   MOCK_CONST_METHOD0(AllowOnlyPolicyWiFiToConnect, bool());
   MOCK_CONST_METHOD0(AllowOnlyPolicyWiFiToConnectIfAvailable, bool());
@@ -95,5 +105,10 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) MockManagedNetworkConfigurationHandler
 };
 
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove when this file is moved to ash.
+namespace ash {
+using ::chromeos::MockManagedNetworkConfigurationHandler;
+}  // namespace ash
 
 #endif  // CHROMEOS_NETWORK_MOCK_MANAGED_NETWORK_CONFIGURATION_HANDLER_H_

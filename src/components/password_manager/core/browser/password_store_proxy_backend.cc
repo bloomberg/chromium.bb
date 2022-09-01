@@ -17,25 +17,200 @@
 #include "base/ranges/algorithm.h"
 #include "base/strings/strcat.h"
 #include "components/password_manager/core/browser/field_info_table.h"
+#include "components/password_manager/core/browser/password_sync_util.h"
 #include "components/password_manager/core/common/password_manager_features.h"
+#include "components/password_manager/core/common/password_manager_pref_names.h"
+#include "components/prefs/pref_service.h"
+#include "components/sync/driver/sync_service.h"
 #include "components/sync/model/proxy_model_type_controller_delegate.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 
 namespace password_manager {
 
 namespace {
 
+bool ShouldExecuteModifyOperationsOnShadowBackend(PrefService* prefs,
+                                                  bool is_syncing) {
+  // TODO(crbug.com/1306001): Reenable or clean up for local-only users.
+  return false;
+}
+
+bool ShouldExecuteReadOperationsOnShadowBackend(PrefService* prefs,
+                                                bool is_syncing) {
+  if (ShouldExecuteModifyOperationsOnShadowBackend(prefs, is_syncing)) {
+    // Read operations are always allowed whenever modifications are allowed.
+    // i.e. necessary migrations have happened and appropriate flags are set.
+    return true;
+  }
+
+  if (!is_syncing)
+    return false;
+
+  if (!base::FeatureList::IsEnabled(features::kUnifiedPasswordManagerAndroid))
+    return false;
+
+  features::UpmExperimentVariation variation =
+      features::kUpmExperimentVariationParam.Get();
+  switch (variation) {
+    case features::UpmExperimentVariation::kEnableForSyncingUsers:
+    case features::UpmExperimentVariation::kEnableOnlyBackendForSyncingUsers:
+    case features::UpmExperimentVariation::kEnableForAllUsers:
+      // Emit shadow list calls for clients unenrolled form the UPM
+      // experiment to source error data.
+      return (prefs->GetBoolean(
+          password_manager::prefs::
+              kUnenrolledFromGoogleMobileServicesDueToErrors));
+    case features::UpmExperimentVariation::kShadowSyncingUsers:
+      return true;
+  }
+  NOTREACHED() << "Define explicitly whether shadow traffic is recorded!";
+  return false;
+}
+
+bool ShouldExecuteDeletionsOnShadowBackend(PrefService* prefs,
+                                           bool is_syncing) {
+  if (ShouldExecuteModifyOperationsOnShadowBackend(prefs, is_syncing))
+    return true;
+
+  if (!is_syncing)
+    return false;
+
+  if (!base::FeatureList::IsEnabled(features::kUnifiedPasswordManagerAndroid))
+    return false;
+
+  features::UpmExperimentVariation variation =
+      features::kUpmExperimentVariationParam.Get();
+  switch (variation) {
+    case features::UpmExperimentVariation::kEnableForSyncingUsers:
+    case features::UpmExperimentVariation::kEnableOnlyBackendForSyncingUsers:
+      return true;
+    case features::UpmExperimentVariation::kEnableForAllUsers:
+      // All passwords are in the remote storage. There should not be a
+      // shadow backend anymore.
+      return false;
+    case features::UpmExperimentVariation::kShadowSyncingUsers:
+      return false;
+  }
+  NOTREACHED()
+      << "Define explicitly whether deletions on both backends are required!";
+  return false;
+}
+
+bool IsBuiltInBackendSyncEnabled() {
+  DCHECK(
+      base::FeatureList::IsEnabled(features::kUnifiedPasswordManagerAndroid));
+
+  features::UpmExperimentVariation variation =
+      features::kUpmExperimentVariationParam.Get();
+  switch (variation) {
+    case features::UpmExperimentVariation::kEnableForSyncingUsers:
+    case features::UpmExperimentVariation::kShadowSyncingUsers:
+    case features::UpmExperimentVariation::kEnableOnlyBackendForSyncingUsers:
+      return true;
+    case features::UpmExperimentVariation::kEnableForAllUsers:
+      return false;
+  }
+  NOTREACHED() << "Define which backend handles sync change callbacks!";
+  return false;
+}
+
+void CallOnSyncEnabledOrDisabledForEnabledBackend(
+    bool originates_from_android,
+    base::RepeatingClosure sync_enabled_or_disabled_cb) {
+  if (IsBuiltInBackendSyncEnabled()) {
+    if (!originates_from_android) {
+      sync_enabled_or_disabled_cb.Run();
+    }
+    return;
+  }
+  sync_enabled_or_disabled_cb.Run();
+}
+
 using MethodName = base::StrongAlias<struct MethodNameTag, std::string>;
 
-bool IsPasswordUniquePtrLess(const std::unique_ptr<PasswordForm>& lhs,
-                             const std::unique_ptr<PasswordForm>& rhs) {
-  return PasswordFormUniqueKey(*lhs) < PasswordFormUniqueKey(*rhs);
-}
+struct LoginsResultImpl {
+  using ResultType = LoginsResult;
+  using ElementsType = LoginsResult;
 
-bool IsPasswordUniquePtrWithSameKeyInconsistent(
-    const std::unique_ptr<PasswordForm>& lhs,
-    const std::unique_ptr<PasswordForm>& rhs) {
-  return lhs->password_value != rhs->password_value;
-}
+  static LoginsResult* GetElements(LoginsResult& logins) { return &logins; }
+
+  static std::unique_ptr<PasswordForm> Clone(
+      const std::unique_ptr<PasswordForm>& login) {
+    return std::make_unique<PasswordForm>(*login);
+  }
+
+  static bool IsLess(const std::unique_ptr<PasswordForm>& lhs,
+                     const std::unique_ptr<PasswordForm>& rhs) {
+    return PasswordFormUniqueKey(*lhs) < PasswordFormUniqueKey(*rhs);
+  }
+
+  static bool HaveInconsistentPasswords(
+      const std::unique_ptr<PasswordForm>& lhs,
+      const std::unique_ptr<PasswordForm>& rhs) {
+    return lhs->password_value != rhs->password_value;
+  }
+};
+
+struct LoginsResultOrErrorImpl {
+  using ResultType = LoginsResultOrError;
+  using ElementsType = LoginsResult;
+
+  static LoginsResult* GetElements(LoginsResultOrError& logins_or_error) {
+    return absl::holds_alternative<PasswordStoreBackendError>(logins_or_error)
+               ? nullptr
+               : &absl::get<LoginsResult>(logins_or_error);
+  }
+
+  static std::unique_ptr<PasswordForm> Clone(
+      const std::unique_ptr<PasswordForm>& login) {
+    return std::make_unique<PasswordForm>(*login);
+  }
+
+  static bool IsLess(const std::unique_ptr<PasswordForm>& lhs,
+                     const std::unique_ptr<PasswordForm>& rhs) {
+    return PasswordFormUniqueKey(*lhs) < PasswordFormUniqueKey(*rhs);
+  }
+
+  static bool HaveInconsistentPasswords(
+      const std::unique_ptr<PasswordForm>& lhs,
+      const std::unique_ptr<PasswordForm>& rhs) {
+    return lhs->password_value != rhs->password_value;
+  }
+};
+
+// An `ApiMethodImpl` for `ShadowTrafficMetricsRecorder` implementing support
+// for the database modification methods returning `PasswordChangesOrError`.
+struct PasswordChangesOrErrorImpl {
+  using ResultType = PasswordChangesOrError;
+  using ElementsType = PasswordStoreChangeList;
+
+  static const PasswordStoreChangeList* GetElements(
+      const PasswordChangesOrError& changelist_or_error) {
+    if (absl::holds_alternative<PasswordStoreBackendError>(changelist_or_error))
+      return nullptr;
+    const PasswordChanges& changelist =
+        absl::get<PasswordChanges>(changelist_or_error);
+
+    return changelist.has_value() ? &changelist.value() : nullptr;
+  }
+
+  static PasswordStoreChange Clone(const PasswordStoreChange& change) {
+    return change;
+  }
+
+  static bool IsLess(const PasswordStoreChange& lhs,
+                     const PasswordStoreChange& rhs) {
+    return std::forward_as_tuple(PasswordFormUniqueKey(lhs.form()),
+                                 lhs.type()) <
+           std::forward_as_tuple(PasswordFormUniqueKey(rhs.form()), rhs.type());
+  }
+
+  static bool HaveInconsistentPasswords(const PasswordStoreChange& lhs,
+                                        const PasswordStoreChange& rhs) {
+    // We never consider PasswordStoreChange having inconsistent passwords.
+    return false;
+  }
+};
 
 void InvokeCallbackWithCombinedStatus(base::OnceCallback<void(bool)> completion,
                                       std::vector<bool> statuses) {
@@ -110,78 +285,79 @@ void RecordMetrics(const MethodName& method_name,
 }
 
 // Records the metrics of a pair of MethodName calls to the main and
-// the shadow backends once both calls are finished.
+// the shadow backends once both calls are finished. MethodName() is expected to
+// return an std::vector<ApiMethodImpl::ResultType>. ApiMethodImpl classes need
+// to provide 4 methods:
+// - GetElements(): returns the elements to be compared
+// - Clone(): Returns a copy of an element, used to cache the main results.
+// - IsLess(): to compare elements.
+// - HaveInconsistentPasswords(): Whether elements have inconsistent passwords
 //
 // The class is ref-counted because it is equally owned by the two parallel
 // method calls : it must outlive the first returning one and shall  be
 // destroyed after the second one returns.
+template <typename ApiMethodImpl>
 class ShadowTrafficMetricsRecorder
-    : public base::RefCounted<ShadowTrafficMetricsRecorder> {
+    : public base::RefCounted<ShadowTrafficMetricsRecorder<ApiMethodImpl>> {
  public:
   explicit ShadowTrafficMetricsRecorder(MethodName method_name)
       : method_name_(std::move(method_name)) {}
 
   // Returns the unchanged |result| so it can be passed to the main handler.
-  LoginsResultOrError RecordMainLoginsResultOrError(
-      LoginsResultOrError logins_or_error) {
-    if (absl::holds_alternative<PasswordStoreBackendError>(logins_or_error)) {
-      return logins_or_error;
+  typename ApiMethodImpl::ResultType RecordMainResult(
+      typename ApiMethodImpl::ResultType result) {
+    if (auto* elements = ApiMethodImpl::GetElements(result)) {
+      if (!first_result_) {
+        first_result_ =
+            absl::make_optional<typename ApiMethodImpl::ElementsType>();
+        first_result_->reserve(elements->size());
+        for (const auto& e : *elements)
+          first_result_->push_back(ApiMethodImpl::Clone(e));
+      } else {
+        RecordMetrics(method_name_, /*main_result=*/*elements,
+                      /*shadow_result=*/*first_result_, &ApiMethodImpl::IsLess,
+                      &ApiMethodImpl::HaveInconsistentPasswords);
+      }
     }
 
-    LoginsResult logins = std::move(absl::get<LoginsResult>(logins_or_error));
-    if (!first_result_) {
-      first_result_ = absl::make_optional<LoginsResult>();
-      first_result_->reserve(logins.size());
-      for (const auto& login : logins)
-        first_result_->push_back(std::make_unique<PasswordForm>(*login));
-    } else {
-      RecordMetrics(method_name_, /*main_result=*/logins,
-                    /*shadow_result=*/*first_result_, &IsPasswordUniquePtrLess,
-                    &IsPasswordUniquePtrWithSameKeyInconsistent);
-    }
-
-    return logins;
+    return result;
   }
 
-  void RecordShadowLoginsResultOrError(LoginsResultOrError logins_or_error) {
-    if (absl::holds_alternative<PasswordStoreBackendError>(logins_or_error)) {
-      return;
+  void RecordShadowResult(typename ApiMethodImpl::ResultType result) {
+    if (auto* elements = ApiMethodImpl::GetElements(result)) {
+      if (!first_result_) {
+        first_result_ = std::move(*elements);
+      } else {
+        RecordMetrics(method_name_,
+                      /*main_result=*/*first_result_,
+                      /*shadow_result=*/*elements, &ApiMethodImpl::IsLess,
+                      &ApiMethodImpl::HaveInconsistentPasswords);
+      }
     }
-
-    LoginsResult logins = std::move(absl::get<LoginsResult>(logins_or_error));
-    if (!first_result_)
-      first_result_ = std::move(logins);
-    else
-      RecordMetrics(method_name_, /*main_result=*/*first_result_,
-                    /*shadow_result=*/logins, &IsPasswordUniquePtrLess,
-                    &IsPasswordUniquePtrWithSameKeyInconsistent);
   }
 
  private:
-  friend class RefCounted<ShadowTrafficMetricsRecorder>;
+  friend class base::RefCounted<ShadowTrafficMetricsRecorder<ApiMethodImpl>>;
   ~ShadowTrafficMetricsRecorder() = default;
 
   // Stores the result of the backend that returns first.
-  absl::optional<LoginsResult> first_result_;
+  absl::optional<typename ApiMethodImpl::ElementsType> first_result_;
   const MethodName method_name_;
 };
 
 }  // namespace
 
 PasswordStoreProxyBackend::PasswordStoreProxyBackend(
-    PasswordStoreBackend* main_backend,
-    PasswordStoreBackend* shadow_backend,
-    base::RepeatingCallback<bool()> is_syncing_passwords_callback)
-    : main_backend_(main_backend),
-      shadow_backend_(shadow_backend),
-      is_syncing_passwords_callback_(std::move(is_syncing_passwords_callback)) {
-}
+    PasswordStoreBackend* built_in_backend,
+    PasswordStoreBackend* android_backend,
+    PrefService* prefs,
+    SyncDelegate* sync_delegate)
+    : built_in_backend_(built_in_backend),
+      android_backend_(android_backend),
+      prefs_(prefs),
+      sync_delegate_(sync_delegate) {}
 
 PasswordStoreProxyBackend::~PasswordStoreProxyBackend() = default;
-
-base::WeakPtr<PasswordStoreBackend> PasswordStoreProxyBackend::GetWeakPtr() {
-  return weak_ptr_factory_.GetWeakPtr();
-}
 
 void PasswordStoreProxyBackend::InitBackend(
     RemoteChangesReceived remote_form_changes_received,
@@ -192,72 +368,182 @@ void PasswordStoreProxyBackend::InitBackend(
           /*num_callbacks=*/2, base::BindOnce(&InvokeCallbackWithCombinedStatus,
                                               std::move(completion)));
 
-  main_backend_->InitBackend(std::move(remote_form_changes_received),
-                             std::move(sync_enabled_or_disabled_cb),
-                             base::BindOnce(pending_initialization_calls));
-  shadow_backend_->InitBackend(base::DoNothing(), base::DoNothing(),
-                               base::BindOnce(pending_initialization_calls));
+  // Both backends need to be initialized, so using the helpers for main/shadow
+  // backend is unnecessary and won't work since the sync status may not be
+  // available yet.
+  built_in_backend_->InitBackend(
+      base::BindRepeating(
+          &PasswordStoreProxyBackend::OnRemoteFormChangesReceived,
+          weak_ptr_factory_.GetWeakPtr(),
+          CallbackOriginatesFromAndroidBackend(false),
+          remote_form_changes_received),
+      base::BindRepeating(&CallOnSyncEnabledOrDisabledForEnabledBackend,
+                          /*originates_from_android=*/false,
+                          sync_enabled_or_disabled_cb),
+      base::BindOnce(pending_initialization_calls));
+
+  android_backend_->InitBackend(
+      base::BindRepeating(
+          &PasswordStoreProxyBackend::OnRemoteFormChangesReceived,
+          weak_ptr_factory_.GetWeakPtr(),
+          CallbackOriginatesFromAndroidBackend(true),
+          std::move(remote_form_changes_received)),
+      base::BindRepeating(&CallOnSyncEnabledOrDisabledForEnabledBackend,
+                          /*originates_from_android=*/true,
+                          std::move(sync_enabled_or_disabled_cb)),
+      base::BindOnce(pending_initialization_calls));
 }
 
 void PasswordStoreProxyBackend::Shutdown(base::OnceClosure shutdown_completed) {
   base::RepeatingClosure pending_shutdown_calls = base::BarrierClosure(
       /*num_closures=*/2, std::move(shutdown_completed));
-  main_backend_->Shutdown(pending_shutdown_calls);
-  shadow_backend_->Shutdown(pending_shutdown_calls);
+  android_backend_->Shutdown(pending_shutdown_calls);
+  built_in_backend_->Shutdown(pending_shutdown_calls);
 }
 
 void PasswordStoreProxyBackend::GetAllLoginsAsync(LoginsOrErrorReply callback) {
-  scoped_refptr<ShadowTrafficMetricsRecorder> handler =
-      base::MakeRefCounted<ShadowTrafficMetricsRecorder>(
-          MethodName("GetAllLoginsAsync"));
-  main_backend_->GetAllLoginsAsync(
-      base::BindOnce(
-          &ShadowTrafficMetricsRecorder::RecordMainLoginsResultOrError, handler)
+  auto handler = base::MakeRefCounted<
+      ShadowTrafficMetricsRecorder<LoginsResultOrErrorImpl>>(
+      MethodName("GetAllLoginsAsync"));
+  main_backend()->GetAllLoginsAsync(
+      base::BindOnce(&ShadowTrafficMetricsRecorder<
+                         LoginsResultOrErrorImpl>::RecordMainResult,
+                     handler)
           .Then(std::move(callback)));
 
-  if (is_syncing_passwords_callback_.Run() &&
-      base::FeatureList::IsEnabled(
-          features::kUnifiedPasswordManagerShadowAndroid)) {
-    shadow_backend_->GetAllLoginsAsync(base::BindOnce(
-        &ShadowTrafficMetricsRecorder::RecordShadowLoginsResultOrError,
-        handler));
+  if (ShouldExecuteReadOperationsOnShadowBackend(
+          prefs_, sync_delegate_->IsSyncingPasswordsEnabled())) {
+    shadow_backend()->GetAllLoginsAsync(
+        base::BindOnce(&ShadowTrafficMetricsRecorder<
+                           LoginsResultOrErrorImpl>::RecordShadowResult,
+                       handler));
   }
 }
 
 void PasswordStoreProxyBackend::GetAutofillableLoginsAsync(
     LoginsOrErrorReply callback) {
-  main_backend_->GetAutofillableLoginsAsync(std::move(callback));
-  // TODO(crbug.com/1229655): Request shadow_backend_ and compare results.
+  auto handler = base::MakeRefCounted<
+      ShadowTrafficMetricsRecorder<LoginsResultOrErrorImpl>>(
+      MethodName("GetAutofillableLoginsAsync"));
+  main_backend()->GetAutofillableLoginsAsync(
+      base::BindOnce(&ShadowTrafficMetricsRecorder<
+                         LoginsResultOrErrorImpl>::RecordMainResult,
+                     handler)
+          .Then(std::move(callback)));
+
+  if (ShouldExecuteReadOperationsOnShadowBackend(
+          prefs_, sync_delegate_->IsSyncingPasswordsEnabled())) {
+    shadow_backend()->GetAutofillableLoginsAsync(
+        base::BindOnce(&ShadowTrafficMetricsRecorder<
+                           LoginsResultOrErrorImpl>::RecordShadowResult,
+                       handler));
+  }
+}
+
+void PasswordStoreProxyBackend::GetAllLoginsForAccountAsync(
+    absl::optional<std::string> account,
+    LoginsOrErrorReply callback) {
+  NOTREACHED();
 }
 
 void PasswordStoreProxyBackend::FillMatchingLoginsAsync(
-    LoginsReply callback,
+    LoginsOrErrorReply callback,
     bool include_psl,
     const std::vector<PasswordFormDigest>& forms) {
-  main_backend_->FillMatchingLoginsAsync(std::move(callback), include_psl,
-                                         forms);
-  // TODO(crbug.com/1229655): Request shadow_backend_ and compare results.
+  auto handler = base::MakeRefCounted<
+      ShadowTrafficMetricsRecorder<LoginsResultOrErrorImpl>>(
+      MethodName("FillMatchingLoginsAsync"));
+  main_backend()->FillMatchingLoginsAsync(
+      base::BindOnce(&ShadowTrafficMetricsRecorder<
+                         LoginsResultOrErrorImpl>::RecordMainResult,
+                     handler)
+          .Then(std::move(callback)),
+      include_psl, forms);
+
+  if (ShouldExecuteReadOperationsOnShadowBackend(
+          prefs_, sync_delegate_->IsSyncingPasswordsEnabled())) {
+    shadow_backend()->FillMatchingLoginsAsync(
+        base::BindOnce(&ShadowTrafficMetricsRecorder<
+                           LoginsResultOrErrorImpl>::RecordShadowResult,
+                       handler),
+        include_psl, forms);
+  }
 }
 
 void PasswordStoreProxyBackend::AddLoginAsync(
     const PasswordForm& form,
-    PasswordStoreChangeListReply callback) {
-  main_backend_->AddLoginAsync(form, std::move(callback));
-  // TODO(crbug.com/1229655): Request shadow_backend_ and compare results.
+    PasswordChangesOrErrorReply callback) {
+  auto handler = base::MakeRefCounted<
+      ShadowTrafficMetricsRecorder<PasswordChangesOrErrorImpl>>(
+      MethodName("AddLoginAsync"));
+
+  auto maybe_retry_callback =
+      base::BindOnce(&PasswordStoreProxyBackend::MaybeRetryToAddLoginOnFail,
+                     weak_ptr_factory_.GetWeakPtr(), form, std::move(callback),
+                     UsesAndroidBackendAsMainBackend());
+
+  main_backend()->AddLoginAsync(
+      form, base::BindOnce(&ShadowTrafficMetricsRecorder<
+                               PasswordChangesOrErrorImpl>::RecordMainResult,
+                           handler)
+                .Then(std::move(maybe_retry_callback)));
+  if (ShouldExecuteModifyOperationsOnShadowBackend(
+          prefs_, sync_delegate_->IsSyncingPasswordsEnabled())) {
+    shadow_backend()->AddLoginAsync(
+        form,
+        base::BindOnce(&ShadowTrafficMetricsRecorder<
+                           PasswordChangesOrErrorImpl>::RecordShadowResult,
+                       handler));
+  }
 }
 
 void PasswordStoreProxyBackend::UpdateLoginAsync(
     const PasswordForm& form,
-    PasswordStoreChangeListReply callback) {
-  main_backend_->UpdateLoginAsync(form, std::move(callback));
-  // TODO(crbug.com/1229655): Request shadow_backend_ and compare results.
+    PasswordChangesOrErrorReply callback) {
+  auto handler = base::MakeRefCounted<
+      ShadowTrafficMetricsRecorder<PasswordChangesOrErrorImpl>>(
+      MethodName("UpdateLoginAsync"));
+
+  auto maybe_retry_callback =
+      base::BindOnce(&PasswordStoreProxyBackend::MaybeRetryToUpdateLoginOnFail,
+                     weak_ptr_factory_.GetWeakPtr(), form, std::move(callback),
+                     UsesAndroidBackendAsMainBackend());
+
+  main_backend()->UpdateLoginAsync(
+      form, base::BindOnce(&ShadowTrafficMetricsRecorder<
+                               PasswordChangesOrErrorImpl>::RecordMainResult,
+                           handler)
+                .Then(std::move(maybe_retry_callback)));
+  if (ShouldExecuteModifyOperationsOnShadowBackend(
+          prefs_, sync_delegate_->IsSyncingPasswordsEnabled())) {
+    shadow_backend()->UpdateLoginAsync(
+        form,
+        base::BindOnce(&ShadowTrafficMetricsRecorder<
+                           PasswordChangesOrErrorImpl>::RecordShadowResult,
+                       handler));
+  }
 }
 
 void PasswordStoreProxyBackend::RemoveLoginAsync(
     const PasswordForm& form,
-    PasswordStoreChangeListReply callback) {
-  main_backend_->RemoveLoginAsync(form, std::move(callback));
-  // TODO(crbug.com/1229655): Request shadow_backend_ and compare results.
+    PasswordChangesOrErrorReply callback) {
+  auto handler = base::MakeRefCounted<
+      ShadowTrafficMetricsRecorder<PasswordChangesOrErrorImpl>>(
+      MethodName("RemoveLoginAsync"));
+
+  main_backend()->RemoveLoginAsync(
+      form, base::BindOnce(&ShadowTrafficMetricsRecorder<
+                               PasswordChangesOrErrorImpl>::RecordMainResult,
+                           handler)
+                .Then(std::move(callback)));
+  if (ShouldExecuteDeletionsOnShadowBackend(
+          prefs_, sync_delegate_->IsSyncingPasswordsEnabled())) {
+    shadow_backend()->RemoveLoginAsync(
+        form,
+        base::BindOnce(&ShadowTrafficMetricsRecorder<
+                           PasswordChangesOrErrorImpl>::RecordShadowResult,
+                       handler));
+  }
 }
 
 void PasswordStoreProxyBackend::RemoveLoginsByURLAndTimeAsync(
@@ -265,41 +551,177 @@ void PasswordStoreProxyBackend::RemoveLoginsByURLAndTimeAsync(
     base::Time delete_begin,
     base::Time delete_end,
     base::OnceCallback<void(bool)> sync_completion,
-    PasswordStoreChangeListReply callback) {
-  main_backend_->RemoveLoginsByURLAndTimeAsync(
-      url_filter, std::move(delete_begin), std::move(delete_end),
-      std::move(sync_completion), std::move(callback));
-  // TODO(crbug.com/1229655): Request shadow_backend_ and compare results.
+    PasswordChangesOrErrorReply callback) {
+  auto handler = base::MakeRefCounted<
+      ShadowTrafficMetricsRecorder<PasswordChangesOrErrorImpl>>(
+      MethodName("RemoveLoginsByURLAndTimeAsync"));
+
+  main_backend()->RemoveLoginsByURLAndTimeAsync(
+      url_filter, delete_begin, delete_end, std::move(sync_completion),
+      base::BindOnce(&ShadowTrafficMetricsRecorder<
+                         PasswordChangesOrErrorImpl>::RecordMainResult,
+                     handler)
+          .Then(std::move(callback)));
+  if (ShouldExecuteDeletionsOnShadowBackend(
+          prefs_, sync_delegate_->IsSyncingPasswordsEnabled())) {
+    shadow_backend()->RemoveLoginsByURLAndTimeAsync(
+        url_filter, std::move(delete_begin), std::move(delete_end),
+        base::OnceCallback<void(bool)>(),
+        base::BindOnce(&ShadowTrafficMetricsRecorder<
+                           PasswordChangesOrErrorImpl>::RecordShadowResult,
+                       handler));
+  }
 }
 
 void PasswordStoreProxyBackend::RemoveLoginsCreatedBetweenAsync(
     base::Time delete_begin,
     base::Time delete_end,
-    PasswordStoreChangeListReply callback) {
-  main_backend_->RemoveLoginsCreatedBetweenAsync(
-      std::move(delete_begin), std::move(delete_end), std::move(callback));
-  // TODO(crbug.com/1229655): Request shadow_backend_ and compare results.
+    PasswordChangesOrErrorReply callback) {
+  auto handler = base::MakeRefCounted<
+      ShadowTrafficMetricsRecorder<PasswordChangesOrErrorImpl>>(
+      MethodName("RemoveLoginsCreatedBetweenAsync"));
+
+  main_backend()->RemoveLoginsCreatedBetweenAsync(
+      delete_begin, delete_end,
+      base::BindOnce(&ShadowTrafficMetricsRecorder<
+                         PasswordChangesOrErrorImpl>::RecordMainResult,
+                     handler)
+          .Then(std::move(callback)));
+  if (ShouldExecuteDeletionsOnShadowBackend(
+          prefs_, sync_delegate_->IsSyncingPasswordsEnabled())) {
+    shadow_backend()->RemoveLoginsCreatedBetweenAsync(
+        std::move(delete_begin), std::move(delete_end),
+        base::BindOnce(&ShadowTrafficMetricsRecorder<
+                           PasswordChangesOrErrorImpl>::RecordShadowResult,
+                       handler));
+  }
 }
 
 void PasswordStoreProxyBackend::DisableAutoSignInForOriginsAsync(
     const base::RepeatingCallback<bool(const GURL&)>& origin_filter,
     base::OnceClosure completion) {
-  main_backend_->DisableAutoSignInForOriginsAsync(origin_filter,
-                                                  std::move(completion));
-  // TODO(crbug.com/1229655): Request shadow_backend_ and compare results.
+  main_backend()->DisableAutoSignInForOriginsAsync(origin_filter,
+                                                   std::move(completion));
+  if (ShouldExecuteModifyOperationsOnShadowBackend(
+          prefs_, sync_delegate_->IsSyncingPasswordsEnabled())) {
+    shadow_backend()->DisableAutoSignInForOriginsAsync(
+        origin_filter,
+        /*completion=*/base::DoNothing());
+  }
 }
 
 SmartBubbleStatsStore* PasswordStoreProxyBackend::GetSmartBubbleStatsStore() {
-  return main_backend_->GetSmartBubbleStatsStore();
+  return main_backend()->GetSmartBubbleStatsStore();
 }
 
 FieldInfoStore* PasswordStoreProxyBackend::GetFieldInfoStore() {
-  return main_backend_->GetFieldInfoStore();
+  return main_backend()->GetFieldInfoStore();
 }
 
 std::unique_ptr<syncer::ProxyModelTypeControllerDelegate>
 PasswordStoreProxyBackend::CreateSyncControllerDelegate() {
-  return main_backend_->CreateSyncControllerDelegate();
+  switch (features::kUpmExperimentVariationParam.Get()) {
+    case features::UpmExperimentVariation::kEnableForSyncingUsers:
+    case features::UpmExperimentVariation::kEnableOnlyBackendForSyncingUsers:
+    case features::UpmExperimentVariation::kShadowSyncingUsers:
+      DCHECK(!base::FeatureList::IsEnabled(
+          features::kUnifiedPasswordManagerSyncUsingAndroidBackendOnly))
+          << "Without support for local passwords, use legacy sync controller";
+      return built_in_backend_->CreateSyncControllerDelegate();
+    case features::UpmExperimentVariation::kEnableForAllUsers:
+      return base::FeatureList::IsEnabled(
+                 features::kUnifiedPasswordManagerSyncUsingAndroidBackendOnly)
+                 ? android_backend_->CreateSyncControllerDelegate()
+                 : built_in_backend_->CreateSyncControllerDelegate();
+  }
+  NOTREACHED() << "Define which backend creates the sync delegate.";
+  return nullptr;
+}
+
+void PasswordStoreProxyBackend::ClearAllLocalPasswords() {
+  NOTIMPLEMENTED();
+}
+
+void PasswordStoreProxyBackend::OnSyncServiceInitialized(
+    syncer::SyncService* sync_service) {
+  sync_service_ = sync_service;
+  android_backend_->OnSyncServiceInitialized(sync_service);
+}
+
+void PasswordStoreProxyBackend::MaybeRetryToAddLoginOnFail(
+    const PasswordForm& form,
+    PasswordChangesOrErrorReply callback,
+    bool was_using_android_backend,
+    PasswordChangesOrError result) {
+  if (was_using_android_backend &&
+      absl::holds_alternative<PasswordStoreBackendError>(result) &&
+      absl::get<PasswordStoreBackendError>(result) ==
+          PasswordStoreBackendError::kUnrecoverable) {
+    built_in_backend_->AddLoginAsync(form, std::move(callback));
+  } else {
+    std::move(callback).Run(result);
+  }
+}
+
+void PasswordStoreProxyBackend::MaybeRetryToUpdateLoginOnFail(
+    const PasswordForm& form,
+    PasswordChangesOrErrorReply callback,
+    bool was_using_android_backend,
+    const PasswordChangesOrError& result) {
+  if (was_using_android_backend &&
+      absl::holds_alternative<PasswordStoreBackendError>(result) &&
+      absl::get<PasswordStoreBackendError>(result) ==
+          PasswordStoreBackendError::kUnrecoverable) {
+    built_in_backend_->UpdateLoginAsync(form, std::move(callback));
+  } else {
+    std::move(callback).Run(result);
+  }
+}
+
+PasswordStoreBackend* PasswordStoreProxyBackend::main_backend() {
+  return UsesAndroidBackendAsMainBackend() ? android_backend_
+                                           : built_in_backend_;
+}
+
+PasswordStoreBackend* PasswordStoreProxyBackend::shadow_backend() {
+  return UsesAndroidBackendAsMainBackend() ? built_in_backend_
+                                           : android_backend_;
+}
+
+void PasswordStoreProxyBackend::OnRemoteFormChangesReceived(
+    CallbackOriginatesFromAndroidBackend originates_from_android,
+    RemoteChangesReceived remote_form_changes_received,
+    absl::optional<PasswordStoreChangeList> changes) {
+  // `remote_form_changes_received` is used to inform observers about changes in
+  // the backend. This check guarantees observers are informed only about
+  // changes in the main backend.
+  if (originates_from_android.value() == UsesAndroidBackendAsMainBackend()) {
+    remote_form_changes_received.Run(std::move(changes));
+  }
+}
+
+bool PasswordStoreProxyBackend::UsesAndroidBackendAsMainBackend() {
+  if (prefs_->GetBoolean(prefs::kUnenrolledFromGoogleMobileServicesDueToErrors))
+    return false;
+
+  if (!sync_delegate_->IsSyncingPasswordsEnabled())
+    return false;
+
+  if (!base::FeatureList::IsEnabled(features::kUnifiedPasswordManagerAndroid))
+    return false;
+
+  features::UpmExperimentVariation variation =
+      features::kUpmExperimentVariationParam.Get();
+  switch (variation) {
+    case features::UpmExperimentVariation::kEnableForSyncingUsers:
+    case features::UpmExperimentVariation::kEnableOnlyBackendForSyncingUsers:
+    case features::UpmExperimentVariation::kEnableForAllUsers:
+      return true;
+    case features::UpmExperimentVariation::kShadowSyncingUsers:
+      return false;
+  }
+  NOTREACHED() << "Define explicitly whether Android is the main backend!";
+  return false;
 }
 
 }  // namespace password_manager

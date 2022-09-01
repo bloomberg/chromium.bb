@@ -8,6 +8,7 @@
 #include "base/test/scoped_command_line.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "chromeos/dbus/constants/dbus_switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/base/user_activity/user_activity_detector.h"
@@ -116,7 +117,7 @@ TEST_F(ChromeVoxHintDetectorTest, NoHintWithDisablingSwitch) {
 TEST_F(ChromeVoxHintDetectorTest, NoHintInDevMode) {
   auto command_line_ = std::make_unique<base::test::ScopedCommandLine>();
   command_line_->GetProcessCommandLine()->AppendSwitch(
-      switches::kSystemDevMode);
+      chromeos::switches::kSystemDevMode);
   ExpectChromeVoxHintWillNotBeGiven();
   StartDetection();
   runner_->FastForwardBy(kFullIdleDuration);
@@ -127,7 +128,7 @@ TEST_F(ChromeVoxHintDetectorTest, NoHintInDevMode) {
 TEST_F(ChromeVoxHintDetectorTest, HintInDevModeWithEnablingSwitch) {
   auto command_line_ = std::make_unique<base::test::ScopedCommandLine>();
   command_line_->GetProcessCommandLine()->AppendSwitch(
-      switches::kSystemDevMode);
+      chromeos::switches::kSystemDevMode);
   command_line_->GetProcessCommandLine()->AppendSwitch(
       switches::kEnableOOBEChromeVoxHintForDevMode);
   ExpectChromeVoxHintWillBeGiven();
@@ -140,7 +141,7 @@ TEST_F(ChromeVoxHintDetectorTest, HintInDevModeWithEnablingSwitch) {
 TEST_F(ChromeVoxHintDetectorTest, NoHintWithDisablingSwitchInDevMode) {
   auto command_line_ = std::make_unique<base::test::ScopedCommandLine>();
   command_line_->GetProcessCommandLine()->AppendSwitch(
-      switches::kSystemDevMode);
+      chromeos::switches::kSystemDevMode);
   command_line_->GetProcessCommandLine()->AppendSwitch(
       switches::kEnableOOBEChromeVoxHintForDevMode);
   command_line_->GetProcessCommandLine()->AppendSwitch(

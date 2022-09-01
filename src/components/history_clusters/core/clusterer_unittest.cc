@@ -21,8 +21,8 @@ class ClustererTest : public ::testing::Test {
   void TearDown() override { clusterer_.reset(); }
 
   std::vector<history::Cluster> CreateInitialClustersFromVisits(
-      const std::vector<history::ClusterVisit>& visits) {
-    return clusterer_->CreateInitialClustersFromVisits(visits);
+      std::vector<history::ClusterVisit> visits) {
+    return clusterer_->CreateInitialClustersFromVisits(&visits);
   }
 
  private:
@@ -195,6 +195,86 @@ TEST_F(ClustererTest, SplitClusterOnNavigationTime) {
               ElementsAre(ElementsAre(testing::VisitResult(1, 1.0),
                                       testing::VisitResult(2, 1.0)),
                           ElementsAre(testing::VisitResult(3, 1.0))));
+}
+
+TEST_F(ClustererTest, SplitClusterOnSearchVisit) {
+  std::vector<history::ClusterVisit> visits;
+
+  history::AnnotatedVisit visit =
+      testing::CreateDefaultAnnotatedVisit(1, GURL("https://google.com/"));
+  visit.visit_row.visit_time = base::Time::Now();
+  visits.push_back(testing::CreateClusterVisit(visit));
+
+  // Visit2 has a different URL but is linked by referring id to visit.
+  history::AnnotatedVisit visit2 =
+      testing::CreateDefaultAnnotatedVisit(2, GURL("https://bar.com/"));
+  visit2.referring_visit_of_redirect_chain_start = 1;
+  visit2.visit_row.visit_time = base::Time::Now() + base::Minutes(5);
+  visits.push_back(testing::CreateClusterVisit(visit2));
+
+  // Visit3 has a different URL but is linked by referring id to visit but the
+  // cutoff has passed so it should be in a different cluster.
+  history::AnnotatedVisit visit3 =
+      testing::CreateDefaultAnnotatedVisit(3, GURL("https://foo.com/"));
+  visit3.referring_visit_of_redirect_chain_start = 1;
+  visit3.visit_row.visit_time = base::Time::Now() + base::Hours(2);
+  visits.push_back(testing::CreateClusterVisit(visit3));
+
+  // Visit4 was referred by visit 3 but is a search visit.
+  history::AnnotatedVisit visit4 =
+      testing::CreateDefaultAnnotatedVisit(4, GURL("https://search.com/"));
+  visit4.referring_visit_of_redirect_chain_start = 3;
+  visit4.visit_row.visit_time =
+      base::Time::Now() + base::Hours(2) + base::Minutes(1);
+  history::ClusterVisit cluster_visit4 = testing::CreateClusterVisit(visit4);
+  cluster_visit4.annotated_visit.content_annotations.search_terms = u"whatever";
+  visits.push_back(cluster_visit4);
+
+  // Visit5 was referred by visit 4.
+  history::AnnotatedVisit visit5 =
+      testing::CreateDefaultAnnotatedVisit(5, GURL("https://resultlink.com/"));
+  visit5.referring_visit_of_redirect_chain_start = 4;
+  visit5.visit_row.visit_time =
+      base::Time::Now() + base::Hours(2) + base::Minutes(1);
+  visits.push_back(testing::CreateClusterVisit(visit5));
+
+  // Visit6 is a search visit (back-forward) and has the same search terms as
+  // visit 4.
+  history::AnnotatedVisit visit6 =
+      testing::CreateDefaultAnnotatedVisit(6, GURL("https://search.com/"));
+  visit6.visit_row.visit_time =
+      base::Time::Now() + base::Hours(2) + base::Minutes(2);
+  history::ClusterVisit cluster_visit6 = testing::CreateClusterVisit(visit6);
+  cluster_visit6.annotated_visit.content_annotations.search_terms = u"whatever";
+  visits.push_back(cluster_visit6);
+
+  // Visit7 was referred by visit 6, is a search visit but has different search
+  // terms as visit 6.
+  history::AnnotatedVisit visit7 =
+      testing::CreateDefaultAnnotatedVisit(7, GURL("https://search.com/"));
+  visit7.referring_visit_of_redirect_chain_start = 6;
+  visit7.visit_row.visit_time =
+      base::Time::Now() + base::Hours(2) + base::Minutes(3);
+  history::ClusterVisit cluster_visit7 = testing::CreateClusterVisit(visit7);
+  cluster_visit7.annotated_visit.content_annotations.search_terms =
+      u"different";
+  visits.push_back(cluster_visit7);
+
+  std::vector<history::Cluster> result_clusters =
+      CreateInitialClustersFromVisits(visits);
+  EXPECT_THAT(
+      testing::ToVisitResults(result_clusters),
+      ElementsAre(
+          ElementsAre(testing::VisitResult(1, 1.0),
+                      testing::VisitResult(2, 1.0)),
+          ElementsAre(testing::VisitResult(3, 1.0)),
+          ElementsAre(testing::VisitResult(4, 1.0, /*duplicate_visits=*/{},
+                                           u"whatever"),
+                      testing::VisitResult(5, 1.0),
+                      testing::VisitResult(6, 1.0, /*duplicate_visits=*/{},
+                                           u"whatever")),
+          ElementsAre(testing::VisitResult(7, 1.0, /*duplicate_visits=*/{},
+                                           u"different"))));
 }
 
 }  // namespace

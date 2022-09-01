@@ -52,8 +52,8 @@ class FakeWebClient : public web::WebClient {
                         int64_t navigation_id,
                         base::OnceCallback<void(NSString*)> callback) override;
   UIView* GetWindowedContainer() override;
-  UserAgentType GetDefaultUserAgent(id<UITraitEnvironment> web_view,
-                                    const GURL& url) override;
+  UserAgentType GetDefaultUserAgent(web::WebState* web_state,
+                                    const GURL& url) const override;
 
   // Sets |plugin_not_supported_text_|.
   void SetPluginNotSupportedText(const std::u16string& text);

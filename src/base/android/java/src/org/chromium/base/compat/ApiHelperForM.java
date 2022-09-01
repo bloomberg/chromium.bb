@@ -4,7 +4,6 @@
 
 package org.chromium.base.compat;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.Notification;
@@ -28,15 +27,14 @@ import android.view.ViewConfiguration;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
-import org.chromium.base.annotations.VerifiesOnM;
+import androidx.annotation.RequiresApi;
 
 /**
  * Utility class to use new APIs that were added in M (API level 23). These need to exist in a
  * separate class so that Android framework can successfully verify classes without
  * encountering the new APIs.
  */
-@VerifiesOnM
-@TargetApi(Build.VERSION_CODES.M)
+@RequiresApi(Build.VERSION_CODES.M)
 public final class ApiHelperForM {
     private ApiHelperForM() {}
 

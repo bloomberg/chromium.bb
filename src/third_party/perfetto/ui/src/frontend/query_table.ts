@@ -26,7 +26,7 @@ import {Panel} from './panel';
 import {Router} from './router';
 import {
   horizontalScrollAndZoomToRange,
-  verticalScrollToTrack
+  verticalScrollToTrack,
 } from './scroll_helper';
 
 interface QueryTableRowAttrs {
@@ -56,7 +56,7 @@ class QueryTableRow implements m.ClassComponent<QueryTableRowAttrs> {
     const sliceDur = fromNs(Math.max(row.dur as number, 1));
     const sliceEnd = sliceStart + sliceDur;
     const trackId = row.track_id as number;
-    const uiTrackId = globals.state.uiTrackIdByTraceTrackId.get(trackId);
+    const uiTrackId = globals.state.uiTrackIdByTraceTrackId[trackId];
     if (uiTrackId === undefined) return;
     verticalScrollToTrack(uiTrackId, true);
     horizontalScrollAndZoomToRange(sliceStart, sliceEnd);
@@ -93,11 +93,11 @@ class QueryTableRow implements m.ClassComponent<QueryTableRowAttrs> {
     return m(
         'tr',
         {
-          onclick: maybeOnClick,
+          'onclick': maybeOnClick,
           // TODO(altimin): Consider improving the logic here (e.g. delay?) to
           // account for cases when dblclick fires late.
-          ondblclick: maybeOnDblClick,
-          'clickable': containsSliceLocation
+          'ondblclick': maybeOnDblClick,
+          'clickable': containsSliceLocation,
         },
         cells);
   }
@@ -135,35 +135,42 @@ export class QueryTable extends Panel<QueryTableAttrs> {
       rows.push(m(QueryTableRow, {row: resp.rows[i], columns: resp.columns}));
     }
 
+    const headers = [
+      m(
+          'header.overview',
+          `Query result - ${Math.round(resp.durationMs)} ms`,
+          m('span.code', resp.query),
+          resp.error ? null :
+                       m('button.query-ctrl',
+                         {
+                           onclick: () => {
+                             queryResponseToClipboard(resp);
+                           },
+                         },
+                         'Copy as .tsv'),
+          m('button.query-ctrl',
+            {
+              onclick: () => {
+                globals.queryResults.delete(queryId);
+                globals.rafScheduler.scheduleFullRedraw();
+              },
+            },
+            'Close'),
+          ),
+    ];
+
+
+    if (resp.statementWithOutputCount > 1) {
+      headers.push(
+          m('header.overview',
+            `${resp.statementWithOutputCount} out of ${resp.statementCount} ` +
+                `statements returned a result. Only the results for the last ` +
+                `statement are displayed in the table below.`));
+    }
+
     return m(
         'div',
-        m(
-            'header.overview',
-            `Query result - ${Math.round(resp.durationMs)} ms`,
-            m('span.code', resp.query),
-            resp.error ? null :
-                         m('button.query-ctrl',
-                           {
-                             onclick: () => {
-                               queryResponseToClipboard(resp);
-                             },
-                           },
-                           'Copy as .tsv'),
-            m('button.query-ctrl',
-              {
-                onclick: () => {
-                  globals.queryResults.delete(queryId);
-                  globals.rafScheduler.scheduleFullRedraw();
-                }
-              },
-              'Close'),
-            ),
-        // TODO(rsavitski): the x-scrollable works for the
-        // dedicated query page, but is insufficient in the case of
-        // the results being presented within the bottom details
-        // pane in the timeline view. In that case, the
-        // details-panel-container enforces non-scrollability.
-        // Ideally we'd want to make that case scrollable as well.
+        ...headers,
         resp.error ?
             m('.query-error', `SQL error: ${resp.error}`) :
             m('.query-table-container.x-scrollable',

@@ -55,11 +55,10 @@ class LayerTreePixelTest : public LayerTreeTest {
       override;
   std::unique_ptr<viz::DisplayCompositorMemoryAndTaskController>
   CreateDisplayControllerOnThread() override;
-  std::unique_ptr<viz::SkiaOutputSurface>
-  CreateDisplaySkiaOutputSurfaceOnThread(
+  std::unique_ptr<viz::SkiaOutputSurface> CreateSkiaOutputSurfaceOnThread(
       viz::DisplayCompositorMemoryAndTaskController*) override;
-  std::unique_ptr<viz::OutputSurface> CreateDisplayOutputSurfaceOnThread(
-      scoped_refptr<viz::ContextProvider> compositor_context_provider) override;
+  std::unique_ptr<viz::OutputSurface> CreateSoftwareOutputSurfaceOnThread()
+      override;
   void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override;
   void InitializeSettings(LayerTreeSettings* settings) override;
 
@@ -127,8 +126,7 @@ class LayerTreePixelTest : public LayerTreeTest {
 
   TestRasterType raster_type() const { return raster_type_; }
   bool use_accelerated_raster() const {
-    return raster_type_ == TestRasterType::kGpu ||
-           raster_type_ == TestRasterType::kOop;
+    return raster_type_ == TestRasterType::kGpu;
   }
 
   // Common CSS colors defined for tests to use.

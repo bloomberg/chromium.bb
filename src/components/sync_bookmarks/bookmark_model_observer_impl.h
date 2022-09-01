@@ -84,15 +84,14 @@ class BookmarkModelObserverImpl : public bookmarks::BookmarkModelObserver {
   // Process a modification of a local node and updates |bookmark_tracker_|
   // accordingly. No-op if the commit can be optimized away, i.e. if |specifics|
   // are identical to the previously-known specifics (in hashed form).
-  void ProcessUpdate(const SyncedBookmarkTracker::Entity* entity,
+  void ProcessUpdate(const SyncedBookmarkTrackerEntity* entity,
                      const sync_pb::EntitySpecifics& specifics);
 
   // Processes the deletion of a bookmake node and updates the
   // |bookmark_tracker_| accordingly. If |node| is a bookmark, it gets marked
   // as deleted and that it requires a commit. If it's a folder, it recurses
   // over all children before processing the folder itself.
-  void ProcessDelete(const bookmarks::BookmarkNode* parent,
-                     const bookmarks::BookmarkNode* node);
+  void ProcessDelete(const bookmarks::BookmarkNode* node);
 
   // Points to the tracker owned by the processor. It keeps the mapping between
   // bookmark nodes and corresponding sync server entities.

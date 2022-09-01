@@ -13,38 +13,41 @@ import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
 import 'chrome://resources/cr_elements/cr_icons_css.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
-import '../icons.js';
+import '../icons.html.js';
 import '../settings_shared_css.js';
-import '../settings_vars_css.js';
-import './passwords_shared_css.js';
+import '../settings_vars.css.js';
+import './passwords_shared.css.js';
 
+import {CrButtonElement} from 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
 import {CrInputElement} from 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
-import {assert} from 'chrome://resources/js/assert.m.js';
+import {assert} from 'chrome://resources/js/assert_ts.js';
 import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
 import {I18nMixin} from 'chrome://resources/js/i18n_mixin.js';
-import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import {getTemplate} from './password_check_edit_dialog.html.js';
 import {PasswordCheckInteraction, PasswordManagerImpl, PasswordManagerProxy} from './password_manager_proxy.js';
 
-interface SettingsPasswordCheckEditDialogElement {
+export interface SettingsPasswordCheckEditDialogElement {
   $: {
     dialog: CrDialogElement,
     cancel: HTMLElement,
     passwordInput: CrInputElement,
+    save: CrButtonElement,
   };
 }
 
 const SettingsPasswordCheckEditDialogElementBase = I18nMixin(PolymerElement);
 
-class SettingsPasswordCheckEditDialogElement extends
+export class SettingsPasswordCheckEditDialogElement extends
     SettingsPasswordCheckEditDialogElementBase {
   static get is() {
     return 'settings-password-check-edit-dialog';
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
@@ -75,7 +78,7 @@ class SettingsPasswordCheckEditDialogElement extends
   private passwordManager_: PasswordManagerProxy =
       PasswordManagerImpl.getInstance();
 
-  connectedCallback() {
+  override connectedCallback() {
     super.connectedCallback();
 
     this.$.dialog.showModal();
@@ -100,9 +103,9 @@ class SettingsPasswordCheckEditDialogElement extends
   private onSave_() {
     this.passwordManager_.recordPasswordCheckInteraction(
         PasswordCheckInteraction.EDIT_PASSWORD);
+    assert(this.item);
     this.passwordManager_
-        .changeInsecureCredential(
-            assert(this.item!), this.$.passwordInput.value)
+        .changeInsecureCredential(this.item, this.$.passwordInput.value)
         .finally(() => {
           this.close();
         });
@@ -153,6 +156,13 @@ class SettingsPasswordCheckEditDialogElement extends
     return this.i18n(
         this.item!.isAndroidCredential ? 'editCompromisedPasswordApp' :
                                          'editCompromisedPasswordSite');
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'settings-password-check-edit-dialog':
+        SettingsPasswordCheckEditDialogElement;
   }
 }
 

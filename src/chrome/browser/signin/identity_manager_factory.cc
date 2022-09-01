@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/files/file_path.h"
+#include "base/observer_list.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
@@ -25,12 +26,15 @@
 #include "components/signin/public/webdata/token_web_data.h"
 #include "content/public/browser/network_service_instance.h"
 
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+#if BUILDFLAG(ENABLE_DICE_SUPPORT) || BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
-#include "chrome/browser/web_data_service_factory.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
-#include "components/keyed_service/core/service_access_type.h"
 #include "components/signin/core/browser/cookie_settings_util.h"
+#endif
+
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+#include "chrome/browser/web_data_service_factory.h"
+#include "components/keyed_service/core/service_access_type.h"
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -45,7 +49,7 @@
 #include "components/account_manager_core/chromeos/account_manager_facade_factory.h"
 #endif
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "base/bind.h"
 #include "chrome/browser/signin/signin_util_win.h"
 #endif
@@ -124,19 +128,21 @@ KeyedService* IdentityManagerFactory::BuildServiceInstanceFor(
   params.profile_path = profile->GetPath();
   params.signin_client = ChromeSigninClientFactory::GetForProfile(profile);
 
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+#if BUILDFLAG(ENABLE_DICE_SUPPORT) || BUILDFLAG(IS_CHROMEOS_LACROS)
   params.delete_signin_cookies_on_exit =
       signin::SettingsDeleteSigninCookiesOnExit(
           CookieSettingsFactory::GetForProfile(profile).get());
+#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT) || BUILDFLAG(IS_CHROMEOS_LACROS)
+
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
   params.token_web_data = WebDataServiceFactory::GetTokenWebDataForProfile(
       profile, ServiceAccessType::EXPLICIT_ACCESS);
-#endif
+#endif  // #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   params.account_manager_facade =
       GetAccountManagerFacade(profile->GetPath().value());
-  params.is_regular_profile =
-      chromeos::ProfileHelper::IsRegularProfile(profile);
+  params.is_regular_profile = ash::ProfileHelper::IsRegularProfile(profile);
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -155,7 +161,7 @@ KeyedService* IdentityManagerFactory::BuildServiceInstanceFor(
   params.is_regular_profile = is_regular_profile;
 #endif
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   params.reauth_callback =
       base::BindRepeating(&signin_util::ReauthWithCredentialProviderIfPossible,
                           base::Unretained(profile));

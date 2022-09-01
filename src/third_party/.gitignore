@@ -3,8 +3,6 @@
 /__START__
 /accessibility-developer-tools/
 /accessibility_test_framework/lib/
-/adobe/flash/binaries
-/adobe/flash/symbols
 /aemu-linux-arm64
 /aemu-linux-x64
 /aemu-mac-arm64
@@ -12,9 +10,6 @@
 /amd/
 /android_build_tools/aapt2/aapt2
 /android_build_tools/aapt2/lib64/*.so
-/android_build_tools/art/dexlayout
-/android_build_tools/art/lib/*.so
-/android_build_tools/art/profman
 /android_build_tools/bundletool/*.jar
 /android_ndk/
 /android_prebuilts/build_tools
@@ -31,6 +26,18 @@
 /androidx/libs/
 /angle
 /angle_dx11
+/apache-mac/LICENSE
+/apache-mac/bin/*
+/apache-mac/lib/*
+/apache-mac/libexec/*
+/apache-mac-arm64/LICENSE
+/apache-mac-arm64/bin/*
+/apache-mac-arm64/lib/*
+/apache-mac-arm64/libexec/*
+/apache-linux/LICENSE
+/apache-linux/bin/*
+/apache-linux/lib/*
+/apache-linux/libexec/*
 /apache-portable-runtime/src
 /apache-win32/bin/*.exe
 /apache-win32/bin/*.dll
@@ -41,7 +48,6 @@
 /arcore-android-sdk/test-apks/arcore/*.apk
 /asan
 /barhopper
-/binutils
 /bison
 /boringssl/src
 /bouncycastle/lib/
@@ -62,6 +68,8 @@
 /cld_2/src
 /cld_3/src
 /colorama/src
+/content_analysis_sdk/src
+/cpuinfo/src
 /crc32c/src
 /cros
 /cros_system_api
@@ -92,6 +100,7 @@
 /fuchsia-sdk/images
 /fuchsia-sdk/images-internal
 /fuchsia-sdk/sdk
+/fxdiv/src
 /gemmlowp/src
 /gles2_conform
 /glfw/src
@@ -197,6 +206,7 @@
 /proguard/lib/
 /protobuf/java/lite/target/
 /psyco_win32
+/pthreadpool/src
 /pthreads-win32
 /py_trace_event/src
 /pyelftools
@@ -214,11 +224,12 @@
 /requests/src
 /robolectric/lib/
 /robolectric/robolectric
+/rust-src
+/rust-toolchain
 /ruy/src
 /scan-build/src
 /scons-2.0.1
 /securemessage/src
-/shaderc/src
 /shaka-player/dist/
 /skia
 /smhasher/src
@@ -231,6 +242,7 @@
 /sqlite/src
 /sqlite4java/lib/
 /subresource-filter-ruleset/data/UnindexedRules
+/swift-format
 /swiftshader/
 /syzygy
 /syzygy/binaries
@@ -242,7 +254,6 @@
 /ub-uiautomator/lib
 /ukey2/src
 /usb_ids
-/usrsctp/usrsctplib
 /v8-i18n
 /valgrind
 /vulkan-deps
@@ -270,4 +281,5 @@
 /wix
 /wuffs/src
 /xdg-utils
+/xnnpack/src
 /xulrunner-sdk

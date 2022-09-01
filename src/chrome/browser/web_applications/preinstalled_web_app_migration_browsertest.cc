@@ -20,11 +20,12 @@
 #include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/web_applications/test/ssl_test_utils.h"
-#include "chrome/browser/web_applications/os_integration_manager.h"
+#include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
 #include "chrome/browser/web_applications/preinstalled_app_install_features.h"
 #include "chrome/browser/web_applications/preinstalled_web_app_manager.h"
 #include "chrome/browser/web_applications/preinstalled_web_apps/preinstalled_web_apps.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
+#include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_paths.h"
@@ -101,8 +102,6 @@ class PreinstalledWebAppMigrationBrowserTest
     SetUpExtensionTestExternalProvider();
 
     extensions::ExtensionBrowserTest::SetUpOnMainThread();
-    os_hooks_suppress_ =
-        OsIntegrationManager::ScopedSuppressOsHooksForTesting();
     web_app::test::WaitUntilReady(
         web_app::WebAppProvider::GetForTest(profile()));
   }
@@ -179,7 +178,7 @@ class PreinstalledWebAppMigrationBrowserTest
                            bool pass_config = true) {
     base::RunLoop run_loop;
 
-    absl::optional<InstallResultCode> code;
+    absl::optional<webapps::InstallResultCode> code;
 
     auto callback = base::BindLambdaForTesting(
         [&](std::map<GURL, ExternallyManagedAppManager::InstallResult>
@@ -187,9 +186,11 @@ class PreinstalledWebAppMigrationBrowserTest
             std::map<GURL, bool> uninstall_results) {
           if (expect_install) {
             code = install_results.at(GetWebAppUrl()).code;
-            EXPECT_TRUE(*code == InstallResultCode::kSuccessNewInstall ||
-                        *code == InstallResultCode::kSuccessAlreadyInstalled ||
-                        *code == InstallResultCode::kSuccessOfflineOnlyInstall);
+            EXPECT_TRUE(
+                *code == webapps::InstallResultCode::kSuccessNewInstall ||
+                *code == webapps::InstallResultCode::kSuccessAlreadyInstalled ||
+                *code ==
+                    webapps::InstallResultCode::kSuccessOfflineOnlyInstall);
           } else {
             EXPECT_EQ(install_results.find(GetWebAppUrl()),
                       install_results.end());
@@ -244,7 +245,7 @@ class PreinstalledWebAppMigrationBrowserTest
   base::test::ScopedFeatureList features_;
   absl::optional<base::AutoReset<bool>> disable_external_extensions_scope_;
   std::unique_ptr<extensions::ExtensionCacheFake> test_extension_cache_;
-  ScopedOsHooksSuppress os_hooks_suppress_;
+  OsIntegrationManager::ScopedSuppressForTesting os_hooks_suppress_;
 };
 
 #if !BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -309,7 +310,7 @@ IN_PROC_BROWSER_TEST_F(PreinstalledWebAppMigrationBrowserTest,
 
       histograms.ExpectUniqueSample(
           PreinstalledWebAppManager::kHistogramInstallResult,
-          InstallResultCode::kSuccessNewInstall, 1);
+          webapps::InstallResultCode::kSuccessNewInstall, 1);
       histograms.ExpectUniqueSample(
           PreinstalledWebAppManager::kHistogramUninstallAndReplaceCount, 1, 1);
 
@@ -364,7 +365,7 @@ IN_PROC_BROWSER_TEST_F(PreinstalledWebAppMigrationBrowserTest,
 
     histograms.ExpectUniqueSample(
         PreinstalledWebAppManager::kHistogramInstallResult,
-        InstallResultCode::kSuccessNewInstall, 1);
+        webapps::InstallResultCode::kSuccessNewInstall, 1);
     histograms.ExpectUniqueSample(
         PreinstalledWebAppManager::kHistogramUninstallAndReplaceCount, 1, 1);
 
@@ -451,7 +452,7 @@ IN_PROC_BROWSER_TEST_F(PreinstalledWebAppMigrationBrowserTest,
       EXPECT_FALSE(IsExtensionAppInstalled());
       histograms.ExpectUniqueSample(
           PreinstalledWebAppManager::kHistogramInstallResult,
-          InstallResultCode::kSuccessNewInstall, 1);
+          webapps::InstallResultCode::kSuccessNewInstall, 1);
       histograms.ExpectUniqueSample(
           PreinstalledWebAppManager::kHistogramUninstallAndReplaceCount, 1, 1);
     }
@@ -484,7 +485,7 @@ IN_PROC_BROWSER_TEST_F(PreinstalledWebAppMigrationBrowserTest,
     EXPECT_EQ(WebAppProvider::GetForTest(profile())
                   ->registrar()
                   .GetAppUserDisplayMode(web_app_id),
-              DisplayMode::kBrowser);
+              UserDisplayMode::kBrowser);
   }
 }
 
@@ -523,7 +524,7 @@ IN_PROC_BROWSER_TEST_F(PreinstalledWebAppMigratePlatformAppBrowserTest,
   EXPECT_EQ(
       WebAppProvider::GetForTest(profile())->registrar().GetAppUserDisplayMode(
           GetWebAppId()),
-      DisplayMode::kStandalone);
+      UserDisplayMode::kStandalone);
 }
 #endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)
 
@@ -610,7 +611,7 @@ IN_PROC_BROWSER_TEST_F(PreinstalledWebAppMigrationBrowserTest,
     histograms.ExpectUniqueSample(
         PreinstalledWebAppManager::
             kHistogramAppToReplaceStillDefaultInstalledCount,
-        1, 1);
+        0, 1);
 
     // Neither app has been added to the shelf.
     histograms.ExpectUniqueSample(
@@ -643,14 +644,14 @@ IN_PROC_BROWSER_TEST_F(PreinstalledWebAppMigrationBrowserTest,
 IN_PROC_BROWSER_TEST_F(PreinstalledWebAppMigrationBrowserTest,
                        MigrateToPreinstalledWebApp) {
   ScopedTestingPreinstalledAppData preinstalled_apps;
-  ExternalInstallOptions options(GetWebAppUrl(), DisplayMode::kBrowser,
+  ExternalInstallOptions options(GetWebAppUrl(), UserDisplayMode::kBrowser,
                                  ExternalInstallSource::kExternalDefault);
   options.gate_on_feature = kMigrationFlag;
   options.user_type_allowlist = {"unmanaged"};
   options.uninstall_and_replace.push_back(kExtensionId);
   options.only_use_app_info_factory = true;
   options.app_info_factory = base::BindLambdaForTesting([&]() {
-    auto info = std::make_unique<WebApplicationInfo>();
+    auto info = std::make_unique<WebAppInstallInfo>();
     info->start_url = GetWebAppUrl();
     info->title = u"Test app";
     return info;
@@ -713,7 +714,7 @@ IN_PROC_BROWSER_TEST_F(PreinstalledWebAppMigrationBrowserTest,
           PreinstalledWebAppManager::kHistogramConfigErrorCount, 0, 1);
       histograms.ExpectUniqueSample(
           PreinstalledWebAppManager::kHistogramInstallResult,
-          InstallResultCode::kSuccessOfflineOnlyInstall, 1);
+          webapps::InstallResultCode::kSuccessOfflineOnlyInstall, 1);
       histograms.ExpectUniqueSample(
           PreinstalledWebAppManager::kHistogramUninstallAndReplaceCount, 1, 1);
     }

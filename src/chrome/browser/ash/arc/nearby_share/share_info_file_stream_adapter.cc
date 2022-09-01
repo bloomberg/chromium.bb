@@ -11,7 +11,6 @@
 #include "base/files/file_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_piece.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/ash/arc/nearby_share/arc_nearby_share_uma.h"
@@ -103,7 +102,7 @@ void ShareInfoFileStreamAdapter::StartFileStreaming() {
       url_, offset_, bytes_remaining_, base::Time());
   if (!stream_reader_) {
     LOG(ERROR) << "Failed to create FileStreamReader.";
-    UpdateNearbyShareIOFail(IOErrorResult::kFilereaderFailed);
+    UpdateNearbyShareIOFail(IOErrorResult::kFileReaderFailed);
     OnStreamingFinished(false);
     return;
   }
@@ -187,7 +186,7 @@ void ShareInfoFileStreamAdapter::OnProducerStreamUpdate(
 void ShareInfoFileStreamAdapter::WriteToPipe() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(producer_stream_.is_valid());
-  DCHECK_NE(pipe_write_size_, 0);
+  DCHECK_NE(pipe_write_size_, 0u);
 
   while (true) {
     uint32_t bytes_to_write = pipe_write_size_ - pipe_write_offset_;

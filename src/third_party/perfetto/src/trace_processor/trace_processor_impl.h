@@ -30,6 +30,7 @@
 #include "perfetto/trace_processor/status.h"
 #include "perfetto/trace_processor/trace_processor.h"
 #include "src/trace_processor/sqlite/create_function.h"
+#include "src/trace_processor/sqlite/create_view_function.h"
 #include "src/trace_processor/sqlite/db_sqlite_table.h"
 #include "src/trace_processor/sqlite/query_cache.h"
 #include "src/trace_processor/sqlite/scoped_db.h"
@@ -57,27 +58,26 @@ class TraceProcessorImpl : public TraceProcessor,
   ~TraceProcessorImpl() override;
 
   // TraceProcessorStorage implementation:
-  util::Status Parse(TraceBlobView) override;
+  base::Status Parse(TraceBlobView) override;
   void NotifyEndOfFile() override;
 
   // TraceProcessor implementation:
-  Iterator ExecuteQuery(const std::string& sql,
-                        int64_t time_queued = 0) override;
+  Iterator ExecuteQuery(const std::string& sql) override;
 
-  util::Status RegisterMetric(const std::string& path,
+  base::Status RegisterMetric(const std::string& path,
                               const std::string& sql) override;
 
-  util::Status ExtendMetricsProto(const uint8_t* data, size_t size) override;
+  base::Status ExtendMetricsProto(const uint8_t* data, size_t size) override;
 
-  util::Status ExtendMetricsProto(
+  base::Status ExtendMetricsProto(
       const uint8_t* data,
       size_t size,
       const std::vector<std::string>& skip_prefixes) override;
 
-  util::Status ComputeMetric(const std::vector<std::string>& metric_names,
+  base::Status ComputeMetric(const std::vector<std::string>& metric_names,
                              std::vector<uint8_t>* metrics) override;
 
-  util::Status ComputeMetricText(const std::vector<std::string>& metric_names,
+  base::Status ComputeMetricText(const std::vector<std::string>& metric_names,
                                  TraceProcessor::MetricResultFormat format,
                                  std::string* metrics_string) override;
 
@@ -92,7 +92,7 @@ class TraceProcessorImpl : public TraceProcessor,
 
   void EnableMetatrace() override;
 
-  util::Status DisableAndReadMetatrace(
+  base::Status DisableAndReadMetatrace(
       std::vector<uint8_t>* trace_proto) override;
 
  private:
@@ -102,14 +102,16 @@ class TraceProcessorImpl : public TraceProcessor,
   template <typename Table>
   void RegisterDbTable(const Table& table) {
     DbSqliteTable::RegisterTable(*db_, query_cache_.get(), Table::Schema(),
-                                 &table, table.table_name());
+                                 &table, Table::Name());
   }
 
-  void RegisterDynamicTable(
-      std::unique_ptr<DbSqliteTable::DynamicTableGenerator> generator) {
+  void RegisterDynamicTable(std::unique_ptr<DynamicTableGenerator> generator) {
     DbSqliteTable::RegisterTable(*db_, query_cache_.get(),
                                  std::move(generator));
   }
+
+  template <typename View>
+  void RegisterView(const View& view);
 
   bool IsRootMetricField(const std::string& metric_name);
 
@@ -120,6 +122,11 @@ class TraceProcessorImpl : public TraceProcessor,
   // State necessary for CREATE_FUNCTION invocations. We store this here as we
   // need to finalize any prepared statements *before* we destroy the database.
   CreateFunction::State create_function_state_;
+
+  // State necessary for CREATE_VIEW_FUNCTION invocations. We store this here as
+  // we need to finalize any prepared statements *before* we destroy the
+  // database.
+  CreateViewFunction::State create_view_function_state_;
 
   std::unique_ptr<QueryCache> query_cache_;
 

@@ -358,7 +358,7 @@ class HWNDMessageHandler::ScopedRedrawLock {
         hwnd_(owner_->hwnd()),
         cancel_unlock_(false),
         should_lock_(owner_->IsVisible() && !owner->HasChildRenderingWindow() &&
-                     ::IsWindow(hwnd_) &&
+                     ::IsWindow(hwnd_) && !owner_->IsHeadless() &&
                      (!(GetWindowLong(hwnd_, GWL_STYLE) & WS_CAPTION) ||
                       !ui::win::IsAeroGlassEnabled())) {
     if (should_lock_)
@@ -434,10 +434,18 @@ HWNDMessageHandler::~HWNDMessageHandler() {
   ClearUserData();
 }
 
-void HWNDMessageHandler::Init(HWND parent, const gfx::Rect& bounds) {
+void HWNDMessageHandler::Init(HWND parent,
+                              const gfx::Rect& bounds,
+                              bool headless_mode) {
   TRACE_EVENT0("views", "HWNDMessageHandler::Init");
   GetMonitorAndRects(bounds.ToRECT(), &last_monitor_, &last_monitor_rect_,
                      &last_work_area_);
+
+  initial_bounds_valid_ = !bounds.IsEmpty();
+
+  // Provide the headless mode window state container.
+  if (headless_mode)
+    headless_mode_window_ = absl::make_optional<HeadlessModeWindow>();
 
   // Create the window.
   WindowImpl::Init(parent, bounds);
@@ -539,6 +547,11 @@ gfx::Rect HWNDMessageHandler::GetClientAreaBoundsInScreen() const {
 }
 
 gfx::Rect HWNDMessageHandler::GetRestoredBounds() const {
+  // Headless mode window never goes fullscreen, so just return an empty
+  // rectangle here.
+  if (IsHeadless())
+    return gfx::Rect();
+
   // If we're in fullscreen mode, we've changed the normal bounds to the monitor
   // rect, so return the saved bounds instead.
   if (IsFullscreen())
@@ -649,6 +662,15 @@ void HWNDMessageHandler::StackAtTop() {
 void HWNDMessageHandler::Show(ui::WindowShowState show_state,
                               const gfx::Rect& pixel_restore_bounds) {
   TRACE_EVENT0("views", "HWNDMessageHandler::Show");
+
+  // In headless mode the platform window is always hidden, so instead of
+  // showing it just maintain a local flag to track the expected headless
+  // window visibility state.
+  if (IsHeadless()) {
+    headless_mode_window_->visibility_state = true;
+    return;
+  }
+
   DWORD native_show_state;
   if (show_state == ui::SHOW_STATE_MAXIMIZED &&
       !pixel_restore_bounds.IsEmpty()) {
@@ -659,9 +681,16 @@ void HWNDMessageHandler::Show(ui::WindowShowState show_state,
     SetWindowPlacement(hwnd(), &placement);
     native_show_state = SW_SHOWMAXIMIZED;
   } else {
+    const bool is_maximized = IsMaximized();
+
+    // Use SW_SHOW/SW_SHOWNA instead of SW_SHOWNORMAL/SW_SHOWNOACTIVATE so that
+    // the window is not restored to its original position if it is maximized.
+    // This could be used unconditionally for ui::SHOW_STATE_INACTIVE, but
+    // cross-platform behavior when showing a minimized window is inconsistent,
+    // some platforms restore the position, some do not. See crbug.com/1296710
     switch (show_state) {
       case ui::SHOW_STATE_INACTIVE:
-        native_show_state = SW_SHOWNOACTIVATE;
+        native_show_state = is_maximized ? SW_SHOWNA : SW_SHOWNOACTIVATE;
         break;
       case ui::SHOW_STATE_MAXIMIZED:
         native_show_state = SW_SHOWMAXIMIZED;
@@ -672,9 +701,9 @@ void HWNDMessageHandler::Show(ui::WindowShowState show_state,
       case ui::SHOW_STATE_NORMAL:
         if ((GetWindowLong(hwnd(), GWL_EXSTYLE) & WS_EX_TRANSPARENT) ||
             (GetWindowLong(hwnd(), GWL_EXSTYLE) & WS_EX_NOACTIVATE)) {
-          native_show_state = SW_SHOWNOACTIVATE;
+          native_show_state = is_maximized ? SW_SHOWNA : SW_SHOWNOACTIVATE;
         } else {
-          native_show_state = SW_SHOWNORMAL;
+          native_show_state = is_maximized ? SW_SHOW : SW_SHOWNORMAL;
         }
         break;
       case ui::SHOW_STATE_FULLSCREEN:
@@ -712,6 +741,14 @@ void HWNDMessageHandler::Show(ui::WindowShowState show_state,
 }
 
 void HWNDMessageHandler::Hide() {
+  // In headless mode the platform window is always hidden, so instead of
+  // hiding it just maintain a local flag to track the expected headless
+  // window visibility state.
+  if (IsHeadless()) {
+    headless_mode_window_->visibility_state = false;
+    return;
+  }
+
   if (IsWindow(hwnd())) {
     // NOTE: Be careful not to activate any windows here (for example, calling
     // ShowWindow(SW_HIDE) will automatically activate another window).  This
@@ -724,15 +761,30 @@ void HWNDMessageHandler::Hide() {
 }
 
 void HWNDMessageHandler::Maximize() {
+  if (IsHeadless()) {
+    headless_mode_window_->minmax_state = HeadlessModeWindow::kMaximized;
+    return;
+  }
+
   ExecuteSystemMenuCommand(SC_MAXIMIZE);
 }
 
 void HWNDMessageHandler::Minimize() {
+  if (IsHeadless()) {
+    headless_mode_window_->minmax_state = HeadlessModeWindow::kMinimized;
+    return;
+  }
+
   ExecuteSystemMenuCommand(SC_MINIMIZE);
   delegate_->HandleNativeBlur(nullptr);
 }
 
 void HWNDMessageHandler::Restore() {
+  if (IsHeadless()) {
+    headless_mode_window_->minmax_state = HeadlessModeWindow::kNormal;
+    return;
+  }
+
   ExecuteSystemMenuCommand(SC_RESTORE);
 }
 
@@ -764,7 +816,11 @@ void HWNDMessageHandler::SetAlwaysOnTop(bool on_top) {
 }
 
 bool HWNDMessageHandler::IsVisible() const {
-  return !!::IsWindowVisible(hwnd());
+  // In headless mode the platform window is always hidden, so instead of
+  // returning the actual window visibility state return the expected visibility
+  // state maintained by Show/Hide() calls.
+  return IsHeadless() ? headless_mode_window_->visibility_state
+                      : !!::IsWindowVisible(hwnd());
 }
 
 bool HWNDMessageHandler::IsActive() const {
@@ -772,19 +828,29 @@ bool HWNDMessageHandler::IsActive() const {
 }
 
 bool HWNDMessageHandler::IsMinimized() const {
-  return !!::IsIconic(hwnd());
+  return IsHeadless() ? headless_mode_window_->IsMinimized()
+                      : !!::IsIconic(hwnd());
 }
 
 bool HWNDMessageHandler::IsMaximized() const {
-  return !!::IsZoomed(hwnd()) && !IsFullscreen();
+  return (IsHeadless() ? headless_mode_window_->IsMaximized()
+                       : !!::IsZoomed(hwnd())) &&
+         !IsFullscreen();
 }
 
 bool HWNDMessageHandler::IsFullscreen() const {
-  return fullscreen_handler_->fullscreen();
+  // In headless mode report the requested window state instead of the actual
+  // one.
+  return IsHeadless() ? headless_mode_window_->fullscreen_state
+                      : fullscreen_handler_->fullscreen();
 }
 
 bool HWNDMessageHandler::IsAlwaysOnTop() const {
   return (GetWindowLong(hwnd(), GWL_EXSTYLE) & WS_EX_TOPMOST) != 0;
+}
+
+bool HWNDMessageHandler::IsHeadless() const {
+  return headless_mode_window_.has_value();
 }
 
 bool HWNDMessageHandler::RunMoveLoop(const gfx::Vector2d& drag_offset,
@@ -899,6 +965,13 @@ void HWNDMessageHandler::SetWindowIcons(const gfx::ImageSkia& window_icon,
 }
 
 void HWNDMessageHandler::SetFullscreen(bool fullscreen) {
+  // Avoid setting fullscreen mode when in headless mode, but keep track
+  // of the requested state for IsFullscreen() to report.
+  if (IsHeadless()) {
+    headless_mode_window_->fullscreen_state = fullscreen;
+    return;
+  }
+
   background_fullscreen_hack_ = false;
   auto ref = msg_handler_weak_factory_.GetWeakPtr();
   fullscreen_handler()->SetFullscreen(fullscreen);
@@ -1300,6 +1373,22 @@ void HWNDMessageHandler::PostProcessActivateMessage(
     bool minimized,
     HWND window_gaining_or_losing_activation) {
   DCHECK(IsTopLevelWindow(hwnd()));
+
+  // Check if this is a legacy window created for screen readers.
+  if (::IsChild(hwnd(), window_gaining_or_losing_activation) &&
+      gfx::GetClassName(window_gaining_or_losing_activation) ==
+          std::wstring(ui::kLegacyRenderWidgetHostHwnd)) {
+    // In Aura, there is only one main HWND which comprises the whole browser
+    // window. Some screen readers however, expect every unique web content
+    // container (WebView) to be in its own HWND. In these cases, a dummy HWND
+    // with class name |Chrome_RenderWidgetHostHWND| is created for each web
+    // content container.
+    // Note that this dummy window should not interfere with focus, and instead
+    // delegates its accessibility implementation to the root of the
+    // |BrowserAccessibilityManager| tree.
+    return;
+  }
+
   const bool active = activation_state != WA_INACTIVE && !minimized;
   if (notify_restore_on_activate_) {
     notify_restore_on_activate_ = false;
@@ -1431,8 +1520,7 @@ bool HWNDMessageHandler::GetClientAreaInsets(gfx::Insets* insets,
     int frame_thickness = ui::GetFrameThickness(monitor);
     if (!delegate_->HasFrame())
       frame_thickness -= 1;
-    *insets = gfx::Insets(frame_thickness, frame_thickness, frame_thickness,
-                          frame_thickness);
+    *insets = gfx::Insets(frame_thickness);
     return true;
   }
 
@@ -1645,6 +1733,12 @@ LRESULT HWNDMessageHandler::OnCreate(CREATESTRUCT* create_struct) {
   session_change_observer_ =
       std::make_unique<ui::SessionChangeObserver>(base::BindRepeating(
           &HWNDMessageHandler::OnSessionChange, base::Unretained(this)));
+
+  // If the window was initialized with a specific size/location then we know
+  // the DPI and thus must initialize dpi_ now. See https://crbug.com/1282804
+  // for details.
+  if (initial_bounds_valid_)
+    dpi_ = display::win::ScreenWin::GetDPIForHWND(hwnd());
 
   // TODO(beng): move more of NWW::OnCreate here.
   return 0;
@@ -2041,7 +2135,7 @@ LRESULT HWNDMessageHandler::OnPointerEvent(UINT message,
         return HandlePointerEventTypeTouchOrNonClient(
             message, w_param, l_param);
       }
-      FALLTHROUGH;
+      [[fallthrough]];
     default:
       break;
   }
@@ -2808,8 +2902,8 @@ void HWNDMessageHandler::OnWindowPosChanging(WINDOWPOS* window_pos) {
       // (Win+Shift+Arrows). See crbug.com/656001.
       window_rect.left = window_pos->x;
       window_rect.top = window_pos->y;
-      window_rect.right = window_pos->x + window_pos->cx - 1;
-      window_rect.bottom = window_pos->y + window_pos->cy - 1;
+      window_rect.right = window_pos->x + window_pos->cx;
+      window_rect.bottom = window_pos->y + window_pos->cy;
     }
 
     HMONITOR monitor;

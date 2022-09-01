@@ -110,6 +110,7 @@ void av1_free_pc_tree_recursive(PC_TREE *tree, int num_planes, int keep_best,
 PICK_MODE_CONTEXT *av1_alloc_pmc(const struct AV1_COMP *const cpi,
                                  BLOCK_SIZE bsize,
                                  PC_TREE_SHARED_BUFFERS *shared_bufs);
+void av1_reset_pmc(PICK_MODE_CONTEXT *ctx);
 void av1_free_pmc(PICK_MODE_CONTEXT *ctx, int num_planes);
 void av1_copy_tree_context(PICK_MODE_CONTEXT *dst_ctx,
                            PICK_MODE_CONTEXT *src_ctx);

@@ -9,19 +9,29 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history_clusters/history_clusters_metrics_logger.h"
 #include "chrome/browser/history_clusters/history_clusters_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/common/pref_names.h"
+#include "components/history/core/browser/history_service.h"
+#include "components/history/core/browser/history_types.h"
+#include "components/history_clusters/core/cluster_metrics_utils.h"
+#include "components/history_clusters/core/config.h"
 #include "components/history_clusters/core/features.h"
 #include "components/history_clusters/core/history_clusters_prefs.h"
+#include "components/history_clusters/core/query_clusters_state.h"
+#include "components/keyed_service/core/service_access_type.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
@@ -29,6 +39,8 @@
 #include "content/public/browser/web_contents.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/l10n/time_format.h"
+#include "ui/webui/mojo_bubble_web_ui_controller.h"
+#include "ui/webui/resources/cr_components/history_clusters/history_clusters.mojom.h"
 #include "url/gurl.h"
 
 namespace history_clusters {
@@ -36,27 +48,38 @@ namespace history_clusters {
 namespace {
 
 // Creates a `mojom::VisitPtr` from a `history_clusters::Visit`.
-mojom::URLVisitPtr VisitToMojom(Profile* profile, const Visit& visit) {
+mojom::URLVisitPtr VisitToMojom(Profile* profile,
+                                const history::ClusterVisit& visit) {
   auto visit_mojom = mojom::URLVisit::New();
   visit_mojom->normalized_url = visit.normalized_url;
+  visit_mojom->url_for_display = base::UTF16ToUTF8(visit.url_for_display);
 
+  // Add the raw URLs and visit times so the UI can perform deletion.
   auto& annotated_visit = visit.annotated_visit;
-  visit_mojom->raw_urls.push_back(annotated_visit.url_row.url());
-  visit_mojom->last_visit_time = annotated_visit.visit_row.visit_time;
-  visit_mojom->first_visit_time = annotated_visit.visit_row.visit_time;
-
-  // Update the fields to reflect data held in the duplicate visits too.
+  visit_mojom->raw_visit_data = mojom::RawVisitData::New(
+      annotated_visit.url_row.url(), annotated_visit.visit_row.visit_time);
   for (const auto& duplicate : visit.duplicate_visits) {
-    visit_mojom->raw_urls.push_back(duplicate.annotated_visit.url_row.url());
-    visit_mojom->last_visit_time =
-        std::max(visit_mojom->last_visit_time,
-                 duplicate.annotated_visit.visit_row.visit_time);
-    visit_mojom->first_visit_time =
-        std::min(visit_mojom->first_visit_time,
-                 duplicate.annotated_visit.visit_row.visit_time);
+    visit_mojom->duplicates.push_back(mojom::RawVisitData::New(
+        duplicate.annotated_visit.url_row.url(),
+        duplicate.annotated_visit.visit_row.visit_time));
   }
 
   visit_mojom->page_title = base::UTF16ToUTF8(annotated_visit.url_row.title());
+
+  for (const auto& match : visit.title_match_positions) {
+    auto match_mojom = mojom::MatchPosition::New();
+    match_mojom->begin = match.first;
+    match_mojom->end = match.second;
+    visit_mojom->title_match_positions.push_back(std::move(match_mojom));
+  }
+  for (const auto& match : visit.url_for_display_match_positions) {
+    auto match_mojom = mojom::MatchPosition::New();
+    match_mojom->begin = match.first;
+    match_mojom->end = match.second;
+    visit_mojom->url_for_display_match_positions.push_back(
+        std::move(match_mojom));
+  }
+
   visit_mojom->relative_date = base::UTF16ToUTF8(ui::TimeFormat::Simple(
       ui::TimeFormat::FORMAT_ELAPSED, ui::TimeFormat::LENGTH_SHORT,
       base::Time::Now() - annotated_visit.visit_row.visit_time));
@@ -80,7 +103,9 @@ mojom::URLVisitPtr VisitToMojom(Profile* profile, const Visit& visit) {
     visit_mojom->annotations.push_back(mojom::Annotation::kSearchResultsPage);
   }
 
-  if (base::FeatureList::IsEnabled(kUserVisibleDebug)) {
+  visit_mojom->hidden = visit.hidden;
+
+  if (GetConfig().user_visible_debug) {
     visit_mojom->debug_info["visit_id"] =
         base::NumberToString(annotated_visit.visit_row.visit_id);
     visit_mojom->debug_info["score"] = base::NumberToString(visit.score);
@@ -117,64 +142,39 @@ absl::optional<mojom::SearchQueryPtr> SearchQueryToMojom(
   return search_query_mojom;
 }
 
-// Chosen fairly arbitrarily. In practice this fills many vertical viewports
-// adequately. The WebUI automatically queries for more for tall monitor cases.
-constexpr size_t kMaxClustersCount = 10;
-
 }  // namespace
 
 // Creates a `mojom::QueryResultPtr` using the original `query`, if the query
 // was a continuation one, and the result of querying HistoryClustersService.
-mojom::QueryResultPtr QueryClustersResultToMojom(Profile* profile,
-                                                 const std::string& query,
-                                                 bool is_continuation,
-                                                 QueryClustersResult result) {
+mojom::QueryResultPtr QueryClustersResultToMojom(
+    Profile* profile,
+    const std::string& query,
+    const std::vector<history::Cluster> clusters_batch,
+    bool can_load_more,
+    bool is_continuation) {
   std::vector<mojom::ClusterPtr> cluster_mojoms;
-  for (const auto& cluster : result.clusters) {
+  for (const auto& cluster : clusters_batch) {
     auto cluster_mojom = mojom::Cluster::New();
     cluster_mojom->id = cluster.cluster_id;
-    std::set<std::string> related_searches;  // Keeps track of unique searches.
-    for (const auto& visit : cluster.visits) {
-      mojom::URLVisitPtr visit_mojom = VisitToMojom(profile, visit);
-      if (!cluster_mojom->visit) {
-        // The first visit is always the top visit.
-        cluster_mojom->visit = std::move(visit_mojom);
-      } else {
-        const auto& top_visit = cluster.visits.front();
-        DCHECK(visit.score <= top_visit.score);
-        // After the experiment-controlled max related visits are attached to
-        // the top visit, any subsequent visits scored below the
-        // experiment-controlled threshold are considered below the fold.
-        // 0-scored (duplicate) visits are always considered below the fold.
-        const auto& top_visit_mojom = cluster_mojom->visit;
-        visit_mojom->below_the_fold =
-            (top_visit_mojom->related_visits.size() >=
-                 static_cast<size_t>(
-                     kNumVisitsToAlwaysShowAboveTheFold.Get()) &&
-             visit.score < kMinScoreToAlwaysShowAboveTheFold.Get()) ||
-            visit.score == 0.0;
-        top_visit_mojom->related_visits.push_back(std::move(visit_mojom));
+    if (cluster.label) {
+      cluster_mojom->label = base::UTF16ToUTF8(*cluster.label);
+      for (const auto& match : cluster.label_match_positions) {
+        auto match_mojom = mojom::MatchPosition::New();
+        match_mojom->begin = match.first;
+        match_mojom->end = match.second;
+        cluster_mojom->label_match_positions.push_back(std::move(match_mojom));
       }
+    }
 
-      // Coalesce the related searches of this visit into the top visit, but
-      // only if the top visit's related searches count is still under the cap.
-      // Note we coalesce a whole visit's worth of searches at a time, so we
-      // can exceed the cap, but we ignore further visits' searches after that.
-      constexpr size_t kMaxRelatedSearches = 8;
-      const auto& top_visit_mojom = cluster_mojom->visit;
-      if (top_visit_mojom->related_searches.size() < kMaxRelatedSearches) {
-        for (const auto& search_query :
-             visit.annotated_visit.content_annotations.related_searches) {
-          if (!related_searches.insert(search_query).second) {
-            continue;
-          }
+    for (const auto& visit : cluster.visits) {
+      cluster_mojom->visits.push_back(VisitToMojom(profile, visit));
+    }
 
-          auto search_query_mojom = SearchQueryToMojom(profile, search_query);
-          if (search_query_mojom) {
-            top_visit_mojom->related_searches.emplace_back(
-                std::move(*search_query_mojom));
-          }
-        }
+    for (const auto& related_search : cluster.related_searches) {
+      auto search_query_mojom = SearchQueryToMojom(profile, related_search);
+      if (search_query_mojom) {
+        cluster_mojom->related_searches.emplace_back(
+            std::move(*search_query_mojom));
       }
     }
 
@@ -183,9 +183,9 @@ mojom::QueryResultPtr QueryClustersResultToMojom(Profile* profile,
 
   auto result_mojom = mojom::QueryResult::New();
   result_mojom->query = query;
-  result_mojom->is_continuation = is_continuation;
-  result_mojom->continuation_end_time = result.continuation_end_time;
   result_mojom->clusters = std::move(cluster_mojoms);
+  result_mojom->can_load_more = can_load_more;
+  result_mojom->is_continuation = is_continuation;
   return result_mojom;
 }
 
@@ -203,13 +203,32 @@ HistoryClustersHandler::HistoryClustersHandler(
       HistoryClustersServiceFactory::GetForBrowserContext(profile_);
   DCHECK(history_clusters_service);
   service_observation_.Observe(history_clusters_service);
+
+  history::HistoryService* local_history = HistoryServiceFactory::GetForProfile(
+      profile_, ServiceAccessType::EXPLICIT_ACCESS);
+  syncer::SyncService* sync_service =
+      SyncServiceFactory::GetForProfile(profile_);
+  browsing_history_service_ = std::make_unique<history::BrowsingHistoryService>(
+      this, local_history, sync_service);
 }
 
 HistoryClustersHandler::~HistoryClustersHandler() = default;
 
+void HistoryClustersHandler::SetSidePanelUIEmbedder(
+    base::WeakPtr<ui::MojoBubbleWebUIController::Embedder>
+        side_panel_embedder) {
+  history_clusters_side_panel_embedder_ = side_panel_embedder;
+}
+
 void HistoryClustersHandler::SetPage(
     mojo::PendingRemote<mojom::Page> pending_page) {
   page_.Bind(std::move(pending_page));
+}
+
+void HistoryClustersHandler::ShowSidePanelUI() {
+  if (history_clusters_side_panel_embedder_) {
+    history_clusters_side_panel_embedder_->ShowUI();
+  }
 }
 
 void HistoryClustersHandler::ToggleVisibility(
@@ -219,18 +238,7 @@ void HistoryClustersHandler::ToggleVisibility(
   std::move(callback).Run(visible);
 }
 
-void HistoryClustersHandler::QueryClusters(mojom::QueryParamsPtr query_params) {
-  base::TimeTicks query_start_time = base::TimeTicks::Now();
-
-  const std::string& query = query_params->query;
-  base::Time end_time;
-  if (query_params->end_time.has_value()) {
-    // Continuation queries have a non-null value for `end_time`.
-    DCHECK(!query_params->end_time->is_null())
-        << "Queried clusters with a null value for end_time.";
-    end_time = *(query_params->end_time);
-  }
-
+void HistoryClustersHandler::StartQueryClusters(const std::string& query) {
   if (!query.empty()) {
     // If the query string is not empty, we assume that this clusters query
     // is user generated.
@@ -239,49 +247,63 @@ void HistoryClustersHandler::QueryClusters(mojom::QueryParamsPtr query_params) {
         ->increment_query_count();
   }
 
-  // Cancel pending tasks, if any.
-  query_task_tracker_.TryCancelAll();
+  // Since the query has changed, initialize a new QueryClustersState and
+  // request the first batch of clusters.
   auto* history_clusters_service =
       HistoryClustersServiceFactory::GetForBrowserContext(profile_);
-  history_clusters_service->QueryClusters(
-      query, /*begin_time=*/base::Time(), end_time, kMaxClustersCount,
-      base::BindOnce(&QueryClustersResultToMojom, profile_, query,
-                     query_params->end_time.has_value())
-          .Then(base::BindOnce(&HistoryClustersHandler::OnClustersQueryResult,
-                               weak_ptr_factory_.GetWeakPtr(),
-                               query_start_time)),
-      &query_task_tracker_);
+  query_clusters_state_ = std::make_unique<QueryClustersState>(
+      history_clusters_service->GetWeakPtr(), query);
+  LoadMoreClusters(query);
+}
+
+void HistoryClustersHandler::LoadMoreClusters(const std::string& query) {
+  if (query_clusters_state_) {
+    DCHECK_EQ(query, query_clusters_state_->query());
+    query_clusters_state_->LoadNextBatchOfClusters(
+        base::BindOnce(&QueryClustersResultToMojom, profile_)
+            .Then(base::BindOnce(&HistoryClustersHandler::OnClustersQueryResult,
+                                 weak_ptr_factory_.GetWeakPtr())));
+  }
 }
 
 void HistoryClustersHandler::RemoveVisits(
     std::vector<mojom::URLVisitPtr> visits,
     RemoveVisitsCallback callback) {
-  // Reject the request if a pending task exists or the set of visits is empty.
-  if (remove_task_tracker_.HasTrackedTasks() || visits.empty()) {
-    std::move(callback).Run(false);
+  if (!profile_->GetPrefs()->GetBoolean(
+          ::prefs::kAllowDeletingBrowserHistory) ||
+      visits.empty()) {
+    std::move(callback).Run(/*success=*/false);
     return;
   }
 
-  std::vector<history::ExpireHistoryArgs> expire_list;
-  expire_list.reserve(visits.size());
-  for (const auto& visit_ptr : visits) {
-    expire_list.resize(expire_list.size() + 1);
-    auto& expire_args = expire_list.back();
-    expire_args.urls =
-        std::set<GURL>(visit_ptr->raw_urls.begin(), visit_ptr->raw_urls.end());
-    // ExpireHistoryArgs::end_time is not inclusive. Make sure all visits in the
-    // given timespan are removed by adding 1 second to it.
-    expire_args.end_time = visit_ptr->last_visit_time + base::Seconds(1);
-    expire_args.begin_time = visit_ptr->first_visit_time;
+  // If there's a pending request for deletion, we have to fail here, because
+  // `BrowsingHistoryService` only supports one deletion request at a time.
+  if (!pending_remove_visits_callback_.is_null()) {
+    std::move(callback).Run(/*success=*/false);
+    return;
   }
-  auto* history_clusters_service =
-      HistoryClustersServiceFactory::GetForBrowserContext(profile_);
-  history_clusters_service->RemoveVisits(
-      expire_list,
-      base::BindOnce(&HistoryClustersHandler::OnVisitsRemoved,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(visits)),
-      &remove_task_tracker_);
-  std::move(callback).Run(true);
+
+  std::vector<history::BrowsingHistoryService::HistoryEntry> items_to_remove;
+  for (const auto& visit : visits) {
+    history::BrowsingHistoryService::HistoryEntry entry;
+    entry.url = visit->raw_visit_data->url;
+    entry.all_timestamps.insert(
+        visit->raw_visit_data->visit_time.ToInternalValue());
+    items_to_remove.push_back(std::move(entry));
+    for (const auto& duplicate : visit->duplicates) {
+      history::BrowsingHistoryService::HistoryEntry entry;
+      entry.url = duplicate->url;
+      entry.all_timestamps.insert(duplicate->visit_time.ToInternalValue());
+      items_to_remove.push_back(std::move(entry));
+    }
+  }
+
+  // Transfer the visits pending deletion and the respective callback to member
+  // variables.
+  pending_remove_visits_ = std::move(visits);
+  pending_remove_visits_callback_ = std::move(callback);
+
+  browsing_history_service_->RemoveVisits(items_to_remove);
 }
 
 void HistoryClustersHandler::OpenVisitUrlsInTabGroup(
@@ -289,6 +311,14 @@ void HistoryClustersHandler::OpenVisitUrlsInTabGroup(
   const auto* browser = chrome::FindTabbedBrowser(profile_, false);
   if (!browser) {
     return;
+  }
+
+  // Hard cap the number of opened visits in a tab group to 32. It's a
+  // relatively high cap chosen fairly arbitrarily, because the user took an
+  // affirmative action to open this many tabs. And hidden visits aren't opened.
+  constexpr size_t kMaxVisitsToOpenInTabGroup = 32;
+  if (visits.size() > kMaxVisitsToOpenInTabGroup) {
+    visits.resize(kMaxVisitsToOpenInTabGroup);
   }
 
   auto* model = browser->tab_strip_model();
@@ -317,51 +347,71 @@ void HistoryClustersHandler::OpenVisitUrlsInTabGroup(
 }
 
 void HistoryClustersHandler::OnDebugMessage(const std::string& message) {
-  content::RenderFrameHost* rfh = web_contents_->GetMainFrame();
-  if (rfh && base::FeatureList::IsEnabled(kNonUserVisibleDebug)) {
+  content::RenderFrameHost* rfh = web_contents_->GetPrimaryMainFrame();
+  if (rfh && GetConfig().non_user_visible_debug) {
     rfh->AddMessageToConsole(blink::mojom::ConsoleMessageLevel::kInfo, message);
   }
 }
 
-void HistoryClustersHandler::OnClustersQueryResult(
-    base::TimeTicks query_start_time,
-    mojom::QueryResultPtr query_result) {
-  // In case no clusters came back, recursively ask for more here. We do this
-  // to fulfill the mojom contract where we always return at least one cluster,
-  // or we exhaust History. We don't do this in the service because of task
-  // tracker lifetime difficulty. In practice, this only happens when the user
-  // has a search query that doesn't match any of the clusters in the "page".
-  // https://crbug.com/1263728
-  if (query_result->clusters.empty() &&
-      query_result->continuation_end_time.has_value()) {
-    base::Time continuation_end_time = *query_result->continuation_end_time;
-    DCHECK(!continuation_end_time.is_null());
-
-    auto* history_clusters_service =
-        HistoryClustersServiceFactory::GetForBrowserContext(profile_);
-    history_clusters_service->QueryClusters(
-        query_result->query, /*begin_time=*/base::Time(), continuation_end_time,
-        kMaxClustersCount,
-        base::BindOnce(&QueryClustersResultToMojom, profile_,
-                       query_result->query, query_result->is_continuation)
-            .Then(base::BindOnce(&HistoryClustersHandler::OnClustersQueryResult,
-                                 weak_ptr_factory_.GetWeakPtr(),
-                                 query_start_time)),
-        &query_task_tracker_);
-
-    return;
-  }
-
-  page_->OnClustersQueryResult(std::move(query_result));
-
-  // Log metrics after delivering the results to the page.
-  base::TimeDelta service_latency = base::TimeTicks::Now() - query_start_time;
-  base::UmaHistogramTimes("History.Clusters.ServiceLatency", service_latency);
+void HistoryClustersHandler::OnRemoveVisitsComplete() {
+  DCHECK(!pending_remove_visits_callback_.is_null());
+  std::move(pending_remove_visits_callback_).Run(/*success=*/true);
+  // Notify the page of the successfully deleted visits to update the UI.
+  page_->OnVisitsRemoved(std::move(pending_remove_visits_));
 }
 
-void HistoryClustersHandler::OnVisitsRemoved(
-    std::vector<mojom::URLVisitPtr> visits) {
-  page_->OnVisitsRemoved(std::move(visits));
+void HistoryClustersHandler::OnRemoveVisitsFailed() {
+  DCHECK(!pending_remove_visits_callback_.is_null());
+  std::move(pending_remove_visits_callback_).Run(/*success=*/false);
+}
+
+void HistoryClustersHandler::HistoryDeleted() {
+  if (page_) {
+    page_->OnHistoryDeleted();
+  }
+}
+
+Profile* HistoryClustersHandler::GetProfile() {
+  DCHECK(profile_);
+  return profile_;
+}
+
+void HistoryClustersHandler::OnClustersQueryResult(
+    mojom::QueryResultPtr query_result) {
+  page_->OnClustersQueryResult(std::move(query_result));
+}
+
+void HistoryClustersHandler::RecordVisitAction(mojom::VisitAction visit_action,
+                                               uint32_t visit_index,
+                                               mojom::VisitType visit_type) {
+  HistoryClustersMetricsLogger::GetOrCreateForPage(
+      web_contents_->GetPrimaryPage())
+      ->RecordVisitAction(static_cast<VisitAction>(visit_action), visit_index,
+                          static_cast<VisitType>(visit_type));
+}
+
+void HistoryClustersHandler::RecordClusterAction(
+    mojom::ClusterAction cluster_action,
+    uint32_t cluster_index) {
+  HistoryClustersMetricsLogger::GetOrCreateForPage(
+      web_contents_->GetPrimaryPage())
+      ->RecordClusterAction(static_cast<ClusterAction>(cluster_action),
+                            cluster_index);
+}
+
+void HistoryClustersHandler::RecordRelatedSearchAction(
+    mojom::RelatedSearchAction action,
+    uint32_t related_search_index) {
+  HistoryClustersMetricsLogger::GetOrCreateForPage(
+      web_contents_->GetPrimaryPage())
+      ->RecordRelatedSearchAction(static_cast<RelatedSearchAction>(action),
+                                  related_search_index);
+}
+
+void HistoryClustersHandler::RecordToggledVisibility(bool visible) {
+  HistoryClustersMetricsLogger::GetOrCreateForPage(
+      web_contents_->GetPrimaryPage())
+      ->RecordToggledVisibility(visible);
 }
 
 }  // namespace history_clusters

@@ -16,13 +16,14 @@ source_set("crt") {
     "locale_iface.h",
     "locale_mgr_iface.h",
   ]
+  configs += [
+    "../../../:pdfium_strict_config",
+    "../../../:pdfium_noshorten_config",
+    "../../:xfa_warnings",
+  ]
   deps = [
     "../../../core/fpdfapi/page",
     "../../../core/fxcrt",
-  ]
-  configs += [
-    "../../../:pdfium_strict_config",
-    "../../:xfa_warnings",
   ]
   visibility = [ "../../../*" ]
 }

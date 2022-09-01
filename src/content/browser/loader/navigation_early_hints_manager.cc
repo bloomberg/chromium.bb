@@ -6,21 +6,27 @@
 
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/metrics/histogram_functions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/url_loader_throttles.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/referrer.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/system/data_pipe_drainer.h"
 #include "net/base/load_flags.h"
 #include "net/base/schemeful_site.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request_job.h"
+#include "services/network/public/cpp/content_security_policy/content_security_policy.h"
+#include "services/network/public/cpp/content_security_policy/csp_source_list.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/public/mojom/content_security_policy.mojom-shared.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
@@ -82,6 +88,62 @@ constexpr char kEarlyHintsPreloadForNavigationOriginTrialName[] =
 bool IsDisabledEarlyHintsPreloadForcibly() {
   return base::GetFieldTrialParamByFeatureAsBool(
       features::kEarlyHintsPreloadForNavigation, "force_disable", false);
+}
+
+bool IsEnabledEarlyHintsPreconnect() {
+  return base::GetFieldTrialParamByFeatureAsBool(
+      features::kEarlyHintsPreloadForNavigation, "enable_preconnect", true);
+}
+
+network::mojom::CSPDirectiveName LinkAsAttributeToCSPDirective(
+    network::mojom::LinkAsAttribute attr) {
+  switch (attr) {
+    case network::mojom::LinkAsAttribute::kUnspecified:
+      return network::mojom::CSPDirectiveName::Unknown;
+    case network::mojom::LinkAsAttribute::kImage:
+      return network::mojom::CSPDirectiveName::ImgSrc;
+    case network::mojom::LinkAsAttribute::kFont:
+      return network::mojom::CSPDirectiveName::FontSrc;
+    case network::mojom::LinkAsAttribute::kScript:
+      return network::mojom::CSPDirectiveName::ScriptSrcElem;
+    case network::mojom::LinkAsAttribute::kStyleSheet:
+      return network::mojom::CSPDirectiveName::StyleSrcElem;
+  }
+  NOTREACHED();
+  return network::mojom::CSPDirectiveName::Unknown;
+}
+
+bool CheckContentSecurityPolicyForPreload(
+    const network::mojom::LinkHeaderPtr& link,
+    const std::vector<network::mojom::ContentSecurityPolicyPtr>&
+        content_security_policies) {
+  DCHECK(link->rel == network::mojom::LinkRelAttribute::kPreload ||
+         link->rel == network::mojom::LinkRelAttribute::kModulePreload);
+
+  network::mojom::CSPDirectiveName directive =
+      LinkAsAttributeToCSPDirective(link->as);
+
+  for (network::mojom::CSPDirectiveName effective_directive = directive;
+       effective_directive != network::mojom::CSPDirectiveName::Unknown;
+       effective_directive =
+           network::CSPFallbackDirective(effective_directive, directive)) {
+    for (auto& policy : content_security_policies) {
+      const auto& it = policy->directives.find(effective_directive);
+      if (it == policy->directives.end())
+        continue;
+
+      if (!network::CheckCSPSourceList(
+              directive, *it->second, link->href, *(policy->self_origin),
+              /*has_followed_redirect=*/false, /*is_response_check=*/false,
+              /*is_opaque_fenced_frame=*/false)) {
+        // TODO(https://crbug.com/1305896): Report CSP violation once the final
+        // response is received.
+        return false;
+      }
+    }
+  }
+
+  return true;
 }
 
 network::mojom::RequestDestination LinkAsAttributeToRequestDestination(
@@ -253,8 +315,11 @@ class NavigationEarlyHintsManager::PreloadURLLoaderClient
     : public network::mojom::URLLoaderClient,
       public mojo::DataPipeDrainer::Client {
  public:
-  PreloadURLLoaderClient(NavigationEarlyHintsManager& owner, const GURL& url)
-      : owner_(owner), url_(url) {}
+  PreloadURLLoaderClient(NavigationEarlyHintsManager& owner,
+                         const network::ResourceRequest& request)
+      : owner_(owner),
+        url_(request.url),
+        request_destination_(request.destination) {}
 
   ~PreloadURLLoaderClient() override = default;
 
@@ -267,11 +332,24 @@ class NavigationEarlyHintsManager::PreloadURLLoaderClient
   // mojom::URLLoaderClient overrides:
   void OnReceiveEarlyHints(network::mojom::EarlyHintsPtr early_hints) override {
   }
-  void OnReceiveResponse(network::mojom::URLResponseHeadPtr head) override {
-    if (head->network_accessed || !head->was_fetched_via_cache)
+  void OnReceiveResponse(network::mojom::URLResponseHeadPtr head,
+                         mojo::ScopedDataPipeConsumerHandle body) override {
+    if (!head->network_accessed && head->was_fetched_via_cache) {
+      // Cancel the client since the response is already stored in the cache.
+      result_.was_canceled = true;
+      MaybeCompletePreload();
       return;
-    result_.was_canceled = true;
-    MaybeCompletePreload();
+    }
+
+    if (!body)
+      return;
+
+    if (response_body_drainer_) {
+      mojo::ReportBadMessage("NEHM_BAD_RESPONSE_BODY");
+      return;
+    }
+    response_body_drainer_ =
+        std::make_unique<mojo::DataPipeDrainer>(this, std::move(body));
   }
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
                          network::mojom::URLResponseHeadPtr head) override {}
@@ -282,15 +360,6 @@ class NavigationEarlyHintsManager::PreloadURLLoaderClient
   }
   void OnReceiveCachedMetadata(mojo_base::BigBuffer data) override {}
   void OnTransferSizeUpdated(int32_t transfer_size_diff) override {}
-  void OnStartLoadingResponseBody(
-      mojo::ScopedDataPipeConsumerHandle body) override {
-    if (response_body_drainer_) {
-      mojo::ReportBadMessage("NEHM_BAD_RESPONSE_BODY");
-      return;
-    }
-    response_body_drainer_ =
-        std::make_unique<mojo::DataPipeDrainer>(this, std::move(body));
-  }
   void OnComplete(const network::URLLoaderCompletionStatus& status) override {
     if (result_.was_canceled || result_.error_code.has_value()) {
       mojo::ReportBadMessage("NEHM_BAD_COMPLETE");
@@ -319,6 +388,12 @@ class NavigationEarlyHintsManager::PreloadURLLoaderClient
 
   void MaybeCompletePreload() {
     if (CanCompletePreload()) {
+      if (!result_.was_canceled) {
+        base::UmaHistogramEnumeration(
+            kEarlyHintsPreloadRequestDestinationHistogramName,
+            request_destination_);
+      }
+
       // Delete `this`.
       owner_.OnPreloadComplete(url_, result_);
     }
@@ -326,6 +401,7 @@ class NavigationEarlyHintsManager::PreloadURLLoaderClient
 
   NavigationEarlyHintsManager& owner_;
   const GURL url_;
+  const network::mojom::RequestDestination request_destination_;
 
   PreloadedResource result_;
   std::unique_ptr<mojo::DataPipeDrainer> response_body_drainer_;
@@ -351,7 +427,19 @@ NavigationEarlyHintsManager::~NavigationEarlyHintsManager() = default;
 
 void NavigationEarlyHintsManager::HandleEarlyHints(
     network::mojom::EarlyHintsPtr early_hints,
-    const network::ResourceRequest& navigation_request) {
+    const network::ResourceRequest& request_for_navigation) {
+  // Ignore the second and subsequent responses to avoid situations where
+  // policies such as CSP are inconsistent among the first and following
+  // responses.
+  // TODO(https://crbug.com/1305896): Refer to a relevant specification once the
+  // spec discussion is settled.
+  if (was_first_early_hints_received_)
+    return;
+
+  was_first_early_hints_received_ = true;
+
+  net::ReferrerPolicy referrer_policy =
+      Referrer::ReferrerPolicyForUrlRequest(early_hints->referrer_policy);
   bool enabled_by_origin_trial = IsPreloadForNavigationEnabledByOriginTrial(
       early_hints->origin_trial_tokens);
 
@@ -361,8 +449,9 @@ void NavigationEarlyHintsManager::HandleEarlyHints(
       MaybePreconnect(link, enabled_by_origin_trial);
     } else if (link->rel == network::mojom::LinkRelAttribute::kPreload ||
                link->rel == network::mojom::LinkRelAttribute::kModulePreload) {
-      MaybePreloadHintedResource(link, navigation_request,
-                                 enabled_by_origin_trial);
+      MaybePreloadHintedResource(link, request_for_navigation,
+                                 early_hints->headers->content_security_policy,
+                                 referrer_policy, enabled_by_origin_trial);
     }
   }
 }
@@ -440,6 +529,9 @@ void NavigationEarlyHintsManager::MaybePreconnect(
     bool enabled_by_origin_trial) {
   was_resource_hints_received_ = true;
 
+  if (!IsEnabledEarlyHintsPreconnect())
+    return;
+
   if (!ShouldHandleResourceHints(link, enabled_by_origin_trial))
     return;
 
@@ -464,14 +556,20 @@ void NavigationEarlyHintsManager::MaybePreconnect(
 
 void NavigationEarlyHintsManager::MaybePreloadHintedResource(
     const network::mojom::LinkHeaderPtr& link,
-    const network::ResourceRequest& navigation_request,
+    const network::ResourceRequest& request_for_navigation,
+    const std::vector<network::mojom::ContentSecurityPolicyPtr>&
+        content_security_policies,
+    net::ReferrerPolicy referrer_policy,
     bool enabled_by_origin_trial) {
-  DCHECK(navigation_request.is_main_frame);
-  DCHECK(navigation_request.url.SchemeIsHTTPOrHTTPS());
+  DCHECK(request_for_navigation.is_outermost_main_frame);
+  DCHECK(request_for_navigation.url.SchemeIsHTTPOrHTTPS());
 
   was_resource_hints_received_ = true;
 
   if (!ShouldHandleResourceHints(link, enabled_by_origin_trial))
+    return;
+
+  if (!CheckContentSecurityPolicyForPreload(link, content_security_policies))
     return;
 
   if (inflight_preloads_.contains(link->href) ||
@@ -491,8 +589,8 @@ void NavigationEarlyHintsManager::MaybePreloadHintedResource(
   request.site_for_cookies = site_for_cookies;
   request.request_initiator = origin_;
   request.referrer = net::URLRequestJob::ComputeReferrerForPolicy(
-      navigation_request.referrer_policy, navigation_request.url, request.url);
-  request.referrer_policy = navigation_request.referrer_policy;
+      referrer_policy, request_for_navigation.url, request.url);
+  request.referrer_policy = referrer_policy;
   request.load_flags = net::LOAD_NORMAL;
   request.resource_type =
       static_cast<int>(blink::mojom::ResourceType::kSubResource);
@@ -506,8 +604,7 @@ void NavigationEarlyHintsManager::MaybePreloadHintedResource(
                               frame_tree_node_id_),
           /*navigation_ui_data=*/nullptr, frame_tree_node_id_);
 
-  auto loader_client =
-      std::make_unique<PreloadURLLoaderClient>(*this, request.url);
+  auto loader_client = std::make_unique<PreloadURLLoaderClient>(*this, request);
   auto loader = blink::ThrottlingURLLoader::CreateLoaderAndStart(
       shared_loader_factory_, std::move(throttles),
       content::GlobalRequestID::MakeBrowserInitiated().request_id,

@@ -15,10 +15,6 @@ class Profile;
 
 namespace chromeos {
 
-namespace tether {
-class GmsCoreNotificationsStateTracker;
-}  // namespace tether
-
 namespace settings {
 
 // Chrome OS Internet settings page UI handler.
@@ -45,12 +41,12 @@ class InternetHandler
   friend class InternetHandlerTest;
 
   // Settings JS handlers.
-  void AddThirdPartyVpn(const base::ListValue* args);
-  void ConfigureThirdPartyVpn(const base::ListValue* args);
+  void AddThirdPartyVpn(const base::Value::List& args);
+  void ConfigureThirdPartyVpn(const base::Value::List& args);
   void RequestGmsCoreNotificationsDisabledDeviceNames(
-      const base::ListValue* args);
-  void ShowCarrierAccountDetail(const base::ListValue* args);
-  void ShowCellularSetupUI(const base::ListValue* args);
+      const base::Value::List& args);
+  void ShowCarrierAccountDetail(const base::Value::List& args);
+  void ShowCellularSetupUI(const base::Value::List& args);
 
   // Sets list of names of devices whose "Google Play Services" notifications
   // are disabled.
@@ -65,7 +61,7 @@ class InternetHandler
       chromeos::tether::GmsCoreNotificationsStateTracker*
           gms_core_notifications_state_tracker);
 
-  std::vector<std::unique_ptr<base::Value>> device_names_without_notifications_;
+  std::vector<base::Value> device_names_without_notifications_;
 
   Profile* const profile_;
 

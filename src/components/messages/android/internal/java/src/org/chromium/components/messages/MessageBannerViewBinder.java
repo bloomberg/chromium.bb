@@ -6,6 +6,7 @@ package org.chromium.components.messages;
 
 import static org.chromium.components.messages.MessageBannerProperties.ALPHA;
 import static org.chromium.components.messages.MessageBannerProperties.DESCRIPTION;
+import static org.chromium.components.messages.MessageBannerProperties.DESCRIPTION_ICON;
 import static org.chromium.components.messages.MessageBannerProperties.DESCRIPTION_MAX_LINES;
 import static org.chromium.components.messages.MessageBannerProperties.ICON;
 import static org.chromium.components.messages.MessageBannerProperties.ICON_RESOURCE_ID;
@@ -16,11 +17,16 @@ import static org.chromium.components.messages.MessageBannerProperties.ON_SECOND
 import static org.chromium.components.messages.MessageBannerProperties.ON_TOUCH_RUNNABLE;
 import static org.chromium.components.messages.MessageBannerProperties.PRIMARY_BUTTON_CLICK_LISTENER;
 import static org.chromium.components.messages.MessageBannerProperties.PRIMARY_BUTTON_TEXT;
+import static org.chromium.components.messages.MessageBannerProperties.PRIMARY_WIDGET_APPEARANCE;
+import static org.chromium.components.messages.MessageBannerProperties.RESIZE_DESCRIPTION_ICON;
 import static org.chromium.components.messages.MessageBannerProperties.SECONDARY_BUTTON_MENU_TEXT;
 import static org.chromium.components.messages.MessageBannerProperties.SECONDARY_ICON;
 import static org.chromium.components.messages.MessageBannerProperties.SECONDARY_ICON_CONTENT_DESCRIPTION;
 import static org.chromium.components.messages.MessageBannerProperties.SECONDARY_ICON_RESOURCE_ID;
+import static org.chromium.components.messages.MessageBannerProperties.SECONDARY_MENU_BUTTON_DELEGATE;
+import static org.chromium.components.messages.MessageBannerProperties.SECONDARY_MENU_MAX_SIZE;
 import static org.chromium.components.messages.MessageBannerProperties.TITLE;
+import static org.chromium.components.messages.MessageBannerProperties.TITLE_CONTENT_DESCRIPTION;
 import static org.chromium.components.messages.MessageBannerProperties.TRANSLATION_X;
 import static org.chromium.components.messages.MessageBannerProperties.TRANSLATION_Y;
 
@@ -37,14 +43,23 @@ import org.chromium.ui.modelutil.PropertyModel;
 public class MessageBannerViewBinder {
     @SuppressLint("ClickableViewAccessibility")
     public static void bind(PropertyModel model, MessageBannerView view, PropertyKey propertyKey) {
-        if (propertyKey == PRIMARY_BUTTON_TEXT) {
+        if (propertyKey == PRIMARY_WIDGET_APPEARANCE) {
+            view.setPrimaryWidgetAppearance(model.get(PRIMARY_WIDGET_APPEARANCE));
+        } else if (propertyKey == PRIMARY_BUTTON_TEXT) {
             view.setPrimaryButtonText(model.get(PRIMARY_BUTTON_TEXT));
         } else if (propertyKey == PRIMARY_BUTTON_CLICK_LISTENER) {
             view.setPrimaryButtonClickListener(model.get(PRIMARY_BUTTON_CLICK_LISTENER));
         } else if (propertyKey == TITLE) {
             view.setTitle(model.get(TITLE));
+        } else if (propertyKey == TITLE_CONTENT_DESCRIPTION) {
+            view.setTitleContentDescription(model.get(TITLE_CONTENT_DESCRIPTION));
         } else if (propertyKey == DESCRIPTION) {
-            view.setDescription(model.get(DESCRIPTION));
+            view.setDescriptionText(model.get(DESCRIPTION));
+        } else if (propertyKey == DESCRIPTION_ICON) {
+            view.setDescriptionIcon(model.get(DESCRIPTION_ICON));
+            view.enableDescriptionIconIntrinsicDimensions(model.get(RESIZE_DESCRIPTION_ICON));
+        } else if (propertyKey == RESIZE_DESCRIPTION_ICON) {
+            view.enableDescriptionIconIntrinsicDimensions(model.get(RESIZE_DESCRIPTION_ICON));
         } else if (propertyKey == DESCRIPTION_MAX_LINES) {
             view.setDescriptionMaxLines(model.get(DESCRIPTION_MAX_LINES));
         } else if (propertyKey == ICON) {
@@ -65,6 +80,10 @@ public class MessageBannerViewBinder {
                     view.getContext(), model.get(SECONDARY_ICON_RESOURCE_ID)));
         } else if (propertyKey == SECONDARY_BUTTON_MENU_TEXT) {
             view.setSecondaryButtonMenuText(model.get(SECONDARY_BUTTON_MENU_TEXT));
+        } else if (propertyKey == SECONDARY_MENU_BUTTON_DELEGATE) {
+            view.setSecondaryMenuButtonDelegate(model.get(SECONDARY_MENU_BUTTON_DELEGATE));
+        } else if (propertyKey == SECONDARY_MENU_MAX_SIZE) {
+            view.setSecondaryMenuMaxSize(model.get(SECONDARY_MENU_MAX_SIZE));
         } else if (propertyKey == SECONDARY_ICON_CONTENT_DESCRIPTION) {
             view.setSecondaryIconContentDescription(model.get(SECONDARY_ICON_CONTENT_DESCRIPTION));
         } else if (propertyKey == ON_SECONDARY_BUTTON_CLICK) {

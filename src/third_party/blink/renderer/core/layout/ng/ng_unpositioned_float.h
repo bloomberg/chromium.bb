@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_UNPOSITIONED_FLOAT_H_
 
 #include "base/memory/scoped_refptr.h"
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/geometry/logical_size.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_bfc_offset.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
@@ -54,7 +55,7 @@ struct CORE_EXPORT NGUnpositionedFloat final {
 
   // layout_result and margins are used as a cache when measuring the
   // inline_size of a float in an inline context.
-  scoped_refptr<const NGLayoutResult> layout_result;
+  const NGLayoutResult* layout_result = nullptr;
   NGBoxStrut margins;
 
   bool IsLineLeft(TextDirection cb_direction) const {

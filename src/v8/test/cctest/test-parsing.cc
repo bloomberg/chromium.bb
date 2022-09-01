@@ -678,7 +678,7 @@ TEST(ScanHTMLEndComments) {
     i::PreParser preparser(&zone, &scanner, stack_limit, &ast_value_factory,
                            &pending_error_handler,
                            i_isolate->counters()->runtime_call_stats(),
-                           i_isolate->logger(), flags);
+                           i_isolate->v8_file_logger(), flags);
     i::PreParser::PreParseResult result = preparser.PreParseProgram();
     CHECK_EQ(i::PreParser::kPreParseSuccess, result);
     CHECK(!pending_error_handler.has_pending_error());
@@ -696,7 +696,7 @@ TEST(ScanHTMLEndComments) {
     i::PreParser preparser(&zone, &scanner, stack_limit, &ast_value_factory,
                            &pending_error_handler,
                            i_isolate->counters()->runtime_call_stats(),
-                           i_isolate->logger(), flags);
+                           i_isolate->v8_file_logger(), flags);
     i::PreParser::PreParseResult result = preparser.PreParseProgram();
     // Even in the case of a syntax error, kPreParseSuccess is returned.
     CHECK_EQ(i::PreParser::kPreParseSuccess, result);
@@ -774,7 +774,7 @@ TEST(StandAlonePreParser) {
     i::PreParser preparser(&zone, &scanner, stack_limit, &ast_value_factory,
                            &pending_error_handler,
                            i_isolate->counters()->runtime_call_stats(),
-                           i_isolate->logger(), flags);
+                           i_isolate->v8_file_logger(), flags);
     i::PreParser::PreParseResult result = preparser.PreParseProgram();
     CHECK_EQ(i::PreParser::kPreParseSuccess, result);
     CHECK(!pending_error_handler.has_pending_error());
@@ -806,7 +806,7 @@ TEST(StandAlonePreParserNoNatives) {
     i::PreParser preparser(&zone, &scanner, stack_limit, &ast_value_factory,
                            &pending_error_handler,
                            isolate->counters()->runtime_call_stats(),
-                           isolate->logger(), flags);
+                           isolate->v8_file_logger(), flags);
     i::PreParser::PreParseResult result = preparser.PreParseProgram();
     CHECK_EQ(i::PreParser::kPreParseSuccess, result);
     CHECK(pending_error_handler.has_pending_error() ||
@@ -839,7 +839,7 @@ TEST(RegressChromium62639) {
   i::PreParser preparser(&zone, &scanner, isolate->stack_guard()->real_climit(),
                          &ast_value_factory, &pending_error_handler,
                          isolate->counters()->runtime_call_stats(),
-                         isolate->logger(), flags);
+                         isolate->v8_file_logger(), flags);
   i::PreParser::PreParseResult result = preparser.PreParseProgram();
   // Even in the case of a syntax error, kPreParseSuccess is returned.
   CHECK_EQ(i::PreParser::kPreParseSuccess, result);
@@ -870,9 +870,10 @@ TEST(PreParseOverflow) {
   i::AstValueFactory ast_value_factory(&zone, isolate->ast_string_constants(),
                                        HashSeed(isolate));
   i::PendingCompilationErrorHandler pending_error_handler;
-  i::PreParser preparser(
-      &zone, &scanner, stack_limit, &ast_value_factory, &pending_error_handler,
-      isolate->counters()->runtime_call_stats(), isolate->logger(), flags);
+  i::PreParser preparser(&zone, &scanner, stack_limit, &ast_value_factory,
+                         &pending_error_handler,
+                         isolate->counters()->runtime_call_stats(),
+                         isolate->v8_file_logger(), flags);
   i::PreParser::PreParseResult result = preparser.PreParseProgram();
   CHECK_EQ(i::PreParser::kPreParseStackOverflow, result);
 }
@@ -1652,7 +1653,7 @@ void TestParserSyncWithFlags(i::Handle<i::String> source,
     i::PreParser preparser(&zone, &scanner, stack_limit, &ast_value_factory,
                            &pending_error_handler,
                            isolate->counters()->runtime_call_stats(),
-                           isolate->logger(), compile_flags);
+                           isolate->v8_file_logger(), compile_flags);
     scanner.Initialize();
     i::PreParser::PreParseResult pre_parse_result = preparser.PreParseProgram();
     CHECK_EQ(i::PreParser::kPreParseSuccess, pre_parse_result);
@@ -3657,7 +3658,6 @@ TEST(MaybeAssignedParameters) {
       base::ScopedVector<char> program(Utf8LengthHelper(source) +
                                        Utf8LengthHelper(suffix) + 1);
       base::SNPrintF(program, "%s%s", source, suffix);
-      std::unique_ptr<i::ParseInfo> info;
       printf("%s\n", program.begin());
       v8::Local<v8::Value> v = CompileRun(program.begin());
       i::Handle<i::Object> o = v8::Utils::OpenHandle(*v);
@@ -3668,16 +3668,15 @@ TEST(MaybeAssignedParameters) {
       i::UnoptimizedCompileFlags flags =
           i::UnoptimizedCompileFlags::ForFunctionCompile(isolate, *shared);
       flags.set_allow_lazy_parsing(allow_lazy);
-      info = std::make_unique<i::ParseInfo>(isolate, flags, &state,
-                                            &reusable_state);
-      CHECK_PARSE_FUNCTION(info.get(), shared, isolate);
+      i::ParseInfo info(isolate, flags, &state, &reusable_state);
+      CHECK_PARSE_FUNCTION(&info, shared, isolate);
 
-      i::Scope* scope = info->literal()->scope();
+      i::Scope* scope = info.literal()->scope();
       CHECK(!scope->AsDeclarationScope()->was_lazily_parsed());
       CHECK_NULL(scope->sibling());
       CHECK(scope->is_function_scope());
       const i::AstRawString* var_name =
-          info->ast_value_factory()->GetOneByteString("arg");
+          info.ast_value_factory()->GetOneByteString("arg");
       i::Variable* var = scope->LookupForTesting(var_name);
       CHECK(var->is_used() || !assigned);
       bool is_maybe_assigned = var->maybe_assigned() == i::kMaybeAssigned;
@@ -3708,12 +3707,11 @@ static void TestMaybeAssigned(Input input, const char* variable, bool module,
       i::UnoptimizedCompileFlags::ForScriptCompile(isolate, *script);
   flags.set_is_module(module);
   flags.set_allow_lazy_parsing(allow_lazy_parsing);
-  std::unique_ptr<i::ParseInfo> info =
-      std::make_unique<i::ParseInfo>(isolate, flags, &state, &reusable_state);
+  i::ParseInfo info(isolate, flags, &state, &reusable_state);
 
-  CHECK_PARSE_PROGRAM(info.get(), script, isolate);
+  CHECK_PARSE_PROGRAM(&info, script, isolate);
 
-  i::Scope* scope = info->literal()->scope();
+  i::Scope* scope = info.literal()->scope();
   CHECK(!scope->AsDeclarationScope()->was_lazily_parsed());
   CHECK_NULL(scope->sibling());
   CHECK(module ? scope->is_module_scope() : scope->is_script_scope());
@@ -3723,13 +3721,13 @@ static void TestMaybeAssigned(Input input, const char* variable, bool module,
     // Find the variable.
     scope = i::ScopeTestHelper::FindScope(scope, input.location);
     const i::AstRawString* var_name =
-        info->ast_value_factory()->GetOneByteString(variable);
+        info.ast_value_factory()->GetOneByteString(variable);
     var = scope->LookupForTesting(var_name);
   }
 
   CHECK_NOT_NULL(var);
   CHECK_IMPLIES(input.assigned, var->is_used());
-  STATIC_ASSERT(true == i::kMaybeAssigned);
+  static_assert(true == i::kMaybeAssigned);
   CHECK_EQ(input.assigned, var->maybe_assigned() == i::kMaybeAssigned);
 }
 

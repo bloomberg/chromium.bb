@@ -45,6 +45,8 @@ const char* MachineReprToString(MachineRepresentation rep) {
       return "kRepFloat64";
     case MachineRepresentation::kSimd128:
       return "kRepSimd128";
+    case MachineRepresentation::kSimd256:
+      return "kRepSimd256";
     case MachineRepresentation::kTaggedSigned:
       return "kRepTaggedSigned";
     case MachineRepresentation::kTaggedPointer:
@@ -57,8 +59,8 @@ const char* MachineReprToString(MachineRepresentation rep) {
       return "kRepCompressed";
     case MachineRepresentation::kMapWord:
       return "kRepMapWord";
-    case MachineRepresentation::kCagedPointer:
-      return "kRepCagedPointer";
+    case MachineRepresentation::kSandboxedPointer:
+      return "kRepSandboxedPointer";
   }
   UNREACHABLE();
 }

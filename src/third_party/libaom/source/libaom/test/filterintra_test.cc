@@ -52,6 +52,9 @@ class AV1FilterIntraPredTest : public ::testing::TestWithParam<PredParams> {
     alloc_ = new uint8_t[2 * MaxTxSize + 1];
     predRef_ = new uint8_t[MaxTxSize * MaxTxSize];
     pred_ = new uint8_t[MaxTxSize * MaxTxSize];
+    ASSERT_NE(alloc_, nullptr);
+    ASSERT_NE(predRef_, nullptr);
+    ASSERT_NE(pred_, nullptr);
   }
 
   virtual void TearDown() {

@@ -17,10 +17,10 @@ export class TestManageProfilesBrowserProxy extends TestBrowserProxy implements
       'openManageProfileSettingsSubPage', 'launchSelectedProfile',
       'askOnStartupChanged', 'getNewProfileSuggestedThemeInfo',
       'getProfileThemeInfo', 'removeProfile', 'getProfileStatistics',
-      'loadSignInProfileCreationFlow', 'createProfile', 'setProfileName',
+      'selectAccountLacros', 'createProfile', 'setProfileName',
       'recordSignInPromoImpression', 'getAvailableIcons', 'getSwitchProfile',
       'confirmProfileSwitch', 'cancelProfileSwitch',
-      // <if expr="lacros">
+      // <if expr="chromeos_lacros">
       'getAvailableAccounts', 'openAshAccountSettingsPage',
       // </if>
     ]);
@@ -43,7 +43,7 @@ export class TestManageProfilesBrowserProxy extends TestBrowserProxy implements
       userName: 'Alice@gmail.com',
       isManaged: false,
       avatarIcon: 'url',
-      // <if expr="lacros">
+      // <if expr="chromeos_lacros">
       isPrimaryLacrosProfile: false,
       // </if>
     };
@@ -100,8 +100,8 @@ export class TestManageProfilesBrowserProxy extends TestBrowserProxy implements
     this.methodCalled('getProfileStatistics', profilePath);
   }
 
-  loadSignInProfileCreationFlow(profileColor: number|null, gaiaId: string) {
-    this.methodCalled('loadSignInProfileCreationFlow', [profileColor, gaiaId]);
+  selectAccountLacros(profileColor: number|null, gaiaId: string) {
+    this.methodCalled('selectAccountLacros', [profileColor, gaiaId]);
   }
 
   createProfile(
@@ -160,7 +160,7 @@ export class TestManageProfilesBrowserProxy extends TestBrowserProxy implements
     this.methodCalled('cancelProfileSwitch');
   }
 
-  // <if expr="lacros">
+  // <if expr="chromeos_lacros">
   getAvailableAccounts() {
     this.methodCalled('getAvailableAccounts');
   }

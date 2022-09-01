@@ -61,8 +61,8 @@ class PLATFORM_EXPORT WorkerMainScriptLoader final
 
   // Implements network::mojom::URLLoaderClient.
   void OnReceiveEarlyHints(network::mojom::EarlyHintsPtr early_hints) override;
-  void OnReceiveResponse(
-      network::mojom::URLResponseHeadPtr response_head) override;
+  void OnReceiveResponse(network::mojom::URLResponseHeadPtr response_head,
+                         mojo::ScopedDataPipeConsumerHandle handle) override;
   void OnReceiveRedirect(
       const net::RedirectInfo& redirect_info,
       network::mojom::URLResponseHeadPtr response_head) override;
@@ -71,8 +71,6 @@ class PLATFORM_EXPORT WorkerMainScriptLoader final
                         OnUploadProgressCallback callback) override;
   void OnReceiveCachedMetadata(mojo_base::BigBuffer data) override;
   void OnTransferSizeUpdated(int32_t transfer_size_diff) override;
-  void OnStartLoadingResponseBody(
-      mojo::ScopedDataPipeConsumerHandle handle) override;
   void OnComplete(const network::URLLoaderCompletionStatus& status) override;
 
   const KURL& GetRequestURL() const { return initial_request_url_; }

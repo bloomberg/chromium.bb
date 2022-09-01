@@ -24,7 +24,7 @@ namespace android {
 class FeedStream : public ::feed::FeedStreamSurface {
  public:
   explicit FeedStream(const base::android::JavaRef<jobject>& j_this,
-                      jboolean is_for_you_stream,
+                      jint stream_kind,
                       FeedReliabilityLoggingBridge* reliability_logging_bridge);
   FeedStream(const FeedStream&) = delete;
   FeedStream& operator=(const FeedStream&) = delete;
@@ -52,7 +52,8 @@ class FeedStream : public ::feed::FeedStreamSurface {
   void ProcessThereAndBackAgain(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
-      const base::android::JavaParamRef<jbyteArray>& data);
+      const base::android::JavaParamRef<jbyteArray>& data,
+      const base::android::JavaParamRef<jbyteArray>& logging_parameters);
 
   int ExecuteEphemeralChange(
       JNIEnv* env,
@@ -73,11 +74,6 @@ class FeedStream : public ::feed::FeedStreamSurface {
   void SurfaceClosed(JNIEnv* env,
                      const base::android::JavaParamRef<jobject>& obj);
 
-  // Is activity logging enabled (ephemeral).
-  bool IsActivityLoggingEnabled(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj);
-
   // Event reporting functions. See |FeedApi| for definitions.
   void ReportSliceViewed(JNIEnv* env,
                          const base::android::JavaParamRef<jobject>& obj,
@@ -88,6 +84,10 @@ class FeedStream : public ::feed::FeedStreamSurface {
                         const base::android::JavaParamRef<jobject>& obj,
                         const base::android::JavaParamRef<jobject>& j_url,
                         const base::android::JavaParamRef<jstring>& slice_id);
+  void UpdateUserProfileOnLinkClick(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& j_url,
+      const base::android::JavaParamRef<jlongArray>& entity_mids);
   void ReportOpenInNewTabAction(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
@@ -116,19 +116,33 @@ class FeedStream : public ::feed::FeedStreamSurface {
   jlong GetLastFetchTimeMs(JNIEnv* env,
                            const base::android::JavaParamRef<jobject>& obj);
 
-  void ReportNoticeCreated(JNIEnv* env,
-                           const base::android::JavaParamRef<jobject>& obj,
-                           const base::android::JavaParamRef<jstring>& key);
-  void ReportNoticeViewed(JNIEnv* env,
-                          const base::android::JavaParamRef<jobject>& obj,
-                          const base::android::JavaParamRef<jstring>& key);
-  void ReportNoticeOpenAction(JNIEnv* env,
-                              const base::android::JavaParamRef<jobject>& obj,
-                              const base::android::JavaParamRef<jstring>& key);
+  void ReportInfoCardTrackViewStarted(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      int info_card_type);
 
-  void ReportNoticeDismissed(JNIEnv* env,
+  void ReportInfoCardViewed(JNIEnv* env,
+                            const base::android::JavaParamRef<jobject>& obj,
+                            int info_card_type,
+                            int minimum_view_interval_seconds);
+
+  void ReportInfoCardClicked(JNIEnv* env,
                              const base::android::JavaParamRef<jobject>& obj,
-                             const base::android::JavaParamRef<jstring>& key);
+                             int info_card_type);
+
+  void ReportInfoCardDismissedExplicitly(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      int info_card_type);
+
+  void ResetInfoCardStates(JNIEnv* env,
+                           const base::android::JavaParamRef<jobject>& obj,
+                           int info_card_type);
+
+  void InvalidateContentCacheFor(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      jint stream_kind);
 
  private:
   base::android::ScopedJavaGlobalRef<jobject> java_ref_;

@@ -9,7 +9,9 @@ namespace skia {
 namespace textlayout {
 
 bool FontCollection::FamilyKey::operator==(const FontCollection::FamilyKey& other) const {
-    return fFamilyNames == other.fFamilyNames && fFontStyle == other.fFontStyle;
+    return fFamilyNames == other.fFamilyNames &&
+           fFontStyle == other.fFontStyle &&
+           fFontArguments == other.fFontArguments;
 }
 
 size_t FontCollection::FamilyKey::Hasher::operator()(const FontCollection::FamilyKey& key) const {
@@ -19,7 +21,8 @@ size_t FontCollection::FamilyKey::Hasher::operator()(const FontCollection::Famil
     }
     return hash ^
            std::hash<uint32_t>()(key.fFontStyle.weight()) ^
-           std::hash<uint32_t>()(key.fFontStyle.slant());
+           std::hash<uint32_t>()(key.fFontStyle.slant()) ^
+           std::hash<std::optional<FontArguments>>()(key.fFontArguments);
 }
 
 FontCollection::FontCollection()
@@ -75,8 +78,12 @@ std::vector<sk_sp<SkFontMgr>> FontCollection::getFontManagerOrder() const {
 }
 
 std::vector<sk_sp<SkTypeface>> FontCollection::findTypefaces(const std::vector<SkString>& familyNames, SkFontStyle fontStyle) {
+    return findTypefaces(familyNames, fontStyle, std::nullopt);
+}
+
+std::vector<sk_sp<SkTypeface>> FontCollection::findTypefaces(const std::vector<SkString>& familyNames, SkFontStyle fontStyle, const std::optional<FontArguments>& fontArgs) {
     // Look inside the font collections cache first
-    FamilyKey familyKey(familyNames, fontStyle);
+    FamilyKey familyKey(familyNames, fontStyle, fontArgs);
     auto found = fTypefaces.find(familyKey);
     if (found) {
         return *found;
@@ -85,6 +92,9 @@ std::vector<sk_sp<SkTypeface>> FontCollection::findTypefaces(const std::vector<S
     std::vector<sk_sp<SkTypeface>> typefaces;
     for (const SkString& familyName : familyNames) {
         sk_sp<SkTypeface> match = matchTypeface(familyName, fontStyle);
+        if (match && fontArgs) {
+            match = fontArgs->CloneTypeface(match);
+        }
         if (match) {
             typefaces.emplace_back(std::move(match));
         }

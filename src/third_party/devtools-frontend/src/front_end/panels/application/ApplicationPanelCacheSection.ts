@@ -4,11 +4,13 @@
 
 import type * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
+import type * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as ApplicationComponents from './components/components.js';
+import * as Host from '../../core/host/host.js';
 
 import {ApplicationPanelTreeElement, ExpandableApplicationPanelTreeElement} from './ApplicationPanelTreeElement.js';
-import {BackForwardCacheView} from './BackForwardCacheView.js';
 import type {ResourcesPanel} from './ResourcesPanel.js';
 import {ServiceWorkerCacheView} from './ServiceWorkerCacheViews.js';
 
@@ -39,7 +41,9 @@ export class ServiceWorkerCacheTreeElement extends ExpandableApplicationPanelTre
   constructor(resourcesPanel: ResourcesPanel) {
     super(resourcesPanel, i18nString(UIStrings.cacheStorage), 'CacheStorage');
     const icon = UI.Icon.Icon.create('mediumicon-database', 'resource-tree-item');
-    this.setLink('https://developer.chrome.com/docs/devtools/storage/cache/?utm_source=devtools');
+    this.setLink(
+        'https://developer.chrome.com/docs/devtools/storage/cache/?utm_source=devtools' as
+        Platform.DevToolsPath.UrlString);
     this.setLeadingIcons([icon]);
     this.swCacheModel = null;
     this.swCacheTreeElements = new Set();
@@ -69,7 +73,7 @@ export class ServiceWorkerCacheTreeElement extends ExpandableApplicationPanelTre
   private handleContextMenuEvent(event: MouseEvent): void {
     const contextMenu = new UI.ContextMenu.ContextMenu(event);
     contextMenu.defaultSection().appendItem(i18nString(UIStrings.refreshCaches), this.refreshCaches.bind(this));
-    contextMenu.show();
+    void contextMenu.show();
   }
 
   private refreshCaches(): void {
@@ -125,15 +129,14 @@ export class SWCacheTreeElement extends ApplicationPanelTreeElement {
     super(resourcesPanel, cache.cacheName + ' - ' + cache.securityOrigin, false);
     this.model = model;
     this.cache = cache;
-    /** @type {?} */
     this.view = null;
     const icon = UI.Icon.Icon.create('mediumicon-table', 'resource-tree-item');
     this.setLeadingIcons([icon]);
   }
 
-  get itemURL(): string {
+  get itemURL(): Platform.DevToolsPath.UrlString {
     // I don't think this will work at all.
-    return 'cache://' + this.cache.cacheId;
+    return 'cache://' + this.cache.cacheId as Platform.DevToolsPath.UrlString;
   }
 
   onattach(): void {
@@ -144,11 +147,11 @@ export class SWCacheTreeElement extends ApplicationPanelTreeElement {
   private handleContextMenuEvent(event: MouseEvent): void {
     const contextMenu = new UI.ContextMenu.ContextMenu(event);
     contextMenu.defaultSection().appendItem(i18nString(UIStrings.delete), this.clearCache.bind(this));
-    contextMenu.show();
+    void contextMenu.show();
   }
 
   private clearCache(): void {
-    this.model.deleteCache(this.cache);
+    void this.model.deleteCache(this.cache);
   }
 
   update(cache: SDK.ServiceWorkerCacheModel.Cache): void {
@@ -165,6 +168,7 @@ export class SWCacheTreeElement extends ApplicationPanelTreeElement {
     }
 
     this.showView(this.view);
+    Host.userMetrics.panelShown(Host.UserMetrics.PanelCodes[Host.UserMetrics.PanelCodes.service_worker_cache]);
     return false;
   }
 
@@ -175,7 +179,7 @@ export class SWCacheTreeElement extends ApplicationPanelTreeElement {
 }
 
 export class BackForwardCacheTreeElement extends ApplicationPanelTreeElement {
-  private view?: BackForwardCacheView;
+  private view?: ApplicationComponents.BackForwardCacheView.BackForwardCacheViewWrapper;
 
   constructor(resourcesPanel: ResourcesPanel) {
     super(resourcesPanel, i18nString(UIStrings.backForwardCache), false);
@@ -183,16 +187,17 @@ export class BackForwardCacheTreeElement extends ApplicationPanelTreeElement {
     this.setLeadingIcons([icon]);
   }
 
-  get itemURL(): string {
-    return 'bfcache://';
+  get itemURL(): Platform.DevToolsPath.UrlString {
+    return 'bfcache://' as Platform.DevToolsPath.UrlString;
   }
 
   onselect(selectedByUser?: boolean): boolean {
     super.onselect(selectedByUser);
     if (!this.view) {
-      this.view = new BackForwardCacheView();
+      this.view = new ApplicationComponents.BackForwardCacheView.BackForwardCacheViewWrapper();
     }
     this.showView(this.view);
+    Host.userMetrics.panelShown(Host.UserMetrics.PanelCodes[Host.UserMetrics.PanelCodes.back_forward_cache]);
     return false;
   }
 }

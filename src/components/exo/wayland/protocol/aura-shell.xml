@@ -24,7 +24,7 @@
     DEALINGS IN THE SOFTWARE.
   </copyright>
 
-  <interface name="zaura_shell" version="28">
+  <interface name="zaura_shell" version="34">
     <description summary="aura_shell">
       The global interface exposing aura shell capabilities is used to
       instantiate an interface extension for a wl_surface object.
@@ -148,7 +148,7 @@
     </request>
   </interface>
 
-  <interface name="zaura_surface" version="25">
+  <interface name="zaura_surface" version="29">
     <description summary="aura shell interface to a wl_surface">
       An additional interface to a wl_surface object, which allows the
       client to access aura shell specific functionality for surface.
@@ -499,9 +499,20 @@
   the window was locked with the trusted state or not.
       </description>
     </request>
+
+    <event name="start_throttle" since="29">
+      <description summary="start throttling on the surface">
+        Informs the client to start throttling on the surface.
+      </description>
+    </event>
+    <event name="end_throttle" since="29">
+      <description summary="end throttling on the surface">
+        Informs the client to end throttling on the surface.
+      </description>
+    </event>
   </interface>
 
-  <interface name="zaura_output" version="6">
+  <interface name="zaura_output" version="34">
     <description summary="aura shell interface to a wl_output">
       An additional interface to a wl_output object, which allows the
       client to access aura shell specific functionality for output.
@@ -603,9 +614,40 @@
       </description>
       <arg name="scale" type="uint" enum="scale_factor" summary="output device scale factor"/>
     </event>
- </interface>
 
-  <interface name="zaura_toplevel" version="28">
+    <!-- Version 33 additions -->
+
+    <event name="insets" since="33">
+      <description summary="advertise the insets for the output">
+        This event describes the insets for the output in logical screen
+        coordinates, from which the work area can be calculated.
+
+        This event is sent before wl_output.done, after which the client would
+        apply the change.
+      </description>
+      <arg name="top" type="int"/>
+      <arg name="left" type="int"/>
+      <arg name="bottom" type="int"/>
+      <arg name="right" type="int"/>
+    </event>
+
+    <!-- Version 34 additions -->
+
+    <event name="logical_transform" since="34">
+      <description summary="advertise the output's logical transform">
+        This event describes the logical transform for the output. Whereas
+        wl_output.geometry's transform corresponds to the display's panel
+        rotation, the logical transform corresponds to the display's logical
+        rotation.
+
+        This event is sent before wl_output.done, after which the client would
+        apply the change.
+      </description>
+      <arg name="transform" type="int" enum="wl_output.transform"/>
+    </event>
+  </interface>
+
+  <interface name="zaura_toplevel" version="32">
     <description summary="aura shell interface to the toplevel shell">
       An interface to the toplevel shell, which allows the
       client to access shell specific functionality.
@@ -638,6 +680,92 @@
         scale via vp_viewporter. Instead the server should apply an appropriate
         scale transform for the submitted buffers to be composited correctly.
       </description>
+    </request>
+
+    <request name="set_supports_screen_coordinates" since="29">
+      <description summary="enables screen coordinates in window bounds">
+	Requesting this will enable screen coordinates in surfaces
+	associated with aura_toplevel including sub surfaces and popup
+	windows who added this toplevel as a parent. This should be
+	set before first commit.
+      </description>
+    </request>
+
+    <request name="set_window_bounds" since="29">
+      <description summary="set window size and position">
+	Request a new location and bounds of the surface in DP screen
+	coordinates.  The size will be applied to visible bounds used
+	in set_geometry.  The output is a hint for the compositor to
+	determine which output the window should move to.  These
+	parameters are just a request and the compositor may ignore,
+	adjust the size and position based on the rule imposed by the
+	window manager, or may preserve it for future operations. For
+	example, the compositor will not allow a position outside of
+	the output, or the compositor may just store it if the
+	toplevel surface is in maximiezd state, and may use it upon
+	unmaximized.
+      </description>
+      <arg name="x" type="int"/>
+      <arg name="y" type="int"/>
+      <arg name="width" type="int"/>
+      <arg name="height" type="int"/>
+      <arg name="output" type="object" interface="wl_output" summary="the output"/>
+    </request>
+
+    <event name="configure" since="29">
+      <description summary="suggest a surface change">
+        A configuration change that also includes the window origin in screen coordinates.
+      </description>
+      <arg name="x" type="int"/>
+      <arg name="y" type="int"/>
+      <arg name="width" type="int"/>
+      <arg name="height" type="int"/>
+      <arg name="states" type="array"/>
+    </event>
+
+    <event name="origin_change" since="29">
+      <description summary="window origin change">
+        A notification sent when the window origin has changed. Unlike a configure,
+        this does not imply the client needs to resize. The values are in screen
+        coordinates.
+      </description>
+      <arg name="x" type="int" />
+      <arg name="y" type="int" />
+    </event>
+
+    <request name="set_restore_info" since="30">
+      <description summary="set session id and restore id">
+      Request session id and restore id of a newly created browser window.
+      Set the information used by compositor to restore the toplevel
+      surface state, such as window position, window state, upon creation.
+      This is not double buffered and must be set before sending first commit.
+      </description>
+      <arg name="restore_session_id" type="int" summary="unique browser session id"/>
+      <arg name="restore_window_id" type="int" summary="restore browser window id"/>
+    </request>
+    
+    <request name="set_system_modal" since="31">
+      <description summary="make window a system modal">
+        Requests that the toplevel surface should become a system modal. The
+        compositor will prevent other windows from receiving events. If there
+        are multiple system modal surfaces, the compositor will decide which
+        one to receive events.
+      </description>
+    </request>
+
+    <request name="unset_system_modal" since="31">
+      <description summary="unset window system modal state">
+        Requests that the system modal state of the toplevel surface will be
+        unset. The compositor will then allow other windows to recieve events.
+      </description>
+    </request>
+
+    <request name="set_restore_info_with_window_id_source" since="32">
+      <description summary="set session id and restore window id source">
+      Request session id and restore id of the window. Set the information used by compositor to restore the toplevel surface state, such as window position, window state, upon creation. This is not double buffered and must be set before sending first commit. This is different from set_restore_info, used for clients that create multiple windows associated with restore_id_source.
+      </description>
+      <arg name="restore_session_id" type="int" summary="unique browser session id"/>
+      <arg name="restore_window_id_source" type="string" summary="restore window id source"/>
     </request>
   </interface>
 
