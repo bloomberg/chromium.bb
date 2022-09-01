@@ -106,9 +106,13 @@ void SecurePaymentConfirmationApp::InvokePaymentApp(
   options->allow_credentials = std::move(credentials);
 
   options->challenge = request_->challenge;
+  // TODO(crbug.com/1325854): The 'showOptOut' flag status must also be signed
+  // in the assertion, so that the verifier can check that the caller offered
+  // the experience if desired.
   authenticator_->SetPaymentOptions(blink::mojom::PaymentOptions::New(
       spec_->GetTotal(/*selected_app=*/this)->amount.Clone(),
-      request_->instrument.Clone(), request_->payee_origin));
+      request_->instrument.Clone(), request_->payee_name,
+      request_->payee_origin));
 
   authenticator_->GetAssertion(
       std::move(options),
@@ -218,8 +222,7 @@ SecurePaymentConfirmationApp::SetAppSpecificResponseFields(
   response->secure_payment_confirmation =
       mojom::SecurePaymentConfirmationResponse::New(
           response_->info.Clone(), response_->signature,
-          response_->has_transport, response_->transport,
-          response_->user_handle);
+          response_->authenticator_attachment, response_->user_handle);
   return response;
 }
 
@@ -235,7 +238,8 @@ void SecurePaymentConfirmationApp::RenderFrameDeleted(
 void SecurePaymentConfirmationApp::OnGetAssertion(
     base::WeakPtr<Delegate> delegate,
     blink::mojom::AuthenticatorStatus status,
-    blink::mojom::GetAssertionAuthenticatorResponsePtr response) {
+    blink::mojom::GetAssertionAuthenticatorResponsePtr response,
+    blink::mojom::WebAuthnDOMExceptionDetailsPtr dom_exception_details) {
   if (!delegate)
     return;
 

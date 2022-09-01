@@ -200,14 +200,22 @@ void av1_intra_mode_cnn_partition(const AV1_COMMON *const cm, MACROBLOCK *x,
         CONVERT_TO_SHORTPTR(x->plane[AOM_PLANE_Y].src.buf) - stride - 1
       };
 
-      av1_cnn_predict_img_multi_out_highbd(image, width, height, stride,
-                                           cnn_config, &thread_data, bit_depth,
-                                           &output);
+      if (!av1_cnn_predict_img_multi_out_highbd(image, width, height, stride,
+                                                cnn_config, &thread_data,
+                                                bit_depth, &output)) {
+        aom_internal_error(cm->error, AOM_CODEC_MEM_ERROR,
+                           "Error allocating CNN data");
+        return;
+      }
     } else {
       uint8_t *image[1] = { x->plane[AOM_PLANE_Y].src.buf - stride - 1 };
 
-      av1_cnn_predict_img_multi_out(image, width, height, stride, cnn_config,
-                                    &thread_data, &output);
+      if (!av1_cnn_predict_img_multi_out(image, width, height, stride,
+                                         cnn_config, &thread_data, &output)) {
+        aom_internal_error(cm->error, AOM_CODEC_MEM_ERROR,
+                           "Error allocating CNN data");
+        return;
+      }
     }
 
     part_info->cnn_output_valid = 1;
@@ -2329,9 +2337,6 @@ static SIMPLE_MOTION_DATA_TREE *setup_sms_tree(
   SIMPLE_MOTION_DATA_TREE *this_sms;
   int square_index = 1;
   int nodes;
-
-  aom_free(sms_tree);
-  CHECK_MEM_ERROR(cm, sms_tree, aom_calloc(tree_nodes, sizeof(*sms_tree)));
   this_sms = &sms_tree[0];
 
   if (!stat_generation_stage) {
@@ -2404,6 +2409,11 @@ void av1_collect_motion_search_features_sb(AV1_COMP *const cpi, ThreadData *td,
   const int col_step = mi_size_wide[fixed_block_size];
   const int row_step = mi_size_high[fixed_block_size];
   SIMPLE_MOTION_DATA_TREE *sms_tree = NULL;
+  const int stat_generation_stage = is_stat_generation_stage(cpi);
+  const int is_sb_size_128 = cm->seq_params->sb_size == BLOCK_128X128;
+  const int tree_nodes =
+      av1_get_pc_tree_nodes(is_sb_size_128, stat_generation_stage);
+  CHECK_MEM_ERROR(cm, sms_tree, aom_calloc(tree_nodes, sizeof(*sms_tree)));
   SIMPLE_MOTION_DATA_TREE *sms_root = setup_sms_tree(cpi, sms_tree);
   TileInfo *const tile_info = &tile_data->tile_info;
   av1_set_offsets_without_segment_id(cpi, tile_info, x, mi_row, mi_col, bsize);
@@ -2421,6 +2431,13 @@ void av1_collect_motion_search_features_sb(AV1_COMP *const cpi, ThreadData *td,
   const int num_blocks = col_steps * row_steps;
   unsigned int *block_sse = aom_calloc(num_blocks, sizeof(*block_sse));
   unsigned int *block_var = aom_calloc(num_blocks, sizeof(*block_var));
+  if (!(block_sse && block_var)) {
+    aom_free(sms_tree);
+    aom_free(block_sse);
+    aom_free(block_var);
+    aom_internal_error(cm->error, AOM_CODEC_MEM_ERROR,
+                       "Error allocating block_sse & block_var");
+  }
   int idx = 0;
 
   for (int row = mi_row;
@@ -2453,10 +2470,6 @@ void av1_collect_motion_search_features_sb(AV1_COMP *const cpi, ThreadData *td,
   aom_free(block_sse);
   aom_free(block_var);
   aom_free(sms_tree);
-  if (sms_tree != NULL) {
-    aom_free(sms_tree);
-    sms_tree = NULL;
-  }
 }
 
 void av1_prepare_motion_search_features_block(
@@ -2471,6 +2484,11 @@ void av1_prepare_motion_search_features_block(
   if (frame_is_intra_only(cm)) return;
   MACROBLOCK *const x = &td->mb;
   SIMPLE_MOTION_DATA_TREE *sms_tree = NULL;
+  const int stat_generation_stage = is_stat_generation_stage(cpi);
+  const int is_sb_size_128 = cm->seq_params->sb_size == BLOCK_128X128;
+  const int tree_nodes =
+      av1_get_pc_tree_nodes(is_sb_size_128, stat_generation_stage);
+  CHECK_MEM_ERROR(cm, sms_tree, aom_calloc(tree_nodes, sizeof(*sms_tree)));
   SIMPLE_MOTION_DATA_TREE *sms_root = setup_sms_tree(cpi, sms_tree);
   TileInfo *const tile_info = &tile_data->tile_info;
   av1_set_offsets_without_segment_id(cpi, tile_info, x, mi_row, mi_col, bsize);
@@ -2520,10 +2538,6 @@ void av1_prepare_motion_search_features_block(
   }
 
   aom_free(sms_tree);
-  if (sms_tree != NULL) {
-    aom_free(sms_tree);
-    sms_tree = NULL;
-  }
 }
 #endif  // !CONFIG_REALTIME_ONLY
 

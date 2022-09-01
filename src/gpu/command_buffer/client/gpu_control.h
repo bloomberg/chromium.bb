@@ -47,15 +47,6 @@ class GPU_EXPORT GpuControl {
 
   virtual const Capabilities& GetCapabilities() const = 0;
 
-  // Create an image for a client buffer with the given dimensions. Returns its
-  // ID or -1 on error.
-  virtual int32_t CreateImage(ClientBuffer buffer,
-                              size_t width,
-                              size_t height) = 0;
-
-  // Destroy an image. The ID must be positive.
-  virtual void DestroyImage(int32_t id) = 0;
-
   // Runs |callback| when a query created via glCreateQueryEXT() has cleared
   // passed the glEndQueryEXT() point.
   virtual void SignalQuery(uint32_t query, base::OnceClosure callback) = 0;
@@ -117,14 +108,6 @@ class GPU_EXPORT GpuControl {
   // channel as the wait command guarantee that the fence sync will be enqueued
   // first so does not need to be flushed.
   virtual bool CanWaitUnverifiedSyncToken(const SyncToken& sync_token) = 0;
-
-  // Notifies the onscreen surface of the display transform applied to the swaps
-  // from the client.
-  virtual void SetDisplayTransform(gfx::OverlayTransform transform) = 0;
-
-  // Notifies the surface of the ideal frame rate that the content is updated
-  // at. This can be used to tune the hardware refresh rate.
-  virtual void SetFrameRate(float frame_rate) {}
 };
 
 }  // namespace gpu

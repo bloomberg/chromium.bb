@@ -166,6 +166,11 @@ void av1_rd_pick_inter_mode_sb_seg_skip(
 void av1_inter_mode_data_init(struct TileDataEnc *tile_data);
 void av1_inter_mode_data_fit(TileDataEnc *tile_data, int rdmult);
 
+void av1_block_yrd(const AV1_COMP *const cpi, MACROBLOCK *x, int mi_row,
+                   int mi_col, RD_STATS *this_rdc, int *skippable,
+                   BLOCK_SIZE bsize, TX_SIZE tx_size, TX_TYPE tx_type,
+                   int is_inter_mode);
+
 static INLINE int coded_to_superres_mi(int mi_col, int denom) {
   return (mi_col * denom + SCALE_NUMERATOR / 2) / SCALE_NUMERATOR;
 }
@@ -188,18 +193,6 @@ static INLINE int av1_get_sb_mi_size(const AV1_COMMON *const cm) {
   return sb_mi_size;
 }
 
-// This function will copy usable ref_mv_stack[ref_frame][4] and
-// weight[ref_frame][4] information from ref_mv_stack[ref_frame][8] and
-// weight[ref_frame][8].
-static INLINE void av1_copy_usable_ref_mv_stack_and_weight(
-    const MACROBLOCKD *xd, MB_MODE_INFO_EXT *const mbmi_ext,
-    MV_REFERENCE_FRAME ref_frame) {
-  memcpy(mbmi_ext->weight[ref_frame], xd->weight[ref_frame],
-         USABLE_REF_MV_STACK_SIZE * sizeof(xd->weight[0][0]));
-  memcpy(mbmi_ext->ref_mv_stack[ref_frame], xd->ref_mv_stack[ref_frame],
-         USABLE_REF_MV_STACK_SIZE * sizeof(xd->ref_mv_stack[0][0]));
-}
-
 // This function prunes the mode if either of the reference frame falls in the
 // pruning list
 static INLINE int prune_ref(const MV_REFERENCE_FRAME *const ref_frame,
@@ -220,6 +213,31 @@ static INLINE int prune_ref(const MV_REFERENCE_FRAME *const ref_frame,
   return 0;
 }
 
+static INLINE int has_closest_ref_frames(const MV_REFERENCE_FRAME *ref_frame,
+                                         int8_t closest_past_ref,
+                                         int8_t closest_future_ref) {
+  int has_closest_past_ref =
+      (ref_frame[0] == closest_past_ref) || (ref_frame[1] == closest_past_ref);
+  int has_closest_future_ref = (ref_frame[0] == closest_future_ref) ||
+                               (ref_frame[1] == closest_future_ref);
+  return (has_closest_past_ref && has_closest_future_ref);
+}
+
+static INLINE int has_best_pred_mv_sad(const MV_REFERENCE_FRAME *ref_frame,
+                                       const MACROBLOCK *const x) {
+  int has_best_past_pred_mv_sad = 0;
+  int has_best_future_pred_mv_sad = 0;
+  if (x->best_pred_mv_sad[0] < INT_MAX && x->best_pred_mv_sad[1] < INT_MAX) {
+    has_best_past_pred_mv_sad =
+        (x->pred_mv_sad[ref_frame[0]] == x->best_pred_mv_sad[0]) ||
+        (x->pred_mv_sad[ref_frame[1]] == x->best_pred_mv_sad[0]);
+    has_best_future_pred_mv_sad =
+        (x->pred_mv_sad[ref_frame[0]] == x->best_pred_mv_sad[1]) ||
+        (x->pred_mv_sad[ref_frame[1]] == x->best_pred_mv_sad[1]);
+  }
+  return (has_best_past_pred_mv_sad && has_best_future_pred_mv_sad);
+}
+
 static INLINE int prune_ref_by_selective_ref_frame(
     const AV1_COMP *const cpi, const MACROBLOCK *const x,
     const MV_REFERENCE_FRAME *const ref_frame,
@@ -237,11 +255,11 @@ static INLINE int prune_ref_by_selective_ref_frame(
       // Disable pruning if either tpl suggests that we keep the frame or
       // the pred_mv gives us the best sad
       if (x->tpl_keep_ref_frame[LAST3_FRAME] ||
-          x->pred_mv_sad[LAST3_FRAME] == x->best_pred_mv_sad) {
+          x->pred_mv_sad[LAST3_FRAME] == x->best_pred_mv_sad[0]) {
         ref_frame_list[0] = NONE_FRAME;
       }
       if (x->tpl_keep_ref_frame[LAST2_FRAME] ||
-          x->pred_mv_sad[LAST2_FRAME] == x->best_pred_mv_sad) {
+          x->pred_mv_sad[LAST2_FRAME] == x->best_pred_mv_sad[0]) {
         ref_frame_list[1] = NONE_FRAME;
       }
     }
@@ -259,11 +277,11 @@ static INLINE int prune_ref_by_selective_ref_frame(
       // Disable pruning if either tpl suggests that we keep the frame or
       // the pred_mv gives us the best sad
       if (x->tpl_keep_ref_frame[ALTREF2_FRAME] ||
-          x->pred_mv_sad[ALTREF2_FRAME] == x->best_pred_mv_sad) {
+          x->pred_mv_sad[ALTREF2_FRAME] == x->best_pred_mv_sad[0]) {
         ref_frame_list[0] = NONE_FRAME;
       }
       if (x->tpl_keep_ref_frame[BWDREF_FRAME] ||
-          x->pred_mv_sad[BWDREF_FRAME] == x->best_pred_mv_sad) {
+          x->pred_mv_sad[BWDREF_FRAME] == x->best_pred_mv_sad[0]) {
         ref_frame_list[1] = NONE_FRAME;
       }
     }
@@ -272,6 +290,21 @@ static INLINE int prune_ref_by_selective_ref_frame(
                   ref_display_order_hint[LAST_FRAME - LAST_FRAME],
                   ref_frame_list))
       return 1;
+  }
+
+  if (x != NULL && sf->inter_sf.prune_comp_ref_frames && comp_pred) {
+    int closest_ref_frames = has_closest_ref_frames(
+        ref_frame, cpi->ref_frame_dist_info.nearest_past_ref,
+        cpi->ref_frame_dist_info.nearest_future_ref);
+    if (closest_ref_frames == 0) {
+      // Prune reference frames which are not the closest to the current frame.
+      if (sf->inter_sf.prune_comp_ref_frames >= 2) {
+        return 1;
+      } else if (sf->inter_sf.prune_comp_ref_frames == 1) {
+        // Prune reference frames with non minimum pred_mv_sad.
+        if (has_best_pred_mv_sad(ref_frame, x) == 0) return 1;
+      }
+    }
   }
 
   return 0;

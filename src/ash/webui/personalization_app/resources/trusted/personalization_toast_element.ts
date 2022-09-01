@@ -7,9 +7,11 @@
  */
 
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
-import {html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
 import {dismissErrorAction} from './personalization_actions.js';
+import {PersonalizationStateError} from './personalization_state.js';
 import {WithPersonalizationStore} from './personalization_store.js';
+import {getTemplate} from './personalization_toast_element.html.js';
 
 export class PersonalizationToastElement extends WithPersonalizationStore {
   static get is() {
@@ -17,13 +19,13 @@ export class PersonalizationToastElement extends WithPersonalizationStore {
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
     return {
       error_: {
-        type: String,
+        type: Object,
         value: null,
       },
 
@@ -38,25 +40,55 @@ export class PersonalizationToastElement extends WithPersonalizationStore {
     };
   }
 
-  private error_: string;
+  static get observers() {
+    return ['onErrorOrShowErrorChanged_(error_, showError_)'];
+  }
+
+  private error_: PersonalizationStateError|null;
   private isLoading_: boolean;
   private showError_: boolean;
+  private autoDismissTimeout_: number;
 
-  connectedCallback() {
+  override connectedCallback() {
     super.connectedCallback();
     this.watch('error_', state => state.error);
     this.watch(
         'isLoading_',
-        state => state.loading.setImage > 0 || state.loading.selected ||
-            state.loading.refreshWallpaper);
+        state => state.wallpaper.loading.setImage > 0 ||
+            state.wallpaper.loading.selected ||
+            state.wallpaper.loading.refreshWallpaper);
   }
 
   private onDismissClicked_() {
-    this.dispatch(dismissErrorAction());
+    this.dispatch(dismissErrorAction(/*id=*/ null, /*fromUser=*/ true));
   }
 
-  private computeShowError_(error: string|null, loading: boolean): boolean {
-    return !!error && !loading;
+  private onErrorOrShowErrorChanged_(
+      _: PersonalizationToastElement['error_'],
+      showError: PersonalizationToastElement['showError_']) {
+    clearTimeout(this.autoDismissTimeout_);
+    if (showError) {
+      this.autoDismissTimeout_ = setTimeout(() => {
+        this.dispatch(dismissErrorAction(/*id=*/ null, /*fromUser=*/ false));
+      }, 10000);
+    }
+  }
+
+  private computeShowError_(
+      error: PersonalizationToastElement['error_'],
+      isLoading: PersonalizationToastElement['isLoading_']): boolean {
+    return !!error && !isLoading;
+  }
+
+  private getErrorMessage_(error: PersonalizationToastElement['error_']): string
+      |null {
+    return error && error.message || null;
+  }
+
+  private getDismissMessage_(error: PersonalizationToastElement['error_']):
+      string|null {
+    return error && error.dismiss && error.dismiss.message ||
+        this.i18n('dismiss');
   }
 }
 

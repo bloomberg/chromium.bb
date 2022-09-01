@@ -2,16 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// clang-format off
-// #import 'chrome://os-settings/chromeos/os_settings.js';
+import 'chrome://os-settings/strings.m.js';
 
-// #import 'chrome://os-settings/strings.m.js';
+import {Router, routes} from 'chrome://os-settings/chromeos/os_settings.js';
+import {setBluetoothConfigForTesting} from 'chrome://resources/cr_components/chromeos/bluetooth/cros_bluetooth_config.js';
+import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
+import {BluetoothSystemProperties, BluetoothSystemState, DeviceConnectionState, SystemPropertiesObserverInterface} from 'chrome://resources/mojo/chromeos/services/bluetooth_config/public/mojom/cros_bluetooth_config.mojom-webui.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {createDefaultBluetoothDevice, FakeBluetoothConfig} from 'chrome://test/cr_components/chromeos/bluetooth/fake_bluetooth_config.js';
+import {eventToPromise, waitAfterNextRender} from 'chrome://test/test_util.js';
 
-// #import {flush, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-// #import {assertTrue} from '../../../chai_assert.js';
-// #import {createDefaultBluetoothDevice, FakeBluetoothConfig} from 'chrome://test/cr_components/chromeos/bluetooth/fake_bluetooth_config.js';
-// #import {setBluetoothConfigForTesting} from 'chrome://resources/cr_components/chromeos/bluetooth/cros_bluetooth_config.js';
-// clang-format on
+import {assertEquals, assertNotEquals, assertTrue} from '../../../chai_assert.js';
 
 suite('OsBluetoothDevicesSubpageTest', function() {
   /** @type {!FakeBluetoothConfig} */
@@ -21,30 +22,35 @@ suite('OsBluetoothDevicesSubpageTest', function() {
   let bluetoothDevicesSubpage;
 
   /**
-   * @type {!chromeos.bluetoothConfig.mojom.SystemPropertiesObserverInterface}
+   * @type {!SystemPropertiesObserverInterface}
    */
   let propertiesObserver;
 
-  /** @type {!chromeos.bluetoothConfig.mojom} */
-  let mojom;
-
   setup(function() {
-    mojom = chromeos.bluetoothConfig.mojom;
-
     bluetoothConfig = new FakeBluetoothConfig();
     setBluetoothConfigForTesting(bluetoothConfig);
   });
 
-  function init() {
+  teardown(function() {
+    bluetoothDevicesSubpage.remove();
+    bluetoothDevicesSubpage = null;
+    Router.getInstance().resetRouteForTesting();
+  });
+
+  /**
+   * @param {URLSearchParams=} opt_urlParams
+   * @return {!Promise}
+   */
+  function init(opt_urlParams) {
     bluetoothDevicesSubpage =
         document.createElement('os-settings-bluetooth-devices-subpage');
     document.body.appendChild(bluetoothDevicesSubpage);
-    Polymer.dom.flush();
+    flush();
 
     propertiesObserver = {
       /**
        * SystemPropertiesObserverInterface override
-       * @param {!chromeos.bluetoothConfig.mojom.BluetoothSystemProperties}
+       * @param {!BluetoothSystemProperties}
        *     properties
        */
       onPropertiesUpdated(properties) {
@@ -52,28 +58,45 @@ suite('OsBluetoothDevicesSubpageTest', function() {
       }
     };
     bluetoothConfig.observeSystemProperties(propertiesObserver);
+    Router.getInstance().navigateTo(routes.BLUETOOTH_DEVICES, opt_urlParams);
+    return flushAsync();
   }
 
   function flushAsync() {
-    Polymer.dom.flush();
+    flush();
     return new Promise(resolve => setTimeout(resolve));
   }
 
-  test('Base Test', function() {
-    init();
+  test('Base Test', async function() {
+    await init();
     assertTrue(!!bluetoothDevicesSubpage);
   });
 
-  test('Toggle button creation', async function() {
-    bluetoothConfig.setSystemState(
-        chromeos.bluetoothConfig.mojom.BluetoothSystemState.kEnabled);
-    await flushAsync();
-    init();
-    assertTrue(bluetoothDevicesSubpage.$.enableBluetoothToggle.checked);
+  test('Toggle button creation and a11y', async function() {
+    bluetoothConfig.setSystemState(BluetoothSystemState.kEnabled);
+    await init();
+    const toggle = bluetoothDevicesSubpage.shadowRoot.querySelector(
+        '#enableBluetoothToggle');
+    assertTrue(toggle.checked);
+
+    let a11yMessagesEventPromise =
+        eventToPromise('cr-a11y-announcer-messages-sent', document.body);
+    toggle.click();
+    let a11yMessagesEvent = await a11yMessagesEventPromise;
+    assertTrue(a11yMessagesEvent.detail.messages.includes(
+        bluetoothDevicesSubpage.i18n('bluetoothDisabledA11YLabel')));
+
+    a11yMessagesEventPromise =
+        eventToPromise('cr-a11y-announcer-messages-sent', document.body);
+    toggle.click();
+
+    a11yMessagesEvent = await a11yMessagesEventPromise;
+    assertTrue(a11yMessagesEvent.detail.messages.includes(
+        bluetoothDevicesSubpage.i18n('bluetoothEnabledA11YLabel')));
   });
 
   test('Toggle button states', async function() {
-    init();
+    await init();
 
     const enableBluetoothToggle =
         bluetoothDevicesSubpage.$.enableBluetoothToggle;
@@ -116,13 +139,13 @@ suite('OsBluetoothDevicesSubpageTest', function() {
     assertToggleEnabledState(/*enabled=*/ true);
 
     // Mock systemState becoming unavailable.
-    bluetoothConfig.setSystemState(mojom.BluetoothSystemState.kUnavailable);
+    bluetoothConfig.setSystemState(BluetoothSystemState.kUnavailable);
     await flushAsync();
     assertTrue(enableBluetoothToggle.disabled);
   });
 
   test('Device lists states', async function() {
-    init();
+    await init();
 
     const getNoDeviceText = () =>
         bluetoothDevicesSubpage.shadowRoot.querySelector('#noDevices');
@@ -142,11 +165,15 @@ suite('OsBluetoothDevicesSubpageTest', function() {
     const connectedDevice = createDefaultBluetoothDevice(
         /*id=*/ '123456789', /*publicName=*/ 'BeatsX',
         /*connectionState=*/
-        chromeos.bluetoothConfig.mojom.DeviceConnectionState.kConnected);
-    const unconnectedDevice = createDefaultBluetoothDevice(
+        DeviceConnectionState.kConnected);
+    const notConnectedDevice = createDefaultBluetoothDevice(
         /*id=*/ '987654321', /*publicName=*/ 'MX 3',
         /*connectionState=*/
-        chromeos.bluetoothConfig.mojom.DeviceConnectionState.kNotConnected);
+        DeviceConnectionState.kNotConnected);
+    const connectingDevice = createDefaultBluetoothDevice(
+        /*id=*/ '11111111', /*publicName=*/ 'MX 3',
+        /*connectionState=*/
+        DeviceConnectionState.kConnecting);
 
     // Pair connected device.
     bluetoothConfig.appendToPairedDeviceList([connectedDevice]);
@@ -157,8 +184,8 @@ suite('OsBluetoothDevicesSubpageTest', function() {
     assertFalse(!!getDeviceList(/*connected=*/ false));
     assertFalse(!!getNoDeviceText());
 
-    // Pair unconnected device
-    bluetoothConfig.appendToPairedDeviceList([unconnectedDevice]);
+    // Pair not connected device
+    bluetoothConfig.appendToPairedDeviceList([notConnectedDevice]);
     await flushAsync();
 
     assertTrue(!!getDeviceList(/*connected=*/ true));
@@ -166,5 +193,118 @@ suite('OsBluetoothDevicesSubpageTest', function() {
     assertTrue(!!getDeviceList(/*connected=*/ false));
     assertEquals(getDeviceList(/*connected=*/ false).devices.length, 1);
     assertFalse(!!getNoDeviceText());
+
+    // Pair connecting device
+    bluetoothConfig.appendToPairedDeviceList([connectingDevice]);
+    await flushAsync();
+
+    assertTrue(!!getDeviceList(/*connected=*/ true));
+    assertEquals(getDeviceList(/*connected=*/ true).devices.length, 1);
+    assertTrue(!!getDeviceList(/*connected=*/ false));
+    assertEquals(getDeviceList(/*connected=*/ false).devices.length, 2);
+    assertFalse(!!getNoDeviceText());
+  });
+
+  test(
+      'Device list items are focused on backward navigation', async function() {
+        await init();
+
+        const getDeviceList = (connected) => {
+          return bluetoothDevicesSubpage.shadowRoot.querySelector(
+              connected ? '#connectedDeviceList' : '#unconnectedDeviceList');
+        };
+        const getDeviceListItem = (connected, index) => {
+          return getDeviceList(connected).shadowRoot.querySelectorAll(
+              'os-settings-paired-bluetooth-list-item')[index];
+        };
+
+        const connectedDeviceId = '1';
+        const connectedDevice = createDefaultBluetoothDevice(
+            /*id=*/ connectedDeviceId, /*publicName=*/ 'BeatsX',
+            /*connectionState=*/
+            DeviceConnectionState.kConnected);
+        const unconnectedDeviceId = '2';
+        const unconnectedDevice = createDefaultBluetoothDevice(
+            /*id=*/ unconnectedDeviceId, /*publicName=*/ 'MX 3',
+            /*connectionState=*/
+            DeviceConnectionState.kNotConnected);
+        bluetoothConfig.appendToPairedDeviceList([connectedDevice]);
+        bluetoothConfig.appendToPairedDeviceList([unconnectedDevice]);
+        await flushAsync();
+
+        assertTrue(!!getDeviceList(/*connected=*/ true));
+        assertEquals(getDeviceList(/*connected=*/ true).devices.length, 1);
+        assertTrue(!!getDeviceList(/*connected=*/ false));
+        assertEquals(getDeviceList(/*connected=*/ false).devices.length, 1);
+
+        // Simulate navigating to the detail page of |connectedDevice|.
+        let params = new URLSearchParams();
+        params.append('id', connectedDeviceId);
+        Router.getInstance().navigateTo(routes.BLUETOOTH_DEVICE_DETAIL, params);
+        await flushAsync();
+
+        // Navigate backwards.
+        assertNotEquals(
+            getDeviceListItem(/*connected=*/ true, /*index=*/ 0),
+            getDeviceList(/*connected=*/ true).shadowRoot.activeElement);
+        let windowPopstatePromise = eventToPromise('popstate', window);
+        Router.getInstance().navigateToPreviousRoute();
+        await windowPopstatePromise;
+
+        // The first connected device list item should be focused.
+        assertEquals(
+            getDeviceListItem(/*connected=*/ true, /*index=*/ 0),
+            getDeviceList(/*connected=*/ true).shadowRoot.activeElement);
+
+        // Simulate navigating to the detail page of |unconnectedDevice|.
+        params = new URLSearchParams();
+        params.append('id', unconnectedDeviceId);
+        Router.getInstance().navigateTo(routes.BLUETOOTH_DEVICE_DETAIL, params);
+        await flushAsync();
+
+        // Navigate backwards.
+        assertNotEquals(
+            getDeviceListItem(/*connected=*/ false, /*index=*/ 0),
+            getDeviceList(/*connected=*/ false).shadowRoot.activeElement);
+        windowPopstatePromise = eventToPromise('popstate', window);
+        Router.getInstance().navigateToPreviousRoute();
+        await windowPopstatePromise;
+
+        // The first unconnected device list item should be focused.
+        assertEquals(
+            getDeviceListItem(/*connected=*/ false, /*index=*/ 0),
+            getDeviceList(/*connected=*/ false).shadowRoot.activeElement);
+      });
+
+  test('Deep link to enable/disable Bluetooth toggle button', async () => {
+    flush();
+    const params = new URLSearchParams();
+    params.append('settingId', '100');
+    init(params);
+
+    const deepLinkElement = bluetoothDevicesSubpage.shadowRoot.querySelector(
+        '#enableBluetoothToggle');
+    await waitAfterNextRender(bluetoothDevicesSubpage);
+    assertEquals(
+        deepLinkElement, getDeepActiveElement(),
+        'On startup enable/disable Bluetooth toggle should be focused for settingId=100.');
+  });
+
+  // TODO(b/215724676): Re-enable this test once the suite is migrated to
+  // interactive UI tests. Focus is currently flaky in browser tests.
+  test.skip('Deep link to enable/disable Fast pair toggle button', async () => {
+    flush();
+    const params = new URLSearchParams();
+    params.append('settingId', '105');
+    init(params);
+
+    const fastPairToggle = bluetoothDevicesSubpage.shadowRoot.querySelector(
+        '#enableFastPairToggle');
+    const innerToggle = fastPairToggle.shadowRoot.querySelector('#toggle');
+    const deepLinkElement = innerToggle.shadowRoot.querySelector('#control');
+    await waitAfterNextRender(bluetoothDevicesSubpage);
+    assertEquals(
+        deepLinkElement, getDeepActiveElement(),
+        'Enable Fast Pair toggle should be focused for settingId=105.');
   });
 });

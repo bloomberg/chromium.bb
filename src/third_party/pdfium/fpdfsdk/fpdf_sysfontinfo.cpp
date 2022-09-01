@@ -11,6 +11,7 @@
 #include <memory>
 
 #include "core/fxcrt/fx_codepage.h"
+#include "core/fxcrt/stl_util.h"
 #include "core/fxcrt/unowned_ptr.h"
 #include "core/fxge/cfx_font.h"
 #include "core/fxge/cfx_fontmapper.h"
@@ -18,6 +19,12 @@
 #include "core/fxge/cfx_gemodule.h"
 #include "core/fxge/fx_font.h"
 #include "core/fxge/systemfontinfo_iface.h"
+#include "third_party/base/numerics/safe_conversions.h"
+
+#ifdef PDF_ENABLE_XFA
+#include "xfa/fgas/font/cfgas_fontmgr.h"
+#include "xfa/fgas/font/cfgas_gemodule.h"
+#endif
 
 static_assert(FXFONT_ANSI_CHARSET == static_cast<int>(FX_Charset::kANSI),
               "Charset must match");
@@ -36,11 +43,22 @@ static_assert(FXFONT_GB2312_CHARSET ==
 static_assert(FXFONT_CHINESEBIG5_CHARSET ==
                   static_cast<int>(FX_Charset::kChineseTraditional),
               "Charset must match");
+static_assert(FXFONT_GREEK_CHARSET ==
+                  static_cast<int>(FX_Charset::kMSWin_Greek),
+              "Charset must match");
+static_assert(FXFONT_VIETNAMESE_CHARSET ==
+                  static_cast<int>(FX_Charset::kMSWin_Vietnamese),
+              "Charset must match");
+static_assert(FXFONT_HEBREW_CHARSET ==
+                  static_cast<int>(FX_Charset::kMSWin_Hebrew),
+              "Charset must match");
 static_assert(FXFONT_ARABIC_CHARSET ==
                   static_cast<int>(FX_Charset::kMSWin_Arabic),
               "Charset must match");
 static_assert(FXFONT_CYRILLIC_CHARSET ==
                   static_cast<int>(FX_Charset::kMSWin_Cyrillic),
+              "Charset must match");
+static_assert(FXFONT_THAI_CHARSET == static_cast<int>(FX_Charset::kThai),
               "Charset must match");
 static_assert(FXFONT_EASTERNEUROPEAN_CHARSET ==
                   static_cast<int>(FX_Charset::kMSWin_EasternEuropean),
@@ -89,19 +107,19 @@ class CFX_ExternalFontInfo final : public SystemFontInfoIface {
     return m_pInfo->GetFont(m_pInfo, family.c_str());
   }
 
-  uint32_t GetFontData(void* hFont,
-                       uint32_t table,
-                       pdfium::span<uint8_t> buffer) override {
+  size_t GetFontData(void* hFont,
+                     uint32_t table,
+                     pdfium::span<uint8_t> buffer) override {
     if (!m_pInfo->GetFontData)
       return 0;
     return m_pInfo->GetFontData(m_pInfo, hFont, table, buffer.data(),
-                                buffer.size());
+                                fxcrt::CollectionSize<unsigned long>(buffer));
   }
 
   bool GetFaceName(void* hFont, ByteString* name) override {
     if (!m_pInfo->GetFaceName)
       return false;
-    uint32_t size = m_pInfo->GetFaceName(m_pInfo, hFont, nullptr, 0);
+    unsigned long size = m_pInfo->GetFaceName(m_pInfo, hFont, nullptr, 0);
     if (size == 0)
       return false;
     char* buffer = FX_Alloc(char, size);
@@ -142,6 +160,10 @@ FPDF_SetSystemFontInfo(FPDF_SYSFONTINFO* pFontInfoExt) {
 
   CFX_GEModule::Get()->GetFontMgr()->GetBuiltinMapper()->SetSystemFontInfo(
       std::make_unique<CFX_ExternalFontInfo>(pFontInfoExt));
+
+#ifdef PDF_ENABLE_XFA
+  CFGAS_GEModule::Get()->GetFontMgr()->EnumFonts();
+#endif
 }
 
 FPDF_EXPORT const FPDF_CharsetFontMap* FPDF_CALLCONV FPDF_GetDefaultTTFMap() {
@@ -185,7 +207,8 @@ static unsigned long DefaultGetFontData(struct _FPDF_SYSFONTINFO* pThis,
                                         unsigned char* buffer,
                                         unsigned long buf_size) {
   auto* pDefault = static_cast<FPDF_SYSFONTINFO_DEFAULT*>(pThis);
-  return pDefault->m_pFontInfo->GetFontData(hFont, table, {buffer, buf_size});
+  return pdfium::base::checked_cast<unsigned long>(
+      pDefault->m_pFontInfo->GetFontData(hFont, table, {buffer, buf_size}));
 }
 
 static unsigned long DefaultGetFaceName(struct _FPDF_SYSFONTINFO* pThis,
@@ -196,12 +219,13 @@ static unsigned long DefaultGetFaceName(struct _FPDF_SYSFONTINFO* pThis,
   auto* pDefault = static_cast<FPDF_SYSFONTINFO_DEFAULT*>(pThis);
   if (!pDefault->m_pFontInfo->GetFaceName(hFont, &name))
     return 0;
-  if (name.GetLength() >= static_cast<size_t>(buf_size))
-    return name.GetLength() + 1;
 
-  strncpy(buffer, name.c_str(),
-          (name.GetLength() + 1) * sizeof(ByteString::CharType));
-  return name.GetLength() + 1;
+  const unsigned long copy_length =
+      pdfium::base::checked_cast<unsigned long>(name.GetLength() + 1);
+  if (copy_length <= buf_size)
+    strncpy(buffer, name.c_str(), copy_length * sizeof(ByteString::CharType));
+
+  return copy_length;
 }
 
 static int DefaultGetFontCharset(struct _FPDF_SYSFONTINFO* pThis, void* hFont) {

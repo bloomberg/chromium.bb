@@ -1,6 +1,6 @@
 AC_PREREQ([2.64])
 AC_INIT([HarfBuzz],
-        [3.1.1],
+        [4.3.0],
         [https://github.com/harfbuzz/harfbuzz/issues/new],
         [harfbuzz],
         [http://harfbuzz.org/])
@@ -68,8 +68,8 @@ GTK_DOC_CHECK([1.15],[--flavour no-tmpl])
 ])
 
 # Functions and headers
-AC_CHECK_FUNCS(atexit mprotect sysconf getpagesize mmap isatty)
-AC_CHECK_HEADERS(unistd.h sys/mman.h stdbool.h)
+AC_CHECK_FUNCS(atexit mprotect sysconf getpagesize mmap isatty newlocale uselocale)
+AC_CHECK_HEADERS(unistd.h sys/mman.h stdbool.h xlocale.h)
 
 # Compiler flags
 AC_CANONICAL_HOST
@@ -194,6 +194,10 @@ AC_ARG_WITH(cairo,
 have_cairo=false
 if test "x$with_cairo" = "xyes" -o "x$with_cairo" = "xauto"; then
 	PKG_CHECK_MODULES(CAIRO, cairo >= 1.8.0, have_cairo=true, :)
+	save_libs=$LIBS
+	LIBS="$LIBS $CAIRO_LIBS"
+	AC_CHECK_FUNCS(cairo_user_font_face_set_render_color_glyph_func)
+	LIBS=$save_libs
 fi
 if test "x$with_cairo" = "xyes" -a "x$have_cairo" != "xtrue"; then
 	AC_MSG_ERROR([cairo support requested but not found])
@@ -433,6 +437,8 @@ test/shape/data/text-rendering-tests/Makefile
 test/subset/Makefile
 test/subset/data/Makefile
 test/subset/data/repack_tests/Makefile
+test/threads/Makefile
+perf/Makefile
 docs/Makefile
 docs/version.xml
 ])

@@ -7,30 +7,22 @@
 
 #include "base/callback.h"
 #include "base/memory/raw_ptr.h"
+
+#include "chrome/browser/ui/incognito_clear_browsing_data_dialog_interface.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 
 class Profile;
-class NonAccessibleImageView;
 
 namespace views {
 class View;
 }  // namespace views
 
-namespace gfx {
-class ImageSkia;
-}
-
 class IncognitoClearBrowsingDataDialog
-    : public views::BubbleDialogDelegateView {
+    : public IncognitoClearBrowsingDataDialogInterface,
+      public views::BubbleDialogDelegateView {
  public:
   METADATA_HEADER(IncognitoClearBrowsingDataDialog);
-
-  enum Type {
-    kDefaultBubble = 0,
-    kHistoryDisclaimerBubble = 1,
-    kMaxValue = kHistoryDisclaimerBubble,
-  };
 
   static void Show(views::View* anchor_view,
                    Profile* incognito_profile,
@@ -48,8 +40,6 @@ class IncognitoClearBrowsingDataDialog
       const IncognitoClearBrowsingDataDialog& other) = delete;
   ~IncognitoClearBrowsingDataDialog() override;
 
-  void OnThemeChanged() override;
-
  private:
   explicit IncognitoClearBrowsingDataDialog(views::View* anchor_view,
                                             Profile* incognito_profile,
@@ -57,17 +47,16 @@ class IncognitoClearBrowsingDataDialog
 
   static void CloseDialog();
 
-  gfx::ImageSkia* GetHeaderArt();
-
   // Helper methods to add functionality to the button.
-  void OnCloseWindowsButtonClicked();
-  void OnCancelButtonClicked();
+  void OnCloseWindowsButtonClicked() override;
+  void OnCancelButtonClicked() override;
 
+  // Helper methods to decorate the dialog for different dialog type.
   void SetDialogForDefaultBubbleType();
   void SetDialogForHistoryDisclaimerBubbleType();
 
+  const Type dialog_type_;
   raw_ptr<Profile> incognito_profile_;
-  raw_ptr<NonAccessibleImageView> header_view_;
   base::OnceClosure destructor_callback_ = base::DoNothing();
 };
 

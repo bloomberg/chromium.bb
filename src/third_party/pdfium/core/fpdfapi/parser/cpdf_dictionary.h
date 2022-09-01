@@ -7,6 +7,7 @@
 #ifndef CORE_FPDFAPI_PARSER_CPDF_DICTIONARY_H_
 #define CORE_FPDFAPI_PARSER_CPDF_DICTIONARY_H_
 
+#include <functional>
 #include <map>
 #include <set>
 #include <utility>
@@ -26,8 +27,8 @@ class CPDF_IndirectObjectHolder;
 // will return nullptr to indicate non-existent keys.
 class CPDF_Dictionary final : public CPDF_Object {
  public:
-  using const_iterator =
-      std::map<ByteString, RetainPtr<CPDF_Object>>::const_iterator;
+  using DictMap = std::map<ByteString, RetainPtr<CPDF_Object>, std::less<>>;
+  using const_iterator = DictMap::const_iterator;
 
   CONSTRUCT_VIA_MAKE_RETAIN;
 
@@ -67,9 +68,11 @@ class CPDF_Dictionary final : public CPDF_Object {
   int GetIntegerFor(const ByteString& key, int default_int) const;
   float GetNumberFor(const ByteString& key) const;
   const CPDF_Dictionary* GetDictFor(const ByteString& key) const;
-  CPDF_Dictionary* GetDictFor(const ByteString& key);
+  CPDF_Dictionary* GetDictFor(const ByteString& key);  // Prefer next form.
+  RetainPtr<CPDF_Dictionary> GetMutableDictFor(const ByteString& key);
   const CPDF_Array* GetArrayFor(const ByteString& key) const;
-  CPDF_Array* GetArrayFor(const ByteString& key);
+  CPDF_Array* GetArrayFor(const ByteString& key);  // Prefer next form.
+  RetainPtr<CPDF_Array> GetMutableArrayFor(const ByteString& key);
   const CPDF_Stream* GetStreamFor(const ByteString& key) const;
   CPDF_Stream* GetStreamFor(const ByteString& key);
   CFX_FloatRect GetRectFor(const ByteString& key) const;
@@ -111,7 +114,7 @@ class CPDF_Dictionary final : public CPDF_Object {
                                   CPDF_IndirectObjectHolder* pHolder);
 
   // Invalidates iterators for the element with the key |key|.
-  RetainPtr<CPDF_Object> RemoveFor(const ByteString& key);
+  RetainPtr<CPDF_Object> RemoveFor(ByteStringView key);
 
   // Invalidates iterators for the element with the key |oldkey|.
   void ReplaceKey(const ByteString& oldkey, const ByteString& newkey);
@@ -132,11 +135,12 @@ class CPDF_Dictionary final : public CPDF_Object {
 
   mutable uint32_t m_LockCount = 0;
   WeakPtr<ByteStringPool> m_pPool;
-  std::map<ByteString, RetainPtr<CPDF_Object>> m_Map;
+  DictMap m_Map;
 };
 
 class CPDF_DictionaryLocker {
  public:
+  FX_STACK_ALLOCATED();
   using const_iterator = CPDF_Dictionary::const_iterator;
 
   explicit CPDF_DictionaryLocker(const CPDF_Dictionary* pDictionary);

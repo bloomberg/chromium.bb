@@ -13,10 +13,10 @@
 #include "components/autofill_assistant/browser/client_status.h"
 #include "components/autofill_assistant/browser/devtools/devtools/domains/types_runtime.h"
 #include "components/autofill_assistant/browser/devtools/devtools_client.h"
-#include "components/autofill_assistant/browser/web/element_finder.h"
 #include "components/autofill_assistant/browser/web/web_controller_worker.h"
 
 namespace autofill_assistant {
+class ElementFinderResult;
 
 // Worker class to check whether an element is on top, in all frames.
 class CheckOnTopWorker : public WebControllerWorker {
@@ -29,7 +29,7 @@ class CheckOnTopWorker : public WebControllerWorker {
   using Callback = base::OnceCallback<void(const ClientStatus&)>;
 
   // Have the worker check |element| and report the result to |callback|.
-  void Start(const ElementFinder::Result& element, Callback callback);
+  void Start(const ElementFinderResult& element, Callback callback);
 
  private:
   void CallFunctionOn(const std::string& function,

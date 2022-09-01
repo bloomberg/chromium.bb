@@ -7,74 +7,44 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
-#include "chromeos/crosapi/mojom/power.mojom.h"
-#include "chromeos/lacros/lacros_service.h"
-#include "mojo/public/cpp/bindings/receiver.h"
 #include "ui/display/screen.h"
 
 namespace device {
 
 /******** PowerSaveBlocker::Delegate ********/
 
-// Lacros-chrome PowerSaveBlocker uses ash-chrome ProwerSaveBlocker via either
-// crosapi (the default) or Wayland (if the idle inhibitor feature is enabled).
-// RAII style is maintained by keeping a crosapi::mojom::PowerWakeLock Mojo
-// connection, whose disconnection triggers resource release in ash-chrome.
-// TODO(b/193670013): Cleanup logic after Wayland idle inhibitor replaces
-// crosapi power service.
+// Lacros-chrome PowerSaveBlocker uses ash-chrome ProwerSaveBlocker via Wayland.
 
 class PowerSaveBlocker::Delegate
     : public base::RefCountedThreadSafe<PowerSaveBlocker::Delegate> {
  public:
-  Delegate(mojom::WakeLockType type,
-           mojom::WakeLockReason reason,
-           const std::string& description,
-           scoped_refptr<base::SequencedTaskRunner> ui_task_runner)
-      : type_(type),
-        reason_(reason),
-        description_(description),
-        ui_task_runner_(ui_task_runner) {}
+  explicit Delegate(scoped_refptr<base::SequencedTaskRunner> ui_task_runner)
+      : ui_task_runner_(ui_task_runner) {}
   Delegate(const Delegate&) = delete;
   Delegate& operator=(const Delegate&) = delete;
 
   void ApplyBlock() {
     DCHECK(ui_task_runner_->RunsTasksInCurrentSequence());
+    DCHECK(!screen_saver_suspender_);
 
-    auto* const screen = display::Screen::GetScreen();
-    if (screen && screen->SetScreenSaverSuspended(true))
-      return;
-
-    auto* lacros_service = chromeos::LacrosService::Get();
-    if (lacros_service->IsAvailable<crosapi::mojom::Power>()) {
-      lacros_service->GetRemote<crosapi::mojom::Power>()->AddPowerSaveBlocker(
-          receiver_.BindNewPipeAndPassRemote(), type_, reason_, description_);
+    if (auto* const screen = display::Screen::GetScreen()) {
+      screen_saver_suspender_ = screen->SuspendScreenSaver();
     }
   }
 
   void RemoveBlock() {
     DCHECK(ui_task_runner_->RunsTasksInCurrentSequence());
 
-    auto* const screen = display::Screen::GetScreen();
-    if (screen && screen->SetScreenSaverSuspended(false))
-      return;
-
-    // Disconnect to make ash-chrome release its PowerSaveBlocker.
-    receiver_.reset();
+    screen_saver_suspender_.reset();
   }
 
  private:
   friend class base::RefCountedThreadSafe<Delegate>;
-  virtual ~Delegate() {}
+  virtual ~Delegate() = default;
 
-  // Connection to ash-chrome via crosapi. Disconnection from RemoveBlock() or
-  // Lacros termination triggers resource release in ash-chrome.
-  crosapi::mojom::PowerWakeLock lock_;
-  mojo::Receiver<crosapi::mojom::PowerWakeLock> receiver_{&lock_};
-
-  mojom::WakeLockType type_;
-  mojom::WakeLockReason reason_;
-  std::string description_;
   scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;
+  std::unique_ptr<display::Screen::ScreenSaverSuspender>
+      screen_saver_suspender_;
 };
 
 /******** PowerSaveBlocker ********/
@@ -85,10 +55,7 @@ PowerSaveBlocker::PowerSaveBlocker(
     const std::string& description,
     scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> blocking_task_runner)
-    : delegate_(base::MakeRefCounted<Delegate>(type,
-                                               reason,
-                                               description,
-                                               ui_task_runner)),
+    : delegate_(base::MakeRefCounted<Delegate>(ui_task_runner)),
       ui_task_runner_(ui_task_runner),
       blocking_task_runner_(blocking_task_runner) {
   ui_task_runner_->PostTask(FROM_HERE,

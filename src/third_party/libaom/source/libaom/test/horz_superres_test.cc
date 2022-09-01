@@ -52,7 +52,7 @@ std::ostream &operator<<(std::ostream &os, const TestVideoParam &test_arg) {
 }
 
 const TestVideoParam kTestVideoVectors[] = {
-  { "park_joy_90p_8_420.y4m", AOM_IMG_FMT_I420, AOM_BITS_8, 0, 5, 0, 25.4,
+  { "park_joy_90p_8_420.y4m", AOM_IMG_FMT_I420, AOM_BITS_8, 0, 5, 0, 25.3,
     45.0 },
 #if CONFIG_AV1_HIGHBITDEPTH
   { "park_joy_90p_10_444.y4m", AOM_IMG_FMT_I44416, AOM_BITS_10, 1, 5, 0, 27.0,
@@ -158,7 +158,7 @@ class HorzSuperresEndToEndTest
     std::unique_ptr<libaom_test::VideoSource> video;
     video.reset(new libaom_test::Y4mVideoSource(test_video_param_.filename, 0,
                                                 test_video_param_.limit));
-    ASSERT_TRUE(video.get() != NULL);
+    ASSERT_NE(video, nullptr);
 
     ASSERT_NO_FATAL_FAILURE(RunLoop(video.get()));
     const double psnr_thresh = (superres_mode_ == AOM_SUPERRES_AUTO)
@@ -263,7 +263,7 @@ class HorzSuperresFixedEndToEndTest
     std::unique_ptr<libaom_test::VideoSource> video;
     video.reset(new libaom_test::Y4mVideoSource(test_video_param_.filename, 0,
                                                 test_video_param_.limit));
-    ASSERT_TRUE(video.get() != NULL);
+    ASSERT_NE(video, nullptr);
 
     ASSERT_NO_FATAL_FAILURE(RunLoop(video.get()));
     const double psnr = GetAveragePsnr();
@@ -373,7 +373,7 @@ class HorzSuperresQThreshEndToEndTest
     std::unique_ptr<libaom_test::VideoSource> video;
     video.reset(new libaom_test::Y4mVideoSource(test_video_param_.filename, 0,
                                                 test_video_param_.limit));
-    ASSERT_TRUE(video.get() != NULL);
+    ASSERT_NE(video, nullptr);
 
     ASSERT_NO_FATAL_FAILURE(RunLoop(video.get()));
     const double psnr = GetAveragePsnr();

@@ -101,7 +101,7 @@ void CreateAndAppendSrcTextureQuad(CompositorRenderPass* render_pass,
       /*uv_bottom_right=*/gfx::PointF(1, 1),
       /*background_color=*/SK_ColorTRANSPARENT,
       /*vertex_opacity=*/vertex_opacity, y_flipped,
-      /*nearest_neighbor=*/true,
+      /*nearest_neighbor=*/false,
       /*secure_output_only=*/false,
       /*protected_video_type=*/gfx::ProtectedVideoType::kClear);
 }
@@ -154,8 +154,8 @@ void ReplaceSharedElementWithRenderPass(
     const SharedElementDrawQuad& shared_element_quad,
     const CompositorRenderPass* shared_element_content_pass) {
   auto pass_id = shared_element_content_pass->id;
-  gfx::RectF tex_coord_rect(
-      gfx::SizeF(shared_element_content_pass->output_rect.size()));
+  const gfx::Rect& shared_pass_output_rect =
+      shared_element_content_pass->output_rect;
 
   gfx::RectF quad_rect(shared_element_quad.rect);
   shared_element_quad.shared_quad_state->quad_to_target_transform.TransformRect(
@@ -169,13 +169,26 @@ void ReplaceSharedElementWithRenderPass(
       target_render_pass->CreateAndAppendSharedQuadState();
   *copied_quad_state = *shared_element_quad.shared_quad_state;
 
+  gfx::Transform transform;
+  transform.Scale(shared_element_quad.rect.width() /
+                      static_cast<SkScalar>(shared_pass_output_rect.width()),
+                  shared_element_quad.rect.height() /
+                      static_cast<SkScalar>(shared_pass_output_rect.height()));
+  transform.Translate(-shared_pass_output_rect.x(),
+                      -shared_pass_output_rect.y());
+
+  copied_quad_state->quad_to_target_transform.PreconcatTransform(transform);
+
   auto* render_pass_quad =
       target_render_pass
           ->CreateAndAppendDrawQuad<CompositorRenderPassDrawQuad>();
+  gfx::RectF tex_coord_rect(gfx::SizeF(shared_element_quad.rect.size()));
+  tex_coord_rect.Offset(-shared_pass_output_rect.x(),
+                        -shared_pass_output_rect.y());
   render_pass_quad->SetNew(
       /*shared_quad_state=*/copied_quad_state,
       /*rect=*/shared_element_quad.rect,
-      /*visible_rect=*/shared_element_quad.visible_rect,
+      /*visible_rect=*/shared_pass_output_rect,
       /*render_pass_id=*/pass_id,
       /*mask_resource_id=*/kInvalidResourceId,
       /*mask_uv_rect=*/gfx::RectF(),
@@ -219,7 +232,7 @@ void ReplaceSharedElementWithTexture(
       /*uv_bottom_right=*/gfx::PointF(1, 1),
       /*background_color=*/SK_ColorTRANSPARENT,
       /*vertex_opacity=*/vertex_opacity, y_flipped,
-      /*nearest_neighbor=*/true,
+      /*nearest_neighbor=*/false,
       /*secure_output_only=*/false,
       /*protected_video_type=*/gfx::ProtectedVideoType::kClear);
 }
@@ -292,11 +305,25 @@ std::unique_ptr<gfx::AnimationCurve> CreateTransformCurve(
 
 }  // namespace
 
+class SurfaceAnimationManager::StorageWithSurface {
+ public:
+  StorageWithSurface(SurfaceSavedFrameStorage* storage, Surface* surface)
+      : storage_(storage) {
+    DCHECK(!storage_->has_active_surface());
+    storage_->set_active_surface(surface);
+  }
+
+  ~StorageWithSurface() { storage_->set_active_surface(nullptr); }
+
+  SurfaceSavedFrameStorage* operator->() { return storage_; }
+
+ private:
+  raw_ptr<SurfaceSavedFrameStorage> storage_;
+};
+
 SurfaceAnimationManager::SurfaceAnimationManager(
     SharedBitmapManager* shared_bitmap_manager)
-    : animation_slowdown_factor_(
-          switches::GetDocumentTransitionSlowDownFactor()),
-      transferable_resource_tracker_(shared_bitmap_manager) {}
+    : transferable_resource_tracker_(shared_bitmap_manager) {}
 
 SurfaceAnimationManager::~SurfaceAnimationManager() = default;
 
@@ -307,8 +334,9 @@ void SurfaceAnimationManager::SetDirectiveFinishedCallback(
 
 bool SurfaceAnimationManager::ProcessTransitionDirectives(
     const std::vector<CompositorFrameTransitionDirective>& directives,
-    SurfaceSavedFrameStorage* storage) {
+    Surface* active_surface) {
   bool started_animation = false;
+  StorageWithSurface storage(&surface_saved_frame_storage_, active_surface);
   for (auto& directive : directives) {
     // Don't process directives with sequence ids smaller than or equal to the
     // last seen one. It is possible that we call this with the same frame
@@ -331,7 +359,7 @@ bool SurfaceAnimationManager::ProcessTransitionDirectives(
         handled = ProcessAnimateRendererDirective(directive, storage);
         break;
       case CompositorFrameTransitionDirective::Type::kRelease:
-        handled = ProcessReleaseDirective(directive, storage);
+        handled = ProcessReleaseDirective();
         break;
     }
 
@@ -347,17 +375,25 @@ bool SurfaceAnimationManager::ProcessTransitionDirectives(
 
 bool SurfaceAnimationManager::ProcessSaveDirective(
     const CompositorFrameTransitionDirective& directive,
-    SurfaceSavedFrameStorage* storage) {
+    StorageWithSurface& storage) {
+  // We can only have one saved frame. It is the job of the client to ensure the
+  // correct API usage. So if we are receiving a save directive while we already
+  // have a saved frame, release it first. That ensures that any subsequent
+  // animate directives which presumably rely on this save directive will
+  // succeed.
+  ProcessReleaseDirective();
+
   // We need to be in the idle state in order to save.
   if (state_ != State::kIdle)
     return false;
-  storage->ProcessSaveDirective(directive, sequence_id_finished_callback_);
+  empty_resource_ids_ =
+      storage->ProcessSaveDirective(directive, sequence_id_finished_callback_);
   return true;
 }
 
 bool SurfaceAnimationManager::ProcessAnimateDirective(
     const CompositorFrameTransitionDirective& directive,
-    SurfaceSavedFrameStorage* storage) {
+    StorageWithSurface& storage) {
   // We can only begin an animate if we are currently idle.
   if (state_ != State::kIdle)
     return false;
@@ -395,7 +431,7 @@ bool SurfaceAnimationManager::ProcessAnimateDirective(
 
 bool SurfaceAnimationManager::ProcessAnimateRendererDirective(
     const CompositorFrameTransitionDirective& directive,
-    SurfaceSavedFrameStorage* storage) {
+    StorageWithSurface& storage) {
   // We can only begin an animate if we are currently idle. The renderer sends
   // this in response to a notification of the capture completing successfully.
   if (state_ != State::kIdle)
@@ -416,9 +452,7 @@ bool SurfaceAnimationManager::ProcessAnimateRendererDirective(
   return true;
 }
 
-bool SurfaceAnimationManager::ProcessReleaseDirective(
-    const CompositorFrameTransitionDirective& directive,
-    SurfaceSavedFrameStorage* storage) {
+bool SurfaceAnimationManager::ProcessReleaseDirective() {
   if (state_ != State::kAnimatingRenderer)
     return false;
 
@@ -1034,10 +1068,8 @@ void SurfaceAnimationManager::CreateRootAnimationCurves(
               : gfx::CubicBezierTimingFunction::EaseType::EASE_OUT);
 
   // Create the transform curve.
-  base::TimeDelta total_duration =
-      ApplySlowdownFactor(save_directive_->root_config().duration);
-  base::TimeDelta total_delay =
-      ApplySlowdownFactor(save_directive_->root_config().delay);
+  base::TimeDelta total_duration = save_directive_->root_config().duration;
+  base::TimeDelta total_delay = save_directive_->root_config().delay;
 
   // The transform animation runs for the entire duration of the root
   // transition.
@@ -1096,14 +1128,14 @@ void SurfaceAnimationManager::CreateSharedElementCurves() {
     const bool has_src_element = shared.has_value();
 
     const auto& config = save_directive_->shared_elements()[i].config;
-    const auto total_duration = ApplySlowdownFactor(config.duration);
-    const auto total_delay = ApplySlowdownFactor(config.delay);
+    const auto total_duration = config.duration;
+    const auto total_delay = config.delay;
 
-    const auto opacity_duration = ApplySlowdownFactor(
-        total_duration * kSharedOpacityTransitionDurationScaleFactor);
-    const auto opacity_delay = ApplySlowdownFactor(
+    const auto opacity_duration =
+        total_duration * kSharedOpacityTransitionDurationScaleFactor;
+    const auto opacity_delay =
         total_delay +
-        (total_duration * kSharedOpacityTransitionDelayScaleFactor));
+        (total_duration * kSharedOpacityTransitionDelayScaleFactor);
 
     // The kSrcOpacity curve animates the screen space opacity applied to the
     // blended content from src and dest elements. The value goes from the
@@ -1187,22 +1219,42 @@ bool SurfaceAnimationManager::FilterSharedElementsWithRenderPassOrResource(
         shared_element_quad.resource_id);
 
     if (texture_it != saved_textures_->element_id_to_resource.end()) {
-      resource_list->push_back(saved_textures_->element_id_to_resource.at(
-          shared_element_quad.resource_id));
+      const auto& transferable_resource = texture_it->second;
+      resource_list->push_back(transferable_resource);
 
       // GPU textures are flipped but software bitmaps are not.
-      bool y_flipped = !saved_textures_->root.resource.is_software;
+      bool y_flipped = !transferable_resource.is_software;
       ReplaceSharedElementWithTexture(&copy_pass, shared_element_quad,
                                       y_flipped, resource_list->back().id);
       return true;
     }
   }
 
+  if (empty_resource_ids_.count(shared_element_quad.resource_id) > 0)
+    return true;
+
+#if DCHECK_IS_ON()
+  LOG(ERROR) << "Content not found for shared element: "
+             << shared_element_quad.resource_id.ToString();
+  LOG(ERROR) << "Known shared element ids:";
+  for (const auto& [shared_resource_id, render_pass] : *element_id_to_pass) {
+    LOG(ERROR) << " " << shared_resource_id.ToString()
+               << " -> RenderPassId: " << render_pass->id.GetUnsafeValue();
+  }
+
+  if (saved_textures_) {
+    LOG(ERROR) << "Known saved textures:";
+    for (const auto& [shared_resource_id, transferable_resource] :
+         saved_textures_->element_id_to_resource) {
+      LOG(ERROR) << " " << shared_resource_id.ToString();
+    }
+  }
+
   // The DCHECK below is for debugging in dev builds. This can happen in
   // production code because of a compromised renderer.
-  LOG(ERROR) << "Content not found for shared element : "
-             << shared_element_quad.resource_id.ToString();
   NOTREACHED();
+#endif
+
   return true;
 }
 
@@ -1260,9 +1312,9 @@ void SurfaceAnimationManager::ReplaceSharedElementResources(Surface* surface) {
   surface->SetInterpolatedFrame(std::move(resolved_frame));
 }
 
-base::TimeDelta SurfaceAnimationManager::ApplySlowdownFactor(
-    base::TimeDelta original) const {
-  return original * animation_slowdown_factor_;
+SurfaceSavedFrameStorage*
+SurfaceAnimationManager::GetSurfaceSavedFrameStorageForTesting() {
+  return &surface_saved_frame_storage_;
 }
 
 // RootAnimationState

@@ -6,7 +6,6 @@
 #define CONTENT_PUBLIC_TEST_PRERENDER_TEST_UTIL_H_
 
 #include "base/callback.h"
-#include "base/compiler_specific.h"
 #include "base/test/scoped_feature_list.h"
 #include "content/public/browser/prerender_trigger_type.h"
 #include "content/public/browser/render_frame_host.h"
@@ -123,7 +122,8 @@ class PrerenderTestHelper {
   std::unique_ptr<PrerenderHandle> AddEmbedderTriggeredPrerenderAsync(
       const GURL& prerendering_url,
       PrerenderTriggerType trigger_type,
-      const std::string& embedder_histogram_suffix);
+      const std::string& embedder_histogram_suffix,
+      ui::PageTransition page_transition);
 
   // This navigates, but does not activate, the prerendered page.
   void NavigatePrerenderedPage(int host_id, const GURL& gurl);
@@ -143,8 +143,8 @@ class PrerenderTestHelper {
 
   // Confirms that, internally, appropriate subframes report that they are
   // prerendering (and that each frame tree type is kPrerender).
-  ::testing::AssertionResult VerifyPrerenderingState(const GURL& gurl)
-      WARN_UNUSED_RESULT;
+  [[nodiscard]] ::testing::AssertionResult VerifyPrerenderingState(
+      const GURL& gurl);
 
   RenderFrameHost* GetPrerenderedMainFrameHost(int host_id);
 

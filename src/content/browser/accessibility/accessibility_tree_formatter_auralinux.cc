@@ -17,7 +17,11 @@
 #include "content/browser/accessibility/browser_accessibility_auralinux.h"
 #include "content/public/browser/ax_inspect_factory.h"
 #include "ui/accessibility/platform/ax_platform_node_auralinux.h"
+#include "ui/accessibility/platform/inspect/ax_call_statement_invoker_auralinux.h"
+#include "ui/accessibility/platform/inspect/ax_inspect_scenario.h"
 #include "ui/accessibility/platform/inspect/ax_inspect_utils_auralinux.h"
+#include "ui/accessibility/platform/inspect/ax_property_node.h"
+#include "ui/accessibility/platform/inspect/ax_script_instruction.h"
 
 #define CHECK_ATSPI_ERROR(error)                       \
   if (error) {                                         \
@@ -57,18 +61,52 @@ base::Value AccessibilityTreeFormatterAuraLinux::BuildTreeForSelector(
     return base::Value(base::Value::Type::DICTIONARY);
   }
 
-  // Active tab
-  if (selector.types & AXTreeSelector::ActiveTab) {
-    node = FindActiveDocument(node);
-    if (!node) {
-      LOG(ERROR) << "No active document was found.";
-      return base::Value(base::Value::Type::DICTIONARY);
-    }
-  }
-
   base::DictionaryValue dict;
   RecursiveBuildTree(node, &dict);
   return std::move(dict);
+}
+
+std::string AccessibilityTreeFormatterAuraLinux::EvaluateScript(
+    const AXTreeSelector& selector,
+    const ui::AXInspectScenario& scenario) const {
+  AtspiAccessible* platform_root = FindAccessible(selector);
+  if (!platform_root) {
+    return "error no accessibility tree found";
+  }
+
+  const std::vector<ui::AXScriptInstruction>& instructions =
+      scenario.script_instructions;
+  size_t end_index = instructions.size();
+
+  base::Value scripts(base::Value::Type::LIST);
+  ui::AXTreeIndexerAuraLinux indexer(platform_root);
+  std::map<std::string, ui::Target> storage;
+  ui::AXCallStatementInvokerAuraLinux invoker(&indexer, &storage);
+  for (size_t index = 0; index < end_index; index++) {
+    if (instructions[index].IsComment()) {
+      scripts.Append(instructions[index].AsComment());
+      continue;
+    }
+
+    DCHECK(instructions[index].IsScript());
+    const ui::AXPropertyNode& property_node = instructions[index].AsScript();
+
+    ui::AXOptionalObject value = invoker.Invoke(property_node);
+    if (value.IsUnsupported()) {
+      continue;
+    }
+
+    scripts.Append(property_node.ToString() + "=" +
+                   ui::AXCallStatementInvokerAuraLinux::ToString(value));
+  }
+
+  std::string contents;
+  for (const base::Value& script : scripts.GetList()) {
+    std::string line;
+    WriteAttribute(true, script.GetString(), &line);
+    contents += line + "\n";
+  }
+  return contents;
 }
 
 AtkObject* GetAtkObject(ui::AXPlatformNodeDelegate* node) {
@@ -100,50 +138,6 @@ base::Value AccessibilityTreeFormatterAuraLinux::BuildNode(
   base::DictionaryValue dict;
   AddProperties(GetAtkObject(node), &dict);
   return std::move(dict);
-}
-
-AtspiAccessible* AccessibilityTreeFormatterAuraLinux::FindActiveDocument(
-    AtspiAccessible* node) const {
-  GError* error = nullptr;
-
-  AtspiRole role = atspi_accessible_get_role(node, &error);
-  CHECK_ATSPI_ERROR_NULLPTR(error)
-
-  // Get embeds relation pointing to active web document.
-  if (role == ATSPI_ROLE_FRAME) {
-    g_autoptr(GArray) relations =
-        atspi_accessible_get_relation_set(node, &error);
-    CHECK_ATSPI_ERROR_NULLPTR(error)
-    if (!relations) {
-      return nullptr;
-    }
-
-    for (guint idx = 0; idx < relations->len; idx++) {
-      AtspiRelation* relation = g_array_index(relations, AtspiRelation*, idx);
-      if (atspi_relation_get_relation_type(relation) == ATSPI_RELATION_EMBEDS &&
-          atspi_relation_get_n_targets(relation) > 0) {
-        return atspi_relation_get_target(relation, 0);
-      }
-    }
-    return nullptr;
-  }
-
-  int child_count = atspi_accessible_get_child_count(node, &error);
-  CHECK_ATSPI_ERROR_NULLPTR(error)
-
-  for (int i = 0; i < child_count; i++) {
-    AtspiAccessible* child =
-        atspi_accessible_get_child_at_index(node, i, &error);
-    CHECK_ATSPI_ERROR_NULLPTR(error)
-
-    CHECK(child);
-    AtspiAccessible* found = FindActiveDocument(child);
-    if (found) {
-      return found;
-    }
-  }
-
-  return nullptr;
 }
 
 void AccessibilityTreeFormatterAuraLinux::RecursiveBuildTree(
@@ -179,7 +173,7 @@ void AccessibilityTreeFormatterAuraLinux::RecursiveBuildTree(
     RecursiveBuildTree(atk_child, child_dict.get());
     g_object_unref(atk_child);
 
-    children->Append(std::move(child_dict));
+    children->Append(base::Value::FromUniquePtrValue(std::move(child_dict)));
   }
 
   dict->Set(kChildrenDictAttr, std::move(children));
@@ -208,14 +202,14 @@ void AccessibilityTreeFormatterAuraLinux::RecursiveBuildTree(
     AtspiAccessible* child =
         atspi_accessible_get_child_at_index(node, i, &error);
     if (error) {
-      child_dict->SetString("error", "[Error retrieving child]");
+      child_dict->SetStringKey("error", "[Error retrieving child]");
       g_clear_error(&error);
       continue;
     }
 
     CHECK(child);
     RecursiveBuildTree(child, child_dict.get());
-    children->Append(std::move(child_dict));
+    children->Append(base::Value::FromUniquePtrValue(std::move(child_dict)));
   }
 
   dict->Set(kChildrenDictAttr, std::move(children));
@@ -224,24 +218,22 @@ void AccessibilityTreeFormatterAuraLinux::RecursiveBuildTree(
 void AccessibilityTreeFormatterAuraLinux::AddHypertextProperties(
     AtkObject* atk_object,
     base::DictionaryValue* dict) const {
-  if (!ATK_IS_HYPERTEXT(atk_object))
+  if (!ATK_IS_TEXT(atk_object) || !ATK_IS_HYPERTEXT(atk_object))
     return;
-
-  AtkHypertext* hypertext = ATK_HYPERTEXT(atk_object);
-  auto hypertext_values = std::make_unique<base::ListValue>();
 
   AtkText* atk_text = ATK_TEXT(atk_object);
   gchar* character_text = atk_text_get_text(atk_text, 0, -1);
-
-  if (!character_text) {
+  if (!character_text)
     return;
-  }
-  std::string text(character_text);
+
+  auto values = std::make_unique<base::ListValue>();
 
   // Each link in the atk_text is represented by the multibyte unicode character
   // U+FFFC, which in UTF-8 is 0xEF 0xBF 0xBC. We will replace each instance of
   // this character with something slightly more useful.
 
+  std::string text(character_text);
+  AtkHypertext* hypertext = ATK_HYPERTEXT(atk_object);
   int link_count = atk_hypertext_get_n_links(hypertext);
   if (link_count > 0) {
     for (int link_index = link_count - 1; link_index >= 0; link_index--) {
@@ -269,15 +261,20 @@ void AccessibilityTreeFormatterAuraLinux::AddHypertextProperties(
     }
   }
 
-  hypertext_values->Append(base::StringPrintf("hypertext='%s'", text.c_str()));
-  dict->Set("hypertext", std::move(hypertext_values));
+  values->Append(base::StringPrintf("hypertext='%s'", text.c_str()));
+  dict->Set("hypertext", std::move(values));
 
   g_free(character_text);
 }
 
 void AccessibilityTreeFormatterAuraLinux::AddTextProperties(
-    AtkText* atk_text,
+    AtkObject* atk_object,
     base::DictionaryValue* dict) const {
+  if (!ATK_IS_TEXT(atk_object))
+    return;
+
+  AtkText* atk_text = ATK_TEXT(atk_object);
+
   auto text_values = std::make_unique<base::ListValue>();
   int character_count = atk_text_get_character_count(atk_text);
   text_values->Append(
@@ -313,6 +310,13 @@ void AccessibilityTreeFormatterAuraLinux::AddTextProperties(
     atk_attribute_set_free(text_attributes);
 
     current_offset = end_offset;
+  }
+
+  gchar* character_text = atk_text_get_text(atk_text, 0, -1);
+  if (character_text) {
+    std::string text(character_text);
+    text_values->Append(base::StringPrintf("text='%s'", text.c_str()));
+    g_free(character_text);
   }
 
   dict->Set("text", std::move(text_values));
@@ -499,19 +503,19 @@ void AccessibilityTreeFormatterAuraLinux::AddProperties(
       platform_node->GetDelegate());
   DCHECK(node);
 
-  dict->SetInteger("id", node->GetId());
+  dict->SetIntKey("id", node->GetId());
 
   AtkRole role = atk_object_get_role(atk_object);
   if (role != ATK_ROLE_UNKNOWN) {
-    dict->SetString("role", AtkRoleToString(role));
+    dict->SetStringKey("role", AtkRoleToString(role));
   }
 
   const gchar* name = atk_object_get_name(atk_object);
   if (name)
-    dict->SetString("name", std::string(name));
+    dict->SetStringKey("name", std::string(name));
   const gchar* description = atk_object_get_description(atk_object);
   if (description)
-    dict->SetString("description", std::string(description));
+    dict->SetStringKey("description", std::string(description));
 
   AtkStateSet* state_set = atk_object_ref_state_set(atk_object);
   auto states = std::make_unique<base::ListValue>();
@@ -536,13 +540,12 @@ void AccessibilityTreeFormatterAuraLinux::AddProperties(
   AtkAttributeSet* attributes = atk_object_get_attributes(atk_object);
   for (AtkAttributeSet* attr = attributes; attr; attr = attr->next) {
     AtkAttribute* attribute = static_cast<AtkAttribute*>(attr->data);
-    dict->SetString(std::string(kObjectAttributePrefix) + attribute->name,
-                    attribute->value);
+    dict->SetStringPath(std::string(kObjectAttributePrefix) + attribute->name,
+                        attribute->value);
   }
   atk_attribute_set_free(attributes);
 
-  if (ATK_IS_TEXT(atk_object))
-    AddTextProperties(ATK_TEXT(atk_object), dict);
+  AddTextProperties(atk_object, dict);
   AddHypertextProperties(atk_object, dict);
   AddActionProperties(atk_object, dict);
   AddValueProperties(atk_object, dict);
@@ -556,20 +559,20 @@ void AccessibilityTreeFormatterAuraLinux::AddProperties(
   GError* error = nullptr;
   char* role_name = atspi_accessible_get_role_name(node, &error);
   if (!error)
-    dict->SetString("role", role_name);
+    dict->SetStringKey("role", role_name);
   g_clear_error(&error);
   free(role_name);
 
   char* name = atspi_accessible_get_name(node, &error);
   if (!error)
-    dict->SetString("name", name);
+    dict->SetStringKey("name", name);
   g_clear_error(&error);
   free(name);
 
   error = nullptr;
   char* description = atspi_accessible_get_description(node, &error);
   if (!error)
-    dict->SetString("description", description);
+    dict->SetStringKey("description", description);
   g_clear_error(&error);
   free(description);
 
@@ -582,7 +585,7 @@ void AccessibilityTreeFormatterAuraLinux::AddProperties(
 
     g_hash_table_iter_init(&i, attributes);
     while (g_hash_table_iter_next(&i, &key, &value)) {
-      dict->SetString(static_cast<char*>(key), static_cast<char*>(value));
+      dict->SetStringPath(static_cast<char*>(key), static_cast<char*>(value));
     }
   }
   g_clear_error(&error);
@@ -678,7 +681,7 @@ std::string AccessibilityTreeFormatterAuraLinux::ProcessTreeForOutput(
 
   const base::ListValue* states_value;
   if (node.GetList("states", &states_value)) {
-    for (const auto& entry : states_value->GetList()) {
+    for (const auto& entry : states_value->GetListDeprecated()) {
       const std::string* state_value = entry.GetIfString();
       if (state_value)
         WriteAttribute(false, *state_value, &line);
@@ -688,7 +691,7 @@ std::string AccessibilityTreeFormatterAuraLinux::ProcessTreeForOutput(
   const base::ListValue* action_names_list;
   std::vector<std::string> action_names;
   if (node.GetList("actions", &action_names_list)) {
-    for (const auto& entry : action_names_list->GetList()) {
+    for (const auto& entry : action_names_list->GetListDeprecated()) {
       const std::string* action_name = entry.GetIfString();
       if (action_name)
         action_names.push_back(*action_name);
@@ -703,7 +706,7 @@ std::string AccessibilityTreeFormatterAuraLinux::ProcessTreeForOutput(
 
   const base::ListValue* relations_value;
   if (node.GetList("relations", &relations_value)) {
-    for (const auto& entry : relations_value->GetList()) {
+    for (const auto& entry : relations_value->GetListDeprecated()) {
       const std::string* relation_value = entry.GetIfString();
       if (relation_value) {
         // By default, exclude embedded-by because that should appear on every
@@ -730,7 +733,7 @@ std::string AccessibilityTreeFormatterAuraLinux::ProcessTreeForOutput(
 
   const base::ListValue* value_info;
   if (node.GetList("value", &value_info)) {
-    for (const auto& entry : value_info->GetList()) {
+    for (const auto& entry : value_info->GetListDeprecated()) {
       const std::string* value_property = entry.GetIfString();
       if (value_property)
         WriteAttribute(true, *value_property, &line);
@@ -739,7 +742,7 @@ std::string AccessibilityTreeFormatterAuraLinux::ProcessTreeForOutput(
 
   const base::ListValue* table_info;
   if (node.GetList("table", &table_info)) {
-    for (const auto& entry : table_info->GetList()) {
+    for (const auto& entry : table_info->GetListDeprecated()) {
       const std::string* table_property = entry.GetIfString();
       if (table_property)
         WriteAttribute(true, *table_property, &line);
@@ -748,7 +751,7 @@ std::string AccessibilityTreeFormatterAuraLinux::ProcessTreeForOutput(
 
   const base::ListValue* cell_info;
   if (node.GetList("cell", &cell_info)) {
-    for (const auto& entry : cell_info->GetList()) {
+    for (const auto& entry : cell_info->GetListDeprecated()) {
       const std::string* cell_property = entry.GetIfString();
       if (cell_property)
         WriteAttribute(true, *cell_property, &line);
@@ -757,7 +760,7 @@ std::string AccessibilityTreeFormatterAuraLinux::ProcessTreeForOutput(
 
   const base::ListValue* text_info;
   if (node.GetList("text", &text_info)) {
-    for (const auto& entry : text_info->GetList()) {
+    for (const auto& entry : text_info->GetListDeprecated()) {
       const std::string* text_property = entry.GetIfString();
       if (text_property)
         WriteAttribute(false, *text_property, &line);
@@ -766,7 +769,7 @@ std::string AccessibilityTreeFormatterAuraLinux::ProcessTreeForOutput(
 
   const base::ListValue* hypertext_info;
   if (node.GetList("hypertext", &hypertext_info)) {
-    for (const auto& entry : hypertext_info->GetList()) {
+    for (const auto& entry : hypertext_info->GetListDeprecated()) {
       const std::string* hypertext_property = entry.GetIfString();
       if (hypertext_property)
         WriteAttribute(false, *hypertext_property, &line);

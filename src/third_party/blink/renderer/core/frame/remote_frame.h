@@ -118,7 +118,7 @@ class CORE_EXPORT RemoteFrame final : public Frame,
   void SetReplicatedSandboxFlags(network::mojom::blink::WebSandboxFlags);
   void SetInsecureRequestPolicy(mojom::blink::InsecureRequestPolicy);
   void SetInsecureNavigationsSet(const WebVector<unsigned>&);
-  void FrameRectsChanged(const gfx::Rect& local_frame_rect,
+  void FrameRectsChanged(const gfx::Size& local_frame_size,
                          const gfx::Rect& screen_space_rect);
   void InitializeFrameVisualProperties(const FrameVisualProperties& properties);
   // If 'propagate' is true, updated properties will be sent to the browser.
@@ -180,7 +180,7 @@ class CORE_EXPORT RemoteFrame final : public Frame,
       mojom::blink::ResourceTimingInfoPtr timing,
       const String& server_timing_values) final;
   void ScrollRectToVisible(
-      const gfx::Rect& rect_to_scroll,
+      const gfx::RectF& rect_to_scroll,
       mojom::blink::ScrollIntoViewParamsPtr params) override;
   void DidStartLoading() override;
   void DidStopLoading() override;
@@ -208,7 +208,7 @@ class CORE_EXPORT RemoteFrame final : public Frame,
 
   // Called only when this frame has a local frame owner.
   gfx::Size GetMainFrameViewportSize() const override;
-  gfx::Point GetMainFrameScrollOffset() const override;
+  gfx::Point GetMainFrameScrollPosition() const override;
 
   void SetOpener(Frame* opener) override;
 
@@ -240,7 +240,7 @@ class CORE_EXPORT RemoteFrame final : public Frame,
 
  private:
   // Frame protected overrides:
-  bool DetachImpl(FrameDetachType) override;
+  bool DetachImpl(FrameDetachType type) override;
 
   // ChildFrameCompositor:
   void SetCcLayer(scoped_refptr<cc::Layer> layer,

@@ -393,6 +393,16 @@ uint64_t PerformanceTiming::FirstContentfulPaint() const {
   return MonotonicTimeToIntegerMilliseconds(timing->FirstContentfulPaint());
 }
 
+base::TimeTicks
+PerformanceTiming::FirstContentfulPaintRenderedButNotPresentedAsMonotonicTime()
+    const {
+  const PaintTiming* timing = GetPaintTiming();
+  if (!timing)
+    return base::TimeTicks();
+
+  return timing->FirstContentfulPaintRenderedButNotPresentedAsMonotonicTime();
+}
+
 base::TimeTicks PerformanceTiming::FirstContentfulPaintAsMonotonicTime() const {
   const PaintTiming* timing = GetPaintTiming();
   if (!timing)
@@ -435,13 +445,22 @@ uint64_t PerformanceTiming::LargestImagePaintSize() const {
   return paint_timing_detector->LargestImagePaintSize();
 }
 
-LargestContentfulPaintTypeMask PerformanceTiming::LargestContentfulPaintType()
-    const {
+blink::LargestContentfulPaintType
+PerformanceTiming::LargestContentfulPaintType() const {
   PaintTimingDetector* paint_timing_detector = GetPaintTimingDetector();
+  // TODO(iclelland) Add a test for this condition
   if (!paint_timing_detector) {
-    return 0;
+    return blink::LargestContentfulPaintType::kNone;
   }
   return paint_timing_detector->LargestContentfulPaintType();
+}
+
+double PerformanceTiming::LargestContentfulPaintImageBPP() const {
+  PaintTimingDetector* paint_timing_detector = GetPaintTimingDetector();
+  if (!paint_timing_detector) {
+    return 0.0;
+  }
+  return paint_timing_detector->LargestContentfulPaintImageBPP();
 }
 
 uint64_t PerformanceTiming::LargestTextPaint() const {
@@ -502,6 +521,15 @@ absl::optional<base::TimeDelta> PerformanceTiming::FirstInputTimestamp() const {
 
   return MonotonicTimeToPseudoWallTime(
       interactive_detector->GetFirstInputTimestamp());
+}
+
+absl::optional<base::TimeTicks>
+PerformanceTiming::FirstInputTimestampAsMonotonicTime() const {
+  const InteractiveDetector* interactive_detector = GetInteractiveDetector();
+  if (!interactive_detector)
+    return absl::nullopt;
+
+  return interactive_detector->GetFirstInputTimestamp();
 }
 
 absl::optional<base::TimeDelta> PerformanceTiming::LongestInputDelay() const {

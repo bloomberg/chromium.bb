@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/ozone/platform/x11/x11_window.h"
 #include "ui/platform_window/extensions/x11_extension_delegate.h"
-#include "ui/platform_window/x11/x11_window.h"
 
 #include <memory>
 #include <utility>
@@ -18,10 +18,10 @@
 #include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/events/test/events_test_utils_x11.h"
 #include "ui/gfx/x/event.h"
+#include "ui/ozone/platform/x11/x11_window_manager.h"
 #include "ui/ozone/test/mock_platform_window_delegate.h"
 #include "ui/platform_window/platform_window_delegate.h"
 #include "ui/platform_window/platform_window_init_properties.h"
-#include "ui/platform_window/x11/x11_window_manager.h"
 
 namespace ui {
 
@@ -60,7 +60,7 @@ class TestScreen : public display::ScreenBase {
     display.SetScaleAndBounds(scale, bounds_in_pixels);
     ProcessDisplayChanged(display, true);
   }
-};  // namespace
+};
 
 }  // namespace
 
@@ -78,11 +78,12 @@ class X11WindowOzoneTest : public testing::Test {
   void SetUp() override {
     event_source_ = std::make_unique<X11EventSource>(x11::Connection::Get());
 
-    test_screen_ = new TestScreen();
-    display::Screen::SetScreenInstance(test_screen_);
+    display::Screen::SetScreenInstance(&test_screen_);
 
     TouchFactory::GetInstance()->SetPointerDeviceForTest({kPointerDeviceId});
   }
+
+  void TearDown() override { display::Screen::SetScreenInstance(nullptr); }
 
  protected:
   std::unique_ptr<PlatformWindow> CreatePlatformWindow(
@@ -112,7 +113,7 @@ class X11WindowOzoneTest : public testing::Test {
     return window_manager;
   }
 
-  TestScreen* test_screen_ = nullptr;
+  TestScreen test_screen_;
 
  private:
   std::unique_ptr<base::test::TaskEnvironment> task_env_;
@@ -283,7 +284,7 @@ class FakeX11ExtensionDelegateForSize : public X11ExtensionDelegate {
 // Verifies X11Window sets fullscreen bounds in pixels when going to fullscreen.
 TEST_F(X11WindowOzoneTest, ToggleFullscreen) {
   constexpr gfx::Rect screen_bounds_in_px(640, 480, 1280, 720);
-  test_screen_->SetScaleAndBoundsForPrimaryDisplay(2, screen_bounds_in_px);
+  test_screen_.SetScaleAndBoundsForPrimaryDisplay(2, screen_bounds_in_px);
 
   MockPlatformWindowDelegate delegate;
   gfx::AcceleratedWidget widget;

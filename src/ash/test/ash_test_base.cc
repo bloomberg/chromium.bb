@@ -55,6 +55,7 @@
 #include "ui/display/screen.h"
 #include "ui/display/test/display_manager_test_api.h"
 #include "ui/display/types/display_constants.h"
+#include "ui/display/util/display_util.h"
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/touchscreen_device.h"
 #include "ui/gfx/geometry/point.h"
@@ -84,8 +85,15 @@ class AshEventGeneratorDelegate
   ui::EventTarget* GetTargetAt(const gfx::Point& point_in_screen) override {
     display::Screen* screen = display::Screen::GetScreen();
     display::Display display = screen->GetDisplayNearestPoint(point_in_screen);
+    if (current_display_id_ != display.id()) {
+      Shell::Get()->cursor_manager()->SetDisplay(display);
+      current_display_id_ = display.id();
+    }
     return Shell::GetRootWindowForDisplayId(display.id())->GetHost()->window();
   }
+
+ private:
+  int64_t current_display_id_ = display::kInvalidDisplayId;
 };
 
 }  // namespace
@@ -139,7 +147,7 @@ void AshTestBase::TearDown() {
   event_generator_.reset();
   // Some tests set an internal display id,
   // reset it here, so other tests will continue in a clean environment.
-  display::Display::SetInternalDisplayId(display::kInvalidDisplayId);
+  display::SetInternalDisplayIds({display::kInvalidDisplayId});
 
   // Tests can add devices, so reset the lists for future tests.
   ui::DeviceDataManager::GetInstance()->ResetDeviceListsForTest();
@@ -217,15 +225,23 @@ std::unique_ptr<views::Widget> AshTestBase::CreateFramelessTestWidget() {
 std::unique_ptr<aura::Window> AshTestBase::CreateAppWindow(
     const gfx::Rect& bounds_in_screen,
     AppType app_type,
-    int shell_window_id) {
+    int shell_window_id,
+    views::WidgetDelegate* delegate) {
   TestWidgetBuilder builder;
   if (app_type != AppType::NON_APP) {
     builder.SetWindowProperty(aura::client::kAppType,
                               static_cast<int>(app_type));
   }
+
+  if (delegate) {
+    builder.SetDelegate(delegate);
+  } else {
+    builder.SetTestWidgetDelegate();
+  }
+
   // |widget| is configured to be owned by the underlying window.
   views::Widget* widget =
-      builder.SetTestWidgetDelegate()
+      builder
           .SetBounds(bounds_in_screen.IsEmpty() ? gfx::Rect(0, 0, 300, 300)
                                                 : bounds_in_screen)
           .SetContext(Shell::GetPrimaryRootWindow())
@@ -477,12 +493,24 @@ void AshTestBase::PressAndReleaseKey(ui::KeyboardCode key_code, int flags) {
   GetEventGenerator()->PressAndReleaseKey(key_code, flags);
 }
 
-void AshTestBase::SimulateMouseClickAt(
-    ui::test::EventGenerator* event_generator,
-    const views::View* target_view) {
-  DCHECK(target_view);
-  event_generator->MoveMouseTo(target_view->GetBoundsInScreen().CenterPoint());
+void AshTestBase::LeftClickOn(const views::View* view) {
+  DCHECK(view);
+  auto* event_generator = GetEventGenerator();
+  event_generator->MoveMouseTo(view->GetBoundsInScreen().CenterPoint());
   event_generator->ClickLeftButton();
+}
+
+void AshTestBase::RightClickOn(const views::View* view) {
+  DCHECK(view);
+  auto* event_generator = GetEventGenerator();
+  event_generator->MoveMouseTo(view->GetBoundsInScreen().CenterPoint());
+  event_generator->ClickRightButton();
+}
+
+void AshTestBase::GestureTapOn(const views::View* view) {
+  DCHECK(view);
+  auto* event_generator = GetEventGenerator();
+  event_generator->GestureTapAt(view->GetBoundsInScreen().CenterPoint());
 }
 
 bool AshTestBase::EnterOverview(OverviewEnterExitType type) {

@@ -44,6 +44,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <cstring>
 
 #ifdef __GNUC__
@@ -80,7 +81,7 @@
 
 #include <vulkan/vulkan.h>
 
-static const char *VkResultString(VkResult err);
+static std::string VkResultString(VkResult err);
 
 // General error: Get file + line and a short message
 struct FileLineException : std::runtime_error {
@@ -334,6 +335,9 @@ struct VkDll {
 #ifdef VK_USE_PLATFORM_ANDROID_KHR
     PFN_vkCreateAndroidSurfaceKHR fp_vkCreateAndroidSurfaceKHR = APPLE_FP(vkCreateAndroidSurfaceKHR);
 #endif  // VK_USE_PLATFORM_ANDROID_KHR
+#ifdef VK_USE_PLATFORM_GGP
+    PFN_vkCreateStreamDescriptorSurfaceGGP fp_vkCreateStreamDescriptorSurfaceGGP = APPLE_FP(vkCreateStreamDescriptorSurfaceGGP);
+#endif  // VK_USE_PLATFORM_GGP
 #ifdef VK_USE_PLATFORM_WIN32_KHR
     PFN_vkCreateWin32SurfaceKHR fp_vkCreateWin32SurfaceKHR = APPLE_FP(vkCreateWin32SurfaceKHR);
     PFN_vkGetPhysicalDeviceWin32PresentationSupportKHR fp_vkGetPhysicalDeviceWin32PresentationSupportKHR =
@@ -396,6 +400,9 @@ struct VkDll {
 #ifdef VK_USE_PLATFORM_ANDROID_KHR
         Load(fp_vkCreateAndroidSurfaceKHR, "vkCreateAndroidSurfaceKHR");
 #endif  // VK_USE_PLATFORM_ANDROID_KHR
+#ifdef VK_USE_PLATFORM_GGP
+        Load(fp_vkCreateStreamDescriptorSurfaceGGP, "vkCreateStreamDescriptorSurfaceGGP");
+#endif  // VK_USE_PLATFORM_GGP
 #ifdef VK_USE_PLATFORM_WIN32_KHR
         Load(fp_vkCreateWin32SurfaceKHR, "vkCreateWin32SurfaceKHR");
         Load(fp_vkGetPhysicalDeviceWin32PresentationSupportKHR, "vkGetPhysicalDeviceWin32PresentationSupportKHR");
@@ -474,42 +481,22 @@ struct ExtensionFunctions {
         dest = reinterpret_cast<T>(vkGetInstanceProcAddr(instance, name));
     }
 };
-struct VkStructureHeader {
-    VkStructureType sType;
-    VkStructureHeader *pNext;
-};
 
-struct pNextChainBuildingBlockInfo {
-    VkStructureType sType;
-    uint32_t mem_size;
-};
+// Forward declarations for pNext chains
+struct phys_device_props2_chain;
+struct phys_device_mem_props2_chain;
+struct phys_device_features2_chain;
+struct surface_capabilities2_chain;
+struct format_properties2_chain;
+struct queue_properties2_chain;
 
-void buildpNextChain(VkStructureHeader *first, const std::vector<pNextChainBuildingBlockInfo> &chain_info) {
-    VkStructureHeader *place = first;
-
-    for (uint32_t i = 0; i < chain_info.size(); i++) {
-        place->pNext = static_cast<VkStructureHeader *>(malloc(chain_info[i].mem_size));
-        if (!place->pNext) {
-            THROW_ERR("buildpNextChain's malloc failed to allocate");
-        }
-        std::memset(place->pNext, 0, chain_info[i].mem_size);
-        place = place->pNext;
-        place->sType = chain_info[i].sType;
-    }
-
-    place->pNext = nullptr;
-}
-
-void freepNextChain(VkStructureHeader *first) {
-    VkStructureHeader *place = first;
-    VkStructureHeader *next = nullptr;
-
-    while (place) {
-        next = place->pNext;
-        free(place);
-        place = next;
-    }
-}
+void setup_phys_device_props2_chain(VkPhysicalDeviceProperties2 &start, std::unique_ptr<phys_device_props2_chain> &chain);
+void setup_phys_device_mem_props2_chain(VkPhysicalDeviceMemoryProperties2 &start,
+                                        std::unique_ptr<phys_device_mem_props2_chain> &chain);
+void setup_phys_device_features2_chain(VkPhysicalDeviceFeatures2 &start, std::unique_ptr<phys_device_features2_chain> &chain);
+void setup_surface_capabilities2_chain(VkSurfaceCapabilities2KHR &start, std::unique_ptr<surface_capabilities2_chain> &chain);
+void setup_format_properties2_chain(VkFormatProperties2 &start, std::unique_ptr<format_properties2_chain> &chain);
+void setup_queue_properties2_chain(VkQueueFamilyProperties2 &start, std::unique_ptr<queue_properties2_chain> &chain);
 
 /* An ptional contains either a value or nothing. The optional asserts if a value is trying to be gotten but none exist.
  * The interface is taken from C++17's <optional> with many aspects removed.
@@ -640,10 +627,9 @@ struct AppInstance {
             if (err) THROW_VK_ERR("vkEnumerateInstanceVersion", err);
         }
 
-        // fallback to baked header version if loader returns 0 for the patch version
-        uint32_t patch_version = VK_VERSION_PATCH(instance_version);
-        if (patch_version == 0) patch_version = VK_VERSION_PATCH(VK_HEADER_VERSION);
         vk_version = make_vulkan_version(instance_version);
+        // fallback to baked header version if loader returns 0 for the patch version
+        if (VK_VERSION_PATCH(instance_version) == 0) vk_version.patch = VK_VERSION_PATCH(VK_HEADER_VERSION);
 
         AppGetInstanceExtensions();
 
@@ -659,8 +645,17 @@ struct AppInstance {
         std::vector<const char *> inst_exts;
         for (const auto &ext : inst_extensions) inst_exts.push_back(ext.c_str());
 
-        const VkInstanceCreateInfo inst_info = {VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,  &dbg_info,       0, &app_info, 0, nullptr,
-                                                static_cast<uint32_t>(inst_exts.size()), inst_exts.data()};
+        const VkInstanceCreateInfo inst_info = {
+            VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
+            &dbg_info,
+            (CheckExtensionEnabled(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME)
+                 ? static_cast<VkInstanceCreateFlags>(VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR)
+                 : 0),
+            &app_info,
+            0,
+            nullptr,
+            static_cast<uint32_t>(inst_exts.size()),
+            inst_exts.data()};
 
         VkResult err = dll.fp_vkCreateInstance(&inst_info, nullptr, &instance);
         if (err == VK_ERROR_INCOMPATIBLE_DRIVER) {
@@ -724,10 +719,20 @@ struct AppInstance {
     std::vector<VkPhysicalDevice> FindPhysicalDevices() {
         return GetVector<VkPhysicalDevice>("vkEnumeratePhysicalDevices", dll.fp_vkEnumeratePhysicalDevices, instance);
     }
+
+    std::vector<VkExtensionProperties> AppGetPhysicalDeviceLayerExtensions(VkPhysicalDevice phys_device, const char *layer_name) {
+        return GetVector<VkExtensionProperties>("vkEnumerateDeviceExtensionProperties", dll.fp_vkEnumerateDeviceExtensionProperties,
+                                                phys_device, layer_name);
+    }
 };
 
 // --------- Platform Specific Presentation Calls --------- //
 
+#if defined(VK_USE_PLATFORM_XCB_KHR) || defined(VK_USE_PLATFORM_XLIB_KHR) || defined(VK_USE_PLATFORM_WIN32_KHR) ||      \
+    defined(VK_USE_PLATFORM_MACOS_MVK) || defined(VK_USE_PLATFORM_METAL_EXT) || defined(VK_USE_PLATFORM_WAYLAND_KHR) || \
+    defined(VK_USE_PLATFORM_DIRECTFB_EXT) || defined(VK_USE_PLATFORM_ANDROID_KHR) || defined(VK_USE_PLATFORM_GGP)
+#define VULKANINFO_WSI_ENABLED
+#endif
 //---------------------------Win32---------------------------
 #ifdef VK_USE_PLATFORM_WIN32_KHR
 
@@ -799,10 +804,11 @@ static void AppDestroyWin32Window(AppInstance &inst) { user32_handles->pfnDestro
 #endif  // VK_USE_PLATFORM_WIN32_KHR
 //-----------------------------------------------------------
 
+#if defined(VULKANINFO_WSI_ENABLED)
 static void AppDestroySurface(AppInstance &inst, VkSurfaceKHR surface) {  // same for all platforms
     inst.dll.fp_vkDestroySurfaceKHR(inst.instance, surface, nullptr);
 }
-
+#endif  // defined(VULKANINFO_WSI_ENABLED)
 //----------------------------XCB----------------------------
 
 #ifdef VK_USE_PLATFORM_XCB_KHR
@@ -1066,7 +1072,24 @@ static VkSurfaceKHR AppCreateAndroidSurface(AppInstance &inst) {
 static VkSurfaceKHR AppDestroyAndroidSurface(AppInstance &inst) {}
 #endif
 //-----------------------------------------------------------
+//---------------------------GGP-----------------------------
+#ifdef VK_USE_PLATFORM_GGP
+static void AppCreateGgpWindow(AppInstance &inst) {}
+static VkSurfaceKHR AppCreateGgpSurface(AppInstance &inst) {
+    VkStreamDescriptorSurfaceCreateInfoGGP createInfo;
+    createInfo.sType = VK_STRUCTURE_TYPE_STREAM_DESCRIPTOR_SURFACE_CREATE_INFO_GGP;
+    createInfo.pNext = NULL;
+    createInfo.flags = 0;
+    createInfo.streamDescriptor = 1;
 
+    VkSurfaceKHR surface;
+    VkResult err = inst.dll.fp_vkCreateStreamDescriptorSurfaceGGP(inst.instance, &createInfo, NULL, &surface);
+    if (err) THROW_VK_ERR("vkCreateStreamDescriptorSurfaceGGP", err);
+    return surface;
+}
+static void AppDestroyGgpWindow(AppInstance &inst) {}
+#endif
+//-----------------------------------------------------------
 // ------------ Setup Windows ------------- //
 
 void SetupWindowExtensions(AppInstance &inst) {
@@ -1187,6 +1210,18 @@ void SetupWindowExtensions(AppInstance &inst) {
         inst.AddSurfaceExtension(surface_ext_android);
     }
 #endif
+//--GGP--
+#ifdef VK_USE_PLATFORM_GGP
+    SurfaceExtension surface_ext_ggp;
+    if (inst.CheckExtensionEnabled(VK_GGP_STREAM_DESCRIPTOR_SURFACE_EXTENSION_NAME)) {
+        surface_ext_ggp.name = VK_GGP_STREAM_DESCRIPTOR_SURFACE_EXTENSION_NAME;
+        surface_ext_ggp.create_window = AppCreateGgpWindow;
+        surface_ext_ggp.create_surface = AppCreateGgpSurface;
+        surface_ext_ggp.destroy_window = AppDestroyGgpWindow;
+
+        inst.AddSurfaceExtension(surface_ext_ggp);
+    }
+#endif
 }
 
 // ---------- Surfaces -------------- //
@@ -1206,8 +1241,9 @@ class AppSurface {
     VkSurfaceCapabilities2KHR surface_capabilities2_khr{};
     VkSurfaceCapabilities2EXT surface_capabilities2_ext{};
 
-    AppSurface(AppInstance &inst, VkPhysicalDevice phys_device, SurfaceExtension surface_extension,
-               std::vector<pNextChainBuildingBlockInfo> &sur_extension_pNextChain)
+    std::unique_ptr<surface_capabilities2_chain> chain_for_surface_capabilities2;
+
+    AppSurface(AppInstance &inst, VkPhysicalDevice phys_device, SurfaceExtension surface_extension)
         : inst(inst),
           phys_device(phys_device),
           surface_extension(surface_extension),
@@ -1237,7 +1273,7 @@ class AppSurface {
 
         if (inst.CheckExtensionEnabled(VK_KHR_GET_SURFACE_CAPABILITIES_2_EXTENSION_NAME)) {
             surface_capabilities2_khr.sType = VK_STRUCTURE_TYPE_SURFACE_CAPABILITIES_2_KHR;
-            buildpNextChain((VkStructureHeader *)&surface_capabilities2_khr, sur_extension_pNextChain);
+            setup_surface_capabilities2_chain(surface_capabilities2_khr, chain_for_surface_capabilities2);
 
             VkPhysicalDeviceSurfaceInfo2KHR surface_info{};
             surface_info.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SURFACE_INFO_2_KHR;
@@ -1247,7 +1283,7 @@ class AppSurface {
             win32_fullscreen_exclusive_info.sType = VK_STRUCTURE_TYPE_SURFACE_FULL_SCREEN_EXCLUSIVE_WIN32_INFO_EXT;
             win32_fullscreen_exclusive_info.hmonitor = MonitorFromWindow(inst.h_wnd, MONITOR_DEFAULTTOPRIMARY);
 
-            surface_info.pNext = reinterpret_cast<void *>(&win32_fullscreen_exclusive_info);
+            surface_info.pNext = static_cast<void *>(&win32_fullscreen_exclusive_info);
 #endif  // defined(WIN32)
             VkResult err =
                 inst.ext_funcs.vkGetPhysicalDeviceSurfaceCapabilities2KHR(phys_device, &surface_info, &surface_capabilities2_khr);
@@ -1263,12 +1299,6 @@ class AppSurface {
         }
     }
 
-    ~AppSurface() {
-        if (inst.CheckExtensionEnabled(VK_KHR_GET_SURFACE_CAPABILITIES_2_EXTENSION_NAME)) {
-            freepNextChain(static_cast<VkStructureHeader *>(surface_capabilities2_khr.pNext));
-        }
-    }
-
     AppSurface(const AppSurface &) = delete;
     const AppSurface &operator=(const AppSurface &) = delete;
 };
@@ -1277,8 +1307,10 @@ class AppSurface {
 
 std::vector<VkPhysicalDeviceGroupProperties> GetGroups(AppInstance &inst) {
     if (inst.CheckExtensionEnabled(VK_KHR_DEVICE_GROUP_CREATION_EXTENSION_NAME)) {
-        return GetVector<VkPhysicalDeviceGroupProperties>("vkEnumeratePhysicalDeviceGroupsKHR",
-                                                          inst.ext_funcs.vkEnumeratePhysicalDeviceGroupsKHR, inst.instance);
+        VkPhysicalDeviceGroupProperties group_props{};
+        group_props.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_GROUP_PROPERTIES;
+        return GetVectorInit<VkPhysicalDeviceGroupProperties>(
+            "vkEnumeratePhysicalDeviceGroupsKHR", inst.ext_funcs.vkEnumeratePhysicalDeviceGroupsKHR, group_props, inst.instance);
     }
     return {};
 }
@@ -1297,6 +1329,15 @@ util::vulkaninfo_optional<VkDeviceGroupPresentCapabilitiesKHR> GetGroupCapabilit
                                                                                     VkPhysicalDeviceGroupProperties group) {
     // Build create info for logical device made from all physical devices in this group.
     std::vector<std::string> extensions_list = {VK_KHR_SWAPCHAIN_EXTENSION_NAME, VK_KHR_DEVICE_GROUP_EXTENSION_NAME};
+
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+    for (const auto &extension : inst.AppGetPhysicalDeviceLayerExtensions(group.physicalDevices[0], nullptr)) {
+        if (std::string(VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME) == extension.extensionName) {
+            extensions_list.push_back(VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME);
+        }
+    }
+#endif
+
     VkDeviceGroupDeviceCreateInfoKHR dg_ci = {VK_STRUCTURE_TYPE_DEVICE_GROUP_DEVICE_CREATE_INFO_KHR, nullptr,
                                               group.physicalDeviceCount, group.physicalDevices};
 
@@ -1396,14 +1437,6 @@ util::vulkaninfo_optional<ImageTypeSupport> FillImageTypeSupport(AppInstance &in
     return {};
 }
 
-struct pNextChainInfos {
-    std::vector<pNextChainBuildingBlockInfo> phys_device_props2;
-    std::vector<pNextChainBuildingBlockInfo> phys_device_mem_props2;
-    std::vector<pNextChainBuildingBlockInfo> phys_device_features2;
-    std::vector<pNextChainBuildingBlockInfo> surface_capabilities2;
-    std::vector<pNextChainBuildingBlockInfo> format_properties2;
-};
-
 struct FormatRange {
     // the Vulkan standard version that supports this format range, or 0 if non-standard
     uint32_t minimum_instance_version;
@@ -1420,12 +1453,12 @@ struct FormatRange {
 struct AppQueueFamilyProperties {
     VkQueueFamilyProperties props;
     uint32_t queue_index;
+    void *pNext = nullptr;  // assumes the lifetime of the pNext chain outlives this object, eg parent object must keep both alive
     bool is_present_platform_agnostic = true;
     VkBool32 platforms_support_present = VK_FALSE;
-
     AppQueueFamilyProperties(AppInstance &inst, VkPhysicalDevice physical_device, VkQueueFamilyProperties family_properties,
-                             uint32_t queue_index)
-        : props(family_properties), queue_index(queue_index) {
+                             uint32_t queue_index, void *pNext = nullptr)
+        : props(family_properties), queue_index(queue_index), pNext(pNext) {
         for (auto &surface_ext : inst.surface_extensions) {
             VkResult err = inst.ext_funcs.vkGetPhysicalDeviceSurfaceSupportKHR(physical_device, queue_index, surface_ext.surface,
                                                                                &surface_ext.supports_present);
@@ -1450,6 +1483,7 @@ struct AppGpu {
     VkPhysicalDeviceProperties2KHR props2{};
 
     std::vector<VkQueueFamilyProperties> queue_props;
+    std::vector<VkQueueFamilyProperties2KHR> queue_props2;
     std::vector<AppQueueFamilyProperties> extended_queue_props;
 
     VkPhysicalDeviceMemoryProperties memory_props{};
@@ -1470,13 +1504,16 @@ struct AppGpu {
 
     std::vector<FormatRange> supported_format_ranges;
 
-    AppGpu(AppInstance &inst, uint32_t id, VkPhysicalDevice phys_device, pNextChainInfos chainInfos)
-        : inst(inst), id(id), phys_device(phys_device) {
+    std::unique_ptr<phys_device_props2_chain> chain_for_phys_device_props2;
+    std::unique_ptr<phys_device_mem_props2_chain> chain_for_phys_device_mem_props2;
+    std::unique_ptr<phys_device_features2_chain> chain_for_phys_device_features2;
+    std::vector<std::unique_ptr<queue_properties2_chain>> chain_for_queue_props2;
+
+    AppGpu(AppInstance &inst, uint32_t id, VkPhysicalDevice phys_device) : inst(inst), id(id), phys_device(phys_device) {
         inst.dll.fp_vkGetPhysicalDeviceProperties(phys_device, &props);
 
         // needs to find the minimum of the instance and device version, and use that to print the device info
-        uint32_t gpu_version = props.apiVersion < inst.instance_version ? props.apiVersion : inst.instance_version;
-        api_version = make_vulkan_version(gpu_version);
+        api_version = make_vulkan_version(props.apiVersion);
 
         inst.dll.fp_vkGetPhysicalDeviceMemoryProperties(phys_device, &memory_props);
 
@@ -1487,42 +1524,75 @@ struct AppGpu {
         queue_props.resize(queue_count);
         inst.dll.fp_vkGetPhysicalDeviceQueueFamilyProperties(phys_device, &queue_count, queue_props.data());
 
-        int queue_index = 0;
-        for (auto &queue_prop : queue_props) {
-            extended_queue_props.push_back(AppQueueFamilyProperties(inst, phys_device, queue_prop, queue_index++));
-        }
-
         if (inst.CheckExtensionEnabled(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME)) {
             // VkPhysicalDeviceProperties2
             props2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2_KHR;
-            buildpNextChain((VkStructureHeader *)&props2, chainInfos.phys_device_props2);
+            setup_phys_device_props2_chain(props2, chain_for_phys_device_props2);
 
             inst.ext_funcs.vkGetPhysicalDeviceProperties2KHR(phys_device, &props2);
 
             // VkPhysicalDeviceMemoryProperties2
             memory_props2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_PROPERTIES_2_KHR;
-            buildpNextChain((VkStructureHeader *)&memory_props2, chainInfos.phys_device_mem_props2);
+            setup_phys_device_mem_props2_chain(memory_props2, chain_for_phys_device_mem_props2);
 
             inst.ext_funcs.vkGetPhysicalDeviceMemoryProperties2KHR(phys_device, &memory_props2);
 
             // VkPhysicalDeviceFeatures2
             features2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2_KHR;
-            buildpNextChain((VkStructureHeader *)&features2, chainInfos.phys_device_features2);
+            setup_phys_device_features2_chain(features2, chain_for_phys_device_features2);
 
             inst.ext_funcs.vkGetPhysicalDeviceFeatures2KHR(phys_device, &features2);
+
+            // std::vector<VkPhysicalDeviceQueueFamilyProperties2>
+            uint32_t queue_prop2_count = 0;
+            inst.ext_funcs.vkGetPhysicalDeviceQueueFamilyProperties2KHR(phys_device, &queue_prop2_count, nullptr);
+            queue_props2.resize(queue_prop2_count);
+            chain_for_queue_props2.resize(queue_prop2_count);
+            for (size_t i = 0; i < queue_props2.size(); i++) {
+                queue_props2[i].sType = VK_STRUCTURE_TYPE_QUEUE_FAMILY_PROPERTIES_2_KHR;
+                setup_queue_properties2_chain(queue_props2[i], chain_for_queue_props2[i]);
+            }
+            inst.ext_funcs.vkGetPhysicalDeviceQueueFamilyProperties2KHR(phys_device, &queue_prop2_count, queue_props2.data());
         }
 
-        device_extensions = AppGetPhysicalDeviceLayerExtensions(nullptr);
+        // Use the queue_props2 if they exist, else fallback on vulkan 1.0 queue_props
+        int queue_index = 0;
+        if (queue_props2.size() > 0) {
+            for (auto &queue_prop : queue_props2) {
+                extended_queue_props.push_back(
+                    AppQueueFamilyProperties(inst, phys_device, queue_prop.queueFamilyProperties, queue_index++, queue_prop.pNext));
+            }
+        } else {
+            for (auto &queue_prop : queue_props) {
+                extended_queue_props.push_back(AppQueueFamilyProperties(inst, phys_device, queue_prop, queue_index++, nullptr));
+            }
+        }
+
+        device_extensions = inst.AppGetPhysicalDeviceLayerExtensions(phys_device, nullptr);
 
         if (features.sparseBinding) {
             enabled_features.sparseBinding = VK_TRUE;
         }
 
+        std::vector<const char *> extensions_to_enable;
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+        for (const auto &extension : device_extensions) {
+            if (std::string(VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME) == extension.extensionName) {
+                extensions_to_enable.push_back(VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME);
+            }
+        }
+#endif
+
         const float queue_priority = 1.0f;
         // pick the first queue index and hope for the best
         const VkDeviceQueueCreateInfo q_ci = {VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO, nullptr, 0, 0, 1, &queue_priority};
-        const VkDeviceCreateInfo device_ci = {
-            VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO, nullptr, 0, 1, &q_ci, 0, nullptr, 0, nullptr, &enabled_features};
+        VkDeviceCreateInfo device_ci{};
+        device_ci.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+        device_ci.queueCreateInfoCount = 1;
+        device_ci.pQueueCreateInfos = &q_ci;
+        device_ci.enabledExtensionCount = static_cast<uint32_t>(extensions_to_enable.size());
+        device_ci.ppEnabledExtensionNames = extensions_to_enable.data();
+        device_ci.pEnabledFeatures = &enabled_features;
 
         VkResult err = inst.dll.fp_vkCreateDevice(phys_device, &device_ci, nullptr, &dev);
         if (err) THROW_VK_ERR("vkCreateDevice", err);
@@ -1556,7 +1626,6 @@ struct AppGpu {
                 if (tiling == VK_IMAGE_TILING_LINEAR) {
                     if (format == color_format) {
                         image_ci_regular.usage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
-                        image_ci_transient.usage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
                     } else {
                         // linear tiling is only applicable to color image types
                         continue;
@@ -1597,22 +1666,22 @@ struct AppGpu {
 
         // Memory //
 
-        struct VkStructureHeader *structure = NULL;
+        struct VkBaseOutStructure *structure = NULL;
         if (inst.CheckExtensionEnabled(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME)) {
-            structure = (struct VkStructureHeader *)memory_props2.pNext;
+            structure = (struct VkBaseOutStructure *)memory_props2.pNext;
 
             while (structure) {
                 if (structure->sType == VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_BUDGET_PROPERTIES_EXT &&
                     CheckPhysicalDeviceExtensionIncluded(VK_EXT_MEMORY_BUDGET_EXTENSION_NAME)) {
                     VkPhysicalDeviceMemoryBudgetPropertiesEXT *mem_budget_props =
-                        (VkPhysicalDeviceMemoryBudgetPropertiesEXT *)structure;
+                        reinterpret_cast<VkPhysicalDeviceMemoryBudgetPropertiesEXT *>(structure);
                     for (uint32_t i = 0; i < VK_MAX_MEMORY_HEAPS; i++) {
                         heapBudget[i] = mem_budget_props->heapBudget[i];
                         heapUsage[i] = mem_budget_props->heapUsage[i];
                     }
                 }
 
-                structure = (struct VkStructureHeader *)structure->pNext;
+                structure = structure->pNext;
             }
         }
         // TODO buffer - memory type compatibility
@@ -1647,15 +1716,7 @@ struct AppGpu {
             },
         };
     }
-    ~AppGpu() {
-        inst.dll.fp_vkDestroyDevice(dev, nullptr);
-
-        if (inst.CheckExtensionEnabled(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME)) {
-            freepNextChain(static_cast<VkStructureHeader *>(features2.pNext));
-            freepNextChain(static_cast<VkStructureHeader *>(props2.pNext));
-            freepNextChain(static_cast<VkStructureHeader *>(memory_props2.pNext));
-        }
-    }
+    ~AppGpu() { inst.dll.fp_vkDestroyDevice(dev, nullptr); }
 
     AppGpu(const AppGpu &) = delete;
     const AppGpu &operator=(const AppGpu &) = delete;
@@ -1663,11 +1724,6 @@ struct AppGpu {
     bool CheckPhysicalDeviceExtensionIncluded(std::string extension_to_check) {
         return std::any_of(device_extensions.begin(), device_extensions.end(),
                            [extension_to_check](VkExtensionProperties &prop) { return prop.extensionName == extension_to_check; });
-    }
-
-    std::vector<VkExtensionProperties> AppGetPhysicalDeviceLayerExtensions(const char *layer_name) {
-        return GetVector<VkExtensionProperties>("vkEnumerateDeviceExtensionProperties",
-                                                inst.dll.fp_vkEnumerateDeviceExtensionProperties, phys_device, layer_name);
     }
 
     // Helper function to determine whether a format range is currently supported.

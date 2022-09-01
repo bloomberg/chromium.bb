@@ -57,7 +57,7 @@ namespace {
 
 DEFINE_SPECIFICS_TO_VALUE_TEST(encrypted)
 
-static_assert(38 == syncer::GetNumModelTypes(),
+static_assert(39 == syncer::GetNumModelTypes(),
               "When adding a new field, add a DEFINE_SPECIFICS_TO_VALUE_TEST "
               "for your field below, and optionally a test for the specific "
               "conversions.");
@@ -75,6 +75,7 @@ DEFINE_SPECIFICS_TO_VALUE_TEST(device_info)
 DEFINE_SPECIFICS_TO_VALUE_TEST(dictionary)
 DEFINE_SPECIFICS_TO_VALUE_TEST(extension)
 DEFINE_SPECIFICS_TO_VALUE_TEST(extension_setting)
+DEFINE_SPECIFICS_TO_VALUE_TEST(history)
 DEFINE_SPECIFICS_TO_VALUE_TEST(history_delete_directive)
 DEFINE_SPECIFICS_TO_VALUE_TEST(managed_user_setting)
 DEFINE_SPECIFICS_TO_VALUE_TEST(nigori)
@@ -107,7 +108,8 @@ TEST(ProtoValueConversionsTest, AutofillWalletSpecificsToValue) {
   specifics.mutable_cloud_token_data()->set_masked_card_id("1111");
 
   specifics.set_type(sync_pb::AutofillWalletSpecifics::UNKNOWN);
-  auto value = AutofillWalletSpecificsToValue(specifics);
+  std::unique_ptr<base::DictionaryValue> value =
+      AutofillWalletSpecificsToValue(specifics);
   EXPECT_FALSE(value->Get("masked_card", nullptr));
   EXPECT_FALSE(value->Get("address", nullptr));
   EXPECT_FALSE(value->Get("customer_data", nullptr));
@@ -168,19 +170,19 @@ TEST(ProtoValueConversionsTest, BookmarkSpecificsData) {
   EXPECT_EQ(icon_url, encoded_icon_url);
   base::ListValue* meta_info_list;
   ASSERT_TRUE(value->GetList("meta_info", &meta_info_list));
-  EXPECT_EQ(2u, meta_info_list->GetList().size());
+  EXPECT_EQ(2u, meta_info_list->GetListDeprecated().size());
   const base::Value* meta_info_value;
   const base::DictionaryValue* meta_info;
   std::string meta_key;
   std::string meta_value;
-  meta_info_value = &meta_info_list->GetList()[0];
+  meta_info_value = &meta_info_list->GetListDeprecated()[0];
   ASSERT_TRUE(meta_info_value->is_dict());
   meta_info = &base::Value::AsDictionaryValue(*meta_info_value);
   EXPECT_TRUE(meta_info->GetString("key", &meta_key));
   EXPECT_TRUE(meta_info->GetString("value", &meta_value));
   EXPECT_EQ("key1", meta_key);
   EXPECT_EQ("value1", meta_value);
-  meta_info_value = &meta_info_list->GetList()[1];
+  meta_info_value = &meta_info_list->GetListDeprecated()[1];
   ASSERT_TRUE(meta_info_value->is_dict());
   meta_info = &base::Value::AsDictionaryValue(*meta_info_value);
   EXPECT_TRUE(meta_info->GetString("key", &meta_key));
@@ -193,7 +195,8 @@ TEST(ProtoValueConversionsTest, UniquePositionToValue) {
   sync_pb::SyncEntity entity;
   entity.mutable_unique_position()->set_custom_compressed_v1("test");
 
-  auto value = SyncEntityToValue(entity, false);
+  std::unique_ptr<base::DictionaryValue> value =
+      SyncEntityToValue(entity, false);
   std::string unique_position;
   EXPECT_TRUE(value->GetString("unique_position", &unique_position));
 
@@ -206,7 +209,8 @@ TEST(ProtoValueConversionsTest, SyncEntityToValueIncludeSpecifics) {
   sync_pb::SyncEntity entity;
   entity.mutable_specifics();
 
-  auto value = SyncEntityToValue(entity, true /* include_specifics */);
+  std::unique_ptr<base::DictionaryValue> value =
+      SyncEntityToValue(entity, true /* include_specifics */);
   EXPECT_TRUE(value->GetDictionary("specifics", nullptr));
 
   value = SyncEntityToValue(entity, false /* include_specifics */);
@@ -222,7 +226,8 @@ bool ValueHasSpecifics(const base::DictionaryValue& value,
   if (!value.GetList(path, &entities_list))
     return false;
 
-  const base::Value& entry_dictionary_value = entities_list->GetList()[0];
+  const base::Value& entry_dictionary_value =
+      entities_list->GetListDeprecated()[0];
   if (!entry_dictionary_value.is_dict())
     return false;
 

@@ -22,6 +22,7 @@
 #include <unwindstack/Unwinder.h>
 
 #include "perfetto/ext/base/metatrace.h"
+#include "perfetto/ext/base/no_destructor.h"
 #include "perfetto/ext/base/thread_utils.h"
 #include "perfetto/ext/base/utils.h"
 
@@ -104,27 +105,38 @@ void Unwinder::AdoptProcDescriptors(DataSourceInstanceID ds_id,
   DataSourceState& ds = it->second;
 
   ProcessState& proc_state = ds.process_states[pid];  // insert if new
-  PERFETTO_DCHECK(proc_state.status != ProcessState::Status::kResolved);
+  PERFETTO_DCHECK(proc_state.status == ProcessState::Status::kInitial ||
+                  proc_state.status == ProcessState::Status::kFdsTimedOut);
   PERFETTO_DCHECK(!proc_state.unwind_state.has_value());
 
   PERFETTO_METATRACE_SCOPED(TAG_PRODUCER, PROFILER_MAPS_PARSE);
 
-  proc_state.status = ProcessState::Status::kResolved;
+  proc_state.status = ProcessState::Status::kFdsResolved;
   proc_state.unwind_state =
       UnwindingMetadata{std::move(maps_fd), std::move(mem_fd)};
 }
 
 void Unwinder::PostRecordTimedOutProcDescriptors(DataSourceInstanceID ds_id,
                                                  pid_t pid) {
-  task_runner_->PostTask(
-      [this, ds_id, pid] { RecordTimedOutProcDescriptors(ds_id, pid); });
+  task_runner_->PostTask([this, ds_id, pid] {
+    UpdateProcessStateStatus(ds_id, pid, ProcessState::Status::kFdsTimedOut);
+  });
 }
 
-void Unwinder::RecordTimedOutProcDescriptors(DataSourceInstanceID ds_id,
-                                             pid_t pid) {
+void Unwinder::PostRecordNoUserspaceProcess(DataSourceInstanceID ds_id,
+                                            pid_t pid) {
+  task_runner_->PostTask([this, ds_id, pid] {
+    UpdateProcessStateStatus(ds_id, pid, ProcessState::Status::kNoUserspace);
+  });
+}
+
+void Unwinder::UpdateProcessStateStatus(DataSourceInstanceID ds_id,
+                                        pid_t pid,
+                                        ProcessState::Status new_status) {
   PERFETTO_DCHECK_THREAD(thread_checker_);
-  PERFETTO_DLOG("Unwinder::RecordTimedOutProcDescriptors(%zu, %d)",
-                static_cast<size_t>(ds_id), static_cast<int>(pid));
+  PERFETTO_DLOG("Unwinder::UpdateProcessStateStatus(%zu, %d, %d)",
+                static_cast<size_t>(ds_id), static_cast<int>(pid),
+                static_cast<int>(new_status));
 
   auto it = data_sources_.find(ds_id);
   if (it == data_sources_.end())
@@ -132,10 +144,7 @@ void Unwinder::RecordTimedOutProcDescriptors(DataSourceInstanceID ds_id,
   DataSourceState& ds = it->second;
 
   ProcessState& proc_state = ds.process_states[pid];  // insert if new
-  PERFETTO_DCHECK(proc_state.status == ProcessState::Status::kResolving);
-  PERFETTO_DCHECK(!proc_state.unwind_state.has_value());
-
-  proc_state.status = ProcessState::Status::kExpired;
+  proc_state.status = new_status;
 }
 
 void Unwinder::PostProcessQueue() {
@@ -226,8 +235,8 @@ base::FlatSet<DataSourceInstanceID> Unwinder::ConsumeAndUnwindReadySamples() {
     ProcessState& proc_state = ds.process_states[pid];  // insert if new
 
     // Giving up on the sample (proc-fd lookup timed out).
-    if (proc_state.status == ProcessState::Status::kExpired) {
-      PERFETTO_DLOG("Unwinder skipping sample for pid [%d]",
+    if (proc_state.status == ProcessState::Status::kFdsTimedOut) {
+      PERFETTO_DLOG("Unwinder skipping sample for pid [%d]: kFdsTimedOut",
                     static_cast<int>(pid));
 
       // free up the sampled stack as the main thread has no use for it
@@ -241,8 +250,8 @@ base::FlatSet<DataSourceInstanceID> Unwinder::ConsumeAndUnwindReadySamples() {
       continue;
     }
 
-    // Still waiting on the proc-fds.
-    if (proc_state.status == ProcessState::Status::kResolving) {
+    // Still waiting to be notified how to handle this process.
+    if (proc_state.status == ProcessState::Status::kInitial) {
       PERFETTO_DLOG("Unwinder deferring sample for pid [%d]",
                     static_cast<int>(pid));
 
@@ -251,17 +260,23 @@ base::FlatSet<DataSourceInstanceID> Unwinder::ConsumeAndUnwindReadySamples() {
     }
 
     // Sample ready - process it.
-    if (proc_state.status == ProcessState::Status::kResolved) {
+    if (proc_state.status == ProcessState::Status::kFdsResolved ||
+        proc_state.status == ProcessState::Status::kNoUserspace) {
       // Metatrace: emit both a scoped slice, as well as a "counter"
       // representing the pid being unwound.
       PERFETTO_METATRACE_SCOPED(TAG_PRODUCER, PROFILER_UNWIND_SAMPLE);
       PERFETTO_METATRACE_COUNTER(TAG_PRODUCER, PROFILER_UNWIND_CURRENT_PID,
                                  static_cast<int32_t>(pid));
 
-      PERFETTO_CHECK(proc_state.unwind_state.has_value());
-      CompletedSample unwound_sample =
-          UnwindSample(entry.sample, &proc_state.unwind_state.value(),
-                       proc_state.attempted_unwinding);
+      PERFETTO_CHECK(proc_state.status == ProcessState::Status::kNoUserspace ||
+                     proc_state.unwind_state.has_value());
+
+      UnwindingMetadata* opt_user_state =
+          (proc_state.unwind_state.has_value()
+               ? &proc_state.unwind_state.value()
+               : nullptr);
+      CompletedSample unwound_sample = UnwindSample(
+          entry.sample, opt_user_state, proc_state.attempted_unwinding);
       proc_state.attempted_unwinding = true;
 
       PERFETTO_METATRACE_COUNTER(TAG_PRODUCER, PROFILER_UNWIND_CURRENT_PID, 0);
@@ -296,15 +311,27 @@ base::FlatSet<DataSourceInstanceID> Unwinder::ConsumeAndUnwindReadySamples() {
 }
 
 CompletedSample Unwinder::UnwindSample(const ParsedSample& sample,
-                                       UnwindingMetadata* unwind_state,
+                                       UnwindingMetadata* opt_user_state,
                                        bool pid_unwound_before) {
   PERFETTO_DCHECK_THREAD(thread_checker_);
-  PERFETTO_DCHECK(unwind_state);
 
   CompletedSample ret;
   ret.common = sample.common;
 
+  // Symbolize kernel-unwound kernel frames, if appropriate.
+  std::vector<unwindstack::FrameData> kernel_frames =
+      SymbolizeKernelCallchain(sample);
+
+  size_t kernel_frames_size = kernel_frames.size();
+  ret.frames = std::move(kernel_frames);
+  ret.build_ids.resize(kernel_frames_size, "");
+
+  // Perform userspace unwinding using libunwindstack, if appropriate.
+  if (!opt_user_state)
+    return ret;
+
   // Overlay the stack bytes over /proc/<pid>/mem.
+  UnwindingMetadata* unwind_state = opt_user_state;
   std::shared_ptr<unwindstack::Memory> overlay_memory =
       std::make_shared<StackOverlayMemory>(
           unwind_state->fd_mem, sample.regs->sp(),
@@ -376,26 +403,12 @@ CompletedSample Unwinder::UnwindSample(const ParsedSample& sample,
     unwind = attempt_unwind();
   }
 
-  // Symbolize kernel-unwound kernel frames (if any).
-  std::vector<unwindstack::FrameData> kernel_frames =
-      SymbolizeKernelCallchain(sample);
-
-  // Concatenate the kernel and userspace frames.
-  auto kernel_frames_size = kernel_frames.size();
-
-  ret.frames = std::move(kernel_frames);
-
   ret.build_ids.reserve(kernel_frames_size + unwind.frames.size());
   ret.frames.reserve(kernel_frames_size + unwind.frames.size());
-
-  ret.build_ids.resize(kernel_frames_size, "");
-
   for (unwindstack::FrameData& frame : unwind.frames) {
     ret.build_ids.emplace_back(unwind_state->GetBuildId(frame));
     ret.frames.emplace_back(std::move(frame));
   }
-
-  PERFETTO_CHECK(ret.build_ids.size() == ret.frames.size());
 
   // In case of an unwinding error, add a synthetic error frame (which will
   // appear as a caller of the partially-unwound fragment), for easier
@@ -405,17 +418,19 @@ CompletedSample Unwinder::UnwindSample(const ParsedSample& sample,
     unwindstack::FrameData frame_data{};
     frame_data.function_name =
         "ERROR " + StringifyLibUnwindstackError(unwind.error_code);
-    frame_data.map_name = "ERROR";
     ret.frames.emplace_back(std::move(frame_data));
     ret.build_ids.emplace_back("");
     ret.unwind_error = unwind.error_code;
   }
 
+  PERFETTO_CHECK(ret.build_ids.size() == ret.frames.size());
   return ret;
 }
 
 std::vector<unwindstack::FrameData> Unwinder::SymbolizeKernelCallchain(
     const ParsedSample& sample) {
+  static base::NoDestructor<std::shared_ptr<unwindstack::MapInfo>>
+      kernel_map_info(unwindstack::MapInfo::Create(0, 0, 0, 0, "kernel"));
   std::vector<unwindstack::FrameData> ret;
   if (sample.kernel_ips.empty())
     return ret;
@@ -438,10 +453,10 @@ std::vector<unwindstack::FrameData> Unwinder::SymbolizeKernelCallchain(
 
     // Synthesise a partially-valid libunwindstack frame struct for the kernel
     // frame. We reuse the type for convenience. The kernel frames are marked by
-    // a magical "kernel" string as their containing mapping.
+    // a magical "kernel" MapInfo object as their containing mapping.
     unwindstack::FrameData frame{};
     frame.function_name = std::move(function_name);
-    frame.map_name = "kernel";
+    frame.map_info = kernel_map_info.ref();
     ret.emplace_back(std::move(frame));
   }
   return ret;
@@ -540,7 +555,8 @@ void Unwinder::ClearCachedStatePeriodic(DataSourceInstanceID ds_id,
   PERFETTO_DLOG("Clearing unwinder's cached state.");
 
   for (auto& pid_and_process : ds.process_states) {
-    pid_and_process.second.unwind_state->fd_maps.Reset();
+    if (pid_and_process.second.status == ProcessState::Status::kFdsResolved)
+      pid_and_process.second.unwind_state->fd_maps.Reset();
   }
   ResetAndEnableUnwindstackCache();
   base::MaybeReleaseAllocatorMemToOS();

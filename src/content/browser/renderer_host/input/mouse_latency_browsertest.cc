@@ -78,13 +78,13 @@ class TracingRenderWidgetHost : public RenderWidgetHostImpl {
  public:
   TracingRenderWidgetHost(FrameTree* frame_tree,
                           RenderWidgetHostDelegate* delegate,
-                          AgentSchedulingGroupHost& agent_scheduling_group,
+                          base::SafeRef<SiteInstanceGroup> site_instance_group,
                           int32_t routing_id,
                           bool hidden)
       : RenderWidgetHostImpl(frame_tree,
                              /*self_owned=*/false,
                              delegate,
-                             agent_scheduling_group,
+                             std::move(site_instance_group),
                              routing_id,
                              hidden,
                              /*renderer_initiated_creation=*/false,
@@ -116,11 +116,12 @@ class TracingRenderWidgetHostFactory : public RenderWidgetHostFactory {
   std::unique_ptr<RenderWidgetHostImpl> CreateRenderWidgetHost(
       FrameTree* frame_tree,
       RenderWidgetHostDelegate* delegate,
-      AgentSchedulingGroupHost& agent_scheduling_group,
+      base::SafeRef<SiteInstanceGroup> site_instance_group,
       int32_t routing_id,
       bool hidden) override {
     return std::make_unique<TracingRenderWidgetHost>(
-        frame_tree, delegate, agent_scheduling_group, routing_id, hidden);
+        frame_tree, delegate, std::move(site_instance_group), routing_id,
+        hidden);
   }
 };
 
@@ -257,7 +258,8 @@ class MouseLatencyBrowserTest : public ContentBrowserTest {
   std::string ShowTraceEventsWithId(const std::string& id_to_show,
                                     const base::ListValue* traceEvents) {
     std::stringstream stream;
-    for (const base::Value& traceEvent_value : traceEvents->GetList()) {
+    for (const base::Value& traceEvent_value :
+         traceEvents->GetListDeprecated()) {
       if (!traceEvent_value.is_dict())
         continue;
       const base::DictionaryValue& traceEvent =
@@ -283,7 +285,8 @@ class MouseLatencyBrowserTest : public ContentBrowserTest {
 
     std::map<std::string, int> trace_ids;
 
-    for (const base::Value& traceEvent_value : traceEvents->GetList()) {
+    for (const base::Value& traceEvent_value :
+         traceEvents->GetListDeprecated()) {
       ASSERT_TRUE(traceEvent_value.is_dict());
       const base::DictionaryValue& traceEvent =
           base::Value::AsDictionaryValue(traceEvent_value);
@@ -337,7 +340,7 @@ IN_PROC_BROWSER_TEST_F(MouseLatencyBrowserTest,
 
   std::vector<std::string> trace_event_names;
 
-  for (const base::Value& traceEvent_value : traceEvents->GetList()) {
+  for (const base::Value& traceEvent_value : traceEvents->GetListDeprecated()) {
     ASSERT_TRUE(traceEvent_value.is_dict());
     const base::DictionaryValue& traceEvent =
         base::Value::AsDictionaryValue(traceEvent_value);

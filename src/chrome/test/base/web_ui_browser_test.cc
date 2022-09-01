@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
@@ -116,7 +117,7 @@ class WebUITestMessageHandler : public content::WebUIMessageHandler,
     // To ensure this gets done, do this before ASSERT* calls.
     RunQuitClosure();
 
-    const auto& list = test_result->GetList();
+    const auto& list = test_result->GetListDeprecated();
     ASSERT_FALSE(list.empty());
     const bool test_succeeded = list[0].is_bool() && list[0].GetBool();
     std::string message;
@@ -386,7 +387,7 @@ class PrintContentBrowserClient : public ChromeContentBrowserClient {
 
  private:
   // ChromeContentBrowserClient implementation:
-  content::WebContentsViewDelegate* GetWebContentsViewDelegate(
+  std::unique_ptr<content::WebContentsViewDelegate> GetWebContentsViewDelegate(
       content::WebContents* web_contents) override {
     preview_dialog_ = web_contents;
     observer_ = std::make_unique<WebUIJsInjectionReadyObserver>(

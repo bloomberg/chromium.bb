@@ -8,11 +8,12 @@
 #include <utility>
 
 #include "base/callback_helpers.h"
+#include "base/containers/adapters.h"
 #include "base/containers/contains.h"
 #include "base/guid.h"
 #include "base/strings/stringprintf.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/child_process_security_policy_impl.h"
-#include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/service_worker/service_worker_consts.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
@@ -190,8 +191,20 @@ void ServiceWorkerContainerHost::Register(
   if (!service_worker_security_utils::AllOriginsMatchAndCanAccessServiceWorkers(
           urls)) {
     mojo::ReportBadMessage(ServiceWorkerConsts::kBadMessageImproperOrigins);
-    // ReportBadMessage() will kill the renderer process, but Mojo complains if
-    // the callback is not run. Just run it with nonsense arguments.
+    // ReportBadMessage() will terminate the renderer process, but Mojo
+    // complains if the callback is not run. Just run it with nonsense
+    // arguments.
+    std::move(callback).Run(blink::mojom::ServiceWorkerErrorType::kUnknown,
+                            std::string(), nullptr);
+    return;
+  }
+
+  if (!service_worker_security_utils::
+          OriginCanRegisterServiceWorkerFromJavascript(url_)) {
+    mojo::ReportBadMessage(ServiceWorkerConsts::kBadMessageImproperOrigins);
+    // ReportBadMessage() will terminate the renderer process, but Mojo
+    // complains if the callback is not run. Just run it with nonsense
+    // arguments.
     std::move(callback).Run(blink::mojom::ServiceWorkerErrorType::kUnknown,
                             std::string(), nullptr);
     return;
@@ -512,13 +525,12 @@ void ServiceWorkerContainerHost::RemoveMatchingRegistration(
 ServiceWorkerRegistration* ServiceWorkerContainerHost::MatchRegistration()
     const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  auto it = matching_registrations_.rbegin();
-  for (; it != matching_registrations_.rend(); ++it) {
-    if (it->second->is_uninstalled())
+  for (const auto& registration : base::Reversed(matching_registrations_)) {
+    if (registration.second->is_uninstalled())
       continue;
-    if (it->second->is_uninstalling())
+    if (registration.second->is_uninstalling())
       return nullptr;
-    return it->second.get();
+    return registration.second.get();
   }
   return nullptr;
 }
@@ -910,8 +922,6 @@ void ServiceWorkerContainerHost::UpdateUrls(
       fetch_request_window_id_ = base::UnguessableToken::Create();
   }
 
-  auto previous_origin = url::Origin::Create(previous_url);
-  auto new_origin = url::Origin::Create(url);
   // Update client id on cross origin redirects. This corresponds to the HTML
   // standard's "process a navigation fetch" algorithm's step for discarding
   // |reservedEnvironment|.
@@ -920,8 +930,7 @@ void ServiceWorkerContainerHost::UpdateUrls(
   // same as |reservedEnvironment|'s creation URL's origin, then:
   //    1. Run the environment discarding steps for |reservedEnvironment|.
   //    2. Set |reservedEnvironment| to null."
-  if (previous_url.is_valid() &&
-      !new_origin.IsSameOriginWith(previous_origin)) {
+  if (previous_url.is_valid() && !url::IsSameOriginWith(previous_url, url)) {
     // Remove old controller since we know the controller is definitely
     // changed. We need to remove |this| from |controller_|'s controllee before
     // updating UUID since ServiceWorkerVersion has a map from uuid to provider
@@ -1162,8 +1171,11 @@ void ServiceWorkerContainerHost::EvictFromBackForwardCache(
     BackForwardCacheMetrics::NotRestoredReason reason) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(IsBackForwardCacheEnabled());
-  DCHECK(IsContainerForWindowClient());
+  DCHECK(IsContainerForClient());
   is_in_back_forward_cache_ = false;
+
+  if (!IsContainerForWindowClient())
+    return;
 
   auto* rfh = RenderFrameHostImpl::FromID(GetRenderFrameHostId());
   // |rfh| could be evicted before this function is called.
@@ -1174,7 +1186,7 @@ void ServiceWorkerContainerHost::EvictFromBackForwardCache(
 void ServiceWorkerContainerHost::OnEnterBackForwardCache() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(IsBackForwardCacheEnabled());
-  DCHECK(IsContainerForWindowClient());
+  DCHECK(IsContainerForClient());
   if (controller_)
     controller_->MoveControlleeToBackForwardCacheMap(client_uuid());
   is_in_back_forward_cache_ = true;
@@ -1183,7 +1195,7 @@ void ServiceWorkerContainerHost::OnEnterBackForwardCache() {
 void ServiceWorkerContainerHost::OnRestoreFromBackForwardCache() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(IsBackForwardCacheEnabled());
-  DCHECK(IsContainerForWindowClient());
+  DCHECK(IsContainerForClient());
   if (controller_)
     controller_->RestoreControlleeFromBackForwardCacheMap(client_uuid());
   is_in_back_forward_cache_ = false;

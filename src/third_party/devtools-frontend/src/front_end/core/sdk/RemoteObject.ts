@@ -62,8 +62,8 @@ export class RemoteObject {
     return remoteObject.type;
   }
 
-  static isNullOrUndefined(remoteObject: RemoteObject|null|undefined): boolean {
-    if (remoteObject === null || remoteObject === undefined) {
+  static isNullOrUndefined(remoteObject?: RemoteObject): boolean {
+    if (remoteObject === undefined) {
       return true;
     }
     switch (remoteObject.type) {
@@ -199,7 +199,7 @@ export class RemoteObject {
       if (property.isAccessorProperty()) {
         continue;
       }
-      if (property.symbol) {
+      if (property.private || property.symbol) {
         propertySymbols.push(property);
       } else {
         propertiesMap.set(property.name, property);
@@ -485,10 +485,18 @@ export class RemoteObjectImpl extends RemoteObject {
       result.push(remoteProperty);
     }
     for (const property of privateProperties) {
-      const propertyValue =
-          this.runtimeModelInternal.createRemoteObject((property.value as Protocol.Runtime.RemoteObject));
+      const propertyValue = property.value ? this.runtimeModelInternal.createRemoteObject(property.value) : null;
       const remoteProperty = new RemoteObjectProperty(
           property.name, propertyValue, true, true, true, false, undefined, false, undefined, true);
+
+      if (typeof property.value === 'undefined') {
+        if (property.get && property.get.type !== 'undefined') {
+          remoteProperty.getter = this.runtimeModelInternal.createRemoteObject(property.get);
+        }
+        if (property.set && property.set.type !== 'undefined') {
+          remoteProperty.setter = this.runtimeModelInternal.createRemoteObject(property.set);
+        }
+      }
       result.push(remoteProperty);
     }
 
@@ -525,7 +533,7 @@ export class RemoteObjectImpl extends RemoteObject {
     const resultPromise = this.doSetObjectPropertyValue(response.result, name);
 
     if (response.result.objectId) {
-      this.#runtimeAgent.invoke_releaseObject({objectId: response.result.objectId});
+      void this.#runtimeAgent.invoke_releaseObject({objectId: response.result.objectId});
     }
 
     return resultPromise;
@@ -611,7 +619,7 @@ export class RemoteObjectImpl extends RemoteObject {
     if (!this.#objectIdInternal) {
       return;
     }
-    this.#runtimeAgent.invoke_releaseObject({objectId: this.#objectIdInternal});
+    void this.#runtimeAgent.invoke_releaseObject({objectId: this.#objectIdInternal});
   }
 
   arrayLength(): number {
@@ -707,7 +715,7 @@ export class ScopeRef {
 
 export class RemoteObjectProperty {
   name: string;
-  value: RemoteObject|null|undefined;
+  value?: RemoteObject;
   enumerable: boolean;
   writable: boolean;
   isOwn: boolean;
@@ -725,9 +733,7 @@ export class RemoteObjectProperty {
       wasThrown?: boolean, symbol?: RemoteObject|null, synthetic?: boolean,
       syntheticSetter?: ((arg0: string) => Promise<RemoteObject|null>), isPrivate?: boolean) {
     this.name = name;
-    if (value !== null) {
-      this.value = value;
-    }
+    this.value = value !== null ? value : undefined;
     this.enumerable = typeof enumerable !== 'undefined' ? enumerable : true;
     const isNonSyntheticOrSyntheticWritable = !synthetic || Boolean(syntheticSetter);
     this.writable = typeof writable !== 'undefined' ? writable : isNonSyntheticOrSyntheticWritable;
@@ -756,6 +762,20 @@ export class RemoteObjectProperty {
 
   isAccessorProperty(): boolean {
     return Boolean(this.getter || this.setter);
+  }
+
+  match({includeNullOrUndefinedValues, regex}: {includeNullOrUndefinedValues: boolean, regex: RegExp|null}): boolean {
+    if (regex !== null) {
+      if (!regex.test(this.name) && !regex.test(this.value?.description ?? '')) {
+        return false;
+      }
+    }
+    if (!includeNullOrUndefinedValues) {
+      if (!this.isAccessorProperty() && RemoteObject.isNullOrUndefined(this.value)) {
+        return false;
+      }
+    }
+    return true;
   }
 }
 

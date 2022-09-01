@@ -1,5 +1,5 @@
 # Copyright (C) 2018-2021 The ANGLE Project Authors.
-# Copyright (C) 2019-2021 LunarG, Inc.
+# Copyright (C) 2019-2022 LunarG, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -82,6 +82,7 @@ config("vulkan_layer_config") {
 
 core_validation_sources = [
   "layers/android_ndk_types.h",
+  "layers/base_node.cpp",
   "layers/base_node.h",
   "layers/buffer_state.cpp",
   "layers/buffer_state.h",
@@ -101,6 +102,10 @@ core_validation_sources = [
   "layers/image_state.cpp",
   "layers/pipeline_state.h",
   "layers/pipeline_state.cpp",
+  "layers/pipeline_layout_state.h",
+  "layers/pipeline_layout_state.cpp",
+  "layers/pipeline_sub_state.h",
+  "layers/pipeline_sub_state.cpp",
   "layers/qfo_transfer.h",
   "layers/query_state.h",
   "layers/queue_state.cpp",
@@ -113,6 +118,7 @@ core_validation_sources = [
   "layers/core_error_location.h",
   "layers/descriptor_sets.cpp",
   "layers/descriptor_sets.h",
+  "layers/descriptor_validation.cpp",
   "layers/drawdispatch.cpp",
   "layers/generated/corechecks_optick_instrumentation.cpp",
   "layers/generated/corechecks_optick_instrumentation.h",
@@ -266,11 +272,11 @@ source_set("vulkan_layer_utils") {
     "layers/generated/vk_safe_struct.h",
     "layers/generated/vk_typemap_helper.h",
     "layers/generated/vk_validation_error_messages.h",
+    "layers/generated/vk_format_utils.cpp",
+    "layers/generated/vk_format_utils.h",
     "layers/hash_util.h",
     "layers/hash_vk_types.h",
     "layers/sparse_containers.h",
-    "layers/vk_format_utils.cpp",
-    "layers/vk_format_utils.h",
     "layers/vk_layer_config.cpp",
     "layers/vk_layer_config.h",
     "layers/vk_layer_data.h",

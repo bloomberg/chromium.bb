@@ -5,7 +5,10 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PROBE_ASYNC_TASK_CONTEXT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PROBE_ASYNC_TASK_CONTEXT_H_
 
-#include "third_party/blink/renderer/core/probe/async_task_id.h"
+#include "third_party/blink/renderer/core/core_export.h"
+
+#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/renderer/core/frame/ad_script_identifier.h"
 
 namespace v8 {
 class Isolate;
@@ -27,7 +30,7 @@ class CORE_EXPORT AsyncTaskContext {
   AsyncTaskContext() = default;
   ~AsyncTaskContext();
 
-  // Not copyable or movable. The address of the async_task_id_ is used
+  // Not copyable or movable. The address of `AsyncTaskContext` is used
   // to identify this task and corresponding runs/invocations via `AsyncTask`.
   AsyncTaskContext(const AsyncTaskContext&) = delete;
   AsyncTaskContext& operator=(const AsyncTaskContext&) = delete;
@@ -40,10 +43,36 @@ class CORE_EXPORT AsyncTaskContext {
   // this context after `Cancel` was called.
   void Cancel();
 
+  // Marks this async task as being created on behalf of ad script. If the ad
+  // script has an identifier then pass it in `ad_identifier` else pass
+  // `absl::nullopt`. `ad_identifier` is for developer debugging purposes and
+  // providing an accurate identifier is best effort.
+  void SetAdTask(const absl::optional<AdScriptIdentifier>& ad_identifier) {
+    ad_task_ = true;
+    ad_identifier_ = ad_identifier;
+  }
+
+  bool IsAdTask() const { return ad_task_; }
+
+  absl::optional<AdScriptIdentifier> ad_identifier() const {
+    return ad_identifier_;
+  }
+
+  // The Id uniquely identifies this task with the V8 debugger. The Id is
+  // calculated based on the address of `AsyncTaskContext`.
+  void* Id() const;
+
  private:
   friend class AsyncTask;
 
-  AsyncTaskId async_task_id_;
+  // Whether or not this async task was created by ad script.
+  bool ad_task_ = false;
+
+  // If this async task was created by ad-related script, the identifier
+  // specifies which ad script it was in many cases, but not always (e.g., not
+  // when the entire execution context is considered ad related).
+  absl::optional<AdScriptIdentifier> ad_identifier_;
+
   v8::Isolate* isolate_ = nullptr;
 };
 

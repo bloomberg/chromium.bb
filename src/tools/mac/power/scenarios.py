@@ -10,6 +10,8 @@ import datetime
 import logging
 import typing
 import os
+import pyautogui
+from AppKit import NSBundle  # used to suppress macOS dock icon pop up/bounce
 
 import utils
 import browsers
@@ -37,6 +39,16 @@ class ScenarioOSADriver(abc.ABC):
   def Launch(self):
     """Starts the driver script.
     """
+    app_info = NSBundle.mainBundle().infoDictionary()
+    # Suppress macOS dock icon pop up/bounce.
+    app_info["LSBackgroundOnly"] = "1"
+
+    # Disable aborting the sequence of movements by moving to the corner of
+    # the screen. This is fine because there isn't a sequence but a single move.
+    pyautogui.FAILSAFE = False
+    # Move the cursor out of the way so it's always in the same spot.
+    pyautogui.moveTo(0, 0)
+
     assert self.osa_script is not None
     logging.debug(f"Starting scenario {self.name}")
     self.script_process = subprocess.Popen(['osascript', self.osa_script.name])
@@ -174,21 +186,10 @@ class ZeroWindowScenario(ScenarioWithBrowserOSADriver):
 class NavigationScenario(ScenarioWithBrowserOSADriver):
   """Scenario that has a browser navigating on web pages in a loop.
   """
-  NAVIGATED_SITES = [
-      "https://amazon.com",
-      "https://www.amazon.com/s?k=computer&ref=nb_sb_noss_2",
-      "https://google.com", "https://www.google.com/search?q=computers",
-      "https://www.youtube.com",
-      "https://www.youtube.com/results?search_query=computers",
-      "https://docs.google.com/document/d/1Ll-8Nvo6JlhzKEttst8GHWCc7_A8Hluy2fX99cy4Sfg/edit?usp=sharing"
-  ]
 
-  def __init__(self,
-               browser_driver: browsers.BrowserDriver,
-               navigation_duration: datetime.timedelta,
-               navigation_cycles: int,
-               sites=NAVIGATED_SITES,
-               scenario_name="navigation"):
+  def __init__(self, browser_driver: browsers.BrowserDriver,
+               navigation_duration: datetime.timedelta, navigation_cycles: int,
+               sites, scenario_name):
     super().__init__(scenario_name, browser_driver,
                      navigation_duration * navigation_cycles * len(sites))
     self._CompileTemplate(
@@ -242,11 +243,36 @@ def MakeScenarioDriver(scenario_name,
   if "idle_on_youtube" == scenario_name:
     return IdleOnSiteScenario.Youtube(browser_driver,
                                       datetime.timedelta(minutes=60))
-  if "navigation" == scenario_name:
+
+  if scenario_name.startswith("navigation"):
+
+    if "navigation_top_sites" == scenario_name:
+      NAVIGATED_SITES = [
+          "https://amazon.com",
+          "https://www.amazon.com/s?k=computer&ref=nb_sb_noss_2",
+          "https://google.com", "https://www.google.com/search?q=computers",
+          "https://www.youtube.com",
+          "https://www.youtube.com/results?search_query=computers",
+          "https://docs.google.com/document/d/1Ll-8Nvo6JlhzKEttst8GHWCc7_A8Hluy2fX99cy4Sfg/edit?usp=sharing"
+      ]
+    elif "navigation_heavy_sites" == scenario_name:
+      NAVIGATED_SITES = [
+          "https://www.chase.com/",
+          "https://www.nytimes.com/ca/section/technology",
+          "https://www.macys.com/",
+          "https://fr.airbnb.ca/s/Montr%C3%A9al/homes?place_id=ChIJDbdkHFQayUwR7-8fITgxTmU&query=Montr%C3%A9al&refinement_paths%5B%5D=%2Fhomes&tab_id=home_tab",
+          "https://www.homedepot.ca/search?q=computer#!q=computer",
+          "https://polygon.com"
+      ]
+    else:
+      raise ValueError("Invalid navigation scenario.")
+
     return NavigationScenario(
         browser_driver,
         navigation_duration=datetime.timedelta(seconds=15),
-        navigation_cycles=70)
+        navigation_cycles=140,
+        sites=NAVIGATED_SITES,
+        scenario_name=scenario_name)
   if "zero_window" == scenario_name:
     return ZeroWindowScenario(browser_driver, datetime.timedelta(minutes=60))
   return None

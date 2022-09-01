@@ -8,7 +8,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
@@ -27,6 +26,7 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.LooperMode;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
@@ -42,6 +42,7 @@ import org.chromium.components.content_settings.ContentSettingValues;
 import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.components.embedder_support.util.UrlUtilitiesJni;
+import org.chromium.components.search_engines.TemplateUrlService;
 import org.chromium.content_public.browser.BrowserContextHandle;
 import org.chromium.content_public.browser.WebContents;
 
@@ -53,6 +54,7 @@ import java.util.HashSet;
  */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
+@LooperMode(LooperMode.Mode.LEGACY)
 public class GeolocationHeaderUnitTest {
     private static final String SEARCH_URL = "https://www.google.com/search?q=potatoes";
 
@@ -123,6 +125,9 @@ public class GeolocationHeaderUnitTest {
     @Mock
     WebContents mWebContentsMock;
 
+    @Mock
+    TemplateUrlService mTemplateUrlServiceMock;
+
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
@@ -139,15 +144,14 @@ public class GeolocationHeaderUnitTest {
                      any(BrowserContextHandle.class), eq(ContentSettingsType.GEOLOCATION),
                      anyString(), anyString()))
                 .thenReturn(ContentSettingValues.ALLOW);
-        when(mWebsitePreferenceBridgeJniMock.isPermissionControlledByDSE(
-                     any(BrowserContextHandle.class), anyInt(), anyString()))
-                .thenReturn(true);
         when(mWebsitePreferenceBridgeJniMock.isDSEOrigin(
                      any(BrowserContextHandle.class), anyString()))
                 .thenReturn(true);
         when(mUrlUtilitiesJniMock.isGoogleSearchUrl(anyString())).thenReturn(true);
         when(mProfileJniMock.fromWebContents(any(WebContents.class))).thenReturn(mProfileMock);
         when(mProfileMock.isOffTheRecord()).thenReturn(false);
+        when(mTemplateUrlServiceMock.getUrlForSearchQuery(anyString()))
+                .thenReturn("https://example.com/");
         sRefreshVisibleNetworksRequests = 0;
         sRefreshLastKnownLocation = 0;
     }
@@ -289,7 +293,7 @@ public class GeolocationHeaderUnitTest {
     @Test
     @Config(shadows = {ShadowVisibleNetworksTracker.class, ShadowGeolocationTracker.class})
     public void testPrimeLocationForGeoHeader() {
-        GeolocationHeader.primeLocationForGeoHeader();
+        GeolocationHeader.primeLocationForGeoHeaderIfEnabled(mProfileMock, mTemplateUrlServiceMock);
         assertEquals(1, sRefreshLastKnownLocation);
         assertEquals(1, sRefreshVisibleNetworksRequests);
     }
@@ -298,7 +302,19 @@ public class GeolocationHeaderUnitTest {
     @Config(shadows = {ShadowVisibleNetworksTracker.class, ShadowGeolocationTracker.class})
     public void testPrimeLocationForGeoHeaderPermissionOff() {
         GeolocationHeader.setAppPermissionGrantedForTesting(false);
-        GeolocationHeader.primeLocationForGeoHeader();
+        GeolocationHeader.primeLocationForGeoHeaderIfEnabled(mProfileMock, mTemplateUrlServiceMock);
+        assertEquals(0, sRefreshLastKnownLocation);
+        assertEquals(0, sRefreshVisibleNetworksRequests);
+    }
+
+    @Test
+    @Config(shadows = {ShadowVisibleNetworksTracker.class, ShadowGeolocationTracker.class})
+    public void testPrimeLocationForGeoHeaderDSEAutograntOff() {
+        when(mWebsitePreferenceBridgeJniMock.getPermissionSettingForOrigin(
+                     any(BrowserContextHandle.class), eq(ContentSettingsType.GEOLOCATION),
+                     anyString(), anyString()))
+                .thenReturn(ContentSettingValues.ASK);
+        GeolocationHeader.primeLocationForGeoHeaderIfEnabled(mProfileMock, mTemplateUrlServiceMock);
         assertEquals(0, sRefreshLastKnownLocation);
         assertEquals(0, sRefreshVisibleNetworksRequests);
     }

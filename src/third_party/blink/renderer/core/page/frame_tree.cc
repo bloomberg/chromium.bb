@@ -125,12 +125,12 @@ Frame& FrameTree::Top(FrameTreeBoundary frame_tree_boundary) const {
   return *this_frame_->Top(frame_tree_boundary);
 }
 
-Frame* FrameTree::NextSibling() const {
-  return this_frame_->NextSibling();
+Frame* FrameTree::NextSibling(FrameTreeBoundary frame_tree_boundary) const {
+  return this_frame_->NextSibling(frame_tree_boundary);
 }
 
-Frame* FrameTree::FirstChild() const {
-  return this_frame_->FirstChild();
+Frame* FrameTree::FirstChild(FrameTreeBoundary frame_tree_boundary) const {
+  return this_frame_->FirstChild(frame_tree_boundary);
 }
 
 Frame* FrameTree::ScopedChild(unsigned index) const {
@@ -216,7 +216,7 @@ FrameTree::FindResult FrameTree::FindOrCreateFrameForNavigation(
   }
 
   const KURL& url = request.GetResourceRequest().Url();
-  Frame* frame = FindFrameForNavigationInternal(name, url);
+  Frame* frame = FindFrameForNavigationInternal(name, url, &request);
   bool new_window = false;
   if (!frame) {
     frame = CreateNewWindow(*current_frame, request, name);
@@ -239,8 +239,10 @@ FrameTree::FindResult FrameTree::FindOrCreateFrameForNavigation(
   return FindResult(frame, new_window);
 }
 
-Frame* FrameTree::FindFrameForNavigationInternal(const AtomicString& name,
-                                                 const KURL& url) const {
+Frame* FrameTree::FindFrameForNavigationInternal(
+    const AtomicString& name,
+    const KURL& url,
+    FrameLoadRequest* request) const {
   if (EqualIgnoringASCIICase(name, "_current")) {
     UseCounter::Count(
         blink::DynamicTo<blink::LocalFrame>(this_frame_.Get())->GetDocument(),
@@ -248,11 +250,34 @@ Frame* FrameTree::FindFrameForNavigationInternal(const AtomicString& name,
   }
 
   if (EqualIgnoringASCIICase(name, "_self") ||
-      EqualIgnoringASCIICase(name, "_current") || name.IsEmpty())
+      EqualIgnoringASCIICase(name, "_current") || name.IsEmpty()) {
     return this_frame_;
+  }
 
   if (EqualIgnoringASCIICase(name, "_top"))
     return &Top(FrameTreeBoundary::kFenced);
+
+  // The target _unfencedTop should only be treated as a special name in
+  // opaque-ads mode fenced frames.
+  // TODO(crbug.com/1262022): Simplify check when ShadowDOM fenced frames are
+  // eventually removed.
+  if (EqualIgnoringASCIICase(name, "_unfencedTop")) {
+    // In ShadowDOM, we can just return the unfenced top frame, because it
+    // exists in the renderer process.
+    if (this_frame_.Get()->IsInShadowDOMOpaqueAdsFencedFrameTree()) {
+      return &Top();
+    }
+    // In MPArch, because the fenced frame tree is isolated in the renderer
+    // process, we instead set a flag that will later indicate to the browser
+    // that this is an _unfencedTop navigation, and return the current frame
+    // so that the renderer-side checks will succeed.
+    // TODO(crbug.com/1315802): Refactor MPArch _unfencedTop handling.
+    if (this_frame_.Get()->IsInMPArchOpaqueAdsFencedFrameTree() &&
+        request != nullptr) {
+      request->SetIsUnfencedTopNavigation(true);
+      return this_frame_;
+    }
+  }
 
   if (EqualIgnoringASCIICase(name, "_parent")) {
     return Parent(FrameTreeBoundary::kFenced)
@@ -267,7 +292,8 @@ Frame* FrameTree::FindFrameForNavigationInternal(const AtomicString& name,
 
   // Search subtree starting with this frame first.
   for (Frame* frame = this_frame_; frame;
-       frame = frame->Tree().TraverseNext(this_frame_)) {
+       frame = frame->Tree().TraverseNext(this_frame_,
+                                          FrameTreeBoundary::kFenced)) {
     if (frame->Tree().GetName() == name &&
         To<LocalFrame>(this_frame_.Get())->CanNavigate(*frame, url)) {
       return frame;
@@ -281,8 +307,10 @@ Frame* FrameTree::FindFrameForNavigationInternal(const AtomicString& name,
   if (!page)
     return nullptr;
 
-  for (Frame* frame = page->MainFrame(); frame;
-       frame = frame->Tree().TraverseNext()) {
+  for (Frame *top = &this_frame_->Tree().Top(FrameTreeBoundary::kFenced),
+             *frame = top;
+       frame;
+       frame = frame->Tree().TraverseNext(top, FrameTreeBoundary::kFenced)) {
     // Skip descendants of this frame that were searched above to avoid
     // showing duplicate console messages if a frame is found by name
     // but access is blocked.
@@ -293,12 +321,21 @@ Frame* FrameTree::FindFrameForNavigationInternal(const AtomicString& name,
     }
   }
 
+  // In fenced frames, only resolve target names using the above lookup methods
+  // (keywords, descendants, and the rest of the frame tree within the fence).
+  // TODO(crbug.com/1262022): Remove this early return when we get rid of
+  // ShadowDOM fenced frames, because it is unnecessary in MPArch.
+  if (this_frame_->IsInFencedFrameTree()) {
+    return nullptr;
+  }
+
   // Search the entire tree of each of the other pages in this namespace.
   for (const Page* other_page : page->RelatedPages()) {
     if (other_page == page || other_page->IsClosing())
       continue;
     for (Frame* frame = other_page->MainFrame(); frame;
-         frame = frame->Tree().TraverseNext()) {
+         frame =
+             frame->Tree().TraverseNext(nullptr, FrameTreeBoundary::kFenced)) {
       if (frame->Tree().GetName() == name &&
           To<LocalFrame>(this_frame_.Get())->CanNavigate(*frame, url)) {
         return frame;
@@ -333,8 +370,9 @@ bool FrameTree::IsDescendantOf(const Frame* ancestor) const {
 }
 
 DISABLE_CFI_PERF
-Frame* FrameTree::TraverseNext(const Frame* stay_within) const {
-  Frame* child = FirstChild();
+Frame* FrameTree::TraverseNext(const Frame* stay_within,
+                               FrameTreeBoundary frame_tree_boundary) const {
+  Frame* child = FirstChild(frame_tree_boundary);
   if (child) {
     DCHECK(!stay_within || child->Tree().IsDescendantOf(stay_within));
     return child;
@@ -343,18 +381,20 @@ Frame* FrameTree::TraverseNext(const Frame* stay_within) const {
   if (this_frame_ == stay_within)
     return nullptr;
 
-  Frame* sibling = NextSibling();
+  Frame* sibling = NextSibling(frame_tree_boundary);
   if (sibling) {
     DCHECK(!stay_within || sibling->Tree().IsDescendantOf(stay_within));
     return sibling;
   }
 
   Frame* frame = this_frame_;
-  while (!sibling && (!stay_within || frame->Tree().Parent() != stay_within)) {
-    frame = frame->Tree().Parent();
+  while (!sibling &&
+         (!stay_within ||
+          frame->Tree().Parent(frame_tree_boundary) != stay_within)) {
+    frame = frame->Tree().Parent(frame_tree_boundary);
     if (!frame)
       return nullptr;
-    sibling = frame->Tree().NextSibling();
+    sibling = frame->Tree().NextSibling(frame_tree_boundary);
   }
 
   if (frame) {
