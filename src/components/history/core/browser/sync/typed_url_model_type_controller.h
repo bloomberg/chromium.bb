@@ -5,19 +5,27 @@
 #ifndef COMPONENTS_HISTORY_CORE_BROWSER_SYNC_TYPED_URL_MODEL_TYPE_CONTROLLER_H_
 #define COMPONENTS_HISTORY_CORE_BROWSER_SYNC_TYPED_URL_MODEL_TYPE_CONTROLLER_H_
 
-#include "base/memory/raw_ptr.h"
-#include "components/prefs/pref_change_registrar.h"
+#include "components/history/core/browser/sync/history_model_type_controller_helper.h"
+#include "components/sync/base/model_type.h"
 #include "components/sync/driver/model_type_controller.h"
 
 class PrefService;
+
+namespace syncer {
+class SyncService;
+}  // namespace syncer
 
 namespace history {
 
 class HistoryService;
 
+// TODO(crbug.com/1318028): Rename to HistoryModelTypeController.
 class TypedURLModelTypeController : public syncer::ModelTypeController {
  public:
-  TypedURLModelTypeController(HistoryService* history_service,
+  // `model_type` must be either HISTORY or TYPED_URLS.
+  TypedURLModelTypeController(syncer::ModelType model_type,
+                              syncer::SyncService* sync_service,
+                              HistoryService* history_service,
                               PrefService* pref_service);
 
   TypedURLModelTypeController(const TypedURLModelTypeController&) = delete;
@@ -30,12 +38,7 @@ class TypedURLModelTypeController : public syncer::ModelTypeController {
   PreconditionState GetPreconditionState() const override;
 
  private:
-  void OnSavingBrowserHistoryDisabledChanged();
-
-  const raw_ptr<HistoryService> history_service_;
-  const raw_ptr<PrefService> pref_service_;
-
-  PrefChangeRegistrar pref_registrar_;
+  HistoryModelTypeControllerHelper helper_;
 };
 
 }  // namespace history

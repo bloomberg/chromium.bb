@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/observer_list.h"
 #include "base/observer_list_types.h"
 #include "base/time/time.h"
 #include "chrome/browser/ash/child_accounts/time_limits/app_types.h"
@@ -16,7 +17,6 @@
 
 namespace content {
 class WebContents;
-class NavigationHandle;
 class NavigationEntry;
 }  // namespace content
 
@@ -63,8 +63,7 @@ class WebTimeNavigationObserver
   bool IsWebApp() const;
 
   // content::WebContentsObserver:
-  void DidFinishNavigation(
-      content::NavigationHandle* navigation_handle) override;
+  void PrimaryPageChanged(content::Page& page) override;
   void WebContentsDestroyed() override;
   void TitleWasSet(content::NavigationEntry* entry) override;
 

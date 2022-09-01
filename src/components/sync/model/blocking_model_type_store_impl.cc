@@ -10,6 +10,7 @@
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
+#include "components/sync/model/metadata_batch.h"
 #include "components/sync/model/model_error.h"
 #include "components/sync/model/model_type_store_backend.h"
 #include "components/sync/protocol/entity_metadata.pb.h"
@@ -28,21 +29,6 @@ const char kMetadataPrefix[] = "-md-";
 
 // Key for global metadata record.
 const char kGlobalMetadataKey[] = "-GlobalMetadata";
-
-// Formats key prefix for data records of |type|.
-std::string FormatDataPrefix(ModelType type) {
-  return std::string(GetModelTypeRootTag(type)) + kDataPrefix;
-}
-
-// Formats key prefix for metadata records of |type|.
-std::string FormatMetaPrefix(ModelType type) {
-  return std::string(GetModelTypeRootTag(type)) + kMetadataPrefix;
-}
-
-// Formats key for global metadata record of |type|.
-std::string FormatGlobalMetadataKey(ModelType type) {
-  return std::string(GetModelTypeRootTag(type)) + kGlobalMetadataKey;
-}
 
 class LevelDbMetadataChangeList : public MetadataChangeList {
  public:
@@ -145,6 +131,21 @@ class LevelDbWriteBatch : public BlockingModelTypeStoreImpl::WriteBatch {
 };
 
 }  // namespace
+
+// Formats key prefix for data records of |type|.
+std::string FormatDataPrefix(ModelType type) {
+  return std::string(GetModelTypeRootTag(type)) + kDataPrefix;
+}
+
+// Formats key prefix for metadata records of |type|.
+std::string FormatMetaPrefix(ModelType type) {
+  return std::string(GetModelTypeRootTag(type)) + kMetadataPrefix;
+}
+
+// Formats key for global metadata record of |type|.
+std::string FormatGlobalMetadataKey(ModelType type) {
+  return std::string(GetModelTypeRootTag(type)) + kGlobalMetadataKey;
+}
 
 BlockingModelTypeStoreImpl::BlockingModelTypeStoreImpl(
     ModelType type,

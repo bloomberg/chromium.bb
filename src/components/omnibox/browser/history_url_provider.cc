@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/containers/adapters.h"
 #include "base/feature_list.h"
 #include "base/location.h"
 #include "base/memory/raw_ptr.h"
@@ -33,6 +34,7 @@
 #include "components/omnibox/browser/autocomplete_result.h"
 #include "components/omnibox/browser/history_provider.h"
 #include "components/omnibox/browser/in_memory_url_index_types.h"
+#include "components/omnibox/browser/keyword_provider.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/url_prefix.h"
 #include "components/omnibox/browser/verbatim_match.h"
@@ -275,86 +277,6 @@ GURL ConvertToHostOnly(const history::HistoryMatch& match,
 }  // namespace
 
 // -----------------------------------------------------------------
-// SearchTermsDataSnapshot
-
-// Implementation of SearchTermsData that takes a snapshot of another
-// SearchTermsData by copying all the responses to the different getters into
-// member strings, then returning those strings when its own getters are called.
-// This will typically be constructed on the UI thread from
-// UIThreadSearchTermsData but is subsequently safe to use on any thread.
-class SearchTermsDataSnapshot : public SearchTermsData {
- public:
-  explicit SearchTermsDataSnapshot(const SearchTermsData* search_terms_data);
-  ~SearchTermsDataSnapshot() override;
-  SearchTermsDataSnapshot(const SearchTermsDataSnapshot&) = delete;
-  SearchTermsDataSnapshot& operator=(const SearchTermsDataSnapshot&) = delete;
-
-  std::string GoogleBaseURLValue() const override;
-  std::string GetApplicationLocale() const override;
-  std::u16string GetRlzParameterValue(bool from_app_list) const override;
-  std::string GetSearchClient() const override;
-  std::string GoogleImageSearchSource() const override;
-
-  // Estimates dynamic memory usage.
-  // See base/trace_event/memory_usage_estimator.h for more info.
-  size_t EstimateMemoryUsage() const override;
-
- private:
-  std::string google_base_url_value_;
-  std::string application_locale_;
-  std::u16string rlz_parameter_value_;
-  std::string search_client_;
-  std::string google_image_search_source_;
-};
-
-SearchTermsDataSnapshot::SearchTermsDataSnapshot(
-    const SearchTermsData* search_terms_data) {
-  if (search_terms_data) {
-    google_base_url_value_ = search_terms_data->GoogleBaseURLValue();
-    application_locale_ = search_terms_data->GetApplicationLocale();
-    rlz_parameter_value_ = search_terms_data->GetRlzParameterValue(false);
-    search_client_ = search_terms_data->GetSearchClient();
-    google_image_search_source_ = search_terms_data->GoogleImageSearchSource();
-  }
-}
-
-SearchTermsDataSnapshot::~SearchTermsDataSnapshot() {
-}
-
-std::string SearchTermsDataSnapshot::GoogleBaseURLValue() const {
-  return google_base_url_value_;
-}
-
-std::string SearchTermsDataSnapshot::GetApplicationLocale() const {
-  return application_locale_;
-}
-
-std::u16string SearchTermsDataSnapshot::GetRlzParameterValue(
-    bool from_app_list) const {
-  return rlz_parameter_value_;
-}
-
-std::string SearchTermsDataSnapshot::GetSearchClient() const {
-  return search_client_;
-}
-
-std::string SearchTermsDataSnapshot::GoogleImageSearchSource() const {
-  return google_image_search_source_;
-}
-
-size_t SearchTermsDataSnapshot::EstimateMemoryUsage() const {
-  size_t res = 0;
-
-  res += base::trace_event::EstimateMemoryUsage(google_base_url_value_);
-  res += base::trace_event::EstimateMemoryUsage(application_locale_);
-  res += base::trace_event::EstimateMemoryUsage(rlz_parameter_value_);
-  res += base::trace_event::EstimateMemoryUsage(search_client_);
-  res += base::trace_event::EstimateMemoryUsage(google_image_search_source_);
-
-  return res;
-}
-
-// -----------------------------------------------------------------
 // HistoryURLProvider
 
 // These ugly magic numbers will go away once we switch all scoring
@@ -420,10 +342,9 @@ HistoryURLProvider::VisitClassifier::VisitClassifier(
   // empty prefix to those that have most components).
   const std::string& desired_tld = input.desired_tld();
   const URLPrefixes& url_prefixes = URLPrefix::GetURLPrefixes();
-  for (auto prefix_it = url_prefixes.rbegin(); prefix_it != url_prefixes.rend();
-       ++prefix_it) {
+  for (const URLPrefix& url_prefix : base::Reversed(url_prefixes)) {
     const GURL url_with_prefix = url_formatter::FixupURL(
-        base::UTF16ToUTF8(prefix_it->prefix + input.text()), desired_tld);
+        base::UTF16ToUTF8(url_prefix.prefix + input.text()), desired_tld);
     if (url_with_prefix.is_valid() &&
         db_->GetRowForURL(url_with_prefix, &url_row_) && !url_row_.hidden()) {
       type_ = Type::kVisited;
@@ -463,7 +384,7 @@ HistoryURLProviderParams::HistoryURLProviderParams(
           default_search_provider
               ? new TemplateURL(default_search_provider->data())
               : nullptr),
-      search_terms_data(new SearchTermsDataSnapshot(search_terms_data)),
+      search_terms_data(SearchTermsData::MakeSnapshot(search_terms_data)),
       allow_deleting_browser_history(allow_deleting_browser_history) {}
 
 HistoryURLProviderParams::~HistoryURLProviderParams() {
@@ -484,9 +405,9 @@ size_t HistoryURLProviderParams::EstimateMemoryUsage() const {
 HistoryURLProvider::HistoryURLProvider(AutocompleteProviderClient* client,
                                        AutocompleteProviderListener* listener)
     : HistoryProvider(AutocompleteProvider::TYPE_HISTORY_URL, client),
-      listener_(listener),
       params_(nullptr),
       search_url_database_(OmniboxFieldTrial::HUPSearchDatabase()) {
+  AddListener(listener);
   // Initialize the default HUP scoring params.
   OmniboxFieldTrial::GetDefaultHUPScoringParams(&scoring_params_);
   // Initialize HUP scoring params based on the current experiment.
@@ -514,33 +435,40 @@ void HistoryURLProvider::Start(const AutocompleteInput& input,
       (input.type() == metrics::OmniboxInputType::EMPTY))
     return;
 
+  // Remove the keyword from input if we're in keyword mode for a starter pack
+  // engine.
+  AutocompleteInput autocomplete_input =
+      KeywordProvider::AdjustInputForStarterPackEngines(
+          input, client()->GetTemplateURLService());
+
   // Do some fixup on the user input before matching against it, so we provide
   // good results for local file paths, input with spaces, etc.
-  const FixupReturn fixup_return(FixupUserInput(input));
+  const FixupReturn fixup_return(FixupUserInput(autocomplete_input));
   if (!fixup_return.first)
     return;
   url::Parsed parts;
   url_formatter::SegmentURL(fixup_return.second, &parts);
-  AutocompleteInput fixed_up_input(input);
+  AutocompleteInput fixed_up_input(autocomplete_input);
   fixed_up_input.UpdateText(fixup_return.second, std::u16string::npos, parts);
 
   // Create a match for what the user typed.
-  const bool trim_http = !AutocompleteInput::HasHTTPScheme(input.text());
+  const bool trim_http =
+      !AutocompleteInput::HasHTTPScheme(autocomplete_input.text());
   AutocompleteMatch what_you_typed_match(
       VerbatimMatchForInput(this, client(), fixed_up_input,
                             fixed_up_input.canonicalized_url(), trim_http));
 
   // If the input fix-up above added characters, show them as an
   // autocompletion, unless directed not to.
-  if (!input.prevent_inline_autocomplete() &&
-      fixed_up_input.text().size() > input.text().size() &&
-      base::StartsWith(fixed_up_input.text(), input.text(),
+  if (!autocomplete_input.prevent_inline_autocomplete() &&
+      fixed_up_input.text().size() > autocomplete_input.text().size() &&
+      base::StartsWith(fixed_up_input.text(), autocomplete_input.text(),
                        base::CompareCase::SENSITIVE)) {
     what_you_typed_match.fill_into_edit = fixed_up_input.text();
     what_you_typed_match.inline_autocompletion =
-        fixed_up_input.text().substr(input.text().size());
+        fixed_up_input.text().substr(autocomplete_input.text().size());
     what_you_typed_match.contents_class.push_back(
-        {input.text().length(), ACMatchClassification::URL});
+        {autocomplete_input.text().length(), ACMatchClassification::URL});
   }
 
   what_you_typed_match.relevance = CalculateRelevance(WHAT_YOU_TYPED, 0);
@@ -572,7 +500,7 @@ void HistoryURLProvider::Start(const AutocompleteInput& input,
   // onto the |params_| member for later deletion below if we need to run pass
   // 2.
   std::unique_ptr<HistoryURLProviderParams> params(new HistoryURLProviderParams(
-      fixed_up_input, input, trim_http, what_you_typed_match,
+      fixed_up_input, autocomplete_input, trim_http, what_you_typed_match,
       default_search_provider, search_terms_data,
       client()->AllowDeletingBrowserHistory()));
 
@@ -596,7 +524,7 @@ void HistoryURLProvider::Start(const AutocompleteInput& input,
 
   // Pass 2: Ask the history service to call us back on the history thread,
   // where we can read the full on-disk DB.
-  if (search_url_database_ && input.want_asynchronous_matches()) {
+  if (search_url_database_ && autocomplete_input.want_asynchronous_matches()) {
     done_ = false;
     params_ = params.release();  // This object will be destroyed in
                                  // QueryComplete() once we're done with it.
@@ -891,7 +819,7 @@ void HistoryURLProvider::QueryComplete(
   }
 
   done_ = true;
-  listener_->OnProviderUpdate(true);
+  NotifyListeners(true);
 }
 
 bool HistoryURLProvider::FixupExactSuggestion(
@@ -987,7 +915,7 @@ GURL HistoryURLProvider::AsKnownIntranetURL(
   // input's text and parts between Parse() and here, it seems better to be
   // paranoid and check.
   if ((input.type() != metrics::OmniboxInputType::UNKNOWN) ||
-      !base::LowerCaseEqualsASCII(input.scheme(), url::kHttpScheme) ||
+      !base::EqualsCaseInsensitiveASCII(input.scheme(), url::kHttpScheme) ||
       !input.parts().host.is_nonempty())
     return GURL();
 
@@ -1189,7 +1117,7 @@ AutocompleteMatch HistoryURLProvider::HistoryMatchToACMatch(
       AutocompleteInput::FormattedStringWithEquivalentMeaning(
           info.url(),
           url_formatter::FormatUrl(info.url(), fill_into_edit_format_types,
-                                   net::UnescapeRule::SPACES, nullptr, nullptr,
+                                   base::UnescapeRule::SPACES, nullptr, nullptr,
                                    &inline_autocomplete_offset),
           client()->GetSchemeClassifier(), &inline_autocomplete_offset);
 
@@ -1198,7 +1126,7 @@ AutocompleteMatch HistoryURLProvider::HistoryMatchToACMatch(
           history_match.match_in_scheme,
       history_match.match_in_subdomain);
   match.contents = url_formatter::FormatUrl(info.url(), format_types,
-                                            net::UnescapeRule::SPACES, nullptr,
+                                            base::UnescapeRule::SPACES, nullptr,
                                             nullptr, nullptr);
   auto term_matches = FindTermMatches(params.input.text(), match.contents);
   match.contents_class = ClassifyTermMatches(

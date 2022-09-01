@@ -219,7 +219,7 @@ void SpellCheckHostChromeImpl::RequestTextCheck(
                      base::Unretained(this))));
 }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 void SpellCheckHostChromeImpl::InitializeDictionaries(
     InitializeDictionariesCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -284,7 +284,7 @@ void SpellCheckHostChromeImpl::OnDictionariesInitialized() {
   std::move(dictionaries_loaded_callback_)
       .Run(std::move(dictionaries), custom_words, enable);
 }
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
 void SpellCheckHostChromeImpl::OnRequestFinished(SpellingRequest* request) {
   auto iterator = requests_.find(request);
@@ -300,7 +300,7 @@ void SpellCheckHostChromeImpl::CombineResultsForTesting(
 #endif  //  BUILDFLAG(USE_BROWSER_SPELLCHECKER) &&
         //  BUILDFLAG(ENABLE_SPELLING_SERVICE)
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 int SpellCheckHostChromeImpl::ToDocumentTag(int route_id) {
   if (!tag_map_.count(route_id))
     tag_map_[route_id] = spellcheck_platform::GetDocumentTag();
@@ -314,7 +314,7 @@ void SpellCheckHostChromeImpl::RetireDocumentTag(int route_id) {
   spellcheck_platform::CloseDocumentWithTag(ToDocumentTag(route_id));
   tag_map_.erase(route_id);
 }
-#endif  // defined(OS_MAC)
+#endif  // BUILDFLAG(IS_MAC)
 
 SpellcheckService* SpellCheckHostChromeImpl::GetSpellcheckService() const {
   auto* host = content::RenderProcessHost::FromID(render_process_id_);

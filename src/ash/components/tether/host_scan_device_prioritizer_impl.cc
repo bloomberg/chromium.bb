@@ -6,6 +6,7 @@
 
 #include "ash/components/tether/pref_names.h"
 #include "ash/components/tether/tether_host_response_recorder.h"
+#include "base/containers/adapters.h"
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chromeos/network/network_state.h"
@@ -13,7 +14,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace tether {
 
@@ -60,14 +61,13 @@ void HostScanDevicePrioritizerImpl::SortByHostScanOrder(
   // Iterate from the last stored ID to the first stored ID. This ensures that
   // the items at the front of the list end up in the front of the prioritized
   // |remote_devices| vector.
-  for (auto prioritized_it = prioritized_ids.rbegin();
-       prioritized_it != prioritized_ids.rend(); ++prioritized_it) {
+  for (const std::string& prioritized_id : base::Reversed(prioritized_ids)) {
     // Iterate through |remote_devices| to see if a device ID exists which is
     // equal to |stored_id|. If one exists, remove it from its previous
     // position in the list and add it at the front instead.
     for (auto remote_devices_it = remote_devices->begin();
          remote_devices_it != remote_devices->end(); ++remote_devices_it) {
-      if (remote_devices_it->GetDeviceId() != *prioritized_it) {
+      if (remote_devices_it->GetDeviceId() != prioritized_id) {
         continue;
       }
 
@@ -81,4 +81,4 @@ void HostScanDevicePrioritizerImpl::SortByHostScanOrder(
 
 }  // namespace tether
 
-}  // namespace chromeos
+}  // namespace ash

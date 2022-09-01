@@ -4,7 +4,7 @@ spv.fragmentShaderBarycentric.frag
 // Id's are bound by 43
 
                               Capability Shader
-                              Capability FragmentBarycentricNV
+                              Capability FragmentBarycentricKHR
                               Extension  "SPV_NV_fragment_shader_barycentric"
                1:             ExtInstImport  "GLSL.std.450"
                               MemoryModel Logical GLSL450
@@ -19,10 +19,10 @@ spv.fragmentShaderBarycentric.frag
                               MemberName 17(vertices) 0  "attrib"
                               Name 21  "v"
                               Decorate 8(value) Location 1
-                              Decorate 11(gl_BaryCoordNV) BuiltIn BaryCoordNV
+                              Decorate 11(gl_BaryCoordNV) BuiltIn BaryCoordKHR
                               Decorate 17(vertices) Block
                               Decorate 21(v) Location 0
-                              Decorate 21(v) PerVertexNV
+                              Decorate 21(v) PerVertexKHR
                2:             TypeVoid
                3:             TypeFunction 2
                6:             TypeFloat 32

@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/time/time.h"
 #include "chrome/browser/ash/net/network_diagnostics/network_diagnostics_routine.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -22,7 +23,7 @@ namespace base {
 class TickClock;
 }
 
-namespace chromeos {
+namespace ash {
 namespace network_diagnostics {
 
 // Tests whether the DNS latency is below an acceptable threshold.
@@ -35,7 +36,7 @@ class DnsLatencyRoutine : public NetworkDiagnosticsRoutine,
   ~DnsLatencyRoutine() override;
 
   // NetworkDiagnosticsRoutine:
-  mojom::RoutineType Type() override;
+  chromeos::network_diagnostics::mojom::RoutineType Type() override;
   void Run() override;
   void AnalyzeResultsAndExecuteCallback() override;
 
@@ -77,12 +78,13 @@ class DnsLatencyRoutine : public NetworkDiagnosticsRoutine,
   std::vector<std::string> hostnames_to_query_;
   std::vector<base::TimeDelta> latencies_;
   net::AddressList resolved_addresses_;
-  std::vector<mojom::DnsLatencyProblem> problems_;
+  std::vector<chromeos::network_diagnostics::mojom::DnsLatencyProblem>
+      problems_;
   mojo::Remote<network::mojom::HostResolver> host_resolver_;
   mojo::Receiver<network::mojom::ResolveHostClient> receiver_{this};
 };
 
 }  // namespace network_diagnostics
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // CHROME_BROWSER_ASH_NET_NETWORK_DIAGNOSTICS_DNS_LATENCY_ROUTINE_H_

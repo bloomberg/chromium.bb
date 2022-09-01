@@ -23,8 +23,10 @@ VideoStreamDecoderImpl::VideoStreamDecoderImpl(
     VideoStreamDecoderInterface::Callbacks* callbacks,
     VideoDecoderFactory* decoder_factory,
     TaskQueueFactory* task_queue_factory,
-    std::map<int, std::pair<SdpVideoFormat, int>> decoder_settings)
-    : timing_(Clock::GetRealTimeClock()),
+    std::map<int, std::pair<SdpVideoFormat, int>> decoder_settings,
+    const FieldTrialsView* field_trials)
+    : field_trials_(field_trials),
+      timing_(Clock::GetRealTimeClock(), *field_trials_),
       decode_callbacks_(this),
       next_frame_info_index_(0),
       callbacks_(callbacks),
@@ -32,7 +34,10 @@ VideoStreamDecoderImpl::VideoStreamDecoderImpl(
       decoder_factory_(decoder_factory),
       decoder_settings_(std::move(decoder_settings)),
       shut_down_(false),
-      frame_buffer_(Clock::GetRealTimeClock(), &timing_, nullptr),
+      frame_buffer_(Clock::GetRealTimeClock(),
+                    &timing_,
+                    nullptr,
+                    *field_trials_),
       bookkeeping_queue_(task_queue_factory->CreateTaskQueue(
           "video_stream_decoder_bookkeeping_queue",
           TaskQueueFactory::Priority::NORMAL)),
@@ -70,11 +75,11 @@ void VideoStreamDecoderImpl::OnFrame(std::unique_ptr<EncodedFrame> frame) {
 }
 
 void VideoStreamDecoderImpl::SetMinPlayoutDelay(TimeDelta min_delay) {
-  timing_.set_min_playout_delay(min_delay.ms());
+  timing_.set_min_playout_delay(min_delay);
 }
 
 void VideoStreamDecoderImpl::SetMaxPlayoutDelay(TimeDelta max_delay) {
-  timing_.set_max_playout_delay(max_delay.ms());
+  timing_.set_max_playout_delay(max_delay);
 }
 
 VideoDecoder* VideoStreamDecoderImpl::GetDecoder(int payload_type) {
@@ -258,7 +263,8 @@ void VideoStreamDecoderImpl::OnDecodedFrameCallback(
          Timestamp::Millis(frame_info->decode_start_time_ms +
                            *decode_time_ms)});
     decoded_image.set_timestamp_us(frame_info->render_time_us);
-    timing_.StopDecodeTimer(*decode_time_ms, decode_stop_time_ms);
+    timing_.StopDecodeTimer(TimeDelta::Millis(*decode_time_ms),
+                            Timestamp::Millis(decode_stop_time_ms));
 
     callbacks_->OnDecodedFrame(decoded_image, callback_info);
   });

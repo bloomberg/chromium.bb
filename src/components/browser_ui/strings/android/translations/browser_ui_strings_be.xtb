@@ -16,6 +16,7 @@
 <translation id="1369915414381695676">Сайт <ph name="SITE_NAME" /> дададзены</translation>
 <translation id="1383876407941801731">Пошук</translation>
 <translation id="1384959399684842514">Спампоўка прыпынена</translation>
+<translation id="1409426117486808224">Спрошчаны выгляд адкрытых укладак</translation>
 <translation id="1415402041810619267">URL-адрас абрэзаны</translation>
 <translation id="1446450296470737166">Дазв. поўны кантроль MIDI-прылад</translation>
 <translation id="1620510694547887537">Камера</translation>
@@ -49,10 +50,13 @@
 <translation id="2212565012507486665">Дазволіць файлы cookie</translation>
 <translation id="2228071138934252756">Каб праграма "<ph name="APP_NAME" />" атрымала доступ да камеры, уключыце камеру таксама ў <ph name="BEGIN_LINK" />Наладах Android<ph name="END_LINK" />.</translation>
 <translation id="2241634353105152135">Толькі адзін раз</translation>
+<translation id="2253414712144136228">Выдаліць: <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="2289270750774289114">Пытацца, калі сайт спрабуе выявіць прылады Bluetooth паблізу (рэкамендуецца)</translation>
 <translation id="2315043854645842844">Аперацыйная сістэма не падтрымлівае выбар сертыфіката кліента.</translation>
+<translation id="2321958826496381788">Перацягвайце паўзунок, пакуль гэты тэкст не будзе зручна чытаць. Пасля падвойнага націскання на абзац тэкст павінен быць як мінімум такім вялікім.</translation>
 <translation id="2359808026110333948">Працягнуць</translation>
 <translation id="2379925928934107488">Калі Chrome выкарыстоўвае цёмную тэму, прымяняць яе да сайтаў (калі гэта магчыма)</translation>
+<translation id="2387895666653383613">Маштаб тэксту</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> МБ</translation>
 <translation id="2404630663942400771">{PERMISSIONS_SUMMARY_ALLOWED,plural, =1{Дазволены <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> і яшчэ <ph name="NUM_MORE" />}one{Дазволены <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> і яшчэ <ph name="NUM_MORE" />}few{Дазволены <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> і яшчэ <ph name="NUM_MORE" />}many{Дазволены <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> і яшчэ <ph name="NUM_MORE" />}other{Дазволены <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> і яшчэ <ph name="NUM_MORE" />}}</translation>
 <translation id="2434158240863470628">Спампоўванне завершана <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -73,6 +77,7 @@
 <translation id="2687403674020088961">Блакіраваць усе файлы cookie (не рэкамендуецца)</translation>
 <translation id="2704606927547763573">Скапіравана</translation>
 <translation id="2717722538473713889">Адрасы электроннай пошты</translation>
+<translation id="2750481671343847896">Сайты могуць паказваць запыты на ўваход ад сэрвісаў ідэнтыфікацыі.</translation>
 <translation id="2785051990912111074">Будуць выдалены файлы cookie для вэб-сайта <ph name="WEBSITE" /></translation>
 <translation id="2822354292072154809">Сапраўды скінуць усе дазволы сайта для <ph name="CHOSEN_OBJECT_NAME" />?</translation>
 <translation id="2870560284913253234">Сайт</translation>
@@ -89,12 +94,14 @@
 <translation id="3115898365077584848">Паказаць інфармацыю</translation>
 <translation id="3123473560110926937">Заблакіравана на некаторых сайтах</translation>
 <translation id="3198916472715691905">Аб'ём захаваных даных: <ph name="STORAGE_AMOUNT" /></translation>
+<translation id="3203366800380907218">З інтэрнэту</translation>
 <translation id="321187648315454507">Каб праграма "<ph name="APP_NAME" />" магла адпраўляць вам апавяшчэнні, таксама ўключыце іх у <ph name="BEGIN_LINK" />Наладах Android<ph name="END_LINK" />.</translation>
 <translation id="3227137524299004712">Мікрафон</translation>
 <translation id="3277252321222022663">Дазволіць сайтам доступ да датчыкаў (рэкамендуецца)</translation>
 <translation id="3295602654194328831">Схаваць інфармацыю</translation>
 <translation id="3328801116991980348">Звесткі пра сайт</translation>
 <translation id="3333961966071413176">Усе кантакты</translation>
+<translation id="3362437373201486687">Ідзе пошук прылад з Bluetooth</translation>
 <translation id="3386292677130313581">Пытацца, перш чым дазволіць сайтам атрымліваць інфармацыю пра ваша месцазнаходжанне (рэкамендуецца)</translation>
 <translation id="3538390592868664640">Забараніць сайтам ствараць 3D-карту вашага асяроддзя і адсочваць становішча камеры</translation>
 <translation id="3551268116566418498">Выйсці з рэжыму інкогніта?</translation>
@@ -107,17 +114,23 @@
 <translation id="3763247130972274048">Каб пераматаць відэа на 10 с назад або наперад, двойчы націсніце на яго з правага або левага боку</translation>
 <translation id="3797520601150691162">Не прымяняць цёмную тэму да канкрэтнага сайта</translation>
 <translation id="381841723434055211">Нумары тэлефонаў</translation>
+<translation id="3826050100957962900">Уваход праз староннія сэрвісы</translation>
 <translation id="3835233591525155343">Выкарыстанне вамі прылады</translation>
 <translation id="385051799172605136">Назад</translation>
 <translation id="3859306556332390985">Перайсці ўперад</translation>
+<translation id="3895926599014793903">Прымусовае ўключэнне павелічэння</translation>
 <translation id="3955193568934677022">Дазволіць сайтам прайграваць абароненае змесціва (рэкамендуецца)</translation>
 <translation id="3967822245660637423">Спампоўка завершана</translation>
 <translation id="3987993985790029246">Скапіраваць спасылку</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
+<translation id="3992684624889376114">Пра гэту старонку</translation>
 <translation id="4002066346123236978">Назва</translation>
 <translation id="4008040567710660924">Дазвол выкарыстання файлаў cookie ад канкрэтнага сайта.</translation>
 <translation id="4046123991198612571">Наступны трэк</translation>
+<translation id="4149994727733219643">Спрошчаны выгляд для вэб-старонак</translation>
 <translation id="4165986682804962316">Налады сайта</translation>
+<translation id="4169549551965910670">Выканана падключэнне да прылады USB</translation>
+<translation id="4194328954146351878">Пытацца, перш чым дазваляць сайтам праглядаць і змяняць інфармацыю на прыладах NFC (рэкамендуецца)</translation>
 <translation id="4200726100658658164">Адкрыць налады месцазнаходжання</translation>
 <translation id="4226663524361240545">Апавяшчэнні могуць уключаць вібрацыю прылады</translation>
 <translation id="4259722352634471385">Пераход па наступным адрасе заблакіраваны: <ph name="URL" /></translation>
@@ -126,6 +139,7 @@
 <translation id="42981349822642051">Разгарнуць</translation>
 <translation id="4336434711095810371">Выдаліць усе даныя</translation>
 <translation id="4402755511846832236">Не даваць сайтам знаць, калі вы карыстаецеся гэтай прыладай</translation>
+<translation id="4428065317363009941">Персаналізацыя рэкламы</translation>
 <translation id="4434045419905280838">Усплыв. вокны і перанакіраванні</translation>
 <translation id="445467742685312942">Дазволіць сайтам прайграваць абароненае змесціва</translation>
 <translation id="4468959413250150279">Выключыць гук на канкрэтным сайце.</translation>
@@ -156,6 +170,7 @@
 <translation id="5186036860380548585">Гэты выбар можна зрабіць уверсе экрана</translation>
 <translation id="5197729504361054390">Выбраныя вамі кантакты будуць абагулены з сайтам <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="5216942107514965959">Апошняе наведванне: сёння</translation>
+<translation id="5264323282659631142">Выдаліць чып "<ph name="CHIP_LABEL" />"</translation>
 <translation id="528192093759286357">Каб выйсці з поўнаэкраннага рэжыму, правядзіце зверху ўніз і націсніце кнопку "Назад".</translation>
 <translation id="5300589172476337783">Паказаць</translation>
 <translation id="5301954838959518834">OK</translation>
@@ -166,6 +181,7 @@
 <translation id="5354152178998424783">Будуць выдалены файлы cookie і даныя (<ph name="DATASIZE" />), захаваныя сайтамі.</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(і яшчэ 1)}one{(і яшчэ #)}few{(і яшчэ #)}many{(і яшчэ #)}other{(і яшчэ #)}}</translation>
 <translation id="5403592356182871684">Імёны</translation>
+<translation id="5412236728747081950">Гэты сайт выкарыстоўвае інфармацыю пра вашы дзеянні ў Chrome, каб паказваць вам больш адпаведную вашым інтарэсам рэкламу</translation>
 <translation id="5438097262470833822">Будуць скінуты дазволы для вэб-сайта <ph name="WEBSITE" /></translation>
 <translation id="5489227211564503167">Прайшло часу: <ph name="ELAPSED_TIME" /> з <ph name="TOTAL_TIME" />.</translation>
 <translation id="5494752089476963479">Блакіраваць рэкламу на сайтах, якія паказваюць назойлівую рэкламу або рэкламу, якая ўводзіць у зман</translation>
@@ -177,10 +193,10 @@
 <translation id="5556459405103347317">Перазагрузіць</translation>
 <translation id="5596627076506792578">Дадатковыя параметры</translation>
 <translation id="5649053991847567735">Аўтаматычнае спампоўванне</translation>
+<translation id="5668404140385795438">Перавызначаць запыт вэб-сайта на прадухіленне павелічэння маштабу</translation>
 <translation id="5677928146339483299">Заблакіравана</translation>
 <translation id="5689516760719285838">Месцазнаходжанне</translation>
 <translation id="5690795753582697420">Камера выключана ў наладах Android</translation>
-<translation id="5710871682236653961">Пытацца, перш чым дазволіць сайтам адпраўляць і атрымліваць інфармацыю, калі вы націсканнем выбіраеце прылады NFC (рэкамендуецца)</translation>
 <translation id="5719847187258001597">Будуць выдалены ўсе файлы cookie і даныя, захаваныя сайтам <ph name="ORIGIN" /> і яго праграмай, размешчанай на галоўным экране.</translation>
 <translation id="5771720122942595109">Заблакіравана: <ph name="PERMISSION_1" /></translation>
 <translation id="5804241973901381774">Дазволы</translation>
@@ -224,25 +240,27 @@
 <translation id="6643016212128521049">Ачысціць</translation>
 <translation id="6689172468748959065">Фота профілю</translation>
 <translation id="6697925417670533197">Актыўныя спампоўкі</translation>
+<translation id="6722828510648505498">Блакіраваць запыты на ўваход ад сэрвісаў ідэнтыфікацыі.</translation>
 <translation id="6746124502594467657">Перамясціць ніжэй</translation>
 <translation id="6749077623962119521">Скінуць дазволы?</translation>
 <translation id="6766622839693428701">Правядзіце пальцам уніз, каб закрыць.</translation>
 <translation id="6790428901817661496">Прайграць</translation>
 <translation id="6818926723028410516">Выберыце элементы</translation>
 <translation id="6864395892908308021">Гэта прылада не падтрымлівае функцыю NFC</translation>
-<translation id="6910211073230771657">Выдалена</translation>
 <translation id="6912998170423641340">Заблакіраваць сайтам доступ да чытання тэксту і відарысаў з буфера абмену</translation>
 <translation id="6945221475159498467">Выбраць</translation>
 <translation id="6965382102122355670">ОК</translation>
+<translation id="6981982820502123353">Спец. магчымасці</translation>
 <translation id="6992289844737586249">Пытацца, перш чым дазволіць сайтам выкарыстоўваць мікрафон (рэкамендуецца)</translation>
 <translation id="7000754031042624318">Выключана ў наладах Android</translation>
 <translation id="7016516562562142042">Дазволена для бягучай пошукавай сістэмы</translation>
+<translation id="702463548815491781">Рэкамендуецца, калі ўключаны TalkBack або доступ праз пераключальнікі</translation>
 <translation id="7053983685419859001">Заблакіраваць</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{Выбраны 1 элемент}one{Выбраны # элемент}few{Выбрана # элементы}many{Выбрана # элементаў}other{Выбрана # элемента}}</translation>
-<translation id="7070090581017165256">Інфармацыя пра гэты сайт</translation>
 <translation id="7087918508125750058">Выбрана: <ph name="ITEM_COUNT" />.  Параметры знаходзяцца ўверсе экрана</translation>
 <translation id="7141896414559753902">Заблакіраваць сайтам паказ выплыўных вокнаў і перанакіраванні (рэкамендуецца)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> КБ</translation>
+<translation id="7180611975245234373">Абнавіць</translation>
 <translation id="723171743924126238">Выберыце відарысы</translation>
 <translation id="7243308994586599757">Параметры знаходзяцца ў ніжняй частцы экрана</translation>
 <translation id="7250468141469952378">Выбрана: <ph name="ITEM_COUNT" /></translation>
@@ -254,8 +272,9 @@
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7554752735887601236">Сайт выкарыстоўвае мікрафон</translation>
 <translation id="7561196759112975576">Заўсёды</translation>
-<translation id="7572498721684305250">Блакіраваць сайтам адпраўку і атрыманне інфармацыі, калі вы націсканнем выбіраеце прылады NFC</translation>
 <translation id="757524316907819857">Блакіраваць прайграванне абароненага змесціва на сайтах</translation>
+<translation id="7577900504646297215">Кіраваць інтарэсамі</translation>
+<translation id="7594634374516752650">Вэб-сайт падключаны да прылады з Bluetooth</translation>
 <translation id="7649070708921625228">Даведка</translation>
 <translation id="7658239707568436148">Скасаваць</translation>
 <translation id="7781829728241885113">Учора</translation>
@@ -288,6 +307,7 @@
 <translation id="8211406090763984747">Падключэнне бяспечнае</translation>
 <translation id="8249310407154411074">Перамясціць уверх</translation>
 <translation id="8261506727792406068">Выдаліць</translation>
+<translation id="8284326494547611709">Субцітры</translation>
 <translation id="8300705686683892304">Пад кіраваннем праграмы</translation>
 <translation id="8324158725704657629">Больш не пытацца</translation>
 <translation id="8372893542064058268">Дазволіць фонавую сінхранізацыю для канкрэтнага сайта.</translation>
@@ -295,7 +315,9 @@
 <translation id="83792324527827022">Сайт выкарыстоўвае камеру і мікрафон</translation>
 <translation id="8380167699614421159">Гэты сайт паказвае назойлівую рэкламу або рэкламу, якая ўводзіць у зман</translation>
 <translation id="8394832520002899662">Каб вярнуцца на сайт, націсніце тут</translation>
+<translation id="8409345997656833551">Апавяшчаць, калі артыкул можна адкрыць у спрошчаным выглядзе</translation>
 <translation id="8425213833346101688">Змяніць</translation>
+<translation id="8428213095426709021">Налады</translation>
 <translation id="8441146129660941386">Перайсці назад</translation>
 <translation id="8444433999583714703">Каб даць праграме "<ph name="APP_NAME" />" доступ да даных пра ваша месцазнаходжанне, уключыце апошнія ў <ph name="BEGIN_LINK" />Наладах Android<ph name="END_LINK" />.</translation>
 <translation id="8447861592752582886">Адклікаць дазвол на доступ да прылады</translation>
@@ -321,6 +343,7 @@
 <translation id="8903921497873541725">Павялічыць маштаб</translation>
 <translation id="8921772741368021346"><ph name="POSITION" /> / <ph name="DURATION" /></translation>
 <translation id="8926666909099850184">Функцыя NFC выключана на гэтай прыладзе. Уключыце яе ў <ph name="BEGIN_LINK" />Наладах Android<ph name="END_LINK" />.</translation>
+<translation id="8928445016601307354">Забараніць сайтам праглядаць і змяняць інфармацыю на прыладах NFC</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8958424370300090006">Блакіраваць файлы cookie для пэўнага сайта.</translation>
 <translation id="8959122750345127698">Пераход па наступным адрасе недаступны: <ph name="URL" /></translation>

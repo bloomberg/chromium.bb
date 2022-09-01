@@ -66,6 +66,7 @@
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_features.h"
+#include "components/metrics/content/content_stability_metrics_provider.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
 #include "components/safe_browsing/core/common/features.h"
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
@@ -88,7 +89,6 @@
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/mhtml_generation_params.h"
-#include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "net/base/auth.h"
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util.h"
@@ -239,6 +239,8 @@ AwContents::AwContents(std::unique_ptr<WebContents> web_contents)
       std::make_unique<AwRenderViewHostExt>(this, web_contents_.get());
 
   InitializePageLoadMetricsForWebContents(web_contents_.get());
+  metrics::ContentStabilityMetricsProvider::SetupWebContentsObserver(
+      web_contents_.get());
 
   permission_request_handler_ =
       std::make_unique<PermissionRequestHandler>(this, web_contents_.get());
@@ -326,16 +328,25 @@ void AwContents::InitAutofillIfNecessary(bool autocomplete_enabled) {
   if (!autofill_provider && !autocomplete_enabled)
     return;
 
+  autofill::AutofillManager::EnableDownloadManager enable_download_manager(
+      !autofill::AutofillProvider::is_download_manager_disabled_for_testing());
+
   AwAutofillClient::CreateForWebContents(web_contents);
+
+  // WebView browser tests may shall use BrowserAutofillManager if
+  // `!autofill_provider`.
+  ContentAutofillDriverFactory::DriverInitCallback driver_init_hook =
+      autofill_provider
+          ? base::BindRepeating(&autofill::AndroidDriverInitHook,
+                                AwAutofillClient::FromWebContents(web_contents),
+                                enable_download_manager)
+          : base::BindRepeating(&autofill::BrowserDriverInitHook,
+                                AwAutofillClient::FromWebContents(web_contents),
+                                base::android::GetDefaultLocaleString());
+
   ContentAutofillDriverFactory::CreateForWebContentsAndDelegate(
       web_contents, AwAutofillClient::FromWebContents(web_contents),
-      base::android::GetDefaultLocaleString(),
-      autofill::AutofillProvider::is_download_manager_disabled_for_testing()
-          ? autofill::AutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER
-          : autofill::AutofillManager::ENABLE_AUTOFILL_DOWNLOAD_MANAGER,
-      autofill_provider
-          ? base::BindRepeating(&autofill::AndroidAutofillManager::Create)
-          : autofill::AutofillManager::AutofillManagerFactoryCallback());
+      std::move(driver_init_hook));
 }
 
 void AwContents::SetAwAutofillClient(const JavaRef<jobject>& client) {
@@ -406,7 +417,7 @@ ScopedJavaLocalRef<jobject> AwContents::GetRenderProcess(
     const JavaParamRef<jobject>& obj) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   content::RenderProcessHost* host =
-      web_contents_->GetMainFrame()->GetProcess();
+      web_contents_->GetPrimaryMainFrame()->GetProcess();
   if (host->run_renderer_in_process()) {
     return ScopedJavaLocalRef<jobject>();
   }
@@ -449,12 +460,28 @@ static void JNI_AwContents_SetAwDrawSWFunctionTable(JNIEnv* env,
 static void JNI_AwContents_SetAwDrawGLFunctionTable(JNIEnv* env,
                                                     jlong function_table) {}
 
-static void JNI_AwContents_UpdateOpenWebScreenArea(JNIEnv* env,
-                                                   jint pixels,
-                                                   jint percentage) {
+static void JNI_AwContents_UpdateScreenCoverage(
+    JNIEnv* env,
+    jint global_percentage,
+    const base::android::JavaParamRef<jobjectArray>& jschemes,
+    const base::android::JavaParamRef<jintArray>& jscheme_percentages) {
+  std::vector<std::string> schemes;
+  AppendJavaStringArrayToStringVector(env, jschemes, &schemes);
+
+  std::vector<int> scheme_percentages;
+  JavaIntArrayToIntVector(env, jscheme_percentages, &scheme_percentages);
+
+  DCHECK(schemes.size() == scheme_percentages.size());
+
+  std::vector<VisibilityMetricsLogger::Scheme> scheme_enums(schemes.size());
+  for (size_t i = 0; i < schemes.size(); i++) {
+    scheme_enums[i] = VisibilityMetricsLogger::SchemeStringToEnum(schemes[i]);
+  }
+
   AwBrowserProcess::GetInstance()
       ->visibility_metrics_logger()
-      ->UpdateOpenWebScreenArea(pixels, percentage);
+      ->UpdateScreenCoverage(global_percentage, scheme_enums,
+                             scheme_percentages);
 }
 
 // static
@@ -767,7 +794,7 @@ void AwContents::ClearCache(JNIEnv* env,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   AwRenderProcess* aw_render_process =
       AwRenderProcess::GetInstanceForRenderProcessHost(
-          web_contents_->GetMainFrame()->GetProcess());
+          web_contents_->GetPrimaryMainFrame()->GetProcess());
 
   aw_render_process->ClearCache();
 
@@ -852,12 +879,12 @@ void AwContents::OnReceivedTouchIconUrl(const std::string& url,
       env, obj, ConvertUTF8ToJavaString(env, url), precomposed);
 }
 
-void AwContents::PostInvalidate() {
+void AwContents::PostInvalidate(bool inside_vsync) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj)
-    Java_AwContents_postInvalidateOnAnimation(env, obj);
+    Java_AwContents_postInvalidate(env, obj, inside_vsync);
 }
 
 void AwContents::OnNewPicture() {
@@ -1201,7 +1228,8 @@ void AwContents::UpdateScrollState(const gfx::Point& max_scroll_offset,
 }
 
 void AwContents::DidOverscroll(const gfx::Vector2d& overscroll_delta,
-                               const gfx::Vector2dF& overscroll_velocity) {
+                               const gfx::Vector2dF& overscroll_velocity,
+                               bool inside_vsync) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
@@ -1209,7 +1237,7 @@ void AwContents::DidOverscroll(const gfx::Vector2d& overscroll_delta,
     return;
   Java_AwContents_didOverscroll(env, obj, overscroll_delta.x(),
                                 overscroll_delta.y(), overscroll_velocity.x(),
-                                overscroll_velocity.y());
+                                overscroll_velocity.y(), inside_vsync);
 }
 
 ui::TouchHandleDrawable* AwContents::CreateDrawable() {
@@ -1228,10 +1256,10 @@ void AwContents::SetDipScale(JNIEnv* env,
   SetDipScaleInternal(dip_scale);
 }
 
-jboolean AwContents::IsDisplayingOpenWebContent(
+base::android::ScopedJavaLocalRef<jstring> AwContents::GetScheme(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {
-  return GetVisibilityInfo().IsDisplayingOpenWebContent();
+  return ConvertUTF8ToJavaString(env, scheme_);
 }
 
 void AwContents::OnInputEvent(JNIEnv* env, const JavaParamRef<jobject>& obj) {
@@ -1266,8 +1294,6 @@ void AwContents::SmoothScroll(JNIEnv* env,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   float scale = browser_view_renderer_.page_scale_factor();
-  if (!content::IsUseZoomForDSFEnabled())
-    scale *= browser_view_renderer_.dip_scale();
 
   DCHECK_GE(duration_ms, 0);
   render_view_host_ext_->SmoothScroll(target_x / scale, target_y / scale,
@@ -1292,10 +1318,7 @@ void AwContents::OnWebLayoutContentsSizeChanged(
   if (!obj)
     return;
   gfx::Size contents_size_css =
-      content::IsUseZoomForDSFEnabled()
-          ? ScaleToRoundedSize(contents_size,
-                               1 / browser_view_renderer_.dip_scale())
-          : contents_size;
+      ScaleToRoundedSize(contents_size, 1 / browser_view_renderer_.dip_scale());
   Java_AwContents_onWebLayoutContentsSizeChanged(
       env, obj, contents_size_css.width(), contents_size_css.height());
 }
@@ -1335,7 +1358,7 @@ void AwContents::InsertVisualStateCallback(
     jlong request_id,
     const JavaParamRef<jobject>& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  web_contents_->GetMainFrame()->InsertVisualStateCallback(
+  web_contents_->GetPrimaryMainFrame()->InsertVisualStateCallback(
       base::BindOnce(&InvokeVisualStateCallback, java_ref_, request_id,
                      ScopedJavaGlobalRef<jobject>(env, callback)));
 }
@@ -1343,8 +1366,9 @@ void AwContents::InsertVisualStateCallback(
 jint AwContents::GetEffectivePriority(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {
-  switch (
-      web_contents_->GetMainFrame()->GetProcess()->GetEffectiveImportance()) {
+  switch (web_contents_->GetPrimaryMainFrame()
+              ->GetProcess()
+              ->GetEffectiveImportance()) {
     case content::ChildProcessImportance::NORMAL:
       return static_cast<jint>(RendererPriority::WAIVED);
     case content::ChildProcessImportance::MODERATE:
@@ -1457,7 +1481,7 @@ void AwContents::SetJsOnlineProperty(JNIEnv* env,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   AwRenderProcess* aw_render_process =
       AwRenderProcess::GetInstanceForRenderProcessHost(
-          web_contents_->GetMainFrame()->GetProcess());
+          web_contents_->GetPrimaryMainFrame()->GetProcess());
 
   aw_render_process->SetJsOnlineProperty(network_up);
 }
@@ -1492,7 +1516,8 @@ void AwContents::GrantFileSchemeAccesstoChildProcess(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
   content::ChildProcessSecurityPolicy::GetInstance()->GrantRequestScheme(
-      web_contents_->GetMainFrame()->GetProcess()->GetID(), url::kFileScheme);
+      web_contents_->GetPrimaryMainFrame()->GetProcess()->GetID(),
+      url::kFileScheme);
 }
 
 void AwContents::ResumeLoadingCreatedPopupWebContents(
@@ -1559,7 +1584,7 @@ void AwContents::DidFinishNavigation(
 
   AwWebResourceRequest request(navigation_handle->GetURL().spec(),
                                navigation_handle->IsPost() ? "POST" : "GET",
-                               navigation_handle->IsInMainFrame(),
+                               navigation_handle->IsInPrimaryMainFrame(),
                                navigation_handle->HasUserGesture(),
                                net::HttpRequestHeaders());
   request.is_renderer_initiated = navigation_handle->IsRendererInitiated();

@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_PERSISTENT_H_
 
 #include "base/bind.h"
-#include "third_party/blink/renderer/platform/bindings/buildflags.h"
+#include "third_party/blink/renderer/platform/heap/heap_buildflags.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_copier.h"
 #include "third_party/blink/renderer/platform/wtf/hash_functions.h"
 #include "third_party/blink/renderer/platform/wtf/hash_traits.h"
@@ -16,11 +16,13 @@
 #include "v8/include/cppgc/persistent.h"
 #include "v8/include/cppgc/source-location.h"
 
-#if BUILDFLAG(RAW_HEAP_SNAPSHOTS)
-#define PERSISTENT_LOCATION_FOR_DEBUGGING blink::PersistentLocation::Current()
-#else  // !BUILDFLAG(RAW_HEAP_SNAPSHOTS)
-#define PERSISTENT_LOCATION_FOR_DEBUGGING blink::PersistentLocation()
-#endif  // !BUILDFLAG(RAW_HEAP_SNAPSHOTS)
+// Required to optimize away locations for builds that do not need them to avoid
+// binary size blowup.
+#if BUILDFLAG(VERBOSE_PERSISTENT)
+#define PERSISTENT_LOCATION_FROM_HERE blink::PersistentLocation::Current()
+#else  // !BUILDFLAG(VERBOSE_PERSISTENT)
+#define PERSISTENT_LOCATION_FROM_HERE blink::PersistentLocation()
+#endif  // !BUILDFLAG(VERBOSE_PERSISTENT)
 
 namespace blink {
 
@@ -30,9 +32,31 @@ using Persistent = cppgc::Persistent<T>;
 template <typename T>
 using WeakPersistent = cppgc::WeakPersistent<T>;
 
+// CrossThreadPersistent allows retaining objects from threads other than the
+// thread that owns the heap of the corresponding object.
+//
+// Caveats:
+// - Does not protect the heap owning an object from terminating. E.g., posting
+//   a task with a CrossThreadPersistent for `this` will result in a
+//   use-after-free in case the heap owning `this` is terminated before the task
+//   is invoked.
+// - Reaching transitively through the graph is unsupported as objects may be
+//   moved concurrently on the thread owning the object.
 template <typename T>
 using CrossThreadPersistent = cppgc::subtle::CrossThreadPersistent<T>;
 
+// CrossThreadWeakPersistent allows weakly retaining objects from threads other
+// than the thread that owns the heap of the corresponding object.
+//
+// Caveats:
+// - Does not protect the heap owning an object from termination, as the
+//   reference is weak.
+// - In order to access the underlying object
+//   `CrossThreadWeakPersistent<T>::Lock()` must be used which returns a
+//   `CrossThreadPersistent<T>` which in turn also does not protect the heap
+//   owning the object from terminating (see above).
+// - Reaching transitively through the graph is unsupported as objects may be
+//   moved concurrently on the thread owning the object.
 template <typename T>
 using CrossThreadWeakPersistent = cppgc::subtle::WeakCrossThreadPersistent<T>;
 
@@ -41,28 +65,28 @@ using PersistentLocation = cppgc::SourceLocation;
 template <typename T>
 Persistent<T> WrapPersistent(
     T* value,
-    const cppgc::SourceLocation& loc = PERSISTENT_LOCATION_FOR_DEBUGGING) {
+    const PersistentLocation& loc = PERSISTENT_LOCATION_FROM_HERE) {
   return Persistent<T>(value, loc);
 }
 
 template <typename T>
 WeakPersistent<T> WrapWeakPersistent(
     T* value,
-    const cppgc::SourceLocation& loc = PERSISTENT_LOCATION_FOR_DEBUGGING) {
+    const PersistentLocation& loc = PERSISTENT_LOCATION_FROM_HERE) {
   return WeakPersistent<T>(value, loc);
 }
 
 template <typename T>
 CrossThreadPersistent<T> WrapCrossThreadPersistent(
     T* value,
-    const cppgc::SourceLocation& loc = PERSISTENT_LOCATION_FOR_DEBUGGING) {
+    const PersistentLocation& loc = PERSISTENT_LOCATION_FROM_HERE) {
   return CrossThreadPersistent<T>(value, loc);
 }
 
 template <typename T>
 CrossThreadWeakPersistent<T> WrapCrossThreadWeakPersistent(
     T* value,
-    const cppgc::SourceLocation& loc = PERSISTENT_LOCATION_FOR_DEBUGGING) {
+    const PersistentLocation& loc = PERSISTENT_LOCATION_FROM_HERE) {
   return CrossThreadWeakPersistent<T>(value, loc);
 }
 

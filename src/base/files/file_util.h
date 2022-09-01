@@ -17,19 +17,18 @@
 #include <string>
 
 #include "base/base_export.h"
-#include "base/callback_forward.h"
+#include "base/callback.h"
 #include "base/containers/span.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_file.h"
 #include "build/build_config.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "base/win/windows_types.h"
-#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
+#elif BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
 #include <sys/stat.h>
 #include <unistd.h>
-#include "base/file_descriptor_posix.h"
 #include "base/posix/eintr_wrapper.h"
 #endif
 
@@ -50,7 +49,7 @@ BASE_EXPORT FilePath MakeAbsoluteFilePath(const FilePath& input);
 // If the path does not exist the function returns 0.
 //
 // This function is implemented using the FileEnumerator class so it is not
-// particularly speedy in any platform.
+// particularly speedy on any platform.
 BASE_EXPORT int64_t ComputeDirectorySize(const FilePath& root_path);
 
 // Deletes the given path, whether it's a file or a directory.
@@ -76,17 +75,28 @@ BASE_EXPORT bool DeleteFile(const FilePath& path);
 // WARNING: USING THIS EQUIVALENT TO "rm -rf", SO USE WITH CAUTION.
 BASE_EXPORT bool DeletePathRecursively(const FilePath& path);
 
-// Simplified way to get a callback to do DeleteFile(path) and ignore the
-// DeleteFile() result. On Windows, this will retry the delete via delayed tasks
-// for up to 2 seconds before giving up, to deal with AV S/W locking the file.
-BASE_EXPORT OnceCallback<void(const FilePath&)> GetDeleteFileCallback();
+// Returns a closure that, when run on any sequence that allows blocking calls,
+// will kick off a potentially asynchronous operation to delete `path`, whose
+// behavior is similar to `DeleteFile()` and `DeletePathRecursively()`
+// respectively.
+//
+// In contrast to `DeleteFile()` and `DeletePathRecursively()`, the thread pool
+// may be used in case retries are needed. On Windows, in particular, retries
+// will be attempted for some time to allow other programs (e.g., anti-virus
+// scanners or malware) to close any open handles to `path` or its contents. If
+// `reply_callback` is not null, it will be posted to the caller's sequence with
+// true if `path` was fully deleted or false otherwise.
+//
+// WARNING: It is NOT safe to use `path` until `reply_callback` is run, as the
+// retry task may still be actively trying to delete it.
+BASE_EXPORT OnceClosure
+GetDeleteFileCallback(const FilePath& path,
+                      OnceCallback<void(bool)> reply_callback = {});
+BASE_EXPORT OnceClosure
+GetDeletePathRecursivelyCallback(const FilePath& path,
+                                 OnceCallback<void(bool)> reply_callback = {});
 
-// Simplified way to get a callback to do DeletePathRecursively(path) and ignore
-// the DeletePathRecursively() result.
-BASE_EXPORT OnceCallback<void(const FilePath&)>
-GetDeletePathRecursivelyCallback();
-
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 // Schedules to delete the given path, whether it's a file or a directory, until
 // the operating system is restarted.
 // Note:
@@ -216,7 +226,7 @@ BASE_EXPORT bool ReadStreamToStringWithMaxSize(FILE* stream,
                                                size_t max_size,
                                                std::string* contents);
 
-#if defined(OS_POSIX) || defined(OS_FUCHSIA)
+#if BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
 
 // Read exactly |bytes| bytes from file descriptor |fd|, storing the result
 // in |buffer|. This function is protected against EINTR and partial reads.
@@ -229,9 +239,9 @@ BASE_EXPORT bool ReadFromFD(int fd, char* buffer, size_t bytes);
 BASE_EXPORT ScopedFD CreateAndOpenFdForTemporaryFileInDir(const FilePath& dir,
                                                           FilePath* path);
 
-#endif  // defined(OS_POSIX) || defined(OS_FUCHSIA)
+#endif  // BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
 
-#if defined(OS_POSIX)
+#if BUILDFLAG(IS_POSIX)
 
 // ReadFileToStringNonBlocking is identical to ReadFileToString except it
 // guarantees that it will not block. This guarantee is provided on POSIX by
@@ -282,16 +292,16 @@ BASE_EXPORT bool SetPosixFilePermissions(const FilePath& path, int mode);
 BASE_EXPORT bool ExecutableExistsInPath(Environment* env,
                                         const FilePath::StringType& executable);
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_AIX)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_AIX)
 // Determine if files under a given |path| can be mapped and then mprotect'd
 // PROT_EXEC. This depends on the mount options used for |path|, which vary
 // among different Linux distributions and possibly local configuration. It also
 // depends on details of kernel--ChromeOS uses the noexec option for /dev/shm
 // but its kernel allows mprotect with PROT_EXEC anyway.
 BASE_EXPORT bool IsPathExecutable(const FilePath& path);
-#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_AIX)
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_AIX)
 
-#endif  // OS_POSIX
+#endif  // BUILDFLAG(IS_POSIX)
 
 // Returns true if the given directory is empty
 BASE_EXPORT bool IsDirectoryEmpty(const FilePath& dir_path);
@@ -381,7 +391,7 @@ BASE_EXPORT bool GetFileSize(const FilePath& file_path, int64_t* file_size);
 // fail if |real_path| would be longer than MAX_PATH characters.
 BASE_EXPORT bool NormalizeFilePath(const FilePath& path, FilePath* real_path);
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 
 // Given a path in NT native form ("\Device\HarddiskVolumeXX\..."),
 // return in |drive_letter_path| the equivalent path that starts with
@@ -455,7 +465,7 @@ BASE_EXPORT bool WriteFile(const FilePath& filename, span<const uint8_t> data);
 // do manual conversions from a char span to a uint8_t span.
 BASE_EXPORT bool WriteFile(const FilePath& filename, StringPiece data);
 
-#if defined(OS_POSIX) || defined(OS_FUCHSIA)
+#if BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
 // Appends |data| to |fd|. Does not close |fd| when done.  Returns true iff all
 // of |data| were written to |fd|.
 BASE_EXPORT bool WriteFileDescriptor(int fd, span<const uint8_t> data);
@@ -558,7 +568,7 @@ PreReadFile(const FilePath& file_path,
             bool is_executable,
             int64_t max_bytes = std::numeric_limits<int64_t>::max());
 
-#if defined(OS_POSIX) || defined(OS_FUCHSIA)
+#if BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
 
 // Creates a pipe. Returns true on success, otherwise false.
 // On success, |read_fd| will be set to the fd of the read side, and
@@ -579,7 +589,9 @@ BASE_EXPORT bool CreateLocalNonBlockingPipe(int fds[2]);
 // Returns true if it was able to set it in the close-on-exec mode, otherwise
 // false.
 BASE_EXPORT bool SetCloseOnExec(int fd);
+#endif  // BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
 
+#if BUILDFLAG(IS_MAC)
 // Test that |path| can only be changed by a given user and members of
 // a given set of groups.
 // Specifically, test that all parts of |path| under (and including) |base|:
@@ -595,9 +607,7 @@ BASE_EXPORT bool VerifyPathControlledByUser(const base::FilePath& base,
                                             const base::FilePath& path,
                                             uid_t owner_uid,
                                             const std::set<gid_t>& group_gids);
-#endif  // defined(OS_POSIX) || defined(OS_FUCHSIA)
 
-#if defined(OS_MAC)
 // Is |path| writable only by a user with administrator privileges?
 // This function uses Mac OS conventions.  The super user is assumed to have
 // uid 0, and the administrator group is assumed to be named "admin".
@@ -606,13 +616,13 @@ BASE_EXPORT bool VerifyPathControlledByUser(const base::FilePath& base,
 // "admin", are not writable by all users, and contain no symbolic links.
 // Will return false if |path| does not exist.
 BASE_EXPORT bool VerifyPathControlledByAdmin(const base::FilePath& path);
-#endif  // defined(OS_MAC)
+#endif  // BUILDFLAG(IS_MAC)
 
 // Returns the maximum length of path component on the volume containing
 // the directory |path|, in the number of FilePath::CharType, or -1 on failure.
 BASE_EXPORT int GetMaximumPathComponentLength(const base::FilePath& path);
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_AIX)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_AIX)
 // Broad categories of file systems as returned by statfs() on Linux.
 enum FileSystemType {
   FILE_SYSTEM_UNKNOWN,  // statfs failed.
@@ -632,7 +642,7 @@ enum FileSystemType {
 BASE_EXPORT bool GetFileSystemType(const FilePath& path, FileSystemType* type);
 #endif
 
-#if defined(OS_POSIX) || defined(OS_FUCHSIA)
+#if BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
 // Get a temporary directory for shared memory files. The directory may depend
 // on whether the destination is intended for executable files, which in turn
 // depends on how /dev/shmem was mounted. As a result, you must supply whether
@@ -650,16 +660,16 @@ namespace internal {
 BASE_EXPORT bool MoveUnsafe(const FilePath& from_path,
                             const FilePath& to_path);
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 // Copy from_path to to_path recursively and then delete from_path recursively.
 // Returns true if all operations succeed.
 // This function simulates Move(), but unlike Move() it works across volumes.
 // This function is not transactional.
 BASE_EXPORT bool CopyAndDeleteDirectory(const FilePath& from_path,
                                         const FilePath& to_path);
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID)
 // CopyFileContentsWithSendfile will use the sendfile(2) syscall to perform a
 // file copy without moving the data between kernel and userspace. This is much
 // more efficient than sequences of read(2)/write(2) calls. The |retry_slow|
@@ -671,7 +681,8 @@ BASE_EXPORT bool CopyAndDeleteDirectory(const FilePath& from_path,
 BASE_EXPORT bool CopyFileContentsWithSendfile(File& infile,
                                               File& outfile,
                                               bool& retry_slow);
-#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) ||
+        // BUILDFLAG(IS_ANDROID)
 
 // Used by PreReadFile() when no kernel support for prefetching is available.
 bool PreReadFileSlow(const FilePath& file_path, int64_t max_bytes);

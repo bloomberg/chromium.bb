@@ -19,6 +19,7 @@
 
 #include "absl/functional/bind_front.h"
 #include "absl/strings/string_view.h"
+#include "api/task_queue/task_queue_base.h"
 #include "net/dcsctp/common/sequence_numbers.h"
 #include "net/dcsctp/packet/chunk/cookie_echo_chunk.h"
 #include "net/dcsctp/packet/sctp_packet.h"
@@ -78,7 +79,9 @@ class TransmissionControlBlock : public Context {
                              this),
             TimerOptions(options.delayed_ack_max_timeout,
                          TimerBackoffAlgorithm::kExponential,
-                         /*max_restarts=*/0))),
+                         /*max_restarts=*/0,
+                         /*max_backoff_duration=*/absl::nullopt,
+                         webrtc::TaskQueueBase::DelayPrecision::kHigh))),
         my_verification_tag_(my_verification_tag),
         my_initial_tsn_(my_initial_tsn),
         peer_verification_tag_(peer_verification_tag),
@@ -95,6 +98,7 @@ class TransmissionControlBlock : public Context {
         reassembly_queue_(log_prefix,
                           peer_initial_tsn,
                           options.max_receiver_window_buffer_size,
+                          capabilities.message_interleaving,
                           handover_state),
         retransmission_queue_(
             log_prefix,
@@ -115,7 +119,17 @@ class TransmissionControlBlock : public Context {
                               &reassembly_queue_,
                               &retransmission_queue_,
                               handover_state),
-        heartbeat_handler_(log_prefix, options, this, &timer_manager_) {}
+        heartbeat_handler_(log_prefix, options, this, &timer_manager_) {
+    // If the connection is re-established (peer restarted, but re-used old
+    // connection), make sure that all message identifiers are reset and any
+    // partly sent message is re-sent in full. The same is true when the socket
+    // is closed and later re-opened, which never happens in WebRTC, but is a
+    // valid operation on the SCTP level. Note that in case of handover, the
+    // send queue is already re-configured, and shouldn't be reset.
+    if (handover_state == nullptr) {
+      send_queue.Reset();
+    }
+  }
 
   // Implementation of `Context`.
   bool is_connection_established() const override {
@@ -179,6 +193,8 @@ class TransmissionControlBlock : public Context {
   void ClearCookieEchoChunk() { cookie_echo_chunk_ = absl::nullopt; }
 
   bool has_cookie_echo_chunk() const { return cookie_echo_chunk_.has_value(); }
+
+  void MaybeSendFastRetransmit();
 
   // Fills `builder` (which may already be filled with control chunks) with
   // other control and data chunks, and sends packets as much as can be

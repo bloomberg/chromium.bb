@@ -71,7 +71,7 @@ TEST(ScriptParametersTest, TriggerScriptAllowList) {
                                   {"INTENT", "FAKE_INTENT"}}};
 
   EXPECT_THAT(
-      parameters.ToProto(/* only_trigger_script_allowlisted = */ false),
+      parameters.ToProto(/* only_non_sensitive_allowlisted = */ false),
       UnorderedElementsAreArray(base::flat_map<std::string, std::string>(
           {{"DEBUG_BUNDLE_ID", "12345"},
            {"key_a", "value_a"},
@@ -83,7 +83,7 @@ TEST(ScriptParametersTest, TriggerScriptAllowList) {
            {"INTENT", "FAKE_INTENT"}})));
 
   EXPECT_THAT(
-      parameters.ToProto(/* only_trigger_script_allowlisted = */ true),
+      parameters.ToProto(/* only_non_sensitive_allowlisted = */ true),
       UnorderedElementsAreArray(base::flat_map<std::string, std::string>(
           {{"DEBUG_BUNDLE_ID", "12345"},
            {"DEBUG_BUNDLE_VERSION", "version"},
@@ -108,6 +108,7 @@ TEST(ScriptParametersTest, SpecialScriptParameters) {
        {"CALLER", "3"},
        {"SOURCE", "4"},
        {"EXPERIMENT_IDS", "123,456,789"},
+       {"DISABLE_RPC_SIGNING", "true"},
        {"DETAILS_SHOW_INITIAL", "true"},
        {"DETAILS_TITLE", "title"},
        {"DETAILS_DESCRIPTION_LINE_1", "line1"},
@@ -134,6 +135,7 @@ TEST(ScriptParametersTest, SpecialScriptParameters) {
   EXPECT_THAT(
       parameters.GetExperiments(),
       UnorderedElementsAreArray(std::vector<std::string>{"123", "456", "789"}));
+  EXPECT_THAT(parameters.GetDisableRpcSigning(), Eq(true));
   EXPECT_THAT(parameters.GetDetailsShowInitial(), Eq(true));
   EXPECT_THAT(parameters.GetDetailsTitle(), Eq("title"));
   EXPECT_THAT(parameters.GetDetailsDescriptionLine1(), Eq("line1"));
@@ -195,11 +197,11 @@ TEST(ScriptParametersTest, ToProtoRemovesEnabled) {
   ScriptParameters parameters = {{{"key_a", "value_a"}, {"ENABLED", "true"}}};
 
   EXPECT_THAT(
-      parameters.ToProto(/* only_trigger_script_allowlisted = */ false),
+      parameters.ToProto(/* only_non_sensitive_allowlisted = */ false),
       UnorderedElementsAreArray(
           base::flat_map<std::string, std::string>({{"key_a", "value_a"}})));
 
-  EXPECT_THAT(parameters.ToProto(/* only_trigger_script_allowlisted = */ true),
+  EXPECT_THAT(parameters.ToProto(/* only_non_sensitive_allowlisted = */ true),
               IsEmpty());
 }
 
@@ -209,7 +211,7 @@ TEST(ScriptParametersTest, ToProtoDoesNotAddDeviceOnlyParameters) {
   parameters.UpdateDeviceOnlyParameters(
       base::flat_map<std::string, std::string>({{"device_only", "secret"}}));
 
-  EXPECT_THAT(parameters.ToProto(/* only_trigger_script_allowlisted = */ false),
+  EXPECT_THAT(parameters.ToProto(/* only_non_sensitive_allowlisted = */ false),
               IsEmpty());
 }
 
@@ -298,6 +300,18 @@ TEST(ScriptParametersTest, ExperimentIdParsing) {
         parameters.GetExperiments(),
         UnorderedElementsAreArray(std::vector<std::string>{"not_an_integer"}));
   }
+}
+
+TEST(ScriptParametersTest, HasExperimentId) {
+  ScriptParameters parameters = {{{"EXPERIMENT_IDS", "13,123,778"}}};
+  EXPECT_THAT(
+      parameters.GetExperiments(),
+      UnorderedElementsAreArray(std::vector<std::string>{"13", "123", "778"}));
+  EXPECT_TRUE(parameters.HasExperimentId("13"));
+  EXPECT_TRUE(parameters.HasExperimentId("123"));
+  EXPECT_TRUE(parameters.HasExperimentId("778"));
+  EXPECT_FALSE(parameters.HasExperimentId("1"));
+  EXPECT_FALSE(parameters.HasExperimentId("42"));
 }
 
 }  // namespace autofill_assistant

@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/platform/testing/font_test_helpers.h"
 
 #include "base/memory/scoped_refptr.h"
+#include "build/build_config.h"
 #include "third_party/blink/renderer/platform/fonts/font.h"
 #include "third_party/blink/renderer/platform/fonts/font_custom_platform_data.h"
 #include "third_party/blink/renderer/platform/fonts/font_selector.h"
@@ -44,7 +45,8 @@ class TestFontSelector : public FontSelector {
         font_description.IsSyntheticItalic() &&
             font_description.SyntheticItalicAllowed(),
         font_description.GetFontSelectionRequest(), normal_capabilities,
-        font_description.FontOpticalSizing(), font_description.Orientation());
+        font_description.FontOpticalSizing(), font_description.TextRendering(),
+        font_description.Orientation());
     return SimpleFontData::Create(platform_data, CustomFontData::Create());
   }
 
@@ -117,7 +119,7 @@ Font CreateTestFont(const AtomicString& family_name,
   return Font(font_description, TestFontSelector::Create(font_path));
 }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 void TestFontPrewarmer::PrewarmFamily(const WebString& family_name) {
   family_names_.push_back(family_name);
 }

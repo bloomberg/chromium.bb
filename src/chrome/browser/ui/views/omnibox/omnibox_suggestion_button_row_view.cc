@@ -49,8 +49,7 @@ class OmniboxSuggestionRowButton : public views::MdTextButton {
       : MdTextButton(std::move(callback), text, CONTEXT_OMNIBOX_PRIMARY),
         icon_(&icon),
         popup_contents_view_(popup_contents_view),
-        selection_(selection),
-        icon_color_(SK_ColorTRANSPARENT) {
+        selection_(selection) {
     SetTriggerableEventFlags(GetTriggerableEventFlags() |
                              ui::EF_MIDDLE_MOUSE_BUTTON);
     views::InstallPillHighlightPathGenerator(this);
@@ -65,10 +64,14 @@ class OmniboxSuggestionRowButton : public views::MdTextButton {
         GetOmniboxStateOpacity(OmniboxPartState::HOVERED));
     views::InkDrop::Get(this)->SetBaseColorCallback(base::BindRepeating(
         [](OmniboxSuggestionRowButton* host) {
-          return color_utils::GetColorWithMaxContrast(
-              host->omnibox_bg_color_.value());
+          return GetOmniboxColor(host->GetThemeProvider(),
+                                 OmniboxPart::RESULTS_BUTTON_INK_DROP,
+                                 host->theme_state_);
         },
         this));
+    SetAnimationDuration(base::TimeDelta());
+    views::InkDrop::Get(this)->GetInkDrop()->SetHoverHighlightFadeDuration(
+        base::TimeDelta());
 
     views::FocusRing::Get(this)->SetHasFocusPredicate([=](View* view) {
       return view->GetVisible() &&
@@ -82,10 +85,12 @@ class OmniboxSuggestionRowButton : public views::MdTextButton {
 
   ~OmniboxSuggestionRowButton() override = default;
 
-  void OnOmniboxBackgroundChange(SkColor omnibox_bg_color) {
+  void SetThemeState(OmniboxPartState theme_state) {
     views::FocusRing::Get(this)->SchedulePaint();
-    omnibox_bg_color_ = omnibox_bg_color;
-    UpdateBackgroundColor();
+    if (theme_state_ == theme_state)
+      return;
+    theme_state_ = theme_state;
+    OnThemeChanged();
   }
 
   OmniboxPopupSelection selection() { return selection_; }
@@ -94,30 +99,26 @@ class OmniboxSuggestionRowButton : public views::MdTextButton {
     MdTextButton::OnThemeChanged();
     // We can't use colors from NativeTheme as the omnibox theme might be
     // different (for example, if the NTP colors are customized).
-    SkColor icon_color =
-        icon_color_ != SK_ColorTRANSPARENT
-            ? icon_color_
-            : GetOmniboxColor(GetThemeProvider(), OmniboxPart::RESULTS_ICON,
-                              OmniboxPartState::NORMAL);
+    const auto* const theme_provider = GetThemeProvider();
+    SkColor icon_color = GetOmniboxColor(
+        theme_provider, OmniboxPart::RESULTS_ICON, theme_state_);
     SetImage(
         views::Button::STATE_NORMAL,
         gfx::CreateVectorIcon(*icon_, GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
                               icon_color));
-    SetEnabledTextColors(GetOmniboxColor(GetThemeProvider(),
-                                         OmniboxPart::RESULTS_TEXT_DEFAULT,
-                                         OmniboxPartState::NORMAL));
+    SetEnabledTextColors(GetOmniboxColor(
+        theme_provider, OmniboxPart::RESULTS_TEXT_DEFAULT, theme_state_));
   }
 
   void UpdateBackgroundColor() override {
-    if (!omnibox_bg_color_.has_value())
-      return;
-
-    SkColor stroke_color =
-        GetOmniboxColor(GetThemeProvider(), OmniboxPart::RESULTS_BUTTON_BORDER,
-                        OmniboxPartState::NORMAL);
+    const auto* const theme_provider = GetThemeProvider();
+    SkColor stroke_color = GetOmniboxColor(
+        theme_provider, OmniboxPart::RESULTS_BUTTON_BORDER, theme_state_);
+    SkColor fill_color = GetOmniboxColor(
+        theme_provider, OmniboxPart::RESULTS_BACKGROUND, theme_state_);
     SetBackground(CreateBackgroundFromPainter(
         views::Painter::CreateRoundRectWith1PxBorderPainter(
-            omnibox_bg_color_.value(), stroke_color, GetCornerRadius())));
+            fill_color, stroke_color, GetCornerRadius())));
   }
 
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
@@ -127,11 +128,9 @@ class OmniboxSuggestionRowButton : public views::MdTextButton {
     node_data->role = ax::mojom::Role::kListBoxOption;
   }
 
-  void SetIcon(const gfx::VectorIcon& icon,
-               SkColor icon_color = SK_ColorTRANSPARENT) {
-    if (icon_ != &icon || icon_color != icon_color_) {
+  void SetIcon(const gfx::VectorIcon& icon) {
+    if (icon_ != &icon) {
       icon_ = &icon;
-      icon_color_ = icon_color;
       OnThemeChanged();
     }
   }
@@ -140,8 +139,7 @@ class OmniboxSuggestionRowButton : public views::MdTextButton {
   raw_ptr<const gfx::VectorIcon> icon_;
   raw_ptr<OmniboxPopupContentsView> popup_contents_view_;
   OmniboxPopupSelection selection_;
-  absl::optional<SkColor> omnibox_bg_color_;
-  SkColor icon_color_;
+  OmniboxPartState theme_state_ = OmniboxPartState::NORMAL;
 };
 
 BEGIN_METADATA(OmniboxSuggestionRowButton, views::MdTextButton)
@@ -158,14 +156,14 @@ OmniboxSuggestionButtonRowView::OmniboxSuggestionButtonRowView(
       ->SetCrossAxisAlignment(views::LayoutAlignment::kStart)
       .SetCollapseMargins(true)
       .SetInteriorMargin(
-          gfx::Insets(0, OmniboxMatchCellView::GetTextIndent(),
-                      ChromeLayoutProvider::Get()->GetDistanceMetric(
-                          DISTANCE_OMNIBOX_CELL_VERTICAL_PADDING),
-                      0))
+          gfx::Insets::TLBR(0, OmniboxMatchCellView::GetTextIndent(),
+                            ChromeLayoutProvider::Get()->GetDistanceMetric(
+                                DISTANCE_OMNIBOX_CELL_VERTICAL_PADDING),
+                            0))
       .SetDefault(
           views::kMarginsKey,
-          gfx::Insets(0, ChromeLayoutProvider::Get()->GetDistanceMetric(
-                             views::DISTANCE_RELATED_BUTTON_HORIZONTAL)));
+          gfx::Insets::VH(0, ChromeLayoutProvider::Get()->GetDistanceMetric(
+                                 views::DISTANCE_RELATED_BUTTON_HORIZONTAL)));
 
   // For all of these buttons, the visibility set from UpdateFromModel().
   // The Keyword and Pedal buttons also get their text from there, since the
@@ -227,8 +225,7 @@ void OmniboxSuggestionButtonRowView::UpdateFromModel() {
     pedal_button_->SetText(pedal_strings.hint);
     pedal_button_->SetTooltipText(pedal_strings.suggestion_contents);
     pedal_button_->SetAccessibleName(pedal_strings.accessibility_hint);
-    pedal_button_->SetIcon(match().action->GetVectorIcon(),
-                           match().action->GetVectorIconColor());
+    pedal_button_->SetIcon(match().action->GetVectorIcon());
   }
 
   bool is_any_button_visible = keyword_button_->GetVisible() ||
@@ -237,11 +234,11 @@ void OmniboxSuggestionButtonRowView::UpdateFromModel() {
   SetVisible(is_any_button_visible);
 }
 
-void OmniboxSuggestionButtonRowView::OnOmniboxBackgroundChange(
-    SkColor omnibox_bg_color) {
-  keyword_button_->OnOmniboxBackgroundChange(omnibox_bg_color);
-  pedal_button_->OnOmniboxBackgroundChange(omnibox_bg_color);
-  tab_switch_button_->OnOmniboxBackgroundChange(omnibox_bg_color);
+void OmniboxSuggestionButtonRowView::SetThemeState(
+    OmniboxPartState theme_state) {
+  keyword_button_->SetThemeState(theme_state);
+  pedal_button_->SetThemeState(theme_state);
+  tab_switch_button_->SetThemeState(theme_state);
 }
 
 views::Button* OmniboxSuggestionButtonRowView::GetActiveButton() const {
@@ -263,15 +260,8 @@ const AutocompleteMatch& OmniboxSuggestionButtonRowView::match() const {
 void OmniboxSuggestionButtonRowView::SetPillButtonVisibility(
     OmniboxSuggestionRowButton* button,
     OmniboxPopupSelection::LineState state) {
-  // If the keyword button flag is not enabled, the classic keyword UI is
-  // used instead, so do not show the keyword button
-  if (button == keyword_button_ &&
-      !OmniboxFieldTrial::IsKeywordSearchButtonEnabled()) {
-    button->SetVisible(false);
-  } else {
-    button->SetVisible(model_->IsPopupControlPresentOnMatch(
-        OmniboxPopupSelection(model_index_, state)));
-  }
+  button->SetVisible(model_->IsPopupControlPresentOnMatch(
+      OmniboxPopupSelection(model_index_, state)));
 }
 
 void OmniboxSuggestionButtonRowView::ButtonPressed(

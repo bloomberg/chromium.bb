@@ -2827,12 +2827,16 @@ VkFormat mapTextureFormat (const tcu::TextureFormat& format)
 		case FMT_CASE(BGR, SNORM_INT8):						return VK_FORMAT_B8G8R8_SNORM;
 		case FMT_CASE(BGR, UNSIGNED_INT8):					return VK_FORMAT_B8G8R8_UINT;
 		case FMT_CASE(BGR, SIGNED_INT8):					return VK_FORMAT_B8G8R8_SINT;
+		case FMT_CASE(BGR, USCALED_INT8):					return VK_FORMAT_B8G8R8_USCALED;
+		case FMT_CASE(BGR, SSCALED_INT8):					return VK_FORMAT_B8G8R8_SSCALED;
 		case FMT_CASE(sBGR, UNORM_INT8):					return VK_FORMAT_B8G8R8_SRGB;
 
 		case FMT_CASE(BGRA, UNORM_INT8):					return VK_FORMAT_B8G8R8A8_UNORM;
 		case FMT_CASE(BGRA, SNORM_INT8):					return VK_FORMAT_B8G8R8A8_SNORM;
 		case FMT_CASE(BGRA, UNSIGNED_INT8):					return VK_FORMAT_B8G8R8A8_UINT;
 		case FMT_CASE(BGRA, SIGNED_INT8):					return VK_FORMAT_B8G8R8A8_SINT;
+		case FMT_CASE(BGRA, USCALED_INT8):					return VK_FORMAT_B8G8R8A8_USCALED;
+		case FMT_CASE(BGRA, SSCALED_INT8):					return VK_FORMAT_B8G8R8A8_SSCALED;
 		case FMT_CASE(sBGRA, UNORM_INT8):					return VK_FORMAT_B8G8R8A8_SRGB;
 
 		case FMT_CASE(BGRA, UNORM_INT_1010102_REV):			return VK_FORMAT_A2R10G10B10_UNORM_PACK32;
@@ -2880,6 +2884,9 @@ VkFormat mapTextureFormat (const tcu::TextureFormat& format)
 
 		case FMT_CASE(RGBA, USCALED_INT_1010102_REV):		return VK_FORMAT_A2B10G10R10_USCALED_PACK32;
 		case FMT_CASE(RGBA, SSCALED_INT_1010102_REV):		return VK_FORMAT_A2B10G10R10_SSCALED_PACK32;
+
+		case FMT_CASE(BGRA, USCALED_INT_1010102_REV):		return VK_FORMAT_A2R10G10B10_USCALED_PACK32;
+		case FMT_CASE(BGRA, SSCALED_INT_1010102_REV):		return VK_FORMAT_A2R10G10B10_SSCALED_PACK32;
 
 		case FMT_CASE(ARGB, UNORM_SHORT_4444):				return VK_FORMAT_A4R4G4B4_UNORM_PACK16_EXT;
 		case FMT_CASE(ABGR, UNORM_SHORT_4444):				return VK_FORMAT_A4B4G4R4_UNORM_PACK16_EXT;
@@ -4160,7 +4167,8 @@ void copyBufferToImage (const DeviceInterface&					vk,
 						deUint32								arrayLayers,
 						VkImage									destImage,
 						VkImageLayout							destImageLayout,
-						VkPipelineStageFlags					destImageDstStageFlags)
+						VkPipelineStageFlags					destImageDstStageFlags,
+						deUint32								baseMipLevel)
 {
 	// Barriers for copying buffer to image
 	const VkBufferMemoryBarrier preBufferBarrier =
@@ -4189,7 +4197,7 @@ void copyBufferToImage (const DeviceInterface&					vk,
 		destImage,										// VkImage					image;
 		{												// VkImageSubresourceRange	subresourceRange;
 			imageAspectFlags,							// VkImageAspectFlags		aspect;
-			0u,											// deUint32					baseMipLevel;
+			baseMipLevel,								// deUint32					baseMipLevel;
 			mipLevels,									// deUint32					mipLevels;
 			0u,											// deUint32					baseArraySlice;
 			arrayLayers									// deUint32					arraySize;
@@ -4209,7 +4217,7 @@ void copyBufferToImage (const DeviceInterface&					vk,
 		destImage,										// VkImage					image;
 		{												// VkImageSubresourceRange	subresourceRange;
 			imageAspectFlags,							// VkImageAspectFlags		aspect;
-			0u,											// deUint32					baseMipLevel;
+			baseMipLevel,								// deUint32					baseMipLevel;
 			mipLevels,									// deUint32					mipLevels;
 			0u,											// deUint32					baseArraySlice;
 			arrayLayers									// deUint32					arraySize;
@@ -4235,7 +4243,8 @@ void copyBufferToImage (const DeviceInterface&					vk,
 						deUint32								arrayLayers,
 						VkImage									destImage,
 						VkImageLayout							destImageLayout,
-						VkPipelineStageFlags					destImageDstStageFlags)
+						VkPipelineStageFlags					destImageDstStageFlags,
+						deUint32								baseMipLevel)
 {
 	Move<VkCommandPool>		cmdPool		= createCommandPool(vk, device, VK_COMMAND_POOL_CREATE_TRANSIENT_BIT, queueFamilyIndex);
 	Move<VkCommandBuffer>	cmdBuffer	= allocateCommandBuffer(vk, device, *cmdPool, VK_COMMAND_BUFFER_LEVEL_PRIMARY);
@@ -4250,7 +4259,7 @@ void copyBufferToImage (const DeviceInterface&					vk,
 	};
 
 	VK_CHECK(vk.beginCommandBuffer(*cmdBuffer, &cmdBufferBeginInfo));
-	copyBufferToImage(vk, *cmdBuffer, buffer, bufferSize, copyRegions, imageAspectFlags, mipLevels, arrayLayers, destImage, destImageLayout, destImageDstStageFlags);
+	copyBufferToImage(vk, *cmdBuffer, buffer, bufferSize, copyRegions, imageAspectFlags, mipLevels, arrayLayers, destImage, destImageLayout, destImageDstStageFlags, baseMipLevel);
 	VK_CHECK(vk.endCommandBuffer(*cmdBuffer));
 
 	const VkPipelineStageFlags pipelineStageFlags = VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT;
@@ -4432,9 +4441,12 @@ void clearColorImage (const DeviceInterface&	vk,
 					  VkClearColorValue			clearColor,
 					  VkImageLayout				oldLayout,
 					  VkImageLayout				newLayout,
+					  VkAccessFlags				dstAccessFlags,
 					  VkPipelineStageFlags		dstStageFlags,
 					  deUint32					baseArrayLayer,
-					  deUint32					layerCount)
+					  deUint32					layerCount,
+					  deUint32					baseMipLevel,
+					  deUint32					levelCount)
 {
 	Move<VkCommandPool>				cmdPool				= createCommandPool(vk, device, VK_COMMAND_POOL_CREATE_TRANSIENT_BIT, queueFamilyIndex);
 	Move<VkCommandBuffer>			cmdBuffer			= allocateCommandBuffer(vk, device, *cmdPool, VK_COMMAND_BUFFER_LEVEL_PRIMARY);
@@ -4442,10 +4454,10 @@ void clearColorImage (const DeviceInterface&	vk,
 	const VkImageSubresourceRange	subresourceRange	=
 	{
 		VK_IMAGE_ASPECT_COLOR_BIT,	// VkImageAspectFlags	aspectMask
-		0u,							// deUint32				baseMipLevel
-		1u,							// deUint32				levelCount
-		baseArrayLayer,							// deUint32				baseArrayLayer
-		layerCount,							// deUint32				layerCount
+		baseMipLevel,				// deUint32				baseMipLevel
+		levelCount,					// deUint32				levelCount
+		baseArrayLayer,				// deUint32				baseArrayLayer
+		layerCount,					// deUint32				layerCount
 	};
 
 	const VkImageMemoryBarrier		preImageBarrier		=
@@ -4467,7 +4479,7 @@ void clearColorImage (const DeviceInterface&	vk,
 		VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,		// VkStructureType			sType;
 		DE_NULL,									// const void*				pNext;
 		VK_ACCESS_TRANSFER_WRITE_BIT,				// VkAccessFlags			srcAccessMask;
-		VK_ACCESS_SHADER_WRITE_BIT,					// VkAccessFlags			dstAccessMask;
+		dstAccessFlags,								// VkAccessFlags			dstAccessMask;
 		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,		// VkImageLayout			oldLayout;
 		newLayout,									// VkImageLayout			newLayout;
 		queueFamilyIndex,							// deUint32					srcQueueFamilyIndex;
@@ -4507,9 +4519,11 @@ void clearColorImage (const DeviceInterface&	vk,
 					  VkImageLayout				newLayout,
 					  VkPipelineStageFlags		dstStageFlags,
 					  deUint32					baseArrayLayer,
-					  deUint32					layerCount)
+					  deUint32					layerCount,
+					  deUint32					baseMipLevel,
+					  deUint32					levelCount)
 {
-	clearColorImage(vk, device, queue, queueFamilyIndex, image, makeClearValueColor(clearColor).color, oldLayout, newLayout, dstStageFlags, baseArrayLayer, layerCount);
+	clearColorImage(vk, device, queue, queueFamilyIndex, image, makeClearValueColor(clearColor).color, oldLayout, newLayout, VK_ACCESS_SHADER_WRITE_BIT, dstStageFlags, baseArrayLayer, layerCount, baseMipLevel, levelCount);
 }
 
 std::vector<VkBufferImageCopy> generateChessboardCopyRegions (deUint32				tileSize,
@@ -4788,24 +4802,27 @@ void clearDepthStencilImage (const DeviceInterface&	vk,
 							 const VkQueue			queue,
 							 deUint32				queueFamilyIndex,
 							 VkImage				image,
+							 VkFormat				format,
 							 float					depthValue,
 							 deUint32				stencilValue,
 							 VkImageLayout			oldLayout,
 							 VkImageLayout			newLayout,
+							 VkAccessFlags			dstAccessFlags,
 							 VkPipelineStageFlags	dstStageFlags)
 {
 	Move<VkCommandPool>				cmdPool				= createCommandPool(vk, device, VK_COMMAND_POOL_CREATE_TRANSIENT_BIT, queueFamilyIndex);
 	Move<VkCommandBuffer>			cmdBuffer			= allocateCommandBuffer(vk, device, *cmdPool, VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 
 	const VkClearDepthStencilValue	clearValue			= makeClearValueDepthStencil(depthValue, stencilValue).depthStencil;
+	const auto						aspectMask			= getImageAspectFlags(mapVkFormat(format));
 
 	const VkImageSubresourceRange	subresourceRange	=
 	{
-		VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT,	// VkImageAspectFlags	aspectMask
-		0u,															// deUint32				baseMipLevel
-		1u,															// deUint32				levelCount
-		0u,															// deUint32				baseArrayLayer
-		1u															// deUint32				layerCount
+		aspectMask,	// VkImageAspectFlags	aspectMask
+		0u,			// deUint32				baseMipLevel
+		1u,			// deUint32				levelCount
+		0u,			// deUint32				baseArrayLayer
+		1u			// deUint32				layerCount
 	};
 
 	const VkImageMemoryBarrier		preImageBarrier		=
@@ -4827,7 +4844,7 @@ void clearDepthStencilImage (const DeviceInterface&	vk,
 		VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,		// VkStructureType			sType;
 		DE_NULL,									// const void*				pNext;
 		VK_ACCESS_TRANSFER_WRITE_BIT,				// VkAccessFlags			srcAccessMask;
-		VK_ACCESS_SHADER_WRITE_BIT,					// VkAccessFlags			dstAccessMask;
+		dstAccessFlags,								// VkAccessFlags			dstAccessMask;
 		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,		// VkImageLayout			oldLayout;
 		newLayout,									// VkImageLayout			newLayout;
 		queueFamilyIndex,							// deUint32					srcQueueFamilyIndex;

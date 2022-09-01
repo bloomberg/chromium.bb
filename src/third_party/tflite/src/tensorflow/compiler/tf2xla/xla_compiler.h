@@ -21,6 +21,7 @@ limitations under the License.
 #include "absl/types/span.h"
 #include "absl/types/variant.h"
 #include "tensorflow/compiler/tf2xla/host_compute_metadata.pb.h"
+#include "tensorflow/compiler/tf2xla/layout_util.h"
 #include "tensorflow/compiler/tf2xla/xla_argument.h"
 #include "tensorflow/compiler/tf2xla/xla_compilation_device.h"
 #include "tensorflow/compiler/tf2xla/xla_expression.h"
@@ -39,6 +40,7 @@ limitations under the License.
 #include "tensorflow/core/platform/mutex.h"
 #include "tensorflow/core/platform/notification.h"
 #include "tensorflow/core/platform/thread_annotations.h"
+#include "tensorflow/core/protobuf/config.pb.h"
 #include "tensorflow/core/public/version.h"
 
 namespace tensorflow {
@@ -161,10 +163,13 @@ class XlaCompiler {
     // for CPU.
     bool allow_cpu_custom_calls = false;
 
-    // If set, the XLA representation of variables represented to XLA as the
-    // shape given by this shape function. Variables are reshaped to this shape
-    // on write, and reshaped to their original shape on read.
-    XlaHelpers::ShapeRepresentationFn shape_representation_fn;
+    // A ShapeDeterminationFns (i.e., a bundle of LayoutSelectionFn and
+    // ShapeRepresentationFn). Each bundle describes the XLA representation of
+    // arguments represented to XLA as the shape given by this shape function.
+    // Arguments are input activations or weights to an XLA entry computation.
+    // Variables are reshaped to this shape on write, and reshaped to their
+    // original shape on read.
+    XlaShapeLayoutHelpers::ShapeDeterminationFns shape_determination_fns;
 
     // If not nullptr, populate_resource_manager is called with the
     // compilation device's resource manager when the compilation
@@ -194,6 +199,19 @@ class XlaCompiler {
 
     // Enable detailed logging of compilation metadata.
     bool detailed_logging = true;
+  };
+
+  // Argument for compiling a single op.
+  struct SingleOpCompileArgument {
+    // Data type of the output tensors. This is used to create _Retval node.
+    std::vector<DataType> output_dtypes;
+
+    // The NodeDef representing the op.
+    NodeDef node_def;
+
+    // This is currently only used to obtain MLIR TPU bridge rollout state.
+    // Can be removed once full rollout is complete.
+    ConfigProto config_proto;
   };
 
   explicit XlaCompiler(Options options);

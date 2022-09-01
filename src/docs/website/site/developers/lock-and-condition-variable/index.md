@@ -65,8 +65,8 @@ to `mu.Acquire()` and `mu.Release()` in the same procedure. Such sections of
 code are called *critical regions* or *critical sections*, or occasionally
 [*monitors*](#monitors) after Hoare monitors, from which mutexes were derived.
 (A Hoare monitor is an abstraction that automatically acquires a lock on entry
-and releases it on exit.) In Chrome C++ code, many use the idiom `AutoLock
-l(mu)`, which acquires `mu` and releases it when `l` goes out of scope. (Less
+and releases it on exit.) In Chrome C++ code, many use the idiom `AutoLockl(mu)`,
+which acquires `mu` and releases it when `l` goes out of scope. (Less
 commonly, `AutoUnlock l(mu)` can also be used.)
 
 Mutexes perform two tasks in concurrent programming. Their primary role is to
@@ -80,20 +80,53 @@ does not hold the mutex, because the mutex holder may be changing the monitored
 state at that moment. For example, suppose `Lock mu` protects the invariant that
 `a + b == 0`. This code is then legal:
 
-mu.Acquire(); assert(a + b == 0); // invariant assumed to hold a++; // invariant
-temporarily invalidated b--; // invariant restored before mu is released
-mu.Release(); while this code is erroneous: mu.Acquire(); assert(a + b == 0); //
-invariant assumed to hold a++; // invariant invalidated mu.Release(); // BUG: mu
-released while invariant invalid mu.Acquire(); b--; // attempt to restore the
-invariant, but the damage is already done mu.Release(); The following does not
-invalidate the invariant, but incorrectly assumes it is true when the lock is
-not held: mu.Acquire(); assert(a + b == 0); // correct: invariant assumed to
-hold mu.Release(); assert(a + b == 0); // BUG: can't assume invariant without
-lock The invariant holds only when evaluated on state observed in a single
-critical section: mu.Acquire(); assert(a + b == 0); // correct: invariant
-assumed to hold temp = a; // takes a temporary copy of "a" mu.Release();
-mu.Acquire(); assert(temp + b == 0); // BUG: can't assume invariant on state //
-from two distinct critical sections mu.Release();
+    mu.Acquire();
+    assert(a + b == 0);
+    // invariant assumed to hold
+    a++;
+    // invariant temporarily invalidated
+    b--;
+    // invariant restored before mu is released
+    mu.Release();
+
+while this code is erroneous:
+
+    mu.Acquire();
+    assert(a + b == 0);
+    // invariant assumed to hold
+    a++;
+    // invariant invalidated
+    mu.Release();
+    // BUG: mu released while invariant invalid
+    mu.Acquire();
+    b--;
+    // attempt to restore the invariant, but the damage is already done
+    mu.Release();
+
+The following does not invalidate the invariant, but incorrectly assumes it is true when the lock is not held:
+
+    mu.Acquire();
+    assert(a + b == 0);
+    // correct: invariant assumed to hold
+    mu.Release();
+    assert(a + b == 0);
+    // BUG: can't assume invariant without lock
+
+The invariant holds only when evaluated on state observed in a single
+critical section:
+
+    mu.Acquire();
+    assert(a + b == 0);
+    // correct: invariant assumed to hold
+    temp = a;
+    // takes a temporary copy of "a"
+    mu.Release();
+
+    mu.Acquire();
+    assert(temp + b == 0);
+    // BUG: can't assume invariant on state
+    // from two distinct critical sections
+    mu.Release();
 
 A less obvious role of mutexes is to ensure a sequentially-consistent view of
 such data structures on machines with memory systems that are not sequentially
@@ -102,25 +135,29 @@ race conditions.
 
 ### Other properties of `Lock`
 
-    The call `mu.Try()` either returns `false` or acquires `mu` and returns
-    `true`. It does not block. If `mu` is free, it is unlikely to return
-    `false`.
+The call `mu.Try()` either returns `false` or acquires `mu` and returns
+`true`. It does not block. If `mu` is free, it is unlikely to return
+`false`.
 
-    The call `mu.AssertAcquired()` aborts the process in debug mode if `mu` is
-    not held by the calling thread..
+The call `mu.AssertAcquired()` aborts the process in debug mode if `mu` is
+not held by the calling thread..
 
-    `Lock` is able to synchronize its own deletion. For example, if an object
-    `*o` contains a `Lock` `mu` and a correctly-maintained reference count `c`,
-    this code is safe:
+`Lock` is able to synchronize its own deletion. For example, if an object
+`*o` contains a `Lock` `mu` and a correctly-maintained reference count `c`,
+this code is safe:
 
-    o-&gt;mu.Acquire(); bool del = (--(o-&gt;c) == 0); o-&gt;mu.Release(); if
-    (del) { delete o; } Not all lock implementations have this property, so it
-    should not be taken for granted when porting code. (To provide this
-    property, we guarantee that `mu.Release()` does not touch `mu` after the
-    atomic moment at which `mu` becomes free.)
+    o->mu.Acquire();
+    bool del = (--(o->c) == 0);
+    o->mu.Release();
+    if (del) { delete o; }
 
-    `Lock` is not re-entrant (also known as not recursive). See
-    [below](#reentrant).
+Not all lock implementations have this property, so it
+should not be taken for granted when porting code. (To provide this
+property, we guarantee that `mu.Release()` does not touch `mu` after the
+atomic moment at which `mu` becomes free.)
+
+`Lock` is not re-entrant (also known as not recursive). See
+[below](#reentrant).
 
 ### Condition variables
 
@@ -145,8 +182,13 @@ while-loop](#whileloop) to recheck *cond_expr*.
 
 Another thread that makes *cond_expr* true might execute:
 
-// Waker mu.Acquire(); Make_cond_expr_True(); // cond_expr now holds
-cv.Signal(); mu.Release(); The call to `Signal()` wakes at least one of the
+    // Waker mu.Acquire();
+    Make_cond_expr_True();
+    // cond_expr now holds
+    cv.Signal();
+    mu.Release();
+
+The call to `Signal()` wakes at least one of the
 threads waiting on `cv`. Many threads may be blocked on a condition variable at
 any given time; if it makes sense to wake more than one such thread
 `Broadcast()` can be used. (However, this may lead to contention and poor
@@ -171,13 +213,23 @@ The call `TimedWait()` allows a thread to wait until either a condition is true,
 or until some time has elapsed. Like `Wait()`, `TimedWait()` *always* reacquires
 the mutex before returning. Example use:
 
-static const int64 kMSToWait = 1000; // we'll wait at most 1000ms TimeDelta
-left_to_wait = TimeDelta::FromMilliseconds(kMSToWait); // ms to wait at any
-given time Time deadline = Time::Now() + left_to_wait; mu.Acquire(); while
-(!cond_expr && left_to_wait.InMilliseconds() &gt; 0) {
-cv.TimedWait(left_to_wait); left_to_wait = deadline - Time::Now(); } if
-(cond_expr) { // cond_expr true } else { // cond_expr false; 1000ms timeout
-expired } mu.Release();
+    static const int64 kMSToWait = 1000;
+    // we'll wait at most 1000ms TimeDelta
+    left_to_wait = base::Milliseconds(kMSToWait);
+
+    // ms to wait at any given time
+    Time deadline = Time::Now() + left_to_wait;
+    mu.Acquire();
+    while(!cond_expr && left_to_wait.InMilliseconds() > 0) {
+      cv.TimedWait(left_to_wait);
+      left_to_wait = deadline - Time::Now();
+    }
+    if (cond_expr) {
+      // cond_expr true
+    } else {
+      // cond_expr false; 1000ms timeout expired
+    }
+    mu.Release();
 
 ### Recommended usage
 
@@ -197,75 +249,83 @@ comments; they may seem tedious to write, but they help tremendously in avoiding
 errors. The particular commenting conventions shown below are derived from the
 work of Nelson and Manasse.
 
-    Critical sections should almost always start and end in the same routine.
-    That is, if a routine acquires a lock, it should release it before it
-    returns, and it should release no locks that it does not itself acquire.
-    This is normally achieved by writing `Acquire()` and `Release()` calls in
-    pairs, or by using `AutoLock l(mu)`, which automatically releases `mu` when
-    `l` goes out of scope.
+Critical sections should almost always start and end in the same routine.
+That is, if a routine acquires a lock, it should release it before it
+returns, and it should release no locks that it does not itself acquire.
+This is normally achieved by writing `Acquire()` and `Release()` calls in
+pairs, or by using `AutoLock l(mu)`, which automatically releases `mu` when
+`l` goes out of scope.
 
-    Every shared variable/field should have a comment indicating which mutex
-    protects it:
+Every shared variable/field should have a comment indicating which mutex
+protects it:
 
-    int accesses_; // count of accesses (guarded by mu_) or a comment explaining
-    why no mutex is needed: int table_size_; // no. of elements in table
-    (readonly after init)
+    int accesses_;
+    // account of accesses (guarded by mu_)
+    // or a comment explaining why no mutex is needed:
+    int table_size_; // no. of elements in table (readonly after init)
 
-    Every mutex should have a comment indicating which variables and also any
-    non-obvious invariants it protects:
+Every mutex should have a comment indicating which variables and also any
+non-obvious invariants it protects:
 
-    Lock mu_; // protects accesses_, list_, count_ // invariant: count_ ==
-    number of elements in linked-list list_ Think of the matching comments on
-    variables and mutexes as analogous to matching types on procedure arguments
-    and parameters; the redundancy can be very helpful to later maintainers of
-    the code.
+    // protects accesses_, list_, count_
+    // invariant: count_ == number of elements in linked-list list_
+    Lock mu_;
 
-    Whenever a thread can hold two mutexes concurrently, either one (or both) of
-    the mutexes should be commented with `acquired before` or `acquired after`
-    to indicate which mutex must be acquired first:
+Think of the matching comments on
+variables and mutexes as analogous to matching types on procedure arguments
+and parameters; the redundancy can be very helpful to later maintainers of
+the code.
 
-    Lock mu0_; // protects foo_ (acquired before mu1_) If the mutex acquisition
-    order is not consistent, [deadlock may result](#deadlock).
+Whenever a thread can hold two mutexes concurrently, either one (or both) of
+the mutexes should be commented with `acquired before` or `acquired after`
+to indicate which mutex must be acquired first:
 
-    Each routine should have a comment indicating which mutexes must and must
-    not be held on entry. This allows implementors to edit routines without
-    examining their call sites, and allows clients to use routines without
-    reading their bodies.
+    Lock mu0_;
+    // protects foo_ (acquired before mu1_)
 
-    Never hold locks when invoking a callback, as the callback may call into the
-    module once more, leading to deadlock. (Violations of this rule should be
-    extremely rare and conspicuously commented in the module's interface.)
-    Comments should indicate what threads can or cannot be used for callbacks:
+If the mutex acquisition order is not consistent, [deadlock may result](#deadlock).
 
-    // Call cb.Run() in "ms" milliseconds. // cb.Run() is called in a private
-    thread; it will not be called // from the thread calling RunAfter(), even if
-    ms==0. void RunAfter(Closure cb, int ms);
+Each routine should have a comment indicating which mutexes must and must
+not be held on entry. This allows implementors to edit routines without
+examining their call sites, and allows clients to use routines without
+reading their bodies.
 
-    In rare cases, it may be useful for a routine to acquire a lock and return
-    without releasing it, or to release a lock (perhaps temporarily using
-    `ConditionVariable::Wait`) that it did not acquire. Such routines may
-    surprise clients, and should be commented clearly in interfaces. Note that a
-    routine that acquires a lock and returns without releasing it is practically
-    a locking primitive and should be commented as such.
+Never hold locks when invoking a callback, as the callback may call into the
+module once more, leading to deadlock. (Violations of this rule should be
+extremely rare and conspicuously commented in the module's interface.)
+Comments should indicate what threads can or cannot be used for callbacks:
 
-    Every condition variable should have a comment indicating when it is
-    signalled:
+    // Call cb.Run() in "ms" milliseconds.
+    // cb.Run() is called in a private thread; it will not be called
+    // from the thread calling RunAfter(), even if ms==0.
+    void RunAfter(Closure cb, int ms);
+
+In rare cases, it may be useful for a routine to acquire a lock and return
+without releasing it, or to release a lock (perhaps temporarily using
+`ConditionVariable::Wait`) that it did not acquire. Such routines may
+surprise clients, and should be commented clearly in interfaces. Note that a
+routine that acquires a lock and returns without releasing it is practically
+a locking primitive and should be commented as such.
+
+Every condition variable should have a comment indicating when it is
+signalled:
 
     ConditionVariable non_empty_; // signalled when the queue becomes non-empty
 
-    In some cases, exclusive access to data is ensured by referencing it only
-    from one thread. (See the section on [message passing](#message).) The
-    thread can be thought of as playing the part of a mutex; you should name the
-    thread and use the name in comments as if it were a lock.
+In some cases, exclusive access to data is ensured by referencing it only
+from one thread. (See the section on [message passing](#message).) The
+thread can be thought of as playing the part of a mutex; you should name the
+thread and use the name in comments as if it were a lock.
 
-    int queue_length_; // length of receive queue (under net_thread) ... //
-    Process one packet from the queue. // L &gt;= net_thread void
+    int queue_length_; // length of receive queue (under net_thread) ...
+    // Process one packet from the queue.
+    // L >= net_thread void
     ProcessPacket() { ... }
 
-    In very rare cases, a variable may be protected by more than one mutex. This
-    means that the variable may be read while holding any of the mutexes, but
-    may be written only when all the mutexes are held. You should document it
-    clearly in the comments.
+In very rare cases, a variable may be protected by more than one mutex. This
+means that the variable may be read while holding any of the mutexes, but
+may be written only when all the mutexes are held. You should document it
+clearly in the comments.
 
     int bytes_left_; // bytes remaining in queue (under mu_ and net_thread)
 
@@ -325,7 +385,10 @@ deadlocks may involve combinations of these activities and resources.
 
 The simplest mutex-related deadlock is the *self-deadlock*:
 
-mu.Acquire(); mu.Acquire(); // BUG: deadlock: thread already holds mu Deadlocks
+    mu.Acquire();
+    mu.Acquire();
+    // BUG: deadlock: thread already holds mu Deadlocks
+
 involving two resources, such as a mutex and a bounded-sized thread pool, are
 easily generated too, but deadlocks involving three or more resources are less
 common. A two-mutex deadlock results when thread T0 attempts to acquire M1 while
@@ -377,35 +440,50 @@ subsystem.)
 
 Races occur in three main ways:
 
-    A shared variable is accessed without being protected consistently by a
-    mutex. The reasons for the problems are discussed at length [below](#why).
-    This error can be avoided with the conventions [already
-    described](#comments); simply ensure that each shared variable is accessed
-    only when its protecting mutex is known to be held. Such races can be
-    detected automatically by
-    [ThreadSanitizer](http://code.google.com/p/data-race-test/wiki/ThreadSanitizer)
-    as described [below](#racedebug).
+A shared variable is accessed without being protected consistently by a
+mutex. The reasons for the problems are discussed at length [below](#why).
+This error can be avoided with the conventions [already
+described](#comments); simply ensure that each shared variable is accessed
+only when its protecting mutex is known to be held. Such races can be
+detected automatically by
+[ThreadSanitizer](http://code.google.com/p/data-race-test/wiki/ThreadSanitizer)
+as described [below](#racedebug).
 
-    A critical section modifies protected state but does not [preserve the
-    monitor invariant](#invariant_bug). Such bugs are rare if invariants are
-    commented correctly.
+A critical section modifies protected state but does not [preserve the
+monitor invariant](#invariant_bug). Such bugs are rare if invariants are
+commented correctly.
 
-    A critical section reads protected state, which is then encoded in a
-    temporary variable or the program counter. Then the lock is released, then
-    reacquired and the state from the previous critical section is used as
-    though still valid:
+A critical section reads protected state, which is then encoded in a
+temporary variable or the program counter. Then the lock is released, then
+reacquired and the state from the previous critical section is used as
+though still valid:
 
-    string name_; // guarded by mu_ size_t NameLen() { AutoLock l(this-&gt;mu_);
-    return this-&gt;name_.size(); } // Requires 0 &lt;= i &lt;
-    this-&gt;name_.size() int CharFromName(size_t i) { AutoLock l(this-&gt;mu_);
-    return this-&gt;name_\[i\]; } ... size_t len = this-&gt;NameLen(); int x =
-    0; if (len &gt; 0) { // BUG: temporary len encodes protected state from a
-    previous // critical section that is used inside another. // The length of
-    name_ may have changed since len was assigned. x = this-&gt;CharFromName(len
-    - 1); } ... This is the most insidious form of race, and the best known way
-    to avoid them is vigilance. Fortunately, they are quite rare. There are
-    algorithms that can detect such races using data flow analysis, but as yet
-    none has been applied to C++.
+    string name_; // guarded by mu_
+    size_t NameLen() {
+      AutoLock l(this->mu_);
+      return this->name_.size();
+    }
+
+    // Requires 0 <= i < this->name_.size()
+    int CharFromName(size_t i) {
+      AutoLock l(this->mu_);
+      return this->name_[i];
+    }
+    ...
+    size_t len = this->NameLen();
+    int x = 0;
+    if (len > 0) {
+      // BUG: temporary len encodes protected state from a previous
+      // critical section that is used inside another.
+      // The length of name_ may have changed since len was assigned.
+      x = this->CharFromName(len - 1);
+    }
+    ...
+
+This is the most insidious form of race, and the best known way
+to avoid them is vigilance. Fortunately, they are quite rare. There are
+algorithms that can detect such races using data flow analysis, but as yet
+none has been applied to C++.
 
 ### Debugging
 
@@ -413,8 +491,8 @@ Races occur in three main ways:
 
 #### Assertions
 
-    `mu.AssertAcquired()`: abort in debug mode if `mu` is not held by the
-    calling thread.
+`mu.AssertAcquired()`: abort in debug mode if `mu` is not held by the
+calling thread.
 
 #### Race detection
 
@@ -433,44 +511,94 @@ producer-consumer queues using condition variables.
 #### Reader-writer lock
 
 The example below could be improved in various ways at the cost of clarity. In
-particular, they allow readers to starve writers. class RWLock { public:
-RWAcquire() : lockers_(0), lock_free_(&mu_) {} ~RWAcquire() {} void
-WriteAcquire() { // acquire a write lock this-&gt;mu_.Acquire(); while
-(this-&gt;lockers_ != 0) { this-&gt;lock_free_.Wait(); } this-&gt;lockers_ = -1;
-this-&gt;mu_.Release(); } void ReadAcquire() { // acquire a read lock
-this-&gt;mu_.Acquire(); while (this-&gt;lockers_ &lt; 0) {
-this-&gt;lock_free_.Wait(); } this-&gt;lockers_++; this-&gt;mu_.Release(); }
-void Release() { // release lock (either mode) this-&gt;mu_.Acquire();
-this-&gt;lockers_ = (this-&gt;lockers_ == -1? 0 : this-&gt;lockers_ - 1); if
-(this-&gt;lockers_ == 0) { // if lock became free, wake all waiters
-this-&gt;lock_free_.Broadcast(); } this-&gt;mu_.Release(); } private: Lock mu_;
-// protects lockers_ int lockers_; // 0 =&gt; free, -1 =&gt; writer, +ve =&gt;
-reader count ConditionVariable lock_free_; // signalled when lockers_ becomes 0
-};
+particular, they allow readers to starve writers.
+
+    class RWLock {
+      public:
+        RWAcquire() : lockers_(0), lock_free_(&mu_) {}
+        ~RWAcquire() {}
+        void WriteAcquire() {
+          // acquire a write lock
+          this->mu_.Acquire();
+          while (this->lockers_ != 0) {
+            this->lock_free_.Wait();
+          }
+          this->lockers_ = -1;
+          this->mu_.Release();
+        }
+        void ReadAcquire() {
+          // acquire a read lock
+          this->mu_.Acquire();
+          while (this->lockers_ < 0) {
+            this->lock_free_.Wait();
+          }
+          this->lockers_++; this->mu_.Release();
+        }
+
+        void Release() {
+          // release lock (either mode)
+          this->mu_.Acquire();
+          this->lockers_ = (this->lockers_ == -1? 0 : this->lockers_ - 1);
+          if (this->lockers_ == 0) {
+            // if lock became free, wake all waiters
+            this->lock_free_.Broadcast();
+          }
+          this->mu_.Release();
+        }
+        private: Lock mu_;
+        // protects lockers_ int lockers_;
+        // 0 => free, -1 => writer, +ve => reader count
+        ConditionVariable lock_free_; // signalled when lockers_ becomes 0
+    };
 
 #### Producer-consumer queue
 
-class PCQ { // a bounded, blocking FIFO producer-consumer queue public: PCQ(int
-n) : max_count_(n), non_full_(&mu_), non_empty_(&mu_) {} ~PCQ() {
-CHECK_EQ(this-&gt;queue_.size(), 0); } // error if queue is not empty // waits
-until queue is not full, then adds value to its end void Add(void \*value) {
-this-&gt;mu_.Acquire(); while (this-&gt;queue_.size() == this-&gt;max_count_) {
-this-&gt;non_full_.Wait(); } this-&gt;non_empty_.Signal(); // no need to
-Broadcast. // (only one remover can consume this item) // Could use: // if
-(this-&gt;queue_.size() == 0) { this-&gt;non_empty_.Broadcast(); }
-this-&gt;queue_.push_back(value); this-&gt;mu_.Release(); } // waits until this
-queue is non-empty, then removes and returns first value void \*Remove() {
-this-&gt;mu_.Acquire(); while (this-&gt;queue_.size() == 0) {
-this-&gt;non_empty_.Wait(); } this-&gt;non_full_.Signal(); // no need to
-Broadcast. // (only one adder can consume this gap) // Could use: // if
-(this-&gt;queue_.size() == this-&gt;max_count_) {
-this-&gt;non_full_.Broadcast(); } void \*value = this-&gt;queue_.front();
-this-&gt;queue_.pop_front(); this-&gt;mu_.Release(); return value; } private:
-Lock mu_; // protects \*queue_ // protects invariant 0 &lt;= queue_.size() &lt;=
-max_count_ deque&lt;void \*&gt; queue_; // list of queued items const int
-max_count_; // max number of items in \*queue_ (readonly after init)
-ConditionVariable non_full_; // signalled when queue becomes non-full
-ConditionVariable non_empty_; // signalled when queue becomes non-empty };
+    class PCQ {
+      // a bounded, blocking FIFO producer-consumer queue
+      public:
+      PCQ(int n) : max_count_(n), non_full_(&mu_), non_empty_(&mu_) {}
+      ~PCQ() {
+        CHECK_EQ(this->queue_.size(), 0);
+      }
+      // error if queue is not empty
+      // waits until queue is not full, then adds value to its end
+      void Add(void *value) {
+        this->mu_.Acquire();
+        while (this->queue_.size() == this->max_count_) {
+          this->non_full_.Wait();
+        }
+        this->non_empty_.Signal(); // no need to Broadcast.
+        // (only one remover can consume this item)
+        // Could use:
+        // if (this->queue_.size() == 0) { this->non_empty_.Broadcast(); }
+        this->queue_.push_back(value);
+        this->mu_.Release();
+      }
+      // waits until this queue is non-empty, then removes and returns first value
+      void *Remove() {
+        this->mu_.Acquire();
+        while (this->queue_.size() == 0) {
+          this->non_empty_.Wait();
+        }
+        this->non_full_.Signal();
+        // no need to Broadcast. (only one adder can consume this gap)
+        // Could use:
+        // if (this->queue_.size() == this->max_count_) {
+        //  this->non_full_.Broadcast();
+        // }
+        void *value = this->queue_.front();
+        this->queue_.pop_front();
+        this->mu_.Release();
+        return value;
+      }
+      private:
+        Lock mu_; // protects *queue_
+        // protects invariant 0 <= queue_.size() <= max_count_
+        deque<void *> queue_; // list of queued items const int
+        max_count_; // max number of items in *queue_ (readonly after init)
+        ConditionVariable non_full_; // signalled when queue becomes non-full
+        ConditionVariable non_empty_; // signalled when queue becomes non-empty
+    };
 
 ## Why are mutexes the way they are?
 
@@ -491,20 +619,20 @@ monitor invariant to protect. Consider a variable or field with type `double`.
 One might expect to be able to read and write this variable from multiple
 threads without the protection of a mutex, but this is not safe:
 
-    Many machines, including the x86, do not guarantee to access a `double`
-    atomically. (A stack-allocated double need not be naturally-aligned by the
-    compiler, potentially leading to two memory operations for a single access.)
-    Thus, there *is* an invariant we need to protect: that the `double` is
-    well-formed.
+Many machines, including the x86, do not guarantee to access a `double`
+atomically. (A stack-allocated double need not be naturally-aligned by the
+compiler, potentially leading to two memory operations for a single access.)
+Thus, there *is* an invariant we need to protect: that the `double` is
+well-formed.
 
-    On some machines seemingly obvious data-dependency properties do not hold
-    without the cross-thread synchronization provided by a mutex; a thread might
-    read a well-formed `double` but get a value from an apparently earlier time.
-    This comment applies to all types, including integers, pointers, and even
-    ["atomic" types](#atomic) provided by the language or runtime.
+On some machines seemingly obvious data-dependency properties do not hold
+without the cross-thread synchronization provided by a mutex; a thread might
+read a well-formed `double` but get a value from an apparently earlier time.
+This comment applies to all types, including integers, pointers, and even
+["atomic" types](#atomic) provided by the language or runtime.
 
-    A variable's concrete type may change as a program is maintained, and this
-    change may be hidden by a `typedef`.
+A variable's concrete type may change as a program is maintained, and this
+change may be hidden by a `typedef`.
 
 In short, data accessed by multiple threads should be protected with a mutex. To
 do otherwise is to court disaster.
@@ -600,9 +728,18 @@ mechanism, we eliminate data races within the table itself, but this does not
 help the client. Consider this code, which increments the count for "foo" in the
 table `*t`:
 
-int \*v = t-&gt;lookup("foo"); // safe because \*t is a monitor if (v != 0) {
-(\*v)++; // BUG: data race: unlocked increment } else { t-&gt;insert("foo", 1);
-// safe because \*t is a monitor } If the client does not use his own mutex,
+    int *v = t->lookup("foo");
+    // safe because *t is a monitor
+
+    if (v != 0) {
+      (*v)++;
+      // BUG: data race: unlocked increment
+    } else {
+      t->insert("foo", 1);
+      // safe because *t is a monitor
+    }
+
+If the client does not use his own mutex,
 counts may be missed. If he does, the synchronization inside `*t` is redundant.
 Thus, monitored modules are rarely helpful.
 
@@ -663,34 +800,34 @@ Atomic operations and types are much harder to use than one might first think,
 and they should not be used in normal code. Unfortunately, programmers are
 attracted to them for various reasons:
 
-    Programmers enjoy the intellectual puzzle of using these operations. This
-    leads to clever, but ill-advised, and often broken code.
+Programmers enjoy the intellectual puzzle of using these operations. This
+leads to clever, but ill-advised, and often broken code.
 
-    Algorithms involving atomic operations are extremely subtle. For example, a
-    general-purpose, efficient, lock-free, singly-linked list algorithm took
-    significant research to discover, and requires care to implement. Almost all
-    programmers make mistakes when they attempt direct use of atomic operations.
-    Even when they don't make mistakes, the resulting code is hard for others to
-    maintain. Both CPUs and compilers can rearrange reads and writes in ways
-    that lead to subtle race conditions. The simple-sounding pattern of
-    [double-checked
-    locking](http://en.wikipedia.org/wiki/Double-checked_locking) is actually
-    extremely subtle and is usually implemented incorrectly.
+Algorithms involving atomic operations are extremely subtle. For example, a
+general-purpose, efficient, lock-free, singly-linked list algorithm took
+significant research to discover, and requires care to implement. Almost all
+programmers make mistakes when they attempt direct use of atomic operations.
+Even when they don't make mistakes, the resulting code is hard for others to
+maintain. Both CPUs and compilers can rearrange reads and writes in ways
+that lead to subtle race conditions. The simple-sounding pattern of
+[double-checked
+locking](http://en.wikipedia.org/wiki/Double-checked_locking) is actually
+extremely subtle and is usually implemented incorrectly.
 
-    Programmers assume that locking is expensive, and that using atomic
-    operations will be more efficient. But in reality, acquiring and releasing a
-    lock is cheaper than a cache miss; attention to cache behaviour is usually a
-    more fruitful way to improve performance. Furthermore, lock-free data
-    structures are often more expensive than using locks. This is because a lock
-    allows arbitrary changes to be made to a complex data structure; if the same
-    changes must be made without a lock, the result is likely to take more
-    atomic read-modify-write instructions, not fewer.
+Programmers assume that locking is expensive, and that using atomic
+operations will be more efficient. But in reality, acquiring and releasing a
+lock is cheaper than a cache miss; attention to cache behaviour is usually a
+more fruitful way to improve performance. Furthermore, lock-free data
+structures are often more expensive than using locks. This is because a lock
+allows arbitrary changes to be made to a complex data structure; if the same
+changes must be made without a lock, the result is likely to take more
+atomic read-modify-write instructions, not fewer.
 
-    People wish to avoid lock contention when concurrency is high. This is best
-    solved by partitioning locked data structures to avoid lock contention. For
-    example, it is easier, more efficient, and [more useful](#monitors) to build
-    a high-concurrency hash table from many normal hash tables, each with its
-    own lock, than to build one lock-free hash table using atomic operations.
+People wish to avoid lock contention when concurrency is high. This is best
+solved by partitioning locked data structures to avoid lock contention. For
+example, it is easier, more efficient, and [more useful](#monitors) to build
+a high-concurrency hash table from many normal hash tables, each with its
+own lock, than to build one lock-free hash table using atomic operations.
 
 Atomic operations should be used in only a handful of low-level data structures,
 written by a few experts, and then reviewed and tested thoroughly.
@@ -706,18 +843,18 @@ the best approach for simple programs that do not require high performance or
 that are inherently sequential. However, it is usually not the best choice for
 large programs, or when high performance is required.
 
-    A single-threaded application can use only one CPU, which typically makes it
-    far slower than other options, even when the overheads of locking are taken
-    into account. If the application is simple enough, one may be able to run
-    multiple copies of the same program on each machine, but this introduces two
-    inefficiencies: cross-address-space context switches are more expensive than
-    thread context switches because threads share TLB entries while address
-    spaces do not; and the address space separation precludes sharing some
-    resources (caches, ports, etc.).
+A single-threaded application can use only one CPU, which typically makes it
+far slower than other options, even when the overheads of locking are taken
+into account. If the application is simple enough, one may be able to run
+multiple copies of the same program on each machine, but this introduces two
+inefficiencies: cross-address-space context switches are more expensive than
+thread context switches because threads share TLB entries while address
+spaces do not; and the address space separation precludes sharing some
+resources (caches, ports, etc.).
 
-    Some programs, such as network servers, exhibit natural concurrency: they
-    must deal with many concurrent client requests, so some mechanism is needed
-    to allow this.
+Some programs, such as network servers, exhibit natural concurrency: they
+must deal with many concurrent client requests, so some mechanism is needed
+to allow this.
 
 ##### The fallacy of thread context-switch cost
 
@@ -729,28 +866,28 @@ the act of multiplexing the processor between multiple activities; its dominant
 costs are similar regardless of whether this is done in kernel-mode or in
 user-mode:
 
-    When a program switches to a new activity, it incurs cache and TLB misses by
-    touching the data and instructions associated with a new activity. This cost
-    is the most important, and is essentially the same regardless of whether the
-    new activity takes place in a different thread or in the same thread. The
-    cost occurs not only when a multithreaded program performs a thread context
-    switch, but also when an [event driven](#event) program processes a new
-    event, or when a [co-operative multithreaded](#coop) program switches
-    context in user-space. Multithreaded programs rarely context switch due to
-    time-slicing because time-slices are large.
+When a program switches to a new activity, it incurs cache and TLB misses by
+touching the data and instructions associated with a new activity. This cost
+is the most important, and is essentially the same regardless of whether the
+new activity takes place in a different thread or in the same thread. The
+cost occurs not only when a multithreaded program performs a thread context
+switch, but also when an [event driven](#event) program processes a new
+event, or when a [co-operative multithreaded](#coop) program switches
+context in user-space. Multithreaded programs rarely context switch due to
+time-slicing because time-slices are large.
 
-    The cost of user-kernel mode switches is sometimes counted as part of the
-    context-switch cost between threads. However, multithreaded programs usually
-    context switch when they have *already* entered the kernel for other
-    reasons---typically, via some system call or to service an interrupt. A
-    single-threaded program incurs these same mode switches, and thus they are
-    common to all models. One might expect mutex and condition variable calls to
-    add to the number of system calls, but this effect is modest because
-    uncontended mutexes induce no system calls, while contended mutexes and
-    condition-variable operations should be relatively rare.
+The cost of user-kernel mode switches is sometimes counted as part of the
+context-switch cost between threads. However, multithreaded programs usually
+context switch when they have *already* entered the kernel for other
+reasons---typically, via some system call or to service an interrupt. A
+single-threaded program incurs these same mode switches, and thus they are
+common to all models. One might expect mutex and condition variable calls to
+add to the number of system calls, but this effect is modest because
+uncontended mutexes induce no system calls, while contended mutexes and
+condition-variable operations should be relatively rare.
 
-    Context switches between address spaces are more expensive because TLB
-    entries must be replaced.
+Context switches between address spaces are more expensive because TLB
+entries must be replaced.
 
 To summarize, if a single address space is used, the costs of switching between
 activities are nearly independent of the number of threads used within that
@@ -842,39 +979,39 @@ messages.
 Hoare's original condition variables did not require the while-loop, but modern
 versions require it for somewhat subtle reasons:
 
-    The presence of the while-loop allows one to tell by *local* inspection that
-    the condition is true when the loop exits. Hoare's original precise
-    semantics required inspection of all code that could potentially call
-    `Signal()`, which made some errors rather harder to debug.
+The presence of the while-loop allows one to tell by *local* inspection that
+the condition is true when the loop exits. Hoare's original precise
+semantics required inspection of all code that could potentially call
+`Signal()`, which made some errors rather harder to debug.
 
-    The while-loop allows clients to do spurious wakeups, which gives the
-    programmer the opportunity to trade performance for ease of programming.
-    Suppose he arranges for threads *always* to signal the condition variable
-    when they modify protected state, rather than only when they make a specific
-    condition true. This allows modularity between waiters and wakers: the
-    wakers don't need to know what conditions wakers are waiting for, and each
-    waiter can wait for a different condition without affecting the code of the
-    wakers.
+The while-loop allows clients to do spurious wakeups, which gives the
+programmer the opportunity to trade performance for ease of programming.
+Suppose he arranges for threads *always* to signal the condition variable
+when they modify protected state, rather than only when they make a specific
+condition true. This allows modularity between waiters and wakers: the
+wakers don't need to know what conditions wakers are waiting for, and each
+waiter can wait for a different condition without affecting the code of the
+wakers.
 
-    The while-loop allows the condition variable implementation more freedom to
-    schedule woken threads in any order. Consider a thread T0 that wakes thread
-    T1 that was waiting for condition C. If the runtime semantics guarantee that
-    T1 will enter the critical section next, T1 can assume C. But context
-    switches have overhead, so it is usually more efficient merely to add T1 to
-    the run queue while continuing to run T0 and perhaps other threads, which
-    may then enter the critical section before T1. If any of those threads
-    falsifies C, T1 must not assume C on entering the critical section;
-    scheduling has made it appear that it has received a spurious wakeup. The
-    while-loop ensures that T1 tests C, and continues only if C is really true.
-    Thus, the while-loop effectively allows more freedom in choosing an
-    efficient scheduling discipline.
+The while-loop allows the condition variable implementation more freedom to
+schedule woken threads in any order. Consider a thread T0 that wakes thread
+T1 that was waiting for condition C. If the runtime semantics guarantee that
+T1 will enter the critical section next, T1 can assume C. But context
+switches have overhead, so it is usually more efficient merely to add T1 to
+the run queue while continuing to run T0 and perhaps other threads, which
+may then enter the critical section before T1. If any of those threads
+falsifies C, T1 must not assume C on entering the critical section;
+scheduling has made it appear that it has received a spurious wakeup. The
+while-loop ensures that T1 tests C, and continues only if C is really true.
+Thus, the while-loop effectively allows more freedom in choosing an
+efficient scheduling discipline.
 
-    Timed waits become less error-prone. A timed wait may cause a thread to wake
-    before its condition C is true. Suppose the programmer forgets to test for a
-    timeout. If he is forced to use a while-loop, his thread will go to sleep
-    again and his program will probably deadlock, allowing easy detection of the
-    bug. Without the while-loop, the thread would falsely assume C, and cause
-    arbitrarily bad behaviour.
+Timed waits become less error-prone. A timed wait may cause a thread to wake
+before its condition C is true. Suppose the programmer forgets to test for a
+timeout. If he is forced to use a while-loop, his thread will go to sleep
+again and his program will probably deadlock, allowing easy detection of the
+bug. Without the while-loop, the thread would falsely assume C, and cause
+arbitrarily bad behavior.
 
 ### Why must the condition used with `cv.Wait()` be a function of state protected by the mutex?
 
@@ -883,19 +1020,19 @@ mu.Acquire(); while (!cond_expr) { cv.Wait(); // mu was passed to cv's
 constructor } // cond_expr now holds ... mu.Release(); If `cond_expr` is not a
 function of state protected by `mu`, two bad things can happen:
 
-    Suppose that thread W finds `cond_expr` false, and is about to call
-    `cv.Wait()`. If the state associated with `cond_expr` is not protected by
-    `mu`, another thread can make `cond_expr` true and call `cv.Signal()` before
-    W calls `cv.Wait()`. This means that W may block indefinitely in `Wait()`,
-    even though `cond_expr` is true (only a thread currently in `Wait()` is
-    woken by a call to `Signal()`).
+Suppose that thread W finds `cond_expr` false, and is about to call
+`cv.Wait()`. If the state associated with `cond_expr` is not protected by
+`mu`, another thread can make `cond_expr` true and call `cv.Signal()` before
+W calls `cv.Wait()`. This means that W may block indefinitely in `Wait()`,
+even though `cond_expr` is true (only a thread currently in `Wait()` is
+woken by a call to `Signal()`).
 
-    Suppose that thread W finds `cond_expr` true, and is about to execute the
-    code labelled "cond_expr now holds". If the state associated with
-    `cond_expr` is not protected by `mu`, another thread can make `cond_expr`
-    false before W runs the rest of the code, so W cannot assume `cond_expr`.
-    This negates the purpose of the condition variable, which was to give W a
-    guarantee about `cond_expr`.
+Suppose that thread W finds `cond_expr` true, and is about to execute the
+code labelled "cond_expr now holds". If the state associated with
+`cond_expr` is not protected by `mu`, another thread can make `cond_expr`
+false before W runs the rest of the code, so W cannot assume `cond_expr`.
+This negates the purpose of the condition variable, which was to give W a
+guarantee about `cond_expr`.
 
 ### Why put `Signal()` inside the critical section?
 
@@ -919,12 +1056,29 @@ we recommend always using it inside the critical section. The following code can
 attempt to access the condition variable after it has been deleted, but could be
 safe if `Signal()` were called inside the critical section.
 
-struct Foo { Lock mu; ConditionVariable cv; bool del; ... }; ... void
-Thread1(Foo \*foo) { foo-&gt;mu.Acquire(); while (!foo-&gt;del) {
-foo-&gt;cv.Wait(); } foo-&gt;mu.Release(); delete foo; } ... void Thread2(Foo
-\*foo) { foo-&gt;mu.Acquire(); foo-&gt;del = true; // Signal() should be called
-here foo-&gt;mu.Release(); foo-&gt;cv.Signal(); // BUG: foo may have been
-deleted }
+    struct Foo {
+      Lock mu;
+      ConditionVariable cv;
+      bool del;
+      ...
+    };
+    ...
+    void Thread1(Foo *foo) {
+      foo->mu.Acquire();
+      while (!foo->del) {
+        foo->cv.Wait();
+      }
+      foo->mu.Release();
+      delete foo;
+    }
+    ...
+    void Thread2(Foo *foo) {
+      foo->mu.Acquire();
+      foo->del = true;
+      // Signal() should be called here
+      foo->mu.Release();
+      foo->cv.Signal(); // BUG: foo may have been deleted
+    }
 
 ### Why should implementors of mutexes pay attention to mutex performance under contention?
 
@@ -934,16 +1088,16 @@ section. Because clients must avoid contention, some implementors of mutexes pay
 less attention to the performance of mutexes under contention. However,
 contention is sometimes encountered despite clients' best efforts. For example:
 
-    A network server may become overloaded or see a changed pattern of use,
-    causing a mutex to be used more than it normally would.
+A network server may become overloaded or see a changed pattern of use,
+causing a mutex to be used more than it normally would.
 
-    A program may be run on an upgraded machine with more CPUs, causing
-    contention on a mutex that was previously lightly loaded.
+A program may be run on an upgraded machine with more CPUs, causing
+contention on a mutex that was previously lightly loaded.
 
-    Software developers encourage abstraction between parts of our programs, so
-    the authors and clients of modules may have different expectations of how
-    the module will be used. In particular, a client may cause contention on a
-    mutex that he is unaware of.
+Software developers encourage abstraction between parts of our programs, so
+the authors and clients of modules may have different expectations of how
+the module will be used. In particular, a client may cause contention on a
+mutex that he is unaware of.
 
 While it is important for clients to fix contention to avoid loss of
 parallelism, that loss of parallelism should be their main consideration. The
@@ -970,8 +1124,19 @@ monitor invariants. In particular, the intent is:
 modified by one of `T0_Inside()` and `T1_Inside()` and read or written by the
 other:
 
-// thread T0 // thread T1 T0_Before(); T1_Before(); mu.Acquire(); mu.Acquire();
-T0_Inside(); T1_Inside(); mu.Release(); mu.Release(); T0_After(); T1_After();
+    // thread T0                             // thread T1
+    T0_Before();
+                                              T1_Before();
+    mu.Acquire();
+                                              mu.Acquire();
+    T0_Inside();
+                                              T1_Inside();
+    mu.Release();
+                                              mu.Release();
+    T0_After();
+                                              T1_After();
+
+
 *then* the memory operations in `Tx_Before()` and `Tx_Inside()` all precede the
 memory operations in `Ty_Inside()` and `Ty_After()` either for `x=0, y=1` or for
 `x=1, y=0`.

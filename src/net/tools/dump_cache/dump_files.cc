@@ -23,6 +23,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/single_thread_task_executor.h"
+#include "base/time/time.h"
 #include "net/disk_cache/blockfile/block_files.h"
 #include "net/disk_cache/blockfile/disk_format.h"
 #include "net/disk_cache/blockfile/mapped_file.h"
@@ -159,11 +160,7 @@ void DumpBlockHeader(const base::FilePath& name) {
 class CacheDumper {
  public:
   explicit CacheDumper(const base::FilePath& path)
-      : path_(path),
-        block_files_(path),
-        index_(nullptr),
-        current_hash_(0),
-        next_addr_(0) {}
+      : path_(path), block_files_(path) {}
 
   CacheDumper(const CacheDumper&) = delete;
   CacheDumper& operator=(const CacheDumper&) = delete;
@@ -186,9 +183,9 @@ class CacheDumper {
   base::FilePath path_;
   disk_cache::BlockFiles block_files_;
   scoped_refptr<disk_cache::MappedFile> index_file_;
-  disk_cache::Index* index_;
-  int current_hash_;
-  disk_cache::CacheAddr next_addr_;
+  disk_cache::Index* index_ = nullptr;
+  int current_hash_ = 0;
+  disk_cache::CacheAddr next_addr_ = 0;
   std::set<disk_cache::CacheAddr> dumped_entries_;
 };
 

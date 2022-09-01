@@ -191,6 +191,7 @@ source_set("unittests") {
     "offer_messages_unittest.cc",
     "packet_receive_stats_tracker_unittest.cc",
     "packet_util_unittest.cc",
+    "receiver_message_unittest.cc",
     "receiver_session_unittest.cc",
     "receiver_unittest.cc",
     "rpc_messenger_unittest.cc",

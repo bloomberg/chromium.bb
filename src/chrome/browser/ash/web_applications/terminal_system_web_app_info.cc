@@ -6,17 +6,15 @@
 
 #include <memory>
 
-#include "ash/constants/ash_features.h"
-#include "base/feature_list.h"
+#include "base/strings/strcat.h"
 #include "chrome/browser/ash/crostini/crostini_terminal.h"
 #include "chrome/browser/ash/web_applications/system_web_app_install_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/web_applications/web_application_info.h"
+#include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/generated_resources.h"
-#include "extensions/browser/api/file_handlers/mime_util.h"
 #include "extensions/common/constants.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -31,8 +29,8 @@ constexpr gfx::Rect TERMINAL_DEFAULT_BOUNDS(gfx::Point(64, 64),
 constexpr gfx::Size TERMINAL_SETTINGS_DEFAULT_SIZE(768, 512);
 }  // namespace
 
-std::unique_ptr<WebApplicationInfo> CreateWebAppInfoForTerminalSystemWebApp() {
-  auto info = std::make_unique<WebApplicationInfo>();
+std::unique_ptr<WebAppInstallInfo> CreateWebAppInfoForTerminalSystemWebApp() {
+  auto info = std::make_unique<WebAppInstallInfo>();
   // URL used for crostini::kCrostiniTerminalSystemAppId.
   const GURL terminal_url("chrome-untrusted://terminal/html/terminal.html");
   info->start_url = terminal_url;
@@ -43,13 +41,6 @@ std::unique_ptr<WebApplicationInfo> CreateWebAppInfoForTerminalSystemWebApp() {
       *info);
   info->background_color = 0xFF202124;
   info->display_mode = blink::mojom::DisplayMode::kStandalone;
-  {
-    apps::FileHandler handler;
-    handler.accept.emplace_back();
-    handler.accept.back().mime_type =
-        extensions::app_file_handler_util::kMimeTypeInodeDirectory;
-    info->file_handlers.push_back(std::move(handler));
-  }
   info->additional_search_terms = {
       "linux", "terminal", "crostini", "ssh",
       l10n_util::GetStringUTF8(IDS_CROSTINI_TERMINAL_APP_SEARCH_TERMS)};
@@ -67,12 +58,12 @@ gfx::Rect GetDefaultBoundsForTerminal(Browser* browser) {
 }
 
 TerminalSystemAppDelegate::TerminalSystemAppDelegate(Profile* profile)
-    : web_app::SystemWebAppDelegate(web_app::SystemAppType::TERMINAL,
-                                    "Terminal",
-                                    GURL(chrome::kChromeUIUntrustedTerminalURL),
-                                    profile) {}
+    : ash::SystemWebAppDelegate(ash::SystemWebAppType::TERMINAL,
+                                "Terminal",
+                                GURL(chrome::kChromeUIUntrustedTerminalURL),
+                                profile) {}
 
-std::unique_ptr<WebApplicationInfo> TerminalSystemAppDelegate::GetWebAppInfo()
+std::unique_ptr<WebAppInstallInfo> TerminalSystemAppDelegate::GetWebAppInfo()
     const {
   return CreateWebAppInfoForTerminalSystemWebApp();
 }
@@ -87,10 +78,6 @@ bool TerminalSystemAppDelegate::ShouldShowNewWindowMenuOption() const {
 
 bool TerminalSystemAppDelegate::ShouldHaveTabStrip() const {
   return true;
-}
-
-bool TerminalSystemAppDelegate::HasTitlebarTerminalSelectNewTabButton() const {
-  return base::FeatureList::IsEnabled(chromeos::features::kTerminalSSH);
 }
 
 gfx::Rect TerminalSystemAppDelegate::GetDefaultBounds(Browser* browser) const {
@@ -123,4 +110,9 @@ bool TerminalSystemAppDelegate::ShouldShowTabContextMenuShortcut(
     return crostini::GetTerminalSettingPassCtrlW(profile);
   }
   return true;
+}
+
+bool TerminalSystemAppDelegate::ShouldPinTab(GURL url) const {
+  return url == GURL(base::StrCat({chrome::kChromeUIUntrustedTerminalURL,
+                                   crostini::kTerminalHomePath}));
 }

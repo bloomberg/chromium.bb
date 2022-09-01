@@ -103,8 +103,10 @@ bool DetectAndStartProxyConfigUtil() {
     case base::nix::DESKTOP_ENVIRONMENT_CINNAMON:
       launched = StartProxyConfigUtil(kCinnamonProxyConfigCommand);
       break;
+    case base::nix::DESKTOP_ENVIRONMENT_DEEPIN:
     case base::nix::DESKTOP_ENVIRONMENT_GNOME:
     case base::nix::DESKTOP_ENVIRONMENT_PANTHEON:
+    case base::nix::DESKTOP_ENVIRONMENT_UKUI:
     case base::nix::DESKTOP_ENVIRONMENT_UNITY: {
       launched = StartProxyConfigUtil(kGNOME2ProxyConfigCommand);
       if (!launched) {

@@ -2,6 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import '//resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+import '//resources/cr_elements/shared_vars_css.m.js';
+import '//resources/polymer/v3_0/iron-icon/iron-icon.js';
+import '../../settings_shared_css.js';
+import '//resources/cr_components/localized_link/localized_link.js';
+import './multidevice_feature_toggle.js';
+
+import {assert} from '//resources/js/assert.m.js';
+import {html, Polymer} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {Route, Router} from '../../router.js';
+import {routes} from '../os_route.js';
+import {RouteOriginBehavior} from '../route_origin_behavior.js';
+
+import {MultiDeviceFeature} from './multidevice_constants.js';
+import {MultiDeviceFeatureBehavior} from './multidevice_feature_behavior.js';
+import {recordSmartLockToggleMetric, SmartLockToggleLocation} from './multidevice_metrics_logger.js';
+
 /**
  * @fileoverview
  * Item for an individual multidevice feature. These features appear in the
@@ -11,26 +29,36 @@
  * feature's autonomous page if there is one.
  */
 Polymer({
+  _template: html`{__html_template__}`,
   is: 'settings-multidevice-feature-item',
 
-  behaviors: [MultiDeviceFeatureBehavior, settings.RouteOriginBehavior],
+  behaviors: [MultiDeviceFeatureBehavior, RouteOriginBehavior],
 
   properties: {
-    /** @type {!settings.MultiDeviceFeature} */
+    /** @type {!MultiDeviceFeature} */
     feature: Number,
 
     /**
      * If it is truthy, the item should be actionable and clicking on it should
-     * navigate to the provided route. Otherwise, the item is simply not
-     * actionable.
-     * @type {!settings.Route|undefined}
+     * navigate to the provided route. Otherwise, the item does not have a
+     * subpage to navigate to.
+     * @type {!Route|undefined}
      */
     subpageRoute: Object,
 
     /**
-     * A tooltip to show over an info icon. If unset, no info icon is shown.
+     * A tooltip to show over a help icon. If unset, no help icon is shown.
      */
-    infoTooltip: String,
+    iconTooltip: String,
+
+    /**
+     * A Chrome icon asset to use as a help icon. The icon is not shown if
+     * iconTooltip is unset. Defaults to cr:info-outline.
+     */
+    icon: {
+      type: String,
+      value: 'cr:info-outline',
+    },
 
     /**
      * URLSearchParams for subpage route. No param is provided if it is
@@ -53,11 +81,13 @@ Polymer({
     }
   },
 
-  /** settings.RouteOriginBehavior override */
-  route_: settings.routes.MULTIDEVICE_FEATURES,
+  listeners: {'feature-toggle-clicked': 'onFeatureToggleClicked_'},
+
+  /** RouteOriginBehavior override */
+  route_: routes.MULTIDEVICE_FEATURES,
 
   ready() {
-    this.addFocusConfig_(this.subpageRoute, '#subpageButton');
+    this.addFocusConfig(this.subpageRoute, '#subpageButton');
   },
 
   /** @override */
@@ -92,13 +122,13 @@ Polymer({
    * @private
    */
   shouldShowSeparator_() {
-    return this.hasSubpageClickHandler_() || !!this.infoTooltip;
+    return this.hasSubpageClickHandler_() || !!this.iconTooltip;
   },
 
   /** @private */
   handleItemClick_(event) {
     // We do not navigate away if the click was on a link.
-    if (event.path[0].tagName === 'A') {
+    if (event.composedPath()[0].tagName === 'A') {
       event.stopPropagation();
       return;
     }
@@ -119,8 +149,8 @@ Polymer({
     // Remove the search term when navigating to avoid potentially having any
     // visible search term reappear at a later time. See
     // https://crbug.com/989119.
-    settings.Router.getInstance().navigateTo(
-        /** @type {!settings.Route} */ (this.subpageRoute),
+    Router.getInstance().navigateTo(
+        /** @type {!Route} */ (this.subpageRoute),
         this.subpageRouteUrlSearchParams, true /* opt_removeSearch */);
   },
 
@@ -135,5 +165,24 @@ Polymer({
    */
   getItemTextContainerClassName_(isFeatureIconHidden) {
     return isFeatureIconHidden ? 'start' : 'middle';
+  },
+
+  /**
+   * Intercept (but do not stop propagation of) the feature-toggle-clicked event
+   * for the purpose of logging metrics.
+   * @private
+   */
+  onFeatureToggleClicked_(event) {
+    const feature = event.detail.feature;
+    const enabled = event.detail.enabled;
+
+    if (feature === MultiDeviceFeature.SMART_LOCK) {
+      const toggleLocation =
+          Router.getInstance().currentRoute.contains(routes.LOCK_SCREEN) ?
+          SmartLockToggleLocation.LOCK_SCREEN_SETTINGS :
+          SmartLockToggleLocation.MULTIDEVICE_PAGE;
+
+      recordSmartLockToggleMetric(toggleLocation, enabled);
+    }
   },
 });

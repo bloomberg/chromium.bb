@@ -62,7 +62,7 @@ WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestPresentationLocksFocus) {
 class WebXrControllerInputMock : public MockXRDeviceHookBase {
  public:
   void OnFrameSubmitted(
-      device_test::mojom::SubmittedFrameDataPtr frame_data,
+      std::vector<device_test::mojom::ViewDataPtr> views,
       device_test::mojom::XRTestHook::OnFrameSubmittedCallback callback) final;
 
   void WaitNumFrames(unsigned int num_frames) {
@@ -148,7 +148,7 @@ class WebXrControllerInputMock : public MockXRDeviceHookBase {
                          bool is_valid) {
     auto controller_data = GetCurrentControllerData(index);
     controller_data.pose_data.is_valid = is_valid;
-    device_to_origin.matrix().asColMajorf(
+    device_to_origin.matrix().getColMajor(
         controller_data.pose_data.device_to_origin);
     UpdateControllerAndWait(index, controller_data);
   }
@@ -244,7 +244,7 @@ class WebXrControllerInputMock : public MockXRDeviceHookBase {
 };
 
 void WebXrControllerInputMock::OnFrameSubmitted(
-    device_test::mojom::SubmittedFrameDataPtr frame_data,
+    std::vector<device_test::mojom::ViewDataPtr> views,
     device_test::mojom::XRTestHook::OnFrameSubmittedCallback callback) {
   num_submitted_frames_++;
   if (wait_loop_ && target_submitted_frames_ == num_submitted_frames_) {
@@ -646,6 +646,8 @@ device_test::mojom::InteractionProfileType GetMojomInteractionProfile(
       return device_test::mojom::InteractionProfileType::kHPReverbG2;
     case device::OpenXrInteractionProfileType::kHandSelectGrasp:
       return device_test::mojom::InteractionProfileType::kHandSelectGrasp;
+    case device::OpenXrInteractionProfileType::kViveCosmos:
+      return device_test::mojom::InteractionProfileType::kViveCosmos;
     case device::OpenXrInteractionProfileType::kCount:
       return device_test::mojom::InteractionProfileType::kInvalid;
   }
@@ -753,7 +755,7 @@ WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestControllerInputRegistered) {
 
 std::string TransformToColMajorString(const gfx::Transform& t) {
   float array[16];
-  t.matrix().asColMajorf(array);
+  t.matrix().getColMajor(array);
   std::string array_string = "[";
   for (int i = 0; i < 16; i++) {
     array_string += base::NumberToString(array[i]) + ",";

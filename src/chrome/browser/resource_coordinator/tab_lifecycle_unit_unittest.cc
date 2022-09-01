@@ -9,6 +9,7 @@
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/observer_list.h"
 #include "base/test/simple_test_tick_clock.h"
@@ -50,6 +51,7 @@
 #include "services/device/public/cpp/test/fake_usb_device_manager.h"
 #include "services/device/public/mojom/usb_manager.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/mediastream/media_stream.mojom.h"
 #include "third_party/blink/public/mojom/usb/web_usb_service.mojom.h"
 
 namespace resource_coordinator {
@@ -353,14 +355,17 @@ TEST_F(TabLifecycleUnitTest, CannotDiscardVideoCapture) {
   test_clock_.Advance(kBackgroundUrgentProtectionTime);
   ExpectCanDiscardTrueAllReasons(&tab_lifecycle_unit);
 
-  blink::MediaStreamDevices video_devices{blink::MediaStreamDevice(
+  blink::mojom::StreamDevices devices;
+  devices.video_device = blink::MediaStreamDevice(
       blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE, "fake_media_device",
-      "fake_media_device")};
+      "fake_media_device");
+
   std::unique_ptr<content::MediaStreamUI> ui =
       MediaCaptureDevicesDispatcher::GetInstance()
           ->GetMediaStreamCaptureIndicator()
-          ->RegisterMediaStream(web_contents_, video_devices);
-  ui->OnStarted(base::OnceClosure(), content::MediaStreamUI::SourceCallback(),
+          ->RegisterMediaStream(web_contents_, devices);
+  ui->OnStarted(base::RepeatingClosure(),
+                content::MediaStreamUI::SourceCallback(),
                 /*label=*/std::string(), /*screen_capture_ids=*/{},
                 content::MediaStreamUI::StateChangeCallback());
   ExpectCanDiscardFalseAllReasons(&tab_lifecycle_unit,
@@ -397,14 +402,16 @@ TEST_F(TabLifecycleUnitTest, CannotDiscardDesktopCapture) {
   test_clock_.Advance(kBackgroundUrgentProtectionTime);
   ExpectCanDiscardTrueAllReasons(&tab_lifecycle_unit);
 
-  blink::MediaStreamDevices desktop_capture_devices{blink::MediaStreamDevice(
+  blink::mojom::StreamDevices devices;
+  devices.video_device = blink::MediaStreamDevice(
       blink::mojom::MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE,
-      "fake_media_device", "fake_media_device")};
+      "fake_media_device", "fake_media_device");
   std::unique_ptr<content::MediaStreamUI> ui =
       MediaCaptureDevicesDispatcher::GetInstance()
           ->GetMediaStreamCaptureIndicator()
-          ->RegisterMediaStream(web_contents_, desktop_capture_devices);
-  ui->OnStarted(base::OnceClosure(), content::MediaStreamUI::SourceCallback(),
+          ->RegisterMediaStream(web_contents_, devices);
+  ui->OnStarted(base::RepeatingClosure(),
+                content::MediaStreamUI::SourceCallback(),
                 /*label=*/std::string(), /*screen_capture_ids=*/{},
                 content::MediaStreamUI::StateChangeCallback());
   ExpectCanDiscardFalseAllReasons(

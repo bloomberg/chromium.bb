@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "components/signin/internal/identity_manager/account_tracker_service.h"
+#include "components/signin/public/base/signin_client.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher_immediate_error.h"
 #include "net/base/backoff_entry.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -138,15 +139,23 @@ class PersistentErrorsHelper : public base::RefCounted<PersistentErrorsHelper> {
 
 ProfileOAuth2TokenServiceDelegateChromeOS::
     ProfileOAuth2TokenServiceDelegateChromeOS(
+        SigninClient* signin_client,
         AccountTrackerService* account_tracker_service,
         network::NetworkConnectionTracker* network_connection_tracker,
         account_manager::AccountManagerFacade* account_manager_facade,
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+        bool delete_signin_cookies_on_exit,
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
         bool is_regular_profile)
-    : account_tracker_service_(account_tracker_service),
+    : signin_client_(signin_client),
+      account_tracker_service_(account_tracker_service),
       network_connection_tracker_(network_connection_tracker),
       account_manager_facade_(account_manager_facade),
       backoff_entry_(&kBackoffPolicy),
       backoff_error_(GoogleServiceAuthError::NONE),
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+      delete_signin_cookies_on_exit_(delete_signin_cookies_on_exit),
+#endif
       is_regular_profile_(is_regular_profile),
       weak_factory_(this) {
   network_connection_tracker_->AddNetworkConnectionObserver(this);
@@ -282,7 +291,8 @@ ProfileOAuth2TokenServiceDelegateChromeOS::GetAccounts() const {
 }
 
 void ProfileOAuth2TokenServiceDelegateChromeOS::LoadCredentials(
-    const CoreAccountId& primary_account_id) {
+    const CoreAccountId& primary_account_id,
+    bool is_syncing) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (load_credentials_state() !=
@@ -308,6 +318,20 @@ void ProfileOAuth2TokenServiceDelegateChromeOS::LoadCredentials(
 
   DCHECK(account_manager_facade_);
   account_manager_facade_->AddObserver(this);
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // On Lacros, signin cookies can only be cleared for non-syncing
+  // secondary profiles, because:
+  // - the main profile cannot be signed out,
+  // - clearing cookie does not turn sync off
+  // Additionally, there is no way for Chrome to "invalidate" a token. In
+  // particular, the "sync paused" state does not exist.
+  bool revoke_all_tokens =
+      delete_signin_cookies_on_exit_ && !is_syncing &&
+      !signin_client_->GetInitialPrimaryAccount().has_value();
+  if (revoke_all_tokens)
+    RevokeAllCredentials();
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+
   account_manager_facade_->GetAccounts(
       base::BindOnce(&ProfileOAuth2TokenServiceDelegateChromeOS::OnGetAccounts,
                      weak_factory_.GetWeakPtr()));
@@ -512,13 +536,28 @@ void ProfileOAuth2TokenServiceDelegateChromeOS::OnAccountRemoved(
 
 void ProfileOAuth2TokenServiceDelegateChromeOS::RevokeCredentials(
     const CoreAccountId& account_id) {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  ScopedBatchChange batch(this);
+  AccountInfo account_info =
+      account_tracker_service_->GetAccountInfo(account_id);
+  DCHECK(!account_info.IsEmpty());
+  signin_client_->RemoveAccount(account_manager::AccountKey{
+      account_info.gaia, account_manager::AccountType::kGaia});
+#else
   // Signing out of Chrome is not possible on Chrome OS Ash / Lacros.
   NOTREACHED();
+#endif
 }
 
 void ProfileOAuth2TokenServiceDelegateChromeOS::RevokeAllCredentials() {
-  // Signing out of Chrome is not possible on Chrome OS Ash / Lacros.
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  DCHECK(!signin_client_->GetInitialPrimaryAccount().has_value());
+  ScopedBatchChange batch(this);
+  signin_client_->RemoveAllAccounts();
+#else
+  // Signing out of Chrome is not possible on Chrome OS Ash.
   NOTREACHED();
+#endif
 }
 
 const net::BackoffEntry*

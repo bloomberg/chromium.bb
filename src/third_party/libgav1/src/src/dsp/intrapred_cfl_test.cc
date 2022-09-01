@@ -49,6 +49,7 @@ template <int bitdepth, typename Pixel>
 class IntraPredTestBase : public testing::TestWithParam<TransformSize>,
                           public test_utils::MaxAlignedAllocable {
  public:
+  static_assert(bitdepth >= kBitdepth8 && bitdepth <= LIBGAV1_MAX_BITDEPTH, "");
   IntraPredTestBase() {
     switch (tx_size_) {
       case kNumTransformSizes:
@@ -127,6 +128,7 @@ class IntraPredTestBase : public testing::TestWithParam<TransformSize>,
 template <int bitdepth, typename Pixel>
 class CflIntraPredTest : public IntraPredTestBase<bitdepth, Pixel> {
  public:
+  static_assert(bitdepth >= kBitdepth8 && bitdepth <= LIBGAV1_MAX_BITDEPTH, "");
   CflIntraPredTest() = default;
   CflIntraPredTest(const CflIntraPredTest&) = delete;
   CflIntraPredTest& operator=(const CflIntraPredTest&) = delete;
@@ -274,6 +276,7 @@ void CflIntraPredTest<bitdepth, Pixel>::TestRandomValues() {
 template <int bitdepth, typename Pixel, SubsamplingType subsampling_type>
 class CflSubsamplerTest : public IntraPredTestBase<bitdepth, Pixel> {
  public:
+  static_assert(bitdepth >= kBitdepth8 && bitdepth <= LIBGAV1_MAX_BITDEPTH, "");
   CflSubsamplerTest() = default;
   CflSubsamplerTest(const CflSubsamplerTest&) = delete;
   CflSubsamplerTest& operator=(const CflSubsamplerTest&) = delete;
@@ -654,8 +657,6 @@ TEST_P(CflSubsamplerTest8bpp420, Random) { TestRandomValues(); }
 //------------------------------------------------------------------------------
 
 #if LIBGAV1_MAX_BITDEPTH >= 10
-//------------------------------------------------------------------------------
-
 using CflIntraPredTest10bpp = CflIntraPredTest<10, uint16_t>;
 
 const char* GetCflIntraPredDigest10bpp(TransformSize tx_size) {
@@ -853,8 +854,237 @@ TEST_P(CflSubsamplerTest10bpp420, FixedInput) {
 TEST_P(CflSubsamplerTest10bpp420, Overflow) { TestSaturatedValues(); }
 
 TEST_P(CflSubsamplerTest10bpp420, Random) { TestRandomValues(); }
-
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
+
+//------------------------------------------------------------------------------
+
+#if LIBGAV1_MAX_BITDEPTH == 12
+using CflIntraPredTest12bpp = CflIntraPredTest<12, uint16_t>;
+
+const char* GetCflIntraPredDigest12bpp(TransformSize tx_size) {
+  static const char* const kDigest4x4 = "1d92a681a58f99396f22acd8b3154e2b";
+  static const char* const kDigest4x8 = "cf6833ebc64c9ae45f192ee384ef4aa3";
+  static const char* const kDigest4x16 = "06a4fbb8590aca98a045c902ed15c777";
+  static const char* const kDigest8x4 = "ad5944c7455f731ae8dd28b2b25a1b9f";
+  static const char* const kDigest8x8 = "c19621e42ca2bc184d5065131d27be2c";
+  static const char* const kDigest8x16 = "8faa7c95e8c3c18621168ed6759c1ac1";
+  static const char* const kDigest8x32 = "502699ef7a8c7aebc8c3bc653e733703";
+  static const char* const kDigest16x4 = "7f30bb038217967336fb8548a6f7df45";
+  static const char* const kDigest16x8 = "b70943098d0fb256c2943e2ebdbe6d34";
+  static const char* const kDigest16x16 = "4c34f5669880ab78d648b16b68ea0c24";
+  static const char* const kDigest16x32 = "5d85daf690020ed235617870a1a179b1";
+  static const char* const kDigest32x8 = "f8eec12e58c469ffb698fc60b13b927c";
+  static const char* const kDigest32x16 = "f272bb7e5d2df333aa63d806c95e6748";
+  static const char* const kDigest32x32 = "c737987c0a5414b03e6014f145dd999c";
+
+  switch (tx_size) {
+    case kTransformSize4x4:
+      return kDigest4x4;
+    case kTransformSize4x8:
+      return kDigest4x8;
+    case kTransformSize4x16:
+      return kDigest4x16;
+    case kTransformSize8x4:
+      return kDigest8x4;
+    case kTransformSize8x8:
+      return kDigest8x8;
+    case kTransformSize8x16:
+      return kDigest8x16;
+    case kTransformSize8x32:
+      return kDigest8x32;
+    case kTransformSize16x4:
+      return kDigest16x4;
+    case kTransformSize16x8:
+      return kDigest16x8;
+    case kTransformSize16x16:
+      return kDigest16x16;
+    case kTransformSize16x32:
+      return kDigest16x32;
+    case kTransformSize32x8:
+      return kDigest32x8;
+    case kTransformSize32x16:
+      return kDigest32x16;
+    case kTransformSize32x32:
+      return kDigest32x32;
+    default:
+      ADD_FAILURE() << "Unknown transform size: " << tx_size;
+      return nullptr;
+  }
+}
+
+TEST_P(CflIntraPredTest12bpp, DISABLED_Speed) {
+  const auto num_runs =
+      static_cast<int>(2.0e9 / (block_width_ * block_height_));
+  TestSpeed(GetCflIntraPredDigest12bpp(tx_size_), num_runs);
+}
+
+TEST_P(CflIntraPredTest12bpp, FixedInput) {
+  TestSpeed(GetCflIntraPredDigest12bpp(tx_size_), 1);
+}
+
+TEST_P(CflIntraPredTest12bpp, Overflow) { TestSaturatedValues(); }
+
+TEST_P(CflIntraPredTest12bpp, Random) { TestRandomValues(); }
+
+//------------------------------------------------------------------------------
+
+using CflSubsamplerTest12bpp444 =
+    CflSubsamplerTest<12, uint16_t, kSubsamplingType444>;
+using CflSubsamplerTest12bpp422 =
+    CflSubsamplerTest<12, uint16_t, kSubsamplingType422>;
+using CflSubsamplerTest12bpp420 =
+    CflSubsamplerTest<12, uint16_t, kSubsamplingType420>;
+
+const char* GetCflSubsamplerDigest12bpp(TransformSize tx_size,
+                                        SubsamplingType subsampling_type) {
+  static const char* const kDigests4x4[3] = {
+      "44af37c60e9ccaacea004b57d5dea4cf",
+      "e29dd1d93f23b23778ed8cd85910d987",
+      "81e5dac2fd4c90f872ab814ed0f76ae5",
+  };
+  static const char* const kDigests4x8[3] = {
+      "bfc04aed9fe41ec07b0462a219652d16",
+      "693dd064636a0aa3be7aa098e867c512",
+      "0636c25d88aacd85d63e56011e7c5d15",
+  };
+  static const char* const kDigests4x16[3] = {
+      "6479ab30377288e75a78068d47c7e194",
+      "7d6f9b8b3eb85e73626118fc9210e622",
+      "1f3d474cd7c86899da90e515b8b7a906",
+  };
+  static const char* const kDigests8x4[3] = {
+      "7da5a2029bcdab159225c475fdff02da",
+      "096bfef24caa0670d2cd7b0bb63a7ba6",
+      "f749310dfc8a6129ed438dbc845470c0",
+  };
+  static const char* const kDigests8x8[3] = {
+      "08494051a7ff50718313a79ec7c51f92",
+      "637efad0630e253f7cce11af1a0af456",
+      "b220faf7dfedef860d59079dcf201757",
+  };
+  static const char* const kDigests8x16[3] = {
+      "19f027af516e88d3b9e613e578deb126",
+      "4f3bb155d70f9ea76d05b2f41b297a0c",
+      "b7504347eeda1e59ba8e36385c219e40",
+  };
+  static const char* const kDigests8x32[3] = {
+      "b8f1ef01c5672c87ee1004bb3cd7b8bc",
+      "b3e3318b050eb1c165d1e320ef622fa7",
+      "67754f7c5ae84dc23bb76ffaa2fa848e",
+  };
+  static const char* const kDigests16x4[3] = {
+      "f687fb4e22d8a1446eeb4915036874f4",
+      "7b5ef3d393a98dfe0ba49a0db2083465",
+      "840bbb6edaa50e9f7d391033a3dda2d9",
+  };
+  static const char* const kDigests16x8[3] = {
+      "dd9aed11d115a028035f0cee5b90d433",
+      "340d5d0784356ea199d3d751f4d6ed5e",
+      "e55f6fb5f34d829727e9dc2068098933",
+  };
+  static const char* const kDigests16x16[3] = {
+      "1df36a20d76a405c6273b88b38693cf9",
+      "2a7590d01df60b4bc6f10bfdb07b7a65",
+      "510ee31a5bd609e8f4542bb817539668",
+  };
+  static const char* const kDigests16x32[3] = {
+      "bdbc13b9fb7c3c50d25fda57f86f5ad9",
+      "7c138c568794b3d0c8aabff2edc07efd",
+      "581bef267c2a66e4c2fb079968440dbe",
+  };
+  static const char* const kDigests32x8[3] = {
+      "26f62743793811475e2afe1414c5fee1",
+      "6e6bf1678a04f2f727f0679564fb3630",
+      "a4c15562c26dbcfa43fe03a2b6e728b5",
+  };
+  static const char* const kDigests32x16[3] = {
+      "791f0713bbf032081da8ec08e58b9cd3",
+      "5dc7a673e92767186ae86996f4a30691",
+      "651f09d1244c817d92d1baa094c86f56",
+  };
+  static const char* const kDigests32x32[3] = {
+      "543a9d76e7238d88ba86218ec47c1f49",
+      "b0f2b29aae4858c1f09c27fc4344fd15",
+      "1d45083875fed14c4e5f149384a3cd2d",
+  };
+
+  switch (tx_size) {
+    case kTransformSize4x4:
+      return kDigests4x4[subsampling_type];
+    case kTransformSize4x8:
+      return kDigests4x8[subsampling_type];
+    case kTransformSize4x16:
+      return kDigests4x16[subsampling_type];
+    case kTransformSize8x4:
+      return kDigests8x4[subsampling_type];
+    case kTransformSize8x8:
+      return kDigests8x8[subsampling_type];
+    case kTransformSize8x16:
+      return kDigests8x16[subsampling_type];
+    case kTransformSize8x32:
+      return kDigests8x32[subsampling_type];
+    case kTransformSize16x4:
+      return kDigests16x4[subsampling_type];
+    case kTransformSize16x8:
+      return kDigests16x8[subsampling_type];
+    case kTransformSize16x16:
+      return kDigests16x16[subsampling_type];
+    case kTransformSize16x32:
+      return kDigests16x32[subsampling_type];
+    case kTransformSize32x8:
+      return kDigests32x8[subsampling_type];
+    case kTransformSize32x16:
+      return kDigests32x16[subsampling_type];
+    case kTransformSize32x32:
+      return kDigests32x32[subsampling_type];
+    default:
+      ADD_FAILURE() << "Unknown transform size: " << tx_size;
+      return nullptr;
+  }
+}
+
+TEST_P(CflSubsamplerTest12bpp444, DISABLED_Speed) {
+  const auto num_runs =
+      static_cast<int>(2.0e9 / (block_width_ * block_height_));
+  TestSpeed(GetCflSubsamplerDigest12bpp(tx_size_, SubsamplingType()), num_runs);
+}
+
+TEST_P(CflSubsamplerTest12bpp444, FixedInput) {
+  TestSpeed(GetCflSubsamplerDigest12bpp(tx_size_, SubsamplingType()), 1);
+}
+
+TEST_P(CflSubsamplerTest12bpp444, Overflow) { TestSaturatedValues(); }
+
+TEST_P(CflSubsamplerTest12bpp444, Random) { TestRandomValues(); }
+
+TEST_P(CflSubsamplerTest12bpp422, DISABLED_Speed) {
+  const auto num_runs =
+      static_cast<int>(2.0e9 / (block_width_ * block_height_));
+  TestSpeed(GetCflSubsamplerDigest12bpp(tx_size_, SubsamplingType()), num_runs);
+}
+
+TEST_P(CflSubsamplerTest12bpp422, FixedInput) {
+  TestSpeed(GetCflSubsamplerDigest12bpp(tx_size_, SubsamplingType()), 1);
+}
+
+TEST_P(CflSubsamplerTest12bpp422, Overflow) { TestSaturatedValues(); }
+
+TEST_P(CflSubsamplerTest12bpp422, Random) { TestRandomValues(); }
+
+TEST_P(CflSubsamplerTest12bpp420, DISABLED_Speed) {
+  const auto num_runs =
+      static_cast<int>(2.0e9 / (block_width_ * block_height_));
+  TestSpeed(GetCflSubsamplerDigest12bpp(tx_size_, SubsamplingType()), num_runs);
+}
+
+TEST_P(CflSubsamplerTest12bpp420, FixedInput) {
+  TestSpeed(GetCflSubsamplerDigest12bpp(tx_size_, SubsamplingType()), 1);
+}
+
+TEST_P(CflSubsamplerTest12bpp420, Overflow) { TestSaturatedValues(); }
+
+TEST_P(CflSubsamplerTest12bpp420, Random) { TestRandomValues(); }
+#endif  // LIBGAV1_MAX_BITDEPTH == 12
 
 // Cfl predictors are available only for transform sizes with
 // max(width, height) <= 32.
@@ -917,6 +1147,17 @@ INSTANTIATE_TEST_SUITE_P(NEON, CflSubsamplerTest10bpp420,
 #endif  // LIBGAV1_ENABLE_NEON
 
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
+
+#if LIBGAV1_MAX_BITDEPTH == 12
+INSTANTIATE_TEST_SUITE_P(C, CflIntraPredTest12bpp,
+                         testing::ValuesIn(kTransformSizesSmallerThan32x32));
+INSTANTIATE_TEST_SUITE_P(C, CflSubsamplerTest12bpp444,
+                         testing::ValuesIn(kTransformSizesSmallerThan32x32));
+INSTANTIATE_TEST_SUITE_P(C, CflSubsamplerTest12bpp422,
+                         testing::ValuesIn(kTransformSizesSmallerThan32x32));
+INSTANTIATE_TEST_SUITE_P(C, CflSubsamplerTest12bpp420,
+                         testing::ValuesIn(kTransformSizesSmallerThan32x32));
+#endif  // LIBGAV1_MAX_BITDEPTH == 12
 
 }  // namespace
 }  // namespace dsp

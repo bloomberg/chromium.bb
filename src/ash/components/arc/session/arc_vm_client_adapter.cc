@@ -25,10 +25,13 @@
 #include "ash/components/arc/session/arc_session.h"
 #include "ash/components/arc/session/connection_holder.h"
 #include "ash/components/arc/session/file_system_status.h"
+#include "ash/components/cryptohome/cryptohome_parameters.h"
+#include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -37,7 +40,6 @@
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/no_destructor.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/process/launch.h"
 #include "base/process/process_metrics.h"
@@ -46,7 +48,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/platform_thread.h"
@@ -54,10 +55,9 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
+#include "chromeos/ash/components/dbus/concierge/concierge_client.h"
 #include "chromeos/components/sensors/buildflags.h"
-#include "chromeos/cryptohome/cryptohome_parameters.h"
-#include "chromeos/dbus/concierge/concierge_client.h"
-#include "chromeos/dbus/dbus_method_call_status.h"
+#include "chromeos/dbus/common/dbus_method_call_status.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
@@ -92,9 +92,9 @@ constexpr int kArcBugReportBackupTimeMetricBuckets = 50;
 constexpr const char kArcBugReportBackupTimeMetric[] =
     "Login.ArcBugReportBackupTime";
 
-// The owner ID that ARCVM is started with for mini-ARCVM. On UpgradeArc,
-// the owner ID is set to the logged-in user.
-constexpr const char kArcVmDefaultOwner[] = "ARCVM_DEFAULT_OWNER";
+constexpr int kLogdConfigSizeSmall = 256;   // kBytes
+constexpr int kLogdConfigSizeMed = 512;     // kBytes
+constexpr int kLogdConfigSizeLarge = 1024;  // kBytes
 
 constexpr int64_t kInvalidCid = -1;
 
@@ -102,42 +102,29 @@ constexpr base::TimeDelta kConnectTimeoutLimit = base::Seconds(20);
 constexpr base::TimeDelta kConnectSleepDurationInitial =
     base::Milliseconds(100);
 
+constexpr const char kEmptyDiskPath[] = "/dev/null";
+
 absl::optional<base::TimeDelta> g_connect_timeout_limit_for_testing;
 absl::optional<base::TimeDelta> g_connect_sleep_duration_initial_for_testing;
 absl::optional<int> g_boot_notification_server_fd;
 
-chromeos::ConciergeClient* GetConciergeClient() {
-  return chromeos::ConciergeClient::Get();
+ash::ConciergeClient* GetConciergeClient() {
+  return ash::ConciergeClient::Get();
 }
 
 chromeos::DebugDaemonClient* GetDebugDaemonClient() {
   return chromeos::DBusThreadManager::Get()->GetDebugDaemonClient();
 }
 
-std::string GetChromeOsChannelFromLsbRelease() {
-  constexpr const char kChromeOsReleaseTrack[] = "CHROMEOS_RELEASE_TRACK";
-  constexpr const char kUnknown[] = "unknown";
-  const std::string kChannelSuffix = "-channel";
-
-  std::string value;
-  base::SysInfo::GetLsbReleaseValue(kChromeOsReleaseTrack, &value);
-
-  if (!base::EndsWith(value, kChannelSuffix, base::CompareCase::SENSITIVE)) {
-    LOG(ERROR) << "Unknown ChromeOS channel: \"" << value << "\"";
-    return kUnknown;
-  }
-  return value.erase(value.find(kChannelSuffix), kChannelSuffix.size());
-}
-
 ArcBinaryTranslationType IdentifyBinaryTranslationType(
     const StartParams& start_params) {
   const auto* command_line = base::CommandLine::ForCurrentProcess();
   const bool is_houdini_available =
-      command_line->HasSwitch(chromeos::switches::kEnableHoudini) ||
-      command_line->HasSwitch(chromeos::switches::kEnableHoudini64);
+      command_line->HasSwitch(ash::switches::kEnableHoudini) ||
+      command_line->HasSwitch(ash::switches::kEnableHoudini64);
   const bool is_ndk_translation_available =
-      command_line->HasSwitch(chromeos::switches::kEnableNdkTranslation) ||
-      command_line->HasSwitch(chromeos::switches::kEnableNdkTranslation64);
+      command_line->HasSwitch(ash::switches::kEnableNdkTranslation) ||
+      command_line->HasSwitch(ash::switches::kEnableNdkTranslation64);
 
   if (!is_houdini_available && !is_ndk_translation_available)
     return ArcBinaryTranslationType::NONE;
@@ -194,9 +181,7 @@ std::vector<std::string> GenerateUpgradeProps(
 std::vector<std::string> GenerateKernelCmdline(
     const StartParams& start_params,
     const FileSystemStatus& file_system_status,
-    bool is_dev_mode,
-    bool is_host_on_vm,
-    const std::string& channel) {
+    bool is_host_on_vm) {
   std::string native_bridge;
   switch (IdentifyBinaryTranslationType(start_params)) {
     case ArcBinaryTranslationType::NONE:
@@ -210,16 +195,11 @@ std::vector<std::string> GenerateKernelCmdline(
       break;
   }
 
-  std::vector<std::string> result = {
-      // Note: Do not change the value "bertha". This string is checked in
-      // platform2/metrics/process_meter.cc to detect ARCVM's crosvm processes,
-      // for example.
-      "androidboot.hardware=bertha",
+  const int guest_zram_size = kGuestZramSize.Get();
+  VLOG(1) << "Setting ARCVM guest's zram size to " << guest_zram_size;
 
-      "androidboot.container=1",
+  std::vector<std::string> result = {
       base::StringPrintf("androidboot.native_bridge=%s", native_bridge.c_str()),
-      base::StringPrintf("androidboot.dev_mode=%d", is_dev_mode),
-      base::StringPrintf("androidboot.disable_runas=%d", !is_dev_mode),
       base::StringPrintf("androidboot.host_is_in_vm=%d", is_host_on_vm),
       base::StringPrintf("androidboot.lcd_density=%d",
                          start_params.lcd_density),
@@ -230,15 +210,15 @@ std::vector<std::string> GenerateKernelCmdline(
       base::StringPrintf(
           "androidboot.keyboard_shortcut_helper_integration=%d",
           start_params.enable_keyboard_shortcut_helper_integration),
-      base::StringPrintf("androidboot.disable_system_default_app=%d",
-                         start_params.arc_disable_system_default_app),
-      "androidboot.chromeos_channel=" + channel,
       base::StringPrintf("androidboot.iioservice_present=%d",
                          BUILDFLAG(USE_IIOSERVICE)),
       base::StringPrintf("androidboot.enable_notifications_refresh=%d",
                          start_params.enable_notifications_refresh),
-      base::StringPrintf("androidboot.zram_size=%d", kGuestZramSize.Get()),
+      base::StringPrintf("androidboot.zram_size=%d", guest_zram_size),
   };
+
+  if (ShouldMountVmDebugFs())
+    result.push_back("androidboot.arcvm_mount_debugfs=1");
 
   const ArcVmUreadaheadMode mode =
       GetArcVmUreadaheadMode(base::BindRepeating(&base::GetSystemMemoryInfo));
@@ -253,17 +233,17 @@ std::vector<std::string> GenerateKernelCmdline(
       break;
   }
 
-  // We run vshd under a restricted domain on non-test images.
-  // (go/arcvm-android-sh-restricted)
-  if (channel == "testimage")
-    result.push_back("androidboot.vshd_service_override=vshd_for_test");
-
   // Only add boot property if flag to disable media store maintenance is set.
   if (start_params.disable_media_store_maintenance)
     result.push_back("androidboot.disable_media_store_maintenance=1");
 
   if (start_params.arc_generate_play_auto_install)
     result.push_back("androidboot.arc_generate_pai=1");
+
+  if (base::FeatureList::IsEnabled(kEnableVirtioBlkForData))
+    result.push_back("androidboot.arcvm_virtio_blk_data=1");
+  else
+    result.push_back("androidboot.arcvm_virtio_blk_data=0");
 
   // Conditionally sets some properties based on |start_params|.
   switch (start_params.play_store_auto_update) {
@@ -275,6 +255,33 @@ std::vector<std::string> GenerateKernelCmdline(
     case StartParams::PlayStoreAutoUpdate::AUTO_UPDATE_OFF:
       result.push_back("androidboot.play_store_auto_update=0");
       break;
+  }
+
+  // Set logcat size, only if configured to one of the few supported sizes.
+  if (base::FeatureList::IsEnabled(kLogdConfig)) {
+    auto logd_config_size = kLogdConfigSize.Get();
+    switch (logd_config_size) {
+      case kLogdConfigSizeSmall:
+        result.push_back("androidboot.arcvm.logd.size=256K");
+        break;
+      case kLogdConfigSizeMed:
+        result.push_back("androidboot.arcvm.logd.size=512K");
+        break;
+      case kLogdConfigSizeLarge:
+        result.push_back("androidboot.arcvm.logd.size=1M");
+        break;
+      default:
+        VLOG(1) << "WARNING: Invalid logd size ignored: [" << logd_config_size
+                << "]";
+        break;
+    }
+  }
+
+  if (base::FeatureList::IsEnabled(kVmMemoryPSIReports)) {
+    auto period = kVmMemoryPSIReportsPeriod.Get();
+    // Since Android performs parameter validation, not doing it here.
+    result.push_back(base::StringPrintf(
+        "androidboot.arcvm_metrics_mem_psi_period=%d", period));
   }
 
   if (base::FeatureList::IsEnabled(arc::kUseDalvikMemoryProfile)) {
@@ -319,43 +326,46 @@ std::vector<std::string> GenerateKernelCmdline(
   if (start_params.disable_download_provider)
     result.push_back("androidboot.disable_download_provider=1");
 
+  if (base::FeatureList::IsEnabled(arc::kVmGmsCoreLowMemoryKillerProtection))
+    result.push_back("androidboot.arc_enable_gmscore_lmk_protection=1");
+
+  if (start_params.enable_tts_caching)
+    result.push_back("androidboot.arc.tts.caching=1");
+
+  if (base::FeatureList::IsEnabled(arc::kVmBroadcastPreNotifyANR))
+    result.push_back("androidboot.arc.broadcast_anr_prenotify=1");
+
   return result;
 }
 
 vm_tools::concierge::StartArcVmRequest CreateStartArcVmRequest(
+    const std::string& user_id_hash,
     uint32_t cpus,
     const base::FilePath& demo_session_apps_path,
+    const absl::optional<base::FilePath>& data_image_path,
     const FileSystemStatus& file_system_status,
     bool use_per_vm_core_scheduling,
     std::vector<std::string> kernel_cmdline,
-    base::OnceCallback<bool(base::SystemMemoryInfoKB*)>
-        get_system_memory_info_cb) {
+    ArcVmClientAdapterDelegate* delegate) {
   vm_tools::concierge::StartArcVmRequest request;
 
   request.set_name(kArcVmName);
-  request.set_owner_id(kArcVmDefaultOwner);
+  request.set_owner_id(user_id_hash);
   request.set_use_per_vm_core_scheduling(use_per_vm_core_scheduling);
 
-  request.add_params("root=/dev/vda");
   if (file_system_status.is_host_rootfs_writable() &&
       file_system_status.is_system_image_ext_format()) {
     request.add_params("rw");
   }
-  request.add_params("init=/init");
 
   for (auto& entry : kernel_cmdline)
     request.add_params(std::move(entry));
-
-  vm_tools::concierge::VirtualMachineSpec* vm = request.mutable_vm();
-
-  vm->set_kernel(file_system_status.guest_kernel_path().value());
 
   const bool should_set_blocksize =
       !base::FeatureList::IsEnabled(arc::kUseDefaultBlockSize);
   constexpr uint32_t kBlockSize = 4096;
 
   // Add rootfs as /dev/vda.
-  vm->set_rootfs(file_system_status.system_image_path().value());
   request.set_rootfs_writable(file_system_status.is_host_rootfs_writable() &&
                               file_system_status.is_system_image_ext_format());
   if (should_set_blocksize)
@@ -372,19 +382,56 @@ vm_tools::concierge::StartArcVmRequest CreateStartArcVmRequest(
     disk_image->set_block_size(kBlockSize);
 
   // Add /run/imageloader/.../android_demo_apps.squash as /dev/block/vdc if
-  // needed.
+  // needed. If it's not needed we pass /dev/null so that /dev/block/vdc
+  // always corresponds to the demo image.
+  disk_image = request.add_disks();
+  disk_image->set_image_type(vm_tools::concierge::DISK_IMAGE_AUTO);
+  disk_image->set_writable(false);
+  disk_image->set_do_mount(true);
   if (!demo_session_apps_path.empty()) {
-    disk_image = request.add_disks();
     disk_image->set_path(demo_session_apps_path.value());
-    disk_image->set_image_type(vm_tools::concierge::DISK_IMAGE_AUTO);
-    disk_image->set_writable(false);
-    disk_image->set_do_mount(true);
     if (should_set_blocksize)
       disk_image->set_block_size(kBlockSize);
+  } else {
+    // This should never be mounted as it's only mounted if
+    // ro.boot.arc_demo_mode is set.
+    disk_image->set_path(kEmptyDiskPath);
   }
 
-  // Add Android fstab.
-  request.set_fstab(file_system_status.fstab_path().value());
+  // Add /opt/google/vms/android/apex/payload.img as /dev/block/vdd if
+  // needed. If it's not needed we pass /dev/null so that /dev/block/vdd
+  // always corresponds to the block apex composite disk.
+  disk_image = request.add_disks();
+  disk_image->set_image_type(vm_tools::concierge::DISK_IMAGE_AUTO);
+  disk_image->set_writable(false);
+  disk_image->set_do_mount(true);
+  if (!file_system_status.block_apex_path().empty()) {
+    disk_image->set_path(file_system_status.block_apex_path().value());
+  } else {
+    // Android will not mount this is the system property
+    // apexd.payload_metadata.path is not set, and it should
+    // always be set if the block apex payload exists.
+    disk_image->set_path(kEmptyDiskPath);
+  }
+
+  // Add /home/root/<hash>/crosvm/YXJjdm0=.img as /dev/block/vde for mounting
+  // Android /data if kEnableVirtioBlkForData is enabled.
+  disk_image = request.add_disks();
+  disk_image->set_image_type(vm_tools::concierge::DISK_IMAGE_AUTO);
+  disk_image->set_do_mount(true);
+  if (data_image_path) {
+    disk_image->set_path(data_image_path->value());
+    disk_image->set_writable(true);
+    if (should_set_blocksize)
+      disk_image->set_block_size(kBlockSize);
+  } else {
+    // This should never be mounted as it's only mounted if
+    // ro.boot.arcvm_virtio_blk_data=1 is set.
+    disk_image->set_path(kEmptyDiskPath);
+    // Ensure to set writable to false, otherwise crosvm will exit with
+    // "failed to lock disk image" error.
+    disk_image->set_writable(false);
+  }
 
   // Add cpus.
   request.set_cpus(cpus);
@@ -401,22 +448,27 @@ vm_tools::concierge::StartArcVmRequest CreateStartArcVmRequest(
   // Specify VM Memory.
   if (base::FeatureList::IsEnabled(kVmMemorySize)) {
     base::SystemMemoryInfoKB info;
-    if (std::move(get_system_memory_info_cb).Run(&info)) {
+    if (delegate->GetSystemMemoryInfo(&info)) {
       const int ram_mib = info.total / 1024;
       const int shift_mib = kVmMemorySizeShiftMiB.Get();
       const int max_mib = kVmMemorySizeMaxMiB.Get();
-      const int vm_ram_mib = std::min(max_mib, ram_mib + shift_mib);
+      int vm_ram_mib = std::min(max_mib, ram_mib + shift_mib);
       constexpr int kVmRamMinMib = 2048;
 
-      if (sizeof(uintptr_t) == 4) {
+      if (delegate->IsCrosvm32bit()) {
         // This is a workaround for ARM Chromebooks where userland including
-        // crosvm is compiled in 32 bit. crosvm binary in 32 bit doesn't have
-        // enough virtual address space to map >4GB of VM memory obviously.
+        // crosvm is compiled in 32 bit.
         // TODO(yusukes): Remove this once crosvm becomes 64 bit binary on ARM.
-        VLOG(1) << "VmMemorySize is enabled, but we are on a 32-bit device, so "
-                << "fall back to the old VM memory size policy.";
-      } else if (vm_ram_mib > kVmRamMinMib) {
+        if (vm_ram_mib > static_cast<int>(k32bitVmRamMaxMib)) {
+          VLOG(1) << "VmMemorySize is enabled, but we are on a 32-bit device, "
+                  << "so limit the size to " << k32bitVmRamMaxMib << " MiB.";
+          vm_ram_mib = k32bitVmRamMaxMib;
+        }
+      }
+
+      if (vm_ram_mib > kVmRamMinMib) {
         request.set_memory_mib(vm_ram_mib);
+        VLOG(1) << "VmMemorySize is enabled. memory_mib=" << vm_ram_mib;
       } else {
         VLOG(1) << "VmMemorySize is enabled, but computed size is "
                 << "min(" << ram_mib << " + " << shift_mib << "," << max_mib
@@ -426,19 +478,29 @@ vm_tools::concierge::StartArcVmRequest CreateStartArcVmRequest(
     } else {
       VLOG(1) << "VmMemorySize is enabled, but GetSystemMemoryInfo failed.";
     }
+  } else {
+    VLOG(1) << "VmMemorySize is disabled.";
   }
 
   // Specify balloon policy.
   if (base::FeatureList::IsEnabled(kVmBalloonPolicy)) {
     vm_tools::concierge::BalloonPolicyOptions* balloon_policy =
         request.mutable_balloon_policy();
-    balloon_policy->set_moderate_target_cache(
-        static_cast<int64_t>(kVmBalloonPolicyModerateKiB.Get()) * 1024);
-    balloon_policy->set_critical_target_cache(
-        static_cast<int64_t>(kVmBalloonPolicyCriticalKiB.Get()) * 1024);
-    balloon_policy->set_reclaim_target_cache(
-        static_cast<int64_t>(kVmBalloonPolicyReclaimKiB.Get()) * 1024);
+    const int64_t moderate_kib = kVmBalloonPolicyModerateKiB.Get();
+    const int64_t critical_kib = kVmBalloonPolicyCriticalKiB.Get();
+    const int64_t reclaim_kib = kVmBalloonPolicyReclaimKiB.Get();
+    balloon_policy->set_moderate_target_cache(moderate_kib * 1024);
+    balloon_policy->set_critical_target_cache(critical_kib * 1024);
+    balloon_policy->set_reclaim_target_cache(reclaim_kib * 1024);
+    VLOG(1) << "Use LimitCacheBalloonPolicy. ModerateKiB=" << moderate_kib
+            << ", CriticalKiB=" << critical_kib
+            << ", ReclaimKiB=" << reclaim_kib;
+  } else {
+    VLOG(1) << "Use BalanceAvailableBalloonPolicy";
   }
+
+  request.set_enable_consumer_auto_update_toggle(base::FeatureList::IsEnabled(
+      ash::features::kConsumerAutoUpdateToggleAllowed));
 
   return request;
 }
@@ -535,12 +597,17 @@ bool ArcVmClientAdapterDelegate::GetSystemMemoryInfo(
   return base::GetSystemMemoryInfo(info);
 }
 
+bool ArcVmClientAdapterDelegate::IsCrosvm32bit() {
+  // Assume that crosvm is 32-bit if chrome is 32-bit.
+  return sizeof(uintptr_t) == 4;
+}
+
 class ArcVmClientAdapter : public ArcClientAdapter,
-                           public chromeos::ConciergeClient::VmObserver,
-                           public chromeos::ConciergeClient::Observer,
+                           public ash::ConciergeClient::VmObserver,
+                           public ash::ConciergeClient::Observer,
                            public ConnectionObserver<arc::mojom::AppInstance> {
  public:
-  // Initializing |is_host_on_vm_| and |is_dev_mode_| is not always very fast.
+  // Initializing |is_host_on_vm_| is not always very fast.
   // Try to initialize them in the constructor and in StartMiniArc respectively.
   // They usually run when the system is not busy.
   ArcVmClientAdapter() : ArcVmClientAdapter(FileSystemStatusRewriter{}) {}
@@ -573,7 +640,7 @@ class ArcVmClientAdapter : public ArcClientAdapter,
     client->RemoveVmObserver(this);
   }
 
-  // chromeos::ConciergeClient::VmObserver overrides:
+  // ash::ConciergeClient::VmObserver overrides:
   void OnVmStarted(
       const vm_tools::concierge::VmStartedSignal& signal) override {
     if (signal.name() == kArcVmName)
@@ -600,23 +667,41 @@ class ArcVmClientAdapter : public ArcClientAdapter,
   // ArcClientAdapter overrides:
   void StartMiniArc(StartParams params,
                     chromeos::VoidDBusMethodCallback callback) override {
-    start_params_ = std::move(params);
-    base::ThreadPool::PostTaskAndReplyWithResult(
-        FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-        base::BindOnce(
-            []() { return GetSystemPropertyInt("cros_debug") == 1; }),
-        base::BindOnce(&ArcVmClientAdapter::OnIsDevMode,
-                       weak_factory_.GetWeakPtr(), std::move(callback)));
-  }
-
-  void UpgradeArc(UpgradeParams params,
-                  chromeos::VoidDBusMethodCallback callback) override {
+    // This step is mandatory regardless of StartMiniArc is called or not
+    // from |ArcSessionManager|. It is also called after login for ARCVM.
     if (user_id_hash_.empty()) {
       LOG(ERROR) << "User ID hash is not set";
       StopArcInstanceInternal();
       std::move(callback).Run(false);
       return;
     }
+
+    start_params_ = std::move(params);
+    std::vector<std::string> enviroment;
+    if (start_params_.disable_ureadahead)
+      enviroment.emplace_back("DISABLE_UREADAHEAD=1");
+    std::deque<JobDesc> jobs{
+        // Note: the first Upstart job is a task, and the callback for the start
+        // request won't be called until the task finishes. When the callback is
+        // called with true, it is ensured that the per-board features files
+        // exist.
+        JobDesc{kArcVmPerBoardFeaturesJobName, UpstartOperation::JOB_START, {}},
+        JobDesc{
+            kArcVmPostVmStartServicesJobName, UpstartOperation::JOB_STOP, {}},
+        JobDesc{kArcVmPostLoginServicesJobName, UpstartOperation::JOB_STOP, {}},
+        JobDesc{kArcVmPreLoginServicesJobName,
+                UpstartOperation::JOB_STOP_AND_START, std::move(enviroment)},
+    };
+    ConfigureUpstartJobs(
+        std::move(jobs),
+        base::BindOnce(
+            &ArcVmClientAdapter::OnConfigureUpstartJobsOnStartMiniArc,
+            weak_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
+  void UpgradeArc(UpgradeParams params,
+                  chromeos::VoidDBusMethodCallback callback) override {
+    DCHECK(!user_id_hash_.empty());
     if (serial_number_.empty()) {
       LOG(ERROR) << "Serial number is not set";
       StopArcInstanceInternal();
@@ -624,15 +709,10 @@ class ArcVmClientAdapter : public ArcClientAdapter,
       return;
     }
 
-    // Stop the existing full-VM if any (e.g. in case of a chrome crash).
-    VLOG(1) << "Stopping the existing full-VM if any.";
-    vm_tools::concierge::StopVmRequest request;
-    request.set_name(kArcVmName);
-    request.set_owner_id(user_id_hash_);
-    GetConciergeClient()->StopVm(
-        request, base::BindOnce(&ArcVmClientAdapter::OnExistingFullVmStopped,
-                                weak_factory_.GetWeakPtr(), std::move(params),
-                                std::move(callback)));
+    VLOG(1) << "Checking adb sideload status";
+    chromeos::SessionManagerClient::Get()->QueryAdbSideload(base::BindOnce(
+        &ArcVmClientAdapter::OnQueryAdbSideload, weak_factory_.GetWeakPtr(),
+        std::move(params), std::move(callback)));
   }
 
   void StopArcInstance(bool on_shutdown, bool should_backup_log) override {
@@ -678,7 +758,7 @@ class ArcVmClientAdapter : public ArcClientAdapter,
     demo_mode_delegate_ = delegate;
   }
 
-  void TrimVmMemory(TrimVmMemoryCallback callback) override {
+  void TrimVmMemory(TrimVmMemoryCallback callback, int page_limit) override {
     VLOG(2) << "Start trimming VM memory";
     if (user_id_hash_.empty()) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -687,16 +767,18 @@ class ArcVmClientAdapter : public ArcClientAdapter,
                          /*failure_reason=*/"user_id_hash_ is not set"));
       return;
     }
+
     vm_tools::concierge::ReclaimVmMemoryRequest request;
     request.set_name(kArcVmName);
     request.set_owner_id(user_id_hash_);
+    request.set_page_limit(page_limit);
     GetConciergeClient()->ReclaimVmMemory(
         request,
         base::BindOnce(&ArcVmClientAdapter::OnTrimVmMemory,
                        weak_factory_.GetWeakPtr(), std::move(callback)));
   }
 
-  // chromeos::ConciergeClient::Observer overrides:
+  // ash::ConciergeClient::Observer overrides:
   void ConciergeServiceStopped() override {
     VLOG(1) << "vm_concierge stopped";
     // At this point, all crosvm processes are gone. Notify the observer of the
@@ -710,18 +792,18 @@ class ArcVmClientAdapter : public ArcClientAdapter,
 
   // ConnectionObserver<arc::mojom::AppInstance> overrides:
   void OnConnectionReady() override {
-    VLOG(2) << "Enabling VM's RT vCPU";
+    VLOG(2) << "Sending ArcVmCompleteBoot Request";
 
     auto* arc_service_manager = arc::ArcServiceManager::Get();
     DCHECK(arc_service_manager);
     arc_service_manager->arc_bridge_service()->app()->RemoveObserver(this);
 
-    vm_tools::concierge::MakeRtVcpuRequest request;
-    request.set_name(kArcVmName);
+    vm_tools::concierge::ArcVmCompleteBootRequest request;
     DCHECK(!user_id_hash_.empty());
     request.set_owner_id(user_id_hash_);
-    GetConciergeClient()->MakeRtVcpu(
-        request, base::BindOnce(&ArcVmClientAdapter::OnMakeRtVcpu));
+    GetConciergeClient()->ArcVmCompleteBoot(
+        request,
+        base::BindOnce(&ArcVmClientAdapter::OnArcVmCompleteBootResponse));
   }
 
   void set_delegate_for_testing(  // IN-TEST
@@ -753,52 +835,13 @@ class ArcVmClientAdapter : public ArcClientAdapter,
     // regardless of whether the VM exists, check to see which VM is actually
     // running.
 
-    vm_tools::concierge::GetVmInfoRequest request;
-    request.set_name(kArcVmName);
-    request.set_owner_id(user_id_hash_);
-    GetConciergeClient()->GetVmInfo(
-        request, base::BindOnce(&ArcVmClientAdapter::OnGetVmReply,
-                                weak_factory_.GetWeakPtr()));
-  }
-
-  void OnGetVmReply(
-      absl::optional<vm_tools::concierge::GetVmInfoResponse> reply) {
     vm_tools::concierge::StopVmRequest request;
     request.set_name(kArcVmName);
-
-    if (reply.has_value() && reply.value().success())
-      request.set_owner_id(user_id_hash_);
-    else
-      request.set_owner_id(kArcVmDefaultOwner);
+    request.set_owner_id(user_id_hash_);
 
     GetConciergeClient()->StopVm(
         request, base::BindOnce(&ArcVmClientAdapter::OnStopVmReply,
                                 weak_factory_.GetWeakPtr()));
-  }
-
-  void OnIsDevMode(chromeos::VoidDBusMethodCallback callback,
-                   bool is_dev_mode) {
-    is_dev_mode_ = is_dev_mode;
-    std::vector<std::string> enviroment;
-    if (start_params_.disable_ureadahead)
-      enviroment.emplace_back("DISABLE_UREADAHEAD=1");
-    std::deque<JobDesc> jobs{
-        // Note: the first Upstart job is a task, and the callback for the start
-        // request won't be called until the task finishes. When the callback is
-        // called with true, it is ensured that the per-board features files
-        // exist.
-        JobDesc{kArcVmPerBoardFeaturesJobName, UpstartOperation::JOB_START, {}},
-        JobDesc{
-            kArcVmPostVmStartServicesJobName, UpstartOperation::JOB_STOP, {}},
-        JobDesc{kArcVmPostLoginServicesJobName, UpstartOperation::JOB_STOP, {}},
-        JobDesc{kArcVmPreLoginServicesJobName,
-                UpstartOperation::JOB_STOP_AND_START, std::move(enviroment)},
-    };
-    ConfigureUpstartJobs(
-        std::move(jobs),
-        base::BindOnce(
-            &ArcVmClientAdapter::OnConfigureUpstartJobsOnStartMiniArc,
-            weak_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   void OnConfigureUpstartJobsOnStartMiniArc(
@@ -824,18 +867,18 @@ class ArcVmClientAdapter : public ArcClientAdapter,
       return;
     }
 
-    // Stop the existing mini-VM if any (e.g. in case of a chrome crash).
-    VLOG(1) << "Stopping the existing mini-VM if any.";
+    // Stop the existing VM if any (e.g. in case of a chrome crash).
+    VLOG(1) << "Stopping the existing VM if any.";
     vm_tools::concierge::StopVmRequest request;
     request.set_name(kArcVmName);
-    request.set_owner_id(kArcVmDefaultOwner);
+    request.set_owner_id(user_id_hash_);
     GetConciergeClient()->StopVm(
         request,
-        base::BindOnce(&ArcVmClientAdapter::OnExistingMiniVmStopped,
+        base::BindOnce(&ArcVmClientAdapter::OnExistingVmStopped,
                        weak_factory_.GetWeakPtr(), std::move(callback)));
   }
 
-  void OnExistingMiniVmStopped(
+  void OnExistingVmStopped(
       chromeos::VoidDBusMethodCallback callback,
       absl::optional<vm_tools::concierge::StopVmResponse> reply) {
     // reply->success() returns true even when there was no VM running.
@@ -892,13 +935,69 @@ class ArcVmClientAdapter : public ArcClientAdapter,
                          FileSystemStatus file_system_status) {
     VLOG(2) << "Retrieving demo session apps path";
     DCHECK(demo_mode_delegate_);
-    demo_mode_delegate_->EnsureOfflineResourcesLoaded(base::BindOnce(
+    demo_mode_delegate_->EnsureResourcesLoaded(base::BindOnce(
         &ArcVmClientAdapter::OnDemoResourcesLoaded, weak_factory_.GetWeakPtr(),
         std::move(callback), std::move(file_system_status)));
   }
 
   void OnDemoResourcesLoaded(chromeos::VoidDBusMethodCallback callback,
                              FileSystemStatus file_system_status) {
+    if (!base::FeatureList::IsEnabled(kEnableVirtioBlkForData)) {
+      // Use virtio-fs for /data.
+      StartArcVm(std::move(callback), std::move(file_system_status),
+                 /*data_image_path=*/absl::nullopt);
+      return;
+    }
+
+    // Use virtio-blk for /data.
+    // If request.disk_size is not set, concierge calculates the desired size
+    // (90% of the available space) and creates a sparse disk image.
+    vm_tools::concierge::CreateDiskImageRequest request;
+    request.set_cryptohome_id(user_id_hash_);
+    request.set_vm_name(kArcVmName);
+    request.set_image_type(vm_tools::concierge::DISK_IMAGE_AUTO);
+    request.set_storage_location(vm_tools::concierge::STORAGE_CRYPTOHOME_ROOT);
+
+    GetConciergeClient()->CreateDiskImage(
+        std::move(request),
+        base::BindOnce(&ArcVmClientAdapter::OnDataDiskImageCreated,
+                       weak_factory_.GetWeakPtr(), std::move(callback),
+                       std::move(file_system_status)));
+  }
+
+  void OnDataDiskImageCreated(
+      chromeos::VoidDBusMethodCallback callback,
+      FileSystemStatus file_system_status,
+      absl::optional<vm_tools::concierge::CreateDiskImageResponse> res) {
+    if (!res) {
+      LOG(ERROR) << "Failed to create a disk image for /data. Empty response.";
+      std::move(callback).Run(false);
+      return;
+    }
+
+    switch (res->status()) {
+      case vm_tools::concierge::DISK_STATUS_CREATED:
+        VLOG(1) << "Created a disk image for /data at " << res->disk_path();
+        StartArcVm(std::move(callback), std::move(file_system_status),
+                   base::FilePath(res->disk_path()));
+        return;
+      case vm_tools::concierge::DISK_STATUS_EXISTS:
+        VLOG(1) << "Disk image for /data already exists: " << res->disk_path();
+        StartArcVm(std::move(callback), std::move(file_system_status),
+                   base::FilePath(res->disk_path()));
+        return;
+      // TODO(niwa): Also handle DISK_STATUS_NOT_ENOUGH_SPACE.
+      default:
+        LOG(ERROR) << "Failed to create a disk image for /data. Status:"
+                   << res->status() << " Reason:" << res->failure_reason();
+        std::move(callback).Run(false);
+        return;
+    }
+  }
+
+  void StartArcVm(chromeos::VoidDBusMethodCallback callback,
+                  FileSystemStatus file_system_status,
+                  absl::optional<base::FilePath> data_image_path) {
     const base::FilePath demo_session_apps_path =
         demo_mode_delegate_->GetDemoAppsPath();
     const bool use_per_vm_core_scheduling =
@@ -920,15 +1019,11 @@ class ArcVmClientAdapter : public ArcClientAdapter,
     DCHECK_LT(0, cpus);
 
     std::vector<std::string> kernel_cmdline = GenerateKernelCmdline(
-        start_params_, file_system_status, *is_dev_mode_, is_host_on_vm_,
-        GetChromeOsChannelFromLsbRelease());
+        start_params_, file_system_status, is_host_on_vm_);
     auto start_request = CreateStartArcVmRequest(
-        cpus, demo_session_apps_path, file_system_status,
-        use_per_vm_core_scheduling, std::move(kernel_cmdline),
-        base::BindOnce(&ArcVmClientAdapterDelegate::GetSystemMemoryInfo,
-                       // Unretained is safe because CreateStartArcVmRequest is
-                       // a synchronous function.
-                       base::Unretained(delegate_.get())));
+        user_id_hash_, cpus, demo_session_apps_path, data_image_path,
+        file_system_status, use_per_vm_core_scheduling,
+        std::move(kernel_cmdline), delegate_.get());
 
     GetConciergeClient()->StartArcVm(
         start_request,
@@ -956,26 +1051,6 @@ class ArcVmClientAdapter : public ArcClientAdapter,
     should_notify_observers_ = true;
     VLOG(1) << "ARCVM started cid=" << current_cid_;
     std::move(callback).Run(true);
-  }
-
-  void OnExistingFullVmStopped(
-      UpgradeParams params,
-      chromeos::VoidDBusMethodCallback callback,
-      absl::optional<vm_tools::concierge::StopVmResponse> reply) {
-    // reply->success() returns true even when there was no VM running.
-    if (!reply.has_value() || !reply->success()) {
-      LOG(ERROR) << "StopVm failed: "
-                 << (reply.has_value() ? reply->failure_reason()
-                                       : "No D-Bus response.");
-      StopArcInstanceInternal();
-      std::move(callback).Run(false);
-      return;
-    }
-
-    VLOG(1) << "Checking adb sideload status";
-    chromeos::SessionManagerClient::Get()->QueryAdbSideload(base::BindOnce(
-        &ArcVmClientAdapter::OnQueryAdbSideload, weak_factory_.GetWeakPtr(),
-        std::move(params), std::move(callback)));
   }
 
   void OnQueryAdbSideload(
@@ -1030,38 +1105,6 @@ class ArcVmClientAdapter : public ArcClientAdapter,
       std::move(callback).Run(false);
       return;
     }
-
-    VLOG(1) << "Setting owner ID for mini-VM instance.";
-    vm_tools::concierge::SetVmIdRequest request;
-    request.set_name(kArcVmName);
-    request.set_src_owner_id(kArcVmDefaultOwner);
-    request.set_dest_owner_id(user_id_hash_);
-    GetConciergeClient()->SetVmId(
-        request, base::BindOnce(&ArcVmClientAdapter::OnSetVmId,
-                                weak_factory_.GetWeakPtr(), std::move(params),
-                                std::move(callback)));
-  }
-
-  void OnSetVmId(UpgradeParams params,
-                 chromeos::VoidDBusMethodCallback callback,
-                 absl::optional<vm_tools::concierge::SetVmIdResponse> reply) {
-    if (!reply.has_value()) {
-      LOG(ERROR) << "Failed to set VM ID. Empty response.";
-      StopArcInstanceInternal();
-      std::move(callback).Run(false);
-      return;
-    }
-
-    const vm_tools::concierge::SetVmIdResponse& response = reply.value();
-    if (!response.success()) {
-      LOG(ERROR) << "Failed to set VM ID. Failure reason="
-                 << response.failure_reason();
-      StopArcInstanceInternal();
-      std::move(callback).Run(false);
-      return;
-    }
-
-    VLOG(2) << "Set VM id for default instance";
 
     base::ThreadPool::PostTaskAndReplyWithResult(
         FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
@@ -1155,28 +1198,20 @@ class ArcVmClientAdapter : public ArcClientAdapter,
     std::move(callback).Run(success, failure_reason);
   }
 
-  static void OnMakeRtVcpu(
-      absl::optional<vm_tools::concierge::MakeRtVcpuResponse> reply) {
-    bool success = false;
-    std::string failure_reason;
+  static void OnArcVmCompleteBootResponse(
+      absl::optional<vm_tools::concierge::ArcVmCompleteBootResponse> reply) {
+    vm_tools::concierge::ArcVmCompleteBootResult result =
+        reply.has_value()
+            ? reply.value().result()
+            : vm_tools::concierge::ArcVmCompleteBootResult::BAD_REQUEST;
 
-    if (!reply.has_value()) {
-      failure_reason = "Empty response";
-    } else {
-      const vm_tools::concierge::MakeRtVcpuResponse& response = reply.value();
-      success = response.success();
-      if (!success)
-        failure_reason = response.failure_reason();
-    }
-
-    VLOG(2) << "Enabling VM's RT vCPU: result=" << success;
-    if (!success)
-      LOG(WARNING) << "Failed to enable RT vCPU: reason=" << failure_reason;
+    VLOG(2) << "ArcVmCompleteBoot: result=" << result;
+    if (result != vm_tools::concierge::ArcVmCompleteBootResult::SUCCESS)
+      LOG(WARNING) << "Failed ArcVmCompleteBoot: result=" << result;
   }
 
   std::unique_ptr<ArcVmClientAdapterDelegate> delegate_;
 
-  absl::optional<bool> is_dev_mode_;
   // True when the *host* is running on a VM.
   const bool is_host_on_vm_;
   // A cryptohome ID of the primary profile.

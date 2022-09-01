@@ -33,7 +33,7 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "ui/views/win/hwnd_util.h"
 #endif
 
@@ -270,13 +270,11 @@ views::ClientView* ScreenCaptureNotificationUIViews::CreateClientView(
 std::unique_ptr<views::NonClientFrameView>
 ScreenCaptureNotificationUIViews::CreateNonClientFrameView(
     views::Widget* widget) {
-  constexpr auto kPadding = gfx::Insets(5, 10);
+  constexpr auto kPadding = gfx::Insets::VH(5, 10);
   auto frame =
       std::make_unique<views::BubbleFrameView>(gfx::Insets(), kPadding);
-  SkColor color =
-      widget->GetColorProvider()->GetColor(ui::kColorDialogBackground);
   frame->SetBubbleBorder(std::make_unique<views::BubbleBorder>(
-      views::BubbleBorder::NONE, views::BubbleBorder::STANDARD_SHADOW, color));
+      views::BubbleBorder::NONE, views::BubbleBorder::STANDARD_SHADOW));
   return frame;
 }
 

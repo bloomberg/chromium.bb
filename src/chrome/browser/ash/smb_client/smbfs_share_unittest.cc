@@ -99,8 +99,11 @@ class TestSmbFsImpl : public smbfs::mojom::SmbFs {
 
 class SmbFsShareTest : public testing::Test {
  protected:
+  static void SetUpTestSuite() {
+    disks::DiskMountManager::InitializeForTesting(disk_mount_manager());
+  }
+
   void SetUp() override {
-    disks::DiskMountManager::InitializeForTesting(disk_mount_manager_);
     file_manager::VolumeManagerFactory::GetInstance()->SetTestingFactory(
         &profile_, base::BindRepeating(&BuildVolumeManager));
 
@@ -120,13 +123,19 @@ class SmbFsShareTest : public testing::Test {
     file_manager::VolumeManager::Get(&profile_)->RemoveObserver(&observer_);
   }
 
+  static file_manager::FakeDiskMountManager* disk_mount_manager() {
+    static file_manager::FakeDiskMountManager* manager =
+        new file_manager::FakeDiskMountManager();
+    return manager;
+  }
+
   std::unique_ptr<smbfs::SmbFsHost> CreateSmbFsHost(
       SmbFsShare* share,
       mojo::Receiver<smbfs::mojom::SmbFs>* smbfs_receiver,
       mojo::Remote<smbfs::mojom::SmbFsDelegate>* delegate) {
     return std::make_unique<smbfs::SmbFsHost>(
         std::make_unique<disks::MountPoint>(base::FilePath(kMountPath),
-                                            disk_mount_manager_),
+                                            disk_mount_manager()),
         share,
         mojo::Remote<smbfs::mojom::SmbFs>(
             smbfs_receiver->BindNewPipeAndPassRemote()),
@@ -136,8 +145,6 @@ class SmbFsShareTest : public testing::Test {
   content::BrowserTaskEnvironment task_environment_{
       content::BrowserTaskEnvironment::REAL_IO_THREAD,
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
-  file_manager::FakeDiskMountManager* disk_mount_manager_ =
-      new file_manager::FakeDiskMountManager;
   TestingProfile profile_;
   MockVolumeManagerObsever observer_;
 
@@ -448,7 +455,7 @@ TEST_F(SmbFsShareTest, GenerateStableMountIdInput) {
   std::vector<std::string> tokens1 =
       base::SplitString(hash_input1, kMountIdHashSeparator,
                         base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
-  EXPECT_EQ(tokens1.size(), 5);
+  EXPECT_EQ(tokens1.size(), 5u);
   EXPECT_EQ(tokens1[0], profile_user_hash);
   EXPECT_EQ(tokens1[1], SmbUrl(kSharePath).ToString());
   EXPECT_EQ(tokens1[2], "0" /* kerberos */);
@@ -466,7 +473,7 @@ TEST_F(SmbFsShareTest, GenerateStableMountIdInput) {
   std::vector<std::string> tokens2 =
       base::SplitString(hash_input2, kMountIdHashSeparator,
                         base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
-  EXPECT_EQ(tokens2.size(), 5);
+  EXPECT_EQ(tokens2.size(), 5u);
   EXPECT_EQ(tokens2[0], profile_user_hash);
   EXPECT_EQ(tokens2[1], SmbUrl(kSharePath2).ToString());
   EXPECT_EQ(tokens2[2], "1" /* kerberos */);
@@ -490,8 +497,8 @@ TEST_F(SmbFsShareTest, GenerateStableMountId) {
   EXPECT_TRUE(mount_id1.compare(mount_id2));
 
   // Check: String is 64 characters long (SHA256 encoded as hex).
-  EXPECT_EQ(mount_id1.size(), 64);
-  EXPECT_EQ(mount_id2.size(), 64);
+  EXPECT_EQ(mount_id1.size(), 64u);
+  EXPECT_EQ(mount_id2.size(), 64u);
 }
 
 }  // namespace smb_client

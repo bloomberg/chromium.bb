@@ -202,7 +202,7 @@ ANGLE_NO_DISCARD bool ReplaceGLDepthRangeWithDriverUniform(TCompiler *compiler,
         symbolTable->findBuiltIn(ImmutableString("gl_DepthRange"), 0));
 
     // ANGLEUniforms.depthRange
-    TIntermBinary *angleEmulatedDepthRangeRef = driverUniforms->getDepthRangeRef();
+    TIntermTyped *angleEmulatedDepthRangeRef = driverUniforms->getDepthRange();
 
     // Use this variable instead of gl_DepthRange everywhere.
     return ReplaceVariableWithTyped(compiler, root, depthRangeVar, angleEmulatedDepthRangeRef);
@@ -215,15 +215,14 @@ TIntermSequence *GetMainSequence(TIntermBlock *root)
 }
 
 // Replaces a builtin variable with a version that is rotated and corrects the X and Y coordinates.
-ANGLE_NO_DISCARD bool RotateAndFlipBuiltinVariable(TCompiler *compiler,
-                                                   TIntermBlock *root,
-                                                   TIntermSequence *insertSequence,
-                                                   TIntermTyped *flipXY,
-                                                   TSymbolTable *symbolTable,
-                                                   const TVariable *builtin,
-                                                   const Name &flippedVariableName,
-                                                   TIntermTyped *pivot,
-                                                   TIntermTyped *fragRotation)
+ANGLE_NO_DISCARD bool FlipBuiltinVariable(TCompiler *compiler,
+                                          TIntermBlock *root,
+                                          TIntermSequence *insertSequence,
+                                          TIntermTyped *flipXY,
+                                          TSymbolTable *symbolTable,
+                                          const TVariable *builtin,
+                                          const Name &flippedVariableName,
+                                          TIntermTyped *pivot)
 {
     // Create a symbol reference to 'builtin'.
     TIntermSymbol *builtinRef = new TIntermSymbol(builtin);
@@ -233,8 +232,8 @@ ANGLE_NO_DISCARD bool RotateAndFlipBuiltinVariable(TCompiler *compiler,
     TIntermSwizzle *builtinXY    = new TIntermSwizzle(builtinRef, swizzleOffsetXY);
 
     // Create a symbol reference to our new variable that will hold the modified builtin.
-    const TType *type = StaticType::GetForVec<EbtFloat, EbpHigh>(
-        EvqGlobal, static_cast<unsigned char>(builtin->getType().getNominalSize()));
+    const TType *type =
+        StaticType::GetForVec<EbtFloat, EbpHigh>(EvqGlobal, builtin->getType().getNominalSize());
     TVariable *replacementVar =
         new TVariable(symbolTable, flippedVariableName.rawName(), type, SymbolType::AngleInternal);
     DeclareGlobalVariable(root, replacementVar);
@@ -246,20 +245,8 @@ ANGLE_NO_DISCARD bool RotateAndFlipBuiltinVariable(TCompiler *compiler,
         return false;
     }
 
-    // Create the expression "(builtin.xy * fragRotation)"
-    TIntermTyped *rotatedXY;
-    if (fragRotation)
-    {
-        rotatedXY = new TIntermBinary(EOpMatrixTimesVector, fragRotation, builtinXY);
-    }
-    else
-    {
-        // No rotation applied, use original variable.
-        rotatedXY = builtinXY;
-    }
-
     // Create the expression "(builtin.xy - pivot) * flipXY + pivot
-    TIntermBinary *removePivot = new TIntermBinary(EOpSub, rotatedXY, pivot);
+    TIntermBinary *removePivot = new TIntermBinary(EOpSub, builtinXY, pivot);
     TIntermBinary *inverseXY   = new TIntermBinary(EOpMul, removePivot, flipXY);
     TIntermBinary *plusPivot   = new TIntermBinary(EOpAdd, inverseXY, pivot->deepCopy());
 
@@ -287,35 +274,15 @@ ANGLE_NO_DISCARD bool InsertFragCoordCorrection(TCompiler *compiler,
                                                 TIntermBlock *root,
                                                 TIntermSequence *insertSequence,
                                                 TSymbolTable *symbolTable,
-                                                SpecConst *specConst,
                                                 const DriverUniformMetal *driverUniforms)
 {
-    TIntermTyped *flipXY = specConst->getFlipXY();
-    if (!flipXY)
-    {
-        flipXY = driverUniforms->getFlipXYRef();
-    }
-
-    TIntermBinary *pivot = specConst->getHalfRenderArea();
-    if (!pivot)
-    {
-        pivot = driverUniforms->getHalfRenderAreaRef();
-    }
-
-    TIntermTyped *fragRotation = nullptr;
-    if ((compileOptions & SH_ADD_PRE_ROTATION) != 0)
-    {
-        fragRotation = specConst->getFragRotationMatrix();
-        if (!fragRotation)
-        {
-            fragRotation = driverUniforms->getFragRotationMatrixRef();
-        }
-    }
+    TIntermTyped *flipXY = driverUniforms->getFlipXY(symbolTable, DriverUniformFlip::Fragment);
+    TIntermTyped *pivot  = driverUniforms->getHalfRenderArea();
 
     const TVariable *fragCoord = static_cast<const TVariable *>(
         symbolTable->findBuiltIn(ImmutableString("gl_FragCoord"), compiler->getShaderVersion()));
-    return RotateAndFlipBuiltinVariable(compiler, root, insertSequence, flipXY, symbolTable,
-                                        fragCoord, kFlippedFragCoordName, pivot, fragRotation);
+    return FlipBuiltinVariable(compiler, root, insertSequence, flipXY, symbolTable, fragCoord,
+                               kFlippedFragCoordName, pivot);
 }
 
 void DeclareRightBeforeMain(TIntermBlock &root, const TVariable &var)
@@ -407,15 +374,6 @@ ANGLE_NO_DISCARD bool AddFragDataDeclaration(TCompiler &compiler, TIntermBlock &
         insertSequence->appendStatement(assignment);
     }
     return RunAtTheEndOfShader(&compiler, &root, insertSequence, &symbolTable);
-}
-
-ANGLE_NO_DISCARD bool EmulateInstanceID(TCompiler &compiler,
-                                        TIntermBlock &root,
-                                        DriverUniform &driverUniforms)
-{
-    TIntermBinary *emuInstanceID = driverUniforms.getEmulatedInstanceId();
-    const TVariable *instanceID  = BuiltInVariable::gl_InstanceIndex();
-    return ReplaceVariableWithTyped(&compiler, &root, instanceID, emuInstanceID);
 }
 
 ANGLE_NO_DISCARD bool AppendVertexShaderTransformFeedbackOutputToMain(TCompiler &compiler,
@@ -514,8 +472,8 @@ ANGLE_NO_DISCARD bool TranslatorMetalDirect::insertSampleMaskWritingLogic(
     //      ANGLE_writeSampleMask(ANGLE_angleUniforms.coverageMask,
     //      ANGLE_fragmentOut.gl_SampleMask);
     // }
-    TIntermSequence *args       = new TIntermSequence;
-    TIntermBinary *coverageMask = driverUniforms.getCoverageMaskFieldRef();
+    TIntermSequence *args      = new TIntermSequence;
+    TIntermTyped *coverageMask = driverUniforms.getCoverageMaskField();
     args->push_back(coverageMask);
     const TIntermSymbol *gl_SampleMask = FindSymbolNode(&root, ImmutableString("gl_SampleMask"));
     args->push_back(gl_SampleMask->deepCopy());
@@ -548,14 +506,15 @@ ANGLE_NO_DISCARD bool TranslatorMetalDirect::insertRasterizationDiscardLogic(TIn
     TIntermSymbol *positionRef = new TIntermSymbol(position);
 
     // Create vec4(-3, -3, -3, 1):
-    auto vec4Type             = new TType(EbtFloat, 4);
-    TIntermSequence *vec4Args = new TIntermSequence();
-    vec4Args->push_back(CreateFloatNode(-3.0f, EbpMedium));
-    vec4Args->push_back(CreateFloatNode(-3.0f, EbpMedium));
-    vec4Args->push_back(CreateFloatNode(-3.0f, EbpMedium));
-    vec4Args->push_back(CreateFloatNode(1.0f, EbpMedium));
+    auto vec4Type            = new TType(EbtFloat, 4);
+    TIntermSequence vec4Args = {
+        CreateFloatNode(-3.0f, EbpMedium),
+        CreateFloatNode(-3.0f, EbpMedium),
+        CreateFloatNode(-3.0f, EbpMedium),
+        CreateFloatNode(1.0f, EbpMedium),
+    };
     TIntermAggregate *constVarConstructor =
-        TIntermAggregate::CreateConstructor(*vec4Type, vec4Args);
+        TIntermAggregate::CreateConstructor(*vec4Type, &vec4Args);
 
     // Create the assignment "gl_Position = vec4(-3, -3, -3, 1)"
     TIntermBinary *assignment =
@@ -584,13 +543,13 @@ bool TranslatorMetalDirect::transformDepthBeforeCorrection(TIntermBlock *root,
     TVector<int> swizzleOffsetZ = {2};
     TIntermSwizzle *positionZ   = new TIntermSwizzle(positionRef, swizzleOffsetZ);
 
-    // Create a ref to "depthRange.reserved"
-    TIntermBinary *viewportZScale = driverUniforms->getDepthRangeReservedFieldRef();
+    // Create a ref to "zscale"
+    TIntermTyped *viewportZScale = driverUniforms->getViewportZScale();
 
-    // Create the expression "gl_Position.z * depthRange.reserved".
+    // Create the expression "gl_Position.z * zscale".
     TIntermBinary *zScale = new TIntermBinary(EOpMul, positionZ->deepCopy(), viewportZScale);
 
-    // Create the assignment "gl_Position.z = gl_Position.z * depthRange.reserved"
+    // Create the assignment "gl_Position.z = gl_Position.z * zscale"
     TIntermTyped *positionZLHS = positionZ->deepCopy();
     TIntermBinary *assignment  = new TIntermBinary(TOperator::EOpAssign, positionZLHS, zScale);
 
@@ -676,16 +635,10 @@ bool TranslatorMetalDirect::translateImpl(TInfoSinkBase &sink,
     }
 
     // Write out default uniforms into a uniform block assigned to a specific set/binding.
-    int defaultUniformCount           = 0;
     int aggregateTypesUsedForUniforms = 0;
     int atomicCounterCount            = 0;
     for (const auto &uniform : getUniforms())
     {
-        if (!uniform.isBuiltIn() && uniform.active && !gl::IsOpaqueType(uniform.type))
-        {
-            ++defaultUniformCount;
-        }
-
         if (uniform.isStruct() || uniform.isArrayOfArrays())
         {
             ++aggregateTypesUsedForUniforms;
@@ -730,7 +683,6 @@ bool TranslatorMetalDirect::translateImpl(TInfoSinkBase &sink,
         {
             return false;
         }
-        defaultUniformCount -= removedUniformsCount;
     }
 
     // Replace array of array of opaque uniforms with a flattened array.  This is run after
@@ -761,7 +713,7 @@ bool TranslatorMetalDirect::translateImpl(TInfoSinkBase &sink,
 
     if (atomicCounterCount > 0)
     {
-        const TIntermTyped *acbBufferOffsets = driverUniforms->getAbcBufferOffsets();
+        const TIntermTyped *acbBufferOffsets = driverUniforms->getAcbBufferOffsets();
         if (!RewriteAtomicCounters(this, root, &symbolTable, acbBufferOffsets))
         {
             return false;
@@ -908,16 +860,12 @@ bool TranslatorMetalDirect::translateImpl(TInfoSinkBase &sink,
 
         if (usesPointCoord)
         {
-            TIntermTyped *flipNegXY = specConst->getNegFlipXY();
-            if (!flipNegXY)
-            {
-                flipNegXY = driverUniforms->getNegFlipXYRef();
-            }
+            TIntermTyped *flipNegXY =
+                driverUniforms->getNegFlipXY(&getSymbolTable(), DriverUniformFlip::Fragment);
             TIntermConstantUnion *pivot = CreateFloatNode(0.5f, EbpMedium);
-            TIntermTyped *fragRotation  = nullptr;
-            if (!RotateAndFlipBuiltinVariable(this, root, GetMainSequence(root), flipNegXY,
-                                              &getSymbolTable(), BuiltInVariable::gl_PointCoord(),
-                                              kFlippedPointCoordName, pivot, fragRotation))
+            if (!FlipBuiltinVariable(this, root, GetMainSequence(root), flipNegXY,
+                                     &getSymbolTable(), BuiltInVariable::gl_PointCoord(),
+                                     kFlippedPointCoordName, pivot))
             {
                 return false;
             }
@@ -927,7 +875,7 @@ bool TranslatorMetalDirect::translateImpl(TInfoSinkBase &sink,
         if (usesFragCoord)
         {
             if (!InsertFragCoordCorrection(this, compileOptions, root, GetMainSequence(root),
-                                           &getSymbolTable(), specConst, driverUniforms))
+                                           &getSymbolTable(), driverUniforms))
             {
                 return false;
             }
@@ -936,8 +884,8 @@ bool TranslatorMetalDirect::translateImpl(TInfoSinkBase &sink,
             DeclareRightBeforeMain(*root, *fragCoord);
         }
 
-        if (!RewriteDfdy(this, compileOptions, root, getSymbolTable(), getShaderVersion(),
-                         specConst, driverUniforms))
+        if (!RewriteDfdy(this, root, &getSymbolTable(), getShaderVersion(), specConst,
+                         driverUniforms))
         {
             return false;
         }
@@ -1017,17 +965,11 @@ bool TranslatorMetalDirect::translateImpl(TInfoSinkBase &sink,
 
     if (getShaderType() == GL_VERTEX_SHADER)
     {
-        auto negFlipY = driverUniforms->getNegFlipYRef();
+        TIntermTyped *flipNegY =
+            driverUniforms->getFlipXY(&getSymbolTable(), DriverUniformFlip::PreFragment);
+        flipNegY = (new TIntermSwizzle(flipNegY, {1}))->fold(nullptr);
 
-        if (mEmulatedInstanceID)
-        {
-            if (!EmulateInstanceID(*this, *root, *driverUniforms))
-            {
-                return false;
-            }
-        }
-
-        if (!AppendVertexShaderPositionYCorrectionToMain(this, root, &getSymbolTable(), negFlipY))
+        if (!AppendVertexShaderPositionYCorrectionToMain(this, root, &getSymbolTable(), flipNegY))
         {
             return false;
         }

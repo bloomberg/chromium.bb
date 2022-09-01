@@ -7,7 +7,8 @@ import * as Formatter from '../../../models/formatter/formatter.js';
 import * as JavaScriptMetaData from '../../../models/javascript_metadata/javascript_metadata.js';
 import * as CodeMirror from '../../../third_party/codemirror.next/codemirror.next.js';
 import * as UI from '../../legacy/legacy.js';
-import {cursorTooltip} from './cursor_tooltip.js';
+
+import {type ArgumentHintsTooltip, closeTooltip, cursorTooltip} from './cursor_tooltip.js';
 
 export function completion(): CodeMirror.Extension {
   return CodeMirror.javascript.javascriptLanguage.data.of({
@@ -18,11 +19,11 @@ export function completion(): CodeMirror.Extension {
 export async function completeInContext(
     textBefore: string, query: string, force: boolean = false): Promise<UI.SuggestBox.Suggestions> {
   const state = CodeMirror.EditorState.create({
-    doc: textBefore,
+    doc: textBefore + query,
     selection: {anchor: textBefore.length},
     extensions: CodeMirror.javascript.javascriptLanguage,
   });
-  const result = await javascriptCompletionSource(new CodeMirror.CompletionContext(state, textBefore.length, force));
+  const result = await javascriptCompletionSource(new CodeMirror.CompletionContext(state, state.doc.length, force));
   return result ?
       result.options.filter((o): boolean => o.label.startsWith(query)).map((o): UI.SuggestBox.Suggestion => ({
                                                                              text: o.label,
@@ -100,11 +101,11 @@ const dontCompleteIn = new Set([
   'TypeName',
 ]);
 
-// FIXME Implement Map property completion?
 export const enum QueryType {
   Expression = 0,
   PropertyName = 1,
   PropertyExpression = 2,
+  PotentiallyRetrievingFromMap = 3,
 }
 
 export function getQueryType(tree: CodeMirror.Tree, pos: number, doc: CodeMirror.Text): {
@@ -148,6 +149,22 @@ export function getQueryType(tree: CodeMirror.Tree, pos: number, doc: CodeMirror
       return {type: QueryType.PropertyName, relatedNode: node};
     }
   }
+  if (node.name === '(') {
+    // map.get(<auto-complete>
+    if (parent?.name === 'ArgList' && parent?.parent?.name === 'CallExpression') {
+      // map.get
+      const callReceiver = parent?.parent?.firstChild;
+      if (callReceiver?.name === 'MemberExpression') {
+        // get
+        const propertyExpression = callReceiver?.lastChild;
+        if (propertyExpression && doc.sliceString(propertyExpression.from, propertyExpression.to) === 'get') {
+          // map
+          const potentiallyMapObject = callReceiver?.firstChild;
+          return {type: QueryType.PotentiallyRetrievingFromMap, relatedNode: potentiallyMapObject || undefined};
+        }
+      }
+    }
+  }
   return {type: QueryType.Expression};
 }
 
@@ -183,18 +200,24 @@ export async function javascriptCompletionSource(cx: CodeMirror.CompletionContex
     }
     result = await completeProperties(
         cx.state.sliceDoc(objectExpr.from, objectExpr.to), quote, cx.state.sliceDoc(cx.pos, cx.pos + 1) === ']');
+  } else if (query.type === QueryType.PotentiallyRetrievingFromMap) {
+    const potentialMapObject = query.relatedNode;
+    if (!potentialMapObject) {
+      return null;
+    }
+    result = await maybeCompleteKeysFromMap(cx.state.sliceDoc(potentialMapObject.from, potentialMapObject.to));
   } else {
     return null;
   }
   return {
     from: query.from ?? cx.pos,
     options: result.completions,
-    span: !quote ? SPAN_IDENT : quote === '\'' ? SPAN_SINGLE_QUOTE : SPAN_DOUBLE_QUOTE,
+    validFor: !quote ? SPAN_IDENT : quote === '\'' ? SPAN_SINGLE_QUOTE : SPAN_DOUBLE_QUOTE,
   };
 }
 
-const SPAN_IDENT = /^#?[\w\P{ASCII}]*$/u, SPAN_SINGLE_QUOTE = /^\'(\\.|[^\\'\n])*'?$/,
-      SPAN_DOUBLE_QUOTE = /^"(\\.|[^\\"\n])*"?$/;
+const SPAN_IDENT = /^#?(?:[$_\p{ID_Start}])(?:[$_\u200C\u200D\p{ID_Continue}])*$/u,
+      SPAN_SINGLE_QUOTE = /^\'(\\.|[^\\'\n])*'?$/, SPAN_DOUBLE_QUOTE = /^"(\\.|[^\\"\n])*"?$/;
 
 function getExecutionContext(): SDK.RuntimeModel.ExecutionContext|null {
   return UI.Context.Context.instance().flavor(SDK.RuntimeModel.ExecutionContext);
@@ -225,6 +248,7 @@ async function evaluateExpression(
 
 const primitivePrototypes = new Map<string, string>([
   ['string', 'String'],
+  ['symbol', 'Symbol'],
   ['number', 'Number'],
   ['boolean', 'Boolean'],
   ['bigint', 'BigInt'],
@@ -255,7 +279,7 @@ class PropertyCache {
 
   set(expression: string, value: Promise<CompletionSet>): void {
     this.#cache.set(expression, value);
-    setTimeout(() => {
+    window.setTimeout(() => {
       if (this.#cache.get(expression) === value) {
         this.#cache.delete(expression);
       }
@@ -268,6 +292,29 @@ class PropertyCache {
     }
     return cacheInstance;
   }
+}
+
+async function maybeCompleteKeysFromMap(objectVariable: string): Promise<CompletionSet> {
+  const result = new CompletionSet();
+  const context = getExecutionContext();
+  if (!context) {
+    return result;
+  }
+  const maybeRetrieveKeys =
+      await evaluateExpression(context, `[...Map.prototype.keys.call(${objectVariable})]`, 'completion');
+  if (!maybeRetrieveKeys) {
+    return result;
+  }
+  const properties = SDK.RemoteObject.RemoteArray.objectAsArray(maybeRetrieveKeys);
+  const numProperties = properties.length();
+  for (let i = 0; i < numProperties; i++) {
+    result.add({
+      label: `"${(await properties.at(i)).value}")`,
+      type: 'constant',
+      boost: i * -1,
+    });
+  }
+  return result;
 }
 
 async function completeProperties(
@@ -293,8 +340,6 @@ async function completeProperties(
   return result;
 }
 
-const prototypePropertyPenalty = -80;
-
 async function completePropertiesInner(
     expression: string,
     context: SDK.RuntimeModel.ExecutionContext,
@@ -319,9 +364,7 @@ async function completePropertiesInner(
     object = innerObject as SDK.RemoteObject.RemoteObject;
   }
 
-  const toPrototype = object.subtype === 'array' ?
-      'Array' :
-      object.subtype === 'typedarray' ? 'Uint8Array' : primitivePrototypes.get(object.type);
+  const toPrototype = primitivePrototypes.get(object.type);
   if (toPrototype) {
     object = await evaluateExpression(context, toPrototype + '.prototype', 'completion');
   }
@@ -329,24 +372,18 @@ async function completePropertiesInner(
   const functionType = expression === 'globalThis' ? 'function' : 'method';
   const otherType = expression === 'globalThis' ? 'variable' : 'property';
   if (object && (object.type === 'object' || object.type === 'function')) {
-    const properties = await object.getAllProperties(false, false);
+    const properties = await object.getAllProperties(
+        /* accessorPropertiesOnly */ false, /* generatePreview */ false, /* nonIndexedPropertiesOnly */ true);
     const isFunction = object.type === 'function';
     for (const prop of properties.properties || []) {
       if (!prop.symbol && !(isFunction && (prop.name === 'arguments' || prop.name === 'caller')) &&
           (!prop.private || expression === 'this') && (quoted || SPAN_IDENT.test(prop.name))) {
         const label =
             quoted ? quoted + prop.name.replaceAll('\\', '\\\\').replaceAll(quoted, '\\' + quoted) + quoted : prop.name;
-        const completion: CodeMirror.Completion = {
-          label,
-          type: prop.value?.type === 'function' ? functionType : otherType,
-        };
-        if (quoted && !hasBracket) {
-          completion.apply = label + ']';
-        }
-        if (!prop.isOwn) {
-          completion.boost = prototypePropertyPenalty;
-        }
-        result.add(completion);
+        const apply = (quoted && !hasBracket) ? `${label}]` : undefined;
+        const boost = 2 * Number(prop.isOwn) + 1 * Number(prop.enumerable);
+        const type = prop.value?.type === 'function' ? functionType : otherType;
+        result.add({apply, label, type, boost});
       }
     }
   }
@@ -420,8 +457,19 @@ export async function isExpressionComplete(expression: string): Promise<boolean>
   return false;
 }
 
-export function argumentHints(): CodeMirror.Extension {
+export function argumentHints(): ArgumentHintsTooltip {
   return cursorTooltip(getArgumentHints);
+}
+
+export function closeArgumentsHintsTooltip(
+    view: CodeMirror.EditorView, tooltip: CodeMirror.StateField<CodeMirror.Tooltip|null>): boolean {
+  // If the tooltip is currently showing, the state will reflect its properties.
+  // If it isn't showing, the state is explicitly set to `null`.
+  if (view.state.field(tooltip) === null) {
+    return false;
+  }
+  view.dispatch({effects: closeTooltip.of(null)});
+  return true;
 }
 
 async function getArgumentHints(
@@ -460,22 +508,20 @@ async function getArgumentsForExpression(
   if (!context) {
     return null;
   }
-  try {
-    const expression = doc.sliceString(callee.from, callee.to);
-    const result = await evaluateExpression(context, expression, 'argumentsHint');
-    if (!result || result.type !== 'function') {
+  const expression = doc.sliceString(callee.from, callee.to);
+  const result = await evaluateExpression(context, expression, 'argumentsHint');
+  if (!result || result.type !== 'function') {
+    return null;
+  }
+  const objGetter = async(): Promise<SDK.RemoteObject.RemoteObject|null> => {
+    const first = callee.firstChild;
+    if (!first || callee.name !== 'MemberExpression') {
       return null;
     }
-    return getArgumentsForFunctionValue(result, async () => {
-      const first = callee.firstChild;
-      if (!first || callee.name !== 'MemberExpression') {
-        return null;
-      }
-      return evaluateExpression(context, doc.sliceString(first.from, first.to), 'argumentsHint');
-    }, expression);
-  } finally {
-    context.runtimeModel.releaseObjectGroup('argumentsHint');
-  }
+    return evaluateExpression(context, doc.sliceString(first.from, first.to), 'argumentsHint');
+  };
+  return getArgumentsForFunctionValue(result, objGetter, expression)
+      .finally(() => context.runtimeModel.releaseObjectGroup('argumentsHint'));
 }
 
 async function getArgumentsForFunctionValue(

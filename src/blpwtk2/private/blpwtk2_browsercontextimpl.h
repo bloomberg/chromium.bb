@@ -72,6 +72,7 @@ class BrowserContextImpl final : public base::RefCounted<BrowserContextImpl>
     scoped_refptr<PrefStore> d_userPrefs;
     std::unique_ptr<net::ProxyConfig> d_proxyConfig;
     std::unique_ptr<RequestContextManager> d_requestContextManager;
+    std::unique_ptr<content::PermissionControllerDelegate> d_permissionManager;
     int d_numWebViews;
     bool d_isDestroyed;
     bool d_devToolsServerLaunched;

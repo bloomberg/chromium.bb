@@ -20,6 +20,7 @@
 #include <math.h>
 #include <sqlite3.h>
 
+#include "perfetto/base/status.h"
 #include "perfetto/ext/base/string_utils.h"
 #include "perfetto/trace_processor/basic_types.h"
 #include "src/trace_processor/sqlite/scoped_db.h"
@@ -35,9 +36,17 @@ const auto kSqliteTransient = reinterpret_cast<sqlite3_destructor_type>(-1);
 inline bool IsOpEq(int op) {
   return op == SQLITE_INDEX_CONSTRAINT_EQ;
 }
-
 inline bool IsOpLe(int op) {
   return op == SQLITE_INDEX_CONSTRAINT_LE;
+}
+inline bool IsOpLt(int op) {
+  return op == SQLITE_INDEX_CONSTRAINT_LT;
+}
+inline bool IsOpGe(int op) {
+  return op == SQLITE_INDEX_CONSTRAINT_GE;
+}
+inline bool IsOpGt(int op) {
+  return op == SQLITE_INDEX_CONSTRAINT_GT;
 }
 
 inline SqlValue::Type SqliteTypeToSqlValueType(int sqlite_type) {
@@ -123,7 +132,39 @@ inline void ReportSqlValue(
   }
 }
 
-inline util::Status GetColumnsForTable(
+inline base::Status PrepareStmt(sqlite3* db,
+                                const char* sql,
+                                ScopedStmt* stmt,
+                                const char** tail) {
+  sqlite3_stmt* raw_stmt = nullptr;
+  int err = sqlite3_prepare_v2(db, sql, -1, &raw_stmt, tail);
+  stmt->reset(raw_stmt);
+  if (err != SQLITE_OK)
+    return base::ErrStatus("%s (errcode: %d)", sqlite3_errmsg(db), err);
+  return base::OkStatus();
+}
+
+inline bool IsStmtDone(sqlite3_stmt* stmt) {
+  return !sqlite3_stmt_busy(stmt);
+}
+
+inline base::Status StepStmtUntilDone(sqlite3_stmt* stmt) {
+  PERFETTO_DCHECK(stmt);
+
+  if (IsStmtDone(stmt))
+    return base::OkStatus();
+
+  int err;
+  for (err = sqlite3_step(stmt); err == SQLITE_ROW; err = sqlite3_step(stmt)) {
+  }
+  if (err != SQLITE_DONE) {
+    return base::ErrStatus("%s (errcode: %d)",
+                           sqlite3_errmsg(sqlite3_db_handle(stmt)), err);
+  }
+  return base::OkStatus();
+}
+
+inline base::Status GetColumnsForTable(
     sqlite3* db,
     const std::string& raw_table_name,
     std::vector<SqliteTable::Column>& columns) {
@@ -140,7 +181,7 @@ inline util::Status GetColumnsForTable(
   int err =
       sqlite3_prepare_v2(db, sql, static_cast<int>(n), &raw_stmt, nullptr);
   if (err != SQLITE_OK) {
-    return util::ErrStatus("Preparing database failed");
+    return base::ErrStatus("Preparing database failed");
   }
   ScopedStmt stmt(raw_stmt);
   PERFETTO_DCHECK(sqlite3_column_count(*stmt) == 2);
@@ -150,7 +191,7 @@ inline util::Status GetColumnsForTable(
     if (err == SQLITE_DONE)
       break;
     if (err != SQLITE_ROW) {
-      return util::ErrStatus("Querying schema of table %s failed",
+      return base::ErrStatus("Querying schema of table %s failed",
                              raw_table_name.c_str());
     }
 
@@ -159,7 +200,7 @@ inline util::Status GetColumnsForTable(
     const char* raw_type =
         reinterpret_cast<const char*>(sqlite3_column_text(*stmt, 1));
     if (!name || !raw_type || !*name) {
-      return util::ErrStatus("Schema for %s has invalid column values",
+      return base::ErrStatus("Schema for %s has invalid column values",
                              raw_table_name.c_str());
     }
 
@@ -180,12 +221,12 @@ inline util::Status GetColumnsForTable(
                     name);
       type = SqlValue::Type::kNull;
     } else {
-      return util::ErrStatus("Unknown column type '%s' on table %s", raw_type,
+      return base::ErrStatus("Unknown column type '%s' on table %s", raw_type,
                              raw_table_name.c_str());
     }
     columns.emplace_back(columns.size(), name, type);
   }
-  return util::OkStatus();
+  return base::OkStatus();
 }
 
 }  // namespace sqlite_utils

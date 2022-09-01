@@ -31,7 +31,7 @@ namespace {
 // INT16_MAX - ((1 << bits) >> 1). In particular, if bits == 16, then
 // RightShiftWithRounding_S16() is equal to RightShiftWithRounding() only for
 // negative values.
-TEST(CommonDspTest, SSE4RightShiftWithRoundingS16) {
+TEST(CommonDspTest, SSE41RightShiftWithRoundingS16) {
   for (int bits = 0; bits < 16; ++bits) {
     const int bias = (1 << bits) >> 1;
     for (int32_t value = INT16_MIN; value <= INT16_MAX; ++value) {
@@ -56,7 +56,7 @@ TEST(CommonDspTest, SSE4RightShiftWithRoundingS16) {
 
 #else  // !LIBGAV1_TARGETING_SSE4_1
 
-TEST(CommonDspTest, SSE4) {
+TEST(CommonDspTest, SSE41) {
   GTEST_SKIP() << "Build this module for x86(-64) with SSE4 enabled to enable "
                   "the tests.";
 }
