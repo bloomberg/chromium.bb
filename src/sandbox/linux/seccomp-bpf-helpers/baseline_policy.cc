@@ -150,7 +150,7 @@ ResultExpr EvaluateSyscallImpl(int fs_denied_errno,
     return Allow();
   }
 
-#if defined(__NR_rseq) && !defined(OS_ANDROID)
+#if defined(__NR_rseq) && !BUILDFLAG(IS_ANDROID)
   // See https://crbug.com/1104160. Rseq can only be disabled right before an
   // execve, because glibc registers it with the kernel and so far it's unclear
   // whether shared libraries (which, during initialization, may observe that
@@ -179,6 +179,13 @@ ResultExpr EvaluateSyscallImpl(int fs_denied_errno,
   // clone3 takes a pointer argument which we cannot examine, so return ENOSYS
   // to force the libc to use clone. See https://crbug.com/1213452.
   if (sysno == __NR_clone3) {
+    return Error(ENOSYS);
+  }
+
+  // pidfd_open provides a file descriptor that refers to a process, meant to
+  // replace the pid as the method of identifying processes. For now there is no
+  // reason to support this, so just pretend pidfd_open doesn't exist.
+  if (sysno == __NR_pidfd_open) {
     return Error(ENOSYS);
   }
 
@@ -366,13 +373,12 @@ ResultExpr EvaluateSyscallImpl(int fs_denied_errno,
 
 }  // namespace.
 
-BaselinePolicy::BaselinePolicy() : BaselinePolicy(EPERM) {
-  // Allocate crash keys set by Seccomp signal handlers.
-  AllocateCrashKeys();
-}
+BaselinePolicy::BaselinePolicy() : BaselinePolicy(EPERM) {}
 
 BaselinePolicy::BaselinePolicy(int fs_denied_errno)
     : fs_denied_errno_(fs_denied_errno), policy_pid_(sys_getpid()) {
+  // Allocate crash keys set by Seccomp signal handlers.
+  AllocateCrashKeys();
 }
 
 BaselinePolicy::~BaselinePolicy() {

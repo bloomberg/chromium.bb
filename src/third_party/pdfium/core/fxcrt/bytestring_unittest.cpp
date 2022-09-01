@@ -7,7 +7,9 @@
 #include <limits.h>
 
 #include <algorithm>
+#include <functional>
 #include <iterator>
+#include <set>
 #include <vector>
 
 #include "core/fxcrt/fx_string.h"
@@ -229,6 +231,19 @@ TEST(ByteString, OperatorLT) {
   EXPECT_FALSE(def < c_abc);
   EXPECT_TRUE(abc < v_def);
   EXPECT_FALSE(def < v_abc);
+
+  EXPECT_TRUE(v_empty < a);
+  EXPECT_TRUE(v_empty < c_a);
+
+  std::set<ByteString, std::less<>> str_set;
+  bool inserted = str_set.insert(ByteString("hello")).second;
+  ASSERT_TRUE(inserted);
+  EXPECT_TRUE(pdfium::Contains(str_set, ByteString("hello")));
+  EXPECT_TRUE(pdfium::Contains(str_set, ByteStringView("hello")));
+  EXPECT_TRUE(pdfium::Contains(str_set, "hello"));
+  EXPECT_FALSE(pdfium::Contains(str_set, ByteString("goodbye")));
+  EXPECT_FALSE(pdfium::Contains(str_set, ByteStringView("goodbye")));
+  EXPECT_FALSE(pdfium::Contains(str_set, "goodbye"));
 }
 
 TEST(ByteString, OperatorEQ) {
@@ -803,6 +818,17 @@ TEST(ByteString, UpperLower) {
   EXPECT_EQ("", empty);
   empty.MakeUpper();
   EXPECT_EQ("", empty);
+
+  ByteString empty_with_buffer("x");
+  empty_with_buffer.Delete(0);
+
+  ByteString additional_empty_with_buffer_ref = empty_with_buffer;
+  additional_empty_with_buffer_ref.MakeLower();
+  EXPECT_EQ("", additional_empty_with_buffer_ref);
+
+  additional_empty_with_buffer_ref = empty_with_buffer;
+  additional_empty_with_buffer_ref.MakeUpper();
+  EXPECT_EQ("", additional_empty_with_buffer_ref);
 }
 
 TEST(ByteString, Trim) {
@@ -1260,7 +1286,7 @@ TEST(ByteStringView, FromVector) {
   cleared_vec.pop_back();
   ByteStringView cleared_string(cleared_vec);
   EXPECT_EQ(0u, cleared_string.GetLength());
-  EXPECT_EQ(nullptr, cleared_string.raw_str());
+  EXPECT_FALSE(cleared_string.raw_str());
 }
 
 TEST(ByteStringView, GetID) {
@@ -1702,19 +1728,19 @@ TEST(ByteString, Empty) {
   EXPECT_EQ(0u, empty_str.GetLength());
 
   const char* cstr = empty_str.c_str();
-  EXPECT_NE(nullptr, cstr);
+  EXPECT_TRUE(cstr);
   EXPECT_EQ(0u, strlen(cstr));
 
   const uint8_t* rstr = empty_str.raw_str();
-  EXPECT_EQ(nullptr, rstr);
+  EXPECT_FALSE(rstr);
 
   pdfium::span<const char> cspan = empty_str.span();
   EXPECT_TRUE(cspan.empty());
-  EXPECT_EQ(nullptr, cspan.data());
+  EXPECT_FALSE(cspan.data());
 
   pdfium::span<const uint8_t> rspan = empty_str.raw_span();
   EXPECT_TRUE(rspan.empty());
-  EXPECT_EQ(nullptr, rspan.data());
+  EXPECT_FALSE(rspan.data());
 }
 
 TEST(ByteString, InitializerList) {

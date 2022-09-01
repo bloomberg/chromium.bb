@@ -1,23 +1,15 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright 2014 the V8 project authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
-# for py2/py3 compatibility
-from __future__ import print_function
 
 from contextlib import contextmanager
 from multiprocessing import Process, Queue
 import os
 import signal
-import time
 import traceback
 
-try:
-  from queue import Empty  # Python 3
-except ImportError:
-  from Queue import Empty  # Python 2
-
+from queue import Empty
 from . import command
 from . import utils
 
@@ -30,11 +22,7 @@ def setup_testing():
   global Process
   del Queue
   del Process
-  try:
-    from queue import Queue  # Python 3
-  except ImportError:
-    from Queue import Queue  # Python 2
-
+  from queue import Queue
   from threading import Thread as Process
   # Monkeypatch threading Queue to look like multiprocessing Queue.
   Queue.cancel_join_thread = lambda self: None

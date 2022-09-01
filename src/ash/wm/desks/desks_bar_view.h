@@ -10,7 +10,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/wm/desks/desks_controller.h"
-#include "ash/wm/desks/templates/desks_templates_metrics_util.h"
+#include "ash/wm/desks/templates/saved_desk_metrics_util.h"
 #include "base/callback_list.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/view.h"
@@ -89,10 +89,6 @@ class ASH_EXPORT DesksBarView : public views::View,
 
   OverviewGrid* overview_grid() const { return overview_grid_; }
 
-  void set_should_name_nudge(bool should_name_nudge) {
-    should_name_nudge_ = should_name_nudge;
-  }
-
   // Initializes and creates mini_views for any pre-existing desks, before the
   // bar was created. This should only be called after this view has been added
   // to a widget, as it needs to call `GetWidget()` when it's performing a
@@ -136,9 +132,11 @@ class ASH_EXPORT DesksBarView : public views::View,
   // Finalize any unfinished drag & drop. Initialize a new drag proxy.
   void InitDragDesk(DeskMiniView* mini_view,
                     const gfx::PointF& location_in_screen);
-  // Start to drag. Scale up the drag proxy.
+  // Start to drag. Scale up the drag proxy. `is_mouse_dragging` is true when
+  // triggered by mouse/trackpad, false when triggered by touch.
   void StartDragDesk(DeskMiniView* mini_view,
-                     const gfx::PointF& location_in_screen);
+                     const gfx::PointF& location_in_screen,
+                     bool is_mouse_dragging);
   // Reorder desks according to the drag proxy's location.
   void ContinueDragDesk(DeskMiniView* mini_view,
                         const gfx::PointF& location_in_screen);
@@ -206,6 +204,12 @@ class ASH_EXPORT DesksBarView : public views::View,
   // has been created for it yet.
   DeskMiniView* FindMiniViewForDesk(const Desk* desk) const;
 
+  // Animates the bar from expanded state to zero state. Clears `mini_views_`.
+  void SwitchToZeroState();
+
+  // Bring focus to the name view of the desk with `desk_index`.
+  void NudgeDeskName(int desk_index);
+
  private:
   friend class DesksBarScrollViewLayout;
   friend class DesksTestApi;
@@ -253,8 +257,10 @@ class ASH_EXPORT DesksBarView : public views::View,
 
   void OnDesksTemplatesButtonPressed();
 
-  // Animates the bar from expanded state to zero state. Clears `mini_views_`.
-  void SwitchToZeroState();
+  // If the `DesksCloseAll` flag is enabled, this function cycles through
+  // `mini_views_` and updates the tooltip for each mini view's combine desks
+  // button.
+  void MaybeUpdateCombineDesksTooltips();
 
   // Scrollview callbacks.
   void OnContentsScrolled();
@@ -285,11 +291,6 @@ class ASH_EXPORT DesksBarView : public views::View,
   // `expanded_state_new_desk_button_` and optionally
   // `expanded_state_desks_templates_button_` currently.
   views::View* scroll_view_contents_ = nullptr;
-
-  // If this is true, when `UpdateNewMiniViews()` is called, the newly created
-  // mini view's name view will be focused and |should_name_nudge_| will be
-  // reset.
-  bool should_name_nudge_ = false;
 
   // True if the `DesksBarBoundsAnimation` is started and hasn't finished yet.
   // It will be used to hold `Layout` until the bounds animation is completed.

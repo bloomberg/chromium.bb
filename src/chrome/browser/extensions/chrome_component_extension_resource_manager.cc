@@ -104,7 +104,7 @@ ChromeComponentExtensionResourceManager::Data::Data() {
   AddComponentResourceEntries(kComponentExtensionResources,
                               kComponentExtensionResourcesSize);
   AddComponentResourceEntries(kExtraComponentExtensionResources,
-                              base::size(kExtraComponentExtensionResources));
+                              std::size(kExtraComponentExtensionResources));
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // Add Files app JS modules resources.
@@ -152,8 +152,8 @@ ChromeComponentExtensionResourceManager::Data::Data() {
     pdf_extension_util::AddAdditionalData(/*enable_annotations=*/true, &dict);
 
     ui::TemplateReplacements pdf_viewer_replacements;
-    ui::TemplateReplacementsFromDictionaryValue(
-        base::Value::AsDictionaryValue(dict), &pdf_viewer_replacements);
+    ui::TemplateReplacementsFromDictionaryValue(dict.GetDict(),
+                                                &pdf_viewer_replacements);
     template_replacements_[extension_misc::kPdfExtensionId] =
         std::move(pdf_viewer_replacements);
   }

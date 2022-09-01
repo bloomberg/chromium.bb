@@ -257,10 +257,10 @@ TEST(FastVector, NonCopyable)
     EXPECT_EQ(3, copy[0].x);
 }
 
-// Basic functionality for FastUnorderedMap
-TEST(FastUnorderedMap, BasicUsage)
+// Basic functionality for FlatUnorderedMap
+TEST(FlatUnorderedMap, BasicUsage)
 {
-    FastUnorderedMap<int, bool, 3> testMap;
+    FlatUnorderedMap<int, bool, 3> testMap;
     EXPECT_TRUE(testMap.empty());
     EXPECT_EQ(testMap.size(), 0u);
 
@@ -294,10 +294,10 @@ TEST(FastUnorderedMap, BasicUsage)
     }
 }
 
-// Basic functionality for FastUnorderedSet
-TEST(FastUnorderedSet, BasicUsage)
+// Basic functionality for FlatUnorderedSet
+TEST(FlatUnorderedSet, BasicUsage)
 {
-    FastUnorderedSet<int, 3> testMap;
+    FlatUnorderedSet<int, 3> testMap;
     EXPECT_TRUE(testMap.empty());
 
     testMap.insert(5);
@@ -317,6 +317,32 @@ TEST(FastUnorderedSet, BasicUsage)
     {
         EXPECT_TRUE(testMap.contains(i));
     }
+}
+
+// Comparison of FlatUnorderedSet
+TEST(FlatUnorderedSet, Comparison)
+{
+    FlatUnorderedSet<int, 3> testSet0;
+    FlatUnorderedSet<int, 3> testSet1;
+    EXPECT_TRUE(testSet0.empty());
+    EXPECT_TRUE(testSet1.empty());
+
+    testSet0.insert(5);
+    EXPECT_FALSE(testSet0 == testSet1);
+
+    testSet0.insert(10);
+    EXPECT_FALSE(testSet0 == testSet1);
+
+    testSet1.insert(5);
+    EXPECT_FALSE(testSet0 == testSet1);
+
+    testSet1.insert(15);
+    EXPECT_FALSE(testSet0 == testSet1);
+
+    testSet1.clear();
+    testSet1.insert(5);
+    testSet1.insert(10);
+    EXPECT_TRUE(testSet0 == testSet1);
 }
 
 // Basic functionality for FastIntegerSet
@@ -383,5 +409,28 @@ TEST(FastIntegerMap, BasicUsage)
     testMap.clear();
     EXPECT_TRUE(testMap.empty());
     EXPECT_EQ(testMap.size(), 0u);
+}
+
+// Basic usage tests of fast map.
+TEST(FastMap, Basic)
+{
+    FastMap<int, 5> testMap;
+    EXPECT_TRUE(testMap.empty());
+
+    testMap[5] = 5;
+    EXPECT_FALSE(testMap.empty());
+
+    testMap.clear();
+    EXPECT_TRUE(testMap.empty());
+
+    for (int i = 0; i < 10; ++i)
+    {
+        testMap[i] = i;
+    }
+
+    for (int i = 0; i < 10; ++i)
+    {
+        EXPECT_TRUE(testMap[i] == i);
+    }
 }
 }  // namespace angle

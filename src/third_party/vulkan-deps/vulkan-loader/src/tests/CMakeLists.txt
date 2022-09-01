@@ -1,6 +1,6 @@
 # ~~~
-# Copyright (c) 2014-2018 Valve Corporation
-# Copyright (c) 2014-2018 LunarG, Inc.
+# Copyright (c) 2014-2022 Valve Corporation
+# Copyright (c) 2014-2022 LunarG, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@
 # Use these options to force a specific sanitizer on all test executables
 option(TEST_USE_ADDRESS_SANITIZER "Linux only: Advanced memory checking" OFF)
 option(TEST_USE_THREAD_SANITIZER "Linux only: Advanced thread checking" OFF)
+option(ENABLE_LIVE_VERIFICATION_TESTS "Enable tests which expect to run on live drivers. Meant for manual verification only" OFF)
 
 include(GoogleTest)
 add_subdirectory(framework)
@@ -28,42 +29,32 @@ add_executable(
     test_regression
         loader_testing_main.cpp
         loader_alloc_callback_tests.cpp
+        loader_envvar_tests.cpp
         loader_get_proc_addr_tests.cpp
+        loader_debug_ext_tests.cpp
         loader_handle_validation_tests.cpp
         loader_layer_tests.cpp
         loader_regression_tests.cpp
+        loader_phys_dev_inst_ext_tests.cpp
         loader_version_tests.cpp
-        loader_unknown_ext_tests.cpp)
-target_link_libraries(test_regression PRIVATE testing_dependencies)
-
-add_executable(
-    test_wsi
-        loader_testing_main.cpp
+        loader_unknown_ext_tests.cpp
         loader_wsi_tests.cpp)
-target_link_libraries(test_wsi PRIVATE testing_dependencies)
-
-if(UNIX AND NOT APPLE) # i.e. Linux
-    if(BUILD_WSI_XCB_SUPPORT)
-        target_include_directories(test_wsi PRIVATE ${XCB_INCLUDE_DIRS})
-        target_link_libraries(test_wsi PRIVATE ${XCB_LIBRARIES})
-    endif()
-
-    if(BUILD_WSI_XLIB_SUPPORT)
-        target_include_directories(test_wsi PRIVATE ${X11_INCLUDE_DIR})
-        target_link_libraries(test_wsi PRIVATE ${X11_LIBRARIES})
-    endif()
-
-    if(BUILD_WSI_WAYLAND_SUPPORT)
-        target_include_directories(test_wsi PRIVATE ${WAYLAND_CLIENT_INCLUDE_DIR})
-        target_link_libraries(test_wsi PRIVATE ${WAYLAND_CLIENT_LIBRARIES})
-    endif()
-endif()
+target_link_libraries(test_regression PUBLIC testing_dependencies)
+set_target_properties(test_regression ${LOADER_STANDARD_CXX_PROPERTIES})
+target_compile_definitions(test_regression PUBLIC VK_NO_PROTOTYPES)
 
 add_executable(
     test_threading
         loader_testing_main.cpp
         loader_threading_tests.cpp)
-target_link_libraries(test_threading PRIVATE testing_dependencies)
+target_link_libraries(test_threading PUBLIC testing_dependencies)
+set_target_properties(test_threading ${LOADER_STANDARD_CXX_PROPERTIES})
+target_compile_definitions(test_threading PUBLIC VK_NO_PROTOTYPES)
+
+# executables that are meant for testing against real drivers rather than the mocks
+if (ENABLE_LIVE_VERIFICATION_TESTS)
+    add_subdirectory(live_verification)
+endif()
 
 if(WIN32)
     # Copy loader and googletest (gtest) libs to test dir so the test executable can find them.
@@ -74,7 +65,13 @@ if(WIN32)
         add_custom_command(TARGET test_regression POST_BUILD
                            COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:vulkan> $<TARGET_FILE_DIR:test_regression>)
     endif()
+
+    # Copy the gtest shared lib (if built) to the live verification tests directory so the tests finds it.
+    if(ENABLE_LIVE_VERIFICATION_TESTS)
+        add_custom_command(TARGET test_regression POST_BUILD
+                           COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:gtest> $<TARGET_FILE_DIR:dynamic_rendering_get_proc_addr>)
+    endif()
 endif()
 
 # must happen after the dll's get copied over
-gtest_discover_tests(test_regression)
+gtest_discover_tests(test_regression PROPERTIES DISCOVERY_TIMEOUT 100)

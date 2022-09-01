@@ -36,13 +36,6 @@ static constexpr T FirstFromVarArgs(T x, ...) noexcept {
 #define BUILTIN_CODE(isolate, name) \
   (isolate)->builtins()->code_handle(i::Builtin::k##name)
 
-#ifdef V8_EXTERNAL_CODE_SPACE
-#define BUILTIN_CODET(isolate, name) \
-  (isolate)->builtins()->codet_handle(i::Builtin::k##name)
-#else
-#define BUILTIN_CODET(isolate, name) BUILTIN_CODE(isolate, name)
-#endif  // V8_EXTERNAL_CODE_SPACE
-
 enum class Builtin : int32_t {
   kNoBuiltinId = -1,
 #define DEF_ENUM(Name, ...) k##Name,
@@ -97,13 +90,13 @@ class Builtins {
       kFirstWideBytecodeHandler + kNumberOfWideBytecodeHandlers;
   static constexpr int kLastBytecodeHandlerPlusOne =
       kFirstExtraWideBytecodeHandler + kNumberOfWideBytecodeHandlers;
-  STATIC_ASSERT(kLastBytecodeHandlerPlusOne == kBuiltinCount);
+  static_assert(kLastBytecodeHandlerPlusOne == kBuiltinCount);
 
   static constexpr bool IsBuiltinId(Builtin builtin) {
     return builtin != Builtin::kNoBuiltinId;
   }
   static constexpr bool IsBuiltinId(int maybe_id) {
-    STATIC_ASSERT(static_cast<int>(Builtin::kNoBuiltinId) == -1);
+    static_assert(static_cast<int>(Builtin::kNoBuiltinId) == -1);
     return static_cast<uint32_t>(maybe_id) <
            static_cast<uint32_t>(kBuiltinCount);
   }
@@ -126,23 +119,12 @@ class Builtins {
   static BytecodeOffset GetContinuationBytecodeOffset(Builtin builtin);
   static Builtin GetBuiltinFromBytecodeOffset(BytecodeOffset);
 
-  static constexpr Builtin GetRecordWriteStub(
-      RememberedSetAction remembered_set_action, SaveFPRegsMode fp_mode) {
-    switch (remembered_set_action) {
-      case RememberedSetAction::kEmit:
-        switch (fp_mode) {
-          case SaveFPRegsMode::kIgnore:
-            return Builtin::kRecordWriteEmitRememberedSetIgnoreFP;
-          case SaveFPRegsMode::kSave:
-            return Builtin::kRecordWriteEmitRememberedSetSaveFP;
-        }
-      case RememberedSetAction::kOmit:
-        switch (fp_mode) {
-          case SaveFPRegsMode::kIgnore:
-            return Builtin::kRecordWriteOmitRememberedSetIgnoreFP;
-          case SaveFPRegsMode::kSave:
-            return Builtin::kRecordWriteOmitRememberedSetSaveFP;
-        }
+  static constexpr Builtin GetRecordWriteStub(SaveFPRegsMode fp_mode) {
+    switch (fp_mode) {
+      case SaveFPRegsMode::kIgnore:
+        return Builtin::kRecordWriteIgnoreFP;
+      case SaveFPRegsMode::kSave:
+        return Builtin::kRecordWriteSaveFP;
     }
   }
 
@@ -156,22 +138,17 @@ class Builtins {
   }
 
   // Convenience wrappers.
-  Handle<Code> CallFunction(ConvertReceiverMode = ConvertReceiverMode::kAny);
-  Handle<Code> Call(ConvertReceiverMode = ConvertReceiverMode::kAny);
-  Handle<Code> NonPrimitiveToPrimitive(
+  Handle<CodeT> CallFunction(ConvertReceiverMode = ConvertReceiverMode::kAny);
+  Handle<CodeT> Call(ConvertReceiverMode = ConvertReceiverMode::kAny);
+  Handle<CodeT> NonPrimitiveToPrimitive(
       ToPrimitiveHint hint = ToPrimitiveHint::kDefault);
-  Handle<Code> OrdinaryToPrimitive(OrdinaryToPrimitiveHint hint);
-  Handle<Code> JSConstructStubGeneric();
+  Handle<CodeT> OrdinaryToPrimitive(OrdinaryToPrimitiveHint hint);
 
   // Used by CreateOffHeapTrampolines in isolate.cc.
-  void set_code(Builtin builtin, Code code);
-  void set_codet(Builtin builtin, CodeT code);
+  void set_code(Builtin builtin, CodeT code);
 
-  V8_EXPORT_PRIVATE Code code(Builtin builtin);
-  V8_EXPORT_PRIVATE Handle<Code> code_handle(Builtin builtin);
-
-  V8_EXPORT_PRIVATE CodeT codet(Builtin builtin);
-  V8_EXPORT_PRIVATE Handle<CodeT> codet_handle(Builtin builtin);
+  V8_EXPORT_PRIVATE CodeT code(Builtin builtin);
+  V8_EXPORT_PRIVATE Handle<CodeT> code_handle(Builtin builtin);
 
   static CallInterfaceDescriptor CallInterfaceDescriptorFor(Builtin builtin);
   V8_EXPORT_PRIVATE static Callable CallableFor(Isolate* isolate,
@@ -203,11 +180,6 @@ class Builtins {
   // by handle location. Similar to Heap::IsRootHandle.
   bool IsBuiltinHandle(Handle<HeapObject> maybe_code, Builtin* index) const;
 
-  // Similar to IsBuiltinHandle but for respective CodeDataContainer handle.
-  // Can be used only when external code space is enabled.
-  bool IsBuiltinCodeDataContainerHandle(Handle<HeapObject> maybe_code,
-                                        Builtin* index) const;
-
   // True, iff the given code object is a builtin with off-heap embedded code.
   static bool IsIsolateIndependentBuiltin(const Code code);
 
@@ -218,7 +190,7 @@ class Builtins {
     return kAllBuiltinsAreIsolateIndependent;
   }
   static constexpr bool IsIsolateIndependent(Builtin builtin) {
-    STATIC_ASSERT(kAllBuiltinsAreIsolateIndependent);
+    static_assert(kAllBuiltinsAreIsolateIndependent);
     return kAllBuiltinsAreIsolateIndependent;
   }
 
@@ -296,8 +268,6 @@ class Builtins {
   FullObjectSlot builtin_slot(Builtin builtin);
   // Returns given builtin's slot in the tier0 builtin table.
   FullObjectSlot builtin_tier0_slot(Builtin builtin);
-  // Returns given builtin's slot in the builtin code data container table.
-  FullObjectSlot builtin_code_data_container_slot(Builtin builtin);
 
  private:
   static void Generate_CallFunction(MacroAssembler* masm,
@@ -309,10 +279,10 @@ class Builtins {
 
   enum class CallOrConstructMode { kCall, kConstruct };
   static void Generate_CallOrConstructVarargs(MacroAssembler* masm,
-                                              Handle<Code> code);
+                                              Handle<CodeT> code);
   static void Generate_CallOrConstructForwardVarargs(MacroAssembler* masm,
                                                      CallOrConstructMode mode,
-                                                     Handle<Code> code);
+                                                     Handle<CodeT> code);
 
   static void Generate_InterpreterPushArgsThenCallImpl(
       MacroAssembler* masm, ConvertReceiverMode receiver_mode,
@@ -320,10 +290,6 @@ class Builtins {
 
   static void Generate_InterpreterPushArgsThenConstructImpl(
       MacroAssembler* masm, InterpreterPushArgsMode mode);
-
-  template <class Descriptor>
-  static void Generate_DynamicCheckMapsTrampoline(MacroAssembler* masm,
-                                                  Handle<Code> builtin_target);
 
 #define DECLARE_ASM(Name, ...) \
   static void Generate_##Name(MacroAssembler* masm);
@@ -346,6 +312,24 @@ class Builtins {
 
   friend class SetupIsolateDelegate;
 };
+
+V8_INLINE constexpr bool IsInterpreterTrampolineBuiltin(Builtin builtin_id) {
+  // Check for kNoBuiltinId first to abort early when the current Code object
+  // is not a builtin.
+  return builtin_id != Builtin::kNoBuiltinId &&
+         (builtin_id == Builtin::kInterpreterEntryTrampoline ||
+          builtin_id == Builtin::kInterpreterEnterAtBytecode ||
+          builtin_id == Builtin::kInterpreterEnterAtNextBytecode);
+}
+
+V8_INLINE constexpr bool IsBaselineTrampolineBuiltin(Builtin builtin_id) {
+  // Check for kNoBuiltinId first to abort early when the current Code object
+  // is not a builtin.
+  return builtin_id != Builtin::kNoBuiltinId &&
+         (builtin_id == Builtin::kBaselineOutOfLinePrologue ||
+          builtin_id == Builtin::kBaselineOrInterpreterEnterAtBytecode ||
+          builtin_id == Builtin::kBaselineOrInterpreterEnterAtNextBytecode);
+}
 
 Builtin ExampleBuiltinForTorqueFunctionPointerType(
     size_t function_pointer_type_id);

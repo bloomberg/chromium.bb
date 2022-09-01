@@ -198,7 +198,8 @@ class V8_EXPORT_PRIVATE NormalPageMemoryPool final {
 // regions alive.
 class V8_EXPORT_PRIVATE PageBackend final {
  public:
-  PageBackend(PageAllocator&, FatalOutOfMemoryHandler&);
+  PageBackend(PageAllocator& normal_page_allocator,
+              PageAllocator& large_page_allocator, FatalOutOfMemoryHandler&);
   ~PageBackend();
 
   // Allocates a normal page from the backend.
@@ -230,7 +231,8 @@ class V8_EXPORT_PRIVATE PageBackend final {
  private:
   // Guards against concurrent uses of `Lookup()`.
   mutable v8::base::Mutex mutex_;
-  PageAllocator& allocator_;
+  PageAllocator& normal_page_allocator_;
+  PageAllocator& large_page_allocator_;
   FatalOutOfMemoryHandler& oom_handler_;
   NormalPageMemoryPool page_pool_;
   PageMemoryRegionTree page_memory_region_tree_;
@@ -242,7 +244,8 @@ class V8_EXPORT_PRIVATE PageBackend final {
 // Returns true if the provided allocator supports committing at the required
 // granularity.
 inline bool SupportsCommittingGuardPages(PageAllocator& allocator) {
-  return kGuardPageSize % allocator.CommitPageSize() == 0;
+  return kGuardPageSize != 0 &&
+         kGuardPageSize % allocator.CommitPageSize() == 0;
 }
 
 Address NormalPageMemoryRegion::Lookup(ConstAddress address) const {

@@ -6,8 +6,11 @@
 
 #include <utility>
 
+#include "build/build_config.h"
+#include "content/public/browser/media_stream_request.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
+#include "third_party/blink/public/mojom/mediastream/media_stream.mojom.h"
 
 namespace background_loader {
 
@@ -100,7 +103,7 @@ void BackgroundLoaderContents::AddNewContents(
     *was_blocked = true;
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 bool BackgroundLoaderContents::ShouldBlockMediaRequest(const GURL& url) {
   // Background pages should not have access to media.
   return true;
@@ -113,7 +116,7 @@ void BackgroundLoaderContents::RequestMediaAccessPermission(
     content::MediaResponseCallback callback) {
   // No permissions granted, act as if dismissed.
   std::move(callback).Run(
-      blink::MediaStreamDevices(),
+      blink::mojom::StreamDevicesSet(),
       blink::mojom::MediaStreamRequestResult::PERMISSION_DISMISSED,
       std::unique_ptr<content::MediaStreamUI>());
 }
@@ -123,13 +126,6 @@ bool BackgroundLoaderContents::CheckMediaAccessPermission(
     const GURL& security_origin,
     blink::mojom::MediaStreamType type) {
   return false;  // No permissions granted.
-}
-
-void BackgroundLoaderContents::AdjustPreviewsStateForNavigation(
-    content::WebContents* web_contents,
-    blink::PreviewsState* previews_state) {
-  if (*previews_state == 0)
-    *previews_state = blink::PreviewsTypes::PREVIEWS_OFF;
 }
 
 bool BackgroundLoaderContents::ShouldAllowLazyLoad() {

@@ -9,7 +9,6 @@
 #include "chrome/browser/extensions/api/chrome_device_permissions_prompt.h"
 #include "chrome/browser/extensions/chrome_extension_chooser_dialog.h"
 #include "chrome/browser/extensions/device_permissions_dialog_controller.h"
-#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/device_chooser_content_view.h"
 #include "components/constrained_window/constrained_window_views.h"
@@ -69,8 +68,6 @@ ChooserDialogView::ChooserDialogView(
   SetCloseCallback(
       base::BindOnce(&DeviceChooserContentView::Close,
                      base::Unretained(device_chooser_content_view_)));
-
-  chrome::RecordDialogCreation(chrome::DialogIdentifier::CHOOSER);
 }
 
 ChooserDialogView::~ChooserDialogView() = default;
@@ -120,8 +117,8 @@ void ChromeDevicePermissionsPrompt::ShowDialogViews() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   std::unique_ptr<permissions::ChooserController> chooser_controller(
-      new DevicePermissionsDialogController(web_contents()->GetMainFrame(),
-                                            prompt()));
+      new DevicePermissionsDialogController(
+          web_contents()->GetPrimaryMainFrame(), prompt()));
 
   constrained_window::ShowWebModalDialogViews(
       new ChooserDialogView(std::move(chooser_controller)), web_contents());

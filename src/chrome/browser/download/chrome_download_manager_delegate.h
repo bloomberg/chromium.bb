@@ -33,7 +33,7 @@
 #include "extensions/buildflags/buildflags.h"
 #include "ui/gfx/native_widget_types.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/download/android/download_dialog_bridge.h"
 #endif
 
@@ -72,7 +72,7 @@ class ChromeDownloadManagerDelegate
 
   void SetDownloadManager(content::DownloadManager* dm);
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   void ShowDownloadDialog(gfx::NativeWindow native_window,
                           int64_t total_bytes,
                           DownloadLocationDialogType dialog_type,
@@ -119,7 +119,8 @@ class ChromeDownloadManagerDelegate
                       const base::FilePath::StringType& default_extension,
                       bool can_save_as_complete,
                       content::SavePackagePathPickedCallback callback) override;
-  void SanitizeSavePackageResourceName(base::FilePath* filename) override;
+  void SanitizeSavePackageResourceName(base::FilePath* filename,
+                                       const GURL& source_url) override;
   void SanitizeDownloadParameters(
       download::DownloadUrlParameters* params) override;
   void OpenDownload(download::DownloadItem* download) override;
@@ -181,8 +182,7 @@ class ChromeDownloadManagerDelegate
 
   // Return true if the downloaded file should be blocked based on the current
   // download restriction pref and |danger_type|.
-  bool ShouldBlockFile(download::DownloadDangerType danger_type,
-                       download::DownloadItem* item) const;
+  bool ShouldBlockFile(download::DownloadDangerType danger_type) const;
 
  protected:
   virtual safe_browsing::DownloadProtectionService*
@@ -214,14 +214,14 @@ class ChromeDownloadManagerDelegate
                            ConfirmationCallback callback) override;
   void DetermineLocalPath(download::DownloadItem* download,
                           const base::FilePath& virtual_path,
-                          LocalPathCallback callback) override;
+                          download::LocalPathCallback callback) override;
   void CheckDownloadUrl(download::DownloadItem* download,
                         const base::FilePath& suggested_virtual_path,
                         CheckDownloadUrlCallback callback) override;
   void GetFileMimeType(const base::FilePath& path,
                        GetFileMimeTypeCallback callback) override;
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   virtual void OnDownloadCanceled(download::DownloadItem* download,
                                   bool has_no_external_storage);
 #endif
@@ -289,7 +289,7 @@ class ChromeDownloadManagerDelegate
   // multiple downloads are associated with the same file path.
   bool IsMostRecentDownloadItemAtFilePath(download::DownloadItem* download);
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // Called after a unique file name is generated in the case that there is a
   // TARGET_CONFLICT and the new file name should be displayed to the user.
   void GenerateUniqueFileNameDone(
@@ -306,7 +306,7 @@ class ChromeDownloadManagerDelegate
 
   raw_ptr<Profile> profile_;
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   std::unique_ptr<DownloadDialogBridge> download_dialog_bridge_;
 #endif
 

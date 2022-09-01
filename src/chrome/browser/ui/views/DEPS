@@ -3,6 +3,8 @@ include_rules = [
  "+components/fullscreen_control",
  "+components/live_caption",
  "+components/services/app_service/public",
+ "+components/url_formatter",
+ "+components/user_education/views",
  "+third_party/libaddressinput",
  "+services/tracing/public",
 ]
@@ -19,6 +21,9 @@ specific_include_rules = {
     "+chrome/services/qrcode_generator/public/cpp/qrcode_generator_service.h",
     "+chrome/services/qrcode_generator/public/mojom/qrcode_generator.mojom.h",
   ],
+  "save_card_bubble_views_browsertest\.cc": [
+    "+ash/services/multidevice_setup/public/cpp/prefs.h",
+  ],
   "screen_capture_notification_ui_views\.cc": [
     "+ash/shell.h",
   ],
@@ -28,6 +33,7 @@ specific_include_rules = {
   ],
   ".*test.*": [
    "!ash",
+   "+ash/accelerators/accelerator_table.h",
    "+ash/components/arc/mojom",
    "+ash/components/arc/intent_helper",
    "+ash/components/arc/session",

@@ -16,7 +16,11 @@
  */
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -39,24 +43,28 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BrowserRunner = void 0;
 const Debug_js_1 = require("../common/Debug.js");
-const rimraf_1 = __importDefault(require("rimraf"));
 const childProcess = __importStar(require("child_process"));
+const fs = __importStar(require("fs"));
+const path = __importStar(require("path"));
+const readline = __importStar(require("readline"));
+const rimraf_1 = __importDefault(require("rimraf"));
+const util_1 = require("util");
 const assert_js_1 = require("../common/assert.js");
 const helper_js_1 = require("../common/helper.js");
 const Connection_js_1 = require("../common/Connection.js");
 const NodeWebSocketTransport_js_1 = require("../node/NodeWebSocketTransport.js");
 const PipeTransport_js_1 = require("./PipeTransport.js");
-const readline = __importStar(require("readline"));
 const Errors_js_1 = require("../common/Errors.js");
-const util_1 = require("util");
 const removeFolderAsync = (0, util_1.promisify)(rimraf_1.default);
+const renameAsync = (0, util_1.promisify)(fs.rename);
+const unlinkAsync = (0, util_1.promisify)(fs.unlink);
 const debugLauncher = (0, Debug_js_1.debug)('puppeteer:launcher');
 const PROCESS_ERROR_EXPLANATION = `Puppeteer was unable to kill the process which ran the browser binary.
 This means that, on future Puppeteer launches, Puppeteer might not be able to launch the browser.
 Please check your open processes and ensure that the browser processes that Puppeteer launched have been killed.
 If you think this is a bug, please report it on the Puppeteer issue tracker.`;
 class BrowserRunner {
-    constructor(product, executablePath, processArguments, tempDirectory) {
+    constructor(product, executablePath, processArguments, userDataDir, isTempUserDataDir) {
         this.proc = null;
         this.connection = null;
         this._closed = true;
@@ -64,7 +72,8 @@ class BrowserRunner {
         this._product = product;
         this._executablePath = executablePath;
         this._processArguments = processArguments;
-        this._tempDirectory = tempDirectory;
+        this._userDataDir = userDataDir;
+        this._isTempUserDataDir = isTempUserDataDir;
     }
     start(options) {
         const { handleSIGINT, handleSIGTERM, handleSIGHUP, dumpio, env, pipe } = options;
@@ -98,18 +107,37 @@ class BrowserRunner {
         }
         this._closed = false;
         this._processClosing = new Promise((fulfill, reject) => {
-            this.proc.once('exit', () => {
+            this.proc.once('exit', async () => {
                 this._closed = true;
                 // Cleanup as processes exit.
-                if (this._tempDirectory) {
-                    removeFolderAsync(this._tempDirectory)
-                        .then(() => fulfill())
-                        .catch((error) => {
-                        console.error(error);
+                if (this._isTempUserDataDir) {
+                    try {
+                        await removeFolderAsync(this._userDataDir);
+                        fulfill();
+                    }
+                    catch (error) {
+                        (0, helper_js_1.debugError)(error);
                         reject(error);
-                    });
+                    }
                 }
                 else {
+                    if (this._product === 'firefox') {
+                        try {
+                            // When an existing user profile has been used remove the user
+                            // preferences file and restore possibly backuped preferences.
+                            await unlinkAsync(path.join(this._userDataDir, 'user.js'));
+                            const prefsBackupPath = path.join(this._userDataDir, 'prefs.js.puppeteer');
+                            if (fs.existsSync(prefsBackupPath)) {
+                                const prefsPath = path.join(this._userDataDir, 'prefs.js');
+                                await unlinkAsync(prefsPath);
+                                await renameAsync(prefsBackupPath, prefsPath);
+                            }
+                        }
+                        catch (error) {
+                            (0, helper_js_1.debugError)(error);
+                            reject(error);
+                        }
+                    }
                     fulfill();
                 }
             });
@@ -130,7 +158,7 @@ class BrowserRunner {
     close() {
         if (this._closed)
             return Promise.resolve();
-        if (this._tempDirectory && this._product !== 'firefox') {
+        if (this._isTempUserDataDir) {
             this.kill();
         }
         else if (this.connection) {
@@ -146,22 +174,39 @@ class BrowserRunner {
         return this._processClosing;
     }
     kill() {
-        // Attempt to remove temporary profile directory to avoid littering.
-        try {
-            rimraf_1.default.sync(this._tempDirectory);
-        }
-        catch (error) { }
         // If the process failed to launch (for example if the browser executable path
         // is invalid), then the process does not get a pid assigned. A call to
         // `proc.kill` would error, as the `pid` to-be-killed can not be found.
-        if (this.proc && this.proc.pid && !this.proc.killed) {
+        if (this.proc && this.proc.pid && pidExists(this.proc.pid)) {
             try {
-                this.proc.kill('SIGKILL');
+                if (process.platform === 'win32') {
+                    childProcess.exec(`taskkill /pid ${this.proc.pid} /T /F`, (error) => {
+                        if (error) {
+                            // taskkill can fail to kill the process e.g. due to missing permissions.
+                            // Let's kill the process via Node API. This delays killing of all child
+                            // proccesses of `this.proc` until the main Node.js process dies.
+                            this.proc.kill();
+                        }
+                    });
+                }
+                else {
+                    // on linux the process group can be killed with the group id prefixed with
+                    // a minus sign. The process group id is the group leader's pid.
+                    const processGroupId = -this.proc.pid;
+                    process.kill(processGroupId, 'SIGKILL');
+                }
             }
             catch (error) {
                 throw new Error(`${PROCESS_ERROR_EXPLANATION}\nError cause: ${error.stack}`);
             }
         }
+        // Attempt to remove temporary profile directory to avoid littering.
+        try {
+            if (this._isTempUserDataDir) {
+                rimraf_1.default.sync(this._userDataDir);
+            }
+        }
+        catch (error) { }
         // Cleanup this listener last, as that makes sure the full callback runs. If we
         // perform this earlier, then the previous function calls would not happen.
         helper_js_1.helper.removeEventListeners(this._listeners);
@@ -227,5 +272,18 @@ function waitForWSEndpoint(browserProcess, timeout, preferredRevision) {
             helper_js_1.helper.removeEventListeners(listeners);
         }
     });
+}
+function pidExists(pid) {
+    try {
+        return process.kill(pid, 0);
+    }
+    catch (error) {
+        if (error && error.code && error.code === 'ESRCH') {
+            return false;
+        }
+        else {
+            throw error;
+        }
+    }
 }
 //# sourceMappingURL=BrowserRunner.js.map

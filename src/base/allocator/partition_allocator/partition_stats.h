@@ -8,11 +8,11 @@
 #include <cstddef>
 #include <cstdint>
 
+#include "base/allocator/partition_allocator/partition_alloc_base/component_export.h"
 #include "base/allocator/partition_allocator/partition_alloc_config.h"
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
-#include "base/base_export.h"
 
-namespace base {
+namespace partition_alloc {
 
 // Most of these are not populated if PA_ENABLE_THREAD_CACHE_STATISTICS is not
 // defined.
@@ -37,7 +37,7 @@ struct ThreadCacheStats {
   uint32_t metadata_overhead;
 
 #if defined(PA_THREAD_CACHE_ALLOC_STATS)
-  uint64_t allocs_per_bucket_[kNumBuckets + 1];
+  uint64_t allocs_per_bucket_[internal::kNumBuckets + 1];
 #endif  // defined(PA_THREAD_CACHE_ALLOC_STATS)
 };
 
@@ -51,6 +51,7 @@ struct PartitionMemoryStats {
   size_t max_allocated_bytes;    // Max size of allocations.
   size_t total_resident_bytes;   // Total bytes provisioned by the partition.
   size_t total_active_bytes;     // Total active bytes in the partition.
+  size_t total_active_count;  // Total count of active objects in the partition.
   size_t total_decommittable_bytes;  // Total bytes that could be decommitted.
   size_t total_discardable_bytes;    // Total bytes that could be discarded.
 #if BUILDFLAG(USE_BACKUP_REF_PTR)
@@ -80,6 +81,7 @@ struct PartitionBucketMemoryStats {
   uint32_t allocated_slot_span_size;  // Total size the slot span allocated
                                       // from the system (committed pages).
   uint32_t active_bytes;              // Total active bytes used in the bucket.
+  uint32_t active_count;  // Total active objects allocated in the bucket.
   uint32_t resident_bytes;            // Total bytes provisioned in the bucket.
   uint32_t decommittable_bytes;       // Total bytes that could be decommitted.
   uint32_t discardable_bytes;         // Total bytes that could be discarded.
@@ -95,7 +97,7 @@ struct PartitionBucketMemoryStats {
 
 // Interface that is passed to PartitionDumpStats and
 // PartitionDumpStats for using the memory statistics.
-class BASE_EXPORT PartitionStatsDumper {
+class PA_COMPONENT_EXPORT(PARTITION_ALLOC) PartitionStatsDumper {
  public:
   // Called to dump total memory used by partition, once per partition.
   virtual void PartitionDumpTotals(const char* partition_name,
@@ -108,7 +110,8 @@ class BASE_EXPORT PartitionStatsDumper {
 
 // Simple version of PartitionStatsDumper, storing the returned stats in stats_.
 // Does not handle per-bucket stats.
-class BASE_EXPORT SimplePartitionStatsDumper : public PartitionStatsDumper {
+class PA_COMPONENT_EXPORT(PARTITION_ALLOC) SimplePartitionStatsDumper
+    : public PartitionStatsDumper {
  public:
   SimplePartitionStatsDumper();
 
@@ -123,6 +126,18 @@ class BASE_EXPORT SimplePartitionStatsDumper : public PartitionStatsDumper {
  private:
   PartitionMemoryStats stats_;
 };
+
+}  // namespace partition_alloc
+
+namespace base {
+
+// TODO(https://crbug.com/1288247): Remove these 'using' declarations once
+// the migration to the new namespaces gets done.
+using ::partition_alloc::PartitionBucketMemoryStats;
+using ::partition_alloc::PartitionMemoryStats;
+using ::partition_alloc::PartitionStatsDumper;
+using ::partition_alloc::SimplePartitionStatsDumper;
+using ::partition_alloc::ThreadCacheStats;
 
 }  // namespace base
 

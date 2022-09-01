@@ -4,6 +4,7 @@
 
 #include "content/browser/media/capture/web_contents_frame_tracker.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "base/bind.h"
@@ -12,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "content/browser/media/capture/web_contents_video_capture_device.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -20,14 +22,16 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_media_capture_id.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "media/base/media_switches.h"
 #include "media/capture/video_capture_types.h"
 #include "ui/base/layout.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/size_conversions.h"
+#include "ui/gfx/geometry/vector2d_f.h"
 #include "ui/gfx/native_widget_types.h"
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 #include "content/browser/media/capture/mouse_cursor_overlay_controller.h"
 #endif
 
@@ -64,6 +68,20 @@ class WebContentsContext : public WebContentsFrameTracker::Context {
 
   void DecrementCapturerCount() override { capture_handle_.RunAndReset(); }
 
+  void SetScaleOverrideForCapture(float scale) override {
+    if (auto* view = GetCurrentView()) {
+      view->SetScaleOverrideForCapture(scale);
+    }
+  }
+
+  float GetScaleOverrideForCapture() const override {
+    if (auto* view = GetCurrentView()) {
+      return view->GetScaleOverrideForCapture();
+    }
+    // Otherwise we can assume it's unset and return the default value.
+    return 1.0f;
+  }
+
  private:
   RenderWidgetHostViewBase* GetCurrentView() const {
     RenderWidgetHostView* view = contents_->GetRenderWidgetHostView();
@@ -92,7 +110,7 @@ WebContentsFrameTracker::WebContentsFrameTracker(
       device_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
   DCHECK(device_task_runner_);
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   cursor_controller_ = cursor_controller;
   DCHECK(cursor_controller_);
 #endif
@@ -113,19 +131,36 @@ void WebContentsFrameTracker::WillStartCapturingWebContents(
     return;
   }
 
-  const gfx::Size preferred_size = CalculatePreferredSize(capture_size);
-  context_->IncrementCapturerCount(preferred_size);
+  capture_size_ = capture_size;
+  context_->IncrementCapturerCount(CalculatePreferredSize(capture_size));
   is_capturing_ = true;
 }
 
 void WebContentsFrameTracker::DidStopCapturingWebContents() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (web_contents()) {
+    SetCaptureScaleOverride(1.0f);
     DCHECK(is_capturing_);
     context_->DecrementCapturerCount();
     is_capturing_ = false;
   }
   DCHECK(!is_capturing_);
+}
+
+void WebContentsFrameTracker::SetCapturedContentSize(
+    const gfx::Size& content_size) {
+  DVLOG(3) << __func__ << ": content_size=" << content_size.ToString();
+  if (base::FeatureList::IsEnabled(media::kWebContentsCaptureHiDpi)) {
+    // Check if the capture scale needs to be modified. The content_size
+    // provided here is the final pixel size, with all scale factors such as the
+    // device scale factor and HiDPI capture scale already applied.
+    //
+    // The initial content_size received here corresponds to the size of the
+    // browser tab. If region capture is active, there will be an additional
+    // call providing the region size. Lastly, if the scale was modified, there
+    // will be another call with the upscaled size.
+    SetCaptureScaleOverride(CalculatePreferredScaleFactor(content_size));
+  }
 }
 
 // We provide the WebContents with a preferred size override during its capture.
@@ -171,9 +206,58 @@ gfx::Size WebContentsFrameTracker::CalculatePreferredSize(
   return preferred_size;
 }
 
+// TODO(https://crbug.com/1329704): this should also include live updates
+// about system resource availability. Perhaps we can use FPS or the
+// lossyness of outputted frames?
+float WebContentsFrameTracker::CalculatePreferredScaleFactor(
+    const gfx::Size& content_size) {
+  // A max factor above 2.0 would cause a quality degradation for local
+  // rendering. The downscaling used by the compositor uses a linear filter
+  // which only looks at 4 source pixels, so rendering more than 4 pixels per
+  // destination pixel would result in information loss.
+  constexpr float kMaxFactor = 2.0f;
+
+  // A minimum scale factor of less than 1.0 doesn't really make any sense: this
+  // would only occur if the "preferred size" is larger than the specified
+  // capture size, which should never happen.
+  constexpr float kMinFactor = 1.0f;
+
+  // Ideally is that the |content_size| is the same as |capture_size_|, so if
+  // we are achieving that with current settings we can exit early.
+  if (content_size.width() == capture_size_.width() &&
+      content_size.height() == capture_size_.height()) {
+    return capture_scale_override_;
+  }
+
+  // The content_size should already be scaled based on the currently set
+  // scale factor, so start by looking at what the content size would have been
+  // if scaling was not enabled.
+  const auto unscaled_content_size = gfx::ScaleToCeiledSize(
+      content_size, 1.0f / context_->GetScaleOverrideForCapture());
+
+  // Next, determine what the ideal scale factors in each direction would have
+  // been for this frame.
+  const gfx::Vector2dF factors(
+      static_cast<float>(capture_size_.width()) / unscaled_content_size.width(),
+      static_cast<float>(capture_size_.height()) /
+          unscaled_content_size.height());
+
+  // We prefer to err on the side of having to downscale in one direction rather
+  // than upscale in the other direction, so we use the largest scale factor.
+  const float largest_factor = std::max(factors.x(), factors.y());
+  return std::clamp(largest_factor, kMinFactor, kMaxFactor);
+}
+
 void WebContentsFrameTracker::RenderFrameCreated(
     RenderFrameHost* render_frame_host) {
   OnPossibleTargetChange();
+  if (capture_scale_override_ != 1.0f) {
+    if (auto* view = render_frame_host->GetView()) {
+      // Inside content, down-casting from the public interface class is safe.
+      static_cast<RenderWidgetHostViewBase*>(view)->SetScaleOverrideForCapture(
+          capture_scale_override_);
+    }
+  }
 }
 
 void WebContentsFrameTracker::RenderFrameDeleted(
@@ -185,6 +269,20 @@ void WebContentsFrameTracker::RenderFrameHostChanged(
     RenderFrameHost* old_host,
     RenderFrameHost* new_host) {
   OnPossibleTargetChange();
+  if (capture_scale_override_ != 1.0f) {
+    // According to WebContentsObserver docs, old_host can be nullptr.
+    if (old_host) {
+      if (auto* old_view = old_host->GetView()) {
+        // Inside content, down-casting from the public interface class is safe.
+        static_cast<RenderWidgetHostViewBase*>(old_view)
+            ->SetScaleOverrideForCapture(1.0f);
+      }
+    }
+    if (auto* new_view = new_host->GetView()) {
+      static_cast<RenderWidgetHostViewBase*>(new_view)
+          ->SetScaleOverrideForCapture(capture_scale_override_);
+    }
+  }
 }
 
 void WebContentsFrameTracker::WebContentsDestroyed() {
@@ -207,11 +305,22 @@ void WebContentsFrameTracker::SetWebContentsAndContextFromRoutingId(
 
 void WebContentsFrameTracker::Crop(
     const base::Token& crop_id,
+    uint32_t crop_version,
     base::OnceCallback<void(media::mojom::CropRequestResult)> callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(callback);
 
+  if (crop_version_ >= crop_version) {
+    // This will trigger a BadMessage from MediaStreamDispatcherHost.
+    // (MediaStreamDispatcherHost knows the capturer, whereas here we know
+    // the capturee.)
+    std::move(callback).Run(
+        media::mojom::CropRequestResult::kNonIncreasingCropVersion);
+    return;
+  }
+
   crop_id_ = crop_id;
+  crop_version_ = crop_version;
 
   // If we don't have a target yet, we can store the crop ID but cannot actually
   // crop yet.
@@ -222,7 +331,7 @@ void WebContentsFrameTracker::Crop(
   device_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
-          [](const viz::VideoCaptureTarget& target,
+          [](const viz::VideoCaptureTarget& target, uint32_t crop_version,
              base::OnceCallback<void(media::mojom::CropRequestResult)> callback,
              base::WeakPtr<WebContentsVideoCaptureDevice> device) {
             if (!device) {
@@ -230,10 +339,10 @@ void WebContentsFrameTracker::Crop(
                   media::mojom::CropRequestResult::kErrorGeneric);
               return;
             }
-            device->OnTargetChanged(target);
+            device->OnTargetChanged(target, crop_version);
             std::move(callback).Run(media::mojom::CropRequestResult::kSuccess);
           },
-          target, std::move(callback), device_));
+          target, crop_version_, std::move(callback), device_));
 }
 
 void WebContentsFrameTracker::SetWebContentsAndContextForTesting(
@@ -274,7 +383,7 @@ void WebContentsFrameTracker::OnPossibleTargetChange() {
     device_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&WebContentsVideoCaptureDevice::OnTargetChanged, device_,
-                       std::move(target)));
+                       std::move(target), crop_version_));
   }
 
   SetTargetView(web_contents()->GetNativeView());
@@ -287,9 +396,15 @@ void WebContentsFrameTracker::SetTargetView(gfx::NativeView view) {
   if (view == target_native_view_)
     return;
   target_native_view_ = view;
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   cursor_controller_->SetTargetView(view);
 #endif
 }
 
+void WebContentsFrameTracker::SetCaptureScaleOverride(float new_value) {
+  if (new_value != capture_scale_override_) {
+    capture_scale_override_ = new_value;
+    context_->SetScaleOverrideForCapture(new_value);
+  }
+}
 }  // namespace content

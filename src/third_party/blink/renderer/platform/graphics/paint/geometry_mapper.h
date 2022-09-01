@@ -6,13 +6,12 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_GEOMETRY_MAPPER_H_
 
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "third_party/blink/renderer/platform/geometry/float_quad.h"
 #include "third_party/blink/renderer/platform/graphics/overlay_scrollbar_clip_behavior.h"
 #include "third_party/blink/renderer/platform/graphics/paint/float_clip_rect.h"
 #include "third_party/blink/renderer/platform/graphics/paint/property_tree_state.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "ui/gfx/geometry/quad_f.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -20,7 +19,7 @@
 
 namespace blink {
 
-// Clips can use FloatRect::Intersect or FloatRect::InclusiveIntersect.
+// Clips can use gfx::RectF::Intersect or gfx::RectF::InclusiveIntersect.
 enum InclusiveIntersectOrNot { kNonInclusiveIntersect, kInclusiveIntersect };
 
 // When performing overlap testing during compositing, we may need to expand the
@@ -96,9 +95,9 @@ class PLATFORM_EXPORT GeometryMapper {
         rect = Matrix().MapRect(rect);
     }
 
-    void MapQuad(FloatQuad& quad) const {
+    void MapQuad(gfx::QuadF& quad) const {
       if (LIKELY(IsIdentityOr2DTranslation()))
-        quad.Move(Translation2D().x(), Translation2D().y());
+        quad += Translation2D();
       else
         quad = Matrix().MapQuad(quad);
     }
@@ -123,21 +122,21 @@ class PLATFORM_EXPORT GeometryMapper {
         matrix_->PostTranslate(x, y);
     }
 
-    SkM44 ToSkM44() const { return TransformationMatrix::ToSkM44(Matrix()); }
+    SkM44 ToSkM44() const { return Matrix().ToSkM44(); }
 
     SkMatrix ToSkMatrix() const {
       if (LIKELY(IsIdentityOr2DTranslation())) {
         return SkMatrix::Translate(Translation2D().x(), Translation2D().y());
       }
-      return SkMatrix(TransformationMatrix::ToSkMatrix44(Matrix()));
+      return Matrix().ToSkM44().asM33();
     }
 
-    bool operator==(const Translation2DOrMatrix& other) {
+    bool operator==(const Translation2DOrMatrix& other) const {
       return translation_2d_ == other.translation_2d_ &&
              matrix_ == other.matrix_;
     }
 
-    bool operator!=(const Translation2DOrMatrix& other) {
+    bool operator!=(const Translation2DOrMatrix& other) const {
       return !(*this == other);
     }
 
@@ -168,7 +167,7 @@ class PLATFORM_EXPORT GeometryMapper {
 
   // Same as SourceToDestinationProjection() except that it maps the rect
   // rather than returning the matrix.
-  // |mapping_rect| is both input and output. Its type can be FloatRect,
+  // |mapping_rect| is both input and output. Its type can be gfx::RectF,
   // LayoutRect, gfx::Rect, gfx::Rect or gfx::RectF.
   template <typename Rect>
   static void SourceToDestinationRect(
@@ -183,33 +182,7 @@ class PLATFORM_EXPORT GeometryMapper {
       const TransformPaintPropertyNode& source,
       const TransformPaintPropertyNode& destination,
       Rect& mapping_rect) {
-    if (&source == &destination)
-      return;
-
-    // Fast-path optimization for mapping through just |source| when |source| is
-    // a 2d translation.
-    if (&destination == source.Parent() && source.IsIdentityOr2DTranslation()) {
-      MoveRect(mapping_rect, source.Translation2D());
-      return;
-    }
-
-    // Fast-path optimization for mapping through just |destination| when
-    // |destination| is a 2d translation.
-    if (&source == destination.Parent() &&
-        destination.IsIdentityOr2DTranslation()) {
-      MoveRect(mapping_rect, -destination.Translation2D());
-      return;
-    }
-
-    bool has_animation = false;
-    bool has_fixed = false;
-    bool success = false;
-    const auto& source_to_destination = SourceToDestinationProjectionInternal(
-        source, destination, has_animation, has_fixed, success);
-    if (!success)
-      mapping_rect = Rect();
-    else
-      source_to_destination.MapRect(mapping_rect);
+    SourceToDestinationProjection(source, destination).MapRect(mapping_rect);
   }
 
   // Returns the clip rect between |local_state| and |ancestor_state|. The clip
@@ -267,11 +240,11 @@ class PLATFORM_EXPORT GeometryMapper {
   // still used, however).
   //
   // If kInclusiveIntersect is set, clipping operations will
-  // use FloatRect::InclusiveIntersect, and the return value of
+  // use gfx::RectF::InclusiveIntersect, and the return value of
   // InclusiveIntersect will be propagated to the return value of this method.
   // Otherwise, clipping operations will use LayoutRect::intersect, and the
   // return value will be true only if the clipped rect has non-zero area.
-  // See the documentation for FloatRect::InclusiveIntersect for more
+  // See the documentation for gfx::RectF::InclusiveIntersect for more
   // information.
   static bool LocalToAncestorVisualRect(
       const PropertyTreeStateOrAlias& local_state,
@@ -340,7 +313,7 @@ class PLATFORM_EXPORT GeometryMapper {
       ExpandVisualRectForCompositingOverlapOrNot,
       bool& success);
 
-  static void MoveRect(FloatRect& rect, const gfx::Vector2dF& delta) {
+  static void MoveRect(gfx::RectF& rect, const gfx::Vector2dF& delta) {
     rect.Offset(delta.x(), delta.y());
   }
 
@@ -352,10 +325,6 @@ class PLATFORM_EXPORT GeometryMapper {
     gfx::RectF rect_f(rect);
     MoveRect(rect_f, delta);
     rect = gfx::ToEnclosingRect(rect_f);
-  }
-
-  static void MoveRect(gfx::RectF& rect, const gfx::Vector2dF& delta) {
-    rect.Offset(delta);
   }
 
   friend class GeometryMapperTest;

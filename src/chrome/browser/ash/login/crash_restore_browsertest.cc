@@ -6,6 +6,8 @@
 #include <utility>
 #include <vector>
 
+#include "ash/components/cryptohome/cryptohome_parameters.h"
+#include "ash/components/login/auth/user_context.h"
 #include "ash/constants/ash_switches.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -28,11 +30,9 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
-#include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/dbus/userdataauth/userdataauth_client.h"
-#include "chromeos/login/auth/user_context.h"
 #include "components/account_id/account_id.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user.h"
@@ -163,27 +163,27 @@ class CrashRestoreComplexTest : public CrashRestoreSimpleTest {
   // Register test users so that UserManager knows them and make kUserId3 as the
   // last active user.
   void RegisterUsers() {
-    base::DictionaryValue local_state;
+    base::Value::Dict local_state;
 
-    const char* kTestUserIds[] = {kUserId1, kUserId2, kUserId3};
+    static const char* const kTestUserIds[] = {kUserId1, kUserId2, kUserId3};
 
-    auto users_list = std::make_unique<base::ListValue>();
-    for (auto* user_id : kTestUserIds)
-      users_list->Append(user_id);
+    base::Value::List users_list;
+    for (const auto* user_id : kTestUserIds)
+      users_list.Append(user_id);
 
-    local_state.SetList("LoggedInUsers", std::move(users_list));
-    local_state.SetString("LastActiveUser", kUserId3);
+    local_state.Set("LoggedInUsers", std::move(users_list));
+    local_state.Set("LastActiveUser", kUserId3);
 
-    auto known_users_list = std::make_unique<base::ListValue>();
+    base::Value::List known_users_list;
     int gaia_id = 10000;
-    for (auto* user_id : kTestUserIds) {
-      auto user_dict = std::make_unique<base::DictionaryValue>();
-      user_dict->SetString("account_type", "google");
-      user_dict->SetString("email", user_id);
-      user_dict->SetString("gaia_id", base::NumberToString(gaia_id++));
-      known_users_list->Append(std::move(user_dict));
+    for (const auto* user_id : kTestUserIds) {
+      base::Value::Dict user_dict;
+      user_dict.Set("account_type", "google");
+      user_dict.Set("email", user_id);
+      user_dict.Set("gaia_id", base::NumberToString(gaia_id++));
+      known_users_list.Append(std::move(user_dict));
     }
-    local_state.SetList("KnownUsers", std::move(known_users_list));
+    local_state.Set("KnownUsers", std::move(known_users_list));
 
     std::string local_state_json;
     ASSERT_TRUE(base::JSONWriter::Write(local_state, &local_state_json));
@@ -201,7 +201,7 @@ class CrashRestoreComplexTest : public CrashRestoreSimpleTest {
     // kGoogleServicesAccountId, so the IdentityManager will not initialize
     // itself with a primary account.
     base::DictionaryValue prefs;
-    prefs.SetString(prefs::kSessionExitType, "Crashed");
+    prefs.SetStringPath(prefs::kSessionExitType, "Crashed");
     std::string prefs_json;
     ASSERT_TRUE(base::JSONWriter::Write(prefs, &prefs_json));
 

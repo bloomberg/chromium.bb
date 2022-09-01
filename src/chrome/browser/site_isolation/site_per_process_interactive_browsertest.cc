@@ -137,7 +137,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest, DocumentHasFocus) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 
-  content::RenderFrameHost* main_frame = web_contents->GetMainFrame();
+  content::RenderFrameHost* main_frame = web_contents->GetPrimaryMainFrame();
   content::RenderFrameHost* child1 = ChildFrameAt(main_frame, 0);
   ASSERT_NE(nullptr, child1);
   content::RenderFrameHost* child2 = ChildFrameAt(main_frame, 1);
@@ -208,7 +208,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
   // Focus the subframe and then its input field.  The return value
   // "input-focus" will be sent once the input field's focus event fires.
   content::RenderFrameHost* child =
-      ChildFrameAt(web_contents->GetMainFrame(), 0);
+      ChildFrameAt(web_contents->GetPrimaryMainFrame(), 0);
   std::string result;
   std::string script =
       "function onInput(e) {"
@@ -227,7 +227,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
   // Generate a few keyboard events and route them to currently focused frame.
   // We wait for replies to be sent back from the page, since keystrokes may
   // take time to propagate to the renderer's main thread.
-  content::DOMMessageQueue msg_queue;
+  content::DOMMessageQueue msg_queue(web_contents);
   std::string reply;
   SimulateKeyPress(web_contents, ui::DomKey::FromCharacter('F'),
                    ui::DomCode::US_F, ui::VKEY_F, false, false, false, false);
@@ -257,8 +257,14 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
 //
 // The test then presses <tab> six times to cycle through focused elements 1-6.
 // The test then repeats this with <shift-tab> to cycle in reverse order.
+#if BUILDFLAG(IS_MAC)
+// TODO(crbug.com/1295296): Fails on Mac 10.11.
+#define MAYBE_SequentialFocusNavigation DISABLED_SequentialFocusNavigation
+#else
+#define MAYBE_SequentialFocusNavigation SequentialFocusNavigation
+#endif
 IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
-                       SequentialFocusNavigation) {
+                       MAYBE_SequentialFocusNavigation) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b,c)"));
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), main_url));
@@ -266,7 +272,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 
-  content::RenderFrameHost* main_frame = web_contents->GetMainFrame();
+  content::RenderFrameHost* main_frame = web_contents->GetPrimaryMainFrame();
   content::RenderFrameHost* child1 = ChildFrameAt(main_frame, 0);
   ASSERT_NE(nullptr, child1);
   content::RenderFrameHost* child2 = ChildFrameAt(main_frame, 1);
@@ -301,7 +307,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
 
   // Helper to simulate a tab press and wait for a focus message.
   auto press_tab_and_wait_for_message = [web_contents](bool reverse) {
-    content::DOMMessageQueue msg_queue;
+    content::DOMMessageQueue msg_queue(web_contents);
     std::string reply;
     SimulateKeyPress(web_contents, ui::DomKey::TAB, ui::DomCode::TAB,
                      ui::VKEY_TAB, false, reverse /* shift */, false, false);
@@ -354,7 +360,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 
-  content::RenderFrameHost* main_frame = web_contents->GetMainFrame();
+  content::RenderFrameHost* main_frame = web_contents->GetPrimaryMainFrame();
 
   content::TestNavigationObserver observer(web_contents);
   GURL object_url(embedded_test_server()->GetURL("b.com", "/title1.html"));
@@ -395,7 +401,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
 
   // Helper to simulate a tab press and wait for a focus message.
   auto press_tab_and_wait_for_message = [web_contents](bool reverse) {
-    content::DOMMessageQueue msg_queue;
+    content::DOMMessageQueue msg_queue(web_contents);
     std::string reply;
     SimulateKeyPress(web_contents, ui::DomKey::TAB, ui::DomCode::TAB,
                      ui::VKEY_TAB, false, reverse /* shift */, false, false);
@@ -422,7 +428,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
 
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
-#if (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) || defined(OS_WIN)
+#if (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) || BUILDFLAG(IS_WIN)
 // Ensures that renderers know to advance focus to sibling frames and parent
 // frames in the presence of mouse click initiated focus changes.
 // Verifies against regression of https://crbug.com/702330
@@ -435,7 +441,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 
-  content::RenderFrameHost* main_frame = web_contents->GetMainFrame();
+  content::RenderFrameHost* main_frame = web_contents->GetPrimaryMainFrame();
   content::RenderFrameHost* child1 = ChildFrameAt(main_frame, 0);
   ASSERT_NE(nullptr, child1);
   content::RenderFrameHost* child2 = ChildFrameAt(main_frame, 1);
@@ -537,7 +543,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
 
   // Helper to simulate a tab press and wait for a focus message.
   auto press_tab_and_wait_for_message = [web_contents](bool reverse) {
-    content::DOMMessageQueue msg_queue;
+    content::DOMMessageQueue msg_queue(web_contents);
     std::string reply;
     SimulateKeyPress(web_contents, ui::DomKey::TAB, ui::DomCode::TAB,
                      ui::VKEY_TAB, false, reverse /* shift */, false, false);
@@ -548,7 +554,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
 
   auto click_element_and_wait_for_message =
       [web_contents](const gfx::Point& point) {
-        content::DOMMessageQueue msg_queue;
+        content::DOMMessageQueue msg_queue(web_contents);
 
         auto content_bounds = web_contents->GetContainerBounds();
         ui_controls::SendMouseMove(point.x() + content_bounds.x(),
@@ -737,7 +743,7 @@ void WaitForMultipleFullscreenEvents(
 // - fullscreenchange events fire in both frames.
 // - fullscreen CSS is applied correctly in both frames.
 //
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 // https://crbug.com/850594
 #define MAYBE_FullscreenElementInSubframe DISABLED_FullscreenElementInSubframe
 #else
@@ -758,7 +764,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
       embedded_test_server()->GetURL("b.com", "/fullscreen_frame.html"));
   EXPECT_TRUE(NavigateIframeToURL(web_contents, "child-0", frame_url));
 
-  content::RenderFrameHost* main_frame = web_contents->GetMainFrame();
+  content::RenderFrameHost* main_frame = web_contents->GetPrimaryMainFrame();
   content::RenderFrameHost* child = ChildFrameAt(main_frame, 0);
   gfx::Size original_child_size = GetFrameSize(child);
 
@@ -771,7 +777,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
   std::set<std::string> expected_events = {"main_frame", "child"};
   AddResizeListener(child, GetScreenSize());
   {
-    content::DOMMessageQueue queue;
+    content::DOMMessageQueue queue(web_contents);
     FullscreenNotificationObserver observer(browser());
     EXPECT_TRUE(ExecuteScript(child, "activateFullscreen()"));
     WaitForMultipleFullscreenEvents(expected_events, queue);
@@ -806,7 +812,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
   // original size.
   AddResizeListener(child, original_child_size);
   {
-    content::DOMMessageQueue queue;
+    content::DOMMessageQueue queue(web_contents);
     FullscreenNotificationObserver observer(browser());
     EXPECT_TRUE(ExecuteScript(child, "exitFullscreen()"));
     WaitForMultipleFullscreenEvents(expected_events, queue);
@@ -841,7 +847,7 @@ void SitePerProcessInteractiveBrowserTest::FullscreenElementInABA(
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 
-  content::RenderFrameHost* main_frame = web_contents->GetMainFrame();
+  content::RenderFrameHost* main_frame = web_contents->GetPrimaryMainFrame();
   content::RenderFrameHost* child = ChildFrameAt(main_frame, 0);
   content::RenderFrameHost* grandchild = ChildFrameAt(child, 0);
 
@@ -870,7 +876,7 @@ void SitePerProcessInteractiveBrowserTest::FullscreenElementInABA(
   // (3) the browser has finished the fullscreen transition.
   std::set<std::string> expected_events = {"main_frame", "child", "grandchild"};
   {
-    content::DOMMessageQueue queue;
+    content::DOMMessageQueue queue(web_contents);
     FullscreenNotificationObserver fullscreen_observer(browser());
     EXPECT_TRUE(ExecuteScript(grandchild, "activateFullscreen()"));
     WaitForMultipleFullscreenEvents(expected_events, queue);
@@ -900,7 +906,7 @@ void SitePerProcessInteractiveBrowserTest::FullscreenElementInABA(
   // Now exit fullscreen from the subframe.
   AddResizeListener(grandchild, original_grandchild_size);
   {
-    content::DOMMessageQueue queue;
+    content::DOMMessageQueue queue(web_contents);
     FullscreenNotificationObserver fullscreen_observer(browser());
     switch (exit_method) {
       case FullscreenExitMethod::JS_CALL:
@@ -935,7 +941,7 @@ void SitePerProcessInteractiveBrowserTest::FullscreenElementInABA(
 }
 
 // https://crbug.com/1087392: Flaky for ASAN and TSAN
-#if defined(OS_MAC) || defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER)
+#if BUILDFLAG(IS_MAC) || defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER)
 #define MAYBE_FullscreenElementInABAAndExitViaEscapeKey \
   DISABLED_FullscreenElementInABAAndExitViaEscapeKey
 #else
@@ -988,7 +994,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 
-  content::RenderFrameHost* a_top = web_contents->GetMainFrame();
+  content::RenderFrameHost* a_top = web_contents->GetPrimaryMainFrame();
   content::RenderFrameHost* a_bottom = ChildFrameAt(a_top, 0);
   content::RenderFrameHost* b_first = ChildFrameAt(a_bottom, 0);
   content::RenderFrameHost* b_second = ChildFrameAt(a_bottom, 1);
@@ -1031,7 +1037,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
   // response, (2) |c_middle| is resized to fill the whole screen, and (3) the
   // browser finishes the fullscreen transition.
   {
-    content::DOMMessageQueue queue;
+    content::DOMMessageQueue queue(web_contents);
     FullscreenNotificationObserver fullscreen_observer(browser());
     EXPECT_TRUE(ExecuteScript(c_middle, "activateFullscreen()"));
     WaitForMultipleFullscreenEvents(expected_events, queue);
@@ -1071,7 +1077,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
   // resized back to its original size.
   AddResizeListener(c_middle, c_middle_original_size);
   {
-    content::DOMMessageQueue queue;
+    content::DOMMessageQueue queue(web_contents);
     FullscreenNotificationObserver fullscreen_observer(browser());
     ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_ESCAPE,
                                                 false, false, false, false));
@@ -1114,7 +1120,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 
-  content::RenderFrameHost* main_frame = web_contents->GetMainFrame();
+  content::RenderFrameHost* main_frame = web_contents->GetPrimaryMainFrame();
   content::RenderFrameHost* child = ChildFrameAt(main_frame, 0);
 
   EXPECT_TRUE(ExecuteScript(child, "document.body.requestPointerLock()"));
@@ -1243,7 +1249,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractivePDFTest,
   navigation_observer.Wait();
 
   content::RenderWidgetHostView* child_view =
-      ChildFrameAt(active_web_contents->GetMainFrame(), 0)->GetView();
+      ChildFrameAt(active_web_contents->GetPrimaryMainFrame(), 0)->GetView();
 
   ContextMenuWaiter menu_waiter;
 
@@ -1292,7 +1298,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractivePDFTest,
 
   // Make sure the text area is focused. First, we must explicitly focus the
   // child iframe containing the text area.
-  content::RenderFrameHost* main_frame = embedder_web_contents->GetMainFrame();
+  content::RenderFrameHost* main_frame =
+      embedder_web_contents->GetPrimaryMainFrame();
   content::RenderFrameHost* child_text_area = ChildFrameAt(main_frame, 0);
   ASSERT_TRUE(content::ExecJs(child_text_area, "window.focus();"));
   bool starts_focused =
@@ -1473,8 +1480,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), main_url));
-  content::RenderFrameHost* child_frame = ChildFrameAt(
-      browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame(), 0);
+  content::RenderFrameHost* child_frame =
+      ChildFrameAt(browser()
+                       ->tab_strip_model()
+                       ->GetActiveWebContents()
+                       ->GetPrimaryMainFrame(),
+                   0);
 
   // Add <input type='date'> to the child frame. Adjust the positions that we
   // know where to click to dismiss the popup.
@@ -1554,7 +1565,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
 // the NSEvent is sent to NSApplication in ui/base/test/ui_controls_mac.mm .
 // This test is disabled on only the Mac until the problem is resolved.
 // See http://crbug.com/425859 for more information.
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #define MAYBE_SubframeAnchorOpenedInBackgroundTab \
   DISABLED_SubframeAnchorOpenedInBackgroundTab
 #else
@@ -1585,7 +1596,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
   content::WebContents* new_contents = nullptr;
   {
     content::WebContentsAddedObserver new_tab_observer;
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
     ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
         old_contents->GetTopLevelNativeWindow(), ui::VKEY_RETURN, false, false,
         false, true /* cmd */));
@@ -1600,7 +1611,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
   // Verify that the new content has loaded the expected contents.
   GURL target_url(embedded_test_server()->GetURL("bar.com", "/title1.html"));
   EXPECT_TRUE(WaitForLoadStop(new_contents));
-  EXPECT_EQ(target_url, new_contents->GetMainFrame()->GetLastCommittedURL());
+  EXPECT_EQ(target_url,
+            new_contents->GetPrimaryMainFrame()->GetLastCommittedURL());
 
   // Verify that the anchor opened in a new background tab.
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
@@ -1609,4 +1621,62 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
             browser()->tab_strip_model()->GetIndexOfWebContents(old_contents));
   EXPECT_EQ(1,
             browser()->tab_strip_model()->GetIndexOfWebContents(new_contents));
+}
+
+// Check that window.focus works for cross-process popups.
+// Flaky on ChromeOS debug and ASAN builds. https://crbug.com/1326293
+#if BUILDFLAG(IS_CHROMEOS) && (!defined(NDEBUG) || defined(ADDRESS_SANITIZER))
+#define MAYBE_PopupWindowFocus DISABLED_PopupWindowFocus
+#else
+#define MAYBE_PopupWindowFocus PopupWindowFocus
+#endif
+IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
+                       MAYBE_PopupWindowFocus) {
+  GURL main_url(embedded_test_server()->GetURL("/page_with_focus_events.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), main_url));
+
+  // Set window.name on main page.  This will be used to identify the page
+  // later when it sends messages from its focus/blur events.
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(
+      ExecuteScriptWithoutUserGesture(web_contents, "window.name = 'main'"));
+
+  // Open a popup for a cross-site page.
+  GURL popup_url =
+      embedded_test_server()->GetURL("foo.com", "/page_with_focus_events.html");
+  content::TestNavigationObserver popup_observer(nullptr);
+  popup_observer.StartWatchingNewWebContents();
+  EXPECT_TRUE(ExecuteScript(web_contents,
+                            "openPopup('" + popup_url.spec() + "','popup')"));
+  popup_observer.Wait();
+  ASSERT_EQ(2, browser()->tab_strip_model()->count());
+  content::WebContents* popup =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_EQ(popup_url, popup->GetLastCommittedURL());
+  EXPECT_NE(popup, web_contents);
+
+  // Switch focus to the original tab, since opening a popup also focused it.
+  web_contents->GetDelegate()->ActivateContents(web_contents);
+  EXPECT_EQ(web_contents, browser()->tab_strip_model()->GetActiveWebContents());
+
+  // Focus the popup via window.focus(), this needs user gesture.
+  content::DOMMessageQueue main_queue(web_contents);
+  content::DOMMessageQueue popup_queue(popup);
+  ExecuteScriptAsync(web_contents, "focusPopup()");
+
+  // Wait for main page to lose focus and for popup to gain focus.  Each event
+  // will send a message, and the two messages can arrive in any order.
+  std::string status;
+  while (main_queue.WaitForMessage(&status)) {
+    if (status == "\"main-lost-focus\"")
+      break;
+  }
+  while (popup_queue.WaitForMessage(&status)) {
+    if (status == "\"popup-got-focus\"")
+      break;
+  }
+
+  // The popup should be focused now.
+  EXPECT_EQ(popup, browser()->tab_strip_model()->GetActiveWebContents());
 }

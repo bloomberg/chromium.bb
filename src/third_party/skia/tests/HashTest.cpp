@@ -129,56 +129,98 @@ DEF_TEST(HashMap, r) {
     }
 }
 
-DEF_TEST(HashSet, r) {
-    SkTHashSet<SkString> set;
+DEF_TEST(HashMapCtor, r) {
+    SkTHashMap<int, std::string_view> map{{1, "one"}, {2, "two"}, {3, "three"}, {4, "four"}};
+    REPORTER_ASSERT(r, map.count() == 4);
+    REPORTER_ASSERT(r, map.approxBytesUsed() >= 4 * (sizeof(int) + sizeof(std::string_view)));
 
-    set.add(SkString("Hello"));
-    set.add(SkString("World"));
+    std::string_view* found = map.find(1);
+    REPORTER_ASSERT(r, found);
+    REPORTER_ASSERT(r, *found == "one");
+
+    found = map.find(2);
+    REPORTER_ASSERT(r, found);
+    REPORTER_ASSERT(r, *found == "two");
+
+    found = map.find(3);
+    REPORTER_ASSERT(r, found);
+    REPORTER_ASSERT(r, *found == "three");
+
+    found = map.find(4);
+    REPORTER_ASSERT(r, found);
+    REPORTER_ASSERT(r, *found == "four");
+
+    found = map.find(5);
+    REPORTER_ASSERT(r, !found);
+
+    found = map.find(6);
+    REPORTER_ASSERT(r, !found);
+}
+
+DEF_TEST(HashSetCtor, r) {
+    SkTHashSet<std::string_view> set{"one", "two", "three", "four"};
+    REPORTER_ASSERT(r, set.count() == 4);
+    REPORTER_ASSERT(r, set.approxBytesUsed() >= 4 * sizeof(std::string_view));
+
+    REPORTER_ASSERT(r, set.contains("one"));
+    REPORTER_ASSERT(r, set.contains("two"));
+    REPORTER_ASSERT(r, set.contains("three"));
+    REPORTER_ASSERT(r, set.contains("four"));
+    REPORTER_ASSERT(r, !set.contains("five"));
+    REPORTER_ASSERT(r, !set.contains("six"));
+}
+
+template <typename T>
+static void test_hash_set(skiatest::Reporter* r) {
+    SkTHashSet<T> set;
+
+    set.add(T("Hello"));
+    set.add(T("World"));
     REPORTER_ASSERT(r, set.count() == 2);
-    REPORTER_ASSERT(r, set.contains(SkString("Hello")));
-    REPORTER_ASSERT(r, set.contains(SkString("World")));
-    REPORTER_ASSERT(r, !set.contains(SkString("Goodbye")));
-    REPORTER_ASSERT(r, set.find(SkString("Hello")));
-    REPORTER_ASSERT(r, *set.find(SkString("Hello")) == SkString("Hello"));
+    REPORTER_ASSERT(r, set.contains(T("Hello")));
+    REPORTER_ASSERT(r, set.contains(T("World")));
+    REPORTER_ASSERT(r, !set.contains(T("Goodbye")));
+    REPORTER_ASSERT(r, set.find(T("Hello")));
+    REPORTER_ASSERT(r, *set.find(T("Hello")) == T("Hello"));
 
     // Test walking the set with iterators, using preincrement (++iter).
-    for (SkTHashSet<SkString>::Iter iter = set.begin(); iter != set.end(); ++iter) {
-        REPORTER_ASSERT(r, iter->equals("Hello") || (*iter).equals("World"));
+    for (typename SkTHashSet<T>::Iter iter = set.begin(); iter != set.end(); ++iter) {
+        REPORTER_ASSERT(r, *iter == T("Hello") || *iter == T("World"));
     }
 
     // Test walking the set with iterators, using postincrement (iter++).
-    for (SkTHashSet<SkString>::Iter iter = set.begin(); iter != set.end(); iter++) {
-        REPORTER_ASSERT(r, iter->equals("Hello") || (*iter).equals("World"));
+    for (typename SkTHashSet<T>::Iter iter = set.begin(); iter != set.end(); iter++) {
+        REPORTER_ASSERT(r, *iter == T("Hello") || *iter == T("World"));
     }
 
     // Test walking the set with range-based for.
     for (auto& entry : set) {
-        REPORTER_ASSERT(r, entry.equals("Hello") || entry.equals("World"));
+        REPORTER_ASSERT(r, entry == T("Hello") || entry == T("World"));
     }
 
     // Ensure that iteration works equally well on a const set.
     const auto& cset = set;
-    for (SkTHashSet<SkString>::Iter iter = cset.begin(); iter != cset.end(); iter++) {
-        REPORTER_ASSERT(r, iter->equals("Hello") || (*iter).equals("World"));
+    for (typename SkTHashSet<T>::Iter iter = cset.begin(); iter != cset.end(); iter++) {
+        REPORTER_ASSERT(r, *iter == T("Hello") || *iter == T("World"));
     }
 
     // Ensure that range-based for works equally well on a const set.
     for (auto& entry : cset) {
-        REPORTER_ASSERT(r, entry.equals("Hello") || entry.equals("World"));
+        REPORTER_ASSERT(r, entry == T("Hello") || entry == T("World"));
     }
 
-    SkTHashSet<SkString> clone = set;
+    SkTHashSet<T> clone = set;
     REPORTER_ASSERT(r, clone.count() == 2);
-    REPORTER_ASSERT(r, clone.contains(SkString("Hello")));
-    REPORTER_ASSERT(r, clone.contains(SkString("World")));
-    REPORTER_ASSERT(r, !clone.contains(SkString("Goodbye")));
-    REPORTER_ASSERT(r, clone.find(SkString("Hello")));
-    REPORTER_ASSERT(r, *clone.find(SkString("Hello")) == SkString("Hello"));
+    REPORTER_ASSERT(r, clone.contains(T("Hello")));
+    REPORTER_ASSERT(r, clone.contains(T("World")));
+    REPORTER_ASSERT(r, !clone.contains(T("Goodbye")));
+    REPORTER_ASSERT(r, clone.find(T("Hello")));
+    REPORTER_ASSERT(r, *clone.find(T("Hello")) == T("Hello"));
 
-    set.remove(SkString("Hello"));
-    REPORTER_ASSERT(r, !set.contains(SkString("Hello")));
+    set.remove(T("Hello"));
+    REPORTER_ASSERT(r, !set.contains(T("Hello")));
     REPORTER_ASSERT(r, set.count() == 1);
-    REPORTER_ASSERT(r, clone.contains(SkString("Hello")));
+    REPORTER_ASSERT(r, clone.contains(T("Hello")));
     REPORTER_ASSERT(r, clone.count() == 2);
 
     set.reset();
@@ -186,6 +228,18 @@ DEF_TEST(HashSet, r) {
 
     clone = set;
     REPORTER_ASSERT(r, clone.count() == 0);
+}
+
+DEF_TEST(HashSetWithSkString, r) {
+    test_hash_set<SkString>(r);
+}
+
+DEF_TEST(HashSetWithStdString, r) {
+    test_hash_set<std::string>(r);
+}
+
+DEF_TEST(HashSetWithStdStringView, r) {
+    test_hash_set<std::string_view>(r);
 }
 
 namespace {

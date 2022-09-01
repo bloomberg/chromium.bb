@@ -9,6 +9,7 @@
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state_manager.h"
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
 #include "ios/chrome/browser/main/test_browser.h"
+#import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #include "ios/chrome/browser/ntp_snippets/ios_chrome_content_suggestions_service_factory.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
@@ -16,7 +17,7 @@
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/omnibox_commands.h"
 #import "ios/chrome/browser/ui/commands/snackbar_commands.h"
-#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_view_controller.h"
 #import "ios/chrome/browser/ui/main/scene_state.h"
 #import "ios/chrome/browser/ui/main/scene_state_browser_agent.h"
 #import "ios/chrome/browser/ui/ntp/incognito_view_controller.h"
@@ -72,6 +73,7 @@ class NewTabPageCoordinatorTest : public PlatformTest {
       scene_state_ = OCMClassMock([SceneState class]);
       SceneStateBrowserAgent::CreateForBrowser(browser_.get(), scene_state_);
     }
+    NewTabPageTabHelper::CreateForWebState(&web_state_);
     coordinator_ = [[NewTabPageCoordinator alloc]
         initWithBaseViewController:base_view_controller_
                            browser:browser_.get()];
@@ -107,7 +109,6 @@ TEST_F(NewTabPageCoordinatorTest, StartOnTheRecord) {
   UIViewController* viewController = [coordinator_ viewController];
   EXPECT_FALSE([viewController isKindOfClass:[IncognitoViewController class]]);
   [coordinator_ stop];
-  [coordinator_ disconnect];
 }
 
 // Tests that the coordinator vends an incognito VC off the record.

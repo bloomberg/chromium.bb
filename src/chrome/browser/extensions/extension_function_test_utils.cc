@@ -62,26 +62,37 @@ absl::optional<base::Value> ParseList(const std::string& data) {
   return result;
 }
 
-std::unique_ptr<base::DictionaryValue> ToDictionary(
-    std::unique_ptr<base::Value> val) {
-  EXPECT_TRUE(val);
-  EXPECT_EQ(base::Value::Type::DICTIONARY, val->type());
-  return base::DictionaryValue::From(std::move(val));
+base::Value::Dict ToDictionary(std::unique_ptr<base::Value> val) {
+  if (!val || !val->is_dict()) {
+    ADD_FAILURE() << "val is nullptr or is not a dictonary.";
+    return base::Value::Dict();
+  }
+  return std::move(val->GetDict());
+}
+
+base::Value::Dict ToDictionary(const base::Value& val) {
+  EXPECT_TRUE(val.is_dict());
+  if (!val.is_dict())
+    return base::Value::Dict();
+  return val.GetDict().Clone();
 }
 
 std::unique_ptr<base::ListValue> ToList(std::unique_ptr<base::Value> val) {
-  EXPECT_TRUE(val);
-  EXPECT_EQ(base::Value::Type::LIST, val->type());
+  if (!val || !val->is_list()) {
+    ADD_FAILURE() << "val is nullptr or is not a list.";
+    return nullptr;
+  }
   return base::ListValue::From(std::move(val));
 }
 
-bool HasAnyPrivacySensitiveFields(base::DictionaryValue* val) {
-  std::string result;
-  if (val->GetString(keys::kUrlKey, &result) ||
-      val->GetString(keys::kTitleKey, &result) ||
-      val->GetString(keys::kFaviconUrlKey, &result) ||
-      val->GetString(keys::kPendingUrlKey, &result))
-    return true;
+bool HasAnyPrivacySensitiveFields(const base::Value::Dict& dict) {
+  constexpr std::array privacySensitiveKeys{keys::kUrlKey, keys::kTitleKey,
+                                            keys::kFaviconUrlKey,
+                                            keys::kPendingUrlKey};
+  for (auto* key : privacySensitiveKeys) {
+    if (dict.contains(key))
+      return true;
+  }
   return false;
 }
 
@@ -100,9 +111,9 @@ std::string RunFunctionAndReturnError(
   RunFunction(function, args, browser, flags);
   // When sending a response, the function will set an empty list value if there
   // is no specified result.
-  const base::ListValue* results = function->GetResultList();
+  const base::Value::List* results = function->GetResultList();
   CHECK(results);
-  EXPECT_TRUE(results->GetList().empty()) << "Did not expect a result";
+  EXPECT_TRUE(results->empty()) << "Did not expect a result";
   CHECK(function->response_type());
   EXPECT_EQ(ExtensionFunction::FAILED, *function->response_type());
   return function->GetError();
@@ -115,6 +126,7 @@ std::unique_ptr<base::Value> RunFunctionAndReturnSingleResult(
   return RunFunctionAndReturnSingleResult(function, args, browser,
                                           extensions::api_test_utils::NONE);
 }
+
 std::unique_ptr<base::Value> RunFunctionAndReturnSingleResult(
     ExtensionFunction* function,
     const std::string& args,
@@ -125,9 +137,9 @@ std::unique_ptr<base::Value> RunFunctionAndReturnSingleResult(
   RunFunction(function, args, browser, flags);
   EXPECT_TRUE(function->GetError().empty()) << "Unexpected error: "
       << function->GetError();
-  if (function->GetResultList() &&
-      !function->GetResultList()->GetList().empty()) {
-    return function->GetResultList()->GetList()[0].CreateDeepCopy();
+  if (function->GetResultList() && !function->GetResultList()->empty()) {
+    return base::Value::ToUniquePtrValue(
+        (*function->GetResultList())[0].Clone());
   }
   return nullptr;
 }

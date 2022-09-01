@@ -15,8 +15,13 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "ui/gfx/geometry/cubic_bezier.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/geometry/size_f.h"
+#include "ui/gfx/geometry/transform.h"
+#include "ui/gfx/geometry/transform_operations.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include <float.h>
 #endif
 
@@ -87,11 +92,17 @@ double Tween::CalculateValue(Tween::Type type, double state) {
     case ACCEL_LIN_DECEL_100:
       return gfx::CubicBezier(0, 0, 0, 1).Solve(state);
 
+    case ACCEL_LIN_DECEL_100_3:
+      return gfx::CubicBezier(0, 0, 0, 0.97).Solve(state);
+
     case ACCEL_20_DECEL_60:
       return gfx::CubicBezier(0.2, 0, 0.4, 1).Solve(state);
 
     case ACCEL_20_DECEL_100:
       return gfx::CubicBezier(0.2, 0, 0, 1).Solve(state);
+
+    case ACCEL_30_DECEL_20_85:
+      return gfx::CubicBezier(0.3, 0, 0.8, 0.15).Solve(state);
 
     case ACCEL_40_DECEL_20:
       return gfx::CubicBezier(0.4, 0, 0.8, 1).Solve(state);
@@ -102,8 +113,17 @@ double Tween::CalculateValue(Tween::Type type, double state) {
     case ACCEL_0_40_DECEL_100:
       return gfx::CubicBezier(0, 0.4, 0, 1).Solve(state);
 
+    case ACCEL_40_DECEL_100_3:
+      return gfx::CubicBezier(0.40, 0, 0, 0.97).Solve(state);
+
     case ACCEL_0_80_DECEL_80:
       return gfx::CubicBezier(0, 0.8, 0.2, 1).Solve(state);
+
+    case ACCEL_0_100_DECEL_80:
+      return gfx::CubicBezier(0, 1, 0.2, 1).Solve(state);
+
+    case ACCEL_5_70_DECEL_90:
+      return gfx::CubicBezier(0.05, 0.7, 0.1, 1).Solve(state);
   }
 
   NOTREACHED();
@@ -150,8 +170,8 @@ SkColor Tween::ColorValueBetween(double value, SkColor start, SkColor target) {
       BlendColorComponents(SkColorGetB(start), SkColorGetB(target), start_a,
                            target_a, blended_a, value);
 
-  return SkColorSetARGB(
-      FloatToColorByte(blended_a), blended_r, blended_g, blended_b);
+  return SkColorSetARGB(FloatToColorByte(blended_a), blended_r, blended_g,
+                        blended_b);
 }
 
 // static
@@ -188,7 +208,7 @@ int Tween::IntValueBetween(double value, int start, int target) {
     delta--;
   else
     delta++;
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   return start + static_cast<int>(value * _nextafter(delta, 0));
 #else
   return start + static_cast<int>(value * nextafter(delta, 0));

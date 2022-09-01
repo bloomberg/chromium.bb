@@ -29,7 +29,8 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_MEDIA_QUERY_EVALUATOR_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -37,14 +38,14 @@ namespace blink {
 
 class LocalFrame;
 class MediaQuery;
-class MediaQueryExp;
 class MediaQueryExpNode;
+class MediaQueryFeatureExpNode;
 class MediaQueryResult;
 class MediaQuerySet;
 class MediaQuerySetResult;
 class MediaValues;
 
-using MediaQueryResultList = Vector<MediaQueryResult>;
+using MediaQueryResultList = HeapVector<MediaQueryResult>;
 
 // See Kleene 3-valued logic
 //
@@ -93,6 +94,9 @@ class CORE_EXPORT MediaQueryEvaluator final
 
   // Output from Eval functions:
   struct Results {
+    STACK_ALLOCATED();
+
+   public:
     MediaQueryResultList* viewport_dependent = nullptr;
     MediaQueryResultList* device_dependent = nullptr;
     // Or'ed MediaQueryExpValue::UnitFlags.
@@ -111,17 +115,9 @@ class CORE_EXPORT MediaQueryEvaluator final
   KleeneValue Eval(const MediaQueryExpNode&) const;
   KleeneValue Eval(const MediaQueryExpNode&, Results) const;
 
-  // Evaluates media query subexpression, ie "and (media-feature: value)" part.
-  bool Eval(const MediaQueryExp&) const;
-  bool Eval(const MediaQueryExp&, Results) const;
-
-  // Returns true if any of the expressions in the results lists changed its
-  // evaluation.
-  bool DidResultsChange(const MediaQueryResultList& results) const;
-
   // Returns true if any of the media queries in the results lists changed its
   // evaluation.
-  bool DidResultsChange(const Vector<MediaQuerySetResult>& results) const;
+  bool DidResultsChange(const HeapVector<MediaQuerySetResult>& results) const;
 
   void Trace(Visitor*) const;
 
@@ -133,16 +129,12 @@ class CORE_EXPORT MediaQueryEvaluator final
   KleeneValue EvalOr(const MediaQueryExpNode&,
                      const MediaQueryExpNode&,
                      Results) const;
-  KleeneValue EvalFeature(const MediaQueryExp&, Results) const;
+  KleeneValue EvalFeature(const MediaQueryFeatureExpNode&, Results) const;
 
   const String MediaType() const;
 
   String media_type_;
   Member<const MediaValues> media_values_;
-
-  // Even if UKM reporting is enabled, do not report any media query evaluation
-  // results if this is set to true.
-  mutable bool skip_ukm_reporting_{false};
 };
 
 }  // namespace blink

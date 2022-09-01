@@ -19,13 +19,6 @@ constexpr char kOpenScreenServiceName[] = "_openscreen._udp";
 // This contains canonical information about a specific Open Screen service
 // found on the network via our discovery mechanism (mDNS).
 struct ServiceInfo {
-  ServiceInfo() = default;
-  ServiceInfo(ServiceInfo&&) noexcept = default;
-  ServiceInfo(const ServiceInfo&) = default;
-
-  ServiceInfo& operator=(ServiceInfo&&) = default;
-  ServiceInfo& operator=(const ServiceInfo&) = default;
-
   bool operator==(const ServiceInfo& other) const;
   bool operator!=(const ServiceInfo& other) const;
 

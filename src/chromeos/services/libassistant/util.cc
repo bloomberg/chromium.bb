@@ -12,12 +12,13 @@
 #include "base/system/sys_info.h"
 #include "base/values.h"
 #include "build/util/chromium_git_revision.h"
-#include "chromeos/assistant/buildflags.h"
+#include "chromeos/ash/components/assistant/buildflags.h"
 #include "chromeos/assistant/internal/internal_constants.h"
 #include "chromeos/assistant/internal/internal_util.h"
 #include "chromeos/assistant/internal/util_headers.h"
 #include "chromeos/dbus/util/version_loader.h"
 #include "chromeos/services/assistant/public/cpp/features.h"
+#include "chromeos/services/assistant/public/cpp/switches.h"
 #include "chromeos/services/libassistant/constants.h"
 #include "chromeos/services/libassistant/public/cpp/android_app_info.h"
 
@@ -146,25 +147,16 @@ class V1InteractionBuilder {
 };
 
 bool ShouldPutLogsInHomeDirectory() {
-  // Redirects libassistant logging to /var/log/chrome/. This is mainly used to
-  // help collect logs when running tests.
-  constexpr char kRedirectLibassistantLogging[] =
-      "redirect-libassistant-logging";
-
   const bool redirect_logging =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
-          kRedirectLibassistantLogging);
+          chromeos::assistant::switches::kRedirectLibassistantLogging);
   return !redirect_logging;
 }
 
 bool ShouldLogToFile() {
-  // Redirects libassistant logging to stdout. This is mainly used to help test
-  // locally.
-  constexpr char kDisableLibAssistantLogfile[] = "disable-libassistant-logfile";
-
   const bool disable_logfile =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
-          kDisableLibAssistantLogfile);
+          chromeos::assistant::switches::kDisableLibAssistantLogfile);
   return !disable_logfile;
 }
 
@@ -197,10 +189,13 @@ std::string CreateLibAssistantConfig(
 
   // Enables Libassistant gRPC server for V2.
   if (chromeos::assistant::features::IsLibAssistantV2Enabled()) {
+    const std::string server_addresses =
+        std::string(assistant::kLibassistantServiceAddress) + "," +
+        assistant::kHttpConnectionServiceAddress;
     Value libas_server(Type::DICTIONARY);
-    libas_server.SetKey("libas_server_address",
-                        Value(assistant::kLibassistantServiceAddress));
+    libas_server.SetKey("libas_server_address", Value(server_addresses));
     libas_server.SetKey("enable_display_service", Value(true));
+    libas_server.SetKey("enable_http_connection_service", Value(true));
     config.SetKey("libas_server", std::move(libas_server));
   }
 
@@ -246,7 +241,7 @@ std::string CreateLibAssistantConfig(
     logging.SetKey("output_type", Value(Type::LIST));
     config.SetKey("logging", std::move(logging));
   } else {
-    // Print logs to console if running in desktop mode.
+    // Print logs to console if running in desktop or test mode.
     internal.SetKey("disable_log_files", Value(true));
   }
 

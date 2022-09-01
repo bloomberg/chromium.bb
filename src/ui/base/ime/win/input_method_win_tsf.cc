@@ -33,8 +33,8 @@ class InputMethodWinTSF::TSFEventObserver : public TSFEventRouterObserver {
 };
 
 InputMethodWinTSF::InputMethodWinTSF(internal::InputMethodDelegate* delegate,
-                                     HWND toplevel_window_handle)
-    : InputMethodWinBase(delegate, toplevel_window_handle),
+                                     HWND attached_window_handle)
+    : InputMethodWinBase(delegate, attached_window_handle),
       tsf_event_observer_(new TSFEventObserver()),
       tsf_event_router_(new TSFEventRouter(tsf_event_observer_.get())) {}
 
@@ -93,7 +93,7 @@ bool InputMethodWinTSF::OnUntranslatedIMEMessage(
   return !!handled;
 }
 
-void InputMethodWinTSF::OnTextInputTypeChanged(const TextInputClient* client) {
+void InputMethodWinTSF::OnTextInputTypeChanged(TextInputClient* client) {
   InputMethodBase::OnTextInputTypeChanged(client);
   if (!ui::TSFBridge::GetInstance() || !IsTextInputClientFocused(client) ||
       !IsWindowFocused(client)) {
@@ -154,7 +154,7 @@ void InputMethodWinTSF::OnDidChangeFocusedClient(
     TextInputClient* focused) {
   if (ui::TSFBridge::GetInstance() && IsWindowFocused(focused) &&
       IsTextInputClientFocused(focused)) {
-    ui::TSFBridge::GetInstance()->SetFocusedClient(toplevel_window_handle_,
+    ui::TSFBridge::GetInstance()->SetFocusedClient(attached_window_handle_,
                                                    focused);
     // Force to update the input type since client's TextInputStateChanged()
     // function might not be called if text input types before the client loses

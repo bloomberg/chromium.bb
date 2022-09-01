@@ -277,9 +277,9 @@ template <typename Indices, typename InputArgType, typename KernelArgType>
 struct TensorEvaluator<const TensorConvolutionOp<Indices, InputArgType, KernelArgType>, Eigen::SyclDevice> {
   typedef TensorConvolutionOp<Indices, InputArgType, KernelArgType> XprType;
 
-  static const int NumDims =
+  static constexpr int NumDims =
       internal::array_size<typename TensorEvaluator<InputArgType, Eigen::SyclDevice>::Dimensions>::value;
-  static const int NumKernelDims = internal::array_size<Indices>::value;
+  static constexpr int NumKernelDims = internal::array_size<Indices>::value;
   typedef typename XprType::Index Index;
   typedef DSizes<Index, NumDims> Dimensions;
   typedef typename TensorEvaluator<KernelArgType, Eigen::SyclDevice>::Dimensions KernelDimensions;
@@ -287,18 +287,18 @@ struct TensorEvaluator<const TensorConvolutionOp<Indices, InputArgType, KernelAr
   typedef typename XprType::CoeffReturnType CoeffReturnType;
   typedef typename PacketType<CoeffReturnType, Eigen::SyclDevice>::type PacketReturnType;
   typedef typename InputArgType::Scalar Scalar;
-  static const int PacketSize = PacketType<CoeffReturnType, Device>::size;
+  static constexpr int PacketSize = PacketType<CoeffReturnType, Device>::size;
   typedef StorageMemory<CoeffReturnType, Eigen::SyclDevice> Storage;
   typedef typename Storage::Type EvaluatorPointerType;
   typedef StorageMemory<const CoeffReturnType, Eigen::SyclDevice> KernelStorage;
 
+  static constexpr int Layout = TensorEvaluator<InputArgType, Eigen::SyclDevice>::Layout;
   enum {
     IsAligned = TensorEvaluator<InputArgType, Eigen::SyclDevice>::IsAligned &
                 TensorEvaluator<KernelArgType, Eigen::SyclDevice>::IsAligned,
     PacketAccess = false,
     BlockAccess = false,
     PreferBlockAccess = false,
-    Layout = TensorEvaluator<InputArgType, Eigen::SyclDevice>::Layout,
     CoordAccess = false,  // to be implemented
     RawAccess = false
   };

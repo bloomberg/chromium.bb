@@ -5,6 +5,7 @@
 #include <memory>
 #include <utility>
 
+#include "ash/components/cryptohome/cryptohome_parameters.h"
 #include "ash/constants/ash_switches.h"
 #include "base/bind.h"
 #include "base/callback.h"
@@ -19,7 +20,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/networking_private/networking_private_ui_delegate_chromeos.h"
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chromeos/cryptohome/cryptohome_parameters.h"
+#include "chromeos/ash/components/network/onc/network_onc_utils.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill/shill_device_client.h"
 #include "chromeos/dbus/shill/shill_ipconfig_client.h"
@@ -36,7 +37,6 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_type_pattern.h"
-#include "chromeos/network/onc/network_onc_utils.h"
 #include "components/onc/onc_constants.h"
 #include "components/onc/onc_pref_names.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
@@ -147,10 +147,10 @@ class NetworkingPrivateChromeOSApiTest : public extensions::ExtensionApiTest {
     // uses the ProfileHelper to obtain the userhash crbug/238623.
     cryptohome::AccountIdentifier login_user;
     login_user.set_account_id(user_manager::CanonicalizeUserID(
-        command_line->GetSwitchValueNative(chromeos::switches::kLoginUser)));
+        command_line->GetSwitchValueNative(ash::switches::kLoginUser)));
     const std::string sanitized_user =
         UserDataAuthClient::GetStubSanitizedUsername(login_user);
-    command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile,
+    command_line->AppendSwitchASCII(ash::switches::kLoginProfile,
                                     sanitized_user);
   }
 
@@ -184,9 +184,9 @@ class NetworkingPrivateChromeOSApiTest : public extensions::ExtensionApiTest {
     device_test()->AddDevice(kCellularDevicePath, shill::kTypeCellular,
                              "stub_cellular_device1");
     base::DictionaryValue home_provider;
-    home_provider.SetString("name", "Cellular1_Provider");
-    home_provider.SetString("code", "000000");
-    home_provider.SetString("country", "us");
+    home_provider.SetStringKey("name", "Cellular1_Provider");
+    home_provider.SetStringKey("code", "000000");
+    home_provider.SetStringKey("country", "us");
     SetDeviceProperty(kCellularDevicePath, shill::kHomeProviderProperty,
                       home_provider);
     SetDeviceProperty(kCellularDevicePath, shill::kTechnologyFamilyProperty,
@@ -337,9 +337,6 @@ class NetworkingPrivateChromeOSApiTest : public extensions::ExtensionApiTest {
     service_test()->SetServiceProperty(kWifi1ServicePath,
                                        shill::kDeviceProperty,
                                        base::Value(kWifiDevicePath));
-    service_test()->SetServiceProperty(
-        kWifi1ServicePath, shill::kTetheringProperty,
-        base::Value(shill::kTetheringNotDetectedState));
     base::DictionaryValue static_ipconfig;
     static_ipconfig.SetKey(shill::kAddressProperty, base::Value("1.2.3.4"));
     static_ipconfig.SetKey(shill::kGatewayProperty, base::Value("0.0.0.0"));
@@ -363,9 +360,6 @@ class NetworkingPrivateChromeOSApiTest : public extensions::ExtensionApiTest {
         kWifi2ServicePath, shill::kSignalStrengthProperty, base::Value(80));
     service_test()->SetServiceProperty(
         kWifi2ServicePath, shill::kConnectableProperty, base::Value(true));
-    service_test()->SetServiceProperty(
-        kWifi2ServicePath, shill::kTetheringProperty,
-        base::Value(shill::kTetheringNotDetectedState));
 
     base::ListValue frequencies2;
     frequencies2.Append(2400);
@@ -695,7 +689,7 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest,
 
 IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest,
                        OnCertificateListsChangedEvent) {
-  ExtensionTestMessageListener listener("eventListenerReady", false);
+  ExtensionTestMessageListener listener("eventListenerReady");
   listener.SetOnSatisfied(base::BindOnce([](const std::string& message) {
     chromeos::NetworkHandler::Get()
         ->network_certificate_handler()
@@ -725,7 +719,7 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest,
   service_test()->RemoveService("stub_ethernet");
   service_test()->RemoveService("stub_vpn1");
 
-  ExtensionTestMessageListener listener("notifyPortalDetectorObservers", false);
+  ExtensionTestMessageListener listener("notifyPortalDetectorObservers");
   listener.SetOnSatisfied(
       base::BindLambdaForTesting([&](const std::string& message) {
         service_test()->SetServiceProperty(

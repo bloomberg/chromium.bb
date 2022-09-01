@@ -364,7 +364,7 @@ void PopulateSubnetsOrClearList(std::vector<InterfaceInfo>* info_list) {
 
 }  // namespace
 
-std::vector<InterfaceInfo> GetAllInterfaces() {
+std::vector<InterfaceInfo> GetNetworkInterfaces() {
   std::vector<InterfaceInfo> interfaces = GetLinkInfo();
   PopulateSubnetsOrClearList(&interfaces);
   return interfaces;

@@ -12,7 +12,6 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "media/base/media_log.h"
@@ -44,14 +43,12 @@ TestVDAVideoDecoder::TestVDAVideoDecoder(
     OnProvidePictureBuffersCB on_provide_picture_buffers_cb,
     const gfx::ColorSpace& target_color_space,
     FrameRenderer* const frame_renderer,
-    gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory,
     bool linear_output)
     : use_vd_vda_(use_vd_vda),
       on_provide_picture_buffers_cb_(std::move(on_provide_picture_buffers_cb)),
       target_color_space_(target_color_space),
       frame_renderer_(frame_renderer),
 #if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
-      gpu_memory_buffer_factory_(gpu_memory_buffer_factory),
       linear_output_(linear_output),
 #endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
       decode_start_timestamps_(kTimestampCacheSize) {
@@ -110,7 +107,7 @@ void TestVDAVideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   if (!decoder_factory) {
     ASSERT_TRUE(decoder_) << "Failed to create VideoDecodeAccelerator factory";
-    std::move(init_cb).Run(StatusCode::kCodeOnlyForTesting);
+    std::move(init_cb).Run(DecoderStatus::Codes::kFailed);
     return;
   }
 
@@ -142,17 +139,17 @@ void TestVDAVideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   if (!decoder_) {
     ASSERT_TRUE(decoder_) << "Failed to create VideoDecodeAccelerator factory";
-    std::move(init_cb).Run(StatusCode::kCodeOnlyForTesting);
+    std::move(init_cb).Run(DecoderStatus::Codes::kFailed);
     return;
   }
 
   if (!vda_config.is_deferred_initialization_allowed)
-    std::move(init_cb).Run(OkStatus());
+    std::move(init_cb).Run(DecoderStatus::Codes::kOk);
   else
     init_cb_ = std::move(init_cb);
 }
 
-void TestVDAVideoDecoder::NotifyInitializationComplete(Status status) {
+void TestVDAVideoDecoder::NotifyInitializationComplete(DecoderStatus status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(vda_wrapper_sequence_checker_);
   DCHECK(init_cb_);
 
@@ -245,8 +242,8 @@ void TestVDAVideoDecoder::ProvidePictureBuffersWithVisibleRect(
 
 #if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
     video_frame = CreateGpuMemoryBufferVideoFrame(
-        gpu_memory_buffer_factory_, format, dimensions, visible_rect,
-        visible_rect.size(), base::TimeDelta(),
+        format, dimensions, visible_rect, visible_rect.size(),
+        base::TimeDelta(),
         linear_output_ ? gfx::BufferUsage::SCANOUT_CPU_READ_WRITE
                        : gfx::BufferUsage::SCANOUT_VDA_WRITE);
 #endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
@@ -373,7 +370,7 @@ void TestVDAVideoDecoder::NotifyEndOfBitstreamBuffer(
       << "Couldn't find decode callback for picture buffer with id "
       << bitstream_buffer_id;
 
-  std::move(it->second).Run(DecodeStatus::OK);
+  std::move(it->second).Run(DecoderStatus::Codes::kOk);
   decode_cbs_.erase(it);
 }
 
@@ -381,7 +378,7 @@ void TestVDAVideoDecoder::NotifyFlushDone() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(vda_wrapper_sequence_checker_);
   DCHECK(flush_cb_);
 
-  std::move(flush_cb_).Run(DecodeStatus::OK);
+  std::move(flush_cb_).Run(DecoderStatus::Codes::kOk);
 }
 
 void TestVDAVideoDecoder::NotifyResetDone() {

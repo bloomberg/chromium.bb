@@ -106,7 +106,7 @@ class BrowserAccessibilityMacTest : public ui::CocoaTest {
     manager_ = std::make_unique<BrowserAccessibilityManagerMac>(
         MakeAXTreeUpdate(root_, child1, child2), nullptr);
     accessibility_.reset(
-        [ToBrowserAccessibilityCocoa(manager_->GetRoot()) retain]);
+        [manager_->GetRoot()->GetNativeViewAccessible() retain]);
   }
 
   void SetRootValue(std::string value) {
@@ -130,14 +130,14 @@ class BrowserAccessibilityMacTest : public ui::CocoaTest {
 TEST_F(BrowserAccessibilityMacTest, HitTestTest) {
   BrowserAccessibilityCocoa* firstChild =
       [accessibility_ accessibilityHitTest:NSMakePoint(50, 50)];
-  EXPECT_NSEQ(@"Child1", firstChild.descriptionForAccessibility);
+  EXPECT_NSEQ(@"Child1", firstChild.accessibilityLabel);
 }
 
 // Test doing a hit test on the edge of a child.
 TEST_F(BrowserAccessibilityMacTest, EdgeHitTest) {
   BrowserAccessibilityCocoa* firstChild =
       [accessibility_ accessibilityHitTest:NSZeroPoint];
-  EXPECT_NSEQ(@"Child1", firstChild.descriptionForAccessibility);
+  EXPECT_NSEQ(@"Child1", firstChild.accessibilityLabel);
 }
 
 // This will test a hit test with invalid coordinates.  It is assumed that
@@ -158,7 +158,7 @@ TEST_F(BrowserAccessibilityMacTest, RetainedDetachedObjectsReturnNil) {
   // Get the first child.
   BrowserAccessibilityCocoa* retainedFirstChild =
       [accessibility_ accessibilityHitTest:NSMakePoint(50, 50)];
-  EXPECT_NSEQ(@"Child1", retainedFirstChild.descriptionForAccessibility);
+  EXPECT_NSEQ(@"Child1", retainedFirstChild.accessibilityLabel);
 
   // Retain it. This simulates what the system might do with an
   // accessibility object.
@@ -168,7 +168,7 @@ TEST_F(BrowserAccessibilityMacTest, RetainedDetachedObjectsReturnNil) {
   RebuildAccessibilityTree();
 
   // Now any attributes we query should return nil.
-  EXPECT_NSEQ(nil, retainedFirstChild.descriptionForAccessibility);
+  EXPECT_NSEQ(nil, retainedFirstChild.accessibilityLabel);
 
   // Don't leak memory in the test.
   [retainedFirstChild release];
@@ -180,8 +180,7 @@ TEST_F(BrowserAccessibilityMacTest, TestComputeTextEdit) {
   root_.role = ax::mojom::Role::kTextField;
   manager_ = std::make_unique<BrowserAccessibilityManagerMac>(
       MakeAXTreeUpdate(root_), nullptr);
-  accessibility_.reset(
-      [ToBrowserAccessibilityCocoa(manager_->GetRoot()) retain]);
+  accessibility_.reset([manager_->GetRoot()->GetNativeViewAccessible() retain]);
 
   // Insertion but no deletion.
 
@@ -266,7 +265,7 @@ TEST_F(BrowserAccessibilityMacTest, TableAPIs) {
   manager_ =
       std::make_unique<BrowserAccessibilityManagerMac>(initial_state, nullptr);
   base::scoped_nsobject<BrowserAccessibilityCocoa> ax_table_(
-      [ToBrowserAccessibilityCocoa(manager_->GetRoot()) retain]);
+      [manager_->GetRoot()->GetNativeViewAccessible() retain]);
   id children = [ax_table_ children];
   EXPECT_EQ(5U, [children count]);
 

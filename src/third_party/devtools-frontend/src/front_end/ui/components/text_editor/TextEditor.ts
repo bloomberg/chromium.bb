@@ -5,11 +5,12 @@
 import * as Common from '../../../core/common/common.js';
 import * as WindowBoundsService from '../../../services/window_bounds/window_bounds.js';
 import * as CodeMirror from '../../../third_party/codemirror.next/codemirror.next.js';
+import * as ThemeSupport from '../../legacy/theme_support/theme_support.js';
 import * as LitHtml from '../../lit-html/lit-html.js';
 import * as CodeHighlighter from '../code_highlighter/code_highlighter.js';
 import * as ComponentHelpers from '../helpers/helpers.js';
 
-import {baseConfiguration, dynamicSetting, DynamicSetting} from './config.js';
+import {baseConfiguration, dummyDarkTheme, dynamicSetting, DynamicSetting, themeSelection} from './config.js';
 import {toLineColumn, toOffset} from './position.js';
 
 declare global {
@@ -46,7 +47,7 @@ export class TextEditor extends HTMLElement {
     this.#shadow.adoptedStyleSheets = [CodeHighlighter.Style.default];
   }
 
-  private createEditor(): CodeMirror.EditorView {
+  #createEditor(): CodeMirror.EditorView {
     this.#activeEditor = new CodeMirror.EditorView({
       state: this.state,
       parent: this.#shadow,
@@ -54,7 +55,7 @@ export class TextEditor extends HTMLElement {
       dispatch: (tr: CodeMirror.Transaction): void => {
         this.editor.update([tr]);
         if (tr.reconfigured) {
-          this.ensureSettingListeners();
+          this.#ensureSettingListeners();
         }
       },
     });
@@ -64,13 +65,19 @@ export class TextEditor extends HTMLElement {
       this.#lastScrollPos.left = (event.target as HTMLElement).scrollLeft;
       this.#lastScrollPos.top = (event.target as HTMLElement).scrollTop;
     });
-    this.ensureSettingListeners();
-    this.startObservingResize();
+    this.#ensureSettingListeners();
+    this.#startObservingResize();
+    ThemeSupport.ThemeSupport.instance().addEventListener(ThemeSupport.ThemeChangeEvent.eventName, () => {
+      const currentTheme = ThemeSupport.ThemeSupport.instance().themeName() === 'dark' ? dummyDarkTheme : [];
+      this.editor.dispatch({
+        effects: themeSelection.reconfigure(currentTheme),
+      });
+    });
     return this.#activeEditor;
   }
 
   get editor(): CodeMirror.EditorView {
-    return this.#activeEditor || this.createEditor();
+    return this.#activeEditor || this.#createEditor();
   }
 
   dispatch(spec: CodeMirror.TransactionSpec): void {
@@ -97,7 +104,7 @@ export class TextEditor extends HTMLElement {
 
   connectedCallback(): void {
     if (!this.#activeEditor) {
-      this.createEditor();
+      this.#createEditor();
     }
   }
 
@@ -108,7 +115,7 @@ export class TextEditor extends HTMLElement {
       window.removeEventListener('resize', this.#resizeListener);
       this.#activeEditor.destroy();
       this.#activeEditor = undefined;
-      this.ensureSettingListeners();
+      this.#ensureSettingListeners();
     }
   }
 
@@ -118,7 +125,7 @@ export class TextEditor extends HTMLElement {
     }
   }
 
-  private ensureSettingListeners(): void {
+  #ensureSettingListeners(): void {
     const dynamicSettings = this.#activeEditor ? this.#activeEditor.state.facet(dynamicSetting) : DynamicSetting.none;
     if (dynamicSettings === this.#dynamicSettings) {
       return;
@@ -144,7 +151,7 @@ export class TextEditor extends HTMLElement {
     }
   }
 
-  private startObservingResize(): void {
+  #startObservingResize(): void {
     const devtoolsElement =
         WindowBoundsService.WindowBoundsService.WindowBoundsServiceImpl.instance().getDevToolsBoundingElement();
     if (devtoolsElement) {
@@ -170,7 +177,7 @@ export class TextEditor extends HTMLElement {
     const editorRect = view.scrollDOM.getBoundingClientRect();
     const targetPos = view.coordsAtPos(selection.main.head);
     if (!targetPos || targetPos.top < editorRect.top || targetPos.bottom > editorRect.bottom) {
-      effects.push(CodeMirror.EditorView.centerOn.of(selection.main));
+      effects.push(CodeMirror.EditorView.scrollIntoView(selection.main, {y: 'center'}));
     }
 
     view.dispatch({
@@ -182,7 +189,7 @@ export class TextEditor extends HTMLElement {
       const {id} = view.state.field(highlightState);
       // Reset the highlight state if, after 2 seconds (the animation
       // duration) it is still showing this highlight.
-      setTimeout(() => {
+      window.setTimeout(() => {
         if (view.state.field(highlightState).id === id) {
           view.dispatch({effects: setHighlightLine.of(null)});
         }

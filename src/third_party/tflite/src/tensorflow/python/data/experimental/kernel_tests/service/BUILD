@@ -15,6 +15,7 @@ tf_py_test(
     deps = [
         ":multi_process_cluster",
         ":test_base",
+        "//tensorflow/core:protos_all_py",
         "//tensorflow/python/data/experimental/ops:data_service_ops",
         "//tensorflow/python/data/experimental/ops:distribute",
         "//tensorflow/python/data/kernel_tests:test_base",
@@ -105,12 +106,18 @@ tf_py_test(
         "//tensorflow/python:errors",
         "//tensorflow/python:framework",
         "//tensorflow/python:framework_test_lib",
+        "//tensorflow/python:math_ops",
         "//tensorflow/python:platform_test",
+        "//tensorflow/python:random_ops",
+        "//tensorflow/python/compat",
         "//tensorflow/python/data",
         "//tensorflow/python/data/experimental/ops:data_service_ops",
         "//tensorflow/python/data/experimental/ops:testing",
         "//tensorflow/python/data/experimental/service:server_lib",
         "//tensorflow/python/data/kernel_tests:test_base",
+        "//tensorflow/python/data/kernel_tests:tf_record_test_base",
+        "//tensorflow/python/data/ops:dataset_ops",
+        "//tensorflow/python/data/ops:readers",
     ],
 )
 
@@ -161,12 +168,43 @@ tf_py_test(
         "//tensorflow/python:framework_test_lib",
         "//tensorflow/python:platform_test",
         "//tensorflow/python:script_ops",
-        "//tensorflow/python/compat",
         "//tensorflow/python/data/experimental/ops:data_service_ops",
         "//tensorflow/python/data/experimental/ops:distribute",
         "//tensorflow/python/data/kernel_tests:test_base",
         "//tensorflow/python/data/ops:dataset_ops",
         "//tensorflow/python/eager:def_function",
+        "@absl_py//absl/testing:parameterized",
+    ],
+)
+
+tf_py_test(
+    name = "cross_trainer_cache_test",
+    size = "medium",
+    srcs = ["cross_trainer_cache_test.py"],
+    shard_count = 4,
+    deps = [
+        ":test_base",
+        "//tensorflow/python/data/experimental/ops:data_service_ops",
+        "//tensorflow/python/data/kernel_tests:test_base",
+        "//tensorflow/python/data/ops:dataset_ops",
+        "//tensorflow/python/framework:combinations",
+        "//tensorflow/python/platform:test",
+        "@absl_py//absl/testing:parameterized",
+    ],
+)
+
+tf_py_test(
+    name = "cross_trainer_cache_ft_test",
+    size = "medium",
+    srcs = ["cross_trainer_cache_ft_test.py"],
+    shard_count = 4,
+    deps = [
+        ":test_base",
+        "//tensorflow/python/data/experimental/ops:data_service_ops",
+        "//tensorflow/python/data/kernel_tests:test_base",
+        "//tensorflow/python/data/ops:dataset_ops",
+        "//tensorflow/python/framework:combinations",
+        "//tensorflow/python/platform:test",
         "@absl_py//absl/testing:parameterized",
     ],
 )
@@ -195,6 +233,8 @@ py_library(
     srcs_version = "PY3",
     deps = [
         ":test_base",
+        "//tensorflow/core:protos_all_py",
+        "//tensorflow/python:framework_test_lib",
         "//tensorflow/python/data/experimental/service:server_lib",
         "//tensorflow/python/distribute:multi_process_lib",
         "//tensorflow/python/platform:test",

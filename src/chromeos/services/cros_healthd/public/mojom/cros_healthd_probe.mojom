@@ -26,8 +26,8 @@ enum CpuArchitectureEnum {
 
 // An enumeration of each category of information that cros_healthd can report.
 //
-// NextMinVersion: 1, NextIndex: 19
-[Extensible]
+// NextMinVersion: 1, NextIndex: 20
+[Stable, Extensible]
 enum ProbeCategoryEnum {
   [Default] kUnknown = 16,
   kBattery = 0,
@@ -48,6 +48,7 @@ enum ProbeCategoryEnum {
   kGraphics = 15,
   kDisplay = 17,
   kNetworkInterface = 18,
+  kInput = 19,
 
   // TODO(b/190459636): Rename it to kSystem after migration.
   kSystem2 = 0x10000,
@@ -57,7 +58,7 @@ enum ProbeCategoryEnum {
 // probing telemetry information.
 //
 // NextMinVersion: 1, NextIndex: 5
-[Extensible]
+[Stable, Extensible]
 enum ErrorType {
   [Default] kUnknown = 4,
   // An error reading a system file.
@@ -73,6 +74,7 @@ enum ErrorType {
 // Structure that contains error information for a telemetry probe.
 //
 // NextMinVersion: 1, NextIndex: 2
+[Stable]
 struct ProbeError {
   // The type of error that occurred.
   ErrorType type@0;
@@ -84,7 +86,7 @@ struct ProbeError {
 // An enumeration of states a process can be in.
 //
 // NextMinVersion: 1, NextIndex: 8
-[Extensible]
+[Stable, Extensible]
 enum ProcessState {
   [Default] kUnknown = 7,
   // The process is running.
@@ -105,16 +107,23 @@ enum ProcessState {
 
 // Process probe result. Can either be populated with the ProcessInfo or an
 // error retrieving the information.
+//
+// NextMinVersion: 2, NextIndex: 3
+[Stable, Extensible]
 union ProcessResult {
+  // The required field for backwards compatibility. The unrecognized Mojo
+  // field will deserialize to this field. It should not be used.
+  [MinVersion=1, Default] bool unmapped_field@2;
   // Valid ProcessInfo.
-  ProcessInfo process_info;
+  ProcessInfo process_info@0;
   // The error that occurred attempting to retrieve the ProcessInfo.
-  ProbeError error;
+  ProbeError error@1;
 };
 
 // Information related to a particular process.
 //
 // NextMinVersion: 1, NextIndex: 16
+[Stable]
 struct ProcessInfo {
   // Command which started the process.
   string command@0;
@@ -548,7 +557,7 @@ union BluetoothResult {
 
 // Information related to one of a device's Bluetooth adapters.
 //
-// NextMinVersion: 1, NextIndex: 4
+// NextMinVersion: 3, NextIndex: 11
 struct BluetoothAdapterInfo {
   // The name of the adapter.
   string name@0;
@@ -558,6 +567,76 @@ struct BluetoothAdapterInfo {
   bool powered@2;
   // The number of devices connected to this adapter.
   uint32 num_connected_devices@3;
+  // The info of connected devices to this adapter.
+  [MinVersion=1] array<BluetoothDeviceInfo>? connected_devices@4;
+  // The adapter is visible or not.
+  [MinVersion=1] bool discoverable@5;
+  // The device discovery procedure is active or not.
+  [MinVersion=1] bool discovering@6;
+  // The list of the available local services.
+  [MinVersion=1] array<string>? uuids@7;
+  // Local Device ID information.
+  [MinVersion=1] string? modalias@8;
+  // List of allowed system devices.
+  [MinVersion=2] array<string>? service_allow_list@9;
+  // A dictionary of supported capabilities.
+  [MinVersion=2] SupportedCapabilities? supported_capabilities@10;
+};
+
+
+// Information related to one of a adapter's Bluetooth connected devices.
+//
+// NextMinVersion: 2, NextIndex: 9
+struct BluetoothDeviceInfo {
+  // The MAC address of the device.
+  string address@0;
+  // The name of the device.
+  string? name@1;
+  // The carriers supported by this remote device ("BR/EDR", "LE", or "DUAL").
+  BluetoothDeviceType type@2;
+  // The external appearance of the device.
+  NullableUint16 appearance@3;
+  // Remote Device ID information.
+  string? modalias@4;
+  // Received Signal Strength Indicator.
+  NullableInt16 rssi@5;
+  // The Maximum Transmission Unit used in ATT communication.
+  NullableUint16 mtu@6;
+  // The list of the available remote services.
+  array<string>? uuids@7;
+  // The battery percentage of the device.
+  [MinVersion=1] NullableUint8? battery_percentage@8;
+};
+
+// An enumeration of type in Bluetooth device info.
+//
+// NextMinVersion: 1, NextIndex: 4
+[Extensible]
+enum BluetoothDeviceType {
+  // An enum value not defined in this version of the enum definition.
+  [Default] kUnmappedEnumField = 0,
+  // Unfound type.
+  kUnfound = 1,
+  // BR/EDR.
+  kBrEdr = 2,
+  // LE.
+  kLe = 3,
+  // DUAL.
+  kDual = 4,
+};
+
+// Supported Capabilities related information.
+//
+// NextMinVersion: 1, NextIndex: 4
+struct SupportedCapabilities {
+  // Max advertising data length.
+  uint8 max_adv_len@0;
+  // Max advertising scan response length.
+  uint8 max_scn_rsp_len@1;
+  // Min advertising tx power (dBm).
+  int16 min_tx_power@2;
+  // Max advertising tx power (dBm).
+  int16 max_tx_power@3;
 };
 
 // System probe result. Can either be populated with the SystemInfo or an error
@@ -596,7 +675,7 @@ struct SystemInfo {
   string? product_serial_number@3;
   // The product model name.
   string? product_model_name@4;
-  // Contents of CrosConfig in /arc/build-properties/marketing-name.
+  // Contents of CrosConfig in /branding/marketing-name.
   string marketing_name@5;
   // The BIOS version.
   string? bios_version@6;
@@ -630,19 +709,21 @@ struct SystemInfoV2 {
 
 // The OS information.
 //
-// NextMinVersion: 1, NextIndex: 4
+// NextMinVersion: 2, NextIndex: 5
 struct OsInfo {
   // Google code name for the given model. While it is OK to use this string for
   // human-display purposes (such as in a debug log or help dialog), or for a
   // searchable-key in metrics collection, it is not recommended to use this
   // property for creating model-specific behaviors.
   string code_name@0;
-  // Contents of CrosConfig in /arc/build-properties/marketing-name.
+  // Contents of CrosConfig in /branding/marketing-name.
   string? marketing_name@1;
   // The OS version of the system.
   OsVersion os_version@2;
   // The boot flow used by the current boot.
   BootMode boot_mode@3;
+  // Contents of CrosConfig in /branding/oem-name.
+  [MinVersion=1] string? oem_name@4;
 };
 
 // Structure containing information about the operating system version of the
@@ -667,7 +748,7 @@ struct OsVersion {
 [Extensible]
 enum BootMode {
   [Default] kUnknown = 0,
-  // Boot with Chrome OS firmware.
+  // Boot with ChromeOS firmware.
   kCrosSecure = 1,
   // Boot with EFI
   kCrosEfi = 2,
@@ -853,7 +934,7 @@ union BusResult {
 // The classes of the bus devices. Can be used to group the devices by their
 // use.
 //
-// NextMinVersion: 1, NextIndex: 5
+// NextMinVersion: 1, NextIndex: 6
 [Extensible]
 enum BusDeviceClass {
   // For the devices which cannot be classified.
@@ -909,7 +990,7 @@ struct PciBusInfo {
 
 // The info related to usb.
 //
-// NextMinVersion: 1, NextIndex: 6
+// NextMinVersion: 2, NextIndex: 7
 struct UsbBusInfo {
   // These fields can be used to classify / identify the usb devices. See the
   // usb.ids database for the values. (https://github.com/gentoo/hwids)
@@ -923,6 +1004,54 @@ struct UsbBusInfo {
   // device. This allows a usb device to provide multiple features.
   // The interfaces are sorted by the |interface_number| field.
   array<UsbBusInterfaceInfo> interfaces@5;
+  // The firmware version obtained from fwupd.
+  [MinVersion=1] FwupdFirmwareVersionInfo? fwupd_firmware_version_info@6;
+};
+
+// The info related to firmware version obtained from fwupd.
+//
+// NextMinVersion: 1, NextIndex: 2
+struct FwupdFirmwareVersionInfo {
+  // The string form of the firmware version.
+  string version@0;
+  // The format for parsing the version string.
+  FwupdVersionFormat version_format@1;
+};
+
+// An enumeration of the formats of firmware version in fwpud. See the fwupd
+// repo for the values. (https://github.com/fwupd/fwupd)
+//
+// NextMinVersion: 1, NextIndex: 14
+[Extensible]
+enum FwupdVersionFormat {
+  // An enum value not defined in this version of the enum definition.
+  [Default] kUnmappedEnumField = 0,
+  // Unknown version format.
+  kUnknown = 1,
+  // An unidentified format text string.
+  kPlain = 2,
+  // A single integer version number.
+  kNumber = 3,
+  // Two AABB.CCDD version numbers.
+  kPair = 4,
+  // Microsoft-style AA.BB.CCDD version numbers.
+  kTriplet = 5,
+  // UEFI-style AA.BB.CC.DD version numbers.
+  kQuad = 6,
+  // Binary coded decimal notation.
+  kBcd = 7,
+  // Intel ME-style bitshifted notation.
+  kIntelMe = 8,
+  // Intel ME-style A.B.CC.DDDD notation.
+  kIntelMe2 = 9,
+  // Legacy Microsoft Surface 10b.12b.10b.
+  kSurfaceLegacy = 10,
+  // Microsoft Surface 8b.16b.8b.
+  kSurface = 11,
+  // Dell BIOS BB.CC.DD style.
+  kDellBios = 12,
+  // Hexadecimal 0xAABCCDD style.
+  kHex = 13,
 };
 
 // The info related to usb interfaces.
@@ -1111,18 +1240,89 @@ union DisplayResult {
 
 // Display information.
 //
-// NextMinVersion: 1, NextIndex: 1
+// NextMinVersion: 2, NextIndex: 2
 struct DisplayInfo {
   // Embedded display info.
   EmbeddedDisplayInfo edp_info@0;
+  // External display info.
+  [MinVersion=1] array<ExternalDisplayInfo>? dp_infos@1;
 };
 
-// NextMinVersion: 1, NextIndex: 2
+// NextMinVersion: 3, NextIndex: 15
 struct EmbeddedDisplayInfo {
   // Privacy screen is supported or not.
   bool privacy_screen_supported@0;
   // Privacy screen is enabled or not.
   bool privacy_screen_enabled@1;
+  // Display width in millimeters.
+  [MinVersion=1] NullableUint32? display_width@2;
+  // Display height in millimeters.
+  [MinVersion=1] NullableUint32? display_height@3;
+  // Horizontal resolution.
+  [MinVersion=1] NullableUint32? resolution_horizontal@4;
+  // Vertical resolution.
+  [MinVersion=1] NullableUint32? resolution_vertical@5;
+  // Refresh rate.
+  [MinVersion=1] NullableDouble? refresh_rate@6;
+  // Three letter manufacturer ID.
+  [MinVersion=2] string? manufacturer@7;
+  // Manufacturer product code.
+  [MinVersion=2] NullableUint16? model_id@8;
+  // 32 bits serial number.
+  [MinVersion=2] NullableUint32? serial_number@9;
+  // Week of manufacture.
+  [MinVersion=2] NullableUint8? manufacture_week@10;
+  // Year of manufacture.
+  [MinVersion=2] NullableUint16? manufacture_year@11;
+  // EDID version.
+  [MinVersion=2] string? edid_version@12;
+  // Digital or analog input.
+  [MinVersion=2] DisplayInputType input_type@13;
+  // Name of display product.
+  [MinVersion=2] string? display_name@14;
+};
+
+// NextMinVersion: 2, NextIndex: 13
+struct ExternalDisplayInfo {
+  // Display width in millimeters.
+  NullableUint32? display_width@0;
+  // Display height in millimeters.
+  NullableUint32? display_height@1;
+  // Horizontal resolution.
+  NullableUint32? resolution_horizontal@2;
+  // Vertical resolution.
+  NullableUint32? resolution_vertical@3;
+  // Refresh rate.
+  NullableDouble? refresh_rate@4;
+  // Three letter manufacturer ID.
+  [MinVersion=1] string? manufacturer@5;
+  // Manufacturer product code.
+  [MinVersion=1] NullableUint16? model_id@6;
+  // 32 bits serial number.
+  [MinVersion=1] NullableUint32? serial_number@7;
+  // Week of manufacture.
+  [MinVersion=1] NullableUint8? manufacture_week@8;
+  // Year of manufacture.
+  [MinVersion=1] NullableUint16? manufacture_year@9;
+  // EDID version.
+  [MinVersion=1] string? edid_version@10;
+  // Digital or analog input.
+  [MinVersion=1] DisplayInputType input_type@11;
+  // Name of display product.
+  [MinVersion=1] string? display_name@12;
+};
+
+// An enumeration of display input type.
+//
+// NextMinVersion: 1, NextIndex: 3
+[Extensible]
+enum DisplayInputType {
+  // An enum value not defined in this version of the enum definition.
+  [Default] kUnmappedEnumField = 0,
+  // Digital input.
+  kDigital = 1,
+  // Analog input.
+  kAnalog = 2,
 };
 
 // Information related to a Thunderbolt device.
@@ -1166,6 +1366,70 @@ struct ThunderboltBusInfo {
   array<ThunderboltBusInterfaceInfo> thunderbolt_interfaces@1;
 };
 
+// Input result.
+union InputResult {
+  // Valid InputInfo.
+  InputInfo input_info;
+  // The error that occurred attempting to retrieve the InputInfo.
+  ProbeError error;
+};
+
+// Input software and hardware information.
+//
+// NextMinVersion: 1, NextIndex: 2
+struct InputInfo {
+  // The touchpad library name used by the input stack.
+  string touchpad_library_name@0;
+  // The touchscreen devices.
+  array<TouchscreenDevice> touchscreen_devices@1;
+};
+
+// Data of a touch screen device.
+//
+// NextMinVersion: 1, NextIndex: 4
+struct TouchscreenDevice {
+  // The input device of this touchscreen.
+  InputDevice input_device@0;
+  // Number of touch points this device supports (0 if unknown).
+  int32 touch_points@1;
+  // True if the specified touchscreen device is stylus capable.
+  bool has_stylus@2;
+  // True if there is a garage/dock switch associated with the stylus.
+  bool has_stylus_garage_switch@3;
+};
+
+// Data of a input device.
+//
+// NextMinVersion: 1, NextIndex: 4
+struct InputDevice {
+  // Name of the device.
+  string name@0;
+
+  // The connection type of the input device.
+  [Extensible]
+  enum ConnectionType {
+    // For mojo backward compatibility.
+    [Default] kUnmappedEnumField,
+    // Internally connected input device.
+    kInternal,
+    // Known externally connected usb input device.
+    kUSB,
+    // Known externally connected bluetooth input device.
+    kBluetooth,
+    // Device that may or may not be an external device.
+    kUnknown,
+  };
+
+  ConnectionType connection_type@1;
+  // The physical location(port) associated with the input device. This is
+  // (supposed to be) stable between reboots and hotplugs. However this may not
+  // always be set and will change when the device is connected via a different
+  // port.
+  string physical_location@2;
+  // If the device is enabled, and whether events should be dispatched to UI.
+  bool is_enabled@3;
+};
+
 // A collection of all the device's telemetry information that cros_healthd is
 // capable of reporting. Note that every field in TelemetryInfo is nullable, and
 // the response for a particular ProbeTelemetryInfo request will only contain
@@ -1174,7 +1438,7 @@ struct ThunderboltBusInfo {
 // attempt to fetch that information, and size zero if cros_healthd did attempt
 // to fetch that information, but was unable to.
 //
-// NextMinVersion: 3, NextIndex: 19
+// NextMinVersion: 4, NextIndex: 20
 struct TelemetryInfo {
   // Information about the device's main battery. Only present when kBattery was
   // included in the categories input to ProbeTelemetryInfo.
@@ -1238,4 +1502,7 @@ struct TelemetryInfo {
   // kNetworkInterface was included in the categories input to
   // ProbeTelemetryInfo.
   [MinVersion=2] NetworkInterfaceResult? network_interface_result@18;
+  // Information about the input software and hardware. Only present when
+  // kInput was included in the categories input to ProbeTelemetryInfo.
+  [MinVersion=3] InputResult? input_result@19;
 };

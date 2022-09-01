@@ -102,6 +102,7 @@ class GURL;
 // |title|. Invokes the given |completion| block after execution.
 - (UIAction*)actionSearchImageWithTitle:(NSString*)title
                                   Block:(ProceduralBlock)block;
+
 // Creates a UIAction instance for closing all tabs.
 - (UIAction*)actionToCloseAllTabsWithBlock:(ProceduralBlock)block;
 
