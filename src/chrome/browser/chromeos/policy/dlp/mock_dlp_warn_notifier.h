@@ -6,10 +6,12 @@
 #define CHROME_BROWSER_CHROMEOS_POLICY_DLP_MOCK_DLP_WARN_NOTIFIER_H_
 
 #include "base/callback_forward.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_confidential_contents.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_warn_dialog.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_warn_notifier.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "ui/views/widget/widget.h"
 
 using ::testing::Mock;
 
@@ -18,17 +20,20 @@ namespace policy {
 // Allows tests to simulate the user's response to the warning dialog.
 class MockDlpWarnNotifier : public DlpWarnNotifier {
  public:
-  MockDlpWarnNotifier() = delete;
-  explicit MockDlpWarnNotifier(bool should_proceed = true);
+  // Creates a mock object that propagates all calls to a real DlpWarnNotifier.
+  MockDlpWarnNotifier();
+  // Creates a mock object that can simulates user addressing the dialog, as
+  // determined by value of |should_proceed|.
+  explicit MockDlpWarnNotifier(bool should_proceed);
   MockDlpWarnNotifier(const MockDlpWarnNotifier& other) = delete;
   MockDlpWarnNotifier& operator=(const MockDlpWarnNotifier& other) = delete;
   ~MockDlpWarnNotifier() override;
 
-  MOCK_METHOD(void,
+  MOCK_METHOD(base::WeakPtr<views::Widget>,
               ShowDlpWarningDialog,
               (OnDlpRestrictionCheckedCallback callback,
                DlpWarnDialog::DlpWarnDialogOptions options),
-              (const, override));
+              (override));
 
  private:
   const bool should_proceed_;

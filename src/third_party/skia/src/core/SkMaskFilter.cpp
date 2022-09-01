@@ -19,10 +19,12 @@
 #include "src/core/SkWriteBuffer.h"
 
 #if SK_SUPPORT_GPU
-#include "src/gpu/GrFragmentProcessor.h"
-#include "src/gpu/GrSurfaceProxyView.h"
-#include "src/gpu/GrTextureProxy.h"
-#include "src/gpu/text/GrSDFMaskFilter.h"
+#include "src/gpu/ganesh/GrFragmentProcessor.h"
+#include "src/gpu/ganesh/GrSurfaceProxyView.h"
+#include "src/gpu/ganesh/GrTextureProxy.h"
+#endif
+#if SK_SUPPORT_GPU || defined(SK_GRAPHITE_ENABLED)
+#include "src/text/gpu/SDFMaskFilter.h"
 #endif
 
 SkMaskFilterBase::NinePatch::~NinePatch() {
@@ -265,7 +267,7 @@ bool SkMaskFilterBase::filterPath(const SkPath& devPath, const SkMatrix& matrix,
         return false;
     }
 #endif
-    if (!SkDraw::DrawToMask(devPath, &clip.getBounds(), this, &matrix, &srcM,
+    if (!SkDraw::DrawToMask(devPath, clip.getBounds(), this, &matrix, &srcM,
                             SkMask::kComputeBoundsAndRenderImage_CreateMode,
                             style)) {
         return false;
@@ -377,8 +379,8 @@ SkRect SkMaskFilter::approximateFilteredBounds(const SkRect& src) const {
 
 void SkMaskFilter::RegisterFlattenables() {
     sk_register_blur_maskfilter_createproc();
-#if SK_SUPPORT_GPU
-    gr_register_sdf_maskfilter_createproc();
+#if SK_SUPPORT_GPU || defined(SK_GRAPHITE_ENABLED)
+    sktext::gpu::register_sdf_maskfilter_createproc();
 #endif
 }
 

@@ -430,6 +430,10 @@ ChromePermissionMessageRule::GetAllRules() {
        {APIPermissionID::kVideoCapture},
        {}},
 
+      {IDS_EXTENSION_PROMPT_WARNING_SPEECH_RECOGNITION,
+       {APIPermissionID::kSpeechRecognitionPrivate},
+       {}},
+
       {IDS_EXTENSION_PROMPT_WARNING_GEOLOCATION,
        {APIPermissionID::kGeolocation},
        {}},
@@ -658,9 +662,6 @@ ChromePermissionMessageRule::GetAllRules() {
        {APIPermissionID::kNativeMessaging},
        {}},
       {IDS_EXTENSION_PROMPT_WARNING_PRIVACY, {APIPermissionID::kPrivacy}, {}},
-      {IDS_EXTENSION_PROMPT_WARNING_SIGNED_IN_DEVICES,
-       {APIPermissionID::kSignedInDevices},
-       {}},
       {IDS_EXTENSION_PROMPT_WARNING_SYNCFILESYSTEM,
        {APIPermissionID::kSyncFileSystem},
        {}},
@@ -682,9 +683,6 @@ ChromePermissionMessageRule::GetAllRules() {
 
       {IDS_EXTENSION_PROMPT_WARNING_ACTIVITY_LOG_PRIVATE,
        {APIPermissionID::kActivityLogPrivate},
-       {}},
-      {IDS_EXTENSION_PROMPT_WARNING_MUSIC_MANAGER_PRIVATE,
-       {APIPermissionID::kMusicManagerPrivate},
        {}},
       {IDS_EXTENSION_PROMPT_WARNING_SETTINGS_PRIVATE,
        {APIPermissionID::kSettingsPrivate},

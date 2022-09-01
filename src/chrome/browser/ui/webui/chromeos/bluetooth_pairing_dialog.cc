@@ -19,6 +19,7 @@
 #include "chrome/grit/bluetooth_pairing_dialog_resources.h"
 #include "chrome/grit/bluetooth_pairing_dialog_resources_map.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/session_manager/core/session_manager.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -93,10 +94,18 @@ BluetoothPairingDialog::BluetoothPairingDialog(
                               /*title=*/std::u16string()),
       dialog_id_(dialog_id) {
   if (canonical_device_address.has_value()) {
-    device_data_.SetString("address", canonical_device_address.value());
+    device_data_.SetStringKey("address", canonical_device_address.value());
   } else {
     CHECK(ash::features::IsBluetoothRevampEnabled());
   }
+
+  if (!ash::features::IsBluetoothRevampEnabled())
+    return;
+
+  device_data_.SetBoolKey(
+      "shouldOmitLinks",
+      session_manager::SessionManager::Get()->session_state() !=
+          session_manager::SessionState::ACTIVE);
 }
 
 BluetoothPairingDialog::~BluetoothPairingDialog() = default;
@@ -140,7 +149,13 @@ BluetoothPairingDialogUI::BluetoothPairingDialogUI(content::WebUI* web_ui)
       content::WebUIDataSource::Create(chrome::kChromeUIBluetoothPairingHost);
 
   AddBluetoothStrings(source);
-  source->AddLocalizedString("title", IDS_SETTINGS_BLUETOOTH_PAIR_DEVICE_TITLE);
+  if (chromeos::features::IsBluetoothRevampEnabled()) {
+    source->AddLocalizedString("title", IDS_BLUETOOTH_PAIRING_PAIR_NEW_DEVICES);
+  } else {
+    source->AddLocalizedString("title",
+                               IDS_SETTINGS_BLUETOOTH_PAIR_DEVICE_TITLE);
+  }
+
   webui::SetupWebUIDataSource(
       source,
       base::make_span(kBluetoothPairingDialogResources,

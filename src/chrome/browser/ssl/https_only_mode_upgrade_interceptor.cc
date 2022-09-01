@@ -37,7 +37,8 @@ int g_http_port_for_testing = 0;
 // proceeding through the interstitial.
 bool ShouldCreateLoader(const network::ResourceRequest& resource_request,
                         HttpsOnlyModeTabHelper* tab_helper) {
-  if (resource_request.is_main_frame && resource_request.method == "GET" &&
+  if (resource_request.is_outermost_main_frame &&
+      resource_request.method == "GET" &&
       !net::IsLocalhost(resource_request.url) &&
       (resource_request.url.SchemeIs(url::kHttpScheme) ||
        tab_helper->is_navigation_fallback())) {
@@ -118,6 +119,13 @@ void HttpsOnlyModeUpgradeInterceptor::MaybeCreateLoader(
     // StatefulSSLHostStateDelegate can be null during tests.
     if (state && state->IsHttpAllowedForHost(
                      tentative_resource_request.url.host(), web_contents)) {
+      // Renew the allowlist expiration for this host as the user is still
+      // actively using it. This means that the allowlist entry will stay valid
+      // until the user stops visiting this host for the entire expiration
+      // period (one week).
+      state->AllowHttpForHost(tentative_resource_request.url.host(),
+                              web_contents);
+
       std::move(callback).Run({});
       return;
     }

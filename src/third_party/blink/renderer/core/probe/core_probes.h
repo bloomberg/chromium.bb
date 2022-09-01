@@ -35,7 +35,6 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/ad_tracker.h"
-#include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 
@@ -62,7 +61,6 @@ class InspectorIssue;
 namespace probe {
 
 class AsyncTaskContext;
-class AsyncTaskId;
 
 class CORE_EXPORT ProbeBase {
   STACK_ALLOCATED();
@@ -100,11 +98,6 @@ class CORE_EXPORT AsyncTask {
   //   enabled: Whether the task is asynchronous. If false, the task is not
   //     reported to the debugger and AdTracker.
   //   ad_tracking_type: Whether this is reported to the AdTracker.
-  AsyncTask(ExecutionContext* context,
-            AsyncTaskId* task,
-            const char* step = nullptr,
-            bool enabled = true,
-            AdTrackingType ad_tracking_type = AdTrackingType::kReport);
   AsyncTask(ExecutionContext* execution_context,
             AsyncTaskContext* async_context,
             const char* step = nullptr,
@@ -114,9 +107,8 @@ class CORE_EXPORT AsyncTask {
 
  private:
   ThreadDebugger* debugger_;
-  AsyncTaskId* task_;
+  AsyncTaskContext* task_context_;
   bool recurring_;
-  bool tracing_ = false;
 
   // This persistent is safe since the class is STACK_ALLOCATED.
   Persistent<AdTracker> ad_tracker_;
@@ -152,27 +144,12 @@ inline CoreProbeSink* ToCoreProbeSink(EventTarget* event_target) {
                       : nullptr;
 }
 
-// DEPRECATED: Use `AsyncTaskContext::Schedule` instead.
-CORE_EXPORT void AsyncTaskScheduled(ExecutionContext*,
-                                    const StringView& name,
-                                    AsyncTaskId*);
-// DEPRECATED: Use `AsyncTaskContext::Schedule` instead and manually call
-// `probe::BreakableLocation`.
-CORE_EXPORT void AsyncTaskScheduledBreakable(ExecutionContext*,
-                                             const char* name,
-                                             AsyncTaskId*);
-// DEPRECATED: Use `AsyncTaskContext::Cancel` instead.
-CORE_EXPORT void AsyncTaskCanceled(ExecutionContext*, AsyncTaskId*);
-// DEPRECATED: Use `AsyncTaskContext::Cancel` instead and manually call
-// `probe::BreakableLocation`.
-CORE_EXPORT void AsyncTaskCanceledBreakable(ExecutionContext*,
-                                            const char* name,
-                                            AsyncTaskId*);
 CORE_EXPORT void AllAsyncTasksCanceled(ExecutionContext*);
 
 }  // namespace probe
 }  // namespace blink
 
+#include "base/time/time.h"
 #include "third_party/blink/renderer/core/core_probes_inl.h"
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PROBE_CORE_PROBES_H_

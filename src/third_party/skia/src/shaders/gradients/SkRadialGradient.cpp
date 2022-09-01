@@ -5,10 +5,16 @@
  * found in the LICENSE file.
  */
 
+#include "src/shaders/gradients/SkRadialGradient.h"
+
 #include "src/core/SkRasterPipeline.h"
 #include "src/core/SkReadBuffer.h"
 #include "src/core/SkWriteBuffer.h"
-#include "src/shaders/gradients/SkRadialGradient.h"
+
+#ifdef SK_ENABLE_SKSL
+#include "src/core/SkKeyHelpers.h"
+#include "src/core/SkPaintParamsKey.h"
+#endif
 
 namespace {
 
@@ -72,11 +78,30 @@ skvm::F32 SkRadialGradient::transformT(skvm::Builder* p, skvm::Uniforms*,
 
 #if SK_SUPPORT_GPU
 
-#include "src/gpu/gradients/GrGradientShader.h"
+#include "src/gpu/ganesh/gradients/GrGradientShader.h"
 
 std::unique_ptr<GrFragmentProcessor> SkRadialGradient::asFragmentProcessor(
         const GrFPArgs& args) const {
     return GrGradientShader::MakeRadial(*this, args);
 }
 
+#endif
+
+#ifdef SK_ENABLE_SKSL
+void SkRadialGradient::addToKey(const SkKeyContext& keyContext,
+                                SkPaintParamsKeyBuilder* builder,
+                                SkPipelineDataGatherer* gatherer) const {
+    GradientShaderBlocks::GradientData data(kRadial_GradientType,
+                                            SkM44(this->getLocalMatrix()),
+                                            fCenter, { 0.0f, 0.0f },
+                                            fRadius, 0.0f,
+                                            0.0f, 0.0f,
+                                            fTileMode,
+                                            fColorCount,
+                                            fOrigColors4f,
+                                            fOrigPos);
+
+    GradientShaderBlocks::BeginBlock(keyContext, builder, gatherer, data);
+    builder->endBlock();
+}
 #endif

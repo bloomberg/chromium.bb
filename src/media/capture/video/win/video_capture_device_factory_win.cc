@@ -18,7 +18,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
-#include "base/cxx17_backports.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
@@ -98,7 +97,7 @@ const char* const kBlockedCameraNames[] = {
     "CyberLink Webcam Splitter",
     "EpocCam",
 };
-static_assert(base::size(kBlockedCameraNames) == BLOCKED_CAMERA_MAX + 1,
+static_assert(std::size(kBlockedCameraNames) == BLOCKED_CAMERA_MAX + 1,
               "kBlockedCameraNames should be same size as "
               "BlockedCameraNames enum");
 
@@ -126,7 +125,9 @@ const char* const kModelIdsBlockedForMediaFoundation[] = {
     // Acer Aspire f5-573g. See https://crbug.com/1034644.
     "0bda:57f2",
     // Elgato Camlink 4k
-    "0fd9:0066"};
+    "0fd9:0066",
+    // ACER Aspire VN7-571G. See https://crbug.com/1327948.
+    "04f2:b469"};
 
 // Use this list only for non-USB webcams.
 const char* const kDisplayNamesBlockedForMediaFoundation[] = {
@@ -190,7 +191,7 @@ bool LoadMediaFoundationDlls() {
 
   for (const wchar_t* kMfDLL : kMfDLLs) {
     wchar_t path[MAX_PATH] = {0};
-    ExpandEnvironmentStringsW(kMfDLL, path, base::size(path));
+    ExpandEnvironmentStringsW(kMfDLL, path, std::size(path));
     if (!LoadLibraryExW(path, nullptr, LOAD_WITH_ALTERED_SEARCH_PATH))
       return false;
   }
@@ -222,8 +223,8 @@ bool PrepareVideoCaptureAttributesMediaFoundation(
 
 bool IsDeviceBlocked(const std::string& name) {
   DCHECK_EQ(BLOCKED_CAMERA_MAX + 1,
-            static_cast<int>(base::size(kBlockedCameraNames)));
-  for (size_t i = 0; i < base::size(kBlockedCameraNames); ++i) {
+            static_cast<int>(std::size(kBlockedCameraNames)));
+  for (size_t i = 0; i < std::size(kBlockedCameraNames); ++i) {
     if (base::StartsWith(name, kBlockedCameraNames[i],
                          base::CompareCase::INSENSITIVE_ASCII)) {
       DVLOG(1) << "Enumerated blocked device: " << name;
@@ -330,8 +331,7 @@ VideoCaptureDeviceFactoryWin::VideoCaptureDeviceFactoryWin()
     : use_media_foundation_(
           base::FeatureList::IsEnabled(media::kMediaFoundationVideoCapture)),
       use_d3d11_with_media_foundation_(
-          base::FeatureList::IsEnabled(
-              media::kMediaFoundationD3D11VideoCapture) &&
+          media::IsMediaFoundationD3D11VideoCaptureEnabled() &&
           switches::IsVideoCaptureUseGpuMemoryBufferEnabled()),
       com_thread_("Windows Video Capture COM Thread") {
   if (use_media_foundation_ && !PlatformSupportsMediaFoundation()) {
@@ -358,7 +358,7 @@ VideoCaptureErrorOrDevice VideoCaptureDeviceFactoryWin::CreateDevice(
   DCHECK(thread_checker_.CalledOnValidThread());
   switch (device_descriptor.capture_api) {
     case VideoCaptureApi::WIN_MEDIA_FOUNDATION:
-      FALLTHROUGH;
+      [[fallthrough]];
     case VideoCaptureApi::WIN_MEDIA_FOUNDATION_SENSOR: {
       DCHECK(PlatformSupportsMediaFoundation());
       ComPtr<IMFMediaSource> source;

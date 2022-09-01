@@ -13,7 +13,6 @@
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 
-namespace ash {
 namespace quick_answers {
 namespace {
 
@@ -79,6 +78,10 @@ void ResultLoader::OnBuildRequestComplete(
   if (!request_body.empty())
     loader_->AttachStringForUpload(request_body, "application/json");
 
+  loader_->SetRetryOptions(
+      /*max_retries=*/5, network::SimpleURLLoader::RetryMode::RETRY_ON_5XX |
+                             network::SimpleURLLoader::RETRY_ON_NETWORK_CHANGE);
+
   fetch_start_time_ = base::TimeTicks::Now();
   loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
       url_loader_factory_.get(),
@@ -115,4 +118,3 @@ void ResultLoader::OnResultParserComplete(
   delegate_->OnQuickAnswerReceived(std::move(quick_answer));
 }
 }  // namespace quick_answers
-}  // namespace ash

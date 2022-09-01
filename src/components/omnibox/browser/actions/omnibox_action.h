@@ -19,10 +19,15 @@
 #include "ui/gfx/color_utils.h"
 #include "url/gurl.h"
 
-#if (!defined(OS_ANDROID) || BUILDFLAG(ENABLE_VR)) && !defined(OS_IOS)
+#if (!BUILDFLAG(IS_ANDROID) || BUILDFLAG(ENABLE_VR)) && !BUILDFLAG(IS_IOS)
+#define SUPPORT_PEDALS_VECTOR_ICONS
 namespace gfx {
 struct VectorIcon;
 }
+#endif
+
+#if BUILDFLAG(IS_ANDROID)
+#include "base/android/scoped_java_ref.h"
 #endif
 
 class AutocompleteInput;
@@ -118,11 +123,13 @@ class OmniboxAction : public base::RefCounted<OmniboxAction> {
   // Provides read access to labels associated with this Action.
   const LabelStrings& GetLabelStrings() const;
 
-  // Records that the action was shown at index `position` in the popup.
-  virtual void RecordActionShown(size_t position) const {}
+  // Returns the destination URL for navigation Actions, Otherwise, returns an
+  // empty URL.
+  const GURL& getUrl() const { return url_; }
 
-  // Records that the action was executed at index `position` in the popup.
-  virtual void RecordActionExecuted(size_t position) const {}
+  // Records that the action was shown at index `position` in the popup.
+  // `executed` is set to true if the action was also executed by the user.
+  virtual void RecordActionShown(size_t position, bool executed) const {}
 
   // Takes the action associated with this Action.  Non-navigation
   // Actions must override the default, but Navigation Actions don't need to.
@@ -134,20 +141,20 @@ class OmniboxAction : public base::RefCounted<OmniboxAction> {
   virtual bool IsReadyToTrigger(const AutocompleteInput& input,
                                 const AutocompleteProviderClient& client) const;
 
-#if (!defined(OS_ANDROID) || BUILDFLAG(ENABLE_VR)) && !defined(OS_IOS)
+#if defined(SUPPORT_PEDALS_VECTOR_ICONS)
   // Returns the vector icon to represent this Action.
   virtual const gfx::VectorIcon& GetVectorIcon() const;
 #endif
 
-  // Returns SK_ColorTRANSPARENT by default to indicate usage of normal theme
-  // color for suggestion row buttons; or override to force icon color.
-  virtual SkColor GetVectorIconColor() const;
-
   // Estimates RAM usage in bytes for this Action.
   virtual size_t EstimateMemoryUsage() const;
 
-  // Returns an ID used to identify some actions. Not defined for all Actions.
+  // Returns an ID used to identify the action.
   virtual int32_t GetID() const;
+
+#if BUILDFLAG(IS_ANDROID)
+  virtual base::android::ScopedJavaGlobalRef<jobject> GetJavaObject() const;
+#endif
 
  protected:
   friend class base::RefCounted<OmniboxAction>;

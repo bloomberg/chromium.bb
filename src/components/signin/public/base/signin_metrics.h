@@ -60,6 +60,23 @@ enum ProfileSignout : int {
   // iOS Specific. Sign-out forced because the account was removed from the
   // device after a device restore.
   IOS_ACCOUNT_REMOVED_FROM_DEVICE_AFTER_RESTORE = 15,
+  // User clicked to 'Turn off sync' from the settings page.
+  // Currently only available for Android Unicorn users.
+  USER_CLICKED_REVOKE_SYNC_CONSENT_SETTINGS = 16,
+  // User clicked to signout from the settings page.
+  USER_CLICKED_SIGNOUT_PROFILE_MENU = 17,
+  // User retriggered signin from the Android web sign-in bottomsheet.
+  SIGNIN_RETRIGGERD_FROM_WEB_SIGNIN = 18,
+  // User clicked on sign-out from the notification dialog for User Policy. The
+  // notification informs the user that from now on user policies may be
+  // effective on their browser if they Sync with their managed account. The
+  // user has the option to sign out to avoid user policies.
+  USER_CLICKED_SIGNOUT_FROM_USER_POLICY_NOTIFICATION_DIALOG = 19,
+  // The email address of the primary account on the device was updated,
+  // triggering an automatic signout followed by signin.
+  ACCOUNT_EMAIL_UPDATED = 20,
+  // User clicked on sign-out from the clear browsing data page.
+  USER_CLICKED_SIGNOUT_FROM_CLEAR_BROWSING_DATA_PAGE = 21,
   // Keep this as the last enum.
   NUM_PROFILE_SIGNOUT_METRICS,
 };
@@ -156,9 +173,9 @@ enum class AccessPoint : int {
   ACCESS_POINT_NTP_CONTENT_SUGGESTIONS = 20,
   ACCESS_POINT_RESIGNIN_INFOBAR = 21,
   ACCESS_POINT_TAB_SWITCHER = 22,
-  // ACCESS_POINT_FORCE_SIGNIN_WARNING is no longer used.
-  ACCESS_POINT_SAVE_CARD_BUBBLE = 24,
-  ACCESS_POINT_MANAGE_CARDS_BUBBLE = 25,
+  // ACCESS_POINT_FORCE_SIGNIN_WARNING = 23, no longer used.
+  // ACCESS_POINT_SAVE_CARD_BUBBLE = 24, no longer used
+  // ACCESS_POINT_MANAGE_CARDS_BUBBLE = 25, no longer used
   ACCESS_POINT_MACHINE_LOGON = 26,
   ACCESS_POINT_GOOGLE_SERVICES_SETTINGS = 27,
   ACCESS_POINT_SYNC_ERROR_CARD = 28,
@@ -168,6 +185,12 @@ enum class AccessPoint : int {
   ACCESS_POINT_SAFETY_CHECK = 32,
   ACCESS_POINT_KALEIDOSCOPE = 33,
   ACCESS_POINT_ENTERPRISE_SIGNOUT_COORDINATOR = 34,
+  ACCESS_POINT_SIGNIN_INTERCEPT_FIRST_RUN_EXPERIENCE = 35,
+  ACCESS_POINT_SEND_TAB_TO_SELF_PROMO = 36,
+  ACCESS_POINT_NTP_FEED_TOP_PROMO = 37,
+  ACCESS_POINT_SETTINGS_SYNC_OFF_ROW = 38,
+  // Add values above this line with a corresponding label to the
+  // "SigninAccessPoint" enum in tools/metrics/histograms/enums.xml
   ACCESS_POINT_MAX,  // This must be last.
 };
 
@@ -210,7 +233,7 @@ enum class PromoAction : int {
   PROMO_ACTION_NEW_ACCOUNT_EXISTING_ACCOUNT
 };
 
-#if defined(OS_ANDROID) || defined(OS_IOS)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
 // This class is used to record user action that was taken after
 // receiving the header from Gaia in the web sign-in flow.
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.signin.metrics
@@ -264,9 +287,11 @@ enum class AccountConsistencyPromoAction : int {
   SUPPRESSED_CONSECUTIVE_DISMISSALS = 16,
   // The timeout erreur was shown to the user.
   TIMEOUT_ERROR_SHOWN = 17,
+  // The web sign-in is not shown because the user is already signed in.
+  SUPPRESSED_ALREADY_SIGNED_IN = 18,
   MAX = 18,
 };
-#endif  // defined(OS_ANDROID) || defined(OS_IOS)
+#endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
 
 // Enum values which enumerates all reasons to start sign in process.
 // These values are persisted to logs. Entries should not be renumbered and
@@ -303,8 +328,11 @@ enum AccountReconcilorState {
   ACCOUNT_RECONCILOR_ERROR,
   // The account reconcilor will start running soon.
   ACCOUNT_RECONCILOR_SCHEDULED,
+  // The account reconcilor is inactive, e.g. initializing or disabled.
+  ACCOUNT_RECONCILOR_INACTIVE,
+
   // Always the last enumerated type.
-  ACCOUNT_RECONCILOR_HISTOGRAM_COUNT,
+  kMaxValue = ACCOUNT_RECONCILOR_SCHEDULED,
 };
 
 // Values of histogram comparing account id and email.
@@ -402,7 +430,7 @@ enum class SourceForRefreshTokenOperation {
   kAccountReconcilor_Reconcile = 12,
   kDiceResponseHandler_Signin = 13,
   kDiceResponseHandler_Signout = 14,
-  kDiceTurnOnSyncHelper_Abort = 15,
+  kTurnOnSyncHelper_Abort = 15,
   kMachineLogon_CredentialProvider = 16,
   kTokenService_ExtractCredentials = 17,
   // DEPRECATED on 09/2021 (used for force migration to DICE)
@@ -532,18 +560,13 @@ void RecordSigninAccountType(signin::ConsentLevel consent_level,
 void RecordSigninUserActionForAccessPoint(AccessPoint access_point,
                                           PromoAction promo_action);
 
-// Records |Signin_ImpressionWithAccount_From*| user action.
+// Records |Signin_Impression_From*| user action.
 void RecordSigninImpressionUserActionForAccessPoint(AccessPoint access_point);
 
-// Records |Signin_Impression{With|No}Account_From*| user action.
-void RecordSigninImpressionWithAccountUserActionForAccessPoint(
-    AccessPoint access_point,
-    bool with_account);
-
-#if defined(OS_IOS)
+#if BUILDFLAG(IS_IOS)
 // Records |Signin.AccountConsistencyPromoAction| histogram.
 void RecordConsistencyPromoUserAction(AccountConsistencyPromoAction action);
-#endif  // defined(OS_IOS)
+#endif  // BUILDFLAG(IS_IOS)
 
 }  // namespace signin_metrics
 

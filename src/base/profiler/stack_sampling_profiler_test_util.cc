@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/path_service.h"
 #include "base/profiler/profiler_buildflags.h"
@@ -21,14 +20,21 @@
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_ANDROID) && BUILDFLAG(ENABLE_ARM_CFI_TABLE)
+#if BUILDFLAG(IS_ANDROID) && BUILDFLAG(ENABLE_ARM_CFI_TABLE)
 #include "base/android/apk_assets.h"
 #include "base/files/memory_mapped_file.h"
-#include "base/profiler/chrome_unwinder_android.h"
 #include "base/profiler/native_unwinder_android.h"
+
+#if BUILDFLAG(USE_ANDROID_UNWINDER_V2)
+#include "base/android/library_loader/anchor_functions.h"
+#include "base/profiler/chrome_unwinder_android_v2.h"
+#else
+#include "base/profiler/chrome_unwinder_android.h"
 #endif
 
-#if defined(OS_WIN)
+#endif
+
+#if BUILDFLAG(IS_WIN)
 // Windows doesn't provide an alloca function like Linux does.
 // Fortunately, it provides _alloca, which functions identically.
 #include <malloc.h>
@@ -92,11 +98,10 @@ void OtherLibraryCallback(void* arg) {
   std::move(*wait_for_sample).Run();
 
   // Prevent tail call.
-  volatile int i = 0;
-  ALLOW_UNUSED_LOCAL(i);
+  [[maybe_unused]] volatile int i = 0;
 }
 
-#if defined(OS_ANDROID) && BUILDFLAG(ENABLE_ARM_CFI_TABLE)
+#if BUILDFLAG(IS_ANDROID) && BUILDFLAG(ENABLE_ARM_CFI_TABLE)
 std::unique_ptr<NativeUnwinderAndroid> CreateNativeUnwinderAndroidForTesting(
     uintptr_t exclude_module_with_base_address) {
   class NativeUnwinderAndroidForTesting : public NativeUnwinderAndroid {
@@ -122,9 +127,49 @@ std::unique_ptr<NativeUnwinderAndroid> CreateNativeUnwinderAndroidForTesting(
       std::move(maps), std::move(memory), exclude_module_with_base_address);
 }
 
+#if BUILDFLAG(USE_ANDROID_UNWINDER_V2)
+std::unique_ptr<Unwinder> CreateChromeUnwinderAndroidForTesting(
+    uintptr_t chrome_module_base_address) {
+  static constexpr char kCfiFileName[] = "assets/unwind_cfi_32_v2";
+
+  // The wrapper class ensures that `MemoryMappedFile` has the same lifetime
+  // as the unwinder.
+  class ChromeUnwinderAndroidForTesting : public ChromeUnwinderAndroidV2 {
+   public:
+    ChromeUnwinderAndroidForTesting(std::unique_ptr<MemoryMappedFile> cfi_file,
+                                    const ChromeUnwindInfoAndroid& unwind_info,
+                                    uintptr_t chrome_module_base_address,
+                                    uintptr_t text_section_start_address)
+        : ChromeUnwinderAndroidV2(unwind_info,
+                                  chrome_module_base_address,
+                                  text_section_start_address),
+          cfi_file_(std::move(cfi_file)) {}
+    ~ChromeUnwinderAndroidForTesting() override = default;
+
+   private:
+    std::unique_ptr<MemoryMappedFile> cfi_file_;
+  };
+
+  MemoryMappedFile::Region cfi_region;
+  int fd = base::android::OpenApkAsset(kCfiFileName, &cfi_region);
+  DCHECK_GT(fd, 0);
+  auto cfi_file = std::make_unique<MemoryMappedFile>();
+  bool ok = cfi_file->Initialize(base::File(fd), cfi_region);
+  DCHECK(ok);
+  return std::make_unique<ChromeUnwinderAndroidForTesting>(
+      std::move(cfi_file),
+      base::CreateChromeUnwindInfoAndroid(
+          {cfi_file->data(), cfi_file->length()}),
+      chrome_module_base_address,
+      /* text_section_start_address= */ base::android::kStartOfText);
+}
+#else
 std::unique_ptr<Unwinder> CreateChromeUnwinderAndroidForTesting(
     uintptr_t chrome_module_base_address) {
   static constexpr char kCfiFileName[] = "assets/unwind_cfi_32";
+
+  // The wrapper class ensures that `MemoryMappedFile` has the same lifetime
+  // as the unwinder.
   class ChromeUnwinderAndroidForTesting : public ChromeUnwinderAndroid {
    public:
     ChromeUnwinderAndroidForTesting(std::unique_ptr<MemoryMappedFile> cfi_file,
@@ -142,26 +187,32 @@ std::unique_ptr<Unwinder> CreateChromeUnwinderAndroidForTesting(
 
   MemoryMappedFile::Region cfi_region;
   int fd = base::android::OpenApkAsset(kCfiFileName, &cfi_region);
-  if (fd < 0)
-    return nullptr;
+  DCHECK_GT(fd, 0);
   auto cfi_file = std::make_unique<MemoryMappedFile>();
-  if (!cfi_file->Initialize(base::File(fd), cfi_region))
-    return nullptr;
+  bool ok = cfi_file->Initialize(base::File(fd), cfi_region);
+  DCHECK(ok);
   std::unique_ptr<ArmCFITable> cfi_table =
       ArmCFITable::Parse({cfi_file->data(), cfi_file->length()});
-  if (!cfi_table)
-    return nullptr;
-
+  DCHECK(cfi_table);
   return std::make_unique<ChromeUnwinderAndroidForTesting>(
       std::move(cfi_file), std::move(cfi_table), chrome_module_base_address);
 }
-#endif  // #if defined(OS_ANDROID) && BUILDFLAG(ENABLE_ARM_CFI_TABLE)
+#endif  // #if BUILDFLAG(USE_ANDROID_UNWINDER_V2)
+#endif  // #if BUILDFLAG(IS_ANDROID) && BUILDFLAG(ENABLE_ARM_CFI_TABLE)
 
 }  // namespace
 
 TargetThread::TargetThread(OnceClosure to_run) : to_run_(std::move(to_run)) {}
 
 TargetThread::~TargetThread() = default;
+
+void TargetThread::Start() {
+  EXPECT_TRUE(PlatformThread::Create(0, this, &target_thread_handle_));
+}
+
+void TargetThread::Join() {
+  PlatformThread::Join(target_thread_handle_);
+}
 
 void TargetThread::ThreadMain() {
   thread_token_ = GetSamplingProfilerCurrentThreadToken();
@@ -283,16 +334,13 @@ void WithTargetThread(UnwindScenario* scenario,
   TargetThread target_thread(
       BindLambdaForTesting([&]() { scenario->Execute(&events); }));
 
-  PlatformThreadHandle target_thread_handle;
-  EXPECT_TRUE(PlatformThread::Create(0, &target_thread, &target_thread_handle));
-
+  target_thread.Start();
   events.ready_for_sample.Wait();
 
   std::move(profile_callback).Run(target_thread.thread_token());
 
   events.sample_finished.Signal();
-
-  PlatformThread::Join(target_thread_handle);
+  target_thread.Join();
 }
 
 std::vector<Frame> SampleScenario(UnwindScenario* scenario,
@@ -395,13 +443,13 @@ NativeLibrary LoadOtherLibrary() {
   // macros in a function returning non-null.
   const auto load = [](NativeLibrary* library) {
     FilePath other_library_path;
-#if defined(OS_FUCHSIA)
+#if BUILDFLAG(IS_FUCHSIA)
     // TODO(crbug.com/1262430): Find a solution that works across platforms.
     ASSERT_TRUE(PathService::Get(DIR_ASSETS, &other_library_path));
 #else
     // The module is next to the test module rather than with test data.
     ASSERT_TRUE(PathService::Get(DIR_MODULE, &other_library_path));
-#endif  // defined(OS_FUCHSIA)
+#endif  // BUILDFLAG(IS_FUCHSIA)
     other_library_path = other_library_path.AppendASCII(
         GetLoadableModuleName("base_profiler_test_support_library"));
     NativeLibraryLoadError load_error;
@@ -425,7 +473,7 @@ uintptr_t GetAddressInOtherLibrary(NativeLibrary library) {
 
 StackSamplingProfiler::UnwindersFactory CreateCoreUnwindersFactoryForTesting(
     ModuleCache* module_cache) {
-#if defined(OS_ANDROID) && BUILDFLAG(ENABLE_ARM_CFI_TABLE)
+#if BUILDFLAG(IS_ANDROID) && BUILDFLAG(ENABLE_ARM_CFI_TABLE)
   std::vector<std::unique_ptr<Unwinder>> unwinders;
   unwinders.push_back(CreateNativeUnwinderAndroidForTesting(
       reinterpret_cast<uintptr_t>(&__executable_start)));
@@ -441,4 +489,23 @@ StackSamplingProfiler::UnwindersFactory CreateCoreUnwindersFactoryForTesting(
 #endif
 }
 
+uintptr_t TestModule::GetBaseAddress() const {
+  return base_address_;
+}
+std::string TestModule::GetId() const {
+  return id_;
+}
+FilePath TestModule::GetDebugBasename() const {
+  return debug_basename_;
+}
+size_t TestModule::GetSize() const {
+  return size_;
+}
+bool TestModule::IsNative() const {
+  return is_native_;
+}
+
+bool operator==(const Frame& a, const Frame& b) {
+  return a.instruction_pointer == b.instruction_pointer && a.module == b.module;
+}
 }  // namespace base

@@ -280,10 +280,13 @@ void TextFieldInputType::HandleBlurEvent() {
 }
 
 bool TextFieldInputType::ShouldSubmitImplicitly(const Event& event) {
-  return (event.type() == event_type_names::kTextInput &&
-          event.HasInterface(event_interface_names::kTextEvent) &&
-          To<TextEvent>(event).data() == "\n") ||
-         InputTypeView::ShouldSubmitImplicitly(event);
+  if (const TextEvent* text_event = DynamicTo<TextEvent>(event)) {
+    if (!text_event->IsPaste() && !text_event->IsDrop() &&
+        text_event->data() == "\n") {
+      return true;
+    }
+  }
+  return InputTypeView::ShouldSubmitImplicitly(event);
 }
 
 void TextFieldInputType::CustomStyleForLayoutObject(ComputedStyle& style) {
@@ -292,19 +295,15 @@ void TextFieldInputType::CustomStyleForLayoutObject(ComputedStyle& style) {
   style.SetShouldIgnoreOverflowPropertyForInlineBlockBaseline();
 }
 
-bool TextFieldInputType::TypeShouldForceLegacyLayout() const {
-  if (RuntimeEnabledFeatures::LayoutNGTextControlEnabled())
-    return false;
-  UseCounter::Count(GetElement().GetDocument(),
-                    WebFeature::kLegacyLayoutByTextControl);
-  return true;
-}
-
 LayoutObject* TextFieldInputType::CreateLayoutObject(
     const ComputedStyle& style,
     LegacyLayout legacy) const {
   return LayoutObjectFactory::CreateTextControlSingleLine(GetElement(), style,
                                                           legacy);
+}
+
+ControlPart TextFieldInputType::AutoAppearance() const {
+  return kTextFieldPart;
 }
 
 void TextFieldInputType::CreateShadowSubtree() {
@@ -399,8 +398,9 @@ void TextFieldInputType::ListAttributeTargetChanged() {
           MakeGarbageCollected<DataListIndicatorElement>(document);
       rp_container->AppendChild(data_list);
       data_list->InitializeInShadowTree();
-      if (GetElement().GetDocument().FocusedElement() == GetElement())
-        GetElement().UpdateFocusAppearance(SelectionBehaviorOnFocus::kRestore);
+      Element& input = GetElement();
+      if (input.GetDocument().FocusedElement() == input)
+        input.UpdateSelectionOnFocus(SelectionBehaviorOnFocus::kRestore);
     }
   } else {
     picker->remove(ASSERT_NO_EXCEPTION);
@@ -605,7 +605,7 @@ void TextFieldInputType::UpdateView() {
 }
 
 void TextFieldInputType::FocusAndSelectSpinButtonOwner() {
-  GetElement().focus();
+  GetElement().Focus();
   GetElement().SetSelectionRange(0, std::numeric_limits<int>::max());
 }
 

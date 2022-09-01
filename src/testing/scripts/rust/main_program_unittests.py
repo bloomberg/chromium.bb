@@ -37,48 +37,56 @@ class EndToEndTests(fake_filesystem_unittest.TestCase):
     def test_basic_scenario(self):
         with tempfile.TemporaryDirectory() as tmpdirname:
             # Prepare simulated inputs.
-            test_list = ['test_foo', 'test_bar', 'test_foobar']
+            test_list = [
+                'test_foo', 'test_bar', 'test_foobar', 'module/test_foo'
+            ]
             test_results = [
                 TestResult('test_foo', 'PASS'),
                 TestResult('test_bar', 'PASS'),
-                TestResult('test_foobar', 'FAILED')
+                TestResult('test_foobar', 'FAILED'),
+                TestResult('module/test_foo', 'PASS')
             ]
             fake_executable_wrapper = FakeTestExecutableWrapper(
                 test_list, test_results)
-            cmdline_args = [
-                '--isolated-outdir={0:s}'.format(tmpdirname),
-                '--isolated-script-test-output=test.out'
-            ]
+            parser = argparse.ArgumentParser()
+            main_program.add_cmdline_args(parser)
+            output_file = os.path.join(tmpdirname, 'test.out')
+            args = parser.parse_args(
+                args=['--isolated-script-test-output={}'.format(output_file)])
             fake_env = {'GTEST_SHARD_INDEX': 0, 'GTEST_TOTAL_SHARDS': 1}
 
             # Run code under test.
-            main_program.main(fake_executable_wrapper, cmdline_args, fake_env)
+            main_program.main([fake_executable_wrapper], args, fake_env)
+
             # Verify results.
-            expected_output_file = os.path.join(tmpdirname, 'test.out')
-            with open(expected_output_file) as f:
+            with open(output_file) as f:
                 actual_json_output = json.load(f)
                 del actual_json_output['seconds_since_epoch']
             # yapf: disable
             expected_json_output = {
                 'interrupted': False,
-                'path_delimiter': '/',
+                'path_delimiter': '//',
                 #'seconds_since_epoch': 1635974313.8388052,
                 'version': 3,
-                'tests': [
-                    {'test_foo': {
+                'tests': {
+                    'test_foo': {
                         'expected': 'PASS',
                         'actual': 'PASS'
-                    }},
-                    {'test_bar': {
+                    },
+                    'test_bar': {
                         'expected': 'PASS',
                         'actual': 'PASS'
-                    }},
-                    {'test_foobar': {
+                    },
+                    'test_foobar': {
                         'expected': 'PASS',
                         'actual': 'FAILED'
-                    }}],
+                    },
+                    'module/test_foo': {
+                        'expected': 'PASS',
+                        'actual': 'PASS'
+                    }},
                 'num_failures_by_type': {
-                    'PASS': 2,
+                    'PASS': 3,
                     'FAILED': 1
                 }
             }

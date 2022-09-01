@@ -14,7 +14,6 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/syslog_logging.h"
 #include "base/trace_event/trace_conversion_helper.h"
@@ -39,8 +38,8 @@
 
 // Vendor ID for downstream, interim ChromeOS specific modifiers.
 #define DRM_FORMAT_MOD_VENDOR_CHROMEOS 0xf0
-// TODO(gurchetansingh) Remove once DRM_FORMAT_MOD_ARM_AFBC is used by all
-// kernels and allocators.
+// TODO(b/231167263) Remove once DRM_FORMAT_MOD_ARM_AFBC is used by all kernels
+// and allocators.
 #define DRM_FORMAT_MOD_CHROMEOS_ROCKCHIP_AFBC fourcc_mod_code(CHROMEOS, 1)
 
 namespace ui {
@@ -78,6 +77,18 @@ std::string NumberToHexString(const T value) {
   std::stringstream ss;
   ss << "0x" << std::hex << std::uppercase << value;
   return ss.str();
+}
+
+bool IsRockchipAfbc(uint64_t modifier) {
+  // TODO(b/231167263): Drop when kernel 4.4 is gone for RK3399.
+  if (modifier == DRM_FORMAT_MOD_CHROMEOS_ROCKCHIP_AFBC) {
+    return true;
+  }
+
+  // Newer (and upstream) kernels use DRM_FORMAT_MOD_ARM_AFBC.
+  return modifier ==
+         DRM_FORMAT_MOD_ARM_AFBC(AFBC_FORMAT_MOD_BLOCK_SIZE_16x16 |
+                                 AFBC_FORMAT_MOD_SPARSE | AFBC_FORMAT_MOD_YTR);
 }
 
 }  // namespace
@@ -300,11 +311,10 @@ std::vector<uint64_t> HardwareDisplayController::GetSupportedModifiers(
   auto it = preferred_format_modifier_.find(fourcc_format);
   if (it != preferred_format_modifier_.end()) {
     uint64_t supported_modifier = it->second;
-    // AFBC for modeset buffers doesn't work correctly, as we can't fill it with
-    // a valid AFBC buffer (crbug.com/852675).
+    // AFBC for modeset buffers doesn't work correctly, as we can't fill them
+    // with a valid AFBC buffer (b/172227166).
     // For now, don't use AFBC for modeset buffers.
-    if (is_modeset &&
-        supported_modifier == DRM_FORMAT_MOD_CHROMEOS_ROCKCHIP_AFBC) {
+    if (is_modeset && IsRockchipAfbc(supported_modifier)) {
       supported_modifier = DRM_FORMAT_MOD_LINEAR;
     }
     return std::vector<uint64_t>{supported_modifier};
@@ -325,12 +335,11 @@ void HardwareDisplayController::UpdatePreferredModiferForFormat(
     gfx::BufferFormat buffer_format,
     uint64_t modifier) {
   uint32_t fourcc_format = GetFourCCFormatFromBufferFormat(buffer_format);
-  base::InsertOrAssign(preferred_format_modifier_, fourcc_format, modifier);
+  preferred_format_modifier_[fourcc_format] = modifier;
 
   uint32_t opaque_fourcc_format =
       GetFourCCFormatForOpaqueFramebuffer(buffer_format);
-  base::InsertOrAssign(preferred_format_modifier_, opaque_fourcc_format,
-                       modifier);
+  preferred_format_modifier_[opaque_fourcc_format] = modifier;
 }
 
 void HardwareDisplayController::MoveCursor(const gfx::Point& location) {
@@ -519,7 +528,7 @@ void HardwareDisplayController::AllocateCursorBuffers() {
   gfx::Size max_cursor_size = GetMaximumCursorSize(GetDrmDevice()->get_fd());
   SkImageInfo info = SkImageInfo::MakeN32Premul(max_cursor_size.width(),
                                                 max_cursor_size.height());
-  for (size_t i = 0; i < base::size(cursor_buffers_); ++i) {
+  for (size_t i = 0; i < std::size(cursor_buffers_); ++i) {
     cursor_buffers_[i] = std::make_unique<DrmDumbBuffer>(GetDrmDevice());
     // Don't register a framebuffer for cursors since they are special (they
     // aren't modesetting buffers and drivers may fail to register them due to
@@ -533,7 +542,7 @@ void HardwareDisplayController::AllocateCursorBuffers() {
 
 DrmDumbBuffer* HardwareDisplayController::NextCursorBuffer() {
   ++cursor_frontbuffer_;
-  cursor_frontbuffer_ %= base::size(cursor_buffers_);
+  cursor_frontbuffer_ %= std::size(cursor_buffers_);
   return cursor_buffers_[cursor_frontbuffer_].get();
 }
 

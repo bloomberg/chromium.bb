@@ -29,6 +29,20 @@ if (is_ios) {
 }
 
 declare_args() {
+  # Set to true to use the android unwinder V2 implementation.
+  use_android_unwinder_v2 = true
+}
+
+declare_args() {
+  # Set to true to use lld, the LLVM linker.
+  # In late bring-up on macOS (see docs/mac_lld.md).
+  # Tentatively used on iOS, except in cronet builds (cronet still supports
+  # 32-bit builds, which lld doesn't support).
+  # The default linker everywhere else.
+  use_lld = is_clang && current_os != "zos" && !(is_ios && is_cronet_build)
+}
+
+declare_args() {
   # Default to warnings as errors for default workflow, where we catch
   # warnings with known toolchains. Allow overriding this e.g. for Chromium
   # builds on Linux that could use a different version of the compiler.
@@ -72,10 +86,10 @@ declare_args() {
   # not ARC or linux-chromeos since it's been seen to not play nicely with
   # Chrome's clang. crbug.com/1033839
   use_thin_lto =
-      is_cfi ||
-      (is_clang && is_official_build && chrome_pgo_phase != 1 &&
-       (is_linux || is_win || (is_android && target_os != "chromeos") ||
-        ((is_chromeos_ash || is_chromeos_lacros) && is_chromeos_device)))
+      is_cfi || (is_clang && is_official_build && chrome_pgo_phase != 1 &&
+                 (is_linux || is_win || is_mac || (is_ios && use_lld) ||
+                  (is_android && target_os != "chromeos") ||
+                  (is_chromeos && is_chromeos_device)))
 
   # If true, use Goma for ThinLTO code generation where applicable.
   use_goma_thin_lto = false
@@ -115,15 +129,15 @@ declare_args() {
   # performed as mitigation against Return-oriented programming (ROP).
   # https://chromium.googlesource.com/chromium/src/+/main/docs/design/sandbox.md#cet-shadow-stack
   enable_cet_shadow_stack = target_cpu == "x64"
+
+  # If true, optimize for size. Does not affect windows builds.
+  # Linux & Mac favor speed over size.
+  # TODO(brettw) it's weird that Mac and desktop Linux are different. We should
+  # explore favoring size over speed in this case as well.
+  optimize_for_size = is_android || is_chromecast || is_fuchsia || is_ios
 }
 
 assert(!is_cfi || use_thin_lto, "CFI requires ThinLTO")
-
-# If true, optimize for size. Does not affect windows builds.
-# Linux & Mac favor speed over size.
-# TODO(brettw) it's weird that Mac and desktop Linux are different. We should
-# explore favoring size over speed in this case as well.
-optimize_for_size = is_android || is_chromecast || is_fuchsia || is_ios
 
 declare_args() {
   # Whether we should consider the profile we're using to be accurate. Accurate
@@ -137,7 +151,7 @@ declare_args() {
 # and build arguments.
 # TODO(crbug.com/1052397): Consider changing is_chromeos_ash to is_chromeos after
 # lacros-chrome switches to target_os="chromeos".
-if (is_chromeos_ash || is_chromeos_lacros) {
+if (is_chromeos) {
   # ChromeOS generally prefers frame pointers, to support CWP.
   # However, Clang does not currently generate usable frame pointers in ARM
   # 32-bit builds (https://bugs.llvm.org/show_bug.cgi?id=18505) so disable them
@@ -170,9 +184,8 @@ if (is_chromeos_ash || is_chromeos_lacros) {
   # Fuchsia on arm64 could use shadow call stack for unwinding.
   enable_frame_pointers = current_cpu != "arm64"
 } else {
-  # Explicitly ask for frame pointers, otherwise:
-  # * Stacks may be missing for sanitizer and profiling builds.
-  # * Debug tcmalloc can crash (crbug.com/636489).
+  # Explicitly ask for frame pointers, otherwise stacks may be missing for
+  # sanitizer and profiling builds.
   enable_frame_pointers = using_sanitizer || enable_profiling || is_debug
 }
 
@@ -202,25 +215,6 @@ can_unwind_with_cfi_table = is_android && !is_component_build &&
 # TODO(crbug.com/1090409): Replace can_unwind_with_cfi_table with this once
 # sampling profiler is enabled on android.
 enable_arm_cfi_table = is_android && !is_component_build && current_cpu == "arm"
-
-declare_args() {
-  # Set to true to use the android unwinder V2 implementation.
-  use_android_unwinder_v2 = false
-
-  # If this running on a GPU FYI bot.
-  # TODO(https://crbug.com/1233871): Remove this again.
-  is_gpu_fyi_bot = false
-}
-
-declare_args() {
-  # Set to true to use lld, the LLVM linker.
-  # In late bring-up on macOS (see docs/mac_lld.md).
-  # Tentatively used on iOS, except in cronet builds (cronet still supports 32-bit builds, which
-  # lld doesn't support).
-  # The default linker everywhere else.
-  use_lld = is_clang && !(is_ios && is_cronet_build) &&
-            !(is_mac && is_gpu_fyi_bot) && current_os != "zos"
-}
 
 declare_args() {
   # Whether to use the gold linker from binutils instead of lld or bfd.

@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/platform/loader/subresource_integrity.h"
 
-#include "base/cxx17_backports.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "third_party/blink/public/platform/web_crypto.h"
 #include "third_party/blink/public/platform/web_crypto_algorithm.h"
@@ -36,15 +35,7 @@ static bool IsValueCharacter(UChar c) {
 
 static bool DigestsEqual(const DigestValue& digest1,
                          const DigestValue& digest2) {
-  if (digest1.size() != digest2.size())
-    return false;
-
-  for (wtf_size_t i = 0; i < digest1.size(); i++) {
-    if (digest1[i] != digest2[i])
-      return false;
-  }
-
-  return true;
+  return digest1 == digest2;
 }
 
 void SubresourceIntegrity::ReportInfo::AddUseCount(UseCounterFeature feature) {
@@ -234,7 +225,7 @@ SubresourceIntegrity::ParseAttributeAlgorithm(const UChar*& begin,
   // The last algorithm prefix is the ed25519 signature algorithm, which should
   // only be enabled if kSignatures is requested. We'll implement this by
   // adjusting the last_prefix index into the array.
-  size_t last_prefix = base::size(kPrefixes);
+  size_t last_prefix = std::size(kPrefixes);
   if (features != IntegrityFeatures::kSignatures)
     last_prefix--;
 

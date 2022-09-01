@@ -7,6 +7,7 @@
 #include "base/check.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/confirmation_alert/confirmation_alert_action_handler.h"
+#import "ios/chrome/common/ui/elements/gradient_view.h"
 #import "ios/chrome/common/ui/util/button_util.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #include "ios/chrome/common/ui/util/dynamic_type_util.h"
@@ -20,6 +21,8 @@ NSString* const kConfirmationAlertMoreInfoAccessibilityIdentifier =
     @"kConfirmationAlertMoreInfoAccessibilityIdentifier";
 NSString* const kConfirmationAlertTitleAccessibilityIdentifier =
     @"kConfirmationAlertTitleAccessibilityIdentifier";
+NSString* const kConfirmationAlertSecondaryTitleAccessibilityIdentifier =
+    @"kConfirmationAlertSecondaryTitleAccessibilityIdentifier";
 NSString* const kConfirmationAlertSubtitleAccessibilityIdentifier =
     @"kConfirmationAlertSubtitleAccessibilityIdentifier";
 NSString* const kConfirmationAlertPrimaryActionAccessibilityIdentifier =
@@ -28,18 +31,41 @@ NSString* const kConfirmationAlertSecondaryActionAccessibilityIdentifier =
     @"kConfirmationAlertSecondaryActionAccessibilityIdentifier";
 NSString* const kConfirmationAlertTertiaryActionAccessibilityIdentifier =
     @"kConfirmationAlertTertiaryActionAccessibilityIdentifier";
-NSString* const kConfirmationAlertBarPrimaryActionAccessibilityIdentifier =
-    @"kConfirmationAlertBarPrimaryActionAccessibilityIdentifier";
 
 namespace {
 
+constexpr CGFloat kActionsBottomMargin = 10;
+// Gradient height.
+constexpr CGFloat kGradientHeight = 40.;
 constexpr CGFloat kScrollViewBottomInsets = 20;
 constexpr CGFloat kStackViewSpacing = 8;
 constexpr CGFloat kStackViewSpacingAfterIllustration = 27;
 // The multiplier used when in regular horizontal size class.
-constexpr CGFloat kSafeAreaMultiplier = 0.8;
-constexpr CGFloat kButtonMaxWidth = 327;
-constexpr CGFloat kContentMaxWidth = 500;
+constexpr CGFloat kSafeAreaMultiplier = 0.65;
+constexpr CGFloat kContentOptimalWidth = 327;
+
+// The size of the symbol image.
+constexpr NSInteger kSymbolBadgeImagePointSize = 13;
+
+// The name of the checkmark symbol in filled circle.
+NSString* const kCheckmarkSymbol = @"checkmark.circle.fill";
+
+// Properties of the favicon.
+constexpr CGFloat kFaviconCornerRadius = 13;
+constexpr CGFloat kFaviconShadowOffsetX = 0;
+constexpr CGFloat kFaviconShadowOffsetY = 0;
+constexpr CGFloat kFaviconShadowRadius = 6;
+constexpr CGFloat kFaviconShadowOpacity = 0.1;
+
+// Length of each side of the favicon frame (which contains the favicon and the
+// surrounding whitespace).
+constexpr CGFloat kFaviconFrameSideLength = 60;
+
+// Length of each side of the favicon.
+constexpr CGFloat kFaviconSideLength = 30;
+
+// Length of each side of the favicon badge.
+constexpr CGFloat kFaviconBadgeSideLength = 24;
 
 }  // namespace
 
@@ -52,10 +78,7 @@ constexpr CGFloat kContentMaxWidth = 500;
 @property(nonatomic, strong) UIButton* tertiaryActionButton;
 @property(nonatomic, strong) UIToolbar* topToolbar;
 @property(nonatomic, strong) UIImageView* imageView;
-// Constraints.
-@property(nonatomic, strong) NSLayoutConstraint* regularWidthConstraints;
-@property(nonatomic, strong)
-    NSLayoutConstraint* buttonStackViewBottomVerticalConstraint;
+@property(nonatomic, strong) UIView* imageContainerView;
 @property(nonatomic, strong) NSLayoutConstraint* imageViewAspectRatioConstraint;
 @end
 
@@ -69,7 +92,6 @@ constexpr CGFloat kContentMaxWidth = 500;
     _customSpacingAfterImage = kStackViewSpacingAfterIllustration;
     _showDismissBarButton = YES;
     _dismissBarButtonSystemItem = UIBarButtonSystemItemDone;
-    _specificContentLayoutGuide = [[UILayoutGuide alloc] init];
   }
   return self;
 }
@@ -77,38 +99,42 @@ constexpr CGFloat kContentMaxWidth = 500;
 - (void)viewDidLoad {
   [super viewDidLoad];
 
-  self.view.backgroundColor = [UIColor colorNamed:kBackgroundColor];
+  self.view.backgroundColor = [UIColor colorNamed:kPrimaryBackgroundColor];
 
   if (self.hasTopToolbar) {
     self.topToolbar = [self createTopToolbar];
     [self.view addSubview:self.topToolbar];
   }
 
-  self.imageView = [self createImageView];
+  if (self.imageEnclosedWithShadowAndBadge) {
+    // The image view is set within the helper method.
+    self.imageContainerView = [self createImageContainerViewWithShadowAndBadge];
+  } else {
+    // The image container and the image view are the same.
+    self.imageView = [self createImageView];
+    self.imageContainerView = self.imageView;
+  }
+
   UILabel* title = [self createTitleLabel];
   UILabel* subtitle = [self createSubtitleLabel];
 
-  NSArray* stackSubviews = @[ self.imageView, title, subtitle ];
+  NSArray* stackSubviews = nil;
+  if ([self.secondaryTitleString length] != 0) {
+    UILabel* secondaryTitle = [self createSecondaryTitleLabel];
+    stackSubviews =
+        @[ self.imageContainerView, title, secondaryTitle, subtitle ];
+  } else {
+    stackSubviews = @[ self.imageContainerView, title, subtitle ];
+  }
+
+  DCHECK(stackSubviews);
+
   UIStackView* stackView =
       [self createStackViewWithArrangedSubviews:stackSubviews];
 
-  // UIView used to set constraints to the scrollable content. Needed in order
-  // to pin UI elements in specific content view above actions buttons. UI
-  // elements can't be added to this view as it does not work with VoiceOver,
-  // see crbug.com/1281364. UILayoutGuide can't be use here as it does not work
-  // with dynamic type, see crbug.com/1283622.
-  UIView* scrollContentView = [[UIView alloc] init];
-  scrollContentView.translatesAutoresizingMaskIntoConstraints = NO;
-
   UIScrollView* scrollView = [self createScrollView];
-  [scrollView addSubview:scrollContentView];
   [scrollView addSubview:stackView];
-  [scrollView addLayoutGuide:self.specificContentLayoutGuide];
   [self.view addSubview:scrollView];
-
-  // Needed to have VoiceOver working to elements added in derived view
-  // controller.
-  self.specificContentSuperview = scrollView;
 
   self.view.preservesSuperviewLayoutMargins = YES;
   UILayoutGuide* margins = self.view.layoutMarginsGuide;
@@ -124,41 +150,39 @@ constexpr CGFloat kContentMaxWidth = 500;
   // the content area. No need to contraint horizontally as we don't want
   // horizontal scroll.
   [NSLayoutConstraint activateConstraints:@[
-    [stackView.widthAnchor
-        constraintLessThanOrEqualToConstant:kContentMaxWidth],
-    [stackView.centerXAnchor constraintEqualToAnchor:self.view.centerXAnchor],
+    [stackView.topAnchor constraintEqualToAnchor:scrollView.topAnchor],
+    [stackView.bottomAnchor constraintEqualToAnchor:scrollView.bottomAnchor
+                                           constant:-kScrollViewBottomInsets]
+  ]];
 
+  // Scroll View constraints to the height of its content. This allows to center
+  // the scroll view.
+  NSLayoutConstraint* heightConstraint = [scrollView.heightAnchor
+      constraintEqualToAnchor:scrollView.contentLayoutGuide.heightAnchor];
+  // UILayoutPriorityDefaultHigh is the default priority for content
+  // compression. Setting this lower avoids compressing the content of the
+  // scroll view.
+  heightConstraint.priority = UILayoutPriorityDefaultHigh - 1;
+  heightConstraint.active = YES;
+
+  [NSLayoutConstraint activateConstraints:@[
+    [stackView.centerXAnchor constraintEqualToAnchor:self.view.centerXAnchor],
+    // Width Scroll View constraint for regular mode.
+    [stackView.widthAnchor
+        constraintGreaterThanOrEqualToAnchor:margins.widthAnchor
+                                  multiplier:kSafeAreaMultiplier],
     // Disable horizontal scrolling.
     [stackView.widthAnchor
         constraintLessThanOrEqualToAnchor:margins.widthAnchor],
-
-    [stackView.topAnchor
-        constraintGreaterThanOrEqualToAnchor:scrollContentView.topAnchor],
-    [stackView.bottomAnchor
-        constraintLessThanOrEqualToAnchor:self.specificContentLayoutGuide
-                                              .topAnchor
-                                 constant:-kScrollViewBottomInsets],
-
-    [self.specificContentLayoutGuide.bottomAnchor
-        constraintEqualToAnchor:scrollContentView.bottomAnchor],
-    [self.specificContentLayoutGuide.centerXAnchor
-        constraintEqualToAnchor:self.view.centerXAnchor],
-    [self.specificContentLayoutGuide.widthAnchor
-        constraintLessThanOrEqualToAnchor:scrollView.widthAnchor],
-
-    // Constrain its height to at least the scroll view height, so that derived
-    // VCs can pin UI elements just above the buttons.
-    [scrollContentView.topAnchor constraintEqualToAnchor:scrollView.topAnchor],
-    [scrollContentView.bottomAnchor
-        constraintEqualToAnchor:scrollView.bottomAnchor],
-    [scrollContentView.heightAnchor
-        constraintGreaterThanOrEqualToAnchor:scrollView.heightAnchor],
   ]];
 
-  // Width Scroll View constraint for regular mode.
-  self.regularWidthConstraints = [stackView.widthAnchor
-      constraintLessThanOrEqualToAnchor:margins.widthAnchor
-                             multiplier:kSafeAreaMultiplier];
+  // This constraint is added to enforce that the content width should be as
+  // close to the optimal width as possible, within the range already activated
+  // for "stackView.widthAnchor" previously, with a higher priority.
+  NSLayoutConstraint* contentLayoutGuideWidthConstraint =
+      [stackView.widthAnchor constraintEqualToConstant:kContentOptimalWidth];
+  contentLayoutGuideWidthConstraint.priority = UILayoutPriorityRequired - 1;
+  contentLayoutGuideWidthConstraint.active = YES;
 
   // The bottom anchor for the scroll view.
   NSLayoutYAxisAnchor* scrollViewBottomAnchor =
@@ -169,34 +193,63 @@ constexpr CGFloat kContentMaxWidth = 500;
                          self.tertiaryActionString;
   if (hasActionButton) {
     UIView* actionStackView = [self createActionStackView];
-
     [self.view addSubview:actionStackView];
-    self.buttonStackViewBottomVerticalConstraint = [actionStackView.bottomAnchor
-        constraintEqualToAnchor:self.view.safeAreaLayoutGuide.bottomAnchor];
+
     // Add a low priority width constraints to make sure that the buttons are
     // taking as much width as they can.
+    CGFloat extraBottomMargin =
+        self.secondaryActionString ? 0 : kActionsBottomMargin;
     NSLayoutConstraint* lowPriorityWidthConstraint =
-        [actionStackView.widthAnchor constraintEqualToConstant:kButtonMaxWidth];
+        [actionStackView.widthAnchor
+            constraintEqualToConstant:kContentOptimalWidth];
     lowPriorityWidthConstraint.priority = UILayoutPriorityDefaultHigh + 1;
+    // Also constrain the bottom of the action stack view to the bottom of the
+    // safe area, but with a lower priority, so that the action stack view is
+    // put as close to the bottom as possible.
+    NSLayoutConstraint* actionBottomConstraint = [actionStackView.bottomAnchor
+        constraintEqualToAnchor:self.view.safeAreaLayoutGuide.bottomAnchor];
+    actionBottomConstraint.priority = UILayoutPriorityDefaultLow;
+    actionBottomConstraint.active = YES;
 
     [NSLayoutConstraint activateConstraints:@[
       [actionStackView.leadingAnchor
           constraintGreaterThanOrEqualToAnchor:scrollView.leadingAnchor],
       [actionStackView.trailingAnchor
           constraintLessThanOrEqualToAnchor:scrollView.trailingAnchor],
-      self.buttonStackViewBottomVerticalConstraint,
       [actionStackView.centerXAnchor
           constraintEqualToAnchor:self.view.centerXAnchor],
       [actionStackView.widthAnchor
-          constraintLessThanOrEqualToConstant:kButtonMaxWidth],
+          constraintEqualToAnchor:stackView.widthAnchor],
+      [actionStackView.bottomAnchor
+          constraintLessThanOrEqualToAnchor:self.view.bottomAnchor
+                                   constant:-kActionsBottomMargin -
+                                            extraBottomMargin],
+      [actionStackView.bottomAnchor
+          constraintLessThanOrEqualToAnchor:self.view.safeAreaLayoutGuide
+                                                .bottomAnchor
+                                   constant:-extraBottomMargin],
       lowPriorityWidthConstraint
     ]];
     scrollViewBottomAnchor = actionStackView.topAnchor;
+
+    GradientView* gradientView = [self createGradientView];
+    [self.view addSubview:gradientView];
+
+    [NSLayoutConstraint activateConstraints:@[
+      [gradientView.bottomAnchor
+          constraintEqualToAnchor:actionStackView.topAnchor],
+      [gradientView.leadingAnchor
+          constraintEqualToAnchor:scrollView.leadingAnchor],
+      [gradientView.trailingAnchor
+          constraintEqualToAnchor:scrollView.trailingAnchor],
+      [gradientView.heightAnchor constraintEqualToConstant:kGradientHeight],
+    ]];
   }
 
   [NSLayoutConstraint activateConstraints:@[
-    [scrollView.bottomAnchor constraintEqualToAnchor:scrollViewBottomAnchor
-                                            constant:-kScrollViewBottomInsets],
+    [scrollView.bottomAnchor
+        constraintLessThanOrEqualToAnchor:scrollViewBottomAnchor
+                                 constant:-kScrollViewBottomInsets],
     [scrollView.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
     [scrollView.trailingAnchor
         constraintEqualToAnchor:self.view.trailingAnchor],
@@ -210,18 +263,24 @@ constexpr CGFloat kContentMaxWidth = 500;
     scrollViewTopAnchor = self.view.safeAreaLayoutGuide.topAnchor;
     scrollViewTopConstant = self.customSpacingBeforeImageIfNoToolbar;
   }
-
-  [scrollView.topAnchor constraintEqualToAnchor:scrollViewTopAnchor
-                                       constant:scrollViewTopConstant]
-      .active = YES;
-
   if (self.topAlignedLayout) {
-    [stackView.topAnchor constraintEqualToAnchor:scrollContentView.topAnchor]
+    [scrollView.topAnchor constraintEqualToAnchor:scrollViewTopAnchor
+                                         constant:scrollViewTopConstant]
         .active = YES;
   } else {
-    [stackView.centerYAnchor
-        constraintEqualToAnchor:scrollContentView.centerYAnchor]
+    [scrollView.topAnchor
+        constraintGreaterThanOrEqualToAnchor:scrollViewTopAnchor
+                                    constant:scrollViewTopConstant]
         .active = YES;
+
+    // Scroll View constraint to the vertical center.
+    NSLayoutConstraint* centerYConstraint = [scrollView.centerYAnchor
+        constraintEqualToAnchor:margins.centerYAnchor];
+    // This needs to be lower than the height constraint, so it's deprioritized.
+    // If this breaks, the scroll view is still constrained to the top toolbar
+    // and the bottom safe area or button.
+    centerYConstraint.priority = heightConstraint.priority - 1;
+    centerYConstraint.active = YES;
   }
 
   if (!self.imageHasFixedSize) {
@@ -279,23 +338,6 @@ constexpr CGFloat kContentMaxWidth = 500;
 }
 
 - (void)updateViewConstraints {
-  CGFloat marginValue =
-      self.view.layoutMargins.left - self.view.safeAreaInsets.left;
-  if (!self.secondaryActionString) {
-    // Do not add margin padding between the bottom button and the containing
-    // view if the primary button is the bottom button to allow for more visual
-    // spacing between the content and the button. The secondary button has a
-    // transparent background so the visual spacing already exists.
-    self.buttonStackViewBottomVerticalConstraint.constant = -marginValue;
-  }
-
-  if (self.traitCollection.horizontalSizeClass ==
-      UIUserInterfaceSizeClassCompact) {
-    self.regularWidthConstraints.active = NO;
-  } else {
-    self.regularWidthConstraints.active = YES;
-  }
-
   BOOL isVerticalCompact =
       self.traitCollection.verticalSizeClass == UIUserInterfaceSizeClassCompact;
 
@@ -304,12 +346,23 @@ constexpr CGFloat kContentMaxWidth = 500;
   // is active, the image's width also goes to 0, which causes the stack view
   // width to become 0 too.
   [self.imageView setHidden:isVerticalCompact];
+  [self.imageContainerView setHidden:isVerticalCompact];
   self.imageViewAspectRatioConstraint.active = !isVerticalCompact;
 
   // Allow toolbar to update its height based on new layout.
   [self.topToolbar invalidateIntrinsicContentSize];
 
   [super updateViewConstraints];
+}
+
+- (void)updateStylingForSecondaryTitleLabel:(UILabel*)secondaryTitleLabel {
+  // The subclass needs to overwrite this method if it wants a different style
+  // than the default.
+}
+
+- (void)updateStylingForSubtitleLabel:(UILabel*)subtitleLabel {
+  // The subclass need to overwrite this method if it wants a different style
+  // than the default.
 }
 
 #pragma mark - UIToolbarDelegate
@@ -409,6 +462,11 @@ constexpr CGFloat kContentMaxWidth = 500;
   return topToolbar;
 }
 
+- (void)setImage:(UIImage*)image {
+  _image = image;
+  _imageView.image = image;
+}
+
 // Helper to create the image view.
 - (UIImageView*)createImageView {
   UIImageView* imageView = [[UIImageView alloc] initWithImage:self.image];
@@ -416,6 +474,83 @@ constexpr CGFloat kContentMaxWidth = 500;
 
   imageView.translatesAutoresizingMaskIntoConstraints = NO;
   return imageView;
+}
+
+// Helper to create the image view enclosed in a frame with a shadow and a
+// corner badge with a green checkmark. |self.imageView| is set in this method.
+- (UIView*)createImageContainerViewWithShadowAndBadge {
+  UIImageView* faviconBadgeView = [[UIImageView alloc] init];
+  faviconBadgeView.translatesAutoresizingMaskIntoConstraints = NO;
+  UIImageSymbolConfiguration* configuration = [UIImageSymbolConfiguration
+      configurationWithPointSize:kSymbolBadgeImagePointSize
+                          weight:UIImageSymbolWeightMedium
+                           scale:UIImageSymbolScaleMedium];
+  faviconBadgeView.image = [UIImage systemImageNamed:kCheckmarkSymbol
+                                   withConfiguration:configuration];
+  faviconBadgeView.tintColor = [UIColor colorNamed:kGreenColor];
+
+  UIImageView* faviconView = [[UIImageView alloc] initWithImage:self.image];
+  faviconView.translatesAutoresizingMaskIntoConstraints = NO;
+  faviconView.contentMode = UIViewContentModeScaleAspectFit;
+
+  UIView* frameView = [[UIView alloc] init];
+  frameView.translatesAutoresizingMaskIntoConstraints = NO;
+  frameView.backgroundColor = [UIColor colorNamed:kBackgroundColor];
+  frameView.layer.cornerRadius = kFaviconCornerRadius;
+  frameView.layer.shadowOffset =
+      CGSizeMake(kFaviconShadowOffsetX, kFaviconShadowOffsetY);
+  frameView.layer.shadowRadius = kFaviconShadowRadius;
+  frameView.layer.shadowOpacity = kFaviconShadowOpacity;
+  [frameView addSubview:faviconView];
+
+  UIView* containerView = [[UIView alloc] init];
+  [containerView addSubview:frameView];
+  [containerView addSubview:faviconBadgeView];
+
+  [NSLayoutConstraint activateConstraints:@[
+    // Size constraints.
+    [frameView.widthAnchor constraintEqualToConstant:kFaviconFrameSideLength],
+    [frameView.heightAnchor constraintEqualToConstant:kFaviconFrameSideLength],
+    [faviconView.widthAnchor constraintEqualToConstant:kFaviconSideLength],
+    [faviconView.heightAnchor constraintEqualToConstant:kFaviconSideLength],
+    [faviconBadgeView.widthAnchor
+        constraintEqualToConstant:kFaviconBadgeSideLength],
+    [faviconBadgeView.heightAnchor
+        constraintEqualToConstant:kFaviconBadgeSideLength],
+
+    // Badge is on the upper right corner of the frame.
+    [frameView.topAnchor
+        constraintEqualToAnchor:faviconBadgeView.centerYAnchor],
+    [frameView.trailingAnchor
+        constraintEqualToAnchor:faviconBadgeView.centerXAnchor],
+
+    // Favicon is centered in the frame.
+    [frameView.centerXAnchor constraintEqualToAnchor:faviconView.centerXAnchor],
+    [frameView.centerYAnchor constraintEqualToAnchor:faviconView.centerYAnchor],
+
+    // Frame and badge define the whole view returned by this method.
+    [containerView.leadingAnchor
+        constraintEqualToAnchor:frameView.leadingAnchor
+                       constant:-kFaviconBadgeSideLength / 2],
+    [containerView.bottomAnchor constraintEqualToAnchor:frameView.bottomAnchor],
+    [containerView.topAnchor
+        constraintEqualToAnchor:faviconBadgeView.topAnchor],
+    [containerView.trailingAnchor
+        constraintEqualToAnchor:faviconBadgeView.trailingAnchor],
+  ]];
+
+  self.imageView = faviconView;
+  return containerView;
+}
+
+// Creates a label with subtitle label defaults.
+- (UILabel*)createLabel {
+  UILabel* label = [[UILabel alloc] init];
+  label.numberOfLines = 0;
+  label.textAlignment = NSTextAlignmentCenter;
+  label.translatesAutoresizingMaskIntoConstraints = NO;
+  label.adjustsFontForContentSizeCategory = YES;
+  return label;
 }
 
 // Helper to create the title label.
@@ -442,18 +577,28 @@ constexpr CGFloat kContentMaxWidth = 500;
   return title;
 }
 
+// Helper to create the title description label.
+- (UILabel*)createSecondaryTitleLabel {
+  UILabel* secondaryTitle = [self createLabel];
+  secondaryTitle.font =
+      [UIFont preferredFontForTextStyle:UIFontTextStyleTitle2];
+  secondaryTitle.text = self.secondaryTitleString;
+  secondaryTitle.textColor = [UIColor colorNamed:kTextPrimaryColor];
+  secondaryTitle.accessibilityIdentifier =
+      kConfirmationAlertSecondaryTitleAccessibilityIdentifier;
+  [self updateStylingForSecondaryTitleLabel:secondaryTitle];
+  return secondaryTitle;
+}
+
 // Helper to create the subtitle label.
 - (UILabel*)createSubtitleLabel {
-  UILabel* subtitle = [[UILabel alloc] init];
+  UILabel* subtitle = [self createLabel];
   subtitle.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
-  subtitle.numberOfLines = 0;
-  subtitle.textColor = [UIColor colorNamed:kTextSecondaryColor];
   subtitle.text = self.subtitleString;
-  subtitle.textAlignment = NSTextAlignmentCenter;
-  subtitle.translatesAutoresizingMaskIntoConstraints = NO;
-  subtitle.adjustsFontForContentSizeCategory = YES;
+  subtitle.textColor = [UIColor colorNamed:kTextSecondaryColor];
   subtitle.accessibilityIdentifier =
       kConfirmationAlertSubtitleAccessibilityIdentifier;
+  [self updateStylingForSubtitleLabel:subtitle];
   return subtitle;
 }
 
@@ -470,13 +615,23 @@ constexpr CGFloat kContentMaxWidth = 500;
   return scrollView;
 }
 
+// Helper to create the gradient view.
+- (GradientView*)createGradientView {
+  GradientView* gradientView = [[GradientView alloc]
+      initWithTopColor:[[UIColor colorNamed:kPrimaryBackgroundColor]
+                           colorWithAlphaComponent:0]
+           bottomColor:[UIColor colorNamed:kPrimaryBackgroundColor]];
+  gradientView.translatesAutoresizingMaskIntoConstraints = NO;
+  return gradientView;
+}
+
 // Helper to create the stack view.
 - (UIStackView*)createStackViewWithArrangedSubviews:
     (NSArray<UIView*>*)subviews {
   UIStackView* stackView =
       [[UIStackView alloc] initWithArrangedSubviews:subviews];
   [stackView setCustomSpacing:self.customSpacingAfterImage
-                    afterView:self.imageView];
+                    afterView:self.imageContainerView];
 
   if (self.imageHasFixedSize) {
     stackView.alignment = UIStackViewAlignmentCenter;

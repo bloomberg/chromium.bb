@@ -55,6 +55,8 @@ web::WebUIIOSDataSource* CreatePolicyUIHtmlSource() {
       {"labelPrecedence", IDS_POLICY_LABEL_PRECEDENCE},
       {"labelRefreshInterval", IDS_POLICY_LABEL_REFRESH_INTERVAL},
       {"labelStatus", IDS_POLICY_LABEL_STATUS},
+      {"labelTimeSinceLastFetchAttempt",
+       IDS_POLICY_LABEL_TIME_SINCE_LAST_FETCH_ATTEMPT},
       {"labelTimeSinceLastRefresh", IDS_POLICY_LABEL_TIME_SINCE_LAST_REFRESH},
       {"labelUsername", IDS_POLICY_LABEL_USERNAME},
       {"labelManagedBy", IDS_POLICY_LABEL_MANAGED_BY},
@@ -88,7 +90,14 @@ web::WebUIIOSDataSource* CreatePolicyUIHtmlSource() {
   source->AddResourcePath("policy.css", IDR_POLICY_CSS);
   source->AddResourcePath("policy_base.js", IDR_POLICY_BASE_JS);
   source->AddResourcePath("policy.js", IDR_POLICY_JS);
+  source->AddResourcePath("policy_conflict.js", IDR_POLICY_POLICY_CONFLICT_JS);
+  source->AddResourcePath("policy_row.js", IDR_POLICY_POLICY_ROW_JS);
+  source->AddResourcePath("policy_precedence_row.js",
+                          IDR_POLICY_POLICY_PRECEDENCE_ROW_JS);
+  source->AddResourcePath("policy_table.js", IDR_POLICY_POLICY_TABLE_JS);
+  source->AddResourcePath("status_box.js", IDR_POLICY_STATUS_BOX_JS);
   source->SetDefaultResource(IDR_POLICY_HTML);
+  source->EnableReplaceI18nInJS();
   return source;
 }
 

@@ -9,9 +9,15 @@
 #include "base/metrics/histogram_functions.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/arc/session/arc_session_manager.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/memory/memory_kills_monitor.h"
+#include "chrome/browser/memory/oom_kills_monitor.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs_factory.h"
+
+// Enable VLOG level 1.
+#undef ENABLED_VLOG_LEVEL
+#define ENABLED_VLOG_LEVEL 1
 
 namespace arc {
 namespace {
@@ -55,6 +61,7 @@ ArcMetricsServiceProxy::ArcMetricsServiceProxy(
   arc_app_list_prefs_->AddObserver(this);
   arc::ArcSessionManager::Get()->AddObserver(this);
   arc_metrics_service_->AddAppKillObserver(this);
+  arc_metrics_service_->set_prefs(g_browser_process->local_state());
 }
 
 void ArcMetricsServiceProxy::Shutdown() {
@@ -75,6 +82,10 @@ void ArcMetricsServiceProxy::OnTaskDestroyed(int32_t task_id) {
   arc_metrics_service_->OnTaskDestroyed(task_id);
 }
 
+void ArcMetricsServiceProxy::OnArcStarted() {
+  arc_metrics_service_->OnArcStarted();
+}
+
 void ArcMetricsServiceProxy::OnArcSessionStopped(ArcStopReason stop_reason) {
   const auto* profile = ProfileManager::GetPrimaryUserProfile();
   if (arc::IsArcAllowedForProfile(profile)) {
@@ -85,6 +96,7 @@ void ArcMetricsServiceProxy::OnArcSessionStopped(ArcStopReason stop_reason) {
     VLOG(1) << metric_name << ": "
             << static_cast<std::underlying_type_t<ArcStopReason>>(stop_reason);
   }
+  arc_metrics_service_->OnArcSessionStopped();
 }
 
 void ArcMetricsServiceProxy::OnArcLowMemoryKill() {
@@ -93,7 +105,7 @@ void ArcMetricsServiceProxy::OnArcLowMemoryKill() {
 
 void ArcMetricsServiceProxy::OnArcOOMKillCount(
     unsigned long current_oom_kills) {
-  memory::MemoryKillsMonitor::LogArcOOMKill(current_oom_kills);
+  memory::OOMKillsMonitor::GetInstance().LogArcOOMKill(current_oom_kills);
 }
 
 void ArcMetricsServiceProxy::OnArcMemoryPressureKill(int count,

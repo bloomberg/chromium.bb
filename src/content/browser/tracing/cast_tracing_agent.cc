@@ -13,7 +13,6 @@
 #include "base/no_destructor.h"
 #include "base/sequence_checker.h"
 #include "base/strings/string_util.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/trace_event/trace_config.h"
 #include "chromecast/tracing/system_tracer.h"
@@ -156,9 +155,9 @@ namespace {
 
 class CastDataSource : public tracing::PerfettoTracedProcess::DataSourceBase {
  public:
-  static CastDataSource* GetInstance() {
+  static CastDataSource& GetInstance() {
     static base::NoDestructor<CastDataSource> instance;
-    return instance.get();
+    return *instance;
   }
 
   CastDataSource(const CastDataSource&) = delete;
@@ -268,7 +267,7 @@ class CastDataSource : public tracing::PerfettoTracedProcess::DataSourceBase {
 
 CastTracingAgent::CastTracingAgent() {
   tracing::PerfettoTracedProcess::Get()->AddDataSource(
-      CastDataSource::GetInstance());
+      &CastDataSource::GetInstance());
 }
 
 CastTracingAgent::~CastTracingAgent() = default;

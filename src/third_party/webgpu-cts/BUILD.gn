@@ -27,7 +27,9 @@ foreach(ts_file, list_from_ts_sources_txt) {
 
   if (js_node_file != "src-node/common/runtime/wpt.js" &&
       js_node_file != "src-node/common/runtime/standalone.js" &&
-      js_node_file != "src-node/common/runtime/helper/test_worker.js") {
+      js_node_file != "src-node/common/runtime/helper/test_worker.js" &&
+      js_node_file !=
+      "src-node/webgpu/web_platform/worker/worker_launcher.js") {
     js_outputs += [ "$target_gen_dir/$js_node_file" ]
   }
 }
@@ -69,6 +71,10 @@ copy("copy_resources") {
 
 action("verify_gen_ts_dep_list") {
   script = "scripts/gen_ts_dep_lists.py"
+  inputs = [
+    "resource_files.txt",
+    "ts_sources.txt",
+  ]
   outputs = [ "$target_out_dir/run_$target_name.stamp" ]
   args = [
     "--check",
@@ -83,13 +89,9 @@ action("verify_regenerate_internal_cts_html") {
   script = "scripts/run_regenerate_internal_cts_html.py"
   inputs = [
              "scripts/compile_src.py",
-             "scripts/run_webgpu_cts.py",
              "scripts/tsc_ignore_errors.py",
              "scripts/regenerate_internal_cts_html.py",
              "//third_party/node/node.py",
-             "//third_party/blink/web_tests/wpt_internal/webgpu/cts.https.html",
-             "//third_party/blink/web_tests/webgpu/ctshtml-template.txt",
-             "//third_party/blink/web_tests/webgpu/argsprefixes.txt",
            ] + ts_source_inputs
 
   outputs = [ "$target_out_dir/run_$target_name.stamp" ]

@@ -6,14 +6,18 @@
 
 #include "ash/style/ash_color_provider.h"
 #include "ash/style/style_util.h"
+#include "ash/utility/haptics_util.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/events/devices/haptic_touchpad_effects.h"
+#include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icon_types.h"
 #include "ui/views/border.h"
@@ -80,7 +84,7 @@ IconButton::IconButton(PressedCallback callback,
   int button_size = GetButtonSizeOnType(type);
   if (has_border) {
     button_size += 2 * kBorderSize;
-    SetBorder(views::CreateEmptyBorder(gfx::Insets(kBorderSize)));
+    SetBorder(views::CreateEmptyBorder(kBorderSize));
   }
   SetPreferredSize(gfx::Size(button_size, button_size));
 
@@ -105,17 +109,51 @@ IconButton::IconButton(PressedCallback callback,
 IconButton::IconButton(PressedCallback callback,
                        IconButton::Type type,
                        const gfx::VectorIcon* icon,
-                       int accessible_name_id,
+                       const std::u16string& accessible_name,
                        bool is_togglable,
                        bool has_border)
     : IconButton(std::move(callback), type, icon, is_togglable, has_border) {
-  SetTooltipText(l10n_util::GetStringUTF16(accessible_name_id));
+  SetTooltipText(accessible_name);
 }
+
+IconButton::IconButton(PressedCallback callback,
+                       IconButton::Type type,
+                       const gfx::VectorIcon* icon,
+                       int accessible_name_id,
+                       bool is_togglable,
+                       bool has_border)
+    : IconButton(std::move(callback),
+                 type,
+                 icon,
+                 l10n_util::GetStringUTF16(accessible_name_id),
+                 is_togglable,
+                 has_border) {}
 
 IconButton::~IconButton() = default;
 
 void IconButton::SetVectorIcon(const gfx::VectorIcon& icon) {
   icon_ = &icon;
+  UpdateVectorIcon();
+}
+
+void IconButton::SetBackgroundColor(const SkColor background_color) {
+  if (background_color_ == background_color)
+    return;
+
+  background_color_ = background_color;
+  SchedulePaint();
+}
+
+void IconButton::SetBackgroundImage(const gfx::ImageSkia& background_image) {
+  background_image_ = gfx::ImageSkiaOperations::CreateResizedImage(
+      background_image, skia::ImageOperations::RESIZE_BEST, GetPreferredSize());
+  SchedulePaint();
+}
+
+void IconButton::SetIconColor(const SkColor icon_color) {
+  if (icon_color_ == icon_color)
+    return;
+  icon_color_ = icon_color;
   UpdateVectorIcon();
 }
 
@@ -145,6 +183,8 @@ void IconButton::PaintButtonContents(gfx::Canvas* canvas) {
       color = color_provider->GetControlsLayerColor(
           AshColorProvider::ControlsLayerType::kControlBackgroundColorActive);
     }
+    if (background_color_)
+      color = background_color_.value();
 
     // If the button is disabled, apply opacity filter to the color.
     if (!GetEnabled())
@@ -154,6 +194,15 @@ void IconButton::PaintButtonContents(gfx::Canvas* canvas) {
     flags.setStyle(cc::PaintFlags::kFill_Style);
     canvas->DrawCircle(gfx::PointF(rect.CenterPoint()), rect.width() / 2,
                        flags);
+
+    // Apply the background image. This is painted on top of the |color|.
+    if (!background_image_.isNull()) {
+      SkPath mask;
+      mask.addCircle(rect.CenterPoint().x(), rect.CenterPoint().y(),
+                     rect.width() / 2);
+      canvas->ClipPath(mask, true);
+      canvas->DrawImageInt(background_image_, 0, 0, flags);
+    }
   }
 
   views::ImageButton::PaintButtonContents(canvas);
@@ -181,13 +230,22 @@ void IconButton::OnThemeChanged() {
   SchedulePaint();
 }
 
+void IconButton::NotifyClick(const ui::Event& event) {
+  if (is_togglable_) {
+    haptics_util::PlayHapticToggleEffect(
+        !toggled_, ui::HapticTouchpadEffectStrength::kMedium);
+  }
+  views::Button::NotifyClick(event);
+}
+
 void IconButton::UpdateVectorIcon() {
   if (!icon_)
     return;
 
   auto* color_provider = AshColorProvider::Get();
-  const SkColor normal_icon_color = color_provider->GetContentLayerColor(
-      AshColorProvider::ContentLayerType::kButtonIconColor);
+  const SkColor normal_icon_color =
+      icon_color_.value_or(color_provider->GetContentLayerColor(
+          AshColorProvider::ContentLayerType::kButtonIconColor));
   const SkColor toggled_icon_color = color_provider->GetContentLayerColor(
       AshColorProvider::ContentLayerType::kButtonIconColorPrimary);
   const SkColor icon_color = toggled_ ? toggled_icon_color : normal_icon_color;

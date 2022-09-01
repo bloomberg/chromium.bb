@@ -8,13 +8,21 @@
 #ifndef SKSL_SWIZZLE
 #define SKSL_SWIZZLE
 
+#include "include/core/SkTypes.h"
 #include "include/private/SkSLDefines.h"
-#include "src/sksl/SkSLContext.h"
-#include "src/sksl/SkSLUtil.h"
-#include "src/sksl/ir/SkSLConstructor.h"
+#include "include/private/SkTArray.h"
+#include "include/sksl/SkSLPosition.h"
 #include "src/sksl/ir/SkSLExpression.h"
+#include "src/sksl/ir/SkSLType.h"
+
+#include <memory>
+#include <string>
+#include <string_view>
+#include <utility>
 
 namespace SkSL {
+
+class Context;
 
 /**
  * Represents a vector swizzle operation such as 'float3(1, 2, 3).zyx'.
@@ -22,9 +30,9 @@ namespace SkSL {
 struct Swizzle final : public Expression {
     inline static constexpr Kind kExpressionKind = Kind::kSwizzle;
 
-    Swizzle(const Context& context, std::unique_ptr<Expression> base,
+    Swizzle(const Context& context, Position pos, std::unique_ptr<Expression> base,
             const ComponentArray& components)
-            : INHERITED(base->fLine, kExpressionKind,
+            : INHERITED(pos, kExpressionKind,
                         &base->type().componentType().toCompound(context, components.size(), 1))
             , fBase(std::move(base))
             , fComponents(components) {
@@ -35,16 +43,21 @@ struct Swizzle final : public Expression {
     // errors via ErrorReporter, and returns an expression that combines constructors and native
     // swizzles (comprised solely of X/Y/W/Z).
     static std::unique_ptr<Expression> Convert(const Context& context,
+                                               Position pos,
+                                               Position maskPos,
                                                std::unique_ptr<Expression> base,
                                                ComponentArray inComponents);
 
     static std::unique_ptr<Expression> Convert(const Context& context,
+                                               Position pos,
+                                               Position maskPos,
                                                std::unique_ptr<Expression> base,
-                                               skstd::string_view maskString);
+                                               std::string_view maskString);
 
     // Swizzle::Make does not permit ZERO or ONE in the component array, just X/Y/Z/W; errors are
     // reported via ASSERT.
     static std::unique_ptr<Expression> Make(const Context& context,
+                                            Position pos,
                                             std::unique_ptr<Expression> expr,
                                             ComponentArray inComponents);
 
@@ -64,13 +77,13 @@ struct Swizzle final : public Expression {
         return this->base()->hasProperty(property);
     }
 
-    std::unique_ptr<Expression> clone() const override {
-        return std::unique_ptr<Expression>(new Swizzle(&this->type(), this->base()->clone(),
+    std::unique_ptr<Expression> clone(Position pos) const override {
+        return std::unique_ptr<Expression>(new Swizzle(pos, &this->type(), this->base()->clone(),
                                                        this->components()));
     }
 
-    String description() const override {
-        String result = this->base()->description() + ".";
+    std::string description() const override {
+        std::string result = this->base()->description() + ".";
         for (int x : this->components()) {
             result += "xyzw"[x];
         }
@@ -78,8 +91,9 @@ struct Swizzle final : public Expression {
     }
 
 private:
-    Swizzle(const Type* type, std::unique_ptr<Expression> base, const ComponentArray& components)
-        : INHERITED(base->fLine, kExpressionKind, type)
+    Swizzle(Position pos, const Type* type, std::unique_ptr<Expression> base,
+            const ComponentArray& components)
+        : INHERITED(pos, kExpressionKind, type)
         , fBase(std::move(base))
         , fComponents(components) {
         SkASSERT(this->components().size() >= 1 && this->components().size() <= 4);

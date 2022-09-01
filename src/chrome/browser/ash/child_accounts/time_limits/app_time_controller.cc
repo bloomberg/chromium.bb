@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "ash/constants/notifier_catalogs.h"
 #include "ash/public/cpp/notification_utils.h"
 #include "base/bind.h"
 #include "base/containers/contains.h"
@@ -162,8 +163,8 @@ std::string GetNotificationIdFor(const std::string& app_name,
 }
 
 bool IsAppOpenedInChrome(const AppId& app_id, Profile* profile) {
-  if (app_id.app_type() != apps::mojom::AppType::kChromeApp &&
-      app_id.app_type() != apps::mojom::AppType::kWeb) {
+  if (app_id.app_type() != apps::AppType::kChromeApp &&
+      app_id.app_type() != apps::AppType::kWeb) {
     return false;
   }
 
@@ -174,9 +175,10 @@ bool IsAppOpenedInChrome(const AppId& app_id, Profile* profile) {
   if (!extension)
     return false;
 
-  extensions::LaunchContainer launch_container = extensions::GetLaunchContainer(
-      extensions::ExtensionPrefs::Get(profile), extension);
-  return launch_container == extensions::LaunchContainer::kLaunchContainerTab;
+  apps::mojom::LaunchContainer launch_container =
+      extensions::GetLaunchContainer(extensions::ExtensionPrefs::Get(profile),
+                                     extension);
+  return launch_container == apps::mojom::LaunchContainer::kLaunchContainerTab;
 }
 
 }  // namespace
@@ -292,7 +294,7 @@ bool AppTimeController::IsExtensionAllowlisted(
 
 absl::optional<base::TimeDelta> AppTimeController::GetTimeLimitForApp(
     const std::string& app_service_id,
-    apps::mojom::AppType app_type) const {
+    apps::AppType app_type) const {
   const app_time::AppId app_id =
       app_service_wrapper_->AppIdFromAppServiceId(app_service_id, app_type);
   return app_registry_->GetTimeLimit(app_id);
@@ -402,7 +404,7 @@ void AppTimeController::TimeLimitsAllowlistPolicyUpdated(
     const std::string& pref_name) {
   DCHECK_EQ(pref_name, prefs::kPerAppTimeLimitsAllowlistPolicy);
 
-  const base::DictionaryValue* policy = pref_registrar_->prefs()->GetDictionary(
+  const base::Value* policy = pref_registrar_->prefs()->GetDictionary(
       prefs::kPerAppTimeLimitsAllowlistPolicy);
 
   // Figure out a way to avoid cloning
@@ -635,7 +637,7 @@ void AppTimeController::ShowNotificationForApp(
           message, notification_source, GURL(),
           message_center::NotifierId(
               message_center::NotifierType::SYSTEM_COMPONENT,
-              kFamilyLinkSourceId),
+              kFamilyLinkSourceId, NotificationCatalogName::kAppTime),
           option_fields,
           notification == AppNotification::kTimeLimitChanged
               ? base::MakeRefCounted<
@@ -646,8 +648,10 @@ void AppTimeController::ShowNotificationForApp(
           chromeos::kNotificationSupervisedUserIcon,
           message_center::SystemNotificationWarningLevel::NORMAL);
 
-  if (icon.has_value())
-    message_center_notification->set_icon(gfx::Image(icon.value()));
+  if (icon.has_value()) {
+    message_center_notification->set_icon(
+        ui::ImageModel::FromImageSkia(icon.value()));
+  }
 
   auto* notification_display_service =
       NotificationDisplayService::GetForProfile(profile_);

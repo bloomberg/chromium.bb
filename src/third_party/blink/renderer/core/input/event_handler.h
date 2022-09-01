@@ -28,6 +28,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/time/time.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/common/input/web_menu_source_type.h"
@@ -47,10 +48,9 @@
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/platform/geometry/layout_point.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
-#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/hash_traits.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom-blink-forward.h"
 
@@ -140,7 +140,7 @@ class CORE_EXPORT EventHandler final : public GarbageCollected<EventHandler> {
   // Performs a logical scroll that chains, crossing frames, starting from
   // the given node or a reasonable default (focus/last clicked).
   bool BubblingScroll(mojom::blink::ScrollDirection,
-                      ScrollGranularity,
+                      ui::ScrollGranularity,
                       Node* starting_node = nullptr);
 
   WebInputEventResult HandleMouseMoveEvent(
@@ -360,8 +360,6 @@ class CORE_EXPORT EventHandler final : public GarbageCollected<EventHandler> {
   void UpdateLastScrollbarUnderMouse(Scrollbar*, bool);
 
   WebInputEventResult HandleGestureShowPress();
-
-  bool ShouldBrowserControlsConsumeScroll(FloatSize) const;
 
   bool RootFrameTrackedActivePointerInCurrentFrame(PointerId pointer_id) const;
 

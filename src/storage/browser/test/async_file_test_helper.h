@@ -15,7 +15,7 @@
 namespace storage {
 class FileSystemContext;
 class FileSystemURL;
-class QuotaManager;
+class QuotaManagerProxy;
 }
 
 namespace url {
@@ -28,8 +28,6 @@ namespace storage {
 class AsyncFileTestHelper {
  public:
   using FileEntryList = FileSystemOperation::FileEntryList;
-  using CopyOrMoveProgressCallback =
-      FileSystemOperation::CopyOrMoveProgressCallback;
 
   static const int64_t kDontCheckSize;
 
@@ -38,12 +36,13 @@ class AsyncFileTestHelper {
                                 const FileSystemURL& src,
                                 const FileSystemURL& dest);
 
-  // Same as Copy, but this supports |progress_callback|.
-  static base::File::Error CopyWithProgress(
+  // Same as Copy, but this supports |copy_or_move_hook_delegate|.
+  static base::File::Error CopyWithHookDelegate(
       FileSystemContext* context,
       const FileSystemURL& src,
       const FileSystemURL& dest,
-      const CopyOrMoveProgressCallback& progress_callback);
+      FileSystemOperation::ErrorBehavior error_behavior,
+      std::unique_ptr<CopyOrMoveHookDelegate> copy_or_move_hook_delegate);
 
   // Performs CopyFileLocal from |src| to |dest| and returns the status code.
   static base::File::Error CopyFileLocal(FileSystemContext* context,
@@ -55,12 +54,13 @@ class AsyncFileTestHelper {
                                 const FileSystemURL& src,
                                 const FileSystemURL& dest);
 
-  // Same as Move, but this supports |progress_callback|.
-  static base::File::Error MoveWithProgress(
+  // Same as Move, but this supports |copy_or_move_hook_delegate|.
+  static base::File::Error MoveWithHookDelegate(
       FileSystemContext* context,
       const FileSystemURL& src,
       const FileSystemURL& dest,
-      const CopyOrMoveProgressCallback& progress_callback);
+      FileSystemOperation::ErrorBehavior error_behavior,
+      std::unique_ptr<CopyOrMoveHookDelegate> copy_or_move_hook_delegate);
 
   // Performs MoveFileLocal from |src| to |dest| and returns the status code.
   static base::File::Error MoveFileLocal(FileSystemContext* context,
@@ -120,7 +120,7 @@ class AsyncFileTestHelper {
   // Returns usage and quota. It's valid to pass nullptr to |usage| and/or
   // |quota|.
   static blink::mojom::QuotaStatusCode GetUsageAndQuota(
-      QuotaManager* quota_manager,
+      QuotaManagerProxy* quota_manager_proxy,
       const url::Origin& origin,
       FileSystemType type,
       int64_t* usage,

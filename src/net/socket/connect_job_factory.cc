@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/check.h"
+#include "base/containers/flat_set.h"
 #include "base/memory/scoped_refptr.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/network_isolation_key.h"
@@ -17,11 +18,11 @@
 #include "net/dns/public/secure_dns_policy.h"
 #include "net/http/http_proxy_connect_job.h"
 #include "net/socket/connect_job.h"
+#include "net/socket/next_proto.h"
 #include "net/socket/socket_tag.h"
 #include "net/socket/socks_connect_job.h"
 #include "net/socket/ssl_connect_job.h"
 #include "net/socket/transport_connect_job.h"
-#include "net/socket/websocket_transport_connect_job.h"
 #include "net/ssl/ssl_config.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -74,6 +75,15 @@ TransportSocketParams::Endpoint ToTransportEndpoint(
       .host_port_pair;
 }
 
+base::flat_set<std::string> SupportedProtocolsFromSSLConfig(
+    const SSLConfig& config) {
+  // We convert because `SSLConfig` uses `NextProto` for ALPN protocols while
+  // `TransportConnectJob` and DNS logic needs `std::string`. See
+  // https://crbug.com/1286835.
+  return base::MakeFlatSet<std::string>(config.alpn_protos, /*comp=*/{},
+                                        NextProtoToString);
+}
+
 }  // namespace
 
 ConnectJobFactory::ConnectJobFactory(
@@ -81,9 +91,7 @@ ConnectJobFactory::ConnectJobFactory(
         http_proxy_connect_job_factory,
     std::unique_ptr<SOCKSConnectJob::Factory> socks_connect_job_factory,
     std::unique_ptr<SSLConnectJob::Factory> ssl_connect_job_factory,
-    std::unique_ptr<TransportConnectJob::Factory> transport_connect_job_factory,
-    std::unique_ptr<WebSocketTransportConnectJob::Factory>
-        websocket_transport_connect_job_factory)
+    std::unique_ptr<TransportConnectJob::Factory> transport_connect_job_factory)
     : http_proxy_connect_job_factory_(
           CreateFactoryIfNull(std::move(http_proxy_connect_job_factory))),
       socks_connect_job_factory_(
@@ -91,9 +99,7 @@ ConnectJobFactory::ConnectJobFactory(
       ssl_connect_job_factory_(
           CreateFactoryIfNull(std::move(ssl_connect_job_factory))),
       transport_connect_job_factory_(
-          CreateFactoryIfNull(std::move(transport_connect_job_factory))),
-      websocket_transport_connect_job_factory_(CreateFactoryIfNull(
-          std::move(websocket_transport_connect_job_factory))) {}
+          CreateFactoryIfNull(std::move(transport_connect_job_factory))) {}
 
 ConnectJobFactory::~ConnectJobFactory() = default;
 
@@ -160,11 +166,18 @@ std::unique_ptr<ConnectJob> ConnectJobFactory::CreateConnectJob(
     ConnectJob::Delegate* delegate) const {
   scoped_refptr<HttpProxySocketParams> http_proxy_params;
   scoped_refptr<SOCKSSocketParams> socks_params;
+  base::flat_set<std::string> no_alpn_protocols;
 
   if (!proxy_server.is_direct()) {
+    // TODO(crbug.com/1206799): For an http-like proxy, should this pass a
+    // `SchemeHostPort`, so proxies can participate in ECH? Note doing so with
+    // `SCHEME_HTTP` requires handling the HTTPS record upgrade.
     auto proxy_tcp_params = base::MakeRefCounted<TransportSocketParams>(
         proxy_server.host_port_pair(), proxy_dns_network_isolation_key_,
-        secure_dns_policy, resolution_callback);
+        secure_dns_policy, resolution_callback,
+        proxy_server.is_secure_http_like()
+            ? SupportedProtocolsFromSSLConfig(*ssl_config_for_proxy)
+            : no_alpn_protocols);
 
     if (proxy_server.is_http_like()) {
       scoped_refptr<SSLSocketParams> ssl_params;
@@ -204,7 +217,8 @@ std::unique_ptr<ConnectJob> ConnectJobFactory::CreateConnectJob(
     if (proxy_server.is_direct()) {
       ssl_tcp_params = base::MakeRefCounted<TransportSocketParams>(
           ToTransportEndpoint(endpoint), network_isolation_key,
-          secure_dns_policy, resolution_callback);
+          secure_dns_policy, resolution_callback,
+          SupportedProtocolsFromSSLConfig(*ssl_config_for_origin));
     }
     // TODO(crbug.com/1206799): Pass `endpoint` directly (preserving scheme
     // when available)?
@@ -229,17 +243,12 @@ std::unique_ptr<ConnectJob> ConnectJobFactory::CreateConnectJob(
         std::move(socks_params), delegate, /*net_log=*/nullptr);
   }
 
+  // Only SSL/TLS-based endpoints have ALPN protocols.
   DCHECK(proxy_server.is_direct());
   auto tcp_params = base::MakeRefCounted<TransportSocketParams>(
       ToTransportEndpoint(endpoint), network_isolation_key, secure_dns_policy,
-      resolution_callback);
-  if (!common_connect_job_params->websocket_endpoint_lock_manager) {
-    return transport_connect_job_factory_->Create(
-        request_priority, socket_tag, common_connect_job_params, tcp_params,
-        delegate, /*net_log=*/nullptr);
-  }
-
-  return websocket_transport_connect_job_factory_->Create(
+      resolution_callback, no_alpn_protocols);
+  return transport_connect_job_factory_->Create(
       request_priority, socket_tag, common_connect_job_params, tcp_params,
       delegate, /*net_log=*/nullptr);
 }

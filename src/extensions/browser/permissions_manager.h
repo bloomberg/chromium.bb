@@ -7,7 +7,10 @@
 
 #include <set>
 
+#include "base/memory/raw_ptr.h"
+#include "base/observer_list.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "extensions/common/extension_id.h"
 #include "url/origin.h"
 
 class BrowserContextKeyedServiceFactory;
@@ -16,7 +19,15 @@ namespace content {
 class BrowserContext;
 }
 
+namespace user_prefs {
+class PrefRegistrySyncable;
+}
+
 namespace extensions {
+
+class ExtensionPrefs;
+class Extension;
+class PermissionSet;
 
 // Class for managing user-scoped extension permissions.
 // Includes blocking all extensions from running on a site and automatically
@@ -44,7 +55,42 @@ class PermissionsManager : public KeyedService {
     std::set<url::Origin> permitted_sites;
   };
 
-  PermissionsManager();
+  struct ExtensionSiteAccess {
+    // The extension has access to the current domain.
+    bool has_site_access = false;
+    // The extension requested access to the current domain, but it was
+    // withheld.
+    bool withheld_site_access = false;
+    // The extension has access to all sites (or a pattern sufficiently broad
+    // as to be functionally similar, such as https://*.com/*). Note that since
+    // this includes "broad" patterns, this may be true even if
+    // |has_site_access| is false.
+    bool has_all_sites_access = false;
+    // The extension wants access to all sites (or a pattern sufficiently broad
+    // as to be functionally similar, such as https://*.com/*). Note that since
+    // this includes "broad" patterns, this may be true even if
+    // |withheld_site_access| is false.
+    bool withheld_all_sites_access = false;
+  };
+
+  // The user's site setting for a given site.
+  enum class UserSiteSetting {
+    // All extensions that request access are granted access in the site.
+    kGrantAllExtensions,
+    // All extensions that request access have withheld access in the site.
+    kBlockAllExtensions,
+    // Each extension that requests access can have its site access customized
+    // in the site.
+    kCustomizeByExtension,
+  };
+
+  class Observer {
+   public:
+    virtual void UserPermissionsSettingsChanged(
+        const UserPermissionsSettings& settings) {}
+  };
+
+  explicit PermissionsManager(content::BrowserContext* browser_context);
   ~PermissionsManager() override;
   PermissionsManager(const PermissionsManager&) = delete;
   const PermissionsManager& operator=(const PermissionsManager&) = delete;
@@ -55,13 +101,16 @@ class PermissionsManager : public KeyedService {
   // Retrieves the factory instance for the PermissionsManager.
   static BrowserContextKeyedServiceFactory* GetFactory();
 
+  // Registers the user preference that stores user permissions.
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
+
   // Adds `origin` to the list of sites the user has blocked all
   // extensions from running on. If `origin` is in permitted_sites, it will
   // remove it from such list.
   void AddUserRestrictedSite(const url::Origin& origin);
 
   // Removes `origin` from the list of sites the user has blocked all
-  // extensions from running on.
+  // extensions from running on and notifies observers.
   void RemoveUserRestrictedSite(const url::Origin& origin);
 
   // Adds `origin` to the list of sites the user has allowed all
@@ -70,13 +119,58 @@ class PermissionsManager : public KeyedService {
   void AddUserPermittedSite(const url::Origin& origin);
 
   // Removes `origin` from the list of sites the user has allowed all
-  // extensions to run on.
+  // extensions to run on and notifies observers.
   void RemoveUserPermittedSite(const url::Origin& origin);
 
   // Returns the user's permission settings.
-  const UserPermissionsSettings& GetUserPermissionsSettings();
+  const UserPermissionsSettings& GetUserPermissionsSettings() const;
+
+  // Returns the user's site setting for `origin`.
+  UserSiteSetting GetUserSiteSetting(const url::Origin& origin) const;
+
+  // Returns the current access level for the extension on the specified `url`.
+  ExtensionSiteAccess GetSiteAccess(const Extension& extension,
+                                    const GURL& url) const;
+
+  // Returns whether Chrome has withheld host permissions from the extension.
+  bool HasWithheldHostPermissions(const ExtensionId& extension_id) const;
+
+  // Returns the effective list of runtime-granted permissions for a given
+  // `extension` from its prefs. ExtensionPrefs doesn't store the valid schemes
+  // for URLPatterns, which results in the chrome:-scheme being included for
+  // <all_urls> when retrieving it directly from the prefs; this then causes
+  // CHECKs to fail when validating that permissions being revoked are present
+  // (see https://crbug.com/930062).
+  // Returns null if there are no stored runtime-granted permissions.
+  // TODO(https://crbug.com/931881): ExtensionPrefs should return
+  // properly-bounded permissions.
+  std::unique_ptr<const PermissionSet> GetRuntimePermissionsFromPrefs(
+      const Extension& extension) const;
+
+  // Adds or removes observers.
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
  private:
+  // Called whenever `user_permissions_` have changed.
+  void OnUserPermissionsSettingsChanged() const;
+
+  // Removes `origin` from the list of sites the user has allowed all
+  // extensions to run on and saves the change to `extension_prefs_`. Returns if
+  // the site has been removed.
+  bool RemovePermittedSiteAndUpdatePrefs(const url::Origin& origin);
+
+  // Removes `origin` from the list of sites the user has blocked all
+  // extensions from running on and saves the change to `extension_prefs_`.
+  // Returns if the site has been removed.
+  bool RemoveRestrictedSiteAndUpdatePrefs(const url::Origin& origin);
+
+  base::ObserverList<Observer>::Unchecked observers_;
+
+  // The associated browser context.
+  const raw_ptr<content::BrowserContext> browser_context_;
+
+  const raw_ptr<ExtensionPrefs> extension_prefs_;
   UserPermissionsSettings user_permissions_;
 };
 

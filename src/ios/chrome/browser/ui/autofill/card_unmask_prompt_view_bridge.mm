@@ -109,9 +109,13 @@ CardUnmaskPromptController* CardUnmaskPromptViewBridge::GetController() {
 }
 
 void CardUnmaskPromptViewBridge::PerformClose() {
+  base::WeakPtr<CardUnmaskPromptViewBridge> weak_this =
+      weak_ptr_factory_.GetWeakPtr();
   [view_controller_ dismissViewControllerAnimated:YES
                                        completion:^{
-                                         this->DeleteSelf();
+                                         if (weak_this) {
+                                           weak_this->DeleteSelf();
+                                         }
                                        }];
 }
 
@@ -127,7 +131,7 @@ void CardUnmaskPromptViewBridge::DeleteSelf() {
   CVCItem* _CVCItem;
   StatusItem* _statusItem;
 
-  // Owns |self|.
+  // Owns `self`.
   autofill::CardUnmaskPromptViewBridge* _bridge;  // weak
 }
 

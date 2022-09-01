@@ -577,20 +577,6 @@ CanvasKit.onRuntimeInitialized = function() {
     this._drawDRRect(oPtr, iPtr, paint);
   };
 
-  CanvasKit.Canvas.prototype.drawGlyphs = function(glyphs, positions, x, y, font, paint) {
-    if (!(glyphs.length*2 <= positions.length)) {
-        throw 'Not enough positions for the array of gyphs';
-    }
-    CanvasKit.setCurrentContext(this._context);
-    const glyphs_ptr    = copy1dArray(glyphs, 'HEAPU16');
-    const positions_ptr = copy1dArray(positions, 'HEAPF32');
-
-    this._drawGlyphs(glyphs.length, glyphs_ptr, positions_ptr, x, y, font, paint);
-
-    freeArraysThatAreNotMallocedByUsers(positions_ptr, positions);
-    freeArraysThatAreNotMallocedByUsers(glyphs_ptr,    glyphs);
-  };
-
   CanvasKit.Canvas.prototype.drawImage = function(img, x, y, paint) {
     CanvasKit.setCurrentContext(this._context);
     this._drawImage(img, x, y, paint || null);
@@ -762,6 +748,13 @@ CanvasKit.onRuntimeInitialized = function() {
     this._drawVertices(verts, mode, paint);
   }
 
+  // getDeviceClipBounds returns an SkIRect
+  CanvasKit.Canvas.prototype.getDeviceClipBounds = function(outputRect) {
+    // _getDeviceClipBounds will copy the values into the pointer.
+    this._getDeviceClipBounds(_scratchIRectPtr);
+    return copyIRectFromWasm(_scratchIRect, outputRect);
+  };
+
   // getLocalToDevice returns a 4x4 matrix.
   CanvasKit.Canvas.prototype.getLocalToDevice = function() {
     // _getLocalToDevice will copy the values into the pointer.
@@ -911,6 +904,12 @@ CanvasKit.onRuntimeInitialized = function() {
     return ta.slice(0, 2);
   };
 
+  CanvasKit.Picture.prototype.makeShader = function(tmx, tmy, mode, matr, rect) {
+    var mPtr = copy3x3MatrixToWasm(matr);
+    var rPtr = copyRectToWasm(rect);
+    return this._makeShader(tmx, tmy, mode, mPtr, rPtr);
+  };
+
   CanvasKit.PictureRecorder.prototype.beginRecording = function(bounds) {
     var bPtr = copyRectToWasm(bounds);
     return this._beginRecording(bPtr);
@@ -977,6 +976,16 @@ CanvasKit.onRuntimeInitialized = function() {
     var dpe = CanvasKit.PathEffect._MakeDash(ptr, intervals.length, phase);
     freeArraysThatAreNotMallocedByUsers(ptr, intervals);
     return dpe;
+  };
+
+  CanvasKit.PathEffect.MakeLine2D = function(width, matrix) {
+    var matrixPtr = copy3x3MatrixToWasm(matrix);
+    return CanvasKit.PathEffect._MakeLine2D(width, matrixPtr);
+  };
+
+  CanvasKit.PathEffect.MakePath2D = function(matrix, path) {
+    var matrixPtr = copy3x3MatrixToWasm(matrix);
+    return CanvasKit.PathEffect._MakePath2D(matrixPtr, path);
   };
 
   CanvasKit.Shader.MakeColor = function(color4f, colorSpace) {
@@ -1185,7 +1194,7 @@ CanvasKit.MakeImageFromCanvasImageSource = function(canvasImageSource) {
   memoizedCanvas2dElement.width = width;
   memoizedCanvas2dElement.height = height;
 
-  var ctx2d = memoizedCanvas2dElement.getContext('2d');
+  var ctx2d = memoizedCanvas2dElement.getContext('2d', {willReadFrequently: true});
   ctx2d.drawImage(canvasImageSource, 0, 0);
 
   var imageData = ctx2d.getImageData(0, 0, width, height);

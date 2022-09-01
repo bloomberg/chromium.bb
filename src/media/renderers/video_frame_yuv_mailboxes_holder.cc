@@ -13,6 +13,7 @@
 #include "gpu/command_buffer/client/raster_interface.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
+#include "third_party/skia/include/core/SkColorSpace.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/core/SkYUVAPixmaps.h"
@@ -38,9 +39,12 @@ viz::ResourceFormat PlaneResourceFormat(int num_channels, bool for_surface) {
   return viz::RGBA_8888;
 }
 
-GLenum PlaneGLFormat(int num_channels, bool for_surface) {
+GLenum PlaneGLFormat(int num_channels,
+                     bool for_surface,
+                     const gpu::Capabilities& capabilities) {
   return viz::TextureStorageFormat(
-      PlaneResourceFormat(num_channels, for_surface));
+      PlaneResourceFormat(num_channels, for_surface),
+      capabilities.angle_rgbx_internal_format);
 }
 
 }  // namespace
@@ -282,7 +286,8 @@ void VideoFrameYUVMailboxesHolder::ImportTextures(bool for_surface) {
 
     int num_channels = yuva_info_.numChannelsInPlane(plane);
     textures_[plane].texture.fTarget = holders_[plane].texture_target;
-    textures_[plane].texture.fFormat = PlaneGLFormat(num_channels, for_surface);
+    textures_[plane].texture.fFormat = PlaneGLFormat(
+        num_channels, for_surface, provider_->ContextCapabilities());
   }
 
   imported_textures_ = true;

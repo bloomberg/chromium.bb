@@ -13,7 +13,6 @@ import android.content.res.ColorStateList;
 import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
 
-import androidx.annotation.ColorInt;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -31,7 +30,8 @@ import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
-import org.chromium.components.browser_ui.styles.ChromeColors;
+import org.chromium.chrome.browser.theme.ThemeUtils;
+import org.chromium.chrome.browser.ui.theme.BrandedColorScheme;
 import org.chromium.components.externalauth.ExternalAuthUtils;
 import org.chromium.components.search_engines.TemplateUrlService;
 import org.chromium.components.signin.AccountManagerFacade;
@@ -41,7 +41,6 @@ import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
 import org.chromium.components.signin.identitymanager.IdentityManager;
 import org.chromium.components.signin.identitymanager.PrimaryAccountChangeEvent;
-import org.chromium.ui.util.ColorUtils;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -66,6 +65,7 @@ public class AssistantVoiceSearchService implements TemplateUrlService.TemplateU
     static final String AGSA_VERSION_HISTOGRAM = "Assistant.VoiceSearch.AgsaVersion";
     private static final String DEFAULT_ASSISTANT_AGSA_MIN_VERSION = "11.7";
     private static final boolean DEFAULT_ASSISTANT_COLORFUL_MIC_ENABLED = false;
+    private static Boolean sAlwaysUseAssistantVoiceSearchForTesting;
 
     // These values are persisted to logs. Entries should not be renumbered and
     // numeric values should never be reused.
@@ -194,6 +194,9 @@ public class AssistantVoiceSearchService implements TemplateUrlService.TemplateU
      * - The consent flow must be accepted.
      */
     public boolean shouldRequestAssistantVoiceSearch() {
+        if (sAlwaysUseAssistantVoiceSearchForTesting != null) {
+            return sAlwaysUseAssistantVoiceSearchForTesting;
+        }
         return mIsAssistantVoiceSearchEnabled && canRequestAssistantVoiceSearch()
                 && isEnabledByPreference();
     }
@@ -204,6 +207,9 @@ public class AssistantVoiceSearchService implements TemplateUrlService.TemplateU
      * conditions.
      */
     public boolean canRequestAssistantVoiceSearch() {
+        if (sAlwaysUseAssistantVoiceSearchForTesting != null) {
+            return sAlwaysUseAssistantVoiceSearchForTesting;
+        }
         return mIsAssistantVoiceSearchEnabled
                 && isDeviceEligibleForAssistant(/* returnImmediately= */ true, /* outList= */ null);
     }
@@ -219,13 +225,10 @@ public class AssistantVoiceSearchService implements TemplateUrlService.TemplateU
 
     /** @return The correct ColorStateList for the current theme. */
     public @Nullable ColorStateList getButtonColorStateList(
-            @ColorInt int primaryColor, Context context) {
+            @BrandedColorScheme int brandedColorScheme, Context context) {
         if (mShouldShowColorfulButtons) return null;
 
-        final boolean useLightColors =
-                ColorUtils.shouldUseLightForegroundOnBackground(primaryColor);
-        int id = ChromeColors.getPrimaryIconTintRes(useLightColors);
-        return AppCompatResources.getColorStateList(context, id);
+        return ThemeUtils.getThemedToolbarIconTint(context, brandedColorScheme);
     }
 
     /** Called from {@link VoiceRecognitionHandler} after the consent flow has completed. */
@@ -458,5 +461,9 @@ public class AssistantVoiceSearchService implements TemplateUrlService.TemplateU
 
     void setMultiAccountCheckEnabledForTesting(boolean enabled) {
         mIsMultiAccountCheckEnabled = enabled;
+    }
+
+    static void setAlwaysUseAssistantVoiceSearchForTestingEnabled(Boolean enabled) {
+        sAlwaysUseAssistantVoiceSearchForTesting = enabled;
     }
 }

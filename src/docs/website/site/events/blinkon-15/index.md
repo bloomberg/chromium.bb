@@ -6,8 +6,6 @@ page_name: blinkon-15
 title: BlinkOn 15
 ---
 
-**Save the (NEW) Dates!**
-
 **Welcome to BlinkOn 15!** We have received a lot of feedback that after 1.6
 years of working from home due to the pandemic, folks are feeling screen fatigue
 from online meetings and events. Given this, we have adjusted our event down to
@@ -17,6 +15,12 @@ will have the same format, however we will not have our Slack channels as all
 networking can be done on the platform. You can also [download the hopin mobile
 app](https://hopin.zendesk.com/hc/en-us/sections/360012637371--Mobile-App) on
 your device.
+
+## Recordings and Presentations
+
+*   [YouTube Playlist](https://www.youtube.com/playlist?list=PL9ioqAuyl6UL_1DiG1tPRHbGJlGQ_gQJW)
+*   [Breakout Talks](https://docs.google.com/spreadsheets/d/1x2MXoLaYENQg7WKHWspzwAuttDB38T5pc74ZHRYEKgo/edit#gid=0)
+*   [Lightning Talks](https://docs.google.com/spreadsheets/d/1pNTdc5CfJ_86FhKhThr-L0E6ptxVA8VuG-Y1LDkbaME/edit#gid=0)
 
 ## **Logistics**
 

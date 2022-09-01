@@ -18,6 +18,7 @@ enum ImmediateMode {
   kInt16Imm_Negate,
   kInt16Imm_4ByteAligned,
   kShift32Imm,
+  kInt34Imm,
   kShift64Imm,
   kNoImmediate
 };
@@ -58,6 +59,8 @@ class PPCOperandGenerator final : public OperandGenerator {
         return is_int16(value) && !(value & 3);
       case kShift32Imm:
         return 0 <= value && value < 32;
+      case kInt34Imm:
+        return is_int34(value);
       case kShift64Imm:
         return 0 <= value && value < 64;
       case kNoImmediate:
@@ -173,7 +176,12 @@ static void VisitLoadCommon(InstructionSelector* selector, Node* node,
   Node* base = node->InputAt(0);
   Node* offset = node->InputAt(1);
   InstructionCode opcode = kArchNop;
-  ImmediateMode mode = kInt16Imm;
+  ImmediateMode mode;
+  if (CpuFeatures::IsSupported(PPC_10_PLUS)) {
+    mode = kInt34Imm;
+  } else {
+    mode = kInt16Imm;
+  }
   switch (load_rep.representation()) {
     case MachineRepresentation::kFloat32:
       opcode = kPPC_LoadFloat32;
@@ -193,10 +201,10 @@ static void VisitLoadCommon(InstructionSelector* selector, Node* node,
       break;
     case MachineRepresentation::kCompressedPointer:  // Fall through.
     case MachineRepresentation::kCompressed:
-    case MachineRepresentation::kCagedPointer:  // Fall through.
+    case MachineRepresentation::kSandboxedPointer:  // Fall through.
 #ifdef V8_COMPRESS_POINTERS
       opcode = kPPC_LoadWordS32;
-      mode = kInt16Imm_4ByteAligned;
+      if (mode != kInt34Imm) mode = kInt16Imm_4ByteAligned;
       break;
 #else
       UNREACHABLE();
@@ -218,13 +226,14 @@ static void VisitLoadCommon(InstructionSelector* selector, Node* node,
 #endif
     case MachineRepresentation::kWord64:
       opcode = kPPC_LoadWord64;
-      mode = kInt16Imm_4ByteAligned;
+      if (mode != kInt34Imm) mode = kInt16Imm_4ByteAligned;
       break;
     case MachineRepresentation::kSimd128:
       opcode = kPPC_LoadSimd128;
       // Vectors do not support MRI mode, only MRR is available.
       mode = kNoImmediate;
       break;
+    case MachineRepresentation::kSimd256:  // Fall through.
     case MachineRepresentation::kMapWord:  // Fall through.
     case MachineRepresentation::kNone:
       UNREACHABLE();
@@ -313,7 +322,12 @@ void VisitStoreCommon(InstructionSelector* selector, Node* node,
     selector->Emit(code, 0, nullptr, input_count, inputs, temp_count, temps);
   } else {
     ArchOpcode opcode;
-    ImmediateMode mode = kInt16Imm;
+    ImmediateMode mode;
+    if (CpuFeatures::IsSupported(PPC_10_PLUS)) {
+      mode = kInt34Imm;
+    } else {
+      mode = kInt16Imm;
+    }
     NodeMatcher m(value);
     switch (rep) {
       case MachineRepresentation::kFloat32:
@@ -339,7 +353,7 @@ void VisitStoreCommon(InstructionSelector* selector, Node* node,
         break;
       case MachineRepresentation::kCompressedPointer:  // Fall through.
       case MachineRepresentation::kCompressed:
-      case MachineRepresentation::kCagedPointer:  // Fall through.
+      case MachineRepresentation::kSandboxedPointer:  // Fall through.
 #ifdef V8_COMPRESS_POINTERS
         opcode = kPPC_StoreCompressTagged;
         break;
@@ -349,12 +363,12 @@ void VisitStoreCommon(InstructionSelector* selector, Node* node,
       case MachineRepresentation::kTaggedSigned:   // Fall through.
       case MachineRepresentation::kTaggedPointer:  // Fall through.
       case MachineRepresentation::kTagged:
-        mode = kInt16Imm_4ByteAligned;
+        if (mode != kInt34Imm) mode = kInt16Imm_4ByteAligned;
         opcode = kPPC_StoreCompressTagged;
         break;
       case MachineRepresentation::kWord64:
         opcode = kPPC_StoreWord64;
-        mode = kInt16Imm_4ByteAligned;
+        if (mode != kInt34Imm) mode = kInt16Imm_4ByteAligned;
         if (m.IsWord64ReverseBytes()) {
           opcode = kPPC_StoreByteRev64;
           value = value->InputAt(0);
@@ -366,6 +380,7 @@ void VisitStoreCommon(InstructionSelector* selector, Node* node,
         // Vectors do not support MRI mode, only MRR is available.
         mode = kNoImmediate;
         break;
+      case MachineRepresentation::kSimd256:  // Fall through.
       case MachineRepresentation::kMapWord:  // Fall through.
       case MachineRepresentation::kNone:
         UNREACHABLE();
@@ -1877,6 +1892,11 @@ void InstructionSelector::VisitFloat64LessThanOrEqual(Node* node) {
   VisitFloat64Compare(this, node, &cont);
 }
 
+void InstructionSelector::EmitMoveParamToFPR(Node* node, int index) {}
+
+void InstructionSelector::EmitMoveFPRToParam(InstructionOperand* op,
+                                             LinkageLocation location) {}
+
 void InstructionSelector::EmitPrepareArguments(
     ZoneVector<PushParameter>* arguments, const CallDescriptor* call_descriptor,
     Node* node) {
@@ -2312,8 +2332,6 @@ void InstructionSelector::VisitInt64AbsWithOverflow(Node* node) {
   V(F64x2PromoteLowF32x4)      \
   V(F32x4Abs)                  \
   V(F32x4Neg)                  \
-  V(F32x4RecipApprox)          \
-  V(F32x4RecipSqrtApprox)      \
   V(F32x4Sqrt)                 \
   V(F32x4SConvertI32x4)        \
   V(F32x4UConvertI32x4)        \
@@ -2565,10 +2583,10 @@ void InstructionSelector::VisitS128Const(Node* node) {
     // We have to use Pack4Lanes to reverse the bytes (lanes) on BE,
     // Which in this case is ineffective on LE.
     Emit(kPPC_S128Const, g.DefineAsRegister(node),
-         g.UseImmediate(Pack4Lanes(bit_cast<uint8_t*>(&val[0]))),
-         g.UseImmediate(Pack4Lanes(bit_cast<uint8_t*>(&val[0]) + 4)),
-         g.UseImmediate(Pack4Lanes(bit_cast<uint8_t*>(&val[0]) + 8)),
-         g.UseImmediate(Pack4Lanes(bit_cast<uint8_t*>(&val[0]) + 12)));
+         g.UseImmediate(Pack4Lanes(base::bit_cast<uint8_t*>(&val[0]))),
+         g.UseImmediate(Pack4Lanes(base::bit_cast<uint8_t*>(&val[0]) + 4)),
+         g.UseImmediate(Pack4Lanes(base::bit_cast<uint8_t*>(&val[0]) + 8)),
+         g.UseImmediate(Pack4Lanes(base::bit_cast<uint8_t*>(&val[0]) + 12)));
   }
 }
 

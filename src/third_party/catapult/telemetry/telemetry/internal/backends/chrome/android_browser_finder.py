@@ -263,7 +263,8 @@ class PossibleAndroidBrowser(possible_browser.PossibleBrowser):
     browser_backend = android_browser_backend.AndroidBrowserBackend(
         self._platform_backend, self._finder_options,
         self.browser_directory, self.profile_directory,
-        self._backend_settings, build_dir=self._build_dir)
+        self._backend_settings, build_dir=self._build_dir,
+        local_apk_path=self._local_apk)
     try:
       return browser.Browser(
           browser_backend, self._platform_backend, startup_args=(),
@@ -342,7 +343,8 @@ class PossibleAndroidBrowser(possible_browser.PossibleBrowser):
         self._platform_backend.device.RunShellCommand(
             ['cmd', 'package', 'compile', '-m', self._compile_apk, '-f',
              package_name],
-            check_return=True)
+            check_return=True,
+            timeout=120)
 
     sdk_version = self._platform_backend.device.build_version_sdk
     # Bundles are in the ../bin directory, so it's safer to just check the

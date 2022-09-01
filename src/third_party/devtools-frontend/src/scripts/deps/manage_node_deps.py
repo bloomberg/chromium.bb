@@ -1,4 +1,4 @@
-#!/usr/bin/env vpython
+#!/usr/bin/env vpython3
 #
 # Copyright 2019 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
@@ -12,7 +12,6 @@ number in DEPS below and run this script.
 import os
 import os.path as path
 import json
-import shutil
 import subprocess
 import sys
 from collections import OrderedDict
@@ -34,72 +33,81 @@ LICENSES = [
     "ISC",
     "MPL-2.0",
     "Python-2.0",
+    "W3C",
 ]
 
 # List all DEPS here.
 DEPS = {
     "@istanbuljs/schema": "0.1.3",
-    "@types/chai": "4.2.21",
+    "@types/chai": "4.3.0",
     "@types/codemirror": "0.0.108",
     "@types/estree": "0.0.50",
     "@types/filesystem": "0.0.32",
-    "@types/istanbul-lib-coverage": "2.0.3",
+    "@types/istanbul-lib-coverage": "2.0.4",
     "@types/istanbul-lib-instrument": "1.7.4",
     "@types/istanbul-lib-report": "3.0.0",
     "@types/istanbul-lib-source-maps": "4.0.1",
     "@types/istanbul-reports": "3.0.1",
     "@types/karma-chai-sinon": "0.1.16",
-    "@types/node": "16.9.1",
+    "@types/node": "17.0.8",
     "@types/marked": "4.0.1",
     "@types/mocha": "9.0.0",
     "@types/rimraf": "3.0.2",
-    "@types/sinon": "10.0.2",
-    "@typescript-eslint/parser": "5.3.0",
-    "@typescript-eslint/eslint-plugin": "5.3.0",
+    "@types/sinon": "10.0.6",
+    "@types/webidl2": "23.13.6",
+    "@typescript-eslint/parser": "5.20.0",
+    "@typescript-eslint/eslint-plugin": "5.20.0",
     "@web/rollup-plugin-import-meta-assets": "1.0.7",
-    "bl": "4.1.0",
     "chai": "4.3.4",
-    "chokidar": "3.5.1",
-    "clean-css": "5.1.3",
-    "convert-source-map": "1.7.0",
+    "chokidar": "3.5.2",
+    "clean-css": "5.2.2",
+    "convert-source-map": "1.8.0",
+
+    # This should be match with esbuild in DEPS.
+    "esbuild": "0.14.13",
     "escodegen": "2.0.0",
-    "eslint": "8.3.0",
-    "eslint-plugin-import": "2.25.3",
+    "eslint": "8.13.0",
+    "eslint-plugin-import": "2.25.4",
     "eslint-plugin-lit-a11y": "2.1.0",
-    "eslint-plugin-mocha": "9.0.0",
+    "eslint-plugin-mocha": "10.0.3",
     "eslint-plugin-rulesdir": "0.2.1",
-    "istanbul-lib-instrument": "5.0.2",
+    "istanbul-lib-instrument": "5.1.0",
     "istanbul-lib-report": "3.0.0",
-    "karma": "6.3.4",
+    "karma": "6.3.9",
     "karma-chai": "0.1.0",
     "karma-chrome-launcher": "3.1.0",
-    "karma-coverage": "2.0.3",
+    "karma-coverage": "2.1.0",
     "karma-mocha": "2.0.1",
     "karma-mocha-reporter": "2.2.5",
     "karma-sinon": "1.0.5",
     "karma-sourcemap-loader": "0.3.8",
     "karma-spec-reporter": "0.0.32",
     "license-checker": "25.0.1",
-    "mocha": "9.1.1",
-    # Purposefully not the latest; we keep this in sync with what stylelint
-    # depends on
-    "postcss": "8.3.11",
-    "puppeteer": "10.0.0",
-    "recast": "0.20.4",
+    "mocha": "9.1.3",
+    "postcss": "8.4.5",
+    "puppeteer": "14.0.0",
+    "recast": "0.20.5",
     "rimraf": "3.0.2",
-    "rollup": "2.56.3",
+    "rollup": "2.63.0",
     "rollup-plugin-minify-html-template-literals": "1.2.0",
     "rollup-plugin-terser": "7.0.2",
-    "sinon": "11.1.2",
-    "source-map-support": "0.5.19",
-    "stylelint": "14.0.1",
-    "stylelint-config-standard": "23.0.0",
-    "svgo": "2.3.1",
-    "terser": "5.8.0",
-    "typescript": "4.5.2",
-    "ws": "7.5.3",
-    "yargs": "16.2.0",
+    "sinon": "12.0.1",
+    "source-map-support": "0.5.21",
+    "stylelint": "14.2.0",
+    "stylelint-config-standard": "24.0.0",
+    "svgo": "2.8.0",
+    "terser": "5.10.0",
+    "typescript": "4.6.2",
+    "ws": "8.4.0",
+    "yargs": "17.3.1",
+    "glob": "7.1.7",
+    "webidl2": "24.2.0",
 }
+
+ADDITIONAL_NPM_ARGS = [
+    # This is to avoid downloading esbuild-* package.
+    '--omit', 'optional', '--ignore-scripts'
+]
 
 def load_json_file(location):
     # By default, json load uses a standard Python dictionary, which is not ordered.
@@ -140,29 +148,29 @@ def ensure_licenses():
 
 def strip_private_fields():
     # npm adds private fields which need to be stripped.
-    pattern = path.join(devtools_paths.node_modules_path(), 'package.json')
     packages = []
-    for root, dirnames, filenames in os.walk(devtools_paths.node_modules_path()):
-        for filename in filter(lambda f: f == 'package.json', filenames):
-            packages.append(path.join(root, filename))
+    for root, _, filenames in os.walk(devtools_paths.node_modules_path()):
+        if 'package.json' in filenames:
+            packages.append(path.join(root, 'package.json'))
 
     for pkg in packages:
         with open(pkg, 'r+') as pkg_file:
             try:
                 pkg_data = load_json_file(pkg_file)
+                updated_pkg_data = pkg_data.copy()
 
                 # Remove anything that begins with an underscore, as these are
                 # the private fields in a package.json
                 for key in pkg_data.keys():
-                    if key.find(u'_') == 0:
-                        pkg_data.pop(key)
+                    if key.find('_') == 0:
+                        updated_pkg_data.pop(key)
 
                 pkg_file.truncate(0)
                 pkg_file.seek(0)
-                json.dump(pkg_data, pkg_file, indent=2, separators=(',', ': '))
+                json.dump(updated_pkg_data, pkg_file, indent=2, separators=(',', ': '))
                 pkg_file.write('\n')
             except:
-                print('Unable to fix: %s' % pkg)
+                print('Unable to fix: %s, %s' % (pkg, sys.exc_info()))
                 return True
 
     return False
@@ -173,7 +181,7 @@ def install_missing_deps():
     with open(devtools_paths.package_lock_json_path(), 'r+') as pkg_lock_file:
         try:
             pkg_lock_data = load_json_file(pkg_lock_file)
-            existing_deps = pkg_lock_data[u'dependencies']
+            existing_deps = pkg_lock_data['dependencies']
             new_deps = []
 
             # Find any new DEPS and add them in.
@@ -183,7 +191,11 @@ def install_missing_deps():
 
             # Now install.
             if len(new_deps) > 0:
-                cmd = ['npm', 'install', '--save-dev']
+                cmd = [
+                    'npm',
+                    'install',
+                    '--save-dev',
+                ] + ADDITIONAL_NPM_ARGS
                 cmd.extend(new_deps)
                 return exec_command(cmd)
 
@@ -200,7 +212,7 @@ def append_package_json_entries():
             pkg_data = load_json_file(pkg_file)
 
             # Replace the dev deps.
-            pkg_data[u'devDependencies'] = DEPS
+            pkg_data['devDependencies'] = DEPS
 
             pkg_file.truncate(0)
             pkg_file.seek(0)
@@ -221,7 +233,8 @@ def remove_package_json_entries():
             # Remove the dependencies and devDependencies from the root package.json
             # so that they can't be used to overwrite the node_modules managed by this file.
             for key in pkg_data.keys():
-                if key.find(u'dependencies') == 0 or key.find(u'devDependencies') == 0:
+                if key.find('dependencies') == 0 or key.find(
+                        'devDependencies') == 0:
                     pkg_data.pop(key)
 
             pkg_file.truncate(0)
@@ -268,7 +281,7 @@ def addChromiumReadme():
 
 def run_npm_command(npm_command_args=None):
     for (name, version) in DEPS.items():
-        if (version.find(u'^') == 0):
+        if (version.find('^') == 0):
             print('Versions must be locked to a specific version; remove ^ from the start of the version.')
             return True
 
@@ -292,13 +305,19 @@ def run_npm_command(npm_command_args=None):
     # However, when we are analyzing the installed NPM dependencies, we don't need to run
     # the installation process again.
     if not runs_analysis_command:
-        if exec_command(['npm', 'ci']):
+        if exec_command([
+                'npm',
+                'ci',
+        ] + ADDITIONAL_NPM_ARGS):
             return True
 
         # To minimize disk usage for Chrome DevTools node_modules, always try to dedupe dependencies.
         # We need to perform this every time, as the order of dependencies added could lead to a
         # non-optimal dependency tree, resulting in unnecessary disk usage.
-        if exec_command(['npm', 'dedupe']):
+        if exec_command([
+                'npm',
+                'dedupe',
+        ] + ADDITIONAL_NPM_ARGS):
             return True
 
     if run_custom_command:

@@ -8,10 +8,21 @@
 #ifndef SKSL_FIELDACCESS
 #define SKSL_FIELDACCESS
 
-#include "src/sksl/SkSLUtil.h"
+#include "include/sksl/SkSLPosition.h"
 #include "src/sksl/ir/SkSLExpression.h"
+#include "src/sksl/ir/SkSLType.h"
+
+#include <cstdint>
+#include <memory>
+#include <string>
+#include <string_view>
+#include <utility>
+#include <vector>
 
 namespace SkSL {
+
+class Context;
+class SymbolTable;
 
 enum class FieldAccessOwnerKind : int8_t {
     kDefault,
@@ -29,21 +40,23 @@ public:
 
     inline static constexpr Kind kExpressionKind = Kind::kFieldAccess;
 
-    FieldAccess(std::unique_ptr<Expression> base, int fieldIndex,
+    FieldAccess(Position pos, std::unique_ptr<Expression> base, int fieldIndex,
                 OwnerKind ownerKind = OwnerKind::kDefault)
-    : INHERITED(base->fLine, kExpressionKind, base->type().fields()[fieldIndex].fType)
+    : INHERITED(pos, kExpressionKind, base->type().fields()[fieldIndex].fType)
     , fFieldIndex(fieldIndex)
     , fOwnerKind(ownerKind)
     , fBase(std::move(base)) {}
 
     // Returns a field-access expression; reports errors via the ErrorReporter.
     static std::unique_ptr<Expression> Convert(const Context& context,
+                                               Position pos,
                                                SymbolTable& symbolTable,
                                                std::unique_ptr<Expression> base,
-                                               skstd::string_view field);
+                                               std::string_view field);
 
     // Returns a field-access expression; reports errors via ASSERT.
     static std::unique_ptr<Expression> Make(const Context& context,
+                                            Position pos,
                                             std::unique_ptr<Expression> base,
                                             int fieldIndex,
                                             OwnerKind ownerKind = OwnerKind::kDefault);
@@ -68,15 +81,16 @@ public:
         return this->base()->hasProperty(property);
     }
 
-    std::unique_ptr<Expression> clone() const override {
-        return std::unique_ptr<Expression>(new FieldAccess(this->base()->clone(),
-                                                           this->fieldIndex(),
-                                                           this->ownerKind()));
+    std::unique_ptr<Expression> clone(Position pos) const override {
+        return std::make_unique<FieldAccess>(pos,
+                                             this->base()->clone(),
+                                             this->fieldIndex(),
+                                             this->ownerKind());
     }
 
-    String description() const override {
+    std::string description() const override {
         return this->base()->description() + "." +
-               this->base()->type().fields()[this->fieldIndex()].fName;
+               std::string(this->base()->type().fields()[this->fieldIndex()].fName);
     }
 
 private:

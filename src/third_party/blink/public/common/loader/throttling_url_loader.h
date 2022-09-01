@@ -159,8 +159,8 @@ class BLINK_COMMON_EXPORT ThrottlingURLLoader
 
   // network::mojom::URLLoaderClient implementation:
   void OnReceiveEarlyHints(network::mojom::EarlyHintsPtr early_hints) override;
-  void OnReceiveResponse(
-      network::mojom::URLResponseHeadPtr response_head) override;
+  void OnReceiveResponse(network::mojom::URLResponseHeadPtr response_head,
+                         mojo::ScopedDataPipeConsumerHandle body) override;
   void OnReceiveRedirect(
       const net::RedirectInfo& redirect_info,
       network::mojom::URLResponseHeadPtr response_head) override;
@@ -169,8 +169,6 @@ class BLINK_COMMON_EXPORT ThrottlingURLLoader
                         OnUploadProgressCallback ack_callback) override;
   void OnReceiveCachedMetadata(mojo_base::BigBuffer data) override;
   void OnTransferSizeUpdated(int32_t transfer_size_diff) override;
-  void OnStartLoadingResponseBody(
-      mojo::ScopedDataPipeConsumerHandle body) override;
   void OnComplete(const network::URLLoaderCompletionStatus& status) override;
 
   void OnClientConnectionError();
@@ -182,7 +180,8 @@ class BLINK_COMMON_EXPORT ThrottlingURLLoader
       const net::HttpRequestHeaders& modified_cors_exempt_request_headers);
   void UpdateRequestHeaders(network::ResourceRequest& resource_request);
   void UpdateDeferredResponseHead(
-      network::mojom::URLResponseHeadPtr new_response_head);
+      network::mojom::URLResponseHeadPtr new_response_head,
+      mojo::ScopedDataPipeConsumerHandle body);
   void PauseReadingBodyFromNet(URLLoaderThrottle* throttle);
   void ResumeReadingBodyFromNet(URLLoaderThrottle* throttle);
   void InterceptResponse(
@@ -191,7 +190,8 @@ class BLINK_COMMON_EXPORT ThrottlingURLLoader
           new_client_receiver,
       mojo::PendingRemote<network::mojom::URLLoader>* original_loader,
       mojo::PendingReceiver<network::mojom::URLLoaderClient>*
-          original_client_receiver);
+          original_client_receiver,
+      mojo::ScopedDataPipeConsumerHandle* body);
 
   // Disconnects the client connection and releases the URLLoader.
   void DisconnectClient(base::StringPiece custom_description);
@@ -266,6 +266,7 @@ class BLINK_COMMON_EXPORT ThrottlingURLLoader
   };
   // Set if response is deferred.
   std::unique_ptr<ResponseInfo> response_info_;
+  mojo::ScopedDataPipeConsumerHandle body_;
 
   struct RedirectInfo {
     RedirectInfo(const net::RedirectInfo& in_redirect_info,

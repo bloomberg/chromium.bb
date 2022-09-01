@@ -13,6 +13,7 @@
 #include "ash/accessibility/chromevox/touch_exploration_manager.h"
 #include "ash/accessibility/ui/accessibility_panel_layout_manager.h"
 #include "ash/ambient/ambient_controller.h"
+#include "ash/app_list/app_list_controller_impl.h"
 #include "ash/app_menu/app_menu_model_adapter.h"
 #include "ash/constants/ash_constants.h"
 #include "ash/constants/ash_features.h"
@@ -28,9 +29,11 @@
 #include "ash/keyboard/virtual_keyboard_container_layout_manager.h"
 #include "ash/lock_screen_action/lock_screen_action_background_controller.h"
 #include "ash/login_status.h"
+#include "ash/public/cpp/app_menu_constants.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/root_window_settings.h"
 #include "ash/scoped_animation_disabler.h"
 #include "ash/screen_util.h"
@@ -41,6 +44,7 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shelf/shelf_window_targeter.h"
 #include "ash/shell.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/tray_background_view.h"
 #include "ash/system/unified/unified_system_tray.h"
@@ -87,7 +91,9 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_tracker.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/menu_model.h"
+#include "ui/base/models/simple_menu_model.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/events/event_utils.h"
@@ -363,7 +369,7 @@ class RootWindowTargeter : public aura::WindowTargeter {
                                             ui::LocatedEvent* event) {
     constexpr int ExtraMarginForTelemetryTest = -10;
     gfx::Rect bounds = window->bounds();
-    bounds.Inset(ExtraMarginForTelemetryTest, ExtraMarginForTelemetryTest);
+    bounds.Inset(ExtraMarginForTelemetryTest);
     return bounds.Contains(event->location());
   }
 
@@ -535,14 +541,6 @@ aura::Window* RootWindowController::GetRootWindow() {
 
 const aura::Window* RootWindowController::GetRootWindow() const {
   return GetHost()->window();
-}
-
-void RootWindowController::InitializeShelf() {
-  if (shelf_initialized_)
-    return;
-  shelf_initialized_ = true;
-
-  shelf_->shelf_widget()->PostCreateShelf();
 }
 
 ShelfLayoutManager* RootWindowController::GetShelfLayoutManager() {
@@ -751,10 +749,6 @@ void RootWindowController::MoveWindowsTo(aura::Window* dst) {
   ReparentAllWindows(root, dst);
 }
 
-void RootWindowController::UpdateShelfVisibility() {
-  shelf_->UpdateVisibilityState();
-}
-
 void RootWindowController::InitTouchHuds() {
   // Enable touch debugging features when each display is initialized.
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -787,19 +781,54 @@ void RootWindowController::ShowContextMenu(const gfx::Point& location_in_screen,
                                  ->GetDisplayNearestWindow(GetRootWindow())
                                  .id();
 
+  const bool tablet_mode =
+      Shell::Get()->tablet_mode_controller()->InTabletMode();
   root_window_menu_model_adapter_ =
       std::make_unique<RootWindowMenuModelAdapter>(
           std::make_unique<ShelfContextMenuModel>(nullptr, display_id),
           wallpaper_widget_controller()->GetWidget(), source_type,
           base::BindOnce(&RootWindowController::OnMenuClosed,
                          base::Unretained(this)),
-          Shell::Get()->tablet_mode_controller()->InTabletMode());
+          tablet_mode);
+
+  // Appends the apps sort options in ShelfContextMenuModel in tablet mode. Note
+  // that the launcher UI is fullscreen in tablet mode, so the whole root window
+  // can be perceived by users to be part of the launcher.
+  auto* const app_list_controller = Shell::Get()->app_list_controller();
+  if (features::IsLauncherAppSortEnabled() && tablet_mode &&
+      app_list_controller->IsVisible(display_id) &&
+      app_list_controller->GetCurrentAppListPage() ==
+          AppListState::kStateApps) {
+    ui::SimpleMenuModel* menu_model = root_window_menu_model_adapter_->model();
+    sort_apps_submenu_ = std::make_unique<ui::SimpleMenuModel>(
+        static_cast<ShelfContextMenuModel*>(menu_model));
+    sort_apps_submenu_->AddItemWithIcon(
+        REORDER_BY_NAME_ALPHABETICAL,
+        l10n_util::GetStringUTF16(
+            IDS_ASH_LAUNCHER_APPS_GRID_CONTEXT_MENU_REORDER_BY_NAME),
+        ui::ImageModel::FromVectorIcon(kSortAlphabeticalIcon,
+                                       ui::kColorAshSystemUIMenuIcon));
+    sort_apps_submenu_->AddItemWithIcon(
+        REORDER_BY_COLOR,
+        l10n_util::GetStringUTF16(
+            IDS_ASH_LAUNCHER_APPS_GRID_CONTEXT_MENU_REORDER_BY_COLOR),
+        ui::ImageModel::FromVectorIcon(kSortColorIcon,
+                                       ui::kColorAshSystemUIMenuIcon));
+    menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
+    menu_model->AddSubMenuWithIcon(
+        REORDER_SUBMENU,
+        l10n_util::GetStringUTF16(
+            IDS_ASH_LAUNCHER_APPS_GRID_CONTEXT_MENU_REORDER_TITLE),
+        sort_apps_submenu_.get(),
+        ui::ImageModel::FromVectorIcon(kReorderIcon,
+                                       ui::kColorAshSystemUIMenuIcon));
+  }
 
   root_window_menu_model_adapter_->Run(
       gfx::Rect(location_in_screen, gfx::Size()),
       views::MenuAnchorPosition::kBubbleRight,
       views::MenuRunner::CONTEXT_MENU |
-          views::MenuRunner::USE_TOUCHABLE_LAYOUT |
+          views::MenuRunner::USE_ASH_SYS_UI_LAYOUT |
           views::MenuRunner::FIXED_ANCHOR);
 }
 
@@ -852,6 +881,10 @@ void RootWindowController::CloseAmbientWidget(bool immediately) {
   ambient_widget_.reset();
 }
 
+bool RootWindowController::HasAmbientWidget() const {
+  return !!ambient_widget_;
+}
+
 AccessibilityPanelLayoutManager*
 RootWindowController::GetAccessibilityPanelLayoutManagerForTest() {
   return GetAccessibilityPanelLayoutManager();
@@ -898,7 +931,9 @@ void RootWindowController::Init(RootWindowType root_window_type) {
 
   InitLayoutManagers();
   InitTouchHuds();
-  InitializeShelf();
+
+  // `shelf_` was created in the constructor.
+  shelf_->shelf_widget()->PostCreateShelf();
 
   if (Shell::GetPrimaryRootWindowController()
           ->GetSystemModalLayoutManager(nullptr)
@@ -1260,7 +1295,7 @@ void RootWindowController::CreateSystemWallpaper(
   const bool is_boot_splash_screen =
       root_window_type == RootWindowType::PRIMARY &&
       base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kFirstExecAfterBoot);
+          switches::kFirstExecAfterBoot);
   if (is_boot_splash_screen)
     color = kChromeOsBootColor;
   system_wallpaper_ =
@@ -1278,6 +1313,7 @@ RootWindowController::GetAccessibilityPanelLayoutManager() const {
 
 void RootWindowController::OnMenuClosed() {
   root_window_menu_model_adapter_.reset();
+  sort_apps_submenu_.reset();
   shelf_->UpdateVisibilityState();
 }
 

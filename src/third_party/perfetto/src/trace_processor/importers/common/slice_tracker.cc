@@ -20,6 +20,7 @@
 
 #include "src/trace_processor/importers/common/process_tracker.h"
 #include "src/trace_processor/importers/common/slice_tracker.h"
+#include "src/trace_processor/importers/common/slice_translation_table.h"
 #include "src/trace_processor/importers/common/track_tracker.h"
 #include "src/trace_processor/storage/trace_storage.h"
 #include "src/trace_processor/types/trace_processor_context.h"
@@ -39,8 +40,10 @@ SliceTracker::~SliceTracker() = default;
 base::Optional<SliceId> SliceTracker::Begin(int64_t timestamp,
                                             TrackId track_id,
                                             StringId category,
-                                            StringId name,
+                                            StringId raw_name,
                                             SetArgsCallback args_callback) {
+  const StringId name =
+      context_->slice_translation_table->TranslateName(raw_name);
   tables::SliceTable::Row row(timestamp, kPendingDuration, track_id, category,
                               name);
   return StartSlice(timestamp, track_id, args_callback, [this, &row]() {
@@ -50,6 +53,10 @@ base::Optional<SliceId> SliceTracker::Begin(int64_t timestamp,
 
 void SliceTracker::BeginLegacyUnnestable(tables::SliceTable::Row row,
                                          SetArgsCallback args_callback) {
+  if (row.name) {
+    row.name = context_->slice_translation_table->TranslateName(*row.name);
+  }
+
   // Ensure that the duration is pending for this row.
   // TODO(lalitm): change this to eventually use null instead of -1.
   row.dur = kPendingDuration;
@@ -72,11 +79,13 @@ void SliceTracker::BeginLegacyUnnestable(tables::SliceTable::Row row,
 base::Optional<SliceId> SliceTracker::Scoped(int64_t timestamp,
                                              TrackId track_id,
                                              StringId category,
-                                             StringId name,
+                                             StringId raw_name,
                                              int64_t duration,
                                              SetArgsCallback args_callback) {
   PERFETTO_DCHECK(duration >= 0);
 
+  const StringId name =
+      context_->slice_translation_table->TranslateName(raw_name);
   tables::SliceTable::Row row(timestamp, duration, track_id, category, name);
   return StartSlice(timestamp, track_id, args_callback, [this, &row]() {
     return context_->storage->mutable_slice_table()->Insert(row).id;
@@ -86,8 +95,10 @@ base::Optional<SliceId> SliceTracker::Scoped(int64_t timestamp,
 base::Optional<SliceId> SliceTracker::End(int64_t timestamp,
                                           TrackId track_id,
                                           StringId category,
-                                          StringId name,
+                                          StringId raw_name,
                                           SetArgsCallback args_callback) {
+  const StringId name =
+      context_->slice_translation_table->TranslateName(raw_name);
   auto finder = [this, category, name](const SlicesStack& stack) {
     return MatchingIncompleteSliceIndex(stack, name, category);
   };
@@ -111,6 +122,8 @@ base::Optional<uint32_t> SliceTracker::AddArgs(TrackId track_id,
       MatchingIncompleteSliceIndex(stack, name, category);
   if (!stack_idx.has_value())
     return base::nullopt;
+  PERFETTO_DCHECK(*stack_idx < stack.size());
+
   uint32_t slice_idx = stack[*stack_idx].row;
   PERFETTO_DCHECK(slices->dur()[slice_idx] == kPendingDuration);
   // Add args to current pending slice.
@@ -152,10 +165,6 @@ base::Optional<SliceId> SliceTracker::StartSlice(
   MaybeCloseStack(timestamp, stack, track_id);
 
   const uint8_t depth = static_cast<uint8_t>(stack->size());
-  if (depth >= std::numeric_limits<uint8_t>::max()) {
-    PERFETTO_DFATAL("Slices with too large depth found.");
-    return base::nullopt;
-  }
   int64_t parent_stack_id =
       depth == 0 ? 0 : slices->stack_id()[stack->back().row];
   base::Optional<tables::SliceTable::Id> parent_id =
@@ -164,6 +173,14 @@ base::Optional<SliceId> SliceTracker::StartSlice(
 
   SliceId id = inserter();
   uint32_t slice_idx = *slices->id().IndexOf(id);
+  if (depth >= std::numeric_limits<uint8_t>::max()) {
+    auto last_slice_name = slices->name().GetString(stack->back().row);
+    auto current_slice_name = slices->name().GetString(slice_idx);
+    PERFETTO_DLOG("Last slice: %s", last_slice_name.c_str());
+    PERFETTO_DLOG("Current slice: %s", current_slice_name.c_str());
+    PERFETTO_DFATAL("Slices with too large depth found.");
+    return base::nullopt;
+  }
   StackPush(track_id, slice_idx);
 
   // Post fill all the relevant columns. All the other columns should have
@@ -212,12 +229,14 @@ base::Optional<SliceId> SliceTracker::CompleteSlice(
   if (!stack_idx)
     return base::nullopt;
 
-  const auto& slice_info = stack[stack_idx.value()];
+  PERFETTO_DCHECK(*stack_idx < stack.size());
+
+  auto& slice_info = stack[stack_idx.value()];
   uint32_t slice_idx = slice_info.row;
   PERFETTO_DCHECK(slices->dur()[slice_idx] == kPendingDuration);
   slices->mutable_dur()->Set(slice_idx, timestamp - slices->ts()[slice_idx]);
 
-  ArgsTracker* tracker = &stack[stack_idx.value()].args_tracker;
+  ArgsTracker* tracker = &slice_info.args_tracker;
   if (args_callback) {
     auto bound_inserter = tracker->AddArgsTo(slices->id()[slice_idx]);
     args_callback(&bound_inserter);

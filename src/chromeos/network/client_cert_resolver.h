@@ -11,9 +11,10 @@
 
 #include "base/callback_helpers.h"
 #include "base/component_export.h"
-#include "base/containers/flat_map.h"
+#include "base/containers/flat_set.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/scoped_observation.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "chromeos/network/client_cert_util.h"
@@ -24,7 +25,8 @@
 
 namespace base {
 class Clock;
-}
+class Value;
+}  // namespace base
 
 namespace chromeos {
 
@@ -33,7 +35,6 @@ class ManagedNetworkConfigurationHandler;
 
 namespace internal {
 struct NetworkAndMatchingCert;
-struct MatchingCertAndResolveStatus;
 }  // namespace internal
 
 // Observes the known networks. If a network is configured with a client
@@ -90,7 +91,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ClientCertResolver
   static bool ResolveClientCertificateSync(
       const client_cert::ConfigType client_cert_type,
       const client_cert::ClientCertConfig& client_cert_config,
-      base::DictionaryValue* shill_properties);
+      base::Value* shill_properties);
 
   // Allows overwriting the function which gets the client certificate
   // provisioning profile id of a certificate. This is necessary for unit tests,
@@ -138,11 +139,10 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ClientCertResolver
 
   base::ObserverList<Observer, true>::Unchecked observers_;
 
-  // Stores the current client certificate resolution status for each network.
-  // The key is the network's service path. If a network is not present, it is
-  // not known yet (or disappeared from the list of known networks again).
-  base::flat_map<std::string, internal::MatchingCertAndResolveStatus>
-      networks_status_;
+  // Tracks which network configurations ClientCertResolver is aware of, to be
+  // able to detect newly created networks for which certificate resolution may
+  // be necessary. The elements in the set are shill service paths.
+  base::flat_set<std::string> known_networks_service_paths_;
 
   // The list of network paths that still have to be resolved.
   std::set<std::string> queued_networks_to_resolve_;
@@ -156,6 +156,9 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ClientCertResolver
 
   // Unowned associated (global or test) instance.
   NetworkStateHandler* network_state_handler_;
+  base::ScopedObservation<chromeos::NetworkStateHandler,
+                          chromeos::NetworkStateHandlerObserver>
+      network_state_handler_observer_{this};
 
   // Unowned associated (global or test) instance.
   ManagedNetworkConfigurationHandler* managed_network_config_handler_;

@@ -9,7 +9,7 @@
 namespace messages {
 
 const base::Feature kMessagesForAndroidAdsBlocked{
-    "MessagesForAndroidAdsBlocked", base::FEATURE_DISABLED_BY_DEFAULT};
+    "MessagesForAndroidAdsBlocked", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kMessagesForAndroidChromeSurvey{
     "MessagesForAndroidChromeSurvey", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -17,25 +17,31 @@ const base::Feature kMessagesForAndroidChromeSurvey{
 const base::Feature kMessagesForAndroidInfrastructure{
     "MessagesForAndroidInfrastructure", base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kMessagesForAndroidInstantApps{
+    "MessagesForAndroidInstantApps", base::FEATURE_ENABLED_BY_DEFAULT};
+
 const base::Feature kMessagesForAndroidNearOomReduction{
-    "MessagesForAndroidNearOomReduction", base::FEATURE_DISABLED_BY_DEFAULT};
+    "MessagesForAndroidNearOomReduction", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kMessagesForAndroidNotificationBlocked{
-    "MessagesForAndroidNotificationBlocked", base::FEATURE_DISABLED_BY_DEFAULT};
+    "MessagesForAndroidNotificationBlocked", base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kMessagesForAndroidOfferNotification{
+    "MessagesForAndroidOfferNotification", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kMessagesForAndroidPasswords{
-    "MessagesForAndroidPasswords", base::FEATURE_DISABLED_BY_DEFAULT};
+    "MessagesForAndroidPasswords", base::FEATURE_ENABLED_BY_DEFAULT};
 
 constexpr base::FeatureParam<int>
     kMessagesForAndroidPasswords_MessageDismissDurationMs{
         &kMessagesForAndroidPasswords,
-        "save_password_message_dismiss_duration_ms", 0};
+        "save_password_message_dismiss_duration_ms", 20000};
 
 const base::Feature kMessagesForAndroidPermissionUpdate{
-    "MessagesForAndroidPermissionUpdate", base::FEATURE_DISABLED_BY_DEFAULT};
+    "MessagesForAndroidPermissionUpdate", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kMessagesForAndroidPopupBlocked{
-    "MessagesForAndroidPopupBlocked", base::FEATURE_DISABLED_BY_DEFAULT};
+    "MessagesForAndroidPopupBlocked", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kMessagesForAndroidReaderMode{
     "MessagesForAndroidReaderMode", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -54,11 +60,17 @@ constexpr base::FeatureParam<bool>
 constexpr base::FeatureParam<bool> kMessagesForAndroidSaveCard_UseGPayIcon{
     &kMessagesForAndroidSaveCard, "save_card_message_use_gpay_icon", true};
 
+constexpr base::FeatureParam<bool> kMessagesForAndroidSaveCard_UseDialogV2{
+    &kMessagesForAndroidSaveCard, "save_card_dialog_v2_enabled", false};
+
+const base::Feature kMessagesForAndroidStackingAnimation{
+    "MessagesForAndroidStackingAnimation", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kMessagesForAndroidSyncError{
-    "MessagesForAndroidSyncError", base::FEATURE_DISABLED_BY_DEFAULT};
+    "MessagesForAndroidSyncError", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kMessagesForAndroidUpdatePassword{
-    "MessagesForAndroidUpdatePassword", base::FEATURE_DISABLED_BY_DEFAULT};
+    "MessagesForAndroidUpdatePassword", base::FEATURE_ENABLED_BY_DEFAULT};
 
 constexpr base::FeatureParam<bool>
     kMessagesForAndroidUpdatePassword_UseFollowupButtonText{
@@ -72,9 +84,19 @@ bool IsAdsBlockedMessagesUiEnabled() {
          base::FeatureList::IsEnabled(kMessagesForAndroidAdsBlocked);
 }
 
+bool IsInstantAppsMessagesUiEnabled() {
+  return base::FeatureList::IsEnabled(kMessagesForAndroidInfrastructure) &&
+         base::FeatureList::IsEnabled(kMessagesForAndroidInstantApps);
+}
+
 bool IsNearOomReductionMessagesUiEnabled() {
   return base::FeatureList::IsEnabled(kMessagesForAndroidInfrastructure) &&
          base::FeatureList::IsEnabled(kMessagesForAndroidNearOomReduction);
+}
+
+bool IsOfferNotificationMessagesUiEnabled() {
+  return base::FeatureList::IsEnabled(kMessagesForAndroidInfrastructure) &&
+         base::FeatureList::IsEnabled(kMessagesForAndroidOfferNotification);
 }
 
 bool IsPasswordMessagesUiEnabled() {
@@ -126,6 +148,10 @@ bool UseFollowupButtonTextForSaveCardMessage() {
 
 bool UseGPayIconForSaveCardMessage() {
   return kMessagesForAndroidSaveCard_UseGPayIcon.Get();
+}
+
+bool UseDialogV2ForSaveCardMessage() {
+  return kMessagesForAndroidSaveCard_UseDialogV2.Get();
 }
 
 }  // namespace messages

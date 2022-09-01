@@ -4,10 +4,13 @@
 
 #include "ash/components/arc/net/arc_net_host_impl.h"
 
+#include <net/if.h>
+
 #include <utility>
 
 #include "ash/components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "ash/components/arc/arc_prefs.h"
+#include "ash/components/arc/net/cert_manager.h"
 #include "ash/components/arc/session/arc_bridge_service.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -15,10 +18,14 @@
 #include "base/location.h"
 #include "base/memory/singleton.h"
 #include "base/posix/eintr_wrapper.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
+#include "chromeos/ash/components/dbus/patchpanel/patchpanel_client.h"
+#include "chromeos/ash/components/dbus/patchpanel/patchpanel_service.pb.h"
+#include "chromeos/ash/components/network/onc/network_onc_utils.h"
 #include "chromeos/dbus/shill/shill_manager_client.h"
 #include "chromeos/login/login_state/login_state.h"
+#include "chromeos/network/client_cert_util.h"
 #include "chromeos/network/device_state.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_configuration_handler.h"
@@ -28,7 +35,6 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_type_pattern.h"
-#include "chromeos/network/onc/network_onc_utils.h"
 #include "components/device_event_log/device_event_log.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
@@ -61,7 +67,7 @@ const chromeos::NetworkProfile* GetNetworkProfile() {
       chromeos::LoginState::Get()->primary_user_hash());
 }
 
-std::vector<const chromeos::NetworkState*> GetActiveNetworks() {
+std::vector<const chromeos::NetworkState*> GetHostActiveNetworks() {
   std::vector<const chromeos::NetworkState*> active_networks;
   GetStateHandler()->GetActiveNetworkListByType(
       chromeos::NetworkTypePattern::Default(), &active_networks);
@@ -120,9 +126,10 @@ std::string TranslateKeyManagement(arc::mojom::KeyManagement management) {
     case arc::mojom::KeyManagement::kWpaEapSha256:
     case arc::mojom::KeyManagement::kWpaPsk:
     case arc::mojom::KeyManagement::kSae:
-    case arc::mojom::KeyManagement::kNone:
       // Currently these key managements are not handled.
       NET_LOG(ERROR) << "Key management is not supported";
+      return "";
+    case arc::mojom::KeyManagement::kNone:
       return "";
   }
   NET_LOG(ERROR) << "Unknown key management";
@@ -190,7 +197,7 @@ bool IsActiveNetworkState(const chromeos::NetworkState* network) {
   const std::string& state = network->connection_state();
   return state == shill::kStateReady || state == shill::kStateOnline ||
          state == shill::kStateAssociation ||
-         state == shill::kStateConfiguration || state == shill::kStatePortal ||
+         state == shill::kStateConfiguration ||
          state == shill::kStateNoConnectivity ||
          state == shill::kStateRedirectFound ||
          state == shill::kStatePortalSuspected;
@@ -220,14 +227,17 @@ arc::mojom::NetworkType TranslateNetworkType(const std::string& type) {
 // the given |network| NetworkConfiguration object.
 void AddIpConfiguration(arc::mojom::NetworkConfiguration* network,
                         const base::Value* shill_ipconfig) {
-  if (!shill_ipconfig || !shill_ipconfig->is_dict())
+  const base::Value::Dict* shill_ipconfig_dict = shill_ipconfig->GetIfDict();
+  if (!shill_ipconfig_dict)
     return;
 
   // Only set the IP address and gateway if both are defined and non empty.
-  const auto* address = shill_ipconfig->FindStringPath(shill::kAddressProperty);
-  const auto* gateway = shill_ipconfig->FindStringPath(shill::kGatewayProperty);
+  const auto* address =
+      shill_ipconfig_dict->FindString(shill::kAddressProperty);
+  const auto* gateway =
+      shill_ipconfig_dict->FindString(shill::kGatewayProperty);
   const int prefixlen =
-      shill_ipconfig->FindIntPath(shill::kPrefixlenProperty).value_or(0);
+      shill_ipconfig_dict->FindInt(shill::kPrefixlenProperty).value_or(0);
   if (address && !address->empty() && gateway && !gateway->empty()) {
     if (prefixlen < 64) {
       network->host_ipv4_prefix_length = prefixlen;
@@ -243,8 +253,8 @@ void AddIpConfiguration(arc::mojom::NetworkConfiguration* network,
   // If the user has overridden DNS with the "Google nameservers" UI options,
   // the kStaticIPConfigProperty object will be empty except for DNS addresses.
   if (const auto* dns_list =
-          shill_ipconfig->FindListKey(shill::kNameServersProperty)) {
-    for (const auto& dns_value : dns_list->GetList()) {
+          shill_ipconfig_dict->FindList(shill::kNameServersProperty)) {
+    for (const auto& dns_value : *dns_list) {
       const std::string& dns = dns_value.GetString();
       if (dns.empty())
         continue;
@@ -259,16 +269,34 @@ void AddIpConfiguration(arc::mojom::NetworkConfiguration* network,
   }
 
   if (const auto* domains =
-          shill_ipconfig->FindKey(shill::kSearchDomainsProperty)) {
-    if (domains->is_list()) {
-      for (const auto& domain : domains->GetList())
-        network->host_search_domains->push_back(domain.GetString());
+          shill_ipconfig_dict->FindList(shill::kSearchDomainsProperty)) {
+    for (const auto& domain : *domains)
+      network->host_search_domains->push_back(domain.GetString());
+  }
+
+  const int mtu = shill_ipconfig_dict->FindInt(shill::kMtuProperty).value_or(0);
+  if (mtu > 0)
+    network->host_mtu = mtu;
+
+  if (const auto* include_routes_list =
+          shill_ipconfig_dict->FindList(shill::kIncludedRoutesProperty)) {
+    for (const auto& include_routes_value : *include_routes_list) {
+      const std::string& include_route = include_routes_value.GetString();
+      if (!include_route.empty()) {
+        network->include_routes->push_back(include_route);
+      }
     }
   }
 
-  const int mtu = shill_ipconfig->FindIntPath(shill::kMtuProperty).value_or(0);
-  if (mtu > 0)
-    network->host_mtu = mtu;
+  if (const auto* exclude_routes_list =
+          shill_ipconfig_dict->FindList(shill::kExcludedRoutesProperty)) {
+    for (const auto& exclude_routes_value : *exclude_routes_list) {
+      const std::string& exclude_route = exclude_routes_value.GetString();
+      if (!exclude_route.empty()) {
+        network->exclude_routes->push_back(exclude_route);
+      }
+    }
+  }
 }
 
 arc::mojom::NetworkConfigurationPtr TranslateNetworkProperties(
@@ -279,6 +307,8 @@ arc::mojom::NetworkConfigurationPtr TranslateNetworkProperties(
   mojo->host_ipv6_global_addresses = std::vector<std::string>();
   mojo->host_search_domains = std::vector<std::string>();
   mojo->host_dns_addresses = std::vector<std::string>();
+  mojo->include_routes = std::vector<std::string>();
+  mojo->exclude_routes = std::vector<std::string>();
   mojo->connection_state =
       TranslateConnectionState(network_state->connection_state());
   mojo->guid = network_state->guid();
@@ -327,10 +357,16 @@ arc::mojom::NetworkConfigurationPtr TranslateNetworkProperties(
     mojo->wifi->security =
         TranslateWiFiSecurity(network_state->security_class());
     mojo->wifi->frequency = network_state->frequency();
-    mojo->wifi->hidden_ssid =
-        shill_dict &&
-        shill_dict->FindBoolPath(shill::kWifiHiddenSsid).value_or(false);
     mojo->wifi->signal_strength = network_state->signal_strength();
+    if (shill_dict) {
+      mojo->wifi->hidden_ssid =
+          shill_dict->FindBoolPath(shill::kWifiHiddenSsid).value_or(false);
+      const auto* fqdn =
+          shill_dict->FindStringPath(shill::kPasspointFQDNProperty);
+      if (fqdn && !fqdn->empty()) {
+        mojo->wifi->fqdn = *fqdn;
+      }
+    }
   }
 
   return mojo;
@@ -355,12 +391,31 @@ const chromeos::NetworkState* GetShillBackedNetwork(
   return GetStateHandler()->GetNetworkStateFromGuid(network->tether_guid());
 }
 
+std::string IPv4AddressToString(uint32_t addr) {
+  char buf[INET_ADDRSTRLEN] = {0};
+  struct in_addr ia;
+  ia.s_addr = addr;
+  return !inet_ntop(AF_INET, &ia, buf, sizeof(buf)) ? std::string() : buf;
+}
+
 // Convenience helper for translating a vector of NetworkState objects to a
 // vector of mojo NetworkConfiguration objects.
 std::vector<arc::mojom::NetworkConfigurationPtr> TranslateNetworkStates(
     const std::string& arc_vpn_path,
     const chromeos::NetworkStateHandler::NetworkStateList& network_states,
-    const std::map<std::string, base::Value>& shill_network_properties) {
+    const std::map<std::string, base::Value>& shill_network_properties,
+    const std::vector<patchpanel::NetworkDevice>& devices) {
+  // Move the devices vector to a map keyed by its physical interface name in
+  // order to avoid multiple loops. The map also filters non-ARC devices.
+  std::map<std::string, patchpanel::NetworkDevice> arc_devices;
+  for (const auto& d : devices) {
+    if (d.guest_type() != patchpanel::NetworkDevice::ARC &&
+        d.guest_type() != patchpanel::NetworkDevice::ARCVM) {
+      continue;
+    }
+    arc_devices.emplace(d.phys_ifname(), d);
+  }
+
   std::vector<arc::mojom::NetworkConfigurationPtr> networks;
   for (const chromeos::NetworkState* state : network_states) {
     const std::string& network_path = state->path();
@@ -382,6 +437,19 @@ std::vector<arc::mojom::NetworkConfigurationPtr> TranslateNetworkStates(
     auto network = TranslateNetworkProperties(state, shill_dict);
     network->is_default_network = state == GetStateHandler()->DefaultNetwork();
     network->service_name = network_path;
+
+    // Fill in ARC properties.
+    auto arc_it =
+        arc_devices.find(network->network_interface.value_or(std::string()));
+    if (arc_it != arc_devices.end()) {
+      network->arc_network_interface = arc_it->second.guest_ifname();
+      network->arc_ipv4_address =
+          IPv4AddressToString(arc_it->second.ipv4_addr());
+      network->arc_ipv4_gateway =
+          IPv4AddressToString(arc_it->second.host_ipv4_addr());
+      network->arc_ipv4_prefix_length =
+          arc_it->second.ipv4_subnet().prefix_len();
+    }
     networks.push_back(std::move(network));
   }
   return networks;
@@ -394,8 +462,7 @@ void ForgetNetworkSuccessCallback(
 
 void ForgetNetworkFailureCallback(
     base::OnceCallback<void(arc::mojom::NetworkResult)> callback,
-    const std::string& error_name,
-    std::unique_ptr<base::DictionaryValue> error_data) {
+    const std::string& error_name) {
   std::move(callback).Run(arc::mojom::NetworkResult::FAILURE);
 }
 
@@ -406,8 +473,7 @@ void StartConnectSuccessCallback(
 
 void StartConnectFailureCallback(
     base::OnceCallback<void(arc::mojom::NetworkResult)> callback,
-    const std::string& error_name,
-    std::unique_ptr<base::DictionaryValue> error_data) {
+    const std::string& error_name) {
   std::move(callback).Run(arc::mojom::NetworkResult::FAILURE);
 }
 
@@ -418,16 +484,14 @@ void StartDisconnectSuccessCallback(
 
 void StartDisconnectFailureCallback(
     base::OnceCallback<void(arc::mojom::NetworkResult)> callback,
-    const std::string& error_name,
-    std::unique_ptr<base::DictionaryValue> error_data) {
+    const std::string& error_name) {
   std::move(callback).Run(arc::mojom::NetworkResult::FAILURE);
 }
 
 void ArcVpnSuccessCallback() {}
 
 void ArcVpnErrorCallback(const std::string& operation,
-                         const std::string& error_name,
-                         std::unique_ptr<base::DictionaryValue> error_data) {
+                         const std::string& error_name) {
   NET_LOG(ERROR) << "ArcVpnErrorCallback: " << operation << ": " << error_name;
 }
 
@@ -435,6 +499,13 @@ void AddPasspointCredentialsFailureCallback(const std::string& error_name,
                                             const std::string& error_message) {
   NET_LOG(ERROR) << "Failed to add passpoint credentials, error:" << error_name
                  << ", message: " << error_message;
+}
+
+void RemovePasspointCredentialsFailureCallback(
+    const std::string& error_name,
+    const std::string& error_message) {
+  NET_LOG(ERROR) << "Failed to remove passpoint credentials, error:"
+                 << error_name << ", message: " << error_message;
 }
 
 }  // namespace
@@ -496,6 +567,10 @@ void ArcNetHostImpl::SetPrefService(PrefService* pref_service) {
   pref_service_ = pref_service;
 }
 
+void ArcNetHostImpl::SetCertManager(std::unique_ptr<CertManager> cert_manager) {
+  cert_manager_ = std::move(cert_manager);
+}
+
 void ArcNetHostImpl::OnConnectionReady() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
@@ -533,25 +608,41 @@ void ArcNetHostImpl::OnConnectionClosed() {
 void ArcNetHostImpl::GetNetworks(mojom::GetNetworksRequestType type,
                                  GetNetworksCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  chromeos::NetworkStateHandler::NetworkStateList network_states;
   if (type == mojom::GetNetworksRequestType::ACTIVE_ONLY) {
-    // Retrieve list of currently active networks.
-    GetStateHandler()->GetActiveNetworkListByType(
-        chromeos::NetworkTypePattern::Default(), &network_states);
-  } else {
-    // Otherwise retrieve list of configured or visible WiFi networks.
-    bool configured_only =
-        type == mojom::GetNetworksRequestType::CONFIGURED_ONLY;
-    chromeos::NetworkTypePattern network_pattern =
-        chromeos::onc::NetworkTypePatternFromOncType(onc::network_type::kWiFi);
-    GetStateHandler()->GetNetworkListByType(
-        network_pattern, configured_only, !configured_only /* visible_only */,
-        kGetNetworksListLimit, &network_states);
+    ash::PatchPanelClient::Get()->GetDevices(
+        base::BindOnce(&ArcNetHostImpl::GetActiveNetworks,
+                       weak_factory_.GetWeakPtr(), std::move(callback)));
+    return;
   }
 
-  std::vector<mojom::NetworkConfigurationPtr> networks = TranslateNetworkStates(
-      arc_vpn_service_path_, network_states, shill_network_properties_);
+  // Otherwise retrieve list of configured or visible WiFi networks.
+  bool configured_only = type == mojom::GetNetworksRequestType::CONFIGURED_ONLY;
+  chromeos::NetworkTypePattern network_pattern =
+      chromeos::onc::NetworkTypePatternFromOncType(onc::network_type::kWiFi);
+
+  chromeos::NetworkStateHandler::NetworkStateList network_states;
+  GetStateHandler()->GetNetworkListByType(
+      network_pattern, configured_only, !configured_only /* visible_only */,
+      kGetNetworksListLimit, &network_states);
+
+  std::vector<mojom::NetworkConfigurationPtr> networks =
+      TranslateNetworkStates(arc_vpn_service_path_, network_states,
+                             shill_network_properties_, {} /* devices */);
+  std::move(callback).Run(mojom::GetNetworksResponseType::New(
+      arc::mojom::NetworkResult::SUCCESS, std::move(networks)));
+}
+
+void ArcNetHostImpl::GetActiveNetworks(
+    GetNetworksCallback callback,
+    const std::vector<patchpanel::NetworkDevice>& devices) {
+  // Retrieve list of currently active networks.
+  chromeos::NetworkStateHandler::NetworkStateList network_states;
+  GetStateHandler()->GetActiveNetworkListByType(
+      chromeos::NetworkTypePattern::Default(), &network_states);
+
+  std::vector<mojom::NetworkConfigurationPtr> networks =
+      TranslateNetworkStates(arc_vpn_service_path_, network_states,
+                             shill_network_properties_, devices);
   std::move(callback).Run(mojom::GetNetworksResponseType::New(
       arc::mojom::NetworkResult::SUCCESS, std::move(networks)));
 }
@@ -568,8 +659,7 @@ void ArcNetHostImpl::CreateNetworkSuccessCallback(
 
 void ArcNetHostImpl::CreateNetworkFailureCallback(
     base::OnceCallback<void(const std::string&)> callback,
-    const std::string& error_name,
-    std::unique_ptr<base::DictionaryValue> error_data) {
+    const std::string& error_name) {
   NET_LOG(ERROR) << "CreateNetworkFailureCallback: " << error_name;
   std::move(callback).Run(std::string());
 }
@@ -912,86 +1002,175 @@ void ArcNetHostImpl::AndroidVpnStateChanged(mojom::ConnectionStateType state) {
       base::BindOnce(&ArcVpnErrorCallback, "disconnecting ARC VPN"));
 }
 
-base::Value ArcNetHostImpl::TranslateEapCredentialsToDict(
-    const mojom::EapCredentials& cred) {
-  base::Value dict(base::Value::Type::DICTIONARY);
+void ArcNetHostImpl::TranslateEapCredentialsToDict(
+    mojom::EapCredentialsPtr cred,
+    base::OnceCallback<void(base::Value)> callback) {
+  if (!cred) {
+    NET_LOG(ERROR) << "Empty EAP credentials";
+    return;
+  }
+  if (!cert_manager_) {
+    NET_LOG(ERROR) << "CertManager is not initialized";
+    return;
+  }
 
-  dict.SetStringKey(shill::kEapMethodProperty, TranslateEapMethod(cred.method));
-  dict.SetStringKey(shill::kEapPhase2AuthProperty,
-                    TranslateEapPhase2Method(cred.phase2_method));
-  if (cred.anonymous_identity.has_value()) {
-    dict.SetStringKey(shill::kEapAnonymousIdentityProperty,
-                      cred.anonymous_identity.value());
+  if (cred->client_certificate_key.has_value() &&
+      cred->client_certificate_pem.has_value() &&
+      cred->client_certificate_pem.value().size() > 0) {
+    // |client_certificate_pem| contains all client certificates inside ARC's
+    // PasspointConfiguration. ARC uses only one of the certificate that match
+    // the certificate SHA-256 fingerprint. Currently, it is assumed that the
+    // first certificate is the used certificate.
+    // TODO(b/195262431): Remove the assumption by passing only the used
+    // certificate to Chrome.
+    // TODO(b/220803680): Remove imported certificates and keys when the
+    // associated passpoint profile is removed.
+    auto key = cred->client_certificate_key.value();
+    auto pem = cred->client_certificate_pem.value()[0];
+    cert_manager_->ImportPrivateKeyAndCert(
+        key, pem,
+        base::BindOnce(&ArcNetHostImpl::TranslateEapCredentialsToDictWithCertID,
+                       weak_factory_.GetWeakPtr(), std::move(cred),
+                       std::move(callback)));
+    return;
   }
-  if (cred.identity.has_value())
-    dict.SetStringKey(shill::kEapIdentityProperty, cred.identity.value());
-
-  if (cred.password.has_value())
-    dict.SetStringKey(shill::kEapPasswordProperty, cred.password.value());
-
-  dict.SetStringKey(shill::kEapKeyMgmtProperty,
-                    TranslateKeyManagement(cred.key_management));
-  // TODO(195262431): Provision and fill in certificates.
-  if (cred.subject_match.has_value()) {
-    dict.SetStringKey(shill::kEapSubjectMatchProperty,
-                      cred.subject_match.value());
-  }
-  if (cred.subject_alternative_name_match_list.has_value()) {
-    dict.SetKey(shill::kEapSubjectAlternativeNameMatchProperty,
-                TranslateStringListToValue(
-                    cred.subject_alternative_name_match_list.value()));
-  }
-  if (cred.domain_suffix_match_list.has_value()) {
-    dict.SetKey(
-        shill::kEapDomainSuffixMatchProperty,
-        TranslateStringListToValue(cred.domain_suffix_match_list.value()));
-  }
-  if (cred.tls_version_max.has_value()) {
-    dict.SetStringKey(shill::kEapTLSVersionMaxProperty,
-                      cred.tls_version_max.value());
-  }
-  dict.SetBoolKey(shill::kEapUseSystemCasProperty, cred.use_system_cas);
-  dict.SetBoolKey(shill::kEapUseProactiveKeyCachingProperty,
-                  cred.use_proactive_key_caching);
-  dict.SetBoolKey(shill::kEapUseLoginPasswordProperty, cred.use_login_password);
-
-  return dict;
+  TranslateEapCredentialsToDictWithCertID(std::move(cred), std::move(callback),
+                                          /*cert_id=*/absl::nullopt,
+                                          /*slot_id=*/absl::nullopt);
 }
 
-base::Value ArcNetHostImpl::TranslatePasspointCredentialsToDict(
-    const mojom::PasspointCredentials& cred) {
-  // Fill in EAP credentials fields.
-  if (!cred.eap) {
-    NET_LOG(ERROR) << "mojom::PasspointCredentials has no EAP properties";
-    return base::Value();
+void ArcNetHostImpl::TranslateEapCredentialsToDictWithCertID(
+    mojom::EapCredentialsPtr cred,
+    base::OnceCallback<void(base::Value)> callback,
+    const absl::optional<std::string>& cert_id,
+    const absl::optional<int>& slot_id) {
+  if (!cred) {
+    NET_LOG(ERROR) << "Empty EAP credentials";
+    return;
   }
-  auto dict = TranslateEapCredentialsToDict(*cred.eap);
 
-  // Fill in Passpoint credentials fields.
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetStringKey(shill::kEapMethodProperty,
+                    TranslateEapMethod(cred->method));
+  dict.SetStringKey(shill::kEapPhase2AuthProperty,
+                    TranslateEapPhase2Method(cred->phase2_method));
+  if (cred->anonymous_identity.has_value()) {
+    dict.SetStringKey(shill::kEapAnonymousIdentityProperty,
+                      cred->anonymous_identity.value());
+  }
+  if (cred->identity.has_value())
+    dict.SetStringKey(shill::kEapIdentityProperty, cred->identity.value());
+
+  if (cred->password.has_value())
+    dict.SetStringKey(shill::kEapPasswordProperty, cred->password.value());
+
+  dict.SetStringKey(shill::kEapKeyMgmtProperty,
+                    TranslateKeyManagement(cred->key_management));
+
+  if (cred->ca_certificate_pem.has_value()) {
+    dict.SetKey(shill::kEapCaCertPemProperty,
+                TranslateStringListToValue(cred->ca_certificate_pem.value()));
+  }
+  if (cert_id.has_value() && slot_id.has_value()) {
+    // The ID of imported user certificate and private key is the same, use one
+    // of them.
+    dict.SetStringKey(
+        shill::kEapKeyIdProperty,
+        base::StringPrintf("%i:%s", slot_id.value(), cert_id.value().c_str()));
+    dict.SetStringKey(
+        shill::kEapCertIdProperty,
+        base::StringPrintf("%i:%s", slot_id.value(), cert_id.value().c_str()));
+    dict.SetStringKey(shill::kEapPinProperty,
+                      chromeos::client_cert::kDefaultTPMPin);
+  }
+
+  if (cred->subject_match.has_value()) {
+    dict.SetStringKey(shill::kEapSubjectMatchProperty,
+                      cred->subject_match.value());
+  }
+  if (cred->subject_alternative_name_match_list.has_value()) {
+    dict.SetKey(shill::kEapSubjectAlternativeNameMatchProperty,
+                TranslateStringListToValue(
+                    cred->subject_alternative_name_match_list.value()));
+  }
+  if (cred->domain_suffix_match_list.has_value()) {
+    dict.SetKey(
+        shill::kEapDomainSuffixMatchProperty,
+        TranslateStringListToValue(cred->domain_suffix_match_list.value()));
+  }
+  if (cred->tls_version_max.has_value()) {
+    dict.SetStringKey(shill::kEapTLSVersionMaxProperty,
+                      cred->tls_version_max.value());
+  }
+  dict.SetBoolKey(shill::kEapUseSystemCasProperty, cred->use_system_cas);
+  dict.SetBoolKey(shill::kEapUseProactiveKeyCachingProperty,
+                  cred->use_proactive_key_caching);
+  dict.SetBoolKey(shill::kEapUseLoginPasswordProperty,
+                  cred->use_login_password);
+
+  std::move(callback).Run(std::move(dict));
+}
+
+void ArcNetHostImpl::TranslatePasspointCredentialsToDict(
+    mojom::PasspointCredentialsPtr cred,
+    base::OnceCallback<void(base::Value)> callback) {
+  if (!cred) {
+    NET_LOG(ERROR) << "Empty passpoint credentials";
+    return;
+  }
+  if (!cred->eap) {
+    NET_LOG(ERROR) << "mojom::PasspointCredentials has no EAP properties";
+    return;
+  }
+
+  mojom::EapCredentialsPtr eap = cred->eap.Clone();
+  TranslateEapCredentialsToDict(
+      std::move(eap),
+      base::BindOnce(
+          &ArcNetHostImpl::TranslatePasspointCredentialsToDictWithEapTranslated,
+          weak_factory_.GetWeakPtr(), std::move(cred), std::move(callback)));
+}
+
+void ArcNetHostImpl::TranslatePasspointCredentialsToDictWithEapTranslated(
+    mojom::PasspointCredentialsPtr cred,
+    base::OnceCallback<void(base::Value)> callback,
+    base::Value dict) {
+  if (!cred) {
+    NET_LOG(ERROR) << "Empty passpoint credentials";
+    return;
+  }
+  if (dict.is_none()) {
+    NET_LOG(ERROR) << "Failed to translate EapCredentials properties";
+    return;
+  }
+
   dict.SetKey(shill::kPasspointCredentialsDomainsProperty,
-              TranslateStringListToValue(cred.domains));
-  dict.SetStringKey(shill::kPasspointCredentialsRealmProperty, cred.realm);
+              TranslateStringListToValue(cred->domains));
+  dict.SetStringKey(shill::kPasspointCredentialsRealmProperty, cred->realm);
   dict.SetKey(shill::kPasspointCredentialsHomeOIsProperty,
-              TranslateLongListToStringValue(cred.home_ois));
+              TranslateLongListToStringValue(cred->home_ois));
   dict.SetKey(shill::kPasspointCredentialsRequiredHomeOIsProperty,
-              TranslateLongListToStringValue(cred.required_home_ois));
+              TranslateLongListToStringValue(cred->required_home_ois));
   dict.SetKey(shill::kPasspointCredentialsRoamingConsortiaProperty,
-              TranslateLongListToStringValue(cred.roaming_consortium_ois));
+              TranslateLongListToStringValue(cred->roaming_consortium_ois));
   dict.SetBoolKey(shill::kPasspointCredentialsMeteredOverrideProperty,
-                  cred.metered);
+                  cred->metered);
   dict.SetStringKey(shill::kPasspointCredentialsAndroidPackageNameProperty,
-                    cred.package_name);
+                    cred->package_name);
 
-  return dict;
+  std::move(callback).Run(std::move(dict));
 }
 
 void ArcNetHostImpl::AddPasspointCredentials(
     mojom::PasspointCredentialsPtr credentials) {
-  // TODO(195262431): Support EAP-TLS.
-  if (credentials->eap->method != mojom::EapMethod::kTtls)
-    return;
+  TranslatePasspointCredentialsToDict(
+      std::move(credentials),
+      base::BindOnce(&ArcNetHostImpl::AddPasspointCredentialsWithProperties,
+                     weak_factory_.GetWeakPtr()));
+}
 
-  const auto properties = TranslatePasspointCredentialsToDict(*credentials);
+void ArcNetHostImpl::AddPasspointCredentialsWithProperties(
+    base::Value properties) {
   if (properties.is_none()) {
     NET_LOG(ERROR) << "Failed to translate PasspointCredentials properties";
     return;
@@ -1010,8 +1189,33 @@ void ArcNetHostImpl::AddPasspointCredentials(
 }
 
 void ArcNetHostImpl::RemovePasspointCredentials(
-    const std::string& package_name) {
-  // TODO(b/195262431) Call shill Manager RemovePasspointCredentials method.
+    mojom::PasspointRemovalPropertiesPtr properties) {
+  if (!properties) {
+    NET_LOG(ERROR) << "Empty passpoint removal properties";
+    return;
+  }
+
+  const auto* profile = GetNetworkProfile();
+  if (!profile || profile->path.empty()) {
+    NET_LOG(ERROR) << "Unable to get network profile path";
+    return;
+  }
+
+  base::Value shill_properties(base::Value::Type::DICTIONARY);
+  if (properties->fqdn.has_value()) {
+    shill_properties.SetStringKey(shill::kPasspointCredentialsFQDNProperty,
+                                  properties->fqdn.value());
+  }
+  if (properties->package_name.has_value()) {
+    shill_properties.SetStringKey(
+        shill::kPasspointCredentialsAndroidPackageNameProperty,
+        properties->package_name.value());
+  }
+
+  ash::ShillManagerClient::Get()->RemovePasspointCredentials(
+      dbus::ObjectPath(profile->path), shill_properties, base::DoNothing(),
+      base::BindOnce(&RemovePasspointCredentialsFailureCallback));
+
   return;
 }
 
@@ -1089,19 +1293,23 @@ void ArcNetHostImpl::ReceiveShillProperties(
   if (!IsActiveNetworkState(network))
     return;
 
-  base::InsertOrAssign(shill_network_properties_, service_path,
-                       std::move(*shill_properties));
-  UpdateActiveNetworks();
+  shill_network_properties_[service_path] = std::move(*shill_properties);
+
+  // Get patchpanel devices and update active networks.
+  ash::PatchPanelClient::Get()->GetDevices(base::BindOnce(
+      &ArcNetHostImpl::UpdateActiveNetworks, weak_factory_.GetWeakPtr()));
 }
 
-void ArcNetHostImpl::UpdateActiveNetworks() {
+void ArcNetHostImpl::UpdateActiveNetworks(
+    const std::vector<patchpanel::NetworkDevice>& devices) {
   auto* net_instance = ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->net(),
                                                    ActiveNetworksChanged);
   if (!net_instance)
     return;
 
-  net_instance->ActiveNetworksChanged(TranslateNetworkStates(
-      arc_vpn_service_path_, GetActiveNetworks(), shill_network_properties_));
+  net_instance->ActiveNetworksChanged(
+      TranslateNetworkStates(arc_vpn_service_path_, GetHostActiveNetworks(),
+                             shill_network_properties_, devices));
 }
 
 void ArcNetHostImpl::NetworkListChanged() {
@@ -1110,11 +1318,11 @@ void ArcNetHostImpl::NetworkListChanged() {
     return !IsActiveNetworkState(
         GetStateHandler()->GetNetworkState(entry.first));
   });
-  const auto active_networks = GetActiveNetworks();
+  const auto active_networks = GetHostActiveNetworks();
   // If there is no active networks, send an explicit ActiveNetworksChanged
   // event to ARC and skip updating Shill properties.
   if (active_networks.empty()) {
-    UpdateActiveNetworks();
+    UpdateActiveNetworks({} /* devices */);
     return;
   }
   for (const auto* network : active_networks)
