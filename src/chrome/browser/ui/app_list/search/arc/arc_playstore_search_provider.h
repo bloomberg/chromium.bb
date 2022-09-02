@@ -18,6 +18,10 @@ namespace arc {
 enum class ArcPlayStoreSearchRequestState;
 }  // namespace arc
 
+namespace base {
+class TimeTicks;
+}  // namespace base
+
 namespace app_list {
 
 class ArcPlayStoreSearchProvider : public SearchProvider {
@@ -34,7 +38,7 @@ class ArcPlayStoreSearchProvider : public SearchProvider {
 
   // SearchProvider:
   void Start(const std::u16string& query) override;
-  ash::AppListSearchResultType ResultType() override;
+  ash::AppListSearchResultType ResultType() const override;
 
  private:
   void OnResults(const std::u16string& query,

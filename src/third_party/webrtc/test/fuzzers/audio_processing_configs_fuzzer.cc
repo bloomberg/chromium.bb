@@ -13,6 +13,7 @@
 
 #include "absl/memory/memory.h"
 #include "api/audio/echo_canceller3_factory.h"
+#include "api/audio/echo_detector_creator.h"
 #include "api/task_queue/default_task_queue_factory.h"
 #include "modules/audio_processing/aec_dump/aec_dump_factory.h"
 #include "modules/audio_processing/include/audio_processing.h"
@@ -39,27 +40,21 @@ rtc::scoped_refptr<AudioProcessing> CreateApm(test::FuzzDataHelper* fuzz_data,
                                               rtc::TaskQueue* worker_queue) {
   // Parse boolean values for optionally enabling different
   // configurable public components of APM.
-  static_cast<void>(fuzz_data->ReadOrDefaultValue(true));
   bool use_ts = fuzz_data->ReadOrDefaultValue(true);
-  static_cast<void>(fuzz_data->ReadOrDefaultValue(true));
-  static_cast<void>(fuzz_data->ReadOrDefaultValue(true));
-  static_cast<void>(fuzz_data->ReadOrDefaultValue(true));
-  bool red = fuzz_data->ReadOrDefaultValue(true);
-  bool hpf = fuzz_data->ReadOrDefaultValue(true);
-  bool aec3 = fuzz_data->ReadOrDefaultValue(true);
-
+  bool use_red = fuzz_data->ReadOrDefaultValue(true);
+  bool use_hpf = fuzz_data->ReadOrDefaultValue(true);
+  bool use_aec3 = fuzz_data->ReadOrDefaultValue(true);
   bool use_aec = fuzz_data->ReadOrDefaultValue(true);
   bool use_aecm = fuzz_data->ReadOrDefaultValue(true);
   bool use_agc = fuzz_data->ReadOrDefaultValue(true);
   bool use_ns = fuzz_data->ReadOrDefaultValue(true);
-  static_cast<void>(fuzz_data->ReadOrDefaultValue(true));
-  bool use_vad = fuzz_data->ReadOrDefaultValue(true);
   bool use_agc_limiter = fuzz_data->ReadOrDefaultValue(true);
   bool use_agc2 = fuzz_data->ReadOrDefaultValue(true);
+  bool use_agc2_adaptive_digital = fuzz_data->ReadOrDefaultValue(true);
 
-  // Read an int8 value, but don't let it be too large or small.
+  // Read a gain value supported by GainController2::Validate().
   const float gain_controller2_gain_db =
-      rtc::SafeClamp<int>(fuzz_data->ReadOrDefaultValue<int8_t>(0), -40, 40);
+      fuzz_data->ReadOrDefaultValue<uint8_t>(0) % 50;
 
   constexpr size_t kNumFieldTrials = arraysize(kFieldTrialNames);
   // Verify that the read data type has enough bits to fuzz the field trials.
@@ -75,10 +70,6 @@ rtc::scoped_refptr<AudioProcessing> CreateApm(test::FuzzDataHelper* fuzz_data,
   }
   field_trial::InitFieldTrialsFromString(field_trial_string->c_str());
 
-  bool use_agc2_adaptive_digital = fuzz_data->ReadOrDefaultValue(true);
-  static_cast<void>(fuzz_data->ReadOrDefaultValue(true));
-  static_cast<void>(fuzz_data->ReadOrDefaultValue(true));
-
   // Ignore a few bytes. Bytes from this segment will be used for
   // future config flag changes. We assume 40 bytes is enough for
   // configuring the APM.
@@ -88,14 +79,14 @@ rtc::scoped_refptr<AudioProcessing> CreateApm(test::FuzzDataHelper* fuzz_data,
       fuzz_data->ReadByteArray(kSizeOfConfigSegment - fuzz_data->BytesRead()));
 
   // Filter out incompatible settings that lead to CHECK failures.
-  if ((use_aecm && use_aec) ||      // These settings cause CHECK failure.
-      (use_aecm && aec3 && use_ns)  // These settings trigger webrtc:9489.
+  if ((use_aecm && use_aec) ||          // These settings cause CHECK failure.
+      (use_aecm && use_aec3 && use_ns)  // These settings trigger webrtc:9489.
   ) {
     return nullptr;
   }
 
   std::unique_ptr<EchoControlFactory> echo_control_factory;
-  if (aec3) {
+  if (use_aec3) {
     echo_control_factory.reset(new EchoCanceller3Factory());
   }
 
@@ -104,8 +95,7 @@ rtc::scoped_refptr<AudioProcessing> CreateApm(test::FuzzDataHelper* fuzz_data,
   apm_config.pipeline.multi_channel_capture = true;
   apm_config.echo_canceller.enabled = use_aec || use_aecm;
   apm_config.echo_canceller.mobile_mode = use_aecm;
-  apm_config.residual_echo_detector.enabled = red;
-  apm_config.high_pass_filter.enabled = hpf;
+  apm_config.high_pass_filter.enabled = use_hpf;
   apm_config.gain_controller1.enabled = use_agc;
   apm_config.gain_controller1.enable_limiter = use_agc_limiter;
   apm_config.gain_controller2.enabled = use_agc2;
@@ -114,11 +104,11 @@ rtc::scoped_refptr<AudioProcessing> CreateApm(test::FuzzDataHelper* fuzz_data,
       use_agc2_adaptive_digital;
   apm_config.noise_suppression.enabled = use_ns;
   apm_config.transient_suppression.enabled = use_ts;
-  apm_config.voice_detection.enabled = use_vad;
 
   rtc::scoped_refptr<AudioProcessing> apm =
       AudioProcessingBuilderForTesting()
           .SetEchoControlFactory(std::move(echo_control_factory))
+          .SetEchoDetector(use_red ? CreateEchoDetector() : nullptr)
           .SetConfig(apm_config)
           .Create();
 

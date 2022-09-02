@@ -67,7 +67,8 @@ base::flat_set<ParsingResult> ParseDomainSpecificParamaters(
     }
   }
 
-  for (const base::Value& domain : supported_domains_list->GetList()) {
+  for (const base::Value& domain :
+       supported_domains_list->GetListDeprecated()) {
     if (!domain.is_string()) {
       warnings.insert(ParsingResult::kInvalidJson);
       continue;
@@ -78,6 +79,12 @@ base::flat_set<ParsingResult> ParseDomainSpecificParamaters(
       warnings.insert(ParsingResult::kInvalidUrl);
       continue;
     }
+
+    if (url.SchemeIs(url::kHttpScheme)) {
+      // Http schemes are not supported.
+      continue;
+    }
+
     supported_domains.insert(std::make_pair(url::Origin::Create(url), version));
   }
 
@@ -96,17 +103,21 @@ constexpr base::FeatureParam<std::string> kScriptsListUrlParam{
     kDefaultChangePasswordScriptsListUrl};
 
 PasswordScriptsFetcherImpl::PasswordScriptsFetcherImpl(
+    bool is_supervised_user,
     const base::Version& version,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
-    : PasswordScriptsFetcherImpl(version,
+    : PasswordScriptsFetcherImpl(is_supervised_user,
+                                 version,
                                  std::move(url_loader_factory),
                                  kScriptsListUrlParam.Get()) {}
 
 PasswordScriptsFetcherImpl::PasswordScriptsFetcherImpl(
+    bool is_supervised_user,
     const base::Version& version,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     std::string scripts_list_url)
-    : version_(version),
+    : is_supervised_user_(is_supervised_user),
+      version_(version),
       scripts_list_url_(std::move(scripts_list_url)),
       url_loader_factory_(std::move(url_loader_factory)) {}
 
@@ -160,6 +171,10 @@ void PasswordScriptsFetcherImpl::FetchScriptAvailability(
 
 bool PasswordScriptsFetcherImpl::IsScriptAvailable(
     const url::Origin& origin) const {
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kForceEnablePasswordDomainCapabilities)) {
+    return true;
+  }
   const auto& it = password_change_domains_.find(origin);
   if (it == password_change_domains_.end()) {
     return false;
@@ -271,6 +286,12 @@ base::flat_set<ParsingResult> PasswordScriptsFetcherImpl::ParseResponse(
 }
 
 bool PasswordScriptsFetcherImpl::IsCacheStale() const {
+  // For supervised users, we always simulate a fresh cache to avoid fetching
+  // scripts.
+  if (is_supervised_user_) {
+    return false;
+  }
+
   static const base::TimeDelta kCacheTimeout(
       base::Minutes(kCacheTimeoutInMinutes));
   return last_fetch_timestamp_.is_null() ||
@@ -283,6 +304,26 @@ void PasswordScriptsFetcherImpl::RunResponseCallback(
   DCHECK(!url_loader_);     // Fetching is not running.
   DCHECK(!IsCacheStale());  // Cache is ready.
   std::move(callback).Run(IsScriptAvailable(origin));
+}
+
+base::Value::Dict PasswordScriptsFetcherImpl::GetDebugInformationForInternals()
+    const {
+  base::Value::Dict result;
+  result.Set("engine", "gstatic lookup");
+  result.Set("script_list_url", scripts_list_url_);
+  return result;
+}
+
+base::Value::List PasswordScriptsFetcherImpl::GetCacheEntries() const {
+  base::Value::List cache_entries;
+
+  for (const auto& [origin, version] : password_change_domains_) {
+    base::Value::Dict entry;
+    entry.Set("url", origin.Serialize());
+    cache_entries.Append(std::move(entry));
+  }
+
+  return cache_entries;
 }
 
 }  // namespace password_manager

@@ -14,6 +14,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
+#include "media/cast/common/encoded_frame.h"
 #include "media/cast/constants.h"
 #include "media/cast/net/rtcp/rtcp_utility.h"
 
@@ -204,8 +205,6 @@ void FrameReceiver::EmitAvailableEncodedFrames() {
 
   while (!frame_request_queue_.empty()) {
     // Attempt to peek at the next completed frame from the |framer_|.
-    // TODO(miu): We should only be peeking at the metadata, and not copying the
-    // payload yet!  Or, at least, peek using a StringPiece instead of a copy.
     std::unique_ptr<EncodedFrame> encoded_frame(new EncodedFrame());
     bool is_consecutively_next_frame = false;
     bool have_multiple_complete_frames = false;
@@ -335,7 +334,7 @@ void FrameReceiver::ScheduleNextRtcpReport() {
   cast_environment_->PostDelayedTask(
       CastEnvironment::MAIN, FROM_HERE,
       base::BindOnce(&FrameReceiver::SendNextRtcpReport, AsWeakPtr()),
-      base::Milliseconds(kRtcpReportIntervalMs));
+      kRtcpReportInterval);
 }
 
 void FrameReceiver::SendNextRtcpReport() {

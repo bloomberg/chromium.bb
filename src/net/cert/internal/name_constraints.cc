@@ -17,6 +17,7 @@
 #include "net/der/input.h"
 #include "net/der/parser.h"
 #include "net/der/tag.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace net {
 
@@ -73,10 +74,9 @@ bool DNSNameMatches(base::StringPiece name,
       name[0] == '*' && name[1] == '.') {
     size_t dns_constraint_dot_pos = dns_constraint.find('.');
     if (dns_constraint_dot_pos != std::string::npos) {
-      base::StringPiece dns_constraint_domain(
-          dns_constraint.begin() + dns_constraint_dot_pos + 1,
-          dns_constraint.size() - dns_constraint_dot_pos - 1);
-      base::StringPiece wildcard_domain(name.begin() + 2, name.size() - 2);
+      base::StringPiece dns_constraint_domain =
+          dns_constraint.substr(dns_constraint_dot_pos + 1);
+      base::StringPiece wildcard_domain = name.substr(2);
       if (base::EqualsCaseInsensitiveASCII(wildcard_domain,
                                            dns_constraint_domain)) {
         return true;
@@ -112,9 +112,9 @@ bool DNSNameMatches(base::StringPiece name,
 // NOTE: |subtrees| is not pre-initialized by the function(it is expected to be
 // a default initialized object), and it will be modified regardless of the
 // return value.
-WARN_UNUSED_RESULT bool ParseGeneralSubtrees(const der::Input& value,
-                                             GeneralNames* subtrees,
-                                             CertErrors* errors) {
+[[nodiscard]] bool ParseGeneralSubtrees(const der::Input& value,
+                                        GeneralNames* subtrees,
+                                        CertErrors* errors) {
   DCHECK(errors);
 
   // GeneralSubtrees ::= SEQUENCE SIZE (1..MAX) OF GeneralSubtree
@@ -196,32 +196,28 @@ bool NameConstraints::Parse(const der::Input& extension_value,
   if (extension_parser.HasMore())
     return false;
 
-  bool had_permitted_subtrees = false;
-  der::Input permitted_subtrees_value;
+  absl::optional<der::Input> permitted_subtrees_value;
   if (!sequence_parser.ReadOptionalTag(der::ContextSpecificConstructed(0),
-                                       &permitted_subtrees_value,
-                                       &had_permitted_subtrees)) {
+                                       &permitted_subtrees_value)) {
     return false;
   }
-  if (had_permitted_subtrees &&
-      !ParseGeneralSubtrees(permitted_subtrees_value, &permitted_subtrees_,
-                            errors)) {
+  if (permitted_subtrees_value &&
+      !ParseGeneralSubtrees(permitted_subtrees_value.value(),
+                            &permitted_subtrees_, errors)) {
     return false;
   }
   constrained_name_types_ |=
       permitted_subtrees_.present_name_types &
       (is_critical ? GENERAL_NAME_ALL_TYPES : kSupportedNameTypes);
 
-  bool had_excluded_subtrees = false;
-  der::Input excluded_subtrees_value;
+  absl::optional<der::Input> excluded_subtrees_value;
   if (!sequence_parser.ReadOptionalTag(der::ContextSpecificConstructed(1),
-                                       &excluded_subtrees_value,
-                                       &had_excluded_subtrees)) {
+                                       &excluded_subtrees_value)) {
     return false;
   }
-  if (had_excluded_subtrees &&
-      !ParseGeneralSubtrees(excluded_subtrees_value, &excluded_subtrees_,
-                            errors)) {
+  if (excluded_subtrees_value &&
+      !ParseGeneralSubtrees(excluded_subtrees_value.value(),
+                            &excluded_subtrees_, errors)) {
     return false;
   }
   constrained_name_types_ |=
@@ -232,7 +228,7 @@ bool NameConstraints::Parse(const der::Input& extension_value,
   // Conforming CAs MUST NOT issue certificates where name constraints is an
   // empty sequence. That is, either the permittedSubtrees field or the
   // excludedSubtrees MUST be present.
-  if (!had_permitted_subtrees && !had_excluded_subtrees)
+  if (!permitted_subtrees_value && !excluded_subtrees_value)
     return false;
 
   if (sequence_parser.HasMore())

@@ -4,9 +4,8 @@
 
 #include "ash/components/tether/network_configuration_remover.h"
 
+#include "ash/components/multidevice/logging/logging.h"
 #include "base/bind.h"
-#include "base/values.h"
-#include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
 
 namespace {
@@ -16,17 +15,15 @@ void RemoveConfigurationSuccessCallback(const std::string& path) {
                   << ".";
 }
 
-void RemoveConfigurationFailureCallback(
-    const std::string& path,
-    const std::string& error_name,
-    std::unique_ptr<base::DictionaryValue> error_data) {
+void RemoveConfigurationFailureCallback(const std::string& path,
+                                        const std::string& error_name) {
   PA_LOG(WARNING) << "Failed to remove Wi-Fi network with path " << path
                   << ". Error:" << error_name << ".";
 }
 
 }  // namespace
 
-namespace chromeos {
+namespace ash {
 
 namespace tether {
 
@@ -47,4 +44,4 @@ void NetworkConfigurationRemover::RemoveNetworkConfigurationByPath(
 
 }  // namespace tether
 
-}  // namespace chromeos
+}  // namespace ash

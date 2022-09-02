@@ -7,8 +7,9 @@
 #include <cstdint>
 #include <utility>
 
-#include "base/cxx17_backports.h"
 #include "base/logging.h"
+#include "chrome/updater/win/ui/l10n_util.h"
+#include "chrome/updater/win/ui/resources/updater_installer_strings.h"
 #include "chrome/updater/win/ui/ui.h"
 #include "chrome/updater/win/ui/ui_constants.h"
 #include "chrome/updater/win/ui/ui_util.h"
@@ -98,10 +99,9 @@ HRESULT SplashScreen::Initialize() {
 
   EnableSystemButtons(false);
 
-  std::wstring text;
-  LoadString(IDS_SPLASH_SCREEN_MESSAGE, &text);
   CWindow text_wnd = GetDlgItem(IDC_INSTALLER_STATE_TEXT);
-  text_wnd.SetWindowText(text.c_str());
+  text_wnd.SetWindowText(
+      GetLocalizedString(IDS_SPLASH_SCREEN_MESSAGE_BASE).c_str());
   text_wnd.ShowWindow(SW_SHOWNORMAL);
 
   InitProgressBar();
@@ -208,7 +208,7 @@ void SplashScreen::SwitchToState(WindowState new_state) {
     case WindowState::STATE_INITIALIZED:
       break;
     case WindowState::STATE_SHOW_NORMAL:
-      alpha_index_ = base::size(kAlphaScales) - 1;
+      alpha_index_ = std::size(kAlphaScales) - 1;
       break;
     case WindowState::STATE_FADING:
       DCHECK(IsWindow());

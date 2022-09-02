@@ -15,7 +15,9 @@
 #include "base/json/json_reader.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "base/observer_list.h"
 #include "base/strings/string_util.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -328,11 +330,12 @@ void TtsControllerImpl::GetVoices(BrowserContext* browser_context,
                                   const GURL& source_url,
                                   std::vector<VoiceData>* out_voices) {
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-  if (GetTtsPlatform()->PlatformImplSupported())
+  if (GetTtsPlatform()->PlatformImplSupported()) {
     GetTtsPlatform()->GetVoicesForBrowserContext(browser_context, source_url,
                                                  out_voices);
-  else
+  } else {
     GetVoicesInternal(browser_context, source_url, out_voices);
+  }
 #else
   GetVoicesInternal(browser_context, source_url, out_voices);
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -345,36 +348,19 @@ void TtsControllerImpl::GetVoicesInternal(BrowserContext* browser_context,
   // if necessary.
   TtsPlatform* tts_platform = GetTtsPlatform();
 
-  std::vector<VoiceData> engine_delegate_voices;
-  if (browser_context && engine_delegate_ &&
-      engine_delegate_->IsBuiltInTtsEngineInitialized(browser_context)) {
-    engine_delegate_->GetVoices(browser_context, source_url,
-                                &engine_delegate_voices);
-  }
-
   DCHECK(tts_platform);
-  std::vector<VoiceData> platform_voices;
   // Ensure we have all built-in voices loaded. This is a no-op if already
   // loaded.
   tts_platform->LoadBuiltInTtsEngine(browser_context);
   if (TtsPlatformReady())
-    tts_platform->GetVoices(&platform_voices);
+    tts_platform->GetVoices(out_voices);
 
-  if (tts_platform->PreferEngineDelegateVoices()) {
-    out_voices->insert(out_voices->end(),
-                       std::make_move_iterator(engine_delegate_voices.begin()),
-                       std::make_move_iterator(engine_delegate_voices.end()));
-    out_voices->insert(out_voices->end(),
-                       std::make_move_iterator(platform_voices.begin()),
-                       std::make_move_iterator(platform_voices.end()));
-  } else {
-    out_voices->insert(out_voices->end(),
-                       std::make_move_iterator(platform_voices.begin()),
-                       std::make_move_iterator(platform_voices.end()));
-    out_voices->insert(out_voices->end(),
-                       std::make_move_iterator(engine_delegate_voices.begin()),
-                       std::make_move_iterator(engine_delegate_voices.end()));
+  if (browser_context && engine_delegate_ &&
+      engine_delegate_->IsBuiltInTtsEngineInitialized(browser_context)) {
+    engine_delegate_->GetVoices(browser_context, source_url, out_voices);
   }
+
+  tts_platform->FinalizeVoiceOrdering(*out_voices);
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // Append lacros voices after ash voices.
@@ -464,6 +450,10 @@ void TtsControllerImpl::SetTtsEngineDelegate(TtsEngineDelegate* delegate) {
 
 TtsEngineDelegate* TtsControllerImpl::GetTtsEngineDelegate() {
   return engine_delegate_;
+}
+
+void TtsControllerImpl::RefreshVoices() {
+  GetTtsPlatform()->RefreshVoices();
 }
 
 void TtsControllerImpl::Shutdown() {
@@ -565,7 +555,7 @@ void TtsControllerImpl::SpeakNow(std::unique_ptr<TtsUtterance> utterance) {
   UMA_HISTOGRAM_BOOLEAN("TextToSpeech.Utterance.Native", voice.native);
 
   if (!voice.native) {
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
     DCHECK(!voice.engine_id.empty());
     SetCurrentUtterance(std::move(utterance));
     current_utterance_->SetEngineId(voice.engine_id);
@@ -578,7 +568,7 @@ void TtsControllerImpl::SpeakNow(std::unique_ptr<TtsUtterance> utterance) {
       SetCurrentUtterance(nullptr);
       SpeakNextUtterance();
     }
-#endif  // !defined(OS_ANDROID)
+#endif  // !BUILDFLAG(IS_ANDROID)
   } else {
     // It's possible for certain platforms to send start events immediately
     // during |speak|.
@@ -701,8 +691,10 @@ void TtsControllerImpl::StripSSML(
 
   // Parse using safe, out-of-process Xml Parser.
   data_decoder::DataDecoder::ParseXmlIsolated(
-      utterance, base::BindOnce(&TtsControllerImpl::StripSSMLHelper, utterance,
-                                std::move(on_ssml_parsed)));
+      utterance,
+      data_decoder::mojom::XmlParser::WhitespaceBehavior::kPreserveSignificant,
+      base::BindOnce(&TtsControllerImpl::StripSSMLHelper, utterance,
+                     std::move(on_ssml_parsed)));
 }
 
 // Called when ParseXml finishes.
@@ -751,10 +743,10 @@ void TtsControllerImpl::PopulateParsedText(std::string* parsed_text,
   if (!children || !children->is_list())
     return;
 
-  for (size_t i = 0; i < children->GetList().size(); ++i) {
+  for (size_t i = 0; i < children->GetListDeprecated().size(); ++i) {
     // We need to iterate over all children because some text elements are
     // nested within other types of elements, such as <emphasis> tags.
-    PopulateParsedText(parsed_text, &children->GetList()[i]);
+    PopulateParsedText(parsed_text, &children->GetListDeprecated()[i]);
   }
 }
 
@@ -788,13 +780,26 @@ int TtsControllerImpl::GetMatchingVoice(TtsUtterance* utterance,
 
     // Prefer the utterance language.
     if (!voice.lang.empty() && !utterance->GetLang().empty()) {
+      std::string voice_language =
+          base::ToLowerASCII(l10n_util::GetLanguage(voice.lang));
+      std::string voice_country =
+          base::ToLowerASCII(l10n_util::GetCountry(voice.lang));
+      std::string utterance_language =
+          base::ToLowerASCII(l10n_util::GetLanguage(utterance->GetLang()));
+      std::string utterance_country =
+          base::ToLowerASCII(l10n_util::GetCountry(utterance->GetLang()));
+
       // An exact locale match is worth more than a partial match.
       // Convert locales to lowercase to handle cases like "en-us" vs. "en-US".
-      if (base::EqualsCaseInsensitiveASCII(voice.lang, utterance->GetLang())) {
+      // Cases where language and country match should score the same as an
+      // exact match.
+      if (voice_language == utterance_language &&
+          (voice_country == utterance_country ||
+           (utterance_country.empty() && voice_language == voice_country) ||
+           (voice_country.empty() &&
+            utterance_language == utterance_country))) {
         score += 128;
-      } else if (base::EqualsCaseInsensitiveASCII(
-                     l10n_util::GetLanguage(voice.lang),
-                     l10n_util::GetLanguage(utterance->GetLang()))) {
+      } else if (voice_language == utterance_language) {
         score += 64;
       }
     }

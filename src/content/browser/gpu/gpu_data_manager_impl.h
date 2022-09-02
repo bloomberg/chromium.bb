@@ -31,6 +31,10 @@
 #include "ui/display/display_observer.h"
 #include "ui/gfx/gpu_extra_info.h"
 
+#if BUILDFLAG(IS_WIN)
+#include "ui/gfx/mojom/dxgi_info.mojom.h"
+#endif
+
 class GURL;
 
 namespace gpu {
@@ -107,13 +111,13 @@ class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager,
   void UpdateGpuInfo(
       const gpu::GPUInfo& gpu_info,
       const absl::optional<gpu::GPUInfo>& gpu_info_for_hardware_gpu);
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   void UpdateDxDiagNode(const gpu::DxDiagNode& dx_diagnostics);
   void UpdateDx12Info(uint32_t d3d12_feature_level);
   void UpdateVulkanInfo(uint32_t vulkan_version);
   void UpdateDevicePerfInfo(const gpu::DevicePerfInfo& device_perf_info);
   void UpdateOverlayInfo(const gpu::OverlayInfo& overlay_info);
-  void UpdateHDRStatus(bool hdr_enabled);
+  void UpdateDXGIInfo(gfx::mojom::DXGIInfoPtr dxgi_info);
   void UpdateDxDiagNodeRequestStatus(bool request_continues);
   void UpdateDx12RequestStatus(bool request_continues);
   void UpdateVulkanRequestStatus(bool request_continues);
@@ -164,7 +168,7 @@ class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager,
                      const std::string& header,
                      const std::string& message);
 
-  void ProcessCrashed(base::TerminationStatus exit_code);
+  void ProcessCrashed();
 
   // Returns a new copy of the ListValue.
   std::unique_ptr<base::ListValue> GetLogMessages() const;

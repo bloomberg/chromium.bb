@@ -47,7 +47,7 @@ class VIZ_SERVICE_EXPORT OutputPresenter {
       return skia_representation_.get();
     }
 
-    void BeginWriteSkia();
+    void BeginWriteSkia(int sample_count);
     SkSurface* sk_surface();
     std::vector<GrBackendSemaphore> TakeEndWriteSkiaSemaphores();
     void EndWriteSkia(bool force_flush = false);
@@ -80,10 +80,9 @@ class VIZ_SERVICE_EXPORT OutputPresenter {
 
   virtual void InitializeCapabilities(
       OutputSurface::Capabilities* capabilities) = 0;
-  virtual bool Reshape(const gfx::Size& size,
-                       float device_scale_factor,
+  virtual bool Reshape(const SkSurfaceCharacterization& characterization,
                        const gfx::ColorSpace& color_space,
-                       gfx::BufferFormat format,
+                       float device_scale_factor,
                        gfx::OverlayTransform transform) = 0;
   virtual std::vector<std::unique_ptr<Image>> AllocateImages(
       gfx::ColorSpace color_space,
@@ -108,9 +107,13 @@ class VIZ_SERVICE_EXPORT OutputPresenter {
       bool is_submitted) = 0;
   using ScopedOverlayAccess =
       gpu::SharedImageRepresentationOverlay::ScopedReadAccess;
+  virtual void ScheduleOneOverlay(const OverlayCandidate& overlay,
+                                  ScopedOverlayAccess* access);
   virtual void ScheduleOverlays(SkiaOutputSurface::OverlayList overlays,
                                 std::vector<ScopedOverlayAccess*> accesses) = 0;
-  virtual void ScheduleBackground(Image* image);
+#if BUILDFLAG(IS_MAC)
+  virtual void SetCALayerErrorCode(gfx::CALayerResult ca_layer_error_code) {}
+#endif
 };
 
 }  // namespace viz

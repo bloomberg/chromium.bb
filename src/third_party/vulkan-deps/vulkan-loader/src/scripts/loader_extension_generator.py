@@ -1,8 +1,8 @@
 #!/usr/bin/python3 -i
 #
-# Copyright (c) 2015-2021 The Khronos Group Inc.
-# Copyright (c) 2015-2021 Valve Corporation
-# Copyright (c) 2015-2021 LunarG, Inc.
+# Copyright (c) 2015-2022 The Khronos Group Inc.
+# Copyright (c) 2015-2022 Valve Corporation
+# Copyright (c) 2015-2022 LunarG, Inc.
 # Copyright (c) 2015-2017 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -45,7 +45,8 @@ WSI_EXT_NAMES = ['VK_KHR_surface',
                  'VK_KHR_display_swapchain',
                  'VK_KHR_get_display_properties2',
                  'VK_KHR_get_surface_capabilities2',
-                 'VK_QNX_screen_surface']
+                 'VK_QNX_screen_surface',
+                 'VK_NN_vi_surface']
 
 ADD_INST_CMDS = ['vkCreateInstance',
                  'vkEnumerateInstanceExtensionProperties',
@@ -185,9 +186,9 @@ class LoaderExtensionOutputGenerator(OutputGenerator):
 
         # Copyright Notice
         copyright =  '/*\n'
-        copyright += ' * Copyright (c) 2015-2021 The Khronos Group Inc.\n'
-        copyright += ' * Copyright (c) 2015-2021 Valve Corporation\n'
-        copyright += ' * Copyright (c) 2015-2021 LunarG, Inc.\n'
+        copyright += ' * Copyright (c) 2015-2022 The Khronos Group Inc.\n'
+        copyright += ' * Copyright (c) 2015-2022 Valve Corporation\n'
+        copyright += ' * Copyright (c) 2015-2022 LunarG, Inc.\n'
         copyright += ' *\n'
         copyright += ' * Licensed under the Apache License, Version 2.0 (the "License");\n'
         copyright += ' * you may not use this file except in compliance with the License.\n'
@@ -705,17 +706,14 @@ class LoaderExtensionOutputGenerator(OutputGenerator):
         extensions = self.instanceExtensions
 
         union = ''
-        union += 'union loader_instance_extension_enables {\n'
-        union += '    struct {\n'
+        union += 'struct loader_instance_extension_enables {\n'
         for ext in extensions:
             if ('VK_VERSION_' in ext.name or ext.name in WSI_EXT_NAMES or
                 ext.type == 'device' or ext.num_commands == 0):
                 continue
 
-            union += '        uint8_t %s : 1;\n' % ext.name[3:].lower()
+            union += '    uint8_t %s;\n' % ext.name[3:].lower()
 
-        union += '    };\n'
-        union += '    uint64_t padding[4];\n'
         union += '};\n\n'
         return union
 
@@ -767,7 +765,7 @@ class LoaderExtensionOutputGenerator(OutputGenerator):
                 tables += '                                                             VkDevice dev) {\n'
                 tables += '    VkLayerDispatchTable *table = &dev_table->core_dispatch;\n'
                 tables += '    table->magic = DEVICE_DISP_TABLE_MAGIC_NUMBER;\n'
-                tables += '    for (uint32_t i = 0; i < MAX_NUM_UNKNOWN_EXTS; i++) dev_table->ext_dispatch.dev_ext[i] = (PFN_vkDevExt)vkDevExtError;\n'
+                tables += '    for (uint32_t i = 0; i < MAX_NUM_UNKNOWN_EXTS; i++) dev_table->ext_dispatch[i] = (PFN_vkDevExt)vkDevExtError;\n'
 
             elif x == 1:
                 cur_type = 'device'
@@ -1035,7 +1033,7 @@ class LoaderExtensionOutputGenerator(OutputGenerator):
                     funcs += '    const VkLayerInstanceDispatchTable *disp;\n'
                     funcs += '    VkPhysicalDevice unwrapped_phys_dev = loader_unwrap_physical_device(%s);\n' % (phys_dev_var_name)
                     funcs += '    if (VK_NULL_HANDLE == unwrapped_phys_dev) {\n'
-                    funcs += '        loader_log(NULL, VK_DEBUG_REPORT_ERROR_BIT_EXT, 0,\n'
+                    funcs += '        loader_log(NULL, VULKAN_LOADER_ERROR_BIT | VULKAN_LOADER_VALIDATION_BIT, 0,\n'
                     funcs += '                   "%s: Invalid %s "\n' % (ext_cmd.name, phys_dev_var_name)
                     funcs += '                   "[VUID-%s-%s-parameter]");\n' % (ext_cmd.name, phys_dev_var_name)
                     funcs += '        abort(); /* Intentionally fail so user can correct issue. */\n'
@@ -1045,7 +1043,7 @@ class LoaderExtensionOutputGenerator(OutputGenerator):
                     funcs += '    struct loader_instance *inst = loader_get_instance(%s);\n' % (instance_var_name)
                     funcs += '    if (NULL == inst) {\n'
                     funcs += '        loader_log(\n'
-                    funcs += '            NULL, VK_DEBUG_REPORT_ERROR_BIT_EXT, 0,\n'
+                    funcs += '            NULL, VULKAN_LOADER_ERROR_BIT | VULKAN_LOADER_VALIDATION_BIT, 0,\n'
                     funcs += '            "%s: Invalid instance [VUID-%s-%s-parameter]");\n' % (ext_cmd.name, ext_cmd.name, instance_var_name)
                     funcs += '        abort(); /* Intentionally fail so user can correct issue. */\n'
                     funcs += '    }\n'
@@ -1055,7 +1053,7 @@ class LoaderExtensionOutputGenerator(OutputGenerator):
                     funcs += ext_cmd.params[0].name
                     funcs += ');\n'
                     funcs += '    if (NULL == disp) {\n'
-                    funcs += '        loader_log(NULL, VK_DEBUG_REPORT_ERROR_BIT_EXT, 0,\n'
+                    funcs += '        loader_log(NULL, VULKAN_LOADER_ERROR_BIT | VULKAN_LOADER_VALIDATION_BIT, 0,\n'
                     funcs += '                   "%s: Invalid %s "\n' % (ext_cmd.name, ext_cmd.params[0].name)
                     funcs += '                   "[VUID-%s-%s-parameter]");\n' % (ext_cmd.name, ext_cmd.params[0].name)
                     funcs += '        abort(); /* Intentionally fail so user can correct issue. */\n'
@@ -1137,6 +1135,13 @@ class LoaderExtensionOutputGenerator(OutputGenerator):
                     funcs += '                   "ICD associated with VkPhysicalDevice does not support '
                     funcs += base_name
                     funcs += '");\n'
+
+                    # If this is an instance function taking a physical device (i.e. pre Vulkan 1.1), we need to behave and not crash so return an
+                    # error here.
+                    if ext_cmd.ext_type =='instance' and has_return_type:
+                        funcs += '        return VK_ERROR_INITIALIZATION_FAILED;\n'
+                    else:
+                        funcs += '        abort(); /* Intentionally fail so user can correct issue. */\n'
                     funcs += '    }\n'
 
                     if has_surface == 1:
@@ -1228,7 +1233,7 @@ class LoaderExtensionOutputGenerator(OutputGenerator):
                     funcs += '    struct loader_instance *inst = loader_get_instance(%s);\n' % (instance_var_name)
                     funcs += '    if (NULL == inst) {\n'
                     funcs += '        loader_log(\n'
-                    funcs += '            NULL, VK_DEBUG_REPORT_ERROR_BIT_EXT, 0,\n'
+                    funcs += '            NULL, VULKAN_LOADER_ERROR_BIT | VULKAN_LOADER_VALIDATION_BIT, 0,\n'
                     funcs += '            "%s: Invalid instance [VUID-%s-%s-parameter]");\n' % (ext_cmd.name, ext_cmd.name, instance_var_name)
                     funcs += '        abort(); /* Intentionally fail so user can correct issue. */\n'
                     funcs += '    }\n'
@@ -1344,7 +1349,7 @@ class LoaderExtensionOutputGenerator(OutputGenerator):
                 funcs += ext_cmd.params[0].name
                 funcs += ');\n'
                 funcs += '    if (NULL == disp) {\n'
-                funcs += '        loader_log(NULL, VK_DEBUG_REPORT_ERROR_BIT_EXT, 0,\n'
+                funcs += '        loader_log(NULL, VULKAN_LOADER_ERROR_BIT | VULKAN_LOADER_VALIDATION_BIT, 0,\n'
                 funcs += '                   "%s: Invalid %s "\n' % (ext_cmd.name, ext_cmd.params[0].name)
                 funcs += '                   "[VUID-%s-%s-parameter]");\n' % (ext_cmd.name, ext_cmd.params[0].name)
                 funcs += '        abort(); /* Intentionally fail so user can correct issue. */\n'

@@ -7,6 +7,7 @@
 
 #include "content/browser/accessibility/hit_testing_browsertest.h"
 
+#include "base/command_line.h"
 #include "base/win/scoped_variant.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
@@ -68,7 +69,7 @@ class AccessibilityHitTestingWinBrowserTest
 INSTANTIATE_TEST_SUITE_P(
     All,
     AccessibilityHitTestingWinBrowserTest,
-    ::testing::Combine(::testing::Values(1, 2), ::testing::Bool()),
+    ::testing::Values(1, 2),
     AccessibilityHitTestingBrowserTest::TestPassToString());
 
 IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingWinBrowserTest, AccHitTest) {

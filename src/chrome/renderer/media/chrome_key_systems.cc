@@ -28,55 +28,33 @@
 #include "media/media_buildflags.h"
 #include "third_party/widevine/cdm/buildflags.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "components/cdm/renderer/android_key_systems.h"
 #endif
 
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS) || BUILDFLAG(IS_WIN)
 #include "base/feature_list.h"
 #include "content/public/renderer/key_system_support.h"
 #include "media/base/media_switches.h"
 #include "media/base/video_codecs.h"
 #if BUILDFLAG(ENABLE_WIDEVINE)
 #include "third_party/widevine/cdm/widevine_cdm_common.h"  // nogncheck
-// TODO(crbug.com/663554): Needed for WIDEVINE_CDM_MIN_GLIBC_VERSION.
-// component updated CDM on all desktop platforms and remove this.
-#include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR. // nogncheck
 #if BUILDFLAG(ENABLE_PLATFORM_HEVC) && BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/ash_features.h"
 #endif  // BUILDFLAG(ENABLE_PLATFORM_HEVC) && BUILDFLAG(IS_CHROMEOS_ASH)
-// The following must be after widevine_cdm_version.h.
-#if defined(WIDEVINE_CDM_MIN_GLIBC_VERSION)
-#include <gnu/libc-version.h>
-#include "base/version.h"
-#endif  // defined(WIDEVINE_CDM_MIN_GLIBC_VERSION)
 #endif  // BUILDFLAG(ENABLE_WIDEVINE)
-#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
+#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS) || BUILDFLAG(IS_WIN)
 
+using media::CdmSessionType;
+using media::EmeConfigRule;
 using media::EmeFeatureSupport;
-using media::EmeSessionTypeSupport;
 using media::KeySystemProperties;
+using media::KeySystemPropertiesVector;
 using media::SupportedCodecs;
 
 namespace {
 
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-
-// External Clear Key (used for testing).
-void AddExternalClearKey(
-    std::vector<std::unique_ptr<KeySystemProperties>>* key_systems) {
-  static const char kExternalClearKeyKeySystem[] =
-      "org.chromium.externalclearkey";
-
-  // TODO(xhwang): Actually use `capability` to determine capabilities.
-  media::mojom::KeySystemCapabilityPtr capability;
-  if (!content::IsKeySystemSupported(kExternalClearKeyKeySystem, &capability)) {
-    DVLOG(1) << "External Clear Key not supported";
-    return;
-  }
-
-  key_systems->push_back(std::make_unique<cdm::ExternalClearKeyProperties>());
-}
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS) || BUILDFLAG(IS_WIN)
 
 #if BUILDFLAG(ENABLE_WIDEVINE)
 SupportedCodecs GetVP9Codecs(
@@ -159,6 +137,12 @@ SupportedCodecs GetSupportedCodecs(const media::CdmCapability& capability) {
       case media::AudioCodec::kAAC:
         supported_codecs |= media::EME_CODEC_AAC;
         break;
+#if BUILDFLAG(ENABLE_PLATFORM_DTS_AUDIO)
+      case media::AudioCodec::kDTS:
+        supported_codecs |= media::EME_CODEC_DTS;
+        supported_codecs |= media::EME_CODEC_DTSXP2;
+        break;
+#endif  // BUILDFLAG(ENABLE_PLATFORM_DTS_AUDIO)
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
       default:
         DVLOG(1) << "Unexpected supported codec: " << GetCodecName(codec);
@@ -198,22 +182,17 @@ SupportedCodecs GetSupportedCodecs(const media::CdmCapability& capability) {
   return supported_codecs;
 }
 
-// Returns persistent-license session support.
-EmeSessionTypeSupport GetPersistentLicenseSupport(bool supported_by_the_cdm) {
+// Returns whether persistent-license session can be supported.
+bool CanSupportPersistentLicense() {
   // Do not support persistent-license if the process cannot persist data.
   // TODO(crbug.com/457487): Have a better plan on this. See bug for details.
   if (ChromeRenderThreadObserver::is_incognito_process()) {
     DVLOG(2) << __func__ << ": Not supported in incognito process.";
-    return EmeSessionTypeSupport::NOT_SUPPORTED;
-  }
-
-  if (!supported_by_the_cdm) {
-    DVLOG(2) << __func__ << ": Not supported by the CDM.";
-    return EmeSessionTypeSupport::NOT_SUPPORTED;
+    return false;
   }
 
 // On ChromeOS, platform verification is similar to CDM host verification.
-#if BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION) || defined(OS_CHROMEOS)
+#if BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION) || BUILDFLAG(IS_CHROMEOS)
   bool cdm_host_verification_potentially_supported = true;
 #else
   bool cdm_host_verification_potentially_supported = false;
@@ -223,60 +202,53 @@ EmeSessionTypeSupport GetPersistentLicenseSupport(bool supported_by_the_cdm) {
   // support persistent-license.
   if (!cdm_host_verification_potentially_supported) {
     DVLOG(2) << __func__ << ": Not supported without CDM host verification.";
-    return EmeSessionTypeSupport::NOT_SUPPORTED;
+    return false;
   }
 
-#if defined(OS_CHROMEOS)
-  // On ChromeOS, platform verification (similar to CDM host verification)
-  // requires identifier to be allowed.
+#if BUILDFLAG(IS_CHROMEOS)
   // TODO(jrummell): Currently the ChromeOS CDM does not require storage ID
   // to support persistent license. Update this logic when the new CDM requires
   // storage ID.
-  return EmeSessionTypeSupport::SUPPORTED_WITH_IDENTIFIER;
+  return true;
 #elif BUILDFLAG(ENABLE_CDM_STORAGE_ID)
   // On other platforms, we require storage ID to support persistent license.
-  return EmeSessionTypeSupport::SUPPORTED;
+  return true;
 #else
   // Storage ID not implemented, so no support for persistent license.
   DVLOG(2) << __func__ << ": Not supported without CDM storage ID.";
-  return EmeSessionTypeSupport::NOT_SUPPORTED;
-#endif  // defined(OS_CHROMEOS)
+  return false;
+#endif  // BUILDFLAG(IS_CHROMEOS)
 }
 
-void AddWidevine(
-    std::vector<std::unique_ptr<KeySystemProperties>>* key_systems) {
-#if defined(WIDEVINE_CDM_MIN_GLIBC_VERSION)
-  base::Version glibc_version(gnu_get_libc_version());
-  DCHECK(glibc_version.IsValid());
-  if (glibc_version < base::Version(WIDEVINE_CDM_MIN_GLIBC_VERSION))
-    return;
-#endif  // defined(WIDEVINE_CDM_MIN_GLIBC_VERSION)
+// Remove `kPersistentLicense` support if it's not supported by the platform.
+base::flat_set<CdmSessionType> UpdatePersistentLicenseSupport(
+    const base::flat_set<CdmSessionType> session_types) {
+  auto updated_session_types = session_types;
+  if (!CanSupportPersistentLicense())
+    updated_session_types.erase(CdmSessionType::kPersistentLicense);
+  return updated_session_types;
+}
 
-  media::mojom::KeySystemCapabilityPtr capability;
-  if (!content::IsKeySystemSupported(kWidevineKeySystem, &capability)) {
-    DVLOG(1) << "Widevine CDM is not currently available.";
-    return;
-  }
-
+bool AddWidevine(const media::mojom::KeySystemCapabilityPtr& capability,
+                 KeySystemPropertiesVector* key_systems) {
   // Codecs and encryption schemes.
   SupportedCodecs codecs = media::EME_CODEC_NONE;
   SupportedCodecs hw_secure_codecs = media::EME_CODEC_NONE;
   base::flat_set<::media::EncryptionScheme> encryption_schemes;
   base::flat_set<::media::EncryptionScheme> hw_secure_encryption_schemes;
-  bool cdm_supports_persistent_license = false;
+  base::flat_set<CdmSessionType> session_types;
+  base::flat_set<CdmSessionType> hw_secure_session_types;
 
   if (capability->sw_secure_capability) {
     codecs = GetSupportedCodecs(capability->sw_secure_capability.value());
     encryption_schemes = capability->sw_secure_capability->encryption_schemes;
-    if (!base::Contains(capability->sw_secure_capability->session_types,
-                        media::CdmSessionType::kTemporary)) {
+    session_types = UpdatePersistentLicenseSupport(
+        capability->sw_secure_capability->session_types);
+    if (!base::Contains(session_types, CdmSessionType::kTemporary)) {
       DVLOG(1) << "Temporary sessions must be supported.";
-      return;
+      return false;
     }
-
-    cdm_supports_persistent_license =
-        base::Contains(capability->sw_secure_capability->session_types,
-                       media::CdmSessionType::kPersistentLicense);
+    DVLOG(2) << "Software secure Widevine supported";
   }
 
   if (capability->hw_secure_capability) {
@@ -284,16 +256,13 @@ void AddWidevine(
         GetSupportedCodecs(capability->hw_secure_capability.value());
     hw_secure_encryption_schemes =
         capability->hw_secure_capability->encryption_schemes;
-    if (!base::Contains(capability->hw_secure_capability->session_types,
-                        media::CdmSessionType::kTemporary)) {
+    hw_secure_session_types = UpdatePersistentLicenseSupport(
+        capability->hw_secure_capability->session_types);
+    if (!base::Contains(hw_secure_session_types, CdmSessionType::kTemporary)) {
       DVLOG(1) << "Temporary sessions must be supported.";
-      return;
+      return false;
     }
-
-    // TODO(b/186035558): With a single flag we can't distinguish persistent
-    // session support between software and hardware CDMs. This should be
-    // fixed so that if there is both a software and a hardware CDM, persistent
-    // session support can be different between the versions.
+    DVLOG(2) << "Hardware secure Widevine supported";
   }
 
   // Robustness.
@@ -301,7 +270,7 @@ void AddWidevine(
   auto max_audio_robustness = Robustness::SW_SECURE_CRYPTO;
   auto max_video_robustness = Robustness::SW_SECURE_DECODE;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
   // On ChromeOS, we support HW_SECURE_ALL even without hardware secure codecs.
   // See WidevineKeySystemProperties::GetRobustnessConfigRule().
   max_audio_robustness = Robustness::HW_SECURE_ALL;
@@ -313,40 +282,80 @@ void AddWidevine(
   }
 #endif
 
-  auto persistent_license_support =
-      GetPersistentLicenseSupport(cdm_supports_persistent_license);
-
   // Others.
   auto persistent_state_support = EmeFeatureSupport::REQUESTABLE;
   auto distinctive_identifier_support = EmeFeatureSupport::NOT_SUPPORTED;
-#if defined(OS_CHROMEOS) || defined(OS_WIN)
+#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_WIN)
   distinctive_identifier_support = EmeFeatureSupport::REQUESTABLE;
 #endif
 
   key_systems->emplace_back(new cdm::WidevineKeySystemProperties(
-      codecs, encryption_schemes, hw_secure_codecs,
-      hw_secure_encryption_schemes, max_audio_robustness, max_video_robustness,
-      persistent_license_support, persistent_state_support,
+      codecs, std::move(encryption_schemes), std::move(session_types),
+      hw_secure_codecs, std::move(hw_secure_encryption_schemes),
+      std::move(hw_secure_session_types), max_audio_robustness,
+      max_video_robustness, persistent_state_support,
       distinctive_identifier_support));
+  return true;
 }
 #endif  // BUILDFLAG(ENABLE_WIDEVINE)
-#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
+
+const char kExternalClearKeyKeySystem[] = "org.chromium.externalclearkey";
+
+void AddExternalClearKey(
+    const media::mojom::KeySystemCapabilityPtr& /*capability*/,
+    KeySystemPropertiesVector* key_systems) {
+  DVLOG(1) << __func__;
+
+  if (!base::FeatureList::IsEnabled(media::kExternalClearKeyForTesting)) {
+    DLOG(ERROR) << "ExternalClearKey supported despite not enabled.";
+    return;
+  }
+
+  // TODO(xhwang): Actually use `capability` to determine capabilities.
+  key_systems->push_back(std::make_unique<cdm::ExternalClearKeyProperties>());
+}
+
+void OnKeySystemSupportUpdated(
+    media::GetSupportedKeySystemsCB cb,
+    content::KeySystemCapabilityPtrMap key_system_capabilities) {
+  KeySystemPropertiesVector key_systems;
+  for (const auto& entry : key_system_capabilities) {
+    const auto& key_system = entry.first;
+    const auto& capability = entry.second;
+#if BUILDFLAG(ENABLE_WIDEVINE)
+    if (key_system == kWidevineKeySystem) {
+      AddWidevine(capability, &key_systems);
+      continue;
+    }
+#endif  // BUILDFLAG(ENABLE_WIDEVINE)
+
+    if (key_system == kExternalClearKeyKeySystem) {
+      AddExternalClearKey(capability, &key_systems);
+      continue;
+    }
+
+    DLOG(ERROR) << "Unrecognized key system: " << key_system;
+  }
+
+  cb.Run(std::move(key_systems));
+}
+
+#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS) || BUILDFLAG(IS_WIN)
 
 }  // namespace
 
-void AddChromeKeySystems(
-    std::vector<std::unique_ptr<KeySystemProperties>>* key_systems) {
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-  if (base::FeatureList::IsEnabled(media::kExternalClearKeyForTesting))
-    AddExternalClearKey(key_systems);
-
-#if BUILDFLAG(ENABLE_WIDEVINE)
-  AddWidevine(key_systems);
-#endif  // BUILDFLAG(ENABLE_WIDEVINE)
-
-#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
-
-#if defined(OS_ANDROID)
-  cdm::AddAndroidWidevine(key_systems);
-#endif  // defined(OS_ANDROID)
+void GetChromeKeySystems(media::GetSupportedKeySystemsCB cb) {
+#if BUILDFLAG(IS_ANDROID) && BUILDFLAG(ENABLE_WIDEVINE)
+  KeySystemPropertiesVector key_systems;
+  cdm::AddAndroidWidevine(&key_systems);
+  std::move(cb).Run(std::move(key_systems));
+  return;
+#elif BUILDFLAG(ENABLE_LIBRARY_CDMS) || BUILDFLAG(IS_WIN)
+  content::ObserveKeySystemSupportUpdate(
+      base::BindRepeating(&OnKeySystemSupportUpdated, std::move(cb)));
+  return;
+#else
+  std::move(cb).Run({});
+  return;
+#endif
 }

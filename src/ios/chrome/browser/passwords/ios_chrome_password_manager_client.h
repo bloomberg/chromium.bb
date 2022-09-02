@@ -22,6 +22,7 @@
 #include "components/password_manager/core/browser/sync_credentials_filter.h"
 #include "components/password_manager/ios/password_manager_client_bridge.h"
 #include "components/prefs/pref_member.h"
+#include "components/sync/driver/sync_service.h"
 #import "ios/chrome/browser/safe_browsing/input_event_observer.h"
 #import "ios/chrome/browser/safe_browsing/password_protection_java_script_feature.h"
 #import "ios/web/public/web_state.h"
@@ -36,6 +37,7 @@ class LogManager;
 }
 
 namespace password_manager {
+class PasswordScriptsFetcher;
 class PasswordFormManagerForUI;
 class PasswordManagerDriver;
 }
@@ -105,6 +107,7 @@ class IOSChromePasswordManagerClient
   const password_manager::PasswordFeatureManager* GetPasswordFeatureManager()
       const override;
   PrefService* GetPrefs() const override;
+  const syncer::SyncService* GetSyncService() const override;
   password_manager::PasswordStoreInterface* GetProfilePasswordStore()
       const override;
   password_manager::PasswordStoreInterface* GetAccountPasswordStore()
@@ -113,6 +116,8 @@ class IOSChromePasswordManagerClient
       const override;
   password_manager::PasswordScriptsFetcher* GetPasswordScriptsFetcher()
       override;
+  password_manager::PasswordChangeSuccessTracker*
+  GetPasswordChangeSuccessTracker() override;
 
   void NotifyUserAutoSignin(
       std::vector<std::unique_ptr<password_manager::PasswordForm>> local_forms,

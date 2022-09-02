@@ -30,6 +30,12 @@ class GrRenderTargetProxy;
 using GrRenderTargetProxy = SkRefCnt;
 #endif // SK_SUPPORT_GPU
 
+#if GRAPHITE_TEST_UTILS
+namespace skgpu::graphite {
+    class TextureProxy;
+}
+#endif
+
 class SkAutoCanvasMatrixPaint : SkNoncopyable {
 public:
     SkAutoCanvasMatrixPaint(SkCanvas*, const SkMatrix*, const SkPaint*, const SkRect& bounds);
@@ -71,6 +77,10 @@ public:
 #endif // GR_TEST_UTILS
     static GrRenderTargetProxy* TopDeviceTargetProxy(SkCanvas*);
 
+#if GRAPHITE_TEST_UTILS
+    static skgpu::graphite::TextureProxy* TopDeviceGraphiteTargetProxy(SkCanvas*);
+#endif
+
     // The experimental_DrawEdgeAAImageSet API accepts separate dstClips and preViewMatrices arrays,
     // where entries refer into them, but no explicit size is provided. Given a set of entries,
     // computes the minimum length for these arrays that would provide index access errors.
@@ -92,6 +102,11 @@ public:
     static void SetBackdropScaleFactor(SkCanvas::SaveLayerRec* rec, SkScalar scale) {
         rec->fExperimentalBackdropScale = scale;
     }
+
+    static void DrawMesh(SkCanvas*,
+                         const SkMesh& mesh,
+                         sk_sp<SkBlender> blender,
+                         const SkPaint& paint);
 };
 
 /**

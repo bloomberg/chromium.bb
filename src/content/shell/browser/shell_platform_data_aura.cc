@@ -21,7 +21,7 @@
 #include "ui/platform_window/platform_window_init_properties.h"
 #include "ui/wm/core/default_activation_client.h"
 
-#if defined(OS_FUCHSIA)
+#if BUILDFLAG(IS_FUCHSIA)
 #include "ui/platform_window/fuchsia/initialize_presenter_api_view.h"
 #endif
 
@@ -82,18 +82,13 @@ ShellPlatformDataAura::ShellPlatformDataAura(const gfx::Size& initial_size) {
 
 #if defined(USE_OZONE)
   // Setup global display::Screen singleton.
-  if (!display::Screen::GetScreen()) {
-    std::unique_ptr<aura::ScreenOzone> screen_ozone =
-        std::make_unique<aura::ScreenOzone>();
-    screen_ozone.get()->Initialize();
-    screen_ = std::move(screen_ozone);
-  }
+  screen_ = std::make_unique<aura::ScopedScreenOzone>();
 #endif  // defined(USE_OZONE)
 
   ui::PlatformWindowInitProperties properties;
   properties.bounds = gfx::Rect(initial_size);
 
-#if defined(OS_FUCHSIA)
+#if BUILDFLAG(IS_FUCHSIA)
   // When using Scenic Ozone platform we need to supply a view_token to the
   // window. This is not necessary when using the headless ozone platform.
   if (ui::OzonePlatform::GetInstance()

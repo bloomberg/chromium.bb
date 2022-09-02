@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ash/net/network_pref_state_observer.h"
 
+#include "ash/components/tpm/install_attributes.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -12,10 +13,9 @@
 #include "chromeos/components/sync_wifi/wifi_configuration_sync_service.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_metadata_store.h"
-#include "chromeos/tpm/install_attributes.h"
 #include "content/public/browser/notification_service.h"
 
-namespace chromeos {
+namespace ash {
 
 NetworkPrefStateObserver::NetworkPrefStateObserver() {
   // Initialize NetworkHandler with device prefs only.
@@ -59,4 +59,4 @@ void NetworkPrefStateObserver::InitializeNetworkPrefServices(Profile* profile) {
       g_browser_process->local_state());
 }
 
-}  // namespace chromeos
+}  // namespace ash

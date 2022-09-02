@@ -15,7 +15,7 @@ you want to be able to hack in it and build it for a CrOS device, see
 instructions below.
 
 Following
-<http://dev.chromium.org/chromium-os/how-tos-and-troubleshooting/building-chromium-browser>,
+<http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/building-chromium-browser>,
 a one-time setup step is:
 > $ cros_sdk --enter --chrome_root=.../path/to/chrome/dir \[
 > --chroot=../../which_chroot \]

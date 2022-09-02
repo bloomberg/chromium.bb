@@ -11,7 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "net/base/net_export.h"
 #include "net/base/request_priority.h"
-#include "net/third_party/quiche/src/spdy/core/spdy_protocol.h"
+#include "net/third_party/quiche/src/quiche/spdy/core/spdy_protocol.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace net {
@@ -106,7 +106,7 @@ class NET_EXPORT_PRIVATE SpdyWriteQueue {
     ~PendingWrite();
   };
 
-  bool removing_writes_;
+  bool removing_writes_ = false;
 
   // Number of currently queued capped frames including all priorities.
   int num_queued_capped_frames_ = 0;

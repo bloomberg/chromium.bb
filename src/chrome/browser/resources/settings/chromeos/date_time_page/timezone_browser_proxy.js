@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// clang-format off
-import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
-// clang-format on
-
 /** @fileoverview A helper object used by the time zone subpage page. */
-  /** @interface */
+
+import {sendWithPromise} from 'chrome://resources/js/cr.m.js';
+
+/** @interface */
 export class TimeZoneBrowserProxy {
   /** Notifies C++ code to show parent access code verification view. */
   showParentAccessForTimeZone() {}
@@ -22,8 +21,21 @@ export class TimeZoneBrowserProxy {
   getTimeZones() {}
 }
 
+/** @type {?TimeZoneBrowserProxy} */
+let instance = null;
+
 /** @implements {TimeZoneBrowserProxy} */
 export class TimeZoneBrowserProxyImpl {
+  /** @return {!TimeZoneBrowserProxy} */
+  static getInstance() {
+    return instance || (instance = new TimeZoneBrowserProxyImpl());
+  }
+
+  /** @param {!TimeZoneBrowserProxy} obj */
+  static setInstance(obj) {
+    instance = obj;
+  }
+
   /** @override */
   showParentAccessForTimeZone() {
     chrome.send('handleShowParentAccessForTimeZone');
@@ -44,5 +56,3 @@ export class TimeZoneBrowserProxyImpl {
     return sendWithPromise('getTimeZones');
   }
 }
-
-addSingletonGetter(TimeZoneBrowserProxyImpl);

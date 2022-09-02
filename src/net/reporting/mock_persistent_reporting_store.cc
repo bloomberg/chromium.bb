@@ -73,7 +73,7 @@ bool operator==(const MockPersistentReportingStore::Command& lhs,
         UPDATE_REPORTING_ENDPOINT_DETAILS:
     case MockPersistentReportingStore::Command::Type::DELETE_REPORTING_ENDPOINT:
       equal &= (lhs.url == rhs.url);
-      FALLTHROUGH;
+      [[fallthrough]];
     // For endpoint group operations, check the group key only.
     case MockPersistentReportingStore::Command::Type::
         ADD_REPORTING_ENDPOINT_GROUP:
@@ -153,13 +153,7 @@ std::ostream& operator<<(std::ostream& out,
   }
 }
 
-MockPersistentReportingStore::MockPersistentReportingStore()
-    : load_started_(false),
-      endpoint_count_(0),
-      endpoint_group_count_(0),
-      queued_endpoint_count_delta_(0),
-      queued_endpoint_group_count_delta_(0) {}
-
+MockPersistentReportingStore::MockPersistentReportingStore() = default;
 MockPersistentReportingStore::~MockPersistentReportingStore() = default;
 
 void MockPersistentReportingStore::LoadReportingClients(

@@ -58,7 +58,7 @@
 #include "ui/gfx/gpu_extra_info.h"
 #include "ui/gl/gpu_switching_manager.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "ui/base/win/shell.h"
 #include "ui/gfx/win/physical_size.h"
 #endif
@@ -74,15 +74,19 @@ WebUIDataSource* CreateGpuHTMLSource() {
   WebUIDataSource* source = WebUIDataSource::Create(kChromeUIGpuHost);
   source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::ScriptSrc,
-      "script-src chrome://resources 'self' 'unsafe-eval';");
+      "script-src chrome://resources 'self';");
   source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::TrustedTypes,
-      "trusted-types jstemplate;");
+      "trusted-types static-types;");
 
   source->UseStringsJs();
   source->AddResourcePath("browser_bridge.js", IDR_GPU_BROWSER_BRIDGE_JS);
   source->AddResourcePath("gpu_internals.js", IDR_GPU_INTERNALS_JS);
-  source->AddResourcePath("info_view.js", IDR_GPU_INFO_VIEW_JS);
+  source->AddResourcePath("info_view.js", IDR_GPU_INTERNALS_INFO_VIEW_JS);
+  source->AddResourcePath("info_view_table.js",
+                          IDR_GPU_INTERNALS_INFO_VIEW_TABLE_JS);
+  source->AddResourcePath("info_view_table_row.js",
+                          IDR_GPU_INTERNALS_INFO_VIEW_TABLE_ROW_JS);
   source->AddResourcePath("vulkan_info.js", IDR_GPU_VULKAN_INFO_JS);
   source->AddResourcePath("vulkan_info.mojom-webui.js",
                           IDR_VULKAN_INFO_MOJO_JS);
@@ -92,7 +96,7 @@ WebUIDataSource* CreateGpuHTMLSource() {
   return source;
 }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 // Output DxDiagNode tree as nested array of {description,value} pairs
 base::Value DxDiagNodeToList(const gpu::DxDiagNode& node) {
   base::Value list(base::Value::Type::LIST);
@@ -112,7 +116,7 @@ base::Value DxDiagNodeToList(const gpu::DxDiagNode& node) {
   }
   return list;
 }
-#endif  // OS_WIN
+#endif  // BUILDFLAG(IS_WIN)
 
 std::string GPUDeviceToString(const gpu::GPUInfo::GPUDevice& gpu) {
   std::string vendor = base::StringPrintf("0x%04x", gpu.vendor_id);
@@ -123,18 +127,22 @@ std::string GPUDeviceToString(const gpu::GPUInfo::GPUDevice& gpu) {
     device += " [" + gpu.device_string + "]";
   std::string rt = base::StringPrintf("VENDOR= %s, DEVICE=%s", vendor.c_str(),
                                       device.c_str());
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   if (gpu.sub_sys_id)
     rt += base::StringPrintf(", SUBSYS=0x%08x", gpu.sub_sys_id);
 #endif
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_CHROMEOS)
   if (gpu.revision)
     rt += base::StringPrintf(", REV=%u", gpu.revision);
 #endif
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   rt += base::StringPrintf(", LUID={%ld,%lu}", gpu.luid.HighPart,
                            gpu.luid.LowPart);
 #endif
+  if (!gpu.driver_vendor.empty())
+    rt += ", DRIVER_VENDOR=" + gpu.driver_vendor;
+  if (!gpu.driver_version.empty())
+    rt += ", DRIVER_VERSION=" + gpu.driver_version;
   if (gpu.active)
     rt += " *ACTIVE*";
   return rt;
@@ -167,7 +175,7 @@ std::vector<base::Value> GetBasicGpuInfo(
       display::BuildGpuInfoEntry("Optimus", base::Value(gpu_info.optimus)));
   basic_info.push_back(display::BuildGpuInfoEntry(
       "AMD switchable", base::Value(gpu_info.amd_switchable)));
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   std::string compositor =
       ui::win::IsAeroGlassEnabled() ? "Aero Glass" : "none";
   basic_info.push_back(
@@ -218,10 +226,6 @@ std::vector<base::Value> GetBasicGpuInfo(
       gpu::VulkanVersionToString(gpu_info.vulkan_version)));
 #endif
 
-  basic_info.push_back(
-      display::BuildGpuInfoEntry("Driver vendor", active_gpu.driver_vendor));
-  basic_info.push_back(
-      display::BuildGpuInfoEntry("Driver version", active_gpu.driver_version));
   basic_info.push_back(display::BuildGpuInfoEntry(
       "GPU CUDA compute capability major version",
       base::Value(active_gpu.cuda_compute_capability_major)));
@@ -321,7 +325,7 @@ base::flat_map<std::string, base::Value> GetGpuInfo() {
       GetBasicGpuInfo(gpu_info, gpu_feature_info, gpu_extra_info);
   info["basicInfo"] = base::Value(std::move(basic_info));
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   base::Value dx_info(base::Value::Type::LIST);
   if (gpu_info.dx_diagnostics.children.size())
     dx_info = DxDiagNodeToList(gpu_info.dx_diagnostics);
@@ -416,7 +420,11 @@ base::Value GetDisplayInfo() {
     }
     display_info.Append(display::BuildGpuInfoEntry(
         "SDR white level in nits",
-        base::NumberToString(display.color_spaces().GetSDRWhiteLevel())));
+        base::NumberToString(display.color_spaces().GetSDRMaxLuminanceNits())));
+    display_info.Append(display::BuildGpuInfoEntry(
+        "HDR relative maximum luminance",
+        base::NumberToString(
+            display.color_spaces().GetHDRMaxLuminanceRelative())));
     display_info.Append(display::BuildGpuInfoEntry(
         "Bits per color component",
         base::NumberToString(display.depth_per_component())));
@@ -431,7 +439,7 @@ base::Value GetDisplayInfo() {
   return display_info;
 }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 const char* D3dFeatureLevelToString(D3D_FEATURE_LEVEL level) {
   switch (level) {
     case D3D_FEATURE_LEVEL_1_0_CORE:
@@ -454,6 +462,8 @@ const char* D3dFeatureLevelToString(D3D_FEATURE_LEVEL level) {
       return "12_0";
     case D3D_FEATURE_LEVEL_12_1:
       return "12_1";
+    case D3D_FEATURE_LEVEL_12_2:
+      return "12_2";
     default:
       NOTREACHED();
       return "";
@@ -472,7 +482,7 @@ const char* HasDiscreteGpuToString(gpu::HasDiscreteGpu has_discrete_gpu) {
   NOTREACHED();
   return "";
 }
-#endif  // OS_WIN
+#endif  // BUILDFLAG(IS_WIN)
 
 base::Value GetDevicePerfInfo() {
   auto list = base::Value(base::Value::Type::LIST);
@@ -490,7 +500,7 @@ base::Value GetDevicePerfInfo() {
         "Hardware Concurrency",
         base::NumberToString(device_perf_info->hardware_concurrency)));
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
     list.Append(display::BuildGpuInfoEntry(
         "System Commit Limit (Gb)",
         base::NumberToString(device_perf_info->system_commit_limit_mb / 1024)));
@@ -500,7 +510,7 @@ base::Value GetDevicePerfInfo() {
     list.Append(display::BuildGpuInfoEntry(
         "Has Discrete GPU",
         HasDiscreteGpuToString(device_perf_info->has_discrete_gpu)));
-#endif  // OS_WIN
+#endif  // BUILDFLAG(IS_WIN)
 
     if (device_perf_info->intel_gpu_generation !=
         gpu::IntelGpuGeneration::kNonIntel) {
@@ -554,6 +564,22 @@ const char* GetProfileName(gpu::VideoCodecProfile profile) {
       return "hevc main 10";
     case gpu::HEVCPROFILE_MAIN_STILL_PICTURE:
       return "hevc main still-picture";
+    case gpu::HEVCPROFILE_REXT:
+      return "hevc range extensions";
+    case gpu::HEVCPROFILE_HIGH_THROUGHPUT:
+      return "hevc high throughput";
+    case gpu::HEVCPROFILE_MULTIVIEW_MAIN:
+      return "hevc multiview main";
+    case gpu::HEVCPROFILE_SCALABLE_MAIN:
+      return "hevc scalable main";
+    case gpu::HEVCPROFILE_3D_MAIN:
+      return "hevc 3d main";
+    case gpu::HEVCPROFILE_SCREEN_EXTENDED:
+      return "hevc screen extended";
+    case gpu::HEVCPROFILE_SCALABLE_REXT:
+      return "hevc scalable range extensions";
+    case gpu::HEVCPROFILE_HIGH_THROUGHPUT_SCREEN_EXTENDED:
+      return "hevc high throughput screen extended";
     case gpu::VP8PROFILE_ANY:
       return "vp8";
     case gpu::VP9PROFILE_PROFILE0:
@@ -597,24 +623,19 @@ base::Value GetVideoAcceleratorsInfo() {
     const gpu::VideoDecodeAcceleratorSupportedProfiles& capabilities;
     std::string name;
   } kVideoDecoderImplementations[] = {
-      {gpu_info.video_decoder_capabilities, "Decoding (VideoDecoder)"},
-      {gpu_info.video_decode_accelerator_capabilities.supported_profiles,
-       "Decoding (Legacy VideoDecodeAccelerator)"},
+      {gpu_info.video_decode_accelerator_supported_profiles, "Decoding"},
   };
 
-  for (const auto& implementation : kVideoDecoderImplementations) {
-    if (implementation.capabilities.empty())
-      continue;
-    info.Append(display::BuildGpuInfoEntry(implementation.name, ""));
-    for (const auto& profile : implementation.capabilities) {
-      std::string codec_string =
-          base::StringPrintf("Decode %s", GetProfileName(profile.profile));
-      std::string resolution_string = base::StringPrintf(
-          "%s to %s pixels%s", profile.min_resolution.ToString().c_str(),
-          profile.max_resolution.ToString().c_str(),
-          profile.encrypted_only ? " (encrypted)" : "");
-      info.Append(display::BuildGpuInfoEntry(codec_string, resolution_string));
-    }
+  info.Append(display::BuildGpuInfoEntry("Decoding", ""));
+  for (const auto& profile :
+       gpu_info.video_decode_accelerator_supported_profiles) {
+    std::string codec_string =
+        base::StringPrintf("Decode %s", GetProfileName(profile.profile));
+    std::string resolution_string = base::StringPrintf(
+        "%s to %s pixels%s", profile.min_resolution.ToString().c_str(),
+        profile.max_resolution.ToString().c_str(),
+        profile.encrypted_only ? " (encrypted)" : "");
+    info.Append(display::BuildGpuInfoEntry(codec_string, resolution_string));
   }
 
   info.Append(display::BuildGpuInfoEntry("Encoding", ""));
@@ -733,7 +754,7 @@ void GpuMessageHandler::RegisterMessages() {
 }
 
 void GpuMessageHandler::OnCallAsync(const base::ListValue* args) {
-  base::Value::ConstListView args_list = args->GetList();
+  base::Value::ConstListView args_list = args->GetListDeprecated();
   DCHECK_GE(args_list.size(), static_cast<size_t>(2));
   // unpack args into requestId, submessage and submessageArgs
   const base::Value& requestId = args_list[0];
@@ -801,7 +822,7 @@ std::unique_ptr<base::DictionaryValue> GpuMessageHandler::OnRequestClientInfo(
   dict->SetStringKey("version", GetContentClient()->browser()->GetProduct());
   base::CommandLine::StringType command_line =
       base::CommandLine::ForCurrentProcess()->GetCommandLineString();
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   dict->SetStringKey("command_line", base::WideToUTF8(command_line));
 #else
   dict->SetStringKey("command_line", command_line);
@@ -887,13 +908,11 @@ void GpuMessageHandler::OnGpuSwitched(gl::GpuPreference active_gpu_heuristic) {
 
 }  // namespace
 
-
 ////////////////////////////////////////////////////////////////////////////////
 //
 // GpuInternalsUI
 //
 ////////////////////////////////////////////////////////////////////////////////
-
 GpuInternalsUI::GpuInternalsUI(WebUI* web_ui)
     : WebUIController(web_ui) {
   web_ui->AddMessageHandler(std::make_unique<GpuMessageHandler>());

@@ -71,7 +71,7 @@ class CrashReportPrivateApiTest : public ExtensionApiTest {
     test_dir.WriteFile(FILE_PATH_LITERAL("test.js"),
                        R"(chrome.test.sendMessage('ready');)");
 
-    ExtensionTestMessageListener listener("ready", false);
+    ExtensionTestMessageListener listener("ready");
     extension_ = LoadExtension(test_dir.UnpackedPath());
     EXPECT_TRUE(listener.WaitUntilSatisfied());
 
@@ -326,7 +326,7 @@ IN_PROC_BROWSER_TEST_P(CrashReportPrivateCalledFromSwaTest,
   ASSERT_TRUE(embedded_test_server()->Started());
   // Create and launch a test web app, opens in an app window.
   GURL start_url = embedded_test_server()->GetURL("/test_app.html");
-  auto web_app_info = std::make_unique<WebApplicationInfo>();
+  auto web_app_info = std::make_unique<WebAppInstallInfo>();
   web_app_info->start_url = start_url;
   web_app::AppId app_id =
       web_app::test::InstallWebApp(profile(), std::move(web_app_info));
@@ -372,7 +372,7 @@ IN_PROC_BROWSER_TEST_P(CrashReportPrivateCalledFromSwaTest,
 IN_PROC_BROWSER_TEST_P(CrashReportPrivateCalledFromSwaTest,
                        CalledFromWebContentsInSwaWindow) {
   WaitForTestSystemAppInstall();
-  content::WebContents* web_content = LaunchApp(web_app::SystemAppType::MEDIA);
+  content::WebContents* web_content = LaunchApp(ash::SystemWebAppType::MEDIA);
   MockCrashEndpoint endpoint(embedded_test_server());
   ScopedMockChromeJsErrorReportProcessor processor(endpoint);
 

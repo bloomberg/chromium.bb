@@ -24,7 +24,6 @@
 #import "ios/chrome/credential_provider_extension/password_util.h"
 #import "ios/chrome/credential_provider_extension/reauthentication_handler.h"
 #import "ios/chrome/credential_provider_extension/ui/consent_coordinator.h"
-#import "ios/chrome/credential_provider_extension/ui/consent_legacy_coordinator.h"
 #import "ios/chrome/credential_provider_extension/ui/credential_list_coordinator.h"
 #import "ios/chrome/credential_provider_extension/ui/feature_flags.h"
 #import "ios/chrome/credential_provider_extension/ui/stale_credentials_view_controller.h"
@@ -35,9 +34,7 @@
 
 namespace {
 UIColor* BackgroundColor() {
-  return IsPasswordCreationEnabled()
-             ? [UIColor colorNamed:kGroupedPrimaryBackgroundColor]
-             : [UIColor colorNamed:kBackgroundColor];
+  return [UIColor colorNamed:kGroupedPrimaryBackgroundColor];
 }
 }
 
@@ -50,14 +47,8 @@ UIColor* BackgroundColor() {
 // List coordinator that shows the list of passwords when started.
 @property(nonatomic, strong) CredentialListCoordinator* listCoordinator;
 
-// Legacy consent coordinator that shows a view requesting device auth in order
-// to enable the extension. Will be used when
-// IsCredentialProviderExtensionPromoEnabled() == NO.
-@property(nonatomic, strong) ConsentLegacyCoordinator* consentLegacyCoordinator;
-
 // Consent coordinator that shows a view requesting device auth in order to
-// enable the extension. Will be used when
-// IsCredentialProviderExtensionPromoEnabled() == YES.
+// enable the extension.
 @property(nonatomic, strong) ConsentCoordinator* consentCoordinator;
 
 // Date kept for ReauthenticationModule.
@@ -172,23 +163,10 @@ UIColor* BackgroundColor() {
 }
 
 - (void)prepareInterfaceForExtensionConfiguration {
-  // Reset the consent if the extension was disabled and reenabled.
-  NSUserDefaults* user_defaults = [NSUserDefaults standardUserDefaults];
-  [user_defaults
-      removeObjectForKey:kUserDefaultsCredentialProviderConsentVerified];
-  if (IsCredentialProviderExtensionPromoEnabled()) {
-    self.consentCoordinator = [[ConsentCoordinator alloc]
-        initWithBaseViewController:self
-                           context:self.extensionContext];
-    [self.consentCoordinator start];
-  } else {
-    self.consentLegacyCoordinator = [[ConsentLegacyCoordinator alloc]
-           initWithBaseViewController:self
-                              context:self.extensionContext
-              reauthenticationHandler:self.reauthenticationHandler
-        isInitialConfigurationRequest:YES];
-    [self.consentLegacyCoordinator start];
-  }
+  self.consentCoordinator = [[ConsentCoordinator alloc]
+      initWithBaseViewController:self
+                         context:self.extensionContext];
+  [self.consentCoordinator start];
 }
 
 #pragma mark - Properties
@@ -199,18 +177,13 @@ UIColor* BackgroundColor() {
         [[ArchivableCredentialStore alloc]
             initWithFileURL:CredentialProviderSharedArchivableStoreURL()];
 
-    if (IsPasswordCreationEnabled()) {
-      NSString* key = AppGroupUserDefaultsCredentialProviderNewCredentials();
-      UserDefaultsCredentialStore* defaultsStore =
-          [[UserDefaultsCredentialStore alloc]
-              initWithUserDefaults:app_group::GetGroupUserDefaults()
-                               key:key];
-      _credentialStore = [[MultiStoreCredentialStore alloc]
-          initWithStores:@[ defaultsStore, archivableStore ]];
-
-    } else {
-      _credentialStore = archivableStore;
-    }
+    NSString* key = AppGroupUserDefaultsCredentialProviderNewCredentials();
+    UserDefaultsCredentialStore* defaultsStore =
+        [[UserDefaultsCredentialStore alloc]
+            initWithUserDefaults:app_group::GetGroupUserDefaults()
+                             key:key];
+    _credentialStore = [[MultiStoreCredentialStore alloc]
+        initWithStores:@[ defaultsStore, archivableStore ]];
   }
   return _credentialStore;
 }
@@ -339,8 +312,7 @@ UIColor* BackgroundColor() {
   // base::i18n::IsRTL(), which checks some values from the command line.
   // Initialize the command line for the process running this extension here
   // before that.
-  if (IsPasswordCreationEnabled() &&
-      !base::CommandLine::InitializedForCurrentProcess()) {
+  if (!base::CommandLine::InitializedForCurrentProcess()) {
     base::CommandLine::Init(0, nullptr);
   }
   self.listCoordinator = [[CredentialListCoordinator alloc]

@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'chrome://resources/cr_elements/mwb_shared_icons.js';
-import 'chrome://resources/cr_elements/mwb_shared_vars.js';
+import 'chrome://resources/cr_elements/mwb_shared_icons.html.js';
+import 'chrome://resources/cr_elements/mwb_shared_vars.css.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 
-import {CrSearchFieldBehavior} from 'chrome://resources/cr_elements/cr_search_field/cr_search_field_behavior.js';
+import {CrSearchFieldMixin} from 'chrome://resources/cr_elements/cr_search_field/cr_search_field_mixin.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-const TabSearchSearchFieldBase =
-    mixinBehaviors([CrSearchFieldBehavior], PolymerElement) as
-    {new (): PolymerElement & CrSearchFieldBehavior};
+import {getTemplate} from './tab_search_search_field.html.js';
+
+const TabSearchSearchFieldBase = CrSearchFieldMixin(PolymerElement);
 
 export interface TabSearchSearchField {
   $: {
@@ -29,7 +29,7 @@ export class TabSearchSearchField extends TabSearchSearchFieldBase {
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
@@ -62,12 +62,12 @@ export class TabSearchSearchField extends TabSearchSearchFieldBase {
     };
   }
 
-  autofocus: boolean;
+  override autofocus: boolean;
   searchResultText: string;
   private shortcut_: string;
   private announceText_: string;
 
-  getSearchInput(): HTMLInputElement {
+  override getSearchInput(): HTMLInputElement {
     return this.$.searchInput;
   }
 
@@ -101,10 +101,10 @@ export class TabSearchSearchField extends TabSearchSearchFieldBase {
   }
 
   /**
-   * Do not schedule the timer from CrSearchFieldBehavior to make search more
+   * Do not schedule the timer from CrSearchFieldMixin to make search more
    * responsive.
    */
-  onSearchTermInput() {
+  override onSearchTermInput() {
     this.hasSearchText = this.$.searchInput.value !== '';
     this.getSearchInput().dispatchEvent(
         new CustomEvent('search', {composed: true, detail: this.getValue()}));

@@ -43,6 +43,7 @@ ToolkitDelegate::ToolkitDelegate() = default;
 struct ToolkitCreateParamsImpl final
 {
     ThreadMode d_threadMode;
+    ToolkitCreateParams::LogMessageHandler d_logMessageHandler;
     ToolkitCreateParams::WinProcExceptionFilter d_winProcExceptionFilter;
     ToolkitCreateParams::ChannelErrorHandler d_channelErrorHandler;
     int d_maxSocketsPerProxy;
@@ -92,6 +93,7 @@ struct ToolkitCreateParamsImpl final
 
 ToolkitCreateParamsImpl::ToolkitCreateParamsImpl()
     : d_threadMode(ThreadMode::ORIGINAL)
+    , d_logMessageHandler(0)
     , d_winProcExceptionFilter(0)
     , d_channelErrorHandler(0)
     , d_maxSocketsPerProxy(-1000)
@@ -166,6 +168,11 @@ void ToolkitCreateParams::setThreadMode(ThreadMode mode)
 void ToolkitCreateParams::enableDefaultPrintSettings()
 {
     d_impl->d_useDefaultPrintSettings = true;
+}
+
+void ToolkitCreateParams::setLogMessageHandler(LogMessageHandler handler)
+{
+    d_impl->d_logMessageHandler = handler;
 }
 
 void ToolkitCreateParams::setTempFolderPath(const StringRef& path)
@@ -326,6 +333,11 @@ ThreadMode ToolkitCreateParams::threadMode() const
 bool ToolkitCreateParams::useDefaultPrintSettings() const
 {
     return d_impl->d_useDefaultPrintSettings;
+}
+
+ToolkitCreateParams::LogMessageHandler ToolkitCreateParams::logMessageHandler() const
+{
+    return d_impl->d_logMessageHandler;
 }
 
 ToolkitCreateParams::WinProcExceptionFilter ToolkitCreateParams::winProcExceptionFilter() const

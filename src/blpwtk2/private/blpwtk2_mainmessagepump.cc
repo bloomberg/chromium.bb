@@ -381,10 +381,10 @@ MainMessagePump::MainMessagePump()
     d_window = ::CreateWindowW(getClassName(),   // lpClassName
                                0,                // lpWindowName
                                0,                // dwStyle
-                               CW_DEFAULT,       // x
-                               CW_DEFAULT,       // y
-                               CW_DEFAULT,       // nWidth
-                               CW_DEFAULT,       // nHeight
+                               CW_USEDEFAULT,    // x
+                               CW_USEDEFAULT,    // y
+                               CW_USEDEFAULT,    // nWidth
+                               CW_USEDEFAULT,    // nHeight
                                HWND_MESSAGE,     // hwndParent
                                0,                // hMenu
                                0,                // hInstance

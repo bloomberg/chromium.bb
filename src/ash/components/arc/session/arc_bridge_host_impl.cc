@@ -18,7 +18,6 @@
 #include "ash/components/arc/mojom/bluetooth.mojom.h"
 #include "ash/components/arc/mojom/boot_phase_monitor.mojom.h"
 #include "ash/components/arc/mojom/camera.mojom.h"
-#include "ash/components/arc/mojom/cast_receiver.mojom.h"
 #include "ash/components/arc/mojom/cert_store.mojom.h"
 #include "ash/components/arc/mojom/clipboard.mojom.h"
 #include "ash/components/arc/mojom/compatibility_mode.mojom.h"
@@ -50,6 +49,7 @@
 #include "ash/components/arc/mojom/policy.mojom.h"
 #include "ash/components/arc/mojom/power.mojom.h"
 #include "ash/components/arc/mojom/print_spooler.mojom.h"
+#include "ash/components/arc/mojom/privacy_items.mojom.h"
 #include "ash/components/arc/mojom/process.mojom.h"
 #include "ash/components/arc/mojom/property.mojom.h"
 #include "ash/components/arc/mojom/rotation_lock.mojom.h"
@@ -57,6 +57,7 @@
 #include "ash/components/arc/mojom/sensor.mojom.h"
 #include "ash/components/arc/mojom/sharesheet.mojom.h"
 #include "ash/components/arc/mojom/storage_manager.mojom.h"
+#include "ash/components/arc/mojom/system_ui.mojom.h"
 #include "ash/components/arc/mojom/timer.mojom.h"
 #include "ash/components/arc/mojom/tracing.mojom.h"
 #include "ash/components/arc/mojom/tts.mojom.h"
@@ -151,12 +152,6 @@ void ArcBridgeHostImpl::OnBootPhaseMonitorInstanceReady(
 void ArcBridgeHostImpl::OnCameraInstanceReady(
     mojo::PendingRemote<mojom::CameraInstance> camera_remote) {
   OnInstanceReady(arc_bridge_service_->camera(), std::move(camera_remote));
-}
-
-void ArcBridgeHostImpl::OnCastReceiverInstanceReady(
-    mojo::PendingRemote<mojom::CastReceiverInstance> cast_receiver_remote) {
-  OnInstanceReady(arc_bridge_service_->cast_receiver(),
-                  std::move(cast_receiver_remote));
 }
 
 void ArcBridgeHostImpl::OnCertStoreInstanceReady(
@@ -350,6 +345,12 @@ void ArcBridgeHostImpl::OnPrintSpoolerInstanceReady(
                   std::move(print_spooler_remote));
 }
 
+void ArcBridgeHostImpl::OnPrivacyItemsInstanceReady(
+    mojo::PendingRemote<mojom::PrivacyItemsInstance> privacy_items_remote) {
+  OnInstanceReady(arc_bridge_service_->privacy_items(),
+                  std::move(privacy_items_remote));
+}
+
 void ArcBridgeHostImpl::OnProcessInstanceReady(
     mojo::PendingRemote<mojom::ProcessInstance> process_remote) {
   OnInstanceReady(arc_bridge_service_->process(), std::move(process_remote));
@@ -394,6 +395,12 @@ void ArcBridgeHostImpl::OnStorageManagerInstanceReady(
     mojo::PendingRemote<mojom::StorageManagerInstance> storage_manager_remote) {
   OnInstanceReady(arc_bridge_service_->storage_manager(),
                   std::move(storage_manager_remote));
+}
+
+void ArcBridgeHostImpl::OnSystemUiInstanceReady(
+    mojo::PendingRemote<mojom::SystemUiInstance> system_ui_remote) {
+  OnInstanceReady(arc_bridge_service_->system_ui(),
+                  std::move(system_ui_remote));
 }
 
 void ArcBridgeHostImpl::OnTimerInstanceReady(

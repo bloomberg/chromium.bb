@@ -5,11 +5,15 @@
 #include "chrome/browser/ui/webui/chromeos/emulator/device_emulator_message_handler.h"
 
 #include <stdint.h>
+
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/values.h"
 #include "chrome/browser/ash/system/fake_input_device_settings.h"
 #include "chrome/browser/ash/system/input_device_settings.h"
@@ -51,10 +55,22 @@ const char kSetHasTouchpad[] = "setHasTouchpad";
 const char kSetHasMouse[] = "setHasMouse";
 
 const char kPairedPropertyName[] = "Paired";
+const char kAudioNodesUpdated[] = "audioNodesUpdated";
 
 // Wattages to use as max power for power sources.
 const double kPowerLevelHigh = 50;
 const double kPowerLevelLow = 2;
+
+bool GetString(const base::Value& dict,
+               base::StringPiece key,
+               std::string* result) {
+  CHECK(result);
+  const std::string* value = dict.GetDict().FindString(key);
+  if (value) {
+    *result = *value;
+  }
+  return value;
+}
 
 }  // namespace
 
@@ -128,7 +144,12 @@ class DeviceEmulatorMessageHandler::CrasAudioObserver
   }
 
   // chromeos::CrasAudioClient::Observer.
-  void NodesChanged() override { owner_->HandleRequestAudioNodes(nullptr); }
+  void NodesChanged() override {
+    if (!owner_->IsJavascriptAllowed()) {
+      return;
+    }
+    owner_->UpdateAudioNodes();
+  }
 
  private:
   DeviceEmulatorMessageHandler* owner_;
@@ -158,15 +179,16 @@ void DeviceEmulatorMessageHandler::PowerObserver::PowerChanged(
     const power_manager::PowerSupplyProperties& proto) {
   base::DictionaryValue power_properties;
 
-  power_properties.SetInteger("battery_percent", proto.battery_percent());
-  power_properties.SetInteger("battery_state", proto.battery_state());
-  power_properties.SetInteger("external_power", proto.external_power());
-  power_properties.SetInteger("battery_time_to_empty_sec",
-                              proto.battery_time_to_empty_sec());
-  power_properties.SetInteger("battery_time_to_full_sec",
-                              proto.battery_time_to_full_sec());
-  power_properties.SetString("external_power_source_id",
-                             proto.external_power_source_id());
+  power_properties.GetDict().Set("battery_percent",
+                                 int(proto.battery_percent()));
+  power_properties.GetDict().Set("battery_state", int(proto.battery_state()));
+  power_properties.GetDict().Set("external_power", int(proto.external_power()));
+  power_properties.GetDict().Set("battery_time_to_empty_sec",
+                                 int(proto.battery_time_to_empty_sec()));
+  power_properties.GetDict().Set("battery_time_to_full_sec",
+                                 int(proto.battery_time_to_full_sec()));
+  power_properties.GetDict().Set("external_power_source_id",
+                                 proto.external_power_source_id());
 
   owner_->FireWebUIListener("power-properties-updated", power_properties);
 }
@@ -181,9 +203,9 @@ DeviceEmulatorMessageHandler::DeviceEmulatorMessageHandler()
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-DeviceEmulatorMessageHandler::~DeviceEmulatorMessageHandler() {}
+DeviceEmulatorMessageHandler::~DeviceEmulatorMessageHandler() = default;
 
-void DeviceEmulatorMessageHandler::Init(const base::ListValue* args) {
+void DeviceEmulatorMessageHandler::Init(const base::Value::List& args) {
   AllowJavascript();
 }
 
@@ -197,26 +219,26 @@ void DeviceEmulatorMessageHandler::BluetoothDeviceAdapterReady(
 }
 
 void DeviceEmulatorMessageHandler::RequestPowerInfo(
-    const base::ListValue* args) {
+    const base::Value::List& args) {
   fake_power_manager_client_->RequestStatusUpdate();
 }
 
 void DeviceEmulatorMessageHandler::HandleRemoveBluetoothDevice(
-    const base::ListValue* args) {
-  CHECK(!args->GetList().empty());
-  std::string path = args->GetList()[0].GetString();
+    const base::Value::List& args) {
+  CHECK(!args.empty());
+  std::string path = args[0].GetString();
   fake_bluetooth_device_client_->RemoveDevice(
       dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath),
       dbus::ObjectPath(path));
 }
 
 void DeviceEmulatorMessageHandler::HandleRequestBluetoothDiscover(
-    const base::ListValue* args) {
+    const base::Value::List& args) {
   CreateBluetoothDeviceFromListValue(args);
 }
 
 void DeviceEmulatorMessageHandler::HandleRequestBluetoothInfo(
-    const base::ListValue* args) {
+    const base::Value::List& args) {
   AllowJavascript();
   // Get a list containing paths of the devices which are connected to
   // the main adapter.
@@ -251,17 +273,19 @@ void DeviceEmulatorMessageHandler::HandleRequestBluetoothInfo(
       bluez::FakeBluetoothDeviceClient::kPairingActionFail);
 
   base::Value info(base::Value::Type::DICTIONARY);
-  info.SetKey("predefined_devices", std::move(predefined_devices));
-  info.SetKey("devices", std::move(devices));
-  info.SetKey("pairing_method_options", std::move(pairing_method_options));
-  info.SetKey("pairing_action_options", std::move(pairing_action_options));
+  info.GetDict().Set("predefined_devices", std::move(predefined_devices));
+  info.GetDict().Set("devices", std::move(devices));
+  info.GetDict().Set("pairing_method_options",
+                     std::move(pairing_method_options));
+  info.GetDict().Set("pairing_action_options",
+                     std::move(pairing_action_options));
 
   // Send the list of devices to the view.
   FireWebUIListener("bluetooth-info-updated", info);
 }
 
 void DeviceEmulatorMessageHandler::HandleRequestBluetoothPair(
-    const base::ListValue* args) {
+    const base::Value::List& args) {
   // Create the device if it does not already exist.
   std::string path = CreateBluetoothDeviceFromListValue(args);
   bluez::FakeBluetoothDeviceClient::Properties* props =
@@ -276,56 +300,36 @@ void DeviceEmulatorMessageHandler::HandleRequestBluetoothPair(
 }
 
 void DeviceEmulatorMessageHandler::HandleRequestAudioNodes(
-    const base::ListValue* args) {
+    const base::Value::List& args) {
   AllowJavascript();
-  const base::Value& callback_id = args->GetList()[0];
-
-  // Get every active audio node and create a dictionary to
-  // send it to JavaScript.
-  base::ListValue audio_nodes;
-  for (const AudioNode& node :
-       chromeos::FakeCrasAudioClient::Get()->node_list()) {
-    std::unique_ptr<base::DictionaryValue> audio_node(
-        new base::DictionaryValue());
-
-    audio_node->SetBoolean("isInput", node.is_input);
-    audio_node->SetString("id", base::NumberToString(node.id));
-    audio_node->SetString("deviceName", node.device_name);
-    audio_node->SetString("type", node.type);
-    audio_node->SetString("name", node.name);
-    audio_node->SetBoolean("active", node.active);
-
-    audio_nodes.Append(std::move(audio_node));
-  }
-
-  ResolveJavascriptCallback(callback_id, audio_nodes);
+  UpdateAudioNodes();
 }
 
 void DeviceEmulatorMessageHandler::HandleInsertAudioNode(
-    const base::ListValue* args) {
+    const base::Value::List& args) {
   AudioNode audio_node;
 
-  const base::Value& device_value = args->GetList()[0];
+  const base::Value& device_value = args[0];
   CHECK(device_value.is_dict());
   const base::DictionaryValue& device_dict =
       base::Value::AsDictionaryValue(device_value);
-  audio_node.is_input = device_dict.FindBoolKey("isInput").value();
-  CHECK(device_dict.GetString("deviceName", &audio_node.device_name));
-  CHECK(device_dict.GetString("type", &audio_node.type));
-  CHECK(device_dict.GetString("name", &audio_node.name));
-  audio_node.active = device_dict.FindBoolKey("active").value();
+  audio_node.is_input = device_dict.GetDict().FindBool("isInput").value();
+  CHECK(GetString(device_dict, "deviceName", &audio_node.device_name));
+  CHECK(GetString(device_dict, "type", &audio_node.type));
+  CHECK(GetString(device_dict, "name", &audio_node.name));
+  audio_node.active = device_dict.GetDict().FindBool("active").value();
 
   std::string tmp_id;
-  CHECK(device_dict.GetString("id", &tmp_id));
+  CHECK(GetString(device_dict, "id", &tmp_id));
   CHECK(base::StringToUint64(tmp_id, &audio_node.id));
 
   chromeos::FakeCrasAudioClient::Get()->InsertAudioNodeToList(audio_node);
 }
 
 void DeviceEmulatorMessageHandler::HandleRemoveAudioNode(
-    const base::ListValue* args) {
-  CHECK(!args->GetList().empty());
-  std::string tmp_id = args->GetList()[0].GetString();
+    const base::Value::List& args) {
+  CHECK(!args.empty());
+  std::string tmp_id = args[0].GetString();
   uint64_t id;
   CHECK(base::StringToUint64(tmp_id, &id));
 
@@ -333,30 +337,27 @@ void DeviceEmulatorMessageHandler::HandleRemoveAudioNode(
 }
 
 void DeviceEmulatorMessageHandler::HandleSetHasTouchpad(
-    const base::ListValue* args) {
-  const auto& list = args->GetList();
-  CHECK(!list.empty());
-  const bool has_touchpad = list[0].GetBool();
+    const base::Value::List& args) {
+  CHECK(!args.empty());
+  const bool has_touchpad = args[0].GetBool();
 
   system::InputDeviceSettings::Get()->GetFakeInterface()->set_touchpad_exists(
       has_touchpad);
 }
 
 void DeviceEmulatorMessageHandler::HandleSetHasMouse(
-    const base::ListValue* args) {
-  const auto& list = args->GetList();
-  CHECK(!list.empty());
-  const bool has_mouse = list[0].GetBool();
+    const base::Value::List& args) {
+  CHECK(!args.empty());
+  const bool has_mouse = args[0].GetBool();
 
   system::InputDeviceSettings::Get()->GetFakeInterface()->set_mouse_exists(
       has_mouse);
 }
 
 void DeviceEmulatorMessageHandler::UpdateBatteryPercent(
-    const base::ListValue* args) {
-  const auto& list = args->GetList();
-  if (list.size() >= 1 && list[0].is_int()) {
-    int new_percent = list[0].GetInt();
+    const base::Value::List& args) {
+  if (args.size() >= 1 && args[0].is_int()) {
+    int new_percent = args[0].GetInt();
     power_manager::PowerSupplyProperties props =
         *fake_power_manager_client_->GetLastStatus();
     props.set_battery_percent(new_percent);
@@ -365,10 +366,9 @@ void DeviceEmulatorMessageHandler::UpdateBatteryPercent(
 }
 
 void DeviceEmulatorMessageHandler::UpdateBatteryState(
-    const base::ListValue* args) {
-  const auto& list = args->GetList();
-  if (list.size() >= 1 && list[0].is_int()) {
-    int battery_state = list[0].GetInt();
+    const base::Value::List& args) {
+  if (args.size() >= 1 && args[0].is_int()) {
+    int battery_state = args[0].GetInt();
     power_manager::PowerSupplyProperties props =
         *fake_power_manager_client_->GetLastStatus();
     props.set_battery_state(
@@ -379,10 +379,9 @@ void DeviceEmulatorMessageHandler::UpdateBatteryState(
 }
 
 void DeviceEmulatorMessageHandler::UpdateTimeToEmpty(
-    const base::ListValue* args) {
-  const auto& list = args->GetList();
-  if (list.size() >= 1 && list[0].is_int()) {
-    int new_time = list[0].GetInt();
+    const base::Value::List& args) {
+  if (args.size() >= 1 && args[0].is_int()) {
+    int new_time = args[0].GetInt();
     power_manager::PowerSupplyProperties props =
         *fake_power_manager_client_->GetLastStatus();
     props.set_battery_time_to_empty_sec(new_time);
@@ -391,10 +390,9 @@ void DeviceEmulatorMessageHandler::UpdateTimeToEmpty(
 }
 
 void DeviceEmulatorMessageHandler::UpdateTimeToFull(
-    const base::ListValue* args) {
-  const auto& list = args->GetList();
-  if (list.size() >= 1 && list[0].is_int()) {
-    int new_time = list[0].GetInt();
+    const base::Value::List& args) {
+  if (args.size() >= 1 && args[0].is_int()) {
+    int new_time = args[0].GetInt();
     power_manager::PowerSupplyProperties props =
         *fake_power_manager_client_->GetLastStatus();
     props.set_battery_time_to_full_sec(new_time);
@@ -403,10 +401,9 @@ void DeviceEmulatorMessageHandler::UpdateTimeToFull(
 }
 
 void DeviceEmulatorMessageHandler::UpdatePowerSources(
-    const base::ListValue* args) {
-  base::Value::ConstListView args_list = args->GetList();
-  CHECK(!args_list.empty() && args_list[0].is_list());
-  base::Value::ConstListView sources = args_list[0].GetList();
+    const base::Value::List& args) {
+  CHECK(!args.empty() && args[0].is_list());
+  base::Value::ConstListView sources = args[0].GetListDeprecated();
 
   power_manager::PowerSupplyProperties props =
       *fake_power_manager_client_->GetLastStatus();
@@ -423,21 +420,21 @@ void DeviceEmulatorMessageHandler::UpdatePowerSources(
     CHECK(val.is_dict());
     power_manager::PowerSupplyProperties_PowerSource* source =
         props.add_available_external_power_source();
-    const std::string* id = val.FindStringKey("id");
+    const std::string* id = val.GetDict().FindString("id");
     CHECK(id);
     source->set_id(*id);
-    const std::string* device_type = val.FindStringKey("type");
+    const std::string* device_type = val.GetDict().FindString("type");
     CHECK(device_type);
     bool dual_role = *device_type == "DualRoleUSB";
     source->set_active_by_default(!dual_role);
     if (dual_role)
       props.set_supports_dual_role_devices(true);
-    absl::optional<int> port = val.FindIntKey("port");
+    absl::optional<int> port = val.GetDict().FindInt("port");
     CHECK(port.has_value());
     source->set_port(
         static_cast<power_manager::PowerSupplyProperties_PowerSource_Port>(
             port.value()));
-    const std::string* power_level = val.FindStringKey("power");
+    const std::string* power_level = val.GetDict().FindString("power");
     CHECK(power_level);
     source->set_max_power(*power_level == "high" ? kPowerLevelHigh
                                                  : kPowerLevelLow);
@@ -462,83 +459,82 @@ void DeviceEmulatorMessageHandler::UpdatePowerSources(
 }
 
 void DeviceEmulatorMessageHandler::UpdatePowerSourceId(
-    const base::ListValue* args) {
-  base::Value::ConstListView args_list = args->GetList();
-  CHECK(!args_list.empty() && args_list[0].is_string());
-  std::string id = args_list[0].GetString();
+    const base::Value::List& args) {
+  CHECK(!args.empty() && args[0].is_string());
+  std::string id = args[0].GetString();
   fake_power_manager_client_->SetPowerSource(id);
 }
 
 void DeviceEmulatorMessageHandler::RegisterMessages() {
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       kInitialize, base::BindRepeating(&DeviceEmulatorMessageHandler::Init,
                                        base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       kRequestPowerInfo,
       base::BindRepeating(&DeviceEmulatorMessageHandler::RequestPowerInfo,
                           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       kUpdateBatteryPercent,
       base::BindRepeating(&DeviceEmulatorMessageHandler::UpdateBatteryPercent,
                           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       kUpdateBatteryState,
       base::BindRepeating(&DeviceEmulatorMessageHandler::UpdateBatteryState,
                           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       kUpdateTimeToEmpty,
       base::BindRepeating(&DeviceEmulatorMessageHandler::UpdateTimeToEmpty,
                           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       kUpdateTimeToFull,
       base::BindRepeating(&DeviceEmulatorMessageHandler::UpdateTimeToFull,
                           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       kUpdatePowerSources,
       base::BindRepeating(&DeviceEmulatorMessageHandler::UpdatePowerSources,
                           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       kUpdatePowerSourceId,
       base::BindRepeating(&DeviceEmulatorMessageHandler::UpdatePowerSourceId,
                           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       kRequestAudioNodes,
       base::BindRepeating(
           &DeviceEmulatorMessageHandler::HandleRequestAudioNodes,
           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       kInsertAudioNode,
       base::BindRepeating(&DeviceEmulatorMessageHandler::HandleInsertAudioNode,
                           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       kRemoveAudioNode,
       base::BindRepeating(&DeviceEmulatorMessageHandler::HandleRemoveAudioNode,
                           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       kBluetoothDiscoverFunction,
       base::BindRepeating(
           &DeviceEmulatorMessageHandler::HandleRequestBluetoothDiscover,
           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       kBluetoothPairFunction,
       base::BindRepeating(
           &DeviceEmulatorMessageHandler::HandleRequestBluetoothPair,
           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       kRequestBluetoothInfo,
       base::BindRepeating(
           &DeviceEmulatorMessageHandler::HandleRequestBluetoothInfo,
           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       kRemoveBluetoothDevice,
       base::BindRepeating(
           &DeviceEmulatorMessageHandler::HandleRemoveBluetoothDevice,
           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       kSetHasTouchpad,
       base::BindRepeating(&DeviceEmulatorMessageHandler::HandleSetHasTouchpad,
                           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       kSetHasMouse,
       base::BindRepeating(&DeviceEmulatorMessageHandler::HandleSetHasMouse,
                           base::Unretained(this)));
@@ -564,27 +560,27 @@ void DeviceEmulatorMessageHandler::OnJavascriptDisallowed() {
 }
 
 std::string DeviceEmulatorMessageHandler::CreateBluetoothDeviceFromListValue(
-    const base::ListValue* args) {
+    const base::Value::List& args) {
   bluez::FakeBluetoothDeviceClient::IncomingDeviceProperties props;
 
-  const base::Value& device_value = args->GetList()[0];
+  const base::Value& device_value = args[0];
   CHECK(device_value.is_dict());
   const base::DictionaryValue& device_dict =
       base::Value::AsDictionaryValue(device_value);
-  CHECK(device_dict.GetString("path", &props.device_path));
-  CHECK(device_dict.GetString("name", &props.device_name));
-  CHECK(device_dict.GetString("alias", &props.device_alias));
-  CHECK(device_dict.GetString("address", &props.device_address));
-  CHECK(device_dict.GetString("pairingMethod", &props.pairing_method));
-  CHECK(device_dict.GetString("pairingAuthToken", &props.pairing_auth_token));
-  CHECK(device_dict.GetString("pairingAction", &props.pairing_action));
+  CHECK(GetString(device_dict, "path", &props.device_path));
+  CHECK(GetString(device_dict, "name", &props.device_name));
+  CHECK(GetString(device_dict, "alias", &props.device_alias));
+  CHECK(GetString(device_dict, "address", &props.device_address));
+  CHECK(GetString(device_dict, "pairingMethod", &props.pairing_method));
+  CHECK(GetString(device_dict, "pairingAuthToken", &props.pairing_auth_token));
+  CHECK(GetString(device_dict, "pairingAction", &props.pairing_action));
 
-  absl::optional<int> class_value = device_dict.FindIntKey("classValue");
+  absl::optional<int> class_value = device_dict.GetDict().FindInt("classValue");
   CHECK(class_value);
   props.device_class = *class_value;
 
-  props.is_trusted = device_dict.FindBoolKey("isTrusted").value();
-  props.incoming = device_dict.FindBoolKey("incoming").value();
+  props.is_trusted = device_dict.GetDict().FindBool("isTrusted").value();
+  props.incoming = device_dict.GetDict().FindBool("incoming").value();
 
   // Create the device and store it in the FakeBluetoothDeviceClient's observed
   // list of devices.
@@ -603,27 +599,27 @@ base::Value DeviceEmulatorMessageHandler::GetDeviceInfo(
       fake_bluetooth_device_client_->GetPairingOptions(object_path);
 
   base::Value device(base::Value::Type::DICTIONARY);
-  device.SetStringKey("path", object_path.value());
-  device.SetStringKey("name", props->name.value());
-  device.SetStringKey("alias", props->alias.value());
-  device.SetStringKey("address", props->address.value());
+  device.GetDict().Set("path", object_path.value());
+  device.GetDict().Set("name", props->name.value());
+  device.GetDict().Set("alias", props->alias.value());
+  device.GetDict().Set("address", props->address.value());
   if (options) {
-    device.SetStringKey("pairingMethod", options->pairing_method);
-    device.SetStringKey("pairingAuthToken", options->pairing_auth_token);
-    device.SetStringKey("pairingAction", options->pairing_action);
+    device.GetDict().Set("pairingMethod", options->pairing_method);
+    device.GetDict().Set("pairingAuthToken", options->pairing_auth_token);
+    device.GetDict().Set("pairingAction", options->pairing_action);
   } else {
-    device.SetStringKey("pairingMethod", "");
-    device.SetStringKey("pairingAuthToken", "");
-    device.SetStringKey("pairingAction", "");
+    device.GetDict().Set("pairingMethod", "");
+    device.GetDict().Set("pairingAuthToken", "");
+    device.GetDict().Set("pairingAction", "");
   }
-  device.SetIntKey("classValue", props->bluetooth_class.value());
-  device.SetBoolKey("isTrusted", props->trusted.value());
-  device.SetBoolKey("incoming", false);
+  device.GetDict().Set("classValue", int(props->bluetooth_class.value()));
+  device.GetDict().Set("isTrusted", bool(props->trusted.value()));
+  device.GetDict().Set("incoming", false);
 
   base::Value uuids(base::Value::Type::LIST);
   for (const std::string& uuid : props->uuids.value())
     uuids.Append(uuid);
-  device.SetKey("uuids", std::move(uuids));
+  device.GetDict().Set("uuids", std::move(uuids));
 
   return device;
 }
@@ -665,6 +661,27 @@ void DeviceEmulatorMessageHandler::MouseExists(bool exists) {
 
 void DeviceEmulatorMessageHandler::PointingStickExists(bool exists) {
   // TODO(crbug.com/1114828): support fake pointing sticks.
+}
+
+void DeviceEmulatorMessageHandler::UpdateAudioNodes() {
+  // Get every active audio node and create a dictionary to
+  // send it to JavaScript.
+  base::Value audio_nodes(base::Value::Type::LIST);
+  for (const AudioNode& node :
+       chromeos::FakeCrasAudioClient::Get()->node_list()) {
+    base::Value audio_node(base::Value::Type::DICTIONARY);
+
+    audio_node.GetDict().Set("isInput", node.is_input);
+    audio_node.GetDict().Set("id", base::NumberToString(node.id));
+    audio_node.GetDict().Set("deviceName", node.device_name);
+    audio_node.GetDict().Set("type", node.type);
+    audio_node.GetDict().Set("name", node.name);
+    audio_node.GetDict().Set("active", node.active);
+
+    audio_nodes.Append(std::move(audio_node));
+  }
+
+  FireWebUIListener(kAudioNodesUpdated, audio_nodes);
 }
 
 }  // namespace chromeos

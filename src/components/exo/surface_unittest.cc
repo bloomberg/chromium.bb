@@ -7,12 +7,15 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
+#include "base/time/time.h"
 #include "components/exo/buffer.h"
 #include "components/exo/shell_surface.h"
 #include "components/exo/sub_surface.h"
+#include "components/exo/surface_test_util.h"
 #include "components/exo/test/exo_test_base.h"
 #include "components/exo/test/exo_test_helper.h"
 #include "components/viz/common/quads/compositor_frame.h"
+#include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/service/surfaces/surface.h"
 #include "components/viz/service/surfaces/surface_manager.h"
@@ -82,25 +85,6 @@ std::string TransformToString(Transform transform) {
   }
   return prefix + name;
 }
-
-class SurfaceObserverForTest : public SurfaceObserver {
- public:
-  SurfaceObserverForTest() = default;
-
-  SurfaceObserverForTest(const SurfaceObserverForTest&) = delete;
-  SurfaceObserverForTest& operator=(const SurfaceObserverForTest&) = delete;
-
-  void OnSurfaceDestroying(Surface* surface) override {}
-
-  void OnWindowOcclusionChanged(Surface* surface) override {
-    num_occlusion_changes_++;
-  }
-
-  int num_occlusion_changes() const { return num_occlusion_changes_; }
-
- private:
-  int num_occlusion_changes_ = 0;
-};
 
 class SurfaceTest : public test::ExoTestBase,
                     public ::testing::WithParamInterface<float> {
@@ -202,6 +186,7 @@ TEST_P(SurfaceTest, Attach) {
   surface->Attach(buffer.get());
   EXPECT_TRUE(surface->HasPendingAttachedBuffer());
   surface->Commit();
+  EXPECT_EQ(gfx::SizeF(buffer_size), surface->content_size());
 
   // Commit without calling Attach() should have no effect.
   surface->Commit();
@@ -212,6 +197,7 @@ TEST_P(SurfaceTest, Attach) {
   surface->Attach(nullptr);
   EXPECT_FALSE(surface->HasPendingAttachedBuffer());
   surface->Commit();
+  EXPECT_TRUE(surface->content_size().IsEmpty());
   // LayerTreeFrameSinkHolder::ReclaimResources() gets called via
   // CompositorFrameSinkClient interface. We need to wait here for the mojo
   // call to finish so that the release callback finishes running before
@@ -260,7 +246,7 @@ TEST_P(SurfaceTest, Damage) {
 
   // Adjust damage for DSF filtering and verify it below.
   if (device_scale_factor() > 1.f)
-    buffer_damage.Inset(-1.f, -1.f);
+    buffer_damage.Inset(-1.f);
 
   {
     const viz::CompositorFrame& frame =
@@ -505,7 +491,7 @@ TEST_P(SurfaceTest, MAYBE_SetOpaqueRegion) {
         frame.render_pass_list.back()->quad_list.back());
 
     EXPECT_FALSE(texture_draw_quad->ShouldDrawWithBlending());
-    EXPECT_EQ(SK_ColorBLACK, texture_draw_quad->background_color);
+    EXPECT_EQ(SkColors::kBlack, texture_draw_quad->background_color);
     EXPECT_EQ(gfx::Rect(buffer_size), ToTargetSpaceDamage(frame));
   }
 
@@ -522,7 +508,7 @@ TEST_P(SurfaceTest, MAYBE_SetOpaqueRegion) {
     auto* texture_draw_quad = viz::TextureDrawQuad::MaterialCast(
         frame.render_pass_list.back()->quad_list.back());
     EXPECT_TRUE(texture_draw_quad->ShouldDrawWithBlending());
-    EXPECT_EQ(SK_ColorTRANSPARENT, texture_draw_quad->background_color);
+    EXPECT_EQ(SkColors::kTransparent, texture_draw_quad->background_color);
     EXPECT_EQ(gfx::Rect(buffer_size), ToTargetSpaceDamage(frame));
   }
 
@@ -821,6 +807,11 @@ TEST_P(SurfaceTest, SetViewport) {
   const viz::CompositorFrame& frame = GetFrameFromSurface(shell_surface.get());
   ASSERT_EQ(1u, frame.render_pass_list.size());
   EXPECT_EQ(ToPixel(gfx::Rect(0, 0, 512, 512)), GetCompleteDamage(frame));
+
+  // This will make the surface have no content regardless of the viewport.
+  surface->Attach(nullptr);
+  surface->Commit();
+  EXPECT_TRUE(surface->content_size().IsEmpty());
 }
 
 TEST_P(SurfaceTest, SubpixelCoordinate) {
@@ -857,11 +848,11 @@ TEST_P(SurfaceTest, SubpixelCoordinate) {
       gfx::RectF(10.5, 20, 30, 40.5), gfx::RectF(10.5, 20.5, 30, 40)};
   bool kExpectedAligned[] = {true,  true,  false, false,
                              false, false, false, false};
-  static_assert(base::size(kTestRects) == base::size(kExpectedAligned),
+  static_assert(std::size(kTestRects) == std::size(kExpectedAligned),
                 "Number of elements in each list should be the identical.");
   for (int j = 0; j < 2; j++) {
     const bool kTestCaseRotation = (j == 1);
-    for (size_t i = 0; i < base::size(kTestRects); i++) {
+    for (size_t i = 0; i < std::size(kTestRects); i++) {
       auto rect_in_dip = kTestRects[i];
       device_scale_transform.TransformRect(&rect_in_dip);
       sub_surface->SetPosition(rect_in_dip.origin());
@@ -931,6 +922,11 @@ TEST_P(SurfaceTest, SetCrop) {
   const viz::CompositorFrame& frame = GetFrameFromSurface(shell_surface.get());
   ASSERT_EQ(1u, frame.render_pass_list.size());
   EXPECT_EQ(ToPixel(gfx::Rect(0, 0, 12, 12)), GetCompleteDamage(frame));
+
+  // This will make the surface have no content regardless of the crop.
+  surface->Attach(nullptr);
+  surface->Commit();
+  EXPECT_TRUE(surface->content_size().IsEmpty());
 }
 
 void SurfaceTest::SetCropAndBufferTransformHelperTransformAndTest(
@@ -1276,6 +1272,45 @@ TEST_P(SurfaceTest, ScaledSurfaceQuad) {
   }
 }
 
+TEST_P(SurfaceTest, ColorBufferAlpha) {
+  gfx::Size buffer_size(1, 1);
+  constexpr SkColor4f kBuffColorExpected[] = {{1.f, 128.0f / 255.0f, 0.f, 1.f},
+                                              {0.f, 128.0f / 255.0f, 1.f, 0.f}};
+  constexpr bool kExpectedOpaque[] = {true, false};
+  for (size_t i = 0; i < std::size(kBuffColorExpected); i++) {
+    auto buffer =
+        std::make_unique<SolidColorBuffer>(kBuffColorExpected[i], buffer_size);
+    auto surface = std::make_unique<Surface>();
+    auto shell_surface = std::make_unique<ShellSurface>(surface.get());
+    surface->Attach(buffer.get());
+    surface->SetAlpha(1.0f);
+
+    surface->SetEmbeddedSurfaceSize(gfx::Size(1, 1));
+    surface->SetEmbeddedSurfaceId(base::BindRepeating([]() -> viz::SurfaceId {
+      return viz::SurfaceId(
+          viz::FrameSinkId(1, 1),
+          viz::LocalSurfaceId(1, 1, base::UnguessableToken::Create()));
+    }));
+
+    {
+      surface->Commit();
+      base::RunLoop().RunUntilIdle();
+
+      const viz::CompositorFrame& frame =
+          GetFrameFromSurface(shell_surface.get());
+      EXPECT_EQ(1u, frame.render_pass_list.size());
+      EXPECT_EQ(1u, frame.render_pass_list.back()->quad_list.size());
+      EXPECT_EQ(0u, frame.resource_list.size());
+      auto* draw_quad = frame.render_pass_list.back()->quad_list.back();
+      EXPECT_EQ(viz::DrawQuad::Material::kSolidColor, draw_quad->material);
+      EXPECT_EQ(kExpectedOpaque[i],
+                draw_quad->shared_quad_state->are_contents_opaque);
+      auto* solid_color_quad = viz::SolidColorDrawQuad::MaterialCast(draw_quad);
+      EXPECT_EQ(kBuffColorExpected[i], solid_color_quad->color);
+    }
+  }
+}
+
 TEST_P(SurfaceTest, Commit) {
   std::unique_ptr<Surface> surface(new Surface);
 
@@ -1425,7 +1460,15 @@ TEST_P(SurfaceTest, HasPendingPerCommitBufferReleaseCallback) {
   EXPECT_FALSE(surface->HasPendingPerCommitBufferReleaseCallback());
 }
 
-TEST_P(SurfaceTest, PerCommitBufferReleaseCallbackForSameSurface) {
+// TODO(crbug.com/1292674): Flaky on ChromeOS.
+#if BUILDFLAG(IS_CHROMEOS)
+#define MAYBE_PerCommitBufferReleaseCallbackForSameSurface \
+  DISABLED_PerCommitBufferReleaseCallbackForSameSurface
+#else
+#define MAYBE_PerCommitBufferReleaseCallbackForSameSurface \
+  PerCommitBufferReleaseCallbackForSameSurface
+#endif
+TEST_P(SurfaceTest, MAYBE_PerCommitBufferReleaseCallbackForSameSurface) {
   gfx::Size buffer_size(1, 1);
   auto buffer1 = std::make_unique<Buffer>(
       exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
@@ -1466,7 +1509,15 @@ TEST_P(SurfaceTest, PerCommitBufferReleaseCallbackForSameSurface) {
   EXPECT_EQ(buffer_release_count, 1);
 }
 
-TEST_P(SurfaceTest, PerCommitBufferReleaseCallbackForDifferentSurfaces) {
+// TODO(crbug.com/1292674): Flaky on ChromeOS.
+#if BUILDFLAG(IS_CHROMEOS)
+#define MAYBE_PerCommitBufferReleaseCallbackForDifferentSurfaces \
+  DISABLED_PerCommitBufferReleaseCallbackForDifferentSurfaces
+#else
+#define MAYBE_PerCommitBufferReleaseCallbackForDifferentSurfaces \
+  PerCommitBufferReleaseCallbackForDifferentSurfaces
+#endif
+TEST_P(SurfaceTest, MAYBE_PerCommitBufferReleaseCallbackForDifferentSurfaces) {
   gfx::Size buffer_size(1, 1);
   auto buffer1 = std::make_unique<Buffer>(
       exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));

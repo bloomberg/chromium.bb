@@ -15,10 +15,12 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/values.h"
 #include "chrome/browser/ash/login/screens/recommend_apps/fake_recommend_apps_fetcher_delegate.h"
 #include "chrome/browser/ash/login/screens/recommend_apps/recommend_apps_fetcher.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/user_manager/scoped_user_manager.h"
@@ -27,11 +29,13 @@
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/zlib/google/compression_utils.h"
 #include "ui/display/display.h"
 #include "ui/display/test/test_screen.h"
+#include "ui/display/util/display_util.h"
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/device_data_manager_test_api.h"
 #include "ui/events/devices/input_device.h"
@@ -214,8 +218,7 @@ class RecommendAppsFetcherImplTest : public testing::Test {
 
   void SetUp() override {
     display::Screen::SetScreenInstance(&test_screen_);
-    display::Display::SetInternalDisplayId(
-        test_screen_.GetPrimaryDisplay().id());
+    display::SetInternalDisplayIds({test_screen_.GetPrimaryDisplay().id()});
 
     mojo::PendingRemote<mojom::CrosDisplayConfigController>
         remote_display_config;
@@ -307,6 +310,10 @@ class RecommendAppsFetcherImplTest : public testing::Test {
               header_reader.GetSystemAvailableFeatures());
   }
 
+  void EnableAppDiscoveryFlag() {
+    scoped_feature_list_.InitAndEnableFeature(features::kAppDiscoveryForOobe);
+  }
+
   FakeRecommendAppsFetcherDelegate delegate_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   std::unique_ptr<RecommendAppsFetcher> recommend_apps_fetcher_;
@@ -319,10 +326,17 @@ class RecommendAppsFetcherImplTest : public testing::Test {
 
  private:
   void InterceptRequest(const network::ResourceRequest& request) {
-    ASSERT_EQ(
-        "https://android.clients.google.com/fdfe/chrome/"
-        "getfastreinstallappslist",
-        request.url.spec());
+    if (base::FeatureList::IsEnabled(features::kAppDiscoveryForOobe)) {
+      ASSERT_EQ(
+          "https://android.clients.google.com/fdfe/chrome/"
+          "getSetupAppRecommendations",
+          request.url.spec());
+    } else {
+      ASSERT_EQ(
+          "https://android.clients.google.com/fdfe/chrome/"
+          "getfastreinstallappslist",
+          request.url.spec());
+    }
     if (request_waiter_)
       request_waiter_->Quit();
   }
@@ -333,6 +347,8 @@ class RecommendAppsFetcherImplTest : public testing::Test {
   }
 
   content::BrowserTaskEnvironment task_environment_;
+  base::test::ScopedFeatureList scoped_feature_list_;
+  data_decoder::test::InProcessDataDecoder in_process_data_decoder;
 
   std::unique_ptr<base::RunLoop> request_waiter_;
 };
@@ -1377,6 +1393,67 @@ TEST_F(RecommendAppsFetcherImplTest, GpuInfo) {
 
   // `gpu_info` should be parsed without causing use-after-free.
   recommend_apps_fetcher_->Start();
+}
+
+TEST_F(RecommendAppsFetcherImplTest, AppDiscoveryValidResponse) {
+  EnableAppDiscoveryFlag();
+
+  ASSERT_TRUE(recommend_apps_fetcher_);
+
+  recommend_apps_fetcher_->Start();
+
+  cros_display_config_->Flush();
+  ASSERT_TRUE(cros_display_config_->RunGetDisplayUnitInfoListCallback(
+      CreateDisplayUnitInfo(Dpi(117, 117), absl::nullopt)));
+
+  ASSERT_TRUE(arc_features_callback_);
+  std::move(arc_features_callback_).Run(CreateArcFeaturesForTest());
+
+  network::ResourceRequest* request = WaitForAppListRequest();
+  ASSERT_TRUE(request);
+
+  const std::string response =
+      R"({"recommendedApp": [{
+    "androidApp": {
+      "packageName": "com.game.name",
+      "title": "NameOfFunGame",
+      "icon": {
+        "imageUri": "https://play-lh.googleusercontent.com/1234IDECLAREATHUMBWAR",
+        "dimensions": {
+          "width": 512,
+          "height": 512
+        }
+      }
+    }
+  }]})";
+
+  test_url_loader_factory_.AddResponse(request->url.spec(), response);
+
+  EXPECT_EQ(FakeRecommendAppsFetcherDelegate::Result::SUCCESS,
+            delegate_.WaitForResult());
+}
+
+TEST_F(RecommendAppsFetcherImplTest, AppDiscoveryParseErrorResponse) {
+  EnableAppDiscoveryFlag();
+
+  ASSERT_TRUE(recommend_apps_fetcher_);
+
+  recommend_apps_fetcher_->Start();
+
+  cros_display_config_->Flush();
+  ASSERT_TRUE(cros_display_config_->RunGetDisplayUnitInfoListCallback(
+      CreateDisplayUnitInfo(Dpi(117, 117), absl::nullopt)));
+
+  ASSERT_TRUE(arc_features_callback_);
+  std::move(arc_features_callback_).Run(CreateArcFeaturesForTest());
+
+  network::ResourceRequest* request = WaitForAppListRequest();
+  ASSERT_TRUE(request);
+
+  test_url_loader_factory_.AddResponse(request->url.spec(), ")}]'!2%^$");
+
+  EXPECT_EQ(FakeRecommendAppsFetcherDelegate::Result::PARSE_ERROR,
+            delegate_.WaitForResult());
 }
 
 }  // namespace ash

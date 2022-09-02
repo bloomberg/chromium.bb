@@ -98,7 +98,6 @@ export class TimelineModelImpl {
   private lastRecalculateStylesEvent!: SDK.TracingModel.Event|null;
   private currentScriptEvent!: SDK.TracingModel.Event|null;
   private eventStack!: SDK.TracingModel.Event[];
-  private knownInputEvents!: Set<string>;
   private browserFrameTracking!: boolean;
   private persistentIds!: boolean;
   private legacyCurrentPage!: any;
@@ -122,7 +121,7 @@ export class TimelineModelImpl {
   static forEachEvent(
       events: SDK.TracingModel.Event[], onStartEvent: (arg0: SDK.TracingModel.Event) => void,
       onEndEvent: (arg0: SDK.TracingModel.Event) => void,
-      onInstantEvent?: ((arg0: SDK.TracingModel.Event, arg1: SDK.TracingModel.Event|null) => any), startTime?: number,
+      onInstantEvent?: ((arg0: SDK.TracingModel.Event, arg1: SDK.TracingModel.Event|null) => void), startTime?: number,
       endTime?: number, filter?: ((arg0: SDK.TracingModel.Event) => boolean)): void {
     startTime = startTime || 0;
     endTime = endTime || Infinity;
@@ -226,7 +225,8 @@ export class TimelineModelImpl {
   }
 
   isMainFrameNavigationStartEvent(event: SDK.TracingModel.Event): boolean {
-    return this.isNavigationStartEvent(event) && event.args['data']['isLoadingMainFrame'] &&
+    return this.isNavigationStartEvent(event) &&
+        (event.args['data']['isOutermostMainFrame'] ?? event.args['data']['isLoadingMainFrame']) &&
         event.args['data']['documentLoaderURL'];
   }
 
@@ -341,7 +341,7 @@ export class TimelineModelImpl {
       }
       this.legacyCurrentPage = metaEvent.args['data'] && metaEvent.args['data']['page'];
       for (const thread of process.sortedThreads()) {
-        let workerUrl: null = null;
+        let workerUrl: Platform.DevToolsPath.UrlString|null = null;
         if (thread.name() === TimelineModelImpl.WorkerThreadName ||
             thread.name() === TimelineModelImpl.WorkerThreadNameLegacy) {
           const workerMetaEvent = metadataEvents.workers.find(e => {
@@ -362,7 +362,7 @@ export class TimelineModelImpl {
           if (workerId) {
             this.workerIdByThread.set(thread, workerId);
           }
-          workerUrl = workerMetaEvent.args['data']['url'] || '';
+          workerUrl = workerMetaEvent.args['data']['url'] || Platform.DevToolsPath.EmptyUrlString;
         }
         this.processThreadEvents(
             tracingModel, [{from: startTime, to: endTime}], thread, thread === metaEvent.thread, Boolean(workerUrl),
@@ -377,7 +377,7 @@ export class TimelineModelImpl {
       from: number,
       to: number,
       main: boolean,
-      url: string,
+      url: Platform.DevToolsPath.UrlString,
     }[]>();
     for (const frame of this.pageFrames.values()) {
       for (let i = 0; i < frame.processes.length; i++) {
@@ -399,8 +399,8 @@ export class TimelineModelImpl {
       }
       data.sort((a, b) => a.from - b.from || a.to - b.to);
       const ranges = [];
-      let lastUrl: string|null = null;
-      let lastMainUrl: string|null = null;
+      let lastUrl: Platform.DevToolsPath.UrlString|null = null;
+      let lastMainUrl: Platform.DevToolsPath.UrlString|null = null;
       let hasMain = false;
       for (const item of data) {
         const last = ranges[ranges.length - 1];
@@ -447,7 +447,7 @@ export class TimelineModelImpl {
           this.workerIdByThread.set(thread, workerMetaEvent.args['data']['workerId'] || '');
           this.processThreadEvents(
               tracingModel, ranges, thread, false /* isMainThread */, true /* isWorker */, false /* forMainFrame */,
-              workerMetaEvent.args['data']['url'] || '');
+              workerMetaEvent.args['data']['url'] || Platform.DevToolsPath.EmptyUrlString);
         } else {
           this.processThreadEvents(
               tracingModel, ranges, thread, false /* isMainThread */, false /* isWorker */, false /* forMainFrame */,
@@ -573,7 +573,6 @@ export class TimelineModelImpl {
     this.lastRecalculateStylesEvent = null;
     this.currentScriptEvent = null;
     this.eventStack = [];
-    this.knownInputEvents = new Set();
     this.browserFrameTracking = false;
     this.persistentIds = false;
     this.legacyCurrentPage = null;
@@ -695,18 +694,18 @@ export class TimelineModelImpl {
         to: number,
       }[],
       thread: SDK.TracingModel.Thread, isMainThread: boolean, isWorker: boolean, forMainFrame: boolean,
-      url: string|null): void {
+      url: Platform.DevToolsPath.UrlString|null): void {
     const track = new Track();
     track.name = thread.name() || i18nString(UIStrings.threadS, {PH1: thread.id()});
     track.type = TrackType.Other;
     track.thread = thread;
     if (isMainThread) {
       track.type = TrackType.MainThread;
-      track.url = url || '';
+      track.url = url || Platform.DevToolsPath.EmptyUrlString;
       track.forMainFrame = forMainFrame;
     } else if (isWorker) {
       track.type = TrackType.Worker;
-      track.url = url || '';
+      track.url = url || Platform.DevToolsPath.EmptyUrlString;
       track.name = track.url ? i18nString(UIStrings.workerS, {PH1: track.url}) : i18nString(UIStrings.dedicatedWorker);
     } else if (thread.name().startsWith('CompositorTileWorker')) {
       track.type = TrackType.Raster;
@@ -831,40 +830,6 @@ export class TimelineModelImpl {
 
         if (asyncEvent.name === RecordType.Animation) {
           group(TrackType.Animation).push(asyncEvent);
-          continue;
-        }
-
-        if (asyncEvent.hasCategory(TimelineModelImpl.Category.LatencyInfo) ||
-            asyncEvent.name === RecordType.ImplSideFling) {
-          const lastStep = asyncEvent.steps[asyncEvent.steps.length - 1];
-          if (!lastStep) {
-            throw new Error('AsyncEvent.steps access is out of bounds.');
-          }
-          // FIXME: fix event termination on the back-end instead.
-          if (lastStep.phase !== SDK.TracingModel.Phase.AsyncEnd) {
-            continue;
-          }
-          const data = lastStep.args['data'];
-          asyncEvent.causedFrame = Boolean(data && data['INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT']);
-          if (asyncEvent.hasCategory(TimelineModelImpl.Category.LatencyInfo)) {
-            if (lastStep.id && !this.knownInputEvents.has(lastStep.id)) {
-              continue;
-            }
-            if (asyncEvent.name === RecordType.InputLatencyMouseMove && !asyncEvent.causedFrame) {
-              continue;
-            }
-            // Coalesced events are not really been processed, no need to track them.
-            if (data['is_coalesced']) {
-              continue;
-            }
-            const rendererMain = data['INPUT_EVENT_LATENCY_RENDERER_MAIN_COMPONENT'];
-            if (rendererMain) {
-              const time = rendererMain['time'] / 1000;
-              TimelineData.forEvent(asyncEvent.steps[0]).timeWaitingForMainThread =
-                  time - asyncEvent.steps[0].startTime;
-            }
-          }
-          group(TrackType.Input).push(asyncEvent);
           continue;
         }
       }
@@ -1206,14 +1171,6 @@ export class TimelineModelImpl {
   }
 
   private processBrowserEvent(event: SDK.TracingModel.Event): void {
-    if (event.name === RecordType.LatencyInfoFlow) {
-      const frameId = event.args['frameTreeNodeId'];
-      if (typeof frameId === 'number' && frameId === this.mainFrameNodeId && event.bind_id) {
-        this.knownInputEvents.add(event.bind_id);
-      }
-      return;
-    }
-
     if (event.name === RecordType.ResourceWillSendRequest) {
       const requestId = event.args?.data?.requestId;
       if (typeof requestId === 'string') {
@@ -1376,8 +1333,8 @@ export class TimelineModelImpl {
     return Array.from(this.pageFrames.values()).filter(frame => !frame.parent);
   }
 
-  pageURL(): string {
-    return this.mainFrame && this.mainFrame.url || '';
+  pageURL(): Platform.DevToolsPath.UrlString {
+    return this.mainFrame && this.mainFrame.url || Platform.DevToolsPath.EmptyUrlString;
   }
 
   pageFrameById(frameId: Protocol.Page.FrameId): PageFrame|null {
@@ -1462,6 +1419,7 @@ export enum RecordType {
   PaintSetup = 'PaintSetup',
   Paint = 'Paint',
   PaintImage = 'PaintImage',
+  PrePaint = 'PrePaint',
   Rasterize = 'Rasterize',
   RasterTask = 'RasterTask',
   ScrollLayer = 'ScrollLayer',
@@ -1639,7 +1597,7 @@ export class Track {
   name: string;
   type: TrackType;
   forMainFrame: boolean;
-  url: string;
+  url: Platform.DevToolsPath.UrlString;
   events: SDK.TracingModel.Event[];
   asyncEvents: SDK.TracingModel.AsyncEvent[];
   tasks: SDK.TracingModel.Event[];
@@ -1650,7 +1608,7 @@ export class Track {
     this.type = TrackType.Other;
     // TODO(dgozman): replace forMainFrame with a list of frames, urls and time ranges.
     this.forMainFrame = false;
-    this.url = '';
+    this.url = Platform.DevToolsPath.EmptyUrlString;
     // TODO(dgozman): do not distinguish between sync and async events.
     this.events = [];
     this.asyncEvents = [];
@@ -1711,7 +1669,6 @@ export class Track {
 export enum TrackType {
   MainThread = 'MainThread',
   Worker = 'Worker',
-  Input = 'Input',
   Animation = 'Animation',
   Timings = 'Timings',
   Console = 'Console',
@@ -1731,13 +1688,13 @@ export class PageFrame {
     time: number,
     processId: number,
     processPseudoId: string|null,
-    url: string,
+    url: Platform.DevToolsPath.UrlString,
   }[];
   deletedTime: number|null;
   ownerNode: SDK.DOMModel.DeferredDOMNode|null;
   constructor(payload: any) {
     this.frameId = payload['frame'];
-    this.url = payload['url'] || '';
+    this.url = payload['url'] || Platform.DevToolsPath.EmptyUrlString;
     this.name = payload['name'];
     this.children = [];
     this.parent = null;
@@ -1788,7 +1745,7 @@ export class NetworkRequest {
     receiveHeadersEnd: number,
   };
   mimeType!: string;
-  url!: string;
+  url!: Platform.DevToolsPath.UrlString;
   requestMethod!: string;
   private transferSize: number;
   private maybeDiskCached: boolean;
@@ -2122,7 +2079,6 @@ export class InvalidationTracker {
         lastScheduleStyleRecalculation = invalidation;
       }
       if (!lastScheduleStyleRecalculation) {
-        console.error('Failed to lookup the event that scheduled a style invalidator invalidation.');
         continue;
       }
       this.addSyntheticStyleRecalcInvalidation(
@@ -2142,7 +2098,6 @@ export class InvalidationTracker {
       invalidation.selectorPart = styleInvalidatorInvalidation.selectorPart;
     }
 
-    this.addInvalidation(invalidation);
     if (!invalidation.linkedRecalcStyleEvent) {
       this.associateWithLastRecalcStyleEvent(invalidation);
     }
@@ -2301,7 +2256,7 @@ export class TimelineAsyncEventTracker {
 export class TimelineData {
   warning: string|null;
   previewElement: Element|null;
-  url: string|null;
+  url: Platform.DevToolsPath.UrlString|null;
   backendNodeIds: Protocol.DOM.BackendNodeId[];
   stackTrace: Protocol.Runtime.CallFrame[]|null;
   picture: SDK.TracingModel.ObjectSnapshot|null;

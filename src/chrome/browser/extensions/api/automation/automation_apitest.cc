@@ -111,7 +111,7 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, TestRendererAccessibilityEnabled) {
 
   base::FilePath extension_path =
       test_data_dir_.AppendASCII("automation/tests/basic");
-  ExtensionTestMessageListener got_tree(kGotTree, false /* no reply */);
+  ExtensionTestMessageListener got_tree(kGotTree);
   LoadExtension(extension_path);
   ASSERT_TRUE(got_tree.WaitUntilSatisfied());
 
@@ -144,7 +144,7 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, ImageLabels) {
   // Enable automation.
   base::FilePath extension_path =
       test_data_dir_.AppendASCII("automation/tests/basic");
-  ExtensionTestMessageListener got_tree(kGotTree, false /* no reply */);
+  ExtensionTestMessageListener got_tree(kGotTree);
   LoadExtension(extension_path);
   ASSERT_TRUE(got_tree.WaitUntilSatisfied());
 
@@ -155,7 +155,7 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, ImageLabels) {
 }
 
 // Flaky on Mac: crbug.com/1248445
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #define MAYBE_GetTreeByTabId DISABLED_GetTreeByTabId
 #else
 #define MAYBE_GetTreeByTabId GetTreeByTabId
@@ -224,7 +224,7 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, TableProperties) {
 }
 
 // Flaky on Mac and Windows: crbug.com/1235249
-#if defined(OS_MAC) || defined(OS_WIN)
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
 #define MAYBE_TabsAutomationBooleanPermissions \
   DISABLED_TabsAutomationBooleanPermissions
 #else
@@ -239,7 +239,7 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest,
 }
 
 // Flaky on Mac and Windows: crbug.com/1235249
-#if defined(OS_MAC) || defined(OS_WIN)
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
 #define MAYBE_TabsAutomationBooleanActions \
   DISABLED_TabsAutomationBooleanActions
 #else
@@ -253,7 +253,7 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, MAYBE_TabsAutomationBooleanActions) {
 }
 
 // Flaky on Mac and Windows: crbug.com/1202710
-#if defined(OS_MAC) || defined(OS_WIN)
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
 #define MAYBE_TabsAutomationHostsPermissions \
   DISABLED_TabsAutomationHostsPermissions
 #else
@@ -268,7 +268,7 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest,
 }
 
 // Flaky on Mac and Windows: crbug.com/1235249
-#if defined(OS_MAC) || defined(OS_WIN)
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
 #define MAYBE_CloseTab DISABLED_CloseTab
 #else
 #define MAYBE_CloseTab CloseTab
@@ -613,7 +613,7 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, DISABLED_TextareaAppendPerf) {
 
   int renderer_total_dur = 0;
   int automation_total_dur = 0;
-  for (const base::Value& event : trace_events->GetList()) {
+  for (const base::Value& event : trace_events->GetListDeprecated()) {
     const std::string* cat = event.FindStringKey("cat");
     if (!cat || *cat != "accessibility")
       continue;
@@ -648,9 +648,22 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, IframeNav) {
                                {.page_url = "iframenav.html"}))
       << message_;
 }
+
+// TODO(crbug.com/1325383): test is flaky on Chromium OS MSAN builder.
+#if BUILDFLAG(IS_CHROMEOS) && defined(MEMORY_SANITIZER)
+#define MAYBE_AddRemoveEventListeners DISABLED_AddRemoveEventListeners
+#else
+#define MAYBE_AddRemoveEventListeners AddRemoveEventListeners
+#endif
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, MAYBE_AddRemoveEventListeners) {
+  StartEmbeddedTestServer();
+  ASSERT_TRUE(RunExtensionTest("automation/tests/desktop",
+                               {.page_url = "add_remove_event_listeners.html"}))
+      << message_;
+}
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS)
 // TODO(crbug.com/1209766) Flaky on lacros
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 #define MAYBE_HitTestMultipleWindows DISABLED_HitTestMultipleWindows
@@ -664,6 +677,6 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, MAYBE_HitTestMultipleWindows) {
                                {.page_url = "hit_test_multiple_windows.html"}))
       << message_;
 }
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 }  // namespace extensions

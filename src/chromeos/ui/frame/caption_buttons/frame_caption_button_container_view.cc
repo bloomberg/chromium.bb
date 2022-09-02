@@ -6,15 +6,18 @@
 
 #include <cmath>
 #include <map>
+#include <tuple>
 
 #include "base/cxx17_backports.h"
-#include "base/ignore_result.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "chromeos/ui/base/tablet_state.h"
 #include "chromeos/ui/frame/caption_buttons/caption_button_model.h"
 #include "chromeos/ui/frame/caption_buttons/frame_size_button.h"
 #include "chromeos/ui/frame/caption_buttons/snap_controller.h"
+#include "chromeos/ui/frame/frame_header.h"
+#include "chromeos/ui/vector_icons/vector_icons.h"
+#include "chromeos/ui/wm/window_util.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -32,6 +35,7 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
+#include "ui/views/window/caption_button_types.h"
 #include "ui/views/window/frame_caption_button.h"
 
 namespace chromeos {
@@ -124,6 +128,8 @@ class DefaultCaptionButtonModel : public CaptionButtonModel {
         return frame_->widget_delegate()->ShouldShowCloseButton();
       case views::CAPTION_BUTTON_ICON_CUSTOM:
         return true;
+      case views::CAPTION_BUTTON_ICON_FLOAT:
+        return chromeos::wm::features::IsFloatWindowEnabled();
       // No back or menu button by default.
       case views::CAPTION_BUTTON_ICON_BACK:
       case views::CAPTION_BUTTON_ICON_MENU:
@@ -169,6 +175,15 @@ FrameCaptionButtonContainerView::FrameCaptionButtonContainerView(
   // Insert the buttons left to right.
   if (custom_button)
     custom_button_ = AddChildView(std::move(custom_button));
+  if (chromeos::wm::features::IsFloatWindowEnabled()) {
+    float_button_ = AddChildView(std::make_unique<views::FrameCaptionButton>(
+        base::BindRepeating(
+            &FrameCaptionButtonContainerView::FloatButtonPressed,
+            base::Unretained(this)),
+        views::CAPTION_BUTTON_ICON_FLOAT, HTMENU));
+    float_button_->SetTooltipText(
+        l10n_util::GetStringUTF16(IDS_APP_ACCNAME_FLOAT));
+  }
 
   menu_button_ = new views::FrameCaptionButton(
       base::BindRepeating(&FrameCaptionButtonContainerView::MenuButtonPressed,
@@ -215,11 +230,11 @@ void FrameCaptionButtonContainerView::SetButtonImage(
     views::CaptionButtonIcon icon,
     const gfx::VectorIcon& icon_definition) {
   button_icon_map_[icon] = &icon_definition;
-
-  views::FrameCaptionButton* buttons[] = {menu_button_, minimize_button_,
-                                          size_button_, close_button_};
-  for (size_t i = 0; i < base::size(buttons); ++i) {
-    if (buttons[i]->GetIcon() == icon)
+  views::FrameCaptionButton* buttons[] = {float_button_, menu_button_,
+                                          minimize_button_, size_button_,
+                                          close_button_};
+  for (size_t i = 0; i < std::size(buttons); ++i) {
+    if (buttons[i] && buttons[i]->GetIcon() == icon)
       buttons[i]->SetImage(icon, views::FrameCaptionButton::Animate::kNo,
                            icon_definition);
   }
@@ -228,6 +243,8 @@ void FrameCaptionButtonContainerView::SetButtonImage(
 void FrameCaptionButtonContainerView::SetPaintAsActive(bool paint_as_active) {
   if (custom_button_)
     custom_button_->SetPaintAsActive(paint_as_active);
+  if (float_button_)
+    float_button_->SetPaintAsActive(paint_as_active);
   menu_button_->SetPaintAsActive(paint_as_active);
   minimize_button_->SetPaintAsActive(paint_as_active);
   size_button_->SetPaintAsActive(paint_as_active);
@@ -239,6 +256,8 @@ void FrameCaptionButtonContainerView::SetBackgroundColor(
     SkColor background_color) {
   if (custom_button_)
     custom_button_->SetBackgroundColor(background_color);
+  if (float_button_)
+    float_button_->SetBackgroundColor(background_color);
   menu_button_->SetBackgroundColor(background_color);
   minimize_button_->SetBackgroundColor(background_color);
   size_button_->SetBackgroundColor(background_color);
@@ -294,6 +313,12 @@ void FrameCaptionButtonContainerView::UpdateCaptionButtonState(bool animate) {
     custom_button_->SetVisible(
         model_->IsVisible(views::CAPTION_BUTTON_ICON_CUSTOM));
   }
+  if (float_button_) {
+    float_button_->SetEnabled(
+        model_->IsEnabled(views::CAPTION_BUTTON_ICON_FLOAT));
+    float_button_->SetVisible(
+        model_->IsVisible(views::CAPTION_BUTTON_ICON_FLOAT));
+  }
   size_button_->SetEnabled(
       (model_->IsEnabled(views::CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE) ||
        model_->InZoomMode()));
@@ -317,6 +342,8 @@ void FrameCaptionButtonContainerView::UpdateSizeButtonTooltip(
 void FrameCaptionButtonContainerView::SetButtonSize(const gfx::Size& size) {
   if (custom_button_)
     custom_button_->SetPreferredSize(size);
+  if (float_button_)
+    float_button_->SetPreferredSize(size);
   menu_button_->SetPreferredSize(size);
   minimize_button_->SetPreferredSize(size);
   size_button_->SetPreferredSize(size);
@@ -487,13 +514,23 @@ void FrameCaptionButtonContainerView::MenuButtonPressed() {
   // Send up event as well as down event as ARC++ clients expect this sequence.
   aura::Window* root_window = GetWidget()->GetNativeWindow()->GetRootWindow();
   ui::KeyEvent press_key_event(ui::ET_KEY_PRESSED, ui::VKEY_APPS, ui::EF_NONE);
-  ignore_result(root_window->GetHost()->GetEventSink()->OnEventFromSource(
-      &press_key_event));
+  std::ignore = root_window->GetHost()->GetEventSink()->OnEventFromSource(
+      &press_key_event);
   ui::KeyEvent release_key_event(ui::ET_KEY_RELEASED, ui::VKEY_APPS,
                                  ui::EF_NONE);
-  ignore_result(root_window->GetHost()->GetEventSink()->OnEventFromSource(
-      &release_key_event));
+  std::ignore = root_window->GetHost()->GetEventSink()->OnEventFromSource(
+      &release_key_event);
   // TODO(oshima): Add metrics
+}
+
+void FrameCaptionButtonContainerView::FloatButtonPressed() {
+  // Abort any animations of the button icons.
+  SetButtonsToNormal(Animate::kNo);
+  DCHECK(chromeos::wm::features::IsFloatWindowEnabled());
+  aura::Window* window = GetWidget()->GetNativeWindow();
+  // Float current window.
+  ToggleFloating(window);
+  UpdateCaptionButtonState(true);
 }
 
 bool FrameCaptionButtonContainerView::IsMinimizeButtonVisible() const {
@@ -505,6 +542,8 @@ void FrameCaptionButtonContainerView::SetButtonsToNormal(Animate animate) {
                  views::CAPTION_BUTTON_ICON_CLOSE, animate);
   if (custom_button_)
     custom_button_->SetState(views::Button::STATE_NORMAL);
+  if (float_button_)
+    float_button_->SetState(views::Button::STATE_NORMAL);
   menu_button_->SetState(views::Button::STATE_NORMAL);
   minimize_button_->SetState(views::Button::STATE_NORMAL);
   size_button_->SetState(views::Button::STATE_NORMAL);
@@ -528,12 +567,12 @@ FrameCaptionButtonContainerView::GetButtonClosestTo(
   gfx::Point position(position_in_screen);
   views::View::ConvertPointFromScreen(this, &position);
 
-  views::FrameCaptionButton* buttons[] = {custom_button_, menu_button_,
-                                          minimize_button_, size_button_,
-                                          close_button_};
+  views::FrameCaptionButton* buttons[] = {custom_button_, float_button_,
+                                          menu_button_,   minimize_button_,
+                                          size_button_,   close_button_};
   int min_squared_distance = INT_MAX;
   views::FrameCaptionButton* closest_button = nullptr;
-  for (size_t i = 0; i < base::size(buttons); ++i) {
+  for (size_t i = 0; i < std::size(buttons); ++i) {
     views::FrameCaptionButton* button = buttons[i];
     if (!button || !button->GetVisible())
       continue;
@@ -554,10 +593,10 @@ FrameCaptionButtonContainerView::GetButtonClosestTo(
 void FrameCaptionButtonContainerView::SetHoveredAndPressedButtons(
     const views::FrameCaptionButton* to_hover,
     const views::FrameCaptionButton* to_press) {
-  views::FrameCaptionButton* buttons[] = {custom_button_, menu_button_,
-                                          minimize_button_, size_button_,
-                                          close_button_};
-  for (size_t i = 0; i < base::size(buttons); ++i) {
+  views::FrameCaptionButton* buttons[] = {custom_button_, float_button_,
+                                          menu_button_,   minimize_button_,
+                                          size_button_,   close_button_};
+  for (size_t i = 0; i < std::size(buttons); ++i) {
     views::FrameCaptionButton* button = buttons[i];
     if (!button)
       continue;

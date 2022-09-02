@@ -8,20 +8,17 @@ import collections
 import os
 import posixpath
 import re
+import typing
+import urllib.request
 
-import six
+import gpu_path_util
 
-# This script is Python 3-only, but some presubmit stuff still tries to parse
-# it in Python 2, and this module does not exist in Python 2.
-if six.PY3:
-  import urllib.request
-
-import flake_suppressor
+from flake_suppressor import common_typing as ct
 from flake_suppressor import tag_utils
 
 from typ import expectations_parser
 
-CHROMIUM_SRC_DIR = flake_suppressor.CHROMIUM_SRC_DIR
+CHROMIUM_SRC_DIR = gpu_path_util.CHROMIUM_SRC_DIR
 RELATIVE_EXPECTATION_FILE_DIRECTORY = os.path.join('content', 'test', 'gpu',
                                                    'gpu_tests',
                                                    'test_expectations')
@@ -39,8 +36,15 @@ TEXT_FORMAT_ARG = '?format=TEXT'
 
 TAG_GROUP_REGEX = re.compile(r'# tags: \[([^\]]*)\]', re.MULTILINE | re.DOTALL)
 
+TestToUrlsType = typing.Dict[str, typing.List[str]]
+SuiteToTestsType = typing.Dict[str, TestToUrlsType]
+TagOrderedAggregateResultType = typing.Dict[ct.TagTupleType, SuiteToTestsType]
 
-def IterateThroughResultsForUser(result_map, group_by_tags, include_all_tags):
+
+# pylint: disable=too-many-locals
+def IterateThroughResultsForUser(result_map: ct.AggregatedResultsType,
+                                 group_by_tags: bool,
+                                 include_all_tags: bool) -> None:
   """Iterates over |result_map| for the user to provide input.
 
   For each unique result, user will be able to decide whether to ignore it (do
@@ -89,11 +93,16 @@ def IterateThroughResultsForUser(result_map, group_by_tags, include_all_tags):
 
         ModifyFileForResult(suite, test, typ_tags, bug, expected_result,
                             group_by_tags, include_all_tags)
+# pylint: enable=too-many-locals
 
 
-def IterateThroughResultsWithThresholds(result_map, group_by_tags,
-                                        result_counts, ignore_threshold,
-                                        flaky_threshold, include_all_tags):
+# pylint: disable=too-many-locals,too-many-arguments
+def IterateThroughResultsWithThresholds(result_map: ct.AggregatedResultsType,
+                                        group_by_tags: bool,
+                                        result_counts: ct.ResultCountType,
+                                        ignore_threshold: float,
+                                        flaky_threshold: float,
+                                        include_all_tags: bool) -> None:
   """Iterates over |result_map| and generates expectations based off thresholds.
 
   Args:
@@ -128,10 +137,13 @@ def IterateThroughResultsWithThresholds(result_map, group_by_tags,
           expected_result = 'Failure'
         ModifyFileForResult(suite, test, typ_tags, '', expected_result,
                             group_by_tags, include_all_tags)
+# pylint: enable=too-many-locals,too-many-arguments
 
 
-def FindFailuresInSameTest(result_map, target_suite, target_test,
-                           target_typ_tags):
+def FindFailuresInSameTest(result_map: ct.AggregatedResultsType,
+                           target_suite: str, target_test: str,
+                           target_typ_tags: ct.TagTupleType
+                           ) -> typing.List[typing.Tuple[ct.TagTupleType, int]]:
   """Finds all other failures that occurred in the given test.
 
   Ignores the failures for the test on the same configuration.
@@ -140,7 +152,7 @@ def FindFailuresInSameTest(result_map, target_suite, target_test,
     result_map: Aggregated query results from results.AggregateResults.
     target_suite: A string containing the test suite being checked.
     target_test: A string containing the target test case being checked.
-    target_typ_tags: A list of strings containing the typ tags that the failure
+    target_typ_tags: A tuple of strings containing the typ tags that the failure
         took place on.
 
   Returns:
@@ -148,8 +160,8 @@ def FindFailuresInSameTest(result_map, target_suite, target_test,
     defining a configuration the specified test failed on. |count| is how many
     times the test failed on that configuration.
   """
+  assert isinstance(target_typ_tags, tuple)
   other_failures = []
-  target_typ_tags = tuple(target_typ_tags)
   tag_map = result_map.get(target_suite, {}).get(target_test, {})
   for typ_tags, build_url_list in tag_map.items():
     if typ_tags == target_typ_tags:
@@ -158,8 +170,10 @@ def FindFailuresInSameTest(result_map, target_suite, target_test,
   return other_failures
 
 
-def FindFailuresInSameConfig(typ_tag_ordered_result_map, target_suite,
-                             target_test, target_typ_tags):
+def FindFailuresInSameConfig(
+    typ_tag_ordered_result_map: TagOrderedAggregateResultType,
+    target_suite: str, target_test: str,
+    target_typ_tags: ct.TagTupleType) -> typing.List[typing.Tuple[str, int]]:
   """Finds all other failures that occurred on the given configuration.
 
   Ignores the failures for the given test on the given configuration.
@@ -172,7 +186,7 @@ def FindFailuresInSameConfig(typ_tag_ordered_result_map, target_suite,
         found in.
     target_test: A string containing the test case the original failure was
         found in.
-    target_typ_tags: A list of strings containing the typ tags defining the
+    target_typ_tags: A tuple of strings containing the typ tags defining the
         configuration to find failures for.
 
   Returns:
@@ -180,7 +194,7 @@ def FindFailuresInSameConfig(typ_tag_ordered_result_map, target_suite,
     test suite and test case concatenated together. |count| is how many times
     |full_name| failed on the configuration specified by |target_typ_tags|.
   """
-  target_typ_tags = tuple(target_typ_tags)
+  assert isinstance(target_typ_tags, tuple)
   other_failures = []
   suite_map = typ_tag_ordered_result_map.get(target_typ_tags, {})
   for suite, test_map in suite_map.items():
@@ -192,7 +206,8 @@ def FindFailuresInSameConfig(typ_tag_ordered_result_map, target_suite,
   return other_failures
 
 
-def _ReorderMapByTypTags(result_map):
+def _ReorderMapByTypTags(result_map: ct.AggregatedResultsType
+                         ) -> TagOrderedAggregateResultType:
   """Rearranges|result_map| to use typ tags as the top level keys.
 
   Args:
@@ -219,7 +234,8 @@ def _ReorderMapByTypTags(result_map):
   return reordered_map
 
 
-def PromptUserForExpectationAction():
+def PromptUserForExpectationAction(
+) -> typing.Union[typing.Tuple[str, str], typing.Tuple[None, None]]:
   """Prompts the user on what to do to handle a failure.
 
   Returns:
@@ -247,14 +263,16 @@ def PromptUserForExpectationAction():
   return (expected_result, response)
 
 
-def ModifyFileForResult(suite, test, typ_tags, bug, expected_result,
-                        group_by_tags, include_all_tags):
+# pylint: disable=too-many-locals,too-many-arguments
+def ModifyFileForResult(suite: str, test: str, typ_tags: ct.TagTupleType,
+                        bug: str, expected_result: str, group_by_tags: bool,
+                        include_all_tags: bool) -> None:
   """Adds an expectation to the appropriate expectation file.
 
   Args:
     suite: A string containing the suite the failure occurred in.
     test: A string containing the test case the failure occurred in.
-    typ_tags: A list of strings containing the typ tags the test produced.
+    typ_tags: A tuple of strings containing the typ tags the test produced.
     bug: A string containing the bug to associate with the new expectation.
     expected_result: A string containing the expected result to use for the new
         expectation, e.g. RetryOnFailure.
@@ -308,21 +326,24 @@ def ModifyFileForResult(suite, test, typ_tags, bug, expected_result,
         outfile.write(output_contents)
   else:
     AppendExpectationToEnd()
+# pylint: enable=too-many-locals,too-many-arguments
 
 
-def FilterToMostSpecificTypTags(typ_tags, expectation_file):
+# pylint: disable=too-many-locals
+def FilterToMostSpecificTypTags(typ_tags: ct.TagTupleType,
+                                expectation_file: str) -> ct.TagTupleType:
   """Filters |typ_tags| to the most specific set.
 
   Assumes that the tags in |expectation_file| are ordered from least specific
   to most specific within each tag group.
 
   Args:
-    typ_tags: A list of strings containing the typ tags the test produced.
+    typ_tags: A tuple of strings containing the typ tags the test produced.
     expectation_file: A string containing a filepath pointing to the
         expectation file to filter tags with.
 
   Returns:
-    A list containing the contents of |typ_tags| with only the most specific
+    A tuple containing the contents of |typ_tags| with only the most specific
     tag from each tag group remaining.
   """
   with open(expectation_file) as infile:
@@ -362,15 +383,16 @@ def FilterToMostSpecificTypTags(typ_tags, expectation_file):
 
   # Sort to keep order consistent with what we were given.
   filtered_tags.sort()
-  return filtered_tags
+  return tuple(filtered_tags)
+# pylint: enable=too-many-locals
 
 
-def GetExpectationFileForSuite(suite, typ_tags):
+def GetExpectationFileForSuite(suite: str, typ_tags: ct.TagTupleType) -> str:
   """Finds the correct expectation file for the given suite.
 
   Args:
     suite: A string containing the test suite to look for.
-    typ_tags: A list of strings containing typ tags that were produced by the
+    typ_tags: A tuple of strings containing typ tags that were produced by the
         failing test.
 
   Returns:
@@ -390,11 +412,13 @@ def GetExpectationFileForSuite(suite, typ_tags):
   return expectation_file
 
 
-def FindBestInsertionLineForExpectation(typ_tags, expectation_file):
+def FindBestInsertionLineForExpectation(typ_tags: ct.TagTupleType,
+                                        expectation_file: str
+                                        ) -> typing.Tuple[int, typing.Set[str]]:
   """Finds the best place to insert an expectation when grouping by tags.
 
   Args:
-    typ_tags: A list of strings containing typ tags that were produced by the
+    typ_tags: A tuple of strings containing typ tags that were produced by the
         failing test.
     expectation_file: A string containing a filepath to the expectation file to
         use.
@@ -424,7 +448,7 @@ def FindBestInsertionLineForExpectation(typ_tags, expectation_file):
   return best_insertion_line, best_matching_tags
 
 
-def GetExpectationFilesFromOrigin():
+def GetExpectationFilesFromOrigin() -> typing.Dict[str, str]:
   """Gets expectation file contents from origin/main.
 
   Returns:
@@ -445,7 +469,7 @@ def GetExpectationFilesFromOrigin():
     files.append(line.split()[-1])
 
   origin_file_contents = {}
-  for f in files:
+  for f in (f for f in files if f.endswith('.txt')):
     origin_filepath = posixpath.join(origin_dir, f)
     origin_filepath_url = posixpath.join(GITILES_URL,
                                          origin_filepath) + TEXT_FORMAT_ARG
@@ -456,7 +480,7 @@ def GetExpectationFilesFromOrigin():
   return origin_file_contents
 
 
-def GetExpectationFilesFromLocalCheckout():
+def GetExpectationFilesFromLocalCheckout() -> typing.Dict[str, str]:
   """Gets expectaiton file contents from the local checkout.
 
   Returns:
@@ -464,13 +488,14 @@ def GetExpectationFilesFromLocalCheckout():
     that are available from the local checkout.
   """
   local_file_contents = {}
-  for f in os.listdir(ABSOLUTE_EXPECTATION_FILE_DIRECTORY):
+  for f in (f for f in os.listdir(ABSOLUTE_EXPECTATION_FILE_DIRECTORY)
+            if f.endswith('.txt')):
     with open(os.path.join(ABSOLUTE_EXPECTATION_FILE_DIRECTORY, f)) as infile:
       local_file_contents[f] = infile.read()
   return local_file_contents
 
 
-def AssertCheckoutIsUpToDate():
+def AssertCheckoutIsUpToDate() -> None:
   """Confirms that the local checkout's expectations are up to date."""
   origin_file_contents = GetExpectationFilesFromOrigin()
   local_file_contents = GetExpectationFilesFromLocalCheckout()

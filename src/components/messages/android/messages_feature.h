@@ -22,6 +22,10 @@ extern const base::Feature kMessagesForAndroidChromeSurvey;
 // implementations also fallback to Infobar implementations.
 extern const base::Feature kMessagesForAndroidInfrastructure;
 
+// Feature that controls whether "instant apps" messages use Messages or
+// Infobars infrastructure.
+extern const base::Feature kMessagesForAndroidInstantApps;
+
 // Feature that controls whether "near OOM reduction" messages use Messages or
 // Infobars infrastructure.
 extern const base::Feature kMessagesForAndroidNearOomReduction;
@@ -29,6 +33,10 @@ extern const base::Feature kMessagesForAndroidNearOomReduction;
 // Feature that controls whether notifiation blocked prompts use Messages or
 // Infobars infrastructure.
 extern const base::Feature kMessagesForAndroidNotificationBlocked;
+
+// Feature that controls whether offer notifications use Messages or Infobars
+// infrastructure.
+extern const base::Feature kMessagesForAndroidOfferNotification;
 
 // Feature that controls whether "save password" and "saved password
 // confirmation" prompts use Messages or Infobars infrastructure.
@@ -54,6 +62,10 @@ extern const base::Feature kMessagesForAndroidSafetyTip;
 // Infobars infrastructure.
 extern const base::Feature kMessagesForAndroidSaveCard;
 
+// Feature that controls whether Messages for Android should use
+// new Stacking Animation.
+extern const base::Feature kMessagesForAndroidStackingAnimation;
+
 // Feature that controls whether "sync error" prompts use Messages or
 // Infobars infrastructure.
 extern const base::Feature kMessagesForAndroidSyncError;
@@ -68,9 +80,13 @@ extern const base::Feature kMessagesForAndroidReduceLayoutChanges;
 
 bool IsAdsBlockedMessagesUiEnabled();
 
+bool IsInstantAppsMessagesUiEnabled();
+
 bool IsNearOomReductionMessagesUiEnabled();
 
 bool IsNotificationBlockedMessagesUiEnabled();
+
+bool IsOfferNotificationMessagesUiEnabled();
 
 bool IsPasswordMessagesUiEnabled();
 
@@ -91,6 +107,8 @@ bool UseFollowupButtonTextForUpdatePasswordButton();
 bool UseFollowupButtonTextForSaveCardMessage();
 
 bool UseGPayIconForSaveCardMessage();
+
+bool UseDialogV2ForSaveCardMessage();
 
 }  // namespace messages
 

@@ -8,6 +8,7 @@
 #include <map>
 #include <memory>
 #include <ostream>
+#include <queue>
 #include <set>
 #include <string>
 #include <utility>
@@ -198,7 +199,7 @@ class WebTestControlHost : public WebContentsObserver,
                            const ChildProcessTerminationInfo& info) override;
 
   // GpuDataManagerObserver implementation.
-  void OnGpuProcessCrashed(base::TerminationStatus exit_code) override;
+  void OnGpuProcessCrashed() override;
 
   // WebTestControlHost implementation.
   void InitiateCaptureDump(
@@ -312,7 +313,7 @@ class WebTestControlHost : public WebContentsObserver,
   void CompositeNodeQueueThen(base::OnceCallback<void()> callback);
   void BuildDepthFirstQueue(Node* node);
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   // Bypasses system APIs to force a resize on the RenderWidgetHostView when in
   // headless web tests.
   static void PlatformResizeWindowMac(Shell* shell, const gfx::Size& size);

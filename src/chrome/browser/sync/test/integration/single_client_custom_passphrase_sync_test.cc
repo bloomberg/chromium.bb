@@ -8,6 +8,7 @@
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
 #include "chrome/browser/sync/test/integration/encryption_helper.h"
 #include "chrome/browser/sync/test/integration/passwords_helper.h"
+#include "chrome/browser/sync/test/integration/sync_engine_stopped_checker.h"
 #include "chrome/browser/sync/test/integration/sync_service_impl_harness.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "components/password_manager/core/browser/password_form.h"
@@ -15,7 +16,6 @@
 #include "components/sync/driver/sync_service_impl.h"
 #include "components/sync/engine/nigori/key_derivation_params.h"
 #include "components/sync/engine/nigori/nigori.h"
-#include "components/sync/engine/sync_engine_switches.h"
 #include "components/sync/nigori/cryptographer_impl.h"
 #include "components/sync/nigori/nigori_test_utils.h"
 #include "components/sync/test/fake_server/fake_server_nigori_helper.h"
@@ -32,24 +32,20 @@ using bookmarks_helper::ServerBookmarksEqualityChecker;
 using fake_server::FakeServer;
 using fake_server::GetServerNigori;
 using fake_server::SetNigoriInFakeServer;
-using sync_pb::EncryptedData;
 using sync_pb::NigoriSpecifics;
-using sync_pb::SyncEntity;
 using syncer::BuildCustomPassphraseNigoriSpecifics;
 using syncer::Cryptographer;
 using syncer::GetEncryptedBookmarkEntitySpecifics;
 using syncer::InitCustomPassphraseCryptographerFromNigori;
 using syncer::KeyParamsForTesting;
 using syncer::LoopbackServerEntity;
-using syncer::ModelType;
 using syncer::ModelTypeSet;
 using syncer::PassphraseType;
 using syncer::Pbkdf2PassphraseKeyParamsForTesting;
 using syncer::ProtoPassphraseInt32ToEnum;
 using syncer::ScryptPassphraseKeyParamsForTesting;
-using syncer::SyncService;
+using syncer::SyncEngineStoppedChecker;
 using testing::ElementsAre;
-using testing::SizeIs;
 
 // Intercepts all bookmark entity names as committed to the FakeServer.
 class CommittedBookmarkEntityNameObserver : public FakeServer::Observer {
@@ -84,18 +80,6 @@ class CommittedBookmarkEntityNameObserver : public FakeServer::Observer {
   std::set<std::string> committed_names_;
 };
 
-class SyncEngineStoppedChecker : public SingleClientStatusChangeChecker {
- public:
-  explicit SyncEngineStoppedChecker(syncer::SyncServiceImpl* service)
-      : SingleClientStatusChangeChecker(service) {}
-
-  // StatusChangeChecker implementation.
-  bool IsExitConditionSatisfied(std::ostream* os) override {
-    *os << "Waiting for sync to stop";
-    return !service()->IsEngineInitialized();
-  }
-};
-
 // These tests use a gray-box testing approach to verify that the data committed
 // to the server is encrypted properly, and that properly-encrypted data from
 // the server is successfully decrypted by the client. They also verify that the
@@ -112,7 +96,7 @@ class SingleClientCustomPassphraseSyncTest : public SyncTest {
   SingleClientCustomPassphraseSyncTest& operator=(
       const SingleClientCustomPassphraseSyncTest&) = delete;
 
-  ~SingleClientCustomPassphraseSyncTest() override {}
+  ~SingleClientCustomPassphraseSyncTest() override = default;
 
   // Waits until the given set of bookmarks appears on the server, encrypted
   // according to the server-side Nigori and with the given passphrase.
@@ -120,9 +104,9 @@ class SingleClientCustomPassphraseSyncTest : public SyncTest {
       const std::vector<ServerBookmarksEqualityChecker::ExpectedBookmark>&
           expected_bookmarks,
       const std::string& passphrase) {
-    auto cryptographer = CreateCryptographerFromServerNigori(passphrase);
-    return ServerBookmarksEqualityChecker(GetSyncService(), GetFakeServer(),
-                                          expected_bookmarks,
+    std::unique_ptr<Cryptographer> cryptographer =
+        CreateCryptographerFromServerNigori(passphrase);
+    return ServerBookmarksEqualityChecker(expected_bookmarks,
                                           cryptographer.get())
         .Wait();
   }
@@ -130,16 +114,13 @@ class SingleClientCustomPassphraseSyncTest : public SyncTest {
   bool WaitForUnencryptedServerBookmarks(
       const std::vector<ServerBookmarksEqualityChecker::ExpectedBookmark>&
           expected_bookmarks) {
-    return ServerBookmarksEqualityChecker(GetSyncService(), GetFakeServer(),
-                                          expected_bookmarks,
+    return ServerBookmarksEqualityChecker(expected_bookmarks,
                                           /*cryptographer=*/nullptr)
         .Wait();
   }
 
   bool WaitForNigori(PassphraseType expected_passphrase_type) {
-    return ServerNigoriChecker(GetSyncService(), GetFakeServer(),
-                               expected_passphrase_type)
-        .Wait();
+    return ServerPassphraseTypeChecker(expected_passphrase_type).Wait();
   }
 
   bool WaitForPassphraseRequiredState(bool desired_state) {
@@ -278,7 +259,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseSyncTest,
 }
 
 // PRE_* tests aren't supported on Android browser tests.
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 // Populates custom passphrase Nigori without keystore keys to the client.
 IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseSyncTest,
                        PRE_CanDecryptWithKeystoreKeys) {
@@ -305,7 +286,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseSyncTest,
       PasswordFormsChecker(/*index=*/0, /*expected_forms=*/{password_form})
           .Wait());
 }
-#endif  // !defined(OS_ANDROID)
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseSyncTest,
                        DoesNotLeakUnencryptedData) {
@@ -358,8 +339,9 @@ IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseSyncTest,
 
 // Tests that on receiving CLIENT_DATA_OBSOLETE passphrase is silently restored,
 // e.g. user input is not needed.
-IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseSyncTest,
-                       ShouldRestorePassphraseOnClientDataObsoleteResponse) {
+IN_PROC_BROWSER_TEST_F(
+    SingleClientCustomPassphraseSyncTest,
+    ShouldRestorePassphraseOnClientDataObsoleteResponseWhenPassphraseSetByDecryption) {
   // Set up sync with custom passphrase.
   ASSERT_TRUE(SetupSync());
   const KeyParamsForTesting kKeyParams =
@@ -385,6 +367,42 @@ IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseSyncTest,
   const std::string kEncryptedBookmarkTitle = "title2";
   InjectEncryptedServerBookmark(kEncryptedBookmarkTitle,
                                 GURL("https://www.google.com"), kKeyParams);
+  EXPECT_TRUE(WaitForClientBookmarkWithTitle(kEncryptedBookmarkTitle));
+}
+
+// Similar to the above, but passphrase is obtained by
+// SetEncryptionPassphrase(). Regression test for crbug.com/1298062.
+IN_PROC_BROWSER_TEST_F(
+    SingleClientCustomPassphraseSyncTest,
+    ShouldRestorePassphraseOnClientDataObsoleteResponseWhenPassphraseSetByEncryption) {
+  // Set up sync with custom passphrase.
+  ASSERT_TRUE(SetupSync());
+  const std::string kPassphrase = "hunter2";
+  // Mimic user just enabled custom passphrase.
+  GetSyncService()->GetUserSettings()->SetEncryptionPassphrase(kPassphrase);
+  ASSERT_TRUE(WaitForNigori(PassphraseType::kCustomPassphrase));
+
+  // Mimic going through CLIENT_DATA_OBSOLETE state.
+  GetFakeServer()->TriggerError(sync_pb::SyncEnums::CLIENT_DATA_OBSOLETE);
+  // Trigger sync by making one more change.
+  ASSERT_TRUE(AddURL(/*profile=*/0, /*title=*/"title1",
+                     GURL("https://www.google.com")));
+  ASSERT_TRUE(SyncEngineStoppedChecker(GetSyncService()).Wait());
+  GetFakeServer()->TriggerError(sync_pb::SyncEnums::SUCCESS);
+  ASSERT_TRUE(GetClient(0)->AwaitEngineInitialization());
+
+  // Make sure the client is still able to decrypt the data.
+  EXPECT_TRUE(WaitForPassphraseRequiredState(/*desired_state=*/false));
+  const std::string kEncryptedBookmarkTitle = "title2";
+
+  NigoriSpecifics nigori;
+  EXPECT_TRUE(GetServerNigori(GetFakeServer(), &nigori));
+  const KeyParamsForTesting key_params{
+      syncer::InitCustomPassphraseKeyDerivationParamsFromNigori(nigori),
+      kPassphrase};
+
+  InjectEncryptedServerBookmark(kEncryptedBookmarkTitle,
+                                GURL("https://www.google.com"), key_params);
   EXPECT_TRUE(WaitForClientBookmarkWithTitle(kEncryptedBookmarkTitle));
 }
 

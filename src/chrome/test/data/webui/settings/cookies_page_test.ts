@@ -5,9 +5,8 @@
 // clang-format off
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {ContentSetting, ContentSettingsTypes, SettingsCookiesPageElement, SiteSettingsPrefsBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
-import {CrLinkRowElement, MetricsBrowserProxyImpl, PrivacyElementInteractions, Router, routes} from 'chrome://settings/settings.js';
-
+import {ContentSetting, ContentSettingsTypes,CookiePrimarySetting, SettingsCookiesPageElement, SiteSettingsPrefsBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
+import {CrLinkRowElement, CrSettingsPrefs, MetricsBrowserProxyImpl, PrivacyElementInteractions, Router, routes, SettingsPrefsElement} from 'chrome://settings/settings.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {flushTasks, isChildVisible} from 'chrome://webui-test/test_util.js';
 
@@ -21,16 +20,17 @@ suite('CrSettingsCookiesPageTest', function() {
   let siteSettingsBrowserProxy: TestSiteSettingsPrefsBrowserProxy;
   let testMetricsBrowserProxy: TestMetricsBrowserProxy;
   let page: SettingsCookiesPageElement;
+  let settingsPrefs: SettingsPrefsElement;
 
   suiteSetup(function() {
     loadTimeData.overrideValues({
       consolidatedSiteStorageControlsEnabled: false,
+      // <if expr="chromeos_lacros">
+      isSecondaryUser: false,
+      // </if>
     });
-    const routes: any = Router.getInstance().getRoutes();
-    routes.SITE_SETTINGS_SITE_DATA = routes.COOKIES.createChild('/siteData');
-    routes.SITE_SETTINGS_DATA_DETAILS =
-        routes.SITE_SETTINGS_SITE_DATA.createChild('/cookies/detail');
-    Router.resetInstanceForTesting(new Router(routes));
+    settingsPrefs = document.createElement('settings-prefs');
+    return CrSettingsPrefs.initialized;
   });
 
   setup(function() {
@@ -40,16 +40,15 @@ suite('CrSettingsCookiesPageTest', function() {
     SiteSettingsPrefsBrowserProxyImpl.setInstance(siteSettingsBrowserProxy);
     document.body.innerHTML = '';
     page = document.createElement('settings-cookies-page');
-    page.prefs = {
-      generated: {
-        cookie_session_only: {value: false},
-        cookie_primary_setting:
-            {type: chrome.settingsPrivate.PrefType.NUMBER, value: 0},
-      },
-      privacy_sandbox: {
-        apis_enabled: {value: true},
-      }
-    };
+    page.prefs = settingsPrefs.prefs!;
+    page.set('prefs.generated.cookie_session_only', {
+      value: false,
+    });
+    page.set('prefs.privacy_sandbox.apis_enabled.value', true);
+    page.set('prefs.privacy_sandbox.apis_enabled_v2.value', true);
+    page.set(
+        'prefs.generated.cookie_primary_setting.value',
+        CookiePrimarySetting.ALLOW_ALL);
     document.body.appendChild(page);
     flush();
   });
@@ -106,6 +105,20 @@ suite('CrSettingsCookiesPageTest', function() {
     const result =
         await testMetricsBrowserProxy.whenCalled('recordSettingsPageHistogram');
     assertEquals(PrivacyElementInteractions.COOKIES_SESSION, result);
+  });
+
+  // Checks that the sub label for "Clear on Exit" is shown for Lacros primary
+  // profiles, and desktop platforms. It is not shown on Ash.
+  // Note: Secondary Lacros profiles are tested in the suite
+  // `CrSettingsCookiesPageTest_lacrosSecondaryProfile`.
+  test('CookieSessionSublabel', function() {
+    const clearOnExitRow =
+        page.shadowRoot!.querySelector<CrLinkRowElement>('#clearOnExit')!;
+    let expectedSubLabel = '';
+    // <if expr="not chromeos_ash">
+    expectedSubLabel = page.i18n('cookiePageClearOnExitDesc');
+    // </if>
+    assertEquals(clearOnExitRow.subLabel, expectedSubLabel);
   });
 
   test('CookieSettingExceptions_Search', async function() {
@@ -224,6 +237,7 @@ suite('CrSettingsCookiesPageTest', function() {
     // The toast should not be displayed if the user has the privacy sandbox
     // APIs disabled.
     page.set('prefs.privacy_sandbox.apis_enabled.value', false);
+    page.set('prefs.privacy_sandbox.apis_enabled_v2.value', false);
     page.$.blockAll.click();
     await flushTasks();
     assertFalse(page.$.toast.open);
@@ -231,7 +245,10 @@ suite('CrSettingsCookiesPageTest', function() {
 
     // Disabling only 3P cookies should display the toast.
     page.set('prefs.privacy_sandbox.apis_enabled.value', true);
-    page.set('prefs.generated.cookie_primary_setting.value', 0);
+    page.set('prefs.privacy_sandbox.apis_enabled_v2.value', true);
+    page.set(
+        'prefs.generated.cookie_primary_setting.value',
+        CookiePrimarySetting.ALLOW_ALL);
     page.$.blockThirdParty.click();
     assertEquals(
         'Settings.PrivacySandbox.Block3PCookies',
@@ -254,6 +271,51 @@ suite('CrSettingsCookiesPageTest', function() {
     assertFalse(page.$.toast.open);
   });
 
+  test('privacySandboxToast_restrictedSandbox', async function() {
+    // No toast should be shown if the privacy sandbox is restricted
+    loadTimeData.overrideValues({
+      isPrivacySandboxRestricted: true,
+    });
+    page.set('prefs.privacy_sandbox.apis_enabled_v2.value', true);
+    page.$.blockAll.click();
+    assertEquals(
+        'Settings.PrivacySandbox.Block3PCookies',
+        await testMetricsBrowserProxy.whenCalled('recordAction'));
+    testMetricsBrowserProxy.resetResolver('recordAction');
+    assertFalse(page.$.toast.open);
+  });
+});
+
+suite('CrSettingsCookiesPageTest_consolidatedControlsDisabled', function() {
+  let page: SettingsCookiesPageElement;
+  let settingsPrefs: SettingsPrefsElement;
+
+  suiteSetup(function() {
+    settingsPrefs = document.createElement('settings-prefs');
+    return CrSettingsPrefs.initialized;
+  });
+
+  setup(function() {
+    document.body.innerHTML = '';
+    page = document.createElement('settings-cookies-page');
+    page.prefs = settingsPrefs.prefs!;
+    page.set('prefs.generated.cookie_session_only', {
+      value: false,
+    });
+    page.set('prefs.privacy_sandbox.apis_enabled.value', true);
+    page.set('prefs.privacy_sandbox.apis_enabled_v2.value', true);
+    page.set(
+        'prefs.generated.cookie_primary_setting.value',
+        CookiePrimarySetting.ALLOW_ALL);
+    document.body.appendChild(page);
+    flush();
+  });
+
+  teardown(function() {
+    page.remove();
+    Router.getInstance().resetRouteForTesting();
+  });
+
   test('AllSiteDataLink_consolidatedControlsDisabled', function() {
     const siteDataLinkRow =
         page.shadowRoot!.querySelector<CrLinkRowElement>('#site-data-trigger')!;
@@ -266,33 +328,29 @@ suite('CrSettingsCookiesPageTest', function() {
 });
 
 suite('CrSettingsCookiesPageTest_consolidatedControlsEnabled', function() {
-  let siteSettingsBrowserProxy: TestSiteSettingsPrefsBrowserProxy;
-  let testMetricsBrowserProxy: TestMetricsBrowserProxy;
   let page: SettingsCookiesPageElement;
+  let settingsPrefs: SettingsPrefsElement;
 
   suiteSetup(function() {
     loadTimeData.overrideValues({
       consolidatedSiteStorageControlsEnabled: true,
     });
+    settingsPrefs = document.createElement('settings-prefs');
+    return CrSettingsPrefs.initialized;
   });
 
   setup(function() {
-    testMetricsBrowserProxy = new TestMetricsBrowserProxy();
-    MetricsBrowserProxyImpl.setInstance(testMetricsBrowserProxy);
-    siteSettingsBrowserProxy = new TestSiteSettingsPrefsBrowserProxy();
-    SiteSettingsPrefsBrowserProxyImpl.setInstance(siteSettingsBrowserProxy);
     document.body.innerHTML = '';
     page = document.createElement('settings-cookies-page');
-    page.prefs = {
-      generated: {
-        cookie_session_only: {value: false},
-        cookie_primary_setting:
-            {type: chrome.settingsPrivate.PrefType.NUMBER, value: 0},
-      },
-      privacy_sandbox: {
-        apis_enabled: {value: true},
-      }
-    };
+    page.prefs = settingsPrefs.prefs!;
+    page.set('prefs.generated.cookie_session_only', {
+      value: false,
+    });
+    page.set('prefs.privacy_sandbox.apis_enabled.value', true);
+    page.set('prefs.privacy_sandbox.apis_enabled_v2.value', true);
+    page.set(
+        'prefs.generated.cookie_primary_setting.value',
+        CookiePrimarySetting.ALLOW_ALL);
     document.body.appendChild(page);
     flush();
   });
@@ -312,3 +370,36 @@ suite('CrSettingsCookiesPageTest_consolidatedControlsEnabled', function() {
         Router.getInstance().getCurrentRoute(), routes.SITE_SETTINGS_ALL);
   });
 });
+
+// <if expr="chromeos_lacros">
+suite('CrSettingsCookiesPageTest_lacrosSecondaryProfile', function() {
+  let page: SettingsCookiesPageElement;
+  let settingsPrefs: SettingsPrefsElement;
+
+  suiteSetup(function() {
+    loadTimeData.overrideValues({isSecondaryUser: true});
+    settingsPrefs = document.createElement('settings-prefs');
+    return CrSettingsPrefs.initialized;
+  });
+
+  setup(function() {
+    document.body.innerHTML = '';
+    page = document.createElement('settings-cookies-page');
+    page.prefs = settingsPrefs.prefs!;
+    document.body.appendChild(page);
+    flush();
+  });
+
+  teardown(function() {
+    page.remove();
+  });
+
+  // Checks that the sub label for "Clear on Exit" is not shown for secondary
+  // Lacros profiles.
+  test('CookieSessionSublabel', function() {
+    const clearOnExitRow =
+        page.shadowRoot!.querySelector<CrLinkRowElement>('#clearOnExit')!;
+    assertEquals(clearOnExitRow.subLabel, '');
+  });
+});
+// </if>
