@@ -364,7 +364,7 @@ void WebViewImpl::RubberbandWalkLayoutObject(const RubberbandContext& context, c
             location -= containingLayer->PixelSnappedScrolledContentOffset();
         }
 
-        if (layer->HasTransformRelatedProperty()) {
+        if (layer->GetLayoutObject().HasTransformRelatedProperty()) {
             TransformationMatrix matrix = layer->CurrentTransform();
             if (!isSupportedTransform(matrix)) {
                 return;
