@@ -1350,7 +1350,7 @@ Common.Settings.registerSettingExtension({
   title: i18nLazyString(UIStrings.enableJavascriptSourceMaps),
   settingName: 'jsSourceMapsEnabled',
   settingType: Common.Settings.SettingType.BOOLEAN,
-  defaultValue: true,
+  defaultValue: false,
   options: [
     {
       value: true,
