@@ -92,6 +92,7 @@
 #define BLPWTK2_FEATURE_RENDERER_UI
 // feature 28
 // feature 29
+#define BLPWTK2_FEATURE_REROUTEMOUSEWHEEL
 // feature 30
 // feature 31
 #define BLPWTK2_FEATURE_WEBSCRIPTCONTEXT
