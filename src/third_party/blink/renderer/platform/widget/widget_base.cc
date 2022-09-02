@@ -487,6 +487,10 @@ void WidgetBase::CancelPresentationTimeRequest() {
   tab_switch_time_recorder_.TabWasHidden();
 }
 
+void WidgetBase::EnableAltDragRubberbanding(bool is_enabled) {
+  client_->EnableAltDragRubberbanding(is_enabled);
+}
+
 void WidgetBase::ApplyViewportChanges(
     const cc::ApplyViewportChangesArgs& args) {
   client_->ApplyViewportChanges(args);
@@ -914,6 +918,14 @@ void WidgetBase::UpdateTooltipFromKeyboard(const String& tooltip_text,
 
 void WidgetBase::ClearKeyboardTriggeredTooltip() {
   widget_host_->ClearKeyboardTriggeredTooltip();
+}
+
+void WidgetBase::SetRubberbandRect(const gfx::Rect& rect) {
+  widget_host_->SetRubberbandRect(rect);
+}
+
+void WidgetBase::HideRubberbandRect() {
+  widget_host_->HideRubberbandRect();
 }
 
 void WidgetBase::ShowVirtualKeyboard() {

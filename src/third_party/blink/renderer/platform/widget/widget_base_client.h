@@ -233,6 +233,8 @@ class WidgetBaseClient {
   // Whether to use ScrollPredictor to resample scroll events. This is false for
   // web_tests to ensure that scroll deltas are not timing-dependent.
   virtual bool AllowsScrollResampling() { return true; }
+
+  virtual void EnableAltDragRubberbanding(bool is_enabled) {}
 };
 
 }  // namespace blink

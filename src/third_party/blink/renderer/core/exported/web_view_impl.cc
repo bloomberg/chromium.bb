@@ -1864,6 +1864,13 @@ bool WebViewImpl::HasVerticalScrollbar() {
   return MainFrameImpl()->GetFrameView()->LayoutViewport()->VerticalScrollbar();
 }
 
+void WebViewImpl::MouseCaptureLost() {
+  if ((rubberbandingForcedOn_ || isAltDragRubberbandingEnabled_) &&
+      IsRubberbanding()) {
+    AbortRubberbanding();
+  }
+}
+
 void WebViewImpl::SetPageFocus(bool enable) {
   page_->GetFocusController().SetFocused(enable);
   if (enable) {

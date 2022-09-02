@@ -141,6 +141,7 @@ class PLATFORM_EXPORT WidgetBase : public mojom::blink::Widget,
       mojom::blink::RecordContentToVisibleTimeRequestPtr visible_time_request)
       override;
   void CancelPresentationTimeRequest() override;
+  void EnableAltDragRubberbanding(bool is_enabled) override;
 
   // LayerTreeDelegate overrides:
   // Applies viewport related properties during a commit from the compositor
@@ -223,6 +224,9 @@ class PLATFORM_EXPORT WidgetBase : public mojom::blink::Widget,
   // Posts a task with the given delay, then calls ScheduleAnimation() on the
   // WidgetBaseClient.
   void RequestAnimationAfterDelay(const base::TimeDelta& delay);
+
+  void SetRubberbandRect(const gfx::Rect& rect);
+  void HideRubberbandRect();
 
   void ShowVirtualKeyboard();
   void UpdateSelectionBounds();

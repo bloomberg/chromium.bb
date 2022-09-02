@@ -25,6 +25,7 @@
 #include "third_party/blink/renderer/core/layout/api/line_layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/hit_test_location.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
+#include "third_party/blink/renderer/core/layout/layout_object_inlines.h"
 #include "third_party/blink/renderer/core/layout/line/inline_flow_box.h"
 #include "third_party/blink/renderer/core/layout/line/root_inline_box.h"
 #include "third_party/blink/renderer/core/paint/block_painter.h"
@@ -357,6 +358,18 @@ void InlineBox::SetLineLayoutItemShouldDoFullPaintInvalidationIfNeeded() {
   // style. Otherwise it paints nothing so we don't need to invalidate it.
   if (!IsRootInlineBox() || IsFirstLineStyle())
     GetLineLayoutItem().SetShouldDoFullPaintInvalidation();
+}
+
+Node* InlineBox::node() const {
+  return GetLineLayoutItem().GetLayoutObject()->GetNode();
+}
+
+const ComputedStyle& InlineBox::styleRef(bool firstLine) const {
+  return GetLineLayoutItem().GetLayoutObject()->StyleRef(firstLine);
+}
+
+LayoutBlock* InlineBox::containingBlock() const {
+  return GetLineLayoutItem().GetLayoutObject()->ContainingBlock();
 }
 
 bool CanUseInlineBox(const LayoutObject& node) {

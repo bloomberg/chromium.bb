@@ -38,6 +38,7 @@ enum class DocumentUpdateReason {
   kPagePopup,
   kPlugin,
   kPrinting,
+  kRubberband,
   kScroll,
   kSelection,
   kSizeChange,
