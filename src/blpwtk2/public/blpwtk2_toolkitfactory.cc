@@ -22,6 +22,7 @@
 
 #include <blpwtk2_toolkitfactory.h>
 
+#include <blpwtk2_logmessagethrottler.h>
 #include <blpwtk2_products.h>
 #include <blpwtk2_statics.h>
 #include <blpwtk2_stringref.h>
@@ -45,9 +46,11 @@
 #include <printing/print_settings.h>
 #include <ui/views/corewm/tooltip_win.h>
 
+#include <memory>
+
 namespace blpwtk2 {
 static bool g_created = false;
-static ToolkitCreateParams::LogMessageHandler g_logMessageHandler;
+static std::weak_ptr<LogMessageThrottler> g_logger;
 
 static void setMaxSocketsPerProxy(int count)
 {
@@ -93,29 +96,22 @@ static bool wtk2LogMessageHandlerFunction(int severity,
                                           size_t message_start,
                                           const std::string& str)
 {
-    if (g_logMessageHandler) {
-      ToolkitCreateParams::LogMessageSeverity ourSeverity;
-      switch (severity) {
-        case logging::LOG_INFO:
-          ourSeverity = ToolkitCreateParams::kSeverityInfo;
-          break;
-        case logging::LOG_WARNING:
-          ourSeverity = ToolkitCreateParams::kSeverityWarning;
-          break;
-        case logging::LOG_ERROR:
-          ourSeverity = ToolkitCreateParams::kSeverityError;
-          break;
-        case logging::LOG_FATAL:
-          ourSeverity = ToolkitCreateParams::kSeverityFatal;
-          break;
-        default:
-          ourSeverity = ToolkitCreateParams::kSeverityVerbose;
-          break;
-      }
-      g_logMessageHandler(ourSeverity, file, line, str.c_str() + message_start);
-      return true;
+    if(auto logger = g_logger.lock()) {
+        return logger->writeLog(severity, file, line, message_start, str);
     }
     return false;
+}
+
+static void wtk2ConsoleLogMessageHandlerFunction(int severity,
+                                                 const std::string& file,
+                                                 int line,
+                                                 int column,
+                                                 const std::string& message,
+                                                 const std::string& stack_trace)
+{
+    if(auto logger = g_logger.lock()) {
+        logger->writeConsole(severity, file, line, column, message, stack_trace);
+    }
 }
 
 // static
@@ -177,7 +173,11 @@ Toolkit* ToolkitFactory::create(const ToolkitCreateParams& params)
 
 
     logging::SetWtk2LogMessageHandler(wtk2LogMessageHandlerFunction);
-    g_logMessageHandler = params.logMessageHandler();
+    content::RenderFrameImpl::SetConsoleLogMessageHandler(wtk2ConsoleLogMessageHandlerFunction);
+    auto logger = std::make_shared<LogMessageThrottler>(
+        params.logThrottleType(), params.logMessageHandler(),
+        params.consoleLogMessageHandler());
+    g_logger = logger;
 
     base::win::SetWinProcExceptionFilter(params.winProcExceptionFilter());
 
@@ -230,7 +230,8 @@ Toolkit* ToolkitFactory::create(const ToolkitCreateParams& params)
 
 
                                            // patch section: log message handler
-                                           profileDirectory);
+                                           profileDirectory,
+                                           std::move(logger));
 
     std::vector<std::wstring> font_files;
 

@@ -1043,6 +1043,23 @@ void logMessageHandler(blpwtk2::ToolkitCreateParams::LogMessageSeverity severity
 
 
 // patch section: log message handler
+void consoleLogMessageHandler(blpwtk2::ToolkitCreateParams::LogMessageSeverity severity,
+                              const blpwtk2::StringRef& file,
+                              unsigned line,
+                              unsigned column,
+                              const blpwtk2::StringRef& message,
+                              const blpwtk2::StringRef& stack_trace)
+{
+    std::cout << "[" << ::GetCurrentProcessId() << ":" << GetCurrentThreadId()
+              << "][" << std::string(file.data(), file.length()) << ":"
+              << line << ":" << column << "] "
+              << std::string(message.data(), message.length()) << std::endl;
+     if (!stack_trace.isEmpty()) {
+          std::cout << "Stack Trace:"
+                    << std::string(stack_trace.data(), stack_trace.length())
+                    << std::endl;
+     }
+}
 
 
 // patch section: embedder ipc
@@ -1259,6 +1276,7 @@ int main(int, const char**)
     toolkitParams.enablePrintBackgroundGraphics();
     toolkitParams.setDictionaryPath(g_dictDir);
     toolkitParams.setLogMessageHandler(logMessageHandler);
+    toolkitParams.setConsoleLogMessageHandler(consoleLogMessageHandler);
 
     if (!noRendererIOThread) {
         toolkitParams.enableRendererIOThread();

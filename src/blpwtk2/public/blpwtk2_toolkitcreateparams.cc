@@ -44,6 +44,7 @@ struct ToolkitCreateParamsImpl final
 {
     ThreadMode d_threadMode;
     ToolkitCreateParams::LogMessageHandler d_logMessageHandler;
+    ToolkitCreateParams::ConsoleLogMessageHandler d_consoleLogMessageHandler;
     ToolkitCreateParams::WinProcExceptionFilter d_winProcExceptionFilter;
     ToolkitCreateParams::ChannelErrorHandler d_channelErrorHandler;
     int d_maxSocketsPerProxy;
@@ -88,6 +89,8 @@ struct ToolkitCreateParamsImpl final
 
 
 
+    ToolkitCreateParams::LogThrottleType d_logThrottleType {ToolkitCreateParams::LogThrottleType::kNoThrottle};
+
     ToolkitCreateParamsImpl();
 };
 
@@ -98,6 +101,7 @@ struct ToolkitCreateParamsImpl final
 ToolkitCreateParamsImpl::ToolkitCreateParamsImpl()
     : d_threadMode(ThreadMode::ORIGINAL)
     , d_logMessageHandler(0)
+    , d_consoleLogMessageHandler(0)
     , d_winProcExceptionFilter(0)
     , d_channelErrorHandler(0)
     , d_maxSocketsPerProxy(-1000)
@@ -180,6 +184,11 @@ void ToolkitCreateParams::enableDefaultPrintSettings()
 void ToolkitCreateParams::setLogMessageHandler(LogMessageHandler handler)
 {
     d_impl->d_logMessageHandler = handler;
+}
+
+void ToolkitCreateParams::setConsoleLogMessageHandler(ConsoleLogMessageHandler handler)
+{
+    d_impl->d_consoleLogMessageHandler = handler;
 }
 
 void ToolkitCreateParams::setTempFolderPath(const StringRef& path)
@@ -356,6 +365,11 @@ void ToolkitCreateParams::setRendererUIEnabled(bool rendererUIEnabled)
 
 
 
+void ToolkitCreateParams::setLogThrottleType(LogThrottleType throttleType)
+{
+    d_impl->d_logThrottleType = throttleType;
+}
+
 ThreadMode ToolkitCreateParams::threadMode() const
 {
     return d_impl->d_threadMode;
@@ -369,6 +383,11 @@ bool ToolkitCreateParams::useDefaultPrintSettings() const
 ToolkitCreateParams::LogMessageHandler ToolkitCreateParams::logMessageHandler() const
 {
     return d_impl->d_logMessageHandler;
+}
+
+ToolkitCreateParams::ConsoleLogMessageHandler ToolkitCreateParams::consoleLogMessageHandler() const
+{
+    return d_impl->d_consoleLogMessageHandler;
 }
 
 ToolkitCreateParams::WinProcExceptionFilter ToolkitCreateParams::winProcExceptionFilter() const
@@ -532,6 +551,11 @@ bool ToolkitCreateParams::rendererUIEnabled() const
 }
 
 
+
+ToolkitCreateParams::LogThrottleType ToolkitCreateParams::logThrottleType() const
+{
+    return d_impl->d_logThrottleType;
+}
 
 }  // close namespace blpwtk2
 
