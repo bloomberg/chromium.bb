@@ -25,6 +25,7 @@ class StyleableMarker;
 class DocumentMarker;
 struct PhysicalOffset;
 struct PhysicalRect;
+class HighlightMarker;
 
 enum class DocumentMarkerPaintPhase { kForeground, kBackground };
 
@@ -93,6 +94,17 @@ class InlineTextBoxPainter {
                                 const Font&,
                                 LayoutTextCombine* = nullptr,
                                 bool allow_empty_selection = false);
+
+  void PaintHighlightMarkerForeground(const PaintInfo& paintInfo,
+                                      const PhysicalOffset& boxOrigin,
+                                      const HighlightMarker& marker,
+                                      const ComputedStyle& style,
+                                      const Font& font);
+  void PaintHighlightMarkerBackground(const PaintInfo& paintInfo,
+                                      const PhysicalOffset& boxOrigin,
+                                      const HighlightMarker& marker,
+                                      const ComputedStyle& style,
+                                      const Font& font);
 
   void PaintStyleableMarkerUnderline(GraphicsContext&,
                                      const PhysicalOffset& box_origin,

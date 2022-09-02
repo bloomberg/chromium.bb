@@ -63,6 +63,16 @@ namespace blink {
 
 
         // patch section: document marker highlightmarker
+        bool isBlock(Node* node);
+        String getPlainText(Node* node, const String& excluder = "", const String& mask = "");
+        void setTextMatchMarkerVisibility(Document* document, bool highlight);
+        bool checkSpellingForRange(Range* range);
+        void removeMarker(Range* range, long mask);
+        void addHighlightMarker(Range* range, long foregroundColor, long backgroundColor, bool includeNonSelectableText = false);
+        void removeHighlightMarker(Range *range);
+        Range* findPlainText(Range* range, const String& target, long options);
+        bool checkSpellingForNode(Node* node);
+        DOMRectReadOnly* getAbsoluteCaretRectAtOffset(Node* node, long offset);
 
 
 
@@ -78,6 +88,10 @@ namespace blink {
         void Trace(Visitor*) const override;
 
         explicit BBWindowHooks(LocalDOMWindow *window);
+    private:
+
+        bool matchSelector(Node *node, const String& selector);
+        void appendTextContent(Node *node, StringBuilder& content, const String& excluder, const String& mask);
     };
 
 } // namespace blink
