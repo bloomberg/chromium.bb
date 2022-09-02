@@ -39,12 +39,14 @@
 #include "third_party/blink/public/common/context_menu_data/edit_flags.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/input/web_menu_source_type.h"
+#include "third_party/blink/public/common/input/web_pointer_properties.h"
 #include "third_party/blink/public/mojom/context_menu/context_menu.mojom-blink.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_plugin.h"
 #include "third_party/blink/public/web/web_text_check_client.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
+#include "third_party/blink/renderer/core/dom/events/custom_event.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/editing/editing_tri_state.h"
@@ -84,6 +86,7 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_response.h"
+#include "v8/include/v8.h"
 
 namespace blink {
 
@@ -395,6 +398,11 @@ static gfx::Rect ComputeSelectionRect(LocalFrame* selected_frame) {
 
   return gfx::Rect(left, top, right - left, bottom - top);
 }
+
+// Forward declare this, it is implemented at the end of this file.
+static bool FireBbContextMenuEvent(const HitTestResult& hitTestResult,
+                                   const blink::ContextMenuData& data,
+                                   bool bContextMenuKey);
 
 bool ContextMenuController::ShouldShowContextMenuFromTouch(
     const ContextMenuData& data) {
@@ -785,12 +793,80 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
   if (!selected_web_frame || !selected_web_frame->Client())
     return false;
 
+  if (!FireBbContextMenuEvent(result, data,
+        mouse_event->button() == static_cast<int16_t>(WebPointerProperties::Button::kNoButton))) {
   selected_web_frame->ShowContextMenu(
       context_menu_client_receiver_.BindNewEndpointAndPassRemote(
           selected_web_frame->GetTaskRunner(TaskType::kInternalDefault)),
       data, host_context_menu_location);
+  }
 
   return true;
+}
+
+static void ExposeInt(v8::Isolate* isolate, const v8::Handle<v8::Object>& obj, const char* name, int value)
+{
+  obj->Set(obj->GetCreationContextChecked(), v8::String::NewFromUtf8(isolate, name).ToLocalChecked(), v8::Integer::New(isolate, value)).Check();
+}
+
+static void ExposeBool(v8::Isolate* isolate, const v8::Handle<v8::Object>& obj, const char* name, bool value)
+{
+  obj->Set(obj->GetCreationContextChecked(), v8::String::NewFromUtf8(isolate, name).ToLocalChecked(), v8::Boolean::New(isolate, value)).Check();
+}
+
+static void ExposeString(v8::Isolate* isolate, const v8::Handle<v8::Object>& obj, const char* name, const std::string& value)
+{
+  obj->Set(obj->GetCreationContextChecked(),
+           v8::String::NewFromUtf8(isolate, name).ToLocalChecked(),
+           v8::String::NewFromUtf8(isolate, value.data(), v8::NewStringType::kNormal, static_cast<int>(value.length())).ToLocalChecked()).Check();
+}
+
+static void ExposeStringVector(v8::Isolate* isolate, const v8::Handle<v8::Object>& obj, const char* name, const std::vector<std::u16string>& value)
+{
+  v8::Handle<v8::Array> array = v8::Array::New(isolate);
+  v8::Handle<v8::Context> context = obj->GetCreationContextChecked();
+
+  for (unsigned i = 0; i < value.size(); ++i) {
+    std::string item = blink::WebString::FromUTF16(value[i]).Utf8();
+    array->Set(context, i, v8::String::NewFromUtf8(isolate, item.data(), v8::NewStringType::kNormal, static_cast<int>(item.length())).ToLocalChecked()).Check();
+  }
+  obj->Set(context, v8::String::NewFromUtf8(isolate, name).ToLocalChecked(), array).Check();
+}
+
+static bool FireBbContextMenuEvent(const HitTestResult& hitTestResult,
+                                   const blink::ContextMenuData& data,
+                                   bool bContextMenuKey)
+{
+  LocalFrame* frame = hitTestResult.InnerNodeFrame();
+
+  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+  v8::HandleScope handle_scope(isolate);
+  v8::Handle<v8::Context> context = ToV8Context(frame, DOMWrapperWorld::MainWorld());
+  v8::Context::Scope context_scope(context);
+
+  v8::Handle<v8::ObjectTemplate> templ = v8::ObjectTemplate::New(isolate);
+  v8::Handle<v8::Object> detail_obj = templ->NewInstance(context).ToLocalChecked();
+
+  ExposeBool(isolate, detail_obj, "canCut", data.edit_flags & kCanCut);
+  ExposeBool(isolate, detail_obj, "canCopy", data.edit_flags & kCanCopy);
+  ExposeBool(isolate, detail_obj, "canPaste", data.edit_flags & kCanPaste);
+
+  ExposeString(isolate, detail_obj, "misspelledWord", blink::WebString::FromUTF16(data.misspelled_word).Utf8());
+  ExposeStringVector(isolate, detail_obj, "dictionarySuggestions", data.dictionary_suggestions);
+  ExposeString(isolate, detail_obj, "selectedText", WTF::String(data.selected_text.c_str()).Utf8());
+  ExposeInt(isolate, detail_obj, "mousePositionX", data.mouse_position.x());
+  ExposeInt(isolate, detail_obj, "mousePositionY", data.mouse_position.y());
+  ExposeBool(isolate, detail_obj, "fromContextMenuKey", bContextMenuKey);
+
+  CustomEvent* event = CustomEvent::Create();
+  ScriptState* script_state = ToScriptStateForMainWorld(frame);
+  event->initCustomEvent(script_state,
+                         "bbContextMenu",
+                         true,
+                         true,
+                         ScriptValue(isolate, detail_obj));
+  hitTestResult.InnerNodeOrImageMapImage()->DispatchEvent(*event);
+  return event->defaultPrevented();
 }
 
 }  // namespace blink
