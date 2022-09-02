@@ -544,6 +544,7 @@ void PrintViewManagerBase::DidPrintDocument(
 }
 
 void PrintViewManagerBase::GetDefaultPrintSettings(
+    uint32_t owner_wnd,
     GetDefaultPrintSettingsCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!printing_enabled_.GetValue()) {

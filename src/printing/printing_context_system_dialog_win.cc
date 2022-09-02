@@ -51,7 +51,8 @@ void PrintingContextSystemDialogWin::AskUserForSettings(
     PrintSettingsCallback callback) {
   DCHECK(!in_print_job_);
 
-  HWND window = GetWindow();
+  HWND window = delegate_->GetOwnerWnd() ? delegate_->GetOwnerWnd()
+                                         : GetWindow();
   DCHECK(window);
 
   // Show the OS-dependent dialog box.

@@ -62,7 +62,7 @@ void AssociatedInterfacePtrStateBase::Bind(
     const char* interface_name,
     MessageToStableIPCHashCallback ipc_hash_callback,
     MessageToMethodNameCallback method_name_callback) {
-  DCHECK(!endpoint_client_);
+  //DCHECK(!endpoint_client_);
   DCHECK_EQ(0u, version_);
   DCHECK(handle.is_valid());
 

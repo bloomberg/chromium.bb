@@ -2078,6 +2078,10 @@ void WebLocalFrameImpl::Trace(Visitor* visitor) const {
   visitor->Trace(input_method_controller_);
 }
 
+void WebLocalFrameImpl::SetLocalFrameHostPartialOverride(CrossVariantMojoAssociatedRemote<mojom::blink::LocalFrameHostPartialOverrideInterfaceBase> hostOverride) {
+  GetFrame()->SetLocalFrameHostPartialOverride(std::move(hostOverride));
+}
+
 void WebLocalFrameImpl::SetCoreFrame(LocalFrame* frame) {
   frame_ = frame;
 }

@@ -132,6 +132,7 @@ Toolkit* ToolkitFactory::create(const ToolkitCreateParams& params)
     Statics::isNativeViewManipulationAsync = params.isNativeViewManipulationAsync();
     Statics::toolkitDelegate = params.delegate();
     Statics::isRendererIOThreadEnabled = params.isRendererIOThreadEnabled();
+    Statics::rendererUIEnabled = params.rendererUIEnabled();
 
 
 

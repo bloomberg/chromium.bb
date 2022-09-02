@@ -46,6 +46,7 @@
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/back_forward_cache_controller.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/frame/frame.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink-forward.h"
@@ -59,6 +60,7 @@
 #include "third_party/blink/public/mojom/navigation/renderer_eviction_reason.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/reporting/reporting.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom-blink-forward.h"
+#include "third_party/blink/public/platform/cross_variant_mojo_util.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/web/web_script_execution_callback.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -747,6 +749,9 @@ class CORE_EXPORT LocalFrame final
 
   void WriteIntoTrace(perfetto::TracedValue ctx) const;
 
+  // blpwtk2: for RenderWebView
+  void SetLocalFrameHostPartialOverride(CrossVariantMojoAssociatedRemote<mojom::blink::LocalFrameHostPartialOverrideInterfaceBase> hostOverride);
+
  private:
   friend class FrameNavigationDisabler;
   // LocalFrameMojoHandler is a part of LocalFrame.
@@ -904,6 +909,9 @@ class CORE_EXPORT LocalFrame final
   std::unique_ptr<WebPrescientNetworking> prescient_networking_;
 
   Member<LocalFrameMojoHandler> mojo_handler_;
+
+  HeapMojoAssociatedRemote<mojom::blink::LocalFrameHostPartialOverride>
+      local_frame_host_partial_override_remote_{nullptr};
 
   // Variable to control burst of download requests.
   int num_burst_download_requests_ = 0;

@@ -796,6 +796,11 @@ bool RenderThreadImpl::ShouldBeDestroyed() {
   return false;
 }
 
+bool RenderThreadImpl::Send(IPC::Message* msg) {
+  return GetContentClient()->renderer()->Dispatch(msg) ||
+         ChildThreadImpl::Send(msg);
+}
+
 IPC::SyncChannel* RenderThreadImpl::GetChannel() {
   return channel();
 }
