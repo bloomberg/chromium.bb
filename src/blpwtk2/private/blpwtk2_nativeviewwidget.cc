@@ -35,6 +35,7 @@ NativeViewWidget::NativeViewWidget(gfx::NativeView contents,
                                    NativeViewWidgetDelegate* delegate,
                                    int width,
                                    int height,
+                                   bool activatable,
                                    bool rerouteMouseWheelToAnyRelatedWindow)
 : d_delegate(delegate)
 , d_nativeViewHost(new views::NativeViewHost())
@@ -54,7 +55,7 @@ NativeViewWidget::NativeViewWidget(gfx::NativeView contents,
     params.delegate = this;
     params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
     params.opacity = views::Widget::InitParams::WindowOpacity::kOpaque;
-    params.activatable = views::Widget::InitParams::Activatable::kDefault;
+    params.activatable = activatable ? views::Widget::InitParams::Activatable::kDefault : views::Widget::InitParams::Activatable::kNo;
     params.layer_type = ui::LAYER_SOLID_COLOR;
     d_impl->set_focus_on_creation(false);
     d_impl->Init(std::move(params));
@@ -132,11 +133,22 @@ void NativeViewWidget::move(int x, int y, int width, int height)
     d_impl->SetBounds(gfx::Rect(x, y, width, height));
 }
 
-void NativeViewWidget::focus()
+bool NativeViewWidget::focus()
 {
     DCHECK(d_impl);
     HWND hwnd = views::HWNDForWidget(d_impl);
-    ::SetFocus(hwnd);
+    HWND oldFocusedHwnd = ::GetFocus();
+    if(::SetFocus(hwnd) != oldFocusedHwnd) {
+        PLOG(WARNING) << "::SetFocus for HWND " << hwnd << " failed";
+        return false;
+    }
+    HWND focusedHwnd = ::GetFocus();
+    if (hwnd != focusedHwnd) {
+        LOG(WARNING) << "::SetFocus for HWND " << hwnd << " failed because focused HWND is "
+            << focusedHwnd;
+        return false;
+    }
+    return true;
 }
 
 blpwtk2::NativeView NativeViewWidget::getNativeWidgetView() const
@@ -181,6 +193,13 @@ void NativeViewWidget::WindowClosing()
     if (d_delegate)
         d_delegate->onDestroyed(this);
     d_delegate = 0;
+}
+
+aura::Window* NativeViewWidget::GetDefaultActivationWindow()
+{
+    if (d_delegate)
+        return d_delegate->GetDefaultActivationWindow();
+    return NULL;
 }
 
 views::View* NativeViewWidget::GetContentsView()

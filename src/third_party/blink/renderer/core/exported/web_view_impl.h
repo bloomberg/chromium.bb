@@ -577,7 +577,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void DidChangeRootLayer(bool root_layer_exists);
 
   // Sets the page focus.
-  void SetPageFocus(bool enable);
+  void SetPageFocus(bool enable) override;
 
   // This method is used for testing.
   // Resizes the unscaled (page scale = 1.0) visual viewport. Normally the
