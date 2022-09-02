@@ -464,7 +464,7 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
   interface_broker_->GetInterface(
       metrics_provider.InitWithNewPipeAndPassReceiver());
 
-  const bool use_surface_layer = features::UseSurfaceLayerForVideo();
+  const bool use_surface_layer = false;
   std::unique_ptr<blink::WebVideoFrameSubmitter> submitter =
       use_surface_layer
           ? CreateSubmitter(main_thread_compositor_task_runner, settings,
