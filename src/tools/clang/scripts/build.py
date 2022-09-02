@@ -147,7 +147,7 @@ def CheckoutLLVM(commit, dir):
     print('Removing %s.' % dir)
     RmTree(dir)
 
-  clone_cmd = ['git', 'clone', 'https://github.com/llvm/llvm-project/', dir]
+  clone_cmd = ['git', 'clone', 'https://bbgithub.dev.bloomberg.com/uiinf/llvm-project.git', dir]
 
   if RunCommand(clone_cmd, fail_hard=False):
     os.chdir(dir)
@@ -399,7 +399,7 @@ def DownloadPinnedClang():
 
   with open(script_path, 'w') as f:
     subprocess.check_call(
-        ['git', 'show', 'HEAD~:tools/clang/scripts/update.py'],
+        ['git', 'show', 'HEAD~:src/tools/clang/scripts/update.py'],
         stdout=f,
         cwd=CHROMIUM_DIR)
   print("Running pinned update.py")
@@ -514,6 +514,8 @@ def main():
                       help='do not build anything')
   parser.add_argument('--skip-checkout', action='store_true',
                       help='do not create or update any checkouts')
+  parser.add_argument('--just-checkout', action='store_true',
+                      help='just checkout llvm and do nothing else')
   parser.add_argument('--build-dir',
                       help='Override build directory')
   parser.add_argument('--extra-tools', nargs='*', default=[],
@@ -541,6 +543,10 @@ def main():
   args = parser.parse_args()
 
   global CLANG_REVISION, PACKAGE_VERSION, LLVM_BUILD_DIR
+
+  if args.just_checkout:
+    CheckoutLLVM(CLANG_REVISION, LLVM_DIR)
+    return 0
 
   if (args.pgo or args.thinlto) and not args.bootstrap:
     print('--pgo/--thinlto requires --bootstrap')
