@@ -116,6 +116,12 @@ const size_t kWebEffectiveConnectionTypeMappingCount =
     std::size(kWebEffectiveConnectionTypeMapping);
 
 bool IsClientHintSentByDefault(network::mojom::WebClientHintsType type) {
+  // blpwtk2: Some ancient web servers do not support request fields with
+  // blank values. The 'sec-ch-ua' field is known to have a blank value
+  // sometimes and this causes the web server to choke. As a temporary
+  // workaround, these fields are not sent by default.
+  // Basically this function should unconditionally return false.
+#if 0
   switch (type) {
     case network::mojom::WebClientHintsType::kSaveData:
     case network::mojom::WebClientHintsType::kUA:
@@ -125,6 +131,8 @@ bool IsClientHintSentByDefault(network::mojom::WebClientHintsType type) {
     default:
       return false;
   }
+#endif
+  return false;
 }
 
 // Add a list of Client Hints headers to be removed to the output vector, based
