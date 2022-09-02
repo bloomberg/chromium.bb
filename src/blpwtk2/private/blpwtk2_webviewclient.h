@@ -72,7 +72,10 @@ class WebViewClient
     virtual void applyRegion(NativeRegion region) = 0;
         // Apply a window-region over the webview.
 
-    virtual void ncHitTestResult(int x, int y, int result) = 0;
+    virtual void onNCHitTestResult(int x, int y, int result) = 0;
+    
+    virtual void onEnterFullscreenModeResult(bool isFullscreen) = 0;
+        // Expected to be executed with the result of WebViewClient::enterFullscreenMode.
 
     virtual void applyNCHitTestRegion(NativeRegion region) = 0;
         // Set the window-region used for non-client hit testing in the webview.

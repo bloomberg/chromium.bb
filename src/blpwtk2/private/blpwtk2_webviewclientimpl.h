@@ -64,6 +64,7 @@ class WebViewClientImpl final : public WebViewClient
     mojo::Remote<mojom::WebViewHost> d_hostPtr;
     WebViewClientDelegate *d_delegate;
     ncHitTestCallback d_ncHitTestCallback;
+    enterFullscreenModeCallback d_enterFullscreenModeCallback;
     NativeView d_nativeView;
     NativeView d_originalParentView;
     std::unique_ptr<FindOnPage> d_findState;
@@ -101,7 +102,10 @@ class WebViewClientImpl final : public WebViewClient
     void applyRegion(NativeRegion region) override;
         // Apply a window-region over the webview.
 
-    void ncHitTestResult(int x, int y, int result) override;
+    void onNCHitTestResult(int x, int y, int result) override;
+
+    void onEnterFullscreenModeResult(bool isFullscreen) override;
+        // Expected to be executed with the result of WebViewClientImpl::enterFullscreenMode.
 
     void applyNCHitTestRegion(NativeRegion region) override;
 
@@ -187,6 +191,12 @@ class WebViewClientImpl final : public WebViewClient
 
     void setParentStatusUpdate(int status, unsigned int parent);
         // Notify the client if setParent call succeed by value of status
+    
+    void enterFullscreenMode(enterFullscreenModeCallback callback) override;
+        // Notify the client that it should make the webview window fullscreen
+
+    void exitFullscreenMode() override;
+        // Notify the client that it should un-fullscreen the webview window
 
   public:
     WebViewClientImpl(mojo::Remote<mojom::WebViewHost> hostPtr,
