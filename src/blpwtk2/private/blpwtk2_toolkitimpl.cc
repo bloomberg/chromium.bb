@@ -66,6 +66,7 @@
 #include <content/renderer/render_thread_impl.h>
 #include <content/public/renderer/render_thread.h>
 #include <content/browser/browser_main_loop.h>
+#include <content/browser/browser_thread_impl.h>
 #include <mojo/public/cpp/system/wait_set.h>
 #include <gin/public/v8_platform.h>
 #include <sandbox/win/src/win_utils.h>
@@ -92,6 +93,8 @@
 #include <windows.h>
 
 // patch section: embedder ipc
+#include <gin/v8_initializer.h>
+#include <v8/include/v8-cppgc.h>
 
 
 // patch section: multi-heap tracer
@@ -598,6 +601,7 @@ ToolkitImpl::ToolkitImpl(const std::string&              dictionaryPath,
                          bool                            isolated,
 
                          // patch section: embedder ipc
+                         bool                            browserV8Enabled,
 
 
                          // patch section: log message handler
@@ -687,7 +691,12 @@ ToolkitImpl::ToolkitImpl(const std::string&              dictionaryPath,
 
     if (!isHost) {
         content::InitializeFieldTrialAndFeatureList();
+    } else if (browserV8Enabled && Statics::isOriginalThreadMode()) {
+#ifdef V8_USE_EXTERNAL_STARTUP_DATA
+        gin::V8Initializer::LoadV8Snapshot(gin::V8SnapshotFileType::kWithAdditionalContext);
+#endif
     }
+
     // Start pumping the message loop.
     startMessageLoop(sandboxInfo);
 
@@ -708,6 +717,28 @@ ToolkitImpl::ToolkitImpl(const std::string&              dictionaryPath,
         blink::Platform::Current()->EstablishGpuChannelSync();
     }
 
+    else if (isHost && browserV8Enabled) {
+        gin::IsolateHolder::Initialize(gin::IsolateHolder::kNonStrictMode,
+                                       gin::ArrayBufferAllocator::SharedInstance());
+
+        auto taskRunner = content::BrowserThreadImpl::GetTaskRunnerForThread(
+                                                    content::BrowserThread::UI);
+
+        d_isolateHolder.reset(new gin::IsolateHolder(taskRunner, gin::IsolateHolder::IsolateType::kBlinkMainThread));
+        d_isolateHolder->isolate()->Enter();
+
+        v8::Platform *realPlatform = gin::V8Platform::Get();
+        cppgc::InitializeProcess(realPlatform->GetPageAllocator());
+        d_cppHeap = v8::CppHeap::Create(
+            realPlatform,
+            {
+                {},
+                v8::WrapperDescriptor(0, 1, 10)
+            });
+        d_isolateHolder->isolate()->AttachCppHeap(d_cppHeap.get());
+    }
+
+    ui::InitializeInputMethod();
     setDefaultLocaleIfWindowsLocaleIsNotSupported();
 
     if (isHost && Statics::isOriginalThreadMode()) {
@@ -768,6 +799,12 @@ ToolkitImpl::~ToolkitImpl()
         InProcessRenderer::cleanup();
 
     d_messagePump->cleanup();
+
+    if (d_isolateHolder) {
+        DCHECK(Statics::isOriginalThreadMode());
+        d_isolateHolder->isolate()->Exit();
+        d_isolateHolder.reset();
+    }
 
     if (Statics::isRendererMainThreadMode()) {
         d_renderMainMessageLoop.reset();
@@ -891,6 +928,15 @@ void ToolkitImpl::setTraceThreshold(unsigned int timeoutMS)
 
 
 // patch section: embedder ipc
+void ToolkitImpl::opaqueMessageToRendererAsync(int pid, const StringRef &message)
+{
+    ProcessHostImpl::opaqueMessageToRendererAsync(pid, message);
+}
+
+void ToolkitImpl::setIPCDelegate(ProcessHostDelegate *delegate)
+{
+    ProcessHostImpl::setIPCDelegate(delegate);
+}
 
 
 // patch section: expose v8 platform
@@ -908,6 +954,5 @@ v8::Platform *ToolkitImpl::getV8Platform()
 
 
 }  // close namespace blpwtk2
-
 // vim: ts=4 et
 

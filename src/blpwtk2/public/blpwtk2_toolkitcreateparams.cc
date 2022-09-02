@@ -78,6 +78,7 @@ struct ToolkitCreateParamsImpl final
 
 
     // patch section: embedder ipc
+    bool d_browserV8Enabled;
 
 
     // patch section: renderer ui
@@ -123,6 +124,7 @@ ToolkitCreateParamsImpl::ToolkitCreateParamsImpl()
 
 
     // patch section: embedder ipc
+    , d_browserV8Enabled(false)
 
 
     // patch section: renderer ui
@@ -321,6 +323,10 @@ void ToolkitCreateParams::setNativeViewManipulationAsync(bool isNativeViewManipu
 
 
 // patch section: embedder ipc
+void ToolkitCreateParams::setBrowserV8Enabled(bool browserV8Enabled)
+{
+    d_impl->d_browserV8Enabled = browserV8Enabled;
+}
 
 
 // patch section: renderer ui
@@ -483,6 +489,10 @@ StringRef ToolkitCreateParams::getTempFolderPath() const
 
 
 // patch section: embedder ipc
+bool ToolkitCreateParams::browserV8Enabled() const
+{
+    return d_impl->d_browserV8Enabled;
+}
 
 
 // patch section: renderer ui

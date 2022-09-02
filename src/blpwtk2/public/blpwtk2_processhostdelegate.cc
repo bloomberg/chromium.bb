@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Bloomberg Finance L.P.
+ * Copyright (C) 2017 Bloomberg Finance L.P.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -20,39 +20,11 @@
  * IN THE SOFTWARE.
  */
 
-#ifndef INCLUDED_BLPWTK2_H
-#define INCLUDED_BLPWTK2_H
-
-#include <blpwtk2_blob.h>
-#include <blpwtk2_contextmenuitem.h>
-#include <blpwtk2_contextmenuparams.h>
-#include <blpwtk2_iatpatchfunction.h>
-#include <blpwtk2_profile.h>
-#include <blpwtk2_resourcecontext.h>
-#include <blpwtk2_resourceloader.h>
-#include <blpwtk2_string.h>
-#include <blpwtk2_stringref.h>
-#include <blpwtk2_textdirection.h>
-#include <blpwtk2_toolkit.h>
-#include <blpwtk2_toolkitcreateparams.h>
-#include <blpwtk2_toolkitfactory.h>
-#include <blpwtk2_webframe.h>
-#include <blpwtk2_webview.h>
-#include <blpwtk2_webviewdelegate.h>
-
-
-
-// patch section: screen printing
-
-
-// patch section: embedder ipc
-#include <blpwtk2_processclientdelegate.h>
 #include <blpwtk2_processhostdelegate.h>
 
 
+namespace blpwtk2 {
+ProcessHostDelegate::ProcessHostDelegate() = default;
+ProcessHostDelegate::~ProcessHostDelegate() {}
 
-#endif  // INCLUDED_BLPWTK2_H
-
-
-// vim: ts=4 et
-
+} // Close namespace blpwtk2

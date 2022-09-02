@@ -26,6 +26,8 @@
 
 // dependencies needed for SubProcessMain()
 #include <blpwtk2_contentmaindelegateimpl.h>
+#include <blpwtk2_processclientdelegate.h>
+
 #include <content/public/app/content_main.h>
 
 namespace blpwtk2 {

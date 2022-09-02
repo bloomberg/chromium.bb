@@ -27,6 +27,7 @@
 #include <blpwtk2_renderwebview.h>
 #include <blpwtk2_statics.h>
 #include <blpwtk2_stringref.h>
+#include <blpwtk2_processclientdelegate.h>
 #include <blpwtk2_webviewclientimpl.h>
 #include <blpwtk2_webviewproxy.h>
 
@@ -70,13 +71,19 @@ ProfileImpl::ProfileImpl(MainMessagePump *pump,
     : d_numWebViews(0)
     , d_processId(pid)
     , d_pump(pump)
+    , d_receiver(this)
+    , d_ipcDelegate(nullptr)
 {
     static const std::string SERVICE_NAME("content_browser");
     g_instances.insert(this);
 
     broker->GetInterface(d_hostPtr.BindNewPipeAndPassReceiver());
     DCHECK(0 != pid);
-    d_hostPtr->bindProcess(pid, launchDevToolsServer);
+
+    d_hostPtr->bindProcess(
+        pid,
+        launchDevToolsServer,
+        base::BindOnce(&ProfileImpl::onBindProcessDone, base::Unretained(this)));
 
 
     // patch section: dump diagnostics
@@ -384,6 +391,44 @@ void ProfileImpl::setPacUrl(const StringRef& url)
 
 
 // patch section: embedder ipc
+void ProfileImpl::onBindProcessDone(
+    mojom::ProcessClientRequest processClientRequest)
+{
+    mojo::PendingReceiver<mojom::ProcessClient> receiver =
+        std::move(processClientRequest);
+    d_receiver.Bind(std::move(receiver));
+}
+
+void ProfileImpl::opaqueMessageToBrowserAsync(const StringRef& msg)
+{
+    d_hostPtr->opaqueMessageToBrowserAsync(std::string(msg.data(), msg.size()));
+}
+
+String ProfileImpl::opaqueMessageToBrowserSync(const StringRef& msg)
+{
+    std::string result;
+
+    if (d_hostPtr->opaqueMessageToBrowserSync(
+                std::string(msg.data(), msg.size()), &result)) {
+
+        return String(result.data(), result.size());
+    }
+    else {
+        return String();
+    }
+}
+
+void ProfileImpl::opaqueMessageToRendererAsync(const std::string& msg)
+{
+    if (d_ipcDelegate) {
+        d_ipcDelegate->onRendererReceivedAsync(StringRef(msg.data(), msg.size()));
+    }
+}
+
+void ProfileImpl::setIPCDelegate(ProcessClientDelegate *delegate)
+{
+    d_ipcDelegate = delegate;
+}
 
 
 // patch section: web cache
