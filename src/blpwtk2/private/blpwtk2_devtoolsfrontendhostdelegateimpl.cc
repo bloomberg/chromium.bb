@@ -164,6 +164,7 @@ DevToolsFrontendHostDelegateImpl::DevToolsFrontendHostDelegateImpl(
 : WebContentsObserver(inspectorContents)
 , d_inspectedContents(inspectedContents)
 , d_inspectElementPointPending(false)
+, d_fileHelper(std::make_unique<DevToolsFileHelper>(inspectorContents, nullptr, nullptr))
 , d_weakFactory(this)
 {
 }
@@ -350,6 +351,23 @@ void DevToolsFrontendHostDelegateImpl::HandleMessageFromDevToolsFrontend(
     if (!origin || !script)
       return;
     extensions_api_[*origin + "/"] = *script;
+  } else if (*method == "save") {
+      const std::string* url = params[0].GetIfString();
+      const std::string* content = params[1].GetIfString();
+      absl::optional<bool> save_as = params[2].GetIfBool();
+      if (!url || !content || !save_as) {
+          return;
+      }
+
+      SaveToFile(*url, *content, *save_as);
+  } else if (*method == "append") {
+      const std::string* url = params[0].GetIfString();
+      const std::string* content = params[1].GetIfString();
+      if (!url || !content) {
+          return;
+      }
+
+      AppendToFile(*url, *content);
   } else {
     return;
   }
@@ -426,6 +444,37 @@ void DevToolsFrontendHostDelegateImpl::SendMessageAck(int request_id, base::Valu
                      base::Value(request_id), std::move(arg));
 }
 
+void DevToolsFrontendHostDelegateImpl::SaveToFile(const std::string& url,
+                                                  const std::string& content,
+                                                  bool save_as) {
+
+  d_fileHelper->Save(url, content, save_as,
+                     base::BindOnce(&DevToolsFrontendHostDelegateImpl::FileSavedAs,
+                                    d_weakFactory.GetWeakPtr(), url),
+                     base::BindOnce(&DevToolsFrontendHostDelegateImpl::CanceledFileSaveAs,
+                                    d_weakFactory.GetWeakPtr(), url));
+}
+
+void DevToolsFrontendHostDelegateImpl::AppendToFile(const std::string& url,
+                                                    const std::string& content) {
+  d_fileHelper->Append(url, content,
+                       base::BindOnce(&DevToolsFrontendHostDelegateImpl::AppendedTo,
+                                      d_weakFactory.GetWeakPtr(), url));
+}
+
+void DevToolsFrontendHostDelegateImpl::FileSavedAs(const std::string& url,
+                                                   const std::string& file_system_path) {
+  CallClientFunction("DevToolsAPI", "savedURL", base::Value(url),
+                      base::Value(file_system_path));
+}
+
+void DevToolsFrontendHostDelegateImpl::CanceledFileSaveAs(const std::string& url) {
+  CallClientFunction("DevToolsAPI", "canceledSaveURL", base::Value(url));
+}
+
+void DevToolsFrontendHostDelegateImpl::AppendedTo(const std::string& url) {
+  CallClientFunction("DevToolsAPI", "appendedToURL", base::Value(url));
+}
 
 }  // close namespace blpwtk2
 
