@@ -15,6 +15,12 @@ template <typename T> class sk_sp;
 
 namespace content {
 
+// Disables the default upstream behavior where the DWriteFactory is patched
+// to make GetSystemFontCollection call StubFontCollection.  When this is
+// disabled, skia will be configured to explicitly use the custom font
+// collection instead of depending on GetSystemFontCollection.
+CONTENT_EXPORT void DisableDWriteFactoryPatching();
+
 class GdiFontPatchData {
  public:
   GdiFontPatchData(const GdiFontPatchData&) = delete;
