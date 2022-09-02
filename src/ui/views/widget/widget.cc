@@ -1076,6 +1076,10 @@ void Widget::FrameTypeChanged() {
   native_widget_->FrameTypeChanged();
 }
 
+void Widget::CompositionChanged() {
+  native_widget_->CompositionChanged();
+}
+
 const ui::Compositor* Widget::GetCompositor() const {
   if (native_widget_destroyed_)
     return nullptr;

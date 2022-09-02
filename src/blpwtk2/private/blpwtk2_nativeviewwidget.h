@@ -58,6 +58,7 @@ class NativeViewWidget final : private views::WidgetDelegateView {
     void focus();
     blpwtk2::NativeView getNativeWidgetView() const;
     void setRegion(blpwtk2::NativeRegion);
+    void compositionChanged();
 
   private:
     // views::WidgetDelegate overrides
