@@ -249,6 +249,10 @@ public:
         this->setColor(color, colorSpace);
     }
 
+    /** BB LCD Background Color */
+    SkColor4f getBbLcdBackgroundColor() const { return fBbLcdBackgroundColor; }
+    void setBbLcdBackgroundColor(const SkColor4f& color, SkColorSpace* colorSpace = nullptr);
+
     /** Retrieves alpha from the color used when stroking and filling.
 
         @return  alpha ranging from zero, fully transparent, to 255, fully opaque
@@ -685,6 +689,7 @@ private:
     sk_sp<SkBlender>      fBlender;
 
     SkColor4f       fColor4f;
+    SkColor4f       fBbLcdBackgroundColor;
     SkScalar        fWidth;
     SkScalar        fMiterLimit;
     union {

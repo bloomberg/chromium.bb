@@ -738,6 +738,7 @@
 
 
         // patch section: composited-lcd-text
+        "-bb-lcd-background-color",
 
 
         // patch section: simple-overflow-clip

@@ -141,7 +141,11 @@ bool PaintChunker::IncrementDisplayItemIndex(const DisplayItemClient& client,
       if (const auto* paint_record = drawing.GetPaintRecord().get()) {
         if (paint_record->has_draw_text_ops()) {
           chunk.has_text = true;
+          // If all the text in the paint record has an opaque bb-lcd
+          // background color, then `text_known_to_be_on_opaque_background`
+          // should be true (which enables the LCD code path on the layer).
           chunk.text_known_to_be_on_opaque_background =
+              !paint_record->has_non_opaque_bb_lcd_text() ||
               chunk.rect_known_to_be_opaque.Contains(item.VisualRect());
         }
       }

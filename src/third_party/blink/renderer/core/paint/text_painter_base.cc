@@ -86,6 +86,9 @@ void TextPainterBase::UpdateGraphicsContext(
   if (mode & kTextModeFill && text_style.fill_color != context.FillColor())
     context.SetFillColor(text_style.fill_color);
 
+  if (text_style.bb_lcd_background_color != context.BbLcdBackgroundColor())
+    context.SetBbLcdBackgroundColor(text_style.bb_lcd_background_color);
+
   if (mode & kTextModeStroke) {
     if (text_style.stroke_color != context.StrokeColor())
       context.SetStrokeColor(text_style.stroke_color);
@@ -155,6 +158,7 @@ TextPaintStyle TextPainterBase::TextPaintingStyle(const Document& document,
     text_style.fill_color = Color::kBlack;
     text_style.stroke_color = Color::kBlack;
     text_style.emphasis_mark_color = Color::kBlack;
+    text_style.bb_lcd_background_color = Color::kTransparent;
     text_style.shadow = nullptr;
   } else {
     text_style.current_color =
@@ -178,6 +182,10 @@ TextPaintStyle TextPainterBase::TextPaintingStyle(const Document& document,
           TextColorForWhiteBackground(text_style.stroke_color);
       text_style.emphasis_mark_color =
           TextColorForWhiteBackground(text_style.emphasis_mark_color);
+      text_style.bb_lcd_background_color = Color::kTransparent;
+    }
+    else {
+      text_style.bb_lcd_background_color = style.BbLcdBackgroundColor();
     }
   }
 

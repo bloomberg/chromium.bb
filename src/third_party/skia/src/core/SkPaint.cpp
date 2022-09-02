@@ -44,6 +44,7 @@
 
 SkPaint::SkPaint()
     : fColor4f{0, 0, 0, 1}  // opaque black
+    , fBbLcdBackgroundColor(SkColors::kTransparent)
     , fWidth{0}
     , fMiterLimit{SkPaintDefaults_MiterLimit}
     , fBitfields{(unsigned)false,                   // fAntiAlias
@@ -79,6 +80,7 @@ bool operator==(const SkPaint& a, const SkPaint& b) {
         && EQUAL(fBlender)
         && EQUAL(fImageFilter)
         && EQUAL(fColor4f)
+        && EQUAL(fBbLcdBackgroundColor)
         && EQUAL(fWidth)
         && EQUAL(fMiterLimit)
         && EQUAL(fBitfieldsUInt)
@@ -132,6 +134,13 @@ void SkPaint::setColor(const SkColor4f& color, SkColorSpace* colorSpace) {
                                  sk_srgb_singleton(), kUnpremul_SkAlphaType};
     fColor4f = {color.fR, color.fG, color.fB, SkTPin(color.fA, 0.0f, 1.0f)};
     steps.apply(fColor4f.vec());
+}
+
+void SkPaint::setBbLcdBackgroundColor(const SkColor4f& color, SkColorSpace* colorSpace) {
+    SkColorSpaceXformSteps steps{colorSpace,          kUnpremul_SkAlphaType,
+                                 sk_srgb_singleton(), kUnpremul_SkAlphaType};
+    fBbLcdBackgroundColor = {color.fR, color.fG, color.fB, SkTPin(color.fA, 0.0f, 1.0f)};
+    steps.apply(fBbLcdBackgroundColor.vec());
 }
 
 void SkPaint::setAlphaf(float a) {
@@ -306,6 +315,7 @@ void SkPaintPriv::Flatten(const SkPaint& paint, SkWriteBuffer& buffer) {
     buffer.writeScalar(paint.getStrokeWidth());
     buffer.writeScalar(paint.getStrokeMiter());
     buffer.writeColor4f(paint.getColor4f());
+    buffer.writeColor4f(paint.getBbLcdBackgroundColor());
 
     buffer.write32(pack_v68(paint, flatFlags));
 
@@ -328,6 +338,11 @@ SkPaint SkPaintPriv::Unflatten(SkReadBuffer& buffer) {
         SkColor4f color;
         buffer.readColor4f(&color);
         paint.setColor(color, sk_srgb_singleton());
+    }
+    {
+        SkColor4f color;
+        buffer.readColor4f(&color);
+        paint.setBbLcdBackgroundColor(color, sk_srgb_singleton());
     }
 
     SkSafeRange safe;

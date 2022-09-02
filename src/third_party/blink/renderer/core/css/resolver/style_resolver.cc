@@ -1838,9 +1838,14 @@ StyleResolver::CacheSuccess StyleResolver::ApplyMatchedCache(
     if (!IsForcedColorsModeEnabled() || is_inherited_cache_hit) {
       bool non_universal_highlights =
           state.Style()->HasNonUniversalHighlightPseudoStyles();
+      StyleColor prevBgColor = state.Style()->BackgroundColor();
 
       state.Style()->CopyNonInheritedFromCached(
           *cached_matched_properties->computed_style);
+
+      if (state.Style()->BackgroundColor() != prevBgColor) {
+        state.Style()->OnBackgroundColorChanged(*state.ParentStyle());
+      }
 
       // Restore the non-universal highlight pseudo flag that was set while
       // collecting matching rules. These fields are in a raredata field group,
