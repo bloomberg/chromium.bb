@@ -2930,4 +2930,9 @@ void WebLocalFrameImpl::ResetHasScrolledFocusedEditableIntoView() {
   has_scrolled_focused_editable_node_into_rect_ = false;
 }
 
+bool WebLocalFrameImpl::IsPrintAllowed() const {
+  DCHECK(GetFrame());
+  return GetFrame()->IsPrintAllowed();
+}
+
 }  // namespace blink

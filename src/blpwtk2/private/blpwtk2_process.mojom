@@ -119,6 +119,8 @@ interface ProcessHost {
 
 
     // patch section: printing
+    setDefaultPrinter(string name);
+        // Sets the printer to use by default
 
 
     // patch section: diagnostics

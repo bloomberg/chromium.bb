@@ -115,7 +115,7 @@ content::WebContents* PrintingContextDelegate::GetWebContents() {
 }
 
 std::string PrintingContextDelegate::GetAppLocale() {
-  return g_browser_process->GetApplicationLocale();
+  return "en-US";
 }
 
 bool ShouldPrintingContextSkipSystemCalls() {
@@ -370,8 +370,9 @@ std::u16string PrintJobWorker::GetDocumentName(
 
   std::u16string document_name = SimplifyDocumentTitle(document_->name());
   if (document_name.empty()) {
+    // TODO(LEVI): Set this to what it should really be
     document_name = SimplifyDocumentTitle(
-        l10n_util::GetStringUTF16(IDS_DEFAULT_PRINT_DOCUMENT_TITLE));
+        std::u16string(u"Default Print Document Title"));
   }
   return document_name;
 }

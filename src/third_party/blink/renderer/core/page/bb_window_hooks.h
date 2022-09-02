@@ -67,6 +67,7 @@ namespace blink {
 
 
         // patch section: docprinter
+        void allowPrint(long value);
 
 
 

@@ -48,6 +48,10 @@
 
 #include <tuple>
 
+namespace printing {
+extern PrintJobManager* g_print_job_manager;
+}
+
 namespace blpwtk2 {
 
                         // -----------------------
@@ -102,10 +106,12 @@ BrowserMainRunner::BrowserMainRunner(
     display::Screen::SetScreenInstance(d_screen.get());
     d_viewsDelegate.reset(new ViewsDelegateImpl());
     content::StartBrowserThreadPool();
+    printing::g_print_job_manager = new printing::PrintJobManager();
 }
 
 BrowserMainRunner::~BrowserMainRunner()
 {
+    delete printing::g_print_job_manager;
     Statics::browserMainTaskRunner.reset();
     d_impl->Shutdown();
 }
@@ -130,4 +136,3 @@ void BrowserMainRunner::createDiscardableSharedMemoryManager()
 }  // close namespace blpwtk2
 
 // vim: ts=4 et
-

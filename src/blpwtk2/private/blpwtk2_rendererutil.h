@@ -26,6 +26,7 @@
 #include <blpwtk2_config.h>
 #include <blpwtk2_webview.h>
 #include <blpwtk2_string.h>
+#include <content/public/renderer/render_view.h>
 
 #include <third_party/blink/public/web/web_widget.h>
 
@@ -49,7 +50,8 @@ struct RendererUtil
     // patch section: screen printing
 
 
-    // patch section: print to pdf
+    // patch section: docprinter
+    static String printToPDF(content::RenderView* renderView);
 
 
 

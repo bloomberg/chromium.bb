@@ -19,6 +19,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  */
+#include <vector>
 
 #include <blpwtk2_rendererutil.h>
 #include <blpwtk2_blob.h>
@@ -29,10 +30,12 @@
 #include <content/public/browser/native_web_keyboard_event.h>
 #include <ui/events/event.h>
 
+#include <content/public/renderer/render_frame.h>
 #include <content/public/renderer/render_view.h>
 #include <third_party/blink/public/common/input/web_coalesced_input_event.h>
 #include <third_party/blink/public/web/web_view.h>
 #include <third_party/blink/public/web/web_frame.h>
+#include <third_party/blink/public/web/web_local_frame.h>
 #include <skia/ext/platform_canvas.h>
 #include <third_party/skia/include/core/SkDocument.h>
 #include <third_party/skia/include/core/SkStream.h>
@@ -41,6 +44,8 @@
 #include <ui/events/blink/web_input_event.h>
 #include <ui/aura/window.h>
 #include <ui/aura/client/screen_position_client.h>
+#include <components/printing/renderer/print_render_frame_helper.h>
+#include <v8.h>
 
 namespace blpwtk2 {
 
@@ -129,7 +134,7 @@ void RendererUtil::handleInputEvents(blink::WebWidget *widget, const WebView::In
         case WM_MBUTTONUP:
         case WM_RBUTTONUP: {
             ui::MouseEvent uiMouseEvent(msg);
-            blink::WebMouseEvent blinkMouseEvent = 
+            blink::WebMouseEvent blinkMouseEvent =
                             ui::MakeWebMouseEvent(uiMouseEvent);
             widget->HandleInputEvent(blink::WebCoalescedInputEvent(blinkMouseEvent, latency_info));
         } break;
@@ -149,7 +154,28 @@ void RendererUtil::handleInputEvents(blink::WebWidget *widget, const WebView::In
 // patch section: screen printing
 
 
-// patch section: print to pdf
+// patch section: docprinter
+String RendererUtil::printToPDF(content::RenderView* renderView)
+{
+    blpwtk2::String returnVal;
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    v8::HandleScope handleScope(isolate);
+
+    auto* main_frame = renderView->GetWebView()->MainFrame();
+    for (auto* frame = main_frame; frame; frame = frame->TraverseNext()) {
+      if (auto* local_frame = frame->ToWebLocalFrame()) {
+        if (local_frame->IsPrintAllowed()) {
+          std::vector<char> buffer = 
+            printing::PrintRenderFrameHelper::Get(content::RenderFrame::FromWebFrame(main_frame->ToWebLocalFrame()))
+                                              ->PrintToPDF(local_frame);
+          returnVal.assign(buffer.data(), buffer.size());
+          break;
+        }
+      }
+    }
+
+    return returnVal;
+}
 
 
 

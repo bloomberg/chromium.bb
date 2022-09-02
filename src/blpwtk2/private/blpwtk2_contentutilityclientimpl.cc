@@ -35,6 +35,13 @@ ContentUtilityClientImpl::~ContentUtilityClientImpl() {}
 void ContentUtilityClientImpl::UtilityThreadStarted() {
   chrome_utility_client_->UtilityThreadStarted();
 }
+
+bool ContentUtilityClientImpl::HandleServiceRequestDeprecated(
+    const std::string& service_name,
+    mojo::ScopedMessagePipeHandle service_pipe) {
+    return chrome_utility_client_->HandleServiceRequestDeprecated(service_name, std::move(service_pipe));
+}
+
 void ContentUtilityClientImpl::RegisterNetworkBinders(
     service_manager::BinderRegistry* registry) {
   chrome_utility_client_->RegisterNetworkBinders(registry);

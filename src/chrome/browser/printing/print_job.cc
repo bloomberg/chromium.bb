@@ -20,6 +20,7 @@
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/printing/print_job_worker.h"
 #include "chrome/browser/printing/printer_query.h"
+#include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "printing/mojom/print.mojom.h"
@@ -96,7 +97,7 @@ PrefService* GetPrefsForWebContents(content::WebContents* web_contents) {
   // pointer checks to avoid crashing.
   content::BrowserContext* context =
       web_contents ? web_contents->GetBrowserContext() : nullptr;
-  return context ? Profile::FromBrowserContext(context)->GetPrefs() : nullptr;
+  return context ? user_prefs::UserPrefs::Get(context) : nullptr;
 }
 
 #endif  // BUILDFLAG(IS_WIN)

@@ -189,6 +189,8 @@ class WebLocalFrame : public WebFrame {
 
   virtual WebLocalFrameClient* Client() const = 0;
 
+  virtual bool IsPrintAllowed() const = 0;
+
   // Initialization ---------------------------------------------------------
 
   virtual void SetAutofillClient(WebAutofillClient*) = 0;

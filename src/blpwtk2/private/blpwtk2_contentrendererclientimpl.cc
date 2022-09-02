@@ -53,6 +53,8 @@
 #include <third_party/skia/include/ports/SkTypeface_win.h>
 #include <ui/gfx/win/direct_write.h>
 
+#include <components/printing/renderer/print_render_frame_helper.h>
+
 #include <sstream>
 
 namespace blpwtk2 {
@@ -90,6 +92,15 @@ void ContentRendererClientImpl::RenderFrameCreated(
 
 
     // patch section: printing
+
+    // Create an instance of PrintWebViewHelper.  This is an observer that is
+    // registered with the RenderFrame.  The RenderFrameImpl's destructor
+    // will call OnDestruct() on all observers, which will delete this
+    // instance of PrintWebViewHelper.
+    new printing::PrintRenderFrameHelper(
+            render_frame,
+            std::unique_ptr<printing::PrintRenderFrameHelper::Delegate>(
+                printing::PrintRenderFrameHelper::CreateEmptyDelegate()));
 
 
 

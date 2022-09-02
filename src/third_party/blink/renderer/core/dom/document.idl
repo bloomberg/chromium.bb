@@ -82,6 +82,11 @@ typedef (HTMLScriptElement or SVGScriptElement) HTMLOrSVGScriptElement;
 
     // resource metadata management
 
+    // Bloomberg-specific extensions
+    attribute DOMString bbHeaderText;
+    attribute DOMString bbFooterText;
+    attribute boolean bbPrintPageNumbers;
+
     [PutForwards=href, LegacyUnforgeable] readonly attribute Location? location;
     [RaisesException=Setter] attribute USVString domain;
     readonly attribute USVString referrer;
