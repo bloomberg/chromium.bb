@@ -280,6 +280,11 @@ class ExtensionPrefs : public KeyedService {
   GURL GetPrefAsGURL(const PrefMap& pref) const;
   const base::DictionaryValue* GetPrefAsDictionary(const PrefMap& pref) const;
 
+  // Returns a wrapper that allows to update an ExtensionPref with a
+  // PrefType::kDictionary.
+  std::unique_ptr<prefs::ScopedDictionaryPrefUpdate> CreatePrefUpdate(
+      const PrefMap& pref);
+
   // Increments/decrements an ExtensionPref with a PrefType::kInteger.
   void IncrementPref(const PrefMap& pref);
   void DecrementPref(const PrefMap& pref);
@@ -739,11 +744,6 @@ class ExtensionPrefs : public KeyedService {
   // TODO(devlin): Remove this once clients are migrated over, around M84.
   void MigrateToNewExternalUninstallPref();
 
-  // Migrates kPrefBlocklist with kPrefBlocklistState.
-  // TODO(crbug.com/1232243): Remove this once clients are migrated over, around
-  // M97.
-  void MigrateOldBlocklistPrefs();
-
   // Returns true if the given component extension should be installed, even
   // though it has been obsoleted. Installing it allows us to ensure it is
   // cleaned/deleted up properly. After that cleanup is done, this will return
@@ -803,13 +803,8 @@ class ExtensionPrefs : public KeyedService {
   // |extension| dictionary.
   std::unique_ptr<ExtensionInfo> GetInstalledInfoHelper(
       const std::string& extension_id,
-      const base::DictionaryValue* extension,
+      const base::Value* extension,
       bool include_component_extensions) const;
-
-  // Deprecated kPrefBlocklistAcknowledged kPrefBlocklist. Use
-  // kPrefBlocklistState instead.
-  // TODO(crbug.com/1193695): Remove kPrefBlocklistAcknowledged kPrefBlocklist
-  // once all clients are updated.
 
   // Read the boolean preference entry and return true if the preference exists
   // and the preference's value is true; false otherwise.

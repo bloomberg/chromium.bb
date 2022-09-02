@@ -9,6 +9,7 @@
 #include <string>
 #include <utility>
 
+#include "ash/app_list/grid_index.h"
 #include "ash/app_list/model/app_icon_load_helper.h"
 #include "ash/app_list/model/app_list_item_observer.h"
 #include "ash/ash_export.h"
@@ -118,6 +119,13 @@ class ASH_EXPORT AppListItemView : public views::Button,
   AppListItemView(const AppListItemView&) = delete;
   AppListItemView& operator=(const AppListItemView&) = delete;
   ~AppListItemView() override;
+
+  // Initializes icon loader. Should be called after the view has been added to
+  // the apps grid view model - otherwise, if icon gets updated synchronously,
+  // it may update the item metadata before the view gets added to the view
+  // model. If the metadata update causes a position change, attempts to move
+  // the item in the view model could crash.
+  void InitializeIconLoader();
 
   // Sets the app list config that should be used to size the app list icon, and
   // margins within the app list item view. The owner should ensure the
@@ -230,10 +238,23 @@ class ASH_EXPORT AppListItemView : public views::Button,
   // Sets the callback which will run after the context menu is shown.
   void SetContextMenuShownCallbackForTest(base::RepeatingClosure closure);
 
+  // Returns the bounds that would be used for the title if there was no blue
+  // dot for new install.
+  gfx::Rect GetDefaultTitleBoundsForTest();
+
+  // Sets the most recent grid index for this item view. Also sets
+  // `has_pending_row_change_` based on whether the grid index change is
+  // considered a row change for the purposes of animating item views between
+  // rows.
+  void SetMostRecentGridIndex(GridIndex new_grid_index, int columns);
+
+  bool has_pending_row_change() { return has_pending_row_change_; }
+  void reset_has_pending_row_change() { has_pending_row_change_ = false; }
+
  private:
-  friend class AppListItemViewProductivityLauncherTest;
+  friend class AppListItemViewTest;
+  friend class AppListMainViewTest;
   friend class test::AppsGridViewTest;
-  friend class test::AppListMainViewTest;
 
   class IconImageView;
   class AppNotificationIndicatorView;
@@ -383,7 +404,8 @@ class ASH_EXPORT AppListItemView : public views::Button,
   IconImageView* icon_ = nullptr;  // Strongly typed child view.
   views::Label* title_ = nullptr;  // Strongly typed child view.
 
-  // Draws a dot next to the title for newly installed apps.
+  // Draws a dot next to the title for newly installed apps. Only exists when
+  // ProductivityLauncher is enabled.
   views::View* new_install_dot_ = nullptr;
 
   // The context menu model adapter used for app item view.
@@ -448,6 +470,13 @@ class ASH_EXPORT AppListItemView : public views::Button,
 
   // Called when the context menu is shown.
   base::RepeatingClosure context_menu_shown_callback_;
+
+  // The most recent location of this item within the app grid.
+  GridIndex most_recent_grid_index_;
+
+  // Whether the last grid index update was a change in position between rows.
+  // Used to determine whether the animation between rows should be used.
+  bool has_pending_row_change_ = false;
 
   base::WeakPtrFactory<AppListItemView> weak_ptr_factory_{this};
 };

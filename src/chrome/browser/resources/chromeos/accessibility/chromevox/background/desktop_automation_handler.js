@@ -5,17 +5,16 @@
 /**
  * @fileoverview Handles automation from a desktop automation node.
  */
+import {AutoScrollHandler} from '/chromevox/background/auto_scroll_handler.js';
+import {AutomationObjectConstructorInstaller} from '/chromevox/background/automation_object_constructor_installer.js';
+import {ChromeVoxState} from '/chromevox/background/chromevox_state.js';
+import {DesktopAutomationInterface} from '/chromevox/background/desktop_automation_interface.js';
+import {TextEditHandler} from '/chromevox/background/editing/editing.js';
+import {EventSourceState} from '/chromevox/background/event_source.js';
+import {Output} from '/chromevox/background/output/output.js';
+import {ChromeVoxEvent, CustomAutomationEvent} from '/chromevox/common/custom_automation_event.js';
+import {EventSourceType} from '/chromevox/common/event_source_type.js';
 
-goog.provide('DesktopAutomationHandler');
-
-goog.require('AutomationObjectConstructorInstaller');
-goog.require('BaseAutomationHandler');
-goog.require('ChromeVoxState');
-goog.require('CommandHandler');
-goog.require('CustomAutomationEvent');
-goog.require('editing.TextEditHandler');
-
-goog.scope(function() {
 const ActionType = chrome.automation.ActionType;
 const AutomationNode = chrome.automation.AutomationNode;
 const Dir = constants.Dir;
@@ -23,16 +22,17 @@ const EventType = chrome.automation.EventType;
 const RoleType = chrome.automation.RoleType;
 const StateType = chrome.automation.StateType;
 
-DesktopAutomationHandler = class extends BaseAutomationHandler {
+export class DesktopAutomationHandler extends DesktopAutomationInterface {
   /**
    * @param {!AutomationNode} node
+   * @private
    */
   constructor(node) {
     super(node);
 
     /**
      * The object that speaks changes to an editable text field.
-     * @type {editing.TextEditHandler}
+     * @type {TextEditHandler}
      * @private
      */
     this.textEditHandler_ = null;
@@ -81,6 +81,14 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
     /** @private {number} */
     this.totalPages_ = -1;
 
+    this.init_(node);
+  }
+
+  /**
+   * @param {!AutomationNode} node
+   * @private
+   */
+  async init_(node) {
     this.addListener_(EventType.ALERT, this.onAlert);
     this.addListener_(EventType.BLUR, this.onBlur);
     this.addListener_(
@@ -94,7 +102,7 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
 
     this.addListener_(EventType.LOAD_COMPLETE, this.onLoadComplete);
     this.addListener_(EventType.FOCUS_AFTER_MENU_CLOSE, this.onMenuEnd);
-    this.addListener_(EventType.MENU_START, (event) => {
+    this.addListener_(EventType.MENU_START, event => {
       Output.forceModeForNextSpeechUtterance(QueueMode.CATEGORY_FLUSH);
       this.onEventDefault(event);
     });
@@ -116,21 +124,18 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
         EventType.VALUE_IN_TEXT_FIELD_CHANGED, this.onEditableChanged_);
     this.addListener_(EventType.VALUE_CHANGED, this.onValueChanged);
 
-    AutomationObjectConstructorInstaller.init(node, function() {
-      chrome.automation.getFocus((function(focus) {
-                                   if (focus) {
-                                     const event = new CustomAutomationEvent(
-                                         EventType.FOCUS, focus, {
-                                           eventFrom: 'page',
-                                           eventFromAction: ActionType.FOCUS
-                                         });
-                                     this.onFocus(event);
-                                   }
-                                 }).bind(this));
-    }.bind(this));
+    await AutomationObjectConstructorInstaller.init(node);
+    const focus =
+        await new Promise(resolve => chrome.automation.getFocus(resolve));
+    if (focus) {
+      const event = new CustomAutomationEvent(
+          EventType.FOCUS, focus,
+          {eventFrom: 'page', eventFromAction: ActionType.FOCUS});
+      this.onFocus(event);
+    }
   }
 
-  /** @type {editing.TextEditHandler} */
+  /** @type {TextEditHandler} */
   get textEditHandler() {
     return this.textEditHandler_;
   }
@@ -310,6 +315,10 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
       return;
     }
 
+    if (!AutoScrollHandler.getInstance().onFocusEventNavigation(node)) {
+      return;
+    }
+
     // Update the focused root url, which gets used as part of focus recovery.
     this.lastRootUrl_ = node.root.docUrl || '';
 
@@ -413,7 +422,7 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
         ChromeVoxState.instance.setCurrentRange(
             cursors.Range.fromNode(evt.target));
         ChromeVox.tts.stop();
-        CommandHandler.onCommand('readFromHere');
+        CommandHandlerInterface.instance.onCommand('readFromHere');
         return;
       }
 
@@ -424,6 +433,7 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
   /**
    * Sets whether document selections from actions should be ignored.
    * @param {boolean} val
+   * @override
    */
   ignoreDocumentSelectionFromAction(val) {
     this.shouldIgnoreDocumentSelectionFromAction_ = val;
@@ -507,7 +517,10 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
               .deepEquivalent);
 
       // Sync ChromeVox range with selection.
-      ChromeVoxState.instance.setCurrentRange(selectedRange);
+      if (!ChromeVoxState.instance.isReadingContinuously) {
+        ChromeVoxState.instance.setCurrentRange(
+            selectedRange, true /* from editing */);
+      }
     }
     this.textEditHandler_.onEvent(evt);
   }
@@ -531,43 +544,51 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
       return;
     }
 
-    const t = evt.target;
-    const fromDesktop = t.root.role === RoleType.DESKTOP;
+    const target = evt.target;
+    const fromDesktop = target.root.role === RoleType.DESKTOP;
     const onDesktop =
         ChromeVoxState.instance.currentRange.start.node.root.role ===
         RoleType.DESKTOP;
-    if (fromDesktop && !onDesktop && t.role !== RoleType.SLIDER) {
+    const isSlider = target.role === RoleType.SLIDER;
+
+    // TODO(accessibility): get rid of callers who use value changes on list
+    // boxes.
+    const isListBox = target.role === RoleType.LIST_BOX;
+    if (fromDesktop && !onDesktop && !isSlider && !isListBox) {
       // Only respond to value changes from the desktop if it's coming from a
       // slider e.g. the volume slider. Do this to avoid responding to frequent
       // updates from UI e.g. download progress bars.
       return;
     }
-    if (t.state.focused || fromDesktop ||
-        AutomationUtil.isDescendantOf(
-            ChromeVoxState.instance.currentRange.start.node, t)) {
-      if (new Date() - this.lastValueChanged_ <=
-          DesktopAutomationHandler.MIN_VALUE_CHANGE_DELAY_MS) {
-        return;
-      }
 
-      this.lastValueChanged_ = new Date();
-
-      const output = new Output();
-      output.withoutFocusRing();
-
-      if (fromDesktop &&
-          (!this.lastValueTarget_ || this.lastValueTarget_ !== t)) {
-        const range = cursors.Range.fromNode(t);
-        output.withRichSpeechAndBraille(range, range, OutputEventType.NAVIGATE);
-        this.lastValueTarget_ = t;
-      } else {
-        output.format(
-            '$if($value, $value, $if($valueForRange, $valueForRange))', t);
-      }
-
-      Output.forceModeForNextSpeechUtterance(QueueMode.INTERJECT);
-      output.go();
+    if (!target.state.focused && (!fromDesktop || (!isSlider && !isListBox)) &&
+        !AutomationUtil.isDescendantOf(
+            ChromeVoxState.instance.currentRange.start.node, target)) {
+      return;
     }
+
+    if (new Date() - this.lastValueChanged_ <=
+        DesktopAutomationHandler.MIN_VALUE_CHANGE_DELAY_MS) {
+      return;
+    }
+
+    this.lastValueChanged_ = new Date();
+
+    const output = new Output();
+    output.withoutFocusRing();
+
+    if (fromDesktop &&
+        (!this.lastValueTarget_ || this.lastValueTarget_ !== target)) {
+      const range = cursors.Range.fromNode(target);
+      output.withRichSpeechAndBraille(range, range, OutputEventType.NAVIGATE);
+      this.lastValueTarget_ = target;
+    } else {
+      output.format(
+          '$if($value, $value, $if($valueForRange, $valueForRange))', target);
+    }
+
+    Output.forceModeForNextSpeechUtterance(QueueMode.INTERJECT);
+    output.go();
   }
 
   /**
@@ -618,23 +639,28 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
     // editable leading to braille output routing to the editable.
     this.textEditHandler_ = null;
 
-    chrome.automation.getFocus((focus) => {
+    chrome.automation.getFocus(focus => {
       const target = evt.target;
 
       // Desktop tabs get "selection" when there's a focused webview during
-      // tab switching. Read it, but don't steal focus which is on the
-      // omnibox. We have to resort to this check to get tab switching read out
-      // because on switching to a new tab, focus actually remains on the *same*
-      // omnibox.
-      const currentRange = ChromeVoxState.instance.currentRange;
+      // tab switching.
       if (target.role === RoleType.TAB &&
-          target.root.role === RoleType.DESKTOP && currentRange &&
-          currentRange.start && currentRange.start.node &&
-          currentRange.start.node.className === 'OmniboxViewViews') {
-        const range = cursors.Range.fromNode(target);
-        new Output()
-            .withRichSpeechAndBraille(range, range, OutputEventType.NAVIGATE)
-            .go();
+          target.root.role === RoleType.DESKTOP) {
+        // Read it only if focus is on the
+        // omnibox. We have to resort to this check to get tab switching read
+        // out because on switching to a new tab, focus actually remains on the
+        // *same* omnibox.
+        const currentRange = ChromeVoxState.instance.currentRange;
+        if (currentRange && currentRange.start && currentRange.start.node &&
+            currentRange.start.node.className === 'OmniboxViewViews') {
+          const range = cursors.Range.fromNode(target);
+          new Output()
+              .withRichSpeechAndBraille(range, range, OutputEventType.NAVIGATE)
+              .go();
+        }
+
+        // This also suppresses tab selection output when ChromeVox is not on
+        // the omnibox.
         return;
       }
 
@@ -665,7 +691,19 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
           walker = walker.parent;
         }
 
-        override = !!walker || override;
+        override = Boolean(walker) || override;
+      }
+
+      // Autofill popup menu items are always announced on selection events,
+      // independent of focus.
+      // The AutofillPopupSeparatorView is intentionally omitted because it
+      // cannot be focused.
+      if (target.className === 'AutofillPopupSuggestionView' ||
+          target.className === 'PasswordPopupSuggestionView' ||
+          target.className === 'AutofillPopupFooterView' ||
+          target.className === 'AutofillPopupWarningView' ||
+          target.className === 'AutofillPopupBaseView') {
+        override = true;
       }
 
       // The popup view associated with a datalist element does not descend
@@ -764,15 +802,15 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
          voxTarget.root.role !== RoleType.DESKTOP &&
          !AutomationUtil.isDescendantOf(target, voxTarget) &&
          !AutomationUtil.getAncestors(voxTarget.root)
-              .find((n) => n.role === RoleType.KEYBOARD))) {
+              .find(n => n.role === RoleType.KEYBOARD))) {
       return false;
     }
 
     if (!this.textEditHandler_ || this.textEditHandler_.node !== target) {
-      this.textEditHandler_ = editing.TextEditHandler.createForNode(target);
+      this.textEditHandler_ = TextEditHandler.createForNode(target);
     }
 
-    return !!this.textEditHandler_;
+    return Boolean(this.textEditHandler_);
   }
 
   /**
@@ -832,19 +870,17 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
         .go();
   }
 
-  /**
-   * Initializes global state for DesktopAutomationHandler.
-   */
-  static init() {
-    if (DesktopAutomationHandler.instance) {
-      throw new Error('DesktopAutomationHandler.instance already exists.');
+  /** Initializes global state for DesktopAutomationHandler. */
+  static async init() {
+    if (DesktopAutomationInterface.instance) {
+      throw new Error('DesktopAutomationInterface.instance already exists.');
     }
 
-    chrome.automation.getDesktop(function(desktop) {
-      DesktopAutomationHandler.instance = new DesktopAutomationHandler(desktop);
-    });
+    const desktop =
+        await new Promise(resolve => chrome.automation.getDesktop(resolve));
+    DesktopAutomationInterface.instance = new DesktopAutomationHandler(desktop);
   }
-};
+}
 
 /**
  * Time to wait until processing more value changed events.
@@ -871,16 +907,3 @@ DesktopAutomationHandler.LIVE_REGION_DELAY_MS = 100;
  * @const {number}
  */
 DesktopAutomationHandler.ATTRIBUTE_DELAY_MS = 1500;
-
-/**
- * Controls announcement of non-user-initiated events.
- * @type {boolean}
- */
-DesktopAutomationHandler.announceActions = false;
-
-/**
- * Global instance.
- * @type {DesktopAutomationHandler}
- */
-DesktopAutomationHandler.instance;
-});  // goog.scope

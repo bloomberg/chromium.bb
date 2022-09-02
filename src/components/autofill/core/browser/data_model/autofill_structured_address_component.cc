@@ -162,6 +162,22 @@ bool AddressComponent::IsValueForTypeValid(const std::string& field_type_name,
   return false;
 }
 
+std::u16string AddressComponent::GetCommonCountryForMerge(
+    const AddressComponent& other) const {
+  const std::u16string country_a =
+      GetRootNode().GetValueForType(ADDRESS_HOME_COUNTRY);
+  const std::u16string country_b =
+      other.GetRootNode().GetValueForType(ADDRESS_HOME_COUNTRY);
+  if (country_a.empty()) {
+    return country_b;
+  }
+  if (country_b.empty()) {
+    return country_a;
+  }
+  return base::EqualsCaseInsensitiveASCII(country_a, country_b) ? country_a
+                                                                : u"";
+}
+
 bool AddressComponent::IsValueForTypeValid(ServerFieldType field_type,
                                            bool wipe_if_not) {
   return IsValueForTypeValid(AutofillType::ServerFieldTypeToString(field_type),
@@ -471,20 +487,19 @@ bool AddressComponent::ParseValueAndAssignSubcomponentsByRegularExpressions() {
 bool AddressComponent::ParseValueAndAssignSubcomponentsByRegularExpression(
     const std::u16string& value,
     const RE2* parse_expression) {
-  std::map<std::string, std::string> result_map;
-  if (ParseValueByRegularExpression(base::UTF16ToUTF8(value), parse_expression,
-                                    &result_map)) {
+  absl::optional<base::flat_map<std::string, std::string>> result_map =
+      ParseValueByRegularExpression(base::UTF16ToUTF8(value), parse_expression);
+  if (result_map) {
     // Parsing was successful and results from the result map can be written
     // to the structure.
-    for (const auto& result_entry : result_map) {
-      const std::string& field_type = result_entry.first;
-      std::u16string field_value = base::UTF8ToUTF16(result_entry.second);
+    for (const auto& [field_type, field_value] : *result_map) {
       // Do not reassign the value of this node.
       if (field_type == GetStorageTypeName()) {
         continue;
       }
-      bool success = SetValueForTypeIfPossible(field_type, field_value,
-                                               VerificationStatus::kParsed);
+      bool success =
+          SetValueForTypeIfPossible(field_type, base::UTF8ToUTF16(field_value),
+                                    VerificationStatus::kParsed);
       // Setting the value should always work unless the regular expression is
       // invalid.
       DCHECK(success);
@@ -793,8 +808,8 @@ const std::vector<AddressToken> AddressComponent::GetSortedTokens() const {
 
 bool AddressComponent::IsMergeableWithComponent(
     const AddressComponent& newer_component) const {
-  const std::u16string value = ValueForComparison();
-  const std::u16string value_newer = newer_component.ValueForComparison();
+  const std::u16string value = ValueForComparison(newer_component);
+  const std::u16string value_newer = newer_component.ValueForComparison(*this);
 
   // If both components are the same, there is nothing to do.
   if (SameAs(newer_component))
@@ -876,8 +891,8 @@ bool AddressComponent::MergeWithComponent(
     bool newer_was_more_recently_used) {
   // If both components are the same, there is nothing to do.
 
-  const std::u16string value = ValueForComparison();
-  const std::u16string value_newer = newer_component.ValueForComparison();
+  const std::u16string value = ValueForComparison(newer_component);
+  const std::u16string value_newer = newer_component.ValueForComparison(*this);
   if (SameAs(newer_component))
     return true;
 
@@ -1050,8 +1065,8 @@ bool AddressComponent::HasNewerValuePrecendenceInMerging(
 bool AddressComponent::MergeTokenEquivalentComponent(
     const AddressComponent& newer_component) {
   if (!AreSortedTokensEqual(
-          TokenizeValue(ValueForComparison()),
-          TokenizeValue(newer_component.ValueForComparison()))) {
+          TokenizeValue(ValueForComparison(newer_component)),
+          TokenizeValue(newer_component.ValueForComparison(*this)))) {
     return false;
   }
 
@@ -1287,7 +1302,8 @@ std::u16string AddressComponent::NormalizedValue() const {
   return NormalizeValue(GetValue());
 }
 
-std::u16string AddressComponent::ValueForComparison() const {
+std::u16string AddressComponent::ValueForComparison(
+    const AddressComponent& other) const {
   return NormalizedValue();
 }
 

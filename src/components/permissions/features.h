@@ -23,6 +23,9 @@ COMPONENT_EXPORT(PERMISSIONS_COMMON)
 extern const base::Feature kBlockRepeatedNotificationPermissionPrompts;
 
 COMPONENT_EXPORT(PERMISSIONS_COMMON)
+extern const base::Feature kNotificationInteractionHistory;
+
+COMPONENT_EXPORT(PERMISSIONS_COMMON)
 extern const base::Feature kOneTimeGeolocationPermission;
 
 COMPONENT_EXPORT(PERMISSIONS_COMMON)
@@ -44,15 +47,22 @@ COMPONENT_EXPORT(PERMISSIONS_COMMON)
 extern const base::Feature kPermissionChipRequestTypeSensitive;
 
 COMPONENT_EXPORT(PERMISSIONS_COMMON)
-extern const base::Feature kPermissionChipIsProminentStyle;
-
-COMPONENT_EXPORT(PERMISSIONS_COMMON)
 extern const base::Feature kPermissionPredictionServiceUseUrlOverride;
 
-#if defined(OS_ANDROID)
 COMPONENT_EXPORT(PERMISSIONS_COMMON)
-extern const base::Feature kRevertDSEAutomaticPermissions;
-#endif  // defined(OS_ANDROID)
+extern const base::Feature kPermissionOnDeviceNotificationPredictions;
+
+#if BUILDFLAG(IS_ANDROID)
+
+COMPONENT_EXPORT(PERMISSIONS_COMMON)
+extern const base::Feature kBlockNotificationPromptsIfDisabledOnAppLevel;
+
+#else
+
+COMPONENT_EXPORT(PERMISSIONS_COMMON)
+extern const base::Feature kPermissionsPostPromptSurvey;
+
+#endif  // BUILDFLAG(IS_ANDROID)
 
 }  // namespace features
 namespace feature_params {
@@ -66,6 +76,24 @@ extern const base::FeatureParam<std::string>
 
 COMPONENT_EXPORT(PERMISSIONS_COMMON)
 extern const base::FeatureParam<bool> kPermissionPredictionServiceUseJson;
+
+COMPONENT_EXPORT(PERMISSIONS_COMMON)
+extern const base::FeatureParam<double>
+    kPermissionOnDeviceNotificationPredictionsHoldbackChance;
+
+#if !BUILDFLAG(IS_ANDROID)
+COMPONENT_EXPORT(PERMISSIONS_COMMON)
+extern const base::FeatureParam<std::string>
+    kPermissionsPostPromptSurveyTriggerId;
+
+COMPONENT_EXPORT(PERMISSIONS_COMMON)
+extern const base::FeatureParam<std::string>
+    kPermissionsPostPromptSurveyRequestTypeFilter;
+
+COMPONENT_EXPORT(PERMISSIONS_COMMON)
+extern const base::FeatureParam<std::string>
+    kPermissionsPostPromptSurveyActionFilter;
+#endif
 
 }  // namespace feature_params
 }  // namespace permissions

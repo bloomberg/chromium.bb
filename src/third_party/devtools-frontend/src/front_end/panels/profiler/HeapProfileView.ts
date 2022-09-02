@@ -160,7 +160,7 @@ export class HeapProfileView extends ProfileView implements UI.SearchableView.Se
       this.timelineOverview.start();
 
       this.profileType.addEventListener(SamplingHeapProfileType.Events.StatsUpdate, this.onStatsUpdate, this);
-      this.profileType.once(ProfileEvents.ProfileComplete).then(() => {
+      void this.profileType.once(ProfileEvents.ProfileComplete).then(() => {
         this.profileType.removeEventListener(SamplingHeapProfileType.Events.StatsUpdate, this.onStatsUpdate, this);
         this.timelineOverview.stop();
         this.timelineOverview.updateGrid();
@@ -255,7 +255,7 @@ export class SamplingHeapProfileTypeBase extends
   }
 
   profileBeingRecorded(): SamplingHeapProfileHeader|null {
-    return /** @type {?SamplingHeapProfileHeader} */ super.profileBeingRecorded() as SamplingHeapProfileHeader | null;
+    return super.profileBeingRecorded() as SamplingHeapProfileHeader | null;
   }
 
   typeName(): string {
@@ -272,7 +272,7 @@ export class SamplingHeapProfileTypeBase extends
 
   buttonClicked(): boolean {
     if (this.recording) {
-      this.stopRecordingProfile();
+      void this.stopRecordingProfile();
     } else {
       this.startRecordingProfile();
     }
@@ -333,7 +333,7 @@ export class SamplingHeapProfileTypeBase extends
 
   profileBeingRecordedRemoved(): void {
     this.clearedDuringRecording = true;
-    this.stopRecordingProfile();
+    void this.stopRecordingProfile();
   }
 
   startSampling(): void {
@@ -388,10 +388,10 @@ export class SamplingHeapProfileType extends SamplingHeapProfileTypeBase {
       return;
     }
 
-    heapProfilerModel.startSampling();
+    void heapProfilerModel.startSampling();
     if (Root.Runtime.experiments.isEnabled('samplingHeapProfilerTimeline')) {
       this.updateTimer = window.setTimeout(() => {
-        this.updateStats();
+        void this.updateStats();
       }, this.updateIntervalMs);
     }
   }
@@ -433,7 +433,7 @@ export class SamplingHeapProfileType extends SamplingHeapProfileTypeBase {
     }
     this.dispatchEventToListeners(SamplingHeapProfileType.Events.StatsUpdate, profile);
     this.updateTimer = window.setTimeout(() => {
-      this.updateStats();
+      void this.updateStats();
     }, this.updateIntervalMs);
   }
 
@@ -620,9 +620,7 @@ export class NodeFormatter implements Formatter {
     const target = heapProfilerModel ? heapProfilerModel.target() : null;
     const options = {
       className: 'profile-node-file',
-      columnNumber: undefined,
       inlineFrameIndex: 0,
-      tabStop: undefined,
     };
     return this.profileView.linkifier().maybeLinkifyConsoleCallFrame(target, node.profileNode.callFrame, options);
   }

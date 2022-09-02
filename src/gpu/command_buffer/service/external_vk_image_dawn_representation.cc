@@ -4,7 +4,7 @@
 
 #include "gpu/command_buffer/service/external_vk_image_dawn_representation.h"
 
-#include <dawn_native/VulkanBackend.h>
+#include <dawn/native/VulkanBackend.h>
 
 #include <utility>
 #include <vector>
@@ -25,7 +25,7 @@ ExternalVkImageDawnRepresentation::ExternalVkImageDawnRepresentation(
       device_(device),
       wgpu_format_(wgpu_format),
       memory_fd_(std::move(memory_fd)),
-      dawn_procs_(dawn_native::GetProcs()) {
+      dawn_procs_(dawn::native::GetProcs()) {
   DCHECK(device_);
 
   // Keep a reference to the device so that it stays valid (it might become
@@ -55,15 +55,16 @@ WGPUTexture ExternalVkImageDawnRepresentation::BeginAccess(
   texture_descriptor.mipLevelCount = 1;
   texture_descriptor.sampleCount = 1;
 
-  // We need to have an internal usage of CopySrc in order to use
-  // CopyTextureToTextureInternal.
+  // We need to have internal usages of CopySrc for copies and
+  // RenderAttachment for clears.
   WGPUDawnTextureInternalUsageDescriptor internalDesc = {};
   internalDesc.chain.sType = WGPUSType_DawnTextureInternalUsageDescriptor;
-  internalDesc.internalUsage = WGPUTextureUsage_CopySrc;
+  internalDesc.internalUsage =
+      WGPUTextureUsage_CopySrc | WGPUTextureUsage_RenderAttachment;
   texture_descriptor.nextInChain =
       reinterpret_cast<WGPUChainedStruct*>(&internalDesc);
 
-  dawn_native::vulkan::ExternalImageDescriptorOpaqueFD descriptor = {};
+  dawn::native::vulkan::ExternalImageDescriptorOpaqueFD descriptor = {};
   descriptor.cTextureDescriptor = &texture_descriptor;
   descriptor.isInitialized = IsCleared();
   descriptor.allocationSize = backing_impl()->image()->device_size();
@@ -89,7 +90,7 @@ WGPUTexture ExternalVkImageDawnRepresentation::BeginAccess(
         external_semaphore.handle().TakeHandle().release());
   }
 
-  texture_ = dawn_native::vulkan::WrapVulkanImage(device_, &descriptor);
+  texture_ = dawn::native::vulkan::WrapVulkanImage(device_, &descriptor);
   return texture_;
 }
 
@@ -99,8 +100,8 @@ void ExternalVkImageDawnRepresentation::EndAccess() {
   }
 
   // Grab the signal semaphore from dawn
-  dawn_native::vulkan::ExternalImageExportInfoOpaqueFD export_info;
-  if (!dawn_native::vulkan::ExportVulkanImage(
+  dawn::native::vulkan::ExternalImageExportInfoOpaqueFD export_info;
+  if (!dawn::native::vulkan::ExportVulkanImage(
           texture_, VK_IMAGE_LAYOUT_UNDEFINED, &export_info)) {
     DLOG(ERROR) << "Failed to export Dawn Vulkan image.";
   } else {

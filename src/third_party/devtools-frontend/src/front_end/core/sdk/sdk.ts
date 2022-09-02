@@ -24,6 +24,7 @@ import * as CPUProfilerModel from './CPUProfilerModel.js';
 import * as CPUThrottlingManager from './CPUThrottlingManager.js';
 import * as CSSContainerQuery from './CSSContainerQuery.js';
 import * as CSSFontFace from './CSSFontFace.js';
+import * as CSSLayer from './CSSLayer.js';
 import * as CSSMatchedStyles from './CSSMatchedStyles.js';
 import * as CSSMedia from './CSSMedia.js';
 import * as CSSMetadata from './CSSMetadata.js';
@@ -34,6 +35,7 @@ import * as CSSQuery from './CSSQuery.js';
 import * as CSSRule from './CSSRule.js';
 import * as CSSStyleDeclaration from './CSSStyleDeclaration.js';
 import * as CSSStyleSheetHeader from './CSSStyleSheetHeader.js';
+import * as CSSSupports from './CSSSupports.js';
 import * as DebuggerModel from './DebuggerModel.js';
 import * as DOMDebuggerModel from './DOMDebuggerModel.js';
 import * as DOMModel from './DOMModel.js';
@@ -91,6 +93,7 @@ export {
   CPUThrottlingManager,
   CSSContainerQuery,
   CSSFontFace,
+  CSSLayer,
   CSSMatchedStyles,
   CSSMedia,
   CSSMetadata,
@@ -101,6 +104,7 @@ export {
   CSSRule,
   CSSStyleDeclaration,
   CSSStyleSheetHeader,
+  CSSSupports,
   DebuggerModel,
   DOMDebuggerModel,
   DOMModel,

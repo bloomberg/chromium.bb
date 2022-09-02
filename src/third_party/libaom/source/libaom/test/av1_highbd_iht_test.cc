@@ -75,6 +75,7 @@ class AV1HighbdInvHTNxN : public ::testing::TestWithParam<IHbdHtParam> {
 
     input_ = reinterpret_cast<int16_t *>(
         aom_memalign(16, sizeof(input_[0]) * num_coeffs_));
+    ASSERT_NE(input_, nullptr);
 
     // Note:
     // Inverse transform input buffer is 32-byte aligned
@@ -82,10 +83,13 @@ class AV1HighbdInvHTNxN : public ::testing::TestWithParam<IHbdHtParam> {
     // void alloc_mode_context().
     coeffs_ = reinterpret_cast<int32_t *>(
         aom_memalign(32, sizeof(coeffs_[0]) * num_coeffs_));
+    ASSERT_NE(coeffs_, nullptr);
     output_ = reinterpret_cast<uint16_t *>(
         aom_memalign(32, sizeof(output_[0]) * num_coeffs_));
+    ASSERT_NE(output_, nullptr);
     output_ref_ = reinterpret_cast<uint16_t *>(
         aom_memalign(32, sizeof(output_ref_[0]) * num_coeffs_));
+    ASSERT_NE(output_ref_, nullptr);
   }
 
   virtual void TearDown() {

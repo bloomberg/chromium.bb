@@ -52,6 +52,7 @@
 <translation id="2445449901874883781">Ցույց տալ ավելի շատ պատուհաններ</translation>
 <translation id="2482878487686419369">Ծանուցումներ</translation>
 <translation id="2497284189126895209">Բոլոր ֆայլերը</translation>
+<translation id="2498950423397131220">Լողացող</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2522350507219695259">Չափաբերումն ավարտվեց</translation>
 <translation id="252373100621549798">Անհայտ էկրան</translation>
@@ -62,7 +63,6 @@
 <translation id="2666092431469916601">Վերին</translation>
 <translation id="2701330563083355633">Ուղարկվել է <ph name="DEVICE_NAME" />-ի միջոցով</translation>
 <translation id="271033894570825754">New</translation>
-<translation id="2743387203779672305">Պատճենել սեղմատախտակին</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{1 տարի առաջ}one{# տարի առաջ}other{# տարի առաջ}}</translation>
 <translation id="2878511608894704031">Ջնջել բոլորը</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{1 օրից}one{# օրից}other{# օրից}}</translation>
@@ -94,12 +94,14 @@
 <translation id="3889424535448813030">Աջ սլաք</translation>
 <translation id="3897092660631435901">Ընտրացանկ</translation>
 <translation id="3909791450649380159">Կտ&amp;րել</translation>
+<translation id="3924145049010392604">Meta</translation>
 <translation id="3990502903496589789">Աջ եզր</translation>
 <translation id="3994749195054421561">«<ph name="COLUMN_NAME" />» սյունակի արժեքները դասավորված են աճման կարգով։</translation>
+<translation id="4031910098617850788">F5</translation>
 <translation id="40579289237549812">{UNREAD_NOTIFICATIONS,plural, =1{1 չկարդացված ծանուցում}one{# չկարդացված ծանուցում}other{# չկարդացված ծանուցում}}</translation>
-<translation id="4250229828105606438">Սքրինշոթ</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 ամիս առաջ}one{# ամիս առաջ}other{# ամիս առաջ}}</translation>
 <translation id="4289300219472526559">Start Speaking</translation>
+<translation id="4289540628985791613">Համատեսք</translation>
 <translation id="4306392492252714209">Հեռացնել սեղմատախտակից։</translation>
 <translation id="4491109536499578614">Պատկեր</translation>
 <translation id="4565377596337484307">Թաքցնել գաղտնաբառը</translation>
@@ -116,7 +118,7 @@
 <translation id="5278860589123563674">Չհաջողվեց ուղարկել</translation>
 <translation id="528468243742722775">Վերջ</translation>
 <translation id="5329858601952122676">&amp;Ջնջել</translation>
-<translation id="5463830097259460683">Զմայլիկներ և նշաններ</translation>
+<translation id="5463830097259460683">Էմոջիներ և նշաններ</translation>
 <translation id="5528053674512161860">Չհաջողվեց բեռնել էջը, քանի որ ծրագրավորողի միջերեսի մոդուլը (dev_ui) տեղադրված չէ</translation>
 <translation id="5574202486608032840"><ph name="IDS_SHORT_PRODUCT_OS_NAME" /> համակարգ</translation>
 <translation id="5583640892426849032">Backspace</translation>
@@ -170,7 +172,7 @@
 <translation id="7410957453383678442">{MINUTES,plural, =1{Մնացել է 1 րոպե}one{Մնացել է # րոպե}other{Մնացել է # րոպե}}</translation>
 <translation id="7437971918971306061">«<ph name="COLUMN_NAME" />» սյունակի արժեքները դասավորված չեն։</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> ՏԲ</translation>
-<translation id="7507604095951736240">Զմայլիկներ</translation>
+<translation id="7507604095951736240">Էմոջիներ</translation>
 <translation id="7620655452534002301">Հեռացվեց։</translation>
 <translation id="7658239707568436148">Չեղարկել</translation>
 <translation id="7781829728241885113">Երեկ</translation>
@@ -203,7 +205,6 @@
 <translation id="8730621377337864115">Պատրաստ է</translation>
 <translation id="8772073294905169192">{HOURS,plural, =1{1 ժ}one{# ժ}other{# ժ}}</translation>
 <translation id="8798099450830957504">Կանխադրված</translation>
-<translation id="883911313571074303">Պատկերին ավելացնել նշում</translation>
 <translation id="8841375032071747811">«Հետ» կոճակ</translation>
 <translation id="8867568208303837180">Ուղարկում...</translation>
 <translation id="8876215549894133151">Ձևաչափ՝</translation>

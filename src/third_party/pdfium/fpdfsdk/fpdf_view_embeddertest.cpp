@@ -24,7 +24,6 @@
 #include "testing/utils/hash.h"
 #include "testing/utils/path_service.h"
 #include "third_party/base/check.h"
-#include "third_party/base/cxx17_backports.h"
 
 using pdfium::kManyRectanglesChecksum;
 
@@ -33,7 +32,7 @@ namespace {
 constexpr char kFirstAlternate[] = "FirstAlternate";
 constexpr char kLastAlternate[] = "LastAlternate";
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 const char kExpectedRectanglePostScript[] = R"(
 save
 /im/initmatrix load def
@@ -80,7 +79,7 @@ Q
 
 restore
 )";
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
 class MockDownloadHints final : public FX_DOWNLOADHINTS {
  public:
@@ -154,7 +153,7 @@ class FPDFViewEmbedderTest : public EmbedderTest {
 TEST_F(FPDFViewEmbedderTest, DeviceCoordinatesToPageCoordinates) {
   ASSERT_TRUE(OpenDocument("about_blank.pdf"));
   FPDF_PAGE page = LoadPage(0);
-  EXPECT_NE(nullptr, page);
+  EXPECT_TRUE(page);
 
   // Error tolerance for floating point comparison
   const double kTolerance = 0.0001;
@@ -237,7 +236,7 @@ TEST_F(FPDFViewEmbedderTest, DeviceCoordinatesToPageCoordinates) {
 TEST_F(FPDFViewEmbedderTest, PageCoordinatesToDeviceCoordinates) {
   ASSERT_TRUE(OpenDocument("about_blank.pdf"));
   FPDF_PAGE page = LoadPage(0);
-  EXPECT_NE(nullptr, page);
+  EXPECT_TRUE(page);
 
   // Display bounds in device coordinates
   int start_x = 0;
@@ -589,20 +588,20 @@ TEST_F(FPDFViewEmbedderTest, NamedDests) {
   // Query the size of the first item.
   buffer_size = 2000000;  // Absurdly large, check not used for this case.
   dest = FPDF_GetNamedDest(document(), 0, nullptr, &buffer_size);
-  EXPECT_NE(nullptr, dest);
+  EXPECT_TRUE(dest);
   EXPECT_EQ(12, buffer_size);
 
   // Try to retrieve the first item with too small a buffer.
   buffer_size = 10;
   dest = FPDF_GetNamedDest(document(), 0, fixed_buffer, &buffer_size);
-  EXPECT_NE(nullptr, dest);
+  EXPECT_TRUE(dest);
   EXPECT_EQ(-1, buffer_size);
 
   // Try to retrieve the first item with correctly sized buffer. Item is
   // taken from Dests NameTree in named_dests.pdf.
   buffer_size = 12;
   dest = FPDF_GetNamedDest(document(), 0, fixed_buffer, &buffer_size);
-  EXPECT_NE(nullptr, dest);
+  EXPECT_TRUE(dest);
   EXPECT_EQ(12, buffer_size);
   EXPECT_EQ("First",
             GetPlatformString(reinterpret_cast<FPDF_WIDESTRING>(fixed_buffer)));
@@ -611,7 +610,7 @@ TEST_F(FPDFViewEmbedderTest, NamedDests) {
   // from Dests NameTree but has a sub-dictionary in named_dests.pdf.
   buffer_size = sizeof(fixed_buffer);
   dest = FPDF_GetNamedDest(document(), 1, fixed_buffer, &buffer_size);
-  EXPECT_NE(nullptr, dest);
+  EXPECT_TRUE(dest);
   EXPECT_EQ(10, buffer_size);
   EXPECT_EQ("Next",
             GetPlatformString(reinterpret_cast<FPDF_WIDESTRING>(fixed_buffer)));
@@ -621,7 +620,7 @@ TEST_F(FPDFViewEmbedderTest, NamedDests) {
   // in named_dests.pdf).
   buffer_size = sizeof(fixed_buffer);
   dest = FPDF_GetNamedDest(document(), 2, fixed_buffer, &buffer_size);
-  EXPECT_EQ(nullptr, dest);
+  EXPECT_FALSE(dest);
   EXPECT_EQ(sizeof(fixed_buffer),
             static_cast<size_t>(buffer_size));  // unmodified.
 
@@ -629,7 +628,7 @@ TEST_F(FPDFViewEmbedderTest, NamedDests) {
   // from Dests NameTree but has a vale of the wrong type in named_dests.pdf.
   buffer_size = sizeof(fixed_buffer);
   dest = FPDF_GetNamedDest(document(), 3, fixed_buffer, &buffer_size);
-  EXPECT_EQ(nullptr, dest);
+  EXPECT_FALSE(dest);
   EXPECT_EQ(sizeof(fixed_buffer),
             static_cast<size_t>(buffer_size));  // unmodified.
 
@@ -637,7 +636,7 @@ TEST_F(FPDFViewEmbedderTest, NamedDests) {
   // old-style Dests dictionary object in named_dests.pdf.
   buffer_size = sizeof(fixed_buffer);
   dest = FPDF_GetNamedDest(document(), 4, fixed_buffer, &buffer_size);
-  EXPECT_NE(nullptr, dest);
+  EXPECT_TRUE(dest);
   EXPECT_EQ(30, buffer_size);
   EXPECT_EQ(kFirstAlternate,
             GetPlatformString(reinterpret_cast<FPDF_WIDESTRING>(fixed_buffer)));
@@ -647,7 +646,7 @@ TEST_F(FPDFViewEmbedderTest, NamedDests) {
   // named_dests.pdf.
   buffer_size = sizeof(fixed_buffer);
   dest = FPDF_GetNamedDest(document(), 5, fixed_buffer, &buffer_size);
-  EXPECT_NE(nullptr, dest);
+  EXPECT_TRUE(dest);
   EXPECT_EQ(28, buffer_size);
   EXPECT_EQ(kLastAlternate,
             GetPlatformString(reinterpret_cast<FPDF_WIDESTRING>(fixed_buffer)));
@@ -655,7 +654,7 @@ TEST_F(FPDFViewEmbedderTest, NamedDests) {
   // Try to retrieve non-existent item with ample buffer.
   buffer_size = sizeof(fixed_buffer);
   dest = FPDF_GetNamedDest(document(), 6, fixed_buffer, &buffer_size);
-  EXPECT_EQ(nullptr, dest);
+  EXPECT_FALSE(dest);
   EXPECT_EQ(sizeof(fixed_buffer),
             static_cast<size_t>(buffer_size));  // unmodified.
 
@@ -663,20 +662,20 @@ TEST_F(FPDFViewEmbedderTest, NamedDests) {
   buffer_size = sizeof(fixed_buffer);
   dest = FPDF_GetNamedDest(document(), std::numeric_limits<int>::max(),
                            fixed_buffer, &buffer_size);
-  EXPECT_EQ(nullptr, dest);
+  EXPECT_FALSE(dest);
   EXPECT_EQ(sizeof(fixed_buffer),
             static_cast<size_t>(buffer_size));  // unmodified.
 
   buffer_size = sizeof(fixed_buffer);
   dest = FPDF_GetNamedDest(document(), std::numeric_limits<int>::min(),
                            fixed_buffer, &buffer_size);
-  EXPECT_EQ(nullptr, dest);
+  EXPECT_FALSE(dest);
   EXPECT_EQ(sizeof(fixed_buffer),
             static_cast<size_t>(buffer_size));  // unmodified.
 
   buffer_size = sizeof(fixed_buffer);
   dest = FPDF_GetNamedDest(document(), -1, fixed_buffer, &buffer_size);
-  EXPECT_EQ(nullptr, dest);
+  EXPECT_FALSE(dest);
   EXPECT_EQ(sizeof(fixed_buffer),
             static_cast<size_t>(buffer_size));  // unmodified.
 }
@@ -686,15 +685,15 @@ TEST_F(FPDFViewEmbedderTest, NamedDestsByName) {
 
   // Null pointer returns nullptr.
   FPDF_DEST dest = FPDF_GetNamedDestByName(document(), nullptr);
-  EXPECT_EQ(nullptr, dest);
+  EXPECT_FALSE(dest);
 
   // Empty string returns nullptr.
   dest = FPDF_GetNamedDestByName(document(), "");
-  EXPECT_EQ(nullptr, dest);
+  EXPECT_FALSE(dest);
 
   // Item from Dests NameTree.
   dest = FPDF_GetNamedDestByName(document(), "First");
-  EXPECT_NE(nullptr, dest);
+  EXPECT_TRUE(dest);
 
   long ignore_len = 0;
   FPDF_DEST dest_by_index =
@@ -703,7 +702,7 @@ TEST_F(FPDFViewEmbedderTest, NamedDestsByName) {
 
   // Item from Dests dictionary.
   dest = FPDF_GetNamedDestByName(document(), kFirstAlternate);
-  EXPECT_NE(nullptr, dest);
+  EXPECT_TRUE(dest);
 
   ignore_len = 0;
   dest_by_index = FPDF_GetNamedDest(document(), 4, nullptr, &ignore_len);
@@ -711,11 +710,11 @@ TEST_F(FPDFViewEmbedderTest, NamedDestsByName) {
 
   // Bad value type for item from Dests NameTree array.
   dest = FPDF_GetNamedDestByName(document(), "WrongType");
-  EXPECT_EQ(nullptr, dest);
+  EXPECT_FALSE(dest);
 
   // No such destination in either Dest NameTree or dictionary.
   dest = FPDF_GetNamedDestByName(document(), "Bogus");
-  EXPECT_EQ(nullptr, dest);
+  EXPECT_FALSE(dest);
 }
 
 TEST_F(FPDFViewEmbedderTest, NamedDestsOldStyle) {
@@ -768,7 +767,7 @@ TEST_F(FPDFViewEmbedderTest, Crasher_451830) {
 TEST_F(FPDFViewEmbedderTest, Crasher_452455) {
   ASSERT_TRUE(OpenDocument("bug_452455.pdf"));
   FPDF_PAGE page = LoadPage(0);
-  EXPECT_NE(nullptr, page);
+  EXPECT_TRUE(page);
   UnloadPage(page);
 }
 
@@ -1106,9 +1105,9 @@ TEST_F(FPDFViewEmbedderTest, GetXFAArrayData) {
       {"postamble", 11u, "6b79e25da35d86634ea27c38f64cf243"},
   };
 
-  ASSERT_EQ(static_cast<int>(pdfium::size(kExpectedResults)),
+  ASSERT_EQ(static_cast<int>(std::size(kExpectedResults)),
             FPDF_GetXFAPacketCount(document()));
-  for (size_t i = 0; i < pdfium::size(kExpectedResults); ++i) {
+  for (size_t i = 0; i < std::size(kExpectedResults); ++i) {
     char name_buffer[20] = {};
     ASSERT_EQ(strlen(kExpectedResults[i].name) + 1,
               FPDF_GetXFAPacketName(document(), i, nullptr, 0));
@@ -1124,9 +1123,8 @@ TEST_F(FPDFViewEmbedderTest, GetXFAArrayData) {
     EXPECT_TRUE(FPDF_GetXFAPacketContent(document(), i, data_buffer.data(),
                                          data_buffer.size(), &buflen));
     EXPECT_EQ(kExpectedResults[i].content_length, buflen);
-    EXPECT_STREQ(
-        kExpectedResults[i].content_checksum,
-        GenerateMD5Base16(data_buffer.data(), data_buffer.size()).c_str());
+    EXPECT_STREQ(kExpectedResults[i].content_checksum,
+                 GenerateMD5Base16(data_buffer).c_str());
   }
 
   // Test bad parameters.
@@ -1134,16 +1132,16 @@ TEST_F(FPDFViewEmbedderTest, GetXFAArrayData) {
 
   EXPECT_EQ(0u, FPDF_GetXFAPacketName(nullptr, 0, nullptr, 0));
   EXPECT_EQ(0u, FPDF_GetXFAPacketName(document(), -1, nullptr, 0));
-  EXPECT_EQ(0u, FPDF_GetXFAPacketName(
-                    document(), pdfium::size(kExpectedResults), nullptr, 0));
+  EXPECT_EQ(0u, FPDF_GetXFAPacketName(document(), std::size(kExpectedResults),
+                                      nullptr, 0));
 
   unsigned long buflen = 123;
   EXPECT_FALSE(FPDF_GetXFAPacketContent(nullptr, 0, nullptr, 0, &buflen));
   EXPECT_EQ(123u, buflen);
   EXPECT_FALSE(FPDF_GetXFAPacketContent(document(), -1, nullptr, 0, &buflen));
   EXPECT_EQ(123u, buflen);
-  EXPECT_FALSE(FPDF_GetXFAPacketContent(
-      document(), pdfium::size(kExpectedResults), nullptr, 0, &buflen));
+  EXPECT_FALSE(FPDF_GetXFAPacketContent(document(), std::size(kExpectedResults),
+                                        nullptr, 0, &buflen));
   EXPECT_EQ(123u, buflen);
   EXPECT_FALSE(FPDF_GetXFAPacketContent(document(), 0, nullptr, 0, nullptr));
 }
@@ -1166,9 +1164,8 @@ TEST_F(FPDFViewEmbedderTest, GetXFAStreamData) {
   EXPECT_TRUE(FPDF_GetXFAPacketContent(document(), 0, data_buffer.data(),
                                        data_buffer.size(), &buflen));
   EXPECT_EQ(121u, buflen);
-  EXPECT_STREQ(
-      "8f912eaa1e66c9341cb3032ede71e147",
-      GenerateMD5Base16(data_buffer.data(), data_buffer.size()).c_str());
+  EXPECT_STREQ("8f912eaa1e66c9341cb3032ede71e147",
+               GenerateMD5Base16(data_buffer).c_str());
 }
 
 TEST_F(FPDFViewEmbedderTest, GetXFADataForNoForm) {
@@ -1259,18 +1256,24 @@ TEST_F(FPDFViewEmbedderTest, LoadDocumentWithEmptyXRefConsistently) {
   }
 }
 
-// TODO(crbug.com/pdfium/1500): Fix this test and enable.
+TEST_F(FPDFViewEmbedderTest, RenderBug664284WithNoNativeText) {
 #if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
-#define MAYBE_RenderBug664284WithNoNativeText \
-  DISABLED_RenderBug664284WithNoNativeText
+  // For Skia/SkiaPaths, since the font used in bug_664284.pdf is not a CID
+  // font, ShouldDrawDeviceText() will always return true. Therefore
+  // FPDF_NO_NATIVETEXT and the font widths defined in the PDF determines
+  // whether to go through the rendering path in
+  // CFX_SkiaDeviceDriver::DrawDeviceText(). In this case, it returns false and
+  // affects the rendering results across all platforms.
+  static const char kOriginalChecksum[] = "288502887ffc63291f35a0573b944375";
+  static const char kNoNativeTextChecksum[] =
+      "288502887ffc63291f35a0573b944375";
 #else
-#define MAYBE_RenderBug664284WithNoNativeText RenderBug664284WithNoNativeText
-#endif
-TEST_F(FPDFViewEmbedderTest, MAYBE_RenderBug664284WithNoNativeText) {
-// FPDF_NO_NATIVETEXT flag only disables native text support on macOS, therefore
-// Windows and Linux rendering results remain the same as rendering with no
-// flags, while the macOS rendering result doesn't.
-#if defined(OS_APPLE)
+// For AGG, since CFX_AggDeviceDriver::DrawDeviceText() always returns false,
+// FPDF_NO_NATIVETEXT won't affect device-specific rendering path and it will
+// only disable native text support on macOS. Therefore Windows and Linux
+// rendering results remain the same as rendering with no flags, while the macOS
+// rendering result doesn't.
+#if BUILDFLAG(IS_APPLE)
   static const char kOriginalChecksum[] = "0e339d606aafb63077f49e238dc27cb0";
   static const char kNoNativeTextChecksum[] =
       "288502887ffc63291f35a0573b944375";
@@ -1278,8 +1281,8 @@ TEST_F(FPDFViewEmbedderTest, MAYBE_RenderBug664284WithNoNativeText) {
   static const char kOriginalChecksum[] = "288502887ffc63291f35a0573b944375";
   static const char kNoNativeTextChecksum[] =
       "288502887ffc63291f35a0573b944375";
-#endif
-
+#endif  // BUILDFLAG(IS_APPLE)
+#endif  // defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
   ASSERT_TRUE(OpenDocument("bug_664284.pdf"));
   FPDF_PAGE page = LoadPage(0);
   ASSERT_TRUE(page);
@@ -1397,11 +1400,11 @@ TEST_F(FPDFViewEmbedderTest, RenderHelloWorldWithFlags) {
   TestRenderPageBitmapWithFlags(page, FPDF_RENDER_NO_SMOOTHPATH,
                                 kHelloWorldChecksum);
 
-#if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
-  static const char kLcdTextChecksum[] = "fea3e59b7ac7b7a6940018497034f6cf";
+#if defined(_SKIA_SUPPORT_)
+  static const char kLcdTextChecksum[] = "c1c548442e0e0f949c5550d89bf8ae3b";
   static const char kNoSmoothtextChecksum[] =
-      "c4173cf724618e5b68efb74543519bb9";
-#elif defined(OS_APPLE)
+      "37d0b34e1762fdda4c05ce7ea357b828";
+#elif BUILDFLAG(IS_APPLE) && !defined(_SKIA_SUPPORT_PATHS_)
   static const char kLcdTextChecksum[] = "6eef7237f7591f07616e238422086737";
   static const char kNoSmoothtextChecksum[] =
       "6eef7237f7591f07616e238422086737";
@@ -1423,7 +1426,7 @@ TEST_F(FPDFViewEmbedderTest, RenderHelloWorldWithFlags) {
   UnloadPage(page);
 }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 TEST_F(FPDFViewEmbedderTest, FPDFRenderPageEmf) {
   ASSERT_TRUE(OpenDocument("rectangles.pdf"));
   FPDF_PAGE page = LoadPage(0);
@@ -1651,7 +1654,7 @@ TEST_F(FPDFViewEmbedderTest, MAYBE_ImageMask) {
 
   UnloadPage(page);
 }
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
 TEST_F(FPDFViewEmbedderTest, GetTrailerEnds) {
   ASSERT_TRUE(OpenDocument("two_signatures.pdf"));

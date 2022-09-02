@@ -19,7 +19,6 @@
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/mock_settings_observer.h"
-#include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/browsing_data/content/cookie_helper.h"
 #include "components/browsing_data/content/mock_cache_storage_helper.h"
@@ -57,7 +56,12 @@ class CookiesTreeModelTest : public testing::Test {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     special_storage_policy_ = nullptr;
 #endif
+    // TODO(arthursonzogni): Consider removing this line, or at least explain
+    // why it is needed.
+    base::RunLoop().RunUntilIdle();
     profile_.reset();
+    // TODO(arthursonzogni): Consider removing this line, or at least explain
+    // why it is needed.
     base::RunLoop().RunUntilIdle();
   }
 
@@ -290,7 +294,10 @@ class CookiesTreeModelTest : public testing::Test {
       case CookieTreeNode::DetailedInfo::TYPE_SHARED_WORKER:
         return node->GetDetailedInfo().shared_worker_info->worker.spec() + ",";
       case CookieTreeNode::DetailedInfo::TYPE_MEDIA_LICENSE:
-        return node->GetDetailedInfo().media_license_info->origin.spec() + ",";
+        return node->GetDetailedInfo()
+                   .media_license_usage_info->origin.GetURL()
+                   .spec() +
+               ",";
       default:
         return std::string();
     }
@@ -1887,9 +1894,9 @@ TEST_F(CookiesTreeModelTest, CookieDeletionFilterNormalUser) {
   EXPECT_FALSE(callback);
 }
 
-#if defined(OS_ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH)
 TEST_F(CookiesTreeModelTest, CookieDeletionFilterChildUser) {
-  profile_->SetSupervisedUserId(supervised_users::kChildAccountSUID);
+  profile_->SetIsSupervisedProfile();
   auto callback =
       CookiesTreeModel::GetCookieDeletionDisabledCallback(profile_.get());
 

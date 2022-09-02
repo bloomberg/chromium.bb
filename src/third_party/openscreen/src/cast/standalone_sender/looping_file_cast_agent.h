@@ -5,8 +5,6 @@
 #ifndef CAST_STANDALONE_SENDER_LOOPING_FILE_CAST_AGENT_H_
 #define CAST_STANDALONE_SENDER_LOOPING_FILE_CAST_AGENT_H_
 
-#include <openssl/x509.h>
-
 #include <functional>
 #include <memory>
 #include <string>
@@ -18,6 +16,7 @@
 #include "cast/common/channel/connection_namespace_handler.h"
 #include "cast/common/channel/virtual_connection_router.h"
 #include "cast/common/public/cast_socket.h"
+#include "cast/common/public/trust_store.h"
 #include "cast/sender/public/sender_socket_factory.h"
 #include "cast/standalone_sender/connection_settings.h"
 #include "cast/standalone_sender/looping_file_sender.h"
@@ -78,6 +77,7 @@ class LoopingFileCastAgent final
   // |shutdown_callback| is invoked after normal shutdown, whether initiated
   // sender- or receiver-side; or, for any fatal error.
   LoopingFileCastAgent(TaskRunner* task_runner,
+                       std::unique_ptr<TrustStore> cast_trust_store,
                        ShutdownCallback shutdown_callback);
   ~LoopingFileCastAgent();
 

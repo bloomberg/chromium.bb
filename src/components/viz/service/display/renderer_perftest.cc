@@ -4,12 +4,11 @@
 
 // This perf test measures the time from when the display compositor starts
 // drawing on the compositor thread to when a swap buffers occurs on the
-// GPU main thread. It tests both GLRenderer and SkiaRenderer under
-// simple work loads.
+// GPU main thread.
 //
 // Example usage:
 //
-// $ out/release/viz_perftests --gtest_filter="*RendererPerfTest*" \
+// $ out/release/viz_perftests --gtest_filter="RendererPerfTest*" \
 //    --use-gpu-in-tests --test-launcher-timeout=300000 \
 //    --perf-test-time-ms=240000 --disable_discard_framebuffer=1 \
 //    --use_virtualized_gl_contexts=1
@@ -26,24 +25,22 @@
 #include "components/viz/client/client_resource_provider.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
+#include "components/viz/common/quads/yuv_video_draw_quad.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/service/display/display.h"
-#include "components/viz/service/display/gl_renderer.h"
 #include "components/viz/service/display/output_surface_client.h"
 #include "components/viz/service/display/overlay_processor_stub.h"
 #include "components/viz/service/display/skia_renderer.h"
 #include "components/viz/service/display/viz_perftest.h"
-#include "components/viz/service/display_embedder/gl_output_surface_offscreen.h"
-#include "components/viz/service/display_embedder/in_process_gpu_memory_buffer_manager.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "components/viz/service/display_embedder/skia_output_surface_dependency_impl.h"
 #include "components/viz/service/display_embedder/skia_output_surface_impl.h"
-#include "components/viz/service/display_embedder/viz_process_context_provider.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/service/gl/gpu_service_impl.h"
 #include "components/viz/test/compositor_frame_helpers.h"
 #include "components/viz/test/test_gpu_service_holder.h"
+#include "components/viz/test/test_in_process_context_provider.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -229,7 +226,6 @@ void CreateTestTileDrawQuad(ResourceId resource_id,
 
 }  // namespace
 
-template <typename RendererType>
 class RendererPerfTest : public VizPerfTest {
  public:
   RendererPerfTest()
@@ -243,63 +239,35 @@ class RendererPerfTest : public VizPerfTest {
   RendererPerfTest(const RendererPerfTest&) = delete;
   RendererPerfTest& operator=(const RendererPerfTest&) = delete;
 
-  // Overloaded for concrete RendererType below.
-  std::unique_ptr<OutputSurface> CreateOutputSurface(
+  std::unique_ptr<SkiaOutputSurface> CreateOutputSurface(
       GpuServiceImpl* gpu_service,
-      DisplayCompositorMemoryAndTaskController* display_controller);
+      DisplayCompositorMemoryAndTaskController* display_controller) {
+    return SkiaOutputSurfaceImpl::Create(display_controller, renderer_settings_,
+                                         &debug_settings_);
+  }
 
   void SetUp() override {
     enable_pixel_output_ = std::make_unique<gl::DisableNullDrawGLBindings>();
-    renderer_settings_.use_skia_renderer =
-        std::is_base_of<SkiaRenderer, RendererType>::value;
-    if (renderer_settings_.use_skia_renderer)
-      printf("Using SkiaRenderer\n");
-    else
-      printf("Using GLRenderer\n");
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     renderer_settings_.color_space = gfx::ColorSpace::CreateSRGB();
     renderer_settings_.initial_screen_size = kSurfaceSize;
 #endif
 
     auto* gpu_service = TestGpuServiceHolder::GetInstance()->gpu_service();
 
-    gpu_memory_buffer_manager_ =
-        std::make_unique<InProcessGpuMemoryBufferManager>(
-            gpu_service->gpu_memory_buffer_factory(),
-            gpu_service->sync_point_manager());
-    gpu::ImageFactory* image_factory = gpu_service->gpu_image_factory();
-    auto* gpu_channel_manager_delegate =
-        gpu_service->gpu_channel_manager()->delegate();
-    auto child_task_scheduler = std::make_unique<gpu::GpuTaskSchedulerHelper>(
-        TestGpuServiceHolder::GetInstance()->task_executor());
-    child_gpu_dependency_ =
-        std::make_unique<DisplayCompositorMemoryAndTaskController>(
-            TestGpuServiceHolder::GetInstance()->task_executor(),
-            image_factory);
-    child_context_provider_ = base::MakeRefCounted<VizProcessContextProvider>(
-        TestGpuServiceHolder::GetInstance()->task_executor(),
-        gpu::kNullSurfaceHandle, gpu_memory_buffer_manager_.get(),
-        image_factory, gpu_channel_manager_delegate,
-        child_gpu_dependency_.get(), renderer_settings_);
+    child_context_provider_ =
+        base::MakeRefCounted<TestInProcessContextProvider>(
+            TestContextType::kGLES2, /*support_locking=*/false);
     child_context_provider_->BindToCurrentThread();
     child_resource_provider_ = std::make_unique<ClientResourceProvider>();
 
-    std::unique_ptr<DisplayCompositorMemoryAndTaskController>
-        display_controller;
-    if (renderer_settings_.use_skia_renderer) {
-      auto skia_deps = std::make_unique<SkiaOutputSurfaceDependencyImpl>(
-          gpu_service, gpu::kNullSurfaceHandle);
-      display_controller =
-          std::make_unique<DisplayCompositorMemoryAndTaskController>(
-              std::move(skia_deps));
-    } else {
-      auto* task_executor =
-          TestGpuServiceHolder::GetInstance()->task_executor();
-      display_controller =
-          std::make_unique<DisplayCompositorMemoryAndTaskController>(
-              task_executor, image_factory);
-    }
+    auto skia_deps = std::make_unique<SkiaOutputSurfaceDependencyImpl>(
+        gpu_service, gpu::kNullSurfaceHandle);
+    auto display_controller =
+        std::make_unique<DisplayCompositorMemoryAndTaskController>(
+            std::move(skia_deps));
+
     auto output_surface =
         CreateOutputSurface(gpu_service, display_controller.get());
     // WaitForSwapDisplayClient depends on this.
@@ -320,8 +288,7 @@ class RendererPerfTest : public VizPerfTest {
 
   void TearDown() override {
     std::string story =
-        renderer_settings_.use_skia_renderer ? "SkiaRenderer_" : "GLRenderer_";
-    story += ::testing::UnitTest::GetInstance()->current_test_info()->name();
+        ::testing::UnitTest::GetInstance()->current_test_info()->name();
     auto reporter = SetUpRendererReporter(story);
     reporter.AddResult(kMetricFps, timer_.LapsPerSecond());
 
@@ -358,8 +325,6 @@ class RendererPerfTest : public VizPerfTest {
     child_resource_provider_->ShutdownAndReleaseAllResources();
     child_resource_provider_.reset();
     child_context_provider_.reset();
-    child_gpu_dependency_.reset();
-    gpu_memory_buffer_manager_.reset();
 
     display_.reset();
   }
@@ -371,8 +336,8 @@ class RendererPerfTest : public VizPerfTest {
                                 .Build();
     support_->SubmitCompositorFrame(id_allocator_.GetCurrentLocalSurfaceId(),
                                     std::move(frame));
-    ASSERT_TRUE(
-        display_->DrawAndSwap(base::TimeTicks::Now(), base::TimeTicks::Now()));
+    ASSERT_TRUE(display_->DrawAndSwap(
+        {base::TimeTicks::Now(), base::TimeTicks::Now()}));
   }
 
   ResourceId MapResourceId(base::flat_map<ResourceId, ResourceId>* resource_map,
@@ -661,69 +626,37 @@ class RendererPerfTest : public VizPerfTest {
   ServerSharedBitmapManager shared_bitmap_manager_;
   FrameSinkManagerImpl manager_;
   std::unique_ptr<CompositorFrameSinkSupport> support_;
-  std::unique_ptr<gpu::GpuMemoryBufferManager> gpu_memory_buffer_manager_;
   RendererSettings renderer_settings_;
   DebugRendererSettings debug_settings_;
   std::unique_ptr<Display> display_;
-  std::unique_ptr<DisplayCompositorMemoryAndTaskController>
-      child_gpu_dependency_;
   scoped_refptr<ContextProvider> child_context_provider_;
   std::unique_ptr<ClientResourceProvider> child_resource_provider_;
   std::vector<TransferableResource> resource_list_;
   std::unique_ptr<gl::DisableNullDrawGLBindings> enable_pixel_output_;
 };
 
-template <>
-std::unique_ptr<OutputSurface>
-RendererPerfTest<SkiaRenderer>::CreateOutputSurface(
-    GpuServiceImpl* gpu_service,
-    DisplayCompositorMemoryAndTaskController* display_controller) {
-  return SkiaOutputSurfaceImpl::Create(
-      display_controller, renderer_settings_, &debug_settings_);
-}
-
-template <>
-std::unique_ptr<OutputSurface>
-RendererPerfTest<GLRenderer>::CreateOutputSurface(
-    GpuServiceImpl* gpu_service,
-    DisplayCompositorMemoryAndTaskController* display_controller) {
-  gpu::ImageFactory* image_factory = gpu_service->gpu_image_factory();
-  auto* gpu_channel_manager_delegate =
-      gpu_service->gpu_channel_manager()->delegate();
-  auto context_provider = base::MakeRefCounted<VizProcessContextProvider>(
-      TestGpuServiceHolder::GetInstance()->task_executor(),
-      gpu::kNullSurfaceHandle, gpu_memory_buffer_manager_.get(), image_factory,
-      gpu_channel_manager_delegate, display_controller, renderer_settings_);
-  context_provider->BindToCurrentThread();
-  return std::make_unique<GLOutputSurfaceOffscreen>(
-      std::move(context_provider));
-}
-
-using RendererTypes = ::testing::Types<GLRenderer, SkiaRenderer>;
-TYPED_TEST_SUITE(RendererPerfTest, RendererTypes);
-
-TYPED_TEST(RendererPerfTest, SingleTextureQuad) {
+TEST_F(RendererPerfTest, SingleTextureQuad) {
   this->RunSingleTextureQuad();
 }
 
-TYPED_TEST(RendererPerfTest, TextureQuads5x5) {
+TEST_F(RendererPerfTest, TextureQuads5x5) {
   this->RunTextureQuads5x5();
 }
 
-TYPED_TEST(RendererPerfTest, TextureQuads5x5SameTex) {
+TEST_F(RendererPerfTest, TextureQuads5x5SameTex) {
   this->RunTextureQuads5x5SameTex();
 }
 
-TYPED_TEST(RendererPerfTest, RotatedTileQuadsShared) {
+TEST_F(RendererPerfTest, RotatedTileQuadsShared) {
   this->RunRotatedTileQuadsShared();
 }
 
-TYPED_TEST(RendererPerfTest, RotatedTileQuads) {
+TEST_F(RendererPerfTest, RotatedTileQuads) {
   this->RunRotatedTileQuads();
 }
 
 #define TOP_REAL_WORLD_DESKTOP_RENDERER_PERF_TEST(SITE, FRAME)              \
-  TYPED_TEST(RendererPerfTest, SITE) {                                      \
+  TEST_F(RendererPerfTest, SITE) {                                          \
     this->RunSingleRenderPassListFromJSON(/*tag=*/"top_real_world_desktop", \
                                           /*site=*/#SITE, /*year=*/2018,    \
                                           /*frame_index=*/FRAME);           \

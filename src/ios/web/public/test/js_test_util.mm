@@ -55,45 +55,6 @@ id ExecuteJavaScript(WKWebView* web_view,
   return result;
 }
 
-#if defined(__IPHONE_14_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_14_0
-id ExecuteJavaScript(WKWebView* web_view,
-                     WKContentWorld* content_world,
-                     NSString* script) {
-  return ExecuteJavaScript(web_view, content_world, script, /*error=*/nil);
-}
-
-id ExecuteJavaScript(WKWebView* web_view,
-                     WKContentWorld* content_world,
-                     NSString* script,
-                     NSError* __autoreleasing* error) {
-  __block id result;
-  __block bool completed = false;
-  __block NSError* block_error = nil;
-  SCOPED_TRACE(base::SysNSStringToUTF8(script));
-  [web_view evaluateJavaScript:script
-                       inFrame:nil
-                inContentWorld:content_world
-             completionHandler:^(id script_result, NSError* script_error) {
-               result = [script_result copy];
-               block_error = [script_error copy];
-               completed = true;
-             }];
-  BOOL success = WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
-    return completed;
-  });
-  // Log stack trace to provide some context.
-  EXPECT_TRUE(success)
-      << base::SysNSStringToUTF8(block_error.description)
-      << "\nWKWebView failed to complete javascript execution.\n"
-      << base::SysNSStringToUTF8(
-             [[NSThread callStackSymbols] componentsJoinedByString:@"\n"]);
-  if (error) {
-    *error = block_error;
-  }
-  return result;
-}
-#endif  // defined(__IPHONE14_0)
-
 bool LoadHtml(WKWebView* web_view, NSString* html, NSURL* base_url) {
   [web_view loadHTMLString:html baseURL:base_url];
 
@@ -115,9 +76,9 @@ NSString* GetPageScript(NSString* script_file_name) {
 NSString* GetSharedScripts() {
   // Scripts must be all injected at once because as soon as __gCrWeb exists,
   // injection is assumed to be done and __gCrWeb.message is used.
-  return [NSString stringWithFormat:@"%@; %@; %@", GetPageScript(@"base_js"),
-                                    GetPageScript(@"common_js"),
-                                    GetPageScript(@"message_js")];
+  return [NSString stringWithFormat:@"%@; %@; %@", GetPageScript(@"base"),
+                                    GetPageScript(@"common"),
+                                    GetPageScript(@"message")];
 }
 
 }  // namespace test

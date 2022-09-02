@@ -29,10 +29,11 @@
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/strings/grit/components_strings.h"
+#include "third_party/abseil-cpp/absl/types/variant.h"
 #include "ui/accessibility/platform/ax_platform_node.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 #include "ui/native_theme/native_theme.h"  // nogncheck
 #endif
 
@@ -89,7 +90,7 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
     bool is_all_server_suggestions) {
   if (query_id != query_id_)
     return;
-#if defined(OS_IOS)
+#if BUILDFLAG(IS_IOS)
   if (!manager_->client()->IsQueryIDRelevant(query_id))
     return;
 #endif
@@ -127,28 +128,6 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
   if (has_autofill_suggestions_)
     ApplyAutofillOptions(&suggestions, is_all_server_suggestions);
 
-    // Append the "Hide Suggestions" menu item for only Autofill Address and
-    // Autocomplete popups.
-#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_APPLE) || \
-    defined(OS_CHROMEOS)
-  if (base::FeatureList::IsEnabled(
-          features::kAutofillEnableHideSuggestionsUI)) {
-    // If the user has selected a suggestion, it indicates the suggestions are
-    // useful to the user and no need  hide them. In this case,
-    // ApplyAutofillOptions() should have added a "Clear form" option instead.
-    if (!query_field_.is_autofilled) {
-      if (!suggestions.empty() &&
-          (GetPopupType() == PopupType::kAddresses ||
-           GetPopupType() == PopupType::kUnspecified) &&
-          suggestions[0].frontend_id != POPUP_ITEM_ID_MIXED_FORM_MESSAGE) {
-        suggestions.emplace_back(
-            l10n_util::GetStringUTF16(IDS_AUTOFILL_HIDE_SUGGESTIONS));
-        suggestions.back().frontend_id =
-            POPUP_ITEM_ID_HIDE_AUTOFILL_SUGGESTIONS;
-      }
-    }
-  }
-#endif
   // Append the credit card signin promo, if appropriate (there are no other
   // suggestions).
   if (suggestions.empty() && should_show_cc_signin_promo_) {
@@ -175,7 +154,7 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
 
   // Send to display.
   if (query_field_.is_focusable && driver_->CanShowAutofillUi()) {
-    autofill::AutofillClient::PopupOpenArgs open_args(
+    AutofillClient::PopupOpenArgs open_args(
         element_bounds_, query_field_.text_direction, suggestions,
         AutoselectFirstSuggestion(autoselect_first_suggestion), popup_type_);
     manager_->client()->ShowAutofillPopup(open_args, GetWeakPtr());
@@ -231,22 +210,30 @@ void AutofillExternalDelegate::OnPopupSuppressed() {
   manager_->DidSuppressPopup(query_form_, query_field_);
 }
 
-void AutofillExternalDelegate::DidSelectSuggestion(const std::u16string& value,
-                                                   int frontend_id) {
+void AutofillExternalDelegate::DidSelectSuggestion(
+    const std::u16string& value,
+    int frontend_id,
+    const std::string& backend_id) {
   ClearPreviewedForm();
 
-  // Only preview the data if it is a profile.
-  if (frontend_id > 0)
+  // Only preview the data if it is a profile or a virtual card.
+  if (frontend_id > 0) {
     FillAutofillFormData(frontend_id, true);
-  else if (frontend_id == POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY)
+  } else if (frontend_id == POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY ||
+             frontend_id == POPUP_ITEM_ID_MERCHANT_PROMO_CODE_ENTRY) {
     driver_->RendererShouldPreviewFieldWithValue(query_field_.global_id(),
                                                  value);
+  } else if (frontend_id == POPUP_ITEM_ID_VIRTUAL_CREDIT_CARD_ENTRY) {
+    manager_->FillOrPreviewVirtualCardInformation(
+        mojom::RendererFormDataAction::kPreview, backend_id, query_id_,
+        query_form_, query_field_);
+  }
 }
 
 void AutofillExternalDelegate::DidAcceptSuggestion(
     const std::u16string& value,
     int frontend_id,
-    const std::string& backend_id,
+    const Suggestion::Payload& payload,
     int position) {
   if (frontend_id == POPUP_ITEM_ID_AUTOFILL_OPTIONS) {
     // User selected 'Autofill Options'.
@@ -263,11 +250,16 @@ void AutofillExternalDelegate::DidAcceptSuggestion(
   } else if (frontend_id == POPUP_ITEM_ID_DATALIST_ENTRY) {
     driver_->RendererShouldAcceptDataListSuggestion(query_field_.global_id(),
                                                     value);
-  } else if (frontend_id == POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY) {
-    // User selected an Autocomplete, so we fill directly.
+  } else if (frontend_id == POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY ||
+             frontend_id == POPUP_ITEM_ID_MERCHANT_PROMO_CODE_ENTRY) {
+    // User selected an Autocomplete or Merchant Promo Code field, so we fill
+    // directly.
     driver_->RendererShouldFillFieldWithValue(query_field_.global_id(), value);
-    AutofillMetrics::LogAutocompleteSuggestionAcceptedIndex(position);
-    manager_->OnSingleFieldSuggestionSelected(value);
+
+    if (frontend_id == POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY)
+      AutofillMetrics::LogAutocompleteSuggestionAcceptedIndex(position);
+
+    manager_->OnSingleFieldSuggestionSelected(value, frontend_id);
   } else if (frontend_id == POPUP_ITEM_ID_SCAN_CREDIT_CARD) {
     manager_->client()->ScanCreditCard(base::BindOnce(
         &AutofillExternalDelegate::OnCreditCardScanned, GetWeakPtr()));
@@ -275,11 +267,8 @@ void AutofillExternalDelegate::DidAcceptSuggestion(
     manager_->client()->ExecuteCommand(frontend_id);
   } else if (frontend_id == POPUP_ITEM_ID_SHOW_ACCOUNT_CARDS) {
     manager_->OnUserAcceptedCardsFromAccountOption();
-  } else if (frontend_id == POPUP_ITEM_ID_HIDE_AUTOFILL_SUGGESTIONS) {
-    // No-op as the popup will be closed in the end of the method.
-    manager_->OnUserHideSuggestions(query_form_, query_field_);
   } else if (frontend_id == POPUP_ITEM_ID_USE_VIRTUAL_CARD) {
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
     manager_->FetchVirtualCardCandidates();
 #else
     NOTREACHED();
@@ -287,9 +276,16 @@ void AutofillExternalDelegate::DidAcceptSuggestion(
   } else if (frontend_id == POPUP_ITEM_ID_VIRTUAL_CREDIT_CARD_ENTRY) {
     // There can be multiple virtual credit cards that all rely on
     // POPUP_ITEM_ID_VIRTUAL_CREDIT_CARD_ENTRY as a frontend_id. In this case,
-    // the backend_id identifies the actually chosen credit card.
-    manager_->FillVirtualCardInformation(backend_id, query_id_, query_form_,
-                                         query_field_);
+    // the payload contains the backend id, which is a GUID that identifies the
+    // actually chosen credit card.
+    DCHECK(absl::holds_alternative<std::string>(payload));
+    manager_->FillOrPreviewVirtualCardInformation(
+        mojom::RendererFormDataAction::kFill, absl::get<std::string>(payload),
+        query_id_, query_form_, query_field_);
+  } else if (frontend_id == POPUP_ITEM_ID_SEE_PROMO_CODE_DETAILS) {
+    DCHECK(absl::holds_alternative<GURL>(payload));
+    manager_->OnSeePromoCodeOfferDetailsSelected(absl::get<GURL>(payload),
+                                                 value, frontend_id);
   } else {
     if (frontend_id > 0) {  // Denotes an Autofill suggestion.
       AutofillMetrics::LogAutofillSuggestionAcceptedIndex(
@@ -327,7 +323,8 @@ bool AutofillExternalDelegate::RemoveSuggestion(const std::u16string& value,
     return manager_->RemoveAutofillProfileOrCreditCard(frontend_id);
 
   if (frontend_id == POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY) {
-    manager_->RemoveCurrentSingleFieldSuggestion(query_field_.name, value);
+    manager_->RemoveCurrentSingleFieldSuggestion(query_field_.name, value,
+                                                 frontend_id);
     return true;
   }
 
@@ -409,7 +406,7 @@ void AutofillExternalDelegate::ApplyAutofillOptions(
   // yet.
   // TODO(crbug.com/1274134): Clean up once improvements are launched.
   if (base::FeatureList::IsEnabled(
-          autofill::features::kAutofillVisualImprovementsForSuggestionUi) &&
+          features::kAutofillVisualImprovementsForSuggestionUi) &&
       !suggestions->empty()) {
     suggestions->push_back(Suggestion());
     suggestions->back().frontend_id = POPUP_ITEM_ID_SEPARATOR;
@@ -420,7 +417,7 @@ void AutofillExternalDelegate::ApplyAutofillOptions(
   if (query_field_.is_autofilled) {
     std::u16string value =
         l10n_util::GetStringUTF16(IDS_AUTOFILL_CLEAR_FORM_MENU_ITEM);
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     if (IsKeyboardAccessoryEnabled())
       value = base::i18n::ToUpper(value);
 #endif
@@ -446,10 +443,10 @@ void AutofillExternalDelegate::ApplyAutofillOptions(
   // On Android and Desktop, Google Pay branding is shown along with Settings.
   // So Google Pay Icon is just attached to an existing menu item.
   if (is_all_server_suggestions) {
-#if defined(OS_ANDROID) || defined(OS_IOS)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
     suggestions->back().icon = "googlePay";
 #else
-    suggestions->back().store_indicator_icon =
+    suggestions->back().trailing_icon =
         ui::NativeTheme::GetInstanceForNativeUi()->ShouldUseDarkColors()
             ? "googlePayDark"
             : "googlePay";
@@ -468,10 +465,10 @@ void AutofillExternalDelegate::InsertDataListValues(
                                          data_list_values_.end());
   base::EraseIf(*suggestions, [&data_list_set](const Suggestion& suggestion) {
     return suggestion.frontend_id == POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY &&
-           base::Contains(data_list_set, suggestion.value);
+           base::Contains(data_list_set, suggestion.main_text.value);
   });
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   // Insert the separator between the datalist and Autofill/Autocomplete values
   // (if there are any).
   if (!suggestions->empty()) {
@@ -484,7 +481,8 @@ void AutofillExternalDelegate::InsertDataListValues(
   suggestions->insert(suggestions->begin(), data_list_values_.size(),
                       Suggestion());
   for (size_t i = 0; i < data_list_values_.size(); i++) {
-    (*suggestions)[i].value = data_list_values_[i];
+    (*suggestions)[i].main_text = Suggestion::Text(
+        data_list_values_[i], Suggestion::Text::IsPrimary(true));
     (*suggestions)[i].label = data_list_labels_[i];
     (*suggestions)[i].frontend_id = POPUP_ITEM_ID_DATALIST_ENTRY;
   }

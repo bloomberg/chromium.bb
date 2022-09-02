@@ -7,12 +7,15 @@
 
 #import <Foundation/Foundation.h>
 
-// Protocol used by |PasswordIssueTableViewController| to display items.
+@class CrURL;
+
+// Protocol used by `PasswordIssueTableViewController` to display items.
 @protocol PasswordIssue
 
+// Associated URL to retrieve a favicon.
+@property(nonatomic, readwrite, strong) CrURL* URL;
 // Associated website.
 @property(nonatomic, readonly) NSString* website;
-
 // Associated username.
 @property(nonatomic, readonly) NSString* username;
 

@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/raw_ptr.h"
+#include "base/time/time.h"
 #include "remoting/client/audio/audio_jitter_buffer.h"
 #include "remoting/client/audio/audio_stream_format.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -21,7 +22,7 @@ namespace {
 constexpr AudioPacket::BytesPerSample kBytesPerSample =
     AudioPacket::BYTES_PER_SAMPLE_2;
 constexpr AudioPacket::Channels kChannels = AudioPacket::CHANNELS_STEREO;
-constexpr uint32_t kAudioSampleBytes = kChannels * kBytesPerSample;
+constexpr uint32_t kAudioSampleBytes = uint32_t{kChannels} * kBytesPerSample;
 
 constexpr uint32_t kNumConsumerBuffers = 3;
 constexpr uint32_t kConsumerBufferMaxByteSize = 5000 * kAudioSampleBytes;

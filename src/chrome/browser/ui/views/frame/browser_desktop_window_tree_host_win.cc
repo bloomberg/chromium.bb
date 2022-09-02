@@ -20,7 +20,6 @@
 #include "base/task/thread_pool.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/headless/headless_mode_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -284,10 +283,7 @@ void BrowserDesktopWindowTreeHostWin::Show(ui::WindowShowState show_state,
     else
       OnHostWorkspaceChanged();
   }
-  // Avoid changing desktop window visibility state when browser is running in
-  // native headless mode.
-  if (!headless::IsChromeNativeHeadless())
-    DesktopWindowTreeHostWin::Show(show_state, restore_bounds);
+  DesktopWindowTreeHostWin::Show(show_state, restore_bounds);
 }
 
 std::string BrowserDesktopWindowTreeHostWin::GetWorkspace() const {
@@ -332,8 +328,8 @@ bool BrowserDesktopWindowTreeHostWin::GetClientAreaInsets(
     int top_thickness = 0;
     if (ShouldCustomDrawSystemTitlebar() && GetWidget()->IsMaximized())
       top_thickness = frame_thickness;
-    *insets = gfx::Insets(top_thickness, frame_thickness, frame_thickness,
-                          frame_thickness);
+    *insets = gfx::Insets::TLBR(top_thickness, frame_thickness, frame_thickness,
+                                frame_thickness);
   }
   return true;
 }
@@ -370,8 +366,8 @@ bool BrowserDesktopWindowTreeHostWin::GetDwmFrameInsetsInPixels(
     const int inset = (base::win::GetVersion() < base::win::Version::WIN8)
                           ? kWin7GlassInset
                           : 0;
-    *insets = gfx::Insets(tabstrip_region_bounds.bottom() + inset, inset, inset,
-                          inset);
+    *insets = gfx::Insets::TLBR(tabstrip_region_bounds.bottom() + inset, inset,
+                                inset, inset);
   }
   return true;
 }

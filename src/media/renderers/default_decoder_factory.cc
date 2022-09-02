@@ -17,13 +17,9 @@
 #include "media/media_buildflags.h"
 #include "media/video/gpu_video_accelerator_factories.h"
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 #include "media/filters/decrypting_audio_decoder.h"
 #include "media/filters/decrypting_video_decoder.h"
-#endif
-
-#if defined(OS_FUCHSIA)
-#include "media/filters/fuchsia/fuchsia_video_decoder.h"
 #endif
 
 #if BUILDFLAG(ENABLE_DAV1D_DECODER)
@@ -62,7 +58,7 @@ void DefaultDecoderFactory::CreateAudioDecoders(
   if (is_shutdown_)
     return;
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   // DecryptingAudioDecoder is only needed in External Clear Key testing to
   // cover the audio decrypt-and-decode path.
   if (base::FeatureList::IsEnabled(kExternalClearKeyForTesting)) {
@@ -141,7 +137,7 @@ void DefaultDecoderFactory::CreateVideoDecoders(
   if (is_shutdown_)
     return;
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   video_decoders->push_back(
       std::make_unique<DecryptingVideoDecoder>(task_runner, media_log));
 #endif
@@ -159,27 +155,6 @@ void DefaultDecoderFactory::CreateVideoDecoders(
         task_runner, gpu_factories, media_log,
         std::move(request_overlay_info_cb), target_color_space, video_decoders);
   }
-
-#if defined(OS_FUCHSIA)
-  // TODO(crbug.com/1122116): Minimize Fuchsia-specific code paths.
-  if (gpu_factories && gpu_factories->IsGpuVideoDecodeAcceleratorEnabled()) {
-    auto* context_provider = gpu_factories->GetMediaContextProvider();
-
-    // GetMediaContextProvider() may return nullptr when the context was lost
-    // (e.g. after GPU process crash). To handle this case RenderThreadImpl
-    // creates a new GpuVideoAcceleratorFactories with a new ContextProvider
-    // instance, but there is no way to get it here. For now just don't add
-    // FuchsiaVideoDecoder in that scenario.
-    //
-    // TODO(crbug.com/580386): Handle context loss properly.
-    if (context_provider) {
-      video_decoders->push_back(FuchsiaVideoDecoder::Create(context_provider));
-    } else {
-      DLOG(ERROR)
-          << "Can't create FuchsiaVideoDecoder due to GPU context loss.";
-    }
-  }
-#endif
 
 #if BUILDFLAG(ENABLE_LIBVPX)
   video_decoders->push_back(std::make_unique<OffloadingVpxVideoDecoder>());
@@ -201,6 +176,10 @@ void DefaultDecoderFactory::CreateVideoDecoders(
 #if BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
   video_decoders->push_back(std::make_unique<FFmpegVideoDecoder>(media_log));
 #endif
+}
+
+base::WeakPtr<DecoderFactory> DefaultDecoderFactory::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }
 
 void DefaultDecoderFactory::Shutdown() {

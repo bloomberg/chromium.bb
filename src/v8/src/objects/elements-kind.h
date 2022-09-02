@@ -158,12 +158,12 @@ constexpr int kFastElementsKindPackedToHoley =
     HOLEY_SMI_ELEMENTS - PACKED_SMI_ELEMENTS;
 
 constexpr int kElementsKindBits = 6;
-STATIC_ASSERT((1 << kElementsKindBits) > LAST_ELEMENTS_KIND);
-STATIC_ASSERT((1 << (kElementsKindBits - 1)) <= LAST_ELEMENTS_KIND);
+static_assert((1 << kElementsKindBits) > LAST_ELEMENTS_KIND);
+static_assert((1 << (kElementsKindBits - 1)) <= LAST_ELEMENTS_KIND);
 
 constexpr int kFastElementsKindBits = 3;
-STATIC_ASSERT((1 << kFastElementsKindBits) > LAST_FAST_ELEMENTS_KIND);
-STATIC_ASSERT((1 << (kFastElementsKindBits - 1)) <= LAST_FAST_ELEMENTS_KIND);
+static_assert((1 << kFastElementsKindBits) > LAST_FAST_ELEMENTS_KIND);
+static_assert((1 << (kFastElementsKindBits - 1)) <= LAST_FAST_ELEMENTS_KIND);
 
 V8_EXPORT_PRIVATE int ElementsKindToShiftSize(ElementsKind elements_kind);
 V8_EXPORT_PRIVATE int ElementsKindToByteSize(ElementsKind elements_kind);
@@ -220,6 +220,11 @@ inline bool IsBigIntTypedArrayElementsKind(ElementsKind kind) {
          kind == RAB_GSAB_BIGUINT64_ELEMENTS;
 }
 
+inline bool IsFloatTypedArrayElementsKind(ElementsKind kind) {
+  return kind == FLOAT32_ELEMENTS || kind == FLOAT64_ELEMENTS ||
+         kind == RAB_GSAB_FLOAT32_ELEMENTS || kind == RAB_GSAB_FLOAT64_ELEMENTS;
+}
+
 inline bool IsWasmArrayElementsKind(ElementsKind kind) {
   return kind == WASM_ARRAY_ELEMENTS;
 }
@@ -231,7 +236,7 @@ inline bool IsTerminalElementsKind(ElementsKind kind) {
 }
 
 inline bool IsFastElementsKind(ElementsKind kind) {
-  STATIC_ASSERT(FIRST_FAST_ELEMENTS_KIND == 0);
+  static_assert(FIRST_FAST_ELEMENTS_KIND == 0);
   return kind <= LAST_FAST_ELEMENTS_KIND;
 }
 

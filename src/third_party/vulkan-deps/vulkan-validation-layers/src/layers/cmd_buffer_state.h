@@ -1,7 +1,7 @@
-/* Copyright (c) 2015-2021 The Khronos Group Inc.
- * Copyright (c) 2015-2021 Valve Corporation
- * Copyright (c) 2015-2021 LunarG, Inc.
- * Copyright (C) 2015-2021 Google Inc.
+/* Copyright (c) 2015-2022 The Khronos Group Inc.
+ * Copyright (c) 2015-2022 Valve Corporation
+ * Copyright (c) 2015-2022 LunarG, Inc.
+ * Copyright (C) 2015-2022 Google Inc.
  * Modifications Copyright (C) 2020 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -134,7 +134,8 @@ enum CBStatusFlagBits : uint64_t {
     CBSTATUS_LOGIC_OP_SET                    = 0x100000000,
     CBSTATUS_PRIMITIVE_RESTART_ENABLE_SET    = 0x200000000,
     CBSTATUS_VERTEX_INPUT_SET                = 0x400000000,
-    CBSTATUS_ALL_STATE_SET                   = 0x7FFFFFDFF,   // All state set (intentionally exclude index buffer)
+    CBSTATUS_COLOR_WRITE_ENABLE_SET          = 0x800000000,
+    CBSTATUS_ALL_STATE_SET                   = 0xFFFFFFDFF,   // All state set (intentionally exclude index buffer)
     // clang-format on
 };
 
@@ -167,7 +168,10 @@ struct CBVertexBufferBindingInfo {
     std::vector<BufferBinding> vertex_buffer_bindings;
 };
 
-typedef layer_data::unordered_map<const IMAGE_STATE *, layer_data::optional<ImageSubresourceLayoutMap>> CommandBufferImageLayoutMap;
+typedef layer_data::unordered_map<const IMAGE_STATE *, std::shared_ptr<ImageSubresourceLayoutMap>> CommandBufferImageLayoutMap;
+
+typedef layer_data::unordered_map<const GlobalImageLayoutRangeMap *, std::shared_ptr<ImageSubresourceLayoutMap>>
+    CommandBufferAliasedLayoutMap;
 
 class CMD_BUFFER_STATE : public REFCOUNTED_NODE {
   public:
@@ -182,6 +186,9 @@ class CMD_BUFFER_STATE : public REFCOUNTED_NODE {
     bool hasBuildAccelerationStructureCmd;
     bool hasDispatchCmd;
     bool unprotected;  // can't be used for protected memory
+    bool hasRenderPassInstance;
+    bool suspendsRenderPassInstance;
+    bool resumesRenderPassInstance;
 
     CB_STATE state;         // Track cmd buffer update state
     uint64_t commandCount;  // Number of commands recorded. Currently only used with VK_KHR_performance_query
@@ -192,11 +199,16 @@ class CMD_BUFFER_STATE : public REFCOUNTED_NODE {
     CBStatusFlags static_status;                       // All state bits provided by current graphics pipeline
                                                        // rather than dynamic state
     CBStatusFlags dynamic_status;                      // dynamic state set up in pipeline
+    std::string begin_rendering_func_name;
     // Currently storing "lastBound" objects on per-CB basis
     //  long-term may want to create caches of "lastBound" states and could have
     //  each individual CMD_NODE referencing its own "lastBound" state
     // Store last bound state for Gfx & Compute pipeline bind points
     std::array<LAST_BOUND_STATE, BindPoint_Count> lastBound;  // index is LvlBindPoint.
+
+    // Use the casting boilerplate from BASE_NODE to implement the derived shared_from_this
+    std::shared_ptr<const CMD_BUFFER_STATE> shared_from_this() const { return SharedFromThisImpl(this); }
+    std::shared_ptr<CMD_BUFFER_STATE> shared_from_this() { return SharedFromThisImpl(this); }
 
     struct CmdDrawDispatchInfo {
         CMD_TYPE cmd_type;
@@ -258,7 +270,7 @@ class CMD_BUFFER_STATE : public REFCOUNTED_NODE {
     layer_data::unordered_set<std::shared_ptr<FRAMEBUFFER_STATE>> framebuffers;
     // Unified data structs to track objects bound to this command buffer as well as object
     //  dependencies that have been broken : either destroyed objects, or updated descriptor sets
-    BASE_NODE::NodeSet object_bindings;
+    layer_data::unordered_set<std::shared_ptr<BASE_NODE>> object_bindings;
     layer_data::unordered_map<VulkanTypedHandle, LogObjectList> broken_bindings;
 
     QFOTransferBarrierSets<QFOBufferTransferBarrier> qfo_transfer_buffer_barriers;
@@ -270,7 +282,10 @@ class CMD_BUFFER_STATE : public REFCOUNTED_NODE {
     layer_data::unordered_set<QueryObject> activeQueries;
     layer_data::unordered_set<QueryObject> startedQueries;
     layer_data::unordered_set<QueryObject> resetQueries;
+    layer_data::unordered_set<QueryObject> updatedQueries;
     CommandBufferImageLayoutMap image_layout_map;
+    CommandBufferAliasedLayoutMap aliased_image_layout_map;  // storage for potentially aliased images
+
     CBVertexBufferBindingInfo current_vertex_buffer_binding_info;
     bool vertex_buffer_used;  // Track for perf warning to make sure any bound vtx buffer used
     VkCommandBuffer primaryCommandBuffer;
@@ -287,9 +302,7 @@ class CMD_BUFFER_STATE : public REFCOUNTED_NODE {
     // Validation functions run when secondary CB is executed in primary
     std::vector<std::function<bool(const CMD_BUFFER_STATE &secondary, const CMD_BUFFER_STATE *primary, const FRAMEBUFFER_STATE *)>>
         cmd_execute_commands_functions;
-    std::vector<
-        std::function<bool(const ValidationStateTracker *device_data, bool do_validate, EventToStageMap *localEventToStageMap)>>
-        eventUpdates;
+    std::vector<std::function<bool(CMD_BUFFER_STATE &cb, bool do_validate, EventToStageMap *localEventToStageMap)>> eventUpdates;
     std::vector<std::function<bool(const ValidationStateTracker *device_data, bool do_validate, VkQueryPool &firstPerfQueryPool,
                                    uint32_t perfQueryPass, QueryMap *localQueryToStateMap)>>
         queryUpdates;
@@ -318,6 +331,10 @@ class CMD_BUFFER_STATE : public REFCOUNTED_NODE {
     bool conditional_rendering_active{false};
     bool conditional_rendering_inside_render_pass{false};
     uint32_t conditional_rendering_subpass{0};
+    uint32_t dynamicColorWriteEnableAttachmentCount{0};
+    mutable ReadWriteLock lock;
+    ReadLockGuard ReadLock() const { return ReadLockGuard(lock); }
+    WriteLockGuard WriteLock() { return WriteLockGuard(lock); }
 
     CMD_BUFFER_STATE(ValidationStateTracker *, VkCommandBuffer cb, const VkCommandBufferAllocateInfo *pCreateInfo,
                      const COMMAND_POOL_STATE *cmd_pool);
@@ -331,9 +348,19 @@ class CMD_BUFFER_STATE : public REFCOUNTED_NODE {
     IMAGE_VIEW_STATE *GetActiveAttachmentImageViewState(uint32_t index);
     const IMAGE_VIEW_STATE *GetActiveAttachmentImageViewState(uint32_t index) const;
 
-    void AddChild(BASE_NODE *child_node);
+    void AddChild(std::shared_ptr<BASE_NODE> &base_node);
+    template <typename StateObject>
+    void AddChild(std::shared_ptr<StateObject> &child_node) {
+        auto base = std::static_pointer_cast<BASE_NODE>(child_node);
+        AddChild(base);
+    }
 
-    void RemoveChild(BASE_NODE *child_node);
+    void RemoveChild(std::shared_ptr<BASE_NODE> &base_node);
+    template <typename StateObject>
+    void RemoveChild(std::shared_ptr<StateObject> &child_node) {
+        auto base = std::static_pointer_cast<BASE_NODE>(child_node);
+        RemoveChild(base);
+    }
 
     virtual void Reset();
 
@@ -402,14 +429,14 @@ class CMD_BUFFER_STATE : public REFCOUNTED_NODE {
     void NextSubpass(CMD_TYPE cmd_type, VkSubpassContents contents);
     void EndRenderPass(CMD_TYPE cmd_type);
 
-    void BeginRendering(CMD_TYPE cmd_type, const VkRenderingInfoKHR *pRenderingInfo);
+    void BeginRendering(CMD_TYPE cmd_type, const VkRenderingInfo *pRenderingInfo);
 
     void ExecuteCommands(uint32_t commandBuffersCount, const VkCommandBuffer *pCommandBuffers);
 
     void UpdateLastBoundDescriptorSets(VkPipelineBindPoint pipeline_bind_point, const PIPELINE_LAYOUT_STATE *pipeline_layout,
                                        uint32_t first_set, uint32_t set_count, const VkDescriptorSet *pDescriptorSets,
-                                       cvdescriptorset::DescriptorSet *push_descriptor_set, uint32_t dynamic_offset_count,
-                                       const uint32_t *p_dynamic_offsets);
+                                       std::shared_ptr<cvdescriptorset::DescriptorSet> &push_descriptor_set,
+                                       uint32_t dynamic_offset_count, const uint32_t *p_dynamic_offsets);
 
     void PushDescriptorSetState(VkPipelineBindPoint pipelineBindPoint, PIPELINE_LAYOUT_STATE *pipeline_layout, uint32_t set,
                                 uint32_t descriptorWriteCount, const VkWriteDescriptorSet *pDescriptorWrites);
@@ -420,10 +447,12 @@ class CMD_BUFFER_STATE : public REFCOUNTED_NODE {
 
     virtual void RecordCmd(CMD_TYPE cmd_type);
     void RecordStateCmd(CMD_TYPE cmd_type, CBStatusFlags state_bits);
-    void RecordTransferCmd(CMD_TYPE cmd_type, BINDABLE *buf1, BINDABLE *buf2 = nullptr);
+    void RecordColorWriteEnableStateCmd(CMD_TYPE cmd_type, CBStatusFlags state_bits, uint32_t attachment_count);
+    void RecordTransferCmd(CMD_TYPE cmd_type, std::shared_ptr<BINDABLE> &&buf1, std::shared_ptr<BINDABLE> &&buf2 = nullptr);
     void RecordSetEvent(CMD_TYPE cmd_type, VkEvent event, VkPipelineStageFlags2KHR stageMask);
     void RecordResetEvent(CMD_TYPE cmd_type, VkEvent event, VkPipelineStageFlags2KHR stageMask);
-    void RecordWaitEvents(CMD_TYPE cmd_type, uint32_t eventCount, const VkEvent *pEvents);
+    virtual void RecordWaitEvents(CMD_TYPE cmd_type, uint32_t eventCount, const VkEvent *pEvents,
+                                  VkPipelineStageFlags2KHR src_stage_mask);
     void RecordWriteTimestamp(CMD_TYPE cmd_type, VkPipelineStageFlags2KHR pipelineStage, VkQueryPool queryPool, uint32_t slot);
 
     void RecordBarriers(uint32_t memoryBarrierCount, const VkMemoryBarrier *pMemoryBarriers, uint32_t bufferMemoryBarrierCount,
@@ -443,7 +472,7 @@ class CMD_BUFFER_STATE : public REFCOUNTED_NODE {
     void SetImageInitialLayout(const IMAGE_STATE &image_state, const VkImageSubresourceLayers &layers, VkImageLayout layout);
 
     void Submit(uint32_t perf_submit_pass);
-    void Retire(uint32_t perf_submit_pass);
+    void Retire(uint32_t perf_submit_pass, const std::function<bool(const QueryObject &)> &is_query_updated_after);
 
     uint32_t GetDynamicColorAttachmentCount() {
         if (activeRenderPass) {
@@ -466,6 +495,7 @@ class CMD_BUFFER_STATE : public REFCOUNTED_NODE {
   protected:
     void NotifyInvalidate(const BASE_NODE::NodeList &invalid_nodes, bool unlink) override;
     void UpdateAttachmentsView(const VkRenderPassBeginInfo *pRenderPassBegin);
+    void UnbindResources();
 };
 
 // specializations for barriers that cannot do queue family ownership transfers

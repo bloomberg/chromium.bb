@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "ash/app_list/app_list_model_provider.h"
 #include "ash/app_list/model/app_list_model.h"
 #include "ash/app_list/model/app_list_model_observer.h"
 #include "ash/ash_export.h"
@@ -24,7 +25,8 @@ class AppListModel;
 
 // Handles badges on app list items (e.g. notification badges).
 class ASH_EXPORT AppListBadgeController
-    : public AppListModelObserver,
+    : public AppListModelProvider::Observer,
+      public AppListModelObserver,
       public SessionObserver,
       public apps::AppRegistryCache::Observer {
  public:
@@ -35,11 +37,9 @@ class ASH_EXPORT AppListBadgeController
 
   void Shutdown();
 
-  // See AppListController for documentation.
-  // TODO(jamescook): Refactor to use AppListModelProvider::Observer to detect
-  // changes.
-  void SetActiveModel(AppListModel* model);
-  void ClearActiveModel();
+  // AppListModelProvider::Observer:
+  void OnActiveAppListModelsChanged(AppListModel* model,
+                                    SearchModel* search_model) override;
 
   // AppListModelObserver:
   void OnAppListItemAdded(AppListItem* item) override;
@@ -55,12 +55,14 @@ class ASH_EXPORT AppListBadgeController
  private:
   // Updates whether a notification badge is shown for the AppListItemView
   // corresponding with the |app_id|.
-  void UpdateItemNotificationBadge(const std::string& app_id,
-                                   apps::mojom::OptionalBool has_badge);
+  void UpdateItemNotificationBadge(const std::string& app_id, bool has_badge);
 
   // Checks the notification badging pref and then updates whether a
   // notification badge is shown for each AppListItem.
   void UpdateAppNotificationBadging();
+
+  // Sets the active AppListModel and observes it for changes.
+  void SetActiveModel(AppListModel* model);
 
   AppListModel* model_ = nullptr;
 

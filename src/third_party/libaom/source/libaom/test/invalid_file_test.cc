@@ -51,7 +51,7 @@ class InvalidFileTest : public ::libaom_test::DecoderTest,
 
   void OpenResFile(const std::string &res_file_name) {
     res_file_ = libaom_test::OpenTestDataFile(res_file_name);
-    ASSERT_TRUE(res_file_ != NULL)
+    ASSERT_NE(res_file_, nullptr)
         << "Result file open failed. Filename: " << res_file_name;
   }
 
@@ -64,7 +64,7 @@ class InvalidFileTest : public ::libaom_test::DecoderTest,
       const aom_codec_err_t res_dec,
       const libaom_test::CompressedVideoSource &video,
       libaom_test::Decoder *decoder) {
-    EXPECT_TRUE(res_file_ != NULL);
+    EXPECT_NE(res_file_, nullptr);
     int expected_res_dec = -1;
 
     // Read integer result.

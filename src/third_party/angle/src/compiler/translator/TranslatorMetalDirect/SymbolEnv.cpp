@@ -218,12 +218,12 @@ Name SymbolEnv::TemplateName::fullName(std::string &buffer) const
                     break;
 
                 case TemplateArg::Kind::Int:
-                    sprintf(argBuffer, "%i", value.i);
+                    snprintf(argBuffer, sizeof(argBuffer), "%i", value.i);
                     buffer += argBuffer;
                     break;
 
                 case TemplateArg::Kind::UInt:
-                    sprintf(argBuffer, "%u", value.u);
+                    snprintf(argBuffer, sizeof(argBuffer), "%u", value.u);
                     buffer += argBuffer;
                     break;
 
@@ -240,15 +240,15 @@ Name SymbolEnv::TemplateName::fullName(std::string &buffer) const
                         buffer += type.getBasicString();
                         if (type.isVector())
                         {
-                            sprintf(argBuffer, "%i", type.getNominalSize());
+                            snprintf(argBuffer, sizeof(argBuffer), "%u", type.getNominalSize());
                             buffer += argBuffer;
                         }
                         else if (type.isMatrix())
                         {
-                            sprintf(argBuffer, "%i", type.getCols());
+                            snprintf(argBuffer, sizeof(argBuffer), "%u", type.getCols());
                             buffer += argBuffer;
                             buffer += "x";
-                            sprintf(argBuffer, "%i", type.getRows());
+                            snprintf(argBuffer, sizeof(argBuffer), "%u", type.getRows());
                             buffer += argBuffer;
                         }
                     }
@@ -563,25 +563,25 @@ Name sh::GetTextureTypeName(TBasicType samplerType)
     const TBasicType textureType = GetTextureBasicType(samplerType);
     const char *name;
 
-#define HANDLE_TEXTURE_NAME(baseName)                \
-    do                                               \
-    {                                                \
-        switch (textureType)                         \
-        {                                            \
-            case TBasicType::EbtFloat:               \
-                name = "metal::" baseName "<float>"; \
-                break;                               \
-            case TBasicType::EbtInt:                 \
-                name = "metal::" baseName "<int>";   \
-                break;                               \
-            case TBasicType::EbtUInt:                \
-                name = "metal::" baseName "<uint>";  \
-                break;                               \
-            default:                                 \
-                UNREACHABLE();                       \
-                name = nullptr;                      \
-                break;                               \
-        }                                            \
+#define HANDLE_TEXTURE_NAME(baseName)                   \
+    do                                                  \
+    {                                                   \
+        switch (textureType)                            \
+        {                                               \
+            case TBasicType::EbtFloat:                  \
+                name = "metal::" baseName "<float>";    \
+                break;                                  \
+            case TBasicType::EbtInt:                    \
+                name = "metal::" baseName "<int>";      \
+                break;                                  \
+            case TBasicType::EbtUInt:                   \
+                name = "metal::" baseName "<uint32_t>"; \
+                break;                                  \
+            default:                                    \
+                UNREACHABLE();                          \
+                name = nullptr;                         \
+                break;                                  \
+        }                                               \
     } while (false)
 
     switch (samplerType)

@@ -50,6 +50,7 @@ ConsoleTestRunner.dumpConsoleMessagesIntoArray = async function(printOriginating
     const element = uiMessage.element();
     // Retrieving the message element triggered rendering, now wait for
     // the live location within to be resolved initially.
+    await uiMessage.formatErrorStackPromiseForTest();
     await TestRunner.waitForPendingLiveLocationUpdates();
 
     let classNames;
@@ -220,9 +221,14 @@ ConsoleTestRunner.evaluateInConsole = function(code, callback, dontForceMainCont
     const element = commandResult.toMessageElement();
     // Only call the callback once the live location within the
     // message element is resolved initially.
-    TestRunner.waitForPendingLiveLocationUpdates().then(() => {
-      callback(element.deepTextContent());
-    });
+    Promise
+        .all([
+          commandResult.formatErrorStackPromiseForTest(),
+          TestRunner.waitForPendingLiveLocationUpdates(),
+        ])
+        .then(() => {
+          callback(element.deepTextContent());
+        });
   });
 };
 
@@ -358,6 +364,7 @@ ConsoleTestRunner.dumpConsoleMessagesWithClasses = async function(sortMessages, 
     let messageText = ConsoleTestRunner.prepareConsoleMessageText(element);
     if (trimMessages) {
       messageText = messageText.replace(/[ ]+/g, ' ');
+      messageText = messageText.replace(/\s+\n\s+/g, ' ');
     }
     result.push(messageText + ' ' + element.getAttribute('class') + ' > ' + contentElement.getAttribute('class'));
   }

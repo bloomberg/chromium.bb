@@ -7,7 +7,6 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/policy/policy_constants.h"
-#include "ios/chrome/browser/chrome_switches.h"
 #import "ios/chrome/browser/policy/policy_app_interface.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
@@ -56,11 +55,17 @@ id<GREYMatcher> TabGridButton() {
 void AssertItemEnabledState(id<GREYMatcher> item,
                             id<GREYMatcher> parentMatcher,
                             bool enabled) {
+  id<GREYMatcher> enabledMatcher =
+      [ChromeEarlGrey isNewOverflowMenuEnabled]
+          // TODO(crbug.com/1285974): grey_userInteractionEnabled doesn't work
+          // for SwiftUI views.
+          ? grey_not(grey_accessibilityTrait(UIAccessibilityTraitNotEnabled))
+          : grey_userInteractionEnabled();
   [[[EarlGrey selectElementWithMatcher:item]
          usingSearchAction:grey_scrollInDirection(kGREYDirectionDown,
                                                   /*amount=*/200)
       onElementWithMatcher:parentMatcher]
-      assertWithMatcher:enabled ? grey_userInteractionEnabled()
+      assertWithMatcher:enabled ? enabledMatcher
                                 : grey_accessibilityTrait(
                                       UIAccessibilityTraitNotEnabled)];
 }
@@ -79,8 +84,6 @@ void AssertItemEnabledState(id<GREYMatcher> item,
   // app, this policy data will appear under the
   // "com.apple.configuration.managed" key.
   AppLaunchConfiguration config;
-  config.additional_args.push_back(std::string("--") +
-                                   switches::kEnableEnterprisePolicy);
   config.relaunch_policy = NoForceRelaunchAndResetState;
   return config;
 }

@@ -9,6 +9,8 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/raw_ptr.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/predictors/predictors_features.h"
 #include "chrome/browser/predictors/predictors_switches.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor.h"
@@ -59,19 +61,19 @@ const net::NetworkTrafficAnnotationTag kPrefetchTrafficAnnotation =
         "C) Disable 'Make searches and browsing better' under Settings > "
         "   Sync and Google services > Make searches and browsing better"
       chrome_policy {
-        URLBlacklist {
-          URLBlacklist: { entries: '*' }
+        URLBlocklist {
+          URLBlocklist: { entries: '*' }
         }
       }
       chrome_policy {
-        URLWhitelist {
-          URLWhitelist { }
+        URLAllowlist {
+          URLAllowlist { }
         }
       }
     }
     comments:
       "This feature can be safely disabled, but enabling it may result in "
-      "faster page loads. Using either URLBlacklist or URLWhitelist policies "
+      "faster page loads. Using either URLBlocklist or URLAllowlist policies "
       "(or a combination of both) limits the scope of these requests."
 )");
 
@@ -121,6 +123,7 @@ struct PrefetchJob {
         network_isolation_key(
             std::move(prefetch_request.network_isolation_key)),
         destination(prefetch_request.destination),
+        creation_time(base::TimeTicks::Now()),
         info(info.weak_factory.GetWeakPtr()) {
     DCHECK(url.is_valid());
     DCHECK(url.SchemeIsHTTPOrHTTPS());
@@ -139,6 +142,7 @@ struct PrefetchJob {
   GURL url;
   net::NetworkIsolationKey network_isolation_key;
   network::mojom::RequestDestination destination;
+  base::TimeTicks creation_time;
 
   // PrefetchJob lives until the URL load completes, so it can outlive the
   // PrefetchManager and therefore the PrefetchInfo.
@@ -310,6 +314,11 @@ void PrefetchManager::OnPrefetchFinished(
 void PrefetchManager::TryToLaunchPrefetchJobs() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
+  // We assume that the number of jobs in the queue will be relatively small at
+  // any given time. We can revisit this as needed.
+  UMA_HISTOGRAM_COUNTS_100("Navigation.Prefetch.PrefetchJobQueueLength",
+                           queued_jobs_.size());
+
   if (queued_jobs_.empty() ||
       inflight_jobs_count_ >= features::GetMaxInflightPrefetches()) {
     return;
@@ -330,6 +339,11 @@ void PrefetchManager::TryToLaunchPrefetchJobs() {
     base::WeakPtr<PrefetchInfo> info = job->info;
     // |this| owns all infos.
     DCHECK(info);
+
+    // Note: PrefetchJobs are put into |queued_jobs_| immediately on creation,
+    // so their creation time is also the time at which they started queueing.
+    UMA_HISTOGRAM_TIMES("Navigation.Prefetch.PrefetchJobQueueingTime",
+                        base::TimeTicks::Now() - job->creation_time);
 
     if (job->url.is_valid() && factory && !info->was_canceled)
       PrefetchUrl(std::move(job), factory);

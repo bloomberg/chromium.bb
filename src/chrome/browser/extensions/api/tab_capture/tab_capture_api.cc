@@ -73,7 +73,7 @@ bool OptionsSpecifyAudioOrVideo(const TabCapture::CaptureOptions& options) {
 DesktopMediaID BuildDesktopMediaID(content::WebContents* target_contents,
                                    TabCapture::CaptureOptions* options) {
   content::RenderFrameHost* const target_frame =
-      target_contents->GetMainFrame();
+      target_contents->GetPrimaryMainFrame();
   DesktopMediaID source(
       DesktopMediaID::TYPE_WEB_CONTENTS, DesktopMediaID::kNullId,
       WebContentsMediaCaptureId(target_frame->GetProcess()->GetID(),
@@ -108,8 +108,8 @@ void AddMediaStreamSourceConstraints(content::WebContents* target_contents,
     if (!msc)
       continue;
     base::DictionaryValue* constraint = &msc->mandatory.additional_properties;
-    constraint->SetString(kMediaStreamSource, kMediaStreamSourceTab);
-    constraint->SetString(kMediaStreamSourceId, device_id);
+    constraint->SetStringKey(kMediaStreamSource, kMediaStreamSourceTab);
+    constraint->SetStringKey(kMediaStreamSourceId, device_id);
   }
 }
 
@@ -204,8 +204,6 @@ ExtensionFunction::ResponseAction TabCaptureCaptureFunction::Run() {
       target_contents, extension_id, false, extension()->url(), source,
       extension()->name(), extension_web_contents);
   if (device_id.empty()) {
-    // TODO(miu): Allow multiple consumers of single tab capture.
-    // http://crbug.com/535336
     return RespondNow(Error(kCapturingSameTab));
   }
   AddMediaStreamSourceConstraints(target_contents, &params->options, device_id);
@@ -218,19 +216,16 @@ ExtensionFunction::ResponseAction TabCaptureCaptureFunction::Run() {
   // virtual audio/video capture devices and set up all the data flows.  The
   // custom JS bindings can be found here:
   // chrome/renderer/resources/extensions/tab_capture_custom_bindings.js
-  std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
-  result->MergeDictionary(params->options.ToValue().get());
-  return RespondNow(
-      OneArgument(base::Value::FromUniquePtrValue(std::move(result))));
+  base::Value result = params->options.ToValue()->Clone();
+  return RespondNow(OneArgument(std::move(result)));
 }
 
 ExtensionFunction::ResponseAction TabCaptureGetCapturedTabsFunction::Run() {
   TabCaptureRegistry* registry = TabCaptureRegistry::Get(browser_context());
-  std::unique_ptr<base::ListValue> list(new base::ListValue());
+  base::Value::List list;
   if (registry)
-    registry->GetCapturedTabs(extension()->id(), list.get());
-  return RespondNow(
-      OneArgument(base::Value::FromUniquePtrValue(std::move(list))));
+    registry->GetCapturedTabs(extension()->id(), &list);
+  return RespondNow(OneArgument(base::Value(std::move(list))));
 }
 
 ExtensionFunction::ResponseAction TabCaptureGetMediaStreamIdFunction::Run() {

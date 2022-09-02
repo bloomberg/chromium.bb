@@ -30,9 +30,10 @@
 #include "base/time/time.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_offset.h"
-#include "third_party/blink/renderer/platform/geometry/float_size.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
+#include "third_party/blink/renderer/platform/heap/member.h"
 #include "ui/gfx/geometry/point_f.h"
+#include "ui/gfx/geometry/size_f.h"
 
 namespace blink {
 
@@ -78,7 +79,6 @@ class CORE_EXPORT AutoscrollController final
   void StartAutoscrollForSelection(LayoutObject*);
   void StopAutoscroll();
   void StopAutoscrollIfNeeded(LayoutObject*);
-  void UpdateAutoscrollLayoutObject();
   void UpdateDragAndDrop(Node* target_node,
                          const gfx::PointF& event_position,
                          base::TimeTicks event_time);

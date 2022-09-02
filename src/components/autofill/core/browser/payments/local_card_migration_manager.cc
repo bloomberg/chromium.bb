@@ -80,7 +80,7 @@ bool LocalCardMigrationManager::ShouldOfferLocalCardMigration(
   }
 
   // Don't show the prompt if max strike count was reached.
-  if (GetLocalCardMigrationStrikeDatabase()->IsMaxStrikesLimitReached()) {
+  if (GetLocalCardMigrationStrikeDatabase()->ShouldBlockFeature()) {
     switch (imported_credit_card_record_type_) {
       case FormDataImporter::ImportedCreditCardRecordType::LOCAL_CARD:
         AutofillMetrics::LogLocalCardMigrationNotOfferedDueToMaxStrikesMetric(
@@ -142,6 +142,7 @@ void LocalCardMigrationManager::AttemptToOfferLocalCardMigration(
       base::BindOnce(&LocalCardMigrationManager::OnDidGetUploadDetails,
                      weak_ptr_factory_.GetWeakPtr(), is_from_settings_page),
       payments::kMigrateCardsBillableServiceNumber,
+      payments::GetBillingCustomerId(personal_data_manager_),
       is_from_settings_page ? payments::PaymentsClient::UploadCardSource::
                                   LOCAL_CARD_MIGRATION_SETTINGS_PAGE
                             : payments::PaymentsClient::UploadCardSource::
@@ -308,10 +309,10 @@ void LocalCardMigrationManager::OnDidMigrateLocalCards(
       if (it->second == kMigrationResultPermanentFailure ||
           it->second == kMigrationResultTemporaryFailure) {
         card.set_migration_status(
-            autofill::MigratableCreditCard::MigrationStatus::FAILURE_ON_UPLOAD);
+            MigratableCreditCard::MigrationStatus::FAILURE_ON_UPLOAD);
       } else if (it->second == kMigrationResultSuccess) {
         card.set_migration_status(
-            autofill::MigratableCreditCard::MigrationStatus::SUCCESS_ON_UPLOAD);
+            MigratableCreditCard::MigrationStatus::SUCCESS_ON_UPLOAD);
         migrated_cards.push_back(card.credit_card());
       } else {
         NOTREACHED();

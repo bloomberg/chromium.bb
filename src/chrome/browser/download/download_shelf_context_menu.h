@@ -8,7 +8,6 @@
 #include <memory>
 #include <string>
 
-#include "base/containers/flat_map.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
@@ -47,6 +46,8 @@ class DownloadShelfContextMenu : public ui::SimpleMenuModel::Delegate,
   void ExecuteCommand(int command_id, int event_flags) override;
   bool IsItemForCommandIdDynamic(int command_id) const override;
   std::u16string GetLabelForCommandId(int command_id) const override;
+
+  DownloadUIModel* GetDownload() { return download_.get(); }
 
  private:
   friend class DownloadShelfContextMenuTest;

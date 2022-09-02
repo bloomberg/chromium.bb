@@ -32,6 +32,8 @@ LayoutNGSVGText::LayoutNGSVGText(Element* element)
 void LayoutNGSVGText::StyleDidChange(StyleDifference diff,
                                      const ComputedStyle* old_style) {
   NOT_DESTROYED();
+  if (needs_text_metrics_update_ && diff.HasDifference())
+    diff.SetNeedsFullLayout();
   LayoutNGBlockFlowMixin<LayoutSVGBlock>::StyleDidChange(diff, old_style);
   SVGResources::UpdatePaints(*GetElement(), old_style, StyleRef());
 }
@@ -87,25 +89,28 @@ void LayoutNGSVGText::RemoveChild(LayoutObject* child) {
 void LayoutNGSVGText::InsertedIntoTree() {
   NOT_DESTROYED();
   LayoutNGBlockFlowMixin<LayoutSVGBlock>::InsertedIntoTree();
-  for (LayoutBlock* cb = ContainingBlock(); cb; cb = cb->ContainingBlock())
-    cb->AddSvgTextDescendant(*this);
-
+  bool seen_svg_root = false;
   for (auto* ancestor = Parent(); ancestor; ancestor = ancestor->Parent()) {
-    if (auto* root = DynamicTo<LayoutSVGRoot>(ancestor)) {
+    auto* root = DynamicTo<LayoutSVGRoot>(ancestor);
+    if (!seen_svg_root && root) {
       root->AddSvgTextDescendant(*this);
-      break;
+      seen_svg_root = true;
+    } else if (auto* block = DynamicTo<LayoutBlock>(ancestor)) {
+      block->AddSvgTextDescendant(*this);
     }
   }
 }
 
 void LayoutNGSVGText::WillBeRemovedFromTree() {
   NOT_DESTROYED();
-  for (LayoutBlock* cb = ContainingBlock(); cb; cb = cb->ContainingBlock())
-    cb->RemoveSvgTextDescendant(*this);
+  bool seen_svg_root = false;
   for (auto* ancestor = Parent(); ancestor; ancestor = ancestor->Parent()) {
-    if (auto* root = DynamicTo<LayoutSVGRoot>(ancestor)) {
+    auto* root = DynamicTo<LayoutSVGRoot>(ancestor);
+    if (!seen_svg_root && root) {
       root->RemoveSvgTextDescendant(*this);
-      break;
+      seen_svg_root = true;
+    } else if (auto* block = DynamicTo<LayoutBlock>(ancestor)) {
+      block->RemoveSvgTextDescendant(*this);
     }
   }
   LayoutNGBlockFlowMixin<LayoutSVGBlock>::WillBeRemovedFromTree();
@@ -274,15 +279,15 @@ gfx::RectF LayoutNGSVGText::VisualRectInLocalSVGCoordinates() const {
   return SVGLayoutSupport::ComputeVisualRectForText(*this, box);
 }
 
-void LayoutNGSVGText::AbsoluteQuads(Vector<FloatQuad>& quads,
+void LayoutNGSVGText::AbsoluteQuads(Vector<gfx::QuadF>& quads,
                                     MapCoordinatesFlags mode) const {
   NOT_DESTROYED();
-  quads.push_back(LocalToAbsoluteQuad(FloatRect(StrokeBoundingBox()), mode));
+  quads.push_back(LocalToAbsoluteQuad(gfx::QuadF(StrokeBoundingBox()), mode));
 }
 
-FloatRect LayoutNGSVGText::LocalBoundingBoxRectForAccessibility() const {
+gfx::RectF LayoutNGSVGText::LocalBoundingBoxRectForAccessibility() const {
   NOT_DESTROYED();
-  return FloatRect(StrokeBoundingBox());
+  return StrokeBoundingBox();
 }
 
 bool LayoutNGSVGText::NodeAtPoint(HitTestResult& result,
@@ -308,7 +313,8 @@ PositionWithAffinity LayoutNGSVGText::PositionForPoint(
     if (!text)
       continue;
     float distance =
-        FloatRect(descendant->ObjectBoundingBox()).SquaredDistanceTo(point);
+        (descendant->ObjectBoundingBox().ClosestPoint(point) - point)
+            .LengthSquared();
     if (distance >= min_distance)
       continue;
     min_distance = distance;
@@ -331,6 +337,11 @@ void LayoutNGSVGText::SetNeedsTextMetricsUpdate() {
   needs_text_metrics_update_ = true;
   // We need to re-shape text.
   SetNeedsCollectInlines(true);
+}
+
+bool LayoutNGSVGText::NeedsTextMetricsUpdate() const {
+  NOT_DESTROYED();
+  return needs_text_metrics_update_;
 }
 
 }  // namespace blink

@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/source_keyed_cached_metadata_handler.h"
 
 #include "base/test/task_environment.h"
+#include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/loader/code_cache.mojom.h"
 #include "third_party/blink/public/platform/url_conversion.h"
@@ -111,7 +112,7 @@ class MockCachedMetadataSender final : public CachedMetadataSender {
             size_t size) override {
     (*code_cache_host)
         ->DidGenerateCacheableMetadata(
-            blink::mojom::CodeCacheType::kJavascript, response_url_,
+            blink::mojom::CodeCacheType::kJavascript, GURL(response_url_),
             response_time_, mojo_base::BigBuffer(base::make_span(data, size)));
   }
 

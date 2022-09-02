@@ -58,8 +58,7 @@ If there's a swap partition, it isn't resized.
 Note that, at the end of the following process, the A and B partitions are
 always the same size as each other.
 
-[<img alt="image"
-src="/chromium-os/chromiumos-design-docs/partition-resizing/resize_partitionpng">](http://sites.google.com/a/chromium.org/dev/chromium-os/chromiumos-design-docs/partition-resizing/resize_partition.png?attredirects=0)
+![](/chromium-os/chromiumos-design-docs/partition-resizing/resize_partition.png)
 
 ## When does resizing occur?
 

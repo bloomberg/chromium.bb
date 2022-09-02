@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/containers/flat_map.h"
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -141,6 +140,11 @@ class AccountProfileMapper
   void CreateNewProfileWithAccount(const account_manager::AccountKey& account,
                                    AddAccountCallback callback);
 
+  // Remove all accounts from profile with profile_path.
+  void RemoveAllAccounts(const base::FilePath& profile_path);
+  void RemoveAccount(const base::FilePath& profile_path,
+                     const account_manager::AccountKey& account_key);
+
   // account_manager::AccountManagerFacade::Observer:
   void OnAccountUpserted(const account_manager::Account& account) override;
   void OnAccountRemoved(const account_manager::Account& account) override;
@@ -218,6 +222,10 @@ class AccountProfileMapper
   // TODO(https://crbug.com/1266485): Consider deleting this code once all Dice
   // profiles were converted.
   void MigrateOldProfiles();
+
+  // Remove accounts from a profile.
+  void RemoveAccountsInternal(const base::FilePath& profile_path,
+                              const base::flat_set<std::string>& gaia_ids);
 
   // All requests are delayed until the first `GetAccounts()` call completes.
   bool initialized_ = false;

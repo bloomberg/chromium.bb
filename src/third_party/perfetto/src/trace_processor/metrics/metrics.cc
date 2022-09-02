@@ -26,6 +26,7 @@
 #include "perfetto/protozero/scattered_heap_buffer.h"
 #include "src/trace_processor/sqlite/sqlite_utils.h"
 #include "src/trace_processor/tp_metatrace.h"
+#include "src/trace_processor/util/descriptors.h"
 #include "src/trace_processor/util/status_macros.h"
 
 #include "protos/perfetto/common/descriptor.pbzero.h"
@@ -572,12 +573,13 @@ base::Status BuildProto::Run(BuildProto::Context* ctx,
                              sqlite3_value** argv,
                              SqlValue& out,
                              Destructors& destructors) {
+  const ProtoDescriptor& desc = ctx->pool->descriptors()[ctx->descriptor_idx];
   if (argc % 2 != 0) {
     return base::ErrStatus("Invalid number of args to %s BuildProto (got %zu)",
-                           ctx->desc->full_name().c_str(), argc);
+                           desc.full_name().c_str(), argc);
   }
 
-  ProtoBuilder builder(ctx->pool, ctx->desc);
+  ProtoBuilder builder(ctx->pool, &desc);
   for (size_t i = 0; i < argc; i += 2) {
     if (sqlite3_value_type(argv[i]) != SQLITE_TEXT) {
       return base::ErrStatus("BuildProto: Invalid args");
@@ -623,7 +625,6 @@ base::Status RunMetric::Run(RunMetric::Context* ctx,
   if (metric_it == ctx->metrics->end()) {
     return base::ErrStatus("RUN_METRIC: Unknown filename provided %s", path);
   }
-  const auto& sql = metric_it->sql;
 
   std::unordered_map<std::string, std::string> substitutions;
   for (size_t i = 1; i < argc; i += 2) {
@@ -642,27 +643,21 @@ base::Status RunMetric::Run(RunMetric::Context* ctx,
     substitutions[*key_str] = *value_str;
   }
 
-  for (const auto& query : base::SplitString(sql, ";\n")) {
-    const auto& trimmed = base::TrimLeading(query);
-    if (trimmed.empty())
-      continue;
+  std::string subbed_sql;
+  int ret = TemplateReplace(metric_it->sql, substitutions, &subbed_sql);
+  if (ret) {
+    return base::ErrStatus(
+        "RUN_METRIC: Error when performing substitutions: %s",
+        metric_it->sql.c_str());
+  }
 
-    std::string buffer;
-    int ret = TemplateReplace(trimmed, substitutions, &buffer);
-    if (ret) {
-      return base::ErrStatus(
-          "RUN_METRIC: Error when performing substitutions: %s", query.c_str());
-    }
+  auto it = ctx->tp->ExecuteQuery(subbed_sql);
+  it.Next();
 
-    PERFETTO_DLOG("RUN_METRIC: Executing query: %s", buffer.c_str());
-    auto it = ctx->tp->ExecuteQuery(buffer);
-    it.Next();
-
-    base::Status status = it.Status();
-    if (!status.ok()) {
-      return base::ErrStatus("RUN_METRIC: Error when running file %s: %s", path,
-                             status.c_message());
-    }
+  base::Status status = it.Status();
+  if (!status.ok()) {
+    return base::ErrStatus("RUN_METRIC: Error when running file %s: %s", path,
+                           status.c_message());
   }
   return base::OkStatus();
 }
@@ -731,18 +726,12 @@ base::Status ComputeMetrics(TraceProcessor* tp,
       return base::ErrStatus("Unknown metric %s", name.c_str());
 
     const auto& sql_metric = *metric_it;
-    for (const auto& outer : base::SplitString(sql_metric.sql, ";\n")) {
-      for (const auto& query : base::SplitString(outer, ";\r\n")) {
-        PERFETTO_DLOG("Executing query: %s", query.c_str());
-        auto prep_it = tp->ExecuteQuery(query);
-        prep_it.Next();
-        RETURN_IF_ERROR(prep_it.Status());
-      }
-    }
+    auto prep_it = tp->ExecuteQuery(sql_metric.sql);
+    prep_it.Next();
+    RETURN_IF_ERROR(prep_it.Status());
 
     auto output_query =
         "SELECT * FROM " + sql_metric.output_table_name.value() + ";";
-    PERFETTO_DLOG("Executing output query: %s", output_query.c_str());
     PERFETTO_TP_TRACE("COMPUTE_METRIC_QUERY", [&](metatrace::Record* r) {
       r->AddArg("SQL", output_query);
     });

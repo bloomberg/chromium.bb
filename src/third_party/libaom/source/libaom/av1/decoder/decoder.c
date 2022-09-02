@@ -19,7 +19,6 @@
 
 #include "aom_dsp/aom_dsp_common.h"
 #include "aom_mem/aom_mem.h"
-#include "aom_ports/aom_once.h"
 #include "aom_ports/aom_timer.h"
 #include "aom_scale/aom_scale.h"
 #include "aom_util/aom_thread.h"
@@ -45,8 +44,7 @@ static void initialize_dec(void) {
 }
 
 static void dec_set_mb_mi(CommonModeInfoParams *mi_params, int width,
-                          int height, int mode, BLOCK_SIZE min_partition_size) {
-  (void)mode;
+                          int height, BLOCK_SIZE min_partition_size) {
   (void)min_partition_size;
   // Ensure that the decoded width and height are both multiples of
   // 8 luma pixels (note: this may only be a multiple of 4 chroma pixels if
@@ -117,7 +115,7 @@ AV1Decoder *av1_decoder_create(BufferPool *const pool) {
   memset(cm->default_frame_context, 0, sizeof(*cm->default_frame_context));
 
   pbi->need_resync = 1;
-  aom_once(initialize_dec);
+  initialize_dec();
 
   // Initialize the references to not point to any frame buffers.
   for (int i = 0; i < REF_FRAMES; i++) {
@@ -137,9 +135,8 @@ AV1Decoder *av1_decoder_create(BufferPool *const pool) {
   av1_loop_filter_init(cm);
 
   av1_qm_init(&cm->quant_params, av1_num_planes(cm));
-#if !CONFIG_REALTIME_ONLY
   av1_loop_restoration_precal();
-#endif
+
 #if CONFIG_ACCOUNTING
   pbi->acct_enabled = 1;
   aom_accounting_init(&pbi->accounting);
@@ -218,9 +215,7 @@ void av1_decoder_remove(AV1Decoder *pbi) {
 
   if (pbi->num_workers > 0) {
     av1_loop_filter_dealloc(&pbi->lf_row_sync);
-#if !CONFIG_REALTIME_ONLY
     av1_loop_restoration_dealloc(&pbi->lr_row_sync, pbi->num_workers);
-#endif
     av1_dealloc_dec_jobs(&pbi->tile_mt_info);
   }
 
@@ -530,7 +525,7 @@ int av1_get_raw_frame(AV1Decoder *pbi, size_t index, YV12_BUFFER_CONFIG **sd,
 }
 
 // Get the highest-spatial-layer output
-// TODO(david.barker): What should this do?
+// TODO(rachelbarker): What should this do?
 int av1_get_frame_to_show(AV1Decoder *pbi, YV12_BUFFER_CONFIG *frame) {
   if (pbi->num_output_frames == 0) return -1;
 

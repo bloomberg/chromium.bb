@@ -15,7 +15,6 @@
 
 #include "base/allocator/allocator_shim_internals.h"
 #include "base/compiler_specific.h"
-#include "base/debug/alias.h"
 #include "build/build_config.h"
 
 // std::align_val_t isn't available until C++17, but we want to override aligned
@@ -39,7 +38,7 @@
 #else
 #define ALIGN_VAL_T size_t
 #define ALIGN_LINKAGE extern "C"
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #error "Mangling is different on these platforms."
 #else
 #define ALIGN_NEW _ZnwmSt11align_val_t
@@ -55,7 +54,7 @@
 #endif
 #endif
 
-#if !defined(OS_APPLE)
+#if !BUILDFLAG(IS_APPLE)
 #define SHIM_CPP_SYMBOLS_EXPORT SHIM_ALWAYS_EXPORT
 #else
 // On Apple OSes, prefer not exporting these symbols (as this reverts to the
@@ -76,40 +75,13 @@ SHIM_CPP_SYMBOLS_EXPORT void operator delete(void* p) __THROW {
 }
 
 SHIM_CPP_SYMBOLS_EXPORT void* operator new[](size_t size) {
-#if defined(OS_APPLE)
-  // On macOS builds with Identical Code Folding (ICF), this gets merged with
-  // operator new() above, as the functions are identical. This then bumps into
-  // the framework.order check. Make sure this function is unique.
-  //
-  // TODO(lizeb): This function should not be exported at all, investigate why
-  // this is the case, and remove this hack.
-  NO_CODE_FOLDING();
-#endif  // defined(OS_APPLE)
   return ShimCppNew(size);
 }
 
 SHIM_CPP_SYMBOLS_EXPORT void operator delete[](void* p) __THROW {
-#if defined(OS_APPLE)
-  // See comment above in operator new[]().
-  NO_CODE_FOLDING();
-#endif  // defined(OS_APPLE)
   ShimCppDelete(p);
 }
 
-
-#if defined(OS_FUCHSIA)
-// On Fuchsia, new() is different from all other platform allocator functions
-// in its use of noexcept.
-SHIM_CPP_SYMBOLS_EXPORT void* operator new(size_t size,
-                                      const std::nothrow_t&) noexcept {
-  return ShimCppNewNoThrow(size);
-}
-
-SHIM_CPP_SYMBOLS_EXPORT void* operator new[](size_t size,
-                                        const std::nothrow_t&) noexcept {
-  return ShimCppNewNoThrow(size);
-}
-#else
 SHIM_CPP_SYMBOLS_EXPORT void* operator new(size_t size,
                                            const std::nothrow_t&) __THROW {
   return ShimCppNewNoThrow(size);
@@ -119,7 +91,6 @@ SHIM_CPP_SYMBOLS_EXPORT void* operator new[](size_t size,
                                              const std::nothrow_t&) __THROW {
   return ShimCppNewNoThrow(size);
 }
-#endif  // defined(OS_FUCHSIA)
 
 SHIM_CPP_SYMBOLS_EXPORT void operator delete(void* p,
                                              const std::nothrow_t&) __THROW {

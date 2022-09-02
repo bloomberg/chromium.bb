@@ -19,10 +19,14 @@ import("vulkan.gni")
 
 # Need a separate config to ensure the warnings are added to the end.
 config("swiftshader_libvulkan_private_config") {
-  if (is_linux || is_chromeos) {
+  if (is_linux) {
     defines = [
-      "VK_USE_PLATFORM_XLIB_KHR",
       "VK_USE_PLATFORM_XCB_KHR",
+      "VK_USE_PLATFORM_WAYLAND_KHR",
+      "VK_EXPORT=__attribute__((visibility(\"default\")))",
+    ]
+  } else if (is_chromeos) {
+    defines = [
       "VK_EXPORT=__attribute__((visibility(\"default\")))",
     ]
   } else if (is_fuchsia) {
@@ -54,6 +58,8 @@ config("swiftshader_libvulkan_private_config") {
 
   defines += [
      "SWIFTSHADER_ENABLE_ASTC",  # TODO(b/150130101)
+     "SWIFTSHADER_LEGACY_PRECISION=true",  # TODO(chromium:1299047)
+     "SWIFTSHADER_ZERO_INITIALIZE_DEVICE_MEMORY",
   ]
 }
 
@@ -88,6 +94,7 @@ swiftshader_source_set("swiftshader_libvulkan_headers") {
     "VkPipeline.hpp",
     "VkPipelineCache.hpp",
     "VkPipelineLayout.hpp",
+    "VkPrivateData.hpp",
     "VkQueryPool.hpp",
     "VkQueue.hpp",
     "VkRenderPass.hpp",
@@ -193,7 +200,9 @@ swiftshader_shared_library("swiftshader_libvulkan") {
   }
 
   deps = [
-    "${swiftshader_spirv_tools_dir}:SPIRV-Tools",
+    "../../third_party/SPIRV-Tools:spvtools_opt",
+    "../../third_party/SPIRV-Tools:spvtools_val",
+    "../../third_party/SPIRV-Tools:spvtools_headers",
     "../../third_party/marl:Marl",
     "../Device",
     "../Pipeline",
@@ -205,8 +214,8 @@ swiftshader_shared_library("swiftshader_libvulkan") {
   include_dirs = [
     "..",
     "../../include",
-    "$swiftshader_spirv_tools_dir/include",
-    "$spirv_tools_spirv_headers_dir/include",
+    "../../third_party/SPIRV-Tools/include",
+    "../../third_party/SPIRV-Headers/include",
   ]
 
   public_deps = [
@@ -224,6 +233,8 @@ action("icd_file") {
     library_path = ".\\vk_swiftshader.dll"
   } else if (is_mac) {
     library_path = "./libvk_swiftshader.dylib"
+  } else if (is_fuchsia) {
+    library_path = "/pkg/lib/libvk_swiftshader.so"
   } else {
     library_path = "./libvk_swiftshader.so"
   }

@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/iterators/text_iterator.h"
+#include "third_party/blink/renderer/core/editing/relocatable_position.h"
 #include "third_party/blink/renderer/core/editing/selection_template.h"
 #include "third_party/blink/renderer/core/editing/visible_position.h"
 #include "third_party/blink/renderer/core/editing/visible_selection.h"
@@ -132,9 +133,11 @@ InsertListCommand::InsertListCommand(Document& document, Type type)
 static bool InSameTreeAndOrdered(const Position& should_be_former,
                                  const Position& should_be_later) {
   // Input positions must be canonical positions.
-  DCHECK_EQ(should_be_former, CanonicalPositionOf(should_be_former))
+  DCHECK_EQ(should_be_former,
+            CreateVisiblePosition(should_be_former).DeepEquivalent())
       << should_be_former;
-  DCHECK_EQ(should_be_later, CanonicalPositionOf(should_be_later))
+  DCHECK_EQ(should_be_later,
+            CreateVisiblePosition(should_be_later).DeepEquivalent())
       << should_be_later;
   return Position::CommonAncestorTreeScope(should_be_former, should_be_later) &&
          ComparePositions(should_be_former, should_be_later) <= 0;
@@ -208,9 +211,10 @@ void InsertListCommand::DoApply(EditingState* editing_state) {
     int index_for_end_of_selection = IndexForVisiblePosition(
         visible_end_of_selection, scope_for_end_of_selection);
 
-    if (StartOfParagraph(visible_start_of_selection,
-                         kCanSkipOverEditingBoundary)
-            .DeepEquivalent() != start_of_last_paragraph) {
+    if (!StartOfParagraph(visible_start_of_selection,
+                          kCanSkipOverEditingBoundary)
+             .DeepEquivalent()
+             .IsEquivalent(start_of_last_paragraph)) {
       force_list_creation =
           !SelectionHasListOfType(selection.Start(), selection.End(), list_tag);
 
@@ -580,6 +584,14 @@ void InsertListCommand::ListifyParagraph(const VisiblePosition& original_start,
   if (start.IsNull() || end.IsNull())
     return;
 
+  // If original_start is of type kOffsetInAnchor, then the offset can become
+  // invalid when inserting the <li>. So use a RelocatablePosition.
+  absl::optional<RelocatablePosition> relocatable_original_start(
+      original_start.DeepEquivalent().IsOffsetInAnchor()
+          ? absl::optional<RelocatablePosition>(
+                RelocatablePosition(original_start.DeepEquivalent()))
+          : absl::nullopt);
+
   // Check for adjoining lists.
   HTMLElement* const previous_list = AdjacentEnclosingList(
       start, PreviousPositionOf(start, kCannotCrossEditingBoundary), list_tag);
@@ -663,13 +675,18 @@ void InsertListCommand::ListifyParagraph(const VisiblePosition& original_start,
   // Layout is necessary since start's node's inline layoutObjects may have been
   // destroyed by the insertion The end of the content may have changed after
   // the insertion and layout so update it as well.
-  if (insertion_pos == start_pos) {
-    MoveParagraphOverPositionIntoEmptyListItem(
-        original_start, list_item_element, editing_state);
-  } else {
+  if (insertion_pos != start_pos) {
     GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
     MoveParagraphOverPositionIntoEmptyListItem(
         CreateVisiblePosition(start_pos), list_item_element, editing_state);
+  } else if (relocatable_original_start) {
+    GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
+    MoveParagraphOverPositionIntoEmptyListItem(
+        CreateVisiblePosition(relocatable_original_start->GetPosition()),
+        list_item_element, editing_state);
+  } else {
+    MoveParagraphOverPositionIntoEmptyListItem(
+        original_start, list_item_element, editing_state);
   }
   if (editing_state->IsAborted())
     return;

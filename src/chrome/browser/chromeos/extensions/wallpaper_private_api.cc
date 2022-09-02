@@ -13,6 +13,7 @@
 #include "ash/public/cpp/wallpaper/wallpaper_controller.h"
 #include "ash/webui/personalization_app/proto/backdrop_wallpaper.pb.h"
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/containers/span.h"
 #include "base/files/file_enumerator.h"
@@ -21,7 +22,6 @@
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/task_runner_util.h"
 #include "base/values.h"
@@ -53,6 +53,7 @@
 #include "url/gurl.h"
 
 using base::Value;
+using wallpaper_api_util::GenerateThumbnail;
 namespace wallpaper_base = extensions::api::wallpaper;
 namespace wallpaper_private = extensions::api::wallpaper_private;
 namespace set_wallpaper_if_exists = wallpaper_private::SetWallpaperIfExists;
@@ -85,7 +86,7 @@ constexpr char kSyncThemes[] = "syncThemes";
 
 bool IsOEMDefaultWallpaper() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      chromeos::switches::kDefaultWallpaperIsOem);
+      ash::switches::kDefaultWallpaperIsOem);
 }
 
 // Saves |data| as |file_name| to directory with |key|. Return false if the
@@ -127,26 +128,9 @@ const user_manager::User* GetUserFromBrowserContext(
   Profile* profile = Profile::FromBrowserContext(context);
   DCHECK(profile);
   const user_manager::User* user =
-      chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
+      ash::ProfileHelper::Get()->GetUserByProfile(profile);
   DCHECK(user);
   return user;
-}
-
-ash::WallpaperType GetWallpaperType(wallpaper_private::WallpaperSource source) {
-  switch (source) {
-    case wallpaper_private::WALLPAPER_SOURCE_ONLINE:
-      return ash::WallpaperType::kOnline;
-    case wallpaper_private::WALLPAPER_SOURCE_DAILY:
-      return ash::WallpaperType::kDaily;
-    case wallpaper_private::WALLPAPER_SOURCE_CUSTOM:
-      return ash::WallpaperType::kCustomized;
-    case wallpaper_private::WALLPAPER_SOURCE_OEM:
-      return ash::WallpaperType::kDefault;
-    case wallpaper_private::WALLPAPER_SOURCE_THIRDPARTY:
-      return ash::WallpaperType::kThirdParty;
-    default:
-      return ash::WallpaperType::kOnline;
-  }
 }
 
 // Helper function to parse the data from a |backdrop::Image| object and save it
@@ -170,7 +154,7 @@ ExtensionFunction::ResponseAction WallpaperPrivateGetStringsFunction::Run() {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
 
 #define SET_STRING(id, idr) \
-  dict->SetString(id, l10n_util::GetStringUTF16(idr))
+  dict->SetStringKey(id, l10n_util::GetStringUTF8(idr))
   SET_STRING("webFontFamily", IDS_WEB_FONT_FAMILY);
   SET_STRING("webFontSize", IDS_WEB_FONT_SIZE);
   SET_STRING("wallpaperAppName", IDS_WALLPAPER_MANAGER_APP_NAME);
@@ -212,18 +196,18 @@ ExtensionFunction::ResponseAction WallpaperPrivateGetStringsFunction::Run() {
   const std::string& app_locale = g_browser_process->GetApplicationLocale();
   webui::SetLoadTimeDataDefaults(app_locale, dict.get());
 
-  dict->SetBoolean("isOEMDefaultWallpaper", IsOEMDefaultWallpaper());
-  dict->SetString("canceledWallpaper",
-                  wallpaper_api_util::kCancelWallpaperMessage);
-  dict->SetString(
+  dict->SetBoolKey("isOEMDefaultWallpaper", IsOEMDefaultWallpaper());
+  dict->SetStringKey("canceledWallpaper",
+                     wallpaper_api_util::kCancelWallpaperMessage);
+  dict->SetStringKey(
       "highResolutionSuffix",
       ash::WallpaperController::Get()->GetBackdropWallpaperSuffix());
 
   auto info =
       WallpaperControllerClientImpl::Get()->GetActiveUserWallpaperInfo();
-  dict->SetString("currentWallpaper", info.location);
-  dict->SetString("currentWallpaperLayout",
-                  wallpaper_api_util::GetLayoutString(info.layout));
+  dict->SetStringKey("currentWallpaper", info.location);
+  dict->SetStringKey("currentWallpaperLayout",
+                     wallpaper_api_util::GetLayoutString(info.layout));
 
   return RespondNow(
       OneArgument(base::Value::FromUniquePtrValue(std::move(dict))));
@@ -246,7 +230,7 @@ void WallpaperPrivateGetSyncSettingFunction::CheckSyncServiceStatus() {
     // It's most likely that the wallpaper synchronization is enabled (It's
     // enabled by default so unless the user disables it explicitly it remains
     // enabled).
-    dict->SetBoolean(kSyncThemes, true);
+    dict->SetBoolKey(kSyncThemes, true);
     Respond(OneArgument(base::Value::FromUniquePtrValue(std::move(dict))));
     return;
   }
@@ -256,29 +240,27 @@ void WallpaperPrivateGetSyncSettingFunction::CheckSyncServiceStatus() {
       SyncServiceFactory::GetForProfile(profile);
   if (!sync_service) {
     // Sync flag is disabled (perhaps prohibited by policy).
-    dict->SetBoolean(kSyncThemes, false);
+    dict->SetBoolKey(kSyncThemes, false);
     Respond(OneArgument(base::Value::FromUniquePtrValue(std::move(dict))));
     return;
   }
 
   if (chromeos::features::IsSyncSettingsCategorizationEnabled()) {
     // When the sync settings categorization is on, the wallpaper sync status is
-    // stored in the kSyncOsWallpaper pref. The pref value essentially means
-    // "themes sync is on" && "apps sync is on".
-    // TODO(https://crbug.com/1243218): Figure out if we need to check
-    // IsOsSyncFeatureEnabled here.
-    bool os_wallpaper_sync_enabled =
-        sync_service->GetUserSettings()->IsOsSyncFeatureEnabled() &&
-        profile->GetPrefs()->GetBoolean(
-            chromeos::settings::prefs::kSyncOsWallpaper);
-    dict->SetBoolean(kSyncThemes, os_wallpaper_sync_enabled);
+    // stored in the kSyncOsWallpaper pref.
+    syncer::SyncUserSettings* user_settings = sync_service->GetUserSettings();
+    bool all_os_types_enabled = user_settings->IsSyncAllOsTypesEnabled();
+    bool os_wallpaper_sync_enabled = profile->GetPrefs()->GetBoolean(
+        chromeos::settings::prefs::kSyncOsWallpaper);
+    dict->SetBoolKey(kSyncThemes,
+                     all_os_types_enabled || os_wallpaper_sync_enabled);
     Respond(OneArgument(base::Value::FromUniquePtrValue(std::move(dict))));
     return;
   }
 
   if (!sync_service->CanSyncFeatureStart()) {
     // Sync-the-feature is disabled.
-    dict->SetBoolean(kSyncThemes, false);
+    dict->SetBoolKey(kSyncThemes, false);
     Respond(OneArgument(base::Value::FromUniquePtrValue(std::move(dict))));
     return;
   }
@@ -286,7 +268,7 @@ void WallpaperPrivateGetSyncSettingFunction::CheckSyncServiceStatus() {
   if (sync_service->GetUserSettings()->IsFirstSetupComplete()) {
     // When sync settings categorization is disabled, wallpaper is synced as a
     // group with browser themes.
-    dict->SetBoolean(kSyncThemes,
+    dict->SetBoolKey(kSyncThemes,
                      sync_service->GetUserSettings()->GetSelectedTypes().Has(
                          syncer::UserSelectableType::kThemes));
     Respond(OneArgument(base::Value::FromUniquePtrValue(std::move(dict))));
@@ -352,10 +334,10 @@ void WallpaperPrivateSetWallpaperIfExistsFunction::
   if (file_exists) {
     Respond(OneArgument(base::Value(true)));
   } else {
-    auto args = std::make_unique<base::ListValue>();
+    std::vector<base::Value> args;
     // TODO(crbug.com/830212): Do not send arguments when the function fails.
     // Call sites should inspect chrome.runtime.lastError instead.
-    args->Append(false);
+    args.emplace_back(false);
     Respond(ErrorWithArguments(
         std::move(args), "The wallpaper doesn't exist in local file system."));
   }
@@ -413,7 +395,7 @@ WallpaperPrivateResetWallpaperFunction::Run() {
       user_manager::UserManager::Get()->GetActiveUser()->GetAccountId();
 
   WallpaperControllerClientImpl::Get()->SetDefaultWallpaper(
-      account_id, true /* show_wallpaper */);
+      account_id, true /* show_wallpaper */, base::DoNothing());
   return RespondNow(NoArguments());
 }
 
@@ -447,7 +429,7 @@ void WallpaperPrivateSetCustomWallpaperFunction::OnWallpaperDecoded(
       base::FilePath(params->file_name).BaseName().value();
   WallpaperControllerClientImpl::Get()->SetCustomWallpaper(
       account_id_, file_name, layout, image, params->preview_mode);
-  unsafe_wallpaper_decoder_ = nullptr;
+  wallpaper_decoder_ = nullptr;
 
   if (params->generate_thumbnail) {
     image.EnsureRepsForSupportedScales();
@@ -474,7 +456,7 @@ WallpaperPrivateSetCustomWallpaperLayoutFunction::Run() {
   ash::WallpaperLayout new_layout = wallpaper_api_util::GetLayoutEnum(
       wallpaper_base::ToString(params->layout));
   wallpaper_api_util::RecordCustomWallpaperLayout(new_layout);
-  WallpaperControllerClientImpl::Get()->UpdateCustomWallpaperLayout(
+  WallpaperControllerClientImpl::Get()->UpdateCurrentWallpaperLayout(
       user_manager::UserManager::Get()->GetActiveUser()->GetAccountId(),
       new_layout);
   return RespondNow(NoArguments());
@@ -535,7 +517,7 @@ ExtensionFunction::ResponseAction WallpaperPrivateGetThumbnailFunction::Run() {
     // thumbnail. We should either resize it or include a wallpaper thumbnail in
     // addition to large and small wallpaper resolutions.
     thumbnail_path = base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
-        chromeos::switches::kDefaultWallpaperSmall);
+        ash::switches::kDefaultWallpaperSmall);
   }
 
   WallpaperFunctionBase::GetNonBlockingTaskRunner()->PostTask(

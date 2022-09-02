@@ -5,12 +5,12 @@
 // clang-format off
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {PaymentsManagerImpl, SettingsCreditCardEditDialogElement, SettingsPaymentsSectionElement} from 'chrome://settings/lazy_load.js';
+import {PaymentsManagerImpl, SettingsCreditCardEditDialogElement, SettingsPaymentsSectionElement, SettingsVirtualCardUnenrollDialogElement} from 'chrome://settings/lazy_load.js';
 import {MetricsBrowserProxyImpl, PrivacyElementInteractions, SettingsToggleButtonElement} from 'chrome://settings/settings.js';
 import {assertEquals, assertFalse, assertNotEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {eventToPromise, whenAttributeIs} from 'chrome://webui-test/test_util.js';
 
-import {createCreditCardEntry, createEmptyCreditCardEntry,TestPaymentsManager} from './passwords_and_autofill_fake_data.js';
+import {createCreditCardEntry, createEmptyCreditCardEntry, PaymentsManagerExpectations,TestPaymentsManager} from './passwords_and_autofill_fake_data.js';
 import {TestMetricsBrowserProxy} from './test_metrics_browser_proxy.js';
 
 // clang-format on
@@ -42,6 +42,7 @@ suite('PaymentsSection', function() {
     document.body.innerHTML = '';
     loadTimeData.overrideValues({
       migrationEnabled: true,
+      virtualCardEnrollmentEnabled: true,
     });
   });
 
@@ -77,6 +78,20 @@ suite('PaymentsSection', function() {
     document.body.appendChild(section);
     flush();
     return section;
+  }
+
+  /**
+   * Creates a virtual card unenroll dialog.
+   */
+  function createVirtualCardUnenrollDialog(
+      creditCardItem: chrome.autofillPrivate.CreditCardEntry):
+      SettingsVirtualCardUnenrollDialogElement {
+    const dialog =
+        document.createElement('settings-virtual-card-unenroll-dialog');
+    dialog.creditCard = creditCardItem;
+    document.body.appendChild(dialog);
+    flush();
+    return dialog;
   }
 
   // Fakes the existence of a platform authenticator.
@@ -121,6 +136,20 @@ suite('PaymentsSection', function() {
         paymentsList.shadowRoot!.querySelector('settings-upi-id-list-entry');
     assertTrue(!!row);
     return row!.shadowRoot!;
+  }
+
+  /**
+   * Returns the default expectations from TestPaymentsManager. Adjust the
+   * values as needed.
+   */
+  function getDefaultExpectations(): PaymentsManagerExpectations {
+    const expected = new PaymentsManagerExpectations();
+    expected.requestedCreditCards = 1;
+    expected.listeningCreditCards = 1;
+    expected.removedCreditCards = 0;
+    expected.clearedCachedCreditCards = 0;
+    expected.addedVirtualCards = 0;
+    return expected;
   }
 
   test('verifyNoCreditCards', function() {
@@ -204,6 +233,54 @@ suite('PaymentsSection', function() {
     assertFalse(!!outlinkButton);
   });
 
+  test('verifyCreditCardMoreDetailsTitle', function() {
+    let creditCard = createCreditCardEntry();
+    creditCard.metadata!.isLocal = true;
+    const section =
+        createPaymentsSection([creditCard], /*upiIds=*/[], /*prefValues=*/ {});
+    const rowShadowRoot = getCardRowShadowRoot(section.$.paymentsList);
+    const menuButton = rowShadowRoot.querySelector('#creditCardMenu');
+    assertTrue(!!menuButton);
+    const updateCreditCardCallback =
+        (creditCard: chrome.autofillPrivate.CreditCardEntry) => {
+          (PaymentsManagerImpl.getInstance() as TestPaymentsManager)
+              .lastCallback.setPersonalDataManagerListener!([], [creditCard]);
+          flush();
+        };
+
+    // Case 1: a card with a nickname
+    creditCard = createCreditCardEntry();
+    creditCard.nickname = 'My card name';
+    updateCreditCardCallback(creditCard);
+    assertEquals(
+        'More actions for My card name', menuButton!.getAttribute('title'));
+
+    // Case 2: a card without nickname
+    creditCard = createCreditCardEntry();
+    creditCard.cardNumber = '0000000000001234';
+    creditCard.network = 'Visa';
+    updateCreditCardCallback(creditCard);
+    assertEquals(
+        'More actions for Visa ending in 1234',
+        menuButton!.getAttribute('title'));
+
+    // Case 3: a card without network
+    creditCard = createCreditCardEntry();
+    creditCard.cardNumber = '0000000000001234';
+    creditCard.network = undefined;
+    updateCreditCardCallback(creditCard);
+    assertEquals(
+        'More actions for Card ending in 1234',
+        menuButton!.getAttribute('title'));
+
+    // Case 4: a card without number
+    creditCard = createCreditCardEntry();
+    creditCard.cardNumber = undefined;
+    updateCreditCardCallback(creditCard);
+    assertEquals(
+        'More actions for Jane Doe', menuButton!.getAttribute('title'));
+  });
+
   test('verifyCreditCardRowButtonIsOutlinkWhenRemote', function() {
     const creditCard = createCreditCardEntry();
     creditCard.metadata!.isLocal = false;
@@ -217,14 +294,31 @@ suite('PaymentsSection', function() {
     assertTrue(!!outlinkButton);
   });
 
+  test(
+      'verifyCreditCardRowButtonIsDropdownWhenVirtualCardEnrollEligible',
+      function() {
+        const creditCard = createCreditCardEntry();
+        creditCard.metadata!.isLocal = false;
+        creditCard.metadata!.isVirtualCardEnrollmentEligible = true;
+        creditCard.metadata!.isVirtualCardEnrolled = false;
+        const section = createPaymentsSection(
+            [creditCard], /*upiIds=*/[], /*prefValues=*/ {});
+        const rowShadowRoot = getCardRowShadowRoot(section.$.paymentsList);
+        const menuButton = rowShadowRoot.querySelector('#creditCardMenu');
+        assertTrue(!!menuButton);
+        const outlinkButton =
+            rowShadowRoot.querySelector('cr-icon-button.icon-external');
+        assertFalse(!!outlinkButton);
+      });
+
   test('verifyAddVsEditCreditCardTitle', function() {
     const newCreditCard = createEmptyCreditCardEntry();
     const newCreditCardDialog = createCreditCardDialog(newCreditCard);
     const oldCreditCard = createCreditCardEntry();
     const oldCreditCardDialog = createCreditCardDialog(oldCreditCard);
 
-    function getTitle(dialog: SettingsCreditCardEditDialogElement) {
-      return dialog.shadowRoot!.querySelector('[slot=title]')!.textContent;
+    function getTitle(dialog: SettingsCreditCardEditDialogElement): string {
+      return dialog.shadowRoot!.querySelector('[slot=title]')!.textContent!;
     }
 
     const oldTitle = getTitle(oldCreditCardDialog);
@@ -353,7 +447,6 @@ suite('PaymentsSection', function() {
         // Fail the test because the save event should not be called
         // when cancel is clicked.
         assertTrue(false);
-        done();
       });
 
       eventToPromise('close', creditCardDialog).then(function() {
@@ -372,6 +465,8 @@ suite('PaymentsSection', function() {
     // When credit card is local, |isCached| will be undefined.
     creditCard.metadata!.isLocal = true;
     creditCard.metadata!.isCached = undefined;
+    creditCard.metadata!.isVirtualCardEnrollmentEligible = false;
+    creditCard.metadata!.isVirtualCardEnrolled = false;
 
     const section =
         createPaymentsSection([creditCard], /*upiIds=*/[], /*prefValues=*/ {});
@@ -384,13 +479,15 @@ suite('PaymentsSection', function() {
         rowShadowRoot.querySelector<HTMLElement>('#creditCardMenu');
     assertTrue(!!menuButton);
 
-    menuButton!.click();
+    menuButton.click();
     flush();
 
     // Menu should have 2 options.
     assertFalse(section.$.menuEditCreditCard.hidden);
     assertFalse(section.$.menuRemoveCreditCard.hidden);
     assertTrue(section.$.menuClearCreditCard.hidden);
+    assertTrue(section.$.menuAddVirtualCard.hidden);
+    assertTrue(section.$.menuRemoveVirtualCard.hidden);
 
     section.$.creditCardSharedMenu.close();
     flush();
@@ -401,6 +498,8 @@ suite('PaymentsSection', function() {
 
     creditCard.metadata!.isLocal = false;
     creditCard.metadata!.isCached = true;
+    creditCard.metadata!.isVirtualCardEnrollmentEligible = false;
+    creditCard.metadata!.isVirtualCardEnrolled = false;
 
     const section =
         createPaymentsSection([creditCard], /*upiIds=*/[], /*prefValues=*/ {});
@@ -413,13 +512,15 @@ suite('PaymentsSection', function() {
         rowShadowRoot.querySelector<HTMLElement>('#creditCardMenu');
     assertTrue(!!menuButton);
 
-    menuButton!.click();
+    menuButton.click();
     flush();
 
     // Menu should have 2 options.
     assertFalse(section.$.menuEditCreditCard.hidden);
     assertTrue(section.$.menuRemoveCreditCard.hidden);
     assertFalse(section.$.menuClearCreditCard.hidden);
+    assertTrue(section.$.menuAddVirtualCard.hidden);
+    assertTrue(section.$.menuRemoveVirtualCard.hidden);
 
     section.$.creditCardSharedMenu.close();
     flush();
@@ -430,6 +531,8 @@ suite('PaymentsSection', function() {
 
     creditCard.metadata!.isLocal = false;
     creditCard.metadata!.isCached = false;
+    creditCard.metadata!.isVirtualCardEnrollmentEligible = false;
+    creditCard.metadata!.isVirtualCardEnrolled = false;
 
     const section =
         createPaymentsSection([creditCard], /*upiIds=*/[], /*prefValues=*/ {});
@@ -439,6 +542,209 @@ suite('PaymentsSection', function() {
     const rowShadowRoot = getCardRowShadowRoot(section.$.paymentsList);
     assertTrue(!!rowShadowRoot.querySelector('#remoteCreditCardLink'));
     assertFalse(!!rowShadowRoot.querySelector('#creditCardMenu'));
+  });
+
+  test('verifyVirtualCardEligibleCreditCardMenu', function() {
+    const creditCard = createCreditCardEntry();
+
+    creditCard.metadata!.isLocal = false;
+    creditCard.metadata!.isCached = false;
+    creditCard.metadata!.isVirtualCardEnrollmentEligible = true;
+    creditCard.metadata!.isVirtualCardEnrolled = false;
+
+    const section =
+        createPaymentsSection([creditCard], /*upiIds=*/[], /*prefValues=*/ {});
+    assertEquals(1, getLocalAndServerCreditCardListItems().length);
+
+    // Server cards that are eligible for virtual card enrollment should show
+    // the overflow menu.
+    const rowShadowRoot = getCardRowShadowRoot(section.$.paymentsList);
+    assertFalse(!!rowShadowRoot.querySelector('#remoteCreditCardLink'));
+    const menuButton =
+        rowShadowRoot.querySelector<HTMLElement>('#creditCardMenu');
+    assertTrue(!!menuButton);
+
+    menuButton.click();
+    flush();
+
+    // Menu should have 2 options.
+    assertFalse(section.$.menuEditCreditCard.hidden);
+    assertTrue(section.$.menuRemoveCreditCard.hidden);
+    assertTrue(section.$.menuClearCreditCard.hidden);
+    assertFalse(section.$.menuAddVirtualCard.hidden);
+    assertTrue(section.$.menuRemoveVirtualCard.hidden);
+
+    section.$.creditCardSharedMenu.close();
+    flush();
+  });
+
+  test('verifyVirtualCardEnrolledCreditCardMenu', function() {
+    const creditCard = createCreditCardEntry();
+
+    creditCard.metadata!.isLocal = false;
+    creditCard.metadata!.isCached = false;
+    creditCard.metadata!.isVirtualCardEnrollmentEligible = true;
+    creditCard.metadata!.isVirtualCardEnrolled = true;
+
+    const section =
+        createPaymentsSection([creditCard], /*upiIds=*/[], /*prefValues=*/ {});
+    assertEquals(1, getLocalAndServerCreditCardListItems().length);
+
+    // Server cards that are eligible for virtual card enrollment should show
+    // the overflow menu.
+    const rowShadowRoot = getCardRowShadowRoot(section.$.paymentsList);
+    assertFalse(!!rowShadowRoot.querySelector('#remoteCreditCardLink'));
+    const menuButton =
+        rowShadowRoot.querySelector<HTMLElement>('#creditCardMenu');
+    assertTrue(!!menuButton);
+
+    menuButton.click();
+    flush();
+
+    // Menu should have 2 options.
+    assertFalse(section.$.menuEditCreditCard.hidden);
+    assertTrue(section.$.menuRemoveCreditCard.hidden);
+    assertTrue(section.$.menuClearCreditCard.hidden);
+    assertTrue(section.$.menuAddVirtualCard.hidden);
+    assertFalse(section.$.menuRemoveVirtualCard.hidden);
+
+    section.$.creditCardSharedMenu.close();
+    flush();
+  });
+
+  test('verifyClearCachedCreditCardClicked', function() {
+    const creditCard = createCreditCardEntry();
+
+    creditCard.metadata!.isLocal = false;
+    creditCard.metadata!.isCached = true;
+    creditCard.metadata!.isVirtualCardEnrollmentEligible = false;
+    creditCard.metadata!.isVirtualCardEnrolled = false;
+
+    const section =
+        createPaymentsSection([creditCard], /*upiIds=*/[], /*prefValues=*/ {});
+    assertEquals(1, getLocalAndServerCreditCardListItems().length);
+
+    const rowShadowRoot = getCardRowShadowRoot(section.$.paymentsList);
+    assertFalse(!!rowShadowRoot.querySelector('#remoteCreditCardLink'));
+    const menuButton =
+        rowShadowRoot.querySelector<HTMLElement>('#creditCardMenu');
+    assertTrue(!!menuButton);
+    menuButton.click();
+    flush();
+
+    assertFalse(section.$.menuClearCreditCard.hidden);
+    section.$.menuClearCreditCard.click();
+    flush();
+
+    const paymentsManager =
+        PaymentsManagerImpl.getInstance() as TestPaymentsManager;
+    const expectations = getDefaultExpectations();
+    expectations.clearedCachedCreditCards = 1;
+    paymentsManager.assertExpectations(expectations);
+  });
+
+  test('verifyRemoveCreditCardClicked', function() {
+    const creditCard = createCreditCardEntry();
+
+    creditCard.metadata!.isLocal = true;
+    creditCard.metadata!.isCached = false;
+    creditCard.metadata!.isVirtualCardEnrollmentEligible = false;
+    creditCard.metadata!.isVirtualCardEnrolled = false;
+
+    const section =
+        createPaymentsSection([creditCard], /*upiIds=*/[], /*prefValues=*/ {});
+    assertEquals(1, getLocalAndServerCreditCardListItems().length);
+
+    const rowShadowRoot = getCardRowShadowRoot(section.$.paymentsList);
+    assertFalse(!!rowShadowRoot.querySelector('#remoteCreditCardLink'));
+    const menuButton =
+        rowShadowRoot.querySelector<HTMLElement>('#creditCardMenu');
+    assertTrue(!!menuButton);
+    menuButton.click();
+    flush();
+
+    assertFalse(section.$.menuRemoveCreditCard.hidden);
+    section.$.menuRemoveCreditCard.click();
+    flush();
+
+    const paymentsManager =
+        PaymentsManagerImpl.getInstance() as TestPaymentsManager;
+    const expectations = getDefaultExpectations();
+    expectations.removedCreditCards = 1;
+    paymentsManager.assertExpectations(expectations);
+  });
+
+  test('verifyAddVirtualCardClicked', function() {
+    const creditCard = createCreditCardEntry();
+
+    creditCard.metadata!.isLocal = false;
+    creditCard.metadata!.isCached = false;
+    creditCard.metadata!.isVirtualCardEnrollmentEligible = true;
+    creditCard.metadata!.isVirtualCardEnrolled = false;
+
+    const section =
+        createPaymentsSection([creditCard], /*upiIds=*/[], /*prefValues=*/ {});
+    assertEquals(1, getLocalAndServerCreditCardListItems().length);
+
+    const rowShadowRoot = getCardRowShadowRoot(section.$.paymentsList);
+    assertFalse(!!rowShadowRoot.querySelector('#remoteCreditCardLink'));
+    const menuButton =
+        rowShadowRoot.querySelector<HTMLElement>('#creditCardMenu');
+    assertTrue(!!menuButton);
+    menuButton.click();
+    flush();
+
+    assertFalse(section.$.menuAddVirtualCard.hidden);
+    section.$.menuAddVirtualCard.click();
+    flush();
+
+    const paymentsManager =
+        PaymentsManagerImpl.getInstance() as TestPaymentsManager;
+    const expectations = getDefaultExpectations();
+    expectations.addedVirtualCards = 1;
+    paymentsManager.assertExpectations(expectations);
+  });
+
+  test('verifyRemoveVirtualCardClicked', function() {
+    const creditCard = createCreditCardEntry();
+    creditCard.metadata!.isLocal = false;
+    creditCard.metadata!.isCached = false;
+    creditCard.metadata!.isVirtualCardEnrollmentEligible = true;
+    creditCard.metadata!.isVirtualCardEnrolled = true;
+
+    const section =
+        createPaymentsSection([creditCard], /*upiIds=*/[], /*prefValues=*/ {});
+    assertEquals(1, getLocalAndServerCreditCardListItems().length);
+
+    const rowShadowRoot = getCardRowShadowRoot(section.$.paymentsList);
+    assertFalse(!!rowShadowRoot.querySelector('#remoteCreditCardLink'));
+    const menuButton =
+        rowShadowRoot.querySelector<HTMLElement>('#creditCardMenu');
+    assertTrue(!!menuButton);
+    menuButton.click();
+    flush();
+
+    assertFalse(section.$.menuRemoveVirtualCard.hidden);
+    section.$.menuRemoveVirtualCard.click();
+    flush();
+
+    const menu =
+        rowShadowRoot.querySelector<HTMLElement>('#creditCardSharedMenu');
+    assertFalse(!!menu);
+  });
+
+  test('verifyVirtualCardUnenrollDialogConfirmed', async function() {
+    const creditCard = createCreditCardEntry();
+    creditCard.guid = '12345';
+    const dialog = createVirtualCardUnenrollDialog(creditCard);
+
+    // Wait for the dialog to open.
+    await whenAttributeIs(dialog.$.dialog, 'open', '');
+
+    const promise = eventToPromise('unenroll-virtual-card', dialog);
+    dialog.$.confirmButton.click();
+    const event = await promise;
+    assertEquals(event.detail, '12345');
   });
 
   test('verifyMigrationButtonNotShownIfMigrationNotEnabled', function() {
@@ -601,5 +907,18 @@ suite('PaymentsSection', function() {
         await testMetricsBrowserProxy.whenCalled('recordSettingsPageHistogram');
 
     assertEquals(PrivacyElementInteractions.PAYMENT_METHOD, result);
+  });
+
+  test('verifyVirtualCardUnenrollDialogContent', function() {
+    const creditCard = createCreditCardEntry();
+    const dialog = createVirtualCardUnenrollDialog(creditCard);
+
+    const title = dialog.shadowRoot!.querySelector('[slot=title]')!;
+    const body = dialog.shadowRoot!.querySelector('[slot=body]')!;
+    assertNotEquals('', title.textContent);
+    assertNotEquals('', body.textContent);
+
+    // Wait for dialogs to open before finishing test.
+    return whenAttributeIs(dialog.$.dialog, 'open', '');
   });
 });

@@ -81,7 +81,7 @@ const char kExtraImageProvided[] =
 const char kNotificationIdTooLong[] =
     "The notification's ID should be %d characters or less";
 
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS)
 const char kLowPriorityDeprecatedOnPlatform[] =
     "Low-priority notifications are deprecated on this platform.";
 #endif
@@ -209,7 +209,7 @@ bool NotificationsApiFunction::CreateNotification(
     return false;
   }
 
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS)
   if (options->priority &&
       *options->priority < message_center::DEFAULT_PRIORITY) {
     *error = kLowPriorityDeprecatedOnPlatform;
@@ -338,7 +338,7 @@ bool NotificationsApiFunction::CreateNotification(
 
   std::string notification_id = CreateScopedIdentifier(extension_->id(), id);
   message_center::Notification notification(
-      type, notification_id, title, message, icon,
+      type, notification_id, title, message, ui::ImageModel::FromImage(icon),
       base::UTF8ToUTF16(extension_->name()), extension_->url(),
       message_center::NotifierId(message_center::NotifierType::APPLICATION,
                                  extension_->id()),
@@ -363,7 +363,7 @@ bool NotificationsApiFunction::UpdateNotification(
     api::notifications::NotificationOptions* options,
     message_center::Notification* notification,
     std::string* error) {
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS)
   if (options->priority &&
       *options->priority < message_center::DEFAULT_PRIORITY) {
     *error = kLowPriorityDeprecatedOnPlatform;
@@ -391,7 +391,7 @@ bool NotificationsApiFunction::UpdateNotification(
       *error = kUnableToDecodeIconError;
       return false;
     }
-    notification->set_icon(icon);
+    notification->set_icon(ui::ImageModel::FromImage(icon));
   }
 
   if (options->app_icon_mask_bitmap.get()) {
@@ -648,16 +648,13 @@ NotificationsGetAllFunction::RunNotificationsApi() {
   std::set<std::string> notification_ids =
       GetDisplayHelper()->GetNotificationIdsForExtension(extension_->url());
 
-  std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
+  base::Value::Dict result;
 
-  for (auto iter = notification_ids.begin(); iter != notification_ids.end();
-       iter++) {
-    result->SetKey(StripScopeFromIdentifier(extension_->id(), *iter),
-                   base::Value(true));
+  for (const auto& entry : notification_ids) {
+    result.Set(StripScopeFromIdentifier(extension_->id(), entry), true);
   }
 
-  return RespondNow(
-      OneArgument(base::Value::FromUniquePtrValue(std::move(result))));
+  return RespondNow(OneArgument(base::Value(std::move(result))));
 }
 
 NotificationsGetPermissionLevelFunction::

@@ -7,10 +7,11 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/values.h"
+#include "components/autofill_assistant/browser/client_status.h"
 #include "components/autofill_assistant/browser/devtools/devtools/domains/types_runtime.h"
 #include "components/autofill_assistant/browser/devtools/devtools_client.h"
 #include "components/autofill_assistant/browser/rectf.h"
-#include "components/autofill_assistant/browser/web/element_finder.h"
+#include "components/autofill_assistant/browser/web/element_finder_result.h"
 #include "components/autofill_assistant/browser/web/web_controller_util.h"
 
 namespace autofill_assistant {
@@ -34,13 +35,13 @@ ElementRectGetter::ElementRectGetter(DevtoolsClient* devtools_client)
 
 ElementRectGetter::~ElementRectGetter() = default;
 
-void ElementRectGetter::Start(std::unique_ptr<ElementFinder::Result> element,
+void ElementRectGetter::Start(std::unique_ptr<ElementFinderResult> element,
                               ElementRectCallback callback) {
   GetBoundingClientRect(std::move(element), 0, RectF(), std::move(callback));
 }
 
 void ElementRectGetter::GetBoundingClientRect(
-    std::unique_ptr<ElementFinder::Result> element,
+    std::unique_ptr<ElementFinderResult> element,
     size_t index,
     const RectF& stacked_rect,
     ElementRectCallback callback) {
@@ -75,7 +76,7 @@ void ElementRectGetter::GetBoundingClientRect(
 
 void ElementRectGetter::OnGetClientRectResult(
     ElementRectCallback callback,
-    std::unique_ptr<ElementFinder::Result> element,
+    std::unique_ptr<ElementFinderResult> element,
     size_t index,
     const RectF& stacked_rect,
     const DevtoolsClient::ReplyStatus& reply_status,
@@ -84,7 +85,7 @@ void ElementRectGetter::OnGetClientRectResult(
       CheckJavaScriptResult(reply_status, result.get(), __FILE__, __LINE__);
   if (!status.ok() || !result->GetResult()->HasValue() ||
       !result->GetResult()->GetValue()->is_list() ||
-      result->GetResult()->GetValue()->GetList().size() != 4u) {
+      result->GetResult()->GetValue()->GetListDeprecated().size() != 4u) {
     VLOG(2) << __func__ << " Failed to get element rect: " << status;
     std::move(callback).Run(
         JavaScriptErrorStatus(reply_status, __FILE__, __LINE__, nullptr),
@@ -92,7 +93,7 @@ void ElementRectGetter::OnGetClientRectResult(
     return;
   }
 
-  const auto& list = result->GetResult()->GetValue()->GetList();
+  const auto& list = result->GetResult()->GetValue()->GetListDeprecated();
   // Value::GetDouble() is safe to call without checking the value type; it'll
   // return 0.0 if the value has the wrong type.
 

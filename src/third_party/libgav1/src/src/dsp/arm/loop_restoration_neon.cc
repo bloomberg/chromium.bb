@@ -1504,7 +1504,6 @@ inline void BoxSumFilterPreProcess5(const uint8_t* const src0,
   const ptrdiff_t overread_in_bytes = kWideOverreadInBytesPass1 - width;
   uint8x16_t s[2][2], mas[2];
   uint16x8_t sq[2][4], bs[3];
-  // TODO(b/194217060): Future msan load.
   s[0][0] = vld1q_u8(src0);
   s[1][0] = vld1q_u8(src1);
 
@@ -1599,7 +1598,6 @@ inline void BoxSumFilterPreProcess(
   const ptrdiff_t overread_in_bytes = kWideOverreadInBytesPass1 - width;
   uint8x16_t s[2][2], ma3[2][2], ma5[2];
   uint16x8_t sq[2][4], b3[2][3], b5[3];
-  // TODO(b/194217060): Future msan load.
   s[0][0] = vld1q_u8(src0);
   s[1][0] = vld1q_u8(src1);
 
@@ -1801,7 +1799,6 @@ inline void BoxFilterPass1LastRow(const uint8_t* const src,
                                   uint8_t* const dst) {
   uint8x16_t s[2], mas[2];
   uint16x8_t sq[4], bs[4];
-  // TODO(b/194217060): Future msan load.
   s[0] = vld1q_u8(src0);
 
   BoxFilterPreProcess5LastRowLo(s, scale, sum5, square_sum5, sq, &mas[0],
@@ -1812,7 +1809,6 @@ inline void BoxFilterPass1LastRow(const uint8_t* const src,
     uint16x8_t ma[2];
     uint8x16_t masx[3];
     uint32x4x2_t b[2];
-    // TODO(b/194217060): Future msan load.
     s[1] = vld1q_u8(src0 + x + 16);
 
     BoxFilterPreProcess5LastRow(s, x + 8, scale, sum5, square_sum5, sq + 1, mas,
@@ -1856,7 +1852,6 @@ LIBGAV1_ALWAYS_INLINE void BoxFilterPass2(
   const ptrdiff_t overread_in_bytes = kWideOverreadInBytesPass2 - width;
   uint8x16_t s[2], mas[2];
   uint16x8_t sq[4], bs[3];
-  // TODO(b/194217060): Future msan load.
   s[0] = vld1q_u8(src0);
 
   BoxFilterPreProcess3Lo(&s[0], scale, sum3, square_sum3, sq, &mas[0], &bs[0]);
@@ -1915,7 +1910,6 @@ LIBGAV1_ALWAYS_INLINE void BoxFilter(
   const ptrdiff_t overread_in_bytes = kWideOverreadInBytesPass1 - width;
   uint8x16_t s[2][2], ma3[2][2], ma5[2];
   uint16x8_t sq[2][4], b3[2][3], b5[3];
-  // TODO(b/194217060): Future msan load.
   s[0][0] = vld1q_u8(src0);
   s[1][0] = vld1q_u8(src1);
 
@@ -2023,7 +2017,6 @@ inline void BoxFilterLastRow(
   uint8x16_t s[2], ma3[2], ma5[2];
   uint16x8_t sq[4], ma[3], b3[3], b5[3];
   uint32x4x2_t b[3];
-  // TODO(b/194217060): Future msan load.
   s[0] = vld1q_u8(src0);
 
   BoxFilterPreProcessLastRowLo(s, scales, sum3, sum5, square_sum3, square_sum5,
@@ -2033,7 +2026,6 @@ inline void BoxFilterLastRow(
   do {
     uint8x16_t ma3x[3], ma5x[3];
     int16x8_t p[2];
-    // TODO(b/194217060): Future msan load.
     s[1] = vld1q_u8(src0 + x + 16);
 
     BoxFilterPreProcessLastRow(s, x + 8, scales, sum3, sum5, square_sum3,

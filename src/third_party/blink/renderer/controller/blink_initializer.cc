@@ -49,10 +49,12 @@
 #include "third_party/blink/renderer/controller/performance_manager/renderer_resource_coordinator_impl.h"
 #include "third_party/blink/renderer/controller/performance_manager/v8_detailed_memory_reporter_impl.h"
 #include "third_party/blink/renderer/core/animation/animation_clock.h"
+#include "third_party/blink/renderer/core/annotation/annotation_agent_container_impl.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/agent.h"
 #include "third_party/blink/renderer/core/frame/display_cutout_client_impl.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/html/parser/literal_buffer.h"
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 #include "third_party/blink/renderer/platform/disk_data_allocator.h"
@@ -66,23 +68,23 @@
 #include "third_party/blink/renderer/extensions/chromeos/chromeos_extensions.h"
 #endif
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "third_party/blink/renderer/controller/crash_memory_metrics_reporter_impl.h"
 #include "third_party/blink/renderer/controller/oom_intervention_impl.h"
 #endif
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 #include "third_party/blink/renderer/controller/memory_usage_monitor_posix.h"
 #endif
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID) || \
-    defined(OS_MAC) || defined(OS_WIN)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID) || \
+    BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
 #include "third_party/blink/renderer/controller/highest_pmf_reporter.h"
 #include "third_party/blink/renderer/controller/user_level_memory_pressure_signal_generator.h"
 #endif
 
 // #if expression should match the one in InitializeCommon
-#if !defined(ARCH_CPU_X86_64) && !defined(ARCH_CPU_ARM64) && defined(OS_WIN)
+#if !defined(ARCH_CPU_X86_64) && !defined(ARCH_CPU_ARM64) && BUILDFLAG(IS_WIN)
 #include <windows.h>
 #endif
 
@@ -102,6 +104,11 @@ class EndOfTaskRunner : public Thread::TaskObserver {
   }
 };
 
+// See description of `g_literal_buffer_create_string_with_encoding` in
+// LiteralBuffer as to what this controls.
+const base::Feature kLiteralBufferCreateStringWithEncoding{
+    "LiteralBufferCreateStringWithEncoding", base::FEATURE_DISABLED_BY_DEFAULT};
+
 Thread::TaskObserver* g_end_of_task_runner = nullptr;
 
 BlinkInitializer& GetBlinkInitializer() {
@@ -112,7 +119,7 @@ BlinkInitializer& GetBlinkInitializer() {
 
 void InitializeCommon(Platform* platform, mojo::BinderMap* binders) {
 // #if expression should match the one around #include <windows.h>
-#if !defined(ARCH_CPU_X86_64) && !defined(ARCH_CPU_ARM64) && defined(OS_WIN)
+#if !defined(ARCH_CPU_X86_64) && !defined(ARCH_CPU_ARM64) && BUILDFLAG(IS_WIN)
   // Reserve address space on 32 bit Windows, to make it likelier that large
   // array buffer allocations succeed.
   BOOL is_wow_64 = -1;
@@ -128,7 +135,14 @@ void InitializeCommon(Platform* platform, mojo::BinderMap* binders) {
     }
   }
 #endif  // !defined(ARCH_CPU_X86_64) && !defined(ARCH_CPU_ARM64) &&
-        // defined(OS_WIN)
+        // BUILDFLAG(IS_WIN)
+
+#if defined(USE_BLINK_EXTENSIONS_CHROMEOS)
+  // ChromeOSExtensions::Initialize() initializes strings which must be done
+  // before calling CoreInitializer::Initialize() which is called by
+  // GetBlinkInitializer().Initialize() below.
+  ChromeOSExtensions::Initialize();
+#endif
 
   // BlinkInitializer::Initialize() must be called before InitializeMainThread
   GetBlinkInitializer().Initialize();
@@ -145,18 +159,14 @@ void InitializeCommon(Platform* platform, mojo::BinderMap* binders) {
   g_end_of_task_runner = new EndOfTaskRunner;
   Thread::Current()->AddTaskObserver(g_end_of_task_runner);
 
-#if defined(USE_BLINK_EXTENSIONS_CHROMEOS)
-  ChromeOSExtensions::Initialize();
-#endif
-
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // Initialize CrashMemoryMetricsReporterImpl in order to assure that memory
   // allocation does not happen in OnOOMCallback.
   CrashMemoryMetricsReporterImpl::Instance();
 #endif
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID) || \
-    defined(OS_MAC) || defined(OS_WIN)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID) || \
+    BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
   // Initialize UserLevelMemoryPressureSignalGenerator so it starts monitoring.
   if (UserLevelMemoryPressureSignalGenerator::Enabled())
     UserLevelMemoryPressureSignalGenerator::Instance();
@@ -168,6 +178,9 @@ void InitializeCommon(Platform* platform, mojo::BinderMap* binders) {
 
   // Initialize performance manager.
   RendererResourceCoordinatorImpl::MaybeInitialize();
+
+  g_literal_buffer_create_string_with_encoding =
+      base::FeatureList::IsEnabled(kLiteralBufferCreateStringWithEncoding);
 }
 
 }  // namespace
@@ -217,7 +230,7 @@ void BlinkInitializer::RegisterInterfaces(mojo::BinderMap& binders) {
   if (!main_thread->GetTaskRunner())
     return;
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   binders.Add(ConvertToBaseRepeatingCallback(
                   CrossThreadBindRepeating(&OomInterventionImpl::BindReceiver)),
               main_thread->GetTaskRunner());
@@ -227,7 +240,7 @@ void BlinkInitializer::RegisterInterfaces(mojo::BinderMap& binders) {
               main_thread->GetTaskRunner());
 #endif
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
   binders.Add(ConvertToBaseRepeatingCallback(
                   CrossThreadBindRepeating(&MemoryUsageMonitorPosix::Bind)),
               main_thread->GetTaskRunner());
@@ -257,7 +270,17 @@ void BlinkInitializer::InitLocalFrame(LocalFrame& frame) const {
 
   frame.GetInterfaceRegistry()->AddInterface(WTF::BindRepeating(
       &LocalFrame::PauseSubresourceLoading, WrapWeakPersistent(&frame)));
+
+  frame.GetInterfaceRegistry()->AddInterface(WTF::BindRepeating(
+      &AnnotationAgentContainerImpl::BindReceiver, WrapWeakPersistent(&frame)));
   ModulesInitializer::InitLocalFrame(frame);
+}
+
+void BlinkInitializer::InitServiceWorkerGlobalScope(
+    ServiceWorkerGlobalScope& worker_global_scope) const {
+#if defined(USE_BLINK_EXTENSIONS_CHROMEOS)
+  ChromeOSExtensions::InitServiceWorkerGlobalScope(worker_global_scope);
+#endif
 }
 
 void BlinkInitializer::OnClearWindowObjectInMainWorld(

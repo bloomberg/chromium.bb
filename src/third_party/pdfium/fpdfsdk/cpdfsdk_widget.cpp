@@ -6,8 +6,10 @@
 
 #include "fpdfsdk/cpdfsdk_widget.h"
 
+#include "constants/access_permissions.h"
 #include "constants/annotation_common.h"
 #include "constants/appearance.h"
+#include "constants/form_flags.h"
 #include "core/fpdfapi/parser/cpdf_array.h"
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
 #include "core/fpdfapi/parser/cpdf_document.h"
@@ -24,7 +26,6 @@
 #include "core/fxge/cfx_graphstatedata.h"
 #include "core/fxge/cfx_path.h"
 #include "core/fxge/cfx_renderdevice.h"
-#include "fpdfsdk/cpdfsdk_actionhandler.h"
 #include "fpdfsdk/cpdfsdk_appstream.h"
 #include "fpdfsdk/cpdfsdk_formfillenvironment.h"
 #include "fpdfsdk/cpdfsdk_interactiveform.h"
@@ -49,7 +50,10 @@ CPDFSDK_Widget::CPDFSDK_Widget(CPDF_Annot* pAnnot,
     : CPDFSDK_BAAnnot(pAnnot, pPageView),
       m_pInteractiveForm(pInteractiveForm) {}
 
-CPDFSDK_Widget::~CPDFSDK_Widget() = default;
+CPDFSDK_Widget::~CPDFSDK_Widget() {
+  GetInteractiveFormFiller()->OnDelete(this);
+  m_pInteractiveForm->RemoveMap(GetFormControl());
+}
 
 #ifdef PDF_ENABLE_XFA
 CXFA_FFWidget* CPDFSDK_Widget::GetMixXFAWidget() const {
@@ -276,8 +280,10 @@ void CPDFSDK_Widget::Synchronize(bool bSynchronizeElse) {
       node->ClearAllSelections();
       for (int i = 0; i < pFormField->CountSelectedItems(); ++i) {
         int nIndex = pFormField->GetSelectedIndex(i);
-        if (nIndex > -1 && nIndex < node->CountChoiceListItems(false))
-          node->SetItemState(nIndex, true, false, false, true);
+        if (nIndex > -1 &&
+            static_cast<size_t>(nIndex) < node->CountChoiceListItems(false)) {
+          node->SetItemState(nIndex, true, false, false);
+        }
       }
       if (GetFieldType() == FormFieldType::kComboBox)
         node->SetValue(XFA_ValuePicture::kEdit, pFormField->GetValue());
@@ -516,9 +522,10 @@ bool CPDFSDK_Widget::IsOptionSelected(int nIndex) const {
   if (CXFA_FFWidget* hWidget = GetMixXFAWidget()) {
     CXFA_Node* node = hWidget->GetNode();
     if (node->IsWidgetReady()) {
-      if (nIndex > -1 && nIndex < node->CountChoiceListItems(false))
+      if (nIndex > -1 &&
+          static_cast<size_t>(nIndex) < node->CountChoiceListItems(false)) {
         return node->GetItemState(nIndex);
-
+      }
       return false;
     }
   }
@@ -651,7 +658,7 @@ void CPDFSDK_Widget::ResetAppearance(absl::optional<WideString> sValue,
       break;
   }
 
-  m_pAnnot->ClearCachedAP();
+  ClearCachedAnnotAP();
 }
 
 absl::optional<WideString> CPDFSDK_Widget::OnFormat() {
@@ -664,6 +671,214 @@ void CPDFSDK_Widget::ResetFieldAppearance() {
   CPDF_FormField* pFormField = GetFormField();
   DCHECK(pFormField);
   m_pInteractiveForm->ResetFieldAppearance(pFormField, absl::nullopt);
+}
+
+void CPDFSDK_Widget::OnDraw(CFX_RenderDevice* pDevice,
+                            const CFX_Matrix& mtUser2Device,
+                            bool bDrawAnnots) {
+  if (IsSignatureWidget()) {
+    DrawAppearance(pDevice, mtUser2Device, CPDF_Annot::AppearanceMode::kNormal);
+    return;
+  }
+
+  GetInteractiveFormFiller()->OnDraw(GetPageView(), this, pDevice,
+                                     mtUser2Device);
+}
+
+bool CPDFSDK_Widget::DoHitTest(const CFX_PointF& point) {
+  if (IsSignatureWidget() || !IsVisible())
+    return false;
+
+  if (GetFieldFlags() & pdfium::form_flags::kReadOnly)
+    return false;
+
+  bool do_hit_test = GetFieldType() == FormFieldType::kPushButton;
+  if (!do_hit_test) {
+    uint32_t perms = GetPDFPage()->GetDocument()->GetUserPermissions();
+    do_hit_test = (perms & pdfium::access_permissions::kFillForm) ||
+                  (perms & pdfium::access_permissions::kModifyAnnotation);
+  }
+  return do_hit_test && GetViewBBox().Contains(point);
+}
+
+CFX_FloatRect CPDFSDK_Widget::GetViewBBox() {
+  if (IsSignatureWidget())
+    return CFX_FloatRect();
+
+  auto* form_filler = GetInteractiveFormFiller();
+  return CFX_FloatRect(form_filler->GetViewBBox(GetPageView(), this));
+}
+
+void CPDFSDK_Widget::OnMouseEnter(Mask<FWL_EVENTFLAG> nFlags) {
+  if (IsSignatureWidget())
+    return;
+
+  ObservedPtr<CPDFSDK_Widget> observer(this);
+  GetInteractiveFormFiller()->OnMouseEnter(GetPageView(), observer, nFlags);
+}
+
+void CPDFSDK_Widget::OnMouseExit(Mask<FWL_EVENTFLAG> nFlags) {
+  if (IsSignatureWidget())
+    return;
+
+  ObservedPtr<CPDFSDK_Widget> observer(this);
+  GetInteractiveFormFiller()->OnMouseExit(GetPageView(), observer, nFlags);
+}
+
+bool CPDFSDK_Widget::OnLButtonDown(Mask<FWL_EVENTFLAG> nFlags,
+                                   const CFX_PointF& point) {
+  if (IsSignatureWidget())
+    return false;
+
+  ObservedPtr<CPDFSDK_Widget> observer(this);
+  return GetInteractiveFormFiller()->OnLButtonDown(GetPageView(), observer,
+                                                   nFlags, point);
+}
+
+bool CPDFSDK_Widget::OnLButtonUp(Mask<FWL_EVENTFLAG> nFlags,
+                                 const CFX_PointF& point) {
+  if (IsSignatureWidget())
+    return false;
+
+  ObservedPtr<CPDFSDK_Widget> observer(this);
+  return GetInteractiveFormFiller()->OnLButtonUp(GetPageView(), observer,
+                                                 nFlags, point);
+}
+
+bool CPDFSDK_Widget::OnLButtonDblClk(Mask<FWL_EVENTFLAG> nFlags,
+                                     const CFX_PointF& point) {
+  if (IsSignatureWidget())
+    return false;
+
+  ObservedPtr<CPDFSDK_Widget> observer(this);
+  return GetInteractiveFormFiller()->OnLButtonDblClk(GetPageView(), observer,
+                                                     nFlags, point);
+}
+
+bool CPDFSDK_Widget::OnMouseMove(Mask<FWL_EVENTFLAG> nFlags,
+                                 const CFX_PointF& point) {
+  if (IsSignatureWidget())
+    return false;
+
+  ObservedPtr<CPDFSDK_Widget> observer(this);
+  return GetInteractiveFormFiller()->OnMouseMove(GetPageView(), observer,
+                                                 nFlags, point);
+}
+
+bool CPDFSDK_Widget::OnMouseWheel(Mask<FWL_EVENTFLAG> nFlags,
+                                  const CFX_PointF& point,
+                                  const CFX_Vector& delta) {
+  if (IsSignatureWidget())
+    return false;
+
+  ObservedPtr<CPDFSDK_Widget> observer(this);
+  return GetInteractiveFormFiller()->OnMouseWheel(GetPageView(), observer,
+                                                  nFlags, point, delta);
+}
+
+bool CPDFSDK_Widget::OnRButtonDown(Mask<FWL_EVENTFLAG> nFlags,
+                                   const CFX_PointF& point) {
+  if (IsSignatureWidget())
+    return false;
+
+  ObservedPtr<CPDFSDK_Widget> observer(this);
+  return GetInteractiveFormFiller()->OnRButtonDown(GetPageView(), observer,
+                                                   nFlags, point);
+}
+
+bool CPDFSDK_Widget::OnRButtonUp(Mask<FWL_EVENTFLAG> nFlags,
+                                 const CFX_PointF& point) {
+  if (IsSignatureWidget())
+    return false;
+
+  ObservedPtr<CPDFSDK_Widget> observer(this);
+  return GetInteractiveFormFiller()->OnRButtonUp(GetPageView(), observer,
+                                                 nFlags, point);
+}
+
+bool CPDFSDK_Widget::OnChar(uint32_t nChar, Mask<FWL_EVENTFLAG> nFlags) {
+  return !IsSignatureWidget() &&
+         GetInteractiveFormFiller()->OnChar(this, nChar, nFlags);
+}
+
+bool CPDFSDK_Widget::OnKeyDown(FWL_VKEYCODE nKeyCode,
+                               Mask<FWL_EVENTFLAG> nFlags) {
+  return !IsSignatureWidget() &&
+         GetInteractiveFormFiller()->OnKeyDown(this, nKeyCode, nFlags);
+}
+
+bool CPDFSDK_Widget::OnSetFocus(Mask<FWL_EVENTFLAG> nFlags) {
+  if (!IsFocusableAnnot(GetPDFAnnot()->GetSubtype()))
+    return false;
+
+  if (IsSignatureWidget())
+    return true;
+
+  ObservedPtr<CPDFSDK_Widget> observer(this);
+  return GetInteractiveFormFiller()->OnSetFocus(observer, nFlags);
+}
+
+bool CPDFSDK_Widget::OnKillFocus(Mask<FWL_EVENTFLAG> nFlags) {
+  if (!IsFocusableAnnot(GetPDFAnnot()->GetSubtype()))
+    return false;
+
+  if (IsSignatureWidget())
+    return true;
+
+  ObservedPtr<CPDFSDK_Widget> observer(this);
+  return GetInteractiveFormFiller()->OnKillFocus(observer, nFlags);
+}
+
+bool CPDFSDK_Widget::CanUndo() {
+  return !IsSignatureWidget() && GetInteractiveFormFiller()->CanUndo(this);
+}
+
+bool CPDFSDK_Widget::CanRedo() {
+  return !IsSignatureWidget() && GetInteractiveFormFiller()->CanRedo(this);
+}
+
+bool CPDFSDK_Widget::Undo() {
+  return !IsSignatureWidget() && GetInteractiveFormFiller()->Undo(this);
+}
+
+bool CPDFSDK_Widget::Redo() {
+  return !IsSignatureWidget() && GetInteractiveFormFiller()->Redo(this);
+}
+
+WideString CPDFSDK_Widget::GetText() {
+  if (IsSignatureWidget())
+    return WideString();
+  return GetInteractiveFormFiller()->GetText(this);
+}
+
+WideString CPDFSDK_Widget::GetSelectedText() {
+  if (IsSignatureWidget())
+    return WideString();
+  return GetInteractiveFormFiller()->GetSelectedText(this);
+}
+
+void CPDFSDK_Widget::ReplaceSelection(const WideString& text) {
+  if (IsSignatureWidget())
+    return;
+
+  GetInteractiveFormFiller()->ReplaceSelection(this, text);
+}
+
+bool CPDFSDK_Widget::SelectAllText() {
+  return !IsSignatureWidget() &&
+         GetInteractiveFormFiller()->SelectAllText(this);
+}
+
+bool CPDFSDK_Widget::SetIndexSelected(int index, bool selected) {
+  ObservedPtr<CPDFSDK_Widget> observer(this);
+  return !IsSignatureWidget() && GetInteractiveFormFiller()->SetIndexSelected(
+                                     observer, index, selected);
+}
+
+bool CPDFSDK_Widget::IsIndexSelected(int index) {
+  ObservedPtr<CPDFSDK_Widget> observer(this);
+  return !IsSignatureWidget() &&
+         GetInteractiveFormFiller()->IsIndexSelected(observer, index);
 }
 
 void CPDFSDK_Widget::DrawAppearance(CFX_RenderDevice* pDevice,
@@ -808,10 +1023,37 @@ bool CPDFSDK_Widget::OnAAction(CPDF_AAction::AActionType type,
 
   CPDF_Action action = GetAAction(type);
   if (action.GetType() != CPDF_Action::Type::kUnknown) {
-    pFormFillEnv->GetActionHandler()->DoAction_Field(action, type, pFormFillEnv,
-                                                     GetFormField(), data);
+    pFormFillEnv->DoActionField(action, type, GetFormField(), data);
   }
   return false;
+}
+
+void CPDFSDK_Widget::OnLoad() {
+  if (IsSignatureWidget())
+    return;
+
+  if (!IsAppearanceValid())
+    ResetAppearance(absl::nullopt, CPDFSDK_Widget::kValueUnchanged);
+
+  FormFieldType field_type = GetFieldType();
+  if (field_type == FormFieldType::kTextField ||
+      field_type == FormFieldType::kComboBox) {
+    ObservedPtr<CPDFSDK_Annot> pObserved(this);
+    absl::optional<WideString> sValue = OnFormat();
+    if (!pObserved)
+      return;
+
+    if (sValue.has_value() && field_type == FormFieldType::kComboBox)
+      ResetAppearance(sValue, CPDFSDK_Widget::kValueUnchanged);
+  }
+
+#ifdef PDF_ENABLE_XFA
+  auto* pContext = m_pPageView->GetFormFillEnv()->GetDocExtension();
+  if (pContext && pContext->ContainsExtensionForegroundForm()) {
+    if (!IsAppearanceValid() && !GetValue().IsEmpty())
+      ResetXFAAppearance(CPDFSDK_Widget::kValueUnchanged);
+  }
+#endif  // PDF_ENABLE_XFA
 }
 
 CPDF_Action CPDFSDK_Widget::GetAAction(CPDF_AAction::AActionType eAAT) {
@@ -842,4 +1084,8 @@ CPDF_Action CPDFSDK_Widget::GetAAction(CPDF_AAction::AActionType eAAT) {
   }
 
   return CPDF_Action(nullptr);
+}
+
+CFFL_InteractiveFormFiller* CPDFSDK_Widget::GetInteractiveFormFiller() {
+  return m_pPageView->GetFormFillEnv()->GetInteractiveFormFiller();
 }

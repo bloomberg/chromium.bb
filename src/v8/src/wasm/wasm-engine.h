@@ -19,6 +19,7 @@
 #include "src/base/platform/mutex.h"
 #include "src/tasks/cancelable-task.h"
 #include "src/tasks/operations-barrier.h"
+#include "src/wasm/canonical-types.h"
 #include "src/wasm/wasm-code-manager.h"
 #include "src/wasm/wasm-tier.h"
 #include "src/zone/accounting-allocator.h"
@@ -221,8 +222,10 @@ class V8_EXPORT_PRIVATE WasmEngine {
 
   AccountingAllocator* allocator() { return &allocator_; }
 
-  // Compilation statistics for TurboFan compilations.
-  CompilationStatistics* GetOrCreateTurboStatistics();
+  // Compilation statistics for TurboFan compilations. Returns a shared_ptr
+  // so that background compilation jobs can hold on to it while the main thread
+  // shuts down.
+  std::shared_ptr<CompilationStatistics> GetOrCreateTurboStatistics();
 
   // Prints the gathered compilation statistics, then resets them.
   void DumpAndResetTurboStatistics();
@@ -357,6 +360,8 @@ class V8_EXPORT_PRIVATE WasmEngine {
   void SampleRethrowEvent(Isolate*);
   void SampleCatchEvent(Isolate*);
 
+  TypeCanonicalizer* type_canonicalizer() { return &type_canonicalizer_; }
+
   // Call on process start and exit.
   static void InitializeOncePerProcess();
   static void GlobalTearDown();
@@ -392,6 +397,8 @@ class V8_EXPORT_PRIVATE WasmEngine {
 
   std::atomic<int> next_compilation_id_{0};
 
+  TypeCanonicalizer type_canonicalizer_;
+
   // This mutex protects all information which is mutated concurrently or
   // fields that are initialized lazily on the first access.
   base::Mutex mutex_;
@@ -404,7 +411,7 @@ class V8_EXPORT_PRIVATE WasmEngine {
   std::unordered_map<AsyncCompileJob*, std::unique_ptr<AsyncCompileJob>>
       async_compile_jobs_;
 
-  std::unique_ptr<CompilationStatistics> compilation_stats_;
+  std::shared_ptr<CompilationStatistics> compilation_stats_;
   std::unique_ptr<CodeTracer> code_tracer_;
 
   // Set of isolates which use this WasmEngine.

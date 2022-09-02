@@ -56,6 +56,7 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.common.ContentSwitches;
 import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.net.test.EmbeddedTestServer;
+import org.chromium.net.test.ServerCertificate;
 import org.chromium.net.test.util.TestWebServer;
 import org.chromium.ui.display.DisplayAndroid;
 import org.chromium.ui.display.DisplayUtil;
@@ -165,8 +166,13 @@ public class AwSettingsTest {
         }
 
         protected String executeJavaScriptAndWaitForResult(String script) throws Exception {
+            return executeJavaScriptAndWaitForResult(script, /*shouldCheckSettings=*/true);
+        }
+
+        protected String executeJavaScriptAndWaitForResult(
+                String script, boolean shouldCheckSettings) throws Exception {
             return mActivityTestRule.executeJavaScriptAndWaitForResult(
-                    mAwContents, mContentViewClient, script);
+                    mAwContents, mContentViewClient, script, shouldCheckSettings);
         }
 
         private void ensureSettingHasValue(T value) throws Throwable {
@@ -233,7 +239,9 @@ public class AwSettingsTest {
         protected void doEnsureSettingHasValue(Boolean value) throws Throwable {
             String oldTitle = getTitleOnUiThread();
             String newTitle = oldTitle + "_modified";
-            executeJavaScriptAndWaitForResult(getScript(newTitle));
+            // Do not check if JavaScript is enabled, since the point of this test is to verify that
+            // when JavaScript is disabled the script does not execute and cannot change the title.
+            executeJavaScriptAndWaitForResult(getScript(newTitle), /*shouldCheckSettings=*/false);
             Assert.assertEquals(value == ENABLED ? newTitle : oldTitle, getTitleOnUiThread());
         }
 
@@ -1947,6 +1955,40 @@ public class AwSettingsTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView", "Preferences"})
+    @CommandLineFlags.Add({"enable-features=UserAgentClientHint,UACHOverrideBlank"})
+    public void testUserAgentOverrideClientHints() throws Throwable {
+        final TestAwContentsClient contentClient = new TestAwContentsClient();
+        final AwTestContainerView testContainerView =
+                mActivityTestRule.createAwTestContainerViewOnMainSync(contentClient);
+        final String customUserAgentString = "testUserAgentOverrideClientHints";
+        AwContents awContents = testContainerView.getAwContents();
+        AwSettings settings = mActivityTestRule.getAwSettingsOnUiThread(awContents);
+        settings.setUserAgentString(customUserAgentString);
+
+        EmbeddedTestServer testServer = EmbeddedTestServer.createAndStartHTTPSServer(
+                InstrumentationRegistry.getInstrumentation().getContext(),
+                ServerCertificate.CERT_OK);
+
+        AwActivityTestRule.enableJavaScriptOnUiThread(awContents);
+
+        try {
+            String targetUrl = testServer.getURL("/android_webview/test/data/fetch-echo.html")
+                    + "?url="
+                    + URLEncoder.encode("/echoheader?Sec-CH-UA&Sec-CH-UA-Mobile&User-Agent");
+            mActivityTestRule.loadUrlSync(
+                    awContents, contentClient.getOnPageFinishedHelper(), targetUrl);
+            AwActivityTestRule.pollInstrumentationThread(
+                    () -> !"running".equals(mActivityTestRule.getTitleOnUiThread(awContents)));
+            Assert.assertEquals("?0 " + customUserAgentString,
+                    mActivityTestRule.getTitleOnUiThread(awContents));
+        } finally {
+            testServer.stopAndDestroyServer();
+        }
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView", "Preferences"})
     public void testDomStorageEnabledWithTwoViews() throws Throwable {
         ViewPair views = createViews();
         runPerViewSettingsTest(
@@ -3076,12 +3118,9 @@ public class AwSettingsTest {
                         views.getContainer1(), views.getClient1(), true));
     }
 
-    /*
-     * @SmallTest
-     * @Feature({"AndroidWebView", "Preferences"})
-     */
     @Test
-    @DisabledTest(message = "crbug.com/644894")
+    @SmallTest
+    @Feature({"AndroidWebView", "Preferences"})
     public void testSetInitialScale() throws Throwable {
         final TestAwContentsClient contentClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =

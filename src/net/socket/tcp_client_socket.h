@@ -13,12 +13,12 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/power_monitor/power_observer.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "net/base/address_list.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/net_export.h"
-#include "net/socket/connection_attempts.h"
 #include "net/socket/socket_descriptor.h"
 #include "net/socket/stream_socket.h"
 #include "net/socket/tcp_socket.h"
@@ -27,7 +27,7 @@
 
 // PowerMonitor doesn't get suspend mode signals on Android, so don't use it to
 // watch for suspend events.
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 // Define SOCKETS_OBSERVE_SUSPEND if sockets should watch for suspend events so
 // they can fail pending socket operations on suspend. Otherwise, connections
 // hang for varying lengths of time when leaving suspend mode before failing
@@ -50,15 +50,20 @@ class NetworkQualityEstimator;
 class NET_EXPORT TCPClientSocket : public TransportClientSocket,
                                    public base::PowerSuspendObserver {
  public:
-  // The IP address(es) and port number to connect to.  The TCP socket will try
+  // The IP address(es) and port number to connect to. The TCP socket will try
   // each IP address in the list until it succeeds in establishing a
   // connection.
+  // If `network` is specified, the socket will be bound to it. All data traffic
+  // on the socket will be sent and received via `network`. Communication using
+  // this socket will fail if `network` disconnects.
   TCPClientSocket(
       const AddressList& addresses,
       std::unique_ptr<SocketPerformanceWatcher> socket_performance_watcher,
       NetworkQualityEstimator* network_quality_estimator,
       net::NetLog* net_log,
-      const net::NetLogSource& source);
+      const net::NetLogSource& source,
+      NetworkChangeNotifier::NetworkHandle network =
+          NetworkChangeNotifier::kInvalidNetworkHandle);
 
   // Adopts the given, connected socket and then acts as if Connect() had been
   // called. This function is used by TCPServerSocket and for testing.
@@ -96,9 +101,6 @@ class NET_EXPORT TCPClientSocket : public TransportClientSocket,
   bool WasAlpnNegotiated() const override;
   NextProto GetNegotiatedProtocol() const override;
   bool GetSSLInfo(SSLInfo* ssl_info) override;
-  void GetConnectionAttempts(ConnectionAttempts* out) const override;
-  void ClearConnectionAttempts() override;
-  void AddConnectionAttempts(const ConnectionAttempts& attempts) override;
   int64_t GetTotalReceivedBytes() const override;
   void ApplySocketTag(const SocketTag& tag) override;
 
@@ -134,15 +136,17 @@ class NET_EXPORT TCPClientSocket : public TransportClientSocket,
     CONNECT_STATE_NONE,
   };
 
-  // Main constructor. |socket| must be non-null. |current_address_index| is the
-  // address index in |addresses| of the server |socket| is connected to, or -1
-  // if not connected. |bind_address|, if present, is the address |socket| is
-  // bound to.
+  // Main constructor. `socket` must be non-null. `current_address_index` is the
+  // address index in `addresses` of the server `socket` is connected to, or -1
+  // if not connected. `bind_address`, if present, is the address `socket` is
+  // bound to. `network` is the network the socket is required to be bound to,
+  // or NetworkChangeNotifier::kInvalidNetworkHandle if no binding is required.
   TCPClientSocket(std::unique_ptr<TCPSocket> socket,
                   const AddressList& addresses,
                   int current_address_index,
                   std::unique_ptr<IPEndPoint> bind_address,
-                  NetworkQualityEstimator* network_quality_estimator);
+                  NetworkQualityEstimator* network_quality_estimator,
+                  NetworkChangeNotifier::NetworkHandle network);
 
   // A helper method shared by Read() and ReadIfReady(). If |read_if_ready| is
   // set to true, ReadIfReady() will be used instead of Read().
@@ -206,25 +210,22 @@ class NET_EXPORT TCPClientSocket : public TransportClientSocket,
   CompletionOnceCallback write_callback_;
 
   // The next state for the Connect() state machine.
-  ConnectState next_connect_state_;
+  ConnectState next_connect_state_ = CONNECT_STATE_NONE;
 
   // This socket was previously disconnected and has not been re-connected.
-  bool previously_disconnected_;
-
-  // Failed connection attempts made while trying to connect this socket.
-  ConnectionAttempts connection_attempts_;
+  bool previously_disconnected_ = false;
 
   // Total number of bytes received by the socket.
-  int64_t total_received_bytes_;
+  int64_t total_received_bytes_ = 0;
 
   BeforeConnectCallback before_connect_callback_;
 
-  bool was_ever_used_;
+  bool was_ever_used_ = false;
 
   // Set to true if the socket was disconnected due to entering suspend mode.
   // Once set, read/write operations return ERR_NETWORK_IO_SUSPENDED, until
   // Connect() or Disconnect() is called.
-  bool was_disconnected_on_suspend_;
+  bool was_disconnected_on_suspend_ = false;
 
   // The time when the latest connect attempt was started.
   absl::optional<base::TimeTicks> start_connect_attempt_;
@@ -234,6 +235,8 @@ class NET_EXPORT TCPClientSocket : public TransportClientSocket,
   raw_ptr<NetworkQualityEstimator> network_quality_estimator_;
 
   base::OneShotTimer connect_attempt_timer_;
+
+  NetworkChangeNotifier::NetworkHandle network_;
 
   base::WeakPtrFactory<TCPClientSocket> weak_ptr_factory_{this};
 };

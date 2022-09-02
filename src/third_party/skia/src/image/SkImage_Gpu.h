@@ -10,9 +10,9 @@
 
 #include "include/private/SkSpinlock.h"
 #include "src/core/SkImagePriv.h"
-#include "src/gpu/GrGpuResourcePriv.h"
-#include "src/gpu/GrSurfaceProxyPriv.h"
-#include "src/gpu/GrSurfaceProxyView.h"
+#include "src/gpu/ganesh/GrGpuResourcePriv.h"
+#include "src/gpu/ganesh/GrSurfaceProxyPriv.h"
+#include "src/gpu/ganesh/GrSurfaceProxyView.h"
 #include "src/image/SkImage_GpuBase.h"
 
 class GrDirectContext;
@@ -46,7 +46,7 @@ public:
     GrBackendTexture onGetBackendTexture(bool flushPendingGrContextIO,
                                          GrSurfaceOrigin* origin) const final;
 
-    bool onIsTextureBacked() const override { return true; }
+    bool isGaneshBacked() const override { return true; }
 
     size_t onTextureSize() const override;
 
@@ -139,7 +139,7 @@ private:
     };
 
     mutable ProxyChooser fChooser;
-    GrSwizzle fSwizzle;
+    skgpu::Swizzle fSwizzle;
     GrSurfaceOrigin fOrigin;
 
     using INHERITED = SkImage_GpuBase;

@@ -6,12 +6,13 @@
 
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/observer_list.h"
 #include "build/build_config.h"
 #include "ui/base/ime/input_method_delegate.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/events/event.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include <windows.h>
 #endif
 
@@ -69,7 +70,7 @@ void MockInputMethod::OnBlur() {
     observer.OnBlur();
 }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 bool MockInputMethod::OnUntranslatedIMEMessage(const CHROME_MSG event,
                                                NativeEventResult* result) {
   if (result)
@@ -84,7 +85,7 @@ bool MockInputMethod::IsInputLocaleCJK() const {
 }
 #endif
 
-void MockInputMethod::OnTextInputTypeChanged(const TextInputClient* client) {
+void MockInputMethod::OnTextInputTypeChanged(TextInputClient* client) {
   for (InputMethodObserver& observer : observer_list_)
     observer.OnTextInputStateChanged(client);
 }
@@ -103,10 +104,6 @@ TextInputType MockInputMethod::GetTextInputType() const {
 
 bool MockInputMethod::IsCandidatePopupOpen() const {
   return false;
-}
-
-void MockInputMethod::ShowVirtualKeyboardIfEnabled() {
-  SetVirtualKeyboardVisibilityIfEnabled(true);
 }
 
 void MockInputMethod::SetVirtualKeyboardVisibilityIfEnabled(bool should_show) {

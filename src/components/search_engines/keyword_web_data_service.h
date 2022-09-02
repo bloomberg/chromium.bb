@@ -14,7 +14,6 @@
 #include "components/search_engines/keyword_table.h"
 #include "components/search_engines/template_url_id.h"
 #include "components/webdata/common/web_data_service_base.h"
-#include "components/webdata/common/web_database.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -33,8 +32,10 @@ struct WDKeywordsResult {
   // Identifies the ID of the TemplateURL that is the default search. A value of
   // 0 indicates there is no default search provider.
   int64_t default_search_provider_id = 0;
-  // Version of the built-in keywords. A value of 0 indicates a first run.
+  // Version of the built-in keywords and starter pack engines. A value of 0
+  // indicates a first run.
   int builtin_keyword_version = 0;
+  int starter_pack_version = 0;
 };
 
 class WebDataServiceConsumer;
@@ -91,6 +92,9 @@ class KeywordWebDataService : public WebDataServiceBase {
 
   // Sets the version of the builtin keywords.
   void SetBuiltinKeywordVersion(int version);
+
+  // Sets the version of the starter pack keywords.
+  void SetStarterPackKeywordVersion(int version);
 
   // WebDataServiceBase:
   void ShutdownOnUISequence() override;

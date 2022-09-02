@@ -53,7 +53,10 @@ namespace {
 const base::FilePath::CharType kReportingDirectory[] =
     FILE_PATH_LITERAL("reporting");
 
-void CreateLocalStorageModule(
+}  // namespace
+
+// static
+void ReportingClient::CreateLocalStorageModule(
     const base::FilePath& local_reporting_path,
     base::StringPiece verification_key,
     CompressionInformation::CompressionAlgorithm compression_algorithm,
@@ -68,15 +71,13 @@ void CreateLocalStorageModule(
       std::move(async_start_upload_cb), EncryptionModule::Create(),
       CompressionModule::Create(512, compression_algorithm), std::move(cb));
 }
-}  // namespace
 
 // Uploader is passed to Storage in order to upload messages using the
 // UploadClient.
 class ReportingClient::Uploader : public UploaderInterface {
  public:
   using UploadCallback =
-      base::OnceCallback<Status(bool,
-                                std::unique_ptr<std::vector<EncryptedRecord>>)>;
+      base::OnceCallback<Status(bool, std::vector<EncryptedRecord>)>;
 
   static std::unique_ptr<Uploader> Create(bool need_encryption_key,
                                           UploadCallback upload_callback) {
@@ -89,9 +90,11 @@ class ReportingClient::Uploader : public UploaderInterface {
   Uploader& operator=(const Uploader& other) = delete;
 
   void ProcessRecord(EncryptedRecord data,
+                     ScopedReservation scoped_reservation,
                      base::OnceCallback<void(bool)> processed_cb) override {
     helper_.AsyncCall(&Helper::ProcessRecord)
-        .WithArgs(std::move(data), std::move(processed_cb));
+        .WithArgs(std::move(data), std::move(scoped_reservation),
+                  std::move(processed_cb));
   }
   void ProcessGap(SequenceInformation start,
                   uint64_t count,
@@ -112,6 +115,7 @@ class ReportingClient::Uploader : public UploaderInterface {
     Helper(const Helper& other) = delete;
     Helper& operator=(const Helper& other) = delete;
     void ProcessRecord(EncryptedRecord data,
+                       ScopedReservation scoped_reservation,
                        base::OnceCallback<void(bool)> processed_cb);
     void ProcessGap(SequenceInformation start,
                     uint64_t count,
@@ -121,7 +125,7 @@ class ReportingClient::Uploader : public UploaderInterface {
    private:
     bool completed_{false};
     const bool need_encryption_key_;
-    std::unique_ptr<std::vector<EncryptedRecord>> encrypted_records_;
+    std::vector<EncryptedRecord> encrypted_records_;
 
     UploadCallback upload_callback_;
   };
@@ -138,17 +142,17 @@ ReportingClient::Uploader::Helper::Helper(
     bool need_encryption_key,
     ReportingClient::Uploader::UploadCallback upload_callback)
     : need_encryption_key_(need_encryption_key),
-      encrypted_records_(std::make_unique<std::vector<EncryptedRecord>>()),
       upload_callback_(std::move(upload_callback)) {}
 
 void ReportingClient::Uploader::Helper::ProcessRecord(
     EncryptedRecord data,
+    ScopedReservation scoped_reservation,  // TODO(b/233089187): Use it.
     base::OnceCallback<void(bool)> processed_cb) {
   if (completed_) {
     std::move(processed_cb).Run(false);
     return;
   }
-  encrypted_records_->emplace_back(std::move(data));
+  encrypted_records_.emplace_back(std::move(data));
   std::move(processed_cb).Run(true);
 }
 
@@ -161,8 +165,8 @@ void ReportingClient::Uploader::Helper::ProcessGap(
     return;
   }
   for (uint64_t i = 0; i < count; ++i) {
-    encrypted_records_->emplace_back();
-    *encrypted_records_->rbegin()->mutable_sequence_information() = start;
+    encrypted_records_.emplace_back();
+    *encrypted_records_.rbegin()->mutable_sequence_information() = start;
     start.set_sequencing_id(start.sequencing_id() + 1);
   }
   std::move(processed_cb).Run(true);
@@ -179,8 +183,7 @@ void ReportingClient::Uploader::Helper::Completed(Status final_status) {
     return;
   }
   completed_ = true;
-  DCHECK(encrypted_records_);
-  if (encrypted_records_->empty() && !need_encryption_key_) {
+  if (encrypted_records_.empty() && !need_encryption_key_) {
     return;
   }
   DCHECK(upload_callback_);
@@ -197,13 +200,13 @@ ReportingClient::ReportingClient()
           [](base::OnceCallback<void(
                  StatusOr<scoped_refptr<StorageModuleInterface>>)>
                  storage_created_cb) {
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS)
             if (StorageSelector::is_use_missive()) {
               StorageSelector::CreateMissiveStorageModule(
                   std::move(storage_created_cb));
               return;
             }
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
             // Storage location in the local file system (if local storage is
             // enabled).
@@ -342,7 +345,7 @@ void ReportingClient::DeliverAsyncStartUploader(
                 base::BindOnce(
                     [](EncryptedReportingUploadProvider* upload_provider,
                        bool need_encryption_key,
-                       std::unique_ptr<std::vector<EncryptedRecord>> records) {
+                       std::vector<EncryptedRecord> records) {
                       upload_provider->RequestUploadEncryptedRecords(
                           need_encryption_key, std::move(records),
                           base::DoNothing());
@@ -359,47 +362,9 @@ ReportingClient::GetDefaultUploadProvider(
     UploadClient::ReportSuccessfulUploadCallback report_successful_upload_cb,
     UploadClient::EncryptionKeyAttachedCallback encryption_key_attached_cb,
     GetCloudPolicyClientCallback build_cloud_policy_client_cb) {
-  return std::make_unique<::reporting::EncryptedReportingUploadProvider>(
+  return std::make_unique<EncryptedReportingUploadProvider>(
       report_successful_upload_cb, encryption_key_attached_cb,
       build_cloud_policy_client_cb);
-}
-
-ReportingClient::TestEnvironment::TestEnvironment(
-    const base::FilePath& reporting_path,
-    base::StringPiece verification_key,
-    policy::CloudPolicyClient* client)
-    : saved_storage_create_cb_(
-          std::move(ReportingClient::GetInstance()->storage_create_cb_)),
-      saved_build_cloud_policy_client_cb_(std::move(
-          ReportingClient::GetInstance()->build_cloud_policy_client_cb_)) {
-  ReportingClient::GetInstance()->storage_create_cb_ = base::BindRepeating(
-      [](const base::FilePath& reporting_path,
-         base::StringPiece verification_key,
-         base::OnceCallback<void(
-             StatusOr<scoped_refptr<StorageModuleInterface>>)>
-             storage_created_cb) {
-        CreateLocalStorageModule(
-            reporting_path, verification_key,
-            CompressionInformation::COMPRESSION_SNAPPY,
-            base::BindRepeating(&ReportingClient::AsyncStartUploader),
-            std::move(storage_created_cb));
-      },
-      reporting_path, verification_key);
-  ReportingClient::GetInstance()->build_cloud_policy_client_cb_ =
-      base::BindRepeating(
-          [](policy::CloudPolicyClient* client,
-             CloudPolicyClientResultCb build_cb) {
-            std::move(build_cb).Run(std::move(client));
-          },
-          std::move(client));
-}
-
-ReportingClient::TestEnvironment::~TestEnvironment() {
-  ReportingClient::GetInstance()->storage_create_cb_ =
-      std::move(saved_storage_create_cb_);
-  ReportingClient::GetInstance()->build_cloud_policy_client_cb_ =
-      std::move(saved_build_cloud_policy_client_cb_);
-  base::Singleton<ReportingClient>::OnExit(nullptr);
 }
 
 }  // namespace reporting

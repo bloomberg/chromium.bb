@@ -53,7 +53,7 @@ class MockWebMediaPlayer : public WebMediaPlayer {
   void SetVolume(double) override {}
   void SetLatencyHint(double) override {}
   void SetPreservesPitch(bool) override {}
-  void SetAutoplayInitiated(bool) override {}
+  void SetWasPlayedWithUserActivation(bool) override {}
   void OnRequestPictureInPicture() override {}
   WebTimeRanges Buffered() const override { return WebTimeRanges(); }
   WebTimeRanges Seekable() const override { return WebTimeRanges(); }
@@ -72,9 +72,6 @@ class MockWebMediaPlayer : public WebMediaPlayer {
   bool IsEnded() const override { return false; }
   NetworkState GetNetworkState() const override { return kNetworkStateEmpty; }
   ReadyState GetReadyState() const override { return kReadyStateHaveNothing; }
-  SurfaceLayerMode GetVideoSurfaceLayerMode() const override {
-    return SurfaceLayerMode::kNever;
-  }
   WebString GetErrorMessage() const override { return WebString(); }
 
   bool DidLoadingProgress() override { return true; }
@@ -96,13 +93,15 @@ class MockWebMediaPlayer : public WebMediaPlayer {
     return;
   }
 
-  scoped_refptr<media::VideoFrame> GetCurrentFrame() override {
+  scoped_refptr<media::VideoFrame> GetCurrentFrameThenUpdate() override {
     // We could fill in |canvas| with a meaningful pattern in ARGB and verify
     // that is correctly captured (as I420) by HTMLVideoElementCapturerSource
     // but I don't think that'll be easy/useful/robust, so just let go here.
     return is_video_opaque_ ? media::VideoFrame::CreateBlackFrame(size_)
                             : media::VideoFrame::CreateTransparentFrame(size_);
   }
+
+  absl::optional<int> CurrentFrameId() const override { return absl::nullopt; }
 
   bool IsOpaque() const override { return is_video_opaque_; }
   bool HasAvailableVideoFrame() const override { return true; }

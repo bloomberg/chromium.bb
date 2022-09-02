@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
 
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context.h"
+#include "third_party/blink/renderer/core/page/page_animator.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/platform/testing/paint_test_configurations.h"
@@ -34,27 +35,25 @@ TEST_P(HTMLCanvasElementTest, CreateLayerUpdatesCompositing) {
 
   SetBodyInnerHTML("<canvas id='canvas'></canvas>");
   auto* canvas = To<HTMLCanvasElement>(GetDocument().getElementById("canvas"));
-  auto* layer = GetPaintLayerByElementId("canvas");
-  ASSERT_TRUE(layer);
-  EXPECT_FALSE(layer->GetLayoutObject()
-                   .FirstFragment()
+  EXPECT_FALSE(canvas->GetLayoutObject()
+                   ->FirstFragment()
                    .PaintProperties()
                    ->PaintOffsetTranslation());
-  EXPECT_EQ(CompositingReason::kNone, layer->DirectCompositingReasons());
 
-  EXPECT_FALSE(layer->GetLayoutObject().NeedsPaintPropertyUpdate());
-  EXPECT_FALSE(layer->SelfNeedsRepaint());
+  EXPECT_FALSE(canvas->GetLayoutObject()->NeedsPaintPropertyUpdate());
+  auto* painting_layer = GetLayoutObjectByElementId("canvas")->PaintingLayer();
+  EXPECT_FALSE(painting_layer->SelfNeedsRepaint());
   canvas->CreateLayer();
-  EXPECT_TRUE(layer->GetLayoutObject().NeedsPaintPropertyUpdate());
-  EXPECT_TRUE(layer->SelfNeedsRepaint());
+  EXPECT_FALSE(canvas->GetLayoutObject()->NeedsPaintPropertyUpdate());
+  EXPECT_TRUE(painting_layer->SelfNeedsRepaint());
   UpdateAllLifecyclePhasesForTest();
-  ASSERT_EQ(layer,
-            To<LayoutBoxModelObject>(canvas->GetLayoutObject())->Layer());
-  EXPECT_TRUE(layer->GetLayoutObject()
-                  .FirstFragment()
-                  .PaintProperties()
-                  ->PaintOffsetTranslation()
-                  ->HasDirectCompositingReasons());
+  ASSERT_EQ(
+      painting_layer,
+      To<LayoutBoxModelObject>(canvas->GetLayoutObject())->PaintingLayer());
+  EXPECT_FALSE(canvas->GetLayoutObject()
+                   ->FirstFragment()
+                   .PaintProperties()
+                   ->PaintOffsetTranslation());
 }
 
 TEST_P(HTMLCanvasElementTest, CanvasInvalidation) {
@@ -137,6 +136,13 @@ TEST_P(HTMLCanvasElementTest, CanvasInvalidationInFrame) {
   ChildDocument().body()->appendChild(script);
   EXPECT_TRUE(
       GetDocument().GetPage()->Animator().has_canvas_invalidation_for_test());
+}
+
+TEST_P(HTMLCanvasElementTest, BrokenCanvasHighRes) {
+  EXPECT_NE(HTMLCanvasElement::BrokenCanvas(2.0).first,
+            HTMLCanvasElement::BrokenCanvas(1.0).first);
+  EXPECT_EQ(HTMLCanvasElement::BrokenCanvas(2.0).second, 2.0);
+  EXPECT_EQ(HTMLCanvasElement::BrokenCanvas(1.0).second, 1.0);
 }
 
 }  // namespace blink

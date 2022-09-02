@@ -13,12 +13,14 @@
 # limitations under the License.
 
 import("//third_party/cast_core/public/src/proto/proto.gni")
-cast_core_grpc_library("platform_service") {
+cast_core_grpc_library("platform_service_proto") {
     sources = [
         "platform_service.proto",
     ]
+    generate_castcore_stubs = true
     deps = [
         "//third_party/cast_core/public/src/proto/common:duration_proto",
         "//third_party/cast_core/public/src/proto/common:service_info_proto",
     ]
+    proto_in_dir = "//third_party/cast_core/public/src"
 }

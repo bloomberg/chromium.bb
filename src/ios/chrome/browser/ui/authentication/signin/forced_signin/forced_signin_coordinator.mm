@@ -15,6 +15,7 @@
 #import "ios/chrome/browser/ui/authentication/signin/signin_coordinator+protected.h"
 #import "ios/chrome/browser/ui/first_run/first_run_screen_delegate.h"
 #import "ios/chrome/browser/ui/first_run/first_run_util.h"
+#import "ios/chrome/browser/ui/first_run/legacy_signin/legacy_signin_screen_coordinator.h"
 #import "ios/chrome/browser/ui/first_run/signin/signin_screen_coordinator.h"
 #import "ios/chrome/browser/ui/screen/screen_provider.h"
 #import "ios/chrome/browser/ui/screen/screen_type.h"
@@ -93,7 +94,7 @@
                                                 completion:completion];
 }
 
-// Presents the screen of certain |type|.
+// Presents the screen of certain `type`.
 - (void)presentScreen:(ScreenType)type {
   // If there are no screens remaining, call delegate to stop presenting
   // screens.
@@ -105,14 +106,20 @@
   [self.childCoordinator start];
 }
 
-// Creates a screen coordinator according to |type|.
+// Creates a screen coordinator according to `type`.
 - (InterruptibleChromeCoordinator*)createChildCoordinatorWithScreenType:
     (ScreenType)type {
   switch (type) {
+    case kLegacySignIn:
+      return [[LegacySigninScreenCoordinator alloc]
+          initWithBaseNavigationController:self.navigationController
+                                   browser:self.browser
+                                  delegate:self];
     case kSignIn:
       return [[SigninScreenCoordinator alloc]
           initWithBaseNavigationController:self.navigationController
                                    browser:self.browser
+                            showFREConsent:NO
                                   delegate:self];
     case kSignInAndSync:
     case kSync:

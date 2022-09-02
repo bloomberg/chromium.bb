@@ -19,6 +19,7 @@
 
 #include "absl/algorithm/container.h"
 #include "absl/strings/match.h"
+#include "absl/strings/string_view.h"
 #include "p2p/base/connection.h"
 #include "p2p/base/port_allocator.h"
 #include "rtc_base/checks.h"
@@ -34,7 +35,6 @@
 #include "rtc_base/strings/string_builder.h"
 #include "rtc_base/third_party/base64/base64.h"
 #include "rtc_base/trace_event.h"
-#include "system_wrappers/include/field_trial.h"
 
 namespace {
 
@@ -80,14 +80,13 @@ const char* ProtoToString(ProtocolType proto) {
   return PROTO_NAMES[proto];
 }
 
-bool StringToProto(const char* value, ProtocolType* proto) {
+absl::optional<ProtocolType> StringToProto(absl::string_view proto_name) {
   for (size_t i = 0; i <= PROTO_LAST; ++i) {
-    if (absl::EqualsIgnoreCase(PROTO_NAMES[i], value)) {
-      *proto = static_cast<ProtocolType>(i);
-      return true;
+    if (absl::EqualsIgnoreCase(PROTO_NAMES[i], proto_name)) {
+      return static_cast<ProtocolType>(i);
     }
   }
-  return false;
+  return absl::nullopt;
 }
 
 // RFC 6544, TCP candidate encoding rules.
@@ -108,9 +107,10 @@ std::string Port::ComputeFoundation(const std::string& type,
 Port::Port(rtc::Thread* thread,
            const std::string& type,
            rtc::PacketSocketFactory* factory,
-           rtc::Network* network,
+           const rtc::Network* network,
            const std::string& username_fragment,
-           const std::string& password)
+           const std::string& password,
+           const webrtc::FieldTrialsView* field_trials)
     : thread_(thread),
       factory_(factory),
       type_(type),
@@ -127,7 +127,8 @@ Port::Port(rtc::Thread* thread,
       ice_role_(ICEROLE_UNKNOWN),
       tiebreaker_(0),
       shared_socket_(true),
-      weak_factory_(this) {
+      weak_factory_(this),
+      field_trials_(field_trials) {
   RTC_DCHECK(factory_ != NULL);
   Construct();
 }
@@ -135,11 +136,12 @@ Port::Port(rtc::Thread* thread,
 Port::Port(rtc::Thread* thread,
            const std::string& type,
            rtc::PacketSocketFactory* factory,
-           rtc::Network* network,
+           const rtc::Network* network,
            uint16_t min_port,
            uint16_t max_port,
            const std::string& username_fragment,
-           const std::string& password)
+           const std::string& password,
+           const webrtc::FieldTrialsView* field_trials)
     : thread_(thread),
       factory_(factory),
       type_(type),
@@ -156,7 +158,8 @@ Port::Port(rtc::Thread* thread,
       ice_role_(ICEROLE_UNKNOWN),
       tiebreaker_(0),
       shared_socket_(false),
-      weak_factory_(this) {
+      weak_factory_(this),
+      field_trials_(field_trials) {
   RTC_DCHECK(factory_ != NULL);
   Construct();
 }
@@ -171,7 +174,7 @@ void Port::Construct() {
     password_ = rtc::CreateRandomString(ICE_PWD_LENGTH);
   }
   network_->SignalTypeChanged.connect(this, &Port::OnNetworkTypeChanged);
-  network_cost_ = network_->GetCost();
+  network_cost_ = network_->GetCost(*field_trials_);
 
   thread_->PostDelayed(RTC_FROM_HERE, timeout_delay_, this,
                        MSG_DESTROY_IF_DEAD);
@@ -194,14 +197,16 @@ Port::~Port() {
     ++iter;
   }
 
-  for (uint32_t i = 0; i < list.size(); i++)
+  for (uint32_t i = 0; i < list.size(); i++) {
+    list[i]->SignalDestroyed.disconnect(this);
     delete list[i];
+  }
 }
 
 const std::string& Port::Type() const {
   return type_;
 }
-rtc::Network* Port::Network() const {
+const rtc::Network* Port::Network() const {
   return network_;
 }
 
@@ -225,15 +230,22 @@ bool Port::SharedSocket() const {
 }
 
 void Port::SetIceParameters(int component,
-                            const std::string& username_fragment,
-                            const std::string& password) {
+                            absl::string_view username_fragment,
+                            absl::string_view password) {
+  RTC_DCHECK_RUN_ON(thread_);
   component_ = component;
-  ice_username_fragment_ = username_fragment;
-  password_ = password;
+  ice_username_fragment_ = std::string(username_fragment);
+  password_ = std::string(password);
   for (Candidate& c : candidates_) {
     c.set_component(component);
     c.set_username(username_fragment);
     c.set_password(password);
+  }
+
+  // In case any connections exist make sure we update them too.
+  for (auto& [unused, connection] : connections_) {
+    connection->UpdateLocalIceParameters(component, username_fragment,
+                                         password);
   }
 }
 
@@ -260,6 +272,7 @@ void Port::AddAddress(const rtc::SocketAddress& address,
                       uint32_t relay_preference,
                       const std::string& url,
                       bool is_final) {
+  RTC_DCHECK_RUN_ON(thread_);
   if (protocol == TCP_PROTOCOL_NAME && type == LOCAL_PORT_TYPE) {
     RTC_DCHECK(!tcptype.empty());
   }
@@ -274,6 +287,7 @@ void Port::AddAddress(const rtc::SocketAddress& address,
   c.set_tcptype(tcptype);
   c.set_network_name(network_->name());
   c.set_network_type(network_->type());
+  c.set_underlying_type_for_vpn(network_->underlying_type_for_vpn());
   c.set_url(url);
   c.set_related_address(related_address);
 
@@ -299,7 +313,7 @@ bool Port::MaybeObfuscateAddress(Candidate* c,
   auto copy = *c;
   auto weak_ptr = weak_factory_.GetWeakPtr();
   auto callback = [weak_ptr, copy, is_final](const rtc::IPAddress& addr,
-                                             const std::string& name) mutable {
+                                             absl::string_view name) mutable {
     RTC_DCHECK(copy.address().ipaddr() == addr);
     rtc::SocketAddress hostname_address(name, copy.address().port());
     // In Port and Connection, we need the IP address information to
@@ -310,6 +324,7 @@ bool Port::MaybeObfuscateAddress(Candidate* c,
     copy.set_address(hostname_address);
     copy.set_related_address(rtc::SocketAddress());
     if (weak_ptr != nullptr) {
+      RTC_DCHECK_RUN_ON(weak_ptr->thread_);
       weak_ptr->set_mdns_name_registration_status(
           MdnsNameRegistrationStatus::kCompleted);
       weak_ptr->FinishAddingAddress(copy, is_final);
@@ -350,7 +365,6 @@ void Port::AddOrReplaceConnection(Connection* conn) {
     ret.first->second = conn;
   }
   conn->SignalDestroyed.connect(this, &Port::OnConnectionDestroyed);
-  SignalConnectionCreated(this, conn);
 }
 
 void Port::OnReadPacket(const char* data,
@@ -415,9 +429,9 @@ void Port::OnReadyToSend() {
   }
 }
 
-size_t Port::AddPrflxCandidate(const Candidate& local) {
+void Port::AddPrflxCandidate(const Candidate& local) {
+  RTC_DCHECK_RUN_ON(thread_);
   candidates_.push_back(local);
-  return (candidates_.size() - 1);
 }
 
 bool Port::GetStunMessage(const char* data,
@@ -606,6 +620,15 @@ rtc::DiffServCodePoint Port::StunDscpValue() const {
   return rtc::DSCP_NO_CHANGE;
 }
 
+void Port::DestroyAllConnections() {
+  RTC_DCHECK_RUN_ON(thread_);
+  for (auto kv : connections_) {
+    kv.second->SignalDestroyed.disconnect(this);
+    kv.second->Destroy();
+  }
+  connections_.clear();
+}
+
 void Port::set_timeout_delay(int delay) {
   RTC_DCHECK_RUN_ON(thread_);
   // Although this method is meant to only be used by tests, some downstream
@@ -630,14 +653,14 @@ bool Port::ParseStunUsername(const StunMessage* stun_msg,
     return false;
 
   // RFRAG:LFRAG
-  const std::string username = username_attr->GetString();
+  const absl::string_view username = username_attr->string_view();
   size_t colon_pos = username.find(':');
-  if (colon_pos == std::string::npos) {
+  if (colon_pos == absl::string_view::npos) {
     return false;
   }
 
-  *local_ufrag = username.substr(0, colon_pos);
-  *remote_ufrag = username.substr(colon_pos + 1, username.size());
+  *local_ufrag = std::string(username.substr(0, colon_pos));
+  *remote_ufrag = std::string(username.substr(colon_pos + 1, username.size()));
   return true;
 }
 
@@ -702,12 +725,8 @@ bool Port::MaybeIceRoleConflict(const rtc::SocketAddress& addr,
   return ret;
 }
 
-void Port::CreateStunUsername(const std::string& remote_username,
-                              std::string* stun_username_attr_str) const {
-  stun_username_attr_str->clear();
-  *stun_username_attr_str = remote_username;
-  stun_username_attr_str->append(":");
-  stun_username_attr_str->append(username_fragment());
+std::string Port::CreateStunUsername(const std::string& remote_username) const {
+  return remote_username + ":" + username_fragment();
 }
 
 bool Port::HandleIncomingPacket(rtc::AsyncPacketSocket* socket,
@@ -723,21 +742,18 @@ bool Port::CanHandleIncomingPacketsFrom(const rtc::SocketAddress&) const {
   return false;
 }
 
-void Port::SendBindingErrorResponse(StunMessage* request,
+void Port::SendBindingErrorResponse(StunMessage* message,
                                     const rtc::SocketAddress& addr,
                                     int error_code,
                                     const std::string& reason) {
-  RTC_DCHECK(request->type() == STUN_BINDING_REQUEST ||
-             request->type() == GOOG_PING_REQUEST);
+  RTC_DCHECK(message->type() == STUN_BINDING_REQUEST ||
+             message->type() == GOOG_PING_REQUEST);
 
   // Fill in the response message.
-  StunMessage response;
-  if (request->type() == STUN_BINDING_REQUEST) {
-    response.SetType(STUN_BINDING_ERROR_RESPONSE);
-  } else {
-    response.SetType(GOOG_PING_ERROR_RESPONSE);
-  }
-  response.SetTransactionID(request->transaction_id());
+  StunMessage response(message->type() == STUN_BINDING_REQUEST
+                           ? STUN_BINDING_ERROR_RESPONSE
+                           : GOOG_PING_ERROR_RESPONSE,
+                       message->transaction_id());
 
   // When doing GICE, we need to write out the error code incorrectly to
   // maintain backwards compatiblility.
@@ -750,15 +766,15 @@ void Port::SendBindingErrorResponse(StunMessage* request,
   // because we don't have enough information to determine the shared secret.
   if (error_code != STUN_ERROR_BAD_REQUEST &&
       error_code != STUN_ERROR_UNAUTHORIZED &&
-      request->type() != GOOG_PING_REQUEST) {
-    if (request->type() == STUN_BINDING_REQUEST) {
+      message->type() != GOOG_PING_REQUEST) {
+    if (message->type() == STUN_BINDING_REQUEST) {
       response.AddMessageIntegrity(password_);
     } else {
       response.AddMessageIntegrity32(password_);
     }
   }
 
-  if (request->type() == STUN_BINDING_REQUEST) {
+  if (message->type() == STUN_BINDING_REQUEST) {
     response.AddFingerprint();
   }
 
@@ -776,15 +792,13 @@ void Port::SendBindingErrorResponse(StunMessage* request,
 }
 
 void Port::SendUnknownAttributesErrorResponse(
-    StunMessage* request,
+    StunMessage* message,
     const rtc::SocketAddress& addr,
     const std::vector<uint16_t>& unknown_types) {
-  RTC_DCHECK(request->type() == STUN_BINDING_REQUEST);
+  RTC_DCHECK(message->type() == STUN_BINDING_REQUEST);
 
   // Fill in the response message.
-  StunMessage response;
-  response.SetType(STUN_BINDING_ERROR_RESPONSE);
-  response.SetTransactionID(request->transaction_id());
+  StunMessage response(STUN_BINDING_ERROR_RESPONSE, message->transaction_id());
 
   auto error_attr = StunAttribute::CreateErrorCode();
   error_attr->SetCode(STUN_ERROR_UNKNOWN_ATTRIBUTE);
@@ -868,7 +882,8 @@ std::string Port::ToString() const {
 
 // TODO(honghaiz): Make the network cost configurable from user setting.
 void Port::UpdateNetworkCost() {
-  uint16_t new_cost = network_->GetCost();
+  RTC_DCHECK_RUN_ON(thread_);
+  uint16_t new_cost = network_->GetCost(*field_trials_);
   if (network_cost_ == new_cost) {
     return;
   }
@@ -878,16 +893,11 @@ void Port::UpdateNetworkCost() {
                    << ". Number of connections created: "
                    << connections_.size();
   network_cost_ = new_cost;
-  for (cricket::Candidate& candidate : candidates_) {
+  for (cricket::Candidate& candidate : candidates_)
     candidate.set_network_cost(network_cost_);
-  }
-  // Network cost change will affect the connection selection criteria.
-  // Signal the connection state change on each connection to force a
-  // re-sort in P2PTransportChannel.
-  for (const auto& kv : connections_) {
-    Connection* conn = kv.second;
-    conn->SignalStateChange(conn);
-  }
+
+  for (auto& [unused, connection] : connections_)
+    connection->SetLocalCandidateNetworkCost(network_cost_);
 }
 
 void Port::EnablePortPackets() {

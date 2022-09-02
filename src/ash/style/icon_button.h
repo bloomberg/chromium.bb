@@ -5,12 +5,18 @@
 #ifndef ASH_STYLE_ICON_BUTTON_H_
 #define ASH_STYLE_ICON_BUTTON_H_
 
+#include "ash/ash_export.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/controls/button/image_button.h"
 
 namespace gfx {
+class ImageSkia;
 struct VectorIcon;
 }  // namespace gfx
+
+namespace ui {
+class Event;
+}  // namespace ui
 
 namespace ash {
 
@@ -20,7 +26,7 @@ namespace ash {
 // might change on different toggle states. A fixed size of EmptyBorder will be
 // applied to the button if `has_border` is true, this is done to help
 // differentiating focus ring from the content of the button.
-class IconButton : public views::ImageButton {
+class ASH_EXPORT IconButton : public views::ImageButton {
  public:
   METADATA_HEADER(IconButton);
 
@@ -54,6 +60,12 @@ class IconButton : public views::ImageButton {
   IconButton(PressedCallback callback,
              Type type,
              const gfx::VectorIcon* icon,
+             const std::u16string& accessible_name,
+             bool is_togglable,
+             bool has_border);
+  IconButton(PressedCallback callback,
+             Type type,
+             const gfx::VectorIcon* icon,
              int accessible_name_id,
              bool is_togglable,
              bool has_border);
@@ -72,6 +84,19 @@ class IconButton : public views::ImageButton {
   // states.
   void SetVectorIcon(const gfx::VectorIcon& icon);
 
+  // Sets the button's background color. Note, do this only when the button
+  // wants to have different color from the default one.
+  void SetBackgroundColor(const SkColor background_color);
+
+  // Sets the button's background image. The |background_image| is resized to
+  // fit the button. Note, if set, |background_image| is painted on top of
+  // the button's existing background color.
+  void SetBackgroundImage(const gfx::ImageSkia& background_image);
+
+  // Sets the icon's color. If the button is togglable, this will be the color
+  // when it's not toggled.
+  void SetIconColor(const SkColor icon_color);
+
   // Updates the `toggled_` state of the button.
   void SetToggled(bool toggled);
 
@@ -79,6 +104,7 @@ class IconButton : public views::ImageButton {
   void PaintButtonContents(gfx::Canvas* canvas) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void OnThemeChanged() override;
+  void NotifyClick(const ui::Event& event) override;
 
  protected:
   void UpdateVectorIcon();
@@ -95,6 +121,10 @@ class IconButton : public views::ImageButton {
 
   // True if the button is currently toggled.
   bool toggled_ = false;
+
+  // Customized value for button's background color or icon's color.
+  absl::optional<SkColor> background_color_;
+  absl::optional<SkColor> icon_color_;
 
   DisabledButtonBehavior button_behavior_ = DisabledButtonBehavior::kNone;
 };

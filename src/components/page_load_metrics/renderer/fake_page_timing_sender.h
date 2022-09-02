@@ -79,16 +79,22 @@ class FakePageTimingSender : public PageTimingSender {
     void UpdateExpectedMobileFriendliness(
         const blink::MobileFriendliness& mobile_friendliness);
 
-    void UpdateExpectFrameIntersectionUpdate(
-        const mojom::FrameIntersectionUpdate& frame_intersection_update) {
-      expected_frame_intersection_update_ = frame_intersection_update.Clone();
+    void UpdateExpectedMainFrameIntersectionRect(
+        const gfx::Rect& main_frame_intersection_rect) {
+      expected_main_frame_intersection_rect_ = main_frame_intersection_rect;
+    }
+
+    void UpdateExpectedMainFrameViewportRect(
+        const gfx::Rect& main_frame_viewport_rect) {
+      expected_main_frame_viewport_rect_ = main_frame_viewport_rect;
     }
 
     // Forces verification that actual features sent through SendTiming match
     // expected features provided via ExpectPageLoadFeatures.
     void VerifyExpectedFeatures() const;
     void VerifyExpectedRenderData() const;
-    void VerifyExpectedFrameIntersectionUpdate() const;
+    void VerifyExpectedMainFrameIntersectionRect() const;
+    void VerifyExpectedMainFrameViewportRect() const;
 
     const std::vector<mojom::PageLoadTimingPtr>& expected_timings() const {
       return expected_timings_;
@@ -104,7 +110,6 @@ class FakePageTimingSender : public PageTimingSender {
         const std::vector<mojom::ResourceDataUpdatePtr>& resources,
         const mojom::FrameRenderDataUpdate& render_data,
         const mojom::CpuTimingPtr& cpu_timing,
-        const mojom::DeferredResourceCountsPtr& new_deferred_resource_data,
         const mojom::InputTimingPtr& input_timing,
         const absl::optional<blink::MobileFriendliness>& mobile_friendliness);
 
@@ -117,8 +122,10 @@ class FakePageTimingSender : public PageTimingSender {
     std::set<blink::UseCounterFeature> actual_features_;
     mojom::FrameRenderDataUpdatePtr expected_render_data_;
     mojom::FrameRenderDataUpdate actual_render_data_;
-    mojom::FrameIntersectionUpdatePtr expected_frame_intersection_update_;
-    mojom::FrameIntersectionUpdatePtr actual_frame_intersection_update_;
+    absl::optional<gfx::Rect> expected_main_frame_intersection_rect_;
+    absl::optional<gfx::Rect> actual_main_frame_intersection_rect_;
+    absl::optional<gfx::Rect> expected_main_frame_viewport_rect_;
+    absl::optional<gfx::Rect> actual_main_frame_viewport_rect_;
     mojom::InputTimingPtr expected_input_timing;
     mojom::InputTimingPtr actual_input_timing;
     absl::optional<blink::MobileFriendliness> expected_mobile_friendliness;
@@ -138,7 +145,6 @@ class FakePageTimingSender : public PageTimingSender {
                   std::vector<mojom::ResourceDataUpdatePtr> resources,
                   const mojom::FrameRenderDataUpdate& render_data,
                   const mojom::CpuTimingPtr& cpu_timing,
-                  mojom::DeferredResourceCountsPtr new_deferred_resource_data,
                   mojom::InputTimingPtr new_input_timing,
                   const absl::optional<blink::MobileFriendliness>&
                       mobile_friendliness) override;

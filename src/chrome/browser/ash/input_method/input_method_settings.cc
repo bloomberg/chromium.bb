@@ -6,13 +6,14 @@
 
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
+#include "base/feature_list.h"
 #include "chrome/common/pref_names.h"
 
 namespace ash {
 namespace input_method {
 namespace {
 
-namespace mojom = chromeos::ime::mojom;
+namespace mojom = ::ash::ime::mojom;
 
 // The values here should be kept in sync with
 // chrome/browser/resources/settings/chromeos/os_languages_page/input_method_util.js
@@ -65,7 +66,9 @@ bool IsUsEnglishEngine(const std::string& engine_id) {
 }
 
 bool IsFstEngine(const std::string& engine_id) {
-  return base::StartsWith(engine_id, "xkb:", base::CompareCase::SENSITIVE);
+  return base::StartsWith(engine_id, "xkb:", base::CompareCase::SENSITIVE) ||
+         base::StartsWith(engine_id, "experimental_",
+                          base::CompareCase::SENSITIVE);
 }
 
 bool IsKoreanEngine(const std::string& engine_id) {
@@ -93,15 +96,18 @@ std::string GetPrefKeyForEngineId(const std::string& engine_id) {
 mojom::LatinSettingsPtr CreateLatinSettings(
     const base::Value& input_method_specific_pref,
     const PrefService& prefs,
-    const std::string& engine_id,
-    const InputFieldContext& context) {
+    const std::string& engine_id) {
   auto settings = mojom::LatinSettings::New();
-  settings->autocorrect = input_method_specific_pref
-                              .FindIntKey("physicalKeyboardAutoCorrectionLevel")
-                              .value_or(0) > 0;
+  settings->autocorrect =
+      base::StartsWith(engine_id, "experimental_",
+                       base::CompareCase::SENSITIVE) ||
+      base::FeatureList::IsEnabled(features::kAutocorrectParamsTuning) ||
+      input_method_specific_pref
+              .FindIntKey("physicalKeyboardAutoCorrectionLevel")
+              .value_or(0) > 0;
   settings->predictive_writing =
-      context.multiword_enabled && context.multiword_allowed &&
-      !context.lacros_enabled &&
+      features::IsAssistiveMultiWordEnabled() &&
+      !base::FeatureList::IsEnabled(chromeos::features::kLacrosSupport) &&
       prefs.GetBoolean(prefs::kAssistPredictiveWritingEnabled) &&
       IsUsEnglishEngine(engine_id);
   return settings;
@@ -242,11 +248,10 @@ mojom::ZhuyinSettingsPtr CreateZhuyinSettings(
 
 mojom::InputMethodSettingsPtr CreateSettingsFromPrefs(
     const PrefService& prefs,
-    const std::string& engine_id,
-    const InputFieldContext& context) {
+    const std::string& engine_id) {
   // All input method settings are stored in a single pref whose value is a
   // dictionary.
-  const base::DictionaryValue& all_input_method_pref =
+  const base::Value& all_input_method_pref =
       *prefs.GetDictionary(::prefs::kLanguageInputMethodSpecificSettings);
 
   // For each input method, the dictionary contains an entry, with the key being
@@ -266,8 +271,8 @@ mojom::InputMethodSettingsPtr CreateSettingsFromPrefs(
                                          : empty_value;
 
   if (IsFstEngine(engine_id)) {
-    return mojom::InputMethodSettings::NewLatinSettings(CreateLatinSettings(
-        input_method_specific_pref, prefs, engine_id, context));
+    return mojom::InputMethodSettings::NewLatinSettings(
+        CreateLatinSettings(input_method_specific_pref, prefs, engine_id));
   }
   if (IsKoreanEngine(engine_id)) {
     return mojom::InputMethodSettings::NewKoreanSettings(

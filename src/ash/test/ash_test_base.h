@@ -141,10 +141,13 @@ class AshTestBase : public testing::Test {
   // window, otherwise the window is added to the display matching
   // |bounds_in_screen|. |shell_window_id| is the shell window id to give to
   // the new window.
+  // If |delegate| is empty, a new |TestWidgetDelegate| instance will be set as
+  // this widget's delegate.
   std::unique_ptr<aura::Window> CreateAppWindow(
       const gfx::Rect& bounds_in_screen = gfx::Rect(),
       AppType app_type = AppType::SYSTEM_APP,
-      int shell_window_id = kShellWindowId_Invalid);
+      int shell_window_id = kShellWindowId_Invalid,
+      views::WidgetDelegate* delegate = nullptr);
 
   // Creates a visible window in the appropriate container. If
   // |bounds_in_screen| is empty the window is added to the primary root
@@ -199,10 +202,16 @@ class AshTestBase : public testing::Test {
   // Presses and releases a key to simulate typing one character.
   void PressAndReleaseKey(ui::KeyboardCode key_code, int flags = ui::EF_NONE);
 
-  // Moves the mouse to the center of the view and generates a left button click
-  // event.
-  void SimulateMouseClickAt(ui::test::EventGenerator* event_generator,
-                            const views::View* target_view);
+  // Moves the mouse to the center of the view and generates a left mouse button
+  // click event.
+  void LeftClickOn(const views::View* view);
+
+  // Moves the mouse to the center of the view and generates a right mouse
+  // button click event.
+  void RightClickOn(const views::View* view);
+
+  // Generates a tap event on the center of `view`.
+  void GestureTapOn(const views::View* view);
 
   // Enters/Exits overview mode with the given animation type `type`.
   bool EnterOverview(

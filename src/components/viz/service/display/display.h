@@ -35,7 +35,6 @@
 #include "components/viz/service/surfaces/surface.h"
 #include "components/viz/service/surfaces/surface_manager.h"
 #include "components/viz/service/viz_service_export.h"
-#include "gpu/command_buffer/common/texture_in_use_response.h"
 #include "ui/gfx/display_color_spaces.h"
 #include "ui/gfx/overlay_transform.h"
 #include "ui/gfx/swap_result.h"
@@ -143,7 +142,7 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
 
   // Sets the color matrix that will be used to transform the output of this
   // display. This is only supported for GPU compositing.
-  void SetColorMatrix(const skia::Matrix44& matrix);
+  void SetColorMatrix(const SkM44& matrix);
 
   void SetDisplayColorSpaces(
       const gfx::DisplayColorSpaces& display_color_spaces);
@@ -152,19 +151,15 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
   const SurfaceId& CurrentSurfaceId() const;
 
   // DisplaySchedulerClient implementation.
-  bool DrawAndSwap(base::TimeTicks frame_time,
-                   base::TimeTicks expected_display_time) override;
+  bool DrawAndSwap(const DrawAndSwapParams& params) override;
   void DidFinishFrame(const BeginFrameAck& ack) override;
   base::TimeDelta GetEstimatedDisplayDrawTime(const base::TimeDelta interval,
                                               double percentile) const override;
-  void OnObservingBeginFrameSourceChanged(bool observing) override;
 
   // OutputSurfaceClient implementation.
   void SetNeedsRedrawRect(const gfx::Rect& damage_rect) override;
   void DidReceiveSwapBuffersAck(const gfx::SwapTimings& timings,
                                 gfx::GpuFenceHandle release_fence) override;
-  void DidReceiveTextureInUseResponses(
-      const gpu::TextureInUseResponses& responses) override;
   void DidReceiveCALayerParams(
       const gfx::CALayerParams& ca_layer_params) override;
   void DidSwapWithSize(const gfx::Size& pixel_size) override;

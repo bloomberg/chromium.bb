@@ -6,7 +6,6 @@
 
 #include "base/callback.h"
 #include "base/command_line.h"
-#include "base/cxx17_backports.h"
 #include "base/i18n/timezone.h"
 #include "base/strings/string_util.h"
 #include "base/token.h"
@@ -64,6 +63,7 @@ VideoCaptureDevice::~VideoCaptureDevice() = default;
 
 void VideoCaptureDevice::Crop(
     const base::Token& crop_id,
+    uint32_t crop_version,
     base::OnceCallback<void(media::mojom::CropRequestResult)> callback) {
   std::move(callback).Run(
       media::mojom::CropRequestResult::kUnsupportedCaptureDevice);
@@ -89,7 +89,7 @@ PowerLineFrequency VideoCaptureDevice::GetPowerLineFrequencyForLocation() {
       "KN", "KR", "KY", "MS", "MX", "NI", "PA", "PE", "PF", "PH", "PR",
       "PW", "SA", "SR", "SV", "TT", "TW", "UM", "US", "VG", "VI", "VE"};
   const char** countries_using_60Hz_end =
-      countries_using_60Hz + base::size(countries_using_60Hz);
+      countries_using_60Hz + std::size(countries_using_60Hz);
   if (std::find(countries_using_60Hz, countries_using_60Hz_end,
                 current_country) == countries_using_60Hz_end) {
     return PowerLineFrequency::FREQUENCY_50HZ;

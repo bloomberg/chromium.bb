@@ -51,8 +51,8 @@ DetachableBaseHandler::DetachableBaseHandler(PrefService* local_state)
     : local_state_(local_state),
       hammerd_observation_(this),
       power_manager_observation_(this) {
-  if (chromeos::HammerdClient::Get())  // May be null in tests
-    hammerd_observation_.Observe(chromeos::HammerdClient::Get());
+  if (HammerdClient::Get())  // May be null in tests
+    hammerd_observation_.Observe(HammerdClient::Get());
   chromeos::PowerManagerClient* power_manager_client =
       chromeos::PowerManagerClient::Get();
   power_manager_observation_.Observe(power_manager_client);
@@ -213,7 +213,7 @@ DetachableBaseHandler::GetLastUsedDeviceForUser(const UserInfo& user) const {
   if (user.is_ephemeral)
     return "";
 
-  const base::DictionaryValue* detachable_base_info =
+  const base::Value* detachable_base_info =
       local_state_->GetDictionary(prefs::kDetachableBaseDevices);
   const base::Value* last_used = detachable_base_info->FindPathOfType(
       {GetKeyForPrefs(user.account_id), kLastUsedByUserPrefKey},

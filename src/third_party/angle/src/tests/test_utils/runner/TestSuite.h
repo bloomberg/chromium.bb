@@ -34,7 +34,7 @@ struct TestIdentifier
     static bool ParseFromString(const std::string &str, TestIdentifier *idOut);
 
     bool valid() const { return !testName.empty(); }
-    void sprintfName(char *outBuffer) const;
+    void snprintfName(char *outBuffer, size_t maxLen) const;
 
     std::string testSuiteName;
     std::string testName;
@@ -70,9 +70,9 @@ const char *TestResultTypeToString(TestResultType type);
 
 struct TestResult
 {
-    TestResultType type       = TestResultType::NoResult;
-    double elapsedTimeSeconds = 0.0;
-    uint32_t flakyFailures    = 0;
+    TestResultType type                    = TestResultType::NoResult;
+    std::vector<double> elapsedTimeSeconds = std::vector<double>({0.0});
+    uint32_t flakyFailures                 = 0;
 };
 
 inline bool operator==(const TestResult &a, const TestResult &b)
@@ -167,6 +167,7 @@ class TestSuite
     void startWatchdog();
     void dumpTestExpectationsErrorMessages();
     int getSlowTestTimeout() const;
+    void writeOutputFiles(bool interrupted);
 
     static TestSuite *mInstance;
 
@@ -206,6 +207,8 @@ class TestSuite
     HistogramWriter mHistogramWriter;
     std::string mTestArtifactDirectory;
     GPUTestExpectationsParser mTestExpectationsParser;
+
+    class TestEventListener;
 };
 
 bool GetTestResultsFromFile(const char *fileName, TestResults *resultsOut);

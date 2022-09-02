@@ -50,7 +50,13 @@ be safe, **most recordings of websites on the public web go in
 Recordings of Google-properties on the public web can go in `PUBLIC_BUCKET`, and
 recordings of unreleased or internal Google websites go in `INTERNAL_BUCKET`.
 
-## Record a page set or benchmark
+## Recording and Uploading
+
+You can record and upload a page set or benchmark using
+[the update_wpr tool](https://source.chromium.org/chromium/chromium/src/+/main:tools/perf/recording_benchmarks.md)
+(recommended!). Alternatively, follow the instructions below.
+
+### Record a page set or benchmark
 
 Use the `record_wpr` script to record a page set or benchmark (preferred). Your
 command will look something like this:
@@ -81,7 +87,7 @@ src$ tools/perf/record_wpr --browser=system --story-filter=wikipedia top25_smoot
 *   A `.json` file containing metadata about which `.wpr` files store
             which URLs.
 
-## Upload the recording to Cloud Storage
+### Upload the recording to Cloud Storage
 
 To avoid bloating everyone's Chromium checkouts, we avoid committing the large
 `.wpr` files to source control. Instead, we upload them to Cloud Storage and
@@ -98,10 +104,10 @@ recording to Cloud Storage.
 To upload your new recording to cloud storage, use the following command, as
 referenced in the presubmit warning:
 
-<pre><code>src$ depot_tools/upload_to_google_storage.py --bucket (chromium-telemetry|chrome-partner-telemetry|chrome-telemetry) tools/perf/page_sets/data/<b>my_page_set_000</b>.wpr 
+<pre><code>src$ depot_tools/upload_to_google_storage.py --bucket (chromium-telemetry|chrome-partner-telemetry|chrome-telemetry) tools/perf/page_sets/data/<b>my_page_set_000</b>.wpr
 </code></pre>
 
-### Moving recordings between Cloud Storage buckets
+#### Moving recordings between Cloud Storage buckets
 
 Sometimes the addition or removal of pages changes the permission of the page
 set, or the page set archives are in the wrong bucket. To move files between

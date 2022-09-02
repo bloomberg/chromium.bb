@@ -6,11 +6,13 @@
 
 #include <memory>
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/message_loop/message_pump.h"
 #include "base/run_loop.h"
 #include "base/task/sequence_manager/sequence_manager.h"
 #include "base/task/sequence_manager/test/test_task_queue.h"
 #include "base/task/sequence_manager/test/test_task_time_observer.h"
+#include "base/time/time.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/non_main_thread_scheduler_helper.h"
@@ -174,10 +176,10 @@ TEST_F(AutoAdvancingVirtualTimeDomainTest, BaseTimeTicksOverriden) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(base::TimeTicks::Now(), initial_time_ticks_ + delay);
+  EXPECT_TRUE(task_run);
 }
 
-TEST_F(AutoAdvancingVirtualTimeDomainTest,
-       DelayTillNextTaskHandlesPastRunTime) {
+TEST_F(AutoAdvancingVirtualTimeDomainTest, GetNextWakeUpHandlesPastRunTime) {
   // Post a task for t+10ms.
   bool task_run = false;
   task_queue_->task_runner()->PostDelayedTask(
@@ -188,10 +190,11 @@ TEST_F(AutoAdvancingVirtualTimeDomainTest,
                                                        base::Milliseconds(100));
 
   // Task at t+10ms should be run immediately.
-  EXPECT_TRUE(
-      auto_advancing_time_domain_
-          ->GetNextDelayedTaskTime(*sequence_manager_->GetNextWakeUp(), nullptr)
-          .is_null());
+  EXPECT_GE(base::TimeTicks::Now(),
+            sequence_manager_->GetNextDelayedWakeUp()->time);
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(task_run);
 }
 
 }  // namespace auto_advancing_virtual_time_domain_unittest

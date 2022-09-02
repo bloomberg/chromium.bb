@@ -71,7 +71,12 @@ class CBCMInvalidationsInitializer::MachineLevelDeviceAccountInitializerHelper
     std::move(callback_).Run(true);
   }
 
-  void OnDeviceAccountTokenError(EnrollmentStatus status) override {
+  void OnDeviceAccountTokenFetchError(
+      absl::optional<DeviceManagementStatus> /*dm_status*/) override {
+    std::move(callback_).Run(false);
+  }
+
+  void OnDeviceAccountTokenStoreError() override {
     std::move(callback_).Run(false);
   }
 
@@ -121,7 +126,7 @@ void CBCMInvalidationsInitializer::OnServiceAccountSet(
   // the service account has to be initialized to the one in the policy.
   if (!DeviceOAuth2TokenServiceFactory::Get()->RefreshTokenIsAvailable() ||
       DeviceOAuth2TokenServiceFactory::Get()->GetRobotAccountId() !=
-          CoreAccountId::FromEmail(account_email)) {
+          CoreAccountId::FromRobotEmail(account_email)) {
     // Initialize the device service account and fetch auth codes to exchange
     // for a refresh token. Creating this object starts that process and the
     // callback will be called from it whether it succeeds or not.

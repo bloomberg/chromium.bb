@@ -27,12 +27,13 @@ g.test('clear').fn(async t => {
     colorAttachments: [
       {
         view: colorAttachmentView,
-        loadValue: { r: 0.0, g: 1.0, b: 0.0, a: 1.0 },
+        clearValue: { r: 0.0, g: 1.0, b: 0.0, a: 1.0 },
+        loadOp: 'clear',
         storeOp: 'store',
       },
     ],
   });
-  pass.endPass();
+  pass.end();
   encoder.copyTextureToBuffer(
     { texture: colorAttachment, mipLevel: 0, origin: { x: 0, y: 0, z: 0 } },
     { buffer: dst, bytesPerRow: 256 },
@@ -57,12 +58,13 @@ g.test('fullscreen_quad').fn(async t => {
   const colorAttachmentView = colorAttachment.createView();
 
   const pipeline = t.device.createRenderPipeline({
+    layout: 'auto',
     vertex: {
       module: t.device.createShaderModule({
         code: `
-        [[stage(vertex)]] fn main(
-          [[builtin(vertex_index)]] VertexIndex : u32
-          ) -> [[builtin(position)]] vec4<f32> {
+        @vertex fn main(
+          @builtin(vertex_index) VertexIndex : u32
+          ) -> @builtin(position) vec4<f32> {
             var pos : array<vec2<f32>, 3> = array<vec2<f32>, 3>(
                 vec2<f32>(-1.0, -3.0),
                 vec2<f32>(3.0, 1.0),
@@ -76,7 +78,7 @@ g.test('fullscreen_quad').fn(async t => {
     fragment: {
       module: t.device.createShaderModule({
         code: `
-          [[stage(fragment)]] fn main() -> [[location(0)]] vec4<f32> {
+          @fragment fn main() -> @location(0) vec4<f32> {
             return vec4<f32>(0.0, 1.0, 0.0, 1.0);
           }
           `,
@@ -93,13 +95,14 @@ g.test('fullscreen_quad').fn(async t => {
       {
         view: colorAttachmentView,
         storeOp: 'store',
-        loadValue: { r: 1.0, g: 0.0, b: 0.0, a: 1.0 },
+        clearValue: { r: 1.0, g: 0.0, b: 0.0, a: 1.0 },
+        loadOp: 'clear',
       },
     ],
   });
   pass.setPipeline(pipeline);
   pass.draw(3);
-  pass.endPass();
+  pass.end();
   encoder.copyTextureToBuffer(
     { texture: colorAttachment, mipLevel: 0, origin: { x: 0, y: 0, z: 0 } },
     { buffer: dst, bytesPerRow: 256 },
@@ -117,7 +120,7 @@ g.test('large_draw')
   Tests that draw calls behave reasonably with large vertex counts for
   non-indexed draws, large index counts for indexed draws, and large instance
   counts in both cases. Various combinations of these counts are tested with
-  both direct and indrect draw calls.
+  both direct and indirect draw calls.
 
   Draw call sizes are increased incrementally over these parameters until we the
   run out of values or completion of a draw call exceeds a fixed time limit of
@@ -216,9 +219,9 @@ g.test('large_draw')
       vertex: {
         module: t.device.createShaderModule({
           code: `
-          [[block]] struct Params {
-            numVertices: u32;
-            numInstances: u32;
+          struct Params {
+            numVertices: u32,
+            numInstances: u32,
           };
 
           fn selectValue(index: u32, maxIndex: u32) -> f32 {
@@ -226,12 +229,12 @@ g.test('large_draw')
             return select(highOrMid, -2.0 / 3.0, index == 0u);
           }
 
-          [[group(0), binding(0)]] var<uniform> params: Params;
+          @group(0) @binding(0) var<uniform> params: Params;
 
-          [[stage(vertex)]] fn main(
-              [[builtin(vertex_index)]] v: u32,
-              [[builtin(instance_index)]] i: u32)
-              -> [[builtin(position)]] vec4<f32> {
+          @vertex fn main(
+              @builtin(vertex_index) v: u32,
+              @builtin(instance_index) i: u32)
+              -> @builtin(position) vec4<f32> {
             let x = selectValue(v, params.numVertices);
             let y = -selectValue(i, params.numInstances);
             return vec4<f32>(x, y, 0.0, 1.0);
@@ -243,7 +246,7 @@ g.test('large_draw')
       fragment: {
         module: t.device.createShaderModule({
           code: `
-            [[stage(fragment)]] fn main() -> [[location(0)]] vec4<f32> {
+            @fragment fn main() -> @location(0) vec4<f32> {
               return vec4<f32>(1.0, 1.0, 0.0, 1.0);
             }
             `,
@@ -254,14 +257,15 @@ g.test('large_draw')
       primitive: { topology: 'point-list' },
     });
 
-    const runPipeline = async (numVertices: number, numInstances: number) => {
+    const runPipeline = (numVertices: number, numInstances: number) => {
       const encoder = t.device.createCommandEncoder();
       const pass = encoder.beginRenderPass({
         colorAttachments: [
           {
             view: colorAttachmentView,
             storeOp: 'store',
-            loadValue: { r: 0.0, g: 0.0, b: 1.0, a: 1.0 },
+            clearValue: { r: 0.0, g: 0.0, b: 1.0, a: 1.0 },
+            loadOp: 'clear',
           },
         ],
       });
@@ -286,7 +290,7 @@ g.test('large_draw')
           pass.draw(numVertices, numInstances);
         }
       }
-      pass.endPass();
+      pass.end();
       encoder.copyTextureToBuffer(
         { texture: colorAttachment, mipLevel: 0, origin: { x: 0, y: 0, z: 0 } },
         { buffer: dst, bytesPerRow: kBytesPerRow },

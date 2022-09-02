@@ -14,7 +14,6 @@
 #include <string>
 
 #include "base/command_line.h"
-#include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/process/launch.h"
@@ -279,7 +278,7 @@ void BeginUserExperiment(const InstallerState& installer_state,
       kExperimentRetryDelay,
   };
   setup_command.CopySwitchesFrom(*base::CommandLine::ForCurrentProcess(),
-                                 kSwitchesToCopy, base::size(kSwitchesToCopy));
+                                 kSwitchesToCopy, std::size(kSwitchesToCopy));
 
   if (user_context) {
     // This is either a per-user install or a per-machine install run via
@@ -534,10 +533,10 @@ void LaunchChrome(const InstallerState& installer_state,
   const base::FilePath chrome_exe =
       installer_state.target_path().Append(kChromeExe);
   base::CommandLine command_line(chrome_exe);
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   command_line.AppendSwitchNative(::switches::kTryChromeAgain,
                                   base::NumberToWString(experiment.group()));
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
   STARTUPINFOW startup_info = {sizeof(startup_info)};
   PROCESS_INFORMATION temp_process_info = {};

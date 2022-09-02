@@ -18,6 +18,7 @@
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
+#include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "media/base/video_frame.h"
 
@@ -159,43 +160,49 @@ bool FrameResources::Initialize() {
   auto* context = pool_->GetContext();
 
   constexpr gfx::BufferUsage kBufferUsage =
-#if defined(OS_MAC) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_CHROMEOS)
       gfx::BufferUsage::SCANOUT_VEA_CPU_READ
 #else
       gfx::BufferUsage::SCANOUT_CPU_READ_WRITE
 #endif
       ;
+  constexpr gfx::BufferFormat kBufferFormat =
+      gfx::BufferFormat::YUV_420_BIPLANAR;
 
   // Create the GpuMemoryBuffer.
-  gpu_memory_buffer_ = context->CreateGpuMemoryBuffer(
-      coded_size_, gfx::BufferFormat::YUV_420_BIPLANAR, kBufferUsage);
+  gpu_memory_buffer_ =
+      context->CreateGpuMemoryBuffer(coded_size_, kBufferFormat, kBufferUsage);
   if (!gpu_memory_buffer_) {
-    DLOG(ERROR) << "Failed to allocate GpuMemoryBuffer for frame.";
+    DLOG(ERROR) << "Failed to allocate GpuMemoryBuffer for frame: coded_size="
+                << coded_size_.ToString()
+                << ", usage=" << static_cast<int>(kBufferUsage);
     return false;
   }
+
+  gpu_memory_buffer_->SetColorSpace(color_space_);
 
   // Bind SharedImages to each plane.
   constexpr size_t kNumPlanes = 2;
   constexpr gfx::BufferPlane kPlanes[kNumPlanes] = {gfx::BufferPlane::Y,
                                                     gfx::BufferPlane::UV};
   constexpr uint32_t kSharedImageUsage =
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
       gpu::SHARED_IMAGE_USAGE_MACOS_VIDEO_TOOLBOX |
 #endif
       gpu::SHARED_IMAGE_USAGE_GLES2 | gpu::SHARED_IMAGE_USAGE_RASTER |
       gpu::SHARED_IMAGE_USAGE_DISPLAY | gpu::SHARED_IMAGE_USAGE_SCANOUT;
 
+  uint32_t texture_target = GL_TEXTURE_2D;
+#if BUILDFLAG(IS_MAC)
+  // TODO(https://crbug.com/1311844): Use gpu::GetBufferTextureTarget() instead.
+  texture_target = gpu::GetPlatformSpecificTextureTarget();
+#endif
   for (size_t plane = 0; plane < kNumPlanes; ++plane) {
     context->CreateSharedImage(
         gpu_memory_buffer_.get(), kPlanes[plane], color_space_,
         kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType, kSharedImageUsage,
         mailbox_holders_[plane].mailbox, mailbox_holders_[plane].sync_token);
-    // TODO(https://crbug.com/1191956): This should be parameterized.
-#if defined(OS_MAC)
-    mailbox_holders_[plane].texture_target = GL_TEXTURE_RECTANGLE_ARB;
-#else
-    mailbox_holders_[plane].texture_target = GL_TEXTURE_2D;
-#endif
+    mailbox_holders_[plane].texture_target = texture_target;
   }
   return true;
 }

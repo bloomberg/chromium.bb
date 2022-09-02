@@ -6,6 +6,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/manifest/capture_links.mojom.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
+#include "third_party/blink/public/mojom/manifest/handle_links.mojom.h"
 #include "url/gurl.h"
 
 namespace blink {
@@ -99,35 +100,42 @@ TEST(ManifestUtilTest, CaptureLinksFromString) {
             CaptureLinksFromString("unknown-value"));
 }
 
+TEST(ManifestUtilTest, HandleLinksFromString) {
+  EXPECT_EQ(blink::mojom::HandleLinks::kUndefined, HandleLinksFromString(""));
+  EXPECT_EQ(blink::mojom::HandleLinks::kAuto, HandleLinksFromString("auto"));
+  EXPECT_EQ(blink::mojom::HandleLinks::kPreferred,
+            HandleLinksFromString("preferred"));
+  EXPECT_EQ(blink::mojom::HandleLinks::kNotPreferred,
+            HandleLinksFromString("not-preferred"));
+
+  // HandleLinksFromString() should work with non-lowercase strings.
+  EXPECT_EQ(blink::mojom::HandleLinks::kAuto, HandleLinksFromString("AUTO"));
+
+  // HandleLinksFromString() should return HandleLinks::kUndefined if the string
+  // isn't known.
+  EXPECT_EQ(blink::mojom::HandleLinks::kUndefined,
+            HandleLinksFromString("unknown-value"));
+}
+
 TEST(ManifestUtilTest, RouteToFromString) {
   using RouteTo = Manifest::LaunchHandler::RouteTo;
   EXPECT_EQ(absl::nullopt, RouteToFromString(""));
-  EXPECT_EQ(RouteTo::kAuto, RouteToFromString("auto"));
-  EXPECT_EQ(RouteTo::kNewClient, RouteToFromString("new-client"));
-  EXPECT_EQ(RouteTo::kExistingClient, RouteToFromString("existing-client"));
+  EXPECT_EQ((ParsedRouteTo{RouteTo::kAuto}), RouteToFromString("auto"));
+  EXPECT_EQ((ParsedRouteTo{RouteTo::kNewClient}),
+            RouteToFromString("new-client"));
+  EXPECT_EQ((ParsedRouteTo{RouteTo::kExistingClientNavigate}),
+            RouteToFromString("existing-client-navigate"));
+  EXPECT_EQ((ParsedRouteTo{RouteTo::kExistingClientRetain}),
+            RouteToFromString("existing-client-retain"));
+  EXPECT_EQ((ParsedRouteTo{RouteTo::kAuto, true}),
+            RouteToFromString("existing-client"));
 
   // Uppercase spelling.
-  EXPECT_EQ(RouteTo::kNewClient, RouteToFromString("NEW-CLIENT"));
+  EXPECT_EQ((ParsedRouteTo{RouteTo::kNewClient}),
+            RouteToFromString("NEW-CLIENT"));
 
   // Unknown value.
   EXPECT_EQ(absl::nullopt, RouteToFromString("unknown-value"));
-}
-
-TEST(ManifestUtilTest, NavigateExistingClientFromString) {
-  using NavigateExistingClient =
-      Manifest::LaunchHandler::NavigateExistingClient;
-  EXPECT_EQ(absl::nullopt, NavigateExistingClientFromString(""));
-  EXPECT_EQ(NavigateExistingClient::kAlways,
-            NavigateExistingClientFromString("always"));
-  EXPECT_EQ(NavigateExistingClient::kNever,
-            NavigateExistingClientFromString("never"));
-
-  // Uppercase spelling.
-  EXPECT_EQ(NavigateExistingClient::kNever,
-            NavigateExistingClientFromString("NEVER"));
-
-  // Unknown value.
-  EXPECT_EQ(absl::nullopt, NavigateExistingClientFromString("unknown-value"));
 }
 
 }  // namespace blink

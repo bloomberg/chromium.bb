@@ -58,7 +58,6 @@ int GetHistogramValueForFilteringBehavior(
     bool uncertain) {
   switch (behavior) {
     case SupervisedUserURLFilter::ALLOW:
-    case SupervisedUserURLFilter::WARN:
       if (reason == supervised_user_error_page::ALLOWLIST)
         return FILTERING_BEHAVIOR_ALLOW_ALLOWLIST;
       return uncertain ? FILTERING_BEHAVIOR_ALLOW_UNCERTAIN
@@ -80,7 +79,7 @@ int GetHistogramValueForFilteringBehavior(
           // Should never happen, only used for requests from Webview
           NOTREACHED();
       }
-      FALLTHROUGH;
+      [[fallthrough]];
     case SupervisedUserURLFilter::INVALID:
       NOTREACHED();
   }
@@ -171,7 +170,7 @@ SupervisedUserNavigationThrottle::CheckURL() {
         skip_manual_parent_filter);
   } else {
     got_result = url_filter_->GetFilteringBehaviorForSubFrameURLWithAsyncChecks(
-        url, navigation_handle()->GetWebContents()->GetURL(),
+        url, navigation_handle()->GetWebContents()->GetVisibleURL(),
         base::BindOnce(&SupervisedUserNavigationThrottle::OnCheckDone,
                        weak_ptr_factory_.GetWeakPtr(), url));
   }

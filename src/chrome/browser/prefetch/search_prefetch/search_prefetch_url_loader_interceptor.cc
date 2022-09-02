@@ -10,7 +10,6 @@
 #include "base/callback.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
-#include "chrome/browser/prefetch/search_prefetch/prefetched_response_container.h"
 #include "chrome/browser/prefetch/search_prefetch/search_prefetch_service.h"
 #include "chrome/browser/prefetch/search_prefetch/search_prefetch_service_factory.h"
 #include "chrome/browser/prefetch/search_prefetch/search_prefetch_url_loader.h"
@@ -42,7 +41,7 @@ SearchPrefetchURLLoaderInterceptor::MaybeCreateLoaderForRequest(
   }
 
   // Only intercept main frame requests.
-  content::RenderFrameHost* main_frame = web_contents->GetMainFrame();
+  content::RenderFrameHost* main_frame = web_contents->GetPrimaryMainFrame();
   if (!main_frame || main_frame->GetFrameTreeNodeId() != frame_tree_node_id) {
     return nullptr;
   }

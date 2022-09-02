@@ -68,6 +68,7 @@
 
 #include <errno.h>
 
+#include <utility>
 #include <vector>
 
 #include "absl/algorithm/container.h"
@@ -79,18 +80,20 @@
 #include "rtc_base/logging.h"
 #include "rtc_base/net_helper.h"
 #include "rtc_base/rate_tracker.h"
+#include "rtc_base/task_utils/to_queued_task.h"
 #include "rtc_base/third_party/sigslot/sigslot.h"
 
 namespace cricket {
 
 TCPPort::TCPPort(rtc::Thread* thread,
                  rtc::PacketSocketFactory* factory,
-                 rtc::Network* network,
+                 const rtc::Network* network,
                  uint16_t min_port,
                  uint16_t max_port,
                  const std::string& username,
                  const std::string& password,
-                 bool allow_listen)
+                 bool allow_listen,
+                 const webrtc::FieldTrialsView* field_trials)
     : Port(thread,
            LOCAL_PORT_TYPE,
            factory,
@@ -98,7 +101,8 @@ TCPPort::TCPPort(rtc::Thread* thread,
            min_port,
            max_port,
            username,
-           password),
+           password,
+           field_trials),
       allow_listen_(allow_listen),
       error_(0) {
   // TODO(mallinath) - Set preference value as per RFC 6544.
@@ -154,11 +158,11 @@ Connection* TCPPort::CreateConnection(const Candidate& address,
     // so we need to hand off the "read packet" responsibility to
     // TCPConnection.
     socket->SignalReadPacket.disconnect(this);
-    conn = new TCPConnection(this, address, socket);
+    conn = new TCPConnection(NewWeakPtr(), address, socket);
   } else {
     // Outgoing connection, which will create a new socket for which we still
     // need to connect SignalReadyToSend and SignalSentPacket.
-    conn = new TCPConnection(this, address);
+    conn = new TCPConnection(NewWeakPtr(), address);
     if (conn->socket()) {
       conn->socket()->SignalReadyToSend.connect(this, &TCPPort::OnReadyToSend);
       conn->socket()->SignalSentPacket.connect(this, &TCPPort::OnSentPacket);
@@ -340,16 +344,17 @@ void TCPPort::OnReadyToSend(rtc::AsyncPacketSocket* socket) {
 // `ice_unwritable_timeout` in IceConfig when determining the writability state.
 // Replace this constant with the config parameter assuming the default value if
 // we decide it is also applicable here.
-TCPConnection::TCPConnection(TCPPort* port,
+TCPConnection::TCPConnection(rtc::WeakPtr<Port> tcp_port,
                              const Candidate& candidate,
                              rtc::AsyncPacketSocket* socket)
-    : Connection(port, 0, candidate),
+    : Connection(std::move(tcp_port), 0, candidate),
       socket_(socket),
       error_(0),
       outgoing_(socket == NULL),
       connection_pending_(false),
       pretending_to_be_writable_(false),
       reconnection_timeout_(cricket::CONNECTION_WRITE_CONNECT_TIMEOUT) {
+  RTC_DCHECK_EQ(port()->GetProtocol(), PROTO_TCP);  // Needs to be TCPPort.
   if (outgoing_) {
     CreateOutgoingTcpSocket();
   } else {
@@ -357,7 +362,7 @@ TCPConnection::TCPConnection(TCPPort* port,
     // what's being checked in OnConnect, but just DCHECKing here.
     RTC_LOG(LS_VERBOSE) << ToString() << ": socket ipaddr: "
                         << socket_->GetLocalAddress().ToSensitiveString()
-                        << ", port() Network:" << port->Network()->ToString();
+                        << ", port() Network:" << port()->Network()->ToString();
     RTC_DCHECK(absl::c_any_of(
         port_->Network()->GetIPs(), [this](const rtc::InterfaceAddress& addr) {
           return socket_->GetLocalAddress().ipaddr() == addr;
@@ -366,7 +371,9 @@ TCPConnection::TCPConnection(TCPPort* port,
   }
 }
 
-TCPConnection::~TCPConnection() {}
+TCPConnection::~TCPConnection() {
+  RTC_DCHECK_RUN_ON(network_thread_);
+}
 
 int TCPConnection::Send(const void* data,
                         size_t size,
@@ -394,7 +401,7 @@ int TCPConnection::Send(const void* data,
   }
   stats_.sent_total_packets++;
   rtc::PacketOptions modified_options(options);
-  static_cast<TCPPort*>(port_)->CopyPortInformationToPacketInfo(
+  tcp_port()->CopyPortInformationToPacketInfo(
       &modified_options.info_signaled_after_sent);
   int sent = socket_->Send(data, size, modified_options);
   int64_t now = rtc::TimeMillis();
@@ -412,7 +419,7 @@ int TCPConnection::GetError() {
   return error_;
 }
 
-void TCPConnection::OnConnectionRequestResponse(ConnectionRequest* req,
+void TCPConnection::OnConnectionRequestResponse(StunRequest* req,
                                                 StunMessage* response) {
   // Process the STUN response before we inform upper layer ready to send.
   Connection::OnConnectionRequestResponse(req, response);
@@ -493,35 +500,27 @@ void TCPConnection::OnClose(rtc::AsyncPacketSocket* socket, int error) {
     // events.
     pretending_to_be_writable_ = true;
 
+    // If this connection can't become connected and writable again in 5
+    // seconds, it's time to tear this down. This is the case for the original
+    // TCP connection on passive side during a reconnect.
     // We don't attempt reconnect right here. This is to avoid a case where the
     // shutdown is intentional and reconnect is not necessary. We only reconnect
     // when the connection is used to Send() or Ping().
-    port()->thread()->PostDelayed(RTC_FROM_HERE, reconnection_timeout(), this,
-                                  MSG_TCPCONNECTION_DELAYED_ONCLOSE);
+    network_thread()->PostDelayedTask(
+        webrtc::ToQueuedTask(network_safety_,
+                             [this]() {
+                               if (pretending_to_be_writable_) {
+                                 Destroy();
+                               }
+                             }),
+        reconnection_timeout());
   } else if (!pretending_to_be_writable_) {
     // OnClose could be called when the underneath socket times out during the
     // initial connect() (i.e. `pretending_to_be_writable_` is false) . We have
     // to manually destroy here as this connection, as never connected, will not
     // be scheduled for ping to trigger destroy.
+    socket_->UnsubscribeClose(this);
     Destroy();
-  }
-}
-
-void TCPConnection::OnMessage(rtc::Message* pmsg) {
-  switch (pmsg->message_id) {
-    case MSG_TCPCONNECTION_DELAYED_ONCLOSE:
-      // If this connection can't become connected and writable again in 5
-      // seconds, it's time to tear this down. This is the case for the original
-      // TCP connection on passive side during a reconnect.
-      if (pretending_to_be_writable_) {
-        Destroy();
-      }
-      break;
-    case MSG_TCPCONNECTION_FAILED_CREATE_SOCKET:
-      FailAndPrune();
-      break;
-    default:
-      Connection::OnMessage(pmsg);
   }
 }
 
@@ -559,6 +558,11 @@ void TCPConnection::CreateOutgoingTcpSocket() {
   int opts = (remote_candidate().protocol() == SSLTCP_PROTOCOL_NAME)
                  ? rtc::PacketSocketFactory::OPT_TLS_FAKE
                  : 0;
+
+  if (socket_) {
+    socket_->UnsubscribeClose(this);
+  }
+
   rtc::PacketSocketTcpOptions tcp_opts;
   tcp_opts.opts = opts;
   socket_.reset(port()->socket_factory()->CreateClientTcpSocket(
@@ -576,13 +580,13 @@ void TCPConnection::CreateOutgoingTcpSocket() {
   } else {
     RTC_LOG(LS_WARNING) << ToString() << ": Failed to create connection to "
                         << remote_candidate().address().ToSensitiveString();
+    set_state(IceCandidatePairState::FAILED);
     // We can't FailAndPrune directly here. FailAndPrune and deletes all
     // the StunRequests from the request_map_. And if this is in the stack
     // of Connection::Ping(), we are still using the request.
     // Unwind the stack and defer the FailAndPrune.
-    set_state(IceCandidatePairState::FAILED);
-    port()->thread()->Post(RTC_FROM_HERE, this,
-                           MSG_TCPCONNECTION_FAILED_CREATE_SOCKET);
+    network_thread()->PostTask(
+        webrtc::ToQueuedTask(network_safety_, [this]() { FailAndPrune(); }));
   }
 }
 
@@ -592,7 +596,11 @@ void TCPConnection::ConnectSocketSignals(rtc::AsyncPacketSocket* socket) {
   }
   socket->SignalReadPacket.connect(this, &TCPConnection::OnReadPacket);
   socket->SignalReadyToSend.connect(this, &TCPConnection::OnReadyToSend);
-  socket->SignalClose.connect(this, &TCPConnection::OnClose);
+  socket->SubscribeClose(this, [this, safety = network_safety_.flag()](
+                                   rtc::AsyncPacketSocket* s, int err) {
+    if (safety->alive())
+      OnClose(s, err);
+  });
 }
 
 }  // namespace cricket

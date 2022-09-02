@@ -9,4 +9,4 @@ set scriptdir=%~dp0
 
 @call "%~dp0\cipd_bin_setup.bat" > nul 2>&1
 @call %scriptdir%python-bin\python3.bat %~dp0\.cipd_bin\goma_auth.py %*
-exit /b
+exit /b %ERRORLEVEL%

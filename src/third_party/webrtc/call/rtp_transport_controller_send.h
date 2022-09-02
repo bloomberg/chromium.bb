@@ -17,6 +17,7 @@
 #include <string>
 #include <vector>
 
+#include "absl/strings/string_view.h"
 #include "api/network_state_predictor.h"
 #include "api/sequence_checker.h"
 #include "api/transport/network_control.h"
@@ -27,12 +28,9 @@
 #include "modules/congestion_controller/rtp/control_handler.h"
 #include "modules/congestion_controller/rtp/transport_feedback_adapter.h"
 #include "modules/congestion_controller/rtp/transport_feedback_demuxer.h"
-#include "modules/pacing/paced_sender.h"
 #include "modules/pacing/packet_router.h"
 #include "modules/pacing/rtp_packet_pacer.h"
 #include "modules/pacing/task_queue_paced_sender.h"
-#include "modules/utility/include/process_thread.h"
-#include "rtc_base/constructor_magic.h"
 #include "rtc_base/network_route.h"
 #include "rtc_base/race_checker.h"
 #include "rtc_base/task_queue.h"
@@ -58,10 +56,13 @@ class RtpTransportControllerSend final
       NetworkStatePredictorFactoryInterface* predictor_factory,
       NetworkControllerFactoryInterface* controller_factory,
       const BitrateConstraints& bitrate_config,
-      std::unique_ptr<ProcessThread> process_thread,
       TaskQueueFactory* task_queue_factory,
-      const WebRtcKeyValueConfig* trials);
+      const FieldTrialsView& trials);
   ~RtpTransportControllerSend() override;
+
+  RtpTransportControllerSend(const RtpTransportControllerSend&) = delete;
+  RtpTransportControllerSend& operator=(const RtpTransportControllerSend&) =
+      delete;
 
   // TODO(tommi): Change to std::unique_ptr<>.
   RtpVideoSenderInterface* CreateRtpVideoSender(
@@ -94,7 +95,7 @@ class RtpTransportControllerSend final
   StreamFeedbackProvider* GetStreamFeedbackProvider() override;
   void RegisterTargetTransferRateObserver(
       TargetTransferRateObserver* observer) override;
-  void OnNetworkRouteChanged(const std::string& transport_name,
+  void OnNetworkRouteChanged(absl::string_view transport_name,
                              const rtc::NetworkRoute& network_route) override;
   void OnNetworkAvailability(bool network_available) override;
   RtcpBandwidthObserver* GetBandwidthObserver() override;
@@ -129,11 +130,8 @@ class RtpTransportControllerSend final
 
  private:
   struct PacerSettings {
-    explicit PacerSettings(const WebRtcKeyValueConfig* trials);
+    explicit PacerSettings(const FieldTrialsView& trials);
 
-    bool use_task_queue_pacer() const { return !tq_disabled.Get(); }
-
-    FieldTrialFlag tq_disabled;  // Kill-switch not normally used.
     FieldTrialParameter<TimeDelta> holdback_window;
     FieldTrialParameter<int> holdback_packets;
   };
@@ -155,8 +153,7 @@ class RtpTransportControllerSend final
       RTC_RUN_ON(task_queue_);
   void PostUpdates(NetworkControlUpdate update) RTC_RUN_ON(task_queue_);
   void UpdateControlState() RTC_RUN_ON(task_queue_);
-  RtpPacketPacer* pacer();
-  const RtpPacketPacer* pacer() const;
+  void UpdateCongestedState() RTC_RUN_ON(task_queue_);
 
   Clock* const clock_;
   RtcEventLog* const event_log_;
@@ -167,10 +164,8 @@ class RtpTransportControllerSend final
   RtpBitrateConfigurator bitrate_configurator_;
   std::map<std::string, rtc::NetworkRoute> network_routes_;
   bool pacer_started_;
-  const std::unique_ptr<ProcessThread> process_thread_;
   const PacerSettings pacer_settings_;
-  std::unique_ptr<PacedSender> process_thread_pacer_;
-  std::unique_ptr<TaskQueuePacedSender> task_queue_pacer_;
+  TaskQueuePacedSender pacer_;
 
   TargetTransferRateObserver* observer_ RTC_GUARDED_BY(task_queue_);
   TransportFeedbackDemuxer feedback_demuxer_;
@@ -208,6 +203,9 @@ class RtpTransportControllerSend final
   RepeatingTaskHandle pacer_queue_update_task_ RTC_GUARDED_BY(task_queue_);
   RepeatingTaskHandle controller_task_ RTC_GUARDED_BY(task_queue_);
 
+  DataSize congestion_window_size_ RTC_GUARDED_BY(task_queue_);
+  bool is_congested_ RTC_GUARDED_BY(task_queue_);
+
   // Protected by internal locks.
   RateLimiter retransmission_rate_limiter_;
 
@@ -215,7 +213,8 @@ class RtpTransportControllerSend final
   // `task_queue_` is defined last to ensure all pending tasks are cancelled
   // and deleted before any other members.
   rtc::TaskQueue task_queue_;
-  RTC_DISALLOW_COPY_AND_ASSIGN(RtpTransportControllerSend);
+
+  const FieldTrialsView& field_trials_;
 };
 
 }  // namespace webrtc

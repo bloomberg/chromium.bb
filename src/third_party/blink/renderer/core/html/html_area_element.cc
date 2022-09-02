@@ -193,12 +193,14 @@ bool HTMLAreaElement::IsMouseFocusable() const {
 }
 
 bool HTMLAreaElement::IsFocusableStyle() const {
-  HTMLImageElement* image = ImageElement();
-  if (!image || !image->GetLayoutObject() ||
-      image->GetLayoutObject()->Style()->Visibility() != EVisibility::kVisible)
-    return false;
-
-  return SupportsFocus() && Element::tabIndex() >= 0;
+  if (HTMLImageElement* image = ImageElement()) {
+    if (LayoutObject* layout_object = image->GetLayoutObject()) {
+      const ComputedStyle& style = layout_object->StyleRef();
+      return !style.IsInert() && style.Visibility() == EVisibility::kVisible &&
+             SupportsFocus() && Element::tabIndex() >= 0;
+    }
+  }
+  return false;
 }
 
 void HTMLAreaElement::SetFocused(bool should_be_focused,
@@ -217,7 +219,7 @@ void HTMLAreaElement::SetFocused(bool should_be_focused,
     layout_image->AreaElementFocusChanged(this);
 }
 
-void HTMLAreaElement::UpdateFocusAppearanceWithOptions(
+void HTMLAreaElement::UpdateSelectionOnFocus(
     SelectionBehaviorOnFocus selection_behavior,
     const FocusOptions* options) {
   GetDocument().UpdateStyleAndLayoutTreeForNode(this);
@@ -225,8 +227,7 @@ void HTMLAreaElement::UpdateFocusAppearanceWithOptions(
     return;
 
   if (HTMLImageElement* image_element = ImageElement()) {
-    image_element->UpdateFocusAppearanceWithOptions(selection_behavior,
-                                                    options);
+    image_element->UpdateSelectionOnFocus(selection_behavior, options);
   }
 }
 

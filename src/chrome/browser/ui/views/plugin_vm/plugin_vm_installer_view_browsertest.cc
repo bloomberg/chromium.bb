@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/plugin_vm/plugin_vm_installer_view.h"
 
+#include "ash/components/tpm/stub_install_attributes.h"
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/test/scoped_feature_list.h"
@@ -21,11 +22,10 @@
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/dbus/concierge/fake_concierge_client.h"
+#include "chromeos/ash/components/dbus/concierge/fake_concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon/fake_debug_daemon_client.h"
 #include "chromeos/dbus/vm_plugin_dispatcher/fake_vm_plugin_dispatcher_client.h"
-#include "chromeos/tpm/stub_install_attributes.h"
 #include "components/account_id/account_id.h"
 #include "components/download/public/background_service/download_metadata.h"
 #include "components/download/public/background_service/features.h"
@@ -68,7 +68,7 @@ class PluginVmInstallerViewBrowserTest : public DialogBrowserTest {
 
   void SetUpOnMainThread() override {
     ASSERT_TRUE(embedded_test_server()->Start());
-    fake_concierge_client_ = chromeos::FakeConciergeClient::Get();
+    fake_concierge_client_ = ash::FakeConciergeClient::Get();
     fake_concierge_client_->set_disk_image_progress_signal_connected(true);
     fake_vm_plugin_dispatcher_client_ =
         static_cast<chromeos::FakeVmPluginDispatcherClient*>(
@@ -112,9 +112,9 @@ class PluginVmInstallerViewBrowserTest : public DialogBrowserTest {
   void SetPluginVmImagePref(std::string url, std::string hash) {
     DictionaryPrefUpdate update(browser()->profile()->GetPrefs(),
                                 plugin_vm::prefs::kPluginVmImage);
-    base::DictionaryValue* plugin_vm_image = update.Get();
-    plugin_vm_image->SetKey("url", base::Value(url));
-    plugin_vm_image->SetKey("hash", base::Value(hash));
+    base::Value* plugin_vm_image = update.Get();
+    plugin_vm_image->SetStringKey("url", url);
+    plugin_vm_image->SetStringKey("hash", hash);
   }
 
   void WaitForSetupToFinish() {
@@ -148,13 +148,13 @@ class PluginVmInstallerViewBrowserTest : public DialogBrowserTest {
   }
 
   ash::ScopedTestingCrosSettings scoped_testing_cros_settings_;
-  chromeos::ScopedStubInstallAttributes scoped_stub_install_attributes_;
+  ash::ScopedStubInstallAttributes scoped_stub_install_attributes_;
 
   std::unique_ptr<network::TestNetworkConnectionTracker>
       network_connection_tracker_;
   std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_;
   PluginVmInstallerView* view_;
-  chromeos::FakeConciergeClient* fake_concierge_client_;
+  ash::FakeConciergeClient* fake_concierge_client_;
   chromeos::FakeVmPluginDispatcherClient* fake_vm_plugin_dispatcher_client_;
 
  private:
@@ -178,7 +178,7 @@ class PluginVmInstallerViewBrowserTest : public DialogBrowserTest {
     auto user_manager = std::make_unique<ash::FakeChromeUserManager>();
     user_manager->AddUserWithAffiliation(account_id, true);
     user_manager->LoginUser(account_id);
-    chromeos::ProfileHelper::Get()->SetProfileToUserMappingForTesting(
+    ash::ProfileHelper::Get()->SetProfileToUserMappingForTesting(
         user_manager->GetActiveUser());
     scoped_user_manager_ = std::make_unique<user_manager::ScopedUserManager>(
         std::move(user_manager));
@@ -319,6 +319,9 @@ IN_PROC_BROWSER_TEST_F(PluginVmInstallerViewBrowserTestWithFeatureEnabled,
   list_vms_response.add_vm_info()->set_state(
       vm_tools::plugin_dispatcher::VmState::VM_STATE_STOPPED);
   fake_vm_plugin_dispatcher_client_->set_list_vms_response(list_vms_response);
+
+  fake_vm_plugin_dispatcher_client_->set_start_vm_response(
+      vm_tools::plugin_dispatcher::StartVmResponse());
 
   ShowUi("default");
   EXPECT_NE(nullptr, view_);

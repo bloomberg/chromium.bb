@@ -10,8 +10,8 @@
 
 #include "ash/ash_export.h"
 #include "ash/public/cpp/session/session_observer.h"
-#include "ash/public/cpp/toast_data.h"
-#include "ash/public/cpp/toast_manager.h"
+#include "ash/public/cpp/system/toast_data.h"
+#include "ash/public/cpp/system/toast_manager.h"
 #include "ash/system/toast/toast_overlay.h"
 #include "base/containers/circular_deque.h"
 #include "base/memory/weak_ptr.h"
@@ -33,6 +33,11 @@ class ASH_EXPORT ToastManagerImpl : public ToastManager,
   // ToastManager overrides:
   void Show(const ToastData& data) override;
   void Cancel(const std::string& id) override;
+  bool MaybeToggleA11yHighlightOnActiveToastDismissButton(
+      const std::string& id) override;
+  bool MaybeActivateHighlightedDismissButtonOnActiveToast(
+      const std::string& id) override;
+  bool IsRunning(const std::string& id) const override;
 
   // ToastOverlay::Delegate overrides:
   void OnClosed() override;
@@ -42,6 +47,9 @@ class ASH_EXPORT ToastManagerImpl : public ToastManager,
 
  private:
   friend class ToastManagerImplTest;
+  friend class BluetoothNotificationControllerTest;
+  friend class AutoConnectNotifierTest;
+  friend class DesksTestApi;
 
   void ShowLatest();
   void OnDurationPassed(int toast_number);

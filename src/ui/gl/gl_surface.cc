@@ -135,7 +135,7 @@ void* GLSurface::GetShareHandle() {
   return NULL;
 }
 
-void* GLSurface::GetDisplay() {
+GLDisplay* GLSurface::GetGLDisplay() {
   NOTIMPLEMENTED();
   return NULL;
 }
@@ -162,11 +162,6 @@ bool GLSurface::ScheduleOverlayPlane(
 bool GLSurface::ScheduleCALayer(const ui::CARendererLayerParams& params) {
   NOTIMPLEMENTED();
   return false;
-}
-
-void GLSurface::ScheduleCALayerInUseQuery(
-    std::vector<CALayerInUseQuery> queries) {
-  NOTIMPLEMENTED();
 }
 
 bool GLSurface::ScheduleDCLayer(
@@ -448,8 +443,8 @@ void* GLSurfaceAdapter::GetShareHandle() {
   return surface_->GetShareHandle();
 }
 
-void* GLSurfaceAdapter::GetDisplay() {
-  return surface_->GetDisplay();
+GLDisplay* GLSurfaceAdapter::GetGLDisplay() {
+  return surface_->GetGLDisplay();
 }
 
 void* GLSurfaceAdapter::GetConfig() {
@@ -561,6 +556,11 @@ void GLSurfaceAdapter::SetFrameRate(float frame_rate) {
   surface_->SetFrameRate(frame_rate);
 }
 
+void GLSurfaceAdapter::SetChoreographerVsyncIdForNextFrame(
+    absl::optional<int64_t> choreographer_vsync_id) {
+  surface_->SetChoreographerVsyncIdForNextFrame(choreographer_vsync_id);
+}
+
 void GLSurfaceAdapter::SetCurrent() {
   surface_->SetCurrent();
 }
@@ -596,10 +596,5 @@ scoped_refptr<GLSurface> InitializeGLSurfaceWithFormat(
 scoped_refptr<GLSurface> InitializeGLSurface(scoped_refptr<GLSurface> surface) {
   return InitializeGLSurfaceWithFormat(surface, GLSurfaceFormat());
 }
-
-GLSurface::CALayerInUseQuery::CALayerInUseQuery() = default;
-GLSurface::CALayerInUseQuery::CALayerInUseQuery(const CALayerInUseQuery&) =
-    default;
-GLSurface::CALayerInUseQuery::~CALayerInUseQuery() = default;
 
 }  // namespace gl

@@ -316,7 +316,7 @@ void *sqlite3_malloc64(sqlite3_uint64 n){
 ** TRUE if p is a lookaside memory allocation from db
 */
 #ifndef SQLITE_OMIT_LOOKASIDE
-static int isLookaside(sqlite3 *db, void *p){
+static int isLookaside(sqlite3 *db, const void *p){
   return SQLITE_WITHIN(p, db->lookaside.pStart, db->lookaside.pEnd);
 }
 #else
@@ -327,18 +327,18 @@ static int isLookaside(sqlite3 *db, void *p){
 ** Return the size of a memory allocation previously obtained from
 ** sqlite3Malloc() or sqlite3_malloc().
 */
-int sqlite3MallocSize(void *p){
+int sqlite3MallocSize(const void *p){
   assert( sqlite3MemdebugHasType(p, MEMTYPE_HEAP) );
-  return sqlite3GlobalConfig.m.xSize(p);
+  return sqlite3GlobalConfig.m.xSize((void*)p);
 }
-static int lookasideMallocSize(sqlite3 *db, void *p){
+static int lookasideMallocSize(sqlite3 *db, const void *p){
 #ifndef SQLITE_OMIT_TWOSIZE_LOOKASIDE    
   return p<db->lookaside.pMiddle ? db->lookaside.szTrue : LOOKASIDE_SMALL;
 #else
   return db->lookaside.szTrue;
 #endif  
 }
-int sqlite3DbMallocSize(sqlite3 *db, void *p){
+int sqlite3DbMallocSize(sqlite3 *db, const void *p){
   assert( p!=0 );
 #ifdef SQLITE_DEBUG
   if( db==0 || !isLookaside(db,p) ){
@@ -365,7 +365,7 @@ int sqlite3DbMallocSize(sqlite3 *db, void *p){
       }
     }
   }
-  return sqlite3GlobalConfig.m.xSize(p);
+  return sqlite3GlobalConfig.m.xSize((void*)p);
 }
 sqlite3_uint64 sqlite3_msize(void *p){
   assert( sqlite3MemdebugNoType(p, (u8)~MEMTYPE_HEAP) );
@@ -750,8 +750,9 @@ char *sqlite3DbSpanDup(sqlite3 *db, const char *zStart, const char *zEnd){
 ** Free any prior content in *pz and replace it with a copy of zNew.
 */
 void sqlite3SetString(char **pz, sqlite3 *db, const char *zNew){
+  char *z = sqlite3DbStrDup(db, zNew);
   sqlite3DbFree(db, *pz);
-  *pz = sqlite3DbStrDup(db, zNew);
+  *pz = z;
 }
 
 /*
@@ -759,8 +760,15 @@ void sqlite3SetString(char **pz, sqlite3 *db, const char *zNew){
 ** has happened.  This routine will set db->mallocFailed, and also
 ** temporarily disable the lookaside memory allocator and interrupt
 ** any running VDBEs.
+**
+** Always return a NULL pointer so that this routine can be invoked using
+**
+**      return sqlite3OomFault(db);
+**
+** and thereby avoid unnecessary stack frame allocations for the overwhelmingly
+** common case where no OOM occurs.
 */
-void sqlite3OomFault(sqlite3 *db){
+void *sqlite3OomFault(sqlite3 *db){
   if( db->mallocFailed==0 && db->bBenignMalloc==0 ){
     db->mallocFailed = 1;
     if( db->nVdbeExec>0 ){
@@ -768,9 +776,11 @@ void sqlite3OomFault(sqlite3 *db){
     }
     DisableLookaside;
     if( db->pParse ){
+      sqlite3ErrorMsg(db->pParse, "out of memory");
       db->pParse->rc = SQLITE_NOMEM_BKPT;
     }
   }
+  return 0;
 }
 
 /*

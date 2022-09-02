@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/memory/raw_ptr.h"
+#include "cc/paint/paint_flags.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/animation/slide_animation.h"
@@ -263,8 +264,8 @@ gfx::Size FrameCaptionButton::GetInkDropSize() const {
 
 gfx::Insets FrameCaptionButton::GetInkdropInsets(
     const gfx::Size& button_size) const {
-  return gfx::Insets((button_size.height() - GetInkDropSize().height()) / 2,
-                     (button_size.width() - GetInkDropSize().width()) / 2);
+  return gfx::Insets::VH((button_size.height() - GetInkDropSize().height()) / 2,
+                         (button_size.width() - GetInkDropSize().width()) / 2);
 }
 
 void FrameCaptionButton::PaintButtonContents(gfx::Canvas* canvas) {
@@ -381,6 +382,8 @@ DEFINE_ENUM_CONVERTERS(
      u"CAPTION_BUTTON_ICON_LOCATION"},
     {views::CaptionButtonIcon::CAPTION_BUTTON_ICON_MENU,
      u"CAPTION_BUTTON_ICON_MENU"},
+    {views::CaptionButtonIcon::CAPTION_BUTTON_ICON_FLOAT,
+     u"CAPTION_BUTTON_ICON_FLOAT"},
     {views::CaptionButtonIcon::CAPTION_BUTTON_ICON_ZOOM,
      u"CAPTION_BUTTON_ICON_ZOOM"},
     {views::CaptionButtonIcon::CAPTION_BUTTON_ICON_CENTER,

@@ -7,6 +7,9 @@ const scriptUrl = '_test_resources/api_test/webnavigation/framework.js';
 let ready;
 let onScriptLoad = chrome.test.loadScript(scriptUrl);
 
+const kNotSpecifiedErrorMessage =
+  'Either documentId or both tabId and frameId must be specified.';
+
 if (inServiceWorker) {
   ready = onScriptLoad;
 } else {
@@ -20,6 +23,7 @@ ready.then(async function() {
   var URL = chrome.extension.getURL("a.html");
   var URL_FRAMES = chrome.extension.getURL("b.html");
   var processId = -1;
+  var documentId;
   let tab = await promise(chrome.tabs.create, {"url": "about:blank"});
 
   chrome.test.runTests([
@@ -29,11 +33,18 @@ ready.then(async function() {
           if (details.tabId != tab.id || details.url != URL)
             return;
           processId = details.processId;
+          documentId = details.documentId;
           chrome.webNavigation.getFrame(
-              {tabId: tab.id, frameId: 0, processId: processId},
+              {frameId: 0, tabId: tab.id, processId: processId},
               function(details) {
             chrome.test.assertEq(
-                {errorOccurred: false, url: URL, parentFrameId: -1},
+                {errorOccurred: false,
+                 url: URL,
+                 parentFrameId: -1,
+                 documentId: documentId,
+                 documentLifecycle: "active",
+                 frameType: "outermost_frame",
+               },
                 details);
             done();
           });
@@ -50,6 +61,77 @@ ready.then(async function() {
       });
     },
 
+    function testGetFrameNoValues() {
+      chrome.webNavigation.getFrame({},
+        function (details) {
+          chrome.test.assertEq(null, details);
+          chrome.test.assertLastError(kNotSpecifiedErrorMessage);
+          chrome.test.succeed();
+      });
+    },
+
+    function testGetFrameNoFrameId() {
+      chrome.webNavigation.getFrame({tabId: tab.id, processId: processId},
+        function (details) {
+          chrome.test.assertEq(null, details);
+          chrome.test.assertLastError(kNotSpecifiedErrorMessage);
+          chrome.test.succeed();
+      });
+    },
+
+    function testGetFrameDocumentId() {
+      chrome.webNavigation.getFrame({tabId: tab.id, documentId: documentId},
+        function (details) {
+          chrome.test.assertEq({
+              errorOccurred: false,
+              url: URL,
+              parentFrameId: -1,
+              documentId: documentId,
+              documentLifecycle: "active",
+              frameType: "outermost_frame",
+            }, details);
+          chrome.test.succeed();
+      });
+    },
+
+    function testGetFrameDocumentIdAndFrameId() {
+      chrome.webNavigation.getFrame({tabId: tab.id, frameId: 0,
+                                     processId: processId,
+                                     documentId: documentId},
+        function (details) {
+          chrome.test.assertEq({
+              errorOccurred: false,
+              url: URL,
+              parentFrameId: -1,
+              documentId: documentId,
+              documentLifecycle: "active",
+              frameType: "outermost_frame",
+            }, details);
+          chrome.test.succeed();
+      });
+    },
+
+    function testGetFrameDocumentIdAndFrameIdDoNotMatch() {
+      chrome.webNavigation.getFrame({tabId: tab.id, frameId: 1,
+                                     processId: processId,
+                                     documentId: documentId},
+        function (details) {
+          chrome.test.assertEq(null, details);
+          chrome.test.succeed();
+      });
+    },
+
+    function testGetFrameInvalidDocumentId() {
+      chrome.webNavigation.getFrame({tabId: tab.id, frameId: 0,
+                                     processId: processId,
+                                     documentId: "42AB"},
+        function (details) {
+          chrome.test.assertLastError("Invalid documentId.");
+          chrome.test.assertEq(null, details);
+          chrome.test.succeed();
+      });
+    },
+
     function testGetAllFrames() {
       chrome.webNavigation.getAllFrames({tabId: tab.id}, function (details) {
           chrome.test.assertEq(
@@ -57,7 +139,10 @@ ready.then(async function() {
                 frameId: 0,
                 parentFrameId: -1,
                 processId: processId,
-                url: URL}],
+                url: URL,
+                documentId: documentId,
+                documentLifecycle: "active",
+                frameType: "outermost_frame"}],
                details);
           chrome.test.succeed();
       });
@@ -78,6 +163,7 @@ ready.then(async function() {
           if (details.tabId != tab.id || details.url != URL_FRAMES)
             return;
           processId = details.processId;
+          documentId = details.documentId;
           chrome.webNavigation.getAllFrames(
               {tabId: tab.id},
             function (details) {
@@ -86,7 +172,10 @@ ready.then(async function() {
                     frameId: 0,
                     parentFrameId: -1,
                     processId: processId,
-                    url: URL_FRAMES}],
+                    url: URL_FRAMES,
+                    documentId: documentId,
+                    documentLifecycle: "active",
+                    frameType: "outermost_frame"}],
                    details);
               chrome.test.succeed();
           });

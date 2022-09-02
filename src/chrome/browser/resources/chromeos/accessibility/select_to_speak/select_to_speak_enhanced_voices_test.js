@@ -5,7 +5,7 @@
 GEN_INCLUDE(['../../../../../../ui/webui/resources/js/cr.js']);
 GEN_INCLUDE(['fake_chrome_event.js']);
 GEN_INCLUDE(['select_to_speak_e2e_test_base.js']);
-GEN_INCLUDE(['mock_tts.js']);
+GEN_INCLUDE(['../common/testing/mock_tts.js']);
 GEN_INCLUDE(['fake_settings_private.js']);
 
 SelectToSpeakEnhancedNetworkTtsVoicesTest = class extends SelectToSpeakE2ETest {
@@ -40,21 +40,16 @@ SelectToSpeakEnhancedNetworkTtsVoicesTest = class extends SelectToSpeakE2ETest {
   }
 
   /** @override */
-  setUp() {
-    var runTest = this.deferRunTest(WhenTestDone.EXPECT);
+  async setUpDeferred() {
+    await super.setUpDeferred();
+    await importModule(
+        'selectToSpeak', '/select_to_speak/select_to_speak_main.js');
+    await importModule(
+        'SelectToSpeakConstants',
+        '/select_to_speak/select_to_speak_constants.js');
+    await importModule('PrefsManager', '/select_to_speak/prefs_manager.js');
 
-    (async () => {
-      await importModule(
-          'selectToSpeak', '/select_to_speak/select_to_speak_main.js');
-      await importModule(
-          'SelectToSpeakConstants',
-          '/select_to_speak/select_to_speak_constants.js');
-      await importModule('PrefsManager', '/select_to_speak/prefs_manager.js');
-
-      selectToSpeak.prefsManager_.initPreferences();
-
-      runTest();
-    })();
+    selectToSpeak.prefsManager_.initPreferences();
   }
 
   /** @override */
@@ -72,133 +67,112 @@ SelectToSpeakEnhancedNetworkTtsVoicesTest = class extends SelectToSpeakE2ETest {
 
 TEST_F(
     'SelectToSpeakEnhancedNetworkTtsVoicesTest',
-    'EnablesVoicesIfConfirmedInDialog', function() {
+    'EnablesVoicesIfConfirmedInDialog', async function() {
       this.confirmationDialogResponse_ = true;
 
-      this.runWithLoadedTree(
+      const root = await this.runWithLoadedTree(
           'data:text/html;charset=utf-8,' +
-              '<p>This is some text</p>',
-          function(root) {
-            assertFalse(this.mockTts.currentlySpeaking());
-            assertEquals(this.mockTts.pendingUtterances().length, 0);
-            this.mockTts.setOnSpeechCallbacks([this.newCallback(function(
-                utterance) {
-              // Speech starts asynchronously.
-              assertEquals(this.confirmationDialogShowCount_, 1);
-              assertTrue(
-                  selectToSpeak.prefsManager_.enhancedVoicesDialogShown());
-              assertTrue(
-                  selectToSpeak.prefsManager_.enhancedNetworkVoicesEnabled());
-              assertTrue(this.mockTts.currentlySpeaking());
-              assertEquals(this.mockTts.pendingUtterances().length, 1);
-              this.assertEqualsCollapseWhitespace(
-                  this.mockTts.pendingUtterances()[0], 'This is some text');
-            })]);
-            const textNode = this.findTextNode(root, 'This is some text');
-            const event = {
-              screenX: textNode.location.left + 1,
-              screenY: textNode.location.top + 1
-            };
-            this.triggerReadMouseSelectedText(event, event);
-          });
+          '<p>This is some text</p>');
+      assertFalse(this.mockTts.currentlySpeaking());
+      assertEquals(this.mockTts.pendingUtterances().length, 0);
+      this.mockTts.setOnSpeechCallbacks([this.newCallback(function(utterance) {
+        // Speech starts asynchronously.
+        assertEquals(this.confirmationDialogShowCount_, 1);
+        assertTrue(selectToSpeak.prefsManager_.enhancedVoicesDialogShown());
+        assertTrue(selectToSpeak.prefsManager_.enhancedNetworkVoicesEnabled());
+        assertTrue(this.mockTts.currentlySpeaking());
+        assertEquals(this.mockTts.pendingUtterances().length, 1);
+        this.assertEqualsCollapseWhitespace(
+            this.mockTts.pendingUtterances()[0], 'This is some text');
+      })]);
+      const textNode = this.findTextNode(root, 'This is some text');
+      const event = {
+        screenX: textNode.location.left + 1,
+        screenY: textNode.location.top + 1
+      };
+      this.triggerReadMouseSelectedText(event, event);
     });
 
 TEST_F(
     'SelectToSpeakEnhancedNetworkTtsVoicesTest',
-    'DisablesVoicesIfCanceledInDialog', function() {
+    'DisablesVoicesIfCanceledInDialog', async function() {
       this.confirmationDialogResponse_ = false;
-      this.runWithLoadedTree(
+      const root = await this.runWithLoadedTree(
           'data:text/html;charset=utf-8,' +
-              '<p>This is some text</p>',
-          function(root) {
-            assertFalse(this.mockTts.currentlySpeaking());
-            assertEquals(this.mockTts.pendingUtterances().length, 0);
-            this.mockTts.setOnSpeechCallbacks([this.newCallback(function(
-                utterance) {
-              // Speech starts asynchronously.
-              assertEquals(this.confirmationDialogShowCount_, 1);
-              assertTrue(
-                  selectToSpeak.prefsManager_.enhancedVoicesDialogShown());
-              assertFalse(
-                  selectToSpeak.prefsManager_.enhancedNetworkVoicesEnabled());
-              assertTrue(this.mockTts.currentlySpeaking());
-              assertEquals(this.mockTts.pendingUtterances().length, 1);
-              this.assertEqualsCollapseWhitespace(
-                  this.mockTts.pendingUtterances()[0], 'This is some text');
-            })]);
-            const textNode = this.findTextNode(root, 'This is some text');
-            const event = {
-              screenX: textNode.location.left + 1,
-              screenY: textNode.location.top + 1
-            };
-            this.triggerReadMouseSelectedText(event, event);
-          });
+          '<p>This is some text</p>');
+      assertFalse(this.mockTts.currentlySpeaking());
+      assertEquals(this.mockTts.pendingUtterances().length, 0);
+      this.mockTts.setOnSpeechCallbacks([this.newCallback(function(utterance) {
+        // Speech starts asynchronously.
+        assertEquals(this.confirmationDialogShowCount_, 1);
+        assertTrue(selectToSpeak.prefsManager_.enhancedVoicesDialogShown());
+        assertFalse(selectToSpeak.prefsManager_.enhancedNetworkVoicesEnabled());
+        assertTrue(this.mockTts.currentlySpeaking());
+        assertEquals(this.mockTts.pendingUtterances().length, 1);
+        this.assertEqualsCollapseWhitespace(
+            this.mockTts.pendingUtterances()[0], 'This is some text');
+      })]);
+      const textNode = this.findTextNode(root, 'This is some text');
+      const event = {
+        screenX: textNode.location.left + 1,
+        screenY: textNode.location.top + 1
+      };
+      this.triggerReadMouseSelectedText(event, event);
     });
 
 TEST_F(
     'SelectToSpeakEnhancedNetworkTtsVoicesTest',
-    'DisablesVoicesIfDisallowedByPolicy', function() {
+    'DisablesVoicesIfDisallowedByPolicy', async function() {
       this.confirmationDialogResponse_ = true;
 
-      this.runWithLoadedTree(
+      const root = await this.runWithLoadedTree(
           'data:text/html;charset=utf-8,' +
-              '<p>This is some text</p>',
-          function(root) {
-            this.mockTts.setOnSpeechCallbacks([this.newCallback(function(
-                utterance) {
-              // Network voices are enabled initially because of the
-              // confirmation.
-              assertEquals(this.confirmationDialogShowCount_, 1);
-              assertTrue(
-                  selectToSpeak.prefsManager_.enhancedVoicesDialogShown());
-              assertTrue(
-                  selectToSpeak.prefsManager_.enhancedNetworkVoicesEnabled());
+          '<p>This is some text</p>');
+      this.mockTts.setOnSpeechCallbacks([this.newCallback(function(utterance) {
+        // Network voices are enabled initially because of the
+        // confirmation.
+        assertEquals(this.confirmationDialogShowCount_, 1);
+        assertTrue(selectToSpeak.prefsManager_.enhancedVoicesDialogShown());
+        assertTrue(selectToSpeak.prefsManager_.enhancedNetworkVoicesEnabled());
 
-              // Sets the policy to disallow network voices.
-              this.setEnhancedNetworkVoicesPolicy(/* allowed= */ false);
-              assertFalse(
-                  selectToSpeak.prefsManager_.enhancedNetworkVoicesEnabled());
-            })]);
-            const textNode = this.findTextNode(root, 'This is some text');
-            const event = {
-              screenX: textNode.location.left + 1,
-              screenY: textNode.location.top + 1
-            };
-            this.triggerReadMouseSelectedText(event, event);
-          });
+        // Sets the policy to disallow network voices.
+        this.setEnhancedNetworkVoicesPolicy(/* allowed= */ false);
+        assertFalse(selectToSpeak.prefsManager_.enhancedNetworkVoicesEnabled());
+      })]);
+      const textNode = this.findTextNode(root, 'This is some text');
+      const event = {
+        screenX: textNode.location.left + 1,
+        screenY: textNode.location.top + 1
+      };
+      this.triggerReadMouseSelectedText(event, event);
     });
 
 TEST_F(
     'SelectToSpeakEnhancedNetworkTtsVoicesTest',
-    'DisablesDialogIfDisallowedByPolicy', function() {
+    'DisablesDialogIfDisallowedByPolicy', async function() {
       this.setEnhancedNetworkVoicesPolicy(/* allowed= */ false);
 
-      this.runWithLoadedTree(
+      const root = await this.runWithLoadedTree(
           'data:text/html;charset=utf-8,' +
-              '<p>This is some text</p>',
-          function(root) {
-            assertFalse(this.mockTts.currentlySpeaking());
-            assertEquals(this.mockTts.pendingUtterances().length, 0);
-            this.mockTts.setOnSpeechCallbacks([this.newCallback(function(
-                utterance) {
-              // Dialog was not shown.
-              assertEquals(this.confirmationDialogShowCount_, 0);
-              assertFalse(
-                  selectToSpeak.prefsManager_.enhancedVoicesDialogShown());
+          '<p>This is some text</p>');
+      assertFalse(this.mockTts.currentlySpeaking());
+      assertEquals(this.mockTts.pendingUtterances().length, 0);
+      this.mockTts.setOnSpeechCallbacks([this.newCallback(function(utterance) {
+        // Dialog was not shown.
+        assertEquals(this.confirmationDialogShowCount_, 0);
+        assertFalse(selectToSpeak.prefsManager_.enhancedVoicesDialogShown());
 
-              // Speech proceeds without enhanced voices.
-              assertFalse(
-                  selectToSpeak.prefsManager_.enhancedNetworkVoicesEnabled());
-              assertTrue(this.mockTts.currentlySpeaking());
-              assertEquals(this.mockTts.pendingUtterances().length, 1);
-              this.assertEqualsCollapseWhitespace(
-                  this.mockTts.pendingUtterances()[0], 'This is some text');
-            })]);
-            const textNode = this.findTextNode(root, 'This is some text');
-            const event = {
-              screenX: textNode.location.left + 1,
-              screenY: textNode.location.top + 1
-            };
-            this.triggerReadMouseSelectedText(event, event);
-          });
+        // Speech proceeds without enhanced voices.
+        assertFalse(selectToSpeak.prefsManager_.enhancedNetworkVoicesEnabled());
+        assertTrue(this.mockTts.currentlySpeaking());
+        assertEquals(this.mockTts.pendingUtterances().length, 1);
+        this.assertEqualsCollapseWhitespace(
+            this.mockTts.pendingUtterances()[0], 'This is some text');
+      })]);
+      const textNode = this.findTextNode(root, 'This is some text');
+      const event = {
+        screenX: textNode.location.left + 1,
+        screenY: textNode.location.top + 1
+      };
+      this.triggerReadMouseSelectedText(event, event);
     });

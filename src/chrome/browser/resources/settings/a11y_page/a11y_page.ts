@@ -12,18 +12,18 @@ import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
 import '../controls/settings_toggle_button.js';
 import '../settings_page/settings_animated_pages.js';
 import '../settings_shared_css.js';
-
-// <if expr="not is_macosx and not chromeos">
+// <if expr="not is_macosx and not chromeos_ash">
 import './captions_subpage.js';
 import '../settings_page/settings_subpage.js';
 // </if>
 
 // <if expr="is_win or is_macosx">
 import './live_caption_section.js';
+
 // </if>
 
 import {WebUIListenerMixin} from 'chrome://resources/js/web_ui_listener_mixin.js';
-import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {BaseMixin} from '../base_mixin.js';
 import {SettingsToggleButtonElement} from '../controls/settings_toggle_button.js';
@@ -31,8 +31,10 @@ import {loadTimeData} from '../i18n_setup.js';
 import {routes} from '../route.js';
 import {Router} from '../router.js';
 
+import {getTemplate} from './a11y_page.html.js';
 // <if expr="is_win or is_macosx">
 import {CaptionsBrowserProxyImpl} from './captions_browser_proxy.js';
+
 // </if>
 
 const SettingsA11YPageElementBase =
@@ -44,7 +46,7 @@ class SettingsA11YPageElement extends SettingsA11YPageElementBase {
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
@@ -65,7 +67,7 @@ class SettingsA11YPageElement extends SettingsA11YPageElementBase {
         notify: true,
       },
 
-      // <if expr="not chromeos">
+      // <if expr="not chromeos_ash">
       enableLiveCaption_: {
         type: Boolean,
         value: function() {
@@ -125,7 +127,7 @@ class SettingsA11YPageElement extends SettingsA11YPageElementBase {
     };
   }
 
-  // <if expr="not chromeos">
+  // <if expr="not chromeos_ash">
   private enableLiveCaption_: boolean;
   private showFocusHighlightOption_: boolean;
   // </if>
@@ -133,7 +135,7 @@ class SettingsA11YPageElement extends SettingsA11YPageElementBase {
   private showAccessibilityLabelsSetting_: boolean;
   private captionSettingsOpensExternally_: boolean;
 
-  ready() {
+  override ready() {
     super.ready();
 
     this.addWebUIListener(
@@ -170,7 +172,7 @@ class SettingsA11YPageElement extends SettingsA11YPageElementBase {
     }
   }
 
-  // <if expr="not chromeos">
+  // <if expr="not chromeos_ash">
   private onFocusHighlightChange_(event: Event) {
     chrome.metricsPrivate.recordBoolean(
         'Accessibility.FocusHighlight.ToggleEnabled',
@@ -178,7 +180,7 @@ class SettingsA11YPageElement extends SettingsA11YPageElementBase {
   }
   // </if>
 
-  // <if expr="chromeos">
+  // <if expr="chromeos_ash">
   private onManageSystemAccessibilityFeaturesTap_() {
     window.location.href = 'chrome://os-settings/manageAccessibility';
   }

@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include "ash/components/settings/cros_settings_names.h"
+#include "ash/constants/notifier_catalogs.h"
 #include "ash/public/cpp/notification_utils.h"
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
@@ -36,8 +37,8 @@ const uint64_t kNotificationThreshold = 1 << 30;          // 1GB
 const uint64_t kNotificationSevereThreshold = 512 << 20;  // 512MB
 constexpr base::TimeDelta kNotificationInterval = base::Minutes(2);
 
-chromeos::CiceroneClient* GetCiceroneClient() {
-  return chromeos::CiceroneClient::Get();
+ash::CiceroneClient* GetCiceroneClient() {
+  return ash::CiceroneClient::Get();
 }
 
 }  // namespace
@@ -122,7 +123,8 @@ CrostiniLowDiskNotification::CreateNotification(Severity severity) {
   optional_fields.buttons.push_back(storage_settings);
 
   message_center::NotifierId notifier_id(
-      message_center::NotifierType::SYSTEM_COMPONENT, kNotifierLowDisk);
+      message_center::NotifierType::SYSTEM_COMPONENT, kNotifierLowDisk,
+      ash::NotificationCatalogName::kCrostiniLowDisk);
 
   auto on_click = base::BindRepeating([](absl::optional<int> button_index) {
     if (button_index) {

@@ -49,6 +49,7 @@ macro(setup_aom_install_targets)
               -DCONFIG_MULTITHREAD=${CONFIG_MULTITHREAD}
               -DCONFIG_TUNE_VMAF=${CONFIG_TUNE_VMAF}
               -DCONFIG_TUNE_BUTTERAUGLI=${CONFIG_TUNE_BUTTERAUGLI}
+              -DCONFIG_TFLITE=${CONFIG_TFLITE}
               -DHAVE_PTHREAD_H=${HAVE_PTHREAD_H}
               -P
               "${AOM_ROOT}/build/cmake/pkg_config.cmake"

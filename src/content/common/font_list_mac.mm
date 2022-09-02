@@ -165,7 +165,7 @@ class FontFamilyResolver {
     CFStringRef set_values[] = {kCTFontFamilyNameAttribute};
     return base::ScopedCFTypeRef<CFSetRef>(CFSetCreate(
         kCFAllocatorDefault, reinterpret_cast<const void**>(set_values),
-        base::size(set_values), &kCFTypeSetCallBacks));
+        std::size(set_values), &kCFTypeSetCallBacks));
   }
 
   // Creates the mutable dictionary stored in |font_descriptor_attributes_|.
@@ -245,7 +245,8 @@ std::unique_ptr<base::ListValue> GetFontList_SlowBlocking() {
       font_list.emplace_back(std::move(font_list_item));
     }
 
-    return std::make_unique<base::ListValue>(base::Value(font_list).TakeList());
+    return std::make_unique<base::ListValue>(
+        base::Value(font_list).TakeListDeprecated());
   }
 }
 

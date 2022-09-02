@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/loader/mixed_content_checker.h"
 #include "third_party/blink/renderer/modules/websockets/websocket_channel.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -45,7 +46,7 @@ WebSocketCommon::ConnectResult WebSocketCommon::Connect(
       mojom::blink::InsecureRequestPolicy::kLeaveInsecureRequestsAlone;
 
   if (upgrade_insecure_requests_set && url_.Protocol() == "ws" &&
-      !network::IsUrlPotentiallyTrustworthy(url_)) {
+      !network::IsUrlPotentiallyTrustworthy(GURL(url_))) {
     UseCounter::Count(
         execution_context,
         WebFeature::kUpgradeInsecureRequestsUpgradedRequestWebsocket);
@@ -168,9 +169,10 @@ void WebSocketCommon::CloseInternal(int code,
     return;
   if (state_ == kConnecting) {
     state_ = kClosing;
-    channel->Fail("WebSocket is closed before the connection is established.",
-                  mojom::ConsoleMessageLevel::kWarning,
-                  std::make_unique<SourceLocation>(String(), 0, 0, nullptr));
+    channel->Fail(
+        "WebSocket is closed before the connection is established.",
+        mojom::ConsoleMessageLevel::kWarning,
+        std::make_unique<SourceLocation>(String(), String(), 0, 0, nullptr));
     return;
   }
   state_ = kClosing;

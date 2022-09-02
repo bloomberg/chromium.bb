@@ -13,8 +13,8 @@
 #include "tools/sk_app/VulkanWindowContext.h"
 #include "tools/sk_app/win/Window_win.h"
 
-#include "src/gpu/vk/GrVkInterface.h"
-#include "src/gpu/vk/GrVkUtil.h"
+#include "src/gpu/ganesh/vk/GrVkInterface.h"
+#include "src/gpu/ganesh/vk/GrVkUtil.h"
 
 #include "tools/gpu/vk/VkTestUtils.h"
 
@@ -25,8 +25,7 @@ namespace window_context_factory {
 
 std::unique_ptr<WindowContext> MakeVulkanForWin(HWND hwnd, const DisplayParams& params) {
     PFN_vkGetInstanceProcAddr instProc;
-    PFN_vkGetDeviceProcAddr devProc;
-    if (!sk_gpu_test::LoadVkLibraryAndGetProcAddrFuncs(&instProc, &devProc)) {
+    if (!sk_gpu_test::LoadVkLibraryAndGetProcAddrFuncs(&instProc)) {
         return nullptr;
     }
 
@@ -70,7 +69,7 @@ std::unique_ptr<WindowContext> MakeVulkanForWin(HWND hwnd, const DisplayParams& 
     };
 
     std::unique_ptr<WindowContext> ctx(
-            new VulkanWindowContext(params, createVkSurface, canPresent, instProc, devProc));
+            new VulkanWindowContext(params, createVkSurface, canPresent, instProc));
     if (!ctx->isValid()) {
         return nullptr;
     }

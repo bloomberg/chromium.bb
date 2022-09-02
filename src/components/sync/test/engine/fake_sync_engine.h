@@ -9,11 +9,10 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "components/sync/base/weak_handle.h"
 #include "components/sync/engine/sync_engine.h"
 #include "components/sync/engine/sync_status.h"
 #include "google_apis/gaia/core_account_id.h"
@@ -40,6 +39,10 @@ class FakeSyncEngine : public SyncEngine,
     return authenticated_account_id_;
   }
 
+  bool started_handling_invalidations() {
+    return started_handling_invalidations_;
+  }
+
   // Manual completion of Initialize(), required if auto-completion was disabled
   // in the constructor.
   void TriggerInitializationCompletion(bool success);
@@ -63,9 +66,13 @@ class FakeSyncEngine : public SyncEngine,
 
   void StartConfiguration() override;
 
+  void StartHandlingInvalidations() override;
+
   void StartSyncingWithServer() override;
 
-  void SetEncryptionPassphrase(const std::string& passphrase) override;
+  void SetEncryptionPassphrase(
+      const std::string& passphrase,
+      const KeyDerivationParams& key_derivation_params) override;
 
   void SetExplicitPassphraseDecryptionKey(std::unique_ptr<Nigori> key) override;
 
@@ -108,6 +115,7 @@ class FakeSyncEngine : public SyncEngine,
   bool initialized_ = false;
   const SyncStatus default_sync_status_;
   CoreAccountId authenticated_account_id_;
+  bool started_handling_invalidations_ = false;
 };
 
 }  // namespace syncer

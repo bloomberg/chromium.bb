@@ -9,6 +9,7 @@
 #include "base/json/json_writer.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/histogram_macros_local.h"
+#include "base/observer_list.h"
 #include "base/time/default_tick_clock.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -45,7 +46,7 @@ void WritePredictionToConsoleLog(
     return;
   }
 
-  prediction.web_contents()->GetMainFrame()->AddMessageToConsole(
+  prediction.web_contents()->GetPrimaryMainFrame()->AddMessageToConsole(
       blink::mojom::ConsoleMessageLevel::kInfo,
       "JSON Navigation Prediction: " + json_body);
 }
@@ -125,7 +126,7 @@ NavigationPredictorKeyedService::NavigationPredictorKeyedService(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!browser_context->IsOffTheRecord());
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   // Start preconnecting to the search engine.
   search_engine_preconnector_.StartPreconnecting(/*with_startup_delay=*/true);
 #endif

@@ -2,24 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "android_webview/browser/gfx/browser_view_renderer.h"
+
 #include <map>
 #include <memory>
 #include <queue>
 #include <utility>
 
-#include "android_webview/browser/gfx/browser_view_renderer.h"
 #include "android_webview/browser/gfx/child_frame.h"
 #include "android_webview/browser/gfx/compositor_frame_consumer.h"
 #include "android_webview/browser/gfx/render_thread_manager.h"
 #include "android_webview/browser/gfx/test/rendering_test.h"
 #include "base/bind.h"
-#include "base/cxx17_backports.h"
 #include "base/location.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
-#include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "content/public/test/test_synchronous_compositor_android.h"
 
 namespace android_webview {
@@ -194,9 +193,10 @@ class TestAnimateInAndOutOfScreen : public RenderingTest {
   bool WillDrawOnRT(HardwareRendererDrawParams* params) override {
     if (draw_gl_count_on_rt_ == 1) {
       draw_gl_count_on_rt_++;
-      ui_task_runner_->PostTask(FROM_HERE,
-                                base::BindOnce(&RenderingTest::PostInvalidate,
-                                               base::Unretained(this)));
+      ui_task_runner_->PostTask(
+          FROM_HERE,
+          base::BindOnce(&RenderingTest::PostInvalidate, base::Unretained(this),
+                         /*inside_vsync=*/false));
       return false;
     }
 
@@ -207,7 +207,7 @@ class TestAnimateInAndOutOfScreen : public RenderingTest {
     if (draw_gl_count_on_rt_ == 0)
       transform = new_constraints_.transform;
 
-    transform.matrix().asColMajorf(params->transform);
+    transform.matrix().getColMajor(params->transform);
     return true;
   }
 
@@ -492,7 +492,7 @@ class SwitchLayerTreeFrameSinkIdTest : public ResourceRenderingTest {
         {1u, viz::ResourceId(3u)},
         {1u, viz::ResourceId(4u)},
     };
-    if (frame_number >= static_cast<int>(base::size(infos))) {
+    if (frame_number >= static_cast<int>(std::size(infos))) {
       return nullptr;
     }
 
@@ -693,12 +693,9 @@ class DidReachMaximalScrollOffsetTest : public RenderingTest {
     gfx::PointF total_scroll_offset = kTotalScrollOffset;
     gfx::PointF total_max_scroll_offset = kTotalMaxScrollOffset;
     gfx::SizeF scrollable_size = kScrollableSize;
-    // When --use-zoom-for-dsf is enabled, these values are in physical pixels.
-    if (content::IsUseZoomForDSFEnabled()) {
-      total_scroll_offset.Scale(kDipScale);
-      total_max_scroll_offset.Scale(kDipScale);
-      scrollable_size.Scale(kDipScale);
-    }
+    total_scroll_offset.Scale(kDipScale);
+    total_max_scroll_offset.Scale(kDipScale);
+    scrollable_size.Scale(kDipScale);
     // |UpdateRootLayerState()| will call |SetTotalRootLayerScrollOffset()|.
     browser_view_renderer_->UpdateRootLayerState(
         ActiveCompositor(), total_scroll_offset, total_max_scroll_offset,

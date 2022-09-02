@@ -16776,9 +16776,7 @@ func addEncryptedClientHelloTests() {
 				},
 				shouldFail:         true,
 				expectedLocalError: "remote error: illegal parameter",
-				// The decoding algorithm relies on the ordering requirement, so
-				// the wrong order appears as a missing extension.
-				expectedError: ":OUTER_EXTENSION_NOT_FOUND:",
+				expectedError:      ":INVALID_OUTER_EXTENSION:",
 			})
 
 			// Test that the server rejects duplicated values in ech_outer_extensions.
@@ -16812,9 +16810,7 @@ func addEncryptedClientHelloTests() {
 				},
 				shouldFail:         true,
 				expectedLocalError: "remote error: illegal parameter",
-				// The decoding algorithm relies on the ordering requirement, so
-				// duplicates appear as missing extensions.
-				expectedError: ":OUTER_EXTENSION_NOT_FOUND:",
+				expectedError:      ":INVALID_OUTER_EXTENSION:",
 			})
 
 			// Test that the server rejects references to missing extensions in
@@ -16843,7 +16839,7 @@ func addEncryptedClientHelloTests() {
 				},
 				shouldFail:         true,
 				expectedLocalError: "remote error: illegal parameter",
-				expectedError:      ":DECODE_ERROR:",
+				expectedError:      ":INVALID_OUTER_EXTENSION:",
 			})
 
 			// Test that the server rejects a references to the ECH extension in
@@ -16871,7 +16867,46 @@ func addEncryptedClientHelloTests() {
 				},
 				shouldFail:         true,
 				expectedLocalError: "remote error: illegal parameter",
-				expectedError:      ":DECODE_ERROR:",
+				expectedError:      ":INVALID_OUTER_EXTENSION:",
+			})
+
+			// Test the message callback is correctly reported with ECH.
+			clientAndServerHello := "read hs 1\nread clienthelloinner\nwrite hs 2\n"
+			expectMsgCallback := clientAndServerHello + "write ccs\n"
+			if hrr {
+				expectMsgCallback += clientAndServerHello
+			}
+			// EncryptedExtensions onwards.
+			expectMsgCallback += `write hs 8
+write hs 11
+write hs 15
+write hs 20
+read hs 20
+write hs 4
+write hs 4
+`
+			testCases = append(testCases, testCase{
+				testType: serverTest,
+				protocol: protocol,
+				name:     prefix + "ECH-Server-MessageCallback" + suffix,
+				config: Config{
+					ServerName:      "secret.example",
+					ClientECHConfig: echConfig.ECHConfig,
+					DefaultCurves:   defaultCurves,
+					Bugs: ProtocolBugs{
+						NoCloseNotify: true, // Align QUIC and TCP traces.
+					},
+				},
+				flags: []string{
+					"-ech-server-config", base64FlagValue(echConfig.ECHConfig.Raw),
+					"-ech-server-key", base64FlagValue(echConfig.Key),
+					"-ech-is-retry-config", "1",
+					"-expect-ech-accept",
+					"-expect-msg-callback", expectMsgCallback,
+				},
+				expectations: connectionExpectations{
+					echAccepted: true,
+				},
 			})
 		}
 
@@ -18622,6 +18657,60 @@ func addEncryptedClientHelloTests() {
 			shouldFail:    true,
 			expectedError: ":INCONSISTENT_ECH_NEGOTIATION:",
 		})
+
+		// Test the message callback is correctly reported, with and without
+		// HelloRetryRequest.
+		clientAndServerHello := "write clienthelloinner\nwrite hs 1\nread hs 2\n"
+		// EncryptedExtensions onwards.
+		finishHandshake := `read hs 8
+read hs 11
+read hs 15
+read hs 20
+write hs 20
+read hs 4
+read hs 4
+`
+		testCases = append(testCases, testCase{
+			testType: clientTest,
+			protocol: protocol,
+			name:     prefix + "ECH-Client-MessageCallback",
+			config: Config{
+				MinVersion:       VersionTLS13,
+				MaxVersion:       VersionTLS13,
+				ServerECHConfigs: []ServerECHConfig{echConfig},
+				Bugs: ProtocolBugs{
+					NoCloseNotify: true, // Align QUIC and TCP traces.
+				},
+			},
+			flags: []string{
+				"-ech-config-list", base64FlagValue(CreateECHConfigList(echConfig.ECHConfig.Raw)),
+				"-expect-ech-accept",
+				"-expect-msg-callback", clientAndServerHello + "write ccs\n" + finishHandshake,
+			},
+			expectations: connectionExpectations{echAccepted: true},
+		})
+		testCases = append(testCases, testCase{
+			testType: clientTest,
+			protocol: protocol,
+			name:     prefix + "ECH-Client-MessageCallback-HelloRetryRequest",
+			config: Config{
+				MinVersion:       VersionTLS13,
+				MaxVersion:       VersionTLS13,
+				CurvePreferences: []CurveID{CurveP384},
+				ServerECHConfigs: []ServerECHConfig{echConfig},
+				Bugs: ProtocolBugs{
+					ExpectMissingKeyShare: true, // Check we triggered HRR.
+					NoCloseNotify:         true, // Align QUIC and TCP traces.
+				},
+			},
+			flags: []string{
+				"-ech-config-list", base64FlagValue(CreateECHConfigList(echConfig.ECHConfig.Raw)),
+				"-expect-ech-accept",
+				"-expect-hrr", // Check we triggered HRR.
+				"-expect-msg-callback", clientAndServerHello + "write ccs\n" + clientAndServerHello + finishHandshake,
+			},
+			expectations: connectionExpectations{echAccepted: true},
+		})
 	}
 }
 
@@ -18943,6 +19032,197 @@ func addHintMismatchTests() {
 	}
 }
 
+func addCompliancePolicyTests() {
+	for _, protocol := range []protocol{tls, quic} {
+		for _, suite := range testCipherSuites {
+			var isFIPSCipherSuite bool
+			switch suite.id {
+			case TLS_AES_128_GCM_SHA256,
+				TLS_AES_256_GCM_SHA384,
+				TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
+				TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
+				TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
+				TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256:
+				isFIPSCipherSuite = true
+			}
+
+			var certFile string
+			var keyFile string
+			var certs []Certificate
+			if hasComponent(suite.name, "ECDSA") {
+				certFile = ecdsaP256CertificateFile
+				keyFile = ecdsaP256KeyFile
+				certs = []Certificate{ecdsaP256Certificate}
+			} else {
+				certFile = rsaCertificateFile
+				keyFile = rsaKeyFile
+				certs = []Certificate{rsaCertificate}
+			}
+
+			maxVersion := uint16(VersionTLS13)
+			if !isTLS13Suite(suite.name) {
+				if protocol == quic {
+					continue
+				}
+				maxVersion = VersionTLS12
+			}
+
+			testCases = append(testCases, testCase{
+				testType: serverTest,
+				protocol: protocol,
+				name:     "Compliance-fips202205-" + protocol.String() + "-Server-" + suite.name,
+				config: Config{
+					MinVersion:   VersionTLS12,
+					MaxVersion:   maxVersion,
+					CipherSuites: []uint16{suite.id},
+				},
+				certFile: certFile,
+				keyFile:  keyFile,
+				flags: []string{
+					"-fips-202205",
+				},
+				shouldFail: !isFIPSCipherSuite,
+			})
+
+			testCases = append(testCases, testCase{
+				testType: clientTest,
+				protocol: protocol,
+				name:     "Compliance-fips202205-" + protocol.String() + "-Client-" + suite.name,
+				config: Config{
+					MinVersion:   VersionTLS12,
+					MaxVersion:   maxVersion,
+					CipherSuites: []uint16{suite.id},
+					Certificates: certs,
+				},
+				flags: []string{
+					"-fips-202205",
+				},
+				shouldFail: !isFIPSCipherSuite,
+			})
+		}
+
+		// Check that a TLS 1.3 client won't accept ChaCha20 even if the server
+		// picks it without it being in the client's cipher list.
+		testCases = append(testCases, testCase{
+			testType: clientTest,
+			protocol: protocol,
+			name:     "Compliance-fips202205-" + protocol.String() + "-Client-ReallyWontAcceptChaCha",
+			config: Config{
+				MinVersion: VersionTLS12,
+				MaxVersion: maxVersion,
+				Bugs: ProtocolBugs{
+					SendCipherSuite: TLS_CHACHA20_POLY1305_SHA256,
+				},
+			},
+			flags: []string{
+				"-fips-202205",
+			},
+			shouldFail:    true,
+			expectedError: ":WRONG_CIPHER_RETURNED:",
+		})
+
+		for _, curve := range testCurves {
+			var isFIPSCurve bool
+			switch curve.id {
+			case CurveP256, CurveP384:
+				isFIPSCurve = true
+			}
+
+			testCases = append(testCases, testCase{
+				testType: serverTest,
+				protocol: protocol,
+				name:     "Compliance-fips202205-" + protocol.String() + "-Server-" + curve.name,
+				config: Config{
+					MinVersion:       VersionTLS12,
+					MaxVersion:       VersionTLS13,
+					CurvePreferences: []CurveID{curve.id},
+				},
+				flags: []string{
+					"-fips-202205",
+				},
+				shouldFail: !isFIPSCurve,
+			})
+
+			testCases = append(testCases, testCase{
+				testType: clientTest,
+				protocol: protocol,
+				name:     "Compliance-fips202205-" + protocol.String() + "-Client-" + curve.name,
+				config: Config{
+					MinVersion:       VersionTLS12,
+					MaxVersion:       VersionTLS13,
+					CurvePreferences: []CurveID{curve.id},
+				},
+				flags: []string{
+					"-fips-202205",
+				},
+				shouldFail: !isFIPSCurve,
+			})
+		}
+
+		for _, sigalg := range testSignatureAlgorithms {
+			var isFIPSSigAlg bool
+			switch sigalg.id {
+			case signatureRSAPKCS1WithSHA256,
+				signatureRSAPKCS1WithSHA384,
+				signatureRSAPKCS1WithSHA512,
+				signatureECDSAWithP256AndSHA256,
+				signatureECDSAWithP384AndSHA384,
+				signatureRSAPSSWithSHA256,
+				signatureRSAPSSWithSHA384,
+				signatureRSAPSSWithSHA512:
+				isFIPSSigAlg = true
+			}
+
+			if sigalg.cert == testCertECDSAP224 {
+				// This can work in TLS 1.2, but not with TLS 1.3.
+				// For consistency it's not permitted in FIPS mode.
+				isFIPSSigAlg = false
+			}
+
+			maxVersion := uint16(VersionTLS13)
+			if hasComponent(sigalg.name, "PKCS1") {
+				if protocol == quic {
+					continue
+				}
+				maxVersion = VersionTLS12
+			}
+
+			testCases = append(testCases, testCase{
+				testType: serverTest,
+				protocol: protocol,
+				name:     "Compliance-fips202205-" + protocol.String() + "-Server-" + sigalg.name,
+				config: Config{
+					MinVersion:                VersionTLS12,
+					MaxVersion:                maxVersion,
+					VerifySignatureAlgorithms: []signatureAlgorithm{sigalg.id},
+				},
+				flags: []string{
+					"-fips-202205",
+					"-cert-file", path.Join(*resourceDir, getShimCertificate(sigalg.cert)),
+					"-key-file", path.Join(*resourceDir, getShimKey(sigalg.cert)),
+				},
+				shouldFail: !isFIPSSigAlg,
+			})
+
+			testCases = append(testCases, testCase{
+				testType: clientTest,
+				protocol: protocol,
+				name:     "Compliance-fips202205-" + protocol.String() + "-Client-" + sigalg.name,
+				config: Config{
+					MinVersion:              VersionTLS12,
+					MaxVersion:              maxVersion,
+					SignSignatureAlgorithms: []signatureAlgorithm{sigalg.id},
+					Certificates:            []Certificate{getRunnerCertificate(sigalg.cert)},
+				},
+				flags: []string{
+					"-fips-202205",
+				},
+				shouldFail: !isFIPSSigAlg,
+			})
+		}
+	}
+}
+
 func worker(statusChan chan statusMsg, c chan *testCase, shimPath string, wg *sync.WaitGroup) {
 	defer wg.Done()
 
@@ -19185,6 +19465,7 @@ func main() {
 	addDelegatedCredentialTests()
 	addEncryptedClientHelloTests()
 	addHintMismatchTests()
+	addCompliancePolicyTests()
 
 	toAppend, err := convertToSplitHandshakeTests(testCases)
 	if err != nil {
@@ -19220,8 +19501,22 @@ func main() {
 		noneOfPattern = strings.Split(*skipTest, ";")
 	}
 
+	shardIndex, shardTotal, err := getSharding()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+
+	if shardTotal > 0 {
+		fmt.Printf("This is shard %d of 0..%d (inclusive)\n", shardIndex, shardTotal-1)
+	}
+
 	var foundTest bool
 	for i := range testCases {
+		if shardTotal > 0 && i%shardTotal != shardIndex {
+			continue
+		}
+
 		matched, err := match(oneOfPatternIfAny, noneOfPattern, testCases[i].name)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error matching pattern: %s\n", err)
@@ -19259,7 +19554,7 @@ func main() {
 		}
 	}
 
-	if !foundTest {
+	if !foundTest && shardTotal == 0 {
 		fmt.Fprintf(os.Stderr, "No tests run\n")
 		os.Exit(1)
 	}

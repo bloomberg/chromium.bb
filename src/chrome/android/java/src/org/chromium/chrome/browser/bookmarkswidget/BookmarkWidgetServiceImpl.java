@@ -21,7 +21,6 @@ import androidx.annotation.UiThread;
 
 import com.google.android.apps.chrome.appwidget.bookmarks.BookmarkThumbnailWidgetProvider;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.IntentUtils;
 import org.chromium.base.Log;
@@ -179,8 +178,7 @@ public class BookmarkWidgetServiceImpl extends BookmarkWidgetService.Impl {
             mLargeIconBridge = new LargeIconBridge(Profile.getLastUsedRegularProfile());
             mMinIconSizeDp = (int) res.getDimension(R.dimen.default_favicon_min_size);
             mDisplayedIconSize = res.getDimensionPixelSize(R.dimen.default_favicon_size);
-            mIconGenerator =
-                    FaviconUtils.createRoundedRectangleIconGenerator(context.getResources());
+            mIconGenerator = FaviconUtils.createRoundedRectangleIconGenerator(context);
 
             mRemainingTaskCount = 1;
             mBookmarkModel = new BookmarkModel();
@@ -290,8 +288,7 @@ public class BookmarkWidgetServiceImpl extends BookmarkWidgetService.Impl {
             mContext = context;
             mWidgetId = widgetId;
             mPreferences = getWidgetState(mWidgetId);
-            mIconColor = ApiCompatibilityUtils.getColor(
-                    mContext.getResources(), R.color.default_icon_color_baseline);
+            mIconColor = mContext.getColor(R.color.default_icon_color_baseline);
             SystemNightModeMonitor.getInstance().addObserver(this);
         }
 
@@ -349,9 +346,9 @@ public class BookmarkWidgetServiceImpl extends BookmarkWidgetService.Impl {
         public void onDestroy() {
             PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
                 if (mBookmarkModel != null) mBookmarkModel.destroy();
+                SystemNightModeMonitor.getInstance().removeObserver(this);
             });
             deleteWidgetState(mWidgetId);
-            SystemNightModeMonitor.getInstance().removeObserver(this);
         }
 
         @BinderThread
@@ -508,8 +505,7 @@ public class BookmarkWidgetServiceImpl extends BookmarkWidgetService.Impl {
 
         @Override
         public void onSystemNightModeChanged() {
-            mIconColor = ApiCompatibilityUtils.getColor(
-                    mContext.getResources(), R.color.default_icon_color_baseline);
+            mIconColor = mContext.getColor(R.color.default_icon_color_baseline);
             redrawWidget(mWidgetId);
         }
     }

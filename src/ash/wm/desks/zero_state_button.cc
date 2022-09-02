@@ -101,6 +101,7 @@ void DeskButtonBase::OnThemeChanged() {
   background_color_ = AshColorProvider::Get()->GetControlsLayerColor(
       AshColorProvider::ControlsLayerType::kControlBackgroundColorInactive);
   StyleUtil::ConfigureInkDropAttributes(this, StyleUtil::kBaseColor);
+  UpdateBorderState();
   SchedulePaint();
 }
 
@@ -112,9 +113,9 @@ void DeskButtonBase::MaybeActivateHighlightedView() {
   OnButtonPressed();
 }
 
-void DeskButtonBase::MaybeSwapHighlightedView(bool right) {}
+void DeskButtonBase::MaybeCloseHighlightedView(bool primary_action) {}
 
-void DeskButtonBase::MaybeCloseHighlightedView() {}
+void DeskButtonBase::MaybeSwapHighlightedView(bool right) {}
 
 void DeskButtonBase::OnViewHighlighted() {
   UpdateBorderState();
@@ -182,9 +183,9 @@ gfx::Size ZeroStateDefaultDeskButton::CalculatePreferredSize() const {
 }
 
 void ZeroStateDefaultDeskButton::OnButtonPressed() {
-  bar_view_->set_should_name_nudge(true);
   bar_view_->UpdateNewMiniViews(/*initializing_bar_view=*/false,
                                 /*expanding_bar_view=*/true);
+  bar_view_->NudgeDeskName(/*desk_index=*/0);
 }
 
 void ZeroStateDefaultDeskButton::UpdateLabelText() {

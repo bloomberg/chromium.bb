@@ -13,7 +13,7 @@
 #include "base/scoped_observation.h"
 #include "chrome/browser/ash/kerberos/kerberos_credentials_manager.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
-#include "chromeos/dbus/kerberos/kerberos_service.pb.h"
+#include "chromeos/ash/components/dbus/kerberos/kerberos_service.pb.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 
 namespace content {
@@ -58,31 +58,31 @@ class KerberosAccountsHandler : public ::settings::SettingsPageUIHandler,
       KerberosCredentialsManager* kerberos_credentials_manager);
 
   // WebUI "getKerberosAccounts" message callback.
-  void HandleGetKerberosAccounts(const base::ListValue* args);
+  void HandleGetKerberosAccounts(const base::Value::List& args);
 
   // WebUI "addKerberosAccount" message callback.
-  void HandleAddKerberosAccount(const base::ListValue* args);
+  void HandleAddKerberosAccount(const base::Value::List& args);
 
   // Callback for the credential manager's AddAccountAndAuthenticate method.
   void OnAddAccountAndAuthenticate(const std::string& callback_id,
                                    kerberos::ErrorType error);
 
   // WebUI "removeKerberosAccount" message callback.
-  void HandleRemoveKerberosAccount(const base::ListValue* args);
+  void HandleRemoveKerberosAccount(const base::Value::List& args);
 
   // Callback for the credential manager's RemoveAccount method.
   void OnRemoveAccount(const std::string& callback_id,
                        kerberos::ErrorType error);
 
   // WebUI "validateKerberosConfig" message callback.
-  void HandleValidateKerberosConfig(const base::ListValue* args);
+  void HandleValidateKerberosConfig(const base::Value::List& args);
 
   // Callback for the credential manager's ValidateConfig method.
   void OnValidateConfig(const std::string& callback_id,
                         const kerberos::ValidateConfigResponse& response);
 
   // WebUI "setAsActiveKerberosAccount" message callback.
-  void HandleSetAsActiveKerberosAccount(const base::ListValue* args);
+  void HandleSetAsActiveKerberosAccount(const base::Value::List& args);
 
   // Callback for the credential manager's ListAccounts method.
   void OnListAccounts(const std::string& callback_id,

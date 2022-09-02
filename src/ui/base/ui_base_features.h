@@ -29,6 +29,7 @@ COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const base::Feature kInputMethodSettingsUiUpdate;
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const base::Feature kPercentBasedScrolling;
+COMPONENT_EXPORT(UI_BASE_FEATURES) bool IsPercentBasedScrollingEnabled();
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const base::Feature kPointerLockOptions;
 COMPONENT_EXPORT(UI_BASE_FEATURES)
@@ -37,24 +38,28 @@ COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const base::Feature kSystemKeyboardLock;
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const base::Feature kUiCompositorScrollWithLayers;
+COMPONENT_EXPORT(UI_BASE_FEATURES)
+extern const base::Feature kVirtualKeyboardMultitouch;
 
 COMPONENT_EXPORT(UI_BASE_FEATURES) bool IsUiGpuRasterizationEnabled();
 
-#if defined(OS_WIN) || defined(OS_ANDROID)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID)
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const base::Feature kElasticOverscroll;
-#endif  // defined(OS_WIN) || defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID)
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
+COMPONENT_EXPORT(UI_BASE_FEATURES)
+extern const base::Feature kAndroidPermissionsCache;
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const char kElasticOverscrollType[];
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const char kElasticOverscrollTypeFilter[];
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const char kElasticOverscrollTypeTransform[];
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const base::Feature kApplyNativeOccludedRegionToWindowTracker;
 COMPONENT_EXPORT(UI_BASE_FEATURES)
@@ -74,16 +79,12 @@ extern const base::Feature kPointerEventsForTouch;
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const base::Feature kScreenPowerListenerForNativeWinOcclusion;
 COMPONENT_EXPORT(UI_BASE_FEATURES) extern const base::Feature kTSFImeSupport;
-COMPONENT_EXPORT(UI_BASE_FEATURES)
-extern const base::Feature kWin11StyleMenus;
-COMPONENT_EXPORT(UI_BASE_FEATURES)
-extern const char kWin11StyleMenuAllWindowsVersionsName[];
 
 // Returns true if the system should use WM_POINTER events for touch events.
 COMPONENT_EXPORT(UI_BASE_FEATURES) bool IsUsingWMPointerForTouch();
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
 // This flag is intended to supercede kNewShortcutMapping.
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const base::Feature kImprovedKeyboardShortcuts;
@@ -93,7 +94,7 @@ COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const base::Feature kDeprecateAltBasedSixPack;
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 bool IsDeprecateAltBasedSixPackEnabled();
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 // Used to enable forced colors mode for web content.
 COMPONENT_EXPORT(UI_BASE_FEATURES) extern const base::Feature kForcedColors;
@@ -102,6 +103,10 @@ COMPONENT_EXPORT(UI_BASE_FEATURES) bool IsForcedColorsEnabled();
 // Used to enable the eye-dropper in the refresh color-picker.
 COMPONENT_EXPORT(UI_BASE_FEATURES) extern const base::Feature kEyeDropper;
 COMPONENT_EXPORT(UI_BASE_FEATURES) bool IsEyeDropperEnabled();
+
+COMPONENT_EXPORT(UI_BASE_FEATURES)
+extern const base::Feature kSystemCursorSizeSupported;
+COMPONENT_EXPORT(UI_BASE_FEATURES) bool IsSystemCursorSizeSupported();
 
 // Used to enable the common select popup.
 COMPONENT_EXPORT(UI_BASE_FEATURES)
@@ -135,7 +140,9 @@ extern const base::Feature kShortcutCustomizationApp;
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 bool IsShortcutCustomizationAppEnabled();
 
-#endif
+COMPONENT_EXPORT(UI_BASE_FEATURES)
+extern const base::Feature kLacrosResourcesFileSharing;
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // Indicates whether DrmOverlayManager should used the synchronous API to
 // perform pageflip tests.
@@ -192,6 +199,24 @@ COMPONENT_EXPORT(UI_BASE_FEATURES) bool IsSwipeToMoveCursorEnabled();
 // Enables Raw Draw.
 COMPONENT_EXPORT(UI_BASE_FEATURES) extern const base::Feature kRawDraw;
 COMPONENT_EXPORT(UI_BASE_FEATURES) bool IsUsingRawDraw();
+COMPONENT_EXPORT(UI_BASE_FEATURES) double RawDrawTileSizeFactor();
+COMPONENT_EXPORT(UI_BASE_FEATURES) bool IsRawDrawUsingMSAA();
+
+COMPONENT_EXPORT(UI_BASE_FEATURES)
+extern const base::Feature kUiCompositorReleaseTileResourcesForHiddenLayers;
+
+COMPONENT_EXPORT(UI_BASE_FEATURES)
+extern const base::Feature kUiCompositorRequiredTilesOnly;
+
+COMPONENT_EXPORT(UI_BASE_FEATURES)
+extern const base::Feature kEnableVariableRefreshRate;
+COMPONENT_EXPORT(UI_BASE_FEATURES)
+bool IsVariableRefreshRateEnabled();
+
+COMPONENT_EXPORT(UI_BASE_FEATURES)
+extern const base::Feature kWaylandScreenCoordinatesEnabled;
+COMPONENT_EXPORT(UI_BASE_FEATURES)
+bool IsWaylandScreenCoordinatesEnabled();
 
 }  // namespace features
 

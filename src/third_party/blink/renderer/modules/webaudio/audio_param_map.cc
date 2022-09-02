@@ -10,7 +10,7 @@ class AudioParamMapIterationSource final
     : public PairIterable<String, IDLString, AudioParam*, AudioParam>::
           IterationSource {
  public:
-  AudioParamMapIterationSource(
+  explicit AudioParamMapIterationSource(
       const HeapHashMap<String, Member<AudioParam>>& map) {
     for (const auto& name : map.Keys()) {
       parameter_names_.push_back(name);
@@ -22,8 +22,9 @@ class AudioParamMapIterationSource final
             String& key,
             AudioParam*& audio_param,
             ExceptionState&) override {
-    if (current_index_ == parameter_names_.size())
+    if (current_index_ == parameter_names_.size()) {
       return false;
+    }
     key = parameter_names_[current_index_];
     audio_param = parameter_objects_[current_index_];
     ++current_index_;

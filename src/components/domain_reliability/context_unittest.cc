@@ -16,6 +16,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/time/time.h"
 #include "components/domain_reliability/beacon.h"
 #include "components/domain_reliability/dispatcher.h"
 #include "components/domain_reliability/scheduler.h"
@@ -109,9 +110,9 @@ bool GetEntryFromReport(const Value* report,
   if (!report || !report->is_dict())
     return false;
   const Value* entries = report->FindListKey("entries");
-  if (!entries || index >= entries->GetList().size())
+  if (!entries || index >= entries->GetListDeprecated().size())
     return false;
-  const Value& entry = entries->GetList()[index];
+  const Value& entry = entries->GetListDeprecated()[index];
   if (!entry.is_dict())
     return false;
   *entry_out = &entry;

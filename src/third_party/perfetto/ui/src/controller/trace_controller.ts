@@ -23,66 +23,63 @@ import {Engine} from '../common/engine';
 import {featureFlags, Flag, PERF_SAMPLE_FLAG} from '../common/feature_flags';
 import {HttpRpcEngine} from '../common/http_rpc_engine';
 import {NUM, NUM_NULL, QueryError, STR, STR_NULL} from '../common/query_result';
-import {EngineMode} from '../common/state';
+import {defaultTraceTime, EngineMode} from '../common/state';
 import {TimeSpan, toNs, toNsCeil, toNsFloor} from '../common/time';
 import {resetEngineWorker, WasmEngineProxy} from '../common/wasm_engine_proxy';
 import {
   globals as frontendGlobals,
   QuantizedLoad,
-  ThreadDesc
+  ThreadDesc,
 } from '../frontend/globals';
 import {
   publishHasFtrace,
   publishMetricError,
   publishOverviewData,
-  publishThreads
+  publishThreads,
 } from '../frontend/publish';
 import {Router} from '../frontend/router';
 
 import {
-  CounterAggregationController
+  CounterAggregationController,
 } from './aggregation/counter_aggregation_controller';
 import {
-  CpuAggregationController
+  CpuAggregationController,
 } from './aggregation/cpu_aggregation_controller';
 import {
-  CpuByProcessAggregationController
+  CpuByProcessAggregationController,
 } from './aggregation/cpu_by_process_aggregation_controller';
 import {
-  FrameAggregationController
+  FrameAggregationController,
 } from './aggregation/frame_aggregation_controller';
 import {
-  SliceAggregationController
+  SliceAggregationController,
 } from './aggregation/slice_aggregation_controller';
 import {
-  ThreadAggregationController
+  ThreadAggregationController,
 } from './aggregation/thread_aggregation_controller';
 import {Child, Children, Controller} from './controller';
 import {
   CpuProfileController,
-  CpuProfileControllerArgs
+  CpuProfileControllerArgs,
 } from './cpu_profile_controller';
 import {
   FlamegraphController,
-  FlamegraphControllerArgs
+  FlamegraphControllerArgs,
 } from './flamegraph_controller';
 import {
   FlowEventsController,
-  FlowEventsControllerArgs
+  FlowEventsControllerArgs,
 } from './flow_events_controller';
 import {globals} from './globals';
 import {LoadingManager} from './loading_manager';
 import {LogsController} from './logs_controller';
 import {MetricsController} from './metrics_controller';
-import {
-  PivotTableController,
-  PivotTableControllerArgs
-} from './pivot_table_controller';
+import {PivotTableReduxController} from './pivot_table_redux_controller';
 import {QueryController, QueryControllerArgs} from './query_controller';
 import {SearchController} from './search_controller';
 import {
   SelectionController,
-  SelectionControllerArgs
+  SelectionControllerArgs,
 } from './selection_controller';
 import {
   TraceErrorController,
@@ -91,28 +88,30 @@ import {
   TraceBufferStream,
   TraceFileStream,
   TraceHttpStream,
-  TraceStream
+  TraceStream,
 } from './trace_stream';
 import {TrackControllerArgs, trackControllerRegistry} from './track_controller';
 import {decideTracks} from './track_decider';
 
-type States = 'init'|'loading_trace'|'ready';
+type States = 'init' | 'loading_trace' | 'ready';
 
 const METRICS = [
   'android_startup',
   'android_ion',
   'android_lmk',
   'android_dma_heap',
-  'android_thread_time_in_state',
   'android_surfaceflinger',
   'android_batt',
   'android_sysui_cuj',
   'android_jank',
   'android_camera',
+  'android_other_traces',
   'chrome_dropped_frames',
+  'chrome_long_latency',
   'trace_metadata',
+  'android_trusty_workqueues',
 ];
-const FLAGGED_METRICS: Array<[Flag, string]> = METRICS.map(m => {
+const FLAGGED_METRICS: Array<[Flag, string]> = METRICS.map((m) => {
   const id = `forceMetric${m}`;
   let name = m.split('_').join(' ') + ' metric';
   name = name[0].toUpperCase() + name.slice(1);
@@ -143,14 +142,14 @@ export class TraceController extends Controller<States> {
     switch (this.state) {
       case 'init':
         this.loadTrace()
-            .then(mode => {
+            .then((mode) => {
               globals.dispatch(Actions.setEngineReady({
                 engineId: this.engineId,
                 ready: true,
                 mode,
               }));
             })
-            .catch(err => {
+            .catch((err) => {
               this.updateStatus(`${err}`);
               throw err;
             });
@@ -182,25 +181,35 @@ export class TraceController extends Controller<States> {
 
         // Create a QueryController for each query.
         for (const queryId of Object.keys(globals.state.queries)) {
+          // If the expected engineId was not specified in the query, we
+          // assume it's `state.currentEngineId`. The engineId is not specified
+          // for instances with queries created prior to the creation of the
+          // first engine.
+          const expectedEngineId = globals.state.queries[queryId].engineId ||
+              frontendGlobals.state.currentEngineId;
+          // Check that we are executing the query on the correct engine.
+          if (expectedEngineId !== engine.id) {
+            continue;
+          }
           const queryArgs: QueryControllerArgs = {queryId, engine};
           childControllers.push(Child(queryId, QueryController, queryArgs));
         }
 
         const selectionArgs: SelectionControllerArgs = {engine};
         childControllers.push(
-            Child('selection', SelectionController, selectionArgs));
+          Child('selection', SelectionController, selectionArgs));
 
         const flowEventsArgs: FlowEventsControllerArgs = {engine};
         childControllers.push(
-            Child('flowEvents', FlowEventsController, flowEventsArgs));
+          Child('flowEvents', FlowEventsController, flowEventsArgs));
 
         const cpuProfileArgs: CpuProfileControllerArgs = {engine};
         childControllers.push(
-            Child('cpuProfile', CpuProfileController, cpuProfileArgs));
+          Child('cpuProfile', CpuProfileController, cpuProfileArgs));
 
         const flamegraphArgs: FlamegraphControllerArgs = {engine};
         childControllers.push(
-            Child('flamegraph', FlamegraphController, flamegraphArgs));
+          Child('flamegraph', FlamegraphController, flamegraphArgs));
         childControllers.push(Child(
             'cpu_aggregation',
             CpuAggregationController,
@@ -229,6 +238,8 @@ export class TraceController extends Controller<States> {
           engine,
           app: globals,
         }));
+        childControllers.push(
+            Child('pivot_table_redux', PivotTableReduxController, {engine}));
 
         childControllers.push(Child('logs', LogsController, {
           engine,
@@ -237,14 +248,6 @@ export class TraceController extends Controller<States> {
         childControllers.push(
             Child('traceError', TraceErrorController, {engine}));
         childControllers.push(Child('metrics', MetricsController, {engine}));
-
-        // Create a PivotTableController for each pivot table.
-        for (const pivotTableId of Object.keys(globals.state.pivotTable)) {
-          const pivotTableArgs:
-              PivotTableControllerArgs = {pivotTableId, engine};
-          childControllers.push(
-              Child(pivotTableId, PivotTableController, pivotTableArgs));
-        }
 
         return childControllers;
 
@@ -282,7 +285,7 @@ export class TraceController extends Controller<States> {
       engineMode = 'WASM';
       const enginePort = resetEngineWorker();
       engine = new WasmEngineProxy(
-          this.engineId, enginePort, LoadingManager.getInstance);
+        this.engineId, enginePort, LoadingManager.getInstance);
     }
     this.engine = engine;
 
@@ -293,7 +296,7 @@ export class TraceController extends Controller<States> {
       mode: engineMode,
     }));
     const engineCfg = assertExists(globals.state.engines[this.engineId]);
-    let traceStream: TraceStream|undefined;
+    let traceStream: TraceStream | undefined;
     if (engineCfg.source.type === 'FILE') {
       traceStream = new TraceFileStream(engineCfg.source.file);
     } else if (engineCfg.source.type === 'ARRAY_BUFFER') {
@@ -313,7 +316,7 @@ export class TraceController extends Controller<States> {
     // file/stream and we just want to jump to the loading phase.
     if (traceStream !== undefined) {
       const tStart = performance.now();
-      for (;;) {
+      for (; ;) {
         const res = await traceStream.readChunk();
         await this.engine.parse(res.data);
         const elapsed = (performance.now() - tStart) / 1000;
@@ -351,38 +354,29 @@ export class TraceController extends Controller<States> {
       omnibox: '',
       mode: frontendGlobals.state.frontendLocalState.omniboxState.mode ||
           'SEARCH',
-      lastUpdate: Date.now() / 1000
+      lastUpdate: Date.now() / 1000,
     };
 
     const actions: DeferredAction[] = [
       Actions.setOmnibox(emptyOmniboxState),
       Actions.setTraceUuid({traceUuid}),
-      Actions.setTraceTime(traceTimeState)
+      Actions.setTraceTime(traceTimeState),
     ];
 
-    let visibleStartSec = startSec;
-    let visibleEndSec = endSec;
-    const mdTime = await this.engine.getTracingMetadataTimeBounds();
-    // make sure the bounds hold
-    if (Math.max(visibleStartSec, mdTime.start - TRACE_MARGIN_TIME_S) <
-        Math.min(visibleEndSec, mdTime.end + TRACE_MARGIN_TIME_S)) {
-      visibleStartSec =
-          Math.max(visibleStartSec, mdTime.start - TRACE_MARGIN_TIME_S);
-      visibleEndSec = Math.min(visibleEndSec, mdTime.end + TRACE_MARGIN_TIME_S);
-    }
-
+    const [startVisibleTime, endVisibleTime] =
+        await computeVisibleTime(startSec, endSec, this.engine);
     // We don't know the resolution at this point. However this will be
     // replaced in 50ms so a guess is fine.
-    const resolution = (visibleStartSec - visibleEndSec) / 1000;
+    const resolution = (endVisibleTime - startVisibleTime) / 1000;
     actions.push(Actions.setVisibleTraceTime({
-      startSec: visibleStartSec,
-      endSec: visibleEndSec,
+      startSec: startVisibleTime,
+      endSec: endVisibleTime,
       lastUpdate: Date.now() / 1000,
-      resolution
+      resolution,
     }));
 
     globals.dispatchMultiple(actions);
-    Router.navigate(`#!/viewer?trace_id=${traceUuid}`);
+    Router.navigate(`#!/viewer?local_cache_key=${traceUuid}`);
 
     // Make sure the helper views are available before we start adding tracks.
     await this.initialiseHelperViews();
@@ -417,6 +411,7 @@ export class TraceController extends Controller<States> {
 
     globals.dispatch(Actions.removeDebugTrack({}));
     globals.dispatch(Actions.sortThreadTracks({}));
+    globals.dispatch(Actions.maybeExpandOnlyTrackGroup({}));
 
     await this.selectFirstHeapProfile();
     if (PERF_SAMPLE_FLAG.get()) {
@@ -506,8 +501,8 @@ export class TraceController extends Controller<States> {
     let hasSchedOverview = false;
     for (let step = 0; step < numSteps; step++) {
       this.updateStatus(
-          'Loading overview ' +
-          `${Math.round((step + 1) / numSteps * 1000) / 10}%`);
+        'Loading overview ' +
+        `${Math.round((step + 1) / numSteps * 1000) / 10}%`);
       const startSec = traceTime.start + step * stepSec;
       const startNs = toNsFloor(startSec);
       const endSec = startSec + stepSec;
@@ -515,10 +510,10 @@ export class TraceController extends Controller<States> {
 
       // Sched overview.
       const schedResult = await engine.query(
-          `select sum(dur)/${stepSec}/1e9 as load, cpu from sched ` +
-          `where ts >= ${startNs} and ts < ${endNs} and utid != 0 ` +
-          'group by cpu order by cpu');
-      const schedData: {[key: string]: QuantizedLoad} = {};
+        `select sum(dur)/${stepSec}/1e9 as load, cpu from sched ` +
+        `where ts >= ${startNs} and ts < ${endNs} and utid != 0 ` +
+        'group by cpu order by cpu');
+      const schedData: { [key: string]: QuantizedLoad } = {};
       const it = schedResult.iter({load: NUM, cpu: NUM});
       for (; it.valid(); it.next()) {
         const load = it.load;
@@ -539,12 +534,11 @@ export class TraceController extends Controller<States> {
     const sliceResult = await engine.query(`select
            bucket,
            upid,
-           sum(utid_sum) / cast(${stepSecNs} as float) as load
+           ifnull(sum(utid_sum) / cast(${stepSecNs} as float), 0) as load
          from thread
          inner join (
            select
-             ifnull(cast((ts - ${traceStartNs})/${
-        stepSecNs} as int), 0) as bucket,
+             ifnull(cast((ts - ${traceStartNs})/${stepSecNs} as int), 0) as bucket,
              sum(dur) as utid_sum,
              utid
            from slice
@@ -554,7 +548,7 @@ export class TraceController extends Controller<States> {
          where upid is not null
          group by bucket, upid`);
 
-    const slicesData: {[key: string]: QuantizedLoad[]} = {};
+    const slicesData: { [key: string]: QuantizedLoad[] } = {};
     const it = sliceResult.iter({bucket: NUM, upid: NUM, load: NUM});
     for (; it.valid(); it.next()) {
       const bucket = it.bucket;
@@ -586,9 +580,10 @@ export class TraceController extends Controller<States> {
     const engineConfig = assertExists(globals.state.engines[engine.id]);
     if (!(await cacheTrace(engineConfig.source, traceUuid))) {
       // If the trace is not cacheable (cacheable means it has been opened from
-      // URL or RPC) only append '?trace_id' to the URL, without the trace_id
-      // value. Doing otherwise would cause an error if the tab is discarded or
-      // the user hits the reload button because the trace is not in the cache.
+      // URL or RPC) only append '?local_cache_key' to the URL, without the
+      // local_cache_key value. Doing otherwise would cause an error if the tab
+      // is discarded or the user hits the reload button because the trace is
+      // not in the cache.
       return '';
     }
     return traceUuid;
@@ -646,11 +641,18 @@ export class TraceController extends Controller<States> {
     `);
 
 
+    const availableMetrics = [];
+    const metricsResult = await engine.query('select name from trace_metrics');
+    for (const it = metricsResult.iter({name: STR}); it.valid(); it.next()) {
+      availableMetrics.push(it.name);
+    }
+    globals.dispatch(Actions.setAvailableMetrics({availableMetrics}));
+
+    const availableMetricsSet = new Set<string>(availableMetrics);
     for (const [flag, metric] of FLAGGED_METRICS) {
-      if (!flag.get()) {
+      if (!flag.get() || !availableMetricsSet.has(metric)) {
         continue;
       }
-
 
       this.updateStatus(`Computing ${metric} metric`);
       try {
@@ -687,7 +689,7 @@ export class TraceController extends Controller<States> {
         const upidColumnSelect = hasUpid ? 'upid' : '0 AS upid';
         const upidColumnWhere = hasUpid ? 'upid' : '0';
         const groupNameColumn =
-            hasGroupName ? 'group_name' : 'NULL AS group_name';
+          hasGroupName ? 'group_name' : 'NULL AS group_name';
         if (hasSliceName && hasDur) {
           await engine.query(`
             INSERT INTO annotation_slice_track(
@@ -765,4 +767,30 @@ export class TraceController extends Controller<States> {
       timestamp: Date.now() / 1000,
     }));
   }
+}
+
+async function computeVisibleTime(
+    traceStartSec: number, traceEndSec: number, engine: Engine):
+    Promise<[number, number]> {
+  // if we have non-default visible state, update the visible time to it
+  const previousVisibleState = globals.state.frontendLocalState.visibleState;
+  if (!(previousVisibleState.startSec === defaultTraceTime.startSec &&
+        previousVisibleState.endSec === defaultTraceTime.endSec)) {
+    return [previousVisibleState.startSec, previousVisibleState.endSec];
+  }
+
+  // initialise visible time to the trace time bounds
+  let visibleStartSec = traceStartSec;
+  let visibleEndSec = traceEndSec;
+
+  // compare start and end with metadata computed by the trace processor
+  const mdTime = await engine.getTracingMetadataTimeBounds();
+  // make sure the bounds hold
+  if (Math.max(visibleStartSec, mdTime.start - TRACE_MARGIN_TIME_S) <
+      Math.min(visibleEndSec, mdTime.end + TRACE_MARGIN_TIME_S)) {
+    visibleStartSec =
+        Math.max(visibleStartSec, mdTime.start - TRACE_MARGIN_TIME_S);
+    visibleEndSec = Math.min(visibleEndSec, mdTime.end + TRACE_MARGIN_TIME_S);
+  }
+  return [visibleStartSec, visibleEndSec];
 }

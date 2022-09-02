@@ -119,7 +119,7 @@ PipelineIntegrationTestBase::PipelineIntegrationTestBase()
 // Use a UI type message loop on macOS, because it doesn't seem to schedule
 // callbacks with enough precision to drive our fake audio output. See
 // https://crbug.com/1014646 for more details.
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
       task_environment_(base::test::TaskEnvironment::MainThreadType::UI),
 #endif
       hashing_enabled_(false),
@@ -231,11 +231,15 @@ PipelineStatus PipelineIntegrationTestBase::WaitUntilEndedOrError() {
 }
 
 void PipelineIntegrationTestBase::OnError(PipelineStatus status) {
-  DCHECK_NE(status, PIPELINE_OK);
+  DCHECK(status != PIPELINE_OK);
   pipeline_status_ = status;
   pipeline_->Stop();
   if (on_error_closure_)
     std::move(on_error_closure_).Run();
+}
+
+void PipelineIntegrationTestBase::OnFallback(PipelineStatus status) {
+  DCHECK(status != PIPELINE_OK);
 }
 
 void PipelineIntegrationTestBase::SetCreateRendererCB(
@@ -406,7 +410,7 @@ void PipelineIntegrationTestBase::Stop() {
 }
 
 void PipelineIntegrationTestBase::FailTest(PipelineStatus status) {
-  DCHECK_NE(PIPELINE_OK, status);
+  DCHECK(status != PIPELINE_OK);
   OnError(status);
 }
 
@@ -604,6 +608,14 @@ PipelineStatus PipelineIntegrationTestBase::StartPipelineWithEncryptedMedia(
     TestMediaSource* source,
     FakeEncryptedMedia* encrypted_media) {
   return StartPipelineWithMediaSource(source, kNormal, encrypted_media);
+}
+
+PipelineStatus PipelineIntegrationTestBase::StartPipelineWithMediaSource(
+    TestMediaSource* source,
+    uint8_t test_type,
+    CreateAudioDecodersCB prepend_audio_decoders_cb) {
+  prepend_audio_decoders_cb_ = prepend_audio_decoders_cb;
+  return StartPipelineWithMediaSource(source, test_type, nullptr);
 }
 
 PipelineStatus PipelineIntegrationTestBase::StartPipelineWithMediaSource(

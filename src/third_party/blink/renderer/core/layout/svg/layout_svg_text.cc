@@ -46,8 +46,8 @@
 #include "third_party/blink/renderer/core/paint/svg_text_painter.h"
 #include "third_party/blink/renderer/core/style/shadow_list.h"
 #include "third_party/blink/renderer/core/svg/svg_text_element.h"
-#include "third_party/blink/renderer/platform/geometry/float_quad.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
+#include "ui/gfx/geometry/quad_f.h"
 
 namespace blink {
 
@@ -144,7 +144,7 @@ void LayoutSVGText::SubtreeStructureChanged(
   // TODO(fs): Restore the passing of |reason| here.
   LayoutSVGResourceContainer::MarkForLayoutAndParentResourceInvalidation(*this);
 
-  if (StyleRef().UserModify() != EUserModify::kReadOnly)
+  if (StyleRef().UsedUserModify() != EUserModify::kReadOnly)
     UseCounter::Count(GetDocument(), WebFeature::kSVGTextEdited);
 }
 
@@ -393,10 +393,10 @@ PositionWithAffinity LayoutSVGText::PositionForPoint(
       PhysicalOffset(clipped_point_in_contents.left, closest_box->Y()));
 }
 
-void LayoutSVGText::AbsoluteQuads(Vector<FloatQuad>& quads,
+void LayoutSVGText::AbsoluteQuads(Vector<gfx::QuadF>& quads,
                                   MapCoordinatesFlags mode) const {
   NOT_DESTROYED();
-  quads.push_back(LocalToAbsoluteQuad(FloatRect(StrokeBoundingBox()), mode));
+  quads.push_back(LocalToAbsoluteQuad(gfx::QuadF(StrokeBoundingBox()), mode));
 }
 
 void LayoutSVGText::Paint(const PaintInfo& paint_info) const {
@@ -426,10 +426,13 @@ gfx::RectF LayoutSVGText::VisualRectInLocalSVGCoordinates() const {
 }
 
 void LayoutSVGText::AddOutlineRects(Vector<PhysicalRect>& rects,
+                                    OutlineInfo* info,
                                     const PhysicalOffset&,
                                     NGOutlineType) const {
   NOT_DESTROYED();
   rects.push_back(PhysicalRect::EnclosingRect(ObjectBoundingBox()));
+  if (info)
+    *info = OutlineInfo::GetUnzoomedFromStyle(StyleRef());
 }
 
 bool LayoutSVGText::IsObjectBoundingBoxValid() const {

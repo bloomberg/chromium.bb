@@ -11,7 +11,6 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/field_trial_params.h"
-#include "base/task/post_task.h"
 #include "base/time/default_clock.h"
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -92,8 +91,8 @@ std::vector<DomainInfo> UpdateEngagedSitesOnWorkerThread(
       continue;
     }
     // Ignore sites with an engagement score below threshold.
-    if (detail.total_score <
-        site_engagement::SiteEngagementScore::GetMediumEngagementBoundary()) {
+    if (!site_engagement::SiteEngagementService::IsEngagementAtLeast(
+            detail.total_score, blink::mojom::EngagementLevel::MEDIUM)) {
       continue;
     }
     const DomainInfo domain_info = GetDomainInfo(detail.origin);

@@ -10,6 +10,7 @@
 #include "base/callback_helpers.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/histogram_macros_local.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/swap_buffers_complete_params.h"
 #include "ui/gfx/vsync_provider.h"
@@ -259,11 +260,6 @@ void PassThroughImageTransportSurface::FinishSwapBuffers(
             kTimingMetricsHistogramBuckets);
       }
     }
-
-    SwapBuffersCompleteParams params;
-    params.swap_response = response;
-    delegate_->DidSwapBuffersComplete(std::move(params),
-                                      std::move(release_fence));
   }
 }
 
@@ -294,8 +290,6 @@ void PassThroughImageTransportSurface::BufferPresented(
 #endif
 
   std::move(callback).Run(feedback);
-  if (delegate_)
-    delegate_->BufferPresented(feedback);
 }
 
 }  // namespace gpu

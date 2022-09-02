@@ -11,19 +11,20 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/scoped_observation.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/ui/profile_chooser_constants.h"
-#include "chrome/browser/ui/signin_view_controller_delegate.h"
+#include "chrome/browser/ui/signin_modal_dialog.h"
+#include "chrome/browser/ui/webui/signin/signin_utils.h"
 #include "components/signin/public/base/signin_buildflags.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "url/gurl.h"
 
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+#if BUILDFLAG(ENABLE_DICE_SUPPORT) || BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "chrome/browser/ui/webui/signin/signin_email_confirmation_dialog.h"
 #endif
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #error This file should only be included on desktop.
 #endif
 
@@ -56,7 +57,7 @@ enum class ReauthResult;
 // error dialog, reauth prompt). Sync confirmation is used on
 // Win/Mac/Linux/Chrome OS. Sign-in is only used on Win/Mac/Linux because
 // Chrome OS has its own sign-in flow and doesn't use DICE.
-class SigninViewController : public SigninViewControllerDelegate::Observer {
+class SigninViewController {
  public:
   // Handle that will stop ongoing reauths upon destruction.
   class ReauthAbortHandle {
@@ -69,10 +70,7 @@ class SigninViewController : public SigninViewControllerDelegate::Observer {
   SigninViewController(const SigninViewController&) = delete;
   SigninViewController& operator=(const SigninViewController&) = delete;
 
-  ~SigninViewController() override;
-
-  // Returns true if the signin flow should be shown for |mode|.
-  static bool ShouldShowSigninForMode(profiles::BubbleViewMode mode);
+  virtual ~SigninViewController();
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   // Shows the signin attached to |browser_|'s active web contents.
@@ -104,13 +102,6 @@ class SigninViewController : public SigninViewControllerDelegate::Observer {
   // out SAML accounts completely (see https://crbug.com/1069421).
   void ShowGaiaLogoutTab(signin_metrics::SourceForRefreshTokenOperation source);
 
-  // Shows the modal sign-in email confirmation dialog as a tab-modal dialog on
-  // top of the currently displayed WebContents in |browser_|.
-  void ShowModalSigninEmailConfirmationDialog(
-      const std::string& last_email,
-      const std::string& email,
-      base::OnceCallback<void(SigninEmailConfirmationDialog::Action)> callback);
-
   // Shows the reauth prompt for |account_id| as either:
   // - a tab-modal dialog on top of the currently active tab, or
   // - a new tab
@@ -125,7 +116,23 @@ class SigninViewController : public SigninViewControllerDelegate::Observer {
       const CoreAccountId& account_id,
       signin_metrics::ReauthAccessPoint access_point,
       base::OnceCallback<void(signin::ReauthResult)> reauth_callback);
+
+  // Shows the modal signin intercept first run experience dialog as a
+  // browser-modal dialog on top of the `browser_`'s window. `account_id`
+  // corresponds to the intercepted account.
+  void ShowModalInterceptFirstRunExperienceDialog(
+      const CoreAccountId& account_id,
+      bool is_forced_intercept);
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
+
+#if BUILDFLAG(ENABLE_DICE_SUPPORT) || BUILDFLAG(IS_CHROMEOS_LACROS)
+  // Shows the modal sign-in email confirmation dialog as a tab-modal dialog on
+  // top of the currently displayed WebContents in |browser_|.
+  void ShowModalSigninEmailConfirmationDialog(
+      const std::string& last_email,
+      const std::string& email,
+      SigninEmailConfirmationDialog::Callback callback);
+#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT) || BUILDFLAG(IS_CHROMEOS_LACROS)
 
   // Shows the modal sync confirmation dialog as a browser-modal dialog on top
   // of the |browser_|'s window.
@@ -135,10 +142,17 @@ class SigninViewController : public SigninViewControllerDelegate::Observer {
   // top of the `browser_`'s window. `domain_name` is the domain of the
   // enterprise account being shown. `callback` is called with the user's action
   // on the dialog.
+  // If `profile_creation_required_by_policy` is true, the wording of the dialog
+  // will tell the user that an admin requires a new profile for the account,
+  // otherwise the default wording will be used.
+  // When `show_link_data_option` is false, the callback is called with either
+  // SIGNIN_CHOICE_CANCEL or SIGNIN_CHOICE_NEW_PROFILE.
   void ShowModalEnterpriseConfirmationDialog(
       const AccountInfo& account_info,
+      bool profile_creation_required_by_policy,
+      bool show_link_data_option,
       SkColor profile_color,
-      base::OnceCallback<void(bool)> callback);
+      signin::SigninChoiceCallback callback);
 
   // Shows the modal sign-in error dialog as a browser-modal dialog on top of
   // the |browser_|'s window.
@@ -154,8 +168,8 @@ class SigninViewController : public SigninViewControllerDelegate::Observer {
   // Sets the height of the modal signin dialog.
   void SetModalSigninHeight(int height);
 
-  // SigninViewControllerDelegate::Observer:
-  void OnModalSigninClosed() override;
+  // Called by a `dialog_`' when it closes.
+  void OnModalDialogClosed();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SignInViewControllerBrowserTest,
@@ -166,6 +180,7 @@ class SigninViewController : public SigninViewControllerDelegate::Observer {
                            CloseImmediately);
   friend class login_ui_test_utils::SigninViewControllerTestUtil;
   friend class SigninReauthViewControllerBrowserTest;
+  friend class SigninInterceptFirstRunExperienceDialogBrowserTest;
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   // Shows the DICE-specific sign-in flow: opens a Gaia sign-in webpage in a new
@@ -180,18 +195,18 @@ class SigninViewController : public SigninViewControllerDelegate::Observer {
   // Returns the web contents of the modal dialog.
   content::WebContents* GetModalDialogWebContentsForTesting();
 
-  // Returns the modal dialog delegate.
-  SigninViewControllerDelegate* GetModalDialogDelegateForTesting();
+  // Returns the currently displayed modal dialog, or nullptr if no modal dialog
+  // is currently displayed.
+  SigninModalDialog* GetModalDialogForTesting();
+
+  // Helper to create an on close callback for `SigninModalDialog`.
+  base::OnceClosure GetOnModalDialogClosedCallback();
 
   // Browser owning this controller.
   raw_ptr<Browser> browser_;
 
-  // |delegate_| owns itself and calls OnModalSigninClosed() before being
-  // destroyed.
-  raw_ptr<SigninViewControllerDelegate> delegate_ = nullptr;
-  base::ScopedObservation<SigninViewControllerDelegate,
-                          SigninViewControllerDelegate::Observer>
-      delegate_observation_{this};
+  // Currently displayed modal dialog, or nullptr if none is displayed.
+  std::unique_ptr<SigninModalDialog> dialog_;
 
   base::WeakPtrFactory<SigninViewController> weak_ptr_factory_{this};
 };

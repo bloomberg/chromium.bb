@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import type * as Platform from '../../core/platform/platform.js';
 import type * as SDK from '../../core/sdk/sdk.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -45,7 +46,8 @@ export class ImagePreviewPopover {
         }
         const precomputedFeatures = await Components.ImagePreview.ImagePreview.loadDimensionsForNode(node);
         const preview = await Components.ImagePreview.ImagePreview.build(
-            node.domModel().target(), href, true, {imageAltText: undefined, precomputedFeatures});
+            node.domModel().target(), href as Platform.DevToolsPath.UrlString, true,
+            {imageAltText: undefined, precomputedFeatures});
         if (preview) {
           popover.contentElement.appendChild(preview);
         }
@@ -58,14 +60,14 @@ export class ImagePreviewPopover {
     this.popover.hidePopover();
   }
 
-  static setImageUrl(element: Element, url: string): Element {
+  static setImageUrl(element: Element, url: Platform.DevToolsPath.UrlString): Element {
     elementToURLMap.set(element, url);
     return element;
   }
 
-  static getImageURL(element: Element): string|undefined {
+  static getImageURL(element: Element): Platform.DevToolsPath.UrlString|undefined {
     return elementToURLMap.get(element);
   }
 }
 
-const elementToURLMap = new WeakMap<Element, string>();
+const elementToURLMap = new WeakMap<Element, Platform.DevToolsPath.UrlString>();

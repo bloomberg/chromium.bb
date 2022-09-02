@@ -4,6 +4,8 @@
 
 package org.chromium.components.offline_items_collection;
 
+import org.chromium.url.GURL;
+
 import java.util.Objects;
 
 /**
@@ -90,8 +92,8 @@ public class OfflineItem implements Cloneable {
     public String mimeType;
 
     // Request Metadata.
-    public String url;
-    public String originalUrl;
+    public GURL url;
+    public GURL originalUrl;
     public boolean isOffTheRecord;
     public String otrProfileId;
 

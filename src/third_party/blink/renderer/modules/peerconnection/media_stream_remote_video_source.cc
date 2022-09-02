@@ -10,6 +10,7 @@
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/task/single_thread_task_runner.h"
+#include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/timestamp_constants.h"
@@ -22,6 +23,7 @@
 #include "third_party/blink/renderer/platform/webrtc/track_observer.h"
 #include "third_party/blink/renderer/platform/webrtc/webrtc_video_frame_adapter.h"
 #include "third_party/blink/renderer/platform/webrtc/webrtc_video_utils.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_copier_base.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
@@ -289,10 +291,8 @@ void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::
 
 MediaStreamRemoteVideoSource::MediaStreamRemoteVideoSource(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    std::unique_ptr<TrackObserver> observer,
-    scoped_refptr<MetronomeProvider> metronome_provider)
-    : MediaStreamVideoSource(std::move(task_runner),
-                             std::move(metronome_provider)),
+    std::unique_ptr<TrackObserver> observer)
+    : MediaStreamVideoSource(std::move(task_runner)),
       observer_(std::move(observer)) {
   // The callback will be automatically cleared when 'observer_' goes out of
   // scope and no further callbacks will occur.

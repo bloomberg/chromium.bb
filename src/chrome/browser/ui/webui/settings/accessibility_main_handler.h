@@ -12,10 +12,6 @@
 #include "chrome/browser/ash/accessibility/accessibility_manager.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-namespace base {
-class ListValue;
-}
-
 namespace settings {
 
 // Settings handler for the main accessibility settings page,
@@ -32,8 +28,8 @@ class AccessibilityMainHandler : public ::settings::SettingsPageUIHandler {
   void OnJavascriptAllowed() override;
   void OnJavascriptDisallowed() override;
 
-  void HandleA11yPageReady(const base::ListValue* args);
-  void HandleCheckAccessibilityImageLabels(const base::ListValue* args);
+  void HandleA11yPageReady(const base::Value::List& args);
+  void HandleCheckAccessibilityImageLabels(const base::Value::List& args);
 
  private:
   void SendScreenReaderStateChanged();

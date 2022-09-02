@@ -29,16 +29,20 @@ struct Holder {
                          std::unique_ptr<exo::SubSurface>>>
       sub_surfaces;
 
-  void AddRootSurface(const gfx::Size& size, gfx::BufferFormat buffer_format) {
-    auto buffer = std::make_unique<exo::Buffer>(
-        aura::Env::GetInstance()
-            ->context_factory()
-            ->GetGpuMemoryBufferManager()
-            ->CreateGpuMemoryBuffer(size, buffer_format,
-                                    gfx::BufferUsage::GPU_READ,
-                                    gpu::kNullSurfaceHandle, nullptr));
+  void AddRootSurface(const gfx::Size& size,
+                      absl::optional<gfx::BufferFormat> buffer_format) {
     auto surface = std::make_unique<exo::Surface>();
-    surface->Attach(buffer.get());
+    std::unique_ptr<exo::Buffer> buffer;
+    if (buffer_format) {
+      buffer = std::make_unique<exo::Buffer>(
+          aura::Env::GetInstance()
+              ->context_factory()
+              ->GetGpuMemoryBufferManager()
+              ->CreateGpuMemoryBuffer(size, *buffer_format,
+                                      gfx::BufferUsage::GPU_READ,
+                                      gpu::kNullSurfaceHandle, nullptr));
+      surface->Attach(buffer.get());
+    }
     root_surface = surface.get();
     sub_surfaces.push_back(
         std::make_tuple<>(std::move(buffer), std::move(surface), nullptr));
@@ -105,6 +109,12 @@ ShellSurfaceBuilder::ShellSurfaceBuilder(const gfx::Size& buffer_size)
 
 ShellSurfaceBuilder::~ShellSurfaceBuilder() = default;
 
+ShellSurfaceBuilder& ShellSurfaceBuilder::SetNoRootBuffer() {
+  DCHECK(!built_);
+  root_buffer_format_.reset();
+  return *this;
+}
+
 ShellSurfaceBuilder& ShellSurfaceBuilder::SetRootBufferFormat(
     gfx::BufferFormat buffer_format) {
   DCHECK(!built_);
@@ -149,6 +159,13 @@ ShellSurfaceBuilder& ShellSurfaceBuilder::SetMaximumSize(
   return *this;
 }
 
+ShellSurfaceBuilder& ShellSurfaceBuilder::SetMinimumSize(
+    const gfx::Size& size) {
+  DCHECK(!built_);
+  min_size_ = size;
+  return *this;
+}
+
 ShellSurfaceBuilder& ShellSurfaceBuilder::SetDisableMovement() {
   DCHECK(!built_);
   disable_movement_ = true;
@@ -158,6 +175,12 @@ ShellSurfaceBuilder& ShellSurfaceBuilder::SetDisableMovement() {
 ShellSurfaceBuilder& ShellSurfaceBuilder::SetCentered() {
   DCHECK(!built_);
   centered_ = true;
+  return *this;
+}
+
+ShellSurfaceBuilder& ShellSurfaceBuilder::SetAsPopup() {
+  DCHECK(!built_);
+  popup_ = true;
   return *this;
 }
 
@@ -199,6 +222,12 @@ std::unique_ptr<ShellSurface> ShellSurfaceBuilder::BuildShellSurface() {
 
   if (!max_size_.IsEmpty())
     shell_surface->SetMaximumSize(max_size_);
+
+  if (!min_size_.IsEmpty())
+    shell_surface->SetMaximumSize(min_size_);
+
+  if (popup_)
+    shell_surface->SetPopup();
 
   if (commit_on_build_) {
     holder->root_surface->Commit();

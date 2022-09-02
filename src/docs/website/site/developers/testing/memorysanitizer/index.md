@@ -112,7 +112,7 @@ container by run_docker.sh).
 e.g. you can place the input in chromium/src/testcases/testcase.html and run:
 
 ```none
-third_party/instrumented_libraries/scripts/run_docker.sh out/msan/chrome --use-gl=swiftshader testcases/testcase.html
+third_party/instrumented_libraries/scripts/run_docker.sh out/msan/chrome --use-gl=angle --use-angle=swiftshader testcases/testcase.html
 ```
 
 The CWD in the docker container is your chromium src directory, so you can pass
@@ -129,17 +129,17 @@ docker build --no-cache -t trusty-chromium third_party/instrumented_libraries/do
 ### **Disable OpenGL**
 
 Chrome must not use hardware OpenGL when running under MSan. This is because
-libgl.so is not instrumented and will crash the GPU process. SwiftShader can be
+libgl.so is not instrumented and will crash the GPU process. SwANGLE can be
 used as a software OpenGL implementation, although it is extremely slow. There
 are several ways to proceed:
 
 *   --disable-gpu: This forces Chrome to use the software path for
-            compositing and raster. WebGL will still work using SwiftShader GL.
-*   `--use-gl=swiftshader: This switches Chrome to use SwiftShader GL
+            compositing and raster. WebGL will still work using SwANGLE.
+*   `--use-gl=angle --use-angle=swiftshader: This switches Chrome to use SwANGLE
             for compositing, (maybe) raster and WebGL.`
-*   `--use-gl=swiftshader --disable-gl-drawing-for-tests`: Use this if
+*   `--use-gl=angle --use-angle=swiftshader --disable-gl-drawing-for-tests`: Use this if
             you don't care about the actual pixel output. This exercises the
-            default code paths, however expensive SwiftShader calls are replaced
+            default code paths, however expensive SwANGLE calls are replaced
             with stubs (i.e. nothing actually gets drawn to the screen).
 
 If neither flag is specified, Chrome will fall back to the first option after

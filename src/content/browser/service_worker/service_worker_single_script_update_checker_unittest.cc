@@ -477,7 +477,6 @@ TEST_F(ServiceWorkerSingleScriptUpdateCheckerTest,
   head->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
       net::HttpUtil::AssembleRawHeaders(kSuccessHeader));
   head->headers->GetMimeType(&head->mime_type);
-  client->OnReceiveResponse(std::move(head));
 
   // Simulate sending the response body. The buffer size for the data pipe
   // should be larger than the body to send the whole body in one chunk.
@@ -490,7 +489,7 @@ TEST_F(ServiceWorkerSingleScriptUpdateCheckerTest,
   mojo::ScopedDataPipeProducerHandle body_producer;
   ASSERT_EQ(MOJO_RESULT_OK,
             mojo::CreateDataPipe(&options, body_producer, body_consumer));
-  client->OnStartLoadingResponseBody(std::move(body_consumer));
+  client->OnReceiveResponse(std::move(head), std::move(body_consumer));
   mojo::BlockingCopyFromString(body_from_net, body_producer);
   body_producer.reset();
 
@@ -777,7 +776,6 @@ TEST_F(ServiceWorkerSingleScriptUpdateCheckerTest,
     head->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
         net::HttpUtil::AssembleRawHeaders(kSuccessHeader));
     head->headers->GetMimeType(&head->mime_type);
-    request->client->OnReceiveResponse(std::move(head));
 
     MojoCreateDataPipeOptions options;
     options.struct_size = sizeof(MojoCreateDataPipeOptions);
@@ -792,7 +790,7 @@ TEST_F(ServiceWorkerSingleScriptUpdateCheckerTest,
     EXPECT_EQ(MOJO_RESULT_OK,
               producer->WriteData(body_from_net.data(), &bytes_written,
                                   MOJO_WRITE_DATA_FLAG_ALL_OR_NONE));
-    request->client->OnStartLoadingResponseBody(std::move(consumer));
+    request->client->OnReceiveResponse(std::move(head), std::move(consumer));
   }
 
   // Blocked on reading the header from the storage due to the asynchronous

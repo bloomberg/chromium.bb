@@ -1,6 +1,6 @@
 #!/usr/bin/python3 -i
 #
-# Copyright (c) 2020-2021 The Khronos Group Inc.
+# Copyright (c) 2020-2022 The Khronos Group Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -97,6 +97,14 @@ class SpirvValidationHelperOutputGenerator(OutputGenerator):
         self.extensionExcludeList = []
         self.capabilityExcludeList = []
 
+        # There are some enums that share the same value in the SPIR-V header.
+        # This array remove the duplicate to not print out, usually due to being the older value given
+        self.capabilityAliasList = [
+          'ShaderViewportIndexLayerNV',
+          'ShadingRateNV',
+          'FragmentBarycentricNV',
+        ]
+
         # This is a list that maps the Vulkan struct a feature field is with the internal
         # state tracker's enabled features value
         #
@@ -107,6 +115,7 @@ class SpirvValidationHelperOutputGenerator(OutputGenerator):
             {'vulkan' : 'VkPhysicalDeviceFeatures', 'layer' : 'core'},
             {'vulkan' : 'VkPhysicalDeviceVulkan11Features', 'layer' : 'core11'},
             {'vulkan' : 'VkPhysicalDeviceVulkan12Features', 'layer' : 'core12'},
+            {'vulkan' : 'VkPhysicalDeviceVulkan13Features', 'layer' : 'core13'},
             {'vulkan' : 'VkPhysicalDeviceTransformFeedbackFeaturesEXT', 'layer' : 'transform_feedback_features'},
             {'vulkan' : 'VkPhysicalDeviceCooperativeMatrixFeaturesNV', 'layer' : 'cooperative_matrix_features'},
             {'vulkan' : 'VkPhysicalDeviceComputeShaderDerivativesFeaturesNV', 'layer' : 'compute_shader_derivatives_features'},
@@ -129,6 +138,8 @@ class SpirvValidationHelperOutputGenerator(OutputGenerator):
             {'vulkan' : 'VkPhysicalDeviceShaderAtomicFloat2FeaturesEXT', 'layer' : 'shader_atomic_float2_features'},
             {'vulkan' : 'VkPhysicalDeviceRayTracingMotionBlurFeaturesNV', 'layer' : 'ray_tracing_motion_blur_features'},
             {'vulkan' : 'VkPhysicalDeviceShaderIntegerDotProductFeaturesKHR', 'layer' : 'shader_integer_dot_product_features'},
+            {'vulkan' : 'VkPhysicalDeviceShaderSubgroupUniformControlFlowFeaturesKHR', 'layer' : 'shader_subgroup_uniform_control_flow_features'},
+            {'vulkan' : 'VkPhysicalDeviceRayTracingMaintenance1FeaturesKHR', 'layer' : 'ray_tracing_maintenance1_features'},
         ]
 
         # Promoted features structure in state_tracker.cpp are put in the VkPhysicalDeviceVulkan*Features structs
@@ -155,6 +166,9 @@ class SpirvValidationHelperOutputGenerator(OutputGenerator):
             "VkPhysicalDeviceBufferDeviceAddressFeatures",
             "VkPhysicalDeviceShaderAtomicInt64Features",
             "VkPhysicalDeviceVulkanMemoryModelFeatures",
+            # 1.3
+            "VkPhysicalDeviceShaderDemoteToHelperInvocationFeatures",
+            "VkPhysicalDeviceShaderIntegerDotProductFeatures",
         ]
 
         # Properties are harder to handle genearted without generating a template for every property struct type
@@ -179,7 +193,7 @@ class SpirvValidationHelperOutputGenerator(OutputGenerator):
         copyright += '\n'
         copyright += '/***************************************************************************\n'
         copyright += ' *\n'
-        copyright += ' * Copyright (c) 2020-2021 The Khronos Group Inc.\n'
+        copyright += ' * Copyright (c) 2020-2022 The Khronos Group Inc.\n'
         copyright += ' *\n'
         copyright += ' * Licensed under the Apache License, Version 2.0 (the "License");\n'
         copyright += ' * you may not use this file except in compliance with the License.\n'
@@ -268,13 +282,10 @@ class SpirvValidationHelperOutputGenerator(OutputGenerator):
     #
     # Creates the Enum string helpers for better error messages. Same idea of vk_enum_string_helper.h but for SPIR-V
     def enumHelper(self):
-        # There are some enums that share the same value in the SPIR-V header.
-        # This array remove the duplicate to not print out, usually due to being the older value given
-        excludeList = ['ShaderViewportIndexLayerNV', 'ShadingRateNV']
         output =  'static inline const char* string_SpvCapability(uint32_t input_value) {\n'
         output += '    switch ((spv::Capability)input_value) {\n'
         for name, enables in sorted(self.capabilities.items()):
-            if (name not in excludeList) and (name not in self.capabilityExcludeList):
+            if (name not in self.capabilityAliasList) and (name not in self.capabilityExcludeList):
                 output += '         case spv::Capability' + name + ':\n'
                 output += '            return \"' + name + '\";\n'
         output += '        default:\n'
@@ -381,7 +392,7 @@ class SpirvValidationHelperOutputGenerator(OutputGenerator):
     # The main function to validate all the extensions and capabilities
     def validateFunction(self):
         output = '''
-bool CoreChecks::ValidateShaderCapabilitiesAndExtensions(SHADER_MODULE_STATE const *src, spirv_inst_iter& insn) const {
+bool CoreChecks::ValidateShaderCapabilitiesAndExtensions(spirv_inst_iter& insn) const {
     bool skip = false;
 
     if (insn.opcode() == spv::OpCapability) {

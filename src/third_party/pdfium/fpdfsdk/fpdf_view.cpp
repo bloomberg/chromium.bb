@@ -47,6 +47,7 @@
 #include "fpdfsdk/cpdfsdk_renderpage.h"
 #include "fxjs/ijs_runtime.h"
 #include "public/fpdf_formfill.h"
+#include "third_party/base/numerics/safe_conversions.h"
 #include "third_party/base/ptr_util.h"
 #include "third_party/base/span.h"
 
@@ -60,7 +61,7 @@
 #include "fpdfsdk/fpdfxfa/cpdfxfa_page.h"
 #endif  // PDF_ENABLE_XFA
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "core/fpdfapi/render/cpdf_progressiverenderer.h"
 #include "core/fpdfapi/render/cpdf_windowsrenderdevice.h"
 #include "public/fpdf_edit.h"
@@ -93,7 +94,7 @@ static_assert(
     static_cast<int>(WindowsPrintMode::kPostScript3Type42PassThrough) ==
         FPDF_PRINTMODE_POSTSCRIPT3_TYPE42_PASSTHROUGH,
     "WindowsPrintMode::kPostScript3Type42PassThrough value mismatch");
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
 namespace {
 
@@ -216,18 +217,7 @@ FPDF_EXPORT void FPDF_CALLCONV FPDF_SetSandBoxPolicy(FPDF_DWORD policy,
   return SetPDFSandboxPolicy(policy, enable);
 }
 
-#if defined(OS_WIN)
-#if defined(PDFIUM_PRINT_TEXT_WITH_GDI)
-FPDF_EXPORT void FPDF_CALLCONV
-FPDF_SetTypefaceAccessibleFunc(PDFiumEnsureTypefaceCharactersAccessible func) {
-  g_pdfium_typeface_accessible_func = func;
-}
-
-FPDF_EXPORT void FPDF_CALLCONV FPDF_SetPrintTextWithGDI(FPDF_BOOL use_gdi) {
-  g_pdfium_print_text_with_gdi = !!use_gdi;
-}
-#endif  // PDFIUM_PRINT_TEXT_WITH_GDI
-
+#if BUILDFLAG(IS_WIN)
 FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDF_SetPrintMode(int mode) {
   if (mode < FPDF_PRINTMODE_EMF ||
       mode > FPDF_PRINTMODE_POSTSCRIPT3_TYPE42_PASSTHROUGH) {
@@ -237,7 +227,7 @@ FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDF_SetPrintMode(int mode) {
   g_pdfium_print_mode = static_cast<WindowsPrintMode>(mode);
   return TRUE;
 }
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
 FPDF_EXPORT FPDF_DOCUMENT FPDF_CALLCONV
 FPDF_LoadDocument(FPDF_STRING file_path, FPDF_BYTESTRING password) {
@@ -415,7 +405,7 @@ FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDF_GetPageBoundingBox(FPDF_PAGE page,
   return true;
 }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 namespace {
 
 constexpr float kEpsilonSize = 0.01f;
@@ -612,7 +602,7 @@ FPDF_EXPORT void FPDF_CALLCONV FPDF_RenderPage(HDC dc,
     pContext->m_pRenderer->Continue(nullptr);
   }
 }
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
 FPDF_EXPORT void FPDF_CALLCONV FPDF_RenderPageBitmap(FPDF_BITMAP bitmap,
                                                      FPDF_PAGE page,
@@ -878,7 +868,8 @@ FPDF_EXPORT void FPDF_CALLCONV FPDFBitmap_FillRect(FPDF_BITMAP bitmap,
   device.Attach(pBitmap, false, nullptr, false);
   if (!pBitmap->IsAlphaFormat())
     color |= 0xFF000000;
-  device.FillRect(FX_RECT(left, top, left + width, top + height), color);
+  device.FillRect(FX_RECT(left, top, left + width, top + height),
+                  static_cast<uint32_t>(color));
 }
 
 FPDF_EXPORT void* FPDF_CALLCONV FPDFBitmap_GetBuffer(FPDF_BITMAP bitmap) {
@@ -1093,7 +1084,7 @@ FPDF_EXPORT FPDF_RESULT FPDF_CALLCONV FPDF_BStr_Set(FPDF_BSTR* bstr,
     return -1;
 
   if (length == -1)
-    length = strlen(cstr);
+    length = pdfium::base::checked_cast<int>(strlen(cstr));
 
   if (length == 0) {
     FPDF_BStr_Clear(bstr);
@@ -1184,7 +1175,7 @@ FPDF_EXPORT FPDF_DEST FPDF_CALLCONV FPDF_GetNamedDest(FPDF_DOCUMENT document,
     return nullptr;
 
   ByteString utf16Name = wsName.ToUTF16LE();
-  int len = utf16Name.GetLength();
+  int len = pdfium::base::checked_cast<int>(utf16Name.GetLength());
   if (!buffer) {
     *buflen = len;
   } else if (len <= *buflen) {
@@ -1259,7 +1250,7 @@ FPDF_GetTrailerEnds(FPDF_DOCUMENT document,
 
   // Traverse the document.
   syntax->SetPos(0);
-  while (1) {
+  while (true) {
     CPDF_SyntaxParser::WordResult word_result = syntax->GetNextWord();
     if (word_result.is_number) {
       // The object number was read. Read the generation number.
@@ -1281,7 +1272,7 @@ FPDF_GetTrailerEnds(FPDF_DOCUMENT document,
     } else if (word_result.word == "startxref") {
       syntax->GetNextWord();
     } else if (word_result.word == "xref") {
-      while (1) {
+      while (true) {
         word_result = syntax->GetNextWord();
         if (word_result.word.IsEmpty() || word_result.word == "startxref")
           break;
@@ -1295,7 +1286,8 @@ FPDF_GetTrailerEnds(FPDF_DOCUMENT document,
   // Stop recording trailer ends.
   syntax->SetTrailerEnds(nullptr);
 
-  unsigned long trailer_ends_len = trailer_ends.size();
+  const unsigned long trailer_ends_len =
+      fxcrt::CollectionSize<unsigned long>(trailer_ends);
   if (buffer && length >= trailer_ends_len) {
     for (size_t i = 0; i < trailer_ends_len; ++i)
       buffer[i] = trailer_ends[i];

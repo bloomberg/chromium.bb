@@ -9,13 +9,10 @@
 namespace policy {
 
 base::flat_set<std::string> ValueToStringSet(const base::Value* value) {
-  if (!value)
+  if (!value || !value->is_list())
     return base::flat_set<std::string>();
 
-  if (!value->is_list())
-    return base::flat_set<std::string>();
-
-  const auto& items = value->GetList();
+  const auto& items = value->GetListDeprecated();
 
   std::vector<std::string> item_vector;
   item_vector.reserve(items.size());
@@ -26,6 +23,14 @@ base::flat_set<std::string> ValueToStringSet(const base::Value* value) {
   }
 
   return base::flat_set<std::string>(std::move(item_vector));
+}
+
+ComponentPolicyMap CopyComponentPolicyMap(const ComponentPolicyMap& map) {
+  ComponentPolicyMap new_map;
+  for (const auto& [policy_namespace, value] : map) {
+    new_map[policy_namespace] = value.Clone();
+  }
+  return new_map;
 }
 
 }  // namespace policy

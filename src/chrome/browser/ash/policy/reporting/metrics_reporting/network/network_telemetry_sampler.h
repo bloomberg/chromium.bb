@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_ASH_POLICY_REPORTING_METRICS_REPORTING_NETWORK_NETWORK_TELEMETRY_SAMPLER_H_
 #define CHROME_BROWSER_ASH_POLICY_REPORTING_METRICS_REPORTING_NETWORK_NETWORK_TELEMETRY_SAMPLER_H_
 
+#include "base/memory/weak_ptr.h"
+#include "chromeos/services/cros_healthd/public/mojom/cros_healthd_probe.mojom.h"
 #include "components/reporting/metrics/sampler.h"
 
 namespace reporting {
@@ -20,10 +22,16 @@ class NetworkTelemetrySampler : public Sampler {
 
   ~NetworkTelemetrySampler() override;
 
-  void Collect(MetricCallback callback) override;
+  void MaybeCollect(OptionalMetricCallback callback) override;
 
  private:
+  void HandleNetworkTelemetryResult(
+      OptionalMetricCallback callback,
+      ::chromeos::cros_healthd::mojom::TelemetryInfoPtr result);
+
   Sampler* const https_latency_sampler_;
+
+  base::WeakPtrFactory<NetworkTelemetrySampler> weak_ptr_factory_{this};
 };
 }  // namespace reporting
 

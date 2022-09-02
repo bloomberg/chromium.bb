@@ -407,13 +407,9 @@ inline void Paeth4Or8xN_NEON(void* LIBGAV1_RESTRICT const dest,
 inline uint8x16_t XLeTopLeft(const uint8x16_t x_dist,
                              const uint16x8_t top_left_dist_low,
                              const uint16x8_t top_left_dist_high) {
-  // TODO(johannkoenig): cle() should work with vmovn(top_left_dist) instead of
-  // using movl(x_dist).
-  const uint8x8_t x_le_top_left_low =
-      vmovn_u16(vcleq_u16(vmovl_u8(vget_low_u8(x_dist)), top_left_dist_low));
-  const uint8x8_t x_le_top_left_high =
-      vmovn_u16(vcleq_u16(vmovl_u8(vget_high_u8(x_dist)), top_left_dist_high));
-  return vcombine_u8(x_le_top_left_low, x_le_top_left_high);
+  const uint8x16_t top_left_dist = vcombine_u8(vqmovn_u16(top_left_dist_low),
+                                               vqmovn_u16(top_left_dist_high));
+  return vcleq_u8(x_dist, top_left_dist);
 }
 
 // Select the closest values and collect them.

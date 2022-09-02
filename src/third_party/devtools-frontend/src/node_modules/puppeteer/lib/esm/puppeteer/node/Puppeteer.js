@@ -128,8 +128,8 @@ export class PuppeteerNode extends Puppeteer {
      * The browser binary might not be there if the download was skipped with
      * the `PUPPETEER_SKIP_DOWNLOAD` environment variable.
      */
-    executablePath() {
-        return this._launcher.executablePath();
+    executablePath(channel) {
+        return this._launcher.executablePath(channel);
     }
     /**
      * @internal
@@ -176,6 +176,9 @@ export class PuppeteerNode extends Puppeteer {
      * @returns A new BrowserFetcher instance.
      */
     createBrowserFetcher(options) {
+        if (!this._projectRoot) {
+            throw new Error('_projectRoot is undefined. Unable to create a BrowserFetcher.');
+        }
         return new BrowserFetcher(this._projectRoot, options);
     }
 }

@@ -864,7 +864,93 @@ void Init10bpp() {
 #endif
 #endif  // LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
 }
+#endif  // LIBGAV1_MAX_BITDEPTH >= 10
+
+#if LIBGAV1_MAX_BITDEPTH == 12
+void Init12bpp() {
+  Dsp* const dsp = dsp_internal::GetWritableDspTable(12);
+  assert(dsp != nullptr);
+#if LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
+  dsp->convolve[0][0][0][0] = ConvolveCopy_C<12, uint16_t>;
+  dsp->convolve[0][0][0][1] = ConvolveHorizontal_C<12, uint16_t>;
+  dsp->convolve[0][0][1][0] = ConvolveVertical_C<12, uint16_t>;
+  dsp->convolve[0][0][1][1] = Convolve2D_C<12, uint16_t>;
+
+  dsp->convolve[0][1][0][0] = ConvolveCompoundCopy_C<12, uint16_t>;
+  dsp->convolve[0][1][0][1] = ConvolveCompoundHorizontal_C<12, uint16_t>;
+  dsp->convolve[0][1][1][0] = ConvolveCompoundVertical_C<12, uint16_t>;
+  dsp->convolve[0][1][1][1] = ConvolveCompound2D_C<12, uint16_t>;
+
+  dsp->convolve[1][0][0][0] = ConvolveCopy_C<12, uint16_t>;
+  dsp->convolve[1][0][0][1] =
+      ConvolveIntraBlockCopy1D_C<12, uint16_t, /*is_horizontal=*/true>;
+  dsp->convolve[1][0][1][0] =
+      ConvolveIntraBlockCopy1D_C<12, uint16_t, /*is_horizontal=*/false>;
+  dsp->convolve[1][0][1][1] = ConvolveIntraBlockCopy2D_C<12, uint16_t>;
+
+  dsp->convolve[1][1][0][0] = nullptr;
+  dsp->convolve[1][1][0][1] = nullptr;
+  dsp->convolve[1][1][1][0] = nullptr;
+  dsp->convolve[1][1][1][1] = nullptr;
+
+  dsp->convolve_scale[0] = ConvolveScale2D_C<12, uint16_t>;
+  dsp->convolve_scale[1] = ConvolveCompoundScale2D_C<12, uint16_t>;
+#else  // LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
+#ifndef LIBGAV1_Dsp12bpp_ConvolveCopy
+  dsp->convolve[0][0][0][0] = ConvolveCopy_C<12, uint16_t>;
 #endif
+#ifndef LIBGAV1_Dsp12bpp_ConvolveHorizontal
+  dsp->convolve[0][0][0][1] = ConvolveHorizontal_C<12, uint16_t>;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_ConvolveVertical
+  dsp->convolve[0][0][1][0] = ConvolveVertical_C<12, uint16_t>;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_Convolve2D
+  dsp->convolve[0][0][1][1] = Convolve2D_C<12, uint16_t>;
+#endif
+
+#ifndef LIBGAV1_Dsp12bpp_ConvolveCompoundCopy
+  dsp->convolve[0][1][0][0] = ConvolveCompoundCopy_C<12, uint16_t>;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_ConvolveCompoundHorizontal
+  dsp->convolve[0][1][0][1] = ConvolveCompoundHorizontal_C<12, uint16_t>;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_ConvolveCompoundVertical
+  dsp->convolve[0][1][1][0] = ConvolveCompoundVertical_C<12, uint16_t>;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_ConvolveCompound2D
+  dsp->convolve[0][1][1][1] = ConvolveCompound2D_C<12, uint16_t>;
+#endif
+
+#ifndef LIBGAV1_Dsp12bpp_ConvolveIntraBlockCopy
+  dsp->convolve[1][0][0][0] = ConvolveCopy_C<12, uint16_t>;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_ConvolveIntraBlockHorizontal
+  dsp->convolve[1][0][0][1] =
+      ConvolveIntraBlockCopy1D_C<12, uint16_t, /*is_horizontal=*/true>;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_ConvolveIntraBlockVertical
+  dsp->convolve[1][0][1][0] =
+      ConvolveIntraBlockCopy1D_C<12, uint16_t, /*is_horizontal=*/false>;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_ConvolveIntraBlock2D
+  dsp->convolve[1][0][1][1] = ConvolveIntraBlockCopy2D_C<12, uint16_t>;
+#endif
+
+  dsp->convolve[1][1][0][0] = nullptr;
+  dsp->convolve[1][1][0][1] = nullptr;
+  dsp->convolve[1][1][1][0] = nullptr;
+  dsp->convolve[1][1][1][1] = nullptr;
+
+#ifndef LIBGAV1_Dsp12bpp_ConvolveScale2D
+  dsp->convolve_scale[0] = ConvolveScale2D_C<12, uint16_t>;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_ConvolveCompoundScale2D
+  dsp->convolve_scale[1] = ConvolveCompoundScale2D_C<12, uint16_t>;
+#endif
+#endif  // LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
+}
+#endif  // LIBGAV1_MAX_BITDEPTH == 12
 
 }  // namespace
 
@@ -872,6 +958,9 @@ void ConvolveInit_C() {
   Init8bpp();
 #if LIBGAV1_MAX_BITDEPTH >= 10
   Init10bpp();
+#endif
+#if LIBGAV1_MAX_BITDEPTH == 12
+  Init12bpp();
 #endif
 }
 

@@ -52,6 +52,8 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImplDelegate {
       DownloadDangerType danger_type,
       DownloadItem::MixedContentStatus mixed_content_status,
       const base::FilePath& intermediate_path,
+      const base::FilePath& display_name,
+      const std::string& mime_type,
       absl::optional<DownloadSchedule> download_schedule,
       DownloadInterruptReason interrupt_reason)>;
   // Request determination of the download target from the delegate.
@@ -96,7 +98,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImplDelegate {
   // Called when an interrupted download is resumed.
   virtual void ResumeInterruptedDownload(
       std::unique_ptr<DownloadUrlParameters> params,
-      const GURL& site_url);
+      const std::string& serialized_embedder_data);
 
   // Update the persistent store with our information.
   virtual void UpdatePersistence(DownloadItemImpl* download);

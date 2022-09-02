@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_SKIA_OUTPUT_SURFACE_IMPL_ON_GPU_H_
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_SKIA_OUTPUT_SURFACE_IMPL_ON_GPU_H_
 
+#include <deque>
 #include <map>
 #include <memory>
 #include <utility>
@@ -41,6 +42,8 @@
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/GrBackendSemaphore.h"
+#include "third_party/skia/include/gpu/GrTypes.h"
+#include "ui/gfx/gpu_fence_handle.h"
 
 namespace gfx {
 namespace mojom {
@@ -133,25 +136,23 @@ class SkiaOutputSurfaceImplOnGpu
   }
   gl::GLSurface* gl_surface() const { return gl_surface_.get(); }
 
-  void Reshape(const gfx::Size& size,
-               float device_scale_factor,
+  void Reshape(const SkSurfaceCharacterization& characterization,
                const gfx::ColorSpace& color_space,
-               gfx::BufferFormat format,
-               bool use_stencil,
+               float device_scale_factor,
                gfx::OverlayTransform transform);
-  void FinishPaintCurrentFrame(sk_sp<SkDeferredDisplayList> ddl,
-                               sk_sp<SkDeferredDisplayList> overdraw_ddl,
-                               std::vector<ImageContextImpl*> image_contexts,
-                               std::vector<gpu::SyncToken> sync_tokens,
-                               base::OnceClosure on_finished,
-                               absl::optional<gfx::Rect> draw_rectangle,
-                               bool allocate_frame_buffer);
+  void FinishPaintCurrentFrame(
+      sk_sp<SkDeferredDisplayList> ddl,
+      sk_sp<SkDeferredDisplayList> overdraw_ddl,
+      std::vector<ImageContextImpl*> image_contexts,
+      std::vector<gpu::SyncToken> sync_tokens,
+      base::OnceClosure on_finished,
+      base::OnceCallback<void(gfx::GpuFenceHandle)> return_release_fence_cb,
+      absl::optional<gfx::Rect> draw_rectangle);
   void ScheduleOutputSurfaceAsOverlay(
       const OverlayProcessorInterface::OutputSurfaceOverlayPlane&
           output_surface_plane);
-  void SwapBuffers(OutputSurfaceFrame frame, bool release_frame_buffer);
-  void AllocateFrameBuffers(size_t n);
-  void ReleaseFrameBuffers(size_t n);
+  void SwapBuffers(OutputSurfaceFrame frame);
+  void EnsureMinNumberOfBuffers(int n);
 
   void SetDependenciesResolvedTimings(base::TimeTicks task_ready);
   void SetDrawTimings(base::TimeTicks task_ready);
@@ -161,18 +162,20 @@ class SkiaOutputSurfaceImplOnGpu
   void SwapBuffersSkipped();
   void EnsureBackbuffer();
   void DiscardBackbuffer();
-  void FinishPaintRenderPass(const gpu::Mailbox& mailbox,
-                             sk_sp<SkDeferredDisplayList> ddl,
-                             std::vector<ImageContextImpl*> image_contexts,
-                             std::vector<gpu::SyncToken> sync_tokens,
-                             base::OnceClosure on_finished);
+  void FinishPaintRenderPass(
+      const gpu::Mailbox& mailbox,
+      sk_sp<SkDeferredDisplayList> ddl,
+      std::vector<ImageContextImpl*> image_contexts,
+      std::vector<gpu::SyncToken> sync_tokens,
+      base::OnceClosure on_finished,
+      base::OnceCallback<void(gfx::GpuFenceHandle)> return_release_fence_cb);
   // Deletes resources for RenderPasses in |ids|. Also takes ownership of
   // |images_contexts| and destroys them on GPU thread.
   void RemoveRenderPassResource(
       std::vector<AggregatedRenderPassId> ids,
       std::vector<std::unique_ptr<ImageContextImpl>> image_contexts);
   void CopyOutput(AggregatedRenderPassId id,
-                  copy_output::RenderPassGeometry geometry,
+                  const copy_output::RenderPassGeometry& geometry,
                   const gfx::ColorSpace& color_space,
                   std::unique_ptr<CopyOutputRequest> request,
                   const gpu::Mailbox& mailbox);
@@ -188,9 +191,7 @@ class SkiaOutputSurfaceImplOnGpu
   void ReleaseImageContexts(
       std::vector<std::unique_ptr<ExternalUseClient::ImageContext>>
           image_contexts);
-  void ScheduleOverlays(SkiaOutputSurface::OverlayList overlays,
-                        std::vector<ImageContextImpl*> image_contexts,
-                        base::OnceClosure on_finished);
+  void ScheduleOverlays(SkiaOutputSurface::OverlayList overlays);
 
   void SetEnableDCLayers(bool enable);
   void SetGpuVSyncEnabled(bool enabled);
@@ -207,16 +208,13 @@ class SkiaOutputSurfaceImplOnGpu
   void OnContextLost() override;
 
   // gpu::ImageTransportSurfaceDelegate implementation:
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   void DidCreateAcceleratedSurfaceChildWindow(
       gpu::SurfaceHandle parent_window,
       gpu::SurfaceHandle child_window) override;
 #endif
   const gpu::gles2::FeatureInfo* GetFeatureInfo() const override;
   const gpu::GpuPreferences& GetGpuPreferences() const override;
-  void DidSwapBuffersComplete(gpu::SwapBuffersCompleteParams params,
-                              gfx::GpuFenceHandle release_fence) override;
-  void BufferPresented(const gfx::PresentationFeedback& feedback) override;
   GpuVSyncCallback GetGpuVSyncCallback() override;
   base::TimeDelta GetGpuBlockedTimeSinceLastSwap() override;
 
@@ -305,6 +303,8 @@ class SkiaOutputSurfaceImplOnGpu
            gpu_preferences_.gr_context_type == gpu::GrContextType::kDawn;
   }
 
+  bool is_using_gl() const { return !is_using_vulkan() && !is_using_dawn(); }
+
   // Helper for `CopyOutput()` method, handles the RGBA format.
   void CopyOutputRGBA(SkSurface* surface,
                       copy_output::RenderPassGeometry geometry,
@@ -340,17 +340,19 @@ class SkiaOutputSurfaceImplOnGpu
   // |surface| into |dest_surface|'s canvas, cropping and scaling the results
   // appropriately. |source_selection| is the area of the |surface| that will be
   // rendered to the destination.
-  // |begin_semaphores| will be submitted to the GPU backend prior to issuing
-  // draw calls to the |dest_surface|.
-  // |end_semaphores| will be submitted to the GPU backend alongside the draw
-  // calls to the |dest_surface|.
-  bool RenderSurface(SkSurface* surface,
+  void RenderSurface(SkSurface* surface,
                      const SkIRect& source_selection,
                      absl::optional<SkVector> scaling,
                      bool is_downscale_or_identity_in_both_dimensions,
-                     SkSurface* dest_surface,
-                     std::vector<GrBackendSemaphore>& begin_semaphores,
-                     std::vector<GrBackendSemaphore>& end_semaphores);
+                     SkSurface* dest_surface);
+
+  // Helper for `CopyOutputNV12()` & `CopyOutputRGBA()` methods, flushes writes
+  // to |surface| with |end_semaphores| and |end_state|.
+  bool FlushSurface(SkSurface* surface,
+                    std::vector<GrBackendSemaphore>& end_semaphores,
+                    std::unique_ptr<GrBackendSurfaceMutableState> end_state,
+                    GrGpuFinishedProc finished_proc = nullptr,
+                    GrGpuFinishedContext finished_context = nullptr);
 
   // Creates surfaces needed to store the data in NV12 format.
   // |plane_access_datas| will be populated with information needed to access
@@ -360,6 +362,7 @@ class SkiaOutputSurfaceImplOnGpu
       const gfx::ColorSpace& color_space,
       std::array<PlaneAccessData, CopyOutputResult::kNV12MaxPlanes>&
           plane_access_datas);
+
   // Imports surfaces needed to store the data in NV12 format from a blit
   // request. |plane_access_datas| will be populated with information needed to
   // access the NV12 planes.
@@ -367,6 +370,11 @@ class SkiaOutputSurfaceImplOnGpu
       const BlitRequest& blit_request,
       std::array<PlaneAccessData, CopyOutputResult::kNV12MaxPlanes>&
           plane_access_datas);
+
+  // Helper, blends `BlendBitmap`s set on the |blit_request| over the |canvas|.
+  // Used to implement handling of `CopyOutputRequest`s that contain
+  // `BlitRequest`s.
+  void BlendBitmapOverlays(SkCanvas* canvas, const BlitRequest& blit_request);
 
   // Schedules a task to check if any skia readback requests have completed
   // after a short delay. Will not schedule a task if there is already a
@@ -380,11 +388,18 @@ class SkiaOutputSurfaceImplOnGpu
 
   void ReleaseAsyncReadResultHelpers();
 
-#if defined(OS_APPLE) || defined(USE_OZONE)
-  std::unique_ptr<gpu::SharedImageRepresentationSkia>
-  GetOrCreateRenderPassOverlayBacking(
-      const SkSurfaceCharacterization& characterization);
+#if BUILDFLAG(ENABLE_VULKAN)
+  // Creates a release fence. The semaphore is an external semaphore created
+  // by CreateAndStoreExternalSemaphoreVulkan(). May destroy VkSemaphore that
+  // the |semaphore| stores if creation of a release fence fails. In this case,
+  // invalid fence handle is returned.
+  gfx::GpuFenceHandle CreateReleaseFenceForVulkan(
+      const GrBackendSemaphore& semaphore);
+  // Returns true if succeess.
+  bool CreateAndStoreExternalSemaphoreVulkan(
+      std::vector<GrBackendSemaphore>& end_semaphores);
 #endif
+  gfx::GpuFenceHandle CreateReleaseFenceForGL();
 
   class ReleaseCurrent {
    public:
@@ -437,7 +452,6 @@ class SkiaOutputSurfaceImplOnGpu
 
   gpu::GpuPreferences gpu_preferences_;
   gfx::Size size_;
-  gfx::ColorSpace color_space_;
   scoped_refptr<gl::GLSurface> gl_surface_;
   scoped_refptr<gpu::SharedContextState> context_state_;
   size_t max_resource_cache_bytes_ = 0u;
@@ -465,7 +479,9 @@ class SkiaOutputSurfaceImplOnGpu
     base::flat_set<ImageContextImpl*> image_contexts_;
   };
   PromiseImageAccessHelper promise_image_access_helper_{this};
-  base::flat_set<ImageContextImpl*> image_contexts_with_end_access_state_;
+  base::flat_set<std::pair<ImageContextImpl*,
+                           std::unique_ptr<GrBackendSurfaceMutableState>>>
+      image_contexts_with_end_access_state_;
 
   std::unique_ptr<SkiaOutputDevice> output_device_;
   std::unique_ptr<SkiaOutputDevice::ScopedPaint> scoped_output_device_paint_;
@@ -487,33 +503,12 @@ class SkiaOutputSurfaceImplOnGpu
   // Tracking for ongoing AsyncReadResults.
   base::flat_set<AsyncReadResultHelper*> async_read_result_helpers_;
 
-#if defined(OS_APPLE) || defined(USE_OZONE)
-  using UniqueBackingPtr = std::unique_ptr<gpu::SharedImageRepresentationSkia>;
-  class BackingComparator {
-   public:
-    using is_transparent = void;
-    bool operator()(const UniqueBackingPtr& lhs,
-                    const UniqueBackingPtr& rhs) const {
-      return lhs->mailbox() < rhs->mailbox();
-    }
-    bool operator()(const UniqueBackingPtr& lhs,
-                    const gpu::Mailbox& rhs) const {
-      return lhs->mailbox() < rhs;
-    }
-    bool operator()(const gpu::Mailbox& lhs,
-                    const UniqueBackingPtr& rhs) const {
-      return lhs < rhs->mailbox();
-    }
-  };
-  // Render pass overlay backings are in flight.
-  // The base::flat_set uses backing->mailbox() as the unique key.
-  base::flat_set<UniqueBackingPtr, BackingComparator>
-      in_flight_render_pass_overlay_backings_;
-
-  // Render pass overlay backings are available for reusing.
-  std::vector<std::unique_ptr<gpu::SharedImageRepresentationSkia>>
-      available_render_pass_overlay_backings_;
-#endif
+  // Pending release fence callbacks. These callbacks can be delayed if Vulkan
+  // external semaphore type has copy transference, which means importing
+  // semaphores has to be delayed until submission.
+  std::deque<std::pair<GrBackendSemaphore,
+                       base::OnceCallback<void(gfx::GpuFenceHandle)>>>
+      pending_release_fence_cbs_;
 
   THREAD_CHECKER(thread_checker_);
 

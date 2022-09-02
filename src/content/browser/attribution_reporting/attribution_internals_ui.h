@@ -8,17 +8,27 @@
 #include <memory>
 
 #include "content/browser/attribution_reporting/attribution_internals.mojom.h"
-#include "content/browser/attribution_reporting/attribution_manager.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_ui_controller.h"
+#include "content/public/browser/webui_config.h"
+#include "content/public/common/url_constants.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 
 namespace content {
 
 class AttributionInternalsHandlerImpl;
+class AttributionInternalsUI;
 
-// WebUI which handles serving the chrome://conversion-internals page.
+// WebUIConfig for chrome://attribution-internals page
+class AttributionInternalsUIConfig
+    : public DefaultWebUIConfig<AttributionInternalsUI> {
+ public:
+  AttributionInternalsUIConfig()
+      : DefaultWebUIConfig(kChromeUIScheme, kChromeUIAttributionInternalsHost) {
+  }
+};
+
+// WebUI which handles serving the chrome://attribution-internals page.
 class CONTENT_EXPORT AttributionInternalsUI : public WebUIController {
  public:
   explicit AttributionInternalsUI(WebUI* web_ui);
@@ -33,10 +43,7 @@ class CONTENT_EXPORT AttributionInternalsUI : public WebUIController {
   void WebUIRenderFrameCreated(RenderFrameHost* render_frame_host) override;
 
   void BindInterface(
-      mojo::PendingReceiver<mojom::AttributionInternalsHandler> receiver);
-
-  void SetAttributionManagerProviderForTesting(
-      std::unique_ptr<AttributionManager::Provider> manager_provider);
+      mojo::PendingReceiver<attribution_internals::mojom::Handler> receiver);
 
  private:
   std::unique_ptr<AttributionInternalsHandlerImpl> ui_handler_;

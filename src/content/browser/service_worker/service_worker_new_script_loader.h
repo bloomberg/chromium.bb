@@ -38,11 +38,10 @@ class ServiceWorkerVersion;
 //   1. Makes a network request.
 //   2. OnReceiveResponse() is called, writes the response headers to the
 //      service worker script storage and responds with them to the |client|
-//      (which is the service worker in the renderer).
-//   3. OnStartLoadingResponseBody() is called, reads the network response from
-//      the data pipe. While reading the response, writes it to the service
-//      worker script storage and responds with it to the |client|.
-//   4. OnComplete() for the network load and OnWriteDataComplete() are called,
+//      (which is the service worker in the renderer). Reads the network
+//      response from the data pipe. While reading the response, writes it to
+//      the service worker script storage and responds with it to the |client|.
+//   3. OnComplete() for the network load and OnWriteDataComplete() are called,
 //      calls CommitCompleted() and closes the connections with the network
 //      service and the renderer process.
 //
@@ -116,8 +115,8 @@ class CONTENT_EXPORT ServiceWorkerNewScriptLoader final
 
   // network::mojom::URLLoaderClient for the network load:
   void OnReceiveEarlyHints(network::mojom::EarlyHintsPtr early_hints) override;
-  void OnReceiveResponse(
-      network::mojom::URLResponseHeadPtr response_head) override;
+  void OnReceiveResponse(network::mojom::URLResponseHeadPtr response_head,
+                         mojo::ScopedDataPipeConsumerHandle body) override;
   void OnReceiveRedirect(
       const net::RedirectInfo& redirect_info,
       network::mojom::URLResponseHeadPtr response_head) override;
@@ -126,8 +125,6 @@ class CONTENT_EXPORT ServiceWorkerNewScriptLoader final
                         OnUploadProgressCallback ack_callback) override;
   void OnReceiveCachedMetadata(mojo_base::BigBuffer data) override;
   void OnTransferSizeUpdated(int32_t transfer_size_diff) override;
-  void OnStartLoadingResponseBody(
-      mojo::ScopedDataPipeConsumerHandle body) override;
   void OnComplete(const network::URLLoaderCompletionStatus& status) override;
 
   // Buffer size for reading script data from network.
@@ -171,7 +168,8 @@ class CONTENT_EXPORT ServiceWorkerNewScriptLoader final
   // This is the last method that is called on this class. Notifies the final
   // result to |client_| and clears all mojo connections etc.
   void CommitCompleted(const network::URLLoaderCompletionStatus& status,
-                       const std::string& status_message);
+                       const std::string& status_message,
+                       network::mojom::URLResponseHeadPtr response_head);
 
   // Called when |client_producer_| is writable. It writes |data_to_send_|
   // to |client_producer_|. If all data is written, the observer has completed
@@ -216,8 +214,7 @@ class CONTENT_EXPORT ServiceWorkerNewScriptLoader final
   //
   // When response body exists:
   // CreateLoaderAndStart(): kNotStarted -> kLoadingHeader
-  // OnReceiveResponse(): kLoadingHeader -> kWaitingForBody
-  // OnStartLoadingResponseBody(): kWaitingForBody -> kLoadingBody
+  // OnReceiveResponse(): kLoadingHeader -> kLoadingBody
   // OnComplete(): kLoadingBody -> kCompleted
   //
   // When response body is empty:
@@ -238,7 +235,7 @@ class CONTENT_EXPORT ServiceWorkerNewScriptLoader final
   // Set to kWriting when |this| starts watching |network_consumer_|, and set to
   // kCompleted when all data has been written to |cache_writer_|.
   //
-  // OnStartLoadingResponseBody() && OnWriteHeadersComplete():
+  // OnWriteHeadersComplete():
   //     kNotStarted -> kWriting
   // OnNetworkDataAvailable() && MOJO_RESULT_FAILED_PRECONDITION:
   //     kWriting -> kCompleted

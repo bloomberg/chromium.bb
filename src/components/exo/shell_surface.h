@@ -8,7 +8,9 @@
 #include "ash/wm/toplevel_window_event_handler.h"
 #include "ash/wm/window_state_observer.h"
 #include "base/containers/circular_deque.h"
+#include "base/observer_list.h"
 #include "components/exo/shell_surface_base.h"
+#include "components/exo/shell_surface_observer.h"
 #include "ui/base/ui_base_types.h"
 
 namespace ash {
@@ -44,13 +46,21 @@ class ShellSurface : public ShellSurfaceBase, public ash::WindowStateObserver {
   // it doesn't resize, pick a smaller size (to satisfy aspect ratio or resize
   // in steps of NxM pixels).
   using ConfigureCallback =
-      base::RepeatingCallback<uint32_t(const gfx::Size& size,
+      base::RepeatingCallback<uint32_t(const gfx::Rect& bounds,
                                        chromeos::WindowStateType state_type,
                                        bool resizing,
                                        bool activated,
                                        const gfx::Vector2d& origin_offset)>;
+  using OriginChangeCallback =
+      base::RepeatingCallback<void(const gfx::Point& origin)>;
+
   void set_configure_callback(const ConfigureCallback& configure_callback) {
     configure_callback_ = configure_callback;
+  }
+
+  void set_origin_change_callback(
+      const OriginChangeCallback& origin_change_callback) {
+    origin_change_callback_ = origin_change_callback;
   }
 
   // When the client is asked to configure the surface, it should acknowledge
@@ -93,6 +103,9 @@ class ShellSurface : public ShellSurfaceBase, public ash::WindowStateObserver {
   // Return the initial show state for this surface.
   ui::WindowShowState initial_show_state() { return initial_show_state_; }
 
+  void AddObserver(ShellSurfaceObserver* observer);
+  void RemoveObserver(ShellSurfaceObserver* observer);
+
   // Overridden from SurfaceDelegate:
   void OnSetParent(Surface* parent, const gfx::Point& position) override;
 
@@ -106,6 +119,7 @@ class ShellSurface : public ShellSurfaceBase, public ash::WindowStateObserver {
                              const gfx::Rect& old_bounds,
                              const gfx::Rect& new_bounds,
                              ui::PropertyChangeReason reason) override;
+  void OnWindowAddedToRootWindow(aura::Window* window) override;
 
   // Overridden from ash::WindowStateObserver:
   void OnPreWindowStateTypeChange(ash::WindowState* window_state,
@@ -121,6 +135,8 @@ class ShellSurface : public ShellSurfaceBase, public ash::WindowStateObserver {
   // Overridden from ShellSurfaceBase:
   void SetWidgetBounds(const gfx::Rect& bounds) override;
   bool OnPreWidgetCommit() override;
+  std::unique_ptr<views::NonClientFrameView> CreateNonClientFrameView(
+      views::Widget* widget) override;
 
  private:
   struct Config;
@@ -159,6 +175,8 @@ class ShellSurface : public ShellSurfaceBase, public ash::WindowStateObserver {
   // the behaviour to check for window dragging by setting ends_drag to true.
   void Configure(bool ends_drag = false);
 
+  bool GetCanResizeFromSizeConstraints() const override;
+
   void AttemptToStartDrag(int component);
 
   void EndDrag();
@@ -167,6 +185,7 @@ class ShellSurface : public ShellSurfaceBase, public ash::WindowStateObserver {
 
   std::unique_ptr<ui::CompositorLock> configure_compositor_lock_;
   ConfigureCallback configure_callback_;
+  OriginChangeCallback origin_change_callback_;
   ScopedConfigure* scoped_configure_ = nullptr;
   base::circular_deque<std::unique_ptr<Config>> pending_configs_;
 
@@ -177,6 +196,8 @@ class ShellSurface : public ShellSurfaceBase, public ash::WindowStateObserver {
   int pending_resize_component_ = HTCAPTION;
   ui::WindowShowState initial_show_state_ = ui::SHOW_STATE_DEFAULT;
   bool ignore_window_bounds_changes_ = false;
+
+  base::ObserverList<ShellSurfaceObserver> observers_;
 };
 
 }  // namespace exo

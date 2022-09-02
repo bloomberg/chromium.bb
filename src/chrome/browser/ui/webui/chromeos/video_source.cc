@@ -11,7 +11,6 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/task/post_task.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/task_runner_util.h"
@@ -32,8 +31,7 @@ bool IsAllowlisted(const std::string& path) {
     return false;
 
   // Check if the path starts with a allowlisted directory.
-  std::vector<std::string> components;
-  file_path.GetComponents(&components);
+  std::vector<std::string> components = file_path.GetComponents();
   if (components.empty())
     return false;
   return components[0] == kAllowlistedDirectory;

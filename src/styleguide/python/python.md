@@ -5,7 +5,7 @@ guides](https://chromium.googlesource.com/chromium/src/+/main/styleguide/stylegu
 
 As of 2021-05-12, Chromium is transitioning from Python 2 to Python 3 (follow
 [crbug.com/941669](https://crbug.com/941669) for updates). See
-[//docs/python3_migration.md](../docs/python3_migration.md) for more on
+[//docs/python3_migration.md](../../docs/python3_migration.md) for more on
 how to migrate code.
 
 For new (Python 3) code, you can assume Python 3.8 (and that's what the bots
@@ -29,7 +29,7 @@ the swarming infrastructure, and they also don't work on Windows.
 So, don't expect them to help you.
 
 However, if your script is executable, you should still use one, and for
-Python you should use `#!/usr/bin/env/python3` or `#!/usr/bin/env vpython3`
+Python you should use `#!/usr/bin/env python3` or `#!/usr/bin/env vpython3`
 in order to pick up the right version of Python from your $PATH rather than
 assuming you want the version in `/usr/bin`; this allows you to pick up the
 versions we endorse from

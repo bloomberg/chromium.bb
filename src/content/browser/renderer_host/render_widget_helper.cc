@@ -6,12 +6,10 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/check_op.h"
 #include "base/lazy_instance.h"
-#include "base/posix/eintr_wrapper.h"
-#include "base/threading/thread.h"
-#include "base/threading/thread_restrictions.h"
-#include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace content {
 namespace {
@@ -64,7 +62,9 @@ void RenderWidgetHelper::Init(int render_process_id) {
 }
 
 int RenderWidgetHelper::GetNextRoutingID() {
-  return next_routing_id_.GetNext() + 1;
+  int next_routing_id = next_routing_id_.GetNext();
+  CHECK_LT(next_routing_id, std::numeric_limits<int>::max());
+  return next_routing_id + 1;
 }
 
 bool RenderWidgetHelper::TakeFrameTokensForFrameRoutingID(

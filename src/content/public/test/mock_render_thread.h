@@ -75,23 +75,21 @@ class MockRenderThread : public RenderThread {
       blink::WebResourceRequestSenderDelegate* delegate) override;
   void RecordAction(const base::UserMetricsAction& action) override;
   void RecordComputedAction(const std::string& action) override;
-  void RegisterExtension(std::unique_ptr<v8::Extension> extension) override;
   int PostTaskToAllWebWorkers(base::RepeatingClosure closure) override;
   base::WaitableEvent* GetShutdownEvent() override;
   int32_t GetClientId() override;
   void SetRendererProcessType(
       blink::scheduler::WebRendererProcessType type) override;
   blink::WebString GetUserAgent() override;
+  blink::WebString GetFullUserAgent() override;
   blink::WebString GetReducedUserAgent() override;
   const blink::UserAgentMetadata& GetUserAgentMetadata() override;
-  bool IsUseZoomForDSF() override;
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   void PreCacheFont(const LOGFONT& log_font) override;
   void ReleaseCachedFonts() override;
 #endif
   void SetFieldTrialGroup(const std::string& trial_name,
                           const std::string& group_name) override;
-  void SetUseZoomForDSFEnabled(bool zoom_for_dsf);
   void WriteIntoTrace(
       perfetto::TracedProto<perfetto::protos::pbzero::RenderProcessHost> proto)
       override;
@@ -153,7 +151,6 @@ class MockRenderThread : public RenderThread {
   base::ObserverList<RenderThreadObserver>::Unchecked observers_;
 
   std::unique_ptr<mojom::RenderMessageFilter> mock_render_message_filter_;
-  bool zoom_for_dsf_ = false;
 };
 
 }  // namespace content

@@ -12,7 +12,6 @@
 #include "base/containers/queue.h"
 #include "base/memory/free_deleter.h"
 #include "base/synchronization/lock.h"
-#include "base/task/post_task.h"
 #include "base/task/task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
@@ -256,10 +255,7 @@ base::Value NetLogFetcherDoneParams(int fetcher_index, int net_error) {
 
 DhcpPacFileFetcherWin::DhcpPacFileFetcherWin(
     URLRequestContext* url_request_context)
-    : state_(STATE_START),
-      num_pending_fetchers_(0),
-      destination_string_(nullptr),
-      url_request_context_(url_request_context),
+    : url_request_context_(url_request_context),
       task_runner_(base::MakeRefCounted<TaskRunnerWithCap>()) {
   DCHECK(url_request_context_);
 }

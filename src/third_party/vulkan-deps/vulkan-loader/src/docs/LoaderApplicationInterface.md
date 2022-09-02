@@ -14,40 +14,42 @@
 
 ## Table of Contents
 
-* [Overview](#overview)
-* [Interfacing with Vulkan Functions](#interfacing-with-vulkan-functions)
-  * [Vulkan Direct Exports](#vulkan-direct-exports)
-  * [Directly Linking to the Loader](#directly-linking-to-the-loader)
-    * [Dynamic Linking](#dynamic-linking)
-    * [Static Linking](#static-linking)
-  * [Indirectly Linking to the Loader](#indirectly-linking-to-the-loader)
-  * [Best Application Performance Setup](#best-application-performance-setup)
-  * [ABI Versioning](#abi-versioning)
-    * [Windows Dynamic Library Usage](#windows-dynamic-library-usage)
-    * [Linux Dynamic Library Usage](#linux-dynamic-library-usage)
-    * [MacOs Dynamic Library Usage](#macos-dynamic-library-usage)
-  * [Bundling the Loader With An Application](#bundling-the-loader-with-an-application)
-* [Application Layer Usage](#application-layer-usage)
-  * [Meta-Layers](#meta-layers)
-  * [Implicit vs Explicit Layers](#implicit-vs-explicit-layers)
-    * [Override Layer](#override-layer)
-  * [Forcing Layer Source Folders](#forcing-layer-source-folders)
-    * [Exception for Elevated Privileges](#exception-for-elevated-privileges)
-  * [Forcing Layers to be Enabled](#forcing-layers-to-be-enabled)
-  * [Overall Layer Ordering](#overall-layer-ordering)
-  * [Debugging Possible Layer Issues](#debugging-possible-layer-issues)
-    * [Enable Loader Debug Layer Output](#enable-loader-debug-layer-output)
-    * [Disable All Layers](#disable-all-layers)
-    * [Enable More Loader Debug Output](#enable-more-loader-debug-output)
-* [Application Usage of Extensions](#application-usage-of-extensions)
-  * [Instance and Device Extensions](#instance-and-device-extensions)
-  * [WSI Extensions](#wsi-extensions)
-  * [Unknown Extensions](#unknown-extensions)
+- [Overview](#overview)
+- [Interfacing with Vulkan Functions](#interfacing-with-vulkan-functions)
+  - [Vulkan Direct Exports](#vulkan-direct-exports)
+  - [Directly Linking to the Loader](#directly-linking-to-the-loader)
+    - [Dynamic Linking](#dynamic-linking)
+    - [Static Linking](#static-linking)
+  - [Indirectly Linking to the Loader](#indirectly-linking-to-the-loader)
+  - [Best Application Performance Setup](#best-application-performance-setup)
+  - [ABI Versioning](#abi-versioning)
+    - [Windows Dynamic Library Usage](#windows-dynamic-library-usage)
+    - [Linux Dynamic Library Usage](#linux-dynamic-library-usage)
+    - [MacOs Dynamic Library Usage](#macos-dynamic-library-usage)
+  - [Bundling the Loader With An Application](#bundling-the-loader-with-an-application)
+- [Application Layer Usage](#application-layer-usage)
+  - [Meta-Layers](#meta-layers)
+  - [Implicit vs Explicit Layers](#implicit-vs-explicit-layers)
+    - [Override Layer](#override-layer)
+  - [Forcing Layer Source Folders](#forcing-layer-source-folders)
+    - [Exception for Elevated Privileges](#exception-for-elevated-privileges)
+  - [Forcing Layers to be Enabled on Windows, Linux and macOS](#forcing-layers-to-be-enabled-on-windows-linux-and-macos)
+  - [Overall Layer Ordering](#overall-layer-ordering)
+  - [Debugging Possible Layer Issues](#debugging-possible-layer-issues)
+    - [Enable Loader Debug Layer Output](#enable-loader-debug-layer-output)
+    - [Disable All Layers](#disable-all-layers)
+    - [Enable More Loader Debug Output](#enable-more-loader-debug-output)
+- [Application Usage of Extensions](#application-usage-of-extensions)
+  - [Instance and Device Extensions](#instance-and-device-extensions)
+  - [WSI Extensions](#wsi-extensions)
+  - [Unknown Extensions](#unknown-extensions)
+  - [Filtering Out Unknown Instance Extension Names](#filtering-out-unknown-instance-extension-names)
+- [Physical Device Ordering](#physical-device-ordering)
 
 ## Overview
 
 This is the Application-centric view of working with the Vulkan loader.
-For the complete overview of all sections of the loader, please refer 
+For the complete overview of all sections of the loader, please refer
 to the [LoaderInterfaceArchitecture.md](LoaderInterfaceArchitecture.md) file.
 
 ## Interfacing with Vulkan Functions
@@ -119,7 +121,7 @@ should set up its own dispatch table for every Vulkan API entry-point.
 For every instance-level Vulkan command in the dispatch table, the function pointer
 should be queried and filled in by using the results of `vkGetInstanceProcAddr`.
 Additionally, for every device-level Vulkan command, the function pointer
-should be queried and filled in using the resulsts of `vkGetDeviceProcAddr`.
+should be queried and filled in using the results of `vkGetDeviceProcAddr`.
 
 *Why do this?*
 
@@ -446,7 +448,7 @@ The table below details more information:
 
 #### Override Layer
 
-The "Override Layer" is a special implicit meta-layer created by the 
+The "Override Layer" is a special implicit meta-layer created by the
 [VkConfig](https://github.com/LunarG/VulkanTools/blob/master/vkconfig/README.md)
 tool and available by default when the tool is running.
 Once VkConfig exits, the override layer is removed, and the system should
@@ -808,13 +810,13 @@ extension support:
 In addition, each of the following OS targets for the loader support target-
 specific extensions:
 
-| Windowing System | Extensions available |
-|----------------|--------------------|
-| Windows  | VK_KHR_win32_surface |
-| Linux (Wayland) | VK_KHR_wayland_surface |
-| Linux (X11) |  VK_KHR_xcb_surface and VK_KHR_xlib_surface |
-| macOS (MoltenVK) | VK_MVK_macos_surface |
-| QNX (Screen) | VK_QNX_screen_surface |
+| Windowing System | Extensions available                       |
+| ---------------- | ------------------------------------------ |
+| Windows          | VK_KHR_win32_surface                       |
+| Linux (Wayland)  | VK_KHR_wayland_surface                     |
+| Linux (X11)      | VK_KHR_xcb_surface and VK_KHR_xlib_surface |
+| macOS (MoltenVK) | VK_MVK_macos_surface                       |
+| QNX (Screen)     | VK_QNX_screen_surface                      |
 
 It is important to understand that while the loader may support the various
 entry-points for these extensions, there is a handshake required to actually
@@ -888,5 +890,38 @@ variable to a non-zero number.
 This will effectively disable the loader's filtering of instance extension
 names.
 
+## Physical Device Ordering
+
+Prior to the 1.3.204 loader, physical devices on Linux could be returned in an
+inconsistent order.
+To remedy this, the Vulkan loader will now sort devices once they have been
+received from the drivers (before returning the information to any enabled
+layers) in the following fashion:
+ * Sort based on device type (Discrete, Integrated, Virtual, all others)
+ * Sort internal to the types based on PCI information (Domain, Bus, Device, and
+   Function).
+
+This allows for a consistent physical device order from run to run on the same
+system, unless the actual underlying hardware changes.
+
+A new environment variable is defined to give users the ability to force a
+specific device, `VK_LOADER_DEVICE_SELECT`.
+This environment variable should be set to the desired devices hex value for
+Vendor Id and Device Id (as returned from `vkGetPhysicalDeviceProperties` in
+the `VkPhysicalDeviceProperties` structure).
+It should look like the following:
+
+```
+set VK_LOADER_DEVICE_SELECT=0x10de:0x1f91
+```
+
+This will force on the device with a vendor ID of "0x10de" and a device ID
+of "0x1f91".
+If that device is not found, this is simply ignored.
+
+All device selection work done in the loader can be disabled by setting the
+environment variable `VK_LOADER_DISABLE_SELECT` to a non-zero value.
+This is intended for debug purposes to narrow down any issues with the loader
+device selection mechanism, but can be used by others.
 
 [Return to the top-level LoaderInterfaceArchitecture.md file.](LoaderInterfaceArchitecture.md)

@@ -4,14 +4,26 @@
 
 #include "chrome/updater/util.h"
 
+#include <algorithm>
+#include <cctype>
+#include <string>
+#include <vector>
+
+#if BUILDFLAG(IS_WIN)
+#include <windows.h>
+#endif  // BUILDFLAG(IS_WIN)
+
 #include "base/base_paths.h"
 #include "base/command_line.h"
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/notreached.h"
 #include "base/path_service.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/version.h"
 #include "build/build_config.h"
 #include "chrome/updater/constants.h"
@@ -22,7 +34,7 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #import "chrome/updater/mac/mac_util.h"
 #endif
 
@@ -50,9 +62,9 @@ struct Charmap {
 
 // Everything except alphanumerics and !'()*-._~
 // See RFC 2396 for the list of reserved characters.
-static const Charmap kQueryCharmap = {{0xffffffffL, 0xfc00987dL, 0x78000001L,
-                                       0xb8000001L, 0xffffffffL, 0xffffffffL,
-                                       0xffffffffL, 0xffffffffL}};
+constexpr Charmap kQueryCharmap = {{0xffffffffL, 0xfc00987dL, 0x78000001L,
+                                    0xb8000001L, 0xffffffffL, 0xffffffffL,
+                                    0xffffffffL, 0xffffffffL}};
 
 // Given text to escape and a Charmap defining which values to escape,
 // return an escaped string.  If use_plus is true, spaces are converted
@@ -91,7 +103,7 @@ std::string EscapeQueryParamValue(base::StringPiece text, bool use_plus) {
 
 absl::optional<base::FilePath> GetBaseDirectory(UpdaterScope scope) {
   absl::optional<base::FilePath> app_data_dir;
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   base::FilePath path;
   if (!base::PathService::Get(scope == UpdaterScope::kSystem
                                   ? base::DIR_PROGRAM_FILES
@@ -101,7 +113,7 @@ absl::optional<base::FilePath> GetBaseDirectory(UpdaterScope scope) {
     return absl::nullopt;
   }
   app_data_dir = path;
-#elif defined(OS_MAC)
+#elif BUILDFLAG(IS_MAC)
   app_data_dir = GetApplicationSupportDirectory(scope);
   if (!app_data_dir) {
     LOG(ERROR) << "Can't retrieve app data directory.";
@@ -149,35 +161,68 @@ absl::optional<base::FilePath> GetVersionedUpdaterFolderPath(
       scope, base::Version(kUpdaterVersion));
 }
 
-absl::optional<tagging::TagArgs> GetTagArgs() {
-  static const absl::optional<tagging::TagArgs> tag_args =
-      []() -> absl::optional<tagging::TagArgs> {
-    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-    const std::string tag = command_line->GetSwitchValueASCII(kTagSwitch);
+TagParsingResult::TagParsingResult() = default;
+TagParsingResult::TagParsingResult(absl::optional<tagging::TagArgs> tag_args,
+                                   tagging::ErrorCode error)
+    : tag_args(tag_args), error(error) {}
+TagParsingResult::~TagParsingResult() = default;
+TagParsingResult::TagParsingResult(const TagParsingResult&) = default;
+TagParsingResult& TagParsingResult::operator=(const TagParsingResult&) =
+    default;
+
+TagParsingResult GetTagArgsForCommandLine(
+    const base::CommandLine& command_line) {
+  std::string tag = command_line.HasSwitch(kTagSwitch)
+                        ? command_line.GetSwitchValueASCII(kTagSwitch)
+                        : command_line.GetSwitchValueASCII(kHandoffSwitch);
+#if BUILDFLAG(IS_WIN)
     if (tag.empty())
-      return absl::nullopt;
+      tag = GetSwitchValueInLegacyFormat(command_line.GetCommandLineString(),
+                                         base::ASCIIToWide(kHandoffSwitch));
+#endif
+    if (tag.empty())
+      return {};
     tagging::TagArgs tag_args;
     const tagging::ErrorCode error =
         tagging::Parse(tag, absl::nullopt, &tag_args);
     VLOG_IF(1, error != tagging::ErrorCode::kSuccess)
         << "Tag parsing returned " << error << ".";
-    return error == tagging::ErrorCode::kSuccess ? absl::make_optional(tag_args)
-                                                 : absl::nullopt;
-  }();
+    return {tag_args, error};
+}
 
-  return tag_args;
+TagParsingResult GetTagArgs() {
+  return GetTagArgsForCommandLine(*base::CommandLine::ForCurrentProcess());
+}
+
+absl::optional<tagging::AppArgs> GetAppArgs(const std::string& app_id) {
+  const absl::optional<tagging::TagArgs> tag_args = GetTagArgs().tag_args;
+  if (!tag_args || tag_args->apps.empty())
+    return absl::nullopt;
+
+  const std::vector<tagging::AppArgs>& apps_args = tag_args->apps;
+  std::vector<tagging::AppArgs>::const_iterator it = std::find_if(
+      std::begin(apps_args), std::end(apps_args),
+      [&app_id](const tagging::AppArgs& app_args) {
+        return base::EqualsCaseInsensitiveASCII(app_args.app_id, app_id);
+      });
+  return it != std::end(apps_args) ? absl::optional<tagging::AppArgs>(*it)
+                                   : absl::nullopt;
+}
+
+std::string GetInstallDataIndexFromAppArgs(const std::string& app_id) {
+  const absl::optional<tagging::AppArgs> app_args = GetAppArgs(app_id);
+  return app_args ? app_args->install_data_index : std::string();
 }
 
 base::CommandLine MakeElevated(base::CommandLine command_line) {
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   command_line.PrependWrapper("/usr/bin/sudo");
 #endif
   return command_line;
 }
 
 // The log file is created in DIR_LOCAL_APP_DATA or DIR_ROAMING_APP_DATA.
-void InitLogging(UpdaterScope updater_scope,
-                 const base::FilePath::StringType& filename) {
+void InitLogging(UpdaterScope updater_scope) {
   logging::LoggingSettings settings;
   const absl::optional<base::FilePath> log_dir =
       GetBaseDirectory(updater_scope);
@@ -185,7 +230,8 @@ void InitLogging(UpdaterScope updater_scope,
     LOG(ERROR) << "Error getting base dir.";
     return;
   }
-  const base::FilePath log_file = log_dir->Append(filename);
+  const base::FilePath log_file =
+      log_dir->Append(FILE_PATH_LITERAL("updater.log"));
   settings.log_file_path = log_file.value().c_str();
   settings.logging_dest = logging::LOG_TO_ALL;
   logging::InitLogging(settings);
@@ -194,6 +240,8 @@ void InitLogging(UpdaterScope updater_scope,
                        /*enable_timestamp=*/true,
                        /*enable_tickcount=*/false);
   VLOG(1) << "Log file: " << settings.log_file_path;
+  VLOG(1) << "Process command line: "
+          << base::CommandLine::ForCurrentProcess()->GetCommandLineString();
 }
 
 // This function and the helper functions are copied from net/base/url_util.cc
@@ -213,7 +261,7 @@ GURL AppendQueryParameter(const GURL& url,
   return url.ReplaceComponents(replacements);
 }
 
-#if defined(OS_LINUX)
+#if BUILDFLAG(IS_LINUX)
 
 // TODO(crbug.com/1276188) - implement the functions below.
 absl::optional<base::FilePath> GetUpdaterFolderPath(UpdaterScope scope) {
@@ -231,5 +279,50 @@ bool PathOwnedByUser(const base::FilePath& path) {
   return false;
 }
 
-#endif  // OS_LINUX
+#endif  // BUILDFLAG(IS_LINUX)
+
+#if BUILDFLAG(IS_WIN)
+
+std::wstring GetTaskNamePrefix(UpdaterScope scope) {
+  std::wstring task_name = GetTaskDisplayName(scope);
+  task_name.erase(std::remove_if(task_name.begin(), task_name.end(), isspace),
+                  task_name.end());
+  return task_name;
+}
+
+std::wstring GetTaskDisplayName(UpdaterScope scope) {
+  return base::StrCat({base::ASCIIToWide(PRODUCT_FULLNAME_STRING), L" Task ",
+                       scope == UpdaterScope::kSystem ? L"System " : L"User ",
+                       kUpdaterVersionUtf16});
+}
+
+#endif  // BUILDFLAG(IS_WIN)
+
+absl::optional<base::FilePath> WriteInstallerDataToTempFile(
+    const base::FilePath& directory,
+    const std::string& installer_data) {
+  VLOG(2) << __func__ << ": " << directory << ": " << installer_data;
+
+  if (!base::DirectoryExists(directory))
+    return absl::nullopt;
+
+  if (installer_data.empty())
+    return absl::nullopt;
+
+  base::FilePath path;
+  base::File file = base::CreateAndOpenTemporaryFileInDir(directory, &path);
+  if (!file.IsValid())
+    return absl::nullopt;
+
+  const std::string installer_data_utf8_bom =
+      base::StrCat({kUTF8BOM, installer_data});
+  if (file.Write(0, installer_data_utf8_bom.c_str(),
+                 installer_data_utf8_bom.length()) == -1) {
+    VLOG(2) << __func__ << " file.Write failed";
+    return absl::nullopt;
+  }
+
+  return path;
+}
+
 }  // namespace updater

@@ -29,6 +29,10 @@ struct GestureEventData;
 struct GestureEventDetails;
 class MotionEvent;
 
+// The scroll percentage per mousewheel tick. Used to determine scroll delta
+// if percent based scrolling is enabled.
+const float kScrollPercentPerLineOrChar = 0.05f;
+
 blink::WebTouchEvent CreateWebTouchEventFromMotionEvent(
     const MotionEvent& event,
     bool may_cause_scrolling,
@@ -96,7 +100,7 @@ inline const blink::WebGestureEvent& ToWebGestureEvent(
 blink::WebGestureEvent ScrollBeginFromScrollUpdate(
     const blink::WebGestureEvent& scroll_update);
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 // Convenience method that converts an instance to blink event.
 std::unique_ptr<blink::WebGestureEvent>
 CreateWebGestureEventFromGestureEventAndroid(const GestureEventAndroid& event);

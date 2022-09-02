@@ -4,6 +4,7 @@
 
 #include "components/viz/service/display/display_damage_tracker.h"
 
+#include "base/observer_list.h"
 #include "base/trace_event/trace_event.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "components/viz/service/display/surface_aggregator.h"
@@ -173,11 +174,6 @@ bool DisplayDamageTracker::OnSurfaceDamaged(const SurfaceId& surface_id,
   ProcessSurfaceDamage(surface_id, ack, display_damaged);
 
   return display_damaged;
-}
-
-void DisplayDamageTracker::OnSurfaceDestroyed(const SurfaceId& surface_id) {
-  TRACE_EVENT0("viz", "DisplayDamageTracker::SurfaceDestroyed");
-  aggregator_->ReleaseResources(surface_id);
 }
 
 void DisplayDamageTracker::OnSurfaceDamageExpected(const SurfaceId& surface_id,

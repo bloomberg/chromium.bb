@@ -8,20 +8,24 @@
 #ifndef SKSL_SYMBOLTABLE
 #define SKSL_SYMBOLTABLE
 
-#include "include/private/SkSLString.h"
+#include "include/core/SkTypes.h"
+#include "include/private/SkOpts_spi.h"
 #include "include/private/SkSLSymbol.h"
-#include "include/private/SkTArray.h"
 #include "include/private/SkTHash.h"
-#include "include/sksl/SkSLErrorReporter.h"
 
 #include <forward_list>
 #include <memory>
+#include <string>
+#include <string_view>
+#include <type_traits>
+#include <utility>
 #include <vector>
 
 namespace SkSL {
 
 class Context;
 class FunctionDeclaration;
+class Type;
 
 /**
  * Maps identifiers to symbols. Functions, in particular, are mapped to either FunctionDeclaration
@@ -74,12 +78,7 @@ public:
      * UnresolvedFunction symbol (pointing to all of the candidates) will be added to the symbol
      * table and returned.
      */
-    const Symbol* operator[](skstd::string_view name);
-
-    /**
-     * Creates a new name for a symbol which already exists; does not take ownership of Symbol*.
-     */
-    void addAlias(skstd::string_view name, const Symbol* symbol);
+    const Symbol* operator[](std::string_view name);
 
     void addWithoutOwnership(const Symbol* symbol);
 
@@ -95,13 +94,6 @@ public:
     const T* takeOwnershipOfSymbol(std::unique_ptr<T> symbol) {
         const T* ptr = symbol.get();
         fOwnedSymbols.push_back(std::move(symbol));
-        return ptr;
-    }
-
-    template <typename T>
-    const T* takeOwnershipOfIRNode(std::unique_ptr<T> node) {
-        const T* ptr = node.get();
-        fOwnedNodes.push_back(std::move(node));
         return ptr;
     }
 
@@ -136,7 +128,7 @@ public:
         return this->isBuiltin() ? this : fParent->builtinParent();
     }
 
-    const String* takeOwnershipOfString(String n);
+    const std::string* takeOwnershipOfString(std::string n);
 
     std::shared_ptr<SymbolTable> fParent;
 
@@ -144,8 +136,8 @@ public:
 
 private:
     struct SymbolKey {
-        skstd::string_view fName;
-        uint32_t       fHash;
+        std::string_view fName;
+        uint32_t         fHash;
 
         bool operator==(const SymbolKey& that) const { return fName == that.fName; }
         bool operator!=(const SymbolKey& that) const { return fName != that.fName; }
@@ -154,7 +146,7 @@ private:
         };
     };
 
-    static SymbolKey MakeSymbolKey(skstd::string_view name) {
+    static SymbolKey MakeSymbolKey(std::string_view name) {
         return SymbolKey{name, SkOpts::hash_fn(name.data(), name.size(), 0)};
     }
 
@@ -163,8 +155,7 @@ private:
     static std::vector<const FunctionDeclaration*> GetFunctions(const Symbol& s);
 
     bool fBuiltin = false;
-    std::vector<std::unique_ptr<IRNode>> fOwnedNodes;
-    std::forward_list<String> fOwnedStrings;
+    std::forward_list<std::string> fOwnedStrings;
     SkTHashMap<SymbolKey, const Symbol*, SymbolKey::Hash> fSymbols;
     const Context& fContext;
 

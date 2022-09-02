@@ -62,18 +62,18 @@
 #ifndef BASE_SYNCHRONIZATION_CONDITION_VARIABLE_H_
 #define BASE_SYNCHRONIZATION_CONDITION_VARIABLE_H_
 
+#include "base/dcheck_is_on.h"
 #include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
 
-#if defined(OS_POSIX) || defined(OS_FUCHSIA)
+#if BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
 #include <pthread.h>
 #endif
 
 #include "base/base_export.h"
-#include "base/check_op.h"
 #include "base/synchronization/lock.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "base/win/windows_types.h"
 #endif
 
@@ -113,10 +113,10 @@ class BASE_EXPORT ConditionVariable {
   void declare_only_used_while_idle() { waiting_is_blocking_ = false; }
 
  private:
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   CHROME_CONDITION_VARIABLE cv_;
   const raw_ptr<CHROME_SRWLOCK> srwlock_;
-#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
+#elif BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
   pthread_cond_t condition_;
   raw_ptr<pthread_mutex_t> user_mutex_;
 #endif

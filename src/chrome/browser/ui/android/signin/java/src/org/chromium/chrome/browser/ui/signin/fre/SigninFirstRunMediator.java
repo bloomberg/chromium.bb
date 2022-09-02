@@ -12,6 +12,7 @@ import android.text.TextUtils;
 import androidx.annotation.Nullable;
 
 import org.chromium.chrome.browser.firstrun.MobileFreProgress;
+import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.services.ProfileDataCache;
@@ -27,15 +28,16 @@ import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.AccountUtils;
 import org.chromium.components.signin.AccountsChangeObserver;
-import org.chromium.components.signin.ChildAccountStatus;
-import org.chromium.components.signin.ChildAccountStatus.Status;
+import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
 import org.chromium.components.signin.metrics.SignoutReason;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
+import org.chromium.ui.util.ColorUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 class SigninFirstRunMediator implements AccountsChangeObserver, ProfileDataCache.Observer,
@@ -44,17 +46,19 @@ class SigninFirstRunMediator implements AccountsChangeObserver, ProfileDataCache
     private final ModalDialogManager mModalDialogManager;
     private final AccountManagerFacade mAccountManagerFacade;
     private final Delegate mDelegate;
+    private final PrivacyPreferencesManager mPrivacyPreferencesManager;
     private final PropertyModel mModel;
     private final ProfileDataCache mProfileDataCache;
     private AccountPickerDialogCoordinator mDialogCoordinator;
     private @Nullable String mSelectedAccountName;
     private @Nullable String mDefaultAccountName;
 
-    SigninFirstRunMediator(
-            Context context, ModalDialogManager modalDialogManager, Delegate delegate) {
+    SigninFirstRunMediator(Context context, ModalDialogManager modalDialogManager,
+            Delegate delegate, PrivacyPreferencesManager privacyPreferencesManager) {
         mContext = context;
         mModalDialogManager = modalDialogManager;
         mDelegate = delegate;
+        mPrivacyPreferencesManager = privacyPreferencesManager;
         mProfileDataCache = ProfileDataCache.createWithDefaultImageSizeAndNoBadge(mContext);
         mModel = SigninFirstRunProperties.createModel(this::onSelectedAccountClicked,
                 this::onContinueAsClicked, this::onDismissClicked,
@@ -77,6 +81,11 @@ class SigninFirstRunMediator implements AccountsChangeObserver, ProfileDataCache
         mAccountManagerFacade.removeObserver(this);
     }
 
+    void reset() {
+        mModel.set(SigninFirstRunProperties.SHOW_SIGNIN_PROGRESS_SPINNER_WITH_TEXT, false);
+        mModel.set(SigninFirstRunProperties.SHOW_SIGNIN_PROGRESS_SPINNER, false);
+    }
+
     void onNativeAndPolicyLoaded(boolean hasPolicies) {
         mModel.set(SigninFirstRunProperties.ARE_NATIVE_AND_POLICY_LOADED, true);
         mModel.set(SigninFirstRunProperties.FRE_POLICY, hasPolicies ? new FrePolicy() : null);
@@ -85,6 +94,19 @@ class SigninFirstRunMediator implements AccountsChangeObserver, ProfileDataCache
                             .getSigninManager(Profile.getLastUsedRegularProfile())
                             .isSigninDisabledByPolicy();
         mModel.set(SigninFirstRunProperties.IS_SIGNIN_SUPPORTED, isSigninSupported);
+
+        if (!mPrivacyPreferencesManager.isUsageAndCrashReportingPermittedByPolicy()) {
+            // If metrics reporting is disabled by policy then there is at least one policy.
+            // Therefore, policies have loaded and frePolicy is not null.
+            assert hasPolicies;
+
+            final FrePolicy frePolicy = mModel.get(SigninFirstRunProperties.FRE_POLICY);
+            frePolicy.metricsReportingDisabledByPolicy = true;
+        }
+
+        final boolean isChild = mModel.get(SigninFirstRunProperties.IS_SELECTED_ACCOUNT_SUPERVISED);
+        mModel.set(SigninFirstRunProperties.FOOTER_STRING,
+                getFooterString(isMetricsReportingDisabledByPolicy()));
     }
 
     /** Implements {@link ProfileDataCache.Observer}. */
@@ -110,10 +132,17 @@ class SigninFirstRunMediator implements AccountsChangeObserver, ProfileDataCache
         mDelegate.addAccount();
     }
 
+    protected boolean isMetricsReportingDisabledByPolicy() {
+        @Nullable
+        FrePolicy frePolicy = mModel.get(SigninFirstRunProperties.FRE_POLICY);
+        return frePolicy != null && frePolicy.metricsReportingDisabledByPolicy;
+    }
+
     /**
      * Callback for the PropertyKey {@link SigninFirstRunProperties#ON_SELECTED_ACCOUNT_CLICKED}.
      */
     private void onSelectedAccountClicked() {
+        if (isContinueOrDismissClicked()) return;
         mDialogCoordinator =
                 new AccountPickerDialogCoordinator(mContext, this, mModalDialogManager);
     }
@@ -122,16 +151,23 @@ class SigninFirstRunMediator implements AccountsChangeObserver, ProfileDataCache
      * Callback for the PropertyKey {@link SigninFirstRunProperties#ON_CONTINUE_AS_CLICKED}.
      */
     private void onContinueAsClicked() {
+        if (isContinueOrDismissClicked()) return;
         if (!mModel.get(SigninFirstRunProperties.IS_SIGNIN_SUPPORTED)) {
             mDelegate.acceptTermsOfService();
+            mDelegate.advanceToNextPage();
             return;
         }
         if (mSelectedAccountName == null) {
             mDelegate.addAccount();
             return;
         }
+
+        // In all other cases, the button text is "Continue as ...", so mark ToS as accepted.
+        // This is needed to get metrics/crash reports from the sign-in flow itself.
+        mDelegate.acceptTermsOfService();
         if (mModel.get(SigninFirstRunProperties.IS_SELECTED_ACCOUNT_SUPERVISED)) {
-            mDelegate.acceptTermsOfService();
+            // Don't perform the sign-in here, as it will be handled by SigninChecker.
+            mDelegate.advanceToNextPage();
             return;
         }
         assert mModel.get(SigninFirstRunProperties.ARE_NATIVE_AND_POLICY_LOADED)
@@ -140,20 +176,26 @@ class SigninFirstRunMediator implements AccountsChangeObserver, ProfileDataCache
                 TextUtils.equals(mDefaultAccountName, mSelectedAccountName)
                         ? MobileFreProgress.WELCOME_SIGNIN_WITH_DEFAULT_ACCOUNT
                         : MobileFreProgress.WELCOME_SIGNIN_WITH_NON_DEFAULT_ACCOUNT);
-        if (IdentityServicesProvider.get()
+        // If the user signs into an account on the FRE, goes to the sync consent page and presses
+        // back to come back to the FRE, then there will already be an account signed in.
+        @Nullable
+        CoreAccountInfo signedInAccount =
+                IdentityServicesProvider.get()
                         .getIdentityManager(Profile.getLastUsedRegularProfile())
-                        .hasPrimaryAccount(ConsentLevel.SIGNIN)) {
-            mDelegate.acceptTermsOfService();
+                        .getPrimaryAccountInfo(ConsentLevel.SIGNIN);
+        if (signedInAccount != null && signedInAccount.getEmail().equals(mSelectedAccountName)) {
+            mDelegate.advanceToNextPage();
             return;
         }
+        mModel.set(SigninFirstRunProperties.SHOW_SIGNIN_PROGRESS_SPINNER_WITH_TEXT, true);
         final SigninManager signinManager = IdentityServicesProvider.get().getSigninManager(
                 Profile.getLastUsedRegularProfile());
-        signinManager.onFirstRunCheckDone();
         signinManager.signin(
                 AccountUtils.createAccountFromName(mSelectedAccountName), new SignInCallback() {
                     @Override
                     public void onSignInComplete() {
-                        mDelegate.acceptTermsOfService();
+                        // Wait for sign-in to be complete before advancing to the next page.
+                        mDelegate.advanceToNextPage();
                     }
 
                     @Override
@@ -167,19 +209,35 @@ class SigninFirstRunMediator implements AccountsChangeObserver, ProfileDataCache
      * Callback for the PropertyKey {@link SigninFirstRunProperties#ON_DISMISS_CLICKED}.
      */
     private void onDismissClicked() {
+        if (isContinueOrDismissClicked()) return;
         assert mModel.get(SigninFirstRunProperties.ARE_NATIVE_AND_POLICY_LOADED)
             : "The dismiss button shouldn't be visible before the native is not initialized!";
         mDelegate.recordFreProgressHistogram(MobileFreProgress.WELCOME_DISMISS);
+        mDelegate.acceptTermsOfService();
         if (IdentityServicesProvider.get()
                         .getIdentityManager(Profile.getLastUsedRegularProfile())
                         .hasPrimaryAccount(ConsentLevel.SIGNIN)) {
+            mModel.set(SigninFirstRunProperties.SHOW_SIGNIN_PROGRESS_SPINNER, true);
             IdentityServicesProvider.get()
                     .getSigninManager(Profile.getLastUsedRegularProfile())
-                    .signOut(SignoutReason.ABORT_SIGNIN, mDelegate::acceptTermsOfService,
+                    .signOut(SignoutReason.ABORT_SIGNIN,
+                            ()
+                                    -> { mDelegate.advanceToNextPage(); },
                             /* forceWipeUserData= */ false);
         } else {
-            mDelegate.acceptTermsOfService();
+            mDelegate.advanceToNextPage();
         }
+    }
+
+    /**
+     * Returns whether the user has already clicked either 'Continue' or 'Dismiss'.
+     * If the user has pressed either of the two buttons consecutive taps are ignored.
+     * See crbug.com/1294994 for details.
+     */
+    private boolean isContinueOrDismissClicked() {
+        // These property keys are set when continue or dismiss button is clicked respectively.
+        return mModel.get(SigninFirstRunProperties.SHOW_SIGNIN_PROGRESS_SPINNER_WITH_TEXT)
+                || mModel.get(SigninFirstRunProperties.SHOW_SIGNIN_PROGRESS_SPINNER);
     }
 
     private void setSelectedAccountName(String accountName) {
@@ -214,36 +272,43 @@ class SigninFirstRunMediator implements AccountsChangeObserver, ProfileDataCache
                 mAccountManagerFacade, accounts, this::onChildAccountStatusReady);
     }
 
-    private void onChildAccountStatusReady(@Status int status, @Nullable Account childAccount) {
-        final boolean isChild = ChildAccountStatus.isChild(status);
+    private void onChildAccountStatusReady(boolean isChild, @Nullable Account childAccount) {
         mModel.set(SigninFirstRunProperties.IS_SELECTED_ACCOUNT_SUPERVISED, isChild);
-        mModel.set(SigninFirstRunProperties.FOOTER_STRING, getFooterString(isChild));
+        mModel.set(SigninFirstRunProperties.FOOTER_STRING,
+                getFooterString(isMetricsReportingDisabledByPolicy()));
         // Selected account data will be updated in {@link #onProfileDataUpdated}
         mProfileDataCache.setBadge(isChild ? R.drawable.ic_account_child_20dp : 0);
     }
 
-    private SpannableString getFooterString(boolean hasChildAccount) {
+    /**
+     * Builds footer string dynamically.
+     * First line has a TOS link. Second line appears only if MetricsReporting is not
+     * disabled by policy.
+     */
+    private SpannableString getFooterString(boolean isMetricsReportingDisabled) {
+        String footerString = mContext.getString(R.string.signin_fre_footer_tos);
+
+        ArrayList<SpanApplier.SpanInfo> spans = new ArrayList<>();
+        // Terms of Service SpanInfo.
         final NoUnderlineClickableSpan clickableTermsOfServiceSpan =
-                new NoUnderlineClickableSpan(mContext.getResources(),
-                        view -> mDelegate.showInfoPage(R.string.google_terms_of_service_url));
-        final SpanApplier.SpanInfo tosSpanInfo =
-                new SpanApplier.SpanInfo("<TOS_LINK>", "</TOS_LINK>", clickableTermsOfServiceSpan);
-        final NoUnderlineClickableSpan clickableUMADialogSpan = new NoUnderlineClickableSpan(
-                mContext.getResources(), view -> mDelegate.openUmaDialog());
-        final SpanApplier.SpanInfo umaSpanInfo =
-                new SpanApplier.SpanInfo("<UMA_LINK>", "</UMA_LINK>", clickableUMADialogSpan);
-        if (hasChildAccount) {
-            final NoUnderlineClickableSpan clickablePrivacyPolicySpan =
-                    new NoUnderlineClickableSpan(mContext.getResources(),
-                            view -> mDelegate.showInfoPage(R.string.google_privacy_policy_url));
-            final SpanApplier.SpanInfo privacySpanInfo = new SpanApplier.SpanInfo(
-                    "<PRIVACY_LINK>", "</PRIVACY_LINK>", clickablePrivacyPolicySpan);
-            return SpanApplier.applySpans(
-                    mContext.getString(R.string.signin_fre_footer_supervised_user), tosSpanInfo,
-                    umaSpanInfo, privacySpanInfo);
-        } else {
-            return SpanApplier.applySpans(
-                    mContext.getString(R.string.signin_fre_footer), tosSpanInfo, umaSpanInfo);
+                new NoUnderlineClickableSpan(mContext,
+                        view
+                        -> mDelegate.showInfoPage(ColorUtils.inNightMode(mContext)
+                                        ? R.string.google_terms_of_service_dark_mode_url
+                                        : R.string.google_terms_of_service_url));
+        spans.add(
+                new SpanApplier.SpanInfo("<TOS_LINK>", "</TOS_LINK>", clickableTermsOfServiceSpan));
+
+        // Metrics and Crash Reporting SpanInfo.
+        if (!isMetricsReportingDisabled) {
+            footerString += " " + mContext.getString(R.string.signin_fre_footer_metrics_reporting);
+            final NoUnderlineClickableSpan clickableUMADialogSpan =
+                    new NoUnderlineClickableSpan(mContext, view -> mDelegate.openUmaDialog());
+            spans.add(
+                    new SpanApplier.SpanInfo("<UMA_LINK>", "</UMA_LINK>", clickableUMADialogSpan));
         }
+
+        // Apply spans to footer string.
+        return SpanApplier.applySpans(footerString, spans.toArray(new SpanApplier.SpanInfo[0]));
     }
 }

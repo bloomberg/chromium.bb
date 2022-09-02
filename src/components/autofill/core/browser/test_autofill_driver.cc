@@ -15,18 +15,24 @@
 namespace autofill {
 
 TestAutofillDriver::TestAutofillDriver()
-    : test_shared_loader_factory_(
+    :
+#if !BUILDFLAG(IS_IOS)
+      ContentAutofillDriver(/*render_frame_host=*/nullptr,
+                            /*autofill_router=*/nullptr),
+#endif
+      test_shared_loader_factory_(
           base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-              &test_url_loader_factory_)) {}
+              &test_url_loader_factory_)) {
+}
 
-TestAutofillDriver::~TestAutofillDriver() {}
+TestAutofillDriver::~TestAutofillDriver() = default;
 
 bool TestAutofillDriver::IsIncognito() const {
   return is_incognito_;
 }
 
-bool TestAutofillDriver::IsInMainFrame() const {
-  return is_in_main_frame_;
+bool TestAutofillDriver::IsInAnyMainFrame() const {
+  return is_in_any_main_frame_;
 }
 
 bool TestAutofillDriver::IsPrerendering() const {
@@ -51,31 +57,27 @@ bool TestAutofillDriver::RendererIsAvailable() {
   return true;
 }
 
-#if !defined(OS_IOS)
+#if !BUILDFLAG(IS_IOS)
 webauthn::InternalAuthenticator*
 TestAutofillDriver::GetOrCreateCreditCardInternalAuthenticator() {
   return test_authenticator_.get();
 }
 #endif
 
-base::flat_map<FieldGlobalId, ServerFieldType>
-TestAutofillDriver::FillOrPreviewForm(
+std::vector<FieldGlobalId> TestAutofillDriver::FillOrPreviewForm(
     int query_id,
     mojom::RendererFormDataAction action,
     const FormData& form_data,
     const url::Origin& triggered_origin,
     const base::flat_map<FieldGlobalId, ServerFieldType>& field_type_map) {
-  base::flat_map<FieldGlobalId, ServerFieldType> result = field_type_map;
-  if (field_type_map_filter_) {
-    base::EraseIf(result, [&](const auto& p) {
-      return !field_type_map_filter_.Run(triggered_origin, p.first, p.second);
-    });
+  std::vector<FieldGlobalId> result;
+  for (const auto& [id, type] : field_type_map) {
+    if (!field_type_map_filter_ ||
+        field_type_map_filter_.Run(triggered_origin, id, type)) {
+      result.push_back(id);
+    }
   }
   return result;
-}
-
-void TestAutofillDriver::PropagateAutofillPredictions(
-    const std::vector<FormStructure*>& forms) {
 }
 
 void TestAutofillDriver::HandleParsedForms(
@@ -120,8 +122,8 @@ void TestAutofillDriver::SetIsIncognito(bool is_incognito) {
   is_incognito_ = is_incognito;
 }
 
-void TestAutofillDriver::SetIsInMainFrame(bool is_in_main_frame) {
-  is_in_main_frame_ = is_in_main_frame;
+void TestAutofillDriver::SetIsInAnyMainFrame(bool is_in_any_main_frame) {
+  is_in_any_main_frame_ = is_in_any_main_frame;
 }
 
 void TestAutofillDriver::SetIsolationInfo(
@@ -140,7 +142,7 @@ void TestAutofillDriver::SetSharedURLLoaderFactory(
   test_shared_loader_factory_ = url_loader_factory;
 }
 
-#if !defined(OS_IOS)
+#if !BUILDFLAG(IS_IOS)
 void TestAutofillDriver::SetAuthenticator(
     webauthn::InternalAuthenticator* authenticator_) {
   test_authenticator_.reset(authenticator_);

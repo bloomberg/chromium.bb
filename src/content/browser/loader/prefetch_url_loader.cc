@@ -143,7 +143,8 @@ void PrefetchURLLoader::OnReceiveEarlyHints(
 }
 
 void PrefetchURLLoader::OnReceiveResponse(
-    network::mojom::URLResponseHeadPtr response) {
+    network::mojom::URLResponseHeadPtr response,
+    mojo::ScopedDataPipeConsumerHandle body) {
   if (is_signed_exchange_handling_enabled_ &&
       signed_exchange_utils::ShouldHandleAsSignedHTTPExchange(
           resource_request_.url, *response)) {
@@ -156,11 +157,10 @@ void PrefetchURLLoader::OnReceiveResponse(
     signed_exchange_prefetch_handler_ =
         std::make_unique<SignedExchangePrefetchHandler>(
             frame_tree_node_id_, resource_request_, std::move(response),
-            mojo::ScopedDataPipeConsumerHandle(), loader_.Unbind(),
-            client_receiver_.Unbind(), network_loader_factory_,
-            url_loader_throttles_getter_, this, network_isolation_key_,
-            signed_exchange_prefetch_metric_recorder_, accept_langs_,
-            keep_entry_for_prefetch_cache);
+            std::move(body), loader_.Unbind(), client_receiver_.Unbind(),
+            network_loader_factory_, url_loader_throttles_getter_, this,
+            network_isolation_key_, signed_exchange_prefetch_metric_recorder_,
+            accept_langs_, keep_entry_for_prefetch_cache);
     return;
   }
 
@@ -179,7 +179,26 @@ void PrefetchURLLoader::OnReceiveResponse(
     response->recursive_prefetch_token = recursive_prefetch_token;
   }
 
-  forwarding_client_->OnReceiveResponse(std::move(response));
+  if (!body) {
+    forwarding_client_->OnReceiveResponse(std::move(response),
+                                          mojo::ScopedDataPipeConsumerHandle());
+    return;
+  }
+
+  response_ = std::move(response);
+  if (prefetched_signed_exchange_cache_adapter_ &&
+      signed_exchange_prefetch_handler_) {
+    prefetched_signed_exchange_cache_adapter_->OnStartLoadingResponseBody(
+        std::move(body));
+    return;
+  }
+
+  // Just drain the original response's body here.
+  DCHECK(!pipe_drainer_);
+  pipe_drainer_ =
+      std::make_unique<mojo::DataPipeDrainer>(this, std::move(body));
+
+  SendEmptyBody();
 }
 
 void PrefetchURLLoader::OnReceiveRedirect(
@@ -215,23 +234,6 @@ void PrefetchURLLoader::OnTransferSizeUpdated(int32_t transfer_size_diff) {
   forwarding_client_->OnTransferSizeUpdated(transfer_size_diff);
 }
 
-void PrefetchURLLoader::OnStartLoadingResponseBody(
-    mojo::ScopedDataPipeConsumerHandle body) {
-  if (prefetched_signed_exchange_cache_adapter_ &&
-      signed_exchange_prefetch_handler_) {
-    prefetched_signed_exchange_cache_adapter_->OnStartLoadingResponseBody(
-        std::move(body));
-    return;
-  }
-
-  // Just drain the original response's body here.
-  DCHECK(!pipe_drainer_);
-  pipe_drainer_ =
-      std::make_unique<mojo::DataPipeDrainer>(this, std::move(body));
-
-  SendEmptyBody();
-}
-
 void PrefetchURLLoader::OnComplete(
     const network::URLLoaderCompletionStatus& status) {
   if (prefetched_signed_exchange_cache_adapter_ &&
@@ -256,7 +258,9 @@ bool PrefetchURLLoader::SendEmptyBody() {
     client_receiver_.reset();
     return false;
   }
-  forwarding_client_->OnStartLoadingResponseBody(std::move(consumer));
+  DCHECK(response_);
+  forwarding_client_->OnReceiveResponse(std::move(response_),
+                                        std::move(consumer));
   return true;
 }
 

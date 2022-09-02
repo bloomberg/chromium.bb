@@ -3,8 +3,11 @@
 # found in the LICENSE file.
 """Class for interacting with the Skia Gold image diffing service."""
 
+# pylint: disable=useless-object-inheritance
+
 import logging
 import os
+import platform
 import shutil
 import sys
 import tempfile
@@ -17,7 +20,11 @@ GOLDCTL_BINARY = os.path.join(CHROMIUM_SRC, 'tools', 'skia_goldctl')
 if sys.platform == 'win32':
   GOLDCTL_BINARY = os.path.join(GOLDCTL_BINARY, 'win', 'goldctl') + '.exe'
 elif sys.platform == 'darwin':
-  GOLDCTL_BINARY = os.path.join(GOLDCTL_BINARY, 'mac', 'goldctl')
+  machine = platform.machine().lower()
+  if any(machine.startswith(m) for m in ('arm64', 'aarch64')):
+    GOLDCTL_BINARY = os.path.join(GOLDCTL_BINARY, 'mac_arm64', 'goldctl')
+  else:
+    GOLDCTL_BINARY = os.path.join(GOLDCTL_BINARY, 'mac_amd64', 'goldctl')
 else:
   GOLDCTL_BINARY = os.path.join(GOLDCTL_BINARY, 'linux', 'goldctl')
 
@@ -75,9 +82,10 @@ class SkiaGoldSession(object):
     self._bucket = bucket
     self._local_png_directory = (self._gold_properties.local_png_directory
                                  or tempfile.mkdtemp())
-    self._triage_link_file = tempfile.NamedTemporaryFile(suffix='.txt',
-                                                         dir=working_dir,
-                                                         delete=False).name
+    with tempfile.NamedTemporaryFile(suffix='.txt',
+                                     dir=working_dir,
+                                     delete=False) as triage_link_file:
+      self._triage_link_file = triage_link_file.name
     # A map of image name (string) to ComparisonResults for that image.
     self._comparison_results = {}
     self._authenticated = False

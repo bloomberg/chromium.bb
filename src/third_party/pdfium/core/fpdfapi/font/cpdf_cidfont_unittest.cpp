@@ -6,24 +6,18 @@
 
 #include <utility>
 
-#include "core/fpdfapi/page/cpdf_docpagedata.h"
-#include "core/fpdfapi/page/cpdf_pagemodule.h"
+#include "core/fpdfapi/page/test_with_page_module.h"
 #include "core/fpdfapi/parser/cpdf_array.h"
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
 #include "core/fpdfapi/parser/cpdf_document.h"
 #include "core/fpdfapi/parser/cpdf_name.h"
-#include "core/fpdfapi/render/cpdf_docrenderdata.h"
+#include "core/fpdfapi/parser/cpdf_test_document.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class CPDF_CIDFontTest : public testing::Test {
- protected:
-  void SetUp() override { CPDF_PageModule::Create(); }
-  void TearDown() override { CPDF_PageModule::Destroy(); }
-};
+using CPDF_CIDFontTest = TestWithPageModule;
 
 TEST_F(CPDF_CIDFontTest, BUG_920636) {
-  CPDF_Document doc(std::make_unique<CPDF_DocRenderData>(),
-                    std::make_unique<CPDF_DocPageData>());
+  CPDF_TestDocument doc;
   auto font_dict = pdfium::MakeRetain<CPDF_Dictionary>();
   font_dict->SetNewFor<CPDF_Name>("Encoding", "Identity−H");
 

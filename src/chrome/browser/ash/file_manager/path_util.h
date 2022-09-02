@@ -10,13 +10,18 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "chrome/browser/ash/crostini/crostini_util.h"
 #include "storage/browser/file_system/file_system_url.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class GURL;
 class Profile;
 
 namespace file_manager {
 namespace util {
+
+// Absolute path for FuseBox media mount point.
+extern const base::FilePath::CharType kFuseBoxMediaPath[];
 
 // Absolute base path for removable media on Chrome OS. Exposed here so it can
 // be used by tests.
@@ -30,6 +35,9 @@ extern const base::FilePath::CharType kSystemFontsPath[];
 
 // Absolute path for the folder containing archive mounts.
 extern const base::FilePath::CharType kArchiveMountPath[];
+
+// FuseBox as a named constant string: "fusebox".
+extern const char kFuseBox[];
 
 // Name of the mount point used to store temporary files for sharing.
 extern const char kShareCacheMountPointName[];
@@ -95,13 +103,20 @@ bool MigrateToDriveFs(Profile* profile,
 std::string GetDownloadsMountPointName(Profile* profile);
 
 // The canonical mount point name for ARC "Play files" folder.
-const std::string GetAndroidFilesMountPointName();
+std::string GetAndroidFilesMountPointName();
 
 // The canonical mount point name for crostini "Linux files" folder.
 std::string GetCrostiniMountPointName(Profile* profile);
 
+// The canonical mount point name for the Guest OS `id`.
+std::string GetGuestOsMountPointName(Profile* profile,
+                                     crostini::ContainerId id);
+
 // The actual directory the crostini "Linux files" folder is mounted.
 base::FilePath GetCrostiniMountDirectory(Profile* profile);
+
+// The actual directory the Guest OS with `mountPointName` is mounted in.
+base::FilePath GetGuestOsMountDirectory(std::string mountPointName);
 
 // The sshfs mount options for crostini "Linux files" mount.
 std::vector<std::string> GetCrostiniMountOptions(
@@ -145,8 +160,10 @@ bool ConvertPathInsideVMToFileSystemURL(
 // and /special/drive, this CANNOT convert paths under ARC media directories
 // (/special/arc-documents-provider).
 // TODO(crbug.com/811679): Migrate all callers and remove this.
-// |requires_sharing_out| will be set to true if |path| needs to be made
+// |*requires_sharing_out| will be set to true if |path| needs to be made
 // available to ARCVM by sharing via Seneschal.
+// Precondition: arc_url_out != nullptr
+// Precondition: requires_sharing_out != nullptr
 bool ConvertPathToArcUrl(const base::FilePath& path,
                          GURL* arc_url_out,
                          bool* requires_sharing_out);
@@ -164,6 +181,11 @@ void ConvertToContentUrls(
     Profile* profile,
     const std::vector<storage::FileSystemURL>& file_system_urls,
     ConvertToContentUrlsCallback callback);
+
+// Replace `prefix` with `replacement` on `s`.
+bool ReplacePrefix(std::string* s,
+                   const std::string& prefix,
+                   const std::string& replacement);
 
 // Convert path into a string suitable for display in settings.
 // Replacements:
@@ -191,6 +213,14 @@ std::string GetDisplayableFileName(GURL file_url);
 std::string GetDisplayableFileName(storage::FileSystemURL file_url);
 std::u16string GetDisplayableFileName16(GURL file_url);
 std::u16string GetDisplayableFileName16(storage::FileSystemURL file_url);
+
+// Turns an absolute path into one suitable for display. Returns nullopt if the
+// given path is invalid or not on a mounted volume.
+absl::optional<base::FilePath> GetDisplayablePath(Profile* profile,
+                                                  base::FilePath path);
+absl::optional<base::FilePath> GetDisplayablePath(
+    Profile* profile,
+    storage::FileSystemURL file_url);
 
 }  // namespace util
 }  // namespace file_manager

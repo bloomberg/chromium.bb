@@ -18,7 +18,6 @@
 #include "components/sync/driver/sync_service.h"
 #import "ios/chrome/browser/bookmarks/managed_bookmark_service_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/policy/policy_features.h"
 #include "ios/chrome/browser/sync/sync_service_factory.h"
 #import "ios/chrome/browser/ui/authentication/cells/table_view_signin_promo_item.h"
 #import "ios/chrome/browser/ui/authentication/enterprise/enterprise_utils.h"
@@ -413,7 +412,7 @@ const int kMaxBookmarksSearchResults = 50;
   }
 }
 
-// |node| was deleted from |folder|.
+// `node` was deleted from `folder`.
 - (void)bookmarkNodeDeleted:(const BookmarkNode*)node
                  fromFolder:(const BookmarkNode*)folder {
   if (self.sharedState.currentlyShowingSearchResults) {
@@ -542,7 +541,7 @@ const int kMaxBookmarksSearchResults = 50;
          !self.sharedState.tableViewDisplayedRootNode->children().empty();
 }
 
-// Delete all items for the given |sectionIdentifier| section, or create it
+// Delete all items for the given `sectionIdentifier` section, or create it
 // if it doesn't exist, hence ensuring the section exists and is empty.
 - (void)deleteAllItemsOrAddSectionWithIdentifier:(NSInteger)sectionIdentifier {
   if ([self.sharedState.tableViewModel
@@ -560,8 +559,9 @@ const int kMaxBookmarksSearchResults = 50;
   DCHECK(self.syncService);
   bool syncDisabledPolicy = self.syncService->GetDisableReasons().Has(
       syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY);
-  bool syncTypesDisabledPolicy = IsManagedSyncDataType(
-      self.browserState, SyncSetupService::kSyncBookmarks);
+  PrefService* prefService = self.browserState->GetPrefs();
+  bool syncTypesDisabledPolicy =
+      IsManagedSyncDataType(prefService, SyncSetupService::kSyncBookmarks);
   return syncDisabledPolicy || syncTypesDisabledPolicy;
 }
 @end

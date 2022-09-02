@@ -23,8 +23,9 @@ extern const char kEncodeBinary[];
 extern const char kStableReleaseMode[];
 extern const char kDisableHeadlessMode[];
 extern const char kDisableAutoWPTOriginIsolation[];
+extern const char kResetBrowsingInstanceBetweenTests[];
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 extern const char kRegisterFontFiles[];
 
 // Returns list of extra font files to be made accessible to the renderer, that

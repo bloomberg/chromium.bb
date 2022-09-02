@@ -9,18 +9,18 @@
 #include <string>
 
 #include "build/build_config.h"
+#include "ui/gfx/geometry/insets_f.h"
+#include "ui/gfx/geometry/outsets_f.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
 typedef struct CGRect CGRect;
 #endif
 
 namespace gfx {
-
-class InsetsF;
 
 // A floating version of gfx::Rect.
 class GEOMETRY_EXPORT RectF {
@@ -39,7 +39,7 @@ class GEOMETRY_EXPORT RectF {
               static_cast<float>(r.width()),
               static_cast<float>(r.height())) {}
 
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
   explicit RectF(const CGRect& r);
   // Construct an equivalent CoreGraphics object.
   CGRect ToCGRect() const;
@@ -88,27 +88,15 @@ class GEOMETRY_EXPORT RectF {
     size_.SetSize(width, height);
   }
 
-  // Shrink the rectangle by |inset| on all sides.
-  void Inset(float inset) { Inset(inset, inset); }
-  // Shrink the rectangle by a horizontal and vertical distance on all sides.
-  void Inset(float horizontal, float vertical) {
-    Inset(horizontal, vertical, horizontal, vertical);
-  }
-
-  // Shrink the rectangle by the given insets.
+  // Shrinks the rectangle by |inset| on all sides.
+  void Inset(float inset) { Inset(InsetsF(inset)); }
+  // Shrinks the rectangle by the given |insets|.
   void Inset(const InsetsF& insets);
 
-  // Shrink the rectangle by the specified amount on each side.
-  void Inset(float left, float top, float right, float bottom);
-
-  // Expand the rectangle by the specified amount on each side.
+  // Expands the rectangle by |outset| on all sides.
   void Outset(float outset) { Inset(-outset); }
-  void Outset(float horizontal, float vertical) {
-    Inset(-horizontal, -vertical);
-  }
-  void Outset(float left, float top, float right, float bottom) {
-    Inset(-left, -top, -right, -bottom);
-  }
+  // Expands the rectangle by the given |outsets|.
+  void Outset(const OutsetsF& outsets) { Inset(outsets.ToInsets()); }
 
   // Move the rectangle by a horizontal and vertical distance.
   void Offset(float horizontal, float vertical);
@@ -237,6 +225,10 @@ class GEOMETRY_EXPORT RectF {
   bool IsExpressibleAsRect() const;
 
   std::string ToString() const;
+
+  bool ApproximatelyEqual(const RectF& rect,
+                          float tolerance_x,
+                          float tolerance_y) const;
 
  private:
   PointF origin_;

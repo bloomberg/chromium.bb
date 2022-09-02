@@ -91,7 +91,7 @@ class DeviceTrustNavigationThrottleTest : public testing::Test {
 
   content::WebContents* web_contents() const { return web_contents_.get(); }
   content::RenderFrameHost* main_frame() const {
-    return web_contents()->GetMainFrame();
+    return web_contents()->GetPrimaryMainFrame();
   }
 
  protected:
@@ -112,6 +112,16 @@ TEST_F(DeviceTrustNavigationThrottleTest, ExpectHeaderDeviceTrustOnRequest) {
   EXPECT_CALL(test_handle,
               SetRequestHeader("X-Device-Trust", "VerifiedAccess"));
   auto throttle = CreateThrottle(&test_handle);
+  EXPECT_EQ(NavigationThrottle::PROCEED, throttle->WillStartRequest().action());
+}
+
+TEST_F(DeviceTrustNavigationThrottleTest, NullService) {
+  content::MockNavigationHandle test_handle(GURL("https://www.example.com/"),
+                                            main_frame());
+  EXPECT_CALL(test_handle, SetRequestHeader("X-Device-Trust", "VerifiedAccess"))
+      .Times(0);
+  auto throttle =
+      std::make_unique<DeviceTrustNavigationThrottle>(nullptr, &test_handle);
   EXPECT_EQ(NavigationThrottle::PROCEED, throttle->WillStartRequest().action());
 }
 

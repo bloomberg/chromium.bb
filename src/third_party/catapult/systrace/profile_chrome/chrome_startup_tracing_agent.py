@@ -3,9 +3,12 @@
 # found in the LICENSE file.
 
 import logging
+# TODO(https://crbug.com/1262296): Update this after Python2 trybots retire.
+# pylint: disable=deprecated-module
 import optparse
 import os
 import re
+import sys
 
 import py_utils
 
@@ -17,6 +20,18 @@ from devil.android.sdk import intent
 from systrace import trace_result
 from systrace import tracing_agents
 
+SRC_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), *['..']*4))
+TESTING_VARIATIONS_DIR = os.path.join(SRC_DIR, 'testing', 'variations')
+
+VARIATIONS_DIR = os.path.join(SRC_DIR, 'tools', 'variations')
+sys.path.append(VARIATIONS_DIR)
+
+try:
+  import fieldtrial_util  # pylint: disable=wrong-import-position,import-error
+except ImportError:
+  # The |fieldtrial_util| is not available when catapult is outside the Chromium
+  # tree.
+  fieldtrial_util = None
 
 class ChromeStartupTracingAgent(tracing_agents.TracingAgent):
   def __init__(self, device, package_info, webapk_package, cold, url,
@@ -42,7 +57,7 @@ class ChromeStartupTracingAgent(tracing_agents.TracingAgent):
   def _SetupTracing(self):
     # TODO(lizeb): Figure out how to clean up the command-line file when
     # _TearDownTracing() is not executed in StopTracing().
-    flags_to_add = ['--enable-perfetto']
+    flags_to_add = ['--enable-perfetto', '--disable-fre']
     if self._chrome_categories is None:
       flags_to_add.append('--trace-startup')
     else:
@@ -57,6 +72,12 @@ class ChromeStartupTracingAgent(tracing_agents.TracingAgent):
     else:
       raise ValueError("Format '{}' is not supported." \
                         .format(self._trace_format))
+    if fieldtrial_util:
+      flags_to_add.extend(fieldtrial_util.GenerateArgs(
+          os.path.join(TESTING_VARIATIONS_DIR,
+                       'fieldtrial_testing_config.json'),
+          'android'))
+
     # Perform flag difference so we only add flags not already on the
     # command line and remove flags that we aren't also trying to add.
     current_flags = self._flag_changer.GetCurrentFlags()
@@ -167,6 +188,8 @@ def try_create_agent(config):
                                    config.trace_time, config.trace_format)
 
 def add_options(parser):
+  # TODO(https://crbug.com/1262296): Update this after Python2 trybots retire.
+  # pylint: disable=deprecated-module
   options = optparse.OptionGroup(parser, 'Chrome startup tracing')
   options.add_option('--url', help='URL to visit on startup. Default: '
                      'https://www.google.com. An empty URL launches Chrome '

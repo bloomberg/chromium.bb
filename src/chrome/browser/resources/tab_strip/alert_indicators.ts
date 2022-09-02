@@ -7,11 +7,12 @@ import './alert_indicator.js';
 import {CustomElement} from 'chrome://resources/js/custom_element.js';
 
 import {AlertIndicatorElement} from './alert_indicator.js';
+import {getTemplate} from './alert_indicators.html.js';
 import {TabAlertState} from './tabs.mojom-webui.js';
 
 export class AlertIndicatorsElement extends CustomElement {
-  static get template() {
-    return `{__html_template__}`;
+  static override get template() {
+    return getTemplate();
   }
 
   private containerEl_: HTMLElement;
@@ -20,7 +21,7 @@ export class AlertIndicatorsElement extends CustomElement {
   constructor() {
     super();
 
-    this.containerEl_ = this.$('#container') as HTMLElement;
+    this.containerEl_ = this.$<HTMLElement>('#container')!;
 
     const audioIndicator = new AlertIndicatorElement();
     const recordingIndicator = new AlertIndicatorElement();

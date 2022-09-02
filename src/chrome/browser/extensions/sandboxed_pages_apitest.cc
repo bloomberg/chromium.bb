@@ -22,10 +22,10 @@ class SandboxedPagesTest
  public:
   SandboxedPagesTest() = default;
 
-  bool RunTest(const char* extension_name,
-               const char* manifest,
-               const RunOptions& run_options,
-               const LoadOptions& load_options) WARN_UNUSED_RESULT {
+  [[nodiscard]] bool RunTest(const char* extension_name,
+                             const char* manifest,
+                             const RunOptions& run_options,
+                             const LoadOptions& load_options) {
     const char* kCustomArg =
         GetParam() == ManifestVersion::TWO ? "manifest_v2" : "manifest_v3";
     SetCustomArg(kCustomArg);
@@ -201,9 +201,9 @@ IN_PROC_BROWSER_TEST_F(SandboxedPagesTest, WebAccessibleResourcesTest) {
     EXPECT_EQ(result, fetch_url);
     histograms.ExpectBucketCount(kHistogramName, is_web_accessible_resource,
                                  count);
-    EXPECT_EQ(
-        expected_frame_origin,
-        web_contents->GetMainFrame()->GetLastCommittedOrigin().Serialize());
+    EXPECT_EQ(expected_frame_origin, web_contents->GetPrimaryMainFrame()
+                                         ->GetLastCommittedOrigin()
+                                         .Serialize());
   };
 
   // Extension page fetching an extension file.

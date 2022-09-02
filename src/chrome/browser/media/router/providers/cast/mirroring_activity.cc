@@ -54,18 +54,28 @@ constexpr char kHistogramSessionLaunch[] =
     "MediaRouter.CastStreaming.Session.Launch";
 constexpr char kHistogramSessionLength[] =
     "MediaRouter.CastStreaming.Session.Length";
-constexpr char kHistogramSessionLengthScreen[] =
-    "MediaRouter.CastStreaming.Session.Length.Screen";
+constexpr char kHistogramSessionLengthAccessCode[] =
+    "MediaRouter.CastStreaming.Session.Length.AccessCode";
 constexpr char kHistogramSessionLengthFile[] =
     "MediaRouter.CastStreaming.Session.Length.File";
 constexpr char kHistogramSessionLengthOffscreenTab[] =
     "MediaRouter.CastStreaming.Session.Length.OffscreenTab";
+constexpr char kHistogramSessionLengthScreen[] =
+    "MediaRouter.CastStreaming.Session.Length.Screen";
 constexpr char kHistogramSessionLengthTab[] =
     "MediaRouter.CastStreaming.Session.Length.Tab";
+constexpr char kHistogramStartFailureAccessCodeManualEntry[] =
+    "MediaRouter.CastStreaming.Start.Failure.AccessCodeManualEntry";
+constexpr char kHistogramStartFailureAccessCodeRememberedDevice[] =
+    "MediaRouter.CastStreaming.Start.Failure.AccessCodeRememberedDevice";
 constexpr char kHistogramStartFailureNative[] =
     "MediaRouter.CastStreaming.Start.Failure.Native";
 constexpr char kHistogramStartSuccess[] =
     "MediaRouter.CastStreaming.Start.Success";
+constexpr char kHistogramStartSuccessAccessCodeManualEntry[] =
+    "MediaRouter.CastStreaming.Start.Success.AccessCodeManualEntry";
+constexpr char kHistogramStartSuccessAccessCodeRememberedDevice[] =
+    "MediaRouter.CastStreaming.Start.Success.AccessCodeRememberedDevice";
 
 constexpr char kLoggerComponent[] = "MirroringService";
 
@@ -177,6 +187,12 @@ MirroringActivity::~MirroringActivity() {
                                   cast_duration);
       break;
   }
+  CastDiscoveryType discovery_type = cast_data_.discovery_type;
+  if (discovery_type == CastDiscoveryType::kAccessCodeManualEntry ||
+      discovery_type == CastDiscoveryType::kAccessCodeRememberedDevice) {
+    base::UmaHistogramLongTimes(kHistogramSessionLengthAccessCode,
+                                cast_duration);
+  }
 }
 
 void MirroringActivity::CreateMojoBindings(mojom::MediaRouter* media_router) {
@@ -221,6 +237,18 @@ void MirroringActivity::OnError(SessionError error) {
   if (will_start_mirroring_timestamp_) {
     // An error was encountered while attempting to start mirroring.
     base::UmaHistogramEnumeration(kHistogramStartFailureNative, error);
+
+    // Record the error for access code discovery types.
+    CastDiscoveryType discovery_type = cast_data_.discovery_type;
+    if (discovery_type == CastDiscoveryType::kAccessCodeManualEntry) {
+      base::UmaHistogramEnumeration(
+          kHistogramStartFailureAccessCodeManualEntry, error);
+    } else if (discovery_type ==
+               CastDiscoveryType::kAccessCodeRememberedDevice) {
+      base::UmaHistogramEnumeration(
+          kHistogramStartFailureAccessCodeRememberedDevice, error);
+    }
+
     will_start_mirroring_timestamp_.reset();
   }
   // Metrics for general errors are captured by the mirroring service in
@@ -239,6 +267,18 @@ void MirroringActivity::DidStart() {
       *did_start_mirroring_timestamp_ - *will_start_mirroring_timestamp_);
   DCHECK(mirroring_type_);
   base::UmaHistogramEnumeration(kHistogramStartSuccess, *mirroring_type_);
+
+  // Record successes to access code discovery types.
+  CastDiscoveryType discovery_type = cast_data_.discovery_type;
+  if (discovery_type == CastDiscoveryType::kAccessCodeManualEntry) {
+    base::UmaHistogramEnumeration(kHistogramStartSuccessAccessCodeManualEntry,
+                                  *mirroring_type_);
+  } else if (discovery_type ==
+             CastDiscoveryType::kAccessCodeRememberedDevice) {
+    base::UmaHistogramEnumeration(
+        kHistogramStartSuccessAccessCodeRememberedDevice, *mirroring_type_);
+  }
+
   will_start_mirroring_timestamp_.reset();
 }
 
@@ -294,7 +334,7 @@ void MirroringActivity::OnAppMessage(
   mirroring::mojom::CastMessagePtr ptr = mirroring::mojom::CastMessage::New();
   ptr->message_namespace = message.namespace_();
   ptr->json_format_data = message.payload_utf8();
-  // TODO(jrw): Do something with message.source_id() and
+  // TODO(crbug.com/1291712): Do something with message.source_id() and
   // message.destination_id()?
   channel_to_service_->Send(std::move(ptr));
 }
@@ -437,7 +477,7 @@ std::string MirroringActivity::GetScrubbedLogMessage(
     return message_str;
   }
 
-  for (base::Value& item : streams->GetList()) {
+  for (base::Value& item : streams->GetListDeprecated()) {
     if (item.FindStringKey("aesKey")) {
       item.SetStringKey("aesKey", "AES_KEY");
     }

@@ -3,16 +3,15 @@
 // found in the LICENSE file.
 
 #include <memory>
+#include <tuple>
 
 #include "base/android/apk_assets.h"
 #include "base/android/application_status_listener.h"
 #include "base/android/jni_array.h"
 #include "base/bind.h"
 #include "base/i18n/icu_util.h"
-#include "base/ignore_result.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
-#include "base/task/post_task.h"
 #include "content/browser/child_process_launcher.h"
 #include "content/browser/child_process_launcher_helper.h"
 #include "content/browser/child_process_launcher_helper_posix.h"
@@ -26,6 +25,7 @@
 #include "content/public/browser/site_isolation_policy.h"
 #include "content/public/common/content_descriptors.h"
 #include "content/public/common/content_switches.h"
+#include "sandbox/policy/features.h"
 #include "sandbox/policy/switches.h"
 
 using base::android::AttachCurrentThread;
@@ -78,18 +78,12 @@ ChildProcessLauncherHelper::GetFilesToMap() {
   std::unique_ptr<PosixFileDescriptorInfo> files_to_register =
       CreateDefaultPosixFilesToMap(
           child_process_id(), mojo_channel_->remote_endpoint(),
-          files_to_preload_, GetProcessType(), command_line());
+          file_data_->files_to_preload, GetProcessType(), command_line());
 
 #if ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_FILE
   base::MemoryMappedFile::Region icu_region;
   int fd = base::i18n::GetIcuDataFileHandle(&icu_region);
   files_to_register->ShareWithRegion(kAndroidICUDataDescriptor, fd, icu_region);
-  base::MemoryMappedFile::Region icu_extra_region;
-  int extra_fd = base::i18n::GetIcuExtraDataFileHandle(&icu_extra_region);
-  if (extra_fd != -1) {
-    files_to_register->ShareWithRegion(kAndroidICUExtraDataDescriptor, extra_fd,
-                                       icu_extra_region);
-  }
 #endif  // ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_FILE
 
   return files_to_register;
@@ -98,6 +92,11 @@ ChildProcessLauncherHelper::GetFilesToMap() {
 bool ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
     PosixFileDescriptorInfo& files_to_register,
     base::LaunchOptions* options) {
+  for (const auto& remapped_fd : file_data_->additional_remapped_fds) {
+    options->fds_to_remap.emplace_back(remapped_fd.second.get(),
+                                       remapped_fd.first);
+  }
+
   return true;
 }
 
@@ -133,7 +132,7 @@ ChildProcessLauncherHelper::LaunchProcessOnLauncherThread(
     const auto& region = files_to_register->GetRegionAt(i);
     bool auto_close = files_to_register->OwnsFD(fd);
     if (auto_close) {
-      ignore_result(files_to_register->ReleaseFD(fd).release());
+      std::ignore = files_to_register->ReleaseFD(fd).release();
     }
 
     ScopedJavaLocalRef<jobject> j_file_info =
@@ -143,10 +142,11 @@ ChildProcessLauncherHelper::LaunchProcessOnLauncherThread(
     env->SetObjectArrayElement(j_file_infos.obj(), i, j_file_info.obj());
   }
 
+  AddRef();  // Balanced by OnChildProcessStarted.
   java_peer_.Reset(Java_ChildProcessLauncherHelperImpl_createAndStart(
       env, reinterpret_cast<intptr_t>(this), j_argv, j_file_infos,
       can_use_warm_up_connection));
-  AddRef();  // Balanced by OnChildProcessStarted.
+
   client_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(

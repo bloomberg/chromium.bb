@@ -14,6 +14,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/raw_ptr.h"
 #include "base/test/task_environment.h"
+#include "base/time/time.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/profiles/profile.h"
@@ -27,6 +28,7 @@
 #include "extensions/browser/blocklist_extension_prefs.h"
 #include "extensions/browser/disable_reason.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/common/api/extension_action/action_info.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/extension_set.h"
@@ -274,7 +276,7 @@ TEST_F(ExtensionMetricsProviderInstallsTest, TestProtoConstruction) {
     scoped_refptr<const Extension> extension =
         ExtensionBuilder("browser_action")
             .SetLocation(ManifestLocation::kInternal)
-            .SetAction(ExtensionBuilder::ActionType::BROWSER_ACTION)
+            .SetAction(extensions::ActionInfo::TYPE_BROWSER)
             .Build();
     add_extension(extension.get());
     ExtensionInstallProto install = ConstructProto(*extension);
@@ -286,7 +288,7 @@ TEST_F(ExtensionMetricsProviderInstallsTest, TestProtoConstruction) {
     scoped_refptr<const Extension> extension =
         ExtensionBuilder("page_action")
             .SetLocation(ManifestLocation::kInternal)
-            .SetAction(ExtensionBuilder::ActionType::PAGE_ACTION)
+            .SetAction(extensions::ActionInfo::TYPE_PAGE)
             .Build();
     add_extension(extension.get());
     ExtensionInstallProto install = ConstructProto(*extension);

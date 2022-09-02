@@ -5,6 +5,7 @@
 #include "ash/test/ash_test_suite.h"
 
 #include "ash/test/ash_test_helper.h"
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/i18n/rtl.h"
 #include "base/path_service.h"
@@ -41,8 +42,8 @@ void AshTestSuite::Initialize() {
   // it'll pass regardless of the system language.
   base::i18n::SetICUDefaultLocale("en_US");
 
-  ui::ResourceBundle::SetParseLottieAsStillImage(
-      &lottie::ParseLottieAsStillImage);
+  ui::ResourceBundle::SetLottieParsingFunctions(
+      &lottie::ParseLottieAsStillImage, &lottie::ParseLottieAsThemedStillImage);
 
   LoadTestResources();
 

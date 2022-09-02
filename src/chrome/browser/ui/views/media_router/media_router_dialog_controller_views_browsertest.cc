@@ -8,6 +8,9 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/frame/top_container_view.h"
+#include "chrome/browser/ui/views/global_media_controls/media_dialog_view.h"
 #include "chrome/browser/ui/views/media_router/cast_dialog_view.h"
 #include "chrome/browser/ui/views/media_router/media_router_dialog_controller_views.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -18,9 +21,11 @@
 #include "content/public/test/browser_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/page_transition_types.h"
+#include "ui/views/test/widget_test.h"
+#include "ui/views/widget/native_widget_private.h"
 #include "ui/views/widget/widget.h"
 
-#if defined(OS_MAC) || defined(OS_LINUX) || defined(OS_WIN)
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN)
 #include "chrome/browser/ui/views/global_media_controls/media_dialog_view.h"
 #endif
 
@@ -31,8 +36,9 @@ namespace media_router {
 std::unique_ptr<StartPresentationContext> CreateStartPresentationContext(
     content::WebContents* content) {
   return std::make_unique<StartPresentationContext>(
-      content::PresentationRequest(content->GetMainFrame()->GetGlobalId(),
-                                   {GURL(), GURL()}, url::Origin()),
+      content::PresentationRequest(
+          content->GetPrimaryMainFrame()->GetGlobalId(), {GURL(), GURL()},
+          url::Origin()),
       base::DoNothing(), base::DoNothing());
 }
 
@@ -49,6 +55,7 @@ class MediaRouterDialogControllerViewsTest : public InProcessBrowserTest {
 
   void OpenMediaRouterDialog();
   void CreateDialogController();
+  void CloseWebContents();
 
  protected:
   raw_ptr<WebContents> initiator_;
@@ -74,6 +81,10 @@ void MediaRouterDialogControllerViewsTest::OpenMediaRouterDialog() {
   ASSERT_TRUE(dialog_controller_->IsShowingMediaRouterDialog());
 }
 
+void MediaRouterDialogControllerViewsTest::CloseWebContents() {
+  initiator_->Close();
+}
+
 // Create/Get a media router dialog for initiator.
 IN_PROC_BROWSER_TEST_F(MediaRouterDialogControllerViewsTest,
                        OpenCloseMediaRouterDialog) {
@@ -86,9 +97,27 @@ IN_PROC_BROWSER_TEST_F(MediaRouterDialogControllerViewsTest,
   EXPECT_EQ(CastDialogView::GetCurrentDialogWidget(), nullptr);
 }
 
+// Regression test for crbug.com/1308341.
+IN_PROC_BROWSER_TEST_F(MediaRouterDialogControllerViewsTest,
+                       MediaBubbleClosedByPlatform) {
+  OpenMediaRouterDialog();
+  base::RunLoop().RunUntilIdle();
+  views::Widget* widget = CastDialogView::GetCurrentDialogWidget();
+  ASSERT_TRUE(widget);
+  EXPECT_TRUE(widget->HasObserver(dialog_controller_));
+  // The media bubble usually will close itself on deactivation, but
+  // crbug.com/1308341 shows a state where the browser is not responsive
+  // to activation change. Simulate that.
+  CastDialogView::GetInstance()->set_close_on_deactivate(false);
+  views::test::WidgetDestroyedWaiter waiter(widget);
+  widget->native_widget_private()->Close();
+  waiter.Wait();
+  CloseWebContents();
+}
+
 // The feature |media_router::kGlobalMediaControlsCastStartStop| is supported
 // on MAC, Linux and Windows only.
-#if defined(OS_MAC) || defined(OS_LINUX) || defined(OS_WIN)
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN)
 class GlobalMediaControlsDialogTest
     : public MediaRouterDialogControllerViewsTest {
  public:
@@ -115,7 +144,29 @@ IN_PROC_BROWSER_TEST_F(GlobalMediaControlsDialogTest, OpenGMCDialog) {
   CreateDialogController();
   dialog_controller_->ShowMediaRouterDialogForPresentation(
       CreateStartPresentationContext(initiator_));
-  EXPECT_TRUE(MediaDialogView::IsShowing());
+  ASSERT_TRUE(MediaDialogView::IsShowing());
+  auto* view = MediaDialogView::GetDialogViewForTesting();
+  ASSERT_TRUE(view->GetAnchorView());
+}
+
+IN_PROC_BROWSER_TEST_F(GlobalMediaControlsDialogTest, OpenGMCDialogInWebApp) {
+  EXPECT_FALSE(MediaDialogView::IsShowing());
+  // Navigate to a page with origin so that the PresentationRequest notification
+  // created on this page has an origin to be displayed.
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL("/simple_page.html")));
+  CreateDialogController();
+  dialog_controller_->SetHideMediaButtonForTesting(true);
+  dialog_controller_->ShowMediaRouterDialogForPresentation(
+      CreateStartPresentationContext(initiator_));
+
+  ASSERT_TRUE(MediaDialogView::IsShowing());
+  auto* view = MediaDialogView::GetDialogViewForTesting();
+  // If there does not exist a media button, the dialog should not have an
+  // anchor view.
+  views::View* anchor_view =
+      BrowserView::GetBrowserViewForBrowser(browser())->top_container();
+  EXPECT_EQ(anchor_view, view->GetAnchorView());
 }
 
 IN_PROC_BROWSER_TEST_F(GlobalMediaControlsDialogTest,

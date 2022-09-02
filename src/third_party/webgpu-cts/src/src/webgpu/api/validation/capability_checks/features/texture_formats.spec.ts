@@ -1,11 +1,11 @@
 export const description = `
 Tests for capability checking for features enabling optional texture formats.
 
-TODO:
-- x= every optional texture format.
-- x= every place in the API that takes a GPUTextureFormat (
-  GPUTextureViewDescriptor (format reinterpretation rules haven't been finalized),
-  maybe GPUSwapChainDescriptor (the supported swapchain format list can't be queried right now)).
+TODO(#902): test GPUTextureViewDescriptor.format
+TODO(#902): test GPUCanvasConfiguration.format (it doesn't allow any optional formats today but the
+  error might still be different - exception instead of validation.
+
+TODO(#920): test GPUTextureDescriptor.viewFormats (if/when it takes formats)
 `;
 
 import { makeTestGroup } from '../../../../../common/framework/test_group.js';
@@ -26,26 +26,27 @@ g.test('texture_descriptor')
   `
   )
   .params(u =>
-    u
-      .combine('format', kOptionalTextureFormats)
-      .beginSubcases()
-      .combine('enable_required_feature', [true, false])
+    u.combine('format', kOptionalTextureFormats).combine('enable_required_feature', [true, false])
   )
-  .fn(async t => {
+  .beforeAllSubcases(t => {
     const { format, enable_required_feature } = t.params;
 
     const formatInfo = kTextureFormatInfo[format];
     if (enable_required_feature) {
-      await t.selectDeviceOrSkipTestCase(formatInfo.feature);
+      t.selectDeviceOrSkipTestCase(formatInfo.feature);
     }
+  })
+  .fn(async t => {
+    const { format, enable_required_feature } = t.params;
 
-    t.expectValidationError(() => {
+    const formatInfo = kTextureFormatInfo[format];
+    t.shouldThrow(enable_required_feature ? false : 'TypeError', () => {
       t.device.createTexture({
         format,
         size: [formatInfo.blockWidth, formatInfo.blockHeight, 1] as const,
         usage: GPUTextureUsage.TEXTURE_BINDING,
       });
-    }, !enable_required_feature);
+    });
   });
 
 g.test('storage_texture_binding_layout')
@@ -53,22 +54,26 @@ g.test('storage_texture_binding_layout')
     `
   Test creating a GPUStorageTextureBindingLayout with an optional texture format will fail if the
   required optional feature are not enabled.
+
+  Note: This test has no cases if there are no optional texture formats supporting storage.
   `
   )
   .params(u =>
     u
       .combine('format', kOptionalTextureFormats)
       .filter(t => kTextureFormatInfo[t.format].storage)
-      .beginSubcases()
       .combine('enable_required_feature', [true, false])
   )
-  .fn(async t => {
+  .beforeAllSubcases(t => {
     const { format, enable_required_feature } = t.params;
 
     const formatInfo = kTextureFormatInfo[format];
     if (enable_required_feature) {
-      await t.selectDeviceOrSkipTestCase(formatInfo.feature);
+      t.selectDeviceOrSkipTestCase(formatInfo.feature);
     }
+  })
+  .fn(async t => {
+    const { format, enable_required_feature } = t.params;
 
     t.expectValidationError(() => {
       t.device.createBindGroupLayout({
@@ -90,30 +95,35 @@ g.test('color_target_state')
     `
   Test creating a render pipeline with an optional texture format set in GPUColorTargetState will
   fail if the required optional feature is not enabled.
+
+  Note: This test has no cases if there are no optional texture formats supporting color rendering.
   `
   )
   .params(u =>
     u
       .combine('format', kOptionalTextureFormats)
       .filter(t => kTextureFormatInfo[t.format].renderable && kTextureFormatInfo[t.format].color)
-      .beginSubcases()
       .combine('enable_required_feature', [true, false])
   )
-  .fn(async t => {
+  .beforeAllSubcases(t => {
     const { format, enable_required_feature } = t.params;
 
     const formatInfo = kTextureFormatInfo[format];
     if (enable_required_feature) {
-      await t.selectDeviceOrSkipTestCase(formatInfo.feature);
+      t.selectDeviceOrSkipTestCase(formatInfo.feature);
     }
+  })
+  .fn(async t => {
+    const { format, enable_required_feature } = t.params;
 
     t.expectValidationError(() => {
       t.device.createRenderPipeline({
+        layout: 'auto',
         vertex: {
           module: t.device.createShaderModule({
             code: `
-              [[stage(vertex)]]
-              fn main()-> [[builtin(position)]] vec4<f32> {
+              @vertex
+              fn main()-> @builtin(position) vec4<f32> {
                 return vec4<f32>(0.0, 0.0, 0.0, 1.0);
               }`,
           }),
@@ -122,8 +132,8 @@ g.test('color_target_state')
         fragment: {
           module: t.device.createShaderModule({
             code: `
-              [[stage(fragment)]]
-              fn main() -> [[location(0)]] vec4<f32> {
+              @fragment
+              fn main() -> @location(0) vec4<f32> {
                 return vec4<f32>(0.0, 1.0, 0.0, 1.0);
               }`,
           }),
@@ -149,24 +159,27 @@ g.test('depth_stencil_state')
           kTextureFormatInfo[t.format].renderable &&
           (kTextureFormatInfo[t.format].depth || kTextureFormatInfo[t.format].stencil)
       )
-      .beginSubcases()
       .combine('enable_required_feature', [true, false])
   )
-  .fn(async t => {
+  .beforeAllSubcases(t => {
     const { format, enable_required_feature } = t.params;
 
     const formatInfo = kTextureFormatInfo[format];
     if (enable_required_feature) {
-      await t.selectDeviceOrSkipTestCase(formatInfo.feature);
+      t.selectDeviceOrSkipTestCase(formatInfo.feature);
     }
+  })
+  .fn(async t => {
+    const { format, enable_required_feature } = t.params;
 
     t.expectValidationError(() => {
       t.device.createRenderPipeline({
+        layout: 'auto',
         vertex: {
           module: t.device.createShaderModule({
             code: `
-              [[stage(vertex)]]
-              fn main()-> [[builtin(position)]] vec4<f32> {
+              @vertex
+              fn main()-> @builtin(position) vec4<f32> {
                 return vec4<f32>(0.0, 0.0, 0.0, 1.0);
               }`,
           }),
@@ -178,8 +191,8 @@ g.test('depth_stencil_state')
         fragment: {
           module: t.device.createShaderModule({
             code: `
-              [[stage(fragment)]]
-              fn main() -> [[location(0)]] vec4<f32> {
+              @fragment
+              fn main() -> @location(0) vec4<f32> {
                 return vec4<f32>(0.0, 1.0, 0.0, 1.0);
               }`,
           }),
@@ -195,22 +208,26 @@ g.test('render_bundle_encoder_descriptor_color_format')
     `
   Test creating a render bundle encoder with an optional texture format set as one of the color
   format will fail if the required optional feature is not enabled.
+
+  Note: This test has no cases if there are no optional texture formats supporting color rendering.
   `
   )
   .params(u =>
     u
       .combine('format', kOptionalTextureFormats)
       .filter(t => kTextureFormatInfo[t.format].renderable && kTextureFormatInfo[t.format].color)
-      .beginSubcases()
       .combine('enable_required_feature', [true, false])
   )
-  .fn(async t => {
+  .beforeAllSubcases(t => {
     const { format, enable_required_feature } = t.params;
 
     const formatInfo = kTextureFormatInfo[format];
     if (enable_required_feature) {
-      await t.selectDeviceOrSkipTestCase(formatInfo.feature);
+      t.selectDeviceOrSkipTestCase(formatInfo.feature);
     }
+  })
+  .fn(async t => {
+    const { format, enable_required_feature } = t.params;
 
     t.expectValidationError(() => {
       t.device.createRenderBundleEncoder({
@@ -234,16 +251,18 @@ g.test('render_bundle_encoder_descriptor_depth_stencil_format')
           kTextureFormatInfo[t.format].renderable &&
           (kTextureFormatInfo[t.format].depth || kTextureFormatInfo[t.format].stencil)
       )
-      .beginSubcases()
       .combine('enable_required_feature', [true, false])
   )
-  .fn(async t => {
+  .beforeAllSubcases(t => {
     const { format, enable_required_feature } = t.params;
 
     const formatInfo = kTextureFormatInfo[format];
     if (enable_required_feature) {
-      await t.selectDeviceOrSkipTestCase(formatInfo.feature);
+      t.selectDeviceOrSkipTestCase(formatInfo.feature);
     }
+  })
+  .fn(async t => {
+    const { format, enable_required_feature } = t.params;
 
     t.expectValidationError(() => {
       t.device.createRenderBundleEncoder({

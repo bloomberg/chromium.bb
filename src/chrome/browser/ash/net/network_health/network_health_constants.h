@@ -7,7 +7,7 @@
 
 #include "base/time/time.h"
 
-namespace chromeos {
+namespace ash {
 namespace network_health {
 
 // The rate in seconds at which to sample all network's signal strengths.
@@ -17,7 +17,11 @@ constexpr base::TimeDelta kSignalStrengthSampleRate = base::Seconds(5);
 // signal strength. Samples older than this duration are discarded.
 constexpr base::TimeDelta kSignalStrengthSampleWindow = base::Minutes(15);
 
+// Represents the interval at which we update tracked guids. See
+// network_health.h for more information about tracked guids.
+constexpr base::TimeDelta kUpdateTrackedGuidsInterval = base::Hours(1);
+
 }  // namespace network_health
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // CHROME_BROWSER_ASH_NET_NETWORK_HEALTH_NETWORK_HEALTH_CONSTANTS_H_

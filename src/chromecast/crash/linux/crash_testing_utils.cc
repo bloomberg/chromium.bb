@@ -50,7 +50,7 @@ std::unique_ptr<base::ListValue> ParseLockFile(const std::string& path) {
     RCHECK(dump_info.has_value(), nullptr, "Invalid DumpInfo");
     DumpInfo info(&dump_info.value());
     RCHECK(info.valid(), nullptr, "Invalid DumpInfo");
-    dumps->Append(std::move(dump_info.value()));
+    dumps->GetList().Append(std::move(dump_info.value()));
   }
 
   return dumps;
@@ -71,7 +71,7 @@ int WriteLockFile(const std::string& path, base::ListValue* contents) {
   DCHECK(contents);
   std::string lockfile;
 
-  for (const auto& elem : contents->GetList()) {
+  for (const auto& elem : contents->GetListDeprecated()) {
     std::string dump_info;
     bool ret = base::JSONWriter::Write(elem, &dump_info);
     RCHECK(ret, -1, "Failed to serialize DumpInfo");
@@ -107,7 +107,7 @@ bool FetchDumps(const std::string& lockfile_path,
 
   dumps->clear();
 
-  for (const auto& elem : dump_list->GetList()) {
+  for (const auto& elem : dump_list->GetListDeprecated()) {
     std::unique_ptr<DumpInfo> dump(new DumpInfo(&elem));
     RCHECK(dump->valid(), false, "Invalid DumpInfo");
     dumps->push_back(std::move(dump));
@@ -149,7 +149,8 @@ bool AppendLockFile(const std::string& lockfile_path,
     }
   }
 
-  contents->Append(dump.GetAsValue());
+  contents->GetList().Append(
+      base::Value::FromUniquePtrValue(dump.GetAsValue()));
 
   return WriteLockFile(lockfile_path, contents.get()) == 0;
 }

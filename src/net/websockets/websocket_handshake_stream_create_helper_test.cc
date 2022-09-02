@@ -200,10 +200,10 @@ class WebSocketHandshakeStreamCreateHelperTest
       case BASIC_HANDSHAKE_STREAM: {
         std::unique_ptr<ClientSocketHandle> socket_handle =
             socket_handle_factory_.CreateClientSocketHandle(
-                WebSocketStandardRequest(
-                    kPath, "www.example.org",
-                    url::Origin::Create(GURL(kOrigin)), "",
-                    WebSocketExtraHeadersToString(extra_request_headers)),
+                WebSocketStandardRequest(kPath, "www.example.org",
+                                         url::Origin::Create(GURL(kOrigin)),
+                                         /*send_additional_request_headers=*/{},
+                                         extra_request_headers),
                 WebSocketStandardResponse(
                     WebSocketExtraHeadersToString(extra_response_headers)));
 
@@ -217,9 +217,9 @@ class WebSocketHandshakeStreamCreateHelperTest
         static_cast<WebSocketBasicHandshakeStream*>(handshake.get())
             ->SetWebSocketKeyForTesting("dGhlIHNhbXBsZSBub25jZQ==");
 
-        int rv =
-            handshake->InitializeStream(&request_info, true, DEFAULT_PRIORITY,
-                                        net_log, CompletionOnceCallback());
+        handshake->RegisterRequest(&request_info);
+        int rv = handshake->InitializeStream(true, DEFAULT_PRIORITY, net_log,
+                                             CompletionOnceCallback());
         EXPECT_THAT(rv, IsOk());
 
         HttpResponseInfo response;
@@ -274,9 +274,10 @@ class WebSocketHandshakeStreamCreateHelperTest
         std::unique_ptr<WebSocketHandshakeStreamBase> handshake =
             create_helper.CreateHttp2Stream(spdy_session, {} /* dns_aliases */);
 
-        int rv = handshake->InitializeStream(
-            &request_info, true, DEFAULT_PRIORITY, NetLogWithSource(),
-            CompletionOnceCallback());
+        handshake->RegisterRequest(&request_info);
+        int rv = handshake->InitializeStream(true, DEFAULT_PRIORITY,
+                                             NetLogWithSource(),
+                                             CompletionOnceCallback());
         EXPECT_THAT(rv, IsOk());
 
         HttpResponseInfo response;

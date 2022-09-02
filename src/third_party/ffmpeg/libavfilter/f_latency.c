@@ -18,6 +18,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include "config_components.h"
+
 #include "libavutil/opt.h"
 #include "avfilter.h"
 #include "filters.h"
@@ -118,7 +120,8 @@ const AVFilter ff_vf_latency = {
     .init          = init,
     .uninit        = uninit,
     .activate      = activate,
-    .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_INTERNAL,
+    .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_INTERNAL |
+                     AVFILTER_FLAG_METADATA_ONLY,
     FILTER_INPUTS(latency_inputs),
     FILTER_OUTPUTS(latency_outputs),
 };

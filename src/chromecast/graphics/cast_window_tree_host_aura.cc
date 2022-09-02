@@ -6,6 +6,7 @@
 
 #include "ui/aura/null_window_targeter.h"
 #include "ui/gfx/geometry/size_conversions.h"
+#include "ui/gfx/geometry/transform.h"
 #include "ui/platform_window/platform_window_init_properties.h"
 
 namespace chromecast {
@@ -29,7 +30,7 @@ void CastWindowTreeHostAura::DispatchEvent(ui::Event* event) {
   WindowTreeHostPlatform::DispatchEvent(event);
 }
 
-gfx::Rect CastWindowTreeHostAura::GetTransformedRootWindowBoundsInPixels(
+gfx::Rect CastWindowTreeHostAura::GetTransformedRootWindowBoundsFromPixelSize(
     const gfx::Size& size_in_pixels) const {
   gfx::RectF new_bounds = gfx::RectF(gfx::Rect(size_in_pixels));
   GetInverseRootTransform().TransformRect(&new_bounds);

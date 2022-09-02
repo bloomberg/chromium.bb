@@ -6,14 +6,14 @@
 #define UI_OZONE_PLATFORM_WAYLAND_GPU_GBM_SURFACELESS_WAYLAND_H_
 
 #include <memory>
+#include <vector>
 
-#include "base/containers/small_map.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gl/gl_surface_egl.h"
+#include "ui/ozone/platform/wayland/common/wayland_overlay_config.h"
 #include "ui/ozone/platform/wayland/gpu/wayland_surface_gpu.h"
-#include "ui/ozone/public/overlay_plane.h"
 #include "ui/ozone/public/swap_completion_callback.h"
 
 namespace ui {
@@ -35,7 +35,9 @@ class GbmSurfacelessWayland : public gl::SurfacelessEGL,
   GbmSurfacelessWayland(const GbmSurfacelessWayland&) = delete;
   GbmSurfacelessWayland& operator=(const GbmSurfacelessWayland&) = delete;
 
-  void QueueOverlayPlane(OverlayPlane plane, BufferId buffer_id);
+  float surface_scale_factor() const { return surface_scale_factor_; }
+
+  void QueueWaylandOverlayConfig(wl::WaylandOverlayConfig config);
 
   // gl::GLSurface:
   bool ScheduleOverlayPlane(
@@ -68,6 +70,7 @@ class GbmSurfacelessWayland : public gl::SurfacelessEGL,
               float scale_factor,
               const gfx::ColorSpace& color_space,
               bool has_alpha) override;
+  void SetForceGlFlushOnSwapBuffers() override;
 
   BufferId GetOrCreateSolidColorBuffer(SkColor color, const gfx::Size& size);
 
@@ -78,6 +81,8 @@ class GbmSurfacelessWayland : public gl::SurfacelessEGL,
                            GbmSurfacelessWaylandCommitOverlaysCallbacksTest);
   FRIEND_TEST_ALL_PREFIXES(WaylandSurfaceFactoryTest,
                            GbmSurfacelessWaylandGroupOnSubmissionCallbacksTest);
+  FRIEND_TEST_ALL_PREFIXES(WaylandSurfaceFactoryCompositorV3,
+                           SurfaceDamageTest);
 
   // Holds solid color buffers.
   class SolidColorBufferHolder {
@@ -90,10 +95,8 @@ class GbmSurfacelessWayland : public gl::SurfacelessEGL,
         WaylandBufferManagerGpu* buffer_manager);
 
     void OnSubmission(BufferId buffer_id,
-                      WaylandBufferManagerGpu* buffer_manager,
-                      gfx::AcceleratedWidget widget);
-    void EraseBuffers(WaylandBufferManagerGpu* buffer_manager,
-                      gfx::AcceleratedWidget widget);
+                      WaylandBufferManagerGpu* buffer_manager);
+    void EraseBuffers(WaylandBufferManagerGpu* buffer_manager);
 
    private:
     // Gpu-size holder for the solid color buffers. These are not backed by
@@ -120,44 +123,36 @@ class GbmSurfacelessWayland : public gl::SurfacelessEGL,
   ~GbmSurfacelessWayland() override;
 
   // WaylandSurfaceGpu overrides:
-  void OnSubmission(BufferId buffer_id,
+  void OnSubmission(uint32_t frame_id,
                     const gfx::SwapResult& swap_result,
                     gfx::GpuFenceHandle release_fence) override;
-  void OnPresentation(BufferId buffer_id,
+  void OnPresentation(uint32_t frame_id,
                       const gfx::PresentationFeedback& feedback) override;
 
   // PendingFrame here is a post-SkiaRenderer struct that contains overlays +
   // primary plane informations. It is a "compositor frame" on AcceleratedWidget
   // level. This information gets into browser process and overlays are
   // translated to be attached to WaylandSurfaces of the AcceleratedWidget.
+  // TODO(fangzhoug): This should be changed to support Vulkan.
   struct PendingFrame {
-    PendingFrame();
+    explicit PendingFrame(uint32_t frame_id);
     ~PendingFrame();
 
-    // Queues overlay configs to |planes|.
-    void ScheduleOverlayPlanes(GbmSurfacelessWayland* surfaceless);
-    void Flush();
+    // Unique identifier of the frame within this AcceleratedWidget.
+    uint32_t frame_id;
 
     bool ready = false;
 
-    // A region of the updated content in a corresponding frame. It's used to
-    // advise Wayland which part of a buffer is going to be updated. The absence
-    // of a value results in a whole buffer update on the Wayland compositor
-    // side.
-    absl::optional<gfx::Rect> damage_region_;
-    // TODO(fangzhoug): This should be changed to support Vulkan.
-    std::vector<gl::GLSurfaceOverlay> overlays;
-    std::vector<gfx::OverlayPlaneData> non_backed_overlays;
     SwapCompletionCallback completion_callback;
     PresentationCallback presentation_callback;
-    // Merged release fence fd. This is taken as the union of all release
-    // fences for a particular OnSubmission.
-    bool schedule_planes_succeeded = false;
 
-    // Maps |buffer_id| to an OverlayPlane, used for committing overlays and
-    // wait for OnSubmission's.
-    base::small_map<std::map<BufferId, OverlayPlane>> planes;
-    BufferId pending_presentation_buffer;
+    // Says if scheduling succeeded.
+    bool schedule_planes_succeeded = true;
+
+    std::vector<BufferId> in_flight_color_buffers;
+    // Contains |buffer_id|s to gl::GLSurfaceOverlay, used for committing
+    // overlays and wait for OnSubmission's.
+    std::vector<wl::WaylandOverlayConfig> configs;
   };
 
   void MaybeSubmitFrames();
@@ -169,12 +164,6 @@ class GbmSurfacelessWayland : public gl::SurfacelessEGL,
   void SetNoGLFlushForTests();
 
   WaylandBufferManagerGpu* const buffer_manager_;
-
-  // |background_buffer_id| is sent to WaylandBufferManagerHost once per
-  // background_buffer allocation. However WaylandBufferManagerHost may commit
-  // this buffer more often b/c buffers needs to be re-attached when wl_surface
-  // is reshown.
-  BufferId background_buffer_id_;
 
   // The native surface. Deleting this is allowed to free the EGLNativeWindow.
   gfx::AcceleratedWidget widget_;
@@ -189,11 +178,11 @@ class GbmSurfacelessWayland : public gl::SurfacelessEGL,
   // PendingFrames that have received OnSubmission(), pending OnPresentation()
   // calls.
   std::vector<std::unique_ptr<PendingFrame>> pending_presentation_frames_;
-  bool has_implicit_external_sync_;
   bool last_swap_buffers_result_ = true;
   bool use_egl_fence_sync_ = true;
 
   bool no_gl_flush_for_tests_ = false;
+  bool requires_gl_flush_on_swap_buffers_ = false;
 
   // Scale factor of the current surface.
   float surface_scale_factor_ = 1.f;

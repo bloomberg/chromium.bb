@@ -9,7 +9,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 
-namespace ash {
 namespace quick_answers {
 
 namespace {
@@ -22,6 +21,8 @@ const char kQuickAnswerLoadingDuration[] = "QuickAnswers.Loading.Duration";
 const char kQuickAnswerSelectedContentLength[] =
     "QuickAnswers.SelectedContent.Length";
 const char kQuickAnswersRequestTextLength[] = "QuickAnswers.RequestTextLength";
+const char kQuickAnswersTtsEngineEvent[] =
+    "QuickAnswers.TextToSpeech.EngineEvent";
 
 const char kDurationSuffix[] = ".Duration";
 const char kDefinitionSuffix[] = ".Definition";
@@ -122,5 +123,8 @@ void RecordNetworkError(IntentType intent_type) {
   base::UmaHistogramEnumeration(kQuickAnswersNetworkError, intent_type);
 }
 
+void RecordTtsEngineEvent(TtsEngineEvent event) {
+  base::UmaHistogramEnumeration(kQuickAnswersTtsEngineEvent, event);
+}
+
 }  // namespace quick_answers
-}  // namespace ash

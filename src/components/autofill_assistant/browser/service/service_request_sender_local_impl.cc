@@ -13,10 +13,19 @@ ServiceRequestSenderLocalImpl::ServiceRequestSenderLocalImpl(
     : response_(response) {}
 ServiceRequestSenderLocalImpl::~ServiceRequestSenderLocalImpl() = default;
 
-void ServiceRequestSenderLocalImpl::SendRequest(const GURL& url,
-                                                const std::string& request_body,
-                                                ResponseCallback callback) {
-  std::move(callback).Run(net::HTTP_OK, response_);
+void ServiceRequestSenderLocalImpl::SendRequest(
+    const GURL& url,
+    const std::string& request_body,
+    ServiceRequestSender::AuthMode auth_mode,
+    ResponseCallback callback,
+    RpcType rpc_type) {
+  // Note: |encoded_body_length| is set to 0 since nothing was sent over the
+  // network.
+  std::move(callback).Run(net::HTTP_OK, response_,
+                          /* response_info = */ {});
 }
+
+void ServiceRequestSenderLocalImpl::SetDisableRpcSigning(
+    bool disable_rpc_signing) {}
 
 }  // namespace autofill_assistant

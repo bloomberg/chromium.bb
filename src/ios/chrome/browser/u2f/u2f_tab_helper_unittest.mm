@@ -6,13 +6,14 @@
 
 #import <UIKit/UIKit.h>
 
+#include "base/strings/escape.h"
 #import "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #import "ios/chrome/browser/chrome_url_util.h"
-#import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #include "ios/web/public/deprecated/url_verification_constants.h"
+#import "ios/web/public/test/fakes/fake_web_frame.h"
+#import "ios/web/public/test/fakes/fake_web_frames_manager.h"
 #import "ios/web/public/test/fakes/fake_web_state.h"
-#include "net/base/escape.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -27,17 +28,12 @@ class U2FTabHelperTest : public PlatformTest {
  protected:
   U2FTabHelperTest() {
     U2FTabHelper::CreateForWebState(&web_state_);
-    TabIdTabHelper::CreateForWebState(&web_state_);
     url::AddStandardScheme("chromium", url::SCHEME_WITH_HOST);
     [[ChromeAppConstants sharedInstance]
         setCallbackSchemeForTesting:@"chromium"];
   }
 
   U2FTabHelper* tab_helper() { return U2FTabHelper::FromWebState(&web_state_); }
-
-  NSString* tab_id() {
-    return TabIdTabHelper::FromWebState(&web_state_)->tab_id();
-  }
 
   // Returns the requestUUID NSString from a properly formatted U2F XCallback
   // GURL.
@@ -66,14 +62,14 @@ class U2FTabHelperTest : public PlatformTest {
   NSString* GetRegexString(const GURL& request_url, const GURL& origin_url) {
     return [@[
       @"u2f-x-callback://x-callback-url/auth\\?x-success=.+u2f-callback",
-      @"%2F%3FtabID%3D", tab_id(),
+      @"%2F%3FtabID%3D", web_state_.GetStableIdentifier(),
       @"%26requestUUID%3.+%26isU2F%3D1&x-error=.+u2f-callback%2F%3FtabID%3D",
-      tab_id(), @"%26requestUUID%3.+%26isU2F%3D1&data=",
+      web_state_.GetStableIdentifier(), @"%26requestUUID%3.+%26isU2F%3D1&data=",
       base::SysUTF8ToNSString(
-          net::EscapeQueryParamValue(request_url.query(), true)),
+          base::EscapeQueryParamValue(request_url.query(), true)),
       @"&origin=",
       base::SysUTF8ToNSString(
-          net::EscapeQueryParamValue(origin_url.spec(), true))
+          base::EscapeQueryParamValue(origin_url.spec(), true))
     ] componentsJoinedByString:@""];
   }
 
@@ -184,20 +180,27 @@ TEST_F(U2FTabHelperTest, TestEvaluateU2FResultWithCorrectFlowTest) {
       "chromium://u2f-callback?requestUUID=" +
       base::SysNSStringToUTF8(request_uuid) +
       "&requestId=TestID&registrationData=TestData&tabID=" +
-      base::SysNSStringToUTF8(tab_id()));
+      base::SysNSStringToUTF8(web_state_.GetStableIdentifier()));
 
-  EXPECT_TRUE(web_state_.GetLastExecutedJavascript().empty());
+  auto web_frames_manager = std::make_unique<web::FakeWebFramesManager>();
+  web::FakeWebFramesManager* web_frames_manager_ptr = web_frames_manager.get();
+  web_state_.SetWebFramesManager(std::move(web_frames_manager));
+
+  auto main_frame = web::FakeWebFrame::CreateMainWebFrame(tab_url);
+  web::FakeWebFrame* main_frame_ptr = main_frame.get();
+  web_frames_manager_ptr->AddWebFrame(std::move(main_frame));
+
+  EXPECT_TRUE(main_frame_ptr->GetLastJavaScriptCall().empty());
 
   tab_helper()->EvaluateU2FResult(correct_request_uuid_url);
-  std::string last_executed_js =
-      base::UTF16ToUTF8(web_state_.GetLastExecutedJavascript());
-  EXPECT_EQ(0, static_cast<int>(last_executed_js.find("u2f.callbackMap_")));
+  EXPECT_EQ(0ul,
+            main_frame_ptr->GetLastJavaScriptCall().find(u"u2f.callbackMap_"));
 
   // Test Replay Attack - Subsequent calls with the
   // same requestUUID should not do anything.
-  web_state_.ClearLastExecutedJavascript();
+  main_frame_ptr->ClearJavaScriptCallHistory();
   tab_helper()->EvaluateU2FResult(correct_request_uuid_url);
-  EXPECT_TRUE(web_state_.GetLastExecutedJavascript().empty());
+  EXPECT_TRUE(main_frame_ptr->GetLastJavaScriptCall().empty());
 }
 
 // Tests when U2F callback is not formatted correctly.
@@ -210,41 +213,50 @@ TEST_F(U2FTabHelperTest, TestEvaluateU2FResultWithBadURLFormat) {
   NSString* request_uuid = GetRequestUuidFromXCallbackUrl(xcallback_url);
   web_state_.SetTrustLevel(web::URLVerificationTrustLevel::kAbsolute);
 
-  EXPECT_TRUE(web_state_.GetLastExecutedJavascript().empty());
+  auto web_frames_manager = std::make_unique<web::FakeWebFramesManager>();
+  web::FakeWebFramesManager* web_frames_manager_ptr = web_frames_manager.get();
+  web_state_.SetWebFramesManager(std::move(web_frames_manager));
+
+  auto main_frame = web::FakeWebFrame::CreateMainWebFrame(tab_url);
+  web::FakeWebFrame* main_frame_ptr = main_frame.get();
+  web_frames_manager_ptr->AddWebFrame(std::move(main_frame));
+
+  EXPECT_TRUE(main_frame_ptr->GetLastJavaScriptCall().empty());
 
   // Test when U2F callback has no requestUUID info.
   GURL no_request_uuid_url(
       "chromium://"
       "u2f-callback?requestId=TestID&registrationData=TestData&tabID=" +
-      base::SysNSStringToUTF8(tab_id()));
+      base::SysNSStringToUTF8(web_state_.GetStableIdentifier()));
   tab_helper()->EvaluateU2FResult(no_request_uuid_url);
-  EXPECT_TRUE(web_state_.GetLastExecutedJavascript().empty());
+  EXPECT_TRUE(main_frame_ptr->GetLastJavaScriptCall().empty());
 
   // Test when U2F callback has wrong requestUUID value.
-  GURL wrong_request_uuid_url("chromium://"
-                              "u2f-callback?requestId=TestID&registrationData="
-                              "TestData&requestUUID=123&tabID=" +
-                              base::SysNSStringToUTF8(tab_id()));
+  GURL wrong_request_uuid_url(
+      "chromium://"
+      "u2f-callback?requestId=TestID&registrationData="
+      "TestData&requestUUID=123&tabID=" +
+      base::SysNSStringToUTF8(web_state_.GetStableIdentifier()));
   tab_helper()->EvaluateU2FResult(wrong_request_uuid_url);
-  EXPECT_TRUE(web_state_.GetLastExecutedJavascript().empty());
+  EXPECT_TRUE(main_frame_ptr->GetLastJavaScriptCall().empty());
 
   // Test when U2F callback has no registrationData value.
   GURL no_registration_request_url(
       "chromium://u2f-callback?requestUUID=" +
-      base::SysNSStringToUTF8(request_uuid) +
-      "&requestId=TestID&tabID=" + base::SysNSStringToUTF8(tab_id()));
+      base::SysNSStringToUTF8(request_uuid) + "&requestId=TestID&tabID=" +
+      base::SysNSStringToUTF8(web_state_.GetStableIdentifier()));
 
   tab_helper()->EvaluateU2FResult(no_registration_request_url);
-  EXPECT_TRUE(web_state_.GetLastExecutedJavascript().empty());
+  EXPECT_TRUE(main_frame_ptr->GetLastJavaScriptCall().empty());
 
   // Test when U2F callback hostname is unexpected.
   GURL wrong_host_name_url(
       "chromium://"
       "evil-callback?requestId=TestID&registrationData=TestData&requestUUID=" +
       base::SysNSStringToUTF8(request_uuid) +
-      "&tabID=" + base::SysNSStringToUTF8(tab_id()));
+      "&tabID=" + base::SysNSStringToUTF8(web_state_.GetStableIdentifier()));
   tab_helper()->EvaluateU2FResult(wrong_host_name_url);
-  EXPECT_TRUE(web_state_.GetLastExecutedJavascript().empty());
+  EXPECT_TRUE(main_frame_ptr->GetLastJavaScriptCall().empty());
 }
 
 // Tests when last committed URL is not valid for U2F.
@@ -256,32 +268,48 @@ TEST_F(U2FTabHelperTest, TestEvaluateU2FResultWithBadTabState) {
   GURL xcallback_url = tab_helper()->GetXCallbackUrl(request_url, origin_url);
   NSString* request_uuid = GetRequestUuidFromXCallbackUrl(xcallback_url);
 
-  // Verify that last executed javascript is empty.
-  EXPECT_TRUE(web_state_.GetLastExecutedJavascript().empty());
+  auto web_frames_manager = std::make_unique<web::FakeWebFramesManager>();
+  web::FakeWebFramesManager* web_frames_manager_ptr = web_frames_manager.get();
+  web_state_.SetWebFramesManager(std::move(web_frames_manager));
 
   // Test when U2F callback has correct information but Tab URL changed.
   web_state_.SetTrustLevel(web::URLVerificationTrustLevel::kAbsolute);
-  web_state_.SetCurrentURL(GURL("http://www.dummy.com"));
+  auto url = GURL("http://www.dummy.com");
+  web_state_.SetCurrentURL(url);
+
+  auto main_frame = web::FakeWebFrame::CreateMainWebFrame(url);
+  web::FakeWebFrame* main_frame_ptr = main_frame.get();
+  web_frames_manager_ptr->AddWebFrame(std::move(main_frame));
+
+  // Verify that last executed javascript is empty.
+  EXPECT_TRUE(main_frame_ptr->GetLastJavaScriptCall().empty());
+
   GURL correct_request_uuid_url(
       "chromium://"
       "u2f-callback?requestId=TestID&registrationData=TestData&requestUUID=" +
       base::SysNSStringToUTF8(request_uuid) +
-      "&tabID=" + base::SysNSStringToUTF8(tab_id()));
+      "&tabID=" + base::SysNSStringToUTF8(web_state_.GetStableIdentifier()));
 
   tab_helper()->EvaluateU2FResult(correct_request_uuid_url);
-  EXPECT_TRUE(web_state_.GetLastExecutedJavascript().empty());
+  EXPECT_TRUE(main_frame_ptr->GetLastJavaScriptCall().empty());
+
+  web_frames_manager_ptr->RemoveWebFrame(main_frame_ptr->GetFrameId());
 
   // Test when U2F callback has correct information but Tab URL not trusted.
   web_state_.SetTrustLevel(web::URLVerificationTrustLevel::kNone);
   web_state_.SetCurrentURL(correct_tab_url);
+  auto main_frame2 = web::FakeWebFrame::CreateMainWebFrame(correct_tab_url);
+  web::FakeWebFrame* main_frame_ptr2 = main_frame2.get();
+  web_frames_manager_ptr->AddWebFrame(std::move(main_frame2));
+
   xcallback_url = tab_helper()->GetXCallbackUrl(request_url, origin_url);
   request_uuid = GetRequestUuidFromXCallbackUrl(xcallback_url);
   correct_request_uuid_url = GURL(
       "chromium://"
       "u2f-callback?requestId=TestID&registrationData=TestData&requestUUID=" +
       base::SysNSStringToUTF8(request_uuid) +
-      "&tabID=" + base::SysNSStringToUTF8(tab_id()));
+      "&tabID=" + base::SysNSStringToUTF8(web_state_.GetStableIdentifier()));
 
   tab_helper()->EvaluateU2FResult(correct_request_uuid_url);
-  EXPECT_TRUE(web_state_.GetLastExecutedJavascript().empty());
+  EXPECT_TRUE(main_frame_ptr2->GetLastJavaScriptCall().empty());
 }

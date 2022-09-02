@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2021 The Khronos Group Inc.
- * Copyright (c) 2021 Valve Corporation
- * Copyright (c) 2021 LunarG, Inc.
+ * Copyright (c) 2021-2022 The Khronos Group Inc.
+ * Copyright (c) 2021-2022 Valve Corporation
+ * Copyright (c) 2021-2022 LunarG, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and/or associated documentation files (the "Materials"), to
@@ -90,57 +90,70 @@ using FP_layer_callback = VkResult (*)(TestLayer& layer, void* data);
 
 struct TestLayer {
     fs::path manifest_file_path;
-    uint32_t manifest_version = VK_MAKE_VERSION(1, 1, 2);
+    uint32_t manifest_version = VK_MAKE_API_VERSION(0, 1, 1, 2);
 
-    bool is_meta_layer = false;
+    BUILDER_VALUE(TestLayer, bool, is_meta_layer, false)
 
-    std::string unique_name;
-    uint32_t api_version = VK_MAKE_VERSION(1, 0, 0);
-    uint32_t implementation_version = 2;
-    uint32_t min_implementation_version = 0;
-    std::string description;
+    BUILDER_VALUE(TestLayer, uint32_t, api_version, VK_API_VERSION_1_0)
+    BUILDER_VALUE(TestLayer, uint32_t, reported_layer_props, 1)
+    BUILDER_VALUE(TestLayer, uint32_t, reported_extension_props, 0)
+    BUILDER_VALUE(TestLayer, uint32_t, reported_instance_version, VK_API_VERSION_1_0)
+    BUILDER_VALUE(TestLayer, uint32_t, implementation_version, 2)
+    BUILDER_VALUE(TestLayer, uint32_t, min_implementation_version, 0)
+    BUILDER_VALUE(TestLayer, std::string, description, {})
 
-    std::vector<std::string> alternative_function_names;
+    BUILDER_VECTOR(TestLayer, std::string, alternative_function_names, alternative_function_name)
 
-    std::vector<Extension> instance_extensions;
-    std::vector<Extension> device_extensions;
+    BUILDER_VECTOR(TestLayer, Extension, instance_extensions, instance_extension)
+    BUILDER_VECTOR(TestLayer, Extension, device_extensions, device_extension)
 
-    std::string enable_environment;
-    std::string disable_environment;
+    BUILDER_VALUE(TestLayer, std::string, enable_environment, {});
+    BUILDER_VALUE(TestLayer, std::string, disable_environment, {});
 
-    std::vector<LayerDefinition> meta_component_layers;
+    BUILDER_VECTOR(TestLayer, LayerDefinition, meta_component_layers, meta_component_layer);
 
-    bool intercept_vkEnumerateInstanceExtensionProperties = false;
-    bool intercept_vkEnumerateInstanceLayerProperties = false;
+    BUILDER_VALUE(TestLayer, bool, intercept_vkEnumerateInstanceExtensionProperties, false)
+    BUILDER_VALUE(TestLayer, bool, intercept_vkEnumerateInstanceLayerProperties, false)
+    // Called in vkCreateInstance after calling down the chain & returning
+    BUILDER_VALUE(TestLayer, std::function<VkResult(TestLayer& layer)>, create_instance_callback, {})
+    // Called in vkCreateDevice after calling down the chain & returning
+    BUILDER_VALUE(TestLayer, std::function<VkResult(TestLayer& layer)>, create_device_callback, {})
+
+    // Physical device modifier test flags and members.  This data is primarily used to test adding, removing and
+    // re-ordering physical device data in a layer.
+    BUILDER_VALUE(TestLayer, bool, add_phys_devs, false)
+    BUILDER_VALUE(TestLayer, bool, remove_phys_devs, false)
+    BUILDER_VALUE(TestLayer, bool, reorder_phys_devs, false)
+    BUILDER_VECTOR(TestLayer, VkPhysicalDevice, complete_physical_devices, complete_physical_device)
+    BUILDER_VECTOR(TestLayer, VkPhysicalDevice, removed_physical_devices, removed_physical_device)
+    BUILDER_VECTOR(TestLayer, VkPhysicalDevice, added_physical_devices, added_physical_device)
+    BUILDER_VECTOR(TestLayer, VkPhysicalDeviceGroupProperties, complete_physical_device_groups, complete_physical_device_group)
+    BUILDER_VECTOR(TestLayer, VkPhysicalDeviceGroupProperties, removed_physical_device_groups, removed_physical_device_group)
+    BUILDER_VECTOR(TestLayer, VkPhysicalDeviceGroupProperties, added_physical_device_groups, added_physical_device_group)
+
+    BUILDER_VECTOR(TestLayer, VulkanFunction, custom_physical_device_functions, custom_physical_device_function)
+
+    BUILDER_VALUE(TestLayer, bool, do_spurious_allocations_in_create_instance, false)
+    void* spurious_instance_memory_allocation = nullptr;
+    BUILDER_VALUE(TestLayer, bool, do_spurious_allocations_in_create_device, false)
+    struct DeviceMemAlloc {
+        void* allocation;
+        VkDevice device;
+    };
+    std::vector<DeviceMemAlloc> spurious_device_memory_allocations;
 
     PFN_vkGetInstanceProcAddr next_vkGetInstanceProcAddr = VK_NULL_HANDLE;
+    PFN_GetPhysicalDeviceProcAddr next_GetPhysicalDeviceProcAddr = VK_NULL_HANDLE;
     PFN_vkGetDeviceProcAddr next_vkGetDeviceProcAddr = VK_NULL_HANDLE;
 
-    VkInstance instance_handle;
-    VkLayerInstanceDispatchTable instance_dispatch_table;
+    VkInstance instance_handle = VK_NULL_HANDLE;
+    VkLayerInstanceDispatchTable instance_dispatch_table{};
 
     struct Device {
-        VkDevice device_handle;
-        VkLayerDispatchTable dispatch_table;
+        VkDevice device_handle = VK_NULL_HANDLE;
+        VkLayerDispatchTable dispatch_table{};
     };
     std::vector<Device> created_devices;
-
-    // Called in vkCreateInstance after calling down the chain & returning
-    FP_layer_callback create_instance_callback = nullptr;
-    void* create_instance_callback_data = nullptr;
-
-    // Called in vkCreateDevice after calling down the chain & returning
-    FP_layer_callback create_device_callback = nullptr;
-    void* create_device_callback_data = nullptr;
-
-    void SetCreateInstanceCallback(FP_layer_callback callback, void* data) noexcept {
-        create_instance_callback = callback;
-        create_instance_callback_data = data;
-    }
-    void SetCreateDeviceCallback(FP_layer_callback callback, void* data) noexcept {
-        create_device_callback = callback;
-        create_device_callback_data = data;
-    }
 };
 
 using GetTestLayerFunc = TestLayer* (*)();

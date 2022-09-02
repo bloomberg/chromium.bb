@@ -10,22 +10,29 @@
 #include "base/command_line.h"
 #include "build/build_config.h"
 #include "ui/gl/gl_export.h"
+#include "ui/gl/gpu_preference.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include <dxgi1_6.h>
 #endif
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "base/files/scoped_file.h"
 #endif
 
 namespace gl {
 class GLApi;
+#if defined(USE_EGL)
+class GLDisplayEGL;
+#endif  // USE_EGL
+#if defined(USE_GLX)
+class GLDisplayX11;
+#endif  // USE_GLX
 
 GL_EXPORT void Crash();
 GL_EXPORT void Hang();
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 GL_EXPORT base::ScopedFD MergeFDs(base::ScopedFD a, base::ScopedFD b);
 #endif
 
@@ -34,7 +41,7 @@ GL_EXPORT bool UsePassthroughCommandDecoder(
 
 GL_EXPORT bool PassthroughCommandDecoderSupported();
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 GL_EXPORT bool AreOverlaysSupportedWin();
 
 // Calculates present during in 100 ns from number of frames per second.
@@ -59,6 +66,25 @@ void LabelSwapChainAndBuffers(IDXGISwapChain* swap_chain,
 void LabelSwapChainBuffers(IDXGISwapChain* swap_chain, const char* name_prefix);
 #endif
 
+// The following functions expose functionalities from GLDisplayManagerEGL
+// and GLDisplayManagerX11 for access outside the ui/gl module. This is because
+// the two GLDisplayManager classes are singletons and in component build,
+// calling GetInstance() directly returns different instances in different
+// components.
+#if defined(USE_EGL)
+// Add an entry <preference, system_device_id> to GLDisplayManagerEGL.
+GL_EXPORT void SetGpuPreferenceEGL(GpuPreference preference,
+                                   uint64_t system_device_id);
+
+// Query the default GLDisplayEGL.
+GL_EXPORT GLDisplayEGL* GetDefaultDisplayEGL();
+#endif  // USE_EGL
+
+#if defined(USE_GLX)
+// Query the GLDisplayX11 by |system_device_id|.
+GL_EXPORT GLDisplayX11* GetDisplayX11(uint64_t system_device_id);
+#endif  // USE_GLX
+
 // Temporarily allows compilation of shaders that use the
 // ARB_texture_rectangle/ANGLE_texture_rectangle extension. We don't want to
 // expose the extension to WebGL user shaders but we still need to use it for
@@ -72,7 +98,7 @@ class GL_EXPORT ScopedEnableTextureRectangleInShaderCompiler {
       const ScopedEnableTextureRectangleInShaderCompiler&) = delete;
 
   // This class is a no-op except on macOS.
-#if !defined(OS_MAC)
+#if !BUILDFLAG(IS_MAC)
   explicit ScopedEnableTextureRectangleInShaderCompiler(gl::GLApi* gl_api) {}
 
 #else

@@ -15,6 +15,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/sequenced_task_runner.h"
+#include "base/time/time.h"
 #include "components/safe_browsing/core/browser/db/database_manager.h"
 #include "components/safe_browsing/core/browser/db/hit_report.h"
 #include "components/safe_browsing/core/browser/db/v4_database.h"
@@ -84,7 +85,6 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
   bool MatchMalwareIP(const std::string& ip_address) override;
   safe_browsing::ThreatSource GetThreatSource() const override;
   bool IsDownloadProtectionEnabled() const override;
-  bool IsSupported() const override;
 
   void StartOnIOThread(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
@@ -229,7 +229,8 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
   // Called when all the stores managed by the database have been read from
   // disk after startup and the database is ready for checking resource
   // reputation.
-  void DatabaseReadyForChecks(std::unique_ptr<V4Database> v4_database);
+  void DatabaseReadyForChecks(
+      std::unique_ptr<V4Database, base::OnTaskRunnerDeleter> v4_database);
 
   // Called when all the stores managed by the database have been verified for
   // checksum correctness after startup and the database is ready for applying
@@ -394,7 +395,7 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
 
   // The database that manages the stores containing the hash prefix updates.
   // All writes to this variable must happen on the IO thread only.
-  std::unique_ptr<V4Database> v4_database_;
+  std::unique_ptr<V4Database, base::OnTaskRunnerDeleter> v4_database_;
 
   // The protocol manager that downloads the hash prefix updates.
   std::unique_ptr<V4UpdateProtocolManager> v4_update_protocol_manager_;

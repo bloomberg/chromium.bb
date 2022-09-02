@@ -7,6 +7,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/command_line.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
@@ -42,10 +43,12 @@
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
+#include "content/public/test/fenced_frame_test_util.h"
 #include "content/public/test/no_renderer_crashes_assertion.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/switches.h"
+#include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -114,8 +117,8 @@ class DelayLoadStartAndExecuteJavascript : public TabStripModelObserver,
     navigation_handle->RegisterThrottleForTesting(std::move(throttle));
 
     if (has_user_gesture_) {
-      rfh_->ExecuteJavaScriptWithUserGestureForTests(
-          base::UTF8ToUTF16(script_));
+      rfh_->ExecuteJavaScriptWithUserGestureForTests(base::UTF8ToUTF16(script_),
+                                                     base::NullCallback());
     } else {
       rfh_->ExecuteJavaScriptForTests(base::UTF8ToUTF16(script_),
                                       base::NullCallback());
@@ -253,8 +256,8 @@ class WebNavigationApiTestWithContextType
       const WebNavigationApiTestWithContextType&) = delete;
 
  protected:
-  bool RunTest(const char* name,
-               bool allow_in_incognito = false) WARN_UNUSED_RESULT {
+  [[nodiscard]] bool RunTest(const char* name,
+                             bool allow_in_incognito = false) {
     return RunExtensionTest(name, {},
                             {.allow_in_incognito = allow_in_incognito});
   }
@@ -266,6 +269,20 @@ IN_PROC_BROWSER_TEST_P(WebNavigationApiTestWithContextType, Api) {
 
 IN_PROC_BROWSER_TEST_P(WebNavigationApiTestWithContextType, GetFrame) {
   ASSERT_TRUE(RunExtensionTest("webnavigation/getFrame")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, GetFrameIncognito) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+
+  GURL url = embedded_test_server()->GetURL("a.com", "/empty.html");
+
+  Browser* incognito_browser = OpenURLOffTheRecord(browser()->profile(), url);
+  ASSERT_TRUE(incognito_browser);
+
+  // Now that we have a OTR browser, run the extension test.
+  ASSERT_TRUE(RunExtensionTest("webnavigation/getFrameIncognito", {},
+                               {.allow_in_incognito = true}))
+      << message_;
 }
 
 INSTANTIATE_TEST_SUITE_P(PersistentBackground,
@@ -291,7 +308,7 @@ IN_PROC_BROWSER_TEST_P(WebNavigationApiTestWithContextType, FormSubmission) {
 
 // TODO(https://crbug.com/1250311):
 // WebNavigationApiTestWithContextType.Download test is flaky.
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #define MAYBE_Download DISABLED_Download
 #else
 #define MAYBE_Download Download
@@ -343,12 +360,14 @@ IN_PROC_BROWSER_TEST_P(WebNavigationApiTestWithContextType, ForwardBack) {
   ASSERT_TRUE(RunTest("webnavigation/forwardBack")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(WebNavigationApiBackForwardCacheTest, ForwardBack) {
+// TODO(crbug.com/1313923): Flaky on several platforms.
+IN_PROC_BROWSER_TEST_F(WebNavigationApiBackForwardCacheTest,
+                       DISABLED_ForwardBack) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("webnavigation/backForwardCache")) << message_;
 }
 
-#if defined(OS_MAC) && defined(ARCH_CPU_ARM64)
+#if BUILDFLAG(IS_MAC) && defined(ARCH_CPU_ARM64)
 // https://crbug.com/1223028
 #define MAYBE_IFrame DISABLED_IFrame
 #else
@@ -445,11 +464,15 @@ IN_PROC_BROWSER_TEST_P(WebNavigationApiTestWithContextType, RequestOpenTab) {
   mouse_event.button = blink::WebMouseEvent::Button::kMiddle;
   mouse_event.SetPositionInWidget(7, 7);
   mouse_event.click_count = 1;
-  tab->GetMainFrame()->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(
-      mouse_event);
+  tab->GetPrimaryMainFrame()
+      ->GetRenderViewHost()
+      ->GetWidget()
+      ->ForwardMouseEvent(mouse_event);
   mouse_event.SetType(blink::WebInputEvent::Type::kMouseUp);
-  tab->GetMainFrame()->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(
-      mouse_event);
+  tab->GetPrimaryMainFrame()
+      ->GetRenderViewHost()
+      ->GetWidget()
+      ->ForwardMouseEvent(mouse_event);
 
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
@@ -480,11 +503,15 @@ IN_PROC_BROWSER_TEST_P(WebNavigationApiTestWithContextType, TargetBlank) {
   mouse_event.button = blink::WebMouseEvent::Button::kLeft;
   mouse_event.SetPositionInWidget(7, 7);
   mouse_event.click_count = 1;
-  tab->GetMainFrame()->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(
-      mouse_event);
+  tab->GetPrimaryMainFrame()
+      ->GetRenderViewHost()
+      ->GetWidget()
+      ->ForwardMouseEvent(mouse_event);
   mouse_event.SetType(blink::WebInputEvent::Type::kMouseUp);
-  tab->GetMainFrame()->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(
-      mouse_event);
+  tab->GetPrimaryMainFrame()
+      ->GetRenderViewHost()
+      ->GetWidget()
+      ->ForwardMouseEvent(mouse_event);
 
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
@@ -515,11 +542,15 @@ IN_PROC_BROWSER_TEST_P(WebNavigationApiTestWithContextType,
   mouse_event.button = blink::WebMouseEvent::Button::kLeft;
   mouse_event.SetPositionInWidget(7, 7);
   mouse_event.click_count = 1;
-  tab->GetMainFrame()->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(
-      mouse_event);
+  tab->GetPrimaryMainFrame()
+      ->GetRenderViewHost()
+      ->GetWidget()
+      ->ForwardMouseEvent(mouse_event);
   mouse_event.SetType(blink::WebInputEvent::Type::kMouseUp);
-  tab->GetMainFrame()->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(
-      mouse_event);
+  tab->GetPrimaryMainFrame()
+      ->GetRenderViewHost()
+      ->GetWidget()
+      ->ForwardMouseEvent(mouse_event);
 
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
@@ -629,8 +660,8 @@ IN_PROC_BROWSER_TEST_P(WebNavigationApiTestWithContextType, Crash) {
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-#if defined(OS_MAC) && defined(ARCH_CPU_ARM64)
-// https://crbug.com/1223055
+#if BUILDFLAG(IS_MAC)
+// TODO(https://crbug.com/1223055): Re-enable this test.
 #define MAYBE_Xslt DISABLED_Xslt
 #else
 #define MAYBE_Xslt Xslt
@@ -649,8 +680,11 @@ class WebNavigationApiFencedFrameTest
     feature_list_.InitWithFeaturesAndParameters(
         /*enabled_features=*/{{blink::features::kFencedFrames,
                                {{"implementation_type",
-                                 GetParam() ? "shadow_dom" : "mparch"}}}},
+                                 GetParam() ? "shadow_dom" : "mparch"}}},
+                              {features::kPrivacySandboxAdsAPIsOverride, {}}},
         /*disabled_features=*/{features::kSpareRendererForSitePerProcess});
+    // Fenced frames are only allowed in a secure context.
+    UseHttpsTestServer();
   }
   ~WebNavigationApiFencedFrameTest() override = default;
 
@@ -660,11 +694,61 @@ class WebNavigationApiFencedFrameTest
 
 IN_PROC_BROWSER_TEST_P(WebNavigationApiFencedFrameTest, Load) {
   ASSERT_TRUE(StartEmbeddedTestServer());
-  ASSERT_TRUE(RunExtensionTest("webnavigation/fencedFrames")) << message_;
+  ASSERT_TRUE(RunExtensionTest("webnavigation/fencedFrames",
+                               {.custom_arg = !GetParam() ? "MPArch" : ""}))
+      << message_;
 }
 
 INSTANTIATE_TEST_SUITE_P(WebNavigationApiFencedFrameTest,
                          WebNavigationApiFencedFrameTest,
                          testing::Bool());
 
+// Tests that the actual url of a fenced frame navaigation is visible to the
+// extensions
+IN_PROC_BROWSER_TEST_P(WebNavigationApiFencedFrameTest, MappedURL) {
+  EXPECT_TRUE(GetParam() ? blink::features::IsFencedFramesShadowDOMBased()
+                         : blink::features::IsFencedFramesMPArchBased());
+
+  ASSERT_TRUE(StartEmbeddedTestServer());
+
+  GURL main_url = embedded_test_server()->GetURL(
+      "a.test",
+      "/extensions/api_test/webnavigation/fencedFramesMappedURL/main.html");
+  content::RenderFrameHost* rfh =
+      ui_test_utils::NavigateToURL(browser(), main_url);
+  ASSERT_FALSE(rfh->IsErrorDocument());
+
+  const char* kScript = R"(
+    var ff = document.createElement('fencedframe');
+    ff.mode = 'opaque-ads';
+    document.body.appendChild(ff);
+  )";
+  EXPECT_TRUE(content::ExecJs(rfh, kScript));
+
+  ExtensionTestMessageListener background_page_read("ready",
+                                                    ReplyBehavior::kWillReply);
+  const Extension* extension =
+      LoadExtension(test_data_dir_.AppendASCII("webnavigation")
+                        .AppendASCII("fencedFramesMappedURL"));
+  ASSERT_TRUE(extension);
+  ASSERT_TRUE(background_page_read.WaitUntilSatisfied());
+  background_page_read.Reply(GetParam() ? "shadow_dom" : "mparch");
+  background_page_read.Reset();
+  ASSERT_TRUE(background_page_read.WaitUntilSatisfied());
+  background_page_read.Reply("");
+
+  GURL frame_url = embedded_test_server()->GetURL(
+      "b.test",
+      "/extensions/api_test/webnavigation/fencedFramesMappedURL/frame.html");
+
+  GURL urn_uuid = content::test::CreateFencedFrameURLMapping(rfh, frame_url);
+
+  ResultCatcher catcher;
+  EXPECT_TRUE(content::ExecJs(
+      rfh, content::JsReplace("ff.src = $1;", urn_uuid.spec())));
+  ASSERT_TRUE(catcher.GetNextResult()) << message_;
+
+  // The parent still sees the urn_uuid as the fenced frame src.
+  EXPECT_EQ(urn_uuid.spec(), content::EvalJs(rfh, "ff.src"));
+}
 }  // namespace extensions

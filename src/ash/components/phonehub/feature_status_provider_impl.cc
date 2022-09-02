@@ -6,27 +6,27 @@
 
 #include <utility>
 
+#include "ash/components/multidevice/logging/logging.h"
+#include "ash/components/multidevice/remote_device_ref.h"
+#include "ash/components/multidevice/software_feature.h"
+#include "ash/components/multidevice/software_feature_state.h"
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
-#include "chromeos/components/multidevice/logging/logging.h"
-#include "chromeos/components/multidevice/remote_device_ref.h"
-#include "chromeos/components/multidevice/software_feature.h"
-#include "chromeos/components/multidevice/software_feature_state.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 
 namespace ash {
 namespace phonehub {
 namespace {
 
-using ::chromeos::multidevice::RemoteDeviceRef;
-using ::chromeos::multidevice::RemoteDeviceRefList;
-using ::chromeos::multidevice::SoftwareFeature;
-using ::chromeos::multidevice::SoftwareFeatureState;
-using ::chromeos::multidevice_setup::mojom::Feature;
-using ::chromeos::multidevice_setup::mojom::FeatureState;
-using ::chromeos::multidevice_setup::mojom::HostStatus;
+using multidevice::RemoteDeviceRef;
+using multidevice::RemoteDeviceRefList;
+using multidevice::SoftwareFeature;
+using multidevice::SoftwareFeatureState;
+using multidevice_setup::mojom::Feature;
+using multidevice_setup::mojom::FeatureState;
+using multidevice_setup::mojom::HostStatus;
 
 bool IsEligiblePhoneHubHost(const RemoteDeviceRef& device) {
   // Device must be capable of being a multi-device host.
@@ -168,19 +168,6 @@ FeatureStatus FeatureStatusProviderImpl::GetStatus() const {
 
 void FeatureStatusProviderImpl::OnReady() {
   UpdateStatus();
-
-  // The status may change a few times before initialization is
-  // complete. Before the login status is recorded, all asynchronous
-  // action should be complete. Note that scheduling
-  // RecordFeatureStatusOnLogin() with BEST_EFFORT sooner (e.g in the
-  // constructor) may yield an incorrect metric, because there may be many
-  // cycles between the constructor being called and |device_sync_client_| being
-  // ready, allowing tasks posted even with BEST_EFFORT to succeed before
-  // initialization.
-  base::ThreadPool::PostTask(
-      FROM_HERE, {base::TaskPriority::BEST_EFFORT},
-      base::BindOnce(&FeatureStatusProviderImpl::RecordFeatureStatusOnLogin,
-                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void FeatureStatusProviderImpl::OnNewDevicesSynced() {
@@ -242,9 +229,6 @@ void FeatureStatusProviderImpl::UpdateStatus() {
   *status_ = computed_status;
   NotifyStatusChanged();
 
-  if (!is_login_status_metric_recorded_)
-    return;
-
   UMA_HISTOGRAM_ENUMERATION("PhoneHub.Adoption.FeatureStatusChangesSinceLogin",
                             GetStatus());
 }
@@ -298,12 +282,6 @@ bool FeatureStatusProviderImpl::IsBluetoothOn() const {
     return false;
 
   return bluetooth_adapter_->IsPresent() && bluetooth_adapter_->IsPowered();
-}
-
-void FeatureStatusProviderImpl::RecordFeatureStatusOnLogin() {
-  UMA_HISTOGRAM_ENUMERATION("PhoneHub.Adoption.LoginFeatureStatus",
-                            GetStatus());
-  is_login_status_metric_recorded_ = true;
 }
 
 void FeatureStatusProviderImpl::SuspendImminent(

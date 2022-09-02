@@ -8,15 +8,53 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-#include <memory>
+#include <stddef.h>
+#include <stdint.h>
 
+#include <memory>
+#include <string>
+#include <tuple>
+#include <type_traits>
+#include <utility>
+#include <vector>
+
+#include "absl/types/optional.h"
+#include "api/audio/audio_mixer.h"
+#include "api/candidate.h"
+#include "api/ice_transport_interface.h"
+#include "api/jsep.h"
+#include "api/media_types.h"
+#include "api/peer_connection_interface.h"
+#include "api/rtc_error.h"
+#include "api/scoped_refptr.h"
+#include "modules/audio_device/include/audio_device.h"
+#include "modules/audio_processing/include/audio_processing.h"
 #include "p2p/base/fake_port_allocator.h"
-#include "p2p/base/test_stun_server.h"
+#include "p2p/base/ice_transport_internal.h"
+#include "p2p/base/p2p_constants.h"
+#include "p2p/base/port.h"
+#include "p2p/base/port_allocator.h"
+#include "p2p/base/transport_description.h"
+#include "p2p/base/transport_info.h"
 #include "p2p/client/basic_port_allocator.h"
+#include "pc/channel_interface.h"
+#include "pc/dtls_transport.h"
 #include "pc/media_session.h"
 #include "pc/peer_connection.h"
 #include "pc/peer_connection_wrapper.h"
+#include "pc/rtp_transceiver.h"
 #include "pc/sdp_utils.h"
+#include "pc/session_description.h"
+#include "rtc_base/checks.h"
+#include "rtc_base/internal/default_socket_server.h"
+#include "rtc_base/ip_address.h"
+#include "rtc_base/logging.h"
+#include "rtc_base/net_helper.h"
+#include "rtc_base/ref_counted_object.h"
+#include "rtc_base/rtc_certificate_generator.h"
+#include "rtc_base/socket_address.h"
+#include "rtc_base/thread.h"
+#include "test/gtest.h"
 #ifdef WEBRTC_ANDROID
 #include "pc/test/android_test_initializer.h"
 #endif
@@ -121,8 +159,9 @@ class PeerConnectionIceBaseTest : public ::testing::Test {
 
   WrapperPtr CreatePeerConnection(const RTCConfiguration& config) {
     auto* fake_network = NewFakeNetwork();
-    auto port_allocator =
-        std::make_unique<cricket::BasicPortAllocator>(fake_network);
+    auto port_allocator = std::make_unique<cricket::BasicPortAllocator>(
+        fake_network,
+        std::make_unique<rtc::BasicPacketSocketFactory>(vss_.get()));
     port_allocator->set_flags(cricket::PORTALLOCATOR_DISABLE_TCP |
                               cricket::PORTALLOCATOR_DISABLE_RELAY);
     port_allocator->set_step_delay(cricket::kMinimumStepDelay);
@@ -130,15 +169,17 @@ class PeerConnectionIceBaseTest : public ::testing::Test {
     modified_config.sdp_semantics = sdp_semantics_;
     auto observer = std::make_unique<MockPeerConnectionObserver>();
     auto port_allocator_copy = port_allocator.get();
-    auto pc = pc_factory_->CreatePeerConnection(
-        modified_config, std::move(port_allocator), nullptr, observer.get());
-    if (!pc) {
+    PeerConnectionDependencies pc_dependencies(observer.get());
+    pc_dependencies.allocator = std::move(port_allocator);
+    auto result = pc_factory_->CreatePeerConnectionOrError(
+        modified_config, std::move(pc_dependencies));
+    if (!result.ok()) {
       return nullptr;
     }
 
-    observer->SetPeerConnectionInterface(pc.get());
+    observer->SetPeerConnectionInterface(result.value().get());
     auto wrapper = std::make_unique<PeerConnectionWrapperForIceTest>(
-        pc_factory_, pc, std::move(observer));
+        pc_factory_, result.MoveValue(), std::move(observer));
     wrapper->set_network(fake_network);
     wrapper->port_allocator_ = port_allocator_copy;
     return wrapper;
@@ -224,7 +265,7 @@ class PeerConnectionIceBaseTest : public ::testing::Test {
     for (const auto& transceiver : pc->GetTransceiversInternal()) {
       if (transceiver->media_type() == cricket::MEDIA_TYPE_AUDIO) {
         auto dtls_transport = pc->LookupDtlsTransportByMidInternal(
-            transceiver->internal()->channel()->content_name());
+            transceiver->internal()->channel()->mid());
         return dtls_transport->ice_transport()->internal()->GetIceRole();
       }
     }
@@ -770,7 +811,7 @@ TEST_P(PeerConnectionIceTest,
   // Chain an operation that will block AddIceCandidate() from executing.
   auto answer_observer =
       rtc::make_ref_counted<MockCreateSessionDescriptionObserver>();
-  callee->pc()->CreateAnswer(answer_observer, RTCOfferAnswerOptions());
+  callee->pc()->CreateAnswer(answer_observer.get(), RTCOfferAnswerOptions());
 
   auto jsep_candidate =
       callee->CreateJsepCandidateForFirstTransport(&candidate);
@@ -800,7 +841,7 @@ TEST_P(PeerConnectionIceTest,
       std::move(jsep_candidate), [&operation_completed](RTCError result) {
         EXPECT_FALSE(result.ok());
         EXPECT_EQ(result.message(),
-                  std::string("Error processing ICE candidate"));
+                  std::string("The remote description was null"));
         operation_completed = true;
       });
   EXPECT_TRUE_WAIT(operation_completed, kWaitTimeout);
@@ -818,7 +859,7 @@ TEST_P(PeerConnectionIceTest,
   // Chain an operation that will block AddIceCandidate() from executing.
   auto answer_observer =
       rtc::make_ref_counted<MockCreateSessionDescriptionObserver>();
-  callee->pc()->CreateAnswer(answer_observer, RTCOfferAnswerOptions());
+  callee->pc()->CreateAnswer(answer_observer.get(), RTCOfferAnswerOptions());
 
   auto jsep_candidate =
       callee->CreateJsepCandidateForFirstTransport(&candidate);
@@ -844,6 +885,7 @@ TEST_P(PeerConnectionIceTest, LocalDescriptionUpdatedWhenContinualGathering) {
   const SocketAddress kLocalAddress("1.1.1.1", 0);
 
   RTCConfiguration config;
+  config.sdp_semantics = SdpSemantics::kUnifiedPlan;
   config.continual_gathering_policy =
       PeerConnectionInterface::GATHER_CONTINUALLY;
   auto caller = CreatePeerConnectionWithAudioVideo(config);
@@ -866,6 +908,7 @@ TEST_P(PeerConnectionIceTest,
   const SocketAddress kLocalAddress("1.1.1.1", 0);
 
   RTCConfiguration config;
+  config.sdp_semantics = SdpSemantics::kUnifiedPlan;
   config.continual_gathering_policy =
       PeerConnectionInterface::GATHER_CONTINUALLY;
   auto caller = CreatePeerConnectionWithAudioVideo(config);
@@ -892,6 +935,7 @@ TEST_P(PeerConnectionIceTest,
   const SocketAddress kLocalAddress("1.1.1.1", 0);
 
   RTCConfiguration config;
+  config.sdp_semantics = SdpSemantics::kUnifiedPlan;
   config.continual_gathering_policy = PeerConnectionInterface::GATHER_ONCE;
   auto caller = CreatePeerConnectionWithAudioVideo(config);
   caller->network()->AddInterface(kLocalAddress);
@@ -1162,7 +1206,7 @@ TEST_F(PeerConnectionIceTestUnifiedPlan,
 class PeerConnectionIceTestPlanB : public PeerConnectionIceBaseTest {
  protected:
   PeerConnectionIceTestPlanB()
-      : PeerConnectionIceBaseTest(SdpSemantics::kPlanB) {}
+      : PeerConnectionIceBaseTest(SdpSemantics::kPlanB_DEPRECATED) {}
 };
 
 TEST_F(PeerConnectionIceTestPlanB,
@@ -1261,7 +1305,7 @@ TEST_P(PeerConnectionIceUfragPwdAnswerTest, TestIncludedInAnswer) {
 INSTANTIATE_TEST_SUITE_P(
     PeerConnectionIceTest,
     PeerConnectionIceUfragPwdAnswerTest,
-    Combine(Values(SdpSemantics::kPlanB, SdpSemantics::kUnifiedPlan),
+    Combine(Values(SdpSemantics::kPlanB_DEPRECATED, SdpSemantics::kUnifiedPlan),
             Values(std::make_pair(true, true),      // Both changed.
                    std::make_pair(true, false),     // Only ufrag changed.
                    std::make_pair(false, true))));  // Only pwd changed.
@@ -1358,7 +1402,7 @@ TEST_P(PeerConnectionIceTest,
 
 INSTANTIATE_TEST_SUITE_P(PeerConnectionIceTest,
                          PeerConnectionIceTest,
-                         Values(SdpSemantics::kPlanB,
+                         Values(SdpSemantics::kPlanB_DEPRECATED,
                                 SdpSemantics::kUnifiedPlan));
 
 class PeerConnectionIceConfigTest : public ::testing::Test {
@@ -1375,14 +1419,15 @@ class PeerConnectionIceConfigTest : public ::testing::Test {
     std::unique_ptr<cricket::FakePortAllocator> port_allocator(
         new cricket::FakePortAllocator(rtc::Thread::Current(), nullptr));
     port_allocator_ = port_allocator.get();
-    rtc::scoped_refptr<PeerConnectionInterface> pc(
-        pc_factory_->CreatePeerConnection(config, std::move(port_allocator),
-                                          nullptr /* cert_generator */,
-                                          &observer_));
-    EXPECT_TRUE(pc.get());
-    pc_ = std::move(pc);
+    PeerConnectionDependencies pc_dependencies(&observer_);
+    pc_dependencies.allocator = std::move(port_allocator);
+    auto result = pc_factory_->CreatePeerConnectionOrError(
+        config, std::move(pc_dependencies));
+    EXPECT_TRUE(result.ok());
+    pc_ = result.MoveValue();
   }
 
+  rtc::AutoThread main_thread_;
   rtc::scoped_refptr<PeerConnectionFactoryInterface> pc_factory_ = nullptr;
   rtc::scoped_refptr<PeerConnectionInterface> pc_ = nullptr;
   cricket::FakePortAllocator* port_allocator_ = nullptr;
@@ -1392,6 +1437,7 @@ class PeerConnectionIceConfigTest : public ::testing::Test {
 
 TEST_F(PeerConnectionIceConfigTest, SetStunCandidateKeepaliveInterval) {
   RTCConfiguration config;
+  config.sdp_semantics = SdpSemantics::kUnifiedPlan;
   config.stun_candidate_keepalive_interval = 123;
   config.ice_candidate_pool_size = 1;
   CreatePeerConnection(config);
@@ -1408,6 +1454,7 @@ TEST_F(PeerConnectionIceConfigTest, SetStunCandidateKeepaliveInterval) {
 
 TEST_F(PeerConnectionIceConfigTest, SetStableWritableConnectionInterval) {
   RTCConfiguration config;
+  config.sdp_semantics = SdpSemantics::kUnifiedPlan;
   config.stable_writable_connection_ping_interval_ms = 3500;
   CreatePeerConnection(config);
   EXPECT_TRUE(pc_->SetConfiguration(config).ok());
@@ -1418,6 +1465,7 @@ TEST_F(PeerConnectionIceConfigTest, SetStableWritableConnectionInterval) {
 TEST_F(PeerConnectionIceConfigTest,
        SetStableWritableConnectionInterval_FailsValidation) {
   RTCConfiguration config;
+  config.sdp_semantics = SdpSemantics::kUnifiedPlan;
   CreatePeerConnection(config);
   ASSERT_TRUE(pc_->SetConfiguration(config).ok());
   config.stable_writable_connection_ping_interval_ms = 5000;
@@ -1428,6 +1476,7 @@ TEST_F(PeerConnectionIceConfigTest,
 TEST_F(PeerConnectionIceConfigTest,
        SetStableWritableConnectionInterval_DefaultValue_FailsValidation) {
   RTCConfiguration config;
+  config.sdp_semantics = SdpSemantics::kUnifiedPlan;
   CreatePeerConnection(config);
   ASSERT_TRUE(pc_->SetConfiguration(config).ok());
   config.ice_check_interval_strong_connectivity = 2500;
@@ -1438,6 +1487,7 @@ TEST_F(PeerConnectionIceConfigTest,
 
 TEST_P(PeerConnectionIceTest, IceCredentialsCreateOffer) {
   RTCConfiguration config;
+  config.sdp_semantics = SdpSemantics::kUnifiedPlan;
   config.ice_candidate_pool_size = 1;
   auto pc = CreatePeerConnectionWithAudioVideo(config);
   ASSERT_NE(pc->port_allocator_, nullptr);
@@ -1455,6 +1505,7 @@ TEST_P(PeerConnectionIceTest, IceCredentialsCreateOffer) {
 
 TEST_P(PeerConnectionIceTest, IceCredentialsCreateAnswer) {
   RTCConfiguration config;
+  config.sdp_semantics = SdpSemantics::kUnifiedPlan;
   config.ice_candidate_pool_size = 1;
   auto pc = CreatePeerConnectionWithAudioVideo(config);
   ASSERT_NE(pc->port_allocator_, nullptr);

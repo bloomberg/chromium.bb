@@ -10,6 +10,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/singleton.h"
+#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/lookalikes/lookalike_url_blocking_page.h"
 #include "chrome/browser/lookalikes/lookalike_url_navigation_throttle.h"
 #include "chrome/browser/lookalikes/lookalike_url_service.h"
@@ -21,7 +22,6 @@
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/lookalikes/core/lookalike_url_util.h"
 #include "components/reputation/core/safety_tips_config.h"
-#include "components/security_state/core/features.h"
 #include "components/security_state/core/security_state.h"
 #include "components/url_formatter/spoof_checks/top_domains/top500_domains.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -170,7 +170,12 @@ void ReputationService::GetReputationStatusWithEngagedSites(
     bool has_delayed_warning,
     ReputationCheckCallback callback,
     const std::vector<DomainInfo>& engaged_sites) {
+  base::TimeTicks start = base::TimeTicks::Now();
+
   const DomainInfo navigated_domain = GetDomainInfo(url);
+
+  UMA_HISTOGRAM_TIMES("Security.SafetyTips.GetDomainInfoTime",
+                      base::TimeTicks::Now() - start);
 
   ReputationCheckResult result;
 
@@ -245,25 +250,6 @@ void ReputationService::GetReputationStatusWithEngagedSites(
     done_checking_reputation_status = true;
   }
 
-  // 6. This case is an experimental variation on Safe Browsing delayed warnings
-  // (https://crbug.com/1057157) to measure the effect of simplified domain
-  // display (https://crbug.com/1090393). In this experiment, Chrome delays Safe
-  // Browsing warnings until user interaction to see if the simplified domain
-  // display UI treatment affects how people interact with the page. In this
-  // variation, Chrome shows a Safety Tip on such pages, to try to isolate the
-  // effect of the UI treatment to when people's attention is drawn to the
-  // omnibox.
-  if (has_delayed_warning &&
-      base::FeatureList::IsEnabled(
-          security_state::features::kSafetyTipUIOnDelayedWarning)) {
-    // Intentionally don't check |done_checking_reputation_status| here, as we
-    // want this Safety Tip to take precedence. In this case, where there is a
-    // delayed Safe Browsing warning, we know the page is actually suspicious.
-    result.safety_tip_status = SafetyTipStatus::kBadReputation;
-    result.triggered_heuristics.blocklist_heuristic_triggered = true;
-    done_checking_reputation_status = true;
-  }
-
   if (IsIgnored(url)) {
     if (result.safety_tip_status == SafetyTipStatus::kBadReputation) {
       result.safety_tip_status = SafetyTipStatus::kBadReputationIgnored;
@@ -281,4 +267,8 @@ void ReputationService::GetReputationStatusWithEngagedSites(
   DCHECK(done_checking_reputation_status ||
          !result.triggered_heuristics.triggered_any());
   std::move(callback).Run(result);
+
+  UMA_HISTOGRAM_TIMES(
+      "Security.SafetyTips.GetReputationStatusWithEngagedSitesTime",
+      base::TimeTicks::Now() - start);
 }

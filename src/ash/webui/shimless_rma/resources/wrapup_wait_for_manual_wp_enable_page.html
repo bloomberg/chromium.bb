@@ -2,12 +2,10 @@
 </style>
 
 <base-page>
-  <div slot="header">
+  <div slot="left-pane">
     <h1>[[i18n('manuallyEnableWpTitleText')]]</h1>
-  </div>
-  <div slot="body">
-    <div id="manuallyEnableHwwpInstructions">
-      [[getBodyText_(hwwpEnabled_)]]
+    <div id="manuallyEnableHwwpInstructions" class="instructions">
+      [[i18n('manuallyEnableWpInstructionsText')]]
     </div>
   </div>
 </base-page>

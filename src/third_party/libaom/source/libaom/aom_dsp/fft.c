@@ -76,15 +76,15 @@ static INLINE float add_float(float a, float b) { return a + b; }
 static INLINE float sub_float(float a, float b) { return a - b; }
 static INLINE float mul_float(float a, float b) { return a * b; }
 
-GEN_FFT_2(void, float, float, float, *, store_float);
+GEN_FFT_2(void, float, float, float, *, store_float)
 GEN_FFT_4(void, float, float, float, *, store_float, (float), add_float,
-          sub_float);
+          sub_float)
 GEN_FFT_8(void, float, float, float, *, store_float, (float), add_float,
-          sub_float, mul_float);
+          sub_float, mul_float)
 GEN_FFT_16(void, float, float, float, *, store_float, (float), add_float,
-           sub_float, mul_float);
+           sub_float, mul_float)
 GEN_FFT_32(void, float, float, float, *, store_float, (float), add_float,
-           sub_float, mul_float);
+           sub_float, mul_float)
 
 void aom_fft2x2_float_c(const float *input, float *temp, float *output) {
   aom_fft_2d_gen(input, temp, output, 2, aom_fft1d_2_float, simple_transpose,
@@ -183,15 +183,15 @@ void aom_ifft_2d_gen(const float *input, float *temp, float *output, int n,
   transpose(temp, output, n);
 }
 
-GEN_IFFT_2(void, float, float, float, *, store_float);
+GEN_IFFT_2(void, float, float, float, *, store_float)
 GEN_IFFT_4(void, float, float, float, *, store_float, (float), add_float,
-           sub_float);
+           sub_float)
 GEN_IFFT_8(void, float, float, float, *, store_float, (float), add_float,
-           sub_float, mul_float);
+           sub_float, mul_float)
 GEN_IFFT_16(void, float, float, float, *, store_float, (float), add_float,
-            sub_float, mul_float);
+            sub_float, mul_float)
 GEN_IFFT_32(void, float, float, float, *, store_float, (float), add_float,
-            sub_float, mul_float);
+            sub_float, mul_float)
 
 void aom_ifft2x2_float_c(const float *input, float *temp, float *output) {
   aom_ifft_2d_gen(input, temp, output, 2, aom_fft1d_2_float, aom_fft1d_2_float,

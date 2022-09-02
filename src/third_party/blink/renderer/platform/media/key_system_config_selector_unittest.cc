@@ -28,7 +28,6 @@ using ::media::EmeConfigRule;
 using ::media::EmeFeatureSupport;
 using ::media::EmeInitDataType;
 using ::media::EmeMediaType;
-using ::media::EmeSessionTypeSupport;
 using MediaKeysRequirement = WebMediaKeySystemConfiguration::Requirement;
 using EncryptionScheme = WebMediaKeySystemMediaCapability::EncryptionScheme;
 
@@ -198,7 +197,10 @@ class FakeKeySystems : public media::KeySystems {
  public:
   ~FakeKeySystems() override = default;
 
-  void UpdateIfNeeded() override { ++update_count; }
+  void UpdateIfNeeded(base::OnceClosure done_cb) override {
+    // Call the callback directly since it's always up to date.
+    std::move(done_cb).Run();
+  }
 
   std::string GetBaseKeySystemName(
       const std::string& key_system) const override {
@@ -335,7 +337,7 @@ class FakeKeySystems : public media::KeySystems {
     return EmeConfigRule::NOT_SUPPORTED;
   }
 
-  EmeSessionTypeSupport GetPersistentLicenseSessionSupport(
+  EmeConfigRule GetPersistentLicenseSessionSupport(
       const std::string& key_system) const override {
     return persistent_license;
   }
@@ -355,7 +357,7 @@ class FakeKeySystems : public media::KeySystems {
   bool init_data_type_keyids_supported_ = false;
 
   // INVALID so that they must be set in any test that needs them.
-  EmeSessionTypeSupport persistent_license = EmeSessionTypeSupport::INVALID;
+  EmeConfigRule persistent_license = EmeConfigRule::NOT_SUPPORTED;
 
   // Every test implicitly requires these, so they must be set. They are set to
   // values that are likely to cause tests to fail if they are accidentally
@@ -363,8 +365,6 @@ class FakeKeySystems : public media::KeySystems {
   // the default values may be changed.
   EmeFeatureSupport persistent_state = EmeFeatureSupport::NOT_SUPPORTED;
   EmeFeatureSupport distinctive_identifier = EmeFeatureSupport::REQUESTABLE;
-
-  int update_count = 0;
 };
 
 class FakeMediaPermission : public media::MediaPermission {
@@ -393,7 +393,7 @@ class FakeWebLocalFrameDelegate
  public:
   FakeWebLocalFrameDelegate()
       : KeySystemConfigSelector::WebLocalFrameDelegate(nullptr) {}
-  bool IsCrossOriginToMainFrame() override { return is_cross_origin_; }
+  bool IsCrossOriginToOutermostMainFrame() override { return is_cross_origin_; }
   bool AllowStorageAccessSync(
       WebContentSettingsClient::StorageType storage_type) override {
     if (storage_type == WebContentSettingsClient::StorageType::kLocalStorage) {
@@ -563,17 +563,6 @@ TEST_F(KeySystemConfigSelectorTest, UsableConfig) {
   EXPECT_FALSE(cdm_config_.allow_distinctive_identifier);
   EXPECT_FALSE(cdm_config_.allow_persistent_state);
   EXPECT_FALSE(cdm_config_.use_hw_secure_codecs);
-}
-
-// KeySystemConfigSelector should make sure it uses up-to-date KeySystems.
-TEST_F(KeySystemConfigSelectorTest, UpdateKeySystems) {
-  configs_.push_back(UsableConfiguration());
-
-  ASSERT_EQ(key_systems_->update_count, 0);
-  SelectConfig();
-  EXPECT_EQ(key_systems_->update_count, 1);
-  SelectConfig();
-  EXPECT_EQ(key_systems_->update_count, 2);
 }
 
 TEST_F(KeySystemConfigSelectorTest, Label) {
@@ -758,13 +747,13 @@ TEST_F(KeySystemConfigSelectorTest,
   config.distinctive_identifier = MediaKeysRequirement::kOptional;
   configs_.push_back(config);
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   SelectConfigRequestsPermissionAndReturnsConfig();
   EXPECT_EQ(MediaKeysRequirement::kRequired, config_.distinctive_identifier);
   EXPECT_TRUE(cdm_config_.allow_distinctive_identifier);
 #else
   SelectConfigReturnsError();
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 }
 
 TEST_F(KeySystemConfigSelectorTest,
@@ -777,13 +766,13 @@ TEST_F(KeySystemConfigSelectorTest,
   config.distinctive_identifier = MediaKeysRequirement::kRequired;
   configs_.push_back(config);
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   SelectConfigRequestsPermissionAndReturnsConfig();
   EXPECT_EQ(MediaKeysRequirement::kRequired, config_.distinctive_identifier);
   EXPECT_TRUE(cdm_config_.allow_distinctive_identifier);
 #else
   SelectConfigReturnsError();
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 }
 
 // --- persistentState ---
@@ -887,7 +876,7 @@ TEST_F(KeySystemConfigSelectorTest, SessionTypes_Empty) {
 TEST_F(KeySystemConfigSelectorTest, SessionTypes_SubsetSupported) {
   // Allow persistent state, as it would be required to be successful.
   key_systems_->persistent_state = EmeFeatureSupport::REQUESTABLE;
-  key_systems_->persistent_license = EmeSessionTypeSupport::NOT_SUPPORTED;
+  key_systems_->persistent_license = EmeConfigRule::NOT_SUPPORTED;
 
   std::vector<WebEncryptedMediaSessionType> session_types;
   session_types.push_back(WebEncryptedMediaSessionType::kTemporary);
@@ -903,7 +892,7 @@ TEST_F(KeySystemConfigSelectorTest, SessionTypes_SubsetSupported) {
 TEST_F(KeySystemConfigSelectorTest, SessionTypes_AllSupported) {
   // Allow persistent state, and expect it to be required.
   key_systems_->persistent_state = EmeFeatureSupport::REQUESTABLE;
-  key_systems_->persistent_license = EmeSessionTypeSupport::SUPPORTED;
+  key_systems_->persistent_license = EmeConfigRule::SUPPORTED;
 
   std::vector<WebEncryptedMediaSessionType> session_types;
   session_types.push_back(WebEncryptedMediaSessionType::kTemporary);
@@ -927,7 +916,7 @@ TEST_F(KeySystemConfigSelectorTest, SessionTypes_PermissionCanBeRequired) {
   key_systems_->distinctive_identifier = EmeFeatureSupport::REQUESTABLE;
   key_systems_->persistent_state = EmeFeatureSupport::REQUESTABLE;
   key_systems_->persistent_license =
-      EmeSessionTypeSupport::SUPPORTED_WITH_IDENTIFIER;
+      EmeConfigRule::IDENTIFIER_AND_PERSISTENCE_REQUIRED;
 
   std::vector<WebEncryptedMediaSessionType> session_types;
   session_types.push_back(WebEncryptedMediaSessionType::kPersistentLicense);
@@ -1285,11 +1274,11 @@ TEST_F(KeySystemConfigSelectorTest,
   config.video_capabilities = video_capabilities;
   configs_.push_back(config);
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   SelectConfigRequestsPermissionAndReturnsConfig();
 #else
   SelectConfigReturnsConfig();
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
   EXPECT_EQ(MediaKeysRequirement::kNotAllowed, config_.distinctive_identifier);
   ASSERT_EQ(1u, config_.video_capabilities.size());
 }

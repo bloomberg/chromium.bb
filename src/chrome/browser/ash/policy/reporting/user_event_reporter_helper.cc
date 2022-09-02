@@ -8,13 +8,19 @@
 
 #include "base/logging.h"
 #include "chrome/browser/ash/login/users/chrome_user_manager.h"
+#include "chrome/browser/ash/settings/cros_settings.h"
 #include "components/reporting/client/report_queue_factory.h"
+#include "components/reporting/util/status.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
+#include "third_party/protobuf/src/google/protobuf/message_lite.h"
 
 namespace reporting {
 
-UserEventReporterHelper::UserEventReporterHelper(Destination destination)
+UserEventReporterHelper::UserEventReporterHelper(Destination destination,
+                                                 EventType event_type)
     : report_queue_(
-          ReportQueueFactory::CreateSpeculativeReportQueue(EventType::kDevice,
+          ReportQueueFactory::CreateSpeculativeReportQueue(event_type,
                                                            destination)) {}
 
 UserEventReporterHelper::UserEventReporterHelper(
@@ -24,34 +30,45 @@ UserEventReporterHelper::UserEventReporterHelper(
 UserEventReporterHelper::~UserEventReporterHelper() = default;
 
 bool UserEventReporterHelper::ShouldReportUser(const std::string& email) const {
+  DCHECK_CURRENTLY_ON(::content::BrowserThread::UI);
   return ash::ChromeUserManager::Get()->ShouldReportUser(email);
 }
 
 bool UserEventReporterHelper::ReportingEnabled(
     const std::string& policy_path) const {
+  DCHECK_CURRENTLY_ON(::content::BrowserThread::UI);
   bool enabled = false;
   chromeos::CrosSettings::Get()->GetBoolean(policy_path, &enabled);
   return enabled;
 }
 
 void UserEventReporterHelper::ReportEvent(
-    const google::protobuf::MessageLite* record,
-    Priority priority) {
+    std::unique_ptr<const google::protobuf::MessageLite> record,
+    Priority priority,
+    ReportQueue::EnqueueCallback enqueue_cb) {
   if (!report_queue_) {
-    DVLOG(1) << "Could not enqueue event: null reporting queue";
+    std::move(enqueue_cb)
+        .Run(Status(error::UNAVAILABLE, "Reporting queue is null."));
     return;
   }
-
-  auto enqueue_cb = base::BindOnce([](Status status) {
-    if (!status.ok()) {
-      DVLOG(1) << "Could not enqueue event to reporting queue because of: "
-               << status;
-    }
-  });
-  report_queue_->Enqueue(record, priority, std::move(enqueue_cb));
+  report_queue_->Enqueue(std::move(record), priority, std::move(enqueue_cb));
 }
 
 bool UserEventReporterHelper::IsCurrentUserNew() const {
   return user_manager::UserManager::Get()->IsCurrentUserNew();
+}
+
+// static
+scoped_refptr<base::SequencedTaskRunner>
+UserEventReporterHelper::valid_task_runner() {
+  return ::content::GetUIThreadTaskRunner({});
+}
+
+// static
+void UserEventReporterHelper::OnEnqueueDefault(Status status) {
+  if (!status.ok()) {
+    DVLOG(1) << "Could not enqueue event to reporting queue because of: "
+             << status;
+  }
 }
 }  // namespace reporting

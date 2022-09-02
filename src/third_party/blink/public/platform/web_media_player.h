@@ -134,15 +134,6 @@ class WebMediaPlayer {
     base::TimeDelta average_frame_duration;
   };
 
-  // Describes when we use SurfaceLayer for video instead of VideoLayer.
-  enum class SurfaceLayerMode {
-    // Always use VideoLayer
-    kNever,
-
-    // Always use SurfaceLayer for video.
-    kAlways,
-  };
-
   virtual ~WebMediaPlayer() = default;
 
   virtual LoadTiming Load(LoadType,
@@ -167,8 +158,10 @@ class WebMediaPlayer {
   // adjustments when using a playback rate other than 1.0.
   virtual void SetPreservesPitch(bool preserves_pitch) = 0;
 
-  // Sets a flag indicating whether the audio stream was initiated by autoplay.
-  virtual void SetAutoplayInitiated(bool autoplay_initiated) = 0;
+  // Sets a flag indicating whether the audio stream was played with user
+  // activation.
+  virtual void SetWasPlayedWithUserActivation(
+      bool was_played_with_user_activation) = 0;
 
   // The associated media element is going to enter Picture-in-Picture. This
   // method should make sure the player is set up for this and has a SurfaceId
@@ -219,8 +212,6 @@ class WebMediaPlayer {
   virtual NetworkState GetNetworkState() const = 0;
   virtual ReadyState GetReadyState() const = 0;
 
-  virtual SurfaceLayerMode GetVideoSurfaceLayerMode() const = 0;
-
   // Returns an implementation-specific human readable error message, or an
   // empty string if no message is available. The message should begin with a
   // UA-specific-error-code (without any ':'), optionally followed by ': ' and
@@ -269,7 +260,13 @@ class WebMediaPlayer {
   // to upload or convert it. Note: This may kick off a process to update the
   // current frame for a future call in some cases. Returns nullptr if no frame
   // is available.
-  virtual scoped_refptr<media::VideoFrame> GetCurrentFrame() = 0;
+  virtual scoped_refptr<media::VideoFrame> GetCurrentFrameThenUpdate() = 0;
+
+  // Return current video frame unique id from compositor. The query is readonly
+  // and should avoid any extra ops. Function returns absl::nullopt if current
+  // frame is invalid or fails to access current frame.
+  // TODO(crbug.com/1328005): Change the id into a 64 bit value.
+  virtual absl::optional<int> CurrentFrameId() const = 0;
 
   // Provides a PaintCanvasVideoRenderer instance owned by this WebMediaPlayer.
   // Useful for ensuring that the paint/texturing operation for current frame is
@@ -294,11 +291,6 @@ class WebMediaPlayer {
   // Sets the poster image URL.
   virtual void SetPoster(const WebURL& poster) {}
 
-  // Whether the WebMediaPlayer supports overlay fullscreen video mode. When
-  // this is true, the video layer will be removed from the layer tree when
-  // entering fullscreen, and the WebMediaPlayer is responsible for displaying
-  // the video in enteredFullscreen().
-  virtual bool SupportsOverlayFullscreenVideo() { return false; }
   // Inform WebMediaPlayer when the element has entered/exited fullscreen.
   virtual void EnteredFullscreen() {}
   virtual void ExitedFullscreen() {}

@@ -20,7 +20,6 @@
 #include "third_party/blink/renderer/core/layout/svg/svg_resources.h"
 
 #include "base/ranges/algorithm.h"
-#include "third_party/blink/renderer/core/layout/svg/layout_svg_foreign_object.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_filter.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_paint_server.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_text.h"
@@ -48,8 +47,8 @@ gfx::RectF SVGResources::ReferenceBoxForEffects(
   // position is already baked into the transform, and we don't want to re-apply
   // the offset when, e.g., using "objectBoundingBox" for clipPathUnits.
   // Use the frame size since it should have the proper zoom applied.
-  if (auto* foreign = DynamicTo<LayoutSVGForeignObject>(layout_object))
-    return gfx::RectF(gfx::SizeF(foreign->Size()));
+  if (layout_object.IsSVGForeignObjectIncludingNG())
+    return gfx::RectF(gfx::SizeF(To<LayoutBox>(layout_object).Size()));
 
   // Text "sub-elements" (<tspan>, <textpath>, <a>) should use the entire
   // <text>s object bounding box rather then their own.
@@ -258,13 +257,8 @@ void SVGElementResourceClient::ResourceContentChanged(SVGResource* resource) {
 
   const auto* clip_reference =
       DynamicTo<ReferenceClipPathOperation>(style.ClipPath());
-  if (ContainsResource(clip_reference, resource)) {
-    // TODO(fs): "Downgrade" to non-subtree?
-    layout_object->SetSubtreeShouldDoFullPaintInvalidation();
-    layout_object->InvalidateClipPathCache();
-  }
-
-  if (ContainsResource(style.MaskerResource(), resource)) {
+  if (ContainsResource(clip_reference, resource) ||
+      ContainsResource(style.MaskerResource(), resource)) {
     // TODO(fs): "Downgrade" to non-subtree?
     layout_object->SetSubtreeShouldDoFullPaintInvalidation();
     layout_object->SetNeedsPaintPropertyUpdate();
@@ -377,11 +371,7 @@ void SVGResourceInvalidator::InvalidateEffects() {
     if (SVGElementResourceClient* client = SVGResources::GetClient(object_))
       client->InvalidateFilterData();
   }
-  if (style.HasClipPath()) {
-    object_.SetShouldDoFullPaintInvalidation();
-    object_.InvalidateClipPathCache();
-  }
-  if (style.MaskerResource()) {
+  if (style.HasClipPath() || style.MaskerResource()) {
     object_.SetShouldDoFullPaintInvalidation();
     object_.SetNeedsPaintPropertyUpdate();
   }

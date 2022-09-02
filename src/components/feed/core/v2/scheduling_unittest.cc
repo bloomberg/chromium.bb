@@ -6,10 +6,12 @@
 #include "base/check.h"
 #include "base/json/json_writer.h"
 #include "base/strings/string_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "components/feed/core/v2/config.h"
 #include "components/feed/core/v2/feedstore_util.h"
 #include "components/feed/core/v2/public/stream_type.h"
+#include "components/feed/feed_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace feed {
@@ -31,11 +33,13 @@ TEST(RequestSchedule, CanSerialize) {
   RequestSchedule schedule;
   schedule.anchor_time = kAnchorTime;
   schedule.refresh_offsets = {base::Hours(1), base::Hours(6)};
+  schedule.type = RequestSchedule::Type::kScheduledRefresh;
 
   const base::Value schedule_value = RequestScheduleToValue(schedule);
   ASSERT_EQ(R"({
    "anchor": "11644495200000000",
-   "offsets": [ "3600000000", "21600000000" ]
+   "offsets": [ "3600000000", "21600000000" ],
+   "type": 0
 }
 )",
             ToJSON(schedule_value));
@@ -44,6 +48,24 @@ TEST(RequestSchedule, CanSerialize) {
       RequestScheduleFromValue(schedule_value);
   EXPECT_EQ(schedule.anchor_time, deserialized_schedule.anchor_time);
   EXPECT_EQ(schedule.refresh_offsets, deserialized_schedule.refresh_offsets);
+  EXPECT_EQ(schedule.type, deserialized_schedule.type);
+}
+
+TEST(RequestSchedule, GetScheduleType) {
+  RequestSchedule schedule;
+  schedule.anchor_time = kAnchorTime;
+  schedule.refresh_offsets = {base::Hours(1), base::Hours(6)};
+  schedule.type = RequestSchedule::Type::kScheduledRefresh;
+  EXPECT_EQ(RequestSchedule::Type::kScheduledRefresh,
+            RequestScheduleFromValue(RequestScheduleToValue(schedule)).type);
+  schedule.type = RequestSchedule::Type::kFeedCloseRefresh;
+  base::Value schedule_value = RequestScheduleToValue(schedule);
+  EXPECT_EQ(RequestSchedule::Type::kFeedCloseRefresh,
+            RequestScheduleFromValue(schedule_value).type);
+  // Default to kScheduledRefresh if the type isn't valid.
+  schedule_value.GetDict().Set("type", -1);
+  EXPECT_EQ(RequestSchedule::Type::kScheduledRefresh,
+            RequestScheduleFromValue(schedule_value).type);
 }
 
 class NextScheduledRequestTimeTest : public testing::Test {
@@ -121,6 +143,8 @@ class ContentLifetimeTest : public testing::Test {
  public:
   const base::TimeDelta kDefaultContentExpiration = base::Hours(24);
   const base::TimeDelta kDefaultStaleContentThreshold = base::Hours(4);
+  const base::TimeDelta kDefaultSubscriptionlessContentExpiration =
+      base::Days(14);
 
   void SetUp() override {
     Config config = GetFeedConfig();
@@ -158,86 +182,145 @@ class ContentLifetimeTest : public testing::Test {
 
 TEST_F(ContentLifetimeTest, ShouldWaitForNewContent_DefaultThreshold) {
   EXPECT_FALSE(ShouldWaitForNewContent(metadata_, kForYouStream,
-                                       kDefaultStaleContentThreshold));
+                                       kDefaultStaleContentThreshold,
+                                       /*is_web_feed_subscriber=*/true));
   EXPECT_TRUE(ShouldWaitForNewContent(
-      metadata_, kForYouStream, WithEpsilon(kDefaultStaleContentThreshold)));
-  EXPECT_TRUE(
-      ShouldWaitForNewContent(metadata_, kForYouStream, base::Hours(5)));
-  EXPECT_FALSE(
-      ShouldWaitForNewContent(metadata_, kForYouStream, base::Hours(3)));
+      metadata_, kForYouStream, WithEpsilon(kDefaultStaleContentThreshold),
+      true));
+  EXPECT_TRUE(ShouldWaitForNewContent(metadata_, kForYouStream, base::Hours(5),
+                                      /*is_web_feed_subscriber=*/true));
+  EXPECT_FALSE(ShouldWaitForNewContent(metadata_, kForYouStream, base::Hours(3),
+                                       /*is_web_feed_subscriber=*/true));
+  // If the web feed onboarding feature is turned off, then we should return
+  // true even if the user is not subscribed.
+  EXPECT_TRUE(ShouldWaitForNewContent(metadata_, kForYouStream, base::Days(8),
+                                      /*is_web_feed_subscriber=*/false));
+  EXPECT_TRUE(ShouldWaitForNewContent(metadata_, kForYouStream, base::Days(6),
+                                      /*is_web_feed_subscriber=*/false));
 }
 
 TEST_F(ContentLifetimeTest, ShouldWaitForNewContent_ServerThreshold_Valid) {
   set_stale_age(base::Minutes(60));
-  EXPECT_TRUE(
-      ShouldWaitForNewContent(metadata_, kForYouStream, base::Minutes(61)));
-  EXPECT_FALSE(
-      ShouldWaitForNewContent(metadata_, kForYouStream, base::Minutes(59)));
+  EXPECT_TRUE(ShouldWaitForNewContent(metadata_, kForYouStream,
+                                      base::Minutes(61),
+                                      /*is_web_feed_subscriber=*/true));
+  EXPECT_FALSE(ShouldWaitForNewContent(metadata_, kForYouStream,
+                                       base::Minutes(59),
+                                       /*is_web_feed_subscriber=*/true));
+}
+
+TEST_F(ContentLifetimeTest, ShouldWaitForNewContent_WithNoSubscriptions) {
+  // Enable WebFeed and WebFeedOnboarding flags.
+  base::test::ScopedFeatureList features;
+  std::vector<base::Feature> enabled_features = {kWebFeedOnboarding},
+                             disabled_features = {};
+  features.InitWithFeatures(enabled_features, disabled_features);
+  EXPECT_FALSE(ShouldWaitForNewContent(metadata_, kWebFeedStream, base::Days(6),
+                                       /*is_web_feed_subscriber=*/false));
+  EXPECT_TRUE(ShouldWaitForNewContent(metadata_, kWebFeedStream, base::Days(8),
+                                      /*is_web_feed_subscriber=*/false));
 }
 
 TEST_F(ContentLifetimeTest, ShouldWaitForNewContent_ServerThreshold_Invalid) {
   // We ignore stale ages greater than the default.
   EXPECT_TRUE(ShouldWaitForNewContent(
-      metadata_, kForYouStream, WithEpsilon(kDefaultStaleContentThreshold)));
+      metadata_, kForYouStream, WithEpsilon(kDefaultStaleContentThreshold),
+      true));
   set_stale_age(kDefaultStaleContentThreshold + base::Minutes(1));
   EXPECT_TRUE(ShouldWaitForNewContent(
-      metadata_, kForYouStream, WithEpsilon(kDefaultStaleContentThreshold)));
+      metadata_, kForYouStream, WithEpsilon(kDefaultStaleContentThreshold),
+      /*is_web_feed_subscriber=*/true));
 
   // We ignore zero durations.
   set_stale_age(base::Days(0));
   EXPECT_FALSE(ShouldWaitForNewContent(metadata_, kForYouStream,
-                                       kDefaultStaleContentThreshold));
+                                       kDefaultStaleContentThreshold,
+                                       /*is_web_feed_subscriber=*/true));
   EXPECT_TRUE(ShouldWaitForNewContent(
-      metadata_, kForYouStream, WithEpsilon(kDefaultStaleContentThreshold)));
+      metadata_, kForYouStream, WithEpsilon(kDefaultStaleContentThreshold),
+      true));
 
   // We ignore negative durations.
   set_stale_age(base::Days(-1));
   EXPECT_FALSE(ShouldWaitForNewContent(metadata_, kForYouStream,
-                                       kDefaultStaleContentThreshold));
+                                       kDefaultStaleContentThreshold,
+                                       /*is_web_feed_subscriber=*/true));
   EXPECT_TRUE(ShouldWaitForNewContent(
-      metadata_, kForYouStream, WithEpsilon(kDefaultStaleContentThreshold)));
+      metadata_, kForYouStream, WithEpsilon(kDefaultStaleContentThreshold),
+      /*is_web_feed_subscriber=*/true));
 }
 
 TEST_F(ContentLifetimeTest, ContentInvalidFromAge_DefaultThreshold) {
   EXPECT_FALSE(ContentInvalidFromAge(metadata_, kForYouStream,
-                                     kDefaultContentExpiration));
+                                     kDefaultContentExpiration,
+                                     /*is_web_feed_subscriber=*/true));
   EXPECT_TRUE(
       ContentInvalidFromAge(metadata_, kForYouStream,
-                            kDefaultContentExpiration + base::Milliseconds(1)));
-  EXPECT_TRUE(ContentInvalidFromAge(metadata_, kForYouStream, base::Hours(25)));
-  EXPECT_FALSE(
-      ContentInvalidFromAge(metadata_, kForYouStream, base::Hours(23)));
+                            kDefaultContentExpiration + base::Milliseconds(1),
+                            /*is_web_feed_subscriber=*/true));
+  EXPECT_TRUE(ContentInvalidFromAge(metadata_, kForYouStream, base::Hours(25),
+                                    /*is_web_feed_subscriber=*/true));
+  EXPECT_FALSE(ContentInvalidFromAge(metadata_, kForYouStream, base::Hours(23),
+                                     /*is_web_feed_subscriber=*/true));
 }
 
 TEST_F(ContentLifetimeTest, ContentInvalidFromAge_ServerThreshold_Valid) {
   set_invalid_age(base::Minutes(60));
-  EXPECT_TRUE(
-      ContentInvalidFromAge(metadata_, kForYouStream, base::Minutes(61)));
-  EXPECT_FALSE(
-      ContentInvalidFromAge(metadata_, kForYouStream, base::Minutes(59)));
+  EXPECT_TRUE(ContentInvalidFromAge(metadata_, kForYouStream, base::Minutes(61),
+                                    /*is_web_feed_subscriber=*/true));
+  EXPECT_FALSE(ContentInvalidFromAge(metadata_, kForYouStream,
+                                     base::Minutes(59),
+                                     /*is_web_feed_subscriber=*/true));
 }
 
 TEST_F(ContentLifetimeTest, ContentInvalidFromAge_ServerThreshold_Invalid) {
   // We ignore stale ages greater than the default.
   EXPECT_TRUE(ContentInvalidFromAge(metadata_, kForYouStream,
-                                    WithEpsilon(kDefaultContentExpiration)));
+                                    WithEpsilon(kDefaultContentExpiration),
+                                    /*is_web_feed_subscriber=*/true));
   set_invalid_age(kDefaultContentExpiration + base::Minutes(1));
   EXPECT_TRUE(ContentInvalidFromAge(metadata_, kForYouStream,
-                                    WithEpsilon(kDefaultContentExpiration)));
+                                    WithEpsilon(kDefaultContentExpiration),
+                                    /*is_web_feed_subscriber=*/true));
 
   // We ignore zero durations.
   set_invalid_age(base::Days(0));
   EXPECT_FALSE(ContentInvalidFromAge(metadata_, kForYouStream,
-                                     kDefaultContentExpiration));
-  EXPECT_TRUE(ContentInvalidFromAge(metadata_, kForYouStream,
-                                    WithEpsilon(kDefaultContentExpiration)));
+                                     kDefaultContentExpiration,
+                                     /*is_web_feed_subscriber=*/true));
+  EXPECT_TRUE(ContentInvalidFromAge(
+      metadata_, kForYouStream,
+      WithEpsilon(kDefaultSubscriptionlessContentExpiration),
+      /*is_web_feed_subscriber=*/true));
 
   // We ignore negative durations.
   set_invalid_age(base::Days(-1));
   EXPECT_FALSE(ContentInvalidFromAge(metadata_, kForYouStream,
-                                     kDefaultContentExpiration));
+                                     kDefaultContentExpiration,
+                                     /*is_web_feed_subscriber=*/true));
   EXPECT_TRUE(ContentInvalidFromAge(metadata_, kForYouStream,
-                                    WithEpsilon(kDefaultContentExpiration)));
+                                    WithEpsilon(kDefaultContentExpiration),
+                                    /*is_web_feed_subscriber=*/true));
+}
+
+TEST_F(ContentLifetimeTest, ContentInvalidFromAge_SubscriptionlessThreshold) {
+  // Enable WebFeed and WebFeedOnboarding flags.
+  base::test::ScopedFeatureList features;
+  std::vector<base::Feature> enabled_features = {kWebFeedOnboarding},
+                             disabled_features = {};
+  features.InitWithFeatures(enabled_features, disabled_features);
+  EXPECT_FALSE(ContentInvalidFromAge(metadata_, kWebFeedStream,
+                                     kDefaultSubscriptionlessContentExpiration,
+                                     /*is_web_feed_subscriber=*/false));
+  EXPECT_TRUE(ContentInvalidFromAge(
+      metadata_, kWebFeedStream,
+      kDefaultSubscriptionlessContentExpiration + base::Milliseconds(1),
+      /*is_web_feed_subscriber=*/false));
+
+  EXPECT_FALSE(ContentInvalidFromAge(metadata_, kWebFeedStream, base::Days(13),
+                                     /*is_web_feed_subscriber=*/false));
+  EXPECT_TRUE(ContentInvalidFromAge(metadata_, kWebFeedStream, base::Days(15),
+                                    /*is_web_feed_subscriber=*/false));
 }
 
 }  // namespace

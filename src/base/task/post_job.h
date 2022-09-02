@@ -9,10 +9,9 @@
 
 #include "base/base_export.h"
 #include "base/callback.h"
-#include "base/check_op.h"
+#include "base/dcheck_is_on.h"
 #include "base/location.h"
 #include "base/memory/raw_ptr.h"
-#include "base/memory/ref_counted.h"
 
 namespace base {
 namespace internal {
@@ -114,7 +113,9 @@ class BASE_EXPORT JobHandle {
 
   // Contributes to the job on this thread. Doesn't return until all tasks have
   // completed and max concurrency becomes 0. This also promotes this Job's
-  // priority to be at least as high as the calling thread's priority.
+  // priority to be at least as high as the calling thread's priority. When
+  // called immediately, prefer CreateJob(...).Join() over PostJob(...).Join()
+  // to avoid having too many workers scheduled for executing the workload.
   void Join();
 
   // Forces all existing workers to yield ASAP. Waits until they have all
@@ -195,6 +196,16 @@ JobHandle BASE_EXPORT PostJob(const Location& from_here,
                               const TaskTraits& traits,
                               RepeatingCallback<void(JobDelegate*)> worker_task,
                               MaxConcurrencyCallback max_concurrency_callback);
+
+// Creates and returns a JobHandle associated with a Job. Unlike PostJob(), this
+// doesn't immediately schedules |worker_task| to run on base::ThreadPool
+// workers; the Job is then scheduled by calling either
+// NotifyConcurrencyIncrease() or Join().
+JobHandle BASE_EXPORT
+CreateJob(const Location& from_here,
+          const TaskTraits& traits,
+          RepeatingCallback<void(JobDelegate*)> worker_task,
+          MaxConcurrencyCallback max_concurrency_callback);
 
 }  // namespace base
 

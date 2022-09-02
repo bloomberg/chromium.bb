@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "ash/constants/ash_features.h"
-#include "ash/webui/diagnostics_ui/backend/networking_log.h"
+#include "ash/system/diagnostics/networking_log.h"
 #include "base/bind.h"
 #include "base/containers/contains.h"
 #include "base/containers/fixed_flat_map.h"
@@ -230,13 +230,13 @@ constexpr mojom::LockType GetLockType(const std::string& lock_type) {
 void UpdateNetwork(
     const network_mojom::NetworkTypeStateProperties& network_type_props,
     mojom::Network* network) {
-  auto type_properties = mojom::NetworkTypeProperties::New();
   switch (network->type) {
     case mojom::NetworkType::kWiFi:
-      type_properties->set_wifi(CreateWiFiStateProperties(network_type_props));
+      network->type_properties = mojom::NetworkTypeProperties::NewWifi(
+          CreateWiFiStateProperties(network_type_props));
       break;
     case mojom::NetworkType::kEthernet:
-      type_properties->set_ethernet(
+      network->type_properties = mojom::NetworkTypeProperties::NewEthernet(
           CreateEthernetStateProperties(network_type_props));
       break;
     case mojom::NetworkType::kCellular: {
@@ -252,15 +252,14 @@ void UpdateNetwork(
         cellular_props->roaming_state =
             network->type_properties->get_cellular()->roaming_state;
       }
-      type_properties->set_cellular(std::move(cellular_props));
+      network->type_properties =
+          mojom::NetworkTypeProperties::NewCellular(std::move(cellular_props));
       break;
     }
     case mojom::NetworkType::kUnsupported:
       NOTREACHED();
       break;
   }
-
-  network->type_properties = std::move(type_properties);
 }
 
 void UpdateNetwork(
@@ -284,10 +283,9 @@ void UpdateNetwork(
 }
 
 void CreateEmptyCellularPropertiesForNetwork(mojom::Network* network) {
-  auto type_properties = mojom::NetworkTypeProperties::New();
   auto cellular_props = mojom::CellularStateProperties::New();
-  type_properties->set_cellular(std::move(cellular_props));
-  network->type_properties = std::move(type_properties);
+  network->type_properties =
+      mojom::NetworkTypeProperties::NewCellular(std::move(cellular_props));
 }
 
 void UpdateNetwork(const network_mojom::DeviceStatePropertiesPtr& device,
@@ -423,8 +421,6 @@ void NetworkHealthProvider::ObserveNetwork(
   NotifyNetworkStateObserver(iter->second);
 }
 
-void NetworkHealthProvider::OnNetworkStateListChanged() {}
-
 void NetworkHealthProvider::OnDeviceStateListChanged() {
   GetDeviceState();
 }
@@ -438,9 +434,6 @@ void NetworkHealthProvider::OnNetworkStateChanged(
     network_mojom::NetworkStatePropertiesPtr network) {
   UpdateMatchingNetwork(std::move(network), /*must_match_existing_guid=*/true);
 }
-
-void NetworkHealthProvider::OnVpnProvidersChanged() {}
-void NetworkHealthProvider::OnNetworkCertificatesChanged() {}
 
 void NetworkHealthProvider::OnActiveNetworkStateListReceived(
     std::vector<network_mojom::NetworkStatePropertiesPtr> networks) {

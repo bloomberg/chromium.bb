@@ -56,10 +56,10 @@ public:
 
     void addPlaceholder(const PlaceholderStyle& placeholderStyle) override;
 
-    void setParagraphStyle(const ParagraphStyle& style) override;
-
     // Constructs a SkParagraph object that can be used to layout and paint the text to a SkCanvas.
     std::unique_ptr<Paragraph> Build() override;
+
+    void Reset() override;
 
     static std::unique_ptr<ParagraphBuilder> make(const ParagraphStyle& style,
                                                   sk_sp<FontCollection> fontCollection,
@@ -69,17 +69,19 @@ public:
     static std::unique_ptr<ParagraphBuilder> make(const ParagraphStyle& style,
                                                   sk_sp<FontCollection> fontCollection);
 private:
+    void startStyledBlock();
     void endRunIfNeeded();
+    const TextStyle& internalPeekStyle();
     void addPlaceholder(const PlaceholderStyle& placeholderStyle, bool lastOne);
 
     SkString fUtf8;
-    std::stack<TextStyle> fTextStyles;
-    SkTArray<Block, true> fStyledBlocks;
-    SkTArray<Placeholder, true> fPlaceholders;
+    SkSTArray<4, TextStyle, true> fTextStyles;
+    SkSTArray<4, Block, true> fStyledBlocks;
+    SkSTArray<4, Placeholder, true> fPlaceholders;
     sk_sp<FontCollection> fFontCollection;
     ParagraphStyle fParagraphStyle;
 
-    std::unique_ptr<SkUnicode> fUnicode;
+    std::shared_ptr<SkUnicode> fUnicode;
 };
 }  // namespace textlayout
 }  // namespace skia

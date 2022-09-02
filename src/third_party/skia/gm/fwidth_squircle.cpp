@@ -15,32 +15,32 @@
 #include "include/core/SkRefCnt.h"
 #include "include/core/SkString.h"
 #include "include/gpu/GrRecordingContext.h"
-#include "include/private/GrTypesPriv.h"
+#include "include/private/gpu/ganesh/GrTypesPriv.h"
 #include "src/core/SkCanvasPriv.h"
-#include "src/gpu/GrBuffer.h"
-#include "src/gpu/GrCaps.h"
-#include "src/gpu/GrDirectContextPriv.h"
-#include "src/gpu/GrGeometryProcessor.h"
-#include "src/gpu/GrGpuBuffer.h"
-#include "src/gpu/GrMemoryPool.h"
-#include "src/gpu/GrOpFlushState.h"
-#include "src/gpu/GrOpsRenderPass.h"
-#include "src/gpu/GrPipeline.h"
-#include "src/gpu/GrProcessor.h"
-#include "src/gpu/GrProcessorSet.h"
-#include "src/gpu/GrProgramInfo.h"
-#include "src/gpu/GrRecordingContextPriv.h"
-#include "src/gpu/GrResourceProvider.h"
-#include "src/gpu/GrShaderCaps.h"
-#include "src/gpu/GrShaderVar.h"
-#include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
-#include "src/gpu/glsl/GrGLSLProgramDataManager.h"
-#include "src/gpu/glsl/GrGLSLUniformHandler.h"
-#include "src/gpu/glsl/GrGLSLVarying.h"
-#include "src/gpu/glsl/GrGLSLVertexGeoBuilder.h"
-#include "src/gpu/ops/GrDrawOp.h"
-#include "src/gpu/ops/GrOp.h"
-#include "src/gpu/v1/SurfaceDrawContext_v1.h"
+#include "src/gpu/ganesh/GrBuffer.h"
+#include "src/gpu/ganesh/GrCaps.h"
+#include "src/gpu/ganesh/GrDirectContextPriv.h"
+#include "src/gpu/ganesh/GrGeometryProcessor.h"
+#include "src/gpu/ganesh/GrGpuBuffer.h"
+#include "src/gpu/ganesh/GrMemoryPool.h"
+#include "src/gpu/ganesh/GrOpFlushState.h"
+#include "src/gpu/ganesh/GrOpsRenderPass.h"
+#include "src/gpu/ganesh/GrPipeline.h"
+#include "src/gpu/ganesh/GrProcessor.h"
+#include "src/gpu/ganesh/GrProcessorSet.h"
+#include "src/gpu/ganesh/GrProgramInfo.h"
+#include "src/gpu/ganesh/GrRecordingContextPriv.h"
+#include "src/gpu/ganesh/GrResourceProvider.h"
+#include "src/gpu/ganesh/GrShaderCaps.h"
+#include "src/gpu/ganesh/GrShaderVar.h"
+#include "src/gpu/ganesh/glsl/GrGLSLFragmentShaderBuilder.h"
+#include "src/gpu/ganesh/glsl/GrGLSLProgramDataManager.h"
+#include "src/gpu/ganesh/glsl/GrGLSLUniformHandler.h"
+#include "src/gpu/ganesh/glsl/GrGLSLVarying.h"
+#include "src/gpu/ganesh/glsl/GrGLSLVertexGeoBuilder.h"
+#include "src/gpu/ganesh/ops/GrDrawOp.h"
+#include "src/gpu/ganesh/ops/GrOp.h"
+#include "src/gpu/ganesh/v1/SurfaceDrawContext_v1.h"
 #include "tools/gpu/ProxyUtils.h"
 
 #include <memory>
@@ -54,7 +54,7 @@ class GrAppliedClip;
 namespace {
 
 static constexpr GrGeometryProcessor::Attribute gVertex =
-        {"bboxcoord", kFloat2_GrVertexAttribType, kFloat2_GrSLType};
+        {"bboxcoord", kFloat2_GrVertexAttribType, SkSLType::kFloat2};
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // SkSL code.
@@ -69,7 +69,7 @@ public:
 
     const char* name() const override { return "FwidthSquircleTestProcessor"; }
 
-    void addToKey(const GrShaderCaps&, GrProcessorKeyBuilder*) const final {}
+    void addToKey(const GrShaderCaps&, skgpu::KeyBuilder*) const final {}
 
     std::unique_ptr<ProgramImpl> makeProgramImpl(const GrShaderCaps&) const final;
 
@@ -77,7 +77,7 @@ private:
     FwidthSquircleTestProcessor(const SkMatrix& viewMatrix)
             : GrGeometryProcessor(kFwidthSquircleTestProcessor_ClassID)
             , fViewMatrix(viewMatrix) {
-        this->setVertexAttributes(&gVertex, 1);
+        this->setVertexAttributesWithImplicitOffsets(&gVertex, 1);
     }
 
     const SkMatrix fViewMatrix;
@@ -103,13 +103,13 @@ std::unique_ptr<GrGeometryProcessor::ProgramImpl> FwidthSquircleTestProcessor::m
             auto* uniforms = args.fUniformHandler;
             fViewMatrixHandle = uniforms->addUniform(nullptr,
                                                      kVertex_GrShaderFlag,
-                                                     kFloat3x3_GrSLType,
+                                                     SkSLType::kFloat3x3,
                                                      "viewmatrix");
 
             auto* varyings = args.fVaryingHandler;
             varyings->emitAttributes(proc);
 
-            GrGLSLVarying squircleCoord(kFloat2_GrSLType);
+            GrGLSLVarying squircleCoord(SkSLType::kFloat2);
             varyings->addVarying("bboxcoord", &squircleCoord);
 
             auto* v = args.fVertBuilder;
@@ -119,7 +119,7 @@ std::unique_ptr<GrGeometryProcessor::ProgramImpl> FwidthSquircleTestProcessor::m
             v->codeAppendf("float3 vertexpos = float3(bboxcoord * 100 * R + 100, 1);");
             v->codeAppendf("vertexpos = %s * vertexpos;",
                            uniforms->getUniformCStr(fViewMatrixHandle));
-            gpArgs->fPositionVar.set(kFloat3_GrSLType, "vertexpos");
+            gpArgs->fPositionVar.set(SkSLType::kFloat3, "vertexpos");
 
             auto* f = args.fFragBuilder;
             f->codeAppendf("float golden_ratio = 1.61803398875;");
@@ -224,8 +224,10 @@ private:
             {-1, +1},
             {+1, +1},
         };
-        fVertexBuffer = flushState->resourceProvider()->createBuffer(
-                sizeof(vertices), GrGpuBufferType::kVertex, kStatic_GrAccessPattern, vertices);
+        fVertexBuffer = flushState->resourceProvider()->createBuffer(vertices,
+                                                                     sizeof(vertices),
+                                                                     GrGpuBufferType::kVertex,
+                                                                     kStatic_GrAccessPattern);
     }
 
     void onExecute(GrOpFlushState* flushState, const SkRect& chainBounds) final {
@@ -269,7 +271,7 @@ private:
 namespace skiagm {
 
 DEF_SIMPLE_GPU_GM_CAN_FAIL(fwidth_squircle, rContext, canvas, errorMsg, 200, 200) {
-    if (!rContext->priv().caps()->shaderCaps()->shaderDerivativeSupport()) {
+    if (!rContext->priv().caps()->shaderCaps()->fShaderDerivativeSupport) {
         *errorMsg = "Shader derivatives not supported.";
         return DrawResult::kSkip;
     }

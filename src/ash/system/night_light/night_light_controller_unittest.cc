@@ -80,8 +80,8 @@ gfx::Vector3dF GetDisplayCompositorRGBScaleFactors(int64_t display_id) {
   ui::Compositor* compositor = host->compositor();
   DCHECK(compositor);
 
-  const skia::Matrix44& matrix = compositor->display_color_matrix();
-  return gfx::Vector3dF(matrix.get(0, 0), matrix.get(1, 1), matrix.get(2, 2));
+  const SkM44& matrix = compositor->display_color_matrix();
+  return gfx::Vector3dF(matrix.rc(0, 0), matrix.rc(1, 1), matrix.rc(2, 2));
 }
 
 // Returns a vector with a Vector3dF for each compositor.
@@ -89,7 +89,7 @@ gfx::Vector3dF GetDisplayCompositorRGBScaleFactors(int64_t display_id) {
 std::vector<gfx::Vector3dF> GetAllDisplaysCompositorsRGBScaleFactors() {
   std::vector<gfx::Vector3dF> scale_factors;
   for (int64_t display_id :
-       Shell::Get()->display_manager()->GetCurrentDisplayIdList()) {
+       Shell::Get()->display_manager()->GetConnectedDisplayIdList()) {
     scale_factors.push_back(GetDisplayCompositorRGBScaleFactors(display_id));
   }
   return scale_factors;
@@ -114,7 +114,7 @@ void TestDisplayCompositorTemperature(int64_t display_id, float temperature) {
 // to the given |temperature|.
 void TestCompositorsTemperature(float temperature) {
   for (int64_t display_id :
-       Shell::Get()->display_manager()->GetCurrentDisplayIdList()) {
+       Shell::Get()->display_manager()->GetConnectedDisplayIdList()) {
     TestDisplayCompositorTemperature(display_id, temperature);
   }
 }

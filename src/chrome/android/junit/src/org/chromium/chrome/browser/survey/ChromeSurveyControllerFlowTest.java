@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.survey;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -67,7 +68,7 @@ import org.chromium.components.messages.DismissReason;
 import org.chromium.components.messages.MessageBannerProperties;
 import org.chromium.components.messages.MessageDispatcher;
 import org.chromium.components.messages.MessageIdentifier;
-import org.chromium.components.messages.MessageScopeType;
+import org.chromium.components.messages.PrimaryActionClickBehavior;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -211,6 +212,7 @@ public class ChromeSurveyControllerFlowTest {
     @After
     public void tearDown() {
         ChromeSurveyController.forceIsUMAEnabledForTesting(false);
+        ChromeSurveyController.resetMessageShownForTesting();
         ShadowChromeFeatureList.sParamValues.clear();
         ShadowChromeFeatureList.sEnableSurvey = false;
         ShadowChromeFeatureList.sEnableMessages = false;
@@ -275,7 +277,7 @@ public class ChromeSurveyControllerFlowTest {
     public void testStartDownloadIfEligibleTask_UmaDisabled() {
         ChromeSurveyController.forceIsUMAEnabledForTesting(false);
         mSharedPreferencesManager.writeBoolean(
-                ChromePreferenceKeys.PRIVACY_METRICS_REPORTING, false);
+                ChromePreferenceKeys.PRIVACY_METRICS_REPORTING_PERMITTED_BY_USER, false);
 
         initializeChromeSurveyController();
         assertDownloadAttempted(false);
@@ -285,7 +287,7 @@ public class ChromeSurveyControllerFlowTest {
     public void testStartDownloadIfEligibleTask_UmaEnabled() {
         ChromeSurveyController.forceIsUMAEnabledForTesting(false);
         mSharedPreferencesManager.writeBoolean(
-                ChromePreferenceKeys.PRIVACY_METRICS_REPORTING, true);
+                ChromePreferenceKeys.PRIVACY_METRICS_REPORTING_PERMITTED_BY_USER, true);
 
         assertDownloadAttempted(false);
         initializeChromeSurveyController();
@@ -572,7 +574,9 @@ public class ChromeSurveyControllerFlowTest {
         Assert.assertNotNull("Message dismissal action is null.",
                 messageModel.get(MessageBannerProperties.ON_DISMISSED));
 
-        messageModel.get(MessageBannerProperties.ON_PRIMARY_ACTION).run();
+        Assert.assertEquals("Message ON_PRIMARY_ACTION should return DISMISS_IMMEDIATELY.",
+                PrimaryActionClickBehavior.DISMISS_IMMEDIATELY,
+                messageModel.get(MessageBannerProperties.ON_PRIMARY_ACTION).get().intValue());
         Assert.assertEquals("showSurvey should be called.", 1,
                 mTestSurveyController.showSurveyIfAvailableCallback.getCallCount());
     }
@@ -605,6 +609,17 @@ public class ChromeSurveyControllerFlowTest {
         Assert.assertFalse(
                 "The enqueued message should not be shown if the survey has expired.", shouldShow);
         verify(mMessageDispatcher).dismissMessage(messageModel, DismissReason.DISMISSED_BY_FEATURE);
+    }
+
+    @Test
+    public void testMessages_MessageShownOnce() {
+        presentMessages();
+        Assert.assertTrue("Message should be shown.", ChromeSurveyController.isMessageShown());
+        verify(mMessageDispatcher).enqueueWindowScopedMessage(any(), anyBoolean());
+
+        // Simulate survey download that triggers invocation of #showSurveyPrompt.
+        mTestSurveyController.onDownloadSuccessRunnable.run();
+        verifyNoMoreInteractions(mMessageDispatcher);
     }
 
     @Test
@@ -774,8 +789,7 @@ public class ChromeSurveyControllerFlowTest {
 
     private void assertSurveyMessagesEnqueued() {
         verify(mMessageDispatcher)
-                .enqueueMessage(mMessagePropertyCaptor.capture(), eq(mMockWebContent),
-                        eq(MessageScopeType.NAVIGATION), eq(false));
+                .enqueueWindowScopedMessage(mMessagePropertyCaptor.capture(), eq(false));
         Assert.assertNotNull("Message captor is null.", mMessagePropertyCaptor.getValue());
     }
 

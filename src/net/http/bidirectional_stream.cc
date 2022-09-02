@@ -29,7 +29,7 @@
 #include "net/spdy/spdy_log_util.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_config.h"
-#include "net/third_party/quiche/src/spdy/core/spdy_header_block.h"
+#include "net/third_party/quiche/src/quiche/spdy/core/spdy_header_block.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "url/gurl.h"
 
@@ -39,23 +39,22 @@ namespace {
 
 base::Value NetLogHeadersParams(const spdy::Http2HeaderBlock* headers,
                                 NetLogCaptureMode capture_mode) {
-  base::Value dict(base::Value::Type::DICTIONARY);
-  dict.SetKey("headers",
-              ElideHttp2HeaderBlockForNetLog(*headers, capture_mode));
-  return dict;
+  base::Value::Dict dict;
+  dict.Set("headers", ElideHttp2HeaderBlockForNetLog(*headers, capture_mode));
+  return base::Value(std::move(dict));
 }
 
 base::Value NetLogParams(const GURL& url,
                          const std::string& method,
                          const HttpRequestHeaders* headers,
                          NetLogCaptureMode capture_mode) {
-  base::Value dict(base::Value::Type::DICTIONARY);
-  dict.SetStringKey("url", url.possibly_invalid_spec());
-  dict.SetStringKey("method", method);
-  std::string empty;
-  base::Value headers_param(headers->NetLogParams(empty, capture_mode));
-  dict.SetKey("headers", std::move(headers_param));
-  return dict;
+  base::Value::Dict dict;
+  dict.Set("url", url.possibly_invalid_spec());
+  dict.Set("method", method);
+  base::Value headers_param(
+      headers->NetLogParams(/*request_line=*/std::string(), capture_mode));
+  dict.Set("headers", std::move(headers_param));
+  return base::Value(std::move(dict));
 }
 
 }  // namespace
@@ -86,7 +85,6 @@ BidirectionalStream::BidirectionalStream(
                                       NetLogSourceType::BIDIRECTIONAL_STREAM)),
       session_(session),
       send_request_headers_automatically_(send_request_headers_automatically),
-      request_headers_sent_(false),
       delegate_(delegate),
       timer_(std::move(timer)) {
   DCHECK(delegate_);
@@ -113,11 +111,7 @@ BidirectionalStream::BidirectionalStream(
     return;
   }
 
-  SSLConfig ssl_config;
-  ssl_config.alpn_protos = session->GetAlpnProtos();
-  ssl_config.application_settings = session->GetApplicationSettings();
-
-  StartRequest(ssl_config);
+  StartRequest(SSLConfig());
 }
 
 BidirectionalStream::~BidirectionalStream() {
@@ -241,7 +235,7 @@ void BidirectionalStream::OnStreamReady(bool request_headers_sent) {
 void BidirectionalStream::OnHeadersReceived(
     const spdy::Http2HeaderBlock& response_headers) {
   HttpResponseInfo response_info;
-  if (!SpdyHeadersToHttpResponse(response_headers, &response_info)) {
+  if (SpdyHeadersToHttpResponse(response_headers, &response_info) != OK) {
     DLOG(WARNING) << "Invalid headers";
     NotifyFailed(ERR_FAILED);
     return;

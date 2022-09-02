@@ -23,12 +23,13 @@
 #include "components/prefs/testing_pref_service.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/time.h"
-#include "components/sync/engine/entity_data.h"
 #include "components/sync/model/data_batch.h"
 #include "components/sync/model/data_type_activation_request.h"
 #include "components/sync/model/entity_change.h"
 #include "components/sync/model/metadata_batch.h"
 #include "components/sync/protocol/device_info_specifics.pb.h"
+#include "components/sync/protocol/entity_data.h"
+#include "components/sync/protocol/entity_metadata.pb.h"
 #include "components/sync/protocol/entity_specifics.pb.h"
 #include "components/sync/protocol/model_type_state.pb.h"
 #include "components/sync/protocol/sync_enums.pb.h"
@@ -48,7 +49,6 @@
 namespace syncer {
 namespace {
 
-using base::OneShotTimer;
 using sync_pb::DeviceInfoSpecifics;
 using sync_pb::EntitySpecifics;
 using sync_pb::ModelTypeState;
@@ -86,8 +86,10 @@ MATCHER_P(EqualsProto, expected, "") {
 }
 
 MATCHER_P(ModelEqualsSpecifics, expected_specifics, "") {
-  if (expected_specifics.has_sharing_fields() != arg.sharing_info().has_value())
+  if (expected_specifics.has_sharing_fields() !=
+      arg.sharing_info().has_value()) {
     return false;
+  }
 
   if (expected_specifics.has_sharing_fields()) {
     auto& expected_fields = expected_specifics.sharing_fields();
@@ -109,8 +111,10 @@ MATCHER_P(ModelEqualsSpecifics, expected_specifics, "") {
     }
 
     for (int i = 0; i < expected_fields.enabled_features_size(); ++i) {
-      if (!arg_info.enabled_features.count(expected_fields.enabled_features(i)))
+      if (!arg_info.enabled_features.count(
+              expected_fields.enabled_features(i))) {
         return false;
+      }
     }
   }
 
@@ -343,8 +347,8 @@ std::map<std::string, sync_pb::EntitySpecifics> DataBatchToSpecificsMap(
     std::unique_ptr<DataBatch> batch) {
   std::map<std::string, sync_pb::EntitySpecifics> storage_key_to_specifics;
   while (batch && batch->HasNext()) {
-    const syncer::KeyAndData& pair = batch->Next();
-    storage_key_to_specifics[pair.first] = pair.second->specifics;
+    auto [key, data] = batch->Next();
+    storage_key_to_specifics[key] = data->specifics;
   }
   return storage_key_to_specifics;
 }
@@ -477,8 +481,9 @@ class DeviceInfoSyncBridgeTest : public testing::Test,
 
   ~DeviceInfoSyncBridgeTest() override {
     // Some tests may never initialize the bridge.
-    if (bridge_)
+    if (bridge_) {
       bridge_->RemoveObserver(this);
+    }
 
     // Force all remaining (store) tasks to execute so we don't leak memory.
     base::RunLoop().RunUntilIdle();

@@ -61,6 +61,16 @@ PortalPageLoadMetricsObserver::OnStart(
   return CONTINUE_OBSERVING;
 }
 
+page_load_metrics::PageLoadMetricsObserver::ObservePolicy
+PortalPageLoadMetricsObserver::OnFencedFramesStart(
+    content::NavigationHandle* navigation_handle,
+    const GURL& currently_committed_url) {
+  // FencedFrames can be created inside a Portal, but as this class is
+  // interested only in Portal pages, stop observing for such FencedFrame inner
+  // pages.
+  return STOP_OBSERVING;
+}
+
 PortalPageLoadMetricsObserver::ObservePolicy
 PortalPageLoadMetricsObserver::FlushMetricsOnAppEnterBackground(
     const page_load_metrics::mojom::PageLoadTiming& timing) {

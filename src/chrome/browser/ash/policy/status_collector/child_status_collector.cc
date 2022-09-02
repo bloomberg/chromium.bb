@@ -29,7 +29,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
@@ -52,11 +51,11 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
+namespace policy {
+
 namespace {
 
-namespace em = enterprise_management;
-
-using base::Time;
+namespace em = ::enterprise_management;
 
 // How much time in the past to store active periods for.
 constexpr base::TimeDelta kMaxStoredPastActivityInterval = base::Days(30);
@@ -72,8 +71,7 @@ const char kReportSizeHistogramName[] =
 const char kTimeSinceLastReportHistogramName[] =
     "ChromeOS.FamilyLink.ChildStatusReportRequest.TimeSinceLastReport";
 
-bool ReadAndroidStatus(
-    policy::ChildStatusCollector::AndroidStatusReceiver receiver) {
+bool ReadAndroidStatus(ChildStatusCollector::AndroidStatusReceiver receiver) {
   auto* const arc_service_manager = arc::ArcServiceManager::Get();
   if (!arc_service_manager)
     return false;
@@ -90,8 +88,6 @@ bool ReadAndroidStatus(
 }
 
 }  // namespace
-
-namespace policy {
 
 class ChildStatusCollectorState : public StatusCollectorState {
  public:
@@ -233,8 +229,8 @@ void ChildStatusCollector::OnUsageTimeStateChange(
 }
 
 void ChildStatusCollector::UpdateChildUsageTime() {
-  Time now = clock_->Now();
-  Time reset_time = activity_storage_->GetBeginningOfDay(now);
+  base::Time now = clock_->Now();
+  base::Time reset_time = activity_storage_->GetBeginningOfDay(now);
   if (reset_time > now)
     reset_time -= base::Days(1);
   // Reset screen time if it has not been reset today.
@@ -276,7 +272,7 @@ bool ChildStatusCollector::GetActivityTimes(
     // This is correct even when there are leap seconds, because when a leap
     // second occurs, two consecutive seconds have the same timestamp.
     int64_t end_timestamp =
-        activity_period.start_timestamp() + Time::kMillisecondsPerDay;
+        activity_period.start_timestamp() + base::Time::kMillisecondsPerDay;
 
     em::ScreenTimeSpan* screen_time_span = status->add_screen_time_span();
     em::TimePeriod* period = screen_time_span->mutable_time_period();

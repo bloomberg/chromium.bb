@@ -248,7 +248,10 @@ class AppWindow : public content::WebContentsDelegate,
   const GURL& initial_url() const { return initial_url_; }
   bool is_hidden() const { return is_hidden_; }
 
+  // Calls to this should always be guarded by a nullptr check as this can
+  // return nullptr if the extension is no longer installed.
   const Extension* GetExtension() const;
+
   NativeAppWindow* GetBaseWindow();
   gfx::NativeWindow GetNativeWindow();
 
@@ -443,9 +446,7 @@ class AppWindow : public content::WebContentsDelegate,
                              const blink::WebGestureEvent& event) override;
   bool TakeFocus(content::WebContents* source, bool reverse) override;
   content::PictureInPictureResult EnterPictureInPicture(
-      content::WebContents* web_contents,
-      const viz::SurfaceId& surface_id,
-      const gfx::Size& natural_size) override;
+      content::WebContents* web_contents) override;
   void ExitPictureInPicture() override;
   bool ShouldShowStaleContentOnEviction(content::WebContents* source) override;
 

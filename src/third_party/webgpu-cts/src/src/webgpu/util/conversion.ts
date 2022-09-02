@@ -1,19 +1,22 @@
 import { Colors } from '../../common/util/colors.js';
 import { assert, TypedArrayBufferView } from '../../common/util/util.js';
 
-import { clamp } from './math.js';
+import { clamp, isSubnormalNumber } from './math.js';
 
 /**
  * Encodes a JS `number` into a "normalized" (unorm/snorm) integer representation with `bits` bits.
  * Input must be between -1 and 1 if signed, or 0 and 1 if unsigned.
+ *
+ * MAINTENANCE_TODO: See if performance of texel_data improves if this function is pre-specialized
+ * for a particular `bits`/`signed`.
  */
 export function floatAsNormalizedInteger(float: number, bits: number, signed: boolean): number {
   if (signed) {
-    assert(float >= -1 && float <= 1);
+    assert(float >= -1 && float <= 1, () => `${float} out of bounds of snorm`);
     const max = Math.pow(2, bits - 1) - 1;
     return Math.round(float * max);
   } else {
-    assert(float >= 0 && float <= 1);
+    assert(float >= 0 && float <= 1, () => `${float} out of bounds of unorm`);
     const max = Math.pow(2, bits) - 1;
     return Math.round(float * max);
   }
@@ -44,7 +47,10 @@ export function normalizedIntegerAsFloat(integer: number, bits: number, signed: 
  * sign, exponent, mantissa bits, and exponent bias.
  * Returns the result as an integer-valued JS `number`.
  *
- * Does not handle clamping, underflow, overflow, or denormalized numbers.
+ * Does not handle clamping, overflow, or denormal inputs.
+ * On underflow (result is subnormal), rounds to (signed) zero.
+ *
+ * MAINTENANCE_TODO: Replace usages of this with numberToFloatBits.
  */
 export function float32ToFloatBits(
   n: number,
@@ -80,18 +86,24 @@ export function float32ToFloatBits(
 
   // Convert to the new biased exponent.
   const newBiasedExp = bias + exp;
-  assert(newBiasedExp >= 0 && newBiasedExp < 1 << exponentBits);
+  assert(newBiasedExp < 1 << exponentBits, () => `input number ${n} overflows target type`);
 
-  // Mask only the mantissa, and discard the lower bits.
-  const newMantissa = (bits & 0x7fffff) >> mantissaBitsToDiscard;
-  return (sign << (exponentBits + mantissaBits)) | (newBiasedExp << mantissaBits) | newMantissa;
+  if (newBiasedExp <= 0) {
+    // Result is subnormal or zero. Round to (signed) zero.
+    return sign << (exponentBits + mantissaBits);
+  } else {
+    // Mask only the mantissa, and discard the lower bits.
+    const newMantissa = (bits & 0x7fffff) >> mantissaBitsToDiscard;
+    return (sign << (exponentBits + mantissaBits)) | (newBiasedExp << mantissaBits) | newMantissa;
+  }
 }
 
 /**
  * Encodes a JS `number` into an IEEE754 16 bit floating point number.
  * Returns the result as an integer-valued JS `number`.
  *
- * Does not handle clamping, underflow, overflow, or denormalized numbers.
+ * Does not handle clamping, overflow, or denormal inputs.
+ * On underflow (result is subnormal), rounds to (signed) zero.
  */
 export function float32ToFloat16Bits(n: number) {
   return float32ToFloatBits(n, 1, 5, 10, 15);
@@ -101,11 +113,87 @@ export function float32ToFloat16Bits(n: number) {
  * Decodes an IEEE754 16 bit floating point number into a JS `number` and returns.
  */
 export function float16BitsToFloat32(float16Bits: number): number {
-  const buf = new DataView(new ArrayBuffer(Float32Array.BYTES_PER_ELEMENT));
-  // shift exponent and mantissa bits and fill with 0 on right, shift sign bit
-  buf.setUint32(0, ((float16Bits & 0x7fff) << 13) | ((float16Bits & 0x8000) << 16), true);
-  // shifting for bias different: f16 uses a bias of 15, f32 uses a bias of 127
-  return buf.getFloat32(0, true) * 2 ** (127 - 15);
+  return floatBitsToNumber(float16Bits, kFloat16Format);
+}
+
+type FloatFormat = { signed: 0 | 1; exponentBits: number; mantissaBits: number; bias: number };
+
+/** FloatFormat defining IEEE754 32-bit float. */
+export const kFloat32Format = { signed: 1, exponentBits: 8, mantissaBits: 23, bias: 127 } as const;
+/** FloatFormat defining IEEE754 16-bit float. */
+export const kFloat16Format = { signed: 1, exponentBits: 5, mantissaBits: 10, bias: 15 } as const;
+
+const workingData = new ArrayBuffer(4);
+const workingDataU32 = new Uint32Array(workingData);
+const workingDataF32 = new Float32Array(workingData);
+/** Bitcast u32 (represented as integer Number) to f32 (represented as floating-point Number). */
+export function float32BitsToNumber(bits: number): number {
+  workingDataU32[0] = bits;
+  return workingDataF32[0];
+}
+/** Bitcast f32 (represented as floating-point Number) to u32 (represented as integer Number). */
+export function numberToFloat32Bits(number: number): number {
+  workingDataF32[0] = number;
+  return workingDataU32[0];
+}
+
+/**
+ * Decodes an IEEE754 float with the supplied format specification into a JS number.
+ *
+ * The format MUST be no larger than a 32-bit float.
+ */
+export function floatBitsToNumber(bits: number, fmt: FloatFormat): number {
+  // Pad the provided bits out to f32, then convert to a `number` with the wrong bias.
+  // E.g. for f16 to f32:
+  // - f16: S    EEEEE MMMMMMMMMM
+  //        ^ 000^^^^^ ^^^^^^^^^^0000000000000
+  // - f32: S eeeEEEEE MMMMMMMMMMmmmmmmmmmmmmm
+
+  const kNonSignBits = fmt.exponentBits + fmt.mantissaBits;
+  const kNonSignBitsMask = (1 << kNonSignBits) - 1;
+  const expAndMantBits = bits & kNonSignBitsMask;
+  let f32BitsWithWrongBias = expAndMantBits << (kFloat32Format.mantissaBits - fmt.mantissaBits);
+  f32BitsWithWrongBias |= (bits << (31 - kNonSignBits)) & 0x8000_0000;
+  const numberWithWrongBias = float32BitsToNumber(f32BitsWithWrongBias);
+  return numberWithWrongBias * 2 ** (kFloat32Format.bias - fmt.bias);
+}
+
+/**
+ * Encodes a JS `number` into an IEEE754 floating point number with the specified format.
+ * Returns the result as an integer-valued JS `number`.
+ *
+ * Does not handle clamping, overflow, or denormal inputs.
+ * On underflow (result is subnormal), rounds to (signed) zero.
+ */
+export function numberToFloatBits(number: number, fmt: FloatFormat): number {
+  return float32ToFloatBits(number, fmt.signed, fmt.exponentBits, fmt.mantissaBits, fmt.bias);
+}
+
+/**
+ * Given a floating point number (as an integer representing its bits), computes how many ULPs it is
+ * from zero.
+ *
+ * Subnormal numbers are skipped, so that 0 is one ULP from the minimum normal number.
+ * Subnormal values are flushed to 0.
+ * Positive and negative 0 are both considered to be 0 ULPs from 0.
+ */
+export function floatBitsToNormalULPFromZero(bits: number, fmt: FloatFormat): number {
+  const mask_sign = fmt.signed << (fmt.exponentBits + fmt.mantissaBits);
+  const mask_expt = ((1 << fmt.exponentBits) - 1) << fmt.mantissaBits;
+  const mask_mant = (1 << fmt.mantissaBits) - 1;
+  const mask_rest = mask_expt | mask_mant;
+
+  assert(fmt.exponentBits + fmt.mantissaBits <= 31);
+
+  const sign = bits & mask_sign ? -1 : 1;
+  const rest = bits & mask_rest;
+  const subnormal_or_zero = (bits & mask_expt) === 0;
+  const infinity_or_nan = (bits & mask_expt) === mask_expt;
+  assert(!infinity_or_nan, 'no ulp representation for infinity/nan');
+
+  // The first normal number is mask_mant+1, so subtract mask_mant to make min_normal - zero = 1ULP.
+  const abs_ulp_from_zero = subnormal_or_zero ? 0 : rest - mask_mant;
+  return sign * abs_ulp_from_zero;
 }
 
 /**
@@ -163,7 +251,8 @@ export function packRGB9E5UFloat(r: number, g: number, b: number): number {
  * Asserts that a number is within the representable (inclusive) of the integer type with the
  * specified number of bits and signedness.
  *
- * TODO: Assert isInteger? Then this function "asserts that a number is representable" by the type
+ * MAINTENANCE_TODO: Assert isInteger? Then this function "asserts that a number is representable"
+ * by the type.
  */
 export function assertInIntegerRange(n: number, bits: number, signed: boolean): void {
   if (signed) {
@@ -225,7 +314,17 @@ export function uint32ToInt32(u32: number): number {
 }
 
 /** A type of number representable by Scalar. */
-export type ScalarKind = 'f32' | 'f16' | 'u32' | 'u16' | 'u8' | 'i32' | 'i16' | 'i8' | 'bool';
+export type ScalarKind =
+  | 'f64'
+  | 'f32'
+  | 'f16'
+  | 'u32'
+  | 'u16'
+  | 'u8'
+  | 'i32'
+  | 'i16'
+  | 'i8'
+  | 'bool';
 
 /** ScalarType describes the type of WGSL Scalar. */
 export class ScalarType {
@@ -295,6 +394,9 @@ export const TypeI32 = new ScalarType('i32', 4, (buf: Uint8Array, offset: number
 export const TypeU32 = new ScalarType('u32', 4, (buf: Uint8Array, offset: number) =>
   u32(new Uint32Array(buf.buffer, offset)[0])
 );
+export const TypeF64 = new ScalarType('f64', 8, (buf: Uint8Array, offset: number) =>
+  f32(new Float64Array(buf.buffer, offset)[0])
+);
 export const TypeF32 = new ScalarType('f32', 4, (buf: Uint8Array, offset: number) =>
   f32(new Float32Array(buf.buffer, offset)[0])
 );
@@ -316,6 +418,32 @@ export const TypeU8 = new ScalarType('u8', 1, (buf: Uint8Array, offset: number) 
 export const TypeBool = new ScalarType('bool', 4, (buf: Uint8Array, offset: number) =>
   bool(new Uint32Array(buf.buffer, offset)[0] !== 0)
 );
+
+/** @returns the ScalarType from the ScalarKind */
+export function scalarType(kind: ScalarKind): ScalarType {
+  switch (kind) {
+    case 'f64':
+      return TypeF64;
+    case 'f32':
+      return TypeF32;
+    case 'f16':
+      return TypeF16;
+    case 'u32':
+      return TypeU32;
+    case 'u16':
+      return TypeU16;
+    case 'u8':
+      return TypeU8;
+    case 'i32':
+      return TypeI32;
+    case 'i16':
+      return TypeI16;
+    case 'i8':
+      return TypeI8;
+    case 'bool':
+      return TypeBool;
+  }
+}
 
 /** @returns the number of scalar (element) types of the given Type */
 export function numElementsOf(ty: Type): number {
@@ -365,21 +493,80 @@ export class Scalar {
     }
   }
 
+  /**
+   * @returns the WGSL representation of this scalar value
+   */
+  public wgsl(): string {
+    const withPoint = (x: number) => {
+      const str = `${x}`;
+      return str.indexOf('.') > 0 || str.indexOf('e') > 0 ? str : `${str}.0`;
+    };
+    if (isFinite(this.value as number)) {
+      switch (this.type.kind) {
+        case 'f32':
+          return `${withPoint(this.value as number)}f`;
+        case 'f16':
+          return `${withPoint(this.value as number)}h`;
+        case 'u32':
+          return `${this.value}u`;
+        case 'i32':
+          return `${this.value}i`;
+        case 'bool':
+          return `${this.value}`;
+      }
+    } else if (this.value === Number.POSITIVE_INFINITY) {
+      switch (this.type.kind) {
+        case 'f32':
+          return `f32(1.0/0.0)`;
+        case 'f16':
+          return `f16(1.0/0.0)`;
+      }
+    } else if (this.value === Number.NEGATIVE_INFINITY) {
+      switch (this.type.kind) {
+        case 'f32':
+          return `f32(-1.0/0.0)`;
+        case 'f16':
+          return `f16(-1.0/0.0)`;
+      }
+    }
+    throw new Error(
+      `scalar of value ${this.value} and type ${this.type} has no WGSL representation`
+    );
+  }
+
   public toString(): string {
     if (this.type.kind === 'bool') {
       return Colors.bold(this.value.toString());
     }
     switch (this.value) {
-      case 0:
       case Infinity:
       case -Infinity:
         return Colors.bold(this.value.toString());
-      default:
-        return Colors.bold(this.value.toString()) + ' (0x' + this.value.toString(16) + ')';
+      default: {
+        // Uint8Array.map returns a Uint8Array, so cannot use .map directly
+        const hex = Array.from(this.bits)
+          .reverse()
+          .map(x => x.toString(16).padStart(2, '0'))
+          .join('');
+        const n = this.value as Number;
+        if (n !== null && isFloatValue(this)) {
+          let str = this.value.toString();
+          str = str.indexOf('.') > 0 || str.indexOf('e') > 0 ? str : `${str}.0`;
+          return isSubnormalNumber(n.valueOf())
+            ? `${Colors.bold(str)} (0x${hex} subnormal)`
+            : `${Colors.bold(str)} (0x${hex})`;
+        }
+        return `${Colors.bold(this.value.toString())} (0x${hex})`;
+      }
     }
   }
 }
 
+/** Create an f64 from a numeric value, a JS `number`. */
+export function f64(value: number): Scalar {
+  const arr = new Float32Array([value]);
+  return new Scalar(TypeF64, arr[0], arr);
+}
 /** Create an f32 from a numeric value, a JS `number`. */
 export function f32(value: number): Scalar {
   const arr = new Float32Array([value]);
@@ -511,6 +698,14 @@ export class Vector {
     }
   }
 
+  /**
+   * @returns the WGSL representation of this vector value
+   */
+  public wgsl(): string {
+    const els = this.elements.map(v => v.wgsl()).join(', ');
+    return `vec${this.type.width}(${els})`;
+  }
+
   public toString(): string {
     return `${this.type}(${this.elements.map(e => e.toString()).join(', ')})`;
   }
@@ -553,3 +748,12 @@ export function vec4(x: Scalar, y: Scalar, z: Scalar, w: Scalar) {
 
 /** Value is a Scalar or Vector value. */
 export type Value = Scalar | Vector;
+
+/** @returns if the Value is a float scalar type */
+export function isFloatValue(v: Value): boolean {
+  if (v instanceof Scalar) {
+    const s = v;
+    return s.type.kind === 'f64' || s.type.kind === 'f32' || s.type.kind === 'f16';
+  }
+  return false;
+}

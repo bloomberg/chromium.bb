@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "ash/shelf/gradient_layer_delegate.h"
+#include "ash/controls/gradient_layer_delegate.h"
 #include "base/bind.h"
 #include "base/check.h"
 #include "base/check_op.h"
@@ -15,16 +15,11 @@
 #include "ui/gfx/geometry/rect.h"
 
 namespace ash {
-namespace {
-
-// Height of the gradient in DIPs.
-constexpr int kGradientHeight = 16;
-
-}  // namespace
 
 ScrollViewGradientHelper::ScrollViewGradientHelper(
-    views::ScrollView* scroll_view)
-    : scroll_view_(scroll_view) {
+    views::ScrollView* scroll_view,
+    int gradient_height)
+    : scroll_view_(scroll_view), gradient_height_(gradient_height) {
   DCHECK(scroll_view_);
   DCHECK(scroll_view_->layer());
   on_contents_scrolled_subscription_ =
@@ -35,10 +30,13 @@ ScrollViewGradientHelper::ScrollViewGradientHelper(
       scroll_view_->AddContentsScrollEndedCallback(
           base::BindRepeating(&ScrollViewGradientHelper::UpdateGradientZone,
                               base::Unretained(this)));
+  scroll_view_->SetPreferredViewportMargins(
+      gfx::Insets::VH(gradient_height_, 0));
 }
 
 ScrollViewGradientHelper::~ScrollViewGradientHelper() {
   RemoveMaskLayer();
+  scroll_view_->SetPreferredViewportMargins(gfx::Insets());
 }
 
 void ScrollViewGradientHelper::UpdateGradientZone() {
@@ -55,13 +53,13 @@ void ScrollViewGradientHelper::UpdateGradientZone() {
   gfx::Rect top_gradient_bounds;
   if (show_top_gradient) {
     top_gradient_bounds =
-        gfx::Rect(0, 0, scroll_view_bounds.width(), kGradientHeight);
+        gfx::Rect(0, 0, scroll_view_bounds.width(), gradient_height_);
   }
   gfx::Rect bottom_gradient_bounds;
   if (show_bottom_gradient) {
     bottom_gradient_bounds =
-        gfx::Rect(0, scroll_view_bounds.height() - kGradientHeight,
-                  scroll_view_bounds.width(), kGradientHeight);
+        gfx::Rect(0, scroll_view_bounds.height() - gradient_height_,
+                  scroll_view_bounds.width(), gradient_height_);
   }
 
   // If no gradient is needed, remove the mask layer.
@@ -73,7 +71,10 @@ void ScrollViewGradientHelper::UpdateGradientZone() {
   // If a gradient is needed, lazily create the GradientLayerDelegate.
   if (!gradient_layer_) {
     DVLOG(1) << "Adding gradient mask layer";
-    gradient_layer_ = std::make_unique<GradientLayerDelegate>();
+    // Animate showing the gradient to avoid a visual "pop" at the end of the
+    // clamshell launcher open animation.
+    gradient_layer_ =
+        std::make_unique<GradientLayerDelegate>(/*animate_in=*/true);
     scroll_view_->layer()->SetMaskLayer(gradient_layer_->layer());
   }
 

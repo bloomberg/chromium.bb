@@ -15,6 +15,7 @@
 #include "ash/style/ash_color_provider.h"
 #include "base/test/scoped_feature_list.h"
 #include "cc/base/math_util.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/services/libassistant/public/cpp/assistant_interaction_metadata.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/color_palette.h"
@@ -32,11 +33,14 @@ constexpr char kResponseText[] = "Response";
 using UiElementContainerViewTest = AssistantAshTestBase;
 
 TEST_F(UiElementContainerViewTest, DarkAndLightTheme) {
-  base::test::ScopedFeatureList scoped_feature_list(features::kDarkLightMode);
-  AshColorProvider::Get()->OnActiveUserPrefServiceChanged(
+  base::test::ScopedFeatureList scoped_feature_list(
+      chromeos::features::kDarkLightMode);
+  ASSERT_TRUE(chromeos::features::IsDarkLightModeEnabled());
+
+  auto* color_provider = AshColorProvider::Get();
+  color_provider->OnActiveUserPrefServiceChanged(
       Shell::Get()->session_controller()->GetActivePrefService());
-  ASSERT_TRUE(features::IsDarkLightModeEnabled());
-  ASSERT_FALSE(AshColorProvider::Get()->IsDarkModeEnabled());
+  const bool initial_dark_mode_status = color_provider->IsDarkModeEnabled();
 
   ShowAssistantUi();
 
@@ -48,9 +52,10 @@ TEST_F(UiElementContainerViewTest, DarkAndLightTheme) {
             AshColorProvider::Get()->GetContentLayerColor(
                 ColorProvider::ContentLayerType::kSeparatorColor));
 
-  Shell::Get()->session_controller()->GetActivePrefService()->SetBoolean(
-      prefs::kDarkModeEnabled, true);
-  ASSERT_TRUE(AshColorProvider::Get()->IsDarkModeEnabled());
+  // Switch the color mode.
+  color_provider->ToggleColorMode();
+  const bool dark_mode_status = color_provider->IsDarkModeEnabled();
+  ASSERT_NE(initial_dark_mode_status, dark_mode_status);
 
   EXPECT_EQ(indicator->GetBackground()->get_color(),
             AshColorProvider::Get()->GetContentLayerColor(
@@ -58,7 +63,12 @@ TEST_F(UiElementContainerViewTest, DarkAndLightTheme) {
 }
 
 TEST_F(UiElementContainerViewTest, DarkAndLightModeFlagOff) {
-  ASSERT_FALSE(features::IsDarkLightModeEnabled());
+  // ProductivityLauncher uses DarkLightMode colors.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      /*enabled_features=*/{}, /*disabled_features=*/{
+          chromeos::features::kDarkLightMode, features::kNotificationsRefresh,
+          features::kProductivityLauncher});
 
   ShowAssistantUi();
 
@@ -67,6 +77,9 @@ TEST_F(UiElementContainerViewTest, DarkAndLightModeFlagOff) {
   views::View* indicator =
       ui_element_container_view->GetViewByID(kOverflowIndicator);
   EXPECT_EQ(indicator->GetBackground()->get_color(), gfx::kGoogleGrey300);
+
+  // Avoid test teardown issues by explicitly closing the launcher.
+  CloseAssistantUi();
 }
 
 TEST_F(UiElementContainerViewTest, CustomOverflowIndicator) {

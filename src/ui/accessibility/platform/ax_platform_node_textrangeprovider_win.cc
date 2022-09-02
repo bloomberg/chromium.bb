@@ -7,6 +7,8 @@
 #include <utility>
 #include <vector>
 
+#include "base/debug/crash_logging.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/i18n/string_search.h"
 #include "base/memory/raw_ptr.h"
 #include "base/win/scoped_safearray.h"
@@ -219,14 +221,16 @@ HRESULT AXPlatformNodeTextRangeProviderWin::ExpandToEnclosingUnitImpl(
       // boundary, thus we only need to move the end position.
       AXPositionInstance end_backup = end()->Clone();
       SetEnd(start()->CreateNextCharacterPosition(
-          AXBoundaryBehavior::CrossBoundary));
+          {AXBoundaryBehavior::kCrossBoundary,
+           AXBoundaryDetection::kDontCheckInitialPosition}));
 
       if (end()->IsNullPosition()) {
         // The previous could fail if the start is at the end of the last anchor
         // of the tree, try expanding to the previous character instead.
         AXPositionInstance start_backup = start()->Clone();
         SetStart(start()->CreatePreviousCharacterPosition(
-            AXBoundaryBehavior::CrossBoundary));
+            {AXBoundaryBehavior::kCrossBoundary,
+             AXBoundaryDetection::kDontCheckInitialPosition}));
 
         if (start()->IsNullPosition()) {
           // Text representation is empty, undo everything and exit.
@@ -235,7 +239,8 @@ HRESULT AXPlatformNodeTextRangeProviderWin::ExpandToEnclosingUnitImpl(
           return S_OK;
         }
         SetEnd(start()->CreateNextCharacterPosition(
-            AXBoundaryBehavior::CrossBoundary));
+            {AXBoundaryBehavior::kCrossBoundary,
+             AXBoundaryDetection::kDontCheckInitialPosition}));
         DCHECK(!end()->IsNullPosition());
       }
 
@@ -248,39 +253,44 @@ HRESULT AXPlatformNodeTextRangeProviderWin::ExpandToEnclosingUnitImpl(
     }
     case TextUnit_Format:
       SetStart(start()->CreatePreviousFormatStartPosition(
-          AXBoundaryBehavior::StopIfAlreadyAtBoundary));
+          {AXBoundaryBehavior::kStopAtAnchorBoundary,
+           AXBoundaryDetection::kCheckInitialPosition}));
       SetEnd(start()->CreateNextFormatEndPosition(
-          AXBoundaryBehavior::StopIfAlreadyAtBoundary));
+          {AXBoundaryBehavior::kStopAtLastAnchorBoundary,
+           AXBoundaryDetection::kDontCheckInitialPosition}));
       break;
     case TextUnit_Word: {
       AXPositionInstance start_backup = start()->Clone();
       SetStart(start()->CreatePreviousWordStartPosition(
-          AXBoundaryBehavior::StopIfAlreadyAtBoundary));
-      // Since we use AXBoundaryBehavior::StopIfAlreadyAtBoundary, the only case
-      // possible where CreatePreviousWordStartPosition can return a
-      // NullPosition is when it's called on a node before the first word
-      // boundary. This can happen when the document starts with nodes that have
-      // no word boundaries, like whitespaces and punctuation. When it happens,
-      // move the position back to the start of the document.
-      if (start()->IsNullPosition())
-        SetStart(start_backup->CreatePositionAtStartOfContent());
+          {AXBoundaryBehavior::kStopAtAnchorBoundary,
+           AXBoundaryDetection::kCheckInitialPosition}));
 
       // Since start_ is already located at a word boundary, we need to cross it
       // in order to move to the next one. Because Windows ATs behave
       // undesirably when the start and end endpoints are not in the same anchor
       // (for character and word navigation), stop at anchor boundary.
       SetEnd(start()->CreateNextWordStartPosition(
-          AXBoundaryBehavior::StopAtAnchorBoundary));
+          {AXBoundaryBehavior::kStopAtAnchorBoundary,
+           AXBoundaryDetection::kDontCheckInitialPosition}));
       break;
     }
     case TextUnit_Line:
+      // Walk backwards to the previous line start (but don't walk backwards
+      // if we're already at the start of a line). The previous line start can
+      // occur in a different node than where `start` is currently pointing, so
+      // use kStopAtLastAnchorBoundary, which will stop at the tree boundary if
+      // no previous line start is found.
       SetStart(start()->CreateBoundaryStartPosition(
-          AXBoundaryBehavior::StopIfAlreadyAtBoundary,
+          {AXBoundaryBehavior::kStopAtLastAnchorBoundary,
+           AXBoundaryDetection::kCheckInitialPosition},
           ax::mojom::MoveDirection::kBackward,
           base::BindRepeating(&AtStartOfLinePredicate),
           base::BindRepeating(&AtEndOfLinePredicate)));
+      // From the start we just walked backwards to, walk forwards to the line
+      // end position.
       SetEnd(start()->CreateBoundaryEndPosition(
-          AXBoundaryBehavior::StopIfAlreadyAtBoundary,
+          {AXBoundaryBehavior::kStopAtLastAnchorBoundary,
+           AXBoundaryDetection::kDontCheckInitialPosition},
           ax::mojom::MoveDirection::kForward,
           base::BindRepeating(&AtStartOfLinePredicate),
           base::BindRepeating(&AtEndOfLinePredicate)));
@@ -288,9 +298,11 @@ HRESULT AXPlatformNodeTextRangeProviderWin::ExpandToEnclosingUnitImpl(
     case TextUnit_Paragraph:
       SetStart(
           start()->CreatePreviousParagraphStartPositionSkippingEmptyParagraphs(
-              AXBoundaryBehavior::StopIfAlreadyAtBoundary));
+              {AXBoundaryBehavior::kStopAtLastAnchorBoundary,
+               AXBoundaryDetection::kCheckInitialPosition}));
       SetEnd(start()->CreateNextParagraphStartPositionSkippingEmptyParagraphs(
-          AXBoundaryBehavior::StopAtLastAnchorBoundary));
+          {AXBoundaryBehavior::kStopAtLastAnchorBoundary,
+           AXBoundaryDetection::kDontCheckInitialPosition}));
       break;
     case TextUnit_Page: {
       // Per UIA spec, if the document containing the current range doesn't
@@ -298,13 +310,15 @@ HRESULT AXPlatformNodeTextRangeProviderWin::ExpandToEnclosingUnitImpl(
       const AXNode* common_anchor = start()->LowestCommonAnchor(*end());
       if (common_anchor->tree()->HasPaginationSupport()) {
         SetStart(start()->CreatePreviousPageStartPosition(
-            ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary));
+            {AXBoundaryBehavior::kStopAtLastAnchorBoundary,
+             AXBoundaryDetection::kCheckInitialPosition}));
         SetEnd(start()->CreateNextPageEndPosition(
-            ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary));
+            {AXBoundaryBehavior::kStopAtAnchorBoundary,
+             AXBoundaryDetection::kCheckInitialPosition}));
         break;
       }
     }
-      FALLTHROUGH;
+      [[fallthrough]];
     case TextUnit_Document:
       SetStart(start()->CreatePositionAtStartOfContent()->AsLeafTextPosition());
       SetEnd(start()->CreatePositionAtEndOfContent());
@@ -908,10 +922,11 @@ HRESULT AXPlatformNodeTextRangeProviderWin::ScrollIntoView(BOOL align_to_top) {
   UIA_VALIDATE_TEXTRANGEPROVIDER_CALL();
 
   const AXPositionInstance start_common_ancestor =
-      start()->LowestCommonAncestor(*end(),
-                                    ax::mojom::MoveDirection::kBackward);
+      start()->LowestCommonAncestorPosition(
+          *end(), ax::mojom::MoveDirection::kBackward);
   const AXPositionInstance end_common_ancestor =
-      end()->LowestCommonAncestor(*start(), ax::mojom::MoveDirection::kForward);
+      end()->LowestCommonAncestorPosition(*start(),
+                                          ax::mojom::MoveDirection::kForward);
   if (start_common_ancestor->IsNullPosition() ||
       end_common_ancestor->IsNullPosition()) {
     return E_INVALIDARG;
@@ -1049,24 +1064,24 @@ AXPlatformNodeTextRangeProviderWin::AXPositionInstance
 AXPlatformNodeTextRangeProviderWin::GetNextTextBoundaryPosition(
     const AXPositionInstance& position,
     ax::mojom::TextBoundary boundary_type,
-    AXBoundaryBehavior boundary_behavior,
+    AXMovementOptions options,
     ax::mojom::MoveDirection boundary_direction) {
   // Override At[Start|End]OfLinePredicate for behavior specific to UIA.
   DCHECK_NE(boundary_type, ax::mojom::TextBoundary::kNone);
   switch (boundary_type) {
     case ax::mojom::TextBoundary::kLineStart:
       return position->CreateBoundaryStartPosition(
-          boundary_behavior, boundary_direction,
+          options, boundary_direction,
           base::BindRepeating(&AtStartOfLinePredicate),
           base::BindRepeating(&AtEndOfLinePredicate));
     case ax::mojom::TextBoundary::kLineEnd:
       return position->CreateBoundaryEndPosition(
-          boundary_behavior, boundary_direction,
+          options, boundary_direction,
           base::BindRepeating(&AtStartOfLinePredicate),
           base::BindRepeating(&AtEndOfLinePredicate));
     default:
       return position->CreatePositionAtTextBoundary(
-          boundary_type, boundary_direction, boundary_behavior);
+          boundary_type, boundary_direction, options);
   }
 }
 
@@ -1075,7 +1090,8 @@ std::u16string AXPlatformNodeTextRangeProviderWin::GetString(
     size_t* appended_newlines_count) {
   AXNodeRange range(start()->Clone(), end()->Clone());
   return range.GetText(AXTextConcatenationBehavior::kWithParagraphBreaks,
-                       max_count, false, appended_newlines_count);
+                       AXEmbeddedObjectBehavior::kExposeCharacter, max_count,
+                       false, appended_newlines_count);
 }
 
 AXPlatformNodeWin* AXPlatformNodeTextRangeProviderWin::GetOwner() const {
@@ -1191,7 +1207,7 @@ AXPlatformNodeTextRangeProviderWin::MoveEndpointByPage(
   // Note that the "ax::mojom::MoveDirection" should not matter when calculating
   // the ancestor position for use when navigating by page or document, so we
   // use a backward direction as the default.
-  AXPositionInstance common_ancestor = start()->LowestCommonAncestor(
+  AXPositionInstance common_ancestor = start()->LowestCommonAncestorPosition(
       *end(), ax::mojom::MoveDirection::kBackward);
   if (!common_ancestor->GetAnchor()->tree()->HasPaginationSupport())
     return MoveEndpointByDocument(std::move(endpoint), count, units_moved);
@@ -1238,13 +1254,16 @@ AXPlatformNodeTextRangeProviderWin::MoveEndpointByUnitHelper(
     do {
       AXPositionInstance next_endpoint = GetNextTextBoundaryPosition(
           current_endpoint, boundary_type,
-          AXBoundaryBehavior::StopAtLastAnchorBoundary, boundary_direction);
+          {AXBoundaryBehavior::kStopAtLastAnchorBoundary,
+           AXBoundaryDetection::kDontCheckInitialPosition},
+          boundary_direction);
       DCHECK(next_endpoint->IsLeafTextPosition());
 
-      // Since AXBoundaryBehavior::StopAtLastAnchorBoundary forces the next text
-      // boundary position to be different than the input position, the only
-      // case where these are equal is when they're already located at the last
-      // anchor boundary. In such case, there is no next position to move to.
+      // Since AXBoundaryBehavior::kStopAtLastAnchorBoundary forces the next
+      // text boundary position to be different than the input position, the
+      // only case where these are equal is when they're already located at the
+      // last anchor boundary. In such case, there is no next position to move
+      // to.
       if (next_endpoint->GetAnchor() == current_endpoint->GetAnchor() &&
           *next_endpoint == *current_endpoint) {
         *units_moved = (count > 0) ? iteration : -iteration;
@@ -1609,7 +1628,7 @@ void AXPlatformNodeTextRangeProviderWin::TextRangeEndpoints::
 
 void AXPlatformNodeTextRangeProviderWin::TextRangeEndpoints::
     AdjustEndpointForSubtreeDeletion(AXTree* tree,
-                                     AXNode* node,
+                                     const AXNode* const node,
                                      bool is_start_endpoint) {
   AXPositionInstance endpoint =
       is_start_endpoint ? start_->Clone() : end_->Clone();
@@ -1623,6 +1642,20 @@ void AXPlatformNodeTextRangeProviderWin::TextRangeEndpoints::
   if (!node->GetParent() || !endpoint_anchor) {
     is_start_endpoint ? SetStart(AXNodePosition::CreateNullPosition())
                       : SetEnd(AXNodePosition::CreateNullPosition());
+    return;
+  }
+
+  DeletionOfInterest deletion_of_interest = {tree->GetAXTreeID(), node->id()};
+
+  // If the root of subtree being deleted is a child of the anchor of the
+  // endpoint, ensure `AXPosition::AsValidPosition` is called after the node is
+  // deleted so that the index doesn't go out of bounds of the child array.
+  if (endpoint->kind() == AXPositionKind::TREE_POSITION &&
+      endpoint_anchor == node->GetParent()) {
+    if (is_start_endpoint)
+      validation_necessary_for_start_ = deletion_of_interest;
+    else
+      validation_necessary_for_end_ = deletion_of_interest;
     return;
   }
 
@@ -1669,13 +1702,13 @@ void AXPlatformNodeTextRangeProviderWin::TextRangeEndpoints::
       SetEnd(new_endpoint->Clone());
 
     SetStart(std::move(new_endpoint));
-    validation_necessary_for_start_ = {tree->GetAXTreeID(), node->id()};
+    validation_necessary_for_start_ = deletion_of_interest;
   } else {
     if (*new_endpoint < *other_endpoint)
       SetStart(new_endpoint->Clone());
 
     SetEnd(std::move(new_endpoint));
-    validation_necessary_for_end_ = {tree->GetAXTreeID(), node->id()};
+    validation_necessary_for_end_ = deletion_of_interest;
   }
 }
 

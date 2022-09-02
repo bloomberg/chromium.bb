@@ -12,20 +12,34 @@ namespace prefs {
 const char kCredentialsEnableAutosignin[] = "credentials_enable_autosignin";
 const char kCredentialsEnableService[] = "credentials_enable_service";
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
+const char kAutoSignInEnabledGMS[] = "profile.auto_sign_in_enabled_gms";
+const char kOfferToSavePasswordsEnabledGMS[] =
+    "profile.save_passwords_enabed_gms";
+const char kSettingsMigratedToUPM[] = "profile.settings_migrated_to_upm";
+
 const char kCurrentMigrationVersionToGoogleMobileServices[] =
     "current_migration_version_to_google_mobile_services";
 
 const char kTimeOfLastMigrationAttempt[] = "time_of_last_migration_attempt";
+
+const char kRequiresMigrationAfterSyncStatusChange[] =
+    "requires_migration_after_sync_status_change";
+
+const char kPasswordsPrefWithNewLabelUsed[] =
+    "passwords_pref_with_new_label_used";
+
+const char kUnenrolledFromGoogleMobileServicesDueToErrors[] =
+    "unenrolled_from_google_mobile_services_due_to_errors";
 #endif
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 const char kOsPasswordBlank[] = "password_manager.os_password_blank";
 const char kOsPasswordLastChanged[] =
     "password_manager.os_password_last_changed";
 #endif
 
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
 const char kKeychainMigrationStatus[] = "password_manager.keychain_migration";
 #endif
 
@@ -49,6 +63,9 @@ const char kLastTimeObsoleteHttpCredentialsRemoved[] =
 const char kLastTimePasswordCheckCompleted[] =
     "profile.last_time_password_check_completed";
 
+const char kLastTimePasswordStoreMetricsReported[] =
+    "profile.last_time_password_store_metrics_reported";
+
 const char kSyncedLastTimePasswordCheckCompleted[] =
     "profile.credentials_last_password_checkup_time";
 
@@ -57,10 +74,18 @@ const char kPasswordHashDataList[] = "profile.password_hash_data_list";
 const char kPasswordLeakDetectionEnabled[] =
     "profile.password_manager_leak_detection";
 
+const char kPasswordDismissCompromisedAlertEnabled[] =
+    "profile.password_dismiss_compromised_alert";
+
 const char kProfileStoreDateLastUsedForFilling[] =
     "password_manager.profile_store_date_last_used_for_filling";
 const char kAccountStoreDateLastUsedForFilling[] =
     "password_manager.account_store_date_last_used_for_filling";
+
+const char kPasswordChangeSuccessTrackerFlows[] =
+    "password_manager.password_change_success_tracker.flows";
+const char kPasswordChangeSuccessTrackerVersion[] =
+    "password_manager.password_change_success_tracker.version";
 
 }  // namespace prefs
 }  // namespace password_manager

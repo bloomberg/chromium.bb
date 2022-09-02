@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {AutoScanManager} from './auto_scan_manager.js';
-import {SAConstants} from './switch_access_constants.js';
+import {AutoScanManager} from '/switch_access/auto_scan_manager.js';
+import {SAConstants} from '/switch_access/switch_access_constants.js';
 
 /**
  * Class to manage user preferences.
@@ -106,7 +106,9 @@ export class PreferenceManager {
     const previousSet = previousPref ? Object.keys(previousPref).length : false;
 
     const autoScanEnabled =
-        !!this.getBoolean_(SAConstants.Preference.AUTO_SCAN_ENABLED);
+        // getBoolean_() returns null if a value is not found, so we force the
+        // value to be a boolean (defaulting to false).
+        Boolean(this.getBoolean_(SAConstants.Preference.AUTO_SCAN_ENABLED));
 
     if (!selectSet) {
       return false;

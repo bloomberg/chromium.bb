@@ -49,7 +49,7 @@ class AV1Crc32cHashTest : public ::testing::TestWithParam<HashParam> {
   size_t length_;
 };
 
-AV1Crc32cHashTest::~AV1Crc32cHashTest() { ; }
+AV1Crc32cHashTest::~AV1Crc32cHashTest() {}
 
 void AV1Crc32cHashTest::SetUp() {
   rnd_.Reset(libaom_test::ACMRandom::DeterministicSeed());
@@ -58,7 +58,7 @@ void AV1Crc32cHashTest::SetUp() {
   bsize_ = GET_PARAM(1);
   length_ = bsize_ * bsize_ * sizeof(uint16_t);
   buffer_ = new uint8_t[length_];
-  ASSERT_TRUE(buffer_ != NULL);
+  ASSERT_NE(buffer_, nullptr);
   for (size_t i = 0; i < length_; ++i) {
     buffer_[i] = rnd_.Rand8();
   }

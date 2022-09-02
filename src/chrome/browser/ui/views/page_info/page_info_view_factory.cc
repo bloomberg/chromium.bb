@@ -4,7 +4,12 @@
 
 #include "chrome/browser/ui/views/page_info/page_info_view_factory.h"
 
+#include <memory>
+#include <string>
+
+#include "base/feature_list.h"
 #include "base/memory/raw_ptr.h"
+#include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/ui/layout_constants.h"
@@ -12,10 +17,12 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/page_info/page_info_about_this_site_content_view.h"
+#include "chrome/browser/ui/views/page_info/page_info_ad_personalization_content_view.h"
 #include "chrome/browser/ui/views/page_info/page_info_main_view.h"
 #include "chrome/browser/ui/views/page_info/page_info_navigation_handler.h"
 #include "chrome/browser/ui/views/page_info/page_info_permission_content_view.h"
 #include "chrome/browser/ui/views/page_info/page_info_security_content_view.h"
+#include "components/page_info/core/features.h"
 #include "components/page_info/core/proto/about_this_site_metadata.pb.h"
 #include "components/page_info/page_info.h"
 #include "components/permissions/permission_util.h"
@@ -31,7 +38,6 @@
 #include "ui/views/controls/separator.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/flex_layout.h"
-#include "ui/views/layout/grid_layout.h"
 #include "ui/views/vector_icons.h"
 
 constexpr int PageInfoViewFactory::kMinBubbleWidth;
@@ -77,7 +83,8 @@ std::unique_ptr<views::View> PageInfoViewFactory::CreateSeparator() {
                                     DISTANCE_CONTENT_LIST_VERTICAL_MULTI) /
                                 2;
   auto separator = std::make_unique<views::Separator>();
-  separator->SetProperty(views::kMarginsKey, gfx::Insets(separator_spacing, 0));
+  separator->SetProperty(views::kMarginsKey,
+                         gfx::Insets::VH(separator_spacing, 0));
   return separator;
 }
 
@@ -89,7 +96,7 @@ std::unique_ptr<views::View> PageInfoViewFactory::CreateLabelWrapper() {
   label_wrapper->SetLayoutManager(std::make_unique<views::FlexLayout>())
       ->SetOrientation(views::LayoutOrientation::kVertical);
   label_wrapper->SetProperty(views::kMarginsKey,
-                             gfx::Insets(0, icon_label_spacing));
+                             gfx::Insets::VH(0, icon_label_spacing));
   label_wrapper->SetProperty(views::kCrossAxisAlignmentKey,
                              views::LayoutAlignment::kStretch);
   label_wrapper->SetProperty(
@@ -104,22 +111,25 @@ std::unique_ptr<views::View> PageInfoViewFactory::CreateLabelWrapper() {
 PageInfoViewFactory::PageInfoViewFactory(
     PageInfo* presenter,
     ChromePageInfoUiDelegate* ui_delegate,
-    PageInfoNavigationHandler* navigation_handler)
+    PageInfoNavigationHandler* navigation_handler,
+    PageInfoHistoryController* history_controller)
     : presenter_(presenter),
       ui_delegate_(ui_delegate),
-      navigation_handler_(navigation_handler) {}
+      navigation_handler_(navigation_handler),
+      history_controller_(history_controller) {}
 
 std::unique_ptr<views::View> PageInfoViewFactory::CreateMainPageView(
     base::OnceClosure initialized_callback) {
-  return std::make_unique<PageInfoMainView>(presenter_, ui_delegate_,
-                                            navigation_handler_,
-                                            std::move(initialized_callback));
+  return std::make_unique<PageInfoMainView>(
+      presenter_, ui_delegate_, navigation_handler_, history_controller_,
+      std::move(initialized_callback));
 }
 
 std::unique_ptr<views::View> PageInfoViewFactory::CreateSecurityPageView() {
   return std::make_unique<PageInfoSubpageView>(
       CreateSubpageHeader(
-          l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURITY_SUBPAGE_HEADER)),
+          l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURITY_SUBPAGE_HEADER),
+          presenter_->GetSimpleSiteName()),
       std::make_unique<PageInfoSecurityContentView>(
           presenter_, /*is_standalone_page=*/true));
 }
@@ -127,7 +137,8 @@ std::unique_ptr<views::View> PageInfoViewFactory::CreateSecurityPageView() {
 std::unique_ptr<views::View> PageInfoViewFactory::CreatePermissionPageView(
     ContentSettingsType type) {
   return std::make_unique<PageInfoSubpageView>(
-      CreateSubpageHeader(PageInfoUI::PermissionTypeToUIString(type)),
+      CreateSubpageHeader(PageInfoUI::PermissionTypeToUIString(type),
+                          presenter_->GetSimpleSiteName()),
       std::make_unique<PageInfoPermissionContentView>(presenter_, ui_delegate_,
                                                       type));
 }
@@ -136,13 +147,25 @@ std::unique_ptr<views::View> PageInfoViewFactory::CreateAboutThisSitePageView(
     const page_info::proto::SiteInfo& info) {
   return std::make_unique<PageInfoSubpageView>(
       CreateSubpageHeader(
-          l10n_util::GetStringUTF16(IDS_PAGE_INFO_ABOUT_THIS_SITE_HEADER)),
+          l10n_util::GetStringUTF16(IDS_PAGE_INFO_ABOUT_THIS_SITE_HEADER),
+          presenter_->GetSimpleSiteName()),
       std::make_unique<PageInfoAboutThisSiteContentView>(presenter_,
                                                          ui_delegate_, info));
 }
 
+std::unique_ptr<views::View>
+PageInfoViewFactory::CreateAdPersonalizationPageView() {
+  return std::make_unique<PageInfoSubpageView>(
+      CreateSubpageHeader(
+          l10n_util::GetStringUTF16(IDS_PAGE_INFO_AD_PERSONALIZATION_HEADER),
+          presenter_->GetSimpleSiteName()),
+      std::make_unique<PageInfoAdPersonalizationContentView>(presenter_,
+                                                             ui_delegate_));
+}
+
 std::unique_ptr<views::View> PageInfoViewFactory::CreateSubpageHeader(
-    std::u16string title) {
+    std::u16string title,
+    std::u16string subtitle) {
   ChromeLayoutProvider* layout_provider = ChromeLayoutProvider::Get();
   views::FlexSpecification stretch_specification =
       views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
@@ -162,7 +185,7 @@ std::unique_ptr<views::View> PageInfoViewFactory::CreateSubpageHeader(
   header->SetLayoutManager(std::make_unique<views::FlexLayout>())
       ->SetCrossAxisAlignment(views::LayoutAlignment::kStart)
       .SetInteriorMargin(
-          gfx::Insets(0, side_margin, bottom_margin, side_margin));
+          gfx::Insets::TLBR(0, side_margin, bottom_margin, side_margin));
   header->SetProperty(views::kFlexBehaviorKey, stretch_specification);
   wrapper->AddChildView(CreateSeparator());
 
@@ -172,7 +195,7 @@ std::unique_ptr<views::View> PageInfoViewFactory::CreateSubpageHeader(
                           base::DoNothing()),
       vector_icons::kArrowBackIcon);
   views::InstallCircleHighlightPathGenerator(back_button.get());
-  back_button->SetID(VIEW_ID_BACK_BUTTON);
+  back_button->SetID(VIEW_ID_PAGE_INFO_BACK_BUTTON);
   back_button->SetTooltipText(l10n_util::GetStringUTF16(IDS_ACCNAME_BACK));
   back_button->SetProperty(views::kInternalPaddingKey,
                            back_button->GetInsets());
@@ -183,15 +206,18 @@ std::unique_ptr<views::View> PageInfoViewFactory::CreateSubpageHeader(
       std::make_unique<views::Label>(title, views::style::CONTEXT_DIALOG_TITLE,
                                      views::style::STYLE_SECONDARY));
   title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  auto* subtitle_label =
-      label_wrapper->AddChildView(std::make_unique<views::Label>(
-          presenter_->GetSimpleSiteName(), views::style::CONTEXT_LABEL,
-          views::style::STYLE_SECONDARY,
-          gfx::DirectionalityMode::DIRECTIONALITY_AS_URL));
-  subtitle_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  subtitle_label->SetAllowCharacterBreak(true);
-  subtitle_label->SetMultiLine(true);
-  subtitle_label->SetProperty(views::kFlexBehaviorKey, stretch_specification);
+
+  if (!subtitle.empty()) {
+    auto* subtitle_label =
+        label_wrapper->AddChildView(std::make_unique<views::Label>(
+            subtitle, views::style::CONTEXT_LABEL,
+            views::style::STYLE_SECONDARY,
+            gfx::DirectionalityMode::DIRECTIONALITY_AS_URL));
+    subtitle_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    subtitle_label->SetAllowCharacterBreak(true);
+    subtitle_label->SetMultiLine(true);
+    subtitle_label->SetProperty(views::kFlexBehaviorKey, stretch_specification);
+  }
 
   auto close_button = views::BubbleFrameView::CreateCloseButton(
       base::BindRepeating(&PageInfoNavigationHandler::CloseBubble,
@@ -212,6 +238,9 @@ const ui::ImageModel PageInfoViewFactory::GetPermissionIcon(
   switch (info.type) {
     case ContentSettingsType::COOKIES:
       icon = &vector_icons::kCookieIcon;
+      break;
+    case ContentSettingsType::FEDERATED_IDENTITY_API:
+      icon = &vector_icons::kAccountCircleIcon;
       break;
     case ContentSettingsType::IMAGES:
       icon = &vector_icons::kPhotoIcon;
@@ -238,7 +267,7 @@ const ui::ImageModel PageInfoViewFactory::GetPermissionIcon(
     case ContentSettingsType::AUTOMATIC_DOWNLOADS:
       icon = &vector_icons::kFileDownloadIcon;
       break;
-#if BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_WIN)
+#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_WIN)
     case ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER:
       icon = &vector_icons::kProtectedContentIcon;
       break;
@@ -283,7 +312,7 @@ const ui::ImageModel PageInfoViewFactory::GetPermissionIcon(
     case ContentSettingsType::WINDOW_PLACEMENT:
       icon = &vector_icons::kSelectWindowIcon;
       break;
-    case ContentSettingsType::FONT_ACCESS:
+    case ContentSettingsType::LOCAL_FONTS:
       icon = &vector_icons::kFontDownloadIcon;
       break;
     case ContentSettingsType::HID_GUARD:
@@ -398,6 +427,25 @@ const ui::ImageModel PageInfoViewFactory::GetOpenSubpageIcon() {
 const ui::ImageModel PageInfoViewFactory::GetAboutThisSiteIcon() {
   return ui::ImageModel::FromVectorIcon(views::kInfoIcon, ui::kColorIcon,
                                         GetIconSize());
+}
+
+// static
+const ui::ImageModel PageInfoViewFactory::GetAboutThisPageIcon() {
+  // TODO(crbug.com/1318000): Use globe icon.
+  return ui::ImageModel::FromVectorIcon(views::kInfoIcon, ui::kColorIcon,
+                                        GetIconSize());
+}
+
+// static
+const ui::ImageModel PageInfoViewFactory::GetHistoryIcon() {
+  return ui::ImageModel::FromVectorIcon(vector_icons::kHistoryIcon,
+                                        ui::kColorIcon, GetIconSize());
+}
+
+// static
+const ui::ImageModel PageInfoViewFactory::GetAdPersonalizationIcon() {
+  return ui::ImageModel::FromVectorIcon(vector_icons::kAdsClickIcon,
+                                        ui::kColorIcon, GetIconSize());
 }
 
 // static

@@ -11,6 +11,7 @@
 #include "base/time/time.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/safe_browsing/core/browser/db/hit_report.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 
 namespace {
@@ -156,7 +157,7 @@ void SafeBrowsingMetricsCollector::LogDailyEventMetrics() {
 void SafeBrowsingMetricsCollector::RemoveOldEventsFromPref() {
   DictionaryPrefUpdate update(pref_service_,
                               prefs::kSafeBrowsingEventTimestamps);
-  base::DictionaryValue* mutable_state_dict = update.Get();
+  base::Value* mutable_state_dict = update.Get();
   bool is_pref_valid = mutable_state_dict->is_dict();
   base::UmaHistogramBoolean("SafeBrowsing.MetricsCollector.IsPrefValid",
                             is_pref_valid);
@@ -183,6 +184,27 @@ void SafeBrowsingMetricsCollector::AddSafeBrowsingEventToPref(
   }
 
   AddSafeBrowsingEventAndUserStateToPref(GetUserState(), event_type);
+}
+
+void SafeBrowsingMetricsCollector::AddBypassEventToPref(
+    ThreatSource threat_source) {
+  EventType event;
+  switch (threat_source) {
+    case ThreatSource::LOCAL_PVER4:
+    case ThreatSource::REMOTE:
+      event = EventType::DATABASE_INTERSTITIAL_BYPASS;
+      break;
+    case ThreatSource::CLIENT_SIDE_DETECTION:
+      event = EventType::CSD_INTERSTITIAL_BYPASS;
+      break;
+    case ThreatSource::REAL_TIME_CHECK:
+      event = EventType::REAL_TIME_INTERSTITIAL_BYPASS;
+      break;
+    default:
+      NOTREACHED() << "Unexpected threat source.";
+      event = EventType::DATABASE_INTERSTITIAL_BYPASS;
+  }
+  AddSafeBrowsingEventToPref(event);
 }
 
 absl::optional<base::Time>
@@ -220,7 +242,7 @@ void SafeBrowsingMetricsCollector::AddSafeBrowsingEventAndUserStateToPref(
     EventType event_type) {
   DictionaryPrefUpdate update(pref_service_,
                               prefs::kSafeBrowsingEventTimestamps);
-  base::DictionaryValue* mutable_state_dict = update.Get();
+  base::Value* mutable_state_dict = update.Get();
 
   base::Value* event_dict =
       mutable_state_dict->FindDictKey(UserStateToPrefKey(user_state));
@@ -238,8 +260,8 @@ void SafeBrowsingMetricsCollector::AddSafeBrowsingEventAndUserStateToPref(
   }
 
   // Remove the oldest timestamp if the length of the timestamps hits the limit.
-  while (timestamps->GetList().size() >= kTimestampsMaxLength) {
-    timestamps->EraseListIter(timestamps->GetList().begin());
+  while (timestamps->GetListDeprecated().size() >= kTimestampsMaxLength) {
+    timestamps->EraseListIter(timestamps->GetListDeprecated().begin());
   }
 
   timestamps->Append(TimeToPrefValue(base::Time::Now()));
@@ -263,7 +285,7 @@ void SafeBrowsingMetricsCollector::OnEnhancedProtectionPrefChanged() {
 
 const base::Value* SafeBrowsingMetricsCollector::GetSafeBrowsingEventDictionary(
     UserState user_state) {
-  const base::DictionaryValue* state_dict =
+  const base::Value* state_dict =
       pref_service_->GetDictionary(prefs::kSafeBrowsingEventTimestamps);
 
   return state_dict->FindDictKey(UserStateToPrefKey(user_state));
@@ -282,8 +304,8 @@ SafeBrowsingMetricsCollector::GetLatestEventFromEventType(
   const base::Value* timestamps =
       event_dict->FindListKey(EventTypeToPrefKey(event_type));
 
-  if (timestamps && timestamps->GetList().size() > 0) {
-    base::Time time = PrefValueToTime(timestamps->GetList().back());
+  if (timestamps && timestamps->GetListDeprecated().size() > 0) {
+    base::Time time = PrefValueToTime(timestamps->GetListDeprecated().back());
     return Event(event_type, time);
   }
 
@@ -419,8 +441,8 @@ int SafeBrowsingMetricsCollector::GetEventCountSince(UserState user_state,
     return 0;
   }
 
-  return std::count_if(timestamps->GetList().begin(),
-                       timestamps->GetList().end(),
+  return std::count_if(timestamps->GetListDeprecated().begin(),
+                       timestamps->GetListDeprecated().end(),
                        [&](const base::Value& timestamp) {
                          return PrefValueToTime(timestamp) > since_time;
                        });
@@ -534,8 +556,10 @@ std::string SafeBrowsingMetricsCollector::GetTimesDisabledSuffix() {
                                   EventType::USER_STATE_ENABLED);
 
   if (!latest_enabled_event) {
-    // this code path could be possible if ESB was enabled via policy but
-    // later disabled by the user, since policy enables/disables are not tracked
+    // This code path could be possible if ESB was enabled via policy but
+    // later disabled by the user, since policy enables/disables are not
+    // tracked. It's also possible if it's been longer than kEventMaxDurationDay
+    // days since the latest enabled event.
     return "NeverEnabled";
   }
   const auto hours_since_enabled =

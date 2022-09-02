@@ -10,12 +10,12 @@
 #include "base/logging.h"
 #include "base/strings/string_split.h"
 #include "build/chromeos_buildflags.h"
-#include "ui/display/display.h"
 #include "ui/display/display_layout_builder.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/display_manager_utilities.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/display/screen.h"
+#include "ui/display/util/display_util.h"
 
 namespace display {
 namespace test {
@@ -50,7 +50,7 @@ DisplayInfoList CreateDisplayInfoListFromString(
 bool GetDisplayModeForResolution(const ManagedDisplayInfo& info,
                                  const gfx::Size& resolution,
                                  ManagedDisplayMode* mode) {
-  if (Display::IsInternalDisplayId(info.id()))
+  if (IsInternalDisplayId(info.id()))
     return false;
 
   const ManagedDisplayInfo::ManagedDisplayModeList& modes =
@@ -98,39 +98,37 @@ void DisplayManagerTestApi::UpdateDisplay(const std::string& display_specs) {
   }
 #endif
   bool is_host_origin_set = false;
-  for (size_t i = 0; i < display_info_list.size(); ++i) {
-    const ManagedDisplayInfo& display_info = display_info_list[i];
+  for (const ManagedDisplayInfo& display_info : display_info_list) {
     if (display_info.bounds_in_native().origin() != gfx::Point(0, 0)) {
       is_host_origin_set = true;
       break;
     }
   }
 
-  // On non-testing environment, when a secondary display is connected, a new
-  // native (i.e. X) window for the display is always created below the
-  // previous one for GPU performance reasons. Try to emulate the behavior
-  // unless host origins are explicitly set.
-  if (!is_host_origin_set) {
-    // Start from (1,1) so that windows won't overlap with native mouse cursor.
-    // See |AshTestBase::SetUp()|.
-    int next_y = 1;
-    for (auto iter = display_info_list.begin(); iter != display_info_list.end();
-         ++iter) {
-      gfx::Rect bounds(iter->bounds_in_native().size());
+  // Start from (1,1) so that windows won't overlap with native mouse cursor.
+  // See |AshTestBase::SetUp()|.
+  int next_y = 1;
+  for (auto& info : display_info_list) {
+    // On non-testing environment, when a secondary display is connected, a new
+    // native (i.e. X) window for the display is always created below the
+    // previous one for GPU performance reasons. Try to emulate the behavior
+    // unless host origins are explicitly set.
+    if (!is_host_origin_set) {
+      gfx::Rect bounds(info.bounds_in_native().size());
       bounds.set_x(1);
       bounds.set_y(next_y);
       next_y += bounds.height();
-      iter->SetBounds(bounds);
-
-      // Overcan and native resolution are excluded for now as they require
-      // special handing (has_overscan flag. resolution change makes sense
-      // only on external).
-      display_manager_->RegisterDisplayProperty(
-          iter->id(), iter->GetRotation(Display::RotationSource::USER),
-          /*overscan_insets=*/nullptr,
-          /*native_resolution=*/gfx::Size(), iter->device_scale_factor(),
-          iter->zoom_factor(), iter->refresh_rate(), iter->is_interlaced());
+      info.SetBounds(bounds);
     }
+
+    // Overcan and native resolution are excluded for now as they require
+    // special handing (has_overscan flag. resolution change makes sense
+    // only on external).
+    display_manager_->RegisterDisplayProperty(
+        info.id(), info.GetRotation(Display::RotationSource::USER),
+        /*overscan_insets=*/nullptr,
+        /*native_resolution=*/gfx::Size(), info.device_scale_factor(),
+        info.zoom_factor(), info.refresh_rate(), info.is_interlaced());
   }
 
   display_manager_->OnNativeDisplaysChanged(display_info_list);
@@ -140,12 +138,12 @@ void DisplayManagerTestApi::UpdateDisplay(const std::string& display_specs) {
 
 int64_t DisplayManagerTestApi::SetFirstDisplayAsInternalDisplay() {
   const Display& internal = display_manager_->active_display_list_[0];
-  SetInternalDisplayId(internal.id());
+  SetInternalDisplayIds({internal.id()});
   return Display::InternalDisplayId();
 }
 
 void DisplayManagerTestApi::SetInternalDisplayId(int64_t id) {
-  Display::SetInternalDisplayId(id);
+  SetInternalDisplayIds({id});
   display_manager_->UpdateInternalManagedDisplayModeListForTest();
 }
 
@@ -197,7 +195,7 @@ ScopedSetInternalDisplayId::ScopedSetInternalDisplayId(
 }
 
 ScopedSetInternalDisplayId::~ScopedSetInternalDisplayId() {
-  Display::SetInternalDisplayId(kInvalidDisplayId);
+  SetInternalDisplayIds({});
 }
 
 bool SetDisplayResolution(DisplayManager* display_manager,

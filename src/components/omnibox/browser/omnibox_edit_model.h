@@ -25,6 +25,7 @@
 #include "components/omnibox/browser/omnibox_view.h"
 #include "components/omnibox/common/omnibox_focus_state.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/native_widget_types.h"
 #include "url/gurl.h"
@@ -76,6 +77,12 @@ class OmniboxEditModel {
   //     completely moved to OmniboxController.
   AutocompleteController* autocomplete_controller() const {
     return omnibox_controller_->autocomplete_controller();
+  }
+
+  void set_autocomplete_controller(
+      std::unique_ptr<AutocompleteController> autocomplete_controller) {
+    omnibox_controller_->set_autocomplete_controller(
+        std::move(autocomplete_controller));
   }
 
   void set_popup_view(OmniboxPopupView* popup_view);
@@ -407,9 +414,6 @@ class OmniboxEditModel {
   // Used for testing purposes only.
   std::u16string GetUserTextForTesting() const { return user_text_; }
 
-  // Name of the histogram tracking cut or copy omnibox commands.
-  static const char kCutOrCopyAllTextHistogram[];
-
   // Just forwards the call to the OmniboxView referred within.
   void SetAccessibilityLabel(const AutocompleteMatch& match);
 
@@ -423,7 +427,7 @@ class OmniboxEditModel {
   // Returns true if the destination URL of the match is bookmarked.
   bool IsStarredMatch(const AutocompleteMatch& match) const;
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
   // Gets the icon for the given `match`.
   gfx::Image GetMatchIcon(const AutocompleteMatch& match,
                           SkColor vector_icon_color);
@@ -492,8 +496,6 @@ class OmniboxEditModel {
       int* label_prefix_length = nullptr);
 
   // Invoked any time the result set of the controller changes.
-  // TODO(orinj): This method seems like a good candidate for removal; it is
-  // preserved here only to prevent possible behavior change while refactoring.
   void OnPopupResultChanged();
 
   // Lookup the bitmap for |result_index|. Returns nullptr if not found.
@@ -509,6 +511,7 @@ class OmniboxEditModel {
 
  private:
   friend class OmniboxControllerTest;
+  friend class TestOmniboxEditModel;
   FRIEND_TEST_ALL_PREFIXES(OmniboxEditModelTest, ConsumeCtrlKey);
   FRIEND_TEST_ALL_PREFIXES(OmniboxEditModelTest, ConsumeCtrlKeyOnRequestFocus);
   FRIEND_TEST_ALL_PREFIXES(OmniboxEditModelTest, ConsumeCtrlKeyOnCtrlAction);

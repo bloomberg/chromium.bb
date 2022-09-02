@@ -4,10 +4,10 @@
 
 package org.chromium.ui.resources.dynamics;
 
-import android.annotation.TargetApi;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.HardwareRenderer;
 import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.graphics.RenderNode;
@@ -20,6 +20,8 @@ import android.view.Surface;
 import android.view.View;
 import android.view.View.OnLayoutChangeListener;
 import android.view.ViewGroup;
+
+import androidx.annotation.RequiresApi;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
@@ -50,6 +52,7 @@ public class ViewResourceAdapter extends DynamicResource implements OnLayoutChan
     private long mLastGetBitmapTimestamp;
     private AcceleratedImageReader mReader;
     private boolean mUseHardwareBitmapDraw;
+    private boolean mDebugViewAttachedToWindowListenerAdded;
     // Incremented each time we enqueue a Hardware drawn Bitmap. Only used if
     // |mUseHardwareBitmapDraw| is true.
     protected AtomicInteger mCurrentBitmapRequestId;
@@ -67,7 +70,7 @@ public class ViewResourceAdapter extends DynamicResource implements OnLayoutChan
 
     // RenderNode was added in API level 29 (Android 10). So restrict AcceleratedImageReader as
     // well.
-    @TargetApi(Build.VERSION_CODES.Q)
+    @RequiresApi(Build.VERSION_CODES.Q)
     private class AcceleratedImageReader implements ImageReader.OnImageAvailableListener {
         // Track the last BitmapRequestId so we only return one image per request (in case of
         // animations during that draw).
@@ -121,6 +124,11 @@ public class ViewResourceAdapter extends DynamicResource implements OnLayoutChan
                     // and contexts, prevents unneeded callbacks as well.
                     mReaderDelegate.close();
                 }
+                if (width == 0 || height == 0) {
+                    // If we get less than 1 width or height, there is nothing to draw.
+                    // Keep this in sync with other restrictions in captureWithHardwareDraw().
+                    return;
+                }
                 mReaderDelegate = ImageReader.newInstance(
                         width, height, PixelFormat.RGBA_8888, maxBitmapsToAcquire);
                 mReaderDelegate.setOnImageAvailableListener(this, sHandler);
@@ -161,12 +169,14 @@ public class ViewResourceAdapter extends DynamicResource implements OnLayoutChan
 
             assert renderNode != null;
             mTaskRunner.postTask(() -> {
+                HardwareRenderer mRenderer = new HardwareRenderer();
                 try (TraceEvent e = TraceEvent.scoped("AcceleratedImageReader::requestDraw")) {
                     mCurrentBitmapRequestId.incrementAndGet();
                     Surface s = mReaderDelegate.getSurface();
-                    Canvas hwCanvas = s.lockHardwareCanvas();
-                    hwCanvas.drawRenderNode(renderNode);
-                    s.unlockCanvasAndPost(hwCanvas);
+                    mRenderer.setContentRoot(renderNode);
+                    mRenderer.setSurface(s);
+                    mRenderer.createRenderRequest().syncAndDraw();
+                    mRenderer.destroy();
                 }
             });
         }
@@ -256,9 +266,12 @@ public class ViewResourceAdapter extends DynamicResource implements OnLayoutChan
      */
     public ViewResourceAdapter(View view, boolean useHardwareBitmapDraw) {
         mView = view;
+        mDebugViewAttachedToWindowListenerAdded = false;
         mView.addOnLayoutChangeListener(this);
         mDirtyRect.set(0, 0, mView.getWidth(), mView.getHeight());
-        mUseHardwareBitmapDraw = useHardwareBitmapDraw;
+        // Enforce hardware accelerated drawing on android Q+ where it's supported.
+        mUseHardwareBitmapDraw =
+                useHardwareBitmapDraw && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q;
         if (mUseHardwareBitmapDraw) {
             if (sHandler == null) {
                 HandlerThread thread = new HandlerThread("ViewResourceAdapterThread");
@@ -285,25 +298,16 @@ public class ViewResourceAdapter extends DynamicResource implements OnLayoutChan
         return bitmap;
     }
 
-    // Software or hardware draw will both need to follow this pattern.
-    //
-    // Note that this method restricts the captured area to the rectangle defined by |mDirtyRect|.
-    private void captureCommon(Canvas canvas) {
-        onCaptureStart(canvas, mDirtyRect.isEmpty() ? null : mDirtyRect);
-        if (!mDirtyRect.isEmpty()) canvas.clipRect(mDirtyRect);
-        capture(canvas);
-        onCaptureEnd();
-    }
-
     // This uses a RecordingNode to store all the required draw instructions without doing
     // them upfront. And then on a threadpool task we grab a hardware canvas (required to use a
     // RenderNode) and draw it using the hardware accelerated canvas.
-    @TargetApi(Build.VERSION_CODES.Q)
-    private void captureWithHardwareDraw() {
+    @RequiresApi(Build.VERSION_CODES.Q)
+    private boolean captureWithHardwareDraw() {
         try (TraceEvent e = TraceEvent.scoped("ViewResourceAdapter:captureWithHardwareDraw")) {
             if (mView.getWidth() == 0 || mView.getHeight() == 0) {
                 // We haven't actually laid out this view yet no point in requesting a screenshot.
-                return;
+                // Keep this in sync with other restrictions in init().
+                return false;
             }
 
             // Since state is replaced with a whole new object on a different thread if we grab a
@@ -338,19 +342,28 @@ public class ViewResourceAdapter extends DynamicResource implements OnLayoutChan
                 renderNode.setPosition(0, 0, mView.getWidth(), mView.getHeight());
 
                 Canvas canvas = renderNode.beginRecording();
-                captureCommon(canvas);
-
+                boolean captureSuccess = captureHardware(canvas, false);
                 renderNode.endRecording();
-                currentState.mRequestNewDraw = false;
-                mReader.requestDraw(renderNode);
+                if (captureSuccess) {
+                    onDrawInstructionsAvailable(renderNode, currentState);
+                }
+                return captureSuccess;
             }
+            return true;
         }
+    }
+
+    @SuppressWarnings("NewApi")
+    private void onDrawInstructionsAvailable(
+            RenderNode renderNode, AcceleratedImageReader.State currentState) {
+        currentState.mRequestNewDraw = false;
+        mReader.requestDraw(renderNode);
     }
 
     private void captureWithSoftwareDraw() {
         try (TraceEvent e = TraceEvent.scoped("ViewResourceAdapter:captureWithSoftwareDraw")) {
             Canvas canvas = new Canvas(mBitmap);
-            captureCommon(canvas);
+            captureCommon(canvas, true);
         }
     }
 
@@ -361,28 +374,32 @@ public class ViewResourceAdapter extends DynamicResource implements OnLayoutChan
      * @return A {@link Bitmap} representing the {@link View}.
      */
     @Override
+    @SuppressWarnings("NewApi")
     public Bitmap getBitmap() {
         mAdapterThreadChecker.assertOnValidThread();
         TraceEvent.begin("ViewResourceAdapter:getBitmap");
         super.getBitmap();
-
+        boolean bitmapReady = false;
         if (mLastGetBitmapTimestamp > 0) {
             RecordHistogram.recordLongTimesHistogram("ViewResourceAdapter.GetBitmapInterval",
                     SystemClock.elapsedRealtime() - mLastGetBitmapTimestamp);
         }
 
         if (mUseHardwareBitmapDraw) {
-            captureWithHardwareDraw();
+            bitmapReady = captureWithHardwareDraw();
         } else if (validateBitmap()) {
             captureWithSoftwareDraw();
+            bitmapReady = true;
         } else {
             assert mBitmap.getWidth() == 1 && mBitmap.getHeight() == 1;
             mBitmap.setPixel(0, 0, Color.TRANSPARENT);
         }
 
-        mDirtyRect.setEmpty();
+        if (bitmapReady) {
+            mDirtyRect.setEmpty();
+            mLastGetBitmapTimestamp = SystemClock.elapsedRealtime();
+        }
 
-        mLastGetBitmapTimestamp = SystemClock.elapsedRealtime();
         TraceEvent.end("ViewResourceAdapter:getBitmap");
         return mBitmap;
     }
@@ -504,6 +521,58 @@ public class ViewResourceAdapter extends DynamicResource implements OnLayoutChan
         canvas.scale(mScale, mScale);
         mView.draw(canvas);
         canvas.restore();
+    }
+
+    /**
+     * Called to draw the {@link View}'s contents into the passed in {@link Canvas}.
+     * @param canvas The {@link Canvas} that will be drawn to.
+     * @param drawWhileDetached drawing while detached causes crashes for both software and
+     * hardware renderer, since enabling hardware renderer caused a regression in number of
+     * crashes, this boolean will only be true for software renderer, and will be removed
+     * later on if the issue was fixed for the hardware renderer and logic for avoiding the
+     * draw would be the same for both hardware and software renderer.
+     * Software or hardware draw will both need to follow this pattern.
+     * @return true if the draw is successful, false if we couldn't draw because the view is
+     * detached.
+     */
+    protected boolean captureCommon(Canvas canvas, boolean drawWhileDetached) {
+        boolean willDraw = drawWhileDetached || mView.isAttachedToWindow();
+        if (!willDraw) {
+            return false;
+        }
+        onCaptureStart(canvas, mDirtyRect.isEmpty() ? null : mDirtyRect);
+        if (!mDirtyRect.isEmpty()) {
+            canvas.clipRect(mDirtyRect);
+        }
+        capture(canvas);
+        onCaptureEnd();
+        return true;
+    }
+
+    protected boolean captureHardware(Canvas canvas, boolean drawWhileDetached) {
+        if (captureCommon(canvas, drawWhileDetached)) {
+            return true;
+        }
+        // TODO(crbug/1318009): remove this code or promote it to default once we determine if this
+        // is the proper fix.
+        TraceEvent.instant("ViewResourceAdapter::DrawAttemptedWhileDetached");
+        if (!mDebugViewAttachedToWindowListenerAdded) {
+            mDebugViewAttachedToWindowListenerAdded = true;
+            mView.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
+                @Override
+                public void onViewAttachedToWindow(View view) {
+                    TraceEvent.instant("ViewResourceAdapter::ViewAttachedToWindow");
+                    view.removeOnAttachStateChangeListener(this);
+                    mDebugViewAttachedToWindowListenerAdded = false;
+                }
+
+                @Override
+                public void onViewDetachedFromWindow(View view) {
+                    TraceEvent.instant("ViewResourceAdapter::ViewDetachedFromWindow");
+                }
+            });
+        }
+        return false;
     }
 
     /**

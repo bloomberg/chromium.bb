@@ -13,19 +13,34 @@
 #include "chrome/browser/ash/login/users/default_user_image/default_user_images.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
+#include "chrome/browser/ash/web_applications/personalization_app/mock_personalization_app_manager.h"
+#include "chrome/browser/ash/web_applications/personalization_app/personalization_app_manager.h"
+#include "chrome/browser/ash/web_applications/personalization_app/personalization_app_manager_factory.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/audio_service.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_web_ui.h"
 #include "services/audio/public/cpp/sounds/sounds_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace chromeos {
 namespace settings {
+
+namespace {
+
+std::unique_ptr<KeyedService> MakeMockPersonalizationAppManager(
+    content::BrowserContext* context) {
+  return std::make_unique<::testing::NiceMock<
+      ::ash::personalization_app::MockPersonalizationAppManager>>();
+}
+
+}  // namespace
 
 class ChangePictureHandlerTest : public testing::Test {
  public:
@@ -42,8 +57,12 @@ class ChangePictureHandlerTest : public testing::Test {
 
     user_manager::User* user = GetFakeUserManager()->AddUser(account_id_);
 
-    testing_profile_ =
-        profile_manager_.CreateTestingProfile(account_id_.GetUserEmail());
+    testing_profile_ = profile_manager_.CreateTestingProfile(
+        account_id_.GetUserEmail(),
+        {{ash::personalization_app::PersonalizationAppManagerFactory::
+              GetInstance(),
+          base::BindRepeating(&MakeMockPersonalizationAppManager)}});
+
     ProfileHelper::Get()->SetUserToProfileMappingForTesting(user,
                                                             testing_profile_);
 
@@ -63,13 +82,11 @@ class ChangePictureHandlerTest : public testing::Test {
     handler_->AllowJavascript();
     handler_->RegisterMessages();
 
-    listener_ = handler_.get();
     request_ = handler_.get();
   }
 
   void TearDown() override {
     request_ = nullptr;
-    listener_ = nullptr;
     handler_.reset();
     web_contents_.reset();
     web_ui_.reset();
@@ -92,7 +109,8 @@ class ChangePictureHandlerTest : public testing::Test {
 
   void SelectNewDefaultImage(int default_image_index) {
     base::ListValue args;
-    args.Append(default_user_image::GetDefaultImageUrl(default_image_index));
+    args.Append(
+        default_user_image::GetDefaultImageUrl(default_image_index).spec());
     args.Append("default");
 
     web_ui_->HandleReceivedMessage("selectImage", &args);
@@ -106,13 +124,11 @@ class ChangePictureHandlerTest : public testing::Test {
     web_ui_->HandleReceivedMessage("selectImage", &args);
   }
 
-  void SelectImageFromFile(const base::FilePath& path,
-                           const int index,
-                           void* params) {
-    listener_->FileSelected(path, index, params);
+  void SelectImageFromFile(const base::FilePath& path) {
+    handler_->FileSelected(path);
   }
 
-  void CancelFileSelection() { listener_->FileSelectionCanceled(nullptr); }
+  void CancelFileSelection() { handler_->FileSelectionCanceled(); }
 
   void OnCameraImageDecoded() {
     SkBitmap bitmap;
@@ -129,6 +145,20 @@ class ChangePictureHandlerTest : public testing::Test {
     return GetFakeUserManager()->GetUserImageManager(account_id_);
   }
 
+  void ResetHandler() { handler_.reset(); }
+
+  ChangePictureHandler* handler() { return handler_.get(); }
+
+  ::testing::NiceMock<
+      ::ash::personalization_app::MockPersonalizationAppManager>*
+  MockPersonalizationAppManager() {
+    return static_cast<::testing::NiceMock<
+        ::ash::personalization_app::MockPersonalizationAppManager>*>(
+        ::ash::personalization_app::PersonalizationAppManagerFactory::
+            GetForBrowserContext(
+                web_ui()->GetWebContents()->GetBrowserContext()));
+  }
+
  private:
   content::BrowserTaskEnvironment task_environment_{
       content::BrowserTaskEnvironment::REAL_IO_THREAD};
@@ -140,7 +170,6 @@ class ChangePictureHandlerTest : public testing::Test {
   TestingProfile* testing_profile_;
   TestingProfileManager profile_manager_;
   user_manager::ScopedUserManager user_manager_enabler_;
-  ui::SelectFileDialog::Listener* listener_;
   ImageDecoder::ImageRequest* request_;
 };
 
@@ -153,7 +182,7 @@ TEST_F(ChangePictureHandlerTest,
   auto* user_image_manager = GetUserImageManager();
 
   histogram_tester().ExpectBucketCount(
-      ChangePictureHandler::kUserImageChangedHistogramName,
+      ash::UserImageManager::kUserImageChangedHistogramName,
       user_image_manager->ImageIndexToHistogramIndex(default_image_index), 1);
 }
 
@@ -165,13 +194,13 @@ TEST_F(ChangePictureHandlerTest,
 
   SelectNewDefaultImage(default_image_index);
   histogram_tester().ExpectBucketCount(
-      ChangePictureHandler::kUserImageChangedHistogramName,
+      ash::UserImageManager::kUserImageChangedHistogramName,
       user_image_manager->ImageIndexToHistogramIndex(default_image_index), 1);
 
   // Selecting the same default image should not log another impression.
   SelectNewDefaultImage(default_image_index);
   histogram_tester().ExpectBucketCount(
-      ChangePictureHandler::kUserImageChangedHistogramName,
+      ash::UserImageManager::kUserImageChangedHistogramName,
       user_image_manager->ImageIndexToHistogramIndex(default_image_index), 1);
 }
 
@@ -183,13 +212,13 @@ TEST_F(ChangePictureHandlerTest, ShoulSendUmaMetricWhenProfileImageIsSelected) {
   // User selects a new default image.
   SelectNewDefaultImage(default_image_index);
   histogram_tester().ExpectBucketCount(
-      ChangePictureHandler::kUserImageChangedHistogramName,
+      ash::UserImageManager::kUserImageChangedHistogramName,
       user_image_manager->ImageIndexToHistogramIndex(default_image_index), 1);
 
   // User selects the profile image.
   SelectProfileImage();
   histogram_tester().ExpectBucketCount(
-      ChangePictureHandler::kUserImageChangedHistogramName,
+      ash::UserImageManager::kUserImageChangedHistogramName,
       user_image_manager->ImageIndexToHistogramIndex(
           user_manager::User::USER_IMAGE_PROFILE),
       1);
@@ -202,7 +231,7 @@ TEST_F(ChangePictureHandlerTest,
   // impression
   SelectProfileImage();
   histogram_tester().ExpectBucketCount(
-      ChangePictureHandler::kUserImageChangedHistogramName,
+      ash::UserImageManager::kUserImageChangedHistogramName,
       user_image_manager->ImageIndexToHistogramIndex(
           user_manager::User::USER_IMAGE_PROFILE),
       0);
@@ -215,12 +244,10 @@ TEST_F(ChangePictureHandlerTest,
   const base::FilePath base_file_path("/this/is/a/test/directory/Base Name");
   const base::FilePath dir_path = base_file_path.AppendASCII("dir1");
   const base::FilePath file_path = dir_path.AppendASCII("file1.txt");
-  const int index = 0;
-  void* params = nullptr;
-  SelectImageFromFile(file_path, index, params);
+  SelectImageFromFile(file_path);
 
   histogram_tester().ExpectBucketCount(
-      ChangePictureHandler::kUserImageChangedHistogramName,
+      ash::UserImageManager::kUserImageChangedHistogramName,
       user_image_manager->ImageIndexToHistogramIndex(
           user_manager::User::USER_IMAGE_EXTERNAL),
       1);
@@ -230,7 +257,7 @@ TEST_F(ChangePictureHandlerTest, ShouldSendUmaMetricWhenCameraImageIsDecoded) {
   // Camera image is decoded
   OnCameraImageDecoded();
   histogram_tester().ExpectBucketCount(
-      ChangePictureHandler::kUserImageChangedHistogramName,
+      ash::UserImageManager::kUserImageChangedHistogramName,
       default_user_image::kHistogramImageFromCamera, 1);
 }
 
@@ -247,6 +274,27 @@ TEST_F(ChangePictureHandlerTest,
                 ->arg1()
                 ->GetString(),
             "profile-image-changed");
+}
+
+TEST_F(ChangePictureHandlerTest, CallsMaybeStartHatsTimerOnDestruction) {
+  EXPECT_CALL(
+      *MockPersonalizationAppManager(),
+      MaybeStartHatsTimer(::ash::personalization_app::HatsSurveyType::kAvatar))
+      .Times(1);
+
+  ResetHandler();
+}
+
+TEST_F(ChangePictureHandlerTest,
+       DoesNotCallMaybeStartHatsTimerOnDestructionIfJavascriptDisallowed) {
+  handler()->DisallowJavascript();
+
+  EXPECT_CALL(
+      *MockPersonalizationAppManager(),
+      MaybeStartHatsTimer(::ash::personalization_app::HatsSurveyType::kAvatar))
+      .Times(0);
+
+  ResetHandler();
 }
 
 }  // namespace settings

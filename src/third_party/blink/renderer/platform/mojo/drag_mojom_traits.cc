@@ -5,7 +5,6 @@
 #include "third_party/blink/renderer/platform/mojo/drag_mojom_traits.h"
 
 #include <string>
-
 #include "base/check.h"
 #include "base/containers/span.h"
 #include "base/files/file_path.h"
@@ -15,8 +14,10 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/mojom/blob/serialized_blob.mojom.h"
 #include "third_party/blink/public/mojom/file_system_access/file_system_access_data_transfer_token.mojom-blink.h"
 #include "third_party/blink/public/platform/file_path_conversion.h"
+#include "third_party/blink/public/platform/web_drag_data.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -209,6 +210,13 @@ WTF::String StructTraits<blink::mojom::DragItemFileSystemFileDataView,
 }
 
 //  static
+scoped_refptr<blink::BlobDataHandle> StructTraits<
+    blink::mojom::DragItemFileSystemFileDataView,
+    blink::WebDragData::Item>::serialized_blob(const blink::WebDragData::Item&
+                                                   item) {
+  return item.file_system_blob_info.GetBlobHandle();
+}
+
 mojo::PendingRemote<blink::mojom::blink::FileSystemAccessDataTransferToken>
 StructTraits<blink::mojom::DataTransferFileDataView, blink::WebDragData::Item>::
     file_system_access_token(const blink::WebDragData::Item& item) {
@@ -223,17 +231,27 @@ bool StructTraits<blink::mojom::DragItemFileSystemFileDataView,
                   blink::WebDragData::Item>::
     Read(blink::mojom::DragItemFileSystemFileDataView data,
          blink::WebDragData::Item* out) {
-  blink::WebDragData::Item item;
   blink::KURL file_system_url;
   WTF::String file_system_id;
+
   if (!data.ReadUrl(&file_system_url) ||
       !data.ReadFileSystemId(&file_system_id))
     return false;
 
+  scoped_refptr<blink::BlobDataHandle> blob_data_handle;
+
+  if (!data.ReadSerializedBlob(&blob_data_handle))
+    return false;
+
+  blink::WebDragData::Item item;
   item.storage_type = blink::WebDragData::Item::kStorageTypeFileSystemFile;
   item.file_system_url = file_system_url;
   item.file_system_file_size = data.size();
   item.file_system_id = file_system_id;
+  if (blob_data_handle) {
+    item.file_system_blob_info =
+        blink::WebBlobInfo(std::move(blob_data_handle));
+  }
   *out = std::move(item);
   return true;
 }
@@ -243,13 +261,13 @@ bool UnionTraits<blink::mojom::DragItemDataView, blink::WebDragData::Item>::
     Read(blink::mojom::DragItemDataView data, blink::WebDragData::Item* out) {
   blink::WebDragData::Item item;
   switch (data.tag()) {
-    case blink::mojom::DragItemDataView::Tag::STRING:
+    case blink::mojom::DragItemDataView::Tag::kString:
       return data.ReadString(out);
-    case blink::mojom::DragItemDataView::Tag::FILE:
+    case blink::mojom::DragItemDataView::Tag::kFile:
       return data.ReadFile(out);
-    case blink::mojom::DragItemDataView::Tag::BINARY:
+    case blink::mojom::DragItemDataView::Tag::kBinary:
       return data.ReadBinary(out);
-    case blink::mojom::DragItemDataView::Tag::FILE_SYSTEM_FILE:
+    case blink::mojom::DragItemDataView::Tag::kFileSystemFile:
       return data.ReadFileSystemFile(out);
   }
   NOTREACHED();
@@ -262,16 +280,16 @@ UnionTraits<blink::mojom::DragItemDataView, blink::WebDragData::Item>::GetTag(
     const blink::WebDragData::Item& item) {
   switch (item.storage_type) {
     case blink::WebDragData::Item::kStorageTypeString:
-      return blink::mojom::DragItemDataView::Tag::STRING;
+      return blink::mojom::DragItemDataView::Tag::kString;
     case blink::WebDragData::Item::kStorageTypeFilename:
-      return blink::mojom::DragItemDataView::Tag::FILE;
+      return blink::mojom::DragItemDataView::Tag::kFile;
     case blink::WebDragData::Item::kStorageTypeBinaryData:
-      return blink::mojom::DragItemDataView::Tag::BINARY;
+      return blink::mojom::DragItemDataView::Tag::kBinary;
     case blink::WebDragData::Item::kStorageTypeFileSystemFile:
-      return blink::mojom::DragItemDataView::Tag::FILE_SYSTEM_FILE;
+      return blink::mojom::DragItemDataView::Tag::kFileSystemFile;
   }
   NOTREACHED();
-  return blink::mojom::DragItemDataView::Tag::STRING;
+  return blink::mojom::DragItemDataView::Tag::kString;
 }
 
 // static

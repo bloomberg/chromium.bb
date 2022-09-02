@@ -14,7 +14,11 @@
  */
 const QuickStartUIState = {
   LOADING: 'loading',
+  VERIFICATION: 'verification',
 };
+
+// Should be in sync with the C++ enum (ash::quick_start::Color).
+const QuickStartColors = ['blue', 'red', 'green', 'yellow'];
 
 /**
  * @constructor
@@ -33,30 +37,54 @@ class QuickStartScreen extends QuickStartScreenBase {
   /* #html_template_placeholder */
 
   static get properties() {
-    return {};
+    return {
+      figures_: Object,
+      shapes_: {
+        type: Object,
+        // Should be in sync with the C++ enum (ash::quick_start::Shape).
+        value: {CIRCLE: 0, DIAMOND: 1, TRIANGLE: 2, SQUARE: 3},
+        readOnly: true
+      },
+    };
   }
 
   constructor() {
     super();
     this.UI_STEPS = QuickStartUIState;
+    this.figures_ = [];
   }
 
-
   get EXTERNAL_API() {
-    return [];
+    return ['setFigures'];
   }
 
   /** @override */
   ready() {
     super.ready();
-    this.initializeLoginScreen('QuickStartScreen', {
-      resetAllowed: true,
-    });
+    this.initializeLoginScreen('QuickStartScreen');
   }
 
   /** @override */
   defaultUIStep() {
     return QuickStartUIState.LOADING;
+  }
+
+  /**
+   * @param {!Array<OobeTypes.QuickStartScreenFigureData>} figures
+   */
+  setFigures(figures) {
+    this.setUIStep(QuickStartUIState.VERIFICATION);
+    this.figures_ = figures.map(x => {
+      return {shape: x.shape, color: QuickStartColors[x.color], digit: x.digit};
+    });
+  }
+
+  onNextClicked_() {
+    this.userActed('next');
+  }
+
+  isEq_(a, b) {
+    return a === b;
   }
 }
 

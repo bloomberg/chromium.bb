@@ -102,25 +102,21 @@ gfx::ColorSpace::TransferID GetCoreVideoTransferFn(CFTypeRef transfer_untyped,
             {kCVImageBufferTransferFunction_ITU_R_2020,
              kCMFormatDescriptionTransferFunction_ITU_R_2020,
              gfx::ColorSpace::TransferID::BT2020_10});
-        if (@available(macos 10.12, *)) {
-          supported_transfer_funcs.push_back(
-              {kCVImageBufferTransferFunction_SMPTE_ST_428_1,
-               kCMFormatDescriptionTransferFunction_SMPTE_ST_428_1,
-               gfx::ColorSpace::TransferID::SMPTEST428_1});
-        }
-        if (@available(macos 10.13, *)) {
-          supported_transfer_funcs.push_back(
-              {kCVImageBufferTransferFunction_SMPTE_ST_2084_PQ,
-               kCMFormatDescriptionTransferFunction_SMPTE_ST_2084_PQ,
-               gfx::ColorSpace::TransferID::SMPTEST2084});
-          supported_transfer_funcs.push_back(
-              {kCVImageBufferTransferFunction_ITU_R_2100_HLG,
-               kCMFormatDescriptionTransferFunction_ITU_R_2100_HLG,
-               gfx::ColorSpace::TransferID::ARIB_STD_B67});
-          supported_transfer_funcs.push_back(
-              {kCVImageBufferTransferFunction_sRGB, nullptr,
-               gfx::ColorSpace::TransferID::IEC61966_2_1});
-        }
+        supported_transfer_funcs.push_back(
+            {kCVImageBufferTransferFunction_SMPTE_ST_428_1,
+             kCMFormatDescriptionTransferFunction_SMPTE_ST_428_1,
+             gfx::ColorSpace::TransferID::SMPTEST428_1});
+        supported_transfer_funcs.push_back(
+            {kCVImageBufferTransferFunction_SMPTE_ST_2084_PQ,
+             kCMFormatDescriptionTransferFunction_SMPTE_ST_2084_PQ,
+             gfx::ColorSpace::TransferID::PQ});
+        supported_transfer_funcs.push_back(
+            {kCVImageBufferTransferFunction_ITU_R_2100_HLG,
+             kCMFormatDescriptionTransferFunction_ITU_R_2100_HLG,
+             gfx::ColorSpace::TransferID::HLG});
+        supported_transfer_funcs.push_back({kCVImageBufferTransferFunction_sRGB,
+                                            nullptr,
+                                            gfx::ColorSpace::TransferID::SRGB});
         if (@available(macos 10.14, *)) {
           supported_transfer_funcs.push_back(
               {kCVImageBufferTransferFunction_Linear,
@@ -131,7 +127,7 @@ gfx::ColorSpace::TransferID GetCoreVideoTransferFn(CFTypeRef transfer_untyped,
           supported_transfer_funcs.push_back(
               {kCVImageBufferTransferFunction_sRGB,
                kCMFormatDescriptionTransferFunction_sRGB,
-               gfx::ColorSpace::TransferID::IEC61966_2_1});
+               gfx::ColorSpace::TransferID::SRGB});
         }
 
         return supported_transfer_funcs;

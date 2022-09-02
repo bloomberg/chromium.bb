@@ -111,8 +111,8 @@ static inline bool HasNoStyleInformation(Document* document) {
   if (!document->GetFrame() || !document->GetFrame()->GetPage())
     return false;
 
-  if (document->GetFrame()->Tree().Parent())
-    return false;  // This document is not in a top frame
+  if (!document->IsInMainFrame() || document->GetFrame()->IsInFencedFrameTree())
+    return false;  // This document has style information from a parent.
 
   if (SVGImage::IsInSVGImage(document))
     return false;
@@ -606,10 +606,16 @@ static bool ShouldAllowExternalLoad(const KURL& url) {
 }
 
 static void* OpenFunc(const char* uri) {
-  DCHECK(XMLDocumentParserScope::current_document_);
+  Document* document = XMLDocumentParserScope::current_document_;
+  DCHECK(document);
   DCHECK_EQ(CurrentThread(), g_libxml_loader_thread);
 
   KURL url(NullURL(), uri);
+
+  // If the document has no ExecutionContext, it's detached. Detached documents
+  // aren't allowed to fetch.
+  if (!document->GetExecutionContext())
+    return &g_global_descriptor;
 
   if (!ShouldAllowExternalLoad(url))
     return &g_global_descriptor;
@@ -618,7 +624,6 @@ static void* OpenFunc(const char* uri) {
   scoped_refptr<const SharedBuffer> data;
 
   {
-    Document* document = XMLDocumentParserScope::current_document_;
     XMLDocumentParserScope scope(nullptr);
     // FIXME: We should restore the original global error handler as well.
     ResourceLoaderOptions options(
@@ -1407,7 +1412,7 @@ static xmlEntityPtr GetXHTMLEntity(const xmlChar* name) {
     return nullptr;
 
   constexpr size_t kSharedXhtmlEntityResultLength =
-      base::size(g_shared_xhtml_entity_result);
+      std::size(g_shared_xhtml_entity_result);
   size_t entity_length_in_utf8;
   // Unlike HTML parser, XML parser parses the content of named
   // entities. So we need to escape '&' and '<'.

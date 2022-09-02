@@ -18,6 +18,7 @@
 #include "api/numerics/samples_stats_counter.h"
 #include "api/units/time_delta.h"
 #include "api/video/i420_buffer.h"
+#include "api/video/video_frame.h"
 #include "common_video/libyuv/include/webrtc_libyuv.h"
 #include "rtc_base/logging.h"
 #include "rtc_base/platform_thread.h"
@@ -155,14 +156,15 @@ uint16_t DefaultVideoQualityAnalyzer::OnFrameCaptured(
     const std::string& stream_label,
     const webrtc::VideoFrame& frame) {
   // `next_frame_id` is atomic, so we needn't lock here.
-  uint16_t frame_id = next_frame_id_++;
   Timestamp captured_time = Now();
   Timestamp start_time = Timestamp::MinusInfinity();
   size_t peer_index = -1;
   size_t peers_count = -1;
   size_t stream_index;
+  uint16_t frame_id = VideoFrame::kNotSetId;
   {
     MutexLock lock(&mutex_);
+    frame_id = GetNextFrameId();
     RTC_CHECK_EQ(state_, State::kActive)
         << "DefaultVideoQualityAnalyzer has to be started before use";
     // Create a local copy of `start_time_`, peer's index and total peers count
@@ -317,7 +319,8 @@ void DefaultVideoQualityAnalyzer::OnFrameEncoded(
   used_encoder.last_frame_id = frame_id;
   used_encoder.switched_on_at = now;
   used_encoder.switched_from_at = now;
-  it->second.OnFrameEncoded(now, encoded_image.size(),
+  it->second.OnFrameEncoded(now, encoded_image._frameType,
+                            DataSize::Bytes(encoded_image.size()),
                             stats.target_encode_bitrate, used_encoder);
 }
 
@@ -336,6 +339,12 @@ void DefaultVideoQualityAnalyzer::OnFramePreDecode(
       << "DefaultVideoQualityAnalyzer has to be started before use";
 
   size_t peer_index = peers_->index(peer_name);
+
+  if (frame_id == VideoFrame::kNotSetId) {
+    frame_counters_.received++;
+    unknown_sender_frame_counters_[std::string(peer_name)].received++;
+    return;
+  }
 
   auto it = captured_frames_in_flight_.find(frame_id);
   if (it == captured_frames_in_flight_.end() ||
@@ -363,7 +372,9 @@ void DefaultVideoQualityAnalyzer::OnFramePreDecode(
           ->receive_time();
   it->second.OnFramePreDecode(peer_index,
                               /*received_time=*/last_receive_time,
-                              /*decode_start_time=*/Now());
+                              /*decode_start_time=*/Now(),
+                              input_image._frameType,
+                              DataSize::Bytes(input_image.size()));
 }
 
 void DefaultVideoQualityAnalyzer::OnFrameDecoded(
@@ -375,6 +386,12 @@ void DefaultVideoQualityAnalyzer::OnFrameDecoded(
       << "DefaultVideoQualityAnalyzer has to be started before use";
 
   size_t peer_index = peers_->index(peer_name);
+
+  if (frame.id() == VideoFrame::kNotSetId) {
+    frame_counters_.decoded++;
+    unknown_sender_frame_counters_[std::string(peer_name)].decoded++;
+    return;
+  }
 
   auto it = captured_frames_in_flight_.find(frame.id());
   if (it == captured_frames_in_flight_.end() ||
@@ -408,6 +425,12 @@ void DefaultVideoQualityAnalyzer::OnFrameRendered(
       << "DefaultVideoQualityAnalyzer has to be started before use";
 
   size_t peer_index = peers_->index(peer_name);
+
+  if (frame.id() == VideoFrame::kNotSetId) {
+    frame_counters_.rendered++;
+    unknown_sender_frame_counters_[std::string(peer_name)].rendered++;
+    return;
+  }
 
   auto frame_it = captured_frames_in_flight_.find(frame.id());
   if (frame_it == captured_frames_in_flight_.end() ||
@@ -711,9 +734,15 @@ VideoStreamsInfo DefaultVideoQualityAnalyzer::GetKnownStreams() const {
                           std::move(stream_to_receivers));
 }
 
-const FrameCounters& DefaultVideoQualityAnalyzer::GetGlobalCounters() const {
+FrameCounters DefaultVideoQualityAnalyzer::GetGlobalCounters() const {
   MutexLock lock(&mutex_);
   return frame_counters_;
+}
+
+std::map<std::string, FrameCounters>
+DefaultVideoQualityAnalyzer::GetUnknownSenderFrameCounters() const {
+  MutexLock lock(&mutex_);
+  return unknown_sender_frame_counters_;
 }
 
 std::map<StatsKey, FrameCounters>
@@ -740,6 +769,14 @@ AnalyzerStats DefaultVideoQualityAnalyzer::GetAnalyzerStats() const {
   return analyzer_stats_;
 }
 
+uint16_t DefaultVideoQualityAnalyzer::GetNextFrameId() {
+  uint16_t frame_id = next_frame_id_++;
+  if (next_frame_id_ == VideoFrame::kNotSetId) {
+    next_frame_id_ = 1;
+  }
+  return frame_id;
+}
+
 void DefaultVideoQualityAnalyzer::ReportResults() {
   using ::webrtc::test::ImproveDirection;
 
@@ -751,10 +788,19 @@ void DefaultVideoQualityAnalyzer::ReportResults() {
   test::PrintResult("cpu_usage", "", test_label_.c_str(), GetCpuUsagePercent(),
                     "%", false, ImproveDirection::kSmallerIsBetter);
   LogFrameCounters("Global", frame_counters_);
-  for (auto& item : frames_comparator_.stream_stats()) {
-    LogFrameCounters(ToStatsKey(item.first).ToString(),
-                     stream_frame_counters_.at(item.first));
-    LogStreamInternalStats(ToStatsKey(item.first).ToString(), item.second,
+  if (!unknown_sender_frame_counters_.empty()) {
+    RTC_LOG(LS_INFO) << "Received frame counters with unknown frame id:";
+    for (const auto& [peer_name, frame_counters] :
+         unknown_sender_frame_counters_) {
+      LogFrameCounters(peer_name, frame_counters);
+    }
+  }
+  RTC_LOG(LS_INFO) << "Received frame counters per stream:";
+  for (const auto& [stats_key, stream_stats] :
+       frames_comparator_.stream_stats()) {
+    LogFrameCounters(ToStatsKey(stats_key).ToString(),
+                     stream_frame_counters_.at(stats_key));
+    LogStreamInternalStats(ToStatsKey(stats_key).ToString(), stream_stats,
                            start_time_);
   }
   if (!analyzer_stats_.comparisons_queue_size.IsEmpty()) {
@@ -867,6 +913,28 @@ void DefaultVideoQualityAnalyzer::ReportResults(
       static_cast<double>(stats.total_encoded_images_payload) /
           static_cast<double>(test_duration.us()) * kMicrosPerSecond,
       "bytesPerSecond", /*important=*/false, ImproveDirection::kNone);
+
+  if (options_.report_detailed_frame_stats) {
+    test::PrintResult("num_encoded_frames", "", test_case_name,
+                      frame_counters.encoded, "count",
+                      /*important=*/false, ImproveDirection::kBiggerIsBetter);
+    test::PrintResult("num_decoded_frames", "", test_case_name,
+                      frame_counters.decoded, "count",
+                      /*important=*/false, ImproveDirection::kBiggerIsBetter);
+    test::PrintResult("num_send_key_frames", "", test_case_name,
+                      stats.num_send_key_frames, "count",
+                      /*important=*/false, ImproveDirection::kBiggerIsBetter);
+    test::PrintResult("num_recv_key_frames", "", test_case_name,
+                      stats.num_recv_key_frames, "count",
+                      /*important=*/false, ImproveDirection::kBiggerIsBetter);
+
+    ReportResult("recv_key_frame_size_bytes", test_case_name,
+                 stats.recv_key_frame_size_bytes, "count",
+                 ImproveDirection::kBiggerIsBetter);
+    ReportResult("recv_delta_frame_size_bytes", test_case_name,
+                 stats.recv_delta_frame_size_bytes, "count",
+                 ImproveDirection::kBiggerIsBetter);
+  }
 }
 
 void DefaultVideoQualityAnalyzer::ReportResult(
@@ -1046,10 +1114,12 @@ bool DefaultVideoQualityAnalyzer::FrameInFlight::HaveAllPeersReceived() const {
 
 void DefaultVideoQualityAnalyzer::FrameInFlight::OnFrameEncoded(
     webrtc::Timestamp time,
-    int64_t encoded_image_size,
+    VideoFrameType frame_type,
+    DataSize encoded_image_size,
     uint32_t target_encode_bitrate,
     StreamCodecInfo used_encoder) {
   encoded_time_ = time;
+  frame_type_ = frame_type;
   encoded_image_size_ = encoded_image_size;
   target_encode_bitrate_ += target_encode_bitrate;
   // Update used encoder info. If simulcast/SVC is used, this method can
@@ -1070,9 +1140,13 @@ void DefaultVideoQualityAnalyzer::FrameInFlight::OnFrameEncoded(
 void DefaultVideoQualityAnalyzer::FrameInFlight::OnFramePreDecode(
     size_t peer,
     webrtc::Timestamp received_time,
-    webrtc::Timestamp decode_start_time) {
+    webrtc::Timestamp decode_start_time,
+    VideoFrameType frame_type,
+    DataSize encoded_image_size) {
   receiver_stats_[peer].received_time = received_time;
   receiver_stats_[peer].decode_start_time = decode_start_time;
+  receiver_stats_[peer].frame_type = frame_type;
+  receiver_stats_[peer].encoded_image_size = encoded_image_size;
 }
 
 bool DefaultVideoQualityAnalyzer::FrameInFlight::HasReceivedTime(
@@ -1134,6 +1208,7 @@ FrameStats DefaultVideoQualityAnalyzer::FrameInFlight::GetStatsForPeer(
   stats.pre_encode_time = pre_encode_time_;
   stats.encoded_time = encoded_time_;
   stats.target_encode_bitrate = target_encode_bitrate_;
+  stats.encoded_frame_type = frame_type_;
   stats.encoded_image_size = encoded_image_size_;
   stats.used_encoder = used_encoder_;
 
@@ -1148,6 +1223,8 @@ FrameStats DefaultVideoQualityAnalyzer::FrameInFlight::GetStatsForPeer(
     stats.rendered_frame_width = receiver_stats->rendered_frame_width;
     stats.rendered_frame_height = receiver_stats->rendered_frame_height;
     stats.used_decoder = receiver_stats->used_decoder;
+    stats.pre_decoded_frame_type = receiver_stats->frame_type;
+    stats.pre_decoded_image_size = receiver_stats->encoded_image_size;
   }
   return stats;
 }

@@ -9,8 +9,12 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#include <stdio.h>
 #include "test/av1_txfm_test.h"
+
+#include <stdio.h>
+
+#include <memory>
+#include <new>
 
 namespace libaom_test {
 
@@ -237,9 +241,15 @@ void reference_hybrid_2d(double *in, double *out, TX_TYPE tx_type,
   const int tx_width = tx_size_wide[tx_size];
   const int tx_height = tx_size_high[tx_size];
 
-  double *const temp_in = new double[AOMMAX(tx_width, tx_height)];
-  double *const temp_out = new double[AOMMAX(tx_width, tx_height)];
-  double *const out_interm = new double[tx_width * tx_height];
+  std::unique_ptr<double[]> temp_in(
+      new (std::nothrow) double[AOMMAX(tx_width, tx_height)]);
+  std::unique_ptr<double[]> temp_out(
+      new (std::nothrow) double[AOMMAX(tx_width, tx_height)]);
+  std::unique_ptr<double[]> out_interm(
+      new (std::nothrow) double[tx_width * tx_height]);
+  ASSERT_NE(temp_in, nullptr);
+  ASSERT_NE(temp_out, nullptr);
+  ASSERT_NE(out_interm, nullptr);
   const int stride = tx_width;
 
   // Transform columns.
@@ -247,7 +257,7 @@ void reference_hybrid_2d(double *in, double *out, TX_TYPE tx_type,
     for (int r = 0; r < tx_height; ++r) {
       temp_in[r] = in[r * stride + c];
     }
-    reference_hybrid_1d(temp_in, temp_out, tx_height, type0);
+    reference_hybrid_1d(temp_in.get(), temp_out.get(), tx_height, type0);
     for (int r = 0; r < tx_height; ++r) {
       out_interm[r * stride + c] = temp_out[r];
     }
@@ -255,13 +265,9 @@ void reference_hybrid_2d(double *in, double *out, TX_TYPE tx_type,
 
   // Transform rows.
   for (int r = 0; r < tx_height; ++r) {
-    reference_hybrid_1d(out_interm + r * stride, out + r * stride, tx_width,
-                        type1);
+    reference_hybrid_1d(out_interm.get() + r * stride, out + r * stride,
+                        tx_width, type1);
   }
-
-  delete[] temp_in;
-  delete[] temp_out;
-  delete[] out_interm;
 
   // These transforms use an approximate 2D DCT transform, by only keeping the
   // top-left quarter of the coefficients, and repacking them in the first

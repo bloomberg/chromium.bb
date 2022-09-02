@@ -8,7 +8,6 @@ import 'chrome://resources/cr_elements/icons.m.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import './battery_status_card.js';
 import './cpu_card.js';
-import './diagnostics_fonts_css.js';
 import './diagnostics_shared_css.js';
 import './icons.js';
 import './memory_card.js';
@@ -47,6 +46,12 @@ Polymer({
   browserProxy_: null,
 
   properties: {
+    /** @protected {boolean} */
+    saveSessionLogEnabled_: {
+      type: Boolean,
+      value: true,
+    },
+
     /** @private {boolean} */
     showBatteryStatusCard_: {
       type: Boolean,
@@ -149,6 +154,12 @@ Polymer({
 
   /** @protected */
   onSessionLogClick_() {
+    // Click already handled then leave early.
+    if (!this.saveSessionLogEnabled_) {
+      return;
+    }
+
+    this.saveSessionLogEnabled_ = false;
     this.browserProxy_.saveSessionLog()
         .then(
             /* @type {boolean} */ (success) => {
@@ -157,7 +168,10 @@ Polymer({
                   loadTimeData.getString(`sessionLogToastText${result}`);
               this.$.toast.show();
             })
-        .catch(() => {/* File selection cancelled */});
+        .catch(() => {/* File selection cancelled */})
+        .finally(() => {
+          this.saveSessionLogEnabled_ = true;
+        });
   },
 
   /** @private */

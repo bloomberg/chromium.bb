@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -73,7 +73,8 @@ chrome.passwordsPrivate.UrlCollection;
  *   federationText: (string|undefined),
  *   id: number,
  *   frontendId: number,
- *   fromAccountStore: boolean
+ *   fromAccountStore: boolean,
+ *   passwordNote: string
  * }}
  */
 chrome.passwordsPrivate.PasswordUiEntry;
@@ -100,7 +101,8 @@ chrome.passwordsPrivate.PasswordExportProgress;
  * @typedef {{
  *   compromiseTime: number,
  *   elapsedTimeSinceCompromise: string,
- *   compromiseType: !chrome.passwordsPrivate.CompromiseType
+ *   compromiseType: !chrome.passwordsPrivate.CompromiseType,
+ *   isMuted: boolean
  * }}
  */
 chrome.passwordsPrivate.CompromisedInfo;
@@ -135,10 +137,20 @@ chrome.passwordsPrivate.PasswordCheckStatus;
  *   url: string,
  *   username: string,
  *   password: string,
+ *   note: string,
  *   useAccountStore: boolean
  * }}
  */
 chrome.passwordsPrivate.AddPasswordOptions;
+
+/**
+ * @typedef {{
+ *   username: string,
+ *   password: string,
+ *   note: (string|undefined)
+ * }}
+ */
+chrome.passwordsPrivate.ChangeSavedPasswordParams;
 
 /**
  * Function that logs that the Passwords page was accessed from the Chrome
@@ -152,12 +164,12 @@ chrome.passwordsPrivate.recordPasswordsPageAccessInSettings = function() {};
  * password for accountId and deviceId. Invokes |callback| or raises an error
  * depending on whether the operation succeeded.
  * @param {!Array<number>} ids The ids for the password entry being updated.
- * @param {string} new_username The new username.
- * @param {string} new_password The new password.
+ * @param {!chrome.passwordsPrivate.ChangeSavedPasswordParams} params The
+ *     dictionary which holds the changed parameters.
  * @param {function(): void=} callback The callback that gets invoked in the
  *     end.
  */
-chrome.passwordsPrivate.changeSavedPassword = function(ids, new_username, new_password, callback) {};
+chrome.passwordsPrivate.changeSavedPassword = function(ids, params, callback) {};
 
 /**
  * Removes the saved password corresponding to |id|. If no saved password for
@@ -319,6 +331,31 @@ chrome.passwordsPrivate.changeInsecureCredential = function(credential, new_pass
  * @param {function(): void=} callback
  */
 chrome.passwordsPrivate.removeInsecureCredential = function(credential, callback) {};
+
+/**
+ * Requests to mute |credential| from the password store. Invokes |callback| on
+ * completion.
+ * @param {!chrome.passwordsPrivate.InsecureCredential} credential
+ * @param {function(): void=} callback
+ */
+chrome.passwordsPrivate.muteInsecureCredential = function(credential, callback) {};
+
+/**
+ * Requests to unmute |credential| from the password store. Invokes |callback|
+ * on completion.
+ * @param {!chrome.passwordsPrivate.InsecureCredential} credential
+ * @param {function(): void=} callback
+ */
+chrome.passwordsPrivate.unmuteInsecureCredential = function(credential, callback) {};
+
+/**
+ * Records that a change password flow was started for |credential|.
+ * @param {!chrome.passwordsPrivate.InsecureCredential} credential The
+ *     credential for which the flow was triggered.
+ * @param {boolean} isManualFlow
+ * @param {function(): void=} callback
+ */
+chrome.passwordsPrivate.recordChangePasswordFlowStarted = function(credential, isManualFlow, callback) {};
 
 /**
  * Starts a check for insecure passwords. Invokes |callback| on completion.

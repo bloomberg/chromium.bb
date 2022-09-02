@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/cxx17_backports.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
@@ -90,6 +89,7 @@ class InterceptingRendererStartupHelper : public RendererStartupHelper,
     std::move(callback).Run();
   }
   void CancelSuspendExtension(const std::string& extension_id) override {}
+  void SetDeveloperMode(bool current_developer_mode) override {}
   void SetSessionInfo(version_info::Channel channel,
                       mojom::FeatureSessionType session,
                       bool is_lock_screen_context) override {}
@@ -113,16 +113,18 @@ class InterceptingRendererStartupHelper : public RendererStartupHelper,
   void UpdateDefaultPolicyHostRestrictions(
       URLPatternSet default_policy_blocked_hosts,
       URLPatternSet default_policy_allowed_hosts) override {}
+  void UpdateUserHostRestrictions(URLPatternSet user_blocked_hosts,
+                                  URLPatternSet user_allowed_hosts) override {}
   void UpdateTabSpecificPermissions(const std::string& extension_id,
                                     URLPatternSet new_hosts,
                                     int tab_id,
-                                    bool update_origin_whitelist) override {}
+                                    bool update_origin_allowlist) override {}
   void UpdateUserScripts(base::ReadOnlySharedMemoryRegion shared_memory,
                          mojom::HostIDPtr host_id) override {}
   void ClearTabSpecificPermissions(
       const std::vector<std::string>& extension_ids,
       int tab_id,
-      bool update_origin_whitelist) override {}
+      bool update_origin_allowlist) override {}
   void WatchPages(const std::vector<std::string>& css_selectors) override {}
 
   mojo::AssociatedReceiverSet<mojom::Renderer> receivers_;
@@ -261,7 +263,7 @@ class ActivityLogTest : public ChromeRenderViewHostTestHarness {
 
   static void RetrieveActions_ArgUrlApiCalls(
       std::unique_ptr<std::vector<scoped_refptr<Action>>> actions) {
-    size_t api_calls_size = base::size(kUrlApiCalls);
+    size_t api_calls_size = std::size(kUrlApiCalls);
     const base::DictionaryValue* other = NULL;
 
     ASSERT_EQ(api_calls_size, actions->size());
@@ -367,8 +369,8 @@ TEST_F(ActivityLogTest, ArgUrlExtraction) {
   action->set_page_url(GURL("http://www.google.com/"));
   action->mutable_args()->Append("POST");
   action->mutable_args()->Append("http://api.google.com/");
-  action->mutable_other()->SetInteger(activity_log_constants::kActionDomVerb,
-                                      DomActionType::METHOD);
+  action->mutable_other()->SetIntKey(activity_log_constants::kActionDomVerb,
+                                     DomActionType::METHOD);
   activity_log->LogAction(action);
 
   // Submit a DOM API call with a relative URL in the argument, which should be
@@ -378,8 +380,8 @@ TEST_F(ActivityLogTest, ArgUrlExtraction) {
   action->set_page_url(GURL("http://www.google.com/"));
   action->mutable_args()->Append("POST");
   action->mutable_args()->Append("/api/");
-  action->mutable_other()->SetInteger(activity_log_constants::kActionDomVerb,
-                                      DomActionType::METHOD);
+  action->mutable_other()->SetIntKey(activity_log_constants::kActionDomVerb,
+                                     DomActionType::METHOD);
   activity_log->LogAction(action);
 
   // Submit a DOM API call with a relative URL but no base page URL against
@@ -388,8 +390,8 @@ TEST_F(ActivityLogTest, ArgUrlExtraction) {
                       Action::ACTION_DOM_ACCESS, "XMLHttpRequest.open");
   action->mutable_args()->Append("POST");
   action->mutable_args()->Append("/api/");
-  action->mutable_other()->SetInteger(activity_log_constants::kActionDomVerb,
-                                      DomActionType::METHOD);
+  action->mutable_other()->SetIntKey(activity_log_constants::kActionDomVerb,
+                                     DomActionType::METHOD);
   activity_log->LogAction(action);
 
   // Submit an API call with an embedded URL.
@@ -442,15 +444,15 @@ TEST_F(ActivityLogTest, UninstalledExtension) {
 TEST_F(ActivityLogTest, ArgUrlApiCalls) {
   ActivityLog* activity_log = ActivityLog::GetInstance(profile());
   base::Time now = base::Time::Now();
-  int api_calls_size = base::size(kUrlApiCalls);
+  int api_calls_size = std::size(kUrlApiCalls);
   scoped_refptr<Action> action;
 
   for (int i = 0; i < api_calls_size; i++) {
     action = new Action(kExtensionId, now - base::Seconds(i),
                         Action::ACTION_DOM_ACCESS, kUrlApiCalls[i]);
     action->mutable_args()->Append("http://www.google.co.uk");
-    action->mutable_other()->SetInteger(activity_log_constants::kActionDomVerb,
-                                        DomActionType::SETTER);
+    action->mutable_other()->SetIntKey(activity_log_constants::kActionDomVerb,
+                                       DomActionType::SETTER);
     activity_log->LogAction(action);
   }
 

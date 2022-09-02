@@ -11,7 +11,6 @@
 #include "libANGLE/Texture.h"
 #include "libANGLE/formatutils.h"
 #include "libANGLE/renderer/load_functions_table.h"
-#include "libANGLE/renderer/load_texture_border_functions_table.h"
 #include "libANGLE/renderer/vulkan/ContextVk.h"
 #include "libANGLE/renderer/vulkan/RendererVk.h"
 #include "libANGLE/renderer/vulkan/vk_caps_utils.h"
@@ -178,7 +177,7 @@ void Format::initBufferFallback(RendererVk *renderer,
     {
         size_t skip = renderer->getFeatures().forceFallbackFormat.enabled ? 1 : 0;
         int i       = FindSupportedFormat(renderer, info, skip, compressedStartIndex,
-                                    HasFullBufferFormatSupport);
+                                          HasFullBufferFormatSupport);
 
         mActualBufferFormatID         = info[i].format;
         mVkBufferFormatIsPacked       = info[i].vkFormatIsPacked;
@@ -235,9 +234,7 @@ FormatTable::FormatTable() {}
 
 FormatTable::~FormatTable() {}
 
-void FormatTable::initialize(RendererVk *renderer,
-                             gl::TextureCapsMap *outTextureCapsMap,
-                             std::vector<GLenum> *outCompressedTextureFormats)
+void FormatTable::initialize(RendererVk *renderer, gl::TextureCapsMap *outTextureCapsMap)
 {
     for (size_t formatIndex = 0; formatIndex < angle::kNumANGLEFormats; ++formatIndex)
     {
@@ -260,11 +257,6 @@ void FormatTable::initialize(RendererVk *renderer,
             continue;
         }
 
-        if (intendedAngleFormat.isBlock)
-        {
-            outCompressedTextureFormats->push_back(format.mIntendedGLFormat);
-        }
-
         if (format.mActualRenderableImageFormatID == angle::FormatID::NONE)
         {
             // If renderable format was not set, it means there is no fallback format for
@@ -279,8 +271,6 @@ void FormatTable::initialize(RendererVk *renderer,
         if (textureCaps.texturable)
         {
             format.mTextureLoadFunctions = GetLoadFunctionsMap(
-                format.mIntendedGLFormat, format.mActualSampleOnlyImageFormatID);
-            format.mTextureBorderLoadFunctions = GetLoadTextureBorderFunctionsMap(
                 format.mIntendedGLFormat, format.mActualSampleOnlyImageFormatID);
         }
 
@@ -434,9 +424,7 @@ gl::SwizzleState ApplySwizzle(const gl::SwizzleState &formatSwizzle,
     return result;
 }
 
-gl::SwizzleState GetFormatSwizzle(const ContextVk *contextVk,
-                                  const angle::Format &angleFormat,
-                                  const bool sized)
+gl::SwizzleState GetFormatSwizzle(const angle::Format &angleFormat, const bool sized)
 {
     gl::SwizzleState internalSwizzle;
 

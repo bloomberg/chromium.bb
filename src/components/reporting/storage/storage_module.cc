@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/containers/span.h"
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "components/reporting/compression/compression_module.h"
 #include "components/reporting/encryption/encryption_module_interface.h"
@@ -30,7 +31,7 @@ StorageModule::~StorageModule() = default;
 
 void StorageModule::AddRecord(Priority priority,
                               Record record,
-                              base::OnceCallback<void(Status)> callback) {
+                              EnqueueCallback callback) {
   storage_->Write(priority, std::move(record), std::move(callback));
 }
 
@@ -45,8 +46,7 @@ void StorageModule::ReportSuccess(SequenceInformation sequence_information,
       }));
 }
 
-void StorageModule::Flush(Priority priority,
-                          base::OnceCallback<void(Status)> callback) {
+void StorageModule::Flush(Priority priority, FlushCallback callback) {
   std::move(callback).Run(storage_->Flush(priority));
 }
 

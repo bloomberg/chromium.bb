@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/page_impl.h"
 
 #include "base/barrier_closure.h"
+#include "base/i18n/character_encoding.h"
 #include "base/trace_event/optional_trace_event.h"
 #include "content/browser/manifest/manifest_manager_host.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
@@ -16,6 +17,7 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/public/browser/render_view_host.h"
 #include "third_party/blink/public/common/loader/loader_constants.h"
+#include "third_party/blink/public/mojom/manifest/manifest.mojom.h"
 #include "third_party/perfetto/include/perfetto/tracing/traced_value.h"
 
 namespace content {
@@ -40,7 +42,7 @@ const absl::optional<GURL>& PageImpl::GetManifestUrl() const {
 
 void PageImpl::GetManifest(GetManifestCallback callback) {
   ManifestManagerHost* manifest_manager_host =
-      ManifestManagerHost::GetOrCreateForCurrentDocument(&main_document_);
+      ManifestManagerHost::GetOrCreateForPage(*this);
   manifest_manager_host->GetManifest(std::move(callback));
 }
 
@@ -73,8 +75,12 @@ base::WeakPtr<Page> PageImpl::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
+base::WeakPtr<PageImpl> PageImpl::GetWeakPtrImpl() {
+  return weak_factory_.GetWeakPtr();
+}
+
 bool PageImpl::IsPageScaleFactorOne() {
-  return page_scale_factor_ == 1.f;
+  return GetPageScaleFactor() == 1.f;
 }
 
 void PageImpl::OnFirstVisuallyNonEmptyPaint() {
@@ -170,7 +176,13 @@ void PageImpl::ActivateForPrerendering(
     if (main_document_.GetRenderViewHost() == rvh)
       navigation_start_to_send = *activation_start_time_for_prerendering_;
 
-    rvh->ActivatePrerenderedPage(navigation_start_to_send, barrier);
+    auto params = blink::mojom::PrerenderPageActivationParams::New();
+    params->was_user_activated =
+        main_document_.frame_tree_node()->has_received_user_gesture_before_nav()
+            ? blink::mojom::WasActivatedOption::kYes
+            : blink::mojom::WasActivatedOption::kNo;
+    params->activation_start = navigation_start_to_send;
+    rvh->ActivatePrerenderedPage(std::move(params), barrier);
   }
 
   // Prepare each RenderFrameHostImpl in this Page for activation.
@@ -179,7 +191,7 @@ void PageImpl::ActivateForPrerendering(
   // inner WebContents. These are in a different FrameTree which might not know
   // it is being prerendered. We should teach these FrameTrees that they are
   // being prerendered, or ban inner FrameTrees in a prerendering page.
-  main_document_.ForEachRenderFrameHost(base::BindRepeating(
+  main_document_.ForEachRenderFrameHostIncludingSpeculative(base::BindRepeating(
       [](PageImpl* page, RenderFrameHostImpl* rfh) {
         if (&rfh->GetPage() != page)
           return;
@@ -198,10 +210,10 @@ void PageImpl::MaybeDispatchLoadEventsOnPrerenderActivation() {
   if (load_progress() != blink::kFinalLoadProgress)
     main_document_.DidChangeLoadProgress(load_progress());
 
-  // Dispatch DocumentAvailableInMainFrame before dispatching following load
-  // complete events.
-  if (is_document_available_in_main_document())
-    main_document_.DocumentAvailableInMainFrame(uses_temporary_zoom_level());
+  // Dispatch PrimaryMainDocumentElementAvailable before dispatching following
+  // load complete events.
+  if (is_main_document_element_available())
+    main_document_.MainDocumentElementAvailable(uses_temporary_zoom_level());
 
   main_document_.ForEachRenderFrameHost(
       base::BindRepeating([](RenderFrameHostImpl* rfh) {
@@ -241,11 +253,37 @@ void PageImpl::UpdateBrowserControlsState(cc::BrowserControlsState constraints,
                                           bool animate) {
   // TODO(https://crbug.com/1154852): Asking for the LocalMainFrame interface
   // before the RenderFrame is created is racy.
-  if (!GetMainDocument().IsRenderFrameCreated())
+  if (!GetMainDocument().IsRenderFrameLive())
     return;
 
   GetMainDocument().GetAssociatedLocalMainFrame()->UpdateBrowserControlsState(
       constraints, current, animate);
+}
+
+float PageImpl::GetPageScaleFactor() const {
+  return GetMainDocument().GetPageScaleFactor();
+}
+
+void PageImpl::UpdateEncoding(const std::string& encoding_name) {
+  if (encoding_name == last_reported_encoding_)
+    return;
+  last_reported_encoding_ = encoding_name;
+
+  canonical_encoding_ =
+      base::GetCanonicalEncodingNameByAliasName(encoding_name);
+}
+
+void PageImpl::NotifyVirtualKeyboardOverlayRect(
+    const gfx::Rect& keyboard_rect) {
+  // TODO(https://crbug.com/1317002): send notification to outer frames if
+  // needed.
+  DCHECK(virtual_keyboard_overlays_content());
+  GetMainDocument().GetAssociatedLocalFrame()->NotifyVirtualKeyboardOverlayRect(
+      keyboard_rect);
+}
+
+base::flat_map<std::string, std::string> PageImpl::GetKeyboardLayoutMap() {
+  return GetMainDocument().GetRenderWidgetHost()->GetKeyboardLayoutMap();
 }
 
 }  // namespace content

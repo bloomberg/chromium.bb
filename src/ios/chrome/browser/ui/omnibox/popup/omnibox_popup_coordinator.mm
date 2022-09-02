@@ -13,18 +13,26 @@
 #include "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
 #import "ios/chrome/browser/main/browser.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
+#import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
+#import "ios/chrome/browser/ui/commands/omnibox_commands.h"
 #import "ios/chrome/browser/ui/main/default_browser_scene_agent.h"
 #import "ios/chrome/browser/ui/main/scene_state_browser_agent.h"
 #import "ios/chrome/browser/ui/ntp/ntp_util.h"
+#import "ios/chrome/browser/ui/omnibox/popup/content_providing.h"
+#import "ios/chrome/browser/ui/omnibox/popup/omnibox_pedal_annotator.h"
+#import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_container_view.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_mediator.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_presenter.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_view_controller.h"
 #include "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_view_ios.h"
+#import "ios/chrome/browser/ui/omnibox/popup/pedal_section_extractor.h"
+#import "ios/chrome/browser/ui/omnibox/popup/popup_swift.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "ui/base/device_form_factor.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -34,8 +42,11 @@
   std::unique_ptr<OmniboxPopupViewIOS> _popupView;
 }
 
-@property(nonatomic, strong) OmniboxPopupViewController* popupViewController;
+@property(nonatomic, strong)
+    UIViewController<ContentProviding>* popupViewController;
 @property(nonatomic, strong) OmniboxPopupMediator* mediator;
+@property(nonatomic, strong) PopupModel* model;
+@property(nonatomic, strong) PopupUIConfiguration* uiConfiguration;
 
 @end
 
@@ -53,6 +64,9 @@
   self = [super initWithBaseViewController:nil browser:browser];
   if (self) {
     _popupView = std::move(popupView);
+    if (base::FeatureList::IsEnabled(kIOSOmniboxUpdatedPopupUI)) {
+      self.pedalExtractor = [[PedalSectionExtractor alloc] init];
+    }
   }
   return self;
 }
@@ -61,6 +75,8 @@
   std::unique_ptr<image_fetcher::ImageDataFetcher> imageFetcher =
       std::make_unique<image_fetcher::ImageDataFetcher>(
           self.browser->GetBrowserState()->GetSharedURLLoaderFactory());
+
+  BOOL isIncognito = self.browser->GetBrowserState()->IsOffTheRecord();
 
   self.mediator = [[OmniboxPopupMediator alloc]
       initWithFetcher:std::move(imageFetcher)
@@ -80,13 +96,61 @@
       templateURLService->GetDefaultSearchProvider()->GetEngineType(
           templateURLService->search_terms_data()) == SEARCH_ENGINE_GOOGLE;
 
-  self.popupViewController = [[OmniboxPopupViewController alloc] init];
-  self.popupViewController.incognito =
-      self.browser->GetBrowserState()->IsOffTheRecord();
+  if (base::FeatureList::IsEnabled(kIOSOmniboxUpdatedPopupUI)) {
+    self.model = [[PopupModel alloc] initWithMatches:@[]
+                                             headers:@[]
+                                            delegate:self.pedalExtractor];
+    ToolbarConfiguration* toolbarConfiguration = [[ToolbarConfiguration alloc]
+        initWithStyle:isIncognito ? INCOGNITO : NORMAL];
+    self.uiConfiguration = [[PopupUIConfiguration alloc]
+        initWithToolbarConfiguration:toolbarConfiguration];
+    BOOL popupShouldSelfSize =
+        (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET);
+    self.mediator.model = self.model;
 
-  BOOL isIncognito = self.browser->GetBrowserState()->IsOffTheRecord();
+    std::string variationName = base::GetFieldTrialParamValueByFeature(
+        kIOSOmniboxUpdatedPopupUI, kIOSOmniboxUpdatedPopupUIVariationName);
+
+    PopupUIVariation popupUIVariation =
+        (variationName == kIOSOmniboxUpdatedPopupUIVariation1)
+            ? PopupUIVariationOne
+            : PopupUIVariationTwo;
+
+    self.popupViewController = [OmniboxPopupViewProvider
+        makeViewControllerWithModel:self.model
+                    uiConfiguration:self.uiConfiguration
+                   popupUIVariation:popupUIVariation
+                popupShouldSelfSize:popupShouldSelfSize
+            appearanceContainerType:[OmniboxPopupContainerView class]];
+    [self.browser->GetCommandDispatcher()
+        startDispatchingToTarget:self.model
+                     forProtocol:@protocol(OmniboxSuggestionCommands)];
+    OmniboxPedalAnnotator* annotator = [[OmniboxPedalAnnotator alloc] init];
+    annotator.pedalsEndpoint = HandlerForProtocol(
+        self.browser->GetCommandDispatcher(), ApplicationCommands);
+    annotator.omniboxCommandHandler = HandlerForProtocol(
+        self.browser->GetCommandDispatcher(), OmniboxCommands);
+    self.mediator.pedalAnnotator = annotator;
+    self.mediator.consumer = self.pedalExtractor;
+    self.pedalExtractor.dataSink = self.model;
+    self.pedalExtractor.delegate = self.mediator;
+  } else {
+    OmniboxPopupViewController* popupViewController =
+        [[OmniboxPopupViewController alloc] init];
+    popupViewController.imageRetriever = self.mediator;
+    popupViewController.faviconRetriever = self.mediator;
+    popupViewController.delegate = self.mediator;
+    popupViewController.incognito = isIncognito;
+    [self.browser->GetCommandDispatcher()
+        startDispatchingToTarget:popupViewController
+                     forProtocol:@protocol(OmniboxSuggestionCommands)];
+
+    self.mediator.consumer = popupViewController;
+
+    self.popupViewController = popupViewController;
+  }
+
   self.mediator.incognito = isIncognito;
-  self.mediator.consumer = self.popupViewController;
   SceneState* sceneState =
       SceneStateBrowserAgent::FromBrowser(self.browser)->GetSceneState();
   self.mediator.promoScheduler =
@@ -95,12 +159,6 @@
       initWithPopupPresenterDelegate:self.presenterDelegate
                  popupViewController:self.popupViewController
                            incognito:isIncognito];
-  self.popupViewController.imageRetriever = self.mediator;
-  self.popupViewController.faviconRetriever = self.mediator;
-  self.popupViewController.delegate = self.mediator;
-  [self.browser->GetCommandDispatcher()
-      startDispatchingToTarget:self.popupViewController
-                   forProtocol:@protocol(OmniboxSuggestionCommands)];
 
   _popupView->SetMediator(self.mediator);
 }

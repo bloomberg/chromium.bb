@@ -30,7 +30,7 @@ class PrefetchProxyNetworkContextClient
   void OnCanSendDomainReliabilityUpload(
       const GURL& origin,
       OnCanSendDomainReliabilityUploadCallback callback) override;
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   void OnGenerateHttpNegotiateAuthToken(
       const std::string& server_auth_token,
       bool can_delegate,
@@ -38,12 +38,15 @@ class PrefetchProxyNetworkContextClient
       const std::string& spn,
       OnGenerateHttpNegotiateAuthTokenCallback callback) override;
 #endif
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
   void OnTrustAnchorUsed() override;
 #endif
   void OnTrustTokenIssuanceDivertedToSystem(
       network::mojom::FulfillTrustTokenIssuanceRequestPtr request,
       OnTrustTokenIssuanceDivertedToSystemCallback callback) override;
+  void OnCanSendSCTAuditingReport(
+      OnCanSendSCTAuditingReportCallback callback) override;
+  void OnNewSCTAuditingReportSent() override;
 };
 
 #endif  // CHROME_BROWSER_PREFETCH_PREFETCH_PROXY_PREFETCH_PROXY_NETWORK_CONTEXT_CLIENT_H_

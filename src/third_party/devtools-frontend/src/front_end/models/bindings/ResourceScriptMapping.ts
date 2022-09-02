@@ -30,6 +30,7 @@
 
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
+import type * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Workspace from '../workspace/workspace.js';
 import type * as Protocol from '../../generated/protocol.js';
@@ -83,7 +84,7 @@ export class ResourceScriptMapping implements DebuggerSourceMapping {
       this.debuggerModel.addEventListener(
           SDK.DebuggerModel.Events.ParsedScriptSource,
           event => {
-            this.parsedScriptSource(event);
+            void this.parsedScriptSource(event);
           },
           this),
       this.debuggerModel.addEventListener(SDK.DebuggerModel.Events.GlobalObjectCleared, this.globalObjectCleared, this),
@@ -219,21 +220,21 @@ export class ResourceScriptMapping implements DebuggerSourceMapping {
     const executionContext = event.data;
     const scripts = this.debuggerModel.scriptsForExecutionContext(executionContext);
     for (const script of scripts) {
-      this.removeScript(script);
+      void this.removeScript(script);
     }
   }
 
   private globalObjectCleared(): void {
     const scripts = Array.from(this.#acceptedScripts);
     for (const script of scripts) {
-      this.removeScript(script);
+      void this.removeScript(script);
     }
   }
 
   resetForTest(): void {
     const scripts = Array.from(this.#acceptedScripts);
     for (const script of scripts) {
-      this.removeScript(script);
+      void this.removeScript(script);
     }
   }
 
@@ -241,7 +242,7 @@ export class ResourceScriptMapping implements DebuggerSourceMapping {
     Common.EventTarget.removeEventListeners(this.#eventListeners);
     const scripts = Array.from(this.#acceptedScripts);
     for (const script of scripts) {
-      this.removeScript(script);
+      void this.removeScript(script);
     }
     for (const project of this.#projects.values()) {
       project.removeProject();
@@ -297,7 +298,7 @@ export class ResourceScriptFile extends Common.ObjectWrapper.ObjectWrapper<Resou
     }
 
     // Match ignoring sourceURL.
-    if (!workingCopy.startsWith(this.#scriptSource.trimRight())) {
+    if (!workingCopy.startsWith(this.#scriptSource.trimEnd())) {
       return true;
     }
     const suffix = this.#uiSourceCodeInternal.workingCopy().substr(this.#scriptSource.length);
@@ -305,7 +306,7 @@ export class ResourceScriptFile extends Common.ObjectWrapper.ObjectWrapper<Resou
   }
 
   private workingCopyChanged(): void {
-    this.update();
+    void this.update();
   }
 
   private workingCopyCommitted(): void {
@@ -321,7 +322,7 @@ export class ResourceScriptFile extends Common.ObjectWrapper.ObjectWrapper<Resou
                             .map(breakpointLocation => breakpointLocation.breakpoint);
     const source = this.#uiSourceCodeInternal.workingCopy();
     debuggerModel.setScriptSource(this.scriptInternal.scriptId, source, (error, exceptionDetails) => {
-      this.scriptSourceWasSet(source, breakpoints, error, exceptionDetails);
+      void this.scriptSourceWasSet(source, breakpoints, error, exceptionDetails);
     });
   }
 
@@ -395,9 +396,9 @@ export class ResourceScriptFile extends Common.ObjectWrapper.ObjectWrapper<Resou
       this.mappingCheckedForTest();
       return;
     }
-    this.scriptInternal.requestContent().then(deferredContent => {
+    void this.scriptInternal.requestContent().then(deferredContent => {
       this.#scriptSource = deferredContent.content;
-      this.update().then(() => this.mappingCheckedForTest());
+      void this.update().then(() => this.mappingCheckedForTest());
     });
   }
 
@@ -411,7 +412,7 @@ export class ResourceScriptFile extends Common.ObjectWrapper.ObjectWrapper<Resou
         Workspace.UISourceCode.Events.WorkingCopyCommitted, this.workingCopyCommitted, this);
   }
 
-  addSourceMapURL(sourceMapURL: string): void {
+  addSourceMapURL(sourceMapURL: Platform.DevToolsPath.UrlString): void {
     if (!this.scriptInternal) {
       return;
     }
@@ -420,6 +421,18 @@ export class ResourceScriptFile extends Common.ObjectWrapper.ObjectWrapper<Resou
 
   hasSourceMapURL(): boolean {
     return this.scriptInternal !== undefined && Boolean(this.scriptInternal.sourceMapURL);
+  }
+
+  async missingSymbolFiles(): Promise<string[]|null> {
+    if (!this.scriptInternal) {
+      return null;
+    }
+    const {pluginManager} = this.#resourceScriptMapping.debuggerWorkspaceBinding;
+    if (!pluginManager) {
+      return null;
+    }
+    const sources = await pluginManager.getSourcesForScript(this.scriptInternal);
+    return sources && 'missingSymbolFiles' in sources ? sources.missingSymbolFiles : null;
   }
 
   get script(): SDK.Script.Script|null {

@@ -10,7 +10,6 @@
 
 #include <memory>
 
-#include "base/cxx17_backports.h"
 #include "base/json/json_reader.h"
 #include "base/mac/scoped_aedesc.h"
 #include "base/notreached.h"
@@ -229,11 +228,11 @@ TEST_F(AppleEventUtilTest, ValueToAppleEventDescriptor) {
       typeAEList },
   };
 
-  for (size_t i = 0; i < base::size(cases); ++i) {
-    std::unique_ptr<base::Value> value =
-        base::JSONReader::ReadDeprecated(cases[i].json_input);
+  for (size_t i = 0; i < std::size(cases); ++i) {
+    absl::optional<base::Value> value =
+        base::JSONReader::Read(cases[i].json_input);
     NSAppleEventDescriptor* descriptor =
-        chrome::mac::ValueToAppleEventDescriptor(value.get());
+        chrome::mac::ValueToAppleEventDescriptor(&*value);
 
     EXPECT_EQ(cases[i].expected_aedesc_dump,
               AEDescToString([descriptor aeDesc]))

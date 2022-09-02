@@ -18,10 +18,14 @@
 
 #include "src/core/ext/filters/client_channel/lb_policy/address_filtering.h"
 
+#include <stddef.h>
+
+#include <utility>
+
+#include "absl/container/inlined_vector.h"
+#include "absl/memory/memory.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
-
-#include "src/core/lib/channel/channel_args.h"
 
 #define GRPC_ARG_HIERARCHICAL_PATH "grpc.internal.address.hierarchical_path"
 
@@ -69,10 +73,11 @@ MakeHierarchicalPathAttribute(std::vector<std::string> path) {
   return absl::make_unique<HierarchicalPathAttribute>(std::move(path));
 }
 
-HierarchicalAddressMap MakeHierarchicalAddressMap(
-    const ServerAddressList& addresses) {
+absl::StatusOr<HierarchicalAddressMap> MakeHierarchicalAddressMap(
+    const absl::StatusOr<ServerAddressList>& addresses) {
+  if (!addresses.ok()) return addresses.status();
   HierarchicalAddressMap result;
-  for (const ServerAddress& address : addresses) {
+  for (const ServerAddress& address : *addresses) {
     const HierarchicalPathAttribute* path_attribute =
         static_cast<const HierarchicalPathAttribute*>(
             address.GetAttribute(kHierarchicalPathAttributeKey));

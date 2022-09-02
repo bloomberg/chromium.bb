@@ -16,6 +16,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/mock_render_process_host.h"
@@ -360,7 +361,7 @@ TEST_F(WebViewUnitTest, CrashedOverlayView) {
   tester->SetIsCrashed(base::TERMINATION_STATUS_PROCESS_CRASHED, -1);
   EXPECT_TRUE(web_contents->IsCrashed());
   static_cast<content::WebContentsObserver*>(web_view.get())
-      ->RenderFrameDeleted(web_contents->GetMainFrame());
+      ->RenderFrameDeleted(web_contents->GetPrimaryMainFrame());
   EXPECT_TRUE(crashed_overlay_view->IsDrawn());
 }
 
@@ -385,7 +386,7 @@ TEST_F(WebViewUnitTest, CrashedOverlayViewOwnedbyClient) {
   tester->SetIsCrashed(base::TERMINATION_STATUS_PROCESS_CRASHED, -1);
   EXPECT_TRUE(web_contents->IsCrashed());
   static_cast<content::WebContentsObserver*>(web_view.get())
-      ->RenderFrameDeleted(web_contents->GetMainFrame());
+      ->RenderFrameDeleted(web_contents->GetPrimaryMainFrame());
   EXPECT_TRUE(crashed_overlay_view->IsDrawn());
 
   web_view->SetCrashedOverlayView(nullptr);

@@ -183,8 +183,9 @@ std::unique_ptr<MediaCodecBridge> MediaCodecBridgeImpl::CreateAudioDecoder(
   DVLOG(2) << __func__ << ": " << config.AsHumanReadableString()
            << " media_crypto:" << media_crypto.obj();
 
-  const std::string mime =
-      MediaCodecUtil::CodecToAndroidMimeType(config.codec());
+  const std::string mime = MediaCodecUtil::CodecToAndroidMimeType(
+      config.codec(), config.target_output_sample_format());
+
   if (mime.empty())
     return nullptr;
 
@@ -280,12 +281,6 @@ std::unique_ptr<MediaCodecBridge> MediaCodecBridgeImpl::CreateVideoEncoder(
 
 // static
 void MediaCodecBridgeImpl::SetupCallbackHandlerForTesting() {
-  // Callback APIs are only available on M+, so do nothing if below that.
-  if (base::android::BuildInfo::GetInstance()->sdk_int() <
-      base::android::SDK_VERSION_MARSHMALLOW) {
-    return;
-  }
-
   JNIEnv* env = AttachCurrentThread();
   Java_MediaCodecBridge_createCallbackHandlerForTesting(env);
 }
@@ -303,9 +298,6 @@ MediaCodecBridgeImpl::MediaCodecBridgeImpl(
 
   if (!on_buffers_available_cb_)
     return;
-
-  DCHECK_GE(base::android::BuildInfo::GetInstance()->sdk_int(),
-            base::android::SDK_VERSION_MARSHMALLOW);
 
   // Note this should be done last since setBuffersAvailableListener() may
   // immediately invoke the callback if buffers came in during construction.
@@ -419,10 +411,10 @@ MediaCodecStatus MediaCodecBridgeImpl::GetOutputColorSpace(
       transfer_id = gfx::ColorSpace::TransferID::SMPTE170M;
       break;
     case 6:  // MediaFormat.COLOR_TRANSFER_ST2084
-      transfer_id = gfx::ColorSpace::TransferID::SMPTEST2084;
+      transfer_id = gfx::ColorSpace::TransferID::PQ;
       break;
     case 7:  // MediaFormat.COLOR_TRANSFER_HLG
-      transfer_id = gfx::ColorSpace::TransferID::ARIB_STD_B67;
+      transfer_id = gfx::ColorSpace::TransferID::HLG;
       break;
     default:
       DVLOG(3) << __func__ << ": unsupported transfer in p: " << standard
@@ -673,8 +665,6 @@ std::string MediaCodecBridgeImpl::GetName() {
 }
 
 bool MediaCodecBridgeImpl::SetSurface(const JavaRef<jobject>& surface) {
-  DCHECK_GE(base::android::BuildInfo::GetInstance()->sdk_int(),
-            base::android::SDK_VERSION_MARSHMALLOW);
   JNIEnv* env = AttachCurrentThread();
   return Java_MediaCodecBridge_setSurface(env, j_bridge_, surface);
 }

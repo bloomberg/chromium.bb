@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ash/policy/handlers/lock_to_single_user_manager.h"
 
+#include "ash/components/cryptohome/cryptohome_parameters.h"
 #include "ash/components/login/session/session_termination_manager.h"
 #include "ash/components/settings/cros_settings_names.h"
 #include "base/bind.h"
@@ -15,7 +16,6 @@
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
-#include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/userdataauth/cryptohome_misc_client.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 
@@ -30,8 +30,8 @@ namespace policy {
 
 namespace {
 
-chromeos::ConciergeClient* GetConciergeClient() {
-  return chromeos::ConciergeClient::Get();
+ash::ConciergeClient* GetConciergeClient() {
+  return ash::ConciergeClient::Get();
 }
 
 LockToSingleUserManager* g_lock_to_single_user_manager_instance;
@@ -124,7 +124,7 @@ void LockToSingleUserManager::OnVmStarting() {
 }
 
 void LockToSingleUserManager::AddVmStartingObservers(user_manager::User* user) {
-  Profile* profile = chromeos::ProfileHelper::Get()->GetProfileByUser(user);
+  Profile* profile = ash::ProfileHelper::Get()->GetProfileByUser(user);
 
   crostini::CrostiniManager::GetForProfile(profile)->AddVmStartingObserver(
       this);

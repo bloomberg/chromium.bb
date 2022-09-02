@@ -21,9 +21,10 @@ namespace history {
 
 namespace {
 
-#define HISTORY_CONTENT_ANNOTATIONS_ROW_FIELDS                       \
-  " visit_id,visibility_score,categories,page_topics_model_version," \
-  "annotation_flags,entities,related_searches "
+#define HISTORY_CONTENT_ANNOTATIONS_ROW_FIELDS                        \
+  " visit_id,visibility_score,categories,page_topics_model_version,"  \
+  "annotation_flags,entities,related_searches,search_normalized_url," \
+  "search_terms,alternative_title "
 #define HISTORY_CONTEXT_ANNOTATIONS_ROW_FIELDS                    \
   " visit_id,context_annotation_flags,duration_since_last_visit," \
   "page_end_reason,total_foreground_duration "
@@ -151,28 +152,6 @@ VisitContextAnnotations ConstructContextAnnotationsWithFlags(
   context_annotations.total_foreground_duration = total_foreground_duration;
   return context_annotations;
 }
-
-// Convenience to construct a `AnnotatedVisitRow`. Assumes the visit values are
-// bound starting at index 0.
-AnnotatedVisitRow StatementToAnnotatedVisitRow(sql::Statement& statement) {
-  return {
-      statement.ColumnInt64(0),
-      ConstructContextAnnotationsWithFlags(
-          statement.ColumnInt64(1),
-          base::Microseconds(statement.ColumnInt64(2)), statement.ColumnInt(3),
-          base::Microseconds(statement.ColumnInt64(4))),
-      {}};
-}
-
-// Like `StatementToAnnotatedVisitRow()` but for multiple rows.
-std::vector<AnnotatedVisitRow> StatementToAnnotatedVisitRows(
-    sql::Statement& statement) {
-  std::vector<AnnotatedVisitRow> rows;
-  while (statement.Step())
-    rows.push_back(StatementToAnnotatedVisitRow(statement));
-  return rows;
-}
-
 }  // namespace
 
 VisitAnnotationsDatabase::VisitAnnotationsDatabase() = default;
@@ -188,7 +167,10 @@ bool VisitAnnotationsDatabase::InitVisitAnnotationsTables() {
                        "page_topics_model_version INTEGER,"
                        "annotation_flags INTEGER NOT NULL,"
                        "entities VARCHAR,"
-                       "related_searches VARCHAR)")) {
+                       "related_searches VARCHAR,"
+                       "search_normalized_url VARCHAR,"
+                       "search_terms LONGVARCHAR,"
+                       "alternative_title VARCHAR)")) {
     return false;
   }
 
@@ -245,7 +227,7 @@ void VisitAnnotationsDatabase::AddContentAnnotationsForVisit(
   sql::Statement statement(GetDB().GetCachedStatement(
       SQL_FROM_HERE,
       "INSERT INTO content_annotations(" HISTORY_CONTENT_ANNOTATIONS_ROW_FIELDS
-      ")VALUES(?,?,?,?,?,?,?)"));
+      ")VALUES(?,?,?,?,?,?,?,?,?,?)"));
   statement.BindInt64(0, visit_id);
   statement.BindDouble(
       1, static_cast<double>(
@@ -261,6 +243,10 @@ void VisitAnnotationsDatabase::AddContentAnnotationsForVisit(
              visit_content_annotations.model_annotations.entities));
   statement.BindString(6, ConvertRelatedSearchesToStringColumn(
                               visit_content_annotations.related_searches));
+  statement.BindString(7,
+                       visit_content_annotations.search_normalized_url.spec());
+  statement.BindString16(8, visit_content_annotations.search_terms);
+  statement.BindString(9, visit_content_annotations.alternative_title);
 
   if (!statement.Run()) {
     DVLOG(0) << "Failed to execute 'content_annotations' insert statement:  "
@@ -295,14 +281,15 @@ void VisitAnnotationsDatabase::UpdateContentAnnotationsForVisit(
     VisitID visit_id,
     const VisitContentAnnotations& visit_content_annotations) {
   DCHECK_GT(visit_id, 0);
-  sql::Statement statement(
-      GetDB().GetCachedStatement(SQL_FROM_HERE,
-                                 "UPDATE content_annotations SET "
-                                 "visibility_score=?,categories=?,"
-                                 "page_topics_model_version=?,"
-                                 "annotation_flags=?,entities=?,"
-                                 "related_searches=? "
-                                 "WHERE visit_id=?"));
+  sql::Statement statement(GetDB().GetCachedStatement(
+      SQL_FROM_HERE,
+      "UPDATE content_annotations SET "
+      "visibility_score=?,categories=?,"
+      "page_topics_model_version=?,"
+      "annotation_flags=?,entities=?,"
+      "related_searches=?,search_normalized_url=?,search_terms=?,"
+      "alternative_title=? "
+      "WHERE visit_id=?"));
   statement.BindDouble(
       0, static_cast<double>(
              visit_content_annotations.model_annotations.visibility_score));
@@ -317,7 +304,11 @@ void VisitAnnotationsDatabase::UpdateContentAnnotationsForVisit(
              visit_content_annotations.model_annotations.entities));
   statement.BindString(5, ConvertRelatedSearchesToStringColumn(
                               visit_content_annotations.related_searches));
-  statement.BindInt64(6, visit_id);
+  statement.BindString(6,
+                       visit_content_annotations.search_normalized_url.spec());
+  statement.BindString16(7, visit_content_annotations.search_terms);
+  statement.BindString(8, visit_content_annotations.alternative_title);
+  statement.BindInt64(9, visit_id);
 
   if (!statement.Run()) {
     DVLOG(0)
@@ -380,62 +371,11 @@ bool VisitAnnotationsDatabase::GetContentAnnotationsForVisit(
       GetCategoriesFromStringColumn(statement.ColumnString(5));
   out_content_annotations->related_searches =
       GetRelatedSearchesFromStringColumn(statement.ColumnString(6));
+  out_content_annotations->search_normalized_url =
+      GURL(statement.ColumnString(7));
+  out_content_annotations->search_terms = statement.ColumnString16(8);
+  out_content_annotations->alternative_title = statement.ColumnString(9);
   return true;
-}
-
-std::vector<VisitID> VisitAnnotationsDatabase::GetRecentAnnotatedVisitIds(
-    base::Time minimum_time,
-    int max_results) {
-  DCHECK_GT(max_results, 0);
-  // Using `IN` would produce an equivalent query plan.
-  sql::Statement statement(GetDB().GetCachedStatement(
-      SQL_FROM_HERE,
-      "SELECT visit_id FROM context_annotations "
-      "JOIN visits ON visit_id=id WHERE visit_time>=? "
-      "ORDER BY visit_id DESC "
-      "LIMIT ?"));
-  statement.BindTime(0, minimum_time);
-  statement.BindInt(1, max_results);
-
-  std::vector<VisitID> visit_ids;
-  while (statement.Step())
-    visit_ids.push_back(statement.ColumnInt64(0));
-  return visit_ids;
-}
-
-std::vector<AnnotatedVisitRow>
-VisitAnnotationsDatabase::GetClusteredAnnotatedVisits(int max_results) {
-  // TODO(manukh): Currently, this only sets the `context_annotations`. It
-  //  should also set the `content_annotations`.
-  // TODO(manukh): This should be paged by `visit_time` since the callers will
-  //  want all clustered visits, not just the `max_results` most recent.
-  DCHECK_GT(max_results, 0);
-  // Using `IN` instead of `EXISTS` would result in a full scan of
-  // `clusters_and_visits` and a list subquery. Using `JOIN` would be equivalent
-  // to using `EXISTS`.
-  sql::Statement statement(GetDB().GetCachedStatement(
-      SQL_FROM_HERE,
-      // clang-format off
-      "SELECT" HISTORY_CONTEXT_ANNOTATIONS_ROW_FIELDS
-      "FROM context_annotations ca "
-      "WHERE EXISTS("
-        "SELECT 1 FROM clusters_and_visits cv "
-        "WHERE cv.visit_id=ca.visit_id)"
-      "ORDER BY visit_id DESC LIMIT ?"
-      // clang-format on
-      ));
-  statement.BindInt(0, max_results);
-  return StatementToAnnotatedVisitRows(statement);
-}
-
-std::vector<AnnotatedVisitRow>
-VisitAnnotationsDatabase::GetAllContextAnnotationsForTesting() {
-  // TODO(manukh): Replace usages of this method with either
-  //  `GetRecentAnnotatedVisitIds()` or `GetClusteredAnnotatedVisits()`.
-  sql::Statement statement(GetDB().GetCachedStatement(
-      SQL_FROM_HERE, "SELECT" HISTORY_CONTEXT_ANNOTATIONS_ROW_FIELDS
-                     "FROM context_annotations"));
-  return StatementToAnnotatedVisitRows(statement);
 }
 
 void VisitAnnotationsDatabase::DeleteAnnotationsForVisit(VisitID visit_id) {
@@ -507,39 +447,23 @@ void VisitAnnotationsDatabase::AddClusters(
   }
 }
 
-std::vector<ClusterRow> VisitAnnotationsDatabase::GetClusters(int max_results) {
-  DCHECK_GT(max_results, 0);
-  sql::Statement statement(
-      GetDB().GetCachedStatement(SQL_FROM_HERE,
-                                 "SELECT cluster_id,visit_id "
-                                 "FROM clusters_and_visits "
-                                 "ORDER BY cluster_id,visit_id DESC "
-                                 "LIMIT ?"));
-  statement.BindInt(0, max_results);
-
-  std::vector<ClusterRow> clusters;
-  while (statement.Step()) {
-    int64_t cluster_id = statement.ColumnInt64(0);
-    if (clusters.empty() || clusters.back().cluster_id != cluster_id)
-      clusters.emplace_back(cluster_id);
-    clusters.back().visit_ids.push_back(statement.ColumnInt64(1));
-  }
-
-  return clusters;
-}
-
-std::vector<int64_t> VisitAnnotationsDatabase::GetRecentClusterIds(
-    base::Time minimum_time) {
-  // Using `EXISTS` instead of `IN` would result in a full scan of
-  // `clusters_and_visits`. Using `JOIN` would produce an equivalent query plan.
-  sql::Statement statement(
-      GetDB().GetCachedStatement(SQL_FROM_HERE,
-                                 "SELECT DISTINCT cluster_id "
-                                 "FROM clusters_and_visits "
-                                 "WHERE visit_id IN("
-                                 "SELECT id FROM visits WHERE visit_time>=?)"
-                                 "ORDER BY cluster_id DESC"));
-  statement.BindTime(0, minimum_time);
+std::vector<int64_t> VisitAnnotationsDatabase::GetMostRecentClusterIds(
+    base::Time inclusive_min_time,
+    base::Time exclusive_max_time,
+    int max_clusters) {
+  DCHECK_GT(max_clusters, 0);
+  sql::Statement statement(GetDB().GetCachedStatement(
+      SQL_FROM_HERE,
+      "SELECT cluster_id "
+      "FROM clusters_and_visits "
+      "JOIN visits ON visit_id=id "
+      "GROUP BY cluster_id "
+      "HAVING MAX(visit_time)>=? AND MAX(visit_time)<? "
+      "ORDER BY MAX(visit_time) DESC "
+      "LIMIT ?"));
+  statement.BindTime(0, inclusive_min_time);
+  statement.BindTime(1, exclusive_max_time);
+  statement.BindInt(2, max_clusters);
 
   std::vector<int64_t> cluster_ids;
   while (statement.Step())
@@ -548,23 +472,48 @@ std::vector<int64_t> VisitAnnotationsDatabase::GetRecentClusterIds(
 }
 
 std::vector<VisitID> VisitAnnotationsDatabase::GetVisitIdsInCluster(
-    int64_t cluster_id,
-    int max_results) {
+    int64_t cluster_id) {
   DCHECK_GT(cluster_id, 0);
   sql::Statement statement(
       GetDB().GetCachedStatement(SQL_FROM_HERE,
                                  "SELECT visit_id "
                                  "FROM clusters_and_visits "
                                  "WHERE cluster_id=? "
-                                 "ORDER BY visit_id DESC "
-                                 "LIMIT ?"));
+                                 "ORDER BY visit_id DESC"));
   statement.BindInt64(0, cluster_id);
-  statement.BindInt64(1, max_results);
 
   std::vector<VisitID> visit_ids;
   while (statement.Step())
     visit_ids.push_back(statement.ColumnInt64(0));
   return visit_ids;
+}
+
+void VisitAnnotationsDatabase::DeleteClusters(
+    const std::vector<int64_t>& cluster_ids) {
+  if (cluster_ids.empty())
+    return;
+
+  sql::Statement clusters_statement(GetDB().GetCachedStatement(
+      SQL_FROM_HERE, "DELETE FROM clusters WHERE cluster_id=?"));
+
+  sql::Statement clusters_and_visits_statement(GetDB().GetCachedStatement(
+      SQL_FROM_HERE, "DELETE FROM clusters_and_visits WHERE cluster_id=?"));
+
+  for (auto cluster_id : cluster_ids) {
+    clusters_statement.Reset(true);
+    clusters_statement.BindInt64(0, cluster_id);
+    if (!clusters_statement.Run()) {
+      DVLOG(0) << "Failed to execute clusters delete statement:  "
+               << "cluster_id = " << cluster_id;
+    }
+
+    clusters_and_visits_statement.Reset(true);
+    clusters_and_visits_statement.BindInt64(0, cluster_id);
+    if (!clusters_and_visits_statement.Run()) {
+      DVLOG(0) << "Failed to execute clusters_and_visits delete statement:  "
+               << "cluster_id = " << cluster_id;
+    }
+  }
 }
 
 bool VisitAnnotationsDatabase::MigrateFlocAllowedToAnnotationsTable() {
@@ -676,6 +625,40 @@ bool VisitAnnotationsDatabase::
   return GetDB().Execute(
       "ALTER TABLE context_annotations "
       "ADD COLUMN total_foreground_duration NUMERIC DEFAULT -1000000");
+}
+
+bool VisitAnnotationsDatabase::MigrateContentAnnotationsAddSearchMetadata() {
+  if (!GetDB().DoesTableExist("content_annotations")) {
+    NOTREACHED() << " Content annotations table should exist before migration";
+    return false;
+  }
+
+  if (GetDB().DoesColumnExist("content_annotations", "search_normalized_url") &&
+      GetDB().DoesColumnExist("content_annotations", "search_terms")) {
+    return true;
+  }
+
+  // Add the `search_normalized_url` and `search_terms` columns to the older
+  // versions of the table.
+  return GetDB().Execute(
+      "ALTER TABLE content_annotations "
+      "ADD COLUMN search_normalized_url; \n"
+      "ALTER TABLE content_annotations ADD COLUMN search_terms LONGVARCHAR");
+}
+
+bool VisitAnnotationsDatabase::MigrateContentAnnotationsAddAlternativeTitle() {
+  if (!GetDB().DoesTableExist("content_annotations")) {
+    NOTREACHED() << "Content annotations table should exist before migration";
+    return false;
+  }
+
+  if (GetDB().DoesColumnExist("content_annotations", "alternative_title"))
+    return true;
+
+  // Add the `alternative_title`column to the older versions of the table.
+  return GetDB().Execute(
+      "ALTER TABLE content_annotations "
+      "ADD COLUMN alternative_title");
 }
 
 }  // namespace history

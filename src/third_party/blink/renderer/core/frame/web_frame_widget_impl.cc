@@ -33,6 +33,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/auto_reset.h"
 #include "base/callback_helpers.h"
 #include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
@@ -65,6 +66,8 @@
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/editing/ime/edit_context.h"
+#include "third_party/blink/renderer/core/editing/ime/input_method_controller.h"
+#include "third_party/blink/renderer/core/editing/selection_template.h"
 #include "third_party/blink/renderer/core/events/current_input_event.h"
 #include "third_party/blink/renderer/core/events/pointer_event_factory.h"
 #include "third_party/blink/renderer/core/events/web_input_event_conversion.h"
@@ -83,7 +86,6 @@
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
-#include "third_party/blink/renderer/core/html/battery_savings.h"
 #include "third_party/blink/renderer/core/html/fenced_frame/document_fenced_frames.h"
 #include "third_party/blink/renderer/core/html/fenced_frame/html_fenced_frame_element.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
@@ -92,6 +94,7 @@
 #include "third_party/blink/renderer/core/html/portal/portal_contents.h"
 #include "third_party/blink/renderer/core/input/context_menu_allowed_scope.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
+#include "third_party/blink/renderer/core/input/touch_action_util.h"
 #include "third_party/blink/renderer/core/layout/hit_test_location.h"
 #include "third_party/blink/renderer/core/layout/hit_test_request.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
@@ -107,6 +110,7 @@
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/link_highlight.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/page/page_animator.h"
 #include "third_party/blink/renderer/core/page/pointer_lock_controller.h"
 #include "third_party/blink/renderer/core/page/scrolling/fragment_anchor.h"
 #include "third_party/blink/renderer/core/page/validation_message_client.h"
@@ -114,6 +118,7 @@
 #include "third_party/blink/renderer/core/paint/first_meaningful_paint_detector.h"
 #include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/core/scroll/scroll_into_view_util.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
@@ -126,11 +131,12 @@
 #include "third_party/blink/renderer/platform/widget/input/main_thread_event_queue.h"
 #include "third_party/blink/renderer/platform/widget/input/widget_input_handler_manager.h"
 #include "third_party/blink/renderer/platform/widget/widget_base.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_copier_base.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom-blink.h"
 #include "ui/gfx/geometry/point_conversions.h"
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #include "third_party/blink/renderer/core/editing/substring_util.h"
 #include "third_party/blink/renderer/platform/fonts/mac/attributed_string_type_converter.h"
 #include "ui/base/mojom/attributed_string.mojom-blink.h"
@@ -138,10 +144,11 @@
 #endif
 
 namespace WTF {
+
 template <>
-struct CrossThreadCopier<base::OnceCallback<void(base::TimeTicks)>>
+struct CrossThreadCopier<blink::WebFrameWidgetImpl::PromiseCallbacks>
     : public CrossThreadCopierByValuePassThrough<
-          base::OnceCallback<void(base::TimeTicks)>> {
+          blink::WebFrameWidgetImpl::PromiseCallbacks> {
   STATIC_ONLY(CrossThreadCopier);
 };
 
@@ -152,20 +159,6 @@ namespace blink {
 namespace {
 
 using ::ui::mojom::blink::DragOperation;
-
-const int kCaretPadding = 10;
-const float kIdealPaddingRatio = 0.3f;
-
-// Returns a rect which is offset and scaled accordingly to |base_rect|'s
-// location and size.
-FloatRect NormalizeRect(const gfx::Rect& to_normalize,
-                        const gfx::Rect& base_rect) {
-  FloatRect result(to_normalize);
-  result.set_origin(
-      gfx::PointF(to_normalize.origin() - base_rect.OffsetFromOrigin()));
-  result.Scale(1.0 / base_rect.width(), 1.0 / base_rect.height());
-  return result;
-}
 
 void ForEachLocalFrameControlledByWidget(
     LocalFrame* frame,
@@ -202,15 +195,16 @@ void ForEachRemoteFrameChildrenControlledByWidget(
   if (auto* local_frame = DynamicTo<LocalFrame>(frame)) {
     if (Document* document = local_frame->GetDocument()) {
       // Iterate on any portals owned by a local frame.
-      for (PortalContents* portal :
-           DocumentPortals::From(*document).GetPortals()) {
-        if (RemoteFrame* remote_frame = portal->GetFrame())
-          callback.Run(remote_frame);
+      if (auto* portals = DocumentPortals::Get(*document)) {
+        for (PortalContents* portal : portals->GetPortals()) {
+          if (RemoteFrame* remote_frame = portal->GetFrame())
+            callback.Run(remote_frame);
+        }
       }
       // Iterate on any fenced frames owned by a local frame.
-      if (features::IsFencedFramesMPArchBased()) {
+      if (auto* fenced_frames = DocumentFencedFrames::Get(*document)) {
         for (HTMLFencedFrameElement* fenced_frame :
-             DocumentFencedFrames::From(*document).GetFencedFrames()) {
+             fenced_frames->GetFencedFrames()) {
           callback.Run(To<RemoteFrame>(fenced_frame->ContentFrame()));
         }
       }
@@ -261,16 +255,20 @@ WebFrameWidgetImpl::WebFrameWidgetImpl(
     bool hidden,
     bool never_composited,
     bool is_for_child_local_root,
-    bool is_for_nested_main_frame)
-    : widget_base_(std::make_unique<WidgetBase>(/*widget_base_client=*/this,
-                                                std::move(widget_host),
-                                                std::move(widget),
-                                                task_runner,
-                                                hidden,
-                                                never_composited,
-                                                is_for_child_local_root)),
+    bool is_for_nested_main_frame,
+    bool is_for_scalable_page)
+    : widget_base_(std::make_unique<WidgetBase>(
+          /*widget_base_client=*/this,
+          std::move(widget_host),
+          std::move(widget),
+          task_runner,
+          hidden,
+          never_composited,
+          /*is_embedded=*/is_for_child_local_root || is_for_nested_main_frame,
+          is_for_scalable_page)),
       frame_sink_id_(frame_sink_id),
-      is_for_child_local_root_(is_for_child_local_root) {
+      is_for_child_local_root_(is_for_child_local_root),
+      is_for_scalable_page_(is_for_scalable_page) {
   DCHECK(task_runner);
   if (is_for_nested_main_frame)
     main_data().is_for_nested_main_frame = is_for_nested_main_frame;
@@ -300,7 +298,7 @@ void WebFrameWidgetImpl::SetIsNestedMainFrameWidget(bool is_nested) {
 
 void WebFrameWidgetImpl::Close() {
   LocalFrameView* frame_view;
-  if (is_for_child_local_root_) {
+  if (ForSubframe()) {
     frame_view = LocalRootImpl()->GetFrame()->View();
   } else {
     // Scrolling for the root frame is special we need to pass null indicating
@@ -520,7 +518,7 @@ void WebFrameWidgetImpl::UpdateRenderThrottlingStatusForSubFrame(
       is_throttled, subtree_throttled, display_locked, /*recurse=*/true);
 }
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 void WebFrameWidgetImpl::GetStringAtPoint(const gfx::Point& point_in_local_root,
                                           GetStringAtPointCallback callback) {
   gfx::Point baseline_point;
@@ -692,9 +690,9 @@ WebInputEventResult WebFrameWidgetImpl::HandleKeyEvent(
     return result;
   }
 
-#if !defined(OS_MAC)
+#if !BUILDFLAG(IS_MAC)
   const WebInputEvent::Type kContextMenuKeyTriggeringEventType =
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
       WebInputEvent::Type::kKeyUp;
 #else
       WebInputEvent::Type::kRawKeyDown;
@@ -714,7 +712,7 @@ WebInputEventResult WebFrameWidgetImpl::HandleKeyEvent(
     View()->SendContextMenuEvent();
     return WebInputEventResult::kHandledSystem;
   }
-#endif  // !defined(OS_MAC)
+#endif  // !BUILDFLAG(IS_MAC)
 
   return WebInputEventResult::kNotHandled;
 }
@@ -755,8 +753,8 @@ void WebFrameWidgetImpl::HandleMouseDown(LocalFrame& local_root,
     }
   }
 
-  PageWidgetEventHandler::HandleMouseDown(local_root, event);
-  // PageWidgetEventHandler may have detached the frame.
+  WidgetEventHandler::HandleMouseDown(local_root, event);
+  // WidgetEventHandler may have detached the frame.
   if (!LocalRootImpl())
     return;
 
@@ -769,7 +767,7 @@ void WebFrameWidgetImpl::HandleMouseDown(LocalFrame& local_root,
 
   // Dispatch the contextmenu event regardless of if the click was swallowed.
   if (!GetPage()->GetSettings().GetShowContextMenuOnMouseUp()) {
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
     if (event.button == WebMouseEvent::Button::kRight ||
         (event.button == WebMouseEvent::Button::kLeft &&
          event.GetModifiers() & WebMouseEvent::kControlKey))
@@ -784,8 +782,8 @@ void WebFrameWidgetImpl::HandleMouseDown(LocalFrame& local_root,
 void WebFrameWidgetImpl::HandleMouseLeave(LocalFrame& local_root,
                                           const WebMouseEvent& event) {
   View()->SetMouseOverURL(WebURL());
-  PageWidgetEventHandler::HandleMouseLeave(local_root, event);
-  // PageWidgetEventHandler may have detached the frame.
+  WidgetEventHandler::HandleMouseLeave(local_root, event);
+  // WidgetEventHandler may have detached the frame.
 }
 
 void WebFrameWidgetImpl::MouseContextMenu(const WebMouseEvent& event) {
@@ -826,8 +824,8 @@ WebInputEventResult WebFrameWidgetImpl::HandleMouseUp(
     LocalFrame& local_root,
     const WebMouseEvent& event) {
   WebInputEventResult result =
-      PageWidgetEventHandler::HandleMouseUp(local_root, event);
-  // PageWidgetEventHandler may have detached the frame.
+      WidgetEventHandler::HandleMouseUp(local_root, event);
+  // WidgetEventHandler may have detached the frame.
   if (!LocalRootImpl())
     return result;
 
@@ -910,10 +908,11 @@ WebInputEventResult WebFrameWidgetImpl::HandleGestureEvent(
         // Queue a highlight animation, then hand off to regular handler.
         web_view->EnableTapHighlightAtPoint(targeted_event);
         break;
+      case WebInputEvent::Type::kGestureShortPress:
+      case WebInputEvent::Type::kGestureLongPress:
       case WebInputEvent::Type::kGestureTapCancel:
       case WebInputEvent::Type::kGestureTap:
-      case WebInputEvent::Type::kGestureLongPress:
-        GetPage()->GetLinkHighlight().StartHighlightAnimationIfNeeded();
+        GetPage()->GetLinkHighlight().UpdateOpacityAndRequestAnimation();
         break;
       default:
         break;
@@ -983,6 +982,7 @@ WebInputEventResult WebFrameWidgetImpl::HandleGestureEvent(
       break;
     case WebInputEvent::Type::kGestureShowPress:
     case WebInputEvent::Type::kGestureTapUnconfirmed:
+    case WebInputEvent::Type::kGestureShortPress:
       event_result =
           frame->GetEventHandler().HandleGestureEvent(targeted_event);
       break;
@@ -997,8 +997,8 @@ WebInputEventResult WebFrameWidgetImpl::HandleMouseWheel(
     LocalFrame& frame,
     const WebMouseWheelEvent& event) {
   View()->CancelPagePopup();
-  return PageWidgetEventHandler::HandleMouseWheel(frame, event);
-  // PageWidgetEventHandler may have detached the frame.
+  return WidgetEventHandler::HandleMouseWheel(frame, event);
+  // WidgetEventHandler may have detached the frame.
 }
 
 WebInputEventResult WebFrameWidgetImpl::HandleCharEvent(
@@ -1236,12 +1236,6 @@ void WebFrameWidgetImpl::SetPrefersReducedMotion(bool prefers_reduced_motion) {
       prefers_reduced_motion);
 }
 
-void WebFrameWidgetImpl::RegisterSelection(cc::LayerSelection selection) {
-  if (!View()->does_composite())
-    return;
-  widget_base_->LayerTreeHost()->RegisterSelection(selection);
-}
-
 void WebFrameWidgetImpl::StartPageScaleAnimation(const gfx::Point& destination,
                                                  bool use_anchor,
                                                  float new_page_scale,
@@ -1285,8 +1279,13 @@ WebFrameWidgetImpl::AllocateNewLayerTreeFrameSink() {
 }
 
 void WebFrameWidgetImpl::DidBeginMainFrame() {
-  DCHECK(LocalRootImpl()->GetFrame());
-  PageWidgetDelegate::DidBeginFrame(*LocalRootImpl()->GetFrame());
+  LocalFrame* root_frame = LocalRootImpl()->GetFrame();
+  DCHECK(root_frame);
+
+  if (LocalFrameView* frame_view = root_frame->View())
+    frame_view->RunPostLifecycleSteps();
+  if (Page* page = root_frame->GetPage())
+    page->Animator().PostAnimate();
 }
 
 void WebFrameWidgetImpl::UpdateLifecycle(WebLifecycleUpdate requested_update,
@@ -1295,8 +1294,8 @@ void WebFrameWidgetImpl::UpdateLifecycle(WebLifecycleUpdate requested_update,
   if (!LocalRootImpl())
     return;
 
-  PageWidgetDelegate::UpdateLifecycle(*GetPage(), *LocalRootImpl()->GetFrame(),
-                                      requested_update, reason);
+  GetPage()->UpdateLifecycle(*LocalRootImpl()->GetFrame(), requested_update,
+                             reason);
   if (requested_update != WebLifecycleUpdate::kAll)
     return;
 
@@ -1351,6 +1350,9 @@ void WebFrameWidgetImpl::DidCompletePageScaleAnimation() {
     if (focused_frame->AutofillClient())
       focused_frame->AutofillClient()->DidCompleteFocusChangeInFrame();
   }
+
+  if (page_scale_animation_for_testing_callback_)
+    std::move(page_scale_animation_for_testing_callback_).Run();
 }
 
 void WebFrameWidgetImpl::ScheduleAnimation() {
@@ -1361,12 +1363,15 @@ void WebFrameWidgetImpl::ScheduleAnimation() {
   widget_base_->LayerTreeHost()->SetNeedsAnimate();
 }
 
-void WebFrameWidgetImpl::FocusChanged(bool enable) {
+void WebFrameWidgetImpl::FocusChanged(mojom::blink::FocusState focus_state) {
   // TODO(crbug.com/689777): FocusChange events are only sent to the MainFrame
   // these maybe should goto the local root so that the rest of input messages
   // sent to those are preserved in order.
   DCHECK(ForMainFrame());
-  View()->SetPageFocus(enable);
+  View()->SetIsActive(focus_state == mojom::blink::FocusState::kFocused ||
+                      focus_state ==
+                          mojom::blink::FocusState::kNotFocusedAndActive);
+  View()->SetPageFocus(focus_state == mojom::blink::FocusState::kFocused);
 }
 
 bool WebFrameWidgetImpl::ShouldAckSyntheticInputImmediately() {
@@ -1474,10 +1479,9 @@ void WebFrameWidgetImpl::UpdateVisualProperties(
         /*is_pinch_gesture_active=*/false);
   }
 
-  // TODO(crbug.com/939118): ScrollFocusedNodeIntoViewForWidget does not work
-  // when the focused node is inside an OOPIF. This code path where
-  // scroll_focused_node_into_view is set is used only for WebView, crbug
-  // 939118 tracks fixing webviews to not use scroll_focused_node_into_view.
+  // TODO(crbug.com/939118): This code path where scroll_focused_node_into_view
+  // is set is used only for WebView, crbug 939118 tracks fixing webviews to
+  // not use scroll_focused_node_into_view.
   if (visual_properties.scroll_focused_node_into_view)
     ScrollFocusedEditableElementIntoView();
 }
@@ -1528,8 +1532,10 @@ void WebFrameWidgetImpl::ApplyVisualPropertiesSizing(
           visual_properties.browser_controls_params);
     }
 
+#if !BUILDFLAG(IS_ANDROID)
     LocalRootImpl()->GetFrame()->UpdateWindowControlsOverlay(
         visual_properties.window_controls_overlay_rect);
+#endif
 
   } else {
     // Widgets in a WebView's frame tree without a local main frame
@@ -1711,6 +1717,12 @@ void WebFrameWidgetImpl::PointerLockMouseEvent(
     case WebInputEvent::Type::kMouseMove:
       event_type = event_type_names::kMousemove;
       break;
+    case WebInputEvent::Type::kMouseEnter:
+    case WebInputEvent::Type::kMouseLeave:
+    case WebInputEvent::Type::kContextMenu:
+      // These should not be normally dispatched but may be due to timing
+      // because pointer lost messaging happens on separate mojo channel.
+      return;
     default:
       NOTREACHED() << input_event.GetType();
   }
@@ -1758,7 +1770,7 @@ void WebFrameWidgetImpl::SetViewportIntersection(
     const absl::optional<VisualProperties>& visual_properties) {
   // Remote viewports are only applicable to local frames with remote ancestors.
   // TODO(https://crbug.com/1148960): Should this deal with portals?
-  DCHECK(ForSubframe());
+  DCHECK(ForSubframe() || !LocalRootImpl()->GetFrame()->IsOutermostMainFrame());
 
   if (visual_properties.has_value())
     UpdateVisualProperties(visual_properties.value());
@@ -1772,10 +1784,16 @@ void WebFrameWidgetImpl::ApplyViewportIntersectionForTesting(
 
 void WebFrameWidgetImpl::ApplyViewportIntersection(
     mojom::blink::ViewportIntersectionStatePtr intersection_state) {
-  child_data().compositor_visible_rect =
-      intersection_state->compositor_visible_rect;
-  widget_base_->LayerTreeHost()->SetVisualDeviceViewportIntersectionRect(
-      intersection_state->compositor_visible_rect);
+  if (ForSubframe()) {
+    // This information is propagated to LTH to define the region for filling
+    // the on-screen text content.
+    // TODO(khushalsagar) : This needs to also be done for main frames which are
+    // embedded pages (see Frame::IsOutermostMainFrame()).
+    child_data().compositor_visible_rect =
+        intersection_state->compositor_visible_rect;
+    widget_base_->LayerTreeHost()->SetVisualDeviceViewportIntersectionRect(
+        intersection_state->compositor_visible_rect);
+  }
   LocalRootImpl()->GetFrame()->SetViewportIntersectionFromParent(
       *intersection_state);
 }
@@ -1840,8 +1858,6 @@ void WebFrameWidgetImpl::SetAutoResizeMode(bool auto_resize,
   DCHECK(ForMainFrame());
 
   if (auto_resize) {
-    if (!Platform::Current()->IsUseZoomForDSFEnabled())
-      device_scale_factor = 1.f;
     View()->EnableAutoResizeMode(
         gfx::ScaleToCeiledSize(min_window_size, device_scale_factor),
         gfx::ScaleToCeiledSize(max_window_size, device_scale_factor));
@@ -1907,49 +1923,58 @@ bool WebFrameWidgetImpl::ScrollFocusedEditableElementIntoView() {
   if (!element->GetLayoutObject())
     return false;
 
+  // The page scale animation started by ZoomAndScrollToFocusedEditableRect
+  // will scroll only the visual and layout viewports. Call ScrollRectToVisible
+  // first to ensure the editable is visible within the document (i.e. scroll
+  // it into view in any subscrollers). By setting `for_focused_editable`,
+  // ScrollRectToVisible will stop bubbling when it reaches the layout viewport
+  // so that can be animated by the PageScaleAnimation.
+  mojom::blink::ScrollIntoViewParamsPtr params =
+      ScrollAlignment::CreateScrollIntoViewParams(
+          ScrollAlignment::CenterIfNeeded(), ScrollAlignment::CenterIfNeeded(),
+          mojom::blink::ScrollType::kProgrammatic,
+          /*make_visible_in_visual_viewport=*/false,
+          mojom::blink::ScrollBehavior::kInstant);
+  params->for_focused_editable = mojom::blink::FocusedEditableParams::New();
+  params->for_focused_editable->relative_location = gfx::Vector2dF();
+  params->for_focused_editable->size = gfx::SizeF();
+
+  // When deciding whether to zoom in on a focused text box, we should
+  // decide not to zoom in if the user won't be able to zoom out. e.g if the
+  // textbox is within a touch-action: none container the user can't zoom
+  // back out.
+  TouchAction action = touch_action_util::ComputeEffectiveTouchAction(*element);
+  params->for_focused_editable->can_zoom =
+      static_cast<int>(action) & static_cast<int>(TouchAction::kPinchZoom);
+
+  PhysicalRect absolute_element_bounds;
+  PhysicalRect absolute_caret_bounds;
+
   if (edit_context) {
-    // Scroll the |EditContext| into view.
     gfx::Rect control_bounds_in_physical_pixels;
     gfx::Rect selection_bounds_in_physical_pixels;
     edit_context->GetLayoutBounds(&control_bounds_in_physical_pixels,
                                   &selection_bounds_in_physical_pixels);
 
-    LocalFrameView* main_frame_view = LocalRootImpl()->GetFrame()->View();
-
-    View()->ZoomAndScrollToFocusedEditableElementRect(
-        main_frame_view->RootFrameToDocument(
-            element->GetDocument().View()->ConvertToRootFrame(
-                control_bounds_in_physical_pixels)),
-        main_frame_view->RootFrameToDocument(
-            element->GetDocument().View()->ConvertToRootFrame(
-                selection_bounds_in_physical_pixels)),
-        View()->ShouldZoomToLegibleScale(*element));
-
-    return true;
+    absolute_element_bounds = PhysicalRect(control_bounds_in_physical_pixels);
+    absolute_caret_bounds = PhysicalRect(selection_bounds_in_physical_pixels);
+  } else {
+    absolute_element_bounds =
+        PhysicalRect(element->GetLayoutObject()->AbsoluteBoundingBoxRect());
+    absolute_caret_bounds = PhysicalRect(
+        element->GetDocument().GetFrame()->Selection().ComputeRectToScroll(
+            kRevealExtent));
   }
 
-  PhysicalRect rect_to_scroll;
-  auto params =
-      GetScrollParamsForFocusedEditableElement(*element, rect_to_scroll);
-  element->GetLayoutObject()->ScrollRectToVisible(rect_to_scroll,
-                                                  std::move(params));
+  gfx::Vector2dF editable_offset_from_caret(absolute_element_bounds.offset -
+                                            absolute_caret_bounds.offset);
+  gfx::SizeF editable_size(absolute_element_bounds.size);
 
-  // Second phase for main frames is to schedule a zoom animation.
-  if (ForMainFrame()) {
-    LocalFrameView* main_frame_view = LocalRootImpl()->GetFrame()->View();
+  params->for_focused_editable->relative_location = editable_offset_from_caret;
+  params->for_focused_editable->size = editable_size;
 
-    View()->ZoomAndScrollToFocusedEditableElementRect(
-        main_frame_view->RootFrameToDocument(
-            element->GetDocument().View()->ConvertToRootFrame(
-                element->GetLayoutObject()->AbsoluteBoundingBoxRect())),
-        main_frame_view->RootFrameToDocument(
-            element->GetDocument().View()->ConvertToRootFrame(
-                element->GetDocument()
-                    .GetFrame()
-                    ->Selection()
-                    .ComputeRectToScroll(kDoNotRevealExtent))),
-        View()->ShouldZoomToLegibleScale(*element));
-  }
+  scroll_into_view_util::ScrollRectToVisible(
+      *element->GetLayoutObject(), absolute_caret_bounds, std::move(params));
 
   return true;
 }
@@ -1959,6 +1984,7 @@ void WebFrameWidgetImpl::ResetMeaningfulLayoutStateForMainFrame() {
   data.should_dispatch_first_visually_non_empty_layout = true;
   data.should_dispatch_first_layout_after_finished_parsing = true;
   data.should_dispatch_first_layout_after_finished_loading = true;
+  data.last_background_color.reset();
 }
 
 void WebFrameWidgetImpl::InitializeCompositing(
@@ -1968,11 +1994,11 @@ void WebFrameWidgetImpl::InitializeCompositing(
   DCHECK(View()->does_composite());
   DCHECK(!non_composited_client_);  // Assure only one initialize is called.
   widget_base_->InitializeCompositing(
-      agent_group_scheduler, is_for_child_local_root_, screen_infos, settings,
+      agent_group_scheduler, screen_infos, settings,
       input_handler_weak_ptr_factory_.GetWeakPtr());
 
   LocalFrameView* frame_view;
-  if (is_for_child_local_root_) {
+  if (ForSubframe()) {
     frame_view = LocalRootImpl()->GetFrame()->View();
   } else {
     // Scrolling for the root frame is special we need to pass null indicating
@@ -2044,7 +2070,7 @@ void WebFrameWidgetImpl::BeginMainFrame(base::TimeTicks last_frame_time) {
       WTF::BindRepeating([](WebLocalFrameImpl* local_frame) {
         if (LocalFrameView* view = local_frame->GetFrameView()) {
           if (FragmentAnchor* anchor = view->GetFragmentAnchor())
-            anchor->PerformPreRafActions();
+            anchor->PerformScriptableActions();
         }
       }));
 
@@ -2057,7 +2083,7 @@ void WebFrameWidgetImpl::BeginMainFrame(base::TimeTicks last_frame_time) {
                           .GetScopedTimer(LocalFrameUkmAggregator::kAnimate));
   }
 
-  PageWidgetDelegate::Animate(*GetPage(), last_frame_time);
+  GetPage()->Animate(last_frame_time);
   // Animate can cause the local frame to detach.
   if (!LocalRootImpl())
     return;
@@ -2068,12 +2094,6 @@ void WebFrameWidgetImpl::BeginMainFrame(base::TimeTicks last_frame_time) {
 void WebFrameWidgetImpl::BeginCommitCompositorFrame() {
   commit_compositor_frame_start_time_.emplace(base::TimeTicks::Now());
   probe::LayerTreePainted(LocalRootImpl()->GetFrame());
-}
-
-void WebFrameWidgetImpl::EndCommitCompositorFrame(
-    base::TimeTicks commit_start_time,
-    base::TimeTicks commit_finish_time) {
-  DCHECK(commit_compositor_frame_start_time_.has_value());
   if (ForTopMostMainFrame()) {
     Document* doc = local_root_->GetFrame()->GetDocument();
     if (doc->GetSettings()->GetViewportMetaEnabled() &&
@@ -2094,7 +2114,12 @@ void WebFrameWidgetImpl::EndCommitCompositorFrame(
       base::debug::DumpWithoutCrashing();
     }
   }
+}
 
+void WebFrameWidgetImpl::EndCommitCompositorFrame(
+    base::TimeTicks commit_start_time,
+    base::TimeTicks commit_finish_time) {
+  DCHECK(commit_compositor_frame_start_time_.has_value());
   LocalRootImpl()
       ->GetFrame()
       ->View()
@@ -2106,9 +2131,12 @@ void WebFrameWidgetImpl::EndCommitCompositorFrame(
 
 void WebFrameWidgetImpl::ApplyViewportChanges(
     const ApplyViewportChangesArgs& args) {
-  // Viewport changes only change the main frame.
-  if (!ForMainFrame())
+  // Viewport changes only change the outermost main frame. Technically a
+  // portal has a viewport but it cannot produce changes from the compositor
+  // until activated so this should be correct for portals too.
+  if (!LocalRootImpl()->GetFrame()->IsOutermostMainFrame())
     return;
+
   WebViewImpl* web_view = View();
   // TODO(https://crbug.com/1160652): Figure out if View is null.
   CHECK(widget_base_);
@@ -2432,16 +2460,18 @@ WebInputEventResult WebFrameWidgetImpl::HandleInputEvent(
   DCHECK(!WebInputEvent::IsTouchEventType(input_event.GetType()));
   CHECK(LocalRootImpl());
 
-  // Only record metrics for the main frame.
-  if (ForMainFrame()) {
+  // Only record metrics for the root frame.
+  if (ForTopMostMainFrame()) {
     GetPage()->GetVisualViewport().StartTrackingPinchStats();
   }
 
   // If a drag-and-drop operation is in progress, ignore input events except
-  // PointerCancel.
+  // PointerCancel and GestureLongPress.
   if (doing_drag_and_drop_ &&
-      input_event.GetType() != WebInputEvent::Type::kPointerCancel)
+      input_event.GetType() != WebInputEvent::Type::kPointerCancel &&
+      input_event.GetType() != WebInputEvent::Type::kGestureLongPress) {
     return WebInputEventResult::kHandledSuppressed;
+  }
 
   // Don't handle events once we've started shutting down.
   if (!GetPage())
@@ -2495,7 +2525,7 @@ WebInputEventResult WebFrameWidgetImpl::HandleInputEvent(
   Frame* frame = FocusedCoreFrame();
   if (auto* local_frame = DynamicTo<LocalFrame>(frame)) {
     if (auto* content_capture_manager =
-            local_frame->LocalFrameRoot().GetContentCaptureManager()) {
+            local_frame->LocalFrameRoot().GetOrResetContentCaptureManager()) {
       content_capture_manager->NotifyInputEvent(input_event.GetType(),
                                                 *local_frame);
     }
@@ -2512,7 +2542,7 @@ WebInputEventResult WebFrameWidgetImpl::HandleInputEvent(
 
   // FIXME: This should take in the intended frame, not the local frame
   // root.
-  return PageWidgetDelegate::HandleInputEvent(*this, coalesced_event,
+  return WidgetEventHandler::HandleInputEvent(coalesced_event,
                                               LocalRootImpl()->GetFrame());
 }
 
@@ -2845,13 +2875,10 @@ void WebFrameWidgetImpl::SetDelegatedInkMetadata(
 // swap promises.
 class ReportTimeSwapPromise : public cc::SwapPromise {
  public:
-  ReportTimeSwapPromise(
-      base::OnceCallback<void(base::TimeTicks)> swap_time_callback,
-      base::OnceCallback<void(base::TimeTicks)> presentation_time_callback,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      WebFrameWidgetImpl* widget)
-      : swap_time_callback_(std::move(swap_time_callback)),
-        presentation_time_callback_(std::move(presentation_time_callback)),
+  ReportTimeSwapPromise(WebFrameWidgetImpl::PromiseCallbacks callbacks,
+                        scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+                        WebFrameWidgetImpl* widget)
+      : promise_callbacks_(std::move(callbacks)),
         task_runner_(std::move(task_runner)),
         widget_(widget) {}
 
@@ -2873,17 +2900,42 @@ class ReportTimeSwapPromise : public cc::SwapPromise {
     DCHECK_GT(frame_token_, 0u);
     PostCrossThreadTask(
         *task_runner_, FROM_HERE,
-        CrossThreadBindOnce(
-            &RunCallbackAfterSwap, widget_, base::TimeTicks::Now(),
-            std::move(swap_time_callback_),
-            std::move(presentation_time_callback_), frame_token_));
+        CrossThreadBindOnce(&RunCallbackAfterSwap, widget_,
+                            base::TimeTicks::Now(),
+                            std::move(promise_callbacks_), frame_token_));
   }
 
   DidNotSwapAction DidNotSwap(DidNotSwapReason reason) override {
-    ReportSwapAndPresentationFailureOnTaskRunner(
-        task_runner_, std::move(swap_time_callback_),
-        std::move(presentation_time_callback_), base::TimeTicks::Now());
-    return DidNotSwapAction::BREAK_PROMISE;
+    if (base::FeatureList::IsEnabled(
+            features::kReportFCPOnlyOnSuccessfulCommit)) {
+      if (reason != DidNotSwapReason::SWAP_FAILS &&
+          reason != DidNotSwapReason::COMMIT_NO_UPDATE) {
+        return DidNotSwapAction::KEEP_ACTIVE;
+      }
+    }
+
+    DidNotSwapAction action = DidNotSwapAction::BREAK_PROMISE;
+    WebFrameWidgetImpl::PromiseCallbacks promise_callbacks_on_failure = {
+        .swap_time_callback = std::move(promise_callbacks_.swap_time_callback),
+        .presentation_time_callback =
+            std::move(promise_callbacks_.presentation_time_callback)};
+
+#if BUILDFLAG(IS_MAC)
+    if (reason == DidNotSwapReason::COMMIT_FAILS &&
+        promise_callbacks_.core_animation_error_code_callback) {
+      action = DidNotSwapAction::KEEP_ACTIVE;
+    } else {
+      promise_callbacks_on_failure.core_animation_error_code_callback =
+          std::move(promise_callbacks_.core_animation_error_code_callback);
+    }
+#endif
+
+    if (!promise_callbacks_on_failure.IsEmpty()) {
+      ReportSwapAndPresentationFailureOnTaskRunner(
+          task_runner_, std::move(promise_callbacks_on_failure),
+          base::TimeTicks::Now());
+    }
+    return action;
   }
 
   int64_t GetTraceId() const override { return 0; }
@@ -2892,8 +2944,7 @@ class ReportTimeSwapPromise : public cc::SwapPromise {
   static void RunCallbackAfterSwap(
       WebFrameWidgetImpl* widget,
       base::TimeTicks swap_time,
-      base::OnceCallback<void(base::TimeTicks)> swap_time_callback,
-      base::OnceCallback<void(base::TimeTicks)> presentation_time_callback,
+      WebFrameWidgetImpl::PromiseCallbacks callbacks,
       int frame_token) {
     // If the widget was collected or the widget wasn't collected yet, but
     // it was closed don't schedule a presentation callback.
@@ -2901,11 +2952,24 @@ class ReportTimeSwapPromise : public cc::SwapPromise {
       widget->widget_base_->AddPresentationCallback(
           frame_token,
           WTF::Bind(&RunCallbackAfterPresentation,
-                    std::move(presentation_time_callback), swap_time));
-      ReportTime(std::move(swap_time_callback), swap_time);
+                    std::move(callbacks.presentation_time_callback),
+                    swap_time));
+      ReportTime(std::move(callbacks.swap_time_callback), swap_time);
+
+#if BUILDFLAG(IS_MAC)
+      if (callbacks.core_animation_error_code_callback) {
+        widget->widget_base_->AddCoreAnimationErrorCodeCallback(
+            frame_token,
+            std::move(callbacks.core_animation_error_code_callback));
+      }
+#endif
     } else {
-      ReportTime(std::move(swap_time_callback), swap_time);
-      ReportTime(std::move(presentation_time_callback), swap_time);
+      ReportTime(std::move(callbacks.swap_time_callback), swap_time);
+      ReportTime(std::move(callbacks.presentation_time_callback), swap_time);
+#if BUILDFLAG(IS_MAC)
+      ReportErrorCode(std::move(callbacks.core_animation_error_code_callback),
+                      gfx::kCALayerUnknownNoWidget);
+#endif
     }
   }
 
@@ -2934,63 +2998,80 @@ class ReportTimeSwapPromise : public cc::SwapPromise {
       std::move(callback).Run(time);
   }
 
+#if BUILDFLAG(IS_MAC)
+  static void ReportErrorCode(
+      base::OnceCallback<void(gfx::CALayerResult)> callback,
+      gfx::CALayerResult error_code) {
+    if (callback)
+      std::move(callback).Run(error_code);
+  }
+#endif
+
   static void ReportSwapAndPresentationFailureOnTaskRunner(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      base::OnceCallback<void(base::TimeTicks)> swap_time_callback,
-      base::OnceCallback<void(base::TimeTicks)> presentation_time_callback,
+      WebFrameWidgetImpl::PromiseCallbacks callbacks,
       base::TimeTicks failure_time) {
     if (!task_runner->BelongsToCurrentThread()) {
       PostCrossThreadTask(
           *task_runner, FROM_HERE,
           CrossThreadBindOnce(&ReportSwapAndPresentationFailureOnTaskRunner,
-                              task_runner, std::move(swap_time_callback),
-                              std::move(presentation_time_callback),
-                              failure_time));
+                              task_runner, std::move(callbacks), failure_time));
       return;
     }
 
-    ReportTime(std::move(swap_time_callback), failure_time);
-    ReportTime(std::move(presentation_time_callback), failure_time);
+    ReportTime(std::move(callbacks.swap_time_callback), failure_time);
+    ReportTime(std::move(callbacks.presentation_time_callback), failure_time);
+#if BUILDFLAG(IS_MAC)
+    ReportErrorCode(std::move(callbacks.core_animation_error_code_callback),
+                    gfx::kCALayerUnknownDidNotSwap);
+#endif
   }
 
-  base::OnceCallback<void(base::TimeTicks)> swap_time_callback_;
-  base::OnceCallback<void(base::TimeTicks)> presentation_time_callback_;
+  WebFrameWidgetImpl::PromiseCallbacks promise_callbacks_;
+
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   CrossThreadWeakPersistent<WebFrameWidgetImpl> widget_;
   uint32_t frame_token_ = 0;
 };
 
 void WebFrameWidgetImpl::NotifySwapAndPresentationTimeForTesting(
-    base::OnceCallback<void(base::TimeTicks)> swap_callback,
-    base::OnceCallback<void(base::TimeTicks)> presentation_callback) {
-  NotifySwapAndPresentationTime(std::move(swap_callback),
-                                std::move(presentation_callback));
+    PromiseCallbacks callbacks) {
+  NotifySwapAndPresentationTime(std::move(callbacks));
 }
 
 void WebFrameWidgetImpl::NotifyPresentationTimeInBlink(
     base::OnceCallback<void(base::TimeTicks)> presentation_callback) {
-  NotifySwapAndPresentationTime(base::NullCallback(),
-                                std::move(presentation_callback));
+  NotifySwapAndPresentationTime(
+      {.presentation_time_callback = std::move(presentation_callback)});
 }
 
 void WebFrameWidgetImpl::NotifyPresentationTime(
     base::OnceCallback<void(base::TimeTicks)> presentation_callback) {
-  NotifySwapAndPresentationTime(base::NullCallback(),
-                                std::move(presentation_callback));
+  NotifySwapAndPresentationTime(
+      {.presentation_time_callback = std::move(presentation_callback)});
 }
 
+#if BUILDFLAG(IS_MAC)
+void WebFrameWidgetImpl::NotifyCoreAnimationErrorCode(
+    base::OnceCallback<void(gfx::CALayerResult)>
+        core_animation_error_code_callback) {
+  NotifySwapAndPresentationTime(
+      {.core_animation_error_code_callback =
+           std::move(core_animation_error_code_callback)});
+}
+#endif
+
 void WebFrameWidgetImpl::NotifySwapAndPresentationTime(
-    base::OnceCallback<void(base::TimeTicks)> swap_time_callback,
-    base::OnceCallback<void(base::TimeTicks)> presentation_time_callback) {
+    PromiseCallbacks callbacks) {
   if (!View()->does_composite())
     return;
+
   widget_base_->LayerTreeHost()->QueueSwapPromise(
-      std::make_unique<ReportTimeSwapPromise>(
-          std::move(swap_time_callback), std::move(presentation_time_callback),
-          widget_base_->LayerTreeHost()
-              ->GetTaskRunnerProvider()
-              ->MainThreadTaskRunner(),
-          this));
+      std::make_unique<ReportTimeSwapPromise>(std::move(callbacks),
+                                              widget_base_->LayerTreeHost()
+                                                  ->GetTaskRunnerProvider()
+                                                  ->MainThreadTaskRunner(),
+                                              this));
 }
 
 scheduler::WebRenderWidgetSchedulingState*
@@ -3156,7 +3237,11 @@ bool WebFrameWidgetImpl::HandlingSelectRange() {
 }
 
 void WebFrameWidgetImpl::SetFocus(bool focus) {
-  widget_base_->SetFocus(focus);
+  widget_base_->SetFocus(
+      focus ? mojom::blink::FocusState::kFocused
+            : View()->IsActive()
+                  ? mojom::blink::FocusState::kNotFocusedAndActive
+                  : mojom::blink::FocusState::kNotFocusedAndNotActive);
 }
 
 bool WebFrameWidgetImpl::HasFocus() {
@@ -3183,7 +3268,7 @@ void WebFrameWidgetImpl::DidOverscroll(
     const gfx::Vector2dF& accumulated_overscroll,
     const gfx::PointF& position,
     const gfx::Vector2dF& velocity) {
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   // On OSX the user can disable the elastic overscroll effect. If that's the
   // case, don't forward the overscroll notification.
   if (!widget_base_->LayerTreeHost()->GetSettings().enable_elastic_overscroll)
@@ -3288,8 +3373,7 @@ bool WebFrameWidgetImpl::IsProvisional() {
 }
 
 uint64_t WebFrameWidgetImpl::GetScrollableContainerIdAt(
-    const gfx::PointF& point_in_dips) {
-  gfx::PointF point = widget_base_->DIPsToBlinkSpace(point_in_dips);
+    const gfx::PointF& point) {
   return HitTestResultAt(point).GetScrollableContainerId();
 }
 
@@ -3329,7 +3413,7 @@ void WebFrameWidgetImpl::ProcessTouchAction(WebTouchAction touch_action) {
 }
 
 void WebFrameWidgetImpl::DidHandleGestureEvent(const WebGestureEvent& event) {
-#if defined(OS_ANDROID) || defined(USE_AURA)
+#if BUILDFLAG(IS_ANDROID) || defined(USE_AURA)
   if (event.GetType() == WebInputEvent::Type::kGestureTap) {
     widget_base_->ShowVirtualKeyboard();
   } else if (event.GetType() == WebInputEvent::Type::kGestureLongPress) {
@@ -3649,8 +3733,7 @@ void WebFrameWidgetImpl::MoveRangeSelectionExtent(
       widget_base_->DIPsToRoundedBlinkSpace(extent_in_dips));
 }
 
-void WebFrameWidgetImpl::ScrollFocusedEditableNodeIntoRect(
-    const gfx::Rect& rect_in_dips) {
+void WebFrameWidgetImpl::ScrollFocusedEditableNodeIntoView() {
   WebLocalFrameImpl* local_frame = FocusedWebLocalFrameInWidget();
   if (!local_frame)
     return;
@@ -3660,7 +3743,14 @@ void WebFrameWidgetImpl::ScrollFocusedEditableNodeIntoRect(
   // DidChangeVisibleViewport to ensure that we don't assume the element
   // is already in view and ignore the scroll.
   local_frame->ResetHasScrolledFocusedEditableIntoView();
-  local_frame->ScrollFocusedEditableElementIntoRect(rect_in_dips);
+  local_frame->ScrollFocusedEditableElementIntoView();
+}
+
+void WebFrameWidgetImpl::WaitForPageScaleAnimationForTesting(
+    WaitForPageScaleAnimationForTestingCallback callback) {
+  DCHECK(ForMainFrame());
+  DCHECK(LocalRootImpl()->GetFrame()->IsOutermostMainFrame());
+  page_scale_animation_for_testing_callback_ = std::move(callback);
 }
 
 void WebFrameWidgetImpl::ZoomToFindInPageRect(
@@ -3681,7 +3771,7 @@ void WebFrameWidgetImpl::MoveCaret(const gfx::Point& point_in_dips) {
       widget_base_->DIPsToRoundedBlinkSpace(point_in_dips));
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 void WebFrameWidgetImpl::SelectAroundCaret(
     mojom::blink::SelectionGranularity granularity,
     bool should_show_handle,
@@ -3785,11 +3875,6 @@ void WebFrameWidgetImpl::CalculateSelectionBounds(
     *bounding_box_in_root_frame = visual_viewport.RootFrameToViewport(
         local_frame->View()->ConvertToRootFrame(bounding_box));
   }
-}
-
-void WebFrameWidgetImpl::BatterySavingsChanged(BatterySavingsFlags savings) {
-  widget_base_->LayerTreeHost()->SetEnableFrameRateThrottling(
-      savings & kAllowReducedFrameRate);
 }
 
 const viz::LocalSurfaceId& WebFrameWidgetImpl::LocalSurfaceIdFromParent() {
@@ -3929,11 +4014,7 @@ void WebFrameWidgetImpl::OrientationChanged() {
 void WebFrameWidgetImpl::DidUpdateSurfaceAndScreen(
     const display::ScreenInfos& previous_original_screen_infos) {
   display::ScreenInfo screen_info = widget_base_->GetScreenInfo();
-  if (Platform::Current()->IsUseZoomForDSFEnabled()) {
-    View()->SetZoomFactorForDeviceScaleFactor(screen_info.device_scale_factor);
-  } else {
-    View()->SetDeviceScaleFactor(screen_info.device_scale_factor);
-  }
+  View()->SetZoomFactorForDeviceScaleFactor(screen_info.device_scale_factor);
 
   if (ShouldAutoDetermineCompositingToLCDTextSetting()) {
     // This causes compositing state to be modified which dirties the
@@ -4079,7 +4160,6 @@ HitTestResult WebFrameWidgetImpl::HitTestResultForRootFramePos(
   HitTestResult result =
       LocalRootImpl()->GetFrame()->View()->HitTestWithThrottlingAllowed(
           location, HitTestRequest::kReadOnly | HitTestRequest::kActive);
-  result.SetToShadowHostIfInRestrictedShadowRoot();
   return result;
 }
 
@@ -4190,7 +4270,7 @@ bool WebFrameWidgetImpl::HasPendingPageScaleAnimation() {
 
 void WebFrameWidgetImpl::SetSourceURLForCompositor(ukm::SourceId source_id,
                                                    const KURL& url) {
-  LayerTreeHost()->SetSourceURL(source_id, url);
+  LayerTreeHost()->SetSourceURL(source_id, GURL(url));
 }
 
 base::ReadOnlySharedMemoryRegion
@@ -4244,19 +4324,20 @@ void WebFrameWidgetImpl::ImeFinishComposingTextForPlugin(bool keep_selection) {
     plugin->ImeFinishComposingTextForPlugin(keep_selection);
 }
 
-void WebFrameWidgetImpl::SetWindowRect(const gfx::Rect& window_rect) {
+void WebFrameWidgetImpl::SetWindowRect(const gfx::Rect& requested_rect,
+                                       const gfx::Rect& adjusted_rect) {
   DCHECK(ForMainFrame());
   if (SynchronousResizeModeForTestingEnabled()) {
     // This is a web-test-only path. At one point, it was planned to be
     // removed. See https://crbug.com/309760.
-    SetWindowRectSynchronously(window_rect);
+    SetWindowRectSynchronously(adjusted_rect);
     return;
   }
 
-  SetPendingWindowRect(window_rect);
+  SetPendingWindowRect(adjusted_rect);
   View()->SendWindowRectToMainFrameHost(
-      window_rect, WTF::Bind(&WebFrameWidgetImpl::AckPendingWindowRect,
-                             WrapWeakPersistent(this)));
+      requested_rect, WTF::Bind(&WebFrameWidgetImpl::AckPendingWindowRect,
+                                WrapWeakPersistent(this)));
 }
 
 void WebFrameWidgetImpl::SetWindowRectSynchronouslyForTesting(
@@ -4298,77 +4379,6 @@ void WebFrameWidgetImpl::DidCreateLocalRootView() {
     child_data().did_suspend_parsing = true;
     LocalRootImpl()->GetFrame()->Loader().GetDocumentLoader()->BlockParser();
   }
-}
-
-mojom::blink::ScrollIntoViewParamsPtr
-WebFrameWidgetImpl::GetScrollParamsForFocusedEditableElement(
-    const Element& element,
-    PhysicalRect& out_rect_to_scroll) {
-  // For main frames, scrolling takes place in two phases.
-  if (ForMainFrame()) {
-    // Since the page has been resized, the layout may have changed. The page
-    // scale animation started by ZoomAndScrollToFocusedEditableRect will scroll
-    // only the visual and layout viewports. We'll call ScrollRectToVisible with
-    // the stop_at_main_frame_layout_viewport param to ensure the element is
-    // actually visible in the page.
-    mojom::blink::ScrollIntoViewParamsPtr params =
-        ScrollAlignment::CreateScrollIntoViewParams(
-            ScrollAlignment::CenterIfNeeded(),
-            ScrollAlignment::CenterIfNeeded(),
-            mojom::blink::ScrollType::kProgrammatic, false,
-            mojom::blink::ScrollBehavior::kInstant);
-    params->stop_at_main_frame_layout_viewport = true;
-    out_rect_to_scroll =
-        PhysicalRect(element.GetLayoutObject()->AbsoluteBoundingBoxRect());
-    return params;
-  }
-
-  LocalFrameView& frame_view = *element.GetDocument().View();
-  gfx::Rect absolute_element_bounds =
-      element.GetLayoutObject()->AbsoluteBoundingBoxRect();
-  gfx::Rect absolute_caret_bounds =
-      element.GetDocument().GetFrame()->Selection().AbsoluteCaretBounds();
-  // Ideally, the chosen rectangle includes the element box and caret bounds
-  // plus some margin on the left. If this does not work (i.e., does not fit
-  // inside the frame view), then choose a subrect which includes the caret
-  // bounds. It is preferable to also include element bounds' location and left
-  // align the scroll. If this cant be satisfied, the scroll will be right
-  // aligned.
-  gfx::Rect maximal_rect =
-      UnionRects(absolute_element_bounds, absolute_caret_bounds);
-
-  // Set the ideal margin.
-  int width =
-      static_cast<int>(kIdealPaddingRatio * absolute_element_bounds.width());
-  maximal_rect.set_x(maximal_rect.right() - width);
-  maximal_rect.set_height(width);
-
-  bool maximal_rect_fits_in_frame =
-      !(frame_view.Size() - maximal_rect.size()).IsEmpty();
-
-  if (!maximal_rect_fits_in_frame) {
-    gfx::Rect frame_rect(maximal_rect.origin(), frame_view.Size());
-    maximal_rect.Intersect(frame_rect);
-    gfx::Point point_forced_to_be_visible =
-        absolute_caret_bounds.bottom_right() +
-        gfx::Vector2d(kCaretPadding, kCaretPadding);
-    if (!maximal_rect.Contains(point_forced_to_be_visible)) {
-      // Move the rect towards the point until the point is barely contained.
-      maximal_rect.Offset(point_forced_to_be_visible -
-                          maximal_rect.bottom_right());
-    }
-  }
-
-  mojom::blink::ScrollIntoViewParamsPtr params =
-      ScrollAlignment::CreateScrollIntoViewParams();
-  params->zoom_into_rect = View()->ShouldZoomToLegibleScale(element);
-  params->relative_element_bounds = ToGfxRectF(NormalizeRect(
-      IntersectRects(absolute_element_bounds, maximal_rect), maximal_rect));
-  params->relative_caret_bounds = ToGfxRectF(NormalizeRect(
-      IntersectRects(absolute_caret_bounds, maximal_rect), maximal_rect));
-  params->behavior = mojom::blink::ScrollBehavior::kInstant;
-  out_rect_to_scroll = PhysicalRect(maximal_rect);
-  return params;
 }
 
 bool WebFrameWidgetImpl::ShouldAutoDetermineCompositingToLCDTextSetting() {

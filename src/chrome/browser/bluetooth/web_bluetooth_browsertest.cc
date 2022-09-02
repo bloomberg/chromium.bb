@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/with_feature_override.h"
 #include "chrome/browser/bluetooth/bluetooth_chooser_context_factory.h"
 #include "chrome/browser/bluetooth/chrome_bluetooth_delegate_impl_client.h"
 #include "chrome/browser/chrome_content_browser_client.h"
@@ -31,9 +32,11 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/bluetooth_test_utils.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_base.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/content_mock_cert_verifier.h"
 #include "content/public/test/prerender_test_util.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
@@ -52,6 +55,8 @@
 #include "device/bluetooth/test/mock_bluetooth_gatt_connection.h"
 #include "device/bluetooth/test/mock_bluetooth_gatt_notify_session.h"
 #include "device/bluetooth/test/mock_bluetooth_gatt_service.h"
+#include "net/dns/mock_host_resolver.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/bluetooth/web_bluetooth_device_id.h"
@@ -78,6 +83,8 @@ constexpr char kHeartRateMeasurementUUIDString[] =
 const device::BluetoothUUID kHeartRateUUID(kHeartRateUUIDString);
 const device::BluetoothUUID kHeartRateMeasurementUUID(
     kHeartRateMeasurementUUIDString);
+
+constexpr char kExampleUrl[] = "https://example.com";
 
 class FakeBluetoothAdapter
     : public testing::NiceMock<device::MockBluetoothAdapter> {
@@ -422,9 +429,22 @@ class WebBluetoothTest : public InProcessBrowserTest {
     // supported on Linux.
     command_line->AppendSwitch(
         switches::kEnableExperimentalWebPlatformFeatures);
+    mock_cert_verifier_.SetUpCommandLine(command_line);
+  }
+
+  void SetUpInProcessBrowserTestFixture() override {
+    mock_cert_verifier_.SetUpInProcessBrowserTestFixture();
+  }
+
+  void TearDownInProcessBrowserTestFixture() override {
+    mock_cert_verifier_.TearDownInProcessBrowserTestFixture();
   }
 
   void SetUpOnMainThread() override {
+    mock_cert_verifier_.mock_cert_verifier()->set_default_result(net::OK);
+    // Necessary to make content/test/data/cross_site_iframe_factory.html work.
+    host_resolver()->AddRule("*", "127.0.0.1");
+
     // Web Bluetooth permissions are granted for an origin. The tests for Web
     // Bluetooth permissions run code across a browser restart by splitting the
     // tests into separate test cases where the test prefixed with PRE_ runs
@@ -443,12 +463,6 @@ class WebBluetoothTest : public InProcessBrowserTest {
               }
               return false;
             }));
-    ASSERT_TRUE(
-        ui_test_utils::NavigateToURL(browser(), GURL("https://example.com")));
-    web_contents_ = browser()->tab_strip_model()->GetActiveWebContents();
-    EXPECT_THAT(
-        web_contents_->GetMainFrame()->GetLastCommittedOrigin().Serialize(),
-        testing::StartsWith("https://example.com"));
 
     adapter_ = base::MakeRefCounted<FakeBluetoothAdapter>();
     global_values_ =
@@ -462,6 +476,17 @@ class WebBluetoothTest : public InProcessBrowserTest {
     content::SetBrowserClientForTesting(old_browser_client_);
     url_loader_interceptor_.reset();
   }
+
+  net::EmbeddedTestServer* CreateHttpsServer() {
+    https_server_ = std::make_unique<net::EmbeddedTestServer>(
+        net::EmbeddedTestServer::TYPE_HTTPS);
+    https_server_->ServeFilesFromSourceDirectory("content/test/data");
+    https_server_->AddDefaultHandlers();
+    https_server_->SetSSLConfig(net::EmbeddedTestServer::CERT_OK);
+    return https_server();
+  }
+
+  net::EmbeddedTestServer* https_server() { return https_server_.get(); }
 
   void AddFakeDevice(const std::string& device_address) {
     constexpr int kProperties = BluetoothGattCharacteristic::PROPERTY_READ |
@@ -501,6 +526,13 @@ class WebBluetoothTest : public InProcessBrowserTest {
     browser_client_.bluetooth_delegate()->UseRealChooser();
   }
 
+  void CheckLastCommitedOrigin(const std::string& pattern) {
+    EXPECT_THAT(web_contents_->GetPrimaryMainFrame()
+                    ->GetLastCommittedOrigin()
+                    .Serialize(),
+                testing::StartsWith(pattern));
+  }
+
   std::unique_ptr<device::BluetoothAdapterFactory::GlobalValuesForTesting>
       global_values_;
   scoped_refptr<FakeBluetoothAdapter> adapter_;
@@ -510,9 +542,18 @@ class WebBluetoothTest : public InProcessBrowserTest {
 
   raw_ptr<content::WebContents> web_contents_ = nullptr;
   std::unique_ptr<content::URLLoaderInterceptor> url_loader_interceptor_;
+
+  // Web Bluetooth needs HTTPS to work (a secure context). Moreover,
+  // ContentMockCertVerifier is used to avoid HTTPS certificate errors.
+  std::unique_ptr<net::EmbeddedTestServer> https_server_;
+  content::ContentMockCertVerifier mock_cert_verifier_;
 };
 
 IN_PROC_BROWSER_TEST_F(WebBluetoothTest, WebBluetoothAfterCrash) {
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL(kExampleUrl)));
+  web_contents_ = browser()->tab_strip_model()->GetActiveWebContents();
+  CheckLastCommitedOrigin(kExampleUrl);
+
   // Make sure we can use Web Bluetooth after the tab crashes.
   // Set up adapter with one device.
   adapter_->SetIsPresent(false);
@@ -526,7 +567,7 @@ IN_PROC_BROWSER_TEST_F(WebBluetoothTest, WebBluetoothAfterCrash) {
 
   // Crash the renderer process.
   content::RenderProcessHost* process =
-      web_contents_->GetMainFrame()->GetProcess();
+      web_contents_->GetPrimaryMainFrame()->GetProcess();
   content::RenderProcessHostWatcher crash_observer(
       process, content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
   process->Shutdown(0);
@@ -549,6 +590,10 @@ IN_PROC_BROWSER_TEST_F(WebBluetoothTest, WebBluetoothAfterCrash) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebBluetoothTest, KillSwitchShouldBlock) {
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL(kExampleUrl)));
+  web_contents_ = browser()->tab_strip_model()->GetActiveWebContents();
+  CheckLastCommitedOrigin(kExampleUrl);
+
   // Turn on the global kill switch.
   std::map<std::string, std::string> params;
   params["Bluetooth"] =
@@ -576,6 +621,10 @@ IN_PROC_BROWSER_TEST_F(WebBluetoothTest, KillSwitchShouldBlock) {
 // Tests that using Finch field trial parameters for blocklist additions has
 // the effect of rejecting requestDevice calls.
 IN_PROC_BROWSER_TEST_F(WebBluetoothTest, BlocklistShouldBlock) {
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL(kExampleUrl)));
+  web_contents_ = browser()->tab_strip_model()->GetActiveWebContents();
+  CheckLastCommitedOrigin(kExampleUrl);
+
   if (base::FieldTrialList::TrialExists("WebBluetoothBlocklist")) {
     LOG(INFO) << "WebBluetoothBlocklist field trial already configured.";
     ASSERT_NE(variations::GetVariationParamValue("WebBluetoothBlocklist",
@@ -611,6 +660,10 @@ IN_PROC_BROWSER_TEST_F(WebBluetoothTest, BlocklistShouldBlock) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebBluetoothTest, NavigateWithChooserCrossOrigin) {
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL(kExampleUrl)));
+  web_contents_ = browser()->tab_strip_model()->GetActiveWebContents();
+  CheckLastCommitedOrigin(kExampleUrl);
+
   UseRealChooser();
   content::TestNavigationObserver observer(
       web_contents_, 1 /* number_of_navigations */,
@@ -638,6 +691,10 @@ IN_PROC_BROWSER_TEST_F(WebBluetoothTest, NavigateWithChooserCrossOrigin) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebBluetoothTest, ShowChooserInBackgroundTab) {
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL(kExampleUrl)));
+  web_contents_ = browser()->tab_strip_model()->GetActiveWebContents();
+  CheckLastCommitedOrigin(kExampleUrl);
+
   UseRealChooser();
 
   content::WebContents* web_contents =
@@ -645,8 +702,7 @@ IN_PROC_BROWSER_TEST_F(WebBluetoothTest, ShowChooserInBackgroundTab) {
 
   // Create a new foreground tab that covers |web_contents|.
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(), GURL("https://example.com"),
-      WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      browser(), GURL(kExampleUrl), WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
 
   // Try to show the chooser in the background tab.
@@ -663,6 +719,10 @@ IN_PROC_BROWSER_TEST_F(WebBluetoothTest, ShowChooserInBackgroundTab) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebBluetoothTest, NotificationStartValueChangeRead) {
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL(kExampleUrl)));
+  web_contents_ = browser()->tab_strip_model()->GetActiveWebContents();
+  CheckLastCommitedOrigin(kExampleUrl);
+
   AddFakeDevice(kDeviceAddress);
   ASSERT_TRUE(characteristic_);
   characteristic_->DeferReadUntilNotificationStart();
@@ -693,12 +753,16 @@ IN_PROC_BROWSER_TEST_F(WebBluetoothTest, NotificationStartValueChangeRead) {
       return Promise.all([readPromise, notifyPromise]);
     })())");
 
-  const base::ListValue promise_values = js_values.ExtractList();
-  EXPECT_EQ(2U, promise_values.GetList().size());
+  const base::Value promise_values = js_values.ExtractList();
+  EXPECT_EQ(2U, promise_values.GetListDeprecated().size());
   EXPECT_EQ(content::ListValueOf(1, 1), js_values);
 }
 
 IN_PROC_BROWSER_TEST_F(WebBluetoothTest, NotificationStartValueChangeNotify) {
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL(kExampleUrl)));
+  web_contents_ = browser()->tab_strip_model()->GetActiveWebContents();
+  CheckLastCommitedOrigin(kExampleUrl);
+
   AddFakeDevice(kDeviceAddress);
   ASSERT_TRUE(characteristic_);
   characteristic_->EmitChangeNotificationAtNotificationStart();
@@ -723,6 +787,128 @@ IN_PROC_BROWSER_TEST_F(WebBluetoothTest, NotificationStartValueChangeNotify) {
     })())"));
 }
 
+// The Web Bluetooth Permissions Policy tests should work with the
+// WebBluetoothNewPermissionsBackend feature flag being either enabled or
+// disabled.
+class WebBluetoothPermissionsPolicyTest
+    : public base::test::WithFeatureOverride,
+      public WebBluetoothTest {
+ public:
+  WebBluetoothPermissionsPolicyTest()
+      : base::test::WithFeatureOverride(
+            features::kWebBluetoothNewPermissionsBackend) {}
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    WebBluetoothTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
+                                    "WebBluetoothGetDevices");
+  }
+
+  content::EvalJsResult InvokeRequestDevice(
+      const content::ToRenderFrameHost& adapter) {
+    return content::EvalJs(adapter, R"((async () => {
+      try {
+        const device = await navigator.bluetooth.requestDevice(
+          {filters: [{name: 'Test Device', services: ['heart_rate']}]});
+        return [ device.id ];
+      } catch(e) {
+        return `${e.name}: ${e.message}`;
+      }
+    })())");
+  }
+
+  content::EvalJsResult InvokeGetDevices(
+      const content::ToRenderFrameHost& adapter) {
+    return content::EvalJs(adapter, R"((async () => {
+      try {
+        const devices = await navigator.bluetooth.getDevices(
+          {filters: [{name: 'Test Device', services: ['heart_rate']}]});
+        return devices.map(device => device.id);
+      } catch(e) {
+        return `${e.name}: ${e.message}`;
+      }
+    })())");
+  }
+};
+
+INSTANTIATE_FEATURE_OVERRIDE_TEST_SUITE(WebBluetoothPermissionsPolicyTest);
+
+IN_PROC_BROWSER_TEST_P(WebBluetoothPermissionsPolicyTest,
+                       ThrowSecurityWhenIFrameIsDisallowed) {
+  ASSERT_TRUE(CreateHttpsServer()->Start());
+  AddFakeDevice(kDeviceAddress);
+  SetDeviceToSelect(kDeviceAddress);
+
+  web_contents_ = browser()->tab_strip_model()->GetActiveWebContents();
+  GURL outer_url = https_server()->GetURL(
+      "outer.com", "/cross_site_iframe_factory.html?outer(inner())");
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), outer_url));
+
+  // Attempting to access bluetooth devices from a disallowed iframe should
+  // throw a SecurityError.
+  content::EvalJsResult inner_device_error = InvokeGetDevices(
+      content::ChildFrameAt(web_contents_->GetPrimaryMainFrame(), 0));
+  EXPECT_EQ(
+      "SecurityError: Failed to execute 'getDevices' on 'Bluetooth': Access to "
+      "the feature \"bluetooth\" is disallowed by permissions policy.",
+      inner_device_error);
+}
+
+IN_PROC_BROWSER_TEST_P(WebBluetoothPermissionsPolicyTest,
+                       AllowedChildFrameShouldHaveAccessToParentDevices) {
+  ASSERT_TRUE(CreateHttpsServer()->Start());
+  AddFakeDevice(kDeviceAddress);
+  SetDeviceToSelect(kDeviceAddress);
+
+  web_contents_ = browser()->tab_strip_model()->GetActiveWebContents();
+  GURL outer_url = https_server()->GetURL(
+      "outer.com",
+      "/cross_site_iframe_factory.html?outer(inner{allow-bluetooth}())");
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), outer_url));
+
+  // The inner frame should have access to the same devices that the main page
+  // has requested.
+  content::EvalJsResult outer_device_id =
+      InvokeRequestDevice(web_contents_.get());
+  content::EvalJsResult inner_device_id = InvokeGetDevices(
+      content::ChildFrameAt(web_contents_->GetPrimaryMainFrame(), 0));
+  ASSERT_TRUE(outer_device_id.value.is_list()) << outer_device_id.value;
+  ASSERT_TRUE(inner_device_id.value.is_list()) << inner_device_id.value;
+  EXPECT_EQ(outer_device_id.ExtractList(), inner_device_id.ExtractList());
+
+  // If we navigate the main frame to inner.com, it should lose access to the
+  // outer.com devices.
+  web_contents_ = browser()->tab_strip_model()->GetActiveWebContents();
+  GURL inner_url = https_server()->GetURL("inner.com", "/simple_page.html");
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), inner_url));
+  content::EvalJsResult inner_device_id_after_navigation =
+      InvokeGetDevices(web_contents_.get());
+  // Expect an empty list.
+  EXPECT_EQ(base::Value(base::Value::List()), inner_device_id_after_navigation);
+}
+
+IN_PROC_BROWSER_TEST_P(WebBluetoothPermissionsPolicyTest,
+                       ParentShouldHaveAccessToAllowedChildFrameDevices) {
+  ASSERT_TRUE(CreateHttpsServer()->Start());
+  AddFakeDevice(kDeviceAddress);
+  SetDeviceToSelect(kDeviceAddress);
+
+  web_contents_ = browser()->tab_strip_model()->GetActiveWebContents();
+  GURL outer_url = https_server()->GetURL(
+      "outer.com",
+      "/cross_site_iframe_factory.html?outer(inner{allow-bluetooth}())");
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), outer_url));
+
+  // The main page should have access to the same devices that the inner frame
+  // has requested.
+  content::EvalJsResult inner_device_id = InvokeRequestDevice(
+      content::ChildFrameAt(web_contents_->GetPrimaryMainFrame(), 0));
+  content::EvalJsResult outer_device_id = InvokeGetDevices(web_contents_.get());
+  ASSERT_TRUE(outer_device_id.value.is_list()) << outer_device_id.value;
+  ASSERT_TRUE(inner_device_id.value.is_list()) << inner_device_id.value;
+  EXPECT_EQ(outer_device_id.ExtractList(), inner_device_id.ExtractList());
+}
+
 // The new Web Bluetooth permissions backend is currently implemented behind a
 // feature flag.
 // TODO(https://crbug.com/589228): Delete this class and convert all the tests
@@ -741,12 +927,27 @@ class WebBluetoothTestWithNewPermissionsBackendEnabled
   WebBluetoothTestWithNewPermissionsBackendEnabled& operator=(
       const WebBluetoothTestWithNewPermissionsBackendEnabled&) = delete;
 
+  void SetUp() override {
+    // Called to prevent flakiness that may arise from changes in the window
+    // visibility. WebBluetoothServiceImpl may clear up its WatchAdvertisement
+    // client lists before being able to simulate the device advertisement when
+    // the window visibility changes or lose focus, resulting in timeouts from
+    // promises that never resolve. This function prevents this clean up from
+    // happening.
+    content::IgnoreBluetoothVisibilityRequirementsForTesting();
+    WebBluetoothTest::SetUp();
+  }
+
  protected:
   base::test::ScopedFeatureList feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(WebBluetoothTestWithNewPermissionsBackendEnabled,
                        PRE_WebBluetoothPersistentIds) {
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL(kExampleUrl)));
+  web_contents_ = browser()->tab_strip_model()->GetActiveWebContents();
+  CheckLastCommitedOrigin(kExampleUrl);
+
   AddFakeDevice(kDeviceAddress);
   SetDeviceToSelect(kDeviceAddress);
 
@@ -770,6 +971,10 @@ IN_PROC_BROWSER_TEST_F(WebBluetoothTestWithNewPermissionsBackendEnabled,
 
 IN_PROC_BROWSER_TEST_F(WebBluetoothTestWithNewPermissionsBackendEnabled,
                        WebBluetoothPersistentIds) {
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL(kExampleUrl)));
+  web_contents_ = browser()->tab_strip_model()->GetActiveWebContents();
+  CheckLastCommitedOrigin(kExampleUrl);
+
   AddFakeDevice(kDeviceAddress);
   SetDeviceToSelect(kDeviceAddress);
 
@@ -801,6 +1006,10 @@ IN_PROC_BROWSER_TEST_F(WebBluetoothTestWithNewPermissionsBackendEnabled,
 
 IN_PROC_BROWSER_TEST_F(WebBluetoothTestWithNewPermissionsBackendEnabled,
                        PRE_WebBluetoothScanningIdsNotPersistent) {
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL(kExampleUrl)));
+  web_contents_ = browser()->tab_strip_model()->GetActiveWebContents();
+  CheckLastCommitedOrigin(kExampleUrl);
+
   // The request to scan should be automatically accepted. Store the detected
   // device's WebBluetoothDeviceId in localStorage to retrieve it after the
   // browser restarts.
@@ -831,6 +1040,10 @@ IN_PROC_BROWSER_TEST_F(WebBluetoothTestWithNewPermissionsBackendEnabled,
 
 IN_PROC_BROWSER_TEST_F(WebBluetoothTestWithNewPermissionsBackendEnabled,
                        WebBluetoothScanningIdsNotPersistent) {
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL(kExampleUrl)));
+  web_contents_ = browser()->tab_strip_model()->GetActiveWebContents();
+  CheckLastCommitedOrigin(kExampleUrl);
+
   // The request to scan should be automatically accepted. Store the detected
   // assigned to the scanned device against the one that was stored previously.
   ASSERT_TRUE(content::ExecJs(web_contents_.get(), R"(
@@ -865,6 +1078,10 @@ IN_PROC_BROWSER_TEST_F(WebBluetoothTestWithNewPermissionsBackendEnabled,
 
 IN_PROC_BROWSER_TEST_F(WebBluetoothTestWithNewPermissionsBackendEnabled,
                        PRE_WebBluetoothIdsUsedInWebBluetoothScanning) {
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL(kExampleUrl)));
+  web_contents_ = browser()->tab_strip_model()->GetActiveWebContents();
+  CheckLastCommitedOrigin(kExampleUrl);
+
   AddFakeDevice(kDeviceAddress);
   SetDeviceToSelect(kDeviceAddress);
 
@@ -888,6 +1105,10 @@ IN_PROC_BROWSER_TEST_F(WebBluetoothTestWithNewPermissionsBackendEnabled,
 
 IN_PROC_BROWSER_TEST_F(WebBluetoothTestWithNewPermissionsBackendEnabled,
                        WebBluetoothIdsUsedInWebBluetoothScanning) {
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL(kExampleUrl)));
+  web_contents_ = browser()->tab_strip_model()->GetActiveWebContents();
+  CheckLastCommitedOrigin(kExampleUrl);
+
   // The request to scan should be automatically accepted. Store the detected
   // assigned to the scanned device against the one that was stored previously.
   ASSERT_TRUE(content::ExecJs(web_contents_.get(), R"(
@@ -921,6 +1142,10 @@ IN_PROC_BROWSER_TEST_F(WebBluetoothTestWithNewPermissionsBackendEnabled,
 
 IN_PROC_BROWSER_TEST_F(WebBluetoothTestWithNewPermissionsBackendEnabled,
                        PRE_WebBluetoothPersistentServices) {
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL(kExampleUrl)));
+  web_contents_ = browser()->tab_strip_model()->GetActiveWebContents();
+  CheckLastCommitedOrigin(kExampleUrl);
+
   AddFakeDevice(kDeviceAddress);
   SetDeviceToSelect(kDeviceAddress);
 
@@ -943,6 +1168,10 @@ IN_PROC_BROWSER_TEST_F(WebBluetoothTestWithNewPermissionsBackendEnabled,
 
 IN_PROC_BROWSER_TEST_F(WebBluetoothTestWithNewPermissionsBackendEnabled,
                        WebBluetoothPersistentServices) {
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL(kExampleUrl)));
+  web_contents_ = browser()->tab_strip_model()->GetActiveWebContents();
+  CheckLastCommitedOrigin(kExampleUrl);
+
   AddFakeDevice(kDeviceAddress);
   SetDeviceToSelect(kDeviceAddress);
 
@@ -968,6 +1197,10 @@ IN_PROC_BROWSER_TEST_F(WebBluetoothTestWithNewPermissionsBackendEnabled,
 
 IN_PROC_BROWSER_TEST_F(WebBluetoothTestWithNewPermissionsBackendEnabled,
                        RevokingPermissionDisconnectsTheDevice) {
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL(kExampleUrl)));
+  web_contents_ = browser()->tab_strip_model()->GetActiveWebContents();
+  CheckLastCommitedOrigin(kExampleUrl);
+
   AddFakeDevice(kDeviceAddress);
   SetDeviceToSelect(kDeviceAddress);
 
@@ -996,7 +1229,8 @@ IN_PROC_BROWSER_TEST_F(WebBluetoothTestWithNewPermissionsBackendEnabled,
 
   permissions::BluetoothChooserContext* context =
       BluetoothChooserContextFactory::GetForProfile(browser()->profile());
-  url::Origin origin = web_contents_->GetMainFrame()->GetLastCommittedOrigin();
+  url::Origin origin =
+      web_contents_->GetPrimaryMainFrame()->GetLastCommittedOrigin();
 
   // Revoke the permission.
   const auto objects = context->GetGrantedObjects(origin);
@@ -1022,6 +1256,10 @@ IN_PROC_BROWSER_TEST_F(WebBluetoothTestWithNewPermissionsBackendEnabled,
 
 IN_PROC_BROWSER_TEST_F(WebBluetoothTestWithNewPermissionsBackendEnabled,
                        RevokingPermissionStopsAdvertisements) {
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL(kExampleUrl)));
+  web_contents_ = browser()->tab_strip_model()->GetActiveWebContents();
+  CheckLastCommitedOrigin(kExampleUrl);
+
   // Setup the fake device.
   AddFakeDevice(kDeviceAddress);
   SetDeviceToSelect(kDeviceAddress);
@@ -1049,7 +1287,8 @@ IN_PROC_BROWSER_TEST_F(WebBluetoothTestWithNewPermissionsBackendEnabled,
     })()
   )"));
 
-  url::Origin origin = web_contents_->GetMainFrame()->GetLastCommittedOrigin();
+  url::Origin origin =
+      web_contents_->GetPrimaryMainFrame()->GetLastCommittedOrigin();
   permissions::BluetoothChooserContext* context =
       BluetoothChooserContextFactory::GetForProfile(browser()->profile());
   auto objects = context->GetGrantedObjects(origin);
@@ -1245,7 +1484,7 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_FALSE(observer.last_is_connected_to_bluetooth_device().has_value());
 
   content::RenderFrameDeletedObserver rfh_observer(
-      GetWebContents()->GetMainFrame());
+      GetWebContents()->GetPrimaryMainFrame());
 
   // Navigates the primary page to the URL.
   prerender_helper()->NavigatePrimaryPage(prerender_url);

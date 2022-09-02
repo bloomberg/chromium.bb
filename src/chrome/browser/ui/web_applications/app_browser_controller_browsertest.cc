@@ -23,13 +23,12 @@
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
-#include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/web_applications/system_web_apps/test/test_system_web_app_installation.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
+#include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_install_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
-#include "chrome/browser/web_applications/web_application_info.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -64,7 +63,7 @@ class LoadFinishedWaiter : public TabStripModelObserver,
 
   void Wait() { run_loop_.Run(); }
 
-  SkColor GetColorAtNavigation() { return color_at_navigation_; }
+  SkColor GetColorAtNavigation() const { return color_at_navigation_; }
 
   // TabStripModelObserver:
   void OnTabStripModelChanged(

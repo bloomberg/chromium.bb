@@ -99,9 +99,13 @@ class VideoFrameHandleReleaserImpl final
 
 MojoVideoDecoderService::MojoVideoDecoderService(
     MojoMediaClient* mojo_media_client,
-    MojoCdmServiceContext* mojo_cdm_service_context)
+    MojoCdmServiceContext* mojo_cdm_service_context,
+    mojo::PendingRemote<stable::mojom::StableVideoDecoder>
+        oop_video_decoder_pending_remote)
     : mojo_media_client_(mojo_media_client),
-      mojo_cdm_service_context_(mojo_cdm_service_context) {
+      mojo_cdm_service_context_(mojo_cdm_service_context),
+      oop_video_decoder_pending_remote_(
+          std::move(oop_video_decoder_pending_remote)) {
   DVLOG(1) << __func__;
   DCHECK(mojo_media_client_);
   DCHECK(mojo_cdm_service_context_);
@@ -112,9 +116,7 @@ MojoVideoDecoderService::~MojoVideoDecoderService() {
   DVLOG(1) << __func__;
 
   if (init_cb_) {
-    OnDecoderInitialized(
-        Status(StatusCode::kMojoDecoderDeletedWithoutInitialization)
-            .WithData("decoder", "MojoVideoDecoder"));
+    OnDecoderInitialized(DecoderStatus::Codes::kInterrupted);
   }
 
   if (reset_cb_)
@@ -153,7 +155,7 @@ void MojoVideoDecoderService::Construct(
   DVLOG(1) << __func__;
   TRACE_EVENT0("media", "MojoVideoDecoderService::Construct");
 
-  if (decoder_) {
+  if (media_log_) {
     mojo::ReportBadMessage("Construct() already called");
     return;
   }
@@ -177,7 +179,7 @@ void MojoVideoDecoderService::Construct(
       task_runner, media_log_.get(), std::move(command_buffer_id),
       base::BindRepeating(
           &MojoVideoDecoderService::OnDecoderRequestedOverlayInfo, weak_this_),
-      target_color_space);
+      target_color_space, std::move(oop_video_decoder_pending_remote_));
 }
 
 void MojoVideoDecoderService::Initialize(
@@ -198,8 +200,17 @@ void MojoVideoDecoderService::Initialize(
 
   init_cb_ = std::move(callback);
 
+  // Prevent creation of too many hardware decoding instances since it may lead
+  // to system instability. Note: This will break decoding entirely for codecs
+  // which don't have software fallback, so we use a conservative limit. Most
+  // platforms will self-limit and never reach this limit.
+  if (!config.is_encrypted() && g_num_active_mvd_instances >= 128) {
+    OnDecoderInitialized(DecoderStatus::Codes::kTooManyDecoders);
+    return;
+  }
+
   if (!decoder_) {
-    OnDecoderInitialized(StatusCode::kMojoDecoderNoWrappedDecoder);
+    OnDecoderInitialized(DecoderStatus::Codes::kFailedToCreateDecoder);
     return;
   }
 
@@ -215,7 +226,7 @@ void MojoVideoDecoderService::Initialize(
     } else if (cdm_id != cdm_id_) {
       // TODO(xhwang): Replace with mojo::ReportBadMessage().
       NOTREACHED() << "The caller should not switch CDM";
-      OnDecoderInitialized(StatusCode::kDecoderMissingCdmForEncryptedContent);
+      OnDecoderInitialized(DecoderStatus::Codes::kUnsupportedEncryptionMode);
       return;
     }
   }
@@ -228,7 +239,7 @@ void MojoVideoDecoderService::Initialize(
     DVLOG(1) << "CdmContext for "
              << CdmContext::CdmIdToString(base::OptionalOrNullptr(cdm_id))
              << " not found for encrypted video";
-    OnDecoderInitialized(StatusCode::kDecoderMissingCdmForEncryptedContent);
+    OnDecoderInitialized(DecoderStatus::Codes::kUnsupportedEncryptionMode);
     return;
   }
 
@@ -267,7 +278,7 @@ void MojoVideoDecoderService::Decode(mojom::DecoderBufferPtr buffer,
 
   if (!decoder_) {
     OnDecoderDecoded(std::move(callback), std::move(trace_event),
-                     DecodeStatus::DECODE_ERROR);
+                     DecoderStatus::Codes::kNotInitialized);
     return;
   }
 
@@ -310,7 +321,7 @@ void MojoVideoDecoderService::Reset(ResetCallback callback) {
       base::BindOnce(&MojoVideoDecoderService::OnReaderFlushed, weak_this_));
 }
 
-void MojoVideoDecoderService::OnDecoderInitialized(Status status) {
+void MojoVideoDecoderService::OnDecoderInitialized(DecoderStatus status) {
   DVLOG(1) << __func__;
   DCHECK(!status.is_ok() || decoder_);
   DCHECK(init_cb_);
@@ -341,7 +352,7 @@ void MojoVideoDecoderService::OnReaderRead(
 
   if (!buffer) {
     OnDecoderDecoded(std::move(callback), std::move(trace_event),
-                     DecodeStatus::DECODE_ERROR);
+                     DecoderStatus::Codes::kFailedToGetDecoderBuffer);
     return;
   }
 
@@ -359,7 +370,7 @@ void MojoVideoDecoderService::OnReaderFlushed() {
 void MojoVideoDecoderService::OnDecoderDecoded(
     DecodeCallback callback,
     std::unique_ptr<ScopedDecodeTrace> trace_event,
-    media::Status status) {
+    media::DecoderStatus status) {
   DVLOG(3) << __func__;
   if (trace_event) {
     TRACE_EVENT_ASYNC_STEP_PAST0("media", kDecodeTraceName, trace_event.get(),

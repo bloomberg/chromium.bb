@@ -5,10 +5,10 @@
 #ifndef CC_TILES_TILE_DRAW_INFO_H_
 #define CC_TILES_TILE_DRAW_INFO_H_
 
+#include "base/notreached.h"
 #include "base/trace_event/traced_value.h"
 #include "cc/resources/resource_pool.h"
 #include "components/viz/common/resources/platform_color.h"
-#include "components/viz/common/resources/resource_format_utils.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace cc {
@@ -78,7 +78,7 @@ class CC_EXPORT TileDrawInfo {
 
   inline bool has_resource() const { return !!resource_; }
 
-  const ResourcePool::InUsePoolResource& GetResource();
+  const ResourcePool::InUsePoolResource& GetResource() const;
 
   bool is_checker_imaged() const {
     DCHECK(!resource_is_checker_imaged_ || resource_);

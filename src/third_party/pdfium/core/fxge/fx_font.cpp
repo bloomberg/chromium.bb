@@ -11,15 +11,13 @@
 #include "core/fxcrt/widestring.h"
 #include "core/fxge/cfx_glyphbitmap.h"
 #include "core/fxge/dib/cfx_dibitmap.h"
-#include "core/fxge/fx_freetype.h"
+#include "core/fxge/freetype/fx_freetype.h"
 #include "core/fxge/text_glyph_pos.h"
 
 namespace {
 
 // These numbers come from the OpenType name table specification.
-constexpr uint16_t kNamePlatformMac = 1;
 constexpr uint16_t kNameMacEncodingRoman = 0;
-constexpr uint16_t kNamePlatformWindows = 3;
 constexpr uint16_t kNameWindowsEncodingUnicode = 1;
 
 ByteString GetStringFromTable(pdfium::span<const uint8_t> string_span,
@@ -130,11 +128,10 @@ ByteString GetNameFromTT(pdfium::span<const uint8_t> name_table,
   return ByteString();
 }
 
-int GetTTCIndex(pdfium::span<const uint8_t> pFontData, uint32_t font_offset) {
+size_t GetTTCIndex(pdfium::span<const uint8_t> pFontData, size_t font_offset) {
   const uint8_t* p = pFontData.data() + 8;
-  uint32_t nfont = FXSYS_UINT32_GET_MSBFIRST(p);
-  uint32_t index;
-  for (index = 0; index < nfont; index++) {
+  size_t nfont = FXSYS_UINT32_GET_MSBFIRST(p);
+  for (size_t index = 0; index < nfont; index++) {
     p = pFontData.data() + 12 + index * 4;
     if (FXSYS_UINT32_GET_MSBFIRST(p) == font_offset)
       return index;
@@ -142,11 +139,11 @@ int GetTTCIndex(pdfium::span<const uint8_t> pFontData, uint32_t font_offset) {
   return 0;
 }
 
-wchar_t PDF_UnicodeFromAdobeName(const char* name) {
+wchar_t UnicodeFromAdobeName(const char* name) {
   return (wchar_t)(FXFT_unicode_from_adobe_name(name) & 0x7FFFFFFF);
 }
 
-ByteString PDF_AdobeNameFromUnicode(wchar_t unicode) {
+ByteString AdobeNameFromUnicode(wchar_t unicode) {
   char glyph_name[64];
   FXFT_adobe_name_from_unicode(glyph_name, unicode);
   return ByteString(glyph_name);

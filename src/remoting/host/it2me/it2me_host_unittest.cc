@@ -34,9 +34,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 #include "base/linux_util.h"
-#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 
 namespace remoting {
 
@@ -64,6 +64,30 @@ const char kPortRange[] = "12401-12408";
 const char kTestStunServer[] = "test_relay_server.com";
 
 }  // namespace
+
+// This is invoked automatically by the gtest framework, and improves the error
+// messages when a test fails (by properly formatting the host state instead
+// of printing their byte value).
+void PrintTo(It2MeHostState state, std::ostream* os) {
+#define CASE(_state)           \
+  case It2MeHostState::_state: \
+    *os << #_state;            \
+    return;
+
+  switch (state) {
+    CASE(kDisconnected);
+    CASE(kStarting);
+    CASE(kRequestedAccessCode);
+    CASE(kReceivedAccessCode);
+    CASE(kConnecting);
+    CASE(kConnected);
+    CASE(kError);
+    CASE(kInvalidDomainError);
+  }
+  NOTREACHED();
+  *os << "Unknown state " << static_cast<int>(state);
+  return;
+}
 
 class FakeIt2MeConfirmationDialog : public It2MeConfirmationDialog {
  public:
@@ -232,7 +256,7 @@ It2MeHostTest::It2MeHostTest() {}
 It2MeHostTest::~It2MeHostTest() = default;
 
 void It2MeHostTest::SetUp() {
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
   // Need to prime the host OS version value for linux to prevent IO on the
   // network thread. base::GetLinuxDistro() caches the result.
   base::GetLinuxDistro();
@@ -272,7 +296,7 @@ void It2MeHostTest::SetPolicies(
         policies) {
   policies_ = std::make_unique<base::DictionaryValue>();
   for (const auto& policy : policies) {
-    policies_->Set(policy.first, policy.second.CreateDeepCopy());
+    policies_->SetKey(policy.first, policy.second.Clone());
   }
   if (it2me_host_) {
     it2me_host_->OnPolicyUpdate(std::move(policies_));
@@ -803,6 +827,19 @@ TEST_F(It2MeHostTest,
        EnterpriseSessionsSucceedWhenRemoteSupportConnectionsPolicyDisabled) {
   SetPolicies({{policy::key::kRemoteAccessHostAllowRemoteSupportConnections,
                 base::Value(false)}});
+
+  is_enterprise_session_ = true;
+  StartHost();
+  ASSERT_EQ(It2MeHostState::kReceivedAccessCode, last_host_state_);
+
+  ShutdownHost();
+  ASSERT_EQ(It2MeHostState::kDisconnected, last_host_state_);
+  ASSERT_EQ(ErrorCode::OK, last_error_code_);
+}
+
+TEST_F(It2MeHostTest, EnterpriseSessionsShouldNotCheckHostDomain) {
+  SetPolicies({{policy::key::kRemoteAccessHostDomainList,
+                MakeList({"other-domain.com"})}});
 
   is_enterprise_session_ = true;
   StartHost();

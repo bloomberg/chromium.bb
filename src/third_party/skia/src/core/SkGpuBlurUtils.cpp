@@ -12,16 +12,17 @@
 #include "src/core/SkMathPriv.h"
 
 #if SK_SUPPORT_GPU
+#include "include/core/SkColorSpace.h"
 #include "include/gpu/GrRecordingContext.h"
-#include "src/gpu/GrCaps.h"
-#include "src/gpu/GrRecordingContextPriv.h"
-#include "src/gpu/SkGr.h"
-#include "src/gpu/effects/GrGaussianConvolutionFragmentProcessor.h"
-#include "src/gpu/effects/GrMatrixConvolutionEffect.h"
-#include "src/gpu/effects/GrTextureEffect.h"
+#include "src/gpu/ganesh/GrCaps.h"
+#include "src/gpu/ganesh/GrRecordingContextPriv.h"
+#include "src/gpu/ganesh/SkGr.h"
+#include "src/gpu/ganesh/effects/GrGaussianConvolutionFragmentProcessor.h"
+#include "src/gpu/ganesh/effects/GrMatrixConvolutionEffect.h"
+#include "src/gpu/ganesh/effects/GrTextureEffect.h"
 
 #if SK_GPU_V1
-#include "src/gpu/v1/SurfaceDrawContext_v1.h"
+#include "src/gpu/ganesh/v1/SurfaceDrawContext_v1.h"
 
 using Direction = GrGaussianConvolutionFragmentProcessor::Direction;
 
@@ -183,7 +184,7 @@ static std::unique_ptr<skgpu::v1::SurfaceDrawContext> convolve_gaussian(
     bool canSplit = mode == SkTileMode::kDecal || mode == SkTileMode::kClamp;
     // ...but it's not worth doing the splitting if we'll get HW tiling instead of shader tiling.
     bool canHWTile =
-            srcBounds.contains(srcBackingBounds)         &&
+            srcBounds.contains(srcBackingBounds)          &&
             !rContext->priv().caps()->reducedShaderMode() && // this mode always uses shader tiling
             !(mode == SkTileMode::kDecal && !rContext->priv().caps()->clampToBorderSupport());
     if (!canSplit || canHWTile) {
@@ -646,7 +647,6 @@ std::unique_ptr<skgpu::v1::SurfaceDrawContext> GaussianBlur(GrRecordingContext* 
                                      SK_PMColor4fWHITE,
                                      SkRect::Make(srcRect),
                                      SkRect::Make(dstRect),
-                                     GrAA::kNo,
                                      GrQuadAAFlags::kNone,
                                      SkCanvas::SrcRectConstraint::kFast_SrcRectConstraint,
                                      SkMatrix::I(),

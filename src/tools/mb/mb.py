@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright 2020 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -20,7 +20,6 @@ import json
 import os
 import pipes
 import platform
-import pprint
 import re
 import shutil
 import sys
@@ -187,11 +186,6 @@ class MetaBuildWrapper(object):
                         help='whether or not to use regression test selection'
                         ' For more info about RTS, please see'
                         ' //docs/testing/regression-test-selection.md')
-      subp.add_argument('--use-st',
-                        action='store_true',
-                        default=False,
-                        help='whether or not to add filter stable tests during'
-                        ' RTS selection')
 
       # TODO(crbug.com/1060857): Remove this once swarming task templates
       # support command prefixes.
@@ -756,8 +750,9 @@ class MetaBuildWrapper(object):
       if ret != 0:
         return ret
       collect_json = json.loads(self.ReadFile(collect_output))
-      # The exit_code field is not included if the task was successful.
-      ret = collect_json.get(task_id, {}).get('results', {}).get('exit_code', 0)
+      # The exit_code field might not be included if the task was successful.
+      ret = int(
+          collect_json.get(task_id, {}).get('results', {}).get('exit_code', 0))
     finally:
       if json_dir:
         self.RemoveDirectory(json_dir)
@@ -808,22 +803,31 @@ class MetaBuildWrapper(object):
         config = self.builder_groups[builder_group][builder]
         if not config:
           continue
+
+        def flatten(config):
+          flattened_config = FlattenConfig(self.configs, self.mixins, config)
+          if flattened_config['gn_args'] == 'error':
+            return None
+          args = {'gn_args': gn_helpers.FromGNArgs(flattened_config['gn_args'])}
+          if flattened_config.get('args_file'):
+            args['args_file'] = flattened_config['args_file']
+          return args
+
         if isinstance(config, dict):
           # This is a 'phased' builder. Each key in the config is a different
           # phase of the builder.
           args = {}
           for k, v in config.items():
-            args[k] = gn_helpers.FromGNArgs(
-                FlattenConfig(self.configs, self.mixins, v)['gn_args'])
+            flattened = flatten(v)
+            if flattened is None:
+              continue
+            args[k] = flattened
         elif config.startswith('//'):
           args = config
         else:
-          flattened_config = FlattenConfig(self.configs, self.mixins, config)
-          if flattened_config['gn_args'] == 'error':
+          args = flatten(config)
+          if args is None:
             continue
-          args = {'gn_args': gn_helpers.FromGNArgs(flattened_config['gn_args'])}
-          if flattened_config.get('args_file'):
-            args['args_file'] = flattened_config['args_file']
         obj[builder_group][builder] = args
 
     return obj
@@ -871,6 +875,11 @@ class MetaBuildWrapper(object):
       jsonish_blob = self._ToJsonish()
       if not validation.CheckExpectations(self, jsonish_blob, expectations_dir):
         raise MBErr("Expectations out of date. Please run 'mb.py train'.")
+
+    validation.CheckKeyOrdering(errs, self.builder_groups, self.configs,
+                                self.mixins)
+    if errs:
+      raise MBErr('mb config file not sorted:\n' + '\n'.join(errs))
 
     if print_ok:
       self.Print('mb config file %s looks ok.' % self.args.config_file)
@@ -1317,7 +1326,7 @@ class MetaBuildWrapper(object):
 
       # For more info about RTS, please see
       # //docs/testing/regression-test-selection.md
-      if self.args.use_rts or self.args.use_st:
+      if self.args.use_rts:
         self.AddFilterFileArg(target, build_dir, command)
 
       canonical_target = target.replace(':','_').replace('/','_')
@@ -1335,49 +1344,9 @@ class MetaBuildWrapper(object):
       filter_file_path = self.PathJoin(self.rts_out_dir, filter_file)
       abs_filter_file_path = self.ToAbsPath(build_dir, filter_file_path)
 
-      self.CreateOrAppendStableTestFilter(abs_filter_file_path, build_dir,
-                                          target)
-
       if self.Exists(abs_filter_file_path):
         command.append('--test-launcher-filter-file=%s' % filter_file_path)
         self.Print('added RTS filter file to command: %s' % filter_file)
-
-  def CreateOrAppendStableTestFilter(self, abs_filter_file_path, build_dir,
-                                     target):
-    if self.args.use_st:
-      stable_filter_file = self.PathJoin(
-          self.chromium_src_dir, 'testing',
-          'buildbot', 'filters', 'stable_test_filters',
-          getattr(self.args, 'builder', None), target) + '.filter'
-      # The path to the filter file to append
-      abs_stable_filter_file = self.ToAbsPath(build_dir, stable_filter_file)
-
-      if self.Exists(abs_stable_filter_file):
-        # A stable filter exists
-        if not self.args.use_rts:
-          self.Print('RTS disabled, using stable filter')
-          dest_dir = os.path.dirname(abs_filter_file_path)
-          if not self.Exists(dest_dir):
-            os.makedirs(dest_dir)
-          shutil.copy(abs_stable_filter_file, abs_filter_file_path)
-        else:
-          # Rts is enabled and will delete ALL .filter files
-          # only rts filters generated this run should remain
-          if not self.Exists(abs_filter_file_path):
-            self.Print('No RTS filter found, using stable filter')
-            shutil.copy(abs_stable_filter_file, abs_filter_file_path)
-          else:
-            self.Print('Adding stable tests filter to RTS filter')
-            with open(abs_filter_file_path, 'a+') as select_filter_file, open(
-                abs_stable_filter_file, 'r') as stable_filter_file:
-              select_filter_file.write('\n')
-              select_filter_file.write(stable_filter_file.read())
-      else:
-        self.Print('No stable filter found at %s' % abs_stable_filter_file)
-    else:
-      self.Print('No stable filter')
-
-    return 0
 
   def PossibleRuntimeDepsPaths(self, vals, ninja_targets, isolate_map):
     """Returns a map of targets to possible .runtime_deps paths.
@@ -1496,9 +1465,11 @@ class MetaBuildWrapper(object):
     is_android = 'target_os="android"' in vals['gn_args']
     is_cros = ('target_os="chromeos"' in vals['gn_args']
                or 'is_chromeos_device=true' in vals['gn_args'])
-    is_mac = self.platform == 'darwin'
     is_msan = 'is_msan=true' in vals['gn_args']
     is_ios = 'target_os="ios"' in vals['gn_args']
+    # pylint: disable=consider-using-ternary
+    is_mac = ((self.platform == 'darwin' and not is_ios)
+              or 'target_os="mac"' in vals['gn_args'])
 
     err = ''
     for f in files:
@@ -1540,6 +1511,7 @@ class MetaBuildWrapper(object):
               'Chromium Helper.app/',
               'Chromium.app/',
               'ChromiumUpdater.app/',
+              'ChromiumUpdater_test.app/',
               'Content Shell.app/',
               'Google Chrome Framework.framework/',
               'Google Chrome Helper (Alerts).app/',
@@ -1549,6 +1521,7 @@ class MetaBuildWrapper(object):
               'Google Chrome Helper.app/',
               'Google Chrome.app/',
               'GoogleUpdater.app/',
+              'GoogleUpdater_test.app/',
               'UpdaterTestApp Framework.framework/',
               'UpdaterTestApp.app/',
               'blink_deprecated_test_plugin.plugin/',
@@ -1574,12 +1547,12 @@ class MetaBuildWrapper(object):
       return 1
 
     self.WriteFile(isolate_path,
-      pprint.pformat({
+      json.dumps({
         'variables': {
           'command': command,
           'files': files,
         }
-      }) + '\n')
+      }, sort_keys=True) + '\n')
 
     self.WriteJSON(
       {
@@ -1652,7 +1625,7 @@ class MetaBuildWrapper(object):
     if android_version_name:
       gn_args += ' android_default_version_name="%s"' % android_version_name
 
-    if self.args.use_rts or self.args.use_st:
+    if self.args.use_rts:
       gn_args += ' use_rts=true'
 
     args_gn_lines = []
@@ -1683,7 +1656,9 @@ class MetaBuildWrapper(object):
                or 'is_chromeos_device=true' in vals['gn_args'])
     is_cros_device = 'is_chromeos_device=true' in vals['gn_args']
     is_ios = 'target_os="ios"' in vals['gn_args']
-    is_mac = self.platform == 'darwin' and not is_ios
+    # pylint: disable=consider-using-ternary
+    is_mac = ((self.platform == 'darwin' and not is_ios)
+              or 'target_os="mac"' in vals['gn_args'])
     is_win = self.platform == 'win32' or 'target_os="win"' in vals['gn_args']
     is_lacros = 'chromeos_is_browser_only=true' in vals['gn_args']
 
@@ -1736,15 +1711,10 @@ class MetaBuildWrapper(object):
     executable_suffix = isolate_map[target].get(
         'executable_suffix', '.exe' if is_win else '')
 
-    if isolate_map[target].get('python3', True):
-      extra_files = ['../../.vpython3']
-      vpython_exe = 'vpython3'
-    else:
-      extra_files = ['../../.vpython']
-      vpython_exe = 'vpython'
-
-    extra_files += [
-      '../../testing/test_env.py',
+    vpython_exe = 'vpython3'
+    extra_files = [
+        '../../.vpython3',
+        '../../testing/test_env.py',
     ]
 
     if is_android and test_type != 'script':
@@ -1753,12 +1723,23 @@ class MetaBuildWrapper(object):
       cmdline += [
           vpython_exe, '../../build/android/test_wrapper/logdog_wrapper.py',
           '--target', target, '--logdog-bin-cmd',
-          '../../.task_template_packages/logdog_butler', '--store-tombstones'
+          '../../.task_template_packages/logdog_butler'
       ]
+      if test_type != 'junit_test':
+        cmdline += ['--store-tombstones']
       if clang_coverage or java_coverage:
         cmdline += ['--coverage-dir', '${ISOLATED_OUTDIR}']
     elif is_fuchsia and test_type != 'script':
+      # On Fuchsia, the generated bin/run_* test scripts are used both in
+      # infrastructure and by developers. test_env.py is intended to establish a
+      # predictable environment for automated testing. In particular, it adds
+      # CHROME_HEADLESS=1 to the environment for child processes. This variable
+      # is a signal to both test and production code that it is running in the
+      # context of automated an testing environment, and should not be present
+      # for normal developer workflows.
       cmdline += [
+          vpython_exe,
+          '../../testing/test_env.py',
           os.path.join('bin', 'run_%s' % target),
           '--test-launcher-bot-mode',
           '--logs-dir=${ISOLATED_OUTDIR}',
@@ -1776,11 +1757,7 @@ class MetaBuildWrapper(object):
           './' + str(executable) + executable_suffix,
           '--test-launcher-bot-mode',
           '--asan=%d' % asan,
-          # Enable lsan when asan is enabled except on Windows where LSAN isn't
-          # supported.
-          # TODO(https://crbug.com/948939): Enable on Mac once things pass.
-          # TODO(https://crbug.com/974478): Enable on ChromeOS once things pass.
-          '--lsan=%d' % (asan and not is_mac and not is_win and not is_cros),
+          '--lsan=%d' % asan,  # Enable lsan when asan is enabled.
           '--msan=%d' % msan,
           '--tsan=%d' % tsan,
           '--cfi-diag=%d' % cfi_diag,

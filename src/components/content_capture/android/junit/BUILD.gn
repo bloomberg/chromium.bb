@@ -15,12 +15,12 @@ java_library("components_content_capture_junit_tests") {
     "src/org/chromium/components/content_capture/UrlAllowlistTest.java",
   ]
   deps = [
-    "//base:base_java",
     "//base:base_java_test_support",
     "//base:base_junit_test_support",
     "//components/content_capture/android:java",
     "//content/public/android:content_java",
     "//third_party/android_deps:robolectric_all_java",
+    "//third_party/androidx:androidx_annotation_annotation_java",
     "//third_party/junit",
     "//third_party/mockito:mockito_java",
   ]

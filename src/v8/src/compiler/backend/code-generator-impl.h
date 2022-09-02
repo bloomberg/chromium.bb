@@ -51,7 +51,7 @@ class InstructionOperandConverter {
   }
 
   uint32_t InputUint32(size_t index) {
-    return bit_cast<uint32_t>(InputInt32(index));
+    return base::bit_cast<uint32_t>(InputInt32(index));
   }
 
   int64_t InputInt64(size_t index) {
@@ -63,7 +63,7 @@ class InstructionOperandConverter {
   }
 
   uint8_t InputUint8(size_t index) {
-    return bit_cast<uint8_t>(InputInt8(index));
+    return base::bit_cast<uint8_t>(InputInt8(index));
   }
 
   int16_t InputInt16(size_t index) {
@@ -90,7 +90,7 @@ class InstructionOperandConverter {
     return ToExternalReference(instr_->InputAt(index));
   }
 
-  Handle<Code> InputCode(size_t index) {
+  Handle<CodeT> InputCode(size_t index) {
     return ToCode(instr_->InputAt(index));
   }
 
@@ -168,7 +168,7 @@ class InstructionOperandConverter {
     return ToConstant(op).ToExternalReference();
   }
 
-  Handle<Code> ToCode(InstructionOperand* op) {
+  Handle<CodeT> ToCode(InstructionOperand* op) {
     return ToConstant(op).ToCode();
   }
 
