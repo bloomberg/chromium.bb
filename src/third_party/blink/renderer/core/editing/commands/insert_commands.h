@@ -62,6 +62,10 @@ class InsertCommands {
                                 Event*,
                                 EditorCommandSource,
                                 const String&);
+  static bool ExecuteInsertHTMLNested(LocalFrame& frame,
+                                      Event*,
+                                      EditorCommandSource,
+                                      const String& value);
   static bool ExecuteInsertImage(LocalFrame&,
                                  Event*,
                                  EditorCommandSource,
