@@ -83,6 +83,9 @@ class BrowserMainRunner
     BrowserMainRunner& operator=(const BrowserMainRunner&) = delete;
 
     int run();
+
+  private:
+    void createDiscardableSharedMemoryManager();
 };
 
 }  // close namespace blpwtk2

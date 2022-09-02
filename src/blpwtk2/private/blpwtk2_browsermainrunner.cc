@@ -87,8 +87,7 @@ BrowserMainRunner::BrowserMainRunner(
         content::BrowserTaskExecutor::CreateIOThread());
     mainParams.startup_data = d_mojo_ipc_support->CreateBrowserStartupData();
 
-    d_discardable_shared_memory_manager =
-      std::make_unique<discardable_memory::DiscardableSharedMemoryManager>();
+    createDiscardableSharedMemoryManager();
 
     int rc = d_impl->Initialize(std::move(mainParams));
     DCHECK(-1 == rc);  // it returns -1 for success!!
@@ -115,6 +114,18 @@ int BrowserMainRunner::run()
 {
     return d_impl->Run();
 }
+
+void BrowserMainRunner::createDiscardableSharedMemoryManager() 
+{
+  d_discardable_shared_memory_manager =
+      std::make_unique<discardable_memory::DiscardableSharedMemoryManager>();
+
+  if (Statics::discardableSharedMemorySizeLimit > 0) 
+  {
+    d_discardable_shared_memory_manager->SetMemoryLimit(Statics::discardableSharedMemorySizeLimit);
+  }
+}
+
 
 }  // close namespace blpwtk2
 
